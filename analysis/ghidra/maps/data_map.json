@@ -2003,7 +2003,7 @@
     {
       "address": "0x00477d28",
       "comment": "SFX playback rate scale (set during sfx_play; affected by Reflex Boost).",
-      "name": "sfx_rate_scale",
+      "name": "sfx_sample_rate",
       "program": "crimsonland.exe",
       "type": "DWORD"
     },
@@ -4011,22 +4011,22 @@
     },
     {
       "address": "0x00480544",
-      "comment": "Config: P1 padding/reserved 0.",
-      "name": "config_p1_padding_0",
+      "comment": "Config: P1 spare key binding 0 (defaults to key 382, like key_reserved_0).",
+      "name": "config_p1_spare_key_0",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00480548",
-      "comment": "Config: P1 padding/reserved 1.",
-      "name": "config_p1_padding_1",
+      "comment": "Config: P1 spare key binding 1 (defaults to key 382).",
+      "name": "config_p1_spare_key_1",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x0048054c",
-      "comment": "Config: P1 padding/reserved 2.",
-      "name": "config_p1_padding_2",
+      "comment": "Config: P1 spare key binding 2 (defaults to key 382).",
+      "name": "config_p1_spare_key_2",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -4123,22 +4123,22 @@
     },
     {
       "address": "0x00480584",
-      "comment": "Config: P2 padding/reserved 0.",
-      "name": "config_p2_padding_0",
+      "comment": "Config: P2 spare key binding 0 (defaults to key 382, like key_reserved_0).",
+      "name": "config_p2_spare_key_0",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00480588",
-      "comment": "Config: P2 padding/reserved 1.",
-      "name": "config_p2_padding_1",
+      "comment": "Config: P2 spare key binding 1 (defaults to key 382).",
+      "name": "config_p2_spare_key_1",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x0048058c",
-      "comment": "Config: P2 padding/reserved 2.",
-      "name": "config_p2_padding_2",
+      "comment": "Config: P2 spare key binding 2 (defaults to key 382).",
+      "name": "config_p2_spare_key_2",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -4490,8 +4490,8 @@
     },
     {
       "address": "0x004808b0",
-      "comment": "Tutorial hint-bonus consumed latch toggled after hint bonus death/flag checks in tutorial_timeline_update.",
-      "name": "tutorial_hint_bonus_consumed_latch",
+      "comment": "Set when the tutorial hint carrier dies and drops its bonus; gates the carrier check and the hint fade in tutorial_timeline_update.",
+      "name": "tutorial_hint_carrier_killed",
       "program": "crimsonland.exe",
       "type": "bool"
     },
@@ -5310,48 +5310,48 @@
     {
       "address": "0x00484730",
       "comment": "Quest metadata table base (0x2c-byte entries, 0x32 total).",
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "program": "crimsonland.exe",
       "type": "quest_meta_t[50]"
     },
     {
       "address": "0x00484734",
-      "comment": "Quest metadata entry index/number (quest_selected_meta + 0x04, stride 0x2c).",
+      "comment": "Quest metadata entry index/number (quest_meta_table + 0x04, stride 0x2c).",
       "name": "quest_meta_index",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00484738",
-      "comment": "Quest time limit in ms (quest_selected_meta + 0x08, stride 0x2c).",
+      "comment": "Quest time limit in ms (quest_meta_table + 0x08, stride 0x2c).",
       "name": "quest_meta_time_limit_ms",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x0048473c",
-      "comment": "Quest display name pointer (quest_selected_meta + 0x0c, stride 0x2c).",
+      "comment": "Quest display name pointer (quest_meta_table + 0x0c, stride 0x2c).",
       "name": "quest_meta_name",
       "program": "crimsonland.exe",
       "type": "char *"
     },
     {
       "address": "0x00484740",
-      "comment": "Terrain texture index (layer A) used by terrain_generate (quest_selected_meta + 0x10, stride 0x2c).",
+      "comment": "Terrain texture index (layer A) used by terrain_generate (quest_meta_table + 0x10, stride 0x2c).",
       "name": "quest_meta_terrain_id",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00484744",
-      "comment": "Terrain texture index (layer B) used by terrain_generate (quest_selected_meta + 0x14, stride 0x2c).",
+      "comment": "Terrain texture index (layer B) used by terrain_generate (quest_meta_table + 0x14, stride 0x2c).",
       "name": "quest_meta_terrain_id_b",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00484748",
-      "comment": "Terrain texture index (layer C) used by terrain_generate (quest_selected_meta + 0x18, stride 0x2c).",
+      "comment": "Terrain texture index (layer C) used by terrain_generate (quest_meta_table + 0x18, stride 0x2c).",
       "name": "quest_meta_terrain_id_c",
       "program": "crimsonland.exe",
       "type": "int"
@@ -5365,21 +5365,21 @@
     },
     {
       "address": "0x00484750",
-      "comment": "Quest unlock perk id field (quest_selected_meta + 0x20, stride 0x2c). Used by perks_rebuild_available.",
+      "comment": "Quest unlock perk id field (quest_meta_table + 0x20, stride 0x2c). Used by perks_rebuild_available.",
       "name": "quest_unlock_perk_id",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00484754",
-      "comment": "Quest unlock weapon id field (quest_selected_meta + 0x24, stride 0x2c). Used by weapon_refresh_available.",
+      "comment": "Quest unlock weapon id field (quest_meta_table + 0x24, stride 0x2c). Used by weapon_refresh_available.",
       "name": "quest_unlock_weapon_id",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00484758",
-      "comment": "Quest starting weapon id (quest_selected_meta + 0x28, stride 0x2c). Applied in quest_start_selected.",
+      "comment": "Quest starting weapon id (quest_meta_table + 0x28, stride 0x2c). Applied in quest_start_selected.",
       "name": "quest_start_weapon_id",
       "program": "crimsonland.exe",
       "type": "int"
@@ -5638,7 +5638,7 @@
     },
     {
       "address": "0x00485540",
-      "comment": "Status file blob (0x268 bytes). Header stores quest_unlock_index (low u16) + quest_unlock_index_full (high u16).",
+      "comment": "Status file blob (0x268 bytes). Header stores quest_unlock_index (low u16) + quest_unlock_index_hardcore (high u16).",
       "name": "game_status_blob",
       "type": "game_status_t",
       "program": "crimsonland.exe"
@@ -5701,14 +5701,14 @@
     },
     {
       "address": "0x00486fa8",
-      "comment": "Survival handout gate (set on reset; cleared after reward or after 3 death samples).",
-      "name": "survival_reward_handout_enabled",
+      "comment": "Shrinkifier handout gate: set on reset, read only by the 64 s Shrinkifier branch, cleared after a handout or the third kill.",
+      "name": "survival_shrinkifier_handout_enabled",
       "program": "crimsonland.exe",
       "type": "unsigned char"
     },
     {
       "address": "0x00486fa9",
-      "comment": "Write-only auxiliary survival handout flag; gameplay_reset_state is its sole Binary Ninja xref and initializes it to one beside survival_reward_handout_enabled.",
+      "comment": "Write-only auxiliary survival handout flag; gameplay_reset_state is its sole Binary Ninja xref and initializes it to one beside survival_shrinkifier_handout_enabled.",
       "name": "survival_reward_handout_aux_enabled",
       "program": "crimsonland.exe",
       "type": "unsigned char"
@@ -5834,36 +5834,36 @@
     },
     {
       "address": "0x00486fe8",
-      "comment": "Survival reward tracking: recent creature death positions (3 entries, stride 0x08 bytes).",
-      "name": "survival_recent_death_pos",
+      "comment": "Survival reward tracking: positions of the run's first three kills (stride 0x08 bytes).",
+      "name": "survival_first_kill_pos",
       "program": "crimsonland.exe",
       "type": "vec2f_t[3]"
     },
     {
       "address": "0x00486fec",
-      "comment": "Survival reward tracking: recent creature death Y positions (survival_recent_death_pos + 0x04; 3 entries, stride 0x08 bytes).",
-      "name": "survival_recent_death_pos_y",
+      "comment": "Survival reward tracking: Y of the run's first three kills (survival_first_kill_pos + 0x04; stride 0x08 bytes).",
+      "name": "survival_first_kill_pos_y",
       "program": "crimsonland.exe",
       "type": "float"
     },
     {
       "address": "0x00486ff0",
-      "comment": "Survival reward tracking: recent creature death position slot 1 (stride 0x08 bytes).",
-      "name": "survival_recent_death_pos_1",
+      "comment": "Survival reward tracking: second kill position (stride 0x08 bytes).",
+      "name": "survival_first_kill_pos_1",
       "program": "crimsonland.exe",
       "type": "vec2f_t"
     },
     {
       "address": "0x00486ff8",
-      "comment": "Survival reward tracking: recent creature death position slot 2 (stride 0x08 bytes).",
-      "name": "survival_recent_death_pos_2",
+      "comment": "Survival reward tracking: third kill position (stride 0x08 bytes).",
+      "name": "survival_first_kill_pos_2",
       "program": "crimsonland.exe",
       "type": "vec2f_t"
     },
     {
       "address": "0x00487000",
-      "comment": "Survival reward tracking: recent creature death counter (counts to 6, stores 3 positions).",
-      "name": "survival_recent_death_count",
+      "comment": "Survival reward tracking: kill counter that stops at 6 and never decays; the third kill arms the Blade Gun check.",
+      "name": "survival_first_kill_count",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -5883,8 +5883,8 @@
     },
     {
       "address": "0x0048700c",
-      "comment": "Creature pool active flag cached by creatures_none_active().",
-      "name": "creatures_any_active_flag",
+      "comment": "1 when no creature is active, cached by creatures_none_active() and read by quest_spawn_timeline_update.",
+      "name": "creatures_none_active_flag",
       "program": "crimsonland.exe",
       "type": "unsigned char"
     },
@@ -5974,15 +5974,15 @@
     },
     {
       "address": "0x00487038",
-      "comment": "Runtime quest unlock index (32-bit); native gameplay uses dword accesses. Only its low 16 bits are serialized in game_status_blob.",
-      "name": "quest_unlock_index_full",
+      "comment": "Hardcore quest unlock progress: only advances on hardcore completions, zeroed outside the full version, unlocks the Splitter Gun at 40. Only its low 16 bits are serialized in game_status_blob.",
+      "name": "quest_unlock_index_hardcore",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x0048703c",
-      "comment": "Nonzero while bonus/perk effects spawn projectiles; skips bonus drop logic.",
-      "name": "bonus_spawn_guard",
+      "comment": "Set around scripted bursts (Angry Reloader, Final Revenge, Nuke, Shock Chain, Fireblast): suppresses kill bonus drops, the shots-fired count and the Fire Bullets conversion.",
+      "name": "scripted_burst_active",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -5995,8 +5995,8 @@
     },
     {
       "address": "0x00487060",
-      "comment": "Survival elapsed time (ms); stored in high score record offset 0x20.",
-      "name": "survival_elapsed_ms",
+      "comment": "Run clock (ms) for every mode; the high score key at record offset 0x20 (Survival and Rush: higher wins, Quest: completion time).",
+      "name": "run_elapsed_ms",
       "program": "crimsonland.exe",
       "type": "unsigned int"
     },
@@ -6073,7 +6073,7 @@
     {
       "address": "0x00487081",
       "comment": "High score record date checksum (offset 0x41).",
-      "name": "highscore_record_date_checksum",
+      "name": "highscore_record_date_week",
       "program": "crimsonland.exe",
       "type": "unsigned char"
     },
@@ -6261,10 +6261,10 @@
     },
     {
       "address": "0x004871d0",
-      "comment": "Per-player (P1/P2) auxiliary timer (2 floats). Used for UI feedback timing; decays over time.",
-      "name": "player_aux_timer",
+      "comment": "Per-player weapon pickup popup timer (2 floats): weapon_assign_player sets 2.0, ui_render_hud decays and reads it.",
+      "name": "player_weapon_popup_timer",
       "program": "crimsonland.exe",
-      "type": "player_aux_timer_t"
+      "type": "player_weapon_popup_timer_t"
     },
     {
       "address": "0x004871d8",
@@ -6362,8 +6362,8 @@
     },
     {
       "address": "0x00487240",
-      "comment": "Render pass mode gate; 0 triggers terrain-only pass.",
-      "name": "render_pass_mode",
+      "comment": "A gameplay run is in progress: set at run start, cleared by game over, quest results and quitting. Back opens the pause menu while set; 0 renders terrain only.",
+      "name": "run_active",
       "program": "crimsonland.exe",
       "type": "unsigned char"
     },
@@ -7315,7 +7315,7 @@
     {
       "address": "0x0048f58c",
       "comment": "Bonus HUD slot slide X offset (bonus_hud_slot_table + 0x04).",
-      "name": "bonus_hud_slot_y",
+      "name": "bonus_hud_slot_slide_x",
       "program": "crimsonland.exe",
       "type": "float"
     },
@@ -8234,8 +8234,8 @@
     },
     {
       "address": "0x00490bc0",
-      "comment": "Low-health warning timer (player_health + 0x2ec)",
-      "name": "player_low_health_timer",
+      "comment": "Bleed drip cooldown (player_health + 0x2ec): 100 means disarmed; a hit at <= 20 HP may arm it, then it drips every second below 20 HP.",
+      "name": "player_bleed_drip_timer",
       "program": "crimsonland.exe",
       "type": "float"
     },
@@ -8438,63 +8438,63 @@
     {
       "address": "0x00490f3c",
       "comment": "Alternate forward move key used when config_player_count == 1.",
-      "name": "player_alt_move_key_forward",
+      "name": "player2_move_key_forward",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00490f40",
       "comment": "Alternate backward move key used when config_player_count == 1.",
-      "name": "player_alt_move_key_backward",
+      "name": "player2_move_key_backward",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00490f44",
       "comment": "Alternate turn-left key used when config_player_count == 1.",
-      "name": "player_alt_turn_key_left",
+      "name": "player2_turn_key_left",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00490f48",
       "comment": "Alternate turn-right key used when config_player_count == 1.",
-      "name": "player_alt_turn_key_right",
+      "name": "player2_turn_key_right",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00490f4c",
       "comment": "Player 2 / alternate single-player fire key (player_state_table[1].input.fire_key); always checked by input_primary_is_down.",
-      "name": "player_alt_fire_key",
+      "name": "player2_fire_key",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00490f50",
       "comment": "Per-player reserved alt keybind slot (player_health + 0x37c); copied from config, no callsites found.",
-      "name": "player_alt_key_reserved_0",
+      "name": "player2_key_reserved_0",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00490f54",
       "comment": "Per-player reserved alt keybind slot (player_health + 0x380); copied from config, no callsites found.",
-      "name": "player_alt_key_reserved_1",
+      "name": "player2_key_reserved_1",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00490f58",
       "comment": "Per-player reserved alt keybind slot (player_health + 0x384); copied from config, no callsites found.",
-      "name": "player_alt_key_reserved_2",
+      "name": "player2_aim_key_left",
       "program": "crimsonland.exe",
       "type": "int"
     },
     {
       "address": "0x00490f5c",
       "comment": "Per-player reserved alt keybind slot (player_health + 0x388); copied from config, no callsites found.",
-      "name": "player_alt_key_reserved_3",
+      "name": "player2_aim_key_right",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -8762,8 +8762,8 @@
     },
     {
       "address": "0x004926f0",
-      "comment": "Projectile travel budget / weapon meta (projectile_pool + 0x38)",
-      "name": "projectile_travel_budget",
+      "comment": "Projectile speed: movement sub-steps per frame, copied from the weapon (projectile_pool + 0x38)",
+      "name": "projectile_speed",
       "program": "crimsonland.exe",
       "type": "float"
     },
@@ -8811,29 +8811,29 @@
     },
     {
       "address": "0x00493ecc",
-      "comment": "Particle scale X (particle_pool + 0x14)",
-      "name": "particle_scale_x",
+      "comment": "Particle color red (particle_pool + 0x14); the Bubblegun pass reads it as a size factor",
+      "name": "particle_color_r",
       "program": "crimsonland.exe",
       "type": "float"
     },
     {
       "address": "0x00493ed0",
-      "comment": "Particle scale Y (particle_pool + 0x18)",
-      "name": "particle_scale_y",
+      "comment": "Particle color green (particle_pool + 0x18)",
+      "name": "particle_color_g",
       "program": "crimsonland.exe",
       "type": "float"
     },
     {
       "address": "0x00493ed4",
-      "comment": "Particle scale Z (particle_pool + 0x1c)",
-      "name": "particle_scale_z",
+      "comment": "Particle color blue (particle_pool + 0x1c)",
+      "name": "particle_color_b",
       "program": "crimsonland.exe",
       "type": "float"
     },
     {
       "address": "0x00493ed8",
-      "comment": "Particle age/timer (particle_pool + 0x20)",
-      "name": "particle_age",
+      "comment": "Particle color alpha (particle_pool + 0x20)",
+      "name": "particle_color_a",
       "program": "crimsonland.exe",
       "type": "float"
     },
@@ -8853,8 +8853,8 @@
     },
     {
       "address": "0x00493ee4",
-      "comment": "Particle spin (particle_pool + 0x2c)",
-      "name": "particle_spin",
+      "comment": "Particle rotation angle (particle_pool + 0x2c)",
+      "name": "particle_rotation",
       "program": "crimsonland.exe",
       "type": "float"
     },
@@ -8916,8 +8916,8 @@
     },
     {
       "address": "0x00495ae0",
-      "comment": "Secondary projectile speed (secondary_projectile_pool + 0x08)",
-      "name": "secondary_proj_speed",
+      "comment": "Secondary projectile life timer: starts at 2.0, detonates at 0 (secondary_projectile_pool + 0x08)",
+      "name": "secondary_proj_life_timer",
       "program": "crimsonland.exe",
       "type": "float"
     },
@@ -8958,8 +8958,8 @@
     },
     {
       "address": "0x00495af8",
-      "comment": "Secondary projectile lifetime (secondary_projectile_pool + 0x20)",
-      "name": "secondary_proj_lifetime",
+      "comment": "Secondary projectile trail distance accumulator: a smoke puff every ~6 units (secondary_projectile_pool + 0x20)",
+      "name": "secondary_proj_trail_distance",
       "program": "crimsonland.exe",
       "type": "float"
     },
@@ -9147,15 +9147,15 @@
     },
     {
       "address": "0x0049ba20",
-      "comment": "Unused gray RGBA startup object immediately before fx_rotated_effect_id; only its initializer references it.",
-      "name": "unused_fx_rotated_effect_id_prefix_color",
+      "comment": "Unused gray RGBA startup object immediately before fx_rotated_creature_type_id; only its initializer references it.",
+      "name": "unused_fx_rotated_creature_type_id_prefix_color",
       "program": "crimsonland.exe",
       "type": "effect_color_t"
     },
     {
       "address": "0x0049ba30",
-      "comment": "Rotated FX queue effect id array",
-      "name": "fx_rotated_effect_id",
+      "comment": "Rotated FX queue creature type id array (picks the corpse frame)",
+      "name": "fx_rotated_creature_type_id",
       "program": "crimsonland.exe",
       "type": "int[64]"
     },
@@ -9217,22 +9217,22 @@
     },
     {
       "address": "0x0049bf41",
-      "comment": "Creature collision/contact flag (creature_pool + 0x09).",
-      "name": "creature_collision_flag",
+      "comment": "Creature Plaguebearer infection flag (creature_pool + 0x09).",
+      "name": "creature_plague_infected",
       "program": "crimsonland.exe",
       "type": "unsigned char"
     },
     {
       "address": "0x0049bf44",
-      "comment": "Creature collision timer (creature_pool + 0x0c).",
-      "name": "creature_collision_timer",
+      "comment": "Creature damage-over-time tick timer shared by plague, Radioactive and Pyrokinetic (creature_pool + 0x0c).",
+      "name": "creature_dot_tick_timer",
       "program": "crimsonland.exe",
       "type": "float"
     },
     {
       "address": "0x0049bf48",
-      "comment": "Creature lifecycle stage sentinel (creature_pool + 0x10).",
-      "name": "creature_lifecycle_stage",
+      "comment": "Creature death timer: 16 while alive, counts down after death; corpses fade below 0 and free below -10 (creature_pool + 0x10).",
+      "name": "creature_death_timer",
       "program": "crimsonland.exe",
       "type": "float"
     },
@@ -9525,8 +9525,8 @@
     },
     {
       "address": "0x004aaf0c",
-      "comment": "Player index used for overlay rendering passes.",
-      "name": "render_overlay_player_index",
+      "comment": "Current player index: loop variable for player updates, firing, reloads, perks, the HUD and rendering.",
+      "name": "current_player_index",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -10228,7 +10228,7 @@
     },
     {
       "address": "0x004c2bcc",
-      "comment": "Perk-id selector used by player_render_overlays to gate auto-target line rendering (defaults to 0 in perk_metadata_init).",
+      "comment": "Perk-id selector used by player_render to gate auto-target line rendering (defaults to 0 in perk_metadata_init).",
       "name": "player_overlay_auto_target_line_perk_id",
       "program": "crimsonland.exe",
       "type": "int"
@@ -11166,8 +11166,8 @@
     },
     {
       "address": "0x004c403c",
-      "comment": "Music track id for extra track (+1 from intro).",
-      "name": "music_track_extra_0",
+      "comment": "Sentinel track id: music_play_exclusive picks a random playlist track instead.",
+      "name": "music_track_game_playlist",
       "program": "crimsonland.exe",
       "type": "int"
     },
@@ -11187,8 +11187,8 @@
     },
     {
       "address": "0x004c404c",
-      "comment": "Per-SFX volume table (0x80 entries; float; updated by sfx_play_exclusive and sfx_update_mute_fades).",
-      "name": "sfx_volume_table",
+      "comment": "Per-track music volume (0x80 entries; float; updated by music_play_exclusive and music_update_fades).",
+      "name": "music_track_volume",
       "program": "crimsonland.exe",
       "type": "sfx_volume_table_t"
     },
@@ -11201,10 +11201,10 @@
     },
     {
       "address": "0x004c8450",
-      "comment": "Per-SFX mute flag table (0x80 entries; char; set by sfx_mute_all).",
-      "name": "sfx_mute_flags",
+      "comment": "Per-track music fade-out flags (0x80 entries; char; set by music_fade_out_all).",
+      "name": "music_fade_out_flags",
       "program": "crimsonland.exe",
-      "type": "sfx_mute_flags_t"
+      "type": "music_fade_out_flags_t"
     },
     {
       "address": "0x004c84d0",
@@ -11236,7 +11236,7 @@
     },
     {
       "address": "0x004cc8d4",
-      "comment": "Random playlist selection latch used by sfx_play_exclusive(music_track_extra_0).",
+      "comment": "Random playlist selection latch used by music_play_exclusive(music_track_game_playlist).",
       "name": "music_playlist_randomized_latch",
       "program": "crimsonland.exe",
       "type": "char"
@@ -11257,8 +11257,8 @@
     },
     {
       "address": "0x004cc8d6",
-      "comment": "Global SFX unmuted flag checked by sfx_is_unmuted.",
-      "name": "sfx_unmuted_flag",
+      "comment": "Set once audio_init_music finishes; every music call is a no-op until then.",
+      "name": "music_ready",
       "program": "crimsonland.exe",
       "type": "unsigned char"
     },
@@ -12469,8 +12469,8 @@
     },
     {
       "address": "0x004d7a98",
-      "comment": "Weapon table projectile travel budget (weapon_table + 0x6c, stride 0x7c)",
-      "name": "weapon_projectile_travel_budget",
+      "comment": "Weapon projectile speed: movement sub-steps per frame (weapon_table + 0x6c, stride 0x7c)",
+      "name": "weapon_projectile_speed",
       "program": "crimsonland.exe",
       "type": "float"
     },
@@ -12497,7 +12497,7 @@
     },
     {
       "address": "0x004d7fd8",
-      "comment": "Perk fire-bullets helper: secondary shot SFX id used by player_fire_weapon/player_update.",
+      "comment": "Perk fire-bullets helper: secondary shot SFX id used by typo_player_update/player_update.",
       "name": "fire_bullets_secondary_shot_sfx_id",
       "program": "crimsonland.exe",
       "type": "int"
@@ -12532,7 +12532,7 @@
     },
     {
       "address": "0x004d9050",
-      "comment": "Perk fire-bullets helper: primary shot SFX id used by player_fire_weapon/player_update.",
+      "comment": "Perk fire-bullets helper: primary shot SFX id used by typo_player_update/player_update.",
       "name": "fire_bullets_primary_shot_sfx_id",
       "program": "crimsonland.exe",
       "type": "int"
@@ -15083,21 +15083,21 @@
     },
     {
       "address": "0x0042b556",
-      "comment": "Callsite: sfx_mute_all(music_track_intro_id) during boot music handoff (Frida: music_intro_trace.jsonl).",
+      "comment": "Callsite: music_fade_out_all(music_track_intro_id) during boot music handoff (Frida: music_intro_trace.jsonl).",
       "kind": "code_label",
       "name": "game_startup_intro_mute_callsite",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x0042b584",
-      "comment": "Callsite: sfx_play_exclusive(music_track_crimson_theme_id) after intro (Frida: music_intro_trace.jsonl).",
+      "comment": "Callsite: music_play_exclusive(music_track_crimson_theme_id) after intro (Frida: music_intro_trace.jsonl).",
       "kind": "code_label",
       "name": "game_startup_theme_play_callsite",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x0042b69a",
-      "comment": "Callsite: sfx_play_exclusive(music_track_intro_id) during boot (Frida: music_intro_trace.jsonl).",
+      "comment": "Callsite: music_play_exclusive(music_track_intro_id) during boot (Frida: music_intro_trace.jsonl).",
       "kind": "code_label",
       "name": "game_startup_intro_play_callsite",
       "program": "crimsonland.exe"

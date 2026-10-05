@@ -2699,7 +2699,7 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     )
     assert defined["player_health"]["size"] == 4
     assert defined["player_reload_active"]["size"] == 1
-    assert defined["player_alt_fire_key"]["size"] == 4
+    assert defined["player2_fire_key"]["size"] == 4
     assert defined["creature_pool"]["size"] == 0xE498
     assert defined["creature_health"]["size"] == 4
     assert defined["creature_target_player"]["size"] == 1
@@ -2731,13 +2731,13 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["play_time_ms"]["definition_group"] == "zero-uint32"
     assert defined["fire_bullets_fallback_spread_heat"]["size"] == 4
     assert defined["perk_available_table"]["size"] == 1
-    assert defined["survival_elapsed_ms"]["definition_group"] == "zero-uint32"
+    assert defined["run_elapsed_ms"]["definition_group"] == "zero-uint32"
     assert defined["highscore_hardcore_marker"]["size"] == 1
     assert defined["game_over_name_input_state_alpha"]["definition_group"] == (
         "mapped-bss-zero-float32"
     )
     assert defined["credits_line_table_flags"]["size"] == 4
-    assert defined["survival_recent_death_pos_1"]["size"] == 8
+    assert defined["survival_first_kill_pos_1"]["size"] == 8
     assert defined["player_overlay_torso_uv8"]["definition_group"] == (
         "zero-abi-00008"
     )
@@ -2833,8 +2833,8 @@ def test_crimsonland_data_manifest_applies_high_fan_in_definitions() -> None:
     assert defined["weapon_ammo_class"]["size"] == 0x1F00
     assert defined["console_log_queue"]["size"] == 0x2C
     assert defined["grim_interface_ptr"]["size"] == 4
-    assert defined["sfx_unmuted_flag"]["size"] == 1
-    for name in ("quest_unlock_index", "quest_unlock_index_full"):
+    assert defined["music_ready"]["size"] == 1
+    for name in ("quest_unlock_index", "quest_unlock_index_hardcore"):
         assert defined[name]["type"] == "int"
         assert defined[name]["size"] == 4
         assert defined[name]["alignment"] == 4

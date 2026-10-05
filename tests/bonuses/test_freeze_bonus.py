@@ -63,7 +63,7 @@ def test_freeze_pickup_shatters_existing_corpses() -> None:
 def test_freeze_shatters_active_corpses_below_despawn_threshold() -> None:
     world = make_world()
     player = world.players[0]
-    corpse = place_creatures(world, [_creature(pos=Vec2(), hp=-1.0, lifecycle_stage=-100.0)])[0]
+    corpse = place_creatures(world, [_creature(pos=Vec2(), hp=-1.0, death_timer=-100.0)])[0]
     bonus_apply(
         world.state,
         player,
@@ -134,7 +134,7 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
     creature.max_hp = 10.0
     creature.pos = Vec2(100.0, 200.0)
     creature.move_speed = 1.0
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.anim_phase = 3.0
 
     events = world.step(

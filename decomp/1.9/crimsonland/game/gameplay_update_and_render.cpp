@@ -30,7 +30,7 @@ extern float perk_prompt_bounds_max_y;
 extern game_state_id_t game_state_pending;
 
 extern int sfx_ui_levelup;
-extern int music_track_extra_0;
+extern int music_track_game_playlist;
 extern int music_track_crimson_theme_id;
 extern int music_track_shortie_monk_id;
 
@@ -45,8 +45,8 @@ void quest_mode_update(void);
 void camera_update(void);
 void tutorial_timeline_update(void);
 void console_input_poll(void);
-void sfx_mute_all(int sfx_id);
-void sfx_play_exclusive(int sfx_id);
+void music_fade_out_all(int sfx_id);
+void music_play_exclusive(int sfx_id);
 void perks_generate_choices(void);
 bool input_primary_just_pressed(void);
 void bonus_update(void);
@@ -137,14 +137,14 @@ extern "C" void gameplay_update_and_render(void)
     if (!demo_trial_blocks_gameplay()
         && !game_paused_flag
         && game_state_id == GAME_STATE_GAMEPLAY) {
-        for (render_overlay_player_index = 0;
-             render_overlay_player_index < config_blob.player_count;
-             ++render_overlay_player_index) {
+        for (current_player_index = 0;
+             current_player_index < config_blob.player_count;
+             ++current_player_index) {
             player_update();
         }
     }
 
-    render_overlay_player_index = 0;
+    current_player_index = 0;
     if (config_blob.game_mode == GAME_MODE_SURVIVAL) {
         survival_update();
     }
@@ -169,7 +169,7 @@ extern "C" void gameplay_update_and_render(void)
         } else {
             time_scale_active = 0;
         }
-        highscore_active_record.survival_elapsed_ms += frame_dt_ms;
+        highscore_active_record.run_elapsed_ms += frame_dt_ms;
         unsigned int &weapon_time =
             weapon_usage_time[player_state_table[0].weapon_id];
         weapon_time += frame_dt_ms;
@@ -191,17 +191,17 @@ extern "C" void gameplay_update_and_render(void)
                && (config_blob.player_count == 1
                    || (player_state_table[1].health <= 0.0f
                        && player_state_table[1].death_timer < 0.0f))) {
-        render_pass_mode = 0;
+        run_active = 0;
         ui_transition_direction = 0;
         game_state_pending = config_blob.game_mode == GAME_MODE_QUEST
             ? GAME_STATE_QUEST_FAILED
             : GAME_STATE_GAME_OVER;
         grim_interface_ptr->grim_flush_input();
         console_input_poll();
-        sfx_mute_all(music_track_extra_0);
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_play_exclusive(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_play_exclusive(music_track_shortie_monk_id);
     }
 
     if (config_blob.game_mode != GAME_MODE_RUSH) {

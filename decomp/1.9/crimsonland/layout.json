@@ -1718,12 +1718,12 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/ui_render/ui_template_triplet_reset_and_seed_modes.cpp",
+          "path": "decomp/1.9/crimsonland/ui_render/ui_element_construct.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/ui_template_triplet_reset_and_seed_modes"
+            "tools/match/scratches/ui_element_construct"
           ]
         },
         {
@@ -2131,21 +2131,21 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_effect_id_prefix_color_global_init_thunk.cpp",
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/unused_fx_rotated_effect_id_prefix_color_global_init_thunk"
+            "tools/match/scratches/unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk"
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_effect_id_prefix_color_global_init.cpp",
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_creature_type_id_prefix_color_global_init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/unused_fx_rotated_effect_id_prefix_color_global_init"
+            "tools/match/scratches/unused_fx_rotated_creature_type_id_prefix_color_global_init"
           ]
         },
         {
@@ -2743,12 +2743,12 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/weapon_table_entry.cpp",
+          "path": "decomp/1.9/crimsonland/crimsonland/weapon_name_get.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/weapon_table_entry"
+            "tools/match/scratches/weapon_name_get"
           ]
         },
         {
@@ -2977,12 +2977,12 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/player_render_overlays.cpp",
+          "path": "decomp/1.9/crimsonland/crimsonland/player_render.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/player_render_overlays"
+            "tools/match/scratches/player_render"
           ]
         },
         {
@@ -4060,12 +4060,12 @@
       ],
       "sources": [
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_date_checksum.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_iso_week.c",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/highscore_date_checksum"
+            "tools/match/scratches/highscore_iso_week"
           ]
         },
         {
@@ -4132,21 +4132,21 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_rush_field32_desc.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_desc.c",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/highscore_compare_rush_field32_desc"
+            "tools/match/scratches/highscore_compare_elapsed_desc"
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_quest_field32_asc_nonzero_first.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_asc_nonzero_first.c",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/highscore_compare_quest_field32_asc_nonzero_first"
+            "tools/match/scratches/highscore_compare_elapsed_asc_nonzero_first"
           ]
         },
         {
@@ -4696,30 +4696,30 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/audio/sfx_play_exclusive.cpp",
+          "path": "decomp/1.9/crimsonland/audio/music_play_exclusive.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/sfx_play_exclusive"
+            "tools/match/scratches/music_play_exclusive"
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/audio/sfx_mute_all.cpp",
+          "path": "decomp/1.9/crimsonland/audio/music_fade_out_all.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/sfx_mute_all"
+            "tools/match/scratches/music_fade_out_all"
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/audio/sfx_update_mute_fades.cpp",
+          "path": "decomp/1.9/crimsonland/audio/music_update_fades.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/sfx_update_mute_fades"
+            "tools/match/scratches/music_update_fades"
           ]
         },
         {
@@ -4741,12 +4741,12 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/audio/sfx_is_unmuted.cpp",
+          "path": "decomp/1.9/crimsonland/audio/music_track_is_playing.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/sfx_is_unmuted"
+            "tools/match/scratches/music_track_is_playing"
           ]
         }
       ]
@@ -5025,12 +5025,12 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/typo/player_fire_weapon.cpp",
+          "path": "decomp/1.9/crimsonland/typo/typo_player_update.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
           "configs": [
-            "tools/match/scratches/player_fire_weapon"
+            "tools/match/scratches/typo_player_update"
           ]
         },
         {

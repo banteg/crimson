@@ -840,7 +840,7 @@
       dict({
         'count': 1,
         'heading': -0.370796174,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 2000,
         'x': 558.381774902,
         'y': 631.301025391,
@@ -848,7 +848,7 @@
       dict({
         'count': 1,
         'heading': -1.420796275,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 4000,
         'x': 796.766113281,
         'y': 555.038208008,
@@ -856,7 +856,7 @@
       dict({
         'count': 1,
         'heading': -3.443981886,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 5950,
         'x': 464.351715088,
         'y': 359.25958252,
@@ -864,7 +864,7 @@
       dict({
         'count': 1,
         'heading': 0.629203796,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 7850,
         'x': 342.511657715,
         'y': 744.846923828,
@@ -872,7 +872,7 @@
       dict({
         'count': 1,
         'heading': 0.449203581,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 9700,
         'x': 414.728363037,
         'y': 713.777709961,
@@ -880,7 +880,7 @@
       dict({
         'count': 1,
         'heading': -3.583981752,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 11500,
         'x': 388.707275391,
         'y': 251.725311279,
@@ -888,7 +888,7 @@
       dict({
         'count': 1,
         'heading': 1.419203758,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 13250,
         'x': 227.302825928,
         'y': 555.491638184,
@@ -896,7 +896,7 @@
       dict({
         'count': 1,
         'heading': -1.953981519,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 14950,
         'x': 690.075866699,
         'y': 440.215698242,
@@ -904,7 +904,7 @@
       dict({
         'count': 1,
         'heading': -2.883981943,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 16600,
         'x': 536.458007812,
         'y': 419.16784668,
@@ -912,7 +912,7 @@
       dict({
         'count': 1,
         'heading': -0.250796556,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 18200,
         'x': 559.649719238,
         'y': 697.993286133,
@@ -920,7 +920,7 @@
       dict({
         'count': 1,
         'heading': -0.030796515,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 19750,
         'x': 514.955993652,
         'y': 607.954467773,
@@ -928,7 +928,7 @@
       dict({
         'count': 1,
         'heading': -2.703981638,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 21250,
         'x': 634.047729492,
         'y': 251.139221191,
@@ -936,7 +936,7 @@
       dict({
         'count': 1,
         'heading': -1.030796289,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 22700,
         'x': 594.340026855,
         'y': 561.357055664,
@@ -944,7 +944,7 @@
       dict({
         'count': 1,
         'heading': -3.283982038,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 24100,
         'x': 475.671386719,
         'y': 258.590759277,
@@ -952,7 +952,7 @@
       dict({
         'count': 1,
         'heading': -4.25398159,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 25450,
         'x': 282.429840088,
         'y': 398.714782715,
@@ -960,7 +960,7 @@
       dict({
         'count': 1,
         'heading': -2.963982105,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 26750,
         'x': 528.961120605,
         'y': 417.510223389,
@@ -968,7 +968,7 @@
       dict({
         'count': 1,
         'heading': -4.5339818,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 28000,
         'x': 291.555419922,
         'y': 472.248443604,
@@ -976,7 +976,7 @@
       dict({
         'count': 1,
         'heading': 0.019203557,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 29200,
         'x': 508.927612305,
         'y': 671.97052002,
@@ -984,7 +984,7 @@
       dict({
         'count': 1,
         'heading': -1.060796499,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 30350,
         'x': 595.783447266,
         'y': 558.864990234,
@@ -992,7 +992,7 @@
       dict({
         'count': 1,
         'heading': 0.94920361,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 31450,
         'x': 433.956604004,
         'y': 567.903747559,
@@ -1000,7 +1000,7 @@
       dict({
         'count': 1,
         'heading': 0.69920367,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 32550,
         'x': 470.809051514,
         'y': 560.982727051,
@@ -1008,7 +1008,7 @@
       dict({
         'count': 1,
         'heading': -0.340796292,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 33650,
         'x': 565.478027344,
         'y': 662.798217773,
@@ -1016,7 +1016,7 @@
       dict({
         'count': 1,
         'heading': -4.083981514,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 34750,
         'x': 304.905029297,
         'y': 361.508605957,
@@ -1024,7 +1024,7 @@
       dict({
         'count': 1,
         'heading': 0.809203565,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 35850,
         'x': 419.361572266,
         'y': 600.329589844,
@@ -1032,7 +1032,7 @@
       dict({
         'count': 1,
         'heading': -0.530796409,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 36950,
         'x': 576.796203613,
         'y': 622.387756348,
@@ -1040,7 +1040,7 @@
       dict({
         'count': 1,
         'heading': -2.643981695,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 38050,
         'x': 588.372436523,
         'y': 371.403930664,
@@ -1048,7 +1048,7 @@
       dict({
         'count': 1,
         'heading': -2.293981791,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 39150,
         'x': 559.980895996,
         'y': 469.646331787,
@@ -1056,7 +1056,7 @@
       dict({
         'count': 1,
         'heading': -4.583981991,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 40250,
         'x': 385.05380249,
         'y': 495.609008789,
@@ -1064,7 +1064,7 @@
       dict({
         'count': 1,
         'heading': -4.423981667,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 41350,
         'x': 235.894927979,
         'y': 430.085449219,
@@ -1072,7 +1072,7 @@
       dict({
         'count': 1,
         'heading': 1.339203596,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 42450,
         'x': 387.417358398,
         'y': 541.379577637,
@@ -2897,7 +2897,7 @@
       dict({
         'count': 2,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 3000,
         'x': -64.0,
         'y': 512.0,
@@ -2929,7 +2929,7 @@
       dict({
         'count': 2,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 21000,
         'x': 1088.0,
         'y': 512.0,
@@ -3836,7 +3836,7 @@
       dict({
         'count': 1,
         'heading': -0.370796442,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 2000,
         'x': 542.438049316,
         'y': 590.291259766,
@@ -3844,7 +3844,7 @@
       dict({
         'count': 1,
         'heading': -0.37079668,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 2000,
         'x': 557.657104492,
         'y': 629.436889648,
@@ -3852,7 +3852,7 @@
       dict({
         'count': 1,
         'heading': -0.370796323,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 2000,
         'x': 572.876098633,
         'y': 668.582580566,
@@ -3860,7 +3860,7 @@
       dict({
         'count': 1,
         'heading': -0.370796472,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 2000,
         'x': 588.095153809,
         'y': 707.728210449,
@@ -3868,7 +3868,7 @@
       dict({
         'count': 1,
         'heading': 0.929203451,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 4000,
         'x': 444.703948975,
         'y': 562.27166748,
@@ -3876,7 +3876,7 @@
       dict({
         'count': 1,
         'heading': 0.929203749,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 4000,
         'x': 411.055908203,
         'y': 587.407470703,
@@ -3884,7 +3884,7 @@
       dict({
         'count': 1,
         'heading': 0.929203451,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 4000,
         'x': 377.407897949,
         'y': 612.543334961,
@@ -3892,7 +3892,7 @@
       dict({
         'count': 1,
         'heading': 0.929203689,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 4000,
         'x': 343.75982666,
         'y': 637.679138184,
@@ -3900,7 +3900,7 @@
       dict({
         'count': 1,
         'heading': -1.420796394,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 5920,
         'x': 595.056762695,
         'y': 524.55279541,
@@ -3908,7 +3908,7 @@
       dict({
         'count': 1,
         'heading': -1.420796156,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 5920,
         'x': 636.585144043,
         'y': 530.829223633,
@@ -3916,7 +3916,7 @@
       dict({
         'count': 1,
         'heading': -1.420796394,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 5920,
         'x': 678.113525391,
         'y': 537.10559082,
@@ -3924,7 +3924,7 @@
       dict({
         'count': 1,
         'heading': -1.420796275,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 5920,
         'x': 719.641906738,
         'y': 543.382019043,
@@ -3932,7 +3932,7 @@
       dict({
         'count': 1,
         'heading': 1.459203243,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 7760,
         'x': 428.522460938,
         'y': 521.354370117,
@@ -3940,7 +3940,7 @@
       dict({
         'count': 1,
         'heading': 1.45920372,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 7760,
         'x': 386.783721924,
         'y': 526.031494141,
@@ -3948,7 +3948,7 @@
       dict({
         'count': 1,
         'heading': 1.459203601,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 7760,
         'x': 345.044952393,
         'y': 530.708679199,
@@ -3956,7 +3956,7 @@
       dict({
         'count': 1,
         'heading': 1.459203601,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 7760,
         'x': 303.306213379,
         'y': 535.385864258,
@@ -3964,7 +3964,7 @@
       dict({
         'count': 1,
         'heading': -3.443981886,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 9520,
         'x': 486.984649658,
         'y': 431.811279297,
@@ -3972,7 +3972,7 @@
       dict({
         'count': 1,
         'heading': -3.443981647,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 9520,
         'x': 474.476989746,
         'y': 391.716918945,
@@ -3980,7 +3980,7 @@
       dict({
         'count': 1,
         'heading': -3.443981886,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 9520,
         'x': 461.969299316,
         'y': 351.622558594,
@@ -3988,7 +3988,7 @@
       dict({
         'count': 1,
         'heading': -3.443981886,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 9520,
         'x': 449.461608887,
         'y': 311.528198242,
@@ -3996,7 +3996,7 @@
       dict({
         'count': 1,
         'heading': -1.903982043,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 11200,
         'x': 591.380432129,
         'y': 484.527374268,
@@ -4004,7 +4004,7 @@
       dict({
         'count': 1,
         'heading': -1.903981805,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 11200,
         'x': 631.070678711,
         'y': 470.79107666,
@@ -4012,7 +4012,7 @@
       dict({
         'count': 1,
         'heading': -1.903982043,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 11200,
         'x': 670.760864258,
         'y': 457.054748535,
@@ -4020,7 +4020,7 @@
       dict({
         'count': 1,
         'heading': -1.903981924,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 11200,
         'x': 710.45111084,
         'y': 443.318450928,
@@ -4028,7 +4028,7 @@
       dict({
         'count': 1,
         'heading': 0.629203498,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 12800,
         'x': 462.565917969,
         'y': 579.913696289,
@@ -4036,7 +4036,7 @@
       dict({
         'count': 1,
         'heading': 0.629203737,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 12800,
         'x': 437.848846436,
         'y': 613.870544434,
@@ -4044,7 +4044,7 @@
       dict({
         'count': 1,
         'heading': 0.629203677,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 12800,
         'x': 413.13180542,
         'y': 647.827392578,
@@ -4052,7 +4052,7 @@
       dict({
         'count': 1,
         'heading': 0.629203618,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 12800,
         'x': 388.414764404,
         'y': 681.784240723,
@@ -4060,7 +4060,7 @@
       dict({
         'count': 1,
         'heading': 0.059203751,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 14320,
         'x': 507.029785156,
         'y': 595.852844238,
@@ -4068,7 +4068,7 @@
       dict({
         'count': 1,
         'heading': 0.059203524,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 14320,
         'x': 504.544708252,
         'y': 637.77923584,
@@ -4076,7 +4076,7 @@
       dict({
         'count': 1,
         'heading': 0.059203569,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 14320,
         'x': 502.05960083,
         'y': 679.705688477,
@@ -4084,7 +4084,7 @@
       dict({
         'count': 1,
         'heading': 0.059203614,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 14320,
         'x': 499.574493408,
         'y': 721.632080078,
@@ -4092,7 +4092,7 @@
       dict({
         'count': 1,
         'heading': 0.4492037,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 15760,
         'x': 475.523132324,
         'y': 587.666625977,
@@ -4100,7 +4100,7 @@
       dict({
         'count': 1,
         'heading': 0.4492037,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 15760,
         'x': 457.284698486,
         'y': 625.499938965,
@@ -4108,7 +4108,7 @@
       dict({
         'count': 1,
         'heading': 0.4492037,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 15760,
         'x': 439.046264648,
         'y': 663.333251953,
@@ -4116,7 +4116,7 @@
       dict({
         'count': 1,
         'heading': 0.449203581,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 15760,
         'x': 420.807861328,
         'y': 701.166564941,
@@ -4124,7 +4124,7 @@
       dict({
         'count': 1,
         'heading': 0.399203509,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 17120,
         'x': 479.350494385,
         'y': 589.395141602,
@@ -4132,7 +4132,7 @@
       dict({
         'count': 1,
         'heading': 0.399203628,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 17120,
         'x': 463.025726318,
         'y': 628.092712402,
@@ -4140,7 +4140,7 @@
       dict({
         'count': 1,
         'heading': 0.399203509,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 17120,
         'x': 446.70098877,
         'y': 666.790283203,
@@ -4148,7 +4148,7 @@
       dict({
         'count': 1,
         'heading': 0.399203569,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 17120,
         'x': 430.376220703,
         'y': 705.487854004,
@@ -4156,7 +4156,7 @@
       dict({
         'count': 1,
         'heading': -3.583981752,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 18400,
         'x': 476.039611816,
         'y': 436.086547852,
@@ -4164,7 +4164,7 @@
       dict({
         'count': 1,
         'heading': -3.583981514,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 18400,
         'x': 458.059448242,
         'y': 398.129821777,
@@ -4172,7 +4172,7 @@
       dict({
         'count': 1,
         'heading': -3.583981752,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 18400,
         'x': 440.07925415,
         'y': 360.173095703,
@@ -4180,7 +4180,7 @@
       dict({
         'count': 1,
         'heading': -3.583981752,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 18400,
         'x': 422.099060059,
         'y': 322.216369629,
@@ -4188,7 +4188,7 @@
       dict({
         'count': 1,
         'heading': -1.220796347,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 19600,
         'x': 590.907287598,
         'y': 540.803405762,
@@ -4196,7 +4196,7 @@
       dict({
         'count': 1,
         'heading': -1.220796227,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 19600,
         'x': 630.360961914,
         'y': 555.20513916,
@@ -4204,7 +4204,7 @@
       dict({
         'count': 1,
         'heading': -1.220796466,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 19600,
         'x': 669.81463623,
         'y': 569.606811523,
@@ -4212,7 +4212,7 @@
       dict({
         'count': 1,
         'heading': -1.220796347,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 19600,
         'x': 709.268249512,
         'y': 584.008544922,
@@ -4220,7 +4220,7 @@
       dict({
         'count': 1,
         'heading': 1.419203758,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 20720,
         'x': 428.963317871,
         'y': 524.685058594,
@@ -4228,7 +4228,7 @@
       dict({
         'count': 1,
         'heading': 1.419203758,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 20720,
         'x': 387.445007324,
         'y': 531.027587891,
@@ -4236,7 +4236,7 @@
       dict({
         'count': 1,
         'heading': 1.419203758,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 20720,
         'x': 345.926635742,
         'y': 537.370117188,
@@ -4244,7 +4244,7 @@
       dict({
         'count': 1,
         'heading': 1.419203758,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 20720,
         'x': 304.408325195,
         'y': 543.712646484,
@@ -4252,7 +4252,7 @@
       dict({
         'count': 1,
         'heading': -1.220796347,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 21760,
         'x': 590.907287598,
         'y': 540.803405762,
@@ -4260,7 +4260,7 @@
       dict({
         'count': 1,
         'heading': -1.220796227,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 21760,
         'x': 630.360961914,
         'y': 555.20513916,
@@ -4268,7 +4268,7 @@
       dict({
         'count': 1,
         'heading': -1.220796466,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 21760,
         'x': 669.81463623,
         'y': 569.606811523,
@@ -4276,7 +4276,7 @@
       dict({
         'count': 1,
         'heading': -1.220796347,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 21760,
         'x': 709.268249512,
         'y': 584.008544922,
@@ -4284,7 +4284,7 @@
       dict({
         'count': 1,
         'heading': -1.953981638,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 22720,
         'x': 589.908203125,
         'y': 480.594360352,
@@ -4292,7 +4292,7 @@
       dict({
         'count': 1,
         'heading': -1.953981638,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 22720,
         'x': 628.862304688,
         'y': 464.891540527,
@@ -4300,7 +4300,7 @@
       dict({
         'count': 1,
         'heading': -1.953981638,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 22720,
         'x': 667.81640625,
         'y': 449.188720703,
@@ -4308,7 +4308,7 @@
       dict({
         'count': 1,
         'heading': -1.953981638,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 22720,
         'x': 706.770507812,
         'y': 433.485900879,
@@ -4316,7 +4316,7 @@
       dict({
         'count': 1,
         'heading': -1.893981576,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 23600,
         'x': 591.651184082,
         'y': 485.322570801,
@@ -4324,7 +4324,7 @@
       dict({
         'count': 1,
         'heading': -1.893981576,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 23600,
         'x': 631.476806641,
         'y': 471.983856201,
@@ -4332,7 +4332,7 @@
       dict({
         'count': 1,
         'heading': -1.893981576,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 23600,
         'x': 671.302368164,
         'y': 458.645141602,
@@ -4340,7 +4340,7 @@
       dict({
         'count': 1,
         'heading': -1.893981695,
-        'spawn_id': <SpawnId.ALIEN_AI7_ORBITER_36: 54>,
+        'spawn_id': <SpawnId.ALIEN_DELAYED_START_36: 54>,
         'trigger_ms': 23600,
         'x': 711.127990723,
         'y': 445.306396484,
@@ -6128,7 +6128,7 @@
       dict({
         'count': 1,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 500,
         'x': 512.0,
         'y': 1088.0,
@@ -6136,7 +6136,7 @@
       dict({
         'count': 1,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 500,
         'x': 576.0,
         'y': 1088.0,
@@ -6152,7 +6152,7 @@
       dict({
         'count': 3,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 17000,
         'x': 512.0,
         'y': 1088.0,
@@ -6160,7 +6160,7 @@
       dict({
         'count': 3,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 17000,
         'x': 512.0,
         'y': -64.0,
@@ -6168,7 +6168,7 @@
       dict({
         'count': 3,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 23000,
         'x': 512.0,
         'y': 1088.0,
@@ -6176,7 +6176,7 @@
       dict({
         'count': 3,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 23000,
         'x': 512.0,
         'y': -64.0,
@@ -6184,7 +6184,7 @@
       dict({
         'count': 4,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 29000,
         'x': 512.0,
         'y': 1088.0,
@@ -6192,7 +6192,7 @@
       dict({
         'count': 4,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 29000,
         'x': 512.0,
         'y': -64.0,
@@ -6200,7 +6200,7 @@
       dict({
         'count': 4,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 35000,
         'x': 512.0,
         'y': 1088.0,
@@ -6208,7 +6208,7 @@
       dict({
         'count': 4,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 35000,
         'x': 512.0,
         'y': -64.0,
@@ -6216,7 +6216,7 @@
       dict({
         'count': 5,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 41000,
         'x': 512.0,
         'y': 1088.0,
@@ -6224,7 +6224,7 @@
       dict({
         'count': 5,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 41000,
         'x': 512.0,
         'y': -64.0,
@@ -6232,7 +6232,7 @@
       dict({
         'count': 5,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 47000,
         'x': 512.0,
         'y': 1088.0,
@@ -6240,7 +6240,7 @@
       dict({
         'count': 5,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 47000,
         'x': 512.0,
         'y': -64.0,
@@ -6248,7 +6248,7 @@
       dict({
         'count': 6,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 53000,
         'x': 512.0,
         'y': 1088.0,
@@ -6256,7 +6256,7 @@
       dict({
         'count': 6,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 53000,
         'x': 512.0,
         'y': -64.0,
@@ -6264,7 +6264,7 @@
       dict({
         'count': 6,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 59000,
         'x': 512.0,
         'y': 1088.0,
@@ -6272,7 +6272,7 @@
       dict({
         'count': 6,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 59000,
         'x': 512.0,
         'y': -64.0,
@@ -6280,7 +6280,7 @@
       dict({
         'count': 7,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 65000,
         'x': 512.0,
         'y': 1088.0,
@@ -6288,7 +6288,7 @@
       dict({
         'count': 7,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 65000,
         'x': 512.0,
         'y': -64.0,
@@ -6296,7 +6296,7 @@
       dict({
         'count': 7,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 71000,
         'x': 512.0,
         'y': 1088.0,
@@ -6304,7 +6304,7 @@
       dict({
         'count': 7,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 71000,
         'x': 512.0,
         'y': -64.0,
@@ -6312,7 +6312,7 @@
       dict({
         'count': 8,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 77000,
         'x': 512.0,
         'y': 1088.0,
@@ -6320,7 +6320,7 @@
       dict({
         'count': 8,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 77000,
         'x': 512.0,
         'y': -64.0,
@@ -6328,7 +6328,7 @@
       dict({
         'count': 8,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 83000,
         'x': 512.0,
         'y': 1088.0,
@@ -6336,7 +6336,7 @@
       dict({
         'count': 8,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 83000,
         'x': 512.0,
         'y': -64.0,
@@ -6344,7 +6344,7 @@
       dict({
         'count': 9,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 89000,
         'x': 512.0,
         'y': 1088.0,
@@ -6352,7 +6352,7 @@
       dict({
         'count': 9,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 89000,
         'x': 512.0,
         'y': -64.0,
@@ -6360,7 +6360,7 @@
       dict({
         'count': 9,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 95000,
         'x': 512.0,
         'y': 1088.0,
@@ -6368,7 +6368,7 @@
       dict({
         'count': 9,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 95000,
         'x': 512.0,
         'y': -64.0,
@@ -6376,7 +6376,7 @@
       dict({
         'count': 10,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 101000,
         'x': 512.0,
         'y': 1088.0,
@@ -6384,7 +6384,7 @@
       dict({
         'count': 10,
         'heading': 0.0,
-        'spawn_id': <SpawnId.SPIDER_SP1_AI7_TIMER_38: 56>,
+        'spawn_id': <SpawnId.SPIDER_SP1_STOP_AND_GO_38: 56>,
         'trigger_ms': 101000,
         'x': 512.0,
         'y': -64.0,

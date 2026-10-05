@@ -35,7 +35,7 @@ def _record(mode: GameMode) -> HighScoreRecord:
     record.set_name("tester")
     record.game_mode_id = mode
     record.score_xp = 1234
-    record.survival_elapsed_ms = 65_000
+    record.run_elapsed_ms = 65_000
     record.creature_kill_count = 10
     record.shots_fired = 40
     record.shots_hit = 9
@@ -127,7 +127,7 @@ def test_highscore_screen_card_adds_name_date_and_underline(drawn: _Drawn) -> No
 
 def test_negative_quest_score_shows_signed_seconds(drawn: _Drawn) -> None:
     record = _record(GameMode.QUESTS)
-    record.survival_elapsed_ms = -500
+    record.run_elapsed_ms = -500
 
     _render(record, GameStateId.QUEST_RESULTS, 2)
 

@@ -476,7 +476,7 @@
       {
         "address": "0x0040573e",
         "source_name": "i_4",
-        "name": "creature_lifecycle_cursor",
+        "name": "creature_death_timer_cursor",
         "type": "float *"
       },
       {
@@ -740,7 +740,7 @@
     "address": "0x0040aab0",
     "name": "gameplay_update_and_render",
     "signature": "void gameplay_update_and_render(void)",
-    "comment": "main gameplay frame loop for state 9 (timers, updates, renders, UI). Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_exclusive id is 1 (346/346)."
+    "comment": "main gameplay frame loop for state 9 (timers, updates, renders, UI). Runtime capture (2026-02-06 gameplay_state_capture): dominant music_play_exclusive id is 1 (346/346)."
   },
   {
     "program": "crimsonland.exe",
@@ -1247,7 +1247,7 @@
     "address": "0x0040ffc0",
     "name": "game_over_screen_update",
     "signature": "void game_over_screen_update(void)",
-    "comment": "game over flow: high score entry, results text, and navigation buttons. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_exclusive id is 1 (714/716).",
+    "comment": "game over flow: high score entry, results text, and navigation buttons. Runtime capture (2026-02-06 gameplay_state_capture): dominant music_play_exclusive id is 1 (714/716).",
     "local_types": [
       {
         "address": "0x0041030f",
@@ -1296,7 +1296,7 @@
     "address": "0x004107e0",
     "name": "quest_failed_screen_update",
     "signature": "void quest_failed_screen_update(void)",
-    "comment": "quest failure screen: retry options and navigation. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_exclusive id is 1 (482/483)."
+    "comment": "quest failure screen: retry options and navigation. Runtime capture (2026-02-06 gameplay_state_capture): dominant music_play_exclusive id is 1 (482/483)."
   },
   {
     "program": "crimsonland.exe",
@@ -1325,7 +1325,7 @@
     "address": "0x00410d20",
     "name": "quest_results_screen_update",
     "signature": "void quest_results_screen_update(void)",
-    "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons. Runtime capture (2026-02-06 gameplay_state_capture): sfx_play_exclusive id 5 is dominant (3989/3989).",
+    "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons. Runtime capture (2026-02-06 gameplay_state_capture): music_play_exclusive id 5 is dominant (3989/3989).",
     "analysis_skip_override": "never_skip",
     "local_types": [
       {
@@ -1741,12 +1741,12 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00417ab0",
-    "name": "ui_template_triplet_reset_and_seed_modes",
+    "name": "ui_element_construct",
     "aliases": [
       "??0ui_element_cpp_t@@QAE@XZ",
-      "@ui_template_triplet_reset_and_seed_modes@4"
+      "@ui_element_construct@4"
     ],
-    "signature": "ui_menu_template_triplet_t * __fastcall ui_template_triplet_reset_and_seed_modes(ui_menu_template_triplet_t *block)",
+    "signature": "ui_menu_template_triplet_t * __fastcall ui_element_construct(ui_menu_template_triplet_t *block)",
     "comment": "resets triplet state and seeds all three template sub-block quad_mode fields to 4"
   },
   {
@@ -1806,8 +1806,8 @@
     "local_types": [
       {
         "address": "0x00418c0a",
-        "name": "detail_lifecycle_cursor",
-        "type": "creature_lifecycle_stride_binja_t *"
+        "name": "detail_death_timer_cursor",
+        "type": "creature_death_timer_stride_binja_t *"
       },
       {
         "address": "0x00418eb0",
@@ -1821,8 +1821,8 @@
       },
       {
         "address": "0x0041945e",
-        "name": "hit_flash_lifecycle_cursor",
-        "type": "creature_lifecycle_stride_binja_t *"
+        "name": "hit_flash_death_timer_cursor",
+        "type": "creature_death_timer_stride_binja_t *"
       }
     ],
     "comment": "renders active creatures matching type_id using 8x8 atlases and animation strips"
@@ -1836,8 +1836,8 @@
     "local_types": [
       {
         "address": "0x00419756",
-        "name": "overlay_lifecycle_cursor",
-        "type": "creature_lifecycle_stride_binja_t *"
+        "name": "overlay_death_timer_cursor",
+        "type": "creature_death_timer_stride_binja_t *"
       },
       {
         "address": "0x00419a8d",
@@ -2131,17 +2131,17 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0041dfb0",
-    "name": "unused_fx_rotated_effect_id_prefix_color_global_init_thunk",
-    "signature": "void unused_fx_rotated_effect_id_prefix_color_global_init_thunk(void)",
-    "comment": "CRT initializer thunk for the unused RGBA object before fx_rotated_effect_id"
+    "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk",
+    "signature": "void unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the unused RGBA object before fx_rotated_creature_type_id"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0041dfc0",
     "include_library": true,
-    "name": "unused_fx_rotated_effect_id_prefix_color_global_init",
-    "signature": "void unused_fx_rotated_effect_id_prefix_color_global_init(void)",
-    "comment": "initializes the unused fx_rotated_effect_id prefix RGBA object to gray"
+    "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init",
+    "signature": "void unused_fx_rotated_creature_type_id_prefix_color_global_init(void)",
+    "comment": "initializes the unused fx_rotated_creature_type_id prefix RGBA object to gray"
   },
   {
     "program": "crimsonland.exe",
@@ -2592,7 +2592,7 @@
     "program": "crimsonland.exe",
     "address": "0x0041f5b0",
     "name": "bonus_spawn_at",
-    "signature": "bonus_entry_t * bonus_spawn_at(vec2f_t *pos, bonus_id_t bonus_id, int duration_override)",
+    "signature": "bonus_entry_t * bonus_spawn_at(vec2f_t *pos, bonus_id_t bonus_id, int amount_override)",
     "comment": "clamps position, fills bonus entry fields, and spawns pickup effect"
   },
   {
@@ -2619,8 +2619,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0041fc60",
-    "name": "weapon_table_entry",
-    "signature": "char * weapon_table_entry(int weapon_id)",
+    "name": "weapon_name_get",
+    "signature": "char * weapon_name_get(int weapon_id)",
     "comment": "returns the entry base (&weapon_table + weapon_id * 0x1f)"
   },
   {
@@ -2730,7 +2730,7 @@
         "type": "float *"
       }
     ],
-    "comment": "updates projectile movement, collisions, and hit effects. Runtime capture (2026-02-06 gameplay_state_capture): dominant sfx_play_panned cluster is 54/51/53/55/52/50."
+    "comment": "updates projectiles, secondary projectiles, sprite effects and particles: movement, collisions, hit effects and particle damage"
   },
   {
     "program": "crimsonland.exe",
@@ -2777,7 +2777,7 @@
     "address": "0x00425d80",
     "name": "plaguebearer_spread_infection",
     "signature": "int plaguebearer_spread_infection(int creature_id)",
-    "comment": "propagates collision_flag infection between nearby creatures (radius 45, hp < 150)"
+    "comment": "propagates plague_infected infection between nearby creatures (radius 45, hp < 150)"
   },
   {
     "program": "crimsonland.exe",
@@ -2856,7 +2856,7 @@
     "address": "0x00428210",
     "name": "creatures_none_active",
     "signature": "uint creatures_none_active(void)",
-    "comment": "returns low byte 1 when no active creature entries exist (0 otherwise); sets creatures_any_active_flag"
+    "comment": "returns low byte 1 when no active creature entries exist (0 otherwise); sets creatures_none_active_flag"
   },
   {
     "program": "crimsonland.exe",
@@ -2868,9 +2868,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00428390",
-    "name": "player_render_overlays",
-    "signature": "void player_render_overlays(void)",
-    "comment": "Renders per-player overlays/indicators using player_state_table + effect_uv8. Runtime (analysis/frida/player_sprite_trace_summary.json): when alive (health>0) draws 2 sprite layers per call from effect_uv8[frame] (0\u201314) and effect_uv8[frame+0x10] (16\u201330) using heading vs aim_heading rotations, with a shadow/outline pass (scale ~1.02/1.03 and offset +3,+3 / +1,+1) before the main pass. When dead, draws a single layer from effect_uv8[crt_ftol(death_timer)] (32\u201351) with 0x34 fallback, also with shadow+main passes."
+    "name": "player_render",
+    "signature": "void player_render(void)",
+    "comment": "Renders the whole player: body and death animation, muzzle flash, auras and the auto-target line; gameplay_render_world calls it for dead players before creatures and for live ones after. When alive (health>0) draws 2 sprite layers per call from effect_uv8[frame] (0\u201314) and effect_uv8[frame+0x10] (16\u201330) using heading vs aim_heading rotations, with a shadow/outline pass (scale ~1.02/1.03 and offset +3,+3 / +1,+1) before the main pass. When dead, draws a single layer from effect_uv8[crt_ftol(death_timer)] (32\u201351) with 0x34 fallback, also with shadow+main passes."
   },
   {
     "program": "crimsonland.exe",
@@ -2884,7 +2884,7 @@
     "address": "0x004295f0",
     "name": "bonus_render",
     "signature": "void bonus_render(void)",
-    "comment": "renders bonus icons and labels from the pickup pool"
+    "comment": "renders bonus icons and labels, applies Telekinetic pickups, and draws particles, beams, secondary-projectile explosions and sprite effects"
   },
   {
     "program": "crimsonland.exe",
@@ -3896,9 +3896,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0043a950",
-    "name": "highscore_date_checksum",
-    "signature": "int highscore_date_checksum(int year, int month, int day)",
-    "comment": "computes a week-of-year style checksum for high score validation"
+    "name": "highscore_iso_week",
+    "signature": "int highscore_iso_week(int year, int month, int day)",
+    "comment": "computes the ISO-style week of year compared by the weekly high score table"
   },
   {
     "program": "crimsonland.exe",
@@ -3953,17 +3953,17 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0043aed0",
-    "name": "highscore_compare_rush_field32_desc",
-    "signature": "int highscore_compare_rush_field32_desc(const highscore_record_t *a, const highscore_record_t *b)",
-    "comment": "qsort comparator used by highscore_load_table() for rush mode; sorts survival_elapsed_ms descending with signed comparisons",
+    "name": "highscore_compare_elapsed_desc",
+    "signature": "int highscore_compare_elapsed_desc(const highscore_record_t *a, const highscore_record_t *b)",
+    "comment": "qsort comparator used by highscore_load_table() for rush mode; sorts run_elapsed_ms descending with signed comparisons",
     "create": true
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043aef0",
-    "name": "highscore_compare_quest_field32_asc_nonzero_first",
-    "signature": "int highscore_compare_quest_field32_asc_nonzero_first(const highscore_record_t *a, const highscore_record_t *b)",
-    "comment": "qsort comparator used by highscore_load_table() for quest mode; sorts survival_elapsed_ms ascending with zero last",
+    "name": "highscore_compare_elapsed_asc_nonzero_first",
+    "signature": "int highscore_compare_elapsed_asc_nonzero_first(const highscore_record_t *a, const highscore_record_t *b)",
+    "comment": "qsort comparator used by highscore_load_table() for quest mode; sorts run_elapsed_ms ascending with zero last",
     "create": true
   },
   {
@@ -4371,23 +4371,23 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0043d460",
-    "name": "sfx_play_exclusive",
-    "signature": "void sfx_play_exclusive(int sfx_id)",
-    "comment": "mutes other sfx ids and ensures the chosen id is audible"
+    "name": "music_play_exclusive",
+    "signature": "void music_play_exclusive(int sfx_id)",
+    "comment": "fades out every other music track and starts the chosen one; the game playlist sentinel picks a random track"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043d550",
-    "name": "sfx_mute_all",
-    "signature": "void sfx_mute_all(int sfx_id)",
-    "comment": "mutes all unmuted sfx ids (recursive)"
+    "name": "music_fade_out_all",
+    "signature": "void music_fade_out_all(int sfx_id)",
+    "comment": "fades out the given music track and every playing one (recursive)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043d5b0",
-    "name": "sfx_update_mute_fades",
-    "signature": "void sfx_update_mute_fades(void)",
-    "comment": "ramps volume up/down based on mute flags"
+    "name": "music_update_fades",
+    "signature": "void music_update_fades(void)",
+    "comment": "ramps each music track's volume toward its fade target"
   },
   {
     "program": "crimsonland.exe",
@@ -4406,9 +4406,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0043d7c0",
-    "name": "sfx_is_unmuted",
-    "signature": "int sfx_is_unmuted(int sfx_id)",
-    "comment": "returns nonzero when sfx id is not muted"
+    "name": "music_track_is_playing",
+    "signature": "int music_track_is_playing(int sfx_id)",
+    "comment": "returns nonzero when the music track is not fading out"
   },
   {
     "program": "crimsonland.exe",
@@ -4813,8 +4813,8 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00444980",
-    "name": "player_fire_weapon",
-    "signature": "void player_fire_weapon(const vec2f_t *aim, char fire_requested, char reload_requested)",
+    "name": "typo_player_update",
+    "signature": "void typo_player_update(const vec2f_t *aim, char fire_requested, char reload_requested)",
     "comment": "runs the bespoke Typ-o Shooter player frame, aim, shotgun fire, and terrain clamp path"
   },
   {

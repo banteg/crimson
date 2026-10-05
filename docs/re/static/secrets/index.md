@@ -35,5 +35,5 @@ Crimsonland contains several layers of secrets:
 - The startup date-gated `balloon.tga` path is mapped as a startup-preload-only gate (no in-binary consumer xrefs in v1.9.93).
 - 17 named weapons are not in the quest unlock table
 - Splitter Gun is a persistent full-version unlock: `weapon_refresh_available`
-  marks it available once `quest_unlock_index_full >= 40` (hardcore 4.10 cleared)
+  marks it available once `quest_unlock_index_hardcore >= 40` (hardcore 4.10 cleared)
 - Survival has two verified one-off secret-weapon style grants (Shrinkifier 5k and Blade Gun), with strict runtime gates

@@ -34,7 +34,7 @@ def _next_rate_scale_hz(*, current_rate_scale_hz: int, reflex_boost_timer: float
             rate_expr = f32((f32(1.0) - reflex_f32 + f32(1.0)) * f32(float(_SFX_RATE_MIN_HZ)))
             # Native __ftol sets RC=truncate before fistp (0x00461054).
             return int(rate_expr)
-        # Native keeps prior `sfx_rate_scale` when timer is exactly 1.0.
+        # Native keeps prior `sfx_sample_rate` when timer is exactly 1.0.
         return int(current_rate_scale_hz)
     return int(_SFX_RATE_MIN_HZ)
 

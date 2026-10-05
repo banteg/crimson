@@ -134,7 +134,7 @@ dword) also alias `ui_menu_item_subtemplate_block_t layers[3]`.
 | 0x204 | overlay_texture_handle | Overlay texture handle (`-1` disables). |
 | 0x20c | enabled_overlay_vertices[8] | Second overlay block; its alpha follows the ready glow. |
 | 0x2ec | secondary_overlay_texture_handle | Initialized to `-1`. |
-| 0x2f4 | hover_enter_played | Set while the mouse is inside the hover bounds. |
+| 0x2f4 | hovered | Set while the mouse is inside the hover bounds. |
 | 0x2f8 | hover_amount | Hover lerp value, clamped 0..1000. |
 | 0x2fc | time_since_ready | Initialized to `0x100` in `ui_element_init_defaults` and increments in `ui_element_update`; clicks need `>= 255`. If it falls into `0..0xFF`, `ui_element_render` uses it to override glow alpha. |
 | 0x300 | render_scale | When `0.0` and `cv_uiPointFilterPanels` is set, the element renders with point filtering. |

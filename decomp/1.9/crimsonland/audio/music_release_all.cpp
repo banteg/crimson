@@ -4,7 +4,7 @@ extern "C" void music_release_all(void)
 {
     int i;
 
-    if (!sfx_unmuted_flag) {
+    if (!music_ready) {
         return;
     }
     for (i = 0; i < 128; i++) {

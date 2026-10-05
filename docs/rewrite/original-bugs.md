@@ -378,7 +378,7 @@ Rewrite behavior:
 
 Native behavior:
 
-- In `player_fire_weapon` (`0x00416a50`), Mini-Rocket Swarmers set per-rocket
+- In `typo_player_update` (`0x00416a50`), Mini-Rocket Swarmers set per-rocket
   spread step to `ammo * 1.0471976` (`ammo * pi/3`), then spawn `ammo` rockets
   at `angle += step`.
 - Because heading is periodic (`2*pi`), some clip sizes alias to repeated
@@ -493,9 +493,9 @@ Native behavior:
 - `audio_init_sfx` (`0x0043caa0`) loads only `trooper_die_01..03`; it does not
   load `trooper_die_04.ogg`.
 - `gameplay_reset_state` (`0x00412dc0`) assigns trooper
-  `creature_type_table[5].sfx_bank_a[0..2]` only.
+  `creature_type_table[5].death_sfx[0..2]` only.
 - `creature_apply_damage` (`0x004207c0`) still resolves trooper death audio with
-  `sfx_bank_a[rand & 3]`.
+  `death_sfx[rand & 3]`.
 - Because the fourth slot is never written and the table lives in zero-initialized
   global storage, the native cold-start value is SFX id `0`
   (`sfx_trooper_inpain_01`).

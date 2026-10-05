@@ -30,7 +30,7 @@ void weapon_assign_player(int player_index, int weapon_id)
         player_state_table[player_index].weapon_reset_latch = 0;
         player_state_table[player_index].shot_cooldown = 0.0f;
         player_state_table[player_index].reload_timer = 0.0f;
-        player_aux_timer[player_index] = 2.0f;
+        player_weapon_popup_timer[player_index] = 2.0f;
         sfx_play_panned(reload_sfx_id, player_pos, 1.0f);
     }
 }

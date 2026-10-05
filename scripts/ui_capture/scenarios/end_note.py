@@ -7,7 +7,7 @@ from crimson.screens.actions import ResultAction, StartRun
 
 def unlock_final(status):
     status.quest_unlock_index = 49
-    status.quest_unlock_index_full = 49
+    status.quest_unlock_index_hardcore = 49
 
 
 STATUS = unlock_final

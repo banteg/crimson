@@ -28,7 +28,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 1000.0
     creature.max_hp = 1000.0
@@ -51,7 +51,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
         perk_progression_enabled=False,
     )
     assert events.hits
-    assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK
+    assert creature.flags & CreatureFlags.POISONED
     assert [
         record.caller
         for record in world.state.rng.records_since()
@@ -72,7 +72,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 1000.0
     creature.max_hp = 1000.0
@@ -95,7 +95,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
         perk_progression_enabled=False,
     )
     assert events.hits
-    assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
+    assert not (creature.flags & CreatureFlags.POISONED)
     assert [
         record.caller
         for record in world.state.rng.records_since()
@@ -116,7 +116,7 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = player.pos + Vec2(100.0, 0.0)
     creature.hp = 2000.0
     creature.max_hp = 2000.0
@@ -130,7 +130,7 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
     )
-    assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
+    assert not (creature.flags & CreatureFlags.POISONED)
 
 
 def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet_hit() -> None:
@@ -147,7 +147,7 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = Vec2(300.0, 300.0)
     creature.hp = 1000.0
     creature.max_hp = 1000.0
@@ -170,8 +170,8 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
         perk_progression_enabled=False,
     )
 
-    assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK
-    assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK_STRONG)
+    assert creature.flags & CreatureFlags.POISONED
+    assert not (creature.flags & CreatureFlags.POISONED_STRONG)
 
 
 def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
@@ -187,7 +187,7 @@ def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 1000.0
     creature.max_hp = 1000.0
@@ -212,7 +212,7 @@ def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
         perk_progression_enabled=False,
     )
     assert events.hits
-    assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK
+    assert creature.flags & CreatureFlags.POISONED
     assert RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE in {
         record.caller for record in world.state.rng.records_since()
     }

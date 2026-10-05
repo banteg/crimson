@@ -17,7 +17,7 @@ extern "C" void game_status_global_init(void)
     memset(game_status_blob.weapon_usage_counts, 0, 0x100);
 
     game_status_blob.quest_unlock_index = 0;
-    game_status_blob.quest_unlock_index_full = 0;
+    game_status_blob.quest_unlock_index_hardcore = 0;
     game_status_blob.play_time_ms = 0;
 
     game_status_blob.reserved_seed_words[0] = crt_rand() % 345354345;

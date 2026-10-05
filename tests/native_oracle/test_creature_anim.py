@@ -25,8 +25,8 @@ _TYPE_STRIDE = 0x44
 _ANIM_PHASE_OFFSET = 0x94
 _FLAG_CHOICES = (
     CreatureFlags(0),
-    CreatureFlags.ANIM_PING_PONG,
-    CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP,
+    CreatureFlags.SPAWNER,
+    CreatureFlags.SPAWNER | CreatureFlags.SPAWNER_MOBILE,
 )
 
 
@@ -45,7 +45,7 @@ def test_creature_anim_phase_matches_native(oracle) -> None:
         dt = f32(rng.choice((1.0 / 60.0, 0.016, 1.0 / 144.0, rng.uniform(0.001, 0.05))))
         phase = f32(rng.uniform(0.0, 31.0))
         flags = rng.choice(_FLAG_CHOICES)
-        ai_mode = rng.choice((CreatureAiMode.ORBIT_PLAYER, CreatureAiMode.HOLD_TIMER))
+        ai_mode = rng.choice((CreatureAiMode.FLANK_PLAYER, CreatureAiMode.HOLD_TIMER))
 
         oracle.write_f32(anim_rates + type_id * _TYPE_STRIDE, anim_rate)
         oracle.write_u32(creature + CREATURE_LAYOUT["type_id"][0], type_id)

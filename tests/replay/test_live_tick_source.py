@@ -48,10 +48,10 @@ def test_catch_up_ticks_keep_control_modes_and_held_buttons(
         fire_pressed=True,
         reload_down=True,
         reload_pressed=True,
-        move_forward_pressed=True,
-        move_backward_pressed=False,
-        turn_left_pressed=True,
-        turn_right_pressed=False,
+        move_forward_down=True,
+        move_backward_down=False,
+        turn_left_down=True,
+        turn_right_down=False,
     )
     source = LiveTickSource()
     source.poll([held])

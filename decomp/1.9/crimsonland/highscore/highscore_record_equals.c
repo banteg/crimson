@@ -9,7 +9,7 @@ char highscore_record_equals(
     if (left->score_xp != right->score_xp) {
         return 0;
     }
-    if (left->survival_elapsed_ms != right->survival_elapsed_ms) {
+    if (left->run_elapsed_ms != right->run_elapsed_ms) {
         return 0;
     }
     if (left->game_mode_id != right->game_mode_id) {

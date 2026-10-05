@@ -280,7 +280,7 @@
     "canonical_address": "0x0041FC60",
     "end": "0x004018C0",
     "evidence": "ordered",
-    "name": "weapon_table_entry",
+    "name": "weapon_name_get",
     "size": 32
   },
   {

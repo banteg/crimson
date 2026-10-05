@@ -27,7 +27,7 @@ def creature_find_nearest_alive(
         creature = creatures[idx]
         if not creature.active:
             continue
-        if not creature_lifecycle_is_alive(creature.lifecycle_stage):
+        if not creature_lifecycle_is_alive(creature.death_timer):
             continue
         dx = x87_pc24_sub(f32(origin.x), f32(creature.pos.x))
         dy = x87_pc24_sub(f32(origin.y), f32(creature.pos.y))

@@ -29,7 +29,7 @@ extern "C" void quest_start_selected(int tier, int index)
     fx_queue_count = 0;
 
     highscore_active_record.hardcore_marker = 0;
-    highscore_active_record.survival_elapsed_ms = 0;
+    highscore_active_record.run_elapsed_ms = 0;
     highscore_active_record.score_xp = 0;
     highscore_active_record.quest_stage_minor = 0;
     highscore_active_record.quest_stage_major = 0;
@@ -38,7 +38,7 @@ extern "C" void quest_start_selected(int tier, int index)
     highscore_active_record.creature_kill_count = 0;
     highscore_active_record.shots_hit = 0;
     highscore_active_record.shots_fired = 0;
-    highscore_active_record.date_checksum = 0;
+    highscore_active_record.date_week = 0;
     highscore_active_record.year_offset = 0;
     highscore_active_record.month = 0;
     highscore_active_record.day = 0;
@@ -52,12 +52,12 @@ extern "C" void quest_start_selected(int tier, int index)
     player_state_table[0].position = player_pos;
 
     int quest_index = tier * 10 + index - 11;
-    quest_meta_t *quest = &quest_selected_meta[quest_index];
+    quest_meta_t *quest = &quest_meta_table[quest_index];
     terrain_generate(quest);
     weapon_assign_player(
-        0, quest_selected_meta[quest_index].start_weapon_id);
+        0, quest_meta_table[quest_index].start_weapon_id);
     weapon_assign_player(
-        1, quest_selected_meta[quest_index].start_weapon_id);
+        1, quest_meta_table[quest_index].start_weapon_id);
 
     console_printf(
         &console_log_queue,

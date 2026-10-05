@@ -119,7 +119,7 @@ typedef struct weapon_stats_t {
     int hud_icon_id;
     unsigned char flags;
     unsigned char _pad2[3];
-    float travel_budget;
+    float projectile_speed;
     float damage_scale;
 #if CL_BUILD != 10908
     int pellet_count;
@@ -147,7 +147,7 @@ typedef struct weapon_storage_entry_t {
     int reload_sfx_id;
     int hud_icon_id;
     int flags;
-    float travel_budget;
+    float projectile_speed;
     float damage_scale;
 #if CL_BUILD != 10908
     int pellet_count;
@@ -184,13 +184,13 @@ typedef unsigned short u16_t;
 typedef float sfx_cooldown_table_t[0x80];
 typedef LPDIRECTSOUNDBUFFER sfx_voice_table_t[0x20];
 typedef float sfx_volume_table_t[0x80];
-typedef char sfx_mute_flags_t[0x80];
+typedef char music_fade_out_flags_t[0x80];
 typedef int music_playlist_t[0x80];
 
 typedef unsigned int weapon_usage_counts_t[53];
 typedef unsigned int quest_play_counts_t[91];
 typedef unsigned int weapon_usage_time_t[64];
-typedef float player_aux_timer_t[2];
+typedef float player_weapon_popup_timer_t[2];
 typedef float player_aim_screen_xy_t[4];
 
 typedef enum perk_id_t {
@@ -296,7 +296,7 @@ typedef struct player_state_t {
     unsigned char entity_state_flag;
     unsigned char plaguebearer_active;
     unsigned char _pad_entity_flags[2];
-    float entity_collision_timer;
+    float entity_dot_tick_timer;
     float death_timer;
     union {
         struct {
@@ -328,6 +328,7 @@ typedef struct player_state_t {
     };
     unsigned char _pad1[4];
     float speed_multiplier;
+    // Write-only: weapon_assign_player and bonus_apply store 0, nothing reads it.
     int weapon_reset_latch;
     unsigned char _pad2[4];
     float move_speed;
@@ -337,6 +338,7 @@ typedef struct player_state_t {
     unsigned char _pad_entity_link[0x14];
     int entity_ai_mode;
     float move_phase;
+    // Read only by the auto-target line in player_render (> 0.25); nothing but the constructor writes it.
     float player_reserved_98;
     float hot_tempered_timer;
 #if CL_BUILD != 10908
@@ -372,7 +374,7 @@ typedef struct player_state_t {
     float turn_speed;
     int state_aux;
     int evil_eyes_target_creature;
-    float low_health_timer;
+    float bleed_drip_timer;
     float speed_bonus_timer;
     float shield_timer;
     float fire_bullets_timer;
@@ -389,13 +391,13 @@ typedef struct player_state_t {
 
 typedef struct creature_bonus_args_t {
     short bonus_id;
-    short duration_override;
+    short amount_override;
 } creature_bonus_args_t;
 
 typedef struct creature_type_t {
     int texture_handle;
-    int sfx_bank_a[4];
-    int sfx_bank_b[2];
+    int death_sfx[4];
+    int attack_sfx[2];
     unsigned char _pad0[4];
     // Initialized to 1.0 for the five animated creature types, but never read.
     float unused_value;
@@ -455,11 +457,12 @@ typedef struct creature_t {
     unsigned char active;
     unsigned char _pad0[3];
     int phase_seed;
+    // Write-only: set on spawn and on plague/radioactive ticks, never read.
     unsigned char state_flag;
-    unsigned char collision_flag;
+    unsigned char plague_infected;
     unsigned char _pad1[2];
-    float collision_timer;
-    float lifecycle_stage;
+    float dot_tick_timer;
+    float death_timer;
     union {
         struct {
             float pos_x;
@@ -550,10 +553,10 @@ typedef struct creature_binja_t {
     unsigned char _pad0[3];
     int phase_seed;
     unsigned char state_flag;
-    unsigned char collision_flag;
+    unsigned char plague_infected;
     unsigned char _pad1[2];
-    float collision_timer;
-    float lifecycle_stage;
+    float dot_tick_timer;
+    float death_timer;
     float pos_x;
     float pos_y;
     float vel_x;
@@ -591,12 +594,12 @@ typedef struct creature_binja_t {
     float anim_phase;
 } creature_binja_t;
 
-// Binary Ninja induction view anchored at creature_t::lifecycle_stage. The
+// Binary Ninja induction view anchored at creature_t::death_timer. The
 // trailing prefix makes sizeof(view) equal the 0x98-byte creature stride, so a
 // native field cursor advances by one typed element while forward accesses
 // retain their recovered field names.
-typedef struct creature_lifecycle_stride_binja_t {
-    float lifecycle_stage;
+typedef struct creature_death_timer_stride_binja_t {
+    float death_timer;
     float pos_x;
     float pos_y;
     float vel_x;
@@ -633,7 +636,7 @@ typedef struct creature_lifecycle_stride_binja_t {
     int ai_mode;
     float anim_phase;
     unsigned char _next_record_prefix[0x10];
-} creature_lifecycle_stride_binja_t;
+} creature_death_timer_stride_binja_t;
 
 // Equivalent 0x98-byte induction view for loops anchored at max_health.
 typedef struct creature_max_health_stride_binja_t {
@@ -690,7 +693,7 @@ typedef struct projectile_vel_y_block_t {
     float speed_scale;
     float damage_pool;
     float hit_radius;
-    float travel_budget;
+    float projectile_speed;
     int owner_id;
 } projectile_vel_y_block_t;
 
@@ -752,7 +755,7 @@ typedef struct projectile_t {
             float speed_scale;
             float damage_pool;
             float hit_radius;
-            float travel_budget;
+            float projectile_speed;
             int owner_id;
         } fields;
         vec2f_t position;
@@ -785,13 +788,14 @@ typedef struct projectile_binja_t {
     float speed_scale;
     float damage_pool;
     float hit_radius;
-    float travel_budget;
+    float projectile_speed;
     int owner_id;
 } projectile_binja_t;
 
 typedef struct particle_t {
     unsigned char active;
-    unsigned char render_flag;
+    // Still flying: gates movement, steering and the hit test; cleared on impact.
+    unsigned char in_flight;
     unsigned char _pad0[2];
     union {
         struct {
@@ -807,13 +811,8 @@ typedef struct particle_t {
         };
         vec2f_t velocity;
     };
+    // Flame particles fade r/g with intensity; the Bubblegun pass reads color_r as a size factor.
     union {
-        struct {
-            float scale_x;
-            float scale_y;
-            float scale_z;
-            float age;
-        };
         struct {
             float color_r;
             float color_g;
@@ -827,33 +826,30 @@ typedef struct particle_t {
         float progress;
     };
     float angle;
-    union {
-        float spin;
-        float rotation;
-    };
+    // Accumulated rotation angle: starts random, grows with dt.
+    float rotation;
     unsigned char style_id;
     unsigned char _pad1[3];
     int target_id;
 } particle_t;
 
-// Binary Ninja presentation view for the same 0x38-byte record. Particle
-// rendering deliberately overlays scale/age with RGBA in matching source; the
-// flat initializer-oriented view keeps pool induction accesses named.
+// Binary Ninja presentation view for the same 0x38-byte record; the flat
+// initializer-oriented view keeps pool induction accesses named.
 typedef struct particle_binja_t {
     unsigned char active;
-    unsigned char render_flag;
+    unsigned char in_flight;
     unsigned char _pad0[2];
     float pos_x;
     float pos_y;
     float vel_x;
     float vel_y;
-    float scale_x;
-    float scale_y;
-    float scale_z;
-    float age;
+    float color_r;
+    float color_g;
+    float color_b;
+    float color_a;
     float intensity;
     float angle;
-    float spin;
+    float rotation;
     unsigned char style_id;
     unsigned char _pad1[3];
     int target_id;
@@ -872,7 +868,7 @@ typedef enum secondary_projectile_type_id_t {
 typedef struct secondary_projectile_vel_y_block_t {
     float vel_y;
     secondary_projectile_type_id_t type_id;
-    float trail_timer;
+    float trail_distance;
     int target_id;
     unsigned int unused_0x28;
 } secondary_projectile_vel_y_block_t;
@@ -917,7 +913,7 @@ typedef struct secondary_projectile_t {
                 vec2f_t velocity;
             };
             secondary_projectile_type_id_t type_id;
-            float trail_timer;
+            float trail_distance;
             int target_id;
             unsigned int unused_0x28;
         } fields;
@@ -1206,7 +1202,7 @@ typedef struct ui_element_t {
         };
         ui_menu_item_subtemplate_block_t layers[3];
     };
-    unsigned char hover_enter_played;
+    unsigned char hovered;
     unsigned char _pad_hover_enter_played[3];
     int hover_amount;
     int time_since_ready;
@@ -1251,7 +1247,7 @@ typedef struct ui_element_binja_t {
     ui_element_vertex_binja_t enabled_overlay_vertices[8];
     int secondary_overlay_texture_handle;
     unsigned char _pad5_end[4];
-    unsigned char hover_enter_played;
+    unsigned char hovered;
     unsigned char _pad_hover_enter_played[3];
     int hover_amount;
     int time_since_ready;
@@ -1461,8 +1457,9 @@ typedef struct crimson_cfg_t {
 
 typedef struct game_status_t {
     unsigned short quest_unlock_index;
-    unsigned short quest_unlock_index_full;
+    unsigned short quest_unlock_index_hardcore;
     unsigned int weapon_usage_counts[53];
+    // Attempts at [major * 10 + minor], completions at [40 + major * 10 + minor]; stage-5 attempts alias stage-1 completions.
     unsigned int quest_play_counts[91];
     unsigned int mode_play_survival;
     unsigned int mode_play_rush;
@@ -1476,8 +1473,9 @@ typedef struct game_status_t {
 // initialization writes the tail as four dwords.
 typedef struct game_status_binja_t {
     unsigned short quest_unlock_index;
-    unsigned short quest_unlock_index_full;
+    unsigned short quest_unlock_index_hardcore;
     unsigned int weapon_usage_counts[53];
+    // Attempts at [major * 10 + minor], completions at [40 + major * 10 + minor]; stage-5 attempts alias stage-1 completions.
     unsigned int quest_play_counts[91];
     unsigned int mode_play_survival;
     unsigned int mode_play_rush;
@@ -1555,6 +1553,7 @@ typedef void (*quest_builder_fn_t)(quest_spawn_entry_t *entries, int *count);
 typedef struct quest_meta_t {
     int tier;
     int index;
+    // Written by quest_database_init, never read: quests have no time limit.
     int time_limit_ms;
     char *name;
     int terrain_id;
@@ -1605,7 +1604,8 @@ typedef struct bonus_meta_t {
 
 typedef struct bonus_entry_t {
     bonus_id_t bonus_id;
-    unsigned char state;
+    // Set on pickup; a picked bonus fades three times faster and no longer counts as on the ground.
+    unsigned char picked;
     unsigned char _pad0[3];
     // Field grouping used to steer the decompiler away from float-bitpattern ints.
     // Native code often takes the address of `time_left` and then indexes by
@@ -1810,7 +1810,7 @@ typedef struct mod_interface_binja_t {
 
 typedef struct highscore_record_t {
     char player_name[0x20];
-    unsigned int survival_elapsed_ms;
+    unsigned int run_elapsed_ms;
     unsigned int score_xp;
     unsigned char game_mode_id;
     unsigned char quest_stage_major;
@@ -1822,7 +1822,7 @@ typedef struct highscore_record_t {
     unsigned int random_tag;
     unsigned char reserved0[0x04];
     unsigned char day;
-    unsigned char date_checksum;
+    unsigned char date_week;
     unsigned char month;
     unsigned char year_offset;
     unsigned char flags;

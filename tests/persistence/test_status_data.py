@@ -18,7 +18,7 @@ def test_status_roundtrip_uses_full_typed_payload() -> None:
     quest_counts[12] = 7
     data = GameStatusData(
         quest_unlock_index=12,
-        quest_unlock_index_full=34,
+        quest_unlock_index_hardcore=34,
         weapon_usage_counts=tuple(weapon_counts),
         quest_play_counts=tuple(quest_counts),
         mode_play_survival=11,

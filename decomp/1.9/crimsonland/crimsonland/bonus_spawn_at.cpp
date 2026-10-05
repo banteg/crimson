@@ -8,7 +8,7 @@
 extern "C" bonus_entry_t *bonus_spawn_at(
     vec2f_t *pos,
     bonus_id_t bonus_id,
-    int duration_override)
+    int amount_override)
 {
     bonus_entry_t *entry;
     int count;
@@ -30,13 +30,13 @@ extern "C" bonus_entry_t *bonus_spawn_at(
     }
 
     entry = bonus_alloc_slot();
-    entry->state = 0;
+    entry->picked = 0;
     entry->time.position = *pos;
     entry->time.time_left = 10.0f;
     entry->time.time_max = 10.0f;
     entry->bonus_id = bonus_id;
-    entry->time.amount = duration_override;
-    if (duration_override == -1) {
+    entry->time.amount = amount_override;
+    if (amount_override == -1) {
         entry->time.amount = bonus_meta_table[bonus_id].default_amount;
     }
 

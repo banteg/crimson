@@ -14,7 +14,7 @@ from tests.support.factories import make_step_runtime
 def _check_fields(index, owner, expected, actual):
     for name, value in actual.items():
         native = expected[name]
-        if name in ("active", "render", "style", "target", "type", "index", "effect"):
+        if name in ("active", "in_flight", "style", "target", "type", "index", "effect"):
             assert value == native, (index, owner, name, value, native)
         else:
             assert struct.pack("<f", value) == struct.pack("<f", native), (index, owner, name, value, native)
@@ -29,13 +29,13 @@ def compare(witness):
     item = case["particles"][0]
     particle = pool.entries[item["index"]]
     particle.active = True
-    particle.render_flag = bool(item["render"])
+    particle.in_flight = bool(item["in_flight"])
     particle.pos = Vec2(f32(item["x"]), f32(item["y"]))
     particle.vel = Vec2(f32(item["vx"]), f32(item["vy"]))
     particle.style_id = ParticleStyleId(item["style"])
     particle.target_id = item["target"]
-    particle.scale_x = particle.scale_y = particle.scale_z = particle.age = 0.0
-    for key in ("intensity", "angle", "spin"):
+    particle.color_r = particle.color_g = particle.color_b = particle.color_a = 0.0
+    for key in ("intensity", "angle", "rotation"):
         setattr(particle, key, f32(item[key]))
     world = make_world()
     world.state.rng = rng
@@ -47,7 +47,7 @@ def compare(witness):
     creature.hp = f32(target["health"])
     creature.max_hp = f32(target["max_health"])
     creature.size = f32(target["size"])
-    creature.lifecycle_stage = f32(target["lifecycle"])
+    creature.death_timer = f32(target["lifecycle"])
     creature.tint = RGBA(*(f32(target[key]) for key in ("r", "g", "b", "a")))
     for perk in case.get("perks", []):
         world.state.perks[perk] = 1
@@ -59,18 +59,18 @@ def compare(witness):
         witness["particle"],
         {
             "active": int(particle.active),
-            "render": int(particle.render_flag),
+            "in_flight": int(particle.in_flight),
             "x": particle.pos.x,
             "y": particle.pos.y,
             "vx": particle.vel.x,
             "vy": particle.vel.y,
-            "sx": particle.scale_x,
-            "sy": particle.scale_y,
-            "sz": particle.scale_z,
-            "age": particle.age,
+            "color_r": particle.color_r,
+            "color_g": particle.color_g,
+            "color_b": particle.color_b,
+            "color_a": particle.color_a,
             "intensity": particle.intensity,
             "angle": particle.angle,
-            "spin": particle.spin,
+            "rotation": particle.rotation,
             "style": int(particle.style_id),
             "target": particle.target_id,
         },
@@ -81,7 +81,7 @@ def compare(witness):
         witness["creature"],
         {
             "active": int(creature.active),
-            "lifecycle": creature.lifecycle_stage,
+            "lifecycle": creature.death_timer,
             "x": creature.pos.x,
             "y": creature.pos.y,
             "health": creature.hp,

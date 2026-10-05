@@ -16,7 +16,11 @@ from ..bonuses.update import bonus_telekinetic_update
 from ..camera import camera_shake_update
 from ..creatures.spawn import CreatureTypeId
 from ..effects import FxQueue, FxQueueRotated
-from ..gameplay import gameplay_accumulate_weapon_usage_time, gameplay_enforce_weapon_guards, player_aux_timer_update
+from ..gameplay import (
+    gameplay_accumulate_weapon_usage_time,
+    gameplay_enforce_weapon_guards,
+    player_weapon_popup_timer_update,
+)
 from ..math_parity import f32, x87_pc24_add, x87_pc24_cos_mul, x87_pc24_mul
 from ..perks.effects import perks_update_effects
 from ..rng_caller_static import RngCallerStatic
@@ -25,7 +29,7 @@ from ..sim.state_types import TERRAIN_SIZE
 from ..sim.timing import FrameTiming
 from ..sim.world_state import WorldEvents, WorldState, WorldStepRuntime
 from ..weapons import WeaponId
-from .player import player_fire_weapon
+from .player import typo_player_update
 from .spawns import creature_spawn_tinted
 
 type TypoCommand = TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
@@ -35,7 +39,7 @@ TYPO_TIME_SCALE_FACTOR = f32(0.3)
 
 
 class TypoFireRequest(msgspec.Struct):
-    """The frame's Enter results, the locals `typo_gameplay_update_and_render` hands `player_fire_weapon`."""
+    """The frame's Enter results, the locals `typo_gameplay_update_and_render` hands `typo_player_update`."""
 
     fire: bool = False
     reload: bool = False
@@ -154,7 +158,7 @@ def typo_gameplay_update(
     world.creatures.update(step_runtime)
     hits, secondary_hit_count = world.projectile_update(step_runtime)
     for player in players:
-        player_fire_weapon(
+        typo_player_update(
             state,
             players,
             player,
@@ -194,7 +198,7 @@ def typo_gameplay_update(
         entry.bonus_id = BonusId.UNUSED
     # `hud_update_and_render`, after the frame dt is restored.
     for player in players:
-        player_aux_timer_update(player, timing.dt)
+        player_weapon_popup_timer_update(player, timing.dt)
 
     step_runtime.sfx.extend(state.sfx_queue)
     state.sfx_queue.clear()

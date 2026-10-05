@@ -248,6 +248,6 @@ Final decoded message:
   - Remaining ambiguity: no direct static xref ties the string block to
     `survival_update`.
   - "First Blood" is still interpretive wording; runtime logic is
-    `survival_recent_death_count == 3` using the first three stored positions.
+    `survival_first_kill_count == 3` using the first three stored positions.
 - Are there any **out-of-main-exe** consumers (e.g., other modules/builds) for the startup `balloon.tga` preload gate?
 - Are any of these flags version-specific (v1.9.93 vs earlier)?

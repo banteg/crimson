@@ -169,7 +169,7 @@ def bonus_apply(
                     dx=x87_pc24_sub(target.pos.x, origin.x),
                     dy=x87_pc24_sub(target.pos.y, origin.y),
                 )
-                state.bonus_spawn_guard = True
+                state.scripted_burst_active = True
                 state.shock_chain_links_left = 0x20
                 state.shock_chain_projectile_id = projectile_spawn(
                     state,
@@ -180,11 +180,11 @@ def bonus_apply(
                     owner_id=player_owner,
                     owner_player_index=player.index,
                 )
-                state.bonus_spawn_guard = False
+                state.scripted_burst_active = False
                 state.sfx_queue.append(SfxRequest(SfxId.SHOCK_HIT_01, origin))
 
         case BonusId.FIREBLAST:
-            state.bonus_spawn_guard = True
+            state.scripted_burst_active = True
             for idx in range(16):
                 projectile_spawn(
                     state,
@@ -195,7 +195,7 @@ def bonus_apply(
                     owner_id=player_owner,
                     owner_player_index=player.index,
                 )
-            state.bonus_spawn_guard = False
+            state.scripted_burst_active = False
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, origin))
 
         case BonusId.FIRE_BULLETS:
@@ -256,7 +256,7 @@ def bonus_apply(
                     owner_player_index=player.index,
                 )
             state.effects.spawn_explosion_burst(pos=origin, scale=1.0, rng=rng, detail_preset=int(detail_preset))
-            state.bonus_spawn_guard = True
+            state.scripted_burst_active = True
             for idx, creature in enumerate(creatures):
                 # Corpses take the blast too, which shrinks them faster.
                 if not creature.active:
@@ -275,7 +275,7 @@ def bonus_apply(
                         CreatureDamageType.EXPLOSION,
                         Vec2(),
                     )
-            state.bonus_spawn_guard = False
+            state.scripted_burst_active = False
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, origin))
             state.sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, origin))
 

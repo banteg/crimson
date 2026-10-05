@@ -45,10 +45,10 @@ def test_plaguebearer_infects_weak_creatures_near_player() -> None:
     pool = world.creatures
     creature = pool.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = Vec2(120.0, 100.0)
     creature.hp = 100.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
 
     step_creatures(world, 0.016)
 
@@ -64,12 +64,12 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
     pool = world.creatures
     creature = pool.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.plague_infected = True
-    creature.collision_timer = 0.1
+    creature.dot_tick_timer = 0.1
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 100.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
 
     step_creatures(world, dt)
 
@@ -77,7 +77,7 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
         x87_pc24_sub(f32(0.1), float(dt)),
         f32(0.5),
     )
-    assert_float_close(creature.collision_timer, expected_timer)
+    assert_float_close(creature.dot_tick_timer, expected_timer)
     assert_float_close(creature.hp, 85.0)
 
 
@@ -91,19 +91,19 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     pool = world.creatures
     infected = pool.entries[0]
     infected.active = True
-    infected.flags = CreatureFlags.ANIM_PING_PONG
+    infected.flags = CreatureFlags.SPAWNER
     infected.plague_infected = True
     infected.pos = Vec2(100.0, 100.0)
     infected.hp = 100.0
-    infected.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    infected.death_timer = CREATURE_LIFECYCLE_ALIVE
 
     other = pool.entries[1]
     other.active = True
-    other.flags = CreatureFlags.ANIM_PING_PONG
+    other.flags = CreatureFlags.SPAWNER
     other.plague_infected = False
     other.pos = Vec2(130.0, 100.0)
     other.hp = 100.0
-    other.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    other.death_timer = CREATURE_LIFECYCLE_ALIVE
 
     step_creatures(world, 0.016)
 
@@ -132,20 +132,20 @@ def test_plaguebearer_infection_kill_increments_global_count() -> None:
     dt = 0.2
     world = make_world()
     state = world.state
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
     player = world.players[0]
     player.pos = Vec2(500.0, 500.0)
 
     pool = world.creatures
     creature = pool.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.plague_infected = True
-    creature.collision_timer = 0.1
+    creature.dot_tick_timer = 0.1
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 10.0
     creature.reward_value = 10.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
 
     step_runtime = step_creatures(world, dt)
 
@@ -157,7 +157,7 @@ def test_plaguebearer_infection_kill_does_not_apply_immediate_dead_decay() -> No
     dt = 0.063
     world = make_world()
     state = world.state
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
     player = world.players[0]
     player.pos = Vec2(500.0, 500.0)
 
@@ -166,25 +166,25 @@ def test_plaguebearer_infection_kill_does_not_apply_immediate_dead_decay() -> No
     creature.active = True
     creature.flags = CreatureFlags(0)
     creature.plague_infected = True
-    creature.collision_timer = 0.01
+    creature.dot_tick_timer = 0.01
     creature.pos = Vec2(120.0, 370.0)
     creature.hp = 10.0
     creature.reward_value = 10.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
 
     step_runtime = step_creatures(world, dt)
 
     assert len(step_runtime.deaths) == 1
     # Native plague timer kills call creature_handle_death, then continue the
     # live branch without an immediate `_tick_dead` pass.
-    assert creature.lifecycle_stage == x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, f32(float(dt)))
+    assert creature.death_timer == x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, f32(float(dt)))
 
 
 def test_plaguebearer_kill_finishes_contact_and_small_creature_tail() -> None:
     dt = f32(0.063)
     world = make_world()
     state = world.state
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
     player = world.players[0]
     player.pos = Vec2(100.0, 100.0)
     player.health = 100.0
@@ -193,14 +193,14 @@ def test_plaguebearer_kill_finishes_contact_and_small_creature_tail() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.plague_infected = True
-    creature.collision_timer = 0.01
+    creature.dot_tick_timer = 0.01
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 10.0
     creature.max_hp = 10.0
     creature.size = 20.0
     creature.move_speed = 0.0
     creature.contact_damage = 7.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
 
     step_runtime = step_creatures(world, dt)
 
@@ -211,4 +211,4 @@ def test_plaguebearer_kill_finishes_contact_and_small_creature_tail() -> None:
         x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, dt),
         dt,
     )
-    assert_float_close(creature.lifecycle_stage, expected_lifecycle)
+    assert_float_close(creature.death_timer, expected_lifecycle)

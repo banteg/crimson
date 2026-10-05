@@ -78,17 +78,17 @@ def survival_update(world: WorldState, spawn: SurvivalSpawnState, *, elapsed_ms:
             not state.survival_reward_damage_seen
             and not state.survival_reward_fire_seen
             and int(elapsed_ms) > 64000
-            and state.survival_reward_handout_enabled
+            and state.survival_shrinkifier_handout_enabled
         ):
             if player.weapon.weapon_id == WeaponId.PISTOL:
                 weapon_assign_player(player, WeaponId.SHRINKIFIER_5K, state=state)
                 state.survival_reward_weapon_guard_id = WeaponId.SHRINKIFIER_5K
-            state.survival_reward_handout_enabled = False
+            state.survival_shrinkifier_handout_enabled = False
             state.survival_reward_damage_seen = True
             state.survival_reward_fire_seen = True
 
-        if state.survival_recent_death_count == 3 and not state.survival_reward_fire_seen:
-            pos0, pos1, pos2 = state.survival_recent_death_pos
+        if state.survival_first_kill_count == 3 and not state.survival_reward_fire_seen:
+            pos0, pos1, pos2 = state.survival_first_kill_pos
             centroid_x = x87_pc24_mul(x87_pc24_add(x87_pc24_add(pos0.x, pos1.x), pos2.x), f32(0.33333334))
             centroid_y = x87_pc24_mul(x87_pc24_add(x87_pc24_add(pos0.y, pos1.y), pos2.y), f32(0.33333334))
             dx = x87_pc24_sub(player.pos.x, centroid_x)
@@ -97,7 +97,7 @@ def survival_update(world: WorldState, spawn: SurvivalSpawnState, *, elapsed_ms:
                 weapon_assign_player(player, WeaponId.BLADE_GUN, state=state)
                 state.survival_reward_weapon_guard_id = WeaponId.BLADE_GUN
                 state.survival_reward_fire_seen = True
-                state.survival_reward_handout_enabled = False
+                state.survival_shrinkifier_handout_enabled = False
 
     def spawn_template(template_id: SpawnId, pos: Vec2) -> None:
         world.creatures.spawn_template(template_id, pos, math.pi, state=state, detail_preset=state.detail_preset)
@@ -123,9 +123,9 @@ def survival_update(world: WorldState, spawn: SurvivalSpawnState, *, elapsed_ms:
     if spawn.stage == 4 and level > 14:
         spawn.stage = 5
         for i in range(4):
-            spawn_template(SpawnId.SPIDER_SP1_AI7_TIMER_38, Vec2(1088.0, i * 64.0 + 384.0))
+            spawn_template(SpawnId.SPIDER_SP1_STOP_AND_GO_38, Vec2(1088.0, i * 64.0 + 384.0))
         for i in range(4):
-            spawn_template(SpawnId.SPIDER_SP1_AI7_TIMER_38, Vec2(-64.0, i * 64.0 + 384.0))
+            spawn_template(SpawnId.SPIDER_SP1_STOP_AND_GO_38, Vec2(-64.0, i * 64.0 + 384.0))
     if spawn.stage == 5 and level > 16:
         spawn.stage = 6
         spawn_template(SpawnId.SPIDER_BOSS_3A, Vec2(1088.0, 512.0))
@@ -226,16 +226,16 @@ def rush_mode_update(world: WorldState, spawn: RushSpawnState, *, elapsed_ms: fl
         half_height = x87_pc24_mul(TERRAIN_SIZE, 0.5)
         right = Vec2(x87_pc24_add(TERRAIN_SIZE, 64.0), x87_pc24_add(x87_pc24_cos_mul(theta, 256.0), half_height))
         creature = world.creatures.creature(
-            creature_spawn(world.creatures, right, tint, CreatureTypeId.ALIEN, rng, survival_elapsed_ms=elapsed),
+            creature_spawn(world.creatures, right, tint, CreatureTypeId.ALIEN, rng, run_elapsed_ms=elapsed),
         )
-        creature.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
+        creature.ai_mode = CreatureAiMode.FLANK_PLAYER_WIDE
 
         left = Vec2(-64.0, x87_pc24_add(x87_pc24_sin_mul(theta, 256.0), half_height))
         creature = world.creatures.creature(
-            creature_spawn(world.creatures, left, tint, CreatureTypeId.SPIDER_SP1, rng, survival_elapsed_ms=elapsed),
+            creature_spawn(world.creatures, left, tint, CreatureTypeId.SPIDER_SP1, rng, run_elapsed_ms=elapsed),
         )
-        creature.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
-        creature.flags |= CreatureFlags.AI7_LINK_TIMER
+        creature.ai_mode = CreatureAiMode.FLANK_PLAYER_WIDE
+        creature.flags |= CreatureFlags.STOP_AND_GO
         creature.move_speed = x87_pc24_mul(creature.move_speed, f32(1.4))
     spawn.spawn_cooldown_ms = float(cooldown)
 
@@ -251,7 +251,7 @@ def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float
     """
 
     state = world.state
-    if state.render_pass_mode:
+    if state.run_active:
         if any(c.active for c in world.creatures.entries) or not quest_spawn_table_empty(spawn.spawn_entries):
             spawn.spawn_timeline_ms = f32(f32(spawn.spawn_timeline_ms) + f32(dt_ms))
         spawn.stage_banner_timer_ms += dt_ms

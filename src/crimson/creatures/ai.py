@@ -35,13 +35,13 @@ __all__ = [
     "creature_ai_update_target",
 ]
 
-_FLAG_AI7_LINK_TIMER = int(CreatureFlags.AI7_LINK_TIMER)
+_FLAG_STOP_AND_GO = int(CreatureFlags.STOP_AND_GO)
 
 
 
 class CreatureAIUpdate(msgspec.Struct, frozen=True):
     move_scale: float
-    self_damage: float | None = None
+    link_death_damage: float | None = None
 
 
 def creature_ai7_tick_link_timer(
@@ -56,7 +56,7 @@ def creature_ai7_tick_link_timer(
     flips from negative to non-negative, ai_mode is forced to 7 for a short hold.
     """
 
-    if (int(creature.flags) & _FLAG_AI7_LINK_TIMER) == 0:
+    if (int(creature.flags) & _FLAG_STOP_AND_GO) == 0:
         return
 
     if creature.link_index < 0:
@@ -64,7 +64,7 @@ def creature_ai7_tick_link_timer(
         if creature.link_index >= 0:
             creature.ai_mode = CreatureAiMode.HOLD_TIMER
             creature.link_index = (
-                rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_AI7_LINK_TIMER_HOLD)
+                rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_STOP_AND_GO_HOLD)
                 & 0x1FF
             ) + 500
         return
@@ -72,7 +72,7 @@ def creature_ai7_tick_link_timer(
     creature.link_index -= dt_ms
     if creature.link_index < 1:
         creature.link_index = -700 - (
-            rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_AI7_LINK_TIMER_RESET)
+            rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_STOP_AND_GO_RESET)
             & 0x3FF
         )
 
@@ -128,12 +128,12 @@ def creature_ai_update_target(
     dist_to_player = x87_pc24_distance(creature.pos, distance_pos)
     orbit_phase = f32(f32(float(creature.phase_seed) * f32(3.7)) * NATIVE_PI)
     move_scale = 1.0
-    self_damage: float | None = None
+    link_death_damage: float | None = None
 
     creature.force_target = 0
 
     ai_mode = creature.ai_mode
-    if ai_mode == CreatureAiMode.ORBIT_PLAYER:
+    if ai_mode == CreatureAiMode.FLANK_PLAYER:
         if dist_to_player > 800.0:
             creature.target = f32_vec2(player_pos)
         else:
@@ -143,14 +143,14 @@ def creature_ai_update_target(
                 dist=dist_to_player,
                 scale=0.85,
             )
-    elif ai_mode == CreatureAiMode.ORBIT_PLAYER_WIDE:
+    elif ai_mode == CreatureAiMode.FLANK_PLAYER_WIDE:
         creature.target = _orbit_target_f32(
             player_pos=player_pos,
             orbit_phase=orbit_phase,
             dist=dist_to_player,
             scale=0.9,
         )
-    elif ai_mode == CreatureAiMode.ORBIT_PLAYER_TIGHT:
+    elif ai_mode == CreatureAiMode.FLANK_PLAYER_TIGHT:
         if dist_to_player > 800.0:
             creature.target = f32_vec2(player_pos)
         else:
@@ -165,7 +165,7 @@ def creature_ai_update_target(
         if link is not None:
             creature.target = _link_target_f32(link_pos=link.pos, offset=(creature.target_offset or Vec2()))
         else:
-            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+            creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     elif ai_mode == CreatureAiMode.FOLLOW_LINK_TETHERED:
         link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
@@ -174,15 +174,15 @@ def creature_ai_update_target(
             if dist_to_target <= 64.0:
                 move_scale = f32(dist_to_target * 0.015625)
         else:
-            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
-            self_damage = 1000.0
+            creature.ai_mode = CreatureAiMode.FLANK_PLAYER
+            link_death_damage = 1000.0
 
     ai_mode = creature.ai_mode
-    if ai_mode == CreatureAiMode.LINK_GUARD:
+    if ai_mode == CreatureAiMode.FLANK_PLAYER_LINKED:
         link = resolve_live_link(creatures, creature.link_index)
         if link is None:
-            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
-            self_damage = 1000.0
+            creature.ai_mode = CreatureAiMode.FLANK_PLAYER
+            link_death_damage = 1000.0
         elif dist_to_player > 800.0:
             creature.target = f32_vec2(player_pos)
         else:
@@ -193,17 +193,17 @@ def creature_ai_update_target(
                 scale=0.85,
             )
     elif ai_mode == CreatureAiMode.HOLD_TIMER:
-        if (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.link_index > 0:
+        if (creature.flags & CreatureFlags.STOP_AND_GO) and creature.link_index > 0:
             creature.target = f32_vec2(creature.pos)
-        elif not (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.orbit_radius > 0.0:
+        elif not (creature.flags & CreatureFlags.STOP_AND_GO) and creature.orbit_radius > 0.0:
             creature.target = f32_vec2(creature.pos)
             creature.orbit_radius = f32(float(creature.orbit_radius) - float(dt))
         else:
-            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+            creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     elif ai_mode == CreatureAiMode.ORBIT_LINK:
         link = resolve_live_link(creatures, creature.link_index)
         if link is None:
-            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+            creature.ai_mode = CreatureAiMode.FLANK_PLAYER
         else:
             angle = x87_pc24_add(float(creature.orbit_angle), float(creature.heading))
             orbit_radius = f32(creature.orbit_radius)
@@ -229,4 +229,4 @@ def creature_ai_update_target(
     dx = f32(float(creature.target.x) - float(creature.pos.x))
     dy = f32(float(creature.target.y) - float(creature.pos.y))
     creature.target_heading = heading_from_delta_f32(dx=float(dx), dy=float(dy))
-    return CreatureAIUpdate(move_scale=f32(move_scale), self_damage=self_damage)
+    return CreatureAIUpdate(move_scale=f32(move_scale), link_death_damage=link_death_damage)

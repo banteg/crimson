@@ -45,7 +45,7 @@ def test_survival_high_score_record_in_multiplayer(mocker, make_mode_config, ass
 
 
 @pytest.mark.usefixtures("headless_resources")
-def test_survival_elapsed_helpers_use_authoritative_session_timer(mocker, make_mode_config, assets_dir) -> None:
+def test_run_elapsed_helpers_use_authoritative_session_timer(mocker, make_mode_config, assets_dir) -> None:
     ctx = ViewContext(assets_dir=assets_dir)
     mode = SurvivalMode(ctx, config=make_mode_config(game_mode=GameMode.SURVIVAL), audio_rng=Crand(0xBEEF))
     mocker.patch.object(mode, "apply_terrain_setup")
@@ -61,5 +61,5 @@ def test_survival_elapsed_helpers_use_authoritative_session_timer(mocker, make_m
 
     record = mode._game_over_record
     assert record is not None
-    assert record.survival_elapsed_ms == 4321
+    assert record.run_elapsed_ms == 4321
     assert mode._replay_checkpoint_elapsed_ms() == 4321.0

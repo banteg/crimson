@@ -30,10 +30,10 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 10000.0
     creature.max_hp = 10000.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.move_speed = 0.0
     creature.contact_damage = 1.0
-    creature.collision_timer = 0.1
+    creature.dot_tick_timer = 0.1
 
     events = world.step(
         0.2,
@@ -94,7 +94,7 @@ def test_final_revenge_runs_before_later_creature_slots_update() -> None:
     attacker.pos = Vec2(100.0, 100.0)
     attacker.hp = 10000.0
     attacker.max_hp = 10000.0
-    attacker.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    attacker.death_timer = CREATURE_LIFECYCLE_ALIVE
     attacker.size = 48.0
     attacker.move_speed = 0.0
     attacker.contact_damage = 1.0
@@ -104,7 +104,7 @@ def test_final_revenge_runs_before_later_creature_slots_update() -> None:
     later.pos = Vec2(100.0, 100.0)
     later.hp = 100.0
     later.max_hp = 100.0
-    later.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    later.death_timer = CREATURE_LIFECYCLE_ALIVE
     later.size = 48.0
     later.move_speed = 0.0
     later.attack_cooldown = 1.0
@@ -181,4 +181,4 @@ def test_final_revenge_damage_uses_native_pc24_arithmetic() -> None:
     _die_with_final_revenge(world, PlayerState(index=0, pos=Vec2()))
 
     assert creature.hp == f32(10000.0 - 890.364990234375)
-    assert not world.state.bonus_spawn_guard
+    assert not world.state.scripted_burst_active

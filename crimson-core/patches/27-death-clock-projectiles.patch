@@ -8,7 +8,7 @@ Original bug 27: enemy projectiles hurt through Death Clock. The fix ignores the
 +extern int perk_id_death_clock;
  extern int highscore_record_shots_hit;
  extern unsigned char music_playlist_randomized_latch;
- extern int music_track_extra_0;
+ extern int music_track_game_playlist;
 @@ -206,7 +207,9 @@
                                          }
                                          if (hit_id != -1) {

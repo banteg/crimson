@@ -1958,11 +1958,11 @@
     "canonical_address": "0x00417AB0",
     "end": "0x0041BE90",
     "evidence": "exact",
-    "name": "ui_template_triplet_reset_and_seed_modes",
+    "name": "ui_element_construct",
     "size": 48,
     "aliases": [
       "??0ui_element_cpp_t@@QAE@XZ",
-      "@ui_template_triplet_reset_and_seed_modes@4"
+      "@ui_element_construct@4"
     ]
   },
   {
@@ -2070,7 +2070,7 @@
     "canonical_address": "0x0041DFB0",
     "end": "0x0041C165",
     "evidence": "exact",
-    "name": "unused_fx_rotated_effect_id_prefix_color_global_init_thunk",
+    "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk",
     "size": 5
   },
   {
@@ -2078,7 +2078,7 @@
     "canonical_address": "0x0041DFC0",
     "end": "0x0041C199",
     "evidence": "exact",
-    "name": "unused_fx_rotated_effect_id_prefix_color_global_init",
+    "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init",
     "size": 41
   },
   {
@@ -2614,7 +2614,7 @@
     "canonical_address": "0x0041FC60",
     "end": "0x0041DEE0",
     "evidence": "referenced",
-    "name": "weapon_table_entry",
+    "name": "weapon_name_get",
     "size": 32
   },
   {
@@ -2825,7 +2825,7 @@
     "canonical_address": "0x00428390",
     "end": "0x004273D0",
     "evidence": "ordered",
-    "name": "player_render_overlays",
+    "name": "player_render",
     "size": 4091
   },
   {
@@ -3624,7 +3624,7 @@
     "canonical_address": "0x0043A950",
     "end": "0x004358E6",
     "evidence": "exact",
-    "name": "highscore_date_checksum",
+    "name": "highscore_iso_week",
     "size": 262
   },
   {
@@ -3680,7 +3680,7 @@
     "canonical_address": "0x0043AED0",
     "end": "0x00435E90",
     "evidence": "exact",
-    "name": "highscore_compare_rush_field32_desc",
+    "name": "highscore_compare_elapsed_desc",
     "size": 32
   },
   {
@@ -3688,7 +3688,7 @@
     "canonical_address": "0x0043AEF0",
     "end": "0x00435EC5",
     "evidence": "exact",
-    "name": "highscore_compare_quest_field32_asc_nonzero_first",
+    "name": "highscore_compare_elapsed_asc_nonzero_first",
     "size": 53
   },
   {
@@ -4139,7 +4139,7 @@
     "canonical_address": "0x0043D460",
     "end": "0x00438480",
     "evidence": "ordered",
-    "name": "sfx_play_exclusive",
+    "name": "music_play_exclusive",
     "size": 240
   },
   {
@@ -4147,7 +4147,7 @@
     "canonical_address": "0x0043D550",
     "end": "0x004384E0",
     "evidence": "ordered",
-    "name": "sfx_mute_all",
+    "name": "music_fade_out_all",
     "size": 96
   },
   {
@@ -4155,7 +4155,7 @@
     "canonical_address": "0x0043D5B0",
     "end": "0x00438656",
     "evidence": "exact",
-    "name": "sfx_update_mute_fades",
+    "name": "music_update_fades",
     "size": 374
   },
   {
@@ -4179,7 +4179,7 @@
     "canonical_address": "0x0043D7C0",
     "end": "0x0043870E",
     "evidence": "exact",
-    "name": "sfx_is_unmuted",
+    "name": "music_track_is_playing",
     "size": 30
   },
   {
@@ -4571,7 +4571,7 @@
     "canonical_address": "0x00444980",
     "end": "0x0043F46C",
     "evidence": "called",
-    "name": "player_fire_weapon",
+    "name": "typo_player_update",
     "size": 700
   },
   {

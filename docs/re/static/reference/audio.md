@@ -224,7 +224,7 @@ Recovered data labels for exclusive music-play path:
 - `music_playlist_entry_count` (`0x004cc8d0`): number of queued entries in
   `music_playlist` (written by `music_queue_track`).
 - `music_playlist_randomized_latch` (`0x004cc8d4`): latch used by
-  `sfx_play_exclusive(music_track_extra_0)` to avoid re-randomizing every call.
+  `music_play_exclusive(music_track_game_playlist)` to avoid re-randomizing every call.
 - `audio_assets_loaded_count` (`0x004cc8d8`): increments on
   `sfx_load_sample`/`music_load_track`; displayed on startup loading UI
   (`"Grim SFX: %d/%d"` line).

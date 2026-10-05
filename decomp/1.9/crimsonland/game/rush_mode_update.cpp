@@ -30,7 +30,7 @@ extern "C" void rush_mode_update(void)
     while (survival_spawn_cooldown < 0) {
         survival_spawn_cooldown += 250;
 
-        int tint_time = survival_elapsed_ms + 1;
+        int tint_time = run_elapsed_ms + 1;
         float elapsed = (float)tint_time;
         effect_color_t tint;
         tint.a = 1.0f;
@@ -56,7 +56,7 @@ extern "C" void rush_mode_update(void)
 
         vec2f_t right;
         right.x = (float)terrain_texture_width + 64.0f;
-        right.y = (float)cos((float)survival_elapsed_ms * 0.001f)
+        right.y = (float)cos((float)run_elapsed_ms * 0.001f)
             * 256.0f
             + (float)terrain_texture_height * 0.5f;
         int creature_id = creature_spawn(
@@ -64,11 +64,11 @@ extern "C" void rush_mode_update(void)
             &tint,
             CREATURE_TYPE_ALIEN
         );
-        creature_pool[creature_id].ai_mode = CREATURE_AI_ORBIT_PLAYER_WIDE;
+        creature_pool[creature_id].ai_mode = CREATURE_AI_FLANK_PLAYER_WIDE;
 
         vec2f_t left;
         left.x = -64.0f;
-        left.y = (float)sin((float)survival_elapsed_ms * 0.001f)
+        left.y = (float)sin((float)run_elapsed_ms * 0.001f)
             * 256.0f
             + (float)terrain_texture_height * 0.5f;
         creature_id = creature_spawn(
@@ -76,13 +76,13 @@ extern "C" void rush_mode_update(void)
             &tint,
             CREATURE_TYPE_SPIDER_SP1
         );
-        creature_pool[creature_id].ai_mode = CREATURE_AI_ORBIT_PLAYER_WIDE;
-        creature_pool[creature_id].flags |= CREATURE_FLAG_AI7_LINK_TIMER;
+        creature_pool[creature_id].ai_mode = CREATURE_AI_FLANK_PLAYER_WIDE;
+        creature_pool[creature_id].flags |= CREATURE_FLAG_STOP_AND_GO;
         creature_pool[creature_id].move_speed *= 1.4f;
     }
 
     if (demo_mode_active && quest_spawn_timeline > demo_time_limit_ms) {
-        render_pass_mode = 0;
+        run_active = 0;
         demo_mode_start();
     }
 }

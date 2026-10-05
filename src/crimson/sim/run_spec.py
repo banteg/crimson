@@ -20,7 +20,8 @@ class RunStatus(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     """
 
     quest_unlock_index: int = 0
-    quest_unlock_index_full: int = 0
+    # Replay format 29 stores this under its earlier name.
+    quest_unlock_index_hardcore: int = msgspec.field(default=0, name="quest_unlock_index_full")
     weapon_usage_counts: WeaponUsageCounts = ZERO_WEAPON_USAGE_COUNTS
 
     @classmethod

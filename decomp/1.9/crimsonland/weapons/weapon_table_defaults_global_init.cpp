@@ -9,7 +9,7 @@ public:
     {
         hud_icon_id = 0;
         damage_scale = 1.0f;
-        travel_budget = 45.0f;
+        projectile_speed = 45.0f;
         flags = 0;
         shot_sfx_variant_count = 1;
         strcpy(name, "Unknown");

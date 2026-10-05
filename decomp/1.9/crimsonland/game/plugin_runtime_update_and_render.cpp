@@ -30,14 +30,14 @@ extern "C" void plugin_runtime_update_and_render(void)
         && plugin_runtime_needs_init != 0) {
         plugin_runtime_needs_init = 0;
         plugin_runtime_active_latch = 0;
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_game_playlist);
         plugin_runtime_clear_pools();
         ((mod_interface_cpp_t *)plugin_interface_ptr)->init();
         ((mod_interface_cpp_t *)plugin_interface_ptr)->parms.fields.onPause = 0;
     } else if (plugin->frame(frame_dt_ms) == 0) {
         plugin_runtime_active_latch = 0;
         ((mod_interface_cpp_t *)plugin_interface_ptr)->shutdown();
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_game_playlist);
         HMODULE module = plugin_module_handle;
         plugin_interface_ptr = 0;
         FreeLibrary(module);

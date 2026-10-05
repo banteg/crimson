@@ -192,7 +192,7 @@ def _normalize_secondary_pool(
             "pos": _normalize_vec2(entry.pos),
             "vel": _normalize_vec2(entry.vel),
             "angle": round(float(entry.angle), 6),
-            "trail_timer": round(float(entry.trail_timer), 6),
+            "trail_distance": round(float(entry.trail_distance), 6),
             "detonation_t": round(float(entry.detonation_t), 6),
             "detonation_scale": round(float(entry.detonation_scale), 6),
         },
@@ -412,7 +412,7 @@ def test_homing_rocket_steering_rounds_each_x87_operation() -> None:
     projectile = pool.entries[idx]
     projectile.vel = Vec2(254.46153259277344, 234.05662536621094)
     projectile.target_id = 0
-    projectile.trail_timer = 1.0
+    projectile.trail_distance = 1.0
 
     hit_count = pool.step(
         make_step_runtime(world, dt=0.05700000375509262),
@@ -435,13 +435,13 @@ def test_homing_rocket_trail_decay_rounds_each_x87_operation() -> None:
     projectile = pool.entries[idx]
     projectile.vel = Vec2(-65.83425903320312, -83.56523895263672)
     projectile.target_id = 0
-    projectile.trail_timer = f32(0.06)
+    projectile.trail_distance = f32(0.06)
 
     pool.step(
         make_step_runtime(world, dt=0.06200000271201134),
     )
 
-    assert projectile.trail_timer == 0.009637407958507538
+    assert projectile.trail_distance == 0.009637407958507538
 
 
 def test_secondary_projectile_direct_hit_snapshot(snapshot: SnapshotAssertion) -> None:
@@ -512,8 +512,8 @@ def test_secondary_detonation_damages_positive_health_corpses() -> None:
     # Native gates the blast on `active && health > 0` only: a Shrinkifier kill
     # keeps positive health, so its fading corpse still takes blast damage.
     creatures = [
-        _creature(pos=Vec2(10.0, 0.0), hp=100.0, lifecycle_stage=3.0),
-        _creature(pos=Vec2(0.0, 10.0), hp=0.0, lifecycle_stage=3.0),
+        _creature(pos=Vec2(10.0, 0.0), hp=100.0, death_timer=3.0),
+        _creature(pos=Vec2(0.0, 10.0), hp=0.0, death_timer=3.0),
     ]
     world = _world_with(creatures)
     _seed_detonation(world, scale=1.0)
@@ -522,7 +522,7 @@ def test_secondary_detonation_damages_positive_health_corpses() -> None:
 
     assert creatures[0].hp < 100.0
     assert creatures[1].hp == 0.0
-    assert creatures[1].lifecycle_stage == 3.0
+    assert creatures[1].death_timer == 3.0
 
 
 def _secondary_callers(rng: RecordingCrand, allowed: set[RngCallerStatic]) -> list[RngCallerStatic]:
@@ -544,7 +544,7 @@ def test_secondary_rocket_hit_tags_exact_non_freeze_callers() -> None:
     assert hit_count == 1
     assert entry.type_id == SecondaryProjectileTypeId.DETONATION
     assert entry.vel == Vec2(0.0, 1.0)
-    assert entry.trail_timer == f32(0.06)
+    assert entry.trail_distance == f32(0.06)
 
     allowed = {
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DX_1,
@@ -594,7 +594,7 @@ def test_secondary_homing_rocket_hit_tags_exact_non_freeze_callers() -> None:
     assert hit_count == 1
     assert entry.type_id == SecondaryProjectileTypeId.DETONATION
     assert entry.vel == Vec2(0.0, f32(0.35))
-    assert entry.trail_timer == f32(0.06)
+    assert entry.trail_distance == f32(0.06)
 
     allowed = {
         RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_ANGLE,

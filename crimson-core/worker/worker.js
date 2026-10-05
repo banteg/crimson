@@ -96,7 +96,7 @@ export default {
         pending,
         terminal: [7, 8, 12].includes(pending),
         experience: u("players[0].experience"),
-        elapsed_ms: u("globals.survival_elapsed_ms"),
+        elapsed_ms: u("globals.run_elapsed_ms"),
         quest_timeline_ms: u("globals.quest_spawn_timeline"),
         rng: u("globals.rng"),
         wasm_memory_bytes: core.memory.buffer.byteLength,

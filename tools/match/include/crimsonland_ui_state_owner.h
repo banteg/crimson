@@ -12,7 +12,7 @@ struct ui_element_t;
 typedef struct ui_runtime_state_original_t {
     unsigned char ui_mouse_blocked;
     unsigned char pad_01[3];
-    float player_aux_timer[2];
+    float player_weapon_popup_timer[2];
     float camera_shake_offset_value[2];
     float camera_shake_timer;
     int camera_shake_pulses;
@@ -22,7 +22,7 @@ typedef struct ui_runtime_state_original_t {
     int ui_screen_phase;
     int ui_element_hover_focus_index;
     struct ui_element_t *ui_element_hover_focus_ptr;
-    unsigned char render_pass_mode;
+    unsigned char run_active;
     unsigned char gameplay_transition_latch;
     unsigned char pad_76[2];
     int quest_stage_banner_timer_ms;
@@ -106,7 +106,7 @@ extern unsigned char ui_mouse_blocked;
     (*(ui_runtime_state_original_t *)&ui_mouse_blocked)
 
 #ifdef CRIMSONLAND_USE_ORIGINAL_UI_OWNER
-#define player_aux_timer ui_runtime_state.player_aux_timer
+#define player_weapon_popup_timer ui_runtime_state.player_weapon_popup_timer
 #define camera_shake_offset_x ui_runtime_state.camera_shake_offset_value[0]
 #define camera_shake_offset_y ui_runtime_state.camera_shake_offset_value[1]
 #define camera_shake_timer ui_runtime_state.camera_shake_timer
@@ -119,7 +119,7 @@ extern unsigned char ui_mouse_blocked;
 #define ui_element_hover_focus_index \
     ui_runtime_state.ui_element_hover_focus_index
 #define ui_element_hover_focus_ptr ui_runtime_state.ui_element_hover_focus_ptr
-#define render_pass_mode ui_runtime_state.render_pass_mode
+#define run_active ui_runtime_state.run_active
 #define gameplay_transition_latch ui_runtime_state.gameplay_transition_latch
 #define quest_stage_banner_timer_ms \
     ui_runtime_state.quest_stage_banner_timer_ms

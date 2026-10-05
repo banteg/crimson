@@ -228,7 +228,7 @@ class QuestFailedView(MenuScreen):
             return
         record = outcome.record.copy()
         record.set_name(_player_name_default(self.state.config) or "Player")
-        record.survival_elapsed_ms = max(1, outcome.base_time_ms)
+        record.run_elapsed_ms = max(1, outcome.base_time_ms)
         self._record = record
 
     def _activate_retry(self) -> None:

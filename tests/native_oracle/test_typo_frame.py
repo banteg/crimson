@@ -55,8 +55,8 @@ _RUN_DOWN_FRAMES = 20
 
 _CREATURE_FRAME_LAYOUT: dict[str, tuple[int, str]] = {
     **CREATURE_LAYOUT,
-    "collision_flag": (0x09, "B"),
-    "collision_timer": (0x0C, "f"),
+    "plague_infected": (0x09, "B"),
+    "dot_tick_timer": (0x0C, "f"),
     "target_heading": (0x30, "f"),
     "hit_flash_timer": (0x38, "f"),
     "force_target": (0x4C, "B"),
@@ -158,7 +158,7 @@ def _python_creature(creature: CreatureState) -> dict[str, float | int | None]:
     return {
         "active": int(creature.active),
         "phase_seed": creature.phase_seed,
-        "lifecycle_stage": creature.lifecycle_stage,
+        "death_timer": creature.death_timer,
         "pos_x": creature.pos.x,
         "pos_y": creature.pos.y,
         "vel_x": creature.vel.x,
@@ -182,8 +182,8 @@ def _python_creature(creature: CreatureState) -> dict[str, float | int | None]:
         "orbit_radius": creature.orbit_radius,
         "flags": int(creature.flags),
         "ai_mode": int(creature.ai_mode),
-        "collision_flag": int(creature.plague_infected),
-        "collision_timer": creature.collision_timer,
+        "plague_infected": int(creature.plague_infected),
+        "dot_tick_timer": creature.dot_tick_timer,
         "target_heading": creature.target_heading,
         "hit_flash_timer": creature.hit_flash_timer,
         "force_target": creature.force_target,
@@ -295,7 +295,7 @@ def _compare(
         "spawn_cooldown": oracle.read_i32("survival_spawn_cooldown"),
         "highscore_names_loaded": oracle.read_u8("typo_word_highscore_cache_ready"),
         "score_xp": oracle.read_i32(_SCORE_XP),
-        "elapsed_ms": oracle.read_i32("survival_elapsed_ms"),
+        "elapsed_ms": oracle.read_i32("run_elapsed_ms"),
         "kills": oracle.read_i32("creature_kill_count"),
         "shotgun_time": oracle.read_u32(oracle.resolve("weapon_usage_time") + 4 * 3),
         "pistol_time": oracle.read_u32(oracle.resolve("weapon_usage_time") + 4 * 1),
@@ -305,7 +305,7 @@ def _compare(
         "time_scale_active": oracle.read_u8("time_scale_active"),
         "camera_shake_timer": oracle.read_f32("camera_shake_timer"),
         "camera_shake_pulses": oracle.read_i32("camera_shake_pulses"),
-        "aux_timer": oracle.read_f32("player_aux_timer"),
+        "weapon_popup_timer": oracle.read_f32("player_weapon_popup_timer"),
         "run_over": int(oracle.read_u32("game_state_pending") == GameStateId.GAME_OVER),
     }
     python_globals = {
@@ -329,7 +329,7 @@ def _compare(
         "time_scale_active": int(state.time_scale_active),
         "camera_shake_timer": state.camera_shake_timer,
         "camera_shake_pulses": state.camera_shake_pulses,
-        "aux_timer": world.players[0].aux_timer,
+        "weapon_popup_timer": world.players[0].weapon_popup_timer,
         "run_over": int(run_over),
     }
     if not run_started:
@@ -353,7 +353,7 @@ def _setup_native(oracle, keys: _Keys) -> None:
         oracle, {"grim_is_key_down": lambda call: int(keys.enter and (call.arg_u32(0) & 0xFF) == _ENTER_SCANCODE)},
     )
     oracle.stub("console_input_poll", lambda _call: keys.take_char())
-    for name in ("sfx_play", "sfx_mute_all", "sfx_play_exclusive", "terrain_render", "ui_elements_update_and_render"):
+    for name in ("sfx_play", "music_fade_out_all", "music_play_exclusive", "terrain_render", "ui_elements_update_and_render"):
         oracle.stub(name, 0)
     # No score table on disk.
     scores_path = oracle.alloc(0x20, data=b"scores.dat\0")

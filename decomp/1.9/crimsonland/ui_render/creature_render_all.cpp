@@ -36,11 +36,11 @@ extern "C" void creature_render_all(void)
 
     for (int creature_index = 0; creature_index < 384; creature_index++) {
         creature_t *creature = &creature_pool[creature_index];
-        float *lifecycle_stage = &creature->lifecycle_stage;
+        float *death_timer = &creature->death_timer;
         if (creature->active) {
             if (perk_count_get(perk_id_monster_vision) != 0) {
-                float alpha = *lifecycle_stage < 0.0f
-                    ? (*lifecycle_stage + 10.0f) * 0.1f
+                float alpha = *death_timer < 0.0f
+                    ? (*death_timer + 10.0f) * 0.1f
                     : 1.0f;
                 if (alpha > 1.0f) {
                     alpha = 1.0f;
@@ -50,34 +50,34 @@ extern "C" void creature_render_all(void)
                 grim_interface_ptr->grim_set_color(
                     1.0f, 1.0f, 0.0f, alpha * transition_alpha);
                 grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + lifecycle_stage[1] - 45.0f,
-                    camera_offset_y + lifecycle_stage[2] - 45.0f,
+                    camera_offset_x + death_timer[1] - 45.0f,
+                    camera_offset_y + death_timer[2] - 45.0f,
                     90.0f,
                     90.0f);
             }
 
-            if (creature->collision_flag) {
-                float alpha = *lifecycle_stage < 0.0f
-                    ? (*lifecycle_stage + 10.0f) * 0.1f
+            if (creature->plague_infected) {
+                float alpha = *death_timer < 0.0f
+                    ? (*death_timer + 10.0f) * 0.1f
                     : 1.0f;
                 grim_interface_ptr->grim_set_color(
                     0.0f, 0.0f, 0.0f, alpha * transition_alpha);
                 grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + lifecycle_stage[1] - 40.0f,
-                    camera_offset_y + lifecycle_stage[2] - 40.0f,
+                    camera_offset_x + death_timer[1] - 40.0f,
+                    camera_offset_y + death_timer[2] - 40.0f,
                     80.0f,
                     80.0f);
             }
 
-            if ((creature->flags & CREATURE_FLAG_SELF_DAMAGE_TICK) != 0) {
-                float alpha = *lifecycle_stage < 0.0f
-                    ? (*lifecycle_stage + 10.0f) * 0.1f
+            if ((creature->flags & CREATURE_FLAG_POISONED) != 0) {
+                float alpha = *death_timer < 0.0f
+                    ? (*death_timer + 10.0f) * 0.1f
                     : 1.0f;
                 grim_interface_ptr->grim_set_color(
                     1.0f, 0.0f, 0.0f, alpha * transition_alpha);
                 grim_interface_ptr->grim_draw_quad(
-                    camera_offset_x + lifecycle_stage[1] - 30.0f,
-                    camera_offset_y + lifecycle_stage[2] - 30.0f,
+                    camera_offset_x + death_timer[1] - 30.0f,
+                    camera_offset_y + death_timer[2] - 30.0f,
                     60.0f,
                     60.0f);
             }

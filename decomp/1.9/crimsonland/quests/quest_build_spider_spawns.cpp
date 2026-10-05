@@ -65,7 +65,7 @@ extern "C" void quest_build_spider_spawns(
     spawns[entry_count].pos.x = -64.0f;
     spawns[entry_count].pos.y = 512.0f;
     spawns[entry_count].set_spawn(
-        SPAWN_ID_SPIDER_SP1_AI7_TIMER_38, 3000, 2);
+        SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38, 3000, 2);
     ++entry_count;
 
     spawns[entry_count].pos.x = 512.0f;
@@ -93,7 +93,7 @@ extern "C" void quest_build_spider_spawns(
     spawns[entry_count].pos.x = 1088.0f;
     spawns[entry_count].pos.y = 512.0f;
     spawns[entry_count].set_spawn(
-        SPAWN_ID_SPIDER_SP1_AI7_TIMER_38, 21000, 2);
+        SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38, 21000, 2);
     ++entry_count;
 
     spawns[entry_count].pos.x = inner_high;

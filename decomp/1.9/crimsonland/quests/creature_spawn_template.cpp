@@ -83,11 +83,11 @@ inline creature_spawn_vec2_t operator*(const creature_spawn_vec2_t &value, float
         *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos + offset;    \
         creature->velocity = grid_velocity;                                                        \
         creature->health = (child_health);                                                         \
-        creature->collision_flag = 0;                                                              \
-        creature->collision_timer = 0.0f;                                                          \
+        creature->plague_infected = 0;                                                              \
+        creature->dot_tick_timer = 0.0f;                                                          \
         creature->active = 1;                                                                      \
         creature->state_flag = 1;                                                                  \
-        creature->lifecycle_stage = 16.0f;                                                         \
+        creature->death_timer = 16.0f;                                                         \
         creature->attack_cooldown = 0.0f;                                                          \
         creature->type_id = (child_type);                                                          \
         creature->move_speed = (child_speed);                                                      \
@@ -128,7 +128,7 @@ inline creature_spawn_vec2_t operator*(const creature_spawn_vec2_t &value, float
                            speed_value, reward, red, green, blue)                                  \
     do {                                                                                           \
         creature->type_id = CREATURE_TYPE_ALIEN;                                                   \
-        creature->flags = CREATURE_FLAG_ANIM_PING_PONG;                                            \
+        creature->flags = CREATURE_FLAG_SPAWNER;                                            \
         child_slot_idx = creature_spawn_slot_alloc();                                              \
         creature->link_index = child_slot_idx;                                                     \
         spawn_slot = &creature_spawn_slot_table[child_slot_idx];                                   \
@@ -193,14 +193,14 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
 
     creature = &creature_pool[root_slot_idx];
 
-    creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
+    creature->ai_mode = CREATURE_AI_FLANK_PLAYER;
     *(creature_spawn_vec2_t *)&creature->position = *(creature_spawn_vec2_t *)pos;
-    creature->collision_flag = 0;
-    creature->collision_timer = 0.0f;
+    creature->plague_infected = 0;
+    creature->dot_tick_timer = 0.0f;
     creature->active = 1;
     creature->force_target = 0;
     creature->state_flag = 1;
-    creature->lifecycle_stage = 16.0f;
+    creature->death_timer = 16.0f;
     vec2f_t root_velocity = {0.0f, 0.0f};
     creature->velocity = root_velocity;
     random_roll = crt_rand();
@@ -234,12 +234,12 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
             creature->position.x = pos->x;
             creature->position.y = pos->y;
             creature->velocity = child_velocity;
-            creature->collision_flag = 0;
+            creature->plague_infected = 0;
             creature->health = 40.0f;
-            creature->collision_timer = 0.0f;
+            creature->dot_tick_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
-            creature->lifecycle_stage = 16.0f;
+            creature->death_timer = 16.0f;
             creature->attack_cooldown = 0.0f;
             creature->type_id = CREATURE_TYPE_ALIEN;
             creature->move_speed = 2.4f;
@@ -280,11 +280,11 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
                 *(creature_spawn_vec2_t *)&creature->target_offset + *(creature_spawn_vec2_t *)pos;
             creature->velocity = child_velocity;
             creature->health = 220.0f;
-            creature->collision_flag = 0;
-            creature->collision_timer = 0.0f;
+            creature->plague_infected = 0;
+            creature->dot_tick_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
-            creature->lifecycle_stage = 16.0f;
+            creature->death_timer = 16.0f;
             creature->attack_cooldown = 0.0f;
             creature->type_id = CREATURE_TYPE_ALIEN;
             creature->move_speed = 3.8f;
@@ -302,7 +302,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         creature->type_id = CREATURE_TYPE_LIZARD;
         creature->position.x = pos->x;
         creature->position.y = pos->y;
-        creature->ai_mode = CREATURE_AI_ORBIT_PLAYER_TIGHT;
+        creature->ai_mode = CREATURE_AI_FLANK_PLAYER_TIGHT;
 
         creature->health = 1500.0f;
         creature->move_speed = 2.1f;
@@ -332,11 +332,11 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
             creature->reward_value = 60.0f;
             *(creature_tint_t *)&creature->color = child_tint;
             creature->max_health = 60.0f;
-            creature->collision_flag = 0;
-            creature->collision_timer = 0.0f;
+            creature->plague_infected = 0;
+            creature->dot_tick_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
-            creature->lifecycle_stage = 16.0f;
+            creature->death_timer = 16.0f;
             creature->attack_cooldown = 0.0f;
             creature->type_id = CREATURE_TYPE_LIZARD;
             creature->move_speed = 2.4f;
@@ -385,11 +385,11 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
             creature->reward_value = 60.0f;
             *(creature_tint_t *)&creature->color = child_tint;
             creature->max_health = 60.0f;
-            creature->collision_flag = 0;
-            creature->collision_timer = 0.0f;
+            creature->plague_infected = 0;
+            creature->dot_tick_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
-            creature->lifecycle_stage = 16.0f;
+            creature->death_timer = 16.0f;
             creature->attack_cooldown = 0.0f;
             creature->type_id = CREATURE_TYPE_ALIEN;
             creature->move_speed = 2.0f;
@@ -410,19 +410,19 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         creature = &creature_pool[root_slot_idx];
         INIT_GRID_ROOT(CREATURE_TYPE_ALIEN, CREATURE_AI_CHASE_PLAYER, 1.0f, 1.0f, 1.0f, 1500.0f,
                        2.0f, 60.0f);
-        SPAWN_GRID(CREATURE_AI_LINK_GUARD, CREATURE_TYPE_ALIEN, 40.0f, 0.4f, 0.7f, 0.11f, 2.0f,
+        SPAWN_GRID(CREATURE_AI_FLANK_PLAYER_LINKED, CREATURE_TYPE_ALIEN, 40.0f, 0.4f, 0.7f, 0.11f, 2.0f,
                    1.0f, 50.0f, 4.0f);
     } else if (template_id == SPAWN_ID_FORMATION_GRID_SPIDER_SP1_WHITE_17) {
         creature = &creature_pool[root_slot_idx];
         INIT_GRID_ROOT(CREATURE_TYPE_SPIDER_SP1, CREATURE_AI_CHASE_PLAYER, 1.0f, 1.0f, 1.0f,
                        1500.0f, 2.0f, 60.0f);
-        SPAWN_GRID(CREATURE_AI_LINK_GUARD, CREATURE_TYPE_SPIDER_SP1, 40.0f, 0.4f, 0.7f, 0.11f, 2.0f,
+        SPAWN_GRID(CREATURE_AI_FLANK_PLAYER_LINKED, CREATURE_TYPE_SPIDER_SP1, 40.0f, 0.4f, 0.7f, 0.11f, 2.0f,
                    1.0f, 50.0f, 4.0f);
     } else if (template_id == SPAWN_ID_FORMATION_GRID_LIZARD_WHITE_16) {
         creature = &creature_pool[root_slot_idx];
         INIT_GRID_ROOT(CREATURE_TYPE_LIZARD, CREATURE_AI_CHASE_PLAYER, 1.0f, 1.0f, 1.0f, 1500.0f,
                        2.0f, 64.0f);
-        SPAWN_GRID(CREATURE_AI_LINK_GUARD, CREATURE_TYPE_LIZARD, 40.0f, 0.4f, 0.7f, 0.11f, 2.0f,
+        SPAWN_GRID(CREATURE_AI_FLANK_PLAYER_LINKED, CREATURE_TYPE_LIZARD, 40.0f, 0.4f, 0.7f, 0.11f, 2.0f,
                    1.0f, 60.0f, 4.0f);
     } else if (template_id == SPAWN_ID_ALIEN_GHOST_0F) {
         creature->type_id = CREATURE_TYPE_ALIEN;
@@ -430,7 +430,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         creature->position.y = pos->y;
         do {
             creature->type_id = CREATURE_TYPE_ALIEN;
-            creature->ai_mode = CREATURE_AI_ORBIT_PLAYER;
+            creature->ai_mode = CREATURE_AI_FLANK_PLAYER;
             creature->health = 20.0f;
             creature->move_speed = 2.9f;
             creature->reward_value = 60.0f;
@@ -488,12 +488,12 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
             creature->position.x = pos->x;
             creature->position.y = pos->y;
             creature->velocity = spawner_velocity;
-            creature->collision_flag = 0;
+            creature->plague_infected = 0;
             creature->health = 40.0f;
-            creature->collision_timer = 0.0f;
+            creature->dot_tick_timer = 0.0f;
             creature->active = 1;
             creature->state_flag = 1;
-            creature->lifecycle_stage = 16.0f;
+            creature->death_timer = 16.0f;
             creature->attack_cooldown = 0.0f;
             creature->type_id = CREATURE_TYPE_ALIEN;
             creature->move_speed = 4.0f;
@@ -522,7 +522,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
     } else if (template_id == SPAWN_ID_AI1_ALIEN_BLUE_TINT_1A) {
         creature->type_id = CREATURE_TYPE_ALIEN;
         creature->size = 50.0f;
-        creature->ai_mode = CREATURE_AI_ORBIT_PLAYER_TIGHT;
+        creature->ai_mode = CREATURE_AI_FLANK_PLAYER_TIGHT;
         creature->health = 50.0f;
         creature->move_speed = 2.4f;
         creature->reward_value = 125.0f;
@@ -536,7 +536,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
     } else if (template_id == SPAWN_ID_AI1_SPIDER_SP1_BLUE_TINT_1B) {
         creature->type_id = CREATURE_TYPE_SPIDER_SP1;
         creature->size = 50.0f;
-        creature->ai_mode = CREATURE_AI_ORBIT_PLAYER_TIGHT;
+        creature->ai_mode = CREATURE_AI_FLANK_PLAYER_TIGHT;
         creature->health = 40.0f;
         creature->move_speed = 2.4f;
         creature->reward_value = 125.0f;
@@ -550,7 +550,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
     } else if (template_id == SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C) {
         creature->type_id = CREATURE_TYPE_LIZARD;
         creature->size = 50.0f;
-        creature->ai_mode = CREATURE_AI_ORBIT_PLAYER_TIGHT;
+        creature->ai_mode = CREATURE_AI_FLANK_PLAYER_TIGHT;
         creature->health = 50.0f;
         creature->move_speed = 2.4f;
         creature->reward_value = 125.0f;
@@ -744,7 +744,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         RAND_FIELD(creature->color.g, 0x28, 0.01f, 0.6f);
         RAND_FIELD(creature->color.b, 0x28, 0.01f, 0.6f);
         RAND_FIELD(creature->contact_damage, 10, 1.0f, 4.0f);
-    } else if (template_id == SPAWN_ID_ALIEN_AI7_ORBITER_36) {
+    } else if (template_id == SPAWN_ID_ALIEN_DELAYED_START_36) {
         creature->type_id = CREATURE_TYPE_ALIEN;
         creature->size = 50.0f;
         creature->ai_mode = CREATURE_AI_HOLD_TIMER;
@@ -809,7 +809,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         *(creature_tint_t *)&creature->color = creature_tint_t(1.0f, 0.8f, 0.1f, 1.0f);
         creature_bonus_args_t *bonus_args = &creature->bonus_args;
         bonus_args->bonus_id = 3;
-        bonus_args->duration_override = 5;
+        bonus_args->amount_override = 5;
         creature->size = 45.0f;
         creature->contact_damage = 10.0f;
     } else if (template_id == SPAWN_ID_ALIEN_HIDDEN_1_21) {
@@ -863,7 +863,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
                                  1.0f, 70.0f, 20.0f);
     } else if (template_id == SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C) {
         creature->type_id = CREATURE_TYPE_SPIDER_SP1;
-        creature->flags = CREATURE_FLAG_RANGED_ATTACK_VARIANT;
+        creature->flags = CREATURE_FLAG_RANGED_TEMPLATE_PROJECTILE;
         creature->orbit_angle = 0.4f;
         creature->orbit_radius.projectile_type = PROJECTILE_TYPE_SPIDER_PLASMA;
         creature->health = 200.0f;
@@ -892,7 +892,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
                                  1.0f, 64.0f, 40.0f);
     } else if (template_id == SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00) {
         creature->type_id = CREATURE_TYPE_ZOMBIE;
-        creature->flags = CREATURE_FLAG_ANIM_PING_PONG | CREATURE_FLAG_ANIM_LONG_STRIP;
+        creature->flags = CREATURE_FLAG_SPAWNER | CREATURE_FLAG_SPAWNER_MOBILE;
         creature->health = 8500.0f;
         creature->move_speed = 1.3f;
         creature->reward_value = 6600.0f;
@@ -909,9 +909,9 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         spawn_slot->interval_s = 0.7f;
         spawn_slot->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
         spawn_slot->owner = creature;
-    } else if (template_id == SPAWN_ID_SPIDER_SP1_AI7_TIMER_38) {
+    } else if (template_id == SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38) {
         creature->type_id = CREATURE_TYPE_SPIDER_SP1;
-        creature->flags = CREATURE_FLAG_AI7_LINK_TIMER;
+        creature->flags = CREATURE_FLAG_STOP_AND_GO;
         creature->link_index = 0;
         creature->health = 50.0f;
         creature->move_speed = 4.8f;
@@ -922,7 +922,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         creature->contact_damage = 10.0f;
     } else if (template_id == SPAWN_ID_SPIDER_SP2_RANGED_VARIANT_37) {
         creature->type_id = CREATURE_TYPE_SPIDER_SP2;
-        creature->flags = CREATURE_FLAG_RANGED_ATTACK_VARIANT;
+        creature->flags = CREATURE_FLAG_RANGED_TEMPLATE_PROJECTILE;
         creature->link_index = 0;
         creature->health = 50.0f;
         creature->move_speed = 3.2f;
@@ -931,9 +931,9 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         *(creature_tint_t *)&creature->color = creature_tint_t(1.0f, 0.75f, 0.1f, 1.0f);
         creature->size = (float)(crt_rand() % 4 + 0x29);
         creature->contact_damage = 10.0f;
-    } else if (template_id == SPAWN_ID_SPIDER_SP1_AI7_TIMER_WEAK_39) {
+    } else if (template_id == SPAWN_ID_SPIDER_SP1_STOP_AND_GO_WEAK_39) {
         creature->type_id = CREATURE_TYPE_SPIDER_SP1;
-        creature->flags = CREATURE_FLAG_AI7_LINK_TIMER;
+        creature->flags = CREATURE_FLAG_STOP_AND_GO;
         creature->link_index = 0;
         creature->health = 4.0f;
         creature->move_speed = 4.8f;
@@ -944,7 +944,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         creature->contact_damage = 10.0f;
     } else if (template_id == SPAWN_ID_SPIDER_BOSS_3A) {
         creature->type_id = CREATURE_TYPE_SPIDER_SP1;
-        creature->flags = CREATURE_FLAG_RANGED_ATTACK_SHOCK;
+        creature->flags = CREATURE_FLAG_RANGED_PLASMA_RIFLE;
         creature->orbit_angle = 0.9f;
         creature->orbit_radius.projectile_type = PROJECTILE_TYPE_PLASMA_RIFLE;
         creature->health = 4500.0f;
@@ -984,21 +984,21 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
 
     creature->max_health = creature->health;
     int flags = creature->flags;
-    if ((flags & CREATURE_FLAG_RANGED_ATTACK_SHOCK) == 0 &&
+    if ((flags & CREATURE_FLAG_RANGED_PLASMA_RIFLE) == 0 &&
         creature->type_id == CREATURE_TYPE_SPIDER_SP1 &&
-        (flags & CREATURE_FLAG_AI7_LINK_TIMER) == 0) {
-        flags = flags | CREATURE_FLAG_AI7_LINK_TIMER;
+        (flags & CREATURE_FLAG_STOP_AND_GO) == 0) {
+        flags = flags | CREATURE_FLAG_STOP_AND_GO;
         creature->flags = flags;
         creature->link_index = 0;
         creature->move_speed = creature->move_speed * 1.2f;
     }
 
-    if (template_id == SPAWN_ID_SPIDER_SP1_AI7_TIMER_38 && config_blob.hardcore) {
+    if (template_id == SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38 && config_blob.hardcore) {
         creature->move_speed = creature->move_speed * 0.7f;
     }
 
     creature->heading = heading;
-    if (!config_blob.hardcore && (creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
+    if (!config_blob.hardcore && (creature->flags & CREATURE_FLAG_SPAWNER) != 0) {
         spawn_slot = &creature_spawn_slot_table[creature->link_index];
         spawn_slot->interval_s = spawn_slot->interval_s + 0.2f;
     }
@@ -1008,7 +1008,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         creature->move_speed = creature->move_speed * 1.05f;
         creature->contact_damage = creature->contact_damage * 1.4f;
         creature->health = creature->health * 1.2f;
-        if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
+        if ((creature->flags & CREATURE_FLAG_SPAWNER) != 0) {
             spawn_slot = &creature_spawn_slot_table[creature->link_index];
             spawn_slot->interval_s = spawn_slot->interval_s - 0.2f;
             if (spawn_slot->interval_s < 0.1f) {
@@ -1048,7 +1048,7 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
             creature->health = creature->health * 0.5f;
             break;
         }
-        if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
+        if ((creature->flags & CREATURE_FLAG_SPAWNER) != 0) {
             float retry_interval = (float)quest_fail_retry_count * 0.35f;
             spawn_slot = &creature_spawn_slot_table[creature->link_index];
             if (retry_interval > 3.0f) {

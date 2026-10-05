@@ -36,7 +36,7 @@ def test_kill_experience_award_matches_native(oracle) -> None:
         player = PlayerState(index=0, pos=Vec2(), experience=experience)
         world = world_with_creature(CreatureState(active=True, hp=0.0, reward_value=reward), players=[player])
         world.state.bonuses.double_experience = double_experience
-        world.state.bonus_spawn_guard = True
+        world.state.scripted_burst_active = True
         kill_creature(world)
         if player.experience != native:
             case = f"experience={experience} reward={reward!r} double={double_experience}"

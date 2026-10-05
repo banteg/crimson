@@ -118,7 +118,7 @@ def resolve_native_death_sfx(
     rng: CrandLike,
     preserve_bugs: bool = False,
 ) -> SfxId | None:
-    """Draw the native `creature_apply_damage` death sound: `sfx_bank_a[crt_rand() % 4]`."""
+    """Draw the native `creature_apply_damage` death sound: `death_sfx[crt_rand() % 4]`."""
     roll = rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX)
     if creature.type_id == CreatureTypeId.TROOPER:
         if preserve_bugs:
@@ -167,7 +167,7 @@ def creature_apply_damage(
     elif damage_type == CreatureDamageType.ION and PerkId.ION_GUN_MASTER in perks:
         damage = x87_pc24_mul(damage, f32(1.2))
 
-    if damage_type == CreatureDamageType.BULLET and (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
+    if damage_type == CreatureDamageType.BULLET and (creature.flags & CreatureFlags.SPAWNER) == 0:
         jitter = x87_pc24_mul(
             float((rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER) & 0x7F) - 0x40),
             f32(0.002),
@@ -178,7 +178,7 @@ def creature_apply_damage(
 
     if creature.hp <= 0.0:
         if dt > 0.0:
-            creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, x87_pc24_mul(dt, 15.0))
+            creature.death_timer = x87_pc24_sub(creature.death_timer, x87_pc24_mul(dt, 15.0))
         return True
 
     if damage_type == CreatureDamageType.FIRE and PerkId.PYROMANIAC in perks:
@@ -191,15 +191,15 @@ def creature_apply_damage(
         return False
 
     if dt > 0.0:
-        creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, dt)
+        creature.death_timer = x87_pc24_sub(creature.death_timer, dt)
     else:
-        creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, f32(0.001))
+        creature.death_timer = x87_pc24_sub(creature.death_timer, f32(0.001))
     step_runtime.world.creatures.handle_death(step_runtime, creature_index)
     creature.vel = Vec2(
         x87_pc24_sub(creature.vel.x, x87_pc24_mul(impulse.x, 2.0)),
         x87_pc24_sub(creature.vel.y, x87_pc24_mul(impulse.y, 2.0)),
     )
-    if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
+    if creature.flags & CreatureFlags.RANGED_PLASMA_RIFLE:
         _damage_lethal_ranged_shock_burst(
             creature=creature, rng=rng, effects=state.effects, detail_preset=step_runtime.world.state.detail_preset,
         )
@@ -220,7 +220,7 @@ def creatures_apply_radius_damage(
     """Port of `creatures_apply_radius_damage`: damage every collidable creature touching the circle."""
 
     for creature_idx, creature in enumerate(step_runtime.world.creatures.entries):
-        if not creature.active or not creature_lifecycle_is_collidable(creature.lifecycle_stage):
+        if not creature.active or not creature_lifecycle_is_collidable(creature.death_timer):
             continue
         if within_native_find_radius(origin=pos, target=creature.pos, radius=radius, target_size=creature.size):
             creature_apply_damage(step_runtime, creature_idx, damage, damage_type, Vec2())

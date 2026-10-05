@@ -62,11 +62,11 @@ def test_particle_pool_tags_exact_native_callers() -> None:
     pool.spawn_particle_slow(pos=Vec2(), angle=0.0, rng=rng)
 
     assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
+        RngCallerStatic.FX_SPAWN_PARTICLE_ROTATION,
         RngCallerStatic.FX_SPAWN_PARTICLE_ALLOC,
-        RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
+        RngCallerStatic.FX_SPAWN_PARTICLE_ROTATION,
         RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_ALLOC,
-        RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_SPIN,
+        RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_ROTATION,
     ]
 
 
@@ -86,11 +86,11 @@ def test_particle_spawn_keeps_native_wide_trig_until_speed_multiply() -> None:
     assert fast.pos == Vec2(1.0, 2.0)
     assert fast.vel == Vec2(89.99990844726562, 0.12599995732307434)
     assert fast.intensity == 1.0
-    assert fast.spin == 0.04999999701976776
+    assert fast.rotation == 0.04999999701976776
 
     slow = pool.entries[slow_idx]
     assert slow.vel == Vec2(29.999988555908203, 0.02699999511241913)
-    assert slow.spin == 0.04999999701976776
+    assert slow.rotation == 0.04999999701976776
 
 
 def test_sprite_effect_pool_tags_exact_native_callers() -> None:
@@ -286,7 +286,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     # Style 0 persists until intensity <= 0.0.
     idx0 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
     p0 = pool.entries[idx0]
-    p0.render_flag = False
+    p0.in_flight = False
     pool.update(1.0, step_runtime=step_runtime)
     assert p0.active
     assert p0.intensity == 0.10000002384185791  # Native subtracts the f32 0.9 literal.
@@ -294,7 +294,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     # Style 1 expires once intensity <= 0.8.
     idx1 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
     p1 = pool.entries[idx1]
-    p1.render_flag = False
+    p1.in_flight = False
     p1.style_id = ParticleStyleId.BLOW_TORCH
     pool.update(1.0, step_runtime=step_runtime)
     assert not p1.active
@@ -302,7 +302,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     # Style 8 decays slowly and also uses the 0.8 cutoff.
     idx2 = pool.spawn_particle_slow(pos=Vec2(), angle=0.0, rng=rng)
     p2 = pool.entries[idx2]
-    p2.render_flag = False
+    p2.in_flight = False
     pool.update(1.0, step_runtime=step_runtime)
     assert p2.active
     assert_float_close(p2.intensity, f32(0.89))
@@ -310,7 +310,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
 
 def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     # Rng consumption order:
-    # - spawn_particle: spin
+    # - spawn_particle: rotation
     # - update: random-walk jitter
     # - hit: speed_scale
     # - hit: sprite_vel_x, sprite_vel_y, fx_spawn_sprite rotation
@@ -338,7 +338,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     pool.update(dt, step_runtime=make_step_runtime(world, dt=dt, fx_queue=fx_queue))
 
     assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
+        RngCallerStatic.FX_SPAWN_PARTICLE_ROTATION,
         RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_FLAMETHROWER,
         RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BOUNCE_SPEED_SCALE,
         RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_X,
@@ -350,7 +350,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
         RngCallerStatic.FX_QUEUE_ADD_RANDOM_EFFECT_ID,
     ]
 
-    assert particle.render_flag is False
+    assert particle.in_flight is False
     assert fx_queue.count == 1
     assert sprite_effects.entries[0].active
     assert_float_close(sprite_effects.entries[0].color.a, f32(0.7))
@@ -394,9 +394,9 @@ def test_particle_pool_tags_style_specific_jitter_callers() -> None:
     before = rng.calls
     pool.update(0.016, step_runtime=make_step_runtime(world, dt=0.016))
 
-    assert flame.render_flag
-    assert alt.render_flag
-    assert bubble.render_flag
+    assert flame.in_flight
+    assert alt.in_flight
+    assert bubble.in_flight
     assert [record.caller for record in rng.records_since(before)] == [
         RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_FLAMETHROWER,
         RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_ALT,

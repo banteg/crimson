@@ -78,7 +78,7 @@ def _native_particle_velocity(angle: float, speed: float) -> Vec2:
     )
 
 
-def _native_particle_spin(draw: int) -> float:
+def _native_particle_rotation(draw: int) -> float:
     return x87_pc24_mul(float(draw % 0x274), _NATIVE_PARTICLE_SPIN_SCALE)
 
 
@@ -100,16 +100,16 @@ class ParticleStyleId(IntEnum):
 
 class Particle(msgspec.Struct):
     active: bool = False
-    render_flag: bool = False
+    in_flight: bool = False
     pos: Vec2 = Vec2()
     vel: Vec2 = Vec2()
-    scale_x: float = 1.0
-    scale_y: float = 1.0
-    scale_z: float = 1.0
-    age: float = 0.0
+    color_r: float = 1.0
+    color_g: float = 1.0
+    color_b: float = 1.0
+    color_a: float = 0.0
     intensity: float = 0.0
     angle: float = 0.0
-    spin: float = 0.0
+    rotation: float = 0.0
     style_id: ParticleStyleId = ParticleStyleId.FLAMETHROWER
     target_id: int = -1
 
@@ -147,16 +147,16 @@ class ParticlePool:
         entry = self._entries[idx]
         angle_f32 = f32(angle)
         entry.active = True
-        entry.render_flag = True
+        entry.in_flight = True
         entry.pos = f32_vec2(pos)
         entry.vel = _native_particle_velocity(angle_f32, 90.0)
-        entry.scale_x = 1.0
-        entry.scale_y = 1.0
-        entry.scale_z = 1.0
-        entry.age = 0.0
+        entry.color_r = 1.0
+        entry.color_g = 1.0
+        entry.color_b = 1.0
+        entry.color_a = 0.0
         entry.intensity = f32(intensity)
         entry.angle = angle_f32
-        entry.spin = _native_particle_spin(rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SPIN))
+        entry.rotation = _native_particle_rotation(rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_ROTATION))
         entry.style_id = ParticleStyleId.FLAMETHROWER
         entry.target_id = -1
         return idx
@@ -174,16 +174,16 @@ class ParticlePool:
         entry = self._entries[idx]
         angle_f32 = f32(angle)
         entry.active = True
-        entry.render_flag = True
+        entry.in_flight = True
         entry.pos = f32_vec2(pos)
         entry.vel = _native_particle_velocity(angle_f32, 30.0)
-        entry.scale_x = 1.0
-        entry.scale_y = 1.0
-        entry.scale_z = 1.0
-        entry.age = 0.0
+        entry.color_r = 1.0
+        entry.color_g = 1.0
+        entry.color_b = 1.0
+        entry.color_a = 0.0
         entry.intensity = 1.0
         entry.angle = angle_f32
-        entry.spin = _native_particle_spin(rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_SPIN))
+        entry.rotation = _native_particle_rotation(rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_ROTATION))
         entry.style_id = ParticleStyleId.BUBBLEGUN
         entry.target_id = -1
         return idx
@@ -220,8 +220,8 @@ class ParticlePool:
             bubblegun = style == int(ParticleStyleId.BUBBLEGUN)
             decay = f32(0.11 if bubblegun else 0.9)
             entry.intensity = x87_pc24_sub(entry.intensity, x87_pc24_mul(dt, decay))
-            entry.spin = x87_pc24_add(entry.spin, x87_pc24_mul(dt, 5.0) if bubblegun else dt)
-            if not bubblegun or entry.render_flag:
+            entry.rotation = x87_pc24_add(entry.rotation, x87_pc24_mul(dt, 5.0) if bubblegun else dt)
+            if not bubblegun or entry.in_flight:
                 # The SDK vector chain multiplies dt into velocity first, with
                 # PC=24 rounding at each operation before adding the position.
                 if bubblegun:
@@ -251,7 +251,7 @@ class ParticlePool:
                         step_runtime.world.creatures.handle_death(step_runtime, target_id, keep_corpse=False)
                 continue
 
-            if entry.render_flag:
+            if entry.in_flight:
                 # Random walk drift (native adjusts angle based on `crt_rand`).
                 jitter_caller = RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_JITTER_ALT
                 if style == int(ParticleStyleId.FLAMETHROWER):
@@ -266,17 +266,17 @@ class ParticlePool:
 
             alpha = clamp(entry.intensity, 0.0, 1.0)
             shade = x87_pc24_sub(1.0, x87_pc24_mul(entry.intensity, f32(0.95)))
-            entry.age = alpha
-            entry.scale_x = shade
-            entry.scale_y = shade
-            # Native only updates scale_x/scale_y; scale_z stays at its spawn value (1.0).
+            entry.color_a = alpha
+            entry.color_r = shade
+            entry.color_g = shade
+            # Native only updates color_r/color_g; color_b stays at its spawn value (1.0).
 
-            if entry.render_flag:
+            if entry.in_flight:
                 hit_idx = creature_find_in_radius(
                     creatures, pos=entry.pos, radius=max(float(entry.intensity), 0.0) * 8.0, start_index=0,
                 )
                 if hit_idx != -1:
-                    entry.render_flag = False
+                    entry.in_flight = False
                     creature = creatures[hit_idx]
                     if style == int(ParticleStyleId.BUBBLEGUN):
                         entry.target_id = int(hit_idx)

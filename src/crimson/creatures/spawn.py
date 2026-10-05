@@ -33,7 +33,6 @@ from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import TERRAIN_SIZE
 from .lifecycle import CREATURE_LIFECYCLE_ALIVE
 from .spawn_ids import (
-    HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
     CreatureAiMode,
     CreatureFlags,
@@ -51,7 +50,6 @@ _NATIVE_CREATURE_SPAWN_HEALTH_SCALE = f32_from_bits(0x38D1B718)  # 0x0046f310
 NATIVE_SPAWN_SLOT_COUNT = 0x20
 
 __all__ = [
-    "HAS_SPAWN_SLOT_FLAG",
     "NATIVE_SPAWN_SLOT_COUNT",
     "RANDOM_HEADING_SENTINEL",
     "SPAWN_ID_TO_TEMPLATE",
@@ -172,9 +170,9 @@ def _activate(creature: CreatureState) -> None:
     """The per-member resets every formation loop writes: velocity, collision, active, lifecycle, cooldown."""
     creature.vel = Vec2()
     creature.plague_infected = False
-    creature.collision_timer = 0.0
+    creature.dot_tick_timer = 0.0
     creature.active = True
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.attack_cooldown = 0.0
 
 
@@ -195,7 +193,7 @@ def _init_alien_spawner(
 ) -> None:
     """Template `INIT_ALIEN_SPAWNER`: an alien spawner and the spawn slot it owns (its `link_index`)."""
     creature.type_id = CreatureTypeId.ALIEN
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     slot_index = pool.spawn_slot_alloc()
     creature.link_index = slot_index
     pool.spawn_slots[slot_index] = SpawnSlot(
@@ -321,13 +319,13 @@ def creature_spawn_template(
 
     creature_idx = root_slot_idx
     creature = pool.creature(creature_idx)
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.pos = f32_vec2(pos)
     creature.plague_infected = False
-    creature.collision_timer = 0.0
+    creature.dot_tick_timer = 0.0
     creature.active = True
     creature.force_target = 0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.vel = Vec2()
     random_roll = rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_BASE_HEADING)
     creature.attack_cooldown = 0.0
@@ -376,7 +374,7 @@ def creature_spawn_template(
             creature.max_hp = 220.0
 
     if template_id == SpawnId.FORMATION_CHAIN_LIZARD_4_11:
-        creature.ai_mode = CreatureAiMode.ORBIT_PLAYER_TIGHT
+        creature.ai_mode = CreatureAiMode.FLANK_PLAYER_TIGHT
         _set_stats(creature, CreatureTypeId.LIZARD, 1500.0, 2.1, 1000.0, _tint(0.99, 0.99, 0.21, 1.0), 69.0, 150.0)
         creature.max_hp = 1500.0
         chain_link_idx = root_slot_idx
@@ -436,26 +434,26 @@ def creature_spawn_template(
         case SpawnId.FORMATION_GRID_ALIEN_WHITE_15:
             _init_grid_root(creature, pos, CreatureTypeId.ALIEN, _tint(1.0, 1.0, 1.0, 1.0), 1500.0, 2.0, 60.0)
             creature_idx = _spawn_grid(
-                pool, rng, pos, root_slot_idx, CreatureAiMode.LINK_GUARD, CreatureTypeId.ALIEN, 40.0,
+                pool, rng, pos, root_slot_idx, CreatureAiMode.FLANK_PLAYER_LINKED, CreatureTypeId.ALIEN, 40.0,
                 _tint(0.4, 0.7, 0.11, 1.0), 2.0, 50.0, 4.0,
             )
             creature = pool.creature(creature_idx)
         case SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17:
             _init_grid_root(creature, pos, CreatureTypeId.SPIDER_SP1, _tint(1.0, 1.0, 1.0, 1.0), 1500.0, 2.0, 60.0)
             creature_idx = _spawn_grid(
-                pool, rng, pos, root_slot_idx, CreatureAiMode.LINK_GUARD, CreatureTypeId.SPIDER_SP1, 40.0,
+                pool, rng, pos, root_slot_idx, CreatureAiMode.FLANK_PLAYER_LINKED, CreatureTypeId.SPIDER_SP1, 40.0,
                 _tint(0.4, 0.7, 0.11, 1.0), 2.0, 50.0, 4.0,
             )
             creature = pool.creature(creature_idx)
         case SpawnId.FORMATION_GRID_LIZARD_WHITE_16:
             _init_grid_root(creature, pos, CreatureTypeId.LIZARD, _tint(1.0, 1.0, 1.0, 1.0), 1500.0, 2.0, 64.0)
             creature_idx = _spawn_grid(
-                pool, rng, pos, root_slot_idx, CreatureAiMode.LINK_GUARD, CreatureTypeId.LIZARD, 40.0,
+                pool, rng, pos, root_slot_idx, CreatureAiMode.FLANK_PLAYER_LINKED, CreatureTypeId.LIZARD, 40.0,
                 _tint(0.4, 0.7, 0.11, 1.0), 2.0, 60.0, 4.0,
             )
             creature = pool.creature(creature_idx)
         case SpawnId.ALIEN_GHOST_0F:
-            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+            creature.ai_mode = CreatureAiMode.FLANK_PLAYER
             # Native float literal 0.66499996f (0x3f2a3d70), one ulp below f32(0.665).
             _set_stats(creature, CreatureTypeId.ALIEN, 20.0, 2.9, 60.0, _tint(0.66499996, 0.385, 0.259, 0.56), 50.0, 35.0)
             creature.max_hp = 20.0
@@ -540,21 +538,21 @@ def creature_spawn_template(
                 reward_value=3000.0, tint=_tint(1.0, 1.0, 1.0, 1.0),
             )
         case SpawnId.AI1_ALIEN_BLUE_TINT_1A:
-            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER_TIGHT
+            creature.ai_mode = CreatureAiMode.FLANK_PLAYER_TIGHT
             random_tint_scalar = _rand_field(rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_AI1_BLUE_TINT_1A, 0x28, 0.01, 0.5)
             _set_stats(
                 creature, CreatureTypeId.ALIEN, 50.0, 2.4, 125.0,
                 RGBA(random_tint_scalar, random_tint_scalar, 1.0, 1.0), 50.0, 5.0,
             )
         case SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B:
-            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER_TIGHT
+            creature.ai_mode = CreatureAiMode.FLANK_PLAYER_TIGHT
             random_tint_scalar = _rand_field(rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_AI1_BLUE_TINT_1B, 0x28, 0.01, 0.5)
             _set_stats(
                 creature, CreatureTypeId.SPIDER_SP1, 40.0, 2.4, 125.0,
                 RGBA(random_tint_scalar, random_tint_scalar, 1.0, 1.0), 50.0, 5.0,
             )
         case SpawnId.AI1_LIZARD_BLUE_TINT_1C:
-            creature.ai_mode = CreatureAiMode.ORBIT_PLAYER_TIGHT
+            creature.ai_mode = CreatureAiMode.FLANK_PLAYER_TIGHT
             random_tint_scalar = _rand_field(rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_AI1_BLUE_TINT_1C, 0x28, 0.01, 0.5)
             _set_stats(
                 creature, CreatureTypeId.LIZARD, 50.0, 2.4, 125.0,
@@ -694,10 +692,10 @@ def creature_spawn_template(
             creature.contact_damage = float(
                 rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_LIZARD_RANDOM_2E_CONTACT_DAMAGE) % 10 + 4,
             )
-        case SpawnId.ALIEN_AI7_ORBITER_36:
+        case SpawnId.ALIEN_DELAYED_START_36:
             creature.ai_mode = CreatureAiMode.HOLD_TIMER
             creature.orbit_radius = 1.5
-            tint_g = _rand_field(rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_AI7_ORBITER_TINT_G, 5, 0.01, 0.65)
+            tint_g = _rand_field(rng, RngCallerStatic.CREATURE_SPAWN_TEMPLATE_DELAYED_START_TINT_G, 5, 0.01, 0.65)
             _set_stats(creature, CreatureTypeId.ALIEN, 10.0, 1.8, 150.0, RGBA(f32(0.65), tint_g, f32(0.95), 1.0), 50.0, 40.0)
         case SpawnId.ALIEN_RANDOM_1D:
             creature.type_id = CreatureTypeId.ALIEN
@@ -755,7 +753,7 @@ def creature_spawn_template(
             # `bonus_args` overlays `link_index`: a Weapon drop with a 5 duration override.
             creature.link_index = pack_bonus_on_death_args(BonusId.WEAPON, 5)
             creature.bonus_id = BonusId.WEAPON
-            creature.bonus_duration_override = 5
+            creature.bonus_amount_override = 5
             _set_stats(creature, CreatureTypeId.ALIEN, 50.0, 2.1, 125.0, _tint(1.0, 0.8, 0.1, 1.0), 45.0, 10.0)
         case SpawnId.ALIEN_HIDDEN_1_21:
             _set_stats(creature, CreatureTypeId.ALIEN, 53.0, 1.7, 120.0, _tint(0.7, 0.1, 0.51, 0.5), 55.0, 8.0)
@@ -783,7 +781,7 @@ def creature_spawn_template(
         case SpawnId.SPIDER_SP1_CONST_RED_BOSS_3B:
             _set_stats(creature, CreatureTypeId.SPIDER_SP1, 1200.0, 2.0, 4000.0, _tint(0.9, 0.0, 0.0, 1.0), 70.0, 20.0)
         case SpawnId.SPIDER_PLASMA_SHOOTER_3C:
-            creature.flags = CreatureFlags.RANGED_ATTACK_VARIANT
+            creature.flags = CreatureFlags.RANGED_TEMPLATE_PROJECTILE
             creature.orbit_angle = f32(0.4)
             creature.ranged_projectile_type = 0x1A
             _set_stats(creature, CreatureTypeId.SPIDER_SP1, 200.0, 2.0, 200.0, _tint(0.9, 0.1, 0.1, 1.0), 40.0, 20.0)
@@ -800,7 +798,7 @@ def creature_spawn_template(
         case SpawnId.SPIDER_SP1_CONST_WHITE_FAST_3E:
             _set_stats(creature, CreatureTypeId.SPIDER_SP1, 1000.0, 2.8, 500.0, _tint(1.0, 1.0, 1.0, 1.0), 64.0, 40.0)
         case SpawnId.ZOMBIE_BOSS_SPAWNER_00:
-            creature.flags = CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP
+            creature.flags = CreatureFlags.SPAWNER | CreatureFlags.SPAWNER_MOBILE
             _set_stats(creature, CreatureTypeId.ZOMBIE, 8500.0, 1.3, 6600.0, _tint(0.6, 0.6, 1.0, 0.8), 64.0, 50.0)
             slot_index = pool.spawn_slot_alloc()
             creature.link_index = slot_index
@@ -812,19 +810,19 @@ def creature_spawn_template(
                 interval=f32(0.7),
                 child_template_id=SpawnId.ZOMBIE_RANDOM_41,
             )
-        case SpawnId.SPIDER_SP1_AI7_TIMER_38:
-            creature.flags = CreatureFlags.AI7_LINK_TIMER
+        case SpawnId.SPIDER_SP1_STOP_AND_GO_38:
+            creature.flags = CreatureFlags.STOP_AND_GO
             creature.link_index = 0
             creature.type_id = CreatureTypeId.SPIDER_SP1
             creature.hp = 50.0
             creature.move_speed = f32(4.8)
             creature.reward_value = 433.0
             creature.tint = _tint(1.0, 0.75, 0.1, 1.0)
-            creature.size = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_AI7_TIMER_38_SIZE) % 4 + 0x29)
+            creature.size = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_STOP_AND_GO_38_SIZE) % 4 + 0x29)
             creature.contact_damage = 10.0
         case SpawnId.SPIDER_SP2_RANGED_VARIANT_37:
             # Native zeroes `link_index` but leaves the `orbit_radius` union (the projectile type) stale.
-            creature.flags = CreatureFlags.RANGED_ATTACK_VARIANT
+            creature.flags = CreatureFlags.RANGED_TEMPLATE_PROJECTILE
             creature.link_index = 0
             creature.type_id = CreatureTypeId.SPIDER_SP2
             creature.hp = 50.0
@@ -835,8 +833,8 @@ def creature_spawn_template(
                 rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANGED_VARIANT_37_SIZE) % 4 + 0x29,
             )
             creature.contact_damage = 10.0
-        case SpawnId.SPIDER_SP1_AI7_TIMER_WEAK_39:
-            creature.flags = CreatureFlags.AI7_LINK_TIMER
+        case SpawnId.SPIDER_SP1_STOP_AND_GO_WEAK_39:
+            creature.flags = CreatureFlags.STOP_AND_GO
             creature.link_index = 0
             creature.type_id = CreatureTypeId.SPIDER_SP1
             creature.hp = 4.0
@@ -844,11 +842,11 @@ def creature_spawn_template(
             creature.reward_value = 50.0
             creature.tint = _tint(0.8, 0.65, 0.1, 1.0)
             creature.size = float(
-                rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_AI7_TIMER_WEAK_39_SIZE) % 4 + 0x1A,
+                rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_STOP_AND_GO_WEAK_39_SIZE) % 4 + 0x1A,
             )
             creature.contact_damage = 10.0
         case SpawnId.SPIDER_BOSS_3A:
-            creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
+            creature.flags = CreatureFlags.RANGED_PLASMA_RIFLE
             creature.orbit_angle = f32(0.9)
             creature.ranged_projectile_type = 9
             _set_stats(creature, CreatureTypeId.SPIDER_SP1, 4500.0, 2.0, 4500.0, _tint(1.0, 1.0, 1.0, 1.0), 64.0, 50.0)
@@ -872,19 +870,19 @@ def creature_spawn_template(
     creature.max_hp = creature.hp
     flags = creature.flags
     if (
-        (flags & CreatureFlags.RANGED_ATTACK_SHOCK) == 0
+        (flags & CreatureFlags.RANGED_PLASMA_RIFLE) == 0
         and creature.type_id == CreatureTypeId.SPIDER_SP1
-        and (flags & CreatureFlags.AI7_LINK_TIMER) == 0
+        and (flags & CreatureFlags.STOP_AND_GO) == 0
     ):
-        creature.flags = flags | CreatureFlags.AI7_LINK_TIMER
+        creature.flags = flags | CreatureFlags.STOP_AND_GO
         creature.link_index = 0
         creature.move_speed = _scale(creature.move_speed, 1.2)
 
-    if template_id == SpawnId.SPIDER_SP1_AI7_TIMER_38 and state.hardcore:
+    if template_id == SpawnId.SPIDER_SP1_STOP_AND_GO_38 and state.hardcore:
         creature.move_speed = _scale(creature.move_speed, 0.7)
 
     creature.heading = f32(heading)
-    if not state.hardcore and creature.flags & HAS_SPAWN_SLOT_FLAG and (slot := _spawn_slot_of(pool, creature)) is not None:
+    if not state.hardcore and creature.flags & CreatureFlags.SPAWNER and (slot := _spawn_slot_of(pool, creature)) is not None:
         slot.interval = x87_pc24_add(slot.interval, f32(0.2))
 
     if state.hardcore:
@@ -892,7 +890,7 @@ def creature_spawn_template(
         creature.move_speed = _scale(creature.move_speed, 1.05)
         creature.contact_damage = _scale(creature.contact_damage, 1.4)
         creature.hp = _scale(creature.hp, 1.2)
-        if creature.flags & HAS_SPAWN_SLOT_FLAG and (slot := _spawn_slot_of(pool, creature)) is not None:
+        if creature.flags & CreatureFlags.SPAWNER and (slot := _spawn_slot_of(pool, creature)) is not None:
             slot.interval = x87_pc24_sub(slot.interval, f32(0.2))
             if slot.interval < 0.1:
                 slot.interval = f32(0.1)
@@ -923,7 +921,7 @@ def creature_spawn_template(
                 creature.move_speed = _scale(creature.move_speed, 0.6)
                 creature.contact_damage = _scale(creature.contact_damage, 0.5)
                 creature.hp = _scale(creature.hp, 0.5)
-        if creature.flags & HAS_SPAWN_SLOT_FLAG and (slot := _spawn_slot_of(pool, creature)) is not None:
+        if creature.flags & CreatureFlags.SPAWNER and (slot := _spawn_slot_of(pool, creature)) is not None:
             retry_interval = x87_pc24_mul(float(state.quest_fail_retry_count), f32(0.35))
             if retry_interval > 3.0:
                 retry_interval = 3.0
@@ -948,8 +946,8 @@ def survival_spawn_creature(pool: CreaturePool, pos: Vec2, rng: CrandLike, *, pl
     creature = pool.creature(creature_idx)
     creature.pos = f32_vec2(pos)
     creature.plague_infected = False
-    creature.collision_timer = 0.0
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.dot_tick_timer = 0.0
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
 
     r10 = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_TYPE_ROLL) % 10
 
@@ -988,14 +986,14 @@ def survival_spawn_creature(pool: CreaturePool, pos: Vec2, rng: CrandLike, *, pl
     size_roll = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_SIZE)
     creature.active = True
     creature.force_target = 0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.size = float(size_roll % 20 + 44)
     creature.vel = Vec2()
     creature.heading = f32(f32(rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEADING) % 314) * f32(0.01))
 
     move_speed = f32(f32(f32(xp // 4000) * f32(0.045)) + f32(0.9))
     if creature.type_id == CreatureTypeId.SPIDER_SP1:
-        creature.flags |= CreatureFlags.AI7_LINK_TIMER
+        creature.flags |= CreatureFlags.STOP_AND_GO
         move_speed = f32(f32(move_speed) * f32(1.3))
 
     r_health = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEALTH)
@@ -1118,21 +1116,21 @@ def creature_spawn(
     type_id: CreatureTypeId,
     rng: CrandLike,
     *,
-    survival_elapsed_ms: int,
+    run_elapsed_ms: int,
 ) -> int:
     """Port of `creature_spawn` (0x00428240), the Rush spawner; stats grow with the elapsed time."""
     creature_idx = pool.alloc_slot(rng)
     creature = pool.creature(creature_idx)
     creature.pos = f32_vec2(pos)
     creature.type_id = type_id
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.plague_infected = False
-    creature.collision_timer = 0.0
+    creature.dot_tick_timer = 0.0
     creature.active = True
     creature.force_target = 0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    # `fild survival_elapsed_ms` loads the int exactly; only the multiply rounds.
-    elapsed = float(int(survival_elapsed_ms))
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
+    # `fild run_elapsed_ms` loads the int exactly; only the multiply rounds.
+    elapsed = float(int(run_elapsed_ms))
     creature.vel = Vec2()
     creature.hp = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_HEALTH_SCALE), 10.0)
     creature.heading = f32(f32(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_HEADING) % 314) * f32(0.01))

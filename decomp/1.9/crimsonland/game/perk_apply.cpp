@@ -40,7 +40,7 @@ extern "C" void perk_apply(int perk_id)
             if ((i & 1) != 0
                 && creature_pool[i].active != 0
                 && creature_pool[i].health <= 500.0f
-                && (creature_pool[i].flags & CREATURE_FLAG_ANIM_PING_PONG) == 0) {
+                && (creature_pool[i].flags & CREATURE_FLAG_SPAWNER) == 0) {
                 creature_pool[i].active = 0;
                 effect_spawn_burst(
                     &creature_pool[i].position,
@@ -64,10 +64,10 @@ extern "C" void perk_apply(int perk_id)
 
         for (i = 0; i < 384; i++) {
             if (creature_pool[i].active != 0) {
-                creature_pool[i].lifecycle_stage -= frame_dt;
+                creature_pool[i].death_timer -= frame_dt;
             }
         }
-        bonus_spawn_guard = 0;
+        scripted_burst_active = 0;
     } else {
         if (perk_id == perk_id_random_weapon) {
             i = 0;

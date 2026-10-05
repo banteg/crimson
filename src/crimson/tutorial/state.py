@@ -9,7 +9,7 @@ class TutorialState(msgspec.Struct):
     stage_transition_timer_ms: int = -1000
     hint_index: int = -1
     hint_alpha: int = 0
-    hint_fade_in: bool = False
+    hint_carrier_killed: bool = False
     repeat_spawn_count: int = 0
     hint_bonus_creature_ref: int | None = None
     move_active_this_tick: bool = False
@@ -32,7 +32,7 @@ def reset_tutorial_state(
     tutorial.stage_transition_timer_ms = -1000
     tutorial.hint_index = -1
     tutorial.hint_alpha = 0
-    tutorial.hint_fade_in = False
+    tutorial.hint_carrier_killed = False
     tutorial.repeat_spawn_count = 0
     tutorial.hint_bonus_creature_ref = None
     tutorial.move_active_this_tick = False

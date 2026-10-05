@@ -44,7 +44,7 @@ extern char console_caret_string[];
 
 extern int sfx_ui_typeenter;
 extern int sfx_ui_typeclick_01;
-extern int music_track_extra_0;
+extern int music_track_game_playlist;
 extern int music_track_crimson_theme_id;
 extern int music_track_shortie_monk_id;
 extern int ui_hud_panel_texture;
@@ -56,13 +56,13 @@ void typo_target_name_draw_labels(void);
 void perks_update_effects(void);
 void creature_update_all(void);
 void projectile_update(void);
-void player_fire_weapon(
+void typo_player_update(
     const vec2f_t *aim,
     char fire_requested,
     char reload_requested);
 void camera_update(void);
-void sfx_mute_all(int sfx_id);
-void sfx_play_exclusive(int sfx_id);
+void music_fade_out_all(int sfx_id);
+void music_play_exclusive(int sfx_id);
 void hud_update_and_render(void);
 }
 
@@ -150,10 +150,10 @@ extern "C" void typo_gameplay_update_and_render(void)
         creature_update_all();
         projectile_update();
         if (game_state_id == GAME_STATE_TYPO_GAMEPLAY) {
-            for (render_overlay_player_index = 0;
-                 render_overlay_player_index < config_player_count;
-                ++render_overlay_player_index) {
-                player_fire_weapon(
+            for (current_player_index = 0;
+                 current_player_index < config_player_count;
+                ++current_player_index) {
+                typo_player_update(
                     (const vec2f_t *)&target_world,
                     fire_requested,
                     reload_requested);
@@ -161,7 +161,7 @@ extern "C" void typo_gameplay_update_and_render(void)
         }
     }
 
-    render_overlay_player_index = 0;
+    current_player_index = 0;
     player_state_table[0].weapon_id = WEAPON_ID_SHOTGUN;
     player_state_table[0].ammo = 30.0f;
 
@@ -169,12 +169,12 @@ extern "C" void typo_gameplay_update_and_render(void)
         survival_spawn_cooldown -= config_player_count * frame_dt_ms;
     }
     while (survival_spawn_cooldown < 0) {
-        survival_spawn_cooldown += 3500 - survival_elapsed_ms / 800;
+        survival_spawn_cooldown += 3500 - run_elapsed_ms / 800;
         if (survival_spawn_cooldown < 100) {
             survival_spawn_cooldown = 100;
         }
 
-        float elapsed = (float)(survival_elapsed_ms + 1);
+        float elapsed = (float)(run_elapsed_ms + 1);
         effect_color_t color;
         color.r = elapsed * 0.00000833333343f + 0.3f;
         color.g = elapsed * 10000.0f + 0.3f;
@@ -188,14 +188,14 @@ extern "C" void typo_gameplay_update_and_render(void)
         vec2f_t right_pos;
         right_pos.x = (float)terrain_texture_width + 64.0f;
         right_pos.y = (float)terrain_texture_height * 0.5f
-            + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f;
+            + (float)cos((float)run_elapsed_ms * 0.001f) * 256.0f;
         typo_target_name_assign_random(
             creature_spawn_tinted(&right_pos, &color, 4));
 
         typo_vec2_t left_pos(
             -64.0f,
             (float)terrain_texture_height * 0.5f
-                + (float)cos((float)survival_elapsed_ms * 0.001f) * 256.0f);
+                + (float)cos((float)run_elapsed_ms * 0.001f) * 256.0f);
         typo_target_name_assign_random(
             creature_spawn_tinted((const vec2f_t *)&left_pos, &color, 2));
     }
@@ -205,7 +205,7 @@ extern "C" void typo_gameplay_update_and_render(void)
         bonus_weapon_power_up_timer = 0.0f;
         bonus_reflex_boost_timer = 0.0f;
         time_scale_active = 0;
-        survival_elapsed_ms += frame_dt_ms;
+        run_elapsed_ms += frame_dt_ms;
         unsigned int *weapon_time =
             &weapon_usage_time[player_state_table[0].weapon_id];
         *weapon_time += frame_dt_ms;
@@ -226,15 +226,15 @@ extern "C" void typo_gameplay_update_and_render(void)
         && (config_player_count == 1
             || (player_state_table[1].health <= 0.0f
                 && player_state_table[1].death_timer < 0.0f))) {
-        render_pass_mode = 0;
+        run_active = 0;
         game_state_pending = GAME_STATE_GAME_OVER;
         ui_transition_direction = 0;
         grim_interface_ptr->grim_flush_input();
         console_input_poll();
-        sfx_mute_all(music_track_extra_0);
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_play_exclusive(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_play_exclusive(music_track_shortie_monk_id);
     }
 
     frame_dt = unscaled_frame_dt;

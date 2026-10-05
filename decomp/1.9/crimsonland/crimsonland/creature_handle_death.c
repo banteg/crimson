@@ -4,12 +4,12 @@
 
 #include "crimsonland_game_state_owner.h"
 
-#define survival_recent_death_positions \
-    gameplay_run_state.survival_recent_death_pos
-#define survival_recent_death_count \
-    gameplay_run_state.survival_recent_death_count
+#define survival_first_kill_positions \
+    gameplay_run_state.survival_first_kill_pos
+#define survival_first_kill_count \
+    gameplay_run_state.survival_first_kill_count
 extern unsigned char survival_reward_fire_seen;
-extern unsigned char survival_reward_handout_enabled;
+extern unsigned char survival_shrinkifier_handout_enabled;
 extern int creature_kill_count;
 extern int perk_id_bloody_mess_quick_learner;
 
@@ -24,21 +24,21 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
         bonus_spawn_at(
             &creature->position,
             (bonus_id_t)creature->bonus_args.bonus_id,
-            creature->bonus_args.duration_override
+            creature->bonus_args.amount_override
         );
     }
 
-    if (survival_recent_death_count < 6) {
-        if (survival_recent_death_count < 3) {
-            survival_recent_death_positions[survival_recent_death_count].x =
+    if (survival_first_kill_count < 6) {
+        if (survival_first_kill_count < 3) {
+            survival_first_kill_positions[survival_first_kill_count].x =
                 creature->position.x;
-            survival_recent_death_positions[survival_recent_death_count].y =
+            survival_first_kill_positions[survival_first_kill_count].y =
                 creature->position.y;
         }
-        ++survival_recent_death_count;
-        if (survival_recent_death_count == 3) {
+        ++survival_first_kill_count;
+        if (survival_first_kill_count == 3) {
             survival_reward_fire_seen = 0;
-            survival_reward_handout_enabled = 0;
+            survival_shrinkifier_handout_enabled = 0;
         }
     }
 
@@ -46,7 +46,7 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
         return;
     }
 
-    if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
+    if ((creature->flags & CREATURE_FLAG_SPAWNER) != 0) {
         creature_spawn_slot_table[creature->link_index].owner = 0;
     }
 
@@ -62,7 +62,7 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
         creature_pool[child_id].size -= 8.0f;
         creature_pool[child_id].move_speed += 0.1f;
         creature_pool[child_id].contact_damage *= 0.7f;
-        creature_pool[child_id].lifecycle_stage = 16.0f;
+        creature_pool[child_id].death_timer = 16.0f;
 
         child_id = creature_alloc_slot();
         memcpy(&creature_pool[child_id], creature, sizeof(creature_t));
@@ -73,7 +73,7 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
         creature_pool[child_id].size -= 8.0f;
         creature_pool[child_id].move_speed += 0.1f;
         creature_pool[child_id].reward_value *= 0.666666687f;
-        creature_pool[child_id].lifecycle_stage = 16.0f;
+        creature_pool[child_id].death_timer = 16.0f;
         creature_pool[child_id].contact_damage *= 0.7f;
 
         effect_spawn_burst(
@@ -82,7 +82,7 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
     }
 
     if (keep_corpse) {
-        creature->lifecycle_stage -= frame_dt;
+        creature->death_timer -= frame_dt;
     } else {
         creature->active = 0;
     }
@@ -110,7 +110,7 @@ void creature_handle_death(int creature_id, unsigned char keep_corpse)
         }
     }
 
-    if (!bonus_spawn_guard) {
+    if (!scripted_burst_active) {
         bonus_try_spawn_on_kill(&creature->position);
     }
 

@@ -74,13 +74,13 @@ Global bonus timers used by `player_update` and the main loop:
   - Quest stage title-card fade timer (incremented in `quest_mode_update`, reset on quest start).
 - `player_spread_damping_scalar` (`0x00473a40`)
   - Shared spread-recovery multiplier used by both `player_update` and
-    `player_fire_weapon` (eased/clamped between `0.3` and `1.0`).
+    `typo_player_update` (eased/clamped between `0.3` and `1.0`).
 - `demo_trial_overlay_active` / `demo_trial_overlay_alpha_ms` (`0x00480850` / `0x00480898`)
   - Demo trial warning overlay latch + fade accumulator (`0..1000`) around `demo_trial_overlay_render`.
 - `pause_keybind_help_alpha_ms` (`0x00487284`)
   - Pause keybind-help overlay fade accumulator (`0..1000`) used by `ui_render_keybind_help`.
 - `player_overlay_suppressed_latch` (`0x0048727c`)
-  - Overlay suppression gate checked by `player_render_overlays`; set on
+  - Overlay suppression gate checked by `player_render`; set on
     highscore-return path and cleared by `gameplay_reset_state`.
 - `time_played_ms` (`0x0048718c`)
   - Registry-backed cumulative playtime counter (`timePlayed`) incremented during active gameplay.
@@ -106,14 +106,14 @@ Global bonus timers used by `player_update` and the main loop:
   and `bonus_double_xp_timer`.
 - Quest progression counters now explicitly type as integer scalars:
   `quest_stage_major`, `quest_stage_minor`, `quest_unlock_index` (`u16`), and
-  `quest_unlock_index_full` (`u16`).
+  `quest_unlock_index_hardcore` (`u16`).
 - Highscore/progression tables now explicitly type as integer arrays:
   `weapon_usage_time` (`unsigned int[64]`) and `quest_play_counts`
   (`unsigned int[91]`).
 - Player helper globals now explicitly type as array/scalar slots:
-  `player_aux_timer` (`float[2]`), `player_aim_screen_x` (`float[4]`),
+  `player_weapon_popup_timer` (`float[2]`), `player_aim_screen_x` (`float[4]`),
   `player_name_length` (`int`), and the alternate keybind slots
-  (`player_alt_move_key_*`, `player_alt_turn_key_*`, `player_alt_fire_key`,
+  (`player_alt_move_key_*`, `player_alt_turn_key_*`, `player2_fire_key`,
   `player_alt_key_reserved_*`).
 
 ### Bonus HUD slots (active bonus list)
@@ -122,7 +122,7 @@ Global bonus timers used by `player_update` and the main loop:
 `bonus_hud_slot_update_and_render` renders up to 16 active slots using the following fields:
 
 - `bonus_hud_slot_active` — per-slot active flag (stride `0x20` bytes).
-- `bonus_hud_slot_y` — slide/position accumulator for the slot.
+- `bonus_hud_slot_slide_x` — slide/position accumulator for the slot.
 - `bonus_hud_slot_timer_ptr` — pointer to the primary timer (global or per‑player).
 - `bonus_hud_slot_alt_timer_ptr` — optional pointer to the player‑2 timer.
 - `bonus_hud_slot_label` — string label for the bonus.
@@ -279,7 +279,7 @@ shot cooldown (`player_shot_cooldown` / `0x00490b84`) at 1.5x speed.
   `fire_bullets_primary_shot_sfx_id` (`0x004d9050`), and
   `fire_bullets_secondary_shot_sfx_id` (`0x004d7fd8`).
 
-- **Spawn guard:** `bonus_spawn_guard` is set while bonus/perk effects spawn
+- **Spawn guard:** `scripted_burst_active` is set while bonus/perk effects spawn
   projectiles to prevent bonus drops from chaining during those effect bursts.
 
 See the data tables for concrete values:

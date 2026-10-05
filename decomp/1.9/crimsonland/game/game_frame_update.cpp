@@ -11,12 +11,12 @@ extern IGrim2D_cpp *grim_interface_ptr;
 
 extern "C" {
 extern player_state_t player_state_table[];
-extern quest_meta_t quest_selected_meta[];
+extern quest_meta_t quest_meta_table[];
 extern ui_element_t ui_element_slot_01_main_menu_aux;
 extern ui_element_t ui_element_slot_02_main_menu_primary;
 extern mod_interface_t *plugin_interface_ptr;
 
-extern unsigned char render_pass_mode;
+extern unsigned char run_active;
 extern unsigned char demo_trial_overlay_active;
 extern unsigned char shareware_offer_seen_latch;
 extern unsigned char main_menu_full_version_layout_latch;
@@ -180,7 +180,7 @@ extern "C" unsigned char game_frame_update(void)
 
     if (!audio_suspend_flag) {
         if ((bool)grim_interface_ptr->grim_get_config_var(0x57)) {
-            if (render_pass_mode && config_blob.game_mode == GAME_MODE_QUEST) {
+            if (run_active && config_blob.game_mode == GAME_MODE_QUEST) {
                 int minor = quest_stage_minor - 1;
                 int major = quest_stage_major - 1;
                 if (minor >= 10) {
@@ -189,7 +189,7 @@ extern "C" unsigned char game_frame_update(void)
                 if (major >= 4) {
                     major -= (unsigned int)major / 4 * 4;
                 }
-                terrain_generate(&quest_selected_meta[minor * 10 + major]);
+                terrain_generate(&quest_meta_table[minor * 10 + major]);
             } else {
                 terrain_generate_random();
             }
@@ -248,18 +248,18 @@ extern "C" unsigned char game_frame_update(void)
     if (!demo_mode_active && !demo_trial_overlay_active) {
         play_time_ms = play_time_get();
         game_state_id_t current_state = game_state_id;
-        if (!console_log_queue.open && render_pass_mode
+        if (!console_log_queue.open && run_active
             && current_state == GAME_STATE_GAMEPLAY) {
             play_time_ms += (int)(frame_dt * 1000.0f);
         }
         if (demo_trial_elapsed_ms > 0 && !console_log_queue.open
-            && render_pass_mode && current_state == GAME_STATE_GAMEPLAY
+            && run_active && current_state == GAME_STATE_GAMEPLAY
             && config_blob.game_mode != GAME_MODE_TUTORIAL) {
             demo_trial_elapsed_ms += (int)(frame_dt * 1000.0f);
         }
     }
 
-    if (render_pass_mode && perk_count_get(perk_id_reflex_boosted) != 0
+    if (run_active && perk_count_get(perk_id_reflex_boosted) != 0
         && game_state_id == GAME_STATE_GAMEPLAY) {
         frame_dt *= 0.9f;
     }
@@ -267,7 +267,7 @@ extern "C" unsigned char game_frame_update(void)
     game_time_s += frame_dt;
     frame_dt_copy = frame_dt;
     frame_dt_ms = (int)(frame_dt * 1000.0f);
-    if (!console_log_queue.open && render_pass_mode
+    if (!console_log_queue.open && run_active
         && game_state_id == GAME_STATE_GAMEPLAY
         && config_blob.game_mode != GAME_MODE_TUTORIAL) {
         time_played_ms += frame_dt_ms;
@@ -428,7 +428,7 @@ extern "C" unsigned char game_frame_update(void)
     audio_update();
 
     if (grim_interface_ptr->grim_was_key_pressed(1)
-        && (render_pass_mode
+        && (run_active
             || game_state_id == GAME_STATE_PLUGIN_RUNTIME)
         && (game_state_id == GAME_STATE_GAMEPLAY
             || game_state_id == GAME_STATE_PLUGIN_RUNTIME
@@ -443,7 +443,7 @@ extern "C" unsigned char game_frame_update(void)
     if (stats_menu_easter_egg_roll == -1) {
         stats_menu_easter_egg_roll = crt_rand() % 32;
     }
-    if (game_state_id == GAME_STATE_STATISTICS_MENU && !render_pass_mode
+    if (game_state_id == GAME_STATE_STATISTICS_MENU && !run_active
         && local_system_time.wMonth == 3 && local_system_time.wDay == 3
         && stats_menu_easter_egg_roll == 3) {
         stats_menu_easter_egg_roll = -1;
@@ -547,10 +547,10 @@ extern "C" unsigned char game_frame_update(void)
 
         config_sync_from_grim();
         demo_mode_start();
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_extra_0);
-        sfx_mute_all(music_track_intro_id);
-        sfx_play_exclusive(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_game_playlist);
+        music_fade_out_all(music_track_intro_id);
+        music_play_exclusive(music_track_shortie_monk_id);
         quit_requested = 0;
         shareware_offer_seen_latch = 1;
     }

@@ -70,7 +70,7 @@ def test_dead_player_update_only_advances_native_death_timer() -> None:
         pos=Vec2(100.0, 100.0),
         health=0.0,
         death_timer=16.0,
-        low_health_timer=0.25,
+        bleed_drip_timer=0.25,
         muzzle_flash_alpha=0.75,
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, shot_cooldown=0.5),
     )
@@ -79,7 +79,7 @@ def test_dead_player_update_only_advances_native_death_timer() -> None:
     step_player(world, player, player_input(), f32(0.1))
 
     assert player.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), f32(20.0)))
-    assert player.low_health_timer == 0.25
+    assert player.bleed_drip_timer == 0.25
     assert player.muzzle_flash_alpha == 0.75
     assert player.weapon.shot_cooldown == 0.5
     assert state.player_spread_damping_scalar == 0.5
@@ -147,7 +147,7 @@ def test_player_update_spread_floor_is_native_f32() -> None:
     assert player.spread_heat != 0.01
 
 
-def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker) -> None:
+def test_player_update_bleed_drip_timer_spawns_bleed_fx_and_resets_timer(mocker) -> None:
     rng = RecordingCrand(Crand(0x1234))
     world = make_world()
     state = world.state
@@ -157,7 +157,7 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker)
         index=0,
         pos=Vec2(100.0, 200.0),
         health=19.0,
-        low_health_timer=0.0,
+        bleed_drip_timer=0.0,
         aim_heading=aim_heading_before,
     )
     world.players[:] = [player]
@@ -191,22 +191,22 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker)
         assert call.kwargs["detail_preset"] == 5
         assert call.kwargs["violence_disabled"] == 0
 
-    assert player.low_health_timer == 1.0
+    assert player.bleed_drip_timer == 1.0
     assert len(state.sfx_queue) == 1
     assert sfx_ids(state.sfx_queue)[0] in {SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02}
     assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL,
+        RngCallerStatic.PLAYER_UPDATE_BLEED_DRIP,
     ]
 
 
-def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx(mocker) -> None:
+def test_player_update_bleed_drip_timer_100_sentinel_skips_bleed_fx(mocker) -> None:
     world = make_world()
     state = world.state
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 200.0),
         health=19.0,
-        low_health_timer=100.0,
+        bleed_drip_timer=100.0,
     )
     world.players[:] = [player]
     spawn_blood_splatter = mocker.Mock()
@@ -215,7 +215,7 @@ def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx(mocker) -> N
     step_player(world, player, player_input(aim=Vec2(101.0, 200.0)), 0.016)
 
     spawn_blood_splatter.assert_not_called()
-    assert player.low_health_timer == 100.0
+    assert player.bleed_drip_timer == 100.0
     assert sfx_ids(state.sfx_queue) == []
 
 
@@ -673,14 +673,14 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     state = world.state
     pool = state.projectiles
     state.rng = rng
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=3.9)
     world.players[:] = [player]
     state.perks[int(PerkId.MAN_BOMB)] = 1
 
     step_player(world, player, player_input(aim=Vec2(101.0, 100.0)), 0.2)
 
-    assert state.bonus_spawn_guard
+    assert state.scripted_burst_active
     owners = {entry.owner_id for entry in pool.entries if entry.active}
     assert owners == {OWNER_LOCAL_PLAYER}
     type_ids = _active_type_ids(pool)
@@ -1133,10 +1133,10 @@ def test_player_update_relative_mode_dispatch_updates_turn_speed() -> None:
     input_state = player_input(
         aim=Vec2(200.0, 100.0),
         move_mode=MovementControlType.RELATIVE,
-        move_forward_pressed=False,
-        move_backward_pressed=False,
-        turn_left_pressed=False,
-        turn_right_pressed=True,
+        move_forward_down=False,
+        move_backward_down=False,
+        turn_left_down=False,
+        turn_right_down=True,
     )
 
     step_player(world, player, input_state, 0.1)
@@ -1176,10 +1176,10 @@ def test_player_update_relative_mode_applies_speed_multiplier(
         player_input(
             aim=Vec2(600.0, 512.0),
             move_mode=MovementControlType.RELATIVE,
-            move_forward_pressed=moving_forward,
-            move_backward_pressed=moving_backward,
-            turn_left_pressed=False,
-            turn_right_pressed=False,
+            move_forward_down=moving_forward,
+            move_backward_down=moving_backward,
+            turn_left_down=False,
+            turn_right_down=False,
         ),
         dt,
     )
@@ -1204,10 +1204,10 @@ def test_player_update_computer_aim_preserves_static_movement_mode() -> None:
         aim=Vec2(200.0, 100.0),
         move_mode=MovementControlType.STATIC,
         aim_scheme=AimScheme.COMPUTER,
-        move_forward_pressed=True,
-        move_backward_pressed=False,
-        turn_left_pressed=False,
-        turn_right_pressed=False,
+        move_forward_down=True,
+        move_backward_down=False,
+        turn_left_down=False,
+        turn_right_down=False,
     )
 
     step_player(world, player, input_state, 0.1)
@@ -1224,10 +1224,10 @@ def test_player_update_digital_turn_only_rotates_and_accelerates() -> None:
         move_mode=MovementControlType.STATIC,
         move=Vec2(1.0, 0.0),
         aim=Vec2(200.0, 100.0),
-        move_forward_pressed=False,
-        move_backward_pressed=False,
-        turn_left_pressed=False,
-        turn_right_pressed=True,
+        move_forward_down=False,
+        move_backward_down=False,
+        turn_left_down=False,
+        turn_right_down=True,
     )
 
     step_player(world, player, input_state, 0.1)
@@ -1248,10 +1248,10 @@ def test_player_update_digital_forward_turn_moves_in_heading_direction() -> None
         move_mode=MovementControlType.STATIC,
         move=Vec2(-1.0, -1.0),
         aim=Vec2(200.0, 100.0),
-        move_forward_pressed=True,
-        move_backward_pressed=False,
-        turn_left_pressed=True,
-        turn_right_pressed=False,
+        move_forward_down=True,
+        move_backward_down=False,
+        turn_left_down=True,
+        turn_right_down=False,
     )
 
     step_player(world, player, input_state, 0.1)
@@ -1275,10 +1275,10 @@ def test_player_update_digital_turn_conflict_prefers_right() -> None:
         move_mode=MovementControlType.STATIC,
         move=Vec2(0.0, 0.0),
         aim=Vec2(200.0, 100.0),
-        move_forward_pressed=False,
-        move_backward_pressed=False,
-        turn_left_pressed=True,
-        turn_right_pressed=True,
+        move_forward_down=False,
+        move_backward_down=False,
+        turn_left_down=True,
+        turn_right_down=True,
     )
 
     step_player(world, player, input_state, 0.1)
@@ -1298,10 +1298,10 @@ def test_player_update_digital_move_conflict_prefers_backward() -> None:
         move_mode=MovementControlType.STATIC,
         move=Vec2(0.0, 0.0),
         aim=Vec2(200.0, 100.0),
-        move_forward_pressed=True,
-        move_backward_pressed=True,
-        turn_left_pressed=False,
-        turn_right_pressed=False,
+        move_forward_down=True,
+        move_backward_down=True,
+        turn_left_down=False,
+        turn_right_down=False,
     )
 
     step_player(world, player, input_state, 0.1)
@@ -1345,10 +1345,10 @@ def test_player_update_minigun_speed_cap_is_f32_before_move_phase() -> None:
         player_input(
             move_mode=MovementControlType.STATIC,
             aim=Vec2(560.0, 496.0),
-            move_forward_pressed=True,
-            move_backward_pressed=False,
-            turn_left_pressed=False,
-            turn_right_pressed=True,
+            move_forward_down=True,
+            move_backward_down=False,
+            turn_left_down=False,
+            turn_right_down=True,
         ),
         0.08900000154972076,
     )
@@ -1440,7 +1440,7 @@ def test_unknown_movement_scheme_stands_still() -> None:
     world = make_world()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), move_speed=1.5, move_phase=3.0)
     world.players[:] = [player]
-    held = player_input(move=Vec2(1.0, 0.0), move_mode=MovementControlType.UNKNOWN, move_forward_pressed=True)
+    held = player_input(move=Vec2(1.0, 0.0), move_mode=MovementControlType.UNKNOWN, move_forward_down=True)
 
     step_player(world, player, held, 0.1)
 
@@ -1744,10 +1744,10 @@ def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
         player_input(
             move_mode=MovementControlType.STATIC,
             aim=Vec2(101.0, 100.0),
-            move_forward_pressed=True,
-            move_backward_pressed=False,
-            turn_left_pressed=False,
-            turn_right_pressed=False,
+            move_forward_down=True,
+            move_backward_down=False,
+            turn_left_down=False,
+            turn_right_down=False,
         ),
         0.1,
     )
@@ -1854,7 +1854,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     )
     step_runtime = make_step_runtime(world)
 
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
     bonus_apply(
         state,
         player,
@@ -1868,7 +1868,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     assert state.shock_chain_links_left == 0x20
     first_proj = state.shock_chain_projectile_id
     assert first_proj >= 0
-    assert not state.bonus_spawn_guard
+    assert not state.scripted_burst_active
 
     step_ctx = step_runtime
     pool.step(step_ctx)
@@ -1877,12 +1877,12 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     assert state.shock_chain_projectile_id == first_proj
     assert sum(1 for entry in pool.entries if entry.active) == 1
 
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
     pool.step(step_ctx)
 
     assert state.shock_chain_links_left == 0x1F
     assert state.shock_chain_projectile_id != first_proj
-    assert not state.bonus_spawn_guard
+    assert not state.scripted_burst_active
     assert sum(1 for entry in pool.entries if entry.active) >= 2
     chained = pool.entries[int(state.shock_chain_projectile_id)]
     # Native stores (float)(atan2(dy, dx) - 1.5707964 - 3.1415927).

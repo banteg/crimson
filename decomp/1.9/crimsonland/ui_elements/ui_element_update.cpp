@@ -75,17 +75,17 @@ extern "C" void ui_element_update(ui_element_t *element)
         && !ui_mouse_blocked
         && !ui_focus_input_locked) {
         unsigned char enabled = element->enabled;
-        element->hover_enter_played = 1;
+        element->hovered = 1;
 
         if (enabled && element->on_activate) {
             ui_element_set_hover_focus(element);
         }
     } else {
-        element->hover_enter_played = 0;
+        element->hovered = 0;
     }
 
     element->time_since_ready += frame_dt_ms;
-    unsigned char hovered = element->hover_enter_played;
+    unsigned char hovered = element->hovered;
     if (hovered) {
         element->hover_amount += frame_dt_ms * 6;
     } else {

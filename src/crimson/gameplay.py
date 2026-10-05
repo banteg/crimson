@@ -95,7 +95,7 @@ _COMPUTER_AIM_TRACK_GAIN = 6.0
 _COMPUTER_AUTO_FIRE_DISTANCE = 128.0
 # Relative mouse aim measures the cursor from this fixed screen point (0x004153cb).
 _MOUSE_RELATIVE_ORIGIN = 200.0
-_LOW_HEALTH_BLOODSPILL_SFX: tuple[SfxId, SfxId] = (SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02)
+_BLEED_DRIP_SFX: tuple[SfxId, SfxId] = (SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02)
 
 
 _REFLEX_MOVEMENT_DT_SCALE = f32(0.6)
@@ -146,24 +146,24 @@ def survival_check_level_up(state: GameplayState, player: PlayerState) -> None:
         player.level += 1
 
 
-def survival_record_recent_death(state: GameplayState, *, pos: Vec2) -> None:
+def survival_record_first_kill(state: GameplayState, *, pos: Vec2) -> None:
     """Track Survival recent-death samples used by one-off weapon handout gating."""
 
-    recent_count = int(state.survival_recent_death_count)
+    recent_count = int(state.survival_first_kill_count)
     if recent_count >= 6:
         return
 
     if recent_count < 3:
-        state.survival_recent_death_pos[recent_count] = Vec2(
+        state.survival_first_kill_pos[recent_count] = Vec2(
             f32(pos.x),
             f32(pos.y),
         )
 
     recent_count += 1
-    state.survival_recent_death_count = int(recent_count)
+    state.survival_first_kill_count = int(recent_count)
     if recent_count == 3:
         state.survival_reward_fire_seen = False
-        state.survival_reward_handout_enabled = False
+        state.survival_shrinkifier_handout_enabled = False
 
 
 def survival_enforce_reward_weapon_guard(state: GameplayState, players: Sequence[PlayerState]) -> None:
@@ -184,7 +184,7 @@ def gameplay_enforce_weapon_guards(state: GameplayState, players: Sequence[Playe
     # Native gameplay_render_world checks exactly the two fixed player slots.
     # Corrected mode extends the same entitlement policy to generalized co-op.
     guarded_players = players[:2] if state.preserve_bugs else players
-    if state.status.quest_unlock_index_full < 40:
+    if state.status.quest_unlock_index_hardcore < 40:
         for player in guarded_players:
             if player.weapon.weapon_id == WeaponId.SPLITTER_GUN:
                 _weapon_assign_player(player, WeaponId.PISTOL, state=state)
@@ -576,7 +576,7 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
         player.hot_tempered_timer = 0.0
 
 
-def _player_tick_low_health(
+def _player_tick_bleed_drip(
     player: PlayerState,
     state: GameplayState,
     dt: float,
@@ -584,12 +584,12 @@ def _player_tick_low_health(
     violence_disabled: int,
 ) -> None:
     # Native low-health warning pulse (`player_update` @ 0x004136b0): once
-    # `player_take_damage` has armed `low_health_timer` (!= 100.0), count down
+    # `player_take_damage` has armed `bleed_drip_timer` (!= 100.0), count down
     # while HP < 20 and emit a 3x blood splatter + bloodspill SFX burst.
-    if player.low_health_timer != 100.0 and player.health < 20.0:
-        next_low_health_timer = f32(float(player.low_health_timer) - float(dt))
-        player.low_health_timer = next_low_health_timer
-        if next_low_health_timer < 0.0:
+    if player.bleed_drip_timer != 100.0 and player.health < 20.0:
+        next_bleed_drip_timer = f32(float(player.bleed_drip_timer) - float(dt))
+        player.bleed_drip_timer = next_bleed_drip_timer
+        if next_bleed_drip_timer < 0.0:
             bleed_dir_angle = x87_pc24_sub(
                 x87_pc24_add(float(player.aim_heading), NATIVE_HALF_PI),
                 f32(0.5),
@@ -614,11 +614,11 @@ def _player_tick_low_health(
                     detail_preset=int(detail_preset),
                     violence_disabled=int(violence_disabled),
                 )
-            bloodspill_sfx = _LOW_HEALTH_BLOODSPILL_SFX[
-                state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_LOW_HEALTH_BLOODSPILL) & 1
+            bloodspill_sfx = _BLEED_DRIP_SFX[
+                state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_BLEED_DRIP) & 1
             ]
             state.sfx_queue.append(SfxRequest(bloodspill_sfx, player.pos))
-            player.low_health_timer = 1.0
+            player.bleed_drip_timer = 1.0
 
 
 
@@ -692,10 +692,10 @@ def _player_move(
     phase_sign = 1.0
     player_controlled_movement = move_mode != MovementControlType.COMPUTER
     if player_controlled_movement and move_mode == MovementControlType.RELATIVE:
-        turning_left = input_state.turn_left_pressed
-        turning_right = input_state.turn_right_pressed
-        moving_forward = input_state.move_forward_pressed
-        moving_backward = input_state.move_backward_pressed
+        turning_left = input_state.turn_left_down
+        turning_right = input_state.turn_right_down
+        moving_forward = input_state.move_forward_down
+        moving_backward = input_state.move_backward_down
         turned = False
 
         if player.turn_speed < 1.0:
@@ -734,10 +734,10 @@ def _player_move(
             speed_scale=speed_scale,
         )
     elif player_controlled_movement and move_mode == MovementControlType.STATIC:
-        moving_forward = input_state.move_forward_pressed
-        moving_backward = input_state.move_backward_pressed
-        turning_left = input_state.turn_left_pressed
-        turning_right = input_state.turn_right_pressed
+        moving_forward = input_state.move_forward_down
+        moving_backward = input_state.move_backward_down
+        turning_left = input_state.turn_left_down
+        turning_right = input_state.turn_right_down
 
         target_heading = float(_RELATIVE_MOVE_HEADING_NONE)
         if turning_left:
@@ -867,7 +867,7 @@ def _player_tick_reload(
             player.weapon.reload_timer = next_timer
             if next_timer <= half:
                 count = 7 + int(player.weapon.reload_timer_max * 4.0)
-                state.bonus_spawn_guard = True
+                state.scripted_burst_active = True
                 owner_id = player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index)
                 # Native `(float)i * (6.2831855f / (float)count) + 0.1f` at PC24.
                 ring_step = x87_pc24_div(NATIVE_TAU, float(count))
@@ -881,7 +881,7 @@ def _player_tick_reload(
                         owner_id=owner_id,
                         owner_player_index=player.index,
                     )
-                state.bonus_spawn_guard = False
+                state.scripted_burst_active = False
                 state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, player.pos))
         else:
             player.weapon.reload_timer = x87_pc24_sub(
@@ -909,12 +909,12 @@ def _player_tick_reload(
     return has_alt_weapon_perk
 
 
-def player_aux_timer_update(player: PlayerState, dt: float) -> None:
+def player_weapon_popup_timer_update(player: PlayerState, dt: float) -> None:
     """`ui_render_hud`: the weapon popup fades slower through its last second and may stop below zero."""
 
-    if player.aux_timer > 0.0:
-        aux_decay = f32(0.5) if player.aux_timer < 1.0 else f32(1.4)
-        player.aux_timer = x87_pc24_sub(player.aux_timer, x87_pc24_mul(dt, aux_decay))
+    if player.weapon_popup_timer > 0.0:
+        aux_decay = f32(0.5) if player.weapon_popup_timer < 1.0 else f32(1.4)
+        player.weapon_popup_timer = x87_pc24_sub(player.weapon_popup_timer, x87_pc24_mul(dt, aux_decay))
 
 
 def player_update(
@@ -923,7 +923,7 @@ def player_update(
     dt: float,
     *,
     step_runtime: WorldStepRuntime,
-    reload_active_any: bool,
+    reload_key_down_any: bool,
 ) -> float:
     """Port of `player_update` (0x004136b0) for the rewrite runtime.
 
@@ -947,7 +947,7 @@ def player_update(
         )
         return dt
 
-    _player_tick_low_health(player, state, dt, step_runtime.world.state.detail_preset, step_runtime.world.state.violence_disabled)
+    _player_tick_bleed_drip(player, state, dt, step_runtime.world.state.detail_preset, step_runtime.world.state.violence_disabled)
 
     damping_scalar = f32(state.player_spread_damping_scalar)
     if float(state.player_spread_damping_gate) <= 0.0:
@@ -972,7 +972,7 @@ def player_update(
     player.weapon.shot_cooldown = max(0.0, float(next_shot_cooldown))
 
     speed_bonus_active = player.speed_bonus_timer > 0.0
-    player_aux_timer_update(player, dt)
+    player_weapon_popup_timer_update(player, dt)
 
     move_mode = input_state.move_mode
     aim_scheme = input_state.aim_scheme
@@ -1019,7 +1019,7 @@ def player_update(
 
     # Native cools spread after perk timers/movement but before weapon fire.
     # Keeping this below `_player_tick_perks` preserves Fire Cough spread
-    # sampling order while still applying cooldown before `player_fire_weapon`.
+    # sampling order while still applying cooldown before `typo_player_update`.
     if PerkId.SHARPSHOOTER in state.perks:
         player.spread_heat = f32(0.02)
     else:
@@ -1038,7 +1038,7 @@ def player_update(
         player.weapon.reload_active = False
 
     reload_key_active = bool(input_state.reload_down or input_state.reload_pressed)
-    reload_key_released = not reload_active_any
+    reload_key_released = not reload_key_down_any
     if has_alt_weapon_perk:
         cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms)
         dt_ms = ftol_ms_i32(float(dt)) if float(dt) > 0.0 else 0

@@ -19,9 +19,9 @@
         "music_track_intro_id",
         "music_track_extra_1",
         "music_track_crimsonquest_id",
-        "sfx_volume_table",
+        "music_track_volume",
         "music_entry_table",
-        "sfx_mute_flags",
+        "music_fade_out_flags",
         "sfx_entry_table",
         "music_playlist",
         "music_playlist_entry_count",
@@ -44,7 +44,7 @@
       "image": "crimsonland.exe",
       "source": "tools/match/data/crimsonland_game_state_owner.cpp",
       "symbols": [
-        "survival_reward_handout_enabled"
+        "survival_shrinkifier_handout_enabled"
       ]
     },
     {
@@ -63,7 +63,7 @@
         "bonus_pool",
         "quest_spawn_count",
         "highscore_table",
-        "quest_selected_meta",
+        "quest_meta_table",
         "creature_spawn_slot_table",
         "bonus_meta_table",
         "bonus_icon_energizer",
@@ -83,13 +83,13 @@
         "shock_chain_projectile_id",
         "creature_active_count",
         "survival_reward_damage_seen",
-        "creatures_any_active_flag",
+        "creatures_none_active_flag",
         "bonus_weapon_power_up_timer",
         "bonus_energizer_timer",
         "bonus_double_xp_timer",
         "gameplay_run_reserved_zero",
         "highscore_active_record",
-        "survival_elapsed_ms",
+        "run_elapsed_ms",
         "highscore_record_shots_fired",
         "quest_transition_timer_ms",
         "weapon_usage_time",
@@ -98,7 +98,7 @@
         "quest_fail_retry_count",
         "player_heading_turn_delta",
         "terrain_texture_failed",
-        "player_aux_timer",
+        "player_weapon_popup_timer",
         "camera_shake_timer",
         "camera_shake_pulses",
         "screen_fade_alpha",
@@ -169,7 +169,7 @@
         "sfx_ui_bonus",
         "weapon_table",
         "quest_unlock_index",
-        "quest_unlock_index_full"
+        "quest_unlock_index_hardcore"
       ]
     },
     {

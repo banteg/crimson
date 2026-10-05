@@ -70,10 +70,10 @@ extern int config_movement_schemes[];
 extern int config_aim_schemes[];
 extern int config_player_count;
 extern int config_key_reload;
-extern int player_alt_move_key_forward;
-extern int player_alt_move_key_backward;
-extern int player_alt_turn_key_left;
-extern int player_alt_turn_key_right;
+extern int player2_move_key_forward;
+extern int player2_move_key_backward;
+extern int player2_turn_key_left;
+extern int player2_turn_key_right;
 extern float camera_offset_x;
 extern float camera_offset_y;
 extern cvar_float_t *cv_padAimDistMul;
@@ -175,7 +175,7 @@ static __inline float abs_bits(float value)
 
 extern "C" float player_heading_approach_target(float target_heading)
 {
-    int player_index = render_overlay_player_index;
+    int player_index = current_player_index;
     float heading = player_state_table[player_index].heading;
 
     while (heading < 0.0f) {
@@ -238,7 +238,7 @@ extern "C" void player_update(void)
         return;
     }
 
-    int player_index = render_overlay_player_index;
+    int player_index = current_player_index;
     player_update_vec2_t *aim_screen =
         (player_update_vec2_t *)&player_aim_screen_x[player_index * 2];
     *aim_screen = *(player_update_vec2_t *)&ui_mouse_x;
@@ -255,9 +255,9 @@ extern "C" void player_update(void)
         player->speed_multiplier = player->speed_multiplier + 1.0f;
     }
 
-    if (player->low_health_timer != 100.0f && player->health < 20.0f) {
-        player->low_health_timer = player->low_health_timer - frame_dt;
-        if (player->low_health_timer < 0.0f) {
+    if (player->bleed_drip_timer != 100.0f && player->health < 20.0f) {
+        player->bleed_drip_timer = player->bleed_drip_timer - frame_dt;
+        if (player->bleed_drip_timer < 0.0f) {
             float heading = player->aim_heading;
             float dx = cosf(heading + 1.5707964f - 0.5f) * -6.0f;
             vec2_t blood_position;
@@ -273,7 +273,7 @@ extern "C" void player_update(void)
                 (crt_rand() & 1) + sfx_bloodspill_01,
                 &player->position,
                 1.0f);
-            player->low_health_timer = 1.0f;
+            player->bleed_drip_timer = 1.0f;
         }
     }
 
@@ -298,7 +298,7 @@ extern "C" void player_update(void)
         if (player->man_bomb_timer > perk_man_bomb_trigger_interval_s) {
             int owner_id;
             if (cv_friendlyFire->value != 0.0f) {
-                owner_id = -1 - render_overlay_player_index;
+                owner_id = -1 - current_player_index;
             } else {
                 owner_id = -100;
             }
@@ -349,7 +349,7 @@ extern "C" void player_update(void)
         if (player->fire_cough_timer > perk_fire_cough_trigger_interval_s) {
             int owner_id;
             if (cv_friendlyFire->value != 0.0f) {
-                owner_id = -1 - render_overlay_player_index;
+                owner_id = -1 - current_player_index;
             } else {
                 owner_id = -100;
             }
@@ -367,7 +367,7 @@ extern "C" void player_update(void)
             float muzzle_heading = aim_heading - 1.5707964f - 0.150915f;
             vec2_t cough_offset(cosf(muzzle_heading) * 16.0f, sinf(muzzle_heading) * 16.0f);
 
-            int fire_index = render_overlay_player_index;
+            int fire_index = current_player_index;
             vec2_t cough_target = *(vec2_t *)&player_state_table[fire_index].aim;
             float shot_heading;
             {
@@ -425,7 +425,7 @@ extern "C" void player_update(void)
         if (player->hot_tempered_timer > perk_hot_tempered_trigger_interval_s) {
             int owner_id;
             if (cv_friendlyFire->value != 0.0f) {
-                owner_id = -1 - render_overlay_player_index;
+                owner_id = -1 - current_player_index;
             } else {
                 owner_id = -100;
             }
@@ -476,8 +476,8 @@ extern "C" void player_update(void)
     }
 
     if (demo_mode_active != 0
-        || config_movement_schemes[render_overlay_player_index] == 5
-        || config_aim_schemes[render_overlay_player_index] == 5) {
+        || config_movement_schemes[current_player_index] == 5
+        || config_aim_schemes[current_player_index] == 5) {
         if (player->auto_target < 0) {
             player->auto_target = 0;
         }
@@ -508,12 +508,12 @@ extern "C" void player_update(void)
     }
 
     if (demo_mode_active == 0
-        && config_movement_schemes[render_overlay_player_index] != 5) {
-        int move_mode = config_movement_schemes[render_overlay_player_index];
+        && config_movement_schemes[current_player_index] != 5) {
+        int move_mode = config_movement_schemes[current_player_index];
         if (move_mode == 4) {
             if (grim_interface_ptr->grim_is_key_active(config_key_reload)) {
                 vec2_t target =
-                    *(vec2_t *)&player_aim_screen_x[render_overlay_player_index * 2]
+                    *(vec2_t *)&player_aim_screen_x[current_player_index * 2]
                     - *(vec2_t *)&camera_offset_x;
                 *(vec2_t *)&player->move_target = target;
             }
@@ -538,7 +538,7 @@ extern "C" void player_update(void)
                             * (3.1415927f - angle_step) * speed_scale * 7.957747f;
                         vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                         player_apply_move_with_spawn_avoidance(
-                            render_overlay_player_index,
+                            current_player_index,
                             &player->position,
                             &move);
                         moving_to_target = true;
@@ -556,7 +556,7 @@ extern "C" void player_update(void)
                     * player->move_speed * speed_scale * 25.0f;
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
-                    render_overlay_player_index,
+                    current_player_index,
                     &player->position,
                     &move);
             }
@@ -592,7 +592,7 @@ extern "C" void player_update(void)
                     * (3.1415927f - angle_step) * speed_scale * 7.957747f;
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
-                    render_overlay_player_index,
+                    current_player_index,
                     &player->position,
                     &move);
             } else {
@@ -605,7 +605,7 @@ extern "C" void player_update(void)
                     * player->move_speed * speed_scale * 25.0f;
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
-                    render_overlay_player_index,
+                    current_player_index,
                     &player->position,
                     &move);
             }
@@ -624,7 +624,7 @@ extern "C" void player_update(void)
             if (grim_interface_ptr->grim_is_key_active(
                     player->input.turn_key_left)
                 || (config_player_count == 1
-                    && grim_interface_ptr->grim_is_key_down(player_alt_turn_key_left))) {
+                    && grim_interface_ptr->grim_is_key_down(player2_turn_key_left))) {
                 float current_turn_speed = player->turn_speed + frame_dt * 10.0f;
                 player->turn_speed = current_turn_speed;
                 player->heading = player->heading
@@ -635,7 +635,7 @@ extern "C" void player_update(void)
             } else if (grim_interface_ptr->grim_is_key_active(
                            player->input.turn_key_right)
                 || (config_player_count == 1
-                    && grim_interface_ptr->grim_is_key_down(player_alt_turn_key_right))) {
+                    && grim_interface_ptr->grim_is_key_down(player2_turn_key_right))) {
                 float current_turn_speed = player->turn_speed + frame_dt * 10.0f;
                 player->turn_speed = current_turn_speed;
                 player->heading = player->heading
@@ -649,7 +649,7 @@ extern "C" void player_update(void)
             if (grim_interface_ptr->grim_is_key_active(
                     player->input.move_key_forward)
                 || (config_player_count == 1
-                    && grim_interface_ptr->grim_is_key_down(player_alt_move_key_forward))) {
+                    && grim_interface_ptr->grim_is_key_down(player2_move_key_forward))) {
                 player_accelerate_move_speed(player);
                 player_apply_move_speed_cap(player);
                 player->move_dx =
@@ -660,13 +660,13 @@ extern "C" void player_update(void)
                     * player->move_speed * speed_scale * 25.0f;
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
-                    render_overlay_player_index,
+                    current_player_index,
                     &player->position,
                     &move);
             } else if (grim_interface_ptr->grim_is_key_active(
                            player->input.move_key_backward)
                 || (config_player_count == 1
-                    && grim_interface_ptr->grim_is_key_down(player_alt_move_key_backward))) {
+                    && grim_interface_ptr->grim_is_key_down(player2_move_key_backward))) {
                 player_accelerate_move_speed(player);
                 movement_heading = -1.0f;
                 player->move_dx =
@@ -677,7 +677,7 @@ extern "C" void player_update(void)
                     * player->move_speed * speed_scale * -25.0f;
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
-                    render_overlay_player_index,
+                    current_player_index,
                     &player->position,
                     &move);
             } else {
@@ -693,7 +693,7 @@ extern "C" void player_update(void)
                     * player->move_speed * speed_scale * 25.0f;
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
-                    render_overlay_player_index,
+                    current_player_index,
                     &player->position,
                     &move);
             }
@@ -707,14 +707,14 @@ extern "C" void player_update(void)
                     player->input.turn_key_left)
                 || (config_player_count == 1
                     && grim_interface_ptr->grim_is_key_active(
-                        player_alt_turn_key_left))) {
+                        player2_turn_key_left))) {
                 turn_angle = 4.712389f;
             }
             if (grim_interface_ptr->grim_is_key_active(
                     player->input.turn_key_right)
                 || (config_player_count == 1
                     && grim_interface_ptr->grim_is_key_active(
-                        player_alt_turn_key_right))) {
+                        player2_turn_key_right))) {
                 turn_angle = 1.5707964f;
             }
 
@@ -722,18 +722,18 @@ extern "C" void player_update(void)
                     player->input.move_key_forward)
                 || (config_player_count == 1
                     && grim_interface_ptr->grim_is_key_active(
-                        player_alt_move_key_forward))) {
+                        player2_move_key_forward))) {
                 if (grim_interface_ptr->grim_is_key_active(
                         player->input.turn_key_left)
                     || (config_player_count == 1
                         && grim_interface_ptr->grim_is_key_active(
-                            player_alt_turn_key_left))) {
+                            player2_turn_key_left))) {
                     turn_angle = 5.4977875f;
                 } else if (grim_interface_ptr->grim_is_key_active(
                                player->input.turn_key_right)
                     || (config_player_count == 1
                         && grim_interface_ptr->grim_is_key_active(
-                            player_alt_turn_key_right))) {
+                            player2_turn_key_right))) {
                     turn_angle = 0.7853982f;
                 } else {
                     turn_angle = 0.0f;
@@ -744,18 +744,18 @@ extern "C" void player_update(void)
                     player->input.move_key_backward)
                 || (config_player_count == 1
                     && grim_interface_ptr->grim_is_key_active(
-                        player_alt_move_key_backward))) {
+                        player2_move_key_backward))) {
                 if (grim_interface_ptr->grim_is_key_active(
                         player->input.turn_key_left)
                     || (config_player_count == 1
                         && grim_interface_ptr->grim_is_key_active(
-                            player_alt_turn_key_left))) {
+                            player2_turn_key_left))) {
                     turn_angle = 3.926991f;
                 } else if (grim_interface_ptr->grim_is_key_active(
                                player->input.turn_key_right)
                     || (config_player_count == 1
                         && grim_interface_ptr->grim_is_key_active(
-                            player_alt_turn_key_right))) {
+                            player2_turn_key_right))) {
                     turn_angle = 2.3561945f;
                 } else {
                     turn_angle = 3.1415927f;
@@ -775,7 +775,7 @@ extern "C" void player_update(void)
                     * (3.1415927f - angle_step) * speed_scale * 7.957747f;
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
-                    render_overlay_player_index,
+                    current_player_index,
                     &player->position,
                     &move);
             } else {
@@ -788,7 +788,7 @@ extern "C" void player_update(void)
                     * player->move_speed * speed_scale * 25.0f;
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
-                    render_overlay_player_index,
+                    current_player_index,
                     &player->position,
                     &move);
             }
@@ -824,7 +824,7 @@ extern "C" void player_update(void)
                 * (3.1415927f - angle_step) * speed_scale * 7.957747f;
             vec2_t move = frame_dt * *(vec2_t *)&player->movement;
             player_apply_move_with_spawn_avoidance(
-                render_overlay_player_index,
+                current_player_index,
                 &player->position,
                 &move);
         } else {
@@ -837,7 +837,7 @@ extern "C" void player_update(void)
                 * player->move_speed * speed_scale * 25.0f;
             vec2_t move = frame_dt * *(vec2_t *)&player->movement;
             player_apply_move_with_spawn_avoidance(
-                render_overlay_player_index,
+                current_player_index,
                 &player->position,
                 &move);
         }
@@ -896,9 +896,9 @@ extern "C" void player_update(void)
             player->reload_timer = player->reload_timer - reload_scale * frame_dt;
             if (player->reload_timer <= half_reload) {
                     int owner_id;
-                    bonus_spawn_guard = 1;
+                    scripted_burst_active = 1;
                     if (cv_friendlyFire->value != 0.0f) {
-                        owner_id = -1 - render_overlay_player_index;
+                        owner_id = -1 - current_player_index;
                     } else {
                         owner_id = -100;
                     }
@@ -917,7 +917,7 @@ extern "C" void player_update(void)
                             ++projectile_index;
                         } while (projectile_index < projectile_count);
                     }
-                    bonus_spawn_guard = 0;
+                    scripted_burst_active = 0;
                     sfx_play_panned(sfx_explosion_small, &player->position, 1.0f);
             }
         } else {
@@ -933,7 +933,7 @@ extern "C" void player_update(void)
 
     if (demo_mode_active == 0
         && perk_count_get(perk_id_alternate_weapon) == 0
-        && config_movement_schemes[render_overlay_player_index] != 4
+        && config_movement_schemes[current_player_index] != 4
         && grim_interface_ptr->grim_is_key_active(config_key_reload)
         && player->reload_timer == 0.0f
         && config_player_count == 1) {
@@ -942,12 +942,12 @@ extern "C" void player_update(void)
 
     auto_fire = false;
     if (demo_mode_active == 0
-        && config_aim_schemes[render_overlay_player_index] != 5) {
-        int aim_scheme = config_aim_schemes[render_overlay_player_index];
+        && config_aim_schemes[current_player_index] != 5) {
+        int aim_scheme = config_aim_schemes[current_player_index];
         if (aim_scheme == 0) {
             player_update_vec2_t *mouse_screen =
                 (player_update_vec2_t *)&player_aim_screen_x[
-                    render_overlay_player_index * 2];
+                    current_player_index * 2];
             *(vec2_t *)&player->aim = vec2_t(
                 mouse_screen->x - camera_offset_x,
                 mouse_screen->y - camera_offset_y);
@@ -982,7 +982,7 @@ extern "C" void player_update(void)
         if (aim_scheme == 3) {
             player_update_vec2_t *stick_screen =
                 (player_update_vec2_t *)&player_aim_screen_x[
-                    render_overlay_player_index * 2];
+                    current_player_index * 2];
             vec2_t stick(
                 stick_screen->x - 200.0f,
                 stick_screen->y - 200.0f);
@@ -999,13 +999,13 @@ extern "C" void player_update(void)
                     &stick,
                     &stick);
                 *(player_update_vec2_t *)&player_aim_screen_x[
-                    render_overlay_player_index * 2] =
+                    current_player_index * 2] =
                     stick * 30.0f + vec2_t(200.0f, 200.0f);
             }
         }
         if (aim_scheme == 1) {
             int move_mode =
-                config_movement_schemes[render_overlay_player_index];
+                config_movement_schemes[current_player_index];
             if (move_mode == 1 || move_mode == 2) {
                 if (grim_interface_ptr->grim_is_key_active(
                         player->input.aim_key_right)) {
@@ -1113,9 +1113,9 @@ extern "C" void player_update(void)
                 }
             } else if (perk_count_get(perk_id_ammunition_within) != 0) {
                 if (weapon_ammo_class[player->weapon_id].ammo_class == 1) {
-                    player_take_damage(render_overlay_player_index, 0.15f);
+                    player_take_damage(current_player_index, 0.15f);
                 } else {
-                    player_take_damage(render_overlay_player_index, 1.0f);
+                    player_take_damage(current_player_index, 1.0f);
                 }
             }
             if (player->experience < 0) {
@@ -1159,12 +1159,12 @@ extern "C" void player_update(void)
 
         scalar = 1.0f;
         if (cv_friendlyFire->value != 0.0f) {
-            owner_id = -1 - render_overlay_player_index;
+            owner_id = -1 - current_player_index;
         } else {
             owner_id = -100;
         }
 
-        int spread_index = render_overlay_player_index;
+        int spread_index = current_player_index;
         vec2_t spread_target = *(vec2_t *)&player_state_table[spread_index].aim;
         {
             vec2_t spread_delta = spread_target

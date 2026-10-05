@@ -85,7 +85,7 @@ class QuestResultsView:
             player_health_values=outcome.player_health_values,
             pending_perk_count=outcome.pending_perk_count,
         )
-        record.survival_elapsed_ms = int(breakdown.final_time_ms)
+        record.run_elapsed_ms = int(breakdown.final_time_ms)
         player_name_default = _player_name_default(self.state.config) or "Player"
         record.set_name(player_name_default)
 

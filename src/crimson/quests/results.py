@@ -16,12 +16,12 @@ def advance_quest_unlocks(status: GameStatusData, *, next_unlock: int, hardcore:
     """Advance quest unlock progression on completion.
 
     Native `quest_mode_update` always raises `_quest_unlock_index`; hardcore
-    completion additionally raises `_quest_unlock_index_full`.
+    completion additionally raises `_quest_unlock_index_hardcore`.
     """
     if int(next_unlock) > int(status.quest_unlock_index):
         status.quest_unlock_index = int(next_unlock)
-    if hardcore and int(next_unlock) > int(status.quest_unlock_index_full):
-        status.quest_unlock_index_full = int(next_unlock)
+    if hardcore and int(next_unlock) > int(status.quest_unlock_index_hardcore):
+        status.quest_unlock_index_hardcore = int(next_unlock)
 
 
 class QuestFinalTime(msgspec.Struct, frozen=True):

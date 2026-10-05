@@ -21,7 +21,7 @@ from ..bonuses.pool import BONUS_SPAWN_MARGIN
 from ..effects import EffectPool, FxQueueRotated
 from ..gameplay import (
     experience_plus_reward,
-    survival_record_recent_death,
+    survival_record_first_kill,
 )
 from ..math_parity import (
     NATIVE_HALF_PI,
@@ -57,7 +57,6 @@ from .lifecycle import (
     creature_lifecycle_is_alive,
 )
 from .spawn import (
-    HAS_SPAWN_SLOT_FLAG,
     NATIVE_SPAWN_SLOT_COUNT,
     RANDOM_HEADING_SENTINEL,
     CreatureAiMode,
@@ -76,8 +75,8 @@ if TYPE_CHECKING:
 
 
 __all__ = [
-    "CONTACT_DAMAGE_PERIOD",
     "CREATURE_POOL_SIZE",
+    "DOT_TICK_PERIOD",
     "PHANTOM_CREATURE_INDEX",
     "CreatureDeath",
     "CreaturePool",
@@ -90,7 +89,9 @@ CREATURE_POOL_SIZE = 0x180
 # that creature anyway: into the unnamed padding after `creature_pool`, which nothing iterates.
 PHANTOM_CREATURE_INDEX = CREATURE_POOL_SIZE
 
-CONTACT_DAMAGE_PERIOD = 0.5
+# Shared damage-over-time tick: plague infection, the Radioactive aura and Pyrokinetic particles.
+# Contact damage runs on `attack_cooldown` instead.
+DOT_TICK_PERIOD = 0.5
 
 # Native movement path multiplies by a fixed `30.0` factor in `creature_update_all`.
 CREATURE_SPEED_SCALE = 30.0
@@ -98,18 +99,19 @@ CREATURE_SPEED_SCALE = 30.0
 # Base heading turn rate multiplier (angle_approach clamps by frame_dt internally).
 CREATURE_TURN_RATE_SCALE = NATIVE_TURN_RATE_SCALE
 
-# Native uses lifecycle_stage as a lifecycle sentinel:
+# The death timer:
 # - 16.0 means "alive" (normal AI/movement/anim update)
 # - once HP <= 0 it ramps down quickly and drives death slide + corpse decal timing.
-# - final deactivation (`lifecycle_stage < -10.0`) happens during render (creature_render_type),
-#   not during creature_update_all.
+# - final deactivation (`death_timer < -10.0`) happens during render (creature_render_type), and also
+#   in creature_update_all when corpses don't fade (`cv_bodiesFade == 0`).
 CREATURE_DEATH_TIMER_DECAY = 28.0
 CREATURE_CORPSE_FADE_DECAY = 20.0
 CREATURE_DEATH_SLIDE_SCALE = 9.0
-_TARGET_REEVAL_PERIOD = 0x46
-_FLAG_SELF_DAMAGE_TICK = int(CreatureFlags.SELF_DAMAGE_TICK)
-_FLAG_SELF_DAMAGE_TICK_STRONG = int(CreatureFlags.SELF_DAMAGE_TICK_STRONG)
-_FLAG_AI7_LINK_TIMER = int(CreatureFlags.AI7_LINK_TIMER)
+# Native re-picks the target on every tick except multiples of 70.
+_TARGET_REEVAL_SKIP_MODULUS = 0x46
+_FLAG_POISONED = int(CreatureFlags.POISONED)
+_FLAG_POISONED_STRONG = int(CreatureFlags.POISONED_STRONG)
+_FLAG_STOP_AND_GO = int(CreatureFlags.STOP_AND_GO)
 
 _CREATURE_CONTACT_SFX: dict[CreatureTypeId, tuple[SfxId, SfxId]] = {
     CreatureTypeId.ZOMBIE: (SfxId.ZOMBIE_ATTACK_01, SfxId.ZOMBIE_ATTACK_02),
@@ -242,7 +244,7 @@ class CreatureState(msgspec.Struct):
     force_target: int = 0
     target: Vec2 = Vec2()
     target_player: int = 0
-    ai_mode: CreatureAiMode = CreatureAiMode.ORBIT_PLAYER
+    ai_mode: CreatureAiMode = CreatureAiMode.FLANK_PLAYER
     flags: CreatureFlags = CreatureFlags(0)
 
     # Native `creature_alloc_slot` does not clear `link_index`; many spawn paths
@@ -265,10 +267,10 @@ class CreatureState(msgspec.Struct):
     attack_cooldown: float = 0.0
     reward_value: float = 0.0
 
-    # Plaguebearer infection state (native: `collision_flag` byte).
+    # Plaguebearer infection state (native: `plague_infected` byte).
     plague_infected: bool = False
-    collision_timer: float = CONTACT_DAMAGE_PERIOD
-    lifecycle_stage: float = CREATURE_LIFECYCLE_ALIVE
+    dot_tick_timer: float = DOT_TICK_PERIOD
+    death_timer: float = CREATURE_LIFECYCLE_ALIVE
 
     # Presentation.
     size: float = 50.0
@@ -278,11 +280,11 @@ class CreatureState(msgspec.Struct):
 
     # Rewrite-only view of the BONUS_ON_DEATH args native packs into `link_index`.
     bonus_id: BonusId | None = None
-    bonus_duration_override: int | None = None
+    bonus_amount_override: int | None = None
 
     @property
     def ranged_projectile_type(self) -> int:
-        """The int32 arm of the native `orbit_radius` union (RANGED_ATTACK_VARIANT fire)."""
+        """The int32 arm of the native `orbit_radius` union (RANGED_TEMPLATE_PROJECTILE fire)."""
 
         return f32_bits_i32(self.orbit_radius)
 
@@ -312,8 +314,8 @@ def _phantom_creature() -> CreatureState:
     return CreatureState(
         target_offset=Vec2(),
         move_speed=0.0,
-        collision_timer=0.0,
-        lifecycle_stage=0.0,
+        dot_tick_timer=0.0,
+        death_timer=0.0,
         size=0.0,
         tint=RGBA(0.0, 0.0, 0.0, 0.0),
     )
@@ -422,7 +424,7 @@ class CreaturePool:
         if player_count == 1:
             creature.target_player = 0
             native_auto_target_distance = None
-            if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+            if (self._update_tick % _TARGET_REEVAL_SKIP_MODULUS) != 0:
                 dx = x87_pc24_sub(players[0].pos.x, creature.pos.x)
                 dy = x87_pc24_sub(players[0].pos.y, creature.pos.y)
                 native_auto_target_distance = x87_pc24_hypot(dx, dy)
@@ -440,7 +442,7 @@ class CreaturePool:
         # and always flip when the current target dies.
         if player_count == 2:
             native_auto_target_distance = None
-            if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+            if (self._update_tick % _TARGET_REEVAL_SKIP_MODULUS) != 0:
                 other = 1 - target_player
                 if float(players[other].health) > 0.0:
                     cur_dx = x87_pc24_sub(players[target_player].pos.x, creature.pos.x)
@@ -463,8 +465,8 @@ class CreaturePool:
             )
 
         # 3/4-player extension: keep deterministic nearest-alive targeting with the
-        # same periodic refresh/dead-target refresh policy as native 2-player mode.
-        needs_refresh = (self._update_tick % _TARGET_REEVAL_PERIOD) != 0 or float(players[target_player].health) <= 0.0
+        # same refresh policy as native 2-player mode: every tick but multiples of 70, or a dead target.
+        needs_refresh = (self._update_tick % _TARGET_REEVAL_SKIP_MODULUS) != 0 or float(players[target_player].health) <= 0.0
         if needs_refresh:
             nearest_idx = -1
             nearest_dist_sq = 0.0
@@ -544,7 +546,7 @@ class CreaturePool:
 
         return creature_spawn_template(self, template_id, pos, heading, state=state, detail_preset=detail_preset)
 
-    def _apply_self_damage_tick(
+    def _apply_poison_tick(
         self,
         creature_index: int,
         creature: CreatureState,
@@ -557,9 +559,9 @@ class CreaturePool:
             return False
         damage_amount = 0.0
         creature_flags = int(creature.flags)
-        if (creature_flags & _FLAG_SELF_DAMAGE_TICK_STRONG) != 0:
+        if (creature_flags & _FLAG_POISONED_STRONG) != 0:
             damage_amount = x87_pc24_mul(dt, 180.0)
-        elif (creature_flags & _FLAG_SELF_DAMAGE_TICK) != 0:
+        elif (creature_flags & _FLAG_POISONED) != 0:
             damage_amount = x87_pc24_mul(dt, 60.0)
         if damage_amount <= 0.0:
             return False
@@ -587,18 +589,18 @@ class CreaturePool:
         # ahead of that call matters when a corpse enters the sweep at
         # exactly 16.0: creature_apply_damage then applies its separate
         # dead-entry dt * 15 decrement before the usual dt * 28 decay.
-        if creature.hp <= 0.0 and creature_lifecycle_is_alive(creature.lifecycle_stage):
-            creature.lifecycle_stage = x87_pc24_sub(float(creature.lifecycle_stage), float(dt))
-        self._apply_self_damage_tick(idx, creature, dt=dt, step_runtime=step_runtime)
+        if creature.hp <= 0.0 and creature_lifecycle_is_alive(creature.death_timer):
+            creature.death_timer = x87_pc24_sub(float(creature.death_timer), float(dt))
+        self._apply_poison_tick(idx, creature, dt=dt, step_runtime=step_runtime)
         # Native still ticks AI7 link-timer state (and its RNG draws) for
         # dead creatures inside `creature_update_all`.
-        if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and (int(creature.flags) & _FLAG_AI7_LINK_TIMER) != 0:
+        if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and (int(creature.flags) & _FLAG_STOP_AND_GO) != 0:
             creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rng=rng)
         # Native's targeting block runs before the alive/dead split:
         # fading corpses still switch their target player and feed the
         # auto-target comparison.
         target_resolution = self._resolve_target_player(creature, players)
-        if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+        if (self._update_tick % _TARGET_REEVAL_SKIP_MODULUS) != 0:
             self._update_player_auto_target(
                 players=players,
                 preserve_bugs=bool(state.preserve_bugs),
@@ -682,7 +684,7 @@ class CreaturePool:
             if float(state.bonuses.freeze) > 0.0:
                 continue
 
-            if not creature_lifecycle_is_alive(creature.lifecycle_stage) or creature.hp <= 0.0:
+            if not creature_lifecycle_is_alive(creature.death_timer) or creature.hp <= 0.0:
                 self._tick_corpse(
                     idx,
                     creature,
@@ -696,7 +698,7 @@ class CreaturePool:
             if dt <= 0.0:
                 continue
 
-            poison_killed = self._apply_self_damage_tick(
+            poison_killed = self._apply_poison_tick(
                 idx,
                 creature,
                 dt=dt,
@@ -715,7 +717,7 @@ class CreaturePool:
             target_player = 1 if target_resolution is None else int(target_resolution.target_player)
             # Native only updates player auto-target feedback inside the
             # `creature_update_tick % 0x46 != 0` retarget cadence block.
-            if target_resolution is not None and (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+            if target_resolution is not None and (self._update_tick % _TARGET_REEVAL_SKIP_MODULUS) != 0:
                 self._update_player_auto_target(
                     players=players,
                     preserve_bugs=bool(state.preserve_bugs),
@@ -760,11 +762,11 @@ class CreaturePool:
                 continue
 
             if creature.plague_infected:
-                creature.collision_timer = x87_pc24_sub(float(creature.collision_timer), float(dt))
-                if creature.collision_timer < 0.0:
-                    creature.collision_timer = x87_pc24_add(
-                        float(creature.collision_timer),
-                        f32(CONTACT_DAMAGE_PERIOD),
+                creature.dot_tick_timer = x87_pc24_sub(float(creature.dot_tick_timer), float(dt))
+                if creature.dot_tick_timer < 0.0:
+                    creature.dot_tick_timer = x87_pc24_add(
+                        float(creature.dot_tick_timer),
+                        f32(DOT_TICK_PERIOD),
                     )
                     creature.hp = x87_pc24_sub(float(creature.hp), f32(15.0))
                     plague_killed = False
@@ -802,19 +804,19 @@ class CreaturePool:
                 dt=dt,
             )
             move_scale = float(ai.move_scale)
-            if ai.self_damage is not None and ai.self_damage > 0.0:
+            if ai.link_death_damage is not None and ai.link_death_damage > 0.0:
                 # Native link-death cleanup calls creature_apply_damage(idx,
                 # 1000.0, 1, zero): the full bullet path with heading-jitter
                 # rand, hit flash, and the lethal death-SFX roll.
                 creature_apply_damage(
-                    step_runtime, idx, ai.self_damage, CreatureDamageType.BULLET, Vec2(),
+                    step_runtime, idx, ai.link_death_damage, CreatureDamageType.BULLET, Vec2(),
                 )
 
             if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.plague_infected:
                 creature.target_heading = heading_add_pi_f32(float(creature.target_heading))
 
             turn_rate = f32(float(creature.move_speed) * CREATURE_TURN_RATE_SCALE)
-            if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
+            if (creature.flags & CreatureFlags.SPAWNER) == 0:
                 if creature.ai_mode != CreatureAiMode.HOLD_TIMER:
                     creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
                     move_delta = _movement_delta_from_heading_f32(
@@ -830,13 +832,13 @@ class CreaturePool:
             else:
                 # Spawner/short-strip creatures clamp to bounds using `size` as a radius, once and
                 # before moving (creature_update_all 0x00426220); most are stationary unless
-                # ANIM_LONG_STRIP is set, and a long-strip mover may step past the bound this frame.
+                # SPAWNER_MOBILE is set, and a long-strip mover may step past the bound this frame.
                 size = float(creature.size)
                 creature.pos = Vec2(
                     _clamp_to_size_bounds(float(creature.pos.x), size, TERRAIN_SIZE),
                     _clamp_to_size_bounds(float(creature.pos.y), size, TERRAIN_SIZE),
                 )
-                if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
+                if (creature.flags & CreatureFlags.SPAWNER_MOBILE) == 0:
                     creature.vel = Vec2()
                 else:
                     creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
@@ -853,7 +855,7 @@ class CreaturePool:
                 # branch, before this creature's plaguebearer/anim/ranged/contact
                 # rand draws; children spawned here are visited later in the same
                 # pass when their slot index is above the current one.
-                if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and (creature.flags & HAS_SPAWN_SLOT_FLAG) != 0:
+                if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and (creature.flags & CreatureFlags.SPAWNER) != 0:
                     child_template_id = tick_spawn_slot(self.spawn_slots[creature.link_index], dt)
                     if child_template_id is not None:
                         self.spawn_template(
@@ -903,12 +905,12 @@ class CreaturePool:
             # requires the creature to still be alive (hp > 0).
             if PerkId.RADIOACTIVE in state.perks and target_dist < 100.0:
                 pulse_timer_step = x87_pc24_mul(float(dt), f32(1.5))
-                creature.collision_timer = x87_pc24_sub(
-                    float(creature.collision_timer),
+                creature.dot_tick_timer = x87_pc24_sub(
+                    float(creature.dot_tick_timer),
                     pulse_timer_step,
                 )
-                if creature.collision_timer < 0.0 and float(creature.hp) > 0.0:
-                    creature.collision_timer = CONTACT_DAMAGE_PERIOD
+                if creature.dot_tick_timer < 0.0 and float(creature.hp) > 0.0:
+                    creature.dot_tick_timer = DOT_TICK_PERIOD
                     pulse_damage = x87_pc24_mul(
                         x87_pc24_sub(f32(100.0), target_dist),
                         f32(0.3),
@@ -924,18 +926,18 @@ class CreaturePool:
                                 players[0].experience,
                                 creature.reward_value,
                             )
-                            creature.lifecycle_stage = x87_pc24_sub(
-                                float(creature.lifecycle_stage),
+                            creature.death_timer = x87_pc24_sub(
+                                float(creature.death_timer),
                                 float(dt),
                             )
 
             if (not frozen_by_evil_eyes) and (  # noqa: SIM102 - preserve the native ranged-fire branch shape
-                creature.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.RANGED_ATTACK_VARIANT)
+                creature.flags & (CreatureFlags.RANGED_PLASMA_RIFLE | CreatureFlags.RANGED_TEMPLATE_PROJECTILE)
             ):
                 # Ported from creature_update_all @ 0x00426220, around the
                 # 0x004276xx ranged-fire branch.
                 if target_dist > 64.0 and creature.attack_cooldown <= 0.0:
-                    if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
+                    if creature.flags & CreatureFlags.RANGED_PLASMA_RIFLE:
                         type_id = ProjectileTemplateId.PLASMA_RIFLE
                         projectile_spawn(
                             state,
@@ -949,7 +951,7 @@ class CreaturePool:
                         sfx.append(SfxRequest(SfxId.SHOCK_FIRE, creature.pos))
                         creature.attack_cooldown = x87_pc24_add(f32(creature.attack_cooldown), f32(1.0))
 
-                    if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
+                    if (creature.flags & CreatureFlags.RANGED_TEMPLATE_PROJECTILE) and creature.attack_cooldown <= 0.0:
                         projectile_type = ProjectileTemplateId(creature.ranged_projectile_type)
                         projectile_spawn(
                             state,
@@ -983,9 +985,9 @@ class CreaturePool:
                     players[0].experience = experience_plus_reward(players[0].experience, creature.reward_value)
                     state.effects.spawn_burst(pos=creature.pos, count=6, rng=rng, detail_preset=detail_preset)
                     sfx.append(SfxRequest(SfxId.UI_BONUS, creature.pos, gain=0.8))
-                    state.bonus_spawn_guard = True
+                    state.scripted_burst_active = True
                     self.handle_death(step_runtime, idx, keep_corpse=False)
-                    state.bonus_spawn_guard = False
+                    state.scripted_burst_active = False
 
             # Native has no aliveness re-check here: a creature plague-killed earlier in the tick
             # can still bite.
@@ -1003,9 +1005,9 @@ class CreaturePool:
                         )
                     if player.shield_timer <= 0.0:
                         if PerkId.TOXIC_AVENGER in state.perks:
-                            creature.flags |= CreatureFlags.SELF_DAMAGE_TICK | CreatureFlags.SELF_DAMAGE_TICK_STRONG
+                            creature.flags |= CreatureFlags.POISONED | CreatureFlags.POISONED_STRONG
                         elif PerkId.VEINS_OF_POISON in state.perks:
-                            creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
+                            creature.flags |= CreatureFlags.POISONED
                     player_take_damage(step_runtime, player, creature.contact_damage, dt=dt)
                     push_dir = x87_d3dx_vec2_normalize(
                         Vec2(x87_pc24_sub(player.pos.x, creature.pos.x), x87_pc24_sub(player.pos.y, creature.pos.y)),
@@ -1026,7 +1028,7 @@ class CreaturePool:
             # the corpse staging still counts the kill later.
             if target_dist < 30.0 and creature.size <= 30.0:
                 creature.hp = 0.0
-                creature.lifecycle_stage = f32(float(creature.lifecycle_stage) - float(dt))
+                creature.death_timer = f32(float(creature.death_timer) - float(dt))
 
     def handle_death(self, step_runtime: WorldStepRuntime, idx: int, *, keep_corpse: bool = True) -> None:
         """Port of `creature_handle_death` (0x0041e910), recording the frame's `CreatureDeath` event.
@@ -1054,15 +1056,15 @@ class CreaturePool:
             state.bonus_pool.spawn_at(
                 pos=creature.pos,
                 bonus_id=creature.bonus_id,
-                duration_override=-1 if creature.bonus_duration_override is None else creature.bonus_duration_override,
+                amount_override=-1 if creature.bonus_amount_override is None else creature.bonus_amount_override,
                 state=state,
                 detail_preset=detail_preset,
             )
             # Native drops it again whenever this death is handled again (original bug 33).
             if not state.preserve_bugs:
                 creature.bonus_id = None
-                creature.bonus_duration_override = None
-        survival_record_recent_death(state, pos=creature.pos)
+                creature.bonus_amount_override = None
+        survival_record_first_kill(state, pos=creature.pos)
         # Re-entrant calls (the secondary detonation follow-up) land on an already deactivated creature.
         if not creature.active:
             step_runtime.deaths.append(
@@ -1097,7 +1099,7 @@ class CreaturePool:
                 child.size = f32(child.size - f32(8.0))
                 child.move_speed = f32(child.move_speed + f32(0.1))
                 child.contact_damage = f32(child.contact_damage * f32(0.7))
-                child.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+                child.death_timer = CREATURE_LIFECYCLE_ALIVE
                 if child_idx == PHANTOM_CREATURE_INDEX:
                     self.phantom = child
                 else:
@@ -1105,7 +1107,7 @@ class CreaturePool:
             state.effects.spawn_burst(pos=creature.pos, count=8, rng=rng, detail_preset=detail_preset)
 
         if keep_corpse:
-            creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, f32(step_runtime.dt))
+            creature.death_timer = x87_pc24_sub(creature.death_timer, f32(step_runtime.dt))
         else:
             creature.active = False
 
@@ -1120,7 +1122,7 @@ class CreaturePool:
             else:
                 killer.experience = experience_plus_reward(killer.experience, creature.reward_value)
 
-        if not state.bonus_spawn_guard:
+        if not state.scripted_burst_active:
             state.bonus_pool.try_spawn_on_kill(pos=creature.pos, state=state, players=players, detail_preset=detail_preset)
 
         if state.bonuses.freeze > 0.0:
@@ -1152,7 +1154,7 @@ class CreaturePool:
     def _release_spawn_slot(self, creature: CreatureState) -> None:
         """A dying or culled spawner (flag 0x4) frees the spawn slot in its `link_index`."""
 
-        if creature.flags & HAS_SPAWN_SLOT_FLAG:
+        if creature.flags & CreatureFlags.SPAWNER:
             self.spawn_slots[creature.link_index].owner_creature = -1
 
     def _tick_dead(
@@ -1166,47 +1168,47 @@ class CreaturePool:
         detail_preset: int,
         violence_disabled: int,
     ) -> None:
-        """Advance the post-death lifecycle_stage ramp and queue corpse decals.
+        """Advance the post-death death_timer ramp and queue corpse decals.
 
-        This matches the `lifecycle_stage` death staging inside `creature_update_all`:
-        - while lifecycle_stage > 0: decrement quickly and slide backwards
-        - once lifecycle_stage <= 0: queue a corpse decal and fade out until < -10, then deactivate.
+        This matches the `death_timer` death staging inside `creature_update_all`:
+        - while death_timer > 0: decrement quickly and slide backwards
+        - once death_timer <= 0: queue a corpse decal and fade out until < -10, then deactivate.
         """
 
         if dt <= 0.0:
             return
 
         dt_f32 = f32(dt)
-        lifecycle_stage = f32(creature.lifecycle_stage)
-        if lifecycle_stage <= 0.0:
-            creature.lifecycle_stage = f32(
-                lifecycle_stage - f32(float(dt_f32) * CREATURE_CORPSE_FADE_DECAY),
+        death_timer = f32(creature.death_timer)
+        if death_timer <= 0.0:
+            creature.death_timer = f32(
+                death_timer - f32(float(dt_f32) * CREATURE_CORPSE_FADE_DECAY),
             )
             return
 
-        long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
-            creature.flags & CreatureFlags.ANIM_LONG_STRIP
+        mobile = (creature.flags & CreatureFlags.SPAWNER) == 0 or (
+            creature.flags & CreatureFlags.SPAWNER_MOBILE
         ) != 0
 
-        next_lifecycle_stage = f32(
-            lifecycle_stage - f32(float(dt_f32) * CREATURE_DEATH_TIMER_DECAY),
+        next_death_timer = f32(
+            death_timer - f32(float(dt_f32) * CREATURE_DEATH_TIMER_DECAY),
         )
-        creature.lifecycle_stage = f32(next_lifecycle_stage)
-        if next_lifecycle_stage > 0.0:
-            if long_strip:
+        creature.death_timer = f32(next_death_timer)
+        if next_death_timer > 0.0:
+            if mobile:
                 # Preserve native x87 operation order for the death-slide
                 # velocity: trig * lifecycle * frame_dt * 9, narrowing after
                 # each multiply in the game's 24-bit precision mode.
                 radians = x87_pc24_sub(f32(creature.heading), NATIVE_HALF_PI)
                 vel_x = x87_pc24_cos_mul(
                     radians,
-                    float(next_lifecycle_stage),
+                    float(next_death_timer),
                     float(dt_f32),
                     f32(CREATURE_DEATH_SLIDE_SCALE),
                 )
                 vel_y = x87_pc24_sin_mul(
                     radians,
-                    float(next_lifecycle_stage),
+                    float(next_death_timer),
                     float(dt_f32),
                     f32(CREATURE_DEATH_SLIDE_SCALE),
                 )
@@ -1222,12 +1224,12 @@ class CreaturePool:
                 creature.vel = Vec2()
             return
 
-        # lifecycle_stage just crossed <= 0: bake a persistent corpse decal into the ground.
+        # death_timer just crossed <= 0: bake a persistent corpse decal into the ground.
         if int(violence_disabled) == 0:
             corpse_size = f32(creature.size)
             corpse_half_size = x87_pc24_mul(corpse_size, 0.5)
-            # Native uses a special fallback corpse id for ping-pong strip creatures.
-            corpse_type_id = int(creature.type_id) if long_strip else 7
+            # Native gives pinned spawners the fallback corpse id 7.
+            corpse_type_id = int(creature.type_id) if mobile else 7
             ok = fx_queue_rotated.add(
                 top_left=Vec2(
                     x87_pc24_sub(f32(creature.pos.x), corpse_half_size),
@@ -1239,21 +1241,21 @@ class CreaturePool:
                 creature_type_id=corpse_type_id,
             )
             if not ok:
-                creature.lifecycle_stage = f32(0.001)
+                creature.death_timer = f32(0.001)
                 return
 
         self.kill_count += 1
 
         # Native `creature_update_all` emits a 19-splatter blood burst when a
-        # ping-pong corpse first reaches this staged kill point.
+        # spawner corpse first reaches this staged kill point.
         if (
             int(violence_disabled) == 0
-            and (creature.flags & CreatureFlags.ANIM_PING_PONG) != 0
+            and (creature.flags & CreatureFlags.SPAWNER) != 0
         ):
             for count, age, angle_caller in (
-                (8, 0.0, RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_8_ANGLE),
-                (6, -0.07, RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_6_ANGLE),
-                (5, -0.12, RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_5_ANGLE),
+                (8, 0.0, RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_8_ANGLE),
+                (6, -0.07, RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_6_ANGLE),
+                (5, -0.12, RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_5_ANGLE),
             ):
                 for _ in range(int(count)):
                     angle = x87_pc24_mul(float(int(rng.rand_tagged(angle_caller)) % 612), f32(0.01))
@@ -1269,7 +1271,7 @@ class CreaturePool:
     def finalize_post_render_lifecycle(self) -> None:
         """Mirror render-time corpse culling from native `creature_render_type`.
 
-        Native deactivates entries only after draw once `lifecycle_stage < -10.0`. Keeping
+        Native deactivates entries only after draw once `death_timer < -10.0`. Keeping
         this outside `creature_update_all` preserves slot-allocation timing for same-tick
         survival/rush spawns.
         """
@@ -1277,7 +1279,7 @@ class CreaturePool:
         for creature in self._entries:
             if not creature.active:
                 continue
-            if classify_creature_lifecycle(creature.lifecycle_stage) != CreatureLifecyclePhase.DESPAWNED:
+            if classify_creature_lifecycle(creature.death_timer) != CreatureLifecyclePhase.DESPAWNED:
                 continue
             self._release_spawn_slot(creature)
             creature.active = False

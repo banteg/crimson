@@ -45,9 +45,9 @@ def draw_typo_name_labels(
             continue
 
         label_alpha = 1.0
-        lifecycle_stage = float(creature.lifecycle_stage)
-        if lifecycle_stage < 0.0:
-            label_alpha = max(0.0, min(1.0, (lifecycle_stage + 10.0) * 0.1))
+        death_timer = float(creature.death_timer)
+        if death_timer < 0.0:
+            label_alpha = max(0.0, min(1.0, (death_timer + 10.0) * 0.1))
         if label_alpha <= 1e-3:
             continue
 

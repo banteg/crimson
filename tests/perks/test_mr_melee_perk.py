@@ -18,9 +18,9 @@ def test_mr_melee_hits_attacking_creature_on_contact_damage_tick() -> None:
     creature.active = True
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 100.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.contact_damage = 10.0
-    creature.collision_timer = 0.1
+    creature.dot_tick_timer = 0.1
 
     step_creatures(world, 0.2)
 
@@ -39,16 +39,16 @@ def test_mr_melee_does_not_prevent_player_damage_when_killing_attacker() -> None
     creature.active = True
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 10.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.contact_damage = 10.0
-    creature.collision_timer = 0.1
+    creature.dot_tick_timer = 0.1
 
     step_creatures(world, 0.2)
 
     assert_float_close(player.health, 90.0)
     assert creature.plague_infected
     # The live interaction tail finishes without an in-frame dt * 28 corpse step.
-    assert creature.lifecycle_stage > CREATURE_LIFECYCLE_ALIVE - 1.0
+    assert creature.death_timer > CREATURE_LIFECYCLE_ALIVE - 1.0
 
 
 def test_mr_melee_is_inert_when_not_active() -> None:
@@ -60,9 +60,9 @@ def test_mr_melee_is_inert_when_not_active() -> None:
     creature.active = True
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 100.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.contact_damage = 10.0
-    creature.collision_timer = 0.1
+    creature.dot_tick_timer = 0.1
 
     step_creatures(world, 0.2)
 

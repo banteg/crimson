@@ -110,7 +110,7 @@ class GameState(msgspec.Struct):
     quest_fail_retry_count: int = 0
     typo: TypoSession = msgspec.field(default_factory=TypoSession)
     terrain_regenerate_requested: bool = False
-    survival_elapsed_ms: float = 0.0
+    run_elapsed_ms: float = 0.0
     quit_requested: bool = False
     screen_fade_alpha: float = 0.0
     screen_fade_ramp: bool = False

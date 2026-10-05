@@ -52,7 +52,7 @@ def test_creature_anim_advance_phase_ping_pong_uses_22_multiplier() -> None:
         dt=1.0 / 60.0,
         size=50.0,
         local_scale=1.0,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
         ai_mode=0,
     )
     expected = _expected_f32_step(strip_mul=22.0)
@@ -61,7 +61,7 @@ def test_creature_anim_advance_phase_ping_pong_uses_22_multiplier() -> None:
 
 
 def test_creature_anim_select_frame_ping_pong_basic() -> None:
-    flags = CreatureFlags.ANIM_PING_PONG
+    flags = CreatureFlags.SPAWNER
     base = 0x20
     # idx=0 -> base+0x10+0 = 0x30
     frame, mirror_applied, mode = creature_anim_select_frame(0.0, base_frame=base, mirror_long=False, flags=flags)
@@ -103,7 +103,7 @@ def test_creature_killed_by_a_projectile_still_advances_its_walk_cycle_that_tick
     creature.max_hp = 1.0
     creature.size = 50.0
     creature.move_speed = 2.0
-    creature.lifecycle_stage = 16.0
+    creature.death_timer = 16.0
     projectile_spawn(
         world.state,
         players=world.players,

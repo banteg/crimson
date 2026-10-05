@@ -2,4 +2,4 @@
 #include "crimsonland_types.h"
 #include "crimsonland_game_state_owner.h"
 
-unsigned char survival_reward_handout_enabled;
+unsigned char survival_shrinkifier_handout_enabled;

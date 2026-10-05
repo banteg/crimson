@@ -9,7 +9,7 @@ from crimson.sim.run_spec import RunSpec, RunStatus
 from grim.geom import Vec2
 from tests.support.factories import player_input
 
-_FULL = RunStatus(quest_unlock_index=50, quest_unlock_index_full=50)
+_FULL = RunStatus(quest_unlock_index=50, quest_unlock_index_hardcore=50)
 
 
 @pytest.mark.parametrize(
@@ -21,12 +21,12 @@ _FULL = RunStatus(quest_unlock_index=50, quest_unlock_index_full=50)
         (RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, status=_FULL, friendly_fire=True), ["friendly_fire"]),
         # Quest 5.10's Plasma Cannon is still locked at index 49.
         (
-            RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, status=RunStatus(quest_unlock_index=49, quest_unlock_index_full=50)),
+            RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, status=RunStatus(quest_unlock_index=49, quest_unlock_index_hardcore=50)),
             ["unlocks"],
         ),
         # The Splitter Gun needs the hardcore index at 40.
         (
-            RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, status=RunStatus(quest_unlock_index=50, quest_unlock_index_full=39)),
+            RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, status=RunStatus(quest_unlock_index=50, quest_unlock_index_hardcore=39)),
             ["unlocks"],
         ),
     ],

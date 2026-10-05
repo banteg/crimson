@@ -18,7 +18,7 @@ extern "C" int projectile_spawn(
     projectile_t *projectile;
     projectile_t *spawned;
 
-    if (!bonus_spawn_guard) {
+    if (!scripted_burst_active) {
 #if CL_BUILD == 10908
         if (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3) {
             ++highscore_record_shots_fired;
@@ -56,7 +56,7 @@ initialize:
     spawned = &projectile_pool[result];
     spawned->fields.owner_id = owner_id;
     spawned->active = 1;
-    spawned->fields.travel_budget = weapon_table[type_id].travel_budget;
+    spawned->fields.projectile_speed = weapon_table[type_id].projectile_speed;
     spawned->position = *pos;
     spawned->fields.origin = *pos;
     spawned->angle = angle;

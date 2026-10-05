@@ -28,7 +28,7 @@ extern "C" void creatures_apply_radius_damage(
                    &spot)
                     - radius
                 < creature_pool[creature_id].size * 0.14285715f + 3.0f
-            && creature_pool[creature_id].lifecycle_stage > 5.0f) {
+            && creature_pool[creature_id].death_timer > 5.0f) {
             creature_apply_damage(
                 creature_id,
                 damage,

@@ -153,7 +153,7 @@ def test_particle_hits_damage_creatures() -> None:
 
     particles = [entry for entry in world.state.particles.entries if entry.active]
     assert particles
-    assert particles[0].render_flag is False
+    assert particles[0].in_flight is False
 
 
 def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
@@ -169,7 +169,7 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     particle = next(entry for entry in particles.entries if entry.active)
     attached_pos = particle.pos
     assert particle.target_id == 0
-    assert not particle.render_flag
+    assert not particle.in_flight
 
     creature.pos = Vec2(80.0, 40.0)
     particles.update(0.1, step_runtime=make_step_runtime(world, dt=0.1))

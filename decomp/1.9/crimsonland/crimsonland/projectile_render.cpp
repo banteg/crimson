@@ -327,9 +327,9 @@ extern "C" void projectile_render(float transition_alpha)
     effect_select_texture(13);
     grim_interface_ptr->grim_set_rotation(0.0f);
 
-    if (player_state_table[render_overlay_player_index].muzzle_flash_alpha > 0.0f) {
+    if (player_state_table[current_player_index].muzzle_flash_alpha > 0.0f) {
         float heading =
-            player_state_table[render_overlay_player_index].aim_heading
+            player_state_table[current_player_index].aim_heading
             - 1.5707964f
             - 0.150915f;
         projectile_render_vec2_t flash(
@@ -340,15 +340,15 @@ extern "C" void projectile_render(float transition_alpha)
             1.0f,
             1.0f,
             transition_alpha
-                * player_state_table[render_overlay_player_index].muzzle_flash_alpha);
+                * player_state_table[current_player_index].muzzle_flash_alpha);
         grim_interface_ptr->grim_begin_batch();
         grim_interface_ptr->grim_draw_quad(
             camera_offset_x
-                + player_state_table[render_overlay_player_index].pos_x
+                + player_state_table[current_player_index].pos_x
                 + flash.x
                 - 80.0f,
             camera_offset_y
-                + player_state_table[render_overlay_player_index].pos_y
+                + player_state_table[current_player_index].pos_y
                 + flash.y
                 - 80.0f,
             160.0f,
@@ -968,7 +968,7 @@ extern "C" void projectile_render(float transition_alpha)
     grim_interface_ptr->grim_end_batch();
 
     float plague_phase =
-        ((float)survival_elapsed_ms * 0.001f) * 9.0f;
+        ((float)run_elapsed_ms * 0.001f) * 9.0f;
     grim_interface_ptr->grim_set_config_var(0x13, 1u);
     grim_interface_ptr->grim_set_config_var(0x14, 6u);
     grim_interface_ptr->grim_begin_batch();

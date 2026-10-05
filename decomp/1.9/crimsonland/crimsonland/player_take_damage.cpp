@@ -72,7 +72,7 @@ post_damage:
             const vec2f_t *player_pos =
                 &player_state_table[player_index].position;
             effect_spawn_explosion_burst(player_pos, 1.8f);
-            bonus_spawn_guard = 1;
+            scripted_burst_active = 1;
 
             int creature_index = 0;
             do {
@@ -104,7 +104,7 @@ post_damage:
                 ++creature_index;
             } while (creature_index < 0x180);
 
-            bonus_spawn_guard = 0;
+            scripted_burst_active = 0;
             sfx_play_panned(
                 sfx_explosion_large,
                 player_pos,
@@ -141,7 +141,7 @@ post_damage:
         }
 
         if (player_state_table[player_index].health <= 20.0f && (crt_rand() & 7) == 3) {
-            player_state_table[player_index].low_health_timer = 0.0f;
+            player_state_table[player_index].bleed_drip_timer = 0.0f;
         }
     }
 }

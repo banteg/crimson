@@ -138,7 +138,7 @@ extern "C" void tutorial_prompt_dialog(
         if (primary_button.activated) {
             ui_sign_crimson.focus_disabled = 0;
             game_state_pending = GAME_STATE_PLAY_GAME_MENU;
-            render_pass_mode = 0;
+            run_active = 0;
             ui_transition_direction = 0;
             grim_interface_ptr->grim_flush_input();
             console_input_poll();
@@ -174,7 +174,7 @@ extern "C" void tutorial_prompt_dialog(
         if (primary_button.activated) {
             ui_sign_crimson.focus_disabled = 0;
             game_state_pending = GAME_STATE_PLAY_GAME_MENU;
-            render_pass_mode = 0;
+            run_active = 0;
             ui_transition_direction = 0;
             grim_interface_ptr->grim_flush_input();
             console_input_poll();

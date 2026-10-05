@@ -204,7 +204,7 @@ class QuestMode(BaseGameplayMode):
                 record=build_highscore_record(
                     state=self.state,
                     player=self.player,
-                    survival_elapsed_ms=base_time_ms,
+                    run_elapsed_ms=base_time_ms,
                     creature_kill_count=int(self.creatures.kill_count),
                     rand_value=int(self._quest_highscore_random_tag),
                 ),

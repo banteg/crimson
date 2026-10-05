@@ -10,7 +10,7 @@
       "note": "Recursive Fire Bullets add-on, 64-slot allocator, all return paths."
     },
     {
-      "name": "weapon_table_entry",
+      "name": "weapon_name_get",
       "address": "0x41f4c0",
       "end": "0x41f4d2",
       "body_sha256": "1e9725a38944671ca7671ed4ef8a7680d379eef951abfd85458ef4e13e932976",
@@ -40,7 +40,7 @@
   ],
   "data": [
     {
-      "name": "bonus_spawn_guard",
+      "name": "scripted_burst_active",
       "address": "0x484d1c",
       "reference": "0x41fc20",
       "bytes": "a01c4d4800",

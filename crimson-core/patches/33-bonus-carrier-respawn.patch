@@ -3,11 +3,11 @@ Original bug 33: a bonus carrier drops its bonus again when its death is handled
 +++ b/creature_handle_death.cpp
 @@ -27,6 +27,9 @@
              (bonus_id_t)creature->bonus_args.bonus_id,
-             creature->bonus_args.duration_override
+             creature->bonus_args.amount_override
          );
 +        if (!portable_preserve_bugs) {
 +            creature->flags &= ~CREATURE_FLAG_BONUS_ON_DEATH;
 +        }
      }
  
-     if (survival_recent_death_count < 6) {
+     if (survival_first_kill_count < 6) {

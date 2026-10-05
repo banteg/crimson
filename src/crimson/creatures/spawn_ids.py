@@ -18,32 +18,28 @@ class CreatureTypeId(IntEnum):
 
 
 class CreatureAiMode(IntEnum):
-    ORBIT_PLAYER = 0
-    ORBIT_PLAYER_TIGHT = 1
+    FLANK_PLAYER = 0
+    FLANK_PLAYER_TIGHT = 1
     CHASE_PLAYER = 2
     FOLLOW_LINK = 3
-    LINK_GUARD = 4
+    FLANK_PLAYER_LINKED = 4
     FOLLOW_LINK_TETHERED = 5
     ORBIT_LINK = 6
     HOLD_TIMER = 7
-    ORBIT_PLAYER_WIDE = 8
+    FLANK_PLAYER_WIDE = 8
 
 
 class CreatureFlags(IntFlag):
-    SELF_DAMAGE_TICK = 0x01  # periodic self-damage tick (dt * 60)
-    SELF_DAMAGE_TICK_STRONG = 0x02  # stronger periodic self-damage tick (dt * 180)
-    ANIM_PING_PONG = 0x04  # short ping-pong strip
+    POISONED = 0x01  # Poison Bullets / Veins of Poison: self-damage dt * 60, red aura
+    POISONED_STRONG = 0x02  # Toxic Avenger: self-damage dt * 180
+    SPAWNER = 0x04  # nest: emits from its spawn slot (link_index), pinned in place; ping-pong strip
     SPLIT_ON_DEATH = 0x08  # split-on-death behavior
-    RANGED_ATTACK_SHOCK = 0x10  # ranged attack using projectile type 9
-    ANIM_LONG_STRIP = 0x40  # force long animation strip
-    AI7_LINK_TIMER = 0x80  # uses link index as timer for AI mode 7
-    RANGED_ATTACK_VARIANT = 0x100  # ranged attack using orbit_radius as projectile type
+    RANGED_PLASMA_RIFLE = 0x10  # fires the Plasma Rifle projectile
+    SPAWNER_MOBILE = 0x40  # a SPAWNER that keeps walking; long animation strip
+    STOP_AND_GO = 0x80  # link_index counts ms: hold, then move, then hold again
+    RANGED_TEMPLATE_PROJECTILE = 0x100  # fires the projectile type stored in orbit_radius
     BONUS_ON_DEATH = 0x400  # spawns bonus on death
 
-
-# Same bit as `ANIM_PING_PONG`; spawn logic reuses it to mean that `link_index`
-# is interpreted as a spawn slot index in template/runtime paths.
-HAS_SPAWN_SLOT_FLAG = CreatureFlags.ANIM_PING_PONG
 
 
 # Semantic names are provenance-backed against the remake creature data; see
@@ -111,10 +107,10 @@ class SpawnId(IntEnum):
     SPIDER_SP1_RANDOM_GREEN_34 = 0x34
     SPIDER_SP2_RANDOM_35 = 0x35
 
-    ALIEN_AI7_ORBITER_36 = 0x36
+    ALIEN_DELAYED_START_36 = 0x36
     SPIDER_SP2_RANGED_VARIANT_37 = 0x37
-    SPIDER_SP1_AI7_TIMER_38 = 0x38
-    SPIDER_SP1_AI7_TIMER_WEAK_39 = 0x39
+    SPIDER_SP1_STOP_AND_GO_38 = 0x38
+    SPIDER_SP1_STOP_AND_GO_WEAK_39 = 0x39
 
     SPIDER_BOSS_3A = 0x3A
     SPIDER_SP1_CONST_RED_BOSS_3B = 0x3B

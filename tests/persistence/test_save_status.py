@@ -34,10 +34,10 @@ def test_ensure_game_status_raises_on_checksum_mismatch(tmp_path: Path) -> None:
 def test_game_status_edit_persists(tmp_path: Path) -> None:
     status = save_status.ensure_game_status(tmp_path)
     assert status.quest_unlock_index == 0
-    assert status.quest_unlock_index_full == 0
+    assert status.quest_unlock_index_hardcore == 0
 
     status.quest_unlock_index = 12
-    status.quest_unlock_index_full = 34
+    status.quest_unlock_index_hardcore = 34
     status.play_time_ms = 0x12345678
     status.increment_mode_play_count_for_mode(GameMode.SURVIVAL)
     status.increment_weapon_usage_slot(5)
@@ -46,7 +46,7 @@ def test_game_status_edit_persists(tmp_path: Path) -> None:
 
     reloaded = save_status.load_status(status.path)
     assert reloaded.quest_unlock_index == 12
-    assert reloaded.quest_unlock_index_full == 34
+    assert reloaded.quest_unlock_index_hardcore == 34
     assert reloaded.play_time_ms == 0x12345678
     assert reloaded.mode_play_count_for_mode(GameMode.SURVIVAL) == 1
     assert reloaded.weapon_usage_count_slot(5) == 1

@@ -88,9 +88,9 @@ def plan_hit_sfx(
     for idx in range(len(hits)):
         if game_mode != GameMode.RUSH and (not local_game_tune_started):
             # Mirrors `projectile_update`: first eligible hit calls
-            # `sfx_play_exclusive(music_track_extra_0)` and skips the panned
+            # `music_play_exclusive(music_track_game_playlist)` and skips the panned
             # bullet/shock hit sound for that same hit. Native
-            # `sfx_play_exclusive` also performs one RNG draw to pick the
+            # `music_play_exclusive` also performs one RNG draw to pick the
             # playlist entry, so consume one draw here for stream parity.
             trigger_game_tune = True
             local_game_tune_started = True

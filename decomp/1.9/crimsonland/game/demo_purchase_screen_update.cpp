@@ -72,8 +72,8 @@ bool ui_button_update(float *xy, ui_button_t *button);
 void ui_draw_textured_quad(
     int x, int y, int width, int height, int texture_id);
 void demo_mode_start(void);
-void sfx_mute_all(int sfx_id);
-void sfx_play_exclusive(int sfx_id);
+void music_fade_out_all(int sfx_id);
+void music_play_exclusive(int sfx_id);
 }
 
 static __forceinline void demo_purchase_render_message(
@@ -126,9 +126,9 @@ extern "C" void demo_purchase_screen_update(void)
         game_state_pending = GAME_STATE_MAIN_MENU;
         demo_mode_active = 1;
         config_load_presets(false);
-        sfx_mute_all(music_track_intro_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_play_exclusive(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_intro_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_play_exclusive(music_track_crimson_theme_id);
         ui_elements_update_and_render();
         ui_cursor_render();
         return;
@@ -322,16 +322,16 @@ extern "C" void demo_purchase_screen_update(void)
             demo_mode_active = 1;
             if (offer_seen == 0) {
                 config_load_presets(false);
-                sfx_mute_all(music_track_intro_id);
-                sfx_mute_all(music_track_crimsonquest_id);
-                sfx_play_exclusive(music_track_crimson_theme_id);
+                music_fade_out_all(music_track_intro_id);
+                music_fade_out_all(music_track_crimsonquest_id);
+                music_play_exclusive(music_track_crimson_theme_id);
             }
             return;
         }
 
         quest_spawn_timeline += frame_dt_ms;
         if (quest_spawn_timeline > demo_time_limit_ms) {
-            render_pass_mode = 0;
+            run_active = 0;
             demo_mode_start();
         }
 

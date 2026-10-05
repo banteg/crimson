@@ -118,7 +118,7 @@ def test_weapon_guard_runs_before_same_frame_locked_splitter_pickup() -> None:
     entry = world.state.bonus_pool.spawn_at(
         pos=player.pos,
         bonus_id=BonusId.WEAPON,
-        duration_override=int(WeaponId.SPLITTER_GUN),
+        amount_override=int(WeaponId.SPLITTER_GUN),
         state=world.state,
     )
     assert entry is not None
@@ -144,7 +144,7 @@ def test_weapon_usage_time_precedes_same_frame_weapon_pickup() -> None:
     entry = world.state.bonus_pool.spawn_at(
         pos=player.pos,
         bonus_id=BonusId.WEAPON,
-        duration_override=int(WeaponId.ASSAULT_RIFLE),
+        amount_override=int(WeaponId.ASSAULT_RIFLE),
         state=world.state,
     )
     assert entry is not None
@@ -172,7 +172,7 @@ def test_highscore_score_stages_before_same_frame_points_pickup() -> None:
     entry = world.state.bonus_pool.spawn_at(
         pos=player.pos,
         bonus_id=BonusId.POINTS,
-        duration_override=500,
+        amount_override=500,
         state=world.state,
     )
     assert entry is not None
@@ -195,7 +195,7 @@ def test_projectile_kill_awards_xp_same_step() -> None:
     creature = world.creatures.entries[0]
     creature.active = True
     creature.pos = Vec2(100.0, 100.0)
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.hp = 1.0
     creature.max_hp = 1.0
     creature.reward_value = 10.0
@@ -255,7 +255,7 @@ def test_world_step_invalid_creature_type_id_fails_fast() -> None:
     creature.max_hp = 25.0
     creature.size = 50.0
     creature.reward_value = 0.0
-    creature.lifecycle_stage = 16.0
+    creature.death_timer = 16.0
 
     with pytest.raises(KeyError):
         _step(world, 0.016)
@@ -300,7 +300,7 @@ def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx() -> None:
     # A bubble that already captured the creature and expires this step.
     particle = world.state.particles.entries[0]
     particle.active = True
-    particle.render_flag = False
+    particle.in_flight = False
     particle.intensity = 0.81
     particle.style_id = ParticleStyleId.BUBBLEGUN
     particle.target_id = 0
@@ -348,7 +348,7 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx() -> None:
         plague_infected=True,
     )
     # The plague tick lands this step and its 15 damage kills.
-    creature.collision_timer = 0.0
+    creature.dot_tick_timer = 0.0
     rng = RecordingCrand(Crand(0x1234))
     world.state.rng = rng
 
@@ -368,7 +368,7 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx() -> None:
         pos=Vec2(256.0, 256.0),
         hp=25.0,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.RANGED_ATTACK_SHOCK,
+        flags=CreatureFlags.RANGED_PLASMA_RIFLE,
     )
     _shoot_pistol_at(world, creature)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
@@ -417,7 +417,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         pos=Vec2(256.0, 256.0),
         hp=1000.0,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
     )
     _shoot_pistol_at(world, creature)
     plan_hit_sfx = mocker.spy(world_state_mod, "plan_hit_sfx")
@@ -456,7 +456,7 @@ def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
     creature.active = True
     creature.pos = Vec2(128.0, 256.0)
     creature.hp = 100.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
 
     _step(world, 0.016, inputs=[player_input(aim=Vec2(900.0, 900.0))])
 

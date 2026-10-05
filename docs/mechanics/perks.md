@@ -49,7 +49,7 @@ long as the player keeps moving. Stopping causes speed to decay rapidly.
 ## 6. Pyrokinetic
 
 While the crosshair is near a creature, Pyrokinetic decrements that creature's
-shared collision timer. When it wraps, the timer resets to 0.5 seconds and a
+shared damage-over-time timer. When it wraps, the timer resets to 0.5 seconds and a
 heat flare triggers: a burst of five flames and a scorch decal at the target.
 The flames are the same fire particles flame weapons spit, and they hurt: each
 one burns the first creature it touches for up to 8 damage (hotter flames hit
@@ -96,7 +96,7 @@ weapon is assigned, so it persists across weapon swaps and reloads.
 
 ## 13. Radioactive
 
-A green aura damages creatures within 100 units. The shared collision timer
+A green aura damages creatures within 100 units. The shared damage-over-time timer
 (0.5 s period) decrements at 1.5× rate, giving an effective tick interval of
 0.33 s. Damage scales with proximity: (100 − distance) × 0.3. Kills from the
 aura award XP directly.

@@ -18,7 +18,7 @@ void perks_rebuild_available(void)
     perk_meta_table[perk_id_tough_reloader].available = 1;
 
     for (i = 0; i < quest_unlock_index && i < 50; i++) {
-        perk_meta_table[quest_selected_meta[i].unlock_perk_id].available = 1;
+        perk_meta_table[quest_meta_table[i].unlock_perk_id].available = 1;
     }
 
     perk_meta_table[perk_id_antiperk].available = 0;

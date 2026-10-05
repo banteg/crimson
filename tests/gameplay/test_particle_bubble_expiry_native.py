@@ -23,10 +23,10 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
     state = world.state
     rng = RecordingCrand(Crand(case["rng_seed"]))
     state.rng = rng
-    state.survival_recent_death_count = case["history_count"]
+    state.survival_first_kill_count = case["history_count"]
     state.survival_reward_fire_seen = bool(case["fire_seen"])
-    state.survival_reward_handout_enabled = bool(case["handout_enabled"])
-    state.survival_recent_death_pos = [Vec2(*case["history_positions"][j : j + 2]) for j in (0, 2, 4)]
+    state.survival_shrinkifier_handout_enabled = bool(case["handout_enabled"])
+    state.survival_first_kill_pos = [Vec2(*case["history_positions"][j : j + 2]) for j in (0, 2, 4)]
     item = case["creatures"][0]
     creature = world.creatures.entries[item["index"]]
     creature.active = False
@@ -34,7 +34,7 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
     for item in case["particles"]:
         particle = state.particles.entries[item["index"]]
         particle.active = True
-        particle.render_flag = False
+        particle.in_flight = False
         particle.intensity = item["intensity"]
         particle.style_id = ParticleStyleId.BUBBLEGUN
         particle.target_id = item["target"]
@@ -49,10 +49,10 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
     )
     expired = state.particles.update(case["dt"], step_runtime=runtime)
     assert expired == [item["index"] for item in case["particles"]]
-    assert state.survival_recent_death_count == witness["history_count"]
+    assert state.survival_first_kill_count == witness["history_count"]
     assert state.survival_reward_fire_seen == bool(witness["fire_seen"])
-    assert state.survival_reward_handout_enabled == bool(witness["handout_enabled"])
-    assert [v for pos in state.survival_recent_death_pos for v in (pos.x, pos.y)] == witness["history_positions"]
+    assert state.survival_shrinkifier_handout_enabled == bool(witness["handout_enabled"])
+    assert [v for pos in state.survival_first_kill_pos for v in (pos.x, pos.y)] == witness["history_positions"]
     assert len(runtime.deaths) == witness["death_calls"]
     assert not runtime.sfx and not runtime.hit_sfx
     assert rng.state == witness["rng_state"]

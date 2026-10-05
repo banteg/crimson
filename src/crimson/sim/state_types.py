@@ -50,7 +50,7 @@ class PlayerState(msgspec.Struct):
     heading: float = 0.0
     turn_speed: float = 1.0
     death_timer: float = 16.0
-    low_health_timer: float = 100.0
+    bleed_drip_timer: float = 100.0
 
     aim: Vec2 = Vec2()
     aim_heading: float = 0.0
@@ -66,7 +66,7 @@ class PlayerState(msgspec.Struct):
     alt_weapon: WeaponSlot | None = None
 
     weapon_reset_latch: int = 0
-    aux_timer: float = 0.0
+    weapon_popup_timer: float = 0.0
     spread_heat: float = f32(0.01)
     muzzle_flash_alpha: float = 0.0
 

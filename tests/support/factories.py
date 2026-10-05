@@ -24,7 +24,7 @@ def make_creature_state(
     pos: Vec2,
     hp: float = 100.0,
     active: bool = True,
-    lifecycle_stage: float = 16.0,
+    death_timer: float = 16.0,
     size: float = 50.0,
     flags: CreatureFlags = CreatureFlags(0),
     plague_infected: bool = False,
@@ -38,7 +38,7 @@ def make_creature_state(
         pos=pos,
         hp=hp_value,
         max_hp=hp_value if max_hp is None else float(max_hp),
-        lifecycle_stage=float(lifecycle_stage),
+        death_timer=float(death_timer),
         size=float(size),
         flags=flags,
         plague_infected=bool(plague_infected),
@@ -114,7 +114,7 @@ def player_input(
 ) -> PlayerInput:
     """A `PlayerInput` whose `move` steers as a dual action pad and whose `aim` is the mouse point; no movement key is held."""
 
-    for key in ("move_forward_pressed", "move_backward_pressed", "turn_left_pressed", "turn_right_pressed"):
+    for key in ("move_forward_down", "move_backward_down", "turn_left_down", "turn_right_down"):
         fields.setdefault(key, False)
     return PlayerInput(move_mode=move_mode, aim_scheme=aim_scheme, **fields)
 
@@ -134,7 +134,7 @@ def step_player(
         input_state,
         dt,
         step_runtime=make_step_runtime(world, dt=dt) if step_runtime is None else step_runtime,
-        reload_active_any=bool(input_state.reload_down or input_state.reload_pressed),
+        reload_key_down_any=bool(input_state.reload_down or input_state.reload_pressed),
     )
 
 

@@ -154,7 +154,7 @@ class BonusPool:
         self,
         pos: Vec2,
         bonus_id: BonusId,
-        duration_override: int = -1,
+        amount_override: int = -1,
         *,
         state: GameplayState,
         detail_preset: int = 5,
@@ -176,7 +176,7 @@ class BonusPool:
         entry.time_left = BONUS_TIME_MAX
         entry.time_max = BONUS_TIME_MAX
 
-        amount = duration_override
+        amount = amount_override
         if amount == -1:
             meta = BONUS_BY_ID.get(bonus_id)
             amount = int(meta.native_amount or 0) if meta is not None else 0

@@ -17,12 +17,12 @@ def _tick(
     dt_ms: float,
     *,
     player_count: int = 1,
-    survival_elapsed_ms: float = 0.0,
+    run_elapsed_ms: float = 0.0,
 ) -> tuple[float, list[CreatureState]]:
     world = make_world(player_count=player_count)
     world.state.rng = rng
     spawn = SurvivalSpawnState(spawn_cooldown_ms=cooldown)
-    survival_update(world, spawn, elapsed_ms=survival_elapsed_ms, dt_ms=dt_ms)
+    survival_update(world, spawn, elapsed_ms=run_elapsed_ms, dt_ms=dt_ms)
     return spawn.spawn_cooldown_ms, [creature for creature in world.creatures.entries if creature.active]
 
 
@@ -74,7 +74,7 @@ def test_wave_spawn_edges_use_exact_native_callers(
 ) -> None:
     rng = ScriptedCrand([edge_draw, coord_draw], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
-    _, spawns = _tick(rng, -1.0, 0.0, survival_elapsed_ms=elapsed_ms)
+    _, spawns = _tick(rng, -1.0, 0.0, run_elapsed_ms=elapsed_ms)
 
     assert_float_close(spawns[0].pos.x, expected_pos[0])
     assert_float_close(spawns[0].pos.y, expected_pos[1])
@@ -108,7 +108,7 @@ def test_survival_wave_spawns_triggers_single_spawn() -> None:
 
 def test_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> None:
     rng = Crand(1)
-    cooldown, spawns = _tick(rng, -1.0, 0.0, survival_elapsed_ms=_EXTRA_SPAWNS_ELAPSED_MS)
+    cooldown, spawns = _tick(rng, -1.0, 0.0, run_elapsed_ms=_EXTRA_SPAWNS_ELAPSED_MS)
 
     assert_float_close(cooldown, 0.0)
     assert len(spawns) == 3
@@ -126,7 +126,7 @@ def test_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> None:
 def test_survival_wave_spawns_uses_distinct_extra_and_main_position_callers() -> None:
     rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
-    _tick(rng, -1.0, 0.0, survival_elapsed_ms=_EXTRA_SPAWNS_ELAPSED_MS)
+    _tick(rng, -1.0, 0.0, run_elapsed_ms=_EXTRA_SPAWNS_ELAPSED_MS)
 
     position_callers = [
         record.caller
@@ -151,7 +151,7 @@ def test_survival_wave_spawns_uses_distinct_extra_and_main_position_callers() ->
 
 def test_survival_wave_spawns_loops_until_cooldown_is_non_negative() -> None:
     rng = Crand(1)
-    cooldown, spawns = _tick(rng, -2.0, 0.0, survival_elapsed_ms=_EXTRA_SPAWNS_ELAPSED_MS)  # interval branch resolves to 1ms after extras
+    cooldown, spawns = _tick(rng, -2.0, 0.0, run_elapsed_ms=_EXTRA_SPAWNS_ELAPSED_MS)  # interval branch resolves to 1ms after extras
 
     # Native loops while cooldown < 0, so -2 with +1 interval runs two iterations.
     assert_float_close(cooldown, 0.0)

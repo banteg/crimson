@@ -84,7 +84,7 @@ extern int perk_id_barrel_greaser;
 extern int perk_id_bloody_mess_quick_learner;
 extern int highscore_record_shots_hit;
 extern unsigned char music_playlist_randomized_latch;
-extern int music_track_extra_0;
+extern int music_track_game_playlist;
 extern int sfx_bullet_hit_01;
 extern weapon_storage_entry_t weapon_ammo_class[];
 extern int config_detail_preset;
@@ -101,7 +101,7 @@ void effect_spawn_ion_hit_sparks(const vec2f_t* pos, float scale);
 void effect_spawn_shrinkifier_hit(const vec2f_t* pos);
 void fx_queue_add_random(vec2f_t* pos);
 void creature_handle_death(int creature_id, unsigned char keep_corpse);
-void sfx_play_exclusive(int sfx_id);
+void music_play_exclusive(int sfx_id);
 int fx_spawn_sprite(const vec2f_t* pos, const vec2f_t* vel, float scale);
 vec2f_t* __stdcall D3DXVec2Normalize(vec2f_t* dst, const vec2f_t* src);
 }
@@ -172,7 +172,7 @@ extern "C" void projectile_update(void)
                     || (float)(terrain_texture_height + 64) < projectile->position.y) {
                     projectile->pos.tail.vy.life_timer -= frame_dt;
                 } else {
-                    step_count = (int)projectile->pos.tail.vy.travel_budget;
+                    step_count = (int)projectile->pos.tail.vy.projectile_speed;
                     float heading = projectile->angle - 1.5707964f;
                     step_x = (float)cos(heading) * frame_dt * 20.0f;
                     step_y = (float)sin(heading) * frame_dt * 20.0f;
@@ -214,7 +214,7 @@ extern "C" void projectile_update(void)
                                     if (perk_count_get(perk_id_poison_bullets) != 0
                                         && (crt_rand() & 7) == 1) {
                                         creature_pool[hit_id].flags
-                                            |= CREATURE_FLAG_SELF_DAMAGE_TICK;
+                                            |= CREATURE_FLAG_POISONED;
                                     }
 
                                     projectile_type_id_t type_id = projectile->pos.tail.vy.type_id;
@@ -275,7 +275,7 @@ extern "C" void projectile_update(void)
                                         }
                                     }
 
-                                    if (creature_pool[hit_id].lifecycle_stage == 16.0f) {
+                                    if (creature_pool[hit_id].death_timer == 16.0f) {
                                         ++highscore_record_shots_hit;
                                     }
 
@@ -345,7 +345,7 @@ extern "C" void projectile_update(void)
                                             --shock_chain_links_left;
                                             int next_id
                                                 = creature_find_nearest(position, hit_id, 100.0f);
-                                            bonus_spawn_guard = 1;
+                                            scripted_burst_active = 1;
                                             vec2f_t* next_position
                                                 = &creature_pool[next_id].position;
                                             vec2f_t* hit_position = &creature_pool[hit_id].position;
@@ -355,7 +355,7 @@ extern "C" void projectile_update(void)
                                             shock_chain_projectile_id = projectile_spawn(position,
                                                 chain_angle - 1.5707964f - 3.1415927f,
                                                 PROJECTILE_TYPE_ION_RIFLE, hit_id);
-                                            bonus_spawn_guard = 0;
+                                            scripted_burst_active = 0;
                                         }
                                         effect_spawn_ion_hit_core(position, 1.2f, 0.4f);
                                         effect_spawn_ion_hit_sparks(position, 1.2f);
@@ -364,7 +364,7 @@ extern "C" void projectile_update(void)
                                         effect_spawn_ion_hit_sparks(position, 2.2f);
                                         sfx_play_panned(sfx_shockwave, position, 1.0f);
                                     } else if (type_id == PROJECTILE_TYPE_PLASMA_CANNON) {
-                                        bonus_spawn_guard = 1;
+                                        scripted_burst_active = 1;
                                         int child_index = 0;
                                         float child_radius
                                             = creature_pool[hit_id].size * 0.5f + 1.0f;
@@ -382,7 +382,7 @@ extern "C" void projectile_update(void)
                                                 PROJECTILE_TYPE_PLASMA_RIFLE, -100);
                                             ++child_index;
                                         } while (child_index < 12);
-                                        bonus_spawn_guard = 0;
+                                        scripted_burst_active = 0;
                                         sfx_play_panned(sfx_explosion_medium, position, 1.0f);
                                         sfx_play_panned(sfx_shockwave, position, 1.0f);
                                         effect_spawn_plasma_hit_core(position, 1.5f, 1.0f);
@@ -403,7 +403,7 @@ extern "C" void projectile_update(void)
                                         creature_pool[hit_id].position.x += pulse_offset.x;
                                         creature_pool[hit_id].position.y += pulse_offset.y;
                                     } else if (type_id == PROJECTILE_TYPE_PLAGUE_SPREADER) {
-                                        creature_pool[hit_id].collision_flag = 1;
+                                        creature_pool[hit_id].plague_infected = 1;
                                     }
 
                                     damage *= 0.95f;
@@ -547,7 +547,7 @@ extern "C" void projectile_update(void)
 
                                     if (!demo_mode_active && !music_playlist_randomized_latch
                                         && config_game_mode != GAME_MODE_RUSH) {
-                                        sfx_play_exclusive(music_track_extra_0);
+                                        music_play_exclusive(music_track_game_playlist);
                                     } else {
                                         if (weapon_ammo_class[projectile->pos.tail.vy.type_id]
                                                 .ammo_class
@@ -670,10 +670,10 @@ extern "C" void projectile_update(void)
                     secondary->life_timer -= frame_dt * 0.5f;
                 }
 
-                secondary->pos.vx.vy.trail_timer
+                secondary->pos.vx.vy.trail_distance
                     -= (m_fabs(secondary->pos.vx.vel_x) + m_fabs(secondary->pos.vx.vy.vel_y))
                     * frame_dt * 0.01f;
-                if (secondary->pos.vx.vy.trail_timer < 0.0f) {
+                if (secondary->pos.vx.vy.trail_distance < 0.0f) {
                     projectile_vec2_t trail_velocity
                         = projectile_vec2_t((float)cos(secondary->angle + 1.5707964f),
                               (float)cos(secondary->angle + 1.5707964f))
@@ -685,14 +685,14 @@ extern "C" void projectile_update(void)
                             * 9.0f;
                     int effect_id = fx_spawn_sprite(
                         (const vec2f_t*)&trail_pos, (const vec2f_t*)&trail_velocity, 14.0f);
-                    secondary->pos.vx.vy.trail_timer = 0.06f;
+                    secondary->pos.vx.vy.trail_distance = 0.06f;
                     sprite_effect_pool[effect_id].color_a = 0.25f;
                 }
 
                 int hit_id = creature_find_in_radius((vec2f_t*)&secondary_position, 8.0f, 0);
                 if (hit_id != -1) {
                     float angle;
-                    if (creature_pool[hit_id].lifecycle_stage == 16.0f) {
+                    if (creature_pool[hit_id].death_timer == 16.0f) {
                         ++highscore_record_shots_hit;
                     }
 
@@ -750,7 +750,7 @@ extern "C" void projectile_update(void)
 
                     if (!demo_mode_active && !music_playlist_randomized_latch
                         && config_game_mode != GAME_MODE_RUSH) {
-                        sfx_play_exclusive(music_track_extra_0);
+                        music_play_exclusive(music_track_game_playlist);
                     } else {
                         sfx_play_panned(sfx_explosion_medium, (vec2f_t*)&secondary_position, 1.0f);
                     }
@@ -899,13 +899,13 @@ extern "C" void projectile_update(void)
         if (particle->active) {
             projectile_vec2_t& particle_velocity = *(projectile_vec2_t*)&particle->velocity;
             float& angle = particle->angle;
-            float& spin = particle->spin;
+            float& rotation = particle->rotation;
             unsigned char& active = particle->active;
             unsigned char style_id = particle->style_id;
             if (style_id == 8) {
                 particle->intensity -= frame_dt * 0.11f;
-                spin += frame_dt * 5.0f;
-                if (particle->render_flag) {
+                rotation += frame_dt * 5.0f;
+                if (particle->in_flight) {
                     if (particle->intensity > 0.15f) {
                         projectile_vec2_t movement
                             = frame_dt * particle_velocity * particle->intensity;
@@ -917,7 +917,7 @@ extern "C" void projectile_update(void)
                 }
             } else {
                 particle->intensity -= frame_dt * 0.9f;
-                spin += frame_dt;
+                rotation += frame_dt;
                 if (particle->intensity > 0.15f) {
                     projectile_vec2_t movement
                         = frame_dt * particle_velocity * 2.5f * particle->intensity;
@@ -938,13 +938,13 @@ extern "C" void projectile_update(void)
                     if (creature_pool[particle->target_id].active) {
                         sfx_play_panned(
                             creature_type_table[creature_pool[particle->target_id].type_id]
-                                .sfx_bank_a[crt_rand() % 3],
+                                .death_sfx[crt_rand() % 3],
                             &creature_pool[particle->target_id].position, 1.0f);
                     }
                     creature_handle_death(particle->target_id, 0);
                 }
             } else {
-                if (particle->render_flag == 1) {
+                if (particle->in_flight == 1) {
                     if (style_id == 0) {
                         int turn = crt_rand() % 100 - 50;
                         float turn_delta = (float)turn * 0.06f;
@@ -974,19 +974,19 @@ extern "C" void projectile_update(void)
                         particle->velocity.y = (float)sin(angle) * 82.0f;
                     }
                 }
-                particle->age = particle->intensity > 1.0f ? 1.0f : particle->intensity;
-                float& scale_x = particle->scale_x;
-                float& scale_y = particle->scale_y;
-                scale_x = 1.0f - particle->intensity * 0.95f;
-                scale_y = scale_x;
+                particle->color_a = particle->intensity > 1.0f ? 1.0f : particle->intensity;
+                float& color_r = particle->color_r;
+                float& color_g = particle->color_g;
+                color_r = 1.0f - particle->intensity * 0.95f;
+                color_g = color_r;
 
-                if (particle->render_flag) {
+                if (particle->in_flight) {
                     projectile_vec2_t& particle_position = *(projectile_vec2_t*)&particle->position;
                     int hit_id = creature_find_in_radius(
                         &particle->position, particle->intensity * 8.0f, 0);
                     if (hit_id != -1) {
-                        unsigned char& render_flag = particle->render_flag;
-                        render_flag = 0;
+                        unsigned char& in_flight = particle->in_flight;
+                        in_flight = 0;
                         if (particle->style_id == 8) {
                             particle_position
                                 = *(projectile_vec2_t*)&creature_pool[hit_id].position;

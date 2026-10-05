@@ -50,8 +50,8 @@ void game_save_status(void)
     if (fp != 0) {
 
         game_status_blob.quest_unlock_index = (unsigned short)quest_unlock_index;
-        game_status_blob.quest_unlock_index_full =
-            (unsigned short)quest_unlock_index_full;
+        game_status_blob.quest_unlock_index_hardcore =
+            (unsigned short)quest_unlock_index_hardcore;
 
         checksum = 0;
         index = 0;

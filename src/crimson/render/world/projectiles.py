@@ -423,7 +423,7 @@ def _draw_streak(
     # Native walks `creature_find_in_radius(pos, reach, 1)`: the inner strip, the
     # outer strip, then the glow on that creature, one creature at a time.
     for creature in frame.creatures.entries[1:]:
-        if not creature.active or not creature_lifecycle_is_collidable(creature.lifecycle_stage):
+        if not creature.active or not creature_lifecycle_is_collidable(creature.death_timer):
             continue
         if proj.pos.distance_to(creature.pos) - reach >= float(creature.size) * 0.14285715 + 3.0:
             continue

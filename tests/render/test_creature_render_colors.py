@@ -31,7 +31,7 @@ def test_creature_color_float_words_match_native(witness) -> None:
                 RGBA(*(creature[f"tint_{channel}"] for channel in "rgba")),
                 max_hp=creature["max_health"],
                 energizer_timer=case["energizer"],
-                lifecycle_stage=creature["lifecycle_stage"],
+                death_timer=creature["death_timer"],
                 transition=case["transition"],
             )
             assert [_bits(channel) for channel in tint] == draw["rgba_bits"]
@@ -43,7 +43,7 @@ def test_creature_color_float_words_match_native(witness) -> None:
             alpha = creature_shadow_alpha(
                 creature["tint_a"],
                 flags=CreatureFlags(creature["flags"]),
-                lifecycle_stage=creature["lifecycle_stage"],
+                death_timer=creature["death_timer"],
                 transition=case["transition"],
             )
             assert _bits(alpha) == draw["rgba_bits"][3]

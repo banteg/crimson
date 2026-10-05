@@ -185,7 +185,7 @@ Perk selection does **not** fade the world; it keeps the gameplay render pass an
 - `perk_selection_screen_update` calls `gameplay_render_world` but does **not** call `hud_update_and_render`, so the HUD
   disappears immediately when entering state `6`.
 - Unless `gameplay_transition_latch` is set, `gameplay_render_world` forces `ui_transition_alpha = 1.0` while
-  `game_state_id` or `game_state_pending` is `6` (perk selection) or `9` (gameplay), so the usual `ui_transition_alpha` gates in `player_render_overlays` /
+  `game_state_id` or `game_state_pending` is `6` (perk selection) or `9` (gameplay), so the usual `ui_transition_alpha` gates in `player_render` /
   `creature_render_all` / `projectile_render` / `bonus_render` do not hide those layers during perk selection.
 - The perk menu panel slides with the UI element timeline (`ui_elements_timeline`).
 - On return to gameplay, `hud_update_and_render` draws the HUD with alpha

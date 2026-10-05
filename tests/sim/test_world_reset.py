@@ -85,9 +85,9 @@ def test_reset_world_players_preserves_native_unwritten_residue() -> None:
             shot_cooldown=5.0,
         ),
         weapon_reset_latch=9,
-        aux_timer=2.0,
+        weapon_popup_timer=2.0,
         muzzle_flash_alpha=0.75,
-        low_health_timer=0.25,
+        bleed_drip_timer=0.25,
         plaguebearer_active=True,
         hot_tempered_timer=1.25,
         man_bomb_timer=2.25,
@@ -117,9 +117,9 @@ def test_reset_world_players_preserves_native_unwritten_residue() -> None:
     assert reset.plaguebearer_active is False
     assert reset.speed_bonus_timer == 0.0
     assert reset.shield_timer == 0.0
-    assert reset.low_health_timer == 100.0
+    assert reset.bleed_drip_timer == 100.0
     assert reset.auto_target == 0
-    assert reset.aux_timer == 0.0
+    assert reset.weapon_popup_timer == 0.0
     assert reset.weapon.weapon_id == WeaponId.PISTOL
     assert reset.weapon.clip_size == 10
     assert reset.weapon.ammo == 10.0

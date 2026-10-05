@@ -32,7 +32,7 @@ Fields (offsets from `player_state_table`; `Symbol` is the player-0 data map lab
 | `0x04` | `entity_phase_seed` | — | Write-only for players: zeroed by `player_state_table_global_init`. |
 | `0x08` | `entity_state_flag` | — | Write-only for players: zeroed by `player_state_table_global_init`. |
 | `0x09` | `plaguebearer_active` | `player_plaguebearer_active` | Set when Plaguebearer is acquired; used by creature update to infect nearby monsters. |
-| `0x0c` | `entity_collision_timer` | — | Write-only for players: zeroed by `player_state_table_global_init`. |
+| `0x0c` | `entity_dot_tick_timer` | — | Write-only for players: zeroed by `player_state_table_global_init`. |
 | `0x10` | `death_timer` | `player_death_timer` | Decremented when health is `<= 0`; triggers game-over once below zero. |
 | `0x14` | `pos_x` | `player_pos_x` | Used for camera centering, distance checks, and projectile aim vectors. |
 | `0x18` | `pos_y` | `player_pos_y` | Used for camera centering, distance checks, and projectile aim vectors. |
@@ -83,7 +83,7 @@ Fields (offsets from `player_state_table`; `Symbol` is the player-0 data map lab
 | `0x304` | `turn_speed` | `player_turn_speed` | Turn speed/accel when using keyboard/tank controls. |
 | `0x308` | `state_aux` | `player_state_aux` | Write-only: zeroed in `player_reset_all`; no reads in the recovered source. |
 | `0x30c` | `evil_eyes_target_creature` | `evil_eyes_target_creature` | Evil Eyes target (player 0 only): the creature under the aim, set in `perks_update_effects`; `creature_update_all` skips its AI. `-1` when none. |
-| `0x310` | `low_health_timer` | `player_low_health_timer` | Counts down to play low-health cues when HP is low. |
+| `0x310` | `bleed_drip_timer` | `player_bleed_drip_timer` | Counts down to play low-health cues when HP is low. |
 | `0x314` | `speed_bonus_timer` | `player_speed_bonus_timer` | Bonus id 13 (Speed). |
 | `0x318` | `shield_timer` | `player_shield_timer` | Bonus id 10 (Shield). |
 | `0x31c` | `fire_bullets_timer` | `player_fire_bullets_timer` | Bonus id 14 (Fire Bullets). |
@@ -119,7 +119,7 @@ unnamed padding in the header.
   active, incoming damage is halved while this flag is set.
 
 - **Low-health warning:** accepted hits at HP `<= 20` have a 1/8 chance to reset
-  `player_low_health_timer`; see [player damage](../crimsonland-exe/player-damage.md).
+  `player_bleed_drip_timer`; see [player damage](../crimsonland-exe/player-damage.md).
 
 ## Control schemes (summary)
 

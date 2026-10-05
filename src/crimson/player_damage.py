@@ -42,7 +42,7 @@ def _final_revenge(step_runtime: WorldStepRuntime, player: PlayerState) -> None:
     state.effects.spawn_explosion_burst(
         pos=player.pos, scale=1.8, rng=state.rng, detail_preset=step_runtime.world.state.detail_preset,
     )
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
     for creature_idx, creature in enumerate(world.creatures.entries):
         if not creature.active:
             continue
@@ -60,7 +60,7 @@ def _final_revenge(step_runtime: WorldStepRuntime, player: PlayerState) -> None:
             CreatureDamageType.EXPLOSION,
             Vec2(),
         )
-    state.bonus_spawn_guard = False
+    state.scripted_burst_active = False
     state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, player.pos))
     state.sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, player.pos))
 
@@ -165,8 +165,8 @@ def player_take_damage(step_runtime: WorldStepRuntime, player: PlayerState, dama
                 ),
             )
 
-        if player.health <= 20.0 and (state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_LOW_HEALTH) & 7) == 3:
-            player.low_health_timer = 0.0
+        if player.health <= 20.0 and (state.rng.rand_tagged(RngCallerStatic.PLAYER_TAKE_DAMAGE_BLEED_DRIP) & 7) == 3:
+            player.bleed_drip_timer = 0.0
 
     return max(0.0, health_before - float(player.health))
 

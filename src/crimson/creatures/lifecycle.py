@@ -14,20 +14,20 @@ class CreatureLifecyclePhase(IntEnum):
     DESPAWNED = 3
 
 
-def creature_lifecycle_is_alive(lifecycle_stage: float) -> bool:
-    return float(lifecycle_stage) == CREATURE_LIFECYCLE_ALIVE
+def creature_lifecycle_is_alive(death_timer: float) -> bool:
+    return float(death_timer) == CREATURE_LIFECYCLE_ALIVE
 
 
-def creature_lifecycle_is_collidable(lifecycle_stage: float) -> bool:
-    return float(lifecycle_stage) > CREATURE_LIFECYCLE_COLLIDABLE_MIN
+def creature_lifecycle_is_collidable(death_timer: float) -> bool:
+    return float(death_timer) > CREATURE_LIFECYCLE_COLLIDABLE_MIN
 
 
-def classify_creature_lifecycle(lifecycle_stage: float) -> CreatureLifecyclePhase:
-    if creature_lifecycle_is_alive(float(lifecycle_stage)):
+def classify_creature_lifecycle(death_timer: float) -> CreatureLifecyclePhase:
+    if creature_lifecycle_is_alive(float(death_timer)):
         return CreatureLifecyclePhase.ALIVE
-    if float(lifecycle_stage) > 0.0:
+    if float(death_timer) > 0.0:
         return CreatureLifecyclePhase.DEATH_STAGING
-    if float(lifecycle_stage) >= CREATURE_CORPSE_DESPAWN_LIFECYCLE:
+    if float(death_timer) >= CREATURE_CORPSE_DESPAWN_LIFECYCLE:
         return CreatureLifecyclePhase.CORPSE_FADING
     return CreatureLifecyclePhase.DESPAWNED
 

@@ -24,7 +24,7 @@ int creature_find_in_radius(
                    pos)
                     - radius
                 < creature_pool[index].size * 0.14285715f + 3.0f
-            && creature_pool[index].lifecycle_stage > 5.0f) {
+            && creature_pool[index].death_timer > 5.0f) {
             goto found;
         }
         ++index;

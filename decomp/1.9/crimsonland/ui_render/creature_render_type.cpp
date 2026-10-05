@@ -76,8 +76,8 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
             color.a *= 0.4f;
 
             int frame;
-            if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0
-                && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {
+            if ((flags & CREATURE_FLAG_SPAWNER) != 0
+                && (flags & CREATURE_FLAG_SPAWNER_MOBILE) == 0) {
                 frame = (int)(creature->anim_phase + 0.5f) % 16;
                 if (frame > 7) {
                     frame = 15 - frame;
@@ -85,24 +85,24 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                 frame += creature_type_table[type_id].base_frame + 16;
                 grim_interface_ptr->grim_set_atlas_frame(8, frame);
 
-                if (creature->lifecycle_stage < 0.0f) {
-                    color.a += creature->lifecycle_stage * 0.1f;
+                if (creature->death_timer < 0.0f) {
+                    color.a += creature->death_timer * 0.1f;
                     if (color.a < 0.0f) {
                         color.a = 0.0f;
                     }
                 }
             } else {
-                if (creature->lifecycle_stage < 16.0f) {
-                    if (creature->lifecycle_stage < 0.0f) {
+                if (creature->death_timer < 16.0f) {
+                    if (creature->death_timer < 0.0f) {
                         frame = creature_type_table[type_id].base_frame + 15;
-                        color.a += creature->lifecycle_stage * 0.5f;
+                        color.a += creature->death_timer * 0.5f;
                         if (color.a < 0.0f) {
                             color.a = 0.0f;
                         }
                     } else {
                         frame = (int)((float)(
                             creature_type_table[type_id].base_frame + 15)
-                            - creature->lifecycle_stage);
+                            - creature->death_timer);
                     }
                 } else {
                     frame = (int)(creature->anim_phase + 0.5f);
@@ -111,7 +111,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                         frame = 31 - frame;
                     }
                 }
-                if ((flags & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0) {
+                if ((flags & CREATURE_FLAG_RANGED_PLASMA_RIFLE) != 0) {
                     frame += 32;
                 }
                 grim_interface_ptr->grim_set_atlas_frame(8, frame);
@@ -168,8 +168,8 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
 
                 int flags = creature->flags;
                 int frame;
-                if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0
-                    && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {
+                if ((flags & CREATURE_FLAG_SPAWNER) != 0
+                    && (flags & CREATURE_FLAG_SPAWNER_MOBILE) == 0) {
                     frame = (int)(creature->anim_phase + 0.5f) % 16;
                     if (frame > 7) {
                         frame = 15 - frame;
@@ -177,24 +177,24 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                     frame += creature_type_table[type_id].base_frame + 16;
                     grim_interface_ptr->grim_set_atlas_frame(8, frame);
 
-                    if (creature->lifecycle_stage < 0.0f) {
-                        color.a += creature->lifecycle_stage * 0.1f;
+                    if (creature->death_timer < 0.0f) {
+                        color.a += creature->death_timer * 0.1f;
                         if (color.a < 0.0f) {
                             color.a = 0.0f;
                         }
                     }
                 } else {
-                    if (creature->lifecycle_stage < 16.0f) {
-                        if (creature->lifecycle_stage < 0.0f) {
+                    if (creature->death_timer < 16.0f) {
+                        if (creature->death_timer < 0.0f) {
                             frame = creature_type_table[type_id].base_frame + 15;
-                            color.a += creature->lifecycle_stage * 0.1f;
+                            color.a += creature->death_timer * 0.1f;
                             if (color.a < 0.0f) {
                                 color.a = 0.0f;
                             }
                         } else {
                             frame = (int)((float)(
                                 creature_type_table[type_id].base_frame + 15)
-                                - creature->lifecycle_stage);
+                                - creature->death_timer);
                         }
                     } else {
                         frame = (int)(creature->anim_phase + 0.5f);
@@ -203,7 +203,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                             frame = 31 - frame;
                         }
                     }
-                    if ((flags & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0) {
+                    if ((flags & CREATURE_FLAG_RANGED_PLASMA_RIFLE) != 0) {
                         frame += 32;
                     }
                     grim_interface_ptr->grim_set_atlas_frame(8, frame);
@@ -223,9 +223,9 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                 grim_interface_ptr->grim_draw_quad(
                     draw_pos.x, draw_pos.y, creature->size, creature->size);
 
-                if (creature->lifecycle_stage < -10.0f) {
+                if (creature->death_timer < -10.0f) {
                     creature->active = 0;
-                    if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
+                    if ((creature->flags & CREATURE_FLAG_SPAWNER) != 0) {
                         creature_spawn_slot_table[creature->link_index].owner = 0;
                     }
                 }
@@ -245,8 +245,8 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
             color = *tint;
 
             int frame;
-            if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0
-                && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {
+            if ((flags & CREATURE_FLAG_SPAWNER) != 0
+                && (flags & CREATURE_FLAG_SPAWNER_MOBILE) == 0) {
                 frame = (int)(creature->anim_phase + 0.5f) % 16;
                 if (frame > 7) {
                     frame = 15 - frame;
@@ -254,24 +254,24 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                 frame += creature_type_table[type_id].base_frame + 16;
                 grim_interface_ptr->grim_set_atlas_frame(8, frame);
 
-                if (creature->lifecycle_stage < 0.0f) {
-                    color.a += creature->lifecycle_stage * 0.1f;
+                if (creature->death_timer < 0.0f) {
+                    color.a += creature->death_timer * 0.1f;
                     if (color.a < 0.0f) {
                         color.a = 0.0f;
                     }
                 }
             } else {
-                if (creature->lifecycle_stage < 16.0f) {
-                    if (creature->lifecycle_stage < 0.0f) {
+                if (creature->death_timer < 16.0f) {
+                    if (creature->death_timer < 0.0f) {
                         frame = creature_type_table[type_id].base_frame + 15;
-                        color.a += creature->lifecycle_stage * 0.1f;
+                        color.a += creature->death_timer * 0.1f;
                         if (color.a < 0.0f) {
                             color.a = 0.0f;
                         }
                     } else {
                         frame = (int)((float)(
                             creature_type_table[type_id].base_frame + 15)
-                            - creature->lifecycle_stage);
+                            - creature->death_timer);
                     }
                 } else {
                     frame = (int)(creature->anim_phase + 0.5f);
@@ -280,7 +280,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                         frame = 31 - frame;
                     }
                 }
-                if ((flags & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0) {
+                if ((flags & CREATURE_FLAG_RANGED_PLASMA_RIFLE) != 0) {
                     frame += 32;
                 }
                 grim_interface_ptr->grim_set_atlas_frame(8, frame);
@@ -300,9 +300,9 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
             grim_interface_ptr->grim_draw_quad(
                 draw_pos.x, draw_pos.y, creature->size, creature->size);
 
-            if (creature->lifecycle_stage < -10.0f) {
+            if (creature->death_timer < -10.0f) {
                 creature->active = 0;
-                if ((creature->flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
+                if ((creature->flags & CREATURE_FLAG_SPAWNER) != 0) {
                     creature_spawn_slot_table[creature->link_index].owner = 0;
                 }
             }
@@ -332,8 +332,8 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
 
             int flags = creature->flags;
             int frame;
-            if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0
-                && (flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {
+            if ((flags & CREATURE_FLAG_SPAWNER) != 0
+                && (flags & CREATURE_FLAG_SPAWNER_MOBILE) == 0) {
                 frame = (int)(creature->anim_phase + 0.5f) % 16;
                 if (frame > 7) {
                     frame = 15 - frame;
@@ -341,13 +341,13 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                 frame += creature_type_table[type_id].base_frame + 16;
                 grim_interface_ptr->grim_set_atlas_frame(8, frame);
             } else {
-                if (creature->lifecycle_stage < 16.0f) {
-                    if (creature->lifecycle_stage < 0.0f) {
+                if (creature->death_timer < 16.0f) {
+                    if (creature->death_timer < 0.0f) {
                         frame = creature_type_table[type_id].base_frame + 15;
                     } else {
                         frame = (int)((float)(
                             creature_type_table[type_id].base_frame + 15)
-                            - creature->lifecycle_stage);
+                            - creature->death_timer);
                     }
                 } else {
                     frame = (int)(creature->anim_phase + 0.5f);
@@ -355,7 +355,7 @@ extern "C" void creature_render_type(int type_id, float transition_alpha)
                         && frame > 15) {
                         frame = 31 - frame;
                     }
-                    if ((flags & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0) {
+                    if ((flags & CREATURE_FLAG_RANGED_PLASMA_RIFLE) != 0) {
                         frame += 32;
                     }
                 }

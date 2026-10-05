@@ -186,8 +186,8 @@ def quest_build_spiders_inc(_ctx: QuestContext) -> list[SpawnEntry]:
     edges = edge_midpoints()
     center = NATIVE_CENTER
     entries = [
-        spawn(edges.bottom, SpawnId.SPIDER_SP1_AI7_TIMER_38, 500, 1),
-        spawn(Vec2(center.x + 64.0, edges.bottom.y), SpawnId.SPIDER_SP1_AI7_TIMER_38, 500, 1),
+        spawn(edges.bottom, SpawnId.SPIDER_SP1_STOP_AND_GO_38, 500, 1),
+        spawn(Vec2(center.x + 64.0, edges.bottom.y), SpawnId.SPIDER_SP1_STOP_AND_GO_38, 500, 1),
         spawn(edges.top, SpawnId.SPIDER_SMALL_BLUE_40, 500, 4),
     ]
 
@@ -195,8 +195,8 @@ def quest_build_spiders_inc(_ctx: QuestContext) -> list[SpawnEntry]:
     step_count = 0
     while trigger < 107000:
         count = step_count // 2 + 3
-        entries.append(spawn(edges.bottom, SpawnId.SPIDER_SP1_AI7_TIMER_38, trigger, count))
-        entries.append(spawn(edges.top, SpawnId.SPIDER_SP1_AI7_TIMER_38, trigger, count))
+        entries.append(spawn(edges.bottom, SpawnId.SPIDER_SP1_STOP_AND_GO_38, trigger, count))
+        entries.append(spawn(edges.top, SpawnId.SPIDER_SP1_STOP_AND_GO_38, trigger, count))
         trigger += 6000
         step_count += 1
     return entries

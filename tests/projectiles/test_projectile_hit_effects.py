@@ -52,12 +52,12 @@ def _fire_at_creature(world: WorldState, type_id: ProjectileTemplateId) -> World
 def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
     world, _rng = _world_with_creature(CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0))
     runtime_state = world.state
-    runtime_state.bonus_spawn_guard = True
+    runtime_state.scripted_burst_active = True
 
     _fire_at_creature(world, ProjectileTemplateId.PLASMA_CANNON)
 
     assert sfx_ids(runtime_state.sfx_queue) == [SfxId.EXPLOSION_MEDIUM, SfxId.SHOCKWAVE]
-    assert not runtime_state.bonus_spawn_guard
+    assert not runtime_state.scripted_burst_active
 
     rings = [entry for entry in runtime_state.effects.iter_active() if int(entry.effect_id) == 1]
     assert len(rings) == 2
@@ -201,7 +201,7 @@ def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
 def test_secondary_homing_acquires_targets_beyond_1000_units() -> None:
     from crimson.projectiles.runtime.collision import creature_find_nearest_alive
 
-    far_creature = CreatureState(active=True, hp=10.0, lifecycle_stage=16.0, pos=Vec2(1200.0, 900.0))
+    far_creature = CreatureState(active=True, hp=10.0, death_timer=16.0, pos=Vec2(1200.0, 900.0))
     creatures = [CreatureState() for _ in range(3)]
     creatures[2] = far_creature
 
@@ -217,13 +217,13 @@ def test_secondary_homing_compares_stored_x87_pc24_distances() -> None:
         CreatureState(
             active=True,
             hp=10.0,
-            lifecycle_stage=16.0,
+            death_timer=16.0,
             pos=Vec2(-631.7838745117188, -249.09634399414062),
         ),
         CreatureState(
             active=True,
             hp=10.0,
-            lifecycle_stage=16.0,
+            death_timer=16.0,
             pos=Vec2(-627.4663696289062, -259.78033447265625),
         ),
     ]

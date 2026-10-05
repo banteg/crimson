@@ -29,10 +29,10 @@ def creature_spawn_tinted(world: WorldState, pos: Vec2, tint: RGBA, type_id: Cre
     creature.vel = Vec2()
     creature.ai_mode = CreatureAiMode.CHASE_PLAYER
     creature.plague_infected = False
-    creature.collision_timer = 0.0
+    creature.dot_tick_timer = 0.0
     creature.type_id = type_id
     creature.force_target = 0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.hp = 1.0
     heading_roll = rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING)
     creature.move_speed = f32(1.7)
@@ -46,7 +46,7 @@ def creature_spawn_tinted(world: WorldState, pos: Vec2, tint: RGBA, type_id: Cre
     size = float(size_roll % 20 + 47)
     creature.size = size
     if type_id in (CreatureTypeId.SPIDER_SP1, CreatureTypeId.SPIDER_SP2):
-        creature.flags |= CreatureFlags.AI7_LINK_TIMER
+        creature.flags |= CreatureFlags.STOP_AND_GO
         creature.move_speed = x87_pc24_mul(creature.move_speed, f32(1.2))
         creature.size = x87_pc24_mul(size, f32(0.8))
     return creature_idx

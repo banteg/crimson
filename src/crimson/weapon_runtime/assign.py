@@ -61,7 +61,7 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     # values across a weapon pickup mid-reload.
     player.weapon.reload_timer = 0.0
     player.weapon.shot_cooldown = 0.0
-    player.aux_timer = 2.0
+    player.weapon_popup_timer = 2.0
     state.sfx_queue.append(SfxRequest(weapon.reload_sound, player.pos))
 
 

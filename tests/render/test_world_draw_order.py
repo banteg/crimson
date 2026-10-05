@@ -80,7 +80,7 @@ def test_draw_world_requires_initialized_ground(mocker, headless_resources) -> N
     ("lifecycle", "phase", "flags", "frame"),
     [
         (7.000000476837158, 4.2, CreatureFlags(0), 24),
-        (-1.0, 4.2, CreatureFlags.RANGED_ATTACK_SHOCK, 63),
+        (-1.0, 4.2, CreatureFlags.RANGED_PLASMA_RIFLE, 63),
         (20.0, 0.4999999701976776, CreatureFlags(0), 1),
     ],
 )
@@ -88,7 +88,7 @@ def test_draw_creatures_uses_native_lifecycle_and_rounding_frames(
     mocker, headless_resources, lifecycle, phase, flags, frame,
 ) -> None:
     creature = make_creature_state(pos=Vec2(137.0, 241.0), type_id=CreatureTypeId.SPIDER_SP1)
-    creature.lifecycle_stage = lifecycle
+    creature.death_timer = lifecycle
     creature.anim_phase = phase
     creature.flags = flags
     render_ctx = render_ctx_for_creatures(headless_resources, [creature])
@@ -160,7 +160,7 @@ def test_creature_hit_flash_draws_match_native_witnesses(mocker, headless_resour
                 pos=Vec2(row["pos_x"], row["pos_y"]),
                 active=bool(row["active"]),
                 type_id=CreatureTypeId(row["type_id"]),
-                lifecycle_stage=row["lifecycle_stage"],
+                death_timer=row["death_timer"],
                 size=row["size"],
                 flags=CreatureFlags(row["flags"]),
             )

@@ -21,7 +21,7 @@ struct player_state_native_t : player_state_t {
         entity_state_flag = 0;
         move_phase = 0.0f;
         plaguebearer_active = 0;
-        entity_collision_timer = 0.0f;
+        entity_dot_tick_timer = 0.0f;
         entity_link_index = -1;
     }
 };
@@ -37,7 +37,7 @@ extern "C" void player_state_table_global_init(void)
         entry->construct_entity();
 
         entry->fire_bullets_timer = 0.0f;
-        entry->low_health_timer = 0.0f;
+        entry->bleed_drip_timer = 0.0f;
 #if CL_BUILD != 10908
         entry->man_bomb_timer = 0.0f;
         entry->living_fortress_timer = 0.0f;

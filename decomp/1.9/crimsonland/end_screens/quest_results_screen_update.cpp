@@ -107,19 +107,19 @@ extern int sfx_shock_hit_01;
 extern int music_track_shortie_monk_id;
 extern int music_track_crimsonquest_id;
 extern int music_track_crimson_theme_id;
-extern int music_track_extra_0;
+extern int music_track_game_playlist;
 
 void highscore_load_table_thunk(void);
 int highscore_rank_index(void);
 void highscore_record_init(void);
 void highscore_save_active(void);
 char *time_format_mm_ss(int seconds);
-char *weapon_table_entry(int weapon_id);
+char *weapon_name_get(int weapon_id);
 unsigned char input_primary_just_pressed(void);
-unsigned char sfx_is_unmuted(int sfx_id);
-void sfx_mute_all(int sfx_id);
+unsigned char music_track_is_playing(int sfx_id);
+void music_fade_out_all(int sfx_id);
 void sfx_play(int sfx_id, float gain);
-void sfx_play_exclusive(int sfx_id);
+void music_play_exclusive(int sfx_id);
 void ui_draw_textured_quad(
     int x, int y, int width, int height, int texture_id);
 bool ui_text_input_update(float *xy, ui_text_input_state_t *input_state);
@@ -138,8 +138,8 @@ extern "C" void quest_results_screen_update(void)
     if (game_state_id == GAME_STATE_QUEST_RESULTS
         && game_state_pending == GAME_STATE_PENDING_IDLE_SENTINEL
         && ui_transition_direction != 0
-        && !sfx_is_unmuted(music_track_shortie_monk_id)) {
-        sfx_play_exclusive(music_track_crimsonquest_id);
+        && !music_track_is_playing(music_track_shortie_monk_id)) {
+        music_play_exclusive(music_track_crimsonquest_id);
     }
 
     gameplay_render_world();
@@ -183,9 +183,9 @@ extern "C" void quest_results_screen_update(void)
         int quest_index =
             quest_stage_minor + quest_stage_major * 10 - 11;
         quest_results_unlock_weapon_id =
-            quest_selected_meta[quest_index].unlock_weapon_id;
+            quest_meta_table[quest_index].unlock_weapon_id;
         quest_results_unlock_perk_id =
-            quest_selected_meta[quest_index].unlock_perk_id;
+            quest_meta_table[quest_index].unlock_perk_id;
 
         player_health[0] = (float)(int)player_health[0];
         int health_bonus = (int)(player_health[0] * 50.0f);
@@ -199,9 +199,9 @@ extern "C" void quest_results_screen_update(void)
             - perk_pending_count * 1000
             - health_bonus;
         quest_results_final_time_ms = final_time;
-        highscore_active_record.survival_elapsed_ms = final_time;
+        highscore_active_record.run_elapsed_ms = final_time;
         if (final_time == 0) {
-            highscore_active_record.survival_elapsed_ms = 1;
+            highscore_active_record.run_elapsed_ms = 1;
         }
         quest_results_anim_timer = 0;
         highscore_record_init();
@@ -263,7 +263,7 @@ extern "C" void quest_results_screen_update(void)
                             perk_pending_count;
                         quest_results_reveal_step_timer_ms = 1000;
                         ++quest_results_step;
-                        highscore_active_record.survival_elapsed_ms =
+                        highscore_active_record.run_elapsed_ms =
                             quest_results_final_time_ms;
                         quest_results_reveal_total_time_ms =
                             quest_results_final_time_ms;
@@ -528,8 +528,8 @@ show_results:
                 xy.x,
                 xy.y,
                 "%s",
-                weapon_table_entry(
-                    quest_selected_meta[
+                weapon_name_get(
+                    quest_meta_table[
                         quest_stage_minor
                         + quest_stage_major * 10
                         - 11]
@@ -547,7 +547,7 @@ show_results:
             int quest_index =
                 quest_stage_minor + quest_stage_major * 10 - 11;
             int perk_id =
-                quest_selected_meta[quest_index].unlock_perk_id;
+                quest_meta_table[quest_index].unlock_perk_id;
             grim_interface_ptr->grim_draw_text_small_fmt(
                 xy.x,
                 xy.y,
@@ -593,27 +593,27 @@ show_results:
 
         if (play_next_button.activated) {
             if (quest_stage_major == 5 && quest_stage_minor == 10) {
-                render_pass_mode = 0;
+                run_active = 0;
                 game_state_pending =
                     GAME_STATE_FINAL_QUEST_END_NOTE;
                 ui_transition_direction = 0;
             } else {
-                sfx_mute_all(music_track_extra_0);
-                sfx_mute_all(music_track_crimson_theme_id);
-                sfx_mute_all(music_track_shortie_monk_id);
+                music_fade_out_all(music_track_game_playlist);
+                music_fade_out_all(music_track_crimson_theme_id);
+                music_fade_out_all(music_track_shortie_monk_id);
                 ui_transition_direction = 0;
                 game_state_pending = GAME_STATE_GAMEPLAY;
-                render_pass_mode = 0;
+                run_active = 0;
                 ++quest_stage_minor;
             }
         }
         if (play_again_button.activated) {
             ui_transition_direction = 0;
             game_state_pending = GAME_STATE_GAMEPLAY;
-            sfx_mute_all(music_track_crimson_theme_id);
-            sfx_mute_all(music_track_shortie_monk_id);
-            sfx_mute_all(music_track_extra_0);
-            render_pass_mode = 0;
+            music_fade_out_all(music_track_crimson_theme_id);
+            music_fade_out_all(music_track_shortie_monk_id);
+            music_fade_out_all(music_track_game_playlist);
+            run_active = 0;
         }
         if (highscores_button.activated) {
             highscore_return_game_mode_id = config_game_mode;
@@ -625,10 +625,10 @@ show_results:
             game_state_pending = GAME_STATE_HIGHSCORES;
         }
         if (main_menu_button.activated) {
-            sfx_mute_all(music_track_extra_0);
-            sfx_mute_all(music_track_crimson_theme_id);
-            sfx_mute_all(music_track_shortie_monk_id);
-            sfx_play_exclusive(music_track_crimson_theme_id);
+            music_fade_out_all(music_track_game_playlist);
+            music_fade_out_all(music_track_crimson_theme_id);
+            music_fade_out_all(music_track_shortie_monk_id);
+            music_play_exclusive(music_track_crimson_theme_id);
             ui_transition_direction = 0;
             game_state_pending = GAME_STATE_MAIN_MENU;
             ui_sign_crimson.focus_disabled = 0;

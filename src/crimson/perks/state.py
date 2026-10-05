@@ -8,8 +8,9 @@ from .ids import PerkId
 class PerkEffectIntervals(msgspec.Struct):
     """Global thresholds used by perk timers in `player_update`.
 
-    These are global (not per-player) in crimsonland.exe: `flt_473310`,
-    `flt_473314`, and `flt_473318`.
+    These are global (not per-player) in crimsonland.exe: `perk_man_bomb_trigger_interval_s`,
+    `perk_fire_cough_trigger_interval_s` and `perk_hot_tempered_trigger_interval_s`; Fire Cough
+    and Hot Tempered re-roll theirs.
     """
 
     man_bomb: float = 4.0

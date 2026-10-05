@@ -74,12 +74,12 @@ def _seed_creature(oracle, world: WorldState, index: int, *, active: bool, healt
     address = oracle.resolve("creature_pool") + index * CREATURE_STRIDE
     oracle.write_u8(address + CREATURE_LAYOUT["active"][0], int(active))
     oracle.write_f32(address + CREATURE_LAYOUT["health"][0], health)
-    oracle.write_f32(address + CREATURE_LAYOUT["lifecycle_stage"][0], 16.0 if health > 0.0 else -20.0)
+    oracle.write_f32(address + CREATURE_LAYOUT["death_timer"][0], 16.0 if health > 0.0 else -20.0)
     oracle.write_u32(address + CREATURE_LAYOUT["flags"][0], flags)
     creature = world.creatures.entries[index]
     creature.active = active
     creature.hp = health
-    creature.lifecycle_stage = 16.0 if health > 0.0 else -20.0
+    creature.death_timer = 16.0 if health > 0.0 else -20.0
     creature.flags = CreatureFlags(flags)
 
 
@@ -132,12 +132,12 @@ def test_tutorial_timeline_matches_native(oracle) -> None:
             ("perk_pending_count", pending),
         ):
             oracle.write_u32(name, value & 0xFFFF_FFFF)
-        oracle.write_u8("tutorial_hint_bonus_consumed_latch", int(latch))
+        oracle.write_u8("tutorial_hint_carrier_killed", int(latch))
         oracle.write_u32(player + _PLAYER_EXPERIENCE, experience)
         oracle.write_f32(player + PLAYER_OFFSETS["health"], 50.0)
         tutorial.stage_index, tutorial.stage_timer_ms, tutorial.stage_transition_timer_ms = stage, timer, transition
         tutorial.repeat_spawn_count, tutorial.hint_index, tutorial.hint_alpha = repeat, hint_index, hint_alpha
-        tutorial.hint_fade_in = latch
+        tutorial.hint_carrier_killed = latch
         world.state.perk_selection.pending_count = pending
         world.players[0].experience = experience
         world.players[0].health = 50.0
@@ -183,7 +183,7 @@ def test_tutorial_timeline_matches_native(oracle) -> None:
         check("repeat", oracle.read_i32("tutorial_repeat_spawn_count"), tutorial.repeat_spawn_count)
         check("hint_index", oracle.read_i32("tutorial_hint_index"), tutorial.hint_index)
         check("hint_alpha", oracle.read_i32("tutorial_hint_alpha"), tutorial.hint_alpha)
-        check("latch", bool(oracle.read_u8("tutorial_hint_bonus_consumed_latch")), tutorial.hint_fade_in)
+        check("latch", bool(oracle.read_u8("tutorial_hint_carrier_killed")), tutorial.hint_carrier_killed)
         native_carrier = oracle.read_u32("tutorial_hint_bonus_ptr")
         python_carrier = tutorial.hint_bonus_creature_ref
         check(
@@ -213,7 +213,7 @@ def test_tutorial_timeline_matches_native(oracle) -> None:
             check(f"creature[{index}].pos", (native["pos_x"], native["pos_y"]), (python.pos.x, python.pos.y))
             check(f"creature[{index}].health", native["health"], python.hp)
             if python.flags & CreatureFlags.BONUS_ON_DEATH and python.bonus_id is not None:
-                override = -1 if python.bonus_duration_override is None else python.bonus_duration_override
+                override = -1 if python.bonus_amount_override is None else python.bonus_amount_override
                 packed = pack_bonus_on_death_args(python.bonus_id, override)
                 check(f"creature[{index}].bonus_args", native["link_index"], packed)
         check("rand_state", oracle.rand_state, world.state.rng.state)

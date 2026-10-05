@@ -11,7 +11,7 @@ from crimson.weapons import (
 
 
 def test_weapon_projectile_type_mapping() -> None:
-    # Known mappings from the decompile (`player_fire_weapon`).
+    # Known mappings from the decompile (`typo_player_update`).
     cases = {
         1: 0x01,  # Pistol
         2: 0x02,  # Assault Rifle

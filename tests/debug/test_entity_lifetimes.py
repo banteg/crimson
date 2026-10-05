@@ -32,7 +32,7 @@ def test_entity_uids_follow_allocations_between_snapshots() -> None:
             entry.active = True
 
     def spawn_all() -> None:
-        creature_spawn(world.creatures, Vec2(), RGBA(), CreatureTypeId.ALIEN, world.state.rng, survival_elapsed_ms=0)
+        creature_spawn(world.creatures, Vec2(), RGBA(), CreatureTypeId.ALIEN, world.state.rng, run_elapsed_ms=0)
         projectile_spawn(
             world.state,
             players=world.players,

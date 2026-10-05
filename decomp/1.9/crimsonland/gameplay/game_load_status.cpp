@@ -81,7 +81,7 @@ extern "C" void game_load_status(void)
         }
 
         quest_unlock_index = game_status_blob.quest_unlock_index;
-        quest_unlock_index_full = game_status_blob.quest_unlock_index_full;
+        quest_unlock_index_hardcore = game_status_blob.quest_unlock_index_hardcore;
         crt_fclose(fp);
         if (cv_verbose->value != 0.0f) {
             console_printf(&console_log_queue, "GAME_LoadStatus OK.\n");
@@ -92,7 +92,7 @@ extern "C" void game_load_status(void)
     console_printf(&console_log_queue, "GAME_LoadStatus FAILED!\n");
     console_printf(&console_log_queue, "Generating new file..\n");
     game_status_blob.quest_unlock_index = 0;
-    game_status_blob.quest_unlock_index_full = 0;
+    game_status_blob.quest_unlock_index_hardcore = 0;
     play_time_load();
     game_save_status();
     play_time_load();

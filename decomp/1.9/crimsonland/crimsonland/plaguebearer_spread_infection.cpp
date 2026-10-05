@@ -27,13 +27,13 @@ extern "C" int plaguebearer_spread_infection(int creature_id)
     return 0;
 
 found:
-    if (creature_pool[other_id].collision_flag
+    if (creature_pool[other_id].plague_infected
         && creature_pool[creature_id].health < 150.0f) {
-        creature_pool[creature_id].collision_flag = 1;
+        creature_pool[creature_id].plague_infected = 1;
     }
-    if (creature_pool[creature_id].collision_flag
+    if (creature_pool[creature_id].plague_infected
         && creature_pool[other_id].health < 150.0f) {
-        creature_pool[other_id].collision_flag = 1;
+        creature_pool[other_id].plague_infected = 1;
     }
     return other_id;
 }

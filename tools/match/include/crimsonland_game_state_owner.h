@@ -8,7 +8,7 @@
  * identities recovered for 1.9.93 while restoring that aggregate ownership.
  */
 typedef struct gameplay_run_state_original_t {
-    unsigned char survival_reward_handout_enabled;
+    unsigned char survival_shrinkifier_handout_enabled;
     unsigned char survival_reward_handout_aux_enabled;
     unsigned char main_menu_full_version_layout_latch;
     unsigned char pad_03;
@@ -30,11 +30,11 @@ typedef struct gameplay_run_state_original_t {
     unsigned char survival_reward_fire_seen;
     unsigned char survival_reward_damage_seen;
     unsigned char pad_3e[2];
-    vec2f_t survival_recent_death_pos[3];
-    int survival_recent_death_count;
+    vec2f_t survival_first_kill_pos[3];
+    int survival_first_kill_count;
     int quest_stage_major;
     int quest_stage_minor;
-    unsigned char creatures_any_active_flag;
+    unsigned char creatures_none_active_flag;
     unsigned char demo_mode_active;
     unsigned char time_scale_active;
     unsigned char pad_67;
@@ -49,8 +49,8 @@ typedef struct gameplay_run_state_original_t {
     unsigned char pad_85[3];
     int quest_spawn_last_time_ms;
     int quest_unlock_index;
-    int quest_unlock_index_full;
-    unsigned char bonus_spawn_guard;
+    int quest_unlock_index_hardcore;
+    unsigned char scripted_burst_active;
     unsigned char pad_95[3];
     highscore_record_t highscore_active_record;
     int quest_transition_timer_ms;
@@ -63,13 +63,13 @@ typedef struct gameplay_run_state_original_t {
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern unsigned char survival_reward_handout_enabled;
+extern unsigned char survival_shrinkifier_handout_enabled;
 #ifdef __cplusplus
 }
 #endif
 
 #define gameplay_run_state \
-    (*(gameplay_run_state_original_t *)&survival_reward_handout_enabled)
+    (*(gameplay_run_state_original_t *)&survival_shrinkifier_handout_enabled)
 
 #ifdef CRIMSONLAND_USE_ORIGINAL_GAME_OWNER
 #define perk_pending_count gameplay_run_state.perk_pending_count
@@ -93,9 +93,9 @@ extern unsigned char survival_reward_handout_enabled;
 #define survival_reward_fire_seen gameplay_run_state.survival_reward_fire_seen
 #define survival_reward_damage_seen \
     gameplay_run_state.survival_reward_damage_seen
-#define survival_recent_death_count \
-    gameplay_run_state.survival_recent_death_count
-#define creatures_any_active_flag gameplay_run_state.creatures_any_active_flag
+#define survival_first_kill_count \
+    gameplay_run_state.survival_first_kill_count
+#define creatures_none_active_flag gameplay_run_state.creatures_none_active_flag
 #define demo_mode_active gameplay_run_state.demo_mode_active
 #define time_scale_active gameplay_run_state.time_scale_active
 #define time_scale_factor gameplay_run_state.time_scale_factor
@@ -109,8 +109,8 @@ extern unsigned char survival_reward_handout_enabled;
 #define screen_fade_ramp_flag gameplay_run_state.screen_fade_ramp_flag
 #define quest_spawn_last_time_ms gameplay_run_state.quest_spawn_last_time_ms
 #define quest_unlock_index gameplay_run_state.quest_unlock_index
-#define quest_unlock_index_full gameplay_run_state.quest_unlock_index_full
-#define bonus_spawn_guard gameplay_run_state.bonus_spawn_guard
+#define quest_unlock_index_hardcore gameplay_run_state.quest_unlock_index_hardcore
+#define scripted_burst_active gameplay_run_state.scripted_burst_active
 #define highscore_active_record gameplay_run_state.highscore_active_record
 #define quest_transition_timer_ms gameplay_run_state.quest_transition_timer_ms
 #define weapon_usage_time gameplay_run_state.weapon_usage_time

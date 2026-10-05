@@ -99,7 +99,7 @@ def test_replay_codec_roundtrip_all_command_kinds() -> None:
             seed=0x1234,
             player_count=2,
             hardcore=True,
-            status=RunStatus(quest_unlock_index=12, quest_unlock_index_full=3),
+            status=RunStatus(quest_unlock_index=12, quest_unlock_index_hardcore=3),
         ),
         ticks=[
             ReplayTick(

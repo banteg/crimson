@@ -120,7 +120,7 @@ def adapt(src, txt):
         # (0x00413f5e); it reaches the scheme the way Python's replay carries it.
         expression = """            if (grim_interface_ptr->grim_is_key_active(config_key_reload)) {
                 vec2_t target =
-                    *(vec2_t *)&player_aim_screen_x[render_overlay_player_index * 2]
+                    *(vec2_t *)&player_aim_screen_x[current_player_index * 2]
                     - *(vec2_t *)&camera_offset_x;
                 *(vec2_t *)&player->move_target = target;
             }"""

@@ -26,7 +26,7 @@ def test_kill_experience_rounds_the_exact_int_plus_reward_once() -> None:
     player = PlayerState(index=0, pos=Vec2(), experience=(1 << 24) + 1)
     world = world_with_creature(CreatureState(active=True, hp=0.0, reward_value=0.5), players=[player])
     world.state.bonuses.double_experience = 5.0
-    world.state.bonus_spawn_guard = True
+    world.state.scripted_burst_active = True
     step_runtime = make_step_runtime(world)
 
     world.creatures.handle_death(step_runtime, 0)

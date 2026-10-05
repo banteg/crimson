@@ -8,7 +8,6 @@ import crimson.creatures.runtime as creature_runtime
 from crimson.bonuses import BonusId
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, PHANTOM_CREATURE_INDEX, CreaturePool, CreatureState
 from crimson.creatures.spawn import (
-    HAS_SPAWN_SLOT_FLAG,
     NATIVE_SPAWN_SLOT_COUNT,
     RANDOM_HEADING_SENTINEL,
     CreatureAiMode,
@@ -152,8 +151,8 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     owner = pool.entries[0]
     owner.active = True
     owner.hp = 100.0
-    owner.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    owner.flags = HAS_SPAWN_SLOT_FLAG
+    owner.death_timer = CREATURE_LIFECYCLE_ALIVE
+    owner.flags = CreatureFlags.SPAWNER
     owner.heading = 1.234
     owner.pos = Vec2(200.0, 300.0)
     owner.link_index = 0
@@ -191,9 +190,9 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
     owner = pool.entries[0]
     owner.active = True
     owner.hp = 100.0
-    owner.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    owner.death_timer = CREATURE_LIFECYCLE_ALIVE
     owner.flags = CreatureFlags(0)
-    owner.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    owner.ai_mode = CreatureAiMode.FLANK_PLAYER
     owner.move_speed = 0.0
     owner.size = 45.0
     owner.pos = Vec2(256.0, 256.0)
@@ -225,10 +224,10 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
     owner = pool.entries[0]
     owner.active = True
     owner.hp = 100.0
-    owner.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    owner.death_timer = CREATURE_LIFECYCLE_ALIVE
     owner.pos = Vec2(256.0, 256.0)
-    owner.flags = HAS_SPAWN_SLOT_FLAG
-    owner.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    owner.flags = CreatureFlags.SPAWNER
+    owner.ai_mode = CreatureAiMode.FLANK_PLAYER
     owner.move_speed = 0.0
     owner.size = 45.0
     owner.link_index = 0
@@ -262,9 +261,9 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.pos = Vec2(-64.0, 1088.0)
@@ -285,7 +284,7 @@ def test_attack_cooldown_is_stored_at_native_precision() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.pos = Vec2(128.0, 128.0)
@@ -312,9 +311,9 @@ def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
         creature.active = True
         creature.type_id = type_id
         creature.hp = 50.0
-        creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+        creature.death_timer = CREATURE_LIFECYCLE_ALIVE
         creature.flags = CreatureFlags(0)
-        creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+        creature.ai_mode = CreatureAiMode.FLANK_PLAYER
         creature.move_speed = 2.0
         creature.size = 45.0
         creature.pos = start_pos
@@ -346,9 +345,9 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     link.active = True
     link.type_id = CreatureTypeId.ZOMBIE
     link.hp = 100.0
-    link.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    link.death_timer = CREATURE_LIFECYCLE_ALIVE
     link.flags = CreatureFlags(0)
-    link.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    link.ai_mode = CreatureAiMode.FLANK_PLAYER
     link.move_speed = 0.0
     link.size = 45.0
     link.pos = Vec2(100.0, 100.0)
@@ -357,7 +356,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     near.active = True
     near.type_id = CreatureTypeId.ZOMBIE
     near.hp = 100.0
-    near.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    near.death_timer = CREATURE_LIFECYCLE_ALIVE
     near.flags = CreatureFlags(0)
     near.ai_mode = CreatureAiMode.FOLLOW_LINK_TETHERED
     near.link_index = 0
@@ -371,7 +370,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
     far.active = True
     far.type_id = CreatureTypeId.ZOMBIE
     far.hp = 100.0
-    far.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    far.death_timer = CREATURE_LIFECYCLE_ALIVE
     far.flags = CreatureFlags(0)
     far.ai_mode = CreatureAiMode.FOLLOW_LINK_TETHERED
     far.link_index = 0
@@ -411,9 +410,9 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.contact_damage = 10.0
@@ -441,7 +440,7 @@ def test_near_player_movement_rollback_is_stored_at_native_precision() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.move_speed = 1.3
     creature.size = 45.0
     creature.pos = Vec2(110.0, 100.0)
@@ -463,7 +462,7 @@ def test_contact_cooldown_addition_is_stored_at_native_precision() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.pos = Vec2(100.0, 100.0)
@@ -486,7 +485,7 @@ def test_creature_eat_gate_uses_stored_native_distance() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.ai_mode = CreatureAiMode.HOLD_TIMER
     creature.orbit_radius = 1.0
     creature.move_speed = 0.0
@@ -513,7 +512,7 @@ def test_creature_contact_gate_uses_stored_native_distance() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.ai_mode = CreatureAiMode.HOLD_TIMER
     creature.orbit_radius = 1.0
     creature.move_speed = 0.0
@@ -544,14 +543,14 @@ def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:
     creature.active = True
     creature.type_id = CreatureTypeId.ZOMBIE
     creature.hp = 10.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.contact_damage = 0.0
     creature.plague_infected = True
-    creature.collision_timer = 0.0
+    creature.dot_tick_timer = 0.0
     creature.pos = Vec2(400.0, 400.0)
 
     state.rng = rng
@@ -580,20 +579,20 @@ def test_plague_infection_timer_keeps_native_stored_cadence() -> None:
     creature.active = True
     creature.hp = 100.0
     creature.max_hp = 100.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.ai_mode = CreatureAiMode.HOLD_TIMER
     creature.orbit_radius = 1.0
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.pos = Vec2(100.0, 100.0)
     creature.plague_infected = True
-    creature.collision_timer = 0.0
+    creature.dot_tick_timer = 0.0
 
     for _ in range(25):
         step_creatures(world, 0.02)
 
     assert creature.hp == 70.0
-    assert creature.collision_timer == 0.49999991059303284
+    assert creature.dot_tick_timer == 0.49999991059303284
 
 
 def test_radioactive_timer_keeps_native_stored_cadence() -> None:
@@ -607,19 +606,19 @@ def test_radioactive_timer_keeps_native_stored_cadence() -> None:
     creature.active = True
     creature.hp = 100.0
     creature.max_hp = 100.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.ai_mode = CreatureAiMode.HOLD_TIMER
     creature.orbit_radius = 1.0
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.pos = Vec2(90.0, 0.0)
-    creature.collision_timer = 0.0
+    creature.dot_tick_timer = 0.0
 
     for _ in range(41):
         step_creatures(world, 1.0 / 120.0)
 
     assert creature.hp == 97.0
-    assert creature.collision_timer == 1.8440186977386475e-07
+    assert creature.dot_tick_timer == 1.8440186977386475e-07
 
 
 def test_single_player_dead_player_uses_dead_target_position() -> None:
@@ -635,9 +634,9 @@ def test_single_player_dead_player_uses_dead_target_position() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.contact_damage = 0.0
@@ -670,9 +669,9 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.contact_damage = 10.0
@@ -704,9 +703,9 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.contact_damage = 10.0
@@ -756,9 +755,9 @@ def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
     far = pool.entries[0]
     far.active = True
     far.hp = 50.0
-    far.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    far.death_timer = CREATURE_LIFECYCLE_ALIVE
     far.flags = CreatureFlags(0)
-    far.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    far.ai_mode = CreatureAiMode.FLANK_PLAYER
     far.move_speed = 0.0
     far.size = 45.0
     far.contact_damage = 0.0
@@ -768,9 +767,9 @@ def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
     near = pool.entries[1]
     near.active = True
     near.hp = 50.0
-    near.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    near.death_timer = CREATURE_LIFECYCLE_ALIVE
     near.flags = CreatureFlags(0)
-    near.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    near.ai_mode = CreatureAiMode.FLANK_PLAYER
     near.move_speed = 0.0
     near.size = 45.0
     near.contact_damage = 0.0
@@ -794,9 +793,9 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     dead_target = pool.entries[0]
     dead_target.active = True
     dead_target.hp = 0.0
-    dead_target.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    dead_target.death_timer = CREATURE_LIFECYCLE_ALIVE
     dead_target.flags = CreatureFlags(0)
-    dead_target.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    dead_target.ai_mode = CreatureAiMode.FLANK_PLAYER
     dead_target.move_speed = 0.0
     dead_target.size = 45.0
     dead_target.contact_damage = 0.0
@@ -806,9 +805,9 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     live_target = pool.entries[1]
     live_target.active = True
     live_target.hp = 50.0
-    live_target.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    live_target.death_timer = CREATURE_LIFECYCLE_ALIVE
     live_target.flags = CreatureFlags(0)
-    live_target.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    live_target.ai_mode = CreatureAiMode.FLANK_PLAYER
     live_target.move_speed = 0.0
     live_target.size = 45.0
     live_target.contact_damage = 0.0
@@ -861,9 +860,9 @@ def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> No
     far = pool.entries[0]
     far.active = True
     far.hp = 50.0
-    far.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    far.death_timer = CREATURE_LIFECYCLE_ALIVE
     far.flags = CreatureFlags(0)
-    far.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    far.ai_mode = CreatureAiMode.FLANK_PLAYER
     far.move_speed = 0.0
     far.size = 45.0
     far.contact_damage = 0.0
@@ -873,9 +872,9 @@ def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> No
     near = pool.entries[1]
     near.active = True
     near.hp = 50.0
-    near.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    near.death_timer = CREATURE_LIFECYCLE_ALIVE
     near.flags = CreatureFlags(0)
-    near.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    near.ai_mode = CreatureAiMode.FLANK_PLAYER
     near.move_speed = 0.0
     near.size = 45.0
     near.contact_damage = 0.0
@@ -883,11 +882,11 @@ def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> No
     near.pos = Vec2(120.0, 100.0)
 
     player.auto_target = 0
-    pool._update_tick = creature_runtime._TARGET_REEVAL_PERIOD - 1
+    pool._update_tick = creature_runtime._TARGET_REEVAL_SKIP_MODULUS - 1
 
     state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
-    assert pool._update_tick == creature_runtime._TARGET_REEVAL_PERIOD
+    assert pool._update_tick == creature_runtime._TARGET_REEVAL_SKIP_MODULUS
     assert player.auto_target == 0
 
     state.rng = RecordingCrand(Crand(0x1234))
@@ -909,9 +908,9 @@ def test_creature_update_coop_auto_target_uses_target_player_position_by_default
     current = pool.entries[0]
     current.active = True
     current.hp = 50.0
-    current.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    current.death_timer = CREATURE_LIFECYCLE_ALIVE
     current.flags = CreatureFlags(0)
-    current.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    current.ai_mode = CreatureAiMode.FLANK_PLAYER
     current.move_speed = 0.0
     current.size = 45.0
     current.contact_damage = 0.0
@@ -921,9 +920,9 @@ def test_creature_update_coop_auto_target_uses_target_player_position_by_default
     nearer_for_player1 = pool.entries[1]
     nearer_for_player1.active = True
     nearer_for_player1.hp = 50.0
-    nearer_for_player1.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    nearer_for_player1.death_timer = CREATURE_LIFECYCLE_ALIVE
     nearer_for_player1.flags = CreatureFlags(0)
-    nearer_for_player1.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    nearer_for_player1.ai_mode = CreatureAiMode.FLANK_PLAYER
     nearer_for_player1.move_speed = 0.0
     nearer_for_player1.size = 45.0
     nearer_for_player1.contact_damage = 0.0
@@ -951,9 +950,9 @@ def test_creature_update_coop_auto_target_preserve_bugs_keeps_player1_distance_b
     current = pool.entries[0]
     current.active = True
     current.hp = 50.0
-    current.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    current.death_timer = CREATURE_LIFECYCLE_ALIVE
     current.flags = CreatureFlags(0)
-    current.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    current.ai_mode = CreatureAiMode.FLANK_PLAYER
     current.move_speed = 0.0
     current.size = 45.0
     current.contact_damage = 0.0
@@ -963,9 +962,9 @@ def test_creature_update_coop_auto_target_preserve_bugs_keeps_player1_distance_b
     nearer_for_player1 = pool.entries[1]
     nearer_for_player1.active = True
     nearer_for_player1.hp = 50.0
-    nearer_for_player1.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    nearer_for_player1.death_timer = CREATURE_LIFECYCLE_ALIVE
     nearer_for_player1.flags = CreatureFlags(0)
-    nearer_for_player1.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    nearer_for_player1.ai_mode = CreatureAiMode.FLANK_PLAYER
     nearer_for_player1.move_speed = 0.0
     nearer_for_player1.size = 45.0
     nearer_for_player1.contact_damage = 0.0
@@ -992,8 +991,8 @@ def test_creature_update_coop_auto_target_preserve_bugs_reuses_other_player_dist
     current = pool.entries[0]
     current.active = True
     current.hp = 50.0
-    current.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    current.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    current.death_timer = CREATURE_LIFECYCLE_ALIVE
+    current.ai_mode = CreatureAiMode.FLANK_PLAYER
     current.move_speed = 0.0
     current.size = 45.0
     current.target_player = 0
@@ -1002,8 +1001,8 @@ def test_creature_update_coop_auto_target_preserve_bugs_reuses_other_player_dist
     candidate = pool.entries[1]
     candidate.active = True
     candidate.hp = 50.0
-    candidate.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    candidate.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    candidate.death_timer = CREATURE_LIFECYCLE_ALIVE
+    candidate.ai_mode = CreatureAiMode.FLANK_PLAYER
     candidate.move_speed = 0.0
     candidate.size = 45.0
     candidate.target_player = 0
@@ -1035,8 +1034,8 @@ def test_creature_update_preserve_bugs_updates_dead_auto_target_before_redirect(
     candidate = pool.entries[1]
     candidate.active = True
     candidate.hp = 50.0
-    candidate.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    candidate.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    candidate.death_timer = CREATURE_LIFECYCLE_ALIVE
+    candidate.ai_mode = CreatureAiMode.FLANK_PLAYER
     candidate.move_speed = 0.0
     candidate.size = 45.0
     candidate.target_player = 0
@@ -1062,9 +1061,9 @@ def test_small_creature_dies_on_contact() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.flags = CreatureFlags(0)
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.move_speed = 0.0
     creature.size = 30.0
     creature.contact_damage = 10.0
@@ -1077,7 +1076,7 @@ def test_small_creature_dies_on_contact() -> None:
 
     assert_float_close(player.health, 90.0)
     assert_float_close(creature.hp, 0.0)
-    assert_float_close(creature.lifecycle_stage, f32(float(CREATURE_LIFECYCLE_ALIVE) - float(dt)))
+    assert_float_close(creature.death_timer, f32(float(CREATURE_LIFECYCLE_ALIVE) - float(dt)))
     assert pool.kill_count == 0
 
 
@@ -1105,16 +1104,16 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
 
 
 def test_death_steps_the_corpse_or_deactivates_an_eaten_creature() -> None:
-    corpse = world_with_creature(CreatureState(active=True, hp=0.0, lifecycle_stage=15.0, reward_value=10.0))
-    corpse.state.bonus_spawn_guard = True
+    corpse = world_with_creature(CreatureState(active=True, hp=0.0, death_timer=15.0, reward_value=10.0))
+    corpse.state.scripted_burst_active = True
     kill_creature(corpse)
-    assert corpse.creatures.entries[0].lifecycle_stage == x87_pc24_sub(15.0, f32(0.1))
+    assert corpse.creatures.entries[0].death_timer == x87_pc24_sub(15.0, f32(0.1))
     assert corpse.creatures.entries[0].active
 
-    eaten = world_with_creature(CreatureState(active=True, hp=0.0, lifecycle_stage=15.0, reward_value=10.0))
-    eaten.state.bonus_spawn_guard = True
+    eaten = world_with_creature(CreatureState(active=True, hp=0.0, death_timer=15.0, reward_value=10.0))
+    eaten.state.scripted_burst_active = True
     death = kill_creature(eaten, keep_corpse=False)
-    assert eaten.creatures.entries[0].lifecycle_stage == 15.0
+    assert eaten.creatures.entries[0].death_timer == 15.0
     assert not eaten.creatures.entries[0].active
     assert death.xp_awarded == 10
 
@@ -1123,7 +1122,7 @@ def test_every_kill_credits_player_one() -> None:
     # Native `creature_handle_death` adds the XP to player one, whoever landed the hit.
     players = [PlayerState(index=0, pos=Vec2()), PlayerState(index=1, pos=Vec2())]
     world = world_with_creature(CreatureState(active=True, hp=0.0, reward_value=10.0), players=players)
-    world.state.bonus_spawn_guard = True
+    world.state.scripted_burst_active = True
     world.state.perks[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
 
     death = kill_creature(world)
@@ -1135,11 +1134,11 @@ def test_every_kill_credits_player_one() -> None:
 def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debris() -> None:
     rng = RecordingCrand(Crand(0xBEEF))
     world = world_with_creature(
-        CreatureState(active=True, flags=CreatureFlags.RANGED_ATTACK_SHOCK, pos=Vec2(100.0, 100.0), hp=0.0),
+        CreatureState(active=True, flags=CreatureFlags.RANGED_PLASMA_RIFLE, pos=Vec2(100.0, 100.0), hp=0.0),
         rng=rng,
     )
     # Kill drops are out of scope here; the guard skips them before any draw.
-    world.state.bonus_spawn_guard = True
+    world.state.scripted_burst_active = True
 
     kill_creature(world)
 
@@ -1224,7 +1223,7 @@ def _inactive_bonus_carrier_world(*, preserve_bugs: bool) -> WorldState:
             active=False,
             flags=CreatureFlags.BONUS_ON_DEATH,
             bonus_id=BonusId.POINTS,
-            bonus_duration_override=5,
+            bonus_amount_override=5,
             hp=-1.0,
             pos=Vec2(100.0, 100.0),
         ),
@@ -1243,7 +1242,7 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_defaul
     assert death.xp_awarded == 0
     creature = world.creatures.entries[0]
     assert creature.bonus_id is None
-    assert creature.bonus_duration_override is None
+    assert creature.bonus_amount_override is None
 
 
 def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve_bugs() -> None:
@@ -1261,7 +1260,7 @@ def test_survival_spawn_resets_the_fields_native_writes_and_keeps_the_rest() -> 
     stale.vel = Vec2(3.0, 4.0)
     stale.force_target = 1
     stale.attack_cooldown = 0.7
-    stale.collision_timer = 0.3
+    stale.dot_tick_timer = 0.3
     stale.anim_phase = 5.0
     stale.hit_flash_timer = 0.1
     stale.link_index = -7
@@ -1277,7 +1276,7 @@ def test_survival_spawn_resets_the_fields_native_writes_and_keeps_the_rest() -> 
     assert entry.vel == Vec2()
     assert entry.force_target == 0
     assert entry.attack_cooldown == 0.0
-    assert entry.collision_timer == 0.0
+    assert entry.dot_tick_timer == 0.0
     assert entry.anim_phase == 0.0
     assert entry.hit_flash_timer == 0.1
     assert entry.link_index == -7
@@ -1310,9 +1309,9 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
     corpse = pool.entries[6]
     corpse.active = True
     corpse.hp = -231.675
-    corpse.lifecycle_stage = -9.656
+    corpse.death_timer = -9.656
     corpse.pos = Vec2(588.6516, 379.7685)
-    corpse.flags = CreatureFlags.AI7_LINK_TIMER
+    corpse.flags = CreatureFlags.STOP_AND_GO
 
     pool._tick_dead(
         corpse,
@@ -1325,21 +1324,21 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
     )
 
     assert corpse.active is True
-    assert_float_close(corpse.lifecycle_stage, f32(-10.016))
+    assert_float_close(corpse.death_timer, f32(-10.016))
 
     pool.finalize_post_render_lifecycle()
     assert corpse.active is False
 
 
-def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> None:
+def test_tick_dead_spawner_corpse_emits_native_19_blood_burst_rng_budget() -> None:
     effects = EffectPool()
     pool = CreaturePool()
     corpse = pool.entries[0]
     corpse.active = True
     corpse.hp = -5.0
-    corpse.lifecycle_stage = 1.0
+    corpse.death_timer = 1.0
     corpse.pos = Vec2(320.0, 240.0)
-    corpse.flags = CreatureFlags.ANIM_PING_PONG
+    corpse.flags = CreatureFlags.SPAWNER
     corpse.size = 24.0
 
     fx_queue_rotated = FxQueueRotated()
@@ -1372,23 +1371,23 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
         for record in rng.records_since(before_calls)
         if record.caller
         in {
-            RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_8_ANGLE,
-            RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_6_ANGLE,
-            RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_5_ANGLE,
+            RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_8_ANGLE,
+            RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_6_ANGLE,
+            RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_5_ANGLE,
         }
     ] == [
-        RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_8_ANGLE,
+        RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_8_ANGLE,
     ] * 8 + [
-        RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_6_ANGLE,
+        RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_6_ANGLE,
     ] * 6 + [
-        RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_5_ANGLE,
+        RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_5_ANGLE,
     ] * 5
     assert len(effects.iter_active()) == 38
     # The corpse decal is queued before the burst and draws no RNG.
     assert fx_queue_rotated.count == 1
 
 
-def test_dead_self_damage_tick_flags_still_reduce_lifecycle_before_dead_decay() -> None:
+def test_dead_poisoned_flags_still_reduce_death_timer_before_dead_decay() -> None:
     world = make_world()
     state = world.state
     player = world.players[0]
@@ -1399,18 +1398,18 @@ def test_dead_self_damage_tick_flags_still_reduce_lifecycle_before_dead_decay() 
     corpse = pool.entries[42]
     corpse.active = True
     corpse.hp = -0.08500146865844727
-    corpse.lifecycle_stage = 12.640003204345703
-    corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
+    corpse.death_timer = 12.640003204345703
+    corpse.flags = CreatureFlags.POISONED
 
     # Exercise a non-round frame time at the native damage boundary.
     state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 0.03800000250339508)
 
-    # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
-    assert_float_close(corpse.lifecycle_stage, f32(11.006003))
+    # Native applies POISONED via creature_apply_damage even while hp<=0.
+    assert_float_close(corpse.death_timer, f32(11.006003))
 
 
-def test_newly_dead_self_damage_tick_preserves_native_prologue_order() -> None:
+def test_newly_dead_poison_tick_preserves_native_prologue_order() -> None:
     world = make_world()
     state = world.state
     player = world.players[0]
@@ -1421,8 +1420,8 @@ def test_newly_dead_self_damage_tick_preserves_native_prologue_order() -> None:
     corpse = pool.entries[42]
     corpse.active = True
     corpse.hp = -1.0
-    corpse.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
+    corpse.death_timer = CREATURE_LIFECYCLE_ALIVE
+    corpse.flags = CreatureFlags.POISONED
 
     dt = f32(0.03800000250339508)
     state.rng = RecordingCrand(Crand(0x1234))
@@ -1435,7 +1434,7 @@ def test_newly_dead_self_damage_tick_preserves_native_prologue_order() -> None:
         ),
         x87_pc24_mul(dt, 28.0),
     )
-    assert corpse.lifecycle_stage == expected
+    assert corpse.death_timer == expected
 
 
 def test_live_self_damage_product_is_stored_at_native_precision() -> None:
@@ -1449,8 +1448,8 @@ def test_live_self_damage_product_is_stored_at_native_precision() -> None:
     creature.active = True
     creature.hp = 8.0
     creature.max_hp = 8.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature.flags = CreatureFlags.SELF_DAMAGE_TICK
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature.flags = CreatureFlags.POISONED
     creature.move_speed = 0.0
     creature.size = 45.0
     creature.pos = Vec2(128.0, 128.0)
@@ -1467,7 +1466,7 @@ def test_tick_dead_death_slide_preserves_native_multiply_order() -> None:
     corpse = pool.entries[4]
     corpse.active = True
     corpse.hp = -42.440147399902344
-    corpse.lifecycle_stage = 15.908000946044922
+    corpse.death_timer = 15.908000946044922
     corpse.heading = 6.330781936645508
 
     pool._tick_dead(
@@ -1480,7 +1479,7 @@ def test_tick_dead_death_slide_preserves_native_multiply_order() -> None:
         violence_disabled=0,
     )
 
-    assert corpse.lifecycle_stage == 14.256000518798828
+    assert corpse.death_timer == 14.256000518798828
     assert corpse.vel == Vec2(0.3601662218570709, -7.56136417388916)
 
 
@@ -1490,17 +1489,17 @@ def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> 
         entry = pool.entries[idx]
         entry.active = True
         entry.hp = 1.0
-        entry.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+        entry.death_timer = CREATURE_LIFECYCLE_ALIVE
         entry.pos = Vec2(float(idx), 0.0)
 
     corpse = pool.entries[6]
     corpse.hp = -231.675
-    corpse.lifecycle_stage = -9.656
+    corpse.death_timer = -9.656
     corpse.pos = Vec2(588.6516, 379.7685)
-    corpse.flags = CreatureFlags.AI7_LINK_TIMER
+    corpse.flags = CreatureFlags.STOP_AND_GO
 
     pool.entries[22].active = False
-    pool.entries[22].lifecycle_stage = -10.21
+    pool.entries[22].death_timer = -10.21
     pool.entries[22].hp = -45.9623
 
     pool._tick_dead(
@@ -1525,7 +1524,7 @@ def test_full_pool_spawns_write_the_phantom_slot_without_a_phase_seed() -> None:
         entry.hp = 1.0
     rng = RecordingCrand(Crand(0))
 
-    idx = creature_spawn(pool, Vec2(12.0, 34.0), RGBA(), CreatureTypeId.SPIDER_SP1, rng, survival_elapsed_ms=0)
+    idx = creature_spawn(pool, Vec2(12.0, 34.0), RGBA(), CreatureTypeId.SPIDER_SP1, rng, run_elapsed_ms=0)
 
     assert idx == PHANTOM_CREATURE_INDEX
     assert pool.phantom.pos == Vec2(12.0, 34.0)
@@ -1538,7 +1537,7 @@ def test_full_pool_spawns_write_the_phantom_slot_without_a_phase_seed() -> None:
     assert pool.spawned_count == 0
 
 
-def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None:
+def test_stop_and_go_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None:
     world = make_world()
     state = world.state
     player = world.players[0]
@@ -1549,9 +1548,9 @@ def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature.flags = CreatureFlags.AI7_LINK_TIMER
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature.flags = CreatureFlags.STOP_AND_GO
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.link_index = -33
     creature.target_player = 0
     creature.pos = Vec2(640.0, 512.0)
@@ -1571,7 +1570,7 @@ def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None
     assert pool.entries[6].active is False
 
 
-def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
+def test_stop_and_go_still_ticks_for_evil_eyes_frozen_target() -> None:
     world = make_world()
     state = world.state
     player = world.players[0]
@@ -1584,8 +1583,8 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature.flags = CreatureFlags.AI7_LINK_TIMER
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature.flags = CreatureFlags.STOP_AND_GO
     creature.ai_mode = CreatureAiMode.HOLD_TIMER
     creature.link_index = 1
     creature.target_player = 0
@@ -1602,7 +1601,7 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
     assert stub_rand.calls == 1
 
 
-def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> None:
+def test_stop_and_go_still_ticks_when_live_poison_kills_creature() -> None:
     world = make_world()
     state = world.state
     player = world.players[0]
@@ -1613,9 +1612,9 @@ def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> No
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 1.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature.flags = CreatureFlags.AI7_LINK_TIMER | CreatureFlags.SELF_DAMAGE_TICK_STRONG
-    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature.flags = CreatureFlags.STOP_AND_GO | CreatureFlags.POISONED_STRONG
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
     creature.link_index = -10
     creature.target_player = 0
     creature.pos = Vec2(640.0, 512.0)
@@ -1631,10 +1630,10 @@ def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> No
 
 
 @pytest.mark.parametrize(
-    ("hp", "lifecycle_stage"),
+    ("hp", "death_timer"),
     [(1.0, CREATURE_LIFECYCLE_ALIVE), (-1.0, 10.0), (10.0, 10.0)],
 )
-def test_dead_creature_still_reevaluates_target_player(hp: float, lifecycle_stage: float) -> None:
+def test_dead_creature_still_reevaluates_target_player(hp: float, death_timer: float) -> None:
     world = make_world(player_count=2)
     state = world.state
     player0 = world.players[0]
@@ -1649,8 +1648,8 @@ def test_dead_creature_still_reevaluates_target_player(hp: float, lifecycle_stag
     creature.active = True
     creature.hp = hp
     creature.max_hp = max(1.0, hp)
-    creature.lifecycle_stage = lifecycle_stage
-    creature.flags = CreatureFlags.SELF_DAMAGE_TICK_STRONG if hp > 0.0 else CreatureFlags(0)
+    creature.death_timer = death_timer
+    creature.flags = CreatureFlags.POISONED_STRONG if hp > 0.0 else CreatureFlags(0)
     creature.target_player = 0
     creature.pos = Vec2(100.0, 100.0)
     creature.move_speed = 0.0
@@ -1659,7 +1658,7 @@ def test_dead_creature_still_reevaluates_target_player(hp: float, lifecycle_stag
     state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     step_creatures(world, 0.1)
 
-    assert creature.lifecycle_stage != CREATURE_LIFECYCLE_ALIVE
+    assert creature.death_timer != CREATURE_LIFECYCLE_ALIVE
     assert creature.target_player == 1
 
 
@@ -1674,7 +1673,7 @@ def test_fading_corpse_redirects_from_dead_single_player() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = -1.0
-    creature.lifecycle_stage = 10.0
+    creature.death_timer = 10.0
     creature.target_player = 0
     creature.pos = Vec2(100.0, 100.0)
     creature.size = 45.0
@@ -1688,7 +1687,7 @@ def test_fading_corpse_redirects_from_dead_single_player() -> None:
 def test_dead_link_cleanup_finishes_current_live_interaction_tail() -> None:
     world = make_world()
     state = world.state
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
     player = world.players[0]
     player.pos = Vec2(100.0, 100.0)
     pool = world.creatures
@@ -1697,7 +1696,7 @@ def test_dead_link_cleanup_finishes_current_live_interaction_tail() -> None:
     creature.active = True
     creature.hp = 10.0
     creature.max_hp = 10.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.ai_mode = CreatureAiMode.FOLLOW_LINK_TETHERED
     creature.link_index = 1
     creature.target_player = 0
@@ -1712,10 +1711,10 @@ def test_dead_link_cleanup_finishes_current_live_interaction_tail() -> None:
 
     step_creatures(world, 0.1)
 
-    assert creature.ai_mode == CreatureAiMode.ORBIT_PLAYER
+    assert creature.ai_mode == CreatureAiMode.FLANK_PLAYER
     assert_float_close(player.health, 93.0)
     assert_float_close(creature.attack_cooldown, 1.0)
-    assert creature.lifecycle_stage > CREATURE_LIFECYCLE_ALIVE - 1.0
+    assert creature.death_timer > CREATURE_LIFECYCLE_ALIVE - 1.0
 
 
 def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
@@ -1729,8 +1728,8 @@ def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature.flags = CreatureFlags.AI7_LINK_TIMER
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature.flags = CreatureFlags.STOP_AND_GO
     creature.ai_mode = CreatureAiMode.HOLD_TIMER
     creature.link_index = 400
     creature.target_player = 0
@@ -1761,8 +1760,8 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature.flags = CreatureFlags.AI7_LINK_TIMER
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature.flags = CreatureFlags.STOP_AND_GO
     creature.ai_mode = CreatureAiMode.HOLD_TIMER
     creature.link_index = 100
     creature.target_player = 0
@@ -1799,9 +1798,9 @@ def test_evil_eyes_target_still_takes_plague_infection_tick() -> None:
     creature.active = True
     creature.hp = 100.0
     creature.max_hp = 100.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.plague_infected = True
-    creature.collision_timer = 0.1
+    creature.dot_tick_timer = 0.1
     creature.target_player = 0
     creature.pos = Vec2(640.0, 512.0)
     creature.move_speed = 1.0
@@ -1811,7 +1810,7 @@ def test_evil_eyes_target_still_takes_plague_infection_tick() -> None:
     step_creatures(world, 0.2)
 
     assert_float_close(creature.hp, 85.0)
-    assert creature.collision_timer == f32(0.4)
+    assert creature.dot_tick_timer == f32(0.4)
     assert creature.pos == before_pos
 
 
@@ -1832,7 +1831,7 @@ def test_evil_eyes_target_still_reevaluates_target_player() -> None:
     creature.active = True
     creature.hp = 100.0
     creature.max_hp = 100.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.target_player = 0
     creature.pos = Vec2(100.0, 100.0)
     creature.move_speed = 1.0
@@ -1866,8 +1865,8 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     creature0 = pool.entries[0]
     creature0.active = True
     creature0.hp = 50.0
-    creature0.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature0.flags = CreatureFlags.AI7_LINK_TIMER
+    creature0.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature0.flags = CreatureFlags.STOP_AND_GO
     creature0.ai_mode = CreatureAiMode.HOLD_TIMER
     creature0.link_index = 100
     creature0.target_player = 0
@@ -1880,8 +1879,8 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     creature1 = pool.entries[1]
     creature1.active = True
     creature1.hp = 50.0
-    creature1.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature1.flags = CreatureFlags.AI7_LINK_TIMER
+    creature1.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature1.flags = CreatureFlags.STOP_AND_GO
     creature1.ai_mode = CreatureAiMode.HOLD_TIMER
     creature1.link_index = 100
     creature1.target_player = 0
@@ -1914,14 +1913,14 @@ def test_bonus_on_death_drop_emits_native_burst_and_clamps_corpse() -> None:
             active=True,
             flags=CreatureFlags.BONUS_ON_DEATH,
             bonus_id=BonusId.POINTS,
-            bonus_duration_override=5,
+            bonus_amount_override=5,
             pos=Vec2(5.0, 1010.0),
             hp=0.0,
         ),
         rng=rng,
     )
     state = world.state
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
     creature = world.creatures.entries[0]
 
     kill_creature(world)
@@ -1941,9 +1940,9 @@ def test_bonus_on_death_drop_emits_native_burst_and_clamps_corpse() -> None:
     ]
 
 
-def test_long_strip_spawner_clamps_only_before_moving() -> None:
-    # creature_update_all clamps PING_PONG movers to [size, 1024 - size] before
-    # the move; the step itself may carry a long-strip mover past the bound.
+def test_mobile_spawner_clamps_only_before_moving() -> None:
+    # creature_update_all clamps spawners to [size, 1024 - size] before
+    # the move; the step itself may carry a mobile spawner past the bound.
     world = make_world()
     state = world.state
     player = world.players[0]
@@ -1958,7 +1957,7 @@ def test_long_strip_spawner_clamps_only_before_moving() -> None:
     creature.pos = Vec2(975.0, 500.0)
     creature.heading = f32(math.pi / 2.0)
     creature.target_heading = creature.heading
-    creature.flags = CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP
+    creature.flags = CreatureFlags.SPAWNER | CreatureFlags.SPAWNER_MOBILE
 
     state.rng = Crand(0)
     step_creatures(world, 1.0 / 60.0)

@@ -34,7 +34,7 @@ PAD_AIM_DIST_MUL_DEFAULT = 96.0
 # radius is ignored.
 _PAD_AIM_DEADZONE = 0.2
 
-# `player_alt_move_key_forward/backward`, `player_alt_turn_key_left/right`: the arrow keys.
+# `player2_move_key_forward/backward`, `player2_turn_key_left/right`: the arrow keys.
 _ALT_MOVE_KEYS = (0xC8, 0xD0, 0xCB, 0xCD)
 _AIM_POV_LEFT_CODE = 0x133
 _AIM_POV_RIGHT_CODE = 0x134
@@ -190,7 +190,7 @@ class LocalInputInterpreter:
 
         move_vec = Vec2()
         # Held in every scheme: the tutorial polls the move keys whatever the movement mode.
-        move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = (
+        move_forward_down, move_backward_down, turn_left_down, turn_right_down = (
             _key_down_with_single_player_alt(key, alt_key=alt_key, config=config, player_index=idx)
             for key, alt_key in zip(binds.move_codes, _ALT_MOVE_KEYS, strict=True)
         )
@@ -199,8 +199,8 @@ class LocalInputInterpreter:
         # other scheme values do not move at all.
         if move_mode_type is MovementControlType.RELATIVE:
             move_vec = Vec2(
-                float(turn_right_pressed) - float(turn_left_pressed),
-                float(move_backward_pressed) - float(move_forward_pressed),
+                float(turn_right_down) - float(turn_left_down),
+                float(move_backward_down) - float(move_forward_down),
             )
         elif move_mode_type is MovementControlType.DUAL_ACTION_PAD:
             # `move` is the direction to travel.  Native builds `movement_input`
@@ -217,10 +217,10 @@ class LocalInputInterpreter:
             move_vec = state.move_target
         elif move_mode_type is MovementControlType.STATIC:
             move_vec = _resolve_static_move_vector(
-                move_up=move_forward_pressed,
-                move_down=move_backward_pressed,
-                move_left=turn_left_pressed,
-                move_right=turn_right_pressed,
+                move_up=move_forward_down,
+                move_down=move_backward_down,
+                move_left=turn_left_down,
+                move_right=turn_right_down,
             )
 
         heading = float(state.aim_heading)
@@ -282,10 +282,10 @@ class LocalInputInterpreter:
             fire_bullets_key_down=input_code_is_down(0x22, player_index=idx),
             aim_turn_left=aim_turn_left,
             aim_turn_right=aim_turn_right,
-            move_forward_pressed=move_forward_pressed,
-            move_backward_pressed=move_backward_pressed,
-            turn_left_pressed=turn_left_pressed,
-            turn_right_pressed=turn_right_pressed,
+            move_forward_down=move_forward_down,
+            move_backward_down=move_backward_down,
+            turn_left_down=turn_left_down,
+            turn_right_down=turn_right_down,
         )
 
     def build_frame_inputs(

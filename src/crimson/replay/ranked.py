@@ -28,7 +28,7 @@ def unranked_reasons(run: RunSpec) -> list[str]:
     full = msgspec.structs.replace(
         run.status,
         quest_unlock_index=quest_count,
-        quest_unlock_index_full=quest_count,
+        quest_unlock_index_hardcore=quest_count,
     )
     if _unlocks(run.status, run) != _unlocks(full, run):
         reasons.append("unlocks")

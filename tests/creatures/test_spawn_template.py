@@ -4,8 +4,8 @@ import pytest
 
 from crimson.creatures.runtime import PHANTOM_CREATURE_INDEX, CreaturePool
 from crimson.creatures.spawn import (
-    HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
+    CreatureFlags,
     CreatureTypeId,
     SpawnId,
 )
@@ -213,7 +213,7 @@ def test_phantom_spawner_keeps_its_flags_and_spawn_slot_across_spawns() -> None:
     pool = _full_pool()
 
     _spawn(pool, SpawnId.DEN_ALIEN_BASIC_07)
-    assert pool.phantom.flags == HAS_SPAWN_SLOT_FLAG
+    assert pool.phantom.flags == CreatureFlags.SPAWNER
     assert pool.phantom.link_index == 0
     assert pool.spawn_slots[0].owner_creature == PHANTOM_CREATURE_INDEX
     interval = x87_pc24_add(f32(2.2), f32(0.2))
@@ -223,7 +223,7 @@ def test_phantom_spawner_keeps_its_flags_and_spawn_slot_across_spawns() -> None:
     # still reads as a spawner in the tail and stretches the leaked slot's interval again.
     _spawn(pool, SpawnId.ZOMBIE_RANDOM_41)
     assert pool.phantom.type_id is CreatureTypeId.ZOMBIE
-    assert pool.phantom.flags == HAS_SPAWN_SLOT_FLAG
+    assert pool.phantom.flags == CreatureFlags.SPAWNER
     assert pool.spawn_slots[0].interval == x87_pc24_add(interval, f32(0.2))
     assert pool.spawn_slot_alloc() == 1
 
@@ -265,10 +265,10 @@ _PROLOGUE = [RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED, RngCallerStatic.CRE
 @pytest.mark.parametrize(
     ("template_id", "callers"),
     [
-        (SpawnId.ALIEN_AI7_ORBITER_36, [RngCallerStatic.CREATURE_SPAWN_TEMPLATE_AI7_ORBITER_TINT_G]),
+        (SpawnId.ALIEN_DELAYED_START_36, [RngCallerStatic.CREATURE_SPAWN_TEMPLATE_DELAYED_START_TINT_G]),
         (SpawnId.SPIDER_SP2_RANGED_VARIANT_37, [RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP2_RANGED_VARIANT_37_SIZE]),
-        (SpawnId.SPIDER_SP1_AI7_TIMER_38, [RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_AI7_TIMER_38_SIZE]),
-        (SpawnId.SPIDER_SP1_AI7_TIMER_WEAK_39, [RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_AI7_TIMER_WEAK_39_SIZE]),
+        (SpawnId.SPIDER_SP1_STOP_AND_GO_38, [RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_STOP_AND_GO_38_SIZE]),
+        (SpawnId.SPIDER_SP1_STOP_AND_GO_WEAK_39, [RngCallerStatic.CREATURE_SPAWN_TEMPLATE_SPIDER_SP1_STOP_AND_GO_WEAK_39_SIZE]),
         (
             SpawnId.SPIDER_SP1_RANDOM_3D,
             [

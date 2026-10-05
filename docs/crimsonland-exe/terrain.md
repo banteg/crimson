@@ -269,8 +269,8 @@ call `terrain_generate` directly. See also
 
 Grim sets config slot `0x57` when the device is reset or texture contents
 cannot be restored. `game_frame_update` checks it every frame, regenerates the
-terrain and clears it: in quest mode (while `render_pass_mode` is set) it calls
-`terrain_generate(&quest_selected_meta[(quest_stage_minor-1)%10 * 10 + (quest_stage_major-1)%4])`
+terrain and clears it: in quest mode (while `run_active` is set) it calls
+`terrain_generate(&quest_meta_table[(quest_stage_minor-1)%10 * 10 + (quest_stage_major-1)%4])`
 — major and minor are swapped relative to the table layout (`(tier-1)*10 + (index-1)`),
 so the regenerated ground generally belongs to a different quest — and otherwise
 `terrain_generate_random()`. Baked decals are lost either way.
@@ -314,7 +314,7 @@ The queue holds 128 entries: when the count reaches `0x80` it is clamped to
 `fx_queue_add_rotated @ 0x00427840` fills parallel arrays:
 `fx_rotated_pos_x` (top-left `vec2`; call sites subtract size/2), `fx_rotated_color_r`
 (RGBA), `fx_rotated_rotation`, `fx_rotated_scale` (drawn as a square) and
-`fx_rotated_effect_id` (a creature type id used to look up the corpse frame).
+`fx_rotated_creature_type_id` (a creature type id used to look up the corpse frame).
 
 It does nothing (but still returns `1`) when `terrain_texture_failed != 0`, and
 returns `0` when the queue already holds `0x3f` entries. Alpha is adjusted on

@@ -16,7 +16,7 @@ def test_creature_frames_match_native_pc24_witnesses() -> None:
     for witness in data["witnesses"]:
         actual, _, _ = creature_anim_select_frame(
             witness["phase"],
-            lifecycle_stage=witness["lifecycle_stage"],
+            death_timer=witness["death_timer"],
             base_frame=witness["base_frame"],
             mirror_long=witness["mirror_long"],
             flags=CreatureFlags(witness["flags"]),
@@ -24,7 +24,7 @@ def test_creature_frames_match_native_pc24_witnesses() -> None:
         assert actual == witness["frame"], witness
         flash, _, _ = creature_anim_select_flash_frame(
             witness["phase"],
-            lifecycle_stage=witness["lifecycle_stage"],
+            death_timer=witness["death_timer"],
             base_frame=witness["base_frame"],
             mirror_long=witness["mirror_long"],
             flags=CreatureFlags(witness["flags"]),

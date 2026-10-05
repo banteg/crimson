@@ -58,7 +58,7 @@ extern "C" void quest_build_target_practice(
             offset.x + 512.0f,
             offset.y + 512.0f);
         spawns[entry_count].pos = position;
-        spawns[entry_count].template_id = SPAWN_ID_ALIEN_AI7_ORBITER_36;
+        spawns[entry_count].template_id = SPAWN_ID_ALIEN_DELAYED_START_36;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count].count = 1;
         spawns[entry_count].heading =

@@ -24,7 +24,7 @@ extern "C" int creature_find_nearest(
 
         do {
             if (creature_pool[index].active
-                && creature_pool[index].lifecycle_stage == 16.0f) {
+                && creature_pool[index].death_timer == 16.0f) {
                 float distance = vec2_distance(
                     pos,
                     &creature_pool[index].position

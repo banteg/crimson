@@ -37,7 +37,7 @@ OFFSET_COLOR = rl.Color(255, 200, 80, 140)
 
 _LINK_AI_MODES = (
     CreatureAiMode.FOLLOW_LINK,
-    CreatureAiMode.LINK_GUARD,
+    CreatureAiMode.FLANK_PLAYER_LINKED,
     CreatureAiMode.FOLLOW_LINK_TETHERED,
     CreatureAiMode.ORBIT_LINK,
 )

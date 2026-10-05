@@ -16,7 +16,7 @@ from grim.config import CrimsonConfig, default_crimson_cfg
 def _record(*, mode: GameMode, time_ms: int) -> HighScoreRecord:
     record = HighScoreRecord.blank()
     record.game_mode_id = mode
-    record.survival_elapsed_ms = int(time_ms)
+    record.run_elapsed_ms = int(time_ms)
     return record
 
 
@@ -134,7 +134,7 @@ def test_quest_highscores_sort_by_time_ascending_with_zero_last() -> None:
         _record(mode=GameMode.QUESTS, time_ms=1000),
     ]
     sorted_records = sort_highscores(records, game_mode_id=GameMode.QUESTS)
-    assert [int(r.survival_elapsed_ms) for r in sorted_records] == [1000, 2000, 5000, 0]
+    assert [int(r.run_elapsed_ms) for r in sorted_records] == [1000, 2000, 5000, 0]
 
 
 def test_quest_rank_index_inserts_smaller_time_higher() -> None:
@@ -158,7 +158,7 @@ def test_rush_highscores_sort_by_time_descending() -> None:
         _record(mode=GameMode.RUSH, time_ms=1000),
     ]
     sorted_records = sort_highscores(records, game_mode_id=GameMode.RUSH)
-    assert [int(r.survival_elapsed_ms) for r in sorted_records] == [5000, 2000, 1000, 0]
+    assert [int(r.run_elapsed_ms) for r in sorted_records] == [5000, 2000, 1000, 0]
 
 
 def test_rush_rank_index_inserts_larger_time_higher() -> None:

@@ -22,11 +22,11 @@ extern int quest_spawn_timeline;
 extern int shock_chain_links_left;
 extern int survival_reward_weapon_guard_id;
 extern int creature_spawned_count;
-extern int survival_recent_death_count;
+extern int survival_first_kill_count;
 extern unsigned char survival_reward_damage_seen;
 extern unsigned char survival_reward_fire_seen;
 extern unsigned char survival_reward_handout_aux_enabled;
-extern unsigned char survival_reward_handout_enabled;
+extern unsigned char survival_shrinkifier_handout_enabled;
 extern int tutorial_stage_index;
 extern int tutorial_stage_timer;
 extern int tutorial_stage_transition_timer;
@@ -66,14 +66,14 @@ extern int sfx_trooper_die_02;
 extern int sfx_trooper_die_03;
 
 extern unsigned char perk_choices_dirty;
-extern unsigned char bonus_spawn_guard;
+extern unsigned char scripted_burst_active;
 extern weapon_usage_time_t weapon_usage_time;
 extern int terrain_texture_width;
 extern int terrain_texture_height;
 extern reset_vec2_t camera_offset;
 extern int perk_pending_count;
 extern int survival_spawn_cooldown;
-extern unsigned char creatures_any_active_flag;
+extern unsigned char creatures_none_active_flag;
 extern unsigned char time_scale_active;
 extern float time_scale_factor;
 extern float bonus_reflex_boost_timer;
@@ -127,11 +127,11 @@ void gameplay_reset_state(void)
     shock_chain_links_left = 0;
     survival_reward_weapon_guard_id = 1;
     creature_spawned_count = 0;
-    survival_recent_death_count = 0;
+    survival_first_kill_count = 0;
     survival_reward_damage_seen = 0;
     survival_reward_fire_seen = 0;
     survival_reward_handout_aux_enabled = 1;
-    survival_reward_handout_enabled = 1;
+    survival_shrinkifier_handout_enabled = 1;
     tutorial_stage_index = -1;
     tutorial_stage_timer = 0;
     tutorial_stage_transition_timer = -1000;
@@ -145,89 +145,89 @@ void gameplay_reset_state(void)
 
     creature_type_table[CREATURE_TYPE_ZOMBIE].texture_handle =
         grim_interface_ptr->grim_get_texture_handle("zombie");
-    creature_type_table[CREATURE_TYPE_ZOMBIE].sfx_bank_b[0] =
+    creature_type_table[CREATURE_TYPE_ZOMBIE].attack_sfx[0] =
         sfx_zombie_attack_01;
-    creature_type_table[CREATURE_TYPE_ZOMBIE].sfx_bank_b[1] =
+    creature_type_table[CREATURE_TYPE_ZOMBIE].attack_sfx[1] =
         sfx_zombie_attack_02;
-    creature_type_table[CREATURE_TYPE_ZOMBIE].sfx_bank_a[0] = sfx_zombie_die_01;
-    creature_type_table[CREATURE_TYPE_ZOMBIE].sfx_bank_a[1] = sfx_zombie_die_02;
+    creature_type_table[CREATURE_TYPE_ZOMBIE].death_sfx[0] = sfx_zombie_die_01;
+    creature_type_table[CREATURE_TYPE_ZOMBIE].death_sfx[1] = sfx_zombie_die_02;
     creature_type_table[CREATURE_TYPE_ZOMBIE].unused_value = 1.0f;
     creature_type_table[CREATURE_TYPE_ZOMBIE].anim_rate = 1.2f;
-    creature_type_table[CREATURE_TYPE_ZOMBIE].sfx_bank_a[2] = sfx_zombie_die_03;
-    creature_type_table[CREATURE_TYPE_ZOMBIE].sfx_bank_a[3] = sfx_zombie_die_04;
+    creature_type_table[CREATURE_TYPE_ZOMBIE].death_sfx[2] = sfx_zombie_die_03;
+    creature_type_table[CREATURE_TYPE_ZOMBIE].death_sfx[3] = sfx_zombie_die_04;
     creature_type_table[CREATURE_TYPE_ZOMBIE].base_frame = 32;
     creature_type_table[CREATURE_TYPE_ZOMBIE].corpse_frame = 0;
 
     creature_type_table[CREATURE_TYPE_LIZARD].texture_handle =
         grim_interface_ptr->grim_get_texture_handle("lizard");
-    creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_b[0] =
+    creature_type_table[CREATURE_TYPE_LIZARD].attack_sfx[0] =
         sfx_lizard_attack_01;
-    creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_b[1] =
+    creature_type_table[CREATURE_TYPE_LIZARD].attack_sfx[1] =
         sfx_lizard_attack_02;
-    creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_a[0] = sfx_lizard_die_01;
+    creature_type_table[CREATURE_TYPE_LIZARD].death_sfx[0] = sfx_lizard_die_01;
     creature_type_table[CREATURE_TYPE_LIZARD].unused_value = 1.0f;
     creature_type_table[CREATURE_TYPE_LIZARD].anim_rate = 1.6f;
-    creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_a[1] = sfx_lizard_die_02;
-    creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_a[2] = sfx_lizard_die_03;
-    creature_type_table[CREATURE_TYPE_LIZARD].sfx_bank_a[3] = sfx_lizard_die_04;
+    creature_type_table[CREATURE_TYPE_LIZARD].death_sfx[1] = sfx_lizard_die_02;
+    creature_type_table[CREATURE_TYPE_LIZARD].death_sfx[2] = sfx_lizard_die_03;
+    creature_type_table[CREATURE_TYPE_LIZARD].death_sfx[3] = sfx_lizard_die_04;
     creature_type_table[CREATURE_TYPE_LIZARD].anim_flags = 1;
     creature_type_table[CREATURE_TYPE_LIZARD].base_frame = 16;
     creature_type_table[CREATURE_TYPE_LIZARD].corpse_frame = 3;
 
     creature_type_table[CREATURE_TYPE_SPIDER_SP1].texture_handle =
         grim_interface_ptr->grim_get_texture_handle("spider_sp1");
-    creature_type_table[CREATURE_TYPE_SPIDER_SP1].sfx_bank_b[0] =
+    creature_type_table[CREATURE_TYPE_SPIDER_SP1].attack_sfx[0] =
         sfx_spider_attack_01;
-    creature_type_table[CREATURE_TYPE_SPIDER_SP1].sfx_bank_b[1] =
+    creature_type_table[CREATURE_TYPE_SPIDER_SP1].attack_sfx[1] =
         sfx_spider_attack_02;
     creature_type_table[CREATURE_TYPE_SPIDER_SP1].unused_value = 1.0f;
     creature_type_table[CREATURE_TYPE_SPIDER_SP1].anim_rate = 1.5f;
-    creature_type_table[CREATURE_TYPE_SPIDER_SP1].sfx_bank_a[0] = sfx_spider_die_01;
-    creature_type_table[CREATURE_TYPE_SPIDER_SP1].sfx_bank_a[1] = sfx_spider_die_02;
-    creature_type_table[CREATURE_TYPE_SPIDER_SP1].sfx_bank_a[2] = sfx_spider_die_03;
-    creature_type_table[CREATURE_TYPE_SPIDER_SP1].sfx_bank_a[3] = sfx_spider_die_04;
+    creature_type_table[CREATURE_TYPE_SPIDER_SP1].death_sfx[0] = sfx_spider_die_01;
+    creature_type_table[CREATURE_TYPE_SPIDER_SP1].death_sfx[1] = sfx_spider_die_02;
+    creature_type_table[CREATURE_TYPE_SPIDER_SP1].death_sfx[2] = sfx_spider_die_03;
+    creature_type_table[CREATURE_TYPE_SPIDER_SP1].death_sfx[3] = sfx_spider_die_04;
     creature_type_table[CREATURE_TYPE_SPIDER_SP1].anim_flags = 1;
     creature_type_table[CREATURE_TYPE_SPIDER_SP1].base_frame = 16;
     creature_type_table[CREATURE_TYPE_SPIDER_SP1].corpse_frame = 1;
 
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].texture_handle =
         grim_interface_ptr->grim_get_texture_handle("spider_sp2");
-    creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_b[0] =
+    creature_type_table[CREATURE_TYPE_SPIDER_SP2].attack_sfx[0] =
         sfx_spider_attack_01;
-    creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_b[1] =
+    creature_type_table[CREATURE_TYPE_SPIDER_SP2].attack_sfx[1] =
         sfx_spider_attack_02;
-    creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_a[0] = sfx_spider_die_01;
+    creature_type_table[CREATURE_TYPE_SPIDER_SP2].death_sfx[0] = sfx_spider_die_01;
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].unused_value = 1.0f;
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].anim_rate = 1.5f;
-    creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_a[1] = sfx_spider_die_02;
-    creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_a[2] = sfx_spider_die_03;
-    creature_type_table[CREATURE_TYPE_SPIDER_SP2].sfx_bank_a[3] = sfx_spider_die_04;
+    creature_type_table[CREATURE_TYPE_SPIDER_SP2].death_sfx[1] = sfx_spider_die_02;
+    creature_type_table[CREATURE_TYPE_SPIDER_SP2].death_sfx[2] = sfx_spider_die_03;
+    creature_type_table[CREATURE_TYPE_SPIDER_SP2].death_sfx[3] = sfx_spider_die_04;
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].anim_flags = 1;
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].base_frame = 16;
     creature_type_table[CREATURE_TYPE_SPIDER_SP2].corpse_frame = 2;
 
     creature_type_table[CREATURE_TYPE_ALIEN].texture_handle =
         grim_interface_ptr->grim_get_texture_handle("alien");
-    creature_type_table[CREATURE_TYPE_ALIEN].sfx_bank_b[0] = sfx_alien_attack_01;
-    creature_type_table[CREATURE_TYPE_ALIEN].sfx_bank_b[1] = sfx_alien_attack_02;
-    creature_type_table[CREATURE_TYPE_ALIEN].sfx_bank_a[0] = sfx_alien_die_01;
-    creature_type_table[CREATURE_TYPE_ALIEN].sfx_bank_a[1] = sfx_alien_die_02;
-    creature_type_table[CREATURE_TYPE_ALIEN].sfx_bank_a[2] = sfx_alien_die_03;
-    creature_type_table[CREATURE_TYPE_ALIEN].sfx_bank_a[3] = sfx_alien_die_04;
-    creature_type_table[CREATURE_TYPE_TROOPER].sfx_bank_a[0] = sfx_trooper_die_01;
+    creature_type_table[CREATURE_TYPE_ALIEN].attack_sfx[0] = sfx_alien_attack_01;
+    creature_type_table[CREATURE_TYPE_ALIEN].attack_sfx[1] = sfx_alien_attack_02;
+    creature_type_table[CREATURE_TYPE_ALIEN].death_sfx[0] = sfx_alien_die_01;
+    creature_type_table[CREATURE_TYPE_ALIEN].death_sfx[1] = sfx_alien_die_02;
+    creature_type_table[CREATURE_TYPE_ALIEN].death_sfx[2] = sfx_alien_die_03;
+    creature_type_table[CREATURE_TYPE_ALIEN].death_sfx[3] = sfx_alien_die_04;
+    creature_type_table[CREATURE_TYPE_TROOPER].death_sfx[0] = sfx_trooper_die_01;
     creature_type_table[CREATURE_TYPE_ALIEN].unused_value = 1.0f;
     creature_type_table[CREATURE_TYPE_ALIEN].anim_rate = 1.35f;
     creature_type_table[CREATURE_TYPE_ALIEN].anim_flags = 0;
     creature_type_table[CREATURE_TYPE_ALIEN].base_frame = 32;
     creature_type_table[CREATURE_TYPE_ALIEN].corpse_frame = 4;
-    creature_type_table[CREATURE_TYPE_TROOPER].sfx_bank_a[1] = sfx_trooper_die_02;
-    creature_type_table[CREATURE_TYPE_TROOPER].sfx_bank_a[2] = sfx_trooper_die_03;
+    creature_type_table[CREATURE_TYPE_TROOPER].death_sfx[1] = sfx_trooper_die_02;
+    creature_type_table[CREATURE_TYPE_TROOPER].death_sfx[2] = sfx_trooper_die_03;
     creature_type_table[CREATURE_TYPE_TROOPER].corpse_frame = 7;
     creature_type_table[CREATURE_TYPE_TROOPER].texture_handle =
         grim_interface_ptr->grim_get_texture_handle("trooper");
 
     perk_choices_dirty = 1;
-    bonus_spawn_guard = 0;
+    scripted_burst_active = 0;
     memset(weapon_usage_time, 0, sizeof(weapon_usage_time));
     camera_offset = reset_vec2_t(
         terrain_texture_width * 0.5f,
@@ -239,7 +239,7 @@ void gameplay_reset_state(void)
 
     perk_pending_count = 0;
     survival_spawn_cooldown = 0;
-    creatures_any_active_flag = 0;
+    creatures_none_active_flag = 0;
     time_scale_active = 0;
     time_scale_factor = 1.0f;
     bonus_reflex_boost_timer = 0.0f;
@@ -249,7 +249,7 @@ void gameplay_reset_state(void)
     perk_doctor_target_creature_id = -1;
 
     highscore_active_record.hardcore_marker = 0;
-    highscore_active_record.survival_elapsed_ms = 0;
+    highscore_active_record.run_elapsed_ms = 0;
     highscore_active_record.score_xp = 0;
     highscore_active_record.quest_stage_minor = 0;
     highscore_active_record.quest_stage_major = 0;
@@ -258,7 +258,7 @@ void gameplay_reset_state(void)
     highscore_active_record.creature_kill_count = 0;
     highscore_active_record.shots_hit = 0;
     highscore_active_record.shots_fired = 0;
-    highscore_active_record.date_checksum = 0;
+    highscore_active_record.date_week = 0;
     highscore_active_record.year_offset = 0;
     highscore_active_record.month = 0;
     highscore_active_record.day = 0;
@@ -275,11 +275,11 @@ void gameplay_reset_state(void)
     player_reset_all();
 
     for (int player_index = 0; player_index < 2; ++player_index) {
-        player_aux_timer[player_index] = 0.0f;
+        player_weapon_popup_timer[player_index] = 0.0f;
         player_state_t *player = &player_state_table[player_index];
         *(reset_vec2_t *)&player->move_target =
             reset_vec2_t(-1.0f, -1.0f);
-        player->low_health_timer = 100.0f;
+        player->bleed_drip_timer = 100.0f;
         player->fire_bullets_timer = 0.0f;
     }
     int i;
@@ -317,7 +317,7 @@ void gameplay_reset_state(void)
     fx_queue_count = 0;
 
     highscore_active_record.hardcore_marker = 0;
-    highscore_active_record.survival_elapsed_ms = 0;
+    highscore_active_record.run_elapsed_ms = 0;
     highscore_active_record.score_xp = 0;
     highscore_active_record.quest_stage_minor = 0;
     highscore_active_record.quest_stage_major = 0;
@@ -326,7 +326,7 @@ void gameplay_reset_state(void)
     highscore_active_record.creature_kill_count = 0;
     highscore_active_record.shots_hit = 0;
     highscore_active_record.shots_fired = 0;
-    highscore_active_record.date_checksum = 0;
+    highscore_active_record.date_week = 0;
     highscore_active_record.year_offset = 0;
     highscore_active_record.month = 0;
     highscore_active_record.day = 0;

@@ -136,13 +136,13 @@ extern game_status_t game_status_blob;
 
 extern unsigned char ui_transition_direction;
 extern unsigned char screen_fade_ramp_flag;
-extern unsigned char render_pass_mode;
+extern unsigned char run_active;
 extern game_state_id_t game_state_pending;
 extern unsigned char player_overlay_suppressed_latch;
 
 extern int music_track_crimson_theme_id;
 extern int music_track_shortie_monk_id;
-extern int music_track_extra_0;
+extern int music_track_game_playlist;
 
 extern int online_sync_status;
 extern unsigned char highscore_batch_sync_mode;
@@ -175,7 +175,7 @@ int ui_list_widget_update(float *xy, ui_list_widget_t *list);
 void ui_text_input_render(
     float *xy, highscore_record_t *record, float alpha, int rank);
 void ui_update_notice_update(float *xy, float alpha);
-void sfx_mute_all(int sfx_id);
+void music_fade_out_all(int sfx_id);
 void highscore_sync_worker(void *);
 void statistics_update_check_worker(void *);
 void crt_beginthread(void (*function)(void *), unsigned int stack_size, void *arg);
@@ -243,9 +243,9 @@ extern "C" void highscore_screen_update(void)
         if (config_blob.hardcore) {
             int quest_index =
                 quest_stage_minor + quest_stage_major * 10 - 11;
-            if (quest_index > quest_unlock_index_full) {
-                quest_stage_major = quest_unlock_index_full / 10 + 1;
-                quest_stage_minor = quest_unlock_index_full % 10 + 1;
+            if (quest_index > quest_unlock_index_hardcore) {
+                quest_stage_major = quest_unlock_index_hardcore / 10 + 1;
+                quest_stage_minor = quest_unlock_index_hardcore % 10 + 1;
                 highscore_load_table_thunk();
             }
         } else {
@@ -267,7 +267,7 @@ extern "C" void highscore_screen_update(void)
             "%d.%d: %s",
             quest_stage_major,
             quest_stage_minor,
-            quest_selected_meta[quest_index].name);
+            quest_meta_table[quest_index].name);
         grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.800000012f);
 
         if (ui_mouse_x > position.x
@@ -360,7 +360,7 @@ extern "C" void highscore_screen_update(void)
         score_line_items[score_count] = score_line_buffers[score_count];
         int prefix_length = 0;
         memset(score_line_items[score_count], 0, sizeof(score_line_buffers[score_count]));
-        if (highscore_table[score_count].survival_elapsed_ms == 0) {
+        if (highscore_table[score_count].run_elapsed_ms == 0) {
             break;
         }
 
@@ -377,7 +377,7 @@ extern "C" void highscore_screen_update(void)
                 "%d\t%d\t%s",
                 score_number,
                 (int)highscore_table[score_count]
-                    .survival_elapsed_ms / 1000,
+                    .run_elapsed_ms / 1000,
                 highscore_table[score_count].player_name);
         } else if (config_blob.game_mode == GAME_MODE_QUEST) {
             crt_sprintf(
@@ -385,7 +385,7 @@ extern "C" void highscore_screen_update(void)
                 "%d\t%d\t%s",
                 score_number,
                 (int)highscore_table[score_count]
-                    .survival_elapsed_ms / 1000,
+                    .run_elapsed_ms / 1000,
                 highscore_table[score_count].player_name);
         } else {
             crt_sprintf(
@@ -462,7 +462,7 @@ extern "C" void highscore_screen_update(void)
             if (config_blob.hardcore) {
                 int quest_index =
                     quest_stage_minor + quest_stage_major * 10 - 11;
-                if (quest_unlock_index_full >= quest_index) {
+                if (quest_unlock_index_hardcore >= quest_index) {
                     goto quest_game_allowed;
                 }
                 goto play_game_done;
@@ -474,21 +474,21 @@ extern "C" void highscore_screen_update(void)
                 }
             }
 quest_game_allowed:
-            render_pass_mode = 0;
+            run_active = 0;
             ui_sign_crimson.focus_disabled = 0;
             ui_transition_direction = 0;
             game_state_pending = GAME_STATE_GAMEPLAY;
         } else {
-            render_pass_mode = 0;
+            run_active = 0;
             ui_sign_crimson.focus_disabled = 0;
             ui_transition_direction = 0;
             game_state_pending = config_blob.game_mode == GAME_MODE_TYPO_SHOOTER
                 ? GAME_STATE_TYPO_GAMEPLAY
                 : GAME_STATE_GAMEPLAY;
         }
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
         screen_fade_ramp_flag = 1;
 play_game_done:
         ;
@@ -832,7 +832,7 @@ play_game_done:
                 if ((!hardcore
                         && game_status_blob.quest_unlock_index < stage)
                     || (hardcore
-                        && game_status_blob.quest_unlock_index_full < stage)
+                        && game_status_blob.quest_unlock_index_hardcore < stage)
                     || stage / 10 + 1 >= 5) {
                     highscore_batch_sync_mode = 0;
                 } else {
@@ -912,9 +912,9 @@ play_game_done:
         }
         if (config_blob.hardcore) {
             if (quest_stage_minor + 10 * quest_stage_major - 11
-                > quest_unlock_index_full) {
-                quest_stage_major = quest_unlock_index_full / 10 + 1;
-                quest_stage_minor = quest_unlock_index_full % 10 + 1;
+                > quest_unlock_index_hardcore) {
+                quest_stage_major = quest_unlock_index_hardcore / 10 + 1;
+                quest_stage_minor = quest_unlock_index_hardcore % 10 + 1;
                 highscore_load_table_thunk();
             }
         } else if (quest_stage_minor + 10 * quest_stage_major - 11
@@ -941,9 +941,9 @@ play_game_done:
         }
         if (config_blob.hardcore) {
             if (quest_stage_minor + 10 * quest_stage_major - 11
-                > quest_unlock_index_full) {
-                quest_stage_major = quest_unlock_index_full / 10 + 1;
-                quest_stage_minor = quest_unlock_index_full % 10 + 1;
+                > quest_unlock_index_hardcore) {
+                quest_stage_major = quest_unlock_index_hardcore / 10 + 1;
+                quest_stage_minor = quest_unlock_index_hardcore % 10 + 1;
                 highscore_load_table_thunk();
             }
         } else if (quest_stage_minor + 10 * quest_stage_major - 11
@@ -971,9 +971,9 @@ play_game_done:
             }
             if (config_blob.hardcore) {
                 if (quest_stage_minor + 10 * quest_stage_major - 11
-                    > quest_unlock_index_full) {
-                    quest_stage_major = quest_unlock_index_full / 10 + 1;
-                    quest_stage_minor = quest_unlock_index_full % 10 + 1;
+                    > quest_unlock_index_hardcore) {
+                    quest_stage_major = quest_unlock_index_hardcore / 10 + 1;
+                    quest_stage_minor = quest_unlock_index_hardcore % 10 + 1;
                     highscore_load_table_thunk();
                 }
             } else if (quest_stage_minor + 10 * quest_stage_major - 11
@@ -997,9 +997,9 @@ play_game_done:
             }
             if (config_blob.hardcore) {
                 if (quest_stage_minor + 10 * quest_stage_major - 11
-                    > quest_unlock_index_full) {
-                    quest_stage_major = quest_unlock_index_full / 10 + 1;
-                    quest_stage_minor = quest_unlock_index_full % 10 + 1;
+                    > quest_unlock_index_hardcore) {
+                    quest_stage_major = quest_unlock_index_hardcore / 10 + 1;
+                    quest_stage_minor = quest_unlock_index_hardcore % 10 + 1;
                     highscore_load_table_thunk();
                 }
             } else if (quest_stage_minor + 10 * quest_stage_major - 11
@@ -1021,13 +1021,13 @@ play_game_done:
                 crt_beginthread(highscore_sync_worker, 0, 0);
             }
         } else if (action == 2) {
-            render_pass_mode = 0;
+            run_active = 0;
             ui_sign_crimson.focus_disabled = 0;
             ui_transition_direction = 0;
             game_state_pending = GAME_STATE_GAMEPLAY;
-            sfx_mute_all(music_track_crimson_theme_id);
-            sfx_mute_all(music_track_shortie_monk_id);
-            sfx_mute_all(music_track_extra_0);
+            music_fade_out_all(music_track_crimson_theme_id);
+            music_fade_out_all(music_track_shortie_monk_id);
+            music_fade_out_all(music_track_game_playlist);
             screen_fade_ramp_flag = 1;
         } else if (action == 3) {
             ui_transition_direction = 0;

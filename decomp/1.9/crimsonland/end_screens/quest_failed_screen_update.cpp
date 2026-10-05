@@ -63,12 +63,12 @@ extern int ui_text_reaper_texture;
 void highscore_load_table_thunk(void);
 int highscore_rank_index(void);
 int console_input_poll(void);
-unsigned char sfx_is_unmuted(int sfx_id);
-void sfx_mute_all(int sfx_id);
-void sfx_play_exclusive(int sfx_id);
+unsigned char music_track_is_playing(int sfx_id);
+void music_fade_out_all(int sfx_id);
+void music_play_exclusive(int sfx_id);
 extern int music_track_shortie_monk_id;
 extern int music_track_crimson_theme_id;
-extern int music_track_extra_0;
+extern int music_track_game_playlist;
 void ui_draw_textured_quad(
     int x, int y, int width, int height, int texture_id);
 void ui_text_input_render(
@@ -85,8 +85,8 @@ extern "C" void quest_failed_screen_update(void)
     if (game_state_id == GAME_STATE_QUEST_FAILED
         && game_state_pending == GAME_STATE_PENDING_IDLE_SENTINEL
         && ui_transition_direction != 0
-        && !sfx_is_unmuted(music_track_shortie_monk_id)) {
-        sfx_play_exclusive(music_track_shortie_monk_id);
+        && !music_track_is_playing(music_track_shortie_monk_id)) {
+        music_play_exclusive(music_track_shortie_monk_id);
     }
 
     gameplay_render_world();
@@ -199,27 +199,27 @@ extern "C" void quest_failed_screen_update(void)
             ++quest_fail_retry_count;
             ui_transition_direction = 0;
             game_state_pending = GAME_STATE_GAMEPLAY;
-            sfx_mute_all(music_track_crimson_theme_id);
-            sfx_mute_all(music_track_shortie_monk_id);
-            sfx_mute_all(music_track_extra_0);
-            render_pass_mode = 0;
+            music_fade_out_all(music_track_crimson_theme_id);
+            music_fade_out_all(music_track_shortie_monk_id);
+            music_fade_out_all(music_track_game_playlist);
+            run_active = 0;
         }
         if (play_another_button.activated) {
             quest_fail_retry_count = 0;
             ui_transition_direction = 0;
             game_state_pending = GAME_STATE_QUEST_SELECT;
             ui_sign_crimson.focus_disabled = 0;
-            sfx_mute_all(music_track_crimson_theme_id);
-            sfx_mute_all(music_track_shortie_monk_id);
-            sfx_mute_all(music_track_extra_0);
-            sfx_play_exclusive(music_track_crimson_theme_id);
+            music_fade_out_all(music_track_crimson_theme_id);
+            music_fade_out_all(music_track_shortie_monk_id);
+            music_fade_out_all(music_track_game_playlist);
+            music_play_exclusive(music_track_crimson_theme_id);
         }
         if (main_menu_button.activated) {
             quest_fail_retry_count = 0;
-            sfx_mute_all(music_track_extra_0);
-            sfx_mute_all(music_track_crimson_theme_id);
-            sfx_mute_all(music_track_shortie_monk_id);
-            sfx_play_exclusive(music_track_crimson_theme_id);
+            music_fade_out_all(music_track_game_playlist);
+            music_fade_out_all(music_track_crimson_theme_id);
+            music_fade_out_all(music_track_shortie_monk_id);
+            music_play_exclusive(music_track_crimson_theme_id);
             ui_transition_direction = 0;
             game_state_pending = GAME_STATE_MAIN_MENU;
             ui_sign_crimson.focus_disabled = 0;

@@ -92,11 +92,11 @@ CRIMSON_ABI_ASSERT(pointer_is_32_bit, sizeof(void *) == 4);
 CRIMSON_ABI_ASSERT(runtime_unlock_is_dword,
     sizeof(((gameplay_run_state_original_t *)0)->quest_unlock_index) == 4);
 CRIMSON_ABI_ASSERT(runtime_unlock_full_is_dword,
-    sizeof(((gameplay_run_state_original_t *)0)->quest_unlock_index_full) == 4);
+    sizeof(((gameplay_run_state_original_t *)0)->quest_unlock_index_hardcore) == 4);
 CRIMSON_ABI_ASSERT(runtime_unlock_offset,
     offsetof(gameplay_run_state_original_t, quest_unlock_index) == 0x8c);
 CRIMSON_ABI_ASSERT(runtime_unlock_full_offset,
-    offsetof(gameplay_run_state_original_t, quest_unlock_index_full) == 0x90);
+    offsetof(gameplay_run_state_original_t, quest_unlock_index_hardcore) == 0x90);
 CRIMSON_ABI_ASSERT(
     pointer_array_2_is_0x08,
     sizeof(char *[2]) == 0x08);
@@ -281,16 +281,16 @@ CRIMSON_ABI_ASSERT(
 CRIMSON_ABI_ASSERT(
     weapon_usage_time_is_0x100,
     sizeof(weapon_usage_time_t) == 0x100);
-CRIMSON_ABI_ASSERT(player_aux_timer_is_0x08, sizeof(player_aux_timer_t) == 0x08);
+CRIMSON_ABI_ASSERT(player_weapon_popup_timer_is_0x08, sizeof(player_weapon_popup_timer_t) == 0x08);
 CRIMSON_ABI_ASSERT(
     player_aim_screen_xy_is_0x10,
     sizeof(player_aim_screen_xy_t) == 0x10);
 CRIMSON_ABI_ASSERT_ALIGN4(sfx_cooldown_table, sfx_cooldown_table_t);
 CRIMSON_ABI_ASSERT_ALIGN4(sfx_voice_table, sfx_voice_table_t);
-CRIMSON_ABI_ASSERT_ALIGN4(sfx_volume_table, sfx_volume_table_t);
+CRIMSON_ABI_ASSERT_ALIGN4(music_track_volume, sfx_volume_table_t);
 CRIMSON_ABI_ASSERT_ALIGN4(music_playlist, music_playlist_t);
 CRIMSON_ABI_ASSERT_ALIGN4(weapon_usage_time, weapon_usage_time_t);
-CRIMSON_ABI_ASSERT_ALIGN4(player_aux_timer, player_aux_timer_t);
+CRIMSON_ABI_ASSERT_ALIGN4(player_weapon_popup_timer, player_weapon_popup_timer_t);
 CRIMSON_ABI_ASSERT_ALIGN4(player_aim_screen_xy, player_aim_screen_xy_t);
 
 CRIMSON_ABI_ASSERT(player_input_is_0x34, sizeof(player_input_t) == 0x34);
@@ -324,7 +324,7 @@ CRIMSON_ABI_ASSERT(
     offsetof(crimson_creature_alignment_probe_t, value) == 4);
 CRIMSON_ABI_ASSERT(
     creature_lifecycle_is_at_0x10,
-    offsetof(creature_t, lifecycle_stage) == 0x10);
+    offsetof(creature_t, death_timer) == 0x10);
 CRIMSON_ABI_ASSERT(
     creature_link_index_is_at_0x78,
     offsetof(creature_t, link_index) == 0x78);
@@ -445,8 +445,8 @@ CRIMSON_ABI_ASSERT_ALIGN4(effect_vec2, effect_vec2_t);
 CRIMSON_ABI_ASSERT_ALIGN4(effect_entry, effect_entry_t);
 CRIMSON_ABI_ASSERT_ALIGN4(effect_pool, effect_pool_t);
 CRIMSON_ABI_ASSERT(
-    sfx_mute_flags_is_0x80,
-    sizeof(sfx_mute_flags_t) == 0x80);
+    music_fade_out_flags_is_0x80,
+    sizeof(music_fade_out_flags_t) == 0x80);
 
 CRIMSON_ABI_ASSERT(effect_vertex_is_0x1c, sizeof(effect_vertex_t) == 0x1c);
 CRIMSON_ABI_ASSERT(uv2_is_0x08, sizeof(uv2f_t) == 0x08);

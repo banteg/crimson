@@ -21265,7 +21265,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 70,
-        "candidate_object_sha256": "bbdb0fd463b5f2b47476738691145327ee0e35db6b49a3804877d33559a2c598",
+        "candidate_object_sha256": "cabbc5d520164cfe387c28deab9c26ae99814bba981baaba5d58bc009e61f387",
         "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
@@ -21335,7 +21335,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 88,
-        "candidate_object_sha256": "ec1b558301e1bc9cedb5b1e55b52f29a090f6b041c31d1d33e5ed1081d1dee63",
+        "candidate_object_sha256": "eccbf6e7eaf53ef53888f9c8db5c97743dacd488aae6d5320ab5890f28adca4d",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -21370,7 +21370,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 78,
-        "candidate_object_sha256": "862aabbca9ea68bc625b6dbadead2e12400d0bb474f3a120cc720a9ce8688fba",
+        "candidate_object_sha256": "697c4d68ae9d54f160e4db9747a292590802fd97efc9d8cd3625c3a328a32dff",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -21557,7 +21557,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 16,
-        "candidate_object_sha256": "2d2227710c6b9ae5ca90622691636cd25c9d5e52f3e5190035a52fcea7ab5c2e",
+        "candidate_object_sha256": "d8f3b9c2cbdb7938ceec7b045f21b338a30767c167121a37c5ed7eee58313790",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -21680,7 +21680,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 617,
-        "candidate_object_sha256": "3064e5af465f7380083e90146aecf201c1623b018049cafa25e80db8c65ff67d",
+        "candidate_object_sha256": "36ec24a19308849a832b5fcaa581925f297ec3d09bb210bd09e47b9019a1df68",
         "candidate_padding_bytes": 8,
         "compared_target_ranges": [
           [
@@ -21721,7 +21721,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "2e27b4b79a694e658d5506a51d139800d640763b2a330e4ff565c783b4e1fbe9",
+        "candidate_object_sha256": "5a02e71e93e2a896790558e2395e5c609a1f70466e5afc10f698c50d1b5cdff8",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -21756,7 +21756,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "7fe260321da41036561bc0ceeccbe3b0b61572a9743413db8ef81c3683b1f539",
+        "candidate_object_sha256": "d32dd18fd9686fcfa3de6abde55a18d9f1d032f95955b3fd205f7ed1f00613ba",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -21791,7 +21791,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "7c179d7ad38f7cc7bbf2af47a96dad1dfb84584bc572607c57fec5424c5ecbef",
+        "candidate_object_sha256": "d8d59b9b56971267e6087bdb9aba201626ef75cc8df25ba590efe002401c9842",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -21867,7 +21867,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 241,
-        "candidate_object_sha256": "7ceb5b4db948d64e94ef3fc33128d6f6ded9555534f259fd764e8705ed52eb66",
+        "candidate_object_sha256": "d8f6afa1cf7f1d40fe3224225b44a5b9968036ca7104521702799b0a27e0bf6b",
         "candidate_padding_bytes": 1,
         "compared_target_ranges": [
           [
@@ -21908,7 +21908,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 186,
-        "candidate_object_sha256": "eae7d1581fbf12638f240ef13b86fb1d157fbf2a8c234582591c7a94cbf4d957",
+        "candidate_object_sha256": "4e74722aca6c5a85d4b5280fc481a13bf9356cbeffa4a37a5861c9ef16ddd972",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -22241,7 +22241,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 441,
-        "candidate_object_sha256": "8dbdff98866c81d2b6457666478c0a8fdb15fe8962cec6ad54fbd259e6f75f94",
+        "candidate_object_sha256": "005232cf144eb1cc0baf62aa0b9973d524a91c6ee10edca888c7d3c81966e452",
         "candidate_padding_bytes": 13,
         "compared_target_ranges": [
           [
@@ -22282,7 +22282,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "97a41d77c3f7bad7092c31ed0c9258012609baa439d21d52ca9686a92d432fc2",
+        "candidate_object_sha256": "e08988fb230925265a7fea4222cd0ab25584580378fdee06e36b9d48ada7b31b",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -22317,7 +22317,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "81dc9cc63767fb4af6b5b686f151ccdc7a3006ef2876643ee977c51d124eb438",
+        "candidate_object_sha256": "a3e9809ae83fd06c1b51fb83d5b73edfcd9855d767304004ca9d2e0675bd416c",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -22352,7 +22352,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "b855765204d36c92f88398ef78ea51f246d0036535cb3248a7e974fe0668653c",
+        "candidate_object_sha256": "d186122801607e9f9bbd74bcfe1c71a7eb23eed1435b0447d93e4c5ecbaa0957",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -22387,7 +22387,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "bcd12ce361e63ad52d08d4200190f37a744e9643b4a9977c7cc3921bebce006c",
+        "candidate_object_sha256": "d2fde808da988628f3f319e55b00f37bbf65c3d889e7e637bc3ecafde7677c83",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -22422,7 +22422,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 19,
-        "candidate_object_sha256": "788a0bc5fc0a0e71a28cadb2848f0f8a1dc9437ede5831f612ffe3a5acda7c64",
+        "candidate_object_sha256": "05a0d402d6ab672a6918c3fd4570016dde79ecbbecacf05650dd818ddc066031",
         "candidate_padding_bytes": 8,
         "compared_target_ranges": [
           [
@@ -22457,7 +22457,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 355,
-        "candidate_object_sha256": "ae6d0445300afdb8fbbd39ab41f11cfacd292e981e7e9eeb78a128a29e2ad64f",
+        "candidate_object_sha256": "e967758f2a1587336202a9c95a645083fd91bdbd090e1a7623cf8ae0bdc9a801",
         "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
@@ -22498,7 +22498,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 108,
-        "candidate_object_sha256": "145b8615ee4cf7abd87e6f4cbb42dfff3ff83de44411f7d8f0a2dabfd2ada012",
+        "candidate_object_sha256": "fabe2ba2ed76cdb5f5e17b62c30c5c3a5cce371a5575c763b5650edd222b2ec8",
         "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
@@ -22539,7 +22539,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 137,
-        "candidate_object_sha256": "7166107d834e36b2acb641429e7a50ccefe7b4951359b22784623f8878291e7a",
+        "candidate_object_sha256": "4bfbff1f577bebf3bcf885474fb9405481c4a98a6ef238f5f566224a514b511c",
         "candidate_padding_bytes": 5,
         "compared_target_ranges": [
           [
@@ -22580,7 +22580,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 478,
-        "candidate_object_sha256": "e6e31f922fa3c95f7a3f6eb0bae0f546dd3696694f6552f8a4e20f065d8b5b45",
+        "candidate_object_sha256": "05a06bac8f80a5ce91aadab82aca57a459d7dad3ce1132e97927accdea20a799",
         "candidate_padding_bytes": 5,
         "compared_target_ranges": [
           [
@@ -22621,7 +22621,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 509,
-        "candidate_object_sha256": "f43ec6d1906feb161f0fbc879666b8f9ae25467c6873b402c1bd1659458431fb",
+        "candidate_object_sha256": "850b613ced327b643dae783799d1f5ca6a1d5f667c2ec4fe9abc837da6efb613",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -22656,7 +22656,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 254,
-        "candidate_object_sha256": "e1d8442c144ce1e5d51f972209fbcc7b1087d1540f325fa1435eeeaef6f2631b",
+        "candidate_object_sha256": "62ddeb852a752198b16ba991f8cb78484d67b009e1266fcacf1e6d0effd3e68a",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -22732,7 +22732,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "12b33e07c2e1672781e81b99839443110bea08732e656c0e55bcfc19d7358e82",
+        "candidate_object_sha256": "f62070d397879b7201b96480ae9f20f8a0bb16b3e30510893aa79453fed1bbd2",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -22767,7 +22767,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "ab8fba6465dd56b07f75e3b25511184e872bf6f039b478f0907cb90b18973ee4",
+        "candidate_object_sha256": "650d143b4e3b5400220c48a88ff3f711c6b78365abdf899a340b1ecc79ca2e8c",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -22802,7 +22802,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 691,
-        "candidate_object_sha256": "48de4d05a667eb8fb51f6fd2d805f9a9aebb2c44f8929ac233af39aede67cf8e",
+        "candidate_object_sha256": "bef957d2ac6592ed39d49f8817bd2f77a6efef0cd8136d12d36d7b028c8a1ab9",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -22837,7 +22837,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 251,
-        "candidate_object_sha256": "e8dc9222c078c7850c864dd8ca429a648c9695e2a8b5747ba1c475ab10e7718d",
+        "candidate_object_sha256": "180638bc4715f33a572dcb00609666b52a369412d9b9c72228be51c1b8143592",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -22872,7 +22872,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 669,
-        "candidate_object_sha256": "327590c31c87054323b393188b12474ac3d2fe77b1d837e6272175836edf10aa",
+        "candidate_object_sha256": "5984328184522c53a22fd180af1c4821dd0e1015843c237b26563f231b191fb8",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -22913,7 +22913,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 113,
-        "candidate_object_sha256": "393a96b08c91296dbcaeed1b5013592a9d5cab69d49c284b0d78af3a77410c88",
+        "candidate_object_sha256": "0544b4d259a96e4d81aeb6f4bd89224f3e68250312183d80d57175cddbc269c3",
         "candidate_padding_bytes": 1,
         "compared_target_ranges": [
           [
@@ -22995,7 +22995,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 355,
-        "candidate_object_sha256": "3028e8a782b9b0eb022c0fa3cab146c9526963a41d5df091fa8d7e6952576cf7",
+        "candidate_object_sha256": "cc28bc61e329c7e999640eb9c65ca148ee5ac1564295a20498ff4255e678f5b5",
         "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
@@ -23071,7 +23071,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "237848f06de87cc1df7f04b360ee47994f3515e32e3ffb31f2c9a12de493d992",
+        "candidate_object_sha256": "d932e1dd2158c312fc7c53a7f8e50aafdecec04c91a13b68a264c5c217285752",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -23106,7 +23106,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "48819a5714d69686b719f91e94f12f0f8b78d5f969c1aed20d2b4c76602d7275",
+        "candidate_object_sha256": "469c8d5338ff175ca22b21de1df61b3586aded56f98493a3e0df671919e0d275",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -23141,7 +23141,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 715,
-        "candidate_object_sha256": "69bc4b27e794008f14ae7e04b2e87fd4c6da7af3fb6e340fbacda03ae0f8af2f",
+        "candidate_object_sha256": "05b07dfad51386dc00e9c317c5ca5e3b242e61c3bbda21fbbb847a2d922f4099",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -23223,7 +23223,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 68,
-        "candidate_object_sha256": "4467a9d725722b3568ee09b27eac37cd32b78a9041f6a6ce462de95dd4a18179",
+        "candidate_object_sha256": "75b1ba9c59e0ed0f200f1cfd13c37db82646250b19fb7d62fda2f9298a09f189",
         "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
@@ -23264,7 +23264,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 684,
-        "candidate_object_sha256": "2d1cba072e1cc8065303962397e14973a30f6e63270658aca7e62563c67ee4a0",
+        "candidate_object_sha256": "6c2f5f095a7c82bcb6fd2a31ad205394c0e55bda576d6421b93593811520a628",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -23305,7 +23305,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "54200cddeffd4b7a7ed0f4fe409978bfeaed1675c925378b7920d9ecbffd9307",
+        "candidate_object_sha256": "4dbb843ad139ec939e66b241cf4bad22f9ec674901a2494ff27bbf31815747f7",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -23340,7 +23340,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "551b04eef41492f34edd074813f337321352ebe6f48db7c3e170333676ac53f4",
+        "candidate_object_sha256": "833e4080949892acc5c1c2f838e814cfda464b4371e184762c147877b4f6c499",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -24566,7 +24566,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
-        "candidate_object_sha256": "2940f481317a81d92392bee85a20c263d9c7aeeac3fce5d054362aa265a11223",
+        "candidate_object_sha256": "3c59e0bfb311d2ae6f194e5e086d0aaa925d6bc8828743c647dd26fb7294ceb4",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -24601,7 +24601,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
-        "candidate_object_sha256": "364014db19e9af334b69e38f4c72db397663801ec164f0fe4d1fe52b55c6f62a",
+        "candidate_object_sha256": "9882027284a377789ed2a393efcad785ff15ed4544af73fd80ffc2caf1ce5bab",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -25238,7 +25238,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 453,
-        "candidate_object_sha256": "b2900802adcd96d0ee9db841c72cca0cf4e220aa9c4598f3b469325e1c8a70a3",
+        "candidate_object_sha256": "d218a339e649d9459ecdf9cc20a29f3c8b5af321be8aba99c125fcffa46a7bd5",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -25279,7 +25279,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "374b80002a634355a3989ebe8547e3ed1408628eecf3dfe3ee3644177b8c131d",
+        "candidate_object_sha256": "19dae1f0cabc2d4efb19c1e32eaef84cc4972a072e8a454d9c2bd564c65e8619",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25314,7 +25314,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "6ae86f7f1fc4e384faf7ea21d99aabf597ac72f85437969efea53b44751f59b9",
+        "candidate_object_sha256": "7d9d1cd5dd68b31ccd74fbcbc93e784ad0ee76a881bc22a0fd3c3c27b45c68ea",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25349,7 +25349,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "8359eea8ed63d94b7a40bb2bdb49f2e4fa5e8930adc04c914e561db72a618a13",
+        "candidate_object_sha256": "45e43f76e93e0ad4beec22695ba0436e7765e1e4c7c6f0def3154dbf979798d8",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25384,7 +25384,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "8d42725cdce6a65d2c24c257bf34ed81cd51b21a945564547420aa8c213e9733",
+        "candidate_object_sha256": "62416a6ac816be75acb90b5d9d68e27bf1099a0432aa8802d3e652831f6a7462",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25419,7 +25419,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "4eea4db10ac197a7d8f859fe0a95e0f54c188ee619c5415e886230a17f814e79",
+        "candidate_object_sha256": "9c08b8ad8a5f6383d0078745eb90aa842563292f2c29018fd009b359f3ed4296",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25454,7 +25454,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 280,
-        "candidate_object_sha256": "47cf9469d783aec9eb0655d1cb1520a6d0d9f60f2ec22d4e30ca77d6102af77a",
+        "candidate_object_sha256": "40fb776f80a8b384838da44007ece1d2f100d219c4414d305092425536c1e651",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -25489,7 +25489,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "6bd6c0cb386efbc9eb15eadc7e6c4e68206c6c31d2fb1f789abe595b898ee2d4",
+        "candidate_object_sha256": "158c64c0419abcdf1a66264a23b3fe8568368d70b69b62a2d2df91857e7ac820",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25524,7 +25524,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "a5b801ba478962a58f99a5b50952ae8b88edae566d450e306cf185d6c7302017",
+        "candidate_object_sha256": "a90eea0e015db2a880f68adb3849bc36b13bd69a08826c7b84ce10631651414f",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25559,7 +25559,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "92e074e91df82443e9b55399ff2d59807811c4abba4f81d6ba7abd4a9d59d38b",
+        "candidate_object_sha256": "4543ac7b7050b9b4b24b628c79bca1d55c2f3cd5d6f1f85c23974d601e1149e3",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25594,7 +25594,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1144,
-        "candidate_object_sha256": "7897dbe75de63f0bd9c108c6653ddd85994950d58107126445e8795fadb905ec",
+        "candidate_object_sha256": "edabf72fed870e00b1341062f5529006635bf8b14f2aa168bbc305b5a72e4252",
         "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
@@ -25635,7 +25635,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "c462887202047c7c91def984f7eba337e400c3ad35711de7332694ea2df4cb4c",
+        "candidate_object_sha256": "06a159deb65d0c376f3d11f1875f5a98e14fded7a04e8d509c5ff8f5e1ffe07e",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25670,7 +25670,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "a97c291119ac91587e3852526b05ddaaf7e0b9d472ef1f1d9d650b78f9ceb90d",
+        "candidate_object_sha256": "d67c8a3094c34e90dac2afc36c9d42aa94f2ffce4173b8512db63371919bb2ef",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25705,7 +25705,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "2672daea00d6ef3ff140d16f70cdac5922a646f8d2017dbbcd63c7bb04e77a15",
+        "candidate_object_sha256": "6e919f0a7f3773e26f3abbd64c97014540831e487befb7cc406e474cff755739",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25740,7 +25740,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "31471fee3760dcd25e50afbddbb20495dbeff7ce255a058c7bd828100ac022fc",
+        "candidate_object_sha256": "bef83293fd3e4357734c970b711071a3083ab8a2c364fca79b3aade8677a6b2d",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25775,7 +25775,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "10a09928f59136059594444727df33046a890ca14d44017152b4316d20afcef0",
+        "candidate_object_sha256": "96faab9c00ad0f04cd7eea346fa39e1b05d4a23a5e54c4a4a1909b65a597204c",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -25810,7 +25810,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "fd1ef3a6d5689cc101a00beeab2646d6ba779f437b7167fad642e8166e942739",
+        "candidate_object_sha256": "96709c7c4c1cc5db93ff88b7175429a7202df401b65daef9f7faaded6be22fe6",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -26055,7 +26055,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 2,
-        "candidate_object_sha256": "d6130449ce902f9c16e6587835a581081f5bd11727978821e002b63b62d55187",
+        "candidate_object_sha256": "69005b2a2b1593570c9a8d62f0de74b63514b2650f065a805f5dd630a2172658",
         "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
@@ -26096,7 +26096,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 7,
-        "candidate_object_sha256": "af66833f2c1d785370b41cc96f6417ba5f69b910440544be8ea9a1a8d77a8437",
+        "candidate_object_sha256": "a7ee21c6bda6f0f525b4442b35f60d8b80b84e82a1e0499fc7b321e6ac2f01bd",
         "candidate_padding_bytes": 7,
         "compared_target_ranges": [
           [
@@ -26131,7 +26131,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
-        "candidate_object_sha256": "28c6ea773c51b89608f1c327a271bd6bd5a871e423d5f14640a1d4fe7ca0b7e8",
+        "candidate_object_sha256": "8617a591a17b1c1469d96a4a440b90bb0a1eed9a7d8a0dc6ca30d394cc41d3d1",
         "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
@@ -26172,7 +26172,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 6,
-        "candidate_object_sha256": "01aa99bd0c8691fd61f8ca2f8a28f180aa74a95a0c99b85bd522434eb4e76512",
+        "candidate_object_sha256": "9f1fab46bb6e33c13da6c68024ef2ba1327eaa92a92a4f6ada7e57a7bbbfef3c",
         "candidate_padding_bytes": 12,
         "compared_target_ranges": [
           [
@@ -26382,7 +26382,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 45,
-        "candidate_object_sha256": "2da2b8e46fad1c7d6fe2016bb74d81df5a42d0a1dd779d98d27fb86fb380c2bf",
+        "candidate_object_sha256": "c056619b7223dc5f37508230e0e3b052b5e4667d5e890de9fca482fcf8bfbd56",
         "candidate_padding_bytes": 5,
         "compared_target_ranges": [
           [
@@ -26639,7 +26639,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 153,
-        "candidate_object_sha256": "e07005f672eb3a72bf0de273edc3e7de1a711e155856ff230056e1f702acd40d",
+        "candidate_object_sha256": "b2031635f672cb7e41701be5e89bbbc010927e1782fdb809acfb6645187fce2f",
         "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
@@ -26826,7 +26826,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 121,
-        "candidate_object_sha256": "12884e5eb6c109151971a47a812f5781580e9de0912013f530cfff03a7b7726f",
+        "candidate_object_sha256": "108f72f540337eb1684936f6ba3c08726d69efcf19bdf99285c93dae9358611f",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -26867,7 +26867,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 121,
-        "candidate_object_sha256": "d3d85d5719ba5aa9be08afe524f503545b4f159b9d4708421779559dd1c442b6",
+        "candidate_object_sha256": "e41a9b89cd25ce982fad8010fe36c9131af8284bbf55fc773eb6ab5660ebf134",
         "candidate_padding_bytes": 5,
         "compared_target_ranges": [
           [
@@ -26908,7 +26908,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 306,
-        "candidate_object_sha256": "1f0c6a1ae3f36d643757cb308dafaa30285d43c904b85f796dcf8de207de948b",
+        "candidate_object_sha256": "23a102387fe897b4b056a9933310670148aa0e7d809770bd8198cd0c56ccc62a",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -26949,7 +26949,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 70,
-        "candidate_object_sha256": "c3368cbd1f671f3782c81b41dc7f242d30a9d486d3eb9ea221f7b9166ffbb6a5",
+        "candidate_object_sha256": "770608c17be765ef6f2eaa862045255ce0f31f038d63373004bb317720510c25",
         "candidate_padding_bytes": 7,
         "compared_target_ranges": [
           [
@@ -26990,7 +26990,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 104,
-        "candidate_object_sha256": "a5a445976860c523120fcbbe962a091dc114af55e1b2f02f83a1f2d427f6176b",
+        "candidate_object_sha256": "13da3fc4f78673a1b4a28efbc01a9f988a0334798ede4a8b0fff917b26b87edf",
         "candidate_padding_bytes": 7,
         "compared_target_ranges": [
           [
@@ -27031,7 +27031,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 3547,
-        "candidate_object_sha256": "484ee64eef61fc9291d65a041b9d4d2850c515196f4aa4ad2e1e8fac93bd8874",
+        "candidate_object_sha256": "0e84f5e9563efa4160eb3725c353d93effa3a7ea1737ea3d406694d25b3ea7f0",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -27317,7 +27317,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 135,
-        "candidate_object_sha256": "a0ea11e293cd6859aa757bcc53c7a028303e2aa8b46b5aea1252a66852009da5",
+        "candidate_object_sha256": "982fce2f14b6961285617d465661fc6fe2bf3acd2f1117c193341d30f7be4994",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -27510,7 +27510,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 766,
-        "candidate_object_sha256": "02589a15d61b6327e120775b8d2d986598bcff5e82dd5d7cde3a8e216ea36d3e",
+        "candidate_object_sha256": "497420ac1a04c2c9b13d5c8fdfd14db97617dc792853f8fe9a0d825c436ee94f",
         "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
@@ -27551,7 +27551,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 343,
-        "candidate_object_sha256": "68f7799ab8f17986f0a531501976de8ac9cb3c942edf2a58ec083f6097b8360a",
+        "candidate_object_sha256": "63e6d33ae53f96cd906bc36c5a16a8a9335f1d29d53ee0eac4ba295fc30eb1ac",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -28089,7 +28089,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1776,
-        "candidate_object_sha256": "f8568f2ebdf9e27be6cf325ce23a2589eb2bde4ecaefe1a42a3168ad078d41c9",
+        "candidate_object_sha256": "8102b179d1d13136e1e7d4f3fd0211bae05d8d301f85f1314c6ffd982cc5cd32",
         "candidate_padding_bytes": 13,
         "compared_target_ranges": [
           [
@@ -28130,7 +28130,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "3cc4fb52053ab879a53cbc7a7a2f880ea2326caf1c2e414888b3301fdd75059b",
+        "candidate_object_sha256": "dce8d05c70b25b2320c49d3ba8292364fc6cfb32e7a5ee87110521090a05e6a3",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -28272,11 +28272,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": true,
-      "name": "ui_template_triplet_reset_and_seed_modes",
+      "name": "ui_element_construct",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 12,
-        "candidate_object_sha256": "cf1067556147881fbf815bb4895c584e9824e703cacb5b87cabbf258a3195fd5",
+        "candidate_object_sha256": "48124242da669eab6d47bd5b7f1234531e0e6934fe3febb373c3603e5383a818",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -28298,7 +28298,7 @@
       },
       "ratio": 1.0,
       "size": 48,
-      "source": "decomp/1.9/crimsonland/ui_render/ui_template_triplet_reset_and_seed_modes.cpp"
+      "source": "decomp/1.9/crimsonland/ui_render/ui_element_construct.cpp"
     },
     {
       "address": 4310896,
@@ -28920,11 +28920,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": true,
-      "name": "unused_fx_rotated_effect_id_prefix_color_global_init_thunk",
+      "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "a94ec01b18e1e96d3f2e981902ce5ba71ec6e56630f737fe7b838824b2368aad",
+        "candidate_object_sha256": "ed42778fb02f26c8a0e96f6837a24d5ef33f6437236e1cae26020f94c5deba4a",
         "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
@@ -28946,7 +28946,7 @@
       },
       "ratio": 1.0,
       "size": 5,
-      "source": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_effect_id_prefix_color_global_init_thunk.cpp"
+      "source": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk.cpp"
     },
     {
       "address": 4315312,
@@ -28955,11 +28955,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": true,
-      "name": "unused_fx_rotated_effect_id_prefix_color_global_init",
+      "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
-        "candidate_object_sha256": "91c52ebcdb6468b658afd1675559c7e2248c279efe9b3ec0b358ecf8a31e2386",
+        "candidate_object_sha256": "9ad4adf010babacf8471d431026578b2935cd25ce01e72655392169f68ced17c",
         "candidate_padding_bytes": 7,
         "compared_target_ranges": [
           [
@@ -28981,7 +28981,7 @@
       },
       "ratio": 1.0,
       "size": 41,
-      "source": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_effect_id_prefix_color_global_init.cpp"
+      "source": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_creature_type_id_prefix_color_global_init.cpp"
     },
     {
       "address": 4315360,
@@ -29916,7 +29916,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 12,
-        "candidate_object_sha256": "c1df82bb98c8b1efff8be3ca07e182f0488727a41159b06f58f8961131512f52",
+        "candidate_object_sha256": "a5a10d50f7c8441f6daf71c9ecd70f956dfd06c57123c946fae1267e6d62942e",
         "candidate_padding_bytes": 7,
         "compared_target_ranges": [
           [
@@ -30056,7 +30056,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 44,
-        "candidate_object_sha256": "6074e237e0f09831e45d8d123fb273d915f5a616a3e21a81fac3074a2e494acc",
+        "candidate_object_sha256": "499cbea7eb9b18252e034c0f132935b7acd5822a210fe0ab4b23ab4ef4cacdc4",
         "candidate_padding_bytes": 1,
         "compared_target_ranges": [
           [
@@ -30126,7 +30126,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 47,
-        "candidate_object_sha256": "9257a1c64df5caacfbe0a2f39f93b32bee15bb43d34c04e037cf6566ff7c8d18",
+        "candidate_object_sha256": "edbdfd3d54e1ef0275270692342d841ba16b8f9286c0ae1202b5a34c979fc668",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -30202,7 +30202,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 17,
-        "candidate_object_sha256": "2e3d4ccadf101569022ed83fd06bd49a5b53e0d474ba4de12076b9d6e711bd88",
+        "candidate_object_sha256": "3e8ecc125523327c348e8817e9c6e1a413e8f4628245a23095f173a10e20c95b",
         "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
@@ -30412,7 +30412,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 16,
-        "candidate_object_sha256": "1311772b1a29d423fb9cf47038f7a8bfbd48052ae058157065f4c697c68e418d",
+        "candidate_object_sha256": "9c37faeb16149f969c2de87425e35ba3c4b991130c2e12d6e09ed9b9260eded2",
         "candidate_padding_bytes": 13,
         "compared_target_ranges": [
           [
@@ -30908,7 +30908,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 205,
-        "candidate_object_sha256": "65fc777e0d3b1807b42719e57cb2bd02f70724aa1967022506cb9097751ce6d5",
+        "candidate_object_sha256": "dd4ce2ee8337bf116a36b5705158c4c0ccd8009b6c6e243408361971348ef567",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -31212,7 +31212,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 128,
-        "candidate_object_sha256": "2ad862aa619c6d3e8e3103fef4b1df3944ee59294bdbe132f480d7704ea5d8ec",
+        "candidate_object_sha256": "3121d30fe4ac2d8b8626e724ccd92d4d4e2ac120e3f027452976b3ce7a421761",
         "candidate_padding_bytes": 1,
         "compared_target_ranges": [
           [
@@ -31253,7 +31253,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 97,
-        "candidate_object_sha256": "1085274fa8d3491b94b5911a215cde151470e2de7b773ca5d6ef4f10779e1899",
+        "candidate_object_sha256": "fc5e956f76a6576078734ff3482502a38f52324e46c1b395e2d7cab6cb79264d",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -31372,11 +31372,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": true,
-      "name": "weapon_table_entry",
+      "name": "weapon_name_get",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 5,
-        "candidate_object_sha256": "1b43e7e55bc941c6e9985ff3006dce6d1f640294448f2ee8fb330975b9c07255",
+        "candidate_object_sha256": "5ee14689a78c0d2b257fd82558d764f60c50313c949536877a0b3b48f8e8ff13",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -31398,7 +31398,7 @@
       },
       "ratio": 1.0,
       "size": 18,
-      "source": "decomp/1.9/crimsonland/crimsonland/weapon_table_entry.cpp"
+      "source": "decomp/1.9/crimsonland/crimsonland/weapon_name_get.cpp"
     },
     {
       "address": 4322528,
@@ -31411,7 +31411,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 119,
-        "candidate_object_sha256": "f4f828886fa644144845cb9ce1588619347fe73d5fc110069fb63b15a24adb8b",
+        "candidate_object_sha256": "59f2a9ffa73764b005d5be3ee4b7e57887b60b49a85d2e8e30ee40190c185dc8",
         "candidate_padding_bytes": 5,
         "compared_target_ranges": [
           [
@@ -31493,7 +31493,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 85,
-        "candidate_object_sha256": "bb6fc83b013f3b4f8990ecf3c9cccad0ab7202fa1275cc5a12e00811d7618147",
+        "candidate_object_sha256": "e7a12cf878f27c1115674ed4706649b7e1019f48e46703f23dd84f2a719f14bd",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -31534,7 +31534,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 67,
-        "candidate_object_sha256": "9e859ec807902c865abedbd88a7f4836cc9e94658ac77d56c1f723fe266826ed",
+        "candidate_object_sha256": "e1a79b0a53606800222591e92f64d48bc5823165b8e959134e5f75bc56d11410",
         "candidate_padding_bytes": 8,
         "compared_target_ranges": [
           [
@@ -31575,7 +31575,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 67,
-        "candidate_object_sha256": "a87026589d1d881509c18addbc369a8d3ecaf0e99a03748e4095104a84f75f7b",
+        "candidate_object_sha256": "223110609e81605dbbbb7edc891d21a0d788a35fa19bd5dbba90c1e2068b722c",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -31616,7 +31616,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 66,
-        "candidate_object_sha256": "0d51eee56741b38f5490d37e602d2e852e6240311e3d0f7a48a36f12df74ca03",
+        "candidate_object_sha256": "75aff925fdbce76ae221cbee00e7e68294011bf648476ac20be037156977d2a3",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -31657,7 +31657,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 130,
-        "candidate_object_sha256": "5a726968b1841a203f4ae90a98fa9d44777e34013e2bbafb08d5526cd9f29a90",
+        "candidate_object_sha256": "ca7a2154cca26acd59f8b755fe6d7be4808177e6cdad20155c01362de8368baf",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -31727,7 +31727,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 58,
-        "candidate_object_sha256": "5326aad702927e89a70035083b8cb8f7b301dd94ccad3acf0b50aff52dd0e752",
+        "candidate_object_sha256": "43cf9defe9eb7903977a666908b03a9c5e44d6f5c294fdc306b3d3ecfed1bb0f",
         "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
@@ -31768,7 +31768,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 48,
-        "candidate_object_sha256": "2ddb3fd68e5eef31c80cf279c6a5ae8eaf98fb09a9c1a6d3cefe2cec9b01ff14",
+        "candidate_object_sha256": "f028d59803116475e3465f79a2561b630f89c27fceae0b1485fa26cb4f208104",
         "candidate_padding_bytes": 5,
         "compared_target_ranges": [
           [
@@ -31863,7 +31863,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 2213,
-        "candidate_object_sha256": "bfca42835ad869fff673e269ab1e76ece2d733e700241bc7921da159163369c7",
+        "candidate_object_sha256": "db1b30a99c4f616db639ea212b25ea0b383fab41fe59332391bac99ee31fe2d6",
         "candidate_padding_bytes": 13,
         "compared_target_ranges": [
           [
@@ -31904,7 +31904,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 2957,
-        "candidate_object_sha256": "1ef466f0e83f9f83bfdde283e61f604fbf72c1d17f20bc9ad19640bfcac0db09",
+        "candidate_object_sha256": "cc7c2b09571995837d3d502ae81a2ddeea75ff900528165c4237cc7295ff9898",
         "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
@@ -31939,7 +31939,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 63,
-        "candidate_object_sha256": "ce7516e5890accba81ce3097501d8ee21fb34c33735ab388a64133831303ec2c",
+        "candidate_object_sha256": "d31ff25e6ab22e2bc9db1058e1b24c47c0f24a0cb86567abb80c8c760db0cf81",
         "candidate_padding_bytes": 7,
         "compared_target_ranges": [
           [
@@ -31980,7 +31980,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 270,
-        "candidate_object_sha256": "70c92c6733c3bfa4e42596fbb11484cf4122e1dda9c6bb172e397179ff50d2e8",
+        "candidate_object_sha256": "4a281e2dd9de9700416fbce88dc8f7fee2203225e6e63453b70f64c9a1580877",
         "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
@@ -32097,7 +32097,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 53,
-        "candidate_object_sha256": "1f05c15ece12e5aa14a90cb3079f6e440b3a28ed34ae484b872ddeea022c4623",
+        "candidate_object_sha256": "c7b25ab29cf2461c9009975cbeb7236862001353d78a94273c4ed19733aa002a",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -32138,7 +32138,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 515,
-        "candidate_object_sha256": "c30e8570534d95992fc2da499e93aba9b8ad35c24c01fb43858b0ddc7b97955b",
+        "candidate_object_sha256": "31d82942e1e630a1b107ff4677ab03112e06ea5ab12b7648e4643d48b5d14f00",
         "candidate_padding_bytes": 8,
         "compared_target_ranges": [
           [
@@ -32261,7 +32261,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 12,
-        "candidate_object_sha256": "6e627495e48040cf85a7f3fe773867ec6ef8b88e17001d4ddbd3336fba455dfa",
+        "candidate_object_sha256": "6aa1816e14f2405ebed91492d2637ca2396b7bda70eb1acfc6c602bed4fb2f1e",
         "candidate_padding_bytes": 8,
         "compared_target_ranges": [
           [
@@ -32296,7 +32296,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 79,
-        "candidate_object_sha256": "28f61d1f92dacea63c4cfabb6eee5d6dcadaa7fc2341642a0f7779474a086c2e",
+        "candidate_object_sha256": "7db9197db5d63c9cff18752b11d854cef4e97d43f5f36cc6a100cb44b35f9d90",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -32333,11 +32333,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": false,
-      "name": "player_render_overlays",
+      "name": "player_render",
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1188,
-        "candidate_object_sha256": "1b8bb2c24557775d4a955629249de46c97f4772524aceca827906d702caa18bf",
+        "candidate_object_sha256": "e78ca8ab1b85ca4a28c69bd12b36af5af335d3ef8c0c36a9bfaeff4463f68012",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -32365,7 +32365,7 @@
       },
       "ratio": 0.8169133192389006,
       "size": 4677,
-      "source": "decomp/1.9/crimsonland/crimsonland/player_render_overlays.cpp"
+      "source": "decomp/1.9/crimsonland/crimsonland/player_render.cpp"
     },
     {
       "address": 4361520,
@@ -32378,7 +32378,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 29,
-        "candidate_object_sha256": "3445f633df9ab2c1b315057610e277b67b7e2e2c340223d2153e154f067d915d",
+        "candidate_object_sha256": "a0b43a2126fb1de4ef77fd9b2ff11f707094fcaa4fc6e921a57c02e00bd18cd8",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -32413,7 +32413,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1082,
-        "candidate_object_sha256": "f5d1c9989ff97d94cbb28b1b956d97d2ce4be3d7d974ac629fa10cc389da3125",
+        "candidate_object_sha256": "4def23b2b3fefd8c09efc32dd74a8c066bca857472e371c16b07f27c0af8f2d3",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -32694,7 +32694,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 9,
-        "candidate_object_sha256": "9b5c7e68d1f3578d0abe48e7bb9bc9344c30f214c1155f223d9ff88497ad67b1",
+        "candidate_object_sha256": "e920f62bf8f45d4dcff72d5875c4d757d9bd7527ff924bd8a5b37cc0a829ec8d",
         "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
@@ -33074,7 +33074,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1118,
-        "candidate_object_sha256": "0c5c231bb913d3f0f64e13975d73ea9d7f60b26c144a4e3c4feeaaac12c42305",
+        "candidate_object_sha256": "23485d12421560133c3c1160c5d7322ec808a3ecb7c0331a2fd203d0e319b42b",
         "candidate_padding_bytes": 1,
         "compared_target_ranges": [
           [
@@ -34587,7 +34587,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 3127,
-        "candidate_object_sha256": "672a6b4535c59d49f599d7a39a6fb7f20f379db1d93c254e7f336613ae59998a",
+        "candidate_object_sha256": "f762ed975e138b6cfc6f1cd9d1131c8f408feb4de3794d15efb00e2a3983a200",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -34657,7 +34657,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 113,
-        "candidate_object_sha256": "8c701cc71bee45aac86771571a0423be4bd74b90fac148004861b5a5e603e4d0",
+        "candidate_object_sha256": "70c894a3c9dd2820ab918987c8c53c1f9dc5637c2e1d25aa87c78a641aa9c71a",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -35740,7 +35740,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 73,
-        "candidate_object_sha256": "3f0c9e87a17df89b671e0d379aa41d3af355a7da7a5f6113f97ef2089e697b77",
+        "candidate_object_sha256": "aaeb0b3d72ef28eb0d3dae42d230e14d20f389e99a348b354ee31770227e0f21",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -36021,7 +36021,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 77,
-        "candidate_object_sha256": "af40f0c447ba0549fe44d9b61f54a37a304954e0468781f2d0db69050f5d68ca",
+        "candidate_object_sha256": "432110e36d7e5bd7462fb2505e81e093afb74082cff48975e195baa039cc5dec",
         "candidate_padding_bytes": 13,
         "compared_target_ranges": [
           [
@@ -36103,7 +36103,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 70,
-        "candidate_object_sha256": "933109354e64daf86bb89dfb476c719cc7e935fb8683b292b1d377415a857836",
+        "candidate_object_sha256": "f6d85b5bdafe565a4d9b185b71dd4588b1434e56c460744dd94628a3959648ff",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -36753,7 +36753,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 105,
-        "candidate_object_sha256": "fa765ccbba9f4529b408b06a7a019482de49d0a631ed19670547a496986c1217",
+        "candidate_object_sha256": "9cb892f0b94c114ee26186534f85015a75f84cd3de37c4e3285239d04e75b35b",
         "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
@@ -36794,7 +36794,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1384,
-        "candidate_object_sha256": "ac9d990754a0a40e1fa97e6626e7b08d5b18cef291ba682e480feb10febd7676",
+        "candidate_object_sha256": "8c67f2385cb871ddc7fd09b5ea1dd601194046c95b5202dea1c706bbfbe20c9f",
         "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
@@ -36829,7 +36829,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 115,
-        "candidate_object_sha256": "7fad28736fadd6ca9e317dce9a257e7b47f9f5212f371565d527deafc11b7d07",
+        "candidate_object_sha256": "57384b7374f67ecfa1edf388dfbf1bf9219a0f96e970c3a1957052fad159ce67",
         "candidate_padding_bytes": 1,
         "compared_target_ranges": [
           [
@@ -36866,11 +36866,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": true,
-      "name": "highscore_date_checksum",
+      "name": "highscore_iso_week",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 97,
-        "candidate_object_sha256": "837e5c6de28de4a3551c25bcbdab2511084bf31fe9d7a121660a2eefe9b77966",
+        "candidate_object_sha256": "1376252d3a9e81c844d065bf762b81f07396ff51d8182cd488e177fc2b1a675c",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -36892,7 +36892,7 @@
       },
       "ratio": 1.0,
       "size": 262,
-      "source": "decomp/1.9/crimsonland/highscore/highscore_date_checksum.c"
+      "source": "decomp/1.9/crimsonland/highscore/highscore_iso_week.c"
     },
     {
       "address": 4432080,
@@ -36981,7 +36981,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 36,
-        "candidate_object_sha256": "1f36a301723ea7209ce704a4184c602531aff4072795d9931adf222064f81b3b",
+        "candidate_object_sha256": "83e20c3c55dedf3b704d34ab05ded119c9f3ea99b96fde9eef49dda4b99e86eb",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -37057,7 +37057,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 74,
-        "candidate_object_sha256": "64543f2981a346522d4ef512e89d94f984221c9a7b99ca3ef662173df7c3047c",
+        "candidate_object_sha256": "6db70cc66338a73ac0fb94413a12267ebb732d0c281d1ee910b24b579d28be3b",
         "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
@@ -37133,7 +37133,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 94,
-        "candidate_object_sha256": "e4403ee5e6c64f4b0ea8de528f054d830572e089ff5a7845f83ae8643bc00f26",
+        "candidate_object_sha256": "23bc4a60958f5727879d3bb657fbc5dbf8e3dec5c33f252866c0dfe1e095ebf9",
         "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
@@ -37205,11 +37205,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": true,
-      "name": "highscore_compare_rush_field32_desc",
+      "name": "highscore_compare_elapsed_desc",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 13,
-        "candidate_object_sha256": "edd4d25bd7638dacfcc075f5f4beaafe1d241acaaa71cdb503683c774e07d379",
+        "candidate_object_sha256": "3032b96000d513ef67947c7325818718a783583c4827f3b6ae655d23f404f52f",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -37231,7 +37231,7 @@
       },
       "ratio": 1.0,
       "size": 32,
-      "source": "decomp/1.9/crimsonland/highscore/highscore_compare_rush_field32_desc.c"
+      "source": "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_desc.c"
     },
     {
       "address": 4433504,
@@ -37240,11 +37240,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": true,
-      "name": "highscore_compare_quest_field32_asc_nonzero_first",
+      "name": "highscore_compare_elapsed_asc_nonzero_first",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 22,
-        "candidate_object_sha256": "9b352db88c783160abf1b9e019b56b5bd09293a5d35cba6f4dcd86cde939854d",
+        "candidate_object_sha256": "6759d84cfc6ed5adc03df8547cb29a19ef8868215224cd0d3a3b3ac58386bcea",
         "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
@@ -37266,7 +37266,7 @@
       },
       "ratio": 1.0,
       "size": 53,
-      "source": "decomp/1.9/crimsonland/highscore/highscore_compare_quest_field32_asc_nonzero_first.c"
+      "source": "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_asc_nonzero_first.c"
     },
     {
       "address": 4433568,
@@ -37314,7 +37314,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 327,
-        "candidate_object_sha256": "5bebba9a84ee46528fddb820be6ee61fa320132141b843da88912de797ed356d",
+        "candidate_object_sha256": "7a33d68746bf9965af60357b522d4e4e608374f3f8daad4b1437205c41f0792e",
         "candidate_padding_bytes": 12,
         "compared_target_ranges": [
           [
@@ -37431,7 +37431,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 49,
-        "candidate_object_sha256": "cf1c92785ce72426b56859d00ea1c0dd761e24c9b892340834aa5c38e630d082",
+        "candidate_object_sha256": "ac528830c7c4b9bb7d4fc8cd95e9bfb7b4cac7b76930c2c3c81854c08a1a9597",
         "candidate_padding_bytes": 7,
         "compared_target_ranges": [
           [
@@ -38190,7 +38190,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 93,
-        "candidate_object_sha256": "54b8734de98f0b2eaf0805b74f227a90cf9152e6573f6bd551cdeefb1ce3a151",
+        "candidate_object_sha256": "a4d96f0c35a42d92e5c70bf41ed52539eeeb1f04ab4d9cde0c306ad66f8f73cf",
         "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
@@ -39025,7 +39025,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 51,
-        "candidate_object_sha256": "9d3bc04775b5a11462657c63666f7eba648e98ef4e84a27defd9766be38a923f",
+        "candidate_object_sha256": "783e6a594059885307b0098515b47ae3e676a181953b10794dfcf5a7f0f88ed5",
         "candidate_padding_bytes": 12,
         "compared_target_ranges": [
           [
@@ -39177,7 +39177,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 16,
-        "candidate_object_sha256": "ba3c1a48aa6237919e717898915adc22f7d72c21ab135fe64274077a2437d4ce",
+        "candidate_object_sha256": "f7b09b949426ae48124696b534a05953f77dad8995f3272cb7034b4b7858b850",
         "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
@@ -39247,7 +39247,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 93,
-        "candidate_object_sha256": "daa231cdd27ac45a260cc125a6e971e3480d7313f87a1e814942a738d004d791",
+        "candidate_object_sha256": "98ff33dcfdd84ca9b9fbb4c43074ac1dc6eef911b8cf627790dc8fa10bbb3560",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -39288,7 +39288,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 110,
-        "candidate_object_sha256": "3af6e0e3b52f30f949e91c270f2e9ebe3e3174e09440ebdbf0c6e7be2e7c6d68",
+        "candidate_object_sha256": "72d8199417e478fa07f06cb9b741df575f8ba49c3892c2260f8c926e27b6c22c",
         "candidate_padding_bytes": 8,
         "compared_target_ranges": [
           [
@@ -39329,7 +39329,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 32,
-        "candidate_object_sha256": "a0b969b40d8c8a39e009b41d4be0b50aeeb09b9b0b341b896c7057b5966099f0",
+        "candidate_object_sha256": "18697675ffa3bc070c7d7839fe024df690f100d8e5e58979a8894598f66412ff",
         "candidate_padding_bytes": 8,
         "compared_target_ranges": [
           [
@@ -39366,11 +39366,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": true,
-      "name": "sfx_play_exclusive",
+      "name": "music_play_exclusive",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 66,
-        "candidate_object_sha256": "4ac69d60771907b052754d6d3a9b58ee96a3c141c9175e6038a4b0e56bb95143",
+        "candidate_object_sha256": "f8e357bfd2ac743b00794871c673e89aa2682ae9730272485fc02c2f8aab7eed",
         "candidate_padding_bytes": 1,
         "compared_target_ranges": [
           [
@@ -39398,7 +39398,7 @@
       },
       "ratio": 1.0,
       "size": 239,
-      "source": "decomp/1.9/crimsonland/audio/sfx_play_exclusive.cpp"
+      "source": "decomp/1.9/crimsonland/audio/music_play_exclusive.cpp"
     },
     {
       "address": 4443152,
@@ -39407,11 +39407,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": true,
-      "name": "sfx_mute_all",
+      "name": "music_fade_out_all",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 31,
-        "candidate_object_sha256": "46fdfea7489624bac81da02f28aa4847b40cf4d7c8e8373810ecf071efaf57ce",
+        "candidate_object_sha256": "b05764575a3ba0f03ed2bf713a72605e21f71df48e4b64c2fad43cb1abe6097b",
         "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
@@ -39433,7 +39433,7 @@
       },
       "ratio": 1.0,
       "size": 87,
-      "source": "decomp/1.9/crimsonland/audio/sfx_mute_all.cpp"
+      "source": "decomp/1.9/crimsonland/audio/music_fade_out_all.cpp"
     },
     {
       "address": 4443248,
@@ -39442,11 +39442,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": false,
-      "name": "sfx_update_mute_fades",
+      "name": "music_update_fades",
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 113,
-        "candidate_object_sha256": "611c5fc0ff5437f22bf50954eb1bca7816c1d4a2343a181bc5e274d2c225478a",
+        "candidate_object_sha256": "609fcc8f4a32581999287671bbd58a516ba887c4e7929b3bd246506ddddfd150",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -39474,7 +39474,7 @@
       },
       "ratio": 1.0,
       "size": 422,
-      "source": "decomp/1.9/crimsonland/audio/sfx_update_mute_fades.cpp"
+      "source": "decomp/1.9/crimsonland/audio/music_update_fades.cpp"
     },
     {
       "address": 4443680,
@@ -39487,7 +39487,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 19,
-        "candidate_object_sha256": "fc2ba4288c04ffce6c67e6a91fd337569d5fe9595f1fd420f7d373f5cb3433fb",
+        "candidate_object_sha256": "d2e51ad0d4a26f1f327957d57a4daa24eb5c235087c4cd5f3badadc215560f9e",
         "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
@@ -39522,7 +39522,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 26,
-        "candidate_object_sha256": "ca9b33958a31a01d4f87ced8d3e56663bcb05c871683c2f3f1abaac658b4aa62",
+        "candidate_object_sha256": "136fac7c1ee54a1916876a35f8f49ad8bc7fd5674b77d6871445e3a99f088a75",
         "candidate_padding_bytes": 7,
         "compared_target_ranges": [
           [
@@ -39553,11 +39553,11 @@
       "image": "crimsonland.exe",
       "linked": false,
       "matched": false,
-      "name": "sfx_is_unmuted",
+      "name": "music_track_is_playing",
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 10,
-        "candidate_object_sha256": "6f73205df3ddf5eb76081e589505ad1e2693ba81820f1fc94d70de40ae7ba7e6",
+        "candidate_object_sha256": "b1b335c0c36913aadaf66365a9aaee8fff983f3130ea513ade17629f163fe0a9",
         "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
@@ -39579,7 +39579,7 @@
       },
       "ratio": 0.6666666666666666,
       "size": 30,
-      "source": "decomp/1.9/crimsonland/audio/sfx_is_unmuted.cpp"
+      "source": "decomp/1.9/crimsonland/audio/music_track_is_playing.cpp"
     },
     {
       "address": 4443856,
@@ -40066,7 +40066,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 664,
-        "candidate_object_sha256": "279a0c08e01e0c6d70d963a1197931b63d154b1d5610d2b666b67c305d0d3b30",
+        "candidate_object_sha256": "e663b5cffc3c2fb8fcea5096f0b312436b9d167f212fb531f6da4038546a135a",
         "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
@@ -40107,7 +40107,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "21d2e07c7a4096bf73eab7416031791b1362703bf7ff4fc1a113b6fd496e3a3e",
+        "candidate_object_sha256": "2b7ff0d3cadc047215f21af694b06397f50adaf5d139e623413ef39d29391702",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40142,7 +40142,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "2b4c95c682db47e7e455b6d3c878d34e7c90e0f9e1ab18de8e81f0c5f50e3a6f",
+        "candidate_object_sha256": "a4b49bd16f6b4b68ba193e331e05d7fa4901cfe0c5386f8a2442d66e35e4a304",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40177,7 +40177,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "ca5f700ff88fc266bc6611f647cd36bc23cdb51885f7416623835670cf760822",
+        "candidate_object_sha256": "29fda993d6ece20608887095a01fa0cfdb2d17361cf340ac06620e6b3355afb2",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40212,7 +40212,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "8d8d590ae26e497974f0385315149f75af45edfa1d948ae8600b5da7c89b1342",
+        "candidate_object_sha256": "8cd9f47d24ace6dff3d698bf1bb203c90222ee08691f5e2fc344562c0f6dcca6",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40247,7 +40247,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "59a6351cda66385a46ce95e00f0257e07a8a004e1bd6623f964ce727f39b63a3",
+        "candidate_object_sha256": "d6fd798a8174c87c1fcd6b75b188d5c2c424f63ad387780b50361050708af91b",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40282,7 +40282,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "206d205b6ee4e6ce13384bba5633fcff3d5212b99b2426fa3ebedd57c1aa3bf6",
+        "candidate_object_sha256": "cb3d9f66f8b9ebbe2d84e611c9d71cd32372c38aeb996abdcf2fa92c4dabc597",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40317,7 +40317,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "dab4d3864086711882ffb7e09fead8b1e21daf7b8485f2970ce8ef6250dcaa2c",
+        "candidate_object_sha256": "62fd718d6985fec3dc9b5aa58e68d6c4b6614e3bb13063b1c09cb1f567608009",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40352,7 +40352,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "f378d432ed7b4a458ef8b0ff58323b1d9ebb5b58174a95a2f0d5d1256ca8b291",
+        "candidate_object_sha256": "04774065eafa1df245cd4dd837bb5ba8fb272c10fa2cc7cf69660fd5d578eae4",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40784,7 +40784,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 892,
-        "candidate_object_sha256": "a0bef69d1b3790ea5561628c939fddf65fb0d7f7d95ce9312bac70916839a62f",
+        "candidate_object_sha256": "bf4386ec45a70b38041cb4c6485df23d996f8f1da37de6844ba90119ff3c1cf7",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40895,7 +40895,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1915,
-        "candidate_object_sha256": "f9521d665aa5b594bed749e936eb305bae411b1265e4c0c34f5dd864827238b9",
+        "candidate_object_sha256": "f1a0760b556f673645b737717380c1b5ff0be8c8d247244cb1fc112a1bd3f43a",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40936,7 +40936,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "bc30c0163267e7861de1ce923593936c508a46809a08677923f93069b2fff1f5",
+        "candidate_object_sha256": "c6464b45b61d61ca3daf9f3bfb3eea6679c41a91287dbdac417cc54966a52287",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40971,7 +40971,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "ac5d0e53b33464a6105f5174c388286efebd5b46b5d95cb751f838a643447822",
+        "candidate_object_sha256": "1689861c8d9b06200e3d6689ac4b003536ffcb603e938d3968f0f369f0242cf7",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -41006,7 +41006,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "ce0d772f6f5fa753a843579d77ff1e45cab36898fb510129c5faf57a3b96d4c5",
+        "candidate_object_sha256": "55def9b90994f671a43beaed170d73cfd573321d0ef4b85c1b4c4f1cbc7e4ba8",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -41041,7 +41041,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "133991758b7076b415f34cdbf0518027f8c08a63c8178b49f7358ba2e0731e18",
+        "candidate_object_sha256": "2be91c268b42c6b25338e7341da7260d1a04937c2dc8959bc4850096f88d7314",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -41076,7 +41076,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "4cc94d8dd1e73dde1bb42f6866982fe11259ad2c84c836ea917c979d8bd7b97b",
+        "candidate_object_sha256": "4c8a77045c57d7ca48b3daeb5608a820ff55dc0618897590421e3ff529eb23ac",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -41111,7 +41111,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "a927a3e2850317d4a2654ba32bc6aac66c426a583a0037d5960a8518c85e2424",
+        "candidate_object_sha256": "d846f197e7487db4c0de8a58992da80de8a530231aeb5f06e2e33d255267f478",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -41146,7 +41146,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "5b8192d745389b300a05c1805defb2fc9370ada4cc2b8b33e9f9cc7dd60f53e2",
+        "candidate_object_sha256": "d92e3fc53f8d20bc3f0b17af6b5b14ae45a57906b4b5f7863db7e5e5923f8102",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -41181,7 +41181,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "3e999afd02473185b9a26b62568b0549002a589fc4830a5cfdb41798d4ce4bc5",
+        "candidate_object_sha256": "21dfec7f3ba3043eb43100c0b24186e0e09a81728f5585b954cfa81925b9a2b2",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -41216,7 +41216,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "6c9df7968a16f48cdb74f33966e00980305b3ef9593ca165d019ec0cdeb0a224",
+        "candidate_object_sha256": "496c038224e855385d27f3fca22e1db0938cf665855a1f1445035f75bcd3ab52",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -41432,7 +41432,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 92,
-        "candidate_object_sha256": "fe0a8b4131392d9d7aa989bba9a94e46522a721bb871412e8ff2e82f001d64d7",
+        "candidate_object_sha256": "8d76eb8578ea9997bef0b96a8fa4e40b098dffb7024d88c5c7c694cc6dd8ee7f",
         "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
@@ -41660,7 +41660,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 111,
-        "candidate_object_sha256": "f08f50d285740219b34dbe02713db78454e4209dfb375ed127b763c29627a29e",
+        "candidate_object_sha256": "02a48daf776f4a716267173d1c1993b60695bafda87c8299aca3bcb95bd3e24b",
         "candidate_padding_bytes": 12,
         "compared_target_ranges": [
           [
@@ -41701,7 +41701,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "b80123a5c6fb6e2e7ab97f9781fdea76959d86ae9c4d200c975606063f098947",
+        "candidate_object_sha256": "2150aba890781423fd41b6e03d50b4425661c67e8532e25622ed2f02c98e3f16",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -41993,7 +41993,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 383,
-        "candidate_object_sha256": "a043006185e843ad7c9376f0172efc0ff3528c8d5d9a5a37018eeb8d6144592b",
+        "candidate_object_sha256": "be7610fd351bce0471afc96acbb180373faeaf2f0fa618d20cc7197092fa0534",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -42034,7 +42034,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 219,
-        "candidate_object_sha256": "c2c5f6388ac0ea6a0ca03280a40662eec68d57d4fc82ee43f3eb9a5becc9c6ff",
+        "candidate_object_sha256": "0a1dc634289ac09bb600221455d9d9dc2ff748b32ffd6d7af3971db7f807f439",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -42186,7 +42186,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 16,
-        "candidate_object_sha256": "3ed3191daaf97e6dacbb461ed8f8e3790be26f2867884cd9b57d8e751a3684aa",
+        "candidate_object_sha256": "590616c880db432dfff451eb859135824cec1316f33d77ccdd9602f0ffbe39c2",
         "candidate_padding_bytes": 13,
         "compared_target_ranges": [
           [
@@ -42291,7 +42291,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 12,
-        "candidate_object_sha256": "1f0c62d37b2fa7edcf73a33fb3c940d8ee477d6076d19841a7a9ffed787e1aa8",
+        "candidate_object_sha256": "5af5efba2b2461852f64cb8b95d362a125c8b527f1aab3a8b5e253ea245f9ce5",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -42326,7 +42326,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 15,
-        "candidate_object_sha256": "4a8b057a9caa7cab302344f322b8a1bfc8e152dfd45e6bd4b9e5874c76693af5",
+        "candidate_object_sha256": "cf7ba379bee2f84ecc4bb39861d410b9015c2c43be14604794a788e2046587f5",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -42396,7 +42396,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 40,
-        "candidate_object_sha256": "f8fb3b6ae0ef16f1997b25d9c6c1eeb0407e4388ab1310b1e58aa10d0fa7f66f",
+        "candidate_object_sha256": "759b90bb7830ba60cc12c97047a897407a2a8de925d5acc3dd4c16d94f69e729",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -42711,7 +42711,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 788,
-        "candidate_object_sha256": "c749736e36371dbca16f73ed0995c35f8ed90b909c85ff6f20e514c62bde2590",
+        "candidate_object_sha256": "90a08c819e2655b1f5b012083132d22f1d6dc6a6dc1604dd65e71764ba65a479",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -42752,7 +42752,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "bd4ac98e58ce3d59ba4e8a29f2ca00c05e014867a658d8248488b43a05b3d9b6",
+        "candidate_object_sha256": "e2e1e8228f70d969d48cf782f6ed80d6381d5b61f44ea3cdd7e0d38d0c50cfb0",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -42787,7 +42787,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "3e66a1a71dee35a0d10590659a65f2fc7854a810503d4ee1439c1a11f403f76e",
+        "candidate_object_sha256": "d44cb79018fa4a15f99c0af72e0b0ca5819bb3e1b4983bc692e6a17a09ff47ba",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -42822,7 +42822,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "d2753a7cfa736f15a1926013ee577c51eb37616d5cc3ce0a47cb60e5d9fb7057",
+        "candidate_object_sha256": "08f9ce47d00a2bf36406d3d531fd875cbbb32ea2b8ded7388768d0a116ed64cd",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -42857,7 +42857,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "a919ff10ee4d96db2d940173de318fa4d258dd896f57f9d821a436b542a8f529",
+        "candidate_object_sha256": "34d7609c0839f2108abb09fe83c5bcbbf4970abc159a2748d3f89dd190ffe449",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -42892,7 +42892,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "ce55a7d8443e43fe814f6a7c63afb5cd85c74dec74601c0457c9307bf0536f2d",
+        "candidate_object_sha256": "e054d6817c37d11436df10811e0af104dcef592ee30f9bd26b863a67c6e8f41e",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -42927,7 +42927,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "d0b9a468418730cdb705c691509211fc2653c2408683fbb0d2a60a08d7fafbe8",
+        "candidate_object_sha256": "7ddeae40414912b24bae6b99ee7a3cefe40d2cbc2a68146044c408f94c47fcba",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -42962,7 +42962,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "eccc5ae670d4791dde06b916d18ce7e81728aecc8180c724176b9e30aa271414",
+        "candidate_object_sha256": "2694de357a94bd20ee7490e9efb2aa0d79b6a5ade865f8348a5fc99a4cbe9c65",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -42997,7 +42997,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "05ead1b63b8f21e9f2874616c22a5c7f855b4a26070488b0cbdd843bfb808d82",
+        "candidate_object_sha256": "77c3de504743d7ef3b548157a0a5311010ba305131c6ac895f57b02717c4c29c",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -43032,7 +43032,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "a42294dc914475c6d0c781ee03441b7dd454e8cd595747a5f4e1d537904b067e",
+        "candidate_object_sha256": "020ee41abb54a61972dce30552ee481c8cb41f94e44e5f8acfa4743101327115",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -43067,7 +43067,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "ab1eb9ae93a8093d02d18da3b4c82ce16a296b0cf3a6aa217eb3e212eff7ae74",
+        "candidate_object_sha256": "ce5f16b53209e058ca912accec800a8ee73318a86bc67a19326baced9e23f47d",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -43382,7 +43382,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 771,
-        "candidate_object_sha256": "7e81938c29a6c7c9f4962ab2c4ead464c01777352a9937fea01ab667e97fc302",
+        "candidate_object_sha256": "fd430e40522a57454c5294cc0b58c126da17a938b460561c83a60e432b5a6b47",
         "candidate_padding_bytes": 13,
         "compared_target_ranges": [
           [
@@ -43423,7 +43423,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "d6644c0f7e5fbde45f1c2f336bf9e32c02f02911411fe87c277bf5d0c6ab79bb",
+        "candidate_object_sha256": "5a083de72db3b8045fb5ccd381a6e73622a32d7feb2e14a95e46f1fe5fec4adb",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -43458,7 +43458,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "ec40886a5d85db62feae0fa7585e08f089c39504644a3c3f9e637efe9e177ed3",
+        "candidate_object_sha256": "4f69f723cac987b67c11b9da634452d1b15f2ecce44e550577af8fb844a26cc2",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -43493,7 +43493,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "418b49e7338210bd784894ab42b919b5ffb631dafc23e74ce8e83345081008ab",
+        "candidate_object_sha256": "e0a8776bb37a1354b921275e81360d96d62a8e2d04562dedd2c2e8828d3eec1b",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -43528,7 +43528,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "c400fd0cd8da8e6005e286bb5162b6549511d2e50eb9241bb2f5bc2974b857ab",
+        "candidate_object_sha256": "7ef656e699b7fda98033441bc0322657b427ae0bab3197f997e0c16a739408b8",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -43563,7 +43563,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "8f10b0cdb8e283f14640779d740e91f0837cd09065d0bdc25f578fc2639bcd51",
+        "candidate_object_sha256": "989d65f3e9b22a1731e069a27e56614f2b3a98599f4231cac4013bfb730b8bb2",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -43598,7 +43598,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "6733cc28ba02e871d6e21af1a6d2a4534b7dcfaed4c62b0645072046fdb3d507",
+        "candidate_object_sha256": "e5fc63bc2431e568e6ab09fd1427cf86e8f25783bcde643eaf91fcd15adaf2fc",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -43633,7 +43633,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "c98af8c70d4857e53e1fbfea21c481ab10b537e07db99a3358ed0dda3357e043",
+        "candidate_object_sha256": "76f4233605eb8d56de5652e2c85568365f822f563bc329dbe989496d1106ba4f",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -43668,7 +43668,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 40,
-        "candidate_object_sha256": "636796d63d140cedfc72ae64db4eb73dbdde0edfe46b7a6ac354d20317031531",
+        "candidate_object_sha256": "b2393682a8f59f37a3489b2750cc9a68ff4c38782d2d37d05afeb0811d9fdc94",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -43855,7 +43855,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 40,
-        "candidate_object_sha256": "469ae71fde2a13a10ca6284266d74e99fd03a991879978612d06a98ec0239056",
+        "candidate_object_sha256": "75ce141e421b62d19f8f8f723f266095103ad70814386da13f04465a5de55d99",
         "candidate_padding_bytes": 13,
         "compared_target_ranges": [
           [
@@ -43890,7 +43890,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 657,
-        "candidate_object_sha256": "49bd05bbd7a1cde141109c5d3792a78b9f3762abe79083b2dc021e35cee6ee76",
+        "candidate_object_sha256": "2174daf29bad7b8cf9192d3bf6aa27967d3bedb1d498bd251f192fe2469a5fee",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -43966,7 +43966,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 62,
-        "candidate_object_sha256": "9879f6c34173cdf04f5fa3b82f787ee18274a0fe31c012f94585184d9289c7d7",
+        "candidate_object_sha256": "2a11e8d8f473346cd49bb53963bfccd8577d45ea7382a59cddde25468d17d53c",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -44007,7 +44007,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 44,
-        "candidate_object_sha256": "cfa35bce19dc8719f24c365e48ca1e2d81d55f93a3fb1825cdcf1e08dea92219",
+        "candidate_object_sha256": "99be9a8f7ce724283df67e01c80084b04bf985be2fb86b9b77a3e7ead67a2773",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -75824,7 +75824,7 @@
     }
   ],
   "identities": {
-    "inventory": "b158b492c7c9d8647e726e7ee114d04032d33d7824636d01400d9c97021327f2",
+    "inventory": "86bdba414a52b5f65bb48be6c360738bfb21209c795cf988329f93ad43477926",
     "inventory_policy": "curated-functions-v2; canonical-ownership-v1; data-extents-v1; executable-gaps-unresolved-v1",
     "scoring": "c7f0141df3d6fd164c8bdb4b3576ecd16b70a6658991fdd4270b13230398e83d",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1",
@@ -75835,70 +75835,70 @@
   },
   "inputs": {
     "analysis/decomp/1.0.2/crimson.exe/data.json": "2501fca7af27cb40c2ea9e107e79bab2575dae8c8742483cb62372ccd4748a9e",
-    "analysis/decomp/1.0.2/crimson.exe/functions.json": "835959c2b100d0a05cafbc061e819068f895a8272e8019faa6e2715a1ebca63e",
+    "analysis/decomp/1.0.2/crimson.exe/functions.json": "a88efb57ed74c703a42c4506885eca4935b310baa1c8b61ea74efea9ea2e3be2",
     "analysis/decomp/1.0.2/crimson.exe/imports.json": "ffee4e9a1e0bb945ca32ba89b4d462ac23de8e14ce077eed3ae2a9a2ec9d56d0",
     "analysis/decomp/1.0.2/crimson.exe/metadata.json": "7533c0f08082ae1ae6e25bea7b8bc0ecfabb818291b2bc48554cc19aa1e9ac93",
-    "analysis/decomp/1.0.2/crimson.exe/native.json": "fb5d40cf0165c18e5eeb9048eaacd2cb3f10125e23d15ad4b84094e0b2dfc763",
+    "analysis/decomp/1.0.2/crimson.exe/native.json": "9806392b5f9be03ffc76b2684b2684989beaf8bd709640556421aee9b4eb596c",
     "analysis/decomp/1.0.2/grim.dll/data.json": "f9da3e15b88c740dddd839ee90896aef43d0b58f5cc0ac2f847db1aa36693f11",
     "analysis/decomp/1.0.2/grim.dll/functions.json": "bc7f500cb8cb10c135e7751f8b33128a775b97922d236add35d3d425e9972344",
     "analysis/decomp/1.0.2/grim.dll/imports.json": "6dd9b270911db4b877f7fa7dbab8e3b1fadff95918d246ed236a85c63f8882de",
     "analysis/decomp/1.0.2/grim.dll/metadata.json": "0d335f40f486180dcd790a21762602006ac8cf255f1adf68f62e862756667509",
     "analysis/decomp/1.0.2/grim.dll/native.json": "13c5ce8655e190548e3c1a9d198ab124a79e7293681c4daf632408e8afcb5fbd",
     "analysis/decomp/1.3.0/crimson.exe/data.json": "55e299d8635a1b296c983f42abfb2c1004cb65327f576bba73de22ddff782b53",
-    "analysis/decomp/1.3.0/crimson.exe/functions.json": "19d9d88bffd0efceaa0aaeb38f56298174db3bf425b2a057c84bb9e011b97e53",
+    "analysis/decomp/1.3.0/crimson.exe/functions.json": "b4e9d0ca785315515b4e5a9df0995cfe2125306c89f9107623cba10612b0f387",
     "analysis/decomp/1.3.0/crimson.exe/imports.json": "2d0079653411e71d05858bcb15f02f92c20d87de316e5d8e3f5256316fb073f4",
     "analysis/decomp/1.3.0/crimson.exe/metadata.json": "8bdac138675a203e877fae41389cd6202aeed766e1cb8855ebac852c4d4bb76c",
-    "analysis/decomp/1.3.0/crimson.exe/native.json": "813ab091ee492df0d14d24d30e0c15eb8d6d828a45b85c06bc5e18ff1c1c9a6b",
+    "analysis/decomp/1.3.0/crimson.exe/native.json": "66471ab701cf94654aed3309b616128059a47021719b4d56d6669e9ef9135ea5",
     "analysis/decomp/1.3.0/grim.dll/data.json": "0dc2d710fc34d6f370dfceffeb4bc9affc51e8678cf42c67884ed62b9af41e80",
     "analysis/decomp/1.3.0/grim.dll/functions.json": "aae4347324e4df80cbeaee0fd39a7f86d0d4ff019e79f30b638f71a0fac4c287",
     "analysis/decomp/1.3.0/grim.dll/imports.json": "e01a91fe3e77e81eb00531d904fa4957f6dac47a61acb55365575f4f653174aa",
     "analysis/decomp/1.3.0/grim.dll/metadata.json": "4daf06c17f58eab74d645d4443fcee8a8e0ac44084f19cb0965cd5cdd0f14f2b",
     "analysis/decomp/1.3.0/grim.dll/native.json": "a52bc5019de730e28da72f3072048d62ee3aaae980a52c99f169737d932decd1",
-    "analysis/decomp/1.4.0/crimson.exe/data.json": "06aac0e7c709634593709b0796e50fdad7fdfc513c7861c231b356b9abdad317",
-    "analysis/decomp/1.4.0/crimson.exe/functions.json": "3afade16d264fef62705b8b218a0a936daf69136cd14ff0d8a6ebf6d401c8c90",
+    "analysis/decomp/1.4.0/crimson.exe/data.json": "d7f45501d498dfec151173bf1c869f9ac1acfcd0f851c01c959b0edc96fa9b86",
+    "analysis/decomp/1.4.0/crimson.exe/functions.json": "387368dadbab4ace8d2585c2e4310d6d8aef7de95cfc49668550d6abf4ee8883",
     "analysis/decomp/1.4.0/crimson.exe/imports.json": "cf97e036d13efbadbba6bdaa98892db3aebb3804f6973abab586eff9cd6ba16b",
     "analysis/decomp/1.4.0/crimson.exe/metadata.json": "bb315687577e7fb4ebb2dd9968beab103da706f154dadf239b754fa32c15aea7",
-    "analysis/decomp/1.4.0/crimson.exe/native.json": "0ef2c9328229dc7bec604bfe4966369afba11a1d95bdd0079d0abed81fcd0275",
+    "analysis/decomp/1.4.0/crimson.exe/native.json": "4a31cd3129deea2ab0fb5858fb6cfcb2677e0b6e9cbdc68f51b0841392204556",
     "analysis/decomp/1.4.0/grim.dll/data.json": "c1178fa4713c7ed64ea81dfff10c7ecc88893da8e41838736414f86ab0dc4084",
     "analysis/decomp/1.4.0/grim.dll/functions.json": "c523dfc9d02166e3ee5c886a3d276e6d130fd0c7a5804139b06102b5b29595ca",
     "analysis/decomp/1.4.0/grim.dll/imports.json": "1f84ff23dcb1865641b0dc1f784746da32ca8a04ed6c3649e23c3e14e06b31bf",
     "analysis/decomp/1.4.0/grim.dll/metadata.json": "b21a4c784bb8ce7b6e48bec961367974814725e5486b6b08103c06034df3413e",
     "analysis/decomp/1.4.0/grim.dll/native.json": "76f4d5b4fa3f37adc53fcfde58ff67f01f99f63b48213da81a9029953e09daaf",
-    "analysis/decomp/1.9.1/crimsonland.exe/data.json": "3009256ec8d91559557bb170b1a04c65d7ffc54f26d29a5e166ba831e2b629ce",
-    "analysis/decomp/1.9.1/crimsonland.exe/functions.json": "abd985b129726e46a859ef18e4f1d3de2ed3c2ac114566c16acff6856aec8fa3",
+    "analysis/decomp/1.9.1/crimsonland.exe/data.json": "e6b7a44b518fc91f82ab419f3da31982c8d35984949842dfd51d6ca7981cb0b4",
+    "analysis/decomp/1.9.1/crimsonland.exe/functions.json": "c49a158dc35d8df1435802ea4f5e292d05e569ea8eafc4c86723cff6ca5bdd4d",
     "analysis/decomp/1.9.1/crimsonland.exe/imports.json": "ec041c4d038353033ff8e5f5d54d76b3692de71369cea8eb1c2da28fc09e99c0",
     "analysis/decomp/1.9.1/crimsonland.exe/metadata.json": "6ab9a8c79de88a490626e43a8f8281015f1c586af4e90b7e1f8ee443bbd5dd77",
     "analysis/decomp/1.9.1/grim.dll/data.json": "31bcbaacdbbe6c24adb667fef8e5949fd03a9a0e555a09625c213cd39d14030d",
     "analysis/decomp/1.9.1/grim.dll/functions.json": "e66e923be09e78b5fcf73217a082d4d6bb6f198f43887448996a0940f8a08412",
     "analysis/decomp/1.9.1/grim.dll/imports.json": "a4929b2195b0aae572e9a11ba6473f48bc15213aff13465c7aae5833759002e1",
     "analysis/decomp/1.9.1/grim.dll/metadata.json": "2283281db97d8c9d22c4240bb9f1b5eed552e6ca4d7303f729a5464af296b6ac",
-    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "a49cc7dd50224bdda42d40a335e6b08ffa5a824ea8af00377df00893c561d89d",
-    "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "8a2cbb40588059b299e1eaffb0a07ac9f6f709dd4d30b98a93019fa89dd5d754",
+    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "0560ace57a36237a3af32ef2d5c1ade90c2f3dbbefda1fd15970821b284f7cfa",
+    "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "b6166ba0629d26c04945662d4f5f176ec757ca643668232f4b632053dc68a9e2",
     "analysis/decomp/1.9.8/crimsonland.exe/imports.json": "0c31f6358f0514e1c8815d7921c8ad3779199591dd36954c4cce4a7bd3024c18",
     "analysis/decomp/1.9.8/crimsonland.exe/metadata.json": "9b248110b10661b30a5d703fc60149baf131572ed64ec85dc77fb71e6b448e4d",
-    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "31b0f73e7b7bf9d6ef786a76d6d3a653aaf0871a591bec412d5f48e446835a21",
+    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "83d97934125dba4fa8909c94a4741bc71475f4c97b63cf9a9fd8e2675d1f327b",
     "analysis/decomp/1.9.8/grim.dll/data.json": "6b9d95c6e1826fe8c470bfc3d2e97e5b9541db2613f36b912b0b8fae08f5ba3b",
     "analysis/decomp/1.9.8/grim.dll/functions.json": "3f5cf721ea4279c4d80280411d3ad9426f60036979e0eedc159e1af9e1a6714f",
     "analysis/decomp/1.9.8/grim.dll/imports.json": "f2e55491c2a9be4e9dcb81246e54f4366f646cf04fc5fd08f6f316e01dd14e7a",
     "analysis/decomp/1.9.8/grim.dll/metadata.json": "cd4d0ec5f6c4a1fe1fa85dd7bba6a4ca50c50c2842cb4864083825ae6e5be0be",
-    "analysis/decomp/1.9.9/crimsonland.exe/data.json": "17451b4f80d5088ffe826d744735f55eca28d94331c1117cc3154f98e20e44fb",
-    "analysis/decomp/1.9.9/crimsonland.exe/functions.json": "e7b1be0defc5f8c642b75fb1ed39b1d1878ed1086d85574ef5a77c943768e087",
+    "analysis/decomp/1.9.9/crimsonland.exe/data.json": "1734f00622707ffcab525ff230872395dc1d64d2adaada31fea3560ced3261dc",
+    "analysis/decomp/1.9.9/crimsonland.exe/functions.json": "4e8f7ce840a906a175fbadd78843a286eab67658964b4d617e7b7df8fc4a37b0",
     "analysis/decomp/1.9.9/crimsonland.exe/imports.json": "21ad37eab0a55ac550d464fb4c730012a980a1b6246d5104e08d0b00d38e06d2",
     "analysis/decomp/1.9.9/crimsonland.exe/metadata.json": "64a72e9a5818cecda58a2bd1b5f8f7b8bfeacb2e681e85e6af71cc5704009f81",
     "analysis/decomp/1.9.9/grim.dll/data.json": "4781d65a6559322867d3e88ce7f2766d5af15c190f79face8445aa2a63ad78a5",
     "analysis/decomp/1.9.9/grim.dll/functions.json": "75b5699c9384f02dca54a1ff7f3b3c8e394389e5441b7683088c24698d013867",
     "analysis/decomp/1.9.9/grim.dll/imports.json": "d30ce43e86b31fe759a175f89999dd2e885fa9e4bf7e06f39fe5cb4f8625e16f",
     "analysis/decomp/1.9.9/grim.dll/metadata.json": "670a93281b2673dd490db4cc96e5f2c81cecbf46a1e0a2cf385d4f59dc586f2a",
-    "analysis/decomp/1.9.92/crimsonland.exe/data.json": "3d81bde6593ebb58ac54136659bfdbe256e35c0e2aaeba48f2f00a55e2871b92",
-    "analysis/decomp/1.9.92/crimsonland.exe/functions.json": "77146e737bb40f00390b80dd2cc5968f5b18b806c8496a03f1655c9111dd4f11",
+    "analysis/decomp/1.9.92/crimsonland.exe/data.json": "7423db3b17cbe35a579543f94de7a80a900d7903dcf54505d45c55acfac5e03b",
+    "analysis/decomp/1.9.92/crimsonland.exe/functions.json": "3e38d200bc6b68fbe2cbaf18d8fcfb00620c6bbf7bc31028c211cf6e9c5493be",
     "analysis/decomp/1.9.92/crimsonland.exe/imports.json": "9eda85da82abddb300bc9f89b71f862c5c5d16b085d523e0803b02751966b422",
     "analysis/decomp/1.9.92/crimsonland.exe/metadata.json": "a652a46f1787e26d4b074a2f709b54bd62719cab7c21d3dabd4e0f988b33e117",
     "analysis/decomp/1.9.92/grim.dll/data.json": "03666786c4efc0856f7af9dcd4daf473e49d67eb7818b3d7f51b683696ae4305",
     "analysis/decomp/1.9.92/grim.dll/functions.json": "75b5699c9384f02dca54a1ff7f3b3c8e394389e5441b7683088c24698d013867",
     "analysis/decomp/1.9.92/grim.dll/imports.json": "d30ce43e86b31fe759a175f89999dd2e885fa9e4bf7e06f39fe5cb4f8625e16f",
     "analysis/decomp/1.9.92/grim.dll/metadata.json": "5c964df3167d9986e6bd8774eec757021e633a6d4ee908de70f9a65bbd176978",
-    "analysis/ghidra/maps/data_map.json": "f445efc8d394d94b29d3545abd30b121f4584116a65005a94f74124c72c47206",
-    "analysis/ghidra/maps/name_map.json": "2071c6ab4abf58735172f6e74a1abe30cf7a3cfba7d893fa76156b0118b038dd",
+    "analysis/ghidra/maps/data_map.json": "a3ae2f3d50129b1b2ac555b20d4a3ce1e15086a1ba7f6631ee59ef8be4203696",
+    "analysis/ghidra/maps/name_map.json": "3e1d525e39356d54662c4cb8986ece8402d6dfa0eb5cd586ac9ff646f53d4d27",
     "analysis/ghidra/maps/winapi_32.gdt": "c2eb92558b6bb5458d1064ca1fd5fbb8ab74a6b6f5814bed47d94ed8f2935712",
     "analysis/ida/raw/crimsonland.exe/functions.json": "0a17560ed1d4d4c45c663640aa1362f46f4155dfdb40a44ac052a1c6baac9ff2",
     "analysis/ida/raw/crimsonland.exe/imports.json": "1ad52eec5ea48e4b5b671357f2ef92d653e4ddd994f96e5585703d3ecf6024ed",
@@ -75935,30 +75935,30 @@
     "crimson-re/src/crimson_re/native_reference_link.py": "63968623f550d0a3c8dbd1bfd84a22e366613f0525d3280eb7a34ade851bb2a5",
     "decomp/1.9/crimsonland/audio/audio_asset_id_table_init.cpp": "0fa303f54e0b51d7222fa5645ae8e03c8bbb64035f6eef208c83231dc9829dcc",
     "decomp/1.9/crimsonland/audio/audio_asset_id_table_init_thunk.cpp": "b562cd3a3746dd8c89ca9f5917812d2f5aa7079de8c1227e57cfb95a7f3f5fd6",
-    "decomp/1.9/crimsonland/audio/audio_init_music.cpp": "8f7de53ebc567052fd566be85928a976df86c45922f7ad68bfa9fcf628f7236f",
+    "decomp/1.9/crimsonland/audio/audio_init_music.cpp": "f572cbeb0c493466f5377db5d4711f69ce2f00e12303a9867257dc9953034f44",
     "decomp/1.9/crimsonland/audio/audio_init_sfx.cpp": "a1da29ec2d156e48f9cf2681f5f56501c2a26fd126088d80e2acfbf2ffb3ab6b",
-    "decomp/1.9/crimsonland/audio/audio_resume_channels.cpp": "9cbf831d05a15bed9b03014bc2e6cd2c403f0ed0596eb2f826fc386c478f5b0b",
+    "decomp/1.9/crimsonland/audio/audio_resume_channels.cpp": "0fbcf11dbe9d33c1dff6a0ae729ffd3273ac5056082fcd7e0559dfa458ac5ade",
     "decomp/1.9/crimsonland/audio/audio_shutdown_all.cpp": "f2960a0b5d89d6d9a2403db7c153c3c193c70f3cb94b2840aabb299d7bb33280",
-    "decomp/1.9/crimsonland/audio/audio_suspend_channels.cpp": "3be1488a2f1f16e261e1554958f778acfc27103f23a4ee05d144bd7c9f190f91",
-    "decomp/1.9/crimsonland/audio/audio_update.cpp": "9a60001cbf73246a1a5bb4acbd53dd36c5dd4714dba78d7633c12c5e31cf2fbb",
+    "decomp/1.9/crimsonland/audio/audio_suspend_channels.cpp": "fd89e5f08b3f99a6042bdc1452e387d707acf05734f4415fdc5f8bc4eba17df5",
+    "decomp/1.9/crimsonland/audio/audio_update.cpp": "c52ad7cf1a48f56863d8ea0ba8273d21877b88ad3d20e96de9c0cd87dee53122",
     "decomp/1.9/crimsonland/audio/music_entry_table_init.cpp": "3ddb8886e6ebf071f1ae259dfbf7a4e2abb7c9f4281f474fb7b20ce3beec7636",
     "decomp/1.9/crimsonland/audio/music_entry_table_init_thunk.cpp": "1e07c7c69ebf7e2787101c8e318422bf59b1c7679b72c17363c4392c14477471",
+    "decomp/1.9/crimsonland/audio/music_fade_out_all.cpp": "f0839c5e846950653d260b53ddacccf5f0a621491ad31b73b256538016a09550",
     "decomp/1.9/crimsonland/audio/music_load_track.cpp": "148a120b8a83c39b691f51088b8af957d52aeb9af9daa967a6b801d145d48b1f",
+    "decomp/1.9/crimsonland/audio/music_play_exclusive.cpp": "46bc0f3766ef06c7c12f18c13459ce2803f711e7f1e3caf3975608855e827477",
     "decomp/1.9/crimsonland/audio/music_queue_track.cpp": "370a3add9d3444ac7fd0919cf760d5f1db28c4dde6329c9a5b10c0ad06df6d84",
-    "decomp/1.9/crimsonland/audio/music_release_all.cpp": "22283019aafebb411925d7e63ac56413ad057a3302bdaaa59944de657fdc18de",
+    "decomp/1.9/crimsonland/audio/music_release_all.cpp": "3fc517f80732c76abfc57a1b89631f8e9bfa2efafce5d35310879cab116c4249",
     "decomp/1.9/crimsonland/audio/music_release_track.cpp": "7b4df18249e9e6c8a810d5932374669de9dab87b3af23599984802330ea093df",
+    "decomp/1.9/crimsonland/audio/music_track_is_playing.cpp": "167b863c5e4ce5d8df690ab646c76d818f2175dab9c07b66c06fbdb9942467ee",
+    "decomp/1.9/crimsonland/audio/music_update_fades.cpp": "0f97daf7fb562677c1aa4b484bf89663cd7c65f4b18c9814df8f331e6ef3acf1",
     "decomp/1.9/crimsonland/audio/sfx_entry_table_init.cpp": "2ce933c42a97a5d5f0eede793aef1b825dd2b04815f56b1b785bb50ffd541e5b",
     "decomp/1.9/crimsonland/audio/sfx_entry_table_init_thunk.cpp": "8a96224ddc1fbbaf306e1bd7a2bbd92afd7d18a9925097f943b4826e02b934d3",
-    "decomp/1.9/crimsonland/audio/sfx_is_unmuted.cpp": "7cfe6bac846a2aa624d18cf40c2bf2af797a80b72c3ce73aa77aa6b32fa1988e",
     "decomp/1.9/crimsonland/audio/sfx_load_sample.cpp": "b5031c72f38464659fe03390843dcdc14cf0f93fe1ceff26bb6baa6856554322",
-    "decomp/1.9/crimsonland/audio/sfx_mute_all.cpp": "2f44a38b1d08adef296c80111115dd21c49c4ae249480c7b8ab53b34d6366112",
-    "decomp/1.9/crimsonland/audio/sfx_play.cpp": "2da6275d1726247585b3555ebe97a6a6312d1cf0a53bc62558dfe68aaa19d4d9",
-    "decomp/1.9/crimsonland/audio/sfx_play_exclusive.cpp": "c6631374c55398dbd1e1e900372494d365f32a7af2e74ee3b18beff086d21efe",
-    "decomp/1.9/crimsonland/audio/sfx_play_panned.cpp": "9933266bbb52c95a9c2e5dca72c1b0cdf12bf5e73bdc552467746d4b82f2b2e2",
+    "decomp/1.9/crimsonland/audio/sfx_play.cpp": "750ea16ffecb1dff586a22d5be847807272af08932a149779b35527b914517fa",
+    "decomp/1.9/crimsonland/audio/sfx_play_panned.cpp": "b55a6d2169c82237b67585d948881fea4e3d60a2fd76c55126e93ec9b576fe34",
     "decomp/1.9/crimsonland/audio/sfx_release_all.cpp": "b2924b0cc3acca4c11498a7cd0eccdfc31113f4be373b262ae7f1dc4dcaf63a1",
     "decomp/1.9/crimsonland/audio/sfx_release_sample.cpp": "70c670efe2be18aea69e551ed07d94f731b4480ca94bd4192e1d9f3e54ceb808",
     "decomp/1.9/crimsonland/audio/sfx_system_init.cpp": "fdf8176263babe063eebc791d9f9932283d5a5cb69766d23da7f695925f296ca",
-    "decomp/1.9/crimsonland/audio/sfx_update_mute_fades.cpp": "5fa26b5169621687bdcf8dafdf2dc5620364f4f53570406faa6ba388be3cc48d",
     "decomp/1.9/crimsonland/console/console_clear_log.cpp": "2e9e3ad15a681504a0c1da3376359f2eb09d18d44c67c5389baf7ec54c9d52bb",
     "decomp/1.9/crimsonland/console/console_cmd_arg_get.cpp": "0c7d458762f3a0a7f2be0ff6596bfa363be6ff01206ae7bbd0f7c12270101391",
     "decomp/1.9/crimsonland/console/console_cmd_argc_get.cpp": "4299ebe9d48439b32b9d9f97788e66e3d6292177e40a2ebfcb94502800cebffb",
@@ -76008,12 +76008,12 @@
     "decomp/1.9/crimsonland/crimsonland/audio_resume_all.cpp": "3185c537b7cbf7af740dd2ce48d2678a8d1990982609c115967a8ce86eed497d",
     "decomp/1.9/crimsonland/crimsonland/audio_suspend_all.cpp": "e4db6e43a11fc9174b20e7f3d9624b31d6df0d63d04d17e82972ba9e3b3c9249",
     "decomp/1.9/crimsonland/crimsonland/bonus_alloc_slot.c": "1f36579bb368bf474b3be759816f29585f7b600782e12c54ee40ce5e501777a6",
-    "decomp/1.9/crimsonland/crimsonland/bonus_label_for_entry.cpp": "72e1c13af5dc86d98535624dd164f0f080c40a7b8b3648da8d6f9f12d0ae3adf",
+    "decomp/1.9/crimsonland/crimsonland/bonus_label_for_entry.cpp": "54586761a08cc518de4c9530a8bf619060915414d483e89e338c3b3142f09902",
     "decomp/1.9/crimsonland/crimsonland/bonus_pool_sentinel_global_init.cpp": "20bdbb4e8bdb1b45c7e78db1170c8b9c1252f7ada874a291708893ac95a9670f",
     "decomp/1.9/crimsonland/crimsonland/bonus_pool_sentinel_global_init_thunk.cpp": "c51a1e9f353ed0c9acaee95db1e5a70db43cc9e7a616eaa6a1c7b178f833e7ff",
-    "decomp/1.9/crimsonland/crimsonland/bonus_render.cpp": "0720bed069738b9187b5a0604ad6b1874f1b00b2d610b01cefe6eda3a99825ff",
-    "decomp/1.9/crimsonland/crimsonland/bonus_spawn_at.cpp": "23305d9bfa57032be8ec1dce58fc84e990e7414b041ba6102c813e261e158a92",
-    "decomp/1.9/crimsonland/crimsonland/bonus_spawn_at_pos.cpp": "a511cff5af06971120177fcd5b367cf89fd721fcbea7e592ed12aa63e95c5f72",
+    "decomp/1.9/crimsonland/crimsonland/bonus_render.cpp": "2c2174a0c4b52345036c90c4f8ded27b5c0544cc8c94d6b9fb10a2c51696be62",
+    "decomp/1.9/crimsonland/crimsonland/bonus_spawn_at.cpp": "03f3fa79a4bd8392ee34b4529fd548880f0ab9071b35e8fefb5ad8a2b8aee791",
+    "decomp/1.9/crimsonland/crimsonland/bonus_spawn_at_pos.cpp": "950ce9a78cf6e554b149aed5d67bb0a529d3be9b44cfbdf997d8291362b3d14d",
     "decomp/1.9/crimsonland/crimsonland/bonus_try_spawn_on_kill.cpp": "4ccff1c42fe30017812d71b23293defc4edab23e5aed07ad3f7f3dcc6ead8a1a",
     "decomp/1.9/crimsonland/crimsonland/config_ensure_file.cpp": "5b9dd7f38b86edc9fe39c84887e78c796997ebe2a9c1078d156d7918a1f55af6",
     "decomp/1.9/crimsonland/crimsonland/config_load_presets.cpp": "e595b2915e6ac28ebda2477a225fcf05fb7a56b9d04a9e89ccc7968e9fcb5479",
@@ -76025,19 +76025,19 @@
     "decomp/1.9/crimsonland/crimsonland/console_cmd_set_resource_paq.cpp": "875566efc425adf8f22833519b6a30c5397a74a3cf506874b28e4acbfeeb315f",
     "decomp/1.9/crimsonland/crimsonland/console_cmd_snd_add_game_tune.cpp": "559343074f88670ce7aa03dbf5e7fd69484539703ec09e356c8b0009fbb29250",
     "decomp/1.9/crimsonland/crimsonland/console_cmd_snd_freq_adjustment.cpp": "a742b778da67926b9f98ed1c8d648158431e057df6af1edf1769206c23b7f8e0",
-    "decomp/1.9/crimsonland/crimsonland/console_cmd_tell_time_survived.c": "ae4d3a76ea41a59c2a4653bedbf2dc288926ebb5cf6e5a37bd7bde521a2bdcb4",
+    "decomp/1.9/crimsonland/crimsonland/console_cmd_tell_time_survived.c": "b0861c0206cc35e50f19afc16b004e174eff79abec83624e35143852f6c7272c",
     "decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.c": "24c4612bc1072ef39170891a1431a9049752a83ebe2e6c333d712cb262c4681b",
-    "decomp/1.9/crimsonland/crimsonland/creature_apply_damage.cpp": "57ed4a111d68ebd1e459e7abbc7cc80288a345e6e3ef5c81e24207f6ccb0390f",
-    "decomp/1.9/crimsonland/crimsonland/creature_find_in_radius.c": "671bc4718a35d70bc43b7997312dc9102884a91325049888e5bfcc9b60484a4a",
-    "decomp/1.9/crimsonland/crimsonland/creature_find_nearest.cpp": "98a84ca8333d11c5d5f3e77b70d54059e9e3c59278b2757bf9537720e35de062",
-    "decomp/1.9/crimsonland/crimsonland/creature_handle_death.c": "e07e19442f132921e7e3e0f4e79891843e129b622363608b0d9b7857e74ce56d",
-    "decomp/1.9/crimsonland/crimsonland/creature_pool_global_init.cpp": "2aafc536221117e647e38f6cf63cda1f9393bb1d246df2efc644b92a759ad6e7",
+    "decomp/1.9/crimsonland/crimsonland/creature_apply_damage.cpp": "3b7647e42a82a2a38fe6693267055fc037c62128c72d3e8c86a84d2f9824b30c",
+    "decomp/1.9/crimsonland/crimsonland/creature_find_in_radius.c": "21298d3fab515d5ad5276ed366dde11a90c4e409ba2996c7bcc063f4b74aa2ba",
+    "decomp/1.9/crimsonland/crimsonland/creature_find_nearest.cpp": "e06eb7da24f14ba60a08175cd5e4b9b5661c2f2d7ca8d3063cf6635dab285d15",
+    "decomp/1.9/crimsonland/crimsonland/creature_handle_death.c": "b44c3fcfa4a4c285930ca8b04fa54a5bb3b754e4e86f0834cf158e0866cf9ef4",
+    "decomp/1.9/crimsonland/crimsonland/creature_pool_global_init.cpp": "43b8f442c9cac9ebcd9682ea693090619d28136c65bd86932ca25ecc51ff7c3b",
     "decomp/1.9/crimsonland/crimsonland/creature_pool_global_init_thunk.cpp": "a498310ad3c93c2fdb1d0d1259af416e26fcfb0ed96fe662e493a45a80ebddc0",
     "decomp/1.9/crimsonland/crimsonland/creature_reset_all.c": "4785c12fe4a763ba404622c02433703ba87e61fd3c1d95d74e99e13be165ffa9",
-    "decomp/1.9/crimsonland/crimsonland/creature_spawn.c": "2d878d45910c6b1901c08a4e2c95fb7541fd166e38a9c3398011c114e965abb3",
-    "decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp": "0d6330069d5f272c60ed4d64b6941d7003d9a82e2a705c58347216e9b44c753b",
-    "decomp/1.9/crimsonland/crimsonland/creatures_apply_radius_damage.cpp": "68dd2dfc6d0c94abcb3fd91b428fbc51eb180574f450074d1af43491c8c5d99d",
-    "decomp/1.9/crimsonland/crimsonland/creatures_none_active.cpp": "a89a5be9573651770e91eb1ed9499e28fb7bbdaabfe10613e4d826639cd876d4",
+    "decomp/1.9/crimsonland/crimsonland/creature_spawn.c": "eed11ff423199101d94d94d96b866f7b7e88594a18c8611223b745defcfe23b1",
+    "decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp": "5a44071e0334ece6f8f7fb4a0dbd8223bd1fe843e1b7253fe163383bf31450b4",
+    "decomp/1.9/crimsonland/crimsonland/creatures_apply_radius_damage.cpp": "875f3b646dfe7fedcc81c9c2833ddd911be417005d83273cc9ab782a5407c084",
+    "decomp/1.9/crimsonland/crimsonland/creatures_none_active.cpp": "ee32b13076f62ac1822a04ae61b407c7480c1fc3e1e687a449dd08fc411f1d3f",
     "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_31.cpp": "c16c583379011d4376566a1c022ef422986f5c06f670d403ec9b0e503395a346",
     "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_31_thunk.cpp": "fe6e3f36d0f0af9c192b2c61469f992c7698a55de7e76e4a5b8f84de89633df4",
     "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_38.cpp": "94bd7d3a358ff93ed0dc0517de6d332cdfe1ee83b6bee1c1925bce79a1f3ea1a",
@@ -76058,43 +76058,43 @@
     "decomp/1.9/crimsonland/crimsonland/effect_uv_tables_init.cpp": "535d32b4d5ccc8ca3e10e7490712858ffd0c3150a0f20f3230a8e5586a0c0ce5",
     "decomp/1.9/crimsonland/crimsonland/fx_queue_add.cpp": "a8fad085f3d9cc58bd29b306b1060d4b7341e63cb8410837f6e1435a94caab35",
     "decomp/1.9/crimsonland/crimsonland/fx_queue_add_random.cpp": "4212a9b4fd90e2da74add4a8efb6b5fb7fea51c938fa9598ff893224512d0e61",
-    "decomp/1.9/crimsonland/crimsonland/fx_queue_add_rotated.c": "bd485bb83bdfc58a118d682b78f8b79ffd4fcb6845cf0373f1b8387ca001b8b7",
+    "decomp/1.9/crimsonland/crimsonland/fx_queue_add_rotated.c": "19096b58df7f5c207b63cb2005a4c43ea986c4673731da202ceb83e1c37f4050",
     "decomp/1.9/crimsonland/crimsonland/fx_queue_global_init.cpp": "b6ec36eb866b7cc97c2b176d4d53cf5caf32e05d7f6d9fe324998b7e3853e057",
     "decomp/1.9/crimsonland/crimsonland/fx_queue_global_init_thunk.cpp": "cd10da43ec3599c32a0064a84f31bf98e189569fbf9b377a34938f56b4bf9b47",
     "decomp/1.9/crimsonland/crimsonland/fx_queue_random_color_destroy.cpp": "9be01f1863e47a2d6bd172a65a9e88891808dc2c5791b8829ebe484b6d442873",
-    "decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp": "c738645bd2130d198e9d23f9d683554b11fd89f0c04646302536727ad84bf3a4",
-    "decomp/1.9/crimsonland/crimsonland/fx_spawn_particle.cpp": "d997e2fc483ad5edbef44c45e60ba8123124a5dfd1464a0e4bbe257db49e4e81",
-    "decomp/1.9/crimsonland/crimsonland/fx_spawn_particle_slow.cpp": "0acd701dea9597f66fa31b798e2739cf9b8325705e2734d2a23a8f935079c164",
-    "decomp/1.9/crimsonland/crimsonland/fx_spawn_secondary_projectile.cpp": "b51ee5e9ecea8ad2090f9da61292daf843631c344ced06eddf4cccf6775b0c5e",
+    "decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp": "687352feb600321cec492b1c36a2642dcb1f877aa5cc4edc99293c3caa974230",
+    "decomp/1.9/crimsonland/crimsonland/fx_spawn_particle.cpp": "42b4a50122baaeeae443c52e996a3481a534af6cfcd029606caa1b6e03d9e8ba",
+    "decomp/1.9/crimsonland/crimsonland/fx_spawn_particle_slow.cpp": "ca706dda79924e016860ee077c6c3cfdf9342c54a40d93d33ba625af09c59a48",
+    "decomp/1.9/crimsonland/crimsonland/fx_spawn_secondary_projectile.cpp": "fd1498dd94592959e7ac6396bceb6781a86d4513730b7b7d072f3efa0a5e1cee",
     "decomp/1.9/crimsonland/crimsonland/fx_spawn_sprite.c": "4da03a5dc04749a145bf5fef76104e517d9f6a8cb9462bbb28ddd3a3d4be262b",
-    "decomp/1.9/crimsonland/crimsonland/game_startup_init.cpp": "a4da0a4c90f63ffc5c04a61a9248e2a9c5c828bf1050994305965196fd139c29",
+    "decomp/1.9/crimsonland/crimsonland/game_startup_init.cpp": "6eb6ee84260ccc6865757bbaaeb37b0b025310277664994b99dc3689fb190f8d",
     "decomp/1.9/crimsonland/crimsonland/game_startup_init_prelude.cpp": "8563c55ec27cc4190c2f4e729e5fd9dfa08ec02cfa28f93c25b8f8422a273e8c",
     "decomp/1.9/crimsonland/crimsonland/highscore_sync_worker.cpp": "062136364e8a45cdcaf71f2e169226b4aa5b168720c9fe253cd0e8b3bea6dd0c",
     "decomp/1.9/crimsonland/crimsonland/init_audio_and_terrain.cpp": "ba5de27e6aaacd047e1f9310ceda1b3858f1d409c06e82a1e7bd4af2bf02d359",
     "decomp/1.9/crimsonland/crimsonland/input_aim_pov_left_active.cpp": "07e275dd063818c7078026c26a30169537b245136529e14d97f1b4c6a361f942",
     "decomp/1.9/crimsonland/crimsonland/input_aim_pov_right_active.cpp": "96c813db14d6d16cd1be671e5e3955ce39c756618afb4467dd82ccedf73b01cf",
     "decomp/1.9/crimsonland/crimsonland/load_textures_step.cpp": "2ee9e49932ab6a8a1712216ab158a0c350465a7a25be57f054df236d0bab2f29",
-    "decomp/1.9/crimsonland/crimsonland/particle_pool_global_init.cpp": "5027f88736049e53953b756d5dd6d31f08b37858778f1f70948b68c2b7f48bca",
+    "decomp/1.9/crimsonland/crimsonland/particle_pool_global_init.cpp": "df109b8f047fc9b874c919cb4efa150d3e4bf35a641d8af9d34f520d2a7b1297",
     "decomp/1.9/crimsonland/crimsonland/particle_pool_global_init_thunk.cpp": "f63c73caf30a5051a5c27b50927465e3b459f2b725a6c4135856b032fe81ac83",
-    "decomp/1.9/crimsonland/crimsonland/plaguebearer_spread_infection.cpp": "f87fca76dd5d3d86cb7801b666703ffb6f786d203d7786e265a837ceec75844d",
+    "decomp/1.9/crimsonland/crimsonland/plaguebearer_spread_infection.cpp": "aaa502268c684a7ea56a807071af6487a73cbb5d414713f6bc50a0b3275644cc",
     "decomp/1.9/crimsonland/crimsonland/player_apply_move_with_spawn_avoidance.cpp": "e60859391dc61d4de0798b6f23b777e61611b259cedaa2f3ee0f68cb623cc4de",
     "decomp/1.9/crimsonland/crimsonland/player_find_in_radius.cpp": "9c2e78dd5006eb4682f9143855d6b97f3052b9351e8f4bd326d9a4d3eb670aa0",
-    "decomp/1.9/crimsonland/crimsonland/player_render_overlays.cpp": "f8f0d91320be05b6351f3a17b1cc2274938407bf5669cf6212c44601c1c85e5d",
-    "decomp/1.9/crimsonland/crimsonland/player_reset_all.c": "da0c2ec9179670d454377b0923a098693f796ea6bee0f610849600cb9a76c103",
-    "decomp/1.9/crimsonland/crimsonland/player_state_table_global_init.cpp": "17db82e33eb7b45ab14a1dc67a1c25674a843b0a1b8eccd6232aaba230530f55",
+    "decomp/1.9/crimsonland/crimsonland/player_render.cpp": "09a1fc9f0bf0d75e3de4b20f229ee7fe699d0e6f6456ee4aa4695f738ea9c510",
+    "decomp/1.9/crimsonland/crimsonland/player_reset_all.c": "8168efdd17b5e98152a0eb642d4f9ee12aa27772527751096fac69feeb50c7bd",
+    "decomp/1.9/crimsonland/crimsonland/player_state_table_global_init.cpp": "43f25c25e8dd7649bbbec52d825a345a2ac8c2b97e72a96c639d46064efdd493",
     "decomp/1.9/crimsonland/crimsonland/player_state_table_global_init_thunk.cpp": "102e82b7e979befefb0d3d6b5d716a22d869a255d9e3c19305d1a7443215f7ec",
-    "decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp": "9fa4a3b14fd1a0d03bab487ec25bcc60a6577bf2b6886e485b0cb7fd20f87b31",
-    "decomp/1.9/crimsonland/crimsonland/projectile_pool_global_init.cpp": "ef7a3e38b978727f2734e0a13401e19aabb224d2e029d1fb9dd0c50b35cbaec5",
+    "decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp": "6175600f6f9846d6ba4b8cdb0d4a5038ce2e684315e71ad1f0587c164c1eae34",
+    "decomp/1.9/crimsonland/crimsonland/projectile_pool_global_init.cpp": "33eac9acaa6c0cbfc1b28410fc5fb483b6208b3de5e95cef3d9f9722f78a11ec",
     "decomp/1.9/crimsonland/crimsonland/projectile_pool_global_init_thunk.cpp": "dd9899c6954bc5cfc92b7061c225b345c2a4be8794df54a01c6667a345a6d43c",
-    "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp": "1bf84ec2131f0af7f8efff1a055ffebfe13d36d8c689f3a3ba236ecf28efcb8b",
+    "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp": "171ce8384bf5b92f9b983049e1fd553672e68f70fe172cd5f6738fa26df75031",
     "decomp/1.9/crimsonland/crimsonland/projectile_reset_pools.cpp": "6fd86d551f9164413ec0820df2ab2ad2c6545466e31386e2feaf8a11f1383868",
-    "decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp": "6c64d22a6e21b9ff17b06bff2f5c1c3c9d5274ba6de875dae6bd07cc94aa4254",
-    "decomp/1.9/crimsonland/crimsonland/projectile_update.cpp": "47fe88b488fa92e44a7c8342c209fba1ec07dc4bf326dbed97c2d6d8c9385ff5",
+    "decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp": "5f05fe918596f928a0556b2973bb1f58484671003140cb6693fcb5bd31560621",
+    "decomp/1.9/crimsonland/crimsonland/projectile_update.cpp": "202f1dfbf5f37d672d9cf8c9f3ce0515a777f69cf1bd84cf9230848b121304bb",
     "decomp/1.9/crimsonland/crimsonland/reg_read_dword_default.c": "a806888629ee1dad18692d96cd015c6a5cb78aeac4dcf69a0179b21faac9f9c7",
     "decomp/1.9/crimsonland/crimsonland/reg_write_dword.c": "f6d3dc472e430cacb6977a6edb2ef91d442324f6d08a79cc069bfd8ef9a01fb0",
     "decomp/1.9/crimsonland/crimsonland/render_tint_color_global_init.cpp": "abddd9469accb4ab13411bdc435cd79528a8ab7de7ed8489dce3377481ae3752",
     "decomp/1.9/crimsonland/crimsonland/render_tint_color_global_init_thunk.cpp": "da6cfb0425d281efae10d2a6185fdcb59a71eb339f7473b90a77424582190a1a",
-    "decomp/1.9/crimsonland/crimsonland/secondary_projectile_pool_global_init.cpp": "7d2d315df125bee181d062df99bc510dbf594e04380267ac916f8ee9407d3c13",
+    "decomp/1.9/crimsonland/crimsonland/secondary_projectile_pool_global_init.cpp": "721b760801028b72df58e7c9c0d023f707eb9dc123a88ca997d4ed2f2c09f3d9",
     "decomp/1.9/crimsonland/crimsonland/secondary_projectile_pool_global_init_thunk.cpp": "38f54de9b2b1e33ac3a14646c22c04216db06b1bfcf47f9c17b9d1da19760cbd",
     "decomp/1.9/crimsonland/crimsonland/sprite_effect_pool_global_init.cpp": "49248597ce2fe9dc26fc380e666223a183121d618dae56de3d7125500ab149f1",
     "decomp/1.9/crimsonland/crimsonland/sprite_effect_pool_global_init_thunk.cpp": "5626d562306a0c263f74d0401bb7e47fc727d4223773abc91d919402daceb24b",
@@ -76114,8 +76114,8 @@
     "decomp/1.9/crimsonland/crimsonland/unused_fx_queue_random_prefix_color_global_init_thunk.cpp": "09b67014bfddca826fc5127e71a1fa630376dda29b691f74971b345b3456b09a",
     "decomp/1.9/crimsonland/crimsonland/unused_fx_queue_random_prefix_vec2_global_init.cpp": "d842ff710e35f370c3705327ec0327f7a501af4ded675888649ae0730aa90686",
     "decomp/1.9/crimsonland/crimsonland/unused_fx_queue_random_prefix_vec2_global_init_thunk.cpp": "7712f26a5161907cc73752fba5489d3a00d7b9959e42cd820a10381856b36a6f",
-    "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_effect_id_prefix_color_global_init.cpp": "42838ae393d0b6c0fbbc9957ec93a31dc750133d1743162ff25b643f89192a32",
-    "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_effect_id_prefix_color_global_init_thunk.cpp": "596ea447ae8299f3875dadf8c52c7bba4a5766621e0104048e218033447b9c2f",
+    "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_creature_type_id_prefix_color_global_init.cpp": "8aac2fbc4b301f7b4c57082efae793fff2f6159a0b1338d4865b833c1034d91e",
+    "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk.cpp": "85a39550095c800bbb885dc4c791d5d22816ac39b09480744a91fab142f8bbec",
     "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_scale_prefix_color_global_init.cpp": "584d5191067df85e8991af594950fe590f73adbafea14aa2d35ff5f558cc2f1c",
     "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_scale_prefix_color_global_init_thunk.cpp": "966b8e610854522bf7534f7bcb27690144f024332b4d6d226f930524ba6e0eb8",
     "decomp/1.9/crimsonland/crimsonland/unused_global_noop_init.cpp": "1f7e61056f39fa712396f6fda490835f9063bfbd52894756a0ffa0b9afa9c552",
@@ -76124,7 +76124,7 @@
     "decomp/1.9/crimsonland/crimsonland/unused_particle_pool_suffix_color_global_init_thunk.cpp": "2410c4e9296d9e703d1cce4e41bc06b4ac772e37031b0cb861d44064c5e89b58",
     "decomp/1.9/crimsonland/crimsonland/vec2_add.cpp": "3155298ae7dfb30a9b8c726b0ad849e4634eeef9cd27cd8c6985e67a2e004401",
     "decomp/1.9/crimsonland/crimsonland/vec2_add_inplace.cpp": "5006b321fb24afd85afca592406e004d13b371e8f2d000f6c70e1eb1c8a22866",
-    "decomp/1.9/crimsonland/crimsonland/weapon_table_entry.cpp": "cdb3dc2eac9d8df19c09f7605e379b4f32467d38ef472e54cf8d48393d4a4fdd",
+    "decomp/1.9/crimsonland/crimsonland/weapon_name_get.cpp": "a298372d92848eb89589ffc498e2a7707c051a11512ccfed04ecb64001a6f41a",
     "decomp/1.9/crimsonland/dxversion/dx_get_version.cpp": "b89d1d3f894e4fa1a60f97e74b7232d0368c11089bc94bd46fb5ee420e68f777",
     "decomp/1.9/crimsonland/dxversion/dx_get_version_fallback_from_files.cpp": "eb567e66a55065cbb57364a442c69e16dffd40aee9e68f5d1c5da131236c3ad6",
     "decomp/1.9/crimsonland/dxversion/dx_get_version_from_dxdiag.cpp": "a11b9bf5571fdc3f5ab8b458cb70380c67f60154cfd30954848e7e6c8e6bf713",
@@ -76154,58 +76154,58 @@
     "decomp/1.9/crimsonland/effects/effect_spawn_splitter_hit_burst.c": "cbae9135109e730231afbe7cfc727c3f9250ea0b4b3d36efd48a7c549ecf037a",
     "decomp/1.9/crimsonland/effects/effects_render.cpp": "ee664e112f743cd560fd1e17a9361cb01038934dba1bd5921e374ac81f8f2de6",
     "decomp/1.9/crimsonland/effects/effects_update.c": "df959a6be42db43dc275e5100bd1072cc0ce367e1cdc8e0cc7bd454c6fc3a7bd",
-    "decomp/1.9/crimsonland/end_screens/game_over_screen_update.cpp": "b84fe74a41e641aba485b9549f7e05cd2003693b06f84b2b6d801d0d05bc98c9",
-    "decomp/1.9/crimsonland/end_screens/quest_failed_screen_update.cpp": "12f093230d3ebb8ffdc14b6782864774c7ef7d04df4dbb5b1f3479765e25f199",
-    "decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp": "0edf12f64b4602aef06905341d4ceb2934f43a26648b82ce2a48f3f9293a106d",
+    "decomp/1.9/crimsonland/end_screens/game_over_screen_update.cpp": "807846fa3fc162f3b5d6d5559a39df8017cdf9128ecf66c066546af749e5ffbd",
+    "decomp/1.9/crimsonland/end_screens/quest_failed_screen_update.cpp": "bcc1b81c54f520eb5c525ddb292ab7e125429fd5e56c250693f75f6a22625a26",
+    "decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp": "b8bb7d697f7e635f1e710503c7b18bbe3dbb1a8644ca5b7bf9b2e031b6b18e1a",
     "decomp/1.9/crimsonland/end_screens/time_format_mm_ss.c": "28ec3cb86348a7e514eced34fc3e2928a42e5b79f77ac698aa304a219c292a2b",
-    "decomp/1.9/crimsonland/game/bonus_apply.cpp": "9196a569fe585f10572ed506573d47a4a94168e4027e2177a0f5fc1cf2a67f67",
-    "decomp/1.9/crimsonland/game/bonus_update.cpp": "f42d6f9a1dde8acaceda41629dc506cc76af9a83a00df01707fd36311be0e8ca",
-    "decomp/1.9/crimsonland/game/camera_update.cpp": "86ce607cf2b98dcf151cd7c8407f23fe6d891e36830142f7d4fed986e5212774",
+    "decomp/1.9/crimsonland/game/bonus_apply.cpp": "e044c941084dbadcaa4f53c12da1f0c350a31af96fe2923087a2b36c59749c6a",
+    "decomp/1.9/crimsonland/game/bonus_update.cpp": "765129214e839807f273549e7f6d5a64f2918ececd666895d98fe47c9d7bafe2",
+    "decomp/1.9/crimsonland/game/camera_update.cpp": "7fe45acae80b7867965fa71b52bcd0da9ab1d8ba03080ef1b3d2d80bd2087e6e",
     "decomp/1.9/crimsonland/game/config_init_defaults.cpp": "0fe3b665088860f96b945077acf407c4910bf68d86d32c5f26a089d5e9370467",
     "decomp/1.9/crimsonland/game/config_init_defaults_thunk.cpp": "28a41062bc6ca3f850819a16f4476e2cc63d744e99a5e0ee8d7342c3fd774645",
     "decomp/1.9/crimsonland/game/demo_mode_start.cpp": "d2f81583466cffa7ea8cffde13c4c90fd4ef1a15f201a9c13b16be8afa5ee244",
     "decomp/1.9/crimsonland/game/demo_purchase_interstitial_begin.cpp": "74d00dfe922df3670c3b06af50f4044a00d7e76be7207bc50915993cadf478a3",
-    "decomp/1.9/crimsonland/game/demo_purchase_screen_update.cpp": "3ee70b2d3ef3db8d0f7060b0ad4843cbbc0d62a65a57899092627332ada64421",
-    "decomp/1.9/crimsonland/game/demo_setup_variant_0.cpp": "20ac4d8afae8f16ea4b0491e099ee19848cbb7c043d4c63e4c96533a8ec860fd",
-    "decomp/1.9/crimsonland/game/demo_setup_variant_1.cpp": "72ceec46c90286e691375d63079fd7b3d9d712546be471eb2326237415b884ef",
+    "decomp/1.9/crimsonland/game/demo_purchase_screen_update.cpp": "9d2261448fd7a4575d18391a11121423a374aeff33d1cccb1b2980b42ff22682",
+    "decomp/1.9/crimsonland/game/demo_setup_variant_0.cpp": "9d88848bcbffc1070fa1373b829b5f1e958715694de21dcdb4a3aa75d8af8941",
+    "decomp/1.9/crimsonland/game/demo_setup_variant_1.cpp": "567c55ca1f51338d81a2c37bf9e5ab54cba43636c70c0b27cda54fae6a244001",
     "decomp/1.9/crimsonland/game/demo_setup_variant_2.cpp": "9f6e87780e9361dcfb6e8a40822bb9aac74c357174c76f1c04924fcac1c461ec",
-    "decomp/1.9/crimsonland/game/demo_setup_variant_3.cpp": "1c44a68439efb25bbe6633624fbea36e05b4ebf756a828704558396bfadc19e6",
-    "decomp/1.9/crimsonland/game/demo_trial_overlay_render.cpp": "b1933fb1c31730a6f08c153cdc891afb58e959352d51bd30821787a2a66153b3",
+    "decomp/1.9/crimsonland/game/demo_setup_variant_3.cpp": "63730af1323c0141e16d85faeb561f40e81cc360609da5150dee0ec38768522a",
+    "decomp/1.9/crimsonland/game/demo_trial_overlay_render.cpp": "10e9058000c21b9020c958ad75450880870e762f162cff146239b14fd987f0fc",
     "decomp/1.9/crimsonland/game/format_ordinal.c": "82338c85314200c5359402e1ba72362975034b1ebb0675137b6baf97cd391f1d",
     "decomp/1.9/crimsonland/game/game_build_path.cpp": "01614041b919303ed849c5cfd5fe0ba234aa59eb93ae090b2068c433ef0f4b19",
-    "decomp/1.9/crimsonland/game/game_core_init.cpp": "50a42ed53c2b5aa93d66987c7c980e406828895c33c97fa431e7e9054229e833",
-    "decomp/1.9/crimsonland/game/game_frame_update.cpp": "1eff0a4a1309353ab3e25f4dcdb1a1ab6ca5327aeed1a862a52d11dba695140f",
-    "decomp/1.9/crimsonland/game/game_update_generic_menu.cpp": "52923f6c909bf7344e8c23f8c0906fe4d5dd38cbe7ca324f9aae1f33c86d6758",
-    "decomp/1.9/crimsonland/game/game_update_victory_screen.cpp": "64f52f26c9aeb420a5e9b32278921fcbb14c4d8ef3c3935d7a799eac53f49822",
-    "decomp/1.9/crimsonland/game/gameplay_render_world.cpp": "b6217ba08cbf967386bea2cfe7862f2431cf1caa4eb8d5e190ef4e71b39437b8",
-    "decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp": "f9026e33c41f58df0f46c91722ee47acc5ddc12e88fdaabf9616cd3c7d72485e",
+    "decomp/1.9/crimsonland/game/game_core_init.cpp": "a47538a2252c19334a97fa157f306931b9adf959a517111a6dd2bc7f332a1939",
+    "decomp/1.9/crimsonland/game/game_frame_update.cpp": "ddc36c183f3d4d4bc9a1fcc0e575d33123aa29258e4d971552b0e366ab9e0b32",
+    "decomp/1.9/crimsonland/game/game_update_generic_menu.cpp": "bfba9e698ad72b210d160f1138f38b31b1cdd0367018d1baa9e4afa1f2df84e5",
+    "decomp/1.9/crimsonland/game/game_update_victory_screen.cpp": "7ba7466199895fc981775caa9ba5a6b0aa0499d1f073d462024be9eb0df137ac",
+    "decomp/1.9/crimsonland/game/gameplay_render_world.cpp": "94ec1ff408da85bd7bf7e6a8898fdbe950a0b65342bad6adf86667e438ce52b0",
+    "decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp": "3cb14aec58236de5cdec81c70bb01988d1dbc96f5e6d4b4a78424e39b5db68b4",
     "decomp/1.9/crimsonland/game/input_key_name.cpp": "ecbb0ff99a908d2ff1393237f08a17fd1d37a83a85bfb74070a52c96ca9490cd",
-    "decomp/1.9/crimsonland/game/perk_apply.cpp": "0572e7b87f8aff9acaa4b4484e0af98576f8fa6a07f40d8d8c7015bc0aa0f273",
+    "decomp/1.9/crimsonland/game/perk_apply.cpp": "07654d96777c082a5e8145d03a647c90f7c888c1c9c1e69d4354add721dd34c1",
     "decomp/1.9/crimsonland/game/perk_prompt_update_and_render.cpp": "60d3bb2a3e40d4bcc2c3f11069122b90c7c669db32ce92fa060f6122347b246e",
     "decomp/1.9/crimsonland/game/perk_selection_screen_update.cpp": "b1ba798b5688ae4ebb5c97f4f63fbb4d89bb159256b572586b66af7e51338233",
     "decomp/1.9/crimsonland/game/perks_generate_choices.c": "5820b4d8c871731c98106beae9265cf814f2755197ad65b6d466b0836eb378c8",
-    "decomp/1.9/crimsonland/game/perks_update_effects.cpp": "22f1f728f22e167529df6bf03d7b8447fc75fe814e48ba8aa16355ab77c5dfeb",
+    "decomp/1.9/crimsonland/game/perks_update_effects.cpp": "0b397d5f5c0b8cae59daa07601bf31a48b5c87bfd7bdaab5e78e66670e8e9ec7",
     "decomp/1.9/crimsonland/game/plugin_runtime_clear_pools.cpp": "579ca3aa665e5660d2c542e179d59c59ad4b0933b62c18f66a49831f7de4dd37",
-    "decomp/1.9/crimsonland/game/plugin_runtime_update_and_render.cpp": "c0cc08808c90295e441be7b6ce631861953427ebbb0d5119cb2c04d2503d58b5",
-    "decomp/1.9/crimsonland/game/quest_mode_update.cpp": "866348bf6680473af2bb614bb52f60d9fe133725b20c97590b63dce65730f7bb",
+    "decomp/1.9/crimsonland/game/plugin_runtime_update_and_render.cpp": "ddb87ac9e5f0de4251f4342d0ea208895a48d2d762b92aef7b0cfbc4754d4562",
+    "decomp/1.9/crimsonland/game/quest_mode_update.cpp": "d0e8a3227b9366fbd6b5544c977ca0e53504fcac92bce200c43d102bed489649",
     "decomp/1.9/crimsonland/game/register_core_cvars.cpp": "fd6e9b33bfd8a1e99c5045244d3017e75c750f160e359ce0432f7387863ad135",
-    "decomp/1.9/crimsonland/game/rush_mode_update.cpp": "e6b276ef0ea34a475f0166d5c8c2a86fc684413e4cfe0cbd5cfee7e327fe2c40",
-    "decomp/1.9/crimsonland/game/survival_spawn_creature.cpp": "648e2d55b3cfc812dc8fa244ca3cbb81b168c9dd2523783e7ce87106d04ff465",
-    "decomp/1.9/crimsonland/game/survival_update.cpp": "8d25d6df1b87efee3d1a2ec6e6c08acf8552d13e695b0ec52cb2fc1bcd74d5ed",
-    "decomp/1.9/crimsonland/game/tutorial_prompt_dialog.cpp": "1554a1a403144d773258f28762f40176a798e47228aae01ee7bb5a1880020d7d",
-    "decomp/1.9/crimsonland/game/tutorial_timeline_update.cpp": "823c5ee7e74e65184aa4d112f42f0dbbe3ea7784be496b9d78aa00a4cdf48bb5",
+    "decomp/1.9/crimsonland/game/rush_mode_update.cpp": "32d00f4d6a10d7b46cda96d315327ef361b7704bf883fff7aed6972d4d2f824d",
+    "decomp/1.9/crimsonland/game/survival_spawn_creature.cpp": "aeaf1f4d581ed98ff98e04b9fb26f2b6c449200c11cdcdd82e13612409aa4216",
+    "decomp/1.9/crimsonland/game/survival_update.cpp": "27b23b7263a443d136fa77b0c074db6305a85f05296c0d8b2785d072811a98af",
+    "decomp/1.9/crimsonland/game/tutorial_prompt_dialog.cpp": "05a231a59d70061e795dba5a02a697c986e4f490146da2695987389a936a17e0",
+    "decomp/1.9/crimsonland/game/tutorial_timeline_update.cpp": "36ee527cb49a53c05bb8e83db800d1d70fea777bd721ddd128ca8aaed5960b95",
     "decomp/1.9/crimsonland/game/ui_draw_clock_gauge.cpp": "b0ae8d96802ef68620015541802cca8c4de2972725e53b259eaf77a8234769eb",
     "decomp/1.9/crimsonland/game/ui_draw_clock_gauge_at.cpp": "44025c756b2f19d5b0bbc12d26cbef462b008d408af687115749430318b09ec1",
     "decomp/1.9/crimsonland/game/ui_mouse_inside_rect.c": "544520ca4d3fd30fb32baaaeb919fde46147372b3413b18ec1c93d231adac161",
     "decomp/1.9/crimsonland/game/ui_mouse_inside_rect_with_padding.c": "e5ed16509424f58561630d1d8c5eeaa90201bd61bb9b3962f89786a956f624a8",
-    "decomp/1.9/crimsonland/game/ui_render_aim_indicators.cpp": "94cc0084ccff10ba46b017a4a77ae9cb1381525f9515980c823ec44666381e2e",
+    "decomp/1.9/crimsonland/game/ui_render_aim_indicators.cpp": "f5f62360f01642d3b702e3648e3525a699e07a4fb694fbf67446f84a4919e5f9",
     "decomp/1.9/crimsonland/game/ui_render_keybind_help.cpp": "2e3e12f403e98f48810290ca8c3a3461980d90818bc34beb2900bf2a99e8d172",
     "decomp/1.9/crimsonland/game/ui_render_loading.cpp": "1e5063c4f6764f1c4add0757c7cc27aea795c15353c4a37bca9718f10291549d",
     "decomp/1.9/crimsonland/gameplay/bonus_meta.cpp": "da21afdab176042158de24e14c2105cbcd78ea9348c27df4df275f78e27317e9",
     "decomp/1.9/crimsonland/gameplay/bonus_meta_entry_init.cpp": "30415fcbb4a9b9ca4b5dfdc143b046d85901999f977cded107198c0a6b27038a",
     "decomp/1.9/crimsonland/gameplay/bonus_meta_entry_release.cpp": "470de7995654495c2a5fbbc40855c8dfca1a00f8e71feee3f88ab131fefb5baf",
     "decomp/1.9/crimsonland/gameplay/bonus_metadata_init.cpp": "2d30ce2b0261d12a766aada75444bf829733bd4c01eea492701cbd162b423393",
-    "decomp/1.9/crimsonland/gameplay/bonus_pick_random_type.cpp": "c83d497de86c9157ec9d08b14322d4ba60a8143c8dc4c19ea280691d8a6cd4fc",
+    "decomp/1.9/crimsonland/gameplay/bonus_pick_random_type.cpp": "81fc4e670ae94db6d7de8f36be6ea3411b57af5bba87c169788f0ffc7e78160e",
     "decomp/1.9/crimsonland/gameplay/bonus_pool_global_init.cpp": "2de2e0c06dbf6ce0dc85566891206538afc8b3852f40a158dd2ccb9b77304155",
     "decomp/1.9/crimsonland/gameplay/bonus_pool_global_init_thunk.cpp": "559165ee68d0e1cc4755609395b432e1bd8ef84c75ecb7c3b12b60d4be88ab52",
     "decomp/1.9/crimsonland/gameplay/bonus_reset_availability.c": "e47d17470b925d483dc112297a983dee85d2a30a87ec4c68e12c104af0f43f6d",
@@ -76215,43 +76215,43 @@
     "decomp/1.9/crimsonland/gameplay/crimson_crt_empty_initializer_slot_07_thunk.cpp": "eea1909620ec77875c741861b94bea7912b37077ecffae60c6b30f9408ed081b",
     "decomp/1.9/crimsonland/gameplay/crimson_crt_empty_initializer_slot_09.cpp": "0771a19d1e34ed807aeda9d021c84cd51898e621c4e40c92471ded99aaba7da6",
     "decomp/1.9/crimsonland/gameplay/crimson_crt_empty_initializer_slot_09_thunk.cpp": "7fa40d34263a1491b01e15a7d1e73f52a92a04bc8cf0a607225c2e35a6871240",
-    "decomp/1.9/crimsonland/gameplay/game_load_status.cpp": "b7369758cccc52137521ba816af72e01d285dc102caa137ce01ae9857f586386",
+    "decomp/1.9/crimsonland/gameplay/game_load_status.cpp": "74438ea46e23c5bf9d0eb90585297a6fa2121d711a7687f4e96c7bb54e2923fd",
     "decomp/1.9/crimsonland/gameplay/game_mode_label.cpp": "54be4c39eb8c9dac2f4a77af0816ecbbc3d638b9002943f25fa4535a6d395300",
-    "decomp/1.9/crimsonland/gameplay/game_save_status.c": "0c8123dfed491484dcff059989859b0f252e77610594ccd9b193564e00e19e18",
-    "decomp/1.9/crimsonland/gameplay/game_status_global_init.cpp": "2749bb65fa598bee139a572a6c5d32ede5b1f2797fa8426f00112c622eff8b3b",
+    "decomp/1.9/crimsonland/gameplay/game_save_status.c": "99688d2d24f0c2a617f554c3f801752ee512224cc8adb569683fd65e7ba4e200",
+    "decomp/1.9/crimsonland/gameplay/game_status_global_init.cpp": "b75c870a88fa3526d177ccf425eb6c45b0c218c8d1735fe6b12b15abb24c68d5",
     "decomp/1.9/crimsonland/gameplay/game_status_global_init_thunk.cpp": "e72cc7400f93427803310e3214be72428abf4edc95eaa9a9703e90d0b4fae567",
-    "decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp": "56f4af9cf2a661df51bf1c4e12d7bf242dc057b8546f5cabfbdd71052ba16bec",
+    "decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp": "9e3ee32a02bcf02d36e4c8ca9dfed0e7d1f1ecd096a9189e7bc555dbe01c4cbf",
     "decomp/1.9/crimsonland/gameplay/gameplay_run_state_init.c": "5c813a626fd233d377da44c6c7ef8fdee0c52622070c5d08118a2599cf7b37a0",
     "decomp/1.9/crimsonland/gameplay/gameplay_run_state_init_thunk.cpp": "81207ee35d3619988e8e222795ea28c0b982e91af5f47483a7621fe85a73f938",
     "decomp/1.9/crimsonland/gameplay/highscore_init_sentinels.c": "17d1f84f0f49e28c04589ea82d71d2f2377ca2d53acecba22688d9a4f32fc844",
     "decomp/1.9/crimsonland/gameplay/highscore_init_sentinels_thunk.cpp": "f3db7c518895dc5e62e466e612348ae9c934fadb32b0bd781d361a410cf80621",
     "decomp/1.9/crimsonland/gameplay/play_time_load.c": "7dc8abcf7f936626000b405d2a629c40154fd344b308144adca52c16fd27dfd1",
-    "decomp/1.9/crimsonland/gameplay/player_start_reload.c": "8992de587e030127951aa336a7a5632fd671fc9567b3f07fbc40d535f5b2c430",
-    "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp": "124127604d70707edb5c3555f95668d29785f40bdf45a4c51f51442593e662af",
-    "decomp/1.9/crimsonland/gameplay/quest_meta.cpp": "e7cd494617031dc7e57d51aeecb87372c112b92f0b5906ca7afffcbccbeb0c62",
+    "decomp/1.9/crimsonland/gameplay/player_start_reload.c": "d7335661ccd51c90c5d36fabd8961b91b2b6ee779069e37b221b7a844c254096",
+    "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp": "d944d321f77ba4a8aaa74c2ef6c77f02f417b8193f201769470bebbcf4c0ca7a",
+    "decomp/1.9/crimsonland/gameplay/quest_meta.cpp": "cb39ede47db83b614764c2c2f66c6c6baea89b236be9154f117f459c879e66b7",
     "decomp/1.9/crimsonland/gameplay/quest_meta_entry_init.cpp": "8d8a186d1e65cb20615b92c6a50da0886399e1f02194a7c4d83e98f958141172",
     "decomp/1.9/crimsonland/gameplay/quest_meta_entry_release.cpp": "48b3f5c7aaa441fed4ffd3c884265b4a8ed0df32af586a293b9cb1e73778be46",
     "decomp/1.9/crimsonland/gameplay/vec2_length.cpp": "65564c09c36961b88c5d586c8d1630099d6ab3b97fdfcd7efcc1473c3a37e9df",
     "decomp/1.9/crimsonland/gameplay/vec2_sub.cpp": "a119885ac75c1dff6913eba77b3c8e7fb6f7bc5876f4847c73caa57af40e725b",
     "decomp/1.9/crimsonland/highscore/highscore_build_path.c": "460a9a352eec037fac86a264b36c3840f0edda13200c409e5a02634dacb3cda0",
-    "decomp/1.9/crimsonland/highscore/highscore_compare_quest_field32_asc_nonzero_first.c": "28b95f769a5d4da359ce48918a3e2693e568489deea124f9c8dc73968507c5bc",
-    "decomp/1.9/crimsonland/highscore/highscore_compare_rush_field32_desc.c": "eca16f79b815d07823a9528a6bba93bb20ef458b953dd2cd2879d73072230bcb",
+    "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_asc_nonzero_first.c": "a804eee109e105624fe3ff00b7c666c08f02a415013b764dab7f533a2c569bfa",
+    "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_desc.c": "0aee84605c1beccb7d6d6043283a104dc58128db13949522cf2edce7e0b41c88",
     "decomp/1.9/crimsonland/highscore/highscore_compare_survival_score_desc.c": "8d058367716e35ef08e307df6a3f39f84d494980357dff40f643b09b7fd44304",
-    "decomp/1.9/crimsonland/highscore/highscore_date_checksum.c": "5663ff79a7ae30ca816bd7f8e2f01124bafb9f4d2ca35433032e77ad2f991c31",
     "decomp/1.9/crimsonland/highscore/highscore_find_name_entry.c": "fbeb7e87b4d1a8c148c00ffc7dcb7ddc9bccf4245166a57e1f9ee0d8c4ee7b18",
-    "decomp/1.9/crimsonland/highscore/highscore_load_table.c": "402e7dd66928c2299d7e6b2daf6382f42d7d05f9798a6e22538c4b097ac13ace",
+    "decomp/1.9/crimsonland/highscore/highscore_iso_week.c": "b4c43c16c3c54928c498cd472bcea640ba24aa6f6850a8cad6b76dd8c94f8b11",
+    "decomp/1.9/crimsonland/highscore/highscore_load_table.c": "385c99fc960890f6ced9e92b12f0f72d7c2b504297c4d93bfe4e4c760c2694ce",
     "decomp/1.9/crimsonland/highscore/highscore_load_table_thunk.cpp": "870ccf8e12a481e092f16642a6f94aece71dc15547aff499de8189bece66f0ef",
-    "decomp/1.9/crimsonland/highscore/highscore_rank_index.c": "242b469e5df6de5fec0058624f9f84588ccdb06dfbd7cc64b518bb652da71e16",
+    "decomp/1.9/crimsonland/highscore/highscore_rank_index.c": "0b84b308a48e096dd304a8209880cd3af8a41edc02cecb8f4b7d93694622d398",
     "decomp/1.9/crimsonland/highscore/highscore_read_record.c": "38368b0751755401a98dc644288ff9e9d461b80e3364560eacbce50b7e024c35",
-    "decomp/1.9/crimsonland/highscore/highscore_record_equals.c": "c8217574743faac0d253c4b2518598981b9e93d574ca79d04aa2a7a601d1b213",
+    "decomp/1.9/crimsonland/highscore/highscore_record_equals.c": "83ad31c55f9f892d2df775037da0a7549c3ac999da45e19deda48c2d9853bd96",
     "decomp/1.9/crimsonland/highscore/highscore_record_init.c": "8a5dbed0e3b1e8a43de1a11c339566fc94f2125a2d81f3dc654c2028a262678f",
-    "decomp/1.9/crimsonland/highscore/highscore_record_pack_for_submit.c": "0891365f1a7bc7e512dbebda416364b89b09e650ce6a116493cace1f65b5a427",
+    "decomp/1.9/crimsonland/highscore/highscore_record_pack_for_submit.c": "a462e997d82ab9fb189370a65c320f8a50e77b86ccd76b16faf19736f43d420d",
     "decomp/1.9/crimsonland/highscore/highscore_save_active.c": "19634a46581f83c6c85f30eb6a61e8356fb901dce5c96f7a8d643b331b2beb2c",
     "decomp/1.9/crimsonland/highscore/highscore_save_record.c": "8b57adb6e25cd16abac0c1674056f2ce0b9476bbd581629f79d0122dea823b0f",
     "decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.c": "d0dc8c02745a6131d0f888dcdcf7aa727555019f67eb4068ce8fc49249306949",
     "decomp/1.9/crimsonland/highscore/highscore_update_record.c": "73d9fde22f5d08c794be7db461de07c9d00476c3f007a4d9a473f4b96b965302",
-    "decomp/1.9/crimsonland/highscore/highscore_write_record.c": "0c001af341bcc0853690ea1de8ec1029f1a557fcb8999e2c6a3dbf5fb3981e13",
-    "decomp/1.9/crimsonland/layout.json": "75d41e5a1803e2260b0255919fbcef50f3b45fb7ffa6ccb915450f00d110b03a",
+    "decomp/1.9/crimsonland/highscore/highscore_write_record.c": "54797beeef4291eaaa0d3d0d34936c883fcbeda559cd7b45157c372f5e4c8498",
+    "decomp/1.9/crimsonland/layout.json": "4f71ceb2e048aa891d999caaace5fc9de3e497abade8055973c4347c60a576d2",
     "decomp/1.9/crimsonland/menus/config_apply_detail_preset.c": "249d131a54a88de2079c1805788a7506fd2f713e355a6425d9914a6e03ab330f",
     "decomp/1.9/crimsonland/menus/controls_aim_method_list_destroy.cpp": "7b20aa70f2d3064cc7630a7dae777e41109127bfeaa52e20e5068dfeef22c7a0",
     "decomp/1.9/crimsonland/menus/controls_back_button_destroy.cpp": "99d949add7529cd8d32018c82052b4ac81853e0f51b3aae0e5dc180df501e4d3",
@@ -76265,9 +76265,9 @@
     "decomp/1.9/crimsonland/menus/input_detect_active_analog_axis.cpp": "e46c9789822e1dcecc9b019eb2cc139248c09c974844b8625cb8cebdc3497772",
     "decomp/1.9/crimsonland/menus/input_scheme_label.cpp": "a44ec7624d1cc91eb612c5167255c64079cb45dbc96be28db07defef971b9a2f",
     "decomp/1.9/crimsonland/menus/options_menu_update.cpp": "701048dc7cd3a9103837cbc09df6a9dd8a4694f678a0b1b0698c6862256b0454",
-    "decomp/1.9/crimsonland/menus/play_game_menu_update.cpp": "8016946cbacf3cab42d66c3a9081e5f7174bb306607af5ca5f071f379ed2f95a",
-    "decomp/1.9/crimsonland/menus/quest_select_menu_update.cpp": "48caa57d1b9d1da20c0e8da0c8ffa7b978f3c6a42265cf01e83796d2b7635245",
-    "decomp/1.9/crimsonland/menus/ui_element_init_defaults.cpp": "0ed141d81e4dc73019de4ed6c75ff4946c7a95c8c98860a7d9cb49858c51bdc2",
+    "decomp/1.9/crimsonland/menus/play_game_menu_update.cpp": "54effc77b8ab0bac32e9bf2af538a8b6d5554f1e5ee357f2826a5f7ee12f4fe3",
+    "decomp/1.9/crimsonland/menus/quest_select_menu_update.cpp": "471132509ba49cde11c18d5febb6a7a94e452ba69b0fb6586b667053fa42735c",
+    "decomp/1.9/crimsonland/menus/ui_element_init_defaults.cpp": "eaf7909e79f60a094df57f7ed0a8e6661db33f5f909ae6c6703f2ce1a6834254",
     "decomp/1.9/crimsonland/menus/ui_element_layout_calc.cpp": "8d13aa19dc639247f19c172097717bd432fefb35c5c3111f8a965181143fd3a1",
     "decomp/1.9/crimsonland/menus/ui_menu_layout_init.cpp": "b6fadc6d4196face5e9546ff9d152b7af6a21e59697b7ebbf7491696bdcaaf6a",
     "decomp/1.9/crimsonland/menus/ui_menu_main_click_buy_full_version.cpp": "be4a23064bc9cd6b8ae03f1c642e078c51b16c876155dcfc341509bad6a21958",
@@ -76312,8 +76312,8 @@
     "decomp/1.9/crimsonland/mods/mod_api_sfx_load_sample.cpp": "7447eb27b3f75f00974566bc4f1d7b8a87db2d618857440c99715c746499df57",
     "decomp/1.9/crimsonland/mods/mod_api_sfx_load_tune.cpp": "f88ac35b67c39658f690c3eba5bb6152b1c64ea135810559f5ce7119e612ba29",
     "decomp/1.9/crimsonland/mods/mod_api_sfx_play_sample.cpp": "b89d0b0bb7033a9791f5c9eb1bab8f92209e562496f7583957d5efaa76d7fa20",
-    "decomp/1.9/crimsonland/mods/mod_api_sfx_play_tune.cpp": "e2aeeea12f18c4b9e47606ef4b39b36815276ee5831003bd7f72f28e948bef32",
-    "decomp/1.9/crimsonland/mods/mod_api_sfx_stop_tune.cpp": "43735a2abd9e877c0b3ab183be7cbb08024a1258e5de58ce1bc931c35541fd29",
+    "decomp/1.9/crimsonland/mods/mod_api_sfx_play_tune.cpp": "619c8313acc3e392dfdd4c8a90d6afc08b51c763970e4385ee38ae526ae26f3b",
+    "decomp/1.9/crimsonland/mods/mod_api_sfx_stop_tune.cpp": "51f6a5b2fe150dcf1b07fb436ff5c9a90b29dd2892e161b275ed29f66f3bedd8",
     "decomp/1.9/crimsonland/mods/mod_load_info.cpp": "64b5e5f52b0f4eb86fe8bac83dbbddb503fae86baceca13e78816ae53e909d6a",
     "decomp/1.9/crimsonland/mods/mod_load_mod.cpp": "3fe2f81cd738df0c5bd9d3d2a11dedf7a0bb8bfe909134c494b666ef039b6fc2",
     "decomp/1.9/crimsonland/mods/mods_any_available.cpp": "0031319095d6a385a51063a390b106f0677515d3911c57ad8419905a73cc7483",
@@ -76324,7 +76324,7 @@
     "decomp/1.9/crimsonland/perks/perk_meta_entry_init.cpp": "6adb19a0509796c97a5ff07f06203fd714f58ebffa5405dd79ccba368b1c59a7",
     "decomp/1.9/crimsonland/perks/perk_select_random.c": "5a5b1454950150ff97cd244bbc561ab618e06bdba3555c072e8a2db2c36a8723",
     "decomp/1.9/crimsonland/perks/perks_init_database.cpp": "bc6314b528523e5da5493e35941d8a96b80d6471f84d3e2d6ec455771400a296",
-    "decomp/1.9/crimsonland/perks/perks_rebuild_available.c": "cd905c1069acb4dfdf463672806c9caabeb791a6d7ed857d9dc0ce6666a82882",
+    "decomp/1.9/crimsonland/perks/perks_rebuild_available.c": "e6cc9a7ab2c33d399a66960289346aebd4e0046e95cf4e306b39ae1be49ffc4d",
     "decomp/1.9/crimsonland/perks/wrap_text_to_width_alloc.cpp": "951cea8a702bdb630375fcd60344beac1af1dfce9d9a88f19d6e4119a5b6d5ca",
     "decomp/1.9/crimsonland/platform/demo_trial_time_limit_ms.c": "8c138efe11dc3b2ecf40478851522a6302c64e9dcd1e2f53e1097b52f8f325c3",
     "decomp/1.9/crimsonland/platform/game_is_full_version.c": "1a82a15f30ce04b2a4a89b7635f31e3058bf5cf511f24ce20ad21193e5433283",
@@ -76339,7 +76339,7 @@
     "decomp/1.9/crimsonland/platform/vorbis_pcm_seek.cpp": "f44a6149d31ba171c051d941708147589119eced038bdbe019df24fb33859416",
     "decomp/1.9/crimsonland/platform/vorbis_read_pcm16.cpp": "e6a9eeef701d2542241d67de620af81a88b7a2de7f07d3e80ce2a3592ec990a4",
     "decomp/1.9/crimsonland/quests/creature_spawn_slot_alloc.c": "94e7ffd9e0af6d933cb369909c2dfe66e2d639538fdca83cd9363439d93c42df",
-    "decomp/1.9/crimsonland/quests/creature_spawn_template.cpp": "7e06761cd2ed01570971b49a51c4e6c892ac1267ced51cf926b0594616ef35aa",
+    "decomp/1.9/crimsonland/quests/creature_spawn_template.cpp": "26bca77b3ffaa29eb6f86feae9c02aa0418e623e197e01b2e97c7b672f29af43",
     "decomp/1.9/crimsonland/quests/quest_build_8_legged_terror.cpp": "75be5146e1b57a9b2e74f2c8e098f966051480899f2278fe65c55180198619e3",
     "decomp/1.9/crimsonland/quests/quest_build_alien_dens.cpp": "67cc8d4c718211909b08d1e040ff164c995f80c43c45e2b5d31f42a9cd5c5252",
     "decomp/1.9/crimsonland/quests/quest_build_alien_squads.cpp": "a246986ef20104bed83879f7ca6220bab9841f164575a7904f3417f748ea8a6f",
@@ -76365,15 +76365,15 @@
     "decomp/1.9/crimsonland/quests/quest_build_monster_blues.cpp": "9e40722e1228605b71d90d568c027277903f74beb9d8d9980c51d7dd71a99c15",
     "decomp/1.9/crimsonland/quests/quest_build_nagolipoli.cpp": "f993b8fe13962db7f2e7c0cd290fef31d926717fd29097f94607b5cdc1a14812",
     "decomp/1.9/crimsonland/quests/quest_build_nesting_grounds.cpp": "53eb13567e9254edc65165ff49ed0c52a69b5a9e08a73b82b4ed9b55e30221b0",
-    "decomp/1.9/crimsonland/quests/quest_build_spider_spawns.cpp": "851885392a90fe479235d4ed72ef5e9f59c7a5c421ebd5c12aed201f0e02e678",
+    "decomp/1.9/crimsonland/quests/quest_build_spider_spawns.cpp": "2a51d96172f82a0ede153cd2ef8dc96331035292248205a73949bfd67c7becdc",
     "decomp/1.9/crimsonland/quests/quest_build_spider_wave_syndrome.cpp": "267fa4a552a9777a2b94d4ac6fbac332a5582f9bd2e023b6d52680ddbfde345d",
     "decomp/1.9/crimsonland/quests/quest_build_spideroids.cpp": "da93375da3621d7c6d1398f004fb0e8ca3bc5ec20a1286c7fdb10cd3ab7a972e",
-    "decomp/1.9/crimsonland/quests/quest_build_spiders_inc.cpp": "0b2eb85261e818cd116cebcb2b4a5e6bfa1212ddeeb3904ac9c7bdeccfed6316",
+    "decomp/1.9/crimsonland/quests/quest_build_spiders_inc.cpp": "5340d4d8fe6dbb7c30ac4510d19ff801a85cf29f0829fe3a83952b53a913500c",
     "decomp/1.9/crimsonland/quests/quest_build_surrounded_by_reptiles.cpp": "5e67653ab32454f9e6cfb0d6be5b6380e380038ea219190a2f6258f942535d46",
     "decomp/1.9/crimsonland/quests/quest_build_survival_of_the_fastest.cpp": "7ed07a3832f74a39af5b5fc0a60f0aa5ae5aa3a3ef4ea20f39debc3d40fec706",
-    "decomp/1.9/crimsonland/quests/quest_build_sweep_stakes.cpp": "a8196650c0631035668cd39e664b336b240c394c3eb42bb7070b4984f4bdfa0e",
+    "decomp/1.9/crimsonland/quests/quest_build_sweep_stakes.cpp": "399b51a9d3ed15837743f3c0d6a1dd0c0de383272c4c2f8bc32abf7c6c130f59",
     "decomp/1.9/crimsonland/quests/quest_build_syntax_terror.cpp": "f773ed742051e06a7e14b9a64204a427b404e4580cc2d83fa649a1a6fc1f01b1",
-    "decomp/1.9/crimsonland/quests/quest_build_target_practice.cpp": "a781828bd80f01758fda51804c064519c1cd0d4c95db1d65b3176dde2e29c4a1",
+    "decomp/1.9/crimsonland/quests/quest_build_target_practice.cpp": "33c201fce847924cee7727a0c6ce036e676fadd8ac71b54038dab1be3a40b5dd",
     "decomp/1.9/crimsonland/quests/quest_build_the_annihilation.cpp": "be8329a98fa0344d7b10f1e8866134ffcecf8650d935fc11b19f5c94156e7926",
     "decomp/1.9/crimsonland/quests/quest_build_the_beating.cpp": "a0a12c4e10c1b0c64672498a8f0c09ae6e7b045db0a2aaaec5aa133df1bc4bbb",
     "decomp/1.9/crimsonland/quests/quest_build_the_blighting.cpp": "5e7b13160eb9c22cd6ac04721eea78c1513abeb009c54564f54ba0debfef20c4",
@@ -76392,11 +76392,11 @@
     "decomp/1.9/crimsonland/quests/quest_build_zombie_masters.cpp": "352174559a0cf87e52f21a930af462e18a1dfdb9344077ef5a9d5db840546e63",
     "decomp/1.9/crimsonland/quests/quest_build_zombie_time.cpp": "41d81263a878ab47c4bc9003ec9b866bfd985be9828ae658c81905b32099a8ef",
     "decomp/1.9/crimsonland/quests/quest_database_advance_slot.c": "c260f67932720b43e0e7ca700522fd93874eddc9806f3b0e4bf994f1e29e69cd",
-    "decomp/1.9/crimsonland/quests/quest_database_init.cpp": "16ad00fadf477d1276de4377b936c5d05d9c06d0662acadbc99feacb24ccedf8",
+    "decomp/1.9/crimsonland/quests/quest_database_init.cpp": "e61aa78bc39f27f4f6a85fdaea93388acc163352730ae6b00d30dc5b75bbbb85",
     "decomp/1.9/crimsonland/quests/quest_meta_init_entry.cpp": "1452a4ccc1194a222e6e62a915e3c0df193adc56b297e975683032c392006281",
     "decomp/1.9/crimsonland/quests/quest_spawn_table_empty.c": "a1a898383560b7126c952f26726f589c1794f69820936eaf4e9e3e5999cf0154",
-    "decomp/1.9/crimsonland/quests/quest_spawn_timeline_update.cpp": "5106274077be14b7a571b636eda607532f90b147f1dce57e26b5e8dccbbd7aa5",
-    "decomp/1.9/crimsonland/quests/quest_start_selected.cpp": "d86e2adcdbdc8fbcc05a322a7b02d1f6ff84e9190119ff3106cc5100a020c16a",
+    "decomp/1.9/crimsonland/quests/quest_spawn_timeline_update.cpp": "a324137a22ab6e0ec504d192cbe5cbd9156f4b95430d7e441843264c1aeb9a77",
+    "decomp/1.9/crimsonland/quests/quest_start_selected.cpp": "21e06b59eda0ea1c86f3fbf8c86f0f3122d2cc94b837ab8924095f5e75aae83e",
     "decomp/1.9/crimsonland/resource/buffer_reader_find_tag.cpp": "6fe40dba8c0eda71a53df20f83e5efd24979fdc789f96f0e2b7cb494d8b49a3f",
     "decomp/1.9/crimsonland/resource/buffer_reader_init.cpp": "ffae81e277bb962b1fe075b40916795c9c0f399287afe752581fac69aead0545",
     "decomp/1.9/crimsonland/resource/buffer_reader_read_u16.cpp": "435613b40a37aefdc01ec2068eaf93bff4fb4931d39e20c10740a5ebc975ac7a",
@@ -76421,45 +76421,45 @@
     "decomp/1.9/crimsonland/sound/sfx_entry_resume.cpp": "468d858b71319e46e4b635536e9a46d059562a163d232373f805293a61bfa310",
     "decomp/1.9/crimsonland/sound/sfx_entry_seek.cpp": "dae2f3e470170056726e2d15a13162642c0d1227bf0763a39351a3424e3f5624",
     "decomp/1.9/crimsonland/sound/sfx_entry_set_volume.cpp": "2715e0e8667a703e3facad1d6b556dc62468b5ad06dc24abe0fe0cfaa61af2c4",
-    "decomp/1.9/crimsonland/sound/sfx_entry_start_playback.cpp": "87c2ddcbe30b8ec40c1ef525337afcd372cb248b385624998e3c5761db50e77f",
+    "decomp/1.9/crimsonland/sound/sfx_entry_start_playback.cpp": "6d131389b1e37dcb43381d797f65d8fb100489cb9d506e4f868f4634873b710d",
     "decomp/1.9/crimsonland/sound/sfx_entry_stop.cpp": "a2d22b0550d8a50ac92af54fed923af4983d5f7a38e41a3d3265d7e81300a5ba",
     "decomp/1.9/crimsonland/sound/sfx_entry_upload_buffer.cpp": "47936750d9a669aa0e47b54a42397c3e4890c154298a95649939cf9fcdf78e3e",
     "decomp/1.9/crimsonland/sound/sfx_release_entry.cpp": "a3b0ccdeb833cfc25a1e03c0e4711d8b040c21ab4100b6d93e62244e22c57235",
     "decomp/1.9/crimsonland/sound/wav_parse_into_entry.cpp": "b9bc2952d976e29d5c9a4f42770cd0c38bffa103a0a0bc568be712d82570d91e",
-    "decomp/1.9/crimsonland/typo/creature_spawn_tinted.c": "219b5dd54644c309be30ead5248d0d6f54cbcb4fc865e7fab6dba56e0d36cb72",
-    "decomp/1.9/crimsonland/typo/player_fire_weapon.cpp": "90628a4ae1586f00423010f3aeef04e074fee5147596f5f6daec37b0a2ae19f6",
-    "decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp": "b5ef6069f9a52e06a8ab345adc030b716477efe2ef2f9dd186ba58a3149c949d",
+    "decomp/1.9/crimsonland/typo/creature_spawn_tinted.c": "fbbadacb5d893114abb270cd8cfb154940da61205041eb8e22260e6da0f00a4d",
+    "decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp": "7967441b2c1cb9d3859a17be0ed0f7fd0553609d29a8f112933f135c39d5b92a",
+    "decomp/1.9/crimsonland/typo/typo_player_update.cpp": "47d82cd5c75c9a763ecfd45eb81faef0c709f24215113d8e510326971aedbb0c",
     "decomp/1.9/crimsonland/typo/typo_target_find_by_name.cpp": "6b76237e0dc76013075dd1a578092b31cd36919acc7e9612ff4aa8c6a19a2bda",
     "decomp/1.9/crimsonland/typo/typo_target_name_assign_random.cpp": "1682e4e5dab2176899ac7f927e50d89aea492bb0d24248b562101ca5392b3a53",
-    "decomp/1.9/crimsonland/typo/typo_target_name_draw_labels.cpp": "290ffeaf4555572b52d221e01d0e826c30600e15506424ff65002c362bd2eb48",
+    "decomp/1.9/crimsonland/typo/typo_target_name_draw_labels.cpp": "d62b25347596b928d91e5585d900f8fd4adb9b89f6df0b58bc5c7ac8b3c65b46",
     "decomp/1.9/crimsonland/typo/typo_target_name_is_unique.cpp": "825394764babe6ac1f6d5c208e7876a9831273ea6f6680fa23925dc4753aa5e9",
     "decomp/1.9/crimsonland/typo/typo_word_pick_fragment.cpp": "6bec780580fabdc63faa4982f8cd779964ce5a451f4d0b50d4fce16a786819fe",
     "decomp/1.9/crimsonland/typo/typo_word_pick_highscore_name.cpp": "ec9f20ab655a6c9276c93c3bc45aba052d9df24f48a9139e72d187b1ac0094d8",
-    "decomp/1.9/crimsonland/ui_elements/game_state_set.cpp": "1f9f76145bc8a54735ffbc65488445563352f86b8c68806fb0d648fa9832c520",
+    "decomp/1.9/crimsonland/ui_elements/game_state_set.cpp": "2aa7f6c51d23087a5da273f73ebdbdf241a976dd3411bfb054ccb4b77a5242cc",
     "decomp/1.9/crimsonland/ui_elements/input_any_key_pressed.cpp": "1fecaf739f9f24ebf764fa6f94ad7187c800519d3cb0a81115e8be11811cae86",
     "decomp/1.9/crimsonland/ui_elements/input_primary_is_down.cpp": "a1ea21d233af3cdcc711ef122a9a13c7ac492c4a4d3923648cba07e7bb3b8366",
     "decomp/1.9/crimsonland/ui_elements/input_primary_just_pressed.cpp": "0887bb277bfd040b519da30176e2148b2503502100c1cf9be919b15e39424f4a",
     "decomp/1.9/crimsonland/ui_elements/ui_callback_noop.cpp": "9452f90a9f212ab6797773ea337d0ad4f2af4555af3e4e95dadfa05dfc9c811f",
     "decomp/1.9/crimsonland/ui_elements/ui_element_render.cpp": "d916e66fd076b2262c3f5a26382cbd4fc49107734baf9211fc4d3433de019faa",
-    "decomp/1.9/crimsonland/ui_elements/ui_element_update.cpp": "b45ec4e022d8c7037fda6cdeb192a1c80f7bb44a135f977744bb5c8b8ef3f5b7",
+    "decomp/1.9/crimsonland/ui_elements/ui_element_update.cpp": "d45f2c34c321cac7856d46876092011200460776946a252d50ba414e8082897b",
     "decomp/1.9/crimsonland/ui_elements/ui_elements_max_timeline.c": "79f4dcd498044a7365dd4705701003db05fd44aa1ad1ad7040198416f1502324",
     "decomp/1.9/crimsonland/ui_elements/ui_elements_reset_state.c": "e46788e73ae39c2b2df4173515b13f9cde0a000ecadbae60f0b1ab87a4086ab9",
     "decomp/1.9/crimsonland/ui_elements/ui_get_element_index.c": "2d109ef7b665c16f9fb4972b0cb830714e4984c5cfad7c25c6daaef170267e52",
-    "decomp/1.9/crimsonland/ui_elements/ui_menu_click_back_contextual.cpp": "9d39431c5a75ffa47f2a361da46091c8826deae10b70d885608774930bd71522",
+    "decomp/1.9/crimsonland/ui_elements/ui_menu_click_back_contextual.cpp": "b8eb8436ccd5f18eaa08e497bd1877e8e6236a28d2d5d618b36dfc036277b9d5",
     "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_controls.cpp": "4206f09a2206cc545bedb2c2be8b0de5c2d86c4e4829b7e38d23a99f1ee4f5db",
     "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_mods.cpp": "0928c2cb9d2c53bc85f7a7dbfeee19285ea47198d07607870bc5b90c194af0ed",
     "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_options.cpp": "331d133407d1e00d6395d6cdc384ac3abc71b1564856d03ad7d2c99a591a8bd7",
     "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_play_game.cpp": "d3502167b9e32a7e9d02d16f983d0e0a610b2b5f41cbec890c309a0e2a6918c9",
-    "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_quit.cpp": "3c59f708d397a7b947d7f3c5c198a301fc773b36c992cf67f6ddaf5396d91c74",
-    "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_statistics.cpp": "7546d4bf24c648c67c1fdc6ccaacbd8e8c480c22948c033770a63ecc85b035c0",
-    "decomp/1.9/crimsonland/ui_elements/ui_menu_pause_click_main_menu.cpp": "aff94f99c3d6b6663b2ad0f54a47f63c4d53bb763942a770ab61d9c3d33d94a0",
+    "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_quit.cpp": "a50b836221370788453d76f16b278c0052c9e8e2493cd47c9ff18e777da6550e",
+    "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_statistics.cpp": "a3cdc6630072249151ef938d7a05399a4621dd7fbc05415056e48a7471e78261",
+    "decomp/1.9/crimsonland/ui_elements/ui_menu_pause_click_main_menu.cpp": "70991bab136e3b23fbb391d09d71d0c7a80cf1f8341b1e977234ed84458bac06",
     "decomp/1.9/crimsonland/ui_elements/ui_menu_pause_click_resume.cpp": "e987335e203f4af7d595040336e3f3dcbf7266ee522b605490cc851ca7a140a2",
     "decomp/1.9/crimsonland/ui_render/bonus_hud_slot_activate.cpp": "f672ed5145de9fc3e4f4e61719cbbb1eece10e0b2ea34c1f72ec96ed86fdb8f1",
     "decomp/1.9/crimsonland/ui_render/bonus_hud_slot_table_global_init.cpp": "9955215588479c862994148b188954513c248435fdd372e589b822c70675b8ae",
     "decomp/1.9/crimsonland/ui_render/bonus_hud_slot_table_global_init_thunk.cpp": "606ae317d2b89193ec67b9758f354091a67fe8dfcde6a3be9ad93f4855714b42",
     "decomp/1.9/crimsonland/ui_render/bonus_hud_slot_update_and_render.cpp": "8307d5045c596365ac39a0f96d9e447ee4af7c6eefa3459c8f72242cf3f3c7d9",
-    "decomp/1.9/crimsonland/ui_render/creature_render_all.cpp": "dcef72a476994ec82fa6502488e1b41a3bfd3ea227730971bf8e6b3febe13348",
-    "decomp/1.9/crimsonland/ui_render/creature_render_type.cpp": "ccc5b0965304ef83c444bfae3b091e640802411d0f2c65231f907653e9ed0107",
+    "decomp/1.9/crimsonland/ui_render/creature_render_all.cpp": "a6592e741df64be50ba790f947cb5df74bdbad5b385bf415d10f4190b0c80f1d",
+    "decomp/1.9/crimsonland/ui_render/creature_render_type.cpp": "5c060a3fbc49af32ec9f8c378e500153cc294b406916dfa2db1134117264ea35",
     "decomp/1.9/crimsonland/ui_render/hud_update_and_render.cpp": "b6c373d4b113fa58d218a7d31f15e815c7b23105c1e7fc2c6a3f11fe0d034916",
     "decomp/1.9/crimsonland/ui_render/reserved_color_global_init.cpp": "bc3732816fc8b0326b1a0ca8b20d0372b83cc6027c17b0d4ccf50c14d968246a",
     "decomp/1.9/crimsonland/ui_render/reserved_color_global_init_thunk.cpp": "52439c63617b75ddf1c33931ca2096e0dd5413b8f2617415286c2eefa86df101",
@@ -76469,7 +76469,8 @@
     "decomp/1.9/crimsonland/ui_render/ui_cursor_render.cpp": "1b3af7fa5c7fa3b915c8bc9647958afc7d0de47059663fe24b95d2ddf4ffc0f6",
     "decomp/1.9/crimsonland/ui_render/ui_draw_progress_bar.cpp": "0d0a1325642d7c293dea7d8fc2baf9bf7501f2112e50fbb6aed4f154a9ea36d5",
     "decomp/1.9/crimsonland/ui_render/ui_draw_textured_quad.cpp": "92523d5b41853aabc5d5c306facdb0a752ccb4949e4779b3ba8fb491edf729af",
-    "decomp/1.9/crimsonland/ui_render/ui_element_globals_init.cpp": "4f0c752a99ecf21f8bda1cd6d126b671669813658f545f4e9c0fdfabdab9c14e",
+    "decomp/1.9/crimsonland/ui_render/ui_element_construct.cpp": "b46d12c776a7cc2b317fe97b9295c7bebfa4d69408ffbf6632812bdf28c7c726",
+    "decomp/1.9/crimsonland/ui_render/ui_element_globals_init.cpp": "3e064158e596452aa93ab1271ad5446ebe2dbd0439f1d345b3052f28c0570858",
     "decomp/1.9/crimsonland/ui_render/ui_element_globals_init_thunk.cpp": "f401cf89e22c1c448b70b8738bb1e2c7c25664863ebf2ee3498528370c809787",
     "decomp/1.9/crimsonland/ui_render/ui_element_load.cpp": "b50c355b7664c18e8a7e53ab93383feb3be1c4a95b3ac3b840f1301ffaf6ba32",
     "decomp/1.9/crimsonland/ui_render/ui_element_set_rect.cpp": "ead99e33f50859e1e7bef17f3a568ffcc57ff22291dcd33e554cb2e5f98ac13a",
@@ -76478,19 +76479,18 @@
     "decomp/1.9/crimsonland/ui_render/ui_menu_template_pool_init.cpp": "3a8815be864339c918e21cfc7532f7fb483ae85ef34a6f548d8a563261794c30",
     "decomp/1.9/crimsonland/ui_render/ui_menu_template_pool_init_thunk.cpp": "2586345b500d4f3de7c81bed818a0a0850f206f9f83f83c4a62d8f819f09cc82",
     "decomp/1.9/crimsonland/ui_render/ui_render_aim_enhancement.cpp": "a263ca7292feb5a9bd328f5730ed66bad2440bb0ffe060f416c9b10c4a3d119d",
-    "decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp": "da1cb180a6d906ad8837008b49ef1b59bf9ab427a662b232a5098ae20f8d8b39",
+    "decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp": "61eb01bb159efb524569f0c84cb8608fe5ff5ec8b412690a4e89a557da77b5bd",
     "decomp/1.9/crimsonland/ui_render/ui_template_block_set_mode4.cpp": "6450f523ce90fc830125f5e84fbbb443b3ada0a5ff68a2faa0797e6dfa227c02",
     "decomp/1.9/crimsonland/ui_render/ui_template_slot_ctor_noop.cpp": "11232ca42f8a2b64146cd8501233b207e612e961f5d567bae913252f64158a61",
-    "decomp/1.9/crimsonland/ui_render/ui_template_triplet_reset_and_seed_modes.cpp": "b1837cc4461e6b4b89b24490767ecb2087830d0afd76de50f0c0b235f9815cb8",
     "decomp/1.9/crimsonland/ui_screens/crimson_crt_empty_initializer_slot_54.cpp": "3278187424f585ee52e9b524cf86e48b4dd2b727301b71b3a72332100eab6ddb",
     "decomp/1.9/crimsonland/ui_screens/crimson_crt_empty_initializer_slot_54_thunk.cpp": "0f65c67aa5bf046dd79e4f6c997846f593ef06de8f6fef1d7b0665ba93313837",
     "decomp/1.9/crimsonland/ui_screens/highscore_card_draw_horizontal_divider.cpp": "b5e9ea5af582c8696a4392a32b7e7ad6e29612e1ad6c71a6784d15da175665a4",
     "decomp/1.9/crimsonland/ui_screens/highscore_card_draw_vertical_divider.cpp": "c6c8c79ce83c37388a7c2410efe9a06da8d05b3bb88b0b0c050cf9b3c644ae17",
     "decomp/1.9/crimsonland/ui_screens/highscore_format_date_label.c": "701d02c91a5a87426adc33baaa0b542073f59346eb4f1df42c8fcc39847d0629",
-    "decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp": "590fdf6537e789b4cfd7463d6e6cbb61a9e8d811fd678d527952875bf5b8c4cf",
-    "decomp/1.9/crimsonland/ui_screens/statistics_menu_update.cpp": "f3f73538bd3f764e5a9a521876546b26b8f2b0b275a6e65d6c71b1030be29784",
+    "decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp": "8996cfb80b23e47431133de24b68207c7e806054a46d883f2ee7e39e22cb648a",
+    "decomp/1.9/crimsonland/ui_screens/statistics_menu_update.cpp": "a0c457f2d64dc5e5b6e6a93faed66545e0f7f7fa3a7e8691c94947868c12557c",
     "decomp/1.9/crimsonland/ui_screens/ui_profile_menu_update.cpp": "dc43370a24bea6635468ef14f3c1e0859bb2673d4df420eff636a3cd640df94d",
-    "decomp/1.9/crimsonland/ui_screens/ui_text_input_render.cpp": "a159acbe81d7cf93bf2ebd0267f49ace86d061ea50348492648ef4ad4773e262",
+    "decomp/1.9/crimsonland/ui_screens/ui_text_input_render.cpp": "b6cef4cea9828a73d3574621fb113e406c7d13ce14b1d8c9c0942cb88b364b70",
     "decomp/1.9/crimsonland/ui_screens/ui_update_notice_update.cpp": "e6fc590271a049e6453b24af1b9cd142ac7eb4a3f013d3b810c9a7662b291141",
     "decomp/1.9/crimsonland/ui_screens/unlocked_perks_database.cpp": "3d23acf4b8cd9ce8c963b90ec2d837270c5f57659102f47aa1824a698cbd95f7",
     "decomp/1.9/crimsonland/ui_screens/unlocked_weapons_database.cpp": "312d91fb6f1beb43f86c0322536a21ad1e30c75e29a8f0a79d7a764177426bf7",
@@ -76504,12 +76504,12 @@
     "decomp/1.9/crimsonland/ui_widgets/ui_scrollbar_update.cpp": "dc3ad5656272a78a02db86e7d51c7dc9030afd39f9609559413c19967c8543e7",
     "decomp/1.9/crimsonland/ui_widgets/ui_segmented_slider_update.cpp": "cf9c0858bee0b8986e1d34c122e93df0617127948b8e0632633d12fedecd261e",
     "decomp/1.9/crimsonland/ui_widgets/ui_text_input_update.cpp": "64996a62f91cda3d5c7d9c827402ff3e13d7f773cec830e915409f8b05df62d0",
-    "decomp/1.9/crimsonland/weapons/weapon_assign_player.c": "326504bee835055b8bdb60c5e5c14d6743b8cf0f0a165723601ccc94713ce2c7",
+    "decomp/1.9/crimsonland/weapons/weapon_assign_player.c": "c053ce3057382b02a520a23e654f8e08068baa16086d617f826c18e6c0fa76ae",
     "decomp/1.9/crimsonland/weapons/weapon_pick_random_available.cpp": "72e92fb0672a8026585e36c7407ee62333f18b30812b923e461f5ee471866d8a",
-    "decomp/1.9/crimsonland/weapons/weapon_refresh_available.c": "9915b8ac4c1cf0173d0c36f08d67671fb03c0fda19e0a6d3a3080ff6f0df1c6c",
-    "decomp/1.9/crimsonland/weapons/weapon_table_defaults_global_init.cpp": "4f3d0212be74b3f07ca9d1e2154e7ffb2593d9bfb3ef8d4922a8fd17925e0239",
+    "decomp/1.9/crimsonland/weapons/weapon_refresh_available.c": "7f8f365b7197c35d87d08864f43a9cc7b291a8ff62bc2f86f8c8a159f4684e32",
+    "decomp/1.9/crimsonland/weapons/weapon_table_defaults_global_init.cpp": "e9d521ad43592506581d3e04fa309302b54a08342567608ecf2149704d4c2abb",
     "decomp/1.9/crimsonland/weapons/weapon_table_defaults_global_init_thunk.cpp": "2a1003c4e3c115ca73c2bcac7525f8fe7ddd7840135faeb3995d4e4475462275",
-    "decomp/1.9/crimsonland/weapons/weapon_table_init.cpp": "4f4e99701138273e606c470a4c45dc3fce369b2b7b5d461cfdb0a3f2ac247d49",
+    "decomp/1.9/crimsonland/weapons/weapon_table_init.cpp": "1f18cd847ffdfa7d622cd1e6e0f4495750c63411f47bdf3c109664e5a355f8c0",
     "decomp/1.9/grim/api/dll_main.cpp": "f1e859b11c27637429145771eeaa3de93eb65e0d852235d6137544073f6d91dc",
     "decomp/1.9/grim/api/get_interface.cpp": "e26f421e03450fb918a9394b1cd2660837e87bd5e8492ae3107821ce10715cfd",
     "decomp/1.9/grim/app/app_cleanup.cpp": "c7172c8efdac25a1f8b810694efe368e247f8bcc01ae40657f938b0a10ebb675",
@@ -76687,7 +76687,7 @@
     "third_party/headers/_mingw_unicode.h": "06aea148557a5561512573f47768d84c1c8b77ea55766f2e269f4eba87c988e5",
     "third_party/headers/basetyps.h": "cb9bdc38dda0d606fafda35730aae7bd6b0b467e124ddf5979d3d4ec656dd81a",
     "third_party/headers/crimsonland_ida_types.h": "0d8964485fb9ae113e7fa282d46842b5a262dd4dd0c86f26d35d6ef41eddb035",
-    "third_party/headers/crimsonland_types.h": "1ed463c5ec82390c0654e286520202d50a7851fd4b3b44f8dca7524caa2281f2",
+    "third_party/headers/crimsonland_types.h": "18a20883907eac6e30ecbeafb954160469959c4cd7320ed16433763b91ba63c5",
     "third_party/headers/d3d8.h": "430ef065b793391f00e787c2e56c60948100c023fd2324fca7fe7b46e4e52981",
     "third_party/headers/d3d8caps.h": "accf384f302c6b52b366e63d2327ae66dd44f52f24b1b93cfe714515e6fba6a2",
     "third_party/headers/d3d8types.h": "2f9cf8fa0c25bb767e660cb5d46e91aa5876dcb7d7620fd5db40744a1ef190d5",
@@ -76788,13 +76788,13 @@
     "tools/match/c2/capture.c": "d9b643973050efe630d6262fcc0754bc177a642a57fee2315339fc797f034cc8",
     "tools/match/c2/replay.c": "802be11aff53e7e7b433c6ac8b6ace36f103a2c2b1387fa1eff2839791e60e64",
     "tools/match/cl.sh": "e2d2329a290bedf6f04392107192e849014864a9235c37a31105e3fe3c878b74",
-    "tools/match/data/crimsonland_audio.cpp": "71f35c3828004ea319571485cda0c050e984cc83aae40b659f80984d89b47db6",
+    "tools/match/data/crimsonland_audio.cpp": "7959189423c15ed2a528ece2fa0ca66076631bb9d082ba8e3838f6afd5925e0e",
     "tools/match/data/crimsonland_buffers.cpp": "3e16a9c31abee01a5b9c37d393c3bd2455732f64a97887f58c86322d30f8ccf0",
     "tools/match/data/crimsonland_console.cpp": "355ca69fdd3314c69965a2f24d2311754c72985e91d681e955b663fcad3a9806",
     "tools/match/data/crimsonland_effect_table.cpp": "a344864055cce7adca71cf58711067167466195be13b9910a9764a56370daff2",
-    "tools/match/data/crimsonland_game_state_owner.cpp": "96ca78f11e3905d4439a99525f3b6a7cac5dd4a7cba3f51ef763723a3d5805ca",
+    "tools/match/data/crimsonland_game_state_owner.cpp": "09884c15f542a94f71468b2403e20ac36b20768987e723b60288b4a6e2f5c851",
     "tools/match/data/crimsonland_game_status_owner.cpp": "59d444b431296b55f2c272ce45d518d2be0178f612836fe232bcb532356890e2",
-    "tools/match/data/crimsonland_gameplay.cpp": "d1b3b971a45a38b68dc27dfb2a3728d6a6d5496cd55f6336c690159c3957154b",
+    "tools/match/data/crimsonland_gameplay.cpp": "7be1b30e903e50b1603c96826234ebeebccb86404c209ce2589d580a57d59c5e",
     "tools/match/data/crimsonland_highscore.cpp": "c6c8dbcdc129e21b31d52fb68fd741757cca9404fd6c74f980dbe88cf8ee7581",
     "tools/match/data/crimsonland_hints.cpp": "fd1831016cc36ea5cdc547db3b90875944b3997c7bf58b876d22cbc5f383fea8",
     "tools/match/data/crimsonland_resource.cpp": "d96d9ac488842b87e3ab92da5de84314a2d32ad5980f6e9c60be165deab3c360",
@@ -77149,21 +77149,21 @@
     "tools/match/include/cl_build.h": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527",
     "tools/match/include/console_update_translation_unit_probe.h": "16ea95ced4bd7622031dba77d7803dc61b24bc898f35359a12e01ff1b94ebad7",
     "tools/match/include/crimson_config_defaults_impl.h": "d498934b784c704bed53d5e439f747e9de0d258773ca165ad133d7a85df8645d",
-    "tools/match/include/crimsonland_audio.h": "cc26490c0f5a77b289328a81281573dbd8037d9a9cbd9862ea300b0991fc4197",
+    "tools/match/include/crimsonland_audio.h": "329ab98ad367444ce0d04094da9eb78d8fcfc4e68afbd67eeb332e64a9931ee6",
     "tools/match/include/crimsonland_config_owner.h": "36894d70bfa536783e43099079cdef0f6b50d2cff80f2b111f5317bdf56ad689",
     "tools/match/include/crimsonland_console.h": "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a",
-    "tools/match/include/crimsonland_game_state_owner.h": "2ba8a1bfd36d86491a0487c52a00da3e963a13596f227d8e33fa8db020401c11",
+    "tools/match/include/crimsonland_game_state_owner.h": "c9598fa423520696880de55afad69125d1910815695c49ce59f37beb329b50fb",
     "tools/match/include/crimsonland_game_status_owner.h": "3725b055a1ae50e9fd7f8302f88ab2a658c4c413ee6dc1d720a6912ab5d8f7fb",
-    "tools/match/include/crimsonland_gameplay.h": "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502",
+    "tools/match/include/crimsonland_gameplay.h": "f5f2e97eb83a3d6dc57fb765351277d066d70a065a61dc925af75bc6a050e51f",
     "tools/match/include/crimsonland_gfxs_owner.h": "15d325cc99dc44b0212ce76df148f2c6bf0daf0c292ec61702d3fc1ffa0183b6",
-    "tools/match/include/crimsonland_highscore.h": "cd315fdc8166f0e5fbf61e1f28371dd744869c2613fcfbc6b344e376e3ceb6ee",
+    "tools/match/include/crimsonland_highscore.h": "2a19a26963837549007231f399058b495976d35289fbe9337b539faa5193340a",
     "tools/match/include/crimsonland_metadata.h": "5f601d7f5d4036491fb18e022cddf34a342da89ead4d09c1f9a8522370a0610e",
     "tools/match/include/crimsonland_mod_api.h": "0d3a4d9d5219bd36c09c9a659c7ba490e6f7dc2fc832b363119b2a3f9bf436d2",
     "tools/match/include/crimsonland_resource.h": "6bc8869d03896ee140b36728e9805dbedb2eb17d64f0c48decba321c2db493fb",
     "tools/match/include/crimsonland_terrain_owner.h": "9e8335120c9b33cdddc65120232cfeaf63ba0b8dc2ee9f28c0040baac1808ae1",
     "tools/match/include/crimsonland_textures_owner.h": "a2284840f3460355b883b05bd943c1b9272519627e8633f372ba09b4b60ca3c5",
     "tools/match/include/crimsonland_ui.h": "a803083591d339fbf41b4d7535fc7eed96347f736742a30c23c1810488fed439",
-    "tools/match/include/crimsonland_ui_state_owner.h": "5c2a4547493cea93c2922da7c7ae6bcbf6452b03b433479e6bed197bdc09b8f9",
+    "tools/match/include/crimsonland_ui_state_owner.h": "0f0823f9a27a324e7fe72750d76cc5f1b7d636bbacd6ed9e3358376dcf1a8a3c",
     "tools/match/include/grim2d_abi.h": "49b43a44c83ba2218233c63d779ba5a32ee6a01a88af92de546f7656353fd53e",
     "tools/match/include/grim2d_cpp.h": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef",
     "tools/match/include/grim_d3d8.h": "6732d55da92dfb16b3b251faed82393a6f000ea48cbf51efa6a8150a8997842a",
@@ -79110,10 +79110,9 @@
     "tools/match/scratches/highscore_build_path/scratch.conf": "78afe3a43ac02e52398024a6eb6479b0145a2353c9a82c2d6c544a928e2a91f0",
     "tools/match/scratches/highscore_card_draw_horizontal_divider/scratch.conf": "a5cd60587b0f33cc2b68fed11f009290daeaed03710fc08ef0ed69d980b258cd",
     "tools/match/scratches/highscore_card_draw_vertical_divider/scratch.conf": "f998f7764fe661559f4acdf8e30dc241efd745ef8e9011dcf20c526548b0874a",
-    "tools/match/scratches/highscore_compare_quest_field32_asc_nonzero_first/scratch.conf": "a67c25391352d4ed03c88c66d45f2df2790e341e68ecd465d12729a81d04f658",
-    "tools/match/scratches/highscore_compare_rush_field32_desc/scratch.conf": "23290c32efdf695c84003204bfb816150da8c3ccb58691fe5183523fa1b6d305",
+    "tools/match/scratches/highscore_compare_elapsed_asc_nonzero_first/scratch.conf": "672fc008c1d62c98b7e7cecc648356f7c49e70fd60533b89c0559b11084da81c",
+    "tools/match/scratches/highscore_compare_elapsed_desc/scratch.conf": "fe6318cf10f2a9a92ff6534de6f20378c3ecba5f7ec5877b2a74dcd1690947b7",
     "tools/match/scratches/highscore_compare_survival_score_desc/scratch.conf": "b6b610baf033dc358b8dd7622456f6f3cfb902abfc4d60b5a1f6ba53c06d43c6",
-    "tools/match/scratches/highscore_date_checksum/scratch.conf": "926113e95093ef72abb2a98bbaf402785be42945a885b3ccd7c74b66815a38e1",
     "tools/match/scratches/highscore_date_filter_list_destroy/scratch.conf": "633e91054ccd3504e3e0594a00ecd04ec8dd5e66c8e46ab295ecb0f75ad9f764",
     "tools/match/scratches/highscore_find_name_entry/scratch.conf": "6dc73b4a19be7e173fbec811557fff2a5fcbc9f006e26f588a69a9e965bf97bc",
     "tools/match/scratches/highscore_format_date_label/scratch.conf": "3bbc4711533553a568f471f8cc8c396bf5a073fa5ea5e9a6f1481b24b57c5489",
@@ -79121,6 +79120,7 @@
     "tools/match/scratches/highscore_hardcore_checkbox_destroy/scratch.conf": "20f0e72466fcfa9d97bcc4f8961c7297a86513ac3d59cf59ff018f59040c4b80",
     "tools/match/scratches/highscore_init_sentinels/scratch.conf": "5b1b2dbde2c8b47219c5179cf42f79ab18c6abda959c85781f92832fb57de1b9",
     "tools/match/scratches/highscore_init_sentinels_thunk/scratch.conf": "987f508877e8f7562e021be49f87b036a306300e5cc59e4802aac41c88e18da1",
+    "tools/match/scratches/highscore_iso_week/scratch.conf": "701052f730acd916fc126fed335e0fd09fd80f5309887fa4b1d7a145c0d25840",
     "tools/match/scratches/highscore_load_table/scratch.conf": "f73bb98d57df8c287431797c88ed2f8d2da8d480add931faed93fab85fcc33e7",
     "tools/match/scratches/highscore_load_table_thunk/scratch.conf": "6fd59ca9a31eb57c63719414c3fe98cec7ce17959c16323eb7683f77449ff075",
     "tools/match/scratches/highscore_online_scores_checkbox_destroy/scratch.conf": "fe5d163e98b906a116ade7996655ba1c4f65411b18f9abee1e303833d489382c",
@@ -79210,12 +79210,16 @@
     "tools/match/scratches/music_entry_load_ogg/scratch.conf": "f64e90e4d7f4839bd4d5cef09d399fdfd34aa5a5f3b4f053a99250c10f6e8199",
     "tools/match/scratches/music_entry_table_init/scratch.conf": "a497e67b6595628740b82eb46d23f35095a52371fd2b7a04c3e8214ac3e495e0",
     "tools/match/scratches/music_entry_table_init_thunk/scratch.conf": "5c24cc8fd3c4abaa850d20e66c4e77b4fcf7f3d584d9eb4742040f23c80c81f3",
+    "tools/match/scratches/music_fade_out_all/scratch.conf": "662e77562d21ed55706ee5c9e54edff24f8b06cc12f5f4e6a2f39504ef037551",
     "tools/match/scratches/music_load_track/scratch.conf": "fe02e6a562e9a65b8ef737635c2b27792b08ce752fce0ad276ff396282915cff",
+    "tools/match/scratches/music_play_exclusive/scratch.conf": "41116c3cee642a069cb855900bf1f268c9a277a7cfad4c8fd87ae58fec2146a0",
     "tools/match/scratches/music_queue_track/scratch.conf": "bf4c42c9316b1b41fde317af6d31eac080f170e9805eac5af5cea129ba517044",
     "tools/match/scratches/music_release_all/scratch.conf": "887c64352b9601f8250d2770e214f69da8b8f2537373432c2528a69913c053c5",
     "tools/match/scratches/music_release_track/scratch.conf": "6771724a1718d4d87c8b32012c21082c6837ef839c0c8e222559b99b0f372216",
     "tools/match/scratches/music_stream_fill/scratch.conf": "318e49f319496f1a38aee80744cd46e09ce97856f8c42588593a9a0967eb525e",
     "tools/match/scratches/music_stream_update/scratch.conf": "3f1e8f75946346435ad74dd253cf76d5791a7ec526c4f4b259f2d512013d2cf0",
+    "tools/match/scratches/music_track_is_playing/scratch.conf": "6838e2352a4bddb7df4c82bee2bcb5dd6a065f1b319114990c3ad27408773e87",
+    "tools/match/scratches/music_update_fades/scratch.conf": "a78dff31483f36ef8322e6a9a800671564772973b9987e84e2d7963feac1f448",
     "tools/match/scratches/operator_new/scratch.conf": "e23d3d36e985163edeccd34d70cac1edbf3e8734feaad2e3edf48ffe397d58a1",
     "tools/match/scratches/options_controls_button_destroy/scratch.conf": "77fcd42ffa4edfb9b5bd04b21ab01bb66a1dff159a084e7a3b507cc9f7a346c7",
     "tools/match/scratches/options_graphics_detail_slider_destroy/scratch.conf": "0a077ee12cf4891fb4426432d00d2ed742d1c59572da06d984216876a3d274da",
@@ -79259,9 +79263,8 @@
     "tools/match/scratches/play_time_load/scratch.conf": "7466f13a8f5fdf4543d614c57db225bc80a6d17319b573970e0b3c414c1ea218",
     "tools/match/scratches/player_apply_move_with_spawn_avoidance/scratch.conf": "5229220ab032f94162dfc01384c88b8b96b15547bb50dc457da04fb6960b49fe",
     "tools/match/scratches/player_find_in_radius/scratch.conf": "e04f90cabeb3a075139bd713679261190e415b7fb2a8417676b8959cbf813ff1",
-    "tools/match/scratches/player_fire_weapon/scratch.conf": "94aaf93d6f5333ed0dd0e54a21fad55c399308d0043c9e631b06bbd33b472a1c",
     "tools/match/scratches/player_heading_approach_target/scratch.conf": "fd765e12a021a0b1ff5a57554aa4e2be2b9ea0967c4c946ba4c109e71044d2e2",
-    "tools/match/scratches/player_render_overlays/scratch.conf": "cb38516f5712ba16fa22ba158a83eebd2f42c80dd97e614fbbb850994ccde4cf",
+    "tools/match/scratches/player_render/scratch.conf": "d8d7c2bdf1d8910fb3bfb5b5a59b586aee7062ba2edf9b561709701f249942b6",
     "tools/match/scratches/player_reset_all/scratch.conf": "450304c6ba62587cca2f58ad890ce61853bc4b907c5b563467721e2b50d32850",
     "tools/match/scratches/player_start_reload/scratch.conf": "ac66d8ae2dc7b78ef1242123bb2a33a64bc27f2c7d02b9aac98822e0f9f9362d",
     "tools/match/scratches/player_state_table_global_init/scratch.conf": "b783a99ac7139766940abad6ceff67a2cb0da8868033fb444caa706aacd570cc",
@@ -79405,17 +79408,13 @@
     "tools/match/scratches/sfx_entry_table_init/scratch.conf": "a06843411cbbea25bc3dff80215775681ef757925d0744666002edc77325b915",
     "tools/match/scratches/sfx_entry_table_init_thunk/scratch.conf": "1b2a5d54f3ebce132a981d63abc56ecf2f316fa8d92ff4c8d84e750ffceb5bf2",
     "tools/match/scratches/sfx_entry_upload_buffer/scratch.conf": "bccbe66554178428a0085309c7f3faac04ca79a4ea8848ca213b3845be2f6a44",
-    "tools/match/scratches/sfx_is_unmuted/scratch.conf": "8282058df5a2d98cc0b4df2a43c43aa094b791be7facc24238e40132215867c7",
     "tools/match/scratches/sfx_load_sample/scratch.conf": "3b0b5a316b6de9dcc78e92d7b3eb773149a53c17818ceba415f049e986e759fc",
-    "tools/match/scratches/sfx_mute_all/scratch.conf": "22cdd3ae8564c851a44c27f0e9042f4131455619b32609a7bff85c1351fc4a21",
     "tools/match/scratches/sfx_play/scratch.conf": "831ee9b26c655aa37f62a48929a4caeecb240234a7c0e770ebfe2c69692cb29c",
-    "tools/match/scratches/sfx_play_exclusive/scratch.conf": "9fb10823d75d4de7e1cbbd6df8f102725d251d68ce9d329dad61f5e31594db05",
     "tools/match/scratches/sfx_play_panned/scratch.conf": "9cbd642504b8f4806970e21654333c09901e634ee6cd3ce2a9e313de23c2d1e4",
     "tools/match/scratches/sfx_release_all/scratch.conf": "c35185a314130ac90b259ed440464f3c77e9a3f2bbb95e76b026629a076940af",
     "tools/match/scratches/sfx_release_entry/scratch.conf": "54071175cd2971dc6e94e12861bf071578a4af80edd7c17510973430829485d4",
     "tools/match/scratches/sfx_release_sample/scratch.conf": "70fad3753eda03032d7ab965993fcaa6499810e0977e06119db5f52432cc88a4",
     "tools/match/scratches/sfx_system_init/scratch.conf": "bf9a1c5349179ffe18e70f88cd17033451ee39ba8968cc309fede656951412bf",
-    "tools/match/scratches/sfx_update_mute_fades/scratch.conf": "4b05751a1076cd3493ac2a15984b82df69d2149cdcf2b9a00bdf4099e1f62e97",
     "tools/match/scratches/sprite_effect_pool_global_init/scratch.conf": "95447624a12a046e968c71c8b38d65170d81d4e463b97a0dea3b9c4c2cfc7603",
     "tools/match/scratches/sprite_effect_pool_global_init_thunk/scratch.conf": "18a15226fd25591b08db81b3412b912063a01d4817f76f44621387ea1552fce4",
     "tools/match/scratches/start/scratch.conf": "a2791cd95c381fbdf2f6bfe8b22faac4d014116332c6823e122afc4fdcd98aba",
@@ -79444,6 +79443,7 @@
     "tools/match/scratches/tutorial_repeat_button_destroy/scratch.conf": "076a0360494c86781d6e3bea31bbf69e2d4faee6576d22702fb1bc66f5dcb5b8",
     "tools/match/scratches/tutorial_timeline_update/scratch.conf": "ccfa1cb07f18104930e95c4a740dd433d2ae1829c10d3741aad3e5d6445553fb",
     "tools/match/scratches/typo_gameplay_update_and_render/scratch.conf": "21e834d502337ff66083084761e678c12ee191b5a06ac9cce2e77e9fe25438f0",
+    "tools/match/scratches/typo_player_update/scratch.conf": "a02a42466799afac3e0803abcc2c821d82b5922f70eda545ec040dc849f35da4",
     "tools/match/scratches/typo_target_find_by_name/scratch.conf": "586963d51e0081d5ba6bb6605e2e63312cb99273fbd565e4bf5752f9e76a163e",
     "tools/match/scratches/typo_target_name_assign_random/scratch.conf": "d04dcf292d95c9a32b26e700b55f6fbe79e91c4af9cd928284cb6a2a3afb6fe1",
     "tools/match/scratches/typo_target_name_draw_labels/scratch.conf": "03c651fa650349b92287e76fddc3e76873db32763bca9ac912bc6904b7f9a05f",
@@ -79459,6 +79459,7 @@
     "tools/match/scratches/ui_draw_clock_gauge_at/scratch.conf": "32b6b6a1f18e8fdd4f096a76aa6f99d8a8092bf9c427f349562dc8b9a2989c51",
     "tools/match/scratches/ui_draw_progress_bar/scratch.conf": "cb37fc164977a36bc3448648f4a1dae1a3e1083d642705fddfd9913bc6869a97",
     "tools/match/scratches/ui_draw_textured_quad/scratch.conf": "90235ace04b94c6036601b8cd0a4365330cdc618a5894b327b8d6954feb84c81",
+    "tools/match/scratches/ui_element_construct/scratch.conf": "97287cb9ca4c56be71cd22e085852420bfe342bf5776caa4716cc04eeb005b36",
     "tools/match/scratches/ui_element_globals_init/scratch.conf": "13251680467d1cc9d36140a44fbb22a57517cffc285852511aa70efd6edf81e9",
     "tools/match/scratches/ui_element_globals_init_thunk/scratch.conf": "58e27bbefe36d0f2f0be425af003cae389023ec48780a26c3427748cd30fbffe",
     "tools/match/scratches/ui_element_init_defaults/scratch.conf": "a55e4ee9ca2c9a837f7739f7b43ec47adc7d85cadf87dc6e7cd28807f7e5a1ac",
@@ -79510,7 +79511,6 @@
     "tools/match/scratches/ui_segmented_slider_update/scratch.conf": "e4ca9b9ad25e1e55a8529e8eb6565d9333f3f0ef33ce601e76174e5e2b6cf29c",
     "tools/match/scratches/ui_template_block_set_mode4/scratch.conf": "db73dca2597a8a7531101afec370d0a438f023ec7e5fd4299e29e894f80bcd87",
     "tools/match/scratches/ui_template_slot_ctor_noop/scratch.conf": "1ada03ae7a22a74ca9df499b6f5de91e6c7a0a220b0e444158b9ba544b50830f",
-    "tools/match/scratches/ui_template_triplet_reset_and_seed_modes/scratch.conf": "1cbb6af3acf1cf5ea3223bc83bdd54c5cccbb507e54d32f6a08cf7c8f201f2cb",
     "tools/match/scratches/ui_text_input_render/scratch.conf": "6342780c71e15c3dede6a5331f72176b5438622975a5b5e0aa34a77f2fa6738f",
     "tools/match/scratches/ui_text_input_update/scratch.conf": "a2e1b197ba0aeda37d738928a0d1d7c83a69400f6890dbd5630a9d1094fa4617",
     "tools/match/scratches/ui_update_notice_button_destroy/scratch.conf": "07d902bf73cb99a0e92cf7225558871476145ef5b819aa7c86b12d5ad758c248",
@@ -79535,8 +79535,8 @@
     "tools/match/scratches/unused_fx_queue_random_prefix_color_global_init_thunk/scratch.conf": "91d652fe15f657a513322b7fed67e95bf9c9bbec66dc125ac7b3e942d42e0699",
     "tools/match/scratches/unused_fx_queue_random_prefix_vec2_global_init/scratch.conf": "bc77f261b6ccc7cf9262a825f7b6ecf5a14741bea821ab5315d6ccaf217dfbd0",
     "tools/match/scratches/unused_fx_queue_random_prefix_vec2_global_init_thunk/scratch.conf": "10cb4216d53f854eef6a717a2b1cddc40fa9cdba8bf6792f025bfd4af210a6a5",
-    "tools/match/scratches/unused_fx_rotated_effect_id_prefix_color_global_init/scratch.conf": "8b3cc4ffc5c5ed80d4fb9e53bad27e78cec575b7d44685f8ee0f40e905452b63",
-    "tools/match/scratches/unused_fx_rotated_effect_id_prefix_color_global_init_thunk/scratch.conf": "05a226b0fa5db945f5ed80f5a0800b23f7b6c4211750b108272e71e7c2c23923",
+    "tools/match/scratches/unused_fx_rotated_creature_type_id_prefix_color_global_init/scratch.conf": "10350358924624480d89f36f6c3fe7cde433aa06da0a26bd79cbe5e1829807e3",
+    "tools/match/scratches/unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk/scratch.conf": "4de2ce3b9aab9520237f13c55ea273c884c4232aadbf8255837c0dc9a9ecf13c",
     "tools/match/scratches/unused_fx_rotated_scale_prefix_color_global_init/scratch.conf": "4528e15116fbc9b08bd015e6afbbcd201670adce3cc88d757062a9f11b81c1a9",
     "tools/match/scratches/unused_fx_rotated_scale_prefix_color_global_init_thunk/scratch.conf": "6f3de8c47fc47f52b6edbbb9ff81e61629bbb645a3fde71e2ce21dc6581b99b1",
     "tools/match/scratches/unused_global_noop_init/scratch.conf": "3dfd0c23674fc44f35b6ed67a3e465d273857216ef0d094bc2ddb9742bbc60a7",
@@ -79561,11 +79561,11 @@
     "tools/match/scratches/vorbis_read_pcm16/scratch.conf": "cde320fde2f05405f53cf09db94d26e18d5b891f56f32745c19c4b233bc87ac4",
     "tools/match/scratches/wav_parse_into_entry/scratch.conf": "907b570f788ee7d1df752a6682132b84528814d3c7792417e800095dcfc4ae35",
     "tools/match/scratches/weapon_assign_player/scratch.conf": "368722037e924b3b914b1e6c5078966f7a14a115655b6a799d57d89e82a3d7d7",
+    "tools/match/scratches/weapon_name_get/scratch.conf": "3b045726cb9f91b0a513bbe0f25e6bbd68a39d041845a1e8ec9da2a75b7f36e9",
     "tools/match/scratches/weapon_pick_random_available/scratch.conf": "16674f0e5b75ed365bad51154e16cb55f90a4c86dbaf3395d0a2caa27bb2b6a6",
     "tools/match/scratches/weapon_refresh_available/scratch.conf": "637a2557f2423c8b00cf50e9284ee99500520aa8f9d4dc1e56f24ce2f647c397",
     "tools/match/scratches/weapon_table_defaults_global_init/scratch.conf": "40dd7657a42842449c715b8ad1727222d22f46c9e742f5418133b4f7f6a6bbde",
     "tools/match/scratches/weapon_table_defaults_global_init_thunk/scratch.conf": "cc1bd47f654707fbbc483718774900cfcde12e879c55d35613ebf33a3b4135ee",
-    "tools/match/scratches/weapon_table_entry/scratch.conf": "72a7502ce48479015908657e2739169f6abe1039297bb3e48a302472532d7c34",
     "tools/match/scratches/weapon_table_init/scratch.conf": "ae3485bb6273ac19d766b97d47b33134d0c4ca007eb57a2086f1ea62ce2d82eb",
     "tools/match/scratches/win32_file_get_version_words/scratch.conf": "5d55f393ae23d5c0687022cab24c5c28c842e5066443cac8610fca22ae41ba50",
     "tools/match/scratches/wrap_text_to_width_alloc/scratch.conf": "1e556cc021240e407189aa97e630caa84525c00d9265a7391b16b99302b20331",
@@ -79643,14 +79643,14 @@
     "tools/match/shared/grim_zlib_callbacks.cpp": "bb511377036a1242c5a13d0a3b87370079b2a5120a06d63e1916ecc3a1a96a4a",
     "tools/match/shared/grim_zlib_inflate_source.c": "7cf89c9e6852c57b459c31ef46b1572a1f30c74d7a8966b4836851813f16a578",
     "tools/match/shared/grim_zlib_trees_source.c": "7ac7bab479c8e93f854cdc7b2d55dd2b48876d8d5e833296567eca3e63ff5e9b",
-    "tools/native/abi/crimsonland.exe/abi_assertions.cpp": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
+    "tools/native/abi/crimsonland.exe/abi_assertions.cpp": "4d50fb679e67443596bff9fad9f6b9a87823595160bf28f462b716cae740d360",
     "tools/native/abi/crimsonland.exe/scratch.conf": "67398df40d73a307b51a662ae5ec6d99bec371f98309edfe86c8580cf6744587",
     "tools/native/abi/grim.dll/abi_assertions.cpp": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "tools/native/abi/grim.dll/scratch.conf": "5e76d0e969b2a775b73d701b7301d305629f61ca5eb9a8c5c4bc393d8751f30c",
-    "tools/native/data_candidates.json": "4a3f5d9f59b6061d6e459b79b6996677a499accb2188ab79d3119747c5cfc33d",
-    "tools/native/data_definitions/crimsonland.exe.json": "cfc8d7d06e51008e3d4c2ce017fadd221daf3252043e856fb000c76d329fad0c",
+    "tools/native/data_candidates.json": "ebb3edf5163cde2a628078411f60eba5f5b6f993a67084a3caba05beae36dcff",
+    "tools/native/data_definitions/crimsonland.exe.json": "cfe84833247b246a1c269bf1239899b267c095b3e105175d71a99ed3d5d9a4b0",
     "tools/native/data_definitions/grim.dll.json": "915d9dfa0f4c5f6b42dee3287ed40b1e5cb13a4760483b9f2f62b5e50531bc0b",
-    "tools/native/data_ownership.json": "96ef45584c6f57bea4fc08146f5dea774b9d2e76873ae1a3924cc29e423b028d",
+    "tools/native/data_ownership.json": "87a3f03dd1fa66311629886c6b62d8dba92b9ef0dfe332735f3aae2f0e1645b4",
     "tools/native/linker_aliases/grim.dll.json": "7d0f37f43a195e318d402cf79f8f6357db9dbde4b2a085631ea8567b6b540682",
     "tools/native/providers/crimsonland.exe.json": "56ae09ebeb4b0178bfa4d95cccedb97d5deb78cf4f1b0c6c81e1eb88fa251a46",
     "tools/native/providers/grim.dll.json": "c5d5e2e9f4ed9b4721ca8cadc02a08cd924cb2aa5f77bfb25be1a7770ba43e58",

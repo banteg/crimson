@@ -62,7 +62,7 @@ def quest_build_target_practice(ctx: QuestContext) -> list[SpawnEntry]:
         ) * 32
         point = ring_point(NATIVE_CENTER, float(radius), angle)
         heading = heading_from_center(point, NATIVE_CENTER)
-        entries.append(spawn(point, SpawnId.ALIEN_AI7_ORBITER_36, trigger, 1, heading=heading))
+        entries.append(spawn(point, SpawnId.ALIEN_DELAYED_START_36, trigger, 1, heading=heading))
         trigger += max(step, 1100)
         step -= 50
         if step <= 500:

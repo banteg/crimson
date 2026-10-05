@@ -95,7 +95,7 @@ extern "C" void game_state_set(game_state_id_t state_id)
 
     if (state_id == GAME_STATE_MAIN_MENU) {
         highscore_return_latch = 0;
-        render_pass_mode = 0;
+        run_active = 0;
         ui_sign_crimson.active = 1;
 
         if (game_is_full_version() && mods_any_available()) {
@@ -174,35 +174,35 @@ extern "C" void game_state_set(game_state_id_t state_id)
         }
         ui_element_slot_footer_variant_b.active = 1;
     } else if (state_id == GAME_STATE_PLUGIN_RUNTIME) {
-        render_pass_mode = 0;
+        run_active = 0;
         ui_sign_crimson.focus_disabled = 0;
     } else if (state_id == GAME_STATE_GAMEPLAY) {
         ui_element_slot_28.active = 1;
         screen_fade_ramp_flag = 0;
-        if (!render_pass_mode) {
+        if (!run_active) {
             highscore_return_latch = 0;
             gameplay_reset_state();
             if (config_game_mode == GAME_MODE_QUEST) {
                 ++game_status_blob.quest_play_counts[
                     quest_stage_major * 10 + quest_stage_minor];
                 quest_start_selected(quest_stage_major, quest_stage_minor);
-                render_pass_mode = 1;
+                run_active = 1;
                 gameplay_transition_latch = 1;
             } else if (config_game_mode == GAME_MODE_RUSH) {
                 ++game_status_blob.mode_play_rush;
-                render_pass_mode = 1;
+                run_active = 1;
                 gameplay_transition_latch = 1;
             } else if (config_game_mode == GAME_MODE_SURVIVAL) {
                 ++game_status_blob.mode_play_survival;
-                render_pass_mode = 1;
+                run_active = 1;
                 gameplay_transition_latch = 1;
             } else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
                 ++game_status_blob.mode_play_typo;
-                render_pass_mode = 1;
+                run_active = 1;
                 gameplay_transition_latch = 1;
             } else {
                 ++game_status_blob.mode_play_other;
-                render_pass_mode = 1;
+                run_active = 1;
                 gameplay_transition_latch = 1;
             }
         }
@@ -211,10 +211,10 @@ extern "C" void game_state_set(game_state_id_t state_id)
         typo_mode_reset_flag = 1;
         ui_element_slot_28.active = 1;
         screen_fade_ramp_flag = 0;
-        if (!render_pass_mode) {
+        if (!run_active) {
             highscore_return_latch = 0;
             gameplay_reset_state();
-            render_pass_mode = 1;
+            run_active = 1;
             gameplay_transition_latch = 1;
         }
     } else if (state_id == GAME_STATE_PLAY_GAME_MENU) {

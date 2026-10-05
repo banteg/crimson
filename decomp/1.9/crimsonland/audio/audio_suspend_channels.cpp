@@ -4,7 +4,7 @@ extern "C" void audio_suspend_channels(void)
 {
     int i;
 
-    if (!sfx_unmuted_flag
+    if (!music_ready
         || config_blob.music_disabled
         || config_blob.sound_disabled) {
         return;

@@ -697,7 +697,7 @@ class BaseGameplayMode:
         self._perk_menu_requested = False
         self._counted_level = 1
 
-        # Native game_over/victory transitions call `sfx_mute_all` on menu + extra
+        # Native game_over/victory transitions call `music_fade_out_all` on menu + extra
         # tracks before restarting gameplay ("Play Again"), resetting first-hit tune gate.
         if self.audio is not None:
             stop_music(self.audio.music)
@@ -778,7 +778,7 @@ class BaseGameplayMode:
         self._game_over_record = build_highscore_record(
             state=self.state,
             player=self.player,
-            survival_elapsed_ms=int(self._session_elapsed_ms()),
+            run_elapsed_ms=int(self._session_elapsed_ms()),
             creature_kill_count=int(self.creatures.kill_count),
         )
         self._game_over_ui.open()
@@ -842,7 +842,7 @@ class BaseGameplayMode:
         )
 
     def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        # `game_update_generic_menu` renders the world only while `render_pass_mode` holds; the death clears it, so
+        # `game_update_generic_menu` renders the world only while `run_active` holds; the death clears it, so
         # the high scores over a game over show just the terrain.
         alpha = 0.0 if self._game_over_active else self._world_entity_alpha() * entity_alpha
         self._draw_world(entity_alpha=alpha)

@@ -76,7 +76,7 @@ PERK_ROWS = [(160, 216), (160, 235)]
 
 def unlock_all(status):
     status.quest_unlock_index = 40
-    status.quest_unlock_index_full = 40
+    status.quest_unlock_index_hardcore = 40
 
 
 # Main-menu buttons move with the window width (`ui_menu_layout_init`).

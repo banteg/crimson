@@ -31,11 +31,11 @@ recorded in the replay and pinned for ranked runs. Add newly found gates here.
 ## Audio
 
 The first eligible bullet or secondary-projectile hit of a run
-(`projectile_update`, not in Rush) calls `sfx_play_exclusive(music_track_extra_0)`
+(`projectile_update`, not in Rush) calls `music_play_exclusive(music_track_game_playlist)`
 instead of playing its hit sound while `music_playlist_randomized_latch` is clear.
-`sfx_play_exclusive` returns early unless all of the following hold:
+`music_play_exclusive` returns early unless all of the following hold:
 
-- audio initialized (`sfx_unmuted_flag`, set by `audio_init_music`)
+- audio initialized (`music_ready`, set by `audio_init_music`)
 - sound and music are enabled in the config
 - the playlist is not empty (`music\game_tunes.txt` queued tracks)
 - no plugin runtime is active
@@ -52,7 +52,7 @@ depend on the player's audio device or settings.
 
 ## Game tune latch
 
-The latch is global, not per run. Any other `sfx_play_exclusive` call clears it
+The latch is global, not per run. Any other `music_play_exclusive` call clears it
 (with the audio gate open), and every route into a run passes one: startup, pause
 to main menu, game over, quest results and quest failed. So it is clear at every
 run start, which the port's per-session flag models. The one unmodeled clear is the

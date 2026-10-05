@@ -30,7 +30,7 @@ void highscore_write_record(highscore_record_t *record, FILE *fp)
         record->month = (unsigned char)local_system_time.wMonth;
         record->year_offset =
             (unsigned char)(local_system_time.wYear - 2000);
-        record->date_checksum = highscore_date_checksum(
+        record->date_week = highscore_iso_week(
             local_system_time.wYear,
             local_system_time.wMonth,
             local_system_time.wDay);

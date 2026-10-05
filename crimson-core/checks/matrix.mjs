@@ -108,7 +108,7 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
       pending: field(e, "globals.game_state_pending"),
       xp: field(e, "players[0].experience"),
       health: field(e, "players[0].health", true),
-      elapsed_ms: field(e, "globals.survival_elapsed_ms"),
+      elapsed_ms: field(e, "globals.run_elapsed_ms"),
       timeline_ms: field(e, "globals.quest_spawn_timeline"),
       rng: field(e, "globals.rng"),
     };
@@ -171,7 +171,7 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
         let distance = 300,
           pickup;
         for (let b = 0; b < 16; b++) {
-          if (!u(`bonuses[${b}].bonus_id`) || u(`bonuses[${b}].state`) !== 0)
+          if (!u(`bonuses[${b}].bonus_id`) || u(`bonuses[${b}].picked`) !== 0)
             continue;
           const bx = f(`bonuses[${b}].time.pos_x`),
             by = f(`bonuses[${b}].time.pos_y`),

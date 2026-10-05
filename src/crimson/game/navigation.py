@@ -159,7 +159,7 @@ class ScreenNavigator:
         if request.mode == GameMode.QUESTS:
             assert request.quest_level is not None
             unlock = (
-                self.state.status.quest_unlock_index_full
+                self.state.status.quest_unlock_index_hardcore
                 if config.gameplay.hardcore
                 else self.state.status.quest_unlock_index
             )

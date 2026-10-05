@@ -737,11 +737,11 @@ def draw_hud_overlay(
     aux_step = Vec2(0.0, 32.0)
     aux_row = 0
     for hud_player in hud_players:
-        aux_timer = float(hud_player.aux_timer)
-        if aux_timer <= 0.0:
+        weapon_popup_timer = float(hud_player.weapon_popup_timer)
+        if weapon_popup_timer <= 0.0:
             continue
 
-        fade = 2.0 - aux_timer if aux_timer > 1.0 else aux_timer
+        fade = 2.0 - weapon_popup_timer if weapon_popup_timer > 1.0 else weapon_popup_timer
         fade = max(0.0, min(1.0, fade)) * alpha
 
         panel_alpha = fade * 0.8

@@ -65,7 +65,7 @@ _TRAIL_DECAY_SCALE = f32(0.01)
 def _creature_is_collidable(creature: CreatureState) -> bool:
     if not creature.active:
         return False
-    return creature_lifecycle_is_collidable(creature.lifecycle_stage)
+    return creature_lifecycle_is_collidable(creature.death_timer)
 
 
 def _step_detonation(
@@ -228,12 +228,12 @@ def _tick_rocket_trail(
     sprite_effects: SpriteEffectPool,
     rng: CrandLike,
 ) -> None:
-    # Rocket smoke trail (`trail_timer` in crimsonland.exe).
+    # Rocket smoke trail (`trail_distance` in crimsonland.exe).
     trail_speed = x87_pc24_add(abs(entry.vel.x), abs(entry.vel.y))
     trail_decay = x87_pc24_mul(trail_speed, dt)
     trail_decay = x87_pc24_mul(trail_decay, _TRAIL_DECAY_SCALE)
-    entry.trail_timer = x87_pc24_sub(entry.trail_timer, trail_decay)
-    if float(entry.trail_timer) < 0.0:
+    entry.trail_distance = x87_pc24_sub(entry.trail_distance, trail_decay)
+    if float(entry.trail_distance) < 0.0:
         direction = Vec2.from_heading(entry.angle)
         spawn_pos = entry.pos - direction * 9.0
         # Native bug: both trail velocity components come from cosine
@@ -247,7 +247,7 @@ def _tick_rocket_trail(
             color=RGBA(1.0, 1.0, 1.0, 0.25),
             rng=rng,
         )
-        entry.trail_timer = f32(0.06)
+        entry.trail_distance = f32(0.06)
 
 
 def fx_spawn_secondary_projectile(
@@ -259,7 +259,7 @@ def fx_spawn_secondary_projectile(
     angle: float,
     type_id: SecondaryProjectileTypeId,
 ) -> int:
-    """Port of `fx_spawn_secondary_projectile`; `player` is `render_overlay_player_index`'s, whose aim seeds the seeker."""
+    """Port of `fx_spawn_secondary_projectile`; `player` is `current_player_index`'s, whose aim seeds the seeker."""
 
     entries = state.secondary_projectiles.entries
     index = next((i for i, entry in enumerate(entries) if not entry.active), SECONDARY_PROJECTILE_POOL_SIZE - 1)
@@ -273,7 +273,7 @@ def fx_spawn_secondary_projectile(
     radians = x87_pc24_sub(f32(angle), NATIVE_HALF_PI)
     entry.vel = Vec2(x87_pc24_cos_mul(radians, 90.0), x87_pc24_sin_mul(radians, 90.0))
     entry.angle = f32(angle)
-    entry.trail_timer = 0.0
+    entry.trail_distance = 0.0
     entry.type_id = type_id
 
     if type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
@@ -351,7 +351,7 @@ class SecondaryProjectilePool:
                     break
             if hit_idx is not None:
                 hit_count += 1
-                if creature_lifecycle_is_alive(creatures[int(hit_idx)].lifecycle_stage):
+                if creature_lifecycle_is_alive(creatures[int(hit_idx)].death_timer):
                     runtime_state.shots_hit += 1
 
                 if freeze_active:

@@ -52,7 +52,7 @@ def test_completion_is_counted_once_and_saved_before_the_results(loop) -> None:
     for _ in range(30):
         loop.update(1.0 / 60.0)
     status = loop.state.status
-    assert (status.quest_play_count(COMPLETED), status.quest_unlock_index, status.quest_unlock_index_full) == (1, 1, 0)
+    assert (status.quest_play_count(COMPLETED), status.quest_unlock_index, status.quest_unlock_index_hardcore) == (1, 1, 0)
     assert _saved(loop).as_data() == status.as_data()
 
 
@@ -65,7 +65,7 @@ def test_death_after_the_transition_completes_keeps_completion_and_unlock(loop) 
     run.world.players[0].health = 0.0
     _play_until(loop, QuestFailedView)
     saved = _saved(loop)
-    assert (saved.quest_play_count(COMPLETED), saved.quest_unlock_index, saved.quest_unlock_index_full) == (1, 1, 1)
+    assert (saved.quest_play_count(COMPLETED), saved.quest_unlock_index, saved.quest_unlock_index_hardcore) == (1, 1, 1)
 
 
 def test_death_before_the_transition_ends_counts_the_completion_without_saving(loop) -> None:

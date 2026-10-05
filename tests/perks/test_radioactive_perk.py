@@ -24,11 +24,11 @@ def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = Vec2(46.0, 0.0)
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature.collision_timer = 0.1
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature.dot_tick_timer = 0.1
 
     step_runtime = step_creatures(world, dt, fx_queue=FxQueue())
 
@@ -41,7 +41,7 @@ def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
         x87_pc24_sub(f32(100.0), dist_after_move),
         f32(0.3),
     )
-    assert_float_close(creature.collision_timer, 0.5)
+    assert_float_close(creature.dot_tick_timer, 0.5)
     assert_float_close(creature.hp, x87_pc24_sub(f32(50.0), expected_damage))
     assert step_runtime.fx_queue.count == 1
 
@@ -61,12 +61,12 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = Vec2(46.0, 0.0)
     creature.hp = 5.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.reward_value = 12.7
-    creature.collision_timer = 0.1
+    creature.dot_tick_timer = 0.1
 
     step_runtime = step_creatures(world, dt, fx_queue=FxQueue())
 
@@ -74,7 +74,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     assert not step_runtime.deaths
     assert creature.hp < 0.0
     assert_float_close(
-        creature.lifecycle_stage,
+        creature.death_timer,
         x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, float(dt)),
     )
     assert step_runtime.fx_queue.count == 1
@@ -94,20 +94,20 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
     creature = world.creatures.entries[0]
     creature.active = True
     creature.type_id = CreatureTypeId.LIZARD
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = Vec2(46.0, 0.0)
     creature.hp = 5.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
     creature.reward_value = 12.7
-    creature.collision_timer = 0.1
+    creature.dot_tick_timer = 0.1
 
     step_runtime = step_creatures(world, dt, fx_queue=FxQueue())
 
     assert player.experience == 100
     assert not step_runtime.deaths
     assert_float_close(creature.hp, 1.0)
-    assert_float_close(creature.lifecycle_stage, CREATURE_LIFECYCLE_ALIVE)
-    assert_float_close(creature.collision_timer, 0.5)
+    assert_float_close(creature.death_timer, CREATURE_LIFECYCLE_ALIVE)
+    assert_float_close(creature.dot_tick_timer, 0.5)
     assert step_runtime.fx_queue.count == 1
 
 
@@ -125,11 +125,11 @@ def test_radioactive_pulse_measures_distance_to_target_player() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = Vec2(46.0, 0.0)
     creature.hp = 50.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature.collision_timer = 0.1
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature.dot_tick_timer = 0.1
     creature.target_player = 1
 
     step_creatures(world, dt)
@@ -151,11 +151,11 @@ def test_radioactive_pulse_requires_living_creature() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = Vec2(46.0, 0.0)
     creature.hp = -1.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature.collision_timer = 0.1
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature.dot_tick_timer = 0.1
     experience_before = player.experience
 
     step_creatures(world, dt)
@@ -163,4 +163,4 @@ def test_radioactive_pulse_requires_living_creature() -> None:
     # Native requires hp > 0 at timer fire: an already-dead creature is not
     # pulsed again (no XP re-award, no collision timer reset).
     assert player.experience == experience_before
-    assert creature.collision_timer != 0.5
+    assert creature.dot_tick_timer != 0.5

@@ -141,12 +141,12 @@ extern "C" unsigned char game_startup_init(void)
             grim_interface_ptr->grim_destroy_texture(
                 grim_interface_ptr->grim_get_texture_handle(
                     "splash10Tons"));
-            sfx_mute_all(music_track_intro_id);
+            music_fade_out_all(music_track_intro_id);
             if (!game_is_full_version()) {
-                sfx_play_exclusive(music_track_crimsonquest_id);
+                music_play_exclusive(music_track_crimsonquest_id);
                 demo_mode_start();
             } else {
-                sfx_play_exclusive(music_track_crimson_theme_id);
+                music_play_exclusive(music_track_crimson_theme_id);
             }
             grim_interface_ptr->grim_clear_color(
                 0.0f, 0.0f, 0.0f, 1.0f);
@@ -171,8 +171,8 @@ extern "C" unsigned char game_startup_init(void)
                 0.0f, 0.0f, 0.0f, 1.0f);
 
             if (startup_intro_enabled) {
-                if (!sfx_is_unmuted(music_track_intro_id)) {
-                    sfx_play_exclusive(music_track_intro_id);
+                if (!music_track_is_playing(music_track_intro_id)) {
+                    music_play_exclusive(music_track_intro_id);
                 }
 
                 startup_splash_timer += frame_dt * 1.1f;

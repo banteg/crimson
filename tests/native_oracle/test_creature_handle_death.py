@@ -32,7 +32,7 @@ from ._support import (
 )
 
 _CREATURE_WRITES = (
-    "lifecycle_stage", "pos_x", "pos_y", "health", "max_health", "heading", "size",
+    "death_timer", "pos_x", "pos_y", "health", "max_health", "heading", "size",
     "contact_damage", "move_speed", "reward_value",
 )  # fmt: skip
 
@@ -41,7 +41,7 @@ def _python_creature(creature: CreatureState) -> dict[str, float | int | None]:
     return {
         "active": int(creature.active),
         "phase_seed": creature.phase_seed,
-        "lifecycle_stage": creature.lifecycle_stage,
+        "death_timer": creature.death_timer,
         "pos_x": creature.pos.x,
         "pos_y": creature.pos.y,
         "health": creature.hp,
@@ -77,7 +77,7 @@ def test_creature_handle_death_matches_native(oracle) -> None:
         experience = rng.choice((rng.randrange(0, 1 << 20), rng.randrange(1 << 24, 1 << 26)))
         dt = f32(rng.uniform(0.001, 0.05))
         values = {
-            "lifecycle_stage": f32(rng.choice((16.0, rng.uniform(0.0, 16.0)))),
+            "death_timer": f32(rng.choice((16.0, rng.uniform(0.0, 16.0)))),
             "pos_x": f32(rng.uniform(40.0, 980.0)),
             "pos_y": f32(rng.uniform(40.0, 980.0)),
             "health": f32(rng.uniform(-30.0, 0.0)),
@@ -101,7 +101,7 @@ def test_creature_handle_death_matches_native(oracle) -> None:
         oracle.write_u32(quick_learner_count, int(quick_learner))
         oracle.write_f32("bonus_double_xp_timer", double_experience)
         oracle.write_f32("bonus_freeze_timer", freeze)
-        oracle.write_u8("bonus_spawn_guard", int(guard))
+        oracle.write_u8("scripted_burst_active", int(guard))
         oracle.write_u32(oracle.resolve("player_state_table") + PLAYER_OFFSETS["weapon_id"], int(weapon_id))
         oracle.write_u8(pool_address, 1)
         for name in _CREATURE_WRITES:
@@ -113,7 +113,7 @@ def test_creature_handle_death_matches_native(oracle) -> None:
         world = world_with_creature(
             CreatureState(
                 active=True,
-                lifecycle_stage=values["lifecycle_stage"],
+                death_timer=values["death_timer"],
                 pos=Vec2(values["pos_x"], values["pos_y"]),
                 hp=values["health"],
                 max_hp=values["max_health"],
@@ -133,7 +133,7 @@ def test_creature_handle_death_matches_native(oracle) -> None:
             world.state.perks[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
         world.state.bonuses.double_experience = double_experience
         world.state.bonuses.freeze = freeze
-        world.state.bonus_spawn_guard = guard
+        world.state.scripted_burst_active = guard
         fx_queue = FxQueue()
         kill_creature(world, keep_corpse=keep_corpse, fx_queue=fx_queue, dt=dt)
 

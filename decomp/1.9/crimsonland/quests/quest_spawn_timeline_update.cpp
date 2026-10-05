@@ -24,7 +24,7 @@ extern "C" void quest_spawn_timeline_update(void)
 {
     int entry_index;
     int spawn_index;
-    unsigned char creatures_none_active = creatures_any_active_flag;
+    unsigned char creatures_none_active = creatures_none_active_flag;
 
     if (creatures_none_active) {
         quest_spawn_stall_timer_ms += frame_dt_ms;
@@ -70,7 +70,7 @@ spawn_entries:
         }
 
         quest_spawn_table[entry_index].count = 0;
-        creatures_any_active_flag = 0;
+        creatures_none_active_flag = 0;
         if (entry_index >= quest_spawn_count - 1) {
             return;
         }

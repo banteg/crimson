@@ -34,13 +34,13 @@ found:
     vel_y = (float)sin(angle - 1.57079637f);
     projectile->fields.velocity.y = vel_y * 90.0f;
     projectile->angle = angle;
-    projectile->fields.trail_timer = 0.0f;
+    projectile->fields.trail_distance = 0.0f;
     projectile->fields.type_id = type_id;
 
     if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
         projectile->fields.target_id =
             creature_find_nearest(
-                &player_state_table[render_overlay_player_index].aim,
+                &player_state_table[current_player_index].aim,
                 -1,
                 0.0f);
         projectile->fields.velocity.x = vel_x * 190.0f;

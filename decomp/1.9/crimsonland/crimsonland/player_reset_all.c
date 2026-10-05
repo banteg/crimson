@@ -27,37 +27,37 @@ void player_reset_all(void)
         console_printf(&console_log_queue, "- Reseting players.\n");
     }
 
-    render_overlay_player_index = 0;
+    current_player_index = 0;
     do {
         reset_vec2_t center(
             (float)terrain_texture_width * 0.5f,
             (float)terrain_texture_height * 0.5f);
 
         player_reset_reserved_zero = 0.0f;
-        player_state_table[render_overlay_player_index].speed_bonus_timer = 0.0f;
-        player_state_table[render_overlay_player_index].shield_timer = 0.0f;
-        player_state_table[render_overlay_player_index].state_aux = 0;
-        player_state_table[render_overlay_player_index].plaguebearer_active = 0;
-        *(reset_vec2_t *)&player_state_table[render_overlay_player_index].position =
+        player_state_table[current_player_index].speed_bonus_timer = 0.0f;
+        player_state_table[current_player_index].shield_timer = 0.0f;
+        player_state_table[current_player_index].state_aux = 0;
+        player_state_table[current_player_index].plaguebearer_active = 0;
+        *(reset_vec2_t *)&player_state_table[current_player_index].position =
             center;
-        player_state_table[render_overlay_player_index].health = 100.0f;
+        player_state_table[current_player_index].health = 100.0f;
 
-        if (render_overlay_player_index % 2 == 0) {
+        if (current_player_index % 2 == 0) {
             reset_vec2_t offset(
-                (float)(render_overlay_player_index * 0x50),
-                (float)(render_overlay_player_index * 0x50));
-            *(reset_vec2_t *)&player_state_table[render_overlay_player_index]
+                (float)(current_player_index * 0x50),
+                (float)(current_player_index * 0x50));
+            *(reset_vec2_t *)&player_state_table[current_player_index]
                 .position += offset;
         } else {
             reset_vec2_t offset(
-                (float)(render_overlay_player_index * 0x50),
-                (float)(render_overlay_player_index * 0x50));
-            *(reset_vec2_t *)&player_state_table[render_overlay_player_index]
+                (float)(current_player_index * 0x50),
+                (float)(current_player_index * 0x50));
+            *(reset_vec2_t *)&player_state_table[current_player_index]
                 .position -= offset;
         }
 
         {
-            int reset_index = render_overlay_player_index;
+            int reset_index = current_player_index;
 
             player_state_table[reset_index].size = 48.0f;
             player_state_table[reset_index].speed_multiplier = 2.0f;
@@ -97,12 +97,12 @@ void player_reset_all(void)
 
         {
             for (int creature_index = 0; creature_index < 0x180; ++creature_index) {
-                creature_pool[creature_index].collision_flag = 0;
+                creature_pool[creature_index].plague_infected = 0;
             }
         }
 
-        render_overlay_player_index += 1;
-    } while (render_overlay_player_index < 2);
+        current_player_index += 1;
+    } while (current_player_index < 2);
 
-    render_overlay_player_index = 0;
+    current_player_index = 0;
 }

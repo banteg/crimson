@@ -229,7 +229,7 @@ extern "C" void ui_render_hud(float transition_alpha)
             } else {
                 bar_position = hud_render_vec2_t(64.0f, 6.0f);
             }
-            render_overlay_player_index = 0;
+            current_player_index = 0;
             if (config_player_count > 0) {
                 float background_alpha = transition_alpha * 0.5f;
                 render_value = transition_alpha * 0.8f;
@@ -241,12 +241,12 @@ extern "C" void ui_render_hud(float transition_alpha)
                     grim_interface_ptr->grim_draw_quad(
                         bar_position.x,
                         bar_position.y
-                            + (float)(render_overlay_player_index * 16),
+                            + (float)(current_player_index * 16),
                         120.0f,
                         9.0f);
 
                     float health_ratio =
-                        player_state_table[render_overlay_player_index].health
+                        player_state_table[current_player_index].health
                         * 0.01f;
                     if (health_ratio > 1.0f) {
                         health_ratio = 1.0f;
@@ -261,11 +261,11 @@ extern "C" void ui_render_hud(float transition_alpha)
                     grim_interface_ptr->grim_draw_quad(
                         bar_position.x,
                         bar_position.y
-                            + (float)(render_overlay_player_index * 16),
+                            + (float)(current_player_index * 16),
                         health_ratio * 120.0f,
                         9.0f);
-                    ++render_overlay_player_index;
-                } while (render_overlay_player_index < config_player_count);
+                    ++current_player_index;
+                } while (current_player_index < config_player_count);
             }
             grim_interface_ptr->grim_end_batch();
         }
@@ -281,11 +281,11 @@ extern "C" void ui_render_hud(float transition_alpha)
             } else {
                 position = hud_render_vec2_t(290.0f, 4.0f);
             }
-            for (render_overlay_player_index = 0;
-                 render_overlay_player_index < config_player_count;
-                 ++render_overlay_player_index) {
+            for (current_player_index = 0;
+                 current_player_index < config_player_count;
+                 ++current_player_index) {
                 int weapon_id =
-                    player_state_table[render_overlay_player_index].weapon_id;
+                    player_state_table[current_player_index].weapon_id;
                 int ammo_class = weapon_ammo_class[weapon_id].ammo_class;
                 if (ammo_class == 1) {
                     grim_interface_ptr->grim_bind_texture(
@@ -316,13 +316,13 @@ extern "C" void ui_render_hud(float transition_alpha)
                 grim_interface_ptr->grim_begin_batch();
 
                 int bar_count = (int)player_state_table
-                    [render_overlay_player_index]
+                    [current_player_index]
                         .clip_size;
                 if (bar_count > 30) {
                     bar_count = 20;
                 }
                 int ammo = (int)player_state_table
-                    [render_overlay_player_index]
+                    [current_player_index]
                         .ammo;
                 grim_interface_ptr->grim_set_uv(
                     0.0f, 0.0f, 1.0f, 1.0f);
@@ -345,7 +345,7 @@ extern "C" void ui_render_hud(float transition_alpha)
                             position.x + (float)bar_x,
                             position.y
                                 + (float)(
-                                    render_overlay_player_index * 14),
+                                    current_player_index * 14),
                             6.0f,
                             16.0f);
                         ++bar_index;
@@ -361,7 +361,7 @@ extern "C" void ui_render_hud(float transition_alpha)
                     grim_interface_ptr->grim_draw_text_small_fmt(
                         position.x + (float)(bar_index * 6) + 8.0f,
                         position.y
-                            + (float)(render_overlay_player_index * 14)
+                            + (float)(current_player_index * 14)
                             + 1.0f,
                         "+ %d",
                         ammo - bar_count);
@@ -498,7 +498,7 @@ extern "C" void ui_render_hud(float transition_alpha)
             if (fade >= 0.0f) {
                 float name_scale = 0.8f;
                 int quest_name_length = strlen(
-                    quest_selected_meta[
+                    quest_meta_table[
                         quest_stage_minor
                         + quest_stage_major * 10
                         - 11]
@@ -519,7 +519,7 @@ extern "C" void ui_render_hud(float transition_alpha)
                 grim_interface_ptr->grim_draw_text_mono(
                     name_x,
                     name_y,
-                    quest_selected_meta[
+                    quest_meta_table[
                         quest_stage_minor
                         + quest_stage_major * 10
                         - 11]
@@ -628,7 +628,7 @@ extern "C" void ui_render_hud(float transition_alpha)
         grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
         grim_interface_ptr->grim_begin_batch();
         grim_interface_ptr->grim_set_rotation(
-            (float)(survival_elapsed_ms / 1000)
+            (float)(run_elapsed_ms / 1000)
             * 0.10471976f);
         grim_interface_ptr->grim_draw_quad(
             220.0f, 2.0f, 32.0f, 32.0f);
@@ -642,7 +642,7 @@ extern "C" void ui_render_hud(float transition_alpha)
             255.0f,
             10.0f,
             "%d seconds",
-            survival_elapsed_ms / 1000);
+            run_elapsed_ms / 1000);
     }
 
     if (hud_show_xp_panel) {
@@ -766,17 +766,17 @@ extern "C" void ui_render_hud(float transition_alpha)
     } while (slot_index < 16);
 
     hud_y = (int)bonus_y + 1;
-    render_overlay_player_index = 0;
+    current_player_index = 0;
     if (config_player_count > 0) {
         do {
-            if (player_aux_timer[render_overlay_player_index] > 0.0f) {
+            if (player_weapon_popup_timer[current_player_index] > 0.0f) {
                 float popup_fade =
-                    player_aux_timer[render_overlay_player_index];
+                    player_weapon_popup_timer[current_player_index];
                 if (popup_fade < 1.0f) {
-                    player_aux_timer[render_overlay_player_index] -=
+                    player_weapon_popup_timer[current_player_index] -=
                         frame_dt * 0.5f;
                 } else {
-                    player_aux_timer[render_overlay_player_index] -=
+                    player_weapon_popup_timer[current_player_index] -=
                         frame_dt * 1.4f;
                 }
 
@@ -813,7 +813,7 @@ extern "C" void ui_render_hud(float transition_alpha)
                     2,
                     1,
                     weapon_table[
-                        player_state_table[render_overlay_player_index]
+                        player_state_table[current_player_index]
                             .weapon_id]
                         .hud_icon_id
                         * 2);
@@ -832,16 +832,16 @@ extern "C" void ui_render_hud(float transition_alpha)
                     8.0f,
                     (float)hud_y,
                     weapon_table[
-                        player_state_table[render_overlay_player_index]
+                        player_state_table[current_player_index]
                             .weapon_id]
                         .name);
 
                 hud_y += 32;
             }
-            ++render_overlay_player_index;
-        } while (render_overlay_player_index < config_player_count);
+            ++current_player_index;
+        } while (current_player_index < config_player_count);
     }
 
     grim_interface_ptr->grim_set_config_var(0x15, 2u);
-    render_overlay_player_index = 0;
+    current_player_index = 0;
 }

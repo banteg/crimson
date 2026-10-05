@@ -123,7 +123,7 @@
     "canonical_address": "0x0041DFB0",
     "end": "0x004012C5",
     "evidence": "exact",
-    "name": "unused_fx_rotated_effect_id_prefix_color_global_init_thunk",
+    "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk",
     "size": 5
   },
   {
@@ -131,7 +131,7 @@
     "canonical_address": "0x0041DFC0",
     "end": "0x004012F0",
     "evidence": "ordered",
-    "name": "unused_fx_rotated_effect_id_prefix_color_global_init",
+    "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init",
     "size": 32
   },
   {
@@ -598,7 +598,7 @@
     "canonical_address": "0x00444980",
     "end": "0x0040BD00",
     "evidence": "ordered",
-    "name": "player_fire_weapon",
+    "name": "typo_player_update",
     "size": 1568
   },
   {

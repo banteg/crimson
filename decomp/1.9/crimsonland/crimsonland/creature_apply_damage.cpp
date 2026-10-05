@@ -63,7 +63,7 @@ extern "C" int creature_apply_damage(
 
     if (damage_type == 1) {
         if ((creature_pool[creature_id].flags
-                & CREATURE_FLAG_ANIM_PING_PONG) == 0) {
+                & CREATURE_FLAG_SPAWNER) == 0) {
             float turn =
                 (float)((crt_rand() & 0x7f) - 0x40) * 0.002f
                 / (creature_pool[creature_id].size * 0.025f);
@@ -86,7 +86,7 @@ extern "C" int creature_apply_damage(
         creature_pool[creature_id].velocity.y -= impulse->y;
 
         if (creature_pool[creature_id].health <= 0.0f) {
-            creature_pool[creature_id].lifecycle_stage -= frame_dt;
+            creature_pool[creature_id].death_timer -= frame_dt;
             creature_handle_death(creature_id, 1);
 
             damage_vec2_t doubled_impulse =
@@ -95,7 +95,7 @@ extern "C" int creature_apply_damage(
             creature_pool[creature_id].velocity.y -= doubled_impulse.y;
 
             if ((creature_pool[creature_id].flags
-                    & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0) {
+                    & CREATURE_FLAG_RANGED_PLASMA_RIFLE) != 0) {
                 effect_color_t color = {0.8f, 0.8f, 0.3f, 0.5f};
                 effect_template.flags = 0x1d;
                 effect_template.color = color;
@@ -121,13 +121,13 @@ extern "C" int creature_apply_damage(
                 sfx_play_panned(
                     creature_type_table[
                         creature_pool[creature_id].type_id
-                    ].sfx_bank_a[crt_rand() % 4],
+                    ].death_sfx[crt_rand() % 4],
                     &creature_pool[creature_id].position,
                     1.0f);
             }
         }
     } else {
-        creature_pool[creature_id].lifecycle_stage -= frame_dt * 15.0f;
+        creature_pool[creature_id].death_timer -= frame_dt * 15.0f;
     }
 
     return creature_pool[creature_id].health <= 0.0f;

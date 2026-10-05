@@ -29,15 +29,15 @@ struct survival_vec2_t {
 
 extern "C" unsigned char console_open_flag;
 extern "C" unsigned char survival_reward_fire_seen;
-extern "C" unsigned char survival_reward_handout_enabled;
+extern "C" unsigned char survival_shrinkifier_handout_enabled;
 extern "C" int config_player_count;
 extern "C" int frame_dt_ms;
 extern "C" int survival_reward_weapon_guard_id;
-extern "C" int survival_recent_death_count;
+extern "C" int survival_first_kill_count;
 extern "C" int survival_spawn_cooldown;
 extern "C" int quest_spawn_timeline;
 extern "C" int demo_time_limit_ms;
-extern "C" survival_vec2_t survival_recent_death_pos[3];
+extern "C" survival_vec2_t survival_first_kill_pos[3];
 
 extern "C" void demo_mode_start(void);
 
@@ -50,7 +50,7 @@ extern "C" void survival_update(void)
     quest_spawn_timeline += frame_dt_ms;
     if (demo_mode_active) {
         if (quest_spawn_timeline > demo_time_limit_ms) {
-            render_pass_mode = 0;
+            run_active = 0;
             demo_mode_start();
         }
         return;
@@ -59,22 +59,22 @@ extern "C" void survival_update(void)
     {
         if (config_player_count == 1) {
             if (!survival_reward_damage_seen && !survival_reward_fire_seen
-                && survival_elapsed_ms > 64000 && survival_reward_handout_enabled) {
+                && run_elapsed_ms > 64000 && survival_shrinkifier_handout_enabled) {
                 if (player_state_table[0].weapon_id == WEAPON_ID_PISTOL) {
                     weapon_assign_player(0, WEAPON_ID_SHRINKIFIER_5K);
                     survival_reward_weapon_guard_id = WEAPON_ID_SHRINKIFIER_5K;
                 }
-                survival_reward_handout_enabled = 0;
+                survival_shrinkifier_handout_enabled = 0;
                 survival_reward_damage_seen = 1;
                 survival_reward_fire_seen = 1;
             }
 
-            if (survival_recent_death_count == 3 && !survival_reward_fire_seen) {
+            if (survival_first_kill_count == 3 && !survival_reward_fire_seen) {
                 survival_vec2_t pos;
-                pos.x = survival_recent_death_pos[0].x;
-                pos.y = survival_recent_death_pos[0].y;
-                pos += survival_recent_death_pos[1];
-                pos += survival_recent_death_pos[2];
+                pos.x = survival_first_kill_pos[0].x;
+                pos.y = survival_first_kill_pos[0].y;
+                pos += survival_first_kill_pos[1];
+                pos += survival_first_kill_pos[2];
                 pos.x *= 0.333333343f;
                 pos.y *= 0.333333343f;
                 float dx = player_state_table[0].position.x - pos.x;
@@ -84,7 +84,7 @@ extern "C" void survival_update(void)
                     weapon_assign_player(0, WEAPON_ID_BLADE_GUN);
                     survival_reward_weapon_guard_id = WEAPON_ID_BLADE_GUN;
                     survival_reward_fire_seen = 1;
-                    survival_reward_handout_enabled = 0;
+                    survival_shrinkifier_handout_enabled = 0;
                 }
             }
         }
@@ -141,12 +141,12 @@ extern "C" void survival_update(void)
         }
         survival_spawn_stage = 5;
         for (int i2 = 0; i2 < 4; ++i2) {
-            creature_spawn_template(SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,
+            creature_spawn_template(SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38,
                 (const vec2f_t *)&survival_vec2_t(1088.0f, (float)i2 * 64.0f + 384.0f),
                 3.14159274f);
         }
         for (int i3 = 0; i3 < 4; ++i3) {
-            creature_spawn_template(SPAWN_ID_SPIDER_SP1_AI7_TIMER_38,
+            creature_spawn_template(SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38,
                 (const vec2f_t *)&survival_vec2_t(-64.0f, (float)i3 * 64.0f + 384.0f),
                 3.14159274f);
         }
@@ -215,9 +215,9 @@ extern "C" void survival_update(void)
 
 update_wave_spawns:
     survival_spawn_cooldown -= frame_dt_ms * config_player_count;
-    render_overlay_player_index = 0;
+    current_player_index = 0;
     while (survival_spawn_cooldown < 0) {
-        int interval = 500 - survival_elapsed_ms / 1800;
+        int interval = 500 - run_elapsed_ms / 1800;
         while (interval < 0) {
             switch (crt_rand() & 3) {
             case 0: {

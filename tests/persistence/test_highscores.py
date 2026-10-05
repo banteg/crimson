@@ -51,7 +51,7 @@ def test_signed_ranking_matches_sorted_order_including_empty_quest_times(mode: G
     for value in [2000, 0, -500, 1000]:
         record = HighScoreRecord.blank(rand_value=0)
         record.game_mode_id = mode
-        record.survival_elapsed_ms = value
+        record.run_elapsed_ms = value
         record.score_xp = value
         records.append(record)
     ordered = sort_highscores(records, game_mode_id=mode)
@@ -92,6 +92,6 @@ def test_negative_quest_final_time_survives_saving_and_loading(tmp_path: Path) -
     path = tmp_path / "quest.hi"
     record = HighScoreRecord.blank(rand_value=0)
     record.game_mode_id = GameMode.QUESTS
-    record.survival_elapsed_ms = -500
+    record.run_elapsed_ms = -500
     upsert_highscore_record(path, record)
-    assert read_highscore_table(path, game_mode_id=GameMode.QUESTS)[0].survival_elapsed_ms == -500
+    assert read_highscore_table(path, game_mode_id=GameMode.QUESTS)[0].run_elapsed_ms == -500

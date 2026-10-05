@@ -63,7 +63,7 @@ class ReplayTutorialSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=
     stage_transition_timer_ms: I32
     hint_index: I32
     hint_alpha: I32
-    hint_fade_in: bool
+    hint_carrier_killed: bool
     repeat_spawn_count: I32
     hint_bonus_creature_ref: I32 | None
     prompt_text: str
@@ -241,7 +241,7 @@ def build_checkpoint(
             stage_transition_timer_ms=int(tutorial.stage_transition_timer_ms),
             hint_index=int(tutorial.hint_index),
             hint_alpha=int(tutorial.hint_alpha),
-            hint_fade_in=bool(tutorial.hint_fade_in),
+            hint_carrier_killed=bool(tutorial.hint_carrier_killed),
             repeat_spawn_count=int(tutorial.repeat_spawn_count),
             hint_bonus_creature_ref=(
                 None if tutorial.hint_bonus_creature_ref is None else int(tutorial.hint_bonus_creature_ref)

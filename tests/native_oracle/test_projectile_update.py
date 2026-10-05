@@ -85,7 +85,7 @@ def _place_creature(
 ) -> None:
     address = oracle.resolve("creature_pool") + index * CREATURE_STRIDE
     oracle.write_u8(address, 1)
-    oracle.write_f32(address + CREATURE_LAYOUT["lifecycle_stage"][0], lifecycle)
+    oracle.write_f32(address + CREATURE_LAYOUT["death_timer"][0], lifecycle)
     oracle.write_f32(address + CREATURE_LAYOUT["pos_x"][0], pos.x)
     oracle.write_f32(address + CREATURE_LAYOUT["pos_y"][0], pos.y)
     oracle.write_f32(address + CREATURE_LAYOUT["health"][0], health)
@@ -93,7 +93,7 @@ def _place_creature(
     oracle.write_f32(address + CREATURE_LAYOUT["size"][0], size)
     creature = world.creatures.entries[index]
     creature.active = True
-    creature.lifecycle_stage = lifecycle
+    creature.death_timer = lifecycle
     creature.pos = pos
     creature.hp = health
     creature.max_hp = health
@@ -108,7 +108,7 @@ def _compare_creatures(oracle, world: WorldState, count: int, case: str) -> list
         creature = world.creatures.entries[index]
         python = {
             "active": int(creature.active),
-            "lifecycle_stage": creature.lifecycle_stage,
+            "death_timer": creature.death_timer,
             "health": creature.hp,
             "size": creature.size,
             "vel_x": creature.vel.x,
@@ -137,7 +137,7 @@ def _python_secondary(entry: SecondaryProjectile) -> dict[str, float | int | Non
         "vel_x": entry.detonation_t if detonation else entry.vel.x,
         "vel_y": entry.detonation_scale if detonation else entry.vel.y,
         "type_id": int(entry.type_id),
-        "trail_timer": entry.trail_timer,
+        "trail_distance": entry.trail_distance,
         "target_id": None if detonation else entry.target_id,
     }
 
@@ -151,7 +151,7 @@ def _seed_secondary(
     vel: Vec2,
     angle: float = 0.0,
     life_timer: float = 0.0,
-    trail_timer: float = 0.0,
+    trail_distance: float = 0.0,
     target_id: int = 0,
 ) -> None:
     address = oracle.resolve("secondary_projectile_pool")
@@ -162,7 +162,7 @@ def _seed_secondary(
         "pos_y": pos.y,
         "vel_x": vel.x,
         "vel_y": vel.y,
-        "trail_timer": trail_timer,
+        "trail_distance": trail_distance,
     }
     oracle.write_u8(address, 1)
     for name, value in values.items():
@@ -176,7 +176,7 @@ def _seed_secondary(
     entry.life_timer = life_timer
     entry.pos = pos
     entry.vel = vel
-    entry.trail_timer = trail_timer
+    entry.trail_distance = trail_distance
     entry.target_id = target_id
     if type_id == SecondaryProjectileTypeId.DETONATION:
         entry.detonation_t = vel.x
@@ -234,7 +234,7 @@ def test_secondary_rockets_match_native(oracle) -> None:
             vel=Vec2(f32(speed * rng.uniform(-1.0, 1.0)), f32(speed * rng.uniform(-1.0, 1.0))),
             angle=f32(rng.uniform(-7.0, 7.0)),
             life_timer=f32(rng.uniform(0.2, 2.0)),
-            trail_timer=f32(rng.uniform(0.0, 0.06)),
+            trail_distance=f32(rng.uniform(0.0, 0.06)),
         )
         for step in range(10):
             _step_secondary(oracle, world, f32(rng.uniform(0.005, 0.04)))

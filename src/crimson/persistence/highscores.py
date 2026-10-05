@@ -120,11 +120,11 @@ class HighScoreRecord(msgspec.Struct):
             i -= 1
 
     @property
-    def survival_elapsed_ms(self) -> int:
+    def run_elapsed_ms(self) -> int:
         return int(struct.unpack_from("<i", self.data, 0x20)[0])
 
-    @survival_elapsed_ms.setter
-    def survival_elapsed_ms(self, value: int) -> None:
+    @run_elapsed_ms.setter
+    def run_elapsed_ms(self, value: int) -> None:
         struct.pack_into("<I", self.data, 0x20, int(value) & 0xFFFFFFFF)
 
     @property

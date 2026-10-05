@@ -25,7 +25,7 @@ def extract_fields(decoded: bytes) -> dict:
     reserved_seed_words = bytes(data["reserved_seed_words"])
     return {
         "quest_unlock_index": int(data["quest_unlock_index"]),
-        "quest_unlock_index_full": int(data["quest_unlock_index_full"]),
+        "quest_unlock_index_hardcore": int(data["quest_unlock_index_hardcore"]),
         "weapon_usage_counts": weapon_usage,
         "quest_play_counts": quest_play_counts,
         "mode_play_counts": mode_counts,
@@ -37,8 +37,8 @@ def extract_fields(decoded: bytes) -> dict:
 def apply_updates(data: dict, updates: dict) -> None:
     if "quest_unlock_index" in updates:
         data["quest_unlock_index"] = int(updates["quest_unlock_index"]) & 0xFFFF
-    if "quest_unlock_index_full" in updates:
-        data["quest_unlock_index_full"] = int(updates["quest_unlock_index_full"]) & 0xFFFF
+    if "quest_unlock_index_hardcore" in updates:
+        data["quest_unlock_index_hardcore"] = int(updates["quest_unlock_index_hardcore"]) & 0xFFFF
     if "play_time_ms" in updates:
         data["play_time_ms"] = int(updates["play_time_ms"]) & 0xFFFFFFFF
 
@@ -83,7 +83,7 @@ def parse_kv_pairs(pairs: Iterable[str]) -> dict:
         elif key.startswith("mode_play."):
             mode = key.split(".", 1)[1]
             updates.setdefault("mode_play_counts", {})[mode] = int(value, 0)
-        elif key in {"quest_unlock_index", "quest_unlock_index_full", "play_time_ms"}:
+        elif key in {"quest_unlock_index", "quest_unlock_index_hardcore", "play_time_ms"}:
             updates[key] = int(value, 0)
         else:
             raise ValueError(f"unknown key: {key}")
@@ -97,7 +97,7 @@ def cmd_info(args: argparse.Namespace) -> int:
     print(f"Checksum: 0x{blob.checksum:08x} (computed 0x{blob.checksum_expected:08x})")
     print(f"Checksum valid: {blob.checksum_valid}")
     print(f"Quest unlock index: {fields['quest_unlock_index']}")
-    print(f"Quest unlock index (full): {fields['quest_unlock_index_full']}")
+    print(f"Quest unlock index (full): {fields['quest_unlock_index_hardcore']}")
     print(f"Play time (ms): {fields['play_time_ms']}")
     print("Mode play counts:")
     for name, _ in MODE_COUNT_ORDER:
@@ -196,7 +196,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         help=(
             "key=value updates (repeatable). Keys: quest_unlock_index, "
-            "quest_unlock_index_full, play_time_ms, weapon_usage.<slot>, "
+            "quest_unlock_index_hardcore, play_time_ms, weapon_usage.<slot>, "
             "quest_play.<index>, mode_play.<survival|rush|typo|other>"
         ),
     )

@@ -51,7 +51,7 @@
       }
     }
   ],
-  "audit_digest": "2080137929d4b6c365435b6f9808143bc9ba6059e91a1774613cf374249031fa",
+  "audit_digest": "d1ccde3d8f9ab55d127e10d69e35017bcc696edebc96f1ed782099196b5b910e",
   "entry": {
     "aliases": {
       "object": {
@@ -258,7 +258,7 @@
           "note": "The pinned VC6 SP6 LIBCMT archive matches 299 executable CRT functions byte-for-byte and uniquely identifies 254 of them.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "428e7520aea9d38accf2db65b1b0ded0a7ceb1d62e0cca7da667c0ea1a10b4ed"
+          "sha256": "590bc38419560b23dc9baf0e923758f6acdc7539b588f21132f953cd99856d13"
         },
         {
           "note": "The provenance manifest pins the exact LIBCMT archive and records its whole-range executable match.",
@@ -339,13 +339,13 @@
           "note": "The native closure classifier identifies __fltused as an MSVC toolchain external.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "ddaa038c29bac2243df82114de9afb97a302330dfa29fde47dc5ff380d8700b5"
+          "sha256": "a6eca0f612a4655d0ea8e8fef6b04e522c6b9a6abf290bac92c416adb6355afd"
         },
         {
           "note": "The pinned VC6 SP6 LIBCMT archive contains the definition.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "428e7520aea9d38accf2db65b1b0ded0a7ceb1d62e0cca7da667c0ea1a10b4ed"
+          "sha256": "590bc38419560b23dc9baf0e923758f6acdc7539b588f21132f953cd99856d13"
         }
       ],
       "kind": "toolchain",
@@ -427,7 +427,7 @@
           "note": "The import inventory identifies DSOUND ordinal 11 as DirectSoundCreate8.",
           "path": "docs/re/static/binary-analysis.md",
           "repository_relative": true,
-          "sha256": "96b1cb3f1fce21657f2c57dd8d5021f42ec82ec2eb92ba531eb23cec6dc65e47"
+          "sha256": "df4bbcdb9f50058efcfa6a7df79e903e19a8c562e63911cf3961427a6995703f"
         }
       ],
       "import_library": {
@@ -965,7 +965,7 @@
           "note": "The pinned VC6 SP6 LIBCMT archive records these decorated KERNEL32 references.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "428e7520aea9d38accf2db65b1b0ded0a7ceb1d62e0cca7da667c0ea1a10b4ed"
+          "sha256": "590bc38419560b23dc9baf0e923758f6acdc7539b588f21132f953cd99856d13"
         }
       ],
       "import_library": {
@@ -1768,7 +1768,7 @@
           "note": "The archive proof identifies D3DXVec2Normalize as an original static D3DX8 provider used by both images.",
           "path": "docs/contributor/project-tracking/third-party-libs.md",
           "repository_relative": true,
-          "sha256": "428e7520aea9d38accf2db65b1b0ded0a7ceb1d62e0cca7da667c0ea1a10b4ed"
+          "sha256": "590bc38419560b23dc9baf0e923758f6acdc7539b588f21132f953cd99856d13"
         }
       ],
       "kind": "static-library",

@@ -70,7 +70,7 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
     world = _fire_pistol_right()
     state = world.state
 
-    place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0, lifecycle_stage=8.0)])
+    place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0, death_timer=8.0)])
     hits = state.projectiles.step(
         make_step_runtime(world, dt=0.1),
     )
@@ -80,13 +80,13 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
 
 
 def test_secondary_projectile_direct_hit_increments_shots_hit_for_alive_targets() -> None:
-    state = _step_rocket_into(_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=16.0))
+    state = _step_rocket_into(_creature(pos=Vec2(0.0, -9.0), hp=1000.0, death_timer=16.0))
 
     assert state.shots_hit == 1
 
 
 def test_secondary_projectile_direct_hit_on_corpse_does_not_increment_shots_hit() -> None:
-    state = _step_rocket_into(_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=12.0))
+    state = _step_rocket_into(_creature(pos=Vec2(0.0, -9.0), hp=1000.0, death_timer=12.0))
 
     assert state.shots_hit == 0
 
@@ -148,7 +148,7 @@ def test_projectile_spawn_fire_bullets_conversion_increments_shots_fired_twice()
 
 def test_projectile_spawn_does_not_increment_shots_fired_when_bonus_guard_is_on() -> None:
     state = GameplayState()
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
     player = PlayerState(index=0, pos=Vec2())
 
     projectile_spawn(

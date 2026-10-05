@@ -75,7 +75,7 @@ _PLAYER_LAYOUT: dict[str, tuple[int, str]] = {
     "muzzle_flash_alpha": (0x2FC, "f"),
     "aim_heading": (0x300, "f"),
     "turn_speed": (0x304, "f"),
-    "low_health_timer": (0x310, "f"),
+    "bleed_drip_timer": (0x310, "f"),
     "auto_target": (0x320, "i"),
     "move_target_x": (0x324, "f"),
     "move_target_y": (0x328, "f"),
@@ -262,7 +262,7 @@ class _Native:
         oracle.write_u32("cv_padAimDistMul", cvar)
         oracle.write_u32("config_key_reload", _RELOAD_KEY)
         for name, code in zip(
-            ("player_alt_move_key_forward", "player_alt_move_key_backward", "player_alt_turn_key_left", "player_alt_turn_key_right"),
+            ("player2_move_key_forward", "player2_move_key_backward", "player2_turn_key_left", "player2_turn_key_right"),
             _ALT_MOVE_KEYS,
             strict=True,
         ):
@@ -279,7 +279,7 @@ class _Native:
         oracle.restore(self.pristine)
         oracle.rand_state = case.seed
         oracle.write_u32("config_player_count", case.player_count)
-        oracle.write_u32("render_overlay_player_index", case.player_index)
+        oracle.write_u32("current_player_index", case.player_index)
         for index in range(case.player_count):
             binds = config.controls.player(index)
             address = self.player(index)
@@ -342,7 +342,7 @@ class _Native:
             "muzzle_flash_alpha": 0.0,
             "aim_heading": case.aim_heading,
             "turn_speed": case.turn_speed,
-            "low_health_timer": 100.0,
+            "bleed_drip_timer": 100.0,
             "auto_target": case.auto_target,
             "move_target_x": case.move_target.x,
             "move_target_y": case.move_target.y,

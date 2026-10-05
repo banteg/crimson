@@ -14,25 +14,25 @@ def test_perk_apply_breathing_room_reduces_health_and_starts_creature_death_stag
     dt = 0.25
 
     state = GameplayState()
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
 
     player = PlayerState(index=0, pos=Vec2(), health=90.0)
 
     creatures: list[CreatureState] = [CreatureState() for _ in range(3)]
     creatures[0].active = True
-    creatures[0].lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creatures[0].death_timer = CREATURE_LIFECYCLE_ALIVE
     creatures[1].active = False
-    creatures[1].lifecycle_stage = 123.0
+    creatures[1].death_timer = 123.0
     creatures[2].active = True
-    creatures[2].lifecycle_stage = -5.0
+    creatures[2].death_timer = -5.0
 
     perk_apply(state, [player], PerkId.BREATHING_ROOM, dt=dt, creatures=creatures)
 
     assert_float_close(player.health, 30.0)
-    assert_float_close(creatures[0].lifecycle_stage, CREATURE_LIFECYCLE_ALIVE - dt)
-    assert_float_close(creatures[1].lifecycle_stage, 123.0)
-    assert_float_close(creatures[2].lifecycle_stage, -5.0 - dt)
-    assert state.bonus_spawn_guard is False
+    assert_float_close(creatures[0].death_timer, CREATURE_LIFECYCLE_ALIVE - dt)
+    assert_float_close(creatures[1].death_timer, 123.0)
+    assert_float_close(creatures[2].death_timer, -5.0 - dt)
+    assert state.scripted_burst_active is False
     assert state.perks[int(PerkId.BREATHING_ROOM)] == 1
 
 
@@ -48,7 +48,7 @@ def test_perk_apply_breathing_room_rounds_each_native_float_operation() -> None:
 def test_perk_apply_breathing_room_rounds_creature_lifecycle_store() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(), health=90.0)
-    creature = CreatureState(active=True, lifecycle_stage=1.2345678)
+    creature = CreatureState(active=True, death_timer=1.2345678)
 
     perk_apply(
         state,
@@ -58,4 +58,4 @@ def test_perk_apply_breathing_room_rounds_creature_lifecycle_store() -> None:
         creatures=[creature],
     )
 
-    assert creature.lifecycle_stage == f32(f32(1.2345678) - f32(0.1))
+    assert creature.death_timer == f32(f32(1.2345678) - f32(0.1))

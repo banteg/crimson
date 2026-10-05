@@ -100,9 +100,9 @@ def perks_update_effects(
 
         if PerkId.PYROKINETIC in perks:
             creature = creatures[creature_id]
-            creature.collision_timer = x87_pc24_sub(f32(creature.collision_timer), dt)
-            if creature.collision_timer < 0.0:
-                creature.collision_timer = 0.5
+            creature.dot_tick_timer = x87_pc24_sub(f32(creature.dot_tick_timer), dt)
+            if creature.dot_tick_timer < 0.0:
+                creature.dot_tick_timer = 0.5
                 for intensity, caller in (
                     (0.8, RngCallerStatic.PERKS_UPDATE_EFFECTS_PYROKINETIC_ANGLE_0P8),
                     (0.6, RngCallerStatic.PERKS_UPDATE_EFFECTS_PYROKINETIC_ANGLE_0P6),
@@ -157,7 +157,7 @@ def perks_update_effects(
         return
 
     creature.hp = -1.0
-    creature.lifecycle_stage = x87_pc24_sub(f32(creature.lifecycle_stage), x87_pc24_mul(dt, f32(20.0)))
+    creature.death_timer = x87_pc24_sub(f32(creature.death_timer), x87_pc24_mul(dt, f32(20.0)))
     # Native adds the reward once (0x004070a6: `fild`, one PC24 `fadd`, `__ftol`): unlike
     # creature_handle_death, the Jinxed kill ignores Double Experience.
     players[0].experience = experience_plus_reward(players[0].experience, creature.reward_value)

@@ -198,7 +198,7 @@ extern "C" void bonus_render(void)
             grim_interface_ptr->grim_set_rotation(
                 (float)sin(
                     (float)bonus_index
-                    - (float)survival_elapsed_ms * 0.003f)
+                    - (float)run_elapsed_ms * 0.003f)
                 * 0.2f);
 
             if (entry->bonus_id == BONUS_ID_POINTS
@@ -239,7 +239,7 @@ extern "C" void bonus_render(void)
         grim_interface_ptr->grim_set_rotation(
             (float)sin(
                 (float)bonus_index
-                - (float)survival_elapsed_ms * 0.003f));
+                - (float)run_elapsed_ms * 0.003f));
         grim_interface_ptr->grim_set_rotation(0.0f);
         grim_interface_ptr->grim_set_sub_rect(
             8,
@@ -272,9 +272,9 @@ extern "C" void bonus_render(void)
 
                 if (*hover_timer > 650
                     && perk_count_get(perk_id_telekinetic)
-                    && bonus_pool[nearby_bonus_index].state == 0) {
+                    && bonus_pool[nearby_bonus_index].picked == 0) {
                     bonus_apply(player_index, &bonus_pool[nearby_bonus_index]);
-                    bonus_pool[nearby_bonus_index].state = 1;
+                    bonus_pool[nearby_bonus_index].picked = 1;
                     bonus_pool[nearby_bonus_index].time.time_left = 0.5f;
                     telekinetic_bonus_hover_timer_ms[player_index] = 0;
                     break;
@@ -386,10 +386,10 @@ extern "C" void bonus_render(void)
             float half_width = 15.0f - phase_size;
             phase_size =
                 (phase_size + 15.0f)
-                * particle_pool[beam_index].scale_x
+                * particle_pool[beam_index].color_r
                 * 7.0f;
             half_width =
-                half_width * particle_pool[beam_index].scale_x * 7.0f;
+                half_width * particle_pool[beam_index].color_r * 7.0f;
             float height = phase_size + phase_size;
             float width = half_width + half_width;
             grim_interface_ptr->grim_draw_quad(

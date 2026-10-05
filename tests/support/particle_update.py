@@ -25,36 +25,36 @@ def compare(witness):
     for item in case["particles"]:
         entry = pool.entries[item["index"]]
         entry.active = True
-        entry.render_flag = bool(item["render"])
+        entry.in_flight = bool(item["in_flight"])
         entry.pos = Vec2(f32(item["x"]), f32(item["y"]))
         entry.vel = Vec2(f32(item["vx"]), f32(item["vy"]))
         entry.style_id = ParticleStyleId(item["style"])
         entry.target_id = item["target"]
-        entry.scale_x = entry.scale_y = entry.scale_z = entry.age = 0.0
-        for key in ("intensity", "angle", "spin"):
+        entry.color_r = entry.color_g = entry.color_b = entry.color_a = 0.0
+        for key in ("intensity", "angle", "rotation"):
             setattr(entry, key, f32(item[key]))
     pool.update(case["dt"], step_runtime=make_step_runtime(world, dt=case["dt"]))
     for native in witness["particles"]:
         entry = pool.entries[native["index"]]
         values = {
             "active": int(entry.active),
-            "render": int(entry.render_flag),
+            "in_flight": int(entry.in_flight),
             "x": entry.pos.x,
             "y": entry.pos.y,
             "vx": entry.vel.x,
             "vy": entry.vel.y,
-            "sx": entry.scale_x,
-            "sy": entry.scale_y,
-            "sz": entry.scale_z,
-            "age": entry.age,
+            "color_r": entry.color_r,
+            "color_g": entry.color_g,
+            "color_b": entry.color_b,
+            "color_a": entry.color_a,
             "intensity": entry.intensity,
             "angle": entry.angle,
-            "spin": entry.spin,
+            "rotation": entry.rotation,
             "style": int(entry.style_id),
             "target": entry.target_id,
         }
         for key, value in values.items():
-            if key in ("active", "render", "style", "target"):
+            if key in ("active", "in_flight", "style", "target"):
                 assert value == native[key], (witness["index"], key, value, native[key])
             else:
                 assert struct.pack("<f", value) == struct.pack("<f", native[key]), (

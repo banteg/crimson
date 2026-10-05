@@ -20,7 +20,7 @@ update. That update handles self-damage and link timers, targeting, living AI,
 movement/animation/spawner work, then proximity effects and attacks. Death and
 corpse phases use the same pool, rather than a separate collection.
 
-The living branch is selected by `lifecycle_stage == 16.0`. Health and `active`
+The living branch is selected by `death_timer == 16.0`. Health and `active`
 are separate gates used by different consumers. In particular, an active entry
 can already be dying, collidable, fading, or awaiting corpse baking. Do not
 replace those tests with one generic `alive` predicate. See [struct](struct.md),
@@ -28,13 +28,13 @@ replace those tests with one generic `alive` predicate. See [struct](struct.md),
 
 ## Infection and attack timers
 
-The historical symbols `collision_flag` and `collision_timer` do not describe the
+The historical symbols `plague_infected` and `dot_tick_timer` do not describe the
 player attack cooldown:
 
 - Plaguebearer sets the flag on eligible nearby creatures. In the living branch,
   the flagged timer loses `frame_dt`; a negative timer gains `0.5` once and the
   creature loses 15 health. A lethal infection calls death handling inline.
-- Radioactive also uses `collision_timer`: within 100 units it loses
+- Radioactive also uses `dot_tick_timer`: within 100 units it loses
   `frame_dt * 1.5`; when negative with positive health it resets to `0.5` and
   applies `(100 - distance) * 0.3` health loss, with its own lethal branch.
 - `attack_cooldown` loses `frame_dt` when positive, otherwise it is set to zero.

@@ -36,7 +36,7 @@ typedef struct projectile_t {
     float speed_scale;
     float damage_pool;
     float hit_radius;
-    float travel_budget;
+    float projectile_speed;
     int owner_id;
 } projectile_t;
 ```
@@ -57,7 +57,7 @@ typedef struct projectile_t {
 | 0x2c | speed_scale | Multiplier applied to movement step in `projectile_update`. |
 | 0x30 | damage pool / pierce budget | Seeded to `1.0` for most types; special cases set `300` (type `6`), `240` (type `0x2d`), or `50` (type `0x19`). Decremented on hit and used as the damage parameter for multi-hit projectiles. |
 | 0x34 | hit_radius | Passed into `creature_find_in_radius` and `creatures_apply_radius_damage`. Set to `3.0` for type `0x16`, `5.0` for type `0x15`, and `10.0` for type `0x17/0x1c` (default `1.0`). |
-| 0x38 | travel_budget | Copied from `weapon_projectile_travel_budget[type_id]`; used as the projectile movement budget / sub-step count. |
+| 0x38 | projectile_speed | Copied from `weapon_projectile_speed[type_id]`; used as the projectile movement budget / sub-step count. |
 | 0x3c | owner_id | Stored on spawn; used to skip the shooter in hit tests. |
 
 Related tables:
@@ -66,7 +66,7 @@ Related tables:
   effect paths (value `4` skips it).
 
 - `weapon_projectile_damage_scale` is used as the damage scale for each `type_id`.
-- `weapon_projectile_travel_budget` is copied into the projectile entry on spawn and shares the
+- `weapon_projectile_speed` is copied into the projectile entry on spawn and shares the
   same stride as the weapon table.
 
 - `projectile_pool + 0x30` (`projectile_damage_pool`) acts like a shared damage pool for
@@ -80,7 +80,7 @@ Spawn notes:
   or `player2_fire_bullets_timer` / `0x00490f2c > 0`) and the owner is a player (`owner_id == -100 / -1 / -2 / -3`), `projectile_spawn`
   forces `type_id` to `0x2d` regardless of the requested type.
 
-Known type_id sources (partial, based on decompile in `player_fire_weapon` and `bonus_apply`):
+Known type_id sources (partial, based on decompile in `typo_player_update` and `bonus_apply`):
 
 | type_id | Sources | Notes |
 | --- | --- | --- |

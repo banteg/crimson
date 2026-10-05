@@ -80,7 +80,7 @@ a run scores only its own words unless `preserve_bugs`), and
 name cache, so this run's first highscore-name pick skips the table load's RNG
 draws).
 
-`RunStatus` is a map of `quest_unlock_index` (i32), `quest_unlock_index_full`
+`RunStatus` is a map of `quest_unlock_index` (i32), `quest_unlock_index_hardcore`
 (i32) and `weapon_usage_counts` (exactly 53 u32 values). Unlock indices gate
 weapons, perks and terrain; usage counts steer native weapon-drop rerolls.
 

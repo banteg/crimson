@@ -1,4 +1,4 @@
-"""`projectile_spawn` (0x00420440) and the player fire paths (Typ-o's `player_fire_weapon`, particle weapons) vs the Python port."""
+"""`projectile_spawn` (0x00420440) and the player fire paths (Typ-o's `typo_player_update`, particle weapons) vs the Python port."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from crimson.perks import PerkId
 from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.sim.state_types import PlayerState, WeaponSlot
-from crimson.typo.player import player_fire_weapon
+from crimson.typo.player import typo_player_update
 from crimson.weapon_runtime import weapon_assign_player, weapon_entry
 from crimson.weapons import WEAPON_TABLE, WeaponId
 from grim.geom import Vec2
@@ -55,7 +55,7 @@ def _python_projectile(projectile: Projectile) -> dict[str, float | int | None]:
         "speed_scale": projectile.speed_scale,
         "damage_pool": projectile.damage_pool,
         "hit_radius": projectile.hit_radius,
-        "travel_budget": projectile.travel_budget,
+        "projectile_speed": projectile.projectile_speed,
     }
 
 
@@ -100,7 +100,7 @@ def test_projectile_spawn_fields_match_native(oracle) -> None:
     assert not mismatches, mismatch_report(mismatches, total_cases=cases)
 
 
-# `player_state_t` fields `player_fire_weapon` reads or writes.
+# `player_state_t` fields `typo_player_update` reads or writes.
 _TYPO_PLAYER_LAYOUT: dict[str, tuple[int, str]] = {
     "death_timer": (0x10, "f"),
     "pos_x": (0x14, "f"),
@@ -183,7 +183,7 @@ def _random_typo_player(rng: random.Random, weapon_id: WeaponId) -> PlayerState:
 
 
 def test_typo_player_fire_weapon_matches_native(oracle) -> None:
-    """Typ-o's `player_fire_weapon` (0x00444980) vs `crimson.typo.player.player_fire_weapon`.
+    """Typ-o's `typo_player_update` (0x00444980) vs `crimson.typo.player.typo_player_update`.
 
     Living and dead players with any weapon, perks, reload and clip state, and
     random frame dt, spread damping, fire/reload requests and RNG seed; compares
@@ -257,7 +257,7 @@ def test_typo_player_fire_weapon_matches_native(oracle) -> None:
         oracle.write_f32(aim_arg, aim.x)
         oracle.write_f32(aim_arg + 4, aim.y)
         oracle.rand_state = seed
-        oracle.call("player_fire_weapon", aim_arg, int(fire_requested), int(reload_requested))
+        oracle.call("typo_player_update", aim_arg, int(fire_requested), int(reload_requested))
 
         world = make_world()
         state = world.state
@@ -268,7 +268,7 @@ def test_typo_player_fire_weapon_matches_native(oracle) -> None:
         for perk_id in perks:
             state.perks[perk_id] = 1
         world.players[:] = [player]
-        player_fire_weapon(
+        typo_player_update(
             state,
             world.players,
             player,

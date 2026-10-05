@@ -25,7 +25,7 @@ extern "C"
     extern int tutorial_hint_index;
     extern int tutorial_repeat_spawn_count;
     extern creature_t *tutorial_hint_bonus_ptr;
-    extern bool tutorial_hint_bonus_consumed_latch;
+    extern bool tutorial_hint_carrier_killed;
     extern int tutorial_hint_alpha;
     extern int tutorial_hint_bonus_id;
     extern int tutorial_hint_bonus_amount;
@@ -143,13 +143,13 @@ extern "C" void tutorial_timeline_update(void)
     }
 
     transition = tutorial_stage_state.transition_timer;
-    if (!tutorial_hint_bonus_consumed_latch) {
+    if (!tutorial_hint_carrier_killed) {
         creature_t *carrier = tutorial_hint_bonus_ptr;
         if (carrier != 0 && !carrier->active && carrier->health <= 0.0f &&
             (carrier->flags & CREATURE_FLAG_BONUS_ON_DEATH)) {
             tutorial_hint_bonus_id = carrier->bonus_args.bonus_id;
-            tutorial_hint_bonus_amount = carrier->bonus_args.duration_override;
-            tutorial_hint_bonus_consumed_latch = true;
+            tutorial_hint_bonus_amount = carrier->bonus_args.amount_override;
+            tutorial_hint_carrier_killed = true;
 
             creature_spawn_template(SPAWN_ID_ALIEN_CONST_GREEN_24,
                                     (const vec2f_t *)&tutorial_vec2_t(128.0f, 128.0f),
@@ -183,7 +183,7 @@ extern "C" void tutorial_timeline_update(void)
         if (tutorial_stage_state.timer > 6000 && transition == -1) {
             tutorial_repeat_spawn_count = 0;
             tutorial_hint_index = transition;
-            tutorial_hint_bonus_consumed_latch = false;
+            tutorial_hint_carrier_killed = false;
             tutorial_stage_state.transition_timer = -1000;
         }
         return;
@@ -205,7 +205,7 @@ extern "C" void tutorial_timeline_update(void)
                 bonus_pool[0].bonus_id = BONUS_ID_POINTS;
                 bonus_pool[0].time.time_left = 100.0f;
                 bonus_pool[0].time.time_max = 100.0f;
-                bonus_pool[0].state = 0;
+                bonus_pool[0].picked = 0;
                 bonus_pool[0].time.amount = 500;
                 *(tutorial_vec2_t *)&bonus_pool[0].time.position = bonus_pos0;
                 effect_spawn_burst(&bonus_pool[0].time.position, 12);
@@ -214,7 +214,7 @@ extern "C" void tutorial_timeline_update(void)
                 bonus_pool[1].bonus_id = BONUS_ID_POINTS;
                 bonus_pool[1].time.time_left = 100.0f;
                 bonus_pool[1].time.time_max = bonus_pool[0].time.time_left;
-                bonus_pool[1].state = 0;
+                bonus_pool[1].picked = 0;
                 bonus_pool[1].time.amount = 1000;
                 *(tutorial_vec2_t *)&bonus_pool[1].time.position = bonus_pos1;
                 effect_spawn_burst(&bonus_pool[1].time.position, 12);
@@ -223,7 +223,7 @@ extern "C" void tutorial_timeline_update(void)
                 bonus_pool[2].bonus_id = BONUS_ID_POINTS;
                 bonus_pool[2].time.time_left = 100.0f;
                 bonus_pool[2].time.time_max = bonus_pool[0].time.time_left;
-                bonus_pool[2].state = 0;
+                bonus_pool[2].picked = 0;
                 bonus_pool[2].time.amount = 500;
                 *(tutorial_vec2_t *)&bonus_pool[2].time.position = bonus_pos2;
                 effect_spawn_burst(&bonus_pool[2].time.position, 12);
@@ -302,7 +302,7 @@ extern "C" void tutorial_timeline_update(void)
                 return;
             }
 
-            tutorial_hint_bonus_consumed_latch = false;
+            tutorial_hint_carrier_killed = false;
             if (tutorial_repeat_spawn_count & 1) {
                 if (tutorial_repeat_spawn_count < 6) {
                     tutorial_hint_bonus_ptr = creature_spawn_template(
@@ -347,25 +347,25 @@ extern "C" void tutorial_timeline_update(void)
                 switch (tutorial_repeat_spawn_count) {
                 case 1:
                     tutorial_hint_bonus_ptr->bonus_args.bonus_id = BONUS_ID_SPEED;
-                    tutorial_hint_bonus_ptr->bonus_args.duration_override = -1;
+                    tutorial_hint_bonus_ptr->bonus_args.amount_override = -1;
                     break;
                 case 2:
                     tutorial_hint_bonus_ptr->bonus_args.bonus_id = BONUS_ID_WEAPON;
-                    tutorial_hint_bonus_ptr->bonus_args.duration_override = 5;
+                    tutorial_hint_bonus_ptr->bonus_args.amount_override = 5;
                     break;
                 case 3:
                     tutorial_hint_bonus_ptr->bonus_args.bonus_id =
                         BONUS_ID_DOUBLE_EXPERIENCE;
-                    tutorial_hint_bonus_ptr->bonus_args.duration_override = -1;
+                    tutorial_hint_bonus_ptr->bonus_args.amount_override = -1;
                     break;
                 case 4:
                     tutorial_hint_bonus_ptr->bonus_args.bonus_id = BONUS_ID_NUKE;
-                    tutorial_hint_bonus_ptr->bonus_args.duration_override = -1;
+                    tutorial_hint_bonus_ptr->bonus_args.amount_override = -1;
                     break;
                 case 5:
                     tutorial_hint_bonus_ptr->bonus_args.bonus_id =
                         BONUS_ID_REFLEX_BOOST;
-                    tutorial_hint_bonus_ptr->bonus_args.duration_override = -1;
+                    tutorial_hint_bonus_ptr->bonus_args.amount_override = -1;
                     break;
                 }
             }

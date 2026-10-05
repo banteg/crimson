@@ -33,7 +33,7 @@
       {
         "path": "third_party/headers/crimsonland_types.h",
         "repository_relative": true,
-        "sha256": "1ed463c5ec82390c0654e286520202d50a7851fd4b3b44f8dca7524caa2281f2"
+        "sha256": "18a20883907eac6e30ecbeafb954160469959c4cd7320ed16433763b91ba63c5"
       },
       {
         "path": "third_party/headers/d3d8.h",
@@ -444,7 +444,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "f5b57477e9c00cf46761c8d0f859ab9e1ad3c6e88ca3d8311211490c0f2db57a",
+  "audit_digest": "2e0ca0fa7a1ba34356c469cebcf06b9ea7a109496afdd4b28f5894e7020ca9e0",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -7128,7 +7128,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "1ed463c5ec82390c0654e286520202d50a7851fd4b3b44f8dca7524caa2281f2"
+          "sha256": "18a20883907eac6e30ecbeafb954160469959c4cd7320ed16433763b91ba63c5"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Include/stddef.h",
@@ -7153,7 +7153,7 @@
         {
           "path": "tools/match/include/crimsonland_gameplay.h",
           "repository_relative": true,
-          "sha256": "2465e47a4704f16a3b77b23cf70428ba87efcb6ec0d0657046cc6cc4020f9502"
+          "sha256": "f5f2e97eb83a3d6dc57fb765351277d066d70a065a61dc925af75bc6a050e51f"
         }
       ],
       "compiler": "msvc6.5",
@@ -7172,7 +7172,7 @@
           "canonical_source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
           "effective_end": 268442094,
           "end": 268442094,
-          "experiment_epoch": "6a7a43e98f601951f1e213c8d63702a3495671ff97b46e0b015394809966d5b9",
+          "experiment_epoch": "05f8a3e54f6fe5a6d02780574a420fc1212d2f18425c42258477eeb840555c25",
           "function": "grim_config_defaults_init",
           "match": {
             "body_byte_exact": true,

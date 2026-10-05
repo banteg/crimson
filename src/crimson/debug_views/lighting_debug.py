@@ -914,8 +914,8 @@ def _build_static_occluders() -> list[CircleOccluder]:
     return occluders
 
 
-def _shadow_occluder_radius(size: float, lifecycle_stage: float) -> float:
-    blended = max(float(lifecycle_stage), float(size) * 0.35)
+def _shadow_occluder_radius(size: float, death_timer: float) -> float:
+    blended = max(float(death_timer), float(size) * 0.35)
     return max(6.0, min(128.0, float(blended)))
 
 
@@ -951,11 +951,11 @@ def collect_shadow_occluders(
             continue
         if float(creature.hp) <= 0.0:
             continue
-        lifecycle_stage = float(creature.lifecycle_stage)
-        if lifecycle_stage <= 0.0:
+        death_timer = float(creature.death_timer)
+        if death_timer <= 0.0:
             continue
         size = float(creature.size)
-        _append(creature.pos, _shadow_occluder_radius(size, lifecycle_stage))
+        _append(creature.pos, _shadow_occluder_radius(size, death_timer))
 
     return occluders
 
@@ -2105,10 +2105,10 @@ class LightingDebugView:
             aim_scheme=AimScheme.MOUSE,
             move=move,
             aim=aim,
-            move_forward_pressed=forward,
-            move_backward_pressed=backward,
-            turn_left_pressed=left,
-            turn_right_pressed=right,
+            move_forward_down=forward,
+            move_backward_down=backward,
+            turn_left_down=left,
+            turn_right_down=right,
             fire_down=False,
             fire_pressed=False,
             reload_pressed=False,

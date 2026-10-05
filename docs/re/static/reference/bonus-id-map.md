@@ -18,7 +18,7 @@ Table fields:
 
 - `description` comes from `bonus_meta_description + id * 0x14`, used for the bonus info strings.
 - `default_amount` comes from `bonus_meta_default_amount + id * 0x14`, used when `bonus_spawn_at` is called with
-  `duration_override == -1`.
+  `amount_override == -1`.
 
 - `enabled` comes from `bonus_meta_enabled + id * 0x14`; id `0` is cleared during init.
 

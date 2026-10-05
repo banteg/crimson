@@ -63,19 +63,19 @@ extern int ui_item_texts_texture;
 extern game_state_id_t game_state_pending;
 extern unsigned char ui_transition_direction;
 extern unsigned char screen_fade_ramp_flag;
-extern unsigned char render_pass_mode;
+extern unsigned char run_active;
 extern int online_sync_status;
 extern char* update_notice_url;
 extern unsigned char update_notice_pending;
 extern int music_track_crimson_theme_id;
 extern int music_track_shortie_monk_id;
-extern int music_track_extra_0;
+extern int music_track_game_playlist;
 extern char menu_label_back[];
 
 bool ui_button_update(float* xy, ui_button_t* button);
 void highscore_load_table_thunk(void);
-void sfx_mute_all(int sfx_id);
-void sfx_play_exclusive(int sfx_id);
+void music_fade_out_all(int sfx_id);
+void music_play_exclusive(int sfx_id);
 void statistics_update_check_worker(void* arg);
 void crt_beginthread(void (*function)(void*), unsigned int stack_size, void* arg);
 }
@@ -251,14 +251,14 @@ extern "C" void statistics_menu_update(void)
         game_state_pending = GAME_STATE_PERK_DATABASE;
     }
     if (typo_button.activated) {
-        render_pass_mode = 0;
+        run_active = 0;
         ui_sign_crimson.focus_disabled = 0;
         ui_transition_direction = 0;
         game_state_pending = GAME_STATE_TYPO_GAMEPLAY;
         config_game_mode = GAME_MODE_TYPO_SHOOTER;
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
         screen_fade_ramp_flag = 1;
     }
     if (credits_button.activated) {
@@ -272,18 +272,18 @@ extern "C" void statistics_menu_update(void)
     if (back_button.activated) {
         ui_transition_direction = 0;
         game_state_pending = GAME_STATE_MAIN_MENU;
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_mute_all(music_track_extra_0);
-        sfx_play_exclusive(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
+        music_play_exclusive(music_track_crimson_theme_id);
     }
     if (grim_interface_ptr->grim_was_key_pressed(1)) {
         ui_transition_direction = 0;
         game_state_pending = GAME_STATE_MAIN_MENU;
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_mute_all(music_track_extra_0);
-        sfx_play_exclusive(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
+        music_play_exclusive(music_track_crimson_theme_id);
     }
     if (ui_transition_direction == 0) {
         update_notice_pending = 0;

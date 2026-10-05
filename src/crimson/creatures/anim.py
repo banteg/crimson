@@ -7,9 +7,9 @@ from grim.math import f32, i32
 from ..math_parity import x87_pc24_div, x87_pc24_mul_chain
 from .spawn import CreatureAiMode, CreatureFlags, CreatureTypeId
 
-_FLAG_ANIM_PING_PONG = int(CreatureFlags.ANIM_PING_PONG)
-_FLAG_ANIM_LONG_STRIP = int(CreatureFlags.ANIM_LONG_STRIP)
-_FLAG_RANGED_ATTACK_SHOCK = int(CreatureFlags.RANGED_ATTACK_SHOCK)
+_FLAG_SPAWNER = int(CreatureFlags.SPAWNER)
+_FLAG_SPAWNER_MOBILE = int(CreatureFlags.SPAWNER_MOBILE)
+_FLAG_RANGED_PLASMA_RIFLE = int(CreatureFlags.RANGED_PLASMA_RIFLE)
 
 
 class CreatureAnimInfo(msgspec.Struct, frozen=True):
@@ -35,7 +35,7 @@ _CREATURE_CORPSE_FRAMES: dict[int, int] = {
     3: 1,  # spider sp1
     4: 2,  # spider sp2
     5: 7,  # trooper
-    7: 6,  # ping-pong strip corpse fallback
+    7: 6,  # pinned spawner corpse fallback
 }
 
 
@@ -49,7 +49,7 @@ def creature_anim_is_long_strip(flags: CreatureFlags) -> bool:
     # From creature_update_all / creature_render_type:
     # long strip when (flags & 4) == 0 OR (flags & 0x40) != 0
     flags_bits = int(flags)
-    return (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
+    return (flags_bits & _FLAG_SPAWNER) == 0 or (flags_bits & _FLAG_SPAWNER_MOBILE) != 0
 
 
 def creature_anim_phase_step(
@@ -60,7 +60,7 @@ def creature_anim_phase_step(
     size: float,
     local_scale: float = 1.0,
     flags: CreatureFlags = CreatureFlags(0),
-    ai_mode: int = CreatureAiMode.ORBIT_PLAYER,
+    ai_mode: int = CreatureAiMode.FLANK_PLAYER,
 ) -> float:
     """Compute the per-frame animation phase increment (creature_update_all)."""
     if size == 0.0:
@@ -73,7 +73,7 @@ def creature_anim_phase_step(
     local_scale = f32(local_scale)
 
     flags_bits = int(flags)
-    is_long_strip = (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
+    is_long_strip = (flags_bits & _FLAG_SPAWNER) == 0 or (flags_bits & _FLAG_SPAWNER_MOBILE) != 0
     strip_mul = 25.0
     if not is_long_strip:
         strip_mul = 22.0
@@ -97,7 +97,7 @@ def creature_anim_advance_phase(
     size: float,
     local_scale: float = 1.0,
     flags: CreatureFlags = CreatureFlags(0),
-    ai_mode: int = CreatureAiMode.ORBIT_PLAYER,
+    ai_mode: int = CreatureAiMode.FLANK_PLAYER,
 ) -> tuple[float, float]:
     """Advance anim_phase and wrap it the same way as creature_update_all.
 
@@ -120,7 +120,7 @@ def creature_anim_advance_phase(
     phase = f32(phase + step)
 
     flags_bits = int(flags)
-    is_long_strip = (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
+    is_long_strip = (flags_bits & _FLAG_SPAWNER) == 0 or (flags_bits & _FLAG_SPAWNER_MOBILE) != 0
     if is_long_strip:
         while phase > 31.0:
             phase = f32(phase - 31.0)
@@ -137,7 +137,7 @@ def creature_anim_select_frame(
     base_frame: int,
     mirror_long: bool,
     flags: CreatureFlags = CreatureFlags(0),
-    lifecycle_stage: float = 16.0,
+    death_timer: float = 16.0,
 ) -> tuple[int, bool, str]:
     """Select the shadow/body atlas frame from lifecycle and animation state.
 
@@ -149,15 +149,15 @@ def creature_anim_select_frame(
     (frame = 0x1f - frame) when the per-type mirror flag is set, not a texture flip.
     """
     phase = f32(phase)
-    lifecycle_stage = f32(lifecycle_stage)
+    death_timer = f32(death_timer)
     flags_bits = int(flags)
-    is_long_strip = (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
+    is_long_strip = (flags_bits & _FLAG_SPAWNER) == 0 or (flags_bits & _FLAG_SPAWNER_MOBILE) != 0
     if is_long_strip:
-        if lifecycle_stage < 16.0:
+        if death_timer < 16.0:
             # Native branches on lifecycle, not on a synthetic animation phase.
             # Subtraction rounds at PC24 before __ftol truncates toward zero.
             frame = (
-                base_frame + 0x0F if lifecycle_stage < 0.0 else int(f32(float(base_frame + 0x0F) - lifecycle_stage))
+                base_frame + 0x0F if death_timer < 0.0 else int(f32(float(base_frame + 0x0F) - death_timer))
             )
             mirrored = False
         else:
@@ -166,7 +166,7 @@ def creature_anim_select_frame(
             if mirror_long and frame > 0x0F:
                 frame = 0x1F - frame
                 mirrored = True
-        if (flags_bits & _FLAG_RANGED_ATTACK_SHOCK) != 0:
+        if (flags_bits & _FLAG_RANGED_PLASMA_RIFLE) != 0:
             frame += 0x20
         return frame, mirrored, "long"
 
@@ -188,15 +188,15 @@ def creature_anim_select_flash_frame(
     base_frame: int,
     mirror_long: bool,
     flags: CreatureFlags = CreatureFlags(0),
-    lifecycle_stage: float = 16.0,
+    death_timer: float = 16.0,
 ) -> tuple[int, bool, str]:
     """Select the hit-flash frame; dying long strips omit the shock offset."""
-    if f32(lifecycle_stage) < 16.0:
-        flags &= ~CreatureFlags.RANGED_ATTACK_SHOCK
+    if f32(death_timer) < 16.0:
+        flags &= ~CreatureFlags.RANGED_PLASMA_RIFLE
     return creature_anim_select_frame(
         phase,
         base_frame=base_frame,
         mirror_long=mirror_long,
         flags=flags,
-        lifecycle_stage=lifecycle_stage,
+        death_timer=death_timer,
     )

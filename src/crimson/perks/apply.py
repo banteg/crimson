@@ -65,8 +65,8 @@ def perk_apply(
             frame_dt = f32(dt)
             for creature in creatures:
                 if creature.active:
-                    creature.lifecycle_stage = x87_pc24_sub(f32(creature.lifecycle_stage), frame_dt)
-            state.bonus_spawn_guard = False
+                    creature.death_timer = x87_pc24_sub(f32(creature.death_timer), frame_dt)
+            state.scripted_burst_active = False
 
         case PerkId.RANDOM_WEAPON:
             current = owner.weapon.weapon_id

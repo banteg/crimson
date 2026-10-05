@@ -14,7 +14,7 @@ extern "C" void audio_update(void)
         }
     }
 
-    if (!sfx_unmuted_flag) {
+    if (!music_ready) {
         return;
     }
     for (i = 0; i < 128; ++i) {
@@ -22,5 +22,5 @@ extern "C" void audio_update(void)
             music_stream_update(&music_entry_table[i]);
         }
     }
-    sfx_update_mute_fades();
+    music_update_fades();
 }

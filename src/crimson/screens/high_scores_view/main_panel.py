@@ -71,7 +71,7 @@ def draw_main_panel(
         arrow = resources.texture(TextureId.UI_ARROW)
         global_index = int(quest_level.global_index)
         unlock = (
-            int(view.state.status.quest_unlock_index_full)
+            int(view.state.status.quest_unlock_index_hardcore)
             if view.state.config.gameplay.hardcore
             else int(view.state.status.quest_unlock_index)
         )

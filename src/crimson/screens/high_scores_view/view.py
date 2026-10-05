@@ -257,7 +257,7 @@ class HighScoresView(MenuScreen):
             level = request.quest_level
             assert level is not None
             unlock = (
-                self.state.status.quest_unlock_index_full
+                self.state.status.quest_unlock_index_hardcore
                 if self.state.config.gameplay.hardcore
                 else self.state.status.quest_unlock_index
             )
@@ -275,7 +275,7 @@ class HighScoresView(MenuScreen):
             prefix = "\\g" if (flags & 1 or flags & 4) and (not flags & 2 or flags & 4) else ""
             match self._request.game_mode_id:
                 case GameMode.RUSH | GameMode.QUESTS:
-                    items.append(f"{prefix}{rank}\t{record.survival_elapsed_ms // 1000}\t{record.name()}")
+                    items.append(f"{prefix}{rank}\t{record.run_elapsed_ms // 1000}\t{record.name()}")
                 case _:
                     items.append(f"{prefix}{rank}\t{record.score_xp}\t{record.name()}")
         self.score_scroll.items = items
@@ -476,7 +476,7 @@ class HighScoresView(MenuScreen):
                 hardcore_toggled = True
 
         unlock = (
-            int(self.state.status.quest_unlock_index_full)
+            int(self.state.status.quest_unlock_index_hardcore)
             if self.state.config.gameplay.hardcore
             else int(self.state.status.quest_unlock_index)
         )

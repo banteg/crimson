@@ -260,7 +260,7 @@ def test_authoritative_repo_type_replaces_complete_database_type(monkeypatch):
         object(),
     )
     assert importer._should_replace_repo_type(
-        "creature_lifecycle_stride_binja_t",
+        "creature_death_timer_stride_binja_t",
         object(),
         object(),
     )
@@ -493,13 +493,13 @@ def test_data_map_preserves_recovered_pool_extents():
     assert types_by_name["particle_pool"] == "particle_t[128]"
     assert types_by_name["creature_pool"] == "creature_t[385]"
     assert types_by_name["highscore_table"] == "highscore_record_t[100]"
-    assert types_by_name["quest_selected_meta"] == "quest_meta_t[50]"
+    assert types_by_name["quest_meta_table"] == "quest_meta_t[50]"
     assert (
         types_by_name["creature_spawn_slot_table"]
         == "creature_spawn_slot_t[32]"
     )
     assert types_by_name["bonus_meta_table"] == "bonus_meta_t[15]"
-    assert types_by_name["survival_recent_death_pos"] == "vec2f_t[3]"
+    assert types_by_name["survival_first_kill_pos"] == "vec2f_t[3]"
     assert types_by_name["sprite_effect_pool"] == "sprite_effect_t[384]"
     assert types_by_name["perk_meta_table"] == "perk_meta_t[128]"
     assert types_by_name["music_entry_table"] == "music_entry_t[128]"
@@ -557,16 +557,16 @@ def test_data_map_preserves_recovered_aggregate_alias_types():
         types_by_name["secondary_proj_type_id"]
         == "secondary_projectile_type_id_t"
     )
-    assert types_by_name["secondary_proj_lifetime"] == "float"
+    assert types_by_name["secondary_proj_trail_distance"] == "float"
     assert types_by_name["effect_pool_effect_id"] == "unsigned char"
     assert types_by_name["effect_pool_quad_data"] == "effect_vertex_t[4]"
     assert types_by_name["particle_style_id"] == "unsigned char"
     assert types_by_name["bonus_label_points"] == "char *"
     assert types_by_name["bonus_hud_slot_timer_ptr"] == "float *"
-    assert types_by_name["bonus_hud_slot_y"] == "float"
+    assert types_by_name["bonus_hud_slot_slide_x"] == "float"
     assert types_by_name["perk_desc_table"] == "char *"
     assert types_by_name["perk_flags_table"] == "int"
-    assert types_by_name["weapon_projectile_travel_budget"] == "float"
+    assert types_by_name["weapon_projectile_speed"] == "float"
     assert types_by_name["ui_sign_crimson_update_disabled"] == "unsigned char"
     assert types_by_name["perk_prompt_transform_cos"] == "float"
     assert (
@@ -858,7 +858,7 @@ def test_written_variable_at_uses_source_name_for_ambiguous_address():
     assert importer._written_variable_at(
         function,
         0x40573E,
-        frozenset({"i_4", "creature_lifecycle_cursor"}),
+        frozenset({"i_4", "creature_death_timer_cursor"}),
     ) is induction_cursor
 
 
@@ -1311,8 +1311,8 @@ def test_name_map_preserves_recovered_core_pointer_signatures():
     assert signatures_by_name["creature_render_type"] == (
         "void creature_render_type(int type_id, float transition_alpha)"
     )
-    assert signatures_by_name["player_fire_weapon"] == (
-        "void player_fire_weapon("
+    assert signatures_by_name["typo_player_update"] == (
+        "void typo_player_update("
         "const vec2f_t *aim, char fire_requested, char reload_requested)"
     )
     assert signatures_by_name["bonus_meta_entry_release"] == (
@@ -1353,14 +1353,14 @@ def test_name_map_preserves_recovered_core_pointer_signatures():
         "int highscore_compare_survival_score_desc("
         "const highscore_record_t *a, const highscore_record_t *b)"
     )
-    assert signatures_by_name["highscore_compare_rush_field32_desc"] == (
-        "int highscore_compare_rush_field32_desc("
+    assert signatures_by_name["highscore_compare_elapsed_desc"] == (
+        "int highscore_compare_elapsed_desc("
         "const highscore_record_t *a, const highscore_record_t *b)"
     )
     assert signatures_by_name[
-        "highscore_compare_quest_field32_asc_nonzero_first"
+        "highscore_compare_elapsed_asc_nonzero_first"
     ] == (
-        "int highscore_compare_quest_field32_asc_nonzero_first("
+        "int highscore_compare_elapsed_asc_nonzero_first("
         "const highscore_record_t *a, const highscore_record_t *b)"
     )
 
@@ -1441,7 +1441,7 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
     assert rows_by_name["perk_apply"]["local_types"][1] == {
         "address": "0x0040573e",
         "source_name": "i_4",
-        "name": "creature_lifecycle_cursor",
+        "name": "creature_death_timer_cursor",
         "type": "float *",
     }
     assert rows_by_name["bonus_update"]["local_types"] == [
@@ -1519,8 +1519,8 @@ def test_name_map_preserves_gameplay_analysis_and_cursor_recovery():
     assert rows_by_name["creature_render_type"]["local_types"][:2] == [
         {
             "address": "0x00418c0a",
-            "name": "detail_lifecycle_cursor",
-            "type": "creature_lifecycle_stride_binja_t *",
+            "name": "detail_death_timer_cursor",
+            "type": "creature_death_timer_stride_binja_t *",
         },
         {
             "address": "0x00418eb0",

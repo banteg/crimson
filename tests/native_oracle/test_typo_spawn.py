@@ -96,7 +96,7 @@ def test_typo_spawn_block_matches_native(oracle) -> None:
 
         oracle.restore(pristine)
         oracle.stub("typo_target_name_assign_random", assign_name)
-        oracle.write_u32("survival_elapsed_ms", elapsed_ms)
+        oracle.write_u32("run_elapsed_ms", elapsed_ms)
         oracle.write_u32("frame_dt_ms", dt_ms)
         oracle.write_u32("survival_spawn_cooldown", cooldown_ms)
         oracle.rand_state = seed

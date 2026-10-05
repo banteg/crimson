@@ -27,7 +27,7 @@ class PlayerInput(msgspec.Struct, frozen=True, kw_only=True):
     aim_turn_right: bool = False
     # Held movement keys (`move_key_forward/backward`, `turn_key_left/right`, or the single-player
     # arrow alternates); legacy names, they carry held controls, not press edges.
-    move_forward_pressed: bool
-    move_backward_pressed: bool
-    turn_left_pressed: bool
-    turn_right_pressed: bool
+    move_forward_down: bool
+    move_backward_down: bool
+    turn_left_down: bool
+    turn_right_down: bool

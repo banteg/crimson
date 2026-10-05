@@ -6,9 +6,9 @@ Findings from native code:
   strip and UV grids for 2x2, 4x4, 8x8, and 16x16 atlases (steps
   0.5/0.25/0.125/0.0625).
 - `effect_select_texture` reads `effect_id_table` at VA 0x004755F0 with pairs
-  (cell_code, group_id).
+  (cell_code, frame).
   cell_code maps to grid size: 0x80->2, 0x40->4, 0x20->8, 0x10->16.
-  group_id is passed to the renderer alongside the grid size; semantics unknown.
+  frame is the atlas frame index passed to grim_set_atlas_frame with the grid size.
 - `effect_spawn` uses the selected UV grid to build quad UVs by frame index.
 
 This module replicates the atlas cutting: given a grid size and frame index,
@@ -28,7 +28,7 @@ GRID_SIZE_BY_CODE = {
     0x10: 16,
 }
 
-# `effect_id_table` (index -> (cell_code, group_id)) extracted from crimsonland.exe
+# `effect_id_table` (index -> (cell_code, frame)) extracted from crimsonland.exe
 SPRITE_TABLE = [
     (0x80, 0x2),
     (0x80, 0x3),

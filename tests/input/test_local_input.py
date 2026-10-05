@@ -145,8 +145,8 @@ def test_local_input_relative_mode_single_player_uses_alt_arrow_fallback(
         mouse_world=Vec2(),
     )
 
-    assert out.move_forward_pressed is True
-    assert out.turn_left_pressed is True
+    assert out.move_forward_down is True
+    assert out.turn_left_down is True
     assert out.move == Vec2(-1.0, -1.0)
 
 
@@ -167,8 +167,8 @@ def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
         mouse_world=Vec2(),
     )
 
-    assert out.move_forward_pressed is False
-    assert out.turn_left_pressed is False
+    assert out.move_forward_down is False
+    assert out.turn_left_down is False
     assert out.move == Vec2()
 
 

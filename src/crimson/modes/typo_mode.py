@@ -81,10 +81,10 @@ class TypoShooterMode(BaseGameplayMode):
             PlayerInput(
                 move_mode=controls.movement,
                 aim_scheme=controls.aim_scheme,
-                move_forward_pressed=False,
-                move_backward_pressed=False,
-                turn_left_pressed=False,
-                turn_right_pressed=False,
+                move_forward_down=False,
+                move_backward_down=False,
+                turn_left_down=False,
+                turn_right_down=False,
             ),
         ]
 

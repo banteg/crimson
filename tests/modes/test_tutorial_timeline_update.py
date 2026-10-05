@@ -36,8 +36,8 @@ def test_the_first_stage_starts_after_the_bootstrap_transition() -> None:
     ("inp", "moving"),
     [
         (player_input(move=Vec2(1.0, 0.0)), False),  # a pushed stick is no move key
-        (player_input(move_forward_pressed=True), True),
-        (player_input(move_mode=MovementControlType.COMPUTER, turn_right_pressed=True), True),
+        (player_input(move_forward_down=True), True),
+        (player_input(move_mode=MovementControlType.COMPUTER, turn_right_down=True), True),
     ],
 )
 def test_stage_1_waits_for_a_held_move_key_in_any_scheme(inp: PlayerInput, moving: bool) -> None:
@@ -76,7 +76,7 @@ def test_stage_5_repeats_give_the_carrier_its_bonus() -> None:
     assert tutorial.hint_bonus_creature_ref is not None
     carrier = world.creatures.entries[tutorial.hint_bonus_creature_ref]
     assert carrier.pos == Vec2(1056.0, 1056.0)
-    assert (carrier.bonus_id, carrier.bonus_duration_override) == (BonusId.WEAPON, 5)
+    assert (carrier.bonus_id, carrier.bonus_amount_override) == (BonusId.WEAPON, 5)
     assert carrier.flags & CreatureFlags.BONUS_ON_DEATH
 
 
@@ -94,7 +94,7 @@ def test_a_dead_carrier_from_an_earlier_repeat_latches_the_next_hint_again() -> 
     tutorial_timeline_update(world, dt_ms=16)
 
     # Repeats 6 and 7 spawn no carrier, so native latches on the old one: a pair spawns and the hint moves on.
-    assert tutorial.hint_fade_in
+    assert tutorial.hint_carrier_killed
     assert tutorial.hint_index == 5
     assert [c.pos for c in world.creatures.iter_active()] == [Vec2(128.0, 128.0), Vec2(152.0, 160.0)]
     # The hint fades out on the latch frame and in from the next one.

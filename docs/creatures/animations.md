@@ -37,13 +37,13 @@ Frame selection is checked against
   The remainder is signed for diagnostic negative phases; arithmetic before
   integer conversion follows gameplay PC24 rounding.
 
-- For the long strip (alive, `lifecycle_stage >= 16.0`): `frame = __ftol(anim_phase + 0.5)`.
+- For the long strip (alive, `death_timer >= 16.0`): `frame = __ftol(anim_phase + 0.5)`.
   - If the type mirror flag is set and `frame > 0x0f`, the index is mirrored: `frame = 0x1f - frame`.
 - In the shadow/body long-strip passes, flag `0x10` adds `+0x20` after either
   alive or death-stage selection (an alternate strip for some spawns).
-- For the long strip during death staging (`0 <= lifecycle_stage < 16.0`): `frame = __ftol((base_frame + 0x0f) - lifecycle_stage)`
-  - This effectively ramps through the 16 death frames as `lifecycle_stage` decays from `~16` to `0`.
-- For long-strip corpses (`lifecycle_stage < 0.0`): `frame = base_frame + 0x0f` (static corpse frame).
+- For the long strip during death staging (`0 <= death_timer < 16.0`): `frame = __ftol((base_frame + 0x0f) - death_timer)`
+  - This effectively ramps through the 16 death frames as `death_timer` decays from `~16` to `0`.
+- For long-strip corpses (`death_timer < 0.0`): `frame = base_frame + 0x0f` (static corpse frame).
 - Rotation: `grim_set_rotation(creature_heading - pi/2)`; creatures visually face along their movement heading.
 
 ## Shadow/outline pass (shadows_enabled)
@@ -53,7 +53,7 @@ When `crimson.cfg` `shadows_enabled` is enabled (`config_shadows_enabled`) and t
 
 - alpha is derived from creature tint alpha (`tint_a * 0.4` in the decompile)
 - the sprite is slightly upscaled (~`size * 1.07`) and offset down-right before the main draw
-- for long-strip corpses (`lifecycle_stage < 0.0`), the shadow alpha decays much faster: `tint_a * 0.4 + lifecycle_stage * 0.5` (clamped to `>= 0`).
+- for long-strip corpses (`death_timer < 0.0`), the shadow alpha decays much faster: `tint_a * 0.4 + death_timer * 0.5` (clamped to `>= 0`).
 - Historical evidence: `analysis/frida/creature_render_trace_summary.json` (a Frida trace from before the
   tooling was retired); the recovered `creature_render_type` source is authoritative.
 
@@ -68,9 +68,9 @@ See the [native pass-order and dimension audit](https://github.com/banteg/crimso
 
 For positive Energizer time and `max_health < 500`, the body tint blends toward
 `(0.5, 0.5, 1, 1)` as `(1 - t) * base + t * target`, with `t` capped at 1.
-A negative lifecycle then adds `lifecycle_stage * 0.1` to alpha and clamps the
+A negative lifecycle then adds `death_timer * 0.1` to alpha and clamps the
 result to zero. Shadow alpha starts at `tint_a * 0.4`; negative lifecycle adds
-`lifecycle_stage * 0.5` for long strips or `* 0.1` for short strips, with the
+`death_timer * 0.5` for long strips or `* 0.1` for short strips, with the
 same lower clamp. Transition alpha is multiplied last in both passes.
 
 The ports round each arithmetic operation at gameplay PC24 and pack each
@@ -89,7 +89,7 @@ each multiplication. Grim2D truncates `alpha * 255` when packing the color.
 The pass restores normal alpha blending afterward.
 
 The flash uses the same ping-pong frames as the body. For long strips, the
-shock offset applies only while `lifecycle_stage >= 16`; dying shock creatures
+shock offset applies only while `death_timer >= 16`; dying shock creatures
 therefore use a different frame in this pass. Stages below `-10` are retired
 by the preceding body pass and do not flash.
 
@@ -106,14 +106,14 @@ Spawn allocation clears it. The Python port implements the flash. See the
 
 | Bit | Name | Behavior |
 | --- | --- | --- |
-| `0x01` | `CREATURE_FLAG_SELF_DAMAGE_TICK` | `creature_update_all` applies `60 * dt` damage per tick; `creature_render_all` draws a red overlay. |
-| `0x02` | `CREATURE_FLAG_SELF_DAMAGE_TICK_STRONG` | Same tick at `180 * dt` (checked before `0x01`). |
-| `0x04` | `CREATURE_FLAG_ANIM_PING_PONG` | Short 8-frame ping‑pong animation strip. |
+| `0x01` | `CREATURE_FLAG_POISONED` | `creature_update_all` applies `60 * dt` damage per tick; `creature_render_all` draws a red overlay. |
+| `0x02` | `CREATURE_FLAG_POISONED_STRONG` | Same tick at `180 * dt` (checked before `0x01`). |
+| `0x04` | `CREATURE_FLAG_SPAWNER` | Short 8-frame ping‑pong animation strip. |
 | `0x08` | `CREATURE_FLAG_SPLIT_ON_DEATH` | `creature_handle_death` clones the creature into split children while `size > 35`. |
-| `0x10` | `CREATURE_FLAG_RANGED_ATTACK_SHOCK` | Fires `PROJECTILE_TYPE_PLASMA_RIFLE` with the shock sound (cooldown `+1.0`); hits spawn an extra effect; selects the `+0x20` strip offset in rendering. |
-| `0x40` | `CREATURE_FLAG_ANIM_LONG_STRIP` | Forces the long animation strip even if `0x4` is set. |
-| `0x80` | `CREATURE_FLAG_AI7_LINK_TIMER` | `link_index` counts up as a millisecond timer that drives the hold-timer AI mode. |
-| `0x100` | `CREATURE_FLAG_RANGED_ATTACK_VARIANT` | Fires the projectile type stored in `orbit_radius` (`creature_orbit_radius_t`); cooldown `rand(0..3) * 0.1 + orbit_angle`. |
+| `0x10` | `CREATURE_FLAG_RANGED_PLASMA_RIFLE` | Fires `PROJECTILE_TYPE_PLASMA_RIFLE` with the shock sound (cooldown `+1.0`); hits spawn an extra effect; selects the `+0x20` strip offset in rendering. |
+| `0x40` | `CREATURE_FLAG_SPAWNER_MOBILE` | Forces the long animation strip even if `0x4` is set. |
+| `0x80` | `CREATURE_FLAG_STOP_AND_GO` | `link_index` counts up as a millisecond timer that drives the hold-timer AI mode. |
+| `0x100` | `CREATURE_FLAG_RANGED_TEMPLATE_PROJECTILE` | Fires the projectile type stored in `orbit_radius` (`creature_orbit_radius_t`); cooldown `rand(0..3) * 0.1 + orbit_angle`. |
 | `0x400` | `CREATURE_FLAG_BONUS_ON_DEATH` | `creature_handle_death` drops the bonus in `bonus_args` (overlaying `link_index`). |
 
 ## Creature type table (`creature_type_texture` / `creature_type_table`)
@@ -164,5 +164,5 @@ Notes:
 - Offsets `0x1c` and `0x24..0x33` are padding in `creature_type_t`; `0x20`
   (`unused_value`) is written but never read.
 - `gameplay_reset_state` (`decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp`)
-  sets the trooper's texture, `sfx_bank_a[0..2]`, and `corpse_frame = 7` only;
+  sets the trooper's texture, `death_sfx[0..2]`, and `corpse_frame = 7` only;
   its `anim_rate`, `base_frame`, and `anim_flags` stay zero.

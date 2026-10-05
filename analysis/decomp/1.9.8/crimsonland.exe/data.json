@@ -327,7 +327,7 @@
     },
     {
       "address": "0x00475b64",
-      "name": "sfx_rate_scale",
+      "name": "sfx_sample_rate",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1427,7 +1427,7 @@
     },
     {
       "address": "0x00482410",
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1637,7 +1637,7 @@
     },
     {
       "address": "0x00484cec",
-      "name": "creatures_any_active_flag",
+      "name": "creatures_none_active_flag",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1657,7 +1657,7 @@
     },
     {
       "address": "0x00484d1c",
-      "name": "bonus_spawn_guard",
+      "name": "scripted_burst_active",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1667,7 +1667,7 @@
     },
     {
       "address": "0x00484d40",
-      "name": "survival_elapsed_ms",
+      "name": "run_elapsed_ms",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1772,7 +1772,7 @@
     },
     {
       "address": "0x00484f20",
-      "name": "render_pass_mode",
+      "name": "run_active",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2052,7 +2052,7 @@
     },
     {
       "address": "0x0048d26c",
-      "name": "bonus_hud_slot_y",
+      "name": "bonus_hud_slot_slide_x",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2247,7 +2247,7 @@
     },
     {
       "address": "0x0048ec24",
-      "name": "player_alt_fire_key",
+      "name": "player2_fire_key",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2317,7 +2317,7 @@
     },
     {
       "address": "0x00492fb8",
-      "name": "secondary_proj_speed",
+      "name": "secondary_proj_life_timer",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2357,7 +2357,7 @@
     },
     {
       "address": "0x00498ef8",
-      "name": "unused_fx_rotated_effect_id_prefix_color",
+      "name": "unused_fx_rotated_creature_type_id_prefix_color",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2957,7 +2957,7 @@
     },
     {
       "address": "0x004c12fc",
-      "name": "music_track_extra_0",
+      "name": "music_track_game_playlist",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2972,7 +2972,7 @@
     },
     {
       "address": "0x004c1310",
-      "name": "sfx_volume_table",
+      "name": "music_track_volume",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2982,7 +2982,7 @@
     },
     {
       "address": "0x004c5710",
-      "name": "sfx_mute_flags",
+      "name": "music_fade_out_flags",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -3017,7 +3017,7 @@
     },
     {
       "address": "0x004c9b96",
-      "name": "sfx_unmuted_flag",
+      "name": "music_ready",
       "program": "1.9.8/crimsonland.exe"
     },
     {

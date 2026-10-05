@@ -101,12 +101,12 @@ void highscore_load_table_thunk(void);
 int highscore_rank_index(void);
 void highscore_save_active(void);
 int console_input_poll(void);
-unsigned char sfx_is_unmuted(int sfx_id);
-void sfx_mute_all(int sfx_id);
-void sfx_play_exclusive(int sfx_id);
+unsigned char music_track_is_playing(int sfx_id);
+void music_fade_out_all(int sfx_id);
+void music_play_exclusive(int sfx_id);
 extern int music_track_shortie_monk_id;
 extern int music_track_crimson_theme_id;
-extern int music_track_extra_0;
+extern int music_track_game_playlist;
 void ui_draw_textured_quad(
     int x, int y, int width, int height, int texture_id);
 bool ui_text_input_update(float *xy, ui_text_input_state_t *input_state);
@@ -147,8 +147,8 @@ extern "C" void game_over_screen_update(void)
     if (game_state_id == GAME_STATE_GAME_OVER
         && game_state_pending == GAME_STATE_PENDING_IDLE_SENTINEL
         && ui_transition_direction != 0
-        && !sfx_is_unmuted(music_track_shortie_monk_id)) {
-        sfx_play_exclusive(music_track_shortie_monk_id);
+        && !music_track_is_playing(music_track_shortie_monk_id)) {
+        music_play_exclusive(music_track_shortie_monk_id);
     }
 
     gameplay_render_world();
@@ -297,9 +297,9 @@ extern "C" void game_over_screen_update(void)
         if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
             game_state_pending = GAME_STATE_TYPO_GAMEPLAY;
         }
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
     }
     if (highscores_button.activated) {
         highscore_return_game_mode_id = config_game_mode;
@@ -311,10 +311,10 @@ extern "C" void game_over_screen_update(void)
         game_state_pending = GAME_STATE_HIGHSCORES;
     }
     if (main_menu_button.activated) {
-        sfx_mute_all(music_track_extra_0);
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_play_exclusive(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_game_playlist);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_play_exclusive(music_track_crimson_theme_id);
         ui_transition_direction = 0;
         game_state_pending = GAME_STATE_MAIN_MENU;
         ui_sign_crimson.focus_disabled = 0;

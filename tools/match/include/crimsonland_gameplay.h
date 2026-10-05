@@ -14,26 +14,26 @@ typedef enum creature_type_id_t {
 } creature_type_id_t;
 
 typedef enum creature_ai_mode_t {
-    CREATURE_AI_ORBIT_PLAYER = 0,
-    CREATURE_AI_ORBIT_PLAYER_TIGHT = 1,
+    CREATURE_AI_FLANK_PLAYER = 0,
+    CREATURE_AI_FLANK_PLAYER_TIGHT = 1,
     CREATURE_AI_CHASE_PLAYER = 2,
     CREATURE_AI_FOLLOW_LINK = 3,
-    CREATURE_AI_LINK_GUARD = 4,
+    CREATURE_AI_FLANK_PLAYER_LINKED = 4,
     CREATURE_AI_FOLLOW_LINK_TETHERED = 5,
     CREATURE_AI_ORBIT_LINK = 6,
     CREATURE_AI_HOLD_TIMER = 7,
-    CREATURE_AI_ORBIT_PLAYER_WIDE = 8,
+    CREATURE_AI_FLANK_PLAYER_WIDE = 8,
 } creature_ai_mode_t;
 
 typedef enum creature_flags_t {
-    CREATURE_FLAG_SELF_DAMAGE_TICK = 0x01,
-    CREATURE_FLAG_SELF_DAMAGE_TICK_STRONG = 0x02,
-    CREATURE_FLAG_ANIM_PING_PONG = 0x04,
+    CREATURE_FLAG_POISONED = 0x01,
+    CREATURE_FLAG_POISONED_STRONG = 0x02,
+    CREATURE_FLAG_SPAWNER = 0x04,
     CREATURE_FLAG_SPLIT_ON_DEATH = 0x08,
-    CREATURE_FLAG_RANGED_ATTACK_SHOCK = 0x10,
-    CREATURE_FLAG_ANIM_LONG_STRIP = 0x40,
-    CREATURE_FLAG_AI7_LINK_TIMER = 0x80,
-    CREATURE_FLAG_RANGED_ATTACK_VARIANT = 0x100,
+    CREATURE_FLAG_RANGED_PLASMA_RIFLE = 0x10,
+    CREATURE_FLAG_SPAWNER_MOBILE = 0x40,
+    CREATURE_FLAG_STOP_AND_GO = 0x80,
+    CREATURE_FLAG_RANGED_TEMPLATE_PROJECTILE = 0x100,
     CREATURE_FLAG_BONUS_ON_DEATH = 0x400,
 } creature_flags_t;
 
@@ -94,10 +94,10 @@ typedef enum spawn_id_t {
     SPAWN_ID_SPIDER_SP1_RANDOM_RED_33 = 0x33,
     SPAWN_ID_SPIDER_SP1_RANDOM_GREEN_34 = 0x34,
     SPAWN_ID_SPIDER_SP2_RANDOM_35 = 0x35,
-    SPAWN_ID_ALIEN_AI7_ORBITER_36 = 0x36,
+    SPAWN_ID_ALIEN_DELAYED_START_36 = 0x36,
     SPAWN_ID_SPIDER_SP2_RANGED_VARIANT_37 = 0x37,
-    SPAWN_ID_SPIDER_SP1_AI7_TIMER_38 = 0x38,
-    SPAWN_ID_SPIDER_SP1_AI7_TIMER_WEAK_39 = 0x39,
+    SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38 = 0x38,
+    SPAWN_ID_SPIDER_SP1_STOP_AND_GO_WEAK_39 = 0x39,
     SPAWN_ID_SPIDER_BOSS_3A = 0x3a,
     SPAWN_ID_SPIDER_SP1_CONST_RED_BOSS_3B = 0x3b,
     SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C = 0x3c,
@@ -142,7 +142,7 @@ extern int perk_id_max;
 
 extern player_state_t player_state_table[2];
 extern crimson_cfg_t config_blob;
-extern int render_overlay_player_index;
+extern int current_player_index;
 extern float player_reset_reserved_zero;
 extern unsigned char player_plaguebearer_active[2];
 extern float ui_mouse_x;
@@ -162,8 +162,8 @@ extern unsigned char config_hardcore;
 extern int quest_stage_major;
 extern int quest_stage_minor;
 extern int quest_unlock_index;
-extern int quest_unlock_index_full;
-extern quest_meta_t quest_selected_meta[50];
+extern int quest_unlock_index_hardcore;
+extern quest_meta_t quest_meta_table[50];
 extern quest_meta_t *quest_meta_cursor;
 extern char registry_key_status_root_path[];
 extern unsigned int play_time_ms;
@@ -213,9 +213,9 @@ extern int bonus_icon_fire_bullets;
 extern int bonus_icon_energizer;
 extern int bonus_icon_double_experience;
 
-extern unsigned char bonus_spawn_guard;
+extern unsigned char scripted_burst_active;
 extern unsigned char survival_reward_damage_seen;
-extern unsigned char creatures_any_active_flag;
+extern unsigned char creatures_none_active_flag;
 extern unsigned char demo_mode_active;
 extern int highscore_record_shots_fired;
 extern int creature_spawned_count;
@@ -226,12 +226,12 @@ extern float camera_shake_timer;
 extern int terrain_texture_width;
 extern int terrain_texture_height;
 extern int quest_fail_retry_count;
-extern int survival_elapsed_ms;
-extern player_aux_timer_t player_aux_timer;
+extern int run_elapsed_ms;
+extern player_weapon_popup_timer_t player_weapon_popup_timer;
 extern int survival_spawn_stage;
 extern int gameplay_run_reserved_zero;
 extern unsigned char main_menu_full_version_layout_latch;
-extern unsigned char render_pass_mode;
+extern unsigned char run_active;
 extern float screen_fade_alpha;
 extern game_state_id_t game_state_id;
 extern int creature_active_count;
@@ -280,7 +280,7 @@ bonus_entry_t *bonus_alloc_slot(void);
 bonus_entry_t *bonus_spawn_at(
     vec2f_t *pos,
     bonus_id_t bonus_id,
-    int duration_override);
+    int amount_override);
 bonus_entry_t *bonus_spawn_at_pos(const vec2f_t *pos);
 bonus_id_t bonus_pick_random_type(void);
 int weapon_pick_random_available(void);
@@ -297,7 +297,7 @@ void terrain_generate_random(void);
 void ui_elements_update_and_render(void);
 void perk_prompt_update_and_render(void);
 void ui_cursor_render(void);
-char *weapon_table_entry(int weapon_id);
+char *weapon_name_get(int weapon_id);
 void sfx_play(int sfx_id, float volume);
 int sfx_play_panned(
     int sfx_id,
@@ -395,7 +395,7 @@ extern int fx_queue_rotated;
 extern vec2f_t fx_rotated_pos_x[];
 extern float fx_rotated_scale[];
 extern float fx_rotated_rotation[];
-extern int fx_rotated_effect_id[];
+extern int fx_rotated_creature_type_id[];
 extern effect_color_t fx_rotated_color_r[];
 
 extern char s_unhandled_creature_type[];

@@ -228,7 +228,7 @@ class ArsenalDebugView:
             bonus_pool.spawn_at(
                 pos=pos,
                 bonus_id=bonus_id,
-                duration_override=int(amount_override),
+                amount_override=int(amount_override),
                 state=self._runtime.world.state,
             )
 
@@ -278,10 +278,10 @@ class ArsenalDebugView:
             aim_scheme=AimScheme.MOUSE,
             move=move,
             aim=aim,
-            move_forward_pressed=forward,
-            move_backward_pressed=backward,
-            turn_left_pressed=left,
-            turn_right_pressed=right,
+            move_forward_down=forward,
+            move_backward_down=backward,
+            turn_left_down=left,
+            turn_right_down=right,
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
@@ -321,7 +321,7 @@ class ArsenalDebugView:
         lines.extend(
             [
                 f"clip {_fmt_int(weapon.clip_size)}  reload {_fmt_float(weapon.reload_time)}  cooldown {_fmt_float(weapon.shot_cooldown)}",
-                f"pellets {_fmt_int(weapon.pellet_count)}  spread_inc {_fmt_float(weapon.spread_heat_inc)}  dmg_scale {_fmt_float(weapon.damage_scale)}  meta {_fmt_int(weapon.travel_budget)}",
+                f"pellets {_fmt_int(weapon.pellet_count)}  spread_inc {_fmt_float(weapon.spread_heat_inc)}  dmg_scale {_fmt_float(weapon.damage_scale)}  meta {_fmt_int(weapon.projectile_speed)}",
                 f"ammo_class {_fmt_int(weapon.ammo_class)}  flags {_fmt_hex(weapon.flags)}  icon {_fmt_int(weapon.icon_index)}",
                 f"sfx fire {', '.join(sfx.value for sfx in weapon.fire_sounds)}  reload {weapon.reload_sound}",
             ],

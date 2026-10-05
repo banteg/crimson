@@ -63,40 +63,40 @@ extern "C" void perks_update_effects(void)
         }
     }
 
-    for (render_overlay_player_index = 0;
-         render_overlay_player_index < config_player_count;
-        ++render_overlay_player_index) {
+    for (current_player_index = 0;
+         current_player_index < config_player_count;
+        ++current_player_index) {
         if (perk_count_get(perk_id_death_clock) != 0) {
-            if (player_state_table[render_overlay_player_index].health > 0.0f) {
-                player_state_table[render_overlay_player_index].health -=
+            if (player_state_table[current_player_index].health > 0.0f) {
+                player_state_table[current_player_index].health -=
                     frame_dt * 3.33333325f;
             } else {
-                player_state_table[render_overlay_player_index].health = 0.0f;
+                player_state_table[current_player_index].health = 0.0f;
             }
         }
 
-        if (player_state_table[render_overlay_player_index].shield_timer > 0.0f) {
-            player_state_table[render_overlay_player_index].shield_timer -=
+        if (player_state_table[current_player_index].shield_timer > 0.0f) {
+            player_state_table[current_player_index].shield_timer -=
                 frame_dt;
         } else {
-            player_state_table[render_overlay_player_index].shield_timer = 0.0f;
+            player_state_table[current_player_index].shield_timer = 0.0f;
         }
 
-        if (player_state_table[render_overlay_player_index].fire_bullets_timer
+        if (player_state_table[current_player_index].fire_bullets_timer
             > 0.0f) {
-            player_state_table[render_overlay_player_index].fire_bullets_timer -=
+            player_state_table[current_player_index].fire_bullets_timer -=
                 frame_dt;
         } else {
-            player_state_table[render_overlay_player_index].fire_bullets_timer =
+            player_state_table[current_player_index].fire_bullets_timer =
                 0.0f;
         }
 
-        if (player_state_table[render_overlay_player_index].speed_bonus_timer
+        if (player_state_table[current_player_index].speed_bonus_timer
             > 0.0f) {
-            player_state_table[render_overlay_player_index].speed_bonus_timer -=
+            player_state_table[current_player_index].speed_bonus_timer -=
                 frame_dt;
         } else {
-            player_state_table[render_overlay_player_index].speed_bonus_timer =
+            player_state_table[current_player_index].speed_bonus_timer =
                 0.0f;
         }
 
@@ -117,9 +117,9 @@ extern "C" void perks_update_effects(void)
             }
 
             if (perk_count_get(perk_id_pyrokinetic) != 0) {
-                creature_pool[creature_id].collision_timer -= frame_dt;
-                if (creature_pool[creature_id].collision_timer < 0.0f) {
-                    creature_pool[creature_id].collision_timer = 0.5f;
+                creature_pool[creature_id].dot_tick_timer -= frame_dt;
+                if (creature_pool[creature_id].dot_tick_timer < 0.0f) {
+                    creature_pool[creature_id].dot_tick_timer = 0.5f;
                     vec2f_t *pos =
                         &creature_pool[creature_id].position;
                     fx_spawn_particle(
@@ -185,20 +185,20 @@ extern "C" void perks_update_effects(void)
     }
 
     int creature_id = crt_rand() % 0x17f;
-    for (render_overlay_player_index = 0;
-         render_overlay_player_index < 10
+    for (current_player_index = 0;
+         current_player_index < 10
             && creature_pool[creature_id].active == 0;
-         ++render_overlay_player_index) {
+         ++current_player_index) {
         creature_id = crt_rand() % 0x17f;
     }
-    render_overlay_player_index = 0;
+    current_player_index = 0;
 
     if (creature_pool[creature_id].active == 0) {
         return;
     }
 
     creature_pool[creature_id].health = -1.0f;
-    creature_pool[creature_id].lifecycle_stage -= frame_dt * 20.0f;
+    creature_pool[creature_id].death_timer -= frame_dt * 20.0f;
     player_state_table[0].experience =
         (int)((float)player_state_table[0].experience
             + creature_pool[creature_id].reward_value);

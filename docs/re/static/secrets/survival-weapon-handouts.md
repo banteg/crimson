@@ -26,8 +26,8 @@ weapon behavior.
 - single-player (`config_player_count == 1`)
 - `survival_reward_damage_seen == 0`
 - `survival_reward_fire_seen == 0`
-- `survival_elapsed_ms > 64000`
-- `survival_reward_handout_enabled != 0`
+- `run_elapsed_ms > 64000`
+- `survival_shrinkifier_handout_enabled != 0`
 
 Side effects:
 
@@ -35,7 +35,7 @@ Side effects:
   - `weapon_assign_player(0, 24)`
   - `survival_reward_weapon_guard_id = 24`
 - always:
-  - `survival_reward_handout_enabled = 0`
+  - `survival_shrinkifier_handout_enabled = 0`
   - `survival_reward_damage_seen = 1`
   - `survival_reward_fire_seen = 1`
 
@@ -47,11 +47,11 @@ holding another weapon consumes the chance without a grant.
 `survival_update` grants id `25` if all of these are true:
 
 - single-player (`config_player_count == 1`)
-- `survival_recent_death_count == 3`
+- `survival_first_kill_count == 3`
 - `survival_reward_fire_seen == 0`
 - player distance to centroid of first 3 recorded death positions is `< 16.0`
 - `player_health < 15.0`
-- this check does **not** require `survival_reward_handout_enabled != 0`
+- this check does **not** require `survival_shrinkifier_handout_enabled != 0`
   and does **not** test `survival_reward_damage_seen`
 
 Centroid formula:
@@ -64,7 +64,7 @@ Side effects:
 - `weapon_assign_player(0, 25)`
 - `survival_reward_weapon_guard_id = 25`
 - `survival_reward_fire_seen = 1`
-- `survival_reward_handout_enabled = 0`
+- `survival_shrinkifier_handout_enabled = 0`
 
 ## Decoded Blade-hint mapping (inference)
 
@@ -77,7 +77,7 @@ The Blade Gun handout gate matches this text closely:
 - **"Dead Center Inside The Triangle"** -> player must stand near the centroid of
   three recorded death positions (`distance < 16.0`).
 - **"Of The First Blood"** -> the check uses the first three stored death samples
-  (`survival_recent_death_count == 3`, positions at indices 0..2).
+  (`survival_first_kill_count == 3`, positions at indices 0..2).
 - **"Sacrifice Yourself"** -> player health must be low (`player_health < 15.0`).
 - **"For Firepower"** -> reward is weapon id `25` (Blade Gun).
 
@@ -94,19 +94,19 @@ Related writes outside `survival_update`:
 - `player_take_damage` sets `survival_reward_damage_seen = 1` on damage attempts
   (including shielded hits).
 - `creature_handle_death` records up to 3 death positions and increments
-  `survival_recent_death_count` up to 6.
-- When `survival_recent_death_count` reaches `3`, `creature_handle_death` sets:
+  `survival_first_kill_count` up to 6.
+- When `survival_first_kill_count` reaches `3`, `creature_handle_death` sets:
   - `survival_reward_fire_seen = 0`
-  - `survival_reward_handout_enabled = 0`
+  - `survival_shrinkifier_handout_enabled = 0`
   This is the key transition that enables the second handout check.
 
 Run reset state (`gameplay_reset_state`) initializes:
 
 - `survival_reward_weapon_guard_id = 1`
-- `survival_recent_death_count = 0`
+- `survival_first_kill_count = 0`
 - `survival_reward_damage_seen = 0`
 - `survival_reward_fire_seen = 0`
-- `survival_reward_handout_enabled = 1`
+- `survival_shrinkifier_handout_enabled = 1`
 
 ## Temporary weapon guard behavior
 

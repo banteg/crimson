@@ -42,13 +42,13 @@ extern float perk_jinxed_proc_timer_s;
 extern int perk_id_reflex_boosted;
 extern float perk_lean_mean_exp_tick_timer_s;
 int perk_count_get(int perk_id);
-extern unsigned char music_playlist_randomized_latch, sfx_unmuted_flag;
+extern unsigned char music_playlist_randomized_latch, music_ready;
 extern int music_playlist_entry_count, music_track_intro_id,
     music_track_shortie_monk_id, music_track_crimson_theme_id,
-    music_track_crimsonquest_id, music_track_extra_0, music_track_extra_1;
+    music_track_crimsonquest_id, music_track_game_playlist, music_track_extra_1;
 extern music_playlist_t music_playlist;
-extern unsigned char survival_reward_fire_seen, survival_reward_handout_enabled;
-extern int survival_reward_weapon_guard_id, survival_recent_death_count,
+extern unsigned char survival_reward_fire_seen, survival_shrinkifier_handout_enabled;
+extern int survival_reward_weapon_guard_id, survival_first_kill_count,
     plaguebearer_infection_count, perk_doctor_target_creature_id,
     effect_spawn_detail_skip_counter, quest_stage_banner_timer_ms,
     quest_spawn_stall_timer_ms, highscore_record_shots_hit, creature_kill_count;
@@ -224,14 +224,14 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   terrain_texture_height = 1024;
   terrain_texture_failed = 0;
   quest_unlock_index = cfg.unlock;
-  quest_unlock_index_full = cfg.unlock_full;
+  quest_unlock_index_hardcore = cfg.unlock_full;
   extern game_status_t game_status_blob;
   game_status_blob.quest_unlock_index = cfg.unlock;
-  game_status_blob.quest_unlock_index_full = cfg.unlock_full;
+  game_status_blob.quest_unlock_index_hardcore = cfg.unlock_full;
   memcpy(game_status_blob.weapon_usage_counts, cfg.weapon_usage,
          sizeof(cfg.weapon_usage));
   for (int i = 0; i < 50; ++i)
-    new (&quest_selected_meta[i]) quest_meta_cpp_t;
+    new (&quest_meta_table[i]) quest_meta_cpp_t;
   for (int i = 0; i < 128; ++i)
     new (&perk_meta_table[i]) perk_meta_cpp_t;
   for (int i = 0; i < 15; ++i)
@@ -252,7 +252,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   quest_database_init();
   game_state_id = GAME_STATE_GAMEPLAY;
   game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
-  render_pass_mode = 1;
+  run_active = 1;
   trace_init("gameplay reset");
   gameplay_reset_state();
   player_input_t &keys = player_state_table[0].input;
@@ -273,9 +273,9 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
     quest_start_selected(major, minor);
   // A successful, silent audio backend keeps the native music-selection RNG
   // gate open.
-  extern sfx_mute_flags_t sfx_mute_flags;
-  memset(sfx_mute_flags, 1, sizeof(sfx_mute_flags));
-  sfx_unmuted_flag = 1;
+  extern music_fade_out_flags_t music_fade_out_flags;
+  memset(music_fade_out_flags, 1, sizeof(music_fade_out_flags));
+  music_ready = 1;
   // audio_init_music's load order: distinct ids keep the game-over and quest
   // music from posing as the random game-tune request (extra_0).
   int track = 0;
@@ -286,7 +286,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
     music_playlist[i] = track++;
   music_track_crimson_theme_id = track++;
   music_track_crimsonquest_id = track;
-  music_track_extra_0 = track + 1;
+  music_track_game_playlist = track + 1;
   music_track_extra_1 = track + 2;
   crt_rand();
   ready = true;
@@ -359,7 +359,7 @@ extern "C" int portable_step_many(uint32_t count) {
   }
   frame_dt = 1.0f / 60.0f;
   // game_frame_update: Reflex Boosted slows the frame while the world renders.
-  if (render_pass_mode && perk_count_get(perk_id_reflex_boosted) != 0)
+  if (run_active && perk_count_get(perk_id_reflex_boosted) != 0)
     frame_dt *= 0.9f;
   frame_dt_ms = (int)(frame_dt * 1000.0f);
   // Mouse-relative aim records the cursor itself; other schemes record world aim.
@@ -450,7 +450,7 @@ extern "C" int portable_builder_probe(uint32_t seed, uint32_t index,
   rng = seed;
   memset(quest_spawn_table, 0, sizeof(quest_spawn_entry_t) * 256);
   quest_spawn_count = 0;
-  reinterpret_cast<quest_builder_fn_t>(quest_selected_meta[index].builder)(
+  reinterpret_cast<quest_builder_fn_t>(quest_meta_table[index].builder)(
       quest_spawn_table, &quest_spawn_count);
   if (quest_spawn_count < 0 || quest_spawn_count > 256)
     return 0;

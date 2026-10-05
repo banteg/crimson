@@ -462,7 +462,7 @@
     },
     {
       "address": "0x00439f74",
-      "name": "particle_scale_x",
+      "name": "particle_color_r",
       "program": "1.4.0/crimson.exe"
     },
     {
@@ -477,7 +477,7 @@
     },
     {
       "address": "0x00439f8c",
-      "name": "particle_spin",
+      "name": "particle_rotation",
       "program": "1.4.0/crimson.exe"
     },
     {

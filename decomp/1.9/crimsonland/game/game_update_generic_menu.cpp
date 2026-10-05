@@ -5,7 +5,7 @@ extern IGrim2D_cpp *grim_interface_ptr;
 
 extern "C" void game_update_generic_menu(void)
 {
-    if (render_pass_mode || game_state_id == GAME_STATE_PAUSE_MENU) {
+    if (run_active || game_state_id == GAME_STATE_PAUSE_MENU) {
         gameplay_render_world();
     } else {
         terrain_render();

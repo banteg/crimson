@@ -140,9 +140,9 @@ def menu_entry_activated(entry: MenuEntry, *, timeline_ms: int, focus: UiFocus, 
     return (entry.hovered and click) or (entry.focused and focus.enter and menu_entry_enabled(entry, timeline_ms))
 
 
-def label_alpha(counter_value: int) -> int:
-    # ui_element_render: alpha = 100 + floor(counter_value * 155 / 1000)
-    return 100 + (counter_value * 155) // 1000
+def label_alpha(hover_amount: int) -> int:
+    # ui_element_render: alpha = 100 + floor(hover_amount * 155 / 1000)
+    return 100 + (hover_amount * 155) // 1000
 
 
 def menu_slot_pos_x(slot: int) -> float:

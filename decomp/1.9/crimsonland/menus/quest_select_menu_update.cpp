@@ -105,7 +105,7 @@ extern unsigned char screen_fade_ramp_flag;
 extern game_state_id_t game_state_pending;
 extern int music_track_crimson_theme_id;
 extern int music_track_shortie_monk_id;
-extern int music_track_extra_0;
+extern int music_track_game_playlist;
 extern int sfx_ui_buttonclick;
 extern char menu_label_back[];
 extern char highscore_month_label_default[];
@@ -114,7 +114,7 @@ bool input_primary_just_pressed(void);
 bool ui_checkbox_update(float *xy, ui_checkbox_t *checkbox);
 bool ui_button_update(float *xy, ui_button_t *button);
 void sfx_play(int sfx_id, float gain);
-void sfx_mute_all(int sfx_id);
+void music_fade_out_all(int sfx_id);
 }
 
 #define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
@@ -279,7 +279,7 @@ extern "C" void quest_select_menu_update(void)
         int stage_major = quest_select_stage_major;
         if (config_hardcore) {
             int quest_index = row + stage_major * 10 - 10;
-            if (quest_unlock_index_full >= quest_index) {
+            if (quest_unlock_index_hardcore >= quest_index) {
                 goto unlocked_row;
             }
         } else {
@@ -319,11 +319,11 @@ unlocked_row:
                 position.x + 32.0f,
                 row_y,
                 "%s",
-                quest_selected_meta[
+                quest_meta_table[
                     row + quest_select_stage_major * 10 - 10].name);
             float title_width =
                 (float)(grim_interface_ptr->grim_measure_text_width(
-                    quest_selected_meta[
+                    quest_meta_table[
                         row + quest_select_stage_major * 10 - 10].name)
                     + 32);
             quest_select_vec2_t line_position(
@@ -439,7 +439,7 @@ start_selected:
 validate_selected:
         unsigned char hardcore = config_hardcore;
         if (hardcore) {
-            if (quest_unlock_index_full
+            if (quest_unlock_index_hardcore
                 >= quest_select_stage_minor_index
                     + quest_select_stage_major * 10 - 10) {
                 goto selection_unlocked;
@@ -456,9 +456,9 @@ selection_unlocked:
         ui_transition_direction = 0;
         game_state_pending = GAME_STATE_GAMEPLAY;
         config_game_mode = GAME_MODE_QUEST;
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
         quest_stage_major = quest_select_stage_major;
         quest_stage_minor = quest_select_stage_minor_index + 1;
         screen_fade_ramp_flag = 1;

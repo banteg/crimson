@@ -104,8 +104,8 @@ class QuestsMenuView(MenuScreen):
             unlock = QUEST_COUNT
             if int(status.quest_unlock_index) < unlock:
                 status.quest_unlock_index = unlock
-            if int(status.quest_unlock_index_full) < unlock:
-                status.quest_unlock_index_full = unlock
+            if int(status.quest_unlock_index_hardcore) < unlock:
+                status.quest_unlock_index_hardcore = unlock
             self.state.console.log.log("debug: unlocked everything")
 
         enabled = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
@@ -279,7 +279,7 @@ class QuestsMenuView(MenuScreen):
         config = self.state.config
         unlock = int(status.quest_unlock_index)
         if config.gameplay.hardcore:
-            unlock = int(status.quest_unlock_index_full)
+            unlock = int(status.quest_unlock_index_hardcore)
         level = QuestLevel(int(stage), int(row) + 1)
         return unlock >= int(level.global_index)
 

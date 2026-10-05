@@ -11,8 +11,8 @@ extern "C" void audio_init_music(void)
         return;
     }
 
-    memset(sfx_mute_flags, 1, sizeof(sfx_mute_flags));
-    memset(sfx_volume_table, 0, sizeof(sfx_volume_table));
+    memset(music_fade_out_flags, 1, sizeof(music_fade_out_flags));
+    memset(music_track_volume, 0, sizeof(music_track_volume));
 
     audio_resource_pack_available = resource_pack_set("music.paq");
     if (audio_resource_pack_available) {
@@ -33,7 +33,7 @@ extern "C" void audio_init_music(void)
         music_load_track("music\\crimson_theme.ogg");
     track_id = music_load_track("music\\crimsonquest.ogg");
     music_track_crimsonquest_id = track_id;
-    music_track_extra_0 = track_id + 1;
+    music_track_game_playlist = track_id + 1;
     music_track_extra_1 = track_id + 2;
-    sfx_unmuted_flag = 1;
+    music_ready = 1;
 }

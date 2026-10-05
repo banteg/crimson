@@ -50,10 +50,10 @@ extern "C" void camera_update(void)
     if (config_blob.player_count == 1) {
         camera_offset_x =
             (float)(screen_width / 2)
-            - player_state_table[render_overlay_player_index].position.x;
+            - player_state_table[current_player_index].position.x;
         next_camera_y =
             (float)(screen_height / 2)
-            - player_state_table[render_overlay_player_index].position.y;
+            - player_state_table[current_player_index].position.y;
         goto apply_shake;
     }
 

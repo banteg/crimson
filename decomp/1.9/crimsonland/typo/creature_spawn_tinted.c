@@ -20,11 +20,11 @@ int creature_spawn_tinted(
     creature_pool[slot_id].state_flag = 1;
     creature_pool[slot_id].vel_x = velocity_storage.zero_velocity.x;
     creature_pool[slot_id].ai_mode = 2;
-    creature_pool[slot_id].collision_flag = 0;
-    creature_pool[slot_id].collision_timer = 0.0f;
+    creature_pool[slot_id].plague_infected = 0;
+    creature_pool[slot_id].dot_tick_timer = 0.0f;
     creature_pool[slot_id].type_id = type_id;
     creature_pool[slot_id].force_target = 0;
-    creature_pool[slot_id].lifecycle_stage = 16.0f;
+    creature_pool[slot_id].death_timer = 16.0f;
     creature_pool[slot_id].health = 1.0f;
     creature_pool[slot_id].vel_y = velocity_storage.zero_velocity.y;
     {

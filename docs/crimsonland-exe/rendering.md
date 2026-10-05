@@ -8,7 +8,7 @@ This page summarizes the primary render paths in `crimsonland.exe`.
 
 ## Render dispatcher (game_update_generic_menu)
 
-- If `render_pass_mode` (`0x00487240`) == `0` and `game_state_id` (`0x00487270`) != `5`, it draws terrain only via
+- If `run_active` (`0x00487240`) == `0` and `game_state_id` (`0x00487270`) != `5`, it draws terrain only via
   `terrain_render` (`0x004188a0`).
 
 - Otherwise it runs the full gameplay render pass `gameplay_render_world` (`0x00405960`).
@@ -22,18 +22,18 @@ Order of major passes:
 
 1) `fx_queue_render` (`0x00427920`)
 2) `terrain_render` (`0x004188a0`) (terrain/backbuffer blit)
-3) `player_render_overlays` (`0x00428390`) for players with
+3) `player_render` (`0x00428390`) for players with
    `player_health` (`0x004908d4`) <= 0
 
 4) `creature_render_all` (`0x00419680`)
-5) `player_render_overlays` for players with `player_health` (`0x004908d4`) > 0
+5) `player_render` for players with `player_health` (`0x004908d4`) > 0
 6) `projectile_render` (`0x00422c70`)
 7) `bonus_render` (`0x004295f0`)
 8) `grim_draw_fullscreen_color` fade when `screen_fade_alpha > 0`
 
 Notes:
 
-- `render_overlay_player_index` is used as the player index during the two overlay passes.
+- `current_player_index` is used as the player index during the two overlay passes.
 - `ui_transition_alpha` (`0x00487278`) is the frame alpha used by multiple render paths.
 - `projectile_render` binds both `projectile_texture` (`0x0048f7d4`) and
   `projectile_bullet_texture` (`0x0049bb30`, `bullet_i`) for distinct projectile sprite passes.
@@ -42,7 +42,7 @@ Notes:
   set, `gameplay_render_world` avoids forcing `ui_transition_alpha` to 1.0 in
   branch paths that normally suppress transition fades.
 - `player_overlay_suppressed_latch` (`0x0048727c`) is an additional hard gate
-  for `player_render_overlays` during highscore-return/result-flow transitions.
+  for `player_render` during highscore-return/result-flow transitions.
 
 ## HUD render (ui_render_hud / 0x0041aed0)
 
@@ -99,7 +99,7 @@ and mirrored by `terrain_slots_for_quest` (`src/crimson/terrain_slots.py`).
 
 ## UI overlays
 
-`player_render_overlays` draws per-player indicators (aim reticles, shields,
+`player_render` draws per-player indicators (aim reticles, shields,
 weapon indicators). It is gated by `game_state_id` (`0x00487270`) values (not drawn in modal
 states like `0x14/0x16`), `ui_transition_alpha` (`0x00487278`) (transition alpha),
 and `player_overlay_suppressed_latch` (`0x0048727c`).
@@ -111,7 +111,7 @@ current `player_state.auto_target`. `perks_init_database`
 
 ### Player sprite layers
 
-From `decomp/1.9/crimsonland/crimsonland/player_render_overlays.cpp` (a historical
+From `decomp/1.9/crimsonland/crimsonland/player_render.cpp` (a historical
 Frida summary, `analysis/frida/player_sprite_trace_summary.json`, agrees):
 
 - Alive (`player_state_table.health > 0`): draws **two** sprite layers (UV frames `0..14` and `+0x10`) with a shadow/outline pass (scaled `~1.02/1.03` and offset) before the main pass; rotations come from `heading` vs `aim_heading`.
@@ -119,7 +119,7 @@ Frida summary, `analysis/frida/player_sprite_trace_summary.json`, agrees):
 
 ### Player sprite UV tables (2026-01-26)
 
-`player_render_overlays` uses two UV tables for the trooper sprite:
+`player_render` uses two UV tables for the trooper sprite:
 
 - Legs: `effect_uv8` (8×8 atlas grid, frames `0–14`, empty `15`)
 - Torso: `player_overlay_torso_uv8`, which is **`effect_uv8 + 16`** (frames `16–30`, empty `31`)
@@ -135,21 +135,21 @@ The legs and torso passes therefore draw paired frames `(0,16) … (14,30)`; the
 Recoil is driven by `player_state.muzzle_flash_alpha`:
 
 - Decay: `muzzle_flash_alpha = max(0, muzzle_flash_alpha - 2 * frame_dt)`
-  (applied in both `player_update` and `player_fire_weapon`).
+  (applied in both `player_update` and `typo_player_update`).
 
 - Firing adds the weapon spread-heat increment (or the Fire Bullets fallback
   value on that branch). Both player paths clamp to `0.8` at their tail.
-  Typ-o's `player_fire_weapon` also clamps the old value to `1.0` before adding
+  Typ-o's `typo_player_update` also clamps the old value to `1.0` before adding
   its increment; this is not a second post-shot cap.
 
 These are separate mode paths. Ordinary gameplay calls `player_update`, whose
-weapon-fire logic is inline; it does not call `player_fire_weapon`. Typ-o calls
-`player_fire_weapon` instead, after its console/dead-player gates. Each reached
+weapon-fire logic is inline; it does not call `typo_player_update`. Typ-o calls
+`typo_player_update` instead, after its console/dead-player gates. Each reached
 path applies the decay once. See
 `decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp` and
 `decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp`.
 
-During `player_render_overlays`, the **torso quad** is offset by a recoil vector computed from aim heading:
+During `player_render`, the **torso quad** is offset by a recoil vector computed from aim heading:
 
 - `dir = (cos(aim_heading + π/2), sin(aim_heading + π/2))`
 - `offset = dir * (muzzle_flash_alpha * 12.0)`

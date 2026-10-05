@@ -29,7 +29,7 @@ tables and other leaf or near-leaf gameplay code.
 - `run(start, stop, regs=..., frame=...)` executes a code fragment of a larger
   function, for example the spawn block of `typo_gameplay_update_and_render`.
 - `run_static_initializers()` runs the CRT `__xi` and `__xc` tables. This
-  applies C++ defaults such as the weapon-table travel budgets. The CRT
+  applies C++ defaults such as the weapon-table projectile speeds. The CRT
   stdio and locale initializers trap and are skipped.
 - The CRT runs natively. `TlsGetValue` returns a fake `_tiddata`, so `crt_rand`
   works, and `oracle.rand_state` reads or writes its `_holdrand`. Win32 heap
@@ -77,10 +77,10 @@ stores a wider double where native stores a float32.
 | `test_float_helpers` | `angle_approach` `0x0041f430`, `__ftol` `0x00461054`, PC24 `fadd`/`fsub`/`fmul`/`fdiv`/`fsqrt`, `fcos`/`fsin` + `fmul` | `_angle_approach`, `ftol_ms_i32`, `math_parity.x87_pc24_*` |
 | `test_spawn_template` | `creature_spawn_template` `0x00430af0`, every template × hardcore × retry count | `CreaturePool.spawn_template` |
 | `test_spawn_full_pool` | `creature_spawn_template`, `survival_spawn_creature` and `rush_mode_update` into a pool with at most five free slots: overflow into the phantom slot `creature_pool[0x180]`, the spawn-slot table | `CreaturePool.spawn_template`, `survival_spawn_creature`, `rush_mode_update` |
-| `test_projectiles` | `projectile_spawn` `0x00420440`; shotgun pellets in `player_fire_weapon` `0x00444980`; flamer and Bubblegun fire block of `player_update` `0x00415a1f..0x004174c4` | `ProjectilePool.spawn`, `fire_weapon` |
+| `test_projectiles` | `projectile_spawn` `0x00420440`; shotgun pellets in `typo_player_update` `0x00444980`; flamer and Bubblegun fire block of `player_update` `0x00415a1f..0x004174c4` | `ProjectilePool.spawn`, `fire_weapon` |
 | `test_projectile_update` | `projectile_update` `0x00420b90`: rocket flight, detonation blast, Shrinkifier/Splitter/Plasma Cannon/Ion Rifle hits; Shock Chain in `bonus_apply` `0x00409890` | `SecondaryProjectilePool.step`, `ProjectilePool.step`, `bonus_apply` |
 | `test_typo_spawn` | Typ-o spawn block `0x00445a62..0x00445c85` with `creature_spawn_tinted` | `typo_spawn_update` |
-| `test_typo_frame` | Whole Typ-o runs from `gameplay_reset_state`: `typo_gameplay_update_and_render` `0x004457c0` frame by frame (creature and projectile updates, `player_fire_weapon`, spawns and names, the world render's corpse culling, the HUD) with a scripted typist, through death and the run-down; Grim is a no-op interface | `DeterministicSession` Typ-o ticks, `typo_gameplay_update` |
+| `test_typo_frame` | Whole Typ-o runs from `gameplay_reset_state`: `typo_gameplay_update_and_render` `0x004457c0` frame by frame (creature and projectile updates, `typo_player_update`, spawns and names, the world render's corpse culling, the HUD) with a scripted typist, through death and the run-down; Grim is a no-op interface | `DeterministicSession` Typ-o ticks, `typo_gameplay_update` |
 | `test_quest_builders` | All 50 `quest_build_*` functions (`0x00434480..0x004390d0`) across seeds, terrain sizes, player counts and hardcore | `QuestDefinition.builder` spawn tables |
 | `test_mode_spawns` | `rush_mode_update` `0x004072b0` with `creature_spawn`; `survival_spawn_creature` `0x00407510`, including elapsed times and experience past 2^24 | `rush_mode_update`, `survival_spawn_creature` |
 | `test_creature_xp` | Quick Learner and plain kill XP in `creature_handle_death` `0x0041eb34..0x0041eb6e`; Radioactive kill XP `0x0042704b..0x00427062`; Jinxed kill XP `0x004070a6..0x004070cf` | `quick_learner_kill_xp`, `experience_plus_reward` |

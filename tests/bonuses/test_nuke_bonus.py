@@ -40,7 +40,7 @@ def test_nuke_damage_is_limited_to_radius() -> None:
     assert [death.index for death in step_runtime.deaths] == [0]
     # The spawn guard holds through the blast, so nuke kills never drop bonuses.
     assert world.state.bonus_pool.iter_active() == []
-    assert not world.state.bonus_spawn_guard
+    assert not world.state.scripted_burst_active
 
 
 def test_nuke_damage_rounds_each_native_radial_distance_operation() -> None:
@@ -124,13 +124,13 @@ def test_nuke_spawns_projectiles_with_weapon_meta_speed() -> None:
     pistol = [entry for entry in active if entry.type_id == int(ProjectileTemplateId.PISTOL)]
     assert len(pistol) == 4
     for entry in pistol:
-        assert_float_close(entry.travel_budget, 55.0)
+        assert_float_close(entry.projectile_speed, 55.0)
         assert_float_close(entry.speed_scale, 0.5)
 
     gauss = [entry for entry in active if entry.type_id == int(ProjectileTemplateId.GAUSS_GUN)]
     assert len(gauss) == 2
     for entry in gauss:
-        assert_float_close(entry.travel_budget, 215.0)
+        assert_float_close(entry.projectile_speed, 215.0)
         assert_float_close(entry.speed_scale, 1.0)
 
     assert [record.caller for record in rng.records_since()[:11]] == [

@@ -20,8 +20,8 @@ highscore_record_t *highscore_find_name_entry(
     const char *player_name,
     int count);
 int highscore_compare_survival_score_desc(const void *left, const void *right);
-int highscore_compare_rush_field32_desc(const void *left, const void *right);
-int highscore_compare_quest_field32_asc_nonzero_first(
+int highscore_compare_elapsed_desc(const void *left, const void *right);
+int highscore_compare_elapsed_asc_nonzero_first(
     const void *left,
     const void *right);
 
@@ -41,7 +41,7 @@ void highscore_load_table(void)
     char *path;
     FILE *fp;
     int count;
-    int current_date_checksum;
+    int current_date_week;
     int index;
 
     highscore_record_reset_light(&stored);
@@ -58,7 +58,7 @@ void highscore_load_table(void)
         return;
     }
 
-    current_date_checksum = highscore_date_checksum(
+    current_date_week = highscore_iso_week(
         local_system_time.wYear,
         local_system_time.wMonth,
         local_system_time.wDay);
@@ -98,7 +98,7 @@ void highscore_load_table(void)
                 continue;
             }
         } else if (config_highscore_date_mode == 2) {
-            if (current_date_checksum != stored.date_checksum ||
+            if (current_date_week != stored.date_week ||
                 local_system_time.wYear != stored.year_offset + 2000) {
                 continue;
             }
@@ -122,8 +122,8 @@ void highscore_load_table(void)
             replace = &highscore_table[0];
             if (mode == GAME_MODE_RUSH) {
                 for (index = 1; index < 100; index++) {
-                    if ((int)highscore_table[index].survival_elapsed_ms <
-                        (int)replace->survival_elapsed_ms) {
+                    if ((int)highscore_table[index].run_elapsed_ms <
+                        (int)replace->run_elapsed_ms) {
                         replace = &highscore_table[index];
                     }
                 }
@@ -132,8 +132,8 @@ void highscore_load_table(void)
             }
             if (mode == GAME_MODE_QUEST) {
                 for (index = 1; index < 100; index++) {
-                    if ((int)highscore_table[index].survival_elapsed_ms >
-                        (int)replace->survival_elapsed_ms) {
+                    if ((int)highscore_table[index].run_elapsed_ms >
+                        (int)replace->run_elapsed_ms) {
                         replace = &highscore_table[index];
                     }
                 }
@@ -165,13 +165,13 @@ void highscore_load_table(void)
             highscore_table,
             100,
             sizeof(highscore_record_t),
-            highscore_compare_rush_field32_desc);
+            highscore_compare_elapsed_desc);
     } else if (config_game_mode == GAME_MODE_QUEST) {
         qsort(
             highscore_table,
             100,
             sizeof(highscore_record_t),
-            highscore_compare_quest_field32_asc_nonzero_first);
+            highscore_compare_elapsed_asc_nonzero_first);
     } else {
         qsort(
             highscore_table,
@@ -200,8 +200,8 @@ void highscore_load_table(void)
                 }
 
                 if (highscore_table[best].game_mode_id == GAME_MODE_RUSH) {
-                    if ((int)highscore_table[best].survival_elapsed_ms <
-                        (int)highscore_table[inner].survival_elapsed_ms) {
+                    if ((int)highscore_table[best].run_elapsed_ms <
+                        (int)highscore_table[inner].run_elapsed_ms) {
                         best = inner;
                     }
                 } else if ((int)highscore_table[best].score_xp <

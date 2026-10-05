@@ -42,24 +42,24 @@ extern "C" void weapon_table_init(void)
     }
     W(WEAPON_ID_NONE).hud_icon_id = 0;
 
-    W(WEAPON_ID_PLASMA_RIFLE).travel_budget = 30.0f;
-    W(WEAPON_ID_PLASMA_MINIGUN).travel_budget = 35.0f;
-    W(WEAPON_ID_ION_RIFLE).travel_budget = 15.0f;
-    W(WEAPON_ID_ION_MINIGUN).travel_budget = 20.0f;
-    W(WEAPON_ID_ION_CANNON).travel_budget = 10.0f;
-    W(WEAPON_ID_PLASMA_CANNON).travel_budget = 10.0f;
-    W(WEAPON_ID_PULSE_GUN).travel_budget = 20.0f;
-    W(WEAPON_ID_GAUSS_GUN).travel_budget = 215.0f;
-    W(WEAPON_ID_PLAGUE_SPREADER_GUN).travel_budget = 15.0f;
-    W(WEAPON_ID_RAINBOW_GUN).travel_budget = 10.0f;
-    W(WEAPON_ID_SHOTGUN).travel_budget = 60.0f;
-    W(WEAPON_ID_PISTOL).travel_budget = 55.0f;
-    W(WEAPON_ID_ASSAULT_RIFLE).travel_budget = 50.0f;
-    W(WEAPON_ID_BLADE_GUN).travel_budget = 20.0f;
+    W(WEAPON_ID_PLASMA_RIFLE).projectile_speed = 30.0f;
+    W(WEAPON_ID_PLASMA_MINIGUN).projectile_speed = 35.0f;
+    W(WEAPON_ID_ION_RIFLE).projectile_speed = 15.0f;
+    W(WEAPON_ID_ION_MINIGUN).projectile_speed = 20.0f;
+    W(WEAPON_ID_ION_CANNON).projectile_speed = 10.0f;
+    W(WEAPON_ID_PLASMA_CANNON).projectile_speed = 10.0f;
+    W(WEAPON_ID_PULSE_GUN).projectile_speed = 20.0f;
+    W(WEAPON_ID_GAUSS_GUN).projectile_speed = 215.0f;
+    W(WEAPON_ID_PLAGUE_SPREADER_GUN).projectile_speed = 15.0f;
+    W(WEAPON_ID_RAINBOW_GUN).projectile_speed = 10.0f;
+    W(WEAPON_ID_SHOTGUN).projectile_speed = 60.0f;
+    W(WEAPON_ID_PISTOL).projectile_speed = 55.0f;
+    W(WEAPON_ID_ASSAULT_RIFLE).projectile_speed = 50.0f;
+    W(WEAPON_ID_BLADE_GUN).projectile_speed = 20.0f;
     W(WEAPON_ID_BLADE_GUN).damage_scale = 11.0f;
-    W(WEAPON_ID_FIRE_BULLETS).travel_budget = 60.0f;
+    W(WEAPON_ID_FIRE_BULLETS).projectile_speed = 60.0f;
     W(WEAPON_ID_FIRE_BULLETS).damage_scale = 0.25f;
-    W(WEAPON_ID_SPIDER_PLASMA).travel_budget = 10.0f;
+    W(WEAPON_ID_SPIDER_PLASMA).projectile_speed = 10.0f;
     W(WEAPON_ID_SPIDER_PLASMA).damage_scale = 0.5f;
     W(WEAPON_ID_PLASMA_RIFLE).damage_scale = 5.0f;
     W(WEAPON_ID_PLASMA_MINIGUN).damage_scale = 2.1f;
@@ -476,7 +476,7 @@ extern "C" void weapon_table_init(void)
 #endif
     W(WEAPON_ID_SPLITTER_GUN).reload_sfx_id = sfx_shock_reload;
     W(WEAPON_ID_SPLITTER_GUN).damage_scale = 6.0f;
-    W(WEAPON_ID_SPLITTER_GUN).travel_budget = 30.0f;
+    W(WEAPON_ID_SPLITTER_GUN).projectile_speed = 30.0f;
 
     strcpy(W(WEAPON_ID_SHRINKIFIER_5K).name, "Shrinkifier 5k");
     W(WEAPON_ID_SHRINKIFIER_5K).flags = 8;

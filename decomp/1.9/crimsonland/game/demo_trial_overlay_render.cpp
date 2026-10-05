@@ -75,13 +75,13 @@ extern game_state_id_t game_state_pending;
 extern int music_track_intro_id;
 extern int music_track_shortie_monk_id;
 extern int music_track_crimson_theme_id;
-extern int music_track_extra_0;
+extern int music_track_game_playlist;
 
 int demo_trial_time_limit_ms(void);
 int play_time_get(void);
 bool ui_button_update(float *xy, ui_button_t *button);
-void sfx_mute_all(int sfx_id);
-void sfx_play_exclusive(int sfx_id);
+void music_fade_out_all(int sfx_id);
+void music_play_exclusive(int sfx_id);
 }
 
 extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
@@ -265,11 +265,11 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
                 (ui_button_t *)&maybe_later_button)) {
             ui_transition_direction = 0;
             game_state_pending = GAME_STATE_MAIN_MENU;
-            render_pass_mode = 0;
-            sfx_mute_all(music_track_intro_id);
-            sfx_mute_all(music_track_shortie_monk_id);
-            sfx_mute_all(music_track_extra_0);
-            sfx_play_exclusive(music_track_crimson_theme_id);
+            run_active = 0;
+            music_fade_out_all(music_track_intro_id);
+            music_fade_out_all(music_track_shortie_monk_id);
+            music_fade_out_all(music_track_game_playlist);
+            music_play_exclusive(music_track_crimson_theme_id);
         }
     }
 }

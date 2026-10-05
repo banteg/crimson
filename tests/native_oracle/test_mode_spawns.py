@@ -5,7 +5,7 @@
 - `survival_spawn_creature` (0x00407510): type, speed, health, tint and reward
   from the player's experience.
 
-`survival_elapsed_ms` and the experience are ints that `fild` loads exactly, so
+`run_elapsed_ms` and the experience are ints that `fild` loads exactly, so
 the cases include values past 2^24 where rounding them to f32 first would drift.
 """
 
@@ -87,7 +87,7 @@ def test_rush_mode_spawns_match_native(oracle) -> None:
         oracle.write_u32("config_player_count", player_count)
         oracle.write_u32("frame_dt_ms", dt_ms)
         oracle.write_u32("survival_spawn_cooldown", cooldown_ms)
-        oracle.write_u32("survival_elapsed_ms", elapsed_ms)
+        oracle.write_u32("run_elapsed_ms", elapsed_ms)
         oracle.rand_state = seed
         oracle.call("rush_mode_update")
 

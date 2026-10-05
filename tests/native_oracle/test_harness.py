@@ -89,5 +89,5 @@ def test_restubbing_calls_the_callback_once_per_call(oracle) -> None:
 def test_static_initializers_seed_weapon_defaults(oracle) -> None:
     # The fixture ran them: every weapon row starts with the 45.0 travel budget
     # from `weapon_table_defaults_global_init` before `weapon_table_init`.
-    travel_budget = oracle.resolve("weapon_projectile_travel_budget")
-    assert oracle.read_f32(travel_budget + 5 * 0x7C) == 45.0
+    projectile_speed = oracle.resolve("weapon_projectile_speed")
+    assert oracle.read_f32(projectile_speed + 5 * 0x7C) == 45.0

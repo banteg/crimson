@@ -24,7 +24,7 @@ and the [recovered core gate](https://github.com/banteg/crimson/tree/master/crim
 | Artifact | Current version | Authority |
 | --- | ---: | --- |
 | CDT container | 2 | `crimson-re/src/crimson_re/dbg/schema.py` |
-| CDT payload schema | 20 | `crimson-re/src/crimson_re/dbg/schema.py` |
+| CDT payload schema | 21 | `crimson-re/src/crimson_re/dbg/schema.py` |
 | CRD replay | 29 | `src/crimson/replay/types.py` |
 
 These artifacts are throwaway debugging data. Readers require exactly these
@@ -107,7 +107,7 @@ Schema 19 changes these semantics and allocation generations. Earlier traces
 are rejected and must be regenerated; rewriting their version number cannot
 recover missing allocation events or correct their clocks.
 
-## Channel contract (schema 20)
+## Channel contract (schema 21)
 
 Every tick requires all six channels:
 

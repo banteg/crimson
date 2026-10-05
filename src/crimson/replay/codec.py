@@ -126,7 +126,7 @@ def _validate_run(run: RunSpec) -> None:
     _require_int(run.quest_fail_retry_count, low=0, high=_I32_MAX, field="run.quest_fail_retry_count")
     _require_int(run.detail_preset, low=1, high=5, field="run.detail_preset")
     _require_int(run.violence_disabled, low=0, high=0xFF, field="run.violence_disabled")
-    for field in ("quest_unlock_index", "quest_unlock_index_full"):
+    for field in ("quest_unlock_index", "quest_unlock_index_hardcore"):
         _require_int(getattr(run.status, field), low=_I32_MIN, high=_I32_MAX, field=f"run.status.{field}")
     for index, count in enumerate(run.status.weapon_usage_counts):
         _require_int(count, low=0, high=_U32_MAX, field=f"run.status.weapon_usage_counts[{index}]")

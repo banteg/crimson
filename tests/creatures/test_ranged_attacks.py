@@ -36,7 +36,7 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     creature.hp = 10.0
     creature.pos = Vec2()
     creature.heading = 0.0
-    creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
+    creature.flags = CreatureFlags.RANGED_PLASMA_RIFLE
     creature.ai_mode = CreatureAiMode.CHASE_PLAYER
     creature.contact_damage = 0.0
 
@@ -65,7 +65,7 @@ def test_ranged_creature_does_not_fire_when_too_close() -> None:
     creature.active = True
     creature.hp = 10.0
     creature.pos = Vec2()
-    creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
+    creature.flags = CreatureFlags.RANGED_PLASMA_RIFLE
     creature.ai_mode = CreatureAiMode.CHASE_PLAYER
     creature.move_speed = 0.0
     creature.contact_damage = 0.0
@@ -91,7 +91,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     creature.hp = 10.0
     creature.pos = Vec2()
     creature.heading = 0.0
-    creature.flags = CreatureFlags.RANGED_ATTACK_VARIANT
+    creature.flags = CreatureFlags.RANGED_TEMPLATE_PROJECTILE
     creature.ai_mode = CreatureAiMode.CHASE_PLAYER
     creature.ranged_projectile_type = 26
     creature.orbit_angle = 0.4

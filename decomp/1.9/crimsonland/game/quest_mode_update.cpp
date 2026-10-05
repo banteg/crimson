@@ -11,22 +11,22 @@ extern "C" game_status_t game_status_blob;
 extern "C" int highscore_score_xp;
 extern "C" IGrim2D_cpp *grim_interface_ptr;
 
-extern "C" int music_track_extra_0;
+extern "C" int music_track_game_playlist;
 extern "C" int music_track_crimsonquest_id;
 extern "C" int sfx_questhit;
-extern "C" sfx_volume_table_t sfx_volume_table;
+extern "C" sfx_volume_table_t music_track_volume;
 
 extern "C" unsigned char creatures_none_active(void);
 extern "C" unsigned char quest_spawn_table_empty(void);
 extern "C" void quest_spawn_timeline_update(void);
-extern "C" void sfx_mute_all(int sfx_id);
-extern "C" void sfx_play_exclusive(int sfx_id);
+extern "C" void music_fade_out_all(int sfx_id);
+extern "C" void music_play_exclusive(int sfx_id);
 extern "C" void game_save_status(void);
 extern "C" int console_input_poll(void);
 
 extern "C" void quest_mode_update(void)
 {
-    if (!console_open_flag && render_pass_mode) {
+    if (!console_open_flag && run_active) {
         if (!creatures_none_active() || !quest_spawn_table_empty()) {
             quest_spawn_timeline += frame_dt_ms;
         }
@@ -43,7 +43,7 @@ extern "C" void quest_mode_update(void)
     int timer = quest_transition_timer_ms;
     bonus_reflex_boost_timer = 0.0f;
     if (timer < 0) {
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_game_playlist);
         quest_transition_timer_ms = 0;
         int quest_index = quest_stage_major * 10 + quest_stage_minor;
         int play_count = game_status_blob.quest_play_counts[40 + quest_index];
@@ -54,8 +54,8 @@ extern "C" void quest_mode_update(void)
         quest_transition_timer_ms = 851;
     } else if (timer > 2000 && timer <= 2050) {
         quest_transition_timer_ms = 2051;
-        sfx_play_exclusive(music_track_crimsonquest_id);
-        sfx_volume_table[music_track_crimsonquest_id] = 0.0f;
+        music_play_exclusive(music_track_crimsonquest_id);
+        music_track_volume[music_track_crimsonquest_id] = 0.0f;
     } else if (timer > 2500) {
         int next_unlock =
             quest_stage_major * 10 + quest_stage_minor - 10;
@@ -63,8 +63,8 @@ extern "C" void quest_mode_update(void)
             quest_unlock_index = next_unlock;
         }
         if (config_hardcore
-            && next_unlock > quest_unlock_index_full) {
-            quest_unlock_index_full = next_unlock;
+            && next_unlock > quest_unlock_index_hardcore) {
+            quest_unlock_index_hardcore = next_unlock;
         }
         game_save_status();
         game_state_pending = GAME_STATE_QUEST_RESULTS;

@@ -127,8 +127,8 @@ nothing in the recovered exe source reads it.
 | `0x60` | `SFX_PlaySample` | `mod_api_sfx_play_sample` (`0x0040e570`) | `pan` is scaled by `512.0`. |
 | `0x64` | `SFX_LoadTune` | `mod_api_sfx_load_tune` (`0x0040e5b0`) | Loads `mods\\%s` via `music_load_track`. |
 | `0x68` | `SFX_FreeTune` | `mod_api_sfx_free_tune` (`0x0040e5e0`) | Releases a track handle. |
-| `0x6c` | `SFX_PlayTune` | `mod_api_sfx_play_tune` (`0x0040e5f0`) | Calls `sfx_play_exclusive(tuneId)` directly. |
-| `0x70` | `SFX_StopTune` | `mod_api_sfx_stop_tune` (`0x0040e600`) | Calls `sfx_mute_all(tuneId)` directly. |
+| `0x6c` | `SFX_PlayTune` | `mod_api_sfx_play_tune` (`0x0040e5f0`) | Calls `music_play_exclusive(tuneId)` directly. |
+| `0x70` | `SFX_StopTune` | `mod_api_sfx_stop_tune` (`0x0040e600`) | Calls `music_fade_out_all(tuneId)` directly. |
 | `0x74` | `INP_KeyDown` | `mod_api_inp_key_down` (`0x0040e660`) | Uses `grim_is_key_active` (key `1` forced false). |
 | `0x78` | `INP_GetAnalog` | `mod_api_inp_get_analog` (`0x0040e620`) | Special-cases `DIKA_MOUSEXSTAT`/`DIKA_MOUSEYSTAT` (355/356). |
 | `0x7c` | `INP_GetPressedChar` | `mod_api_inp_get_pressed_char` (`0x0040e610`) | Bridges to `grim_get_key_char`. |

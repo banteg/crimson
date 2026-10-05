@@ -117,7 +117,7 @@ def test_open_stops_music_before_run_restart(make_mode_config, assets_dir) -> No
 
 
 def test_high_scores_over_a_game_over_draw_only_the_terrain(mocker, make_mode_config, assets_dir) -> None:
-    # The death clears native `render_pass_mode`, so `game_update_generic_menu` renders the terrain without the run.
+    # The death clears native `run_active`, so `game_update_generic_menu` renders the terrain without the run.
     mode = _game_over(make_mode_config, assets_dir)
     _press_result_button(mode, ResultAction.HIGH_SCORES)
     world_draw = mocker.spy(mode, "_draw_world")
@@ -138,5 +138,5 @@ def test_rush_elapsed_helpers_use_authoritative_session_timer(make_mode_config, 
 
     record = mode._game_over_record
     assert record is not None
-    assert record.survival_elapsed_ms == 9876
+    assert record.run_elapsed_ms == 9876
     assert mode._replay_checkpoint_elapsed_ms() == 9876.0

@@ -197,10 +197,10 @@ def draw_creature_overlays(
     creature: CreatureState,
     *,
     screen: Vec2,
-    lifecycle_stage: float,
+    death_timer: float,
     ctx: WorldDrawContext,
 ) -> None:
-    fade = monster_vision_fade_alpha(lifecycle_stage)
+    fade = monster_vision_fade_alpha(death_timer)
     if ctx.monster_vision and ctx.particles_texture is not None and ctx.monster_vision_src is not None:
         mv_alpha = fade * ctx.entity_alpha
         if mv_alpha > 1e-3:
@@ -211,7 +211,7 @@ def draw_creature_overlays(
             rl.draw_texture_pro(ctx.particles_texture, ctx.monster_vision_src, dst, origin, 0.0, tint)
 
     if ctx.particles_texture is not None and ctx.poison_src is not None and bool(creature.plague_infected):
-        # creature_render_all: collision_flag overlay (black 80x80 aura), drawn before red poison flag.
+        # creature_render_all: plague_infected overlay (black 80x80 aura), drawn before red poison flag.
         plague_alpha = fade * ctx.entity_alpha
         if plague_alpha > 1e-3:
             size = 80.0 * render_ctx.view.scale
@@ -223,7 +223,7 @@ def draw_creature_overlays(
     if (
         ctx.particles_texture is not None
         and ctx.poison_src is not None
-        and (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
+        and (creature.flags & CreatureFlags.POISONED)
     ):
         poison_alpha = fade * ctx.entity_alpha
         if poison_alpha > 1e-3:
@@ -246,8 +246,8 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
             camera=render_ctx.view.camera,
             view_scale=render_ctx.view.view_scale,
         )
-        lifecycle_stage = float(creature.lifecycle_stage)
-        draw_creature_overlays(render_ctx, creature, screen=screen, lifecycle_stage=lifecycle_stage, ctx=ctx)
+        death_timer = float(creature.death_timer)
+        draw_creature_overlays(render_ctx, creature, screen=screen, death_timer=death_timer, ctx=ctx)
 
     resources = frame.resources
     shadows_enabled = frame.config.display.shadows_enabled if frame.config is not None else True
@@ -263,7 +263,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
                     camera=render_ctx.view.camera,
                     view_scale=render_ctx.view.view_scale,
                 )
-                lifecycle_stage = float(creature.lifecycle_stage)
+                death_timer = float(creature.death_timer)
 
                 texture = _creature_texture(resources, type_id)
 
@@ -277,7 +277,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
                         creature_shadow_alpha(
                             creature.tint.a,
                             flags=creature.flags,
-                            lifecycle_stage=lifecycle_stage,
+                            death_timer=death_timer,
                             transition=ctx.entity_alpha,
                         ),
                     )
@@ -288,7 +288,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
                             creature.tint,
                             max_hp=creature.max_hp,
                             energizer_timer=frame.state.bonuses.energizer,
-                            lifecycle_stage=lifecycle_stage,
+                            death_timer=death_timer,
                             transition=ctx.entity_alpha,
                         ),
                     )
@@ -299,7 +299,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
                     type_id=type_id or CreatureTypeId.ZOMBIE,
                     flags=creature.flags,
                     phase=float(creature.anim_phase),
-                    lifecycle_stage=lifecycle_stage,
+                    death_timer=death_timer,
                     shadow_alpha=shadow_alpha,
                     pos=creature.pos,
                     screen_pos=screen,
@@ -331,7 +331,7 @@ def draw_creature_hit_flashes(
             if (
                 not creature.active
                 or creature.type_id != type_id
-                or creature.lifecycle_stage < -10.0
+                or creature.death_timer < -10.0
                 or creature.hit_flash_timer <= 0.0
             ):
                 continue
@@ -344,7 +344,7 @@ def draw_creature_hit_flashes(
                 type_id=type_id,
                 flags=creature.flags,
                 phase=creature.anim_phase,
-                lifecycle_stage=creature.lifecycle_stage,
+                death_timer=creature.death_timer,
                 pos=creature.pos,
                 rotation_rad=x87_pc24_sub(creature.heading, NATIVE_HALF_PI),
                 scale=render_ctx.view.scale,

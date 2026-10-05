@@ -43,7 +43,7 @@ def creature_find_in_radius(creatures: Sequence[CreatureState], *, pos: Vec2, ra
             continue
         if not within_native_find_radius(origin=pos, target=creature.pos, radius=radius, target_size=creature.size):
             continue
-        if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
+        if not creature_lifecycle_is_collidable(creature.death_timer):
             continue
         return idx
     return -1

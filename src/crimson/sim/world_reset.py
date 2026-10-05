@@ -81,9 +81,9 @@ def reset_world_players(
         # `gameplay_reset_state` immediately follows `player_reset_all` with
         # these represented per-player writes. The native move target is held
         # by the input runtime rather than PlayerState in this port.
-        player.low_health_timer = 100.0
+        player.bleed_drip_timer = 100.0
         player.auto_target = 0
-        player.aux_timer = 0.0
+        player.weapon_popup_timer = 0.0
         players.append(player)
 
 

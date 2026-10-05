@@ -114,13 +114,13 @@ extern unsigned char screen_fade_ramp_flag;
 extern game_state_id_t game_state_pending;
 extern int music_track_crimson_theme_id;
 extern int music_track_shortie_monk_id;
-extern int music_track_extra_0;
+extern int music_track_game_playlist;
 
 bool ui_button_update(float *xy, ui_button_t *button);
 int ui_list_widget_update(float *xy, ui_list_widget_t *list);
 bool input_primary_just_pressed(void);
 void highscore_load_table_thunk(void);
-void sfx_mute_all(int sfx_id);
+void music_fade_out_all(int sfx_id);
 void ui_menu_click_back_contextual(void);
 }
 
@@ -392,14 +392,14 @@ extern "C" void play_game_menu_update(void)
     }
 
     if (typo_button.activated) {
-        render_pass_mode = 0;
+        run_active = 0;
         ui_sign_crimson.focus_disabled = 0;
         ui_transition_direction = 0;
         game_state_pending = GAME_STATE_TYPO_GAMEPLAY;
         config_game_mode = GAME_MODE_TYPO_SHOOTER;
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
         screen_fade_ramp_flag = 1;
     }
     if (quests_button.activated) {
@@ -412,9 +412,9 @@ extern "C" void play_game_menu_update(void)
         game_state_pending = GAME_STATE_GAMEPLAY;
         config_game_mode = GAME_MODE_RUSH;
         screen_fade_ramp_flag = 1;
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
     }
     if (survival_button.activated) {
         ui_sign_crimson.focus_disabled = 0;
@@ -422,9 +422,9 @@ extern "C" void play_game_menu_update(void)
         game_state_pending = GAME_STATE_GAMEPLAY;
         config_game_mode = GAME_MODE_SURVIVAL;
         screen_fade_ramp_flag = 1;
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
     }
     if (tutorial_button.activated) {
         ui_sign_crimson.focus_disabled = 0;
@@ -432,9 +432,9 @@ extern "C" void play_game_menu_update(void)
         game_state_pending = GAME_STATE_GAMEPLAY;
         config_game_mode = GAME_MODE_TUTORIAL;
         screen_fade_ramp_flag = 1;
-        sfx_mute_all(music_track_crimson_theme_id);
-        sfx_mute_all(music_track_shortie_monk_id);
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_crimson_theme_id);
+        music_fade_out_all(music_track_shortie_monk_id);
+        music_fade_out_all(music_track_game_playlist);
     }
 
     if (grim_interface_ptr->grim_was_key_pressed(1)) {

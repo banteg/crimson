@@ -39,7 +39,7 @@ def observe(case):
     projectile.speed_scale = item["speed"]
     projectile.damage_pool = item["damage"]
     projectile.hit_radius = item["radius"]
-    projectile.travel_budget = item["travel"]
+    projectile.projectile_speed = item["travel"]
     projectile.owner_id = item["owner"]
     target = case["creatures"][0]
     creature = world.creatures.entries[target["index"]]
@@ -48,7 +48,7 @@ def observe(case):
     creature.hp = target["health"]
     creature.max_hp = target["max_health"]
     creature.size = target["size"]
-    creature.lifecycle_stage = target["lifecycle"]
+    creature.death_timer = target["lifecycle"]
     creature.tint = RGBA(0, 0, 0, 0)
     world.state.game_tune_started = True
     runtime = WorldStepRuntime(
@@ -104,12 +104,12 @@ def observe(case):
             "speed": projectile.speed_scale,
             "damage": projectile.damage_pool,
             "radius": projectile.hit_radius,
-            "travel": projectile.travel_budget,
+            "travel": projectile.projectile_speed,
             "owner": projectile.owner_id,
         },
         "creature": {
             "active": int(creature.active),
-            "lifecycle": creature.lifecycle_stage,
+            "lifecycle": creature.death_timer,
             "x": creature.pos.x,
             "y": creature.pos.y,
             "health": creature.hp,

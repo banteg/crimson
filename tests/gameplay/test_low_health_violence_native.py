@@ -40,7 +40,7 @@ def test_low_health_gore_gate_matches_native_effects_sound_timer_and_rng() -> No
             index=frame["index"],
             pos=Vec2(frame["pos_x"], frame["pos_y"]),
             health=f32(frame["health"]),
-            low_health_timer=f32(frame["low_health_timer"]),
+            bleed_drip_timer=f32(frame["bleed_drip_timer"]),
             aim_heading=f32(frame["aim_heading"]),
         )
         world.players[player.index] = player
@@ -52,7 +52,7 @@ def test_low_health_gore_gate_matches_native_effects_sound_timer_and_rng() -> No
             frame["dt"],
             step_runtime=make_step_runtime(world, dt=frame["dt"]),
         )
-        assert _bits(player.low_health_timer) == expected["timer_bits"], case["input"]["name"]
+        assert _bits(player.bleed_drip_timer) == expected["timer_bits"], case["input"]["name"]
         assert [record.value for record in rng.records_since()] == expected["rng_draws"], case["input"]["name"]
         assert rng.state == expected["rng_state"]
         effects = state.effects.iter_active()
@@ -79,7 +79,7 @@ def test_low_health_gore_gate_matches_native_effects_sound_timer_and_rng() -> No
 def test_world_step_passes_gore_setting_to_low_health_players(violence_disabled) -> None:
     world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
     world.players = [
-        PlayerState(index=index, pos=Vec2(400.0 + index * 100, 400.0), health=19.0, low_health_timer=0.0)
+        PlayerState(index=index, pos=Vec2(400.0 + index * 100, 400.0), health=19.0, bleed_drip_timer=0.0)
         for index in range(2)
     ]
     world.state.violence_disabled = violence_disabled
@@ -89,4 +89,4 @@ def test_world_step_passes_gore_setting_to_low_health_players(violence_disabled)
                 fx_queue=FxQueue(), fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,     )
     assert len(world.state.effects.iter_active()) == (0 if violence_disabled else 12)
-    assert [player.low_health_timer for player in world.players] == [1.0, 1.0]
+    assert [player.bleed_drip_timer for player in world.players] == [1.0, 1.0]

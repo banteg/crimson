@@ -79,7 +79,7 @@ Unlock gating:
 
 - global quest index: `(stage - 1) * 10 + row`
 - normal: unlocked if `quest_unlock_index >= global_index`
-- hardcore: unlocked if `quest_unlock_index_full >= global_index`
+- hardcore: unlocked if `quest_unlock_index_hardcore >= global_index`
 
 ## Hardcore toggle (after unlock >= 40)
 

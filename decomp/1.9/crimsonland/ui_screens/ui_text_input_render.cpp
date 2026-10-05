@@ -165,12 +165,12 @@ extern "C" void ui_text_input_render(
         crt_sprintf(
             highscore_card_text_buffer,
             "%.2f secs",
-            (float)(int)record->survival_elapsed_ms * 0.001f);
+            (float)(int)record->run_elapsed_ms * 0.001f);
     } else if (record->game_mode_id == GAME_MODE_QUEST) {
         crt_sprintf(
             highscore_card_text_buffer,
             "%.2f secs",
-            (float)(int)record->survival_elapsed_ms * 0.001f);
+            (float)(int)record->run_elapsed_ms * 0.001f);
     } else {
         crt_sprintf(
             highscore_card_text_buffer, "%d", record->score_xp);
@@ -219,7 +219,7 @@ extern "C" void ui_text_input_render(
         ui_draw_clock_gauge(
             (int)(position.x + 8.0f),
             (int)(position.y + 13.0f),
-            record->survival_elapsed_ms,
+            record->run_elapsed_ms,
             alpha);
         highscore_card_update_hover(
             ui_stats_hover_time,
@@ -231,7 +231,7 @@ extern "C" void ui_text_input_render(
         grim_interface_ptr->grim_set_color(
             0.9f, 0.9f, 0.9f, label_alpha);
         int elapsed_seconds =
-            (int)record->survival_elapsed_ms / 1000;
+            (int)record->run_elapsed_ms / 1000;
         int elapsed_minutes = elapsed_seconds / 60;
         elapsed_seconds %= 60;
         if (elapsed_seconds < 10) {

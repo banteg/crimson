@@ -319,7 +319,7 @@
     },
     {
       "image": "crimsonland.exe",
-      "name": "creatures_any_active_flag",
+      "name": "creatures_none_active_flag",
       "owner": "game",
       "evidence": {
         "path": "tools/match/data/crimsonland_gameplay.cpp",
@@ -1759,7 +1759,7 @@
     },
     {
       "image": "crimsonland.exe",
-      "name": "player_aux_timer",
+      "name": "player_weapon_popup_timer",
       "owner": "game",
       "evidence": {
         "path": "tools/match/data/crimsonland_gameplay.cpp",
@@ -1849,7 +1849,7 @@
     },
     {
       "image": "crimsonland.exe",
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "owner": "game",
       "evidence": {
         "path": "tools/match/data/crimsonland_gameplay.cpp",
@@ -2065,7 +2065,7 @@
     },
     {
       "image": "crimsonland.exe",
-      "name": "sfx_mute_flags",
+      "name": "music_fade_out_flags",
       "owner": "game",
       "evidence": {
         "path": "tools/match/data/crimsonland_audio.cpp",
@@ -2128,7 +2128,7 @@
     },
     {
       "image": "crimsonland.exe",
-      "name": "sfx_volume_table",
+      "name": "music_track_volume",
       "owner": "game",
       "evidence": {
         "path": "tools/match/data/crimsonland_audio.cpp",
@@ -2164,7 +2164,7 @@
     },
     {
       "image": "crimsonland.exe",
-      "name": "survival_elapsed_ms",
+      "name": "run_elapsed_ms",
       "owner": "game",
       "evidence": {
         "path": "tools/match/data/crimsonland_gameplay.cpp",
@@ -2182,7 +2182,7 @@
     },
     {
       "image": "crimsonland.exe",
-      "name": "survival_reward_handout_enabled",
+      "name": "survival_shrinkifier_handout_enabled",
       "owner": "game",
       "evidence": {
         "path": "tools/match/data/crimsonland_game_state_owner.cpp",
@@ -3523,7 +3523,7 @@
     },
     {
       "image": "crimsonland.exe",
-      "name": "quest_unlock_index_full",
+      "name": "quest_unlock_index_hardcore",
       "owner": "game",
       "evidence": {
         "path": "tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md",

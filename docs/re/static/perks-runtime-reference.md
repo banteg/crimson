@@ -50,7 +50,7 @@ order: a perk can act in several native paths.
 ### Original
 
 - `player_update` (0x004136b0): forces `spread_heat = 0.02` while active.
-- `player_fire_weapon` (0x00444980): applies `shot_cooldown *= 1.05` and avoids the normal post-shot spread heat increase.
+- `typo_player_update` (0x00444980): applies `shot_cooldown *= 1.05` and avoids the normal post-shot spread heat increase.
 - Rendering: draws the laser overlay in the player render path.
 
 
@@ -143,7 +143,7 @@ order: a perk can act in several native paths.
 
 ### Original
 
-- `player_fire_weapon` (0x00444980): applies the cooldown multiplier.
+- `typo_player_update` (0x00444980): applies the cooldown multiplier.
 
 
 ## 15. Fatal Lottery (`PerkId.FATAL_LOTTERY`)
@@ -208,7 +208,7 @@ order: a perk can act in several native paths.
 
 ### Original
 
-- `player_fire_weapon` (0x00444980): implements the "fire during reload by paying XP" path; this branch is gated by `experience > 0`.
+- `typo_player_update` (0x00444980): implements the "fire during reload by paying XP" path; this branch is gated by `experience > 0`.
 - `player_start_reload` (0x00413430): reload restart guard when Regression Bullets or Ammunition Within is active.
 
 
@@ -304,7 +304,7 @@ order: a perk can act in several native paths.
 
 ### Original
 
-- `player_fire_weapon` (0x00444980): implements the "fire during reload by paying health" path; this branch is also gated by `experience > 0`.
+- `typo_player_update` (0x00444980): implements the "fire during reload by paying health" path; this branch is also gated by `experience > 0`.
 - `player_start_reload` (0x00413430): restart guard.
 
 
@@ -386,7 +386,7 @@ order: a perk can act in several native paths.
 
 ### Original
 
-- `perk_apply` (0x004055e0): applies health reduction, advances the creature lifecycle stage, clears guard.
+- `perk_apply` (0x004055e0): applies health reduction, advances the creature death timer, clears guard.
 
 
 ## 47. Death Clock (`PerkId.DEATH_CLOCK`)

@@ -149,7 +149,7 @@ def test_draw_hud_overlay_uses_native_aux_origin_without_xp(mocker, headless_res
     mocker.patch.object(hud_module.rl, "draw_text", side_effect=lambda *args, **kwargs: None)
 
     panel = resources.texture(TextureId.UI_IND_PANEL)
-    player = PlayerState(index=0, pos=Vec2(), health=100.0, aux_timer=0.5)
+    player = PlayerState(index=0, pos=Vec2(), health=100.0, weapon_popup_timer=0.5)
     player.weapon.weapon_id = WeaponId.PISTOL
     draw_texture_pro = mocker.patch.object(hud_module.rl, "draw_texture_pro")
     mocker.patch.object(hud_module, "_draw_progress_bar")
@@ -183,8 +183,8 @@ def test_draw_hud_overlay_compacts_active_aux_rows(mocker, headless_resources: R
     mocker.patch.object(hud_module.rl, "draw_rectangle", side_effect=lambda *args, **kwargs: None)
 
     panel = resources.texture(TextureId.UI_IND_PANEL)
-    player0 = PlayerState(index=0, pos=Vec2(), health=100.0, aux_timer=0.0)
-    player1 = PlayerState(index=1, pos=Vec2(), health=100.0, aux_timer=0.5)
+    player0 = PlayerState(index=0, pos=Vec2(), health=100.0, weapon_popup_timer=0.0)
+    player1 = PlayerState(index=1, pos=Vec2(), health=100.0, weapon_popup_timer=0.5)
     player0.weapon.weapon_id = WeaponId.PISTOL
     player1.weapon.weapon_id = WeaponId.PISTOL
     draw_texture_pro = mocker.patch.object(hud_module.rl, "draw_texture_pro")

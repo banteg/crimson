@@ -20,14 +20,14 @@ extern "C" int sfx_play(int sfx_id, float volume)
 
     if (bonus_reflex_boost_timer > 0.0f) {
         if (bonus_reflex_boost_timer > 1.0f) {
-            sfx_rate_scale = 22050;
+            sfx_sample_rate = 22050;
         } else if (bonus_reflex_boost_timer < 1.0f) {
-            sfx_rate_scale =
+            sfx_sample_rate =
                 (DWORD)((1.0f - bonus_reflex_boost_timer + 1.0f) *
                     22050.0f);
         }
     } else {
-        sfx_rate_scale = 44100;
+        sfx_sample_rate = 44100;
     }
 
     if (sfx_id == sfx_flamer_fire_01 || sfx_id == sfx_flamer_fire_02) {

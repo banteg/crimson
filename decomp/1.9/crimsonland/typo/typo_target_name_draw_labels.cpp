@@ -42,15 +42,15 @@ extern "C" void typo_target_name_draw_labels(void)
     grim_interface_ptr->grim_set_config_var(24, 0.5f);
 
     char *name = &typo_target_name_table[0][0];
-    float *lifecycle_stage = &creature_pool[0].lifecycle_stage;
+    float *death_timer = &creature_pool[0].death_timer;
     do {
         creature_t *creature = (creature_t *)(
-            (char *)lifecycle_stage
-            - offsetof(creature_t, lifecycle_stage));
+            (char *)death_timer
+            - offsetof(creature_t, death_timer));
         if (creature->active) {
             width = grim_interface_ptr->grim_measure_text_width(name);
-            alpha = *lifecycle_stage < 0.0f
-                ? (*lifecycle_stage + 10.0f) * 0.1f
+            alpha = *death_timer < 0.0f
+                ? (*death_timer + 10.0f) * 0.1f
                 : 1.0f;
             if (alpha > 1.0f) {
                 alpha = 1.0f;
@@ -77,8 +77,8 @@ extern "C" void typo_target_name_draw_labels(void)
             grim_interface_ptr->grim_draw_text_small(
                 text_position.x, text_position.y, name);
         }
-        lifecycle_stage += sizeof(creature_t) / sizeof(float);
+        death_timer += sizeof(creature_t) / sizeof(float);
         name += 64;
-    } while ((int)lifecycle_stage
-             < (int)&creature_pool[384].lifecycle_stage);
+    } while ((int)death_timer
+             < (int)&creature_pool[384].death_timer);
 }

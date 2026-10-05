@@ -327,7 +327,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | ui_element_globals_init | 0x004177f0 | 662 | 662/662 | 0 | 135/135 | 100.00% | 135/135 | 121/0/0 |  | ui-element-global-construction |
 | match | ui_template_slot_ctor_noop | 0x00417a90 | 3 | 3/3 | 0 | 2/2 | 100.00% | 2/2 | 0/0/0 |  | ui-template-trivial-slot-constructor |
 | match | ui_template_block_set_mode4 | 0x00417aa0 | 13 | 13/13 | 0 | 3/3 | 100.00% | 3/3 | 0/0/0 |  | ui-subtemplate-mode-init |
-| match | ui_template_triplet_reset_and_seed_modes | 0x00417ab0 | 48 | 48/48 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | ui-template-triplet-init |
+| match | ui_element_construct | 0x00417ab0 | 48 | 48/48 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | ui-template-triplet-init |
 | match | ui_draw_textured_quad | 0x00417ae0 | 158 | 158/158 | 0 | 46/46 | 100.00% | 46/46 | 6/0/0 |  | ui-textured-quad |
 | match | terrain_generate | 0x00417b80 | 1569 | 1569/1569 | 0 | 408/408 | 100.00% | 408/408 | 88/0/0 |  | terrain-render-target-scatter-generation |
 | match | terrain_generate_random | 0x004181b0 | 1764 | 1764/1764 | 0 | 465/465 | 100.00% | 465/465 | 110/0/0 |  | random-terrain-selector-and-scatter-generation |
@@ -364,8 +364,8 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | play_time_get | 0x0041df60 | 6 | 6/6 | 0 | 2/2 | 100.00% | 2/2 | 1/0/0 |  | smoke |
 | match | unused_fx_queue_random_prefix_color_global_init_thunk | 0x0041df70 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-fx-queue-prefix-color-constructor-thunk |
 | match | unused_fx_queue_random_prefix_color_global_init | 0x0041df80 | 41 | 41/41 | 0 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | unused-fx-queue-prefix-color-constructor |
-| match | unused_fx_rotated_effect_id_prefix_color_global_init_thunk | 0x0041dfb0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-fx-rotated-effect-id-prefix-color-constructor-thunk |
-| match | unused_fx_rotated_effect_id_prefix_color_global_init | 0x0041dfc0 | 41 | 41/41 | 0 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | unused-fx-rotated-effect-id-prefix-color-constructor |
+| match | unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk | 0x0041dfb0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-fx-rotated-effect-id-prefix-color-constructor-thunk |
+| match | unused_fx_rotated_creature_type_id_prefix_color_global_init | 0x0041dfc0 | 41 | 41/41 | 0 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | unused-fx-rotated-effect-id-prefix-color-constructor |
 | match | unused_aim64_prefix_color_global_init_thunk | 0x0041dff0 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-aim64-prefix-color-constructor-thunk |
 | match | unused_aim64_prefix_color_global_init | 0x0041e000 | 41 | 41/41 | 0 | 5/5 | 100.00% | 5/5 | 4/0/0 |  | unused-aim64-prefix-color-constructor |
 | match | unused_fx_rotated_scale_prefix_color_global_init_thunk | 0x0041e030 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | unused-fx-rotated-scale-prefix-color-constructor-thunk |
@@ -432,7 +432,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | bonus_spawn_at_pos | 0x0041f790 | 309 | 309/309 | 0 | 99/99 | 100.00% | 99/99 | 15/0/0 |  | gameplay-bonus-spawn |
 | match | bonus_try_spawn_on_kill | 0x0041f8d0 | 730 | 730/730 | 0 | 207/207 | 100.00% | 207/207 | 47/0/0 |  | gameplay-bonus-drop |
 | match | fx_spawn_sprite | 0x0041fbb0 | 175 | 175/175 | 0 | 48/48 | 100.00% | 48/48 | 16/0/0 |  | gameplay-sprite-effect-spawn |
-| match | weapon_table_entry | 0x0041fc60 | 19 | 19/19 | 0 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
+| match | weapon_name_get | 0x0041fc60 | 19 | 19/19 | 0 | 6/6 | 100.00% | 6/6 | 1/0/0 |  | gameplay-weapon-table |
 | match | player_reset_all | 0x0041fc80 | 584 | 584/584 | 0 | 127/127 | 100.00% | 127/127 | 61/0/0 | msvc6.5 /O2 /GB /W3 /GR- /TP | gameplay-player-reset |
 | match | effect_uv_tables_init | 0x0041fed0 | 356 | 356/356 | 0 | 109/109 | 100.00% | 109/109 | 15/0/0 |  | gameplay-effect-atlas-uv-init |
 | match | creature_find_nearest | 0x00420040 | 225 | 225/225 | 0 | 89/89 | 100.00% | 89/89 | 5/0/0 |  | gameplay-target-search |
@@ -458,7 +458,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | creature_reset_all | 0x004281e0 | 46 | 46/46 | 0 | 13/13 | 100.00% | 13/13 | 3/0/0 |  | gameplay-creature-reset |
 | match | creatures_none_active | 0x00428210 | 40 | 40/40 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | gameplay-creature-scan |
 | match | creature_spawn | 0x00428240 | 334 | 334/334 | 0 | 79/79 | 100.00% | 79/79 | 35/0/0 |  | gameplay-creature-spawn |
-| match | player_render_overlays | 0x00428390 | 4582 | 4582/4582 | 0 | 1148/1148 | 100.00% | 1148/1148 | 340/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
+| match | player_render | 0x00428390 | 4582 | 4582/4582 | 0 | 1148/1148 | 100.00% | 1148/1148 | 340/0/0 |  | player-sprites-shield-flash-and-native-residual-target-trail |
 | match | bonus_label_for_entry | 0x00429580 | 99 | 99/99 | 0 | 30/30 | 100.00% | 30/30 | 11/0/0 |  | gameplay-bonus-label |
 | match | bonus_render | 0x004295f0 | 4088 | 4088/4088 | 0 | 1088/1088 | 100.00% | 1088/1088 | 239/0/0 |  | bonus-icons-telekinetic-pickup-and-effect-pool-rendering |
 | match | audio_resume_all | 0x0042a5f0 | 54 | 54/54 | 0 | 14/14 | 100.00% | 14/14 | 7/0/0 |  | audio-suspend-resume |
@@ -574,7 +574,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | quest_build_spiders_inc | 0x004390d0 | 346 | 346/346 | 0 | 105/105 | 100.00% | 105/105 | 8/0/0 |  | quest-spiders-inc-metadata-recomputed-count |
 | match | quest_database_init | 0x00439230 | 5466 | 5466/5466 | 0 | 1384/1384 | 100.00% | 1384/1384 | 503/0/0 |  | quest-content-database-initialization |
 | match | quest_start_selected | 0x0043a790 | 434 | 434/434 | 0 | 116/116 | 100.00% | 116/116 | 49/0/0 |  | quest-start-state-and-spawn-table |
-| match | highscore_date_checksum | 0x0043a950 | 262 | 262/262 | 0 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |
+| match | highscore_iso_week | 0x0043a950 | 262 | 262/262 | 0 | 97/97 | 100.00% | 97/97 | 0/0/0 |  | highscore-iso-week-checksum |
 | match | highscore_submit_full_version_guard | 0x0043aa60 | 38 | 38/38 | 0 | 12/12 | 100.00% | 12/12 | 4/0/0 |  | highscore-submit-validation |
 | match | highscore_record_pack_for_submit | 0x0043aa90 | 113 | 113/113 | 0 | 44/44 | 100.00% | 44/44 | 0/0/0 |  | highscore-submit-packing |
 | match | highscore_read_record | 0x0043ab10 | 179 | 179/179 | 0 | 80/80 | 100.00% | 80/80 | 5/0/0 |  | highscore-record-read-validation |
@@ -582,8 +582,8 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | highscore_update_record | 0x0043ac70 | 255 | 255/255 | 0 | 95/95 | 100.00% | 95/95 | 13/0/0 |  | highscore-record-in-place-update |
 | match | highscore_write_record | 0x0043ad70 | 318 | 318/318 | 0 | 103/103 | 100.00% | 103/103 | 13/0/0 |  | highscore-record-write-encoding |
 | match | highscore_compare_survival_score_desc | 0x0043aeb0 | 32 | 32/32 | 0 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-survival-score-order |
-| match | highscore_compare_rush_field32_desc | 0x0043aed0 | 32 | 32/32 | 0 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-rush-time-order |
-| match | highscore_compare_quest_field32_asc_nonzero_first | 0x0043aef0 | 53 | 53/53 | 0 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | highscore-quest-time-order |
+| match | highscore_compare_elapsed_desc | 0x0043aed0 | 32 | 32/32 | 0 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | highscore-rush-time-order |
+| match | highscore_compare_elapsed_asc_nonzero_first | 0x0043aef0 | 53 | 53/53 | 0 | 22/22 | 100.00% | 22/22 | 0/0/0 |  | highscore-quest-time-order |
 | match | highscore_find_name_entry | 0x0043af30 | 101 | 101/101 | 0 | 48/48 | 100.00% | 48/48 | 2/0/0 |  | highscore-name-lookup |
 | match | highscore_load_table | 0x0043afa0 | 1198 | 1198/1198 | 0 | 354/354 | 100.00% | 354/354 | 59/0/0 |  | highscore-table-load-filter-sort |
 | match | highscore_save_record | 0x0043b450 | 182 | 182/182 | 0 | 70/70 | 100.00% | 70/70 | 16/0/0 |  | highscore-record-save-coordinator |
@@ -641,12 +641,12 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | sfx_play | 0x0043d120 | 320 | 320/320 | 0 | 93/93 | 100.00% | 93/93 | 29/0/0 |  | audio-centered-sfx-playback |
 | match | sfx_play_panned | 0x0043d260 | 386 | 386/386 | 0 | 110/110 | 100.00% | 110/110 | 34/0/0 |  | position-panned-sfx-playback |
 | match | audio_update | 0x0043d3f0 | 102 | 102/102 | 0 | 32/32 | 100.00% | 32/32 | 10/0/0 |  | audio-frame-update |
-| match | sfx_play_exclusive | 0x0043d460 | 239 | 239/239 | 0 | 66/66 | 100.00% | 66/66 | 23/0/0 |  | audio-exclusive-music-playback |
-| match | sfx_mute_all | 0x0043d550 | 87 | 87/87 | 0 | 31/31 | 100.00% | 31/31 | 6/0/0 |  | audio-mute-recursion |
-| match | sfx_update_mute_fades | 0x0043d5b0 | 374 | 374/374 | 0 | 118/118 | 100.00% | 118/118 | 27/0/0 |  | audio-mute-fade-state-machine |
+| match | music_play_exclusive | 0x0043d460 | 239 | 239/239 | 0 | 66/66 | 100.00% | 66/66 | 23/0/0 |  | audio-exclusive-music-playback |
+| match | music_fade_out_all | 0x0043d550 | 87 | 87/87 | 0 | 31/31 | 100.00% | 31/31 | 6/0/0 |  | audio-mute-recursion |
+| match | music_update_fades | 0x0043d5b0 | 374 | 374/374 | 0 | 118/118 | 100.00% | 118/118 | 27/0/0 |  | audio-mute-fade-state-machine |
 | match | audio_suspend_channels | 0x0043d730 | 58 | 58/58 | 0 | 19/19 | 100.00% | 19/19 | 6/0/0 |  | audio-suspend-resume |
 | match | audio_resume_channels | 0x0043d770 | 73 | 73/73 | 0 | 26/26 | 100.00% | 26/26 | 7/0/0 |  | audio-suspend-resume |
-| match | sfx_is_unmuted | 0x0043d7c0 | 30 | 30/30 | 0 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | audio-mute-state |
+| match | music_track_is_playing | 0x0043d7c0 | 30 | 30/30 | 0 | 11/11 | 100.00% | 11/11 | 2/0/0 |  | audio-mute-state |
 | match | ui_focus_set | 0x0043d7e0 | 75 | 75/75 | 0 | 25/25 | 100.00% | 25/25 | 6/0/0 |  | ui-focus-selection |
 | match | ui_focus_update | 0x0043d830 | 268 | 268/268 | 0 | 78/78 | 100.00% | 78/78 | 27/0/0 |  | ui-focus-navigation |
 | match | ui_focus_draw | 0x0043d940 | 104 | 104/104 | 0 | 24/24 | 100.00% | 24/24 | 4/0/0 |  | ui-focus-highlight |
@@ -698,7 +698,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 | match | profile_add_button_destroy | 0x004447f0 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-profile-add-button-destroy |
 | match | profile_name_input_destroy | 0x00444800 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-profile-name-input-destroy |
 | match | creature_spawn_tinted | 0x00444810 | 364 | 364/364 | 0 | 92/92 | 100.00% | 92/92 | 34/0/0 |  | gameplay-typo-creature-spawn |
-| match | player_fire_weapon | 0x00444980 | 1518 | 1518/1518 | 0 | 378/378 | 100.00% | 378/378 | 142/0/0 |  | typo-player-frame-and-shotgun-fire |
+| match | typo_player_update | 0x00444980 | 1518 | 1518/1518 | 0 | 378/378 | 100.00% | 378/378 | 142/0/0 |  | typo-player-frame-and-shotgun-fire |
 | match | typo_word_pick_fragment | 0x00444f70 | 356 | 356/356 | 0 | 117/117 | 100.00% | 117/117 | 54/0/0 |  | typo-random-name-fragment-table |
 | match | typo_word_pick_highscore_name | 0x004451b0 | 345 | 345/345 | 0 | 123/123 | 100.00% | 123/123 | 20/0/0 |  | typo-highscore-name-cache |
 | match | typo_target_name_is_unique | 0x00445310 | 110 | 110/110 | 0 | 50/50 | 100.00% | 50/50 | 3/0/0 |  | typo-target-uniqueness |

@@ -14,7 +14,7 @@ extern unsigned char ui_transition_direction;
 extern game_state_id_t game_state_pending;
 
 void fx_queue_render(void);
-void player_render_overlays(void);
+void player_render(void);
 void creature_render_all(void);
 void projectile_render(float transition_alpha);
 void bonus_render(void);
@@ -31,7 +31,7 @@ extern "C" void gameplay_render_world(void)
 {
     ui_transition_alpha = ui_timeline_fraction();
 
-    if (quest_unlock_index_full < 40) {
+    if (quest_unlock_index_hardcore < 40) {
         if (player_state_table[0].weapon_id == 0x1d) {
             weapon_assign_player(0, 1);
         }
@@ -89,22 +89,22 @@ extern "C" void gameplay_render_world(void)
     fx_queue_render();
     terrain_render();
 
-    render_overlay_player_index = 0;
-    while (render_overlay_player_index < config_player_count) {
-        if (player_state_table[render_overlay_player_index].health <= 0.0f) {
-            player_render_overlays();
+    current_player_index = 0;
+    while (current_player_index < config_player_count) {
+        if (player_state_table[current_player_index].health <= 0.0f) {
+            player_render();
         }
-        ++render_overlay_player_index;
+        ++current_player_index;
     }
 
     creature_render_all();
 
-    render_overlay_player_index = 0;
-    while (render_overlay_player_index < config_player_count) {
-        if (player_state_table[render_overlay_player_index].health > 0.0f) {
-            player_render_overlays();
+    current_player_index = 0;
+    while (current_player_index < config_player_count) {
+        if (player_state_table[current_player_index].health > 0.0f) {
+            player_render();
         }
-        ++render_overlay_player_index;
+        ++current_player_index;
     }
 
     projectile_render(ui_transition_alpha);

@@ -25,7 +25,7 @@ def encode(replay, limit):
         level.major if level else 1,
         level.minor if level else 1,
         run.status.quest_unlock_index,
-        run.status.quest_unlock_index_full,
+        run.status.quest_unlock_index_hardcore,
         run.detail_preset,
         run.violence_disabled,
         run.friendly_fire,

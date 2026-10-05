@@ -20,7 +20,7 @@ inline bonus_entry_t *bonus_spawn_valid_pos(
         }
     }
 
-    entry->state = 0;
+    entry->picked = 0;
     entry->time.position = *pos;
     entry->time.time_left = 10.0f;
     entry->time.time_max = 10.0f;

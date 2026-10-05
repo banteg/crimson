@@ -30,7 +30,7 @@ def test_energizer_inverts_target_heading_for_weak_creatures() -> None:
 
     creature = world.creatures.entries[0]
     creature.active = True
-    creature.flags = CreatureFlags.ANIM_PING_PONG
+    creature.flags = CreatureFlags.SPAWNER
     creature.pos = Vec2(100.0, 100.0)
     creature.hp = 10.0
     creature.max_hp = 400.0
@@ -46,7 +46,7 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     world = make_world()
     state = world.state
     state.bonuses.energizer = 1.0
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
 
     player = world.players[0]
     player.pos = Vec2(-10.0, 0.0)
@@ -72,7 +72,7 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     assert SfxId.UI_BONUS in sfx_ids(step_runtime.sfx)
     assert not any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)
     assert creature.pos == Vec2(-10.0, 0.0)
-    assert not state.bonus_spawn_guard
+    assert not state.scripted_burst_active
     # Native returns from no-corpse death into the unconditional size-30 tail.
     assert creature.hp == 0.0
-    assert creature.lifecycle_stage == x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, f32(0.016))
+    assert creature.death_timer == x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, f32(0.016))

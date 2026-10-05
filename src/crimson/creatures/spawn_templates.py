@@ -24,7 +24,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
         type_id=CreatureTypeId.ZOMBIE,
-        flags=CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP,
+        flags=CreatureFlags.SPAWNER | CreatureFlags.SPAWNER_MOBILE,
         creature="zombie",
         anim_note="long strip (0x40 overrides 0x4)",
         tint=(0.6, 0.6, 1.0, 0.8),
@@ -72,7 +72,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.DEN_ALIEN_BASIC_07,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
         creature="alien",
         anim_note="short strip (ping-pong)",
         tint=(1.0, 1.0, 1.0, 1.0),
@@ -82,7 +82,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.DEN_ALIEN_BASIC_SLOWER_08,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
         creature="alien",
         anim_note="short strip (ping-pong)",
         tint=(1.0, 1.0, 1.0, 1.0),
@@ -92,7 +92,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.DEN_ALIEN_WEAK_SMALL_09,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
         creature="alien",
         anim_note="short strip (ping-pong)",
         tint=(1.0, 1.0, 1.0, 1.0),
@@ -102,7 +102,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
         creature="alien",
         anim_note="short strip (ping-pong)",
         tint=(0.8, 0.7, 0.4, 1.0),
@@ -112,7 +112,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.DEN_SPIDER_PLASMA_SHOOTERS_0B,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
         creature="alien",
         anim_note="short strip (ping-pong)",
         tint=(0.9, 0.1, 0.1, 1.0),
@@ -122,7 +122,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.DEN_LIZARD_WEAK_0C,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
         creature="alien",
         anim_note="short strip (ping-pong)",
         tint=(0.9, 0.8, 0.4, 1.0),
@@ -132,7 +132,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
         creature="alien",
         anim_note="short strip (ping-pong)",
         tint=(0.9, 0.8, 0.4, 1.0),
@@ -142,7 +142,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.ALIEN_SPAWNER_RING_24_0E,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
         creature="alien",
         anim_note="short strip (ping-pong)",
         tint=(0.9, 0.8, 0.4, 1.0),
@@ -162,7 +162,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.DEN_SPIDER_WEAK_10,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
         creature="alien",
         anim_note="short strip (ping-pong)",
         tint=(0.9, 0.8, 0.4, 1.0),
@@ -337,7 +337,7 @@ SPAWN_TEMPLATES = [
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.BONUS_ON_DEATH,
         creature="alien",
-        anim_note="bonus_id=WEAPON (3), duration_override=5 (packed in link_index)",
+        anim_note="bonus_id=WEAPON (3), amount_override=5 (packed in link_index)",
         tint=(1.0, 0.8, 0.1, 1.0),
         size=45.0,
         move_speed=2.1,
@@ -459,7 +459,7 @@ SPAWN_TEMPLATES = [
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
+        spawn_id=SpawnId.ALIEN_DELAYED_START_36,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -471,25 +471,25 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.SPIDER_SP2_RANGED_VARIANT_37,
         type_id=CreatureTypeId.SPIDER_SP2,
-        flags=CreatureFlags.RANGED_ATTACK_VARIANT,
+        flags=CreatureFlags.RANGED_TEMPLATE_PROJECTILE,
         creature="spider_sp2",
         anim_note=None,
         tint=(1.0, 0.75, 0.1, 1.0),
         move_speed=3.2,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
+        spawn_id=SpawnId.SPIDER_SP1_STOP_AND_GO_38,
         type_id=CreatureTypeId.SPIDER_SP1,
-        flags=CreatureFlags.AI7_LINK_TIMER,
+        flags=CreatureFlags.STOP_AND_GO,
         creature="spider_sp1",
         anim_note=None,
         tint=(1.0, 0.75, 0.1, 1.0),
         move_speed=4.8,
     ),
     SpawnTemplate(
-        spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_WEAK_39,
+        spawn_id=SpawnId.SPIDER_SP1_STOP_AND_GO_WEAK_39,
         type_id=CreatureTypeId.SPIDER_SP1,
-        flags=CreatureFlags.AI7_LINK_TIMER,
+        flags=CreatureFlags.STOP_AND_GO,
         creature="spider_sp1",
         anim_note=None,
         tint=(0.8, 0.65, 0.1, 1.0),
@@ -498,7 +498,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.SPIDER_BOSS_3A,
         type_id=CreatureTypeId.SPIDER_SP1,
-        flags=CreatureFlags.RANGED_ATTACK_SHOCK,
+        flags=CreatureFlags.RANGED_PLASMA_RIFLE,
         creature="spider_sp1",
         anim_note="projectile_type=9",
         tint=(1.0, 1.0, 1.0, 1.0),
@@ -518,7 +518,7 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
         type_id=CreatureTypeId.SPIDER_SP1,
-        flags=CreatureFlags.RANGED_ATTACK_VARIANT,
+        flags=CreatureFlags.RANGED_TEMPLATE_PROJECTILE,
         creature="spider_sp1",
         anim_note="projectile_type=26 (packed in orbit_radius)",
         tint=(0.9, 0.1, 0.1, 1.0),

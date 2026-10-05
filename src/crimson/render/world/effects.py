@@ -69,16 +69,16 @@ def draw_particle_pool(
         screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
         dst = rl.Rectangle(screen.x, screen.y, size, size)
         origin = rl.Vector2(size * 0.5, size * 0.5)
-        rotation_deg = float(entry.spin) * _RAD_TO_DEG
-        tint = RGBA(entry.scale_x, entry.scale_y, entry.scale_z, float(entry.age)).to_rl()
+        rotation_deg = float(entry.rotation) * _RAD_TO_DEG
+        tint = RGBA(entry.color_r, entry.color_g, entry.color_b, float(entry.color_a)).to_rl()
         rl.draw_texture_pro(texture, src_normal, dst, origin, rotation_deg, tint)
 
     for entry in particles:
         if not entry.active or int(entry.style_id) != int(ParticleStyleId.BUBBLEGUN):
             continue
-        wobble = math.sin(float(entry.spin)) * 3.0
-        half_h = (wobble + 15.0) * float(entry.scale_x) * 7.0
-        half_w = (15.0 - wobble) * float(entry.scale_x) * 7.0
+        wobble = math.sin(float(entry.rotation)) * 3.0
+        half_h = (wobble + 15.0) * float(entry.color_r) * 7.0
+        half_w = (15.0 - wobble) * float(entry.color_r) * 7.0
         w = max(0.0, half_w * 2.0 * scale)
         h = max(0.0, half_h * 2.0 * scale)
         if w <= 0.0 or h <= 0.0:
@@ -86,7 +86,7 @@ def draw_particle_pool(
         screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
         dst = rl.Rectangle(screen.x, screen.y, w, h)
         origin = rl.Vector2(w * 0.5, h * 0.5)
-        tint = rl.Color(255, 255, 255, int(float(entry.age) * 255.0 + 0.5))
+        tint = rl.Color(255, 255, 255, int(float(entry.color_a) * 255.0 + 0.5))
         rl.draw_texture_pro(texture, src_style_8, dst, origin, 0.0, tint)
 
     rl.end_blend_mode()

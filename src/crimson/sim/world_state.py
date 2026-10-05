@@ -109,7 +109,7 @@ class WorldStepRuntime(msgspec.Struct):
 
     def play_secondary_rocket_hit_audio(self, position: Vec2) -> None:
         # Native secondary-rocket hits run the same first-hit game-tune branch
-        # as bullet hits: sfx_play_exclusive(music_track_extra_0) plus one
+        # as bullet hits: music_play_exclusive(music_track_game_playlist) plus one
         # playlist rand outside rush, else the panned explosion sound.
         state = self.world.state
         if state.game_mode != GameMode.RUSH and not state.game_tune_started:
@@ -172,7 +172,7 @@ class WorldState(msgspec.Struct):
 
     def world_dt_after_perk_steps(self, dt: float) -> float:
         # Native `game_frame_update` scales frame_dt by 0.9 under Reflex Boosted.
-        if dt > 0.0 and self.state.render_pass_mode and PerkId.REFLEX_BOOSTED in self.state.perks:
+        if dt > 0.0 and self.state.run_active and PerkId.REFLEX_BOOSTED in self.state.perks:
             return x87_pc24_mul(f32(dt), f32(0.9))
         return dt
 
@@ -217,7 +217,7 @@ class WorldState(msgspec.Struct):
         )
         self.creatures.update(step_runtime)
         hits, secondary_hit_count = self.projectile_update(step_runtime)
-        reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
+        reload_key_down_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
         player_dt = float(dt)
         for player, input_state in zip(self.players, inputs, strict=True):
             player_dt = player_update(
@@ -225,7 +225,7 @@ class WorldState(msgspec.Struct):
                 input_state,
                 player_dt,
                 step_runtime=step_runtime,
-                reload_active_any=bool(reload_active_any),
+                reload_key_down_any=bool(reload_key_down_any),
             )
         dt = float(player_dt)
         # The mode updates read the elapsed run time from before this frame.
@@ -263,7 +263,7 @@ class WorldState(msgspec.Struct):
         # The death check, then the level-up check. XP awarded by `bonus_update` kills
         # (e.g. freeze cleanup) levels next tick.
         if death_transition_ready(self.players):
-            self.state.render_pass_mode = False
+            self.state.run_active = False
         if perk_progression_enabled:
             survival_check_level_up(self.state, self.players[0])
         # A perk-menu request opens here, mid-frame: native generates the choices
@@ -277,7 +277,7 @@ class WorldState(msgspec.Struct):
         )
         if perk_menu_opened:
             perk_selection_open_choices(self.state, self.players, game_mode=self.state.game_mode)
-        if self.state.render_pass_mode:
+        if self.state.run_active:
             pickups += bonus_update(
                 self.state,
                 self.players,

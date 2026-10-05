@@ -92,7 +92,7 @@ FIELDS: tuple[tuple[str, str, Callable, bool], ...] = (
 # Result-only fields read from the core's last compared snapshot.
 RESULT_FIELDS = (
     "globals.game_state_pending",
-    "globals.survival_elapsed_ms",
+    "globals.run_elapsed_ms",
     "globals.quest_spawn_timeline",
     *(f"globals.weapon_usage_time[{i}]" for i in range(WEAPON_USAGE_SLOTS)),
 )
@@ -159,7 +159,7 @@ class Stream:
             friendly_fire=bool(friendly),
             status=RunStatus(
                 quest_unlock_index=unlock,
-                quest_unlock_index_full=unlock_full,
+                quest_unlock_index_hardcore=unlock_full,
                 weapon_usage_counts=tuple(self.config[12 : 12 + WEAPON_USAGE_SLOTS]),
             ),
         )
@@ -203,7 +203,7 @@ def core_result(row: dict[str, int], mode: GameMode) -> RunResult:
 
     state = row["globals.game_state_pending"]
     outcome = TERMINAL_OUTCOMES.get(state, RunOutcome.INCOMPLETE)
-    elapsed = row["globals.quest_spawn_timeline"] if mode == GameMode.QUESTS else row["globals.survival_elapsed_ms"]
+    elapsed = row["globals.quest_spawn_timeline"] if mode == GameMode.QUESTS else row["globals.run_elapsed_ms"]
     elapsed = struct.unpack("<i", struct.pack("<I", elapsed))[0]
     health = _from_bits(row["players[0].health"], True)
     pending = row["globals.perk_pending_count"]

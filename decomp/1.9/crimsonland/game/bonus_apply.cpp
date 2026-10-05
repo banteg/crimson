@@ -142,7 +142,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         player_state_table[player_index].shield_timer += (float)bonus_entry->time.amount * multiplier;
     } else if (bonus_id == BONUS_ID_SHOCK_CHAIN) {
         int owner;
-        bonus_spawn_guard = 1;
+        scripted_burst_active = 1;
         if (cv_friendlyFire->value != 0.0f) {
             owner = -1 - player_index;
         } else {
@@ -166,11 +166,11 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             PROJECTILE_TYPE_ION_RIFLE,
             owner);
 
-        bonus_spawn_guard = 0;
+        scripted_burst_active = 0;
         sfx_play_panned(sfx_shock_hit_01, bonus_pos, 1.0f);
     } else if (bonus_id == BONUS_ID_FIREBLAST) {
         int owner;
-        bonus_spawn_guard = 1;
+        scripted_burst_active = 1;
         if (cv_friendlyFire->value != 0.0f) {
             owner = -1 - player_index;
         } else {
@@ -183,7 +183,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
                 PROJECTILE_TYPE_PLASMA_RIFLE,
                 owner);
         }
-        bonus_spawn_guard = 0;
+        scripted_burst_active = 0;
         sfx_play_panned(
             sfx_explosion_medium,
             &bonus_entry->time.position,
@@ -246,7 +246,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
         camera_shake_pulses = 20;
         camera_shake_timer = 0.2f;
 
-        bonus_spawn_guard = 1;
+        scripted_burst_active = 1;
         int creature_iter = 0;
         do {
             if (creature_pool[creature_iter].active) {
@@ -273,7 +273,7 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             }
             ++creature_iter;
         } while (creature_iter < 0x180);
-        bonus_spawn_guard = 0;
+        scripted_burst_active = 0;
         sfx_play_panned(sfx_explosion_large, bonus_pos, 1.0f);
         sfx_play_panned(sfx_shockwave, bonus_pos, 1.0f);
     } else if (bonus_id == BONUS_ID_POINTS) {

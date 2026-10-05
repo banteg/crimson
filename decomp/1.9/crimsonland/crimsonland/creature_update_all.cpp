@@ -113,8 +113,8 @@ extern "C" void creature_update_all(void)
 {
     int creature_index;
     creature_t *creatures = creature_pool;
-    float *lifecycle_stage;
-    unsigned char *collision_flag;
+    float *death_timer;
+    unsigned char *plague_infected;
     float *attack_cooldown;
     int spawn_limit;
     int slot_index;
@@ -138,19 +138,19 @@ extern "C" void creature_update_all(void)
             if (bonus_freeze_timer <= 0.0f) {
                 health = &creatures[creature_index].health;
                 if (creatures[creature_index].health <= 0.0f
-                    && creatures[creature_index].lifecycle_stage == 16.0f) {
-                    creatures[creature_index].lifecycle_stage -= frame_dt;
+                    && creatures[creature_index].death_timer == 16.0f) {
+                    creatures[creature_index].death_timer -= frame_dt;
                 }
 
                 if ((creatures[creature_index].flags
-                        & CREATURE_FLAG_SELF_DAMAGE_TICK_STRONG) != 0) {
+                        & CREATURE_FLAG_POISONED_STRONG) != 0) {
                     creature_apply_damage(
                         creature_index,
                         frame_dt * 180.0f,
                         0,
                         creature_vec2_t());
                 } else if ((creatures[creature_index].flags
-                               & CREATURE_FLAG_SELF_DAMAGE_TICK) != 0) {
+                               & CREATURE_FLAG_POISONED) != 0) {
                     creature_apply_damage(
                         creature_index,
                         frame_dt * 60.0f,
@@ -159,7 +159,7 @@ extern "C" void creature_update_all(void)
                 }
 
                 if ((creatures[creature_index].flags
-                        & CREATURE_FLAG_AI7_LINK_TIMER) != 0) {
+                        & CREATURE_FLAG_STOP_AND_GO) != 0) {
                     if (creatures[creature_index].link_index < 0) {
                         creatures[creature_index].link_index += frame_dt_ms;
                         if (creatures[creature_index].link_index >= 0) {
@@ -178,32 +178,32 @@ extern "C" void creature_update_all(void)
                 }
 
                 if (*health <= 0.0f
-                    && creatures[creature_index].lifecycle_stage == 16.0f) {
-                    creatures[creature_index].lifecycle_stage -= frame_dt;
+                    && creatures[creature_index].death_timer == 16.0f) {
+                    creatures[creature_index].death_timer -= frame_dt;
                 }
 
                 {
-                    signed char current_player =
+                    signed char target_player_slot =
                         creatures[creature_index].target_player;
-                    int current_player_index = (int)current_player;
+                    int target_player_index = (int)target_player_slot;
                     creature_t *creature = &creatures[creature_index];
                     vec2f_t *position = &creatures[creature_index].position;
                     distance = vec2_distance(
-                        &player_state_table[current_player_index].position,
+                        &player_state_table[target_player_index].position,
                         position);
                     float dx;
                     float dy;
 
                     if (creature_update_tick % 70 != 0) {
                         if (config_player_count == 2) {
-                            if (player_state_table[1 - current_player_index].health > 0.0f) {
+                            if (player_state_table[1 - target_player_index].health > 0.0f) {
                                 vec2f_t *alternate_pos =
-                                    &player_state_table[1 - current_player_index].position;
+                                    &player_state_table[1 - target_player_index].position;
                                 alternate_distance = vec2_distance(alternate_pos, position);
                                 if (alternate_distance < distance) {
                                     distance = alternate_distance;
                                     creatures[creature_index].target_player =
-                                        1 - current_player;
+                                        1 - target_player_slot;
                                 }
                             }
                         } else {
@@ -212,34 +212,34 @@ extern "C" void creature_update_all(void)
                                 position);
                         }
 
-                        current_player =
+                        target_player_slot =
                             creatures[creature_index].target_player;
-                        current_player_index = (int)current_player;
+                        target_player_index = (int)target_player_slot;
                         if (alternate_distance < vec2_distance(
                                 &player_state_table[0].position,
                                 &creature_pool[
-                                    player_state_table[current_player_index].auto_target
+                                    player_state_table[target_player_index].auto_target
                                 ].position)) {
-                            player_state_table[current_player_index].auto_target = creature_index;
+                            player_state_table[target_player_index].auto_target = creature_index;
                         }
                     }
 
-                    if (player_state_table[current_player_index].health <= 0.0f) {
+                    if (player_state_table[target_player_index].health <= 0.0f) {
                         creatures[creature_index].target_player =
-                            1 - current_player;
+                            1 - target_player_slot;
                     }
 
-                    lifecycle_stage = &creatures[creature_index].lifecycle_stage;
-                    if (creatures[creature_index].lifecycle_stage == 16.0f) {
-                        collision_flag = &creatures[creature_index].collision_flag;
-                        if (creatures[creature_index].collision_flag) {
-                            float collision_timer =
-                                creatures[creature_index].collision_timer - frame_dt;
-                            creatures[creature_index].collision_timer = collision_timer;
-                            if (collision_timer < 0.0f) {
+                    death_timer = &creatures[creature_index].death_timer;
+                    if (creatures[creature_index].death_timer == 16.0f) {
+                        plague_infected = &creatures[creature_index].plague_infected;
+                        if (creatures[creature_index].plague_infected) {
+                            float dot_tick_timer =
+                                creatures[creature_index].dot_tick_timer - frame_dt;
+                            creatures[creature_index].dot_tick_timer = dot_tick_timer;
+                            if (dot_tick_timer < 0.0f) {
                                 creatures[creature_index].state_flag = 1;
-                                creatures[creature_index].collision_timer =
-                                    collision_timer + 0.5f;
+                                creatures[creature_index].dot_tick_timer =
+                                    dot_tick_timer + 0.5f;
                                 *health -= 15.0f;
                                 if (*health < 0.0f) {
                                     ++plaguebearer_infection_count;
@@ -247,7 +247,7 @@ extern "C" void creature_update_all(void)
                                     sfx_play_panned(
                                         creature_type_table[
                                             creatures[creature_index].type_id
-                                        ].sfx_bank_b[crt_rand() % 2],
+                                        ].attack_sfx[crt_rand() % 2],
                                         position,
                                         1.0f);
                                 }
@@ -267,46 +267,46 @@ extern "C" void creature_update_all(void)
                         }
 
                         int ai_mode = creatures[creature_index].ai_mode;
-                        if (ai_mode == CREATURE_AI_ORBIT_PLAYER) {
+                        if (ai_mode == CREATURE_AI_FLANK_PLAYER) {
                             if (distance > 800.0f) {
-                                current_player_index = creatures[creature_index].target_player;
+                                target_player_index = creatures[creature_index].target_player;
                                 creatures[creature_index].target_x =
-                                    player_state_table[current_player_index].position.x;
+                                    player_state_table[target_player_index].position.x;
                                 creatures[creature_index].target_y =
-                                    player_state_table[current_player_index].position.y;
+                                    player_state_table[target_player_index].position.y;
                             } else {
-                                current_player_index = creatures[creature_index].target_player;
+                                target_player_index = creatures[creature_index].target_player;
                                 creatures[creature_index].target_x =
                                     (float)cos(phase_angle) * distance * 0.85f
-                                    + player_state_table[current_player_index].position.x;
+                                    + player_state_table[target_player_index].position.x;
                                 creatures[creature_index].target_y =
                                     (float)sin(phase_angle) * distance * 0.85f
-                                    + player_state_table[current_player_index].position.y;
+                                    + player_state_table[target_player_index].position.y;
                             }
-                        } else if (ai_mode == CREATURE_AI_ORBIT_PLAYER_WIDE) {
-                            current_player_index =
+                        } else if (ai_mode == CREATURE_AI_FLANK_PLAYER_WIDE) {
+                            target_player_index =
                                 creatures[creature_index].target_player;
                             creatures[creature_index].target_x =
                                 (float)cos(phase_angle) * distance * 0.9f
-                                + player_state_table[current_player_index].position.x;
+                                + player_state_table[target_player_index].position.x;
                             creatures[creature_index].target_y =
                                 (float)sin(phase_angle) * distance * 0.9f
-                                + player_state_table[current_player_index].position.y;
-                        } else if (ai_mode == CREATURE_AI_ORBIT_PLAYER_TIGHT) {
+                                + player_state_table[target_player_index].position.y;
+                        } else if (ai_mode == CREATURE_AI_FLANK_PLAYER_TIGHT) {
                             if (distance > 800.0f) {
-                                current_player_index = creatures[creature_index].target_player;
+                                target_player_index = creatures[creature_index].target_player;
                                 creatures[creature_index].target_x =
-                                    player_state_table[current_player_index].position.x;
+                                    player_state_table[target_player_index].position.x;
                                 creatures[creature_index].target_y =
-                                    player_state_table[current_player_index].position.y;
+                                    player_state_table[target_player_index].position.y;
                             } else {
-                                current_player_index = creatures[creature_index].target_player;
+                                target_player_index = creatures[creature_index].target_player;
                                 creatures[creature_index].target_x =
                                     (float)cos(phase_angle) * distance * 0.55f
-                                    + player_state_table[current_player_index].position.x;
+                                    + player_state_table[target_player_index].position.x;
                                 creatures[creature_index].target_y =
                                     (float)sin(phase_angle) * distance * 0.55f
-                                    + player_state_table[current_player_index].position.y;
+                                    + player_state_table[target_player_index].position.y;
                             }
                         } else if (ai_mode == CREATURE_AI_FOLLOW_LINK) {
                             linked_index = creatures[creature_index].link_index;
@@ -319,7 +319,7 @@ extern "C" void creature_update_all(void)
                                     + creatures[creature_index].target_offset.y;
                             } else {
                                 creatures[creature_index].ai_mode =
-                                    CREATURE_AI_ORBIT_PLAYER;
+                                    CREATURE_AI_FLANK_PLAYER;
                             }
                         } else if (ai_mode == CREATURE_AI_FOLLOW_LINK_TETHERED) {
                             linked_index = creatures[creature_index].link_index;
@@ -338,7 +338,7 @@ extern "C" void creature_update_all(void)
                                 }
                             } else {
                                 creatures[creature_index].ai_mode =
-                                    CREATURE_AI_ORBIT_PLAYER;
+                                    CREATURE_AI_FLANK_PLAYER;
                                 creature_apply_damage(
                                     creature_index,
                                     1000.0f,
@@ -348,27 +348,27 @@ extern "C" void creature_update_all(void)
                         }
 
                         ai_mode = creatures[creature_index].ai_mode;
-                        if (ai_mode == CREATURE_AI_LINK_GUARD) {
+                        if (ai_mode == CREATURE_AI_FLANK_PLAYER_LINKED) {
                             linked_index = creatures[creature_index].link_index;
                             if (creature_pool[linked_index].health > 0.0f) {
                                 if (distance > 800.0f) {
-                                    current_player_index = creatures[creature_index].target_player;
+                                    target_player_index = creatures[creature_index].target_player;
                                     creatures[creature_index].target_x =
-                                        player_state_table[current_player_index].position.x;
+                                        player_state_table[target_player_index].position.x;
                                     creatures[creature_index].target_y =
-                                        player_state_table[current_player_index].position.y;
+                                        player_state_table[target_player_index].position.y;
                                 } else {
-                                    current_player_index = creatures[creature_index].target_player;
+                                    target_player_index = creatures[creature_index].target_player;
                                     creatures[creature_index].target_x =
                                         (float)cos(phase_angle) * distance * 0.85f
-                                        + player_state_table[current_player_index].position.x;
+                                        + player_state_table[target_player_index].position.x;
                                     creatures[creature_index].target_y =
                                         (float)sin(phase_angle) * distance * 0.85f
-                                        + player_state_table[current_player_index].position.y;
+                                        + player_state_table[target_player_index].position.y;
                                 }
                             } else {
                                 creatures[creature_index].ai_mode =
-                                    CREATURE_AI_ORBIT_PLAYER;
+                                    CREATURE_AI_FLANK_PLAYER;
                                 creature_apply_damage(
                                     creature_index,
                                     1000.0f,
@@ -377,13 +377,13 @@ extern "C" void creature_update_all(void)
                             }
                         } else if (ai_mode == CREATURE_AI_HOLD_TIMER) {
                             flags = creatures[creature_index].flags
-                                & CREATURE_FLAG_AI7_LINK_TIMER;
+                                & CREATURE_FLAG_STOP_AND_GO;
                             if (flags == 0
                                 || creatures[creature_index].link_index <= 0) {
                                 if (creatures[creature_index].orbit_radius.radius <= 0.0f
                                     || flags != 0) {
                                     creatures[creature_index].ai_mode =
-                                        CREATURE_AI_ORBIT_PLAYER;
+                                        CREATURE_AI_FLANK_PLAYER;
                                 } else {
                                     creature->orbit_radius.radius -= frame_dt;
                                     creature->target_position = creature->position;
@@ -407,7 +407,7 @@ extern "C" void creature_update_all(void)
                                     + creature_pool[linked_index].pos_y;
                             } else {
                                 creatures[creature_index].ai_mode =
-                                    CREATURE_AI_ORBIT_PLAYER;
+                                    CREATURE_AI_FLANK_PLAYER;
                             }
                         }
 
@@ -424,10 +424,10 @@ extern "C" void creature_update_all(void)
                         if (creatures[creature_index].force_target
                             || creatures[creature_index].ai_mode
                                 == CREATURE_AI_CHASE_PLAYER) {
-                            current_player_index =
+                            target_player_index =
                                 creatures[creature_index].target_player;
                             creatures[creature_index].target_position =
-                                player_state_table[current_player_index].position;
+                                player_state_table[target_player_index].position;
                         }
 
                         creature_vec2_t &target_position =
@@ -440,12 +440,12 @@ extern "C" void creature_update_all(void)
                             (float)(desired_heading + 1.5707964f);
                         if ((bonus_energizer_timer > 0.0f
                                 && creatures[creature_index].max_health < 500.0f)
-                            || *collision_flag) {
+                            || *plague_infected) {
                             creatures[creature_index].target_heading += 3.1415927f;
                         }
 
                         flags = creatures[creature_index].flags;
-                        if ((flags & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
+                        if ((flags & CREATURE_FLAG_SPAWNER) != 0) {
                             if (position->x < creatures[creature_index].size) {
                                 position->x = creatures[creature_index].size;
                             }
@@ -460,7 +460,7 @@ extern "C" void creature_update_all(void)
                                 creatures[creature_index].pos_y = max_pos;
                             }
 
-                            if ((flags & CREATURE_FLAG_ANIM_LONG_STRIP) == 0) {
+                            if ((flags & CREATURE_FLAG_SPAWNER_MOBILE) == 0) {
                                 creatures[creature_index].vel_x =
                                     creatures[creature_index].vel_y = 0.0f;
                             } else {
@@ -528,9 +528,9 @@ extern "C" void creature_update_all(void)
                         float *size = &creatures[creature_index].size;
                         float anim_scale = 30.0f / creatures[creature_index].size;
                         if ((creatures[creature_index].flags
-                                & CREATURE_FLAG_ANIM_PING_PONG) == 0
+                                & CREATURE_FLAG_SPAWNER) == 0
                             || (creatures[creature_index].flags
-                                & CREATURE_FLAG_ANIM_LONG_STRIP) != 0) {
+                                & CREATURE_FLAG_SPAWNER_MOBILE) != 0) {
                             if (creatures[creature_index].ai_mode
                                 != CREATURE_AI_HOLD_TIMER) {
                                 creatures[creature_index].anim_phase +=
@@ -573,11 +573,11 @@ extern "C" void creature_update_all(void)
 
                         if (interaction_distance < 100.0f
                             && perk_count_get(perk_id_radioactive) != 0) {
-                            creatures[creature_index].collision_timer -=
+                            creatures[creature_index].dot_tick_timer -=
                                 frame_dt * 1.5f;
-                            if (creatures[creature_index].collision_timer < 0.0f
+                            if (creatures[creature_index].dot_tick_timer < 0.0f
                                 && *health > 0.0f) {
-                                creatures[creature_index].collision_timer = 0.5f;
+                                creatures[creature_index].dot_tick_timer = 0.5f;
                                 creatures[creature_index].state_flag = 1;
                                 *health -= (100.0f - interaction_distance) * 0.3f;
                                 if (*health < 0.0f) {
@@ -588,7 +588,7 @@ extern "C" void creature_update_all(void)
                                         player_state_table[0].experience = (int)(
                                             (float)player_state_table[0].experience
                                             + creatures[creature_index].reward_value);
-                                        *lifecycle_stage -= frame_dt;
+                                        *death_timer -= frame_dt;
                                     }
                                 }
                                 fx_queue_add_random(position);
@@ -597,7 +597,7 @@ extern "C" void creature_update_all(void)
 
                         if (interaction_distance > 64.0f) {
                             if ((creatures[creature_index].flags
-                                    & CREATURE_FLAG_RANGED_ATTACK_SHOCK) != 0
+                                    & CREATURE_FLAG_RANGED_PLASMA_RIFLE) != 0
                                 && *attack_cooldown <= 0.0f) {
                                 projectile_spawn(
                                     position,
@@ -611,7 +611,7 @@ extern "C" void creature_update_all(void)
                                     1.0f);
                             }
                             if ((creatures[creature_index].flags
-                                    & CREATURE_FLAG_RANGED_ATTACK_VARIANT) != 0
+                                    & CREATURE_FLAG_RANGED_TEMPLATE_PROJECTILE) != 0
                                 && *attack_cooldown <= 0.0f) {
                                 projectile_spawn(
                                     position,
@@ -643,9 +643,9 @@ extern "C" void creature_update_all(void)
                                     sfx_ui_bonus,
                                     position,
                                     0.8f);
-                                bonus_spawn_guard = 1;
+                                scripted_burst_active = 1;
                                 creature_handle_death(creature_index, 0);
-                                bonus_spawn_guard = 0;
+                                scripted_burst_active = 0;
                             }
                         }
 
@@ -657,7 +657,7 @@ extern "C" void creature_update_all(void)
                                     sfx_play_panned(
                                         creature_type_table[
                                             creatures[creature_index].type_id
-                                        ].sfx_bank_b[crt_rand() % 2],
+                                        ].attack_sfx[crt_rand() % 2],
                                         position,
                                         1.0f);
                                     if (perk_count_get(perk_id_mr_melee) != 0) {
@@ -696,7 +696,7 @@ extern "C" void creature_update_all(void)
                                 if (player_state_table[*target_player].plaguebearer_active
                                     && *health < 150.0f
                                     && plaguebearer_infection_count < 50) {
-                                    *collision_flag = 1;
+                                    *plague_infected = 1;
                                 }
                             }
                         }
@@ -704,18 +704,18 @@ extern "C" void creature_update_all(void)
                         if (interaction_distance < 30.0f
                             && *size <= 30.0f) {
                             *health = 0.0f;
-                            *lifecycle_stage -= frame_dt;
+                            *death_timer -= frame_dt;
                         }
-                    } else if (*lifecycle_stage > 0.0f) {
-                        float corpse_stage = *lifecycle_stage - frame_dt * 28.0f;
-                        *lifecycle_stage = corpse_stage;
+                    } else if (*death_timer > 0.0f) {
+                        float corpse_stage = *death_timer - frame_dt * 28.0f;
+                        *death_timer = corpse_stage;
                         if (corpse_stage <= 0.0f) {
                             if (!config_violence_disabled) {
                                 unsigned char corpse_queued;
                                 if ((creatures[creature_index].flags
-                                        & CREATURE_FLAG_ANIM_PING_PONG) == 0
+                                        & CREATURE_FLAG_SPAWNER) == 0
                                     || (creatures[creature_index].flags
-                                        & CREATURE_FLAG_ANIM_LONG_STRIP) != 0) {
+                                        & CREATURE_FLAG_SPAWNER_MOBILE) != 0) {
                                     corpse_queued = fx_queue_add_rotated(
                                         *(creature_vec2_t *)position
                                             - creature_vec2_t(
@@ -737,7 +737,7 @@ extern "C" void creature_update_all(void)
                                         7);
                                 }
                                 if (!corpse_queued) {
-                                    *lifecycle_stage = 0.001f;
+                                    *death_timer = 0.001f;
                                     goto next_creature;
                                 }
                             }
@@ -745,7 +745,7 @@ extern "C" void creature_update_all(void)
                             ++creature_kill_count;
                             if (!config_violence_disabled
                                 && (creatures[creature_index].flags
-                                    & CREATURE_FLAG_ANIM_PING_PONG) != 0) {
+                                    & CREATURE_FLAG_SPAWNER) != 0) {
                                 int count = 8;
                                 do {
                                     effect_spawn_blood_splatter(
@@ -774,9 +774,9 @@ extern "C" void creature_update_all(void)
                             }
                         } else {
                             if ((creatures[creature_index].flags
-                                    & CREATURE_FLAG_ANIM_PING_PONG) == 0
+                                    & CREATURE_FLAG_SPAWNER) == 0
                                 || (creatures[creature_index].flags
-                                    & CREATURE_FLAG_ANIM_LONG_STRIP) != 0) {
+                                    & CREATURE_FLAG_SPAWNER_MOBILE) != 0) {
                                 double corpse_heading =
                                     creatures[creature_index].heading - 1.5707964f;
                                 creatures[creature_index].vel_x =
@@ -793,7 +793,7 @@ extern "C" void creature_update_all(void)
                             }
                         }
                     } else {
-                        *lifecycle_stage -= frame_dt * 20.0f;
+                        *death_timer -= frame_dt * 20.0f;
                     }
                 }
             }

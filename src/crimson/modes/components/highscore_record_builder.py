@@ -15,14 +15,14 @@ def build_highscore_record(
     *,
     state: GameplayState,
     player: PlayerState,
-    survival_elapsed_ms: int,
+    run_elapsed_ms: int,
     creature_kill_count: int,
     rand_value: int | None = None,
 ) -> HighScoreRecord:
     """The run's high-score record; quests pass the tag drawn at quest start, other modes draw it now."""
     record = HighScoreRecord.blank(rng=state.rng) if rand_value is None else HighScoreRecord.blank(rand_value=rand_value)
     record.score_xp = int(state.highscore_score_xp)
-    record.survival_elapsed_ms = int(survival_elapsed_ms)
+    record.run_elapsed_ms = int(run_elapsed_ms)
     record.creature_kill_count = int(creature_kill_count)
     record.most_used_weapon_id = most_used_weapon_id_for_player(
         state,

@@ -86,7 +86,7 @@ def projectile_spawn(
 ) -> int:
     """Port of `projectile_spawn` (0x00420440): a player's shot counts as fired and becomes Fire Bullets."""
 
-    if not state.bonus_spawn_guard:
+    if not state.scripted_burst_active:
         # Native lists -100, -1, -2 and -3, so a fourth player's friendly-fire shots skip it; the rewrite takes any player.
         if state.preserve_bugs:
             player_owned = owner_id == OWNER_LOCAL_PLAYER or -3 <= owner_id <= -1
@@ -112,7 +112,7 @@ def projectile_spawn(
     entry.generation += 1
     entry.owner_id = owner_id
     entry.active = True
-    entry.travel_budget = float(weapon_entry_for_projectile_type_id(type_id).travel_budget)
+    entry.projectile_speed = float(weapon_entry_for_projectile_type_id(type_id).projectile_speed)
     entry.pos = Vec2(f32(pos.x), f32(pos.y))
     entry.origin = entry.pos
     entry.angle = f32(angle)
@@ -195,7 +195,7 @@ class ProjectilePool:
         def _creature_is_collidable(creature: CreatureState) -> bool:
             if not creature.active:
                 return False
-            return creature_lifecycle_is_collidable(creature.lifecycle_stage)
+            return creature_lifecycle_is_collidable(creature.death_timer)
 
         creature_spatial = CreatureSpatialHash(pool=world.creatures, is_collidable=_creature_is_collidable)
 
@@ -246,7 +246,7 @@ class ProjectilePool:
                 proj.life_timer = f32(float(proj.life_timer) - float(dt))
                 continue
 
-            steps = int(proj.travel_budget)
+            steps = int(proj.projectile_speed)
             if barrel_greaser_active and proj.owner_id < 0:
                 steps *= 2
 
@@ -360,7 +360,7 @@ class ProjectilePool:
                         poison_bullets_active
                         and (rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE) & 7) == 1
                     ):
-                        creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
+                        creature.flags |= CreatureFlags.POISONED
 
                     if type_id == ProjectileTemplateId.SPLITTER_GUN:
                         effect_spawn_splitter_hit_burst(effects, pos=proj.pos, rng=rng, detail_preset=detail_preset)
@@ -387,7 +387,7 @@ class ProjectilePool:
 
                     # Native counts a hit for any owner (creature-owned splitter children included)
                     # while the target is still at the alive sentinel.
-                    if creature_lifecycle_is_alive(creature.lifecycle_stage):
+                    if creature_lifecycle_is_alive(creature.death_timer):
                         runtime_state.shots_hit += 1
 
                     target = creature.pos
@@ -438,7 +438,7 @@ class ProjectilePool:
                                 )
                                 # Native chains to slot 0 when nothing qualifies; the rewrite ends the chain.
                                 if next_idx >= 0:
-                                    runtime_state.bonus_spawn_guard = True
+                                    runtime_state.scripted_burst_active = True
                                     runtime_state.shock_chain_projectile_id = projectile_spawn(
                                         runtime_state,
                                         players=players,
@@ -451,7 +451,7 @@ class ProjectilePool:
                                         owner_id=hit_idx,
                                         owner_player_index=0,
                                     )
-                                    runtime_state.bonus_spawn_guard = False
+                                    runtime_state.scripted_burst_active = False
                             effect_spawn_ion_hit_core(
                                 effects, pos=proj.pos, scale_step=1.2, lifetime=0.4, detail_preset=detail_preset,
                             )
@@ -463,7 +463,7 @@ class ProjectilePool:
                             effect_spawn_ion_hit_sparks(effects, pos=proj.pos, scale=2.2, rng=rng, detail_preset=detail_preset)
                             sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, proj.pos))
                         case ProjectileTemplateId.PLASMA_CANNON:
-                            runtime_state.bonus_spawn_guard = True
+                            runtime_state.scripted_burst_active = True
                             # Native 0x00421370: each PC=24 op rounds; the ring angle is a float32 local.
                             ring_radius = x87_pc24_add(x87_pc24_mul(creature.size, 0.5), 1.0)
                             for ring_idx in range(12):
@@ -480,7 +480,7 @@ class ProjectilePool:
                                     owner_id=OWNER_LOCAL_PLAYER,
                                     owner_player_index=0,
                                 )
-                            runtime_state.bonus_spawn_guard = False
+                            runtime_state.scripted_burst_active = False
                             sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, proj.pos))
                             sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, proj.pos))
                             effect_spawn_plasma_hit_core(

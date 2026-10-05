@@ -36,16 +36,16 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
         )
 
     # Fireblast.
-    state.bonus_spawn_guard = True
+    state.scripted_burst_active = True
     player = world.players[0]
     player.pos = Vec2(100.0, 100.0)
     _fireblast(player)
     assert _signature(pool) == Counter({int(ProjectileTemplateId.PLASMA_RIFLE): 16})
-    assert not state.bonus_spawn_guard
+    assert not state.scripted_burst_active
 
     pool.reset()
 
-    # Fireblast should NOT convert to Fire Bullets because it sets bonus_spawn_guard.
+    # Fireblast should NOT convert to Fire Bullets because it sets scripted_burst_active.
     player.fire_bullets_timer = 1.0
     _fireblast(player)
     assert _signature(pool) == Counter({int(ProjectileTemplateId.PLASMA_RIFLE): 16})

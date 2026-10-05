@@ -47,7 +47,7 @@ Resetting the world or reopening render resources leaves the ground alone.
   without stamping. A capture from such a run would need that flag recorded in its run metadata.
 - Native recovery regeneration is not modelled. When Grim sets config var `0x57` (texture backup failure,
   DC-mode `WM_PAINT`), `game_frame_update` regenerates terrain mid-run on the live stream:
-  `terrain_generate_random()`, or during quests `terrain_generate(&quest_selected_meta[minor * 10 + major])`
+  `terrain_generate_random()`, or during quests `terrain_generate(&quest_meta_table[minor * 10 + major])`
   with minor and major wrapped separately, a swapped index that can read past the 50-entry table (quest 1.6
   gives 50). A capture containing it cannot replay exactly. Should the port ever rebuild a lost render
   target, it would redraw the retained setup rather than draw new terrain.

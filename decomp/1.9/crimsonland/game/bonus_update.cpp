@@ -20,7 +20,7 @@ static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
 
 extern "C" void bonus_update(void)
 {
-    if (render_pass_mode == 0) {
+    if (run_active == 0) {
         return;
     }
 
@@ -29,25 +29,25 @@ extern "C" void bonus_update(void)
     for (int bonus_index = 0; bonus_index < 16; ++bonus_index) {
         bonus_entry_t *bonus = &bonus_pool[bonus_index];
         if (bonus->bonus_id != BONUS_ID_NONE) {
-            unsigned char state = bonus->state;
-            bonus->time.time_left = state != 0
+            unsigned char picked = bonus->picked;
+            bonus->time.time_left = picked != 0
                 ? bonus->time.time_left - frame_dt * 3.0f
                 : bonus->time.time_left - frame_dt;
 
-            if (state == 0 && config_game_mode == GAME_MODE_TUTORIAL) {
+            if (picked == 0 && config_game_mode == GAME_MODE_TUTORIAL) {
                 bonus->time.time_left = 5.0f;
             }
             if (bonus->time.time_left < 0.0f) {
                 bonus->bonus_id = BONUS_ID_NONE;
             }
 
-            if (state == 0) {
-                render_overlay_player_index = 0;
+            if (picked == 0) {
+                current_player_index = 0;
                 if (config_player_count > 0) {
                     int player_index;
                     int player_count;
                     do {
-                        player_index = render_overlay_player_index;
+                        player_index = current_player_index;
                         player_count = config_player_count;
                         if (vec2_distance(
                                 &bonus->time.position,
@@ -55,19 +55,19 @@ extern "C" void bonus_update(void)
                             < pickup_radius) {
                             bonus_apply(player_index, bonus);
                             player_count = config_player_count;
-                            player_index = render_overlay_player_index;
-                            bonus->state = 1;
+                            player_index = current_player_index;
+                            bonus->picked = 1;
                             bonus->time.time_left = pickup_lifetime;
                         }
                         ++player_index;
-                        render_overlay_player_index = player_index;
+                        current_player_index = player_index;
                     } while (player_index < player_count);
                 }
             }
         }
     }
 
-    render_overlay_player_index = 0;
+    current_player_index = 0;
     if (bonus_freeze_timer > 0.0f) {
         bonus_freeze_timer -= frame_dt;
     } else {

@@ -22,13 +22,13 @@ def creature_render_tint(
     *,
     max_hp: float,
     energizer_timer: float,
-    lifecycle_stage: float,
+    death_timer: float,
     transition: float,
 ) -> RGBA:
     """Native body tint, including PC24 blend order and lifecycle fading."""
     r, g, b, a = (f32(channel) for channel in tint)
     energy = f32(energizer_timer)
-    life = f32(lifecycle_stage)
+    life = f32(death_timer)
     if energy > 0.0 and f32(max_hp) < 500.0:
         blend = min(energy, 1.0)
         inverse = x87_pc24_sub(1.0, blend)
@@ -46,12 +46,12 @@ def creature_shadow_alpha(
     tint_alpha: float,
     *,
     flags: CreatureFlags,
-    lifecycle_stage: float,
+    death_timer: float,
     transition: float,
 ) -> float:
     """Native shadow alpha before Grim2D packs it into a byte."""
     alpha = x87_pc24_mul(f32(tint_alpha), f32(0.4))
-    life = f32(lifecycle_stage)
+    life = f32(death_timer)
     if life < 0.0:
         fade = 0.5 if creature_anim_is_long_strip(flags) else f32(0.1)
         alpha = max(0.0, x87_pc24_add(alpha, x87_pc24_mul(life, fade)))
@@ -74,7 +74,7 @@ def draw_creature_sprite(
     type_id: CreatureTypeId,
     flags: CreatureFlags,
     phase: float,
-    lifecycle_stage: float = 16.0,
+    death_timer: float = 16.0,
     mirror_long: bool | None = None,
     shadow_alpha: int | None = None,
     pos: Vec2,
@@ -98,7 +98,7 @@ def draw_creature_sprite(
         base_frame=info.base,
         mirror_long=mirror_flag,
         flags=flags,
-        lifecycle_stage=lifecycle_stage,
+        death_timer=death_timer,
     )
     if index < 0:
         return

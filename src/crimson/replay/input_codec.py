@@ -44,10 +44,10 @@ def pack_player_input(inp: PlayerInput) -> PackedPlayerInput:
         | (AIM_TURN_LEFT_FLAG if inp.aim_turn_left else 0)
         | (AIM_TURN_RIGHT_FLAG if inp.aim_turn_right else 0)
         | MOVE_KEYS_PRESENT_FLAG
-        | (MOVE_FORWARD_FLAG if inp.move_forward_pressed else 0)
-        | (MOVE_BACKWARD_FLAG if inp.move_backward_pressed else 0)
-        | (TURN_LEFT_FLAG if inp.turn_left_pressed else 0)
-        | (TURN_RIGHT_FLAG if inp.turn_right_pressed else 0)
+        | (MOVE_FORWARD_FLAG if inp.move_forward_down else 0)
+        | (MOVE_BACKWARD_FLAG if inp.move_backward_down else 0)
+        | (TURN_LEFT_FLAG if inp.turn_left_down else 0)
+        | (TURN_RIGHT_FLAG if inp.turn_right_down else 0)
     )
     flags |= MOVE_MODE_PRESENT_FLAG | (int(inp.move_mode) & MOVE_MODE_MASK) << MOVE_MODE_SHIFT
     flags |= AIM_SCHEME_PRESENT_FLAG | (int(inp.aim_scheme) & AIM_SCHEME_MASK) << AIM_SCHEME_SHIFT
@@ -82,10 +82,10 @@ def unpack_player_input(packed: PackedPlayerInput) -> PlayerInput:
         fire_bullets_key_down=bool(flags & FIRE_BULLETS_KEY_DOWN_FLAG),
         aim_turn_left=bool(flags & AIM_TURN_LEFT_FLAG),
         aim_turn_right=bool(flags & AIM_TURN_RIGHT_FLAG),
-        move_forward_pressed=bool(flags & MOVE_FORWARD_FLAG),
-        move_backward_pressed=bool(flags & MOVE_BACKWARD_FLAG),
-        turn_left_pressed=bool(flags & TURN_LEFT_FLAG),
-        turn_right_pressed=bool(flags & TURN_RIGHT_FLAG),
+        move_forward_down=bool(flags & MOVE_FORWARD_FLAG),
+        move_backward_down=bool(flags & MOVE_BACKWARD_FLAG),
+        turn_left_down=bool(flags & TURN_LEFT_FLAG),
+        turn_right_down=bool(flags & TURN_RIGHT_FLAG),
     )
 
 

@@ -16,8 +16,8 @@ and what the 1.9.93 executable does with them. Weapon ids are 1-based; see the
 registers each quest through `quest_meta_init_entry`
 (`decomp/1.9/crimsonland/quests/quest_meta_init_entry.cpp`), which resets
 `unlock_weapon_id = 0` and `unlock_perk_id = perk_id_antiperk`. The function's
-tail then assigns `quest_selected_meta[i].unlock_weapon_id` for all 50 quests
-(`quest_selected_meta` stride `0x2c`). Quests not listed below store `0`
+tail then assigns `quest_meta_table[i].unlock_weapon_id` for all 50 quests
+(`quest_meta_table` stride `0x2c`). Quests not listed below store `0`
 (no weapon).
 
 | Index | Quest | Unlocks |
@@ -57,13 +57,13 @@ Spiders Inc. (11 Plasma Minigun), and Major Alien Breach (18 Rocket Minigun).
 that sets `weapon_table[].unlocked`:
 
 - clears all 64 flags, then marks Pistol (1) available;
-- marks `quest_selected_meta[i].unlock_weapon_id` for `i < quest_unlock_index`
+- marks `quest_meta_table[i].unlock_weapon_id` for `i < quest_unlock_index`
   (capped at 50);
 - in Survival (`config_game_mode == GAME_MODE_SURVIVAL`), also marks Assault
   Rifle (2), Shotgun (3), and Submachine Gun (5);
 - in the full version, marks Splitter Gun (29) when
-  `quest_unlock_index_full >= 40`, i.e. after hardcore 4.10 *The End of All*;
-  the demo forces `quest_unlock_index_full = 0`;
+  `quest_unlock_index_hardcore >= 40`, i.e. after hardcore 4.10 *The End of All*;
+  the demo forces `quest_unlock_index_hardcore = 0`;
 - always clears entry 0.
 
 Weapon drops and the Random Weapon perk go through
@@ -83,17 +83,17 @@ are unused slots.
 | -- | -- | -- | -- | -- | -- | -- |
 | 16 | HR Flamer | 30 | 0.0085s | 1.80s | Flag 0x8. | none |
 | 24 | Shrinkifier 5k | 8 | 0.21s | 1.22s | Damage 0.0x. Flag 0x8. | Survival handout |
-| 25 | Blade Gun | 6 | 0.35s | 3.50s | Damage 11.0x. Travel budget 20. Flag 0x8. | Survival handout |
-| 26 | Spider Plasma | 5 | 0.20s | 1.20s | Damage 0.5x. Travel budget 10. Flag 0x8. | none |
+| 25 | Blade Gun | 6 | 0.35s | 3.50s | Damage 11.0x. Projectile speed 20. Flag 0x8. | Survival handout |
+| 26 | Spider Plasma | 5 | 0.20s | 1.20s | Damage 0.5x. Projectile speed 10. Flag 0x8. | none |
 | 27 | Evil Scythe | 3 | 1.00s | 3.00s | Spread heat 0.68. | none |
-| 29 | Splitter Gun | 6 | 0.70s | 2.20s | Damage 6.0x. Travel budget 30. | hardcore progression |
+| 29 | Splitter Gun | 6 | 0.70s | 2.20s | Damage 6.0x. Projectile speed 30. | hardcore progression |
 | 32 | Flameburst | 60 | 0.02s | 3.00s | - | none |
 | 33 | RayGun | 12 | 0.70s | 2.00s | - | none |
-| 41 | Plague Sphreader Gun | 5 | 0.20s | 1.20s | Damage 0.0x. Travel budget 15. Flag 0x8. | none |
+| 41 | Plague Sphreader Gun | 5 | 0.20s | 1.20s | Damage 0.0x. Projectile speed 15. Flag 0x8. | none |
 | 42 | Bubblegun | 15 | 0.16s | 1.20s | Flag 0x8. | none |
-| 43 | Rainbow Gun | 10 | 0.20s | 1.20s | Travel budget 10. Flag 0x8. | none |
+| 43 | Rainbow Gun | 10 | 0.20s | 1.20s | Projectile speed 10. Flag 0x8. | none |
 | 44 | Grim Weapon | 3 | 0.50s | 1.20s | - | none |
-| 45 | Fire bullets | 112 | 0.14s | 1.20s | Damage 0.25x. Travel budget 60. Flag 0x1. | Fire Bullets bonus stats |
+| 45 | Fire bullets | 112 | 0.14s | 1.20s | Damage 0.25x. Projectile speed 60. Flag 0x1. | Fire Bullets bonus stats |
 | 50 | Transmutator | 50 | 0.04s | 5.00s | Flag 0x9. | none |
 | 51 | Blaster R-300 | 20 | 0.08s | 2.00s | Flag 0x9. | none |
 | 52 | Lighting Rifle | 500 | 4.00s | 8.00s | Flag 0x8. | none |
@@ -107,7 +107,7 @@ Notes:
   above).
 - Fire bullets (45) is the stats row for the Fire Bullets bonus, not an
   obtainable weapon: `PROJECTILE_TYPE_FIRE_BULLETS` is `0x2d`, so
-  `projectile_spawn` and `projectile_update` read its travel budget and damage
+  `projectile_spawn` and `projectile_update` read its projectile speed and damage
   scale, and the bonus fire path reads its `shot_cooldown` and `spread_heat`
   (`fire_bullets_fallback_shot_cooldown` at `0x004d9040` and
   `fire_bullets_fallback_spread_heat` at `0x004d9048` are those fields).

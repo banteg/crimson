@@ -176,7 +176,7 @@
         0.0,
       ]),
       'target_id': -1,
-      'trail_timer': 0.0,
+      'trail_distance': 0.0,
       'type_id': 3,
       'vel': list([
         0.3,
@@ -204,7 +204,7 @@
         -1.9,
       ]),
       'target_id': 1,
-      'trail_timer': 0.06,
+      'trail_distance': 0.06,
       'type_id': 2,
       'vel': list([
         7.999978,

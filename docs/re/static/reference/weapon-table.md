@@ -5,7 +5,7 @@ tags:
 
 # Weapon table (weapon_table_init)
 Weapon stats are initialized in `weapon_table_init` (`0x004519b0`) and stored
-in a fixed‑stride table. The accessor `weapon_table_entry` (`0x0041fc60`)
+in a fixed‑stride table. The accessor `weapon_name_get` (`0x0041fc60`)
 returns a pointer to the name buffer at the start of each entry:
 
 ```
@@ -40,7 +40,7 @@ typedef struct weapon_stats_t {
     int hud_icon_id;
     unsigned char flags;
     unsigned char _pad2[3];
-    float travel_budget;
+    float projectile_speed;
     float damage_scale;
     int pellet_count;
     unsigned char _pad3[4];
@@ -50,7 +50,7 @@ typedef struct weapon_stats_t {
 ## Offsets (relative to entry base)
 
 All offsets below are in **bytes**, relative to the pointer returned by
-`weapon_table_entry` (`0x0041fc60`).
+`weapon_name_get` (`0x0041fc60`).
 
 | Offset | Type  | Meaning | Evidence |
 | ------ | ----- | ------- | -------- |
@@ -58,15 +58,15 @@ All offsets below are in **bytes**, relative to the pointer returned by
 | `0x00` | char[0x40] | Weapon name | String is copied inline during `weapon_table_init` and drawn by the weapon-pickup popup in `ui_render_hud` (`0x0041aed0`). |
 | `0x40` | byte | Unlocked/available flag | `weapon_refresh_available` (`0x00452e40`) clears the table then marks unlocked weapons; `weapon_pick_random_available` (`0x00452cd0`) skips entries with `0`. |
 | `0x44` | int | Clip size | Copied into `player_clip_size` (`0x00490b74`) on weapon swap and used to reset `player_ammo` (`0x00490b7c`). In player storage these land in float-typed slots (for example `10.0`, `12.0`, `25.0`). |
-| `0x48` | float | Shot cooldown | Copied into `player_shot_cooldown` (`0x00490b84`) after firing in `player_fire_weapon`. |
+| `0x48` | float | Shot cooldown | Copied into `player_shot_cooldown` (`0x00490b84`) after firing in `typo_player_update`. |
 | `0x4c` | float | Reload time | Loaded into `player_reload_timer` (`0x00490b80`) in `player_start_reload` (scaled by perks). |
 | `0x50` | float | Spread / heat increment | Added to `player_spread_heat` (`0x00490b68`) after each shot (scaled by perks). |
 | `0x58` | int | Shot SFX base id | Used with `0x5c` to pick a random fire SFX. |
-| `0x5c` | int | Shot SFX variant count | `rand % count + base` in `player_fire_weapon`. |
+| `0x5c` | int | Shot SFX variant count | `rand % count + base` in `typo_player_update`. |
 | `0x60` | int | Reload / equip SFX id | Played when a reload starts and when swapping to the weapon. |
 | `0x64` | int | HUD icon id | Passed into the HUD sprite selection (shifted by `<< 1`). |
 | `0x68` | byte | Flags | Bit `0x1` triggers a muzzle flash / effect burst; bits `0x4/0x8` affect crosshair rendering. |
-| `0x6c` | float | Travel budget | Copied into projectile entries on spawn (`weapon_projectile_travel_budget`). |
+| `0x6c` | float | Projectile speed (movement sub-steps per frame) | Copied into projectile entries on spawn (`weapon_projectile_speed`). |
 | `0x70` | float | Damage scale | Used in projectile hit damage computation (`weapon_projectile_damage_scale`). |
 | `0x74` | int | Pellet count | Number of pellets spawned in the spread fire path (`weapon_projectile_pellet_count`). |
 
@@ -76,7 +76,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
   - `weapon_id=2` (Assault Rifle) resolved to entry index **2**.
   - Observed fields: `clip_size=25`, `shot_cooldown=0.117`, `reload_time=1.2`, `spread_heat=0.09`,
     `shot_sfx_base=34`, `shot_sfx_count=1`, `reload_sfx=35`, `hud_icon_id=1`, `flags=1`,
-    `travel_budget=50`, `damage_scale=1`, `pellet_count=1`, `ammo_class=0` (from `-0x04`).
+    `projectile_speed=50`, `damage_scale=1`, `pellet_count=1`, `ammo_class=0` (from `-0x04`).
 
 - UI text for weapons is pulled directly from the `weapon_table` name field (`offset 0x00`).
   Examples:
@@ -91,7 +91,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
     `grim_draw_text_small`.
 
   - **Quest results** (`decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp`):
-    passes the quest's `unlock_weapon_id` to `weapon_table_entry()` for the
+    passes the quest's `unlock_weapon_id` to `weapon_name_get()` for the
     "Weapon unlocked:" line.
 
   This means `ui_itemTexts.jaz` is **not** the weapon list source; it’s used for menu labels.
@@ -107,7 +107,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
 - Pellet count (offset `0x74`, `weapon_projectile_pellet_count`) is used by the Fire Bullets bonus
   to spawn multiple `0x2d` pellets per shot.
 - Fire Bullets fallback helpers (initialized in `weapon_table_init` and consumed
-  by `player_fire_weapon` / `player_update`):
+  by `typo_player_update` / `player_update`):
   `fire_bullets_fallback_shot_cooldown` (`0x004d9040`),
   `fire_bullets_fallback_spread_heat` (`0x004d9048`),
   `fire_bullets_primary_shot_sfx_id` (`0x004d9050`), and
@@ -130,7 +130,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
   `player_alt_reload_timer` (`0x00490b9c`), `player_alt_shot_cooldown`
   (`0x00490ba0`), and `player_alt_reload_timer_max` (`0x00490ba4`).
 
-- The same stride is used by projectile metadata lookups (`weapon_projectile_travel_budget`,
+- The same stride is used by projectile metadata lookups (`weapon_projectile_speed`,
   `weapon_projectile_damage_scale`) keyed by projectile type ids in `projectile_spawn` and
   `projectile_update`.
 

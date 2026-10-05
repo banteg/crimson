@@ -104,17 +104,17 @@ def test_repeated_heading_jitter_stores_each_native_precision_result() -> None:
 
 
 @pytest.mark.parametrize(
-    ("start_health", "expected_health", "expected_low_health_timer"),
+    ("start_health", "expected_health", "expected_bleed_drip_timer"),
     [
         (25.0, 15.0, 0.0),
         (50.0, 40.0, 100.0),
     ],
     ids=["resets-low-health-timer-on-hit", "does-not-reset-low-health-timer-above-threshold"],
 )
-def test_player_take_damage_low_health_timer_behavior(
+def test_player_take_damage_bleed_drip_timer_behavior(
     start_health: float,
     expected_health: float,
-    expected_low_health_timer: float,
+    expected_bleed_drip_timer: float,
 ) -> None:
     world = make_world()
     state = world.state
@@ -126,7 +126,7 @@ def test_player_take_damage_low_health_timer_behavior(
 
     assert applied == 10.0
     assert player.health == expected_health
-    assert player.low_health_timer == expected_low_health_timer
+    assert player.bleed_drip_timer == expected_bleed_drip_timer
 
 
 def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
@@ -164,7 +164,7 @@ def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None
         RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER,
         RngCallerStatic.PLAYER_TAKE_DAMAGE_DEATH_SFX,
         RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING,
-        RngCallerStatic.PLAYER_TAKE_DAMAGE_LOW_HEALTH,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_BLEED_DRIP,
     ]
 
 
@@ -188,7 +188,7 @@ def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> N
         RngCallerStatic.PLAYER_TAKE_DAMAGE_HIGHLANDER,
         RngCallerStatic.PLAYER_TAKE_DAMAGE_PAIN_SFX,
         RngCallerStatic.PLAYER_TAKE_DAMAGE_HEADING,
-        RngCallerStatic.PLAYER_TAKE_DAMAGE_LOW_HEALTH,
+        RngCallerStatic.PLAYER_TAKE_DAMAGE_BLEED_DRIP,
     ]
 
 

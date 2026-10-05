@@ -1131,7 +1131,7 @@
     "canonical_address": "0x0043D460",
     "end": "0x004202C0",
     "evidence": "ordered",
-    "name": "sfx_play_exclusive",
+    "name": "music_play_exclusive",
     "size": 192
   },
   {

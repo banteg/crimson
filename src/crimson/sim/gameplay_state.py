@@ -43,9 +43,9 @@ class GameplayState(msgspec.Struct):
     secondary_projectiles: SecondaryProjectilePool = msgspec.field(default_factory=SecondaryProjectilePool)
     bonuses: BonusTimers = msgspec.field(default_factory=BonusTimers)
     time_scale_active: bool = False
-    # Native `render_pass_mode`: the death transition clears it, so the run-down skips
+    # Native `run_active`: the death transition clears it, so the run-down skips
     # `bonus_update`, the quest timeline and Reflex Boosted.
-    render_pass_mode: bool = True
+    run_active: bool = True
     # Native `player_state_table[1]` in a one-player run: creatures turn on it once player 0 is dead.
     dormant_player: PlayerState = msgspec.field(default_factory=lambda: PlayerState(index=1, pos=Vec2()))
     perk_intervals: PerkEffectIntervals = msgspec.field(default_factory=PerkEffectIntervals)
@@ -73,18 +73,18 @@ class GameplayState(msgspec.Struct):
     perk_available: list[bool] = msgspec.field(default_factory=lambda: [False] * PERK_COUNT_SIZE)
     weapon_available: list[bool] = msgspec.field(default_factory=lambda: [False] * WEAPON_COUNT_SIZE)
     friendly_fire_enabled: bool = False
-    bonus_spawn_guard: bool = False
+    scripted_burst_active: bool = False
     player_alt_weapon_swap_cooldown_ms: int = 0
     bonus_hud: BonusHudState = msgspec.field(default_factory=BonusHudState)
     bonus_pool: BonusPool = msgspec.field(default_factory=BonusPool)
     shock_chain_links_left: int = 0
     shock_chain_projectile_id: int = -1
     survival_reward_weapon_guard_id: WeaponId = WeaponId.PISTOL
-    survival_reward_handout_enabled: bool = True
+    survival_shrinkifier_handout_enabled: bool = True
     survival_reward_fire_seen: bool = False
     survival_reward_damage_seen: bool = False
-    survival_recent_death_pos: list[Vec2] = msgspec.field(default_factory=lambda: [Vec2(), Vec2(), Vec2()])
-    survival_recent_death_count: int = 0
+    survival_first_kill_pos: list[Vec2] = msgspec.field(default_factory=lambda: [Vec2(), Vec2(), Vec2()])
+    survival_first_kill_count: int = 0
     camera_shake_offset: Vec2 = Vec2()
     camera_shake_timer: float = 0.0
     camera_shake_pulses: int = 0

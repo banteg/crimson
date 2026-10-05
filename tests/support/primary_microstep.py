@@ -28,7 +28,7 @@ def observe(case):
     projectile.speed_scale = item["speed"]
     projectile.damage_pool = 0.0
     projectile.hit_radius = item["radius"]
-    projectile.travel_budget = item["travel"]
+    projectile.projectile_speed = item["travel"]
     projectile.owner_id = item["owner"]
     for item in case.get("players", []):
         world.players.append(
@@ -77,7 +77,7 @@ def observe(case):
             "speed": projectile.speed_scale,
             "damage": projectile.damage_pool,
             "radius": projectile.hit_radius,
-            "travel": projectile.travel_budget,
+            "travel": projectile.projectile_speed,
             "owner": projectile.owner_id,
         },
         "players": [

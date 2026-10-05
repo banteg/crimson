@@ -66,7 +66,7 @@ QUEST_BUILDER(quest_build_the_gathering);
 
 #define ADD_QUEST(title, weapon, limit, builder_fn)                         \
     quest_meta_init_entry(                                                  \
-        &quest_selected_meta[tier * 10 + index],                            \
+        &quest_meta_table[tier * 10 + index],                            \
         tier + 1,                                                           \
         index + 1,                                                          \
         title);                                                             \
@@ -105,7 +105,7 @@ extern "C" void quest_database_init(void)
     ADD_QUEST("The Killing", 1, 300000, quest_build_the_killing);
 
     quest_meta_init_entry(
-        &quest_selected_meta[tier * 10 + index],
+        &quest_meta_table[tier * 10 + index],
         tier + 1,
         index + 1,
         "Hidden Evil");
@@ -142,108 +142,108 @@ extern "C" void quest_database_init(void)
     ADD_QUEST("Nagolipoli", 1, 480000, quest_build_nagolipoli);
     ADD_QUEST("The Gathering", 1, 480000, quest_build_the_gathering);
 
-    quest_selected_meta[0].unlock_weapon_id = 2;
-    quest_selected_meta[1].unlock_weapon_id = 3;
-    quest_selected_meta[2].unlock_weapon_id = 0;
-    quest_selected_meta[3].unlock_weapon_id = 8;
-    quest_selected_meta[4].unlock_weapon_id = 0;
-    quest_selected_meta[5].unlock_weapon_id = 5;
-    quest_selected_meta[6].unlock_weapon_id = 0;
-    quest_selected_meta[7].unlock_weapon_id = 6;
-    quest_selected_meta[8].unlock_weapon_id = 0;
-    quest_selected_meta[9].unlock_weapon_id = 12;
-    quest_selected_meta[10].unlock_weapon_id = 0;
-    quest_selected_meta[11].unlock_weapon_id = 9;
-    quest_selected_meta[12].unlock_weapon_id = 0;
-    quest_selected_meta[13].unlock_weapon_id = 21;
-    quest_selected_meta[14].unlock_weapon_id = 0;
-    quest_selected_meta[15].unlock_weapon_id = 7;
-    quest_selected_meta[16].unlock_weapon_id = 0;
-    quest_selected_meta[17].unlock_weapon_id = 4;
-    quest_selected_meta[18].unlock_weapon_id = 0;
-    quest_selected_meta[19].unlock_weapon_id = 11;
-    quest_selected_meta[20].unlock_weapon_id = 0;
-    quest_selected_meta[21].unlock_weapon_id = 10;
-    quest_selected_meta[22].unlock_weapon_id = 0;
-    quest_selected_meta[23].unlock_weapon_id = 13;
-    quest_selected_meta[24].unlock_weapon_id = 0;
-    quest_selected_meta[25].unlock_weapon_id = 15;
-    quest_selected_meta[26].unlock_weapon_id = 0;
-    quest_selected_meta[27].unlock_weapon_id = 18;
-    quest_selected_meta[28].unlock_weapon_id = 0;
-    quest_selected_meta[29].unlock_weapon_id = 20;
-    quest_selected_meta[30].unlock_weapon_id = 0;
-    quest_selected_meta[31].unlock_weapon_id = 19;
-    quest_selected_meta[32].unlock_weapon_id = 0;
-    quest_selected_meta[33].unlock_weapon_id = 14;
-    quest_selected_meta[34].unlock_weapon_id = 0;
-    quest_selected_meta[35].unlock_weapon_id = 17;
-    quest_selected_meta[36].unlock_weapon_id = 0;
-    quest_selected_meta[37].unlock_weapon_id = 22;
-    quest_selected_meta[38].unlock_weapon_id = 0;
-    quest_selected_meta[39].unlock_weapon_id = 23;
+    quest_meta_table[0].unlock_weapon_id = 2;
+    quest_meta_table[1].unlock_weapon_id = 3;
+    quest_meta_table[2].unlock_weapon_id = 0;
+    quest_meta_table[3].unlock_weapon_id = 8;
+    quest_meta_table[4].unlock_weapon_id = 0;
+    quest_meta_table[5].unlock_weapon_id = 5;
+    quest_meta_table[6].unlock_weapon_id = 0;
+    quest_meta_table[7].unlock_weapon_id = 6;
+    quest_meta_table[8].unlock_weapon_id = 0;
+    quest_meta_table[9].unlock_weapon_id = 12;
+    quest_meta_table[10].unlock_weapon_id = 0;
+    quest_meta_table[11].unlock_weapon_id = 9;
+    quest_meta_table[12].unlock_weapon_id = 0;
+    quest_meta_table[13].unlock_weapon_id = 21;
+    quest_meta_table[14].unlock_weapon_id = 0;
+    quest_meta_table[15].unlock_weapon_id = 7;
+    quest_meta_table[16].unlock_weapon_id = 0;
+    quest_meta_table[17].unlock_weapon_id = 4;
+    quest_meta_table[18].unlock_weapon_id = 0;
+    quest_meta_table[19].unlock_weapon_id = 11;
+    quest_meta_table[20].unlock_weapon_id = 0;
+    quest_meta_table[21].unlock_weapon_id = 10;
+    quest_meta_table[22].unlock_weapon_id = 0;
+    quest_meta_table[23].unlock_weapon_id = 13;
+    quest_meta_table[24].unlock_weapon_id = 0;
+    quest_meta_table[25].unlock_weapon_id = 15;
+    quest_meta_table[26].unlock_weapon_id = 0;
+    quest_meta_table[27].unlock_weapon_id = 18;
+    quest_meta_table[28].unlock_weapon_id = 0;
+    quest_meta_table[29].unlock_weapon_id = 20;
+    quest_meta_table[30].unlock_weapon_id = 0;
+    quest_meta_table[31].unlock_weapon_id = 19;
+    quest_meta_table[32].unlock_weapon_id = 0;
+    quest_meta_table[33].unlock_weapon_id = 14;
+    quest_meta_table[34].unlock_weapon_id = 0;
+    quest_meta_table[35].unlock_weapon_id = 17;
+    quest_meta_table[36].unlock_weapon_id = 0;
+    quest_meta_table[37].unlock_weapon_id = 22;
+    quest_meta_table[38].unlock_weapon_id = 0;
+    quest_meta_table[39].unlock_weapon_id = 23;
 
-    quest_selected_meta[0].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[1].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[2].unlock_perk_id = 28;
-    quest_selected_meta[3].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[4].unlock_perk_id = 29;
-    quest_selected_meta[5].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[6].unlock_perk_id = 30;
-    quest_selected_meta[7].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[8].unlock_perk_id = 31;
-    quest_selected_meta[9].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[10].unlock_perk_id = 32;
-    quest_selected_meta[11].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[12].unlock_perk_id = 33;
-    quest_selected_meta[13].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[14].unlock_perk_id = 34;
-    quest_selected_meta[15].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[16].unlock_perk_id = 35;
-    quest_selected_meta[17].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[18].unlock_perk_id = 36;
-    quest_selected_meta[19].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[20].unlock_perk_id = 37;
-    quest_selected_meta[21].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[22].unlock_perk_id = 38;
-    quest_selected_meta[23].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[24].unlock_perk_id = 39;
-    quest_selected_meta[25].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[26].unlock_perk_id = 40;
-    quest_selected_meta[27].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[28].unlock_perk_id = 41;
-    quest_selected_meta[29].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[30].unlock_perk_id = 42;
-    quest_selected_meta[31].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[32].unlock_perk_id = 43;
-    quest_selected_meta[33].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[34].unlock_perk_id = 44;
-    quest_selected_meta[35].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[36].unlock_perk_id = 45;
-    quest_selected_meta[37].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[38].unlock_perk_id = 46;
-    quest_selected_meta[39].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[0].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[1].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[2].unlock_perk_id = 28;
+    quest_meta_table[3].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[4].unlock_perk_id = 29;
+    quest_meta_table[5].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[6].unlock_perk_id = 30;
+    quest_meta_table[7].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[8].unlock_perk_id = 31;
+    quest_meta_table[9].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[10].unlock_perk_id = 32;
+    quest_meta_table[11].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[12].unlock_perk_id = 33;
+    quest_meta_table[13].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[14].unlock_perk_id = 34;
+    quest_meta_table[15].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[16].unlock_perk_id = 35;
+    quest_meta_table[17].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[18].unlock_perk_id = 36;
+    quest_meta_table[19].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[20].unlock_perk_id = 37;
+    quest_meta_table[21].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[22].unlock_perk_id = 38;
+    quest_meta_table[23].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[24].unlock_perk_id = 39;
+    quest_meta_table[25].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[26].unlock_perk_id = 40;
+    quest_meta_table[27].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[28].unlock_perk_id = 41;
+    quest_meta_table[29].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[30].unlock_perk_id = 42;
+    quest_meta_table[31].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[32].unlock_perk_id = 43;
+    quest_meta_table[33].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[34].unlock_perk_id = 44;
+    quest_meta_table[35].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[36].unlock_perk_id = 45;
+    quest_meta_table[37].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[38].unlock_perk_id = 46;
+    quest_meta_table[39].unlock_perk_id = perk_id_antiperk;
 
-    quest_selected_meta[40].unlock_weapon_id = 31;
-    quest_selected_meta[40].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[41].unlock_weapon_id = 0;
-    quest_selected_meta[41].unlock_perk_id = 47;
-    quest_selected_meta[42].unlock_weapon_id = 0;
-    quest_selected_meta[42].unlock_perk_id = 48;
-    quest_selected_meta[43].unlock_weapon_id = 30;
-    quest_selected_meta[43].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[44].unlock_weapon_id = 0;
-    quest_selected_meta[44].unlock_perk_id = 49;
-    quest_selected_meta[45].unlock_weapon_id = 0;
-    quest_selected_meta[45].unlock_perk_id = 50;
-    quest_selected_meta[46].unlock_weapon_id = 0;
-    quest_selected_meta[46].unlock_perk_id = perk_id_antiperk;
-    quest_selected_meta[47].unlock_weapon_id = 0;
-    quest_selected_meta[47].unlock_perk_id = 51;
-    quest_selected_meta[48].unlock_weapon_id = 0;
-    quest_selected_meta[48].unlock_perk_id = 52;
-    quest_selected_meta[49].unlock_weapon_id = 28;
-    quest_selected_meta[49].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[40].unlock_weapon_id = 31;
+    quest_meta_table[40].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[41].unlock_weapon_id = 0;
+    quest_meta_table[41].unlock_perk_id = 47;
+    quest_meta_table[42].unlock_weapon_id = 0;
+    quest_meta_table[42].unlock_perk_id = 48;
+    quest_meta_table[43].unlock_weapon_id = 30;
+    quest_meta_table[43].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[44].unlock_weapon_id = 0;
+    quest_meta_table[44].unlock_perk_id = 49;
+    quest_meta_table[45].unlock_weapon_id = 0;
+    quest_meta_table[45].unlock_perk_id = 50;
+    quest_meta_table[46].unlock_weapon_id = 0;
+    quest_meta_table[46].unlock_perk_id = perk_id_antiperk;
+    quest_meta_table[47].unlock_weapon_id = 0;
+    quest_meta_table[47].unlock_perk_id = 51;
+    quest_meta_table[48].unlock_weapon_id = 0;
+    quest_meta_table[48].unlock_perk_id = 52;
+    quest_meta_table[49].unlock_weapon_id = 28;
+    quest_meta_table[49].unlock_perk_id = perk_id_antiperk;
 }
 
 #undef ADD_QUEST

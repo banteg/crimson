@@ -91,7 +91,7 @@ def tutorial_timeline_update(world: WorldState, *, dt_ms: int) -> None:
 
     # The carrier's slot is inactive once its corpse is culled. Native keeps the last carrier referenced, so
     # repeats 6 and 7, which spawn no carrier, latch on it again.
-    if not tutorial.hint_fade_in:
+    if not tutorial.hint_carrier_killed:
         ref = tutorial.hint_bonus_creature_ref
         carrier = world.creatures.creature(ref) if ref is not None else None
         if (
@@ -100,7 +100,7 @@ def tutorial_timeline_update(world: WorldState, *, dt_ms: int) -> None:
             and carrier.hp <= 0.0
             and carrier.flags & CreatureFlags.BONUS_ON_DEATH
         ):
-            tutorial.hint_fade_in = True
+            tutorial.hint_carrier_killed = True
             spawn(SpawnId.ALIEN_CONST_GREEN_24, 128.0, 128.0)
             spawn(SpawnId.ALIEN_SMALL_GRAY_26, 152.0, 160.0)
             tutorial.hint_index += 1
@@ -121,7 +121,7 @@ def tutorial_timeline_update(world: WorldState, *, dt_ms: int) -> None:
             if tutorial.stage_timer_ms > 6000 and ready:
                 tutorial.repeat_spawn_count = 0
                 tutorial.hint_index = -1
-                tutorial.hint_fade_in = False
+                tutorial.hint_carrier_killed = False
                 tutorial.stage_transition_timer_ms = -1000
         case 1:
             if tutorial.move_active_this_tick and ready:
@@ -165,7 +165,7 @@ def tutorial_timeline_update(world: WorldState, *, dt_ms: int) -> None:
                     # The level-up check after this update turns it into a perk.
                     players[0].experience = 3000
                 return
-            tutorial.hint_fade_in = False
+            tutorial.hint_carrier_killed = False
             if repeat & 1:
                 if repeat < 6:
                     tutorial.hint_bonus_creature_ref = spawn(SpawnId.ALIEN_BONUS_CARRIER_27, -32.0, 1056.0)
@@ -184,15 +184,15 @@ def tutorial_timeline_update(world: WorldState, *, dt_ms: int) -> None:
                 carrier = world.creatures.creature(tutorial.hint_bonus_creature_ref)
                 match repeat:
                     case 1:
-                        carrier.bonus_id, carrier.bonus_duration_override = BonusId.SPEED, -1
+                        carrier.bonus_id, carrier.bonus_amount_override = BonusId.SPEED, -1
                     case 2:
-                        carrier.bonus_id, carrier.bonus_duration_override = BonusId.WEAPON, 5
+                        carrier.bonus_id, carrier.bonus_amount_override = BonusId.WEAPON, 5
                     case 3:
-                        carrier.bonus_id, carrier.bonus_duration_override = BonusId.DOUBLE_EXPERIENCE, -1
+                        carrier.bonus_id, carrier.bonus_amount_override = BonusId.DOUBLE_EXPERIENCE, -1
                     case 4:
-                        carrier.bonus_id, carrier.bonus_duration_override = BonusId.NUKE, -1
+                        carrier.bonus_id, carrier.bonus_amount_override = BonusId.NUKE, -1
                     case 5:
-                        carrier.bonus_id, carrier.bonus_duration_override = BonusId.REFLEX_BOOST, -1
+                        carrier.bonus_id, carrier.bonus_amount_override = BonusId.REFLEX_BOOST, -1
         case 6:
             if state.perk_selection.pending_count <= 0 and ready:
                 tutorial.stage_transition_timer_ms = -1000

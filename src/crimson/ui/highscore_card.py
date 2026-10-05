@@ -115,7 +115,7 @@ def ui_text_input_render(
     draw_small_text(font, "Score", Vec2(pos.x + 32.0 - _half_width(font, "Score"), pos.y), label_color)
     match record.game_mode_id:
         case GameMode.RUSH | GameMode.QUESTS:
-            score_text = f"{float(int(record.survival_elapsed_ms)) * 0.001:.2f} secs"
+            score_text = f"{float(int(record.run_elapsed_ms)) * 0.001:.2f} secs"
         case _:
             score_text = f"{record.score_xp}"
     draw_small_text(
@@ -138,10 +138,10 @@ def ui_text_input_render(
         _hover.time -= hover_step
     else:
         draw_small_text(font, "Game time", pos.offset(dx=6.0), divider_color)
-        ui_draw_clock_gauge(resources, int(pos.x + 8.0), int(pos.y + 13.0), record.survival_elapsed_ms, alpha)
+        ui_draw_clock_gauge(resources, int(pos.x + 8.0), int(pos.y + 13.0), record.run_elapsed_ms, alpha)
         inside = pos.x + 8.0 < mouse.x < pos.x + 72.0 and pos.y + 16.0 < mouse.y < pos.y + 45.0
         _hover.time += hover_step if inside else -hover_step
-        seconds = int(record.survival_elapsed_ms) // 1000
+        seconds = int(record.run_elapsed_ms) // 1000
         draw_small_text(font, f"{seconds // 60}:{seconds % 60:02d}", pos + Vec2(40.0, 19.0), label_color)
 
     pos = Vec2(pos.x - 96.0, pos.y + 52.0)

@@ -18,7 +18,7 @@ def data_source(root, out):
                 },
             )
     # C++ constructors own these pointer-bearing tables at each platform's stride.
-    owned = {"quest_selected_meta", "perk_meta_table", "bonus_meta_table"}
+    owned = {"quest_meta_table", "perk_meta_table", "bonus_meta_table"}
     ownranges = [
         (int(e["address"], 16), int(e["address"], 16) + e["size"], e["name"]) for e in entries if e["name"] in owned
     ]
@@ -52,7 +52,7 @@ def data_source(root, out):
     lines = [
         '#include "crimsonland_types.h"',
         '#include "crimsonland_metadata.h"',
-        "quest_meta_cpp_t quest_selected_meta[50];",
+        "quest_meta_cpp_t quest_meta_table[50];",
         "perk_meta_cpp_t perk_meta_table[128];",
         "bonus_meta_cpp_t bonus_meta_table[15];",
         "#include <stdint.h>",
@@ -105,12 +105,12 @@ def data_source(root, out):
                     f"{{extern unsigned char {target}[]; uintptr_t p=(uintptr_t){target}; memcpy(portable_data_{i}+{v - a},&p,sizeof(p));}}",
                 )
     for e, a, name in interiors:
-        old_stride = {"quest_selected_meta": 44, "perk_meta_table": 20, "bonus_meta_table": 20}[name]
-        new_stride = {"quest_selected_meta": 64, "perk_meta_table": 32, "bonus_meta_table": 32}[name]
+        old_stride = {"quest_meta_table": 44, "perk_meta_table": 20, "bonus_meta_table": 20}[name]
+        new_stride = {"quest_meta_table": 64, "perk_meta_table": 32, "bonus_meta_table": 32}[name]
         index, offset = divmod(int(e["address"], 16) - a, old_stride)
         offsets = (
             {0: 0, 4: 4, 8: 8, 12: 16, 16: 24, 20: 28, 24: 32, 28: 40, 32: 48, 36: 52, 40: 56}
-            if name == "quest_selected_meta"
+            if name == "quest_meta_table"
             else {0: 0, 4: 8, 8: 16, 12: 20, 16: 24}
         )
         native = index * new_stride + offsets[offset]

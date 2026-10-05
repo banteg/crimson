@@ -212,16 +212,16 @@ Frida trace (`artifacts/frida/share/music_intro_trace.jsonl`) shows the **intro
 track is played inside `game_startup_init`**, then muted and replaced by
 `crimson_theme`:
 
-- `sfx_play_exclusive(music_track_intro_id)` at `0x0042b69a`
-- `sfx_mute_all(music_track_intro_id)` at `0x0042b556`
-- `sfx_play_exclusive(music_track_crimson_theme_id)` at `0x0042b584`
+- `music_play_exclusive(music_track_intro_id)` at `0x0042b69a`
+- `music_fade_out_all(music_track_intro_id)` at `0x0042b556`
+- `music_play_exclusive(music_track_crimson_theme_id)` at `0x0042b584`
 
 Measured timing from the same trace:
 
 - Intro starts ~20.4s after process start and plays for ~12.7s.
 - Theme starts immediately after intro mute (same frame).
 
-Additional `sfx_mute_all` calls with return addresses in `ui_menu_click_back_contextual`
+Additional `music_fade_out_all` calls with return addresses in `ui_menu_click_back_contextual`
 (`0x00447420`) occur later during UI transitions (menu flow), not the boot
 sequence.
 

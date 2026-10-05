@@ -11,7 +11,7 @@ from tests.support.factories import make_step_runtime, place_creatures
 
 
 def _is_collidable(creature: CreatureState) -> bool:
-    return bool(creature.active) and float(creature.lifecycle_stage) > 5.0
+    return bool(creature.active) and float(creature.death_timer) > 5.0
 
 
 def _spatial_over(creatures: list[CreatureState]) -> tuple[list[CreatureState], CreatureSpatialHash]:

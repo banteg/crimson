@@ -7,7 +7,7 @@ from ..sim.world_state import WorldState
 
 
 def _move_key_held(inp: PlayerInput) -> bool:
-    return inp.move_forward_pressed or inp.move_backward_pressed or inp.turn_left_pressed or inp.turn_right_pressed
+    return inp.move_forward_down or inp.move_backward_down or inp.turn_left_down or inp.turn_right_down
 
 
 def tutorial_input_transform(world: WorldState, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:

@@ -48,14 +48,14 @@ def test_survival_spawn_creature_xp_threshold_25000_consumes_extra_rand() -> Non
     c_24999 = _spawn_survival(Vec2(1.0, 2.0), rng_24999, player_experience=24_999)
 
     assert c_24999.type_id == CreatureTypeId.SPIDER_SP1
-    assert (c_24999.flags & CreatureFlags.AI7_LINK_TIMER) != 0
+    assert (c_24999.flags & CreatureFlags.STOP_AND_GO) != 0
     assert rng_24999.state == 0xC1BBB05F
 
     rng_25000 = Crand(1)
     c_25000 = _spawn_survival(Vec2(1.0, 2.0), rng_25000, player_experience=25_000)
 
     assert c_25000.type_id == CreatureTypeId.SPIDER_SP1
-    assert (c_25000.flags & CreatureFlags.AI7_LINK_TIMER) != 0
+    assert (c_25000.flags & CreatureFlags.STOP_AND_GO) != 0
     assert rng_25000.state == 0xA6E9C9A6
 
 

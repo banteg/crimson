@@ -20,7 +20,7 @@ CREATURE_POOL_SLOTS = 0x180
 CREATURE_LAYOUT: dict[str, tuple[int, str]] = {
     "active": (0x00, "B"),
     "phase_seed": (0x04, "i"),
-    "lifecycle_stage": (0x10, "f"),
+    "death_timer": (0x10, "f"),
     "pos_x": (0x14, "f"),
     "pos_y": (0x18, "f"),
     "vel_x": (0x1C, "f"),
@@ -74,7 +74,7 @@ PROJECTILE_LAYOUT: dict[str, tuple[int, str]] = {
     "speed_scale": (0x2C, "f"),
     "damage_pool": (0x30, "f"),
     "hit_radius": (0x34, "f"),
-    "travel_budget": (0x38, "f"),
+    "projectile_speed": (0x38, "f"),
     "owner_id": (0x3C, "i"),
 }
 
@@ -89,7 +89,7 @@ SECONDARY_PROJECTILE_LAYOUT: dict[str, tuple[int, str]] = {
     "vel_x": (0x14, "f"),
     "vel_y": (0x18, "f"),
     "type_id": (0x1C, "i"),
-    "trail_timer": (0x20, "f"),
+    "trail_distance": (0x20, "f"),
     "target_id": (0x24, "i"),
 }
 

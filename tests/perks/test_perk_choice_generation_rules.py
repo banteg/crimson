@@ -64,7 +64,7 @@ def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order
     state = GameplayState(rng=rng)
     status = _status_default()
     status.quest_unlock_index = 49
-    status.quest_unlock_index_full = 49
+    status.quest_unlock_index_hardcore = 49
     state.status = status
     state.quest_level = QuestLevel(3, 4)
     prepare_perk_availability(state)

@@ -34,12 +34,12 @@ def test_build_highscore_record_uses_weapon_stats_and_shots() -> None:
     record = build_highscore_record(
         state=state,
         player=player,
-        survival_elapsed_ms=5000,
+        run_elapsed_ms=5000,
         creature_kill_count=7,
     )
 
     assert record.score_xp == 1234
-    assert record.survival_elapsed_ms == 5000
+    assert record.run_elapsed_ms == 5000
     assert record.creature_kill_count == 7
     assert record.most_used_weapon_id == 2
     assert record.shots_fired == 20
@@ -59,7 +59,7 @@ def test_build_highscore_record_keeps_typo_counts_unclamped() -> None:
     record = build_highscore_record(
         state=state,
         player=player,
-        survival_elapsed_ms=0,
+        run_elapsed_ms=0,
         creature_kill_count=0,
     )
 
@@ -78,7 +78,7 @@ def test_build_highscore_record_for_a_hardcore_quest_uses_the_start_tag() -> Non
     record = build_highscore_record(
         state=state,
         player=player,
-        survival_elapsed_ms=0,
+        run_elapsed_ms=0,
         creature_kill_count=0,
         rand_value=0x0AAC0004,
     )

@@ -26,7 +26,7 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
     )
     world = world_with_creature(parent, rng=rng)
     # Kill drops are out of scope here; the guard skips them before any draw.
-    world.state.bonus_spawn_guard = True
+    world.state.scripted_burst_active = True
     pool = world.creatures
 
     kill_creature(world)
@@ -34,8 +34,8 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
     child1 = pool.entries[1]
     child2 = pool.entries[2]
     assert child1.active and child2.active
-    assert child1.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
-    assert child2.lifecycle_stage == CREATURE_LIFECYCLE_ALIVE
+    assert child1.death_timer == CREATURE_LIFECYCLE_ALIVE
+    assert child2.death_timer == CREATURE_LIFECYCLE_ALIVE
     assert child1.phase_seed == 0x123 & 0xFF
     assert child2.phase_seed == 0x456 & 0xFF
     assert child1.heading == f32(parent.heading - NATIVE_HALF_PI)

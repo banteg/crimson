@@ -33,7 +33,7 @@ INPUT = CONTENT.offset(dy=150.0)
 def _record() -> HighScoreRecord:
     record = HighScoreRecord.blank()
     record.game_mode_id = GameMode.QUESTS
-    record.survival_elapsed_ms = 17_610
+    record.run_elapsed_ms = 17_610
     record.score_xp = 1750
     record.creature_kill_count = 10
     record.shots_fired = 43

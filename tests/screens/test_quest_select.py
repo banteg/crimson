@@ -19,10 +19,10 @@ def press(loop: GameLoopView, mocker, *keys: int) -> None:
     mocker.patch.object(rl, "is_key_pressed", return_value=False)
 
 
-def open_quest_select(loop: GameLoopView, *, unlock_index: int, unlock_index_full: int) -> QuestsMenuView:
+def open_quest_select(loop: GameLoopView, *, unlock_index: int, unlock_index_hardcore: int) -> QuestsMenuView:
     """The quest menu over a game.cfg that unlocks quests up to the given global indices."""
     state = loop.state
-    save_status(state.status.path, GameStatusData(quest_unlock_index=unlock_index, quest_unlock_index_full=unlock_index_full))
+    save_status(state.status.path, GameStatusData(quest_unlock_index=unlock_index, quest_unlock_index_hardcore=unlock_index_hardcore))
     state.status = ensure_game_status(state.base_dir)
     loop.navigation.navigate(Route.QUESTS)
     finish_transition(loop)
@@ -32,7 +32,7 @@ def open_quest_select(loop: GameLoopView, *, unlock_index: int, unlock_index_ful
 
 
 def test_number_keys_start_only_unlocked_quests_of_the_stage(loop, mocker) -> None:
-    open_quest_select(loop, unlock_index=QuestLevel(2, 3).global_index, unlock_index_full=0)
+    open_quest_select(loop, unlock_index=QuestLevel(2, 3).global_index, unlock_index_hardcore=0)
     press(loop, mocker, rl.KeyboardKey.KEY_RIGHT)
 
     # 2.4 is past the unlock index; the key does nothing.
@@ -46,7 +46,7 @@ def test_number_keys_start_only_unlocked_quests_of_the_stage(loop, mocker) -> No
 
 
 def test_zero_key_picks_the_tenth_row(loop, mocker) -> None:
-    open_quest_select(loop, unlock_index=QuestLevel(1, 10).global_index, unlock_index_full=0)
+    open_quest_select(loop, unlock_index=QuestLevel(1, 10).global_index, unlock_index_hardcore=0)
 
     press(loop, mocker, rl.KeyboardKey.KEY_ZERO)
 
@@ -62,7 +62,7 @@ def tab_to_hardcore(loop: GameLoopView, mocker, menu: QuestsMenuView) -> None:
 
 
 def test_hardcore_gates_quests_by_the_full_unlock_index(loop, mocker) -> None:
-    menu = open_quest_select(loop, unlock_index=QuestLevel(5, 1).global_index, unlock_index_full=QuestLevel(1, 4).global_index)
+    menu = open_quest_select(loop, unlock_index=QuestLevel(5, 1).global_index, unlock_index_hardcore=QuestLevel(1, 4).global_index)
     tab_to_hardcore(loop, mocker, menu)
 
     press(loop, mocker, rl.KeyboardKey.KEY_ENTER)
@@ -76,7 +76,7 @@ def test_hardcore_gates_quests_by_the_full_unlock_index(loop, mocker) -> None:
 
 
 def test_hardcore_toggle_is_saved_when_leaving_the_menu(loop, mocker) -> None:
-    menu = open_quest_select(loop, unlock_index=QuestLevel(5, 1).global_index, unlock_index_full=0)
+    menu = open_quest_select(loop, unlock_index=QuestLevel(5, 1).global_index, unlock_index_hardcore=0)
     tab_to_hardcore(loop, mocker, menu)
     press(loop, mocker, rl.KeyboardKey.KEY_ENTER)
 

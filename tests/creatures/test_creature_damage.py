@@ -53,19 +53,19 @@ def test_damage_type1_heading_jitter_rounds_each_x87_operation() -> None:
 
     world = world_with_creature(creature, rng=ScriptedCrand(2932, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=PerkCounts(), players=[PlayerState(index=0, pos=Vec2())])
     # Kill drops are out of scope; the guard skips their retry loop on the constant rolls.
-    world.state.bonus_spawn_guard = True
+    world.state.scripted_burst_active = True
     killed = creature_apply_damage(make_step_runtime(world, dt=0.09600000083446503), 0, 109.99357604980469, 1, Vec2(1.0, 1.0))
 
     assert killed
     assert creature.heading == 0.03825003653764725
 
 
-def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
+def test_damage_type1_heading_jitter_skips_spawner_creatures() -> None:
     creature = CreatureState(
         active=True,
         hp=100.0,
         size=50.0,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
         heading=0.0,
     )
     player = PlayerState(index=0, pos=Vec2())
@@ -107,7 +107,7 @@ def test_damage_modifier_chain_rounds_each_native_pc24_operation() -> None:
         active=True,
         hp=435.9342956542969,
         size=50.0,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=CreatureFlags.SPAWNER,
     )
     player = PlayerState(index=0, pos=Vec2())
     perks = PerkCounts()
@@ -131,30 +131,30 @@ def test_damage_float_parameter_rounds_at_the_native_abi_boundary() -> None:
     assert creature.hp == -62.3795166015625
 
 
-def test_nonlethal_damage_does_not_reset_non_alive_lifecycle_stage() -> None:
-    creature = CreatureState(active=True, hp=100.0, lifecycle_stage=12.0, size=50.0, flags=CreatureFlags(0))
+def test_nonlethal_damage_does_not_reset_non_alive_death_timer() -> None:
+    creature = CreatureState(active=True, hp=100.0, death_timer=12.0, size=50.0, flags=CreatureFlags(0))
 
     world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=PerkCounts(), players=[PlayerState(index=0, pos=Vec2())])
     killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 3, Vec2())
 
     assert killed is False
-    assert_float_close(creature.lifecycle_stage, 12.0)
+    assert_float_close(creature.death_timer, 12.0)
 
 
 def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> None:
     creature = CreatureState(
         active=True,
         hp=5.0,
-        lifecycle_stage=16.0,
+        death_timer=16.0,
         size=50.0,
-        flags=CreatureFlags.RANGED_ATTACK_SHOCK,
+        flags=CreatureFlags.RANGED_PLASMA_RIFLE,
         pos=Vec2(10.0, 20.0),
         vel=Vec2(10.0, 20.0),
     )
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world = world_with_creature(creature, rng=rng)
     # Kill drops are out of scope here; the guard skips them before any draw.
-    world.state.bonus_spawn_guard = True
+    world.state.scripted_burst_active = True
     step_runtime = make_step_runtime(world, dt=0.016)
     before_calls = rng.calls
 
@@ -181,13 +181,13 @@ def test_split_children_inherit_only_initial_damage_impulse() -> None:
         active=True,
         hp=5.0,
         max_hp=400.0,
-        lifecycle_stage=16.0,
+        death_timer=16.0,
         size=40.0,
         flags=CreatureFlags.SPLIT_ON_DEATH,
         vel=Vec2(10.0, 20.0),
     )
     world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    world.state.bonus_spawn_guard = True
+    world.state.scripted_burst_active = True
 
     killed = creature_apply_damage(
         make_step_runtime(world, dt=0.016), 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(1.0, 2.0),
@@ -204,7 +204,7 @@ def test_lethal_death_sfx_rand_draws_after_death_handling() -> None:
     creature = CreatureState(
         active=True,
         hp=5.0,
-        lifecycle_stage=16.0,
+        death_timer=16.0,
         size=50.0,
         type_id=CreatureTypeId.TROOPER,
         flags=CreatureFlags(0),
@@ -212,7 +212,7 @@ def test_lethal_death_sfx_rand_draws_after_death_handling() -> None:
     )
     rng = ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world = world_with_creature(creature, rng=rng)
-    world.state.bonus_spawn_guard = True
+    world.state.scripted_burst_active = True
     step_runtime = make_step_runtime(world, dt=0.016)
     before_calls = rng.calls
 
@@ -257,9 +257,9 @@ def test_lethal_branch_gates_on_entry_health_not_lifecycle() -> None:
     # Native creature_apply_damage runs the lethal branch whenever entry hp > 0,
     # even for a creature whose death already started (Shrinkifier corpse with
     # hp still positive).
-    creature = CreatureState(active=True, hp=5.0, max_hp=400.0, lifecycle_stage=15.0, size=40.0)
+    creature = CreatureState(active=True, hp=5.0, max_hp=400.0, death_timer=15.0, size=40.0)
     world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    world.state.bonus_spawn_guard = True
+    world.state.scripted_burst_active = True
     step_runtime = make_step_runtime(world, dt=0.016)
 
     killed = creature_apply_damage(

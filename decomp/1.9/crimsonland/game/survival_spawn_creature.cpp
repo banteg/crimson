@@ -23,8 +23,8 @@ extern "C" void survival_spawn_creature(const vec2f_t *pos)
     creature_t *creature = &creature_pool[creature_alloc_slot()];
 
     creature->position = *pos;
-    creature->collision_flag = 0;
-    creature->collision_timer = 0.0f;
+    creature->plague_infected = 0;
+    creature->dot_tick_timer = 0.0f;
     creature->ai_mode = 0;
 
     int type_roll = crt_rand() % 10;
@@ -70,7 +70,7 @@ extern "C" void survival_spawn_creature(const vec2f_t *pos)
     int size_roll = crt_rand();
     creature->active = 1;
     creature->force_target = 0;
-    creature->lifecycle_stage = 16.0f;
+    creature->death_timer = 16.0f;
     creature->size = (float)(size_roll % 20 + 44);
     *(survival_vec2_t *)&creature->velocity = survival_vec2_t(0.0f, 0.0f);
     creature->heading = (float)(crt_rand() % 314) * 0.01f;

@@ -64,7 +64,7 @@ _AUTHORITATIVE_REPO_TYPES = frozenset(
         # member to float explicitly before using it as an orbit phase.
         "creature_t",
         "creature_binja_t",
-        "creature_lifecycle_stride_binja_t",
+        "creature_death_timer_stride_binja_t",
         "creature_max_health_stride_binja_t",
         # Creature metadata still carried an older field_0x20 member in the
         # database after the write-only slot was characterized.

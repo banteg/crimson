@@ -46,6 +46,6 @@ Skinned scaling). At health `<= 20`, `(rand() & 7) == 3` resets the low-health
 warning timer to zero.
 
 Creature contact is governed by `attack_cooldown`, with a `1.0` increment per
-attack. The separate `collision_timer` governs creature infection/proximity
+attack. The separate `dot_tick_timer` governs creature infection/proximity
 health effects. See [creature update](../creatures/update.md) and
 [player layout](../structs/player.md).

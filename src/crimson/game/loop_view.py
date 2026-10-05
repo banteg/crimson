@@ -170,7 +170,7 @@ class GameLoopView:
     def _sync_console_elapsed_ms(self) -> None:
         gameplay = self.state.screens.gameplay
         if gameplay is not None:
-            self.state.survival_elapsed_ms = max(0.0, float(gameplay.console_elapsed_ms()))
+            self.state.run_elapsed_ms = max(0.0, float(gameplay.console_elapsed_ms()))
 
     def _handle_console_requests(self) -> None:
         if self.state.terrain_regenerate_requested:

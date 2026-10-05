@@ -31,7 +31,7 @@ extern "C" void ui_element_init_defaults(ui_element_t *element)
     element->render_scale = 0.0f;
     element->active = 0;
     element->label_id = 57;
-    element->hover_enter_played = 0;
+    element->hovered = 0;
     element->timeline_end_ms = 300;
     element->timeline_start_ms = 0;
     element->focus_disabled = 0;

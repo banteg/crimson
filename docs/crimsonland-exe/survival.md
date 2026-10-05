@@ -24,16 +24,16 @@ Key functions:
 
 Survival-specific state referenced by `survival_update` / death handling:
 
-- `survival_elapsed_ms` (`0x00487060`, ms): used to scale wave spawn cadence. It is the
-  `survival_elapsed_ms` field (`+0x20`) of `highscore_active_record` (`highscore_record_t`).
+- `run_elapsed_ms` (`0x00487060`, ms): used to scale wave spawn cadence. It is the
+  `run_elapsed_ms` field (`+0x20`) of `highscore_active_record` (`highscore_record_t`).
 
 - `survival_spawn_cooldown` (ms): countdown accumulator for wave spawns (decremented by `player_count * frame_dt_ms`).
 - `survival_spawn_stage` (0..10): scripted stage index that gates milestone spawns by `player_level`.
 - Reward gates:
-  - `survival_reward_handout_enabled`
+  - `survival_shrinkifier_handout_enabled`
   - `survival_reward_fire_seen`
   - `survival_reward_damage_seen`
-  - `survival_recent_death_pos` + `survival_recent_death_count` (tracked in `creature_handle_death`)
+  - `survival_first_kill_pos` + `survival_first_kill_count` (tracked in `creature_handle_death`)
 - Player progression (stored in the per-player struct; see `docs/structs/player.md`):
   - `player_experience` (`player_health + 0x88`)
   - `player_level` (`player_health + 0x90`)
@@ -51,7 +51,7 @@ Observed behavior (high level):
   Survival may grant a weapon and then permanently disables the handout logic by setting
   both `survival_reward_fire_seen` and `survival_reward_damage_seen`.
 
-- A second handout check triggers when **exactly 3 recent death positions** have been recorded
+- A second handout check triggers when **the run's first 3 kill positions** have been recorded
   (in `creature_handle_death`), the player is close to their centroid, and player HP is low.
 
 Weapons granted (weapon ids):
@@ -78,7 +78,7 @@ Milestones (as implemented by `survival_update` and mirrored in tests):
 - Stage `1` → `2` when `player_level >= 9`: spawn `ALIEN_CONST_RED_BOSS_2C` (`0x2c`, red boss alien) at `(1088, 512)` (heading π).
 - Stage `2` → `3` when `player_level >= 11`: spawn 12× `SPIDER_SP2_RANDOM_35` (`0x35`, spider sp2) at `(1088, 256 + i*(128/3))` (heading π).
 - Stage `3` → `4` when `player_level >= 13`: spawn 4× `ALIEN_DEADLY_FAST_2B` (`0x2b`, AlienDeadlyFast) at `(1088, 384 + i*64)` (heading π).
-- Stage `4` → `5` when `player_level >= 15`: spawn 4× `SPIDER_SP1_AI7_TIMER_38` (`0x38`, timed spider sp1) at right edge and 4× at left edge:
+- Stage `4` → `5` when `player_level >= 15`: spawn 4× `SPIDER_SP1_STOP_AND_GO_38` (`0x38`, timed spider sp1) at right edge and 4× at left edge:
   - `(1088, 384 + i*64)` and `(-64, 384 + i*64)` (heading π).
 - Stage `5` → `6` when `player_level >= 17`: spawn `SPIDER_BOSS_3A` (`0x3a`, SpiderBoss) at `(1088, 512)` (heading π).
 - Stage `6` → `7` when `player_level >= 19`: spawn `SPIDER_SP2_SPLITTER_01` (`0x01`, splitter spider) at `(640, 512)` (heading π).
@@ -103,7 +103,7 @@ Wave spawns are driven by `survival_spawn_cooldown` (milliseconds):
 
 2) When the cooldown goes negative, schedule spawns:
 
-- `interval_ms = 500 - (survival_elapsed_ms // 1800)`
+- `interval_ms = 500 - (run_elapsed_ms // 1800)`
 - If `interval_ms < 0`:
   - `extra = (1 - interval_ms) >> 1`
   - `interval_ms += extra * 2`

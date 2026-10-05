@@ -1181,7 +1181,7 @@
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "image": "crimsonland.exe",
-      "name": "fx_rotated_effect_id",
+      "name": "fx_rotated_creature_type_id",
       "owners": [
         "unknown"
       ],
@@ -3463,7 +3463,7 @@
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "image": "crimsonland.exe",
-      "name": "survival_recent_death_pos",
+      "name": "survival_first_kill_pos",
       "owners": [
         "unknown"
       ],
@@ -4303,7 +4303,7 @@
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "image": "crimsonland.exe",
-      "name": "unused_fx_rotated_effect_id_prefix_color",
+      "name": "unused_fx_rotated_creature_type_id_prefix_color",
       "owners": [
         "unknown"
       ],
@@ -6921,7 +6921,7 @@
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "image": "crimsonland.exe",
-      "name": "survival_recent_death_pos_1",
+      "name": "survival_first_kill_pos_1",
       "owners": [
         "unknown"
       ],
@@ -6935,7 +6935,7 @@
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "image": "crimsonland.exe",
-      "name": "survival_recent_death_pos_2",
+      "name": "survival_first_kill_pos_2",
       "owners": [
         "unknown"
       ],
@@ -8797,7 +8797,7 @@
       "blocker": "initialized-definition",
       "extent_evidence": "tools/match/scratches: recovered int, long, or DWORD declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit and long_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "sfx_rate_scale",
+      "name": "sfx_sample_rate",
       "owners": [
         "unknown"
       ],
@@ -11457,7 +11457,7 @@
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "survival_recent_death_pos_y",
+      "name": "survival_first_kill_pos_y",
       "owners": [
         "unknown"
       ],
@@ -11471,7 +11471,7 @@
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "tools/match/scratches: consistent extern int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "survival_recent_death_count",
+      "name": "survival_first_kill_count",
       "owners": [
         "unknown"
       ],
@@ -12689,7 +12689,7 @@
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "bonus_hud_slot_y",
+      "name": "bonus_hud_slot_slide_x",
       "owners": [
         "unknown"
       ],
@@ -13739,7 +13739,7 @@
       "blocker": "initialized-definition",
       "extent_evidence": "tools/match/include/crimsonland_gameplay.h: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "render_overlay_player_index",
+      "name": "current_player_index",
       "owners": [
         "unknown"
       ],
@@ -18990,7 +18990,7 @@
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: bool; tools/native/abi/crimsonland.exe/abi_assertions.cpp: bool_is_one_byte",
       "image": "crimsonland.exe",
-      "name": "tutorial_hint_bonus_consumed_latch",
+      "name": "tutorial_hint_carrier_killed",
       "owners": [
         "unknown"
       ],
@@ -19214,7 +19214,7 @@
       "blocker": "initialized-definition",
       "extent_evidence": "tools/match/include/crimsonland_gameplay.h: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "image": "crimsonland.exe",
-      "name": "bonus_spawn_guard",
+      "name": "scripted_burst_active",
       "owners": [
         "unknown"
       ],
@@ -19354,7 +19354,7 @@
       "blocker": "initialized-definition",
       "extent_evidence": "tools/match/include/crimsonland_gameplay.h: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "image": "crimsonland.exe",
-      "name": "render_pass_mode",
+      "name": "run_active",
       "owners": [
         "unknown"
       ],
@@ -19662,7 +19662,7 @@
       "blocker": "initialized-definition",
       "extent_evidence": "tools/match/include/crimsonland_audio.h: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "image": "crimsonland.exe",
-      "name": "sfx_unmuted_flag",
+      "name": "music_ready",
       "owners": [
         "unknown"
       ],
@@ -21468,7 +21468,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "config_p1_padding_0",
+      "name": "config_p1_spare_key_0",
       "owners": [
         "game"
       ],
@@ -21482,7 +21482,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "config_p1_padding_1",
+      "name": "config_p1_spare_key_1",
       "owners": [
         "game"
       ],
@@ -21496,7 +21496,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "config_p1_padding_2",
+      "name": "config_p1_spare_key_2",
       "owners": [
         "game"
       ],
@@ -21692,7 +21692,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "config_p2_padding_0",
+      "name": "config_p2_spare_key_0",
       "owners": [
         "game"
       ],
@@ -21706,7 +21706,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "config_p2_padding_1",
+      "name": "config_p2_spare_key_1",
       "owners": [
         "game"
       ],
@@ -21720,7 +21720,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "config_p2_padding_2",
+      "name": "config_p2_spare_key_2",
       "owners": [
         "game"
       ],
@@ -22168,7 +22168,7 @@
       "blocker": "matched",
       "extent_evidence": "third_party/headers/crimsonland_types.h: quest_meta_t[50]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: quest_meta_table_is_0x898",
       "image": "crimsonland.exe",
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "owners": [
         "game"
       ],
@@ -22882,7 +22882,7 @@
       "blocker": "matched",
       "extent_evidence": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "image": "crimsonland.exe",
-      "name": "survival_reward_handout_enabled",
+      "name": "survival_shrinkifier_handout_enabled",
       "owners": [
         "game"
       ],
@@ -22980,7 +22980,7 @@
       "blocker": "matched",
       "extent_evidence": "tools/match/scratches: consistent extern unsigned char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "image": "crimsonland.exe",
-      "name": "creatures_any_active_flag",
+      "name": "creatures_none_active_flag",
       "owners": [
         "game"
       ],
@@ -23064,7 +23064,7 @@
       "blocker": "matched",
       "extent_evidence": "tools/match/include/crimsonland_game_state_owner.h: int runtime member; tools/match/DATA-OWNERSHIP-AUDIT-2026-09-08.md: native dword access evidence",
       "image": "crimsonland.exe",
-      "name": "quest_unlock_index_full",
+      "name": "quest_unlock_index_hardcore",
       "owners": [
         "game"
       ],
@@ -23092,7 +23092,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: uint32_t presentation alias; third_party/headers/crimsonland_types.h: secondary_projectile_t.unused_0x28 is unsigned int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "survival_elapsed_ms",
+      "name": "run_elapsed_ms",
       "owners": [
         "game"
       ],
@@ -23246,7 +23246,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "image": "crimsonland.exe",
-      "name": "highscore_record_date_checksum",
+      "name": "highscore_record_date_week",
       "owners": [
         "game"
       ],
@@ -23414,13 +23414,13 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "image": "crimsonland.exe",
-      "name": "player_aux_timer",
+      "name": "player_weapon_popup_timer",
       "owners": [
         "game"
       ],
       "reason": null,
       "size": 8,
-      "type": "player_aux_timer_t",
+      "type": "player_weapon_popup_timer_t",
       "unmatched_bytes": 0
     },
     {
@@ -24381,7 +24381,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered float declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "player_low_health_timer",
+      "name": "player_bleed_drip_timer",
       "owners": [
         "game"
       ],
@@ -24787,7 +24787,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "player_alt_move_key_forward",
+      "name": "player2_move_key_forward",
       "owners": [
         "game"
       ],
@@ -24801,7 +24801,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "player_alt_move_key_backward",
+      "name": "player2_move_key_backward",
       "owners": [
         "game"
       ],
@@ -24815,7 +24815,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "player_alt_turn_key_left",
+      "name": "player2_turn_key_left",
       "owners": [
         "game"
       ],
@@ -24829,7 +24829,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "player_alt_turn_key_right",
+      "name": "player2_turn_key_right",
       "owners": [
         "game"
       ],
@@ -24843,7 +24843,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "player_alt_fire_key",
+      "name": "player2_fire_key",
       "owners": [
         "game"
       ],
@@ -24857,7 +24857,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "player_alt_key_reserved_0",
+      "name": "player2_key_reserved_0",
       "owners": [
         "game"
       ],
@@ -24871,7 +24871,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "player_alt_key_reserved_1",
+      "name": "player2_key_reserved_1",
       "owners": [
         "game"
       ],
@@ -24885,7 +24885,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "player_alt_key_reserved_2",
+      "name": "player2_aim_key_left",
       "owners": [
         "game"
       ],
@@ -24899,7 +24899,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered int declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "player_alt_key_reserved_3",
+      "name": "player2_aim_key_right",
       "owners": [
         "game"
       ],
@@ -25389,7 +25389,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "projectile_travel_budget",
+      "name": "projectile_speed",
       "owners": [
         "game"
       ],
@@ -25487,7 +25487,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "particle_scale_x",
+      "name": "particle_color_r",
       "owners": [
         "game"
       ],
@@ -25501,7 +25501,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "particle_scale_y",
+      "name": "particle_color_g",
       "owners": [
         "game"
       ],
@@ -25515,7 +25515,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "particle_scale_z",
+      "name": "particle_color_b",
       "owners": [
         "game"
       ],
@@ -25529,7 +25529,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "particle_age",
+      "name": "particle_color_a",
       "owners": [
         "game"
       ],
@@ -25571,7 +25571,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "particle_spin",
+      "name": "particle_rotation",
       "owners": [
         "game"
       ],
@@ -25641,7 +25641,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "secondary_proj_speed",
+      "name": "secondary_proj_life_timer",
       "owners": [
         "game"
       ],
@@ -25725,7 +25725,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "secondary_proj_lifetime",
+      "name": "secondary_proj_trail_distance",
       "owners": [
         "game"
       ],
@@ -26019,7 +26019,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered unsigned-char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "image": "crimsonland.exe",
-      "name": "creature_collision_flag",
+      "name": "creature_plague_infected",
       "owners": [
         "game"
       ],
@@ -26033,7 +26033,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered float declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "creature_collision_timer",
+      "name": "creature_dot_tick_timer",
       "owners": [
         "game"
       ],
@@ -26047,7 +26047,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered float declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "creature_lifecycle_stage",
+      "name": "creature_death_timer",
       "owners": [
         "game"
       ],
@@ -28721,7 +28721,7 @@
       "blocker": "matched",
       "extent_evidence": "tools/match/include/crimsonland_audio.h: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "music_track_extra_0",
+      "name": "music_track_game_playlist",
       "owners": [
         "game"
       ],
@@ -28763,7 +28763,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
       "image": "crimsonland.exe",
-      "name": "sfx_volume_table",
+      "name": "music_track_volume",
       "owners": [
         "game"
       ],
@@ -28789,15 +28789,15 @@
     {
       "address": 5014608,
       "blocker": "matched",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: sfx_mute_flags_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: sfx_mute_flags_is_0x80",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: music_fade_out_flags_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: music_fade_out_flags_is_0x80",
       "image": "crimsonland.exe",
-      "name": "sfx_mute_flags",
+      "name": "music_fade_out_flags",
       "owners": [
         "game"
       ],
       "reason": null,
       "size": 128,
-      "type": "sfx_mute_flags_t",
+      "type": "music_fade_out_flags_t",
       "unmatched_bytes": 0
     },
     {
@@ -29001,7 +29001,7 @@
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
-      "name": "weapon_projectile_travel_budget",
+      "name": "weapon_projectile_speed",
       "owners": [
         "game"
       ],
@@ -35231,7 +35231,7 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "sfx_rate_scale"
+        "sfx_sample_rate"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -39573,7 +39573,7 @@
       "name": "config_blob",
       "objects": [
         "config_blob",
-        "config_p1_padding_0"
+        "config_p1_spare_key_0"
       ],
       "owner": "game",
       "section": ".data",
@@ -39587,7 +39587,7 @@
       "name": "config_blob",
       "objects": [
         "config_blob",
-        "config_p1_padding_1"
+        "config_p1_spare_key_1"
       ],
       "owner": "game",
       "section": ".data",
@@ -39601,7 +39601,7 @@
       "name": "config_blob",
       "objects": [
         "config_blob",
-        "config_p1_padding_2"
+        "config_p1_spare_key_2"
       ],
       "owner": "game",
       "section": ".data",
@@ -39797,7 +39797,7 @@
       "name": "config_blob",
       "objects": [
         "config_blob",
-        "config_p2_padding_0"
+        "config_p2_spare_key_0"
       ],
       "owner": "game",
       "section": ".data",
@@ -39811,7 +39811,7 @@
       "name": "config_blob",
       "objects": [
         "config_blob",
-        "config_p2_padding_1"
+        "config_p2_spare_key_1"
       ],
       "owner": "game",
       "section": ".data",
@@ -39825,7 +39825,7 @@
       "name": "config_blob",
       "objects": [
         "config_blob",
-        "config_p2_padding_2"
+        "config_p2_spare_key_2"
       ],
       "owner": "game",
       "section": ".data",
@@ -40633,7 +40633,7 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "tutorial_hint_bonus_consumed_latch"
+        "tutorial_hint_carrier_killed"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -42525,9 +42525,9 @@
       "address": 4736816,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_selected_meta"
+        "quest_meta_table"
       ],
       "owner": "game",
       "section": ".data",
@@ -42538,10 +42538,10 @@
       "address": 4736820,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
         "quest_meta_index",
-        "quest_selected_meta"
+        "quest_meta_table"
       ],
       "owner": "game",
       "section": ".data",
@@ -42552,10 +42552,10 @@
       "address": 4736824,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_meta_time_limit_ms",
-        "quest_selected_meta"
+        "quest_meta_table",
+        "quest_meta_time_limit_ms"
       ],
       "owner": "game",
       "section": ".data",
@@ -42566,10 +42566,10 @@
       "address": 4736828,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
         "quest_meta_name",
-        "quest_selected_meta"
+        "quest_meta_table"
       ],
       "owner": "game",
       "section": ".data",
@@ -42580,10 +42580,10 @@
       "address": 4736832,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_meta_terrain_id",
-        "quest_selected_meta"
+        "quest_meta_table",
+        "quest_meta_terrain_id"
       ],
       "owner": "game",
       "section": ".data",
@@ -42594,10 +42594,10 @@
       "address": 4736836,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_meta_terrain_id_b",
-        "quest_selected_meta"
+        "quest_meta_table",
+        "quest_meta_terrain_id_b"
       ],
       "owner": "game",
       "section": ".data",
@@ -42608,10 +42608,10 @@
       "address": 4736840,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_meta_terrain_id_c",
-        "quest_selected_meta"
+        "quest_meta_table",
+        "quest_meta_terrain_id_c"
       ],
       "owner": "game",
       "section": ".data",
@@ -42622,10 +42622,10 @@
       "address": 4736844,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_selected_builder",
-        "quest_selected_meta"
+        "quest_meta_table",
+        "quest_selected_builder"
       ],
       "owner": "game",
       "section": ".data",
@@ -42636,9 +42636,9 @@
       "address": 4736848,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_selected_meta",
+        "quest_meta_table",
         "quest_unlock_perk_id"
       ],
       "owner": "game",
@@ -42650,9 +42650,9 @@
       "address": 4736852,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_selected_meta",
+        "quest_meta_table",
         "quest_unlock_weapon_id"
       ],
       "owner": "game",
@@ -42664,9 +42664,9 @@
       "address": 4736856,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_selected_meta",
+        "quest_meta_table",
         "quest_start_weapon_id"
       ],
       "owner": "game",
@@ -42678,9 +42678,9 @@
       "address": 4736860,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_selected_meta"
+        "quest_meta_table"
       ],
       "owner": "game",
       "section": ".data",
@@ -42691,10 +42691,10 @@
       "address": 4737300,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_meta_terrain_desc_unlock_gt_0x13",
-        "quest_selected_meta"
+        "quest_meta_table",
+        "quest_meta_terrain_desc_unlock_gt_0x13"
       ],
       "owner": "game",
       "section": ".data",
@@ -42705,9 +42705,9 @@
       "address": 4737344,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_selected_meta"
+        "quest_meta_table"
       ],
       "owner": "game",
       "section": ".data",
@@ -42718,10 +42718,10 @@
       "address": 4737740,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_meta_terrain_desc_unlock_gt_0x1d",
-        "quest_selected_meta"
+        "quest_meta_table",
+        "quest_meta_terrain_desc_unlock_gt_0x1d"
       ],
       "owner": "game",
       "section": ".data",
@@ -42732,9 +42732,9 @@
       "address": 4737784,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_selected_meta"
+        "quest_meta_table"
       ],
       "owner": "game",
       "section": ".data",
@@ -42745,10 +42745,10 @@
       "address": 4738180,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_meta_terrain_desc_unlock_gt_0x27",
-        "quest_selected_meta"
+        "quest_meta_table",
+        "quest_meta_terrain_desc_unlock_gt_0x27"
       ],
       "owner": "game",
       "section": ".data",
@@ -42759,9 +42759,9 @@
       "address": 4738224,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_selected_meta",
+      "name": "quest_meta_table",
       "objects": [
-        "quest_selected_meta"
+        "quest_meta_table"
       ],
       "owner": "game",
       "section": ".data",
@@ -43622,9 +43622,9 @@
       "address": 4747176,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "survival_reward_handout_enabled",
+      "name": "survival_shrinkifier_handout_enabled",
       "objects": [
-        "survival_reward_handout_enabled"
+        "survival_shrinkifier_handout_enabled"
       ],
       "owner": "game",
       "section": ".data",
@@ -43893,7 +43893,7 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "survival_recent_death_pos"
+        "survival_first_kill_pos"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -43906,8 +43906,8 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "survival_recent_death_pos",
-        "survival_recent_death_pos_y"
+        "survival_first_kill_pos",
+        "survival_first_kill_pos_y"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -43920,8 +43920,8 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "survival_recent_death_pos",
-        "survival_recent_death_pos_1"
+        "survival_first_kill_pos",
+        "survival_first_kill_pos_1"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -43934,8 +43934,8 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "survival_recent_death_pos",
-        "survival_recent_death_pos_2"
+        "survival_first_kill_pos",
+        "survival_first_kill_pos_2"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -43948,7 +43948,7 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "survival_recent_death_count"
+        "survival_first_kill_count"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -43985,9 +43985,9 @@
       "address": 4747276,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "creatures_any_active_flag",
+      "name": "creatures_none_active_flag",
       "objects": [
-        "creatures_any_active_flag"
+        "creatures_none_active_flag"
       ],
       "owner": "game",
       "section": ".data",
@@ -44176,9 +44176,9 @@
       "address": 4747320,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "quest_unlock_index_full",
+      "name": "quest_unlock_index_hardcore",
       "objects": [
-        "quest_unlock_index_full"
+        "quest_unlock_index_hardcore"
       ],
       "owner": "game",
       "section": ".data",
@@ -44191,7 +44191,7 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "bonus_spawn_guard"
+        "scripted_burst_active"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -44229,7 +44229,7 @@
       "name": "highscore_active_record",
       "objects": [
         "highscore_active_record",
-        "survival_elapsed_ms"
+        "run_elapsed_ms"
       ],
       "owner": "game",
       "section": ".data",
@@ -44396,7 +44396,7 @@
       "name": "highscore_active_record",
       "objects": [
         "highscore_active_record",
-        "highscore_record_date_checksum"
+        "highscore_record_date_week"
       ],
       "owner": "game",
       "section": ".data",
@@ -44784,9 +44784,9 @@
       "address": 4747728,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "player_aux_timer",
+      "name": "player_weapon_popup_timer",
       "objects": [
-        "player_aux_timer"
+        "player_weapon_popup_timer"
       ],
       "owner": "game",
       "section": ".data",
@@ -44982,7 +44982,7 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "render_pass_mode"
+        "run_active"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -46997,8 +46997,8 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "bonus_hud_slot_table",
-        "bonus_hud_slot_y"
+        "bonus_hud_slot_slide_x",
+        "bonus_hud_slot_table"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -48999,7 +48999,7 @@
       "matched": true,
       "name": "player_state_table",
       "objects": [
-        "player_low_health_timer",
+        "player_bleed_drip_timer",
         "player_state_table"
       ],
       "owner": "game",
@@ -49483,7 +49483,7 @@
       "matched": true,
       "name": "player_state_table",
       "objects": [
-        "player_alt_move_key_forward",
+        "player2_move_key_forward",
         "player_state_table"
       ],
       "owner": "game",
@@ -49497,7 +49497,7 @@
       "matched": true,
       "name": "player_state_table",
       "objects": [
-        "player_alt_move_key_backward",
+        "player2_move_key_backward",
         "player_state_table"
       ],
       "owner": "game",
@@ -49511,7 +49511,7 @@
       "matched": true,
       "name": "player_state_table",
       "objects": [
-        "player_alt_turn_key_left",
+        "player2_turn_key_left",
         "player_state_table"
       ],
       "owner": "game",
@@ -49525,7 +49525,7 @@
       "matched": true,
       "name": "player_state_table",
       "objects": [
-        "player_alt_turn_key_right",
+        "player2_turn_key_right",
         "player_state_table"
       ],
       "owner": "game",
@@ -49539,7 +49539,7 @@
       "matched": true,
       "name": "player_state_table",
       "objects": [
-        "player_alt_fire_key",
+        "player2_fire_key",
         "player_state_table"
       ],
       "owner": "game",
@@ -49553,7 +49553,7 @@
       "matched": true,
       "name": "player_state_table",
       "objects": [
-        "player_alt_key_reserved_0",
+        "player2_key_reserved_0",
         "player_state_table"
       ],
       "owner": "game",
@@ -49567,7 +49567,7 @@
       "matched": true,
       "name": "player_state_table",
       "objects": [
-        "player_alt_key_reserved_1",
+        "player2_key_reserved_1",
         "player_state_table"
       ],
       "owner": "game",
@@ -49581,7 +49581,7 @@
       "matched": true,
       "name": "player_state_table",
       "objects": [
-        "player_alt_key_reserved_2",
+        "player2_aim_key_left",
         "player_state_table"
       ],
       "owner": "game",
@@ -49595,7 +49595,7 @@
       "matched": true,
       "name": "player_state_table",
       "objects": [
-        "player_alt_key_reserved_3",
+        "player2_aim_key_right",
         "player_state_table"
       ],
       "owner": "game",
@@ -50232,7 +50232,7 @@
       "name": "projectile_pool",
       "objects": [
         "projectile_pool",
-        "projectile_travel_budget"
+        "projectile_speed"
       ],
       "owner": "game",
       "section": ".data",
@@ -50341,8 +50341,8 @@
       "matched": true,
       "name": "particle_pool",
       "objects": [
-        "particle_pool",
-        "particle_scale_x"
+        "particle_color_r",
+        "particle_pool"
       ],
       "owner": "game",
       "section": ".data",
@@ -50355,8 +50355,8 @@
       "matched": true,
       "name": "particle_pool",
       "objects": [
-        "particle_pool",
-        "particle_scale_y"
+        "particle_color_g",
+        "particle_pool"
       ],
       "owner": "game",
       "section": ".data",
@@ -50369,8 +50369,8 @@
       "matched": true,
       "name": "particle_pool",
       "objects": [
-        "particle_pool",
-        "particle_scale_z"
+        "particle_color_b",
+        "particle_pool"
       ],
       "owner": "game",
       "section": ".data",
@@ -50383,7 +50383,7 @@
       "matched": true,
       "name": "particle_pool",
       "objects": [
-        "particle_age",
+        "particle_color_a",
         "particle_pool"
       ],
       "owner": "game",
@@ -50426,7 +50426,7 @@
       "name": "particle_pool",
       "objects": [
         "particle_pool",
-        "particle_spin"
+        "particle_rotation"
       ],
       "owner": "game",
       "section": ".data",
@@ -50587,7 +50587,7 @@
       "matched": true,
       "name": "secondary_projectile_pool",
       "objects": [
-        "secondary_proj_speed",
+        "secondary_proj_life_timer",
         "secondary_projectile_pool"
       ],
       "owner": "game",
@@ -50671,7 +50671,7 @@
       "matched": true,
       "name": "secondary_projectile_pool",
       "objects": [
-        "secondary_proj_lifetime",
+        "secondary_proj_trail_distance",
         "secondary_projectile_pool"
       ],
       "owner": "game",
@@ -51096,7 +51096,7 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "unused_fx_rotated_effect_id_prefix_color"
+        "unused_fx_rotated_creature_type_id_prefix_color"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -51109,7 +51109,7 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "fx_rotated_effect_id"
+        "fx_rotated_creature_type_id"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -51255,7 +51255,7 @@
       "matched": true,
       "name": "creature_pool",
       "objects": [
-        "creature_collision_flag",
+        "creature_plague_infected",
         "creature_pool"
       ],
       "owner": "game",
@@ -51282,7 +51282,7 @@
       "matched": true,
       "name": "creature_pool",
       "objects": [
-        "creature_collision_timer",
+        "creature_dot_tick_timer",
         "creature_pool"
       ],
       "owner": "game",
@@ -51296,7 +51296,7 @@
       "matched": true,
       "name": "creature_pool",
       "objects": [
-        "creature_lifecycle_stage",
+        "creature_death_timer",
         "creature_pool"
       ],
       "owner": "game",
@@ -51995,7 +51995,7 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "render_overlay_player_index"
+        "current_player_index"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -55467,7 +55467,7 @@
       "name": "audio_asset_id_table",
       "objects": [
         "audio_asset_id_table",
-        "music_track_extra_0"
+        "music_track_game_playlist"
       ],
       "owner": "game",
       "section": ".data",
@@ -55519,9 +55519,9 @@
       "address": 4997196,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "sfx_volume_table",
+      "name": "music_track_volume",
       "objects": [
-        "sfx_volume_table"
+        "music_track_volume"
       ],
       "owner": "game",
       "section": ".data",
@@ -55556,9 +55556,9 @@
       "address": 5014608,
       "image": "crimsonland.exe",
       "matched": true,
-      "name": "sfx_mute_flags",
+      "name": "music_fade_out_flags",
       "objects": [
-        "sfx_mute_flags"
+        "music_fade_out_flags"
       ],
       "owner": "game",
       "section": ".data",
@@ -55663,7 +55663,7 @@
       "matched": false,
       "name": "unmatched",
       "objects": [
-        "sfx_unmuted_flag"
+        "music_ready"
       ],
       "owner": "unknown",
       "section": ".data",
@@ -58437,7 +58437,7 @@
       "name": "weapon_table",
       "objects": [
         "weapon_ammo_class",
-        "weapon_projectile_travel_budget",
+        "weapon_projectile_speed",
         "weapon_table"
       ],
       "owner": "game",

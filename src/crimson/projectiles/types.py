@@ -11,8 +11,8 @@ SECONDARY_PROJECTILE_POOL_SIZE = 0x40
 
 
 class ProjectileTemplateId(IntEnum):
-    # Values are projectile type ids (not weapon ids). Based on the decompile
-    # for `player_fire_weapon` and `projectile_update`.
+    # Projectile type ids are weapon ids: `projectile_spawn` reads `weapon_table[type_id]`
+    # as the projectile's stats template.
     PISTOL = 0x01
     ASSAULT_RIFLE = 0x02
     SHOTGUN = 0x03
@@ -65,7 +65,7 @@ class Projectile(msgspec.Struct):
     speed_scale: float = 1.0
     damage_pool: float = 1.0
     hit_radius: float = 1.0
-    travel_budget: float = 0.0
+    projectile_speed: float = 0.0
     owner_id: int = 0
 
 
@@ -79,7 +79,7 @@ class SecondaryProjectile(msgspec.Struct):
     detonation_t: float = 0.0
     detonation_scale: float = 1.0
     type_id: SecondaryProjectileTypeId = SecondaryProjectileTypeId.NONE
-    trail_timer: float = 0.0
+    trail_distance: float = 0.0
     target_id: int = -1
 
 

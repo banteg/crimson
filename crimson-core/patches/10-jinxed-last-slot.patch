@@ -7,12 +7,12 @@ Original bug 10: Jinxed picks its creature with `% 0x17f`, so the last pool slot
  
 -    int creature_id = crt_rand() % 0x17f;
 +    int creature_id = crt_rand() % (portable_preserve_bugs ? 0x17f : 0x180);
-     for (render_overlay_player_index = 0;
-          render_overlay_player_index < 10
+     for (current_player_index = 0;
+          current_player_index < 10
              && creature_pool[creature_id].active == 0;
-          ++render_overlay_player_index) {
+          ++current_player_index) {
 -        creature_id = crt_rand() % 0x17f;
 +        creature_id = crt_rand() % (portable_preserve_bugs ? 0x17f : 0x180);
      }
-     render_overlay_player_index = 0;
+     current_player_index = 0;
  

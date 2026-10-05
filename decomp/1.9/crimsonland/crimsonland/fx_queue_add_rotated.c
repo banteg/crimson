@@ -22,7 +22,7 @@ unsigned char fx_queue_add_rotated(
             fx_rotated_color_r[fx_queue_rotated].a *= 1.0f / transparency->value;
         }
         fx_rotated_rotation[fx_queue_rotated] = rotation;
-        fx_rotated_effect_id[fx_queue_rotated] = effect_id;
+        fx_rotated_creature_type_id[fx_queue_rotated] = effect_id;
         fx_rotated_scale[fx_queue_rotated] = scale;
         fx_rotated_pos_x[fx_queue_rotated] = *pos;
 

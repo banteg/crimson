@@ -41,7 +41,7 @@ extern int fx_queue_rotated;
 extern fx_render_vec2_t fx_rotated_pos_x[];
 extern float fx_rotated_scale[];
 extern float fx_rotated_rotation[];
-extern int fx_rotated_effect_id[];
+extern int fx_rotated_creature_type_id[];
 extern effect_color_t fx_rotated_color_r[];
 extern fx_render_vec2_t effect_uv4[];
 extern fx_render_vec2_t render_scratch_f0;
@@ -70,7 +70,7 @@ extern "C" void fx_queue_render(void)
         int index;
         for (index = 0; index < fx_queue_rotated; ++index) {
             int frame = creature_type_table[
-                fx_rotated_effect_id[index]].corpse_frame;
+                fx_rotated_creature_type_id[index]].corpse_frame;
             render_scratch_f0 = effect_uv4[frame];
             render_scratch_f2 =
                 effect_uv4[frame] + fx_render_vec2_t(0.25f, 0.25f);
@@ -103,7 +103,7 @@ extern "C" void fx_queue_render(void)
 
         for (index = 0; index < fx_queue_rotated; ++index) {
             int frame = creature_type_table[
-                fx_rotated_effect_id[index]].corpse_frame;
+                fx_rotated_creature_type_id[index]].corpse_frame;
             render_scratch_f0 = effect_uv4[frame];
             render_scratch_f2 =
                 effect_uv4[frame] + fx_render_vec2_t(0.25f, 0.25f);
@@ -166,7 +166,7 @@ extern "C" void fx_queue_render(void)
                 int index;
                 for (index = 0; index < fx_queue_rotated; ++index) {
                     int frame = creature_type_table[
-                        fx_rotated_effect_id[index]].corpse_frame;
+                        fx_rotated_creature_type_id[index]].corpse_frame;
                     render_scratch_f0 = effect_uv4[frame];
                     render_scratch_f2 =
                         effect_uv4[frame]
@@ -202,7 +202,7 @@ extern "C" void fx_queue_render(void)
 
                 for (index = 0; index < fx_queue_rotated; ++index) {
                     int frame = creature_type_table[
-                        fx_rotated_effect_id[index]].corpse_frame;
+                        fx_rotated_creature_type_id[index]].corpse_frame;
                     render_scratch_f0 = effect_uv4[frame];
                     render_scratch_f2 =
                         effect_uv4[frame]

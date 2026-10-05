@@ -194,7 +194,7 @@ def play_music(state: MusicState, track_name: str, *, fade_in: bool = False) -> 
         if key != track_name:
             other.muted = True
 
-    # Native sfx_play_exclusive only unmutes a requested track at silence.
+    # Native music_play_exclusive only unmutes a requested track at silence.
     # Callers that request a fading track keep retrying until it reaches zero.
     if track.volume <= 0.0:
         rl.stop_music_stream(track.stream)

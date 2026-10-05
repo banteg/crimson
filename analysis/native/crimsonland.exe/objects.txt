@@ -173,7 +173,7 @@ tools/match/scratches/ui_element_globals_init_thunk/build/msvc6.5/5114c52c770285
 tools/match/scratches/ui_element_globals_init/build/msvc6.5/e9dabbd7746a672f/ui_element_globals_init.obj
 tools/match/scratches/ui_template_slot_ctor_noop/build/msvc6.5/6ba9208c8c89e0ae/ui_template_slot_ctor_noop.obj
 tools/match/scratches/ui_template_block_set_mode4/build/msvc6.5/7eaf1760e5116a5b/ui_template_block_set_mode4.obj
-tools/match/scratches/ui_template_triplet_reset_and_seed_modes/build/msvc6.5/77c3b6e3fae0a761/ui_template_triplet_reset_and_seed_modes.obj
+tools/match/scratches/ui_element_construct/build/msvc6.5/920f9e837eb1e731/ui_element_construct.obj
 tools/match/scratches/ui_draw_textured_quad/build/msvc6.5/81c0c4b51a428871/ui_draw_textured_quad.obj
 tools/match/scratches/terrain_generate/build/msvc6.5/1b50848e522fe7bf/terrain_generate.obj
 tools/match/scratches/terrain_generate_random/build/msvc6.5/8869d4a60d0b172a/terrain_generate_random.obj
@@ -209,8 +209,8 @@ tools/match/scratches/demo_trial_time_limit_ms/build/msvc6.5/6473e0d2877c5637/de
 tools/match/scratches/play_time_get/build/msvc6.5/a1c8a7621233c7f7/play_time_get.obj
 tools/match/scratches/unused_fx_queue_random_prefix_color_global_init_thunk/build/msvc6.5/d5ed09000dd1454d/unused_fx_queue_random_prefix_color_global_init_thunk.obj
 tools/match/scratches/unused_fx_queue_random_prefix_color_global_init/build/msvc6.5/bddf711322c6d089/unused_fx_queue_random_prefix_color_global_init.obj
-tools/match/scratches/unused_fx_rotated_effect_id_prefix_color_global_init_thunk/build/msvc6.5/d1545a7ac4dc7169/unused_fx_rotated_effect_id_prefix_color_global_init_thunk.obj
-tools/match/scratches/unused_fx_rotated_effect_id_prefix_color_global_init/build/msvc6.5/e4874d38fa64abb1/unused_fx_rotated_effect_id_prefix_color_global_init.obj
+tools/match/scratches/unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk/build/msvc6.5/90d7e9e087ccd0cd/unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk.obj
+tools/match/scratches/unused_fx_rotated_creature_type_id_prefix_color_global_init/build/msvc6.5/86cf10be90242e3f/unused_fx_rotated_creature_type_id_prefix_color_global_init.obj
 tools/match/scratches/unused_aim64_prefix_color_global_init_thunk/build/msvc6.5/e029003e979b0f4b/unused_aim64_prefix_color_global_init_thunk.obj
 tools/match/scratches/unused_aim64_prefix_color_global_init/build/msvc6.5/ff4bcefd8f30f7de/unused_aim64_prefix_color_global_init.obj
 tools/match/scratches/unused_fx_rotated_scale_prefix_color_global_init_thunk/build/msvc6.5/6c35e8e20363f747/unused_fx_rotated_scale_prefix_color_global_init_thunk.obj
@@ -277,7 +277,7 @@ tools/match/scratches/bonus_spawn_at/build/msvc6.5/561476dd142282e6/bonus_spawn_
 tools/match/scratches/bonus_spawn_at_pos/build/msvc6.5/e830208098d0d68e/bonus_spawn_at_pos.obj
 tools/match/scratches/bonus_try_spawn_on_kill/build/msvc6.5/02bd6cdc5b222540/bonus_try_spawn_on_kill.obj
 tools/match/scratches/fx_spawn_sprite/build/msvc6.5/4ae47e062f2edcb3/fx_spawn_sprite.obj
-tools/match/scratches/weapon_table_entry/build/msvc6.5/0145e6852186ba88/weapon_table_entry.obj
+tools/match/scratches/weapon_name_get/build/msvc6.5/33cb5a0f3211a82c/weapon_name_get.obj
 tools/match/scratches/player_reset_all/build/msvc6.5/cc31d46b7abe027b/player_reset_all.obj
 tools/match/scratches/effect_uv_tables_init/build/msvc6.5/d728c9d70904dded/effect_uv_tables_init.obj
 tools/match/scratches/creature_find_nearest/build/msvc6.5/4ac23deeb23b2ad8/creature_find_nearest.obj
@@ -303,7 +303,7 @@ tools/match/scratches/creature_alloc_slot/build/msvc6.5/f88ae99ee43e12e6/creatur
 tools/match/scratches/creature_reset_all/build/msvc6.5/d05559658e2ffd6f/creature_reset_all.obj
 tools/match/scratches/creatures_none_active/build/msvc6.5/d5257963dbbe5004/creatures_none_active.obj
 tools/match/scratches/creature_spawn/build/msvc6.5/63f3b7772baba507/creature_spawn.obj
-tools/match/scratches/player_render_overlays/build/msvc6.5/d53c9f0ce4a38ce6/player_render_overlays.obj
+tools/match/scratches/player_render/build/msvc6.5/21b062a583e9c246/player_render.obj
 tools/match/scratches/bonus_label_for_entry/build/msvc6.5/e04101d2f68f2b29/bonus_label_for_entry.obj
 tools/match/scratches/bonus_render/build/msvc6.5/b6e3f1c29717db02/bonus_render.obj
 tools/match/scratches/audio_resume_all/build/msvc6.5/2c67e19aaa681c17/audio_resume_all.obj
@@ -416,7 +416,7 @@ tools/match/scratches/quest_build_the_end_of_all/build/msvc6.5/06912064ee0dee35/
 tools/match/scratches/quest_build_spiders_inc/build/msvc6.5/ba02a0d0b2fc291b/quest_build_spiders_inc.obj
 tools/match/scratches/quest_database_init/build/msvc6.5/6974efe8920e9880/quest_database_init.obj
 tools/match/scratches/quest_start_selected/build/msvc6.5/0ae067766e4302cb/quest_start_selected.obj
-tools/match/scratches/highscore_date_checksum/build/msvc6.5/812fbb67c558c6db/highscore_date_checksum.obj
+tools/match/scratches/highscore_iso_week/build/msvc6.5/43c68b5a3308afce/highscore_iso_week.obj
 tools/match/scratches/highscore_submit_full_version_guard/build/msvc6.5/2719fb0a054bee72/highscore_submit_full_version_guard.obj
 tools/match/scratches/highscore_record_pack_for_submit/build/msvc6.5/9cf06837c81991ed/highscore_record_pack_for_submit.obj
 tools/match/scratches/highscore_read_record/build/msvc6.5/6b1b0a62baa7db6f/highscore_read_record.obj
@@ -424,8 +424,8 @@ tools/match/scratches/highscore_record_equals/build/msvc6.5/cbb7b7ff37780f2b/hig
 tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj
 tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj
 tools/match/scratches/highscore_compare_survival_score_desc/build/msvc6.5/03f998d8fb1f9a5d/highscore_compare_survival_score_desc.obj
-tools/match/scratches/highscore_compare_rush_field32_desc/build/msvc6.5/e450c971e33d5d78/highscore_compare_rush_field32_desc.obj
-tools/match/scratches/highscore_compare_quest_field32_asc_nonzero_first/build/msvc6.5/007ccd98344a47f1/highscore_compare_quest_field32_asc_nonzero_first.obj
+tools/match/scratches/highscore_compare_elapsed_desc/build/msvc6.5/2d421e257ea0d80d/highscore_compare_elapsed_desc.obj
+tools/match/scratches/highscore_compare_elapsed_asc_nonzero_first/build/msvc6.5/a11762c827ece439/highscore_compare_elapsed_asc_nonzero_first.obj
 tools/match/scratches/highscore_find_name_entry/build/msvc6.5/99b1d8eb8f03dcc7/highscore_find_name_entry.obj
 tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj
 tools/match/scratches/highscore_save_record/build/msvc6.5/c906096293bbcc6d/highscore_save_record.obj
@@ -483,12 +483,12 @@ tools/match/scratches/audio_shutdown_all/build/msvc6.5/944d193044282648/audio_sh
 tools/match/scratches/sfx_play/build/msvc6.5/0b803c84849b6d2d/sfx_play.obj
 tools/match/scratches/sfx_play_panned/build/msvc6.5/1586f3208e7bbb1a/sfx_play_panned.obj
 tools/match/scratches/audio_update/build/msvc6.5/33b8ed44bf6929e3/audio_update.obj
-tools/match/scratches/sfx_play_exclusive/build/msvc6.5/06abf7a8ff99b70d/sfx_play_exclusive.obj
-tools/match/scratches/sfx_mute_all/build/msvc6.5/b7240621fdf18e4b/sfx_mute_all.obj
-tools/match/scratches/sfx_update_mute_fades/build/msvc6.5/73cf1f473d01e8b5/sfx_update_mute_fades.obj
+tools/match/scratches/music_play_exclusive/build/msvc6.5/43abe4abb5ce14bf/music_play_exclusive.obj
+tools/match/scratches/music_fade_out_all/build/msvc6.5/11e11033484ffc3a/music_fade_out_all.obj
+tools/match/scratches/music_update_fades/build/msvc6.5/c3beb4a5e94937fc/music_update_fades.obj
 tools/match/scratches/audio_suspend_channels/build/msvc6.5/efd49830fe439911/audio_suspend_channels.obj
 tools/match/scratches/audio_resume_channels/build/msvc6.5/04c206867acd4bca/audio_resume_channels.obj
-tools/match/scratches/sfx_is_unmuted/build/msvc6.5/dcece31d36a9cd16/sfx_is_unmuted.obj
+tools/match/scratches/music_track_is_playing/build/msvc6.5/05f7930abf8d4ff3/music_track_is_playing.obj
 tools/match/scratches/ui_focus_set/build/msvc6.5/ddd4f2f828c05bc2/ui_focus_set.obj
 tools/match/scratches/ui_focus_update/build/msvc6.5/7685862a1785a402/ui_focus_update.obj
 tools/match/scratches/ui_focus_draw/build/msvc6.5/90e24dc294dfd1fc/ui_focus_draw.obj
@@ -512,7 +512,7 @@ tools/match/scratches/ui_update_notice_update/build/msvc6.5/ff8030c9d0d3d55f/ui_
 tools/match/scratches/highscore_screen_update/build/msvc6.5/b61c893cc3c2ef7e/highscore_screen.obj
 tools/match/scratches/ui_profile_menu_update/build/msvc6.5/380c6803a8ce5aeb/ui_profile_menu_update.obj
 tools/match/scratches/creature_spawn_tinted/build/msvc6.5/a46842c695bdf174/creature_spawn_tinted.obj
-tools/match/scratches/player_fire_weapon/build/msvc6.5/cb9026be8c62ee6a/player_fire_weapon.obj
+tools/match/scratches/typo_player_update/build/msvc6.5/81ce319c75a78cfd/typo_player_update.obj
 tools/match/scratches/typo_word_pick_fragment/build/msvc6.5/12cd339200bee00e/typo_word_pick_fragment.obj
 tools/match/scratches/typo_word_pick_highscore_name/build/msvc6.5/a5bc720a1ac8eb29/typo_word_pick_highscore_name.obj
 tools/match/scratches/typo_target_name_is_unique/build/msvc6.5/2cacb8a256ff73c3/typo_target_name_is_unique.obj

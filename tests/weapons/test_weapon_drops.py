@@ -61,7 +61,7 @@ def test_prepare_weapon_availability_unlocks_quest_weapon_ids() -> None:
 
 def test_prepare_weapon_availability_unlocks_splitter_gun_from_full_version_index() -> None:
     status = _status_default()
-    status.quest_unlock_index_full = 0x28
+    status.quest_unlock_index_hardcore = 0x28
     state = GameplayState(status=status)
 
     prepare_weapon_availability(state)

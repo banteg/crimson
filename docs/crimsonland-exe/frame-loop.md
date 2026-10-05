@@ -32,7 +32,7 @@ Other states have their own loops but reuse the same render pass (`gameplay_rend
    - Survival: `survival_update`
    - Rush: `rush_mode_update`
    - Quests: `quest_mode_update`
-7) Powerup timers and global time (`survival_elapsed_ms`) advance when not paused.
+7) Powerup timers and global time (`run_elapsed_ms`) advance when not paused.
 8) Camera + shake update (`camera_update`).
 9) Gameplay render pass (`gameplay_render_world`, `0x00405960`).
 10) Tutorial timeline if `config_game_mode == 8` (`tutorial_timeline_update`).

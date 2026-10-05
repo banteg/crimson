@@ -156,7 +156,7 @@ def test_rush_spawns_into_a_nearly_full_pool_match_native(oracle) -> None:
         pool = _nearly_full_pool(oracle, free_slots)
         oracle.write_u32("frame_dt_ms", dt_ms)
         oracle.write_u32("survival_spawn_cooldown", 0)
-        oracle.write_u32("survival_elapsed_ms", elapsed_ms)
+        oracle.write_u32("run_elapsed_ms", elapsed_ms)
         oracle.rand_state = seed
         oracle.call("rush_mode_update")
         crand = CrtRand(seed)

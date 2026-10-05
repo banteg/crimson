@@ -6,7 +6,7 @@ extern "C" void terrain_generate(quest_meta_t *quest);
 extern "C" void demo_setup_variant_3(void)
 {
     config_blob.player_count = 1;
-    terrain_generate(&quest_selected_meta[0]);
+    terrain_generate(&quest_meta_table[0]);
     demo_time_limit_ms = 4000;
 
     float large_x;

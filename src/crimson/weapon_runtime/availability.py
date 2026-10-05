@@ -25,7 +25,7 @@ def build_weapon_availability(
 ) -> list[bool]:
     available = [False] * WEAPON_AVAILABLE_COUNT
     unlock_index = status.quest_unlock_index
-    unlock_index_full = status.quest_unlock_index_full
+    unlock_index_hardcore = status.quest_unlock_index_hardcore
 
     pistol_id = WeaponId.PISTOL
     if 0 <= pistol_id < len(available):
@@ -43,7 +43,7 @@ def build_weapon_availability(
             if 0 <= weapon_id < len(available):
                 available[weapon_id] = True
 
-    if unlock_index_full >= 0x28:
+    if unlock_index_hardcore >= 0x28:
         splitter_id = WeaponId.SPLITTER_GUN
         if 0 <= splitter_id < len(available):
             available[splitter_id] = True

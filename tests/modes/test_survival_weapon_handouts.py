@@ -31,7 +31,7 @@ def test_survival_handout_time_gate_assigns_shrinkifier() -> None:
 
     assert player.weapon.weapon_id == WeaponId.SHRINKIFIER_5K
     assert state.survival_reward_weapon_guard_id == WeaponId.SHRINKIFIER_5K
-    assert state.survival_reward_handout_enabled is False
+    assert state.survival_shrinkifier_handout_enabled is False
     assert state.survival_reward_damage_seen is True
     assert state.survival_reward_fire_seen is True
 
@@ -46,7 +46,7 @@ def test_survival_handout_time_gate_consumes_gate_even_without_pistol() -> None:
 
     assert player.weapon.weapon_id == WeaponId.ASSAULT_RIFLE
     assert state.survival_reward_weapon_guard_id == WeaponId.PISTOL
-    assert state.survival_reward_handout_enabled is False
+    assert state.survival_shrinkifier_handout_enabled is False
     assert state.survival_reward_damage_seen is True
     assert state.survival_reward_fire_seen is True
 
@@ -60,7 +60,7 @@ def test_survival_handouts_are_single_player_only() -> None:
     _survival_frame(world, elapsed_ms=64001.0)
 
     assert [player.weapon.weapon_id for player in world.players] == [WeaponId.PISTOL, WeaponId.PISTOL]
-    assert state.survival_reward_handout_enabled is True
+    assert state.survival_shrinkifier_handout_enabled is True
     assert state.survival_reward_damage_seen is False
     assert state.survival_reward_fire_seen is False
 
@@ -72,11 +72,11 @@ def test_survival_handout_centroid_gate_assigns_blade_gun() -> None:
     player.pos = Vec2(100.0, 100.0)
     player.health = 14.0
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
-    state.survival_reward_handout_enabled = False
+    state.survival_shrinkifier_handout_enabled = False
     state.survival_reward_damage_seen = True
     state.survival_reward_fire_seen = False
-    state.survival_recent_death_count = 3
-    state.survival_recent_death_pos = [
+    state.survival_first_kill_count = 3
+    state.survival_first_kill_pos = [
         Vec2(90.0, 100.0),
         Vec2(100.0, 90.0),
         Vec2(110.0, 110.0),
@@ -87,7 +87,7 @@ def test_survival_handout_centroid_gate_assigns_blade_gun() -> None:
     assert player.weapon.weapon_id == WeaponId.BLADE_GUN
     assert state.survival_reward_weapon_guard_id == WeaponId.BLADE_GUN
     assert state.survival_reward_fire_seen is True
-    assert state.survival_reward_handout_enabled is False
+    assert state.survival_shrinkifier_handout_enabled is False
 
 
 def test_survival_handout_centroid_keeps_native_pc24_radius_boundary() -> None:
@@ -97,11 +97,11 @@ def test_survival_handout_centroid_keeps_native_pc24_radius_boundary() -> None:
     player.pos = Vec2(-97.64498138427734, 544.9747924804688)
     player.health = 14.0
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
-    state.survival_reward_handout_enabled = False
+    state.survival_shrinkifier_handout_enabled = False
     state.survival_reward_damage_seen = True
     state.survival_reward_fire_seen = False
-    state.survival_recent_death_count = 3
-    state.survival_recent_death_pos = [
+    state.survival_first_kill_count = 3
+    state.survival_first_kill_pos = [
         Vec2(315.8760681152344, 836.8428344726562),
         Vec2(1131.1593017578125, 1372.648681640625),
         Vec2(-1691.9703369140625, -574.5670776367188),
@@ -113,20 +113,20 @@ def test_survival_handout_centroid_keeps_native_pc24_radius_boundary() -> None:
     assert state.survival_reward_fire_seen is False
 
 
-def test_creature_handle_death_tracks_survival_recent_death_samples() -> None:
+def test_creature_handle_death_tracks_survival_first_kill_samples() -> None:
     world = world_with_creature(CreatureState(), players=[PlayerState(index=0, pos=Vec2(512.0, 512.0))])
     state = world.state
     state.survival_reward_fire_seen = True
-    state.survival_reward_handout_enabled = True
+    state.survival_shrinkifier_handout_enabled = True
 
     for idx, pos in enumerate((Vec2(10.0, 20.0), Vec2(30.0, 40.0), Vec2(50.0, 60.0))):
         world.creatures.entries[idx] = CreatureState(active=True, hp=0.0, reward_value=0.0, pos=pos)
         kill_creature(world, idx)
 
-    assert int(state.survival_recent_death_count) == 3
-    assert state.survival_recent_death_pos == [Vec2(10.0, 20.0), Vec2(30.0, 40.0), Vec2(50.0, 60.0)]
+    assert int(state.survival_first_kill_count) == 3
+    assert state.survival_first_kill_pos == [Vec2(10.0, 20.0), Vec2(30.0, 40.0), Vec2(50.0, 60.0)]
     assert state.survival_reward_fire_seen is False
-    assert state.survival_reward_handout_enabled is False
+    assert state.survival_shrinkifier_handout_enabled is False
 
 
 def test_survival_weapon_guard_reverts_mismatched_temporary_weapons() -> None:
@@ -170,7 +170,7 @@ def test_gameplay_weapon_guard_extends_splitter_policy_in_corrected_mode() -> No
 
 
 def test_gameplay_weapon_guard_keeps_unlocked_splitter() -> None:
-    state = GameplayState(status=GameStatus(path=Path("game.cfg"), quest_unlock_index_full=40))
+    state = GameplayState(status=GameStatus(path=Path("game.cfg"), quest_unlock_index_hardcore=40))
     player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, WeaponId.SPLITTER_GUN, state=state)
 

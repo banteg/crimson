@@ -6,15 +6,15 @@ int highscore_rank_index(void)
 
     if (config_game_mode == GAME_MODE_RUSH) {
         for (i = 0; i < highscore_table_count; i++) {
-            if (survival_elapsed_ms >
-                (int)highscore_table[i].survival_elapsed_ms) {
+            if (run_elapsed_ms >
+                (int)highscore_table[i].run_elapsed_ms) {
                 return i;
             }
         }
     } else if (config_game_mode == GAME_MODE_QUEST) {
         for (i = 0; i < highscore_table_count; i++) {
-            if (survival_elapsed_ms <
-                (int)highscore_table[i].survival_elapsed_ms) {
+            if (run_elapsed_ms <
+                (int)highscore_table[i].run_elapsed_ms) {
                 return i;
             }
         }

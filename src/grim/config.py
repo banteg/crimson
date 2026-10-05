@@ -73,9 +73,9 @@ CRIMSON_CFG_STRUCT = Struct(
     "saved_names" / Bytes(SAVED_NAMES_BLOB_SIZE),
     "player_name" / Bytes(PLAYER_NAME_SIZE),
     "player_name_len" / Int32sl,
-    "unknown_1a4" / Int32sl,
-    "unknown_1a8" / Int32sl,
-    "unknown_1ac" / Int32sl,
+    "reserved_1a4" / Int32sl,
+    "reserved_1a8" / Int32sl,
+    "reserved_1ac" / Int32sl,
     "aim_pov_right" / Int32sl,
     "aim_pov_left" / Int32sl,
     "screen_bpp" / Int32sl,
@@ -572,7 +572,7 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
 def _default_wire() -> bytes:
     """A fresh crimson.cfg: zeroes plus the constants native writes."""
     data = dict(CRIMSON_CFG_STRUCT.parse(bytes(CRIMSON_CFG_SIZE)))
-    data["unknown_1a4"] = 100
+    data["reserved_1a4"] = 100
     data["aim_pov_right"] = 9000
     data["aim_pov_left"] = 27000
     data["ten_tons_logging_completed"] = 1

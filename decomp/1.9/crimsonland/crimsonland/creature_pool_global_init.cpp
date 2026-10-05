@@ -13,8 +13,8 @@ extern "C" void creature_pool_global_init(void)
         entry->ai_mode = 0;
         entry->state_flag = 0;
         entry->anim_phase = 0.0f;
-        entry->collision_flag = 0;
-        entry->collision_timer = 0.0f;
+        entry->plague_infected = 0;
+        entry->dot_tick_timer = 0.0f;
         entry->link_index = -1;
         ++entry;
     } while (--remaining != 0);

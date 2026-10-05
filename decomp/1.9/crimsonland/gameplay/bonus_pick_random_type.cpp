@@ -5,7 +5,7 @@ extern "C" bonus_id_t bonus_pick_random_type(void)
     int retries = 0;
     bool has_fire_bullets_drop = false;
     for (int i = 0; i < 0x10; i++) {
-        if (bonus_pool[i].bonus_id == BONUS_ID_FIRE_BULLETS && !bonus_pool[i].state) {
+        if (bonus_pool[i].bonus_id == BONUS_ID_FIRE_BULLETS && !bonus_pool[i].picked) {
             has_fire_bullets_drop = true;
         }
     }

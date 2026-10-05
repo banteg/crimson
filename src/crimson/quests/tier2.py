@@ -38,11 +38,11 @@ def quest_build_spider_spawns(_ctx: QuestContext) -> list[SpawnEntry]:
         spawn(Vec2(896.0, 896.0), SpawnId.DEN_SPIDER_WEAK_10, 1500, 1),
         spawn(Vec2(896.0, 128.0), SpawnId.DEN_SPIDER_WEAK_10, 1500, 1),
         spawn(Vec2(128.0, 896.0), SpawnId.DEN_SPIDER_WEAK_10, 1500, 1),
-        spawn(Vec2(-64.0, 512.0), SpawnId.SPIDER_SP1_AI7_TIMER_38, 3000, 2),
+        spawn(Vec2(-64.0, 512.0), SpawnId.SPIDER_SP1_STOP_AND_GO_38, 3000, 2),
         spawn(Vec2(512.0, 512.0), SpawnId.DEN_SPIDER_BASIC_0A, 18000, 1),
         spawn(Vec2(448.0, 448.0), SpawnId.DEN_SPIDER_WEAK_10, 20500, 1),
         spawn(Vec2(576.0, 448.0), SpawnId.DEN_SPIDER_WEAK_10, 26000, 1),
-        spawn(Vec2(1088.0, 512.0), SpawnId.SPIDER_SP1_AI7_TIMER_38, 21000, 2),
+        spawn(Vec2(1088.0, 512.0), SpawnId.SPIDER_SP1_STOP_AND_GO_38, 21000, 2),
         spawn(Vec2(576.0, 576.0), SpawnId.DEN_SPIDER_WEAK_10, 31500, 1),
         spawn(Vec2(448.0, 576.0), SpawnId.DEN_SPIDER_WEAK_10, 22000, 1),
     ]
@@ -94,7 +94,7 @@ def quest_build_sweep_stakes(ctx: QuestContext) -> list[SpawnEntry]:
         angle = random_angle(ctx.rng.rand_tagged(RngCallerStatic.QUEST_BUILD_SWEEP_STAKES_ANGLE))
         for pos in radial_points(NATIVE_CENTER, angle, 0x54, 0xFC, 0x2A):
             heading = heading_from_center(pos, NATIVE_CENTER)
-            entries.append(spawn(pos, SpawnId.ALIEN_AI7_ORBITER_36, trigger, 1, heading=heading))
+            entries.append(spawn(pos, SpawnId.ALIEN_DELAYED_START_36, trigger, 1, heading=heading))
         trigger += max(step, 600)
         step -= 0x50
     return entries

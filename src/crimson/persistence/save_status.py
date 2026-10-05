@@ -37,7 +37,7 @@ _ZERO_QUEST_PLAY_COUNTS: Final[QuestPlayCounts] = tuple(0 for _ in range(QUEST_P
 _ZERO_RESERVED_SEED_WORDS: Final[bytes] = b"\x00" * RESERVED_SEED_WORDS_BYTE_SIZE
 GAME_STATUS_STRUCT = Struct(
     "quest_unlock_index" / Int16ul,
-    "quest_unlock_index_full" / Int16ul,
+    "quest_unlock_index_hardcore" / Int16ul,
     "weapon_usage_counts" / Array(WEAPON_USAGE_COUNT, Int32ul),
     "quest_play_counts" / Array(QUEST_PLAY_COUNT, Int32ul),
     "mode_play_survival" / Int32ul,
@@ -56,7 +56,7 @@ GAME_CFG_STRUCT = Struct(
 
 class GameStatusData(msgspec.Struct, forbid_unknown_fields=True):
     quest_unlock_index: int = 0
-    quest_unlock_index_full: int = 0
+    quest_unlock_index_hardcore: int = 0
     weapon_usage_counts: WeaponUsageCounts = msgspec.field(default_factory=lambda: ZERO_WEAPON_USAGE_COUNTS)
     quest_play_counts: QuestPlayCounts = msgspec.field(default_factory=lambda: _ZERO_QUEST_PLAY_COUNTS)
     mode_play_survival: int = 0

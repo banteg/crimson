@@ -73,14 +73,14 @@ def test_staged_death_matches_native_corpse_tint_size_and_retry() -> None:
         pool = world.creatures
         creature = make_creature_state(
             pos=Vec2(f32(row["pos_x"]), f32(row["pos_y"])), hp=row["health"], active=True,
-            lifecycle_stage=f32(row["lifecycle_stage"]), size=f32(row["size"]), flags=CreatureFlags(row["flags"]),
+            death_timer=f32(row["death_timer"]), size=f32(row["size"]), flags=CreatureFlags(row["flags"]),
         )
         creature.type_id = CreatureTypeId(row["type_id"])
         creature.heading = f32(row["heading"])
         creature.tint = RGBA(*(f32(row[f"tint_{channel}"]) for channel in "rgba"))
         pool.entries[0] = creature
         pool.update(step_runtime)
-        assert bits(creature.lifecycle_stage) == expected["lifecycle_bits"], case
+        assert bits(creature.death_timer) == expected["lifecycle_bits"], case
         assert pool.kill_count == expected["kill_count"], case
         assert queue.count == initial_count + int(expected["entry"] is not None), case
         if expected["entry"] is not None:

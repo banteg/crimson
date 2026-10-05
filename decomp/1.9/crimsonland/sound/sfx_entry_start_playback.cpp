@@ -35,7 +35,7 @@ stream_playback:
         if (entry->buffers[result] != 0) {
             entry->buffers[result]->GetStatus(&status);
             if ((status & DSBSTATUS_PLAYING) == 0) {
-                entry->buffers[result]->SetFrequency(sfx_rate_scale);
+                entry->buffers[result]->SetFrequency(sfx_sample_rate);
                 entry->buffers[result]->Play(0, 0, 0);
                 return result;
             }
@@ -45,7 +45,7 @@ stream_playback:
     result = rand() % 16;
     entry->buffers[result]->Stop();
 
-    entry->buffers[result]->SetFrequency(sfx_rate_scale);
+    entry->buffers[result]->SetFrequency(sfx_sample_rate);
     entry->buffers[result]->Play(0, 0, 0);
     return result;
 }

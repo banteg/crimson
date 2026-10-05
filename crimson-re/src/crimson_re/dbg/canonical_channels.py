@@ -140,11 +140,11 @@ class CreatureEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=Tr
     target_offset: SnapshotVec2
     heading: float
     target_heading: float
-    collision_timer: float
+    dot_tick_timer: float
     attack_cooldown: float
     orbit_angle: float
     orbit_radius: float
-    lifecycle_stage: float
+    death_timer: float
     vel: SnapshotVec2
     move_speed: float
 
@@ -163,7 +163,7 @@ class ProjectileEntitySample(msgspec.Struct, frozen=True, forbid_unknown_fields=
     speed_scale: float
     damage_pool: float
     hit_radius: float
-    travel_budget: float
+    projectile_speed: float
     owner_id: int
 
 
@@ -178,7 +178,7 @@ class SecondaryProjectileEntitySample(msgspec.Struct, frozen=True, forbid_unknow
     pos: SnapshotVec2
     vel: SnapshotVec2
     speed: float
-    trail_timer: float
+    trail_distance: float
     owner_id: int
     target_id: int
 

@@ -13,14 +13,14 @@ from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
 
 
-def test_weapon_assign_player_queues_reload_sfx_and_sets_aux_timer() -> None:
+def test_weapon_assign_player_queues_reload_sfx_and_sets_weapon_popup_timer() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
 
     weapon_assign_player(player, WeaponId.SHOTGUN, state=state)
 
     assert player.weapon_reset_latch == 0
-    assert player.aux_timer == 2.0
+    assert player.weapon_popup_timer == 2.0
     assert sfx_ids(state.sfx_queue) == [SfxId.SHOTGUN_RELOAD]
 
 

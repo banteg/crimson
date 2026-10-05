@@ -15,11 +15,11 @@ from tests.support.builders.session import make_world
 from tests.support.helpers import assert_float_close
 
 
-def _tick(rng: CrandLike, cooldown: float, *, survival_elapsed_ms: int = 0) -> tuple[float, list[CreatureState]]:
+def _tick(rng: CrandLike, cooldown: float, *, run_elapsed_ms: int = 0) -> tuple[float, list[CreatureState]]:
     world = make_world()
     world.state.rng = rng
     spawn = RushSpawnState(spawn_cooldown_ms=cooldown)
-    rush_mode_update(world, spawn, elapsed_ms=float(survival_elapsed_ms), dt_ms=0.0)
+    rush_mode_update(world, spawn, elapsed_ms=float(run_elapsed_ms), dt_ms=0.0)
     return spawn.spawn_cooldown_ms, [creature for creature in world.creatures.entries if creature.active]
 
 
@@ -40,9 +40,9 @@ def test_rush_mode_update_forces_assault_rifles_without_spawning_before_the_cool
 
 
 def test_rush_spawn_stats_round_each_native_x87_operation() -> None:
-    def spawn(survival_elapsed_ms: int) -> CreatureState:
+    def spawn(run_elapsed_ms: int) -> CreatureState:
         pool = CreaturePool()
-        idx = creature_spawn(pool, Vec2(), RGBA(), CreatureTypeId.ALIEN, Crand(1), survival_elapsed_ms=survival_elapsed_ms)
+        idx = creature_spawn(pool, Vec2(), RGBA(), CreatureTypeId.ALIEN, Crand(1), run_elapsed_ms=run_elapsed_ms)
         return pool.entries[idx]
 
     health_case = spawn(474)
@@ -78,7 +78,7 @@ def test_rush_mode_update_triggers_two_creatures() -> None:
 
     assert spider.type_id == CreatureTypeId.SPIDER_SP1
     assert spider.ai_mode == 8
-    assert spider.flags == CreatureFlags.AI7_LINK_TIMER
+    assert spider.flags == CreatureFlags.STOP_AND_GO
     assert spider.pos == Vec2(-64.0, 512.0)
     assert spider.hp == 10.0
     assert spider.max_hp == 10.0
@@ -91,7 +91,7 @@ def test_rush_mode_update_triggers_two_creatures() -> None:
 
 
 def test_rush_mode_update_uses_native_upward_rounded_sine_scale() -> None:
-    _, spawns = _tick(Crand(1), -1.0, survival_elapsed_ms=63)
+    _, spawns = _tick(Crand(1), -1.0, run_elapsed_ms=63)
 
     assert spawns[0].tint.b == 0.30639997124671936
 

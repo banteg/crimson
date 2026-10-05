@@ -2,17 +2,17 @@
 
 void player_start_reload(void)
 {
-    if (!player_state_table[render_overlay_player_index].reload_active
+    if (!player_state_table[current_player_index].reload_active
         || (perk_count_get(perk_id_ammunition_within) == 0
             && perk_count_get(perk_id_regression_bullets) == 0)) {
-        int player_index = render_overlay_player_index;
-        if (!player_state_table[render_overlay_player_index].reload_active) {
-            int weapon_id = player_state_table[render_overlay_player_index].weapon_id;
+        int player_index = current_player_index;
+        if (!player_state_table[current_player_index].reload_active) {
+            int weapon_id = player_state_table[current_player_index].weapon_id;
             const vec2f_t *pos =
-                &player_state_table[render_overlay_player_index].position;
+                &player_state_table[current_player_index].position;
             sfx_play_panned(weapon_table[weapon_id].reload_sfx_id, pos, 1.0f);
-            player_index = render_overlay_player_index;
-            player_state_table[render_overlay_player_index].reload_active = 1;
+            player_index = current_player_index;
+            player_state_table[current_player_index].reload_active = 1;
         }
 
         {

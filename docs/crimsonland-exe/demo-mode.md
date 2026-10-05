@@ -161,7 +161,7 @@ The variants are small, deterministic setup functions that:
 ### Variant 3 — `demo_setup_variant_3` (`0x00403250`)
 
 - `player_count = 1`
-- `terrain_generate(&quest_selected_meta)` (uses the currently selected quest descriptor).
+- `terrain_generate(&quest_meta_table)` (uses the currently selected quest descriptor).
 - `demo_time_limit_ms = 4000`
 - Spawns random templates `0x24` and `0x25` at positions similar to variant 1.
 - Player position: `(512,512)`.

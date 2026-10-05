@@ -99,7 +99,7 @@ typedef struct secondary_projectile_t {
     float vel_x;
     float vel_y;
     secondary_projectile_type_id_t type_id;
-    float trail_timer;
+    float trail_distance;
     int target_id;
     unsigned int unused_0x28;
 } secondary_projectile_t;
@@ -118,7 +118,7 @@ Layout (`0x2c` bytes; spawn values from
 | 0x14 | vel_x | `cos(angle - PI/2) * 90` (`* 190` for type `2`). In the type `3` state it holds the detonation timer. |
 | 0x18 | vel_y | `sin(angle - PI/2) * 90` (`* 190` for type `2`). In the type `3` state it holds the detonation scale. |
 | 0x1c | type_id | `secondary_projectile_type_id_t`; spawn parameter. |
-| 0x20 | trail_timer | Zeroed on spawn; drained by `(abs(vel_x) + abs(vel_y)) * dt * 0.01`; on `< 0` spawns a trail sprite and resets to `0.06`. |
+| 0x20 | trail_distance | Zeroed on spawn; drained by `(abs(vel_x) + abs(vel_y)) * dt * 0.01`; on `< 0` spawns a trail sprite and resets to `0.06`. |
 | 0x24 | target_id | Set to the creature nearest the player's aim when `type_id == 2`; re-acquired when the target dies. |
 | 0x28 | unused_0x28 | Write-only: set to `-100` by `secondary_projectile_pool_global_init`; no reads in the recovered source. |
 
@@ -205,7 +205,7 @@ Queue size: `0x40` entries. Written by `fx_queue_add_rotated` (`0x00427840`)
 and rendered by `fx_queue_render`.
 
 Backing arrays are labeled in the data map (e.g. `fx_rotated_pos_x`, `fx_rotated_color_a`,
-`fx_rotated_effect_id`).
+`fx_rotated_creature_type_id`).
 
 Layout (structure-of-arrays):
 
@@ -219,7 +219,7 @@ Layout (structure-of-arrays):
 | `fx_rotated_color_a` | color_a | Stride 4 floats; scaled by view factor in `fx_queue_add_rotated`. |
 | `fx_rotated_rotation` | rotation | Stored from `rotation` in `fx_queue_add_rotated`. |
 | `fx_rotated_scale` | scale | Stored from `scale` in `fx_queue_add_rotated`. |
-| `fx_rotated_effect_id` | effect_id | Used to index the atlas table in `fx_queue_render`. |
+| `fx_rotated_creature_type_id` | effect_id | Used to index the atlas table in `fx_queue_render`. |
 
 Notes:
 

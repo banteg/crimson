@@ -17,7 +17,7 @@ known state ids. Names are inferred from call sites and screen behavior.
 | `ui_elements_timeline` (`0x00487248`) | transition timeline | incremented/decremented in `ui_elements_update_and_render` |
 | `ui_transition_direction` (`0x0048724c`) | transition direction flag | `ui_elements_update_and_render` negates timeline when 0 |
 | `ui_transition_alpha` (`0x00487278`) | transition alpha | computed in `gameplay_render_world` (`0x00405960`) from timeline |
-| `render_pass_mode` (`0x00487240`) | render gating | dispatcher uses it to choose terrain-only vs full pass |
+| `run_active` (`0x00487240`) | render gating | dispatcher uses it to choose terrain-only vs full pass |
 | `game_paused_flag` (`0x004808b8`) | pause toggle | checked in the main frame loop |
 | `demo_mode_active` (`0x0048700d`) | demo/attract gating | disables HUD and alters update behavior |
 

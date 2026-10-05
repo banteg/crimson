@@ -34,7 +34,7 @@ def test_hit_flash_countdown_matches_native_witnesses() -> None:
                 pos=Vec2(120, 230),
                 hp=row["health"],
                 active=bool(row["active"]),
-                lifecycle_stage=row["lifecycle_stage"],
+                death_timer=row["death_timer"],
                 size=40,
             )
             creature.hit_flash_timer = row["hit_flash_timer"]
@@ -57,7 +57,7 @@ def test_damage_hit_flash_matches_native_witnesses() -> None:
             hp=row["health"],
             size=row["size"],
             flags=CreatureFlags(row["flags"]),
-            lifecycle_stage=row["lifecycle"],
+            death_timer=row["lifecycle"],
         )
         creature.hit_flash_timer = row["hit_flash"]
         world = world_with_creature(creature, rng=Crand(case["rng_seed"]), perks=PerkCounts(), players=[PlayerState(index=0, pos=Vec2(), health=100)] if case["players"] else [])

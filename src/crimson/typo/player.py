@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from ..sim.gameplay_state import GameplayState
 
 
-def player_fire_weapon(
+def typo_player_update(
     state: GameplayState,
     players: list[PlayerState],
     player: PlayerState,
@@ -40,7 +40,7 @@ def player_fire_weapon(
     reload_requested: bool,
     dt: float,
 ) -> None:
-    """Typ-o's player frame, `player_fire_weapon` (0x00444980), in place of `player_update`.
+    """Typ-o's player frame, `typo_player_update` (0x00444980), in place of `player_update`.
 
     Cooldown, spread and reload are cleared and the clip refilled every frame, so
     typed words (not the weapon) set the rate of fire. Only the shotgun spawns

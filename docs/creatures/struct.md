@@ -20,7 +20,7 @@ Pool facts:
 ```c
 typedef struct creature_bonus_args_t {
     short bonus_id;
-    short duration_override;
+    short amount_override;
 } creature_bonus_args_t;
 
 typedef struct creature_t {
@@ -28,10 +28,10 @@ typedef struct creature_t {
     unsigned char _pad0[3];
     int phase_seed;
     unsigned char state_flag;
-    unsigned char collision_flag;
+    unsigned char plague_infected;
     unsigned char _pad1[2];
-    float collision_timer;
-    float lifecycle_stage;
+    float dot_tick_timer;
+    float death_timer;
     float pos_x;
     float pos_y;
     float vel_x;
@@ -87,9 +87,9 @@ Field map:
 | `0x00` | active (byte) | `creature_pool` | set on allocation; dying/corpse entries can remain active until lifecycle completion. |
 | `0x04` | phase seed | `creature_phase_seed` | randomized on spawn; used to offset orbit/aim timing. |
 | `0x08` | state flag | `creature_state_flag` | Write-only: set to `1` by spawners, AI transitions, and projectile hits (one hit path sets `0`); no reads in the recovered source. |
-| `0x09` | collision flag | `creature_collision_flag` | Plaguebearer infection flag; propagates between nearby creatures and drives creature health loss. |
-| `0x0c` | collision timer | `creature_collision_timer` | shared timer for infection and Radioactive health effects; player attacks use `attack_cooldown`. |
-| `0x10` | lifecycle stage | `creature_lifecycle_stage` | set to `16.0` on spawn, decremented through death/corpse rendering, and used as the AoE eligibility gate (`lifecycle_stage > 5.0`). |
+| `0x09` | collision flag | `creature_plague_infected` | Plaguebearer infection flag; propagates between nearby creatures and drives creature health loss. |
+| `0x0c` | damage-over-time tick timer | `creature_dot_tick_timer` | shared timer for infection and Radioactive health effects; player attacks use `attack_cooldown`. |
+| `0x10` | death timer | `creature_death_timer` | set to `16.0` on spawn, decremented through death/corpse rendering, and used as the AoE eligibility gate (`death_timer > 5.0`). |
 | `0x14` | pos_x | `creature_pos_x` | written by `creature_spawn` (`0x00428240`); used in distance tests/targeting. |
 | `0x18` | pos_y | `creature_pos_y` | written by `creature_spawn` (`0x00428240`); used in distance tests/targeting. |
 | `0x1c` | vel_x | `creature_vel_x` | computed from heading/speed and passed to `vec2_add_inplace` (`0x0041e400`). |
@@ -114,11 +114,11 @@ Field map:
 | `0x6c` | type id | `creature_type_id` | written from spawn param; indexes behavior tables. |
 | `0x70` | target player index | `creature_target_player` | toggled based on distance; indexes player arrays. |
 | `0x74` | reserved entity dword | `entity_reserved_74` | Cleared by both the pool constructor and slot allocator; the same offset is a constructor-touched dword in `player_state_t`. |
-| `0x78` | link index / state timer / bonus args | `creature_link_index` | Used as linked creature index in AI modes and as a timer when the `0x80` flag is set. Under `BONUS_ON_DEATH`, `creature_bonus_args_t` overlays this dword with signed `bonus_id` and `duration_override` halfwords. |
+| `0x78` | link index / state timer / bonus args | `creature_link_index` | Used as linked creature index in AI modes and as a timer when the `0x80` flag is set. Under `BONUS_ON_DEATH`, `creature_bonus_args_t` overlays this dword with signed `bonus_id` and `amount_override` halfwords. |
 | `0x7c` | target offset x | `creature_target_offset_x` | used when AI mode links to another creature. |
 | `0x80` | target offset y | `creature_target_offset_y` | used when AI mode links to another creature. |
 | `0x84` | orbit angle | `creature_orbit_angle` | combined with heading for orbiting AI modes. |
-| `0x88` | orbit radius / ranged projectile type | `creature_orbit_radius` | `creature_orbit_radius_t` union: a float radius/timer for orbiting and tethered AI modes; when `flags & 0x100` (`CREATURE_FLAG_RANGED_ATTACK_VARIANT`) it holds the `projectile_type_id_t` fired by `creature_update_all`. |
+| `0x88` | orbit radius / ranged projectile type | `creature_orbit_radius` | `creature_orbit_radius_t` union: a float radius/timer for orbiting and tethered AI modes; when `flags & 0x100` (`CREATURE_FLAG_RANGED_TEMPLATE_PROJECTILE`) it holds the `projectile_type_id_t` fired by `creature_update_all`. |
 | `0x8c` | flags | `creature_flags` | `creature_flags_t` bits (`tools/match/include/crimsonland_gameplay.h`); see [creature flags](animations.md#creature-flags). |
 | `0x90` | AI mode | `creature_ai_mode` | selects movement pattern (cases 0/1/3/4/5/6/7/8). |
 | `0x94` | anim phase | `creature_anim_phase` | accumulates to drive sprite timing; wraps at 31 or 15 depending on flags. |
@@ -142,9 +142,9 @@ Spawn slots (used by `creature_update_all` when `creature_link_index` selects a 
 
 Survival reward tracking (globals):
 
-- `survival_recent_death_pos` — up to 3 recent creature death positions (recorded in `creature_handle_death`).
-- `survival_recent_death_count` — increments with deaths (caps at 6) and gates the survival weapon reward check in `survival_update`.
-- `survival_reward_handout_enabled` — one-time survival handout gate (cleared after the handout or after 3 death samples).
+- `survival_first_kill_pos` — up to 3 recent creature death positions (recorded in `creature_handle_death`).
+- `survival_first_kill_count` — increments with deaths (caps at 6) and gates the survival weapon reward check in `survival_update`.
+- `survival_shrinkifier_handout_enabled` — one-time survival handout gate (cleared after the handout or after 3 death samples).
 - `survival_reward_fire_seen` — set when a fire attempt passes the shot-readiness gate; blocks the survival reward checks in `survival_update`.
 - `survival_reward_damage_seen` — set on player damage; blocks the survival reward checks in `survival_update`.
 

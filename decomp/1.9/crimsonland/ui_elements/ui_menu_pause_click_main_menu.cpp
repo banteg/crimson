@@ -7,7 +7,7 @@ extern "C" mod_interface_t *plugin_interface_ptr;
 extern "C" HMODULE plugin_module_handle;
 extern "C" unsigned char plugin_runtime_needs_init;
 extern "C" unsigned char ui_transition_direction;
-extern "C" unsigned char render_pass_mode;
+extern "C" unsigned char run_active;
 extern "C" game_state_id_t game_state_pending;
 
 extern "C" void ui_menu_pause_click_main_menu(void)
@@ -16,7 +16,7 @@ extern "C" void ui_menu_pause_click_main_menu(void)
         ((mod_interface_cpp_t *)plugin_interface_ptr)->parms.fields.onPause = 0;
         plugin_runtime_active_latch = 0;
         ((mod_interface_cpp_t *)plugin_interface_ptr)->shutdown();
-        sfx_mute_all(music_track_extra_0);
+        music_fade_out_all(music_track_game_playlist);
         HMODULE module = plugin_module_handle;
         plugin_interface_ptr = 0;
         FreeLibrary(module);
@@ -28,9 +28,9 @@ extern "C" void ui_menu_pause_click_main_menu(void)
     }
 
     ui_transition_direction = 0;
-    render_pass_mode = 0;
-    sfx_mute_all(music_track_crimson_theme_id);
-    sfx_mute_all(music_track_shortie_monk_id);
-    sfx_mute_all(music_track_extra_0);
-    sfx_play_exclusive(music_track_crimson_theme_id);
+    run_active = 0;
+    music_fade_out_all(music_track_crimson_theme_id);
+    music_fade_out_all(music_track_shortie_monk_id);
+    music_fade_out_all(music_track_game_playlist);
+    music_play_exclusive(music_track_crimson_theme_id);
 }
