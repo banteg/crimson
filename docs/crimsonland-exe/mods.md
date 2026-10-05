@@ -92,8 +92,11 @@ drives whether the exe keeps the mod active.
 The context pointer passed at `+0x04` is treated as a vtable-based API from
 within the mod DLLs. The layout matches `clAPI_t` in `cl_mod_sdk_v1/ClMod.h`
 (API v3), and the vtable pointer is set to `0x0046f3e4` during init.
-The same CRT global initializer sets the still-unknown context tail field at
-offset `+0x68` to `1`; its semantics are not yet proven.
+The same CRT global initializer (`mod_api_init`,
+`decomp/1.9/crimsonland/mods/mod_api_init.cpp`) also sets `field_0x68`
+(`tools/match/include/crimsonland_mod_api.h`) to `1`. That dword sits just past
+the SDK `clAPI_t` fields (vtable, `version`, `keyConfig` end at `+0x68`), and
+nothing in the recovered exe source reads it.
 
 | Vtable offset | SDK name | Wrapper (crimsonland.exe) | Notes |
 | --- | --- | --- | --- |

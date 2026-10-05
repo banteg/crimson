@@ -14,6 +14,7 @@ Sections:
 - [State id glossary](state-ids.md)
 - [Frame loop](frame-loop.md)
 - [Rendering](rendering.md)
+- [Terrain pipeline](terrain.md)
 - [UI and menus](ui.md)
 - [Local multiplayer controls](local-multiplayer-controls.md)
 - [Main menu (state 0)](main-menu.md)

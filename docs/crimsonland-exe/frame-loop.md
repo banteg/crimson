@@ -38,12 +38,13 @@ Other states have their own loops but reuse the same render pass (`gameplay_rend
 10) Tutorial timeline if `config_game_mode == 8` (`tutorial_timeline_update`).
 11) Perk prompt handling (`perk_prompt_update_and_render`, `0x00403550`) and perk selection transition.
     - `perk_prompt_timer` (`0x0048f524`) ramps 0..200 when perks are pending; it feeds the prompt
-      alpha and transform matrix (`perk_prompt_transform_*` at `perk_prompt_transform_cos..perk_prompt_transform_cos_2`).
+      alpha and transform matrix (`perk_prompt_transform_cos`, `_sin_neg`, `_sin`, `_cos_2` at
+      `0x0048f510..0x0048f51c`).
     - `perk_prompt_hover_active` (`0x0048f500`) + `perk_prompt_pulse` (`0x0048f504`) drive the
       hover/pulse feedback and click gating.
-    - `perk_prompt_origin_x/y` (`0x0048f224`/`perk_prompt_origin_y`) with bounds
-      (`perk_prompt_bounds_min_*` at `perk_prompt_bounds_min_x/0048f24c`, `perk_prompt_bounds_max_*` at
-      `perk_prompt_bounds_max_x/0048f284`) define the perk prompt hover rectangle.
+    - `perk_prompt_origin_x/y` (`0x0048f224`/`0x0048f228`) with bounds
+      (`perk_prompt_bounds_min_x/y` at `0x0048f248`/`0x0048f24c`, `perk_prompt_bounds_max_x/y` at
+      `0x0048f280`/`0x0048f284`) define the perk prompt hover rectangle.
     - `perk_choices_dirty` (`0x00486fb0`) forces a one-shot `perks_generate_choices()` before
       switching to state `6`.
 

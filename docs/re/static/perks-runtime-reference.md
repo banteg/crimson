@@ -351,7 +351,7 @@ order: a perk can act in several native paths.
 
 - `player_take_damage` (0x00425e50): Highlander replacement behavior.
 - `perk_can_offer` (0x0042fb10): mode-flag gating rejects Highlander in quest mode and two-player.
-- `perks_generate_choices` (0x00430160): Death Clock active path rejects Highlander from offers.
+- `perks_generate_choices` (0x004045a0): Death Clock active path rejects Highlander from offers.
 
 
 ## 42. Jinxed (`PerkId.JINXED`)

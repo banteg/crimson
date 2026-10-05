@@ -35,6 +35,6 @@ Names are trimmed in the stored copy before encoding. Native trimming preserves
 character zero even for an all-space name; the name-entry UI requires a
 non-space character. A failed score write leaves name entry available for retry.
 
-Implementation: `src/crimson/persistence/highscores.py`. Native evidence is maintained in
-the `highscore_save_record`, `highscore_load_table`, and `highscore_compare_*`
-matching sources under `tools/match/scratches/`.
+Implementation: `src/crimson/persistence/highscores.py`. The native behavior is in the
+recovered sources under `decomp/1.9/crimsonland/highscore/` (`highscore_save_record.c`,
+`highscore_load_table.c`, and the `highscore_compare_*` comparators).

@@ -10,6 +10,8 @@ Decompiler- and symbol-driven reference docs.
 
 - [Binary analysis](binary-analysis.md)
 - [Entrypoint trace](entrypoint.md)
+- [Native linking](native-linking.md)
+- [Diagnostic alignments](../diagnostic-alignments.md)
 - [Boot / loading sequence](boot-sequence.md)
 - [Source recovery references](detangling.md)
 - [Perk runtime reference](perks-runtime-reference.md)

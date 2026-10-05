@@ -14,8 +14,8 @@ interpretation; the gate itself is established independently in native code.
 
 ## Evidence: secret-hint string cluster
 
-Source: `analysis/ghidra/raw/crimsonland.exe_strings.txt` and the startup log path
-inside `crimsonland_main` at `0x0042c450`.
+Source: `analysis/ghidra/raw/crimsonland.exe_strings.txt` and the dead startup
+hint block inside `crimsonland_main` (`0x0042c450`).
 
 ### Strings (static addresses)
 
@@ -30,19 +30,24 @@ inside `crimsonland_main` at `0x0042c450`.
 - `0x00473d50` — "I'll tell you a little secret; there are few secret weapons hidden inside the game!"
 - `0x00473e34` — `%ReDistrBuildXX%` (build tag string)
 
-### Verified code path (startup console output)
+### Startup console output (dead code)
 
-The decompiled `crimsonland_main` (`0x0042c450`) prints the secret-hint cluster via `console_printf`
-in a guarded block right after `grim_load_interface()` succeeds and before the usual config load/flow.
-The decompiler shows the guard as:
+`crimsonland_main` (`decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp`)
+prints the hint cluster through the `developer_hint_*` pointers
+(`0x00473a10`..`0x00473a34`) immediately after `grim_load_interface` and before
+the null-interface check, inside:
 
-- `if (grim_interface_ptr == grim_interface_ptr + 1) { ... print secret hints ... }`
+- `if (grim_interface_ptr == grim_interface_ptr + 1) { ... }`
 
-This condition is nonsensical as written (always false), so treat it as a **decompiler artifact** or
-an intentional debug/anti-tamper check that needs disassembly confirmation.
+The guard is literal in the byte-matched source: a pointer never equals itself
+plus one, so the block never runs. It is dead code in the original program, and
+the hints never reach `console.log`.
 
-This guarded output is separate from the gameplay paths below. It is evidence
-for the embedded hints, not evidence that the credits or weapon gates are unknown.
+The separate `startup_integrity_cookie != 0x7b` check later in the same function
+is real: it clears `grim_interface_ptr` and is unrelated to the hint block.
+
+This dead block is evidence for the embedded hints, not for how the credits or
+weapon gates work.
 
 ## Credits screen code (verified)
 
@@ -210,22 +215,12 @@ Final decoded message:
 - **Match Logic**: Swapping tiles calls `credits_secret_match3_find` (`0x0040f400`), which returns
   the first 3-in-a-row match it finds. The logic is standard match-3 (horizontal and vertical scans).
 
-- **No Unlock Found**: The update loop handles scoring, timer (adds 2000ms on match), and "Game Over".
-  **No code path** was found that sets a global unlock flag (like `weapon_table` modification) or
-  writes to the save file upon reaching a score or matching a specific pattern. The minigame appears
-  to be self-contained.
-
-- **Runtime verification (2026-02-09)**: a Frida harness
-  auto-entered AZK (`game_state_set(0x1a)`), reset timer to `0x2580`, then solved to a fully cleared
-  board (`36` cleared cells, score `12`). Final `verdict` in
-  `C:\share\frida\azk_verify_no_unlock.jsonl` reported:
-  - `no_external_effect = true`
-  - `side_effects = []`
-  - unchanged `credits_secret_unlock_flag` (`0x004811c4`)
-  - unchanged quest unlock ids (`0x00482700`, `0x00482704`)
-  - unchanged `weapon_table` unlock hash
-  Later state transitions (`4`, `0`, `10`) were logged after verdict timing and correspond to normal
-  UI navigation, not an AZK-completion trigger.
+- **No unlock**: `decomp/1.9/crimsonland/mods/credits_secret_alien_zookeeper_update.cpp`
+  only writes the board, selection, score, timer (adds 2000 ms on a match), and
+  animation state, plus `game_state_pending` when leaving to the statistics menu.
+  It never touches `weapon_table`, quest unlock indices, `credits_secret_unlock_flag`,
+  or the save file. A runtime check on 2026-02-09 (fully cleared board, score `12`)
+  likewise showed no external side effects.
 
 - **Color mapping (render tint)**: Confirmed via `credits_secret_alien_zookeeper_update` draw calls:
   - `0 = (1.0, 0.5, 0.5)` Red
@@ -241,10 +236,9 @@ Final decoded message:
 
 ### “Brave little haxx0r” / “not really meant to see”
 
-- **Observed logic**: these lines are printed alongside the hint block under the same guard condition in
-  `crimsonland_main`. They likely indicate a debug/redistribution build or an anti-tamper path.
-
-- **Verified code**: only the startup print path; the guard condition needs disassembly confirmation.
+- These lines (`developer_hint_haxxor`, `developer_hint_warning`) are part of
+  the same dead startup block in `crimsonland_main`; nothing else references
+  them.
 
 ## Open questions
 
@@ -255,6 +249,5 @@ Final decoded message:
     `survival_update`.
   - "First Blood" is still interpretive wording; runtime logic is
     `survival_recent_death_count == 3` using the first three stored positions.
-- Is the startup secret-hint block tied to a “redistribution build” check or another sentinel?
 - Are there any **out-of-main-exe** consumers (e.g., other modules/builds) for the startup `balloon.tga` preload gate?
 - Are any of these flags version-specific (v1.9.93 vs earlier)?

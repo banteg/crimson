@@ -82,13 +82,13 @@ https://www.dafont.com/pixel-arial-11.font
   builds 0xE4 from `a` + `"`, 0xE5 from `a` + `.`, and 0xF6 from `o` + `"`;
   `\n` resets X and advances Y. [static]
 
-### Quest title overlay (runtime evidence)
+### Quest title overlay
 
 The quest HUD renders the level number and title with separate mono draws:
 
-- **Title** (`"Land Hostile"`) uses the base scale (0.75 at 640px width, 0.8 at larger widths). [static+runtime]
-- **Number** (`"1.1"`) uses `base_scale - 0.2` (observed 0.55 when base is 0.75). [runtime]
-- **Opacity**: number alpha is **50%** of title alpha (ratio 0.5 across captures). [runtime]
+- **Title** (`"Land Hostile"`) uses the base scale (0.75 at 640px width, 0.8 at larger widths). [static]
+- **Number** (`"1.1"`) uses `base_scale - 0.2` (0.55 when base is 0.75). [static]
+- **Opacity**: number alpha is **50%** of title alpha (`banner_alpha * 0.5`). [static]
 - **Position X**: computed dynamically based on string length: [static]
   ```
   number_x = title_x - (strlen(number) * number_scale * 8.0) - (number_scale * 32.0) - 4.0
@@ -105,10 +105,5 @@ The quest HUD renders the level number and title with separate mono draws:
   At number_scale 0.55: `0.55 * 7.36 = 4.048 px` lower than title.
   At number_scale 0.60: `0.60 * 7.36 = 4.416 px` lower than title. [static]
 
-Evidence: `artifacts/frida/share/quest_title_colors.jsonl` (quest HUD capture on 2026-01-20). Runtime logs show paired `draw_text_mono` calls for the title and number with the scale/alpha ratios above. Static analysis of `ui_render_hud` at 0x41bf94-0x41c01c confirms the dynamic x-position formula using strlen.
-
-## Sample render (interactive)
-
-```
-uv run crimson view fonts
-```
+Source: the quest banner block of `ui_render_hud` (`decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp`),
+which issues paired `grim_draw_text_mono` / `grim_draw_text_mono_fmt` calls for the title and number.

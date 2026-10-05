@@ -6,19 +6,22 @@ tags:
 # Boot / Loading Sequence
 
 This page documents the boot-up sequence from process entry to the main menu.
-The sequence is derived from `crimsonland_main` analysis and the iterative asset loader `load_textures_step`.
+The sequence follows the recovered `crimsonland_main`
+(`decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp`), `game_startup_init`
+and the iterative asset loader `load_textures_step`.
 
 ## 1. System Initialization
 (`crimsonland_main` start)
 
-1. **DirectX / System Checks:** Verifies DX8.1+, SSE support, etc.
-2. **Path Setup:** Sets current working directory (`crt_getcwd`).
-3. **Console Init:** Registers commands (`console_register_command`) and core cvars (`register_core_cvars`).
-4. **Config Load:** Loads `crimson.cfg` and executes `autoexec.txt`.
-5. **Grim2D Init:**
-   - `grim_init_system`
-   - `grim_apply_config` (Resolution/Window mode)
-6. **Audio/Terrain Init:** `init_audio_and_terrain` (`0x0042a9f0`).
+1. **DirectX Check:** `dx_get_version` requires DX 8.1+; `Direct3DCreate8` is a presence check.
+2. **Path Setup:** Stores the current working directory (`crt_getcwd`).
+3. **Config File + Commands:** `config_ensure_file`, then console commands (`console_register_command`).
+4. **Grim2D Load:** `grim_load_interface`, then core cvars (`register_core_cvars`).
+5. **Config Load:** `config_load_presets` reads `crimson.cfg`; `game_load_status` and `play_time_load`.
+6. **Grim Config:** `grim_apply_config` (resolution/window mode dialog), then `config_sync_from_grim`.
+7. **Grim2D Init:** `grim_init_system`.
+8. **Autoexec:** executes `autoexec.txt`.
+9. **Audio/Terrain Init:** `init_audio_and_terrain` (`0x0042a9f0`).
 
 ## 2. Splash Assets Loading
 (`crimsonland_main` continued)
@@ -47,8 +50,7 @@ exact draw calls for the splash/loading screen at 800x600. Key facts:
   the captured splash frame.
 
 - **Drawn textures:** `cl_logo`, `loading`, `logo_esrb`.
-- **Band frame:** 1px rectangle around the logo band, rendered using
-  `cl_logo` as a solid-tinted quad.
+- **Band frame:** untextured 1px rectangle around the logo band.
 
 ### Geometry (800x600)
 
@@ -120,8 +122,11 @@ Each pass uses `grim_get_texture_handle` + `grim_bind_texture`, then
    - Left: `x = -4`, `y = (screen_height * 0.5) - 68`, `w = 1`, `h = 128`
    - Right: `x = screen_width + 4`, `y = (screen_height * 0.5) - 68`, `w = 1`, `h = 128`
 
-> The band frame draw is implemented inside `grim.dll` (callsites in the DLL),
-> but the geometry and color are confirmed via Frida capture.
+> The band frame is `startup_render_loading_outline` in
+> `decomp/1.9/crimsonland/crimsonland/game_startup_init.cpp`: one
+> `grim_draw_rect_outline(-4, h/2 - 68, w + 8, 128)` call, which
+> `decomp/1.9/grim/render/draw_rect_outline.cpp` expands into the four quads
+> above. Its tint is `render_tint_color_*` with alpha `loading_alpha * 0.7`.
 
 ## 5. Company Logo Sequence (Static)
 
@@ -189,16 +194,17 @@ While this loop runs, the `loading` texture (`load\loading.jaz`) is displayed on
 | **9** | **Finalization:** Creates `bullet_i` and `aim64` sprites. Sets `game_state_id = 0`. |
 
 ## 7. Startup Finalization
-(`game_startup_init` @ `0x0042b290`)
+(`game_startup_init_prelude` @ `0x0042b090`)
 
-Once loading is complete (`step > 9`):
+Once loading is complete, `game_startup_init` runs
+`game_startup_init_prelude` (`decomp/1.9/crimsonland/crimsonland/game_startup_init_prelude.cpp`):
 
 1. **Effect/UV Tables:** `effect_uv_tables_init`.
 2. **Databases:** `perks_init_database`, `weapon_table_init`.
 3. **Game Core:** `game_core_init`.
-4. **Easter Eggs:** Checks system date (e.g. Sep 12, Nov 8, Dec 18) for special behavior (`s_balloon`).
+4. **Easter Eggs:** On Sep 12, Nov 8 and Dec 18 (local date) it loads the `balloon` texture (`balloon.tga`).
 5. **Gameplay Reset:** `gameplay_reset_state`, `terrain_generate_random`.
-6. **Registry:** Updates "Time Played" counter.
+6. **Registry:** Reads the `timePlayed` counter into `time_played_ms`.
 
 ### Boot music handoff (runtime evidence)
 

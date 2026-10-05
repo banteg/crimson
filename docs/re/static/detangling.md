@@ -24,7 +24,7 @@ uv run crimson match status
 - `analysis/annotations/functions.json` retains address-keyed recovery notes.
 - `tools/match/STATUS.md` reports matching results; each scratch's configuration
   identifies its source, including bodies moved into `decomp/`.
-- [Binary analysis](binary-analysis.md) describes current source/view lookup.
+- `analysis/README.md` describes current source/view lookup.
 - [Native linking](native-linking.md) distinguishes recovered code, library
   providers, linkability and byte-match evidence.
 
@@ -36,7 +36,7 @@ uv run crimson match status
 - [Gameplay](../../crimsonland-exe/gameplay.md), [Survival](../../crimsonland-exe/survival.md),
   [UI](../../crimsonland-exe/ui.md), and [online scores](../../crimsonland-exe/online-scores.md).
 - [Perk call sites](perks-runtime-reference.md) and [mechanics](../../mechanics/perks.md).
-- [Grim API](../../grim2d/api.md) and its [evidence appendix](../../grim2d/api-evidence.md).
+- [Grim API](../../grim2d/api.md).
 
 Keep new findings in the owning reference page after verification. A recovered
 name is not by itself proof of behavior; retain instruction addresses, capture

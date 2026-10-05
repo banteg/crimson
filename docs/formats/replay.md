@@ -5,7 +5,7 @@ tags:
   - replay
 ---
 
-# Replay format (v24)
+# Replay format
 
 A replay (`.crd`) records one run: the settings it started from, every tick's
 inputs, and the result the recording game derived when the run ended. A

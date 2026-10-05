@@ -66,7 +66,7 @@ typedef struct creature_t {
     float target_offset_x;
     float target_offset_y;
     float orbit_angle;
-    float orbit_radius;
+    creature_orbit_radius_t orbit_radius;
     int flags;
     int ai_mode;
     float anim_phase;
@@ -80,13 +80,13 @@ Key helpers:
 - `creature_update_all` (`0x00426220`) is the primary update loop (movement, targeting, AI, attacks).
 - `creatures_none_active` (`0x00428210`) scans the pool and returns nonzero when empty.
 
-Field map (medium confidence):
+Field map:
 
 | Offset | Field | Symbol | Evidence |
 | --- | --- | --- | --- |
 | `0x00` | active (byte) | `creature_pool` | set on allocation; dying/corpse entries can remain active until lifecycle completion. |
 | `0x04` | phase seed | `creature_phase_seed` | randomized on spawn; used to offset orbit/aim timing. |
-| `0x08` | state flag | `creature_state_flag` | set to `1` in spawners and during AI transitions; exact meaning TBD. |
+| `0x08` | state flag | `creature_state_flag` | Write-only: set to `1` by spawners, AI transitions, and projectile hits (one hit path sets `0`); no reads in the recovered source. |
 | `0x09` | collision flag | `creature_collision_flag` | Plaguebearer infection flag; propagates between nearby creatures and drives creature health loss. |
 | `0x0c` | collision timer | `creature_collision_timer` | shared timer for infection and Radioactive health effects; player attacks use `attack_cooldown`. |
 | `0x10` | lifecycle stage | `creature_lifecycle_stage` | set to `16.0` on spawn, decremented through death/corpse rendering, and used as the AoE eligibility gate (`lifecycle_stage > 5.0`). |
@@ -118,8 +118,8 @@ Field map (medium confidence):
 | `0x7c` | target offset x | `creature_target_offset_x` | used when AI mode links to another creature. |
 | `0x80` | target offset y | `creature_target_offset_y` | used when AI mode links to another creature. |
 | `0x84` | orbit angle | `creature_orbit_angle` | combined with heading for orbiting AI modes. |
-| `0x88` | orbit radius/timer | `creature_orbit_radius` | used by orbiting and tethered AI modes. |
-| `0x8c` | flags | `creature_flags` | bit tests (`0x4/0x8/0x10/0x40/0x80/0x100/0x400`) gate behaviors. |
+| `0x88` | orbit radius / ranged projectile type | `creature_orbit_radius` | `creature_orbit_radius_t` union: a float radius/timer for orbiting and tethered AI modes; when `flags & 0x100` (`CREATURE_FLAG_RANGED_ATTACK_VARIANT`) it holds the `projectile_type_id_t` fired by `creature_update_all`. |
+| `0x8c` | flags | `creature_flags` | `creature_flags_t` bits (`tools/match/include/crimsonland_gameplay.h`); see [creature flags](animations.md#creature-flags). |
 | `0x90` | AI mode | `creature_ai_mode` | selects movement pattern (cases 0/1/3/4/5/6/7/8). |
 | `0x94` | anim phase | `creature_anim_phase` | accumulates to drive sprite timing; wraps at 31 or 15 depending on flags. |
 

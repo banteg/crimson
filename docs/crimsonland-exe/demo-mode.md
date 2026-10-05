@@ -211,15 +211,22 @@ things:
 
 ## Player behavior in demo mode (autoplay)
 
-`player_update @ 0x004136b0` treats `demo_mode_active` as a control-scheme
-override and routes through the same logic as the “auto-aim” control mode:
+`player_update @ 0x004136b0`
+(`decomp/1.9/crimsonland/gameplay/player_update_heading.cpp`) treats
+`demo_mode_active` like the computer-controlled schemes (movement or aim
+scheme `5`):
 
 - Maintains `player_auto_target` (`player+0x2fc`) as the nearest living creature
   with a 64-unit hysteresis.
 
-- Aiming is biased by arena center:
-  - if no valid target: aim away from `(512,512)`
-  - if within 300 units of center: aim at the target; otherwise aim relative to center
+- Movement is anchored on the arena centre `(512,512)`:
+  - no living target: the heading is perpendicular to the centre direction, so the player circles the centre
+  - farther than 300 units from the centre: walk back toward the centre
+  - otherwise: walk toward the target
 
-The exact firing behavior in this mode still needs confirmation (movement/aim
-are clearly autonomous; the fire gating should be verified with a runtime probe).
+- Aim: the aim point moves toward the target at `6 * distance` units per second
+  (snapping once within 4 units), and the heading follows the aim point.
+
+- Firing: `auto_fire` is set when the aim point is within 128 units of a living
+  target and is ORed with the fire key in the fire gate, so the player shoots
+  whenever the weapon is ready and the aim has nearly converged.

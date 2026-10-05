@@ -5,12 +5,13 @@ tags:
 
 # Online high scores (WinINet protocol)
 
-This is the classic 1.9.93 online leaderboard client logic as recovered from
-static analysis. The implementation lives in two threads:
+This is the classic 1.9.93 online leaderboard client logic. The implementation
+lives in two threads:
 
-- High score submit/receive thread: `highscore_sync_worker` (`0x0042d0e0`)
-  (logs "beginthread () highscores thread.")
-- Version check thread: `statistics_update_check_worker` (`0x0042d8a0`)
+- High score submit/receive thread: `highscore_sync_worker` (`0x0042d0e0`,
+  `decomp/1.9/crimsonland/crimsonland/highscore_sync_worker.cpp`) (logs "beginthread () highscores thread.")
+- Version check thread: `statistics_update_check_worker` (`0x0042d8a0`,
+  `decomp/1.9/crimsonland/crimsonland/statistics_update_check_worker.cpp`)
   (logs "beginthread () (version check)")
 
 The client uses WinINet (`InternetOpenA`, `InternetConnectA`, `HttpOpenRequestA`,
@@ -143,19 +144,13 @@ not critical for correctness.
   - `0x15`, `count_a`, `count_b`, then `0x44 * (count_a + count_b)` bytes.
   - You can return zero records by sending three bytes: `0x15 0x00 0x00`.
 
-## Open questions (need runtime confirmation)
+## Client-side semantics
 
-- Exact semantics of header byte `0x04` (name slot / full version gate).
-- Whether `count_a` vs `count_b` are interpreted as local vs internet scores.
-- Any server-side validation expected for the 0x40-byte submitted records.
-
-## Runtime wishlist (windows-vm)
-
-If we want to validate with live captures:
-
-- Hook `HttpSendRequestA` in the highscores thread and dump:
-  - `lpOptional` buffer (payload) and `dwOptionalLength`.
-  - `lpszObjectName` (path) and `lpszHeaders`.
-- Hook `InternetReadFile` to dump the response body.
-- Trigger: use the "Update scores" / "Receive scores" UI flow in the high
-  scores screen and submit a fresh local high score.
+- Header byte `0x04` is only computed and sent: it is `1` when saved-name slot other
+  than 0 is selected (`config_selected_saved_name_slot != 0`) in the full
+  version, otherwise `0`. Nothing else in the client depends on it.
+- `count_a` and `count_b` are only summed (for the length check) and logged as
+  `"<-- %d scores (%d+%d) received"`; every received record is saved the same
+  way, so the split carries no meaning on the client.
+- Any validation of the submitted `0x40`-byte records is server-side; the
+  client only filters with `highscore_submit_full_version_guard` before sending.

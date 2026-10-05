@@ -15,7 +15,8 @@ See also: [Creature pool struct](struct.md), [Atlas notes](../formats/atlas.md).
   rate stored in the type table (`creature_type_table`).
 
 - The phase wraps at **31** for the long strip or **15** for the short ping‑pong strip.
-- Evidence: `analysis/frida/creature_anim_trace_summary.json` (captured with a Frida trace).
+- Historical evidence: `analysis/frida/creature_anim_trace_summary.json` (a Frida trace from before the
+  tooling was retired); the recovered `creature_update_all` source is authoritative.
 
 ## Strip selection and frame mapping
 
@@ -53,7 +54,8 @@ When `crimson.cfg` `shadows_enabled` is enabled (`config_shadows_enabled`) and t
 - alpha is derived from creature tint alpha (`tint_a * 0.4` in the decompile)
 - the sprite is slightly upscaled (~`size * 1.07`) and offset down-right before the main draw
 - for long-strip corpses (`lifecycle_stage < 0.0`), the shadow alpha decays much faster: `tint_a * 0.4 + lifecycle_stage * 0.5` (clamped to `>= 0`).
-- Evidence: `analysis/frida/creature_render_trace_summary.json` (captured with a Frida trace).
+- Historical evidence: `analysis/frida/creature_render_trace_summary.json` (a Frida trace from before the
+  tooling was retired); the recovered `creature_render_type` source is authoritative.
 
 Each species finishes **all shadows before any body**, followed by its optional
 hit flashes. The species order is zombie, spider_sp1, spider_sp2, alien, lizard.
@@ -97,13 +99,22 @@ is positive, before the Freeze branch, and allows it to cross below zero.
 Spawn allocation clears it. The Python port implements the flash. See the
 [native lifetime and draw audit](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-hit-flash-2026-09-11/README.md).
 
-## Creature flags related to animation / attacks (partial)
+## Creature flags
 
-The `creature_flags` bitfield is consulted in `creature_update_all` and related helpers:
+`creature_t.flags` holds `creature_flags_t` bits
+(`tools/match/include/crimsonland_gameplay.h`):
 
-- **0x4** — short ping‑pong animation strip.
-- **0x10** — ranged attack variant; also selects the `+0x20` strip offset in rendering.
-- **0x40** — force long animation strip even if `0x4` is set.
+| Bit | Name | Behavior |
+| --- | --- | --- |
+| `0x01` | `CREATURE_FLAG_SELF_DAMAGE_TICK` | `creature_update_all` applies `60 * dt` damage per tick; `creature_render_all` draws a red overlay. |
+| `0x02` | `CREATURE_FLAG_SELF_DAMAGE_TICK_STRONG` | Same tick at `180 * dt` (checked before `0x01`). |
+| `0x04` | `CREATURE_FLAG_ANIM_PING_PONG` | Short 8-frame ping‑pong animation strip. |
+| `0x08` | `CREATURE_FLAG_SPLIT_ON_DEATH` | `creature_handle_death` clones the creature into split children while `size > 35`. |
+| `0x10` | `CREATURE_FLAG_RANGED_ATTACK_SHOCK` | Fires `PROJECTILE_TYPE_PLASMA_RIFLE` with the shock sound (cooldown `+1.0`); hits spawn an extra effect; selects the `+0x20` strip offset in rendering. |
+| `0x40` | `CREATURE_FLAG_ANIM_LONG_STRIP` | Forces the long animation strip even if `0x4` is set. |
+| `0x80` | `CREATURE_FLAG_AI7_LINK_TIMER` | `link_index` counts up as a millisecond timer that drives the hold-timer AI mode. |
+| `0x100` | `CREATURE_FLAG_RANGED_ATTACK_VARIANT` | Fires the projectile type stored in `orbit_radius` (`creature_orbit_radius_t`); cooldown `rand(0..3) * 0.1 + orbit_angle`. |
+| `0x400` | `CREATURE_FLAG_BONUS_ON_DEATH` | `creature_handle_death` drops the bonus in `bonus_args` (overlaying `link_index`). |
 
 ## Creature type table (`creature_type_texture` / `creature_type_table`)
 
@@ -118,7 +129,7 @@ Stride: `0x44` bytes (`0x11` floats). Indexed by `type_id`.
 - `creature_type_spider_sp2` at `0x00482838`
 - `creature_type_trooper` at `0x0048287c`
 
-Field map (partial):
+Field map (`creature_type_t`, `third_party/headers/crimsonland_types.h`):
 
 | Offset | Field | Evidence |
 | --- | --- | --- |
@@ -129,7 +140,9 @@ Field map (partial):
 | 0x10 | sfx bank A [3] | same selection as above (0..3 range proves this slot is live). |
 | 0x14 | sfx bank B [0] | contact-damage removal path picks `rand() & 1` and plays a per-type sound. |
 | 0x18 | sfx bank B [1] | same selection as above (second slot in the 0..1 range). |
-| 0x20 | unknown (const 1.0) | set to `1.0` for every type in the init routine; no reads found in decompiled output. |
+| 0x1c | padding | `_pad0`; never accessed. |
+| 0x20 | `unused_value` | Write-only: set to `1.0` for the five animated types in `gameplay_reset_state`; never read. |
+| 0x24 | padding | `_pad1[0x10]` (`0x24..0x33`); never accessed. |
 | 0x34 | anim rate | multiplies animation step in `creature_update_all`. |
 | 0x38 | atlas base frame | start frame for the long strip (used with `+0x10` / `+0x20` offsets in `creature_render_type`). |
 | 0x3c | corpse frame | used by corpse sprite paths. |
@@ -148,5 +161,8 @@ Known initial entries (from the reset/init routine that loads creature textures)
 
 Notes:
 
-- No references to offsets `0x1c..0x30` were found in the decompiled output.
-  Only offset `0x20` is initialized (to `1.0`), so the remaining fields appear unused or reserved in this build.
+- Offsets `0x1c` and `0x24..0x33` are padding in `creature_type_t`; `0x20`
+  (`unused_value`) is written but never read.
+- `gameplay_reset_state` (`decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp`)
+  sets the trooper's texture, `sfx_bank_a[0..2]`, and `corpse_frame = 7` only;
+  its `anim_rate`, `base_frame`, and `anim_flags` stay zero.

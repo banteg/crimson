@@ -10,11 +10,14 @@ can hang names and subsystems off a stable boot sequence.
 ## Entry address
 
 - PE entrypoint VA: `0x00463026`
-- Ghidra function: `entry` (`entry @ 00463026`)
+- Function: `start`, the VC6 SP6 `WinMainCRTStartup` from LIBCMT's
+  `wincrt0.obj`, matched byte-exact against the archive member; it calls
+  `crimsonland_main` as `WinMain`.
+
 ## Trace (depth 2, internal calls only)
 
 ```
-- entry -> crt_mt_init, crt_io_init, crt_build_argv, crt_fast_error_exit, crt_exit, crt_build_environ, crt_skip_program_name, crt_heap_init ...
+- start -> crt_mt_init, crt_io_init, crt_build_argv, crt_fast_error_exit, crt_exit, crt_build_environ, crt_skip_program_name, crt_heap_init ...
   - crt_mt_init -> crt_init_locks, crt_init_thread_data (0x004654a5), crt_calloc (0x004667ac)
   - crt_io_init -> __amsg_exit, _malloc
   - crt_build_argv -> __amsg_exit, _malloc, crt_mbcs_init (0x0046d5c7), crt_parse_cmdline
@@ -68,7 +71,7 @@ can hang names and subsystems off a stable boot sequence.
 
 ## Classic Windows entry sequence (ordered)
 
-From `entry` (`0x00463026`), the classic binary performs a short CRT/bootstrap
+From `start` (`0x00463026`), the classic binary performs a short CRT/bootstrap
 sequence and then enters the main game loop.
 
 High-level call order:
@@ -97,8 +100,8 @@ Notes:
 ## Pre-logo loading pipeline (inside `crimsonland_main`)
 
 This is the simplified startup slice **before** the logo/splash assets are first
-loaded. All callsites below are in `crimsonland_main` at `0x0042c450`; use
-`just analysis-function crimsonland_main` to refresh the current tool views.
+loaded. All callsites below are in `crimsonland_main` at `0x0042c450`
+(`decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp`).
 
 1) Seed + DirectX check:
    - `crt_time` → `crt_srand`.
@@ -115,8 +118,8 @@ loaded. All callsites below are in `crimsonland_main` at `0x0042c450`; use
 
 4) Grim2D interface:
    - `grim_load_interface` (dev path), fallback to `grim.dll`.
-   - Secret-hint print block executes immediately after this call (guard looks
-     bogus in the decompiler).
+   - The developer-hint print block after this call never runs: its guard,
+     `grim_interface_ptr == grim_interface_ptr + 1`, is always false.
 
    - `register_core_cvars`.
 5) Config + save bootstrap:
@@ -148,17 +151,14 @@ loaded. All callsites below are in `crimsonland_main` at `0x0042c450`; use
 The "pre-logo" phase ends at step 8; step 9 is the earliest point where the
 logo/splash textures become available.
 
-## Game startup init boundary (BN-assisted)
+## Game startup init boundary
 
-Binary Ninja HLIL shows the **real `game_startup_init` entry** at
-`0x0042b290` (function `game_startup_init`), with a caller inside
-`crimsonland_main` (`0x0042c450` ref at `0x0042cb1d`).
+`crimsonland_main` installs `game_startup_init` (`0x0042b290`,
+`decomp/1.9/crimsonland/crimsonland/game_startup_init.cpp`) as Grim's frame
+callback (`grim_set_config_var(0x2d, ...)`); it owns the loading screen, the
+intro music play/mute, and the theme switch. `game_startup_init_prelude` (`0x0042b090`,
+`decomp/1.9/crimsonland/crimsonland/game_startup_init_prelude.cpp`) is a
+separate function it calls once texture loading finishes.
 
-Ghidra’s auto-analysis had previously created a shorter function at
-`0x0042b090` that does **not** include the intro music handoff block. We now
-label `0x0042b090` as `game_startup_init_prelude`; the shared function map also
-creates `game_startup_init` at `0x0042b290`, preserving the intro play/mute and
-theme switch logic in every tool.
-
-- The early CRT cluster is now tagged as `crt_*` (heap/TLS/IO); confirm exact
-  MSVCRT symbol names later.
+The `crt_*` functions are byte-exact archive matches against the VC6 SP6
+`LIBCMT.LIB` (see `analysis/library_provenance.json`).

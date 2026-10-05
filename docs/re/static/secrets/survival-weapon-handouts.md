@@ -21,22 +21,26 @@ weapon behavior.
 
 ## Handout A: time-based Shrinkifier 5k
 
-`survival_update` grants id `24` if all of these are true:
+`survival_update` runs the check when all of these are true:
 
 - single-player (`config_player_count == 1`)
 - `survival_reward_damage_seen == 0`
 - `survival_reward_fire_seen == 0`
 - `survival_elapsed_ms > 64000`
 - `survival_reward_handout_enabled != 0`
-- current weapon is Pistol (`player_weapon_id == 1`)
 
 Side effects:
 
-- `weapon_assign_player(0, 24)`
-- `survival_reward_weapon_guard_id = 24`
-- `survival_reward_handout_enabled = 0`
-- `survival_reward_damage_seen = 1`
-- `survival_reward_fire_seen = 1`
+- only if the current weapon is Pistol (`player_state_table[0].weapon_id == 1`):
+  - `weapon_assign_player(0, 24)`
+  - `survival_reward_weapon_guard_id = 24`
+- always:
+  - `survival_reward_handout_enabled = 0`
+  - `survival_reward_damage_seen = 1`
+  - `survival_reward_fire_seen = 1`
+
+The flag writes sit outside the Pistol test, so reaching 64 seconds while
+holding another weapon consumes the chance without a grant.
 
 ## Handout B: low-health centroid Blade Gun
 
@@ -50,7 +54,7 @@ Side effects:
 - this check does **not** require `survival_reward_handout_enabled != 0`
   and does **not** test `survival_reward_damage_seen`
 
-Centroid formula in decompile:
+Centroid formula:
 
 - `cx = (p0.x + p1.x + p2.x) * 0.33333334`
 - `cy = (p0.y + p1.y + p2.y) * 0.33333334`
@@ -119,13 +123,14 @@ normal unlocks.
 
 ## Evidence pointers
 
-- Address-keyed native analysis:
-  - `survival_update` handout checks around `0x00407cd0`
-  - `gameplay_render_world` guard checks around `0x00405960`
-  - `player_update` fire flag write around `0x004136b0`
-  - `player_take_damage` damage flag write around `0x00425e50`
-  - `creature_handle_death` recent-death tracking around `0x0041e910`
-  - reset init around `0x00412d70`
+- Recovered sources under `decomp/1.9/crimsonland/`:
+  - `game/survival_update.cpp` (`0x00407cd0`): both handout checks
+  - `game/gameplay_render_world.cpp` (`0x00405960`): guard checks
+  - `gameplay/player_update_heading.cpp` (`player_update`, `0x004136b0`):
+    fire flag write
+  - `crimsonland/player_take_damage.cpp` (`0x00425e50`): damage flag write
+  - `crimsonland/creature_handle_death.c` (`0x0041e910`): recent-death tracking
+  - `gameplay/gameplay_reset_state.cpp` (`0x00412dc0`): run reset
 - `docs/re/static/reference/weapon-id-map.md`
 - `docs/re/static/secrets/weapon-candidates.md`
 - `docs/crimsonland-exe/survival.md`

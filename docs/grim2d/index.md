@@ -27,7 +27,6 @@ At a high level, Grim2D provides:
 ## Related docs
 
 - [API vtable](api.md)
-- [API evidence](api-evidence.md)
 
 ## Data map highlights (grim.dll)
 

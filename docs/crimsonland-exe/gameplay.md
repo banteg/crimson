@@ -17,27 +17,27 @@ standalone data tables.
 - Spawning projectiles and effects tied to the active weapon.
 - Applying status timers (bonus/perk effects).
 
-### Per-player runtime fields (partial)
+### Key per-player runtime fields
 
-These are the most important per-player arrays that bridge weapons, perks, and
-bonuses (stride `0xd8`, base `player_health` / `0x004908d4`). See
-[Player struct](../structs/player.md) for offsets and related fields.
+These are the most important per-player fields that bridge weapons, perks, and
+bonuses (`player_state_t`, base `player_state_table` / `0x004908b0`, stride
+`0x360`). See [Player struct](../structs/player.md) for the full field map.
 
 | Offset | Symbol | Meaning | Source / Notes |
 | --- | --- | --- | --- |
-| `0x294` | `player_spread_heat` | spread/heat | decays each frame; Sharpshooter alters decay and disables per-shot heat gain |
-| `0x29c` | `player_weapon_id` | current weapon id | set by `weapon_assign_player` |
-| `0x2a0` | `player_clip_size` | clip size | from weapon table, modified by Ammo Maniac + My Favourite Weapon |
-| `0x2a8` | `player_ammo` | current ammo | reset to clip size when reload completes |
-| `0x2ac` | `player_reload_timer` | reload timer | decremented each frame; used by Angry/Anxious/Stationary Reloader |
-| `0x2b0` | `player_shot_cooldown` | shot cooldown | decremented each frame; slowed by Weapon Power Up timer |
-| `0x2b4` | `player_reload_timer_max` | reload timer max | used to compute reload progress (HUD + Angry Reloader) |
-| `0x2dc` | `player_aim_heading` | aim heading (radians) | used for projectile direction + overlays |
-| `0x2f0` | `player_speed_bonus_timer` | speed bonus timer | Bonus id 13 (Speed) |
-| `0x2f4` | `player_shield_timer` | shield timer | Bonus id 10 (Shield) |
-| `0x2f8` | `player_fire_bullets_timer` | Fire Bullets timer | Bonus id 14 (Fire Bullets) |
+| `0x2b8` | `player_spread_heat` | spread/heat | decays each frame; Sharpshooter alters decay and disables per-shot heat gain |
+| `0x2c0` | `player_weapon_id` | current weapon id | set by `weapon_assign_player` |
+| `0x2c4` | `player_clip_size` | clip size | from weapon table, modified by Ammo Maniac + My Favourite Weapon |
+| `0x2cc` | `player_ammo` | current ammo | reset to clip size when reload completes |
+| `0x2d0` | `player_reload_timer` | reload timer | decremented each frame; used by Angry/Anxious/Stationary Reloader |
+| `0x2d4` | `player_shot_cooldown` | shot cooldown | decremented each frame; slowed by Weapon Power Up timer |
+| `0x2d8` | `player_reload_timer_max` | reload timer max | used to compute reload progress (HUD + Angry Reloader) |
+| `0x300` | `player_aim_heading` | aim heading (radians) | used for projectile direction + overlays |
+| `0x314` | `player_speed_bonus_timer` | speed bonus timer | Bonus id 13 (Speed) |
+| `0x318` | `player_shield_timer` | shield timer | Bonus id 10 (Shield) |
+| `0x31c` | `player_fire_bullets_timer` | Fire Bullets timer | Bonus id 14 (Fire Bullets) |
 
-Alt-weapon swap caches live in the same struct (offsets `0x2b8..0x2d0`); see
+Alt-weapon swap caches live in the same struct (offsets `0x2dc..0x2f4`); see
 [Weapon table](../re/static/reference/weapon-table.md) for the current field map.
 
 Global bonus timers used by `player_update` and the main loop:

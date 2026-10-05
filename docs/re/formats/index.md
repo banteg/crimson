@@ -17,3 +17,5 @@ Original game file and asset format reverse engineering used by extraction and r
 - [CLI setup and invocation](../../contributor/setup.md)
 - [Save/status format](../../formats/save-status-format.md)
 - [Config blob (crimson.cfg)](../../formats/crimson-cfg.md)
+- [Local high scores](../../formats/highscores.md)
+- [Replays (.crd)](../../formats/replay.md)

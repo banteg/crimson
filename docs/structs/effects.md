@@ -42,22 +42,22 @@ typedef struct particle_t {
 } particle_t;
 ```
 
-Layout (partial):
+Layout:
 
 | Offset | Field | Evidence |
 | --- | --- | --- |
 | 0x00 | active (byte) | Set to `1` on spawn; cleared by update/render when expired. |
 | 0x01 | render flag | Set to `1` on spawn; referenced in render loops. |
-| 0x04 | pos_x | Written from `*param_1` on spawn. |
-| 0x08 | pos_y | Written from `param_1[1]` on spawn. |
+| 0x04 | pos_x | Copied from `pos` on spawn. |
+| 0x08 | pos_y | Copied from `pos` on spawn. |
 | 0x0c | vel_x | `cos(angle) * 90` or `*30` on spawn. |
 | 0x10 | vel_y | `sin(angle) * 90` or `*30` on spawn. |
 | 0x14 | scale_x | Initialized to `1.0` on spawn. |
 | 0x18 | scale_y | Initialized to `1.0` on spawn. |
 | 0x1c | scale_z | Initialized to `1.0` on spawn. |
 | 0x20 | age / timer | Zeroed on spawn. |
-| 0x24 | intensity | `param_4` (fast) or `1.0` (slow). |
-| 0x28 | angle | Written from `param_2` on spawn. |
+| 0x24 | intensity | `intensity` argument (fast) or `1.0` (slow). |
+| 0x28 | angle | Written from the `angle` argument on spawn. |
 | 0x2c | spin | Random `rand % 0x274 * 0.01`. |
 | 0x30 | style id | Set to `0`, `1`, `2`, or `8` at callsites. |
 | 0x34 | target id | Set to `-1` in slow variant. |
@@ -84,48 +84,58 @@ Spawn helper:
 
 ### Struct view (secondary_projectile_t)
 
+Flattened view of `secondary_projectile_t` in
+`third_party/headers/crimsonland_types.h` (the header wraps the tail fields in
+unions for native addressing):
+
 ```c
 typedef struct secondary_projectile_t {
     unsigned char active;
     unsigned char _pad0[3];
     float angle;
-    float speed;
+    float life_timer;
     float pos_x;
     float pos_y;
     float vel_x;
     float vel_y;
-    int type_id;
-    float lifetime;
+    secondary_projectile_type_id_t type_id;
+    float trail_timer;
     int target_id;
+    unsigned int unused_0x28;
 } secondary_projectile_t;
 ```
 
-Layout (partial):
+Layout (`0x2c` bytes; spawn values from
+`decomp/1.9/crimsonland/crimsonland/fx_spawn_secondary_projectile.cpp`):
 
 | Offset | Field | Evidence |
 | --- | --- | --- |
 | 0x00 | active (byte) | Set to `1` on spawn; cleared in `projectile_update`. |
-| 0x04 | angle | Set from `param_2`. |
-| 0x08 | speed | Initialized to `2.0` on spawn. |
-| 0x0c | pos_x | Written from `*param_1` on spawn. |
-| 0x10 | pos_y | Written from `param_1[1]` on spawn. |
-| 0x14 | vel_x | `cos(angle - PI/2) * 90` (or `*190` for type `2`). |
-| 0x18 | vel_y | `sin(angle - PI/2) * 90` (or `*190` for type `2`). |
-| 0x1c | type id | Spawn parameter; branches in `projectile_update`. |
-| 0x20 | lifetime | Zeroed on spawn; decremented in update. |
-| 0x24 | target id | Set to nearest creature when `type_id == 2`. |
+| 0x04 | angle | Spawn heading; re-aimed every tick for type `2`. |
+| 0x08 | life_timer | Set to `2.0` on spawn; decremented in `projectile_update` (type `2` at 0.5x); scales hit damage. |
+| 0x0c | pos_x | Copied from `pos` on spawn. |
+| 0x10 | pos_y | Copied from `pos` on spawn. |
+| 0x14 | vel_x | `cos(angle - PI/2) * 90` (`* 190` for type `2`). In the type `3` state it holds the detonation timer. |
+| 0x18 | vel_y | `sin(angle - PI/2) * 90` (`* 190` for type `2`). In the type `3` state it holds the detonation scale. |
+| 0x1c | type_id | `secondary_projectile_type_id_t`; spawn parameter. |
+| 0x20 | trail_timer | Zeroed on spawn; drained by `(abs(vel_x) + abs(vel_y)) * dt * 0.01`; on `< 0` spawns a trail sprite and resets to `0.06`. |
+| 0x24 | target_id | Set to the creature nearest the player's aim when `type_id == 2`; re-acquired when the target dies. |
+| 0x28 | unused_0x28 | Write-only: set to `-100` by `secondary_projectile_pool_global_init`; no reads in the recovered source. |
 
-`projectile_update` (`0x00420b90`) advances and damages creatures for this pool, and the render path
-in the same function draws the sprite variants based on `type id`.
+`projectile_update` (`decomp/1.9/crimsonland/crimsonland/projectile_update.cpp`)
+advances and damages creatures for this pool; `projectile_render` draws the
+sprite variants based on `type_id`.
 
 ### Type id behaviors (secondary pool)
 
+Spawn sites are in `decomp/1.9/crimsonland/gameplay/player_update_heading.cpp`.
+
 | type id | Behavior | Sources |
 | --- | --- | --- |
-| `1` | Straight projectile; accelerates while speed < ~500; lifetime decays at 1.0x. On hit, switches to type `3` detonation with base scale `1.0`; on timeout, switches with scale `0.5`. | Seeker Rockets (weapon id `0x0d`). |
-| `2` | Homing projectile; targets nearest creature and steers toward it (velocity += 800 * dt, capped ~350). Lifetime decays at 0.5x. On hit, switches to type `3` detonation with base scale `0.35`; on timeout, switches with scale `0.5`. | Plasma Shotgun (weapon id `0x0e`), Rocket Minigun (weapon id `0x12`). |
-| `4` | Straight projectile; accelerates while speed < ~600; lifetime decays at 1.0x. On hit, switches to type `3` detonation with base scale `0.25`; on timeout, switches with scale `0.5`. | Pulse Gun (weapon id `0x13`). |
-| `3` | Detonation state; expands over ~1s, applies radial damage each tick, spawns `fx_queue_add(0x10)` and clears when the timer > 1.0. | Triggered by types `1/2/4` or when their lifetime expires. |
+| `1` `ROCKET` | Straight projectile; velocity scales by `1 + 3*dt` while speed < 500; `life_timer` decays at 1.0x. Hit damage `life_timer * 50 + 500`. On hit, switches to type `3` with scale `1.0`; on timeout, scale `0.5`. | Rocket Launcher (weapon id `0x0c`). |
+| `2` `SEEKER_ROCKET` | Homing projectile; steers toward `target_id` (velocity += 800 * dt along the heading, backed off above speed 350). `life_timer` decays at 0.5x. Hit damage `life_timer * 20 + 80`. On hit, switches to type `3` with scale `0.35`; on timeout, scale `0.5`. | Seeker Rockets (weapon id `0x0d`), Mini-Rocket Swarmers (weapon id `0x11`). |
+| `4` `ROCKET_MINIGUN` | Straight projectile; velocity scales by `1 + 4*dt` while speed < 600; `life_timer` decays at 1.0x. Hit damage `life_timer * 20 + 40`. On hit, switches to type `3` with scale `0.25`; on timeout, scale `0.5`. | Rocket Minigun (weapon id `0x12`). |
+| `3` `EXPLODING` | Detonation state; the timer in `vel_x` grows by `3 * dt`, radius is `scale * timer * 80`, and creatures inside take `dt * scale * 700` each tick. When the timer passes `1.0` it queues `fx_queue_add(0x10)` and clears the entry. | Entered from types `1/2/4` on hit or when `life_timer <= 0`. |
 
 Render notes:
 
@@ -189,31 +199,6 @@ Notes:
 
 - `fx_queue_add` clamps the queue length to `0x7f` if the caller overflows it.
 
-## Sprite effect pool (`sprite_effect_pool` / `0x00496820`)
-
-Entry size: `0x2c` bytes. Pool size: `0x180` entries (looping to `0x49aa20`).
-
-### Struct view (sprite_effect_t)
-
-```c
-typedef struct sprite_effect_t {
-    int active;
-    float color_r;
-    float color_g;
-    float color_b;
-    float color_a;
-    float rotation;
-    float pos_x;
-    float pos_y;
-    float vel_x;
-    float vel_y;
-    float scale;
-} sprite_effect_t;
-```
-
-Field arrays are labeled in the data map (e.g. `sprite_effect_color_r`,
-`sprite_effect_pos_x`, `sprite_effect_scale`) at `sprite_effect_pool` + offsets.
-
 ## Rotated FX queue (`fx_queue_rotated` / `0x004aaf3c`)
 
 Queue size: `0x40` entries. Written by `fx_queue_add_rotated` (`0x00427840`)
@@ -240,7 +225,7 @@ Notes:
 
 - `fx_queue_render` binds `bodyset_texture` (`0x0048f7dc`) and maps `effect_id`
   through the creature type table: `frame = *(int *)(&creature_type_corpse_frame + effect_id * 0x44)`.
-  That offset is the per‑type `corpse frame` (see `creature.md`),
+  That offset is the per‑type `corpse frame` (see [Creature animations](../creatures/animations.md)),
   and the frame is converted to UVs via the 4x atlas table (`effect_uv4`, `u/v`).
 
 - The rotated queue is drawn in two passes: the first uses half alpha and a
@@ -316,7 +301,7 @@ The four vertices begin at `0x48` with a `0x1c` stride. The initializer writes
 `zrhw = (0.5, 1.0)` and opaque white to each vertex; the spawner fills `pos` and
 `tex`. `next_free` at `0xb8` links inactive entries.
 
-Layout (partial):
+Layout:
 
 | Offset | Field | Evidence |
 | --- | --- | --- |
@@ -342,9 +327,10 @@ Layout (partial):
 
 Notes:
 
-- `effect_spawn` fills a 4‑corner quad starting at `0x48`. The position and UV
-  components are spaced with a 7‑float stride, leaving three unknown floats
-  between the position and UV fields for each corner.
+- `effect_spawn` fills a 4‑corner quad starting at `0x48`. Each `effect_vertex_t`
+  is 7 floats: `pos`, then `zrhw` (2 floats) and the packed `color`, then `tex`.
+  The spawner writes only `pos` and `tex`; `zrhw` and `color` keep their
+  initializer values.
 
 - `effects_render` splits entries by `flags & 0x40`. Both passes build a 2x2
   rotation/scale matrix from `rotation` + `scale` and draw the quad data starting
@@ -372,7 +358,7 @@ Quad layout (from `effect_spawn` writes):
 | 0 | `0x48/0x4c` | `0x5c/0x60` | `(-half_w, -half_h)` + `(u0, v0)` |
 | 1 | `0x64/0x68` | `0x78/0x7c` | `( half_w, -half_h)` + `(u1, v0)` |
 | 2 | `0x80/0x84` | `0x94/0x98` | `( half_w,  half_h)` + `(u1, v1)` |
-| 3 | `0xa0/0xa4` | `0xb0/0xb4` | `(-half_w,  half_h)` + `(u0, v1)` |
+| 3 | `0x9c/0xa0` | `0xb0/0xb4` | `(-half_w,  half_h)` + `(u0, v1)` |
 
 - `effect_spawn` reads `effect_id_table` (`size_code`, `frame`) to pick atlas size + frame index, then
   pulls UVs from size-specific tables:
@@ -414,9 +400,9 @@ Entry size: `0x08` bytes. Indexed by `effect_id`.
 `effect_select_texture` (`0x0042e0a0`) reads this table and calls the renderer
 with grid sizes `16/8/4/2` depending on the size code (`0x10/0x20/0x40/0x80`).
 
-Runtime capture confirms Grim’s `set_atlas_frame` uses **full‑cell UVs** for
-particles; the `effect_uv_step_*` clamp is only applied when `effect_spawn`
-stores UVs in the effect pool.
+Grim’s `set_atlas_frame` (`decomp/1.9/grim/render/set_atlas_frame.cpp`) uses
+**full‑cell UVs** (`1 / atlas_size`); the `effect_uv_step_*` clamp is only
+applied when `effect_spawn` stores UVs in the effect pool.
 
 | Offset | Field | Evidence |
 | --- | --- | --- |
@@ -489,7 +475,26 @@ Spawn helper:
 
 - `fx_spawn_sprite` (`0x0041fbb0`)
 
-Layout (partial):
+### Struct view (sprite_effect_t)
+
+```c
+typedef struct sprite_effect_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    float color_r;
+    float color_g;
+    float color_b;
+    float color_a;
+    float rotation;
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    float scale;
+} sprite_effect_t;
+```
+
+Layout:
 
 | Offset | Field | Evidence |
 | --- | --- | --- |
@@ -499,11 +504,11 @@ Layout (partial):
 | 0x0c | color_b | Initialized to `1.0` on spawn; passed into render color. |
 | 0x10 | color_a / lifetime | Initialized to `1.0` on spawn, decremented by `dt`; when it reaches `<= 0` the entry is deactivated. Also passed into render color alpha. |
 | 0x14 | rotation | Seeded from `rand`, incremented by `dt * 3.0`, passed into `grim_set_rotation`. |
-| 0x18 | pos_x | Written from `param_1[0]`; advanced by `vel_x` each tick. |
-| 0x1c | pos_y | Written from `param_1[1]`; advanced by `vel_y` each tick. |
-| 0x20 | vel_x | Written from `param_2[0]`; scaled by `frame_dt` in update. |
-| 0x24 | vel_y | Written from `param_2[1]`; scaled by `frame_dt` in update. |
-| 0x28 | scale / size | Written from `param_3`; incremented by `dt * 60.0` before render, but not referenced in the current render path. |
+| 0x18 | pos_x | Copied from `pos`; advanced by `vel_x` each tick. |
+| 0x1c | pos_y | Copied from `pos`; advanced by `vel_y` each tick. |
+| 0x20 | vel_x | Copied from `vel`; scaled by `frame_dt` in update. |
+| 0x24 | vel_y | Copied from `vel`; scaled by `frame_dt` in update. |
+| 0x28 | scale / size | Written from the `scale` argument; incremented by `dt * 60.0` in `projectile_update`; drawn as the quad width/height in the sprite pass of `bonus_render`. |
 
 Notes:
 

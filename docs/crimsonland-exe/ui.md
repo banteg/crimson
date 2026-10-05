@@ -177,20 +177,20 @@ A common menu loop that:
 2) Runs `ui_elements_update_and_render`.
 3) Draws menu content and buttons (`ui_button_update`).
 
-### TODO (runtime)
+### World and HUD during perk selection
 
-Perk selection does **not** fade the world; it keeps the gameplay render pass and overlays active.
+Perk selection does **not** fade the world; it keeps the gameplay render pass and overlays active
+(`decomp/1.9/crimsonland/game/perk_selection_screen_update.cpp`).
 
 - `perk_selection_screen_update` calls `gameplay_render_world` but does **not** call `hud_update_and_render`, so the HUD
   disappears immediately when entering state `6`.
-- `gameplay_render_world` forces `ui_transition_alpha = 1.0` for `game_state_id == 6` (perk selection) and `== 9`
-  (gameplay), so the usual `ui_transition_alpha` gates in `player_render_overlays` / `creature_render_all` /
-  `projectile_render` / `bonus_render` do not hide those layers during perk selection.
-- The perk menu panel slides using the UI element timeline (`ui_elements_timeline`) and `ui_element_update`'s `render_mode`
-  offset path (slide_x).
-
-Pause/transition fades appear to be handled elsewhere (not perk selection). Capture HUD alpha when returning from perk
-selection to confirm the exact fade-in timing/curve.
+- Unless `gameplay_transition_latch` is set, `gameplay_render_world` forces `ui_transition_alpha = 1.0` while
+  `game_state_id` or `game_state_pending` is `6` (perk selection) or `9` (gameplay), so the usual `ui_transition_alpha` gates in `player_render_overlays` /
+  `creature_render_all` / `projectile_render` / `bonus_render` do not hide those layers during perk selection.
+- The perk menu panel slides with the UI element timeline (`ui_elements_timeline`).
+- On return to gameplay, `hud_update_and_render` draws the HUD with alpha
+  `ui_elements_timeline / (slot_28.timeline_end_ms - slot_28.timeline_start_ms)`, clamped to `1.0`, so the HUD fades
+  in linearly over the transition.
 
 The perk prompt origin/bounds globals are listed in `analysis/ghidra/maps/data_map.json`.
 
@@ -205,24 +205,13 @@ Recovered action-button globals for this state:
   `perk_selection_choice_color_idle_*` (`0x00480298..0x004802a4`) and
   `perk_selection_choice_color_hover_*` (`0x00480310..0x0048031c`).
 
-### Runtime capture request (next large run)
+### Menu item subtemplate blocks
 
-For deeper carving of `ui_menu_item_element` subtemplate blocks
-(`0x0048fd78..0x004902ff`), capture:
-
-- One memory snapshot immediately after `ui_menu_assets_init` (`0x00419dd0`)
-  returns.
-- One memory snapshot immediately after `ui_menu_layout_init` (`0x0044fcb0`)
-  returns.
-- Per-frame deltas for `0x0048fd78..0x004902ff` while visiting these states:
-  main menu (`0`), options, statistics, perk selection (`6`), and in-game HUD (`9`).
-- Write-trace events (address + value + EIP) for this range, especially writes to
-  offsets repeating with stride `0x1c` (8-slot blocks).
-- A trace of `ui_element_render` input pointers for frames where these blocks are
-  visible, so we can map block/slot identity to rendered widget role.
-
-Goal: promote block-local `_pad*` fields to named slot fields (position,
-mode/timeline, UV/color tuples) with confidence across menu variants.
+`ui_menu_item_subtemplate_block_01..06` (`0x0048fd78..0x004902e7`) are
+`ui_menu_item_subtemplate_block_t` records (`third_party/headers/crimsonland_types.h`):
+eight `0x1c`-byte `ui_menu_item_subtemplate_slot_t` vertices (`x`, `y`, `z`,
+`rhw`, packed `color`, `u`, `v`), followed by `texture_handle` (`+0xe0`) and
+`quad_mode` (`+0xe4`).
 
 ## UI element render (ui_element_render / 0x00446c40)
 

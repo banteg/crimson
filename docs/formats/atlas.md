@@ -169,7 +169,7 @@ glow path, not this Ion trail branch.
 
   - Drawn via **grid=8** in the creature render path.
   - Per‑enemy base frame offsets are stored in the enemy data struct
-    (e.g. `creature_type_base_frame = 0x20`, `_DAT_004827a4 = 0x10`, etc).
+    (e.g. `creature_type_table[0].base_frame = 0x20`, `creature_type_table[1].base_frame = 0x10`).
 ## Replicating the atlas cutting
 
 `src/crimson/atlas.py` provides the same slicing math used by the engine:
@@ -252,54 +252,14 @@ each frame.
 
 ## Enemy animation slices (grid 8)
 
-Enemies are rendered from 8×8 sheets (`+0x104(8, frame)`) with two selection
-paths in `creature_render_type` (`0x00418b60`):
+Enemy sheets are cut as 8×8 grids: `creature_render_type` (`0x00418b60`)
+selects cells with `grim_set_atlas_frame(8, frame)`. One sheet packs several
+animations for a type (the 32-frame long strip, its `+0x20` alternate strip,
+and the 8-frame ping-pong strip at `base_frame + 0x10`), and type variants can
+share a sheet by using different `base_frame` values.
 
-- **32‑frame strip**: `frame = floor(anim_phase)` (0..31), optionally mirrored
-  if the type table flag `(&creature_type_anim_flags)[type * 0x44] & 1` is set. If the
-  per‑creature flags include `0x10`, the frame offset shifts by `+0x20`
-  (indices 32..63).
-
-- **8‑frame ping‑pong strip**: `frame = base + 0x10 + pingpong(floor(anim_phase))`
-  where `base = *(int *)(&creature_type_base_frame + type * 0x44)` and ping‑pong folds a
-  0..15 phase into 0..7..0.
-
-Examples from the type init table (`gameplay_reset_state`, `0x00412dc0`):
-
-- Zombie: base `0x20`
-- Lizard: base `0x10`
-- Spider SP1/SP2: base `0x10`
-- Alien: base `0x20`
-
-The animation phase itself lives at creature offset `0x94` and is advanced in
-`creature_update_all` (`0x00426220`) using a per‑type rate (`&creature_type_anim_rate + type * 0x44`).
-
-These sheets often pack **multiple animations** for the same type (long strip
-plus short ping‑pong strip), and in some cases **multiple type variants** share
-one sheet by selecting different base offsets.
-
-### Enemy type table (creature_type_table)
-
-The render helper indexes a 0x44‑byte type table starting at `creature_type_table`.
-Known entries from `gameplay_reset_state` (`0x00412dc0`):
-
-| Type id | Texture | Base (short strip) | Anim rate (hex) | Mirror flag | Notes |
-| --- | --- | --- | --- | --- | --- |
-| 0 | `zombie.png` | `0x20` | `0x3f99999a` | 0 | uses 32‑frame strip by default |
-| 1 | `lizard.png` | `0x10` | `0x3fcccccd` | 1 | mirror flag set (`DAT_004827ac = 1`) |
-| 2 | `alien.png` | `0x20` | `0x3faccccd` | 0 | alt strip via creature flag `0x10` |
-| 3 | `spider_sp1.png` | `0x10` | `0x3fc00000` | 1 | mirror flag set (`DAT_00482834 = 1`) |
-| 4 | `spider_sp2.png` | `0x10` | `0x3fc00000` | 1 | mirror flag set (`DAT_00482878 = 1`) |
-| 5 | `trooper.png` | unknown | unknown | unknown | not initialized in `gameplay_reset_state` (`0x00412dc0`) |
-
-### Creature flags that select animation strips
-
-Creature flags are written in the spawn helper `creature_spawn_template` (`0x00430af0`) and control which
-strip is used in `creature_render_type` (`0x00418b60`).
-
-Examples:
-
-- `param_1 == 0x3a` sets `creature_flags = 0x10` (forces the `+0x20` strip).
-- Many IDs (e.g. `0x7`, `0x8`, `0x9`, `0x0b`) set `creature_flags = 0x4` (short strip).
-- `param_1 == 0` sets `creature_flags = 0x44`, which still uses the long strip
-  because bit `0x40` overrides the short‑strip branch.
+Frame selection, the per-type `creature_type_table` fields (`anim_rate`,
+`base_frame`, `corpse_frame`, `anim_flags`), and the `creature_flags_t` bits
+that pick a strip are documented in [Creature animations](../creatures/animations.md).
+Per-template flag assignments (from `creature_spawn_template`, keyed by
+`template_id`) are in [Creature spawning](../creatures/spawning.md#spawn-template-ids-direct-typeflags-map).

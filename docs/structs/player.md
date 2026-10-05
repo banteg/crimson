@@ -3,114 +3,113 @@ tags:
   - status-analysis
 ---
 
-# Player struct (player_health / 0x004908d4)
+# Player struct (player_state_table / 0x004908b0)
 
-This page tracks the per-player runtime struct stored in `player_health`
-(table base).
+This page tracks the per-player runtime struct `player_state_t`
+(`third_party/headers/crimsonland_types.h`), stored in
+`player_state_table` (`player_state_t[2]`).
 
 Pool facts:
 
 - Entry size: `0x360` bytes per player (`0xd8` dwords/floats).
-- Base address: `player_health` (`0x004908d4`).
+- Base address: `player_state_table` (`0x004908b0`).
 - Access pattern: `field_base + player_index * 0x360` (disassembly often shows
   `player_index * 0xd8` because the base pointer is typed as `float*`/`u32*`).
 
 - Input bindings (keys + axes) live in a `player_input_t` sub-struct at offset
-  `0x308` (13 dwords / 0x34 bytes).
+  `0x32c` (13 dwords / `0x34` bytes), ending the entry at `0x360`.
 
-- Player 2 constants appear as base + `0x360` (e.g. `player2_health` at `0x00490c34`).
-- Some high-confidence fields live before `player_health` (negative offsets).
+- Player 2 fields are base + `0x360` (e.g. `player2_health` at `0x00490c34`).
+- Offsets `0x00..0x97` share the entity prefix used by `creature_t`;
+  `player_state_table_global_init` constructs them, but most prefix fields
+  have no player reads.
 
-## Runtime probe notes (2026-01-18)
-
-Captured with a Frida probe after fixing pointer-based reads.
-
-- `player_take_damage` logs show sane values and health deltas (e.g. 100 -> 95 with `damage_f32=5`),
-  confirming that the base/stride assumptions are valid for the current build.
-
-- The unknown-field tracker flagged offsets **0x2BC / 0x2C4 / 0x2D0** as frequently changing; these
-  correspond to the **alt-weapon** block already listed below (good cross-check).
-
-- Offsets **0x34C / 0x350 / 0x354** are player 2's pre-health fields:
-  death timer, X and Y at stride `0x360` minus `0x14/0x10/0x0c`. They do not
-  represent additional tail fields in player 1.
-
-- The 2026-02-06 gameplay-state capture (`analysis/frida/gameplay_state_capture_summary.json`)
-  confirms `player_clip_size` / `player_ammo` are float slots in memory:
-  `clip_size_f32` had integer-valued floats in `1411/1411` compact snapshots and
-  `ammo_f32` in `1356/1411`. This replaced the older "possible type artifact"
-  assumption.
-
-High-confidence fields (partial):
+Fields (offsets from `player_state_table`; `Symbol` is the player-0 data map label):
 
 | Offset | Field | Symbol | Evidence |
 | --- | --- | --- | --- |
-| `-0x14` | death/respawn timer | `player_death_timer` | Decremented when health is `<= 0`; triggers game-over once below zero. |
-| `-0x10` | pos_x | `player_pos_x` | Used for camera centering, distance checks, and projectile aim vectors. |
-| `-0x0c` | pos_y | `player_pos_y` | Used for camera centering, distance checks, and projectile aim vectors. |
-| `-0x08` | move dx | `player_move_dx` | Zeroed each tick, then filled by input movement logic. |
-| `-0x04` | move dy | `player_move_dy` | Zeroed each tick, then filled by input movement logic. |
-| `-0x1b` | Plaguebearer active flag | `player_plaguebearer_active` | Set when Plaguebearer is acquired; used by creature update to infect nearby monsters. |
-| `0x00` | health | `player_health` | Reduced by `player_take_damage`; `<= 0` counts as dead. |
-| `0x08` | body heading (radians) | `player_heading` | Used for overlays and movement vector rotation. |
-| `0x10` | size / diameter | `player_size` | Halved for collision and arena bounds clamping. |
-| `0x2c` | aim target x | `player_aim_x` | Used to derive aim vectors and overlay position. |
-| `0x30` | aim target y | `player_aim_y` | Used to derive aim vectors and overlay position. |
-| `0x38` | move speed multiplier | `player_speed_multiplier` | Multiplies movement vector (boosted by Speed bonus). |
-| `0x3c` | weapon reset latch | `player_weapon_reset_latch` | Cleared by `weapon_assign_player` and `bonus_apply` (Weapon Power Up / Fire Bullets) when timers/ammo reset. |
-| `0x44` | move speed / accel | `player_move_speed` | Ramps up/down based on input; scales movement. |
-| `0x70` | move phase | `player_move_phase` | Incremented by movement speed, wrapped to `[0, 14]` for step/anim phase. |
-| `0x74` | reserved overlay gate (float) | `player_reserved_98` | Initialized to floating zero; the only recovered read compares it with `0.25f` before drawing the optional target trail. |
-| `0x78` | Hot Tempered timer | `player_hot_tempered_timer` | Used by perk ring burst logic. |
-| `0x7c` | Man Bomb timer | `player_man_bomb_timer` | Charge timer for perk ring burst. |
-| `0x80` | Living Fortress timer | `player_living_fortress_timer` | Accumulates while stationary. |
-| `0x84` | Fire Cough timer | `player_fire_cough_timer` | Periodic Fire Cough perk timer. |
-| `0x88` | experience points | `player_experience` | XP counter; drives level-ups and survival scaling. |
-| `0x90` | level / perk tier | `player_level` | Increments when XP crosses thresholds; gates survival waves. |
-| `0x94` | perk counts table | `player_perk_counts` | `int[0x80]` table indexed by perk id (ends at `0x294`). |
-| `0x294` | spread / heat | `player_spread_heat` | Decays each frame in `player_update`; incremented by weapon spread value. |
-| `0x29c` | current weapon id | `player_weapon_id` | Set by `weapon_assign_player`. |
-| `0x2a0` | clip size (float slot) | `player_clip_size` | Loaded from weapon table on swap; used to reset ammo. Runtime values are integer-valued floats (for example 10.0/12.0/25.0). |
-| `0x2a4` | reload active flag | `player_reload_active` | Set when a reload starts; used by Tough Reloader damage reduction. |
-| `0x2a8` | current ammo (float slot) | `player_ammo` | Decrements on fire; reset when reload completes. Runtime values are integer-valued floats. |
-| `0x2ac` | reload timer | `player_reload_timer` | Decremented each frame; used by reload perks. |
-| `0x2b0` | shot cooldown | `player_shot_cooldown` | Decays each frame; scaled by Weapon Power Up. |
-| `0x2b4` | reload timer max | `player_reload_timer_max` | Used for reload HUD progress and perk checks. |
-| `0x2b8` | alt weapon id | `player_alt_weapon_id` | Saved when swapping to alt weapon (see weapon table notes). |
-| `0x2bc` | alt clip size (float slot) | `player_alt_clip_size` | Saved when swapping to alt weapon. |
-| `0x2c0` | alt reload active flag | `player_alt_reload_active` | Saved when swapping to alt weapon. |
-| `0x2c4` | alt current ammo (float slot) | `player_alt_ammo` | Saved when swapping to alt weapon. |
-| `0x2c8` | alt reload timer | `player_alt_reload_timer` | Saved when swapping to alt weapon. |
-| `0x2cc` | alt shot cooldown | `player_alt_shot_cooldown` | Saved when swapping to alt weapon. |
-| `0x2d0` | alt reload timer max | `player_alt_reload_timer_max` | Saved when swapping to alt weapon. |
-| `0x2d8` | muzzle flash intensity | `player_muzzle_flash_alpha` | Decays each frame; accumulates on fire and drives weapon glow. |
-| `0x2dc` | aim heading (radians) | `player_aim_heading` | Used for projectile direction and overlay rendering. |
-| `0x2e0` | turn speed accumulator | `player_turn_speed` | Turn speed/accel when using keyboard/tank controls. |
-| `0x2e4` | aux state | `player_state_aux` | Zeroed in `player_reset_all` (player reset); no read sites found yet. |
-| `0x2ec` | low-health timer | `player_low_health_timer` | Counts down to play low-health cues when HP is low. |
-| `0x2f0` | speed bonus timer | `player_speed_bonus_timer` | Bonus id 13 (Speed). |
-| `0x2f4` | shield timer | `player_shield_timer` | Bonus id 10 (Shield). |
-| `0x2f8` | Fire Bullets timer | `player_fire_bullets_timer` | Bonus id 14 (Fire Bullets). |
-| `0x2fc` | auto-aim target | `player_auto_target` | Stores the nearest creature index for auto-aim modes. |
-| `0x300` | move target x | `player_move_target_x` | Cached target position for click/assist movement mode. |
-| `0x304` | move target y | `player_move_target_y` | Cached target position for click/assist movement mode. |
-| `0x308` | move key (forward) | `player_move_key_forward` | Primary movement key binding. |
-| `0x30c` | move key (backward) | `player_move_key_backward` | Primary movement key binding. |
-| `0x310` | turn key (left) | `player_turn_key_left` | Primary turn/rotate key binding. |
-| `0x314` | turn key (right) | `player_turn_key_right` | Primary turn/rotate key binding. |
-| `0x318` | fire key | `player_fire_key` | Primary fire key binding. |
-| `0x31c` | keybind reserved 0 | `player_key_reserved_0` | Copied from config; no callsites yet. |
-| `0x320` | keybind reserved 1 | `player_key_reserved_1` | Copied from config; no callsites yet. |
-| `0x324` | aim key (left) | `player_aim_key_left` | Aim-rotate key binding. |
-| `0x328` | aim key (right) | `player_aim_key_right` | Aim-rotate key binding. |
-| `0x32c` | aim axis x binding | `player_axis_aim_x` | Axis binding read via input API for aim stick. |
-| `0x330` | aim axis y binding | `player_axis_aim_y` | Axis binding read via input API for aim stick. |
-| `0x334` | move axis x binding | `player_axis_move_x` | Axis binding read via input API for movement stick. |
-| `0x338` | move axis y binding | `player_axis_move_y` | Axis binding read via input API for movement stick. |
+| `0x00` | `entity_active` | — | Write-only for players: zeroed by `player_state_table_global_init` and `plugin_runtime_clear_pools`. |
+| `0x04` | `entity_phase_seed` | — | Write-only for players: zeroed by `player_state_table_global_init`. |
+| `0x08` | `entity_state_flag` | — | Write-only for players: zeroed by `player_state_table_global_init`. |
+| `0x09` | `plaguebearer_active` | `player_plaguebearer_active` | Set when Plaguebearer is acquired; used by creature update to infect nearby monsters. |
+| `0x0c` | `entity_collision_timer` | — | Write-only for players: zeroed by `player_state_table_global_init`. |
+| `0x10` | `death_timer` | `player_death_timer` | Decremented when health is `<= 0`; triggers game-over once below zero. |
+| `0x14` | `pos_x` | `player_pos_x` | Used for camera centering, distance checks, and projectile aim vectors. |
+| `0x18` | `pos_y` | `player_pos_y` | Used for camera centering, distance checks, and projectile aim vectors. |
+| `0x1c` | `move_dx` | `player_move_dx` | Zeroed each tick, then filled by input movement logic. |
+| `0x20` | `move_dy` | `player_move_dy` | Zeroed each tick, then filled by input movement logic. |
+| `0x24` | `health` | `player_health` | Reduced by `player_take_damage`; `<= 0` counts as dead. |
+| `0x28` | `max_health` | — | Entity-prefix slot; not used for players in the recovered source. |
+| `0x2c` | `heading` | `player_heading` | Body heading (radians); used for overlays and movement vector rotation. |
+| `0x30` | `target_heading` | — | Entity-prefix slot; not used for players in the recovered source. |
+| `0x34` | `size` | `player_size` | Diameter; halved for collision and arena bounds clamping. |
+| `0x38` | `entity_hit_flash_timer` | — | Write-only for players: zeroed by `player_state_table_global_init`. |
+| `0x50` | `aim_x` | `player_aim_x` | Aim target; used to derive aim vectors and overlay position. |
+| `0x54` | `aim_y` | `player_aim_y` | Aim target; used to derive aim vectors and overlay position. |
+| `0x5c` | `speed_multiplier` | `player_speed_multiplier` | Multiplies movement vector (boosted by Speed bonus). |
+| `0x60` | `weapon_reset_latch` | `player_weapon_reset_latch` | Cleared by `weapon_assign_player` and `bonus_apply` (Weapon Power Up / Fire Bullets) when timers/ammo reset. |
+| `0x68` | `move_speed` | `player_move_speed` | Ramps up/down based on input; scales movement. |
+| `0x74` | `entity_reserved_74` | — | Write-only for players: zeroed by `player_state_table_global_init`. |
+| `0x78` | `entity_link_index` | — | Write-only for players: set to `-1` by `player_state_table_global_init`. |
+| `0x90` | `entity_ai_mode` | — | Write-only for players: zeroed by `player_state_table_global_init`. |
+| `0x94` | `move_phase` | `player_move_phase` | Incremented by movement speed, wrapped to `[0, 14]` for step/anim phase. |
+| `0x98` | `player_reserved_98` | — | Initialized to `0.0f`; the only read compares it with `0.25f` before drawing the optional target trail. |
+| `0x9c` | `hot_tempered_timer` | `player_hot_tempered_timer` | Used by perk ring burst logic. |
+| `0xa0` | `man_bomb_timer` | `player_man_bomb_timer` | Charge timer for perk ring burst. |
+| `0xa4` | `living_fortress_timer` | `player_living_fortress_timer` | Accumulates while stationary. |
+| `0xa8` | `fire_cough_timer` | `player_fire_cough_timer` | Periodic Fire Cough perk timer. |
+| `0xac` | `experience` | `player_experience` | XP counter; drives level-ups and survival scaling. |
+| `0xb0` | `reset_reserved_b0` | `player_reset_reserved_b0` | Write-only: zeroed by `player_reset_all`. |
+| `0xb4` | `level` | `player_level` | Increments when XP crosses thresholds; gates survival waves. |
+| `0xb8` | `perk_counts` | `player_perk_counts` | `int[0x80]` table indexed by perk id (ends at `0x2b8`). |
+| `0x2b8` | `spread_heat` | `player_spread_heat` | Decays each frame in `player_update`; incremented by weapon spread value. |
+| `0x2c0` | `weapon_id` | `player_weapon_id` | Set by `weapon_assign_player`. |
+| `0x2c4` | `clip_size` (float) | `player_clip_size` | Loaded from weapon table on swap; used to reset ammo. Holds integer values. |
+| `0x2c8` | `reload_active` (byte) | `player_reload_active` | Set when a reload starts; used by Tough Reloader damage reduction. |
+| `0x2cc` | `ammo` (float) | `player_ammo` | Decrements on fire; reset when reload completes. |
+| `0x2d0` | `reload_timer` | `player_reload_timer` | Decremented each frame; used by reload perks. |
+| `0x2d4` | `shot_cooldown` | `player_shot_cooldown` | Decays each frame; scaled by Weapon Power Up. |
+| `0x2d8` | `reload_timer_max` | `player_reload_timer_max` | Used for reload HUD progress and perk checks. |
+| `0x2dc` | `alt_weapon_id` | `player_alt_weapon_id` | Saved when swapping to alt weapon (see weapon table notes). |
+| `0x2e0` | `alt_clip_size` (float) | `player_alt_clip_size` | Saved when swapping to alt weapon. |
+| `0x2e4` | `alt_reload_active` (byte) | `player_alt_reload_active` | Saved when swapping to alt weapon. |
+| `0x2e8` | `alt_ammo` (float) | `player_alt_ammo` | Saved when swapping to alt weapon. |
+| `0x2ec` | `alt_reload_timer` | `player_alt_reload_timer` | Saved when swapping to alt weapon. |
+| `0x2f0` | `alt_shot_cooldown` | `player_alt_shot_cooldown` | Saved when swapping to alt weapon. |
+| `0x2f4` | `alt_reload_timer_max` | `player_alt_reload_timer_max` | Saved when swapping to alt weapon. |
+| `0x2f8` | `reset_reserved_zero` | `player_reset_reserved_2f8` | Write-only: zeroed by `player_state_table_global_init` and `player_reset_all`. |
+| `0x2fc` | `muzzle_flash_alpha` | `player_muzzle_flash_alpha` | Decays each frame; accumulates on fire and drives weapon glow. |
+| `0x300` | `aim_heading` | `player_aim_heading` | Used for projectile direction and overlay rendering. |
+| `0x304` | `turn_speed` | `player_turn_speed` | Turn speed/accel when using keyboard/tank controls. |
+| `0x308` | `state_aux` | `player_state_aux` | Write-only: zeroed in `player_reset_all`; no reads in the recovered source. |
+| `0x30c` | `evil_eyes_target_creature` | `evil_eyes_target_creature` | Evil Eyes target (player 0 only): the creature under the aim, set in `perks_update_effects`; `creature_update_all` skips its AI. `-1` when none. |
+| `0x310` | `low_health_timer` | `player_low_health_timer` | Counts down to play low-health cues when HP is low. |
+| `0x314` | `speed_bonus_timer` | `player_speed_bonus_timer` | Bonus id 13 (Speed). |
+| `0x318` | `shield_timer` | `player_shield_timer` | Bonus id 10 (Shield). |
+| `0x31c` | `fire_bullets_timer` | `player_fire_bullets_timer` | Bonus id 14 (Fire Bullets). |
+| `0x320` | `auto_target` | `player_auto_target` | Stores the nearest creature index for auto-aim modes. |
+| `0x324` | `move_target_x` | `player_move_target_x` | Cached target position for click/assist movement mode. |
+| `0x328` | `move_target_y` | `player_move_target_y` | Cached target position for click/assist movement mode. |
+| `0x32c` | `input.move_key_forward` | `player_move_key_forward` | Primary movement key binding. |
+| `0x330` | `input.move_key_backward` | `player_move_key_backward` | Primary movement key binding. |
+| `0x334` | `input.turn_key_left` | `player_turn_key_left` | Primary turn/rotate key binding. |
+| `0x338` | `input.turn_key_right` | `player_turn_key_right` | Primary turn/rotate key binding. |
+| `0x33c` | `input.fire_key` | `player_fire_key` | Primary fire key binding. |
+| `0x340` | `input.key_reserved_0` | `player_key_reserved_0` | Write-only: copied from config; no reads in the recovered source. |
+| `0x344` | `input.key_reserved_1` | `player_key_reserved_1` | Write-only: copied from config; no reads in the recovered source. |
+| `0x348` | `input.aim_key_left` | `player_aim_key_left` | Aim-rotate key binding. |
+| `0x34c` | `input.aim_key_right` | `player_aim_key_right` | Aim-rotate key binding. |
+| `0x350` | `input.axis_aim_x` | `player_axis_aim_x` | Axis binding read via input API for aim stick. |
+| `0x354` | `input.axis_aim_y` | `player_axis_aim_y` | Axis binding read via input API for aim stick. |
+| `0x358` | `input.axis_move_x` | `player_axis_move_x` | Axis binding read via input API for movement stick. |
+| `0x35c` | `input.axis_move_y` | `player_axis_move_y` | Axis binding read via input API for movement stick. |
+
+Gaps (`0x3c..0x4f`, `0x58`, `0x64`, `0x6c..0x73`, `0x7c..0x8f`, `0x2bc`) are
+unnamed padding in the header.
 
 ## Defense state (summary)
 
-- **Health gate:** `player_health` at the table base is decremented by `player_take_damage`; `<= 0`
+- **Health gate:** `health` (`0x24`, `player_health`) is decremented by `player_take_damage`; `<= 0`
   counts as dead and starts `player_death_timer`.
 
 - **Shield immunity:** when `player_shield_timer > 0`, `player_take_damage` returns early and the

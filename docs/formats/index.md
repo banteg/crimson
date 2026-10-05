@@ -14,6 +14,8 @@ These pages document original Crimsonland (Windows binary) file and asset format
 - [JAZ](jaz.md) — JPEG + RLE alpha texture format
 - [Local high scores](highscores.md) — Score history, ranking, and date selection
 - [Fonts](fonts.md) — Bitmap font data (glyph widths)
+- [Config blob (crimson.cfg)](crimson-cfg.md) — Fixed-size settings and key bindings
+- [Save/status file (game.cfg)](save-status-format.md) — Quest progress and play counters
 
 ## Port formats
 

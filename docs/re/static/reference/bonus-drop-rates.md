@@ -39,18 +39,22 @@ the per-kill spawn gate in `bonus_try_spawn_on_kill` (0x41f8d0).
 
 ## Reroll gates
 
-`bonus_pick_random_type` rerolls until it finds an allowed type (up to 0x64
-attempts, then falls back to id 1 / Points). The distribution above is
-renormalized when these gates are active:
+`bonus_pick_random_type` (`decomp/1.9/crimsonland/gameplay/bonus_pick_random_type.cpp`)
+rerolls until it finds an allowed type (giving up after 100 rerolls and
+returning id 1 / Points). The distribution above is renormalized when these
+gates are active:
 
-- `bonus_meta_enabled` disables id 0; all other ids are enabled in init.
+- `bonus_meta_table[].enabled`: `bonus_reset_availability` enables every id
+  except 0.
 - Shock Chain (7) is rerolled if `shock_chain_links_left > 0`.
 - Freeze (11) is rerolled if `bonus_freeze_timer > 0`.
 - Shield (10) is rerolled if either player shield timer is active.
 - Weapon (3) is rerolled if `perk_id_my_favourite_weapon` is owned.
 - MediKit (12) is rerolled if `perk_id_death_clock` is owned.
-- Weapon (3) is also rerolled when `bonus_state` contains a type `0x0e` entry
-  with state 0 (see the scan at the top of `bonus_pick_random_type`).
+- Weapon (3) is also rerolled while a Fire Bullets (14) drop with state 0 is in
+  `bonus_pool` (`has_fire_bullets_drop`, from the scan at the top of the
+  function).
 
-- In quest mode (`config_blob[0x18] == 3`), additional quest stage checks can
-  suppress Nuke (5) and Freeze (11).
+- In quest mode (`config_blob.game_mode == GAME_MODE_QUEST`):
+  - Nuke (5) is rerolled in 2.10, 4.10, and 5.10, and also in 3.10 on hardcore.
+  - Freeze (11) is rerolled in 4.10, and also in 2.10 on hardcore.

@@ -82,24 +82,20 @@ its base texture index from a per-level descriptor.
 For the full pipeline (init, procedural stamping, FX decal baking, and final
 screen draw), see [Terrain pipeline](terrain.md).
 
-### Runtime evidence (2026-01-20)
+### Screen UVs and quest terrain ids
 
-`terrain_trace.jsonl` confirms the render path uses config-sized UVs over a
-1024×1024 terrain texture:
+`terrain_render` (`decomp/1.9/crimsonland/ui_render/terrain_render.cpp`) samples
+a screen-sized window of the 1024×1024 terrain texture:
 
 - `u0 = -camera_offset_x / terrain_texture_width`
 - `v0 = -camera_offset_y / terrain_texture_height`
 - `u1 = u0 + (config_screen_width / terrain_texture_width)`
 - `v1 = v0 + (config_screen_height / terrain_texture_height)`
 
-Example capture (800×600 config, 1024×1024 terrain):
-`u0=0.21875`, `u1=1.0`, `v0≈0.2228192`, `v1≈0.8087567` (deltas match
-`800/1024` and `600/1024`). This matches the decompile and shows camera
-clamping to the terrain edges.
-
-The same trace confirms quest terrain indices:
-`base/overlay/detail = (0,1,0)`, `(2,3,2)`, `(4,5,4)`, `(6,7,6)` for tiers 1–4,
-matching the quest metadata and `terrain_ids_for` logic.
+Quest terrain indices are `base/overlay/detail = (0,1,0)`, `(2,3,2)`, `(4,5,4)`,
+`(6,7,6)` for tiers 1–4 (quests 1–5; quests 6–10 swap the last two), set by
+`quest_meta_init_entry` (`decomp/1.9/crimsonland/quests/quest_meta_init_entry.cpp`)
+and mirrored by `terrain_slots_for_quest` (`src/crimson/terrain_slots.py`).
 
 ## UI overlays
 
@@ -110,14 +106,16 @@ and `player_overlay_suppressed_latch` (`0x0048727c`).
 
 The same function also checks `player_overlay_auto_target_line_perk_id` (`0x004c2bcc`) via
 `perk_count_get` before drawing the segmented auto-target line overlay toward the
-current `player_state.auto_target`. In `perk_metadata_init`, this selector defaults to `0`.
+current `player_state.auto_target`. `perks_init_database`
+(`decomp/1.9/crimsonland/perks/perks_init_database.cpp`) sets this selector to `0`.
 
-### Runtime evidence (2026-01-26)
+### Player sprite layers
 
-A Frida trace (summarized in `analysis/frida/player_sprite_trace_summary.json`) matches the decompile:
+From `decomp/1.9/crimsonland/crimsonland/player_render_overlays.cpp` (a historical
+Frida summary, `analysis/frida/player_sprite_trace_summary.json`, agrees):
 
 - Alive (`player_state_table.health > 0`): draws **two** sprite layers (UV frames `0..14` and `+0x10`) with a shadow/outline pass (scaled `~1.02/1.03` and offset) before the main pass; rotations come from `heading` vs `aim_heading`.
-- Dead: draws a **single** sprite layer indexed by `ftol(death_timer)` (observed monotonic `32..52` then hold at `52` / `0x34` fallback), also with shadow+main passes.
+- Dead: draws a **single** sprite layer, frame `(int)((1 - death_timer / 16) * 20 + 32)` (`32..52`), or `52` once `death_timer < 0`, also with shadow+main passes.
 
 ### Player sprite UV tables (2026-01-26)
 
@@ -129,9 +127,8 @@ A Frida trace (summarized in `analysis/frida/player_sprite_trace_summary.json`) 
 This table is not filled separately; it aliases into `effect_uv8`, which is populated by
 `effect_uv_tables_init` (`0x0041fed0`), called during `game_startup_init_prelude` (`0x0042b090`).
 
-Runtime trace (`artifacts/frida/share/player_sprite_trace.jsonl`) shows paired draw calls with indices
-`(0,16) … (14,30)`, and the trooper atlas (`game/trooper.png`) has fully empty frames at 15 and 31,
-matching the decompile and the observed render order.
+The legs and torso passes therefore draw paired frames `(0,16) … (14,30)`; the trooper atlas
+(`game/trooper.jaz`) has fully empty frames at 15 and 31.
 
 ### Recoil / muzzle-flash kick (2026-01-26)
 

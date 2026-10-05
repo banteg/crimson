@@ -23,13 +23,13 @@ known state ids. Names are inferred from call sites and screen behavior.
 
 ## Known state ids
 
-For the complete id-by-id glossary (`0x00..0x1a`, including uncertain/legacy ids),
+For the complete id-by-id glossary (`0x00..0x1a`, including unreachable legacy ids),
 see [State id glossary](state-ids.md).
 
 | Id | Label (inferred) | Evidence |
 | --- | --- | --- |
 | `0` | main menu / root UI | `game_state_set` (`0x004461c0(0)`), load step sets `game_state_id` (`0x00487270`) = `0` |
-| `0xb` | quest select menu | `game_state_set(0xb)` enables quest-select UI and installs `quest_select_menu_update`; runtime trace labels `state_11:#.#` |
+| `0xb` | quest select menu | `game_state_set(0xb)` enables quest-select UI and installs `quest_select_menu_update` |
 | `5` | pause (console/mod pause) | `mod_api_cl_enter_menu` (`0x0040e690`) sets `game_state_pending` (`0x00487274`) = `5` on `game_pause` |
 | `6` | perk selection | direct `game_state_set` (`0x004461c0(6)`) when perk prompt is accepted |
 | `7` | game over / high score entry | `game_over_screen_update` checks `game_state_id` (`0x00487270`) == `7` |
@@ -37,8 +37,8 @@ see [State id glossary](state-ids.md).
 | `9` | gameplay | `gameplay_update_and_render` runs creature/projectile/player updates only when 9 |
 | `10` | quit transition | main-menu Quit callback sets `game_state_pending = 10`; `ui_elements_update_and_render` checks `game_state_id == 10` |
 | `0xc` | quest failed | `quest_failed_screen_update` checks `game_state_id` (`0x00487270`) == `0xc` |
-| `0xe` | high scores | post-run High scores buttons queue `game_state_pending = 0xe`; runtime labels `state_14:High scores - ...` |
-| `0x11` | credits | `game_state_set(0x11)` installs `credits_screen_update`; runtime label `state_17:credits` |
+| `0xe` | high scores | post-run High scores buttons queue `game_state_pending = 0xe` |
+| `0x11` | credits | `game_state_set(0x11)` installs `credits_screen_update` |
 | `0x12` | Typ-o-Shooter gameplay | `typo_gameplay_update_and_render` (`0x004457c0`) updates when `game_state_id` (`0x00487270`) == `0x12` |
 | `0x14` | mods browser / plugin fallback | `game_state_set(0x14)` installs `mods_menu_update` (mods menu); plugin flow queues `0x14` on exit/failure |
 | `0x15` | final quest end note | dispatch routes to `game_update_victory_screen()` when `game_state_id == 0x15` |
@@ -61,4 +61,5 @@ see [State id glossary](state-ids.md).
 ## Notes
 
 - `0x19` is used as an idle sentinel for `game_state_pending` (`0x00487274`), not as a real state id.
-- Remaining uncertain ids are `0x0d`, `0x13`, `0x17`, and `0x18` (tracked in `state-ids.md` with lower confidence).
+- `0x0d`, `0x13`, `0x17` and `0x18` are named in `game_state_id_t` but nothing in the
+  recovered source queues or sets them, so they are unreachable in 1.9.93 (see `state-ids.md`).

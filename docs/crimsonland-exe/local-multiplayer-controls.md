@@ -11,10 +11,13 @@ This note consolidates the controls/multiplayer evidence used by the rewrite.
 
 - `crimson.cfg` is fixed-size `0x480` bytes and rewritten as a whole struct.
   - Ref: `docs/formats/crimson-cfg.md`
-- Keybind blocks:
-  - P1: offset `0x1c8`, `13 dwords + 3 dwords padding`
-  - P2: offset `0x208`, `13 dwords + 3 dwords padding`
-  - Reserved extension region starts at `0x248` (`0x200` bytes), suitable for extra player blocks.
+- Keybind blocks: `crimson_cfg_t.input_config[10]` (`player_input_config_t`,
+  `third_party/headers/crimsonland_types.h`) holds ten `0x40`-byte slots
+  (`13 dwords + 3 dwords padding`) starting at `0x1c8`:
+  - P1: slot 0 at `0x1c8`
+  - P2: slot 1 at `0x208`
+  - Slots 2..9 occupy `0x248..0x447`; the native build copies only slots 0 and 1,
+    and the ports use slots 2 and 3 for P3/P4.
   - Ref: `docs/formats/crimson-cfg.md`
 
 ## Control mode IDs and labels
@@ -27,10 +30,10 @@ This note consolidates the controls/multiplayer evidence used by the rewrite.
 
 ## Per-scheme semantics (evidence anchors)
 
-- Player struct carries explicit per-player bindings:
-  - aim keys (`+0x324/+0x328`)
-  - aim axes (`+0x32c/+0x330`)
-  - move axes (`+0x334/+0x338`)
+- `player_state_t.input` (`player_input_t` at `+0x32c`) carries explicit per-player bindings:
+  - aim keys (`+0x348/+0x34c`)
+  - aim axes (`+0x350/+0x354`)
+  - move axes (`+0x358/+0x35c`)
 - Explicit branch evidence:
   - movement scheme `== 3` reads move axes
   - aim scheme `== 4` reads aim axes

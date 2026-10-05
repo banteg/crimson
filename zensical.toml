@@ -126,7 +126,6 @@ nav = [
       { "Grim2D" = [
         { "Overview" = "grim2d/index.md" },
         { "API vtable" = "grim2d/api.md" },
-        { "API evidence" = "grim2d/api-evidence.md" },
       ]},
       { "Secrets" = [
         { "Overview" = "re/static/secrets/index.md" },

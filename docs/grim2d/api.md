@@ -14,10 +14,9 @@ the Grim2D global state, allocates the four-byte interface object, and installs
 `grim_interface_vtable` (`0x1004c238`). It stores the new object globally but
 does not itself enforce singleton reuse.
 
-We created functions at vtable entry addresses via
-`analysis/ghidra/scripts/CreateGrim2DVtableFunctions.java` and re-exported
-`grim.dll_functions.json` to capture those entry names. The latest vtable JSON
-exports now include 84 entry points created from the vtable.
+The vtable has 84 entries. Every method is byte-matched under
+`decomp/1.9/grim/`, and `tools/match/include/grim2d_cpp.h` is the authority
+for their signatures.
 
 For a high-level summary, see [Grim2D overview](index.md).
 
@@ -44,10 +43,6 @@ We now filter vtable exports to entries that resolve into the `.text` section
 (84 entries / 0x150 bytes). Values after `0x14c` in the raw table look like
 data, not executable pointers.
 
-We also generate an evidence appendix with callsite snippets:
-
-- [Grim2D API evidence](api-evidence.md)
-
 
 ## Internal helpers (non-vtable)
 
@@ -57,7 +52,7 @@ We also generate an evidence appendix with callsite snippets:
 
 - `grim_convert_vertex_space` (`0x10016944`) remaps vec4 coordinates between three space
   modes used by the batcher. Modes 1/2/3 control whether xyz and w are in `[-1, 1]`
-  or `[0, 1]`; see the evidence appendix for inferred mappings.
+  or `[0, 1]`.
 
 - `grim_pixel_format_init` (`0x100170f9`) initializes format descriptors and palette
   expansion; it also stores the coordinate mode later compared against the current
@@ -114,8 +109,7 @@ We also generate an evidence appendix with callsite snippets:
 - `grim_d3d_init` (`0x10003e60`) creates the Direct3D8 interface and sets up the device.
 - `grim_d3d_shutdown` (`0x10004280`) has the full recovered surface, embedded
   texture, 256-slot texture table, geometry-buffer, device, and Direct3D8
-  teardown shape. Its only remaining match delta is an `ESI`/`EDI` allocation
-  swap inside the texture loop.
+  teardown, exact-matched.
 - `grim_create_geometry_buffers` (`0x10004350`) exact-matches allocation of
   the 256-entry dynamic vertex buffer and quad index buffer, construction of
   every `(0,1,2, 2,3,0)` index group, and binding both buffers to the device.
@@ -162,7 +156,7 @@ We also generate an evidence appendix with callsite snippets:
 
 ## Calling conventions and behavior
 
-Validation highlights (see the evidence appendix for snippets):
+Validation highlights:
 
 - `grim_set_config_var` callsites pass an ID plus a 16-byte config record by
   value. Many callsites initialize only its first word (for example ID `0x15`
@@ -312,98 +306,96 @@ These offsets appear with keycodes or input-related values:
 - `0x98`..`0xa0` return cached joystick axis values.
 
 
-## Vtable map (high confidence)
+## Vtable map
 
-| Offset | Name | Signature (guess) | Confidence | Notes |
-| --- | --- | --- | --- | --- |
-| `0x0` | `release` | `void release(void)` | high | vtable destructor (operator_delete) |
-| `0x4` | `set_paused` | `void set_paused(int paused)` | high | sets global pause flag |
-| `0x8` | `get_version` | `float get_version(void)` | high | returns constant 1.21 |
-| `0xc` | `save_screenshot` | `bool save_screenshot(char *path)` | high | exact front-buffer capture and BMP save; original identifier unknown |
-| `0x10` | `apply_config` | `bool apply_config(void)` | high | opens D3D config dialog and applies settings |
-| `0x14` | `init_system` | `bool init_system(void)` | high | returns success before game starts |
-| `0x18` | `shutdown` | `void shutdown(void)` | high | exact ordered teardown of lookup, input, Direct3D, and window resources |
-| `0x1c` | `apply_settings` | `bool apply_settings(void)` | high | exact wrapper around the Win32/D3D run loop; public name remains provisional |
-| `0x20` | `set_config_var` | `void set_config_var(uint32_t id, grim_config_value_t value)` | high | takes a 16-byte record by value; some IDs map to D3D render/texture stage state |
-| `0x24` | `get_config_var` | `grim_config_value_t get_config_var(int id)` | high | returns a 4-dword record from the 128-entry config table, or a zero default |
-| `0x28` | `get_error_text` | `const char * get_error_text(void)` | high | error string for MessageBox |
-| `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | high | exact guarded `Clear` call using `D3DCOLOR_COLORVALUE` |
-| `0x30` | `set_render_target` | `bool set_render_target(int target_index)` | high | switches render target surfaces; -1 restores backbuffer |
-| `0x34` | `get_time_ms` | `int get_time_ms(void)` | high | frame time accumulator (ms) |
-| `0x38` | `set_time_ms` | `void set_time_ms(int ms)` | high | overrides time accumulator |
-| `0x3c` | `get_frame_dt` | `float get_frame_dt(void)` | high | clamped frame delta |
-| `0x40` | `get_fps` | `float get_fps(void)` | high | frame rate estimate |
-| `0x44` | `is_key_down` | `uint8_t is_key_down(uint32_t key)` | high | low-byte-indexed 0/1 keyboard-state query |
-| `0x48` | `was_key_pressed` | `bool was_key_pressed(uint32_t key)` | high | press edge plus timed held repeats |
-| `0x4c` | `flush_input` | `void flush_input(void)` | high | clears input buffers + drains DirectInput |
-| `0x50` | `get_key_char` | `int get_key_char(void)` | high | console text input |
-| `0x54` | `set_key_char_buffer` | `void set_key_char_buffer(uint8_t *buffer, int *count, int size)` | high | stores ring buffer pointers |
-| `0x58` | `is_mouse_button_down` | `uint8_t is_mouse_button_down(int button)` | high | returns cached button state or polls input |
-| `0x5c` | `was_mouse_button_pressed` | `bool was_mouse_button_pressed(int button)` | high | edge-triggered mouse button using cached state; no decompiled callsites yet |
-| `0x60` | `get_mouse_wheel_delta` | `float get_mouse_wheel_delta(void)` | high | +/- wheel to change selection |
-| `0x64` | `set_mouse_pos` | `void set_mouse_pos(float x, float y)` | high | updates cached mouse position |
-| `0x68` | `get_mouse_x` | `float get_mouse_x(void)` | high | cached mouse position X |
-| `0x6c` | `get_mouse_y` | `float get_mouse_y(void)` | high | cached mouse position Y |
-| `0x70` | `get_mouse_dx` | `float get_mouse_dx(void)` | high | cached mouse delta X |
-| `0x74` | `get_mouse_dy` | `float get_mouse_dy(void)` | high | cached mouse delta Y |
-| `0x78` | `get_mouse_dx_indexed` | `float get_mouse_dx_indexed(int index)` | high | aliases mouse dx (calls 0x70); index unused |
-| `0x7c` | `get_mouse_dy_indexed` | `float get_mouse_dy_indexed(int index)` | high | aliases mouse dy (calls 0x74); index unused |
-| `0x80` | `is_key_active` | `uint8_t is_key_active(int key)` | high | routes raw keys plus mouse, joystick, axis, and RIM action IDs; natural VC6.5 source is a documented 73.93% WIP |
-| `0x84` | `get_config_float` | `float get_config_float(int id)` | high | exactly matched router for six joystick axes and direct/indexed mouse deltas |
-| `0x88` | `get_slot_float` | `float get_slot_float(int index)` | high | reads float slot array |
-| `0x8c` | `get_slot_int` | `int get_slot_int(int index)` | high | reads int slot array |
-| `0x90` | `set_slot_float` | `void set_slot_float(int index, float value)` | high | writes float slot array |
-| `0x94` | `set_slot_int` | `void set_slot_int(int index, int value)` | high | writes int slot array |
-| `0x98` | `get_joystick_x` | `int get_joystick_x(void)` | high | returns cached joystick X |
-| `0x9c` | `get_joystick_y` | `int get_joystick_y(void)` | high | returns cached joystick Y |
-| `0xa0` | `get_joystick_z` | `int get_joystick_z(void)` | high | returns cached joystick Z |
-| `0xa4` | `get_joystick_pov` | `int get_joystick_pov(int index)` | high | returns cached POV value |
-| `0xa8` | `is_joystick_button_down` | `uint8_t is_joystick_button_down(int button)` | high | returns bit 7 of the low-byte-indexed cached button |
-| `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | confirmed | exact-matched blank texture allocation in a free slot |
-| `0xb0` | `recreate_texture` | `bool recreate_texture(int handle)` | confirmed | exact-matched managed texture recreation with success-only swap |
-| `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | confirmed | exact-matched `(name, filename)` wrapper |
-| `0xb8` | `save_texture` | `bool save_texture(int handle, const char *path)` | confirmed | saves the texture as TGA through `D3DXSaveTextureToFileA` |
-| `0xbc` | `destroy_texture` | `void destroy_texture(int handle)` | high | releases texture and clears slot |
-| `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | high | returns `-1` on missing |
-| `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | high | validates handle then sets device texture stage |
-| `0xc8` | `draw_fullscreen_quad` | `void draw_fullscreen_quad(int unused)` | confirmed | caller passes zero; batch draws current texture fullscreen |
-| `0xcc` | `draw_fullscreen_color` | `void draw_fullscreen_color(float r, float g, float b, float a)` | high | alpha>0 draws a fullscreen color quad |
-| `0xd0` | `draw_rect_filled` | `void draw_rect_filled(const float *xy, float w, float h, const float *rgba)` | confirmed | UI panel fill / background quad with explicit color |
-| `0xd4` | `draw_rect_outline` | `void draw_rect_outline(const float *xy, float w, float h)` | high | UI panel outline/frame (4 edge quads) |
-| `0xd8` | `draw_circle_filled` | `void draw_circle_filled(float x, float y, float radius)` | confirmed | exact-matched triangle fan; `int(radius * 0.125f + 12)` segments |
-| `0xdc` | `draw_circle_outline` | `void draw_circle_outline(float x, float y, float radius)` | confirmed | exact-matched triangle strip; `int(radius * 0.2f + 14)` segments |
-| `0xe0` | `draw_line` | `void draw_line(const float *p0, const float *p1, float thickness)` | confirmed | exact-matched local-static line-vector transform, then calls 0xe4 |
-| `0xe4` | `draw_line_quad` | `void draw_line_quad(const float *p0, const float *p1, const float *half_vec)` | confirmed | exact-matched quad expansion from endpoints + half_vec |
-| `0xec` | `flush_batch` | `void flush_batch(void)` | high | flushes batch when buffer fills |
-| `0xe8` | `begin_batch` | `void begin_batch(void)` | high | start buffered quad batch |
-| `0xf0` | `end_batch` | `void end_batch(void)` | high | flush buffered batch |
-| `0xf4` | `submit_vertex_raw` | `void submit_vertex_raw(const float *vertex)` | confirmed | exact-matched 28-byte vertex append; lazy begin + auto-flush |
-| `0xf8` | `submit_quad_raw` | `void submit_quad_raw(const float *verts)` | confirmed | exact-matched 112-byte quad append; auto-flush |
-| `0xfc` | `set_rotation` | `void set_rotation(float radians)` | high | precomputes sin/cos (+45°) for rotation matrix |
-| `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | sets all 4 UV pairs (u0/v0/u1/v1) |
-| `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas_size, int frame)` | high | atlas size (cells per side) + frame index; extra args in decompiled callsites are ignored |
-| `0x108` | `set_sub_rect` | `void set_sub_rect(int atlas_size, int width, int height, int frame)` | high | atlas grid sub-rect: `atlas_size` indexes the UV table (2/4/8/16), width/height in cells, `frame` selects top-left cell |
-| `0x10c` | `set_uv_point` | `void set_uv_point(int index, float u, float v)` | high | sets a single UV pair (index 0..3) for custom quad UVs |
-| `0x110` | `set_color_ptr` | `void set_color_ptr(const float *rgba)` | high | sets current color from float[4] (RGBA 0..1) |
-| `0x114` | `set_color` | `void set_color(float r, float g, float b, float a)` | high | RGBA floats |
-| `0x118` | `set_color_slot` | `void set_color_slot(int index, float r, float g, float b, float a)` | high | packs RGBA into color slot array (index 0..3, per-corner) |
-| `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call; uses per-corner color slots + UV array |
-| `0x120` | `draw_quad_xy` | `void draw_quad_xy(const float *xy, float w, float h)` | high | wrapper for draw_quad using `xy` pointer |
-| `0x124` | `draw_quad_rotated_matrix` | `void draw_quad_rotated_matrix(float x, float y, float w, float h)` | confirmed | exact-matched centered 2x2 matrix transform with batched UV/color emission |
-| `0x128` | `submit_vertices_transform` | `void submit_vertices_transform(const float *verts, int count, const float *offset, const float *matrix)` | high | copies `count` verts (7-float stride) then applies 2x2 matrix + offset |
-| `0x12c` | `submit_vertices_offset` | `void submit_vertices_offset(const float *verts, int count, const float *offset)` | high | copies verts then offsets XY (7-float stride) |
-| `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(const float *verts, int count, const float *offset, const uint32_t *color)` | high | copies verts, offsets XY, overrides packed color from `*color` |
-| `0x134` | `submit_vertices_transform_color` | `void submit_vertices_transform_color(const float *verts, int count, const float *offset, const float *matrix, const uint32_t *color)` | high | copies verts, applies matrix+offset, overrides packed color from `*color` |
-| `0x138` | `draw_quad_points` | `void draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)` | high | pushes quad from 4 points using current UV/color slots |
-| `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | high | fixed 16px grid; handles a few extended codes; binds Grim2D font texture (resource `0x6f`) |
-| `0x140` | `draw_text_mono_fmt` | `void draw_text_mono_fmt(float x, float y, const char *fmt, ...)` | high | printf-style wrapper around `draw_text_mono` |
-| `0x144` | `draw_text_small` | `void draw_text_small(float x, float y, char *text)` | confirmed | exact-matched batched `GRIM_Font2` atlas renderer with newline handling |
-| `0x148` | `draw_text_small_fmt` | `void draw_text_small_fmt(float x, float y, const char *fmt, ...)` | high | formatted small-font text (wrapper around `0x144`) |
-| `0x14c` | `measure_text_width` | `int measure_text_width(char *text)` | confirmed | exact-matched maximum-line width metric for newline-delimited small-font text |
+| Offset | Name | Signature | Notes |
+| --- | --- | --- | --- |
+| `0x0` | `release` | `void release(void)` | vtable destructor (operator_delete) |
+| `0x4` | `set_paused` | `void set_paused(int paused)` | sets global pause flag |
+| `0x8` | `get_version` | `float get_version(void)` | returns constant 1.21 |
+| `0xc` | `save_screenshot` | `bool save_screenshot(char *path)` | exact front-buffer capture and BMP save; original identifier unknown |
+| `0x10` | `apply_config` | `bool apply_config(void)` | opens D3D config dialog and applies settings |
+| `0x14` | `init_system` | `bool init_system(void)` | returns success before game starts |
+| `0x18` | `shutdown` | `void shutdown(void)` | exact ordered teardown of lookup, input, Direct3D, and window resources |
+| `0x1c` | `apply_settings` | `bool apply_settings(void)` | exact wrapper around the Win32/D3D run loop; public name remains provisional |
+| `0x20` | `set_config_var` | `void set_config_var(uint32_t id, grim_config_value_t value)` | takes a 16-byte record by value; some IDs map to D3D render/texture stage state |
+| `0x24` | `get_config_var` | `grim_config_value_t get_config_var(int id)` | returns a 4-dword record from the 128-entry config table, or a zero default |
+| `0x28` | `get_error_text` | `const char * get_error_text(void)` | error string for MessageBox |
+| `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | exact guarded `Clear` call using `D3DCOLOR_COLORVALUE` |
+| `0x30` | `set_render_target` | `bool set_render_target(int target_index)` | switches render target surfaces; -1 restores backbuffer |
+| `0x34` | `get_time_ms` | `int get_time_ms(void)` | frame time accumulator (ms) |
+| `0x38` | `set_time_ms` | `void set_time_ms(int ms)` | overrides time accumulator |
+| `0x3c` | `get_frame_dt` | `float get_frame_dt(void)` | clamped frame delta |
+| `0x40` | `get_fps` | `float get_fps(void)` | frame rate estimate |
+| `0x44` | `is_key_down` | `uint8_t is_key_down(uint32_t key)` | low-byte-indexed 0/1 keyboard-state query |
+| `0x48` | `was_key_pressed` | `bool was_key_pressed(uint32_t key)` | press edge plus timed held repeats |
+| `0x4c` | `flush_input` | `void flush_input(void)` | clears input buffers + drains DirectInput |
+| `0x50` | `get_key_char` | `int get_key_char(void)` | console text input |
+| `0x54` | `set_key_char_buffer` | `void set_key_char_buffer(uint8_t *buffer, int *count, int size)` | stores ring buffer pointers |
+| `0x58` | `is_mouse_button_down` | `uint8_t is_mouse_button_down(int button)` | returns cached button state or polls input |
+| `0x5c` | `was_mouse_button_pressed` | `bool was_mouse_button_pressed(int button)` | edge-triggered mouse button using cached state; no decompiled callsites yet |
+| `0x60` | `get_mouse_wheel_delta` | `float get_mouse_wheel_delta(void)` | +/- wheel to change selection |
+| `0x64` | `set_mouse_pos` | `void set_mouse_pos(float x, float y)` | updates cached mouse position |
+| `0x68` | `get_mouse_x` | `float get_mouse_x(void)` | cached mouse position X |
+| `0x6c` | `get_mouse_y` | `float get_mouse_y(void)` | cached mouse position Y |
+| `0x70` | `get_mouse_dx` | `float get_mouse_dx(void)` | cached mouse delta X |
+| `0x74` | `get_mouse_dy` | `float get_mouse_dy(void)` | cached mouse delta Y |
+| `0x78` | `get_mouse_dx_indexed` | `float get_mouse_dx_indexed(int index)` | aliases mouse dx (calls 0x70); index unused |
+| `0x7c` | `get_mouse_dy_indexed` | `float get_mouse_dy_indexed(int index)` | aliases mouse dy (calls 0x74); index unused |
+| `0x80` | `is_key_active` | `uint8_t is_key_active(int key)` | routes raw keys plus mouse, joystick, axis, and RIM action IDs; exact-matched |
+| `0x84` | `get_config_float` | `float get_config_float(int id)` | exactly matched router for six joystick axes and direct/indexed mouse deltas |
+| `0x88` | `get_slot_float` | `float get_slot_float(int index)` | reads float slot array |
+| `0x8c` | `get_slot_int` | `int get_slot_int(int index)` | reads int slot array |
+| `0x90` | `set_slot_float` | `void set_slot_float(int index, float value)` | writes float slot array |
+| `0x94` | `set_slot_int` | `void set_slot_int(int index, int value)` | writes int slot array |
+| `0x98` | `get_joystick_x` | `int get_joystick_x(void)` | returns cached joystick X |
+| `0x9c` | `get_joystick_y` | `int get_joystick_y(void)` | returns cached joystick Y |
+| `0xa0` | `get_joystick_z` | `int get_joystick_z(void)` | returns cached joystick Z |
+| `0xa4` | `get_joystick_pov` | `int get_joystick_pov(int index)` | returns cached POV value |
+| `0xa8` | `is_joystick_button_down` | `uint8_t is_joystick_button_down(int button)` | returns bit 7 of the low-byte-indexed cached button |
+| `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | exact-matched blank texture allocation in a free slot |
+| `0xb0` | `recreate_texture` | `bool recreate_texture(int handle)` | exact-matched managed texture recreation with success-only swap |
+| `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | exact-matched `(name, filename)` wrapper |
+| `0xb8` | `save_texture` | `bool save_texture(int handle, const char *path)` | saves the texture as TGA through `D3DXSaveTextureToFileA` |
+| `0xbc` | `destroy_texture` | `void destroy_texture(int handle)` | releases texture and clears slot |
+| `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | returns `-1` on missing |
+| `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | validates handle then sets device texture stage |
+| `0xc8` | `draw_fullscreen_quad` | `void draw_fullscreen_quad(int unused)` | caller passes zero; batch draws current texture fullscreen |
+| `0xcc` | `draw_fullscreen_color` | `void draw_fullscreen_color(float r, float g, float b, float a)` | alpha>0 draws a fullscreen color quad |
+| `0xd0` | `draw_rect_filled` | `void draw_rect_filled(const float *xy, float w, float h, const float *rgba)` | UI panel fill / background quad with explicit color |
+| `0xd4` | `draw_rect_outline` | `void draw_rect_outline(const float *xy, float w, float h)` | UI panel outline/frame (4 edge quads) |
+| `0xd8` | `draw_circle_filled` | `void draw_circle_filled(float x, float y, float radius)` | exact-matched triangle fan; `int(radius * 0.125f + 12)` segments |
+| `0xdc` | `draw_circle_outline` | `void draw_circle_outline(float x, float y, float radius)` | exact-matched triangle strip; `int(radius * 0.2f + 14)` segments |
+| `0xe0` | `draw_line` | `void draw_line(const float *p0, const float *p1, float thickness)` | exact-matched local-static line-vector transform, then calls 0xe4 |
+| `0xe4` | `draw_line_quad` | `void draw_line_quad(const float *p0, const float *p1, const float *half_vec)` | exact-matched quad expansion from endpoints + half_vec |
+| `0xec` | `flush_batch` | `void flush_batch(void)` | flushes batch when buffer fills |
+| `0xe8` | `begin_batch` | `void begin_batch(void)` | start buffered quad batch |
+| `0xf0` | `end_batch` | `void end_batch(void)` | flush buffered batch |
+| `0xf4` | `submit_vertex_raw` | `void submit_vertex_raw(const float *vertex)` | exact-matched 28-byte vertex append; lazy begin + auto-flush |
+| `0xf8` | `submit_quad_raw` | `void submit_quad_raw(const float *verts)` | exact-matched 112-byte quad append; auto-flush |
+| `0xfc` | `set_rotation` | `void set_rotation(float radians)` | precomputes sin/cos (+45°) for rotation matrix |
+| `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | sets all 4 UV pairs (u0/v0/u1/v1) |
+| `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas_size, int frame)` | atlas size (cells per side) + frame index; extra args in decompiled callsites are ignored |
+| `0x108` | `set_sub_rect` | `void set_sub_rect(int atlas_size, int width, int height, int frame)` | atlas grid sub-rect: `atlas_size` indexes the UV table (2/4/8/16), width/height in cells, `frame` selects top-left cell |
+| `0x10c` | `set_uv_point` | `void set_uv_point(int index, float u, float v)` | sets a single UV pair (index 0..3) for custom quad UVs |
+| `0x110` | `set_color_ptr` | `void set_color_ptr(const float *rgba)` | sets current color from float[4] (RGBA 0..1) |
+| `0x114` | `set_color` | `void set_color(float r, float g, float b, float a)` | RGBA floats |
+| `0x118` | `set_color_slot` | `void set_color_slot(int index, float r, float g, float b, float a)` | packs RGBA into color slot array (index 0..3, per-corner) |
+| `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | core draw call; uses per-corner color slots + UV array |
+| `0x120` | `draw_quad_xy` | `void draw_quad_xy(const float *xy, float w, float h)` | wrapper for draw_quad using `xy` pointer |
+| `0x124` | `draw_quad_rotated_matrix` | `void draw_quad_rotated_matrix(float x, float y, float w, float h)` | exact-matched centered 2x2 matrix transform with batched UV/color emission |
+| `0x128` | `submit_vertices_transform` | `void submit_vertices_transform(const float *verts, int count, const float *offset, const float *matrix)` | copies `count` verts (7-float stride) then applies 2x2 matrix + offset |
+| `0x12c` | `submit_vertices_offset` | `void submit_vertices_offset(const float *verts, int count, const float *offset)` | copies verts then offsets XY (7-float stride) |
+| `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(const float *verts, int count, const float *offset, const uint32_t *color)` | copies verts, offsets XY, overrides packed color from `*color` |
+| `0x134` | `submit_vertices_transform_color` | `void submit_vertices_transform_color(const float *verts, int count, const float *offset, const float *matrix, const uint32_t *color)` | copies verts, applies matrix+offset, overrides packed color from `*color` |
+| `0x138` | `draw_quad_points` | `void draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)` | pushes quad from 4 points using current UV/color slots |
+| `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | fixed 16px grid; handles a few extended codes; binds Grim2D font texture (resource `0x6f`) |
+| `0x140` | `draw_text_mono_fmt` | `void draw_text_mono_fmt(float x, float y, const char *fmt, ...)` | printf-style wrapper around `draw_text_mono` |
+| `0x144` | `draw_text_small` | `void draw_text_small(float x, float y, char *text)` | exact-matched batched `GRIM_Font2` atlas renderer with newline handling |
+| `0x148` | `draw_text_small_fmt` | `void draw_text_small_fmt(float x, float y, const char *fmt, ...)` | formatted small-font text (wrapper around `0x144`) |
+| `0x14c` | `measure_text_width` | `int measure_text_width(char *text)` | exact-matched maximum-line width metric for newline-delimited small-font text |
 
 The native ABI declarations live in `tools/match/include/grim2d_abi.h` and
 `tools/match/include/grim2d_cpp.h`. Recovered implementations live under
-`decomp/1.9/grim/` and the remaining matching scratches. Use
-[API evidence](api-evidence.md) for function-specific proof and
-`tools/match/STATUS.md` for current match status. Runtime notes are dated evidence,
+`decomp/1.9/grim/`; `tools/match/STATUS.md` has the current match status. Runtime notes are dated evidence,
 not a list of methods still waiting to be ported.

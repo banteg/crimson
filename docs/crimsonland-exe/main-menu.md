@@ -30,8 +30,9 @@ Terrain generation is triggered elsewhere:
 - Demo → Menu: `ui_elements_update_and_render` calls `terrain_generate_random()` when
   `demo_mode_active != 0` and `game_state_pending == 0`, right before `game_state_set(0)`.
 
-- Debug: `game_frame_update` checks config var `0x57` and calls `terrain_generate_random()`
-  (or `terrain_generate(desc)` in quest mode), then clears the config var.
+- Render-target loss: Grim sets config var `0x57` after a device reset or failed texture
+  restore; `game_frame_update` then calls `terrain_generate_random()` (or `terrain_generate(desc)`
+  in quest mode) and clears it (see [Terrain pipeline](terrain.md)).
 
 ## Menu terrain selection (`terrain_generate_random`)
 
@@ -108,10 +109,11 @@ Animation note:
 - When `config_blob.shadows_enabled` (`0x00480356`) is enabled, `ui_element_render` also draws a
   shadow pass with `+7,+7` offset and tint `0x44444444` using the same transform (rotation matrix).
 
-Runtime verification (Frida):
+Historical runtime check (Frida, before the decompilation was complete; consistent with
+`decomp/1.9/crimsonland/ui_elements/ui_element_update.cpp`):
 
 - Summary: `analysis/frida/menu_logo_pivot_trace_summary.json`
-- Logs `logo_update` / `logo_render` while `ui_elements_timeline <= 350` (or when the logo angle is non-zero).
+- Logged `logo_update` / `logo_render` while `ui_elements_timeline <= 350` (or when the logo angle is non-zero).
 - Observed:
   - Play / Options: `logo_update.update_disabled == 1` and `angle_deg == 0` for the whole close (no pivot).
   - Quit: `logo_update.update_disabled == 0` and `angle_deg` ramps from `0` to `-90` as `timeline` goes `299 -> 0`.
@@ -143,7 +145,7 @@ This is **not used in state 0** (but used by other menus/screens):
 Panel-based screens (e.g. Play Game, Options) use the panel template plus a single
 `BACK` menu item, but **they do not rotate in** like the main-menu items.
 
-In `ui_menu_layout_init` these elements have `render_mode = 1` (element+0x4 == 1, offset mode), so
+In `ui_menu_layout_init` these elements have `use_offset_render = 1` (element+0x4), so
 `ui_element_render` draws them using `pos + offset_xy` instead of the rotation matrix.
 `ui_element_update` animates the X offset from `+/-abs(width)` to `0` over the default
 `[end_time_ms .. start_time_ms] = [0 .. 300]` ms window.
@@ -305,9 +307,11 @@ Important behavior:
 
 ## Animation (`ui_element_update @ 0x00446900`)
 
-Menu items use `render_mode == 0` (element+0x4 == 0, "transform") and animate via rotation:
+Source: `decomp/1.9/crimsonland/ui_elements/ui_element_update.cpp`.
 
-Note: `element+0x2` is an update-disable flag; when non-zero `ui_element_update` returns immediately
+Menu items use `use_offset_render == 0` (element+0x4, rotation transform) and animate via rotation:
+
+Note: `element+0x2` is `focus_disabled`; when non-zero `ui_element_update` returns immediately
 (used to lock the logo sign during menu navigation).
 
 - Fully hidden: `angle = ±pi/2`
@@ -325,7 +329,7 @@ m11 = cos(angle)
 ```
 
 `slide_x` is computed for all elements, but is only used when
-`render_mode == 1` (element+0x4 == 1, "offset"). For main menu items (`render_mode == 0`) it is
+`use_offset_render == 1` (element+0x4). For main menu items (`use_offset_render == 0`) it is
 ignored by the render path.
 
 ## Hit testing bounds (`ui_element_layout_calc @ 0x0044fb50`)
@@ -344,6 +348,8 @@ Then:
 
 ## Per-element render passes (`ui_element_render @ 0x00446c40`)
 
+Source: `decomp/1.9/crimsonland/ui_elements/ui_element_render.cpp`.
+
 The element renderer draws, in order:
 
 1. Optional **shadow** pass (when `shadows_enabled != 0`):
@@ -352,12 +358,12 @@ The element renderer draws, in order:
 3. Overlay label quad
 4. "Glow" overlay re-draw in additive blend (clickable + enabled elements):
    - always draws the overlay a second time with a different render state / blend mode
-   - if `counter_timer` is in `0..0xFF`, it overrides the glow alpha:
-     - `alpha_glow = 0xFF - counter_timer/2`
+   - if `time_since_ready` is in `0..0xFF`, it overrides the glow alpha:
+     - `alpha_glow = 0xFF - time_since_ready/2`
 
-Note: `counter_timer` is initialized to `0x100` in `ui_element_init_defaults` and (as far as we
-can tell) only increments in `ui_element_update`, so this short alpha override
-may never trigger for main-menu items unless something else resets the timer.
+Note: `time_since_ready` is initialized to `0x100` in `ui_element_init_defaults` and is never
+reset; `ui_element_update` only adds `frame_dt_ms` to it. It therefore never drops back into
+`0..0xFF`, and this alpha override never fires in 1.9.93.
 
 Overlay alpha for clickable elements:
 

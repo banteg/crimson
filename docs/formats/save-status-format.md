@@ -73,7 +73,7 @@ Offsets are relative to the decoded payload (`game_status_blob`).
 | `0x00` | u16 | `quest_unlock_index` | Max quest unlock index (limited version). |
 | `0x02` | u16 | `quest_unlock_index_full` | Max quest unlock index (full version). |
 | `0x04` | u32[53] | `weapon_usage_counts` | Weapon usage counters indexed by **status slot** (`0..52`). Slot `0` is unused; tracked weapon ids map to slots `1..52`; weapon id `53` has no slot in this table. |
-| `0xD8` | u32[91] | `quest_play_counts` | Quest play/attempt counters (`major * 10 + minor`). Length inferred from known tail fields. |
+| `0xD8` | u32[91] | `quest_play_counts` | Quest play/attempt counters (`major * 10 + minor`); `unsigned int quest_play_counts[91]` in `game_status_t` (`third_party/headers/crimsonland_types.h`). |
 | `0x244` | u32 | `mode_play_survival` | Incremented when starting Survival (mode 1). |
 | `0x248` | u32 | `mode_play_rush` | Incremented when starting Rush (mode 2). |
 | `0x24C` | u32 | `mode_play_typo` | Incremented when starting Typ‑o‑Shooter (mode 4). |

@@ -143,32 +143,31 @@ This returns a pointer to the Grim2D interface vtable.
 
 | Address | Entries | Purpose |
 |---------|---------|---------|
-| 0x1004c238 | 84 | **Grim2D public interface** (documented in grim2d-api.md) |
-| 0x1004cc10 | 124 | Texture format converter table (31 groups × 4 methods) |
-| 0x1004cb6c | 20 | Unknown |
-| 0x1004cbdc | 8 | Unknown |
+| 0x1004c238 | 84 | **Grim2D public interface** `grim_interface_vtable` (see [Grim2D API](../../grim2d/api.md)) |
+| 0x1004cae4 | 4 | `grim_vertex_space_converter_vtable` |
+| 0x1004caf8–0x1004cdf0 | 4 each | 39 pixel-format vtables (`grim_pixel_format_vtable_*`, e.g. `_r8g8b8` at 0x1004cb6c, `_x1r5g5b5` at 0x1004cbdc, `_a4r4g4b4` at 0x1004cc10), one installed by each pixel-format constructor |
 
 ### crimsonland.exe
 
 | Address | Entries | Purpose |
 |---------|---------|---------|
-| 0x0046f3e4 | 34 | Likely switch/dispatch table |
+| 0x0046f3e4 | 34 | `mod_api_vtable`: the `clAPI` virtuals exposed to mods (`mod_api_vtbl_t`) |
 
 ## Embedded Libraries
 
 ### grim.dll
 
-Statically linked image libraries:
+The image codecs come from the statically linked DirectX 8.1 `d3dx8.lib`
+(0x1000aaa6–0x1004b5b0); Grim decodes image files through the D3DX texture
+loaders (`decomp/1.9/grim/texture/load_file.cpp`). The archive carries:
 
-- **libjpeg** (IJG) - JPEG decoding
-- **libpng** - PNG decoding  
-- **zlib** - Deflate compression
+- **IJG libjpeg 6a** (`"6a  7-Feb-96"` at 0x1004d724)
+- **libpng 1.0.5** (`"1.0.5"` at 0x1004e1c0)
+- **zlib 1.1.3** (`"deflate 1.1.3"` / `"inflate 1.1.3"` at 0x10050971 / 0x100514a1)
 
-Evidence: Library signature strings found at:
-
-- libjpeg: 0x04d0e9 ("JFIF")
-- libpng: 0x04e29d
-- zlib: 0x04e24c, deflate/inflate at 0x050971/0x0514a1
+Archive and version provenance is pinned in `analysis/library_provenance.json`;
+[Native linking](native-linking.md) describes how the archives are rebuilt and
+linked.
 
 ## Identified Strings
 
@@ -200,16 +199,11 @@ http://buy.crimsonland.com  @ 0x071b40
 www.crimsonland.com         @ 0x075584
 ```
 
-## Function Estimation
+## Function inventory
 
-### By prologue patterns
-
-| Binary | `push ebp; mov ebp,esp` | `ret` instructions |
-|--------|-------------------------|-------------------|
-| crimsonland.exe | 244 | 2221 |
-| grim.dll | 356 | 1660 |
-
-Note: Lower than Ghidra's count because many functions use different calling conventions or are inlined.
+The exact function inventory, with each function's recovered source or library
+archive and its byte-match proof, is the match report
+`analysis/decomp/1.9.93.json`.
 
 ## Useful Addresses for Decompilation
 
@@ -232,11 +226,3 @@ Note: Lower than Ghidra's count because many functions use different calling con
 | 0x1004c238 | Grim2D vtable (84 entries) |
 | 0x053618 | D3D error message prefix |
 | 0x05384e | "MyApp::Init" string |
-
-## Notes for Ghidra
-
-1. **No RTTI** - Class names must be inferred from usage patterns
-2. **VS2003 compiler** - Use Microsoft demangler for any mangled names
-3. **Fixed base for exe** - No relocations, addresses are final
-4. **DLL has relocations** - 5738 entries, useful for identifying code vs data references
-5. **Large BSS in exe** - 378KB uninitialized, contains runtime game state arrays

@@ -5,18 +5,20 @@ tags:
 
 # Game mode map
 
-Observed values for `config_game_mode` (game mode selector) from the decompiled `crimsonland.exe`.
+Values of `config_game_mode` (game mode selector), declared as the
+`GAME_MODE_*` enum in `third_party/headers/crimsonland_types.h`.
 
 | Value | Mode | Evidence |
 | --- | --- | --- |
-| 1 | Survival | Mode select button labeled `Survival` sets `config_game_mode = 1`. |
-| 2 | Rush | Mode select button labeled `Rush` sets `config_game_mode = 2`. |
-| 3 | Quests | `game_mode_label` (`0x00412960`) returns the `Quests` label when `config_game_mode == 3`. |
-| 4 | Typ-o-Shooter | Mode select button labeled `Typ-o-Shooter` sets `config_game_mode = 4`. |
-| 8 | Tutorial (hidden) | Calls `tutorial_timeline_update` in the main loop, forces a preset perk list, and uses the tutorial prompt/strings; not exposed in the mode select UI. |
+| 1 | Survival | The Play Game menu's `Survival` button sets `GAME_MODE_SURVIVAL`. |
+| 2 | Rush | The Play Game menu's `Rush` button sets `GAME_MODE_RUSH`. |
+| 3 | Quests | Starting a quest from the quest select menu sets `GAME_MODE_QUEST`; `game_mode_label` (`0x00412960`) returns the `Quests` label. |
+| 4 | Typ-o-Shooter | The Play Game menu's `Typ-o-Shooter` button sets `GAME_MODE_TYPO_SHOOTER`. |
+| 8 | Tutorial | The Play Game menu's `Tutorial` button sets `GAME_MODE_TUTORIAL`. Calls `tutorial_timeline_update` in the main loop, forces a preset perk list, and uses the tutorial prompt/strings. |
 
 Notes:
 
-- Values 1/2/4 are set in the mode select UI handler (see the block around `ui_mouse_inside_rect_with_padding`).
-- Value 3 appears in the mode label helper (`game_mode_label` / `0x00412960`) and gating logic in perk selection.
-- Value 8 is referenced in perk selection and update logic but is not assigned in the UI code seen so far.
+- The mode-select assignments of 1/2/4/8 are in `decomp/1.9/crimsonland/menus/play_game_menu_update.cpp`.
+- Value 3 is assigned in `decomp/1.9/crimsonland/menus/quest_select_menu_update.cpp`.
+- Demo mode (`demo_mode_start`), the victory screen and the statistics menu
+  also set the mode directly.

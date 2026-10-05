@@ -8,8 +8,11 @@ tags:
 This page documents the core Survival-mode responsibilities of the classic game
 (`crimsonland.exe` v1.9.93) independent of rendering.
 
-**Source of truth:** decompiles (Ghidra/IDA/Binary Ninja). Code under `src/` is our
-reimplementation and can drift; treat it as a porting aid, not an authority.
+**Source of truth:** the recovered source in
+`decomp/1.9/crimsonland/game/survival_update.cpp`,
+`decomp/1.9/crimsonland/game/survival_spawn_creature.cpp` and
+`decomp/1.9/crimsonland/crimsonland/creature_handle_death.c`. Code under `src/` is
+our reimplementation and can drift; treat it as a porting aid, not an authority.
 
 Key functions:
 
@@ -21,8 +24,8 @@ Key functions:
 
 Survival-specific state referenced by `survival_update` / death handling:
 
-- `survival_elapsed_ms` (ms): used to scale wave spawn cadence. In Binja it is accessed as
-  `highscore_active_record + 0x20` and in other docs as `survival_elapsed_ms`.
+- `survival_elapsed_ms` (`0x00487060`, ms): used to scale wave spawn cadence. It is the
+  `survival_elapsed_ms` field (`+0x20`) of `highscore_active_record` (`highscore_record_t`).
 
 - `survival_spawn_cooldown` (ms): countdown accumulator for wave spawns (decremented by `player_count * frame_dt_ms`).
 - `survival_spawn_stage` (0..10): scripted stage index that gates milestone spawns by `player_level`.

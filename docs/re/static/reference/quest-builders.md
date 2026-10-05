@@ -93,9 +93,10 @@ textures (`ter/fb_q1..q4.jaz`) and only `Terrain A` is used.
 | 5 | 9 | Nagolipoli | 1 | 480000 | 0x01 | 0x01 | 0x03 | quest_build_nagolipoli | 0x00434480 |
 | 5 | 10 | The Gathering | 1 | 480000 | 0x02 | 0x01 | 0x03 | quest_build_the_gathering | 0x004349c0 |
 
-## Builder notes (known implementations)
+## Builder notes
 
-The builders below have explicit function bodies in the current Ghidra export.
+All builders are recovered under `decomp/1.9/crimsonland/quests/`
+(`quest_build_<name>.cpp`); the notes below summarize a few of them.
 Spawn ids include mapped creature names from `src/crimson/creatures/spawn.py`.
 
 - `quest_build_fallback` (`0x004343e0`): two spawn entries at x = -50, y = terrain_height * 0.5
@@ -118,10 +119,10 @@ Spawn ids include mapped creature names from `src/crimson/creatures/spawn.py`.
 
 - `quest_build_surrounded_by_reptiles` (`0x00438940`):
   - Phase 1: spawn id `0x0d` (alien) pairs at x = 256 and x = 768, times `1000..4200` step `800`,
-    y = `256 + 0.2 * local_4` where `local_4` steps by `0x200`.
+    y = `256 + 0.2 * line_offset` where `line_offset` steps by `0x200`.
 
   - Phase 2: spawn id `0x0d` (alien) pairs at y = 256 and y = 768, times `8000..11200` step `800`,
-    x = `256 + 0.2 * local_4`.
+    x = `256 + 0.2 * line_offset`.
 
 ## Quest spawn scripts
 
@@ -147,6 +148,6 @@ including creature labels from `src/crimson/creatures/spawn.py`.
   an algorithm (it can spawn formations, configure spawn slots, and applies difficulty/hardcore tail
   modifiers). For human-readable labels we use the partial index in `src/crimson/creatures/spawn.py`.
 
-## Open questions
-
-- Confirm heading semantics for Target Practice (current heading is derived from the spawn angle).
+- Target Practice (`quest_build_target_practice.cpp`) sets each heading to
+  `atan2(pos - (512, 512)) - 1.57079637f`, i.e. the spawn angle around the
+  arena center minus a quarter turn.

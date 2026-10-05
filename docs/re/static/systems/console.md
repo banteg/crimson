@@ -71,8 +71,8 @@ Relevant globals (see `analysis/ghidra/maps/data_map.json`):
 
 - `console_input_enabled` (`0x0047f4d4`)
 - `console_input_ready` (`0x0047ea58`)
-- `console_input_buffer` (`0x0047e448`) + length (`0x0047ea54`)
-- `console_prompt_string` (`0x004712c0`, prompt format `"> %s"`)
+- `console_input_buf` (`0x0047e448`) + `console_input_cursor` (`0x0047ea54`, also the current length)
+- `console_prompt_string` (`0x004712c0`, mono-font prompt) and `console_prompt_format` (`0x004712bc`, small-font `">%s"`)
 - `console_height_px` (`0x0047eeb8`)
 
 ## Command / cvar dispatch (static)

@@ -5,8 +5,10 @@ tags:
 
 # UI elements
 This page documents the UI element struct used by `ui_element_render` and the
-menu/button helpers. The layout is inferred from the decompile and is still
-partial.
+menu/button helpers. `ui_element_t` (0x318 bytes) is fully typed in
+`third_party/headers/crimsonland_types.h` and used by the byte-matched
+`decomp/1.9/crimsonland/ui_elements/ui_element_render.cpp` and
+`ui_element_update.cpp`.
 
 ## Overview
 
@@ -102,47 +104,45 @@ heavy writes to `0x004902f0/0x004902f4` and periodic writes to
 
 ## Struct view (ui_element_t)
 
-This is a *working* layout for the fields we actively rely on. Many unknown
-fields remain.
-
-## Known fields (partial)
-
-Offsets below are relative to the UI element base pointer.
+Offsets are relative to the UI element base pointer. The three 0xe8-byte
+blocks at `0x3c`, `0x124` and `0x20c` (vertices, texture handle, trailing
+dword) also alias `ui_menu_item_subtemplate_block_t layers[3]`.
 
 | Offset | Field | Notes |
 | --- | --- | --- |
-| 0x00 | active | If zero, `ui_element_render` returns immediately. |
-| 0x01 | ready | Becomes 1 when `ui_elements_timeline >= start_time_ms`. |
-| 0x02 | disabled | Skips hover/click logic when nonzero. |
-| 0x04 | render_mode | `0 = transform (pos+matrix)`, `1 = offset (pos+slide)` |
-| 0x08 | slide_x | Computed during transitions; used when `render_mode == 1`. |
-| 0x0c | slide_y | Unused in most menus; reserved. |
-| 0x10 | start_time_ms | Transition "fully visible" time used by timeline logic. |
-| 0x14 | end_time_ms | Transition "fully hidden" time (start of lerp interval). |
-| 0x18 | pos_x | Base X used for quad placement and highlight math. |
-| 0x1c | pos_y | Base Y used for quad placement and highlight math. |
-| 0x20 | bounds_left | Click/hover bounds (screen space). |
-| 0x24 | bounds_top | Click/hover bounds (screen space). |
-| 0x28 | bounds_right | Click/hover bounds (screen space). |
-| 0x2c | bounds_bottom | Click/hover bounds (screen space). |
-| 0x34 | on_activate | Function pointer called on click/confirm. |
-| 0x38 | custom_render | Optional extra draw callback after main passes. |
-| 0x3c | quad0 | Main quad vertex block (4 verts). |
-| 0x74 | quad1 | Stretch/panel quad #2 (only when `quad_mode == 8`). |
-| 0xac | quad2 | Stretch/panel quad #3 (only when `quad_mode == 8`). |
+| 0x00 | active | If zero, `ui_element_update` and `ui_element_render` return immediately. |
+| 0x01 | enabled | Set (with the panel-click SFX) once `ui_elements_timeline >= timeline_end_ms`, cleared while below it. Gates Enter activation and the enabled overlay pass. |
+| 0x02 | focus_disabled | `ui_element_update` skips the element when nonzero. |
+| 0x04 | use_offset_render | `0` = transform (`pos` + rotation matrix), `1` = offset (`pos` + `render_offset`). |
+| 0x08 | render_offset_x | Slide-in offset derived from the quad width during the transition; zero once fully in. |
+| 0x0c | render_offset_y | Always zeroed by `ui_element_update`. |
+| 0x10 | timeline_end_ms | Timeline value at which the element is fully in (default `300`). |
+| 0x14 | timeline_start_ms | Timeline value at which the slide starts (default `0`). |
+| 0x18 | pos_x | Base X used for quad placement and hover bounds. |
+| 0x1c | pos_y | Base Y used for quad placement and hover bounds. |
+| 0x20 | hover_min_x | Hover/click bounds (screen space), set by `ui_element_layout_calc`. |
+| 0x24 | hover_min_y | Hover/click bounds (screen space). |
+| 0x28 | hover_max_x | Hover/click bounds (screen space). |
+| 0x2c | hover_max_y | Hover/click bounds (screen space). |
+| 0x30 | label_id | Menu label index (default `57`; set per slot in `ui_menu_layout_init`). |
+| 0x34 | on_activate | Callback on click/Enter. |
+| 0x38 | on_update | Optional callback run at the end of `ui_element_render`. |
+| 0x3c | vertices[8] | Main vertex block (`ui_element_vertex_t`, 0x1c bytes each). |
 | 0x11c | texture_handle | Main texture handle (`-1` disables). |
-| 0x120 | quad_mode | `4` for normal quads, `8` for 3-piece panels. |
-| 0x124 | overlay_quad | Overlay quad (menu item text). |
+| 0x120 | vertex_count | `4` for a single quad; `8` for a three-piece panel drawn as quads from vertices 0–3, 2–5 and 4–7. |
+| 0x124 | overlay_vertices[8] | Overlay (label) quad. |
 | 0x204 | overlay_texture_handle | Overlay texture handle (`-1` disables). |
-| 0x2f4 | hover_enter_played | Gate for "hover enter" SFX. |
+| 0x20c | enabled_overlay_vertices[8] | Second overlay block; its alpha follows the ready glow. |
+| 0x2ec | secondary_overlay_texture_handle | Initialized to `-1`. |
+| 0x2f4 | hover_enter_played | Set while the mouse is inside the hover bounds. |
 | 0x2f8 | hover_amount | Hover lerp value, clamped 0..1000. |
-| 0x2fc | time_since_ready | Initialized to `0x100` in `ui_element_init_defaults` and increments in `ui_element_update`. If it ever falls into `0..0xFF`, `ui_element_render` uses it to override glow alpha. |
-| 0x300 | render_scale | Used to pick a special render state when zero. |
+| 0x2fc | time_since_ready | Initialized to `0x100` in `ui_element_init_defaults` and increments in `ui_element_update`; clicks need `>= 255`. If it falls into `0..0xFF`, `ui_element_render` uses it to override glow alpha. |
+| 0x300 | render_scale | When `0.0` and `cv_uiPointFilterPanels` is set, the element renders with point filtering. |
 | 0x304 | rot_m00 | Rotation matrix (cos). |
 | 0x308 | rot_m01 | Rotation matrix (-sin). |
 | 0x30c | rot_m10 | Rotation matrix (sin). |
 | 0x310 | rot_m11 | Rotation matrix (cos). |
-| 0x314 | direction_flag | Affects offscreen direction + UV swapping (see below). |
+| 0x314 | direction_flag | Slide-in direction; `ui_element_layout_calc` swaps vertex U pairs when set. |
 
 ## Related functions
 
@@ -158,15 +158,15 @@ Offsets below are relative to the UI element base pointer.
 Buttons use an inset rectangle derived from the element's *local* quad and its
 `pos_x/pos_y`:
 
-- `w = quad0.v2.x - quad0.v0.x`
-- `h = quad0.v2.y - quad0.v0.y`
+- `w = vertices[2].x - vertices[0].x`
+- `h = vertices[2].y - vertices[0].y`
 
 Then:
 
-- `left   = pos_x + quad0.v0.x + w*0.54`
-- `top    = pos_y + quad0.v0.y + h*0.28`
-- `right  = pos_x + quad0.v2.x - w*0.05`
-- `bottom = pos_y + quad0.v2.y - h*0.10`
+- `hover_min_x = pos_x + vertices[0].x + w*0.54`
+- `hover_min_y = pos_y + vertices[0].y + h*0.28`
+- `hover_max_x = pos_x + vertices[2].x - w*0.05`
+- `hover_max_y = pos_y + vertices[2].y - h*0.10`
 
 ### Hover amount
 

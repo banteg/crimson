@@ -55,7 +55,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
 | Offset | Type  | Meaning | Evidence |
 | ------ | ----- | ------- | -------- |
 | `-0x04` | int | Ammo class / HUD indicator | Used to choose `ui_ui_ind*` icons in the HUD: `0=bullet`, `1=fire`, `2=rocket`, else electric. |
-| `0x00` | char[0x40] | Weapon name | String is copied inline during `weapon_table_init` and rendered in the HUD weapon list via `FUN_0041c4b0`. |
+| `0x00` | char[0x40] | Weapon name | String is copied inline during `weapon_table_init` and drawn by the weapon-pickup popup in `ui_render_hud` (`0x0041aed0`). |
 | `0x40` | byte | Unlocked/available flag | `weapon_refresh_available` (`0x00452e40`) clears the table then marks unlocked weapons; `weapon_pick_random_available` (`0x00452cd0`) skips entries with `0`. |
 | `0x44` | int | Clip size | Copied into `player_clip_size` (`0x00490b74`) on weapon swap and used to reset `player_ammo` (`0x00490b7c`). In player storage these land in float-typed slots (for example `10.0`, `12.0`, `25.0`). |
 | `0x48` | float | Shot cooldown | Copied into `player_shot_cooldown` (`0x00490b84`) after firing in `player_fire_weapon`. |
@@ -81,14 +81,19 @@ All offsets below are in **bytes**, relative to the pointer returned by
 - UI text for weapons is pulled directly from the `weapon_table` name field (`offset 0x00`).
   Examples:
 
-  - **HUD** (`ui_render_hud`): passes `&weapon_table + player_weapon_id * 0x1f` into
-    `grim_text_width`/`grim_text_draw` (`grim_interface_ptr + 0x14c/0x144`), then draws the name.
+  - **HUD** (`ui_render_hud`, `decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp`):
+    the weapon-pickup popup passes `weapon_table[weapon_id].name` to
+    `grim_draw_text_small` (Grim2D vtable `0x144`).
 
-  - **End‑of‑game stats**: uses `param_2 + 0x2b` (most‑used weapon id) to index
-    `&weapon_table + id * 0x1f` for the “Most used weapon” label.
+  - **Most used weapon** (`decomp/1.9/crimsonland/ui_screens/ui_text_input_render.cpp`):
+    centers `weapon_table[record->most_used_weapon_id].name` with
+    `grim_measure_text_width` (vtable `0x14c`) and draws it with
+    `grim_draw_text_small`.
 
-  - **Quest completion**: uses `quest_unlock_weapon_id` via `weapon_table_entry()` to render
-    the unlocked weapon name.
+  - **Quest results** (`decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp`):
+    passes the quest's `unlock_weapon_id` to `weapon_table_entry()` for the
+    "Weapon unlocked:" line.
+
   This means `ui_itemTexts.jaz` is **not** the weapon list source; it’s used for menu labels.
 
 - Ammo class values (offset `-0x04`): `0` bullet (`ui_ui_indBullet.jaz`), `1` fire
@@ -96,7 +101,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
   (`ui_ui_indElectric.jaz`).
 
 - Flag bits (offset `0x68`): `0x1` spawn muzzle flash / shot burst effect
-  (`effect_spawn`, `0x0042e120(0x12, ...)`), `0x4` use the smaller crosshair size, `0x8` hide
+  (`effect_spawn(0x12, ...)`, `0x0042e120`), `0x4` use the smaller crosshair size, `0x8` hide
   the crosshair entirely.
 
 - Pellet count (offset `0x74`, `weapon_projectile_pellet_count`) is used by the Fire Bullets bonus
@@ -106,7 +111,10 @@ All offsets below are in **bytes**, relative to the pointer returned by
   `fire_bullets_fallback_shot_cooldown` (`0x004d9040`),
   `fire_bullets_fallback_spread_heat` (`0x004d9048`),
   `fire_bullets_primary_shot_sfx_id` (`0x004d9050`), and
-  `fire_bullets_secondary_shot_sfx_id` (`0x004d7fd8`).
+  `fire_bullets_secondary_shot_sfx_id` (`0x004d7fd8`). The first three are the
+  `shot_cooldown`, `spread_heat`, and `shot_sfx_base_id` fields of the Fire
+  bullets row (id `0x2d`); the last is the Plasma Minigun (`0x0b`) row's
+  `shot_sfx_base_id`.
 
 - Several weapons bypass the main projectile pool and use particle or secondary
   projectile pools instead (Flamethrower `0x08`, Blow Torch `0x0f`, HR Flamer
@@ -120,7 +128,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
   `player_alt_weapon_id` (`0x00490b8c`), `player_alt_clip_size` (`0x00490b90`),
   `player_alt_reload_active` (`0x00490b94`), `player_alt_ammo` (`0x00490b98`),
   `player_alt_reload_timer` (`0x00490b9c`), `player_alt_shot_cooldown`
-  (`player_alt_shot_cooldown`), and `player_alt_reload_timer_max` (`0x00490ba4`).
+  (`0x00490ba0`), and `player_alt_reload_timer_max` (`0x00490ba4`).
 
 - The same stride is used by projectile metadata lookups (`weapon_projectile_travel_budget`,
   `weapon_projectile_damage_scale`) keyed by projectile type ids in `projectile_spawn` and

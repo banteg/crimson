@@ -53,7 +53,7 @@ typedef struct projectile_t {
 | 0x1c | vel_y | Set to `sin(angle) * 1.5` on spawn. |
 | 0x20 | type_id | Spawn parameter; drives branching in `projectile_update`. |
 | 0x24 | life_timer | Starts at `0.4`, decremented each frame; when <= 0, the entry clears. |
-| 0x28 | unused / reserved | Zeroed on spawn; no reads observed yet. |
+| 0x28 | reserved | Write-only: zeroed in `projectile_spawn` (`decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp`); no reads in the recovered source. |
 | 0x2c | speed_scale | Multiplier applied to movement step in `projectile_update`. |
 | 0x30 | damage pool / pierce budget | Seeded to `1.0` for most types; special cases set `300` (type `6`), `240` (type `0x2d`), or `50` (type `0x19`). Decremented on hit and used as the damage parameter for multi-hit projectiles. |
 | 0x34 | hit_radius | Passed into `creature_find_in_radius` and `creatures_apply_radius_damage`. Set to `3.0` for type `0x16`, `5.0` for type `0x15`, and `10.0` for type `0x17/0x1c` (default `1.0`). |
