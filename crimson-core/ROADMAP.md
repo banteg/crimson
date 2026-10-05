@@ -16,7 +16,7 @@ the shared WASM artifact.
    supported scope; Typ-o support remains.
 2. **Ranked rules.** Python's documented fixes run in the core behind a runtime
    policy flag; both policies pass the gate, and default-policy Python replays
-   verify. Done: 139 of 139 streams agree, the five human recordings included.
+   verify. Done: 142 of 142 streams agree, the eight human recordings included.
 3. **Rules definition.** Finite-state and NaN handling, and a rules version
    covering aim, command order, UI pause and timing.
 4. **Client.** The whole recovered game, including menus, options, high scores
@@ -42,7 +42,7 @@ hit, RNG state, pending perks, quest final time and each player's experience,
 health as F32 bits and most-used weapon), the terminal tick and outcome, and
 per-tick state to locate the first divergence.
 
-Still to do: record keyboard-and-mouse human fixtures, and report bot quest completion and failure coverage separately. Runs that exhaust their budget are incomplete, not
+Still to do: report bot quest completion and failure coverage separately. Runs that exhaust their budget are incomplete, not
 terminal coverage.
 
 When Python and the core disagree, reduce the first divergence and use the
