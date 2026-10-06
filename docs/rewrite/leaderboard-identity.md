@@ -6,8 +6,8 @@ tags:
 
 # Leaderboard identity
 
-Status: the game side is built (`src/crimson/leaderboard/`); the service (`service/`) runs locally and is not
-deployed yet. The
+Status: the game side is built (`src/crimson/leaderboard/`); the service (`service/`) runs at crimson.land, a
+Solid app over a JSON API. The
 [ranked rules](ranked-rules.md) decide which runs rank; this page decides whose runs they are and what name they
 show under.
 

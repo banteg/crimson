@@ -1,0 +1,59 @@
+@font-face{font-family:"Crimson Small";src:url(/ui/small.woff2) format("woff2");font-display:swap}
+:root{--text:#e6e6e6;--label:#b3b3b3;--dim:#7d7d7d;--heading:#2089c6;--row:rgba(70,180,240,.6);--row-on:rgb(70,180,240);
+  --row-hardcore:rgba(250,70,60,.6);--row-hardcore-on:rgb(250,70,60)}
+body{margin:0;color:var(--text);background:#0b0a07;
+  font:16px/20px "Crimson Small",Arial,sans-serif;-webkit-font-smoothing:none;-moz-osx-font-smoothing:unset}
+/* The game's 1024-wide screen: the generated ground (terrain/draw.ts), the sign hanging from its right edge, panels
+   whose wires run to its left edge. */
+.screen{position:relative;isolation:isolate;max-width:1024px;min-height:100vh;margin:0 auto;overflow:hidden;background:rgb(63,56,25)}
+.ground{position:fixed;z-index:-1;top:0;left:50%;width:min(1024px,100%);height:100vh;transform:translateX(-50%);
+  background-position:center top;background-repeat:no-repeat;animation:ground-in .5s linear}
+@keyframes ground-in{from{opacity:0}}
+/* The game's menu timeline: panels slide in from the left one after another, and back out in reverse. */
+.panel{animation:panel-in .3s linear both;animation-delay:calc(var(--i) * 100ms)}
+.leaving .panel{animation:panel-out .3s linear both;animation-delay:calc((var(--n) - 1 - var(--i)) * 100ms)}
+@keyframes panel-in{from{transform:translateX(calc(-100% - 240px))}}
+@keyframes panel-out{to{transform:translateX(calc(-100% - 240px))}}
+@media (prefers-reduced-motion:reduce){.panel,.leaving .panel,.ground{animation:none}}
+header{text-align:right;padding-top:10px}header img{width:512px;max-width:100%;height:auto;display:inline-block;vertical-align:top}
+main{padding:6px 40px 4px 178px}
+@media (max-width:900px){main{padding:6px 12px 4px}}
+h2,h3,.quest-menu .label{margin:2px 0 10px;color:var(--label);font:bold 20px/32px "Courier New",Courier,monospace}
+h3{font-size:17px;line-height:26px;margin-top:14px}
+/* The small font has no bold: emphasis is brighter, and code stays in the text's own font. */
+em,strong,b{font-style:normal;font-weight:400;color:#fff}code{font:inherit;color:#fff}
+.notice{color:#fff}ul.providers{padding-left:20px}ul{padding-left:20px}
+td.n,.count,.score{font:bold 14px/20px "Courier New",Courier,monospace;white-space:nowrap}
+a{color:var(--row-on)}a:hover{color:#8fd3ff}
+.panel{position:relative;z-index:0;margin:0 0 20px;padding:4px 14px 6px;border:solid transparent;border-width:18px 19px 19px 14px;
+  border-image:url(/ui/panel.png) 18 19 19 14 fill stretch}
+@media (min-width:901px){.panel::before{content:"";position:absolute;z-index:-1;left:-192px;top:-2px;width:192px;height:50px;
+  background:url(/ui/wires.png) no-repeat}}
+table{width:100%;border-collapse:collapse}td,th{padding:2px 6px;text-align:left}tr+tr td{border-top:1px solid #151515}
+th{color:var(--dim);font-weight:400}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.muted{color:var(--dim)}
+img.avatar{width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:6px}img.avatar.heading{width:36px;height:36px}
+a.name{color:#fff;text-decoration:none}a.name:hover{color:var(--row-on)}
+.links{margin-left:4px}.links .muted{margin-right:6px;font-weight:400}
+a.provider{color:var(--dim);margin-right:6px;text-decoration:none;white-space:nowrap}a.provider:hover{color:var(--text)}
+svg.icon{width:13px;height:13px;fill:currentColor;vertical-align:-1px}h2 svg.icon{width:17px;height:17px}
+h2 .avatar+a.name{font-weight:400}h2.player{font-family:"Crimson Small",Arial,sans-serif;font-weight:400}
+.fingerprint{font-size:16px}
+button{background:#1b1b1b;color:var(--label);border:1px solid #484848;border-radius:3px;padding:1px 12px;cursor:pointer;font:inherit}
+button:hover{color:#fff;border-color:#777}button.danger{border-color:#6a2a2a;color:#e88}form.inline{display:inline}
+/* quest_select_menu_update's layout from its QUEST label, whose 64px art becomes "QUEST:" in 20px Courier (72px):
+   stage icons 16px past it and 3px down, 36px apart, 32px or
+   25.6px from their top-left corner; the list origin 32px right and 50px down, its rows 10px lower for the
+   hardcore box, in 20px rows; the hardcore box 132px right of the list origin and 12px above it. The label and idle icons are tinted 0.7. */
+.quest-menu{position:relative;width:296px;height:264px;margin:4px 0 0 4px}.panel:has(>.quest-menu){width:fit-content}
+.quest-menu>.label{position:absolute;left:0;top:0;margin:0}
+.stages a{position:absolute;top:3px;width:26px;height:26px}.stages img{width:100%;height:100%;filter:brightness(.7);opacity:.7}
+.stages a:hover img{filter:none;opacity:.8}.stages a.on{width:32px;height:32px}.stages a.on img{filter:none;opacity:1}
+.hardcore{position:absolute;left:164px;top:38px;color:var(--label);text-decoration:none;white-space:nowrap}.hardcore:hover{color:#fff}
+.hardcore img{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
+ol.quests{position:absolute;left:32px;top:60px;list-style:none;margin:0;padding:0}ol.quests li{height:20px;white-space:nowrap}
+ol.quests .count{font-size:13px}
+ol.quests a{color:var(--row);text-decoration:none;border-bottom:1px solid}ol.quests a:hover,ol.quests a.on{color:var(--row-on)}
+.hardcore-on ol.quests a{color:var(--row-hardcore)}.hardcore-on ol.quests a:hover,.hardcore-on ol.quests a.on{color:var(--row-hardcore-on)}
+ol.quests .n{display:inline-block;width:34px}ol.quests .count{margin-left:10px;color:var(--dim)}
+footer{padding:0 0 20px;text-align:center;color:var(--label);text-shadow:0 1px 2px #000}footer a{color:var(--text)}

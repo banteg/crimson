@@ -4,9 +4,10 @@
 // exchange stay in the Worker; the provider token is used once to read the profile and never stored.
 
 import { hex, randomToken, sha256 } from "./crypto";
+import type { ProviderName } from "./api-types";
 import type { Env } from "./http";
 
-export type ProviderName = "github" | "discord" | "x";
+export type { ProviderName };
 
 export interface Identity {
   subject: string;

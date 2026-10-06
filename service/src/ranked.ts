@@ -1,14 +1,15 @@
 // The run-level ranked rules, a port of src/crimson/replay/ranked.py (docs/rewrite/ranked-rules.md). The per-tick
 // controls and aim checks run with the simulation, in the verifier.
 
+import type { Board } from "./api-types";
 import { GameMode, type RunResult, type RunSpec } from "./replay";
+
+export type { Board };
 
 const QUEST_COUNT = 50;
 const RANKED_DETAIL_PRESET = 5;
 const WEAPON_USAGE_SLOTS = 53;
 const FINISHED: Record<number, string> = { [GameMode.SURVIVAL]: "death", [GameMode.QUESTS]: "quest_completed" };
-
-export type Board = "survival" | "quests" | "quests-hardcore";
 
 export function rankedBoard(run: RunSpec): Board | null {
   if (run.game_mode_id === GameMode.SURVIVAL) return "survival";

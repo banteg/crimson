@@ -3,3 +3,4 @@ node_modules/
 .dev.vars
 # Game art, exported from crimson.paq by scripts/assets.py.
 public/ui/
+dist/

@@ -2,8 +2,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "crimson-land",
   "main": "src/index.ts",
-  // The game's art (scripts/assets.py), served before the Worker sees the request.
-  "assets": { "directory": "./public" },
+  // The site, built by Vite from web/ (with public/'s game art) into dist/. The Worker sees every request first: it
+  // answers the API and server pages, serves files, and titles the site's page for each route.
+  "assets": { "directory": "./dist", "binding": "ASSETS", "run_worker_first": true },
   "compatibility_date": "2026-08-22",
   "send_metrics": false,
   "routes": [{ "pattern": "crimson.land", "custom_domain": true }],

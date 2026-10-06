@@ -3,22 +3,26 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "vite build && wrangler dev",
+    "build": "vite build",
     "assets": "cd .. && uv run --with fonttools --with brotli python service/scripts/assets.py",
-    "deploy": "npm run assets && wrangler deploy",
-    "test": "vitest run",
-    "check": "tsc --noEmit"
+    "deploy": "npm run assets && vite build && wrangler deploy",
+    "test": "vite build && vitest run",
+    "check": "tsc --noEmit && tsc --noEmit -p web"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "^5.20261006.1",
     "@types/node": "^26.6.4",
     "typescript": "^7.0.2",
+    "vite": "^8.3.3",
+    "vite-plugin-solid": "^2.11.14",
     "vitest": "^4.1.0",
     "wrangler": "^4.147.0"
   },
   "dependencies": {
     "fzstd": "^0.1.1",
-    "simple-icons": "^16.34.0"
+    "simple-icons": "^16.34.0",
+    "solid-js": "^1.9.15"
   }
 }

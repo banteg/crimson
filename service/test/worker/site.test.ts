@@ -2,6 +2,7 @@ import { env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { concat, hex, LOGIN_DOMAIN, sha256 } from "../../src/crypto";
 import worker from "../../src/index";
+import type { BoardView, JoinView, ProfileView, QuestMenuView } from "../../src/api-types";
 import questTitles from "../../src/quests.json";
 
 const ORIGIN = "https://crimson.land";
@@ -45,12 +46,19 @@ async function link(cookie: string, name: string): Promise<{ authorize: URL; cal
 
 afterEach(() => vi.restoreAllMocks());
 
-describe("pages", () => {
-  it("every page links the privacy and terms pages", async () => {
-    for (const path of ["/", "/privacy", "/terms"]) {
-      const html = await (await call(path)).text();
-      expect(html).toContain('href="/privacy"');
-      expect(html).toContain('href="/terms"');
+async function api<T>(path: string, cookie = ""): Promise<T> {
+  const response = await call(path, { headers: { cookie } });
+  expect(response.status).toBe(200);
+  return response.json() as Promise<T>;
+}
+
+describe("site", () => {
+  it("every route gets the site's page, titled for what a shared link points at", async () => {
+    for (const [path, title] of [["/", "crimson.land"], ["/boards/quests/1.1", `1.1 ${questTitles["1.1"]} · crimson.land`], ["/about", "About · crimson.land"]]) {
+      const html = await (await call(path!)).text();
+      expect(html).toContain(`<title>${title}</title>`);
+      expect(html).toContain(`<meta property="og:title" content="${title}">`);
+      expect(html).toContain('<div id="app">');
     }
   });
 
@@ -65,45 +73,28 @@ describe("pages", () => {
     expect([local.status, local.headers.has("strict-transport-security")]).toEqual([200, false]);
   });
 
-  it("the quest menu lists a stage like the game's quest screen, with a hardcore toggle", async () => {
-    const html = await (await call("/quests/2")).text();
+  it("the quest menu lists a stage's ten quests by title with their player counts", async () => {
+    const menu = await api<QuestMenuView>("/api/quests/quests-hardcore/2");
 
-    expect(html).toContain('<a class="on" style="left:124px" href="/quests/2"><img src="/ui/stage2.png" alt="II"></a>');
-    for (let minor = 1; minor <= 10; minor++) expect(html).toContain(`href="/boards/quests/2.${minor}"`);
-    expect(html).toContain(questTitles["2.1"]);
-    expect(html).toContain('href="/quests-hardcore/2"');
-    const hardcore = await (await call("/boards/quests-hardcore/2.3")).text();
-    expect(hardcore).toContain('href="/boards/quests/2.3"');
-    // Hardcore turns the quest rows red, as in the game.
-    expect(hardcore).toContain('class="quest-menu hardcore-on"');
+    expect(menu).toMatchObject({ board: "quests-hardcore", stage: 2 });
+    expect(menu.quests.map((quest) => quest.quest)).toEqual(Array.from({ length: 10 }, (_, i) => `2.${i + 1}`));
+    expect(menu.quests[0]).toEqual({ quest: "2.1", title: questTitles["2.1"], players: 0 });
+    expect((await api<BoardView>("/api/boards/quests-hardcore/2.3")).title).toBe(`2.3 ${questTitles["2.3"]} · hardcore`);
+    expect((await call("/api/boards/quests/9.9")).status).toBe(404);
   });
 
-  it("linked handles shared by every provider collapse into the name", async () => {
+  it("a profile shows its links, and to its owner the providers configured with both ID and secret", async () => {
     const { cookie, accountId } = await signIn();
-    await env.DB.prepare("UPDATE accounts SET name = 'banteg' WHERE id = ?").bind(accountId).run();
-    const link = (provider: string, handle: string) =>
-      env.DB.prepare("INSERT INTO links (provider, subject, account_id, handle, avatar_url, linked_at) VALUES (?, ?, ?, ?, NULL, 0)")
-        .bind(provider, `${provider}-${accountId}`, accountId, handle).run();
-    await link("github", "banteg");
-    await link("x", "Banteg");
-    const heading = async () => /<h2>(.*?)<\/h2>/s.exec(await (await call(`/players/${accountId}`, { headers: { cookie } })).text())![1]!;
+    await env.DB.prepare("INSERT INTO links (provider, subject, account_id, handle, avatar_url, linked_at) VALUES ('discord', '9', ?, 'banteg', NULL, 0)")
+      .bind(accountId).run();
 
-    const collapsed = await heading();
-    expect(collapsed.match(/class="provider"/g)).toHaveLength(2);
-    expect(collapsed).not.toContain('<span class="muted">banteg</span>');
-    await link("discord", "someone_else");
-    expect(await heading()).toContain("someone_else");
-  });
-
-  it("a provider shows only with both its client ID and secret", async () => {
-    const { cookie, accountId } = await signIn();
-    const page = async (bindings: typeof env) => (await call(`/players/${accountId}`, { headers: { cookie } }, bindings)).text();
-
-    expect(await page(env)).not.toContain("Link GitHub");
-    const html = await page(configured);
-    expect(html).toContain("Link GitHub");
-    expect(html).toContain("Link X");
-    expect(html).not.toContain("Link Discord");
+    const own = await api<ProfileView>(`/api/players/${accountId}`, cookie);
+    expect(own.player.links).toEqual([{ provider: "discord", handle: "banteg", avatar_url: null, url: "https://discord.com/users/9" }]);
+    expect(own.account!.providers).toEqual([
+      { name: "github", label: "GitHub", linked: false },
+      { name: "x", label: "X", linked: false },
+    ]);
+    expect((await api<ProfileView>(`/api/players/${accountId}`)).account).toBeNull();
   });
 });
 
@@ -116,9 +107,9 @@ describe("linking", () => {
     expect(authorize.searchParams.has("scope")).toBe(false);
     const calls = provider({ id: 42, login: "banteg", avatar_url: "https://avatars.githubusercontent.com/u/42" });
 
-    const html = await (await callback()).text();
+    const landed = await callback();
 
-    expect(html).toContain("Linked GitHub.");
+    expect(landed.headers.get("location")).toBe(`/players/${accountId}?notice=linked&provider=github`);
     const [tokenRequest] = calls.mock.calls[0]!;
     const form = await new Request(tokenRequest as RequestInfo, calls.mock.calls[0]![1]).text();
     expect(new URLSearchParams(form).get("client_secret")).toBe("github-secret");
@@ -151,7 +142,7 @@ describe("linking", () => {
     const { callback } = await link(owner.cookie, "github");
     const calls = provider({ id: 42, login: "banteg" });
 
-    expect(await (await callback("code", other.cookie)).text()).toContain("failed or expired");
+    expect((await callback("code", other.cookie)).headers.get("location")).toContain("notice=failed");
     expect(calls).not.toHaveBeenCalled();
   });
 
@@ -161,17 +152,17 @@ describe("linking", () => {
     await (await link(home.cookie, "github")).callback();
     const keysOf = async (id: number) => (await env.DB.prepare("SELECT count(*) AS n FROM keys WHERE account_id = ?").bind(id).first<{ n: number }>())!.n;
 
-    const html = await (await (await link(laptop.cookie, "github")).callback()).text();
+    const landed = await (await link(laptop.cookie, "github")).callback();
 
-    expect(html).toContain("belongs to another account");
-    expect(html).toContain(`/players/${home.accountId}`);
+    const token = /^\/join\/([0-9a-f]{64})$/.exec(landed.headers.get("location")!)![1]!;
+    const pending = await api<JoinView>(`/api/join/${token}`, laptop.cookie);
+    expect(pending).toMatchObject({ destination: { id: home.accountId }, moving: { keys: 1, runs: 0, names: 0 }, provider: "GitHub" });
     expect([await keysOf(home.accountId), await keysOf(laptop.accountId)]).toEqual([1, 1]);
-    const token = /name="token" value="([0-9a-f]{64})"/.exec(html)![1]!;
     const confirm = (cookie: string) =>
-      call("/account/merge", { method: "POST", headers: { cookie, origin: ORIGIN }, body: new URLSearchParams({ token }) });
+      call("/api/join", { method: "POST", headers: { cookie, origin: ORIGIN }, body: JSON.stringify({ token }) });
 
-    expect(await (await confirm(home.cookie)).text()).toContain("expired");
-    expect(await (await confirm(laptop.cookie)).text()).toContain("joined the account");
+    expect((await confirm(home.cookie)).status).toBe(410);
+    expect(await (await confirm(laptop.cookie)).json()).toEqual({ account: home.accountId });
     expect([await keysOf(home.accountId), await keysOf(laptop.accountId)]).toEqual([2, 0]);
     expect(await env.DB.prepare("SELECT 1 FROM accounts WHERE id = ?").bind(laptop.accountId).first()).toBeNull();
   });
@@ -185,15 +176,15 @@ describe("account", () => {
     provider({ id: 42, login: "banteg" });
     await (await link(cookie, "github")).callback();
 
-    expect((await post("/account/unlink/github", cookie)).status).toBe(303);
+    expect((await post("/api/account/unlink/github", cookie)).status).toBe(200);
     expect(await env.DB.prepare("SELECT 1 FROM links WHERE account_id = ?").bind(accountId).first()).toBeNull();
   });
 
   it("delete removes the account, its keys and sessions", async () => {
     const { cookie, accountId } = await signIn();
 
-    expect((await post("/account/delete", cookie, "https://evil.example")).status).toBe(403);
-    const deleted = await post("/account/delete", cookie);
+    expect((await post("/api/account/delete", cookie, "https://evil.example")).status).toBe(403);
+    const deleted = await post("/api/account/delete", cookie);
 
     expect(deleted.headers.get("set-cookie")).toContain("Max-Age=0");
     for (const table of ["accounts", "keys", "sessions"]) {

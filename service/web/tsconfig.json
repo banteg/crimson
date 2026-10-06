@@ -3,14 +3,15 @@
     "target": "es2024",
     "module": "es2022",
     "moduleResolution": "bundler",
-    "lib": ["es2024"],
-    "types": ["@cloudflare/workers-types", "@cloudflare/vitest-pool-workers/types", "node"],
+    "lib": ["es2024", "dom", "dom.iterable"],
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "types": ["vite/client"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "resolveJsonModule": true,
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["src", "test", "vitest.config.ts"],
-  "exclude": ["web"]
+  "include": ["src"]
 }

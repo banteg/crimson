@@ -94,3 +94,13 @@ export async function deleteAccount(env: Env, accountId: number): Promise<void> 
       ),
   );
 }
+
+// The join a session started, for its confirmation page; it stays pending until confirmed.
+export async function pendingJoin(env: Env, accountId: number, sessionToken: string, token: string): Promise<{ into: number; provider: string } | null> {
+  const request = await env.DB.prepare(
+    "SELECT into_account, provider FROM merge_requests WHERE token_hash = ? AND session_hash = ? AND from_account = ? AND expires_at >= ?",
+  )
+    .bind(await tokenHash(token), await tokenHash(sessionToken), accountId, Date.now())
+    .first<{ into_account: number; provider: string }>();
+  return request && { into: request.into_account, provider: request.provider };
+}
