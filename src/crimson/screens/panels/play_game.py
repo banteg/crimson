@@ -11,14 +11,14 @@ from crimson.ui.menu_layout import (
 )
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
-from grim.fonts.small import SmallFontData, draw_small_text
+from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...replay.ranked import RANKED_MODES, human_controls
-from ...ui.button import UiButtonState, button_draw, button_update
+from ...ui.button import UiButtonState, button_draw, button_update, button_width
 from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update, ui_checkbox_width
 from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update, ui_list_widget_width
 from ..assets import require_runtime_resources
@@ -408,7 +408,7 @@ class PlayGameMenuView(PanelMenuView):
         ui_checkbox_draw(resources, self.ranked_checkbox, self._ranked_pos(layout, resources), focus=self.state.focus)
         # `play_game_menu_update`: the list widget is drawn before tooltips, so tooltips can overlay it.
         self._draw_player_count(layout.drop_pos, resources=resources)
-        self._draw_tooltips(entries, base_pos, y_end, font=font)
+        self._draw_tooltips(entries, base_pos, y_end, resources=resources)
 
     def _draw_player_count(self, pos: Vec2, *, resources: RuntimeResources) -> None:
         widget = self.player_count_list
@@ -445,8 +445,9 @@ class PlayGameMenuView(PanelMenuView):
         base_pos: Vec2,
         y_end: float,
         *,
-        font: SmallFontData,
+        resources: RuntimeResources,
     ) -> None:
+        font = resources.small_font
         # `play_game_menu_update` draws these below the mode list based on per-button hover timers.
         tooltip_x = base_pos.x - 55.0
         tooltip_y = base_pos.y + (y_end + 16.0)
@@ -458,6 +459,9 @@ class PlayGameMenuView(PanelMenuView):
             "typo": (0.0, -12.0),
             "tutorial": (38.0, 0.0),
         }
+        # Native hand-places each tip roughly centred under the buttons; the port's Ranked tip is centred exactly.
+        button_centre = button_width(resources, self._mode_button_state(entries[0])) * 0.5
+        offsets["ranked"] = (button_centre - measure_small_text_width(font, self._RANKED_TOOLTIP) * 0.5 + 55.0, 0.0)
 
         tips = [(mode.key, mode.tooltip) for mode in entries] + [("ranked", self._RANKED_TOOLTIP)]
         for key, tooltip in tips:
@@ -466,7 +470,7 @@ class PlayGameMenuView(PanelMenuView):
                 continue
             alpha_f = min(1.0, float(ms) * 0.0009)
             alpha = int(255 * alpha_f)
-            off_x, off_y = offsets.get(key, (0.0, 0.0))
+            off_x, off_y = offsets[key]
             x = tooltip_x + off_x
             y = tooltip_y + off_y
             for line in tooltip.splitlines():
