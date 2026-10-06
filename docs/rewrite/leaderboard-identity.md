@@ -15,8 +15,8 @@ low-friction spirit. Nobody needs an account to rank, and ranked play never need
 
 ## Keys and accounts
 
-- On first launch the game creates an Ed25519 keypair in the runtime directory. The public key is the player's
-  identity; nothing else is asked for or stored.
+- On first launch the game creates an Ed25519 keypair in the runtime directory with PyNaCl (libsodium, on the cffi
+  the game already ships with). The public key is the player's identity; nothing else is asked for or stored.
 - An account is a set of keys. A new key starts its own account.
 - The game can export the key to a file, so an unlinked player can move it to another machine.
 - Linking a GitHub or Discord login to an account is optional, and happens on the site (see
@@ -27,7 +27,8 @@ low-friction spirit. Nobody needs an account to rank, and ranked play never need
 
 - Replays stay free of identity. A `.crd` carries the run, not the player, so anyone can still verify any replay.
 - The game signs each upload: the replay, the name, the public key and an Ed25519 signature over the SHA-256 of the
-  replay's uncompressed payload and the name. The service rejects an upload whose signature does not verify.
+  replay's uncompressed payload and the name. The service rejects an upload whose signature does not verify; Workers
+  verify Ed25519 with WebCrypto, so the service needs no library for it.
 - A finished ranked run goes into an upload queue in the runtime directory. The game sends queued runs when it can
   reach the service and keeps them until the service answers, so a run played offline uploads later.
 - The client draws the seed ([ranked rules](ranked-rules.md#the-ranked-profile)). Without a server-issued seed a
@@ -75,6 +76,5 @@ player signs into with a linked login.
 
 ## Open
 
-- The Ed25519 dependency: neither `cryptography` nor `pynacl` is a dependency yet.
 - The service itself is gate 5 in `crimson-core/ROADMAP.md`: the challenge and login endpoints, uploads verified
   by crimson-core, storage and the boards.
