@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import { spawn } from "node:child_process";
 import crypto from "node:crypto";
-import { performance } from "node:perf_hooks";
 import { pathToFileURL } from "node:url";
 import {
   decode,
@@ -22,7 +21,6 @@ export async function compare(input, native, wasm) {
     stderr = "",
     snapshots = 0;
   const hash = crypto.createHash("sha256");
-  const start = performance.now();
   const child = spawn(native, ["--reset-check"], {
     stdio: ["pipe", "pipe", "pipe"],
   });
@@ -87,20 +85,11 @@ export async function compare(input, native, wasm) {
   for (const r of run.records)
     if (!step(e, r)) throw Error("A reset rejected input");
   if (!last.equals(state(e))) throw Error("WASM A/B/A reset differs");
-  const comparisonSeconds = (performance.now() - start) / 1000;
-  init(e, run.config);
-  const bench = performance.now();
-  for (const r of run.records)
-    if (!step(e, r)) throw Error("Benchmark rejected input");
-  const seconds = (performance.now() - bench) / 1000;
-  if (!last.equals(state(e))) throw Error("Benchmark final state differs");
   return {
     ticks: run.records.length,
     fields_per_snapshot: names.length,
     sha256: hash.digest("hex"),
     final_sha256: crypto.createHash("sha256").update(last).digest("hex"),
-    comparison_seconds: comparisonSeconds,
-    wasm_sim_seconds: seconds,
     wasm_memory_mib: e.memory.buffer.byteLength / 1048576,
     reset: "native and WASM A/B/A passed",
     imports: 0,

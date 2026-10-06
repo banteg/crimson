@@ -33,7 +33,7 @@ copies of 168 recovered translation units; everything it adds lives here.
 | Path | Contents |
 | --- | --- |
 | [`build.py`](build.py), [`adapter.py`](adapter.py), [`data.py`](data.py) | Generate, adapt and compile the recovered sources; recreate the globals. |
-| [`sources.json`](sources.json), [`provenance.json`](provenance.json), [`schema.json`](schema.json) | Selected bodies, pinned dependency hashes, snapshot fields. |
+| [`sources.json`](sources.json), [`schema.json`](schema.json) | Selected bodies, snapshot fields. |
 | [`host/`](host) | The host the recovered code runs in: API, input, timing, stubs, portable math. |
 | [`rules.py`](rules.py), [`patches/`](patches) | The ranked rules: one patch per fixed original bug. |
 | [`checks/`](checks) | Native/WASM matrix, Python whole-run gate, original-executable oracles, Wasmtime probe. |
@@ -51,9 +51,10 @@ uv run python crimson-core/build.py
 uv run python crimson-core/build.py --target wasm
 ```
 
-Outputs land in `crimson-core/build/{native,wasm}`. The build stops when a
-pinned recovered source, header or the data-definition manifest changes; audit
-the adapters before refreshing `provenance.json`.
+Outputs land in `crimson-core/build/{native,wasm}`. Recovered sources are read
+as they are: every adapter seam asserts how many times it matches and every
+rule patch hunk must match its exact text once, so a decomp edit that moves a
+seam stops the build there.
 
 ## Checks
 
@@ -104,7 +105,9 @@ after the end, at most 500 ms of frames, as live play and verification do; a
 core rejection counts only where Python's run-down ends, and the gate refuses
 to run on a partial bot corpus or unknown `--only` names.
 
-The [baseline](results/gate.json) agrees on **all 142** streams, including the
+Python steps each stream through its verification `PlaybackDriver`, so a
+recorded fixture is also checked against its claimed result and every `.chk`
+checkpoint in the same pass. The [baseline](results/gate.json) agrees on **all 142** streams, including the
 eight supported human fixtures (Quests 1.1, 2.3, 2.5, 2.10 and 4.10, two Survival
 runs and a Rush run, with pad, keyboard-and-mouse and tank controls);
 the Typ-o fixture is not supported yet. CI fails on any
@@ -150,12 +153,12 @@ uv run --with wasmtime==49.0.0 python crimson-core/checks/wasmtime_check.py \
 
 The [probe](results/wasmtime.json) loads the exact `core.wasm` used by Node and
 the Worker in [wasmtime-py](https://bytecodealliance.github.io/wasmtime-py/),
-compares the hash of every snapshot in all 134 runs and checks A/B/A resets
-in one instance, without adding a project dependency. A rendered desktop client
-still needs graphics and audio imports. The 9,995-tick Survival run takes about
-**0.15 s** in a warmed Node WASM instance (simulation and input transfer,
-without snapshots, initialization or bot decisions); linear memory stays at
-**2.5 MiB** and the stripped module is about **357 KiB**.
+compares the hash of every snapshot of a smoke set (one run per mode, bug
+policy and control family) and checks A/B/A resets in one instance, without
+adding a project dependency; the matrix already compares every run between
+native and Node. A rendered desktop client still needs graphics and audio
+imports. Linear memory stays at **2.5 MiB** and the stripped module is about
+**357 KiB**.
 
 ### Worker
 

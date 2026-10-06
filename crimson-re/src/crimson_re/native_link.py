@@ -1270,17 +1270,6 @@ def _record_min_address(record: NativeObjectRecord) -> int:
     return min(binding.function.address for binding in _record_bindings(record))
 
 
-def _normalized_coff_sha256(data: bytes) -> str:
-    if len(data) < 20:
-        raise ValueError("truncated COFF object while hashing")
-    machine = struct.unpack_from("<H", data, 0)[0]
-    if machine != matchlib.IMAGE_FILE_MACHINE_I386:
-        raise ValueError(f"expected i386 COFF object while hashing, got machine 0x{machine:x}")
-    normalized = bytearray(data)
-    normalized[4:8] = b"\x00\x00\x00\x00"
-    return hashlib.sha256(normalized).hexdigest()
-
-
 def _path_label(path: Path, *, repo_root: Path) -> tuple[str, bool]:
     relative = matchlib.repo_relative_path(path, repo_root)
     if relative is None:
@@ -1928,7 +1917,7 @@ def build_native_object_set(
             coff=coff,
             compile_inputs=inputs_after,
             config_sha256=input_hashes[config_path],
-            object_sha256=_normalized_coff_sha256(object_data),
+            object_sha256=matchlib.coff_sha256(object_data),
             source_sha256=input_hashes[source_path],
         )
 
@@ -1992,7 +1981,7 @@ def build_native_object_set(
             coff=coff,
             compile_inputs=inputs_after,
             config_sha256=input_hashes[config_path],
-            object_sha256=_normalized_coff_sha256(object_data),
+            object_sha256=matchlib.coff_sha256(object_data),
             source_sha256=input_hashes[source_path],
             compile_config=provider,
             members=tuple(bindings),
@@ -2055,7 +2044,7 @@ def build_native_object_set(
                 f"{abi_config.directory.name}: compile inputs changed during native audit",
             )
         matchlib.parse_coff_object(abi_data)
-        abi_object_sha256 = _normalized_coff_sha256(abi_data)
+        abi_object_sha256 = matchlib.coff_sha256(abi_data)
 
     if (
         translation_units is not None
@@ -2206,7 +2195,7 @@ def object_manifest_payload(
             "object_function_symbol": first_binding.object_symbol,
             "object_sha256": (
                 record.object_sha256
-                or _normalized_coff_sha256(record.object_path.read_bytes())
+                or matchlib.coff_sha256(record.object_path.read_bytes())
             ),
             "scratch": _repo_relative(compile_config.directory, repo_root=repo_root),
             "source": _repo_relative(source_path, repo_root=repo_root),
@@ -2354,7 +2343,7 @@ def object_manifest_payload(
             "object": _repo_relative(objects.abi_object_path, repo_root=repo_root),
             "object_sha256": (
                 objects.abi_object_sha256
-                or _normalized_coff_sha256(objects.abi_object_path.read_bytes())
+                or matchlib.coff_sha256(objects.abi_object_path.read_bytes())
             ),
             "source": _repo_relative(abi_source, repo_root=repo_root),
             "source_sha256": abi_source_sha256,
@@ -4829,7 +4818,7 @@ def build_native_linker_alias_object(
         coff=matchlib.parse_coff_object(object_data),
         config_path=config.path,
         config_sha256=config.sha256,
-        object_sha256=_normalized_coff_sha256(object_data),
+        object_sha256=matchlib.coff_sha256(object_data),
         aliases=config.aliases,
     )
 
@@ -4871,7 +4860,7 @@ def build_native_data_object(
         coff=matchlib.parse_coff_object(object_data),
         definitions_path=resolved_definitions_path.resolve(),
         definitions_sha256=_sha256(resolved_definitions_path),
-        object_sha256=_normalized_coff_sha256(object_data),
+        object_sha256=matchlib.coff_sha256(object_data),
         bindings=bindings,
         regions=regions,
     )

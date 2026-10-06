@@ -27,7 +27,6 @@ from crimson_re.native_link import (
     NativeSymbolCatalog,
     NativeToolchainSnapshot,
     _native_link_image_options,
-    _normalized_coff_sha256,
     _select_unique_statuses,
     _validate_cluster_match,
     _validate_loaded_configs,
@@ -1357,9 +1356,9 @@ def test_normalized_coff_hash_ignores_only_header_timestamp() -> None:
     second = bytearray(first)
     struct.pack_into("<I", second, 4, 2)
 
-    assert _normalized_coff_sha256(bytes(first)) == _normalized_coff_sha256(bytes(second))
+    assert matchlib.coff_sha256(bytes(first)) == matchlib.coff_sha256(bytes(second))
     second[12] = 1
-    assert _normalized_coff_sha256(bytes(first)) != _normalized_coff_sha256(bytes(second))
+    assert matchlib.coff_sha256(bytes(first)) != matchlib.coff_sha256(bytes(second))
 
 
 def test_native_data_object_emits_overlapping_exact_symbol_aliases(

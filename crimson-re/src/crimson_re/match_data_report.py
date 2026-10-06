@@ -229,7 +229,7 @@ def refresh_evidence(configs: list[matchlib.ScratchConfig]) -> dict[str, Any]:
                 raise ValueError(f"data compilation failed for {source['source']}:\n{result.stdout}{result.stderr}")
             object_bytes = (directory / "data.obj").read_bytes()
         obj = matchlib.parse_coff_object(object_bytes)
-        digest = native_link._normalized_coff_sha256(object_bytes)
+        digest = matchlib.coff_sha256(object_bytes)
         for row in source["rows"]:
             storage = _check_storage(obj, row["name"], row["size"],
                                      expected=bytes.fromhex(row["initializer_hex"]), relocations=row["relocations"],

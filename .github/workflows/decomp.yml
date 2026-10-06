@@ -1,9 +1,30 @@
 name: Decompilation progress
 
+# Only the inputs pinned by the saved evidence can change the report.
 on:
   push:
     branches: [master]
+    paths:
+      - "decomp/**"
+      - "crimson-re/**"
+      - "tools/match/**"
+      - "tools/native/**"
+      - "third_party/**"
+      - "analysis/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/decomp.yml"
   pull_request:
+    paths:
+      - "decomp/**"
+      - "crimson-re/**"
+      - "tools/match/**"
+      - "tools/native/**"
+      - "third_party/**"
+      - "analysis/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/decomp.yml"
   workflow_dispatch:
 
 permissions:

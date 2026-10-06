@@ -11,5 +11,5 @@ hooks = [
     # Slow matrix gates stay available explicitly and run in CI/`just check`.
     { id = "py-pytest", name = "py-pytest", entry = "uv run pytest", language = "system", pass_filenames = false, stages = ["manual"], files = "^(src/|crimson-re/|tests/|pyproject\\.toml|uv\\.lock|justfile)" },
     { id = "py-build", name = "py-build", entry = "uv build", language = "system", pass_filenames = false, stages = ["pre-push"], files = "^(src/|pyproject\\.toml|uv\\.lock|readme\\.md|justfile)" },
-    { id = "decomp-report", name = "decomp-report", entry = "uv run --no-sync crimson match report", language = "system", pass_filenames = false, stages = ["pre-push"], files = "^(crimson-re/|tools/match/|tools/native/|third_party/|analysis/|pyproject\\.toml|uv\\.lock|prek\\.toml|\\.github/workflows/decomp\\.yml)" },
+    { id = "decomp-report", name = "decomp-report", entry = "uv run --no-sync crimson match report", language = "system", pass_filenames = false, stages = ["pre-push"], files = "^(decomp/|crimson-re/|tools/match/|tools/native/|third_party/|analysis/|pyproject\\.toml|uv\\.lock|prek\\.toml|\\.github/workflows/decomp\\.yml)" },
 ]

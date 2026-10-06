@@ -5,6 +5,9 @@ either an input-only `.rsi` from the bot corpus (`matrix.mjs`) or a recorded
 `.crd` fixture converted with `replay.encode`. The gate compares a set of
 per-tick fields to locate the first divergence, the first terminal tick and its
 outcome, and the complete `RunResult` after the last tick both sides stepped.
+Python steps through the verification `PlaybackDriver`, so a recorded fixture
+is also checked against its claimed result and its `.chk` checkpoints (state
+and RNG caller order at each recorded tick) in the same pass.
 
 Each stream's config carries its bug policy (`preserve_bugs`), and Python runs
 under the same one: the bot corpus covers both, and recorded fixtures replay
@@ -29,11 +32,13 @@ from replay import encode
 from crimson.game_modes import GameMode
 from crimson.quests.level import QuestLevel
 from crimson.quests.results import compute_quest_final_time
+from crimson.replay.checkpoint_diff import compare_checkpoints
+from crimson.replay.checkpoints import ReplayCheckpoint, load_checkpoints_file
 from crimson.replay.codec import load_replay_file
-from crimson.replay.ticks import step_replay_tick
-from crimson.replay.types import ReplayTick
+from crimson.replay.driver.playback_driver import PlaybackDriver
+from crimson.replay.driver.setup import ReplayRunnerError
+from crimson.replay.types import REPLAY_FORMAT_VERSION, Replay, ReplayTick
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
-from crimson.sim.run_init import initialize_run
 from crimson.sim.run_result import (
     PlayerRunResult,
     RunDown,
@@ -43,7 +48,6 @@ from crimson.sim.run_result import (
     run_result_mismatches,
 )
 from crimson.sim.run_spec import RunSpec, RunStatus
-from crimson.sim.sessions import IllegalCommandError
 from crimson.weapon_runtime import most_used_weapon_id_for_player
 from crimson.weapons import WeaponId
 
@@ -122,9 +126,12 @@ def _from_bits(bits: int, floating: bool):
 class Stream:
     """An input/command stream in the core's transport: its config and tick records."""
 
-    def __init__(self, name: str, payload: bytes):
+    def __init__(self, name: str, payload: bytes, recorded: Replay | None = None, checkpoints: tuple[ReplayCheckpoint, ...] = ()):
         self.name = name
         self.payload = payload
+        # A recorded fixture: Python replays the recording itself and checks its claims.
+        self.recorded = recorded
+        self.checkpoints = checkpoints
         self.config = struct.unpack_from(f"<{CONFIG_BYTES // 4}I", payload, 0)
         self.ticks: list[ReplayTick] = []
         offset = CONFIG_BYTES
@@ -141,6 +148,17 @@ class Stream:
                     else PerkMenuOpenCommand(player_index=0),
                 )
             self.ticks.append(ReplayTick(inputs=[(mx, my, ax, ay, flags)], commands=commands))
+
+    def replay(self) -> Replay:
+        if self.recorded is not None:
+            return self.recorded
+        return Replay(
+            format_version=REPLAY_FORMAT_VERSION,
+            game_version="",
+            run=self.run_spec(),
+            result=RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, ()),
+            ticks=self.ticks,
+        )
 
     def run_spec(self) -> RunSpec:
         seed, mode, major, minor, unlock, unlock_full, detail, violence, friendly, hardcore, retry, preserve_bugs = (
@@ -170,7 +188,11 @@ def load_streams(rsi_dir: Path, fixtures_dir: Path) -> tuple[list[Stream], dict[
     unsupported = {}
     for path in sorted(fixtures_dir.glob("*.crd")):
         try:
-            streams.append(Stream(path.name, encode(load_replay_file(path), None)))
+            replay = load_replay_file(path)
+            payload = encode(replay, None)
+            sidecar = path.with_name(path.name + ".chk")
+            checkpoints = tuple(load_checkpoints_file(sidecar).checkpoints) if sidecar.exists() else ()
+            streams.append(Stream(path.name, payload, replay, checkpoints))
         except ValueError as exc:
             unsupported[path.name] = str(exc)
     return streams, unsupported
@@ -248,8 +270,12 @@ def compare(stream: Stream, native: Path) -> dict:
     names = [core for _, core, _, _ in FIELDS] + [name for name in RESULT_FIELDS if name not in {f[1] for f in FIELDS}]
     core_rows, exit_code, stderr = run_core(native, stream, [index[name] for name in names])
 
-    spec = stream.run_spec()
-    session = initialize_run(spec).session
+    replay = stream.replay()
+    spec = replay.run
+    driver = PlaybackDriver(replay, version_mismatch_action=None)
+    session = driver.session
+    checkpoint_ticks = {int(checkpoint.tick_index) for checkpoint in stream.checkpoints}
+    checkpoints: list[ReplayCheckpoint] = []
     report: dict = {
         "preserve_bugs": spec.preserve_bugs,
         "ticks": len(stream.ticks),
@@ -266,10 +292,13 @@ def compare(stream: Stream, native: Path) -> dict:
     for tick_index in range(len(core_rows)):
         if tick_index:
             try:
-                step = step_replay_tick(session, stream.ticks[tick_index - 1])
-            except IllegalCommandError as exc:
-                python_error = f"tick {tick_index - 1}: {type(exc).__name__}: {exc}"
+                tick_result = driver.step_tick(tick_index - 1)
+            except ReplayRunnerError as exc:
+                python_error = f"{type(exc).__name__}: {exc}"
                 break
+            step = tick_result.payload
+            if tick_index - 1 in checkpoint_ticks:
+                checkpoints.append(driver.build_checkpoint(tick_result=tick_result))
             python_ticks = tick_index
             if run_down is None and step.outcome is not None:
                 run_down = RunDown(outcome=step.outcome, end_tick=tick_index - 1)
@@ -300,6 +329,8 @@ def compare(stream: Stream, native: Path) -> dict:
     expected = build_run_result(session, outcome=session.end_outcome())
     actual = core_result(row, spec.game_mode_id)
     mismatches = run_result_mismatches(expected, actual)
+    checkpoint_diff = compare_checkpoints(stream.checkpoints, checkpoints) if stream.checkpoints else None
+    claimed = stream.recorded.result if stream.recorded is not None else None
     report.update(
         python_ticks=python_ticks,
         python_error=python_error,
@@ -309,6 +340,14 @@ def compare(stream: Stream, native: Path) -> dict:
         result_mismatches=mismatches,
         python_result=_result_json(expected),
         core_result=_result_json(actual),
+        checkpoints=None if checkpoint_diff is None else {
+            "checked": checkpoint_diff.checked_count,
+            "ok": checkpoint_diff.ok,
+            "failure": None if checkpoint_diff.failure is None else {
+                "kind": checkpoint_diff.failure.kind, "tick": checkpoint_diff.failure.tick_index,
+            },
+        },
+        claim_mismatches=None if claimed is None else run_result_mismatches(claimed, expected),
     )
     # The core runs the whole stream, or rejects the tick after its run-down (exit 5), where Python's
     # `RunDown` ends too. Any other rejection is a failure, even when Python stopped at the same tick.
@@ -321,6 +360,8 @@ def compare(stream: Stream, native: Path) -> dict:
         and first_divergence is None
         and terminal["python"] == terminal["core"]
         and not mismatches
+        and (checkpoint_diff is None or checkpoint_diff.ok)
+        and not report["claim_mismatches"]
     )
     return report
 

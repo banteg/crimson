@@ -53,8 +53,9 @@ This project prioritizes deterministic parity with the original executable. The 
 
 - To add a recorded replay fixture, play the run with `uv run crimson --replay-checkpoints`, then copy the
   saved `<name>.crd` and its `<name>.crd.chk` checkpoint sidecar from the runtime `replays/` directory into
-  `tests/fixtures/replays/`. The fixture tests replay it headlessly and compare every tick's checkpoint;
-  `uv run crimson replay verify-checkpoints tests/fixtures/replays/<name>.crd` runs the same check.
+  `tests/fixtures/replays/`. The [core gate](https://github.com/banteg/crimson/tree/master/crimson-core#whole-run-gate)
+  replays it once, comparing its claimed result and every tick's checkpoint while it checks the recovered
+  core; `uv run crimson replay verify-checkpoints tests/fixtures/replays/<name>.crd` checks one fixture.
 - A checkpoint pins the RNG state after its tick, which a reorder of draws within the tick leaves unchanged,
   so it also carries `rng_callers_crc32`: a CRC32 of the tick's RNG call sites in draw order. A reorder fails
   at its tick, and `verify-checkpoints` lists the tick's call sites.

@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Any
 
 from . import match as matchlib
-from . import match_toolchain
 
 VERIFICATION = "source-bound local compilation; CI checks freshness and report consistency"
 SCORING_POLICY = "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1"
@@ -64,9 +63,10 @@ def candidate_evidence(status: matchlib.ScratchStatus | None) -> dict[str, Any]:
     compared_end = end - status.target_padding_bytes
     entries = status.audit.entries
     positional = status.ratio == 1 and all(e.target_index == e.candidate_index for e in entries)
-    object_hash = match_toolchain.file_sha256(matchlib._scratch_object_path(status.config))
-    if object_hash is None:
+    object_path = matchlib._scratch_object_path(status.config)
+    if not object_path.is_file():
         raise ValueError(f"missing candidate object: {status.config.function}")
+    object_hash = matchlib.coff_sha256(object_path.read_bytes())
     return {"proof": {
         "state": status.state,
         "target_size": status.target_size,

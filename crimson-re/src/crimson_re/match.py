@@ -165,6 +165,20 @@ VC6_LOCAL_SWITCH_PARTITION_KEY = "compiler:vc6-local-switch-partition"
 VC6_PROVEN_COPY_LOAD_KEY = "compiler:vc6-proven-copy-load"
 
 
+def coff_sha256(data: bytes) -> str:
+    """SHA-256 of an i386 COFF object with its build timestamp zeroed: equal for equal compilations."""
+
+    if len(data) < 20:
+        raise ValueError("truncated COFF object while hashing")
+    machine = struct.unpack_from("<H", data, 0)[0]
+    if machine != IMAGE_FILE_MACHINE_I386:
+        raise ValueError(f"expected i386 COFF object while hashing, got machine 0x{machine:x}")
+    normalized = bytearray(data)
+    normalized[4:8] = b"\x00\x00\x00\x00"
+    return hashlib.sha256(normalized).hexdigest()
+
+
+
 def parse_int(value: str | int) -> int:
     if isinstance(value, int):
         return value

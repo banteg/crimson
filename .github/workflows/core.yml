@@ -1,10 +1,36 @@
 name: Crimson core
 
+# The gate also runs the Python port, so its sources and the replay fixtures count.
 on:
   push:
     branches:
       - "master"
+    paths:
+      - "crimson-core/**"
+      - "decomp/**"
+      - "third_party/headers/**"
+      - "tools/match/include/**"
+      - "tools/native/data_definitions/**"
+      - "src/**"
+      - "crimson-re/**"
+      - "tests/fixtures/replays/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/core.yml"
   pull_request:
+    paths:
+      - "crimson-core/**"
+      - "decomp/**"
+      - "third_party/headers/**"
+      - "tools/match/include/**"
+      - "tools/native/data_definitions/**"
+      - "src/**"
+      - "crimson-re/**"
+      - "tests/fixtures/replays/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/core.yml"
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"

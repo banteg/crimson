@@ -147,7 +147,7 @@ def _compile_data(component: dict[str, Any], directory: Path) -> Path:
         symbol = next(s for s in symbols.values() if s.name.startswith(f"?{row['name']}@@3"))
         if row["address"] != cursor or symbol.value != cursor - component["data"][0]["address"]:
             raise ValueError("compiled data layout differs from native storage organization")
-        if native_link._normalized_coff_sha256(raw) != row["object_sha256"]:
+        if matchlib.coff_sha256(raw) != row["object_sha256"]:
             raise ValueError("linked data object differs from matched-data compilation")
         cursor += row["size"]
     if len(section.data) != cursor - component["data"][0]["address"]:
@@ -221,11 +221,11 @@ def refresh(functions: list[dict[str, Any]], data: dict[str, Any]) -> dict[str, 
         directory.mkdir(parents=True, exist_ok=True)
         code = matchlib.compile_scratch(config, matchlib.DEFAULT_MATCH_ROOT)
         raw = code.read_bytes()
-        canonical_hash = native_link._normalized_coff_sha256(raw)
+        canonical_hash = matchlib.coff_sha256(raw)
         for row in component["code"]:
             member_config = matchlib.load_scratch_config(matchlib.DEFAULT_MATCH_ROOT / "scratches" / row["name"])
             member_raw = matchlib.compile_scratch(member_config, matchlib.DEFAULT_MATCH_ROOT).read_bytes()
-            if _sha(member_raw) != row["object_sha256"] or native_link._normalized_coff_sha256(member_raw) != canonical_hash:
+            if not matchlib.coff_sha256(member_raw) == row["object_sha256"] == canonical_hash:
                 raise ValueError("linked code object differs from matched-source compilation")
         adapted, relocations, code_size = _adapt_code(raw, component["code"])
         (directory / "code.obj").write_bytes(adapted)
@@ -281,7 +281,7 @@ def refresh(functions: list[dict[str, Any]], data: dict[str, Any]) -> dict[str, 
         components.append({"image": spec["image"], "cluster": spec["cluster"], "records": records,
                            "relocations": relocations, "artifact": _relative(image_path),
                            "artifact_sha256": _sha(image_path.read_bytes()), "archive": archive_receipt,
-                           "adapted_object_sha256": _sha(adapted), "reservation_sha256": _sha((directory / "reserved.obj").read_bytes()),
+                           "adapted_object_sha256": matchlib.coff_sha256(adapted), "reservation_sha256": _sha((directory / "reserved.obj").read_bytes()),
                            "linker_sha256": _sha(linker.read_bytes()), "code_object_sha256": canonical_hash})
     receipt = {"schema": 1, "policy": POLICY, "components": components}
     validate(receipt, functions, data)
@@ -322,10 +322,10 @@ def validate(receipt: dict[str, Any], functions: list[dict[str, Any]], data: dic
             obj_path = matchlib._scratch_object_path(config)
             if obj_path.is_file():
                 raw = obj_path.read_bytes()
-                if _sha(raw) != row["object_sha256"] or native_link._normalized_coff_sha256(raw) != saved["code_object_sha256"]:
+                if matchlib.coff_sha256(raw) != row["object_sha256"] or row["object_sha256"] != saved["code_object_sha256"]:
                     raise ValueError("reference-layout source object changed")
                 adapted, relocations, _ = _adapt_code(raw, component["code"])
-                if _sha(adapted) != saved["adapted_object_sha256"] or [(r["address"], r["symbol"], r["type"]) for r in relocations] != [
+                if matchlib.coff_sha256(adapted) != saved["adapted_object_sha256"] or [(r["address"], r["symbol"], r["type"]) for r in relocations] != [
                     (r["address"], r["symbol"], r["type"]) for r in saved["relocations"]
                 ]:
                     raise ValueError("reference-layout source organization or relocations changed")
