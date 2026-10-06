@@ -13,6 +13,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game_modes import GameMode
+from ...leaderboard import SyncStatus
 from ...quests import quest_by_level
 from ...ui.button import button_draw
 from ...ui.checkbox import ui_checkbox_draw
@@ -34,6 +35,14 @@ from .shared import mode_label
 
 if TYPE_CHECKING:
     from .view import HighScoresView
+
+SYNC_LINES = {
+    SyncStatus.CONNECTING: "Connecting...",
+    SyncStatus.SENDING: "Sending local scores...",
+    SyncStatus.RECEIVING: "Receiving internet scores...",
+    SyncStatus.DONE: "Done...",
+    SyncStatus.FAILED: "Failed to update scores. Try again later.",
+}
 
 
 def draw_main_panel(
@@ -137,6 +146,13 @@ def draw_main_panel(
         focus=focus,
         pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X, HS_BACK_BUTTON_Y),
     )
+    leaderboard = view.state.leaderboard
+    if leaderboard is not None and leaderboard.sync_status != SyncStatus.IDLE:
+        # `highscore_screen` writes the sync's progress 32px left of the Play button and 32px below it.
+        status = leaderboard.sync_status
+        color = grim_color(1.0, 0.5, 0.5, 1.0) if status == SyncStatus.FAILED else grim_color(0.5, 1.0, 0.6, 1.0)
+        line_pos = button_base_pos + Vec2(-32.0, HS_BUTTON_STEP_Y + 32.0)
+        draw_small_text(font, SYNC_LINES[status], line_pos, color)
 
     return selected_rank
 

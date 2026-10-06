@@ -428,7 +428,7 @@ def _passes_date_filter(entry: HighScoreRecord, date_mode: HighScoreDateMode, no
     return False
 
 
-def _select_highscore_table(
+def select_highscore_table(
     records: list[HighScoreRecord], *, game_mode_id: GameMode, date_mode: HighScoreDateMode, now: dt.date,
 ) -> list[HighScoreRecord]:
     eligible = [r for r in records if r.game_mode_id == game_mode_id and _passes_date_filter(r, date_mode, now)]
@@ -439,7 +439,7 @@ def read_highscore_table(
     path: Path, *, game_mode_id: GameMode, date_mode: HighScoreDateMode = HighScoreDateMode.ALL_TIME,
     now: dt.date | None = None,
 ) -> list[HighScoreRecord]:
-    return _select_highscore_table(
+    return select_highscore_table(
         read_highscore_records(path), game_mode_id=game_mode_id, date_mode=date_mode,
         now=now or dt.datetime.now(tz=dt.UTC).astimezone().date(),
     )
@@ -474,7 +474,7 @@ def upsert_highscore_record(
     """Save a qualifying score without discarding history outside the displayed table."""
     now = now or dt.datetime.now(tz=dt.UTC).astimezone().date()
     history = read_highscore_records(path)
-    table = _select_highscore_table(history, game_mode_id=record.game_mode_id, date_mode=date_mode, now=now)
+    table = select_highscore_table(history, game_mode_id=record.game_mode_id, date_mode=date_mode, now=now)
     idx = rank_index(table, record)
     if idx >= TABLE_MAX:
         return table, idx

@@ -4,6 +4,9 @@ A finished ranked run is held from its end until its results screen closes, so i
 there. Then one worker thread signs it into the outbox and uploads every queued run; a run the service cannot be
 reached for stays in the outbox and goes with a later pass. The console is not thread-safe, so the worker's lines
 come back through `drain` on the main thread, as the replay saver's do.
+
+The high score screen's Update scores runs `sync` on the same thread, as the original's `highscore_sync_worker`
+did: it sends the waiting runs, then receives a verified board's best runs for the screen to show.
 """
 
 from __future__ import annotations
@@ -16,6 +19,7 @@ import urllib.error
 import urllib.request
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
+from enum import IntEnum
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -76,6 +80,36 @@ class _Report(msgspec.Struct, frozen=True):
     waiting: int
 
 
+class SyncStatus(IntEnum):
+    """`online_sync_status`: the high score screen's line while Update scores runs; the port has no "Connected..."."""
+
+    IDLE = 0
+    CONNECTING = 1
+    SENDING = 3
+    RECEIVING = 4
+    DONE = 5
+    FAILED = 6
+
+
+class OnlineScore(msgspec.Struct, frozen=True):
+    """A verified board's run with a high score record's fields; `score` is the board's (experience, or a quest's
+    final time) and `accepted_at` is in Unix milliseconds."""
+
+    name: str
+    score: int
+    elapsed_ms: int
+    experience: int
+    most_used_weapon_id: int
+    shots_fired: int
+    shots_hit: int
+    kills: int
+    accepted_at: int
+
+
+# A verified board: its name and, for quests, the "major.minor" level.
+type Board = tuple[str, str]
+
+
 class Leaderboard:
     def __init__(self, base_dir: Path, *, url: str | None = None, transport: Transport = post_json) -> None:
         self.identity = Identity.load_or_create(base_dir)
@@ -90,6 +124,9 @@ class Leaderboard:
         self._held: Replay | None = None
         self._next_pass_s = 0.0
         self.waiting = self._waiting_count()
+        # Written by the worker, read by the high score screen.
+        self.sync_status = SyncStatus.IDLE
+        self.scores: dict[Board, list[OnlineScore]] = {}
 
     def hold(self, replay: Replay) -> None:
         """Keep a finished ranked run until its results screen closes and its name is known."""
@@ -105,6 +142,14 @@ class Leaderboard:
         if self._url and self.waiting and not self._pending and now_s >= self._next_pass_s:
             self._next_pass_s = now_s + RETRY_INTERVAL_S
             self._pending.append(self._executor.submit(self._upload_pass))
+
+    def sync(self, board: Board | None) -> None:
+        """Send the waiting runs, then receive `board`'s best runs into `scores`; `sync_status` follows along."""
+        if not self._url:
+            self.sync_status = SyncStatus.FAILED
+            return
+        self.sync_status = SyncStatus.CONNECTING
+        self._pending.append(self._executor.submit(self._sync, board))
 
     def login(self) -> Future[str]:
         """The one-time link that opens the site signed in as this key."""
@@ -177,6 +222,27 @@ class Leaderboard:
                 break
         return _Report(lines, self._waiting_count())
 
+    def _sync(self, board: Board | None) -> _Report:
+        self.sync_status = SyncStatus.SENDING
+        sent = self._upload_pass()
+        if board is None:
+            self.sync_status = SyncStatus.DONE
+            return sent
+        self.sync_status = SyncStatus.RECEIVING
+        name, quest = board
+        try:
+            status, answer = self._transport(f"{self._url}/scores", {"board": name, "quest": quest})
+        except OSError as exc:
+            self.sync_status = SyncStatus.FAILED
+            return _Report([*sent.lines, f"leaderboard: can't reach {self._url} ({exc})"], sent.waiting)
+        if status != 200:
+            self.sync_status = SyncStatus.FAILED
+            return _Report([*sent.lines, f"leaderboard: scores: HTTP {status}"], sent.waiting)
+        scores = msgspec.convert(answer["scores"], list[OnlineScore])
+        self.scores[board] = scores
+        self.sync_status = SyncStatus.DONE
+        return _Report([*sent.lines, f"leaderboard: received {len(scores)} {f'{name} {quest}'.strip()} scores"], sent.waiting)
+
     def _login(self) -> str:
         if not self._url:
             raise LeaderboardError("no leaderboard service is configured")
@@ -198,4 +264,13 @@ class Leaderboard:
         return answer
 
 
-__all__ = ["LEADERBOARD_URL", "Leaderboard", "LeaderboardError", "leaderboard_url", "post_json"]
+__all__ = [
+    "LEADERBOARD_URL",
+    "Board",
+    "Leaderboard",
+    "LeaderboardError",
+    "OnlineScore",
+    "SyncStatus",
+    "leaderboard_url",
+    "post_json",
+]

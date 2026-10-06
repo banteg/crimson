@@ -9,7 +9,7 @@ import pytest
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
-from crimson.leaderboard import Identity, Leaderboard, LeaderboardError
+from crimson.leaderboard import Identity, Leaderboard, LeaderboardError, OnlineScore, SyncStatus
 from crimson.leaderboard.identity import IDENTITY_FILE, login_message, run_message
 from crimson.replay import load_replay
 from crimson.replay.codec import inflate_replay_payload
@@ -26,13 +26,21 @@ def replay():
 class _Service:
     """Answers like the leaderboard service, with one scripted status per upload."""
 
-    def __init__(self, *statuses: int | OSError, login_url: str = "https://crimson.test/login/once") -> None:
+    def __init__(
+        self, *statuses: int | OSError, login_url: str = "https://crimson.test/login/once", scores: list[dict[str, Any]] | None = None,
+    ) -> None:
         self.statuses = list(statuses)
         self.login_url = login_url
+        # A board's answer; None is a service that can't be reached.
+        self.scores = scores
         self.calls: list[tuple[str, dict[str, Any]]] = []
 
     def __call__(self, url: str, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
         self.calls.append((url, body))
+        if url.endswith("/scores"):
+            if self.scores is None:
+                raise OSError("no route")
+            return 200, {"scores": self.scores}
         if url.endswith("/auth/challenge"):
             return 200, {"challenge": "c0ffee"}
         if url.endswith("/auth/login"):
@@ -98,6 +106,36 @@ def test_runs_wait_offline_and_go_with_a_later_pass(tmp_path, replay) -> None:
 
     assert len(service.calls) == 1
     assert relaunched.waiting == 0
+
+
+def test_update_scores_sends_waiting_runs_then_receives_the_board(tmp_path, replay) -> None:
+    offline = Leaderboard(tmp_path, url=_URL, transport=_Service(OSError("no route")))
+    offline.hold(replay)
+    offline.release("banteg")
+    _finish(offline)
+    score = {
+        "name": "banteg", "score": 749, "elapsed_ms": 30000, "experience": 749, "most_used_weapon_id": 1,
+        "shots_fired": 90, "shots_hit": 60, "kills": 40, "accepted_at": 1_791_000_000_000,
+    }
+    service = _Service(201, scores=[score])
+    leaderboard = Leaderboard(tmp_path, url=_URL, transport=service)
+
+    leaderboard.sync(("survival", ""))
+    _finish(leaderboard)
+
+    assert [url.rsplit("/", 1)[1] for url, _body in service.calls] == ["runs", "scores"]
+    assert service.calls[1][1] == {"board": "survival", "quest": ""}
+    assert leaderboard.sync_status == SyncStatus.DONE
+    assert leaderboard.scores[("survival", "")] == [OnlineScore(**score)]
+    assert leaderboard.waiting == 0
+
+
+def test_update_scores_fails_without_the_service(tmp_path) -> None:
+    leaderboard = Leaderboard(tmp_path, url=_URL, transport=_Service())
+    leaderboard.sync(("quests", "1.1"))
+    assert "can't reach" in _finish(leaderboard)[-1]
+    assert leaderboard.sync_status == SyncStatus.FAILED
+    assert leaderboard.scores == {}
 
 
 @pytest.mark.parametrize(("status", "rejected"), [(409, 0), (422, 1)])

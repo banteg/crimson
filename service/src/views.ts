@@ -1,9 +1,10 @@
 // The read API's JSON (src/api-types.ts): the boards, the quest menu, profiles and the join confirmation.
 
-import type { Board, BoardView, JoinView, PlayerView, ProfileView, ProviderName, QuestMenuView, RunView } from "./api-types";
+import type { Board, BoardView, GameScore, JoinView, PlayerView, ProfileView, ProviderName, QuestMenuView, RunView } from "./api-types";
 import type { Env } from "./http";
 import { configuredProviders } from "./oauth";
 import { LOWER_IS_BETTER } from "./ranked";
+import type { RunResult } from "./replay";
 import questTitles from "./quests.json";
 
 export const QUEST_TITLES: Record<string, string> = questTitles;
@@ -58,18 +59,32 @@ export function boardTitle(board: Board, quest: string): string {
   return board === "survival" ? "Survival" : `${quest} ${QUEST_TITLES[quest]}${board === "quests-hardcore" ? " · hardcore" : ""}`;
 }
 
+interface BestRun {
+  id: string;
+  account_id: number;
+  name: string;
+  score: number;
+  result: string;
+  accepted_at: number;
+}
+
 // Each account's best run on a board; equal scores keep the earlier accepted run ahead.
-export async function boardView(env: Env, board: Board, quest: string, limit: number): Promise<BoardView> {
+async function bestRuns(env: Env, board: Board, quest: string, limit: number): Promise<BestRun[]> {
   const order = LOWER_IS_BETTER[board] ? "ASC" : "DESC";
   const { results } = await env.DB.prepare(
-    `SELECT r.id, r.account_id, r.score FROM runs r JOIN accounts a ON a.id = r.account_id
+    `SELECT r.id, r.account_id, r.name, r.score, r.result, r.accepted_at FROM runs r JOIN accounts a ON a.id = r.account_id
      WHERE r.board = ? AND r.quest = ? AND r.hidden = 0 AND a.banned = 0
        AND r.id = (SELECT id FROM runs b WHERE b.account_id = r.account_id AND b.board = r.board AND b.quest = r.quest AND b.hidden = 0
                    ORDER BY b.score ${order}, b.accepted_at LIMIT 1)
      ORDER BY r.score ${order}, r.accepted_at LIMIT ?`,
   )
     .bind(board, quest, limit)
-    .all<{ id: string; account_id: number; score: number }>();
+    .all<BestRun>();
+  return results;
+}
+
+export async function boardView(env: Env, board: Board, quest: string, limit: number): Promise<BoardView> {
+  const results = await bestRuns(env, board, quest, limit);
   const who = await players(env, results.map((row) => row.account_id));
   return {
     board,
@@ -77,6 +92,24 @@ export async function boardView(env: Env, board: Board, quest: string, limit: nu
     title: boardTitle(board, quest),
     rows: results.map((row, i) => ({ rank: i + 1, run: row.id, score: row.score, player: who.get(row.account_id)! })),
   };
+}
+
+export async function gameScores(env: Env, board: Board, quest: string, limit: number): Promise<GameScore[]> {
+  return (await bestRuns(env, board, quest, limit)).map((run) => {
+    const result = JSON.parse(run.result) as RunResult;
+    const player = result.players[0]!;
+    return {
+      name: run.name,
+      score: run.score,
+      elapsed_ms: result.elapsed_ms,
+      experience: player.experience,
+      most_used_weapon_id: player.most_used_weapon_id,
+      shots_fired: result.shots_fired,
+      shots_hit: result.shots_hit,
+      kills: result.kills,
+      accepted_at: run.accepted_at,
+    };
+  });
 }
 
 export async function questMenuView(env: Env, board: "quests" | "quests-hardcore", stage: number): Promise<QuestMenuView> {

@@ -45,6 +45,17 @@ Connect a PlayStation, Switch Pro or Xbox controller and press any button on it:
 
 Buttons are named by position, so on a Switch Pro controller "Cross / A" is the bottom face button. In local co-op, player 2 uses the second controller, and so on. Options → Controls edits everything; its Reset button restores the controller layout, or mouse and keyboard when no controller is connected. `crimson view gamepad` shows what the game reads from each controller.
 
+### Online leaderboard
+
+Tick Ranked in the Play Game menu to play Survival or a quest for [crimson.land](https://crimson.land). The server replays every run before its score counts, and the game uploads finished runs by itself, so playing offline is fine. The high score screen's Update scores shows the boards in game. There is no sign-up: the game makes a key on its first launch, and the `identity` commands manage it:
+
+```
+crimson identity show                     print your key and the fingerprint the boards show
+crimson identity export <file>            copy your key to a file, to play as you on another machine
+crimson identity import <file>            sign as an exported key (--replace overwrites this one)
+crimson identity profile                  open your profile on crimson.land, signed in
+```
+
 ### Replays and tools
 
 Every run is recorded. The `crimson` CLI (alias `crimsonland`) plays them back and checks them:

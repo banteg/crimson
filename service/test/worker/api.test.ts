@@ -50,6 +50,16 @@ describe("runs", () => {
     expect(stored).toMatchObject({ client: "crimson", platform: expect.stringMatching(/^[a-z]+-[a-z0-9_]+$/) });
   });
 
+  it("the game reads a board's runs as high score records", async () => {
+    const player = await Player.create();
+    await player.upload(vectors.ranked_run, "banteg");
+
+    const { scores } = (await (await post("/api/scores", { board: "survival", quest: "" })).json()) as { scores: Record<string, number | string>[] };
+    expect(scores).toHaveLength(1);
+    expect(scores[0]).toMatchObject({ name: "banteg", score: 749, experience: 749 });
+    expect((await post("/api/scores", { board: "quests", quest: "" })).status).toBe(400);
+  });
+
   it("a run is accepted once, whoever sends it again", async () => {
     const [owner, copier] = [await Player.create(), await Player.create()];
     expect((await owner.upload(vectors.ranked_run, "owner")).status).toBe(201);

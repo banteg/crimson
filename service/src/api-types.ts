@@ -35,6 +35,19 @@ export interface BoardView {
   rows: BoardRow[];
 }
 
+// A board row as the game's high score screen shows it: the run's own name and the fields of a high score record.
+export interface GameScore {
+  name: string;
+  score: number;
+  elapsed_ms: number;
+  experience: number;
+  most_used_weapon_id: number;
+  shots_fired: number;
+  shots_hit: number;
+  kills: number;
+  accepted_at: number;
+}
+
 export interface QuestMenuView {
   board: "quests" | "quests-hardcore";
   stage: number;

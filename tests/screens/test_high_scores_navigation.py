@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.leaderboard import Leaderboard
+from crimson.persistence.highscores import HighScoreRecord, scores_path_for_mode, write_highscore_records
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScoreQuery, ScoreReturnContext, ShowScores, StartRun
 from crimson.screens.high_scores_layout import (
@@ -150,3 +154,38 @@ def test_play_locked_quest_does_not_transition(scores_view, hardcore, mocker) ->
     click_button(view, PLAY_ROW, mocker)
     assert view.state.ui.pending is None
     assert not view.state.screen_fade_ramp
+
+
+def test_update_scores_shows_the_board_green_beside_local_runs(scores_view, mocker) -> None:
+    view = scores_view
+    state = view.state
+    local = HighScoreRecord.blank(rand_value=0)
+    local.set_name("banteg")
+    local.game_mode_id = GameMode.QUESTS
+    local.quest_level = QuestLevel(1, 1)
+    local.run_elapsed_ms, local.score_xp = 16936, 1200
+    write_highscore_records(scores_path_for_mode(state.base_dir, GameMode.QUESTS, quest_stage_major=1, quest_stage_minor=1), [local])
+
+    def score(name: str, final_ms: int, experience: int) -> dict[str, int | str]:
+        return {
+            "name": name, "score": final_ms, "elapsed_ms": final_ms, "experience": experience, "most_used_weapon_id": 1,
+            "shots_fired": 50, "shots_hit": 40, "kills": 30, "accepted_at": 1_791_000_000_000,
+        }
+
+    def service(url: str, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+        assert url.endswith("/scores")
+        assert body == {"board": "quests", "quest": "1.1"}
+        return 200, {"scores": [score("zhenya", 15000, 900), score("banteg", 16936, 1200)]}
+
+    state.leaderboard = Leaderboard(state.base_dir, url="https://crimson.test/api", transport=service)
+    view.open()
+    assert view.score_scroll.items == ["1\t16\tbanteg"]
+
+    click_button(view, UPDATE_ROW, mocker)
+    for job in state.leaderboard._pending:
+        job.result()
+    update_frame(view, view.state)
+
+    # The board's run of this machine turns green instead of showing twice.
+    assert view.score_scroll.items == ["\\g1\t15\tzhenya", "\\g2\t16\tbanteg"]
+    assert state.config.profile.show_internet_scores

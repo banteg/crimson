@@ -4,12 +4,14 @@ import { type Env, json, refuse } from "./http";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
 import type { Board } from "./ranked";
 import { postRun } from "./runs";
-import { boardTitle, boardView, joinView, players, profileView, questMenuView } from "./views";
+import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView } from "./views";
 
 // Links, OAuth callbacks and the session cookie follow the request's origin, so the site answers only over
 // HTTPS, and browsers are told to stay there. Plain-HTTP localhost stays for wrangler dev.
 const HSTS = "max-age=31536000; includeSubDomains";
 const QUEST = /^[1-5]\.(?:[1-9]|10)$/;
+// The game's high score tables hold 100 records (TABLE_MAX).
+const SCORES_LIMIT = 100;
 
 const signedOut = (request: Request) => `${SESSION_COOKIE}=; Path=/; HttpOnly;${secure(request)} SameSite=Lax; Max-Age=0`;
 
@@ -45,6 +47,15 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
       return postChallenge(request, env);
     case "POST /api/auth/login":
       return postLogin(request, env);
+    case "POST /api/scores": {
+      // The high score screen's Update scores: a board's best runs as high score records, {board, quest}.
+      const body = (await request.json().catch(() => ({}))) as { board?: unknown; quest?: unknown };
+      const quest = String(body.quest ?? "");
+      if (body.board === "survival" && quest === "") return json({ scores: await gameScores(env, "survival", "", SCORES_LIMIT) });
+      if ((body.board === "quests" || body.board === "quests-hardcore") && QUEST.test(quest))
+        return json({ scores: await gameScores(env, body.board, quest, SCORES_LIMIT) });
+      return refuse(400, "no such board");
+    }
   }
 
   // The site's read API.

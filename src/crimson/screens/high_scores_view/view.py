@@ -16,6 +16,7 @@ from grim.sfx_map import SfxId
 
 from ...game.types import GameState
 from ...game_modes import GameMode
+from ...leaderboard import SyncStatus
 from ...persistence.highscores import HighScoreRecord
 from ...ui.button import UiButtonState, button_update
 from ...ui.checkbox import UiCheckbox, ui_checkbox_update
@@ -49,7 +50,7 @@ from ..high_scores_layout import (
 from ..menu_screen import MenuScreen
 from ..quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from .main_panel import draw_main_panel
-from .records import load_records
+from .records import load_records, online_board
 from .right_panel import draw_right_panel
 
 DATE_FILTER_ITEMS = ("Best of all time", "Best of month", "Best of week", "Best of day")
@@ -89,7 +90,6 @@ class HighScoresView(MenuScreen):
         self.hardcore_checkbox = UiCheckbox("Hardcore")
 
     def open(self) -> None:
-        
         super().open()
         self.score_scroll.scroll_offset = 0.0
         self.score_scroll.hovered_index = -1
@@ -99,6 +99,11 @@ class HighScoresView(MenuScreen):
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
+        # The last sync's line stays with the screen it ran on.
+        leaderboard = self.state.leaderboard
+        if leaderboard is not None and leaderboard.sync_status in (SyncStatus.DONE, SyncStatus.FAILED):
+            leaderboard.sync_status = SyncStatus.IDLE
+        self._sync_seen = SyncStatus.IDLE if leaderboard is None else leaderboard.sync_status
 
         self._close_lists()
 
@@ -180,6 +185,7 @@ class HighScoresView(MenuScreen):
         resources = require_runtime_resources(self.state)
         left_panel_top_left = self._panel_rect(9).top_left
         right_panel_top_left = self._panel_rect(33).top_left
+        self._follow_sync()
 
         # `highscore_screen` focus order: the Hardcore checkbox, the score list, Update / Play / Back, then the
         # right panel's checkbox and lists. A press while a list is open belongs to the lists only.
@@ -199,10 +205,9 @@ class HighScoresView(MenuScreen):
             mouse=mouse,
             click=click,
         ):
-            # Reload scores from disk (no view transition).
             if self.state.audio is not None:
                 play_sfx(self.state.audio.sfx, SfxId.UI_BUTTONCLICK)
-            self._reload_records()
+            self._update_scores()
         if button_update(
             resources,
             self._play_button,
@@ -265,9 +270,46 @@ class HighScoresView(MenuScreen):
                 return
         self._begin_close_transition(StartRun(request.game_mode_id, request.quest_level), fade_to_black=True)
 
+    def _update_scores(self) -> None:
+        """Update scores: send the waiting runs and receive the shown board, as `highscore_sync_worker` did; without
+        a leaderboard client it re-reads the table."""
+        leaderboard = self.state.leaderboard
+        if leaderboard is None:
+            self._reload_records()
+        elif leaderboard.sync_status in (SyncStatus.IDLE, SyncStatus.DONE, SyncStatus.FAILED):
+            leaderboard.sync(online_board(self.state, self._request))
+
+    def _follow_sync(self) -> None:
+        """Play a game waits for a running sync. A finished receive turns Show internet scores on, as the original's
+        worker does, and shows the board."""
+        leaderboard = self.state.leaderboard
+        if leaderboard is None:
+            return
+        status = leaderboard.sync_status
+        self._play_button.enabled = status in (SyncStatus.IDLE, SyncStatus.DONE, SyncStatus.FAILED)
+        if status == self._sync_seen:
+            return
+        self._sync_seen = status
+        if status == SyncStatus.DONE:
+            if online_board(self.state, self._request) in leaderboard.scores:
+                self.state.config.profile.show_internet_scores = True
+                self._dirty = True
+            self._reload_records()
+
     def _reload_records(self) -> None:
         """`highscore_load_table`, then `highscore_screen`'s score lines: rank, score (seconds in Rush and Quests)
-        and name, green for a score the server took."""
+        and name, green for a score the server took. With Show internet scores on, a board not yet received this
+        session is fetched once; after a failure only Update scores tries again."""
+        leaderboard = self.state.leaderboard
+        board = online_board(self.state, self._request)
+        if (
+            self.state.config.profile.show_internet_scores
+            and leaderboard is not None
+            and board is not None
+            and board not in leaderboard.scores
+            and leaderboard.sync_status in (SyncStatus.IDLE, SyncStatus.DONE)
+        ):
+            leaderboard.sync(board)
         self._records = load_records(self.state, self._request)
         items = []
         for rank, record in enumerate(self._records, start=1):

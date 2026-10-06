@@ -53,6 +53,7 @@ hex, except the replay, which is base64.
 | `runs` | `replay` (the `.crd` file), `name`, `public_key`, `signature` | 200 or 201 accepted, 409 already accepted, other 4xx refused with a `reason`, 5xx retried later |
 | `auth/challenge` | `public_key` | 200 with `challenge` (ASCII) |
 | `auth/login` | `public_key`, `challenge`, `signature` | 200 with `url`, a login link on the service's own host |
+| `scores` | `board`, `quest` (`"major.minor"`, empty for Survival) | 200 with `scores`: each account's best run, up to 100, as the run's name and a high score record's fields |
 
 The signatures cover byte strings that start with their purpose, so a run signature never passes as a login:
 
@@ -115,6 +116,14 @@ replays, names, links, keys and sessions. `/privacy` and `/terms` say the same i
 - The Ranked tooltip names the player, "Play for the online leaderboard as banteg.", when that fits the panel. The
   Profile tooltip says how many runs wait to upload, or that the leaderboard can't be reached after a failed
   login. Both stay on one line, above the bottom row.
+- The high score screen's **Update scores** works as the original's did against `scores.crimsonland.com`
+  ([online high scores](../crimsonland-exe/online-scores.md)): it sends the waiting runs, then receives the shown
+  board, with the original's status lines under the buttons and Play a game disabled meanwhile. Only the verified
+  boards are received: one-player Survival and quests; in other modes it only sends. The received runs show in
+  green beside the local scores while **Show internet scores** is ticked, which a receive turns on; a local run the
+  board holds turns green instead of showing twice. Unlike the original, received runs stay in memory for the
+  session instead of joining the local high score files, and a board not yet received is fetched when the box is
+  ticked or the screen shows it.
 
 ## Open
 
