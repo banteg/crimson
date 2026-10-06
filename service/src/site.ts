@@ -1,6 +1,8 @@
 // The site's pages: boards, profiles, and the privacy and terms pages.
 
+import { siDiscord, siGithub, siX } from "simple-icons";
 import type { Env } from "./http";
+import questTitles from "./quests.json";
 import { configuredProviders, PROVIDERS, type ProviderName } from "./oauth";
 import { type Board, LOWER_IS_BETTER } from "./ranked";
 
@@ -8,29 +10,54 @@ export function escape(text: string): string {
   return text.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
 }
 
+// The game's menu look: black panels in a metal frame with a blue top strip, gray text, blue links that light up.
 const STYLE = `
-body{margin:0;background:#0b0b0d;color:#ddd;font:15px/1.5 system-ui,sans-serif}
-main{max-width:760px;margin:0 auto;padding:24px 16px}
-a{color:#e8a33d}h1,h2{color:#fff;font-weight:600}h1 a{color:#c33;text-decoration:none}
-table{width:100%;border-collapse:collapse}td,th{padding:4px 6px;text-align:left;border-bottom:1px solid #222}
-td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
-.muted{color:#888}.badge{font-size:12px;border:1px solid #444;border-radius:4px;padding:0 4px;margin-left:4px}
-img.avatar{width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:4px}
-button{background:#222;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 10px;cursor:pointer}
-button.danger{border-color:#833;color:#f99}form.inline{display:inline}
-footer{margin-top:48px;padding-top:12px;border-top:1px solid #222;font-size:13px}`;
+:root{--panel:#050505;--frame:#484848;--strip:#2f7fb5;--text:#b3b3b3;--label:#696969;--link:#2c6e92;--hover:#46b4f0}
+body{margin:0;background:#1e1b13 radial-gradient(circle at 30% 20%,#2b2617,#15130d 70%) fixed;color:var(--text);
+  font:13px/1.65 Verdana,Tahoma,sans-serif;letter-spacing:.2px}
+main{max-width:820px;margin:0 auto;padding:20px 16px}
+h1{margin:8px 0 18px;font:700 34px/1 Impact,"Arial Narrow",sans-serif;letter-spacing:3px;text-transform:uppercase}
+h1 a{color:#c9262c;text-decoration:none;text-shadow:0 2px 0 #3a0a0c,0 0 12px rgba(201,38,44,.35)}
+h2,h3{margin:4px 0 12px;color:var(--hover);font:700 15px/1.3 "Arial Narrow",Verdana,sans-serif;letter-spacing:2px;text-transform:uppercase}
+a{color:var(--link)}a:hover{color:var(--hover)}
+.panel{background:var(--panel);border:2px solid var(--frame);border-top:3px solid var(--strip);border-radius:6px;
+  box-shadow:inset 0 0 0 1px #111,0 8px 24px rgba(0,0,0,.6);padding:14px 20px;margin-bottom:18px}
+table{width:100%;border-collapse:collapse}td,th{padding:3px 6px;text-align:left;border-bottom:1px solid #161616}
+th{color:var(--label);font-weight:400}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.muted{color:var(--label)}
+img.avatar{width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:6px}img.avatar.heading{width:40px;height:40px}
+a.name{font-weight:700;color:#ddd;text-decoration:none}a.name:hover{color:var(--hover)}
+.links{margin-left:4px}.links .muted{margin-right:6px;font-weight:400}
+a.provider{color:var(--label);margin-right:6px;text-decoration:none;white-space:nowrap}a.provider:hover{color:var(--hover)}
+svg.icon{width:14px;height:14px;fill:currentColor;vertical-align:-1px}h2 svg.icon{width:18px;height:18px}
+h2 a.name,h2 .links,.fingerprint{text-transform:none}h2 .avatar+a.name{font-size:18px;letter-spacing:.5px}
+.fingerprint{font-size:13px;font-weight:400;letter-spacing:0}
+button{background:#1b1b1b;color:var(--text);border:1px solid var(--frame);border-radius:3px;padding:3px 12px;cursor:pointer;font:inherit}
+button:hover{color:#fff;border-color:#777}button.danger{border-color:#6a2a2a;color:#e88}form.inline{display:inline}
+.quest-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.quest-head .label{color:var(--label);font:700 18px/1 "Arial Narrow",sans-serif;letter-spacing:3px}
+.stages a{display:inline-block;min-width:30px;margin-right:6px;padding:2px 6px;border-radius:50%/40%;text-align:center;
+  font:700 15px/1.2 "Times New Roman",serif;color:#cfcfcf;text-decoration:none;background:linear-gradient(#4a4a4a,#1d1d1d);border:1px solid #555}
+.stages a.on{color:#fff8dc;background:linear-gradient(#d8b25a,#6b4f15);border-color:#c9a245}
+.hardcore{float:right;color:var(--text);text-decoration:none}.hardcore .box{display:inline-block;width:11px;height:11px;margin-right:7px;
+  border:1px solid #bbb;vertical-align:-1px}.hardcore .box.on{background:var(--hover);box-shadow:inset 0 0 0 2px var(--panel)}
+ol.quests{list-style:none;margin:10px 0 2px;padding:0 0 0 18px}ol.quests li{margin:1px 0}
+ol.quests .n{display:inline-block;width:42px}ol.quests a.on{color:var(--hover)}ol.quests .count{margin-left:8px}
+footer{margin-top:10px;font-size:12px}footer a{color:var(--label)}`;
 
-export function page(title: string, body: string, status = 200, headers: HeadersInit = {}): Response {
+export function page(title: string, panels: string | string[], status = 200, headers: HeadersInit = {}): Response {
+  const body = (Array.isArray(panels) ? panels : [panels]).map((panel) => `<section class="panel">${panel}</section>`).join("");
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escape(title)} · crimson.land</title><style>${STYLE}</style></head><body><main>
 <h1><a href="/">crimson.land</a></h1>${body}
-<footer class="muted"><a href="/">Boards</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/banteg/crimson">Source</a></footer>
+<footer><a href="/">Boards</a> · <a href="/quests/1">Quests</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/banteg/crimson">Source</a></footer>
 </main></body></html>`;
   return new Response(html, { status, headers: { "content-type": "text/html; charset=utf-8", ...headers } });
 }
 
 interface Link {
   provider: ProviderName;
+  subject: string;
   handle: string;
   avatar_url: string | null;
 }
@@ -57,7 +84,7 @@ async function players(env: Env, ids: number[]): Promise<Map<number, Player>> {
   )
     .bind(...ids)
     .all<{ id: number; name: string; name_hidden: number; fingerprint: string; clashes: number }>();
-  const { results: links } = await env.DB.prepare(`SELECT account_id, provider, handle, avatar_url FROM links WHERE account_id IN (${marks})`)
+  const { results: links } = await env.DB.prepare(`SELECT account_id, provider, subject, handle, avatar_url FROM links WHERE account_id IN (${marks})`)
     .bind(...ids)
     .all<Link & { account_id: number }>();
   for (const account of accounts)
@@ -69,12 +96,44 @@ async function players(env: Env, ids: number[]): Promise<Map<number, Player>> {
   return found;
 }
 
-function playerName(player: Player, withLink = true): string {
-  const name = player.name && !player.name_hidden ? escape(player.name) : `<span class="muted">${player.fingerprint}</span>`;
-  const shown = `<a href="/players/${player.id}">${name}</a>`;
-  if (player.links.length && withLink)
-    return shown + player.links.map((link) => `<span class="badge">${PROVIDERS[link.provider].label} ${escape(link.handle)}</span>`).join("");
-  return player.clash && !player.links.length && !player.name_hidden ? `${shown} <span class="muted">· ${player.fingerprint}</span>` : shown;
+// Linked accounts in this order: the avatar comes from the first that has one.
+const LINK_ORDER: ProviderName[] = ["x", "discord", "github"];
+const ICONS: Record<ProviderName, { title: string; path: string }> = { github: siGithub, discord: siDiscord, x: siX };
+
+function icon(provider: ProviderName): string {
+  return `<svg class="icon" viewBox="0 0 24 24" role="img" aria-label="${ICONS[provider].title}"><path d="${ICONS[provider].path}"/></svg>`;
+}
+
+function providerProfile(link: Link): string {
+  switch (link.provider) {
+    case "github":
+      return `https://github.com/${encodeURIComponent(link.handle)}`;
+    case "x":
+      return `https://x.com/${encodeURIComponent(link.handle)}`;
+    case "discord":
+      return `https://discord.com/users/${encodeURIComponent(link.subject)}`;
+  }
+}
+
+// A player as boards and profiles show them: the avatar of their first linked account, the latest run's name, and
+// each linked account's icon. Handles shared by every link collapse into one, shown only where it differs from the
+// name; an unlinked account adds its key fingerprint when another account shows the same name.
+function playerName(player: Player, size: "row" | "heading" = "row"): string {
+  const links = [...player.links].sort((a, b) => LINK_ORDER.indexOf(a.provider) - LINK_ORDER.indexOf(b.provider));
+  const named = Boolean(player.name) && !player.name_hidden;
+  const label = named ? escape(player.name) : `<span class="muted">${player.fingerprint}</span>`;
+  const avatar = links.find((link) => link.avatar_url)?.avatar_url;
+  const shown = `${avatar ? `<img class="avatar ${size}" src="${escape(avatar)}" alt="">` : ""}<a class="name" href="/players/${player.id}">${label}</a>`;
+  if (!links.length) return player.clash && named ? `${shown} <span class="muted">· ${player.fingerprint}</span>` : shown;
+  const handles = new Set(links.map((link) => link.handle.toLowerCase()));
+  const iconLink = (link: Link, text = "") =>
+    `<a class="provider" href="${escape(providerProfile(link))}" title="${PROVIDERS[link.provider].label} ${escape(link.handle)}">${icon(link.provider)}${text}</a>`;
+  if (handles.size === 1) {
+    const handle = links[0]!.handle;
+    const differs = !named || handle.toLowerCase() !== player.name.toLowerCase();
+    return `${shown} <span class="links">${differs ? `<span class="muted">${escape(handle)}</span>` : ""}${links.map((link) => iconLink(link)).join("")}</span>`;
+  }
+  return `${shown} <span class="links">${links.map((link) => iconLink(link, ` ${escape(link.handle)}`)).join("")}</span>`;
 }
 
 const BOARD_TITLES: Record<Board, string> = { survival: "Survival", quests: "Quests", "quests-hardcore": "Quests, hardcore" };
@@ -114,23 +173,51 @@ async function boardTable(env: Env, board: Board, quest: string, limit: number):
     .join("")}</table>`;
 }
 
+const STAGES = ["I", "II", "III", "IV", "V"];
+const QUEST_TITLES: Record<string, string> = questTitles;
+
+// The quest boards' menu, as the game's quest screen: stage tabs, the hardcore box and the stage's ten quests.
+async function questMenu(env: Env, stage: number, hardcore: boolean, current = ""): Promise<string> {
+  const board: Board = hardcore ? "quests-hardcore" : "quests";
+  const { results } = await env.DB.prepare(
+    "SELECT quest, count(DISTINCT account_id) AS players FROM runs WHERE board = ? AND quest LIKE ? AND hidden = 0 GROUP BY quest",
+  )
+    .bind(board, `${stage}.%`)
+    .all<{ quest: string; players: number }>();
+  const players = new Map(results.map((row) => [row.quest, row.players]));
+  const menu = hardcore ? "quests-hardcore" : "quests";
+  const toggle = current ? `/boards/${hardcore ? "quests" : "quests-hardcore"}/${current}` : `/${hardcore ? "quests" : "quests-hardcore"}/${stage}`;
+  const tabs = STAGES.map((numeral, i) => `<a class="${i + 1 === stage ? "on" : ""}" href="/${menu}/${i + 1}">${numeral}</a>`).join("");
+  const rows = Array.from({ length: 10 }, (_, i) => {
+    const quest = `${stage}.${i + 1}`;
+    const count = players.get(quest);
+    return `<li><a class="${quest === current ? "on" : ""}" href="/boards/${board}/${quest}"><span class="n">${quest}</span>${escape(QUEST_TITLES[quest]!)}</a>${
+      count ? `<span class="muted count">${count}</span>` : ""
+    }</li>`;
+  }).join("");
+  return `<div class="quest-head"><span class="label">QUEST:</span><nav class="stages">${tabs}</nav></div>
+<a class="hardcore" href="${toggle}"><span class="box${hardcore ? " on" : ""}"></span>Hardcore</a><ol class="quests">${rows}</ol>`;
+}
+
 export async function homePage(env: Env): Promise<Response> {
-  const { results: quests } = await env.DB.prepare(
-    "SELECT board, quest, count(DISTINCT account_id) AS players FROM runs WHERE board != 'survival' AND hidden = 0 GROUP BY board, quest ORDER BY board, quest",
-  ).all<{ board: Board; quest: string; players: number }>();
-  const questLinks = quests.length
-    ? `<ul>${quests.map((q) => `<li><a href="/boards/${q.board}/${q.quest}">${BOARD_TITLES[q.board]} ${q.quest}</a> <span class="muted">${q.players} players</span></li>`).join("")}</ul>`
-    : `<p class="muted">No quest runs yet.</p>`;
-  return page(
-    "Boards",
+  return page("Boards", [
     `<p class="muted">Verified runs of the Crimsonland port: every score is a replay the server re-simulates. <a href="https://crimson.banteg.xyz/rewrite/ranked-rules/">Ranked rules</a>.</p>
-<h2>Survival</h2>${await boardTable(env, "survival", "", 25)}<p><a href="/boards/survival">Full board</a></p><h2>Quests</h2>${questLinks}`,
-  );
+<h2>Survival</h2>${await boardTable(env, "survival", "", 25)}<p><a href="/boards/survival">Full board</a></p>`,
+    await questMenu(env, 1, false),
+  ]);
+}
+
+export async function questsPage(env: Env, stage: number, hardcore: boolean): Promise<Response> {
+  return page(`Quests ${STAGES[stage - 1]}`, await questMenu(env, stage, hardcore));
 }
 
 export async function boardPage(env: Env, board: Board, quest: string): Promise<Response> {
-  const title = `${BOARD_TITLES[board]}${quest ? ` ${quest}` : ""}`;
-  return page(title, `<h2>${escape(title)}</h2>${await boardTable(env, board, quest, 100)}`);
+  if (board === "survival") return page("Survival", `<h2>Survival</h2>${await boardTable(env, board, quest, 100)}`);
+  const title = `${quest} ${QUEST_TITLES[quest]}`;
+  return page(`${title}${board === "quests-hardcore" ? " (hardcore)" : ""}`, [
+    await questMenu(env, Number(quest.split(".")[0]), board === "quests-hardcore", quest),
+    `<h2>${escape(title)}${board === "quests-hardcore" ? " · hardcore" : ""}</h2>${await boardTable(env, board, quest, 100)}`,
+  ]);
 }
 
 export async function profilePage(env: Env, accountId: number, viewer: number | null, notice = ""): Promise<Response> {
@@ -142,24 +229,23 @@ export async function profilePage(env: Env, accountId: number, viewer: number | 
   )
     .bind(accountId)
     .all<{ id: string; board: Board; quest: string; score: number; game_version: string; accepted_at: number }>();
-  const links = player.links.length
-    ? `<p>${player.links.map((link) => `${link.avatar_url ? `<img class="avatar" src="${escape(link.avatar_url)}" alt="">` : ""}${PROVIDERS[link.provider].label} <b>${escape(link.handle)}</b>`).join(" · ")}</p>`
-    : "";
   const history = names.length > 1 || player.name_hidden ? `<p class="muted">Names: ${names.map((n) => escape(n.name)).join(", ")}</p>` : "";
   const table = runs.length
     ? `<table><tr><th>Board</th><th class="n">Score</th><th>Version</th><th>Accepted</th><th>Replay</th></tr>${runs
         .map(
           (run) =>
-            `<tr><td>${BOARD_TITLES[run.board]} ${run.quest}</td><td class="n">${formatScore(run.board, run.score)}</td><td>${escape(run.game_version)}</td>` +
+            `<tr><td><a href="/boards/${run.board}${run.quest ? `/${run.quest}` : ""}">${BOARD_TITLES[run.board]} ${run.quest}</a></td><td class="n">${formatScore(run.board, run.score)}</td><td>${escape(run.game_version)}</td>` +
             `<td>${new Date(run.accepted_at).toISOString().slice(0, 10)}</td><td><a href="/runs/${run.id}.crd">.crd</a></td></tr>`,
         )
         .join("")}</table>`
     : `<p class="muted">No ranked runs yet.</p>`;
-  const own = viewer === accountId ? accountControls(env, player) : "";
-  return page(
-    player.name || player.fingerprint,
-    `${notice ? `<p>${escape(notice)}</p>` : ""}<h2>${playerName(player, false)}${player.name && !player.name_hidden ? ` <span class="muted">· ${player.fingerprint}</span>` : ""}</h2>${links}${history}<h2>Runs</h2>${table}${own}`,
-  );
+  const header = `${notice ? `<p>${escape(notice)}</p>` : ""}<h2>${playerName(player, "heading")}${
+    player.name && !player.name_hidden ? ` <span class="muted fingerprint">${player.fingerprint}</span>` : ""
+  }</h2>${history}`;
+  return page(player.name || player.fingerprint, [
+    `${header}<h3>Runs</h3>${table}`,
+    ...(viewer === accountId ? [accountControls(env, player)] : []),
+  ]);
 }
 
 function accountControls(env: Env, player: Player): string {

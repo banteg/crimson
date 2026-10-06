@@ -4,7 +4,7 @@ import { type Env, refuse } from "./http";
 import { authorizeUrl, completeLink, provider } from "./oauth";
 import type { Board } from "./ranked";
 import { postRun } from "./runs";
-import { boardPage, homePage, mergePage, page, privacyPage, profilePage, termsPage } from "./site";
+import { boardPage, homePage, mergePage, page, privacyPage, profilePage, questsPage, termsPage } from "./site";
 
 const BOARDS = new Set<Board>(["survival", "quests", "quests-hardcore"]);
 const signedOut = (request: Request) => `${SESSION_COOKIE}=; Path=/; HttpOnly;${secure(request)} SameSite=Lax; Max-Age=0`;
@@ -58,6 +58,8 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   if ((match = /^GET \/login\/([0-9a-f]{64})$/.exec(route))) return getLogin(request, env, match[1]!);
   if ((match = /^GET \/boards\/(survival)$|^GET \/boards\/(quests|quests-hardcore)\/([1-5]\.(?:[1-9]|10))$/.exec(route)))
     return boardPage(env, (match[1] ?? match[2]) as Board, match[3] ?? "");
+  if ((match = /^GET \/(quests|quests-hardcore)\/([1-5])$/.exec(route))) return questsPage(env, Number(match[2]), match[1] === "quests-hardcore");
+  if (route === "GET /quests") return redirect("/quests/1");
   if ((match = /^GET \/players\/(\d+)$/.exec(route))) return profilePage(env, Number(match[1]), await sessionAccount(request, env));
   if ((match = /^GET \/runs\/([0-9a-f]{64})\.crd$/.exec(route))) {
     const run = await env.DB.prepare("SELECT 1 FROM runs WHERE id = ? AND hidden = 0").bind(match[1]).first();

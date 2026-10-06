@@ -2,6 +2,7 @@ import { env } from "cloudflare:test";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { concat, hex, LOGIN_DOMAIN, sha256 } from "../../src/crypto";
 import worker from "../../src/index";
+import questTitles from "../../src/quests.json";
 
 const ORIGIN = "https://crimson.land";
 const configured = { ...env, GITHUB_CLIENT_SECRET: "github-secret", X_CLIENT_ID: "x-id", X_CLIENT_SECRET: "x-secret" };
@@ -62,6 +63,33 @@ describe("pages", () => {
     expect((await call("/privacy")).headers.get("strict-transport-security")).toContain("max-age=31536000");
     const local = await plain("http://localhost:8787/privacy");
     expect([local.status, local.headers.has("strict-transport-security")]).toEqual([200, false]);
+  });
+
+  it("the quest menu lists a stage like the game's quest screen, with a hardcore toggle", async () => {
+    const html = await (await call("/quests/2")).text();
+
+    expect(html).toContain('<a class="on" href="/quests/2">II</a>');
+    for (let minor = 1; minor <= 10; minor++) expect(html).toContain(`href="/boards/quests/2.${minor}"`);
+    expect(html).toContain(questTitles["2.1"]);
+    expect(html).toContain('href="/quests-hardcore/2"');
+    expect(await (await call("/boards/quests-hardcore/2.3")).text()).toContain('href="/boards/quests/2.3"');
+  });
+
+  it("linked handles shared by every provider collapse into the name", async () => {
+    const { cookie, accountId } = await signIn();
+    await env.DB.prepare("UPDATE accounts SET name = 'banteg' WHERE id = ?").bind(accountId).run();
+    const link = (provider: string, handle: string) =>
+      env.DB.prepare("INSERT INTO links (provider, subject, account_id, handle, avatar_url, linked_at) VALUES (?, ?, ?, ?, NULL, 0)")
+        .bind(provider, `${provider}-${accountId}`, accountId, handle).run();
+    await link("github", "banteg");
+    await link("x", "Banteg");
+    const heading = async () => /<h2>(.*?)<\/h2>/s.exec(await (await call(`/players/${accountId}`, { headers: { cookie } })).text())![1]!;
+
+    const collapsed = await heading();
+    expect(collapsed.match(/class="provider"/g)).toHaveLength(2);
+    expect(collapsed).not.toContain('<span class="muted">banteg</span>');
+    await link("discord", "someone_else");
+    expect(await heading()).toContain("someone_else");
   });
 
   it("a provider shows only with both its client ID and secret", async () => {
