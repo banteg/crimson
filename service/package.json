@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "assets": "cd .. && uv run python service/scripts/assets.py",
+    "assets": "cd .. && uv run --with fonttools --with brotli python service/scripts/assets.py",
     "deploy": "npm run assets && wrangler deploy",
     "test": "vitest run",
     "check": "tsc --noEmit"

@@ -1,5 +1,5 @@
 """Write the site's game art to service/public/ui/ from crimson.paq: the sign, the menu panel's frame and wires, the
-quest screen's label, stage icons and checkboxes, and a terrain tile. The files are generated, not checked in;
+quest screen's label, stage icons and checkboxes, and the terrain textures the browser stamps the ground with. The files are generated, not checked in;
 `npm run deploy` writes them first.
 
 Run from the repository root: uv run python service/scripts/assets.py [--assets artifacts/assets]
@@ -40,12 +40,66 @@ def main() -> None:
         "quest.png": image("ui/ui_textQuest.tga"),
         "check-on.png": image("ui/ui_checkOn.tga"),
         "check-off.png": image("ui/ui_checkOff.tga"),
-        "terrain.png": image("ter/ter_q1_base.tga").convert("RGB"),
+        # Terrain textures by the game's slot number (src/crimson/terrain_slots.py): base, then overlay, per quest stage.
+        **{f"ter{2 * q + layer}.png": image(f"ter/ter_q{q + 1}_{'base' if layer == 0 else 'tex1'}.tga") for q in range(4) for layer in (0, 1)},
         **{f"stage{n}.png": image(f"ui/ui_num{n}.{'jaz' if n == 5 else 'tga'}") for n in range(1, 6)},
     }
     for name, art in outputs.items():
         art.save(OUT / name, optimize=True)
-    print(f"wrote {len(outputs)} images to {OUT}")
+    small_font(image("load/smallWhite.tga"), entries["load/smallFnt.dat"]).save(OUT / "small.woff2")
+    print(f"wrote {len(outputs)} images and the small font to {OUT}")
+
+
+# The game's small font (grim's "pixel Arial"): 16x16 cells of one-bit glyphs, their advances in smallFnt.dat,
+# capitals on rows 4..11 above a baseline at row 12. Each lit pixel becomes a square 100 units wide in a
+# 1600-unit em, so at 16 CSS pixels a font pixel covers a screen pixel.
+PIXEL = 100
+CELL = 16
+BASELINE_ROW = 12
+
+
+def small_font(sheet: Image.Image, widths: bytes):
+    from fontTools.fontBuilder import FontBuilder
+    from fontTools.pens.ttGlyphPen import TTGlyphPen
+
+    alpha = sheet.getchannel("A")
+    glyphs, advances, cmap = {".notdef": TTGlyphPen(None).glyph()}, {".notdef": (8 * PIXEL, 0)}, {}
+    for code in range(32, 256):
+        if not widths[code]:
+            continue
+        pen = TTGlyphPen(None)
+        col, row = code % CELL, code // CELL
+        for y in range(CELL):
+            x = 0
+            while x < widths[code]:
+                if alpha.getpixel((col * CELL + x, row * CELL + y)) < 128:
+                    x += 1
+                    continue
+                start = x
+                while x < widths[code] and alpha.getpixel((col * CELL + x, row * CELL + y)) >= 128:
+                    x += 1
+                top, bottom = (BASELINE_ROW - y) * PIXEL, (BASELINE_ROW - y - 1) * PIXEL
+                pen.moveTo((start * PIXEL, bottom))
+                pen.lineTo((start * PIXEL, top))
+                pen.lineTo((x * PIXEL, top))
+                pen.lineTo((x * PIXEL, bottom))
+                pen.closePath()
+        name = f"uni{code:04X}"
+        glyphs[name] = pen.glyph()
+        advances[name] = (widths[code] * PIXEL, 0)
+        cmap[code] = name
+    builder = FontBuilder(CELL * PIXEL, isTTF=True)
+    builder.setupGlyphOrder(list(glyphs))
+    builder.setupCharacterMap(cmap)
+    builder.setupGlyf(glyphs)
+    builder.setupHorizontalMetrics(advances)
+    builder.setupHorizontalHeader(ascent=BASELINE_ROW * PIXEL, descent=-(CELL - BASELINE_ROW) * PIXEL)
+    builder.setupNameTable({"familyName": "Crimson Small", "styleName": "Regular"})
+    builder.setupOS2(sTypoAscender=BASELINE_ROW * PIXEL, sTypoDescender=-(CELL - BASELINE_ROW) * PIXEL, sTypoLineGap=0,
+                     usWinAscent=BASELINE_ROW * PIXEL, usWinDescent=(CELL - BASELINE_ROW) * PIXEL)
+    builder.setupPost()
+    builder.font.flavor = "woff2"
+    return builder.font
 
 
 if __name__ == "__main__":

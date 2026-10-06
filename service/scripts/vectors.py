@@ -243,6 +243,36 @@ def ranked_run() -> tuple[str, str]:
     return tuple(base64.b64encode(dump_replay(replay(ticks, claim))).decode("ascii") for claim in (result, inflated))
 
 
+def terrain_vectors() -> list[dict]:
+    """terrain_generate_random from seeds that reach each of its outcomes, and two quests' terrain_generate."""
+    from crimson.quests.level import QuestLevel
+    from crimson.sim.terrain_generate import terrain_generate, terrain_generate_random
+    from crimson.terrain_slots import terrain_slots_for_quest
+    from grim.rand import Crand
+
+    def stamps(setup) -> list[str]:
+        # One digest per layer over "rotation f32 bits,x,y" lines, which both languages print the same way.
+        return [
+            _sha("".join(f"{struct.pack('<f', rotation).hex()},{int(x)},{int(y)}\n" for rotation, x, y in layer).encode())
+            for layer in (setup.layers.base, setup.layers.overlay, setup.layers.detail)
+        ]
+
+    vectors, outcomes = [], set()
+    for seed in range(1000):
+        setup = terrain_generate_random(Crand(seed), 50)
+        if setup.terrain_slots in outcomes:
+            continue
+        outcomes.add(setup.terrain_slots)
+        vectors.append({"seed": seed, "random": True, "slots": list(setup.terrain_slots), "layers": stamps(setup)})
+        if len(outcomes) == 4:
+            break
+    for seed, (major, minor) in ((7, (2, 7)), (8, (5, 3))):
+        slots = terrain_slots_for_quest(QuestLevel(major, minor))
+        setup = terrain_generate(Crand(seed), slots)
+        vectors.append({"seed": seed, "quest": [major, minor], "slots": list(slots), "layers": stamps(setup)})
+    return vectors
+
+
 def main() -> None:
     base, corrupted = corrupted_vectors()
     ranked, inflated = ranked_run()
@@ -250,6 +280,7 @@ def main() -> None:
         "fixtures": fixture_vectors(), "valid_payload": base, "corrupted": corrupted, "ranked_run": ranked,
         "ranked_run_inflated": inflated,
         "unranked_run": base64.b64encode((FIXTURES / "rush-kills103.crd").read_bytes()).decode("ascii"),
+        "terrain": terrain_vectors(),
     }
     OUT.write_text(json.dumps(vectors, indent=1) + "\n")
     print(f"wrote {OUT.relative_to(ROOT)}")

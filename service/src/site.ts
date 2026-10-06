@@ -13,48 +13,61 @@ export function escape(text: string): string {
 // The game's menus: its own sign, panel frame, quest label, stage icons and checkboxes (scripts/assets.py exports
 // them from crimson.paq) over its terrain, with the menu's label blue and quest-row colors.
 const STYLE = `
+@font-face{font-family:"Crimson Small";src:url(/ui/small.woff2) format("woff2");font-display:swap}
 :root{--text:#e6e6e6;--label:#b3b3b3;--dim:#7d7d7d;--heading:#2089c6;--row:rgba(70,180,240,.6);--row-on:rgb(70,180,240);
   --row-hardcore:rgba(250,70,60,.6);--row-hardcore-on:rgb(250,70,60)}
-body{margin:0;color:var(--text);background:linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.3)),url(/ui/terrain.png) 0 0/256px repeat #141109;
-  font:12px/1.7 Verdana,Tahoma,sans-serif;letter-spacing:.2px}
-main{max-width:720px;margin:0 auto;padding:12px 16px 24px 16px}
-header{text-align:center;margin:0 0 6px}header img{width:512px;max-width:100%;height:auto;display:inline-block}
-h2,h3{margin:2px 0 10px;color:var(--heading);font:700 16px/1.3 "Arial Narrow","Helvetica Neue",sans-serif;letter-spacing:2px;text-transform:uppercase}
+body{margin:0;color:var(--text);background:#0b0a07;
+  font:16px/20px "Crimson Small",Arial,sans-serif;-webkit-font-smoothing:none;-moz-osx-font-smoothing:unset}
+/* The game's 1024-wide screen: the generated ground (terrain.js), the sign hanging from its right edge, panels
+   whose wires run to its left edge. */
+.screen{position:relative;max-width:1024px;min-height:100vh;margin:0 auto;overflow:hidden;background:rgb(63,56,25) 0 0/1024px repeat}
+header{text-align:right;padding-top:10px}header img{width:512px;max-width:100%;height:auto;display:inline-block;vertical-align:top}
+main{padding:6px 40px 4px 178px}
+@media (max-width:900px){main{padding:6px 12px 4px}}
+h2,h3{margin:2px 0 10px;color:var(--heading);font:32px/36px "Crimson Small",Arial,sans-serif;text-transform:uppercase}
+td.n,.count,.score{font:bold 14px/20px "Courier New",Courier,monospace;white-space:nowrap}
 a{color:var(--row-on)}a:hover{color:#8fd3ff}
 .panel{position:relative;z-index:0;margin:0 0 20px;padding:4px 14px 6px;border:solid transparent;border-width:18px 19px 19px 14px;
   border-image:url(/ui/panel.png) 18 19 19 14 fill stretch}
-@media (min-width:1000px){.panel::before{content:"";position:absolute;z-index:-1;left:-192px;top:-2px;width:192px;height:50px;
+@media (min-width:901px){.panel::before{content:"";position:absolute;z-index:-1;left:-192px;top:-2px;width:192px;height:50px;
   background:url(/ui/wires.png) no-repeat}}
 table{width:100%;border-collapse:collapse}td,th{padding:2px 6px;text-align:left}tr+tr td{border-top:1px solid #151515}
 th{color:var(--dim);font-weight:400}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 .muted{color:var(--dim)}
 img.avatar{width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:6px}img.avatar.heading{width:36px;height:36px}
-a.name{font-weight:700;color:var(--text);text-decoration:none}a.name:hover{color:var(--row-on)}
+a.name{color:#fff;text-decoration:none}a.name:hover{color:var(--row-on)}
 .links{margin-left:4px}.links .muted{margin-right:6px;font-weight:400}
 a.provider{color:var(--dim);margin-right:6px;text-decoration:none;white-space:nowrap}a.provider:hover{color:var(--text)}
 svg.icon{width:13px;height:13px;fill:currentColor;vertical-align:-1px}h2 svg.icon{width:17px;height:17px}
-h2 a.name,h2 .links,.fingerprint{text-transform:none}h2 .avatar+a.name{font-size:18px;letter-spacing:.5px}
-.fingerprint{font-size:12px;font-weight:400;letter-spacing:0}
-button{background:#1b1b1b;color:var(--label);border:1px solid #484848;border-radius:3px;padding:2px 12px;cursor:pointer;font:inherit}
+h2 a.name,h2 .links,.fingerprint{text-transform:none}h2 .avatar+a.name{font-weight:400}
+.fingerprint{font-size:16px}
+button{background:#1b1b1b;color:var(--label);border:1px solid #484848;border-radius:3px;padding:1px 12px;cursor:pointer;font:inherit}
 button:hover{color:#fff;border-color:#777}button.danger{border-color:#6a2a2a;color:#e88}form.inline{display:inline}
-.quest-head{display:flex;align-items:center;gap:6px}.quest-head img.label{opacity:.7;margin-right:18px}
-.stages a{display:inline-block;width:36px;text-align:center}.stages img{width:32px;height:32px;opacity:.7;transform:scale(.8)}
-.stages a:hover img{opacity:.8}.stages a.on img{opacity:1;transform:none}
-.hardcore{display:block;text-align:right;margin:-4px 0 4px;color:var(--label);text-decoration:none}.hardcore:hover{color:#fff}
+/* quest_select_menu_update's layout from its QUEST label: stage icons 80px right and 3px down, 36px apart, 32px or
+   25.6px from their top-left corner; the list 32px right and 60px down (50, and 10 for the hardcore box) in 20px
+   rows; the hardcore box 132px right of the list and 12px above it. The label and idle icons are tinted 0.7. */
+.quest-menu{position:relative;height:264px;margin:4px 0 0 4px}
+.quest-menu>img.label{position:absolute;left:0;top:0;width:64px;height:32px;filter:brightness(.7);opacity:.7}
+.stages a{position:absolute;top:3px;width:26px;height:26px}.stages img{width:100%;height:100%;filter:brightness(.7);opacity:.7}
+.stages a:hover img{filter:none;opacity:.8}.stages a.on{width:32px;height:32px}.stages a.on img{filter:none;opacity:1}
+.hardcore{position:absolute;left:164px;top:48px;color:var(--label);text-decoration:none;white-space:nowrap}.hardcore:hover{color:#fff}
 .hardcore img{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
-ol.quests{list-style:none;margin:0 0 6px;padding:0 0 0 22px}ol.quests li{height:20px}
+ol.quests{position:absolute;left:32px;top:60px;list-style:none;margin:0;padding:0}ol.quests li{height:20px;white-space:nowrap}
+ol.quests .count{font-size:13px}
 ol.quests a{color:var(--row);text-decoration:none;border-bottom:1px solid}ol.quests a:hover,ol.quests a.on{color:var(--row-on)}
 .hardcore-on ol.quests a{color:var(--row-hardcore)}.hardcore-on ol.quests a:hover,.hardcore-on ol.quests a.on{color:var(--row-hardcore-on)}
 ol.quests .n{display:inline-block;width:34px}ol.quests .count{margin-left:10px;color:var(--dim)}
-footer{text-align:center;font-size:11px;color:var(--dim)}footer a{color:var(--label)}`;
+footer{padding:0 0 20px;text-align:center;color:var(--label);text-shadow:0 1px 2px #000}footer a{color:var(--text)}`;
 
-export function page(title: string, panels: string | string[], status = 200, headers: HeadersInit = {}): Response {
+// `quest` picks the quest whose terrain the ground shows; other pages roll the game's random terrain.
+export function page(title: string, panels: string | string[], status = 200, headers: HeadersInit = {}, quest = ""): Response {
   const body = (Array.isArray(panels) ? panels : [panels]).map((panel) => `<section class="panel">${panel}</section>`).join("");
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escape(title)} · crimson.land</title><style>${STYLE}</style></head><body><main>
-<header><a href="/"><img src="/ui/sign.png" width="512" height="128" alt="Crimsonland"></a></header>${body}
+<title>${escape(title)} · crimson.land</title><style>${STYLE}</style><script type="module" src="/terrain.js"></script></head>
+<body><div class="screen"${quest ? ` data-quest="${quest}"` : ""}>
+<header><a href="/"><img src="/ui/sign.png" width="512" height="128" alt="Crimsonland"></a></header><main>${body}</main>
 <footer><a href="/">Boards</a> · <a href="/quests/1">Quests</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/banteg/crimson">Source</a></footer>
-</main></body></html>`;
+</div></body></html>`;
   return new Response(html, { status, headers: { "content-type": "text/html; charset=utf-8", ...headers } });
 }
 
@@ -191,7 +204,8 @@ async function questMenu(env: Env, stage: number, hardcore: boolean, current = "
   const menu = hardcore ? "quests-hardcore" : "quests";
   const toggle = current ? `/boards/${hardcore ? "quests" : "quests-hardcore"}/${current}` : `/${hardcore ? "quests" : "quests-hardcore"}/${stage}`;
   const tabs = STAGES.map(
-    (numeral, i) => `<a class="${i + 1 === stage ? "on" : ""}" href="/${menu}/${i + 1}"><img src="/ui/stage${i + 1}.png" alt="${numeral}"></a>`,
+    (numeral, i) =>
+      `<a class="${i + 1 === stage ? "on" : ""}" style="left:${80 + i * 36}px" href="/${menu}/${i + 1}"><img src="/ui/stage${i + 1}.png" alt="${numeral}"></a>`,
   ).join("");
   const rows = Array.from({ length: 10 }, (_, i) => {
     const quest = `${stage}.${i + 1}`;
@@ -200,8 +214,8 @@ async function questMenu(env: Env, stage: number, hardcore: boolean, current = "
       count ? `<span class="count">${count}</span>` : ""
     }</li>`;
   }).join("");
-  return `<div class="${hardcore ? "hardcore-on" : ""}"><div class="quest-head"><img class="label" src="/ui/quest.png" width="64" height="32" alt="Quest:">
-<nav class="stages">${tabs}</nav></div><a class="hardcore" href="${toggle}"><img src="/ui/check-${hardcore ? "on" : "off"}.png" alt="">Hardcore</a>
+  return `<div class="quest-menu${hardcore ? " hardcore-on" : ""}"><img class="label" src="/ui/quest.png" width="64" height="32" alt="Quest:">
+<nav class="stages">${tabs}</nav><a class="hardcore" href="${toggle}"><img src="/ui/check-${hardcore ? "on" : "off"}.png" alt="">Hardcore</a>
 <ol class="quests">${rows}</ol></div>`;
 }
 
@@ -214,16 +228,22 @@ export async function homePage(env: Env): Promise<Response> {
 }
 
 export async function questsPage(env: Env, stage: number, hardcore: boolean): Promise<Response> {
-  return page(`Quests ${STAGES[stage - 1]}`, await questMenu(env, stage, hardcore));
+  return page(`Quests ${STAGES[stage - 1]}`, await questMenu(env, stage, hardcore), 200, {}, `${stage}.1`);
 }
 
 export async function boardPage(env: Env, board: Board, quest: string): Promise<Response> {
   if (board === "survival") return page("Survival", `<h2>Survival</h2>${await boardTable(env, board, quest, 100)}`);
   const title = `${quest} ${QUEST_TITLES[quest]}`;
-  return page(`${title}${board === "quests-hardcore" ? " (hardcore)" : ""}`, [
-    await questMenu(env, Number(quest.split(".")[0]), board === "quests-hardcore", quest),
-    `<h2>${escape(title)}${board === "quests-hardcore" ? " · hardcore" : ""}</h2>${await boardTable(env, board, quest, 100)}`,
-  ]);
+  return page(
+    `${title}${board === "quests-hardcore" ? " (hardcore)" : ""}`,
+    [
+      await questMenu(env, Number(quest.split(".")[0]), board === "quests-hardcore", quest),
+      `<h2>${escape(title)}${board === "quests-hardcore" ? " · hardcore" : ""}</h2>${await boardTable(env, board, quest, 100)}`,
+    ],
+    200,
+    {},
+    quest,
+  );
 }
 
 export async function profilePage(env: Env, accountId: number, viewer: number | null, notice = ""): Promise<Response> {

@@ -68,14 +68,14 @@ describe("pages", () => {
   it("the quest menu lists a stage like the game's quest screen, with a hardcore toggle", async () => {
     const html = await (await call("/quests/2")).text();
 
-    expect(html).toContain('<a class="on" href="/quests/2"><img src="/ui/stage2.png" alt="II"></a>');
+    expect(html).toContain('<a class="on" style="left:116px" href="/quests/2"><img src="/ui/stage2.png" alt="II"></a>');
     for (let minor = 1; minor <= 10; minor++) expect(html).toContain(`href="/boards/quests/2.${minor}"`);
     expect(html).toContain(questTitles["2.1"]);
     expect(html).toContain('href="/quests-hardcore/2"');
     const hardcore = await (await call("/boards/quests-hardcore/2.3")).text();
     expect(hardcore).toContain('href="/boards/quests/2.3"');
     // Hardcore turns the quest rows red, as in the game.
-    expect(hardcore).toContain('class="hardcore-on"');
+    expect(hardcore).toContain('class="quest-menu hardcore-on"');
   });
 
   it("linked handles shared by every provider collapse into the name", async () => {
