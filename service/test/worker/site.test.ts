@@ -43,9 +43,6 @@ async function link(cookie: string, name: string): Promise<{ authorize: URL; cal
 }
 
 afterEach(() => vi.restoreAllMocks());
-// Storage persists across this file's tests, so each test links its own provider identity.
-const ids = { next: 1000 };
-const uniqueId = () => ids.next++;
 
 describe("pages", () => {
   it("every page links the privacy and terms pages", async () => {
@@ -75,8 +72,7 @@ describe("linking", () => {
     expect(authorize.origin + authorize.pathname).toBe("https://github.com/login/oauth/authorize");
     expect(authorize.searchParams.get("redirect_uri")).toBe(`${ORIGIN}/auth/github/callback`);
     expect(authorize.searchParams.has("scope")).toBe(false);
-    const id = uniqueId();
-    const calls = provider({ id, login: "banteg", avatar_url: "https://avatars.githubusercontent.com/u/42" });
+    const calls = provider({ id: 42, login: "banteg", avatar_url: "https://avatars.githubusercontent.com/u/42" });
 
     const html = await (await callback()).text();
 
@@ -86,7 +82,7 @@ describe("linking", () => {
     expect(new URLSearchParams(form).get("client_secret")).toBe("github-secret");
     const row = await env.DB.prepare("SELECT * FROM links WHERE account_id = ?").bind(accountId).first();
     expect(row).toEqual({
-      provider: "github", subject: String(id), account_id: accountId, handle: "banteg",
+      provider: "github", subject: "42", account_id: accountId, handle: "banteg",
       avatar_url: "https://avatars.githubusercontent.com/u/42", linked_at: expect.any(Number),
     });
   });
@@ -96,7 +92,7 @@ describe("linking", () => {
     const { authorize, callback } = await link(cookie, "x");
     expect(authorize.searchParams.get("scope")).toBe("users.read tweet.read");
     expect(authorize.searchParams.get("code_challenge_method")).toBe("S256");
-    const calls = provider({ data: { id: String(uniqueId()), username: "banteg", profile_image_url: null } });
+    const calls = provider({ data: { id: "7", username: "banteg", profile_image_url: null } });
 
     await callback();
 
@@ -111,22 +107,31 @@ describe("linking", () => {
   it("a state only completes in the session that started it", async () => {
     const [owner, other] = [await signIn(), await signIn()];
     const { callback } = await link(owner.cookie, "github");
-    const calls = provider({ id: uniqueId(), login: "banteg" });
+    const calls = provider({ id: 42, login: "banteg" });
 
     expect(await (await callback("code", other.cookie)).text()).toContain("failed or expired");
     expect(calls).not.toHaveBeenCalled();
   });
 
-  it("signing in with a linked login moves another computer's key into that account", async () => {
+  it("a login another account linked asks before moving this key into it, then moves everything at once", async () => {
     const [home, laptop] = [await signIn(), await signIn()];
-    provider({ id: uniqueId(), login: "banteg" });
+    provider({ id: 42, login: "banteg" });
     await (await link(home.cookie, "github")).callback();
+    const keysOf = async (id: number) => (await env.DB.prepare("SELECT count(*) AS n FROM keys WHERE account_id = ?").bind(id).first<{ n: number }>())!.n;
 
     const html = await (await (await link(laptop.cookie, "github")).callback()).text();
 
-    expect(html).toContain("joined your GitHub-linked account");
-    const { results } = await env.DB.prepare("SELECT DISTINCT account_id FROM keys WHERE account_id IN (?, ?)").bind(home.accountId, laptop.accountId).all();
-    expect(results).toEqual([{ account_id: home.accountId }]);
+    expect(html).toContain("belongs to another account");
+    expect(html).toContain(`/players/${home.accountId}`);
+    expect([await keysOf(home.accountId), await keysOf(laptop.accountId)]).toEqual([1, 1]);
+    const token = /name="token" value="([0-9a-f]{64})"/.exec(html)![1]!;
+    const confirm = (cookie: string) =>
+      call("/account/merge", { method: "POST", headers: { cookie, origin: ORIGIN }, body: new URLSearchParams({ token }) });
+
+    expect(await (await confirm(home.cookie)).text()).toContain("expired");
+    expect(await (await confirm(laptop.cookie)).text()).toContain("joined the account");
+    expect([await keysOf(home.accountId), await keysOf(laptop.accountId)]).toEqual([2, 0]);
+    expect(await env.DB.prepare("SELECT 1 FROM accounts WHERE id = ?").bind(laptop.accountId).first()).toBeNull();
   });
 });
 
@@ -135,7 +140,7 @@ describe("account", () => {
 
   it("unlink removes the link", async () => {
     const { cookie, accountId } = await signIn();
-    provider({ id: uniqueId(), login: "banteg" });
+    provider({ id: 42, login: "banteg" });
     await (await link(cookie, "github")).callback();
 
     expect((await post("/account/unlink/github", cookie)).status).toBe(303);

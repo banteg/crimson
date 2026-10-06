@@ -205,12 +205,34 @@ export function termsPage(): Response {
     "Terms",
     `<h2>Terms</h2>
 <ul>
-<li>crimson.land is a free, unofficial fan leaderboard for an open-source port of Crimsonland. It is not affiliated with 10tons.</li>
+<li>crimson.land is a free, unofficial fan leaderboard for an open-source port of Crimsonland. It is not affiliated with 10tons, who own Crimsonland and its assets; the port distributes the assets with their permission.</li>
 <li>Upload runs you played yourself. Runs played by tools or other people, runs that exploit a flaw in the verifier, and names that impersonate someone are not allowed. The <a href="https://crimson.banteg.xyz/rewrite/ranked-rules/">ranked rules</a> say which runs rank.</li>
 <li>Uploading a run lets us store and show it and lets anyone download its replay.</li>
 <li>We may hide or remove runs, names and accounts, and ban keys, when these terms are broken.</li>
 <li>The service comes as is, without guarantees. It may change, go down or lose data.</li>
 <li>Changes to these terms appear on this page.</li>
 </ul>`,
+  );
+}
+
+// Confirming that this game's key joins the account a linked login belongs to.
+export async function mergePage(env: Env, token: string, from: number, into: number, providerLabel: string): Promise<Response> {
+  const who = await players(env, [from, into]);
+  const destination = who.get(into)!;
+  const count = async (sql: string, id: number) => (await env.DB.prepare(sql).bind(id).first<{ n: number }>())!.n;
+  const [keys, runs, names] = await Promise.all([
+    count("SELECT count(*) AS n FROM keys WHERE account_id = ?", from),
+    count("SELECT count(*) AS n FROM runs WHERE account_id = ?", from),
+    count("SELECT count(*) AS n FROM names WHERE account_id = ?", from),
+  ]);
+  const destinationRuns = await count("SELECT count(*) AS n FROM runs WHERE account_id = ?", into);
+  return page(
+    "Join account",
+    `<h2>This ${escape(providerLabel)} login belongs to another account</h2>
+<p>${playerName(destination)} <span class="muted">· ${destination.fingerprint} · ${destinationRuns} runs</span></p>
+<p>Joining moves this game's ${keys === 1 ? "key" : `${keys} keys`}, ${runs} runs and ${names} names into that account, and removes
+this one. Do it only if both are yours.</p>
+<form method="post" action="/account/merge"><input type="hidden" name="token" value="${token}">
+<button>Join ${escape(destination.name || destination.fingerprint)}</button> <a href="/players/${from}">Cancel</a></form>`,
   );
 }

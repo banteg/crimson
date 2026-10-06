@@ -1,10 +1,10 @@
-import { deleteAccount, linkIdentity, unlink } from "./accounts";
+import { confirmMerge, deleteAccount, linkIdentity, unlink } from "./accounts";
 import { getLogin, postChallenge, postLogin, SESSION_COOKIE, sessionAccount, sessionToken, tokenHash } from "./auth";
 import { type Env, refuse } from "./http";
 import { authorizeUrl, completeLink, provider } from "./oauth";
 import type { Board } from "./ranked";
 import { postRun } from "./runs";
-import { boardPage, homePage, page, privacyPage, profilePage, termsPage } from "./site";
+import { boardPage, homePage, mergePage, page, privacyPage, profilePage, termsPage } from "./site";
 
 const BOARDS = new Set<Board>(["survival", "quests", "quests-hardcore"]);
 const signedOutCookie = `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
@@ -69,9 +69,15 @@ export default {
       if (!code || !state) return profilePage(env, accountId, accountId, `${chosen.label} sign-in was cancelled.`);
       const identity = await completeLink(env, url.origin, chosen, token, state, code);
       if (!identity) return profilePage(env, accountId, accountId, `Linking ${chosen.label} failed or expired; try again.`);
-      const linked = await linkIdentity(env, accountId, chosen.name, identity);
-      const notice = linked.outcome === "merged" ? `This game's key joined your ${chosen.label}-linked account.` : `Linked ${chosen.label}.`;
-      return profilePage(env, linked.accountId, linked.accountId, notice);
+      const linked = await linkIdentity(env, accountId, token, chosen.name, identity);
+      if (linked.outcome === "confirm") return mergePage(env, linked.token, accountId, linked.into, chosen.label);
+      return profilePage(env, accountId, accountId, `Linked ${chosen.label}.`);
+    }
+    if (route === "POST /account/merge") {
+      const form = await request.formData();
+      const into = await confirmMerge(env, accountId, token, String(form.get("token") ?? ""));
+      if (into === null) return profilePage(env, accountId, accountId, "That request expired; link again to join the accounts.");
+      return profilePage(env, into, into, "This game's key joined the account.");
     }
     if ((match = /^POST \/account\/unlink\/([a-z]+)$/.exec(route))) {
       const chosen = provider(env, match[1]!);

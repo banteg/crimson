@@ -84,6 +84,19 @@ CREATE TABLE oauth_states (
   expires_at INTEGER NOT NULL
 );
 
+-- A key's move into the account a linked login belongs to, waiting for the player to confirm it.
+CREATE TABLE merge_requests (
+  token_hash TEXT PRIMARY KEY,
+  session_hash TEXT NOT NULL,
+  from_account INTEGER NOT NULL REFERENCES accounts (id),
+  into_account INTEGER NOT NULL REFERENCES accounts (id),
+  provider TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  handle TEXT NOT NULL,
+  avatar_url TEXT,
+  expires_at INTEGER NOT NULL
+);
+
 CREATE TABLE moderation_log (
   id INTEGER PRIMARY KEY,
   at INTEGER NOT NULL,

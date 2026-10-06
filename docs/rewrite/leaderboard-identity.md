@@ -101,8 +101,9 @@ are `/auth/{github,discord,x}/callback` on the site's own origin (`https://crims
 `http://localhost:8787` under `wrangler dev`), and the client secrets and token exchange stay in the Worker. The
 provider's token reads the profile once and is discarded; the link keeps the account's id, handle and avatar URL.
 
-Signing in with a login another account has linked moves this key, its runs and its names into that account,
-which is how a second computer joins. The profile unlinks a provider and deletes the account with its runs,
+Signing in with a login another account has linked, matched by the provider's account ID and never the handle,
+shows that account and asks before moving this key, its runs and its names into it, which is how a second computer
+joins. The move happens in one transaction once confirmed, from the session that asked. The profile unlinks a provider and deletes the account with its runs,
 replays, names, links, keys and sessions. `/privacy` and `/terms` say the same in plain words.
 
 ## In the game
