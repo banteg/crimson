@@ -46,13 +46,13 @@ button{background:#1b1b1b;color:var(--label);border:1px solid #484848;border-rad
 button:hover{color:#fff;border-color:#777}button.danger{border-color:#6a2a2a;color:#e88}form.inline{display:inline}
 /* quest_select_menu_update's layout from its QUEST label, whose 64px art becomes "QUEST:" in 20px Courier (72px):
    stage icons 16px past it and 3px down, 36px apart, 32px or
-   25.6px from their top-left corner; the list 32px right and 60px down (50, and 10 for the hardcore box) in 20px
-   rows; the hardcore box 132px right of the list and 12px above it. The label and idle icons are tinted 0.7. */
-.quest-menu{position:relative;height:264px;margin:4px 0 0 4px}
+   25.6px from their top-left corner; the list origin 32px right and 50px down, its rows 10px lower for the
+   hardcore box, in 20px rows; the hardcore box 132px right of the list origin and 12px above it. The label and idle icons are tinted 0.7. */
+.quest-menu{position:relative;width:296px;height:264px;margin:4px 0 0 4px}.panel:has(>.quest-menu){width:fit-content}
 .quest-menu>.label{position:absolute;left:0;top:0;margin:0}
 .stages a{position:absolute;top:3px;width:26px;height:26px}.stages img{width:100%;height:100%;filter:brightness(.7);opacity:.7}
 .stages a:hover img{filter:none;opacity:.8}.stages a.on{width:32px;height:32px}.stages a.on img{filter:none;opacity:1}
-.hardcore{position:absolute;left:164px;top:48px;color:var(--label);text-decoration:none;white-space:nowrap}.hardcore:hover{color:#fff}
+.hardcore{position:absolute;left:164px;top:38px;color:var(--label);text-decoration:none;white-space:nowrap}.hardcore:hover{color:#fff}
 .hardcore img{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
 ol.quests{position:absolute;left:32px;top:60px;list-style:none;margin:0;padding:0}ol.quests li{height:20px;white-space:nowrap}
 ol.quests .count{font-size:13px}
