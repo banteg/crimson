@@ -38,6 +38,7 @@ def test_due_group_spreads_along_x_and_zeroes_the_entry() -> None:
     quest = QuestSpawnState(
         spawn_entries=(spawn(Vec2(512.0, 512.0), SpawnId.ALIEN_SMALL_GRAY_26, 1000, 3, heading=1.25),),
         spawn_timeline_ms=1001.0,
+        creatures_none_active=True,
     )
 
     quest_spawn_timeline_update(world, quest, dt_ms=16.0)
@@ -82,12 +83,15 @@ def test_next_group_spawns_early_after_three_idle_seconds() -> None:
         spawn_entries=(spawn(Vec2(512.0, 512.0), SpawnId.ALIEN_SMALL_GRAY_26, 999_999, 1),),
         spawn_timeline_ms=2000.0,  # > 0x6A4
         no_creatures_timer_ms=3001.0,  # > 3000
+        creatures_none_active=True,
     )
 
     quest_spawn_timeline_update(world, quest, dt_ms=0.0)
 
     assert quest.spawn_entries[0].count == 0
     assert len(_active(world)) == 1
+    # Spawning a group clears the cached flag, as native does.
+    assert not quest.creatures_none_active
 
 
 def test_timeline_advances_while_creatures_are_active_or_entries_remain() -> None:

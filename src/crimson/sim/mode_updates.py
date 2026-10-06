@@ -57,6 +57,9 @@ class QuestSpawnState(msgspec.Struct):
     total_creatures: int = 0
     spawn_timeline_ms: float = 0.0
     no_creatures_timer_ms: float = 0.0
+    # Native `creatures_none_active_flag`: the pool scan cached by `creatures_none_active()`;
+    # the spawn timeline reads this, not the pool.
+    creatures_none_active: bool = False
     completion_transition_ms: float = -1.0
     # Native `quest_stage_banner_timer_ms`: the stage title banner's fade clock, zeroed at quest start.
     stage_banner_timer_ms: float = 0.0
@@ -240,6 +243,12 @@ def rush_mode_update(world: WorldState, spawn: RushSpawnState, *, elapsed_ms: fl
     spawn.spawn_cooldown_ms = float(cooldown)
 
 
+def creatures_none_active(world: WorldState) -> bool:
+    """Port of `creatures_none_active` (0x00428210); callers cache the result like native's flag."""
+
+    return not any(creature.active for creature in world.creatures.entries)
+
+
 def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float) -> None:
     """Port of `quest_mode_update` (0x004070e0): the spawn timeline, then the completion transition.
 
@@ -252,7 +261,8 @@ def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float
 
     state = world.state
     if state.run_active:
-        if any(c.active for c in world.creatures.entries) or not quest_spawn_table_empty(spawn.spawn_entries):
+        spawn.creatures_none_active = creatures_none_active(world)
+        if not spawn.creatures_none_active or not quest_spawn_table_empty(spawn.spawn_entries):
             spawn.spawn_timeline_ms = f32(f32(spawn.spawn_timeline_ms) + f32(dt_ms))
         spawn.stage_banner_timer_ms += dt_ms
     quest_spawn_timeline_update(world, spawn, dt_ms=dt_ms)
@@ -260,7 +270,8 @@ def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float
     spawn.completed = False
     spawn.play_hit_sfx = False
     spawn.play_completion_music = False
-    if any(c.active for c in world.creatures.entries) or not quest_spawn_table_empty(spawn.spawn_entries):
+    spawn.creatures_none_active = creatures_none_active(world)
+    if not spawn.creatures_none_active or not quest_spawn_table_empty(spawn.spawn_entries):
         return
 
     # No player-alive gate: if the timer crosses 2500 ms while the death
