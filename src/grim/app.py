@@ -14,7 +14,8 @@ from .canvas import Canvas, frame_rect
 from .render_pipeline import RaylibDrawScope, RenderPipeline, WindowSink
 from .view import View
 
-SCREENSHOT_DIR = Path("screenshots")
+# F12 shots land in the working directory, as the original writes them next to the game.
+SCREENSHOT_DIR = Path()
 SCREENSHOT_KEY = rl.KeyboardKey.KEY_F12
 ALT_KEYS = (rl.KeyboardKey.KEY_LEFT_ALT, rl.KeyboardKey.KEY_RIGHT_ALT)
 
@@ -27,11 +28,16 @@ def _ignore_window_change(_state: bool) -> None:
     return None
 
 
+def _ignore_screenshot(_path: Path) -> None:
+    return None
+
+
 class RunViewHooks(msgspec.Struct, frozen=True):
     should_close: Callable[[], bool] = _not_requested
     consume_screenshot_request: Callable[[], bool] = _not_requested
     fullscreen_changed: Callable[[bool], None] = _ignore_window_change
     focus_changed: Callable[[bool], None] = _ignore_window_change
+    screenshot_saved: Callable[[Path], None] = _ignore_screenshot
 
 
 def _fullscreen_toggle_pressed() -> bool:
@@ -160,6 +166,8 @@ def run_view(
                 height=rl.get_render_height(),
             )
             screenshot_key.release()
+            if screenshot_path is not None:
+                run_hooks.screenshot_saved(screenshot_path)
             render_pipeline.present()
             if run_hooks.should_close():
                 break

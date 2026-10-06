@@ -172,6 +172,11 @@ def _save_windowed(cfg: CrimsonConfig, *, windowed: bool) -> None:
     cfg.save()
 
 
+def _log_screenshot(console: ConsoleState, path: Path) -> None:
+    console.log.log(f"screenshot: saved {path}")
+    console.log.flush()
+
+
 def run_game(config: GameConfig) -> None:
     if config.debug:
         set_debug_enabled(True)
@@ -246,9 +251,8 @@ def run_game(config: GameConfig) -> None:
                 consume_screenshot_request=view.consume_screenshot_request,
                 fullscreen_changed=lambda fullscreen: _save_windowed(cfg, windowed=not fullscreen),
                 focus_changed=view.focus_changed,
+                screenshot_saved=lambda path: _log_screenshot(console, path),
             ),
-            # Native F12 saves into the game directory.
-            screenshot_dir=base_dir,
         )
         if state is not None:
             state.status.save_if_dirty()

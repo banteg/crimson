@@ -188,17 +188,20 @@ def test_run_view_uses_explicit_quit_and_screenshot_callbacks(mocker, tmp_path) 
     screenshot = mocker.patch.object(grim_app, "_save_screenshot")
     quit_requested = mocker.Mock(side_effect=[False, True])
     screenshot_requested = mocker.Mock(side_effect=[True, False])
+    screenshot_saved = mocker.Mock()
     grim_app.run_view(
         view,
         hooks=grim_app.RunViewHooks(
             should_close=quit_requested,
             consume_screenshot_request=screenshot_requested,
+            screenshot_saved=screenshot_saved,
         ),
         screenshot_dir=tmp_path,
     )
     assert view.draw_calls == 2
     assert len(view.update_dts) == 2
     screenshot.assert_called_once_with(tmp_path / "shot_000.png")
+    screenshot_saved.assert_called_once_with(tmp_path / "shot_000.png")
     assert quit_requested.call_count == screenshot_requested.call_count == 2
     assert view.close_calls == fake_rl.close_calls == 1
 
