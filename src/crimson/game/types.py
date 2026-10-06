@@ -108,6 +108,8 @@ class GameState(msgspec.Struct):
     stats_menu_easter_egg_roll: int = -1
     screens: ScreenStack = msgspec.field(default_factory=ScreenStack)
     quest_fail_retry_count: int = 0
+    # Play Game menu's Ranked box: Survival and quest runs start from the ranked profile.
+    ranked: bool = False
     typo: TypoSession = msgspec.field(default_factory=TypoSession)
     terrain_regenerate_requested: bool = False
     run_elapsed_ms: float = 0.0

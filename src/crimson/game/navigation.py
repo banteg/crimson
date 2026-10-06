@@ -174,6 +174,7 @@ class ScreenNavigator:
             stop_music(self.state.audio.music)
         self.state.screens.close()
         gameplay = self._mode(request.mode)
+        gameplay.ranked = self.state.ranked
         gameplay.bind_status(self.state.status)
         gameplay.bind_audio(self.state.audio, self.state.rng)
         gameplay.set_rtx_mode(self.state.rtx_mode)

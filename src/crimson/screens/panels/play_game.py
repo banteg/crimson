@@ -17,7 +17,9 @@ from grim.raylib_api import rl
 
 from ...game.types import GameState
 from ...game_modes import GameMode
+from ...replay.ranked import RANKED_MODES, human_controls
 from ...ui.button import UiButtonState, button_draw, button_update
+from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update
 from ..assets import require_runtime_resources
 from .base import PanelMenuView
@@ -30,6 +32,10 @@ class _PlayGameModeEntry(msgspec.Struct):
     action: ScreenAction
     game_mode: int | None = None
     show_count: bool = False
+
+    @property
+    def ranked(self) -> bool:
+        return (GameMode.QUESTS if self.action is Route.QUESTS else self.game_mode) in RANKED_MODES
 
 
 class _PlayGameContentLayout(msgspec.Struct, frozen=True):
@@ -44,6 +50,9 @@ class PlayGameMenuView(PanelMenuView):
     """
 
     _PLAYER_COUNT_LABELS = ("1 player", "2 players", "3 players", "4 players")
+    # Right of the mode buttons, under the player-count list; clear of the buttons in either spacing.
+    _RANKED_OFFSET = Vec2(148.0, 22.0)
+    _RANKED_TOOLTIP = "Play for the leaderboard: Survival or\nQuests from the ranked profile."
 
     def __init__(self, state: GameState) -> None:
         super().__init__(
@@ -55,6 +64,7 @@ class PlayGameMenuView(PanelMenuView):
         )
         # Native lists two players; the port plays up to four.
         self.player_count_list = UiListWidget(items=self._PLAYER_COUNT_LABELS)
+        self.ranked_checkbox = UiCheckbox("Ranked")
 
         # Hover fade timers for tooltips (0..1000ms-ish; original uses ~0.0009 alpha scale).
         self._tooltip_ms: dict[str, int] = {}
@@ -106,15 +116,39 @@ class PlayGameMenuView(PanelMenuView):
             y += y_step
 
         # Decay timers for modes that aren't visible right now.
-        visible = {m.key for m in entries}
+        visible = {m.key for m in entries} | {"ranked"}
         for key in list(self._tooltip_ms):
             if key in visible:
                 continue
             self._tooltip_ms[key] = max(0, self._tooltip_ms[key] - dt_ms * 2)
 
-        if self._update_player_count(layout.drop_pos, resources=resources) or activated is None:
+        # A ranked attempt is single-player; the list stays shut. The Ranked box follows it in focus order.
+        took_list = not self.state.ranked and self._update_player_count(layout.drop_pos, resources=resources)
+        self._update_ranked(base_pos, resources=resources, mouse=Vec2.from_xy(mouse), click=click, dt_ms=dt_ms)
+        if took_list or activated is None:
             return
         self._activate_mode(activated)
+
+    def _update_ranked(self, base_pos: Vec2, *, resources: RuntimeResources, mouse: Vec2, click: bool, dt_ms: int) -> None:
+        """The Ranked box: whether the next Survival or quest run is a ranked attempt."""
+        checkbox = self.ranked_checkbox
+        binds = self.state.config.controls.player(0)
+        # Computer movement or aim never ranks.
+        human = human_controls(binds.movement, binds.aim_scheme)
+        if not human:
+            self.state.ranked = False
+        # It keeps its focus slot while the open list covers it, but neither hovers nor toggles.
+        checkbox.disabled = not human or self.player_count_list.open
+        checkbox.checked = self.state.ranked
+        toggled = ui_checkbox_update(
+            resources, checkbox, base_pos + self._RANKED_OFFSET, focus=self.state.focus, mouse=mouse, click=click,
+        )
+        if toggled:
+            self.state.ranked = checkbox.checked
+            if checkbox.checked:
+                self.state.config.gameplay.player_count = 1
+                self._dirty = True
+        self._update_tooltip_timer("ranked", checkbox.hovered, dt_ms)
 
     def _content_layout(self) -> _PlayGameContentLayout:
         panel_top_left = self._panel_rect(self._panel_element).top_left
@@ -227,6 +261,10 @@ class PlayGameMenuView(PanelMenuView):
                     game_mode=GameMode.TUTORIAL,
                 ),
             )
+
+        # A ranked attempt lists only the modes that rank.
+        if self.state.ranked:
+            entries = [entry for entry in entries if entry.ranked]
 
         # The y after the last row is used as a tooltip anchor in `play_game_menu_update`.
         y_end = y_start + y_step * float(len(entries))
@@ -358,6 +396,7 @@ class PlayGameMenuView(PanelMenuView):
                 )
             y += y_step
 
+        ui_checkbox_draw(resources, self.ranked_checkbox, base_pos + self._RANKED_OFFSET, focus=self.state.focus)
         # `play_game_menu_update`: the list widget is drawn before tooltips, so tooltips can overlay it.
         self._draw_player_count(layout.drop_pos, resources=resources)
         self._draw_tooltips(entries, base_pos, y_end, font=font)
@@ -411,15 +450,16 @@ class PlayGameMenuView(PanelMenuView):
             "tutorial": (38.0, 0.0),
         }
 
-        for mode in entries:
-            ms = int(self._tooltip_ms.get(mode.key, 0))
+        tips = [(mode.key, mode.tooltip) for mode in entries] + [("ranked", self._RANKED_TOOLTIP)]
+        for key, tooltip in tips:
+            ms = int(self._tooltip_ms.get(key, 0))
             if ms <= 0:
                 continue
             alpha_f = min(1.0, float(ms) * 0.0009)
             alpha = int(255 * alpha_f)
-            off_x, off_y = offsets.get(mode.key, (0.0, 0.0))
+            off_x, off_y = offsets.get(key, (0.0, 0.0))
             x = tooltip_x + off_x
             y = tooltip_y + off_y
-            for line in mode.tooltip.splitlines():
+            for line in tooltip.splitlines():
                 draw_small_text(font, line, Vec2(x, y), rl.Color(255, 255, 255, alpha))
                 y += font.cell_size

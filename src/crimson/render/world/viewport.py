@@ -7,6 +7,9 @@ from grim.geom import Vec2
 
 from ...sim.state_types import TERRAIN_SIZE
 
+# The world view never exceeds the arena; a ranked run caps it at its fixed resolution.
+DEFAULT_VIEW_CAP = Vec2(TERRAIN_SIZE, TERRAIN_SIZE)
+
 
 class ViewTransform(msgspec.Struct, frozen=True):
     camera: Vec2
@@ -30,6 +33,7 @@ def camera_screen_size(
     config: CrimsonConfig | None,
     runtime_w: float,
     runtime_h: float,
+    view_cap: Vec2 = DEFAULT_VIEW_CAP,
 ) -> Vec2:
     if runtime_w > 0.0 and runtime_h > 0.0:
         # Prefer live framebuffer dimensions. Config values can lag behind
@@ -44,8 +48,8 @@ def camera_screen_size(
         screen_h = max(1.0, runtime_h)
     out_w = max(1.0, screen_w)
     out_h = max(1.0, screen_h)
-    scale = max(out_w / TERRAIN_SIZE, out_h / TERRAIN_SIZE, 1.0)
-    return Vec2(min(TERRAIN_SIZE, out_w / scale), min(TERRAIN_SIZE, out_h / scale))
+    scale = max(out_w / view_cap.x, out_h / view_cap.y, 1.0)
+    return Vec2(min(view_cap.x, out_w / scale), min(view_cap.y, out_h / scale))
 
 
 def clamp_camera(*, camera: Vec2, screen_size: Vec2) -> Vec2:
@@ -69,11 +73,13 @@ def view_transform(
     config: CrimsonConfig | None,
     camera: Vec2,
     out_size: Vec2,
+    view_cap: Vec2 = DEFAULT_VIEW_CAP,
 ) -> ViewTransform:
     screen_size = camera_screen_size(
         config=config,
         runtime_w=out_size.x,
         runtime_h=out_size.y,
+        view_cap=view_cap,
     )
     clamped_camera = clamp_camera(camera=camera, screen_size=screen_size)
     scale_x = out_size.x / screen_size.x if screen_size.x > 0.0 else 1.0

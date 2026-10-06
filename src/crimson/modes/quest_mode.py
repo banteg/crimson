@@ -128,12 +128,10 @@ class QuestMode(BaseGameplayMode):
         hardcore_flag = self.config.gameplay.hardcore
 
         self.hardcore = hardcore_flag
-        # Native quest start does not reseed RNG per level; carry the current
-        # session RNG state into the next run.
-        seed = int(self.state.rng.state) & 0xFFFFFFFF
-        self._run_reset_seed = int(seed)
+        seed = self._next_run_seed()
+        self._run_reset_seed = seed
 
-        player_count = self.config.gameplay.player_count
+        player_count = self._runtime_player_count()
         self.world_runtime.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._local_input.reset(players=self.world.players)
         self.bind_status(status)

@@ -27,6 +27,11 @@ recorded in the replay and pinned for ranked runs. Add newly found gates here.
 | Violence disabled | blood and particle paths draw or skip | recorded; ranked runs need violence on |
 | Attract mode | `demo_mode_active` skips the game tune | removed: runs are never attract mode |
 | Frames outside gameplay | one discarded draw per frame | fixed: none |
+| Corpse fading (`cv_bodiesFade`) | off frees a corpse's slot the frame it dies | fixed: corpses fade |
+| Weapon history | a used weapon costs an extra draw in the drop reroll | recorded; ranked runs start with none |
+| Quest retries | each failure softens the next attempt's creatures | recorded; ranked runs play as the first try |
+| Seed | the session RNG carries into the next run | recorded; ranked runs draw a fresh seed |
+| Screen size and pad reach | the cursor is clamped to the screen; pad reach follows `cv_padAimDistMul` | the aim is recorded; ranked runs bound it to a 1024x768 view and the default reach |
 
 ## Audio
 
@@ -63,10 +68,8 @@ then, because no creatures are left.
 
 Both are recorded run inputs, so replays verify under any value and a run at low
 detail plays exactly as the original does at low detail. The leaderboard ranks
-only runs in the ranked profile: `replay verify` reports `ranked`
-and `unranked_reasons` (`detail_preset` unless 5, `violence_disabled`,
-`friendly_fire`, and `unlocks` unless the save's weapon and perk offers match a save with every quest
-completed). Runs outside it still verify; they just do not rank.
+only runs in the [ranked profile](../ranked-rules.md), which pins these and the
+other recorded gates above; runs outside it still verify, they just do not rank.
 
 ## Frames outside gameplay
 

@@ -14,7 +14,8 @@ run() { # name scenario size
     >"$out/$1.log" 2>&1; echo "$1 exit=$? shots=$(grep -c '^shot' "$out/$1.log")") &
 }
 for scenario in menus menus_unlocked dropdowns focus hiscores_quest lists sliders pause pause_quit key_info perk \
-  game_over game_over_again game_over_menu quest quest_next quest_scores quest_fail end_note azk mods rush tutorial typo; do
+  game_over game_over_again game_over_menu quest quest_next quest_scores quest_fail end_note azk mods rush tutorial typo \
+  ranked; do
   run "$scenario" "$scenario" 1024x768
 done
 for panel in play options stats panels; do

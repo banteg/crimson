@@ -11,6 +11,7 @@ Contracts that protect deterministic behavior and parity-critical invariants.
 - [Deterministic session](../deterministic-step-pipeline.md)
 - [Timing domains and mode scheduling](../timing.md)
 - [Replay run start](../replay-run-start.md)
+- [Ranked rules](../ranked-rules.md)
 - [Quest identifiers](../quest-identifiers.md)
 - [CDT trace format](../cdt-trace-format.md)
 - [RNG caller mapping workflow](../rng-caller-mapping-workflow.md)

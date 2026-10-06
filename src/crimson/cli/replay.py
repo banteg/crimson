@@ -509,7 +509,7 @@ def cmd_replay_verify(
     from ..replay import ReplayCodecError, decode_replay_payload, inflate_replay_payload
     from ..replay.driver.playback_driver import build_verify_playback_driver
     from ..replay.driver.setup import ReplayRunnerError
-    from ..replay.ranked import unranked_reasons
+    from ..replay.ranked import RankedTickMonitor, outcome_reasons, ranked_board, unranked_reasons
     from ..sim.run_result import run_result_mismatches
 
     replay_path = _require_replay_path(replay_file, base_dir=base_dir)
@@ -518,7 +518,8 @@ def cmd_replay_verify(
         replay_payload = inflate_replay_payload(Path(replay_path).read_bytes())
         replay = decode_replay_payload(replay_payload)
         driver = build_verify_playback_driver(replay, max_ticks=max_ticks)
-        result = driver.run()
+        monitor = RankedTickMonitor(replay=replay)
+        result = driver.run(observer=monitor)
     except (ReplayCodecError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
@@ -531,7 +532,7 @@ def cmd_replay_verify(
         status = "result_mismatch"
     else:
         status = "ok"
-    unranked = unranked_reasons(replay.run)
+    unranked = [*unranked_reasons(replay.run), *sorted(monitor.reasons), *outcome_reasons(replay.run, result)]
     payload_json = msgspec.json.encode({
         "schema_version": _REPLAY_VERIFY_SCHEMA_VERSION,
         "status": status,
@@ -546,6 +547,7 @@ def cmd_replay_verify(
         # Whether the run was played in the leaderboard's ranked profile.
         "ranked": not unranked,
         "unranked_reasons": unranked,
+        "board": ranked_board(replay.run) if not unranked else None,
     })
 
     if json_out is not None:

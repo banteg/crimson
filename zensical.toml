@@ -48,6 +48,7 @@ nav = [
       { "Deterministic session" = "rewrite/deterministic-step-pipeline.md" },
       { "Timing domains and mode scheduling" = "rewrite/timing.md" },
       { "Replay run start" = "rewrite/replay-run-start.md" },
+      { "Ranked rules" = "rewrite/ranked-rules.md" },
       { "Quest identifiers" = "rewrite/quest-identifiers.md" },
       { "CDT trace format" = "rewrite/cdt-trace-format.md" },
       { "RNG caller mapping workflow" = "rewrite/rng-caller-mapping-workflow.md" },

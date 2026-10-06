@@ -31,6 +31,7 @@ from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import HighScoreRecord
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
+from ..render.world.viewport import DEFAULT_VIEW_CAP
 from ..replay import REPLAY_TICK_RATE, Replay, ReplayCodecError, ReplayRecorder, dump_replay_file
 from ..replay.checkpoints import (
     DEFAULT_CHECKPOINT_SAMPLE_RATE,
@@ -42,6 +43,14 @@ from ..replay.checkpoints import (
 )
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
+)
+from ..replay.ranked import (
+    RANKED_MODES,
+    RANKED_PAD_AIM_DIST_MUL,
+    RANKED_VIEW,
+    human_controls,
+    ranked_run_seed,
+    ranked_run_spec,
 )
 from ..replay.rng_call_order import RngCallOrder
 from ..replay.ticks import LiveTickSource, step_replay_tick
@@ -126,6 +135,7 @@ class BaseGameplayMode:
         # The next run's flags; the run spec carries them into the gameplay state.
         self.hardcore = False
         self.quest_fail_retry_count = 0
+        self.ranked = False
         # The runtime owns the run (session, world), audio and render mode; the mode reads them from it.
         self._world_runtime = WorldRuntime(
             assets_dir=self.assets_dir,
@@ -169,6 +179,8 @@ class BaseGameplayMode:
         self._screen_fade: GameState | None = None
         self._terrain_regen_counter = 0
         self._run_reset_seed = 0
+        # Whether the current run is a ranked attempt (fixed when it starts).
+        self.ranked_run = False
         self._replay_recorder: ReplayRecorder | None = None
         self._replay_checkpoints: list[ReplayCheckpoint] = []
         # Checkpoint sidecars are a parity-debugging aid; off unless requested.
@@ -671,7 +683,22 @@ class BaseGameplayMode:
         return str(self.config.profile.player_name or "")
 
     def _runtime_player_count(self) -> int:
-        return self.config.gameplay.player_count
+        return 1 if self._ranked_attempt() else self.config.gameplay.player_count
+
+    def _ranked_attempt(self) -> bool:
+        """The Play Game menu's Ranked box is on, the mode ranks, and player one uses human controls."""
+
+        binds = self.config.controls.player(0)
+        return (
+            self.ranked
+            and self.default_game_mode_id in RANKED_MODES
+            and human_controls(binds.movement, binds.aim_scheme)
+        )
+
+    def _next_run_seed(self) -> int:
+        """Native carries the session RNG into the next run; a ranked attempt draws a fresh seed."""
+
+        return ranked_run_seed() if self._ranked_attempt() else int(self.state.rng.state) & 0xFFFFFFFF
 
     def update(self, dt: float) -> None:
         raise NotImplementedError(f"{self.__class__.__name__}.update() must be implemented by gameplay mode")
@@ -703,8 +730,8 @@ class BaseGameplayMode:
             stop_music(self.audio.music)
 
         player_count = self._runtime_player_count()
-        seed = int(self.state.rng.state)
-        self._run_reset_seed = int(seed) & 0xFFFFFFFF
+        seed = self._next_run_seed()
+        self._run_reset_seed = seed
 
         self._world_runtime.reset(seed=seed, player_count=max(1, min(4, int(player_count))))
         self._world_runtime.open_runtime()
@@ -726,8 +753,14 @@ class BaseGameplayMode:
         highscore_names: tuple[str, ...] = (),
         typo_carry: TypoCarry | None = None,
     ) -> PreparedRun:
-        status = self._status_base
-        spec = RunSpec(
+        ranked = self._ranked_attempt()
+        # A ranked run plays the canonical profile on a detached save, exactly as verification replays it.
+        status = None if ranked else self._status_base
+        self._world_runtime.view_cap = RANKED_VIEW if ranked else DEFAULT_VIEW_CAP
+        self.ranked_run = ranked
+        spec = ranked_run_spec(
+            game_mode, seed=self._run_reset_seed, quest_level=quest_level, hardcore=self.hardcore,
+        ) if ranked else RunSpec(
             game_mode_id=game_mode,
             seed=self._run_reset_seed,
             quest_level=quest_level,
@@ -884,7 +917,11 @@ class BaseGameplayMode:
             config=self.config,
             mouse_screen=self._ui_mouse,
             screen_to_world=self.screen_to_world,
-            pad_aim_dist_mul=self._cvar_float("cv_padAimDistMul", PAD_AIM_DIST_MUL_DEFAULT),
+            pad_aim_dist_mul=(
+                RANKED_PAD_AIM_DIST_MUL
+                if self.ranked_run
+                else self._cvar_float("cv_padAimDistMul", PAD_AIM_DIST_MUL_DEFAULT)
+            ),
         )
 
     def _reset_gameplay_frame_clock(self) -> None:

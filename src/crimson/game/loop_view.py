@@ -184,7 +184,8 @@ class GameLoopView:
             gameplay.regenerate_terrain_for_console()
 
     def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: ScreenAction | None) -> ScreenAction | None:
-        if isinstance(gameplay, QuestMode):
+        # A ranked attempt plays as a first try; it leaves the regular retry count alone.
+        if isinstance(gameplay, QuestMode) and not gameplay.ranked_run:
             self.state.quest_fail_retry_count = int(gameplay.world.state.quest_fail_retry_count)
         if action is not None:
             if action is Route.MENU:

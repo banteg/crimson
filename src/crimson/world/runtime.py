@@ -68,6 +68,7 @@ class WorldRuntime:
         self.terrain_setup: TerrainSetup | None = None
 
         self.camera = Vec2(-1.0, -1.0)
+        self.view_cap = viewport.DEFAULT_VIEW_CAP
 
         self.sync_audio_bridge_state()
 
@@ -149,6 +150,7 @@ class WorldRuntime:
             config=self.config,
             runtime_w=float(canvas.width()),
             runtime_h=float(canvas.height()),
+            view_cap=self.view_cap,
         )
         camera = self.camera if update.focus is None else screen_size * 0.5 - update.focus
         camera = camera + update.shake
@@ -173,6 +175,7 @@ class WorldRuntime:
         return viewport.view_transform(
             config=self.config, camera=self.camera,
             out_size=Vec2(float(canvas.width()), float(canvas.height())),
+            view_cap=self.view_cap,
         )
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
