@@ -28,7 +28,7 @@ from crimson.replay.codec import (
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.driver.setup import ReplayRunnerError
 from crimson.replay.ranked import RankedTickMonitor, outcome_reasons, ranked_board, ranked_run_spec, unranked_reasons
-from crimson.replay.types import REPLAY_FORMAT_VERSION, Replay, ReplayTick
+from crimson.replay.types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, current_recorder
 from crimson.replay.versioning import current_replay_game_version
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import PlayerRunResult, RunOutcome, RunResult
@@ -87,6 +87,7 @@ def _base_replay() -> Replay:
     return Replay(
         format_version=REPLAY_FORMAT_VERSION,
         game_version=current_replay_game_version(),
+        recorder=current_recorder(),
         run=ranked_run_spec(GameMode.SURVIVAL, seed=0x1234ABCD),
         result=result,
         ticks=ticks,
@@ -188,6 +189,8 @@ def corrupted_vectors() -> tuple[str, list[dict]]:
         "short weapon usage": edit(lambda w: w["run"]["status"]["weapon_usage_counts"].pop()),
         "quest level outside quests": edit(lambda w: w["run"].__setitem__("quest_level", {"major": 1, "minor": 1})),
         "no ticks": edit(lambda w: w.__setitem__("ticks", [])),
+        "no recorder": edit(lambda w: w.pop("recorder")),
+        "empty recorder platform": edit(lambda w: w["recorder"].__setitem__("platform", "")),
     }
     vectors = []
     for name, payload in corrupted.items():
@@ -211,7 +214,10 @@ def ranked_run() -> tuple[str, str]:
         return ReplayTick(inputs=[(0.0, 0.0, f32(512.0 + 150.0 * math.cos(angle)), f32(512.0 + 150.0 * math.sin(angle)), flags)])
 
     def replay(ticks: list[ReplayTick], result: RunResult) -> Replay:
-        return Replay(REPLAY_FORMAT_VERSION, current_replay_game_version(), ranked_run_spec(GameMode.SURVIVAL, seed=0xC0FFEE), result, ticks)
+        return Replay(
+            REPLAY_FORMAT_VERSION, current_replay_game_version(), current_recorder(),
+            ranked_run_spec(GameMode.SURVIVAL, seed=0xC0FFEE), result, ticks,
+        )
 
     provisional = RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, (PlayerRunResult(0, 0.0, 1),))
     long = replay([tick(i) for i in range(60 * 60 * 10)], provisional)

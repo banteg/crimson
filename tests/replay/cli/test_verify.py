@@ -46,7 +46,8 @@ def test_replay_verify_json_output_payload_ok(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
-    assert payload["schema_version"] == 4
+    assert payload["schema_version"] == 5
+    assert payload["recorder"]["client"] == "crimson"
     assert payload["status"] == "ok"
     assert payload["replay"] == str(replay_path)
     assert payload["payload_sha256"] == hashlib.sha256(encode_replay_payload(replay)).hexdigest()

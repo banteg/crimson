@@ -6,7 +6,7 @@
 import { decompress } from "fzstd";
 import { F64, MapValue, PayloadError, readPayload, type Value } from "./msgpack";
 
-export const REPLAY_FORMAT_VERSION = 29;
+export const REPLAY_FORMAT_VERSION = 30;
 const MAX_FILE_BYTES = 65 * 1024 * 1024;
 const MAX_PAYLOAD_BYTES = 64 * 1024 * 1024;
 const MAX_WINDOW_BYTES = 8 * 1024 * 1024;
@@ -29,6 +29,7 @@ const NAME_MAX_CHARS = 16;
 const HIGHSCORE_NAME_MAX_CHARS = 31;
 const MAX_TYPO_DICTIONARY_WORDS = 2048;
 const MAX_TYPO_HIGHSCORE_NAMES = 512;
+const RECORDER_FIELD_MAX_CHARS = 64;
 const I32_MIN = -(2 ** 31);
 const I32_MAX = 2 ** 31 - 1;
 const U32_MAX = 2 ** 32 - 1;
@@ -106,9 +107,15 @@ export interface Tick {
   inputs: PlayerInput[];
   commands: Command[];
 }
+export interface Recorder {
+  client: string;
+  version: string;
+  platform: string;
+}
 export interface Replay {
   format_version: number;
   game_version: string;
+  recorder: Recorder;
   run: RunSpec;
   result: RunResult;
   ticks: Tick[];
@@ -178,7 +185,7 @@ export function decodeReplay(payload: Uint8Array): Replay {
 // The wire shape, as msgspec decodes it: maps with every key in declared order, typed and range-checked values.
 class Schema {
   replay(value: Value): Replay {
-    const fields = this.fields(value, "replay", ["format_version", "game_version", "run", "result", "ticks"]);
+    const fields = this.fields(value, "replay", ["format_version", "game_version", "recorder", "run", "result", "ticks"]);
     const format_version = this.int(fields.format_version, "format_version");
     require(
       format_version === REPLAY_FORMAT_VERSION,
@@ -187,9 +194,19 @@ class Schema {
     return {
       format_version,
       game_version: this.str(fields.game_version, "game_version"),
+      recorder: this.recorder(fields.recorder),
       run: this.runSpec(fields.run),
       result: this.result(fields.result),
       ticks: this.array(fields.ticks, "ticks").map((tick, i) => this.tick(tick, `ticks[${i}]`)),
+    };
+  }
+
+  private recorder(value: Value): Recorder {
+    const f = this.fields(value, "recorder", ["client", "version", "platform"]);
+    return {
+      client: this.str(f.client, "recorder.client"),
+      version: this.str(f.version, "recorder.version"),
+      platform: this.str(f.platform, "recorder.platform"),
     };
   }
 
@@ -398,6 +415,13 @@ const isHighscoreName = (text: string) => /^[A-Za-z.]+$/.test(text) && text.leng
 
 export function validateReplay(replay: Replay): void {
   require(Boolean(replay.game_version), "game_version must be non-empty");
+  for (const field of ["client", "version", "platform"] as const) {
+    const value = replay.recorder[field];
+    require(
+      value.length > 0 && value.length <= RECORDER_FIELD_MAX_CHARS && isPrintableAscii(value),
+      `recorder.${field} must be 1..${RECORDER_FIELD_MAX_CHARS} printable ASCII characters`,
+    );
+  }
   const run = replay.run;
   const mode = run.game_mode_id;
   require(REPLAY_MODES.has(mode), `run.game_mode_id ${mode} is not a replayable mode`);

@@ -31,8 +31,10 @@ from .types import (
     TURN_RIGHT_FLAG,
     PackedPlayerInput,
     PackedTickInputs,
+    Recorder,
     Replay,
     ReplayTick,
+    current_recorder,
 )
 from .versioning import ReplayGameVersionWarning, warn_on_game_version_mismatch
 
@@ -54,11 +56,13 @@ __all__ = [
     "TURN_RIGHT_FLAG",
     "PackedPlayerInput",
     "PackedTickInputs",
+    "Recorder",
     "Replay",
     "ReplayCodecError",
     "ReplayGameVersionWarning",
     "ReplayRecorder",
     "ReplayTick",
+    "current_recorder",
     "decode_replay_payload",
     "dump_replay",
     "dump_replay_file",

@@ -8,7 +8,8 @@ tags:
 
 A leaderboard run is a replay that verifies and satisfies these rules. The rules
 version is the replay's `game_version`: a build with a rules bug is withdrawn
-from the boards rather than frozen. `crimson replay verify` reports `ranked`,
+from the boards rather than frozen. The replay's `recorder` names the client and
+platform that recorded it, so a faulty client can be withdrawn the same way. `crimson replay verify` reports `ranked`,
 the `board` and every `unranked_reasons` entry; the leaderboard service applies
 the same checks (`src/crimson/replay/ranked.py`).
 

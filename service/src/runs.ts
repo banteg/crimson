@@ -77,11 +77,13 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
   await env.REPLAYS.put(`runs/${runId}.crd`, file, { httpMetadata: { contentType: "application/octet-stream" } });
   await env.DB.batch([
     env.DB.prepare(
-      `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, ticks, result, accepted_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, client,
+         client_version, platform, ticks, result, accepted_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(
       runId, hex(payloadSha), accountId, upload.public_key, upload.name, board, quest, score, replay.game_version,
-      replay.ticks.length, JSON.stringify(replay.result), now,
+      replay.recorder.client, replay.recorder.version, replay.recorder.platform, replay.ticks.length,
+      JSON.stringify(replay.result), now,
     ),
     env.DB.prepare("UPDATE accounts SET name = ? WHERE id = ?").bind(upload.name, accountId),
     env.DB.prepare(

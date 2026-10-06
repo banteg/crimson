@@ -19,7 +19,7 @@ from crimson.replay.driver.playback_driver import (
 )
 from crimson.replay.driver.replay_info import ReplayInfoResult, collect_replay_info
 from crimson.replay.input_codec import pack_tick
-from crimson.replay.types import current_replay_game_version
+from crimson.replay.types import current_recorder, current_replay_game_version
 from crimson.sim.hooks import TickResult
 from crimson.sim.run_result import RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec
@@ -56,6 +56,7 @@ def idle_replay(tick_count: int, *, run: RunSpec | None = None) -> Replay:
     return Replay(
         format_version=REPLAY_FORMAT_VERSION,
         game_version=current_replay_game_version(),
+        recorder=current_recorder(),
         run=RunSpec(game_mode_id=GameMode.DEMO, seed=0) if run is None else run,
         result=UNVERIFIED_RESULT,
         ticks=[ReplayTick(inputs=[(0.0, 0.0, 0.0, 0.0, 0)]) for _ in range(int(tick_count))],

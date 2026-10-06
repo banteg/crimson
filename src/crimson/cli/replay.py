@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from ..replay.checkpoint_diff import ReplayDiffResult
     from ..replay.driver.replay_benchmark import BenchmarkAggregate
 
-_REPLAY_VERIFY_SCHEMA_VERSION = 4
+_REPLAY_VERIFY_SCHEMA_VERSION = 5
 _REPLAY_INFO_SCHEMA_VERSION = 2
 _REPLAY_BENCHMARK_SCHEMA_VERSION = 4
 _REPLAY_VERIFY_MISMATCH_EXIT_CODE = 3
@@ -539,6 +539,7 @@ def cmd_replay_verify(
         "replay": str(replay_path),
         "payload_sha256": hashlib.sha256(replay_payload).hexdigest(),
         "game_version": replay.game_version,
+        "recorder": replay.recorder,
         "ticks": len(replay.ticks),
         "ticks_simulated": int(driver.tick_limit),
         "result": result,

@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
-from .types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, current_replay_game_version
+from .types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, current_recorder, current_replay_game_version
 
 
 class ReplayRecorder:
     def __init__(self, run: RunSpec, *, game_version: str | None = None) -> None:
         self._run = run
         self._game_version = current_replay_game_version() if game_version is None else game_version
+        self._recorder = current_recorder()
         self._ticks: list[ReplayTick] = []
 
     @property
@@ -31,6 +32,7 @@ class ReplayRecorder:
         return Replay(
             format_version=REPLAY_FORMAT_VERSION,
             game_version=self._game_version,
+            recorder=self._recorder,
             run=self._run,
             result=result,
             ticks=self._ticks,

@@ -22,7 +22,7 @@ from ..typo.names import (
     is_typo_highscore_name,
 )
 from ..typo.state import TypoCarry
-from .types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, input_flags_validation_error
+from .types import REPLAY_FORMAT_VERSION, Recorder, Replay, ReplayTick, input_flags_validation_error
 
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 # Level 9 writes a long survival replay in ~16 ms and its checkpoint sidecar in ~95 ms; 19 took 0.4 s and
@@ -222,9 +222,22 @@ def _require_current_format(payload: bytes) -> None:
     _require(not isinstance(version, int) or version == REPLAY_FORMAT_VERSION, _unsupported_format(version))
 
 
+RECORDER_FIELD_MAX_CHARS = 64
+
+
+def _validate_recorder(recorder: Recorder) -> None:
+    for field in ("client", "version", "platform"):
+        value = getattr(recorder, field)
+        _require(
+            0 < len(value) <= RECORDER_FIELD_MAX_CHARS and all(" " <= ch <= "~" for ch in value),
+            f"recorder.{field} must be 1..{RECORDER_FIELD_MAX_CHARS} printable ASCII characters",
+        )
+
+
 def validate_replay(replay: Replay) -> None:
     _require(replay.format_version == REPLAY_FORMAT_VERSION, _unsupported_format(replay.format_version))
     _require(bool(replay.game_version), "game_version must be non-empty")
+    _validate_recorder(replay.recorder)
     _validate_run(replay.run)
     _validate_result(replay.result, replay.run)
     _require(bool(replay.ticks), "replay must contain at least one tick")

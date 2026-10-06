@@ -46,6 +46,8 @@ describe("runs", () => {
     const account = await env.DB.prepare("SELECT accounts.name, keys.fingerprint FROM accounts JOIN keys ON keys.account_id = accounts.id").first();
     expect(account).toMatchObject({ name: "banteg" });
     expect(await env.REPLAYS.head(`runs/${run.id}.crd`)).not.toBeNull();
+    const stored = await env.DB.prepare("SELECT client, platform FROM runs WHERE id = ?").bind(run.id).first();
+    expect(stored).toMatchObject({ client: "crimson", platform: expect.stringMatching(/^[a-z]+-[a-z0-9_]+$/) });
   });
 
   it("a run is accepted once, whoever sends it again", async () => {

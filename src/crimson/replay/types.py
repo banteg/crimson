@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import platform
 import re
 import shutil
 import subprocess
+import sys
 from functools import lru_cache
 from pathlib import Path
 
@@ -13,7 +15,7 @@ from ..sim.commands import GameCommand
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
 
-REPLAY_FORMAT_VERSION = 29
+REPLAY_FORMAT_VERSION = 30
 # Replays step a fixed 60 Hz schedule; every tick uses this float32 delta.
 REPLAY_TICK_RATE = 60
 REPLAY_TICK_DT = f32(1.0 / REPLAY_TICK_RATE)
@@ -107,6 +109,16 @@ def _tree_is_dirty(*, repo_root: Path, git_exe: str) -> bool:
     return bool(out.strip())
 
 
+def current_platform() -> str:
+    system = {"darwin": "macos", "win32": "windows"}.get(sys.platform, sys.platform)
+    machine = platform.machine().lower()
+    return f"{system}-{ {'amd64': 'x86_64', 'aarch64': 'arm64'}.get(machine, machine) }"
+
+
+def current_recorder() -> Recorder:
+    return Recorder(client="crimson", version=current_replay_game_version(), platform=current_platform())
+
+
 @lru_cache(maxsize=1)
 def current_replay_game_version() -> str:
     """Return replay `game_version`.
@@ -163,9 +175,22 @@ class ReplayTick(msgspec.Struct, frozen=True, array_like=True, forbid_unknown_fi
     commands: list[GameCommand] = []
 
 
+class Recorder(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    """The program that recorded a replay. Verification ignores it; boards can show, filter or withdraw by it."""
+
+    # "crimson" for this port; another client, such as a native crimson-core build, names itself.
+    client: str
+    # The client's own build, in `game_version`'s form.
+    version: str
+    # "<os>-<cpu>", e.g. "macos-arm64".
+    platform: str
+
+
 class Replay(msgspec.Struct, forbid_unknown_fields=True):
     format_version: int
+    # The rules the run was recorded under: the build of the simulation and ranked rules it follows.
     game_version: str
+    recorder: Recorder
     run: RunSpec
     result: RunResult
     ticks: list[ReplayTick]

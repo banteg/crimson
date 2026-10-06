@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import struct
 import subprocess
 from pathlib import Path
@@ -29,7 +30,7 @@ from crimson.replay import (
 from crimson.replay import types as replay_types
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.replay.input_codec import pack_player_input, pack_tick, unpack_player_input
-from crimson.replay.types import REPLAY_FORMAT_VERSION, current_replay_game_version
+from crimson.replay.types import REPLAY_FORMAT_VERSION, Recorder, current_replay_game_version
 from crimson.sim.commands import (
     PerkMenuOpenCommand,
     PerkPickCommand,
@@ -76,6 +77,7 @@ def _replay(
     return Replay(
         format_version=REPLAY_FORMAT_VERSION,
         game_version="1.2.3",
+        recorder=Recorder(client="crimson", version="1.2.3", platform="macos-arm64"),
         run=run,
         result=_result(player_count=run.player_count) if result is None else result,
         ticks=[ReplayTick(inputs=[(0.0, 0.0, 512.0, 512.0, 0)] * run.player_count)] if ticks is None else ticks,
@@ -155,7 +157,8 @@ def test_replay_payload_layout() -> None:
         _replay(ticks=[ReplayTick(inputs=[(0.0, 0.0, 1.0, 2.0, 0)], commands=[PerkPickCommand(player_index=0, choice_index=2)])]),
     )
 
-    assert list(wire) == ["format_version", "game_version", "run", "result", "ticks"]
+    assert list(wire) == ["format_version", "game_version", "recorder", "run", "result", "ticks"]
+    assert wire["recorder"] == {"client": "crimson", "version": "1.2.3", "platform": "macos-arm64"}
     assert list(wire["run"]) == list(RunSpec.__struct_fields__)
     assert list(wire["result"]) == list(RunResult.__struct_fields__)
     assert wire["result"]["outcome"] == "death"
@@ -174,6 +177,9 @@ def test_recorder_builds_replay() -> None:
     replay = recorder.finish(_result())
 
     assert replay.run == run
+    # The live game names itself and where it ran, apart from the rules version.
+    assert (replay.recorder.client, replay.recorder.version) == ("crimson", replay_types.current_replay_game_version())
+    assert re.fullmatch(r"[a-z]+-[a-z0-9_]+", replay.recorder.platform)
     controls = (
         replay_types.MOVE_KEYS_PRESENT_FLAG
         | replay_types.MOVE_MODE_PRESENT_FLAG
@@ -242,9 +248,9 @@ def _noncanonical_payloads() -> dict[str, bytes]:
     int_axis = dict(wire)
     int_axis["ticks"] = [[[[0, 0.0, 512.0, 512.0, 0]], []]]
 
-    # Top-level fixmap header 0x85 → 0x86 plus a repeated key.
-    assert payload[0] == 0x85
-    duplicate = b"\x86" + payload[1:] + msgspec.msgpack.encode("game_version") + msgspec.msgpack.encode("9.9.9")
+    # Top-level fixmap header 0x86 → 0x87 plus a repeated key.
+    assert payload[0] == 0x86
+    duplicate = b"\x87" + payload[1:] + msgspec.msgpack.encode("game_version") + msgspec.msgpack.encode("9.9.9")
 
     seed_key = msgspec.msgpack.encode("seed")
     non_minimal_int = payload.replace(seed_key + b"\x01", seed_key + b"\xcc\x01", 1)

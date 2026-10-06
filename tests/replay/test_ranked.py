@@ -16,7 +16,7 @@ from crimson.replay.ranked import (
     ranked_run_spec,
     unranked_reasons,
 )
-from crimson.replay.types import REPLAY_FORMAT_VERSION, Replay, ReplayTick
+from crimson.replay.types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, current_recorder
 from crimson.sim.input import PlayerInput
 from crimson.sim.run_result import RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec, RunStatus
@@ -69,6 +69,7 @@ def _monitor(run: RunSpec, *inputs: PlayerInput) -> set[str]:
     replay = Replay(
         format_version=REPLAY_FORMAT_VERSION,
         game_version="test",
+        recorder=current_recorder(),
         run=run,
         result=RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, ()),
         ticks=[ReplayTick(inputs=[pack_player_input(inp)]) for inp in inputs],

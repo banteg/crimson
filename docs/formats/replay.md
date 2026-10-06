@@ -42,8 +42,9 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `29` |
-| `game_version` | str | Build that recorded the run (see below) |
+| `format_version` | int | `30` |
+| `game_version` | str | Rules the run was recorded under: the build of the simulation and ranked rules (see below) |
+| `recorder` | `Recorder` | The program that recorded the run (since v30) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
 | `ticks` | array of `Tick` | At least one tick |
@@ -52,6 +53,12 @@ alternative encoding "wins".
 installed package (`0.11.0`), else `<version>+g<12-hex commit>`. A checkout
 whose `src/` differs from that commit (modified or new unignored files) appends
 `.dirty`.
+
+`Recorder` is a map of `client` (`crimson` for this port; another client, such as a native crimson-core build,
+names itself), `version` (that client's own build, in `game_version`'s form) and `platform` (`<os>-<cpu>`, such
+as `macos-arm64`; `unknown` for the fixtures recorded before v30). Each is 1..64 printable ASCII characters.
+Verification ignores it: `game_version` names the rules, `recorder` who followed them, so boards can show, filter
+or withdraw runs by client.
 
 ### RunSpec
 
