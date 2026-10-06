@@ -37,7 +37,6 @@ def main() -> None:
         "sign.png": image("ui/ui_signCrimson.tga"),
         "panel.png": panel.crop(PANEL_FRAME),
         "wires.png": panel.crop(PANEL_WIRES),
-        "quest.png": image("ui/ui_textQuest.tga"),
         "check-on.png": image("ui/ui_checkOn.tga"),
         "check-off.png": image("ui/ui_checkOff.tga"),
         # Terrain textures by the game's slot number (src/crimson/terrain_slots.py): base, then overlay, per quest stage.

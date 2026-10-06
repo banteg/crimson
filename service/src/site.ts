@@ -20,11 +20,12 @@ body{margin:0;color:var(--text);background:#0b0a07;
   font:16px/20px "Crimson Small",Arial,sans-serif;-webkit-font-smoothing:none;-moz-osx-font-smoothing:unset}
 /* The game's 1024-wide screen: the generated ground (terrain.js), the sign hanging from its right edge, panels
    whose wires run to its left edge. */
-.screen{position:relative;max-width:1024px;min-height:100vh;margin:0 auto;overflow:hidden;background:rgb(63,56,25) 0 0/1024px repeat}
+.screen{position:relative;max-width:1024px;min-height:100vh;margin:0 auto;overflow:hidden;
+  background:rgb(63,56,25) center top/1024px 1024px no-repeat fixed}
 header{text-align:right;padding-top:10px}header img{width:512px;max-width:100%;height:auto;display:inline-block;vertical-align:top}
 main{padding:6px 40px 4px 178px}
 @media (max-width:900px){main{padding:6px 12px 4px}}
-h2,h3{margin:2px 0 10px;color:var(--heading);font:32px/36px "Crimson Small",Arial,sans-serif;text-transform:uppercase}
+h2,h3,.quest-menu .label{margin:2px 0 10px;color:var(--label);font:bold 20px/32px "Courier New",Courier,monospace;text-transform:uppercase}
 td.n,.count,.score{font:bold 14px/20px "Courier New",Courier,monospace;white-space:nowrap}
 a{color:var(--row-on)}a:hover{color:#8fd3ff}
 .panel{position:relative;z-index:0;margin:0 0 20px;padding:4px 14px 6px;border:solid transparent;border-width:18px 19px 19px 14px;
@@ -43,11 +44,12 @@ h2 a.name,h2 .links,.fingerprint{text-transform:none}h2 .avatar+a.name{font-weig
 .fingerprint{font-size:16px}
 button{background:#1b1b1b;color:var(--label);border:1px solid #484848;border-radius:3px;padding:1px 12px;cursor:pointer;font:inherit}
 button:hover{color:#fff;border-color:#777}button.danger{border-color:#6a2a2a;color:#e88}form.inline{display:inline}
-/* quest_select_menu_update's layout from its QUEST label: stage icons 80px right and 3px down, 36px apart, 32px or
+/* quest_select_menu_update's layout from its QUEST label, whose 64px art becomes "QUEST:" in 20px Courier (72px):
+   stage icons 16px past it and 3px down, 36px apart, 32px or
    25.6px from their top-left corner; the list 32px right and 60px down (50, and 10 for the hardcore box) in 20px
    rows; the hardcore box 132px right of the list and 12px above it. The label and idle icons are tinted 0.7. */
 .quest-menu{position:relative;height:264px;margin:4px 0 0 4px}
-.quest-menu>img.label{position:absolute;left:0;top:0;width:64px;height:32px;filter:brightness(.7);opacity:.7}
+.quest-menu>.label{position:absolute;left:0;top:0;margin:0}
 .stages a{position:absolute;top:3px;width:26px;height:26px}.stages img{width:100%;height:100%;filter:brightness(.7);opacity:.7}
 .stages a:hover img{filter:none;opacity:.8}.stages a.on{width:32px;height:32px}.stages a.on img{filter:none;opacity:1}
 .hardcore{position:absolute;left:164px;top:48px;color:var(--label);text-decoration:none;white-space:nowrap}.hardcore:hover{color:#fff}
@@ -205,7 +207,7 @@ async function questMenu(env: Env, stage: number, hardcore: boolean, current = "
   const toggle = current ? `/boards/${hardcore ? "quests" : "quests-hardcore"}/${current}` : `/${hardcore ? "quests" : "quests-hardcore"}/${stage}`;
   const tabs = STAGES.map(
     (numeral, i) =>
-      `<a class="${i + 1 === stage ? "on" : ""}" style="left:${80 + i * 36}px" href="/${menu}/${i + 1}"><img src="/ui/stage${i + 1}.png" alt="${numeral}"></a>`,
+      `<a class="${i + 1 === stage ? "on" : ""}" style="left:${88 + i * 36}px" href="/${menu}/${i + 1}"><img src="/ui/stage${i + 1}.png" alt="${numeral}"></a>`,
   ).join("");
   const rows = Array.from({ length: 10 }, (_, i) => {
     const quest = `${stage}.${i + 1}`;
@@ -214,7 +216,7 @@ async function questMenu(env: Env, stage: number, hardcore: boolean, current = "
       count ? `<span class="count">${count}</span>` : ""
     }</li>`;
   }).join("");
-  return `<div class="quest-menu${hardcore ? " hardcore-on" : ""}"><img class="label" src="/ui/quest.png" width="64" height="32" alt="Quest:">
+  return `<div class="quest-menu${hardcore ? " hardcore-on" : ""}"><span class="label">Quest:</span>
 <nav class="stages">${tabs}</nav><a class="hardcore" href="${toggle}"><img src="/ui/check-${hardcore ? "on" : "off"}.png" alt="">Hardcore</a>
 <ol class="quests">${rows}</ol></div>`;
 }

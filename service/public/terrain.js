@@ -44,13 +44,18 @@ function prepare(image, alpha) {
 async function draw(screen) {
   const rand = crtRand(crypto.getRandomValues(new Uint32Array(1))[0]);
   const quest = screen.dataset.quest;
-  const ground = quest ? generate(rand, questSlots(...quest.split(".").map(Number))) : generateRandom(rand, UNLOCK_INDEX);
+  // As tall as the display, so the ground fills the screen at any window height without tiling.
+  const height = Math.max(SIZE, Math.ceil(Math.max(window.screen.height, window.innerHeight) / 64) * 64);
+  const ground = quest
+    ? generate(rand, questSlots(...quest.split(".").map(Number)), SIZE, height)
+    : generateRandom(rand, UNLOCK_INDEX, SIZE, height);
   const images = await Promise.all(ground.slots.map(load));
   const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = SIZE;
+  canvas.width = SIZE;
+  canvas.height = height;
   const context = canvas.getContext("2d");
   context.fillStyle = CLEAR;
-  context.fillRect(0, 0, SIZE, SIZE);
+  context.fillRect(0, 0, SIZE, height);
   ground.layers.forEach((stamps, i) => {
     const texture = prepare(images[i], LAYER_ALPHA[i]);
     for (const [rotation, x, y] of stamps) {
@@ -61,6 +66,7 @@ async function draw(screen) {
   });
   canvas.toBlob((blob) => {
     screen.style.backgroundImage = `url(${URL.createObjectURL(blob)})`;
+    screen.style.backgroundSize = `${SIZE}px ${height}px`;
   });
 }
 
