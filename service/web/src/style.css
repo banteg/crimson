@@ -33,7 +33,9 @@ header{display:flex;flex-wrap:wrap-reverse;justify-content:space-between;align-i
 .button::after{content:"";position:absolute;inset:0;background:url(/ui/button-sm.png) 0 0/100% 100%}
 .button.wide::after{background-image:url(/ui/button-md.png)}
 .button span{position:relative;z-index:1;display:inline-block;margin:8px 0 0 2px;line-height:16px}
-main{padding:6px 40px 4px 178px}
+/* The high scores panel (ui_element 9) draws ui_menuPanel 98px off the screen's left edge, so its frame starts 80px in
+   and the wire, with its shadow, runs past the edge. */
+main{padding:6px 40px 4px 80px}
 @media (max-width:900px){main{padding:6px 12px 4px}}
 h2,h3,.quest-menu .label{margin:2px 0 10px;color:var(--label);font:bold 20px/32px "Courier New",Courier,monospace}
 h3{font-size:17px;line-height:26px;margin-top:14px}
