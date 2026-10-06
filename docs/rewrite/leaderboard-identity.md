@@ -43,9 +43,9 @@ low-friction spirit. Nobody needs an account to rank, and ranked play never need
 
 ## Protocol
 
-The game has no API root until the service is deployed; `CRIMSON_LEADERBOARD_URL` points it at one, such as a
-local Worker. Without one, runs collect in the outbox and nothing leaves the machine. Every request is a JSON
-`POST`; byte strings are hex, except the replay, which is base64.
+The API root is `https://crimson.land/api`. `CRIMSON_LEADERBOARD_URL` points the game at another one, such as a
+local Worker, and an empty value keeps every run on the machine. Every request is a JSON `POST`; byte strings are
+hex, except the replay, which is base64.
 
 | Endpoint | Body | Answer |
 | --- | --- | --- |
@@ -105,5 +105,5 @@ player signs into with a linked login.
 ## Open
 
 - The service itself is gate 5 in `crimson-core/ROADMAP.md`: the endpoints above, uploads verified by
-  crimson-core, storage, the site and the boards. Until it exists, ranked runs collect in the outbox.
+  crimson-core, storage, the site and the boards. Until it answers, ranked runs wait in the outbox.
 - Showing a linked handle in the game needs the service to say whether the key's account is linked.

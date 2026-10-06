@@ -29,8 +29,7 @@ from ..replay.codec import encode_replay_payload, zstd_pack
 from ..replay.types import Replay
 from .identity import Identity
 
-# Empty until the service is deployed: runs collect in the outbox and nothing leaves the machine.
-LEADERBOARD_URL = ""
+LEADERBOARD_URL = "https://crimson.land/api"
 # Seconds between upload passes while runs wait in the outbox.
 RETRY_INTERVAL_S = 600.0
 _TIMEOUT_S = 10.0
@@ -43,8 +42,8 @@ class LeaderboardError(OSError):
 
 
 def leaderboard_url() -> str:
-    """The service's API root, empty when there is none; `CRIMSON_LEADERBOARD_URL` points the game at one, such as a
-    local Worker."""
+    """The service's API root; `CRIMSON_LEADERBOARD_URL` points the game at another one, such as a local Worker, and
+    an empty value keeps every run on the machine."""
     return os.environ.get("CRIMSON_LEADERBOARD_URL", LEADERBOARD_URL).rstrip("/")
 
 
