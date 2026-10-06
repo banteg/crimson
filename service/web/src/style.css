@@ -74,3 +74,4 @@ ol.quests a{color:var(--row);text-decoration:none;border-bottom:1px solid}ol.que
 .hardcore-on ol.quests a{color:var(--row-hardcore)}.hardcore-on ol.quests a:hover,.hardcore-on ol.quests a.on{color:var(--row-hardcore-on)}
 ol.quests .n{display:inline-block;width:34px}ol.quests .count{margin-left:10px;color:var(--dim)}
 footer{padding:0 0 20px;text-align:center;color:var(--label);text-shadow:0 1px 2px #000}footer a{color:var(--text)}
+footer p{margin:0 0 6px}footer .credit{color:var(--dim)}footer .credit a{color:var(--label)}

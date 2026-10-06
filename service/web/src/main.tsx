@@ -140,7 +140,13 @@ function App() {
         </For>
       </main>
       <footer>
-        <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/banteg/crimson">GitHub</a>
+        <p>
+          <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/banteg/crimson">GitHub</a> ·{" "}
+          <a href="https://t.me/+NEHzXtv5_fphZDYy">Telegram</a>
+        </p>
+        <p class="credit">
+          Made by <a href="https://banteg.xyz">banteg</a>. Not affiliated with 10tons, just big fans of Crimsonland.
+        </p>
       </footer>
     </div>
   );
