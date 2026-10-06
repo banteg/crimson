@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import difflib
+import fcntl
 import hashlib
 import json
 import os
 import re
 import shlex
+import shutil
 import struct
 from collections import Counter, defaultdict
-from collections.abc import Collection
+from collections.abc import Collection, Iterator
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field, replace
 from functools import cache
 from pathlib import Path
@@ -5404,6 +5407,18 @@ def _scratch_build_directory(config: ScratchConfig) -> Path:
     return config.directory / "build" / profile / _scratch_profile_digest(config)
 
 
+@contextmanager
+def _locked_staging_dir(path: Path) -> Iterator[Path]:
+    with open(path.with_name(path.name + ".lock"), "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        shutil.rmtree(path, ignore_errors=True)
+        path.mkdir()
+        try:
+            yield path
+        finally:
+            shutil.rmtree(path, ignore_errors=True)
+
+
 def _scratch_object_path(config: ScratchConfig) -> Path:
     build_dir = _scratch_build_directory(config)
     if config.import_thunk is not None:
@@ -5624,7 +5639,6 @@ def compile_scratch(
     force: bool = False,
     deadline: float | None = None,
 ) -> Path:
-    import tempfile
 
     match_root = match_root.resolve()
     if config.import_thunk is not None:
@@ -5703,8 +5717,9 @@ def compile_scratch(
 
     build_dir.parent.mkdir(parents=True, exist_ok=True)
     command = list(_scratch_compile_argv(config, match_root))
-    with tempfile.TemporaryDirectory(dir=build_dir.parent, prefix=f".{build_dir.name}.") as temp_name:
-        temp_dir = Path(temp_name)
+    # MSVC 7 objects embed the compiled source's path, so the staging directory is fixed per
+    # build key (a random temp name would change every rebuild's bytes); the lock serializes it.
+    with _locked_staging_dir(build_dir.parent / f".{build_dir.name}.stage") as temp_dir:
         temp_source = temp_dir / Path(config.source).name
         temp_obj = temp_dir / obj_name
         temp_source.write_bytes(staged_source_text.encode("latin1"))
