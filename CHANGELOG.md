@@ -2,6 +2,12 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.12.1
+
+### For players
+
+- Completing a ranked quest no longer leaves a `run:` folder holding a stray `status` file in the directory you started the game from. Your save was never affected, and an existing `run:` folder can be deleted.
+
 ## 0.12.0
 
 ### For players
