@@ -145,7 +145,7 @@ function App() {
           <a href="https://t.me/+NEHzXtv5_fphZDYy">Telegram</a>
         </p>
         <p class="credit">
-          Made by <a href="https://banteg.xyz">banteg</a>. Not affiliated with 10tons, just a big fan of Crimsonland.
+          made by <a href="https://banteg.xyz">banteg</a>. not affiliated with 10tons, just a big fan of crimsonland.
         </p>
       </footer>
     </div>
