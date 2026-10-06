@@ -23,6 +23,7 @@ from .. import (
     match_report,
     match_report_accounting,
     mod_sdk,
+    name_audit,
 )
 from .. import library_provenance as provenance
 from .. import match as matchlib
@@ -1691,9 +1692,9 @@ def cmd_match_resolved_name_audit(
     ),
     check: bool = typer.Option(False, "--check", help="fail when resolved labels remain"),
 ) -> None:
-    """Find analyzer identities whose curated identity is already stronger."""
+    """Find analyzer placeholders and superseded names that linger in live files."""
 
-    rows = matchlib.collect_resolved_name_references(
+    rows = name_audit.collect_resolved_name_references(
         repo_root=root,
         name_map_path=name_map,
         data_map_path=data_map,
@@ -1704,7 +1705,7 @@ def cmd_match_resolved_name_audit(
                 "rewriting cannot be combined with limit, summary, or check filters",
                 param_hint="--rewrite",
             )
-        result = matchlib.rewrite_resolved_name_references(rows, repo_root=root)
+        result = name_audit.rewrite_resolved_name_references(rows, repo_root=root)
         if as_json:
             typer.echo(json.dumps(result, indent=2, sort_keys=True))
         else:
@@ -1719,12 +1720,12 @@ def cmd_match_resolved_name_audit(
         typer.echo(
             json.dumps(
                 {
-                    "summary": matchlib.resolved_name_reference_summary_payload(rows),
+                    "summary": name_audit.resolved_name_reference_summary_payload(rows),
                     "rows": (
                         []
                         if summary_only
                         else [
-                            matchlib.resolved_name_reference_payload(row)
+                            name_audit.resolved_name_reference_payload(row)
                             for row in displayed_rows
                         ]
                     ),
@@ -1734,9 +1735,9 @@ def cmd_match_resolved_name_audit(
             ),
         )
     elif summary_only:
-        typer.echo(matchlib.render_resolved_name_reference_summary(rows))
+        typer.echo(name_audit.render_resolved_name_reference_summary(rows))
     else:
-        typer.echo(matchlib.render_resolved_name_reference_table(displayed_rows))
+        typer.echo(name_audit.render_resolved_name_reference_table(displayed_rows))
     if check and rows:
         raise typer.Exit(code=1)
 

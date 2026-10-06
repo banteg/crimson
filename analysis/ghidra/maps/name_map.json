@@ -309,7 +309,10 @@
     "address": "0x004028e0",
     "name": "config_init_defaults_thunk",
     "comment": "Exact tail thunk to config_init_defaults at 0x004028f0.",
-    "create": false
+    "create": false,
+    "formerly": [
+      "j_config_init_defaults"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -860,7 +863,10 @@
     "name": "mod_api_init_thunk",
     "signature": "void mod_api_init_thunk(void)",
     "comment": "Exact tail thunk to mod_api_init at 0x0040dfa0.",
-    "create": false
+    "create": false,
+    "formerly": [
+      "j_mod_api_init"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -1396,7 +1402,10 @@
     "address": "0x004120a0",
     "name": "gameplay_run_state_init_thunk",
     "comment": "Exact tail thunk to gameplay_run_state_init at 0x004120b0.",
-    "create": false
+    "create": false,
+    "formerly": [
+      "j_gameplay_run_state_init"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -1517,7 +1526,10 @@
     "address": "0x00412350",
     "name": "highscore_init_sentinels_thunk",
     "comment": "Exact tail thunk to highscore_init_sentinels at 0x00412360.",
-    "create": false
+    "create": false,
+    "formerly": [
+      "j_highscore_init_sentinels"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -1611,7 +1623,10 @@
     "address": "0x00412a10",
     "name": "play_time_load",
     "signature": "void play_time_load(void)",
-    "comment": "raises the saved play time from the registry value named sequence"
+    "comment": "raises the saved play time from the registry value named sequence",
+    "formerly": [
+      "game_sequence_load"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -1689,7 +1704,10 @@
     "address": "0x00417680",
     "name": "ui_menu_template_pool_init_thunk",
     "comment": "Exact tail thunk to ui_menu_template_pool_init at 0x00417690.",
-    "create": false
+    "create": false,
+    "formerly": [
+      "j_ui_menu_template_pool_init"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -1747,7 +1765,10 @@
       "@ui_element_construct@4"
     ],
     "signature": "ui_element_t * __fastcall ui_element_construct(ui_element_t *element)",
-    "comment": "resets triplet state and seeds all three template sub-block quad_mode fields to 4"
+    "comment": "resets triplet state and seeds all three template sub-block quad_mode fields to 4",
+    "formerly": [
+      "ui_template_triplet_reset_and_seed_modes"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -2111,7 +2132,10 @@
     "address": "0x0041df60",
     "name": "play_time_get",
     "signature": "int play_time_get(void)",
-    "comment": "returns the saved play time in milliseconds"
+    "comment": "returns the saved play time in milliseconds",
+    "formerly": [
+      "game_sequence_get"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -2133,7 +2157,10 @@
     "address": "0x0041dfb0",
     "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk",
     "signature": "void unused_fx_rotated_creature_type_id_prefix_color_global_init_thunk(void)",
-    "comment": "CRT initializer thunk for the unused RGBA object before fx_rotated_creature_type_id"
+    "comment": "CRT initializer thunk for the unused RGBA object before fx_rotated_creature_type_id",
+    "formerly": [
+      "unused_fx_rotated_effect_id_prefix_color_global_init_thunk"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -2141,7 +2168,10 @@
     "include_library": true,
     "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init",
     "signature": "void unused_fx_rotated_creature_type_id_prefix_color_global_init(void)",
-    "comment": "initializes the unused fx_rotated_creature_type_id prefix RGBA object to gray"
+    "comment": "initializes the unused fx_rotated_creature_type_id prefix RGBA object to gray",
+    "formerly": [
+      "unused_fx_rotated_effect_id_prefix_color_global_init"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -2621,7 +2651,10 @@
     "address": "0x0041fc60",
     "name": "weapon_name_get",
     "signature": "char * weapon_name_get(int weapon_id)",
-    "comment": "returns the entry base (&weapon_table + weapon_id * 0x1f)"
+    "comment": "returns the entry base (&weapon_table + weapon_id * 0x1f)",
+    "formerly": [
+      "weapon_table_entry"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -2870,7 +2903,10 @@
     "address": "0x00428390",
     "name": "player_render",
     "signature": "void player_render(void)",
-    "comment": "Renders the whole player: body and death animation, muzzle flash, auras and the auto-target line; gameplay_render_world calls it for dead players before creatures and for live ones after. When alive (health>0) draws 2 sprite layers per call from effect_uv8[frame] (0\u201314) and effect_uv8[frame+0x10] (16\u201330) using heading vs aim_heading rotations, with a shadow/outline pass (scale ~1.02/1.03 and offset +3,+3 / +1,+1) before the main pass. When dead, draws a single layer from effect_uv8[crt_ftol(death_timer)] (32\u201351) with 0x34 fallback, also with shadow+main passes."
+    "comment": "Renders the whole player: body and death animation, muzzle flash, auras and the auto-target line; gameplay_render_world calls it for dead players before creatures and for live ones after. When alive (health>0) draws 2 sprite layers per call from effect_uv8[frame] (0\u201314) and effect_uv8[frame+0x10] (16\u201330) using heading vs aim_heading rotations, with a shadow/outline pass (scale ~1.02/1.03 and offset +3,+3 / +1,+1) before the main pass. When dead, draws a single layer from effect_uv8[crt_ftol(death_timer)] (32\u201351) with 0x34 fallback, also with shadow+main passes.",
+    "formerly": [
+      "player_render_overlays"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -3898,7 +3934,10 @@
     "address": "0x0043a950",
     "name": "highscore_iso_week",
     "signature": "int highscore_iso_week(int year, int month, int day)",
-    "comment": "computes the ISO-style week of year compared by the weekly high score table"
+    "comment": "computes the ISO-style week of year compared by the weekly high score table",
+    "formerly": [
+      "highscore_date_checksum"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -3956,7 +3995,10 @@
     "name": "highscore_compare_elapsed_desc",
     "signature": "int highscore_compare_elapsed_desc(const highscore_record_t *a, const highscore_record_t *b)",
     "comment": "qsort comparator used by highscore_load_table() for rush mode; sorts run_elapsed_ms descending with signed comparisons",
-    "create": true
+    "create": true,
+    "formerly": [
+      "highscore_compare_rush_field32_desc"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -3964,7 +4006,10 @@
     "name": "highscore_compare_elapsed_asc_nonzero_first",
     "signature": "int highscore_compare_elapsed_asc_nonzero_first(const highscore_record_t *a, const highscore_record_t *b)",
     "comment": "qsort comparator used by highscore_load_table() for quest mode; sorts run_elapsed_ms ascending with zero last",
-    "create": true
+    "create": true,
+    "formerly": [
+      "highscore_compare_quest_field32_asc_nonzero_first"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -4020,7 +4065,10 @@
     "address": "0x0043b800",
     "name": "highscore_load_table_thunk",
     "comment": "Exact tail thunk to highscore_load_table at 0x0043afa0.",
-    "create": false
+    "create": false,
+    "formerly": [
+      "j_highscore_load_table"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -4373,21 +4421,30 @@
     "address": "0x0043d460",
     "name": "music_play_exclusive",
     "signature": "void music_play_exclusive(int sfx_id)",
-    "comment": "fades out every other music track and starts the chosen one; the game playlist sentinel picks a random track"
+    "comment": "fades out every other music track and starts the chosen one; the game playlist sentinel picks a random track",
+    "formerly": [
+      "sfx_play_exclusive"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043d550",
     "name": "music_fade_out_all",
     "signature": "void music_fade_out_all(int sfx_id)",
-    "comment": "fades out the given music track and every playing one (recursive)"
+    "comment": "fades out the given music track and every playing one (recursive)",
+    "formerly": [
+      "sfx_mute_all"
+    ]
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0043d5b0",
     "name": "music_update_fades",
     "signature": "void music_update_fades(void)",
-    "comment": "ramps each music track's volume toward its fade target"
+    "comment": "ramps each music track's volume toward its fade target",
+    "formerly": [
+      "sfx_update_mute_fades"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -4408,7 +4465,10 @@
     "address": "0x0043d7c0",
     "name": "music_track_is_playing",
     "signature": "int music_track_is_playing(int sfx_id)",
-    "comment": "returns nonzero when the music track is not fading out"
+    "comment": "returns nonzero when the music track is not fading out",
+    "formerly": [
+      "sfx_is_unmuted"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -4815,7 +4875,10 @@
     "address": "0x00444980",
     "name": "typo_player_update",
     "signature": "void typo_player_update(const vec2f_t *aim, char fire_requested, char reload_requested)",
-    "comment": "runs the bespoke Typ-o Shooter player frame, aim, shotgun fire, and terrain clamp path"
+    "comment": "runs the bespoke Typ-o Shooter player frame, aim, shotgun fire, and terrain clamp path",
+    "formerly": [
+      "player_fire_weapon"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -5483,7 +5546,10 @@
     "aliases": [
       "?init_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
     ],
-    "create": false
+    "create": false,
+    "formerly": [
+      "vec2_normalize_dispatch_init"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -5494,7 +5560,10 @@
     "aliases": [
       "_D3DXVec2Normalize@8"
     ],
-    "create": false
+    "create": false,
+    "formerly": [
+      "vec2_normalize_dispatch"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -6454,7 +6523,10 @@
     "aliases": [
       "?c_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
     ],
-    "create": false
+    "create": false,
+    "formerly": [
+      "vec2_normalize_safe"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -6637,7 +6709,10 @@
     "aliases": [
       "_D3DXCpuOptimizations@4"
     ],
-    "create": false
+    "create": false,
+    "formerly": [
+      "renderer_select_backend"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -6733,7 +6808,10 @@
     "aliases": [
       "?x86_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
     ],
-    "create": false
+    "create": false,
+    "formerly": [
+      "renderer_patch_portable"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -7551,7 +7629,10 @@
     "aliases": [
       "?x3d_D3DXVec3TransformCoord_inline@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
     ],
-    "create": false
+    "create": false,
+    "formerly": [
+      "vec3_transform_coord"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -7568,6 +7649,9 @@
     "create": false,
     "aliases": [
       "?x3d_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ],
+    "formerly": [
+      "j_vec3_transform_coord"
     ]
   },
   {
@@ -9430,7 +9514,10 @@
     "aliases": [
       "___sbh_alloc_block"
     ],
-    "create": false
+    "create": false,
+    "formerly": [
+      "crt_sbh_alloc"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -9518,7 +9605,10 @@
     "aliases": [
       "___old_sbh_alloc_block"
     ],
-    "create": false
+    "create": false,
+    "formerly": [
+      "crt_sbh_alloc_units"
+    ]
   },
   {
     "program": "crimsonland.exe",
@@ -13420,6 +13510,9 @@
     "create": false,
     "aliases": [
       "?LoadJPG@CD3DXImage@@AAEJPBXK@Z"
+    ],
+    "formerly": [
+      "grim_load_image_jpg"
     ]
   },
   {
@@ -13442,6 +13535,9 @@
     "create": false,
     "aliases": [
       "?LoadPPM@CD3DXImage@@AAEJPBXK@Z"
+    ],
+    "formerly": [
+      "grim_load_image_pnm"
     ]
   },
   {
@@ -13470,6 +13566,9 @@
     "create": false,
     "aliases": [
       "?LoadPNG@CD3DXImage@@AAEJPBXK@Z"
+    ],
+    "formerly": [
+      "grim_load_image_png"
     ]
   },
   {
@@ -13481,6 +13580,9 @@
     "create": false,
     "aliases": [
       "?LoadDDS@CD3DXImage@@AAEJPBXK@Z"
+    ],
+    "formerly": [
+      "grim_load_image_dds"
     ]
   },
   {
@@ -13514,6 +13616,9 @@
     "create": false,
     "aliases": [
       "?LoadBMP@CD3DXImage@@AAEJPBXK@Z"
+    ],
+    "formerly": [
+      "grim_load_image_bmp"
     ]
   },
   {
@@ -14658,7 +14763,10 @@
     "address": "0x1001a574",
     "name": "grim_vertex_space_converter_destroy_thunk",
     "comment": "Exact tail thunk to the shared Grim vertex-space-converter destructor.",
-    "create": false
+    "create": false,
+    "formerly": [
+      "j_grim_vertex_space_converter_destroy"
+    ]
   },
   {
     "program": "grim.dll",
@@ -14960,7 +15068,10 @@
     "name": "grim_pixel_format_destroy_dxt_thunk",
     "signature": "void grim_pixel_format_destroy_dxt_thunk(void *this)",
     "comment": "Exact tail thunk to the shared DXT1-DXT5 regular destructor.",
-    "create": false
+    "create": false,
+    "formerly": [
+      "j_grim_pixel_format_destroy_dxt"
+    ]
   },
   {
     "program": "grim.dll",
@@ -15015,7 +15126,10 @@
     "name": "grim_pixel_format_destroy_yuv_thunk",
     "signature": "void grim_pixel_format_destroy_yuv_thunk(void *this)",
     "comment": "Exact tail thunk to the shared UYVY/YUY2 regular destructor.",
-    "create": false
+    "create": false,
+    "formerly": [
+      "j_grim_pixel_format_destroy_yuv"
+    ]
   },
   {
     "program": "grim.dll",
@@ -15124,7 +15238,10 @@
       "_D3DXCpuOptimizations@4"
     ],
     "signature": "int D3DXCpuOptimizations(int force)",
-    "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member."
+    "comment": "Exact DirectX 8.1 D3DX CPU-detection implementation selected from the pinned cpudetect.obj archive member.",
+    "formerly": [
+      "grim_select_renderer_backend"
+    ]
   },
   {
     "program": "grim.dll",
@@ -15977,7 +16094,10 @@
       "?x3d_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
     ],
     "signature": "void d3dx_x3d_init_fast_table(void *table)",
-    "comment": "Exact DirectX 8.1 D3DX 3DNow dispatch implementation selected from the pinned d3dxmathx3d.obj archive member."
+    "comment": "Exact DirectX 8.1 D3DX 3DNow dispatch implementation selected from the pinned d3dxmathx3d.obj archive member.",
+    "formerly": [
+      "grim_init_mmx_sse_functions"
+    ]
   },
   {
     "program": "grim.dll",
@@ -16462,7 +16582,10 @@
     "address": "0x10025163",
     "name": "png_handle_IHDR",
     "signature": "void png_handle_IHDR(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
-    "comment": "Archive-confirmed libpng 1.0.5 IHDR parser and validator"
+    "comment": "Archive-confirmed libpng 1.0.5 IHDR parser and validator",
+    "formerly": [
+      "grim_png_read_IHDR"
+    ]
   },
   {
     "program": "grim.dll",
@@ -16473,7 +16596,10 @@
     ],
     "signature": "void d3dx_png_handle_plte(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
     "comment": "Archive-confirmed libpng 1.0.5 PLTE parser",
-    "create": false
+    "create": false,
+    "formerly": [
+      "grim_png_read_PLTE"
+    ]
   },
   {
     "program": "grim.dll",
@@ -16508,7 +16634,10 @@
     "address": "0x1002587e",
     "name": "png_handle_unknown",
     "signature": "void png_handle_unknown(png_structp png_ptr, png_infop info_ptr, png_uint_32 length)",
-    "comment": "Validates, rejects unknown critical chunks, and skips unknown ancillary chunks"
+    "comment": "Validates, rejects unknown critical chunks, and skips unknown ancillary chunks",
+    "formerly": [
+      "grim_png_read_chunk_generic"
+    ]
   },
   {
     "program": "grim.dll",

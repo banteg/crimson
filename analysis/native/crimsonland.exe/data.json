@@ -1,5 +1,5 @@
 {
-  "audit_digest": "667561b0537e0c2200755b89c0bb4b9ca5420bbcb360bca6ee35421012471f2b",
+  "audit_digest": "3674266ee46d0669891b192f777cd30ced82c020e30fdc52aa70f43bb337fbfc",
   "entries": [
     {
       "address": 4211888,
@@ -37780,7 +37780,7 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "942bef2db8747b587a15650c67a630209354f76260abf76e1ce40912945843f2",
+    "data_map_sha256": "ce850f3e7d907e60d9507a5696b541ce019a32000b555e00e0202be3435475fa",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
     "definitions_sha256": "cfe84833247b246a1c269bf1239899b267c095b3e105175d71a99ed3d5d9a4b0",
     "reference_image": {

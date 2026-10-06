@@ -1202,19 +1202,22 @@ target while leaving decorated object/linkage symbols untouched.
 an older bulk rename rewrote an auto-generated provider comment to the new
 canonical identity.
 
-`resolved-name-audit` is the repository-wide companion to the scratch/map
-audit. It scans maintained analysis, Zig, documentation, source, scripts,
-matching notes, and native data initializers for analyzer identities whose
-address already has a stronger curated identity. This includes semantic raw
-function names, not only address-derived labels. Raw analyzer exports, native
-build artifacts, experiment logs, and genuinely unresolved address-named
-fields are excluded, while vtable slots such as a stale `nullsub_*` are checked
-against their explicit target address. `--rewrite` replaces unambiguous labels
-with their curated identity; when that identity is already present on the line,
-it keeps the useful address as a plain hexadecimal literal instead of repeating
-the name. Ambiguous multi-name addresses remain reported for manual review. CI
-and `just check` run the same check; it scans the whole repository, so it is
-not a pre-commit hook.
+`resolved-name-audit` keeps replaced names out of live files. It reports two
+kinds of stale identity: analyzer placeholders (`FUN_*`, `DAT_*`, a stale
+`nullsub_*` in a native data initializer) at an address the name or data map
+already names, and superseded names, which a map row records in its
+`formerly` list when it is renamed. `naming-audit --apply-suggestions` records
+them itself; a hand rename edits `name`, adds the old one to `formerly`, and
+runs `--rewrite`, which replaces every unambiguous hit (keeping the address as
+a hexadecimal literal when the curated name is already on the line).
+
+Only live files are scanned: code, headers, maps, scratch configs, the decomp,
+the core, tests and docs. Dated history (`tools/match/evidence/`, dated
+reports, scratch notes and experiment logs, archived analysis and captures)
+keeps the names it was written with, as do the naming tools' own test
+fixtures. A line that must keep an old name, such as a serialized key, carries
+`name-audit: keep`. CI and `just check` run `--check`; it lives in
+`crimson_re/name_audit.py`, outside the report inputs.
 
 ## No Fakematching
 
