@@ -25,7 +25,9 @@ from ..typo.state import TypoCarry
 from .types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, input_flags_validation_error
 
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
-_ZSTD_LEVEL = 19
+# Level 9 writes a long survival replay in ~16 ms and its checkpoint sidecar in ~95 ms; 19 took 0.4 s and
+# 4.4 s for files only 5-20% smaller.
+_ZSTD_LEVEL = 9
 # zstd frames may not ask for a larger decompression window than this.
 MAX_ZSTD_WINDOW_BYTES = 8 * 1024 * 1024
 MAX_REPLAY_PAYLOAD_BYTES = 64 * 1024 * 1024
