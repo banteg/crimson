@@ -2,6 +2,32 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.12.0
+
+### For players
+
+#### Online leaderboard
+
+- **[crimson.land](https://crimson.land)** is the port's online leaderboard, with boards for Survival, every quest, and every quest on hardcore. The server replays each run in full before its score counts.
+- Tick **Ranked** at the bottom of the Play Game menu to play Survival or a quest for the boards. Ranked runs play the same for everyone, whatever your save holds: one player, the original's bugs fixed, every quest unlocked, no weapon history and a fresh seed. The view is capped at 1024x768, and computer-controlled movement or aim does not rank. Only finished runs count: a Survival death or a completed quest. [The ranked rules](https://crimson.banteg.xyz/rewrite/ranked-rules/) have the details.
+- A ranked run uploads by itself once its results screen closes, under the name you typed there. Offline play is fine: runs wait on your computer and upload at the next launch, or every ten minutes while the game runs.
+- There is no sign-up. The game makes a key on its first launch. `crimson identity show`, `export` and `import` show it or move it to another computer.
+- The **Profile** button, shown in the Play Game menu while Ranked is ticked, opens your profile on crimson.land, signed in. From there you can link a GitHub, Discord or X account, so your handle shows next to your name and another computer's game can join your account. You can also unlink them, or delete the account with its runs.
+- The high score screen's **Update scores** and **Show internet scores** work again, as in the original. Update scores sends your waiting runs, then shows the shown board's best runs in green beside your local scores. A local run that is on the board turns green.
+
+#### Other changes
+
+- F12 saves one screenshot per press, without a hitch, into the directory you started the game from, and logs its path.
+- The end of a long run no longer stalls for seconds while its replay saves: replays save in the background and compress much faster.
+- In quests, the spawn timeline after a death matches the original's.
+- Replays are format 30 and name the program that recorded them. Replays recorded with 0.11 no longer load.
+
+### Under the hood
+
+- **crimson-core** verifies every movement and aim scheme, and Rush.
+- **crimson.land** runs on Cloudflare Workers. It verifies uploads with the crimson-core WebAssembly build and checks the ranked rules, including that every aim point stays on screen. The site is a small Solid app in `service/`.
+- crimson-core builds with Zig 0.17.
+
 ## 0.11.1
 
 ### For players
