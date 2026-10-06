@@ -142,7 +142,7 @@ weighted bytes over the prior baseline. Spec SHA-256 values are
 Live Binary Ninja disassembly at `0x00411afd` through `0x00411b48` shows the
 weapon notice setting up the Grim vtable before recomputing
 `quest_stage_minor + quest_stage_major * 10 - 11` inside the
-`weapon_table_entry` argument. The prior named `quest_index` caused VC6 to
+`weapon_name_get` argument. The prior named `quest_index` caused VC6 to
 compute that index before loading the interface and split the otherwise
 native instruction schedule.
 

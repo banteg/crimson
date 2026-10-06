@@ -122,15 +122,15 @@ def main():
         replay.compile_driver(helper, "capture.c", "capture.obj")
         replay.link(helper, "capture.dll", "capture.obj", dll=True)
         if args.source:
-            config = replay.match.load_scratch_config(replay.match.DEFAULT_MATCH_ROOT / "scratches/player_render_overlays")
+            config = replay.match.load_scratch_config(replay.match.DEFAULT_MATCH_ROOT / "scratches/player_render")
             source_dir = out / "source"
             source_dir.mkdir(exist_ok=True)
             (source_dir / config.source).write_bytes(args.source.read_bytes())
             with patch.object(replay.match, "load_scratch_config", return_value=replace(config, directory=source_dir)):
-                capture = replay.verify_function("player_render_overlays", out, helper / "capture.dll")
+                capture = replay.verify_function("player_render", out, helper / "capture.dll")
         else:
-            capture = replay.verify_function("player_render_overlays", out, helper / "capture.dll")
-        baseline = out / "player_render_overlays/replay"
+            capture = replay.verify_function("player_render", out, helper / "capture.dll")
+        baseline = out / "player_render/replay"
         observer = out / "observer"
         observer.mkdir(exist_ok=True)
         shutil.copyfile(baseline / "replay_settings.h", observer / "replay_settings.h")

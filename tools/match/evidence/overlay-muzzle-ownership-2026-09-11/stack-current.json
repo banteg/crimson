@@ -9,7 +9,7 @@
   },
   "backend_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
   "capture": {
-    "function": "player_render_overlays",
+    "function": "player_render",
     "source_sha256": "93a5f988ea28855eb588ce1fa6c6b687ee70c8d8b939b0ac70e592c7bcc98e98",
     "normal_build_key": {
       "toolchain": {

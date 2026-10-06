@@ -31,7 +31,7 @@ def main():
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     rows = []
-    for function in ("projectile_render", "player_render_overlays"):
+    for function in ("projectile_render", "player_render"):
         controls_path = HERE / f"{function}-controls.json"
         data = json.loads(controls_path.read_text())
         for control in data["controls"]:

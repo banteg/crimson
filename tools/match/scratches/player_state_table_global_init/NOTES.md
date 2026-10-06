@@ -21,6 +21,6 @@ its padding spans. Inherited canonical field names and the typed two-float move
 target preserve the exact 50/50 result.
 
 Offset `0x98` is now typed as `float`: the constructor writes floating zero
-bits, and `player_render_overlays` is its only recovered read, through an x87
+bits, and `player_render` is its only recovered read, through an x87
 load compared with `0.25f`. Its reserved name remains until a writer or
 stronger gameplay role is recovered.

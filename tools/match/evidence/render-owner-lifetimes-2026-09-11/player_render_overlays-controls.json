@@ -1,5 +1,5 @@
 {
-  "function": "player_render_overlays",
+  "function": "player_render",
   "before_sha256": "93a5f988ea28855eb588ce1fa6c6b687ee70c8d8b939b0ac70e592c7bcc98e98",
   "controls": [
     {

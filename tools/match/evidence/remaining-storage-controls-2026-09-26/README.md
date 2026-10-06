@@ -2,7 +2,7 @@
 
 The compiler's typed-copy behavior resolves projectile_render's K2 zero-alpha
 temporary. The retained source uses the same alpha wrapper and tint constructor
-already present in `player_render_overlays`: the constructor assigns a four-byte
+already present in `player_render`: the constructor assigns a four-byte
 alpha object, instead of assigning its float member directly. No compiler,
 matcher, shared header, or reference alias was changed.
 
@@ -33,7 +33,7 @@ integration tests and all eleven regression tests pass.
 
 ## Why the copy survives
 
-The decompiled compiler and [post-promotion-stores.md, section 5](../../c2/compiler/post-promotion-stores.md#5-player_render_overlays-plain-source)
+The decompiled compiler and [post-promotion-stores.md, section 5](../../c2/compiler/post-promotion-stores.md#5-player_render-plain-source)
 explain the source choice. A float store (type `0x4004`) and an unsigned scalar
 copy (type `0x2004`) expose overlapping views of one four-byte object. Promotion
 marks the unsigned read while leaving the float store in memory; live-range

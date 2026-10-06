@@ -26,7 +26,7 @@ def linked_body(p):
 
 
 def run(p, native, frame):
-    assert p.config.function == "player_render_overlays"
+    assert p.config.function == "player_render"
     count, overlay = frame.get("player_count", 1), frame.get("overlay_index", 0)
     assert 0 <= count <= 2 and 0 <= overlay < 2
     mu = unicorn.Uc(unicorn.UC_ARCH_X86, unicorn.UC_MODE_32)

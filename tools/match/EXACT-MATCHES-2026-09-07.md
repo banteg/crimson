@@ -16,7 +16,7 @@ zero unresolved or mismatched references, and `body_byte_exact=True`.
 
 | Function / evidence | Before | Instructions | Resolved references | Commit |
 |---|---:|---:|---:|---|
-| [player_fire_weapon](scratches/player_fire_weapon/NOTES.md) | 99.2063% | 378/378 | 142 | `27a4a5f35` |
+| [typo_player_update](scratches/typo_player_update/NOTES.md) | 99.2063% | 378/378 | 142 | `27a4a5f35` |
 | [ui_element_render](scratches/ui_element_render/NOTES.md) | 97.8887% | 521/521 | 65 | `8abf3b4c0` |
 | [perk_apply](scratches/perk_apply/NOTES.md) | 99.5851% | 241/241 | 76 | `4cf163f92` |
 | [demo_trial_overlay_render](scratches/demo_trial_overlay_render/NOTES.md) | 98.1132% | 636/636 | 175 | `d6445ad99` |

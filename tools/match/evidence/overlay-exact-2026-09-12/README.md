@@ -1,6 +1,6 @@
 # Exact player overlays
 
-`player_render_overlays` now matches all **1,148 instructions and 4,582 encoded
+`player_render` now matches all **1,148 instructions and 4,582 encoded
 body bytes**, with **340 clean references**, no unresolved or mismatched
 references, and no padding difference. The preceding source had the same
 instruction count and stack homes but two scheduling differences, at 99.303136%.
@@ -63,7 +63,7 @@ UV_CACHE_DIR=/private/tmp/crimson-uv-cache uv run --no-sync --with unicorn==2.1.
 UV_CACHE_DIR=/private/tmp/crimson-uv-cache uv run --no-sync python \
   tools/match/evidence/overlay-exact-2026-09-12/verify_controls.py \
   --out /private/tmp/overlay-exact-controls
-.venv/bin/crimson match mutate tools/match/scratches/player_render_overlays \
-  --spec tools/match/scratches/player_render_overlays/float-sine-vector-reversions-2026-09-12.json \
+.venv/bin/crimson match mutate tools/match/scratches/player_render \
+  --spec tools/match/scratches/player_render/float-sine-vector-reversions-2026-09-12.json \
   --max-changes 3 --max-variants 7 --jobs 6
 ```

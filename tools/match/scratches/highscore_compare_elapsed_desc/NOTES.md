@@ -1,4 +1,4 @@
-# `highscore_compare_rush_field32_desc`
+# `highscore_compare_elapsed_desc`
 
 Exact 32-byte, 13-instruction match with MSVC 6.5 `/O2 /GB`. This is the same
 three-way descending comparator shape as Survival, but it reads

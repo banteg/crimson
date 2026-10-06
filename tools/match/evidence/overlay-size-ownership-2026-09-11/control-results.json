@@ -33,11 +33,11 @@
     "auto_inline_off": [],
     "dependencies": [
       [
-        "scratches/player_render_overlays/scratch.cpp",
+        "scratches/player_render/scratch.cpp",
         "893863b7f9421b1aef6bd0e72818a4f024c49d4190543f0534e5fa84427dd484"
       ],
       [
-        "scratches/player_render_overlays/scratch.conf",
+        "scratches/player_render/scratch.conf",
         "3b8f56e51dfea0059a038ba21899fda22c41f9f71140c8be7957fd2b8ee3ef05"
       ],
       [

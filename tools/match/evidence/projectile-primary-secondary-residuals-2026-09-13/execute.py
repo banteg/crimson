@@ -264,7 +264,7 @@ def run(p, native, case):
             "effect_spawn_splitter_hit_burst",
             "effect_spawn_freeze_shard",
             "projectile_spawn",
-            "sfx_play_exclusive",
+            "music_play_exclusive",
             "D3DXVec2Normalize",
         )
     }
@@ -329,7 +329,7 @@ def run(p, native, case):
                 args = list(arg(counts[name]))
                 args[0] = list(struct.unpack("<2I", uc.mem_read(args[0], 8)))
                 calls.append([name, *args])
-            elif name == "sfx_play_exclusive":
+            elif name == "music_play_exclusive":
                 calls.append([name, *arg(1)])
             elif name == "D3DXVec2Normalize":
                 dst, src = arg(2)

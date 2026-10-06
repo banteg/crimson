@@ -28,7 +28,7 @@ match=98.43% prefix=33/508 target_insns=508 candidate_insns=508 refs=194/0/0
   still plays the click sound; the first broad source draft incorrectly
   skipped that full-buffer sound path.
 - The mode applies perk effects, the native 0.3 time scale, creature and
-  projectile simulation, and the bespoke `player_fire_weapon` loop. It then
+  projectile simulation, and the bespoke `typo_player_update` loop. It then
   forces Shotgun weapon id 3 and ammo 30 for player zero. This evidence also
   corrected an enum-migration regression that had selected Sawed-off Shotgun
   id 4 in both ports.

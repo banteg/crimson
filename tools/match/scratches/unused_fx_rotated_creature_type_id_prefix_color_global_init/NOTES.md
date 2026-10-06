@@ -1,4 +1,4 @@
-# `unused_fx_rotated_effect_id_prefix_color_global_init`
+# `unused_fx_rotated_creature_type_id_prefix_color_global_init`
 
 Native target: `crimsonland.exe` at `0x0041dfc0` (41 bytes).
 

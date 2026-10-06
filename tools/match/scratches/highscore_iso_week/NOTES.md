@@ -1,4 +1,4 @@
-# highscore_date_checksum
+# highscore_iso_week
 
 The native constants and signed division sequence identify the algorithm as a
 Gregorian Julian-day conversion followed by the standard ISO week-number

@@ -129,7 +129,7 @@ void effect_spawn_ion_hit_sparks(const vec2f_t *pos, float scale);
 void effect_spawn_shrinkifier_hit(const vec2f_t *pos);
 void fx_queue_add_random(vec2f_t *pos);
 void creature_handle_death(int creature_id, unsigned char keep_corpse);
-void sfx_play_exclusive(int sfx_id);
+void music_play_exclusive(int sfx_id);
 int fx_spawn_sprite(
     const vec2f_t *pos,
     const vec2f_t *vel,
@@ -785,7 +785,7 @@ extern "C" void projectile_update(void)
                                         && !music_playlist_randomized_latch
                                         && config_game_mode
                                             != GAME_MODE_RUSH) {
-                                        sfx_play_exclusive(
+                                        music_play_exclusive(
                                             music_track_extra_0);
                                     } else {
                                         if (weapon_ammo_class[projectile->pos.tail.vy.type_id]
@@ -1052,7 +1052,7 @@ extern "C" void projectile_update(void)
                     if (!demo_mode_active
                         && !music_playlist_randomized_latch
                         && config_game_mode != GAME_MODE_RUSH) {
-                        sfx_play_exclusive(music_track_extra_0);
+                        music_play_exclusive(music_track_extra_0);
                     } else {
                         sfx_play_panned(
                             sfx_explosion_medium,

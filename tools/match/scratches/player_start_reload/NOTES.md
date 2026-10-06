@@ -4,7 +4,7 @@ Native target: `crimsonland.exe` at `0x00413430` (263 bytes).
 
 The recovered C source matches all 67 normalized instructions and all 28
 masked references. Live Binary Ninja shows four native callers: two in
-`player_update` and two in Typ-o Shooter's `player_fire_weapon`.
+`player_update` and two in Typ-o Shooter's `typo_player_update`.
 
 The helper mutates the overlay-selected player but deliberately obtains
 Ammunition Within and Regression Bullets through `perk_count_get`, whose exact

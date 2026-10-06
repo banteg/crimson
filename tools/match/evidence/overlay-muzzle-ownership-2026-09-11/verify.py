@@ -26,7 +26,7 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     assert observe.parent.unicorn.__version__ == "2.1.4"
     assert sha(match.default_image_path().read_bytes()) == "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
-    config = match.load_scratch_config(match.DEFAULT_MATCH_ROOT / "scratches/player_render_overlays")
+    config = match.load_scratch_config(match.DEFAULT_MATCH_ROOT / "scratches/player_render")
     before = (HERE / "before.cpp").read_bytes()
     assert sha(before) == "df048c95f7ba8cd30ab5b8ac3a4a9ad1ab46b658eea1ff7b6a6e3b1ae24fef2b"
     sources = {"before": before, "current": (args.source or config.directory / config.source).read_bytes()}

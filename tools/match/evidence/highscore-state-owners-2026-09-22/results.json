@@ -2255,7 +2255,7 @@
           "kind": 20,
           "shared": [
             "address:0x0043d550",
-            "name:sfx_mute_all"
+            "name:music_fade_out_all"
           ]
         },
         {
@@ -2273,7 +2273,7 @@
           "kind": 20,
           "shared": [
             "address:0x0043d550",
-            "name:sfx_mute_all"
+            "name:music_fade_out_all"
           ]
         },
         {
@@ -2291,7 +2291,7 @@
           "kind": 20,
           "shared": [
             "address:0x0043d550",
-            "name:sfx_mute_all"
+            "name:music_fade_out_all"
           ]
         },
         {
@@ -5933,7 +5933,7 @@
           "kind": 20,
           "shared": [
             "address:0x0043d550",
-            "name:sfx_mute_all"
+            "name:music_fade_out_all"
           ]
         },
         {
@@ -5951,7 +5951,7 @@
           "kind": 20,
           "shared": [
             "address:0x0043d550",
-            "name:sfx_mute_all"
+            "name:music_fade_out_all"
           ]
         },
         {
@@ -5969,7 +5969,7 @@
           "kind": 20,
           "shared": [
             "address:0x0043d550",
-            "name:sfx_mute_all"
+            "name:music_fade_out_all"
           ]
         },
         {

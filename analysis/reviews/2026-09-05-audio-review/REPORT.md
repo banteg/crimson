@@ -40,7 +40,7 @@ The reproduction starts `gt1_ingame`, mutes, restores volume, and advances 120
 updates. There are zero retained playbacks, the backend remains stopped, and a
 second trigger returns `None` with the first-hit gate still set.
 
-[Recovered `sfx_update_mute_fades`](/Users/banteg/dev/banteg/crimson/tools/match/scratches/sfx_update_mute_fades/scratch.cpp:17)
+[Recovered `music_update_fades`](/Users/banteg/dev/banteg/crimson/tools/match/scratches/music_update_fades/scratch.cpp:17)
 stops the buffer at zero global volume but retains the entry and its unmuted
 flag. Once volume is positive, the same routine resumes the audible entry and
 ramps its volume. Its recovery notes record an exact instruction match.

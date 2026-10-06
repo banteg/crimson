@@ -1,4 +1,4 @@
-# sfx_update_mute_fades
+# music_update_fades
 
 For each loaded music entry, this keeps audible tracks playing, fades muted
 tracks down at half the frame delta, and ramps unmuted tracks toward the music

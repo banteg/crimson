@@ -27,7 +27,7 @@ compiler-listing diagnostics leave matching and acceptance rules unchanged.
 The preceding five-function pass completed the bonus HUD slot, statistics menu, tutorial
 timeline, mods menu, and bonus renderer, recovering 14,045 exact code bytes. Its matcher
 corrections separately recognized existing body identity in console_log_node_free and
-sfx_mute_all; those were not new source matches.
+music_fade_out_all; those were not new source matches.
 
 This follows the [Play Game recovery](scratches/play_game_menu_update/NOTES.md),
 [eight exact recoveries](EXACT-MATCHES-2026-09-07.md),
@@ -209,7 +209,7 @@ phase alone fails. The centroid and random edge-spawn owners remain unchanged.
 
 It joins [play_game_menu_update](scratches/play_game_menu_update/NOTES.md), whose opening
 position and later SDK list-call expression likewise had to change together, plus
-player_fire_weapon, demo_trial_overlay_render, and credits_screen_update. Keep this batch
+typo_player_update, demo_trial_overlay_render, and credits_screen_update. Keep this batch
 ID reserved for its completed group.
 
 <a id="batch-05"></a>
@@ -278,14 +278,14 @@ why the individual changes alone do not match.
 | Function / detailed evidence | Match | Insns C/N | Gap | Ref mismatches | Evidence |
 |---|---:|---:|---:|---:|:---:|
 | [ui_render_hud](scratches/ui_render_hud/NOTES.md) | 92.21% | 1824/1824 | 551 | 0 | A |
-| [player_render_overlays](scratches/player_render_overlays/NOTES.md) | 91.19% | 1144/1148 | 404 | 0 | A |
+| [player_render](scratches/player_render/NOTES.md) | 91.19% | 1144/1148 | 404 | 0 | A |
 
 - **ui_render_hud:** All 1,824 instruction shapes, branches, and 393 references align after
   recovering the quest reset order, heart/ammo/quest position lifetime, and single popup text
   coordinate. The remaining 142 operand differences are stack displacements. Use the verified
   compiler listing to relate those accesses to named values and temporary lifetimes; raw ESP
   displacements alone are not variable identities.
-- **player_render_overlays:** Four native instructions remain absent after the interacting
+- **player_render:** Four native instructions remain absent after the interacting
   recoil/target-direction and shadow/muzzle half-size recoveries. Tint-alpha ownership and stack
   publications remain different. SDK type spelling, color-object call boundaries, and simple
   scalar-lifetime controls do not recover those operations on the tested baselines.

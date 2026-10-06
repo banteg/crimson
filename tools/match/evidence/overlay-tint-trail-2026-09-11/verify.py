@@ -10,7 +10,7 @@ from pathlib import Path
 import runner
 
 HERE = Path(__file__).resolve().parent
-FUNCTION = "player_render_overlays"
+FUNCTION = "player_render"
 probe = runner.probe
 sha, bits, f32 = runner.sha, runner.bits, runner.f32
 

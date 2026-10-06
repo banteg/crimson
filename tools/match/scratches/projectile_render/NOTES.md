@@ -54,7 +54,7 @@ because one of the two additions is a measuring device, not recovered source.
 
 ## K2 alpha object copy recovered (2026-09-26)
 
-The alpha wrapper/tint-constructor pattern from `player_render_overlays`
+The alpha wrapper/tint-constructor pattern from `player_render`
 recovers the native zero store and reload into `esi` before the first two
 color-slot calls. **94.23% to 97.75%**, labels masked **99.20% to 99.40%**,
 references unchanged at **544/0/0**, frame unchanged at **0x19c**. The matching

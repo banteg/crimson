@@ -41,6 +41,9 @@ def _input_path(path: str) -> bool:
         return True
     if path.startswith("crimson-re/src/crimson_re/") and p.suffix == ".py":
         return p.stem.startswith(("match", "library"))
+    if path.startswith("tools/match/evidence/"):
+        # Dated investigation records: nothing evaluated for the report reads them.
+        return False
     if path.startswith(("tools/match/", "tools/native/", "third_party/", "decomp/")):
         return p.suffix in {".c", ".cpp", ".cc", ".h", ".hpp", ".inc", ".conf", ".sh", ".py"} or (
             path.startswith(("tools/native/", "decomp/")) and p.suffix == ".json"

@@ -1,4 +1,4 @@
-# `player_fire_weapon`
+# `typo_player_update`
 
 Native target: `crimsonland.exe` at `0x00444980` (1,518 bytes).
 

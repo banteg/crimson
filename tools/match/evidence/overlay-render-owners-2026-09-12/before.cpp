@@ -124,7 +124,7 @@ struct player_render_tint_t {
     }
 };
 
-extern "C" void player_render_overlays(void)
+extern "C" void player_render(void)
 {
     float transition_alpha = ui_transition_alpha;
     float half_size;

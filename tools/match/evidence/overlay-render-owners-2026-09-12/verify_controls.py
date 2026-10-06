@@ -22,7 +22,7 @@ def main():
     data = json.loads((HERE / "source-controls.json").read_text())
     before = (HERE / "before.cpp").read_text()
     assert parent.sha(before.encode()) == data["before_sha256"]
-    config = parent.match.load_scratch_config(parent.match.DEFAULT_MATCH_ROOT / "scratches/player_render_overlays")
+    config = parent.match.load_scratch_config(parent.match.DEFAULT_MATCH_ROOT / "scratches/player_render")
     rows = []
     for control in data["controls"]:
         source = parent.reconstruct(before, control)

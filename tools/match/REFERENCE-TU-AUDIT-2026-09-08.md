@@ -71,7 +71,7 @@ assembly were inspected, including live Binary Ninja disassembly.
 | `creature_spawn_template` | `0x004340c3` | `+0x35e4` | local code layout | All four retry destinations are +0x11 in the candidate, following preceding code-size differences. |
 | `creature_update_all` | `0x004272fa` | `+0x1047` | operation pairing | Native Toxic Avenger load is paired with the later Veins of Poison load; both perk checks are present. |
 | `creature_update_all` | `0x0042731e` | `+0x1070` | operation pairing | Native second perk_count_get is paired with the later player_take_damage call; both callees occur in each contact path. |
-| `highscore_screen_update` | `0x00442feb` | `+0xbdd` | operation pairing | Three successive sfx_mute_all calls load theme, Shortie Monk, and extra IDs; repeated call sequences pair different members. |
+| `highscore_screen_update` | `0x00442feb` | `+0xbdd` | operation pairing | Three successive music_fade_out_all calls load theme, Shortie Monk, and extra IDs; repeated call sequences pair different members. |
 | `highscore_screen_update` | `0x00442ff6` | `+0xbe8` | operation pairing | Same three-call mute sequence; native extra ID is paired with candidate Shortie Monk ID. |
 | `highscore_screen_update` | `0x0044324e` | `+0xe04` | operation pairing | Native +364 coordinate addition is paired with candidate +32; candidate +364 occurs six instructions later. |
 | `highscore_screen_update` | `0x00443638` | `+0x11fd` | operation pairing | Native list.items (+0x0c) publication is paired with list.selected_index (+8); count and selection stores are reordered. |

@@ -21,7 +21,7 @@ def main():
     source = (HERE / "before.cpp").read_text()
     controls = json.loads((HERE / "source-controls.json").read_text())
     assert parent.sha(source.encode()) == controls["before_sha256"]
-    config = parent.match.load_scratch_config(parent.match.DEFAULT_MATCH_ROOT / "scratches/player_render_overlays")
+    config = parent.match.load_scratch_config(parent.match.DEFAULT_MATCH_ROOT / "scratches/player_render")
     rows = []
     for control in controls["controls"]:
         directory = args.out / control["family"] / control["name"]

@@ -1,4 +1,4 @@
-# sfx_mute_all
+# music_fade_out_all
 
 When audio and music are enabled, clears the randomized-playlist latch, walks
 all 128 ids, and recursively mutes every other currently audible id before

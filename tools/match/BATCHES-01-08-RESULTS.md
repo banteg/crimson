@@ -59,7 +59,7 @@ tested baseline; they do not establish a compiler limitation.
 | 02 | [projectile_spawn](scratches/projectile_spawn/NOTES.md) | [Plan](scratches/projectile_spawn/batch-02-focused-value-boundaries-mutations.json) | 3 | Unchanged |
 | 03 | [highscore_sync_worker](scratches/highscore_sync_worker/NOTES.md) | [Plan](scratches/highscore_sync_worker/request-path-publication-mutations.json) | 10 | WIP improved |
 | 03 | [statistics_update_check_worker](scratches/statistics_update_check_worker/NOTES.md) | [Plan](scratches/statistics_update_check_worker/batch-03-focused-value-boundaries-mutations.json) | 6 | Unchanged |
-| 04 | [player_fire_weapon](scratches/player_fire_weapon/NOTES.md) | [Plan](scratches/player_fire_weapon/batch-04-focused-value-boundaries-mutations.json) | 3 | Unchanged |
+| 04 | [typo_player_update](scratches/typo_player_update/NOTES.md) | [Plan](scratches/typo_player_update/batch-04-focused-value-boundaries-mutations.json) | 3 | Unchanged |
 | 04 | [survival_update](scratches/survival_update/NOTES.md) | [Plan](scratches/survival_update/batch-04-focused-value-boundaries-mutations.json) | 3 | Unchanged |
 | 04 | [play_game_menu_update](scratches/play_game_menu_update/NOTES.md) | [Plan](scratches/play_game_menu_update/batch-04-focused-value-boundaries-mutations.json) | 3 | Unchanged |
 | 04 | [credits_screen_update](scratches/credits_screen_update/NOTES.md) | [Plan](scratches/credits_screen_update/batch-04-focused-value-boundaries-mutations.json) | 3 | Unchanged |
@@ -79,7 +79,7 @@ tested baseline; they do not establish a compiler limitation.
 | 08 | [bonus_hud_slot_update_and_render](scratches/bonus_hud_slot_update_and_render/NOTES.md) | [Plan](scratches/bonus_hud_slot_update_and_render/batch-08-focused-value-boundaries-mutations.json) | 3 | Unchanged |
 | 08 | [bonus_render](scratches/bonus_render/NOTES.md) | [Plan](scratches/bonus_render/batch-08-focused-value-boundaries-mutations.json) | 3 | Unchanged |
 | 08 | [ui_render_hud](scratches/ui_render_hud/NOTES.md) | [Plan](scratches/ui_render_hud/batch-08-focused-value-boundaries-mutations.json) | 3 | Unchanged |
-| 08 | [player_render_overlays](scratches/player_render_overlays/NOTES.md) | [Plan](scratches/player_render_overlays/batch-08-focused-value-boundaries-mutations.json) | 3 | Unchanged |
+| 08 | [player_render](scratches/player_render/NOTES.md) | [Plan](scratches/player_render/batch-08-focused-value-boundaries-mutations.json) | 3 | Unchanged |
 
 ## Validation and commits
 

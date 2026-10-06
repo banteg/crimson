@@ -40,7 +40,7 @@ record each bounded hypothesis and rejected result; these are not impossibility 
 | [survival_update](scratches/survival_update/NOTES.md) | 16 | Unchanged | [Controls](scratches/survival_update/ui-storage-followup-controls-mutations.json) |
 | [demo_trial_overlay_render](scratches/demo_trial_overlay_render/NOTES.md) | 24 | Unchanged | [Controls](scratches/demo_trial_overlay_render/ui-storage-followup-controls-mutations.json) |
 | [unlocked_perks_database_update](scratches/unlocked_perks_database_update/NOTES.md) | 2 | Unchanged | [Controls](scratches/unlocked_perks_database_update/ui-storage-followup-controls-mutations.json) |
-| [player_fire_weapon](scratches/player_fire_weapon/NOTES.md) | 5 | Unchanged | [Controls](scratches/player_fire_weapon/ui-storage-followup-controls-mutations.json) |
+| [typo_player_update](scratches/typo_player_update/NOTES.md) | 5 | Unchanged | [Controls](scratches/typo_player_update/ui-storage-followup-controls-mutations.json) |
 | [quest_select_menu_update](scratches/quest_select_menu_update/NOTES.md) | 6 | Unchanged | [Controls](scratches/quest_select_menu_update/ui-storage-followup-controls-mutations.json) |
 | [perk_apply](scratches/perk_apply/NOTES.md) | 7 | Unchanged | [Controls](scratches/perk_apply/ui-storage-followup-controls-mutations.json) |
 

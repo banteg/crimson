@@ -5,7 +5,7 @@ idiom still needs a native check. This package retains two changes to
 `projectile_render`:
 
 1. Copy the fading beam's direction as a whole `vec2f_t`, as the live beam
-   already does. The exact `player_render_overlays` likewise copies its
+   already does. The exact `player_render` likewise copies its
    direction before normalization. Native `0x42484f..0x424889` copies the
    two stored components with integer loads/stores before normalization.
 2. Compute the chain radius before the Fire Bullets condition. Native
@@ -34,7 +34,7 @@ The retained source SHA-256 is
 
 ## What transferred from the exact code
 
-- `player_render_overlays`: constructed direction, whole-vector copy, then
+- `player_render`: constructed direction, whole-vector copy, then
   normalization. The aggregate-copy change helps here; changing the vector
   type or borrowing a function-level direction-result local is neutral.
 - `creature_render_type`: mixed indexed pool accesses and local pointers.

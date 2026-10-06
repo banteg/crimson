@@ -64,7 +64,7 @@ def main():
     overlay = {}
     overlay_bodies = {}
     for name in ("baseline", "early-living_body_size-01", "early-sprite_size-01"):
-        config, control = controls.reconstruct("player_render_overlays", name, args.out)
+        config, control = controls.reconstruct("player_render", name, args.out)
         obj = match.compile_scratch(config)
         body = match.extract_object_function(match.parse_coff_object(obj.read_bytes()), config.symbol)
         assert controls.parent.sha(body.data) == control["body_sha256"]

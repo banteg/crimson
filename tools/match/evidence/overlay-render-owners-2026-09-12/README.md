@@ -1,6 +1,6 @@
 # Overlay size and target-position ownership
 
-`player_render_overlays` improves from **97.431432% to 99.303136%** under the
+`player_render` improves from **97.431432% to 99.303136%** under the
 unchanged `msvc6.5 /O2 /GB /W3 /GR-` profile. Candidate instructions fall from
 1,149 to the native **1,148**, the exact prefix grows from 9 to **784**, and
 clean references increase from 333 to **338**. No reference debt is introduced.
@@ -44,7 +44,7 @@ hashes, instruction/prefix counts and reference results.
 all **78 controls**, reproducing every recorded metric in
 [control-results.json](control-results.json). The four retained source regions
 also have a complete **15-case reversion matrix** in
-[render-owners-reversions-2026-09-12.json](../../scratches/player_render_overlays/render-owners-reversions-2026-09-12.json).
+[render-owners-reversions-2026-09-12.json](../../scratches/player_render/render-owners-reversions-2026-09-12.json).
 Every partial or full reversion compiles and lowers alignment; reverting all
 four reproduces the preceding 97.431432% result. That sweep is recorded in the
 scratch's `experiments.jsonl`. These matrices bound the tested source forms;
@@ -81,8 +81,8 @@ uv run --no-sync python tools/match/evidence/overlay-render-owners-2026-09-12/ve
 uv run --no-sync --with unicorn==2.1.4 python \
   tools/match/evidence/overlay-render-owners-2026-09-12/verify.py \
   --out /tmp/crimson-overlay-owner-native
-uv run --no-sync crimson match mutate tools/match/scratches/player_render_overlays \
-  --spec tools/match/scratches/player_render_overlays/render-owners-reversions-2026-09-12.json \
+uv run --no-sync crimson match mutate tools/match/scratches/player_render \
+  --spec tools/match/scratches/player_render/render-owners-reversions-2026-09-12.json \
   --max-changes 4 --max-variants 15 --jobs 6
 ```
 

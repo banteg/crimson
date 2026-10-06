@@ -1,7 +1,7 @@
 # Renderer index and living-body ownership controls
 
 This pass tests the ion-chain index lifetime in `projectile_render` and the
-four remaining living-body argument stack accesses in `player_render_overlays`.
+four remaining living-body argument stack accesses in `player_render`.
 **Neither canonical source changes.** No additional exact function, native-link
 credit or runtime bug fix is claimed. The retained scores remain **60.268007%**
 and **97.431432%**, respectively.
@@ -119,7 +119,7 @@ uv run --with unicorn==2.1.4 python \
   tools/match/evidence/render-owner-lifetimes-2026-09-11/verify_ion.py \
   --out /tmp/crimson-render-owner-native
 uv run python tools/match/evidence/overlay-size-ownership-2026-09-11/verify_stack.py \
-  --source /tmp/crimson-render-owner-controls/player_render_overlays/early-living_body_size-01/scratch.cpp \
+  --source /tmp/crimson-render-owner-controls/player_render/early-living_body_size-01/scratch.cpp \
   --out /tmp/crimson-render-owner-stack
 ```
 

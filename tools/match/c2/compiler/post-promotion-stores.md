@@ -5,7 +5,7 @@ This note answers one question about the pinned VC6 back end (C2.DLL 12.00.8966,
 so that the store is still in the output, often dead, while the value itself lives in a register.
 Two scratches need such a store:
 
-- `player_render_overlays` keeps `tint.a` in `esi` and also stores it to `[esp+0x24]`:
+- `player_render` keeps `tint.a` in `esi` and also stores it to `[esp+0x24]`:
   `mov edx, [esp+0x10]; mov esi, edx; mov [esp+0x24], edx`.
 - `quest_spawn_timeline_update` keeps `&entry->template_id` in `edi` and also stores it to the slot
   that `spread` reuses at once: `lea edi, [esi+0xc]; mov [esp+0x10], edi; mov [esp+0x10], ebx`.
@@ -24,7 +24,7 @@ Short version:
 2. Nothing deletes a dead memory store after the global optimizer. The late passes forward loads
    (`late_register_value_cse` 0x10736b27) but never remove the store they forwarded from, and
    `late_stack_temp_forwarding` 0x1073e591 only removes class-3 temporaries.
-3. `player_render_overlays` needs a **4-byte aggregate copy out of an object whose float member was
+3. `player_render` needs a **4-byte aggregate copy out of an object whose float member was
    stored as a float**. A one-member alpha type passed by value reproduces the function byte for byte
    without `memcpy` (§5).
 4. `quest_spawn_timeline_update` needs a **copy of the pointer into a local that has no other
@@ -155,7 +155,7 @@ pushes, which lowering retypes to integer pushes under `/Ot`, and it gets `esi`.
 5. Integers converted to float (`fild`) are stored back and then usually demoted (path H then K), so
    they end up in memory. The timeline's `spread` is this case.
 
-## 5. `player_render_overlays`: plain source
+## 5. `player_render`: plain source
 
 Traced on the canonical scratch (`memcpy(&a, &alpha, sizeof(a))` in the constructor):
 

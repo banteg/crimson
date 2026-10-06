@@ -109,7 +109,7 @@ static __inline float player_render_distance(
     return (float)sqrt(dy * dy + dx * dx);
 }
 
-extern "C" void player_render_overlays(void)
+extern "C" void player_render(void)
 {
     float transition_alpha = ui_transition_alpha;
     float half_size;

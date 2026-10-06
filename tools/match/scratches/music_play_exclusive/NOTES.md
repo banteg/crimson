@@ -1,4 +1,4 @@
-# sfx_play_exclusive
+# music_play_exclusive
 
 Rejects disabled audio, resolves the one-shot randomized playlist sentinel when
 not under plugin control, recursively mutes every other audible track, and only

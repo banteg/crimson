@@ -3,19 +3,19 @@
   "sites": [
     {
       "name": "weapon-unlock-index-expression",
-      "find": "            int quest_index =\n                quest_stage_minor + quest_stage_major * 10 - 11;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                xy.x,\n                xy.y,\n                \"%s\",\n                weapon_table_entry(\n                    quest_selected_meta[quest_index]\n                        .unlock_weapon_id));",
+      "find": "            int quest_index =\n                quest_stage_minor + quest_stage_major * 10 - 11;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                xy.x,\n                xy.y,\n                \"%s\",\n                weapon_name_get(\n                    quest_selected_meta[quest_index]\n                        .unlock_weapon_id));",
       "replacements": [
         {
           "name": "inline-native-order",
-          "text": "            grim_interface_ptr->grim_draw_text_small_fmt(\n                xy.x,\n                xy.y,\n                \"%s\",\n                weapon_table_entry(\n                    quest_selected_meta[\n                        quest_stage_minor\n                        + quest_stage_major * 10\n                        - 11]\n                            .unlock_weapon_id));"
+          "text": "            grim_interface_ptr->grim_draw_text_small_fmt(\n                xy.x,\n                xy.y,\n                \"%s\",\n                weapon_name_get(\n                    quest_selected_meta[\n                        quest_stage_minor\n                        + quest_stage_major * 10\n                        - 11]\n                            .unlock_weapon_id));"
         },
         {
           "name": "inline-major-first-expression",
-          "text": "            grim_interface_ptr->grim_draw_text_small_fmt(\n                xy.x,\n                xy.y,\n                \"%s\",\n                weapon_table_entry(\n                    quest_selected_meta[\n                        quest_stage_major * 10\n                        + quest_stage_minor\n                        - 11]\n                            .unlock_weapon_id));"
+          "text": "            grim_interface_ptr->grim_draw_text_small_fmt(\n                xy.x,\n                xy.y,\n                \"%s\",\n                weapon_name_get(\n                    quest_selected_meta[\n                        quest_stage_major * 10\n                        + quest_stage_minor\n                        - 11]\n                            .unlock_weapon_id));"
         },
         {
           "name": "named-unlock-id",
-          "text": "            int unlock_weapon_id =\n                quest_selected_meta[\n                    quest_stage_minor + quest_stage_major * 10 - 11]\n                        .unlock_weapon_id;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                xy.x,\n                xy.y,\n                \"%s\",\n                weapon_table_entry(unlock_weapon_id));"
+          "text": "            int unlock_weapon_id =\n                quest_selected_meta[\n                    quest_stage_minor + quest_stage_major * 10 - 11]\n                        .unlock_weapon_id;\n            grim_interface_ptr->grim_draw_text_small_fmt(\n                xy.x,\n                xy.y,\n                \"%s\",\n                weapon_name_get(unlock_weapon_id));"
         }
       ]
     },

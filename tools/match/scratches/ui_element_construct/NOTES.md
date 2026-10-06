@@ -1,4 +1,4 @@
-# `ui_template_triplet_reset_and_seed_modes`
+# `ui_element_construct`
 
 Exact 48-byte, 12-instruction match with MSVC 6.5 `/O2 /GB`; the helper has no
 masked references and uses the same `__fastcall`/this-like pointer ABI as the

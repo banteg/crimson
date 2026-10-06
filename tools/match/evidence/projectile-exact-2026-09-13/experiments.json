@@ -892,8 +892,8 @@
         },
         {
           "start_line": 786,
-          "removed": "                                    if (!demo_mode_active\n                                        && !music_playlist_randomized_latch\n                                        && config_game_mode\n                                            != GAME_MODE_RUSH) {\n                                        sfx_play_exclusive(\n                                            music_track_extra_0);\n",
-          "replacement": "                                    if (!demo_mode_active && !music_playlist_randomized_latch\n                                        && config_game_mode != GAME_MODE_RUSH) {\n                                        sfx_play_exclusive(music_track_extra_0);\n"
+          "removed": "                                    if (!demo_mode_active\n                                        && !music_playlist_randomized_latch\n                                        && config_game_mode\n                                            != GAME_MODE_RUSH) {\n                                        music_play_exclusive(\n                                            music_track_extra_0);\n",
+          "replacement": "                                    if (!demo_mode_active && !music_playlist_randomized_latch\n                                        && config_game_mode != GAME_MODE_RUSH) {\n                                        music_play_exclusive(music_track_extra_0);\n"
         },
         {
           "start_line": 794,
