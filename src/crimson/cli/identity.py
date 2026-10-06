@@ -62,3 +62,19 @@ def cmd_identity_import(
     target.parent.mkdir(parents=True, exist_ok=True)
     identity.save(target)
     typer.echo(f"imported key {identity.fingerprint}")
+
+
+@identity_app.command("profile")
+def cmd_identity_profile(base_dir: Path = _BASE_DIR) -> None:
+    """Open your leaderboard profile in the browser, signed in as this game's key (the Profile button's link)."""
+    import webbrowser
+
+    from ..leaderboard import Leaderboard
+
+    leaderboard = Leaderboard(base_dir)
+    try:
+        url = leaderboard.login().result()
+    finally:
+        leaderboard.close("")
+    webbrowser.open(url)
+    typer.echo(f"opened the profile of key {leaderboard.identity.fingerprint}")

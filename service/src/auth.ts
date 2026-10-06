@@ -63,8 +63,13 @@ export async function getLogin(request: Request, env: Env, token: string): Promi
   await env.DB.prepare("INSERT INTO sessions (token_hash, account_id, expires_at) VALUES (?, ?, ?)")
     .bind(await tokenHash(session), link.account_id, now + SESSION_TTL_MS)
     .run();
-  const cookie = `${SESSION_COOKIE}=${session}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_TTL_MS / 1000}`;
+  const cookie = `${SESSION_COOKIE}=${session}; Path=/; HttpOnly;${secure(request)} SameSite=Lax; Max-Age=${SESSION_TTL_MS / 1000}`;
   return new Response(null, { status: 303, headers: { Location: `/players/${link.account_id}`, "Set-Cookie": cookie } });
+}
+
+// Secure everywhere but plain-HTTP local development, where some browsers refuse Secure cookies on localhost.
+export function secure(request: Request): string {
+  return new URL(request.url).protocol === "https:" ? " Secure;" : "";
 }
 
 export function sessionToken(request: Request): string | null {

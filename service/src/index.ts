@@ -1,5 +1,5 @@
 import { confirmMerge, deleteAccount, linkIdentity, unlink } from "./accounts";
-import { getLogin, postChallenge, postLogin, SESSION_COOKIE, sessionAccount, sessionToken, tokenHash } from "./auth";
+import { getLogin, postChallenge, postLogin, SESSION_COOKIE, secure, sessionAccount, sessionToken, tokenHash } from "./auth";
 import { type Env, refuse } from "./http";
 import { authorizeUrl, completeLink, provider } from "./oauth";
 import type { Board } from "./ranked";
@@ -7,7 +7,7 @@ import { postRun } from "./runs";
 import { boardPage, homePage, mergePage, page, privacyPage, profilePage, termsPage } from "./site";
 
 const BOARDS = new Set<Board>(["survival", "quests", "quests-hardcore"]);
-const signedOutCookie = `${SESSION_COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
+const signedOut = (request: Request) => `${SESSION_COOKIE}=; Path=/; HttpOnly;${secure(request)} SameSite=Lax; Max-Age=0`;
 
 function redirect(location: string, headers: HeadersInit = {}): Response {
   return new Response(null, { status: 303, headers: { Location: location, ...headers } });
@@ -86,11 +86,11 @@ export default {
     }
     if (route === "POST /account/delete") {
       await deleteAccount(env, accountId);
-      return page("Deleted", "<p>Your account and its runs are deleted.</p>", 200, { "Set-Cookie": signedOutCookie });
+      return page("Deleted", "<p>Your account and its runs are deleted.</p>", 200, { "Set-Cookie": signedOut(request) });
     }
     if (route === "POST /logout") {
       await env.DB.prepare("DELETE FROM sessions WHERE account_id = ? AND token_hash = ?").bind(accountId, await tokenHash(token)).run();
-      return redirect("/", { "Set-Cookie": signedOutCookie });
+      return redirect("/", { "Set-Cookie": signedOut(request) });
     }
     return page("Not found", "<p>Nothing here.</p>", 404);
   },

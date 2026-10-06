@@ -5,14 +5,23 @@
   "compatibility_date": "2026-08-22",
   "send_metrics": false,
   "routes": [{ "pattern": "crimson.land", "custom_domain": true }],
+  // wrangler dev otherwise presents requests as the route's host; links and OAuth callbacks follow the request's
+  // origin, so local runs must see http://localhost:8787.
+  "dev": { "port": 8787, "host": "localhost:8787" },
   // Verifying an hour of play takes about 11 s of CPU in the WASM core.
   "limits": { "cpu_ms": 300000 },
   "d1_databases": [
-    { "binding": "DB", "database_name": "crimson-land", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
+    { "binding": "DB", "database_name": "crimson-land", "database_id": "24e7de6e-b482-4a73-a9ed-c8359da31665", "migrations_dir": "migrations" }
   ],
   "r2_buckets": [{ "binding": "REPLAYS", "bucket_name": "crimson-land-replays" }],
   // Client IDs are public; each provider's secret is set with `wrangler secret put <PROVIDER>_CLIENT_SECRET`
   // (or in .dev.vars locally). A provider without both stays hidden.
-  "vars": { "GITHUB_CLIENT_ID": "Ov23lirNiNyg92mdYr2z", "DISCORD_CLIENT_ID": "", "X_CLIENT_ID": "" },
-  "observability": { "enabled": true }
+  "vars": {
+    "GITHUB_CLIENT_ID": "Ov23lirNiNyg92mdYr2z",
+    "DISCORD_CLIENT_ID": "1557080813470883900",
+    "X_CLIENT_ID": "UnVGMFJ3SE0zczlxMGpZamhfS1I6MTpjaQ"
+  },
+  // Invocation logs would keep every request URL, OAuth codes and one-time login links among them; the Worker
+  // never logs tokens itself, so only its own console output and errors are kept.
+  "observability": { "enabled": true, "logs": { "invocation_logs": false } }
 }
