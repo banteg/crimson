@@ -226,7 +226,7 @@ def run_game(config: GameConfig) -> None:
         _apply_debug_console_defaults(console, debug=config.debug)
         console.log.log("crimson: boot start")
         console.log.log(f"config: {cfg.display.width}x{cfg.display.height} windowed={cfg.display.windowed}")
-        console.log.log(f"status: {status.path.name} loaded")
+        console.log.log(f"status: {status.path} loaded")
         console.log.log(f"assets: {assets_dir}")
         _require_runtime_assets(assets_dir)
         console.log.log(f"assets: required archives ready ({', '.join(REQUIRED_RUNTIME_PAQS)})")

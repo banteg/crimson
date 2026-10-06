@@ -5,7 +5,7 @@ import msgspec
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
-from crimson.persistence.save_status import GameStatus, load_status
+from crimson.persistence.save_status import GAME_CFG_NAME, GameStatus, load_status
 from crimson.quests.level import QuestLevel
 from crimson.quests.status import quest_completed_counter_index
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
@@ -39,7 +39,7 @@ def _play_until(loop: GameLoopView, screen_type: type, *, stop=lambda: False) ->
 
 
 def _saved(loop: GameLoopView) -> GameStatus:
-    return load_status(loop.state.status.path)
+    return load_status(loop.state.base_dir / GAME_CFG_NAME)
 
 
 def test_completion_is_counted_once_and_saved_before_the_results(loop) -> None:

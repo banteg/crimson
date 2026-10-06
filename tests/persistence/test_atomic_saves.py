@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from crimson.persistence import highscores
-from crimson.persistence.save_status import ensure_game_status, load_status
+from crimson.persistence.save_status import GAME_CFG_NAME, ensure_game_status, load_status
 from grim import atomic_write
 from grim.config import default_crimson_cfg, load_crimson_cfg
 
@@ -44,12 +44,12 @@ def test_status_stays_dirty_until_replacement_succeeds(tmp_path: Path, mocker) -
     with pytest.raises(OSError):
         status.save_if_dirty()
     assert status.dirty
-    assert load_status(status.path).quest_unlock_index == 0
+    assert load_status(tmp_path / GAME_CFG_NAME).quest_unlock_index == 0
 
     mocker.stop(replace)
     status.save_if_dirty()
     assert not status.dirty
-    assert load_status(status.path).quest_unlock_index == 7
+    assert load_status(tmp_path / GAME_CFG_NAME).quest_unlock_index == 7
 
 
 def test_failed_config_save_preserves_previous_settings(tmp_path: Path, mocker) -> None:

@@ -46,4 +46,4 @@ def test_counter_overflow_remains_serializable(tmp_path: Path) -> None:
     assert status.increment_weapon_usage_slot(0) == 0
     assert status.increment_quest_play_count(0) == 0
     status.save()
-    assert load_status(status.path).as_data() == status.as_data()
+    assert load_status(tmp_path / "game.cfg").as_data() == status.as_data()

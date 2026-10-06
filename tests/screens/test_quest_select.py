@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
-from crimson.persistence.save_status import GameStatusData, ensure_game_status, save_status
+from crimson.persistence.save_status import GAME_CFG_NAME, GameStatusData, ensure_game_status, save_status
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, StartRun
 from crimson.screens.quest_views import QuestsMenuView
@@ -22,7 +22,7 @@ def press(loop: GameLoopView, mocker, *keys: int) -> None:
 def open_quest_select(loop: GameLoopView, *, unlock_index: int, unlock_index_hardcore: int) -> QuestsMenuView:
     """The quest menu over a game.cfg that unlocks quests up to the given global indices."""
     state = loop.state
-    save_status(state.status.path, GameStatusData(quest_unlock_index=unlock_index, quest_unlock_index_hardcore=unlock_index_hardcore))
+    save_status(state.base_dir / GAME_CFG_NAME, GameStatusData(quest_unlock_index=unlock_index, quest_unlock_index_hardcore=unlock_index_hardcore))
     state.status = ensure_game_status(state.base_dir)
     loop.navigation.navigate(Route.QUESTS)
     finish_transition(loop)

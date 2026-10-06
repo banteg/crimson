@@ -44,13 +44,25 @@ def test_game_status_edit_persists(tmp_path: Path) -> None:
     status.increment_quest_play_count(7, delta=2)
     status.save_if_dirty()
 
-    reloaded = save_status.load_status(status.path)
+    reloaded = save_status.load_status(tmp_path / save_status.GAME_CFG_NAME)
     assert reloaded.quest_unlock_index == 12
     assert reloaded.quest_unlock_index_hardcore == 34
     assert reloaded.play_time_ms == 0x12345678
     assert reloaded.mode_play_count_for_mode(GameMode.SURVIVAL) == 1
     assert reloaded.weapon_usage_count_slot(5) == 1
     assert reloaded.quest_play_count(7) == 2
+
+
+def test_a_detached_status_never_writes_a_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # A ranked quest's completion saves its status; the ranked run's detached copy must stay in memory.
+    monkeypatch.chdir(tmp_path)
+    status = save_status.GameStatus.detached(save_status.GameStatusData())
+    status.quest_unlock_index = 7
+
+    status.save_if_dirty()
+
+    assert list(tmp_path.iterdir()) == []
+    assert status.quest_unlock_index == 7
 
 
 def test_game_status_weapon_usage_slots_skip_untracked_ids() -> None:
