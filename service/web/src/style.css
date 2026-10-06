@@ -16,6 +16,9 @@ body{margin:0;color:var(--text);background:#0b0a07;
 @keyframes panel-out{to{transform:translateX(calc(-100% - 240px))}}
 @media (prefers-reduced-motion:reduce){.panel,.panel.leaving,.ground{animation:none}.button::before{transition:none}}
 header{display:flex;flex-wrap:wrap-reverse;justify-content:space-between;align-items:center;padding-top:10px}
+/* ui_element_render's shadow pass: the element's silhouette again, 7px right and down, darkening what lies under it by
+   0x44/255 of its alpha, unblurred. drop-shadow composites the same way, the panel's wires included. */
+:root{--shadow:drop-shadow(7px 7px 0 rgb(0 0 0/.267))}.sign img,.panel{filter:var(--shadow)}
 .sign{margin-left:auto;max-width:100%}.sign img{width:512px;max-width:100%;height:auto;display:block}
 /* The game's buttons (ui_button_update): the label centered on the glass, 1px right of center, the hover fill 12px in from
    the sides and 5px down, fading in over 167 ms and out over 250 ms; a click flashes it white. */
