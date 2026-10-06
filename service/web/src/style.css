@@ -17,7 +17,7 @@ body{margin:0;color:var(--text);background:#0b0a07;
 @media (prefers-reduced-motion:reduce){.panel,.panel.leaving,.ground{animation:none}.button::before{transition:none}}
 header{display:flex;flex-wrap:wrap-reverse;justify-content:space-between;align-items:center;padding-top:10px}
 .sign{margin-left:auto;max-width:100%}.sign img{width:512px;max-width:100%;height:auto;display:block}
-/* The game's buttons (ui_button_update): the label 10px down and 1px right of center, the hover fill 12px in from
+/* The game's buttons (ui_button_update): the label centered on the glass, 1px right of center, the hover fill 12px in from
    the sides and 5px down, fading in over 167 ms and out over 250 ms; a click flashes it white. */
 .menu{display:flex;flex-wrap:wrap;padding:0 8px}
 .button{position:relative;width:82px;height:32px;color:rgb(255 255 255/.7);text-align:center;text-decoration:none}
@@ -27,7 +27,7 @@ header{display:flex;flex-wrap:wrap-reverse;justify-content:space-between;align-i
 .button:hover::before,.button.on::before{opacity:1;transition-duration:.167s}.button:active::before{background:#fff}
 .button::after{content:"";position:absolute;inset:0;background:url(/ui/button-sm.png) 0 0/100% 100%}
 .button.wide::after{background-image:url(/ui/button-md.png)}
-.button span{position:relative;z-index:1;display:inline-block;margin:10px 0 0 2px;line-height:16px}
+.button span{position:relative;z-index:1;display:inline-block;margin:8px 0 0 2px;line-height:16px}
 main{padding:6px 40px 4px 178px}
 @media (max-width:900px){main{padding:6px 12px 4px}}
 h2,h3,.quest-menu .label{margin:2px 0 10px;color:var(--label);font:bold 20px/32px "Courier New",Courier,monospace}

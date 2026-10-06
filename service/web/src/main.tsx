@@ -41,13 +41,14 @@ function slideOut(panels: Shown[]): number {
 }
 
 const MENU: { label: string; href: string; on: (path: string) => boolean }[] = [
-  { label: "Boards", href: "/", on: (path) => path === "/" || path === "/boards/survival" },
+  { label: "Survival", href: "/boards/survival", on: (path) => path === "/boards/survival" },
   { label: "Quests", href: "/quests/1", on: (path) => /^\/(?:boards\/)?quests/.test(path) },
   { label: "About", href: "/about", on: (path) => path === "/about" },
 ];
 
 // ui_button_update: a 64x32 plate stretched to 82 px under 40 px of label, else the 128x32 one at 145 px; the label
 // at 70% white, full on hover, over a blue-grey fill that fades in under the plate's glass.
+// The game draws the label's cell 10 px down, its capitals 2 px below the glass's middle; here they sit on it.
 function MenuButton(props: { label: string; href: string; on: boolean }) {
   const [wide, setWide] = createSignal(false);
   let label!: HTMLSpanElement;
