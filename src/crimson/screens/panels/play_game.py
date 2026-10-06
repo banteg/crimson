@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import webbrowser
+from concurrent.futures import Future
+
 import msgspec
 
 from crimson.game_states import GameStateId
@@ -50,11 +53,14 @@ class PlayGameMenuView(PanelMenuView):
     """
 
     _PLAYER_COUNT_LABELS = ("1 player", "2 players", "3 players", "4 players")
-    # The port's row under the native panel holds the Ranked box below every mode tooltip, flush right with the
-    # player-count list.
-    _RANKED_ROW = 28.0
-    _RANKED_Y = 208.0
-    _RANKED_TOOLTIP = "Play for the online leaderboard."
+    # The port's row under the native panel, below every mode tooltip: the Ranked box flush right with the
+    # player-count list and, while it is ticked, the Profile button on the left. The row fits the button's 32px
+    # plate, with the box centred on it.
+    _RANKED_ROW = 40.0
+    _RANKED_Y = 212.0
+    # From the content origin: the plate's visible edge on the mode tips' column, centred on the box's row.
+    _PROFILE_OFFSET = Vec2(-62.0, _RANKED_Y - 8.0)
+    _PROFILE_TOOLTIP = "Open your profile in the browser."
 
     def __init__(self, state: GameState) -> None:
         super().__init__(
@@ -68,6 +74,9 @@ class PlayGameMenuView(PanelMenuView):
         # Native lists two players; the port plays up to four.
         self.player_count_list = UiListWidget(items=self._PLAYER_COUNT_LABELS)
         self.ranked_checkbox = UiCheckbox("Ranked")
+        self.profile_button = UiButtonState("Profile")
+        self._login: Future[str] | None = None
+        self._profile_note = ""
 
         # Hover fade timers for tooltips (0..1000ms-ish; original uses ~0.0009 alpha scale).
         self._tooltip_ms: dict[str, int] = {}
@@ -119,7 +128,7 @@ class PlayGameMenuView(PanelMenuView):
             y += y_step
 
         # Decay timers for modes that aren't visible right now.
-        visible = {m.key for m in entries} | {"ranked"}
+        visible = {m.key for m in entries} | {"ranked", "profile"}
         for key in list(self._tooltip_ms):
             if key in visible:
                 continue
@@ -127,9 +136,9 @@ class PlayGameMenuView(PanelMenuView):
 
         # A ranked attempt is single-player; the list stays shut. The Ranked box follows it in focus order.
         took_list = not self.state.ranked and self._update_player_count(layout.drop_pos, resources=resources)
-        self._update_ranked(
-            self._ranked_pos(layout, resources), resources=resources, mouse=Vec2.from_xy(mouse), click=click, dt_ms=dt_ms,
-        )
+        ranked_pos = self._ranked_pos(layout, resources)
+        self._update_ranked(ranked_pos, resources=resources, mouse=Vec2.from_xy(mouse), click=click, dt_ms=dt_ms)
+        self._update_profile(layout.base_pos + self._PROFILE_OFFSET, resources=resources, mouse=mouse, click=click, dt_ms=dt_ms)
         if took_list or activated is None:
             return
         self._activate_mode(activated)
@@ -158,6 +167,49 @@ class PlayGameMenuView(PanelMenuView):
                 self.state.config.gameplay.player_count = 1
                 self._dirty = True
         self._update_tooltip_timer("ranked", checkbox.hovered, dt_ms)
+
+    def _profile_shown(self) -> bool:
+        return self.state.ranked and self.state.leaderboard is not None
+
+    def _update_profile(
+        self, pos: Vec2, *, resources: RuntimeResources, mouse: rl.Vector2, click: bool, dt_ms: int,
+    ) -> None:
+        """The Profile button opens the leaderboard site signed in as this game's key."""
+        login = self._login
+        if login is not None and login.done():
+            self._login = None
+            if login.exception() is None:
+                webbrowser.open(login.result())
+                self._profile_note = ""
+            else:
+                self._profile_note = "Can't reach the leaderboard."
+        leaderboard = self.state.leaderboard
+        if not self._profile_shown() or leaderboard is None:
+            self._update_tooltip_timer("profile", False, dt_ms)
+            return
+        button = self.profile_button
+        button.enabled = not self.player_count_list.open
+        if button_update(
+            resources, button, focus=self.state.focus, pos=pos, dt_ms=float(dt_ms),
+            mouse=mouse, click=click,
+        ) and self._login is None:
+            self._login = leaderboard.login()
+            self._profile_note = "Opening the leaderboard site..."
+        self._update_tooltip_timer("profile", button.hovered, dt_ms)
+
+    def _port_tooltips(self, entries: list[_PlayGameModeEntry], font: SmallFontData) -> list[tuple[str, str]]:
+        """The Ranked and Profile tips, one line each and no wider than the widest mode tip, so they fit the panel
+        above the bottom row."""
+        width = max(measure_small_text_width(font, mode.tooltip) for mode in entries)
+        name = str(self.state.config.profile.player_name or "")
+        ranked = f"Play for the online leaderboard as {name}."
+        if not name or measure_small_text_width(font, ranked) > width:
+            ranked = "Play for the online leaderboard."
+        profile = self._profile_note or self._PROFILE_TOOLTIP
+        leaderboard = self.state.leaderboard
+        if not self._profile_note and leaderboard is not None and leaderboard.waiting:
+            profile = f"{leaderboard.waiting} run{'s' if leaderboard.waiting != 1 else ''} waiting to upload."
+        return [("ranked", ranked), ("profile", profile)]
 
     def _content_layout(self) -> _PlayGameContentLayout:
         panel_top_left = self._panel_rect(self._panel_element).top_left
@@ -405,7 +457,10 @@ class PlayGameMenuView(PanelMenuView):
                 )
             y += y_step
 
-        ui_checkbox_draw(resources, self.ranked_checkbox, self._ranked_pos(layout, resources), focus=self.state.focus)
+        ranked_pos = self._ranked_pos(layout, resources)
+        ui_checkbox_draw(resources, self.ranked_checkbox, ranked_pos, focus=self.state.focus)
+        if self._profile_shown():
+            button_draw(resources, self.profile_button, focus=self.state.focus, pos=layout.base_pos + self._PROFILE_OFFSET)
         # `play_game_menu_update`: the list widget is drawn before tooltips, so tooltips can overlay it.
         self._draw_player_count(layout.drop_pos, resources=resources)
         self._draw_tooltips(entries, base_pos, y_end, resources=resources)
@@ -459,11 +514,13 @@ class PlayGameMenuView(PanelMenuView):
             "typo": (0.0, -12.0),
             "tutorial": (38.0, 0.0),
         }
-        # Native hand-places each tip roughly centred under the buttons; the port's Ranked tip is centred exactly.
+        # Native hand-places each tip roughly centred under the buttons; the port's tips are centred exactly.
+        port_tips = self._port_tooltips(entries, font)
         button_centre = button_width(resources, self._mode_button_state(entries[0])) * 0.5
-        offsets["ranked"] = (button_centre - measure_small_text_width(font, self._RANKED_TOOLTIP) * 0.5 + 55.0, 0.0)
+        for key, tooltip in port_tips:
+            offsets[key] = (button_centre - measure_small_text_width(font, tooltip) * 0.5 + 55.0, 0.0)
 
-        tips = [(mode.key, mode.tooltip) for mode in entries] + [("ranked", self._RANKED_TOOLTIP)]
+        tips = [(mode.key, mode.tooltip) for mode in entries] + port_tips
         for key, tooltip in tips:
             ms = int(self._tooltip_ms.get(key, 0))
             if ms <= 0:

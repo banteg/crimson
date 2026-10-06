@@ -155,6 +155,10 @@ class UiFocus(msgspec.Struct):
             slot = min(self.count, UI_FOCUS_SLOTS - 1)
         self.candidates[slot] = widget
         self.count = slot + 1
+        if focused:
+            # Port: the focus stays on its widget when the list above it changes length (ticking Ranked drops
+            # three Play Game modes), rather than on a slot that now holds another widget or none.
+            self.index = slot
         return focused
 
     def set(self, widget: object, *, reset_timer: bool = False) -> None:

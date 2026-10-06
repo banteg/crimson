@@ -6,6 +6,7 @@ from crimson.ui.animation import ui_element_timeline_window
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_entry, draw_menu_sign
 from crimson.ui.menu_layout import (
+    MENU_ITEM_OFFSET_Y,
     MENU_LABEL_ROW_BACK,
     MenuEntry,
     back_button_scale,
@@ -47,6 +48,7 @@ class PanelMenuView(MenuScreen):
         self._back_action = back_action
         # Port rows below the native panel: its 3-slice middle stretches and the Back item moves down with it.
         self._panel_grow = panel_grow
+        self._panel_lift = 0.0
         self._entry: MenuEntry | None = None
         self._menu_screen_width = 0
 
@@ -54,10 +56,16 @@ class PanelMenuView(MenuScreen):
         width = int(self.state.config.display.width)
         self._menu_screen_width = width
         scale, rise = back_button_scale(width)
+        back_pos = ui_element_pos(self._back_element, width).offset(dy=self._panel_grow)
+        # Where the grown panel would push Back out of the window (640x480), the panel and Back rise instead, by at
+        # most the growth, so a native layout never moves.
+        item_h = float(require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM).height)
+        back_bottom = back_pos.y + MENU_ITEM_OFFSET_Y * scale - rise + item_h * scale
+        self._panel_lift = min(self._panel_grow, max(0.0, back_bottom - float(self.state.config.display.height)))
         self._entry = MenuEntry(
             element=self._back_element,
             row=MENU_LABEL_ROW_BACK,
-            pos=ui_element_pos(self._back_element, width).offset(dy=self._panel_grow),
+            pos=back_pos.offset(dy=-self._panel_lift),
             scale=scale,
             rise=rise,
         )
@@ -134,7 +142,7 @@ class PanelMenuView(MenuScreen):
 
     def _panel_rect(self, index: int) -> Rect:
         rect = ui_panel_rect(index, self.state.ui.timeline_ms, self._menu_screen_width)
-        return Rect.from_top_left(rect.top_left, rect.width, rect.height + self._panel_grow)
+        return Rect.from_top_left(rect.top_left.offset(dy=-self._panel_lift), rect.width, rect.height + self._panel_grow)
 
     def _draw_panel(self) -> None:
         index = self._panel_element

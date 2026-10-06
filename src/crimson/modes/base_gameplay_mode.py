@@ -26,6 +26,7 @@ from grim.view import ViewContext
 from ..game_modes import GameMode
 from ..game_states import GameStateId
 from ..input_codes import PadCode, pad_nav_pressed
+from ..leaderboard import Leaderboard
 from ..local_input import PAD_AIM_DIST_MUL_DEFAULT, LocalInputInterpreter
 from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import HighScoreRecord
@@ -47,6 +48,7 @@ from ..replay.ranked import (
     RANKED_PAD_AIM_DIST_MUL,
     RANKED_VIEW,
     human_controls,
+    outcome_reasons,
     ranked_run_seed,
     ranked_run_spec,
 )
@@ -116,6 +118,8 @@ class BaseGameplayMode:
         self._console = console
         # The game loop's shared saver writes replays off the frame; without one a run's end writes it inline.
         self.replay_saver: ReplaySaver | None = None
+        # The game loop's leaderboard client: a finished ranked run waits in it for its results screen's name.
+        self.leaderboard: Leaderboard | None = None
         self._base_dir = self.config.path.parent
 
         self.close_requested = False
@@ -657,6 +661,8 @@ class BaseGameplayMode:
             else None,
         )
         self._reset_replay_capture_state(clear_recorder=True)
+        if self.leaderboard is not None and self.ranked_run and not outcome_reasons(replay.run, replay.result):
+            self.leaderboard.hold(replay)
         if self.replay_saver is not None:
             self.replay_saver.submit(job)
             return
@@ -841,6 +847,9 @@ class BaseGameplayMode:
             rng=self.audio_rng,
             mouse=self._ui_mouse_pos(),
         )
+        if action is not None and self.leaderboard is not None:
+            # Leaving the results settles the run's name: the one just typed, or the last one when it didn't qualify.
+            self.leaderboard.release(self._player_name_default())
         if action == ResultAction.PLAY_AGAIN:
             self.open()
             return

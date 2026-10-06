@@ -16,6 +16,7 @@ from grim.raylib_api import rl
 
 from ..debug import set_debug_enabled
 from ..input_codes import GAMEPAD_SLOT_COUNT, gamepad_snapshot, input_code_name, player_gamepad_index
+from ..leaderboard import Leaderboard
 from ..persistence.save_status import ensure_game_status
 from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
 from ..runtime_boot import boot_runtime
@@ -214,6 +215,7 @@ def run_game(config: GameConfig) -> None:
             console=console,
             preserve_bugs=config.preserve_bugs,
             replay_checkpoints=config.replay_checkpoints,
+            leaderboard=Leaderboard(base_dir),
             skip_intro=config.no_intro,
             resources=None,
             audio=None,

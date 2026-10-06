@@ -144,6 +144,10 @@ class QuestResultsView:
             play_sfx=(lambda name: play_sfx(audio.sfx, name)) if audio is not None else None,
             rng=self.state.rng,
         )
+        leaderboard = self.state.leaderboard
+        if action is not None and leaderboard is not None:
+            # Leaving the results settles the run's name: the one just typed, or the last one when it didn't qualify.
+            leaderboard.release(str(self.state.config.profile.player_name or ""))
         if action == ResultAction.PLAY_AGAIN:
             assert self._quest_level is not None
             self._save_quest_selection(self._quest_level)

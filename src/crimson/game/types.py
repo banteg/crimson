@@ -10,6 +10,7 @@ from grim.rand import Crand
 
 from ..game_modes import GameMode
 from ..game_states import GameStateId
+from ..leaderboard import Leaderboard
 from ..paths import default_runtime_dir
 from ..pause_background import PauseBackground
 from ..render.rtx.mode import RtxRenderMode
@@ -112,6 +113,8 @@ class GameState(msgspec.Struct):
     # Play Game menu's Ranked box: Survival and quest runs start from the ranked profile.
     ranked: bool = False
     replay_saver: ReplaySaver = msgspec.field(default_factory=ReplaySaver)
+    # The live game's leaderboard client; headless and test states run without one.
+    leaderboard: Leaderboard | None = None
     typo: TypoSession = msgspec.field(default_factory=TypoSession)
     terrain_regenerate_requested: bool = False
     run_elapsed_ms: float = 0.0

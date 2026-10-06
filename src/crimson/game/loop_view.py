@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 from crimson.screens.chrome import ensure_menu_ground
 from grim import canvas
 from grim.audio import resume_audio, suspend_audio
@@ -103,7 +105,11 @@ class GameLoopView:
         console = self.state.console
         console.handle_hotkey()
         console.update(dt)
-        self._log_replay_saves(self.state.replay_saver.drain())
+        self._log_lines(self.state.replay_saver.drain())
+        leaderboard = self.state.leaderboard
+        if leaderboard is not None:
+            leaderboard.tick(time.monotonic())
+            self._log_lines(leaderboard.drain())
         self._sync_console_elapsed_ms()
         self._handle_console_requests()
         self._sync_rtx_mode()
@@ -292,7 +298,7 @@ class GameLoopView:
     def draw(self) -> None:
         self._draw_with_gamma()
 
-    def _log_replay_saves(self, lines: list[str]) -> None:
+    def _log_lines(self, lines: list[str]) -> None:
         if not lines:
             return
         log = self.state.console.log
@@ -309,6 +315,8 @@ class GameLoopView:
         finally:
             self._close_gamma_resources()
             self.resources.close()
-            self._log_replay_saves(self.state.replay_saver.close())
+            self._log_lines(self.state.replay_saver.close())
+            if self.state.leaderboard is not None:
+                self._log_lines(self.state.leaderboard.close(str(self.state.config.profile.player_name or "")))
             self.state.console.close()
             rl.show_cursor()
