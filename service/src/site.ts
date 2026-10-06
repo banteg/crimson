@@ -10,46 +10,49 @@ export function escape(text: string): string {
   return text.replace(/[&<>"']/g, (ch) => `&#${ch.charCodeAt(0)};`);
 }
 
-// The game's menu look: black panels in a metal frame with a blue top strip, gray text, blue links that light up.
+// The game's menus: its own sign, panel frame, quest label, stage icons and checkboxes (scripts/assets.py exports
+// them from crimson.paq) over its terrain, with the menu's label blue and quest-row colors.
 const STYLE = `
-:root{--panel:#050505;--frame:#484848;--strip:#2f7fb5;--text:#b3b3b3;--label:#696969;--link:#2c6e92;--hover:#46b4f0}
-body{margin:0;background:#1e1b13 radial-gradient(circle at 30% 20%,#2b2617,#15130d 70%) fixed;color:var(--text);
-  font:13px/1.65 Verdana,Tahoma,sans-serif;letter-spacing:.2px}
-main{max-width:820px;margin:0 auto;padding:20px 16px}
-h1{margin:8px 0 18px;font:700 34px/1 Impact,"Arial Narrow",sans-serif;letter-spacing:3px;text-transform:uppercase}
-h1 a{color:#c9262c;text-decoration:none;text-shadow:0 2px 0 #3a0a0c,0 0 12px rgba(201,38,44,.35)}
-h2,h3{margin:4px 0 12px;color:var(--hover);font:700 15px/1.3 "Arial Narrow",Verdana,sans-serif;letter-spacing:2px;text-transform:uppercase}
-a{color:var(--link)}a:hover{color:var(--hover)}
-.panel{background:var(--panel);border:2px solid var(--frame);border-top:3px solid var(--strip);border-radius:6px;
-  box-shadow:inset 0 0 0 1px #111,0 8px 24px rgba(0,0,0,.6);padding:14px 20px;margin-bottom:18px}
-table{width:100%;border-collapse:collapse}td,th{padding:3px 6px;text-align:left;border-bottom:1px solid #161616}
-th{color:var(--label);font-weight:400}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
-.muted{color:var(--label)}
-img.avatar{width:20px;height:20px;border-radius:50%;vertical-align:middle;margin-right:6px}img.avatar.heading{width:40px;height:40px}
-a.name{font-weight:700;color:#ddd;text-decoration:none}a.name:hover{color:var(--hover)}
+:root{--text:#e6e6e6;--label:#b3b3b3;--dim:#7d7d7d;--heading:#2089c6;--row:rgba(70,180,240,.6);--row-on:rgb(70,180,240);
+  --row-hardcore:rgba(250,70,60,.6);--row-hardcore-on:rgb(250,70,60)}
+body{margin:0;color:var(--text);background:linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.3)),url(/ui/terrain.png) 0 0/256px repeat #141109;
+  font:12px/1.7 Verdana,Tahoma,sans-serif;letter-spacing:.2px}
+main{max-width:720px;margin:0 auto;padding:12px 16px 24px 16px}
+header{text-align:center;margin:0 0 6px}header img{width:512px;max-width:100%;height:auto;display:inline-block}
+h2,h3{margin:2px 0 10px;color:var(--heading);font:700 16px/1.3 "Arial Narrow","Helvetica Neue",sans-serif;letter-spacing:2px;text-transform:uppercase}
+a{color:var(--row-on)}a:hover{color:#8fd3ff}
+.panel{position:relative;z-index:0;margin:0 0 20px;padding:4px 14px 6px;border:solid transparent;border-width:18px 19px 19px 14px;
+  border-image:url(/ui/panel.png) 18 19 19 14 fill stretch}
+@media (min-width:1000px){.panel::before{content:"";position:absolute;z-index:-1;left:-192px;top:-2px;width:192px;height:50px;
+  background:url(/ui/wires.png) no-repeat}}
+table{width:100%;border-collapse:collapse}td,th{padding:2px 6px;text-align:left}tr+tr td{border-top:1px solid #151515}
+th{color:var(--dim);font-weight:400}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.muted{color:var(--dim)}
+img.avatar{width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:6px}img.avatar.heading{width:36px;height:36px}
+a.name{font-weight:700;color:var(--text);text-decoration:none}a.name:hover{color:var(--row-on)}
 .links{margin-left:4px}.links .muted{margin-right:6px;font-weight:400}
-a.provider{color:var(--label);margin-right:6px;text-decoration:none;white-space:nowrap}a.provider:hover{color:var(--hover)}
-svg.icon{width:14px;height:14px;fill:currentColor;vertical-align:-1px}h2 svg.icon{width:18px;height:18px}
+a.provider{color:var(--dim);margin-right:6px;text-decoration:none;white-space:nowrap}a.provider:hover{color:var(--text)}
+svg.icon{width:13px;height:13px;fill:currentColor;vertical-align:-1px}h2 svg.icon{width:17px;height:17px}
 h2 a.name,h2 .links,.fingerprint{text-transform:none}h2 .avatar+a.name{font-size:18px;letter-spacing:.5px}
-.fingerprint{font-size:13px;font-weight:400;letter-spacing:0}
-button{background:#1b1b1b;color:var(--text);border:1px solid var(--frame);border-radius:3px;padding:3px 12px;cursor:pointer;font:inherit}
+.fingerprint{font-size:12px;font-weight:400;letter-spacing:0}
+button{background:#1b1b1b;color:var(--label);border:1px solid #484848;border-radius:3px;padding:2px 12px;cursor:pointer;font:inherit}
 button:hover{color:#fff;border-color:#777}button.danger{border-color:#6a2a2a;color:#e88}form.inline{display:inline}
-.quest-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.quest-head .label{color:var(--label);font:700 18px/1 "Arial Narrow",sans-serif;letter-spacing:3px}
-.stages a{display:inline-block;min-width:30px;margin-right:6px;padding:2px 6px;border-radius:50%/40%;text-align:center;
-  font:700 15px/1.2 "Times New Roman",serif;color:#cfcfcf;text-decoration:none;background:linear-gradient(#4a4a4a,#1d1d1d);border:1px solid #555}
-.stages a.on{color:#fff8dc;background:linear-gradient(#d8b25a,#6b4f15);border-color:#c9a245}
-.hardcore{float:right;color:var(--text);text-decoration:none}.hardcore .box{display:inline-block;width:11px;height:11px;margin-right:7px;
-  border:1px solid #bbb;vertical-align:-1px}.hardcore .box.on{background:var(--hover);box-shadow:inset 0 0 0 2px var(--panel)}
-ol.quests{list-style:none;margin:10px 0 2px;padding:0 0 0 18px}ol.quests li{margin:1px 0}
-ol.quests .n{display:inline-block;width:42px}ol.quests a.on{color:var(--hover)}ol.quests .count{margin-left:8px}
-footer{margin-top:10px;font-size:12px}footer a{color:var(--label)}`;
+.quest-head{display:flex;align-items:center;gap:6px}.quest-head img.label{opacity:.7;margin-right:18px}
+.stages a{display:inline-block;width:36px;text-align:center}.stages img{width:32px;height:32px;opacity:.7;transform:scale(.8)}
+.stages a:hover img{opacity:.8}.stages a.on img{opacity:1;transform:none}
+.hardcore{display:block;text-align:right;margin:-4px 0 4px;color:var(--label);text-decoration:none}.hardcore:hover{color:#fff}
+.hardcore img{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
+ol.quests{list-style:none;margin:0 0 6px;padding:0 0 0 22px}ol.quests li{height:20px}
+ol.quests a{color:var(--row);text-decoration:none;border-bottom:1px solid}ol.quests a:hover,ol.quests a.on{color:var(--row-on)}
+.hardcore-on ol.quests a{color:var(--row-hardcore)}.hardcore-on ol.quests a:hover,.hardcore-on ol.quests a.on{color:var(--row-hardcore-on)}
+ol.quests .n{display:inline-block;width:34px}ol.quests .count{margin-left:10px;color:var(--dim)}
+footer{text-align:center;font-size:11px;color:var(--dim)}footer a{color:var(--label)}`;
 
 export function page(title: string, panels: string | string[], status = 200, headers: HeadersInit = {}): Response {
   const body = (Array.isArray(panels) ? panels : [panels]).map((panel) => `<section class="panel">${panel}</section>`).join("");
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escape(title)} · crimson.land</title><style>${STYLE}</style></head><body><main>
-<h1><a href="/">crimson.land</a></h1>${body}
+<header><a href="/"><img src="/ui/sign.png" width="512" height="128" alt="Crimsonland"></a></header>${body}
 <footer><a href="/">Boards</a> · <a href="/quests/1">Quests</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/banteg/crimson">Source</a></footer>
 </main></body></html>`;
   return new Response(html, { status, headers: { "content-type": "text/html; charset=utf-8", ...headers } });
@@ -187,16 +190,19 @@ async function questMenu(env: Env, stage: number, hardcore: boolean, current = "
   const players = new Map(results.map((row) => [row.quest, row.players]));
   const menu = hardcore ? "quests-hardcore" : "quests";
   const toggle = current ? `/boards/${hardcore ? "quests" : "quests-hardcore"}/${current}` : `/${hardcore ? "quests" : "quests-hardcore"}/${stage}`;
-  const tabs = STAGES.map((numeral, i) => `<a class="${i + 1 === stage ? "on" : ""}" href="/${menu}/${i + 1}">${numeral}</a>`).join("");
+  const tabs = STAGES.map(
+    (numeral, i) => `<a class="${i + 1 === stage ? "on" : ""}" href="/${menu}/${i + 1}"><img src="/ui/stage${i + 1}.png" alt="${numeral}"></a>`,
+  ).join("");
   const rows = Array.from({ length: 10 }, (_, i) => {
     const quest = `${stage}.${i + 1}`;
     const count = players.get(quest);
     return `<li><a class="${quest === current ? "on" : ""}" href="/boards/${board}/${quest}"><span class="n">${quest}</span>${escape(QUEST_TITLES[quest]!)}</a>${
-      count ? `<span class="muted count">${count}</span>` : ""
+      count ? `<span class="count">${count}</span>` : ""
     }</li>`;
   }).join("");
-  return `<div class="quest-head"><span class="label">QUEST:</span><nav class="stages">${tabs}</nav></div>
-<a class="hardcore" href="${toggle}"><span class="box${hardcore ? " on" : ""}"></span>Hardcore</a><ol class="quests">${rows}</ol>`;
+  return `<div class="${hardcore ? "hardcore-on" : ""}"><div class="quest-head"><img class="label" src="/ui/quest.png" width="64" height="32" alt="Quest:">
+<nav class="stages">${tabs}</nav></div><a class="hardcore" href="${toggle}"><img src="/ui/check-${hardcore ? "on" : "off"}.png" alt="">Hardcore</a>
+<ol class="quests">${rows}</ol></div>`;
 }
 
 export async function homePage(env: Env): Promise<Response> {

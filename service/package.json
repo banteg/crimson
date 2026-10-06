@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "assets": "cd .. && uv run python service/scripts/assets.py",
+    "deploy": "npm run assets && wrangler deploy",
     "test": "vitest run",
     "check": "tsc --noEmit"
   },

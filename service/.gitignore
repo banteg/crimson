@@ -1,3 +1,5 @@
 node_modules/
 .wrangler/
 .dev.vars
+# Game art, exported from crimson.paq by scripts/assets.py.
+public/ui/

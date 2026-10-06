@@ -2,6 +2,8 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "crimson-land",
   "main": "src/index.ts",
+  // The game's art (scripts/assets.py), served before the Worker sees the request.
+  "assets": { "directory": "./public" },
   "compatibility_date": "2026-08-22",
   "send_metrics": false,
   "routes": [{ "pattern": "crimson.land", "custom_domain": true }],
