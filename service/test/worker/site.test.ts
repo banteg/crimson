@@ -53,6 +53,17 @@ describe("pages", () => {
     }
   });
 
+  it("the site answers only over HTTPS, except plain-HTTP localhost for wrangler dev", async () => {
+    const plain = (url: string, init: RequestInit = {}) => worker.fetch(new Request(url, { redirect: "manual", ...init }), configured);
+
+    const get = await plain("http://crimson.land/privacy?x=1");
+    expect([get.status, get.headers.get("location")]).toEqual([301, "https://crimson.land/privacy?x=1"]);
+    expect((await plain("http://crimson.land/api/runs", { method: "POST", body: "{}" })).status).toBe(308);
+    expect((await call("/privacy")).headers.get("strict-transport-security")).toContain("max-age=31536000");
+    const local = await plain("http://localhost:8787/privacy");
+    expect([local.status, local.headers.has("strict-transport-security")]).toEqual([200, false]);
+  });
+
   it("a provider shows only with both its client ID and secret", async () => {
     const { cookie, accountId } = await signIn();
     const page = async (bindings: typeof env) => (await call(`/players/${accountId}`, { headers: { cookie } }, bindings)).text();

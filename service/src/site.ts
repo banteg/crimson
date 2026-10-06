@@ -158,7 +158,7 @@ export async function profilePage(env: Env, accountId: number, viewer: number | 
   const own = viewer === accountId ? accountControls(env, player) : "";
   return page(
     player.name || player.fingerprint,
-    `${notice ? `<p>${escape(notice)}</p>` : ""}<h2>${playerName(player, false)} <span class="muted">· ${player.fingerprint}</span></h2>${links}${history}<h2>Runs</h2>${table}${own}`,
+    `${notice ? `<p>${escape(notice)}</p>` : ""}<h2>${playerName(player, false)}${player.name && !player.name_hidden ? ` <span class="muted">· ${player.fingerprint}</span>` : ""}</h2>${links}${history}<h2>Runs</h2>${table}${own}`,
   );
 }
 
