@@ -10,18 +10,35 @@ body{margin:0;color:var(--text);background:#0b0a07;
   background-position:center top;background-repeat:no-repeat;animation:ground-in .5s linear}
 @keyframes ground-in{from{opacity:0}}
 /* The game's menu timeline: panels slide in from the left one after another, and back out in reverse. */
-.panel{animation:panel-in .3s linear both;animation-delay:calc(var(--i) * 100ms)}
-.leaving .panel{animation:panel-out .3s linear both;animation-delay:calc((var(--n) - 1 - var(--i)) * 100ms)}
+.panel{animation:panel-in .3s linear both;animation-delay:calc(var(--in) * 100ms)}
+.panel.leaving{animation:panel-out .3s linear both;animation-delay:calc(var(--out) * 100ms)}
 @keyframes panel-in{from{transform:translateX(calc(-100% - 240px))}}
 @keyframes panel-out{to{transform:translateX(calc(-100% - 240px))}}
-@media (prefers-reduced-motion:reduce){.panel,.leaving .panel,.ground{animation:none}}
-header{text-align:right;padding-top:10px}header img{width:512px;max-width:100%;height:auto;display:inline-block;vertical-align:top}
+@media (prefers-reduced-motion:reduce){.panel,.panel.leaving,.ground{animation:none}.button::before{transition:none}}
+header{display:flex;flex-wrap:wrap-reverse;justify-content:space-between;align-items:center;padding-top:10px}
+.sign{margin-left:auto;max-width:100%}.sign img{width:512px;max-width:100%;height:auto;display:block}
+/* The game's buttons (ui_button_update): the label 10px down and 1px right of center, the hover fill 12px in from
+   the sides and 5px down, fading in over 167 ms and out over 250 ms; a click flashes it white. */
+.menu{display:flex;flex-wrap:wrap;padding:0 8px}
+.button{position:relative;width:82px;height:32px;color:rgb(255 255 255/.7);text-align:center;text-decoration:none}
+.button.wide{width:145px}.button:hover,.button.on{color:#fff}
+.button::before{content:"";position:absolute;left:12px;right:12px;top:5px;height:22px;background:rgb(128 128 178);opacity:0;
+  transition:opacity .25s linear}
+.button:hover::before,.button.on::before{opacity:1;transition-duration:.167s}.button:active::before{background:#fff}
+.button::after{content:"";position:absolute;inset:0;background:url(/ui/button-sm.png) 0 0/100% 100%}
+.button.wide::after{background-image:url(/ui/button-md.png)}
+.button span{position:relative;z-index:1;display:inline-block;margin:10px 0 0 2px;line-height:16px}
 main{padding:6px 40px 4px 178px}
 @media (max-width:900px){main{padding:6px 12px 4px}}
 h2,h3,.quest-menu .label{margin:2px 0 10px;color:var(--label);font:bold 20px/32px "Courier New",Courier,monospace}
 h3{font-size:17px;line-height:26px;margin-top:14px}
 /* The small font has no bold: emphasis is brighter, and code stays in the text's own font. */
 em,strong,b{font-style:normal;font-weight:400;color:#fff}code{font:inherit;color:#fff}
+/* Commands in the game console's colors (grim/console.py): white mono text on its blue, inside its border. */
+code.command{position:relative;padding:1px 6px;background:rgb(36 48 74);border:1px solid rgb(56 68 94);cursor:copy;white-space:nowrap;
+  font:bold 14px/18px "Courier New",Courier,monospace}code.command:hover{border-color:rgb(110 130 170)}
+code.command.copied::after{content:"copied";position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);
+  padding:0 6px;background:rgb(36 48 74);border:1px solid rgb(56 68 94);font:16px/18px "Crimson Small",Arial,sans-serif}
 .notice{color:#fff}ul.providers{padding-left:20px}ul{padding-left:20px}
 td.n,.count,.score{font:bold 14px/20px "Courier New",Courier,monospace;white-space:nowrap}
 a{color:var(--row-on)}a:hover{color:#8fd3ff}

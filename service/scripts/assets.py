@@ -1,5 +1,5 @@
 """Write the site's game art to service/public/ui/ from crimson.paq: the sign, the menu panel's frame and wires, the
-quest screen's label, stage icons and checkboxes, and the terrain textures the browser stamps the ground with. The files are generated, not checked in;
+button plates, the quest screen's label, stage icons and checkboxes, and the terrain textures the browser stamps the ground with. The files are generated, not checked in;
 `npm run deploy` writes them first.
 
 Run from the repository root: uv run python service/scripts/assets.py [--assets artifacts/assets]
@@ -38,6 +38,8 @@ def main() -> None:
         "panel.png": panel.crop(PANEL_FRAME),
         "wires.png": panel.crop(PANEL_WIRES),
         "check-on.png": image("ui/ui_checkOn.tga"),
+        "button-sm.png": image("ui/ui_button_64x32.jaz"),
+        "button-md.png": image("ui/ui_button_128x32.jaz"),
         "check-off.png": image("ui/ui_checkOff.tga"),
         # Terrain textures by the game's slot number (src/crimson/terrain_slots.py): base, then overlay, per quest stage.
         **{f"ter{2 * q + layer}.png": image(f"ter/ter_q{q + 1}_{'base' if layer == 0 else 'tex1'}.tga") for q in range(4) for layer in (0, 1)},

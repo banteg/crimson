@@ -1,6 +1,7 @@
-import { createSignal, For, Show } from "solid-js";
+import { type Accessor, createSignal, For, onMount, type Setter, Show } from "solid-js";
 import { render } from "solid-js/web";
-import { type Navigator, resolve, type Screen } from "./pages";
+import { get } from "./api";
+import { type Navigator, type Panel, resolve, type Screen } from "./pages";
 import "./style.css";
 import { drawGround } from "./terrain/draw";
 
@@ -17,10 +18,52 @@ interface Layer {
   height: number;
 }
 
+// A panel on screen: its content, its place in the slide-in order, and its place in the slide-out order while it leaves.
+interface Shown {
+  key: string | undefined;
+  panel: Accessor<Panel>;
+  setPanel: Setter<Panel>;
+  enter: number;
+  out: Accessor<number | null>;
+  setOut: Setter<number | null>;
+}
+
+function shown(panel: Panel, enter: number): Shown {
+  const [current, setPanel] = createSignal<Panel>(panel);
+  const [out, setOut] = createSignal<number | null>(null);
+  return { key: panel.key, panel: current, setPanel, enter, out, setOut };
+}
+
+// Slide panels out, the last one first, and resolve once the last of them is gone.
+function slideOut(panels: Shown[]): number {
+  panels.forEach((panel, i) => panel.setOut(panels.length - 1 - i));
+  return panels.length ? SLIDE_MS + (panels.length - 1) * STAGGER_MS : 0;
+}
+
+const MENU: { label: string; href: string; on: (path: string) => boolean }[] = [
+  { label: "Boards", href: "/", on: (path) => path === "/" || path === "/boards/survival" },
+  { label: "Quests", href: "/quests/1", on: (path) => /^\/(?:boards\/)?quests/.test(path) },
+  { label: "About", href: "/about", on: (path) => path === "/about" },
+];
+
+// ui_button_update: a 64x32 plate stretched to 82 px under 40 px of label, else the 128x32 one at 145 px; the label
+// at 70% white, full on hover, over a blue-grey fill that fades in under the plate's glass.
+function MenuButton(props: { label: string; href: string; on: boolean }) {
+  const [wide, setWide] = createSignal(false);
+  let label!: HTMLSpanElement;
+  onMount(() => void document.fonts.ready.then(() => setWide(label.offsetWidth >= 40)));
+  return (
+    <a class="button" classList={{ wide: wide(), on: props.on }} href={props.href}>
+      <span ref={label}>{props.label}</span>
+    </a>
+  );
+}
+
 function App() {
-  const [screen, setScreen] = createSignal<Screen | null>(null);
-  const [leaving, setLeaving] = createSignal(false);
+  const [panels, setPanels] = createSignal<Shown[]>([]);
   const [grounds, setGrounds] = createSignal<Layer[]>([]);
+  const [path, setPath] = createSignal(location.pathname);
+  const [me, setMe] = createSignal<number | null>(null);
   let navigation = 0;
   let groundKey: string | null = null;
   // Pages without a quest keep one random ground for the visit; a reload rolls a new one, as the game does.
@@ -36,23 +79,39 @@ function App() {
     setGrounds((layers) => [...layers.slice(-1), { id: navigation * 1000 + layers.length, ...ground }]);
   }
 
+  // Unkeyed panels start leaving at once; a keyed one waits for the next screen, and stays if it is there in the same
+  // place.
   async function go(path: string, history_: "push" | "replace" | "none", animate = true) {
     const id = ++navigation;
     const url = new URL(path, location.href);
     if (history_ === "push") history.pushState(null, "", url);
     else if (history_ === "replace") history.replaceState(null, "", url);
-    const current = screen();
-    const out = animate && motion() && current ? SLIDE_MS + (current.panels.length - 1) * STAGGER_MS : 0;
-    if (out) setLeaving(true);
-    const [next] = await Promise.all([
-      resolve(url, nav).catch(() => ({ title: "Error", quest: null, panels: [() => <p>The leaderboard could not be reached.</p>] })),
-      sleep(out),
-    ]);
+    setPath(url.pathname);
+    void get<{ account: number | null }>("/api/me").then((answer) => setMe(answer!.account));
+    const moving = animate && motion();
+    const old = panels();
+    const started = performance.now();
+    const early = moving ? slideOut(old.filter((panel) => panel.key === undefined)) : 0;
+    const next = await resolve(url, nav).catch(
+      (): Screen => ({ title: "Error", quest: null, panels: [() => <p>The leaderboard could not be reached.</p>] }),
+    );
+    if (id !== navigation) return;
+    const stays = (panel: Shown, i: number) => panel.key !== undefined && next.panels[i]?.key === panel.key;
+    const late = moving ? slideOut(old.filter((panel, i) => panel.key !== undefined && !stays(panel, i))) : 0;
+    await sleep(Math.max(early - (performance.now() - started), late));
     if (id !== navigation) return;
     document.title = next.title ? `${next.title} · crimson.land` : "crimson.land";
     if (animate) window.scrollTo(0, 0);
-    setScreen(next);
-    setLeaving(false);
+    let entering = 0;
+    setPanels(
+      next.panels.map((panel, i) => {
+        const kept = old[i];
+        if (!kept || !stays(kept, i)) return shown(panel, entering++);
+        kept.setPanel(() => panel);
+        kept.setOut(null);
+        return kept;
+      }),
+    );
     void showGround(next.quest);
   }
 
@@ -73,31 +132,30 @@ function App() {
   void go(here(), "none");
 
   return (
-    <div class="screen" classList={{ leaving: leaving() }}>
+    <div class="screen">
       <For each={grounds()}>
         {(layer) => <div class="ground" style={{ "background-image": `url(${layer.url})`, "background-size": `1024px ${layer.height}px` }} />}
       </For>
       <header>
-        <a href="/">
+        <nav class="menu">
+          <For each={MENU}>{(item) => <MenuButton label={item.label} href={item.href} on={item.on(path())} />}</For>
+          <Show when={me()}>{(id) => <MenuButton label="Profile" href={`/players/${id()}`} on={path() === `/players/${id()}`} />}</Show>
+        </nav>
+        <a class="sign" href="/">
           <img src="/ui/sign.png" width="512" height="128" alt="Crimsonland" />
         </a>
       </header>
       <main>
-        <Show when={screen()}>
-          {(current) => (
-            <For each={current().panels}>
-              {(panel, i) => (
-                <section class="panel" style={{ "--i": i(), "--n": current().panels.length }}>
-                  {panel()}
-                </section>
-              )}
-            </For>
+        <For each={panels()}>
+          {(shown) => (
+            <section class="panel" classList={{ leaving: shown.out() !== null }} style={{ "--in": shown.enter, "--out": shown.out() ?? 0 }}>
+              {shown.panel()()}
+            </section>
           )}
-        </Show>
+        </For>
       </main>
       <footer>
-        <a href="/">Boards</a> · <a href="/quests/1">Quests</a> · <a href="/about">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> ·{" "}
-        <a href="https://github.com/banteg/crimson">GitHub</a>
+        <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/banteg/crimson">GitHub</a>
       </footer>
     </div>
   );

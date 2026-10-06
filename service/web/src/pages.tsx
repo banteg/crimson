@@ -1,4 +1,4 @@
-import { For, type JSX, Show } from "solid-js";
+import { createSignal, For, type JSX, Show } from "solid-js";
 import type { Board, BoardView, JoinView, ProfileView, QuestMenuView } from "../../src/api-types";
 import { get, post } from "./api";
 import { PlayerName, PROVIDER_LABELS } from "./players";
@@ -8,8 +8,13 @@ import { PlayerName, PROVIDER_LABELS } from "./players";
 export interface Screen {
   title: string | null;
   quest: string | null;
-  panels: (() => JSX.Element)[];
+  panels: Panel[];
 }
+
+// A keyed panel stays on screen, its content updated in place, when the next screen has it in the same place: the
+// quest menu holds still while its stage, hardcore box or quest changes.
+export type Panel = (() => JSX.Element) & { key?: string };
+const keep = (key: string, panel: () => JSX.Element): Panel => Object.assign(panel, { key });
 
 export interface Navigator {
   go(path: string, replace?: boolean): void;
@@ -107,6 +112,21 @@ function QuestMenu(props: { view: QuestMenuView; current?: string }) {
   );
 }
 
+// A command to type, in the game console's colors; a click copies it.
+function Command(props: { children: string }) {
+  const [copied, setCopied] = createSignal(false);
+  const copy = async () => {
+    await navigator.clipboard.writeText(props.children);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
+  };
+  return (
+    <code class="command" classList={{ copied: copied() }} title="Copy" onClick={copy}>
+      {props.children}
+    </code>
+  );
+}
+
 function notFound(): Screen {
   return { title: "Not found", quest: null, panels: [() => <p>Nothing here.</p>] };
 }
@@ -175,7 +195,7 @@ async function board(boardName: Board, quest: string): Promise<Screen> {
     title: view!.title,
     quest,
     panels: [
-      () => <QuestMenu view={menu!} current={quest} />,
+      keep("quest-menu", () => <QuestMenu view={menu!} current={quest} />),
       () => (
         <>
           <h2>{view!.title}</h2>
@@ -188,7 +208,7 @@ async function board(boardName: Board, quest: string): Promise<Screen> {
 
 async function quests(boardName: "quests" | "quests-hardcore", stage: number): Promise<Screen> {
   const menu = (await get<QuestMenuView>(`/api/quests/${boardName}/${stage}`))!;
-  return { title: `Quests ${STAGES[stage - 1]}`, quest: `${stage}.1`, panels: [() => <QuestMenu view={menu} />] };
+  return { title: `Quests ${STAGES[stage - 1]}`, quest: `${stage}.1`, panels: [keep("quest-menu", () => <QuestMenu view={menu} />)] };
 }
 
 function AccountControls(props: { profile: ProfileView; nav: Navigator }) {
@@ -371,7 +391,7 @@ const ABOUT: Screen = {
         </p>
         <h3>Play</h3>
         <p>
-          Install <a href="https://docs.astral.sh/uv/getting-started/installation/">uv</a>, then run <em>uvx crimsonland@latest</em>. The
+          Install <a href="https://docs.astral.sh/uv/getting-started/installation/">uv</a>, then run <Command>uvx crimsonland@latest</Command>. The
           game downloads the original art and sound on first launch, distributed with permission from 10tons.
         </p>
       </>
@@ -411,8 +431,8 @@ const ABOUT: Screen = {
         </p>
         <h3>Replays</h3>
         <p>
-          Every run on a board can be downloaded as a <em>.crd</em> file and watched with <em>crimson replay play</em>, or checked with{" "}
-          <em>crimson replay verify</em>.
+          Every run on a board can be downloaded as a <em>.crd</em> file. <Command>uvx crimsonland replay play</Command> followed by the
+          file's path watches it, and <Command>uvx crimsonland replay verify</Command> checks it.
         </p>
       </>
     ),
