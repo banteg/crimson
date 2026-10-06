@@ -10,7 +10,7 @@ tags:
 
 - Python 3.13+ with [uv](https://docs.astral.sh/uv/)
 - `just` task runner and ast-grep
-- for `crimson-core/`: clang++, Zig 0.16.0 (builds its math helper) and Node.js
+- for `crimson-core/`: clang++, Zig 0.17.0 (builds its math helper) and Node.js
 
 ## First run
 

@@ -3,11 +3,11 @@ const sine = @import("rt").sin;
 const cosine = @import("rt").cos;
 export fn portable_sin(x: f64) f64 {
     @setFloatMode(.strict);
-    return sine.sin(x);
+    return sine.sin_f64(x);
 }
 export fn portable_cos(x: f64) f64 {
     @setFloatMode(.strict);
-    return cosine.cos(x);
+    return cosine.cos_f64(x);
 }
 export fn portable_atan2(y: f64, x: f64) f64 {
     @setFloatMode(.strict);

@@ -55,8 +55,8 @@ def main():
     data_source(a.root, a.out)
     env = dict(os.environ, ZIG_GLOBAL_CACHE_DIR=str(a.out / "zig-global"), ZIG_LOCAL_CACHE_DIR=str(a.out / "zig-local"))
     zig = shutil.which("zig")
-    if not zig or subprocess.check_output([zig, "version"], text=True).strip() != "0.16.0":
-        raise SystemExit("The shared math adapter requires Zig 0.16.0")
+    if not zig or subprocess.check_output([zig, "version"], text=True).strip() != "0.17.0":
+        raise SystemExit("The shared math adapter requires Zig 0.17.0")
     cc = ["clang++"] if a.target == "native" else [zig, "c++", "-target", "wasm32-wasi"]
     flags = [
         "-g",
@@ -123,8 +123,9 @@ def main():
             raise SystemExit(1)
     ziglib = Path(re.search(r'\.lib_dir = "([^"]+)"', subprocess.check_output([zig, "env"], env=env, text=True))[1])
     runtime = a.out / "runtime"
-    if not runtime.exists():
-        runtime.symlink_to(ziglib, target_is_directory=True)
+    # Relink every build, so a build directory from another Zig never keeps that Zig's runtime.
+    runtime.unlink(missing_ok=True)
+    runtime.symlink_to(ziglib, target_is_directory=True)
     (a.out / "runtime_bridge.zig").write_text(
         'pub const sin = @import("runtime/compiler_rt/sin.zig");\npub const cos = @import("runtime/compiler_rt/cos.zig");\n',
     )

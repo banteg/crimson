@@ -32,7 +32,7 @@ the shared WASM artifact.
 
 The independent Zig port was retired once the core passed the gate under both
 bug policies; the last commit that has it is tagged. The core still uses the
-Zig 0.16.0 compiler and its bundled math as build dependencies.
+Zig 0.17.0 compiler and its bundled math as build dependencies.
 
 ## Original-rules gate
 

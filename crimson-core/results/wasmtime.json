@@ -1,6 +1,6 @@
 {
   "wasmtime_version": "49.0.0",
-  "module_sha256": "a7db52588a489bbe79dec8ac3293881f46c6323b86269d3154396f7d477ada27",
+  "module_sha256": "9e6a410012e0865088385adabf5691eaa88356c827343d7d2f30cb696c499817",
   "cases": 5,
   "ticks": 36953,
   "fields_per_snapshot": 36343,

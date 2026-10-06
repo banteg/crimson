@@ -42,7 +42,7 @@ copies of 168 recovered translation units; everything it adds lives here.
 
 ## Build
 
-Run from the repository root. Requires clang++, Zig **0.16.0**, Node.js and the
+Run from the repository root. Requires clang++, Zig **0.17.0**, Node.js and the
 project's Python environment. Tested on macOS ARM64; CI runs Linux x86-64.
 The transport assumes little-endian hosts.
 
