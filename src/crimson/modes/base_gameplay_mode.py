@@ -32,14 +32,12 @@ from ..persistence.highscores import HighScoreRecord
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world.viewport import DEFAULT_VIEW_CAP
-from ..replay import REPLAY_TICK_RATE, Replay, ReplayCodecError, ReplayRecorder, dump_replay_file
+from ..replay import REPLAY_TICK_RATE, Replay, ReplayRecorder
 from ..replay.checkpoints import (
     DEFAULT_CHECKPOINT_SAMPLE_RATE,
     ReplayCheckpoint,
     ReplayCheckpoints,
     build_checkpoint,
-    default_checkpoints_path,
-    dump_checkpoints_file,
 )
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
@@ -53,6 +51,7 @@ from ..replay.ranked import (
     ranked_run_spec,
 )
 from ..replay.rng_call_order import RngCallOrder
+from ..replay.saver import ReplaySaveJob, ReplaySaver
 from ..replay.ticks import LiveTickSource, step_replay_tick
 from ..screens.results.game_over import GameOverUi
 from ..screens.ui_timeline import UiTimeline
@@ -115,6 +114,8 @@ class BaseGameplayMode:
 
         self.config: CrimsonConfig = config
         self._console = console
+        # The game loop's shared saver writes replays off the frame; without one a run's end writes it inline.
+        self.replay_saver: ReplaySaver | None = None
         self._base_dir = self.config.path.parent
 
         self.close_requested = False
@@ -643,40 +644,26 @@ class BaseGameplayMode:
         replay = recorder.finish(result)
 
         stamp = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y%m%d_%H%M%S")
-        replay_dir = self._base_dir / "replays"
-        replay_dir.mkdir(parents=True, exist_ok=True)
-        base_name = self._replay_output_basename(stamp=stamp, replay=replay)
-        path = replay_dir / f"{base_name}.crd"
-        counter = 1
-        while path.exists():
-            path = replay_dir / f"{base_name}_{counter}.crd"
-            counter += 1
-        try:
-            dump_replay_file(path, replay)
-        except ReplayCodecError as exc:
-            # Only a run of many hours outgrows the format's size ceiling.
-            self._reset_replay_capture_state(clear_recorder=True)
-            if self._console is not None:
-                self._console.log.log(f"replay: not saved ({exc})")
-                self._console.log.flush()
-            return
-        saved = [path]
-
-        if self._replay_checkpoints_enabled:
-            checkpoints_path = default_checkpoints_path(path)
-            dump_checkpoints_file(
-                checkpoints_path,
-                ReplayCheckpoints(
-                    version=CHECKPOINTS_FORMAT_VERSION,
-                    sample_rate=DEFAULT_CHECKPOINT_SAMPLE_RATE,
-                    checkpoints=list(self._replay_checkpoints),
-                ),
+        job = ReplaySaveJob(
+            replay_dir=self._base_dir / "replays",
+            base_name=self._replay_output_basename(stamp=stamp, replay=replay),
+            replay=replay,
+            checkpoints=ReplayCheckpoints(
+                version=CHECKPOINTS_FORMAT_VERSION,
+                sample_rate=DEFAULT_CHECKPOINT_SAMPLE_RATE,
+                checkpoints=list(self._replay_checkpoints),
             )
-            saved.append(checkpoints_path)
+            if self._replay_checkpoints_enabled
+            else None,
+        )
         self._reset_replay_capture_state(clear_recorder=True)
+        if self.replay_saver is not None:
+            self.replay_saver.submit(job)
+            return
+        lines = job.run()
         if self._console is not None:
-            for saved_path in saved:
-                self._console.log.log(f"replay: saved {saved_path}")
+            for line in lines:
+                self._console.log.log(line)
             self._console.log.flush()
 
     def _player_name_default(self) -> str:

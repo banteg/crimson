@@ -103,6 +103,7 @@ class GameLoopView:
         console = self.state.console
         console.handle_hotkey()
         console.update(dt)
+        self._log_replay_saves(self.state.replay_saver.drain())
         self._sync_console_elapsed_ms()
         self._handle_console_requests()
         self._sync_rtx_mode()
@@ -291,6 +292,14 @@ class GameLoopView:
     def draw(self) -> None:
         self._draw_with_gamma()
 
+    def _log_replay_saves(self, lines: list[str]) -> None:
+        if not lines:
+            return
+        log = self.state.console.log
+        for line in lines:
+            log.log(line)
+        log.flush()
+
     def close(self) -> None:
         try:
             self.state.screens.close()
@@ -300,5 +309,6 @@ class GameLoopView:
         finally:
             self._close_gamma_resources()
             self.resources.close()
+            self._log_replay_saves(self.state.replay_saver.close())
             self.state.console.close()
             rl.show_cursor()

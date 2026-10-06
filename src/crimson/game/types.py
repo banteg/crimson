@@ -13,6 +13,7 @@ from ..game_states import GameStateId
 from ..paths import default_runtime_dir
 from ..pause_background import PauseBackground
 from ..render.rtx.mode import RtxRenderMode
+from ..replay.saver import ReplaySaver
 from ..screens.stack import ScreenStack
 from ..screens.ui_timeline import UiTimeline
 from ..typo.state import TypoSession
@@ -110,6 +111,7 @@ class GameState(msgspec.Struct):
     quest_fail_retry_count: int = 0
     # Play Game menu's Ranked box: Survival and quest runs start from the ranked profile.
     ranked: bool = False
+    replay_saver: ReplaySaver = msgspec.field(default_factory=ReplaySaver)
     typo: TypoSession = msgspec.field(default_factory=TypoSession)
     terrain_regenerate_requested: bool = False
     run_elapsed_ms: float = 0.0

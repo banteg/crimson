@@ -150,6 +150,7 @@ class ScreenNavigator:
             audio=self.state.audio,
             audio_rng=self.state.rng,
         )
+        mode.replay_saver = self.state.replay_saver
         self._modes[mode_id] = mode
         return mode
 
