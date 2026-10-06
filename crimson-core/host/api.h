@@ -33,6 +33,12 @@ float portable_move_x();
 float portable_move_y();
 bool portable_aim_turn_left();
 bool portable_aim_turn_right();
+// Player one's position and health and the screen shake, for the ranked aim bound.
+float portable_player_x();
+float portable_player_y();
+float portable_player_health();
+float portable_shake_x();
+float portable_shake_y();
 int portable_math_probe(uint32_t operation, uint32_t a, uint32_t b);
 int portable_builder_probe(uint32_t seed, uint32_t index, uint32_t hardcore,
                            uint32_t players);

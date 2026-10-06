@@ -6,7 +6,8 @@ tags:
 
 # Leaderboard identity
 
-Status: the game side is built (`src/crimson/leaderboard/`); the service is not. The
+Status: the game side is built (`src/crimson/leaderboard/`); the service (`service/`) runs locally and is not
+deployed yet. The
 [ranked rules](ranked-rules.md) decide which runs rank; this page decides whose runs they are and what name they
 show under.
 
@@ -89,8 +90,20 @@ The game opens the site already signed in:
 2. It signs the challenge with its key; the service answers with a login link that works once, within a minute.
 3. The game opens the link in the browser, which is then signed in as that key's account.
 
-From there the site shows the profile, links a GitHub or Discord login, and attaches a new key to an account the
-player signs into with a linked login.
+The link sets a session cookie for 30 days, which the site keeps only as a hash.
+
+## Linking
+
+The signed-in profile links a GitHub, Discord or X account, each shown only once its client ID and secret are
+configured. Linking uses the authorization-code flow with the least scope each provider offers (GitHub none,
+Discord `identify`, X `users.read tweet.read` with PKCE). The state is bound to the site session, the callbacks
+are `/auth/{github,discord,x}/callback` on the site's own origin (`https://crimson.land`, or
+`http://localhost:8787` under `wrangler dev`), and the client secrets and token exchange stay in the Worker. The
+provider's token reads the profile once and is discarded; the link keeps the account's id, handle and avatar URL.
+
+Signing in with a login another account has linked moves this key, its runs and its names into that account,
+which is how a second computer joins. The profile unlinks a provider and deletes the account with its runs,
+replays, names, links, keys and sessions. `/privacy` and `/terms` say the same in plain words.
 
 ## In the game
 

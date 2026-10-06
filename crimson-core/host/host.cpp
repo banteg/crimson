@@ -152,6 +152,13 @@ extern "C" float portable_move_x() { return in.move_x; }
 extern "C" float portable_move_y() { return in.move_y; }
 extern "C" bool portable_aim_turn_left() { return in.flags & 1u << 18; }
 extern "C" bool portable_aim_turn_right() { return in.flags & 1u << 19; }
+// What the ranked aim bound builds its camera from after a tick
+// (src/crimson/replay/ranked.py): player one and the screen shake.
+extern "C" float portable_player_x() { return player_state_table[0].position.x; }
+extern "C" float portable_player_y() { return player_state_table[0].position.y; }
+extern "C" float portable_player_health() { return player_state_table[0].health; }
+extern "C" float portable_shake_x() { return camera_shake_offset_x; }
+extern "C" float portable_shake_y() { return camera_shake_offset_y; }
 extern "C" uintptr_t portable_commands() { return (uintptr_t)commands; }
 extern "C" uintptr_t portable_output() { return (uintptr_t)output; }
 static void trace_init(const char *stage) {

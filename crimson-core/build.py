@@ -174,6 +174,11 @@ def main():
             "-Wl,--export=portable_step_many",
             "-Wl,--export=portable_builder_probe",
             "-Wl,--export=portable_math_probe",
+            "-Wl,--export=portable_player_x",
+            "-Wl,--export=portable_player_y",
+            "-Wl,--export=portable_player_health",
+            "-Wl,--export=portable_shake_x",
+            "-Wl,--export=portable_shake_y",
             "-Wl,-z,stack-size=1048576",
         ]
     proc = subprocess.run(link, env=env, capture_output=True, text=True, check=False)

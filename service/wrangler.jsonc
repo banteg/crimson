@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "crimson-land",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-22",
+  "send_metrics": false,
+  "routes": [{ "pattern": "crimson.land", "custom_domain": true }],
+  // Verifying an hour of play takes about 11 s of CPU in the WASM core.
+  "limits": { "cpu_ms": 300000 },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "crimson-land", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }
+  ],
+  "r2_buckets": [{ "binding": "REPLAYS", "bucket_name": "crimson-land-replays" }],
+  // Client IDs are public; each provider's secret is set with `wrangler secret put <PROVIDER>_CLIENT_SECRET`
+  // (or in .dev.vars locally). A provider without both stays hidden.
+  "vars": { "GITHUB_CLIENT_ID": "Ov23lirNiNyg92mdYr2z", "DISCORD_CLIENT_ID": "", "X_CLIENT_ID": "" },
+  "observability": { "enabled": true }
+}
