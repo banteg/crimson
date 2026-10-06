@@ -1,6 +1,7 @@
-import { createSignal, For, type JSX, Show } from "solid-js";
+import { type Accessor, createSignal, For, type JSX, Show } from "solid-js";
 import type { Board, BoardView, JoinView, ProfileView, QuestMenuView } from "../../src/api-types";
 import { get, post } from "./api";
+import { GameButton } from "./button";
 import { PlayerName, PROVIDER_LABELS } from "./players";
 
 // What a route shows once its data has arrived: the page title, the quest whose terrain the ground shows (null for
@@ -11,10 +12,19 @@ export interface Screen {
   panels: Panel[];
 }
 
-// A keyed panel stays on screen, its content updated in place, when the next screen has it in the same place: the
-// quest menu holds still while its stage, hardcore box or quest changes.
-export type Panel = (() => JSX.Element) & { key?: string };
-const keep = (key: string, panel: () => JSX.Element): Panel => Object.assign(panel, { key });
+// A keyed panel stays on screen when the next screen has it in the same place, and adopts that panel's data, so its
+// elements update in place: the quest menu holds still while its stage, hardcore box or quest changes.
+export type Panel = (() => JSX.Element) & { key?: string; adopt?: (next: Panel) => void };
+
+function keep<D>(key: string, data: D, view: (data: Accessor<D>) => JSX.Element): Panel {
+  const [current, setCurrent] = createSignal(data);
+  const panel = Object.assign(() => view(current), {
+    key,
+    data,
+    adopt: (next: Panel) => setCurrent(() => (next as typeof panel).data),
+  });
+  return panel;
+}
 
 export interface Navigator {
   go(path: string, replace?: boolean): void;
@@ -195,7 +205,7 @@ async function board(boardName: Board, quest: string): Promise<Screen> {
     title: view!.title,
     quest,
     panels: [
-      keep("quest-menu", () => <QuestMenu view={menu!} current={quest} />),
+      keep("quest-menu", { menu: menu!, quest }, (data) => <QuestMenu view={data().menu} current={data().quest} />),
       () => (
         <>
           <h2>{view!.title}</h2>
@@ -208,7 +218,7 @@ async function board(boardName: Board, quest: string): Promise<Screen> {
 
 async function quests(boardName: "quests" | "quests-hardcore", stage: number): Promise<Screen> {
   const menu = (await get<QuestMenuView>(`/api/quests/${boardName}/${stage}`))!;
-  return { title: `Quests ${STAGES[stage - 1]}`, quest: `${stage}.1`, panels: [keep("quest-menu", () => <QuestMenu view={menu} />)] };
+  return { title: `Quests ${STAGES[stage - 1]}`, quest: `${stage}.1`, panels: [keep("quest-menu", { menu, quest: undefined }, (data) => <QuestMenu view={data().menu} current={data().quest} />)] };
 }
 
 function AccountControls(props: { profile: ProfileView; nav: Navigator }) {
@@ -224,45 +234,34 @@ function AccountControls(props: { profile: ProfileView; nav: Navigator }) {
           Linking shows your handle next to your name and lets you add another computer's game to this account by signing in with the
           same login there. See <a href="/privacy">what linking stores</a>.
         </p>
-        <ul class="providers">
+        <p class="buttons">
           <For each={props.profile.account!.providers}>
             {(provider) => (
-              <li>
-                <Show
-                  when={provider.linked}
-                  fallback={
-                    <a href={`/auth/${provider.name}/start`} data-native>
-                      Link {provider.label}
-                    </a>
-                  }
-                >
-                  {provider.label}: linked ·{" "}
-                  <button type="button" onClick={() => act(`/api/account/unlink/${provider.name}`, props.nav.reload)}>
-                    Unlink
-                  </button>
-                </Show>
-              </li>
+              <Show
+                when={provider.linked}
+                fallback={<GameButton label={`Link ${provider.label}`} href={`/auth/${provider.name}/start`} native />}
+              >
+                <GameButton label={`Unlink ${provider.label}`} onClick={() => act(`/api/account/unlink/${provider.name}`, props.nav.reload)} />
+              </Show>
             )}
           </For>
-        </ul>
+        </p>
       </Show>
       <p>
-        <button type="button" onClick={() => act("/api/logout", () => props.nav.go("/"))}>
-          Sign out
-        </button>
+        <GameButton label="Sign out" onClick={() => act("/api/logout", () => props.nav.go("/"))} />
       </p>
       <h3>Delete account</h3>
       <p class="muted">
         Removes your runs and their replay files, names, links, keys and sessions. The game keeps its key, so playing ranked again starts a
         new account.
       </p>
-      <button
-        type="button"
-        class="danger"
-        onClick={() => confirm("Delete this account and all its runs?") && act("/api/account/delete", () => props.nav.go("/?notice=deleted"))}
-      >
-        Delete account
-      </button>
+      <p>
+        <GameButton
+          label="Delete account"
+          danger
+          onClick={() => confirm("Delete this account and all its runs?") && act("/api/account/delete", () => props.nav.go("/?notice=deleted"))}
+        />
+      </p>
     </>
   );
 }
@@ -365,11 +364,9 @@ async function join(token: string, nav: Navigator): Promise<Screen> {
             Joining moves this game's {view.moving.keys === 1 ? "key" : `${view.moving.keys} keys`}, {view.moving.runs} runs and {view.moving.names} names into that
             account, and removes this one. Do it only if both are yours.
           </p>
-          <p>
-            <button type="button" onClick={confirmJoin}>
-              Join {view.destination.name ?? view.destination.fingerprint}
-            </button>{" "}
-            <a href="/account">Cancel</a>
+          <p class="buttons">
+            <GameButton label={`Join ${view.destination.name ?? view.destination.fingerprint}`} onClick={confirmJoin} />
+            <GameButton label="Cancel" href="/account" />
           </p>
         </>
       ),

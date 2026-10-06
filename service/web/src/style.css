@@ -19,8 +19,10 @@ header{display:flex;flex-wrap:wrap-reverse;justify-content:space-between;align-i
 .sign{margin-left:auto;max-width:100%}.sign img{width:512px;max-width:100%;height:auto;display:block}
 /* The game's buttons (ui_button_update): the label centered on the glass, 1px right of center, the hover fill 12px in from
    the sides and 5px down, fading in over 167 ms and out over 250 ms; a click flashes it white. */
-.menu{display:flex;flex-wrap:wrap;padding:0 8px}
-.button{position:relative;width:82px;height:32px;color:rgb(255 255 255/.7);text-align:center;text-decoration:none}
+.menu{padding:0 8px}.buttons{display:flex;flex-wrap:wrap}
+.button{position:relative;display:inline-block;width:82px;height:32px;padding:0;border:0;background:none;font:inherit;cursor:pointer;
+  color:rgb(255 255 255/.7);text-align:center;text-decoration:none;vertical-align:middle}
+.button.danger{color:rgb(250 70 60/.8)}.button.danger:hover{color:rgb(250 70 60)}
 .button.wide{width:145px}.button:hover,.button.on{color:#fff}
 .button::before{content:"";position:absolute;left:12px;right:12px;top:5px;height:22px;background:rgb(128 128 178);opacity:0;
   transition:opacity .25s linear}
@@ -39,7 +41,7 @@ code.command{position:relative;padding:1px 6px;background:rgb(36 48 74);border:1
   font:bold 14px/18px "Courier New",Courier,monospace}code.command:hover{border-color:rgb(110 130 170)}
 code.command.copied::after{content:"copied";position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);
   padding:0 6px;background:rgb(36 48 74);border:1px solid rgb(56 68 94);font:16px/18px "Crimson Small",Arial,sans-serif}
-.notice{color:#fff}ul.providers{padding-left:20px}ul{padding-left:20px}
+.notice{color:#fff}ul{padding-left:20px}
 td.n,.count,.score{font:bold 14px/20px "Courier New",Courier,monospace;white-space:nowrap}
 a{color:var(--row-on)}a:hover{color:#8fd3ff}
 .panel{position:relative;z-index:0;margin:0 0 20px;padding:4px 14px 6px;border:solid transparent;border-width:18px 19px 19px 14px;
@@ -56,8 +58,6 @@ a.provider{color:var(--dim);margin-right:6px;text-decoration:none;white-space:no
 svg.icon{width:13px;height:13px;fill:currentColor;vertical-align:-1px}h2 svg.icon{width:17px;height:17px}
 h2 .avatar+a.name{font-weight:400}h2.player{font-family:"Crimson Small",Arial,sans-serif;font-weight:400}
 .fingerprint{font-size:16px}
-button{background:#1b1b1b;color:var(--label);border:1px solid #484848;border-radius:3px;padding:1px 12px;cursor:pointer;font:inherit}
-button:hover{color:#fff;border-color:#777}button.danger{border-color:#6a2a2a;color:#e88}form.inline{display:inline}
 /* quest_select_menu_update's layout from its QUEST label, whose 64px art becomes "QUEST:" in 20px Courier (72px):
    stage icons 16px past it and 3px down, 36px apart, 32px or
    25.6px from their top-left corner; the list origin 32px right and 50px down, its rows 10px lower for the
