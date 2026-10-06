@@ -7,6 +7,7 @@ from crimson.modes.survival_mode import SurvivalMode
 from crimson.quests.level import QUEST_COUNT
 from crimson.replay.ranked import RANKED_VIEW
 from crimson.screens.actions import Route, StartRun
+from crimson.screens.assets import require_runtime_resources
 from crimson.screens.panels.play_game import PlayGameMenuView
 from grim import canvas
 from grim.geom import Vec2
@@ -23,7 +24,7 @@ def _play_game(loop: GameLoopView) -> PlayGameMenuView:
 
 
 def _click_ranked(loop: GameLoopView, panel: PlayGameMenuView, mocker) -> None:
-    box = panel._content_layout().base_pos + PlayGameMenuView._RANKED_OFFSET + Vec2(4.0, 8.0)
+    box = panel._ranked_pos(panel._content_layout(), require_runtime_resources(loop.state)) + Vec2(4.0, 8.0)
     mocker.patch.object(canvas, "mouse_position", return_value=box.to_rl())
     mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
     loop.update(1.0 / 60.0)

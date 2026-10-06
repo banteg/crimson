@@ -24,11 +24,15 @@ class UiListWidget(msgspec.Struct):
     focused: bool = False
 
 
+def ui_list_widget_width(resources: RuntimeResources, widget: UiListWidget) -> float:
+    """The widest item plus 48."""
+    return max((measure_small_text_width(resources.small_font, item) for item in widget.items), default=0.0) + 48.0
+
+
 def _list_widget_size(resources: RuntimeResources, widget: UiListWidget) -> tuple[float, float]:
-    """The widest item plus 48 by 16, or `item_count * 16 + 24` tall while open."""
-    width = max((measure_small_text_width(resources.small_font, item) for item in widget.items), default=0.0) + 48.0
+    """`ui_list_widget_width` by 16, or `item_count * 16 + 24` tall while open."""
     height = float(len(widget.items) * 16 + 24) if widget.open else 16.0
-    return width, height
+    return ui_list_widget_width(resources, widget), height
 
 
 def ui_list_widget_update(

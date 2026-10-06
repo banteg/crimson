@@ -19,8 +19,8 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...replay.ranked import RANKED_MODES, human_controls
 from ...ui.button import UiButtonState, button_draw, button_update
-from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
-from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update
+from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update, ui_checkbox_width
+from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update, ui_list_widget_width
 from ..assets import require_runtime_resources
 from .base import PanelMenuView
 
@@ -50,9 +50,11 @@ class PlayGameMenuView(PanelMenuView):
     """
 
     _PLAYER_COUNT_LABELS = ("1 player", "2 players", "3 players", "4 players")
-    # Right of the mode buttons, under the player-count list; clear of the buttons in either spacing.
-    _RANKED_OFFSET = Vec2(148.0, 22.0)
-    _RANKED_TOOLTIP = "Play for the leaderboard: Survival or\nQuests from the ranked profile."
+    # The port's row under the native panel holds the Ranked box below every mode tooltip, flush right with the
+    # player-count list.
+    _RANKED_ROW = 28.0
+    _RANKED_Y = 208.0
+    _RANKED_TOOLTIP = "Play for the online leaderboard."
 
     def __init__(self, state: GameState) -> None:
         super().__init__(
@@ -61,6 +63,7 @@ class PlayGameMenuView(PanelMenuView):
             panel_element=11,
             back_element=12,
             title="Play Game",
+            panel_grow=self._RANKED_ROW,
         )
         # Native lists two players; the port plays up to four.
         self.player_count_list = UiListWidget(items=self._PLAYER_COUNT_LABELS)
@@ -124,12 +127,18 @@ class PlayGameMenuView(PanelMenuView):
 
         # A ranked attempt is single-player; the list stays shut. The Ranked box follows it in focus order.
         took_list = not self.state.ranked and self._update_player_count(layout.drop_pos, resources=resources)
-        self._update_ranked(base_pos, resources=resources, mouse=Vec2.from_xy(mouse), click=click, dt_ms=dt_ms)
+        self._update_ranked(
+            self._ranked_pos(layout, resources), resources=resources, mouse=Vec2.from_xy(mouse), click=click, dt_ms=dt_ms,
+        )
         if took_list or activated is None:
             return
         self._activate_mode(activated)
 
-    def _update_ranked(self, base_pos: Vec2, *, resources: RuntimeResources, mouse: Vec2, click: bool, dt_ms: int) -> None:
+    def _ranked_pos(self, layout: _PlayGameContentLayout, resources: RuntimeResources) -> Vec2:
+        right = layout.drop_pos.x + ui_list_widget_width(resources, self.player_count_list)
+        return Vec2(right - ui_checkbox_width(resources, self.ranked_checkbox), layout.base_pos.y + self._RANKED_Y)
+
+    def _update_ranked(self, pos: Vec2, *, resources: RuntimeResources, mouse: Vec2, click: bool, dt_ms: int) -> None:
         """The Ranked box: whether the next Survival or quest run is a ranked attempt."""
         checkbox = self.ranked_checkbox
         binds = self.state.config.controls.player(0)
@@ -137,11 +146,11 @@ class PlayGameMenuView(PanelMenuView):
         human = human_controls(binds.movement, binds.aim_scheme)
         if not human:
             self.state.ranked = False
-        # It keeps its focus slot while the open list covers it, but neither hovers nor toggles.
+        # Like the mode buttons, it neither hovers nor toggles while the list is open, but keeps its focus slot.
         checkbox.disabled = not human or self.player_count_list.open
         checkbox.checked = self.state.ranked
         toggled = ui_checkbox_update(
-            resources, checkbox, base_pos + self._RANKED_OFFSET, focus=self.state.focus, mouse=mouse, click=click,
+            resources, checkbox, pos, focus=self.state.focus, mouse=mouse, click=click,
         )
         if toggled:
             self.state.ranked = checkbox.checked
@@ -396,7 +405,7 @@ class PlayGameMenuView(PanelMenuView):
                 )
             y += y_step
 
-        ui_checkbox_draw(resources, self.ranked_checkbox, base_pos + self._RANKED_OFFSET, focus=self.state.focus)
+        ui_checkbox_draw(resources, self.ranked_checkbox, self._ranked_pos(layout, resources), focus=self.state.focus)
         # `play_game_menu_update`: the list widget is drawn before tooltips, so tooltips can overlay it.
         self._draw_player_count(layout.drop_pos, resources=resources)
         self._draw_tooltips(entries, base_pos, y_end, font=font)

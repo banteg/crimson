@@ -36,6 +36,7 @@ class PanelMenuView(MenuScreen):
         title: str,
         body: str | None = None,
         back_action: ScreenAction = Route.MENU,
+        panel_grow: float = 0.0,
     ) -> None:
         super().__init__(state)
         self.game_state = game_state
@@ -44,6 +45,8 @@ class PanelMenuView(MenuScreen):
         self._title = title
         self._body_lines = (body or "").splitlines()
         self._back_action = back_action
+        # Port rows below the native panel: its 3-slice middle stretches and the Back item moves down with it.
+        self._panel_grow = panel_grow
         self._entry: MenuEntry | None = None
         self._menu_screen_width = 0
 
@@ -54,7 +57,7 @@ class PanelMenuView(MenuScreen):
         self._entry = MenuEntry(
             element=self._back_element,
             row=MENU_LABEL_ROW_BACK,
-            pos=ui_element_pos(self._back_element, width),
+            pos=ui_element_pos(self._back_element, width).offset(dy=self._panel_grow),
             scale=scale,
             rise=rise,
         )
@@ -130,7 +133,8 @@ class PanelMenuView(MenuScreen):
             y += 22
 
     def _panel_rect(self, index: int) -> Rect:
-        return ui_panel_rect(index, self.state.ui.timeline_ms, self._menu_screen_width)
+        rect = ui_panel_rect(index, self.state.ui.timeline_ms, self._menu_screen_width)
+        return Rect.from_top_left(rect.top_left, rect.width, rect.height + self._panel_grow)
 
     def _draw_panel(self) -> None:
         index = self._panel_element

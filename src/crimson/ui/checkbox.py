@@ -21,6 +21,11 @@ class UiCheckbox(msgspec.Struct):
     focused: bool = False
 
 
+def ui_checkbox_width(resources: RuntimeResources, checkbox: UiCheckbox) -> float:
+    """The box and its label, 22px right of the box's left edge."""
+    return measure_small_text_width(resources.small_font, checkbox.label) + 22.0
+
+
 def ui_checkbox_update(
     resources: RuntimeResources, checkbox: UiCheckbox, pos: Vec2, *, focus: UiFocus, mouse: Vec2, click: bool,
 ) -> bool:
@@ -31,7 +36,7 @@ def ui_checkbox_update(
     """
     focused = focus.update(checkbox)
     checkbox.focused = focused
-    width = measure_small_text_width(resources.small_font, checkbox.label) + 22.0
+    width = ui_checkbox_width(resources, checkbox)
     # `ui_mouse_inside_rect`: strictly inside a 16px tall rect.
     checkbox.hovered = (
         not checkbox.disabled and pos.x < mouse.x < pos.x + width and pos.y < mouse.y < pos.y + 16.0
