@@ -1746,7 +1746,7 @@
       "??0ui_element_cpp_t@@QAE@XZ",
       "@ui_element_construct@4"
     ],
-    "signature": "ui_menu_template_triplet_t * __fastcall ui_element_construct(ui_menu_template_triplet_t *block)",
+    "signature": "ui_element_t * __fastcall ui_element_construct(ui_element_t *element)",
     "comment": "resets triplet state and seeds all three template sub-block quad_mode fields to 4"
   },
   {
