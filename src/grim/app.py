@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import threading
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 import msgspec
+from PIL import Image
 
 from grim.raylib_api import rl
 
@@ -35,11 +38,38 @@ def _fullscreen_toggle_pressed() -> bool:
     return rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and any(rl.is_key_down(key) for key in ALT_KEYS)
 
 
+class _HeldKey:
+    """Hands one key's GLFW events to raylib only once `end_drawing` has returned.
+
+    raylib's `EndDrawing` polls input and then, when F12 just went down, saves its own `screenshot%03i.png` into
+    the working directory, at double size on HiDPI. Holding F12 back hides the press from that check, and
+    `is_key_pressed` still reports it on the frame it otherwise would.
+    """
+
+    def __init__(self, key: int) -> None:
+        self._key = key
+        self._held: list[tuple[Any, int, int, int, int]] = []
+        self._hook = rl.ffi.callback("void(GLFWwindow *, int, int, int, int)", self._on_key)
+        self._raylib_on_key = rl.glfw_set_key_callback(rl.glfw_get_current_context(), self._hook)
+
+    def _on_key(self, window: Any, key: int, scancode: int, action: int, mods: int) -> None:
+        if key == self._key:
+            self._held.append((window, key, scancode, action, mods))
+        else:
+            self._raylib_on_key(window, key, scancode, action, mods)
+
+    def release(self) -> None:
+        for event in self._held:
+            self._raylib_on_key(*event)
+        self._held.clear()
+
+
 def _save_screenshot(path: Path) -> None:
     """Write the frame drawn so far at physical pixels, without letterbox bars.
 
     Runs before the buffer swap. raylib's `take_screenshot` runs after it and scales the already-physical
-    HiDPI render size by the DPI again, so it wrote a double-size image with the frame in one corner.
+    HiDPI render size by the DPI again, so it wrote a double-size image with the frame in one corner. Only
+    the read stays on the frame: encoding a Retina-size PNG takes about a second, so a worker writes it.
     """
     # Flush the batched draws so the read sees the whole frame, not just the clear.
     rl.rl_draw_render_batch_active()
@@ -48,9 +78,11 @@ def _save_screenshot(path: Path) -> None:
         frame = frame_rect()
         dpi = rl.get_window_scale_dpi()
         rl.image_crop(image, rl.Rectangle(frame.x * dpi.x, frame.y * dpi.y, frame.width * dpi.x, frame.height * dpi.y))
-        rl.export_image(image, str(path))
+        pixels = rl.ffi.buffer(image.data, image.width * image.height * 4)
+        shot = Image.frombytes("RGBA", (image.width, image.height), pixels).convert("RGB")
     finally:
         rl.unload_image(image)
+    threading.Thread(target=shot.save, args=(path,), name=f"screenshot {path.name}").start()
 
 
 def _next_screenshot_name(directory: Path, index: int) -> tuple[str, int]:
@@ -80,6 +112,7 @@ def run_view(
         rl.set_window_state(window_state)
     canvas = Canvas(width, height)
     canvas.fit()
+    screenshot_key = _HeldKey(SCREENSHOT_KEY)
     if exit_key is not None:
         rl.set_exit_key(exit_key)
     rl.set_target_fps(fps)
@@ -126,6 +159,7 @@ def run_view(
                 width=rl.get_render_width(),
                 height=rl.get_render_height(),
             )
+            screenshot_key.release()
             render_pipeline.present()
             if run_hooks.should_close():
                 break

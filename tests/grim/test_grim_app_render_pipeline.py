@@ -9,6 +9,7 @@ from grim.raylib_api import rl
 class _FakeRl:
     ConfigFlags = rl.ConfigFlags
     KeyboardKey = rl.KeyboardKey
+    ffi = rl.ffi
 
     def __init__(self) -> None:
         self.window_should_close_calls = 0
@@ -29,6 +30,14 @@ class _FakeRl:
 
     def set_exit_key(self, _: int) -> None:
         return None
+
+    def glfw_get_current_context(self) -> Any:
+        return rl.ffi.NULL
+
+    def glfw_set_key_callback(self, _window: Any, hook: Any) -> Any:
+        self.key_hook = hook
+        self.raylib_key_events: list[tuple[int, int]] = []
+        return lambda _window, key, _scancode, action, _mods: self.raylib_key_events.append((key, action))
 
     def set_target_fps(self, fps: int) -> None:
         self.target_fps = fps
@@ -220,3 +229,22 @@ def test_screenshot_names_skip_existing_shots(tmp_path) -> None:
 
     assert grim_app._next_screenshot_name(tmp_path, 0) == ("shot_002.png", 3)
     assert grim_app._next_screenshot_name(tmp_path, 1000) == ("shot_1000.png", 1001)
+
+
+def test_raylib_sees_the_screenshot_key_only_after_the_frame_ends(mocker) -> None:
+    # raylib's EndDrawing saves its own screenshot when F12 went down in its input poll.
+    fake_rl = _FakeRl()
+    mocker.patch.object(grim_app, "rl", fake_rl)
+    held = grim_app._HeldKey(rl.KeyboardKey.KEY_F12)
+    press, release = 1, 0
+
+    for key, action in ((rl.KeyboardKey.KEY_F12, press), (rl.KeyboardKey.KEY_A, press), (rl.KeyboardKey.KEY_F12, release)):
+        fake_rl.key_hook(rl.ffi.NULL, key, 0, action, 0)
+    assert fake_rl.raylib_key_events == [(rl.KeyboardKey.KEY_A, press)]
+
+    held.release()
+    assert fake_rl.raylib_key_events == [
+        (rl.KeyboardKey.KEY_A, press),
+        (rl.KeyboardKey.KEY_F12, press),
+        (rl.KeyboardKey.KEY_F12, release),
+    ]
