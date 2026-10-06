@@ -55,7 +55,7 @@
     "quest_start_selected": 3,
     "ready": 1,
     "sfx_play": 290,
-    "sfx_play_exclusive": 5544,
+    "music_play_exclusive": 5544,
     "sfx_play_panned": 1301,
     "snapshot_compact": 1411,
     "snapshot_full": 406,
@@ -106,15 +106,15 @@
   },
   "sfx": {
     "by_function": {
-      "sfx_play_exclusive|game_over_screen_update": 716,
-      "sfx_play_exclusive|game_startup_init": 2,
-      "sfx_play_exclusive|gameplay_update_and_render": 346,
-      "sfx_play_exclusive|projectile_update": 4,
-      "sfx_play_exclusive|quest_failed_screen_update": 483,
-      "sfx_play_exclusive|quest_mode_update": 2,
-      "sfx_play_exclusive|quest_results_screen_update": 3989,
-      "sfx_play_exclusive|ui_list_widget_update": 1,
-      "sfx_play_exclusive|ui_menu_main_click_options": 1,
+      "music_play_exclusive|game_over_screen_update": 716,
+      "music_play_exclusive|game_startup_init": 2,
+      "music_play_exclusive|gameplay_update_and_render": 346,
+      "music_play_exclusive|projectile_update": 4,
+      "music_play_exclusive|quest_failed_screen_update": 483,
+      "music_play_exclusive|quest_mode_update": 2,
+      "music_play_exclusive|quest_results_screen_update": 3989,
+      "music_play_exclusive|ui_list_widget_update": 1,
+      "music_play_exclusive|ui_menu_main_click_options": 1,
       "sfx_play_panned|bonus_apply": 5,
       "sfx_play_panned|creature_apply_damage": 160,
       "sfx_play_panned|creature_update_all": 57,
@@ -141,18 +141,18 @@
       "sfx_play|ui_text_input_update": 1
     },
     "by_function_and_id": {
-      "sfx_play_exclusive|game_over_screen_update|1": 714,
-      "sfx_play_exclusive|game_over_screen_update|4": 2,
-      "sfx_play_exclusive|game_startup_init|0": 1,
-      "sfx_play_exclusive|game_startup_init|4": 1,
-      "sfx_play_exclusive|gameplay_update_and_render|1": 346,
-      "sfx_play_exclusive|projectile_update|6": 4,
-      "sfx_play_exclusive|quest_failed_screen_update|1": 482,
-      "sfx_play_exclusive|quest_failed_screen_update|4": 1,
-      "sfx_play_exclusive|quest_mode_update|5": 2,
-      "sfx_play_exclusive|quest_results_screen_update|5": 3989,
-      "sfx_play_exclusive|ui_list_widget_update|4": 1,
-      "sfx_play_exclusive|ui_menu_main_click_options|1": 1,
+      "music_play_exclusive|game_over_screen_update|1": 714,
+      "music_play_exclusive|game_over_screen_update|4": 2,
+      "music_play_exclusive|game_startup_init|0": 1,
+      "music_play_exclusive|game_startup_init|4": 1,
+      "music_play_exclusive|gameplay_update_and_render|1": 346,
+      "music_play_exclusive|projectile_update|6": 4,
+      "music_play_exclusive|quest_failed_screen_update|1": 482,
+      "music_play_exclusive|quest_failed_screen_update|4": 1,
+      "music_play_exclusive|quest_mode_update|5": 2,
+      "music_play_exclusive|quest_results_screen_update|5": 3989,
+      "music_play_exclusive|ui_list_widget_update|4": 1,
+      "music_play_exclusive|ui_menu_main_click_options|1": 1,
       "sfx_play_panned|bonus_apply|56": 2,
       "sfx_play_panned|bonus_apply|58": 1,
       "sfx_play_panned|bonus_apply|59": 1,
@@ -217,7 +217,7 @@
     "high_confidence_function_ids": [
       {
         "count": 3989,
-        "event": "sfx_play_exclusive",
+        "event": "music_play_exclusive",
         "function": "quest_results_screen_update",
         "id": 5,
         "share": 1.0,
@@ -225,7 +225,7 @@
       },
       {
         "count": 714,
-        "event": "sfx_play_exclusive",
+        "event": "music_play_exclusive",
         "function": "game_over_screen_update",
         "id": 1,
         "share": 0.9972,
@@ -233,7 +233,7 @@
       },
       {
         "count": 482,
-        "event": "sfx_play_exclusive",
+        "event": "music_play_exclusive",
         "function": "quest_failed_screen_update",
         "id": 1,
         "share": 0.9979,
@@ -241,7 +241,7 @@
       },
       {
         "count": 346,
-        "event": "sfx_play_exclusive",
+        "event": "music_play_exclusive",
         "function": "gameplay_update_and_render",
         "id": 1,
         "share": 1.0,
@@ -275,11 +275,11 @@
     "top_by_function": [
       {
         "count": 3989,
-        "key": "sfx_play_exclusive|quest_results_screen_update"
+        "key": "music_play_exclusive|quest_results_screen_update"
       },
       {
         "count": 716,
-        "key": "sfx_play_exclusive|game_over_screen_update"
+        "key": "music_play_exclusive|game_over_screen_update"
       },
       {
         "count": 638,
@@ -287,7 +287,7 @@
       },
       {
         "count": 483,
-        "key": "sfx_play_exclusive|quest_failed_screen_update"
+        "key": "music_play_exclusive|quest_failed_screen_update"
       },
       {
         "count": 355,
@@ -295,7 +295,7 @@
       },
       {
         "count": 346,
-        "key": "sfx_play_exclusive|gameplay_update_and_render"
+        "key": "music_play_exclusive|gameplay_update_and_render"
       },
       {
         "count": 160,
@@ -351,7 +351,7 @@
       },
       {
         "count": 4,
-        "key": "sfx_play_exclusive|projectile_update"
+        "key": "music_play_exclusive|projectile_update"
       },
       {
         "count": 3,
@@ -359,7 +359,7 @@
       },
       {
         "count": 2,
-        "key": "sfx_play_exclusive|game_startup_init"
+        "key": "music_play_exclusive|game_startup_init"
       },
       {
         "count": 2,
@@ -387,11 +387,11 @@
       },
       {
         "count": 2,
-        "key": "sfx_play_exclusive|quest_mode_update"
+        "key": "music_play_exclusive|quest_mode_update"
       },
       {
         "count": 1,
-        "key": "sfx_play_exclusive|ui_menu_main_click_options"
+        "key": "music_play_exclusive|ui_menu_main_click_options"
       },
       {
         "count": 1,
@@ -399,7 +399,7 @@
       },
       {
         "count": 1,
-        "key": "sfx_play_exclusive|ui_list_widget_update"
+        "key": "music_play_exclusive|ui_list_widget_update"
       },
       {
         "count": 1,
@@ -409,15 +409,15 @@
     "top_by_function_and_id": [
       {
         "count": 3989,
-        "key": "sfx_play_exclusive|quest_results_screen_update|5"
+        "key": "music_play_exclusive|quest_results_screen_update|5"
       },
       {
         "count": 714,
-        "key": "sfx_play_exclusive|game_over_screen_update|1"
+        "key": "music_play_exclusive|game_over_screen_update|1"
       },
       {
         "count": 482,
-        "key": "sfx_play_exclusive|quest_failed_screen_update|1"
+        "key": "music_play_exclusive|quest_failed_screen_update|1"
       },
       {
         "count": 348,
@@ -425,7 +425,7 @@
       },
       {
         "count": 346,
-        "key": "sfx_play_exclusive|gameplay_update_and_render|1"
+        "key": "music_play_exclusive|gameplay_update_and_render|1"
       },
       {
         "count": 221,

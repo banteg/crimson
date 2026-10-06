@@ -940,17 +940,17 @@ Init timing note:
   - Evidence: same as `sfx_play`, but converts an FPU value to pan (`__ftol`), clamps to
     `[-10000, 10000]`, and passes pan to vtable +0x40.
 
-- `0x0043d550` -> `sfx_mute_all`
+- `0x0043d550` -> `music_fade_out_all`
   - Evidence: sets `sfx_mute_flags[sfx]=1` and recursively mutes all other unmuted ids using
-    `sfx_is_unmuted`.
+    `music_track_is_playing`.
 
-- `0x0043d7c0` -> `sfx_is_unmuted`
+- `0x0043d7c0` -> `music_track_is_playing`
   - Evidence: returns true when `sfx_unmuted_flag` is set and the per-id mute flag is clear.
-- `0x0043d460` -> `sfx_play_exclusive`
+- `0x0043d460` -> `music_play_exclusive`
   - Evidence: mutes other ids, optionally selects a random variant, and ensures the chosen id is
     unmuted with its volume set in `sfx_volume_table`.
 
-- `0x0043d5b0` -> `sfx_update_mute_fades`
+- `0x0043d5b0` -> `music_update_fades`
   - Evidence: ramps per-id volume toward `config_music_volume` when unmuted and fades to zero when muted,
     stopping voices via sfx_entry_stop (`0x0043bf60`).
 
@@ -1512,7 +1512,7 @@ See [Projectile struct](../../structs/projectile.md) for the expanded field map 
 - `0x00417aa0` -> `ui_template_block_set_mode4`
   - Evidence: writes mode sentinel value `4` at `block+0xe4`.
 
-- `0x00417ab0` -> `ui_template_triplet_reset_and_seed_modes`
+- `0x00417ab0` -> `ui_element_construct`
   - Evidence: zeroes head flags and seeds three mode sentinel dwords at `+0x120`, `+0x208`, and `+0x2f0`.
 
 - `console_register_global_destructor_atexit` -> `console_register_clear_log_atexit`

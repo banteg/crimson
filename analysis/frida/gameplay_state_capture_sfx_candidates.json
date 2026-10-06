@@ -1,7 +1,7 @@
 [
   {
     "count": 3989,
-    "event": "sfx_play_exclusive",
+    "event": "music_play_exclusive",
     "function": "quest_results_screen_update",
     "id": 5,
     "share": 1.0,
@@ -9,7 +9,7 @@
   },
   {
     "count": 714,
-    "event": "sfx_play_exclusive",
+    "event": "music_play_exclusive",
     "function": "game_over_screen_update",
     "id": 1,
     "share": 0.9972,
@@ -17,7 +17,7 @@
   },
   {
     "count": 482,
-    "event": "sfx_play_exclusive",
+    "event": "music_play_exclusive",
     "function": "quest_failed_screen_update",
     "id": 1,
     "share": 0.9979,
@@ -25,7 +25,7 @@
   },
   {
     "count": 346,
-    "event": "sfx_play_exclusive",
+    "event": "music_play_exclusive",
     "function": "gameplay_update_and_render",
     "id": 1,
     "share": 1.0,

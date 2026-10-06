@@ -10,7 +10,7 @@
 - `perks_update_effects_delta`: 50097
 - `bonus_hud_slot_update_tick`: 40080
 - `quest_spawn_timeline_delta`: 7316
-- `sfx_play_exclusive`: 5544
+- `music_play_exclusive`: 5544
 - `creature_update_all_tick`: 2504
 - `hud_update_and_render_tick`: 2504
 - `ui_render_hud_tick`: 2504
@@ -185,12 +185,12 @@
   - state:6|block:7|slot:0|field_0x0c|ui_aim_enhancement_pulse_phase: 1
 
 ## SFX by function
-- sfx_play_exclusive|quest_results_screen_update: 3989
-- sfx_play_exclusive|game_over_screen_update: 716
+- music_play_exclusive|quest_results_screen_update: 3989
+- music_play_exclusive|game_over_screen_update: 716
 - sfx_play_panned|player_update: 638
-- sfx_play_exclusive|quest_failed_screen_update: 483
+- music_play_exclusive|quest_failed_screen_update: 483
 - sfx_play_panned|projectile_update: 355
-- sfx_play_exclusive|gameplay_update_and_render: 346
+- music_play_exclusive|gameplay_update_and_render: 346
 - sfx_play_panned|creature_apply_damage: 160
 - sfx_play|ui_element_update: 108
 - sfx_play_panned|creature_update_all: 57
@@ -204,26 +204,26 @@
 - sfx_play_panned|weapon_assign_player: 9
 - sfx_play|tutorial_timeline_update: 7
 - sfx_play_panned|bonus_apply: 5
-- sfx_play_exclusive|projectile_update: 4
+- music_play_exclusive|projectile_update: 4
 - sfx_play|ui_menu_item_update: 3
-- sfx_play_exclusive|game_startup_init: 2
+- music_play_exclusive|game_startup_init: 2
 - sfx_play|gameplay_update_and_render: 2
 - sfx_play|perk_selection_screen_update: 2
 - sfx_play|perk_apply: 2
 - sfx_play|game_over_screen_update: 2
 - sfx_play|input_scheme_label: 2
 - sfx_play|quest_mode_update: 2
-- sfx_play_exclusive|quest_mode_update: 2
-- sfx_play_exclusive|ui_menu_main_click_options: 1
+- music_play_exclusive|quest_mode_update: 2
+- music_play_exclusive|ui_menu_main_click_options: 1
 - sfx_play|credits_line_clear_flag: 1
-- sfx_play_exclusive|ui_list_widget_update: 1
+- music_play_exclusive|ui_list_widget_update: 1
 - sfx_play|ui_text_input_update: 1
 - top function+id pairs:
-  - sfx_play_exclusive|quest_results_screen_update|5: 3989
-  - sfx_play_exclusive|game_over_screen_update|1: 714
-  - sfx_play_exclusive|quest_failed_screen_update|1: 482
+  - music_play_exclusive|quest_results_screen_update|5: 3989
+  - music_play_exclusive|game_over_screen_update|1: 714
+  - music_play_exclusive|quest_failed_screen_update|1: 482
   - sfx_play_panned|player_update|34: 348
-  - sfx_play_exclusive|gameplay_update_and_render|1: 346
+  - music_play_exclusive|gameplay_update_and_render|1: 346
   - sfx_play_panned|player_update|37: 221
   - sfx_play|ui_element_update|64: 95
   - sfx_play_panned|projectile_update|54: 63
@@ -260,10 +260,10 @@
   - sfx_play_panned|projectile_update|58: 7
   - sfx_play_panned|weapon_assign_player|31: 6
 - high-confidence function->id:
-  - sfx_play_exclusive|quest_results_screen_update -> id 5 (3989/3989, 100.0%)
-  - sfx_play_exclusive|game_over_screen_update -> id 1 (714/716, 99.7%)
-  - sfx_play_exclusive|quest_failed_screen_update -> id 1 (482/483, 99.8%)
-  - sfx_play_exclusive|gameplay_update_and_render -> id 1 (346/346, 100.0%)
+  - music_play_exclusive|quest_results_screen_update -> id 5 (3989/3989, 100.0%)
+  - music_play_exclusive|game_over_screen_update -> id 1 (714/716, 99.7%)
+  - music_play_exclusive|quest_failed_screen_update -> id 1 (482/483, 99.8%)
+  - music_play_exclusive|gameplay_update_and_render -> id 1 (346/346, 100.0%)
   - sfx_play|ui_button_update -> id 63 (38/38, 100.0%)
   - sfx_play|credits_screen_update -> id 62 (38/38, 100.0%)
   - sfx_play|quest_results_screen_update -> id 69 (21/23, 91.3%)
