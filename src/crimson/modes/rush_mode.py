@@ -6,7 +6,7 @@ from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.rand import Crand
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 from grim.view import ViewContext
 
 from ..debug import debug_enabled
@@ -17,9 +17,9 @@ from .base_gameplay_mode import (
     BaseGameplayMode,
 )
 
-UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
-UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
-UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
+UI_TEXT_COLOR = rl_color(220, 220, 220, 255)
+UI_HINT_COLOR = rl_color(140, 140, 140, 255)
+UI_ERROR_COLOR = rl_color(240, 80, 80, 255)
 
 
 class RushMode(BaseGameplayMode):

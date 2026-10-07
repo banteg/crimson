@@ -10,7 +10,7 @@ from crimson.ui.animation import ui_element_timeline_window, ui_elements_max_tim
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.math import clamp
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from grim.sfx_map import SfxId
 
 from ...perks import PerkId, perk_display_name
@@ -28,8 +28,8 @@ from ...ui.perk_menu import (
 )
 from ...ui.text_wrap import perk_description_wrapped
 
-UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
-UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
+UI_TEXT_COLOR = rl_color(220, 220, 220, 255)
+UI_SPONSOR_COLOR = rl_color(255, 255, 255, int(255 * 0.5))
 
 
 class PerkMenuUiContext(msgspec.Struct, frozen=True):
@@ -213,12 +213,12 @@ class PerkMenuController:
         draw_ui_panel(ctx.resources, 27, computed.panel, shadow=bool(ctx.shadows_enabled))
 
         title_tex = ctx.resources.texture(TextureId.UI_TEXT_PICK_A_PERK)
-        src = rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height))
+        src = rl_rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height))
         rl.draw_texture_pro(
             title_tex,
             src,
             computed.title.to_rl(),
-            rl.Vector2(0.0, 0.0),
+            rl_vector2(0.0, 0.0),
             0.0,
             rl.WHITE,
         )

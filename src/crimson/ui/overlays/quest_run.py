@@ -3,7 +3,7 @@ from __future__ import annotations
 from grim import canvas
 from grim.fonts.grim_mono import GrimMonoFont
 from grim.math import clamp
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from .quest_title import draw_quest_title_overlay
 
@@ -65,7 +65,7 @@ def draw_quest_complete_banner_overlay(texture: rl.Texture, *, timer_ms: float) 
     height = QUEST_COMPLETE_BANNER_BASE_H * scale
     center_x = float(canvas.width()) * 0.5
     center_y = float(canvas.height()) * 0.5
-    src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
-    dst = rl.Rectangle(center_x - width * 0.5, center_y - height * 0.5, width, height)
-    tint = rl.Color(255, 255, 255, int(clamp(alpha, 0.0, 1.0) * 255.0))
-    rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+    src = rl_rectangle(0.0, 0.0, float(texture.width), float(texture.height))
+    dst = rl_rectangle(center_x - width * 0.5, center_y - height * 0.5, width, height)
+    tint = rl_color(255, 255, 255, int(clamp(alpha, 0.0, 1.0) * 255.0))
+    rl.draw_texture_pro(texture, src, dst, rl_vector2(0.0, 0.0), 0.0, tint)

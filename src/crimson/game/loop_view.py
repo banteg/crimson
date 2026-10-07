@@ -6,7 +6,7 @@ from crimson.screens.chrome import ensure_menu_ground
 from grim import canvas
 from grim.audio import resume_audio, suspend_audio
 from grim.blend import opaque_blend
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.texture_mode import texture_mode
 
 from ..debug import debug_enabled
@@ -288,9 +288,9 @@ class GameLoopView:
             with opaque_blend():
                 rl.draw_texture_pro(
                     target.texture,
-                    rl.Rectangle(0.0, 0.0, float(render_w), -float(render_h)),
-                    rl.Rectangle(0.0, 0.0, float(screen_w), float(screen_h)),
-                    rl.Vector2(0.0, 0.0), 0.0, rl.WHITE,
+                    rl_rectangle(0.0, 0.0, float(render_w), -float(render_h)),
+                    rl_rectangle(0.0, 0.0, float(screen_w), float(screen_h)),
+                    rl_vector2(0.0, 0.0), 0.0, rl.WHITE,
                 )
         finally:
             rl.end_shader_mode()

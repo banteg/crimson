@@ -14,7 +14,7 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, me
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import Crand
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
@@ -188,18 +188,18 @@ class ReplayPlaybackMode:
         icon_y = panel_y + 8.0 + float(_REPLAY_WIDGET_CLOCK_OFFSET_Y)
 
         clock_table = resources.texture(TextureId.UI_CLOCK_TABLE)
-        src = rl.Rectangle(0.0, 0.0, float(clock_table.width), float(clock_table.height))
-        dst = rl.Rectangle(icon_x, icon_y, icon_w, icon_h)
-        rl.draw_texture_pro(clock_table, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.Color(255, 255, 255, 230))
+        src = rl_rectangle(0.0, 0.0, float(clock_table.width), float(clock_table.height))
+        dst = rl_rectangle(icon_x, icon_y, icon_w, icon_h)
+        rl.draw_texture_pro(clock_table, src, dst, rl_vector2(0.0, 0.0), 0.0, rl_color(255, 255, 255, 230))
 
         elapsed_seconds = float(self._tick_index) / float(self._tick_rate)
 
         clock_pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
-        src = rl.Rectangle(0.0, 0.0, float(clock_pointer.width), float(clock_pointer.height))
+        src = rl_rectangle(0.0, 0.0, float(clock_pointer.width), float(clock_pointer.height))
         center_x = icon_x + icon_w * 0.5
         center_y = icon_y + icon_h * 0.5
-        dst = rl.Rectangle(center_x, center_y, icon_w, icon_h)
-        origin = rl.Vector2(icon_w * 0.5, icon_h * 0.5)
+        dst = rl_rectangle(center_x, center_y, icon_w, icon_h)
+        origin = rl_vector2(icon_w * 0.5, icon_h * 0.5)
         rotation = max(0.0, float(elapsed_seconds)) * 6.0
         rl.draw_texture_pro(
             clock_pointer,
@@ -207,7 +207,7 @@ class ReplayPlaybackMode:
             dst,
             origin,
             rotation,
-            rl.Color(255, 255, 255, 220),
+            rl_color(255, 255, 255, 220),
         )
 
         total_ticks = len(replay.ticks)
@@ -217,7 +217,7 @@ class ReplayPlaybackMode:
         text_x = icon_x + icon_w + 6.0 + float(_REPLAY_WIDGET_TEXT_OFFSET_X)
         line1_y = line1_y + float(_REPLAY_WIDGET_TEXT_OFFSET_Y)
         status = "PAUSE" if self._paused else "REPLAY"
-        status_color = rl.Color(245, 210, 120, 230) if self._paused else rl.Color(230, 230, 230, 220)
+        status_color = rl_color(245, 210, 120, 230) if self._paused else rl_color(230, 230, 230, 220)
         self._draw_ui_text(
             f"{status} {self._playback_speed():.2f}x",
             Vec2(text_x, line1_y),
@@ -237,20 +237,20 @@ class ReplayPlaybackMode:
         bar_x = bar_x_base + float(_REPLAY_WIDGET_BAR_OFFSET_X)
         bar_y = line2_y + 5.0 + float(_REPLAY_WIDGET_BAR_OFFSET_Y)
         bar_h = _REPLAY_WIDGET_BAR_HEIGHT
-        rl.draw_rectangle(int(bar_x), int(bar_y), int(bar_w), int(bar_h), rl.Color(46, 67, 96, 150))
+        rl.draw_rectangle(int(bar_x), int(bar_y), int(bar_w), int(bar_h), rl_color(46, 67, 96, 150))
         fill_w = bar_w * progress_ratio
         if fill_w > 0.0:
-            rl.draw_rectangle(int(bar_x), int(bar_y), int(fill_w), int(bar_h), rl.Color(70, 130, 220, 225))
+            rl.draw_rectangle(int(bar_x), int(bar_y), int(fill_w), int(bar_h), rl_color(70, 130, 220, 225))
 
         self._draw_ui_text(
             elapsed_text,
             Vec2(text_x, line2_y),
-            rl.Color(220, 220, 220, 210),
+            rl_color(220, 220, 220, 210),
         )
         self._draw_ui_text(
             total_text,
             Vec2(total_x, line2_y),
-            rl.Color(220, 220, 220, 210),
+            rl_color(220, 220, 220, 210),
         )
 
     def open(self) -> None:

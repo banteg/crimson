@@ -9,7 +9,7 @@ from grim.assets import TextureId
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
 from grim.music import play_music
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...game.types import GameState
 from ...game_modes import GameMode
@@ -148,18 +148,18 @@ class QuestFailedView(MenuScreen):
         panel_top_left = panel.top_left
 
         reaper_tex = resources.texture(TextureId.UI_TEXT_REAPER)
-        src = rl.Rectangle(0.0, 0.0, float(reaper_tex.width), float(reaper_tex.height))
+        src = rl_rectangle(0.0, 0.0, float(reaper_tex.width), float(reaper_tex.height))
         banner_pos = panel_top_left + Vec2(QUEST_FAILED_BANNER_X_OFFSET, QUEST_FAILED_BANNER_Y_OFFSET)
-        dst = rl.Rectangle(
+        dst = rl_rectangle(
             banner_pos.x,
             banner_pos.y,
             float(QUEST_FAILED_BANNER_W),
             float(QUEST_FAILED_BANNER_H),
         )
-        rl.draw_texture_pro(reaper_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        rl.draw_texture_pro(reaper_tex, src, dst, rl_vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         font = resources.small_font
-        text_color = rl.Color(235, 235, 235, 255)
+        text_color = rl_color(235, 235, 235, 255)
         draw_small_text(
             font,
             self._failure_message(),

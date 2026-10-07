@@ -7,7 +7,7 @@ from contextlib import contextmanager
 import msgspec
 
 from grim import canvas
-from grim.raylib_api import rd, rl
+from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
 
 from .blend import blend_custom, opaque_blend
 from .geom import Vec2
@@ -17,10 +17,10 @@ from .texture_mode import texture_mode
 
 TERRAIN_TEXTURE_SIZE = 1024
 TERRAIN_PATCH_SIZE = 128.0
-TERRAIN_CLEAR_COLOR = rl.Color(63, 56, 25, 255)
-TERRAIN_BASE_TINT = rl.Color(178, 178, 178, 230)
-TERRAIN_OVERLAY_TINT = rl.Color(178, 178, 178, 230)
-TERRAIN_DETAIL_TINT = rl.Color(178, 178, 178, 153)
+TERRAIN_CLEAR_COLOR = rl_color(63, 56, 25, 255)
+TERRAIN_BASE_TINT = rl_color(178, 178, 178, 230)
+TERRAIN_OVERLAY_TINT = rl_color(178, 178, 178, 230)
+TERRAIN_DETAIL_TINT = rl_color(178, 178, 178, 153)
 
 
 @contextmanager
@@ -50,7 +50,7 @@ class GroundDecal(msgspec.Struct):
     height: float
     rotation_rad: float = 0.0
     # `rl.WHITE` is a plain tuple in pyray; the draws read `.r` / `.a`.
-    tint: rl.Color = msgspec.field(default_factory=lambda: rl.Color(255, 255, 255, 255))
+    tint: rl.Color = msgspec.field(default_factory=lambda: rl_color(255, 255, 255, 255))
 
 
 class GroundCorpseDecal(msgspec.Struct):
@@ -58,7 +58,7 @@ class GroundCorpseDecal(msgspec.Struct):
     top_left: Vec2
     size: float
     rotation_rad: float
-    tint: rl.Color = msgspec.field(default_factory=lambda: rl.Color(255, 255, 255, 255))
+    tint: rl.Color = msgspec.field(default_factory=lambda: rl_color(255, 255, 255, 255))
 
 
 class GroundRenderer(msgspec.Struct):
@@ -152,8 +152,8 @@ class GroundRenderer(msgspec.Struct):
             for decal in decals:
                 w = decal.width * inv_scale
                 h = decal.height * inv_scale
-                dst = rl.Rectangle(decal.pos.x * inv_scale, decal.pos.y * inv_scale, w, h)
-                origin = rl.Vector2(w * 0.5, h * 0.5)
+                dst = rl_rectangle(decal.pos.x * inv_scale, decal.pos.y * inv_scale, w, h)
+                origin = rl_vector2(w * 0.5, h * 0.5)
                 rl.draw_texture_pro(
                     decal.texture,
                     decal.src,
@@ -236,12 +236,12 @@ class GroundRenderer(msgspec.Struct):
         src_y = (1.0 - v1) * float(target.texture.height)
         src_w = (u1 - u0) * float(target.texture.width)
         src_h = (v1 - v0) * float(target.texture.height)
-        src = rl.Rectangle(src_x, src_y, src_w, -src_h)
-        dst = rl.Rectangle(0.0, 0.0, out_w, out_h)
+        src = rl_rectangle(src_x, src_y, src_w, -src_h)
+        dst = rl_rectangle(0.0, 0.0, out_w, out_h)
         # Disable alpha blending when drawing terrain to screen - the render target's
         # alpha channel may be < 1.0 after stamp blending, but terrain should be opaque.
         with opaque_blend():
-            rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+            rl.draw_texture_pro(target.texture, src, dst, rl_vector2(0.0, 0.0), 0.0, rl.WHITE)
 
     def _fit_view_window(self, screen_w: float, screen_h: float) -> tuple[float, float]:
         """
@@ -267,15 +267,15 @@ class GroundRenderer(msgspec.Struct):
     def _draw_stamps(self, texture: rl.Texture, tint: rl.Color, stamps: TerrainStampLayer) -> None:
         inv_scale = 1.0 / self._units_per_target_pixel()
         size = TERRAIN_PATCH_SIZE * inv_scale
-        src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
-        origin = rl.Vector2(size * 0.5, size * 0.5)
+        src = rl_rectangle(0.0, 0.0, float(texture.width), float(texture.height))
+        origin = rl_vector2(size * 0.5, size * 0.5)
         for rotation, x, y in stamps:
             # `position *= inv_scale` on the native pre-scale top-left.
             x *= inv_scale
             y *= inv_scale
             # raylib's DrawTexturePro positions the quad by the *origin point*,
             # while the original engine uses x/y as the quad top-left.
-            dst = rl.Rectangle(float(x + size * 0.5), float(y + size * 0.5), size, size)
+            dst = rl_rectangle(float(x + size * 0.5), float(y + size * 0.5), size, size)
             rl.draw_texture_pro(texture, src, dst, origin, math.degrees(rotation), tint)
 
     def _clamp_camera(self, camera: Vec2, screen_w: float, screen_h: float) -> Vec2:
@@ -341,7 +341,7 @@ class GroundRenderer(msgspec.Struct):
         cell_h = float(bodyset_texture.height) * 0.25
         col = frame & 3
         row = frame >> 2
-        return rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
+        return rl_rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
 
     def _draw_corpse_shadow_pass(
         self,
@@ -360,9 +360,9 @@ class GroundRenderer(msgspec.Struct):
                 size = decal.size * inv_scale * 1.064
                 x = (decal.top_left.x - 0.5) * inv_scale - offset
                 y = (decal.top_left.y - 0.5) * inv_scale - offset
-                dst = rl.Rectangle(x + size * 0.5, y + size * 0.5, size, size)
-                origin = rl.Vector2(size * 0.5, size * 0.5)
-                tint = rl.Color(
+                dst = rl_rectangle(x + size * 0.5, y + size * 0.5, size, size)
+                origin = rl_vector2(size * 0.5, size * 0.5)
+                tint = rl_color(
                     decal.tint.r,
                     decal.tint.g,
                     decal.tint.b,
@@ -394,8 +394,8 @@ class GroundRenderer(msgspec.Struct):
                 size = decal.size * inv_scale
                 x = decal.top_left.x * inv_scale - offset
                 y = decal.top_left.y * inv_scale - offset
-                dst = rl.Rectangle(x + size * 0.5, y + size * 0.5, size, size)
-                origin = rl.Vector2(size * 0.5, size * 0.5)
+                dst = rl_rectangle(x + size * 0.5, y + size * 0.5, size, size)
+                origin = rl_vector2(size * 0.5, size * 0.5)
                 rl.draw_texture_pro(
                     bodyset_texture,
                     src,

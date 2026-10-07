@@ -6,7 +6,7 @@ from grim.draw import grim_draw_rect_outline
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle
 
 from ..input_codes import input_code_name
 
@@ -20,7 +20,7 @@ def ui_render_keybind_help(
     mono: GrimMonoFont,
 ) -> None:
     """`ui_render_keybind_help`: the key info panel the F1 pause shows."""
-    rl.draw_rectangle_rec(rl.Rectangle(xy.x, xy.y, 512.0, 256.0), grim_color(0.0, 0.0, 0.0, alpha * 0.8))
+    rl.draw_rectangle_rec(rl_rectangle(xy.x, xy.y, 512.0, 256.0), grim_color(0.0, 0.0, 0.0, alpha * 0.8))
     color = grim_color(1.0, 1.0, 1.0, alpha)
     grim_draw_rect_outline(xy, 512.0, 256.0, color)
     draw_grim_mono_text(mono, "key info", Vec2(xy.x + 16.0, xy.y + 16.0), 0.8, color)

@@ -8,7 +8,7 @@ from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle, rl_vector2
 
 from ..game_modes import GameMode
 from ..game_states import GameStateId
@@ -48,9 +48,9 @@ def ui_draw_clock_gauge(resources: RuntimeResources, x: int, y: int, time_ms: in
     table = resources.texture(TextureId.UI_CLOCK_TABLE)
     rl.draw_texture_pro(
         table,
-        rl.Rectangle(0.0, 0.0, float(table.width), float(table.height)),
-        rl.Rectangle(float(x), float(y), 32.0, 32.0),
-        rl.Vector2(0.0, 0.0),
+        rl_rectangle(0.0, 0.0, float(table.width), float(table.height)),
+        rl_rectangle(float(x), float(y), 32.0, 32.0),
+        rl_vector2(0.0, 0.0),
         0.0,
         tint,
     )
@@ -58,9 +58,9 @@ def ui_draw_clock_gauge(resources: RuntimeResources, x: int, y: int, time_ms: in
     pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
     rl.draw_texture_pro(
         pointer,
-        rl.Rectangle(0.0, 0.0, float(pointer.width), float(pointer.height)),
-        rl.Rectangle(float(x) + 16.0, float(y) + 16.0, 32.0, 32.0),
-        rl.Vector2(16.0, 16.0),
+        rl_rectangle(0.0, 0.0, float(pointer.width), float(pointer.height)),
+        rl_rectangle(float(x) + 16.0, float(y) + 16.0, 32.0, 32.0),
+        rl_vector2(16.0, 16.0),
         float(int(time_ms) // 1000) * 6.0,
         tint,
     )
@@ -161,8 +161,8 @@ def ui_text_input_render(
         rl.draw_texture_pro(
             wicons,
             weapon_icon_src(wicons, icon_index),
-            rl.Rectangle(float(int(pos.x)), float(int(pos.y)), 64.0, 32.0),
-            rl.Vector2(0.0, 0.0),
+            rl_rectangle(float(int(pos.x)), float(int(pos.y)), 64.0, 32.0),
+            rl_vector2(0.0, 0.0),
             0.0,
             grim_color(1.0, 1.0, 1.0, alpha),
         )

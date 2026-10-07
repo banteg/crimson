@@ -8,7 +8,7 @@ from grim import canvas
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.rand import Crand
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 from grim.view import ViewContext
 
 from ..creatures.runtime import CreaturePool, CreatureState
@@ -27,13 +27,13 @@ from .registry import ViewInstance, register_view
 BASE_POS = Vec2(512.0, 512.0)
 
 UI_TEXT_SCALE = 1
-UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
-UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
+UI_TEXT_COLOR = rl_color(220, 220, 220, 255)
+UI_HINT_COLOR = rl_color(140, 140, 140, 255)
 
-BG_COLOR = rl.Color(12, 12, 14, 255)
-GRID_COLOR = rl.Color(40, 40, 48, 255)
-LINK_COLOR = rl.Color(80, 160, 255, 120)
-OFFSET_COLOR = rl.Color(255, 200, 80, 140)
+BG_COLOR = rl_color(12, 12, 14, 255)
+GRID_COLOR = rl_color(40, 40, 48, 255)
+LINK_COLOR = rl_color(80, 160, 255, 120)
+OFFSET_COLOR = rl_color(255, 200, 80, 140)
 
 _LINK_AI_MODES = (
     CreatureAiMode.FOLLOW_LINK,
@@ -45,16 +45,16 @@ _LINK_AI_MODES = (
 
 def _type_color(type_id: CreatureTypeId | None) -> rl.Color:
     if type_id == CreatureTypeId.ZOMBIE:
-        return rl.Color(120, 220, 120, 255)
+        return rl_color(120, 220, 120, 255)
     if type_id == CreatureTypeId.LIZARD:
-        return rl.Color(120, 160, 255, 255)
+        return rl_color(120, 160, 255, 255)
     if type_id == CreatureTypeId.ALIEN:
-        return rl.Color(200, 140, 255, 255)
+        return rl_color(200, 140, 255, 255)
     if type_id == CreatureTypeId.SPIDER_SP1:
-        return rl.Color(255, 120, 120, 255)
+        return rl_color(255, 120, 120, 255)
     if type_id == CreatureTypeId.SPIDER_SP2:
-        return rl.Color(255, 160, 120, 255)
-    return rl.Color(200, 200, 200, 255)
+        return rl_color(255, 160, 120, 255)
+    return rl_color(200, 200, 200, 255)
 
 
 class _SpawnSummary(msgspec.Struct, frozen=True):
@@ -318,7 +318,7 @@ class SpawnPlanView:
             color = _type_color(c.type_id)
             rl.draw_circle(int(screen_pos.x), int(screen_pos.y), radius, color)
             if idx == summary.returned_idx:
-                rl.draw_circle_lines(int(screen_pos.x), int(screen_pos.y), radius + 2.0, rl.Color(255, 255, 255, 200))
+                rl.draw_circle_lines(int(screen_pos.x), int(screen_pos.y), radius + 2.0, rl_color(255, 255, 255, 200))
 
         # Spawn-slot owners.
         for _idx, slot in self._owned_slots():
@@ -328,7 +328,7 @@ class SpawnPlanView:
                 int(owner_screen.x),
                 int(owner_screen.y),
                 max(8.0, 12.0 * self._world_scale),
-                rl.Color(120, 255, 180, 200),
+                rl_color(120, 255, 180, 200),
             )
 
 

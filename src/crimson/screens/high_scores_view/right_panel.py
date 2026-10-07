@@ -6,7 +6,7 @@ from grim import canvas
 from grim.assets import RuntimeResources
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl_color
 
 from ...game_states import GameStateId
 from ...ui.button import button_draw
@@ -71,7 +71,7 @@ def _draw_right_panel_quest_options(
 ) -> None:
     options_shift_x = hs_right_options_x_shift(float(view.state.config.display.width))
     options_top_left = right_top_left + Vec2(options_shift_x, 0.0)
-    text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+    text_color = rl_color(255, 255, 255, int(255 * 0.8))
 
     checkbox = view.internet_checkbox
     checkbox.checked = view.state.config.profile.show_internet_scores

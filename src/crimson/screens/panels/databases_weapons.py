@@ -9,7 +9,7 @@ from grim.color import grim_color
 from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...game.types import GameState
 from ...ui.scrollbar import ui_scrollbar_draw, ui_scrollbar_update
@@ -51,13 +51,13 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         right = right_top_left
         detail_shift_x = weapons_db_right_detail_x_shift(float(self.state.config.display.width))
         detail_top_left = right + Vec2(detail_shift_x, 0.0)
-        dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
+        dim_color = rl_color(255, 255, 255, int(255 * 0.7))
         text_color = rl.WHITE
 
         # state_15 title at (153,244) => relative to left panel (-98,194): (251,50)
         title_pos = left + Vec2(251.0, 50.0)
         title_text = "Unlocked Weapons Database"
-        draw_small_text(font, title_text, title_pos, rl.Color(255, 255, 255, 255))
+        draw_small_text(font, title_text, title_pos, rl_color(255, 255, 255, 255))
         title_w = measure_small_text_width(font, title_text)
         # `draw_title_separator`: the title's underline at 0.5.
         grim_draw_rect_outline(title_pos.offset(dy=13.0), title_w, 1.0, grim_color(1.0, 1.0, 1.0, 0.5))
@@ -79,7 +79,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         name, icon_index = self._weapon_label_and_icon(weapon_id)
         weapon = self._weapon_entry(weapon_id)
         weapon_no_label = "wepno"
-        draw_small_text(font, f"{weapon_no_label} #{weapon_id}", detail_top_left + Vec2(240.0, 32.0), rl.Color(255, 255, 255, int(255 * 0.4)))
+        draw_small_text(font, f"{weapon_no_label} #{weapon_id}", detail_top_left + Vec2(240.0, 32.0), rl_color(255, 255, 255, int(255 * 0.4)))
         draw_small_text(font, name, detail_top_left + Vec2(50.0, 50.0), text_color)
         if icon_index is not None:
             self._draw_wicon(icon_index, pos=detail_top_left + Vec2(82.0, 82.0))
@@ -165,9 +165,9 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         icon_h = cell_h
         rl.draw_texture_pro(
             tex,
-            rl.Rectangle(src_x, src_y, icon_w, icon_h),
-            rl.Rectangle(pos.x, pos.y, icon_w, icon_h),
-            rl.Vector2(0.0, 0.0),
+            rl_rectangle(src_x, src_y, icon_w, icon_h),
+            rl_rectangle(pos.x, pos.y, icon_w, icon_h),
+            rl_vector2(0.0, 0.0),
             0.0,
             rl.WHITE,
         )

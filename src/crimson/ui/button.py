@@ -6,7 +6,7 @@ from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.math import clamp
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from .focus import UiFocus
 
@@ -106,7 +106,7 @@ def button_draw(
             r = g
             b = min(1.0, 0.7 + click_t * 0.0007)
         a = state.hover_t * 0.001 * state.alpha
-        hl = rl.Color(
+        hl = rl_color(
             int(255 * r),
             int(255 * g),
             int(255 * b),
@@ -120,14 +120,14 @@ def button_draw(
             hl,
         )
 
-    plate_tint = rl.Color(255, 255, 255, int(255 * clamp(state.alpha, 0.0, 1.0)))
+    plate_tint = rl_color(255, 255, 255, int(255 * clamp(state.alpha, 0.0, 1.0)))
 
-    src = rl.Rectangle(0.0, 0.0, texture.width, texture.height)
-    dst = rl.Rectangle(pos.x, pos.y, width, 32.0)
-    rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, plate_tint)
+    src = rl_rectangle(0.0, 0.0, texture.width, texture.height)
+    dst = rl_rectangle(pos.x, pos.y, width, 32.0)
+    rl.draw_texture_pro(texture, src, dst, rl_vector2(0.0, 0.0), 0.0, plate_tint)
 
     text_a = state.alpha if state.hovered else state.alpha * 0.7
-    text_tint = rl.Color(255, 255, 255, int(255 * clamp(text_a, 0.0, 1.0)))
+    text_tint = rl_color(255, 255, 255, int(255 * clamp(text_a, 0.0, 1.0)))
     text_w = measure_small_text_width(resources.small_font, state.label)
     text_pos = Vec2(pos.x + width * 0.5 - text_w * 0.5 + 1.0, pos.y + 10.0)
     draw_small_text(resources.small_font, state.label, text_pos, text_tint)

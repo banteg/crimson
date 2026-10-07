@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from grim.assets import TextureId
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...perks import PerkId
@@ -61,7 +61,7 @@ def draw_player_trooper_sprite(
                 row = atlas_frame // aura_grid
                 cell_w = float(particles_texture.width) / float(aura_grid)
                 cell_h = float(particles_texture.height) / float(aura_grid)
-                src = rl.Rectangle(
+                src = rl_rectangle(
                     cell_w * float(col),
                     cell_h * float(row),
                     max(0.0, cell_w - 2.0),
@@ -71,22 +71,22 @@ def draw_player_trooper_sprite(
                 aura_alpha = ((math.sin(t) + 1.0) * 0.1875 + 0.25) * alpha
                 if aura_alpha > 1e-3:
                     size = 100.0 * scale
-                    dst = rl.Rectangle(screen_pos.x, screen_pos.y, float(size), float(size))
-                    origin = rl.Vector2(size * 0.5, size * 0.5)
-                    tint = rl.Color(77, 153, 77, int(clamp(aura_alpha, 0.0, 1.0) * 255.0 + 0.5))
+                    dst = rl_rectangle(screen_pos.x, screen_pos.y, float(size), float(size))
+                    origin = rl_vector2(size * 0.5, size * 0.5)
+                    tint = rl_color(77, 153, 77, int(clamp(aura_alpha, 0.0, 1.0) * 255.0 + 0.5))
                     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
                     rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, tint)
                     rl.end_blend_mode()
 
-    tint = rl.Color(240, 240, 255, int(255 * alpha + 0.5))
-    shadow_tint = rl.Color(0, 0, 0, int(90 * alpha + 0.5))
+    tint = rl_color(240, 240, 255, int(255 * alpha + 0.5))
+    shadow_tint = rl_color(0, 0, 0, int(90 * alpha + 0.5))
     overlay_tint = tint
     if len(render_frame.players) > 1:
         index = int(player.index)
         if index == 0:
-            overlay_tint = rl.Color(77, 77, 255, tint.a)
+            overlay_tint = rl_color(77, 77, 255, tint.a)
         else:
-            overlay_tint = rl.Color(255, 140, 89, tint.a)
+            overlay_tint = rl_color(255, 140, 89, tint.a)
 
     def draw(frame: int, *, pos: Vec2, scale_mul: float, rotation: float, color: rl.Color) -> None:
         render_ctx._draw_atlas_sprite(
@@ -152,7 +152,7 @@ def draw_player_trooper_sprite(
                     row = atlas_frame // shield_grid
                     cell_w = float(particles_texture.width) / float(shield_grid)
                     cell_h = float(particles_texture.height) / float(shield_grid)
-                    src = rl.Rectangle(
+                    src = rl_rectangle(
                         cell_w * float(col),
                         cell_h * float(row),
                         max(0.0, cell_w - 2.0),
@@ -171,17 +171,17 @@ def draw_player_trooper_sprite(
                         half = math.sin(t * 3.0) + 17.5
                         size = half * 2.0 * scale
                         a = int(clamp(strength * 0.4, 0.0, 1.0) * 255.0 + 0.5)
-                        tint = rl.Color(91, 180, 255, a)
-                        dst = rl.Rectangle(center.x, center.y, float(size), float(size))
-                        origin = rl.Vector2(size * 0.5, size * 0.5)
+                        tint = rl_color(91, 180, 255, a)
+                        dst = rl_rectangle(center.x, center.y, float(size), float(size))
+                        origin = rl_vector2(size * 0.5, size * 0.5)
                         rotation_deg = float((t + t) * _RAD_TO_DEG)
 
                         half = math.sin(t * 3.0) * 4.0 + 24.0
                         size2 = half * 2.0 * scale
                         a2 = int(clamp(strength * 0.3, 0.0, 1.0) * 255.0 + 0.5)
-                        tint2 = rl.Color(91, 180, 255, a2)
-                        dst2 = rl.Rectangle(center.x, center.y, float(size2), float(size2))
-                        origin2 = rl.Vector2(size2 * 0.5, size2 * 0.5)
+                        tint2 = rl_color(91, 180, 255, a2)
+                        dst2 = rl_rectangle(center.x, center.y, float(size2), float(size2))
+                        origin2 = rl_vector2(size2 * 0.5, size2 * 0.5)
                         rotation2_deg = float((t * -2.0) * _RAD_TO_DEG)
 
                         rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
@@ -199,15 +199,15 @@ def draw_player_trooper_sprite(
                     heading = float(player.aim_heading) + math.pi / 2.0
                     offset = (float(player.muzzle_flash_alpha) * 12.0 - 21.0) * scale
                     flash_pos = screen_pos + Vec2.from_angle(heading) * offset
-                    src = rl.Rectangle(
+                    src = rl_rectangle(
                         0.0,
                         0.0,
                         float(muzzle_flash_texture.width),
                         float(muzzle_flash_texture.height),
                     )
-                    dst = rl.Rectangle(flash_pos.x, flash_pos.y, size, size)
-                    origin = rl.Vector2(size * 0.5, size * 0.5)
-                    tint_flash = rl.Color(255, 255, 255, int(flash_alpha * 255.0 + 0.5))
+                    dst = rl_rectangle(flash_pos.x, flash_pos.y, size, size)
+                    origin = rl_vector2(size * 0.5, size * 0.5)
+                    tint_flash = rl_color(255, 255, 255, int(flash_alpha * 255.0 + 0.5))
                     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
                     rl.draw_texture_pro(
                         muzzle_flash_texture,

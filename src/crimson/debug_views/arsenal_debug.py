@@ -10,7 +10,7 @@ from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.rand import Crand
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 from grim.view import ViewContext
 
 from ..aim_schemes import AimScheme
@@ -38,11 +38,11 @@ from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import ViewInstance, register_view
 
-BG = rl.Color(10, 10, 12, 255)
+BG = rl_color(10, 10, 12, 255)
 
-UI_TEXT = rl.Color(235, 235, 235, 255)
-UI_HINT = rl.Color(180, 180, 180, 255)
-UI_ERROR = rl.Color(240, 80, 80, 255)
+UI_TEXT = rl_color(235, 235, 235, 255)
+UI_HINT = rl_color(180, 180, 180, 255)
+UI_ERROR = rl_color(240, 80, 80, 255)
 
 ARSENAL_PLAYER_MOVE_SPEED_MULTIPLIER = 6.0
 ARSENAL_PLAYER_INVULNERABLE_SHIELD_TIMER = 1e-3

@@ -5,7 +5,7 @@ import msgspec
 from grim.assets import RuntimeResources, TextureId
 from grim.color import grim_color
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle, rl_vector2
 
 from .focus import UiFocus
 
@@ -60,9 +60,9 @@ def ui_segmented_slider_draw(resources: RuntimeResources, focus: UiFocus, slider
     for i in range(slider.max):
         rl.draw_texture_pro(
             rect_off,
-            rl.Rectangle(0.0, 0.0, float(rect_off.width), float(rect_off.height)),
-            rl.Rectangle(pos.x + float(i * 8), pos.y, 8.0, 16.0),
-            rl.Vector2(0.0, 0.0),
+            rl_rectangle(0.0, 0.0, float(rect_off.width), float(rect_off.height)),
+            rl_rectangle(pos.x + float(i * 8), pos.y, 8.0, 16.0),
+            rl_vector2(0.0, 0.0),
             0.0,
             grim_color(1.0, 1.0, 1.0, 0.5),
         )
@@ -70,9 +70,9 @@ def ui_segmented_slider_draw(resources: RuntimeResources, focus: UiFocus, slider
     for i in range(slider.value):
         rl.draw_texture_pro(
             rect_on,
-            rl.Rectangle(0.0, 0.0, float(rect_on.width), float(rect_on.height)),
-            rl.Rectangle(pos.x + float(i * 8), pos.y, 8.0, 16.0),
-            rl.Vector2(0.0, 0.0),
+            rl_rectangle(0.0, 0.0, float(rect_on.width), float(rect_on.height)),
+            rl_rectangle(pos.x + float(i * 8), pos.y, 8.0, 16.0),
+            rl_vector2(0.0, 0.0),
             0.0,
             grim_color(1.0, 1.0, 1.0, 1.0),
         )

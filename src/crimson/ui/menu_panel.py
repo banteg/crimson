@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from grim.assets import RuntimeResources, TextureId
 from grim.geom import Rect, Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle, rl_vector2
 
 from .animation import ui_element_anim, ui_element_direction_flag
 from .menu_layout import MENU_PANEL_WIDTH, ui_element_pos
@@ -57,7 +57,7 @@ def draw_classic_menu_panel(
     bottom_h = MENU_PANEL_DST_BOTTOM_H * scale
     mid_h = float(dst.height) - top_h - bottom_h
 
-    origin = rl.Vector2(0.0, 0.0)
+    origin = rl_vector2(0.0, 0.0)
 
     def _src(rect: rl.Rectangle) -> rl.Rectangle:
         if not flip_x:
@@ -67,15 +67,15 @@ def draw_classic_menu_panel(
         # With CLAMP wrap, raylib's DrawTexturePro behaves badly when flipping via
         # src.x=rect.x+rect.width (u near 1.0) and negative widths; it can clamp
         # the UVs to the edge texel and collapse the panel to a transparent strip.
-        return rl.Rectangle(rect.x, rect.y, -rect.width, rect.height)
+        return rl_rectangle(rect.x, rect.y, -rect.width, rect.height)
 
     if mid_h <= 0.0:
-        src = _src(rl.Rectangle(src_x, src_y, src_w, src_h))
+        src = _src(rl_rectangle(src_x, src_y, src_w, src_h))
         if shadow:
             draw_ui_quad_shadow(
                 texture=texture,
                 src=src,
-                dst=rl.Rectangle(
+                dst=rl_rectangle(
                     float(dst.x + UI_SHADOW_OFFSET),
                     float(dst.y + UI_SHADOW_OFFSET),
                     float(dst.width),
@@ -88,22 +88,22 @@ def draw_classic_menu_panel(
         return
 
     # Source slice rects (in texture pixels, with 1px inset).
-    src_top = _src(rl.Rectangle(src_x, src_y, src_w, max(0.0, MENU_PANEL_SRC_SLICE_Y1 - inset)))
+    src_top = _src(rl_rectangle(src_x, src_y, src_w, max(0.0, MENU_PANEL_SRC_SLICE_Y1 - inset)))
     src_mid = _src(
-        rl.Rectangle(src_x, MENU_PANEL_SRC_SLICE_Y1, src_w, max(0.0, MENU_PANEL_SRC_SLICE_Y2 - MENU_PANEL_SRC_SLICE_Y1)),
+        rl_rectangle(src_x, MENU_PANEL_SRC_SLICE_Y1, src_w, max(0.0, MENU_PANEL_SRC_SLICE_Y2 - MENU_PANEL_SRC_SLICE_Y1)),
     )
-    src_bot = _src(rl.Rectangle(src_x, MENU_PANEL_SRC_SLICE_Y2, src_w, max(0.0, (tex_h - inset) - MENU_PANEL_SRC_SLICE_Y2)))
+    src_bot = _src(rl_rectangle(src_x, MENU_PANEL_SRC_SLICE_Y2, src_w, max(0.0, (tex_h - inset) - MENU_PANEL_SRC_SLICE_Y2)))
 
     # Destination slices.
-    dst_top = rl.Rectangle(dst.x, dst.y, float(dst.width), float(top_h))
-    dst_mid = rl.Rectangle(dst.x, dst.y + float(top_h), float(dst.width), float(mid_h))
-    dst_bot = rl.Rectangle(dst.x, dst.y + float(top_h) + float(mid_h), float(dst.width), float(bottom_h))
+    dst_top = rl_rectangle(dst.x, dst.y, float(dst.width), float(top_h))
+    dst_mid = rl_rectangle(dst.x, dst.y + float(top_h), float(dst.width), float(mid_h))
+    dst_bot = rl_rectangle(dst.x, dst.y + float(top_h) + float(mid_h), float(dst.width), float(bottom_h))
 
     if shadow:
         draw_ui_quad_shadow(
             texture=texture,
             src=src_top,
-            dst=rl.Rectangle(
+            dst=rl_rectangle(
                 float(dst_top.x + UI_SHADOW_OFFSET),
                 float(dst_top.y + UI_SHADOW_OFFSET),
                 float(dst_top.width),
@@ -115,7 +115,7 @@ def draw_classic_menu_panel(
         draw_ui_quad_shadow(
             texture=texture,
             src=src_mid,
-            dst=rl.Rectangle(
+            dst=rl_rectangle(
                 float(dst_mid.x + UI_SHADOW_OFFSET),
                 float(dst_mid.y + UI_SHADOW_OFFSET),
                 float(dst_mid.width),
@@ -127,7 +127,7 @@ def draw_classic_menu_panel(
         draw_ui_quad_shadow(
             texture=texture,
             src=src_bot,
-            dst=rl.Rectangle(
+            dst=rl_rectangle(
                 float(dst_bot.x + UI_SHADOW_OFFSET),
                 float(dst_bot.y + UI_SHADOW_OFFSET),
                 float(dst_bot.width),

@@ -5,7 +5,7 @@ import msgspec
 from grim.color import grim_color
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle
 
 from .focus import UiFocus
 
@@ -162,19 +162,19 @@ def ui_scrollbar_draw(font: SmallFontData, focus: UiFocus, bar: UiScrollbar, pos
     if bar.focused:
         focus.draw(pos.offset(dx=-16.0))
     height = float(bar.visible_rows * 16 + 4)
-    rl.draw_rectangle_rec(rl.Rectangle(pos.x, pos.y, 250.0, height), grim_color(1.0, 1.0, 1.0, 1.0))
-    rl.draw_rectangle_rec(rl.Rectangle(pos.x + 1.0, pos.y + 1.0, 248.0, height - 2.0), grim_color(0.0, 0.0, 0.0, 1.0))
+    rl.draw_rectangle_rec(rl_rectangle(pos.x, pos.y, 250.0, height), grim_color(1.0, 1.0, 1.0, 1.0))
+    rl.draw_rectangle_rec(rl_rectangle(pos.x + 1.0, pos.y + 1.0, 248.0, height - 2.0), grim_color(0.0, 0.0, 0.0, 1.0))
     if bar.item_count > bar.visible_rows:
-        rl.draw_rectangle_rec(rl.Rectangle(pos.x + 240.0, pos.y, 1.0, height), grim_color(1.0, 1.0, 1.0, 0.8))
+        rl.draw_rectangle_rec(rl_rectangle(pos.x + 240.0, pos.y, 1.0, height), grim_color(1.0, 1.0, 1.0, 0.8))
         thumb_pos, thumb_height = _thumb(bar, pos)
         rl.draw_rectangle_rec(
-            rl.Rectangle(thumb_pos.x, thumb_pos.y, 8.0, thumb_height + 1.0), grim_color(1.0, 1.0, 1.0, 0.8),
+            rl_rectangle(thumb_pos.x, thumb_pos.y, 8.0, thumb_height + 1.0), grim_color(1.0, 1.0, 1.0, 0.8),
         )
         if _mouse_inside_rect(mouse, pos.offset(dx=240.0), int(height), 10):
             fill = grim_color(0.2, 0.4, 0.8, 1.0)
         else:
             fill = grim_color(0.1, 0.2, 0.4, 1.0)
-        rl.draw_rectangle_rec(rl.Rectangle(thumb_pos.x + 1.0, thumb_pos.y + 1.0, 6.0, thumb_height - 1.0), fill)
+        rl.draw_rectangle_rec(rl_rectangle(thumb_pos.x + 1.0, thumb_pos.y + 1.0, 6.0, thumb_height - 1.0), fill)
 
     first_item = int(bar.scroll_offset)
     hovered_index = ui_scrollbar_row_under_mouse(bar, pos, mouse)

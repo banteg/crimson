@@ -5,7 +5,7 @@ from collections.abc import Callable, Sequence
 
 from grim import canvas
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...creatures.runtime import CreatureState
 
@@ -58,9 +58,9 @@ def draw_typo_name_labels(
         x = screen_pos.x - text_w * 0.5
 
         bg_alpha = label_alpha * NAME_LABEL_BG_ALPHA
-        bg = rl.Color(0, 0, 0, int(255 * bg_alpha))
-        fg = rl.Color(255, 255, 255, int(255 * label_alpha))
-        rl.draw_rectangle_rec(rl.Rectangle(x - 4.0, y, text_w + 8.0, text_h), bg)
+        bg = rl_color(0, 0, 0, int(255 * bg_alpha))
+        fg = rl_color(255, 255, 255, int(255 * label_alpha))
+        rl.draw_rectangle_rec(rl_rectangle(x - 4.0, y, text_w + 8.0, text_h), bg)
         draw_text(text, Vec2(x, y), fg)
 
 
@@ -77,21 +77,21 @@ def draw_typing_box(
     panel_y = screen_h - 144.0
     text_y = screen_h - 127.0
 
-    src = rl.Rectangle(0.0, 0.0, float(panel_texture.width), float(panel_texture.height))
-    dst = rl.Rectangle(
+    src = rl_rectangle(0.0, 0.0, float(panel_texture.width), float(panel_texture.height))
+    dst = rl_rectangle(
         panel_x,
         panel_y,
         TYPING_PANEL_WIDTH,
         TYPING_PANEL_HEIGHT,
     )
-    tint = rl.Color(255, 255, 255, int(255 * TYPING_PANEL_ALPHA))
-    rl.draw_texture_pro(panel_texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+    tint = rl_color(255, 255, 255, int(255 * TYPING_PANEL_ALPHA))
+    rl.draw_texture_pro(panel_texture, src, dst, rl_vector2(0.0, 0.0), 0.0, tint)
 
-    draw_text(TYPING_PROMPT + text, Vec2(TYPING_TEXT_X, text_y), rl.Color(255, 255, 255, 255))
+    draw_text(TYPING_PROMPT + text, Vec2(TYPING_TEXT_X, text_y), rl_color(255, 255, 255, 255))
 
     cursor_dim = math.sin(game_time_s * 4.0) > 0.0
     cursor_alpha = 0.4 if cursor_dim else 1.0
-    cursor_color = rl.Color(255, 255, 255, int(255 * cursor_alpha))
+    cursor_color = rl_color(255, 255, 255, int(255 * cursor_alpha))
     text_w = float(measure_text_width(text))
     cursor_x = text_w + TYPING_CURSOR_X_OFFSET
     draw_text(TYPING_CURSOR, Vec2(cursor_x, text_y), cursor_color)

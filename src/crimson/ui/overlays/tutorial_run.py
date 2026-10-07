@@ -5,7 +5,7 @@ from collections.abc import Callable
 from grim import canvas
 from grim.draw import grim_draw_rect_outline
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle
 
 from ...tutorial import TutorialOverlayState
 
@@ -34,7 +34,7 @@ def tutorial_prompt_panel_rect(
     height = float(len(lines)) * line_h + TUTORIAL_PANEL_PADDING.y * 2.0
     screen_w = float(canvas.width())
     x = (screen_w - width) * 0.5
-    rect = rl.Rectangle(float(x), pos.y, float(width), float(height))
+    rect = rl_rectangle(float(x), pos.y, float(width), float(height))
     return rect, lines, line_h
 
 
@@ -55,13 +55,13 @@ def draw_tutorial_prompt_panel(
         measure_line_height=measure_line_height,
         pos=pos,
     )
-    fill = rl.Color(0, 0, 0, int(255 * alpha * 0.8))
-    border = rl.Color(255, 255, 255, int(255 * alpha))
+    fill = rl_color(0, 0, 0, int(255 * alpha * 0.8))
+    border = rl_color(255, 255, 255, int(255 * alpha))
     rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height), fill)
     grim_draw_rect_outline(Vec2(rect.x, rect.y), rect.width, rect.height, border)
 
     text_alpha = int(255 * min(1.0, max(0.0, alpha * 0.9)))
-    color = rl.Color(255, 255, 255, text_alpha)
+    color = rl_color(255, 255, 255, text_alpha)
     x = rect.x + TUTORIAL_PANEL_PADDING.x
     line_y = rect.y + TUTORIAL_PANEL_PADDING.y
     for line in lines:

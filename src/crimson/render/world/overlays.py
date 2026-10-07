@@ -3,7 +3,7 @@ from __future__ import annotations
 from grim.assets import TextureId
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from . import viewport
 from .constants import _RAD_TO_DEG
@@ -29,8 +29,8 @@ def draw_aim_circle(*, center: Vec2, radius: float, alpha: float = 1.0) -> None:
 
     fill_a = int(77 * alpha + 0.5)  # ui_render_aim_indicators: rgba(0,0,0.1,0.3)
     outline_a = int(255 * 0.55 * alpha + 0.5)
-    fill = rl.Color(0, 0, 26, fill_a)
-    outline = rl.Color(255, 255, 255, outline_a)
+    fill = rl_color(0, 0, 26, fill_a)
+    outline = rl_color(255, 255, 255, outline_a)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
 
@@ -65,27 +65,27 @@ def draw_clock_gauge(
     size = 32.0 * scale
     if size <= 1e-3:
         return
-    tint = rl.Color(255, 255, 255, int(clamp(float(alpha), 0.0, 1.0) * 255.0 + 0.5))
+    tint = rl_color(255, 255, 255, int(clamp(float(alpha), 0.0, 1.0) * 255.0 + 0.5))
     half = size * 0.5
 
-    table_src = rl.Rectangle(
+    table_src = rl_rectangle(
         0.0,
         0.0,
         float(table.width),
         float(table.height),
     )
-    table_dst = rl.Rectangle(pos.x, pos.y, size, size)
-    rl.draw_texture_pro(table, table_src, table_dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+    table_dst = rl_rectangle(pos.x, pos.y, size, size)
+    rl.draw_texture_pro(table, table_src, table_dst, rl_vector2(0.0, 0.0), 0.0, tint)
 
     seconds = int(ms) // 1000
-    pointer_src = rl.Rectangle(
+    pointer_src = rl_rectangle(
         0.0,
         0.0,
         float(pointer.width),
         float(pointer.height),
     )
-    pointer_dst = rl.Rectangle(pos.x + half, pos.y + half, size, size)
-    origin = rl.Vector2(half, half)
+    pointer_dst = rl_rectangle(pos.x + half, pos.y + half, size, size)
+    origin = rl_vector2(half, half)
     rotation_deg = float(seconds) * 6.0
     rl.draw_texture_pro(pointer, pointer_src, pointer_dst, origin, rotation_deg, tint)
 
@@ -101,9 +101,9 @@ def direction_arrow_tint(render_ctx: WorldRenderCtx, player_index: int, *, alpha
     alpha = clamp(float(alpha), 0.0, 1.0)
     if len(render_ctx.frame.players) == 2:
         if int(player_index) == 0:
-            return rl.Color(204, 230, 255, int(153.0 * alpha + 0.5))
-        return rl.Color(255, 230, 204, int(153.0 * alpha + 0.5))
-    return rl.Color(255, 255, 255, int(77.0 * alpha + 0.5))
+            return rl_color(204, 230, 255, int(153.0 * alpha + 0.5))
+        return rl_color(255, 230, 204, int(153.0 * alpha + 0.5))
+    return rl_color(255, 255, 255, int(77.0 * alpha + 0.5))
 
 
 def draw_direction_arrows(
@@ -119,10 +119,10 @@ def draw_direction_arrows(
         return
     arrow = render_ctx.frame.resources.texture(TextureId.ARROW)
 
-    src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
+    src = rl_rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
     width = max(1.0, float(arrow.width) * scale)
     height = max(1.0, float(arrow.height) * scale)
-    origin = rl.Vector2(width * 0.5, height * 0.5)
+    origin = rl_vector2(width * 0.5, height * 0.5)
 
     for player in render_ctx.frame.players:
         if float(player.health) <= 0.0:
@@ -134,6 +134,6 @@ def draw_direction_arrows(
         heading = float(player.heading)
         marker_pos = player.pos + Vec2.from_heading(heading) * 60.0
         screen = viewport.world_to_screen_with(marker_pos, camera=camera, view_scale=view_scale)
-        dst = rl.Rectangle(screen.x, screen.y, width, height)
+        dst = rl_rectangle(screen.x, screen.y, width, height)
         tint = direction_arrow_tint(render_ctx, index, alpha=alpha)
         rl.draw_texture_pro(arrow, src, dst, origin, float(heading * _RAD_TO_DEG), tint)

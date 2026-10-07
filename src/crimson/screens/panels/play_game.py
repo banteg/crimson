@@ -16,7 +16,7 @@ from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...game.types import GameState
 from ...game_modes import GameMode
@@ -410,20 +410,20 @@ class PlayGameMenuView(PanelMenuView):
         labels_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         layout = self._content_layout()
         base_pos = layout.base_pos
-        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        text_color = rl_color(255, 255, 255, int(255 * 0.8))
 
         # `play_game_menu_update`: title label at (xy - 64, var_1c - 8), size 128x32.
         title_w = 128.0
         title_h = MENU_LABEL_ROW_HEIGHT
         title_pos = base_pos + Vec2(-64.0, -8.0)
 
-        src = rl.Rectangle(
+        src = rl_rectangle(
             0.0,
             float(MENU_LABEL_ROW_PLAY_GAME) * MENU_LABEL_ROW_HEIGHT,
             title_w,
             title_h,
         )
-        dst = rl.Rectangle(
+        dst = rl_rectangle(
             title_pos.x,
             title_pos.y,
             title_w,
@@ -433,7 +433,7 @@ class PlayGameMenuView(PanelMenuView):
             texture=labels_tex,
             src=src,
             dst=dst,
-            origin=rl.Vector2(0.0, 0.0),
+            origin=rl_vector2(0.0, 0.0),
             rotation_deg=0.0,
             tint=rl.WHITE,
         )
@@ -531,5 +531,5 @@ class PlayGameMenuView(PanelMenuView):
             x = tooltip_x + off_x
             y = tooltip_y + off_y
             for line in tooltip.splitlines():
-                draw_small_text(font, line, Vec2(x, y), rl.Color(255, 255, 255, alpha))
+                draw_small_text(font, line, Vec2(x, y), rl_color(255, 255, 255, alpha))
                 y += font.cell_size

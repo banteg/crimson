@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle
 
 
 def grim_draw_rect_outline(xy: Vec2, width: float, height: float, color: rl.Color) -> None:
@@ -18,4 +18,4 @@ def grim_draw_rect_outline(xy: Vec2, width: float, height: float, color: rl.Colo
             (xy.x + width, xy.y, 1.0, height),
         )
     for x, y, w, h in quads:
-        rl.draw_rectangle_rec(rl.Rectangle(x, y, w, h), color)
+        rl.draw_rectangle_rec(rl_rectangle(x, y, w, h), color)

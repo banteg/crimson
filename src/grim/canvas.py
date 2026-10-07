@@ -5,7 +5,7 @@ from collections.abc import Callable
 import msgspec
 
 from .blend import opaque_blend
-from .raylib_api import rl
+from .raylib_api import rl, rl_rectangle, rl_vector2
 from .texture_mode import texture_mode
 
 # The game lays out for one resolution (crimson.cfg width/height). When the window is
@@ -37,8 +37,8 @@ def frame_rect() -> rl.Rectangle:
     """Where the game frame lands in the window, in window points: the letterboxed area or the whole window."""
     box = _letterbox
     if box is None:
-        return rl.Rectangle(0.0, 0.0, float(rl.get_screen_width()), float(rl.get_screen_height()))
-    return rl.Rectangle(box.x, box.y, box.width * box.scale, box.height * box.scale)
+        return rl_rectangle(0.0, 0.0, float(rl.get_screen_width()), float(rl.get_screen_height()))
+    return rl_rectangle(box.x, box.y, box.width * box.scale, box.height * box.scale)
 
 
 def mouse_position() -> rl.Vector2:
@@ -46,7 +46,7 @@ def mouse_position() -> rl.Vector2:
     box = _letterbox
     if box is None:
         return pos
-    return rl.Vector2((pos.x - box.x) / box.scale, (pos.y - box.y) / box.scale)
+    return rl_vector2((pos.x - box.x) / box.scale, (pos.y - box.y) / box.scale)
 
 
 def mouse_delta() -> rl.Vector2:
@@ -54,7 +54,7 @@ def mouse_delta() -> rl.Vector2:
     box = _letterbox
     if box is None:
         return delta
-    return rl.Vector2(delta.x / box.scale, delta.y / box.scale)
+    return rl_vector2(delta.x / box.scale, delta.y / box.scale)
 
 
 class Canvas:
@@ -98,9 +98,9 @@ class Canvas:
         with opaque_blend():
             rl.draw_texture_pro(
                 target.texture,
-                rl.Rectangle(0.0, 0.0, float(target_w), -float(target_h)),
+                rl_rectangle(0.0, 0.0, float(target_w), -float(target_h)),
                 dst,
-                rl.Vector2(0.0, 0.0),
+                rl_vector2(0.0, 0.0),
                 0.0,
                 rl.WHITE,
             )

@@ -7,7 +7,7 @@ import msgspec
 from crimson.game_states import GameStateId
 from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl_color
 
 from ...game.types import GameState
 from .base import PanelMenuView
@@ -67,8 +67,8 @@ class ModsMenuView(PanelMenuView):
         label_pos = layout.label_pos
 
         font = require_runtime_resources(self.state).small_font
-        title_color = rl.Color(255, 255, 255, 255)
-        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        title_color = rl_color(255, 255, 255, 255)
+        text_color = rl_color(255, 255, 255, int(255 * 0.8))
 
         draw_small_text(font, "MODS", base_pos, title_color)
         line_pos = label_pos.offset(dy=44.0)

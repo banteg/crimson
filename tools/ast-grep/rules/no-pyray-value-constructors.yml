@@ -1,0 +1,11 @@
+id: no-pyray-value-constructors
+language: python
+severity: error
+message: Construct Raylib values with rl_color, rl_rectangle, or rl_vector2 from grim.raylib_api.
+files:
+  - src/**/*.py
+rule:
+  any:
+    - pattern: rl.Color($$$ARGS)
+    - pattern: rl.Rectangle($$$ARGS)
+    - pattern: rl.Vector2($$$ARGS)

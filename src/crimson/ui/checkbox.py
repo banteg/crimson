@@ -6,7 +6,7 @@ from grim.assets import RuntimeResources, TextureId
 from grim.color import grim_color
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle, rl_vector2
 
 from .focus import UiFocus
 
@@ -59,9 +59,9 @@ def ui_checkbox_draw(resources: RuntimeResources, checkbox: UiCheckbox, pos: Vec
     texture = resources.texture(TextureId.UI_CHECK_ON if checkbox.checked else TextureId.UI_CHECK_OFF)
     rl.draw_texture_pro(
         texture,
-        rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height)),
-        rl.Rectangle(pos.x, pos.y, 16.0, 16.0),
-        rl.Vector2(0.0, 0.0),
+        rl_rectangle(0.0, 0.0, float(texture.width), float(texture.height)),
+        rl_rectangle(pos.x, pos.y, 16.0, 16.0),
+        rl_vector2(0.0, 0.0),
         0.0,
         rl.WHITE,
     )

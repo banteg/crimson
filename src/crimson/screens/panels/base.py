@@ -18,7 +18,7 @@ from crimson.ui.menu_layout import (
 from grim import canvas
 from grim.assets import TextureId
 from grim.geom import Rect, Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
@@ -134,10 +134,10 @@ class PanelMenuView(MenuScreen):
     def _draw_title_text(self) -> None:
         x = 32
         y = 140
-        rl.draw_text(self._title, x, y, 28, rl.Color(235, 235, 235, 255))
+        rl.draw_text(self._title, x, y, 28, rl_color(235, 235, 235, 255))
         y += 34
         for line in self._body_lines:
-            rl.draw_text(line, x, y, 18, rl.Color(190, 190, 200, 255))
+            rl.draw_text(line, x, y, 18, rl_color(190, 190, 200, 255))
             y += 22
 
     def _panel_rect(self, index: int) -> Rect:

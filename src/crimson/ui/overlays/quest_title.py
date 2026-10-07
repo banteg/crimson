@@ -5,7 +5,7 @@ import msgspec
 from grim import canvas
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl_color
 
 QUEST_TITLE_ALPHA = 1.0
 QUEST_NUMBER_ALPHA_RATIO = 0.5
@@ -89,8 +89,8 @@ def draw_quest_title_overlay(font: GrimMonoFont, title: str, number: str, *, alp
         font_advance=font.advance,
     )
 
-    title_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * alpha))
-    number_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * QUEST_NUMBER_ALPHA_RATIO * alpha))
+    title_color = rl_color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * alpha))
+    number_color = rl_color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * QUEST_NUMBER_ALPHA_RATIO * alpha))
 
     draw_grim_mono_text(font, title, layout.title_pos, layout.title_scale, title_color)
     draw_grim_mono_text(

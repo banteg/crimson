@@ -7,7 +7,7 @@ from grim.color import grim_color
 from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 
 from ...game.types import GameState
 from ...perks import PerkId
@@ -41,14 +41,14 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         left = left_top_left
         right = right_top_left
         text_color = rl.WHITE
-        dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
+        dim_color = rl_color(255, 255, 255, int(255 * 0.7))
         violence_disabled = self._violence_disabled()
         detail_shift_x = perks_db_right_detail_x_shift(float(self.state.config.display.width))
 
         # state_16 title at (163,244) => relative to left panel (-98,194): (261,50)
         title_pos = left + Vec2(261.0, 50.0)
         title_text = "Unlocked Perks Database"
-        draw_small_text(font, title_text, title_pos, rl.Color(255, 255, 255, 255))
+        draw_small_text(font, title_text, title_pos, rl_color(255, 255, 255, 255))
         title_w = measure_small_text_width(font, title_text)
         # `draw_title_separator`: the title's underline at 0.5.
         grim_draw_rect_outline(title_pos.offset(dy=13.0), title_w, 1.0, grim_color(1.0, 1.0, 1.0, 0.5))
@@ -73,7 +73,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             font,
             f"{perk_no_label} #{perk_id}",
             detail_anchor + Vec2(190.0, -40.0),
-            rl.Color(255, 255, 255, int(255 * 0.4)),
+            rl_color(255, 255, 255, int(255 * 0.4)),
         )
         name_w = measure_small_text_width(font, perk_name)
         # Native centres the name on the int text width halved with C integer division.
@@ -84,7 +84,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         desc_pos = detail_anchor + Vec2(16.0, 0.0)
         prereq_name = self._perk_prereq_name(perk_id, violence_disabled=violence_disabled)
         if prereq_name:
-            draw_small_text(font, f"Requires: {prereq_name}", desc_pos, rl.Color(255, 204, 204, int(255 * 0.8)))
+            draw_small_text(font, f"Requires: {prereq_name}", desc_pos, rl_color(255, 204, 204, int(255 * 0.8)))
             desc_pos = desc_pos.offset(dy=18.0)
 
         wrapped_desc = perk_description_wrapped(font, perk_id, violence_disabled=violence_disabled)

@@ -16,7 +16,7 @@ from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
 from grim.music import play_music, stop_music
 from grim.rand import CrandLike
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
@@ -161,17 +161,17 @@ class StatisticsMenuView(MenuScreen):
         # Title: full-size row from ui_itemTexts.jaz (128x32).
         label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
         row_h = float(MENU_LABEL_ROW_HEIGHT)
-        src = rl.Rectangle(0.0, float(MENU_LABEL_ROW_STATISTICS) * row_h, float(label_tex.width), row_h)
+        src = rl_rectangle(0.0, float(MENU_LABEL_ROW_STATISTICS) * row_h, float(label_tex.width), row_h)
         draw_ui_quad(
             texture=label_tex,
             src=src,
-            dst=rl.Rectangle(
+            dst=rl_rectangle(
                 panel_top_left.x + _TITLE_X,
                 panel_top_left.y + _TITLE_Y,
                 _TITLE_W,
                 _TITLE_H,
             ),
-            origin=rl.Vector2(0.0, 0.0),
+            origin=rl_vector2(0.0, 0.0),
             rotation_deg=0.0,
             tint=rl.WHITE,
         )
@@ -184,7 +184,7 @@ class StatisticsMenuView(MenuScreen):
                 int(self.state.status.play_time_ms),
             ),
             panel_top_left + Vec2(_PLAYTIME_X, _PLAYTIME_Y),
-            rl.Color(255, 255, 255, int(255 * 0.8)),
+            rl_color(255, 255, 255, int(255 * 0.8)),
         )
 
         if (
@@ -193,7 +193,7 @@ class StatisticsMenuView(MenuScreen):
         ):
             self.state.stats_menu_easter_egg_roll = _STATS_EASTER_ROLL_UNSET
             x = float(self.state.rng.rand_tagged(RngCallerStatic.REWRITE_STATS_MENU_EASTER_TEXT_X) % 64 + 16)
-            draw_small_text(font, _STATS_EASTER_TEXT, Vec2(x, _STATS_EASTER_TEXT_Y), rl.Color(51, 255, 153, 128))
+            draw_small_text(font, _STATS_EASTER_TEXT, Vec2(x, _STATS_EASTER_TEXT_Y), rl_color(51, 255, 153, 128))
 
         # Buttons.
         button_base = panel_top_left + Vec2(_BUTTON_X, _BUTTON_Y0)

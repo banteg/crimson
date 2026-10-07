@@ -6,7 +6,7 @@ from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 
 from ...game.types import GameState
 from ...game_modes import GameMode
@@ -155,8 +155,8 @@ class EndNoteView(MenuScreen):
         )
 
         header_pos = panel_top_left + Vec2(END_NOTE_HEADER_X_OFFSET, END_NOTE_HEADER_Y_OFFSET)
-        header_color = rl.Color(255, 255, 255, int(255 * 0.8))
-        body_color = rl.Color(255, 255, 255, int(255 * 0.5))
+        header_color = rl_color(255, 255, 255, int(255 * 0.8))
+        body_color = rl_color(255, 255, 255, int(255 * 0.5))
 
         draw_small_text(font, header, header_pos, header_color)
 

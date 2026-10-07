@@ -9,7 +9,7 @@ from crimson.ui.menu_chrome import draw_menu_sign
 from grim import canvas
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle
 from grim.sfx import play_sfx
 from grim.sfx_map import SfxId
 
@@ -265,7 +265,7 @@ class CreditsView(MenuScreen):
                 r, g, b = 0.4, 0.7, 0.7
             else:
                 r, g, b = 0.9, 1.0, 0.9
-        return rl.Color(
+        return rl_color(
             int(r * 255.0 + 0.5),
             int(g * 255.0 + 0.5),
             int(b * 255.0 + 0.5),
@@ -438,7 +438,7 @@ class CreditsView(MenuScreen):
             font,
             "credits",
             panel_top_left + Vec2(_TITLE_X, _TITLE_Y),
-            rl.Color(255, 255, 255, 255),
+            rl_color(255, 255, 255, 255),
         )
 
         visible_count = self._scroll_line_end_index - self._scroll_line_start_index
@@ -462,8 +462,8 @@ class CreditsView(MenuScreen):
                 # The reading row keeps its marker while focused: the port-only stop has no hover to show it.
                 reading_y = self._line_y(self._reading_row(), panel_top_left=panel_top_left)
                 rl.draw_rectangle_rec(
-                    rl.Rectangle(panel_top_left.x + _TEXT_ANCHOR_X - 16.0, reading_y + 4.0, 6.0, 6.0),
-                    rl.Color(204, 204, 153, 204),
+                    rl_rectangle(panel_top_left.x + _TEXT_ANCHOR_X - 16.0, reading_y + 4.0, 6.0, 6.0),
+                    rl_color(204, 204, 153, 204),
                 )
 
         button_draw(

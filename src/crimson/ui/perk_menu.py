@@ -6,7 +6,7 @@ from grim.assets import RuntimeResources
 from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 
 from .focus import UiFocus
 
@@ -137,7 +137,7 @@ def draw_menu_item(
 ) -> float:
     alpha = MENU_ITEM_ALPHA_HOVER if hovered else MENU_ITEM_ALPHA_IDLE
     r, g, b = MENU_ITEM_RGB
-    color = rl.Color(int(r), int(g), int(b), int(255 * alpha))
+    color = rl_color(int(r), int(g), int(b), int(255 * alpha))
     draw_ui_text(resources, label, pos, color=color)
     width = _ui_text_width(resources, label)
     if width <= 0.0:
