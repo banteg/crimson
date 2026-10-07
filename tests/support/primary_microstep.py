@@ -3,8 +3,8 @@
 import struct
 from unittest.mock import patch
 
+from crimson.creatures.spatial_hash import CreatureSpatialHash
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime

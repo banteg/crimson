@@ -14,6 +14,7 @@ from ...collision_math import within_native_find_radius
 from ...creatures.damage import creature_apply_damage, creatures_apply_radius_damage
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
+from ...creatures.spatial_hash import CreatureSpatialHash
 from ...creatures.spawn_ids import CreatureFlags
 from ...math_parity import (
     NATIVE_HALF_PI,
@@ -46,7 +47,6 @@ from ..types import (
     ProjectileTemplateId,
 )
 from .collision import creature_find_nearest_active
-from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -178,6 +178,8 @@ class ProjectilePool:
 
         if dt <= 0.0:
             return []
+        if not any(entry.active for entry in self._entries):
+            return []
 
         perks = runtime_state.perks
         barrel_greaser_active = PerkId.BARREL_GREASER in perks
@@ -221,6 +223,7 @@ class ProjectilePool:
                             radius, damage = x87_pc24_mul(ion_scale, 60.0), x87_pc24_mul(dt, 40.0)
                         creatures_apply_radius_damage(
                             step_runtime, proj.pos, radius, damage, CreatureDamageType.ION,
+                            creature_spatial=creature_spatial,
                         )
                     case ProjectileTemplateId.ION_CANNON:
                         proj.life_timer = x87_pc24_sub(proj.life_timer, x87_pc24_mul(dt, f32(0.7)))
@@ -230,6 +233,7 @@ class ProjectilePool:
                             x87_pc24_mul(ion_scale, 128.0),
                             x87_pc24_mul(dt, 300.0),
                             CreatureDamageType.ION,
+                            creature_spatial=creature_spatial,
                         )
                     case ProjectileTemplateId.GAUSS_GUN:
                         proj.life_timer = x87_pc24_sub(proj.life_timer, x87_pc24_mul(dt, f32(0.1)))

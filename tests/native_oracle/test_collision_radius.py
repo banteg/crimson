@@ -7,6 +7,7 @@ import struct
 
 from crimson.collision_math import creature_find_in_radius, native_find_size_margin
 from crimson.creatures.runtime import CreaturePool
+from crimson.creatures.spatial_hash import CreatureSpatialHash
 from grim.geom import Vec2
 from grim.math import f32, i32
 
@@ -42,8 +43,22 @@ def test_collision_radius_matches_native_at_axis_boundaries_and_translated_posit
         image[0] = 1
         for name, value in (("pos_x", position.x), ("pos_y", position.y), ("size", size), ("death_timer", creature.death_timer)):
             struct.pack_into("<f", image, CREATURE_LAYOUT[name][0], value)
+        # An overlapping later slot must lose to slot zero, but become the
+        # first hit when zero is outside the circle or no longer collidable.
+        later = pool.entries[17]
+        later.active = case % 4 == 0
+        later.pos = origin
+        later.size = 32.0
+        later.death_timer = 16.0
+        if later.active:
+            offset = 17 * CREATURE_STRIDE
+            image[offset] = 1
+            for name, value in (("pos_x", origin.x), ("pos_y", origin.y), ("size", later.size), ("death_timer", later.death_timer)):
+                struct.pack_into("<f", image, offset + CREATURE_LAYOUT[name][0], value)
         oracle.write(address, image)
         oracle.write(origin_address, struct.pack("<2f", origin.x, origin.y))
         expected = i32(oracle.call("creature_find_in_radius", origin_address, radius, 0).eax)
         actual = creature_find_in_radius(pool.entries, pos=origin, radius=radius, start_index=0)
         assert actual == expected, f"case {case}: {origin}, {position}, radius {radius}, size {size}"
+        spatial = CreatureSpatialHash(pool=pool, is_collidable=lambda c: c.active and c.death_timer > 5.0)
+        assert spatial.find_in_radius(pos=origin, radius=radius) == expected

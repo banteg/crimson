@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
+from crimson.creatures.spatial_hash import CreatureSpatialHash
 from crimson.projectiles.runtime import fx_spawn_secondary_projectile
-from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from crimson.projectiles.types import SecondaryProjectileTypeId
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
