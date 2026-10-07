@@ -3,7 +3,13 @@
 import re
 
 
-def adapt(src, txt):
+def session_only(session, *_original, **_statement):
+    return session
+
+
+def adapt(src, txt, seam=session_only):
+    # `seam` decides where a recorded-input seam replaces the original read: the
+    # verifier always takes the recording; the game module only inside a session.
     txt = re.sub(r"\bfloat (VEC2_Angle|creature_vec2_angle|projectile_vec2_angle)\s*\(", r"double \1(", txt)
     if 'extern "C" float cos(float angle);' in txt:
         txt = txt.replace("float cos(float angle)", "float cosf(float angle)").replace(
@@ -90,7 +96,7 @@ def adapt(src, txt):
         expression = f"grim_interface_ptr->grim_get_joystick_pov(0)\n        == config_blob.aim_pov_{side}"
         if txt.count(expression) != 1:
             raise ValueError("Audit the POV aim seam before changing this adapter")
-        txt = '#include "api.h"\n' + txt.replace(expression, f"portable_aim_turn_{side}()")
+        txt = '#include "api.h"\n' + txt.replace(expression, seam(f"portable_aim_turn_{side}()", expression))
     if src.stem == "bonus_apply":
         # 0x00409e0b: the first link's `fpatan` stays wide; each subtraction rounds.
         expression = "(float)atan2(dy, dx) - 1.5707964f - 3.1415927f,"
@@ -104,13 +110,13 @@ def adapt(src, txt):
             expression = f"mouse_screen->{axis} - camera_offset_{axis}"
             if txt.count(expression) != 1:
                 raise ValueError("Audit the normalized world-aim seam before changing this adapter")
-            txt = txt.replace(expression, f"portable_aim_{axis}()")
+            txt = txt.replace(expression, seam(f"portable_aim_{axis}()", expression))
         # Pad aim is recorded as the stick's reach (0x0041539e..0x004153ba); it
         # still lands on the position movement just produced.
         txt, count = re.subn(
             r"scalar = grim_interface_ptr->grim_get_config_float\(\s*player->input\.axis_aim_y\);.*?"
             r"(\*\(vec2_t \*\)&player->aim = )pad \* distance( \+ \*\(vec2_t \*\)&player->position;)",
-            r"\1vec2_t(portable_aim_x(), portable_aim_y())\2",
+            lambda m: seam(f"{m[1]}vec2_t(portable_aim_x(), portable_aim_y()){m[2]}", m[0], statement=True),
             txt,
             flags=re.DOTALL,
         )
@@ -128,7 +134,11 @@ def adapt(src, txt):
             raise ValueError("Audit the point-click move target seam before changing this adapter")
         txt = txt.replace(
             expression,
-            "            *(vec2_t *)&player->move_target = vec2_t(portable_move_x(), portable_move_y());",
+            seam(
+                "            *(vec2_t *)&player->move_target = vec2_t(portable_move_x(), portable_move_y());",
+                expression,
+                statement=True,
+            ),
         )
         txt = '#include "api.h"\n' + txt
         # FCOS/FSIN remain wide until the first FMUL (e.g. 0x00414335).

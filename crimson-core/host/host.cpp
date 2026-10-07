@@ -74,8 +74,8 @@ static cvar_float_t friendly, transparency, verbose, pad_distance, bodies_fade;
 // recovered implementation.
 extern "C" int crt_rand() {
 #ifdef CRIMSON_GAME
-  // Gameplay RNG belongs to run start and ticks; presentation must not draw it.
-  if (!game_ticking)
+  // In a session, gameplay RNG belongs to run start and ticks; presentation must not draw it.
+  if (game_session && !game_ticking)
     abort();
 #endif
   rng = rng * 214013u + 2531011u;
@@ -94,7 +94,7 @@ extern "C" void crt_free(void *) {}
 #endif
 extern "C" char *strdup_malloc(char *s) {
 #ifdef CRIMSON_GAME
-  if (game_booting)
+  if (game_heap_strings)
     return s ? strdup(s) : nullptr;
 #endif
   if (!s)
@@ -107,9 +107,11 @@ extern "C" char *strdup_malloc(char *s) {
   string_used += n;
   return p;
 }
+#ifndef CRIMSON_GAME
 extern "C" char *wrap_text_to_width_alloc(char *s, int) {
   return strdup_malloc(s);
 }
+#endif
 extern "C" int crt_sprintf(char *dst, const char *fmt, ...) {
   va_list v;
   va_start(v, fmt);
@@ -117,6 +119,7 @@ extern "C" int crt_sprintf(char *dst, const char *fmt, ...) {
   va_end(v);
   return n;
 }
+#ifndef CRIMSON_GAME
 extern "C" void console_printf(console_queue_t *, char *, ...) {}
 extern "C" int console_input_poll() { return 0; }
 extern "C" int play_time_get() { return 0; }
@@ -124,13 +127,14 @@ extern "C" unsigned char game_is_full_version() { return 1; }
 extern "C" void game_save_status() {}
 extern "C" void game_state_set(game_state_id_t s) { game_state_pending = s; }
 extern "C" void demo_mode_start() { abort(); }
+#endif
 #ifndef CRIMSON_GAME
 extern "C" void sfx_play(int, float) {}
 extern "C" int sfx_play_panned(int, const vec2f_t *, float) { return 0; }
-#endif
 extern "C" int sfx_entry_start_playback(music_entry_t *) { return 1; }
 extern "C" void sfx_entry_set_volume(music_entry_t *, float) {}
 extern "C" bool input_primary_just_pressed() { return (in.flags & 2) != 0; }
+#endif
 extern "C" vec2f_t *__stdcall D3DXVec2Normalize(vec2f_t *out,
                                                 const vec2f_t *src) {
   // D3DX8's x87 path (0x00455587), including its F32 spills and PC24
@@ -157,7 +161,9 @@ extern "C" vec2f_t *__stdcall D3DXVec2Normalize(vec2f_t *out,
 #ifndef CRIMSON_GAME
 extern "C" void terrain_render() {}
 #endif
+#ifndef CRIMSON_GAME
 extern "C" void tutorial_timeline_update() { abort(); }
+#endif
 #ifndef CRIMSON_GAME
 extern "C" void perk_prompt_update_and_render() {}
 extern "C" void ui_render_aim_indicators() {}
@@ -165,8 +171,10 @@ extern "C" void hud_update_and_render() {}
 extern "C" void ui_elements_update_and_render() {}
 extern "C" void ui_cursor_render() {}
 #endif
+#ifndef CRIMSON_GAME
 extern "C" void demo_trial_overlay_render(float *, float) { abort(); }
 extern "C" void ui_render_keybind_help(float *, float) {}
+#endif
 static bool run_ended() {
   return game_state_pending == GAME_STATE_GAME_OVER ||
          game_state_pending == GAME_STATE_QUEST_FAILED ||

@@ -9,9 +9,21 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from adapter import adapt
+from adapter import adapt, session_only
 from data import data_source
-from game import adapt_game, com_defaults, engine_globals, game_headers, game_platform, game_sources, object_name
+from game import (
+    adapt_game,
+    com_defaults,
+    engine_globals,
+    game_data,
+    game_headers,
+    game_initializers,
+    game_platform,
+    game_sources,
+    game_third_party,
+    object_name,
+    session_seam,
+)
 from rules import apply_patches, load_patches
 
 HERE = Path(__file__).resolve().parent
@@ -57,7 +69,10 @@ def main():
         else:
             lines.extend(f"put({f});" for f in group["fields"])
     (headers / "snapshot.inc").write_text("\n".join(lines) + "\n")
-    data_source(a.root, a.out, grim=a.target == "game", engine=engine_globals(a.root) if a.target == "game" else ())
+    if a.target == "game":
+        game_data(a.root, a.out, engine_globals(a.root))
+    else:
+        data_source(a.root, a.out)
     env = dict(os.environ, ZIG_GLOBAL_CACHE_DIR=str(a.out / "zig-global"), ZIG_LOCAL_CACHE_DIR=str(a.out / "zig-local"))
     zig = shutil.which("zig")
     if not zig or subprocess.check_output([zig, "version"], text=True).strip() != "0.17.0":
@@ -97,7 +112,8 @@ def main():
     def compile_one(rel):
         src = a.root / rel
         txt = src.read_text()
-        txt = apply_patches(src.stem, adapt(src, txt), hunks)
+        seam = session_seam if a.target == "game" else session_only
+        txt = apply_patches(src.stem, adapt(src, txt, seam), hunks)
         if a.target == "game":
             txt = adapt_game(src, txt)
         dst = a.out / (name(rel) + ".cpp")
@@ -121,6 +137,37 @@ def main():
     if errors:
         raise SystemExit(1)
     glue = [a.out / "data.cpp", HOST / "host.cpp", *(game_platform() if a.target == "game" else [])]
+    if a.target == "game":
+        game_initializers(a.root, a.out)
+        glue.append(a.out / "initializers.cpp")
+    third_party = game_third_party(a.root) if a.target == "game" else []
+    for src in third_party:
+        proc = subprocess.run(
+            [
+                zig,
+                "cc",
+                "-target",
+                "wasm32-wasi",
+                "-std=gnu89",
+                "-O2",
+                "-w",
+                "-DHAVE_BOOLEAN",
+                "-Dboolean=unsigned char",
+                "-I" + str(HERE / "game/include"),
+                "-I" + str(a.root / "third_party/headers"),
+                "-c",
+                str(src),
+                "-o",
+                str(a.out / f"third_party_{src.stem}.o"),
+            ],
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if proc.returncode:
+            print(proc.stderr)
+            raise SystemExit(1)
     for src in glue:
         proc = subprocess.run(
             cc + flags + ["-c", str(src), "-o", str(a.out / (src.stem + ".o"))],
@@ -162,6 +209,7 @@ def main():
         mathcmd[2:2] = ["-target", "aarch64-macos.11.0" if os.uname().machine == "arm64" else "x86_64-macos.11.0"]
     subprocess.run(mathcmd, env=env, check=True)
     objs = [str(a.out / (name(f) + ".o")) for f in sources] + [str(a.out / (src.stem + ".o")) for src in glue]
+    objs += [str(a.out / f"third_party_{src.stem}.o") for src in third_party]
     objs.append(str(a.out / "math.o"))
     link = (
         cc

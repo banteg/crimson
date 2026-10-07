@@ -1,11 +1,12 @@
 #pragma once
 // What the game module asks of its host. Presentation calls return nothing, so
-// the host observes the game without feeding back into it; the queries are wall
-// time and asset bytes, which a simulation tick never reads.
+// the host observes the game without feeding back into it. The query is wall
+// time, which a simulation tick never reads; files arrive through WASI.
 #define HOST_IMPORT(name) __attribute__((import_module("host"), import_name(#name)))
 extern "C" {
-// Textures hold A8R8G8B8 texels; a render target is a texture the host can draw into.
-HOST_IMPORT(texture_create) void host_texture_create(int id, int width, int height, int render_target);
+// Textures hold A8R8G8B8 texels. Flags: 1, a render target the device draws
+// into; 2, no alpha channel (X8R8G8B8), so alpha reads as one.
+HOST_IMPORT(texture_create) void host_texture_create(int id, int width, int height, int flags);
 HOST_IMPORT(texture_upload) void host_texture_upload(int id, const void *texels);
 HOST_IMPORT(texture_release) void host_texture_release(int id);
 // Direct3D 8 render and texture stage states, by their D3DRENDERSTATETYPE and
@@ -13,6 +14,8 @@ HOST_IMPORT(texture_release) void host_texture_release(int id);
 HOST_IMPORT(render_state) void host_render_state(int state, unsigned value);
 HOST_IMPORT(texture_stage_state) void host_texture_stage_state(int stage, int state, unsigned value);
 HOST_IMPORT(set_texture) void host_set_texture(int stage, int id);
+// The back buffer the device draws into, at device creation and reset.
+HOST_IMPORT(back_buffer) void host_back_buffer(int width, int height);
 // Texture id, or 0 for the back buffer.
 HOST_IMPORT(set_render_target) void host_set_render_target(int id);
 HOST_IMPORT(clear) void host_clear(unsigned color);
@@ -24,8 +27,7 @@ HOST_IMPORT(present) void host_present(void);
 HOST_IMPORT(gamma_ramp) void host_gamma_ramp(const unsigned short *red, const unsigned short *green,
                                              const unsigned short *blue);
 HOST_IMPORT(fatal) [[noreturn]] void host_fatal(const char *message);
+// A message box the original shows the player (startup failures, warnings).
+HOST_IMPORT(message) void host_message(const char *text, const char *caption);
 HOST_IMPORT(time_ms) unsigned host_time_ms(void);
-// An asset's size, or -1 when the host has none by that name; then its bytes.
-HOST_IMPORT(file_size) int host_file_size(const char *name);
-HOST_IMPORT(file_read) void host_file_read(const char *name, void *bytes);
 }
