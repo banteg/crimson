@@ -367,14 +367,25 @@ class CreaturePool:
         origin = self._entries[origin_index]
         if not origin.active:
             return
+        # A strong, uninfected origin can neither catch nor pass on infection.
+        if not origin.plague_infected and float(origin.hp) >= 150.0:
+            return
 
+        origin_x, origin_y = origin.pos.x, origin.pos.y
         for creature in self._entries:
             if not creature.active:
                 continue
 
-            dx = x87_pc24_sub(creature.pos.x, origin.pos.x)
-            dy = x87_pc24_sub(creature.pos.y, origin.pos.y)
-            if x87_pc24_hypot(dx, dy) >= 45.0:
+            # Rounding an axis at or beyond 45 to F32 cannot put it inside
+            # the native radius. Cull those candidates before the PC24 math;
+            # nearby candidates still use its exact distance and pool order.
+            dx = creature.pos.x - origin_x
+            if dx <= -45.0 or dx >= 45.0:
+                continue
+            dy = creature.pos.y - origin_y
+            if dy <= -45.0 or dy >= 45.0:
+                continue
+            if x87_pc24_hypot(f32(dx), f32(dy)) >= 45.0:
                 continue
             if creature.plague_infected and float(origin.hp) < 150.0:
                 origin.plague_infected = True

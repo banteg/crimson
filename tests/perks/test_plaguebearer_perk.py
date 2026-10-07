@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.creatures.spawn import CreatureFlags
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_sub
@@ -126,6 +128,102 @@ def test_plaguebearer_spread_rejects_distance_rounded_to_native_radius() -> None
     pool._plaguebearer_spread_infection(1)
 
     assert not target.plague_infected
+
+
+@pytest.mark.parametrize("axis", [0, 1])
+@pytest.mark.parametrize("sign", [-1.0, 1.0])
+@pytest.mark.parametrize(
+    ("distance", "infected"),
+    [(44.999996185302734, True), (45.0, False), (45.000003814697266, False)],
+)
+def test_plaguebearer_spread_axis_radius_boundary(axis: int, sign: float, distance: float, infected: bool) -> None:
+    pool = CreaturePool()
+    target, origin = pool.entries[:2]
+    target.active = origin.active = True
+    target.hp = origin.hp = 100.0
+    origin.plague_infected = True
+    target.pos = Vec2(sign * distance, 0.0) if axis == 0 else Vec2(0.0, sign * distance)
+
+    pool._plaguebearer_spread_infection(1)
+
+    assert target.plague_infected is infected
+
+
+def test_plaguebearer_spread_self_stops_before_later_neighbors() -> None:
+    pool = CreaturePool()
+    origin, target = pool.entries[:2]
+    origin.active = target.active = True
+    origin.hp = target.hp = 100.0
+    origin.plague_infected = True
+    target.pos = Vec2(10.0, 0.0)
+
+    pool._plaguebearer_spread_infection(0)
+
+    assert not target.plague_infected
+
+
+@pytest.mark.parametrize(
+    ("health", "infected"),
+    [(149.99998474121094, True), (150.0, False), (150.00001525878906, False)],
+)
+def test_plaguebearer_spread_infection_health_boundary(health: float, infected: bool) -> None:
+    pool = CreaturePool()
+    source, origin = pool.entries[:2]
+    source.active = origin.active = True
+    source.plague_infected = True
+    source.pos = Vec2(10.0, 0.0)
+    source.hp = 100.0
+    origin.hp = health
+
+    pool._plaguebearer_spread_infection(1)
+
+    assert origin.plague_infected is infected
+
+
+def test_plaguebearer_spread_strong_infected_origin_can_infect_weak_neighbor() -> None:
+    pool = CreaturePool()
+    target, origin = pool.entries[:2]
+    target.active = origin.active = True
+    target.pos = Vec2(10.0, 0.0)
+    target.hp = 100.0
+    origin.hp = 500.0
+    origin.plague_infected = True
+
+    pool._plaguebearer_spread_infection(1)
+
+    assert target.plague_infected
+
+
+def test_plaguebearer_spread_first_neighbor_blocks_later_infected_neighbor() -> None:
+    pool = CreaturePool()
+    first, infected, origin = pool.entries[:3]
+    for creature in (first, infected, origin):
+        creature.active = True
+        creature.hp = 100.0
+    first.pos = Vec2(20.0, 0.0)
+    infected.pos = Vec2(10.0, 0.0)
+    infected.plague_infected = True
+
+    pool._plaguebearer_spread_infection(2)
+
+    assert not origin.plague_infected
+
+
+def test_plaguebearer_spread_includes_active_corpses_and_current_positions() -> None:
+    pool = CreaturePool()
+    corpse, origin = pool.entries[:2]
+    corpse.active = origin.active = True
+    corpse.hp = origin.hp = 100.0
+    corpse.death_timer = -1.0
+    corpse.plague_infected = True
+    corpse.pos = Vec2(45.0, 0.0)
+
+    pool._plaguebearer_spread_infection(1)
+    assert not origin.plague_infected
+
+    corpse.pos = Vec2(44.999996185302734, 0.0)
+    pool._plaguebearer_spread_infection(1)
+    assert origin.plague_infected
 
 
 def test_plaguebearer_infection_kill_increments_global_count() -> None:
