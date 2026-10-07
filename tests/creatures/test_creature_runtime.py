@@ -821,7 +821,9 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     assert player.auto_target == 1
 
 
-def test_creature_auto_target_keeps_current_slot_when_native_distances_round_equal() -> None:
+@pytest.mark.parametrize("preserve_bugs", [False, True])
+@pytest.mark.parametrize("precomputed", [False, True])
+def test_creature_auto_target_keeps_current_slot_when_native_distances_round_equal(preserve_bugs: bool, precomputed: bool) -> None:
     pool = CreaturePool()
     player = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=100.0, auto_target=0)
 
@@ -840,10 +842,11 @@ def test_creature_auto_target_keeps_current_slot_when_native_distances_round_equ
 
     pool._update_player_auto_target(
         players=[player],
-        preserve_bugs=True,
+        preserve_bugs=preserve_bugs,
         player_index=0,
         creature_index=1,
         creature=candidate,
+        native_candidate_distance=x87_pc24_hypot(candidate.pos.x, candidate.pos.y) if precomputed else None,
     )
 
     assert player.auto_target == 0
