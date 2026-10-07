@@ -3,7 +3,7 @@
 import re
 
 
-def session_only(session, original, statement=False):
+def session_only(session, *_original, **_statement):
     return session
 
 
