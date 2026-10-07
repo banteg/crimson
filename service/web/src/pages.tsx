@@ -72,6 +72,7 @@ function BoardTable(props: { view: BoardView }) {
               <th class="n">#</th>
               <th>Player</th>
               <th class="n">Score</th>
+              <th>Run</th>
               <th class="n">Duration</th>
               <th title="Most used weapon by time equipped">Weapon</th>
               <th>Replay</th>
@@ -89,6 +90,9 @@ function BoardTable(props: { view: BoardView }) {
                     <a class="run" href={`/runs/${row.run}`}>
                       {formatScore(props.view.board, row.score)}
                     </a>
+                  </td>
+                  <td>
+                    <a class="run-details" href={`/runs/${row.run}`}>Details →</a>
                   </td>
                   <td class="n">{formatDuration(row.elapsed_ms)}</td>
                   <td>
@@ -328,6 +332,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                 <tr>
                   <th>Board</th>
                   <th class="n">Score</th>
+                  <th>Run</th>
                   <th>Version</th>
                   <th>Accepted</th>
                   <th>Replay</th>
@@ -346,6 +351,9 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                         <a class="run" href={`/runs/${run.id}`}>
                           {formatScore(run.board, run.score)}
                         </a>
+                      </td>
+                      <td>
+                        <a class="run-details" href={`/runs/${run.id}`}>Details →</a>
                       </td>
                       <td>{run.game_version}</td>
                       <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
