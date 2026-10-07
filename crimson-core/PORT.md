@@ -9,8 +9,8 @@ The supported simulation is already portable: the recovered core runs as
 import-free WASM, the service uses it to verify ranked runs, and the checked-in
 native/WASM matrix agrees over 357,500 ticks. This covers single-player
 Survival, Rush and all 50 Quests, not the whole game. There is no playable C
-client yet. Menus, resources, sound and the platform layer remain substantial
-integration work; source recovery is not evidence that they compile or run.
+client yet. Menus, resources, sound and the platform layer are recovered but
+have never been built by a modern compiler.
 
 Recommendation: port at the **Grim2D interface plus explicit platform and
 session contracts**, **web first**, using **SDL3 and an owned OpenGL renderer**:
@@ -18,18 +18,18 @@ GLES3/WebGL2 in the browser, desktop OpenGL on macOS/Linux/Windows. Keep Python
 as the reference product. Prefer this over raylib for the C client because we
 need precise graphics state and control of audio side effects.
 
-First deliver one playable browser Quest with terrain, corpses, HUD, perk
-selection and sound, and prove replay parity in that actual client. Do not
-require compiling every recovered file before this slice. A faithful original
-client and parity with the Python product are separate milestones; neither has
-a defensible calendar estimate until the slice exercises the missing systems.
+First deliver Quest 1.1 in the browser with terrain, corpses, HUD, perk
+selection and sound, and prove replay parity in that client. It does not need
+every recovered file. A faithful original client and parity with the Python
+product are separate milestones; estimate them once the slice has exercised the
+missing systems.
 
 ## Where we are
 
 | Piece | State |
 | --- | --- |
 | Simulation | The core compiles 168 of the exe's 576 source files: 20,220 of 44,850 source lines, producing roughly 356 KiB of import-free WASM. The service verifier is [`service/src/verify.ts`](../service/src/verify.ts). See [supported scope](README.md), [replay gate](results/gate.json) and [native/WASM matrix](results/matrix.json). |
-| Rest of the exe | Menus, UI, high scores, sound, resources, typ-o, console, credits: outside the current core build. The [matching report](../tools/match/STATUS.md) establishes its declared recovery scope, not a complete modern executable. Expect more of the declaration and layout repairs [`adapter.py`](adapter.py) already makes. |
+| Rest of the exe | Menus, UI, high scores, sound, resources, typ-o, console, credits: byte-exact under VC6 ([matching report](../tools/match/STATUS.md)) but outside the core build. Expect more of the declaration and layout repairs [`adapter.py`](adapter.py) already makes. |
 | Grim | 84 vtable slots, 60 called by the exe from 111 files ([`grim2d_cpp.h`](../tools/match/include/grim2d_cpp.h), [API docs](../docs/grim2d/api.md)). The core uses a headless implementation in [`host/grim.inc`](host/grim.inc); recovered Grim is not a modern backend. Python's [`src/grim`](../src/grim) is the working reference for rendering and audio. |
 | Direct platform calls in the exe | Registry, DirectSound with vorbisfile (`sound/`, `platform/vorbis_*`), WinInet high-score threads, ShellExecute, Sleep and timeGetTime, mod DLLs via LoadLibrary. Each needs an explicit replacement or unsupported disposition; original Windows mod DLLs cannot run in the web client. |
 | Runnable full build | None, with MSVC or anything else. The native link has only checked a passive grim component. |
@@ -37,8 +37,7 @@ a defensible calendar estimate until the slice exercises the missing systems.
 
 The checked-in replay gate reports 142/142 supported fixtures agreeing, with
 Typ-o explicitly unsupported. The matrix validates the selected headless
-simulation across 134 cases. Neither result validates the missing client code.
-Counts describe coverage, not a percentage of porting effort.
+simulation across 134 cases. Neither covers the missing client code.
 
 ### Not yet compiled by the core
 
@@ -61,11 +60,15 @@ source is compiled.
   multiply matter to the existing core. Preserve its build flags and portable
   math. Audit newly included routines by their effect on authoritative state;
   being named UI or render does not exempt a routine from numeric adaptation.
-- Keep the VC6 CRT `rand` LCG exact wherever it is authoritative. Calls in
-  roughly 75 files require classification, not blanket forwarding to one RNG.
+- Keep the VC6 CRT `rand` LCG exact wherever it is authoritative. 64 files call
+  `crt_rand` and `sfx_entry_start_playback.cpp` calls `rand` directly; each call
+  is either authoritative or presentation, never blanket-forwarded to one RNG.
+  In the client build, make the authoritative `crt_rand` abort when called
+  outside a simulation tick, so the build lists the presentation callers
+  instead of an audit having to find them.
 - `D3DXVec2Normalize` is covered for current core callers; new callers and new
-  compiler targets still need parity checks. Existing aliasing and layout
-  assumptions also need review as the dependency closure grows.
+  compiler targets need parity checks, and aliasing and layout assumptions need
+  review as the dependency closure grows.
 
 ## Seam: the Grim2D interface
 
@@ -144,19 +147,17 @@ Both designs can use one C renderer compiled per platform:
 | Shared simulation WASM; host consumes ordered Grim commands | Client and verifier execute identical simulation bytes; desktop can host the module with Wasmtime | Define command/resource lifetimes and synchronous metadata queries; measure boundary overhead. A JavaScript bridge does not require rewriting the renderer in JavaScript. |
 | Game and SDL/GL backend linked into each client | Direct calls and simpler initial resource ownership | Different simulation artifacts and additional recovered routines; prove each release artifact against the verifier, including active rendering and audio. A headless rebuild of client sources is insufficient. |
 
-Prototype the linked route if it materially accelerates the playable slice.
-Adopt it only after the actual client passes the gates below and measured
-benefits justify departing from the roadmap. If restoring code changes state,
-fix or explicitly reconcile the authoritative contract first. A matching
-snapshot layout cannot establish that omitted state is irrelevant.
+Prototype the linked route if it speeds up the slice. Adopt it only after the
+client passes the gates below and measured benefits justify departing from the
+roadmap. If restored code changes state, reconcile the authoritative contract
+first; a matching snapshot layout does not show omitted state is irrelevant.
 
 ### Web first
 
-wasm32 retains the original pointer width and reduces initial layout work. It
-still needs the relocation/callback audit above. Prove the browser slice before
-expanding the recovered game's 64-bit layout adaptations. A native SDL host for
-the same wasm32 core is an alternative to a native 64-bit simulation rebuild.
-Python remains the desktop product while either route is developed.
+wasm32 keeps the original pointer width, so it needs only the relocation and
+callback audit above. Prove the browser slice before expanding the 64-bit layout
+adaptations; a native SDL host for the same wasm32 core is the alternative to a
+64-bit simulation rebuild. Python stays the desktop product meanwhile.
 
 ## Stack: SDL3, owned GL renderer, Emscripten
 
@@ -168,8 +169,7 @@ OpenGL path ([SDL implementation](https://raw.githubusercontent.com/libsdl-org/S
 Choose desktop OpenGL for the first native backend. ANGLE/EGL is an explicit
 future dependency choice if one GLES path becomes preferable.
 
-Implement the D3D8 subset Grim uses. A small renderer prototype is plausible;
-1k lines is not a bound on the finished resource, lifecycle and parity work:
+Implement the D3D8 subset Grim uses:
 
 - 28-byte XYZRHW + diffuse + one texture coordinate vertices, D3DCOLOR packing;
 - raw `D3DBLEND` factors through config 0x13/0x14, including separate alpha
@@ -187,7 +187,7 @@ Implement the D3D8 subset Grim uses. A small renderer prototype is plausible;
 - resize/HiDPI/fullscreen handling and restoration of persistent targets after
   WebGL context loss, without changing simulation state.
 
-Neither higher-level SDL rendering API is the preferred fit today:
+Neither SDL rendering API fits:
 
 - **SDL_GPU** has no WebGL backend; its WebGPU backend is still an
   [experimental PR](https://github.com/libsdl-org/SDL/pull/16020).
@@ -241,19 +241,18 @@ Keep authoritative sound/music selection and its RNG consumption on the
 simulation side, including when audio is unavailable. Use a separate
 presentation RNG for first-idle-else-random voice stealing, as Python's
 [`audio_bridge.py`](../src/crimson/world/audio_bridge.py) does with `audio_rng`.
-This deliberately follows the existing deterministic replay policy rather than
-restoring the original device-dependent RNG behavior.
-Audit music-ready gates and backend return values as well: the headless host
+This follows the existing replay policy, not the original device-dependent
+behavior. Audit music-ready gates and backend return values as well: the headless host
 deliberately represents silent, successfully initialized audio. Exercise muted,
 unlocked, saturated and failed-device paths in parity checks.
 
 ### Why not raylib for the C port
 
-raylib remains a viable way to get a short demo running. It supports desktop
-GL and web GLES/WebGL targets, and offers an SDL3 platform backend
+raylib would get a demo running quickly: it targets desktop GL and WebGL and
+has an SDL3 platform backend
 ([raylib platforms](https://github.com/raysan5/raylib/wiki/raylib-platforms-and-graphics)).
-The tradeoff here is fitting Grim's state machine around raylib/rlgl and raudio
-versus owning that small subset directly.
+The tradeoff is fitting Grim's state machine around rlgl and raudio versus
+owning that small subset directly.
 
 Python shows the specific adaptation work: render-target nesting
 ([`texture_mode.py`](../src/grim/texture_mode.py)), blend state across mode
@@ -261,34 +260,34 @@ switches ([`blend.py`](../src/grim/blend.py)), texture orientation and
 DirectSound pan ([`audio_math.py`](../src/grim/audio_math.py)). Owning the mixer
 also makes separation of authoritative and playback-dependent RNG explicit.
 
-Some adaptations are common to both stacks: alpha testing requires a discard
-shader in an owned GL renderer too; web shaders need ES
-variants in either stack; and F12 screenshot capture can be disabled when
-building C raylib with `SUPPORT_SCREEN_CAPTURE=0`
+Other Python workarounds apply to either stack: alpha test needs a discard
+shader in owned GL too, web shaders need ES variants, and C raylib can drop F12
+capture with `SUPPORT_SCREEN_CAPTURE=0`
 ([raylib config](https://raw.githubusercontent.com/raysan5/raylib/6.0/src/config.h)).
-The Python fullscreen/HiDPI issues are regression cases to reproduce in either
-backend, not proof that SDL automatically fixes them. An old raylib build's
-use of Asyncify does not establish a current requirement.
+The Python fullscreen and HiDPI issues are regression cases for either backend.
 
-**Choose SDL3 plus owned GL for the C client; keep raylib for Python.** This
-reduces state ownership ambiguity without requiring a binding migration of the
-existing product. Revisit only if the first slice shows that direct renderer
-or audio work dominates and raylib removes that work without losing parity.
+**Choose SDL3 plus owned GL for the C client; keep raylib for Python.**
+Revisit if the slice shows renderer or audio work dominating and raylib
+removing it without losing parity.
 
 ## Plan
 
 1. **Freeze session and dependency contracts.** Specify clocks, input/commands,
    run completion, authoritative versus presentation RNG, resource queries and
-   render side effects. Inventory the smallest dependency closure for one
-   Quest. Add files incrementally in [`build.py`](build.py); unsupported paths
-   should fail visibly rather than silently succeeding. Preserve the existing
-   core build and corpus as the baseline.
-2. **One browser Quest end to end.** SDL callbacks, required assets, terrain
-   and corpse render targets, player/enemy/projectile rendering, HUD, perk
-   selection, mixer and replay recording. Include restart and completion.
-   Evaluate linked versus shared-module packaging at this slice. Exit only
-   when the actual client reproduces its recorded run in the verifier and
-   passes timing/audio tests below. This is the first playable milestone.
+   render side effects. Inventory the dependency closure for Quest 1.1. Add
+   files incrementally in [`build.py`](build.py); unsupported paths fail
+   visibly. Add the out-of-tick `crt_rand` abort before restoring any
+   presentation code. The existing core build and corpus stay the baseline.
+2. **Quest 1.1 in the browser.** SDL callbacks, required assets, terrain and
+   corpse render targets, player/enemy/projectile rendering, HUD, perk
+   selection, mixer and replay recording, including restart and completion.
+   The gate already carries a human recording of it
+   ([`quest-1.1-completed.crd`](results/gate.json), 1,441 ticks, ranked rules)
+   and the bot completes it, so the client starts with known-good references.
+   Evaluate linked versus shared-module packaging here. Exit when the client
+   replays that recording to the same `RunResult`, its own fresh recordings
+   verify, and it passes the session and audio gates below. This is the first
+   playable milestone.
 3. **Complete the supported single-player client.** Grow the closure for all
    Quests, Survival and Rush; restore menus, options, progress/high scores and
    reliable browser persistence. Audit state transitions and initialization
@@ -322,7 +321,6 @@ or audio work dominates and raylib removes that work without losing parity.
 | Resources and persistence | Stable resource IDs/metrics across loading order and backend; fresh launch and reload preserve saves. A failed asset or IndexedDB operation is surfaced and does not silently alter a ranked run's canonical setup. |
 | Packaging | Record source revision, compiler/SDL/Emscripten versions, flags and hashes. Linked builds must pass artifact parity for every release target; a separate headless variant is not release evidence. Shared-core builds must verify core byte identity and still test the real host's session/render/audio behavior. |
 
-The existing matrix is a strong starting point for the supported simulation.
-These gates establish whether the new client preserves that contract. They do
-not require finishing all 576 files before learning whether the chosen seam and
-stack work.
+The existing matrix covers the supported simulation; these gates check that
+the client preserves it. Quest 1.1 tests the seam and stack long before all 576
+files build.
