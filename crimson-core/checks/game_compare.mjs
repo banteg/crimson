@@ -4,15 +4,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { CORE, decode, init, loadCore, names, state, step } from "./engine.mjs";
+import { CORE, decode, init, loadCore, names, record, state, step } from "./engine.mjs";
 
 // Fields only presentation code writes; the verifier stubs that code.
 export const PRESENTATION = new Set(
   names.filter((n) => /^globals\.player_weapon_popup_timer\[/.test(n)),
 );
 
-// game_state_id_t: game over, quest results and quest failed.
-const TERMINAL = new Set([0x07, 0x08, 0x0c]);
 
 export function loadGame(wasm) {
   const module = new WebAssembly.Module(fs.readFileSync(wasm));
@@ -67,21 +65,33 @@ export function loadGame(wasm) {
   return e;
 }
 
-export function compareStream(input, core, game) {
+// A tick nothing can refuse except a run that is over (host.cpp's run-down).
+const NEUTRAL = record([0, 0, 0, 0, 0]);
+
+// Whether the verifier still accepts a neutral tick after these records.
+function acceptsAfter(coreWasm, run, count) {
+  const core = loadCore(coreWasm);
+  init(core, run.config);
+  for (let tick = 0; tick < count; tick++) step(core, run.records[tick]);
+  return step(core, NEUTRAL);
+}
+
+export function compareStream(input, core, game, coreWasm) {
   const run = decode(input);
   init(core, run.config);
   init(game, run.config);
-  let pending;
   for (let tick = -1; tick < run.records.length; tick++) {
     if (tick >= 0) {
       const accepted = [step(core, run.records[tick]), step(game, run.records[tick])];
       if (accepted[0] !== accepted[1]) return { tick, field: "accepted", core: accepted[0], game: accepted[1] };
-      // A stream may run past the end; both must refuse it only once the run is over.
-      if (!accepted[0]) return TERMINAL.has(pending) ? { ticks: tick, end: "run over" } : { tick, rejected: true };
+      if (!accepted[0]) {
+        // A stream may run past its run; any other refusal hides the rest of it.
+        if (acceptsAfter(coreWasm, run, tick)) return { tick, rejected: "valid ticks remained" };
+        return { ticks: tick, end: "run over" };
+      }
     }
     const expected = state(core),
       actual = state(game);
-    pending = expected.readUInt32LE(names.indexOf("globals.game_state_pending") * 4);
     for (let i = 0; i < names.length; i++) {
       if (PRESENTATION.has(names[i])) continue;
       const a = expected.readUInt32LE(i * 4),
@@ -89,11 +99,10 @@ export function compareStream(input, core, game) {
       if (a !== b) return { tick, field: names[i], core: a, game: b };
     }
   }
-  if (!TERMINAL.has(pending) || !run.records.length) return { ticks: run.records.length, end: "stream" };
-  // The run is over: one more tick must be refused by both.
-  const after = [step(core, run.records.at(-1)), step(game, run.records.at(-1))];
-  if (after[0] || after[1]) return { tick: run.records.length, field: "accepted after the run", core: after[0], game: after[1] };
-  return { ticks: run.records.length, end: "run over" };
+  // One neutral tick past the stream: both accept it mid-run, both refuse it after the run.
+  const after = [step(core, NEUTRAL), step(game, NEUTRAL)];
+  if (after[0] !== after[1]) return { tick: run.records.length, field: "accepted after the stream", core: after[0], game: after[1] };
+  return { ticks: run.records.length, end: after[0] ? "stream" : "run over" };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -105,7 +114,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     : fs.readdirSync(new URL("build/fixtures", CORE)).map((f) => path.join(new URL("build/fixtures", CORE).pathname, f));
   let failed = 0;
   for (const file of files) {
-    const result = compareStream(fs.readFileSync(file), core, game);
+    const result = compareStream(fs.readFileSync(file), core, game, coreWasm ?? new URL("build/wasm/core.wasm", CORE));
     if (!result.end) failed++;
     console.log(path.basename(file), JSON.stringify(result));
   }

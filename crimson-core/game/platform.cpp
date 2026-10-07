@@ -192,7 +192,13 @@ struct Device final : UnimplementedIDirect3DDevice8 {
     back_buffer.refs = 2; // the device's own reference, and its binding as the target
   }
   STDMETHOD_(ULONG, AddRef)(THIS) override { return ++refs; }
-  STDMETHOD_(ULONG, Release)(THIS) override { return --refs; }
+  STDMETHOD_(ULONG, Release)(THIS) override {
+    if (--refs)
+      return refs;
+    target->Release();
+    delete this;
+    return 0;
+  }
   STDMETHOD(TestCooperativeLevel)(THIS) override { return D3D_OK; }
   STDMETHOD(GetDeviceCaps)(THIS_ D3DCAPS8 *caps) override;
   STDMETHOD(Reset)(THIS_ D3DPRESENT_PARAMETERS *) override { return D3D_OK; }
@@ -389,10 +395,7 @@ UINT WINAPI timeEndPeriod(UINT) { return 0; }
 // Headless, the module owns a device that is never ready, so Grim's state calls
 // land somewhere and its draws stop at grim_device_ready.
 extern "C" IDirect3DDevice8 *grim_d3d_device;
-void platform_headless_device() {
-  static Device device(1024, 768);
-  grim_d3d_device = &device;
-}
+void platform_headless_device() { grim_d3d_device = new Device(1024, 768); }
 
 // --- Not reached by the headless module yet --------------------------------------
 
