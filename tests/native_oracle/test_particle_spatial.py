@@ -24,8 +24,8 @@ from ._support import (
 )
 
 
-@pytest.mark.parametrize("hits", [(), (383,), (5, 383)])
-def test_full_flame_pool_matches_native_first_collidable_slot(oracle, hits: tuple[int, ...]) -> None:
+@pytest.mark.parametrize("hits,moving", [((), False), ((383,), False), ((5, 383), False), ((383,), True)])
+def test_full_flame_pool_matches_native_first_collidable_slot(oracle, hits: tuple[int, ...], moving: bool) -> None:
     prepare_gameplay(oracle)
     oracle.write_u32("config_detail_preset", 5)
     dt = f32(0.016)
@@ -44,6 +44,9 @@ def test_full_flame_pool_matches_native_first_collidable_slot(oracle, hits: tupl
         creature.pos = Vec2(128.0 + index % 16 * 48.0, 128.0 + index // 16 * 24.0)
         if index in hits or index == 1:
             creature.pos = Vec2(43.0, 40.0)
+        if moving and index in hits:
+            creature.pos = Vec2(f32(63.99), 40.0)
+            creature.size = 350.0
         if index == 1:
             creature.death_timer = 5.0  # Earlier overlapping corpse must be skipped.
         fields = {
@@ -61,12 +64,18 @@ def test_full_flame_pool_matches_native_first_collidable_slot(oracle, hits: tupl
     position = Vec2(40.0, 40.0)
     position_address = oracle.alloc_f32s(position.x, position.y)
     for index in range(128):
-        angle = f32(index * 0.01)
+        angle = 0.0 if moving else f32(index * 0.01)
+        if moving and index == 100:
+            position = Vec2(128.0, 40.0)
+            position_address = oracle.alloc_f32s(position.x, position.y)
         native_index = oracle.call("fx_spawn_particle", position_address, angle, 0, 1.0).eax
         assert native_index == world.state.particles.spawn_particle(pos=position, angle=angle, rng=world.state.rng)
     oracle.call("projectile_update")
     step = make_step_runtime(world, dt=dt)
     world.projectile_update(step)
+    if moving:
+        assert world.creatures.entries[383].pos.x >= 64.0
+        assert not world.state.particles.entries[127].in_flight, world.creatures.entries[383].pos
     mismatches: list[Mismatch] = []
     particle_address = oracle.resolve("particle_pool")
     layout = {**PARTICLE_LAYOUT, "in_flight": (1, "B"), "rotation": (0x2C, "f")}

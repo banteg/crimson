@@ -375,6 +375,7 @@ class ParticlePool:
                             x87_pc24_add(creature.pos.x, x87_pc24_mul(entry.vel.x, dt)),
                             x87_pc24_add(creature.pos.y, x87_pc24_mul(entry.vel.y, dt)),
                         )
+                        creature_spatial.sync_index(hit_idx)
 
         return expired
 
