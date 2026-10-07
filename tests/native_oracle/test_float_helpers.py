@@ -15,6 +15,7 @@ from crimson.math_parity import (
     x87_pc24_add,
     x87_pc24_cos_mul,
     x87_pc24_div,
+    x87_pc24_hypot,
     x87_pc24_mul,
     x87_pc24_sin_mul,
     x87_pc24_sqrt,
@@ -136,6 +137,21 @@ def test_x87_pc24_sqrt(oracle) -> None:
         if f32_bits(native) != f32_bits(x87_pc24_sqrt(value)):
             failures.append(f"sqrt {value!r}: native {fmt_value(native)} python {fmt_value(x87_pc24_sqrt(value))}")
     assert not failures, "\n".join(failures[:20])
+
+
+def test_x87_pc24_hypot_rounds_each_operation(oracle) -> None:
+    # ST0=x, ST1=y: square x; exchange; square y; add and pop; sqrt.
+    probe = oracle.load_code(b"\xd8\xc8\xd9\xc9\xd8\xc8\xde\xc1\xd9\xfa\xc3")
+    rng = random.Random(0x485950)
+    cases = [(0.0, -0.0), (-0.0, 0.0), (3.0, 4.0)]
+    cases += [
+        (f32(rng.uniform(-1e4, 1e4) * 10 ** rng.uniform(-6, 2)),
+         f32(rng.uniform(-1e4, 1e4) * 10 ** rng.uniform(-6, 2)))
+        for _ in range(_SAMPLES)
+    ]
+    for x, y in cases:
+        native = oracle.call(probe, st=(x, y)).st0
+        assert f32_bits(native) == f32_bits(x87_pc24_hypot(x, y)), (x, y, native)
 
 
 @pytest.mark.parametrize(("name", "opcode", "port"), [("cos", b"\xd9\xff", x87_pc24_cos_mul), ("sin", b"\xd9\xfe", x87_pc24_sin_mul)])

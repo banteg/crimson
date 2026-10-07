@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import struct
 
 from grim.geom import Vec2
 from grim.math import f32, f32_bits_i32, f32_from_bits
@@ -46,11 +47,16 @@ NATIVE_QUARTER_PI = f32_from_bits(0x3F490FDB)
 NATIVE_TAU = f32_from_bits(0x40C90FDB)
 NATIVE_TURN_RATE_SCALE = f32_from_bits(0x3FAAAAAB)
 
+# Keep each PC24 rounding boundary, without an extra Python f32 call per op.
+_F32_STRUCT = struct.Struct("<f")
+_F32_PACK = _F32_STRUCT.pack
+_F32_UNPACK = _F32_STRUCT.unpack
+
 
 def x87_pc24_add(lhs: float, rhs: float) -> float:
     """Add using the game's x87 24-bit significand precision."""
 
-    return f32(float(lhs) + float(rhs))
+    return _F32_UNPACK(_F32_PACK(float(lhs) + float(rhs)))[0]
 
 
 def x87_fpatan(y: float, x: float) -> float:
@@ -62,25 +68,25 @@ def x87_fpatan(y: float, x: float) -> float:
 def x87_pc24_sub(lhs: float, rhs: float) -> float:
     """Subtract using the game's x87 24-bit significand precision."""
 
-    return f32(float(lhs) - float(rhs))
+    return _F32_UNPACK(_F32_PACK(float(lhs) - float(rhs)))[0]
 
 
 def x87_pc24_div(lhs: float, rhs: float) -> float:
     """Divide using the game's x87 24-bit significand precision."""
 
-    return f32(float(lhs) / float(rhs))
+    return _F32_UNPACK(_F32_PACK(float(lhs) / float(rhs)))[0]
 
 
 def x87_pc24_mul(lhs: float, rhs: float) -> float:
     """Multiply using the game's x87 24-bit significand precision."""
 
-    return f32(float(lhs) * float(rhs))
+    return _F32_UNPACK(_F32_PACK(float(lhs) * float(rhs)))[0]
 
 
 def x87_pc24_sqrt(value: float) -> float:
     """Square-root using the game's x87 24-bit significand precision."""
 
-    return f32(math.sqrt(float(value)))
+    return _F32_UNPACK(_F32_PACK(math.sqrt(float(value))))[0]
 
 
 def x87_pc24_crt_pow(base: float, exponent: float) -> float:
@@ -100,12 +106,11 @@ def x87_pc24_crt_pow(base: float, exponent: float) -> float:
 def x87_pc24_hypot(x: float, y: float) -> float:
     """Evaluate ``sqrt(x*x + y*y)`` with PC=24 rounding per operation."""
 
-    return x87_pc24_sqrt(
-        x87_pc24_add(
-            x87_pc24_mul(x, x),
-            x87_pc24_mul(y, y),
-        ),
-    )
+    x, y = float(x), float(y)
+    xx = _F32_UNPACK(_F32_PACK(x * x))[0]
+    yy = _F32_UNPACK(_F32_PACK(y * y))[0]
+    length_sq = _F32_UNPACK(_F32_PACK(xx + yy))[0]
+    return _F32_UNPACK(_F32_PACK(math.sqrt(length_sq)))[0]
 
 
 _FLT_EPSILON = f32_from_bits(0x34000000)
