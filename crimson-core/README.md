@@ -39,7 +39,7 @@ copies of 168 recovered translation units; everything it adds lives here.
 | [`checks/`](checks) | Native/WASM matrix, Python whole-run gate, original-executable oracles, Wasmtime probe. |
 | [`results/`](results) | Checked-in results of those checks. |
 | [`worker/`](worker) | Diagnostic Cloudflare Worker that runs the WASM module. |
-| [`game.py`](game.py), [`game/`](game) | The game module: recovered presentation and Grim over a platform layer; see [PORT.md](PORT.md). |
+| [`game.py`](game.py), [`game/`](game), [`client/`](client) | The game module (the whole recovered game over a platform layer) and its native client; see [PORT.md](PORT.md). |
 
 ## Build
 

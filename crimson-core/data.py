@@ -3,11 +3,9 @@
 import json
 import re
 
-GRIM_BASE = 0x10000000
 
-
-def image_entries(root, image):
-    d = json.loads((root / f"tools/native/data_definitions/{image}.json").read_text())
+def data_source(root, out):
+    d = json.loads((root / "tools/native/data_definitions/crimsonland.exe.json").read_text())
     entries = list(d["entries"])
     for g in d["groups"]:
         for m in g["members"]:
@@ -19,18 +17,6 @@ def image_entries(root, image):
                     "initializer_hex": m[2] if len(m) > 2 else g.get("initializer_hex", ""),
                 },
             )
-    return entries
-
-
-def data_source(root, out, grim=False, engine=()):
-    entries = image_entries(root, "crimsonland.exe")
-    if grim:
-        # The compiler emits the interface vtable; the other symbol tables, and the
-        # names both images define, belong to the statically linked D3DX.
-        names = {e["name"] for e in entries}
-        entries += [
-            e for e in image_entries(root, "grim.dll") if "initializer_symbols" not in e and e["name"] not in names
-        ]
     # C++ constructors own these pointer-bearing tables at each platform's stride.
     owned = {"quest_meta_table", "perk_meta_table", "bonus_meta_table"}
     ownranges = [
@@ -78,13 +64,9 @@ def data_source(root, out, grim=False, engine=()):
         "#endif",
         'extern "C" {',
     ]
-    exe_resets = []
-    exe_reloc = []
-    # Grim's state, and the executable's named engine globals, outlive every run.
-    engine_resets = []
+    resets = []
+    reloc = []
     for i, (a, b) in enumerate(blocks):
-        owned = a >= GRIM_BASE or any(a <= int(e["address"], 16) < b for e in entries if e["name"] in engine)
-        resets, reloc = (engine_resets, engine_resets) if owned else (exe_resets, exe_reloc)
         # Pointer-bearing storage expands on 64-bit hosts. Interior names below refer to first-record fields.
         size = b - a
         members = [e for e in entries if a <= int(e["address"], 16) < b]
@@ -139,8 +121,5 @@ def data_source(root, out, grim=False, engine=()):
             f'asm(".globl " P "{e["name"]}\\n.set " P "{e["name"]}, " P "{name}+{index * old_stride + offset}\\n");',
             "#endif",
         ]
-    lines += ["void portable_reset_data() {", *exe_resets, *exe_reloc, "}"]
-    if grim:
-        lines += ["void portable_reset_engine_data() {", *engine_resets, "}"]
-    lines.append("}")
+    lines += ["void portable_reset_data() {", *resets, *reloc, "}", "}"]
     (out / "data.cpp").write_text("\n".join(lines) + "\n")

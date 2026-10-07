@@ -63,7 +63,8 @@ struct Texture final : UnimplementedIDirect3DTexture8 {
     level.height = height;
     level.format = format;
     if (outputs)
-      host_texture_create(id, width, height, (usage & D3DUSAGE_RENDERTARGET) != 0);
+      host_texture_create(id, width, height,
+                          ((usage & D3DUSAGE_RENDERTARGET) ? 1 : 0) | (format == D3DFMT_X8R8G8B8 ? 2 : 0));
   }
   STDMETHOD_(ULONG, AddRef)(THIS) override { return ++refs; }
   STDMETHOD_(ULONG, Release)(THIS) override {
@@ -203,7 +204,13 @@ struct Device final : UnimplementedIDirect3DDevice8 {
   }
   STDMETHOD(TestCooperativeLevel)(THIS) override { return D3D_OK; }
   STDMETHOD(GetDeviceCaps)(THIS_ D3DCAPS8 *caps) override;
-  STDMETHOD(Reset)(THIS_ D3DPRESENT_PARAMETERS *) override { return D3D_OK; }
+  STDMETHOD(Reset)(THIS_ D3DPRESENT_PARAMETERS *parameters) override {
+    width = back_buffer->width = parameters->BackBufferWidth;
+    height = back_buffer->height = parameters->BackBufferHeight;
+    if (outputs)
+      host_back_buffer(width, height);
+    return D3D_OK;
+  }
   STDMETHOD(Present)(THIS_ const RECT *, const RECT *, HWND, const RGNDATA *) override {
     if (outputs)
       host_present();
@@ -370,6 +377,8 @@ struct Direct3D final : UnimplementedIDirect3D8 {
   STDMETHOD(CreateDevice)(THIS_ UINT, D3DDEVTYPE, HWND, DWORD, D3DPRESENT_PARAMETERS *parameters,
                           struct IDirect3DDevice8 **device) override {
     *device = new Device(parameters->BackBufferWidth, parameters->BackBufferHeight);
+    if (outputs)
+      host_back_buffer(parameters->BackBufferWidth, parameters->BackBufferHeight);
     return D3D_OK;
   }
 };
@@ -383,7 +392,11 @@ IDirect3D8 *WINAPI Direct3DCreate8(UINT) { return &direct3d; }
 HMODULE WINAPI GetModuleHandleA(LPCSTR) { return nullptr; }
 HWND WINAPI GetForegroundWindow(void) { return nullptr; }
 HWND WINAPI GetDesktopWindow(void) { return nullptr; }
-int WINAPI MessageBoxA(HWND, LPCSTR, LPCSTR, UINT) { return 0; }
+int WINAPI MessageBoxA(HWND, LPCSTR text, LPCSTR caption, UINT) {
+  if (outputs)
+    host_message(text, caption);
+  return 0;
+}
 char *_getcwd(char *buffer, int size) {
   if (size > 0)
     buffer[0] = 0;
@@ -399,7 +412,7 @@ UINT WINAPI timeEndPeriod(UINT) { return 0; }
 extern "C" IDirect3DDevice8 *grim_d3d_device;
 void platform_headless_device() { grim_d3d_device = new Device(1024, 768); }
 
-// --- Not reached by the headless module yet --------------------------------------
+// --- Win32 left to the host ------------------------------------------------------
 
 extern "C" {
 int WINAPI GetKeyNameTextA(LONG, LPSTR text, int size) {
@@ -407,45 +420,10 @@ int WINAPI GetKeyNameTextA(LONG, LPSTR text, int size) {
     text[0] = 0;
   return 0;
 }
-HRSRC WINAPI FindResourceA(HMODULE, LPCSTR, LPCSTR) { platform_unimplemented("FindResourceA"); }
-HGLOBAL WINAPI LoadResource(HMODULE, HRSRC) { platform_unimplemented("LoadResource"); }
-LPVOID WINAPI LockResource(HGLOBAL) { platform_unimplemented("LockResource"); }
-DWORD WINAPI SizeofResource(HMODULE, HRSRC) { platform_unimplemented("SizeofResource"); }
-HRESULT WINAPI DirectInput8Create(HINSTANCE, DWORD, REFIID, LPVOID *, LPUNKNOWN) {
-  platform_unimplemented("DirectInput8Create");
-}
-int __stdcall D3DXCreateTexture(IDirect3DDevice8 *, unsigned int, unsigned int, unsigned int, unsigned long, D3DFORMAT,
-                                D3DPOOL, IDirect3DTexture8 **) {
-  platform_unimplemented("D3DXCreateTexture");
-}
-int __stdcall D3DXCreateTextureFromFileExA(IDirect3DDevice8 *, char *, unsigned int, unsigned int, unsigned int,
-                                           unsigned long, D3DFORMAT, D3DPOOL, unsigned long, unsigned long, D3DCOLOR,
-                                           void *, PALETTEENTRY *, IDirect3DTexture8 **) {
-  platform_unimplemented("D3DXCreateTextureFromFileExA");
-}
-int __stdcall D3DXCreateTextureFromFileInMemoryEx(IDirect3DDevice8 *, const void *, unsigned int, unsigned int,
-                                                  unsigned int, unsigned int, unsigned long, D3DFORMAT, D3DPOOL,
-                                                  unsigned long, unsigned long, D3DCOLOR, void *, PALETTEENTRY *,
-                                                  IDirect3DTexture8 **) {
-  platform_unimplemented("D3DXCreateTextureFromFileInMemoryEx");
-}
-int __stdcall D3DXSaveSurfaceToFileA(char *, int, IDirect3DSurface8 *, void *, void *) {
-  platform_unimplemented("D3DXSaveSurfaceToFileA");
-}
-int __stdcall D3DXSaveTextureToFileA(char *, int, IDirect3DBaseTexture8 *, void *) {
-  platform_unimplemented("D3DXSaveTextureToFileA");
-}
-int __stdcall d3dx_copy_texture_filtered(IDirect3DTexture8 *, IDirect3DTexture8 *, void *, unsigned long, unsigned long,
-                                         float) {
-  platform_unimplemented("d3dx_copy_texture_filtered");
-}
 int grim_run_loop(void) { platform_unimplemented("grim_run_loop"); }
 double crt_atof_l(char *text) { return atof(text); }
-bool config_load_presets(bool) { platform_unimplemented("config_load_presets"); }
 }
-bool grim_window_create(void) { platform_unimplemented("grim_window_create"); }
+// The host owns the window.
+bool grim_window_create(void) { return true; }
 BOOL grim_window_destroy(void) { return 1; }
 bool IGrim2D_cpp::grim_apply_config(void) { return true; }
-unsigned char *grim_decode_jaz_texture(unsigned char *, unsigned int, unsigned int *, int *, int *) {
-  platform_unimplemented("grim_decode_jaz_texture");
-}
