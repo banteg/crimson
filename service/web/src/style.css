@@ -23,7 +23,7 @@ header{display:flex;flex-wrap:wrap-reverse;justify-content:space-between;align-i
 /* The game's buttons (ui_button_update): the label centered on the glass, 1px right of center, the hover fill 12px in from
    the sides and 5px down, fading in over 167 ms and out over 250 ms; a click flashes it white. */
 .menu{padding:0 8px}.buttons{display:flex;flex-wrap:wrap}
-.button{position:relative;display:inline-block;width:82px;height:32px;padding:0;border:0;background:none;font:inherit;cursor:pointer;
+.button{position:relative;display:inline-flex;justify-content:center;align-items:flex-start;width:82px;height:32px;padding:0;border:0;background:none;font:inherit;cursor:pointer;
   color:rgb(255 255 255/.7);text-align:center;text-decoration:none;vertical-align:middle}
 .button.danger{color:rgb(250 70 60/.8)}.button.danger:hover{color:rgb(250 70 60)}
 .button.wide{width:145px}.button:hover,.button.on{color:#fff}
@@ -32,7 +32,7 @@ header{display:flex;flex-wrap:wrap-reverse;justify-content:space-between;align-i
 .button:hover::before,.button.on::before{opacity:1;transition-duration:.167s}.button:active::before{background:#fff}
 .button::after{content:"";position:absolute;inset:0;background:url(/ui/button-sm.png) 0 0/100% 100%}
 .button.wide::after{background-image:url(/ui/button-md.png)}
-.button span{position:relative;z-index:1;display:inline-block;margin:8px 0 0 2px;line-height:16px}
+.button span{position:relative;z-index:1;margin:8px 0 0 2px;line-height:16px;white-space:nowrap}
 /* The high scores panel (ui_element 9) draws ui_menuPanel 98px off the screen's left edge, so its frame starts 80px in
    and the wire, with its shadow, runs past the edge. */
 main{padding:6px 40px 4px 80px}
@@ -85,3 +85,19 @@ ol.quests a{color:var(--row);text-decoration:none;border-bottom:1px solid}ol.que
 ol.quests .n{display:inline-block;width:34px}ol.quests .count{margin-left:10px;color:var(--dim)}
 footer{padding:0 0 20px;text-align:center;color:var(--label);text-shadow:0 1px 2px #000}footer a{color:var(--text)}
 footer p{margin:0 0 6px}footer .credit{color:var(--dim)}footer .credit a{color:var(--label)}
+/* A run's page; a board's scores link to it. */
+a.run{color:inherit;text-decoration:none}a.run:hover{color:var(--row-on);text-decoration:underline}
+.run-player{margin:4px 0}.run-score{margin:6px 0;color:#fff;font:bold 32px/36px "Courier New",Courier,monospace}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px 18px}
+.tile{display:flex;flex-direction:column}.tile b{font:bold 20px/26px "Courier New",Courier,monospace;color:#fff;white-space:nowrap}
+.panel-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;margin-bottom:6px}
+.panel-head h3{margin:0}.checks{display:flex;gap:16px}
+button.check{background:none;border:0;padding:0;font:inherit;color:var(--label);cursor:pointer}button.check:hover{color:#fff}
+button.check img{width:16px;height:16px;vertical-align:-3px;margin-right:6px}button.check:disabled{opacity:.45;cursor:default;color:var(--label)}
+.readout{margin:0 0 6px;color:var(--label)}.readout b{color:#fff;font-weight:400}
+svg.chart{display:block;width:100%;height:auto;overflow:visible;font:bold 12px "Courier New",Courier,monospace}
+svg .axis{fill:var(--dim)}svg .axis.small{font-size:11px}svg .grid{stroke:#fff;stroke-opacity:.07}svg .cursor{stroke:#fff;stroke-opacity:.6}
+svg .rival{fill:none;stroke-width:1.5;stroke-dasharray:5 4;stroke-opacity:.85}
+.arena-row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.arena{width:min(480px,100%);aspect-ratio:1;background-size:100% auto;background-position:top;background-color:rgb(63,56,25)}
+.arena svg{display:block;width:100%;height:100%}.arena-note{flex:1;min-width:200px;margin-top:0}

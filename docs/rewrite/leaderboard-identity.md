@@ -125,6 +125,19 @@ replays, names, links, keys and sessions. `/privacy` and `/terms` say the same i
   session instead of joining the local high score files, and a board not yet received is fetched when the box is
   ticked or the screen shows it.
 
+## Run pages
+
+Every accepted run has a page at `/runs/<run id>`, linked from its score on the boards and profiles. While the
+service replays a run to verify it, crimson-core's `portable_probe` reads player one after every tick, and the service
+keeps a timeline next to the replay (`runs/<id>.timeline.json` in R2, `service/src/timeline.ts`):
+
+- once a second, experience, level, health, kills and the damage creatures took (overkill excluded);
+- ten times a second, the position;
+- weapon changes, level-ups, perk picks, Nukes and the spans of the timed bonuses.
+
+The page draws them against the board's top run and the player's own best, and rebuilds the run's terrain from its
+seed. A run accepted before timelines existed gets its timeline the first time its page asks, by replaying its file.
+
 ## Open
 
 - The service itself is gate 5 in `crimson-core/ROADMAP.md`: the endpoints above, uploads verified by

@@ -48,6 +48,11 @@ export async function drawGround(quest: string | null): Promise<{ url: string; h
   const ground: Ground = quest
     ? generate(rand, questSlots(...(quest.split(".").map(Number) as [number, number])), SIZE, height)
     : generateRandom(rand, UNLOCK_INDEX, SIZE, height);
+  return { url: await paintGround(ground, height), height };
+}
+
+// A ground's stamps painted over the clear color, as an image URL.
+export async function paintGround(ground: Ground, height = SIZE): Promise<string> {
   const images = await Promise.all(ground.slots.map(load));
   const canvas = document.createElement("canvas");
   canvas.width = SIZE;
@@ -64,5 +69,5 @@ export async function drawGround(quest: string | null): Promise<{ url: string; h
     }
   });
   const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!)));
-  return { url: URL.createObjectURL(blob), height };
+  return URL.createObjectURL(blob);
 }

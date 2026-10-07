@@ -79,3 +79,38 @@ export interface JoinView {
   moving: { keys: number; runs: number; names: number };
   provider: string;
 }
+
+// A run's timeline (src/timeline.ts): one sample a second, [t, experience, level, health, kills, damage dealt], the
+// position ten times a second, and when weapons, levels, perks, nukes and timed bonuses changed. Times are seconds of
+// run time; perk and weapon ids are the game's. The seed rebuilds the run's terrain.
+export interface Timeline {
+  seed: number;
+  duration_s: number;
+  samples: [t: number, xp: number, level: number, health: number, kills: number, damage: number][];
+  path: [t: number, x: number, y: number][];
+  weapons: { t: number; id: number }[];
+  perks: { t: number; id: number }[];
+  levels: { t: number; level: number }[];
+  nukes: number[];
+  effects: Record<string, [start: number, end: number][]>;
+}
+
+// A run's page: the run, its rank when it is its player's best on the board, the board's top run and the player's
+// best when they are other runs, for comparison.
+export interface RunDetailView {
+  id: string;
+  board: Board;
+  quest: string;
+  title: string;
+  name: string;
+  player: PlayerView;
+  score: number;
+  rank: number | null;
+  accepted_at: number;
+  game_version: string;
+  recorder: { client: string; version: string; platform: string };
+  result: { elapsed_ms: number; kills: number; shots_fired: number; shots_hit: number; experience: number };
+  timeline: Timeline | null;
+  top: { id: string; name: string; score: number } | null;
+  best: { id: string; score: number } | null;
+}

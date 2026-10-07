@@ -2,7 +2,7 @@ import { env, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { concat, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256 } from "../../src/crypto";
 import { decodeReplay, inflateReplay } from "../../src/replay";
-import type { BoardView } from "../../src/api-types";
+import type { BoardView, RunDetailView } from "../../src/api-types";
 import vectors from "../vectors.json";
 
 const ORIGIN = "https://crimson.land";
@@ -70,6 +70,27 @@ describe("runs", () => {
     expect(scores).toHaveLength(1);
     expect(scores[0]).toMatchObject({ name: "banteg", score: 749, experience: 749 });
     expect((await post("/api/scores", { board: "quests", quest: "" })).status).toBe(400);
+  });
+
+  it("a verified run's page has the timeline its verification recorded", async () => {
+    const player = await Player.create();
+    const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
+
+    const detail = (await (await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).json()) as RunDetailView;
+    expect(detail).toMatchObject({ board: "survival", score: 749, rank: 1, name: "banteg", top: null, best: null });
+    const timeline = detail.timeline!;
+    // One sample a second and the last tick: the curves end on the run's result.
+    expect(timeline.samples.at(-1)!.slice(1, 5)).toEqual([749, detail.timeline!.samples.at(-1)![2], 0, detail.result.kills]);
+    expect(timeline.duration_s).toBe(detail.result.elapsed_ms / 1000);
+    expect(timeline.path.length).toBeGreaterThan(timeline.samples.length * 9);
+    expect(timeline.weapons[0]).toMatchObject({ t: expect.any(Number), id: 1 });
+    expect(timeline.samples.at(-1)![5]).toBeGreaterThan(0);
+
+    // A run accepted before timelines existed gets one replayed from its file, the same as verification's.
+    await env.REPLAYS.delete(`runs/${id}.timeline.json`);
+    expect(await (await SELF.fetch(`${ORIGIN}/api/runs/${id}/timeline`)).json()).toEqual(timeline);
+    expect(await env.REPLAYS.head(`runs/${id}.timeline.json`)).not.toBeNull();
+    expect((await SELF.fetch(`${ORIGIN}/api/runs/${"0".repeat(64)}`)).status).toBe(404);
   });
 
   it("a run is accepted once, whoever sends it again", async () => {

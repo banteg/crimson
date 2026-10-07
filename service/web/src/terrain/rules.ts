@@ -56,3 +56,20 @@ export function questSlots(major: number, minor: number): Slots {
   if (major > 4) return [minor & 3, 1, 3];
   return minor < 6 ? [base, base + 1, base] : [base, base, base + 1];
 }
+
+// gameplay_reset_state draws a score tag, one animation phase per creature slot (0x180) and the tag again before
+// terrain_generate_random (src/crimson/sim/bootstrap.py).
+const RESET_DRAWS = 1 + 0x180 + 1;
+// Ranked runs play with every quest unlocked (docs/rewrite/ranked-rules.md).
+const RANKED_UNLOCK_INDEX = 50;
+
+// The terrain a ranked run starts on, from its seed: the reset's random terrain, or for a quest its score tag draw
+// and then the quest's own terrain over it (src/crimson/sim/run_init.py).
+export function runGround(seed: number, quest: [major: number, minor: number] | null): Ground {
+  const rand = crtRand(seed);
+  for (let i = 0; i < RESET_DRAWS; i++) rand();
+  const ground = generateRandom(rand, RANKED_UNLOCK_INDEX);
+  if (quest === null) return ground;
+  rand();
+  return generate(rand, questSlots(...quest));
+}

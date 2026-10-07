@@ -3,6 +3,7 @@
 import { concat, fromHex, hex, latin1, RUN_DOMAIN, sha256, verifyEd25519 } from "./crypto";
 import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
+import type { Timeline } from "./api-types";
 import { decodeReplay, inflateReplay, type Replay, ReplayError } from "./replay";
 import { encodeTransport } from "./transport";
 import { verifyRun } from "./verify";
@@ -75,6 +76,7 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
   const now = Date.now();
   const accountId = await accountForKey(env, upload.public_key, publicKey, now);
   await env.REPLAYS.put(`runs/${runId}.crd`, file, { httpMetadata: { contentType: "application/octet-stream" } });
+  await putTimeline(env, runId, verdict.timeline);
   await env.DB.batch([
     env.DB.prepare(
       `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, client,
@@ -92,4 +94,24 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
     ).bind(accountId, upload.name, now, now),
   ]);
   return json({ id: runId, board, quest, score }, 201);
+}
+
+const timelineKey = (runId: string) => `runs/${runId}.timeline.json`;
+
+function putTimeline(env: Env, runId: string, timeline: Timeline): Promise<R2Object> {
+  return env.REPLAYS.put(timelineKey(runId), JSON.stringify(timeline), { httpMetadata: { contentType: "application/json" } });
+}
+
+// A run's timeline. Runs accepted before timelines were recorded get theirs the first time it is asked for, by
+// replaying their stored file again; null when there is no such replay.
+export async function timelineFor(env: Env, runId: string): Promise<Timeline | null> {
+  const stored = await env.REPLAYS.get(timelineKey(runId));
+  if (stored) return stored.json<Timeline>();
+  const file = await env.REPLAYS.get(`runs/${runId}.crd`);
+  if (!file) return null;
+  const replay = decodeReplay(inflateReplay(new Uint8Array(await file.arrayBuffer())));
+  const verdict = await verifyRun(env, replay, encodeTransport(replay));
+  if (!verdict.ok) throw new Error(`run ${runId} no longer verifies: ${verdict.reason}`);
+  await putTimeline(env, runId, verdict.timeline);
+  return verdict.timeline;
 }

@@ -2,12 +2,14 @@
 // aim bound, and compare the derived result with the claimed one (docs/rewrite/ranked-rules.md).
 //
 // The result is derived from the core's state as crimson-core/checks/gate.py derives it; the per-tick check is
-// src/crimson/replay/ranked.py's RankedTickMonitor.
+// src/crimson/replay/ranked.py's RankedTickMonitor. A verified run also gets its page's timeline (src/timeline.ts).
 
 import coreModule from "../../crimson-core/build/wasm/core.wasm";
 import schema from "../../crimson-core/schema.json";
+import type { Timeline } from "./api-types";
 import type { Env } from "./http";
 import { Flags, type Replay, type RunResult } from "./replay";
+import { PROBE_BYTES, TimelineRecorder } from "./timeline";
 import { CONFIG_BYTES, TICK_BYTES } from "./transport";
 
 interface Core {
@@ -25,6 +27,7 @@ interface Core {
   portable_player_health(): number;
   portable_shake_x(): number;
   portable_shake_y(): number;
+  portable_probe(): number;
 }
 
 // One instance per isolate. Nothing awaits between init and the final snapshot, so requests never interleave
@@ -63,7 +66,7 @@ const AIM_MOUSE = 0;
 const AIM_DUAL_ACTION_PAD = 4;
 const MOVE_POINT_CLICK = 4;
 
-export type Verdict = { ok: true } | { ok: false; reason: string };
+export type Verdict = { ok: true; timeline: Timeline } | { ok: false; reason: string };
 
 export async function verifyRun(_env: Env, replay: Replay, transport: Uint8Array): Promise<Verdict> {
   return simulate(replay, transport);
@@ -78,6 +81,7 @@ function simulate(replay: Replay, transport: Uint8Array): Verdict {
 
   const monitor = new TickMonitor();
   monitor.updateCamera(c);
+  const recorder = new TimelineRecorder(replay.run.seed);
   let at = CONFIG_BYTES;
   for (let tick = 0; tick < replay.ticks.length; tick++) {
     const reason = monitor.check(replay.ticks[tick]!.inputs[0]!);
@@ -88,12 +92,15 @@ function simulate(replay: Replay, transport: Uint8Array): Verdict {
     if (!c.portable_step_many(count)) return { ok: false, reason: `tick ${tick}: an illegal command or a tick past the run's end` };
     at += TICK_BYTES + count * 8;
     monitor.updateCamera(c);
+    recorder.record(new DataView(c.memory.buffer, c.portable_probe(), PROBE_BYTES));
   }
 
   if (c.portable_snapshot() !== fieldIndex.size) throw new Error("crimson-core snapshot schema mismatch");
   const derived = deriveResult(new DataView(c.memory.buffer, c.portable_output(), fieldIndex.size * 4), replay.run.game_mode_id);
   const mismatches = resultMismatches(replay.result, derived);
-  return mismatches.length ? { ok: false, reason: `the claimed result differs in ${mismatches.join(", ")}` } : { ok: true };
+  return mismatches.length
+    ? { ok: false, reason: `the claimed result differs in ${mismatches.join(", ")}` }
+    : { ok: true, timeline: recorder.finish() };
 }
 
 class TickMonitor {

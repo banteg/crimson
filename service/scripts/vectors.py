@@ -273,6 +273,35 @@ def terrain_vectors() -> list[dict]:
     return vectors
 
 
+def run_terrain_vectors() -> list[dict]:
+    """The terrain a ranked run starts on, from its seed: Survival seeds that reach each terrain_generate_random
+    outcome, and two quests, whose terrain replaces the reset's."""
+    from crimson.game_modes import GameMode
+    from crimson.quests.level import QuestLevel
+    from crimson.replay.ranked import ranked_run_spec
+    from crimson.sim.run_init import initialize_run
+
+    def stamps(setup) -> list[str]:
+        return [
+            _sha("".join(f"{struct.pack('<f', rotation).hex()},{int(x)},{int(y)}\n" for rotation, x, y in layer).encode())
+            for layer in (setup.layers.base, setup.layers.overlay, setup.layers.detail)
+        ]
+
+    vectors, outcomes = [], set()
+    for seed in range(1000):
+        setup = initialize_run(ranked_run_spec(GameMode.SURVIVAL, seed=seed)).terrain
+        if setup.terrain_slots in outcomes:
+            continue
+        outcomes.add(setup.terrain_slots)
+        vectors.append({"seed": seed, "quest": None, "slots": list(setup.terrain_slots), "layers": stamps(setup)})
+        if len(outcomes) == 4:
+            break
+    for seed, (major, minor) in ((7, (2, 7)), (8, (5, 3))):
+        setup = initialize_run(ranked_run_spec(GameMode.QUESTS, seed=seed, quest_level=QuestLevel(major, minor))).terrain
+        vectors.append({"seed": seed, "quest": [major, minor], "slots": list(setup.terrain_slots), "layers": stamps(setup)})
+    return vectors
+
+
 def main() -> None:
     base, corrupted = corrupted_vectors()
     ranked, inflated = ranked_run()
@@ -281,6 +310,7 @@ def main() -> None:
         "ranked_run_inflated": inflated,
         "unranked_run": base64.b64encode((FIXTURES / "rush-kills103.crd").read_bytes()).decode("ascii"),
         "terrain": terrain_vectors(),
+        "run_terrain": run_terrain_vectors(),
     }
     OUT.write_text(json.dumps(vectors, indent=1) + "\n")
     print(f"wrote {OUT.relative_to(ROOT)}")

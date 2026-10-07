@@ -1,8 +1,10 @@
 import { type Accessor, createSignal, For, type JSX, Show } from "solid-js";
-import type { Board, BoardView, JoinView, ProfileView, QuestMenuView } from "../../src/api-types";
+import type { Board, BoardView, JoinView, ProfileView, QuestMenuView, RunDetailView } from "../../src/api-types";
 import { get, post } from "./api";
+import { formatScore } from "./format";
 import { GameButton } from "./button";
 import { PlayerName, PROVIDER_LABELS } from "./players";
+import { runPanels } from "./run";
 import weaponData from "./weapons.json";
 
 // What a route shows once its data has arrived: the page title, the quest whose terrain the ground shows (null for
@@ -35,13 +37,6 @@ export interface Navigator {
 const STAGES = ["I", "II", "III", "IV", "V"];
 const QUEST = /^[1-5]\.(?:[1-9]|10)$/;
 const RULES = "https://crimson.banteg.xyz/rewrite/ranked-rules/";
-
-function formatScore(board: Board, score: number): string {
-  if (board === "survival") return `${score.toLocaleString("en-US")} xp`;
-  const ms = Math.abs(score);
-  const time = `${Math.floor(ms / 60000)}:${String(Math.floor((ms % 60000) / 1000)).padStart(2, "0")}.${String(ms % 1000).padStart(3, "0")}`;
-  return score < 0 ? `-${time}` : time;
-}
 
 const BOARD_NAMES: Record<Board, string> = { survival: "Survival", quests: "Quests", "quests-hardcore": "Quests, hardcore" };
 const WEAPONS: Record<string, { name: string; icon_index: number }> = weaponData;
@@ -90,7 +85,11 @@ function BoardTable(props: { view: BoardView }) {
                   <td>
                     <PlayerName player={row.player} />
                   </td>
-                  <td class="n">{formatScore(props.view.board, row.score)}</td>
+                  <td class="n">
+                    <a class="run" href={`/runs/${row.run}`}>
+                      {formatScore(props.view.board, row.score)}
+                    </a>
+                  </td>
                   <td class="n">{formatDuration(row.elapsed_ms)}</td>
                   <td>
                     <Weapon id={row.most_used_weapon_id} />
@@ -166,6 +165,12 @@ function Command(props: { children: string }) {
       {props.children}
     </code>
   );
+}
+
+async function runPage(id: string): Promise<Screen> {
+  const detail = await get<RunDetailView>(`/api/runs/${id}`);
+  if (!detail) return notFound();
+  return { title: `${detail.name} · ${detail.title}`, quest: detail.quest || null, panels: runPanels(detail) };
 }
 
 function notFound(): Screen {
@@ -337,7 +342,11 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                           {BOARD_NAMES[run.board]} {run.quest}
                         </a>
                       </td>
-                      <td class="n">{formatScore(run.board, run.score)}</td>
+                      <td class="n">
+                        <a class="run" href={`/runs/${run.id}`}>
+                          {formatScore(run.board, run.score)}
+                        </a>
+                      </td>
                       <td>{run.game_version}</td>
                       <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
                       <td>
@@ -557,6 +566,7 @@ export async function resolve(url: URL, nav: Navigator): Promise<Screen> {
   else if ((match = /^\/players\/(\d+)$/.exec(path))) screen = await profile(Number(match[1]), nav);
   else if ((match = /^\/join\/([0-9a-f]{64})$/.exec(path))) screen = await join(match[1]!, nav);
   else if (path === "/account") screen = await account(nav);
+  else if ((match = /^\/runs\/([0-9a-f]{64})$/.exec(path))) screen = await runPage(match[1]!);
   else if (path === "/about") screen = ABOUT;
   else if (path === "/privacy") screen = PRIVACY;
   else if (path === "/terms") screen = TERMS;

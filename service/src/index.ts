@@ -3,8 +3,8 @@ import { getLogin, postChallenge, postLogin, SESSION_COOKIE, secure, sessionAcco
 import { type Env, json, refuse } from "./http";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
 import type { Board } from "./ranked";
-import { postRun } from "./runs";
-import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView } from "./views";
+import { postRun, timelineFor } from "./runs";
+import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView, runDetailView } from "./views";
 
 // Links, OAuth callbacks and the session cookie follow the request's origin, so the site answers only over
 // HTTPS, and browsers are told to stay there. Plain-HTTP localhost stays for wrangler dev.
@@ -70,6 +70,14 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   if ((match = /^GET \/api\/players\/(\d+)$/.exec(route))) {
     const profile = await profileView(env, Number(match[1]), await sessionAccount(request, env));
     return profile ? json(profile) : refuse(404, "no such player");
+  }
+  if ((match = /^GET \/api\/runs\/([0-9a-f]{64})$/.exec(route))) {
+    const run = await runDetailView(env, match[1]!);
+    return run ? json(run) : refuse(404, "no such run");
+  }
+  if ((match = /^GET \/api\/runs\/([0-9a-f]{64})\/timeline$/.exec(route))) {
+    const timeline = await timelineFor(env, match[1]!);
+    return timeline ? json(timeline) : refuse(404, "no such run");
   }
   if (route === "GET /api/me") return json({ account: await sessionAccount(request, env) });
 
@@ -147,6 +155,12 @@ async function routeTitle(env: Env, path: string): Promise<string | null> {
   if ((match = /^\/players\/(\d+)$/.exec(path))) {
     const player = (await players(env, [Number(match[1])])).get(Number(match[1]));
     return player ? (player.name ?? player.fingerprint) : null;
+  }
+  if ((match = /^\/runs\/([0-9a-f]{64})$/.exec(path))) {
+    const run = await env.DB.prepare("SELECT name, board, quest FROM runs WHERE id = ? AND hidden = 0")
+      .bind(match[1])
+      .first<{ name: string; board: Board; quest: string }>();
+    return run ? `${run.name} · ${boardTitle(run.board, run.quest)}` : null;
   }
   return ({ "/about": "About", "/privacy": "Privacy", "/terms": "Terms" } as Record<string, string>)[path] ?? null;
 }

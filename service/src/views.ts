@@ -1,10 +1,11 @@
 // The read API's JSON (src/api-types.ts): the boards, the quest menu, profiles and the join confirmation.
 
-import type { Board, BoardView, GameScore, JoinView, PlayerView, ProfileView, ProviderName, QuestMenuView, RunView } from "./api-types";
+import type { Board, BoardView, GameScore, JoinView, PlayerView, ProfileView, ProviderName, QuestMenuView, RunDetailView, RunView } from "./api-types";
 import type { Env } from "./http";
 import { configuredProviders } from "./oauth";
 import { LOWER_IS_BETTER } from "./ranked";
 import type { RunResult } from "./replay";
+import { timelineFor } from "./runs";
 import questTitles from "./quests.json";
 
 export const QUEST_TITLES: Record<string, string> = questTitles;
@@ -101,6 +102,50 @@ export async function boardView(env: Env, board: Board, quest: string, limit: nu
         player: who.get(row.account_id)!,
       };
     }),
+  };
+}
+
+// The board holds each account's best run; a run that is not its player's best has no rank.
+const BOARD_SCAN = 1000;
+
+export async function runDetailView(env: Env, id: string): Promise<RunDetailView | null> {
+  const run = await env.DB.prepare(
+    `SELECT r.id, r.account_id, r.name, r.board, r.quest, r.score, r.accepted_at, r.game_version, r.client, r.client_version,
+       r.platform, r.result FROM runs r WHERE r.id = ? AND r.hidden = 0`,
+  )
+    .bind(id)
+    .first<{
+      id: string; account_id: number; name: string; board: Board; quest: string; score: number; accepted_at: number; game_version: string;
+      client: string; client_version: string; platform: string; result: string;
+    }>();
+  if (!run) return null;
+  const board = await bestRuns(env, run.board, run.quest, BOARD_SCAN);
+  const rank = board.findIndex((row) => row.id === id);
+  const top = board[0] && board[0].id !== id ? board[0] : null;
+  const best = board.find((row) => row.account_id === run.account_id);
+  const result = JSON.parse(run.result) as RunResult;
+  return {
+    id,
+    board: run.board,
+    quest: run.quest,
+    title: boardTitle(run.board, run.quest),
+    name: run.name,
+    player: (await players(env, [run.account_id])).get(run.account_id)!,
+    score: run.score,
+    rank: rank === -1 ? null : rank + 1,
+    accepted_at: run.accepted_at,
+    game_version: run.game_version,
+    recorder: { client: run.client, version: run.client_version, platform: run.platform },
+    result: {
+      elapsed_ms: result.elapsed_ms,
+      kills: result.kills,
+      shots_fired: result.shots_fired,
+      shots_hit: result.shots_hit,
+      experience: result.players[0]!.experience,
+    },
+    timeline: await timelineFor(env, id),
+    top: top && { id: top.id, name: top.name, score: top.score },
+    best: best && best.id !== id ? { id: best.id, score: best.score } : null,
   };
 }
 

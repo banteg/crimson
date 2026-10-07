@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { crtRand, generate, generateRandom, questSlots, type Stamp } from "../../web/src/terrain/rules";
+import { crtRand, generate, generateRandom, questSlots, runGround, type Stamp } from "../../web/src/terrain/rules";
 import vectors from "../vectors.json";
 
 function digest(layer: Stamp[]): string {
@@ -18,6 +18,17 @@ describe("the site's terrain follows the game's generator", () => {
     it(vector.quest ? `quest ${vector.quest.join(".")}, seed ${vector.seed}` : `random terrain, seed ${vector.seed}`, () => {
       const rand = crtRand(vector.seed);
       const ground = vector.quest ? generate(rand, questSlots(vector.quest[0]!, vector.quest[1]!)) : generateRandom(rand, 50);
+
+      expect(ground.slots).toEqual(vector.slots);
+      expect(ground.layers.map(digest)).toEqual(vector.layers);
+    });
+  }
+});
+
+describe("a run page rebuilds the terrain its run started on", () => {
+  for (const vector of vectors.run_terrain) {
+    it(vector.quest ? `quest ${vector.quest.join(".")}, seed ${vector.seed}` : `survival, seed ${vector.seed}`, () => {
+      const ground = runGround(vector.seed, vector.quest as [number, number] | null);
 
       expect(ground.slots).toEqual(vector.slots);
       expect(ground.layers.map(digest)).toEqual(vector.layers);
