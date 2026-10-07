@@ -145,13 +145,29 @@ unattended runs, `CRIMSON_CAPTURE=<dir>` with `CRIMSON_CAPTURE_FRAMES=n,...`
 saves those frames' back buffers and quits, and `CRIMSON_INPUT` scripts the
 mouse and keys ([`client/main.cpp`](client/main.cpp)).
 
+## Running the web client
+
+```sh
+uv run python crimson-core/client/build.py --target web   # Emscripten, SDL3 port
+```
+
+`build/web/index.html` runs the same host on WebGL2. The game directory is
+`/game` in IndexedDB: on first launch the page fetches `grim.dll` and the PAQs
+from `?assets=<url>` (default `game/` beside the page), and settings, saves and
+high scores sync back a few seconds after the game writes them, when the tab is
+hidden, and when the game quits ([`client/web/shell.html`](client/web/shell.html)).
+One tab at a time owns the directory (a Web Lock), since IndexedDB takes each
+sync as the whole tree and a stale tab would write over newer saves. As in the
+original, settings changed in the options reach the disk when the game quits.
+It needs no threads, so no cross-origin isolation.
+
 ## Plan
 
 | Phase | Delivers | State |
 | --- | --- | --- |
 | 1. Game module | Recovered Grim and presentation in wasm32; sessions match the verifier on all gate streams | Done ([#550](https://github.com/banteg/crimson/pull/550)) |
-| 2. Native client | The whole executable in the module; SDL3/OpenGL host over `wasm2c`; the original game boots, menus and runs play | This change |
-| 3. Web client | The same host through Emscripten | |
+| 2. Native client | The whole executable in the module; SDL3/OpenGL host over `wasm2c`; the original game boots, menus and runs play | Done ([#552](https://github.com/banteg/crimson/pull/552)) |
+| 3. Web client | The same host through Emscripten; game files in IndexedDB | This change |
 | 4. Audio | DirectSound and vorbisfile over a host mixer; voice stealing on its own RNG | |
 | 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates | |
 | 6. Verifier convergence | The service and gate run the game module; the native core retires | |

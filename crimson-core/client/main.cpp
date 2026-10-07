@@ -4,6 +4,9 @@
 #include "client.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -32,6 +35,8 @@ std::string game_directory = ".";
 SDL_Window *window;
 SDL_GLContext context;
 float wheel;
+bool held[8];
+int hold_frames[8];
 
 // SDL scancodes to the DirectInput scancodes the game binds.
 unsigned char dik(SDL_Scancode s) {
@@ -265,9 +270,17 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
     w2c_game_game_close(&game);
     break;
   case SDL_EVENT_WINDOW_FOCUS_LOST:
-  case SDL_EVENT_WINDOW_MINIMIZED:
+  case SDL_EVENT_WINDOW_MINIMIZED: {
+    // Releases happen elsewhere while the window is away: nothing stays held.
+    HostInput *in = input();
+    memset(in->keys, 0, sizeof in->keys);
+    memset(in->mouse_buttons, 0, sizeof in->mouse_buttons);
+    in->key_event_count = 0;
+    memset(held, 0, sizeof held);
+    memset(hold_frames, 0, sizeof hold_frames);
     w2c_game_game_activate(&game, 0);
     break;
+  }
   case SDL_EVENT_WINDOW_FOCUS_GAINED:
   case SDL_EVENT_WINDOW_RESTORED:
     w2c_game_game_activate(&game, 1);
@@ -287,8 +300,16 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
     // DirectInput's order: left, right, middle, then the side buttons.
     int button = event->button.button == SDL_BUTTON_LEFT ? 0 : event->button.button == SDL_BUTTON_RIGHT ? 1
                  : event->button.button == SDL_BUTTON_MIDDLE ? 2 : event->button.button - 1;
-    if (button < 8)
-      input()->mouse_buttons[button] = event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ? 0x80 : 0;
+    if (button >= 8)
+      break;
+    // The game polls button state once a frame, so a tap shorter than a frame
+    // (a touchpad's) still shows for two before letting go (SDL_AppIterate).
+    bool down = event->type == SDL_EVENT_MOUSE_BUTTON_DOWN;
+    held[button] = down;
+    if (down)
+      hold_frames[button] = 2;
+    if (down || !hold_frames[button])
+      input()->mouse_buttons[button] = down ? 0x80 : 0;
     break;
   }
   case SDL_EVENT_MOUSE_WHEEL:
@@ -324,8 +345,16 @@ SDL_AppResult SDL_AppIterate(void *) {
     wheel = 0;
     w2c_game_game_mouse_move(&game, gx, gy);
   }
-  if (!w2c_game_game_frame(&game)) {
+  bool running = w2c_game_game_frame(&game);
+  for (int button = 0; button < 8; ++button)
+    if (hold_frames[button] && !--hold_frames[button] && !held[button])
+      input()->mouse_buttons[button] = 0;
+  if (!running) {
     w2c_game_game_exit(&game);
+#ifdef __EMSCRIPTEN__
+    // The page stays: the shell commits the saves the exit wrote.
+    MAIN_THREAD_EM_ASM(Module.quit());
+#endif
     return SDL_APP_SUCCESS;
   }
   return SDL_APP_CONTINUE;
