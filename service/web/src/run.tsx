@@ -531,7 +531,17 @@ export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
     () => (
       <>
         <div class="panel-head">
-          <h3>{rate() === "kills" ? "Kills per minute" : "Damage per second"}</h3>
+          <span class="head-title">
+            <h3>{rate() === "kills" ? "Kills per minute" : "Damage per second"}</h3>
+            <Show when={run.nukes.length}>
+              <span class="legend">
+                <svg width="10" height="8" viewBox="0 0 10 8" aria-hidden="true">
+                  <path d="M0,0 l10,0 l-5,8 Z" fill={RED} />
+                </svg>
+                Nuke
+              </span>
+            </Show>
+          </span>
           <span class="buttons">
             <GameButton label="Kills/min" on={rate() === "kills"} onClick={() => setRate("kills")} />
             <GameButton label="Damage/s" on={rate() === "damage"} onClick={() => setRate("damage")} />
