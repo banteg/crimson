@@ -10,6 +10,7 @@ from pathlib import Path
 import msgspec
 
 from grim.console import ConsoleState
+from grim.paq import MAGIC
 
 ASSET_BASE_URL = "https://paq.crimson.banteg.xyz/v1.9.93"
 DEFAULT_PAQ_FILES = ("crimson.paq", "music.paq", "sfx.paq")
@@ -38,6 +39,9 @@ def _download_file(url: str, dest: Path) -> None:
             os.fsync(handle.fileno())
         if tmp_path is None:
             raise RuntimeError("assets: temporary file not created")
+        with tmp_path.open("rb") as archive:
+            if archive.read(len(MAGIC)) != MAGIC:
+                raise ValueError("Invalid PAQ archive: missing paq header")
         tmp_path.replace(dest)
     finally:
         if tmp_path is not None:
@@ -62,7 +66,7 @@ def download_missing_paqs(
         dest = assets_dir / name
         try:
             _download_file(url, dest)
-        except (OSError, RuntimeError, urllib.error.URLError) as exc:
+        except (OSError, RuntimeError, ValueError, urllib.error.URLError) as exc:
             results.append(DownloadResult(name=name, ok=False, error=str(exc)))
             console.log.log(f"assets: failed to download {name}: {exc}")
             continue
