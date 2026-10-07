@@ -12,7 +12,18 @@ struct PortableConfig {
       friendly_fire, hardcore, retry, preserve_bugs;
   uint32_t weapon_usage[53];
 };
+// Player one after a tick, for a run's timeline (service/src/timeline.ts). `damage` is the health creatures have
+// lost since the run started (overkill excluded) and `nukes` the Nukes picked up; `pick_ids` are the perks picked
+// since the previous read. The timers are Double Experience, Weapon Power Up, Fire Bullets, Freeze, Reflex Boost,
+// Energizer, Shield and Speed.
+struct PortableProbe {
+  float x, y, health, damage;
+  int32_t elapsed_ms, experience, level, weapon_id, kills, nukes, picks;
+  int32_t pick_ids[8];
+  float timers[8];
+};
 static_assert(sizeof(PortableConfig) == 260);
+static_assert(sizeof(PortableProbe) == 108);
 static_assert(sizeof(PortableInput) == 20);
 static_assert(sizeof(PortableCommand) == 8);
 static_assert(sizeof(float) == 4 && sizeof(int) == 4);
@@ -39,6 +50,8 @@ float portable_player_y();
 float portable_player_health();
 float portable_shake_x();
 float portable_shake_y();
+// Reads the tick into the probe and returns its address; portable_init starts its counts over.
+uintptr_t portable_probe();
 int portable_math_probe(uint32_t operation, uint32_t a, uint32_t b);
 int portable_builder_probe(uint32_t seed, uint32_t index, uint32_t hardcore,
                            uint32_t players);

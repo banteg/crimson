@@ -159,6 +159,61 @@ extern "C" float portable_player_y() { return player_state_table[0].position.y; 
 extern "C" float portable_player_health() { return player_state_table[0].health; }
 extern "C" float portable_shake_x() { return camera_shake_offset_x; }
 extern "C" float portable_shake_y() { return camera_shake_offset_y; }
+// The timeline probe: each read compares the creature pool, player one's perk
+// counts and the bonus pool with the previous read's.
+static PortableProbe probe;
+static float creature_health[385];
+static bool creature_alive[385];
+static int perk_seen[0x80];
+static bool bonus_seen[0x10];
+static int probe_mode;
+static void probe_reset(int mode) {
+  probe = PortableProbe{};
+  probe_mode = mode;
+  for (int i = 0; i < 385; ++i) {
+    creature_alive[i] = creature_pool[i].active && creature_pool[i].health > 0;
+    creature_health[i] = creature_pool[i].health;
+  }
+  memcpy(perk_seen, player_state_table[0].perk_counts, sizeof(perk_seen));
+  for (int i = 0; i < 0x10; ++i)
+    bonus_seen[i] = bonus_pool[i].picked;
+}
+extern "C" uintptr_t portable_probe() {
+  player_state_t &p = player_state_table[0];
+  for (int i = 0; i < 385; ++i) {
+    creature_t &c = creature_pool[i];
+    // A creature still in its slot loses health; one removed in the same tick
+    // it was killed loses what it had left.
+    if (creature_alive[i] && (!c.active || c.health < creature_health[i]))
+      probe.damage += creature_health[i] - (c.active ? fmaxf(c.health, 0) : 0);
+    creature_alive[i] = c.active && c.health > 0;
+    creature_health[i] = c.health;
+  }
+  probe.picks = 0;
+  for (int id = 0; id < 0x80; ++id) {
+    for (int n = perk_seen[id]; n < p.perk_counts[id] && probe.picks < 8; ++n)
+      probe.pick_ids[probe.picks++] = id;
+    perk_seen[id] = p.perk_counts[id];
+  }
+  for (int i = 0; i < 0x10; ++i) {
+    if (bonus_pool[i].picked && !bonus_seen[i] && bonus_pool[i].bonus_id == BONUS_ID_NUKE)
+      ++probe.nukes;
+    bonus_seen[i] = bonus_pool[i].picked;
+  }
+  probe.x = p.position.x;
+  probe.y = p.position.y;
+  probe.health = p.health;
+  probe.elapsed_ms = probe_mode == GAME_MODE_QUEST ? quest_spawn_timeline : run_elapsed_ms;
+  probe.experience = p.experience;
+  probe.level = p.level;
+  probe.weapon_id = p.weapon_id;
+  probe.kills = creature_kill_count;
+  const float timers[8] = {bonus_double_xp_timer, bonus_weapon_power_up_timer, p.fire_bullets_timer,
+                           bonus_freeze_timer, bonus_reflex_boost_timer, bonus_energizer_timer,
+                           p.shield_timer, p.speed_bonus_timer};
+  memcpy(probe.timers, timers, sizeof(timers));
+  return (uintptr_t)&probe;
+}
 extern "C" uintptr_t portable_commands() { return (uintptr_t)commands; }
 extern "C" uintptr_t portable_output() { return (uintptr_t)output; }
 static void trace_init(const char *stage) {
@@ -296,6 +351,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   music_track_game_playlist = track + 1;
   music_track_extra_1 = track + 2;
   crt_rand();
+  probe_reset(mode);
   ready = true;
   trace_init("ready");
   return 1;
