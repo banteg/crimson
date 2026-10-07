@@ -89,9 +89,9 @@ footer p{margin:0 0 6px}footer .credit{color:var(--dim)}footer .credit a{color:v
 a.run{color:inherit;text-decoration:none}a.run:hover{color:var(--row-on);text-decoration:underline}
 a.run-details{white-space:nowrap}
 .run-player{margin:4px 0}.run-score{margin:6px 0;color:#fff;font:bold 32px/36px "Courier New",Courier,monospace}
-.score-label{margin:10px 0 0}.quest-score{margin:8px 0 16px;font-size:13px}
+/* Keep the game's pixel font at its native 16px size so its square pixels stay legible. */
+.score-label{margin:10px 0 0}.quest-score{margin:8px 0 16px}
 .quest-score dl{display:grid;grid-template-columns:auto max-content;gap:4px 14px;margin:0;max-width:380px;color:var(--label)}
-.quest-score dt span{display:block}
 .quest-score dd{margin:0;text-align:right;color:var(--text);font-family:"Courier New",Courier,monospace;white-space:nowrap}
 .run-overview{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,1.4fr);gap:16px 32px;align-items:center}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,120px),1fr));gap:10px 18px}

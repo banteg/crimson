@@ -497,8 +497,8 @@ function QuestScore(props: { detail: RunDetailView }) {
     <div class="quest-score">
       <dl>
         <dt>Quest time</dt><dd>{formatScore("quests", result.elapsed_ms)}</dd>
-        <dt>Life bonus <span class="muted">({Math.trunc(result.health)} hp × 50 ms)</span></dt><dd>{adjustment(lifeBonus)}</dd>
-        <dt>Unpicked perks <span class="muted">({result.pending_perks} × 1 s)</span></dt><dd>{adjustment(perkBonus)}</dd>
+        <dt>Life bonus</dt><dd>{adjustment(lifeBonus)}</dd>
+        <dt>Unpicked perks <span class="muted">({result.pending_perks})</span></dt><dd>{adjustment(perkBonus)}</dd>
       </dl>
       <Show when={result.elapsed_ms - lifeBonus - perkBonus === 0}>
         <p class="muted">An exactly zero final time is recorded as 0:00.001.</p>
