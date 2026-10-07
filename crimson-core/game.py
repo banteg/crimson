@@ -55,7 +55,16 @@ def replace_once(text, old, new, src):
     return text.replace(old, new)
 
 
+# Recovered functions host/game.inc wraps so that a simulation tick runs them as
+# the verifier does; the recovered body keeps a _recovered name.
+SEAMS = ("ui_elements_update_and_render",)
+
+
 def adapt_game(src, txt):
+    if src.stem in SEAMS:
+        txt, count = re.subn(rf"\b{src.stem}\(", f"{src.stem}_recovered(", txt)
+        if not count:
+            raise SystemExit(f"Audit {src.name} before changing its seam")
     # Declaration repairs: the recovered translation units disagree about these
     # signatures, which wasm32 calls cannot tolerate. Each matches the callers.
     # Some callers declare sfx_play void; it returns the voice, which they ignore.
@@ -109,3 +118,13 @@ def com_defaults(root, headers):
                 lines.append(f'  {" ".join(method.split())} {{ platform_unimplemented("{interface}::{name}"); }}')
             lines.append("};")
     (headers / "com_defaults.h").write_text("\n".join(lines) + "\n")
+
+
+def engine_globals(root):
+    # The console and its registered cvars belong to the engine: registered once,
+    # they outlive every run.
+    registration = (root / "decomp/1.9/crimsonland/game/register_core_cvars.cpp").read_text()
+    cvars = re.findall(r"\b(cv_\w+) =", registration)
+    if len(cvars) != 13:
+        raise SystemExit("Audit register_core_cvars before changing the engine globals")
+    return {"console_log_queue", *cvars}

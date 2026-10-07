@@ -11,9 +11,8 @@ export const PRESENTATION = new Set(
   names.filter((n) => /^globals\.player_weapon_popup_timer\[/.test(n)),
 );
 
-// game_state_id_t: game over, quest results, quest failed, and the idle sentinel.
+// game_state_id_t: game over, quest results and quest failed.
 const TERMINAL = new Set([0x07, 0x08, 0x0c]);
-const IDLE = 0x19;
 
 export function loadGame(wasm) {
   const module = new WebAssembly.Module(fs.readFileSync(wasm));
@@ -72,30 +71,32 @@ export function compareStream(input, core, game) {
   const run = decode(input);
   init(core, run.config);
   init(game, run.config);
+  let pending;
   for (let tick = -1; tick < run.records.length; tick++) {
     if (tick >= 0) {
       const accepted = [step(core, run.records[tick]), step(game, run.records[tick])];
       if (accepted[0] !== accepted[1]) return { tick, field: "accepted", core: accepted[0], game: accepted[1] };
-      if (!accepted[0]) return { ticks: tick, rejected: true };
+      // A stream may run past the end; both must refuse it only once the run is over.
+      if (!accepted[0]) return TERMINAL.has(pending) ? { ticks: tick, end: "run over" } : { tick, rejected: true };
     }
     const expected = state(core),
       actual = state(game);
+    pending = expected.readUInt32LE(names.indexOf("globals.game_state_pending") * 4);
     for (let i = 0; i < names.length; i++) {
       if (PRESENTATION.has(names[i])) continue;
       const a = expected.readUInt32LE(i * 4),
         b = actual.readUInt32LE(i * 4);
-      if (a === b) continue;
-      // When the run-down ends, the recovered UI timeline hands the terminal
-      // state to game_state_set and clears the pending one; the verifier stops
-      // there instead. Both must then refuse the next tick.
-      if (names[i] === "globals.game_state_pending" && TERMINAL.has(a) && b === IDLE) continue;
-      return { tick, field: names[i], core: a, game: b };
+      if (a !== b) return { tick, field: names[i], core: a, game: b };
     }
   }
-  return { ticks: run.records.length };
+  if (!TERMINAL.has(pending) || !run.records.length) return { ticks: run.records.length, end: "stream" };
+  // The run is over: one more tick must be refused by both.
+  const after = [step(core, run.records.at(-1)), step(game, run.records.at(-1))];
+  if (after[0] || after[1]) return { tick: run.records.length, field: "accepted after the run", core: after[0], game: after[1] };
+  return { ticks: run.records.length, end: "run over" };
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [coreWasm, gameWasm, ...streams] = process.argv.slice(2);
   const core = loadCore(coreWasm ?? new URL("build/wasm/core.wasm", CORE));
   const game = loadGame(gameWasm ?? new URL("build/game/game.wasm", CORE));
@@ -105,7 +106,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   let failed = 0;
   for (const file of files) {
     const result = compareStream(fs.readFileSync(file), core, game);
-    if (result.field) failed++;
+    if (!result.end) failed++;
     console.log(path.basename(file), JSON.stringify(result));
   }
   process.exitCode = failed ? 1 : 0;

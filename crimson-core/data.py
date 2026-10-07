@@ -22,7 +22,7 @@ def image_entries(root, image):
     return entries
 
 
-def data_source(root, out, grim=False):
+def data_source(root, out, grim=False, engine=()):
     entries = image_entries(root, "crimsonland.exe")
     if grim:
         # The compiler emits the interface vtable; the other symbol tables, and the
@@ -80,10 +80,11 @@ def data_source(root, out, grim=False):
     ]
     exe_resets = []
     exe_reloc = []
-    # Grim's state belongs to the engine, which outlives every run.
-    grim_resets = []
+    # Grim's state, and the executable's named engine globals, outlive every run.
+    engine_resets = []
     for i, (a, b) in enumerate(blocks):
-        resets, reloc = (grim_resets, grim_resets) if a >= GRIM_BASE else (exe_resets, exe_reloc)
+        owned = a >= GRIM_BASE or any(a <= int(e["address"], 16) < b for e in entries if e["name"] in engine)
+        resets, reloc = (engine_resets, engine_resets) if owned else (exe_resets, exe_reloc)
         # Pointer-bearing storage expands on 64-bit hosts. Interior names below refer to first-record fields.
         size = b - a
         members = [e for e in entries if a <= int(e["address"], 16) < b]
@@ -140,6 +141,6 @@ def data_source(root, out, grim=False):
         ]
     lines += ["void portable_reset_data() {", *exe_resets, *exe_reloc, "}"]
     if grim:
-        lines += ["void portable_reset_grim_data() {", *grim_resets, "}"]
+        lines += ["void portable_reset_engine_data() {", *engine_resets, "}"]
     lines.append("}")
     (out / "data.cpp").write_text("\n".join(lines) + "\n")

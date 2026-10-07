@@ -75,14 +75,13 @@ inside Grim.
 [`checks/game_check.py`](checks/game_check.py) steps the game module and the
 verifier through every gate stream (the 134-run bot corpus under both bug
 policies and the 8 supported recordings) and compares all 36,343 snapshot
-fields after every tick. All 142 agree. Two differences are expected and
-documented in [`checks/game_compare.mjs`](checks/game_compare.mjs):
+fields after every tick; where a run ends, both must refuse the next tick. All
+142 agree. The one expected difference is `player_weapon_popup_timer`, which the
+restored HUD counts down and only the HUD reads
+([`checks/game_compare.mjs`](checks/game_compare.mjs)).
 
-- `player_weapon_popup_timer`: the restored HUD counts it down; the verifier
-  stubs the HUD. Only the HUD reads it.
-- When the run-down ends, the restored UI timeline hands the terminal state to
-  `game_state_set` and clears the pending state; the verifier stops there
-  instead. Both refuse the next tick.
+During a run the host owns the run-down, as in the verifier, so the restored UI
+timeline that drives it in the original runs only outside ticks.
 
 Restoring the original setup also showed that the verifier's hand-set cvars
 differ from the registered defaults for two values it never reads: terrain body

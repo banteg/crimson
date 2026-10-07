@@ -11,7 +11,7 @@ from pathlib import Path
 
 from adapter import adapt
 from data import data_source
-from game import adapt_game, com_defaults, game_headers, game_platform, game_sources, object_name
+from game import adapt_game, com_defaults, engine_globals, game_headers, game_platform, game_sources, object_name
 from rules import apply_patches, load_patches
 
 HERE = Path(__file__).resolve().parent
@@ -57,7 +57,7 @@ def main():
         else:
             lines.extend(f"put({f});" for f in group["fields"])
     (headers / "snapshot.inc").write_text("\n".join(lines) + "\n")
-    data_source(a.root, a.out, grim=a.target == "game")
+    data_source(a.root, a.out, grim=a.target == "game", engine=engine_globals(a.root) if a.target == "game" else ())
     env = dict(os.environ, ZIG_GLOBAL_CACHE_DIR=str(a.out / "zig-global"), ZIG_LOCAL_CACHE_DIR=str(a.out / "zig-local"))
     zig = shutil.which("zig")
     if not zig or subprocess.check_output([zig, "version"], text=True).strip() != "0.17.0":

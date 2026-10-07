@@ -81,8 +81,22 @@ extern "C" int crt_rand() {
   rng = rng * 214013u + 2531011u;
   return (rng >> 16) & 0x7fff;
 }
+#ifdef CRIMSON_GAME
+// Strings made while the engine boots (cvar names among them) outlive runs;
+// a run's own strings live in the arena that run start empties.
+static bool in_arena(void *p) { return p >= string_arena && p < string_arena + sizeof(string_arena); }
+extern "C" void crt_free(void *p) {
+  if (!in_arena(p))
+    free(p);
+}
+#else
 extern "C" void crt_free(void *) {}
+#endif
 extern "C" char *strdup_malloc(char *s) {
+#ifdef CRIMSON_GAME
+  if (game_booting)
+    return s ? strdup(s) : nullptr;
+#endif
   if (!s)
     return nullptr;
   size_t n = strlen(s) + 1;
@@ -525,6 +539,9 @@ extern "C" int portable_math_probe(uint32_t operation, uint32_t a, uint32_t b) {
 // Test-only builder oracle. It leaves the run unsteppable until reinitialized.
 extern "C" int portable_builder_probe(uint32_t seed, uint32_t index,
                                       uint32_t hardcore, uint32_t players) {
+#ifdef CRIMSON_GAME
+  GameTick game_tick;
+#endif
   if (index >= 50 || hardcore > 1 || players < 1 || players > 4)
     return 0;
   cfg = {};

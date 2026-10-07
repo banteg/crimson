@@ -41,14 +41,18 @@ public:
 };
 static SessionGrim session_grim;
 unsigned char game_ticking;
+static bool game_booting;
 void platform_headless_device();
-extern "C" void portable_reset_grim_data();
+extern "C" void portable_reset_engine_data();
 extern "C" unsigned char grim_render_disabled;
 static void game_init_run() {
   static bool booted;
   if (!booted) {
-    portable_reset_grim_data();
+    game_booting = true;
+    portable_reset_engine_data();
     grim_state_init();
+    register_core_cvars();
+    game_booting = false;
     // Headless, Grim's own switch keeps every draw and render target away from
     // the device; the recovered state changes still reach it.
     platform_headless_device();
@@ -56,12 +60,21 @@ static void game_init_run() {
     booted = true;
   }
   grim_interface_ptr = &session_grim;
-  register_core_cvars();
   cv_friendlyFire->value = cfg.friendly_fire ? 1 : 0;
 }
 // Live input and wall time reach the simulation only through the verifier's
 // seam: inside run start and ticks, Grim answers as the headless verifier does.
 struct GameTick {
+  unsigned char outer = game_ticking;
   GameTick() { game_ticking = 1; }
-  ~GameTick() { game_ticking = 0; }
+  ~GameTick() { game_ticking = outer; }
 };
+// During a run the host owns the run-down this UI timeline drives in the
+// original (portable_step_many), exactly as in the verifier.
+extern "C" {
+void ui_elements_update_and_render_recovered();
+void ui_elements_update_and_render() {
+  if (!game_ticking)
+    ui_elements_update_and_render_recovered();
+}
+}
