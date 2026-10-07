@@ -3,7 +3,7 @@ from __future__ import annotations
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...creatures.anim import (
     CREATURE_ANIM,
@@ -64,7 +64,7 @@ def creature_color_byte(channel: float) -> int:
 
 
 def creature_color_to_rl(tint: RGBA) -> rl.Color:
-    return rl.Color(*(creature_color_byte(channel) for channel in tint))
+    return rl_color(*(creature_color_byte(channel) for channel in tint))
 
 
 def draw_creature_sprite(
@@ -109,7 +109,7 @@ def draw_creature_sprite(
     height = float(texture.height) / 8.0 * size_scale * scale
     src_x = float((index % 8) * (texture.width // 8))
     src_y = float((index // 8) * (texture.height // 8))
-    src = rl.Rectangle(src_x, src_y, float(texture.width) / 8.0, float(texture.height) / 8.0)
+    src = rl_rectangle(src_x, src_y, float(texture.width) / 8.0, float(texture.height) / 8.0)
 
     rotation_deg = float(rotation_rad * _RAD_TO_DEG)
 
@@ -119,20 +119,20 @@ def draw_creature_sprite(
         # anchored at camera + position - (size / 2 + 0.7). Convert that native
         # top-left position to the centered rectangle expected by Raylib.
         alpha = int(shadow_alpha) if shadow_alpha is not None else int(clamp(float(tint.a) * 0.4, 0.0, 255.0) + 0.5)
-        shadow_tint = rl.Color(0, 0, 0, alpha)
+        shadow_tint = rl_color(0, 0, 0, alpha)
         shadow_scale = 1.07
         shadow_w = width * shadow_scale
         shadow_h = height * shadow_scale
         offset = width * 0.035 - 0.7 * scale
-        shadow_dst = rl.Rectangle(screen_pos.x + offset, screen_pos.y + offset, shadow_w, shadow_h)
-        shadow_origin = rl.Vector2(shadow_w * 0.5, shadow_h * 0.5)
+        shadow_dst = rl_rectangle(screen_pos.x + offset, screen_pos.y + offset, shadow_w, shadow_h)
+        shadow_origin = rl_vector2(shadow_w * 0.5, shadow_h * 0.5)
         rl.draw_texture_pro(texture, src, shadow_dst, shadow_origin, rotation_deg, shadow_tint)
 
     if not body:
         return
 
-    dst = rl.Rectangle(screen_pos.x, screen_pos.y, width, height)
-    origin = rl.Vector2(width * 0.5, height * 0.5)
+    dst = rl_rectangle(screen_pos.x, screen_pos.y, width, height)
+    origin = rl_vector2(width * 0.5, height * 0.5)
     rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
     if hit_flash:
         # Native emits two identical additive quads for each flash.
