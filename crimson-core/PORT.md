@@ -5,29 +5,40 @@ to port at, and the stack to port with. Researched 2026-10-07.
 
 ## Summary
 
-The simulation part of a web port is done: the recovered gameplay already runs
-as WASM in production and agrees bit for bit with Python and with native. What
-remains is everything around it: about 60% of the exe source has never met a
-modern compiler, nothing implements the 84-slot Grim2D interface on a modern
-backend, and the exe's direct Win32, DirectSound and WinInet calls need
-replacing.
+The supported simulation is already portable: the recovered core runs as
+import-free WASM, the service uses it to verify ranked runs, and the checked-in
+native/WASM matrix agrees over 357,500 ticks. This covers single-player
+Survival, Rush and all 50 Quests, not the whole game. There is no playable C
+client yet. Menus, resources, sound and the platform layer remain substantial
+integration work; source recovery is not evidence that they compile or run.
 
-Recommendation: port at the **Grim2D interface**, **web first**, on **SDL3 plus
-a small GLES3/WebGL2 renderer** we own. Not raylib for the C port.
+Recommendation: port at the **Grim2D interface plus explicit platform and
+session contracts**, **web first**, using **SDL3 and an owned OpenGL renderer**:
+GLES3/WebGL2 in the browser, desktop OpenGL on macOS/Linux/Windows. Keep Python
+as the reference product. Prefer this over raylib for the C client because we
+need precise graphics state and control of audio side effects.
+
+First deliver one playable browser Quest with terrain, corpses, HUD, perk
+selection and sound, and prove replay parity in that actual client. Do not
+require compiling every recovered file before this slice. A faithful original
+client and parity with the Python product are separate milestones; neither has
+a defensible calendar estimate until the slice exercises the missing systems.
 
 ## Where we are
 
 | Piece | State |
 | --- | --- |
-| Simulation | Done. The core compiles 168 of the exe's 576 source files (about 20k of 45k lines) to a 357 KiB import-free WASM module. The crimson.land Worker verifies ranked runs with it ([`service/src/verify.ts`](../service/src/verify.ts)). |
-| Rest of the exe | Menus, UI, high scores, sound, resources, typ-o, console, credits: recovered and byte-exact, but never compiled by clang. Expect more of the declaration repairs [`adapter.py`](adapter.py) already makes. |
-| Grim | 84 vtable slots, 60 called by the exe from 111 files ([`grim2d_cpp.h`](../tools/match/include/grim2d_cpp.h), [API docs](../docs/grim2d/api.md)). The only implementation is the headless no-op in [`host/grim.inc`](host/grim.inc). The Python [`src/grim`](../src/grim) (4.8k lines) is a validated reference backend. |
-| Direct platform calls in the exe | Registry, DirectSound with vorbisfile (`sound/`, `platform/vorbis_*`), WinInet high-score threads, ShellExecute, Sleep and timeGetTime, mod DLLs via LoadLibrary. Each is small and replaceable; mods cannot run on the web. |
+| Simulation | The core compiles 168 of the exe's 576 source files: 20,220 of 44,850 source lines, producing roughly 356 KiB of import-free WASM. The service verifier is [`service/src/verify.ts`](../service/src/verify.ts). See [supported scope](README.md), [replay gate](results/gate.json) and [native/WASM matrix](results/matrix.json). |
+| Rest of the exe | Menus, UI, high scores, sound, resources, typ-o, console, credits: outside the current core build. The [matching report](../tools/match/STATUS.md) establishes its declared recovery scope, not a complete modern executable. Expect more of the declaration and layout repairs [`adapter.py`](adapter.py) already makes. |
+| Grim | 84 vtable slots, 60 called by the exe from 111 files ([`grim2d_cpp.h`](../tools/match/include/grim2d_cpp.h), [API docs](../docs/grim2d/api.md)). The core uses a headless implementation in [`host/grim.inc`](host/grim.inc); recovered Grim is not a modern backend. Python's [`src/grim`](../src/grim) is the working reference for rendering and audio. |
+| Direct platform calls in the exe | Registry, DirectSound with vorbisfile (`sound/`, `platform/vorbis_*`), WinInet high-score threads, ShellExecute, Sleep and timeGetTime, mod DLLs via LoadLibrary. Each needs an explicit replacement or unsupported disposition; original Windows mod DLLs cannot run in the web client. |
 | Runnable full build | None, with MSVC or anything else. The native link has only checked a passive grim component. |
 | Python product features | Twin-stick controllers, letterboxing, 3–4 player co-op, replay recording, ranked upload and identity, the bug fixes outside the core's 12 patches. This is the long tail. |
 
-A faithful web build of the original game is moderately close. Parity with what
-the Python port ships today is much further.
+The checked-in replay gate reports 142/142 supported fixtures agreeing, with
+Typ-o explicitly unsupported. The matrix validates the selected headless
+simulation across 134 cases. Neither result validates the missing client code.
+Counts describe coverage, not a percentage of porting effort.
 
 ### Not yet compiled by the core
 
@@ -40,69 +51,125 @@ source is compiled.
 ### Portability hazards
 
 - No `__asm`, SEH or C++ exceptions. Grim's JAZ decoder uses setjmp/longjmp.
-- About 23 obvious pointer/int casts. The real 32-bit coupling is Grim's
-  `grim_config_value_t`, which stores pointers in `unsigned int words[3]`
-  (14 sites: window title, PAQ path, frame callback, HWND, device), the fixed
-  mod API layout, and metadata tables with pointer strides
-  ([`data.py`](data.py)). All harmless on wasm32.
-- x87 PC24 and wide trig results until the first multiply. The adapter already
-  handles the gameplay sites; UI and render code need no such treatment.
-- The VC6 CRT `rand` LCG must stay exact (about 75 files use it).
-- `D3DXVec2Normalize` must stay x87-exact; the core's portable math covers it.
+- About 23 obvious pointer/int casts. `grim_config_value_t` is a four-word
+  `unsigned int words[4]` payload; its pointer constructor uses slot 3. The
+  pointer-bearing configuration sites, fixed mod API layout and metadata
+  pointer strides ([`data.py`](data.py)) need auditing. wasm32 avoids pointer
+  widening, but does not repair absolute addresses, relocations, or mismatched
+  function-pointer signatures. Use a correctly typed frame callback.
+- x87 PC24, intermediate precision and wide trig results until the first
+  multiply matter to the existing core. Preserve its build flags and portable
+  math. Audit newly included routines by their effect on authoritative state;
+  being named UI or render does not exempt a routine from numeric adaptation.
+- Keep the VC6 CRT `rand` LCG exact wherever it is authoritative. Calls in
+  roughly 75 files require classification, not blanket forwarding to one RNG.
+- `D3DXVec2Normalize` is covered for current core callers; new callers and new
+  compiler targets still need parity checks. Existing aliasing and layout
+  assumptions also need review as the dependency closure grows.
 
 ## Seam: the Grim2D interface
 
-Make `IGrim2D_cpp` the platform seam, plus a thin `platform_*` layer for the
-exe's direct OS calls:
+Keep `IGrim2D_cpp` as the graphics/resource seam, plus a thin platform layer for
+direct OS calls. Treat it as a stateful contract: font metrics, resource IDs,
+configuration reads and return values affect recovered code. Only operations
+proved irrelevant to the selected simulation may be no-ops in the verifier.
 
 | Original | Replacement |
 | --- | --- |
-| Registry (`reg_read_dword_default`, `reg_write_dword`, saves, play time) | A config file in the per-user directory; IndexedDB on the web |
-| DirectSound buffers and vorbisfile (`sound/`, `platform/vorbis_*`) | Our own mixer and an Ogg decoder |
-| WinInet high-score and update threads | crimson.land, or off |
+| Registry (`reg_read_dword_default`, `reg_write_dword`, saves, play time) | Per-user config/save files natively; an explicit asynchronous IndexedDB adapter on the web |
+| DirectSound buffers and vorbisfile (`sound/`, `platform/vorbis_*`) | Our own mixer and Ogg decoder, with playback state kept outside authoritative RNG |
+| WinInet high-score and update threads | Disable the original network paths for the first client; integrate the existing service protocol later |
 | ShellExecute, HlinkNavigateString | The host's URL opener |
-| Sleep, timeGetTime, QueryPerformanceCounter | Host timing |
+| Sleep, timeGetTime, QueryPerformanceCounter | Host/UI timing; simulation time comes from the fixed-tick session contract |
 | Mod DLLs | Off |
+| Texture/font loading and text measurement | Stable resource metadata shared with the headless implementation; GPU handles remain presentation details |
 
 Why this seam:
 
-- **The original authors drew it.** The exe already compiles against
-  `grim2d_cpp.h`, and the core's headless Grim already implements it. The
-  verifier and the client become two implementations of one interface around
-  the same compiled game.
+- **The original authors drew it.** The exe already uses `grim2d_cpp.h`, and the
+  core's headless Grim implements that interface. Python provides reference
+  behavior for the parts a real backend must restore.
 - **Its control flow fits the web.** Grim's `apply_settings` is the message
   loop, and it calls the frame function the exe installs with
-  `set_config_var(0x2d, …)`. That maps onto SDL3 main callbacks and
-  `emscripten_set_main_loop` without Asyncify.
-- **Audio splits cleanly.** The recovered `audio/` logic stays, because voice
-  selection and the music gate consume RNG. Only the DirectSound and vorbisfile
-  layer underneath is replaced.
+  `set_config_var(0x2d, …)`. Replace ownership of that loop with SDL3 main
+  callbacks and a typed frame entry point. Initialize assets asynchronously
+  before entering gameplay; a callback-driven loop need not require Asyncify.
+- **Simulation and presentation can be separated explicitly.** Sound choice,
+  playlist selection, camera shake and persistent effects have authoritative
+  work to preserve. Real device state must not feed back into those decisions.
 
-### Backend linked in, not imported
+### Session rules come before the backend
 
-The [roadmap](ROADMAP.md#client-milestone-the-whole-recovered-game) sketches
-the host supplying Grim as WASM imports. With 84 fine-grained slots called
-thousands of times a frame, that means a JavaScript backend, a second desktop
-backend, and a command buffer to make the boundary cheap. A C backend compiled
-per target is one implementation.
+Extend the existing [host API](host/api.h), [roadmap](ROADMAP.md) and Python
+[clock](../src/crimson/sim/clock.py)/[run result](../src/crimson/sim/run_result.py)
+contracts, rather than allowing the original OS loop to define a second policy:
 
-The cost is that the client's simulation is a separate build of the same
-adapted sources, not the verifier's exact module. The native/WASM matrix
-already shows those agree bit for bit over 357,500 ticks; add "the client build
-replayed headless equals `core.wasm`" to it rather than requiring one module.
+- Gameplay consumes normalized finite input and ordered commands at fixed
+  60 Hz boundaries. Preserve the core's float32 time arithmetic, Reflex Boost
+  behavior and once-per-tick work; host wall time must not become gameplay dt.
+- Sample controllers/mouse through a specified mapping to the existing input
+  ABI. Record the float32 values actually submitted to the core. Ranked runs
+  use the [canonical rules](../docs/rewrite/ranked-rules.md), including aim and
+  viewport constraints, rather than current window dimensions.
+- Menus and fully paused/perk-selection screens do not advance gameplay time
+  or authoritative RNG. Preserve the existing transition ticks before a pause
+  becomes effective. Clear accumulated gameplay debt on session transitions;
+  resuming a tab must not replay seconds of missed gameplay.
+- Perk picks and menu requests use the command seam. Preserve validation,
+  ordering and tick placement; UI code must not mutate gameplay directly.
+- Define terminal versus incomplete runs and the simulated 500 ms run-down.
+  Compare the complete `RunResult`, including pending perks and final RNG,
+  rather than only a death/completion flag or score.
+
+Rendering is not yet a pure observer. The recovered world render path contains
+weapon checks and effect-queue work. Some headless state-transition and UI
+stubs also omit side effects (see the roadmap's stub audit). Execute every
+authoritative operation once per tick, including persistent terrain/corpse
+bakes. For a display frame with zero or several ticks, submit persistent work
+from every tick and only the latest transient scene. Detached menu animation
+may use presentation time and a separate RNG. Do not simply skip all render
+routines between display frames.
+
+### Packaging: preserve the shared core until the client proves parity
+
+The [roadmap](ROADMAP.md#client-milestone-the-whole-recovered-game) prefers one
+wasm32 simulation artifact for browser, verifier and desktop host. That remains
+the release baseline. A linked Emscripten game/backend is a candidate to test in
+the first slice, not a property established by the current native/WASM matrix.
+
+Both designs can use one C renderer compiled per platform:
+
+| Design | Benefit | Cost and condition |
+| --- | --- | --- |
+| Shared simulation WASM; host consumes ordered Grim commands | Client and verifier execute identical simulation bytes; desktop can host the module with Wasmtime | Define command/resource lifetimes and synchronous metadata queries; measure boundary overhead. A JavaScript bridge does not require rewriting the renderer in JavaScript. |
+| Game and SDL/GL backend linked into each client | Direct calls and simpler initial resource ownership | Different simulation artifacts and additional recovered routines; prove each release artifact against the verifier, including active rendering and audio. A headless rebuild of client sources is insufficient. |
+
+Prototype the linked route if it materially accelerates the playable slice.
+Adopt it only after the actual client passes the gates below and measured
+benefits justify departing from the roadmap. If restoring code changes state,
+fix or explicitly reconcile the authoritative contract first. A matching
+snapshot layout cannot establish that omitted state is irrelevant.
 
 ### Web first
 
-wasm32 is ILP32, so the pointer-in-config sites and the mod API layout just
-work. A 64-bit desktop build needs those 14 sites widened plus the existing
-layout machinery, which matches the roadmap's advice not to expand it before a
-real client exists. The Python port stays the desktop product until then.
+wasm32 retains the original pointer width and reduces initial layout work. It
+still needs the relocation/callback audit above. Prove the browser slice before
+expanding the recovered game's 64-bit layout adaptations. A native SDL host for
+the same wasm32 core is an alternative to a native 64-bit simulation rebuild.
+Python remains the desktop product while either route is developed.
 
-## Stack: SDL3, GLES3 renderer, Emscripten
+## Stack: SDL3, owned GL renderer, Emscripten
 
-### Rendering: our own GLES3/WebGL2 renderer
+### Rendering: GLES3/WebGL2 on web, desktop GL on native
 
-About 1k lines implementing the D3D8 subset Grim uses:
+Use shared renderer code with GLSL 300 ES and GLSL 330 shader variants.
+On macOS, SDL's Cocoa GLES path uses EGL; it is not the ordinary CGL desktop
+OpenGL path ([SDL implementation](https://raw.githubusercontent.com/libsdl-org/SDL/main/src/video/cocoa/SDL_cocoaopengl.m)).
+Choose desktop OpenGL for the first native backend. ANGLE/EGL is an explicit
+future dependency choice if one GLES path becomes preferable.
+
+Implement the D3D8 subset Grim uses. A small renderer prototype is plausible;
+1k lines is not a bound on the finished resource, lifecycle and parity work:
 
 - 28-byte XYZRHW + diffuse + one texture coordinate vertices, D3DCOLOR packing;
 - raw `D3DBLEND` factors through config 0x13/0x14, including separate alpha
@@ -112,76 +179,150 @@ About 1k lines implementing the D3D8 subset Grim uses:
 - render targets for the persistent 1024×1024 terrain, with incremental decal
   and corpse bakes;
 - point or bilinear filtering per texture (config 0x15);
-- gamma through a full-frame gain pass (the original's config 0x1c ramp);
-- strict native draw order, batched by pass.
+- gamma (config 0x1c), with an explicit approximation of the original ramp
+  validated against captures;
+- texture addressing, render-target orientation and D3D pixel-center rules;
+- strict original draw order; batch only adjacent compatible draws, without
+  sorting translucent draws or reordering render-target updates;
+- resize/HiDPI/fullscreen handling and restoration of persistent targets after
+  WebGL context loss, without changing simulation state.
 
-Neither SDL3 rendering API fits:
+Neither higher-level SDL rendering API is the preferred fit today:
 
 - **SDL_GPU** has no WebGL backend; its WebGPU backend is still an
   [experimental PR](https://github.com/libsdl-org/SDL/pull/16020).
-- **SDL_Renderer** has no alpha test, colour mask or custom shaders outside
-  its GPU renderer.
+- **SDL_Renderer** supports custom fragment shaders through its GPU renderer,
+  but that is not a WebGL solution. Alpha testing, write masks and the exact
+  D3D blend/state contract favor owning GL directly
+  ([SDL FAQ](https://wiki.libsdl.org/SDL3/FAQDevelopment)).
 
 ### Platform: SDL3
 
-- PlayStation, Switch and Xbox drivers, hot-plug, and button labels by position,
-  which the controller feature names its buttons by.
-- Native Wayland without libX11.
-- `SDL_GetPrefPath` for saves; `SDL_AudioStream` for output.
-- Main callbacks that drive the loop on desktop and Emscripten alike.
+- SDL gamepad mappings, hot-plug and positional button labels; controller
+  support still needs the game's input and aim mapping.
+- Window/events and platform selection, including Wayland on Linux.
+- `SDL_GetPrefPath` for native saves and `SDL_AudioStream` for audio output.
+- SDL main callbacks for desktop and Emscripten. Keep asset loading, persistence
+  and network activity out of blocking frame callbacks.
+
+Browser execution has additional contracts: yield to the browser each frame,
+render on the main thread initially, unlock audio with a user gesture, and
+handle tab suspension. MEMFS is ephemeral; load saved data before session
+initialization and flush IndexedDB explicitly. Avoid pthreads initially;
+enabling them adds cross-origin isolation requirements. Pin SDL/Emscripten
+versions and record the actual build options
+([SDL Emscripten guide](https://wiki.libsdl.org/SDL3/README-emscripten)).
+
+### Resources
+
+Use a reproducible asset manifest with stable IDs and dimensions, and shared
+font metrics for the client and verifier. GPU allocations or asynchronous load
+order must not determine IDs or authoritative return values. For the first
+slice, converting PAQ/JAZ assets at build time is reasonable; shipping the
+original archive/decoder path can follow when needed. The existing Python
+asset pipeline supplies reference behavior. Bootstrap required assets before
+starting a run, and make missing assets a visible initialization failure.
 
 ### Audio
 
-stb_vorbis (or libvorbis) and a small mixer: 16 voices per sample with
-first-idle-else-random stealing, per-voice pitch (44100 down to 22050 for Reflex
-Boost), DirectSound pan and attenuation in hundredths of a dB implemented
-directly, streamed music with manual fades.
-[SDL3_mixer 3.0](https://discourse.libsdl.org/t/announcing-the-sdl-mixer-3-official-release/66567)
-is an alternative.
+Use an Ogg decoder (evaluate stb_vorbis versus libvorbis on the slice) and a
+small mixer: 16 voices per sample, per-voice pitch, DirectSound pan/attenuation
+in hundredths of a dB, and streamed music with manual fades. Preserve the
+Reflex Boost sample-rate behavior (44100 down to 22050). Select the decoder
+using actual asset compatibility, memory use and decode cost.
+
+**Real audio playback must not choose authoritative RNG draws.** Recovered
+[`sfx_entry_start_playback.cpp`](../decomp/1.9/crimsonland/sound/sfx_entry_start_playback.cpp)
+queries DirectSound status, takes the first idle voice, or calls `rand() % 16`
+when all voices are busy. The core currently stubs playback; restoring this
+path unchanged would make core RNG depend on device timing and muting.
+
+Keep authoritative sound/music selection and its RNG consumption on the
+simulation side, including when audio is unavailable. Use a separate
+presentation RNG for first-idle-else-random voice stealing, as Python's
+[`audio_bridge.py`](../src/crimson/world/audio_bridge.py) does with `audio_rng`.
+This deliberately follows the existing deterministic replay policy rather than
+restoring the original device-dependent RNG behavior.
+Audit music-ready gates and backend return values as well: the headless host
+deliberately represents silent, successfully initialized audio. Exercise muted,
+unlocked, saturated and failed-device paths in parity checks.
 
 ### Why not raylib for the C port
 
-Nearly every raylib workaround in the Python port is raylib fighting D3D8
-semantics:
+raylib remains a viable way to get a short demo running. It supports desktop
+GL and web GLES/WebGL targets, and offers an SDL3 platform backend
+([raylib platforms](https://github.com/raysan5/raylib/wiki/raylib-platforms-and-graphics)).
+The tradeoff here is fitting Grim's state machine around raylib/rlgl and raudio
+versus owning that small subset directly.
 
-- no render-target stack ([`texture_mode.py`](../src/grim/texture_mode.py));
-- alpha test emulated with a discard shader ([`shaders.py`](../src/grim/shaders.py));
-- custom blend factors reapplied around every mode switch ([`blend.py`](../src/grim/blend.py));
-- `EndDrawing` hijacks F12, worked around by hooking the GLFW key callback
-  ([`app.py`](../src/grim/app.py));
-- macOS exclusive fullscreen renders into a quarter of the framebuffer;
-- the raudio pan law inverted to emulate DirectSound ([`audio_math.py`](../src/grim/audio_math.py));
-- `DrawTexturePro` UV collapse under clamp, rotation-origin semantics and
-  flipped Y in render textures;
-- desktop GLSL 3.3 only, so the web needs ES variants anyway.
+Python shows the specific adaptation work: render-target nesting
+([`texture_mode.py`](../src/grim/texture_mode.py)), blend state across mode
+switches ([`blend.py`](../src/grim/blend.py)), texture orientation and
+DirectSound pan ([`audio_math.py`](../src/grim/audio_math.py)). Owning the mixer
+also makes separation of authoritative and playback-dependent RNG explicit.
 
-The retired Zig port's raylib web target also needed `-sASYNCIFY`. Grim is
-already an immediate-mode 2D API, so rlgl adds a translation layer rather than
-removing one.
-[raylib 6.0](https://newreleases.io/project/github/raysan5/raylib/release/6.0)
-can sit on SDL3 for platform code, but then it is mostly SDL3 with extra
-constraints.
+Some adaptations are common to both stacks: alpha testing requires a discard
+shader in an owned GL renderer too; web shaders need ES
+variants in either stack; and F12 screenshot capture can be disabled when
+building C raylib with `SUPPORT_SCREEN_CAPTURE=0`
+([raylib config](https://raw.githubusercontent.com/raysan5/raylib/6.0/src/config.h)).
+The Python fullscreen/HiDPI issues are regression cases to reproduce in either
+backend, not proof that SDL automatically fixes them. An old raylib build's
+use of Asyncify does not establish a current requirement.
 
-**Keep raylib for the Python port.** Its problems are solved there, and moving
-pyray to SDL3 bindings costs a lot for little gain.
+**Choose SDL3 plus owned GL for the C client; keep raylib for Python.** This
+reduces state ownership ambiguity without requiring a binding migration of the
+existing product. Revisit only if the first slice shows that direct renderer
+or audio work dominates and raylib removes that work without losing parity.
 
 ## Plan
 
-1. **Compile all 576 exe files** in [`build.py`](build.py) against the headless
-   Grim, and run the state machine through the menus headless. The matrix must
-   stay bit-exact.
-2. **Grim backend** on SDL3 and GLES3, ported from [`src/grim`](../src/grim).
-   Check it with the UI screenshot diff against the Python port and original
-   captures.
-3. **Sound and platform layer:** mixer, config file, IndexedDB on the web,
-   WinInet off.
-4. **Emscripten build** with SDL3 main callbacks; assets fetched on first launch
-   as the Python port does.
-5. **Session policy** from the roadmap: menus freeze the gameplay clock, perk
-   picks go through the command seam, replays are recorded.
-6. **Product features:** controller layer, letterboxing, the remaining bug
-   patches (co-op, HUD and menu entries), ranked upload with WebCrypto
-   signatures.
+1. **Freeze session and dependency contracts.** Specify clocks, input/commands,
+   run completion, authoritative versus presentation RNG, resource queries and
+   render side effects. Inventory the smallest dependency closure for one
+   Quest. Add files incrementally in [`build.py`](build.py); unsupported paths
+   should fail visibly rather than silently succeeding. Preserve the existing
+   core build and corpus as the baseline.
+2. **One browser Quest end to end.** SDL callbacks, required assets, terrain
+   and corpse render targets, player/enemy/projectile rendering, HUD, perk
+   selection, mixer and replay recording. Include restart and completion.
+   Evaluate linked versus shared-module packaging at this slice. Exit only
+   when the actual client reproduces its recorded run in the verifier and
+   passes timing/audio tests below. This is the first playable milestone.
+3. **Complete the supported single-player client.** Grow the closure for all
+   Quests, Survival and Rush; restore menus, options, progress/high scores and
+   reliable browser persistence. Audit state transitions and initialization
+   omitted by the headless build. Compare UI and gameplay captures with Python
+   and original references. Tutorial, Typ-o, console, credits and other omitted
+   paths need explicit follow-up scopes before claiming the whole original
+   game. Windows mod DLLs and original network endpoints remain disabled.
+4. **Native host and distribution.** Reuse the renderer with desktop GL shaders;
+   validate macOS/Linux/Windows resource paths, audio, HiDPI and fullscreen.
+   Choose a wasm32 host or native simulation build based on measured startup,
+   distribution cost and parity; adapt 64-bit recovered layouts only if the
+   native simulation route is justified. Native renderer smoke checks can run
+   earlier without porting the whole executable.
+5. **Python product parity and ranked release.** Controller mappings,
+   letterboxing, co-op, remaining bug fixes and UI, replay browsing, identity
+   and upload. Follow the existing [ranked rules](../docs/rewrite/ranked-rules.md)
+   and [identity protocol](../docs/rewrite/leaderboard-identity.md), including
+   canonical runs detached from ordinary save progress. Reconcile unsupported
+   modes/player counts explicitly; co-op is beyond the current core contract.
+   Ranked release requires the artifact gates below, but need not wait for
+   co-op or other unsupported modes.
 
-Steps 1–4 give a faithful web Crimsonland. Step 6 is where most of the effort
-goes.
+## Acceptance gates
+
+| Gate | Evidence required |
+| --- | --- |
+| Simulation | Run the supported replay corpus under both bug policies through the actual release client artifact and the verifier. Compare per-tick authoritative state and complete terminal/incomplete results. Keep unsupported fixtures visible. Extend probes when restored code introduces state outside current snapshots. |
+| Session | Replay identical normalized input/commands at 30/60/144 Hz display rates, including zero/multiple ticks per frame, pause/perk/menu transitions, restart and tab suspension. State/RNG/results must agree; UI time must not change command placement. |
+| Audio | Identical simulation results with real audio, a null sink, muting, autoplay lock, voice saturation and device failure. Verify music selection/gates as well as SFX; perceptual pan/pitch/fade checks are separate. |
+| Graphics | Targeted captures for terrain persistence, corpse/decal bakes, alpha threshold, blend factors, write masks, fonts, texture edges and gamma. Document tolerances for rasterization differences. Test resize, HiDPI/fullscreen and web context restoration. Pixels may differ within justified tolerances; authoritative state may not. |
+| Resources and persistence | Stable resource IDs/metrics across loading order and backend; fresh launch and reload preserve saves. A failed asset or IndexedDB operation is surfaced and does not silently alter a ranked run's canonical setup. |
+| Packaging | Record source revision, compiler/SDL/Emscripten versions, flags and hashes. Linked builds must pass artifact parity for every release target; a separate headless variant is not release evidence. Shared-core builds must verify core byte identity and still test the real host's session/render/audio behavior. |
+
+The existing matrix is a strong starting point for the supported simulation.
+These gates establish whether the new client preserves that contract. They do
+not require finishing all 576 files before learning whether the chosen seam and
+stack work.
