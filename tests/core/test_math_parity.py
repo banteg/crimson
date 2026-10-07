@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import math
+import random
+import struct
+
+import pytest
 
 from crimson.math_parity import (
     NATIVE_HALF_PI,
@@ -12,6 +16,7 @@ from crimson.math_parity import (
     native_shot_angle_from_jitter_draws,
     x87_fpatan,
     x87_pc24_cos_mul,
+    x87_pc24_mul,
     x87_pc24_mul_chain,
     x87_pc24_sin_mul,
     x87_pc24_sub,
@@ -96,3 +101,25 @@ def test_native_shot_jitter_preserves_fpatan_branch_and_pc24_rounding() -> None:
     )
 
     assert angle == -4.71196985244751
+
+
+def test_x87_pc24_mul_chain_matches_stepwise_bits_and_overflow() -> None:
+    rng = random.Random(0x50433234)
+    edges = (-0.0, 0.0, 1.0, -1.0, 1e-45, 3.4028234663852886e38, float("inf"), float("nan"))
+    cases: list[tuple[float, tuple[float, ...]]] = [(first, ()) for first in (*edges, 1.0000000001)]
+    cases += [(first, (factor,)) for first in edges for factor in edges]
+    cases += [
+        (rng.uniform(-100.0, 100.0), tuple(rng.uniform(-100.0, 100.0) for _ in range(rng.randrange(9))))
+        for _ in range(10_000)
+    ]
+    for first, factors in cases:
+        expected = float(first)
+        try:
+            for factor in factors:
+                expected = x87_pc24_mul(expected, factor)
+        except OverflowError:
+            with pytest.raises(OverflowError):
+                x87_pc24_mul_chain(first, *factors)
+            continue
+        actual = x87_pc24_mul_chain(first, *factors)
+        assert struct.pack("<d", actual) == struct.pack("<d", expected), (first, factors)

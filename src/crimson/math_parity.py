@@ -146,7 +146,7 @@ def x87_pc24_mul_chain(first: float, *factors: float) -> float:
 
     result = float(first)
     for factor in factors:
-        result = x87_pc24_mul(result, factor)
+        result = _F32_UNPACK(_F32_PACK(result * float(factor)))[0]
     return result
 
 

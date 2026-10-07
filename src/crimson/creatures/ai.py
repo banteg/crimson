@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from functools import lru_cache
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -83,15 +84,23 @@ def resolve_live_link(creatures: Sequence[CreatureState], link_index: int) -> Cr
     return None
 
 
-def _orbit_target_f32(*, player_pos: Vec2, orbit_phase: float, dist: float, scale: float) -> Vec2:
+@lru_cache(maxsize=384)
+def _orbit_direction(phase_seed: int) -> tuple[float, float]:
+    # Allocation uses rand & 0x17f; split children use rand & 0xff. Preserve
+    # the phase spills and keep trig wide until the distance multiply.
+    phase = f32(f32(float(phase_seed) * f32(3.7)) * NATIVE_PI)
+    return math.cos(phase), math.sin(phase)
+
+
+def _orbit_target_f32(*, player_pos: Vec2, phase_seed: int, dist: float, scale: float) -> Vec2:
     orbit_dist = f32(dist)
     orbit_scale = f32(scale)
-    phase = f32(orbit_phase)
+    cos_phase, sin_phase = _orbit_direction(phase_seed)
     px = f32(player_pos.x)
     py = f32(player_pos.y)
-    orbit_x = f32(math.cos(float(phase)) * float(orbit_dist))
+    orbit_x = f32(cos_phase * float(orbit_dist))
     orbit_x = f32(float(orbit_x) * float(orbit_scale))
-    orbit_y = f32(math.sin(float(phase)) * float(orbit_dist))
+    orbit_y = f32(sin_phase * float(orbit_dist))
     orbit_y = f32(float(orbit_y) * float(orbit_scale))
     return Vec2(
         f32(float(orbit_x) + px),
@@ -126,7 +135,6 @@ def creature_ai_update_target(
 
     distance_pos = distance_player_pos
     dist_to_player = x87_pc24_distance(creature.pos, distance_pos)
-    orbit_phase = f32(f32(float(creature.phase_seed) * f32(3.7)) * NATIVE_PI)
     move_scale = 1.0
     link_death_damage: float | None = None
 
@@ -139,14 +147,14 @@ def creature_ai_update_target(
         else:
             creature.target = _orbit_target_f32(
                 player_pos=player_pos,
-                orbit_phase=orbit_phase,
+                phase_seed=creature.phase_seed,
                 dist=dist_to_player,
                 scale=0.85,
             )
     elif ai_mode == CreatureAiMode.FLANK_PLAYER_WIDE:
         creature.target = _orbit_target_f32(
             player_pos=player_pos,
-            orbit_phase=orbit_phase,
+            phase_seed=creature.phase_seed,
             dist=dist_to_player,
             scale=0.9,
         )
@@ -156,7 +164,7 @@ def creature_ai_update_target(
         else:
             creature.target = _orbit_target_f32(
                 player_pos=player_pos,
-                orbit_phase=orbit_phase,
+                phase_seed=creature.phase_seed,
                 dist=dist_to_player,
                 scale=0.55,
             )
@@ -188,7 +196,7 @@ def creature_ai_update_target(
         else:
             creature.target = _orbit_target_f32(
                 player_pos=player_pos,
-                orbit_phase=orbit_phase,
+                phase_seed=creature.phase_seed,
                 dist=dist_to_player,
                 scale=0.85,
             )

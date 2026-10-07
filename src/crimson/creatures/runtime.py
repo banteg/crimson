@@ -112,6 +112,9 @@ _TARGET_REEVAL_SKIP_MODULUS = 0x46
 _FLAG_POISONED = int(CreatureFlags.POISONED)
 _FLAG_POISONED_STRONG = int(CreatureFlags.POISONED_STRONG)
 _FLAG_STOP_AND_GO = int(CreatureFlags.STOP_AND_GO)
+_FLAG_SPAWNER = int(CreatureFlags.SPAWNER)
+_FLAG_SPAWNER_MOBILE = int(CreatureFlags.SPAWNER_MOBILE)
+_FLAG_RANGED = int(CreatureFlags.RANGED_PLASMA_RIFLE | CreatureFlags.RANGED_TEMPLATE_PROJECTILE)
 
 _CREATURE_CONTACT_SFX: dict[CreatureTypeId, tuple[SfxId, SfxId]] = {
     CreatureTypeId.ZOMBIE: (SfxId.ZOMBIE_ATTACK_01, SfxId.ZOMBIE_ATTACK_02),
@@ -827,7 +830,7 @@ class CreaturePool:
                 creature.target_heading = heading_add_pi_f32(float(creature.target_heading))
 
             turn_rate = f32(float(creature.move_speed) * CREATURE_TURN_RATE_SCALE)
-            if (creature.flags & CreatureFlags.SPAWNER) == 0:
+            if (int(creature.flags) & _FLAG_SPAWNER) == 0:
                 if creature.ai_mode != CreatureAiMode.HOLD_TIMER:
                     creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
                     move_delta = _movement_delta_from_heading_f32(
@@ -849,7 +852,7 @@ class CreaturePool:
                     _clamp_to_size_bounds(float(creature.pos.x), size, TERRAIN_SIZE),
                     _clamp_to_size_bounds(float(creature.pos.y), size, TERRAIN_SIZE),
                 )
-                if (creature.flags & CreatureFlags.SPAWNER_MOBILE) == 0:
+                if (int(creature.flags) & _FLAG_SPAWNER_MOBILE) == 0:
                     creature.vel = Vec2()
                 else:
                     creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
@@ -866,7 +869,7 @@ class CreaturePool:
                 # branch, before this creature's plaguebearer/anim/ranged/contact
                 # rand draws; children spawned here are visited later in the same
                 # pass when their slot index is above the current one.
-                if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and (creature.flags & CreatureFlags.SPAWNER) != 0:
+                if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and (int(creature.flags) & _FLAG_SPAWNER) != 0:
                     child_template_id = tick_spawn_slot(self.spawn_slots[creature.link_index], dt)
                     if child_template_id is not None:
                         self.spawn_template(
@@ -943,7 +946,7 @@ class CreaturePool:
                             )
 
             if (not frozen_by_evil_eyes) and (  # noqa: SIM102 - preserve the native ranged-fire branch shape
-                creature.flags & (CreatureFlags.RANGED_PLASMA_RIFLE | CreatureFlags.RANGED_TEMPLATE_PROJECTILE)
+                int(creature.flags) & _FLAG_RANGED
             ):
                 # Ported from creature_update_all @ 0x00426220, around the
                 # 0x004276xx ranged-fire branch.
@@ -1165,7 +1168,7 @@ class CreaturePool:
     def _release_spawn_slot(self, creature: CreatureState) -> None:
         """A dying or culled spawner (flag 0x4) frees the spawn slot in its `link_index`."""
 
-        if creature.flags & CreatureFlags.SPAWNER:
+        if int(creature.flags) & _FLAG_SPAWNER:
             self.spawn_slots[creature.link_index].owner_creature = -1
 
     def _tick_dead(
@@ -1197,8 +1200,8 @@ class CreaturePool:
             )
             return
 
-        mobile = (creature.flags & CreatureFlags.SPAWNER) == 0 or (
-            creature.flags & CreatureFlags.SPAWNER_MOBILE
+        mobile = (int(creature.flags) & _FLAG_SPAWNER) == 0 or (
+            int(creature.flags) & _FLAG_SPAWNER_MOBILE
         ) != 0
 
         next_death_timer = f32(
@@ -1261,7 +1264,7 @@ class CreaturePool:
         # spawner corpse first reaches this staged kill point.
         if (
             int(violence_disabled) == 0
-            and (creature.flags & CreatureFlags.SPAWNER) != 0
+            and (int(creature.flags) & _FLAG_SPAWNER) != 0
         ):
             for count, age, angle_caller in (
                 (8, 0.0, RngCallerStatic.CREATURE_UPDATE_ALL_SPAWNER_BLOOD_8_ANGLE),
