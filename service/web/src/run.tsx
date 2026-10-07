@@ -304,8 +304,7 @@ function WeaponsChart(props: { run: RunTimeline; cursor: Cursor; held: boolean }
   totals.sort((a, b) => b.seconds - a.seconds);
   const ROW = 30;
   const effects = Object.entries(run.effects);
-  const perksTop = names.length * ROW + 10;
-  const effectsTop = perksTop + 34;
+  const effectsTop = names.length * ROW + 10;
   const EFFECT_ROW = 13;
   const height = () => (props.held ? names.length * ROW + 8 : effectsTop + effects.length * EFFECT_ROW + 26);
   const icon = (name: string, y: number) => (
@@ -359,16 +358,6 @@ function WeaponsChart(props: { run: RunTimeline; cursor: Cursor; held: boolean }
             </g>
           )}
         </For>
-        {label("perks", perksTop + 14)}
-        <For each={run.perks}>
-          {(perk) => (
-            <path d={`M${x(perk.t)},${perksTop + 2} l6,8 l-6,8 l-6,-8 Z`} fill={GREEN} fill-opacity="0.85">
-              <title>
-                {clock(perk.t)} {perk.name}
-              </title>
-            </path>
-          )}
-        </For>
         <For each={effects}>
           {([name, spans], i) => (
             <g>
@@ -389,6 +378,28 @@ function WeaponsChart(props: { run: RunTimeline; cursor: Cursor; held: boolean }
         <CursorLine run={run} cursor={props.cursor} top={0} bottom={height() - 22} />
       </Show>
     </svg>
+  );
+}
+
+function Perks(props: { run: RunTimeline }) {
+  return (
+    <Show when={props.run.perks.length} fallback={<p class="muted">No perks picked.</p>}>
+      <details class="perk-list" open>
+        <summary>Perks <span class="muted">· {props.run.perks.length} picked</span></summary>
+        <ol>
+          <For each={props.run.perks}>
+            {(perk) => (
+              <li>
+                <span class="perk-pick">
+                  <span>{perk.name}</span>
+                  <span class="perk-time">{clock(perk.t)}</span>
+                </span>
+              </li>
+            )}
+          </For>
+        </ol>
+      </details>
+    </Show>
   );
 }
 
@@ -472,31 +483,33 @@ function boardPath(detail: RunDetailView): string {
 
 // The run's panels; the top run's and the player's best's timelines load when their boxes are ticked.
 export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
+  const run = detail.timeline ? prepare(detail.timeline, detail.quest) : null;
   const header = () => (
-    <>
-      <h2>
-        {detail.title}
-        <Show when={detail.rank}>{(rank) => <> · #{rank()}</>}</Show>
-      </h2>
-      <p class="run-player">
-        <PlayerName player={detail.player} heading />
-        <Show when={detail.name !== detail.player.name}>
-          <span class="muted"> · played as {detail.name}</span>
-        </Show>
-      </p>
-      <p class="run-score">{formatScore(detail.board, detail.score)}</p>
-      <p class="muted">
-        {new Date(detail.accepted_at).toISOString().slice(0, 10)} · {detail.recorder.client} {detail.recorder.version} · {detail.recorder.platform}
-      </p>
-      <p class="buttons">
-        <GameButton label="Download replay" href={`/runs/${detail.id}.crd`} native />
-        <GameButton label="Board" href={boardPath(detail)} />
-      </p>
-    </>
+    <div class="run-overview">
+      <div>
+        <h2>
+          {detail.title}
+          <Show when={detail.rank}>{(rank) => <> · #{rank()}</>}</Show>
+        </h2>
+        <p class="run-player">
+          <PlayerName player={detail.player} heading />
+          <Show when={detail.name !== detail.player.name}>
+            <span class="muted"> · played as {detail.name}</span>
+          </Show>
+        </p>
+        <p class="run-score">{formatScore(detail.board, detail.score)}</p>
+        <p class="muted">
+          {new Date(detail.accepted_at).toISOString().slice(0, 10)} · {detail.recorder.client} {detail.recorder.version} · {detail.recorder.platform}
+        </p>
+        <p class="buttons">
+          <GameButton label="Download replay" href={`/runs/${detail.id}.crd`} native />
+          <GameButton label="Board" href={boardPath(detail)} />
+        </p>
+      </div>
+      <Show when={run}>{(run) => <Stats run={run()} detail={detail} />}</Show>
+    </div>
   );
-  const timeline = detail.timeline;
-  if (!timeline) return [header, () => <p class="muted">This run's timeline is not available.</p>];
-  const run = prepare(timeline, detail.quest);
+  if (!run) return [header, () => <p class="muted">This run's timeline is not available.</p>];
   const [t, set] = createSignal<number | null>(null);
   const cursor: Cursor = { t, set };
   const [showTop, setShowTop] = createSignal(detail.top !== null);
@@ -514,7 +527,6 @@ export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
   const name = detail.player.name ?? detail.player.fingerprint;
   return [
     header,
-    () => <Stats run={run} detail={detail} />,
     () => (
       <>
         <div class="panel-head">
@@ -553,13 +565,14 @@ export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
     () => (
       <>
         <div class="panel-head">
-          <h3>Weapons, perks and bonuses</h3>
+          <h3>Weapons and bonuses</h3>
           <span class="buttons">
             <GameButton label="Timeline" on={!held()} onClick={() => setHeld(false)} />
             <GameButton label="Time held" on={held()} onClick={() => setHeld(true)} />
           </span>
         </div>
         <WeaponsChart run={run} cursor={cursor} held={held()} />
+        <Perks run={run} />
       </>
     ),
     () => (

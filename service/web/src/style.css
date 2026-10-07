@@ -88,8 +88,15 @@ footer p{margin:0 0 6px}footer .credit{color:var(--dim)}footer .credit a{color:v
 /* A run's page; a board's scores link to it. */
 a.run{color:inherit;text-decoration:none}a.run:hover{color:var(--row-on);text-decoration:underline}
 .run-player{margin:4px 0}.run-score{margin:6px 0;color:#fff;font:bold 32px/36px "Courier New",Courier,monospace}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px 18px}
+.run-overview{display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,1.4fr);gap:16px 32px;align-items:center}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,120px),1fr));gap:10px 18px}
+@media (max-width:700px){.run-overview{grid-template-columns:minmax(0,1fr)}}
 .tile{display:flex;flex-direction:column}.tile b{font:bold 20px/26px "Courier New",Courier,monospace;color:#fff;white-space:nowrap}
+.perk-list{margin-top:12px}.perk-list summary{cursor:pointer;color:var(--text)}
+.perk-list ol{columns:230px;column-gap:28px;padding-left:22px;margin:10px 0 4px}
+.perk-list li{break-inside:avoid;margin-bottom:6px}.perk-list li::marker{color:var(--dim)}
+.perk-pick{display:flex;justify-content:space-between;gap:12px}
+.perk-time{color:var(--dim);font:14px/20px "Courier New",Courier,monospace;white-space:nowrap}
 .panel-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 16px;margin-bottom:6px}
 .panel-head h3{margin:0}.head-title{display:flex;align-items:baseline;gap:14px}.legend{color:var(--label);white-space:nowrap}.legend svg{margin-right:5px}.checks{display:flex;gap:16px}
 button.check{background:none;border:0;padding:0;font:inherit;color:var(--label);cursor:pointer}button.check:hover{color:#fff}
