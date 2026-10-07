@@ -7,7 +7,7 @@ import msgspec
 from grim.assets import TextureId
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
+from grim.raylib_api import rd, rl
 
 from ...math_parity import f32, f32_vec2
 from ...projectiles.types import ProjectileTemplateId
@@ -40,11 +40,11 @@ class WorldRenderCtx(msgspec.Struct, frozen=True):
         cell_h = float(texture.height) / float(grid)
         col = frame % grid
         row = frame // grid
-        src = rl_rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
+        src = rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
         w = cell_w * float(scale)
         h = cell_h * float(scale)
-        dst = rl_rectangle(pos.x, pos.y, w, h)
-        origin = rl_vector2(w * 0.5, h * 0.5)
+        dst = rl.Rectangle(pos.x, pos.y, w, h)
+        origin = rl.Vector2(w * 0.5, h * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), tint)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
@@ -80,9 +80,9 @@ def draw_late_bullet_pass_sprite(
 ) -> None:
     src = effect_cell_src(texture, _LATE_BULLET_PASS_EFFECT_ID)
     assert src is not None
-    dst = rl_rectangle(screen_pos.x, screen_pos.y, size, size)
-    origin = rl_vector2(size * 0.5, size * 0.5)
-    tint = rl_color(204, 204, 204, int(clamp(alpha * 0.9, 0.0, 1.0) * 255.0))
+    dst = rl.Rectangle(screen_pos.x, screen_pos.y, size, size)
+    origin = rl.Vector2(size * 0.5, size * 0.5)
+    tint = rl.Color(204, 204, 204, int(clamp(alpha * 0.9, 0.0, 1.0) * 255.0))
     rl.draw_texture_pro(texture, src, dst, origin, angle * _RAD_TO_DEG, tint)
 
 
@@ -141,8 +141,8 @@ def draw_bullet_trail_quad(
         head_rgb = (127, 127, 127)  # (0.5, 0.5, 0.5)
 
     tail_rgb = (127, 127, 127)
-    head = rl_color(head_rgb[0], head_rgb[1], head_rgb[2], alpha)
-    tail = rl_color(tail_rgb[0], tail_rgb[1], tail_rgb[2], 0)
+    head = rl.Color(head_rgb[0], head_rgb[1], head_rgb[2], alpha)
+    tail = rl.Color(tail_rgb[0], tail_rgb[1], tail_rgb[2], 0)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     rl.rl_set_texture(bullet_trail_texture.id)

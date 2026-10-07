@@ -91,10 +91,10 @@ class RGBA(msgspec.Struct, frozen=True):
         return self.with_alpha(self.a * float(factor))
 
     def to_rl(self) -> rl.Color:
-        from grim.raylib_api import rl_color
+        from grim.raylib_api import rl
 
         c = self.clamped()
-        return rl_color(
+        return rl.Color(
             int(c.r * 255.0 + 0.5),
             int(c.g * 255.0 + 0.5),
             int(c.b * 255.0 + 0.5),

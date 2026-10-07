@@ -5,7 +5,7 @@ import math
 from grim.assets import TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
-from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
+from grim.raylib_api import rl
 
 from ...effects import EffectEntry, ParticleStyleId
 from ...effects_atlas import EffectId
@@ -42,7 +42,7 @@ def draw_particle_pool(
 
     if flame_glow_enabled and src_large is not None:
         alpha_byte = int(0.065 * 255.0 + 0.5)
-        tint = rl_color(255, 255, 255, alpha_byte)
+        tint = rl.Color(255, 255, 255, alpha_byte)
         for idx, entry in enumerate(particles):
             if not entry.active or (idx % 2) or int(entry.style_id) == int(ParticleStyleId.BUBBLEGUN):
                 continue
@@ -52,8 +52,8 @@ def draw_particle_pool(
             if size <= 0.0:
                 continue
             screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
-            dst = rl_rectangle(screen.x, screen.y, size, size)
-            origin = rl_vector2(size * 0.5, size * 0.5)
+            dst = rl.Rectangle(screen.x, screen.y, size, size)
+            origin = rl.Vector2(size * 0.5, size * 0.5)
             rl.draw_texture_pro(texture, src_large, dst, origin, 0.0, tint)
 
     for entry in particles:
@@ -67,8 +67,8 @@ def draw_particle_pool(
         if size <= 0.0:
             continue
         screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
-        dst = rl_rectangle(screen.x, screen.y, size, size)
-        origin = rl_vector2(size * 0.5, size * 0.5)
+        dst = rl.Rectangle(screen.x, screen.y, size, size)
+        origin = rl.Vector2(size * 0.5, size * 0.5)
         rotation_deg = float(entry.rotation) * _RAD_TO_DEG
         tint = RGBA(entry.color_r, entry.color_g, entry.color_b, float(entry.color_a)).to_rl()
         rl.draw_texture_pro(texture, src_normal, dst, origin, rotation_deg, tint)
@@ -84,9 +84,9 @@ def draw_particle_pool(
         if w <= 0.0 or h <= 0.0:
             continue
         screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
-        dst = rl_rectangle(screen.x, screen.y, w, h)
-        origin = rl_vector2(w * 0.5, h * 0.5)
-        tint = rl_color(255, 255, 255, int(float(entry.color_a) * 255.0 + 0.5))
+        dst = rl.Rectangle(screen.x, screen.y, w, h)
+        origin = rl.Vector2(w * 0.5, h * 0.5)
+        tint = rl.Color(255, 255, 255, int(float(entry.color_a) * 255.0 + 0.5))
         rl.draw_texture_pro(texture, src_style_8, dst, origin, 0.0, tint)
 
     rl.end_blend_mode()
@@ -120,8 +120,8 @@ def draw_sprite_effect_pool(
         if size <= 0.0:
             continue
         screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
-        dst = rl_rectangle(screen.x, screen.y, size, size)
-        origin = rl_vector2(size * 0.5, size * 0.5)
+        dst = rl.Rectangle(screen.x, screen.y, size, size)
+        origin = rl.Vector2(size * 0.5, size * 0.5)
         rotation_deg = float(entry.rotation) * _RAD_TO_DEG
         tint = entry.color.to_rl()
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
@@ -162,8 +162,8 @@ def draw_effect_pool(
         rotation_deg = float(entry.rotation) * _RAD_TO_DEG
         tint = entry.color.to_rl()
 
-        dst = rl_rectangle(screen.x, screen.y, float(w), float(h))
-        origin = rl_vector2(float(w) * 0.5, float(h) * 0.5)
+        dst = rl.Rectangle(screen.x, screen.y, float(w), float(h))
+        origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
