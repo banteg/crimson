@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from crimson.creatures.ai import creature_ai7_tick_link_timer, creature_ai_update_target
+import math
+import random
+import struct
+
+from crimson.creatures.ai import _orbit_target_f32, creature_ai7_tick_link_timer, creature_ai_update_target
 from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags
-from crimson.math_parity import f32
+from crimson.math_parity import NATIVE_PI, f32
 from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
@@ -160,3 +164,22 @@ def test_ai_orbit_target_keeps_trig_wide_until_first_multiply() -> None:
     assert c.target.x == 69.8948974609375
     assert c.target.y == 463.69183349609375
     assert c.target_heading == 0.25701460242271423
+
+
+def test_orbit_target_matches_uncached_spills_across_seed_reuse() -> None:
+    rng = random.Random(0x17F)
+    # All allocated/split seeds, plus non-native seeds to exercise bounded-cache eviction.
+    seeds = [*range(384), *range(384), *range(384, 1024), *reversed(range(384))]
+    for seed in seeds:
+        for scale in (0.85, 0.9, 0.55):
+            player_pos = Vec2(rng.uniform(-1024.0, 1024.0), rng.uniform(-1024.0, 1024.0))
+            dist = rng.uniform(0.0, 1500.0)
+            phase = f32(f32(float(seed) * f32(3.7)) * NATIVE_PI)
+            orbit_x = f32(math.cos(phase) * f32(dist))
+            orbit_y = f32(math.sin(phase) * f32(dist))
+            expected = Vec2(
+                f32(f32(orbit_x * f32(scale)) + f32(player_pos.x)),
+                f32(f32(orbit_y * f32(scale)) + f32(player_pos.y)),
+            )
+            actual = _orbit_target_f32(player_pos=player_pos, phase_seed=seed, dist=dist, scale=scale)
+            assert struct.pack("<ff", actual.x, actual.y) == struct.pack("<ff", expected.x, expected.y)
