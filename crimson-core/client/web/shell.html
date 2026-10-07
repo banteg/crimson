@@ -22,6 +22,25 @@
   const canvas = document.getElementById("canvas");
   // The right button is the game's (reload, by default), not the browser's menu.
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+  // A button released while the page was away never reaches SDL, which then
+  // drops the next press as a repeat. The first mouse event back carries the
+  // real buttons: SDL hears a release (on the document, where it listens for
+  // them) for each one that is up or about to be pressed, before the event.
+  let away = false;
+  addEventListener("blur", () => (away = true));
+  for (const type of ["pointermove", "pointerdown"])
+    addEventListener(type, (event) => {
+      if (!away || !event.isTrusted || event.pointerType !== "mouse") return;
+      away = false;
+      const bit = (button) => 1 << [0, 2, 1][button]; // MouseEvent.button to its MouseEvent.buttons bit
+      const held = type === "pointerdown" ? event.buttons & ~bit(event.button) : event.buttons;
+      for (const button of [0, 1, 2])
+        if (!(held & bit(button)))
+          document.dispatchEvent(new PointerEvent("pointerup", {
+            pointerType: "mouse", pointerId: event.pointerId, button, buttons: held,
+            clientX: event.clientX, clientY: event.clientY,
+          }));
+    }, true);
 
   // Writes /game back to IndexedDB, one sync at a time and only once it has been
   // read: IndexedDB takes the written tree as the whole directory. Resolves
