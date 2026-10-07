@@ -79,6 +79,11 @@ jobs:
       - name: Compare whole runs with Python under the original rules
         run: uv run --no-sync python crimson-core/checks/gate.py
 
+      - name: Compare the game module with the verifier on every gate stream
+        run: |
+          uv run --no-sync python crimson-core/build.py --target game
+          uv run --no-sync python crimson-core/checks/game_check.py
+
       - name: Download original executable
         run: |
           game_dir="game_bins/crimsonland/1.9.93-gog"
