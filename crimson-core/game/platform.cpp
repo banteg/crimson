@@ -180,22 +180,24 @@ static int texture_id(IDirect3DBaseTexture8 *texture) {
 struct Device final : UnimplementedIDirect3DDevice8 {
   ULONG refs = 1;
   UINT width, height;
-  Surface back_buffer;
-  Surface *target = &back_buffer;
+  // The back buffer outlives the device while anyone still holds it.
+  Surface *back_buffer = new Surface;
+  Surface *target = back_buffer;
   VertexBuffer *stream = nullptr;
   IndexBuffer *indices = nullptr;
   UINT base_vertex = 0;
   DWORD render_states[256] = {};
   Device(UINT w, UINT h) : width(w), height(h) {
-    back_buffer.width = w;
-    back_buffer.height = h;
-    back_buffer.refs = 2; // the device's own reference, and its binding as the target
+    back_buffer->width = w;
+    back_buffer->height = h;
+    back_buffer->refs = 2; // the device's own reference, and its binding as the target
   }
   STDMETHOD_(ULONG, AddRef)(THIS) override { return ++refs; }
   STDMETHOD_(ULONG, Release)(THIS) override {
     if (--refs)
       return refs;
     target->Release();
+    back_buffer->Release();
     delete this;
     return 0;
   }
@@ -240,7 +242,7 @@ struct Device final : UnimplementedIDirect3DDevice8 {
   }
   STDMETHOD(SetRenderTarget)(THIS_ IDirect3DSurface8 *surface, IDirect3DSurface8 *) override {
     // The device holds its render target, as Direct3D does.
-    Surface *next = surface ? static_cast<Surface *>(surface) : &back_buffer;
+    Surface *next = surface ? static_cast<Surface *>(surface) : back_buffer;
     next->AddRef();
     target->Release();
     target = next;
