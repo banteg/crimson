@@ -93,8 +93,12 @@ a.run-details{white-space:nowrap}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,120px),1fr));gap:10px 18px}
 @media (max-width:700px){.run-overview{grid-template-columns:minmax(0,1fr)}}
 .tile{display:flex;flex-direction:column}.tile b{font:bold 20px/26px "Courier New",Courier,monospace;color:#fff;white-space:nowrap}
-.perk-list{margin-top:12px}.perk-list summary{cursor:pointer;color:var(--text)}
-.perk-list ol{columns:230px;column-gap:28px;padding-left:22px;margin:10px 0 4px}
+.perk-list{margin-top:12px}.perk-list summary{cursor:pointer;color:var(--text);list-style:none}
+.perk-list summary::-webkit-details-marker{display:none}
+.perk-list summary::before{content:"";display:inline-block;width:5px;height:5px;margin-right:8px;vertical-align:3px;
+  border-right:1px solid var(--dim);border-bottom:1px solid var(--dim);transform:rotate(-45deg)}
+.perk-list[open] summary::before{transform:rotate(45deg)}
+.perk-list ol{columns:230px;column-gap:60px;padding-left:22px;margin:10px 0 4px}
 .perk-list li{break-inside:avoid;margin-bottom:6px}.perk-list li::marker{color:var(--dim)}
 .perk-pick{display:flex;justify-content:space-between;gap:12px}
 .perk-time{color:var(--dim);font:14px/20px "Courier New",Courier,monospace;white-space:nowrap}
