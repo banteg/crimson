@@ -32,8 +32,8 @@ def projectile_render(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
     if alpha <= 1e-3:
         return
     _plasma_glow_pass(render_ctx, alpha=alpha)
-    _projectile_sprite_pass(render_ctx, alpha=alpha)
-    _plague_pass(render_ctx, alpha=alpha)
+    atlas_state = _projectile_sprite_pass(render_ctx, alpha=alpha)
+    _plague_pass(render_ctx, alpha=alpha, atlas_state=atlas_state)
     _fire_bullets_glow_pass(render_ctx, alpha=alpha)
     _bullet_head_pass(render_ctx, alpha=alpha)
     _secondary_glow_pass(render_ctx, alpha=alpha)
@@ -270,15 +270,21 @@ def _plasma_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
             )
         _draw_quad(texture, src, pos=screen, size=head_size * scale, rgba=RGBA(red, green, blue, alpha * head_alpha))
         if flame_glow:
-            _draw_quad(texture, src, pos=screen, size=aura_size * scale, rgba=RGBA(red, green, blue, alpha * aura_alpha))
+            _draw_quad(
+                texture, src, pos=screen, size=aura_size * scale, rgba=RGBA(red, green, blue, alpha * aura_alpha),
+            )
     rl.end_blend_mode()
 
 
-def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
+def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> tuple[int, int, float]:
     """Pulse, Splitter and Blade sprites and the ion/Fire Bullets streaks on `projs`."""
 
     texture = render_ctx.frame.resources.texture(TextureId.PROJS)
     scale = render_ctx.view.scale
+    # Plague inherits the preceding pass's atlas and rotation. Initially these
+    # are the plasma glow's effect 13 UVs and zero rotation. Even a zero-size
+    # sprite changes native state, so track selections independently of draws.
+    atlas_state = (4, 3, 0.0)
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     for proj_index, proj in enumerate(render_ctx.frame.state.projectiles.entries):
         if not proj.active:
@@ -289,13 +295,17 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None
         dist = proj.origin.distance_to(proj.pos)
         match int(proj.type_id):
             case ProjectileTemplateId.PULSE_GUN:
+                atlas_state = (2, 0, angle)
                 if life >= 0.4:
                     size, rgba = dist * 0.16, RGBA(0.1, 0.6, 0.2, alpha * 0.7)
                 else:
                     size, rgba = 56.0, RGBA(1.0, 1.0, 1.0, clamp(life * 2.5, 0.0, 1.0) * alpha)
-                _draw_atlas(render_ctx, texture, grid=2, frame=0, pos=screen, size=size * scale, rgba=rgba, rotation_rad=angle)
+                _draw_atlas(
+                    render_ctx, texture, grid=2, frame=0, pos=screen, size=size * scale, rgba=rgba, rotation_rad=angle,
+                )
             case ProjectileTemplateId.SPLITTER_GUN:
                 if life >= 0.4:
+                    atlas_state = (4, 3, angle)
                     _draw_atlas(
                         render_ctx,
                         texture,
@@ -308,6 +318,7 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None
                     )
             case ProjectileTemplateId.BLADE_GUN:
                 if life >= 0.4:
+                    atlas_state = (4, 6, float(proj_index) * 0.1 - float(render_ctx.frame.elapsed_ms) * 0.1)
                     _draw_atlas(
                         render_ctx,
                         texture,
@@ -316,19 +327,24 @@ def _projectile_sprite_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None
                         pos=screen,
                         size=min(dist, 20.0) * scale,
                         rgba=RGBA(0.8, 0.8, 0.8, alpha),
-                        rotation_rad=float(proj_index) * 0.1 - float(render_ctx.frame.elapsed_ms) * 0.1,
+                        rotation_rad=atlas_state[2],
                     )
             case ProjectileTemplateId.ION_MINIGUN:
+                atlas_state = (4, 2, angle)
                 _draw_streak(render_ctx, texture, proj, effect_scale=1.05, alpha=alpha, chain=True)
             case ProjectileTemplateId.ION_RIFLE:
+                atlas_state = (4, 2, angle)
                 _draw_streak(render_ctx, texture, proj, effect_scale=2.2, alpha=alpha, chain=True)
             case ProjectileTemplateId.ION_CANNON:
+                atlas_state = (4, 2, angle)
                 _draw_streak(render_ctx, texture, proj, effect_scale=3.5, alpha=alpha, chain=True)
             case ProjectileTemplateId.FIRE_BULLETS:
+                atlas_state = (4, 2, angle)
                 _draw_streak(render_ctx, texture, proj, effect_scale=0.8, alpha=alpha, chain=False)
             case _:
                 pass
     rl.end_blend_mode()
+    return atlas_state
 
 
 def _draw_streak(
@@ -352,8 +368,7 @@ def _draw_streak(
     if base_alpha <= 1e-3:
         return
     direction, dist = (proj.pos - proj.origin).normalized_with_length()
-    if dist <= 1e-6:
-        return
+    # A shot can still have a head (and impact arcs) before its trail grows.
     scale = render_ctx.view.scale
     screen = render_ctx.world_to_screen(proj.pos)
     streak_rgb = (0.5, 0.6, 1.0) if chain else (1.0, 0.6, 0.1)
@@ -458,11 +473,12 @@ def _draw_streak(
         )
 
 
-def _plague_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
+def _plague_pass(render_ctx: WorldRenderCtx, *, alpha: float, atlas_state: tuple[int, int, float]) -> None:
     """Plague Spreader cloud, darkening what lies under it."""
 
     texture = render_ctx.frame.resources.texture(TextureId.PROJS)
     scale = render_ctx.view.scale
+    grid, atlas_frame, rotation = atlas_state
     # Native switches to D3D8 SRC=ZERO / DST=INVSRCALPHA for this pass.
     blend = (rd.RL_ZERO, rd.RL_ONE_MINUS_SRC_ALPHA, rd.RL_ZERO, rd.RL_ONE, rd.RL_FUNC_ADD, rd.RL_FUNC_ADD)
     rl.rl_set_blend_factors_separate(*blend)
@@ -477,14 +493,15 @@ def _plague_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
             _draw_atlas(
                 render_ctx,
                 texture,
-                grid=4,
-                frame=2,
+                grid=grid,
+                frame=atlas_frame,
                 pos=render_ctx.world_to_screen(proj.pos),
                 size=(fade * 40.0 + 32.0) * scale,
                 rgba=RGBA(1.0, 1.0, 1.0, fade * alpha),
+                rotation_rad=rotation,
             )
             continue
-        phase = float(proj_index) + float(render_ctx.frame.elapsed_ms) * 0.01
+        phase = float(proj_index) + float(render_ctx.frame.elapsed_ms) * 0.009
         phase_120 = phase + 2.0943952
         phase_240 = phase + 4.1887903
         for pos, size in (
@@ -497,11 +514,12 @@ def _plague_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
             _draw_atlas(
                 render_ctx,
                 texture,
-                grid=4,
-                frame=2,
+                grid=grid,
+                frame=atlas_frame,
                 pos=render_ctx.world_to_screen(pos),
                 size=size * scale,
                 rgba=RGBA(1.0, 1.0, 1.0, alpha),
+                rotation_rad=rotation,
             )
     rl.end_blend_mode()
 

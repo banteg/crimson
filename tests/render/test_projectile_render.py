@@ -30,7 +30,9 @@ class _Resources:
         return _Texture(texture_id)
 
 
-def _render_ctx(*, rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC, creatures: CreaturePool | None = None) -> WorldRenderCtx:
+def _render_ctx(
+    *, rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC, creatures: CreaturePool | None = None,
+) -> WorldRenderCtx:
     frame = RenderFrame(
         config=None,
         camera=Vec2(),
@@ -52,7 +54,14 @@ class _Draws:
 
     def __init__(self, mocker) -> None:
         self.calls = mocker.Mock()
-        for name in ("begin_blend_mode", "end_blend_mode", "rl_set_blend_factors_separate", "rl_begin", "rl_color4ub", "rl_tex_coord2f"):
+        for name in (
+            "begin_blend_mode",
+            "end_blend_mode",
+            "rl_set_blend_factors_separate",
+            "rl_begin",
+            "rl_color4ub",
+            "rl_tex_coord2f",
+        ):
             mocker.patch.object(world_projectiles.rl, name)
         for name in ("rl_set_texture", "rl_vertex2f", "rl_end", "draw_texture_pro"):
             self.calls.attach_mock(mocker.patch.object(world_projectiles.rl, name), name)
@@ -106,8 +115,16 @@ def test_projectiles_draw_pass_by_pass_across_the_pool(mocker) -> None:
     _place(
         render_ctx,
         [
-            Projectile(type_id=ProjectileTemplateId.PLASMA_RIFLE, origin=Vec2(100, 100), pos=Vec2(100, 60), life_timer=0.4),
-            Projectile(type_id=ProjectileTemplateId.PISTOL, origin=Vec2(300, 300), pos=Vec2(300, 260), vel=Vec2(1, 0), life_timer=0.4),
+            Projectile(
+                type_id=ProjectileTemplateId.PLASMA_RIFLE, origin=Vec2(100, 100), pos=Vec2(100, 60), life_timer=0.4,
+            ),
+            Projectile(
+                type_id=ProjectileTemplateId.PISTOL,
+                origin=Vec2(300, 300),
+                pos=Vec2(300, 260),
+                vel=Vec2(1, 0),
+                life_timer=0.4,
+            ),
         ],
     )
 
@@ -123,7 +140,15 @@ def test_plasma_cannon_counts_segments_by_its_wider_divisor(mocker) -> None:
     render_ctx = _render_ctx()
     _place(
         render_ctx,
-        [Projectile(type_id=ProjectileTemplateId.PLASMA_CANNON, origin=Vec2(100, 140), pos=Vec2(100, 100), life_timer=0.4, speed_scale=1.0)],
+        [
+            Projectile(
+                type_id=ProjectileTemplateId.PLASMA_CANNON,
+                origin=Vec2(100, 140),
+                pos=Vec2(100, 100),
+                life_timer=0.4,
+                speed_scale=1.0,
+            ),
+        ],
     )
 
     world_projectiles.projectile_render(render_ctx, alpha=1.0)
@@ -139,7 +164,15 @@ def test_splitter_gun_draws_its_head_sprite(mocker) -> None:
     render_ctx = _render_ctx()
     _place(
         render_ctx,
-        [Projectile(type_id=ProjectileTemplateId.SPLITTER_GUN, origin=Vec2(100, 140), pos=Vec2(100, 100), vel=Vec2(1, 0), life_timer=0.4)],
+        [
+            Projectile(
+                type_id=ProjectileTemplateId.SPLITTER_GUN,
+                origin=Vec2(100, 140),
+                pos=Vec2(100, 100),
+                vel=Vec2(1, 0),
+                life_timer=0.4,
+            ),
+        ],
     )
 
     world_projectiles.projectile_render(render_ctx, alpha=1.0)
@@ -168,7 +201,8 @@ def test_ion_chain_draws_each_creature_strips_then_its_glow(mocker) -> None:
     chain = [
         kind if kind != "sprite" else "glow"
         for kind, payload in events[first_strip:]
-        if kind == "quads_end" or (kind == "sprite" and payload[0] == TextureId.PROJS and payload[1] == pytest.approx(64.0 * 2.2))
+        if kind == "quads_end"
+        or (kind == "sprite" and payload[0] == TextureId.PROJS and payload[1] == pytest.approx(64.0 * 2.2))
     ]
     assert chain == ["quads_end", "glow", "quads_end", "glow"]
 
@@ -199,10 +233,52 @@ def test_streaks_use_the_stamped_rtx_beam_only_in_rtx_mode(mocker, rtx_mode: Rtx
     render_ctx = _render_ctx(rtx_mode=rtx_mode)
     _place(
         render_ctx,
-        [Projectile(type_id=ProjectileTemplateId.FIRE_BULLETS, origin=Vec2(100, 300), pos=Vec2(100, 100), life_timer=0.4)],
+        [
+            Projectile(
+                type_id=ProjectileTemplateId.FIRE_BULLETS, origin=Vec2(100, 300), pos=Vec2(100, 100), life_timer=0.4,
+            ),
+        ],
     )
 
     world_projectiles.projectile_render(render_ctx, alpha=1.0)
 
     expected = 1 if rtx_mode is RtxRenderMode.RTX else 0
     assert body.call_count == head.call_count == expected
+
+
+@pytest.mark.parametrize("rtx_mode", [RtxRenderMode.CLASSIC, RtxRenderMode.RTX])
+@pytest.mark.parametrize(
+    "type_id",
+    [
+        ProjectileTemplateId.ION_RIFLE,
+        ProjectileTemplateId.ION_MINIGUN,
+        ProjectileTemplateId.ION_CANNON,
+        ProjectileTemplateId.FIRE_BULLETS,
+    ],
+)
+@pytest.mark.parametrize("life", [0.4, 0.2])
+def test_streak_head_survives_a_zero_length_trail(mocker, rtx_mode, type_id, life) -> None:
+    draws = _Draws(mocker)
+    mocker.patch.object(world_projectiles, "draw_beam_fast_stamped_body")
+    head = mocker.patch.object(world_projectiles, "draw_beam_fast_stamped_head")
+    render_ctx = _render_ctx(rtx_mode=rtx_mode)
+    _place(render_ctx, [Projectile(type_id=type_id, origin=Vec2(100, 100), pos=Vec2(100, 100), life_timer=life)])
+    world_projectiles.projectile_render(render_ctx, alpha=1.0)
+    if rtx_mode is RtxRenderMode.RTX:
+        head.assert_called_once()
+    else:
+        sprites = [payload for kind, payload in draws.events() if kind == "sprite" and payload[0] == TextureId.PROJS]
+        assert len(sprites) == 1
+
+
+def test_zero_length_ion_impact_still_chains_to_creatures(mocker) -> None:
+    draws = _Draws(mocker)
+    pool = CreaturePool()
+    pool.entries[1] = make_creature_state(pos=Vec2(140, 100), hp=10.0)
+    render_ctx = _render_ctx(creatures=pool)
+    _place(
+        render_ctx,
+        [Projectile(type_id=ProjectileTemplateId.ION_RIFLE, origin=Vec2(100, 100), pos=Vec2(100, 100), life_timer=0.2)],
+    )
+    world_projectiles.projectile_render(render_ctx, alpha=1.0)
+    assert ("quads_end", TextureId.PROJS) in draws.events()

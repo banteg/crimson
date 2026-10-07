@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import io
+from pathlib import Path
+
 import pytest
+from PIL import Image
 
 from crimson.render.world.context import draw_late_bullet_pass_sprite
+from grim.assets import _load_texture_asset_from_bytes, load_paq_entries
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -33,11 +38,27 @@ def _lit_pixels(texture: rl.Texture) -> int:
 
 
 @pytest.mark.parametrize(("top_right_opaque", "visible"), [(False, False), (True, True)])
-def test_late_bullet_pass_samples_only_the_top_right_quarter(raylib_context, top_right_opaque: bool, visible: bool) -> None:
+def test_late_bullet_pass_samples_only_the_top_right_quarter(
+    raylib_context, top_right_opaque: bool, visible: bool,
+) -> None:
     # Native leaves effect 13's UVs bound, so the pass reads just this corner,
     # which is transparent in bullet16 and hides every head and plasma core.
     texture = _quarter_texture(top_right_opaque=top_right_opaque)
     try:
         assert (_lit_pixels(texture) > 0) is visible
+    finally:
+        rl.unload_texture(texture)
+
+
+def test_original_bullet_texture_keeps_late_heads_invisible(raylib_context, assets_dir: Path) -> None:
+    data = load_paq_entries(assets_dir)["load/bullet16.tga"]
+    image = Image.open(io.BytesIO(data)).convert("RGBA")
+    assert image.size == (16, 16)
+    assert image.getchannel("A").getextrema() == (0, 255)
+    assert image.crop((12, 0, 16, 4)).getchannel("A").getextrema() == (0, 0)
+    texture = _load_texture_asset_from_bytes("load/bullet16.tga", data)
+    assert texture is not None
+    try:
+        assert _lit_pixels(texture) == 0
     finally:
         rl.unload_texture(texture)

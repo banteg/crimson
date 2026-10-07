@@ -682,7 +682,10 @@ Rewrite behavior:
 
 Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (Fire Bullets
 glow and late bullet pass), `effect_select_texture`, and captures of the
-original with Plasma Shooter spiders.
+original with Plasma Shooter spiders. Executable-backed coverage is in
+`tests/native_oracle/test_projectile_render.py`; the original texture's invisible
+sampled corner is also checked on the GPU in
+`tests/render/test_late_bullet_pass.py`.
 
 ## 29) A stray click picks a row from an open list
 

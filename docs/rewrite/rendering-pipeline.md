@@ -203,10 +203,16 @@ native sizes and colors inline (`src/crimson/render/world/projectiles.py`,
 `src/crimson/render/world/draw.py`). Only the Gauss trail ignores the world
 transition alpha, so at zero transition it is all `projectile_render` shows.
 
-Not reproduced: native render-state carries between passes (the rotation, atlas
-frame or UVs a pass inherits from the previous one), the Fire Bullets glow gate
-that reads a stale pointer to slot 95, and the muzzle-glow pass that reads the
-player slot past the last player.
+The late bullet heads retain the particle glow UVs, and Plague Spreader retains
+the preceding projectile sprite pass's atlas frame and rotation, as native does.
+Ion and Fire Bullets draw their head even when the origin-to-position trail is
+zero length. `tests/native_oracle/test_projectile_render.py` compares sprite
+selection for every primary template and rocket type against the original
+executable, plus Plague's inherited state in mixed projectile pools.
+
+Other native render-state carries between passes are not reproduced. Neither
+are the Fire Bullets glow gate that reads a stale pointer to slot 95 and the
+muzzle-glow pass that reads the player slot past the last player.
 
 The aim circle, direction arrows and aim enhancement are not part of the world
 pass. Like native `gameplay_update_and_render`, each mode draws the world, then
