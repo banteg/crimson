@@ -1,0 +1,20 @@
+{
+  "rebuilt_hashes": [
+    "2832ea37b51340e1e6930eaebc4257b1752ef74aae1c54401d9539c6a02a55ff",
+    "79e4ba66a196a0f5a913a5318f8643c9313ca4c7ceed0ee1464f2edcd10355c7"
+  ],
+  "same_size": true,
+  "text_sha256": [
+    "5885669b72285c0f0db7c8055b0db41605efee64f112f43c8d200e89d6aedba2",
+    "5885669b72285c0f0db7c8055b0db41605efee64f112f43c8d200e89d6aedba2"
+  ],
+  "same_text": true,
+  "different_bytes": 678,
+  "unexplained_different_offsets": [],
+  "difference_regions": [
+    "LC_UUID",
+    "N_OSO object modification times",
+    "LC_CODE_SIGNATURE"
+  ],
+  "original_native_bytes_available": false
+}

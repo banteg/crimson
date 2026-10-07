@@ -20,10 +20,12 @@ HOST = HERE / "host"
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--root", type=Path, default=HERE.parent)
-    p.add_argument("--target", choices=["native", "wasm"], default="native")
+    p.add_argument("--target", choices=["native", "wasm", "client"], default="native")
     p.add_argument("--out", type=Path)
     a = p.parse_args()
     a.out = (a.out or HERE / "build" / a.target).resolve()
+    if a.target == "client" and a.out in {(HERE / "build/native").resolve(), (HERE / "build/wasm").resolve()}:
+        p.error("client output must be separate from verifier artifacts")
     a.out.mkdir(parents=True, exist_ok=True)
     headers = a.out / "include"
     headers.mkdir(exist_ok=True)
@@ -57,7 +59,7 @@ def main():
     zig = shutil.which("zig")
     if not zig or subprocess.check_output([zig, "version"], text=True).strip() != "0.17.0":
         raise SystemExit("The shared math adapter requires Zig 0.17.0")
-    cc = ["clang++"] if a.target == "native" else [zig, "c++", "-target", "wasm32-wasi"]
+    cc = ["clang++"] if a.target != "wasm" else [zig, "c++", "-target", "wasm32-wasi"]
     flags = [
         "-g",
         "-std=c++17",
@@ -77,9 +79,15 @@ def main():
         "-I" + str(headers),
         "-I" + str(a.root / "third_party/headers"),
     ]
-    if a.target == "native" and os.uname().sysname == "Darwin":
+    if a.target != "wasm" and os.uname().sysname == "Darwin":
         flags.append("-mmacosx-version-min=11.0")
     sources = json.loads((HERE / "sources.json").read_text())
+    if a.target == "client":
+        from client import instrument, prepare
+
+        (a.out / "client").unlink(missing_ok=True)
+        sources += json.loads((HERE / "client/sources.json").read_text())
+        prepare(a.root, a.out, sources)
 
     hunks = load_patches()
     if missing := sorted(set(hunks) - {Path(rel).stem for rel in sources}):
@@ -89,6 +97,8 @@ def main():
         src = a.root / rel
         txt = src.read_text()
         txt = apply_patches(src.stem, adapt(src, txt), hunks)
+        if a.target == "client":
+            txt = instrument(src, txt)
         dst = a.out / (src.stem + ".cpp")
         dst.write_text(f'#line 1 "{src}"\n' + txt)
         obj = a.out / (src.stem + ".o")
@@ -110,7 +120,7 @@ def main():
     if errors:
         raise SystemExit(1)
     for name in ["data.cpp", "host.cpp"]:
-        src = a.out / name if name == "data.cpp" else HOST / name
+        src = a.out / name if name == "data.cpp" or a.target == "client" else HOST / name
         proc = subprocess.run(
             cc + flags + ["-c", str(src), "-o", str(a.out / (Path(name).stem + ".o"))],
             env=env,
@@ -157,9 +167,9 @@ def main():
     ]
     link = (
         cc
-        + (["-mmacosx-version-min=11.0"] if a.target == "native" and os.uname().sysname == "Darwin" else [])
+        + (["-mmacosx-version-min=11.0"] if a.target != "wasm" and os.uname().sysname == "Darwin" else [])
         + objs
-        + ["-o", str(a.out / ("core.wasm" if a.target == "wasm" else "core"))]
+        + ["-o", str(a.out / ("core.wasm" if a.target == "wasm" else "client" if a.target == "client" else "core"))]
     )
     if a.target == "wasm":
         link += [

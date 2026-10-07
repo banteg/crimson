@@ -1,0 +1,50 @@
+{
+  "exit": 0,
+  "slots": 40,
+  "expected_slots": 40,
+  "agree": true,
+  "controls": [
+    {
+      "name": "rand-outside-tick",
+      "exit": -6,
+      "observed": {
+        "event": "rand_outside_tick",
+        "tick": 0,
+        "source": "probe",
+        "line": 0,
+        "caller": "outside_tick_probe"
+      },
+      "agree": true
+    },
+    {
+      "name": "unsupported-grim-slot",
+      "exit": -6,
+      "observed": {
+        "event": "unsupported",
+        "tick": 0,
+        "reason": "grim:grim_init_system"
+      },
+      "agree": true
+    },
+    {
+      "name": "survival",
+      "exit": -6,
+      "observed": {
+        "event": "unsupported",
+        "tick": 0,
+        "reason": "session:only-quest-1.1"
+      },
+      "agree": true
+    },
+    {
+      "name": "quest-1.2",
+      "exit": -6,
+      "observed": {
+        "event": "unsupported",
+        "tick": 0,
+        "reason": "session:only-quest-1.1"
+      },
+      "agree": true
+    }
+  ]
+}

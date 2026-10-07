@@ -1,0 +1,2 @@
+{"event":"grim","tick":0,"in_tick":false,"slot":5,"name":"grim_init_system","return_read":false}
+{"event":"unsupported","tick":0,"reason":"grim:grim_init_system"}

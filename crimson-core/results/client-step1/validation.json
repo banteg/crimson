@@ -1,0 +1,102 @@
+{
+  "gate": {
+    "agree": 142,
+    "total": 142,
+    "unsupported": {
+      "typo-144.crd": "The core supports one player in Rush, Survival or Quests"
+    },
+    "identical_to_checked_in": true
+  },
+  "matrix": {
+    "cases": 134,
+    "ticks": 357500,
+    "identical_to_checked_in": true
+  },
+  "comparator_control": {
+    "client_snapshots": 1442,
+    "compared_ticks": 1441,
+    "fields_per_snapshot": 36343,
+    "verifier_state_sha256": "af9f632b6fc9facf6dc8a563481082ad29904be68a345097ac987c510b0eeadf",
+    "differences": [],
+    "full_state_agree": true
+  },
+  "protected_tracked_paths": "no diff under decomp/, host/api.h, patches/, verifier host or sources; results/gate.json and results/matrix.json unchanged",
+  "client_compiled_units": 195,
+  "comparator_negative_control": {
+    "injection": "toggle rng bit at snapshots 2 and 3, health bit at snapshot 4",
+    "differences": [
+      {
+        "field": "globals.rng",
+        "first_snapshot": 2,
+        "first_tick": 1,
+        "client_bits": 3461923193,
+        "verifier_bits": 3461923192
+      },
+      {
+        "field": "players[0].health",
+        "first_snapshot": 4,
+        "first_tick": 3,
+        "client_bits": 1120403457,
+        "verifier_bits": 1120403456
+      }
+    ],
+    "detected_failure": true
+  },
+  "client_contract": {
+    "artifact_preservation": true,
+    "expected_blocker": true,
+    "probes": {
+      "exit": 0,
+      "slots": 40,
+      "expected_slots": 40,
+      "agree": true,
+      "controls": [
+        {
+          "name": "rand-outside-tick",
+          "exit": -6,
+          "observed": {
+            "event": "rand_outside_tick",
+            "tick": 0,
+            "source": "probe",
+            "line": 0,
+            "caller": "outside_tick_probe"
+          },
+          "agree": true
+        },
+        {
+          "name": "unsupported-grim-slot",
+          "exit": -6,
+          "observed": {
+            "event": "unsupported",
+            "tick": 0,
+            "reason": "grim:grim_init_system"
+          },
+          "agree": true
+        },
+        {
+          "name": "survival",
+          "exit": -6,
+          "observed": {
+            "event": "unsupported",
+            "tick": 0,
+            "reason": "session:only-quest-1.1"
+          },
+          "agree": true
+        },
+        {
+          "name": "quest-1.2",
+          "exit": -6,
+          "observed": {
+            "event": "unsupported",
+            "tick": 0,
+            "reason": "session:only-quest-1.1"
+          },
+          "agree": true
+        }
+      ]
+    },
+    "control_ticks": 1441,
+    "control_fields": 36343,
+    "control_full_result_mismatches": []
+  }
+}

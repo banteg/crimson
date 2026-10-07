@@ -79,6 +79,9 @@ jobs:
       - name: Compare whole runs with Python under the original rules
         run: uv run --no-sync python crimson-core/checks/gate.py
 
+      - name: Check client instrumentation and expected initialization blocker
+        run: uv run --no-sync python crimson-core/checks/client_contract.py
+
       - name: Download original executable
         run: |
           game_dir="game_bins/crimsonland/1.9.93-gog"
@@ -122,3 +125,5 @@ jobs:
             crimson-core/build/*/link.log
             crimson-core/build/native/core
             crimson-core/build/wasm/core.wasm
+            crimson-core/build/client/contract/*.json
+            crimson-core/build/client/contract/*.jsonl
