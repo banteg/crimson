@@ -109,7 +109,16 @@ export interface RunDetailView {
   accepted_at: number;
   game_version: string;
   recorder: { client: string; version: string; platform: string };
-  result: { elapsed_ms: number; kills: number; shots_fired: number; shots_hit: number; experience: number };
+  result: {
+    outcome: string;
+    elapsed_ms: number;
+    kills: number;
+    shots_fired: number;
+    shots_hit: number;
+    experience: number;
+    health: number;
+    pending_perks: number;
+  };
   timeline: Timeline | null;
   top: { id: string; name: string; score: number } | null;
   best: { id: string; score: number } | null;

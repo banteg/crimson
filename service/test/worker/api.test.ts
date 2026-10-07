@@ -77,7 +77,10 @@ describe("runs", () => {
     const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
 
     const detail = (await (await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).json()) as RunDetailView;
-    expect(detail).toMatchObject({ board: "survival", score: 749, rank: 1, name: "banteg", top: null, best: null });
+    expect(detail).toMatchObject({
+      board: "survival", score: 749, rank: 1, name: "banteg", top: null, best: null,
+      result: { outcome: "death", pending_perks: 0, health: decodeReplay(inflateReplay(decode64(vectors.ranked_run))).result.players[0]!.health },
+    });
     const timeline = detail.timeline!;
     // One sample a second and the last tick: the curves end on the run's result.
     expect(timeline.samples.at(-1)!.slice(1, 5)).toEqual([749, detail.timeline!.samples.at(-1)![2], 0, detail.result.kills]);
@@ -91,6 +94,23 @@ describe("runs", () => {
     expect(await (await SELF.fetch(`${ORIGIN}/api/runs/${id}/timeline`)).json()).toEqual(timeline);
     expect(await env.REPLAYS.head(`runs/${id}.timeline.json`)).not.toBeNull();
     expect((await SELF.fetch(`${ORIGIN}/api/runs/${"0".repeat(64)}`)).status).toBe(404);
+  });
+
+  it.each(["quests", "quests-hardcore"])("%s details retain the exact stored scoring inputs without a migration", async (board) => {
+    const player = await Player.create();
+    const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
+    // Model an existing accepted quest row; chart health rounds to tenths, but scoring truncates raw HP.
+    const result = decodeReplay(inflateReplay(decode64(vectors.ranked_run))).result;
+    Object.assign(result, { outcome: "quest_completed", elapsed_ms: 64093, pending_perks: 2, quest_final_ms: 57143 });
+    result.players[0]!.health = 99.999;
+    await env.DB.prepare("UPDATE runs SET board = ?, quest = '1.2', score = ?, result = ? WHERE id = ?")
+      .bind(board, result.quest_final_ms, JSON.stringify(result), id).run();
+
+    const detail = (await (await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).json()) as RunDetailView;
+    expect(detail).toMatchObject({
+      board, score: 57143,
+      result: { outcome: "quest_completed", elapsed_ms: 64093, health: 99.999, pending_perks: 2 },
+    });
   });
 
   it("a run is accepted once, whoever sends it again", async () => {

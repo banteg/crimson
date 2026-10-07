@@ -403,7 +403,7 @@ function Perks(props: { run: RunTimeline }) {
   );
 }
 
-function Arena(props: { run: RunTimeline; cursor: Cursor }) {
+function Arena(props: { run: RunTimeline; cursor: Cursor; outcome: string }) {
   const run = props.run;
   const [ground] = createResource(() => paintGround(run.terrain));
   // Where the player spent the run: the 10 Hz positions binned into 32px cells.
@@ -435,7 +435,17 @@ function Arena(props: { run: RunTimeline; cursor: Cursor }) {
           <polyline points={trail().map(([, x, y]) => `${x},${y}`).join(" ")} fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" stroke-opacity="0.9" />
           <Show
             when={props.cursor.t() !== null}
-            fallback={<path d={`M${here()[1] - 18},${here()[2] - 18} l36,36 M${here()[1] + 18},${here()[2] - 18} l-36,36`} stroke={RED} stroke-width="8" />}
+            fallback={
+              <g role="img" aria-label={props.outcome === "quest_completed" ? "Quest completed" : props.outcome === "death" ? "Death" : "Run ended"}>
+                <Show when={props.outcome === "quest_completed"} fallback={
+                  <Show when={props.outcome === "death"} fallback={<circle cx={here()[1]} cy={here()[2]} r="18" fill="none" stroke={GOLD} stroke-width="6" />}>
+                    <path d={`M${here()[1] - 18},${here()[2] - 18} l36,36 M${here()[1] + 18},${here()[2] - 18} l-36,36`} stroke={RED} stroke-width="8" />
+                  </Show>
+                }>
+                  <path d={`M${here()[1] - 20},${here()[2]} l14,16 l28,-32`} fill="none" stroke={GREEN} stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+                </Show>
+              </g>
+            }
           >
             <circle cx={here()[1]} cy={here()[2]} r="14" fill="#fff" stroke="#000" stroke-width="4" />
           </Show>
@@ -443,7 +453,7 @@ function Arena(props: { run: RunTimeline; cursor: Cursor }) {
       </div>
       <p class="muted arena-note">
         Gold is where the player spent the run. The white line is their last {TRAIL_S} seconds before the time under the cursor, or before
-        the death, the red X.
+        the run ended. {props.outcome === "quest_completed" ? "The green check marks quest completion." : props.outcome === "death" ? "The red X marks death." : "The gold circle marks the end of the run."}
       </p>
     </div>
   );
@@ -454,7 +464,7 @@ function Stats(props: { run: RunTimeline; detail: RunDetailView }) {
   const result = props.detail.result;
   const end = run.samples.at(-1)!;
   const tiles: [string, string][] = [
-    [props.detail.board === "survival" ? "survived" : "time", clock(run.duration_s)],
+    [props.detail.board === "survival" ? "survived" : "quest time", clock(result.elapsed_ms / 1000)],
     ["experience", grouped(result.experience)],
     ["level", String(end.level)],
     ["kills", grouped(result.kills)],
@@ -473,6 +483,26 @@ function Stats(props: { run: RunTimeline; detail: RunDetailView }) {
           </div>
         )}
       </For>
+    </div>
+  );
+}
+
+// Use the stored result, not rounded chart samples: player 0's whole HP earns 50 ms, each pending perk 1 s.
+function QuestScore(props: { detail: RunDetailView }) {
+  const result = props.detail.result;
+  const lifeBonus = Math.trunc(result.health) * 50;
+  const perkBonus = result.pending_perks * 1000;
+  const adjustment = (bonus: number) => `${bonus > 0 ? "−" : bonus < 0 ? "+" : ""}${formatScore("quests", Math.abs(bonus))}`;
+  return (
+    <div class="quest-score">
+      <dl>
+        <dt>Quest time</dt><dd>{formatScore("quests", result.elapsed_ms)}</dd>
+        <dt>Life bonus <span class="muted">({Math.trunc(result.health)} hp × 50 ms)</span></dt><dd>{adjustment(lifeBonus)}</dd>
+        <dt>Unpicked perks <span class="muted">({result.pending_perks} × 1 s)</span></dt><dd>{adjustment(perkBonus)}</dd>
+      </dl>
+      <Show when={result.elapsed_ms - lifeBonus - perkBonus === 0}>
+        <p class="muted">An exactly zero final time is recorded as 0:00.001.</p>
+      </Show>
     </div>
   );
 }
@@ -497,7 +527,9 @@ export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
             <span class="muted"> · played as {detail.name}</span>
           </Show>
         </p>
+        <Show when={detail.result.outcome === "quest_completed"}><p class="score-label muted">Final time</p></Show>
         <p class="run-score">{formatScore(detail.board, detail.score)}</p>
+        <Show when={detail.result.outcome === "quest_completed"}><QuestScore detail={detail} /></Show>
         <p class="muted">
           {new Date(detail.accepted_at).toISOString().slice(0, 10)} · {detail.recorder.client} {detail.recorder.version} · {detail.recorder.platform}
         </p>
@@ -578,7 +610,7 @@ export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
     () => (
       <>
         <h3>Arena</h3>
-        <Arena run={run} cursor={cursor} />
+        <Arena run={run} cursor={cursor} outcome={detail.result.outcome} />
       </>
     ),
   ];

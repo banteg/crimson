@@ -137,6 +137,9 @@ export async function runDetailView(env: Env, id: string): Promise<RunDetailView
     game_version: run.game_version,
     recorder: { client: run.client, version: run.client_version, platform: run.platform },
     result: {
+      outcome: result.outcome,
+      health: result.players[0]!.health,
+      pending_perks: result.pending_perks,
       elapsed_ms: result.elapsed_ms,
       kills: result.kills,
       shots_fired: result.shots_fired,
