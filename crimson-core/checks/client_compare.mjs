@@ -24,7 +24,7 @@ const completion = new Promise((resolve, reject) => {
 const timer = setTimeout(() => child.kill(), 120000);
 child.stdin.on("error", () => {});
 child.stdin.end(fs.readFileSync(inputFile));
-let stderr = "", pending = Buffer.alloc(0), snapshots = 0, clientFinal;
+let stderr = "", pending = Buffer.alloc(0), snapshots = 0, clientFinal, initializationAgree = null;
 child.stderr.on("data", (chunk) => { stderr += chunk; });
 const differences = new Map(), verifierHash = crypto.createHash("sha256");
 let expected = state(e);
@@ -44,6 +44,7 @@ try {
       if (snapshots > run.records.length) throw Error("Extra client snapshot");
       if (snapshots) advance(snapshots - 1);
       const actual = pending.subarray(4, bytes + 4);
+      if (snapshots === 0) initializationAgree = actual.equals(expected);
       clientFinal = Buffer.from(actual);
       for (let i = 0; i < names.length; ++i) {
         const a = actual.readUInt32LE(i * 4), b = expected.readUInt32LE(i * 4);
@@ -67,6 +68,8 @@ try {
     input: inputFile, ticks: run.records.length, fields_per_snapshot: names.length,
     client_exit: exit, client_stderr: stderr.trim(), client_snapshots: snapshots,
     compared_ticks: Math.max(0, snapshots - 1), incomplete_snapshot_bytes: pending.length,
+    initialization_agree: initializationAgree,
+    first_uncompleted_tick: snapshots > 0 && snapshots <= run.records.length ? snapshots - 1 : null,
     verifier_ticks: run.records.length, verifier_state_sha256: verifierHash.digest("hex"),
     differences: [...differences.values()], blockers: events.filter((event) => ["unsupported", "rand_outside_tick"].includes(event.event)),
     complete_stream: complete,

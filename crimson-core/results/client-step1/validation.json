@@ -44,7 +44,14 @@
   },
   "client_contract": {
     "artifact_preservation": true,
-    "expected_blocker": true,
+    "client_exit": {
+      "code": null,
+      "signal": "SIGSEGV"
+    },
+    "client_compared_ticks": 0,
+    "client_full_state_agree": false,
+    "client_full_result_agree": false,
+    "client_blockers": [],
     "probes": {
       "exit": 0,
       "slots": 40,
@@ -98,5 +105,12 @@
     "control_ticks": 1441,
     "control_fields": 36343,
     "control_full_result_mismatches": []
-  }
+  },
+  "client_initialization": {
+    "fields_compared": 36343,
+    "agree": true,
+    "client_snapshots": 1,
+    "first_uncompleted_tick": 0
+  },
+  "native_rebuild_exception": "accepted by user; existing verifier bytes preserved in this rerun"
 }

@@ -1,0 +1,19 @@
+{
+  "tick": 0,
+  "signal": "SIGSEGV",
+  "lldb_stop_reason": "EXC_BAD_ACCESS (code=1, address=0x14)",
+  "source": "decomp/1.9/crimsonland/ui_render/terrain_render.cpp",
+  "original_line": 20,
+  "debug_line": 22,
+  "expression": "cv_terrainFilter->value == 2.0f",
+  "cv_terrainFilter": "0x0000000000000000",
+  "stack": [
+    "terrain_render",
+    "gameplay_render_world (original line 90)",
+    "gameplay_update_and_render (original line 179)",
+    "portable_step_many",
+    "main"
+  ],
+  "note": "generated adapters add two include lines to recovered source debug locations; original read is line 20",
+  "fixed": false
+}

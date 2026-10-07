@@ -1,4 +1,4 @@
-"""Test instrumentation and the known initialization blocker, not client parity."""
+"""Local instrumentation/control tool; report client results without enforcing a blocker."""
 
 import json
 import shutil
@@ -26,11 +26,7 @@ def main():
     )
     report = json.loads((out / "replay.json").read_text())
     probes = json.loads((out / "probes.json").read_text())
-    if proc.returncode != 1 or report["client_snapshots"] != 0 or report["client_result"] is not None:
-        raise RuntimeError("Expected blocked initialization, not successful replay")
-    if len(report["blockers"]) != 1 or report["blockers"][0]["caller"] != "gameplay_reset_state":
-        raise RuntimeError("Initialization blocker changed; review the session contract")
-    if report["blockers"][0]["event"] != "rand_outside_tick" or not probes["agree"]:
+    if proc.returncode not in (0, 1) or not probes["agree"]:
         raise RuntimeError("Client recording/guard control failed")
     if report["claimed_result_mismatches"]:
         raise RuntimeError("Verifier reference differs from the recording claim")
@@ -59,14 +55,18 @@ def main():
         raise RuntimeError("Comparator control failed for native/WASM verifier state or full result")
     summary = {
         "artifact_preservation": before == after,
-        "expected_blocker": True,
+        "client_exit": report["client_exit"],
+        "client_compared_ticks": report["compared_ticks"],
+        "client_full_state_agree": report["full_state_agree"],
+        "client_full_result_agree": report["full_result_agree"],
+        "client_blockers": report["blockers"],
         "probes": probes,
         "control_ticks": control["compared_ticks"],
         "control_fields": control["fields_per_snapshot"],
         "control_full_result_mismatches": mismatches,
     }
     (out / "contract.json").write_text(json.dumps(summary, indent=2) + "\n")
-    print("Client instrumentation controls passed; actual client replay remains blocked before tick 0")
+    print(f"Client tools validated; replay full-state agree={report['full_state_agree']}, exit={report['client_exit']}")
 
 
 if __name__ == "__main__":

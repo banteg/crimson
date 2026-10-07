@@ -1,7 +1,0 @@
-{"event":"grim","tick":0,"in_tick":false,"slot":48,"name":"grim_get_texture_handle","return_read":true}
-{"event":"grim","tick":0,"in_tick":false,"slot":48,"name":"grim_get_texture_handle","return_read":true}
-{"event":"grim","tick":0,"in_tick":false,"slot":48,"name":"grim_get_texture_handle","return_read":true}
-{"event":"grim","tick":0,"in_tick":false,"slot":48,"name":"grim_get_texture_handle","return_read":true}
-{"event":"grim","tick":0,"in_tick":false,"slot":48,"name":"grim_get_texture_handle","return_read":true}
-{"event":"grim","tick":0,"in_tick":false,"slot":48,"name":"grim_get_texture_handle","return_read":true}
-{"event":"rand_outside_tick","tick":0,"source":"/Users/banteg/dev/banteg/crimson/decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp","line":266,"caller":"gameplay_reset_state"}

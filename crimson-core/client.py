@@ -119,6 +119,7 @@ def prepare(root, out, sources):
         host,
         "int main(int argc, char **argv) {",
         '#include "client_probe.inc"\nint main(int argc, char **argv) {\n'
+        "  setvbuf(stdout, nullptr, _IONBF, 0); // Retain complete snapshots if a later tick aborts.\n"
         '  if (argc == 2 && strcmp(argv[1], "--client-grim-probe") == 0) { client_grim_probe(); return 0; }\n'
         '  if (argc == 2 && strcmp(argv[1], "--client-unsupported-probe") == 0) { headless_grim.grim_init_system(); return 0; }\n'
         '  if (argc == 2 && strcmp(argv[1], "--client-rand-probe") == 0) { client_rand("probe", 0, "outside_tick_probe"); return 0; }',
@@ -153,6 +154,7 @@ def prepare(root, out, sources):
         host,
         'extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {',
         'extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {\n'
+        "  ClientTickScope client_init_scope;\n"
         '  if (mode != GAME_MODE_QUEST || major != 1 || minor != 1) client_unsupported("session:only-quest-1.1");',
     )
     host = replace_once(

@@ -81,7 +81,6 @@ def main():
     events = [json.loads(line) for line in Path(str(result_file) + ".jsonl").read_text().splitlines()]
     report["observed_slots"] = sorted({event["slot"] for event in events if event["event"] == "grim"})
     report["grim_calls"] = sum(event["event"] == "grim" for event in events)
-    report["render_executed"] = False if not report["client_snapshots"] else "inspect trace"
     report["compiler"] = subprocess.check_output([shutil.which("clang++"), "--version"], text=True).splitlines()[0]
     report["zig"] = subprocess.check_output([shutil.which("zig"), "version"], text=True).strip()
     result_file.write_text(json.dumps(report, indent=2) + "\n")
