@@ -2,6 +2,19 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.12.2
+
+### For players
+
+- Long Survival runs spend less time updating creatures and finding collisions, especially with Plaguebearer and large crowds. Rendering and particle weapons also have lower CPU overhead.
+- Run pages on **[crimson.land](https://crimson.land)** now show experience, kill-rate and damage charts, weapons, perks, timed bonuses and the arena. Leaderboards also show each run's duration and most-used weapon.
+
+### Under the hood
+
+- A complete 65,776-tick Survival recording took **94.5 seconds instead of 223.2 seconds** to simulate headlessly on an M1 Pro: about **2.36 times faster**, or **58% less time**, with identical results. The baseline and final runs were measured in separate passes on the same host.
+- A separate rendered comparison of the same recording measured **22% less wall time** from the rendering optimization. These measurements cover one recording on one machine; they are not general frame-rate guarantees.
+- Native float rounding, RNG order and collision order are preserved, including split children spawned during damage. Native oracle tests and complete replay comparisons against crimson-core cover the optimizations.
+
 ## 0.12.1
 
 ### For players
