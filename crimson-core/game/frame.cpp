@@ -104,6 +104,23 @@ GAME_EXPORT(game_exit) void game_exit() { crimsonland_main_exit(); }
 // The screen the game shows (game_state_id_t).
 GAME_EXPORT(game_state) int game_state() { return game_state_id; }
 
+// WM_ACTIVATEAPP: losing the window freezes Grim's clock, so the loop stops
+// running the game until it returns, and tells the game (it suspends audio).
+// The device keeps its textures, so there is nothing to back up or restore.
+extern void (*grim_on_device_lost)(void);
+GAME_EXPORT(game_activate) void game_activate(int active) {
+  if (active) {
+    if (grim_d3d_device)
+      grim_on_device_restore();
+    grim_timing_frozen = false;
+  } else {
+    if (grim_d3d_device)
+      grim_on_device_lost();
+    grim_timing_frozen = true;
+    grim_device_ready = false;
+  }
+}
+
 // WM_CLOSE.
 GAME_EXPORT(game_close) void game_close() { quit_posted = true; }
 

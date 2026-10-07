@@ -264,6 +264,14 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
   case SDL_EVENT_QUIT:
     w2c_game_game_close(&game);
     break;
+  case SDL_EVENT_WINDOW_FOCUS_LOST:
+  case SDL_EVENT_WINDOW_MINIMIZED:
+    w2c_game_game_activate(&game, 0);
+    break;
+  case SDL_EVENT_WINDOW_FOCUS_GAINED:
+  case SDL_EVENT_WINDOW_RESTORED:
+    w2c_game_game_activate(&game, 1);
+    break;
   case SDL_EVENT_KEY_DOWN:
   case SDL_EVENT_KEY_UP:
     if (!event->key.repeat)
@@ -276,8 +284,9 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
     break;
   case SDL_EVENT_MOUSE_BUTTON_DOWN:
   case SDL_EVENT_MOUSE_BUTTON_UP: {
+    // DirectInput's order: left, right, middle, then the side buttons.
     int button = event->button.button == SDL_BUTTON_LEFT ? 0 : event->button.button == SDL_BUTTON_RIGHT ? 1
-                 : event->button.button == SDL_BUTTON_MIDDLE ? 2 : event->button.button + 1;
+                 : event->button.button == SDL_BUTTON_MIDDLE ? 2 : event->button.button - 1;
     if (button < 8)
       input()->mouse_buttons[button] = event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ? 0x80 : 0;
     break;

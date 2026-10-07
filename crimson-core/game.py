@@ -83,6 +83,13 @@ SEAMS = (
 )
 
 
+def session_seam(session, original, statement=False):
+    # The game module takes the recorded input only inside a session (host/game.inc).
+    if statement:
+        return f"if (game_ticking) {{\n{session}\n}} else {{\n{original}\n}}"
+    return f"(game_ticking ? ({session}) : ({original}))"
+
+
 def adapt_game(src, txt):
     if src.suffix == ".c":
         # The adapter gives C linkage to the common return types; the rest of a
@@ -100,6 +107,8 @@ def adapt_game(src, txt):
         r'extern "C" \1 \2(',
         txt,
     )
+    if "game_ticking" in txt:
+        txt = 'extern "C" unsigned char game_ticking;\n' + txt
     if src.stem in SEAMS:
         txt, count = re.subn(rf"\b{src.stem}\(", f"{src.stem}_recovered(", txt)
         if not count:

@@ -243,7 +243,8 @@ void allocate(Target &t) {
     glGenFramebuffers(1, &t.framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, t.framebuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, t.texture, 0);
-    // Direct3D's surfaces start black and opaque.
+    // Direct3D's surfaces start black and opaque, whatever the last draw masked.
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
   }

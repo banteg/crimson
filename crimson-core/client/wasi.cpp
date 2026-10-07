@@ -18,6 +18,7 @@ namespace {
 
 enum : u32 {
   ESUCCESS = 0,
+  EACCES_ = 2,
   EBADF_ = 8,
   EINVAL_ = 28,
   EIO_ = 29,
@@ -59,8 +60,9 @@ u32 errno_code() {
 File *file(u32 fd) { return fd < files.size() && (files[fd].fd >= 0 || files[fd].dir) ? &files[fd] : nullptr; }
 
 // The real name of each component, matched case-insensitively under the root.
-std::string resolve(const std::string &relative) {
-  std::string path = client_game_directory();
+// Paths stay inside the game directory: no "..", and no symbolic links.
+bool resolve(const std::string &relative, std::string &path) {
+  path = client_game_directory();
   size_t start = 0;
   while (start <= relative.size()) {
     size_t end = relative.find('/', start);
@@ -70,6 +72,8 @@ std::string resolve(const std::string &relative) {
     start = end + 1;
     if (part.empty() || part == ".")
       continue;
+    if (part == "..")
+      return false;
     std::string match = part;
     if (DIR *dir = opendir(path.c_str())) {
       while (dirent *entry = readdir(dir))
@@ -80,8 +84,11 @@ std::string resolve(const std::string &relative) {
       closedir(dir);
     }
     path += "/" + match;
+    struct stat st;
+    if (lstat(path.c_str(), &st) == 0 && S_ISLNK(st.st_mode))
+      return false;
   }
-  return path;
+  return true;
 }
 
 std::string guest_string(u32 at, u32 length) { return std::string((const char *)memory() + at, length); }
@@ -160,7 +167,9 @@ u32 w2c_wasi__snapshot__preview1_path_open(struct w2c_wasi__snapshot__preview1 *
     return EBADF_;
   std::string relative = dir->path.empty() ? guest_string(path_at, path_length)
                                            : dir->path + "/" + guest_string(path_at, path_length);
-  std::string host = resolve(relative);
+  std::string host;
+  if (!resolve(relative, host))
+    return EACCES_;
   File opened;
   opened.path = relative;
   struct stat st;
@@ -171,7 +180,7 @@ u32 w2c_wasi__snapshot__preview1_path_open(struct w2c_wasi__snapshot__preview1 *
   } else {
     bool reads = rights & 1u << 1, writes = rights & 1u << 6; // fd_read, fd_write
     int flags = (oflags & 1 ? O_CREAT : 0) | (oflags & 4 ? O_EXCL : 0) | (oflags & 8 ? O_TRUNC : 0) |
-                (fdflags & 1 ? O_APPEND : 0) | (reads && writes ? O_RDWR : writes ? O_WRONLY : O_RDONLY);
+                (fdflags & 1 ? O_APPEND : 0) | (reads && writes ? O_RDWR : writes ? O_WRONLY : O_RDONLY) | O_NOFOLLOW;
     if ((opened.fd = open(host.c_str(), flags, 0644)) < 0)
       return errno_code();
   }
@@ -270,9 +279,11 @@ u32 w2c_wasi__snapshot__preview1_path_filestat_get(struct w2c_wasi__snapshot__pr
   File *dir = file(dirfd);
   if (!dir || !dir->dir)
     return EBADF_;
-  std::string relative = guest_string(path_at, path_length);
+  std::string relative = guest_string(path_at, path_length), host;
+  if (!resolve(dir->path.empty() ? relative : dir->path + "/" + relative, host))
+    return EACCES_;
   struct stat st;
-  if (stat(resolve(dir->path.empty() ? relative : dir->path + "/" + relative).c_str(), &st))
+  if (stat(host.c_str(), &st))
     return errno_code();
   store_filestat(result, st);
   return ESUCCESS;
@@ -282,8 +293,10 @@ u32 w2c_wasi__snapshot__preview1_path_create_directory(struct w2c_wasi__snapshot
   File *dir = file(dirfd);
   if (!dir || !dir->dir)
     return EBADF_;
-  std::string relative = guest_string(path_at, path_length);
-  if (mkdir(resolve(dir->path.empty() ? relative : dir->path + "/" + relative).c_str(), 0755) && errno != EEXIST)
+  std::string relative = guest_string(path_at, path_length), host;
+  if (!resolve(dir->path.empty() ? relative : dir->path + "/" + relative, host))
+    return EACCES_;
+  if (mkdir(host.c_str(), 0755) && errno != EEXIST)
     return errno_code();
   return ESUCCESS;
 }

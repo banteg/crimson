@@ -135,6 +135,7 @@ void bonus_meta_global_construct_and_register() {
 }
 void game_static_init();
 __attribute__((export_name("game_start"))) int game_start() {
+  game_session = false;
   game_heap_strings = true;
   portable_reset_engine_data();
   portable_reset_data();

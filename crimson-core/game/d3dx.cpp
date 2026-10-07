@@ -35,12 +35,9 @@ struct Image {
 unsigned read16(const unsigned char *p) { return p[0] | p[1] << 8; }
 unsigned read32(const unsigned char *p) { return p[0] | p[1] << 8 | p[2] << 16 | (unsigned)p[3] << 24; }
 
-unsigned tga_texel(const unsigned char *p, int bits, const unsigned char *palette, int palette_bits) {
+// A truecolor TGA texel: 15/16-bit A1R5G5B5, 24-bit BGR or 32-bit BGRA.
+unsigned tga_color(const unsigned char *p, int bits) {
   switch (bits) {
-  case 8:
-    if (palette)
-      return tga_texel(palette + p[0] * (palette_bits / 8), palette_bits, nullptr, 0);
-    return 0xff000000u | p[0] * 0x010101u;
   case 15:
   case 16: {
     unsigned v = read16(p);
@@ -65,19 +62,25 @@ bool decode_tga(const unsigned char *data, size_t size, Image &image) {
   int base = rle ? type - 8 : type;
   if ((base != 1 && base != 2 && base != 3) || !width || !height)
     return false;
-  if (bits != 8 && bits != 15 && bits != 16 && bits != 24 && bits != 32)
+  if (base == 2 ? bits != 15 && bits != 16 && bits != 24 && bits != 32 : bits != 8)
     return false;
   size_t offset = 18 + id_length;
+  // Colour-mapped images index entries palette_start onwards, each a whole number of bytes.
   const unsigned char *palette = nullptr;
+  int entry_bytes = (palette_bits + 7) / 8;
   if (color_map_type == 1) {
-    palette = data + offset - palette_start * (palette_bits / 8);
-    offset += (size_t)palette_length * ((palette_bits + 7) / 8);
+    if (palette_bits != 15 && palette_bits != 16 && palette_bits != 24 && palette_bits != 32)
+      return false;
+    palette = data + offset;
+    offset += (size_t)palette_length * entry_bytes;
+    if (offset > size)
+      return false;
   }
   if (base == 1 && !palette)
     return false;
   if (!image.allocate(width, height))
     return false;
-  image.alpha = bits == 32 || (bits == 16) || (palette && palette_bits == 32);
+  image.alpha = base == 1 ? palette_bits == 16 || palette_bits == 32 : bits == 16 || bits == 32;
   int stride = (bits + 7) / 8;
   bool top_down = descriptor & 0x20;
   for (int i = 0, count = width * height; i < count;) {
@@ -93,7 +96,17 @@ bool decode_tga(const unsigned char *data, size_t size, Image &image) {
     for (int k = 0; k < run && i < count; ++k, ++i) {
       if (offset + stride > size)
         return false;
-      unsigned texel = tga_texel(data + offset, bits, base == 1 ? palette : nullptr, palette_bits);
+      unsigned texel;
+      if (base == 1) {
+        int index = data[offset] - palette_start;
+        if (index < 0 || index >= palette_length)
+          return false;
+        texel = tga_color(palette + index * entry_bytes, palette_bits);
+      } else if (base == 3) {
+        texel = 0xff000000u | data[offset] * 0x010101u;
+      } else {
+        texel = tga_color(data + offset, bits);
+      }
       if (!repeat || k == run - 1)
         offset += stride;
       int x = i % width, y = i / width;
@@ -116,7 +129,8 @@ bool decode_bmp(const unsigned char *data, size_t size, Image &image) {
     height = -height;
   const unsigned char *palette = data + 14 + header;
   size_t stride = ((size_t)width * bits / 8 + 3) & ~(size_t)3;
-  if (pixels + stride * height > size || !image.allocate(width, height))
+  if (pixels > size || stride * height > size - pixels || header > size || (bits == 8 && 14 + 1024 > size - header) ||
+      !image.allocate(width, height))
     return false;
   for (int y = 0; y < height; ++y) {
     const unsigned char *row = data + pixels + stride * y;
@@ -244,7 +258,7 @@ int __stdcall D3DXCreateTextureFromFileExA(IDirect3DDevice8 *device, char *path,
                                            D3DFORMAT format, D3DPOOL pool, unsigned long filter,
                                            unsigned long mip_filter, D3DCOLOR key, GrimD3dxImageInfo *info,
                                            PALETTEENTRY *palette, IDirect3DTexture8 **texture) {
-  FILE *fp = fopen(path, "rb");
+  FILE *fp = platform_fopen(path, "rb");
   if (!fp)
     return D3DERR_INVALIDCALL;
   fseek(fp, 0, SEEK_END);

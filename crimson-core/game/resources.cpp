@@ -15,8 +15,10 @@ struct Resource {
 unsigned char *image;
 long image_size;
 
-unsigned read16(const unsigned char *p) { return p[0] | p[1] << 8; }
-unsigned read32(const unsigned char *p) { return p[0] | p[1] << 8 | p[2] << 16 | (unsigned)p[3] << 24; }
+// Reads at file offsets; anything past the end reads as zero, which no valid
+// structure here contains.
+unsigned read16(unsigned at) { return at + 2 <= (unsigned)image_size ? image[at] | image[at + 1] << 8 : 0; }
+unsigned read32(unsigned at) { return at + 4 <= (unsigned)image_size ? read16(at) | read16(at + 2) << 16 : 0; }
 
 bool load_image() {
   if (image)
@@ -35,27 +37,27 @@ bool load_image() {
 
 // The file offset of a relative virtual address, through the section table.
 long file_offset(unsigned rva) {
-  unsigned pe = read32(image + 0x3c);
-  unsigned sections = read16(image + pe + 6), optional = read16(image + pe + 20);
-  const unsigned char *table = image + pe + 24 + optional;
+  unsigned pe = read32(0x3c);
+  unsigned sections = read16(pe + 6), optional = read16(pe + 20);
+  unsigned table = pe + 24 + optional;
   for (unsigned i = 0; i < sections; ++i) {
-    const unsigned char *s = table + i * 40;
+    unsigned s = table + i * 40;
     unsigned va = read32(s + 12), size = read32(s + 8), raw = read32(s + 20);
-    if (rva >= va && rva < va + size)
+    if (rva >= va && rva - va < size && raw + (rva - va) < (unsigned)image_size)
       return raw + (rva - va);
   }
   return -1;
 }
 
-// The entry for an id in a resource directory, or null.
-const unsigned char *find_entry(const unsigned char *root, const unsigned char *directory, unsigned id) {
+// The offset of an id's entry in a resource directory, or 0 for none.
+unsigned find_entry(unsigned root, unsigned directory, unsigned id) {
   unsigned count = read16(directory + 12) + read16(directory + 14);
   for (unsigned i = 0; i < count; ++i) {
-    const unsigned char *entry = directory + 16 + i * 8;
+    unsigned entry = directory + 16 + i * 8;
     if (id == ~0u || read32(entry) == id)
       return root + (read32(entry + 4) & 0x7fffffff);
   }
-  return nullptr;
+  return 0;
 }
 
 } // namespace
@@ -64,21 +66,20 @@ extern "C" {
 HRSRC WINAPI FindResourceA(HMODULE, LPCSTR name, LPCSTR type) {
   if (!load_image())
     return nullptr;
-  unsigned pe = read32(image + 0x3c);
-  unsigned directory_rva = read32(image + pe + 24 + 96 + 2 * 8);
-  long offset = file_offset(directory_rva);
-  if (offset < 0)
+  unsigned pe = read32(0x3c);
+  long root = file_offset(read32(pe + 24 + 96 + 2 * 8));
+  if (root <= 0)
     return nullptr;
-  const unsigned char *root = image + offset;
-  const unsigned char *by_type = find_entry(root, root, (unsigned)(uintptr_t)type);
-  const unsigned char *by_name = by_type ? find_entry(root, by_type, (unsigned)(uintptr_t)name) : nullptr;
-  const unsigned char *by_language = by_name ? find_entry(root, by_name, ~0u) : nullptr;
+  unsigned by_type = find_entry(root, root, (unsigned)(uintptr_t)type);
+  unsigned by_name = by_type ? find_entry(root, by_type, (unsigned)(uintptr_t)name) : 0;
+  unsigned by_language = by_name ? find_entry(root, by_name, ~0u) : 0;
   if (!by_language)
     return nullptr;
   long data = file_offset(read32(by_language));
-  if (data < 0)
+  unsigned size = read32(by_language + 4);
+  if (data < 0 || size > (unsigned long)(image_size - data))
     return nullptr;
-  return (HRSRC) new Resource{image + data, read32(by_language + 4)};
+  return (HRSRC) new Resource{image + data, size};
 }
 HGLOBAL WINAPI LoadResource(HMODULE, HRSRC resource) {
   return resource ? (HGLOBAL)((Resource *)resource)->data : nullptr;

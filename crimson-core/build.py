@@ -9,7 +9,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from adapter import adapt
+from adapter import adapt, session_only
 from data import data_source
 from game import (
     adapt_game,
@@ -22,6 +22,7 @@ from game import (
     game_sources,
     game_third_party,
     object_name,
+    session_seam,
 )
 from rules import apply_patches, load_patches
 
@@ -111,7 +112,8 @@ def main():
     def compile_one(rel):
         src = a.root / rel
         txt = src.read_text()
-        txt = apply_patches(src.stem, adapt(src, txt), hunks)
+        seam = session_seam if a.target == "game" else session_only
+        txt = apply_patches(src.stem, adapt(src, txt, seam), hunks)
         if a.target == "game":
             txt = adapt_game(src, txt)
         dst = a.out / (name(rel) + ".cpp")
