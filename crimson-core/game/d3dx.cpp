@@ -127,16 +127,20 @@ bool decode_bmp(const unsigned char *data, size_t size, Image &image) {
   bool top_down = height < 0;
   if (top_down)
     height = -height;
-  const unsigned char *palette = data + 14 + header;
-  size_t stride = ((size_t)width * bits / 8 + 3) & ~(size_t)3;
-  if (pixels > size || stride * height > size - pixels || header > size || (bits == 8 && 14 + 1024 > size - header) ||
+  // An 8-bit image's palette holds biClrUsed entries, or all 256 when zero;
+  // an index past them reads black.
+  unsigned colors = bits == 8 ? read32(data + 46) ? read32(data + 46) : 256 : 0;
+  unsigned long long stride = ((unsigned long long)width * bits / 8 + 3) & ~3ull;
+  if (colors > 256 || 14ull + header + colors * 4 > size || pixels > size || stride * height > size - pixels ||
       !image.allocate(width, height))
     return false;
+  const unsigned char *palette = data + 14 + header;
+  static const unsigned char black[4] = {};
   for (int y = 0; y < height; ++y) {
     const unsigned char *row = data + pixels + stride * y;
     unsigned *out = image.texels + (top_down ? y : height - 1 - y) * width;
     for (int x = 0; x < width; ++x) {
-      const unsigned char *p = bits == 8 ? palette + row[x] * 4 : row + x * (bits / 8);
+      const unsigned char *p = bits != 8 ? row + x * (bits / 8) : row[x] < colors ? palette + row[x] * 4 : black;
       out[x] = 0xff000000u | p[2] << 16 | p[1] << 8 | p[0];
     }
   }

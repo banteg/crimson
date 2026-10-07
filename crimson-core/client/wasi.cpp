@@ -60,8 +60,11 @@ u32 errno_code() {
 File *file(u32 fd) { return fd < files.size() && (files[fd].fd >= 0 || files[fd].dir) ? &files[fd] : nullptr; }
 
 // The real name of each component, matched case-insensitively under the root.
-// Paths stay inside the game directory: no "..", and no symbolic links.
+// Paths stay inside the game directory: no "..", no symbolic links, and no
+// NUL, which would end a component early for the host's calls.
 bool resolve(const std::string &relative, std::string &path) {
+  if (relative.find('\0') != std::string::npos)
+    return false;
   path = client_game_directory();
   size_t start = 0;
   while (start <= relative.size()) {

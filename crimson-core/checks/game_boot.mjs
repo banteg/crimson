@@ -1,6 +1,7 @@
 // Boots the original game from a game directory (grim.dll and the three PAQs),
 // headless under Node's WASI, then clicks through to a Survival run. Every
-// texture must load and the run must keep drawing.
+// texture must load, the run must keep drawing, and losing and regaining the
+// window mid-run must suspend and resume it.
 //
 //   node crimson-core/checks/game_boot.mjs <game directory> [game.wasm]
 import fs from "node:fs";
@@ -65,6 +66,8 @@ for (let frame = 1; frame <= 3000; frame++) {
     ++step;
     settled = 0;
   }
+  if (frame === 2500) game.game_activate(0);
+  if (frame === 2510) game.game_activate(1);
   clock += 16;
   if (!game.game_frame()) throw Error(`the game quit at frame ${frame}`);
   if (game.game_state() === 9) ++playing; // game_state_id_t's gameplay screen

@@ -17,8 +17,9 @@ long image_size;
 
 // Reads at file offsets; anything past the end reads as zero, which no valid
 // structure here contains.
-unsigned read16(unsigned at) { return at + 2 <= (unsigned)image_size ? image[at] | image[at + 1] << 8 : 0; }
-unsigned read32(unsigned at) { return at + 4 <= (unsigned)image_size ? read16(at) | read16(at + 2) << 16 : 0; }
+bool inside(unsigned at, unsigned long long size) { return at + size <= (unsigned long long)image_size; }
+unsigned read16(unsigned at) { return inside(at, 2) ? image[at] | image[at + 1] << 8 : 0; }
+unsigned read32(unsigned at) { return inside(at, 4) ? read16(at) | read16(at + 2) << 16 : 0; }
 
 bool load_image() {
   if (image)
@@ -43,7 +44,7 @@ long file_offset(unsigned rva) {
   for (unsigned i = 0; i < sections; ++i) {
     unsigned s = table + i * 40;
     unsigned va = read32(s + 12), size = read32(s + 8), raw = read32(s + 20);
-    if (rva >= va && rva - va < size && raw + (rva - va) < (unsigned)image_size)
+    if (rva >= va && rva - va < size && inside(raw, rva - va + 1ull))
       return raw + (rva - va);
   }
   return -1;
