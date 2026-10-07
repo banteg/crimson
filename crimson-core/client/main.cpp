@@ -305,6 +305,13 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
     // The game polls button state once a frame, so a tap shorter than a frame
     // (a touchpad's) still shows for two before letting go (SDL_AppIterate).
     bool down = event->type == SDL_EVENT_MOUSE_BUTTON_DOWN;
+    // A button released while the window was away still reads as held to SDL,
+    // which then drops the next press: its release arrives alone, as a tap.
+    if (!down && !held[button] && !hold_frames[button]) {
+      input()->mouse_buttons[button] = 0x80;
+      hold_frames[button] = 2;
+      break;
+    }
     held[button] = down;
     if (down)
       hold_frames[button] = 2;

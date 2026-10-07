@@ -159,7 +159,8 @@ hidden, and when the game quits ([`client/web/shell.html`](client/web/shell.html
 One tab at a time owns the directory (a Web Lock), since IndexedDB takes each
 sync as the whole tree and a stale tab would write over newer saves. As in the
 original, settings changed in the options reach the disk when the game quits.
-It needs no threads, so no cross-origin isolation.
+It needs a secure context (HTTPS or localhost) for the lock, and no threads, so
+no cross-origin isolation.
 
 ## Plan
 

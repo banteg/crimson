@@ -66,7 +66,12 @@
       FS.mount(IDBFS, {}, "/game");
       addRunDependency("game files");
       // One tab owns the directory: another would write its stale copy over
-      // this one's saves. The lock lasts as long as the page.
+      // this one's saves. The lock lasts as long as the page. Web Locks exist
+      // only in secure contexts: HTTPS, or localhost.
+      if (!navigator.locks) {
+        status.textContent = "Crimsonland needs HTTPS (or localhost) to keep its saves.";
+        return;
+      }
       navigator.locks.request("crimsonland /game", { ifAvailable: true }, (lock) => {
         if (!lock) {
           status.textContent = "Crimsonland is already open in another tab.";
@@ -80,7 +85,7 @@
           (error) => (status.textContent = "Could not load the game files: " + (error.message ?? error)),
         );
         return new Promise(() => {});
-      });
+      }).catch((error) => (status.textContent = "Could not open the game files: " + (error.message ?? error)));
     }],
     printErr: (text) => console.warn(text),
     // The game quit (client/main.cpp) after writing its settings and scores.
