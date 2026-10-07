@@ -90,7 +90,17 @@ export async function boardView(env: Env, board: Board, quest: string, limit: nu
     board,
     quest,
     title: boardTitle(board, quest),
-    rows: results.map((row, i) => ({ rank: i + 1, run: row.id, score: row.score, player: who.get(row.account_id)! })),
+    rows: results.map((row, i) => {
+      const result = JSON.parse(row.result) as RunResult;
+      return {
+        rank: i + 1,
+        run: row.id,
+        score: row.score,
+        elapsed_ms: result.elapsed_ms,
+        most_used_weapon_id: result.players[0]!.most_used_weapon_id,
+        player: who.get(row.account_id)!,
+      };
+    }),
   };
 }
 

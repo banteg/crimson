@@ -1,7 +1,8 @@
 import { env, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { concat, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256 } from "../../src/crypto";
-import { inflateReplay } from "../../src/replay";
+import { decodeReplay, inflateReplay } from "../../src/replay";
+import type { BoardView } from "../../src/api-types";
 import vectors from "../vectors.json";
 
 const ORIGIN = "https://crimson.land";
@@ -48,6 +49,17 @@ describe("runs", () => {
     expect(await env.REPLAYS.head(`runs/${run.id}.crd`)).not.toBeNull();
     const stored = await env.DB.prepare("SELECT client, platform FROM runs WHERE id = ?").bind(run.id).first();
     expect(stored).toMatchObject({ client: "crimson", platform: expect.stringMatching(/^[a-z]+-[a-z0-9_]+$/) });
+
+    const board = (await (await SELF.fetch(`${ORIGIN}/api/boards/survival`)).json()) as BoardView;
+    const result = decodeReplay(inflateReplay(decode64(vectors.ranked_run))).result;
+    expect(board.rows).toHaveLength(1);
+    expect(board.rows[0]).toMatchObject({
+      rank: 1,
+      run: run.id,
+      score: 749,
+      elapsed_ms: result.elapsed_ms,
+      most_used_weapon_id: result.players[0]!.most_used_weapon_id,
+    });
   });
 
   it("the game reads a board's runs as high score records", async () => {
@@ -120,4 +132,3 @@ describe("site login", () => {
     expect((await post("/api/auth/login", { public_key: player.publicKey, challenge, signature })).status).toBe(401);
   });
 });
-

@@ -55,6 +55,11 @@ a{color:var(--row-on)}a:hover{color:#8fd3ff}
   background:url(/ui/wires.png) no-repeat}}
 table{width:100%;border-collapse:collapse}td,th{padding:2px 6px;text-align:left}tr+tr td{border-top:1px solid #151515}
 th{color:var(--dim);font-weight:400}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.board-table{overflow-x:auto}
+.weapon{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+/* ui_wicons uses an 8 by 8 grid, with two cells per weapon (ui/hud.py weapon_icon_src).
+   Show its 64 by 32 game icons at half size; weapons outside the sheet have only their name. */
+.weapon-icon{display:inline-block;flex:none;width:32px;height:16px;background:url(/ui/weapons.png) 0 0/128px 128px no-repeat}
 .muted{color:var(--dim)}
 img.avatar{width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:6px}img.avatar.heading{width:36px;height:36px}
 a.name{color:#fff;text-decoration:none}a.name:hover{color:var(--row-on)}

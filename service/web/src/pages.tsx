@@ -3,6 +3,7 @@ import type { Board, BoardView, JoinView, ProfileView, QuestMenuView } from "../
 import { get, post } from "./api";
 import { GameButton } from "./button";
 import { PlayerName, PROVIDER_LABELS } from "./players";
+import weaponData from "./weapons.json";
 
 // What a route shows once its data has arrived: the page title, the quest whose terrain the ground shows (null for
 // the game's random terrain), and its panels, which slide in one after another.
@@ -43,38 +44,68 @@ function formatScore(board: Board, score: number): string {
 }
 
 const BOARD_NAMES: Record<Board, string> = { survival: "Survival", quests: "Quests", "quests-hardcore": "Quests, hardcore" };
+const WEAPONS: Record<string, { name: string; icon_index: number }> = weaponData;
+
+function formatDuration(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function Weapon(props: { id: number }) {
+  const weapon = () => WEAPONS[props.id];
+  return (
+    <span class="weapon">
+      <Show when={weapon() && weapon()!.icon_index < 32}>
+        <span
+          class="weapon-icon"
+          aria-hidden="true"
+          style={{ "background-position": `${-(weapon()!.icon_index % 4) * 32}px ${-Math.floor(weapon()!.icon_index / 4) * 16}px` }}
+        />
+      </Show>
+      {weapon()?.name ?? "Unknown"}
+    </span>
+  );
+}
 
 function BoardTable(props: { view: BoardView }) {
   return (
     <Show when={props.view.rows.length} fallback={<p class="muted">No runs yet.</p>}>
-      <table>
-        <thead>
-          <tr>
-            <th class="n">#</th>
-            <th>Player</th>
-            <th class="n">Score</th>
-            <th>Replay</th>
-          </tr>
-        </thead>
-        <tbody>
-          <For each={props.view.rows}>
-            {(row) => (
-              <tr>
-                <td class="n">{row.rank}</td>
-                <td>
-                  <PlayerName player={row.player} />
-                </td>
-                <td class="n">{formatScore(props.view.board, row.score)}</td>
-                <td>
-                  <a href={`/runs/${row.run}.crd`} data-native>
-                    .crd
-                  </a>
-                </td>
-              </tr>
-            )}
-          </For>
-        </tbody>
-      </table>
+      <div class="board-table">
+        <table>
+          <thead>
+            <tr>
+              <th class="n">#</th>
+              <th>Player</th>
+              <th class="n">Score</th>
+              <th class="n">Duration</th>
+              <th title="Most used weapon by time equipped">Weapon</th>
+              <th>Replay</th>
+            </tr>
+          </thead>
+          <tbody>
+            <For each={props.view.rows}>
+              {(row) => (
+                <tr>
+                  <td class="n">{row.rank}</td>
+                  <td>
+                    <PlayerName player={row.player} />
+                  </td>
+                  <td class="n">{formatScore(props.view.board, row.score)}</td>
+                  <td class="n">{formatDuration(row.elapsed_ms)}</td>
+                  <td>
+                    <Weapon id={row.most_used_weapon_id} />
+                  </td>
+                  <td>
+                    <a href={`/runs/${row.run}.crd`} data-native>
+                      .crd
+                    </a>
+                  </td>
+                </tr>
+              )}
+            </For>
+          </tbody>
+        </table>
+      </div>
     </Show>
   );
 }

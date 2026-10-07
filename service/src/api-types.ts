@@ -25,6 +25,8 @@ export interface BoardRow {
   rank: number;
   run: string;
   score: number;
+  elapsed_ms: number;
+  most_used_weapon_id: number;
   player: PlayerView;
 }
 

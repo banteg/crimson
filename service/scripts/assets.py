@@ -35,6 +35,7 @@ def main() -> None:
     panel = image("ui/ui_menuPanel.tga")
     outputs = {
         "sign.png": image("ui/ui_signCrimson.tga"),
+        "weapons.png": image("ui/ui_wicons.tga" if "ui/ui_wicons.tga" in entries else "ui/ui_wicons.jaz"),
         "panel.png": panel.crop(PANEL_FRAME),
         "wires.png": panel.crop(PANEL_WIRES),
         "check-on.png": image("ui/ui_checkOn.tga"),

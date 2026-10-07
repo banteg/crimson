@@ -1,0 +1,170 @@
+{
+ "1": {
+  "name": "Pistol",
+  "icon_index": 0
+ },
+ "2": {
+  "name": "Assault Rifle",
+  "icon_index": 1
+ },
+ "3": {
+  "name": "Shotgun",
+  "icon_index": 2
+ },
+ "4": {
+  "name": "Sawed-off Shotgun",
+  "icon_index": 3
+ },
+ "5": {
+  "name": "Submachine Gun",
+  "icon_index": 4
+ },
+ "6": {
+  "name": "Gauss Gun",
+  "icon_index": 5
+ },
+ "7": {
+  "name": "Mean Minigun",
+  "icon_index": 6
+ },
+ "8": {
+  "name": "Flamethrower",
+  "icon_index": 7
+ },
+ "9": {
+  "name": "Plasma Rifle",
+  "icon_index": 8
+ },
+ "10": {
+  "name": "Multi-Plasma",
+  "icon_index": 9
+ },
+ "11": {
+  "name": "Plasma Minigun",
+  "icon_index": 10
+ },
+ "12": {
+  "name": "Rocket Launcher",
+  "icon_index": 11
+ },
+ "13": {
+  "name": "Seeker Rockets",
+  "icon_index": 12
+ },
+ "14": {
+  "name": "Plasma Shotgun",
+  "icon_index": 13
+ },
+ "15": {
+  "name": "Blow Torch",
+  "icon_index": 14
+ },
+ "16": {
+  "name": "HR Flamer",
+  "icon_index": 15
+ },
+ "17": {
+  "name": "Mini-Rocket Swarmers",
+  "icon_index": 16
+ },
+ "18": {
+  "name": "Rocket Minigun",
+  "icon_index": 17
+ },
+ "19": {
+  "name": "Pulse Gun",
+  "icon_index": 18
+ },
+ "20": {
+  "name": "Jackhammer",
+  "icon_index": 19
+ },
+ "21": {
+  "name": "Ion Rifle",
+  "icon_index": 20
+ },
+ "22": {
+  "name": "Ion Minigun",
+  "icon_index": 21
+ },
+ "23": {
+  "name": "Ion Cannon",
+  "icon_index": 22
+ },
+ "24": {
+  "name": "Shrinkifier 5k",
+  "icon_index": 23
+ },
+ "25": {
+  "name": "Blade Gun",
+  "icon_index": 24
+ },
+ "26": {
+  "name": "Spider Plasma",
+  "icon_index": 25
+ },
+ "27": {
+  "name": "Evil Scythe",
+  "icon_index": 25
+ },
+ "28": {
+  "name": "Plasma Cannon",
+  "icon_index": 25
+ },
+ "29": {
+  "name": "Splitter Gun",
+  "icon_index": 28
+ },
+ "30": {
+  "name": "Gauss Shotgun",
+  "icon_index": 30
+ },
+ "31": {
+  "name": "Ion Shotgun",
+  "icon_index": 31
+ },
+ "32": {
+  "name": "Flameburst",
+  "icon_index": 29
+ },
+ "33": {
+  "name": "RayGun",
+  "icon_index": 30
+ },
+ "41": {
+  "name": "Plague Sphreader Gun",
+  "icon_index": 40
+ },
+ "42": {
+  "name": "Bubblegun",
+  "icon_index": 41
+ },
+ "43": {
+  "name": "Rainbow Gun",
+  "icon_index": 42
+ },
+ "44": {
+  "name": "Grim Weapon",
+  "icon_index": 43
+ },
+ "45": {
+  "name": "Fire bullets",
+  "icon_index": 44
+ },
+ "50": {
+  "name": "Transmutator",
+  "icon_index": 49
+ },
+ "51": {
+  "name": "Blaster R-300",
+  "icon_index": 50
+ },
+ "52": {
+  "name": "Lighting Rifle",
+  "icon_index": 51
+ },
+ "53": {
+  "name": "Nuke Launcher",
+  "icon_index": 52
+ }
+}
