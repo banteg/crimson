@@ -1,3 +1,4 @@
+#ifndef CRIMSON_GAME
 void IGrim2D_cpp::grim_bind_texture(int handle, int stage) {}
 void IGrim2D_cpp::grim_draw_fullscreen_quad(int unused) {}
 void IGrim2D_cpp::grim_draw_fullscreen_color(float r, float g, float b,
@@ -37,6 +38,7 @@ void IGrim2D_cpp::grim_draw_quad_points(float x0, float y0, float x1, float y1,
                                         float y3) {}
 void IGrim2D_cpp::grim_draw_text_mono_fmt(float x, float y, char *fmt, ...) {}
 void IGrim2D_cpp::grim_draw_text_small_fmt(float x, float y, char *fmt, ...) {}
+#endif
 class HeadlessGrim final : public IGrim2D_cpp {
 public:
   void grim_release(void) override {}

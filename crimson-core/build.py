@@ -11,6 +11,7 @@ from pathlib import Path
 
 from adapter import adapt
 from data import data_source
+from game import adapt_game, com_defaults, game_headers, game_platform, game_sources, object_name
 from rules import apply_patches, load_patches
 
 HERE = Path(__file__).resolve().parent
@@ -20,7 +21,7 @@ HOST = HERE / "host"
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--root", type=Path, default=HERE.parent)
-    p.add_argument("--target", choices=["native", "wasm"], default="native")
+    p.add_argument("--target", choices=["native", "wasm", "game"], default="native")
     p.add_argument("--out", type=Path)
     a = p.parse_args()
     a.out = (a.out or HERE / "build" / a.target).resolve()
@@ -38,6 +39,10 @@ def main():
         "#include <stdint.h>\ntypedef int16_t ogg_int16_t; typedef uint16_t ogg_uint16_t; typedef int32_t ogg_int32_t; typedef uint32_t ogg_uint32_t; typedef int64_t ogg_int64_t;\n",
     )
     (headers / "new.h").write_text("#include <new>\n")
+    wasm = a.target != "native"
+    if a.target == "game":
+        game_headers(headers)
+        com_defaults(a.root, headers)
     schema = json.loads((HERE / "schema.json").read_text())
     lines = []
     for group in schema:
@@ -52,12 +57,12 @@ def main():
         else:
             lines.extend(f"put({f});" for f in group["fields"])
     (headers / "snapshot.inc").write_text("\n".join(lines) + "\n")
-    data_source(a.root, a.out)
+    data_source(a.root, a.out, grim=a.target == "game")
     env = dict(os.environ, ZIG_GLOBAL_CACHE_DIR=str(a.out / "zig-global"), ZIG_LOCAL_CACHE_DIR=str(a.out / "zig-local"))
     zig = shutil.which("zig")
     if not zig or subprocess.check_output([zig, "version"], text=True).strip() != "0.17.0":
         raise SystemExit("The shared math adapter requires Zig 0.17.0")
-    cc = ["clang++"] if a.target == "native" else [zig, "c++", "-target", "wasm32-wasi"]
+    cc = [zig, "c++", "-target", "wasm32-wasi"] if wasm else ["clang++"]
     flags = [
         "-g",
         "-std=c++17",
@@ -73,13 +78,17 @@ def main():
         "-Wno-address-of-temporary",
         "-Wno-deprecated-register",
         "-Wno-int-to-pointer-cast",
+        *(["-DCRIMSON_GAME", "-I" + str(HERE / "game/include")] if a.target == "game" else []),
         "-I" + str(HOST),
         "-I" + str(headers),
         "-I" + str(a.root / "third_party/headers"),
     ]
-    if a.target == "native" and os.uname().sysname == "Darwin":
+    if not wasm and os.uname().sysname == "Darwin":
         flags.append("-mmacosx-version-min=11.0")
     sources = json.loads((HERE / "sources.json").read_text())
+    if a.target == "game":
+        sources += game_sources(a.root)
+    name = object_name if a.target == "game" else lambda rel: Path(rel).stem
 
     hunks = load_patches()
     if missing := sorted(set(hunks) - {Path(rel).stem for rel in sources}):
@@ -89,9 +98,11 @@ def main():
         src = a.root / rel
         txt = src.read_text()
         txt = apply_patches(src.stem, adapt(src, txt), hunks)
-        dst = a.out / (src.stem + ".cpp")
+        if a.target == "game":
+            txt = adapt_game(src, txt)
+        dst = a.out / (name(rel) + ".cpp")
         dst.write_text(f'#line 1 "{src}"\n' + txt)
-        obj = a.out / (src.stem + ".o")
+        obj = a.out / (name(rel) + ".o")
         proc = subprocess.run(
             cc + flags + ["-c", str(dst), "-o", str(obj)],
             env=env,
@@ -109,10 +120,10 @@ def main():
     print(f"{len(sources) - len(errors)}/{len(sources)} compiled; errors: {a.out / 'errors.txt'}")
     if errors:
         raise SystemExit(1)
-    for name in ["data.cpp", "host.cpp"]:
-        src = a.out / name if name == "data.cpp" else HOST / name
+    glue = [a.out / "data.cpp", HOST / "host.cpp", *(game_platform() if a.target == "game" else [])]
+    for src in glue:
         proc = subprocess.run(
-            cc + flags + ["-c", str(src), "-o", str(a.out / (Path(name).stem + ".o"))],
+            cc + flags + ["-c", str(src), "-o", str(a.out / (src.stem + ".o"))],
             env=env,
             capture_output=True,
             text=True,
@@ -141,7 +152,7 @@ def main():
         "-Mrt=" + str(a.out / "runtime_bridge.zig"),
         "-femit-bin=" + str(a.out / "math.o"),
     ]
-    if a.target == "wasm":
+    if wasm:
         mathcmd[2:2] = ["-target", "wasm32-wasi"]
     elif os.uname().sysname != "Darwin":
         # Linux clang links PIE executables by default. The imported compiler
@@ -150,21 +161,18 @@ def main():
     elif os.uname().sysname == "Darwin":
         mathcmd[2:2] = ["-target", "aarch64-macos.11.0" if os.uname().machine == "arm64" else "x86_64-macos.11.0"]
     subprocess.run(mathcmd, env=env, check=True)
-    objs = [str(a.out / (Path(f).stem + ".o")) for f in sources] + [
-        str(a.out / "data.o"),
-        str(a.out / "host.o"),
-        str(a.out / "math.o"),
-    ]
+    objs = [str(a.out / (name(f) + ".o")) for f in sources] + [str(a.out / (src.stem + ".o")) for src in glue]
+    objs.append(str(a.out / "math.o"))
     link = (
         cc
-        + (["-mmacosx-version-min=11.0"] if a.target == "native" and os.uname().sysname == "Darwin" else [])
+        + (["-mmacosx-version-min=11.0"] if not wasm and os.uname().sysname == "Darwin" else [])
         + objs
-        + ["-o", str(a.out / ("core.wasm" if a.target == "wasm" else "core"))]
+        + ["-o", str(a.out / {"native": "core", "wasm": "core.wasm", "game": "game.wasm"}[a.target])]
     )
-    if a.target == "wasm":
+    if wasm:
         link += [
             "-mexec-model=reactor",
-            "-Wl,--strip-debug",
+            *(["-Wl,--strip-debug"] if a.target == "wasm" else []),
             "-Wl,--export=portable_init",
             "-Wl,--export=portable_step",
             "-Wl,--export=portable_snapshot",
@@ -187,7 +195,7 @@ def main():
     (a.out / "link.log").write_text(proc.stderr)
     if proc.returncode:
         print(proc.stderr[-12000:])
-    if a.target == "wasm" and "function signature mismatch" in proc.stderr:
+    if wasm and "function signature mismatch" in proc.stderr:
         raise SystemExit("WASM ABI warning; see link.log")
     raise SystemExit(proc.returncode)
 

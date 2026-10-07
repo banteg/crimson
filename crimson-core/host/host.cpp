@@ -66,10 +66,18 @@ void quest_start_selected(int, int);
 void perks_generate_choices();
 void perk_apply(int);
 }
+#ifdef CRIMSON_GAME
+#include "game.inc"
+#endif
 static cvar_float_t friendly, transparency, verbose, pad_distance, bodies_fade;
 // Device output does not consume gameplay RNG. Music selection keeps the
 // recovered implementation.
 extern "C" int crt_rand() {
+#ifdef CRIMSON_GAME
+  // Gameplay RNG belongs to run start and ticks; presentation must not draw it.
+  if (!game_ticking)
+    abort();
+#endif
   rng = rng * 214013u + 2531011u;
   return (rng >> 16) & 0x7fff;
 }
@@ -102,8 +110,10 @@ extern "C" unsigned char game_is_full_version() { return 1; }
 extern "C" void game_save_status() {}
 extern "C" void game_state_set(game_state_id_t s) { game_state_pending = s; }
 extern "C" void demo_mode_start() { abort(); }
+#ifndef CRIMSON_GAME
 extern "C" void sfx_play(int, float) {}
 extern "C" int sfx_play_panned(int, const vec2f_t *, float) { return 0; }
+#endif
 extern "C" int sfx_entry_start_playback(music_entry_t *) { return 1; }
 extern "C" void sfx_entry_set_volume(music_entry_t *, float) {}
 extern "C" bool input_primary_just_pressed() { return (in.flags & 2) != 0; }
@@ -130,13 +140,17 @@ extern "C" vec2f_t *__stdcall D3DXVec2Normalize(vec2f_t *out,
 }
 // Presentation passes still called by recovered gameplay orchestration; guards
 // are in gameplay_render_world.
+#ifndef CRIMSON_GAME
 extern "C" void terrain_render() {}
+#endif
 extern "C" void tutorial_timeline_update() { abort(); }
+#ifndef CRIMSON_GAME
 extern "C" void perk_prompt_update_and_render() {}
 extern "C" void ui_render_aim_indicators() {}
 extern "C" void hud_update_and_render() {}
 extern "C" void ui_elements_update_and_render() {}
 extern "C" void ui_cursor_render() {}
+#endif
 extern "C" void demo_trial_overlay_render(float *, float) { abort(); }
 extern "C" void ui_render_keybind_help(float *, float) {}
 static bool run_ended() {
@@ -225,6 +239,9 @@ static void trace_init(const char *stage) {
 #endif
 }
 extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
+#ifdef CRIMSON_GAME
+  GameTick game_tick;
+#endif
   trace_init("begin");
   ready = false;
   if (cfg.detail > 5 || cfg.unlock > 50 || cfg.unlock_full > 50 ||
@@ -253,6 +270,9 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   shock_chain_projectile_id = portable_preserve_bugs ? 0 : -1;
   perk_lean_mean_exp_tick_timer_s = 0;
   in = {0, 0, 512, 512, 0};
+#ifdef CRIMSON_GAME
+  game_init_run();
+#else
   grim_interface_ptr = &headless_grim;
   friendly.value = cfg.friendly_fire ? 1 : 0;
   transparency.value = 0.8f;
@@ -266,6 +286,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   cv_verbose = &verbose;
   extern cvar_float_t *cv_padAimDistMul;
   cv_padAimDistMul = &pad_distance;
+#endif
   config_blob.player_count = 1;
   config_blob.game_mode = (game_mode_id_t)mode;
   config_blob.texture_scale = 1;
@@ -359,6 +380,9 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
 // The menu request is consumed at the recovered mid-tick prompt. Picks run
 // in order in the between-tick prelude, as they do in the current replay API.
 extern "C" int portable_step_many(uint32_t count) {
+#ifdef CRIMSON_GAME
+  GameTick game_tick;
+#endif
   if (!ready || count > 16 || run_down_ms < 0)
     return 0;
   // Replay input flags (src/crimson/replay/types.py): buttons and held keys,

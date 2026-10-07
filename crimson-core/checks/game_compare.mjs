@@ -1,0 +1,112 @@
+// Steps the game module and the verifier core in lockstep over the same input
+// streams and compares every snapshot field, except presentation state the
+// verifier never advances.
+import fs from "node:fs";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { CORE, decode, init, loadCore, names, state, step } from "./engine.mjs";
+
+// Fields only presentation code writes; the verifier stubs that code.
+export const PRESENTATION = new Set(
+  names.filter((n) => /^globals\.player_weapon_popup_timer\[/.test(n)),
+);
+
+// game_state_id_t: game over, quest results, quest failed, and the idle sentinel.
+const TERMINAL = new Set([0x07, 0x08, 0x0c]);
+const IDLE = 0x19;
+
+export function loadGame(wasm) {
+  const module = new WebAssembly.Module(fs.readFileSync(wasm));
+  let memory;
+  // Headless, the module performs no I/O; any WASI call is a defect.
+  const wasi = Object.fromEntries(
+    WebAssembly.Module.imports(module)
+      .filter((i) => i.module === "wasi_snapshot_preview1")
+      .map((i) => [
+        i.name,
+        (...args) => {
+          if (i.name === "fd_write") {
+            const [, iovs, count, written] = args;
+            const view = new DataView(memory.buffer);
+            let total = 0;
+            for (let k = 0; k < count; k++) total += view.getUint32(iovs + k * 8 + 4, true);
+            view.setUint32(written, total, true);
+            return 0;
+          }
+          // libc probes for preopened directories at start: there are none.
+          if (i.name === "fd_prestat_get") return 8;
+          throw Error(`game module called WASI ${i.name}`);
+        },
+      ]),
+  );
+  const text = (address) => {
+    const bytes = new Uint8Array(memory.buffer, address);
+    return Buffer.from(bytes.subarray(0, bytes.indexOf(0))).toString("latin1");
+  };
+  // A headless host: no assets, and a clock that only moves when read.
+  let clock = 0;
+  const host = Object.fromEntries(
+    WebAssembly.Module.imports(module)
+      .filter((i) => i.module === "host")
+      .map((i) => [
+        i.name,
+        {
+          fatal: (message) => {
+            throw Error(`game module: ${text(message)}`);
+          },
+          time_ms: () => (clock += 2),
+          file_size: () => -1,
+        }[i.name] ??
+          (() => {
+            throw Error(`headless game module called host ${i.name}`);
+          }),
+      ]),
+  );
+  const e = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi, host }).exports;
+  memory = e.memory;
+  e._initialize();
+  return e;
+}
+
+export function compareStream(input, core, game) {
+  const run = decode(input);
+  init(core, run.config);
+  init(game, run.config);
+  for (let tick = -1; tick < run.records.length; tick++) {
+    if (tick >= 0) {
+      const accepted = [step(core, run.records[tick]), step(game, run.records[tick])];
+      if (accepted[0] !== accepted[1]) return { tick, field: "accepted", core: accepted[0], game: accepted[1] };
+      if (!accepted[0]) return { ticks: tick, rejected: true };
+    }
+    const expected = state(core),
+      actual = state(game);
+    for (let i = 0; i < names.length; i++) {
+      if (PRESENTATION.has(names[i])) continue;
+      const a = expected.readUInt32LE(i * 4),
+        b = actual.readUInt32LE(i * 4);
+      if (a === b) continue;
+      // When the run-down ends, the recovered UI timeline hands the terminal
+      // state to game_state_set and clears the pending one; the verifier stops
+      // there instead. Both must then refuse the next tick.
+      if (names[i] === "globals.game_state_pending" && TERMINAL.has(a) && b === IDLE) continue;
+      return { tick, field: names[i], core: a, game: b };
+    }
+  }
+  return { ticks: run.records.length };
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const [coreWasm, gameWasm, ...streams] = process.argv.slice(2);
+  const core = loadCore(coreWasm ?? new URL("build/wasm/core.wasm", CORE));
+  const game = loadGame(gameWasm ?? new URL("build/game/game.wasm", CORE));
+  const files = streams.length
+    ? streams
+    : fs.readdirSync(new URL("build/fixtures", CORE)).map((f) => path.join(new URL("build/fixtures", CORE).pathname, f));
+  let failed = 0;
+  for (const file of files) {
+    const result = compareStream(fs.readFileSync(file), core, game);
+    if (result.field) failed++;
+    console.log(path.basename(file), JSON.stringify(result));
+  }
+  process.exitCode = failed ? 1 : 0;
+}
