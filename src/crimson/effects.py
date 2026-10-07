@@ -11,9 +11,10 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import CallerStatic, CrandLike
 
-from .collision_math import creature_find_in_radius
 from .creatures.damage import creature_apply_damage
 from .creatures.damage_types import CreatureDamageType
+from .creatures.lifecycle import creature_lifecycle_is_collidable
+from .creatures.spatial_hash import CreatureSpatialHash
 from .effects_atlas import EffectId
 from .math_parity import (
     NATIVE_HALF_PI,
@@ -210,6 +211,7 @@ class ParticlePool:
         rng = step_runtime.world.state.rng
 
         expired: list[int] = []
+        creature_spatial: CreatureSpatialHash | None = None
 
         for idx, entry in enumerate(self._entries):
             if not entry.active:
@@ -272,8 +274,13 @@ class ParticlePool:
             # Native only updates color_r/color_g; color_b stays at its spawn value (1.0).
 
             if entry.in_flight:
-                hit_idx = creature_find_in_radius(
-                    creatures, pos=entry.pos, radius=max(float(entry.intensity), 0.0) * 8.0, start_index=0,
+                if creature_spatial is None:
+                    creature_spatial = CreatureSpatialHash(
+                        pool=step_runtime.world.creatures,
+                        is_collidable=lambda c: c.active and creature_lifecycle_is_collidable(c.death_timer),
+                    )
+                hit_idx = creature_spatial.find_in_radius(
+                    pos=entry.pos, radius=max(float(entry.intensity), 0.0) * 8.0,
                 )
                 if hit_idx != -1:
                     entry.in_flight = False

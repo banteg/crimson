@@ -12,6 +12,7 @@ from ...collision_math import within_native_find_radius
 from ...creatures.damage import creature_apply_damage
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
+from ...creatures.spatial_hash import CreatureSpatialHash
 from ...effects import SpriteEffectPool
 from ...effects_atlas import EffectId
 from ...math_parity import (
@@ -32,7 +33,6 @@ from ..types import (
     SecondaryProjectileTypeId,
 )
 from .collision import creature_find_nearest_alive
-from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState

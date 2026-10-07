@@ -9,10 +9,10 @@ import msgspec
 
 from grim.geom import Vec2
 
-from ...collision_math import native_find_size_margin
+from ..collision_math import native_find_size_margin, within_native_find_radius
 
 if TYPE_CHECKING:
-    from ...creatures.runtime import CreaturePool, CreatureState
+    from .runtime import CreaturePool, CreatureState
 
 _SPATIAL_BUCKET_SIZE = 64.0
 _NATIVE_FIND_RADIUS_MARGIN_EPS = 0.001
@@ -114,6 +114,16 @@ class CreatureSpatialHash(msgspec.Struct):
         cell_x = int(math.floor(float(pos.x) / self.bucket_size))
         cell_y = int(math.floor(float(pos.y) / self.bucket_size))
         return (cell_x, cell_y)
+
+    def find_in_radius(self, *, pos: Vec2, radius: float) -> int:
+        """First live collidable slot, in native pool order."""
+        for index in self.candidate_indices(pos=pos, radius=radius):
+            creature = self.creatures[index]
+            if self.is_collidable(creature) and within_native_find_radius(
+                origin=pos, target=creature.pos, radius=radius, target_size=creature.size,
+            ):
+                return index
+        return -1
 
     def _remove_from_cell(self, index: int, cell: tuple[int, int]) -> None:
         bucket = self._cells.get(cell)

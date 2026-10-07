@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from ..effects import EffectPool
     from ..sim.world_state import WorldStepRuntime
     from .runtime import CreatureState
+    from .spatial_hash import CreatureSpatialHash
 
 _CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[SfxId, ...]] = {
     CreatureTypeId.ZOMBIE: (
@@ -216,11 +217,29 @@ def creatures_apply_radius_damage(
     radius: float,
     damage: float,
     damage_type: int,
+    *,
+    creature_spatial: CreatureSpatialHash,
 ) -> None:
     """Port of `creatures_apply_radius_damage`: damage every collidable creature touching the circle."""
 
-    for creature_idx, creature in enumerate(step_runtime.world.creatures.entries):
-        if not creature.active or not creature_lifecycle_is_collidable(creature.death_timer):
-            continue
-        if within_native_find_radius(origin=pos, target=creature.pos, radius=radius, target_size=creature.size):
+    pool = step_runtime.world.creatures
+    next_index = 0
+    while True:
+        allocation_count = pool.alloc_count
+        for creature_idx in creature_spatial.candidate_indices(pos=pos, radius=radius):
+            if creature_idx < next_index:
+                continue
+            next_index = creature_idx + 1
+            creature = pool.entries[creature_idx]
+            if not creature.active or not creature_lifecycle_is_collidable(creature.death_timer):
+                continue
+            if not within_native_find_radius(origin=pos, target=creature.pos, radius=radius, target_size=creature.size):
+                continue
             creature_apply_damage(step_runtime, creature_idx, damage, damage_type, Vec2())
+            creature_spatial.sync_index(creature_idx)
+            if pool.alloc_count != allocation_count:
+                # Native reaches split children only if their slots are later
+                # than the parent. Refresh buckets and resume after this slot.
+                break
+        else:
+            return
