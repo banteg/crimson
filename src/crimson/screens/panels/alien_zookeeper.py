@@ -15,7 +15,7 @@ from grim.fonts.small import (
     draw_small_text,
 )
 from grim.geom import Rect, Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from grim.sfx import play_sfx
 from grim.sfx_map import SfxId
 
@@ -71,7 +71,7 @@ class _AzkLayout(msgspec.Struct):
 
 
 def _to_color(r: float, g: float, b: float, a: float) -> rl.Color:
-    return rl.Color(
+    return rl_color(
         int(max(0.0, min(1.0, r)) * 255.0 + 0.5),
         int(max(0.0, min(1.0, g)) * 255.0 + 0.5),
         int(max(0.0, min(1.0, b)) * 255.0 + 0.5),
@@ -324,7 +324,7 @@ class AlienZooKeeperView(MenuScreen):
         score_text = _LABEL_SCORE % int(self._score)
         draw_small_text(font, score_text, Vec2(layout.score_x, layout.score_y), _to_color(1.0, 1.0, 1.0, 0.7))
 
-        board_bg = rl.Rectangle(layout.board_x, layout.board_y, layout.board_size, layout.board_size)
+        board_bg = rl_rectangle(layout.board_x, layout.board_y, layout.board_size, layout.board_size)
         rl.draw_rectangle_rec(board_bg, _to_color(0.0, 0.0, 0.0, 0.6))
         grim_draw_rect_outline(Vec2(board_bg.x, board_bg.y), board_bg.width, board_bg.height, rl.WHITE)
 
@@ -335,7 +335,7 @@ class AlienZooKeeperView(MenuScreen):
         timer_y = layout.board_y + 200.0
         timer_fill_w = float(timer_value)
         rl.draw_rectangle_rec(
-            rl.Rectangle(layout.board_x, timer_y, timer_fill_w, timer_h),
+            rl_rectangle(layout.board_x, timer_y, timer_fill_w, timer_h),
             _to_color(0.2, 0.6, 1.0, 0.6),
         )
         grim_draw_rect_outline(Vec2(layout.board_x, timer_y), layout.board_size, timer_h, rl.WHITE)
@@ -343,7 +343,7 @@ class AlienZooKeeperView(MenuScreen):
         if self._selected_index >= 0:
             row = self._selected_index // _BOARD_SIDE
             col = self._selected_index % _BOARD_SIDE
-            sel_rect = rl.Rectangle(
+            sel_rect = rl_rectangle(
                 layout.board_x + col * layout.tile_size + 4.0,
                 layout.board_y + row * layout.tile_size + 4.0,
                 24.0,
@@ -354,7 +354,7 @@ class AlienZooKeeperView(MenuScreen):
 
         if self._board_focus.focused:
             row, col = divmod(self._cursor_index, _BOARD_SIDE)
-            cursor = rl.Rectangle(
+            cursor = rl_rectangle(
                 layout.board_x + col * layout.tile_size, layout.board_y + row * layout.tile_size, layout.tile_size, layout.tile_size,
             )
             grim_draw_rect_outline(Vec2(cursor.x, cursor.y), cursor.width, cursor.height, _to_color(0.8, 0.8, 0.6, 0.8))
@@ -371,8 +371,8 @@ class AlienZooKeeperView(MenuScreen):
             anim_frame = ((self._anim_time_ms // 50) + (tile * 2)) % 32
             src_col = anim_frame % 8
             src_row = anim_frame // 8
-            src = rl.Rectangle(src_col * frame_w, src_row * frame_h, frame_w, frame_h)
-            dst = rl.Rectangle(
+            src = rl_rectangle(src_col * frame_w, src_row * frame_h, frame_w, frame_h)
+            dst = rl_rectangle(
                 layout.board_x + col * layout.tile_size,
                 layout.board_y + row * layout.tile_size,
                 layout.tile_size,
@@ -390,7 +390,7 @@ class AlienZooKeeperView(MenuScreen):
                 tint = _to_color(1.0, 1.0, 0.5, 1.0)
             else:
                 tint = rl.WHITE
-            rl.draw_texture_pro(alien, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+            rl.draw_texture_pro(alien, src, dst, rl_vector2(0.0, 0.0), 0.0, tint)
 
         if self._timer_ms == 0 and math.cos(float(self._anim_time_ms) * 0.005) > 0.0:
             draw_small_text(font, _LABEL_GAME_OVER, Vec2(layout.game_over_x, layout.game_over_y), rl.WHITE)

@@ -13,7 +13,7 @@ from grim.config import CrimsonConfig
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
 from grim.rand import CrandLike
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from grim.sfx_map import SfxId
 
 from ...game_modes import GameMode
@@ -48,15 +48,15 @@ GAME_OVER_BANNER_X_OFFSET = 214.0
 # The name form sits 8 right of and 84 below the banner.
 _GAME_OVER_FORM_OFFSET = Vec2(GAME_OVER_BANNER_X_OFFSET + 8.0, 40.0 + 84.0)
 
-COLOR_TEXT = rl.Color(255, 255, 255, 255)
-COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
+COLOR_TEXT = rl_color(255, 255, 255, 255)
+COLOR_TEXT_MUTED = rl_color(255, 255, 255, int(255 * 0.8))
 
 
 def _draw_texture_centered(tex: rl.Texture, pos: Vec2, w: float, h: float, alpha: float) -> None:
-    src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-    dst = rl.Rectangle(pos.x, pos.y, float(w), float(h))
-    tint = rl.Color(255, 255, 255, int(255 * max(0.0, min(1.0, alpha))))
-    rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+    src = rl_rectangle(0.0, 0.0, float(tex.width), float(tex.height))
+    dst = rl_rectangle(pos.x, pos.y, float(w), float(h))
+    tint = rl_color(255, 255, 255, int(255 * max(0.0, min(1.0, alpha))))
+    rl.draw_texture_pro(tex, src, dst, rl_vector2(0.0, 0.0), 0.0, tint)
 
 
 class GameOverUi(msgspec.Struct):
@@ -313,7 +313,7 @@ class GameOverUi(msgspec.Struct):
                     font,
                     "Score too low for top100.",
                     banner_pos + Vec2(38.0, 62.0),
-                    rl.Color(200, 200, 200, 255),
+                    rl_color(200, 200, 200, 255),
                 )
 
             ui_text_input_render(

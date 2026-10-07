@@ -9,7 +9,7 @@ import msgspec
 from grim.assets import RuntimeResources, TextureId
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...creatures.spawn import CreatureFlags, CreatureTypeId
 from ...effects_atlas import EffectId
@@ -106,7 +106,7 @@ def draw_background(
     screen_size: Vec2,
     out_size: Vec2,
 ) -> None:
-    clear_color = rl.Color(10, 10, 12, 255)
+    clear_color = rl_color(10, 10, 12, 255)
     ground = render_ctx.frame.ground
     assert ground is not None, "ground renderer must be initialized before live world draw"
     rl.clear_background(clear_color)
@@ -166,7 +166,7 @@ def draw_player(render_ctx: WorldRenderCtx, player: PlayerState, *, ctx: WorldDr
         camera=render_ctx.view.camera,
         view_scale=render_ctx.view.view_scale,
     )
-    tint = rl.Color(90, 190, 120, int(255 * ctx.entity_alpha + 0.5))
+    tint = rl_color(90, 190, 120, int(255 * ctx.entity_alpha + 0.5))
     rl.draw_circle(int(screen.x), int(screen.y), max(1.0, 14.0 * render_ctx.view.scale), tint)
 
 
@@ -205,9 +205,9 @@ def draw_creature_overlays(
         mv_alpha = fade * ctx.entity_alpha
         if mv_alpha > 1e-3:
             size = 90.0 * render_ctx.view.scale
-            dst = rl.Rectangle(screen.x, screen.y, size, size)
-            origin = rl.Vector2(size * 0.5, size * 0.5)
-            tint = rl.Color(255, 255, 0, int(clamp(mv_alpha, 0.0, 1.0) * 255.0 + 0.5))
+            dst = rl_rectangle(screen.x, screen.y, size, size)
+            origin = rl_vector2(size * 0.5, size * 0.5)
+            tint = rl_color(255, 255, 0, int(clamp(mv_alpha, 0.0, 1.0) * 255.0 + 0.5))
             rl.draw_texture_pro(ctx.particles_texture, ctx.monster_vision_src, dst, origin, 0.0, tint)
 
     if ctx.particles_texture is not None and ctx.poison_src is not None and bool(creature.plague_infected):
@@ -215,9 +215,9 @@ def draw_creature_overlays(
         plague_alpha = fade * ctx.entity_alpha
         if plague_alpha > 1e-3:
             size = 80.0 * render_ctx.view.scale
-            dst = rl.Rectangle(screen.x, screen.y, size, size)
-            origin = rl.Vector2(size * 0.5, size * 0.5)
-            tint = rl.Color(0, 0, 0, int(clamp(plague_alpha, 0.0, 1.0) * 255.0 + 0.5))
+            dst = rl_rectangle(screen.x, screen.y, size, size)
+            origin = rl_vector2(size * 0.5, size * 0.5)
+            tint = rl_color(0, 0, 0, int(clamp(plague_alpha, 0.0, 1.0) * 255.0 + 0.5))
             rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
 
     if (
@@ -228,9 +228,9 @@ def draw_creature_overlays(
         poison_alpha = fade * ctx.entity_alpha
         if poison_alpha > 1e-3:
             size = 60.0 * render_ctx.view.scale
-            dst = rl.Rectangle(screen.x, screen.y, size, size)
-            origin = rl.Vector2(size * 0.5, size * 0.5)
-            tint = rl.Color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
+            dst = rl_rectangle(screen.x, screen.y, size, size)
+            origin = rl_vector2(size * 0.5, size * 0.5)
+            tint = rl_color(255, 0, 0, int(clamp(poison_alpha, 0.0, 1.0) * 255.0 + 0.5))
             rl.draw_texture_pro(ctx.particles_texture, ctx.poison_src, dst, origin, 0.0, tint)
 
 
@@ -281,7 +281,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
                             transition=ctx.entity_alpha,
                         ),
                     )
-                    tint = rl.Color(0, 0, 0, shadow_alpha)
+                    tint = rl_color(0, 0, 0, shadow_alpha)
                 else:
                     tint = creature_color_to_rl(
                         creature_render_tint(
@@ -349,7 +349,7 @@ def draw_creature_hit_flashes(
                 rotation_rad=x87_pc24_sub(creature.heading, NATIVE_HALF_PI),
                 scale=render_ctx.view.scale,
                 size_scale=creature.size / (texture.width / 8.0),
-                tint=rl.Color(255, 255, 255, alpha_byte),
+                tint=rl_color(255, 255, 255, alpha_byte),
                 hit_flash=True,
             )
     finally:
@@ -373,7 +373,7 @@ def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
     if freeze_alpha <= 1e-3:
         return
 
-    tint = rl.Color(255, 255, 255, int(freeze_alpha * 255.0 + 0.5))
+    tint = rl_color(255, 255, 255, int(freeze_alpha * 255.0 + 0.5))
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
     for idx, creature in enumerate(render_ctx.frame.creatures.entries):
         if not creature.active:
@@ -386,8 +386,8 @@ def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
             camera=render_ctx.view.camera,
             view_scale=render_ctx.view.view_scale,
         )
-        dst = rl.Rectangle(creature_screen.x, creature_screen.y, size, size)
-        origin = rl.Vector2(size * 0.5, size * 0.5)
+        dst = rl_rectangle(creature_screen.x, creature_screen.y, size, size)
+        origin = rl_vector2(size * 0.5, size * 0.5)
         rotation_deg = (float(idx) * 0.01 + float(creature.heading)) * _RAD_TO_DEG
         rl.draw_texture_pro(ctx.particles_texture, src, dst, origin, rotation_deg, tint)
     rl.end_blend_mode()

@@ -14,7 +14,7 @@ from grim.config import (
 from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...aim_schemes import AimScheme
 from ...game.types import GameState
@@ -511,8 +511,8 @@ class ControlsMenuView(PanelMenuView):
         resources = require_runtime_resources(self.state)
         font = resources.small_font
 
-        text_color_full = rl.Color(255, 255, 255, 255)
-        text_color_soft = rl.Color(255, 255, 255, 204)
+        text_color_full = rl_color(255, 255, 255, 255)
+        text_color_soft = rl_color(255, 255, 255, 204)
         config = self.state.config
         player_idx = self._current_player_index()
         player_controls = config.controls.player(player_idx)
@@ -523,14 +523,14 @@ class ControlsMenuView(PanelMenuView):
         text_controls = resources.texture(TextureId.UI_TEXT_CONTROLS)
         draw_ui_quad(
             texture=text_controls,
-            src=rl.Rectangle(0.0, 0.0, float(text_controls.width), float(text_controls.height)),
-            dst=rl.Rectangle(
+            src=rl_rectangle(0.0, 0.0, float(text_controls.width), float(text_controls.height)),
+            dst=rl_rectangle(
                 left_top_left.x + 206.0,
                 left_top_left.y + 44.0,
                 128.0,
                 32.0,
             ),
-            origin=rl.Vector2(0.0, 0.0),
+            origin=rl_vector2(0.0, 0.0),
             rotation_deg=0.0,
             tint=rl.WHITE,
         )
@@ -619,7 +619,7 @@ class ControlsMenuView(PanelMenuView):
                     font,
                     row.row.label,
                     Vec2(right_top_left.x + 52.0, row_y),
-                    rl.Color(255, 255, 255, 178),
+                    rl_color(255, 255, 255, 178),
                 )
                 draw_menu_item(resources, value_text, pos=row.value_pos, hovered=item.hovered)
                 row_y += 16.0

@@ -10,7 +10,7 @@ from grim.config import (
 from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.rand import Crand
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 from grim.sfx_map import SfxId
 from grim.view import ViewContext
 
@@ -38,8 +38,8 @@ from .base_gameplay_mode import (
 )
 from .components.highscore_record_builder import build_highscore_record
 
-UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
-UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
+UI_HINT_COLOR = rl_color(140, 140, 140, 255)
+UI_SPONSOR_COLOR = rl_color(255, 255, 255, int(255 * 0.5))
 
 _DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 

@@ -15,7 +15,7 @@ from grim.console import ConsoleState
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
 from grim.rand import Crand
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from grim.view import ViewContext
 
 from ..aim_schemes import AimScheme
@@ -44,25 +44,25 @@ if TYPE_CHECKING:
 
 WORLD_CENTER = Vec2(TERRAIN_SIZE * 0.5, TERRAIN_SIZE * 0.5)
 
-BG = rl.Color(10, 10, 12, 255)
-UI_TEXT = rl.Color(235, 235, 235, 255)
-UI_HINT = rl.Color(180, 180, 180, 255)
-UI_WARNING = rl.Color(255, 204, 96, 255)
-UI_ERROR = rl.Color(240, 80, 80, 255)
+BG = rl_color(10, 10, 12, 255)
+UI_TEXT = rl_color(235, 235, 235, 255)
+UI_HINT = rl_color(180, 180, 180, 255)
+UI_WARNING = rl_color(255, 204, 96, 255)
+UI_ERROR = rl_color(240, 80, 80, 255)
 
-OCCLUDER_COLOR = rl.Color(60, 180, 255, 220)
-LIGHT_RING_COLOR = rl.Color(255, 180, 80, 190)
-LIGHT_CORE_COLOR = rl.Color(255, 235, 160, 240)
-LIGHT_SELECTED_COLOR = rl.Color(255, 255, 120, 255)
-LIGHT_HANDLE_MOVE = rl.Color(120, 220, 255, 255)
-LIGHT_HANDLE_RADIUS = rl.Color(255, 200, 90, 255)
-LIGHT_HANDLE_DIR = rl.Color(255, 245, 185, 255)
-LIGHT_HANDLE_STRENGTH = rl.Color(255, 130, 170, 255)
-LIGHT_HANDLE_STRETCH = rl.Color(130, 255, 170, 255)
-SHADOW_PREVIEW_BG = rl.Color(14, 14, 18, 220)
-SHADOW_PREVIEW_BORDER = rl.Color(90, 90, 110, 240)
-SHADOW_PREVIEW_CANVAS = rl.Color(176, 176, 176, 255)
-SHADOW_PREVIEW_TEXT = rl.Color(215, 215, 215, 255)
+OCCLUDER_COLOR = rl_color(60, 180, 255, 220)
+LIGHT_RING_COLOR = rl_color(255, 180, 80, 190)
+LIGHT_CORE_COLOR = rl_color(255, 235, 160, 240)
+LIGHT_SELECTED_COLOR = rl_color(255, 255, 120, 255)
+LIGHT_HANDLE_MOVE = rl_color(120, 220, 255, 255)
+LIGHT_HANDLE_RADIUS = rl_color(255, 200, 90, 255)
+LIGHT_HANDLE_DIR = rl_color(255, 245, 185, 255)
+LIGHT_HANDLE_STRENGTH = rl_color(255, 130, 170, 255)
+LIGHT_HANDLE_STRETCH = rl_color(130, 255, 170, 255)
+SHADOW_PREVIEW_BG = rl_color(14, 14, 18, 220)
+SHADOW_PREVIEW_BORDER = rl_color(90, 90, 110, 240)
+SHADOW_PREVIEW_CANVAS = rl_color(176, 176, 176, 255)
+SHADOW_PREVIEW_TEXT = rl_color(215, 215, 215, 255)
 
 SHADOW_RT_SCALE = 0.30
 MAX_LIGHTS = 6
@@ -2812,11 +2812,11 @@ class LightingDebugView:
 
     def _copy_shadow_rt(self, src: rl.RenderTexture, dst: rl.RenderTexture) -> None:
         rt_w, rt_h = self._shadow_rt_size
-        src_rect = rl.Rectangle(0.0, 0.0, float(rt_w), -float(rt_h))
-        dst_rect = rl.Rectangle(0.0, 0.0, float(rt_w), float(rt_h))
+        src_rect = rl_rectangle(0.0, 0.0, float(rt_w), -float(rt_h))
+        dst_rect = rl_rectangle(0.0, 0.0, float(rt_w), float(rt_h))
         rl.begin_texture_mode(dst)
-        rl.clear_background(rl.Color(0, 0, 0, 0))
-        rl.draw_texture_pro(src.texture, src_rect, dst_rect, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        rl.clear_background(rl_color(0, 0, 0, 0))
+        rl.draw_texture_pro(src.texture, src_rect, dst_rect, rl_vector2(0.0, 0.0), 0.0, rl.WHITE)
         rl.end_texture_mode()
 
     def _resolve_shadow_output_rt(self) -> rl.RenderTexture | None:
@@ -2858,8 +2858,8 @@ class LightingDebugView:
         shader = self._temporal_shader
         uniforms = self._temporal_uniforms
         rt_w, rt_h = self._shadow_rt_size
-        src_rect = rl.Rectangle(0.0, 0.0, float(rt_w), -float(rt_h))
-        dst_rect = rl.Rectangle(0.0, 0.0, float(rt_w), float(rt_h))
+        src_rect = rl_rectangle(0.0, 0.0, float(rt_w), -float(rt_h))
+        dst_rect = rl_rectangle(0.0, 0.0, float(rt_w), float(rt_h))
 
         rl.set_shader_value(
             shader,
@@ -2869,11 +2869,11 @@ class LightingDebugView:
         )
 
         rl.begin_texture_mode(self._shadow_accum_swap_rt)
-        rl.clear_background(rl.Color(0, 0, 0, 0))
+        rl.clear_background(rl_color(0, 0, 0, 0))
         rl.begin_shader_mode(shader)
         # Bind the secondary sampler while shader mode is active; this is more stable across backends.
         rl.set_shader_value_texture(shader, int(uniforms.current_tex), self._shadow_rt.texture)
-        rl.draw_texture_pro(self._shadow_accum_rt.texture, src_rect, dst_rect, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        rl.draw_texture_pro(self._shadow_accum_rt.texture, src_rect, dst_rect, rl_vector2(0.0, 0.0), 0.0, rl.WHITE)
         rl.end_shader_mode()
         rl.end_texture_mode()
 
@@ -2908,7 +2908,7 @@ class LightingDebugView:
 
         rt_w, rt_h = self._shadow_rt_size
         rl.begin_texture_mode(self._shadow_rt)
-        rl.clear_background(rl.Color(0, 0, 0, 0))
+        rl.clear_background(rl_color(0, 0, 0, 0))
         rl.begin_shader_mode(self._shadow_shader)
         rl.draw_rectangle(0, 0, rt_w, rt_h, rl.WHITE)
         rl.end_shader_mode()
@@ -2922,10 +2922,10 @@ class LightingDebugView:
         if output_rt is None:
             self._last_shadow_draw_ms = (time.perf_counter() - start_time) * 1000.0
             return
-        src = rl.Rectangle(0.0, 0.0, float(rt_w), -float(rt_h))
-        dst = rl.Rectangle(0.0, 0.0, float(canvas.width()), float(canvas.height()))
+        src = rl_rectangle(0.0, 0.0, float(rt_w), -float(rt_h))
+        dst = rl_rectangle(0.0, 0.0, float(canvas.width()), float(canvas.height()))
         rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
-        rl.draw_texture_pro(output_rt.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        rl.draw_texture_pro(output_rt.texture, src, dst, rl_vector2(0.0, 0.0), 0.0, rl.WHITE)
         rl.end_blend_mode()
 
         self._last_shadow_draw_ms = (time.perf_counter() - start_time) * 1000.0
@@ -2976,8 +2976,8 @@ class LightingDebugView:
                 tip_x = screen.x + float(light.dir_x) * dir_len
                 tip_y = screen.y + float(light.dir_y) * dir_len
                 rl.draw_line_ex(
-                    rl.Vector2(float(screen.x), float(screen.y)),
-                    rl.Vector2(float(tip_x), float(tip_y)),
+                    rl_vector2(float(screen.x), float(screen.y)),
+                    rl_vector2(float(tip_x), float(tip_y)),
                     2.0,
                     LIGHT_CORE_COLOR,
                 )
@@ -3000,45 +3000,45 @@ class LightingDebugView:
                 rl.draw_circle_lines(int(center_screen.x), int(center_screen.y), int(radius), LIGHT_SELECTED_COLOR)
 
             rl.draw_line_ex(
-                rl.Vector2(float(center_screen.x), float(center_screen.y)),
-                rl.Vector2(float(radius_screen.x), float(radius_screen.y)),
+                rl_vector2(float(center_screen.x), float(center_screen.y)),
+                rl_vector2(float(radius_screen.x), float(radius_screen.y)),
                 1.5,
                 LIGHT_HANDLE_RADIUS,
             )
             rl.draw_line_ex(
-                rl.Vector2(float(center_screen.x), float(center_screen.y)),
-                rl.Vector2(float(direction_screen.x), float(direction_screen.y)),
+                rl_vector2(float(center_screen.x), float(center_screen.y)),
+                rl_vector2(float(direction_screen.x), float(direction_screen.y)),
                 2.0,
                 LIGHT_HANDLE_DIR,
             )
             rl.draw_line_ex(
-                rl.Vector2(float(center_screen.x), float(center_screen.y)),
-                rl.Vector2(float(strength_screen.x), float(strength_screen.y)),
+                rl_vector2(float(center_screen.x), float(center_screen.y)),
+                rl_vector2(float(strength_screen.x), float(strength_screen.y)),
                 1.5,
                 LIGHT_HANDLE_STRENGTH,
             )
             rl.draw_line_ex(
-                rl.Vector2(float(center_screen.x), float(center_screen.y)),
-                rl.Vector2(float(stretch_screen.x), float(stretch_screen.y)),
+                rl_vector2(float(center_screen.x), float(center_screen.y)),
+                rl_vector2(float(stretch_screen.x), float(stretch_screen.y)),
                 1.5,
                 LIGHT_HANDLE_STRETCH,
             )
 
             handle_radius = STATIC_HANDLE_DRAW_RADIUS_PX + (2.0 if selected else 0.0)
             rl.draw_circle_v(
-                rl.Vector2(float(center_screen.x), float(center_screen.y)), handle_radius, LIGHT_HANDLE_MOVE,
+                rl_vector2(float(center_screen.x), float(center_screen.y)), handle_radius, LIGHT_HANDLE_MOVE,
             )
             rl.draw_circle_v(
-                rl.Vector2(float(radius_screen.x), float(radius_screen.y)), handle_radius, LIGHT_HANDLE_RADIUS,
+                rl_vector2(float(radius_screen.x), float(radius_screen.y)), handle_radius, LIGHT_HANDLE_RADIUS,
             )
             rl.draw_circle_v(
-                rl.Vector2(float(direction_screen.x), float(direction_screen.y)), handle_radius, LIGHT_HANDLE_DIR,
+                rl_vector2(float(direction_screen.x), float(direction_screen.y)), handle_radius, LIGHT_HANDLE_DIR,
             )
             rl.draw_circle_v(
-                rl.Vector2(float(strength_screen.x), float(strength_screen.y)), handle_radius, LIGHT_HANDLE_STRENGTH,
+                rl_vector2(float(strength_screen.x), float(strength_screen.y)), handle_radius, LIGHT_HANDLE_STRENGTH,
             )
             rl.draw_circle_v(
-                rl.Vector2(float(stretch_screen.x), float(stretch_screen.y)), handle_radius, LIGHT_HANDLE_STRETCH,
+                rl_vector2(float(stretch_screen.x), float(stretch_screen.y)), handle_radius, LIGHT_HANDLE_STRETCH,
             )
 
             if selected and self._small is not None:
@@ -3094,10 +3094,10 @@ class LightingDebugView:
         map_y = y + pad + title_h
         rl.draw_rectangle(int(map_x), int(map_y), int(content_w), int(content_h), SHADOW_PREVIEW_CANVAS)
 
-        src = rl.Rectangle(0.0, 0.0, float(rt_w), -float(rt_h))
-        dst = rl.Rectangle(map_x, map_y, content_w, content_h)
+        src = rl_rectangle(0.0, 0.0, float(rt_w), -float(rt_h))
+        dst = rl_rectangle(map_x, map_y, content_w, content_h)
         rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
-        rl.draw_texture_pro(preview_rt.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        rl.draw_texture_pro(preview_rt.texture, src, dst, rl_vector2(0.0, 0.0), 0.0, rl.WHITE)
         rl.end_blend_mode()
 
     def _draw_tuning_panel(self) -> None:

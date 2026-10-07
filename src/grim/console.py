@@ -21,7 +21,7 @@ from grim.fonts.small import (
 )
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 
 from . import paq
 
@@ -119,7 +119,7 @@ def _load_script_from_paq(console: ConsoleState, target: Path) -> str | None:
 
 def _rgba(r: float, g: float, b: float, a: float) -> rl.Color:
     c = RGBA(r, g, b, a).clamped()
-    return rl.Color(
+    return rl_color(
         int(c.r * 255.0),
         int(c.g * 255.0),
         int(c.b * 255.0),

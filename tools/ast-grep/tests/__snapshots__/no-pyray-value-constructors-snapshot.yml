@@ -1,0 +1,23 @@
+id: no-pyray-value-constructors
+snapshots:
+  ? |
+    color = rl.Color(255, 0, 0, 255)
+  : labels:
+    - source: rl.Color(255, 0, 0, 255)
+      style: primary
+      start: 8
+      end: 32
+  ? |
+    rect = rl.Rectangle(0.0, 0.0, 10.0, 20.0)
+  : labels:
+    - source: rl.Rectangle(0.0, 0.0, 10.0, 20.0)
+      style: primary
+      start: 7
+      end: 41
+  ? |
+    vector = rl.Vector2(1.0, 2.0)
+  : labels:
+    - source: rl.Vector2(1.0, 2.0)
+      style: primary
+      start: 9
+      end: 29

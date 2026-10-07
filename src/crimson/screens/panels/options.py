@@ -12,7 +12,7 @@ from grim.config import apply_detail_preset
 from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.music import set_music_volume
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from grim.sfx import set_sfx_volume
 
 from ...game.types import GameState
@@ -156,16 +156,16 @@ class OptionsMenuView(PanelMenuView):
         slider_pos = layout.slider_pos
 
         font = resources.small_font
-        text_color = rl.Color(255, 255, 255, int(255 * 0.8))
+        text_color = rl_color(255, 255, 255, int(255 * 0.8))
 
         title_w = 128.0
-        src = rl.Rectangle(
+        src = rl_rectangle(
             0.0,
             float(MENU_LABEL_ROW_OPTIONS) * MENU_LABEL_ROW_HEIGHT,
             title_w,
             MENU_LABEL_ROW_HEIGHT,
         )
-        dst = rl.Rectangle(
+        dst = rl_rectangle(
             base_pos.x,
             base_pos.y,
             title_w,
@@ -175,7 +175,7 @@ class OptionsMenuView(PanelMenuView):
             texture=labels_tex,
             src=src,
             dst=dst,
-            origin=rl.Vector2(0.0, 0.0),
+            origin=rl_vector2(0.0, 0.0),
             rotation_deg=0.0,
             tint=rl.WHITE,
         )

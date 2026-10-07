@@ -91,10 +91,10 @@ class RGBA(msgspec.Struct, frozen=True):
         return self.with_alpha(self.a * float(factor))
 
     def to_rl(self) -> rl.Color:
-        from grim.raylib_api import rl
+        from grim.raylib_api import rl_color
 
         c = self.clamped()
-        return rl.Color(
+        return rl_color(
             int(c.r * 255.0 + 0.5),
             int(c.g * 255.0 + 0.5),
             int(c.b * 255.0 + 0.5),
@@ -104,7 +104,7 @@ class RGBA(msgspec.Struct, frozen=True):
 
 def grim_color(r: float, g: float, b: float, a: float) -> rl.Color:
     """`grim_set_color`: clamp alpha, then truncate each channel to a byte."""
-    from grim.raylib_api import rl
+    from grim.raylib_api import rl_color
 
     a = clamp(a, 0.0, 1.0)
-    return rl.Color(int(r * 255.0) & 0xFF, int(g * 255.0) & 0xFF, int(b * 255.0) & 0xFF, int(a * 255.0) & 0xFF)
+    return rl_color(int(r * 255.0) & 0xFF, int(g * 255.0) & 0xFF, int(b * 255.0) & 0xFF, int(a * 255.0) & 0xFF)

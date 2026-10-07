@@ -10,7 +10,7 @@ from grim.color import grim_color
 from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...game_modes import GameMode
 from ...leaderboard import SyncStatus
@@ -65,14 +65,14 @@ def draw_main_panel(
     # text width halved with C integer division, and underlines it at 0.7.
     title_w = int(measure_small_text_width(font, title))
     title_pos = left_panel_top_left + Vec2(float(330 - title_w // 2), 41.0)
-    draw_small_text(font, title, title_pos, rl.Color(255, 255, 255, 255))
+    draw_small_text(font, title, title_pos, rl_color(255, 255, 255, 255))
     grim_draw_rect_outline(title_pos.offset(dy=14.0), float(title_w), 1.0, grim_color(1.0, 1.0, 1.0, 0.7))
     if mode_id == GameMode.QUESTS:
         hardcore = view.state.config.gameplay.hardcore
         if hardcore:
-            quest_color = rl.Color(250, 70, 60, int(255 * 0.7))
+            quest_color = rl_color(250, 70, 60, int(255 * 0.7))
         else:
-            quest_color = rl.Color(70, 180, 240, int(255 * 0.7))
+            quest_color = rl_color(70, 180, 240, int(255 * 0.7))
         quest_level = QuestLevel(int(quest_major), int(quest_minor))
         quest = quest_by_level(quest_level)
         quest_label = f"{quest_level.text}: {quest.title if quest is not None else '???'}"
@@ -88,29 +88,29 @@ def draw_main_panel(
 
         dst_w = float(arrow.width)
         dst_h = float(arrow.height)
-        tint = rl.Color(255, 255, 255, int(255 * 0.51))
+        tint = rl_color(255, 255, 255, int(255 * 0.51))
 
         if global_index > 0:
-            src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
+            src = rl_rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
             arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X - 255.0, HS_QUEST_ARROW_Y)
-            dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
-            rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+            dst = rl_rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
+            rl.draw_texture_pro(arrow, src, dst, rl_vector2(0.0, 0.0), 0.0, tint)
 
         if global_index < max_index:
             # state_14 flips ui_arrow.jaz (uv 1..0) for the right arrow.
             # Keep src.x in-range; with CLAMP wrap, raylib can collapse flipped UVs
             # when the rect starts at x=tex.width.
-            src = rl.Rectangle(0.0, 0.0, -float(arrow.width), float(arrow.height))
+            src = rl_rectangle(0.0, 0.0, -float(arrow.width), float(arrow.height))
             arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X, HS_QUEST_ARROW_Y)
-            dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
-            rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+            dst = rl_rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
+            rl.draw_texture_pro(arrow, src, dst, rl_vector2(0.0, 0.0), 0.0, tint)
 
     if mode_id == GameMode.QUESTS and view.state.status.quest_unlock_index >= QUEST_HARDCORE_UNLOCK_INDEX:
         checkbox = view.hardcore_checkbox
         checkbox.checked = view.state.config.gameplay.hardcore
         ui_checkbox_draw(resources, checkbox, left_panel_top_left + HS_HARDCORE_CHECKBOX_OFFSET, focus=view.state.focus)
 
-    header_color = rl.Color(255, 255, 255, 255)
+    header_color = rl_color(255, 255, 255, 255)
     draw_small_text(font, "Rank", left_panel_top_left + Vec2(211.0, 84.0), header_color)
     draw_small_text(font, "Score", left_panel_top_left + Vec2(246.0, 84.0), header_color)
     draw_small_text(font, "Player", left_panel_top_left + Vec2(302.0, 84.0), header_color)
@@ -128,7 +128,7 @@ def draw_main_panel(
             font,
             "No scores yet.",
             Vec2(left_panel_top_left.x + 211.0, left_panel_top_left.y + 111.0),
-            rl.Color(190, 190, 200, 255),
+            rl_color(190, 190, 200, 255),
         )
 
     button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X, HS_BUTTON_Y0)

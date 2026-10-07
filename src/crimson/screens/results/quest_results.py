@@ -18,7 +18,7 @@ from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
 from grim.rand import CrandLike
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from grim.sfx_map import SfxId
 
 from ...game_modes import GameMode
@@ -50,13 +50,13 @@ QUEST_RESULTS_BANNER_X_FROM_CONTENT = -18.0
 QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT = 30.0
 
 
-COLOR_TEXT = rl.Color(255, 255, 255, 255)
-COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
-COLOR_TEXT_SUBTLE = rl.Color(255, 255, 255, int(255 * 0.7))
+COLOR_TEXT = rl_color(255, 255, 255, 255)
+COLOR_TEXT_MUTED = rl_color(255, 255, 255, int(255 * 0.8))
+COLOR_TEXT_SUBTLE = rl_color(255, 255, 255, int(255 * 0.7))
 # `render_tint_color_global_init_thunk` initializes `render_tint_color` to this
 # blue tint (149,175,198),
 # reused by quest/game-over captions and score-card separator outlines.
-COLOR_UI_ACCENT = rl.Color(149, 175, 198, 255)
+COLOR_UI_ACCENT = rl_color(149, 175, 198, 255)
 
 
 class QuestResultsUi(msgspec.Struct):
@@ -405,9 +405,9 @@ class QuestResultsUi(msgspec.Struct):
         content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X)
         banner_pos = content_pos + Vec2(QUEST_RESULTS_BANNER_X_FROM_CONTENT, 36.0)
         text_well_done = resources.texture(TextureId.UI_TEXT_WELL_DONE)
-        src = rl.Rectangle(0.0, 0.0, float(text_well_done.width), float(text_well_done.height))
-        dst = rl.Rectangle(banner_pos.x, banner_pos.y, TEXTURE_TOP_BANNER_W, TEXTURE_TOP_BANNER_H)
-        rl.draw_texture_pro(text_well_done, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        src = rl_rectangle(0.0, 0.0, float(text_well_done.width), float(text_well_done.height))
+        dst = rl_rectangle(banner_pos.x, banner_pos.y, TEXTURE_TOP_BANNER_W, TEXTURE_TOP_BANNER_H)
+        rl.draw_texture_pro(text_well_done, src, dst, rl_vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         qualifies = int(self.rank) < TABLE_MAX
 
@@ -448,7 +448,7 @@ class QuestResultsUi(msgspec.Struct):
                 font,
                 "State your name trooper!",
                 Vec2(content_pos.x + 42.0, text_y),
-                rl.Color(COLOR_UI_ACCENT.r, COLOR_UI_ACCENT.g, COLOR_UI_ACCENT.b, int(255 * alpha)),
+                rl_color(COLOR_UI_ACCENT.r, COLOR_UI_ACCENT.g, COLOR_UI_ACCENT.b, int(255 * alpha)),
             )
 
             input_pos = content_pos.offset(dy=150.0)

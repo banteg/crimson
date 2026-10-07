@@ -128,9 +128,9 @@ class Vec2(msgspec.Struct, frozen=True):
         return Vec2(self.y, -self.x)
 
     def to_rl(self) -> rl.Vector2:
-        from grim.raylib_api import rl
+        from grim.raylib_api import rl_vector2
 
-        return rl.Vector2(self.x, self.y)
+        return rl_vector2(self.x, self.y)
 
     def to_dict(self, *, ndigits: int | None = None) -> dict[str, float]:
         if ndigits is None:
@@ -265,6 +265,6 @@ class Rect(msgspec.Struct, frozen=True):
         return self.x <= px <= self.right and self.y <= py <= self.bottom
 
     def to_rl(self) -> rl.Rectangle:
-        from grim.raylib_api import rl
+        from grim.raylib_api import rl_rectangle
 
-        return rl.Rectangle(self.x, self.y, self.w, self.h)
+        return rl_rectangle(self.x, self.y, self.w, self.h)

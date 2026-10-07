@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from grim.raylib_api import rd, rl
+from grim.raylib_api import rd, rl, rl_color
 
 # ui_element_render (0x446c40): shadow pass uses offset (7, 7), tint 0x44444444, and
 # blend factors (src=ZERO, dst=ONE_MINUS_SRC_ALPHA).
 UI_SHADOW_OFFSET = 7.0
-UI_SHADOW_TINT = rl.Color(0x44, 0x44, 0x44, 0x44)
+UI_SHADOW_TINT = rl_color(0x44, 0x44, 0x44, 0x44)
 
 
 def draw_ui_quad_shadow(

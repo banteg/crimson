@@ -11,7 +11,7 @@ from grim.assets import TextureId
 from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...debug import debug_enabled
 from ...game.types import GameState
@@ -309,7 +309,7 @@ class QuestsMenuView(MenuScreen):
         else:
             # (0.274509, 0.707..., 0.941..., alpha)
             r, g, b = 70, 180, 240
-        return (rl.Color(r, g, b, 153), rl.Color(r, g, b, 255))
+        return (rl_color(r, g, b, 153), rl_color(r, g, b, 255))
 
     def _quest_counts(self, *, stage: int, row: int) -> tuple[int, int] | None:
         # In `quest_select_menu_update`, counts are indexed by (row + stage*10) and split across two
@@ -383,16 +383,16 @@ class QuestsMenuView(MenuScreen):
         title_tex = resources.texture(TextureId.UI_TEXT_QUEST)
         rl.draw_texture_pro(
             title_tex,
-            rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height)),
-            rl.Rectangle(title_pos.x, title_pos.y, QUEST_TITLE_W, QUEST_TITLE_H),
-            rl.Vector2(0.0, 0.0),
+            rl_rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height)),
+            rl_rectangle(title_pos.x, title_pos.y, QUEST_TITLE_W, QUEST_TITLE_H),
+            rl_vector2(0.0, 0.0),
             0.0,
-            rl.Color(179, 179, 179, 179),
+            rl_color(179, 179, 179, 179),
         )
 
         # Stage icons (1..5).
-        hover_tint = rl.Color(255, 255, 255, 204)  # 0.8 alpha
-        base_tint = rl.Color(179, 179, 179, 179)  # 0.7 RGBA
+        hover_tint = rl_color(255, 255, 255, 204)  # 0.8 alpha
+        base_tint = rl_color(179, 179, 179, 179)  # 0.7 RGBA
         selected_tint = rl.WHITE
         stage_icons = {
             1: resources.texture(TextureId.UI_NUM1),
@@ -413,9 +413,9 @@ class QuestsMenuView(MenuScreen):
                 tint = selected_tint
             rl.draw_texture_pro(
                 icon,
-                rl.Rectangle(0.0, 0.0, float(icon.width), float(icon.height)),
-                rl.Rectangle(x, icons_start_pos.y, size, size),
-                rl.Vector2(0.0, 0.0),
+                rl_rectangle(0.0, 0.0, float(icon.width), float(icon.height)),
+                rl_rectangle(x, icons_start_pos.y, size, size),
+                rl_vector2(0.0, 0.0),
                 0.0,
                 tint,
             )

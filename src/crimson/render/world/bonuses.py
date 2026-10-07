@@ -7,7 +7,7 @@ from grim.assets import TextureId
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...bonuses import BONUS_BY_ID, BonusId
 from ...bonuses.pool import bonus_find_aim_hover_entry, bonus_label_for_entry
@@ -23,7 +23,7 @@ def bonus_icon_src(texture: rl.Texture, icon_id: int) -> rl.Rectangle:
     cell_h = float(texture.height) / grid
     col = int(icon_id) % grid
     row = int(icon_id) // grid
-    return rl.Rectangle(float(col * cell_w), float(row * cell_h), float(cell_w), float(cell_h))
+    return rl_rectangle(float(col * cell_w), float(row * cell_h), float(cell_w), float(cell_h))
 
 
 def weapon_icon_src(texture: rl.Texture, icon_index: int) -> rl.Rectangle:
@@ -33,7 +33,7 @@ def weapon_icon_src(texture: rl.Texture, icon_index: int) -> rl.Rectangle:
     frame = int(icon_index) * 2
     col = frame % grid
     row = frame // grid
-    return rl.Rectangle(float(col * cell_w), float(row * cell_h), float(cell_w * 2), float(cell_h))
+    return rl_rectangle(float(col * cell_w), float(row * cell_h), float(cell_w * 2), float(cell_h))
 
 
 def bonus_fade(time_left: float, time_max: float) -> float:
@@ -98,9 +98,9 @@ def draw_bonus_pickups(
         time_max = float(bonus.time_max)
         screen = viewport.world_to_screen_with(bonus.pos, camera=camera, view_scale=view_scale)
         bubble_alpha = bonus_bubble_fade(time_left, time_max) * 0.9 * alpha
-        bubble_dst = rl.Rectangle(screen.x, screen.y, bubble_size, bubble_size)
-        bubble_origin = rl.Vector2(bubble_size * 0.5, bubble_size * 0.5)
-        bubble_tint = rl.Color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
+        bubble_dst = rl_rectangle(screen.x, screen.y, bubble_size, bubble_size)
+        bubble_origin = rl_vector2(bubble_size * 0.5, bubble_size * 0.5)
+        bubble_tint = rl_color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
         rl.draw_texture_pro(bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, bubble_tint)
 
         meta = BONUS_BY_ID.get(bonus.bonus_id)
@@ -115,9 +115,9 @@ def draw_bonus_pickups(
         src = bonus_icon_src(bonuses_texture, icon_id)
         size = 32.0 * icon_scale * scale
         rotation_rad = math.sin(float(idx) - float(frame.elapsed_ms) * 0.003) * 0.2
-        dst = rl.Rectangle(screen.x, screen.y, size, size)
-        origin = rl.Vector2(size * 0.5, size * 0.5)
-        icon_tint = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
+        dst = rl_rectangle(screen.x, screen.y, size, size)
+        origin = rl_vector2(size * 0.5, size * 0.5)
+        icon_tint = rl_color(255, 255, 255, int(alpha * 255.0 + 0.5))
         rl.draw_texture_pro(bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), icon_tint)
 
     for bonus in entries:
@@ -134,9 +134,9 @@ def draw_bonus_pickups(
         src = weapon_icon_src(wicons_texture, icon_index)
         w = 60.0 * icon_scale * scale
         h = 30.0 * icon_scale * scale
-        dst = rl.Rectangle(screen.x, screen.y, w, h)
-        origin = rl.Vector2(w * 0.5, h * 0.5)
-        icon_tint = rl.Color(255, 255, 255, int(fade * alpha * 255.0 + 0.5))
+        dst = rl_rectangle(screen.x, screen.y, w, h)
+        origin = rl_vector2(w * 0.5, h * 0.5)
+        icon_tint = rl_color(255, 255, 255, int(fade * alpha * 255.0 + 0.5))
         rl.draw_texture_pro(wicons_texture, src, dst, origin, 0.0, icon_tint)
 
 
@@ -156,7 +156,7 @@ def draw_bonus_hover_labels(
     text_scale = 1.0
     screen_w = float(canvas.width())
 
-    color = rl.Color(255, 255, 255, int(0.7 * 255.0))
+    color = rl_color(255, 255, 255, int(0.7 * 255.0))
 
     for player in frame.players:
         if player.health <= 0.0:

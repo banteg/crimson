@@ -12,7 +12,7 @@ from crimson.screens.actions import (
 )
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from grim.audio import update_audio
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 from grim.sfx import play_sfx
 from grim.terrain_render import GroundRenderer
 
@@ -183,8 +183,8 @@ class QuestResultsView:
             ui.draw()
             return
 
-        rl.draw_text("Quest results unavailable.", 32, 140, 28, rl.Color(235, 235, 235, 255))
-        rl.draw_text("Press ESC to return to the menu.", 32, 180, 18, rl.Color(190, 190, 200, 255))
+        rl.draw_text("Quest results unavailable.", 32, 140, 28, rl_color(235, 235, 235, 255))
+        rl.draw_text("Press ESC to return to the menu.", 32, 180, 18, rl_color(190, 190, 200, 255))
 
     def take_action(self) -> ScreenAction | None:
         action = self._action

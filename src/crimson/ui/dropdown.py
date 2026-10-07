@@ -6,7 +6,7 @@ from grim.assets import RuntimeResources, TextureId
 from grim.color import grim_color
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle, rl_vector2
 
 from .focus import UiFocus
 from .hit_test import mouse_inside_rect_with_padding
@@ -107,19 +107,19 @@ def ui_list_widget_draw(
     if widget.focused:
         focus.draw(pos.offset(dx=-16.0))
     width, height = _list_widget_size(resources, widget)
-    rl.draw_rectangle_rec(rl.Rectangle(pos.x, pos.y, width, height), rl.WHITE)
-    rl.draw_rectangle_rec(rl.Rectangle(pos.x + 1.0, pos.y + 1.0, width - 2.0, height - 2.0), rl.BLACK)
+    rl.draw_rectangle_rec(rl_rectangle(pos.x, pos.y, width, height), rl.WHITE)
+    rl.draw_rectangle_rec(rl_rectangle(pos.x + 1.0, pos.y + 1.0, width - 2.0, height - 2.0), rl.BLACK)
 
     if widget.open or widget.hovered:
-        rl.draw_rectangle_rec(rl.Rectangle(pos.x, pos.y + 15.0, width, 1.0), grim_color(1.0, 1.0, 1.0, 0.5))
+        rl.draw_rectangle_rec(rl_rectangle(pos.x, pos.y + 15.0, width, 1.0), grim_color(1.0, 1.0, 1.0, 0.5))
         arrow = resources.texture(TextureId.UI_DROP_ON)
     else:
         arrow = resources.texture(TextureId.UI_DROP_OFF)
     rl.draw_texture_pro(
         arrow,
-        rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height)),
-        rl.Rectangle(pos.x + width - 16.0 - 1.0, pos.y, 16.0, 16.0),
-        rl.Vector2(0.0, 0.0),
+        rl_rectangle(0.0, 0.0, float(arrow.width), float(arrow.height)),
+        rl_rectangle(pos.x + width - 16.0 - 1.0, pos.y, 16.0, 16.0),
+        rl_vector2(0.0, 0.0),
         0.0,
         rl.WHITE,
     )

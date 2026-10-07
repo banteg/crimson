@@ -8,7 +8,7 @@ from grim.audio import update_audio
 from grim.draw import grim_draw_rect_outline
 from grim.geom import Vec2
 from grim.music import play_music, stop_music
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_vector2
 
 from ..game.types import GameState
 from .actions import Route
@@ -174,8 +174,8 @@ class BootView:
         tex_h = float(tex.height)
         x = (canvas.width() - tex_w) * 0.5
         y = (canvas.height() - tex_h) * 0.5
-        tint = rl.Color(255, 255, 255, int(round(alpha * 255.0)))
-        rl.draw_texture_v(tex, rl.Vector2(x, y), tint)
+        tint = rl_color(255, 255, 255, int(round(alpha * 255.0)))
+        rl.draw_texture_v(tex, rl_vector2(x, y), tint)
 
     def _splash_alpha(self) -> float:
         return self._clamp01(self._boot_time * SPLASH_ALPHA_SCALE)
@@ -197,24 +197,24 @@ class BootView:
         logo = resources.texture(TextureId.CL_LOGO)
         # `game_startup_init`'s loading outline, in `render_tint_color` at 0.7 of the fade.
         line_alpha = self._clamp01(alpha * 0.7)
-        line_color = rl.Color(149, 175, 198, int(round(line_alpha * 255.0)))
+        line_color = rl_color(149, 175, 198, int(round(line_alpha * 255.0)))
         grim_draw_rect_outline(Vec2(-4.0, screen_h * 0.5 - 68.0), screen_w + 8.0, 128.0, line_color)
 
-        tint = rl.Color(255, 255, 255, int(round(alpha * 255.0)))
+        tint = rl_color(255, 255, 255, int(round(alpha * 255.0)))
 
         logo_w = float(logo.width)
         logo_h = float(logo.height)
         logo_x = (screen_w - logo_w) * 0.5
         logo_y = (screen_h - logo_h) * 0.5
-        rl.draw_texture_v(logo, rl.Vector2(logo_x, logo_y), tint)
+        rl.draw_texture_v(logo, rl_vector2(logo_x, logo_y), tint)
         loading = resources.texture(TextureId.LOADING)
         loading_x = screen_w * 0.5 + 128.0
         loading_y = screen_h * 0.5 + 16.0
-        rl.draw_texture_v(loading, rl.Vector2(loading_x, loading_y), tint)
+        rl.draw_texture_v(loading, rl_vector2(loading_x, loading_y), tint)
 
         esrb = resources.texture(TextureId.LOGO_ESRB)
         esrb_w = float(esrb.width)
         esrb_h = float(esrb.height)
         esrb_x = screen_w - esrb_w - 1.0
         esrb_y = screen_h - esrb_h - 1.0
-        rl.draw_texture_v(esrb, rl.Vector2(esrb_x, esrb_y), tint)
+        rl.draw_texture_v(esrb, rl_vector2(esrb_x, esrb_y), tint)

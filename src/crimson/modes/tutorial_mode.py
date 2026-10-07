@@ -7,7 +7,7 @@ from grim.console import ConsoleState
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import Crand
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
@@ -22,7 +22,7 @@ from ..ui.overlays.tutorial_run import (
 )
 from .base_gameplay_mode import BaseGameplayMode
 
-UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
+UI_HINT_COLOR = rl_color(140, 140, 140, 255)
 
 
 class TutorialMode(BaseGameplayMode):

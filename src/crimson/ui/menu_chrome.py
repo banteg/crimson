@@ -4,7 +4,7 @@ import math
 
 from grim.assets import RuntimeResources, TextureId
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from .animation import ui_element_anim, ui_element_offset_render
 from .menu_layout import (
@@ -58,22 +58,22 @@ def draw_menu_entry(resources: RuntimeResources, entry: MenuEntry, *, timeline_m
     else:
         pos = entry.pos
         rotation_deg = math.degrees(angle_rad)
-    item_src = rl.Rectangle(0.0, 0.0, float(item.width), float(item.height))
-    dst = rl.Rectangle(pos.x, pos.y, float(item.width) * item_scale, float(item.height) * item_scale)
-    origin = rl.Vector2(-MENU_ITEM_OFFSET_X * item_scale, -(MENU_ITEM_OFFSET_Y * item_scale - local_y_shift))
+    item_src = rl_rectangle(0.0, 0.0, float(item.width), float(item.height))
+    dst = rl_rectangle(pos.x, pos.y, float(item.width) * item_scale, float(item.height) * item_scale)
+    origin = rl_vector2(-MENU_ITEM_OFFSET_X * item_scale, -(MENU_ITEM_OFFSET_Y * item_scale - local_y_shift))
     if shadows:
         draw_ui_quad_shadow(
             texture=item,
             src=item_src,
-            dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
+            dst=rl_rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
             origin=origin,
             rotation_deg=rotation_deg,
         )
     rl.draw_texture_pro(item, item_src, dst, origin, rotation_deg, rl.WHITE)
-    label_src = rl.Rectangle(0.0, float(entry.row) * MENU_LABEL_ROW_HEIGHT, MENU_LABEL_WIDTH, MENU_LABEL_ROW_HEIGHT)
-    label_dst = rl.Rectangle(pos.x, pos.y, MENU_LABEL_WIDTH * item_scale, MENU_LABEL_HEIGHT * item_scale)
-    label_origin = rl.Vector2(-MENU_LABEL_OFFSET_X * item_scale, -(MENU_LABEL_OFFSET_Y * item_scale - local_y_shift))
-    label_tint = rl.Color(255, 255, 255, label_alpha(entry.hover_amount))
+    label_src = rl_rectangle(0.0, float(entry.row) * MENU_LABEL_ROW_HEIGHT, MENU_LABEL_WIDTH, MENU_LABEL_ROW_HEIGHT)
+    label_dst = rl_rectangle(pos.x, pos.y, MENU_LABEL_WIDTH * item_scale, MENU_LABEL_HEIGHT * item_scale)
+    label_origin = rl_vector2(-MENU_LABEL_OFFSET_X * item_scale, -(MENU_LABEL_OFFSET_Y * item_scale - local_y_shift))
+    label_tint = rl_color(255, 255, 255, label_alpha(entry.hover_amount))
     rl.draw_texture_pro(label_tex, label_src, label_dst, label_origin, rotation_deg, label_tint)
     if menu_entry_enabled(entry, timeline_ms):
         rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
@@ -108,16 +108,16 @@ def draw_menu_sign(
     if shadows_enabled:
         draw_ui_quad_shadow(
             texture=sign,
-            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
-            origin=rl.Vector2(-offset_x, -offset_y),
+            src=rl_rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+            dst=rl_rectangle(sign_pos.x + UI_SHADOW_OFFSET, sign_pos.y + UI_SHADOW_OFFSET, sign_w, sign_h),
+            origin=rl_vector2(-offset_x, -offset_y),
             rotation_deg=rotation_deg,
         )
     draw_ui_quad(
         texture=sign,
-        src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-        dst=rl.Rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
-        origin=rl.Vector2(-offset_x, -offset_y),
+        src=rl_rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+        dst=rl_rectangle(sign_pos.x, sign_pos.y, sign_w, sign_h),
+        origin=rl_vector2(-offset_x, -offset_y),
         rotation_deg=rotation_deg,
         tint=rl.WHITE,
     )

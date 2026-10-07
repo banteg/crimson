@@ -7,7 +7,7 @@ from grim.assets import RuntimeResources, TextureId
 from grim.color import grim_color
 from grim.config import CrimsonConfig
 from grim.geom import Rect, Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 
 from ...input_codes import input_code_name
 from ...ui.perk_menu import draw_ui_text
@@ -87,7 +87,7 @@ class PerkPromptUi:
         hinge = cls.hinge()
         # Prompt swings counter-clockwise; raylib's Y-down makes positive rotation clockwise.
         rot_deg = -(1.0 - alpha) * 90.0
-        tint = rl.Color(255, 255, 255, int(255 * alpha))
+        tint = rl_color(255, 255, 255, int(255 * alpha))
 
         if label:
             text_w = float(ui_text_width(label))
@@ -103,9 +103,9 @@ class PerkPromptUi:
         # Raylib clamps out-of-range UVs when the texture wrap mode is CLAMP.
         # Using src.x=tex.width with a negative width relies on REPEAT wrap to
         # wrap UVs back into range, making the bar disappear when clamped.
-        src = rl.Rectangle(0.0, 0.0, -float(tex.width), float(tex.height))
-        dst = rl.Rectangle(hinge.x, hinge.y, bar_w, bar_h)
-        origin = rl.Vector2(float(-local_x), float(-local_y))
+        src = rl_rectangle(0.0, 0.0, -float(tex.width), float(tex.height))
+        dst = rl_rectangle(hinge.x, hinge.y, bar_w, bar_h)
+        origin = rl_vector2(float(-local_x), float(-local_y))
         rl.draw_texture_pro(tex, src, dst, origin, rot_deg, tint)
 
         tex = resources.texture(TextureId.UI_TEXT_LEVEL_UP)
@@ -116,10 +116,10 @@ class PerkPromptUi:
         pulse_alpha = (100.0 + float(int(float(pulse) * 155.0 / 1000.0))) / 255.0
         pulse_alpha = max(0.0, min(1.0, pulse_alpha))
         label_alpha = max(0.0, min(1.0, alpha * pulse_alpha))
-        pulse_tint = rl.Color(255, 255, 255, int(255 * label_alpha))
-        src = rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height))
-        dst = rl.Rectangle(hinge.x, hinge.y, w, h)
-        origin = rl.Vector2(float(-local_x), float(-local_y))
+        pulse_tint = rl_color(255, 255, 255, int(255 * label_alpha))
+        src = rl_rectangle(0.0, 0.0, float(tex.width), float(tex.height))
+        dst = rl_rectangle(hinge.x, hinge.y, w, h)
+        origin = rl_vector2(float(-local_x), float(-local_y))
         rl.draw_texture_pro(tex, src, dst, origin, rot_deg, pulse_tint)
         if label_alpha > 0.0:
             rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)

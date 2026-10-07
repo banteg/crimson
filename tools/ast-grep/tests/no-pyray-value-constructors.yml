@@ -1,0 +1,18 @@
+id: no-pyray-value-constructors
+valid:
+  - |
+    color = rl_color(255, 0, 0, 255)
+  - |
+    rect = rl_rectangle(0.0, 0.0, 10.0, 20.0)
+  - |
+    vector = rl_vector2(1.0, 2.0)
+  - |
+    def draw(color: rl.Color, rect: rl.Rectangle, vector: rl.Vector2):
+        rl.draw_texture_pro(texture, rect, rect, vector, 0.0, color)
+invalid:
+  - |
+    color = rl.Color(255, 0, 0, 255)
+  - |
+    rect = rl.Rectangle(0.0, 0.0, 10.0, 20.0)
+  - |
+    vector = rl.Vector2(1.0, 2.0)

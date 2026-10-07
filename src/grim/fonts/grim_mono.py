@@ -6,7 +6,7 @@ import msgspec
 
 from grim.assets import TextureId, runtime_resources_for
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle, rl_vector2
 
 GRIM_MONO_ADVANCE = 16.0
 GRIM_MONO_DRAW_SIZE = 32.0
@@ -32,13 +32,13 @@ def _draw_mono_glyph(
 ) -> None:
     col = value % font.grid
     row = value // font.grid
-    src = rl.Rectangle(
+    src = rl_rectangle(
         float(col * font.cell_width),
         float(row * font.cell_height),
         float(font.cell_width),
         float(font.cell_height),
     )
-    dst = rl.Rectangle(x_pos, y_pos, draw_size, draw_size)
+    dst = rl_rectangle(x_pos, y_pos, draw_size, draw_size)
     rl.draw_texture_pro(font.texture, src, dst, origin, 0.0, color)
 
 
@@ -62,7 +62,7 @@ def draw_grim_mono_text(font: GrimMonoFont, text: str, pos: Vec2, scale: float, 
     advance = font.advance * scale
     draw_size = GRIM_MONO_DRAW_SIZE * scale
     line_height = GRIM_MONO_LINE_HEIGHT * scale
-    origin = rl.Vector2(0.0, 0.0)
+    origin = rl_vector2(0.0, 0.0)
     skip_advance = False
     for value in text.encode("latin-1", errors="replace"):
         if value == 0x0A:

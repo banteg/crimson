@@ -8,7 +8,7 @@ from typing import Any
 import msgspec
 from PIL import Image
 
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle
 
 from .canvas import Canvas, frame_rect
 from .render_pipeline import RaylibDrawScope, RenderPipeline, WindowSink
@@ -83,7 +83,7 @@ def _save_screenshot(path: Path) -> None:
     try:
         frame = frame_rect()
         dpi = rl.get_window_scale_dpi()
-        rl.image_crop(image, rl.Rectangle(frame.x * dpi.x, frame.y * dpi.y, frame.width * dpi.x, frame.height * dpi.y))
+        rl.image_crop(image, rl_rectangle(frame.x * dpi.x, frame.y * dpi.y, frame.width * dpi.x, frame.height * dpi.y))
         pixels = rl.ffi.buffer(image.data, image.width * image.height * 4)
         shot = Image.frombytes("RGBA", (image.width, image.height), pixels).convert("RGB")
     finally:

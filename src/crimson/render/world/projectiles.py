@@ -6,7 +6,7 @@ from grim.assets import TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.raylib_api import rd, rl
+from grim.raylib_api import rd, rl, rl_color, rl_rectangle, rl_vector2
 
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
@@ -54,7 +54,7 @@ def _glow_src(texture: rl.Texture) -> rl.Rectangle:
     cell_w = float(texture.width) / float(grid)
     cell_h = float(texture.height) / float(grid)
     frame = int(atlas.frame)
-    return rl.Rectangle(
+    return rl_rectangle(
         cell_w * float(frame % grid),
         cell_h * float(frame // grid),
         max(0.0, cell_w - 2.0),
@@ -73,8 +73,8 @@ def _draw_quad(
 ) -> None:
     if rgba.a <= 1e-3 or size <= 1e-3:
         return
-    dst = rl.Rectangle(pos.x, pos.y, size, size)
-    origin = rl.Vector2(size * 0.5, size * 0.5)
+    dst = rl_rectangle(pos.x, pos.y, size, size)
+    origin = rl_vector2(size * 0.5, size * 0.5)
     rl.draw_texture_pro(texture, src, dst, origin, rotation_rad * _RAD_TO_DEG, rgba.to_rl())
 
 
@@ -154,8 +154,8 @@ def _sharpshooter_laser_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> Non
     # Grim truncates each scaled float channel; the far slots are black.
     tail_alpha = int(f32(f32(alpha * 0.5) * 255.0))
     head_alpha = int(f32(f32(alpha * f32(0.2)) * 255.0))
-    tail = rl.Color(255, 0, 0, tail_alpha)
-    head = rl.Color(0, 0, 0, head_alpha)
+    tail = rl_color(255, 0, 0, tail_alpha)
+    head = rl_color(0, 0, 0, head_alpha)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     rl.rl_set_texture(bullet_trail_texture.id)

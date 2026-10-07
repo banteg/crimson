@@ -9,7 +9,7 @@ from grim.assets import RuntimeResources
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.rand import CrandLike
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 from grim.sfx_map import SfxId
 
 from ..persistence.highscores import NAME_MAX_EDIT, HighScoreRecord, upsert_highscore_record
@@ -28,7 +28,7 @@ from .text_input import (
 
 # The name box width both result screens pass to `ui_text_input_update` (`width_px = 0xa6`).
 NAME_INPUT_W = 166.0
-_COLOR_SAVE_ERROR = rl.Color(255, 255, 255, int(255 * 0.8))
+_COLOR_SAVE_ERROR = rl_color(255, 255, 255, int(255 * 0.8))
 
 
 class HighScoreNameEntry(msgspec.Struct):

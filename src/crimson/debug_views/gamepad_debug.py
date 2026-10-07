@@ -4,7 +4,7 @@ from grim import canvas
 from grim.config import default_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 from grim.view import ViewContext
 
 from ..gamepad_profile import apply_pad_profile
@@ -14,13 +14,13 @@ from ..sim.state_types import PlayerState
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import ViewInstance, register_view
 
-BG_COLOR = rl.Color(12, 12, 14, 255)
-TEXT_COLOR = rl.Color(220, 220, 220, 255)
-HINT_COLOR = rl.Color(140, 140, 140, 255)
-HELD_COLOR = rl.Color(255, 200, 80, 255)
-RING_COLOR = rl.Color(70, 70, 84, 255)
-MOVE_COLOR = rl.Color(120, 220, 120, 255)
-AIM_COLOR = rl.Color(255, 110, 110, 255)
+BG_COLOR = rl_color(12, 12, 14, 255)
+TEXT_COLOR = rl_color(220, 220, 220, 255)
+HINT_COLOR = rl_color(140, 140, 140, 255)
+HELD_COLOR = rl_color(255, 200, 80, 255)
+RING_COLOR = rl_color(70, 70, 84, 255)
+MOVE_COLOR = rl_color(120, 220, 120, 255)
+AIM_COLOR = rl_color(255, 110, 110, 255)
 
 PANEL_HEIGHT = 170.0
 ARENA_RADIUS = 60.0

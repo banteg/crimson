@@ -5,7 +5,7 @@ import msgspec
 from grim import canvas
 from grim.color import grim_color
 from grim.geom import Vec2
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_rectangle
 
 from ..input_codes import PadCode, pad_nav_pressed, pad_nav_stick
 
@@ -180,7 +180,7 @@ class UiFocus(msgspec.Struct):
         if self.timer_ms <= 0:
             return
         color = grim_color(0.8, 0.8, 0.6, float(self.timer_ms) * (0.8 / UI_FOCUS_TIMER_MS))
-        rl.draw_rectangle_rec(rl.Rectangle(pos.x, pos.y + 4.0, 6.0, 6.0), color)
+        rl.draw_rectangle_rec(rl_rectangle(pos.x, pos.y + 4.0, 6.0, 6.0), color)
 
 
 class UiFocusTarget(msgspec.Struct):

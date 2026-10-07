@@ -19,7 +19,7 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.music import play_music, stop_music
 from grim.rand import Crand, CrandLike
-from grim.raylib_api import rl
+from grim.raylib_api import rl, rl_color
 from grim.sfx_map import SfxId
 from grim.view import ViewContext
 
@@ -905,7 +905,7 @@ class BaseGameplayMode:
         if fade_alpha <= 0.0:
             return
         alpha = int(255 * max(0.0, min(1.0, fade_alpha)))
-        rl.draw_rectangle(0, 0, int(canvas.width()), int(canvas.height()), rl.Color(0, 0, 0, alpha))
+        rl.draw_rectangle(0, 0, int(canvas.width()), int(canvas.height()), rl_color(0, 0, 0, alpha))
 
     def _build_local_inputs(self) -> list[PlayerInput]:
         return self._local_input.build_frame_inputs(
