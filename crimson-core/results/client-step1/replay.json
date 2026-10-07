@@ -3,18 +3,27 @@
   "ticks": 1441,
   "fields_per_snapshot": 36343,
   "client_exit": {
-    "code": null,
-    "signal": "SIGSEGV"
+    "code": 0,
+    "signal": null
   },
   "client_stderr": "",
-  "client_snapshots": 1,
-  "compared_ticks": 0,
+  "client_snapshots": 2,
+  "compared_ticks": 1,
   "incomplete_snapshot_bytes": 0,
   "initialization_agree": true,
-  "first_uncompleted_tick": 0,
+  "stopped_on_divergence": true,
+  "first_uncompleted_tick": 1,
   "verifier_ticks": 1441,
   "verifier_state_sha256": "af9f632b6fc9facf6dc8a563481082ad29904be68a345097ac987c510b0eeadf",
-  "differences": [],
+  "differences": [
+    {
+      "field": "globals.player_weapon_popup_timer[0]",
+      "first_snapshot": 1,
+      "first_tick": 0,
+      "client_bits": 1073546090,
+      "verifier_bits": 1073741824
+    }
+  ],
   "blockers": [],
   "complete_stream": false,
   "full_state_agree": false,
@@ -45,7 +54,7 @@
   "hashes_after": {
     "native": "79e4ba66a196a0f5a913a5318f8643c9313ca4c7ceed0ee1464f2edcd10355c7",
     "wasm": "b925731b352eef830b2c219cd7a250bf93e6c7fda76e28741fd9bcd36272647a",
-    "client": "a35e6fdf5228410712bcc37f127e473994ab3f5bcd83cf22562719cd700c07a0"
+    "client": "0dad28327f387f7f383db7df4cce3fea333dbc04f655c5f86ada26e6b907873d"
   },
   "hashes_before": {
     "native": "79e4ba66a196a0f5a913a5318f8643c9313ca4c7ceed0ee1464f2edcd10355c7",
@@ -57,30 +66,37 @@
   },
   "observed_slots": [
     8,
+    9,
     11,
     12,
     17,
+    18,
+    22,
     32,
     48,
     49,
+    50,
+    52,
+    54,
+    55,
     58,
     60,
     63,
     64,
+    65,
+    66,
+    68,
     69,
-    72
+    70,
+    71,
+    72,
+    74,
+    79,
+    80,
+    81,
+    82
   ],
-  "grim_calls": 6867,
+  "grim_calls": 7229,
   "compiler": "Apple clang version 21.0.0 (clang-2100.3.34.2)",
-  "zig": "0.17.0",
-  "crash_diagnosis": "crash.json",
-  "render_coverage": {
-    "entered": [
-      "gameplay_render_world",
-      "terrain_render"
-    ],
-    "completed_gameplay_ticks": 0,
-    "hud_and_perk_screen_reached": false,
-    "proof": "LLDB crash stack"
-  }
+  "zig": "0.17.0"
 }

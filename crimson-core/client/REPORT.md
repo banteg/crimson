@@ -1,8 +1,8 @@
 # Quest 1.1 client contract evidence
 
-**Status: initialization agrees; restored world rendering crashes during tick 0.** Run start is authoritative: `ClientTickScope` covers both `portable_init` and simulation ticks. Initialization matches all 36,343 verifier snapshot fields. The client then reaches `terrain_render`, where `cv_terrainFilter` is null at recovered line 20 (`->value`, address 0x14). No gameplay tick completes, so terminal `RunResult` parity remains untested. No cvar setup, render behavior, RNG caller class or divergence was fixed.
+**Status: restored rendering changes canonical state at tick 0; stopped for review.** Run start is authoritative and still matches all 36,343 verifier snapshot fields. After restoring omitted original cvar registration and UI table/default setup, tick 0 completes. Its only differing field is `globals.player_weapon_popup_timer[0]`: client `1.9766666889190674` versus verifier `2.0`. Recovered HUD code decrements that timer at `ui_render_hud.cpp:779–780`. The remaining 36,342 fields agree at tick 0, including RNG. The harness stops before sending tick 1. No divergence or RNG ownership was fixed or reclassified; full client `RunResult` comparison is unavailable after this intentional stop.
 
-This is step 1 evidence only. `build.py --target client` emits `build/client/client`, a native headless executable from the unchanged 168-unit verifier selection plus the 27 explicitly listed units in [sources.json](sources.json). It does not produce a backend or release client. The normal native/WASM targets retain their source list, host and flags. The client refuses the standard verifier output directories.
+This is step 1 evidence only. `build.py --target client` emits `build/client/client`, a native headless executable from the unchanged 168-unit verifier selection plus the 32 explicitly listed units in [sources.json](sources.json). It does not produce a backend or release client. The normal native/WASM targets retain their source list, host and flags. The client refuses the standard verifier output directories.
 
 ## Constraints and baseline
 
@@ -10,8 +10,8 @@ This is step 1 evidence only. `build.py --target client` emits `build/client/cli
 - Gate: 142/142 streams; the regenerated report equals checked-in `results/gate.json` as a JSON value. Typ-o remains explicitly unsupported.
 - Comparator control: native verifier against unchanged WASM verifier, all 1,441 recording ticks plus initialization and all 36,343 schema fields agree. State stream SHA256: `af9f632b6fc9facf6dc8a563481082ad29904be68a345097ac987c510b0eeadf`.
 - Comparator negative control: injected RNG differences at snapshots 2/3 and health at snapshot 4 are reported separately at first ticks 1 and 3; the final result alone would not detect them.
-- Current-artifact preservation control: both native and WASM verifier executables remained byte-identical around the corrected client build/rerun. The user accepted the earlier macOS native rebuild metadata exception.
-- Recording probe: all 40 slots statically referenced by the compiled selection log once; RNG-outside-tick, unsupported Grim slot, Survival and Quest 1.2 controls abort with named reasons.
+- Current-artifact preservation control: both native and WASM verifier executables remained byte-identical around the setup-restored client build/rerun. The user accepted the earlier macOS native rebuild metadata exception.
+- Recording probe: all 41 slots statically referenced by the compiled selection log once; RNG-outside-tick, unsupported Grim slot, Survival and Quest 1.2 controls abort with named reasons.
 - No tracked edits under `decomp/`, `host/api.h` or `patches/`; no SDL, GL, Emscripten, mixer, decoder or audio-device implementation.
 
 The user accepted the macOS native rebuild metadata exception. The earlier repeated-rebuild UUID/object-timestamp/code-signature analysis remains in [native-rebuild.json](../results/client-step1/native-rebuild.json); no reproducible-linking change is part of this PR. This rerun does not rebuild the verifier and preserves both existing artifacts exactly.
@@ -21,7 +21,7 @@ The user accepted the macOS native rebuild metadata exception. The earlier repea
 | native | `79e4ba66a196a0f5a913a5318f8643c9313ca4c7ceed0ee1464f2edcd10355c7` | `79e4ba66a196a0f5a913a5318f8643c9313ca4c7ceed0ee1464f2edcd10355c7` | True |
 | wasm | `b925731b352eef830b2c219cd7a250bf93e6c7fda76e28741fd9bcd36272647a` | `b925731b352eef830b2c219cd7a250bf93e6c7fda76e28741fd9bcd36272647a` | True |
 
-Client SHA256: `a35e6fdf5228410712bcc37f127e473994ab3f5bcd83cf22562719cd700c07a0`. Compiler: Apple clang version 21.0.0 (clang-2100.3.34.2); Zig 0.17.0. The client inherits the verifier build flags (`-O2`, C++17, no exceptions/RTTI, no strict aliasing, wrapping integers, FP contraction off, existing portable math and rule patches).
+Client SHA256: `0dad28327f387f7f383db7df4cce3fea333dbc04f655c5f86ada26e6b907873d`. Compiler: Apple clang version 21.0.0 (clang-2100.3.34.2); Zig 0.17.0. The client inherits the verifier build flags (`-O2`, C++17, no exceptions/RTTI, no strict aliasing, wrapping integers, FP contraction off, existing portable math and rule patches).
 
 ## Session contract and remaining review items
 
@@ -31,13 +31,13 @@ Client SHA256: `a35e6fdf5228410712bcc37f127e473994ab3f5bcd83cf22562719cd700c07a0
 4. **Pause and presentation:** fully paused/menu/perk presentation should advance no authoritative time or RNG. Preserve the command transition tick before pausing; clear accumulated gameplay debt on pause/restart/tab suspension. The current evidence target rejects pause and unrelated states. Its command-triggered recovered perk-screen call is instrumented in the transition tick; it is not evidence of a valid independent paused UI clock.
 5. **Render work:** keep weapon guards, effect-queue processing, corpse and terrain bakes once per authoritative tick. For zero/multiple simulation ticks per display frame, preserve ordered persistent work from every tick and present only the latest transient scene. No display cadence scheduler exists here. The restored perk screen also calls world rendering; duplicate authoritative work must be investigated before adopting it. Nothing was moved or deduplicated.
 6. **Completion:** preserve terminal outcome versus incomplete stream, the simulated 500 ms run-down, pending perks, final RNG and all player fields. Derive `RunResult` with the existing gate reducer. Early abort/rejection must never pass as zero compared ticks. A complete client result can only be compared after the complete input stream.
-7. **Resources and Grim queries:** stable resource IDs/dimensions/font metrics and synchronous queries must be defined before initialization. All used slots record ordered calls. Baseline sentinel returns are retained as evidence (texture handle 1, text width 0, input from the existing host); none is certified neutral. Original UI geometry, pointer-bearing tables and callback layouts are not bootstrapped by this experiment.
+7. **Resources and Grim queries:** stable resource IDs/dimensions/font metrics and synchronous queries must be defined before initialization. All used slots record ordered calls. Baseline sentinel returns are retained as evidence (texture handle 1, text width 0, input from the existing host); none is certified neutral. The original UI table/default stage and native-width storage are restored; asset-backed menu/prompt geometry and the full menu layout remain unbootstrapped. The menu-layout asset remainder aborts by name.
 8. **Sound:** compile the recovered trigger guards, cooldown/sample-rate/pan calculations and record trigger entry. The first actual playback/volume/pan-device boundary aborts by name; no buffers/devices are created. Music-selection RNG remains unchanged. Direct `rand()` voice stealing is inventoried but its recovered device routine is not linked. Proposed presentation RNG ownership below is not applied.
 9. **Unsupported paths:** named aborts cover modes/quests outside this slice, pause, console activation, demo/tutorial/trial paths, persistence, preset loading, Windows key-name lookup, UI element callbacks, sound devices, unrelated state transitions and Grim slots absent from this closure. A successful compile does not prove all indirect/data dependencies are valid; linking the wider baseline does not authorize its other modes.
 
 ## Dependency closure
 
-The closure is the existing verifier selection plus these added bodies. Static and link closure succeeded; runtime closure reaches the world pass and stops at the first terrain cvar read in tick 0. Verifier return stubs remain unchanged. Client-only replacements remove the world/HUD/prompt/cursor stubs and call the recovered perk screen when a command requests it. Generated copies alone intercept Windows/device/callback boundaries. No recovered file is edited.
+The closure is the existing verifier selection plus these added bodies. All 200 selected units compile and link. Runtime closure completes world/HUD rendering and tick 0, then stops at its first differing canonical field. Verifier return stubs remain unchanged. Client-only replacements remove the world/HUD/prompt/cursor stubs and call the recovered perk screen when a command requests it. Generated copies alone intercept Windows/device/callback boundaries. No recovered file is edited.
 
 | Added source | Purpose |
 | --- | --- |
@@ -68,22 +68,58 @@ The closure is the existing verifier selection plus these added bodies. Static a
 | [ui_focus_update](../../decomp/1.9/crimsonland/ui_widgets/ui_focus_update.cpp) | Perk/prompt, widget, focus, cursor and UI dependency |
 | [ui_get_element_index](../../decomp/1.9/crimsonland/ui_elements/ui_get_element_index.c) | Perk/prompt, widget, focus, cursor and UI dependency |
 | [ui_mouse_inside_rect](../../decomp/1.9/crimsonland/game/ui_mouse_inside_rect.c) | Perk/prompt, widget, focus, cursor and UI dependency |
+| [console_register_cvar](../../decomp/1.9/crimsonland/console/console_register_cvar.cpp) | Original registration and allocation |
+| [console_cvar_find](../../decomp/1.9/crimsonland/console/console_cvar_find.cpp) | Registration list lookup only |
+| [register_core_cvars](../../decomp/1.9/crimsonland/game/register_core_cvars.cpp) | Original 13 defaults |
+| [ui_menu_layout_init](../../decomp/1.9/crimsonland/menus/ui_menu_layout_init.cpp) | Only original table/default prefix; remainder aborts |
+| [ui_element_init_defaults](../../decomp/1.9/crimsonland/menus/ui_element_init_defaults.cpp) | Original UI element defaults |
+
+## Original setup restorations and cvar defaults
+
+1. Link the unchanged `register_core_cvars`, `console_register_cvar` and its one list-lookup dependency, `console_cvar_find`. Call registration during client initialization after data reset, then apply `PortableConfig.friendly_fire` to the registered cvar (0 for this recording). The requested fallback is unnecessary; no console command or render subsystem is linked.
+2. Expand only generated client cvar pointers and the registration-list storage for native pointer width. Generate a matching `cvar_float_t.value` offset and assert it equals `console_cvar_entry_t.value` (20 bytes on this host). Existing float-only readers now read the original registered values. The small `crt_atof_l` shim parses the numeric defaults with `strtod`; there is no verifier edit or replacement default.
+3. The next tick-0 crash was `ui_element_table[0] == nullptr` at original `ui_elements_max_timeline.c:8`; LLDB identifies the call from `ui_elements_update_and_render`. Restore the original `ui_menu_layout_init` prefix, lines 265–331, containing table bindings and the 41-element defaults loop. It runs as `client_ui_table_defaults_init` during initialization after viewport configuration. Its asset/menu layout remainder stays outside this slice; calling `ui_menu_layout_init` aborts as `ui:menu-layout-assets`. This is a partial setup restoration, not a claim that menu/prompt geometry is ready.
+4. Allocate all 42 UI records and the 41-pointer table at native width in generated client data; rebase its original table aliases. The separate prompt record remains at reset values until recovered prompt code runs. No callbacks or asset loading are enabled.
+
+Every restoration is client-only. Initialization still agrees on the entire existing schema. The raw trace records these 13 defaults before applying the run configuration; [setup.json](../results/client-step1/setup.json) holds the defaults, comparisons and restored crash sites.
+
+| Cvar | Original default text | Verifier hand-wired value | Match |
+| --- | --- | --- | --- |
+| `cv_silentloads` | `1` | Not wired | — |
+| `cv_terrainFilter` | `1` | Not wired | — |
+| `cv_bodiesFade` | `1` | 1 | Yes |
+| `cv_uiTransparency` | `1` | Not wired | — |
+| `cv_uiPointFilterPanels` | `0` | Not wired | — |
+| `cv_enableMousePointAndClickMovement` | `0` | Not wired | — |
+| `cv_verbose` | `0` | 0 | Yes |
+| `cv_terrainBodiesTransparency` | `0` | 0.8 | **No** |
+| `cv_uiSmallIndicators` | `0` | Not wired | — |
+| `cv_aimEnhancementFade` | `0.7` | Not wired | — |
+| `cv_friendlyFire` | `0` | PortableConfig (0 here) | Run override after registration |
+| `cv_showFPS` | `0` | Not wired | — |
+| `cv_padAimDistMul` | `96` | 128 | **No** |
+
+`cv_terrainBodiesTransparency` (verifier 0.8, original 0) and `cv_padAimDistMul` (verifier 128, original 96) are verifier-default findings. `cv_bodiesFade` (1) and `cv_verbose` (0) match. These cvars are outside the current snapshot schema; the default mismatches are not being reported as a proven cause of the tick-0 field difference. The verifier is unchanged.
 
 ## Every observed divergence or blocker
 
 | Evidence | First differing tick | Observation |
 | --- | --- | --- |
-| Initialization full state | None | All 36,343 fields agree; one complete snapshot retained. |
-| Restored terrain renderer | Tick 0, before completion | `cv_terrainFilter == nullptr`; read at `terrain_render.cpp:20`, SIGSEGV/address 0x14. LLDB stack reaches world render from gameplay update. |
-| Out-of-scope RNG | None observed | 10,594 startup draws are authorized inside `portable_init`; no draw was reported outside initialization/ticks. No RNG draw occurs in the tick-0 prefix before the crash. |
-| Per-tick full state | Unavailable after init | Zero completed ticks, so no gameplay-state divergence is established. |
-| Full terminal client `RunResult` | Unavailable | Client crashes; verifier completes all 1,441 ticks and matches the recording claim. |
+| Initialization full state | None | All 36,343 fields agree. |
+| `globals.player_weapon_popup_timer[0]` | **0** | Client 1.9766666889190674 (`0x3ffd036a`) versus verifier 2.0 (`0x40000000`); recovered `ui_render_hud.cpp:779–780` subtracts `frame_dt * 1.4f`. |
+| Other full-state fields | None through tick 0 | All other 36,342 words agree, including RNG, health, experience, effects, pools and pending state. |
+| Out-of-scope RNG | None observed | Startup draws are inside `portable_init`; the only tick-0 draw is the existing host tail. |
+| Later ticks / terminal client `RunResult` | Unavailable | Input stops before tick 1 on the first differing snapshot; no terminal client result is manufactured from the prefix. |
 
-The failure is missing renderer cvar setup, not evidence that the renderer changes authoritative state. It remains unfixed. `grim_measure_text_width` and the perk screen's second world-render pass have not been reached, so both remain leads, not confirmed divergences. Font metrics, remaining renderer/UI configuration, persistent work, pause/display cadence and state outside `schema.json` remain untested. See [crash.json](../results/client-step1/crash.json) and [calls.json](../results/client-step1/calls.json).
+The HUD timer is already a canonical schema field. Its mutation proves that this recovered rendering path changes verifier-compared state, even though this one tick shows no RNG, health or experience difference. No timer ownership decision, relocation or fix is made. See [divergence.json](../results/client-step1/divergence.json) for exact bits and source attribution, and [replay.json](../results/client-step1/replay.json) for all differences at the stopping boundary.
+
+The comparator sends initialization and each tick only after comparing the previous snapshot. It closes input at the first differing boundary, so later client ticks do not execute. The verifier separately finishes its full reference stream; that is not a complete client comparison. The earlier full-stream negative control still finds both transient RNG and health differences at their first ticks, and the new stop control halts at its first planted RNG difference (tick 1) without sending tick 2.
 
 ### Observed slot and RNG usage
 
-Initialization logs 6,860 Grim calls and 10,594 RNG draws: `gameplay_reset_state` 386, `terrain_generate_random` 5,106, `terrain_generate` 5,100, `quest_start_selected` 1 and the host init tail 1. It also logs two guarded `sfx_play_panned` triggers. The incomplete tick-0 prefix logs only five `grim_is_key_active` and two `grim_is_key_down` calls. There are no HUD/perk-screen calls or renderer slot calls after run start before the crash.
+Initialization logs 6,861 Grim calls and 10,594 RNG draws: `gameplay_reset_state` 386, `terrain_generate_random` 5,106, `terrain_generate` 5,100, `quest_start_selected` 1 and the host init tail 1. It also logs two guarded `sfx_play_panned` triggers. Tick 0 logs 368 Grim calls and one host-tail RNG draw. There are 30 distinct observed slots across initialization and tick 0.
+
+`grim_measure_text_width` is not reached before the stop. Its statically consumed headless result remains 0. The perk screen and its second world pass are also not reached. Font metrics and duplicate world work remain unresolved leads, not additional confirmed differences.
 
 | Phase | Slot | Calls | Return read (static flag) |
 | --- | --- | --- | --- |
@@ -92,14 +128,39 @@ Initialization logs 6,860 Grim calls and 10,594 RNG draws: `gameplay_reset_state
 | portable_init | `grim_clear_color` | 2 | False |
 | portable_init | `grim_draw_quad_xy` | 3400 | False |
 | portable_init | `grim_end_batch` | 6 | False |
+| portable_init | `grim_get_config_var` | 1 | True |
 | portable_init | `grim_get_texture_handle` | 6 | True |
 | portable_init | `grim_set_color` | 8 | False |
 | portable_init | `grim_set_config_var` | 20 | False |
 | portable_init | `grim_set_render_target` | 4 | False |
 | portable_init | `grim_set_rotation` | 3400 | False |
 | portable_init | `grim_set_uv` | 2 | False |
-| tick_0_incomplete | `grim_is_key_active` | 5 | True |
-| tick_0_incomplete | `grim_is_key_down` | 2 | True |
+| tick_0 | `grim_begin_batch` | 37 | False |
+| tick_0 | `grim_bind_texture` | 37 | False |
+| tick_0 | `grim_draw_circle_filled` | 1 | False |
+| tick_0 | `grim_draw_circle_outline` | 1 | False |
+| tick_0 | `grim_draw_fullscreen_quad` | 1 | False |
+| tick_0 | `grim_draw_quad` | 31 | False |
+| tick_0 | `grim_draw_rect_filled` | 4 | False |
+| tick_0 | `grim_draw_text_mono` | 1 | False |
+| tick_0 | `grim_draw_text_mono_fmt` | 1 | False |
+| tick_0 | `grim_draw_text_small` | 1 | False |
+| tick_0 | `grim_draw_text_small_fmt` | 5 | False |
+| tick_0 | `grim_end_batch` | 38 | False |
+| tick_0 | `grim_get_texture_handle` | 3 | True |
+| tick_0 | `grim_is_key_active` | 5 | True |
+| tick_0 | `grim_is_key_down` | 2 | True |
+| tick_0 | `grim_is_mouse_button_down` | 1 | True |
+| tick_0 | `grim_set_atlas_frame` | 8 | False |
+| tick_0 | `grim_set_color` | 46 | False |
+| tick_0 | `grim_set_color_ptr` | 1 | False |
+| tick_0 | `grim_set_color_slot` | 4 | False |
+| tick_0 | `grim_set_config_var` | 79 | False |
+| tick_0 | `grim_set_rotation` | 21 | False |
+| tick_0 | `grim_set_sub_rect` | 2 | False |
+| tick_0 | `grim_set_uv` | 35 | False |
+| tick_0 | `grim_submit_vertices_transform` | 2 | False |
+| tick_0 | `grim_was_key_pressed` | 1 | True |
 
 Verifier full `RunResult`:
 
@@ -125,7 +186,7 @@ Verifier full `RunResult`:
 
 ## Grim slot table and proposed dispositions
 
-Offsets are original 32-bit vtable offsets, not native pointer strides. `read` is a conservative static flag for a non-void result used in an expression in the selected recovered sources. It is attached to every recorded invocation of that slot; it does not imply every invocation reads the result or that the result is authoritative. `used` means static closure use, not replay coverage. Thirteen slots were observed across initialization and the incomplete tick-0 prefix; exact counts are above. The 40-slot probe calls the recording implementation directly and is not recovered render evidence.
+Offsets are original 32-bit vtable offsets, not native pointer strides. `read` is a conservative static flag for a non-void result used in an expression in the selected recovered sources. It is attached to every recorded invocation of that slot; it does not imply every invocation reads the result or that the result is authoritative. `used` means static closure use, not replay coverage. Thirty slots were observed across initialization and completed tick 0; exact counts are above. The 41-slot probe calls the recording implementation directly and is not recovered render evidence.
 
 | Slot / offset | Method | Return | Used | Read | Proposed disposition |
 | --- | --- | --- | --- | --- | --- |
@@ -138,7 +199,7 @@ Offsets are original 32-bit vtable offsets, not native pointer strides. `read` i
 | 6 / 0x018 | `grim_shutdown` | `void` | False | False | Outside slice: named abort |
 | 7 / 0x01c | `grim_apply_settings` | `bool` | False | False | Outside slice: named abort |
 | 8 / 0x020 | `grim_set_config_var` | `void` | True | False | Ordered graphics configuration and query state |
-| 9 / 0x024 | `grim_get_config_var` | `grim_config_value_t` | False | False | Outside slice: named abort |
+| 9 / 0x024 | `grim_get_config_var` | `grim_config_value_t` | True | True | Original table setup query; sentinel 0 retained, resource/config contract unresolved |
 | 10 / 0x028 | `grim_get_error_text` | `char *` | False | False | Outside slice: named abort |
 | 11 / 0x02c | `grim_clear_color` | `void` | True | False | Record ordered presentation operation; future owned renderer |
 | 12 / 0x030 | `grim_set_render_target` | `bool` | True | False | Ordered persistent target switch; specify success/failure result |
@@ -288,21 +349,21 @@ All 64 recovered `crt_rand` caller files and the separate direct-`rand()` playba
 | `host/host.cpp::portable_init` | Bootstrap tail `crt_rand()` | Client-generated host | Authoritative run-start draw; authorized by initialization scope; observed once |
 | `host/host.cpp::portable_step_many` | Tick tail `crt_rand()` | Client-generated host | Authoritative baseline frame draw; inside tick |
 
-The corrected replay reports no out-of-scope RNG caller before its tick-0 crash. Startup draws listed above are observed authoritative work. The standalone guard probe still aborts outside initialization/ticks. Static entries must not be presented as observed presentation callers.
+The setup-restored replay reports no out-of-scope RNG caller through completed tick 0. Startup draws listed above are observed authoritative work. The standalone guard probe still aborts outside initialization/ticks. Static entries must not be presented as observed presentation callers.
 
 ## Reproduce
 
 ```sh
 uv run --no-sync python crimson-core/build.py --target client
 uv run --no-sync python crimson-core/checks/client_evidence.py
-# Expected exit 1: client crashes in terrain_render during tick 0, after matching initialization.
+# Expected exit 1: first canonical difference at tick 0; stop before tick 1.
 # --before path/to/hashes.json records native/wasm identity against your captured baseline.
 node crimson-core/checks/matrix.mjs
 uv run --no-sync python crimson-core/checks/gate.py --jobs 8
 ```
 
-Do not rebuild the native verifier when checking preservation of an existing executable: copy/hash it first. The client build never needs to rebuild either verifier. Compact diagnostic JSON, call summaries, guard controls and baseline equality are checked in under [results/client-step1](../results/client-step1/). The existing ranked fixture is `tests/fixtures/replays/quest-1.1-completed.crd`; `results/gate.json` identifies it. The full call trace, generated inventory and private `.rsi` stream are produced on demand under `build/client/evidence`; `.rsi` contains no claimed result.
+Do not rebuild the native verifier when checking preservation of an existing executable: copy/hash it first. The client build never needs to rebuild either verifier. Compact setup/divergence JSON, call summaries, guard controls and baseline equality are checked in under [results/client-step1](../results/client-step1/). The existing ranked fixture is `tests/fixtures/replays/quest-1.1-completed.crd`; `results/gate.json` identifies it. The full call trace, generated inventory and private `.rsi` stream are produced on demand under `build/client/evidence`; `.rsi` contains no claimed result.
 
-Run-start ownership is resolved and the earlier native metadata exception is accepted. Review the missing terrain cvar setup before continuing this slice. The font-metric and possible duplicate-world-render leads remain for later replay evidence. This PR remains a draft.
+Run-start ownership is resolved and the earlier native metadata exception is accepted. Original cvar registration and the minimum original table/default stage are restored. The first canonical state divergence is reported at tick 0 and remains unfixed. Review it before continuing; font metrics and the possible duplicate world pass still lack later replay evidence. This PR remains a draft.
 
 The client CI step and client artifact uploads were removed. `checks/client_contract.py` remains a local tool that validates instrumentation, verifier preservation and the comparator control while reporting the actual replay result; it no longer asserts a particular failure. No client build was added to the ordinary core CI run.

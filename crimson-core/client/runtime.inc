@@ -1,4 +1,5 @@
 // Included by the generated client host only. No verifier macro or ABI changes.
+#include "crimsonland_console.h"
 static bool client_in_tick;
 extern "C" unsigned char game_paused_flag, console_open_flag;
 static FILE *client_trace() {
@@ -11,6 +12,13 @@ static FILE *client_trace() {
     return f;
   }();
   return file;
+}
+extern "C" void register_core_cvars();
+extern "C" void client_ui_table_defaults_init();
+extern "C" double crt_atof_l(char *text) { return strtod(text, nullptr); }
+static void client_record_cvars() {
+  for (auto *entry = console_log_queue.cvar_head; entry; entry = entry->next)
+    fprintf(client_trace(), "{\"event\":\"cvar_default\",\"name\":\"%s\",\"text\":\"%s\",\"value\":%.9g}\n", entry->name, entry->string_value, entry->value);
 }
 [[noreturn]] void client_unsupported(const char *reason) {
   fprintf(client_trace(), "{\"event\":\"unsupported\",\"tick\":%u,\"reason\":\"%s\"}\n", tick, reason);

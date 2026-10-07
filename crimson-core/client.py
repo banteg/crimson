@@ -34,16 +34,112 @@ def instrument(src, text):
         )
     if src.stem == "ui_element_update":
         text = replace_once(text, "element->on_activate();", 'client_unsupported("ui:element-callback");')
+    if src.stem == "ui_menu_layout_init":
+        # Restore only its table/default setup stage; the asset/menu layout tail
+        # is outside the gameplay slice. Keep the original assignments/defaults.
+        text = text[: text.index("    copy_layer(ui_sign_crimson, ui_sign_crimson_template);")] + "}\n"
+        text = replace_once(
+            text, 'extern "C" void ui_menu_layout_init(void)', 'extern "C" void client_ui_table_defaults_init(void)',
+        )
+        text += 'extern "C" void ui_menu_layout_init(void) { client_unsupported("ui:menu-layout-assets"); }\n'
+        text = replace_once(
+            text, "#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER", "// Client globals use native-width storage.",
+        )
     return '#include "client.h"\n' + text
 
 
+def prepare_cvars(root, out):
+    # Recover registration unchanged; only generated native storage/layout expands.
+    registration = (root / "decomp/1.9/crimsonland/game/register_core_cvars.cpp").read_text()
+    cvars = re.findall(r"\b(cv_\w+)\s*=", registration)
+    if len(cvars) != 13 or len(set(cvars)) != 13:
+        raise ValueError("Audit changed core cvar registration")
+    types = (root / "third_party/headers/crimsonland_types.h").read_text()
+    types = replace_once(
+        types,
+        "unsigned char _pad0[0x0c];\n    float value;",
+        "unsigned char _pad0[sizeof(void *) * 2 + sizeof(int)];\n    float value;",
+    )
+    (out / "include/crimsonland_types.h").write_text(types)
+    data = (out / "data.cpp").read_text()
+    symbols = cvars + ["console_log_queue", "console_command_list_head", "console_log_head"]
+    for symbol in symbols:
+        data, count = re.subn(r'^asm\("\.globl " P "' + symbol + r"\\n\.set .*?\);\n", "", data, flags=re.MULTILINE)
+        if count != 1:
+            raise ValueError(f"Audit changed client cvar data symbol: {symbol}")
+    storage = [
+        '#include "crimsonland_console.h"',
+        "#include <stddef.h>",
+        "static_assert(offsetof(cvar_float_t, value) == offsetof(console_cvar_entry_t, value));",
+        'extern "C" {',
+        "alignas(console_queue_t) unsigned char client_console_queue[sizeof(console_queue_t)];",
+        'asm(".globl " P "console_log_queue\\n.set " P "console_log_queue, " P "client_console_queue\\n");',
+        *[f"console_cvar_entry_t *{name};" for name in cvars],
+        "}",
+    ]
+    # Console interior aliases are unused here; console activation still aborts.
+    resets = "memset(client_console_queue, 0, sizeof(client_console_queue));\n" + "\n".join(
+        f"{name} = nullptr;" for name in cvars
+    )
+    data = replace_once(data, "void portable_reset_data() {", "void portable_reset_data() {\n" + resets)
+    (out / "data.cpp").write_text(data.replace('extern "C" {', "\n".join(storage) + '\nextern "C" {', 1))
+
+
+def prepare_ui_table(root, out):
+    owner = (root / "tools/match/include/crimsonland_ui_state_owner.h").read_text()
+    elements = re.findall(r"struct ui_element_t (\w+);", owner)
+    if len(elements) != 42:
+        raise ValueError("Audit changed UI element owner")
+    data = (out / "data.cpp").read_text()
+    # The original table aliases expose 41 pointers with a 4-byte stride.
+    table = re.search(
+        r'asm\("\.globl " P "ui_element_table\\n\.set " P "ui_element_table, " P "(portable_data_\d+)\+0\\n"\);', data,
+    )
+    if not table:
+        raise ValueError("Audit changed UI table storage")
+    aliases = re.findall(r'asm\("\.globl " P "(\w+)\\n\.set .*?' + table[1] + r'\+(\d+)\\n"\);', data)
+    if len(aliases) != 42:
+        raise ValueError("Audit changed UI table aliases")
+    storage = [
+        'extern "C" {',
+        *[f"ui_element_t {name};" for name in elements],
+        "ui_element_t *ui_element_table[41];",
+        "}",
+    ]
+    for name, offset in aliases:
+        if name == "ui_element_table":
+            continue
+        storage += [
+            "#if UINTPTR_MAX > 0xffffffffu",
+            f'asm(".globl " P "{name}\\n.set " P "{name}, " P "ui_element_table+{int(offset) * 2}\\n");',
+            "#else",
+            f'asm(".globl " P "{name}\\n.set " P "{name}, " P "ui_element_table+{offset}\\n");',
+            "#endif",
+        ]
+    for symbol in elements + [name for name, _ in aliases] + ["ui_sign_crimson_update_disabled"]:
+        data, count = re.subn(r'^asm\("\.globl " P "' + symbol + r"\\n\.set .*?\);\n", "", data, flags=re.MULTILINE)
+        if count != 1:
+            raise ValueError(f"Audit changed UI data symbol: {symbol}")
+    storage.append(
+        'asm(".globl " P "ui_sign_crimson_update_disabled\\n.set " P "ui_sign_crimson_update_disabled, " P "ui_sign_crimson+2\\n");',
+    )
+    resets = "\n".join(f"memset(&{name}, 0, sizeof({name}));" for name in elements)
+    resets += "\nmemset(ui_element_table, 0, sizeof(ui_element_table));"
+    data = replace_once(data, "void portable_reset_data() {", "void portable_reset_data() {\n" + resets)
+    (out / "data.cpp").write_text(data.replace('extern "C" {', "\n".join(storage) + '\nextern "C" {', 1))
+
+
 def prepare(root, out, sources):
+    prepare_cvars(root, out)
+    prepare_ui_table(root, out)
     header = (root / "tools/match/include/grim2d_cpp.h").read_text()
     methods = re.findall(r"virtual\s+(.+?)\s*(grim_\w+)\(", header)
     methods = [(ret, name) for ret, name in methods if "legacy" not in name]
     reads, callers, sites = set(), [], []
     for rel in sources:
         text = (root / rel).read_text()
+        if Path(rel).stem == "ui_menu_layout_init":
+            text = text[: text.index("    copy_layer(ui_sign_crimson, ui_sign_crimson_template);")]
         for number, line in enumerate(text.splitlines(), 1):
             if "crt_rand()" in line or re.search(r"\brand\(\)", line):
                 callers.append({"source": rel, "line": number, "expression": line.strip()})
@@ -156,6 +252,16 @@ def prepare(root, out, sources):
         'extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {\n'
         "  ClientTickScope client_init_scope;\n"
         '  if (mode != GAME_MODE_QUEST || major != 1 || minor != 1) client_unsupported("session:only-quest-1.1");',
+    )
+    first = host.index("  friendly.value = cfg.friendly_fire ? 1 : 0;")
+    last = host.index("  config_blob.player_count = 1;", first)
+    host = (
+        host[:first]
+        + "  register_core_cvars();\n  client_record_cvars();\n  cv_friendlyFire->value = cfg.friendly_fire ? 1 : 0;\n"
+        + host[last:]
+    )
+    host = replace_once(
+        host, '  trace_init("creature pool");', '  client_ui_table_defaults_init();\n  trace_init("creature pool");',
     )
     host = replace_once(
         host,

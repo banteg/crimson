@@ -6,7 +6,9 @@ import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { decode, init, loadCore, names, state, step } from "./engine.mjs";
 
-const [inputFile, client, wasm, output] = process.argv.slice(2);
+const [inputFile, client, wasm, output, option] = process.argv.slice(2);
+const stopOnDivergence = option === "--stop-on-divergence";
+if (option && !stopOnDivergence) throw Error(`Unknown option ${option}`);
 if (!output) throw Error("Usage: client_compare.mjs input.rsi client core.wasm report.json");
 const run = decode(fs.readFileSync(inputFile));
 const e = loadCore(wasm);
@@ -23,7 +25,10 @@ const completion = new Promise((resolve, reject) => {
 });
 const timer = setTimeout(() => child.kill(), 120000);
 child.stdin.on("error", () => {});
-child.stdin.end(fs.readFileSync(inputFile));
+// Feed one boundary at a time in evidence mode: never execute a later tick
+// after the first differing snapshot. Other controls can inspect a full stream.
+if (stopOnDivergence) child.stdin.write(run.config);
+else child.stdin.end(fs.readFileSync(inputFile));
 let stderr = "", pending = Buffer.alloc(0), snapshots = 0, clientFinal, initializationAgree = null;
 child.stderr.on("data", (chunk) => { stderr += chunk; });
 const differences = new Map(), verifierHash = crypto.createHash("sha256");
@@ -56,6 +61,10 @@ try {
       }
       ++snapshots;
       pending = pending.subarray(bytes + 4);
+      if (stopOnDivergence) {
+        if (differences.size || snapshots > run.records.length) child.stdin.end();
+        else child.stdin.write(run.records[snapshots - 1]);
+      }
     }
   }
   const exit = await completion;
@@ -69,6 +78,7 @@ try {
     client_exit: exit, client_stderr: stderr.trim(), client_snapshots: snapshots,
     compared_ticks: Math.max(0, snapshots - 1), incomplete_snapshot_bytes: pending.length,
     initialization_agree: initializationAgree,
+    stopped_on_divergence: stopOnDivergence && differences.size > 0,
     first_uncompleted_tick: snapshots > 0 && snapshots <= run.records.length ? snapshots - 1 : null,
     verifier_ticks: run.records.length, verifier_state_sha256: verifierHash.digest("hex"),
     differences: [...differences.values()], blockers: events.filter((event) => ["unsupported", "rand_outside_tick"].includes(event.event)),

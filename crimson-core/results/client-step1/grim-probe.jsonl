@@ -1,4 +1,5 @@
 {"event":"grim","tick":0,"in_tick":false,"slot":8,"name":"grim_set_config_var","return_read":false}
+{"event":"grim","tick":0,"in_tick":false,"slot":9,"name":"grim_get_config_var","return_read":true}
 {"event":"grim","tick":0,"in_tick":false,"slot":11,"name":"grim_clear_color","return_read":false}
 {"event":"grim","tick":0,"in_tick":false,"slot":12,"name":"grim_set_render_target","return_read":false}
 {"event":"grim","tick":0,"in_tick":false,"slot":17,"name":"grim_is_key_down","return_read":true}

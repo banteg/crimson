@@ -1,0 +1,166 @@
+{
+  "restorations": [
+    {
+      "setup": "13 core cvars",
+      "source": "decomp/1.9/crimsonland/game/register_core_cvars.cpp",
+      "dependencies": [
+        "console/console_register_cvar.cpp",
+        "console/console_cvar_find.cpp"
+      ],
+      "configuration_override": {
+        "cv_friendlyFire": 0
+      },
+      "fallback_used": false
+    },
+    {
+      "setup": "native-width cvar pointers and console registration list; matching cvar value offsets",
+      "scope": "generated client data.cpp and include/crimsonland_types.h only",
+      "cvar_value_offset": 20,
+      "console_constructor": "not linked; console activation aborts"
+    },
+    {
+      "setup": "original 41 UI table bindings and ui_element_init_defaults",
+      "source": "decomp/1.9/crimsonland/menus/ui_menu_layout_init.cpp",
+      "original_lines": [
+        265,
+        331
+      ],
+      "compiled_stage": "prefix through defaults loop; asset/menu layout remainder is a named abort",
+      "dependencies": [
+        "menus/ui_element_init_defaults.cpp"
+      ],
+      "scope": "generated client copies only"
+    },
+    {
+      "setup": "native-width UI table and 42 UI records, including prompt storage",
+      "scope": "generated client data.cpp only",
+      "note": "table has 41 records; prompt is a separate record; table aliases use native pointer stride"
+    }
+  ],
+  "registered_defaults": [
+    {
+      "event": "cvar_default",
+      "name": "cv_silentloads",
+      "text": "1",
+      "value": 1
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_terrainFilter",
+      "text": "1",
+      "value": 1
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_bodiesFade",
+      "text": "1",
+      "value": 1
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_uiTransparency",
+      "text": "1",
+      "value": 1
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_uiPointFilterPanels",
+      "text": "0",
+      "value": 0
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_enableMousePointAndClickMovement",
+      "text": "0",
+      "value": 0
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_verbose",
+      "text": "0",
+      "value": 0
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_terrainBodiesTransparency",
+      "text": "0",
+      "value": 0
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_uiSmallIndicators",
+      "text": "0",
+      "value": 0
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_aimEnhancementFade",
+      "text": "0.7",
+      "value": 0.699999988
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_friendlyFire",
+      "text": "0",
+      "value": 0
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_showFPS",
+      "text": "0",
+      "value": 0
+    },
+    {
+      "event": "cvar_default",
+      "name": "cv_padAimDistMul",
+      "text": "96",
+      "value": 96
+    }
+  ],
+  "verifier_default_comparison": [
+    {
+      "name": "cv_bodiesFade",
+      "original_text": "1",
+      "original_value": 1,
+      "verifier_value": 1,
+      "match": true
+    },
+    {
+      "name": "cv_verbose",
+      "original_text": "0",
+      "original_value": 0,
+      "verifier_value": 0,
+      "match": true
+    },
+    {
+      "name": "cv_terrainBodiesTransparency",
+      "original_text": "0",
+      "original_value": 0,
+      "verifier_value": 0.8,
+      "match": false
+    },
+    {
+      "name": "cv_padAimDistMul",
+      "original_text": "96",
+      "original_value": 96,
+      "verifier_value": 128,
+      "match": false
+    }
+  ],
+  "restored_blockers": [
+    {
+      "tick": 0,
+      "source": "ui_render/terrain_render.cpp",
+      "original_line": 20,
+      "reason": "cv_terrainFilter was null",
+      "restoration": "original cvar registration"
+    },
+    {
+      "tick": 0,
+      "source": "ui_elements/ui_elements_max_timeline.c",
+      "original_line": 8,
+      "reason": "ui_element_table[0] was null",
+      "restoration": "original table bindings and defaults"
+    }
+  ]
+}

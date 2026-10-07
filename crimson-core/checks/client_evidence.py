@@ -51,6 +51,7 @@ def main():
             str(args.client),
             str(args.wasm),
             str(result_file),
+            "--stop-on-divergence",
         ],
         capture_output=True,
         text=True,

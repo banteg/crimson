@@ -1,0 +1,21 @@
+{
+  "field": "globals.player_weapon_popup_timer[0]",
+  "first_snapshot": 1,
+  "first_tick": 0,
+  "client_bits": 1073546090,
+  "verifier_bits": 1073741824,
+  "client_float": 1.9766666889190674,
+  "verifier_float": 2.0,
+  "source": "decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp",
+  "original_lines": [
+    779,
+    780
+  ],
+  "expression": "player_weapon_popup_timer[current_player_index] -= frame_dt * 1.4f",
+  "initial_value": 2.0,
+  "scope": "existing canonical snapshot field; no ownership reclassification or repair",
+  "fixed": false,
+  "other_fields_at_tick_0_agree": 36342,
+  "rng_agrees_at_tick_0": true,
+  "ticks_after_0_executed": 0
+}

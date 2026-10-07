@@ -21,7 +21,7 @@
     "full_state_agree": true
   },
   "protected_tracked_paths": "no diff under decomp/, host/api.h, patches/, verifier host or sources; results/gate.json and results/matrix.json unchanged",
-  "client_compiled_units": 195,
+  "client_compiled_units": 200,
   "comparator_negative_control": {
     "injection": "toggle rng bit at snapshots 2 and 3, health bit at snapshot 4",
     "differences": [
@@ -45,17 +45,17 @@
   "client_contract": {
     "artifact_preservation": true,
     "client_exit": {
-      "code": null,
-      "signal": "SIGSEGV"
+      "code": 0,
+      "signal": null
     },
-    "client_compared_ticks": 0,
+    "client_compared_ticks": 1,
     "client_full_state_agree": false,
     "client_full_result_agree": false,
     "client_blockers": [],
     "probes": {
       "exit": 0,
-      "slots": 40,
-      "expected_slots": 40,
+      "slots": 41,
+      "expected_slots": 41,
       "agree": true,
       "controls": [
         {
@@ -109,8 +109,33 @@
   "client_initialization": {
     "fields_compared": 36343,
     "agree": true,
-    "client_snapshots": 1,
-    "first_uncompleted_tick": 0
+    "client_snapshots": 2,
+    "first_uncompleted_tick": 1
   },
-  "native_rebuild_exception": "accepted by user; existing verifier bytes preserved in this rerun"
+  "native_rebuild_exception": "accepted by user; existing verifier bytes preserved in this rerun",
+  "comparator_stop_control": {
+    "client_exit": {
+      "code": 0,
+      "signal": null
+    },
+    "client_snapshots": 3,
+    "compared_ticks": 2,
+    "stopped_on_divergence": true,
+    "differences": [
+      {
+        "field": "globals.rng",
+        "first_snapshot": 2,
+        "first_tick": 1,
+        "client_bits": 3461923193,
+        "verifier_bits": 3461923192
+      }
+    ],
+    "complete_stream": false
+  },
+  "client_divergence": {
+    "first_tick": 0,
+    "field": "globals.player_weapon_popup_timer[0]",
+    "difference_count": 1,
+    "later_ticks_executed": 0
+  }
 }
