@@ -521,9 +521,9 @@ class CreaturePool:
             return
 
         current = self._entries[int(auto_target)]
-        if preserve_bugs and native_candidate_distance is not None:
-            # In native two-player mode this is the distance from the creature
-            # to the player opposite its target at the start of reevaluation.
+        if native_candidate_distance is not None and (preserve_bugs or len(players) == 1):
+            # Single-player reevaluation already measured this distance. In
+            # native two-player bug mode it instead measured the opposite player.
             dist_new = float(native_candidate_distance)
         else:
             # Native leaves the alternate-distance stack local untouched when

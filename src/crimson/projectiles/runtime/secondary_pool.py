@@ -313,6 +313,8 @@ class SecondaryProjectilePool:
 
         if dt <= 0.0:
             return 0
+        if not any(entry.active for entry in self._entries):
+            return 0
 
         rng = runtime_state.rng
         freeze_active = float(runtime_state.bonuses.freeze) > 0.0
