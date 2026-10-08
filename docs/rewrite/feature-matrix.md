@@ -14,9 +14,10 @@ Where each way to play stands. Three clients play Crimsonland 1.9.93:
 - **Native**: the same recovered game under an SDL3 host for desktop
   ([`crimson-core/PORT.md`](https://github.com/banteg/crimson/blob/master/crimson-core/PORT.md)).
 
-The web and native clients run the original's own code, so they play exactly as
-the 2003 game does, menus and quirks included. The Python port matches it tick
-by tick and adds what a modern release needs.
+The web and native clients run the original's own code, so they play as the
+2003 game does, menus included. The Python port matches it tick by tick and adds
+what a modern release needs. All three fix the
+[original's documented bugs](original-bugs.md) by default.
 
 ## Getting it
 
@@ -34,7 +35,7 @@ by tick and adds what a modern release needs.
 | Survival, Rush, Quests | Yes | Yes | Yes |
 | Tutorial, Typ-o-Shooter | Yes | Yes | Yes |
 | Local co-op | 2–4 players | 2 players, as the original | 2 players, as the original |
-| Original bugs | Fixed by default, kept with `--preserve-bugs` | Kept, as the original; fixed in ranked runs | Kept, as the original |
+| Original bugs | Fixed by default, kept with `--preserve-bugs` | Fixed | Fixed |
 | Resolution | Any, with borderless fullscreen | 1024x768, scaled to the page; fullscreen button | 1024x768, scaled to the window |
 | Keyboard and mouse | Yes | Yes | Yes |
 | Gamepads | PlayStation, Xbox and Switch Pro, twin-stick, every menu by pad | One pad as the original's joystick | One pad as the original's joystick |
@@ -59,14 +60,11 @@ by tick and adds what a modern release needs.
 | Ranked play | Survival and Quests | Survival and Quests | No |
 | Uploads, offline queue | Yes | Yes | No |
 | Profile, signed in | Yes | Yes | No |
-| Update scores on the high score screen | Yes | No | No |
+| Update scores on the high score screen | Yes | Yes | No |
 | Your key | `identity.key`; export and import with `crimson identity` | Site storage, no export; link an account to keep your runs | No |
 
 ## Next
 
-- **Update scores in the web client**: the original's high score screen
-  already has the button and the online-scores box, which reached 10tons' old
-  server; it can read the boards from crimson.land instead.
 - **Native leaderboard**: uploads and the profile need a network layer in the
   host, after which the Ranked box can show there too.
 - **Native releases**: a Windows host, signed builds and a release channel.

@@ -304,8 +304,11 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_scores_request() {
 }
 extern "C" EMSCRIPTEN_KEEPALIVE void client_scores_received(const char *answer) {
   int size = answer ? (int)strlen(answer) : -1;
-  if (answer)
-    memcpy(client_memory() + w2c_game_game_scores_buffer(&game, size), answer, size);
+  // The buffer first: making room can move the module's memory.
+  if (answer) {
+    uint32_t buffer = w2c_game_game_scores_buffer(&game, size);
+    memcpy(client_memory() + buffer, answer, size);
+  }
   w2c_game_game_scores_received(&game, size);
 }
 #endif

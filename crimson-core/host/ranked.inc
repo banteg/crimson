@@ -6,7 +6,9 @@
 // client.py), signed by the player's key. The host uploads the outbox.
 #include "../game/host_abi.h"
 #include "../game/leaderboard.h"
+#include <cmath>
 #include <dirent.h>
+#include <string>
 #include <time.h>
 
 static bool ranked_enabled; // the host takes runs to the leaderboard (game_leaderboard_enable)
@@ -264,94 +266,113 @@ extern int online_sync_status; // 1 while updating, 0 done, 6 failed (highscore_
 void highscore_sync_worker_recovered(void *arg);
 void highscore_load_table_thunk(void);
 }
+// The board the screen asked for, kept for its answer: the screen's own
+// settings can change while the request is out.
+static struct {
+  game_mode_id_t mode;
+  int major, minor;
+  unsigned char hardcore;
+} scores_board_asked;
 static char scores_request[64];
 static std::vector<char> scores_response;
 
 // One-player Survival and quests have a board; other tables have none.
 static bool scores_board() {
-  if (config_blob.player_count != 1)
+  bool quest = config_blob.game_mode == GAME_MODE_QUEST;
+  if (config_blob.player_count != 1 || (!quest && config_blob.game_mode != GAME_MODE_SURVIVAL))
     return false;
-  if (config_blob.game_mode == GAME_MODE_SURVIVAL)
-    snprintf(scores_request, sizeof scores_request, "{\"board\": \"survival\", \"quest\": \"\"}");
-  else if (config_blob.game_mode == GAME_MODE_QUEST)
+  scores_board_asked = {config_blob.game_mode, quest ? quest_stage_major : 0, quest ? quest_stage_minor : 0,
+                        (unsigned char)(quest && config_blob.hardcore)};
+  if (quest)
     snprintf(scores_request, sizeof scores_request, "{\"board\": \"%s\", \"quest\": \"%d.%d\"}",
              config_blob.hardcore ? "quests-hardcore" : "quests", quest_stage_major, quest_stage_minor);
   else
-    return false;
+    snprintf(scores_request, sizeof scores_request, "{\"board\": \"survival\", \"quest\": \"\"}");
   return true;
 }
 
-// The service's scores ({"scores": [{"name": ..., "score": ..., ...}]}): each
-// object's fields, numbers and strings, read in order.
-struct ScoreFields {
-  char name[32];
-  double score, elapsed_ms, experience, most_used_weapon_id, shots_fired, shots_hit, kills, accepted_at;
-};
-static const char *scores_string(const char *at, char *out, size_t size) {
-  size_t n = 0;
-  for (++at; *at && *at != '"'; ++at) {
-    unsigned code = (unsigned char)*at;
-    if (*at == '\\' && at[1] == 'u') {
-      code = (unsigned)strtoul(std::string(at + 2, 4).c_str(), nullptr, 16);
-      at += 5;
-    } else if (*at == '\\' && at[1]) {
-      code = (unsigned char)*++at;
-    } else if (code >= 0xc0 && (at[1] & 0xc0) == 0x80) {
-      // Latin-1 names arrive as UTF-8.
-      code = (code & 0x1f) << 6 | (at[1] & 0x3f);
-      ++at;
-    }
-    if (n + 1 < size)
-      out[n++] = code < 0x100 ? (char)code : '?';
-  }
-  out[n] = 0;
-  return *at ? at + 1 : at;
+#include "json.inc"
+
+// A whole number in [0, max] under `key`.
+static bool scores_count(const Json &run, const char *key, double max, double &out) {
+  const Json *value = run.field(key, Json::NUMBER);
+  if (!value || value->number < 0 || value->number > max || value->number != floor(value->number))
+    return false;
+  out = value->number;
+  return true;
 }
-static std::vector<ScoreFields> scores_parse(const char *json) {
-  std::vector<ScoreFields> scores;
-  const char *at = strchr(json, '[');
-  while (at && (at = strchr(at, '{'))) {
-    ScoreFields score = {};
-    for (++at; *at && *at != '}';) {
-      if (*at != '"') {
-        ++at;
-        continue;
-      }
-      char key[32];
-      at = scores_string(at, key, sizeof key);
-      while (*at == ' ' || *at == ':')
-        ++at;
-      if (*at == '"') {
-        char text[64];
-        at = scores_string(at, text, sizeof text);
-        if (!strcmp(key, "name"))
-          snprintf(score.name, sizeof score.name, "%s", text);
-        continue;
-      }
-      char *end;
-      double value = strtod(at, &end);
-      at = end;
-      const struct { const char *key; double *field; } numbers[] = {
-          {"score", &score.score},       {"elapsed_ms", &score.elapsed_ms},
-          {"experience", &score.experience}, {"most_used_weapon_id", &score.most_used_weapon_id},
-          {"shots_fired", &score.shots_fired}, {"shots_hit", &score.shots_hit},
-          {"kills", &score.kills},       {"accepted_at", &score.accepted_at},
-      };
-      for (const auto &number : numbers)
-        if (!strcmp(key, number.key))
-          *number.field = value;
-    }
-    scores.push_back(score);
+
+// A run of the service's board ({"scores": [{"name": ..., "score": ..., ...}]})
+// as the record the original keeps for it, or false when a field is missing
+// or out of the record's range.
+static bool scores_record(const Json &run, highscore_record_t &record) {
+  const Json *name = run.field("name", Json::STRING);
+  // accepted_at is in milliseconds, whole up to 2^53 as a double.
+  double score, elapsed, experience, weapon, fired, hit, kills, accepted_at;
+  if (!name || !scores_count(run, "score", UINT32_MAX, score) || !scores_count(run, "elapsed_ms", UINT32_MAX, elapsed) ||
+      !scores_count(run, "experience", UINT32_MAX, experience) ||
+      !scores_count(run, "most_used_weapon_id", std::size(game_status_blob.weapon_usage_counts) - 1, weapon) ||
+      !scores_count(run, "shots_fired", UINT32_MAX, fired) || !scores_count(run, "shots_hit", UINT32_MAX, hit) ||
+      !scores_count(run, "kills", UINT32_MAX, kills) || !scores_count(run, "accepted_at", 0x1p53, accepted_at))
+    return false;
+  bool quest = scores_board_asked.mode == GAME_MODE_QUEST;
+  snprintf(record.player_name, sizeof record.player_name, "%s", name->text.c_str());
+  record.game_mode_id = (unsigned char)scores_board_asked.mode;
+  record.quest_stage_major = (unsigned char)scores_board_asked.major;
+  record.quest_stage_minor = (unsigned char)scores_board_asked.minor;
+  record.score_xp = (unsigned)experience;
+  // A quest record's time is its final time, which the quest boards rank.
+  record.run_elapsed_ms = (unsigned)(quest ? score : elapsed);
+  record.most_used_weapon_id = (unsigned char)weapon;
+  record.shots_fired = (unsigned)fired;
+  record.shots_hit = (unsigned)hit;
+  record.creature_kill_count = (unsigned)kills;
+  // The day the board took the run.
+  time_t when = (time_t)(accepted_at / 1000);
+  if (struct tm *day = localtime(&when)) {
+    record.day = (unsigned char)day->tm_mday;
+    record.month = (unsigned char)(day->tm_mon + 1);
+    record.year_offset = (unsigned char)(day->tm_year + 1900 - 2000);
+    record.date_week = (unsigned char)highscore_iso_week(day->tm_year + 1900, day->tm_mon + 1, day->tm_mday);
   }
-  return scores;
+  record.flags = 1;
+  record.hardcore_marker = scores_board_asked.hardcore ? 0x75 : 0;
+  record.sentinel_pipe = 0x7c;
+  record.sentinel_ff = 0xff;
+  return true;
+}
+
+// Saves the received runs to the asked board's table: highscore_save_record
+// picks the table from the settings, and sets the active record up for each,
+// which the original keeps around a sync.
+static void scores_save(const std::vector<Json> &runs) {
+  highscore_record_t active = highscore_active_record;
+  game_mode_id_t mode = config_blob.game_mode;
+  int major = quest_stage_major, minor = quest_stage_minor;
+  unsigned char hardcore = config_blob.hardcore;
+  config_blob.game_mode = scores_board_asked.mode;
+  config_blob.hardcore = scores_board_asked.hardcore;
+  quest_stage_major = scores_board_asked.major;
+  quest_stage_minor = scores_board_asked.minor;
+  for (const Json &run : runs) {
+    highscore_record_t record = {};
+    if (scores_record(run, record))
+      highscore_save_record(&record);
+  }
+  config_blob.game_mode = mode;
+  config_blob.hardcore = hardcore;
+  quest_stage_major = major;
+  quest_stage_minor = minor;
+  highscore_active_record = active;
 }
 
 extern "C" {
 void highscore_sync_worker(void *arg) {
   if (!ranked_enabled)
     return highscore_sync_worker_recovered(arg);
+  // A table with no board is up to date, so Update all goes on past it.
   if (!scores_board()) {
-    online_sync_status = 6;
+    online_sync_status = 0;
     return;
   }
   online_sync_status = 1;
@@ -366,38 +387,15 @@ __attribute__((export_name("game_scores_buffer"))) char *game_scores_buffer(int 
   return scores_response.data();
 }
 __attribute__((export_name("game_scores_received"))) void game_scores_received(int size) {
-  if (size < 0 || scores_response.empty()) {
+  Json answer;
+  const Json *runs = size >= 0 && (size_t)size < scores_response.size() && json_parse(scores_response.data(), size, answer)
+                         ? answer.field("scores", Json::ARRAY)
+                         : nullptr;
+  if (!runs) {
     online_sync_status = 6;
     return;
   }
-  bool quest = config_blob.game_mode == GAME_MODE_QUEST;
-  for (const ScoreFields &score : scores_parse(scores_response.data())) {
-    highscore_record_t record = {};
-    snprintf(record.player_name, sizeof record.player_name, "%s", score.name);
-    record.game_mode_id = (unsigned char)config_blob.game_mode;
-    record.quest_stage_major = quest ? (unsigned char)quest_stage_major : 0;
-    record.quest_stage_minor = quest ? (unsigned char)quest_stage_minor : 0;
-    record.score_xp = (unsigned)score.experience;
-    // A quest record's time is its final time, which the quest boards rank.
-    record.run_elapsed_ms = (unsigned)(quest ? score.score : score.elapsed_ms);
-    record.most_used_weapon_id = (unsigned char)score.most_used_weapon_id;
-    record.shots_fired = (unsigned)score.shots_fired;
-    record.shots_hit = (unsigned)score.shots_hit;
-    record.creature_kill_count = (unsigned)score.kills;
-    // The day the board took the run.
-    time_t when = (time_t)(score.accepted_at / 1000);
-    if (struct tm *day = localtime(&when)) {
-      record.day = (unsigned char)day->tm_mday;
-      record.month = (unsigned char)(day->tm_mon + 1);
-      record.year_offset = (unsigned char)(day->tm_year + 1900 - 2000);
-      record.date_week = (unsigned char)highscore_iso_week(day->tm_year + 1900, day->tm_mon + 1, day->tm_mday);
-    }
-    record.flags = 1;
-    record.hardcore_marker = quest && config_blob.hardcore ? 0x75 : 0;
-    record.sentinel_pipe = 0x7c;
-    record.sentinel_ff = 0xff;
-    highscore_save_record(&record);
-  }
+  scores_save(runs->items);
   // As the original after a sync: all-time scores, the internet's shown.
   config_blob.highscore_date_mode = 0;
   config_blob.show_online_scores = 1;
