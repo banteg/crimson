@@ -200,7 +200,7 @@ async function routeTitle(env: Env, path: string): Promise<string | null> {
 async function shell(env: Env, url: URL): Promise<Response> {
   const page = await env.ASSETS.fetch(new Request(new URL("/", url)));
   const title = await routeTitle(env, url.pathname);
-  const description = "Verified leaderboards for the Crimsonland port: every score is a replay the server re-simulates.";
+  const description = "Play Crimsonland in your browser, and verified leaderboards where every score is a replay the server re-simulates.";
   return withPreview(page, url, title ? `${title} · crimson.land` : "crimson.land", description);
 }
 
