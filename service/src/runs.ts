@@ -96,7 +96,7 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
   return json({ id: runId, board, quest, score }, 201);
 }
 
-const timelineKey = (runId: string) => `runs/${runId}.timeline.json`;
+export const timelineKey = (runId: string) => `runs/${runId}.timeline.json`;
 
 function putTimeline(env: Env, runId: string, timeline: Timeline): Promise<R2Object> {
   return env.REPLAYS.put(timelineKey(runId), JSON.stringify(timeline), { httpMetadata: { contentType: "application/json" } });

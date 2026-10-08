@@ -10,6 +10,11 @@ import questTitles from "./quests.json";
 
 export const QUEST_TITLES: Record<string, string> = questTitles;
 
+// SQL over accounts `a` and runs `r`: the account's key fingerprint, and the name a run shows, which is the
+// fingerprint once a moderator hid the account's name.
+const FINGERPRINT = "(SELECT fingerprint FROM keys WHERE account_id = a.id ORDER BY added_at LIMIT 1)";
+export const SHOWN_NAME = `CASE WHEN a.name_hidden THEN ${FINGERPRINT} ELSE r.name END`;
+
 function linkUrl(provider: ProviderName, handle: string, subject: string): string {
   switch (provider) {
     case "github":
@@ -27,7 +32,7 @@ export async function players(env: Env, ids: number[]): Promise<Map<number, Play
   const marks = ids.map(() => "?").join(",");
   const { results: accounts } = await env.DB.prepare(
     `SELECT a.id, a.name, a.name_hidden,
-       (SELECT fingerprint FROM keys WHERE account_id = a.id ORDER BY added_at LIMIT 1) AS fingerprint,
+       ${FINGERPRINT} AS fingerprint,
        (SELECT count(*) FROM accounts b WHERE lower(b.name) = lower(a.name) AND b.id != a.id AND b.name != '') AS clashes
      FROM accounts a WHERE a.id IN (${marks})`,
   )
@@ -73,7 +78,7 @@ interface BestRun {
 async function bestRuns(env: Env, board: Board, quest: string, limit: number): Promise<BestRun[]> {
   const order = LOWER_IS_BETTER[board] ? "ASC" : "DESC";
   const { results } = await env.DB.prepare(
-    `SELECT r.id, r.account_id, r.name, r.score, r.result, r.accepted_at FROM runs r JOIN accounts a ON a.id = r.account_id
+    `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.score, r.result, r.accepted_at FROM runs r JOIN accounts a ON a.id = r.account_id
      WHERE r.board = ? AND r.quest = ? AND r.hidden = 0 AND a.banned = 0
        AND r.id = (SELECT id FROM runs b WHERE b.account_id = r.account_id AND b.board = r.board AND b.quest = r.quest AND b.hidden = 0
                    ORDER BY b.score ${order}, b.accepted_at LIMIT 1)
@@ -110,8 +115,8 @@ const BOARD_SCAN = 1000;
 
 export async function runDetailView(env: Env, id: string): Promise<RunDetailView | null> {
   const run = await env.DB.prepare(
-    `SELECT r.id, r.account_id, r.name, r.board, r.quest, r.score, r.accepted_at, r.game_version, r.client, r.client_version,
-       r.platform, r.result FROM runs r WHERE r.id = ? AND r.hidden = 0`,
+    `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.board, r.quest, r.score, r.accepted_at, r.game_version, r.client,
+       r.client_version, r.platform, r.result FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND r.hidden = 0`,
   )
     .bind(id)
     .first<{
@@ -190,8 +195,11 @@ export async function questMenuView(env: Env, board: "quests" | "quests-hardcore
 export async function profileView(env: Env, accountId: number, viewer: number | null): Promise<ProfileView | null> {
   const player = (await players(env, [accountId])).get(accountId);
   if (!player) return null;
-  const { results: names } = await env.DB.prepare("SELECT name FROM names WHERE account_id = ? ORDER BY last_at DESC")
-    .bind(accountId)
+  // A hidden name hides the account's earlier names too.
+  const { results: names } = await env.DB.prepare(
+    "SELECT name FROM names WHERE account_id = ? AND NOT (SELECT name_hidden FROM accounts WHERE id = ?) ORDER BY last_at DESC",
+  )
+    .bind(accountId, accountId)
     .all<{ name: string }>();
   const { results: runs } = await env.DB.prepare(
     "SELECT id, board, quest, score, game_version, accepted_at FROM runs WHERE account_id = ? AND hidden = 0 ORDER BY accepted_at DESC LIMIT 100",

@@ -5,6 +5,7 @@ import type { Identity, ProviderName } from "./oauth";
 
 import { randomToken } from "./crypto";
 import { tokenHash } from "./auth";
+import { timelineKey } from "./runs";
 
 const MERGE_TTL_MS = 10 * 60 * 1000;
 
@@ -81,10 +82,10 @@ export async function unlink(env: Env, accountId: number, provider: ProviderName
   await env.DB.prepare("DELETE FROM links WHERE account_id = ? AND provider = ?").bind(accountId, provider).run();
 }
 
-// Delete an account and everything tied to it: runs and their replay files, names, links, keys and sessions.
+// Delete an account and everything tied to it: runs with their replay and timeline files, names, links, keys and sessions.
 export async function deleteAccount(env: Env, accountId: number): Promise<void> {
   const { results } = await env.DB.prepare("SELECT id FROM runs WHERE account_id = ?").bind(accountId).all<{ id: string }>();
-  if (results.length) await env.REPLAYS.delete(results.map((run) => `runs/${run.id}.crd`));
+  if (results.length) await env.REPLAYS.delete(results.flatMap((run) => [`runs/${run.id}.crd`, timelineKey(run.id)]));
   await env.DB.batch(
     ["runs", "names", "links", "keys", "sessions", "login_links"]
       .map((table) => env.DB.prepare(`DELETE FROM ${table} WHERE account_id = ?`).bind(accountId))
