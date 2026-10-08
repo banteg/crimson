@@ -9,7 +9,7 @@ import { WASI } from "node:wasi";
 // HostInput's layout (game/host_input.h).
 export const INPUT = { keys: 0, motion_x: 256, motion_y: 260, buttons: 268, event_count: 276, events: 280 };
 
-export function bootGame(wasm, directory, seed) {
+export function bootGame(wasm, directory, seed, { leaderboard = false } = {}) {
   const module = new WebAssembly.Module(fs.readFileSync(wasm));
   const wasi = new WASI({ version: "preview1", preopens: { ".": directory }, returnOnExit: true });
   const calls = {};
@@ -40,6 +40,8 @@ export function bootGame(wasm, directory, seed) {
   const instance = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi.wasiImport, host });
   game = instance.exports;
   wasi.initialize(instance);
+  // As the browser host does: ranked runs, which go to leaderboard/outbox/.
+  if (leaderboard) game.game_leaderboard_enable(1);
   if (!game.game_start()) throw Error("startup failed");
   return {
     game,

@@ -21,9 +21,9 @@ verifier does and gameplay RNG may only be drawn inside run start and ticks.
 Everything the module sends the host returns nothing, so presentation cannot
 feed back into either.
 
-Python stays the reference port and the ranked client: it records the `.crd`
-replays the leaderboard takes and signs their upload, which the client does
-not yet (phase 9).
+Python stays the reference port. The web client plays ranked runs too: it
+records the `.crd` replays the leaderboard takes and signs their upload as the
+Python port does ([Ranked runs](#ranked-runs)).
 
 ## Architecture
 
@@ -147,6 +147,33 @@ volumes, which only choose and voice tracks; the run plays the original's. The
 weapons' sound ids are snapshot fields that hold the original's loaded ids in
 a run, and only choose samples.
 
+### Ranked runs
+
+The Play Game panel grows by a Ranked box under the player-count list, as the
+Python port's does (`screens/panels/play_game.py`), when the host takes runs
+to the leaderboard (the web client; [`host/ranked.inc`](host/ranked.inc)).
+Ticked, it lists only the modes that rank, Quests and Survival, makes the game
+one player's, and shows a Profile button. A run started that way, with a
+player's movement and aim, plays the ranked rules (`ranked_run_spec`): full
+detail with violence on, no friendly fire, the documented fixes, every quest
+unlocked, no weapon used yet and the registered pad reach, on a detached save
+whose progress stays its own.
+
+When it ends as the board takes it, a death in Survival or a completed quest,
+the run's replay is built from the recording: the canonical msgpack the server
+reads (`service/src/msgpack.ts`), with the configuration and the result the
+server derives from the verifier's state after the last tick (`deriveResult`).
+Leaving the end screen, or quitting on it, signs it with the player's key
+under the name the end screen took and queues it in `leaderboard/outbox/` as
+the Python port does: one zstd frame, an Ed25519 signature over the payload's
+digest and the name (`identity.py`), and the key kept as a 32-byte seed in
+`identity.key`. zstd 1.5.7's compressor and Monocypher 4.0.2 are vendored in
+[`game/vendor`](game/vendor). The page uploads the outbox at start, when a run
+is queued and every ten minutes: a run the service took or already has leaves
+it, one it refuses moves to `rejected/` with the reason, and offline runs wait.
+Profile signs a challenge and opens the profile signed in. The native client
+has no network stack yet and shows no Ranked box.
+
 ### Evidence
 
 - [`checks/game_check.py`](checks/game_check.py) runs sessions in the game
@@ -165,7 +192,10 @@ a run, and only choose samples.
   passes with three) and, after every frame, compares the run with the verifier
   replaying the run's own recording; the run must end on the verifier's tick and
   the saved replay must match. Each run has a fresh seed; a failing run names
-  its seed, and `--seed` plays it again.
+  its seed, and `--seed` plays it again. With `--ranked` it ticks Ranked
+  first (`--quest` plays quest 1.1), and the run it queues must be the one it
+  recorded, under the ranked rules, signed by the player's key, claiming the
+  result the verifier derives.
 - [`checks/game_boot.mjs`](checks/game_boot.mjs) boots the original from a fresh
   game directory under Node's WASI, clicks through the menus into Survival, and
   requires every texture to load, the menus' music to reach the mix, the run to
@@ -294,7 +324,7 @@ and `npm run play` in `service` stages the packaged web build for deploy.
 | 6. Verifier convergence | Dropped: the verifier stays its own artifact and holds every client build to it ([Packaging](#packaging)) | |
 | 7. Product parity | Gamepads as the original's joystick; the web client takes the player's own game folder | Done ([#556](https://github.com/banteg/crimson/pull/556)) |
 | 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client finds the game folder; next, a Windows host (the WASI layer is POSIX) and signing | Done ([#557](https://github.com/banteg/crimson/pull/557)); crimson.land/play hosts the web client with the distributed files |
-| 9. Ranked play from the client | `.crd` replays, the leaderboard's signed upload, replay browsing | |
+| 9. Ranked play from the client | Ranked runs from the web client: the Play Game panel's Ranked box and Profile button, `.crd` replays signed and queued as the Python port does, uploaded by the page; next, the native client's upload and the high score screen's Update scores | Done ([#566](https://github.com/banteg/crimson/pull/566)) |
 
 ## Acceptance gates
 

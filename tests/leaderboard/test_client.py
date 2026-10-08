@@ -138,14 +138,14 @@ def test_update_scores_fails_without_the_service(tmp_path) -> None:
     assert leaderboard.scores == {}
 
 
-@pytest.mark.parametrize(("status", "rejected"), [(409, 0), (422, 1)])
-def test_the_service_settles_duplicate_and_refused_runs(tmp_path, replay, status, rejected) -> None:
+@pytest.mark.parametrize(("status", "rejected", "waiting"), [(409, 0, 0), (422, 1, 0), (429, 0, 1)])
+def test_the_service_settles_duplicate_and_refused_runs(tmp_path, replay, status, rejected, waiting) -> None:
     leaderboard = Leaderboard(tmp_path, url=_URL, transport=_Service(status))
     leaderboard.hold(replay)
     leaderboard.release("banteg")
     _finish(leaderboard)
 
-    assert leaderboard.waiting == 0
+    assert leaderboard.waiting == waiting
     kept = sorted((tmp_path / "leaderboard" / "rejected").glob("*.json"))
     assert len(kept) == rejected
     if rejected:

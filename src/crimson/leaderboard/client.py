@@ -210,7 +210,7 @@ class Leaderboard:
             elif status == 409:
                 path.unlink()
                 lines.append(f"leaderboard: run {run} was already uploaded")
-            elif 400 <= status < 500:
+            elif 400 <= status < 500 and status != 429:
                 # The service will never take this run; keep it, with the reason, out of the outbox.
                 reason = str(answer.get("reason", f"HTTP {status}"))
                 self._rejected.mkdir(parents=True, exist_ok=True)
@@ -218,6 +218,7 @@ class Leaderboard:
                 path.unlink()
                 lines.append(f"leaderboard: run {run} rejected ({reason})")
             else:
+                # A service error, or the service asking to slow down (429): the runs wait.
                 lines.append(f"leaderboard: service error (HTTP {status}); runs wait in {self._outbox}")
                 break
         return _Report(lines, self._waiting_count())

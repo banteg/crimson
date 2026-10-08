@@ -440,9 +440,10 @@ const ABOUT: Screen = {
           from its executable, with your saves kept in the browser. It plays with a keyboard and mouse or a gamepad.
         </p>
         <p>
-          To play for the leaderboard, install <a href="https://docs.astral.sh/uv/getting-started/installation/">uv</a>, then run{" "}
-          <Command>uvx crimsonland@latest</Command>: the reimplementation for Windows, macOS and Linux, which records ranked runs. Both
-          download the original art and sound on first launch, distributed with permission from 10tons.
+          Or install <a href="https://docs.astral.sh/uv/getting-started/installation/">uv</a>, then run{" "}
+          <Command>uvx crimsonland@latest</Command>: the reimplementation for Windows, macOS and Linux, with controllers and replays.
+          Both play for the leaderboard and download the original art and sound on first launch, distributed with permission from
+          10tons.
         </p>
       </>
     ),
@@ -451,7 +452,7 @@ const ABOUT: Screen = {
         <h3>Play for the leaderboard</h3>
         <ul>
           <li>
-            In the installed game, tick <em>Ranked</em> in the Play Game menu, then play Survival or a quest. Ranked runs play the same for everyone, whatever your own save
+            Tick <em>Ranked</em> in the Play Game menu, then play Survival or a quest. Ranked runs play the same for everyone, whatever your own save
             holds: one player, with the original's bugs fixed.
           </li>
           <li>
@@ -477,7 +478,8 @@ const ABOUT: Screen = {
         </p>
         <p>
           From your profile you can link a GitHub, Discord or X account. Linked players show their handle, so nobody can pass as them, and
-          signing in with the same link from another computer joins its runs to your account.
+          signing in with the same link from another computer joins its runs to your account. In the browser the key lives in the
+          site's storage, so clearing it starts a new identity; a link joins its runs back to yours.
         </p>
         <h3>Replays</h3>
         <p>

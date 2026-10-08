@@ -30,4 +30,8 @@ HOST_IMPORT(fatal) [[noreturn]] void host_fatal(const char *message);
 // A message box the original shows the player (startup failures, warnings).
 HOST_IMPORT(message) void host_message(const char *text, const char *caption);
 HOST_IMPORT(time_ms) unsigned host_time_ms(void);
+// The leaderboard (host/ranked.inc): open the player's profile, signed in
+// (game_login_challenge), or upload the runs waiting in leaderboard/outbox/.
+enum { HOST_LEADERBOARD_PROFILE = 1, HOST_LEADERBOARD_UPLOAD = 2 };
+HOST_IMPORT(leaderboard) void host_leaderboard(int request);
 }

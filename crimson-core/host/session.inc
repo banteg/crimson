@@ -24,10 +24,16 @@ extern cvar_float_t *cv_padAimDistMul, *cv_bodiesFade;
 extern float perk_prompt_origin_x, perk_prompt_origin_y, perk_prompt_bounds_min_x, perk_prompt_bounds_min_y,
     perk_prompt_bounds_max_x, perk_prompt_bounds_max_y;
 }
+// The quests unlocked, which the save takes from these globals (game_save_status).
+struct LiveUnlocks {
+  int normal, hardcore;
+};
 struct LiveSettings {
   crimson_cfg_t config;
   game_status_t status;
+  LiveUnlocks unlocks;
   float bodies_fade;      // which keeps or removes corpses
+  float friendly_fire;    // whether players' shots hit each other
   player_input_t keys[2]; // the codes each player's input reads
 };
 
@@ -48,6 +54,8 @@ static struct {
   std::vector<unsigned char> replay;
 } live;
 
+#include "ranked.inc"
+
 // Runs a single player plays in Survival, Rush or Quests, at the resolution the
 // verifier simulates (1024x768); the rest play as the original.
 static bool live_eligible() {
@@ -64,13 +72,18 @@ static void live_append(const void *data, size_t size) {
 static LiveSettings live_settings() {
   return {config_blob,
           game_status_blob,
+          {quest_unlock_index, quest_unlock_index_hardcore},
           cv_bodiesFade->value,
+          cv_friendlyFire->value,
           {player_state_table[0].input, player_state_table[1].input}};
 }
 static void live_install(const LiveSettings &settings) {
   config_blob = settings.config;
   game_status_blob = settings.status;
+  quest_unlock_index = settings.unlocks.normal;
+  quest_unlock_index_hardcore = settings.unlocks.hardcore;
   cv_bodiesFade->value = settings.bodies_fade;
+  cv_friendlyFire->value = settings.friendly_fire;
   for (int i = 0; i < 2; ++i)
     player_state_table[i].input = settings.keys[i];
 }
@@ -90,7 +103,11 @@ static int live_step(uint32_t count) {
   int accepted = portable_step_many(count);
   LiveSettings after = live_settings();
   live_carry(live.run.config, after.config, live.outside.config, false);
-  live_carry(live.run.status, after.status, live.outside.status, true);
+  // A ranked run plays on a detached save: its progress stays its own.
+  if (!ranked_run) {
+    live_carry(live.run.status, after.status, live.outside.status, true);
+    live_carry(live.run.unlocks, after.unlocks, live.outside.unlocks, false);
+  }
   live.run = after;
   live_install(live.outside);
   return accepted;
@@ -117,10 +134,18 @@ static void live_begin() {
   cfg.retry = quest_fail_retry_count;
   cfg.preserve_bugs = 1; // the original's rules
   memcpy(cfg.weapon_usage, game_status_blob.weapon_usage_counts, sizeof cfg.weapon_usage);
+  ranked_run = ranked_attempt();
+  if (ranked_run)
+    ranked_spec(cfg);
   // The run's strings live in the session's arena, which the next run reuses.
   bool heap_strings = game_heap_strings;
   game_heap_strings = false;
+  // The end screen offers the name the original set up for the run, which the
+  // verifier's setup clears.
+  char name[sizeof highscore_active_record.player_name];
+  memcpy(name, highscore_active_record.player_name, sizeof name);
   bool ready = portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor);
+  memcpy(highscore_active_record.player_name, name, sizeof name);
   game_heap_strings = heap_strings;
   live.run = live_settings();
   // The verifier keeps corpses (cv_bodiesFade, host.cpp).
@@ -155,6 +180,7 @@ static void live_save() {
 
 static void live_end() {
   live_save();
+  ranked_run = false; // an unfinished run ranks nothing
   game_live = game_session = false;
 }
 
@@ -237,7 +263,8 @@ static PortableInput live_input() {
     input.aim_y = ui_mouse_y;
   } else if (aim_scheme == 4) { // dual-action pad: the stick's reach
     float x = live_axis(keys.axis_aim_x), y = live_axis(keys.axis_aim_y), length = sqrtf(x * x + y * y);
-    float reach = fminf(length, 1.0f) * cv_padAimDistMul->value + 42.0f;
+    // A ranked run's pad reach is the registered default (ranked.py).
+    float reach = fminf(length, 1.0f) * (ranked_run ? 96.0f : cv_padAimDistMul->value) + 42.0f;
     input.aim_x = length > 0 ? x / length * reach : 0;
     input.aim_y = length > 0 ? y / length * reach : 0;
   } else if (aim_scheme == 2 || aim_scheme == -1) { // joystick hat
@@ -286,6 +313,7 @@ static bool live_tick() {
   if (!live_step(count)) {
     // The run is over: its screen follows, as the timeline would have shown it.
     live.replay.resize(live.replay.size() - sizeof in - sizeof count - count * sizeof(PortableCommand));
+    ranked_finish();
     live_end();
     ui_elements_timeline = 0;
     game_state_set_recovered(game_state_pending);
@@ -356,6 +384,7 @@ bool game_live_run() { return game_live; }
 void game_live_quit() {
   if (game_live)
     live_end();
+  ranked_release();
 }
 bool game_live_pause() {
   live.pausing |= game_live;
@@ -387,6 +416,8 @@ void game_state_set(game_state_id_t state) {
     live.requested = state;
     return;
   }
+  // Leaving the end screen names the ranked run it held (ranked.inc).
+  ranked_release();
   // Leaving the run for anything but its own screens (the perk menu, and the
   // pause menu with its options) ends it unfinished.
   if (game_live && state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&

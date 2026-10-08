@@ -16,8 +16,9 @@ the reverse engineering that ties them to the original executable.
 
     ---
 
-    The original game, compiled from the recovered source. Nothing to install;
-    saves stay in the browser. Keyboard and mouse, or a gamepad.
+    The original game, compiled from the recovered source, with ranked play.
+    Nothing to install; saves stay in the browser. Keyboard and mouse, or a
+    gamepad.
 
     :lucide-arrow-right: [crimson.land/play](https://crimson.land/play/)
 
