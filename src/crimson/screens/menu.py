@@ -10,7 +10,6 @@ from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_entry, draw_menu_sign
 from crimson.ui.menu_layout import (
     MENU_LABEL_BASE_Y,
-    MENU_LABEL_ROW_MODS,
     MENU_LABEL_ROW_OPTIONS,
     MENU_LABEL_ROW_OTHER_GAMES,
     MENU_LABEL_ROW_PLAY_GAME,
@@ -47,10 +46,7 @@ class MenuView(MenuScreen):
         layout_w = float(self.state.config.display.width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
-        self._menu_entries = self._menu_entries_for_flags(
-            mods_available=self._mods_available(),
-            other_games=self._other_games_enabled(),
-        )
+        self._menu_entries = self._menu_entries_for_flags(other_games=self._other_games_enabled())
         super().open()
         if self.state.audio is not None:
             if self.state.audio.music.active_track != "crimson_theme":
@@ -58,9 +54,7 @@ class MenuView(MenuScreen):
             play_music(self.state.audio.music, "crimson_theme")
 
     def _ui_elements(self) -> tuple[int, ...]:
-        return game_state_elements(
-            GameStateId.MAIN_MENU, mods_available=self._mods_available(), other_games=self._other_games_enabled(),
-        )
+        return game_state_elements(GameStateId.MAIN_MENU, other_games=self._other_games_enabled())
 
     def update(self, dt: float) -> None:
         if self.state.audio is not None and not self.state.ui.closing:
@@ -115,8 +109,6 @@ class MenuView(MenuScreen):
             self._begin_close_transition(Route.OPTIONS)
         elif entry.row == MENU_LABEL_ROW_STATISTICS:
             self._begin_close_transition(Route.STATISTICS)
-        elif entry.row == MENU_LABEL_ROW_MODS:
-            self._begin_close_transition(Route.MODS)
         elif entry.row == MENU_LABEL_ROW_OTHER_GAMES:
             self._begin_close_transition(Route.OTHER_GAMES)
 
@@ -124,14 +116,10 @@ class MenuView(MenuScreen):
         self.state.menu_sign_locked = False
         self._begin_close_transition(Route.QUIT)
 
-    def _menu_entries_for_flags(
-        self,
-        mods_available: bool,
-        other_games: bool,
-    ) -> list[MenuEntry]:
+    def _menu_entries_for_flags(self, other_games: bool) -> list[MenuEntry]:
         rows = self._menu_label_rows(other_games)
         slot_ys = self._menu_slot_ys(other_games, self._widescreen_y_shift)
-        active = self._menu_slot_active(mods_available, other_games)
+        active = self._menu_slot_active(other_games)
         entries: list[MenuEntry] = []
         for slot, (row, y, enabled) in enumerate(zip(rows, slot_ys, active, strict=False)):
             if not enabled:
@@ -167,14 +155,11 @@ class MenuView(MenuScreen):
         return [y + y_shift for y in ys]
 
     @staticmethod
-    def _menu_slot_active(
-        mods_available: bool,
-        other_games: bool,
-    ) -> list[bool]:
-        show_top = mods_available
+    def _menu_slot_active(other_games: bool) -> list[bool]:
+        # The top slot is the full version's Mods, which no version runs.
         if other_games:
-            return [show_top, True, True, True, True, True]
-        return [show_top, True, True, True, True, False]
+            return [False, True, True, True, True, True]
+        return [False, True, True, True, True, False]
 
     def _draw_menu_items(self, resources: RuntimeResources) -> None:
         # `ui_elements_update_and_render` walks the table backwards: later items draw first, earlier ones on top.
@@ -185,12 +170,6 @@ class MenuView(MenuScreen):
                 timeline_ms=self.state.ui.timeline_ms,
                 shadows=self.state.config.display.shadows_enabled,
             )
-
-    def _mods_available(self) -> bool:
-        mods_dir = self.state.base_dir / "mods"
-        if not mods_dir.exists():
-            return False
-        return any(mods_dir.glob("*.dll"))
 
     def _other_games_enabled(self) -> bool:
         # Original game checks a config string via grim_get_config_var(100).

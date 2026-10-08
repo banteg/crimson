@@ -224,6 +224,9 @@ def adapt_game(src, txt):
             src,
         )
         txt = 'extern "C" void ranked_layout(void);\n' + txt
+    if src.stem == "mods_any_available":
+        # No version runs mods (docs/rewrite/status.md), so the main menu never offers them.
+        txt = replace_once(txt, "    int count = 0;", "    return false;\n    int count = 0;", src)
     if src.stem == "input_key_name":
         # Its header defines it; a live run names the player's keys (host/session.inc).
         txt = "#define input_key_name input_key_name_recovered\n" + txt

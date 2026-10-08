@@ -54,13 +54,12 @@ def ui_element_anim(timeline_ms: float, *, index: int, width: float) -> tuple[fl
     return angle, offset_x
 
 
-def game_state_elements(
-    state: GameStateId, *, mods_available: bool = False, other_games: bool = False,
-) -> tuple[int, ...]:
-    """`game_state_set`: the `ui_element_table` entries each screen turns on."""
+def game_state_elements(state: GameStateId, *, other_games: bool = False) -> tuple[int, ...]:
+    """`game_state_set`: the `ui_element_table` entries each screen turns on. The main menu's Mods (element 2, shown
+    with mod DLLs) stays off: no version runs mods."""
     match state:
         case GameStateId.MAIN_MENU:
-            return (0, *((2,) if mods_available else ()), 3, 4, 5, 6, *((7,) if other_games else ()))
+            return (0, 3, 4, 5, 6, *((7,) if other_games else ()))
         case GameStateId.GAMEPLAY | GameStateId.TYPO_GAMEPLAY:
             return (28,)
         case GameStateId.PLAY_GAME_MENU:
@@ -95,9 +94,9 @@ def game_state_elements(
             return ()
 
 
-def ui_elements_max_timeline(state: GameStateId, *, mods_available: bool = False, other_games: bool = False) -> int:
+def ui_elements_max_timeline(state: GameStateId, *, other_games: bool = False) -> int:
     """`ui_elements_max_timeline`: the latest `timeline_end_ms` among the screen's active elements."""
-    elements = game_state_elements(state, mods_available=mods_available, other_games=other_games)
+    elements = game_state_elements(state, other_games=other_games)
     return max((ui_element_timeline_window(index)[1] for index in elements), default=0)
 
 
