@@ -21,6 +21,8 @@ extern int ui_elements_timeline;
 extern unsigned char console_open_flag, ui_transition_direction;
 int ui_elements_max_timeline(void);
 extern cvar_float_t *cv_padAimDistMul, *cv_bodiesFade;
+extern float perk_prompt_origin_x, perk_prompt_origin_y, perk_prompt_bounds_min_x, perk_prompt_bounds_min_y,
+    perk_prompt_bounds_max_x, perk_prompt_bounds_max_y;
 }
 struct LiveSettings {
   crimson_cfg_t config;
@@ -36,6 +38,7 @@ static struct {
   int due;      // ticks this frame
   // Presses since the last tick, which only the next tick sees.
   bool fire_down, reload_down, pick_down, fire_pressed, reload_pressed, open_requested;
+  bool click_down; // the left button, as the last pass of play saw it
   bool pausing; // Escape: the timeline runs down to the pause menu
   bool picked;  // the perk menu, once opened, takes one choice
   float move_target_x, move_target_y; // point-click movement's target
@@ -140,9 +143,10 @@ static void live_begin() {
 // The replay, as the verifier's stream (checks/replay.py), into replays/.
 static void live_save() {
   mkdir("replays", 0755);
-  static const char *const modes[] = {"", "survival", "rush", "", "", "", "", "", "quest"};
+  // Sessions play Survival (1), Rush (2) and Quests (3).
+  static const char *const modes[] = {"", "survival", "rush", "quest"};
   char name[64];
-  snprintf(name, sizeof name, "replays/%s-%08x.rsi", modes[cfg.mode < 9 ? cfg.mode : 0], cfg.seed);
+  snprintf(name, sizeof name, "replays/%s-%08x.rsi", modes[cfg.mode < 4 ? cfg.mode : 0], cfg.seed);
   if (FILE *fp = platform_fopen(name, "wb")) {
     fwrite(live.replay.data(), 1, live.replay.size(), fp);
     fclose(fp);
@@ -333,6 +337,15 @@ void gameplay_update_and_render() {
     gameplay_update_and_render_recovered();
     return;
   }
+  // A click on the perk prompt, where the original laid it out, also asks for
+  // the perk menu, with this frame's cursor; a tick never hit-tests it, as the
+  // verifier lays out no prompt (game.py).
+  // A press is the button going down since the last pass of play.
+  bool down = session_grim.IGrim2D_cpp::grim_is_mouse_button_down(0) != 0, pressed = down && !live.click_down;
+  live.click_down = down;
+  float x = ui_mouse_x - perk_prompt_origin_x, y = ui_mouse_y - perk_prompt_origin_y;
+  live.open_requested |= pressed && live_perk_command_valid() && x > perk_prompt_bounds_min_x &&
+                         y > perk_prompt_bounds_min_y && x < perk_prompt_bounds_max_x && y < perk_prompt_bounds_max_y;
   for (int i = 0; i < live.due && live_tick(); ++i) {
   }
 }
@@ -385,9 +398,12 @@ void game_state_set(game_state_id_t state) {
     live_begin();
     live.banked = 0;
   }
-  // Back from a menu, the run picks up where it stopped, without catching up.
-  if (game_live && state == GAME_STATE_GAMEPLAY)
+  // Back from a menu, the run picks up where it stopped, without catching up,
+  // and the click that left the menu is no press on the perk prompt.
+  if (game_live && state == GAME_STATE_GAMEPLAY) {
     live.banked = 0;
+    live.click_down = true;
+  }
 }
 __attribute__((export_name("game_replay"))) const unsigned char *game_replay() { return live.replay.data(); }
 __attribute__((export_name("game_replay_size"))) int game_replay_size() { return (int)live.replay.size(); }

@@ -153,6 +153,21 @@ def adapt_game(src, txt):
             src,
         )
         txt = "char *grim_lookup_blob_entry(char *path);\n" + txt
+    if src.stem == "gameplay_update_and_render":
+        # The verifier lays out no perk prompt, so a click in a tick never opens
+        # the menu; the run takes a click on it between ticks (host/session.inc).
+        txt = replace_once(
+            txt,
+            "            } else if (relative_mouse.x > perk_prompt_bounds_min_x",
+            "            } else if (!game_ticking && relative_mouse.x > perk_prompt_bounds_min_x",
+            src,
+        )
+        if 'extern "C" unsigned char game_ticking;' not in txt:
+            txt = 'extern "C" unsigned char game_ticking;\n' + txt
+    if src.stem == "config_ensure_file":
+        # The original writes a missing crimson.cfg with violence off; a fresh
+        # configuration is the Python port's, which keeps it on.
+        txt = replace_once(txt, "    config_violence_disabled = 1;\n", "", src)
     if src.stem == "input_key_name":
         # Its header defines it; a live run names the player's keys (host/session.inc).
         txt = "#define input_key_name input_key_name_recovered\n" + txt
@@ -399,15 +414,21 @@ def simulation_names(root):
 
 
 # What a run inside the running original keeps although the simulation names
-# it: the texture, sound and music handles the original loaded, and the screen's
-# transition, which only the UI reads. Settings and progress reset with the
+# it: the texture, sound and music handles the original loaded, the screen's
+# transition, which only the UI reads, and the sprite-sheet cells
+# effect_uv_tables_init lays out at startup, which effects, bonuses and the player
+# draw with and the verifier never fills: effect_spawn copies them only into quads
+# no snapshot field holds, and the perk prompt's layout, which a tick never
+# hit-tests (adapt_game). Names inside a kept aggregate stay with it.
+# Settings and progress reset with the
 # rest; the player's own stay outside ticks (host/session.inc).
 # Sessions inside the original after it loads its
 # assets agree with the verifier on every gate stream (checks/game_check.py --live).
 SESSION_KEEPS = re.compile(
     r"_texture$|^terrain_texture_|^sfx_|^music_(track_|entry_table$|playlist$|playlist_entry_count$|ready$|fade_out_flags$)"
     r"|^audio_asset_id_table$"
-    r"|^creature_type_table$|^bonus_icon_|^ui_element|^ui_transition_",
+    r"|^creature_type_table$|^bonus_icon_|^ui_element|^ui_transition_"
+    r"|^effect_uv(2|4|8|16|_strip16)$|^perk_prompt_(origin|bounds)_",
 )
 
 
@@ -430,17 +451,28 @@ def game_data(root, out, engine, simulation):
         size = max(int(e["address"], 16) + e["size"] for e in entries) - base
         lines.append(f"alignas(16) unsigned char game_image_{image}[{size}];")
         clears, fills = {kind: [] for kind in resets}, {kind: [] for kind in resets}
+        own = {
+            e["name"]: "engine"
+            if image == "grim" or e["name"] in engine
+            else "run"
+            if e["name"] in simulation and not SESSION_KEEPS.search(e["name"])
+            else "presentation"
+            for e in entries
+        }
+        # A name inside an aggregate the run keeps is kept with it: resetting the
+        # name alone would clear that slice of the aggregate.
+        kept_spans = [
+            (int(e["address"], 16), int(e["address"], 16) + e["size"])
+            for e in entries
+            if own[e["name"]] != "engine" and SESSION_KEEPS.search(e["name"])
+        ]
         for e in sorted(entries, key=lambda e: int(e["address"], 16)):
             offset = int(e["address"], 16) - base
             if re.fullmatch(r"[A-Za-z_]\w*", e["name"]):
                 lines.append(f'asm(".globl {e["name"]}\\n.set {e["name"]}, game_image_{image}+{offset}\\n");')
-            kind = (
-                "engine"
-                if image == "grim" or e["name"] in engine
-                else "run"
-                if e["name"] in simulation and not SESSION_KEEPS.search(e["name"])
-                else "presentation"
-            )
+            start, end = int(e["address"], 16), int(e["address"], 16) + e["size"]
+            kept = any(s <= start and end <= f and f - s > e["size"] for s, f in kept_spans)
+            kind = "presentation" if kept and own[e["name"]] == "run" else own[e["name"]]
             clears[kind].append(f"memset(game_image_{image}+{offset},0,{e['size']});")
             if (data := e.get("initializer_hex", "")) and any(bytes.fromhex(data)):
                 values = ",".join(map(str, bytes.fromhex(data)))

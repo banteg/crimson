@@ -109,7 +109,8 @@ recorded before the tick runs. A pass that covers no tick draws nothing, and
 the host shows the last frame again. Runs are single-player Survival, Rush and
 Quests at 1024x768, the resolution the verifier simulates; the rest play as the
 original. A fresh configuration is the Python port's: windowed, since the host
-owns the window, at 1024x768. The main menu leaves out Other Games, 10tons'
+owns the window, at 1024x768, with violence on (the original turns it off when
+it writes a missing `crimson.cfg`). The main menu leaves out Other Games, 10tons'
 catalogue of the time, as the Python port does.
 
 Between ticks the original keeps its screens. The perk menu opens when a tick
@@ -131,8 +132,12 @@ perk menu takes one choice per opening.
 
 A tick reads exactly the verifier's state. A run resets the simulation's
 globals (the names the verifier's sources and host use) except what the
-original loaded: texture, sound and music handles, and the screen transition
-(`SESSION_KEEPS` in [`game.py`](game.py)). The settings and progress a tick
+original loaded or laid out: texture, sound and music handles, the screen
+transition, the sprite-sheet cells effects, bonuses and the player draw with,
+and the perk prompt's layout (`SESSION_KEEPS` in [`game.py`](game.py)); a name
+inside an aggregate the run keeps stays with it. A tick never hit-tests the prompt, as the
+verifier lays out none; a click on it opens the perk menu between ticks, as a
+command, like the pick key. The settings and progress a tick
 reads (the configuration, the status, the corpse-fade cvar, the players' key
 codes) are the verifier's, swapped in for each tick; between ticks the
 original shows and keeps the player's. What a tick changes carries over: the
