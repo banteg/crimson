@@ -856,10 +856,25 @@ Native behavior:
 - Before them it calls `grim_set_uv(0, 0, 1, 1)`, so each flash stretches the
   entire particle atlas, debris, blood, explosion and ring cells included,
   rather than one glow cell.
+- The atlas's ring cell sits in its bottom-right quarter, so a thin ring grows
+  down-right of each blast, with small debris blobs up-left.
+
+Why it's likely a bug:
+
+- In 1.4.0 the flash binds the standalone `glow` texture (`glow64.tga`, one
+  64x64 soft glow) by name before the same `grim_set_uv(0, 0, 1, 1)`, so the
+  whole texture is the glow.
+- By 1.8.7 the loose effect textures had moved into the `game\particles.jaz`
+  atlas. The flash lost its own bind and kept the full-texture UVs, so it took
+  the whole atlas the particle pass left bound, as 1.9.93 still does.
+- The same move hid the bullet heads in
+  [28)](#28-bullet-heads-and-plasma-cores-are-never-visible), in the opposite
+  direction.
 
 Rewrite behavior:
 
 - Documented and preserved in both modes.
 
 Evidence: `decomp/1.9/crimsonland/crimsonland/bonus_render.cpp` (the detonation
-loop) and `tests/native_oracle/test_projectile_render.py`.
+loop), the detonation flashes of the 1.4.0 and 1.8.7 builds in
+`game_bins/crimsonland/`, and `tests/native_oracle/test_projectile_render.py`.
