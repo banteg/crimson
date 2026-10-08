@@ -7049,6 +7049,69 @@
       "claim_mismatches": [],
       "agree": true
     },
+    "survival-141318-revive.crd": {
+      "preserve_bugs": false,
+      "ticks": 31576,
+      "core_ticks": 31576,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 31576,
+      "python_error": null,
+      "result_tick": 31576,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 31545,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 31545,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 474889,
+        "kills": 1303,
+        "shots_fired": 3213,
+        "shots_hit": 2211,
+        "rng_state": 486265421,
+        "pending_perks": 2,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 141318,
+            "health": -2.050506114959717,
+            "most_used_weapon_id": 21
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 474889,
+        "kills": 1303,
+        "shots_fired": 3213,
+        "shots_hit": 2211,
+        "rng_state": 486265421,
+        "pending_perks": 2,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 141318,
+            "health": -2.050506114959717,
+            "most_used_weapon_id": 21
+          }
+        ]
+      },
+      "checkpoints": {
+        "checked": 31576,
+        "ok": true,
+        "failure": null
+      },
+      "claim_mismatches": [],
+      "agree": true
+    },
     "survival-238852.crd": {
       "preserve_bugs": false,
       "ticks": 34763,
@@ -8408,6 +8471,6 @@
   "unsupported": {
     "typo-144.crd": "The core supports one player in Rush, Survival or Quests"
   },
-  "agree": 142,
-  "total": 142
+  "agree": 143,
+  "total": 143
 }

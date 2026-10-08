@@ -14,8 +14,8 @@ copies of 168 recovered translation units; everything it adds lives here.
 
 - Whole runs agree with Python under both bug policies: the **original rules**
   (`preserve_bugs=True`) and the **ranked rules** (`preserve_bugs=False`, the
-  documented fixes). The [gate](#whole-run-gate) checks all 142 streams in CI,
-  including the eight supported human recordings, whose claimed results the core
+  documented fixes). The [gate](#whole-run-gate) checks all 143 streams in CI,
+  including the nine supported recordings, whose claimed results the core
   reproduces.
 - Native and WASM snapshots are bit-exact on 134 bot runs, including resets.
   Quest builders and gameplay math match the original executable.
@@ -110,9 +110,11 @@ to run on a partial bot corpus or unknown `--only` names.
 
 Python steps each stream through its verification `PlaybackDriver`, so a
 recorded fixture is also checked against its claimed result and every `.chk`
-checkpoint in the same pass. The [baseline](results/gate.json) agrees on **all 142** streams, including the
-eight supported human fixtures (Quests 1.1, 2.3, 2.5, 2.10 and 4.10, two Survival
-runs and a Rush run, with pad, keyboard-and-mouse and tank controls);
+checkpoint in the same pass. The [baseline](results/gate.json) agrees on **all 143** streams, including the
+nine supported recorded fixtures (Quests 1.1, 2.3, 2.5, 2.10 and 4.10, two Survival
+runs and a Rush run, with pad, keyboard-and-mouse and tank controls, and one of
+those Survival runs without a perk pick, so its dead player gets back up from a
+MediKit);
 the Typ-o fixture is not supported yet. CI fails on any
 disagreement. A new divergence is reduced to its first differing state and
 decided against the original through Unicorn or its disassembly.
