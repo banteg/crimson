@@ -42,7 +42,18 @@ int crt_fseek(FILE *fp, long offset, int origin) { return fseek(fp, offset, orig
 long crt_ftell(FILE *fp) { return ftell(fp); }
 int crt_fclose(FILE *fp) { return fclose(fp); }
 int crt_fflush(FILE *fp) { return fflush(fp); }
-char *crt_fgets(char *buffer, int size, FILE *fp) { return fgets(buffer, size, fp); }
+// The console's exec reads its scripts in the Windows CRT's text mode ("rt"),
+// which reads each line's CRLF as LF.
+char *crt_fgets(char *buffer, int size, FILE *fp) {
+  if (!fgets(buffer, size, fp))
+    return nullptr;
+  size_t n = strlen(buffer);
+  if (n >= 2 && buffer[n - 2] == '\r' && buffer[n - 1] == '\n') {
+    buffer[n - 2] = '\n';
+    buffer[n - 1] = 0;
+  }
+  return buffer;
+}
 int crt_vsprintf(char *buffer, const char *format, va_list args) { return vsprintf(buffer, format, args); }
 int _stricmp(const char *a, const char *b) { return strcasecmp(a, b); }
 int _strnicmp(const char *a, const char *b, size_t count) { return strncasecmp(a, b, count); }
