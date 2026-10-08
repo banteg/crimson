@@ -110,3 +110,5 @@ Builds 1.9.1, 1.9.9 and 1.9.92 are pinned and mapped in [builds.json](decomp/bui
 ## Legal
 
 This project is an independent reverse engineering and reimplementation effort for preservation, research, and compatibility. Original Crimsonland Classic assets are distributed with permission from the original developer; the game code and reimplementation remain independent.
+
+<!-- CI docs-only filtering smoke test; temporary branch only. -->
