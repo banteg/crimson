@@ -36,7 +36,9 @@ export interface Navigator {
 
 const STAGES = ["I", "II", "III", "IV", "V"];
 const QUEST = /^[1-5]\.(?:[1-9]|10)$/;
-const RULES = "https://crimson.banteg.xyz/rewrite/ranked-rules/";
+const DOCS = "https://crimson.banteg.xyz/";
+const RULES = `${DOCS}rewrite/ranked-rules/`;
+const BUGS = `${DOCS}rewrite/original-bugs/`;
 
 const BOARD_NAMES: Record<Board, string> = { survival: "Survival", quests: "Quests", "quests-hardcore": "Quests, hardcore" };
 const WEAPONS: Record<string, { name: string; icon_index: number }> = weaponData;
@@ -430,61 +432,50 @@ const ABOUT: Screen = {
       <>
         <h2>About</h2>
         <p>
-          crimson.land is the home of <a href="https://github.com/banteg/crimson">Crimsonland, rebuilt</a>: the 2003 game, playable in your
-          browser, and the online leaderboard of its reimplementation. Every score here is a replay of the whole run, which the server plays
-          back from start to finish before the score counts.
-        </p>
-        <h3>Play</h3>
-        <p>
-          <a href="/play/" data-native>Play in your browser</a>, nothing to install: the original game, compiled from source recovered
-          from its executable, with your saves kept in the browser. It plays with a keyboard and mouse or a gamepad.
+          Crimsonland was one of my favourite games as a kid. It came out in 2003, and over the years it got harder and harder to run, so I
+          brought it back.
         </p>
         <p>
-          Or install <a href="https://docs.astral.sh/uv/getting-started/installation/">uv</a>, then run{" "}
-          <Command>uvx crimsonland@latest</Command>: the reimplementation for Windows, macOS and Linux, with controllers and replays.
-          Both play for the leaderboard and download the original art and sound on first launch, distributed with permission from
-          10tons.
+          I reverse engineered the original game back into C/C++ source that compiles to the same machine code as the original .exe. That
+          source is what you <a href="/play/" data-native>play in your browser</a>. It plays exactly like you remember, the same weapons,
+          perks, quests and bugs, because it <em>is</em> the same code. On top of that it supports modern gamepads and has an online
+          leaderboard. Your saves are kept in your browser, and the original art and sound are used with permission from 10tons.
         </p>
       </>
     ),
     () => (
       <>
-        <h3>Play for the leaderboard</h3>
-        <ul>
-          <li>
-            Tick <em>Ranked</em> in the Play Game menu, then play Survival or a quest. Ranked runs play the same for everyone, whatever your own save
-            holds: one player, with the original's bugs fixed.
-          </li>
-          <li>
-            Finish the run: die in Survival or complete the quest. The name you type into the high-score entry is the name the run shows
-            under.
-          </li>
-          <li>
-            The game uploads the run by itself. Playing offline is fine; runs wait on your computer and upload once the site can be reached.
-          </li>
-        </ul>
+        <h3>The leaderboard</h3>
         <p>
-          Survival ranks experience, higher first. Each quest ranks its final time, lower first, with hardcore on its own board. A board
-          shows each player's best run. The <a href={RULES}>ranked rules</a> have the details.
+          Tick <em>Ranked</em> in the Play Game menu and play Survival or a quest to the end. Enter your name on the high score screen, and
+          the game uploads your run. If you're offline, it uploads the next time you connect.
+        </p>
+        <p>
+          Survival is ranked by experience and quests by time, with a separate board for hardcore. Only your best run counts.
+        </p>
+        <p>
+          It can't be cheated, because a score is not a number you send. It's a recording of every input in the whole run, signed with your
+          key. The server runs the same game code and plays the recording from start to finish. The score only counts if the result
+          matches.
+        </p>
+        <p>
+          Ranked runs are the same for everyone: one player, a fresh save, and the <a href={BUGS}>original bugs</a> fixed.
         </p>
       </>
     ),
     () => (
       <>
-        <h3>Your name and profile</h3>
+        <h3>Your name</h3>
         <p>
-          The game makes you an identity on first launch, so there is no sign-up. Your name is the one on your latest run, and your
-          profile lists every name you have used. The <em>Profile</em> button in the Play Game menu opens it, signed in.
+          You don't need to sign up. The game makes a keypair on first launch, and that keypair is your account. You show up under the name
+          from your latest run, and your <em>Profile</em> in the Play Game menu lists every name you've used. Link GitHub, Discord or X to
+          show your handle, so no one can take your name, and to keep your runs when you switch computers or clear your browser's site data.
         </p>
+        <h3>Replays, other ports and docs</h3>
         <p>
-          From your profile you can link a GitHub, Discord or X account. Linked players show their handle, so nobody can pass as them, and
-          signing in with the same link from another computer joins its runs to your account. In the browser the key lives in the
-          site's storage, so clearing it starts a new identity; a link joins its runs back to yours.
-        </p>
-        <h3>Replays</h3>
-        <p>
-          Every run on a board can be downloaded as a <em>.crd</em> file. <Command>uvx crimsonland replay play</Command> followed by the
-          file's path watches it, and <Command>uvx crimsonland replay verify</Command> checks it.
+          Every run on the boards can be downloaded as a replay. There's also a Python port and a native desktop build, both on{" "}
+          <a href="https://github.com/banteg/crimson">GitHub</a>. The <a href={DOCS}>docs</a> describe how the game actually works, from the
+          real numbers behind every perk and weapon rather than the in-game descriptions, to how the whole thing was rebuilt.
         </p>
       </>
     ),
