@@ -38,6 +38,7 @@ nav = [
   ]},
   { "Rewrite" = [
     { "Overview" = "rewrite/index.md" },
+    { "Feature matrix" = "rewrite/feature-matrix.md" },
     { "Architecture" = [
       { "Overview" = "rewrite/architecture/index.md" },
       { "Module map" = "rewrite/module-map.md" },
