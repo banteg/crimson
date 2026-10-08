@@ -44,9 +44,11 @@ void audio_update(w2c_game *game) {
   }
   Sint64 room = stream ? depth - queued : 0;
   // What no one will hear is skipped, not mixed: a long stall costs one call.
-  if (Sint64 unheard = due - mixed - LAG - room; unheard > 0) {
-    w2c_game_game_audio_skip(game, (u32)SDL_min(unheard, (Sint64)INT32_MAX));
-    mixed += unheard;
+  for (Sint64 unheard = due - mixed - LAG - room; unheard > 0;) {
+    Sint64 skip = SDL_min(unheard, (Sint64)INT32_MAX);
+    w2c_game_game_audio_skip(game, (u32)skip);
+    mixed += skip;
+    unheard -= skip;
   }
   for (Sint64 frames = SDL_max(room, due - mixed - LAG); frames > 0;) {
     int pull = (int)SDL_min(frames, (Sint64)PULL);
