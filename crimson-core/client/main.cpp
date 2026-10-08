@@ -254,6 +254,7 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   SDL_HideCursor();
   SDL_StartTextInput(window);
   renderer_init();
+  audio_init();
 
   wasm_rt_init();
   client_wasi_init();
@@ -357,6 +358,7 @@ SDL_AppResult SDL_AppIterate(void *) {
 #endif
     return SDL_APP_SUCCESS;
   }
+  audio_update(&game);
   return SDL_APP_CONTINUE;
 }
 

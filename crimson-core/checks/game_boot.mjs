@@ -1,7 +1,8 @@
-// Boots the original game from a game directory (grim.dll and the three PAQs),
-// headless under Node's WASI, then clicks through to a Survival run. Every
-// texture must load, the run must keep drawing, and losing and regaining the
-// window mid-run must suspend and resume it.
+// Boots the original game from a game directory (grim.dll, crimson.paq, sfx.paq
+// and music/), headless under Node's WASI, then clicks through to a Survival
+// run. Every texture must load, the menus' music must play, the run must keep
+// drawing, and losing and regaining the window mid-run must suspend and resume
+// it.
 //
 //   node crimson-core/checks/game_boot.mjs <game directory> [game.wasm]
 import fs from "node:fs";
@@ -51,7 +52,8 @@ let cursor = [512, 384],
   playing = 0,
   step = 0,
   settled = 0,
-  click = 0;
+  click = 0,
+  audible = 0;
 for (let frame = 1; frame <= 3000; frame++) {
   if (frame > 900 && step < steps.length && game.game_state() === steps[step].screen) {
     cursor = steps[step].at;
@@ -70,6 +72,9 @@ for (let frame = 1; frame <= 3000; frame++) {
   if (frame === 2510) game.game_activate(1);
   clock += 16;
   if (!game.game_frame()) throw Error(`the game quit at frame ${frame}`);
+  // A 60 Hz frame of the mix: 735 stereo frames at 44.1 kHz.
+  const mix = new Int16Array(memory.buffer, game.game_audio(735), 735 * 2);
+  if (mix.some((v) => v !== 0)) ++audible;
   if (game.game_state() === 9) ++playing; // game_state_id_t's gameplay screen
 }
 const log = fs.readFileSync(path.join(directory, "console.log"), "latin1");
@@ -77,4 +82,6 @@ const failed = log.split("\n").filter((line) => line.includes("failed"));
 if (failed.length) throw Error(`assets failed to load:\n${failed.join("\n")}`);
 if ((calls.texture_create ?? 0) < 60) throw Error(`only ${calls.texture_create} textures`);
 if (playing < 600) throw Error(`the Survival run lasted ${playing} frames`);
-console.log(JSON.stringify(calls));
+// The run itself is quiet: its music starts at the first hit, and nothing fires.
+if (audible < 1000) throw Error(`only ${audible} frames made sound`);
+console.log(JSON.stringify({ ...calls, audible }));

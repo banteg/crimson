@@ -15,8 +15,10 @@
 <div id="status">Loading…</div>
 <script>
   // The game reads and writes its directory, /game, kept in IndexedDB. Files it
-  // lacks (grim.dll and the PAQs) come from ?assets=<url>, default ./game/.
-  const ASSETS = ["grim.dll", "crimson.paq", "music.paq", "sfx.paq"];
+  // lacks (grim.dll, two PAQs and the music) come from ?assets=<url>, default
+  // ./game/.
+  const ASSETS = ["grim.dll", "crimson.paq", "sfx.paq", "music/game_tunes.txt",
+    ...["intro", "shortie_monk", "crimson_theme", "crimsonquest", "gt1_ingame", "gt2_harppen"].map((n) => `music/${n}.ogg`)];
   const base = new URLSearchParams(location.search).get("assets") ?? "game/";
   const status = document.getElementById("status");
   const canvas = document.getElementById("canvas");
@@ -73,6 +75,7 @@
     for (const name of ASSETS) {
       if (FS.analyzePath("/game/" + name).exists) continue;
       status.textContent = "Downloading " + name + "…";
+      FS.mkdirTree("/game/" + name.slice(0, name.lastIndexOf("/") + 1));
       const response = await fetch(new URL(name, new URL(base, location.href)));
       if (!response.ok) throw Error(name + ": " + response.status);
       FS.writeFile("/game/" + name, new Uint8Array(await response.arrayBuffer()));
