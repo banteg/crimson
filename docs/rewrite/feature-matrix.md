@@ -40,7 +40,7 @@ by tick and adds what a modern release needs.
 | Gamepads | PlayStation, Xbox and Switch Pro, twin-stick, every menu by pad | One pad as the original's joystick | One pad as the original's joystick |
 | Music, sound, addon tunes | Yes | Yes | Yes |
 | Uncompressed source art | Yes | Yes | With the distributed files |
-| Mods | Listed, not run | No | No |
+| Mods | No | No | No |
 | Console | Yes | Yes, outside runs | Yes, outside runs |
 
 ## Replays

@@ -20,7 +20,6 @@ from ..screens.panels.base import PanelMenuView
 from ..screens.panels.controls import ControlsMenuView
 from ..screens.panels.credits import CreditsView
 from ..screens.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
-from ..screens.panels.mods import ModsMenuView
 from ..screens.panels.options import OptionsMenuView
 from ..screens.panels.play_game import PlayGameMenuView
 from ..screens.panels.stats import StatisticsMenuView
@@ -81,7 +80,6 @@ class ScreenNavigator:
                 | Route.WEAPONS
                 | Route.PERKS
                 | Route.CREDITS
-                | Route.MODS
                 | Route.OTHER_GAMES
             ):
                 screens.push(self._panel(action))
@@ -112,7 +110,6 @@ class ScreenNavigator:
                 Route.PERKS: UnlockedPerksDatabaseView,
                 Route.CREDITS: CreditsView,
                 Route.ALIEN_ZOOKEEPER: AlienZooKeeperView,
-                Route.MODS: ModsMenuView,
                 Route.END_NOTE: EndNoteView,
             }[route]
             view = view_type(self.state)

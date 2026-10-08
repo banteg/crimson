@@ -38,7 +38,8 @@ address-keyed source evidence, a native-oracle test, or the core gate. See [evid
   extension must preserve those outcomes; see [local multiplayer](local-multiplayer.md).
 - Rendering has explicit options and sampling differences; see [terrain](terrain.md)
   and [beam rendering](beam-rendering.md).
-- Mods are discovered and displayed, but native DLL plugin execution is out of scope.
+- Mods are out of scope in every version: the original's mods are DLL plugins, so the port and the web and
+  native clients offer no Mods entry.
 - Other Games advertisement/runtime flows and native online-score submission are out of scope.
 - Custom network play (LAN, lockstep, rollback, relay) was removed on 2026-09-05 because it never
   restored full state. A future design must start from the deterministic session and prove full state

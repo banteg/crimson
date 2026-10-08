@@ -27,7 +27,6 @@ class Route(Enum):
     PERKS = auto()
     CREDITS = auto()
     ALIEN_ZOOKEEPER = auto()
-    MODS = auto()
     OTHER_GAMES = auto()
     END_NOTE = auto()
     QUIT = auto()
