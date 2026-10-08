@@ -145,7 +145,7 @@ static std::vector<uint8_t> ranked_payload() {
   m.str("friendly_fire"), m.boolean(cfg.friendly_fire);
   m.str("status"), m.map(3);
   m.str("quest_unlock_index"), m.integer(cfg.unlock);
-  m.str("quest_unlock_index_full"), m.integer(cfg.unlock_full);
+  m.str("quest_unlock_index_full"), m.integer(cfg.unlock_full); // the replay format's key; name-audit: keep
   m.str("weapon_usage_counts"), m.array(53);
   for (uint32_t count : cfg.weapon_usage)
     m.integer(count);
