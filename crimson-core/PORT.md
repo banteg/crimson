@@ -50,7 +50,8 @@ they use:
 | Grim's window procedure and run loop | [`frame.cpp`](game/frame.cpp): one loop pass per host frame; window messages as calls |
 | `grim.dll`'s embedded font and splash | [`resources.cpp`](game/resources.cpp) reads them from `grim.dll` |
 | Files, registry, threads, WinInet, DLLs | [`win32.cpp`](game/win32.cpp): Windows paths under the game directory, a registry file, threads that run to completion, offline WinInet, no DLLs |
-| DirectSound and vorbisfile | Silent for now: the original's no-sound path |
+| DirectSound | [`dsound.cpp`](game/dsound.cpp) mixes the buffers inside the module; the host pulls the mix |
+| vorbisfile | [`vorbis.cpp`](game/vorbis.cpp) over stb_vorbis |
 | The executable's static initializers | Run in the order of its `.CRT$XCU` table ([`game.py`](game.py)) |
 
 Any COM method the platform layer does not implement stops the module with its
@@ -69,6 +70,16 @@ disagree on and wasm32 calls cannot tolerate; [`game.py`](game.py) lists each.
 textures, render and texture-stage states, draws, present, gamma and message
 boxes return nothing. The only query is wall time. Files arrive through WASI,
 rooted at the game directory.
+
+The host drives the module through exports: a frame, input state, window
+events, and `game_audio`, the next frames of the mix. DirectSound's buffers,
+play cursors and voice status live in the module, which the recovered audio
+code polls to stream music and pick voices; the host only plays what it pulls,
+or pulls it at wall-clock pace into nothing when there is no output. So no
+output device, a muted or autoplay-locked one, or a failing one can reach the
+game: the original's own no-sound path only follows a disabled sound setting.
+Voice stealing draws the C library's `rand`, which never touches the gameplay
+`crt_rand` stream.
 
 ### The tick seam
 
@@ -94,7 +105,8 @@ inside Grim.
   counts down and only the HUD reads.
 - [`checks/game_boot.mjs`](checks/game_boot.mjs) boots the original from a fresh
   game directory under Node's WASI, clicks through the menus into Survival, and
-  requires every texture to load and the run to keep drawing.
+  requires every texture to load, the menus' music to reach the mix, the run to
+  keep drawing, and a lost and regained window to suspend and resume it.
 
 The verifier's hand-set cvars differ from the registered defaults for two
 values it never reads: terrain body transparency (verifier 0.8, original 0) and
@@ -110,11 +122,14 @@ that are never called, and the 64-bit native core build retires.
 
 ### Assets
 
-The client reads the original game directory: `grim.dll` and the three PAQs
-(the configuration files appear on first launch). The asset host's PAQs are the
-Python port's repack, with forward-slash names and replaced art, which the
-original lookup cannot read; serving the original files as well would let the
-client and CI fetch them.
+The client reads the original game directory: `grim.dll`, `crimson.paq`,
+`sfx.paq` and the `music` folder (the configuration files appear on first
+launch). The executable asks for music as `music\<name>.ogg`, which no PAQ
+entry matches, so it plays the loose files, as the GOG release ships them; the
+in-game tunes are whatever `music\game_tunes.txt` adds. The asset host's PAQs
+are the Python port's repack, with forward-slash names and replaced art, which
+the original lookup cannot read; serving the original files as well would let
+the client and CI fetch them.
 
 ## Stack
 
@@ -152,8 +167,8 @@ uv run python crimson-core/client/build.py --target web   # Emscripten, SDL3 por
 ```
 
 `build/web/index.html` runs the same host on WebGL2. The game directory is
-`/game` in IndexedDB: on first launch the page fetches `grim.dll` and the PAQs
-from `?assets=<url>` (default `game/` beside the page), and settings, saves and
+`/game` in IndexedDB: on first launch the page fetches the game files from
+`?assets=<url>` (default `game/` beside the page), and settings, saves and
 high scores sync back a few seconds after the game writes them, when the tab is
 hidden, and when the game quits ([`client/web/shell.html`](client/web/shell.html)).
 One tab at a time owns the directory (a Web Lock), since IndexedDB takes each
@@ -168,9 +183,9 @@ no cross-origin isolation.
 | --- | --- | --- |
 | 1. Game module | Recovered Grim and presentation in wasm32; sessions match the verifier on all gate streams | Done ([#550](https://github.com/banteg/crimson/pull/550)) |
 | 2. Native client | The whole executable in the module; SDL3/OpenGL host over `wasm2c`; the original game boots, menus and runs play | Done ([#552](https://github.com/banteg/crimson/pull/552)) |
-| 3. Web client | The same host through Emscripten; game files in IndexedDB | This change |
-| 4. Audio | DirectSound and vorbisfile over a host mixer; voice stealing on its own RNG | |
-| 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates | |
+| 3. Web client | The same host through Emscripten; game files in IndexedDB | Done ([#553](https://github.com/banteg/crimson/pull/553)) |
+| 4. Audio | DirectSound mixed in the module, vorbisfile over stb_vorbis; the host plays the pulled mix | This change |
+| 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates with the game files and audio loaded | |
 | 6. Verifier convergence | The service and gate run the game module; the native core retires | |
 | 7. Product parity | Controllers, letterboxing options, replay browsing, ranked upload | |
 | 8. Distribution | Packaged desktop builds and the hosted web build | |

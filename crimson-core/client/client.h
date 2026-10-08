@@ -20,3 +20,7 @@ struct Viewport {
 };
 Viewport renderer_viewport(int window_width, int window_height);
 std::vector<unsigned char> renderer_capture(int &width, int &height);
+
+// audio.cpp: plays the module's mix, pulled after each frame.
+void audio_init();
+void audio_update(w2c_game *game);

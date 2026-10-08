@@ -208,6 +208,7 @@ COM_INTERFACES = {
         "IDirect3DTexture8",
     ],
     "dinput.h": ["IDirectInput8A", "IDirectInputDevice8A"],
+    "dsound.h": ["IDirectSound8", "IDirectSoundBuffer"],
 }
 
 
@@ -216,6 +217,7 @@ def com_defaults(root, headers):
         "#pragma once",
         '#include "grim_d3d8.h"',
         "#include <dinput.h>",
+        "#include <dsound.h>",
         "[[noreturn]] void platform_unimplemented(const char *method);",
     ]
     for header, interfaces in COM_INTERFACES.items():
