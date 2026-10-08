@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from grim.config import CrimsonConfig
 
     from ..modes.quest_mode import QuestRunOutcome
+    from ..replay.types import Replay
 
 
 class Route(Enum):
@@ -76,6 +77,12 @@ class ShowQuestOutcome(msgspec.Struct, frozen=True):
     outcome: QuestRunOutcome
 
 
+class WatchReplay(msgspec.Struct, frozen=True):
+    """Play a run's replay above the high scores, which Esc returns to."""
+
+    replay: Replay
+
+
 class ResultAction(Enum):
     PLAY_AGAIN = auto()
     PLAY_NEXT = auto()
@@ -83,4 +90,4 @@ class ResultAction(Enum):
     MAIN_MENU = auto()
 
 
-type ScreenAction = Route | StartRun | ShowScores | ShowQuestOutcome
+type ScreenAction = Route | StartRun | ShowScores | ShowQuestOutcome | WatchReplay

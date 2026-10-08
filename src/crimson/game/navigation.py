@@ -7,11 +7,12 @@ from grim.view import ViewContext
 from ..game_modes import GameMode
 from ..modes.base_gameplay_mode import BaseGameplayMode
 from ..modes.quest_mode import QuestMode
+from ..modes.replay_playback_mode import ReplayPlaybackMode
 from ..modes.rush_mode import RushMode
 from ..modes.survival_mode import SurvivalMode
 from ..modes.tutorial_mode import TutorialMode
 from ..modes.typo_mode import TypoShooterMode
-from ..screens.actions import Route, ScreenAction, ShowQuestOutcome, ShowScores, StartRun
+from ..screens.actions import Route, ScreenAction, ShowQuestOutcome, ShowScores, StartRun, WatchReplay
 from ..screens.boot import BootView
 from ..screens.high_scores_view import HighScoresView
 from ..screens.menu import MenuView
@@ -45,7 +46,16 @@ class ScreenNavigator:
             case StartRun():
                 self._start_run(action)
             case ShowScores():
-                screens.push(ScreenEntry(HighScoresView(self.state, action)))
+                view = HighScoresView(self.state, action)
+                screens.push(ScreenEntry(view, resume=view.resume))
+            case WatchReplay(replay=replay):
+                state = self.state
+                ctx = ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs)
+                screens.push(
+                    ScreenEntry(
+                        ReplayPlaybackMode(ctx, replay=replay, config=state.config, console=state.console, audio=state.audio),
+                    ),
+                )
             case ShowQuestOutcome(outcome=outcome):
                 if outcome.kind == "completed":
                     view = QuestResultsView(self.state, outcome)

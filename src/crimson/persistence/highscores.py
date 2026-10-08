@@ -75,6 +75,9 @@ def _score_uni_num_from_rand(rand_value: int) -> int:
 
 class HighScoreRecord(msgspec.Struct):
     data: bytearray
+    # The leaderboard run a received record shows (its replay is the site's /runs/<run>.crd); kept in memory only,
+    # never in the record's bytes.
+    run: str = ""
 
     @classmethod
     def blank(cls, *, rng: CrandLike | None = None, rand_value: int | None = None) -> HighScoreRecord:
@@ -96,7 +99,7 @@ class HighScoreRecord(msgspec.Struct):
         return cls(data=bytearray(data))
 
     def copy(self) -> HighScoreRecord:
-        return HighScoreRecord(data=bytearray(self.data))
+        return HighScoreRecord(data=bytearray(self.data), run=self.run)
 
     def name(self) -> str:
         raw = bytes(self.data[:NAME_SIZE])

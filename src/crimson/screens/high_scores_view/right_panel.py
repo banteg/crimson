@@ -15,6 +15,8 @@ from ...ui.dropdown import ui_list_widget_draw
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.text_input import ui_text_input_draw, ui_text_input_draw_focus
 from ..high_scores_layout import (
+    HS_CARD_WATCH_NOTE_DX,
+    HS_CARD_WATCH_OFFSET,
     HS_RIGHT_CHECK_X,
     HS_RIGHT_CHECK_Y,
     HS_RIGHT_GAME_MODE_WIDGET,
@@ -137,11 +139,28 @@ def _draw_right_panel_local_score(
         return
     idx = int(highlight_rank) if highlight_rank is not None else int(view.score_scroll.scroll_offset)
     idx = max(0, min(idx, len(view._records) - 1))
-    local_shift_x = hs_right_local_card_x_shift(float(view.state.config.display.width))
+    card = local_card_pos(view, right_top_left)
     ui_text_input_render(
-        right_top_left + Vec2(local_shift_x + 74.0, 44.0), view._records[idx], 1.0, idx + 1,
+        card, view._records[idx], 1.0, idx + 1,
         game_state=GameStateId.HIGHSCORES, ui_phase=0, resources=resources, mouse=canvas.mouse_position(), dt=view._dt,
     )
+    if idx != view.pinned:
+        return
+    target = view.watch_target()
+    if target is None:
+        return
+    pos = card + HS_CARD_WATCH_OFFSET
+    if target.replay is not None:
+        button_draw(resources, view.watch_button, focus=view.state.focus, pos=pos)
+        pos = pos.offset(dx=HS_CARD_WATCH_NOTE_DX)
+    if target.note:
+        color = rl_color(190, 190, 200, 255) if target.replay is not None else rl_color(255, 128, 128, 255)
+        draw_small_text(resources.small_font, target.note, pos.offset(dy=4.0), color)
+
+
+def local_card_pos(view: HighScoresView, right_top_left: Vec2) -> Vec2:
+    """Where the score card sits in the right panel."""
+    return right_top_left + Vec2(hs_right_local_card_x_shift(float(view.state.config.display.width)) + 74.0, 44.0)
 
 
 __all__ = ["draw_right_panel"]

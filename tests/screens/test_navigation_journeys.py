@@ -8,16 +8,25 @@ import pytest
 from crimson.game import resources as resources_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
+from crimson.leaderboard import Leaderboard, OnlineScore
 from crimson.modes.base_gameplay_mode import BaseGameplayMode
+from crimson.modes.replay_playback_mode import ReplayPlaybackMode
+from crimson.persistence.highscores import HighScoreRecord, scores_path_for_config, upsert_highscore_record
 from crimson.quests.level import QuestLevel
+from crimson.replay import ReplayRecorder, dump_replay, dump_replay_file
+from crimson.replay.input_codec import pack_tick
+from crimson.replay.library import replay_file_name
 from crimson.screens import menu
 from crimson.screens.actions import (
     ResultAction,
     Route,
+    ScoreQuery,
+    ShowScores,
     StartRun,
 )
-from crimson.screens.high_scores_layout import HS_RIGHT_GAME_MODE_WIDGET, hs_right_options_x_shift
+from crimson.screens.high_scores_layout import HS_CARD_WATCH_OFFSET, HS_RIGHT_GAME_MODE_WIDGET, hs_right_options_x_shift
 from crimson.screens.high_scores_view import view as scores_module
+from crimson.screens.high_scores_view.right_panel import local_card_pos
 from crimson.screens.panels import alien_zookeeper, stats
 from crimson.screens.panels.controls import ControlsMenuView
 from crimson.screens.panels.options import OptionsMenuView
@@ -25,8 +34,11 @@ from crimson.screens.pause_menu import PauseMenuView
 from crimson.screens.quest_views.quest_results import QuestResultsView
 from crimson.screens.stack import ScreenEntry, ScreenStack
 from crimson.sim.run_result import RunOutcome
+from crimson.sim.run_spec import RunSpec
 from grim.geom import Vec2
 from grim.raylib_api import rl
+from tests.support.factories import player_input
+from tests.support.replay_runner_helpers import finish_replay
 from tests.support.screens import ScreenStub, finish_transition
 
 
@@ -252,3 +264,73 @@ def test_alt_q_quits_from_any_screen(loop, mocker) -> None:
     mocker.patch.object(rl, "is_key_down", side_effect=lambda key: int(key) in held)
     loop.update(0.016)
     assert loop.should_close()
+
+
+def test_watch_plays_a_pinned_rows_replay_over_the_scores_and_esc_returns(loop, mocker) -> None:
+    state = loop.state
+    state.config.gameplay.mode = GameMode.SURVIVAL
+    # A Survival run's replay, and the high score record naming it.
+    recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=7))
+    for _ in range(30):
+        recorder.record(pack_tick([player_input()], []))
+    replay = finish_replay(recorder)
+    (state.base_dir / "replays").mkdir(parents=True)
+    dump_replay_file(state.base_dir / "replays" / replay_file_name(1, GameMode.SURVIVAL), replay)
+    record = HighScoreRecord.blank(rand_value=0)
+    record.set_name("banteg")
+    record.game_mode_id = GameMode.SURVIVAL
+    record.score_xp = 10
+    record.run_elapsed_ms = 500
+    record.replay_number = 1
+    upsert_highscore_record(scores_path_for_config(state.base_dir, state.config), record)
+
+    loop.navigation.navigate(ShowScores(ScoreQuery(GameMode.SURVIVAL)))
+    finish_transition(loop)
+    scores = state.screens.active
+    assert isinstance(scores, scores_module.HighScoresView)
+    scores.pinned = 0
+    target = scores.watch_target()
+    assert target is not None and target.replay == replay
+
+    # Click the pinned card's Watch button.
+    button = local_card_pos(scores, scores._panel_rect(33).top_left) + HS_CARD_WATCH_OFFSET + Vec2(20.0, 10.0)
+    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(button.x, button.y))
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
+    loop.update(0.016)
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=False)
+    watching = state.screens.active
+    assert isinstance(watching, ReplayPlaybackMode)
+
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
+    loop.update(0.016)
+    mocker.patch.object(rl, "is_key_pressed", return_value=False)
+    assert state.screens.active is scores
+    assert scores.pinned == 0
+
+
+def test_watch_downloads_a_board_runs_replay_for_its_row(loop, tmp_path) -> None:
+    state = loop.state
+    state.config.gameplay.mode = GameMode.SURVIVAL
+    state.config.profile.show_internet_scores = True
+    recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=9))
+    recorder.record(pack_tick([player_input()], []))
+    replay = finish_replay(recorder)
+    run = "c" * 64
+    leaderboard = Leaderboard(tmp_path, url="https://crimson.test/api", transport=lambda *_: (200, {}), download=lambda _url: dump_replay(replay))
+    leaderboard.scores[("survival", "")] = [
+        OnlineScore(name="ranker", score=99, elapsed_ms=1000, experience=99, most_used_weapon_id=1, shots_fired=0, shots_hit=0, kills=0, accepted_at=0, run=run),
+    ]
+    state.leaderboard = leaderboard
+
+    loop.navigation.navigate(ShowScores(ScoreQuery(GameMode.SURVIVAL)))
+    finish_transition(loop)
+    scores = state.screens.active
+    assert isinstance(scores, scores_module.HighScoresView)
+    scores.pinned = 0
+
+    target = scores.watch_target()
+    while target is not None and target.note == "Downloading the run...":
+        target = scores.watch_target()
+
+    assert target is not None and target.replay == replay
+    assert (state.base_dir / "replays" / "online" / f"{run}.crd").exists()
