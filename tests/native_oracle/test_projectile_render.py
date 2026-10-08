@@ -484,3 +484,48 @@ def test_rewrite_shows_bullet_heads_where_native_hides_them(mocker, native_draws
         assert actual["size"] == pytest.approx(expected["size"], abs=1e-4)
         assert actual["center"] == pytest.approx(expected["center"], abs=1e-4)
         assert actual["angle"] == pytest.approx(expected["angle"], abs=1e-3)
+
+
+@pytest.mark.parametrize("last_active", [False, True])
+def test_rewrite_glows_each_fire_bullets_shot(mocker, native_draws, last_active):
+    # The rewrite glows Fire Bullets shots on their own type, with native's size and rotation.
+    pool: list[Projectile | None] = [
+        Projectile(active=True, type_id=type_id, life_timer=0.4, pos=Vec2(100 + 60 * index, 100), angle=0.3)
+        for index, type_id in enumerate(
+            (ProjectileTemplateId.FIRE_BULLETS, ProjectileTemplateId.PISTOL, ProjectileTemplateId.ION_RIFLE),
+        )
+    ]
+    pool += [None] * (95 - len(pool))
+    pool.append(
+        Projectile(active=last_active, type_id=ProjectileTemplateId.FIRE_BULLETS, life_timer=0.4, pos=Vec2(500, 100), angle=0.3),
+    )
+    native = {q["center"]: q for q in _native_sprites(native_draws, pool, textures=(102,))}
+    port = _port_draws(mocker, pool, textures=(102,), preserve_bugs=False)
+    expected = [(100.0, 100.0)] + ([(500.0, 100.0)] if last_active else [])
+    assert [q["center"] for q in port] == pytest.approx(expected)
+    for actual in port:
+        reference = native[min(native, key=lambda c: abs(c[0] - actual["center"][0]))]
+        assert actual["size"] == pytest.approx(reference["size"], abs=1e-4)
+        assert actual["angle"] == pytest.approx(reference["angle"], abs=1e-3)
+
+
+@pytest.mark.parametrize("t", [0.1, 0.5, 0.9])
+def test_rewrite_detonation_flash_draws_the_soft_glow_cell(mocker, native_draws, t):
+    # Freeware bound `glow64.tga` here; its atlas copy is 4x4 frame 6 (effect 0x10).
+    secondaries = [
+        SecondaryProjectile(
+            active=True, type_id=SecondaryProjectileTypeId.DETONATION, pos=Vec2(200, 150), detonation_t=t, detonation_scale=1.0,
+        ),
+    ]
+    native = native_draws.render_detonations(secondaries)
+    port = _port_draws(
+        mocker, [], secondaries=secondaries, textures=(102,), render=world_projectiles.secondary_detonation_pass, preserve_bugs=False,
+    )
+    assert len(port) == len(native) == 2
+    for actual, expected in zip(port, native, strict=True):
+        assert actual["uv"][:2] == pytest.approx((0.5, 0.25))
+        assert actual["uv"][2:] == pytest.approx((0.75, 0.5), abs=2 / 256)
+        assert actual["size"] == pytest.approx(expected["xywh"][2], abs=1e-4)
+        assert actual["center"] == pytest.approx(
+            (expected["xywh"][0] + expected["xywh"][2] / 2, expected["xywh"][1] + expected["xywh"][3] / 2), abs=1e-4,
+        )

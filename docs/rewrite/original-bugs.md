@@ -841,9 +841,15 @@ Native behavior:
 - Otherwise no projectile glows, Fire Bullets shots included. Spawns take the
   first free slot, so slot 95 fills only when the pool is full.
 
+Why it's likely a bug:
+
+- The loop draws at each projectile's own position and angle; only the type
+  test reads another slot, through a pointer left over from an earlier loop.
+
 Rewrite behavior:
 
-- Documented and preserved in both modes.
+- Default: each Fire Bullets shot in flight gets the glow, and nothing else does.
+- `--preserve-bugs`: the glow follows slot 95, as native.
 
 Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (the glow
 loop after the Plague Spreader pass). Executable-backed coverage is in
@@ -872,10 +878,14 @@ Why it's likely a bug:
 - The same move hid the bullet heads in
   [28)](#28-bullet-heads-and-plasma-cores-are-never-visible), in the opposite
   direction.
+- The atlas keeps `glow64.tga` as 4x4 frame 6 (effect `0x10`), pixel for pixel.
+  The ring is a separate cell (effect `0x01`); freeware drew its own
+  `shockwave.tga` in other passes, not in this flash.
 
 Rewrite behavior:
 
-- Documented and preserved in both modes.
+- Default: the flashes draw the soft glow cell, as freeware did.
+- `--preserve-bugs`: they stretch the whole atlas, as native.
 
 Evidence: `decomp/1.9/crimsonland/crimsonland/bonus_render.cpp` (the detonation
 loop), the detonation flashes of the 1.4.0 and 1.8.7 builds in

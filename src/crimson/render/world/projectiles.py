@@ -15,6 +15,7 @@ from ...perks import PerkId
 from ...projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectileTypeId
 from ..rtx.beam import draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
 from ..rtx.mode import RtxRenderMode
+from .atlas import effect_cell_src_inset
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx, draw_bullet_trail_quad, draw_late_bullet_pass_sprite, late_bullet_pass_size
 
@@ -525,15 +526,16 @@ def _plague_pass(render_ctx: WorldRenderCtx, *, alpha: float, atlas_state: tuple
 
 
 def _fire_bullets_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
-    """Fire Bullets glow over every projectile in flight, gated on the last pool slot.
+    """Glow over each Fire Bullets shot in flight.
 
     Native tests the type through the pointer the sprite pass left on the last
-    slot, not each projectile's own. So every shot glows while that slot holds
-    Fire Bullets, even a spent one, and none glow otherwise.
+    slot, not each projectile's own (original bug 34). So every shot glows while
+    that slot holds Fire Bullets, even a spent one, and none glow otherwise.
     """
 
+    preserve_bugs = render_ctx.frame.state.preserve_bugs
     entries = render_ctx.frame.state.projectiles.entries
-    if int(entries[-1].type_id) != ProjectileTemplateId.FIRE_BULLETS:
+    if preserve_bugs and int(entries[-1].type_id) != ProjectileTemplateId.FIRE_BULLETS:
         return
     texture = render_ctx.frame.resources.texture(TextureId.PARTICLES)
     src = _glow_src(texture)
@@ -541,6 +543,8 @@ def _fire_bullets_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     for proj in entries:
         if not proj.active or float(proj.life_timer) < 0.4:
+            continue
+        if not preserve_bugs and int(proj.type_id) != ProjectileTemplateId.FIRE_BULLETS:
             continue
         _draw_quad(
             texture,
@@ -680,11 +684,16 @@ def secondary_detonation_pass(render_ctx: WorldRenderCtx) -> None:
     """Detonation flashes; `bonus_render` draws them after the particle pool.
 
     Native resets the UVs to the whole bound texture, so each flash stretches
-    the entire `particles` atlas rather than one glow cell.
+    the entire `particles` atlas (original bug 35). The rewrite draws the soft
+    glow cell, the `glow64.tga` that freeware 1.4.0 bound here.
     """
 
     texture = render_ctx.frame.resources.texture(TextureId.PARTICLES)
-    src = rl_rectangle(0.0, 0.0, float(texture.width), float(texture.height))
+    if render_ctx.frame.state.preserve_bugs:
+        src = rl_rectangle(0.0, 0.0, float(texture.width), float(texture.height))
+    else:
+        src = effect_cell_src_inset(texture, EffectId.AURA)
+        assert src is not None
     scale = render_ctx.view.scale
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     for proj in render_ctx.frame.state.secondary_projectiles.entries:
