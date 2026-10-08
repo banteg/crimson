@@ -9,13 +9,15 @@
 [Crimsonland](https://en.wikipedia.org/wiki/Crimsonland) 1.9.93 (2003, GOG "Crimsonland Classic"), rebuilt twice:
 
 - **A playable reimplementation** in Python and raylib that matches the original's timings, random rolls, float32 rounding, UI layout and quirks, checked tick by tick against the original code.
-- **A matching decompilation**: C/C++ source that Visual C++ 6 compiles back into the original `crimsonland.exe` and `grim.dll`, instruction for instruction.
+- **A matching decompilation**: C/C++ source that Visual C++ 6 compiles back into the original `crimsonland.exe` and `grim.dll`, instruction for instruction. Compiled to WebAssembly, the same source plays the original game [in your browser](https://crimson.land/play/).
 
-[The full story](https://banteg.xyz/posts/crimsonland/) · [Docs](https://crimson.banteg.xyz/) · [Changelog](CHANGELOG.md) · [Telegram group](https://t.me/+pG-Ow90lt28zMWFi)
+[Play in your browser](https://crimson.land/play/) · [Leaderboard](https://crimson.land) · [The full story](https://banteg.xyz/posts/crimsonland/) · [Docs](https://crimson.banteg.xyz/) · [Changelog](CHANGELOG.md) · [Telegram group](https://t.me/+pG-Ow90lt28zMWFi)
 
 ## Play
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
+**In your browser**: [crimson.land/play](https://crimson.land/play/) runs the original game, compiled from the recovered source, with nothing to install. Saves stay in the browser, and it plays with a keyboard and mouse or a gamepad. Runs there don't count for the leaderboard yet.
+
+**Installed**, with ranked play: install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
 ```bash
 uvx crimsonland@latest
@@ -85,7 +87,7 @@ The port plays like the 2003 game, and adds what a modern release needs:
 
 The rewrite is the full game: Survival, Rush, Quests (5 tiers), Tutorial, Typ-o-Shooter and local co-op, with every weapon, creature, perk and bonus, the music, sound and secrets. The simulation is deterministic, so every recorded run can be verified headlessly.
 
-The [Crimson core](crimson-core/README.md) is the direction for a shared game and verifier: the recovered C/C++ compiled to one WASM module for desktop, web and Workers. It replaced the earlier Zig port as the replay verifier and agrees with the Python port under both bug policies.
+The [Crimson core](crimson-core/README.md) compiles the recovered C/C++ to WebAssembly twice. Its import-free verifier replays every leaderboard run and agrees with the Python port under both bug policies. Its game module is the whole original, which plays [in the browser](https://crimson.land/play/) and natively over SDL3, held to the verifier on every gate stream ([port notes](crimson-core/PORT.md)).
 
 ## Decompilation
 
