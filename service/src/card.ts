@@ -90,8 +90,7 @@ function number(x: number, y: number, size: number, width: number, content: stri
 // The ground and heat at the card's left, mirrored on under the panel, and the panel.
 function background(detail: RunDetailView, timeline: Timeline, art: CardArt): Pixels {
   const canvas = new Canvas(CARD_WIDTH, CARD_HEIGHT, [0, 0, 0]);
-  const quest = detail.quest ? (detail.quest.split(".").map(Number) as [number, number]) : null;
-  paintGround(canvas, runGround(timeline.seed, quest), art.textures, CARD_HEIGHT);
+  paintGround(canvas, runGround(timeline.seed, detail), art.textures, CARD_HEIGHT);
   mirror(canvas, CARD_HEIGHT);
   paintHeat(canvas, timeline.path, CARD_HEIGHT, GOLD, (HEAT_BLUR * CARD_HEIGHT) / SIZE);
   paintPanel(canvas, art.panel, PANEL_BORDERS, PANEL, SHADOW.offset, SHADOW.shade);

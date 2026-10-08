@@ -39,8 +39,14 @@ is pinned:
 - one player, the documented fixes on (`preserve_bugs` off; see
   [original bugs](original-bugs.md));
 - detail preset 5, violence on, friendly fire off;
-- a save with every quest completed in both difficulties and no weapon used,
-  so weapon and perk offers and the weapon-drop reroll draws match;
+- a save with no weapon used and the progress the run's own place in the game
+  gives, so weapon and perk offers and the weapon-drop reroll draws match:
+    - Survival: every quest completed in both difficulties;
+    - a quest: the save that has just unlocked it, with the quests before it
+      completed, so it plays with the weapons and perks the campaign has handed
+      out by then;
+    - a hardcore quest: the whole normal campaign completed, and the hardcore
+      quests before it;
 - no quest retries: every attempt plays as the first, at full difficulty;
 - a fresh random seed for each attempt. Today the client draws it; the service
   will issue it.

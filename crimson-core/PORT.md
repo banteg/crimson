@@ -156,9 +156,9 @@ to the leaderboard (the web client; [`host/ranked.inc`](host/ranked.inc)).
 Ticked, it lists only the modes that rank, Quests and Survival, makes the game
 one player's, and shows a Profile button. A run started that way, with a
 player's movement and aim, plays the ranked rules (`ranked_run_spec`): full
-detail with violence on, no friendly fire, the documented fixes, every quest
-unlocked, no weapon used yet and the registered pad reach, on a detached save
-whose progress stays its own.
+detail with violence on, no friendly fire, the documented fixes, the quests the
+run's own place in the campaign unlocks (`ranked_status`), no weapon used yet
+and the registered pad reach, on a detached save whose progress stays its own.
 
 When it ends as the board takes it, a death in Survival or a completed quest,
 the run's replay is built from the recording: the canonical msgpack the server

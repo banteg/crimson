@@ -3,10 +3,10 @@
 
 import type { Board } from "./api-types";
 import { GameMode, type RunResult, type RunSpec } from "./replay";
+import { rankedUnlocks } from "./unlocks";
 
 export type { Board };
 
-const QUEST_COUNT = 50;
 const RANKED_DETAIL_PRESET = 5;
 const WEAPON_USAGE_SLOTS = 53;
 const FINISHED: Record<number, string> = { [GameMode.SURVIVAL]: "death", [GameMode.QUESTS]: "quest_completed" };
@@ -27,7 +27,8 @@ export function unrankedReasons(run: RunSpec): string[] {
   if (run.friendly_fire) reasons.push("friendly_fire");
   if (run.hardcore && run.game_mode_id !== GameMode.QUESTS) reasons.push("hardcore");
   if (run.quest_fail_retry_count) reasons.push("quest_retry");
-  if (run.status.quest_unlock_index !== QUEST_COUNT || run.status.quest_unlock_index_hardcore !== QUEST_COUNT)
+  const [unlocks, unlocksHardcore] = rankedUnlocks(run.quest_level, run.hardcore);
+  if (run.status.quest_unlock_index !== unlocks || run.status.quest_unlock_index_hardcore !== unlocksHardcore)
     reasons.push("unlocks");
   if (run.status.weapon_usage_counts.length !== WEAPON_USAGE_SLOTS || run.status.weapon_usage_counts.some(Boolean))
     reasons.push("weapon_usage");

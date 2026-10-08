@@ -29,14 +29,22 @@ static bool ranked_attempt() {
 }
 
 // The ranked rules (ranked_run_spec): full detail with violence on, no friendly
-// fire, every quest unlocked and no weapon used yet; the documented fixes, as
-// every run plays.
+// fire and no weapon used yet; the documented fixes, as every run plays. The
+// save has every quest done for Survival, and for a quest is the one that has
+// just unlocked it (ranked_status): a hardcore quest's has the normal campaign
+// done.
 static void ranked_spec(PortableConfig &config) {
-  config.unlock = config.unlock_full = 50;
+  if (config.mode == GAME_MODE_QUEST) {
+    int quest = (config.major - 1) * 10 + (config.minor - 1);
+    config.unlock = config.hardcore ? 50 : quest;
+    config.unlock_full = config.hardcore ? quest : 0;
+  } else {
+    config.hardcore = 0;
+    config.unlock = config.unlock_full = 50;
+  }
   config.detail = 5;
   config.violence = 0;
   config.friendly_fire = 0;
-  config.hardcore = config.mode == GAME_MODE_QUEST && config.hardcore;
   config.retry = 0;
   memset(config.weapon_usage, 0, sizeof config.weapon_usage);
 }

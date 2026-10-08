@@ -2,7 +2,7 @@
 
 docs/rewrite/ranked-rules.md is the contract. A ranked run starts from the canonical profile
 (`ranked_run_spec`): one player, full detail with violence on, friendly fire off, the documented
-fixes, every quest unlocked, no weapon history and no quest retries. Every tick uses human
+fixes, the quests the run's own progression has unlocked, no weapon history and no quest retries. Every tick uses human
 controls, and every aim point is one a cursor clamped to a 1024x768 view could reach. Only
 finished runs rank: a Survival death or a completed quest.
 """
@@ -55,10 +55,19 @@ RANKED_MODES = frozenset({GameMode.SURVIVAL, GameMode.QUESTS})
 _FINISHED = {GameMode.SURVIVAL: RunOutcome.DEATH, GameMode.QUESTS: RunOutcome.QUEST_COMPLETED}
 
 
-def ranked_status() -> RunStatus:
-    """The canonical save: every quest done in both difficulties, no weapon used yet."""
+def ranked_status(quest_level: QuestLevel | None = None, *, hardcore: bool = False) -> RunStatus:
+    """The canonical save, with no weapon used yet.
 
-    return RunStatus(quest_unlock_index=QUEST_COUNT, quest_unlock_index_hardcore=QUEST_COUNT)
+    Survival plays with every quest done in both difficulties. A quest plays on the save that has
+    just unlocked it: a normal quest with the quests before it done, a hardcore quest with the whole
+    normal campaign and the hardcore quests before it.
+    """
+
+    if quest_level is None:
+        return RunStatus(quest_unlock_index=QUEST_COUNT, quest_unlock_index_hardcore=QUEST_COUNT)
+    if hardcore:
+        return RunStatus(quest_unlock_index=QUEST_COUNT, quest_unlock_index_hardcore=quest_level.global_index)
+    return RunStatus(quest_unlock_index=quest_level.global_index)
 
 
 def ranked_run_seed() -> int:
@@ -68,18 +77,19 @@ def ranked_run_seed() -> int:
 def ranked_run_spec(game_mode: GameMode, *, seed: int, quest_level: QuestLevel | None = None, hardcore: bool = False) -> RunSpec:
     """The run a ranked attempt plays; hardcore only changes quests, so Survival has one board."""
 
+    hardcore = hardcore and game_mode == GameMode.QUESTS
     return RunSpec(
         game_mode_id=game_mode,
         seed=seed,
         quest_level=quest_level,
         player_count=1,
-        hardcore=hardcore and game_mode == GameMode.QUESTS,
+        hardcore=hardcore,
         preserve_bugs=False,
         quest_fail_retry_count=0,
         detail_preset=RANKED_DETAIL_PRESET,
         violence_disabled=0,
         friendly_fire=False,
-        status=ranked_status(),
+        status=ranked_status(quest_level, hardcore=hardcore),
     )
 
 
@@ -117,7 +127,7 @@ def unranked_reasons(run: RunSpec) -> list[str]:
         reasons.append("hardcore")
     if run.quest_fail_retry_count:
         reasons.append("quest_retry")
-    canonical = ranked_status()
+    canonical = ranked_status(run.quest_level, hardcore=run.hardcore)
     if (run.status.quest_unlock_index, run.status.quest_unlock_index_hardcore) != (
         canonical.quest_unlock_index,
         canonical.quest_unlock_index_hardcore,
