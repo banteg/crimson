@@ -6,7 +6,16 @@
 import { decompress } from "fzstd";
 import { F64, MapValue, PayloadError, readPayload, type Value } from "./msgpack";
 
-export const REPLAY_FORMAT_VERSION = 30;
+export const REPLAY_FORMAT_VERSION = 31;
+// Each readable format's keys, in order. Format 30 had no `rules`; its replays play under rules 1.
+type ReplayKey = "format_version" | "game_version" | "rules" | "recorder" | "run" | "result" | "ticks";
+const REPLAY_KEYS: Record<number, readonly ReplayKey[]> = {
+  30: ["format_version", "game_version", "recorder", "run", "result", "ticks"],
+  31: ["format_version", "game_version", "rules", "recorder", "run", "result", "ticks"],
+};
+const V30_RULES = 1;
+// The simulation rules this service verifies (src/crimson/replay/types.py REPLAY_RULES).
+export const REPLAY_RULES = 1;
 const MAX_FILE_BYTES = 65 * 1024 * 1024;
 const MAX_PAYLOAD_BYTES = 64 * 1024 * 1024;
 const MAX_WINDOW_BYTES = 8 * 1024 * 1024;
@@ -115,6 +124,7 @@ export interface Recorder {
 export interface Replay {
   format_version: number;
   game_version: string;
+  rules: number;
   recorder: Recorder;
   run: RunSpec;
   result: RunResult;
@@ -185,15 +195,19 @@ export function decodeReplay(payload: Uint8Array): Replay {
 // The wire shape, as msgspec decodes it: maps with every key in declared order, typed and range-checked values.
 class Schema {
   replay(value: Value): Replay {
-    const fields = this.fields(value, "replay", ["format_version", "game_version", "recorder", "run", "result", "ticks"]);
-    const format_version = this.int(fields.format_version, "format_version");
+    require(value instanceof MapValue, "replay must be a map");
+    const version = new Map(value.entries).get("format_version");
+    const names = typeof version === "number" ? REPLAY_KEYS[version] : undefined;
     require(
-      format_version === REPLAY_FORMAT_VERSION,
-      `unsupported replay format version: ${format_version} (this build reads version ${REPLAY_FORMAT_VERSION})`,
+      names !== undefined,
+      `unsupported replay format version: ${String(version)} (this build reads versions ${Object.keys(REPLAY_KEYS).join(", ")})`,
     );
+    const fields = this.fields(value, "replay", names!);
+    const format_version = this.int(fields.format_version, "format_version");
     return {
       format_version,
       game_version: this.str(fields.game_version, "game_version"),
+      rules: format_version === 30 ? V30_RULES : this.int(fields.rules, "rules"),
       recorder: this.recorder(fields.recorder),
       run: this.runSpec(fields.run),
       result: this.result(fields.result),
@@ -416,6 +430,7 @@ const isHighscoreName = (text: string) => /^[A-Za-z.]+$/.test(text) && text.leng
 
 export function validateReplay(replay: Replay): void {
   require(Boolean(replay.game_version), "game_version must be non-empty");
+  require(replay.rules >= 1, "rules must be at least 1");
   for (const field of ["client", "version", "platform"] as const) {
     const value = replay.recorder[field];
     require(

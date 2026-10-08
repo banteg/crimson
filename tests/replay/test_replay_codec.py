@@ -28,9 +28,10 @@ from crimson.replay import (
     load_replay,
 )
 from crimson.replay import types as replay_types
-from crimson.replay.driver.playback_driver import build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
 from crimson.replay.input_codec import pack_player_input, pack_tick, unpack_player_input
-from crimson.replay.types import REPLAY_FORMAT_VERSION, Recorder, current_replay_game_version
+from crimson.replay.types import REPLAY_FORMAT_VERSION, REPLAY_RULES, Recorder, current_replay_game_version
+from crimson.replay.versioning import ReplayRulesError
 from crimson.sim.commands import (
     PerkMenuOpenCommand,
     PerkPickCommand,
@@ -77,6 +78,7 @@ def _replay(
     return Replay(
         format_version=REPLAY_FORMAT_VERSION,
         game_version="1.2.3",
+        rules=REPLAY_RULES,
         recorder=Recorder(client="crimson", version="1.2.3", platform="macos-arm64"),
         run=run,
         result=_result(player_count=run.player_count) if result is None else result,
@@ -157,7 +159,7 @@ def test_replay_payload_layout() -> None:
         _replay(ticks=[ReplayTick(inputs=[(0.0, 0.0, 1.0, 2.0, 0)], commands=[PerkPickCommand(player_index=0, choice_index=2)])]),
     )
 
-    assert list(wire) == ["format_version", "game_version", "recorder", "run", "result", "ticks"]
+    assert list(wire) == ["format_version", "game_version", "rules", "recorder", "run", "result", "ticks"]
     assert wire["recorder"] == {"client": "crimson", "version": "1.2.3", "platform": "macos-arm64"}
     assert list(wire["run"]) == list(RunSpec.__struct_fields__)
     assert list(wire["result"]) == list(RunResult.__struct_fields__)
@@ -248,9 +250,9 @@ def _noncanonical_payloads() -> dict[str, bytes]:
     int_axis = dict(wire)
     int_axis["ticks"] = [[[[0, 0.0, 512.0, 512.0, 0]], []]]
 
-    # Top-level fixmap header 0x86 → 0x87 plus a repeated key.
-    assert payload[0] == 0x86
-    duplicate = b"\x87" + payload[1:] + msgspec.msgpack.encode("game_version") + msgspec.msgpack.encode("9.9.9")
+    # Top-level fixmap header 0x87 → 0x88 plus a repeated key.
+    assert payload[0] == 0x87
+    duplicate = b"\x88" + payload[1:] + msgspec.msgpack.encode("game_version") + msgspec.msgpack.encode("9.9.9")
 
     seed_key = msgspec.msgpack.encode("seed")
     non_minimal_int = payload.replace(seed_key + b"\x01", seed_key + b"\xcc\x01", 1)
@@ -288,8 +290,18 @@ def test_decode_accepts_canonical_payload() -> None:
     ],
 )
 def test_decode_names_the_format_of_another_version(wire: dict, version: int) -> None:
-    with pytest.raises(ReplayCodecError, match=rf"format version: {version} \(this build reads version {REPLAY_FORMAT_VERSION}\)"):
+    with pytest.raises(ReplayCodecError, match=rf"format version: {version} \(this build reads versions 30, {REPLAY_FORMAT_VERSION}\)"):
         decode_replay_payload(msgspec.msgpack.encode(wire))
+
+
+def test_format_30_replays_play_under_rules_1_and_are_written_as_the_current_format() -> None:
+    wire = {key: value for key, value in _wire().items() if key != "rules"}
+    wire["format_version"] = 30
+
+    replay = decode_replay_payload(msgspec.msgpack.encode(wire))
+
+    assert (replay.format_version, replay.rules) == (30, 1)
+    assert encode_replay_payload(replay) == _payload()
 
 
 # Semantic validation -----------------------------------------------------------
@@ -298,7 +310,6 @@ def test_decode_names_the_format_of_another_version(wire: dict, version: int) ->
 @pytest.mark.parametrize(
     ("replay", "message"),
     [
-        (msgspec.structs.replace(_replay(), format_version=19), "unsupported replay format version"),
         (msgspec.structs.replace(_replay(), game_version=""), "game_version"),
         (_replay(RunSpec(game_mode_id=GameMode.DEMO, seed=1)), "not a replayable mode"),
         (_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1 << 32)), "run.seed"),
@@ -436,3 +447,11 @@ def test_dump_rejects_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.setattr(replay_codec_mod, "MAX_REPLAY_PAYLOAD_BYTES", len(_payload()) - 1)
     with pytest.raises(ReplayCodecError, match="payload too large"):
         dump_replay(_replay())
+
+
+def test_a_replay_under_other_rules_decodes_but_does_not_play() -> None:
+    other = msgspec.structs.replace(_replay(), rules=REPLAY_RULES + 1)
+
+    assert decode_replay_payload(encode_replay_payload(other)).rules == REPLAY_RULES + 1
+    with pytest.raises(ReplayRulesError, match="recorded under rules 2"):
+        PlaybackDriver(other)

@@ -2,7 +2,19 @@ from __future__ import annotations
 
 import warnings
 
-from .types import Replay, current_replay_game_version
+from .codec import ReplayCodecError
+from .types import REPLAY_RULES, Replay, current_replay_game_version
+
+
+class ReplayRulesError(ReplayCodecError):
+    """A replay recorded under rules this build does not play."""
+
+
+def require_playable_rules(replay: Replay) -> None:
+    """Refuse a replay recorded under other rules: this build simulates only its own (REPLAY_RULES)."""
+
+    if replay.rules != REPLAY_RULES:
+        raise ReplayRulesError(f"replay was recorded under rules {replay.rules}; this build plays rules {REPLAY_RULES}")
 
 
 class ReplayGameVersionWarning(UserWarning):

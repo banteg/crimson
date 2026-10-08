@@ -73,11 +73,11 @@ describe("runs", () => {
 
   it("the game reads a board's runs as high score records", async () => {
     const player = await Player.create();
-    await player.upload(vectors.ranked_run, "banteg");
+    const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
 
     const { scores } = (await (await post("/api/scores", { board: "survival", quest: "" })).json()) as { scores: Record<string, number | string>[] };
     expect(scores).toHaveLength(1);
-    expect(scores[0]).toMatchObject({ name: "banteg", score: 749, experience: 749 });
+    expect(scores[0]).toMatchObject({ run: id, name: "banteg", score: 749, experience: 749 });
     expect((await post("/api/scores", { board: "quests", quest: "" })).status).toBe(400);
   });
 
@@ -187,6 +187,26 @@ describe("runs", () => {
     expect((await SELF.fetch(`${ORIGIN}/api/account/delete`, { method: "POST", headers: { cookie, origin: ORIGIN } })).status).toBe(200);
     expect((await env.REPLAYS.list()).objects).toEqual([]);
     expect((await timeline()).status).toBe(404);
+  });
+
+  it("a run's replay downloads as the file the game sent; a hidden or banned run's does not", async () => {
+    const player = await Player.create();
+    const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
+    const replay = () => SELF.fetch(`${ORIGIN}/runs/${id}.crd`);
+
+    const response = await replay();
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toMatch(/^public, max-age=\d+, must-revalidate$/);
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(decode64(vectors.ranked_run));
+
+    await env.DB.prepare("UPDATE runs SET hidden = 1").run();
+    expect((await replay()).status).toBe(404);
+    await env.DB.prepare("UPDATE runs SET hidden = 0").run();
+
+    await env.DB.prepare("UPDATE accounts SET banned = 1").run();
+    expect((await replay()).status).toBe(404);
+    expect((await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).status).toBe(404);
+    expect((await SELF.fetch(`${ORIGIN}/api/runs/${id}/timeline`)).status).toBe(404);
   });
 
   it("a run is accepted once, whoever sends it again", async () => {

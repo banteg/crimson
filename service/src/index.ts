@@ -6,7 +6,7 @@ import { playerLabel } from "../web/src/names";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
 import type { Board } from "./ranked";
 import { postRun, timelineFor } from "./runs";
-import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView, runDescription, runDetailView, runSummary } from "./views";
+import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView, runDescription, runDetailView, runSummary, visibleRun } from "./views";
 
 // Links, OAuth callbacks and the session cookie follow the request's origin, so the site answers only over
 // HTTPS, and browsers are told to stay there. Plain-HTTP localhost stays for wrangler dev.
@@ -20,6 +20,7 @@ const GAME_VERSION = "v1.9.93";
 const SCORES_LIMIT = 100;
 // How long the edge keeps a run's card: link previews fetch it once, and a rank or a moderator's change shows soon.
 const CARD_MAX_AGE_S = 600;
+const REPLAY_MAX_AGE_S = 300;
 
 const signedOut = (request: Request) => `${SESSION_COOKIE}=; Path=/; HttpOnly;${secure(request)} SameSite=Lax; Max-Age=0`;
 
@@ -84,8 +85,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     return run ? json(run) : refuse(404, "no such run");
   }
   if ((match = /^GET \/api\/runs\/([0-9a-f]{64})\/timeline$/.exec(route))) {
-    const run = await env.DB.prepare("SELECT 1 FROM runs WHERE id = ? AND hidden = 0").bind(match[1]).first();
-    const timeline = run && (await timelineFor(env, match[1]!));
+    const timeline = (await visibleRun(env, match[1]!)) && (await timelineFor(env, match[1]!));
     return timeline ? json(timeline) : refuse(404, "no such run");
   }
   if (route === "GET /api/me") return json({ account: await sessionAccount(request, env) });
@@ -117,11 +117,15 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   // Pages the server answers itself: the game's login link and replay files.
   if ((match = /^GET \/login\/([0-9a-f]{64})$/.exec(route))) return getLogin(request, env, match[1]!);
   if ((match = /^GET \/runs\/([0-9a-f]{64})\.crd$/.exec(route))) {
-    const run = await env.DB.prepare("SELECT 1 FROM runs WHERE id = ? AND hidden = 0").bind(match[1]).first();
-    const file = run && (await env.REPLAYS.get(`runs/${match[1]}.crd`));
+    const file = (await visibleRun(env, match[1]!)) && (await env.REPLAYS.get(`runs/${match[1]}.crd`));
     if (!file) return new Response("No such replay.", { status: 404 });
+    // A run's replay never changes; the short life lets hiding, bans and deletions take effect.
     return new Response(file.body, {
-      headers: { "content-type": "application/octet-stream", "content-disposition": `attachment; filename="${match[1]!.slice(0, 12)}.crd"` },
+      headers: {
+        "content-type": "application/octet-stream",
+        "content-disposition": `attachment; filename="${match[1]!.slice(0, 12)}.crd"`,
+        "cache-control": `public, max-age=${REPLAY_MAX_AGE_S}, must-revalidate`,
+      },
     });
   }
 
@@ -130,7 +134,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     if (cached) return cached;
     const card = await runCard(env, url.origin, match[1]!);
     if (!card) return new Response("No such run.", { status: 404 });
-    const response = new Response(card, { headers: { "content-type": "image/png", "cache-control": `public, max-age=${CARD_MAX_AGE_S}` } });
+    const response = new Response(card, { headers: { "content-type": "image/png", "cache-control": `public, max-age=${CARD_MAX_AGE_S}, must-revalidate` } });
     await caches.default.put(request, response.clone());
     return response;
   }
