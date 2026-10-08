@@ -135,9 +135,9 @@ globals (the names the verifier's sources and host use) except what the
 original loaded or laid out: texture, sound and music handles, the screen
 transition, the sprite-sheet cells effects, bonuses and the player draw with,
 and the perk prompt's layout (`SESSION_KEEPS` in [`game.py`](game.py)); a name
-inside an aggregate the run keeps stays with it. A tick hit-tests the prompt
-with the verifier's layout, none, so a click on it opens the perk menu between
-ticks, as a command, like the pick key. The settings and progress a tick
+inside an aggregate the run keeps stays with it. A tick never hit-tests the prompt, as the
+verifier lays out none; a click on it opens the perk menu between ticks, as a
+command, like the pick key. The settings and progress a tick
 reads (the configuration, the status, the corpse-fade cvar, the players' key
 codes) are the verifier's, swapped in for each tick; between ticks the
 original shows and keeps the player's. What a tick changes carries over: the

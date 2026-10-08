@@ -153,6 +153,17 @@ def adapt_game(src, txt):
             src,
         )
         txt = "char *grim_lookup_blob_entry(char *path);\n" + txt
+    if src.stem == "gameplay_update_and_render":
+        # The verifier lays out no perk prompt, so a click in a tick never opens
+        # the menu; the run takes a click on it between ticks (host/session.inc).
+        txt = replace_once(
+            txt,
+            "            } else if (relative_mouse.x > perk_prompt_bounds_min_x",
+            "            } else if (!game_ticking && relative_mouse.x > perk_prompt_bounds_min_x",
+            src,
+        )
+        if 'extern "C" unsigned char game_ticking;' not in txt:
+            txt = 'extern "C" unsigned char game_ticking;\n' + txt
     if src.stem == "config_ensure_file":
         # The original writes a missing crimson.cfg with violence off; a fresh
         # configuration is the Python port's, which keeps it on.
@@ -407,8 +418,8 @@ def simulation_names(root):
 # transition, which only the UI reads, and the sprite-sheet cells
 # effect_uv_tables_init lays out at startup, which effects, bonuses and the player
 # draw with and the verifier never fills: effect_spawn copies them only into quads
-# no snapshot field holds, and the perk prompt's layout, which a tick sees as the
-# verifier's (host/session.inc). Names inside a kept aggregate stay with it.
+# no snapshot field holds, and the perk prompt's layout, which a tick never
+# hit-tests (adapt_game). Names inside a kept aggregate stay with it.
 # Settings and progress reset with the
 # rest; the player's own stay outside ticks (host/session.inc).
 # Sessions inside the original after it loads its
