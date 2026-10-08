@@ -19,6 +19,7 @@
 // With --quest the run is quest 1.1 instead, and must be completed.
 //
 //   node crimson-core/checks/game_session.mjs [--seed n] [--ranked] [--quest] <game directory> [core.wasm] [game.wasm]
+import { execFileSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -91,6 +92,7 @@ function click(screen, at) {
 // sequence, which ends after about 14 s.
 while (run.clock < 15000) frame(16, { cursor: [512, 384] });
 click(MAIN_MENU, [240, 338]);
+const unlocksBefore = savedUnlocks();
 // A fresh profile's Play Game panel lists Tutorial, Quests, Rush and Survival;
 // ticking Ranked, under the player-count list, leaves Quests and Survival.
 if (ranked) click(PLAY_GAME_MENU, [285, 489]);
@@ -205,6 +207,16 @@ if (!saved.some((f) => fs.readFileSync(f).equals(replay()))) throw Error("the sa
 if (ranked) checkRanked();
 console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses }));
 
+// The quests the player's save unlocks (game.cfg, src/crimson/persistence/save_status.py).
+function savedUnlocks() {
+  const file = path.join(directory, "game.cfg");
+  if (!fs.existsSync(file)) return "none";
+  const script =
+    "import sys; from crimson.persistence.save_status import load_status; " +
+    "s = load_status(__import__('pathlib').Path(sys.argv[1])); print(s.quest_unlock_index, s.quest_unlock_index_hardcore)";
+  return execFileSync("uv", ["run", "--no-sync", "python", "-c", script, file], { encoding: "utf8" }).trim();
+}
+
 // Closing the game on its end screen queues the run; the queued entry is
 // checked as the service checks it.
 function checkRanked() {
@@ -215,6 +227,12 @@ function checkRanked() {
   } catch (error) {
     if (error.message !== "the game quit") throw error;
   }
+  // A ranked run plays on a detached save: completing a quest unlocks nothing.
+  const unlocks = savedUnlocks();
+  if (unlocks !== "none" && unlocks !== unlocksBefore && unlocksBefore !== "none")
+    throw Error(`the ranked run changed the save's unlocks from ${unlocksBefore} to ${unlocks}`);
+  if (unlocks !== "none" && unlocksBefore === "none" && unlocks !== "0 0")
+    throw Error(`the ranked run unlocked quests in a fresh save: ${unlocks}`);
   const outbox = path.join(directory, "leaderboard/outbox");
   const queued = fs.readdirSync(outbox);
   if (queued.length !== 1) throw Error(`the outbox holds ${queued.length} runs`);

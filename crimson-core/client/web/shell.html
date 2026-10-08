@@ -32,6 +32,7 @@
   :fullscreen #fullscreen .exit { display: block; }
   #notice { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); padding: 4px 12px; border-radius: 4px;
     background: rgb(11 10 7 / 0.8); color: rgb(250 160 80); }
+  #notice a { color: var(--row-on); }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -352,7 +353,8 @@
         } catch {
           break;
         }
-        if (response.status >= 500) break;
+        // The service is down or asks to slow down: the run waits.
+        if (response.status >= 500 || response.status === 429) break;
         if (!response.ok && response.status !== 409) {
           const reason = (await response.json().catch(() => ({}))).reason ?? `HTTP ${response.status}`;
           FS.mkdirTree(REJECTED);
@@ -364,8 +366,17 @@
     })().finally(() => (uploading = null));
     return uploading;
   }
+  // A short note over the game, with a link to follow.
+  function tell(text, href) {
+    const line = href ? Object.assign(document.createElement("a"), { href, target: "_blank", textContent: text }) : text;
+    notice.replaceChildren(line);
+    notice.hidden = false;
+    clearTimeout(tell.timer);
+    tell.timer = setTimeout(() => (notice.hidden = true), 15000);
+  }
   // The profile opens signed in as the game's key: the tab opens on the click,
-  // while the browser still lets it, and goes to the sign-in link once signed.
+  // while the browser still lets it, and goes to the sign-in link once signed;
+  // where the browser blocks it, the link waits in the note.
   async function profile() {
     const tab = window.open("", "_blank");
     try {
@@ -374,9 +385,11 @@
       const signature = Module.ccall("client_sign_login", "string", ["string"], [challenge]);
       const { url } = await (await post("/api/auth/login", JSON.stringify({ public_key, challenge, signature }))).json();
       if (new URL(url).origin !== location.origin) throw Error("unexpected sign-in link");
-      tab.location = url;
+      if (tab) tab.location = url;
+      else tell("Open your profile", url);
     } catch {
       tab?.close();
+      tell("Can't reach the leaderboard.");
     }
   }
   setInterval(upload, 600000);
