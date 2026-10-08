@@ -29,6 +29,7 @@
     transition: opacity 0.3s; opacity: 0; pointer-events: none; }
   #bar.shown { opacity: 1; pointer-events: auto; }
   #bar a { color: var(--label); text-decoration: none; }
+  #notice { color: #f0a050; }
   #bar a:hover { color: #fff; }
   [hidden] { display: none !important; }
 </style>
@@ -42,7 +43,7 @@
   <div id="pick" hidden><label>Choose your Crimsonland folder…<input type="file" webkitdirectory></label></div>
   <p id="touch" hidden>Crimsonland plays with a keyboard and mouse, or a gamepad.</p>
 </div>
-<nav id="bar" hidden><a href="/">crimson.land</a><button id="fullscreen" type="button">Fullscreen</button></nav>
+<nav id="bar" hidden><span id="notice" hidden></span><a href="/">crimson.land</a><button id="fullscreen" type="button">Fullscreen</button></nav>
 <script>
   // The game reads and writes its directory, /game, kept in IndexedDB. Files it
   // lacks come from ?assets=<url>, default ./game/ (the project's distribution:
@@ -50,7 +51,9 @@
   // where the executable plays its music from), or else from the player's own
   // game folder.
   const FILES = ["grim.dll", "crimson.paq", "sfx.paq"];
-  const MUSIC = "music/game_tunes.txt"; // present once the music is
+  // The music the executable plays by name, and the file naming the in-game tunes.
+  const MUSIC = ["intro", "crimson_theme", "crimsonquest", "shortie_monk"].map((name) => `music/${name}.ogg`);
+  const TUNES = "music/game_tunes.txt";
   const base = new URLSearchParams(location.search).get("assets") ?? "game/";
   const status = document.getElementById("status");
   const progress = document.getElementById("progress");
@@ -89,13 +92,20 @@
   // the game starts. Fullscreen keeps Escape for the game where the browser
   // allows it (the Keyboard Lock API); holding Escape still leaves.
   const bar = document.getElementById("bar");
+  const notice = document.getElementById("notice");
   let hide;
   const showBar = (ms) => {
     bar.classList.add("shown");
     clearTimeout(hide);
-    hide = setTimeout(() => bar.classList.remove("shown"), ms);
+    hide = setTimeout(() => notice.hidden && bar.classList.remove("shown"), ms);
   };
   addEventListener("pointermove", (event) => event.clientY < 60 && showBar(1500));
+  // A failed save stays in the bar until a save succeeds; the game plays on.
+  const saveFailed = (error) => {
+    notice.textContent = "Could not save: " + (error.message ?? error);
+    notice.hidden = false;
+    bar.classList.add("shown");
+  };
   document.getElementById("fullscreen").onclick = async () => {
     if (document.fullscreenElement) return document.exitFullscreen();
     await document.documentElement.requestFullscreen();
@@ -108,7 +118,7 @@
 
   // Writes /game back to IndexedDB, one sync at a time and only once it has been
   // read: IndexedDB takes the written tree as the whole directory. Resolves
-  // whether the saves committed; a failure stays on screen.
+  // whether the saves committed.
   let hydrated = false, syncing = null, again = false;
   function persist() {
     if (!hydrated) return Promise.resolve(false);
@@ -117,10 +127,8 @@
       return syncing;
     }
     syncing = new Promise((resolve) => FS.syncfs(false, (error) => {
-      if (error) {
-        cover.hidden = false;
-        say("Could not save: " + (error.message ?? error));
-      }
+      if (error) saveFailed(error);
+      else notice.hidden = true;
       resolve(!error);
     })).then((ok) => {
       syncing = null;
@@ -135,26 +143,37 @@
     FS.mkdirTree("/game/" + name.slice(0, name.lastIndexOf("/") + 1));
     FS.writeFile("/game/" + name, bytes);
   };
-  const missing = () => [...FILES, MUSIC].filter((name) => !FS.analyzePath("/game/" + name).exists);
+  const exists = (name) => FS.analyzePath("/game/" + name).exists;
+  // The game files /game lacks, the tunes game_tunes.txt adds among them.
+  function missing() {
+    const tunes = exists(TUNES)
+      ? [...FS.readFile("/game/" + TUNES, { encoding: "utf8" }).matchAll(/^snd_addGameTune\s+(\S+)/gm)].map((m) => "music/" + m[1])
+      : [TUNES];
+    return [...FILES, ...MUSIC, ...tunes].filter((name) => !exists(name));
+  }
 
   // A PAQ's entries: a NUL-terminated name, a little-endian size, the bytes.
-  function* paq(bytes) {
+  function paq(bytes) {
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    if (new TextDecoder("latin1").decode(bytes.subarray(0, 4)) !== "paq\0") throw Error("not a PAQ");
+    const entries = [];
     for (let at = 4; at < bytes.length; ) {
       const end = bytes.indexOf(0, at);
-      const name = new TextDecoder("latin1").decode(bytes.subarray(at, end));
+      if (end < 0 || end + 5 > bytes.length) throw Error("truncated PAQ");
       const size = view.getUint32(end + 1, true);
-      yield [name, bytes.subarray(end + 5, end + 5 + size)];
+      if (end + 5 + size > bytes.length) throw Error("truncated PAQ");
+      entries.push([new TextDecoder("latin1").decode(bytes.subarray(at, end)), bytes.subarray(end + 5, end + 5 + size)]);
       at = end + 5 + size;
     }
+    return entries;
   }
   const storeMusic = (bytes) => {
     for (const [name, data] of paq(bytes)) store("music/" + name.split("/").pop(), data);
   };
 
   // The files the player picks, matched by name inside the chosen folder: the
-  // GOG release's (music as loose files) or the project's (music.paq). The folder
-  // supplies every game file, so a partial download never mixes with it.
+  // GOG release's (music as loose files) or the project's (music.paq), over
+  // whatever a failed download left. The directory must then be complete.
   function pickFolder() {
     const pick = document.getElementById("pick");
     pick.hidden = false;
@@ -165,13 +184,16 @@
         const files = new Map(
           [...event.target.files].map((f) => [f.webkitRelativePath.split("/").slice(1).join("/").toLowerCase(), f]),
         );
-        const music = files.get("music.paq");
-        const lacking = FILES.filter((name) => !files.has(name));
-        if (!music && !files.has(MUSIC)) lacking.push("music");
+        try {
+          for (const [name, file] of files)
+            if (FILES.includes(name) || name.startsWith("music/")) store(name, new Uint8Array(await file.arrayBuffer()));
+          if (files.has("music.paq")) storeMusic(new Uint8Array(await files.get("music.paq").arrayBuffer()));
+        } catch (error) {
+          return say("Could not read that folder: " + (error.message ?? error));
+        }
+        // Nothing reaches IndexedDB until the directory is complete.
+        const lacking = missing();
         if (lacking.length) return say("That folder lacks " + lacking.join(", ") + ".");
-        for (const [name, file] of files)
-          if (FILES.includes(name) || name.startsWith("music/")) store(name, new Uint8Array(await file.arrayBuffer()));
-        if (music) storeMusic(new Uint8Array(await music.arrayBuffer()));
         pick.hidden = true;
         resolve();
       };
@@ -206,10 +228,11 @@
     await new Promise((resolve, reject) => FS.syncfs(true, (error) => (error ? reject(error) : resolve())));
     const needed = missing();
     if (needed.length) {
-      const names = needed.map((name) => (name === MUSIC ? "music.paq" : name));
+      const names = [...new Set(needed.map((name) => (name.startsWith("music/") ? "music.paq" : name)))];
       try {
         const bytes = await download(names);
         names.forEach((name, i) => (name === "music.paq" ? storeMusic(bytes[i]) : store(name, bytes[i])));
+        if (missing().length) throw Error("incomplete download");
       } catch {
         await pickFolder();
       }
@@ -254,7 +277,7 @@
       bar.hidden = true;
       progress.hidden = true;
       say("Saving…");
-      if (await persist()) say("Reload the page to play again.");
+      say((await persist()) ? "Reload the page to play again." : notice.textContent);
     },
   };
   // Saves and settings reach IndexedDB a few seconds after the game writes them,

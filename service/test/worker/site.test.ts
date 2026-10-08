@@ -66,10 +66,13 @@ describe("site", () => {
     await env.GAME_FILES.put("v1.9.93/sfx.paq", "paq\0");
     const file = await call("/play/game/sfx.paq");
     expect([file.status, await file.text(), file.headers.get("etag")]).toEqual([200, "paq\0", expect.any(String)]);
+    const head = await call("/play/game/sfx.paq", { method: "HEAD" });
+    expect([head.status, head.headers.get("content-length"), await head.text()]).toEqual([200, "4", ""]);
     expect((await call("/play/game/missing.paq")).status).toBe(404);
+    expect((await call("/play/game/missing.paq", { method: "HEAD" })).status).toBe(404);
     expect((await call("/play/game/crimson.paq")).status).toBe(404);
-    const play = await call("/play");
-    expect([play.status, play.headers.get("location")]).toEqual([301, `${ORIGIN}/play/`]);
+    const play = await call("/play?assets=/elsewhere/");
+    expect([play.status, play.headers.get("location")]).toEqual([301, `${ORIGIN}/play/?assets=/elsewhere/`]);
   });
 
   it("the site answers only over HTTPS, except plain-HTTP localhost for wrangler dev", async () => {

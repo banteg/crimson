@@ -87,18 +87,26 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   if (route === "GET /api/me") return json({ account: await sessionAccount(request, env) });
 
   // The playable game: its page, built from crimson-core/client into dist/play/, and the game's files.
-  if (route === "GET /play") return Response.redirect(new URL("/play/", url).toString(), 301);
+  // The redirect keeps the query, which can name where the page loads the game files from.
+  if (route === "GET /play") return Response.redirect(new URL(`/play/${url.search}`, url).toString(), 301);
   if (route === "GET /play/") {
     // Staged by `npm run play`; a build without it has no game page.
     const page = await env.ASSETS.fetch(request);
     if (!page.ok) return page;
     return withPreview(page, url, "Play · crimson.land", "Crimsonland in the browser: the original game, recovered from its executable.");
   }
-  if ((match = /^GET \/play\/game\/(.+)$/.exec(route))) {
-    const file = GAME_FILES.has(match[1]!) && (await env.GAME_FILES.get(`${GAME_VERSION}/${match[1]}`));
-    if (!file) return new Response("No such game file.", { status: 404 });
-    return new Response(file.body, {
-      headers: { "content-type": "application/octet-stream", etag: file.httpEtag, "cache-control": "public, max-age=86400" },
+  if ((match = /^(GET|HEAD) \/play\/game\/(.+)$/.exec(route))) {
+    const key = `${GAME_VERSION}/${match[2]}`;
+    const head = match[1] === "HEAD";
+    const file = GAME_FILES.has(match[2]!) && (await (head ? env.GAME_FILES.head(key) : env.GAME_FILES.get(key)));
+    if (!file) return new Response(null, { status: 404 });
+    return new Response(head ? null : (file as R2ObjectBody).body, {
+      headers: {
+        "content-type": "application/octet-stream",
+        "content-length": String(file.size),
+        etag: file.httpEtag,
+        "cache-control": "public, max-age=86400",
+      },
     });
   }
 
