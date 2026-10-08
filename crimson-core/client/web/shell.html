@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crimsonland</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; color: #ccc; font: 14px sans-serif; overflow: hidden; }
+  canvas { display: block; width: 100vw; height: 100vh; outline: none; }
+  #status { position: fixed; inset: auto 0 1rem 0; text-align: center; pointer-events: none; }
+</style>
+</head>
+<body>
+<canvas id="canvas" tabindex="-1"></canvas>
+<div id="status">Loading…</div>
+<script>
+  // The game reads and writes its directory, /game, kept in IndexedDB. Files it
+  // lacks (grim.dll and the PAQs) come from ?assets=<url>, default ./game/.
+  const ASSETS = ["grim.dll", "crimson.paq", "music.paq", "sfx.paq"];
+  const base = new URLSearchParams(location.search).get("assets") ?? "game/";
+  const status = document.getElementById("status");
+  const canvas = document.getElementById("canvas");
+  // The right button is the game's (reload, by default), not the browser's menu.
+  canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+  // A button released while the page was away never reaches SDL, which then
+  // drops the next press as a repeat. The first mouse event back carries the
+  // real buttons: SDL hears a release (on the document, where it listens for
+  // them) for each one that is up or about to be pressed, before the event.
+  let away = false;
+  addEventListener("blur", () => (away = true));
+  for (const type of ["pointermove", "pointerdown"])
+    addEventListener(type, (event) => {
+      if (!away || !event.isTrusted || event.pointerType !== "mouse") return;
+      away = false;
+      // MouseEvent.button to its MouseEvent.buttons bit: left, middle, right, back, forward.
+      const bit = (button) => 1 << [0, 2, 1, 3, 4][button];
+      // A press, also one chorded onto a held button (a pointermove), names its button.
+      const pressing = event.button >= 0 && event.buttons & bit(event.button);
+      const held = pressing ? event.buttons & ~bit(event.button) : event.buttons;
+      for (const button of [0, 1, 2, 3, 4])
+        if (!(held & bit(button)))
+          document.dispatchEvent(new PointerEvent("pointerup", {
+            pointerType: "mouse", pointerId: event.pointerId, button, buttons: held,
+            clientX: event.clientX, clientY: event.clientY,
+          }));
+    }, true);
+
+  // Writes /game back to IndexedDB, one sync at a time and only once it has been
+  // read: IndexedDB takes the written tree as the whole directory. Resolves
+  // whether the saves committed; a failure stays on screen.
+  let hydrated = false, syncing = null, again = false;
+  function persist() {
+    if (!hydrated) return Promise.resolve(false);
+    if (syncing) {
+      again = true;
+      return syncing;
+    }
+    syncing = new Promise((resolve) => FS.syncfs(false, (error) => {
+      if (error) status.textContent = "Could not save: " + (error.message ?? error);
+      else if (status.textContent.startsWith("Could not save")) status.textContent = "";
+      resolve(!error);
+    })).then((ok) => {
+      syncing = null;
+      if (!again) return ok;
+      again = false;
+      return persist();
+    });
+    return syncing;
+  }
+
+  async function hydrate() {
+    await new Promise((resolve, reject) => FS.syncfs(true, (error) => (error ? reject(error) : resolve())));
+    for (const name of ASSETS) {
+      if (FS.analyzePath("/game/" + name).exists) continue;
+      status.textContent = "Downloading " + name + "…";
+      const response = await fetch(new URL(name, new URL(base, location.href)));
+      if (!response.ok) throw Error(name + ": " + response.status);
+      FS.writeFile("/game/" + name, new Uint8Array(await response.arrayBuffer()));
+    }
+    hydrated = true;
+  }
+
+  var Module = {
+    canvas,
+    arguments: ["/game"],
+    preRun: [() => {
+      FS.mkdir("/game");
+      FS.mount(IDBFS, {}, "/game");
+      addRunDependency("game files");
+      // One tab owns the directory: another would write its stale copy over
+      // this one's saves. The lock lasts as long as the page. Web Locks exist
+      // only in secure contexts: HTTPS, or localhost.
+      if (!navigator.locks) {
+        status.textContent = "Crimsonland needs HTTPS (or localhost) to keep its saves.";
+        return;
+      }
+      navigator.locks.request("crimsonland /game", { ifAvailable: true }, (lock) => {
+        if (!lock) {
+          status.textContent = "Crimsonland is already open in another tab.";
+          return;
+        }
+        hydrate().then(
+          () => {
+            status.textContent = "";
+            removeRunDependency("game files");
+          },
+          (error) => (status.textContent = "Could not load the game files: " + (error.message ?? error)),
+        );
+        return new Promise(() => {});
+      }).catch((error) => (status.textContent = "Could not open the game files: " + (error.message ?? error)));
+    }],
+    printErr: (text) => console.warn(text),
+    // The game quit (client/main.cpp) after writing its settings and scores.
+    quit: async () => {
+      status.textContent = "Saving…";
+      if (await persist()) status.textContent = "Reload the page to play again.";
+    },
+  };
+  // Saves and settings reach IndexedDB a few seconds after the game writes them,
+  // and when the tab is hidden.
+  setInterval(persist, 5000);
+  document.addEventListener("visibilitychange", () => document.hidden && persist());
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>
