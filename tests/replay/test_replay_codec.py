@@ -28,9 +28,10 @@ from crimson.replay import (
     load_replay,
 )
 from crimson.replay import types as replay_types
-from crimson.replay.driver.playback_driver import build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
 from crimson.replay.input_codec import pack_player_input, pack_tick, unpack_player_input
 from crimson.replay.types import REPLAY_FORMAT_VERSION, REPLAY_RULES, Recorder, current_replay_game_version
+from crimson.replay.versioning import ReplayRulesError
 from crimson.sim.commands import (
     PerkMenuOpenCommand,
     PerkPickCommand,
@@ -446,3 +447,11 @@ def test_dump_rejects_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.setattr(replay_codec_mod, "MAX_REPLAY_PAYLOAD_BYTES", len(_payload()) - 1)
     with pytest.raises(ReplayCodecError, match="payload too large"):
         dump_replay(_replay())
+
+
+def test_a_replay_under_other_rules_decodes_but_does_not_play() -> None:
+    other = msgspec.structs.replace(_replay(), rules=REPLAY_RULES + 1)
+
+    assert decode_replay_payload(encode_replay_payload(other)).rules == REPLAY_RULES + 1
+    with pytest.raises(ReplayRulesError, match="recorded under rules 2"):
+        PlaybackDriver(other)

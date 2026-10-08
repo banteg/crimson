@@ -14,6 +14,8 @@ const REPLAY_KEYS: Record<number, readonly ReplayKey[]> = {
   31: ["format_version", "game_version", "rules", "recorder", "run", "result", "ticks"],
 };
 const V30_RULES = 1;
+// The simulation rules this service verifies (src/crimson/replay/types.py REPLAY_RULES).
+export const REPLAY_RULES = 1;
 const MAX_FILE_BYTES = 65 * 1024 * 1024;
 const MAX_PAYLOAD_BYTES = 64 * 1024 * 1024;
 const MAX_WINDOW_BYTES = 8 * 1024 * 1024;

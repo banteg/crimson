@@ -4,7 +4,7 @@ import { concat, fromHex, hex, latin1, RUN_DOMAIN, sha256, verifyEd25519 } from 
 import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
 import type { Timeline } from "./api-types";
-import { decodeReplay, inflateReplay, type Replay, ReplayError } from "./replay";
+import { decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError } from "./replay";
 import { encodeTransport } from "./transport";
 import { verifyRun } from "./verify";
 
@@ -54,6 +54,8 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
     if (error instanceof ReplayError) return refuse(422, error.message);
     throw error;
   }
+  if (replay.rules !== REPLAY_RULES)
+    return refuse(422, `replay was recorded under rules ${replay.rules}; this service verifies rules ${REPLAY_RULES}`);
   const payloadSha = await sha256(payload);
   if (!(await verifyEd25519(publicKey, signature, concat(RUN_DOMAIN, payloadSha, name))))
     return refuse(401, "signature does not match");
