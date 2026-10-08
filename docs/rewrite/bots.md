@@ -102,7 +102,9 @@ Both roles can:
 - mark or unmark an account as a bot;
 - set or clear a run's category.
 
-Each action takes a note and goes to the moderation log, which moderators can read. The existing actions (hide a
+Each action takes a note and goes to the moderation log, which moderators can read. Joining accounts keeps the bot
+mark if either account had it and the stronger of their roles, so a join never moves a bot's runs to the human
+boards or loses a moderator. The admin's account cannot be deleted from the site. The existing actions (hide a
 run, hide a name, ban a key or an account) stay as they are.
 
 The site's moderation API, for signed-in moderators only:

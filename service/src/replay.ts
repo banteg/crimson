@@ -6,12 +6,14 @@
 import { decompress } from "fzstd";
 import { F64, MapValue, PayloadError, readPayload, type Value } from "./msgpack";
 
-export const REPLAY_FORMAT_VERSION = 31;
-// Each readable format's keys, in order. Format 30 had no `rules`; its replays play under rules 1.
-type ReplayKey = "format_version" | "game_version" | "rules" | "recorder" | "run" | "result" | "ticks";
+export const REPLAY_FORMAT_VERSION = 32;
+// Each readable format's keys, in order. Format 30 had no `rules`, so its replays play under rules 1; formats before
+// 32 had no `pilot`, so their runs declare none.
+type ReplayKey = "format_version" | "game_version" | "rules" | "recorder" | "pilot" | "run" | "result" | "ticks";
 const REPLAY_KEYS: Record<number, readonly ReplayKey[]> = {
   30: ["format_version", "game_version", "recorder", "run", "result", "ticks"],
   31: ["format_version", "game_version", "rules", "recorder", "run", "result", "ticks"],
+  32: ["format_version", "game_version", "rules", "recorder", "pilot", "run", "result", "ticks"],
 };
 const V30_RULES = 1;
 // The simulation rules this service verifies (src/crimson/replay/types.py REPLAY_RULES).
@@ -39,6 +41,10 @@ const HIGHSCORE_NAME_MAX_CHARS = 31;
 const MAX_TYPO_DICTIONARY_WORDS = 2048;
 const MAX_TYPO_HIGHSCORE_NAMES = 512;
 const RECORDER_FIELD_MAX_CHARS = 64;
+// src/crimson/replay/codec.py PILOT_*_MAX_CHARS.
+const PILOT_NAME_MAX_CHARS = 31;
+const PILOT_FIELD_MAX_CHARS = 64;
+const PILOT_URL_MAX_CHARS = 200;
 const I32_MIN = -(2 ** 31);
 const I32_MAX = 2 ** 31 - 1;
 const U32_MAX = 2 ** 32 - 1;
@@ -225,7 +231,7 @@ class Schema {
       game_version: this.str(fields.game_version, "game_version"),
       rules: format_version === 30 ? V30_RULES : this.int(fields.rules, "rules"),
       recorder: this.recorder(fields.recorder),
-      pilot: null,
+      pilot: format_version < 32 || fields.pilot === null ? null : this.pilot(fields.pilot),
       run: this.runSpec(fields.run),
       result: this.result(fields.result),
       ticks: this.array(fields.ticks, "ticks").map((tick, i) => this.tick(tick, `ticks[${i}]`)),
@@ -239,6 +245,11 @@ class Schema {
       version: this.str(f.version, "recorder.version"),
       platform: this.str(f.platform, "recorder.platform"),
     };
+  }
+
+  private pilot(value: Value): Pilot {
+    const f = this.fields(value, "pilot", ["name", "model", "url"]);
+    return { name: this.str(f.name, "pilot.name"), model: this.str(f.model, "pilot.model"), url: this.str(f.url, "pilot.url") };
   }
 
   private runSpec(value: Value): RunSpec {
@@ -453,6 +464,21 @@ export function validateReplay(replay: Replay): void {
     require(
       value.length > 0 && value.length <= RECORDER_FIELD_MAX_CHARS && isPrintableAscii(value),
       `recorder.${field} must be 1..${RECORDER_FIELD_MAX_CHARS} printable ASCII characters`,
+    );
+  }
+  const pilot = replay.pilot;
+  if (pilot) {
+    require(
+      pilot.name.length > 0 && pilot.name.length <= PILOT_NAME_MAX_CHARS && isPrintableAscii(pilot.name),
+      `pilot.name must be 1..${PILOT_NAME_MAX_CHARS} printable ASCII characters`,
+    );
+    require(
+      pilot.model.length <= PILOT_FIELD_MAX_CHARS && isPrintableAscii(pilot.model),
+      `pilot.model must be at most ${PILOT_FIELD_MAX_CHARS} printable ASCII characters`,
+    );
+    require(
+      !pilot.url || (pilot.url.startsWith("https://") && pilot.url.length <= PILOT_URL_MAX_CHARS && isPrintableAscii(pilot.url)),
+      `pilot.url must be empty or an https:// URL of at most ${PILOT_URL_MAX_CHARS} printable ASCII characters`,
     );
   }
   const run = replay.run;

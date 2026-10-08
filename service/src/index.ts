@@ -209,7 +209,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
       return json({ account: accountId });
     }
     if (route === "POST /api/account/delete") {
-      await deleteAccount(env, accountId);
+      if (!(await deleteAccount(env, accountId))) return refuse(403, "the admin's account cannot be deleted");
       return json({ account: null }, 200, { "Set-Cookie": signedOut(request) });
     }
     if (route === "POST /api/logout") {

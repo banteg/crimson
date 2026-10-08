@@ -157,6 +157,7 @@ class Stream:
             game_version="",
             rules=REPLAY_RULES,
             recorder=current_recorder(),
+            pilot=None,
             run=self.run_spec(),
             result=RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, ()),
             ticks=self.ticks,

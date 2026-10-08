@@ -306,6 +306,20 @@ describe("bots and moderation", () => {
     expect((await SELF.fetch(`${ORIGIN}/api/boards/survival?category=tas`)).status).toBe(400);
   });
 
+  it("a run that declares its pilot lists on the bot board under the bot's name", async () => {
+    const player = await Player.create();
+    const response = await player.upload(vectors.piloted_run, "egornomic");
+    expect(response.status).toBe(201);
+    const { id } = (await response.json()) as { id: string };
+
+    const pilot = { name: "Astra", model: "gpt-5", url: "https://example.com/astra" };
+    expect((await board()).rows).toEqual([]);
+    expect((await board("?category=bot")).rows).toEqual([expect.objectContaining({ run: id, pilot, player: expect.objectContaining({ bot: false }) })]);
+    expect(await (await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).json()).toMatchObject({ category: "bot", pilot, rank: 1 });
+    // The pilot does not change the run: the same inputs without it are the same run.
+    expect((await (await Player.create()).upload(vectors.ranked_run, "banteg")).status).toBe(409);
+  });
+
   it("a moderator's category for a run wins over the account's mark, and every action is logged", async () => {
     const { id, owner, moderator, session } = await moderatedRun("mod");
     await session.post(`/api/mod/accounts/${owner}`, { bot: true, note: "" });
