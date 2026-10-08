@@ -6,7 +6,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.game_modes import GameMode
 from crimson.gameplay import survival_check_level_up
 from crimson.perks import PerkId
-from crimson.perks.selection import perk_selection_open_choices, perk_selection_pick
+from crimson.perks.selection import PerkPick, perk_selection_open_choices, perk_selection_pick
 from crimson.perks.state import PerkSelectionState
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
@@ -54,7 +54,9 @@ def test_survival_level_up_preserves_waiting_perk_offer(reopen_menu: bool) -> No
 
     picked = perk_selection_pick(state, world.players, 2, game_mode=GameMode.SURVIVAL, dt=0.0, creatures=[])
 
-    assert picked == PerkId.DEATH_CLOCK
+    # The pick comes from the offer that waited through the level-ups.
+    assert picked == PerkPick(offered=tuple(offered), chosen=2)
+    assert picked.perk_id == PerkId.DEATH_CLOCK
     assert player.health == 100.0
     assert state.rng.state == rng_before
     assert state.perk_selection.pending_count == 2
