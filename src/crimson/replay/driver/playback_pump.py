@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Protocol
 from ...sim.clock import FixedStepClock
 from ...sim.hooks import TickResult
 from ...sim.presentation_step import DeterministicPresentationPlan
+from .setup import ReplayRunnerError
 
 if TYPE_CHECKING:
     from ...world.runtime import WorldRuntime
@@ -22,6 +23,8 @@ class PlaybackFrameAdvance:
     tick_results: tuple[TickResult, ...]
     next_tick_index: int
     ticks_requested: int
+    # The tick the simulation refused (a command or input the run could not have issued); playback stops before it.
+    refused_tick: int | None = None
 
 
 def advance_playback_frame(
@@ -42,9 +45,13 @@ def advance_playback_frame(
 
     tick_results: list[TickResult] = []
     next_tick_index = int(start_tick)
-    while len(tick_results) < ticks_requested and next_tick_index < int(tick_limit):
-        tick_results.append(driver.step_tick(next_tick_index))
-        next_tick_index += 1
+    refused_tick: int | None = None
+    try:
+        while len(tick_results) < ticks_requested and next_tick_index < int(tick_limit):
+            tick_results.append(driver.step_tick(next_tick_index))
+            next_tick_index += 1
+    except ReplayRunnerError:
+        refused_tick = next_tick_index
     # Time the replay has no ticks for stays on the clock.
     clock.accum += float(ticks_requested - len(tick_results)) * float(clock.dt_tick)
 
@@ -55,4 +62,5 @@ def advance_playback_frame(
         tick_results=tuple(tick_results),
         next_tick_index=next_tick_index,
         ticks_requested=ticks_requested,
+        refused_tick=refused_tick,
     )

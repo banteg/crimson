@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+import msgspec
 import pytest
 
 from crimson.game_modes import GameMode
@@ -10,10 +11,11 @@ from crimson.modes import replay_playback_mode
 from crimson.modes.replay_playback_mode import ReplayPlaybackMode
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
-from crimson.replay import Replay, ReplayRecorder
+from crimson.replay import Replay, ReplayRecorder, load_replay
 from crimson.replay.driver.playback_driver import build_runtime_playback_driver
 from crimson.replay.input_codec import pack_tick
-from crimson.sim.commands import GameCommand, TypoCharCommand
+from crimson.screens.actions import Route
+from crimson.sim.commands import GameCommand, PerkPickCommand, TypoCharCommand
 from crimson.sim.input import PlayerInput
 from crimson.sim.run_spec import RunSpec
 from crimson.world.render_resources import RenderResources
@@ -33,6 +35,8 @@ from grim.view import ViewContext
 from tests.support.audio import HeadlessAudio
 from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import finish_replay
+
+RECORDED_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "replays"
 
 pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
@@ -104,11 +108,12 @@ def test_replay_render_uses_recorded_gore_setting(open_playback: OpenPlayback, t
     assert frame.config is not viewer_config
 
 
-def test_game_tune_script_queues_its_tunes_through_snd_add_game_tune(open_playback: OpenPlayback, tmp_path: Path) -> None:
+def test_standalone_replay_audio_queues_the_game_tunes_through_snd_add_game_tune(
+    tmp_path: Path, assets_dir: Path, mocker,
+) -> None:
     script = tmp_path / "music" / "game_tunes.txt"
     script.parent.mkdir()
     script.write_text("snd_addGameTune gt1_ingame.ogg\nsnd_addGameTune gt2_harppen.ogg\n")
-    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 1))
     # Music ready with both tunes already streamed, so no device or music.paq is needed.
     music = MusicState(
         ready=True,
@@ -116,10 +121,15 @@ def test_game_tune_script_queues_its_tunes_through_snd_add_game_tune(open_playba
         volume=1.0,
         tracks={name: MusicTrack(stream=rl.Music(), track_id=index) for index, name in enumerate(("gt1_ingame", "gt2_harppen"))},
     )
-    view._audio = AudioState(ready=True, music=music, sfx=init_sfx_state(ready=False, enabled=False, volume=1.0, rng=Crand(0x1234)))
+    ready = AudioState(ready=True, music=music, sfx=init_sfx_state(ready=False, enabled=False, volume=1.0, rng=Crand(0x1234)))
+    mocker.patch.object(replay_playback_mode, "init_audio_state", return_value=ready)
+    console = create_console(tmp_path, assets_dir=assets_dir)
 
-    view._load_game_tune_queue()
+    audio = replay_playback_mode.open_replay_audio(
+        ensure_crimson_cfg(tmp_path), ViewContext(assets_dir=assets_dir, preserve_bugs=False), console,
+    )
 
+    assert audio is ready
     assert music.queue == ["gt1_ingame", "gt2_harppen"]
 
 
@@ -212,8 +222,9 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(open_playback: OpenPlay
     # Fault injection: the first skipped tick's audio step fails.
     mocker.patch.object(audio_bridge, "apply_post_plan", side_effect=_fail)
 
+    view._skip_forward_seconds(1.0 / 60.0)
     with pytest.raises(RuntimeError, match="skip test boom"):
-        view._skip_forward_seconds(1.0 / 60.0)
+        view._advance_skip()
 
     assert observed_sfx_enabled == [False]
     assert audio_bridge.sfx_enabled
@@ -291,3 +302,82 @@ def test_tutorial_replay_draws_the_world_tutorial_overlay(open_playback: OpenPla
     assert overlay.prompt_text
     overlay_panels.assert_called_once()
     assert overlay_panels.call_args.args == (overlay,)
+
+
+def test_esc_returns_to_the_screen_below_once(open_playback: OpenPlayback, mocker) -> None:
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 4))
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
+
+    view.update(0.016)
+
+    assert view.take_action() is Route.BACK
+    assert view.take_action() is None
+
+
+def test_closing_gives_the_music_back_to_the_track_that_was_playing(tmp_path: Path, assets_dir: Path, mocker) -> None:
+    music = MusicState(ready=True, enabled=True, volume=1.0, active_track="crimson_theme")
+    audio = AudioState(ready=True, music=music, sfx=init_sfx_state(ready=False, enabled=False, volume=1.0, rng=Crand(0)))
+    cfg = ensure_crimson_cfg(tmp_path)
+    console = create_console(tmp_path, assets_dir=assets_dir)
+    register_core_cvars(console, cfg.display.width, cfg.display.height)
+    view = ReplayPlaybackMode(
+        ViewContext(assets_dir=assets_dir, preserve_bugs=False),
+        replay=_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 2),
+        config=cfg,
+        console=console,
+        audio=audio,
+    )
+    play_music = mocker.patch.object(replay_playback_mode, "play_music")
+    stop_music = mocker.patch.object(replay_playback_mode, "stop_music")
+    view.open()
+
+    view.close()
+
+    stop_music.assert_called_once_with(music)
+    play_music.assert_called_once_with(music, "crimson_theme")
+
+
+def test_a_run_that_reaches_its_recorded_result_says_so_and_a_doctored_one_does_not(open_playback: OpenPlayback) -> None:
+    replay = _record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 4)
+    view = open_playback(replay)
+    view.update(0.1)
+    assert view.finished and view._played_as_recorded
+
+    doctored = msgspec.structs.replace(replay, result=msgspec.structs.replace(replay.result, kills=replay.result.kills + 1))
+    view = open_playback(doctored)
+    view.update(0.1)
+    assert view.finished and view._played_as_recorded is False
+
+
+def test_a_tick_the_simulation_refuses_stops_playback_there(open_playback: OpenPlayback) -> None:
+    replay = _record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 3)
+    # A pick with no perk pending, which no run could have issued.
+    ticks = list(replay.ticks)
+    ticks[1] = msgspec.structs.replace(ticks[1], commands=[PerkPickCommand(player_index=0, choice_index=0)])
+    view = open_playback(msgspec.structs.replace(replay, ticks=ticks))
+
+    view.update(0.1)
+
+    assert view.finished
+    assert view.tick_index == 1
+    assert view._stopped_reason == "This run stops playing here (tick 1)"
+
+
+def test_a_perk_pick_shows_the_offered_perks_with_the_chosen_one(open_playback: OpenPlayback, mocker) -> None:
+    replay = load_replay((RECORDED_DIR / "quest-2.10-completed.crd").read_bytes())
+    pick_tick = next(i for i, tick in enumerate(replay.ticks) if any(isinstance(c, PerkPickCommand) for c in tick.commands))
+    [command] = [c for c in replay.ticks[pick_tick].commands if isinstance(c, PerkPickCommand)]
+    view = open_playback(replay)
+    view._skip_forward_seconds((pick_tick + 1) / 60.0)
+    while view._skip_target is not None:
+        view._advance_skip()
+
+    pick = view._pick
+    assert pick is not None
+    assert pick.chosen == command.choice_index
+    assert pick.perk_id == pick.offered[command.choice_index]
+    draw_text = mocker.spy(replay_playback_mode, "draw_small_text")
+    _draw(view, mocker)
+    texts = [call.args[1] for call in draw_text.call_args_list]
+    assert any(text.endswith("perk picked") for text in texts)
+    assert any(text.startswith("> ") for text in texts)

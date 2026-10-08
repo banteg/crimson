@@ -27,6 +27,8 @@ class FakePlaybackDriver:
     terrain_fx: TerrainFxBatch = TerrainFxBatch()
     game_tune_started: bool = False
     elapsed_ms: float = 0.0
+    # A prefix of a replay: the viewer has no recorded result to compare at its end.
+    complete: bool = False
 
     @property
     def session(self) -> object:

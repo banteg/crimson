@@ -6,18 +6,21 @@ from grim import canvas
 from grim.assets import (
     TextureId,
 )
-from grim.audio import AudioState, game_tune_command, init_audio_state, shutdown_audio, update_audio
+from grim.audio import AudioState, game_tune_command, init_audio_state, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.music import play_music, stop_music
 from grim.rand import Crand
 from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
+from ..perks.ids import perk_display_name
+from ..perks.selection import PerkPick
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import mode_from_rtx_flag
 from ..replay import (
@@ -31,10 +34,12 @@ from ..replay.driver.playback_driver import (
 )
 from ..replay.driver.playback_pump import advance_playback_frame
 from ..replay.driver.setup import ReplayRunnerError
+from ..screens.actions import Route, ScreenAction
 from ..sim.batch_apply import (
     apply_presentation_plans,
 )
 from ..sim.clock import FixedStepClock
+from ..sim.run_result import RunOutcome, run_result_mismatches
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
     HUD_AMMO_TEXT_OFFSET,
@@ -55,6 +60,10 @@ _PLAYBACK_SPEED_STEPS: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0, 4.0, 8.0)
 _DEFAULT_SPEED_INDEX = 2
 _SKIP_SHORT_SECONDS = 5.0
 _SKIP_LONG_SECONDS = 30.0
+# A skip runs every tick, this many per frame, so a long one does not freeze the frame.
+_SKIP_TICKS_PER_FRAME = 600
+# How long a perk pick's popup stays, in seconds of the viewer's time.
+_PICK_POPUP_SECONDS = 3.0
 _REPLAY_WIDGET_PANEL_SIZE = Vec2(182.0, 53.0)
 _REPLAY_WIDGET_ICON_SIZE = Vec2(32.0, 32.0)
 _REPLAY_WIDGET_BAR_HEIGHT = 4.0
@@ -71,7 +80,20 @@ _REPLAY_WIDGET_BAR_OFFSET_X = 0.0
 _REPLAY_WIDGET_BAR_OFFSET_Y = 0.0
 
 
+def open_replay_audio(config: CrimsonConfig, ctx: ViewContext, console: ConsoleState) -> AudioState:
+    """Audio for a replay played outside the game (`crimson replay play`, rendering, benchmarks), the game's tunes
+    queued as the game queues them; the game itself hands its own audio to the replay."""
+
+    audio = init_audio_state(config, ctx.assets_dir, console, Crand(0))
+    console.register_command("snd_addGameTune", game_tune_command(console, ctx.assets_dir, lambda: audio))
+    console.exec_line("exec music/game_tunes.txt")
+    return audio
+
+
 class ReplayPlaybackMode:
+    """Plays a replay in the game's view: in the game, a screen above the high scores that Esc leaves; standalone,
+    the whole window. It never writes anything."""
+
     def __init__(
         self,
         ctx: ViewContext,
@@ -82,6 +104,7 @@ class ReplayPlaybackMode:
         max_ticks: int | None = None,
         rtx: bool = False,
         show_replay_widget: bool = True,
+        audio: AudioState | None = None,
     ) -> None:
         self._ctx = ctx
         self._config = config
@@ -113,8 +136,18 @@ class ReplayPlaybackMode:
 
         self._driver: PlaybackDriver | None = None
 
-        self._audio: AudioState | None = None
+        self._audio = audio
         self._audio_rng: Crand | None = None
+        # The music playing when the replay opened, played again when it closes.
+        self._resume_track: str | None = None
+        self._skip_target: int | None = None
+        # Why playback stopped before the replay's end: a tick the simulation refused.
+        self._stopped_reason: str | None = None
+        # At the end: whether the run reached the result it recorded.
+        self._played_as_recorded: bool | None = None
+        self._pick: PerkPick | None = None
+        self._pick_level = 0
+        self._pick_seconds = 0.0
 
     @property
     def tick_index(self) -> int:
@@ -142,18 +175,6 @@ class ReplayPlaybackMode:
         if ratio > 1.0:
             return 1.0
         return ratio
-
-    def _register_replay_audio_commands(self) -> None:
-        console = self._console
-        console.register_command(
-            "snd_addGameTune",
-            game_tune_command(console, self._ctx.assets_dir, lambda: self._audio),
-        )
-
-    def _load_game_tune_queue(self) -> None:
-        if self._audio is None:
-            return
-        self._console.exec_line("exec music/game_tunes.txt")
 
     def _draw_world(self, *, entity_alpha: float = 1.0) -> None:
         runtime = self._runtime
@@ -272,12 +293,12 @@ class ReplayPlaybackMode:
         self._speed_index = _DEFAULT_SPEED_INDEX
         self._driver = None
 
-        audio_rng = Crand(int(replay.run.seed) & 0xFFFFFFFF)
-        audio = init_audio_state(self._config, self._ctx.assets_dir, self._console, audio_rng)
-        self._audio = audio
-        self._audio_rng = audio_rng
-        self._register_replay_audio_commands()
-        self._load_game_tune_queue()
+        self._audio_rng = Crand(int(replay.run.seed) & 0xFFFFFFFF)
+        self._resume_track = None if self._audio is None else self._audio.music.active_track
+        self._skip_target = None
+        self._stopped_reason = None
+        self._played_as_recorded = None
+        self._pick = None
 
         preserve_bugs = bool(replay.run.preserve_bugs)
         rtx_mode = mode_from_rtx_flag(self._rtx)
@@ -332,10 +353,19 @@ class ReplayPlaybackMode:
         if self._runtime is not None:
             self._runtime.close_runtime()
             self._runtime = None
-        if self._audio is not None:
-            shutdown_audio(self._audio)
-            self._audio = None
-            self._audio_rng = None
+        audio = self._audio
+        if audio is not None:
+            # The replay's tunes give way to the music that was playing.
+            stop_music(audio.music)
+            if self._resume_track is not None:
+                play_music(audio.music, self._resume_track)
+        self._audio_rng = None
+
+    def take_action(self) -> ScreenAction | None:
+        if not self.close_requested:
+            return None
+        self.close_requested = False
+        return Route.BACK
 
     def should_close(self) -> bool:
         return bool(self.close_requested)
@@ -365,6 +395,9 @@ class ReplayPlaybackMode:
         if int(self._tick_index) < int(tick_limit):
             return
         self._finished = True
+        driver = self._driver
+        if driver is not None and driver.complete:
+            self._played_as_recorded = not run_result_mismatches(self._replay.result, driver.build_result())
 
     def _advance_runner(
         self,
@@ -396,6 +429,15 @@ class ReplayPlaybackMode:
         self._tick_index = int(advance.next_tick_index)
 
         apply_presentation_plans(plans=advance.plans, runtime=runtime)
+        for tick_result in advance.tick_results:
+            for pick in tick_result.payload.perk_picks:
+                self._pick = pick
+                self._pick_level = int(runtime.world.players[0].level)
+                self._pick_seconds = _PICK_POPUP_SECONDS
+        if advance.refused_tick is not None:
+            self._stopped_reason = f"This run stops playing here (tick {advance.refused_tick})"
+            self._finished = True
+            return
 
         self._mark_finished_if_complete()
         self._dt_accum = float(self._clock.accum)
@@ -412,24 +454,27 @@ class ReplayPlaybackMode:
         if self._finished:
             return
         ticks = int(round(float(seconds) * float(self._tick_rate)))
-        if ticks <= 0:
-            return
-        target = min(int(self._tick_limit()), int(self._tick_index) + int(ticks))
+        start = self._tick_index if self._skip_target is None else self._skip_target
+        self._skip_target = min(int(self._tick_limit()), int(start) + ticks)
+
+    def _advance_skip(self) -> None:
+        """A frame of the skip: every tick runs, a bounded number per frame, with sound effects muted."""
+        target = self._skip_target
+        assert target is not None
+        ticks = min(_SKIP_TICKS_PER_FRAME, int(target) - int(self._tick_index))
         audio_bridge = self._runtime.audio_bridge if self._runtime is not None else None
-        prev_sfx_enabled: bool | None = None
+        sfx_enabled = audio_bridge.sfx_enabled if audio_bridge is not None else False
         if audio_bridge is not None:
-            prev_sfx_enabled = bool(audio_bridge.sfx_enabled)
             audio_bridge.sfx_enabled = False
         try:
-            ticks_to_advance = max(0, int(target) - int(self._tick_index))
-            if ticks_to_advance > 0:
-                self._advance_runner(
-                    dt_seconds=float(ticks_to_advance) * float(self._dt),
-                    max_ticks=int(ticks_to_advance),
-                )
+            if ticks > 0:
+                self._clock.reset()
+                self._advance_runner(dt_seconds=float(ticks) * float(self._dt), max_ticks=ticks)
         finally:
-            if prev_sfx_enabled is not None and audio_bridge is not None:
-                audio_bridge.sfx_enabled = bool(prev_sfx_enabled)
+            if audio_bridge is not None:
+                audio_bridge.sfx_enabled = sfx_enabled
+        if self._finished or self._tick_index >= target:
+            self._skip_target = None
         self._clock.reset()
         self._dt_accum = 0.0
 
@@ -453,7 +498,10 @@ class ReplayPlaybackMode:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
             self._skip_forward_seconds(_SKIP_LONG_SECONDS)
 
-        if not self._finished and bool(self._paused) and bool(self._step_once_pending):
+        self._pick_seconds = max(0.0, self._pick_seconds - max(0.0, float(dt)))
+        if self._skip_target is not None and not self._finished:
+            self._advance_skip()
+        elif not self._finished and bool(self._paused) and bool(self._step_once_pending):
             self._clock.reset()
             self._advance_runner(
                 dt_seconds=float(self._dt),
@@ -463,7 +511,7 @@ class ReplayPlaybackMode:
             self._step_once_pending = False
             self._dt_accum = 0.0
 
-        if not self._finished and (not self._paused):
+        elif not self._finished and (not self._paused):
             dt = float(dt)
             if dt < 0.0:
                 dt = 0.0
@@ -607,3 +655,54 @@ class ReplayPlaybackMode:
 
         if bool(self._show_replay_widget):
             self._draw_replay_widget()
+            if self._pick is not None and self._pick_seconds > 0.0:
+                self._draw_pick_popup(self._pick)
+            if self._finished:
+                self._draw_result_panel()
+
+    def _draw_panel(self, x: float, y: float, w: float, h: float) -> None:
+        rl.draw_rectangle(int(x), int(y), int(w), int(h), rl_color(0, 0, 0, 190))
+        rl.draw_rectangle_lines(int(x), int(y), int(w), int(h), rl_color(120, 120, 140, 200))
+
+    def _draw_pick_popup(self, pick: PerkPick) -> None:
+        """The perks the menu offered at a pick, the chosen one highlighted, beside the play area."""
+        violence_disabled = int(self._replay.run.violence_disabled)
+        line_h = 16.0
+        x, y = 12.0, float(canvas.height()) * 0.5 - (len(pick.offered) + 1) * line_h * 0.5
+        self._draw_panel(x - 6.0, y - 6.0, 230.0, (len(pick.offered) + 1) * line_h + 12.0)
+        fade = min(1.0, self._pick_seconds / 0.5)
+        self._draw_ui_text(f"Level {self._pick_level}: perk picked", Vec2(x, y), rl_color(230, 230, 230, int(230 * fade)))
+        for index, perk_id in enumerate(pick.offered):
+            chosen = index == pick.chosen
+            color = rl_color(128, 255, 153, int(255 * fade)) if chosen else rl_color(150, 150, 160, int(200 * fade))
+            name = perk_display_name(perk_id, violence_disabled=violence_disabled)
+            self._draw_ui_text(f"{'>' if chosen else ' '} {name}", Vec2(x, y + line_h * (index + 1)), color)
+
+    def _draw_result_panel(self) -> None:
+        """At the end: how the run ended, its score and time, and whether it played as recorded."""
+        result = self._replay.result
+        seconds = (result.quest_final_ms if result.quest_final_ms is not None else result.elapsed_ms) / 1000.0
+        ending = {
+            RunOutcome.DEATH: f"Died at {self._format_time_text(result.elapsed_ms / 1000.0)}",
+            RunOutcome.QUEST_COMPLETED: f"Quest completed, final time {seconds:.2f} s",
+            RunOutcome.TUTORIAL_COMPLETED: "Tutorial completed",
+            RunOutcome.INCOMPLETE: "Left before the end",
+        }[RunOutcome(result.outcome)]
+        lines = [
+            (ending, rl_color(230, 230, 230, 240)),
+            (f"Experience {result.players[0].experience if result.players else 0}, kills {result.kills}", rl_color(200, 200, 210, 230)),
+        ]
+        if self._stopped_reason is not None:
+            lines.append((self._stopped_reason, rl_color(255, 128, 128, 240)))
+        elif self._played_as_recorded is False:
+            lines.append(("This run played differently", rl_color(255, 128, 128, 240)))
+        elif self._played_as_recorded:
+            lines.append(("Played as recorded", rl_color(128, 255, 153, 240)))
+        lines.append(("Esc returns", rl_color(150, 150, 160, 220)))
+        line_h = 18.0
+        w = max(self._measure_ui_text_width(text) for text, _ in lines) + 24.0
+        x = (float(canvas.width()) - w) * 0.5
+        y = float(canvas.height()) * 0.5 - len(lines) * line_h * 0.5
+        self._draw_panel(x, y - 8.0, w, len(lines) * line_h + 12.0)
+        for index, (text, color) in enumerate(lines):
+            self._draw_ui_text(text, Vec2(x + 12.0, y + index * line_h), color)

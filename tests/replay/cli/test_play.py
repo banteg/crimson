@@ -3,6 +3,7 @@ from __future__ import annotations
 import msgspec
 from typer.testing import CliRunner
 
+import grim.audio as grim_audio
 from crimson import runtime_resources_view
 from crimson.cli import app
 from crimson.game_modes import GameMode
@@ -20,6 +21,8 @@ def test_replay_play_owns_runtime_resources_at_cli_boundary(tmp_path, mocker) ->
     mocker.patch.object(runtime_boot, "download_missing_paqs")
     load_runtime_resources = mocker.patch.object(runtime_resources_view, "load_runtime_resources", return_value=object())
     unload_runtime_resources = mocker.patch.object(runtime_resources_view, "unload_runtime_resources")
+    mocker.patch.object(replay_playback_mode, "open_replay_audio", return_value=object())
+    mocker.patch.object(grim_audio, "shutdown_audio")
     inner_open = mocker.patch.object(replay_playback_mode.ReplayPlaybackMode, "open")
     inner_close = mocker.patch.object(replay_playback_mode.ReplayPlaybackMode, "close")
     run_view = mocker.patch.object(grim_app, "run_view")

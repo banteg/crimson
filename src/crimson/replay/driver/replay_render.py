@@ -427,13 +427,16 @@ def _capture_replay_audio_track(
     show_progress: bool,
     total_ticks: int,
 ) -> _CapturedAudioTrack:
-    from ...modes.replay_playback_mode import ReplayPlaybackMode
+    from grim.audio import shutdown_audio
+
+    from ...modes.replay_playback_mode import ReplayPlaybackMode, open_replay_audio
 
     cfg = config
     cfg.audio.sound_disabled = False
     cfg.audio.music_disabled = False
 
     mode: ReplayPlaybackMode | None = None
+    audio = open_replay_audio(cfg, ctx, console)
     capture = _MixedAudioCapture(
         rl=rl,
         output_path=Path(output_path),
@@ -449,6 +452,7 @@ def _capture_replay_audio_track(
             console=console,
             max_ticks=max_ticks,
             show_replay_widget=False,
+            audio=audio,
         )
         mode.open()
         try:
@@ -492,6 +496,7 @@ def _capture_replay_audio_track(
             capture.close()
         if mode is not None:
             mode.close()
+        shutdown_audio(audio)
 
 
 def _mux_raw_audio_with_video(
