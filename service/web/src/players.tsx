@@ -27,7 +27,6 @@ export function PlayerName(props: { player: PlayerView; heading?: boolean }) {
       <Show when={parts().fingerprint}>{(fingerprint) => <span class="muted"> · {fingerprint()}</span>}</Show>
       <Show when={parts().links.length}>
         <span class="links">
-          <Show when={parts().handle}>{(handle) => <span class="muted handle">{handle()}</span>}</Show>
           <For each={parts().links}>
             {({ link, handle }) => (
               <a class="provider" href={link.url} title={`${PROVIDER_LABELS[link.provider]} ${link.handle}`} target="_blank" rel="noopener">

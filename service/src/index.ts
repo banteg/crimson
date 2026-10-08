@@ -2,6 +2,7 @@ import { confirmMerge, deleteAccount, linkIdentity, pendingJoin, unlink } from "
 import { getLogin, postChallenge, postLogin, SESSION_COOKIE, secure, sessionAccount, sessionToken, tokenHash } from "./auth";
 import { CARD_HEIGHT, CARD_WIDTH, runCard } from "./card";
 import { type Env, json, refuse } from "./http";
+import { playerLabel } from "../web/src/names";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
 import type { Board } from "./ranked";
 import { postRun, timelineFor } from "./runs";
@@ -209,13 +210,13 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
   if ((match = /^\/(quests|quests-hardcore)\/([1-5])$/.exec(path))) return titled(`Quests ${["I", "II", "III", "IV", "V"][Number(match[2]) - 1]}`);
   if ((match = /^\/players\/(\d+)$/.exec(path))) {
     const player = (await players(env, [Number(match[1])])).get(Number(match[1]));
-    return titled(player ? (player.name ?? player.fingerprint) : null);
+    return titled(player ? playerLabel(player) : null);
   }
   if ((match = /^\/runs\/([0-9a-f]{64})$/.exec(path))) {
     const run = await runSummary(env, match[1]!);
     if (!run) return titled(null);
     return {
-      title: `${run.name} · ${run.title}`,
+      title: `${playerLabel(run.player)} · ${run.title}`,
       description: runDescription(run),
       image: { url: `${url.origin}/runs/${run.id}.png`, width: CARD_WIDTH, height: CARD_HEIGHT },
     };

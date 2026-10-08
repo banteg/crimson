@@ -138,6 +138,26 @@ describe("runs", () => {
     expect(await (await SELF.fetch(`${ORIGIN}/runs/${id}`)).text()).toContain(`<title>${fingerprint} · Survival · crimson.land</title>`);
   });
 
+  it("a linked account shows its handle over a mistyped name; an unlinked default name shows the fingerprint", async () => {
+    const player = await Player.create();
+    const { id } = (await (await player.upload(vectors.ranked_run, "10tons]]")).json()) as { id: string };
+    await env.DB.prepare("INSERT INTO links (provider, subject, account_id, handle, avatar_url, linked_at) SELECT 'x', '9', id, 'Razenpok', NULL, 0 FROM accounts")
+      .run();
+    const get = async <T>(path: string) => (await (await SELF.fetch(`${ORIGIN}${path}`)).json()) as T;
+
+    const detail = await get<RunDetailView>(`/api/runs/${id}`);
+    expect([detail.name, detail.player.name]).toEqual(["10tons]]", "Razenpok"]);
+    expect(await (await SELF.fetch(`${ORIGIN}/runs/${id}`)).text()).toContain("<title>Razenpok · Survival · crimson.land</title>");
+
+    // Once the handle is another account's, a name matching it gets the fingerprint, and the default name shows only that.
+    await env.DB.prepare("INSERT INTO accounts (id, created_at) VALUES (99, 0)").run();
+    await env.DB.prepare("UPDATE links SET account_id = 99").run();
+    await env.DB.prepare("UPDATE accounts SET name = 'razenpok' WHERE id != 99").run();
+    expect((await get<BoardView>("/api/boards/survival")).rows[0]!.player).toMatchObject({ name: "razenpok", clash: true });
+    await env.DB.prepare("UPDATE accounts SET name = '10tons' WHERE id != 99").run();
+    expect((await get<BoardView>("/api/boards/survival")).rows[0]!.player.name).toBeNull();
+  });
+
   it("a shared run's link previews what happened, over its card", async () => {
     const player = await Player.create();
     const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };

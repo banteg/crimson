@@ -11,8 +11,9 @@ export interface LinkView {
   url: string;
 }
 
-// docs/rewrite/leaderboard-identity.md, "Names": the latest run's name (null when there is none or a moderator hid
-// it), the key fingerprint, whether another account shows the same name, and the linked accounts.
+// docs/rewrite/leaderboard-identity.md, "Names": the name the account shows (a linked handle, or the latest run's
+// name; null when there is none, it is the default or a moderator hid it), the key fingerprint, whether another account
+// shows the same name, and the linked accounts.
 export interface PlayerView {
   id: number;
   name: string | null;
