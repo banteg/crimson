@@ -16,7 +16,8 @@ function Icon(props: { provider: keyof typeof ICONS }) {
   );
 }
 
-export function PlayerName(props: { player: PlayerView; heading?: boolean }) {
+// `tag` shows the bot tag of an account that plays as a bot; a bot board says so already.
+export function PlayerName(props: { player: PlayerView; heading?: boolean; tag?: boolean }) {
   const parts = () => playerParts(props.player);
   return (
     <>
@@ -25,8 +26,8 @@ export function PlayerName(props: { player: PlayerView; heading?: boolean }) {
         {parts().label}
       </a>
       <Show when={parts().fingerprint}>{(fingerprint) => <span class="muted"> · {fingerprint()}</span>}</Show>
-      <Show when={props.player.bot}>
-        <span class="tag" title="A moderator marked this account as a bot">bot</span>
+      <Show when={props.player.bot && props.tag !== false}>
+        <span class="tag" title="This account's runs are on the bot boards">bot</span>
       </Show>
       <Show when={parts().links.length}>
         <span class="links">

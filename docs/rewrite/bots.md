@@ -11,6 +11,9 @@ runs are everything else: a program steering the inputs, tool-assisted runs (TAS
 categories follow the same [ranked rules](ranked-rules.md) and the same verification. The category only decides
 which board a run is listed on.
 
+The site shows both side by side: the home page has the top humans and the top bots, and every board page lists its
+human runs and then its bot runs, each bot run under the bot its replay names.
+
 A bot doesn't have to hide. A harness that declares itself goes straight to the bot board under its own name.
 The human board relies on moderators, who see each run's input signals and can move a whole account or a single
 run between categories.
