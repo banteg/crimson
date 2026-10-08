@@ -37,6 +37,7 @@ static struct {
   // Presses since the last tick, which only the next tick sees.
   bool fire_down, reload_down, pick_down, fire_pressed, reload_pressed, open_requested;
   bool pausing; // Escape: the timeline runs down to the pause menu
+  bool picked;  // the perk menu, once opened, takes one choice
   float move_target_x, move_target_y; // point-click movement's target
   PortableCommand queued[16];
   int queued_count;
@@ -132,7 +133,7 @@ static void live_begin() {
   }
   game_live = true;
   live.banked = 0;
-  live.fire_pressed = live.reload_pressed = live.open_requested = live.pausing = false;
+  live.fire_pressed = live.reload_pressed = live.open_requested = live.pausing = live.picked = false;
   live.move_target_x = live.move_target_y = -1;
   live.queued_count = 0;
   live.replay.clear();
@@ -292,7 +293,8 @@ static bool live_tick() {
     return false;
   }
   if (live.requested == GAME_STATE_PERK_SELECTION) {
-    // The menu is open: requests still queued are spent.
+    // The menu is open: requests still queued are spent, and it takes a choice.
+    live.picked = false;
     int kept = 0;
     for (int i = 0; i < live.queued_count; ++i)
       if (live.queued[i].type != 2)
@@ -352,7 +354,13 @@ bool game_live_pause() {
 }
 char *input_key_name_recovered(int code);
 char *input_key_name(int code) { return input_key_name_recovered(game_live_key(code)); }
-void game_live_pick(int choice) { live_queue({1, choice}); }
+// One choice per opening: clicks while the menu closes pick nothing, which keeps
+// them from spending a perk the pick itself earns on choices never shown.
+void game_live_pick(int choice) {
+  if (!live.picked)
+    live_queue({1, choice});
+  live.picked = true;
+}
 // A run's metadata strings (perks_init_database, bonus_metadata_init) live in
 // the session's arena with the rest, which the next run reuses.
 char *wrap_text_to_width_alloc_recovered(char *text, int max_width_px);
