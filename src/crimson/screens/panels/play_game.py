@@ -14,6 +14,7 @@ from crimson.ui.menu_layout import (
 )
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
+from grim.config import DEFAULT_PROFILE_NAME
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
@@ -199,11 +200,11 @@ class PlayGameMenuView(PanelMenuView):
 
     def _port_tooltips(self, entries: list[_PlayGameModeEntry], font: SmallFontData) -> list[tuple[str, str]]:
         """The Ranked and Profile tips, one line each and no wider than the widest mode tip, so they fit the panel
-        above the bottom row."""
+        above the bottom row. The Ranked tip leaves out a fresh config's default name, which is nobody's."""
         width = max(measure_small_text_width(font, mode.tooltip) for mode in entries)
         name = str(self.state.config.profile.player_name or "")
         ranked = f"Play for the online leaderboard as {name}."
-        if not name or measure_small_text_width(font, ranked) > width:
+        if name in ("", DEFAULT_PROFILE_NAME) or measure_small_text_width(font, ranked) > width:
             ranked = "Play for the online leaderboard."
         profile = self._profile_note or self._PROFILE_TOOLTIP
         leaderboard = self.state.leaderboard
