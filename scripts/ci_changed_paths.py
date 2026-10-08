@@ -39,6 +39,7 @@ SERVICE_DIRS = (
     "third_party/headers/",
     "tools/match/include/",
     "tools/native/data_definitions/",
+    "src/grim/",
 )
 SHARED_FILES = ("pyproject.toml", "uv.lock", "scripts/ci_changed_paths.py")
 DOC_SUFFIXES = {".md", ".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp", ".css"}
@@ -57,7 +58,7 @@ def relevant(category: str, paths: list[str]) -> bool:
         "core": (CORE_DIRS, (*SHARED_FILES, ".github/workflows/core.yml")),
         "client": (CLIENT_DIRS, ("scripts/ci_changed_paths.py", ".github/workflows/client.yml")),
         "decomp": (DECOMP_DIRS, (*SHARED_FILES, ".github/workflows/decomp.yml")),
-        "service": (SERVICE_DIRS, ("scripts/ci_changed_paths.py", ".github/workflows/service.yml")),
+        "service": (SERVICE_DIRS, (*SHARED_FILES, ".github/workflows/service.yml")),
     }[category]
     return any(path in files or path.startswith(directories) for path in paths)
 

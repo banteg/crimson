@@ -47,12 +47,26 @@ jobs:
           version: "0.17.0"
       - name: Build verifier WASM for Worker tests
         run: python3 crimson-core/build.py --target wasm
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - name: Download and verify game assets
+        run: |
+          mkdir -p artifacts/assets
+          curl --fail --location --retry 3 --retry-all-errors \
+            --output artifacts/assets/crimson.paq "https://paq.crimson.banteg.xyz/v1.9.93/crimson.paq"
+          sha256sum --check <<'EOF'
+          52ae564a2cb86de9f11be261338af942377b4340595a0df2a5ae41f468042547  artifacts/assets/crimson.paq
+          EOF
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
           cache: npm
           cache-dependency-path: service/package-lock.json
       - run: npm ci
+        working-directory: service
+      - run: npm run assets
         working-directory: service
       - run: npm run check
         working-directory: service
