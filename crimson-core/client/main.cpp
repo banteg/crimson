@@ -265,12 +265,16 @@ u32 w2c_host_time_ms(struct w2c_host *) {
   static u32 reads;
   return unattended ? (u32)frames * 16 + reads++ : (u32)SDL_GetTicks();
 }
+static void show_frame(int width, int height) {
+  renderer_present(width, height);
+  SDL_GL_SwapWindow(window);
+  renderer_resume();
+}
 void w2c_host_present(struct w2c_host *) {
   int width, height;
   SDL_GetWindowSizeInPixels(window, &width, &height);
   capture_frame();
-  renderer_present(width, height);
-  SDL_GL_SwapWindow(window);
+  show_frame(width, height);
 }
 }
 
@@ -516,10 +520,8 @@ SDL_AppResult SDL_AppIterate(void *) {
   ++frames;
   bool running = w2c_game_game_frame(&game);
   // A pass of a run that covered no tick drew nothing: show the last frame again.
-  if (running && presented == before) {
-    renderer_present(pixel_width, pixel_height);
-    SDL_GL_SwapWindow(window);
-  }
+  if (running && presented == before)
+    show_frame(pixel_width, pixel_height);
   for (int button = 0; button < 8; ++button)
     if (hold_frames[button] && !--hold_frames[button] && !held[button])
       input()->mouse_buttons[button] = 0;
