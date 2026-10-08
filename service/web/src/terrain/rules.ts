@@ -2,6 +2,9 @@
 // detail stamps of 128x128 textures, rotated, on a 1024x1024 ground. test/unit/terrain.test.ts checks them against
 // the Python generator.
 
+import type { Board } from "../../../src/api-types";
+import { rankedUnlocks } from "../../../src/unlocks";
+
 export const SIZE = 1024;
 // How terrain_render paints the stamps (src/grim/terrain_render.py): 128px patches over the clear color, each layer
 // tinted RGB 178/255 with alpha 230, 230 and 153, and texels at or below 4/255 after the tint discarded (the DX8
@@ -68,16 +71,16 @@ export function questSlots(major: number, minor: number): Slots {
 // gameplay_reset_state draws a score tag, one animation phase per creature slot (0x180) and the tag again before
 // terrain_generate_random (src/crimson/sim/bootstrap.py).
 const RESET_DRAWS = 1 + 0x180 + 1;
-// Ranked runs play with every quest unlocked (docs/rewrite/ranked-rules.md).
-const RANKED_UNLOCK_INDEX = 50;
-
-// The terrain a ranked run starts on, from its seed: the reset's random terrain, or for a quest its score tag draw
-// and then the quest's own terrain over it (src/crimson/sim/run_init.py).
-export function runGround(seed: number, quest: [major: number, minor: number] | null): Ground {
+// The terrain a ranked run on `board` (and `quest`, "major.minor", on a quest board) starts on, from its seed: the
+// reset's random terrain for its save's unlocks, or for a quest its score tag draw and then the quest's own terrain
+// over it (src/crimson/sim/run_init.py).
+export function runGround(seed: number, run: { board: Board; quest: string }): Ground {
+  const [major, minor] = run.quest.split(".").map(Number);
+  const quest = run.quest ? { major: major!, minor: minor! } : null;
   const rand = crtRand(seed);
   for (let i = 0; i < RESET_DRAWS; i++) rand();
-  const ground = generateRandom(rand, RANKED_UNLOCK_INDEX);
+  const ground = generateRandom(rand, rankedUnlocks(quest, run.board === "quests-hardcore")[0]);
   if (quest === null) return ground;
   rand();
-  return generate(rand, questSlots(...quest));
+  return generate(rand, questSlots(quest.major, quest.minor));
 }

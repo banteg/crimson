@@ -278,7 +278,6 @@ def run_terrain_vectors() -> list[dict]:
     outcome, and two quests, whose terrain replaces the reset's."""
     from crimson.game_modes import GameMode
     from crimson.quests.level import QuestLevel
-    from crimson.replay.ranked import ranked_run_spec
     from crimson.sim.run_init import initialize_run
 
     def stamps(setup) -> list[str]:
@@ -293,12 +292,15 @@ def run_terrain_vectors() -> list[dict]:
         if setup.terrain_slots in outcomes:
             continue
         outcomes.add(setup.terrain_slots)
-        vectors.append({"seed": seed, "quest": None, "slots": list(setup.terrain_slots), "layers": stamps(setup)})
+        vectors.append({"seed": seed, "board": "survival", "quest": "", "slots": list(setup.terrain_slots), "layers": stamps(setup)})
         if len(outcomes) == 4:
             break
-    for seed, (major, minor) in ((7, (2, 7)), (8, (5, 3))):
-        setup = initialize_run(ranked_run_spec(GameMode.QUESTS, seed=seed, quest_level=QuestLevel(major, minor))).terrain
-        vectors.append({"seed": seed, "quest": [major, minor], "slots": list(setup.terrain_slots), "layers": stamps(setup)})
+    # Quest 5.3's save (unlock 42) and its hardcore one (50) draw differently before the quest's terrain.
+    for seed, (major, minor), hardcore in ((7, (2, 7), False), (8, (5, 3), False), (8, (5, 3), True)):
+        spec = ranked_run_spec(GameMode.QUESTS, seed=seed, quest_level=QuestLevel(major, minor), hardcore=hardcore)
+        setup = initialize_run(spec).terrain
+        board = ranked_board(spec)
+        vectors.append({"seed": seed, "board": board, "quest": f"{major}.{minor}", "slots": list(setup.terrain_slots), "layers": stamps(setup)})
     return vectors
 
 

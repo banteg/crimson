@@ -217,6 +217,14 @@ function savedUnlocks() {
   return execFileSync("uv", ["run", "--no-sync", "python", "-c", script, file], { encoding: "utf8" }).trim();
 }
 
+// Why a replay payload does not rank, as the service decides it (src/crimson/replay/ranked.py unranked_reasons).
+function unrankedReasons(payload) {
+  const script =
+    "import sys; from crimson.replay.codec import decode_replay_payload; from crimson.replay.ranked import unranked_reasons; " +
+    "print(' '.join(unranked_reasons(decode_replay_payload(sys.stdin.buffer.read()).run)))";
+  return execFileSync("uv", ["run", "--no-sync", "python", "-c", script], { input: payload, encoding: "utf8" }).trim();
+}
+
 // Closing the game on its end screen queues the run; the queued entry is
 // checked as the service checks it.
 function checkRanked() {
@@ -249,11 +257,8 @@ function checkRanked() {
   if (!crypto.verify(null, message, key, Buffer.from(entry.signature, "hex"))) throw Error("the signature does not verify");
   const crd = unpack(payload);
   const spec = crd.run;
-  const rules = { preserve_bugs: false, detail_preset: 5, violence_disabled: 0, friendly_fire: false, quest_fail_retry_count: 0 };
-  for (const [name, value] of Object.entries(rules))
-    if (spec[name] !== value) throw Error(`run.${name} is ${spec[name]}, the ranked rules say ${value}`);
-  if (spec.status.quest_unlock_index !== 50 || spec.status.weapon_usage_counts.some((count) => count !== 0))
-    throw Error("the ranked run starts from someone's progress");
+  const reasons = unrankedReasons(payload);
+  if (reasons) throw Error(`the queued run breaks the ranked rules: ${reasons}`);
   const recorded = decode(replay());
   if (crd.ticks.length !== recorded.records.length) throw Error("the queued run's ticks are not the recording's");
   crd.ticks.forEach(([[input], queuedCommands], i) => {

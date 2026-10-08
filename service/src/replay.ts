@@ -226,6 +226,7 @@ class Schema {
         minor: this.range(this.int(level.minor, "run.quest_level.minor"), 1, 10, "run.quest_level.minor"),
       };
     }
+    require((quest_level !== null) === (game_mode_id === GameMode.QUESTS), "run.quest_level must be set for quests and only for quests");
     const status = this.fields(f.status, "run.status", [
       "quest_unlock_index", "quest_unlock_index_full", "weapon_usage_counts",
     ]);

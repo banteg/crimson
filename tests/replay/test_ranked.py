@@ -35,6 +35,16 @@ def test_the_ranked_profile_ranks_on_its_board() -> None:
     assert not ranked_run_spec(GameMode.SURVIVAL, seed=1, hardcore=True).hardcore
 
 
+def test_a_quest_plays_on_the_save_that_unlocked_it() -> None:
+    normal = ranked_run_spec(GameMode.QUESTS, seed=1, quest_level=QuestLevel(2, 3))
+    hardcore = ranked_run_spec(GameMode.QUESTS, seed=1, quest_level=QuestLevel(2, 3), hardcore=True)
+
+    assert (normal.status.quest_unlock_index, normal.status.quest_unlock_index_hardcore) == (12, 0)
+    assert (hardcore.status.quest_unlock_index, hardcore.status.quest_unlock_index_hardcore) == (50, 12)
+    # Survival's save, with every quest done, is not a quest's.
+    assert unranked_reasons(msgspec.structs.replace(normal, status=_SURVIVAL.status)) == ["unlocks"]
+
+
 @pytest.mark.parametrize(
     ("change", "reason"),
     [

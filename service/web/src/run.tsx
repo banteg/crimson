@@ -36,13 +36,13 @@ interface RunTimeline extends Omit<Timeline, "samples" | "weapons" | "perks"> {
   terrain: Ground;
 }
 
-function prepare(timeline: Timeline, quest: string): RunTimeline {
+function prepare(timeline: Timeline, detail: RunDetailView): RunTimeline {
   return {
     ...timeline,
     samples: timeline.samples.map(([t, xp, level, health, kills, damage]) => ({ t, xp, level, health, kills, damage })),
     weapons: timeline.weapons.map(({ t, id }) => ({ t, name: WEAPONS[id]?.name ?? `weapon ${id}` })),
     perks: timeline.perks.map(({ t, id }) => ({ t, name: PERKS[id] ?? `perk ${id}` })),
-    terrain: runGround(timeline.seed, quest ? (quest.split(".").map(Number) as [number, number]) : null),
+    terrain: runGround(timeline.seed, detail),
   };
 }
 
@@ -533,7 +533,7 @@ function boardPath(detail: RunDetailView): string {
 
 // The run's panels; the top run's and the player's best's timelines load when their boxes are ticked.
 export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
-  const run = detail.timeline ? prepare(detail.timeline, detail.quest) : null;
+  const run = detail.timeline ? prepare(detail.timeline, detail) : null;
   const header = () => (
     <div class="run-overview">
       <div>
@@ -568,7 +568,7 @@ export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
   const [showBest, setShowBest] = createSignal(detail.best !== null);
   const rival = (id: string | undefined, shown: Accessor<boolean>) => {
     const [loaded] = createResource(() => (shown() && id) || false, (rid) => get<Timeline>(`/api/runs/${rid}/timeline`));
-    return () => (loaded() ? prepare(loaded()!, detail.quest) : undefined);
+    return () => (loaded() ? prepare(loaded()!, detail) : undefined);
   };
   const rivals: Rival[] = [
     ...(detail.top ? [{ label: `#1 ${detail.top.name}`, run: rival(detail.top.id, showTop), color: GOLD, shown: showTop }] : []),
