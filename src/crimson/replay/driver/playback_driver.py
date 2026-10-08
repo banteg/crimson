@@ -14,6 +14,7 @@ from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.rng_call_order import RngCallOrder
 from ...replay.ticks import step_replay_tick
+from ...replay.versioning import require_playable_rules
 from ...sim.hooks import TickResult
 from ...sim.mode_updates import QuestSpawnState
 from ...sim.run_init import initialize_run
@@ -99,6 +100,7 @@ class PlaybackDriver:
         spawn_entries: tuple[SpawnEntry, ...] | None = None,
         start_weapon_id: WeaponId | None = None,
     ) -> None:
+        require_playable_rules(replay)
         if version_mismatch_action is not None:
             warn_on_game_version_mismatch(replay, action=str(version_mismatch_action))
         self.replay = replay

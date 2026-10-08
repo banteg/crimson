@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { compare } from "./compare.mjs";
 import {
   CORE,
+  index,
   loadCore,
   init,
   state,
@@ -88,6 +89,13 @@ const PERK_COUNTS = names.filter((n) => n.startsWith("players[0].perk_counts["))
 // FIRE_BULLETS_KEY_DOWN_FLAG in src/crimson/replay/types.py: the G key.
 const G_KEY = 131072;
 
+// Snapshot byte offsets of the creature fields the bot reads every tick.
+const CREATURES = Array.from({ length: 384 }, (_, c) =>
+  Object.fromEntries(
+    ["active", "health", "pos_x", "pos_y"].map((f) => [f, index.get(`creatures[${c}].${f}`) * 4]),
+  ),
+);
+
 // `hunt` steers a bot towards fixed behaviour: `prefer` lists perks to pick when offered, most wanted first; `gKey` holds G at times.
 function play(cfg, bot, limit, scheme, hunt = {}) {
   init(e, cfg);
@@ -119,7 +127,7 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
     final;
   const mode = cfg.readUInt32LE(4);
   for (let tick = 0; tick < limit; tick++) {
-    state(e);
+    const snapshot = state(e);
     const f = (name) => field(e, name, true),
       u = (name) => field(e, name);
     const x = f("players[0].pos_x"),
@@ -128,12 +136,12 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
     let nearest = Infinity,
       target,
       active = 0;
-    for (let c = 0; c < 384; c++) {
-      if (!u(`creatures[${c}].active`) || f(`creatures[${c}].health`) <= 0)
+    for (const c of CREATURES) {
+      if (!snapshot.readUInt32LE(c.active) || snapshot.readFloatLE(c.health) <= 0)
         continue;
       active++;
-      const cx = f(`creatures[${c}].pos_x`),
-        cy = f(`creatures[${c}].pos_y`),
+      const cx = snapshot.readFloatLE(c.pos_x),
+        cy = snapshot.readFloatLE(c.pos_y),
         d = Math.hypot(cx - x, cy - y);
       if (d < nearest) {
         nearest = d;
@@ -193,13 +201,16 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
       my = (bot === 2 || bot === 4 ? my : -my) / n;
     }
     let commands = [];
+    // The perk screen pauses the run: a pick follows the tick that opened the menu, and a tick without one cancels it.
+    const menuOpen = pickNext;
+    pickNext = false;
     if (
       bot &&
       health > 0 &&
       mode !== 2 &&
       u("globals.perk_pending_count") >= (bot === 4 ? 2 : 1)
     ) {
-      if (pickNext) {
+      if (menuOpen) {
         let choice = 0;
         if (hunt.prefer) {
           const offered = [0, 1, 2, 3, 4].map((i) => u(`globals.perk_choice_ids[${i}]`));
@@ -212,8 +223,9 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
           )
             choice++;
         }
-        commands = bot === 4 ? [[1, choice], [1, 0]] : [[1, choice]];
-        pickNext = false;
+        // The batch picks, then opens the menu again for the next pending perk.
+        commands = bot === 4 ? [[1, choice], [2, 0]] : [[1, choice]];
+        pickNext = bot === 4;
       } else {
         commands = [[2, 0]];
         pickNext = true;
@@ -273,17 +285,21 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
     coverage[key] = [...coverage[key]].sort((a, b) =>
       a < b ? -1 : a > b ? 1 : 0,
     );
-  return { input: Buffer.concat([cfg, ...records]), final, coverage };
+  return { input: Buffer.concat([cfg, ...records]), records, final, coverage };
 }
 
-function rejects(label, cfg, r, expected = 5) {
+// `records`: one record, or a run whose records up to the last one are accepted.
+function rejects(label, cfg, records, expected = 5) {
   console.log(`Checking rejection: ${label}`);
+  const run = [records].flat();
   init(e, cfg);
-  if (step(e, r)) throw Error(`WASM accepted ${label}`);
+  for (const r of run.slice(0, -1)) if (!step(e, r)) throw Error(`WASM refused the lead-in of ${label}`);
+  if (step(e, run.at(-1))) throw Error(`WASM accepted ${label}`);
   const n = spawnSync(native, [], {
-    input: Buffer.concat([cfg, r]),
-    maxBuffer: 1048576,
-    timeout: 10000,
+    input: Buffer.concat([cfg, ...run]),
+    // A lead-in prints a snapshot for each of its ticks.
+    maxBuffer: 1 << 30,
+    timeout: 60000,
   });
   if (n.status !== expected)
     throw Error(`Native ${label}: status=${n.status} signal=${n.signal} error=${n.error?.message} stdout=${n.stdout.length} ${n.stderr}`);
@@ -389,7 +405,7 @@ const policies = [
   ["-ranked", 0],
 ];
 const report = {
-  guards: "13 native/WASM rejection probes; large-vector speed cap",
+  guards: "15 native/WASM rejection probes; large-vector speed cap",
   cases: [],
 };
 for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] of scenarios)
@@ -412,6 +428,21 @@ for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] o
     `${name}: ${parity.ticks} ticks, terminal ${run.final.pending}, native/WASM + reset passed`,
   );
   }
+// A pick needs the menu the tick before opened: not in the opening tick itself, and not after a cancel.
+{
+  const name = "survival-bot-ranked";
+  const cfg = config(1, 1, 1, { preserveBugs: 0 });
+  const records = play(cfg, true, 30000, PAD, {}).records;
+  const opened = records.findIndex((r) => r.readUInt32LE(20) === 1 && r.readInt32LE(24) === 2);
+  if (opened < 0) throw Error(`${name} never opened the perk menu`);
+  const withCommands = (r, commands) => record([0, 4, 8, 12].map((at) => r.readFloatLE(at)).concat(r.readUInt32LE(16)), commands);
+  rejects("pick in the tick that opens the menu", cfg, [...records.slice(0, opened), withCommands(records[opened], [[2, 0], [1, 0]])]);
+  rejects("pick after a cancel", cfg, [
+    ...records.slice(0, opened + 1),
+    withCommands(records[opened + 1], []),
+    withCommands(records[opened + 1], [[1, 0]]),
+  ]);
+}
 if (!report.cases.some((c) => c.coverage.max_commands > 1))
   throw Error("No ordered command batch covered");
 if (!report.cases.some((c) => c.final.pending === 8))

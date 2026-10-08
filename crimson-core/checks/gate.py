@@ -37,7 +37,7 @@ from crimson.replay.checkpoints import ReplayCheckpoint, load_checkpoints_file
 from crimson.replay.codec import load_replay_file
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.driver.setup import ReplayRunnerError
-from crimson.replay.types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, current_recorder
+from crimson.replay.types import REPLAY_FORMAT_VERSION, REPLAY_RULES, Replay, ReplayTick, current_recorder
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import (
     PlayerRunResult,
@@ -155,7 +155,9 @@ class Stream:
         return Replay(
             format_version=REPLAY_FORMAT_VERSION,
             game_version="",
+            rules=REPLAY_RULES,
             recorder=current_recorder(),
+            pilot=None,
             run=self.run_spec(),
             result=RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, ()),
             ticks=self.ticks,

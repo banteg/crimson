@@ -7232,55 +7232,55 @@
     },
     "survival-command-batches-ranked.rsi": {
       "preserve_bugs": false,
-      "ticks": 8800,
-      "core_ticks": 8800,
+      "ticks": 8328,
+      "core_ticks": 8328,
       "core_exit": 0,
       "core_stderr": "",
-      "python_ticks": 8800,
+      "python_ticks": 8328,
       "python_error": null,
-      "result_tick": 8800,
+      "result_tick": 8328,
       "first_divergence": null,
       "terminal": {
         "python": {
-          "tick": 8769,
+          "tick": 8297,
           "outcome": "death"
         },
         "core": {
-          "tick": 8769,
+          "tick": 8297,
           "outcome": "death"
         }
       },
       "result_mismatches": [],
       "python_result": {
         "outcome": "death",
-        "elapsed_ms": 140800,
-        "kills": 242,
-        "shots_fired": 440,
-        "shots_hit": 263,
-        "rng_state": 595045055,
+        "elapsed_ms": 133248,
+        "kills": 196,
+        "shots_fired": 334,
+        "shots_hit": 203,
+        "rng_state": 3609160768,
         "pending_perks": 1,
         "quest_final_ms": null,
         "players": [
           {
-            "experience": 12720,
-            "health": -1.4285836219787598,
+            "experience": 8545,
+            "health": -1.4285831451416016,
             "most_used_weapon_id": 30
           }
         ]
       },
       "core_result": {
         "outcome": "death",
-        "elapsed_ms": 140800,
-        "kills": 242,
-        "shots_fired": 440,
-        "shots_hit": 263,
-        "rng_state": 595045055,
+        "elapsed_ms": 133248,
+        "kills": 196,
+        "shots_fired": 334,
+        "shots_hit": 203,
+        "rng_state": 3609160768,
         "pending_perks": 1,
         "quest_final_ms": null,
         "players": [
           {
-            "experience": 12720,
-            "health": -1.4285836219787598,
+            "experience": 8545,
+            "health": -1.4285831451416016,
             "most_used_weapon_id": 30
           }
         ]
@@ -7291,56 +7291,56 @@
     },
     "survival-command-batches.rsi": {
       "preserve_bugs": true,
-      "ticks": 8269,
-      "core_ticks": 8269,
+      "ticks": 14429,
+      "core_ticks": 14429,
       "core_exit": 0,
       "core_stderr": "",
-      "python_ticks": 8269,
+      "python_ticks": 14429,
       "python_error": null,
-      "result_tick": 8269,
+      "result_tick": 14429,
       "first_divergence": null,
       "terminal": {
         "python": {
-          "tick": 8238,
+          "tick": 14398,
           "outcome": "death"
         },
         "core": {
-          "tick": 8238,
+          "tick": 14398,
           "outcome": "death"
         }
       },
       "result_mismatches": [],
       "python_result": {
         "outcome": "death",
-        "elapsed_ms": 123929,
-        "kills": 226,
-        "shots_fired": 361,
-        "shots_hit": 234,
-        "rng_state": 1777971957,
-        "pending_perks": 0,
+        "elapsed_ms": 230864,
+        "kills": 496,
+        "shots_fired": 930,
+        "shots_hit": 866,
+        "rng_state": 969129689,
+        "pending_perks": 1,
         "quest_final_ms": null,
         "players": [
           {
-            "experience": 13298,
-            "health": -1.0,
-            "most_used_weapon_id": 30
+            "experience": 40676,
+            "health": -3.047623634338379,
+            "most_used_weapon_id": 4
           }
         ]
       },
       "core_result": {
         "outcome": "death",
-        "elapsed_ms": 123929,
-        "kills": 226,
-        "shots_fired": 361,
-        "shots_hit": 234,
-        "rng_state": 1777971957,
-        "pending_perks": 0,
+        "elapsed_ms": 230864,
+        "kills": 496,
+        "shots_fired": 930,
+        "shots_hit": 866,
+        "rng_state": 969129689,
+        "pending_perks": 1,
         "quest_final_ms": null,
         "players": [
           {
-            "experience": 13298,
-            "health": -1.0,
-            "most_used_weapon_id": 30
+            "experience": 40676,
+            "health": -3.047623634338379,
+            "most_used_weapon_id": 4
           }
         ]
       },

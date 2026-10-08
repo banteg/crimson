@@ -22,7 +22,7 @@ from ..typo.names import (
     is_typo_highscore_name,
 )
 from ..typo.state import TypoCarry
-from .types import REPLAY_FORMAT_VERSION, Recorder, Replay, ReplayTick, input_flags_validation_error
+from .types import REPLAY_FORMAT_VERSION, Pilot, Recorder, Replay, ReplayTick, input_flags_validation_error
 
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 # Level 9 writes a long survival replay in ~16 ms and its checkpoint sidecar in ~95 ms; 19 took 0.4 s and
@@ -48,8 +48,55 @@ _MODE_OUTCOMES = {
 }
 _TYPO_COMMANDS = (TypoCharCommand, TypoBackspaceCommand, TypoSubmitCommand)
 
+
+
+class _ReplayV30(msgspec.Struct, forbid_unknown_fields=True):
+    """Format 30, which had no `rules`: no change since makes its replays play differently, so they play under rules 1."""
+
+    format_version: int
+    game_version: str
+    recorder: Recorder
+    run: RunSpec
+    result: RunResult
+    ticks: list[ReplayTick]
+
+
+class _ReplayV31(msgspec.Struct, forbid_unknown_fields=True):
+    """Format 31, which had no `pilot`: its runs declare none."""
+
+    format_version: int
+    game_version: str
+    rules: int
+    recorder: Recorder
+    run: RunSpec
+    result: RunResult
+    ticks: list[ReplayTick]
+
+
+class _FormatVersion(msgspec.Struct):
+    format_version: int | None = None
+
+
+_V30_RULES = 1
 _ENCODER = msgspec.msgpack.Encoder()
-_DECODER = msgspec.msgpack.Decoder(type=Replay)
+_DECODERS: dict[int, msgspec.msgpack.Decoder] = {
+    REPLAY_FORMAT_VERSION: msgspec.msgpack.Decoder(type=Replay),
+    31: msgspec.msgpack.Decoder(type=_ReplayV31),
+    30: msgspec.msgpack.Decoder(type=_ReplayV30),
+}
+
+
+def _upgrade(decoded: Replay | _ReplayV31 | _ReplayV30) -> Replay:
+    """A replay read from an earlier format, with what that format left out."""
+
+    match decoded:
+        case _ReplayV30():
+            return Replay(**msgspec.structs.asdict(decoded), rules=_V30_RULES, pilot=None)
+        case _ReplayV31():
+            return Replay(**msgspec.structs.asdict(decoded), pilot=None)
+        case _:
+            return decoded
+_FORMAT_PROBE = msgspec.msgpack.Decoder(type=_FormatVersion)
 
 
 class ReplayCodecError(ValueError):
@@ -203,26 +250,28 @@ def _validate_tick(tick: ReplayTick, *, tick_index: int, run: RunSpec) -> None:
         )
 
 
-def _unsupported_format(version: int) -> str:
-    return f"unsupported replay format version: {version} (this build reads version {REPLAY_FORMAT_VERSION})"
+def _unsupported_format(version: object) -> str:
+    readable = ", ".join(str(v) for v in sorted(_DECODERS))
+    return f"unsupported replay format version: {version} (this build reads versions {readable})"
 
 
-def _require_current_format(payload: bytes) -> None:
-    """Name an older or newer format instead of the first field it does not share."""
+def _format_version(payload: bytes) -> object:
+    """The payload's format version, also in the header map formats before v20 kept it in."""
 
     try:
-        wire = msgspec.msgpack.decode(payload)
-    except msgspec.DecodeError:
-        return
-    if not isinstance(wire, dict):
-        return
-    # Formats before v20 kept the version in a header map.
-    header = wire.get("header")
-    version = header.get("replay_format_version") if isinstance(header, dict) else wire.get("format_version")
-    _require(not isinstance(version, int) or version == REPLAY_FORMAT_VERSION, _unsupported_format(version))
+        version = _FORMAT_PROBE.decode(payload).format_version
+        if version is not None:
+            return version
+        header = msgspec.msgpack.decode(payload).get("header")
+    except (msgspec.DecodeError, msgspec.ValidationError, AttributeError):
+        return None
+    return header.get("replay_format_version") if isinstance(header, dict) else None
 
 
 RECORDER_FIELD_MAX_CHARS = 64
+PILOT_NAME_MAX_CHARS = 31
+PILOT_FIELD_MAX_CHARS = 64
+PILOT_URL_MAX_CHARS = 200
 
 
 def _validate_recorder(recorder: Recorder) -> None:
@@ -234,10 +283,32 @@ def _validate_recorder(recorder: Recorder) -> None:
         )
 
 
+def _printable(value: str) -> bool:
+    return all(" " <= ch <= "~" for ch in value)
+
+
+def _validate_pilot(pilot: Pilot) -> None:
+    _require(
+        0 < len(pilot.name) <= PILOT_NAME_MAX_CHARS and _printable(pilot.name),
+        f"pilot.name must be 1..{PILOT_NAME_MAX_CHARS} printable ASCII characters",
+    )
+    _require(
+        len(pilot.model) <= PILOT_FIELD_MAX_CHARS and _printable(pilot.model),
+        f"pilot.model must be at most {PILOT_FIELD_MAX_CHARS} printable ASCII characters",
+    )
+    _require(
+        not pilot.url or (pilot.url.startswith("https://") and len(pilot.url) <= PILOT_URL_MAX_CHARS and _printable(pilot.url)),
+        f"pilot.url must be empty or an https:// URL of at most {PILOT_URL_MAX_CHARS} printable ASCII characters",
+    )
+
+
 def validate_replay(replay: Replay) -> None:
-    _require(replay.format_version == REPLAY_FORMAT_VERSION, _unsupported_format(replay.format_version))
+    _require(replay.format_version in _DECODERS, _unsupported_format(replay.format_version))
+    _require(replay.rules >= 1, "rules must be at least 1")
     _require(bool(replay.game_version), "game_version must be non-empty")
     _validate_recorder(replay.recorder)
+    if replay.pilot is not None:
+        _validate_pilot(replay.pilot)
     _validate_run(replay.run)
     _validate_result(replay.result, replay.run)
     _require(bool(replay.ticks), "replay must contain at least one tick")
@@ -246,8 +317,10 @@ def validate_replay(replay: Replay) -> None:
 
 
 def encode_replay_payload(replay: Replay) -> bytes:
-    """Validate and encode the canonical msgpack payload."""
+    """Validate and encode the canonical msgpack payload, always in the current format: a replay read from an
+    earlier one is written with the rules it was read with."""
 
+    replay = msgspec.structs.replace(replay, format_version=REPLAY_FORMAT_VERSION)
     validate_replay(replay)
     payload = _ENCODER.encode(replay)
     _require(len(payload) <= MAX_REPLAY_PAYLOAD_BYTES, f"replay payload too large (> {MAX_REPLAY_PAYLOAD_BYTES} bytes)")
@@ -283,12 +356,16 @@ def decode_replay_payload(payload: bytes) -> Replay:
     one byte representation.
     """
 
+    version = _format_version(payload)
+    decoder = _DECODERS.get(version) if isinstance(version, int) else None
+    if decoder is None and version is not None:
+        raise ReplayCodecError(_unsupported_format(version))
     try:
-        replay = _DECODER.decode(payload)
+        decoded = (decoder or _DECODERS[REPLAY_FORMAT_VERSION]).decode(payload)
     except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        _require_current_format(payload)
         raise ReplayCodecError(f"invalid replay payload: {exc}") from exc
-    _require(_ENCODER.encode(replay) == payload, "replay payload is not canonically encoded")
+    _require(_ENCODER.encode(decoded) == payload, "replay payload is not canonically encoded")
+    replay = _upgrade(decoded)
     validate_replay(replay)
     return replay
 

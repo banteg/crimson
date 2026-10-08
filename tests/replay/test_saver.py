@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from crimson.replay import load_replay
+import msgspec
+
+from crimson.replay import REPLAY_FORMAT_VERSION, load_replay
 from crimson.replay.saver import ReplaySaveJob, ReplaySaver
 from tests.support.replay_runner_helpers import RECORDED_REPLAYS
 
 
 def test_runs_ending_in_the_same_second_save_side_by_side(tmp_path) -> None:
-    replay = load_replay(min(RECORDED_REPLAYS, key=lambda path: path.stat().st_size).read_bytes())
+    # A recorded fixture, as the saver writes it: in the current format.
+    recorded = load_replay(min(RECORDED_REPLAYS, key=lambda path: path.stat().st_size).read_bytes())
+    replay = msgspec.structs.replace(recorded, format_version=REPLAY_FORMAT_VERSION)
     saver = ReplaySaver()
     for _ in range(2):
         saver.submit(ReplaySaveJob(replay_dir=tmp_path, base_name="survival_20261006_120000", replay=replay))

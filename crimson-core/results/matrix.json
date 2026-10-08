@@ -1,5 +1,5 @@
 {
-  "guards": "13 native/WASM rejection probes; large-vector speed cap",
+  "guards": "15 native/WASM rejection probes; large-vector speed cap",
   "cases": [
     {
       "name": "rush-idle",
@@ -487,41 +487,43 @@
     },
     {
       "name": "survival-command-batches",
-      "ticks": 8269,
+      "ticks": 14429,
       "fields_per_snapshot": 36343,
-      "sha256": "d5b39c6eb99938555278b7b142117cd2a572feda3b24f7936e3ebc1493c3e549",
-      "final_sha256": "e166a2522642ea99e12d37a3450fc28f335e7ede2e212b731ab831820c9dfce8",
+      "sha256": "695bcaae9afa695be437d621d810a0989a35202cb566e723292c8f36e7c0d6a1",
+      "final_sha256": "63a08287227ce008610151ce0ec546849dd9592320812839f39819903719f931",
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
         "pending": 7,
-        "xp": 13298,
-        "health": -1,
-        "elapsed_ms": 123929,
-        "timeline_ms": 123929,
-        "rng": 1777971957
+        "xp": 40676,
+        "health": -3.047623634338379,
+        "elapsed_ms": 230864,
+        "timeline_ms": 230864,
+        "rng": 969129689
       },
       "coverage": {
         "weapons": [
           1,
+          4,
+          29,
           30
         ],
         "perks": [
           1,
-          15,
-          28,
-          54
+          2,
+          7,
+          11,
+          50
         ],
         "bonuses": [
           "double_xp",
-          "reflex_boost",
           "weapon_power_up"
         ],
-        "menu": 2,
-        "reload": 61,
+        "menu": 6,
+        "reload": 106,
         "max_commands": 2,
-        "peak_creatures": 62,
+        "peak_creatures": 81,
         "stall": false,
         "transitions": false,
         "run_down": 31
@@ -529,20 +531,20 @@
     },
     {
       "name": "survival-command-batches-ranked",
-      "ticks": 8800,
+      "ticks": 8328,
       "fields_per_snapshot": 36343,
-      "sha256": "c98c8d1cdbf38fe6baba9e1bc72748e5db1acea06de4a7ef1d549c60d1508ebb",
-      "final_sha256": "8376917ff272ce6499fb380d91d96fff6fa38b77b5fce7317fdd09a8965fa887",
+      "sha256": "4ea19062703e6d851555dad453d206e824d0c594b000d3e2c8a6f7baedd92354",
+      "final_sha256": "1e8e93e8ef18355dccb6028ee96883cc7eb142bf06680eb7574d730c53eb471a",
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
         "pending": 7,
-        "xp": 12720,
-        "health": -1.4285836219787598,
-        "elapsed_ms": 140800,
-        "timeline_ms": 140800,
-        "rng": 595045055
+        "xp": 8545,
+        "health": -1.4285831451416016,
+        "elapsed_ms": 133248,
+        "timeline_ms": 133248,
+        "rng": 3609160768
       },
       "coverage": {
         "weapons": [
@@ -551,13 +553,15 @@
         ],
         "perks": [
           20,
-          31
+          32
         ],
-        "bonuses": [],
-        "menu": 1,
-        "reload": 65,
+        "bonuses": [
+          "freeze"
+        ],
+        "menu": 2,
+        "reload": 61,
         "max_commands": 2,
-        "peak_creatures": 73,
+        "peak_creatures": 93,
         "stall": false,
         "transitions": false,
         "run_down": 31

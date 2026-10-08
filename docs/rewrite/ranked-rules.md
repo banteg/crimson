@@ -30,6 +30,10 @@ Rush, Survival and Quests.
 Only a finished run ranks: a Survival run that ended in death, or a completed
 quest. A quit or a failed quest does not.
 
+Each board ranks human runs and bot runs apart, under these same rules. A run
+is a bot run when its replay declares a pilot or a moderator puts it there; see
+[bots and moderation](bots.md).
+
 ## The ranked profile
 
 A ranked run starts from the same profile whatever the player's save holds, so
@@ -48,12 +52,18 @@ is pinned:
     - a hardcore quest: the whole normal campaign completed, and the hardcore
       quests before it;
 - no quest retries: every attempt plays as the first, at full difficulty;
-- a fresh random seed for each attempt. Today the client draws it; the service
-  will issue it.
+- a fresh random seed for each attempt, which the client draws. A seed the
+  service issued would stop neither humans nor bots from shopping for one
+  ([bots and moderation](bots.md)).
 
 The run itself keeps the replay contract: a fixed float32 1/60 s step, float32
 inputs that must be finite, commands at the tick boundary, and no draws for
 paused or menu frames ([replay run start](replay-run-start.md)).
+
+The perk screen pauses the game, so the perk commands follow it: a pick comes
+only as the first perk command of the tick right after the menu opened, and a
+tick without one closes the menu, as Cancel does. A pick may reopen the menu
+in the same tick for the next pending perk.
 
 ## Controls and aim
 

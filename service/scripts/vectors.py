@@ -28,7 +28,7 @@ from crimson.replay.codec import (
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.driver.setup import ReplayRunnerError
 from crimson.replay.ranked import RankedTickMonitor, outcome_reasons, ranked_board, ranked_run_spec, unranked_reasons
-from crimson.replay.types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, current_recorder
+from crimson.replay.types import REPLAY_FORMAT_VERSION, REPLAY_RULES, Pilot, Replay, ReplayTick, current_recorder
 from crimson.replay.versioning import current_replay_game_version
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import PlayerRunResult, RunOutcome, RunResult
@@ -87,7 +87,9 @@ def _base_replay() -> Replay:
     return Replay(
         format_version=REPLAY_FORMAT_VERSION,
         game_version=current_replay_game_version(),
+        rules=REPLAY_RULES,
         recorder=current_recorder(),
+        pilot=None,
         run=ranked_run_spec(GameMode.SURVIVAL, seed=0x1234ABCD),
         result=result,
         ticks=ticks,
@@ -204,9 +206,9 @@ def corrupted_vectors() -> tuple[str, list[dict]]:
     return base64.b64encode(base).decode("ascii"), vectors
 
 
-def ranked_run() -> tuple[str, str]:
+def ranked_run() -> tuple[str, str, str]:
     """A ranked Survival run that verifies: static movement, firing at a point circling the arena centre until the
-    player dies, recorded through the run-down."""
+    player dies, recorded through the run-down; the same run claiming more than it earned; and declaring a pilot."""
     flags = 1 | (1 << 8) | (2 << 9) | (1 << 12)  # fire, static movement, mouse aim
 
     def tick(i: int) -> ReplayTick:
@@ -215,7 +217,7 @@ def ranked_run() -> tuple[str, str]:
 
     def replay(ticks: list[ReplayTick], result: RunResult) -> Replay:
         return Replay(
-            REPLAY_FORMAT_VERSION, current_replay_game_version(), current_recorder(),
+            REPLAY_FORMAT_VERSION, current_replay_game_version(), REPLAY_RULES, current_recorder(), None,
             ranked_run_spec(GameMode.SURVIVAL, seed=0xC0FFEE), result, ticks,
         )
 
@@ -240,7 +242,9 @@ def ranked_run() -> tuple[str, str]:
     inflated = msgspec.structs.replace(
         result, players=(msgspec.structs.replace(result.players[0], experience=result.players[0].experience + 100),),
     )
-    return tuple(base64.b64encode(dump_replay(replay(ticks, claim))).decode("ascii") for claim in (result, inflated))
+    # The same run again, declaring the bot that played it.
+    piloted = msgspec.structs.replace(replay(ticks, result), pilot=Pilot(name="Astra", model="gpt-5", url="https://example.com/astra"))
+    return tuple(base64.b64encode(dump_replay(r)).decode("ascii") for r in (replay(ticks, result), replay(ticks, inflated), piloted))
 
 
 def terrain_vectors() -> list[dict]:
@@ -306,10 +310,10 @@ def run_terrain_vectors() -> list[dict]:
 
 def main() -> None:
     base, corrupted = corrupted_vectors()
-    ranked, inflated = ranked_run()
+    ranked, inflated, piloted = ranked_run()
     vectors = {
         "fixtures": fixture_vectors(), "valid_payload": base, "corrupted": corrupted, "ranked_run": ranked,
-        "ranked_run_inflated": inflated,
+        "ranked_run_inflated": inflated, "piloted_run": piloted,
         "unranked_run": base64.b64encode((FIXTURES / "rush-kills103.crd").read_bytes()).decode("ascii"),
         "terrain": terrain_vectors(),
         "run_terrain": run_terrain_vectors(),

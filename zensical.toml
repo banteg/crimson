@@ -51,6 +51,7 @@ nav = [
       { "Replay run start" = "rewrite/replay-run-start.md" },
       { "Ranked rules" = "rewrite/ranked-rules.md" },
       { "Leaderboard identity" = "rewrite/leaderboard-identity.md" },
+      { "Bots and moderation" = "rewrite/bots.md" },
       { "Watching replays" = "rewrite/watch-replays.md" },
       { "Quest identifiers" = "rewrite/quest-identifiers.md" },
       { "CDT trace format" = "rewrite/cdt-trace-format.md" },

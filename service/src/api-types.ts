@@ -1,7 +1,18 @@
 // The JSON the Worker's read API answers with (src/views.ts builds it); the site (web/) imports these types.
 
+import type { SignalName, Signals } from "./signals";
+export type { SignalName, Signals };
+
 export type Board = "survival" | "quests" | "quests-hardcore";
 export type ProviderName = "github" | "discord" | "x";
+// docs/rewrite/bots.md: every board ranks human runs and bot runs apart.
+export type Category = "human" | "bot";
+export const CATEGORIES: readonly Category[] = ["human", "bot"];
+export type Role = "" | "mod" | "admin";
+
+// The program that played a run, as its replay declares it: the operator's claim.
+export type { Pilot } from "./replay";
+import type { Pilot } from "./replay";
 
 export interface LinkView {
   provider: ProviderName;
@@ -20,6 +31,8 @@ export interface PlayerView {
   fingerprint: string;
   clash: boolean;
   links: LinkView[];
+  // A moderator marked the account as a bot.
+  bot: boolean;
 }
 
 export interface BoardRow {
@@ -29,11 +42,13 @@ export interface BoardRow {
   elapsed_ms: number;
   most_used_weapon_id: number;
   player: PlayerView;
+  pilot: Pilot | null;
 }
 
 export interface BoardView {
   board: Board;
   quest: string;
+  category: Category;
   title: string;
   rows: BoardRow[];
 }
@@ -55,6 +70,7 @@ export interface GameScore {
 
 export interface QuestMenuView {
   board: "quests" | "quests-hardcore";
+  category: Category;
   stage: number;
   quests: { quest: string; title: string; players: number }[];
 }
@@ -63,6 +79,7 @@ export interface RunView {
   id: string;
   board: Board;
   quest: string;
+  category: Category;
   score: number;
   game_version: string;
   accepted_at: number;
@@ -74,6 +91,14 @@ export interface ProfileView {
   runs: RunView[];
   // Only for the signed-in player's own profile: the providers they can link and which are linked.
   account: { providers: { name: ProviderName; label: string; linked: boolean }[] } | null;
+  // Only for moderators.
+  moderation: AccountModeration | null;
+}
+
+export interface AccountModeration {
+  role: Role;
+  // Runs accepted sooner after the account's previous run than their own game time.
+  overlapping_runs: number;
 }
 
 export interface JoinView {
@@ -104,6 +129,8 @@ export interface RunDetailView {
   id: string;
   board: Board;
   quest: string;
+  category: Category;
+  pilot: Pilot | null;
   title: string;
   name: string;
   player: PlayerView;
@@ -126,4 +153,41 @@ export interface RunDetailView {
   timeline: Timeline | null;
   top: { id: string; name: string; score: number } | null;
   best: { id: string; score: number } | null;
+  // Only for moderators.
+  moderation: RunModeration | null;
+}
+
+// Why a run is in its category, and its input signals (src/signals.ts).
+export interface RunModeration {
+  // A moderator's choice for this run, else the pilot, the account's mark or neither.
+  source: "moderator" | "pilot" | "account" | "default";
+  // The moderator's choice, null when the run follows its pilot and account.
+  override: Category | null;
+  signals: Signals | null;
+  flagged: SignalName[];
+}
+
+export interface FlaggedRun {
+  id: string;
+  board: Board;
+  quest: string;
+  score: number;
+  accepted_at: number;
+  player: PlayerView;
+  signals: Signals;
+  flagged: SignalName[];
+}
+
+export interface ModerationAction {
+  at: number;
+  actor: string;
+  action: string;
+  target: string;
+  note: string;
+}
+
+export interface FlagsView {
+  runs: FlaggedRun[];
+  // Runs whose signals are not measured yet.
+  unmeasured: number;
 }

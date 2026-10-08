@@ -1,6 +1,6 @@
 import { siDiscord, siGithub, siX } from "simple-icons";
 import { For, Show } from "solid-js";
-import type { PlayerView } from "../../src/api-types";
+import type { Pilot, PlayerView } from "../../src/api-types";
 import { PROVIDER_LABELS, playerParts } from "./names";
 
 export { PROVIDER_LABELS };
@@ -25,6 +25,9 @@ export function PlayerName(props: { player: PlayerView; heading?: boolean }) {
         {parts().label}
       </a>
       <Show when={parts().fingerprint}>{(fingerprint) => <span class="muted"> · {fingerprint()}</span>}</Show>
+      <Show when={props.player.bot}>
+        <span class="tag" title="A moderator marked this account as a bot">bot</span>
+      </Show>
       <Show when={parts().links.length}>
         <span class="links">
           <For each={parts().links}>
@@ -38,5 +41,21 @@ export function PlayerName(props: { player: PlayerView; heading?: boolean }) {
         </span>
       </Show>
     </>
+  );
+}
+
+// The program that played a run, as its operator declares it.
+export function PilotName(props: { pilot: Pilot }) {
+  return (
+    <span class="pilot" title="Declared by the run's operator">
+      <Show when={props.pilot.url} fallback={props.pilot.name}>
+        <a href={props.pilot.url} target="_blank" rel="noopener">
+          {props.pilot.name}
+        </a>
+      </Show>
+      <Show when={props.pilot.model}>
+        <span class="muted"> ({props.pilot.model})</span>
+      </Show>
+    </span>
   );
 }

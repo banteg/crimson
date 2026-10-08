@@ -18,6 +18,9 @@ unsigned char portable_preserve_bugs;
 static PortableCommand commands[16];
 static bool ready;
 static bool menu_requested;
+// The perk menu opened in the last tick. The perk screen pauses the game, so
+// the next tick may start with one pick, and closes the menu either way.
+static bool perk_menu_open;
 static char string_arena[65536];
 static size_t string_used;
 static uint32_t rng;
@@ -202,6 +205,15 @@ extern "C" float portable_player_y() { return player_state_table[0].position.y; 
 extern "C" float portable_player_health() { return player_state_table[0].health; }
 extern "C" float portable_shake_x() { return camera_shake_offset_x; }
 extern "C" float portable_shake_y() { return camera_shake_offset_y; }
+extern "C" float portable_nearest_creature(float x, float y) {
+  float best = INFINITY;
+  for (int i = 0; i < 385; ++i) {
+    const creature_t &c = creature_pool[i];
+    if (c.active && c.health > 0)
+      best = fminf(best, sqrtf((c.position.x - x) * (c.position.x - x) + (c.position.y - y) * (c.position.y - y)));
+  }
+  return best;
+}
 // The timeline probe: each read compares the creature pool, player one's perk
 // counts and the bonus pool with the previous read's.
 static PortableProbe probe;
@@ -295,6 +307,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   string_used = 0;
   rng = seed;
   menu_requested = false;
+  perk_menu_open = false;
   tick = 0;
   running_down = false;
   run_down_ms = 500;
@@ -446,6 +459,8 @@ extern "C" int portable_step_many(uint32_t count) {
   // The 3-bit field stores the -1 scheme as all ones.
   config_blob.aim_schemes[0] = aim_scheme == 7 ? -1 : (int)aim_scheme;
   menu_requested = false;
+  bool menu_open = perk_menu_open;
+  perk_menu_open = false;
   for (uint32_t i = 0; i < count; ++i) {
     int command = commands[i].type, argument = commands[i].argument;
     if ((command != 1 && command != 2) || config_game_mode == GAME_MODE_RUSH ||
@@ -461,6 +476,11 @@ extern "C" int portable_step_many(uint32_t count) {
       menu_requested = true;
       continue;
     }
+    if (!menu_open) {
+      ready = false;
+      return 0;
+    }
+    menu_open = false;
     int n = player_state_table[0].perk_counts[PERK_ID_PERK_MASTER] > 0   ? 7
             : player_state_table[0].perk_counts[PERK_ID_PERK_EXPERT] > 0 ? 6
                                                                          : 5;
@@ -490,8 +510,10 @@ extern "C" int portable_step_many(uint32_t count) {
   ui_mouse_x = cursor ? in.aim_x : in.aim_x + camera_offset_x;
   ui_mouse_y = cursor ? in.aim_y : in.aim_y + camera_offset_y;
   gameplay_update_and_render();
-  if (game_state_pending == GAME_STATE_PERK_SELECTION)
+  if (game_state_pending == GAME_STATE_PERK_SELECTION) {
+    perk_menu_open = true;
     game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
+  }
   // ui_elements_update_and_render: the timeline runs down by the restored
   // frame_dt_ms from the frame that ends the run.
   running_down = running_down || run_ended();

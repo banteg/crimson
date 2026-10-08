@@ -179,6 +179,18 @@ describe("linking", () => {
     expect([await keysOf(home.accountId), await keysOf(laptop.accountId)]).toEqual([2, 0]);
     expect(await env.DB.prepare("SELECT 1 FROM accounts WHERE id = ?").bind(laptop.accountId).first()).toBeNull();
   });
+
+  it("a join keeps a moderator's bot mark and the stronger role", async () => {
+    const [home, laptop] = [await signIn(), await signIn()];
+    await env.DB.prepare("UPDATE accounts SET bot = 1, role = 'admin' WHERE id = ?").bind(laptop.accountId).run();
+    provider({ id: 42, login: "banteg" });
+    await (await link(home.cookie, "github")).callback();
+    const token = /^\/join\/([0-9a-f]{64})$/.exec((await (await link(laptop.cookie, "github")).callback()).headers.get("location")!)![1]!;
+
+    await call("/api/join", { method: "POST", headers: { cookie: laptop.cookie, origin: ORIGIN }, body: JSON.stringify({ token }) });
+
+    expect(await env.DB.prepare("SELECT bot, role FROM accounts WHERE id = ?").bind(home.accountId).first()).toEqual({ bot: 1, role: "admin" });
+  });
 });
 
 describe("account", () => {
@@ -204,5 +216,13 @@ describe("account", () => {
       const column = table === "accounts" ? "id" : "account_id";
       expect(await env.DB.prepare(`SELECT 1 FROM ${table} WHERE ${column} = ?`).bind(accountId).first()).toBeNull();
     }
+  });
+
+  it("the admin's account cannot be deleted", async () => {
+    const { cookie, accountId } = await signIn();
+    await env.DB.prepare("UPDATE accounts SET role = 'admin' WHERE id = ?").bind(accountId).run();
+
+    expect((await post("/api/account/delete", cookie)).status).toBe(403);
+    expect(await env.DB.prepare("SELECT 1 FROM accounts WHERE id = ?").bind(accountId).first()).not.toBeNull();
   });
 });

@@ -9,7 +9,7 @@ from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
-from crimson.replay import REPLAY_FORMAT_VERSION, Replay, ReplayRecorder, ReplayTick
+from crimson.replay import REPLAY_FORMAT_VERSION, REPLAY_RULES, Replay, ReplayRecorder, ReplayTick
 from crimson.replay.checkpoints import ReplayCheckpoint
 from crimson.replay.driver.playback_driver import (
     PlaybackDriver,
@@ -56,7 +56,9 @@ def idle_replay(tick_count: int, *, run: RunSpec | None = None) -> Replay:
     return Replay(
         format_version=REPLAY_FORMAT_VERSION,
         game_version=current_replay_game_version(),
+        rules=REPLAY_RULES,
         recorder=current_recorder(),
+        pilot=None,
         run=RunSpec(game_mode_id=GameMode.DEMO, seed=0) if run is None else run,
         result=UNVERIFIED_RESULT,
         ticks=[ReplayTick(inputs=[(0.0, 0.0, 0.0, 0.0, 0)]) for _ in range(int(tick_count))],

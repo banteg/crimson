@@ -8,7 +8,8 @@ import coreModule from "../../crimson-core/build/wasm/core.wasm";
 import schema from "../../crimson-core/schema.json";
 import type { Timeline } from "./api-types";
 import type { Env } from "./http";
-import { Flags, type Replay, type RunResult } from "./replay";
+import { type Replay, type RunResult, tickControls } from "./replay";
+import { type Signals, SignalMeter } from "./signals";
 import { PROBE_BYTES, TimelineRecorder } from "./timeline";
 import { CONFIG_BYTES, TICK_BYTES } from "./transport";
 
@@ -28,6 +29,7 @@ interface Core {
   portable_shake_x(): number;
   portable_shake_y(): number;
   portable_probe(): number;
+  portable_nearest_creature(x: number, y: number): number;
 }
 
 // One instance per isolate. Nothing awaits between init and the final snapshot, so requests never interleave
@@ -66,7 +68,8 @@ const AIM_MOUSE = 0;
 const AIM_DUAL_ACTION_PAD = 4;
 const MOVE_POINT_CLICK = 4;
 
-export type Verdict = { ok: true; timeline: Timeline } | { ok: false; reason: string };
+// The signals cover the ticks replayed, up to a refused one.
+export type Verdict = ({ ok: true; timeline: Timeline } | { ok: false; reason: string }) & { signals: Signals };
 
 export async function verifyRun(_env: Env, replay: Replay, transport: Uint8Array): Promise<Verdict> {
   return simulate(replay, transport);
@@ -75,21 +78,27 @@ export async function verifyRun(_env: Env, replay: Replay, transport: Uint8Array
 function simulate(replay: Replay, transport: Uint8Array): Verdict {
   const c = core();
   const view = new DataView(transport.buffer, transport.byteOffset, transport.byteLength);
+  const meter = new SignalMeter();
+  const refused = (reason: string): Verdict => ({ ok: false, reason, signals: meter.finish() });
   new Uint8Array(c.memory.buffer, c.portable_config(), CONFIG_BYTES).set(transport.subarray(0, CONFIG_BYTES));
   if (!c.portable_init(...([0, 4, 8, 12].map((at) => view.getUint32(at, true)) as [number, number, number, number])))
-    return { ok: false, reason: "the core refused the run's settings" };
+    return refused("the core refused the run's settings");
 
   const monitor = new TickMonitor();
   monitor.updateCamera(c);
   const recorder = new TimelineRecorder(replay.run.seed);
+  const nearest = (x: number, y: number) => c.portable_nearest_creature(x, y);
   let at = CONFIG_BYTES;
   for (let tick = 0; tick < replay.ticks.length; tick++) {
-    const reason = monitor.check(replay.ticks[tick]!.inputs[0]!);
-    if (reason) return { ok: false, reason: `tick ${tick}: ${reason}` };
+    const input = replay.ticks[tick]!.inputs[0]!;
+    const player = { x: c.portable_player_x(), y: c.portable_player_y(), alive: c.portable_player_health() > 0 };
+    meter.record(input, player, monitor.camera!, nearest);
+    const reason = monitor.check(input);
+    if (reason) return refused(`tick ${tick}: ${reason}`);
     const count = view.getUint32(at + 20, true);
     new Uint8Array(c.memory.buffer, c.portable_input(), 20).set(transport.subarray(at, at + 20));
     new Uint8Array(c.memory.buffer, c.portable_commands(), count * 8).set(transport.subarray(at + TICK_BYTES, at + TICK_BYTES + count * 8));
-    if (!c.portable_step_many(count)) return { ok: false, reason: `tick ${tick}: an illegal command or a tick past the run's end` };
+    if (!c.portable_step_many(count)) return refused(`tick ${tick}: an illegal command or a tick past the run's end`);
     at += TICK_BYTES + count * 8;
     monitor.updateCamera(c);
     recorder.record(new DataView(c.memory.buffer, c.portable_probe(), PROBE_BYTES));
@@ -99,12 +108,13 @@ function simulate(replay: Replay, transport: Uint8Array): Verdict {
   const derived = deriveResult(new DataView(c.memory.buffer, c.portable_output(), fieldIndex.size * 4), replay.run.game_mode_id);
   const mismatches = resultMismatches(replay.result, derived);
   return mismatches.length
-    ? { ok: false, reason: `the claimed result differs in ${mismatches.join(", ")}` }
-    : { ok: true, timeline: recorder.finish() };
+    ? refused(`the claimed result differs in ${mismatches.join(", ")}`)
+    : { ok: true, timeline: recorder.finish(), signals: meter.finish() };
 }
 
 class TickMonitor {
-  private camera: { x: number; y: number } | null = null;
+  // The ranked view's camera the last tick left: screen = world + camera.
+  camera: { x: number; y: number } | null = null;
   private moveTarget: { x: number; y: number } | null = null;
 
   updateCamera(c: Core): void {
@@ -120,10 +130,7 @@ class TickMonitor {
   }
 
   check([moveX, moveY, aimX, aimY, flags]: [number, number, number, number, number]): string | null {
-    const moveKeys = Boolean(flags & Flags.MOVE_KEYS_PRESENT);
-    const moveMode = flags & Flags.MOVE_MODE_PRESENT ? (flags >>> Flags.MOVE_MODE_SHIFT) & Flags.MASK3 : moveKeys ? 2 : 3;
-    const aimRaw = (flags >>> Flags.AIM_SCHEME_SHIFT) & Flags.MASK3;
-    const aimScheme = flags & Flags.AIM_SCHEME_PRESENT ? (aimRaw === Flags.MASK3 ? -1 : aimRaw) : AIM_MOUSE;
+    const { moveMode, aimScheme } = tickControls(flags);
     if (!HUMAN_MOVEMENT.has(moveMode) || !HUMAN_AIM.has(aimScheme)) return "computer or unknown controls";
     const camera = this.camera!;
     if (aimScheme === AIM_MOUSE && !inView(aimX + camera.x, aimY + camera.y)) return "aim outside the 1024x768 view";

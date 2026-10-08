@@ -49,9 +49,11 @@ EXPORTS = (
     "portable_shake_x",
     "portable_shake_y",
     "portable_probe",
+    "portable_nearest_creature",
 )
-# Player one and the shake, for the service's ranked aim bound (host/api.h).
+# Player one and the shake, for the service's ranked aim bound, and the nearest creature, for its input signals (host/api.h).
 PROBE_READS = {
+    "portable_nearest_creature",
     "portable_player_x",
     "portable_player_y",
     "portable_player_health",
@@ -131,10 +133,14 @@ def main():
     if not wasm and os.uname().sysname == "Darwin":
         flags.append("-mmacosx-version-min=11.0")
     if a.target == "game":
-        # The version a ranked replay names, as the Python port names its own (host/ranked.inc).
-        from crimson.replay.types import current_replay_game_version
+        # The version, format and rules a replay names, as the Python port names its own (host/ranked.inc).
+        from crimson.replay.types import REPLAY_FORMAT_VERSION, REPLAY_RULES, current_replay_game_version
 
-        flags.append(f'-DCRIMSON_GAME_VERSION="{current_replay_game_version()}"')
+        flags += [
+            f'-DCRIMSON_GAME_VERSION="{current_replay_game_version()}"',
+            f"-DCRIMSON_REPLAY_FORMAT={REPLAY_FORMAT_VERSION}",
+            f"-DCRIMSON_REPLAY_RULES={REPLAY_RULES}",
+        ]
     sources = json.loads((HERE / "sources.json").read_text())
     if a.target == "game":
         sources += game_sources(a.root)
