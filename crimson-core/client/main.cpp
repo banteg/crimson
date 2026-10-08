@@ -297,6 +297,17 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_sign_login(const char *challe
   snprintf((char *)client_memory() + w2c_game_game_login_challenge(&game), 65, "%s", challenge);
   return (const char *)client_memory() + w2c_game_game_login_signature(&game);
 }
+// The high score screen's Update scores: the board it asks for, then the
+// service's answer, or none when it could not be fetched.
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_scores_request() {
+  return (const char *)client_memory() + w2c_game_game_scores_request(&game);
+}
+extern "C" EMSCRIPTEN_KEEPALIVE void client_scores_received(const char *answer) {
+  int size = answer ? (int)strlen(answer) : -1;
+  if (answer)
+    memcpy(client_memory() + w2c_game_game_scores_buffer(&game, size), answer, size);
+  w2c_game_game_scores_received(&game, size);
+}
 #endif
 
 #ifndef __EMSCRIPTEN__
