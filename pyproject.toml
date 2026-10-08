@@ -1,6 +1,6 @@
 [project]
 name = "crimsonland"
-version = "0.13.0"
+version = "0.13.1"
 description = "A faithful reimplementation of Crimsonland 1.9.93 in Python and raylib"
 keywords = ["crimsonland", "game", "shooter", "raylib", "reverse-engineering"]
 classifiers = [

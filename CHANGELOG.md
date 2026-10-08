@@ -2,6 +2,12 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.13.1
+
+### For players
+
+- In the browser game at **[crimson.land/play](https://crimson.land/play/)**, Survival and quests now switch to the in-game tunes at the first hit, as the original does, instead of keeping the main menu theme. The game read its list of in-game tunes with the Windows line endings left on each name, so none of them loaded. The Python port was not affected.
+
 ## 0.13.0
 
 ### For players
