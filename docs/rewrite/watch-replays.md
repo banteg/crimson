@@ -70,11 +70,15 @@ Both clients keep the original's 72-byte high score record.
   which the game's scores never read and the original's duplicate check leaves
   out. Zero is no replay: records saved before this change have none.
 - **A leaderboard row** is not written into the local tables any more. Each
-  client keeps the board's last scores answer and merges its rows into the
-  table when it shows it, as the Python port already does; every merged row
-  keeps its run id through the merge and the sort. The web and native client's
-  "Update scores" (`game_scores_received`) changes from saving records to
-  keeping the answer.
+  client keeps the board's latest scores answer, which every "Update scores"
+  replaces whole, so a run that was hidden, banned or deleted disappears at the
+  next update and online rows never pile up. The table shows the local records
+  and the kept answer's rows together, as the Python port already does; each
+  answer row keeps its run id through the sort, and a local record that is on
+  the board is marked online by matching it against the kept answer, so the
+  mark follows the board too. The web and native client's "Update scores"
+  (`game_scores_received`) changes from saving records into the tables to
+  keeping the answer, per board, in its own file.
 - The scores answer gains `run`, the run's id.
 
 ## Service
