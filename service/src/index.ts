@@ -124,7 +124,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
       headers: {
         "content-type": "application/octet-stream",
         "content-disposition": `attachment; filename="${match[1]!.slice(0, 12)}.crd"`,
-        "cache-control": `public, max-age=${REPLAY_MAX_AGE_S}`,
+        "cache-control": `public, max-age=${REPLAY_MAX_AGE_S}, must-revalidate`,
       },
     });
   }
@@ -134,7 +134,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     if (cached) return cached;
     const card = await runCard(env, url.origin, match[1]!);
     if (!card) return new Response("No such run.", { status: 404 });
-    const response = new Response(card, { headers: { "content-type": "image/png", "cache-control": `public, max-age=${CARD_MAX_AGE_S}` } });
+    const response = new Response(card, { headers: { "content-type": "image/png", "cache-control": `public, max-age=${CARD_MAX_AGE_S}, must-revalidate` } });
     await caches.default.put(request, response.clone());
     return response;
   }

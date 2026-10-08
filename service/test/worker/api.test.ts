@@ -196,7 +196,7 @@ describe("runs", () => {
 
     const response = await replay();
     expect(response.status).toBe(200);
-    expect(response.headers.get("cache-control")).toMatch(/^public, max-age=\d+$/);
+    expect(response.headers.get("cache-control")).toMatch(/^public, max-age=\d+, must-revalidate$/);
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(decode64(vectors.ranked_run));
 
     await env.DB.prepare("UPDATE runs SET hidden = 1").run();
