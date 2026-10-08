@@ -258,17 +258,19 @@ uv run python crimson-core/client/build.py --target web   # Emscripten, SDL3 por
 
 `build/web/index.html` runs the same host on WebGL2. The game directory is
 `/game` in IndexedDB: on first launch the page fetches the game files from
-`?assets=<url>` (default `game/` beside the page) with a progress bar, or takes
-the player's own game folder, either layout; and settings, saves and
+`?assets=<url>` (default `game/` beside the page) with a progress bar; when that
+fails, it retries or takes the player's own game folder, either layout; and settings, saves and
 high scores sync back a few seconds after the game writes them, when the tab is
 hidden, and when the game quits ([`client/web/shell.html`](client/web/shell.html)).
 One tab at a time owns the directory (a Web Lock), since IndexedDB takes each
-sync as the whole tree and a stale tab would write over newer saves. As in the
+sync as the whole tree and a stale tab would write over newer saves; another
+tab's Play here asks the owner to save and reload, and takes the lock from one
+that does not answer, which then stops saving. As in the
 original, settings changed in the options reach the disk when the game quits.
 It needs a secure context (HTTPS or localhost) for the lock, and no threads, so
-no cross-origin isolation. A bar at the top of the page, shown when the pointer
-reaches it, links back to the site and goes fullscreen, holding Escape for the
-game where the browser allows it.
+no cross-origin isolation. A fullscreen icon shows when the pointer reaches its
+corner, holding Escape for the game where the browser allows it. The page wears
+the site's font and game buttons (`service/public/game.css`).
 
 crimson.land serves the page at [`/play/`](https://crimson.land/play/): the
 site's Worker answers `/play/game/<file>` from the asset bucket, same-origin,

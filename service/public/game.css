@@ -1,0 +1,18 @@
+/* The game's look the site and the playable game share (web/, crimson-core/client/web/shell.html): its small font, its
+   colors and its buttons, drawn with the art scripts/assets.py exports to /ui/. */
+@font-face{font-family:"Crimson Small";src:url(/ui/small.woff2) format("woff2");font-display:swap}
+:root{--text:#e6e6e6;--label:#b3b3b3;--dim:#7d7d7d;--heading:#2089c6;--row:rgba(70,180,240,.6);--row-on:rgb(70,180,240);
+  --row-hardcore:rgba(250,70,60,.6);--row-hardcore-on:rgb(250,70,60)}
+/* The game's buttons (ui_button_update): the label centered on the glass, 1px right of center, the hover fill 12px in from
+   the sides and 5px down, fading in over 167 ms and out over 250 ms; a click flashes it white. */
+.buttons{display:flex;flex-wrap:wrap}
+.button{position:relative;display:inline-flex;justify-content:center;align-items:flex-start;width:82px;height:32px;padding:0;border:0;background:none;font:inherit;cursor:pointer;
+  color:rgb(255 255 255/.7);text-align:center;text-decoration:none;vertical-align:middle}
+.button.danger{color:rgb(250 70 60/.8)}.button.danger:hover{color:rgb(250 70 60)}
+.button.wide{width:145px}.button:hover,.button.on{color:#fff}
+.button::before{content:"";position:absolute;left:12px;right:12px;top:5px;height:22px;background:rgb(128 128 178);opacity:0;
+  transition:opacity .25s linear}
+.button:hover::before,.button.on::before{opacity:1;transition-duration:.167s}.button:active::before{background:#fff}
+.button::after{content:"";position:absolute;inset:0;background:url(/ui/button-sm.png) 0 0/100% 100%}
+.button.wide::after{background-image:url(/ui/button-md.png)}
+.button span{position:relative;z-index:1;margin:8px 0 0 2px;line-height:16px;white-space:nowrap}

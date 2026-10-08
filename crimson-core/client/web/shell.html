@@ -4,34 +4,31 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Play · crimson.land</title>
+<!-- The site's font, colors and game buttons (service/public/game.css). -->
+<link rel="stylesheet" href="/game.css">
 <style>
-  /* The site's look (service/web/src/style.css): its game font and colours. */
-  @font-face { font-family: "Crimson Small"; src: url(/ui/small.woff2) format("woff2"); font-display: swap; }
-  :root { --text: #e6e6e6; --label: #b3b3b3; --dim: #7d7d7d; --row: rgb(70 180 240 / 0.6); --row-on: rgb(70 180 240); }
   html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0a07; color: var(--text);
-    font: 15px/1.5 "Crimson Small", Arial, sans-serif; }
+    font: 16px/20px "Crimson Small", Arial, sans-serif; -webkit-font-smoothing: none; }
   canvas { display: block; width: 100vw; height: 100vh; outline: none; }
-  a { color: var(--row-on); }
   #cover { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 18px; text-align: center; padding: 16px; background: #0b0a07; }
   #cover img { width: min(512px, 90vw); filter: drop-shadow(7px 7px 0 rgb(0 0 0 / 0.267)); }
-  #status { min-height: 1.5em; color: var(--label); }
+  #status { min-height: 20px; color: var(--label); }
   #progress { width: min(360px, 80vw); height: 4px; background: rgb(255 255 255 / 0.1); }
   #progress div { height: 100%; width: 0; background: var(--row-on); transition: width 0.1s linear; }
   #touch { max-width: 420px; color: var(--dim); }
-  #again:not([hidden]) { display: flex; gap: 16px; align-items: center; }
-  button, #pick label { font: inherit; color: rgb(255 255 255 / 0.7); background: rgb(30 40 55 / 0.85);
-    border: 1px solid rgb(70 180 240 / 0.4); border-radius: 3px; padding: 4px 12px; cursor: pointer; }
-  button:hover, #pick label:hover { color: #fff; border-color: var(--row-on); }
-  #pick input { display: none; }
-  /* The bar over the game: back to the site, and fullscreen. It shows while the cursor is near it. */
-  #bar { position: fixed; top: 8px; right: 8px; display: flex; gap: 10px; align-items: center;
-    padding: 4px 6px 4px 12px; background: rgb(11 10 7 / 0.7); border-radius: 4px;
-    transition: opacity 0.3s; opacity: 0; pointer-events: none; }
-  #bar.shown { opacity: 1; pointer-events: auto; }
-  #bar a { color: var(--label); text-decoration: none; }
-  #notice { color: #f0a050; }
-  #bar a:hover { color: #fff; }
+  .buttons { justify-content: center; }
+  .button input { display: none; }
+  /* Fullscreen, in the corner: shown while the cursor is near it, and briefly once the game starts. */
+  #fullscreen { position: fixed; top: 6px; right: 6px; width: 32px; height: 32px; padding: 6px; border: 0; border-radius: 4px;
+    background: rgb(11 10 7 / 0.6); color: rgb(255 255 255 / 0.7); cursor: pointer; transition: opacity 0.3s; opacity: 0; pointer-events: none; }
+  #fullscreen.shown { opacity: 1; pointer-events: auto; }
+  #fullscreen:hover { color: #fff; }
+  #fullscreen svg { display: block; width: 20px; height: 20px; }
+  #fullscreen .exit, :fullscreen #fullscreen .enter { display: none; }
+  :fullscreen #fullscreen .exit { display: block; }
+  #notice { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); padding: 4px 12px; border-radius: 4px;
+    background: rgb(11 10 7 / 0.8); color: rgb(250 160 80); }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -41,11 +38,22 @@
   <img src="/ui/sign.png" alt="Crimsonland" onerror="this.hidden = true">
   <div id="status">Loading…</div>
   <div id="progress" hidden><div></div></div>
-  <div id="pick" hidden><label>Choose your Crimsonland folder…<input type="file" webkitdirectory></label></div>
-  <div id="again" hidden><button type="button" onclick="location.reload()">Play again</button> <a href="/">crimson.land</a></div>
-  <p id="touch" hidden>Crimsonland plays with a keyboard and mouse, or a gamepad.</p>
+  <div id="offer" class="buttons" hidden>
+    <button id="retry" type="button" class="button"><span>Retry</span></button>
+    <label class="button wide"><span>Choose folder</span><input id="folder" type="file" webkitdirectory></label>
+  </div>
+  <div id="elsewhere" class="buttons" hidden><button id="here" type="button" class="button wide"><span>Play here</span></button></div>
+  <div id="again" class="buttons" hidden>
+    <button type="button" class="button wide" onclick="location.reload()"><span>Play again</span></button>
+    <a class="button wide" href="/"><span>crimson.land</span></a>
+  </div>
+  <p id="touch" hidden>On a phone, Crimsonland plays with a gamepad: connect one to play.</p>
 </div>
-<nav id="bar" hidden><span id="notice" hidden></span><a href="/">crimson.land</a><button id="fullscreen" type="button">Fullscreen</button></nav>
+<button id="fullscreen" type="button" title="Fullscreen" aria-label="Fullscreen" hidden>
+  <svg class="enter" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7V2h5M13 2h5v5M18 13v5h-5M7 18H2v-5"/></svg>
+  <svg class="exit" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v5H2M18 7h-5V2M13 18v-5h5M2 13h5v5"/></svg>
+</button>
+<div id="notice" hidden></div>
 <script>
   // The game reads and writes its directory, /game, kept in IndexedDB. Files it
   // lacks come from ?assets=<url>, default ./game/ (the project's distribution:
@@ -90,40 +98,36 @@
           }));
     }, true);
 
-  // The bar shows while the cursor is near the top of the page, and briefly once
-  // the game starts. Fullscreen keeps Escape for the game where the browser
-  // allows it (the Keyboard Lock API); holding Escape still leaves.
-  const bar = document.getElementById("bar");
-  const notice = document.getElementById("notice");
+  // Fullscreen shows while the cursor is near its corner. It keeps Escape for the
+  // game where the browser allows it (the Keyboard Lock API); holding Escape
+  // still leaves.
+  const fullscreen = document.getElementById("fullscreen");
   let hide;
-  const showBar = (ms) => {
-    bar.classList.add("shown");
+  const showFullscreen = (ms) => {
+    fullscreen.classList.add("shown");
     clearTimeout(hide);
-    hide = setTimeout(() => notice.hidden && bar.classList.remove("shown"), ms);
+    hide = setTimeout(() => fullscreen.classList.remove("shown"), ms);
   };
-  addEventListener("pointermove", (event) => event.clientY < 60 && showBar(1500));
-  // A failed save stays in the bar until a save succeeds; the game plays on.
-  const saveFailed = (error) => {
-    notice.textContent = "Could not save: " + (error.message ?? error);
-    notice.hidden = false;
-    bar.classList.add("shown");
-  };
-  document.getElementById("fullscreen").onclick = async () => {
+  addEventListener("pointermove", (event) => event.clientY < 80 && event.clientX > innerWidth - 80 && showFullscreen(1500));
+  fullscreen.onclick = async () => {
     if (document.fullscreenElement) return document.exitFullscreen();
     await document.documentElement.requestFullscreen();
     await navigator.keyboard?.lock?.(["Escape"]).catch(() => {});
     canvas.focus();
   };
-  document.addEventListener("fullscreenchange", () => {
-    document.getElementById("fullscreen").textContent = document.fullscreenElement ? "Exit fullscreen" : "Fullscreen";
-  });
+  // A failed save stays on screen until a save succeeds; the game plays on.
+  const notice = document.getElementById("notice");
+  const saveFailed = (error) => {
+    notice.textContent = "Could not save: " + (error.message ?? error);
+    notice.hidden = false;
+  };
 
   // Writes /game back to IndexedDB, one sync at a time and only once it has been
-  // read: IndexedDB takes the written tree as the whole directory. Resolves
-  // whether the saves committed.
-  let hydrated = false, syncing = null, again = false;
+  // read, and not once another tab has taken the game: IndexedDB takes the
+  // written tree as the whole directory. Resolves whether the saves committed.
+  let hydrated = false, moved = false, syncing = null, again = false;
   function persist() {
-    if (!hydrated) return Promise.resolve(false);
+    if (!hydrated || moved) return Promise.resolve(false);
     if (syncing) {
       again = true;
       return syncing;
@@ -177,13 +181,18 @@
   // The files the player picks, matched by name inside the chosen folder: the
   // GOG release's (music as loose files) or the project's (music.paq), over
   // whatever a failed download left. The directory must then be complete.
-  function pickFolder() {
-    const pick = document.getElementById("pick");
-    pick.hidden = false;
+  // Resolves "retry", or "picked" once a folder completes the directory.
+  function offer() {
+    const buttons = document.getElementById("offer");
+    buttons.hidden = false;
     progress.hidden = true;
-    say("The game files did not download. Crimsonland can play from your own copy.");
+    say("The game files did not download. Try again, or play from your own Crimsonland folder.");
     return new Promise((resolve) => {
-      pick.querySelector("input").onchange = async (event) => {
+      document.getElementById("retry").onclick = () => {
+        buttons.hidden = true;
+        resolve("retry");
+      };
+      document.getElementById("folder").onchange = async (event) => {
         const files = new Map(
           [...event.target.files].map((f) => [f.webkitRelativePath.split("/").slice(1).join("/").toLowerCase(), f]),
         );
@@ -198,8 +207,8 @@
         const lacking = missing(), named = lacking.filter((name) => !name.startsWith("music/"));
         const music = lacking.length - named.length;
         if (lacking.length) return say(`That folder lacks ${[...named, ...(music ? [`${music} music files`] : [])].join(", ")}.`);
-        pick.hidden = true;
-        resolve();
+        buttons.hidden = true;
+        resolve("picked");
       };
     });
   }
@@ -229,20 +238,75 @@
     }));
   }
 
+  async function fetchMissing() {
+    const needed = missing();
+    if (!needed.length) return;
+    const names = [...new Set(needed.map((name) => (name.startsWith("music/") ? "music.paq" : name)))];
+    const bytes = await download(names);
+    names.forEach((name, i) => (name === "music.paq" ? storeMusic(bytes[i]) : store(name, bytes[i])));
+    if (missing().length) throw Error("incomplete download");
+  }
+
   async function hydrate() {
     await new Promise((resolve, reject) => FS.syncfs(true, (error) => (error ? reject(error) : resolve())));
-    const needed = missing();
-    if (needed.length) {
-      const names = [...new Set(needed.map((name) => (name.startsWith("music/") ? "music.paq" : name)))];
+    for (;;) {
       try {
-        const bytes = await download(names);
-        names.forEach((name, i) => (name === "music.paq" ? storeMusic(bytes[i]) : store(name, bytes[i])));
-        if (missing().length) throw Error("incomplete download");
-      } catch {
-        await pickFolder();
+        await fetchMissing();
+        break;
+      } catch (error) {
+        console.warn("game files:", error);
+        if ((await offer()) === "picked") break;
       }
     }
     hydrated = true;
+  }
+
+  // One tab owns the directory: another would write its stale copy over this
+  // one's saves. The lock lasts as long as the page. Play here asks the owner to
+  // save and reload, which hands the lock over; an owner that does not answer
+  // (a frozen tab) loses it, stops saving and reloads. Web Locks exist only in
+  // secure contexts: HTTPS, or localhost.
+  const LOCK = "crimsonland /game";
+  const channel = new BroadcastChannel(LOCK);
+  function own() {
+    hydrate().then(
+      () => {
+        say("Starting…");
+        removeRunDependency("game files");
+      },
+      (error) => say("Could not load the game files: " + (error.message ?? error)),
+    );
+    channel.onmessage = async (event) => {
+      if (event.data !== "play here") return;
+      await persist();
+      moved = true;
+      location.reload();
+    };
+    return new Promise(() => {});
+  }
+  function lost(error) {
+    if (error.name !== "AbortError") return say("Could not open the game files: " + (error.message ?? error));
+    moved = true;
+    location.reload();
+  }
+  function elsewhere() {
+    const buttons = document.getElementById("elsewhere");
+    say("Crimsonland is open in another tab.");
+    buttons.hidden = false;
+    document.getElementById("here").onclick = () => {
+      buttons.hidden = true;
+      say("Moving the game here…");
+      const queued = new AbortController();
+      const steal = setTimeout(() => {
+        queued.abort();
+        navigator.locks.request(LOCK, { steal: true }, own).catch(lost);
+      }, 3000);
+      navigator.locks.request(LOCK, { signal: queued.signal }, () => {
+        clearTimeout(steal);
+        return own();
+      }).catch((error) => error.name === "AbortError" || lost(error));
+      channel.postMessage("play here");
+    };
   }
 
   var Module = {
@@ -252,34 +316,21 @@
       FS.mkdir("/game");
       FS.mount(IDBFS, {}, "/game");
       addRunDependency("game files");
-      // One tab owns the directory: another would write its stale copy over
-      // this one's saves. The lock lasts as long as the page. Web Locks exist
-      // only in secure contexts: HTTPS, or localhost.
       if (!navigator.locks) return say("Crimsonland needs HTTPS (or localhost) to keep its saves.");
-      navigator.locks.request("crimsonland /game", { ifAvailable: true }, (lock) => {
-        if (!lock) return say("Crimsonland is already open in another tab.");
-        hydrate().then(
-          () => {
-            say("Starting…");
-            removeRunDependency("game files");
-          },
-          (error) => say("Could not load the game files: " + (error.message ?? error)),
-        );
-        return new Promise(() => {});
-      }).catch((error) => say("Could not open the game files: " + (error.message ?? error)));
+      navigator.locks.request(LOCK, { ifAvailable: true }, (lock) => (lock ? own() : elsewhere())).catch(lost);
     }],
     // The host is running: the game takes the page.
     onRuntimeInitialized: () => {
       cover.hidden = true;
-      bar.hidden = false;
-      showBar(3000);
+      fullscreen.hidden = false;
+      showFullscreen(3000);
       canvas.focus();
     },
     printErr: (text) => console.warn(text),
     // The game quit (client/main.cpp) after writing its settings and scores.
     quit: async () => {
       cover.hidden = false;
-      bar.hidden = true;
+      fullscreen.hidden = true;
       progress.hidden = true;
       say("Saving…");
       const saved = await persist();
