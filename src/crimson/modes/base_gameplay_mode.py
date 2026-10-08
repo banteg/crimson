@@ -42,7 +42,7 @@ from ..replay.checkpoints import (
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
-from ..replay.library import next_replay_number, replay_file_name
+from ..replay.library import replay_file_name, reserve_replay_number
 from ..replay.ranked import (
     RANKED_MODES,
     RANKED_PAD_AIM_DIST_MUL,
@@ -644,7 +644,7 @@ class BaseGameplayMode:
         replay = recorder.finish(result)
 
         replay_dir = self._base_dir / "replays"
-        number = self.replay_saver.allocate(replay_dir) if self.replay_saver is not None else next_replay_number(replay_dir)
+        number = reserve_replay_number(replay_dir)
         job = ReplaySaveJob(
             path=replay_dir / replay_file_name(number, GameMode(replay.run.game_mode_id)),
             replay=replay,

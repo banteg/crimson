@@ -14,7 +14,6 @@ import msgspec
 
 from .checkpoints import ReplayCheckpoints, default_checkpoints_path, dump_checkpoints_file
 from .codec import ReplayCodecError, dump_replay_file
-from .library import next_replay_number
 from .types import Replay
 
 
@@ -43,20 +42,12 @@ class ReplaySaveJob(msgspec.Struct, frozen=True):
 class ReplaySaver:
     """Runs save jobs on one worker, in the order runs finished.
 
-    Numbers are handed out on the main thread when a run ends, counting the ones still being written. The console is
-    not thread-safe, so the lines each job logs come back through `drain` on the main thread.
+    The console is not thread-safe, so the lines each job logs come back through `drain` on the main thread.
     """
 
     def __init__(self) -> None:
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="replay-save")
         self._pending: list[Future[list[str]]] = []
-        self._last_number: dict[Path, int] = {}
-
-    def allocate(self, replay_dir: Path) -> int:
-        """The next replay number in `replay_dir`."""
-        number = next_replay_number(replay_dir, after=self._last_number.get(replay_dir, 0))
-        self._last_number[replay_dir] = number
-        return number
 
     def submit(self, job: ReplaySaveJob) -> None:
         self._pending.append(self._executor.submit(job.run))
