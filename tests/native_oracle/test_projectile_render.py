@@ -14,7 +14,7 @@ from typing import Any, cast
 import pytest
 
 import crimson.render.world.projectiles as world_projectiles
-from crimson.creatures.runtime import CreaturePool
+from crimson.creatures.runtime import CreaturePool, CreatureState
 from crimson.game_states import GameStateId
 from crimson.projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.render.frame import RenderFrame
@@ -26,6 +26,9 @@ from crimson_re.dbg.native_oracle import NativeOracle
 from grim.assets import TextureId
 from grim.geom import Vec2
 from tests.native_oracle._support import (
+    CREATURE_LAYOUT,
+    CREATURE_POOL_SLOTS,
+    CREATURE_STRIDE,
     PROJECTILE_LAYOUT,
     PROJECTILE_STRIDE,
     SECONDARY_PROJECTILE_LAYOUT,
@@ -39,6 +42,7 @@ class _NativeDraws:
         self.oracle = oracle
         self.texture = 0
         self.uv = (0.0, 0.0, 1.0, 1.0)
+        self.uv_corners = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
         self.angle = 0.0
         self.color = (1.0, 1.0, 1.0, 1.0)
         self.quads = []
@@ -66,13 +70,21 @@ class _NativeDraws:
         def bind(c):
             self.texture = c.arg_u32(0)
 
+        def set_rect(u0, v0, u1, v1):
+            self.uv = (u0, v0, u1, v1)
+            # Grim's corner order: top-left, top-right, bottom-right, bottom-left.
+            self.uv_corners = [(u0, v0), (u1, v0), (u1, v1), (u0, v1)]
+
         def uv(c):
-            self.uv = tuple(c.arg_f32(i) for i in range(4))
+            set_rect(*(c.arg_f32(i) for i in range(4)))
+
+        def uv_point(c):
+            self.uv_corners[c.arg_u32(0)] = (c.arg_f32(1), c.arg_f32(2))
 
         def atlas(c):
             grid = c.arg_u32(0)
             frame = c.arg_u32(1)
-            self.uv = (
+            set_rect(
                 (frame % grid) / grid,
                 (frame // grid) / grid,
                 (frame % grid + 1) / grid,
@@ -100,9 +112,24 @@ class _NativeDraws:
         hook(0xC4, bind)
         hook(0x100, uv)
         hook(0x104, atlas)
+        hook(0x10C, uv_point)
         hook(0x114, color)
         hook(0xFC, angle)
         hook(0x11C, quad)
+
+        def quad_points(c):
+            self.quads.append(
+                {
+                    "texture": self.texture,
+                    "uv": self.uv,
+                    "points": tuple(c.arg_f32(i) for i in range(8)),
+                    "uvs": tuple(self.uv_corners),
+                    "rgba": self.color,
+                    "caller": hex(c.return_address),
+                },
+            )
+
+        hook(0x138, quad_points)
         vtable = oracle.alloc(0x400, data=struct.pack("<256I", *slots))
         oracle.write_u32("grim_interface_ptr", oracle.alloc(0x10, data=struct.pack("<I", vtable)))
         oracle.stub("perk_count_get", 0)
@@ -125,9 +152,23 @@ class _NativeDraws:
             oracle.write_u32(name, handle)
         oracle.write_u8("config_flame_glow_enabled", 1)
 
-    def render(self, projectiles, *, elapsed_ms=0, secondaries=()):
+    def render(self, projectiles, *, elapsed_ms=0, secondaries=(), creatures=()):
         o = self.oracle
         o.write("projectile_pool", bytes(96 * PROJECTILE_STRIDE))
+        o.write("creature_pool", bytes(CREATURE_POOL_SLOTS * CREATURE_STRIDE))
+        for index, creature in creatures:
+            p = o.resolve("creature_pool") + index * CREATURE_STRIDE
+            values = {
+                "active": int(creature.active),
+                "death_timer": creature.death_timer,
+                "pos_x": creature.pos.x,
+                "pos_y": creature.pos.y,
+                "health": creature.hp,
+                "size": creature.size,
+            }
+            for name, value in values.items():
+                offset, fmt = CREATURE_LAYOUT[name]
+                o.write(p + offset, struct.pack("<" + fmt, value))
         o.write("secondary_projectile_pool", bytes(64 * SECONDARY_PROJECTILE_STRIDE))
         o.write_u32("run_elapsed_ms", elapsed_ms)
         o.write_u32("quest_spawn_timeline", elapsed_ms)
@@ -225,10 +266,21 @@ def _render_projectiles(ctx):
 
 
 def _port_draws(
-    mocker, projectiles, *, elapsed_ms=0, secondaries=(), textures=(103, 104), render=_render_projectiles, preserve_bugs=True,
+    mocker,
+    projectiles,
+    *,
+    elapsed_ms=0,
+    secondaries=(),
+    creatures=(),
+    textures=(103, 104),
+    render=_render_projectiles,
+    preserve_bugs=True,
 ):
     draws = _Draws(mocker)
     state = GameplayState(preserve_bugs=preserve_bugs)
+    creature_pool = CreaturePool()
+    for index, creature in creatures:
+        creature_pool.entries[index] = creature
     for index, proj in enumerate(projectiles):
         if proj is not None:
             state.projectiles.entries[index] = proj
@@ -240,7 +292,7 @@ def _port_draws(
         ground=None,
         state=state,
         players=[],
-        creatures=CreaturePool(),
+        creatures=creature_pool,
         resources=cast(Any, _Resources()),
         elapsed_ms=elapsed_ms,
         bonus_anim_phase=0,
@@ -280,7 +332,7 @@ def _native_sprites(native_draws, projectiles, *, elapsed_ms=0, secondaries=(), 
             "angle": math.degrees(q["angle"]),
         }
         for q in native_draws.render(projectiles, elapsed_ms=elapsed_ms, secondaries=secondaries)
-        if q["texture"] in textures and q["xywh"][2] > 1e-3 and q["rgba"][3] > 1e-3
+        if q["texture"] in textures and "xywh" in q and q["xywh"][2] > 1e-3 and q["rgba"][3] > 1e-3
     ]
 
 
@@ -529,3 +581,64 @@ def test_rewrite_detonation_flash_draws_the_soft_glow_cell(mocker, native_draws,
         assert actual["center"] == pytest.approx(
             (expected["xywh"][0] + expected["xywh"][2] / 2, expected["xywh"][1] + expected["xywh"][3] / 2), abs=1e-4,
         )
+
+
+def _port_arc_quads(mocker, projectiles, creatures, *, preserve_bugs):
+    _port_draws(mocker, projectiles, creatures=creatures, preserve_bugs=preserve_bugs)
+    # `_Draws` leaves the immediate-mode calls patched with mocks.
+    points = [call.args for call in cast(Any, world_projectiles.rl.rl_vertex2f).call_args_list]
+    uvs = [call.args for call in cast(Any, world_projectiles.rl.rl_tex_coord2f).call_args_list]
+    assert len(points) == len(uvs)
+    assert len(points) % 4 == 0
+    return [(points[i : i + 4], uvs[i : i + 4]) for i in range(0, len(points), 4)]
+
+
+def _native_arc_quads(native_draws, projectiles, creatures):
+    quads = [q for q in native_draws.render(projectiles, creatures=creatures) if "points" in q and q["texture"] == 103]
+    return [([q["points"][i : i + 2] for i in range(0, 8, 2)], list(q["uvs"])) for q in quads]
+
+
+_ION_TYPES = [ProjectileTemplateId.ION_MINIGUN, ProjectileTemplateId.ION_RIFLE, ProjectileTemplateId.ION_CANNON]
+
+
+def _ion_hit(type_id):
+    projectiles = [Projectile(active=True, type_id=type_id, life_timer=0.2, pos=Vec2(140, 120), origin=Vec2(40, 120), angle=1.0)]
+    creatures = [(1, CreatureState(active=True, pos=Vec2(150, 150), size=50.0, hp=100.0))]
+    return projectiles, creatures
+
+
+@pytest.mark.parametrize("type_id", _ION_TYPES)
+def test_ion_arc_strips_match_original(mocker, native_draws, type_id):
+    projectiles, creatures = _ion_hit(type_id)
+    native = _native_arc_quads(native_draws, projectiles, creatures)
+    port = _port_arc_quads(mocker, projectiles, creatures, preserve_bugs=True)
+    assert len(native) == 2
+    assert len(port) == len(native)
+    for (points, uvs), (expected_points, expected_uvs) in zip(port, native, strict=True):
+        for point, expected in zip(points, expected_points, strict=True):
+            assert point == pytest.approx(expected, abs=1e-3)
+        for uv, expected in zip(uvs, expected_uvs, strict=True):
+            assert uv == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("type_id", _ION_TYPES)
+def test_rewrite_caps_ion_arc_strips_with_glow_halves(mocker, native_draws, type_id):
+    # Each native strip keeps its body; the rewrite adds the glow's left half before
+    # the shot and its right half past the creature, one half-width long each.
+    projectiles, creatures = _ion_hit(type_id)
+    native = _native_arc_quads(native_draws, projectiles, creatures)
+    port = _port_arc_quads(mocker, projectiles, creatures, preserve_bugs=False)
+    assert len(port) == 3 * len(native)
+    for strip, (expected_points, expected_uvs) in enumerate(native):
+        (body, body_uvs), (head, head_uvs), (tail, tail_uvs) = port[3 * strip : 3 * strip + 3]
+        for point, expected in zip(body, expected_points, strict=True):
+            assert point == pytest.approx(expected, abs=1e-3)
+        assert body_uvs == pytest.approx(expected_uvs)
+        half_width = math.dist(body[0], body[1]) / 2
+        assert head[3] == pytest.approx(body[0]) and head[2] == pytest.approx(body[1])
+        assert tail[0] == pytest.approx(body[3]) and tail[1] == pytest.approx(body[2])
+        assert math.dist(head[0], head[3]) == pytest.approx(half_width)
+        assert math.dist(tail[0], tail[3]) == pytest.approx(half_width)
+        assert [u for u, _ in head_uvs] == pytest.approx([0.5, 0.5, 0.625, 0.625])
+        assert [u for u, _ in tail_uvs] == pytest.approx([0.625, 0.625, 0.75, 0.75])
+        assert [v for _, v in head_uvs] == [v for _, v in tail_uvs] == pytest.approx([0.0, 0.25, 0.25, 0.0])

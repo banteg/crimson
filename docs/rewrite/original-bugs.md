@@ -891,3 +891,29 @@ Evidence: `decomp/1.9/crimsonland/crimsonland/bonus_render.cpp` (the detonation
 loop), the detonation flashes of the 1.4.0 and 1.8.7 builds in
 `game_bins/crimsonland/`, captures of 1.9.93 on Windows showing the atlas in the
 flash, and `tests/native_oracle/test_projectile_render.py`.
+
+## 36) Ion chain arcs end in a hard cut
+
+Native behavior:
+
+- After an ion shot hits, `projectile_render` draws two strips from it to each
+  creature in reach (half-widths 10 and 14 times the weapon's effect scale), then
+  the ion glow on that creature at 32 times the scale.
+- Each strip maps the glow's centre column across its width, so the full glow
+  profile runs unchanged to the creature's centre and stops in a straight cut.
+- The creature glow is narrower than the strips and half their combined
+  brightness, so the cut shows across the creature, worst on the Ion Cannon.
+
+Why it's likely a bug:
+
+- The strips and the creature glow are cut from the same round glow, which
+  suggests a soft arc that fades out at the creature.
+
+Rewrite behavior:
+
+- Default: each strip gets end caps cut from the glow's halves, one
+  half-width long, so the arc closes in a round, seamless end.
+- `--preserve-bugs`: the strips stop in a straight cut, as native.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (the
+`creature_find_in_radius` loop) and `tests/native_oracle/test_projectile_render.py`.
