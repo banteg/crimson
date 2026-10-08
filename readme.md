@@ -15,7 +15,7 @@
 
 ## Play
 
-**In your browser**: [crimson.land/play](https://crimson.land/play/) runs the original game, compiled from the recovered source, with nothing to install. Saves stay in the browser, and it plays with a keyboard and mouse or a gamepad. Runs there don't count for the leaderboard yet.
+**In your browser**: [crimson.land/play](https://crimson.land/play/) runs the original game, compiled from the recovered source, with nothing to install. Saves stay in the browser, and it plays with a keyboard and mouse or a gamepad. Tick Ranked in its Play Game menu to play for the leaderboard.
 
 **Installed**, with ranked play: install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
