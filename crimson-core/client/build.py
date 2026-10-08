@@ -2,12 +2,16 @@
 
 --target native links a desktop executable against SDL3 (build/app/crimson).
 --target web builds the same host with Emscripten (build/web/index.html).
+--package also lays out what ships in build/dist: a macOS app bundle or a
+Linux folder carrying SDL3, or the web page's three files.
 Requires the game module (build.py --target game) and wabt's wasm2c.
 """
 
 import argparse
 import concurrent.futures
 import os
+import plistlib
+import re
 import shutil
 import subprocess
 import sys
@@ -51,11 +55,56 @@ def compile_all(jobs):
     return [job[job.index("-o") + 1] for job in jobs]
 
 
+def package(out, web):
+    dist = CORE / "build/dist"
+    shutil.rmtree(dist, ignore_errors=True)
+    if web:
+        (dist / "web").mkdir(parents=True)
+        for name in ("index.html", "index.js", "index.wasm"):
+            shutil.copy2(out / name, dist / "web" / name)
+        return dist / "web"
+    libdir = Path(pkg_config("--variable=libdir")[0])
+    if sys.platform == "darwin":
+        app = dist / "Crimsonland.app/Contents"
+        (app / "MacOS").mkdir(parents=True)
+        (app / "Frameworks").mkdir()
+        binary = app / "MacOS/crimson"
+        shutil.copy2(out / "crimson", binary)
+        linked = subprocess.check_output([tool("otool"), "-L", str(binary)], text=True)
+        sdl = re.search(r"^\s+(\S*libSDL3[^ ]*\.dylib)", linked, re.MULTILINE)[1]
+        shutil.copy2(libdir / Path(sdl).name, app / "Frameworks")
+        rpath = f"@executable_path/../Frameworks/{Path(sdl).name}"
+        subprocess.run([tool("install_name_tool"), "-change", sdl, rpath, str(binary)], check=True)
+        (app / "Info.plist").write_bytes(
+            plistlib.dumps(
+                {
+                    "CFBundleExecutable": "crimson",
+                    "CFBundleIdentifier": "land.crimson.client",
+                    "CFBundleName": "Crimsonland",
+                    "CFBundlePackageType": "APPL",
+                    "NSHighResolutionCapable": True,
+                },
+            ),
+        )
+        subprocess.run(
+            [tool("codesign"), "--force", "--deep", "--sign", "-", str(dist / "Crimsonland.app")],
+            check=True,
+        )
+        return dist / "Crimsonland.app"
+    folder = dist / "crimsonland"
+    folder.mkdir(parents=True)
+    shutil.copy2(out / "crimson", folder)
+    for library in libdir.glob("libSDL3.so*"):
+        shutil.copy2(library, folder, follow_symlinks=False)
+    return folder
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", choices=["native", "web"], default="native")
     parser.add_argument("--out", type=Path)
     parser.add_argument("--skip-game", action="store_true", help="Reuse the built game module")
+    parser.add_argument("--package", action="store_true", help="Lay out a distributable build in build/dist")
     args = parser.parse_args()
     out = (args.out or CORE / "build" / {"native": "app", "web": "web"}[args.target]).resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -102,10 +151,11 @@ def main():
             str(out / "index.html"),
         ]
     else:
-        system = ["-framework", "OpenGL"] if sys.platform == "darwin" else ["-lGL"]
+        # Linux finds a packaged SDL3 beside the executable.
+        system = ["-framework", "OpenGL"] if sys.platform == "darwin" else ["-lGL", "-Wl,-rpath,$ORIGIN"]
         link = [cxx, *objects, *pkg_config("--libs"), *system, "-o", str(out / "crimson")]
     subprocess.run(link, check=True)
-    print(out / ("index.html" if web else "crimson"))
+    print(package(out, web) if args.package else out / ("index.html" if web else "crimson"))
 
 
 if __name__ == "__main__":

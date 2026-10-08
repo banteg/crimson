@@ -213,10 +213,15 @@ its workarounds are already solved.
 
 ```sh
 uv run python crimson-core/client/build.py      # game module, wasm2c, SDL3 host
-crimson-core/build/app/crimson <game directory>
+crimson-core/build/app/crimson [game directory]
 ```
 
-It needs wabt's `wasm2c`, SDL3 and the original game directory. For
+It needs wabt's `wasm2c`, SDL3 and the original game files. Without a
+directory the client uses the folder chosen last time, or asks for the one
+Crimsonland is installed in. `--package` lays out what ships in `build/dist`:
+a macOS app bundle or a Linux folder carrying SDL3, or the web page's files;
+[`client.yml`](../.github/workflows/client.yml) builds all three on every
+change. For
 unattended runs, `CRIMSON_CAPTURE=<dir>` with `CRIMSON_CAPTURE_FRAMES=n,...`
 saves those frames' back buffers and quits, and `CRIMSON_INPUT` scripts the
 mouse and keys; such a run keeps a fixed 60 Hz clock, so it repeats
@@ -249,8 +254,8 @@ no cross-origin isolation.
 | 4. Audio | DirectSound mixed in the module, vorbisfile over stb_vorbis; the host plays the pulled mix | Done ([#554](https://github.com/banteg/crimson/pull/554)) |
 | 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates with the game files and audio loaded | Done ([#555](https://github.com/banteg/crimson/pull/555)) |
 | 6. Verifier convergence | Dropped: the verifier stays its own artifact and holds every client build to it ([Packaging](#packaging)) | |
-| 7. Product parity | Gamepads as the original's joystick; the web client takes the player's own game folder | This change |
-| 8. Distribution | CI builds of the native and web clients; packaged desktop builds; the hosted web build | |
+| 7. Product parity | Gamepads as the original's joystick; the web client takes the player's own game folder | Done ([#556](https://github.com/banteg/crimson/pull/556)) |
+| 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client finds the game folder; next, a Windows host (the WASI layer is POSIX), signing, and hosting the web build | This change |
 | 9. Ranked play from the client | `.crd` replays, the leaderboard's signed upload, replay browsing | |
 
 ## Acceptance gates

@@ -1,5 +1,6 @@
 // The client: an SDL3 window running the game module one frame per callback.
-// Usage: crimson [game directory], defaulting to the current directory.
+// Usage: crimson [game directory]. Without one it uses the folder chosen last
+// time, or asks for the folder that holds the game's files.
 #define SDL_MAIN_USE_CALLBACKS
 #include "client.h"
 #include <SDL3/SDL.h>
@@ -274,9 +275,73 @@ void w2c_host_present(struct w2c_host *) {
 }
 }
 
+bool started;
+bool start_game() {
+  wasm_rt_init();
+  client_wasi_init();
+  wasm2c_game_instantiate(&game, &host, &wasi);
+  w2c_game_0x5Finitialize(&game);
+  started = true;
+  return w2c_game_game_start(&game);
+}
+
+#ifndef __EMSCRIPTEN__
+// The game directory the player chose, remembered between launches.
+std::string remembered() {
+  char *pref = SDL_GetPrefPath("crimson", "crimsonland");
+  std::string path = std::string(pref ? pref : "") + "game-directory";
+  SDL_free(pref);
+  return path;
+}
+bool has_game_files(const std::string &directory) {
+  return SDL_GetPathInfo((directory + "/grim.dll").c_str(), nullptr);
+}
+// The folder dialog answers on its own thread; the main loop takes the answer.
+SDL_AtomicInt answered;
+std::string chosen;
+void choose_folder();
+void on_folder(void *, const char *const *files, int) {
+  chosen = files && files[0] ? files[0] : "";
+  SDL_SetAtomicInt(&answered, 1);
+}
+void choose_folder() {
+  SDL_SetAtomicInt(&answered, 0);
+  SDL_ShowOpenFolderDialog(on_folder, nullptr, window, nullptr, false);
+}
+
+
+// Until the game directory is known.
+SDL_AppResult wait_for_folder() {
+  if (!SDL_GetAtomicInt(&answered)) {
+    SDL_Delay(16);
+    return SDL_APP_CONTINUE;
+  }
+  if (chosen.empty())
+    return SDL_APP_SUCCESS;
+  if (!has_game_files(chosen)) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Crimsonland",
+                             "That folder has no grim.dll. Choose the folder Crimsonland is installed in.", window);
+    choose_folder();
+    return SDL_APP_CONTINUE;
+  }
+  game_directory = chosen;
+  if (SDL_IOStream *file = SDL_IOFromFile(remembered().c_str(), "w")) {
+    SDL_WriteIO(file, chosen.data(), chosen.size());
+    SDL_CloseIO(file);
+  }
+  return start_game() ? SDL_APP_CONTINUE : SDL_APP_FAILURE;
+}
+#endif
+
 SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   if (argc > 1)
     game_directory = argv[1];
+#ifndef __EMSCRIPTEN__
+  else if (size_t size; char *saved = (char *)SDL_LoadFile(remembered().c_str(), &size)) {
+    game_directory.assign(saved, size);
+    SDL_free(saved);
+  }
+#endif
   if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMEPAD))
     client_fatal(SDL_GetError());
 #ifdef __EMSCRIPTEN__
@@ -298,17 +363,18 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   SDL_StartTextInput(window);
   renderer_init();
   audio_init();
-
-  wasm_rt_init();
-  client_wasi_init();
-  wasm2c_game_instantiate(&game, &host, &wasi);
-  w2c_game_0x5Finitialize(&game);
-  if (!w2c_game_game_start(&game))
-    return SDL_APP_FAILURE;
-  return SDL_APP_CONTINUE;
+#ifndef __EMSCRIPTEN__
+  if (!has_game_files(game_directory)) {
+    choose_folder();
+    return SDL_APP_CONTINUE;
+  }
+#endif
+  return start_game() ? SDL_APP_CONTINUE : SDL_APP_FAILURE;
 }
 
 SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
+  if (!started && event->type != SDL_EVENT_GAMEPAD_ADDED && event->type != SDL_EVENT_GAMEPAD_REMOVED)
+    return event->type == SDL_EVENT_QUIT ? SDL_APP_SUCCESS : SDL_APP_CONTINUE;
   switch (event->type) {
   case SDL_EVENT_QUIT:
     w2c_game_game_close(&game);
@@ -384,6 +450,10 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
 }
 
 SDL_AppResult SDL_AppIterate(void *) {
+#ifndef __EMSCRIPTEN__
+  if (!started)
+    return wait_for_folder();
+#endif
   // The window cursor, in back-buffer pixels, reaches DirectInput as motion.
   float x, y;
   SDL_GetMouseState(&x, &y);

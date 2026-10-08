@@ -1,0 +1,116 @@
+name: Crimson client
+
+# The client compiles the whole recovered game, so the decompiled sources count.
+on:
+  push:
+    branches:
+      - "master"
+    paths:
+      - "crimson-core/**"
+      - "decomp/**"
+      - "third_party/**"
+      - "tools/match/include/**"
+      - "tools/native/data_definitions/**"
+      - ".github/workflows/client.yml"
+  pull_request:
+    paths:
+      - "crimson-core/**"
+      - "decomp/**"
+      - "third_party/**"
+      - "tools/match/include/**"
+      - "tools/native/data_definitions/**"
+      - ".github/workflows/client.yml"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  WABT_VERSION: "1.0.42"
+  SDL_VERSION: "3.4.18"
+  EMSDK_VERSION: "6.0.10"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  client:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: web
+            os: ubuntu-latest
+            target: web
+            wabt: linux-x64
+          - name: linux
+            os: ubuntu-latest
+            target: native
+            wabt: linux-x64
+          - name: macos
+            os: macos-latest
+            target: native
+            wabt: macos-arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen --group dev
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: "0.17.0"
+
+      - name: Install wabt
+        run: |
+          curl -sSfL "https://github.com/WebAssembly/wabt/releases/download/${WABT_VERSION}/wabt-${WABT_VERSION}-${{ matrix.wabt }}.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/wabt-${WABT_VERSION}/bin" >> "$GITHUB_PATH"
+
+      - name: Setup Emscripten
+        if: matrix.target == 'web'
+        uses: mymindstorm/setup-emsdk@v16
+        with:
+          version: ${{ env.EMSDK_VERSION }}
+
+      - name: Install SDL3
+        if: matrix.os == 'macos-latest'
+        run: brew install sdl3 pkg-config
+
+      # Ubuntu has no SDL3 package yet: build the release with its X11, Wayland
+      # and audio backends.
+      - name: Build SDL3
+        if: matrix.name == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build libgl-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+            libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libwayland-dev wayland-protocols libdecor-0-dev libasound2-dev \
+            libpulse-dev libpipewire-0.3-dev libudev-dev libdbus-1-dev
+          curl -sSfL "https://github.com/libsdl-org/SDL/releases/download/release-${SDL_VERSION}/SDL3-${SDL_VERSION}.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          cmake -S "$RUNNER_TEMP/SDL3-${SDL_VERSION}" -B "$RUNNER_TEMP/sdl-build" -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/sdl" -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF
+          cmake --build "$RUNNER_TEMP/sdl-build"
+          cmake --install "$RUNNER_TEMP/sdl-build"
+          echo "PKG_CONFIG_PATH=$RUNNER_TEMP/sdl/lib/pkgconfig" >> "$GITHUB_ENV"
+
+      - name: Build the client
+        run: uv run --no-sync python crimson-core/client/build.py --target ${{ matrix.target }} --package
+
+      # An artifact drops file modes: a tarball keeps the executables runnable.
+      - name: Archive the build
+        run: tar -C crimson-core/build/dist -czf "crimsonland-${{ matrix.name }}.tar.gz" .
+
+      - name: Upload the build
+        uses: actions/upload-artifact@v4
+        with:
+          name: crimsonland-${{ matrix.name }}
+          path: crimsonland-${{ matrix.name }}.tar.gz
