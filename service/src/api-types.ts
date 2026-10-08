@@ -118,6 +118,7 @@ export interface RunDetailView {
     experience: number;
     health: number;
     pending_perks: number;
+    most_used_weapon_id: number;
   };
   timeline: Timeline | null;
   top: { id: string; name: string; score: number } | null;

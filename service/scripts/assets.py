@@ -48,7 +48,11 @@ def main() -> None:
     }
     for name, art in outputs.items():
         art.save(OUT / name, optimize=True)
-    small_font(image("load/smallWhite.tga"), entries["load/smallFnt.dat"]).save(OUT / "small.woff2")
+    # The site's pages read the WOFF2; the Worker's preview cards (src/card.ts) render with the TrueType.
+    font = small_font(image("load/smallWhite.tga"), entries["load/smallFnt.dat"])
+    font.save(OUT / "small.ttf")
+    font.flavor = "woff2"
+    font.save(OUT / "small.woff2")
     print(f"wrote {len(outputs)} images and the small font to {OUT}")
 
 
@@ -96,11 +100,10 @@ def small_font(sheet: Image.Image, widths: bytes):
     builder.setupGlyf(glyphs)
     builder.setupHorizontalMetrics(advances)
     builder.setupHorizontalHeader(ascent=BASELINE_ROW * PIXEL, descent=-(CELL - BASELINE_ROW) * PIXEL)
-    builder.setupNameTable({"familyName": "Crimson Small", "styleName": "Regular"})
+    builder.setupNameTable({"familyName": "Crimson Small", "styleName": "Regular", "fullName": "Crimson Small", "psName": "CrimsonSmall-Regular"})
     builder.setupOS2(sTypoAscender=BASELINE_ROW * PIXEL, sTypoDescender=-(CELL - BASELINE_ROW) * PIXEL, sTypoLineGap=0,
                      usWinAscent=BASELINE_ROW * PIXEL, usWinDescent=(CELL - BASELINE_ROW) * PIXEL)
     builder.setupPost()
-    builder.font.flavor = "woff2"
     return builder.font
 
 

@@ -138,6 +138,21 @@ describe("runs", () => {
     expect(await (await SELF.fetch(`${ORIGIN}/runs/${id}`)).text()).toContain(`<title>${fingerprint} · Survival · crimson.land</title>`);
   });
 
+  it("a shared run's link previews what happened, over its card", async () => {
+    const player = await Player.create();
+    const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
+    const html = await (await SELF.fetch(`${ORIGIN}/runs/${id}`)).text();
+    expect(html).toMatch(/<meta property="og:description" content="banteg survived \d+:\d\d for [\d,]+ xp, #1 on the board\. [\d,]+ kills/);
+    expect(html).toContain(`<meta property="og:image" content="${ORIGIN}/runs/${id}.png">`);
+    expect(html).toContain('<meta name="twitter:card" content="summary_large_image">');
+
+    const card = await SELF.fetch(`${ORIGIN}/runs/${id}.png`);
+    expect(card.headers.get("content-type")).toBe("image/png");
+    const header = new DataView(await card.arrayBuffer());
+    expect([header.getUint32(16), header.getUint32(20)]).toEqual([1200, 630]);
+    expect((await SELF.fetch(`${ORIGIN}/runs/${"0".repeat(64)}.png`)).status).toBe(404);
+  });
+
   it("a timeline goes with its run: hidden runs and deleted accounts have none", async () => {
     const player = await Player.create();
     const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
