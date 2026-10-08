@@ -10,6 +10,7 @@ from crimson.replay import ReplayRecorder, dump_replay_file
 from crimson.replay.input_codec import pack_tick
 from crimson.replay.library import replay_file_name
 from crimson.replay.types import REPLAY_RULES
+from crimson.screens.high_scores_view.records import _with_online
 from crimson.screens.high_scores_view.watch import WatchTarget, local_watch_target
 from crimson.sim.run_spec import RunSpec
 from tests.support.factories import player_input
@@ -47,3 +48,21 @@ def test_a_rows_replay_plays_or_says_why_not(tmp_path: Path) -> None:
     missing = local_watch_target(tmp_path, _record(5))
     assert missing is not None and missing.replay is None and missing.note == "Its replay was not saved"
     assert local_watch_target(tmp_path, _record(0)) is None
+
+
+def test_each_board_row_keeps_its_own_run_and_a_local_run_on_the_board_takes_its_id() -> None:
+    def received(run: str) -> HighScoreRecord:
+        record = HighScoreRecord.blank(rand_value=0)
+        record.set_name("twin")
+        record.run = run
+        return record
+
+    local = HighScoreRecord.blank(rand_value=0)
+    local.set_name("twin")
+    local.replay_number = 4
+
+    merged = _with_online([local], [received("a" * 64), received("b" * 64)])
+
+    # The local run takes the first board row's id and keeps its own replay; the other board row stays.
+    assert [(record.replay_number, record.run) for record in merged] == [(4, "a" * 64), (0, "b" * 64)]
+    assert local.run == ""
