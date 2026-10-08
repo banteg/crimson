@@ -13,6 +13,7 @@ import {
   config,
   record,
   step,
+  names,
 } from "./engine.mjs";
 
 const out = path.resolve(
@@ -83,10 +84,11 @@ const PERK = {
   deathClock: 47,
   bandage: 49,
 };
+const PERK_COUNTS = names.filter((n) => n.startsWith("players[0].perk_counts[")).length;
 // FIRE_BULLETS_KEY_DOWN_FLAG in src/crimson/replay/types.py: the G key.
 const G_KEY = 131072;
 
-// `hunt` steers a bot towards fixed behaviour: `prefer` lists perks to pick when offered, `gKey` holds G at times.
+// `hunt` steers a bot towards fixed behaviour: `prefer` lists perks to pick when offered, most wanted first; `gKey` holds G at times.
 function play(cfg, bot, limit, scheme, hunt = {}) {
   init(e, cfg);
   const records = [],
@@ -201,7 +203,7 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
         let choice = 0;
         if (hunt.prefer) {
           const offered = [0, 1, 2, 3, 4].map((i) => u(`globals.perk_choice_ids[${i}]`));
-          choice = Math.max(0, offered.findIndex((id) => hunt.prefer.includes(id)));
+          choice = Math.max(0, offered.indexOf(hunt.prefer.find((id) => offered.includes(id))));
         }
         if (bot === 4) {
           while (
@@ -210,14 +212,7 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
           )
             choice++;
         }
-        commands =
-          bot === 4
-            ? [
-                [1, choice],
-                [1, 0],
-              ]
-            : [[1, 0]];
-        coverage.perks.add(u(`globals.perk_choice_ids[${choice}]`));
+        commands = bot === 4 ? [[1, choice], [1, 0]] : [[1, choice]];
         pickNext = false;
       } else {
         commands = [[2, 0]];
@@ -226,6 +221,9 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
       }
     }
     coverage.max_commands = Math.max(coverage.max_commands, commands.length);
+    // Coverage names the perks the step applied, read from the counts it raised.
+    const perkCounts = () => Array.from({ length: PERK_COUNTS }, (_, i) => u(`players[0].perk_counts[${i}]`));
+    const countsBefore = commands.length && perkCounts();
     const reload = bot && tick % 137 === 0;
     coverage.reload += Number(reload);
     const [wx, wy] = target ?? [x, y - 60];
@@ -256,6 +254,10 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
     if (!step(e, r)) throw Error(`Bot rejected tick ${tick} in mode ${mode}`);
     records.push(r);
     final = summary();
+    if (countsBefore)
+      perkCounts().forEach((count, id) => {
+        if (count > countsBefore[id]) coverage.perks.add(id);
+      });
     if (terminal.has(final.pending)) {
       // The run-down: the game simulates until its UI timeline runs out, then refuses input.
       const idle = record(encodeControls(scheme, { ...view, moving: false }));
@@ -347,7 +349,7 @@ const scenarios = [
   ["survival-command-batches", [1, 1, 1, { seed: 1337 }], 4, 30000, MOUSE],
   [
     "survival-hunt-jinxed",
-    [1, 1, 1, { seed: 7 }],
+    [1, 1, 1, { seed: 28 }],
     2,
     30000,
     PAD,
@@ -355,12 +357,13 @@ const scenarios = [
   ],
   [
     "survival-hunt-highlander",
-    [1, 1, 1, { seed: 10 }],
+    [1, 1, 1, { seed: 106 }],
     2,
     30000,
     MOUSE,
     {
-      prefer: [PERK.highlander, PERK.deathClock, PERK.regeneration, PERK.greaterRegeneration, PERK.bandage],
+      // Death Clock comes last: once owned, the game stops offering the Regenerations.
+      prefer: [PERK.highlander, PERK.regeneration, PERK.greaterRegeneration, PERK.bandage, PERK.deathClock],
     },
   ],
   ["survival-relative-keyboard", [1, 1, 1, { seed: 21 }], 2, 30000, { move: MOVE.relative, aim: AIM.keyboard }],
