@@ -32,6 +32,7 @@ DECOMP_DIRS = (
     "third_party/",
     "analysis/",
 )
+SERVICE_DIRS = ("service/",)
 SHARED_FILES = ("pyproject.toml", "uv.lock", "scripts/ci_changed_paths.py")
 DOC_SUFFIXES = {".md", ".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp", ".css"}
 
@@ -49,6 +50,7 @@ def relevant(category: str, paths: list[str]) -> bool:
         "core": (CORE_DIRS, (*SHARED_FILES, ".github/workflows/core.yml")),
         "client": (CLIENT_DIRS, ("scripts/ci_changed_paths.py", ".github/workflows/client.yml")),
         "decomp": (DECOMP_DIRS, (*SHARED_FILES, ".github/workflows/decomp.yml")),
+        "service": (SERVICE_DIRS, ("scripts/ci_changed_paths.py", ".github/workflows/service.yml")),
     }[category]
     return any(path in files or path.startswith(directories) for path in paths)
 
@@ -58,7 +60,7 @@ def changed_paths(base: str) -> list[str]:
     if git is None:
         raise RuntimeError("git is required to classify CI paths")
     result = subprocess.run(
-        [git, "diff", "--name-only", "-z", base, "HEAD"],
+        [git, "diff", "--name-only", "--no-renames", "-z", base, "HEAD"],
         check=True,
         capture_output=True,
     )
@@ -67,7 +69,7 @@ def changed_paths(base: str) -> list[str]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("category", choices=("docs-only", "core", "client", "decomp"))
+    parser.add_argument("category", choices=("docs-only", "core", "client", "decomp", "service"))
     parser.add_argument("--base", required=True)
     args = parser.parse_args()
     print(str(relevant(args.category, changed_paths(args.base))).lower())
