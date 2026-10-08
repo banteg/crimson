@@ -38,7 +38,9 @@ function slideOut(panels: Shown[]): number {
   return panels.length ? SLIDE_MS + (panels.length - 1) * STAGGER_MS : 0;
 }
 
-const MENU: { label: string; href: string; on: (path: string) => boolean }[] = [
+// Play leaves the site's app for the game's own page.
+const MENU: { label: string; href: string; native?: boolean; on: (path: string) => boolean }[] = [
+  { label: "Play", href: "/play/", native: true, on: () => false },
   { label: "Survival", href: "/boards/survival", on: (path) => path === "/boards/survival" },
   { label: "Quests", href: "/quests/1", on: (path) => /^\/(?:boards\/)?quests/.test(path) },
   { label: "About", href: "/about", on: (path) => path === "/about" },
@@ -123,7 +125,7 @@ function App() {
       </For>
       <header>
         <nav class="menu buttons">
-          <For each={MENU}>{(item) => <GameButton label={item.label} href={item.href} on={item.on(path())} />}</For>
+          <For each={MENU}>{(item) => <GameButton label={item.label} href={item.href} native={item.native} on={item.on(path())} />}</For>
           <Show when={me()}>{(id) => <GameButton label="Profile" href={`/players/${id()}`} on={path() === `/players/${id()}`} />}</Show>
         </nav>
         <a class="sign" href="/">

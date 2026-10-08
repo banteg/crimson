@@ -10,6 +10,10 @@ import { boardTitle, boardView, gameScores, joinView, players, profileView, ques
 // HTTPS, and browsers are told to stay there. Plain-HTTP localhost stays for wrangler dev.
 const HSTS = "max-age=31536000; includeSubDomains";
 const QUEST = /^[1-5]\.(?:[1-9]|10)$/;
+// The game's files the playable game loads, from the version the bucket keeps them under; the page keeps them in the
+// player's browser after the first visit (crimson-core/client/web/shell.html).
+const GAME_FILES = new Set(["grim.dll", "crimson.paq", "sfx.paq", "music.paq"]);
+const GAME_VERSION = "v1.9.93";
 // The game's high score tables hold 100 records (TABLE_MAX).
 const SCORES_LIMIT = 100;
 
@@ -82,6 +86,22 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   }
   if (route === "GET /api/me") return json({ account: await sessionAccount(request, env) });
 
+  // The playable game: its page, built from crimson-core/client into dist/play/, and the game's files.
+  if (route === "GET /play") return Response.redirect(new URL("/play/", url).toString(), 301);
+  if (route === "GET /play/") {
+    // Staged by `npm run play`; a build without it has no game page.
+    const page = await env.ASSETS.fetch(request);
+    if (!page.ok) return page;
+    return withPreview(page, url, "Play · crimson.land", "Crimsonland in the browser: the original game, recovered from its executable.");
+  }
+  if ((match = /^GET \/play\/game\/(.+)$/.exec(route))) {
+    const file = GAME_FILES.has(match[1]!) && (await env.GAME_FILES.get(`${GAME_VERSION}/${match[1]}`));
+    if (!file) return new Response("No such game file.", { status: 404 });
+    return new Response(file.body, {
+      headers: { "content-type": "application/octet-stream", etag: file.httpEtag, "cache-control": "public, max-age=86400" },
+    });
+  }
+
   // Pages the server answers itself: the game's login link and replay files.
   if ((match = /^GET \/login\/([0-9a-f]{64})$/.exec(route))) return getLogin(request, env, match[1]!);
   if ((match = /^GET \/runs\/([0-9a-f]{64})\.crd$/.exec(route))) {
@@ -144,7 +164,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
 
   // The site: its files, else its page with the route's title and preview tags.
   // Quest routes end in ".1" and such, so only real file extensions count as files.
-  if (/\.(?:js|css|png|svg|ico|woff2|txt|map|webmanifest)$/i.test(url.pathname)) return env.ASSETS.fetch(request);
+  if (/\.(?:js|css|png|svg|ico|woff2|txt|map|webmanifest|wasm)$/i.test(url.pathname)) return env.ASSETS.fetch(request);
   return shell(env, url);
 }
 
@@ -172,8 +192,12 @@ async function routeTitle(env: Env, path: string): Promise<string | null> {
 async function shell(env: Env, url: URL): Promise<Response> {
   const page = await env.ASSETS.fetch(new Request(new URL("/", url)));
   const title = await routeTitle(env, url.pathname);
-  const full = title ? `${title} · crimson.land` : "crimson.land";
   const description = "Verified leaderboards for the Crimsonland port: every score is a replay the server re-simulates.";
+  return withPreview(page, url, title ? `${title} · crimson.land` : "crimson.land", description);
+}
+
+// A page with its title and the preview tags shared links show.
+function withPreview(page: Response, url: URL, full: string, description: string): Response {
   const escape = (text: string) => text.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
   const tags = [
     `<meta name="description" content="${escape(description)}">`,
