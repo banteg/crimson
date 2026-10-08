@@ -31,5 +31,6 @@ def test_filter_change_runs_every_suite(category: str) -> None:
 def test_docs_only_requires_all_paths_to_be_docs() -> None:
     assert relevant("docs-only", ["README.md", "docs/image.png"])
     assert not relevant("docs-only", ["README.md", "src/crimson/game.py"])
+    assert not relevant("docs-only", ["docs/javascripts/weapons-widgets.js"])
     assert not relevant("docs-only", ["tests/fixtures/readme.md"])
     assert not relevant("docs-only", [])

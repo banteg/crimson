@@ -33,13 +33,15 @@ DECOMP_DIRS = (
     "analysis/",
 )
 SHARED_FILES = ("pyproject.toml", "uv.lock", "scripts/ci_changed_paths.py")
+DOC_SUFFIXES = {".md", ".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp", ".css"}
 
 
 def relevant(category: str, paths: list[str]) -> bool:
     """Return whether a changed path requires the named suite."""
     if category == "docs-only":
         return bool(paths) and all(
-            path.startswith("docs/") or (len(PurePosixPath(path).parts) == 1 and path.endswith(".md"))
+            (path.startswith("docs/") and PurePosixPath(path).suffix.lower() in DOC_SUFFIXES)
+            or (len(PurePosixPath(path).parts) == 1 and path.endswith(".md"))
             for path in paths
         )
 
