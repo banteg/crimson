@@ -71,15 +71,20 @@ Both clients keep the original's 72-byte high score record.
   out. Zero is no replay: records saved before this change have none.
 - **A leaderboard row** is not written into the local tables any more. Each
   client keeps the board's latest scores answer in memory for the session; every
-  "Update scores" replaces it whole, so a run that was hidden, banned or deleted disappears at the
+  fetch replaces it whole, so a run that was hidden, banned or deleted disappears at the
   next update and online rows never pile up. The table shows the local records
   and the kept answer's rows together, as the Python port already does; each
   answer row keeps its run id through the sort, and a local record that is on
   the board is marked online by matching it against the kept answer, so the
   mark follows the board too. The web and native client's "Update scores"
   (`game_scores_received`) changes from saving records into the tables to
-  keeping the answer. Nothing online is stored: after a launch, internet rows
-  show once "Update scores" has run, as in the original.
+  keeping the answer. Nothing online is stored.
+- **The screen fetches a board by itself** when it shows one (opening the
+  screen, or switching mode, quest or hardcore) while "Show internet scores" is
+  ticked, once per board per session. These fetches are quiet: no status line,
+  and a failure just leaves the internet rows out. "Update scores" stays as the
+  manual refresh: it sends waiting runs, refetches the shown board and shows the
+  original's status and failure messages.
 - The scores answer gains `run`, the run's id.
 
 ## Service
