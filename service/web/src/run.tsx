@@ -562,7 +562,7 @@ function RunModerationPanel(props: { detail: RunDetailView; reload: () => void }
           <div class="tiles">
             <For each={Object.keys(SIGNAL_LABELS) as SignalName[]}>
               {(name) => (
-                <div class="tile" classList={{ flag: moderation.flagged.includes(name) }}>
+                <div class="tile">
                   <span class="muted">{SIGNAL_LABELS[name]}</span>
                   <b classList={{ flag: moderation.flagged.includes(name) }}>{signals()[name]}</b>
                 </div>

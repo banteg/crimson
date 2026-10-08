@@ -418,49 +418,51 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
           </Show>
           <h3>Runs</h3>
           <Show when={view.runs.length} fallback={<p class="muted">No ranked runs yet.</p>}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Board</th>
-                  <th class="n">Score</th>
-                  <th>Run</th>
-                  <th>Version</th>
-                  <th>Accepted</th>
-                  <th>Replay</th>
-                </tr>
-              </thead>
-              <tbody>
-                <For each={view.runs}>
-                  {(run) => (
-                    <tr>
-                      <td>
-                        <a href={`/boards/${run.board}${run.quest ? `/${run.quest}` : ""}${categoryQuery(run.category)}`}>
-                          {BOARD_NAMES[run.board]} {run.quest}
-                        </a>
-                        <Show when={run.category === "bot"}>
-                          <span class="tag">bot</span>
-                        </Show>
-                      </td>
-                      <td class="n">
-                        <a class="run" href={`/runs/${run.id}`}>
-                          {formatScore(run.board, run.score)}
-                        </a>
-                      </td>
-                      <td>
-                        <a class="run-details" href={`/runs/${run.id}`}>Details →</a>
-                      </td>
-                      <td>{run.game_version}</td>
-                      <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
-                      <td>
-                        <a href={`/runs/${run.id}.crd`} data-native>
-                          .crd
-                        </a>
-                      </td>
-                    </tr>
-                  )}
-                </For>
-              </tbody>
-            </table>
+            <div class="board-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Board</th>
+                    <th class="n">Score</th>
+                    <th>Run</th>
+                    <th>Version</th>
+                    <th>Accepted</th>
+                    <th>Replay</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <For each={view.runs}>
+                    {(run) => (
+                      <tr>
+                        <td>
+                          <a href={`/boards/${run.board}${run.quest ? `/${run.quest}` : ""}${categoryQuery(run.category)}`}>
+                            {BOARD_NAMES[run.board]} {run.quest}
+                          </a>
+                          <Show when={run.category === "bot"}>
+                            <span class="tag">bot</span>
+                          </Show>
+                        </td>
+                        <td class="n">
+                          <a class="run" href={`/runs/${run.id}`}>
+                            {formatScore(run.board, run.score)}
+                          </a>
+                        </td>
+                        <td>
+                          <a class="run-details" href={`/runs/${run.id}`}>Details →</a>
+                        </td>
+                        <td>{run.game_version}</td>
+                        <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
+                        <td>
+                          <a href={`/runs/${run.id}.crd`} data-native>
+                            .crd
+                          </a>
+                        </td>
+                      </tr>
+                    )}
+                  </For>
+                </tbody>
+              </table>
+            </div>
           </Show>
         </>
       ),
