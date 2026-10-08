@@ -202,8 +202,20 @@ for (const r of decode(replay()).records)
   for (let i = 0; i < r.readUInt32LE(20); i++) ++commands[r.readInt32LE(24 + i * 8)];
 // A Survival run plays long enough to pick perks and pause twice.
 if (!quest && (!commands[1] || pauses < 2)) throw Error(`the run picked ${commands[1]} perks and paused ${pauses} times`);
-const saved = fs.readdirSync(path.join(directory, "replays")).map((f) => path.join(directory, "replays", f));
-if (!saved.some((f) => fs.readFileSync(f).equals(replay()))) throw Error("the saved replay differs from the recording");
+// The run's replay, the first numbered one in a fresh game folder, which the Python port reads.
+const saved = fs.readdirSync(path.join(directory, "replays")).filter((name) => /^\d+-[a-z]+\.crd$/.test(name));
+if (saved.join() !== (quest ? "1-quest.crd" : "1-survival.crd")) throw Error(`the replays are ${saved.join(", ")}`);
+const savedPayload = zlib.zstdDecompressSync(fs.readFileSync(path.join(directory, "replays", saved[0])));
+unrankedReasons(savedPayload);
+const savedCrd = unpack(savedPayload);
+requireRecording(savedCrd, "the saved replay");
+if (savedCrd.result.outcome !== (quest ? "quest_completed" : "death")) throw Error(`the saved replay ends in ${savedCrd.result.outcome}`);
+// The module reads its own replay back as the run it recorded.
+const memory = () => Buffer.from(game.memory.buffer);
+memory().write(`replays/${saved[0]}\0`, game.game_replay_path(), "latin1");
+if (!game.game_replay_open()) throw Error("the module cannot play its own replay");
+const reread = memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size());
+if (!reread.equals(replay())) throw Error("the saved replay reads back differently from the recording");
 if (ranked) checkRanked();
 console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses }));
 
@@ -259,14 +271,7 @@ function checkRanked() {
   const spec = crd.run;
   const reasons = unrankedReasons(payload);
   if (reasons) throw Error(`the queued run breaks the ranked rules: ${reasons}`);
-  const recorded = decode(replay());
-  if (crd.ticks.length !== recorded.records.length) throw Error("the queued run's ticks are not the recording's");
-  crd.ticks.forEach(([[input], queuedCommands], i) => {
-    const tick = recorded.records[i];
-    const values = [tick.readFloatLE(0), tick.readFloatLE(4), tick.readFloatLE(8), tick.readFloatLE(12), tick.readUInt32LE(16)];
-    if (input.some((value, j) => value !== values[j]) || queuedCommands.length !== tick.readUInt32LE(20))
-      throw Error(`tick ${i} is not the recording's`);
-  });
+  requireRecording(crd, "the queued run");
   // deriveResult (service/src/verify.ts), from the verifier at the run's last tick.
   state(core);
   const u32 = (name) => field(core, name), i32 = (name) => field(core, name) | 0, f32 = (name) => field(core, name, true);
@@ -294,6 +299,18 @@ function checkRanked() {
   for (const [name, value] of Object.entries(derived))
     if (claimed[name] !== value) throw Error(`result.${name} claims ${claimed[name]}, the verifier derives ${value}`);
 }
+// A replay's ticks are the recording's: each tick's input and its commands.
+function requireRecording(crd, what) {
+  const recorded = decode(replay());
+  if (crd.ticks.length !== recorded.records.length) throw Error(`${what}'s ticks are not the recording's`);
+  crd.ticks.forEach(([[input], tickCommands], i) => {
+    const tick = recorded.records[i];
+    const values = [tick.readFloatLE(0), tick.readFloatLE(4), tick.readFloatLE(8), tick.readFloatLE(12), tick.readUInt32LE(16)];
+    if (input.some((value, j) => value !== values[j]) || tickCommands.length !== tick.readUInt32LE(20))
+      throw Error(`${what}'s tick ${i} is not the recording's`);
+  });
+}
+
 // The canonical msgpack the replay is (service/src/msgpack.ts), as plain values.
 function unpack(bytes) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);

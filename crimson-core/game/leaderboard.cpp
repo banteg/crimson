@@ -1,5 +1,5 @@
-// The leaderboard's digest, envelope and key (leaderboard.h). zstd 1.5.7
-// (compression only) and Monocypher 4.0.2 are vendored in vendor/.
+// The leaderboard's digest, envelope and key (leaderboard.h). zstd 1.5.7 and
+// Monocypher 4.0.2 are vendored in vendor/.
 #include "leaderboard.h"
 #include <stdio.h>
 #include <string.h>
@@ -73,6 +73,17 @@ std::vector<uint8_t> zstd_pack(const std::vector<uint8_t> &payload) {
   std::vector<uint8_t> out(ZSTD_compressBound(payload.size()));
   size_t size = ZSTD_compress(out.data(), out.size(), payload.data(), payload.size(), 9);
   out.resize(ZSTD_isError(size) ? 0 : size);
+  return out;
+}
+
+std::vector<uint8_t> zstd_unpack(const uint8_t *data, size_t size, size_t max_size) {
+  unsigned long long content = ZSTD_getFrameContentSize(data, size);
+  if (content == ZSTD_CONTENTSIZE_UNKNOWN || content == ZSTD_CONTENTSIZE_ERROR || content > max_size)
+    return {};
+  std::vector<uint8_t> out(content);
+  size_t unpacked = ZSTD_decompress(out.data(), out.size(), data, size);
+  if (ZSTD_isError(unpacked) || unpacked != content)
+    return {};
   return out;
 }
 

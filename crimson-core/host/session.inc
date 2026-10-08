@@ -54,6 +54,7 @@ static struct {
   std::vector<unsigned char> replay;
 } live;
 
+#include "replay.inc"
 #include "ranked.inc"
 
 // Runs a single player plays in Survival, Rush or Quests, at the resolution the
@@ -165,22 +166,14 @@ static void live_begin() {
   live_append(&cfg, sizeof cfg);
 }
 
-// The replay, as the verifier's stream (checks/replay.py), into replays/.
-static void live_save() {
-  mkdir("replays", 0755);
-  // Sessions play Survival (1), Rush (2) and Quests (3).
-  static const char *const modes[] = {"", "survival", "rush", "quest"};
-  char name[64];
-  snprintf(name, sizeof name, "replays/%s-%08x.rsi", modes[cfg.mode < 4 ? cfg.mode : 0], cfg.seed);
-  if (FILE *fp = platform_fopen(name, "wb")) {
-    fwrite(live.replay.data(), 1, live.replay.size(), fp);
-    fclose(fp);
-  }
-}
-
-static void live_end() {
-  live_save();
-  ranked_run = false; // an unfinished run ranks nothing
+// The run is over (`outcome`: "death", "quest_completed", or "incomplete" for a
+// run left before its end): its replay is saved and its high score record
+// names it, and a ranked run the board takes is held for its name.
+static void live_end(const char *outcome) {
+  std::vector<uint8_t> payload = replay_payload(outcome);
+  int number = replay_save(payload);
+  memcpy(highscore_active_record.reserved0, &number, sizeof highscore_active_record.reserved0);
+  ranked_finish(payload, outcome);
   game_live = game_session = false;
 }
 
@@ -313,8 +306,7 @@ static bool live_tick() {
   if (!live_step(count)) {
     // The run is over: its screen follows, as the timeline would have shown it.
     live.replay.resize(live.replay.size() - sizeof in - sizeof count - count * sizeof(PortableCommand));
-    ranked_finish();
-    live_end();
+    live_end(game_state_pending == GAME_STATE_QUEST_RESULTS ? "quest_completed" : "death");
     ui_elements_timeline = 0;
     game_state_set_recovered(game_state_pending);
     game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
@@ -383,7 +375,7 @@ bool game_live_run() { return game_live; }
 // The game quits (game/frame.cpp): an unfinished run still keeps its recording.
 void game_live_quit() {
   if (game_live)
-    live_end();
+    live_end("incomplete");
   ranked_release();
 }
 bool game_live_pause() {
@@ -422,7 +414,7 @@ void game_state_set(game_state_id_t state) {
   // pause menu with its options) ends it unfinished.
   if (game_live && state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&
       state != GAME_STATE_PAUSE_MENU && state != GAME_STATE_OPTIONS_MENU && state != GAME_STATE_CONTROLS_MENU)
-    live_end();
+    live_end("incomplete");
   bool starts = state == GAME_STATE_GAMEPLAY && !run_active && live_eligible();
   game_state_set_recovered(state);
   if (starts) {

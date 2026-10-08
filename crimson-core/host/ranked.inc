@@ -16,7 +16,6 @@ extern "C" bool ranked_checked; // the Ranked box, which a launch starts unticke
 bool ranked_checked;
 static bool ranked_run;     // the run playing is a ranked attempt
 static std::vector<uint8_t> ranked_held; // a finished ranked run, until the end screen names it
-static const char *ranked_platform = "";
 
 // Movement 1-4 and aim 0-4: the controls the server takes as a player's (service/src/verify.ts).
 static bool ranked_controls() {
@@ -49,163 +48,10 @@ static void ranked_spec(PortableConfig &config) {
   memset(config.weapon_usage, 0, sizeof config.weapon_usage);
 }
 
-// Canonical msgpack, as msgspec writes it and the server reads it (service/src/msgpack.ts):
-// the shortest header for every integer, string, array and map, float64 for every float.
-struct Msgpack {
-  std::vector<uint8_t> out;
-  void byte(uint8_t b) { out.push_back(b); }
-  void be(uint64_t value, int bytes) {
-    for (int i = bytes - 1; i >= 0; --i)
-      byte((uint8_t)(value >> (8 * i)));
-  }
-  void integer(int64_t v) {
-    if (v >= 0) {
-      if (v < 0x80) byte((uint8_t)v);
-      else if (v < 0x100) byte(0xcc), be(v, 1);
-      else if (v < 0x10000) byte(0xcd), be(v, 2);
-      else if (v < 0x100000000ll) byte(0xce), be(v, 4);
-      else byte(0xcf), be(v, 8);
-    } else if (v >= -0x20) byte((uint8_t)v);
-    else if (v >= -0x80) byte(0xd0), be((uint64_t)v, 1);
-    else if (v >= -0x8000) byte(0xd1), be((uint64_t)v, 2);
-    else if (v >= -0x80000000ll) byte(0xd2), be((uint64_t)v, 4);
-    else byte(0xd3), be((uint64_t)v, 8);
-  }
-  void real(double v) {
-    uint64_t bits;
-    memcpy(&bits, &v, 8);
-    byte(0xcb), be(bits, 8);
-  }
-  void boolean(bool v) { byte(v ? 0xc3 : 0xc2); }
-  void nil() { byte(0xc0); }
-  void header(uint32_t n, uint8_t fix, uint8_t fix_limit, uint8_t b16, uint8_t b32) {
-    if (n < fix_limit) byte((uint8_t)(fix | n));
-    else if (n < 0x10000) byte(b16), be(n, 2);
-    else byte(b32), be(n, 4);
-  }
-  void array(uint32_t n) { header(n, 0x90, 16, 0xdc, 0xdd); }
-  void map(uint32_t n) { header(n, 0x80, 16, 0xde, 0xdf); }
-  void str(const char *s) {
-    uint32_t n = (uint32_t)strlen(s);
-    if (n < 32) byte((uint8_t)(0xa0 | n));
-    else if (n < 0x100) byte(0xd9), be(n, 1);
-    else if (n < 0x10000) byte(0xda), be(n, 2);
-    else byte(0xdb), be(n, 4);
-    out.insert(out.end(), s, s + n);
-  }
-};
-
-// The run's claimed result, read from the state after its last tick as the
-// server derives it (service/src/verify.ts deriveResult).
-static void ranked_result(Msgpack &m) {
-  const char *outcome = game_state_pending == GAME_STATE_QUEST_RESULTS ? "quest_completed" : "death";
-  int elapsed = cfg.mode == GAME_MODE_QUEST ? quest_spawn_timeline : run_elapsed_ms;
-  float health = player_state_table[0].health;
-  int fired = highscore_record_shots_fired > 0 ? highscore_record_shots_fired : 0;
-  int hit = highscore_record_shots_hit < fired ? highscore_record_shots_hit : fired;
-  int best = 1;
-  for (int weapon = 2; weapon < 53; ++weapon)
-    if (weapon_usage_time[weapon] > weapon_usage_time[best])
-      best = weapon;
-  m.map(9);
-  m.str("outcome"), m.str(outcome);
-  m.str("elapsed_ms"), m.integer(elapsed);
-  m.str("kills"), m.integer((uint32_t)creature_kill_count);
-  m.str("shots_fired"), m.integer(fired);
-  m.str("shots_hit"), m.integer(hit < 0 ? 0 : hit);
-  m.str("rng_state"), m.integer(rng);
-  m.str("pending_perks"), m.integer((uint32_t)perk_pending_count);
-  m.str("quest_final_ms");
-  if (game_state_pending == GAME_STATE_QUEST_RESULTS) {
-    // compute_quest_final_time for one player (src/crimson/quests/results.py).
-    int final = elapsed - (int)health * 50 - perk_pending_count * 1000;
-    m.integer(final == 0 ? 1 : final);
-  } else
-    m.nil();
-  m.str("players"), m.array(1), m.map(3);
-  m.str("experience"), m.integer((uint32_t)player_state_table[0].experience);
-  m.str("health"), m.real(health);
-  m.str("most_used_weapon_id"), m.integer(best);
-}
-
-// The replay (src/crimson/replay/types.py Replay): the run's configuration,
-// its claimed result and every tick the recording holds.
-static std::vector<uint8_t> ranked_payload() {
-  Msgpack m;
-  m.map(7);
-  m.str("format_version"), m.integer(CRIMSON_REPLAY_FORMAT);
-  m.str("game_version"), m.str(CRIMSON_GAME_VERSION);
-  m.str("rules"), m.integer(CRIMSON_REPLAY_RULES);
-  m.str("recorder"), m.map(3);
-  m.str("client"), m.str("crimson-core");
-  m.str("version"), m.str(CRIMSON_GAME_VERSION);
-  m.str("platform"), m.str(ranked_platform);
-  m.str("run"), m.map(14);
-  m.str("game_mode_id"), m.integer(cfg.mode);
-  m.str("seed"), m.integer(cfg.seed);
-  m.str("quest_level");
-  if (cfg.mode == GAME_MODE_QUEST)
-    m.map(2), m.str("major"), m.integer(cfg.major), m.str("minor"), m.integer(cfg.minor);
-  else
-    m.nil();
-  m.str("player_count"), m.integer(1);
-  m.str("hardcore"), m.boolean(cfg.hardcore);
-  m.str("preserve_bugs"), m.boolean(cfg.preserve_bugs);
-  m.str("quest_fail_retry_count"), m.integer(cfg.retry);
-  m.str("detail_preset"), m.integer(cfg.detail);
-  m.str("violence_disabled"), m.integer(cfg.violence);
-  m.str("friendly_fire"), m.boolean(cfg.friendly_fire);
-  m.str("status"), m.map(3);
-  m.str("quest_unlock_index"), m.integer(cfg.unlock);
-  m.str("quest_unlock_index_full"), m.integer(cfg.unlock_full); // the replay format's key; name-audit: keep
-  m.str("weapon_usage_counts"), m.array(53);
-  for (uint32_t count : cfg.weapon_usage)
-    m.integer(count);
-  m.str("typo_dictionary_words"), m.array(0);
-  m.str("typo_highscore_names"), m.array(0);
-  m.str("typo_carry"), m.map(4);
-  m.str("target_world"), m.nil();
-  m.str("submit_count"), m.integer(0);
-  m.str("match_count"), m.integer(0);
-  m.str("highscore_names_loaded"), m.boolean(false);
-  m.str("result");
-  ranked_result(m);
-  // The recording after its configuration: each tick's input, then its commands.
-  const unsigned char *at = live.replay.data() + sizeof(PortableConfig), *end = live.replay.data() + live.replay.size();
-  std::vector<std::pair<PortableInput, std::vector<PortableCommand>>> ticks;
-  while (at < end) {
-    PortableInput input;
-    uint32_t count;
-    memcpy(&input, at, sizeof input), at += sizeof input;
-    memcpy(&count, at, sizeof count), at += sizeof count;
-    std::vector<PortableCommand> commands(count);
-    memcpy(commands.data(), at, count * sizeof(PortableCommand)), at += count * sizeof(PortableCommand);
-    ticks.emplace_back(input, std::move(commands));
-  }
-  m.str("ticks"), m.array((uint32_t)ticks.size());
-  for (const auto &[input, commands] : ticks) {
-    m.array(2);
-    m.array(1), m.array(5);
-    m.real(input.move_x), m.real(input.move_y), m.real(input.aim_x), m.real(input.aim_y);
-    m.integer(input.flags);
-    m.array((uint32_t)commands.size());
-    for (const PortableCommand &command : commands) {
-      // Kind 1 picks a perk, kind 2 opens the menu (crimson-core/checks/replay.py).
-      m.map(command.type == 1 ? 3 : 2);
-      m.str("type"), m.str(command.type == 1 ? "perk_pick" : "perk_menu_open");
-      m.str("player_index"), m.integer(0);
-      if (command.type == 1)
-        m.str("choice_index"), m.integer(command.argument);
-    }
-  }
-  return m.out;
-}
-
 // A run the board takes is held for its name; one that ends otherwise is not.
-static void ranked_finish() {
-  bool finished = cfg.mode == GAME_MODE_QUEST ? game_state_pending == GAME_STATE_QUEST_RESULTS
-                                               : game_state_pending == GAME_STATE_GAME_OVER;
-  ranked_held = ranked_run && finished ? ranked_payload() : std::vector<uint8_t>{};
+static void ranked_finish(const std::vector<uint8_t> &payload, const char *outcome) {
+  bool finished = !strcmp(outcome, cfg.mode == GAME_MODE_QUEST ? "quest_completed" : "death");
+  ranked_held = ranked_run && finished ? payload : std::vector<uint8_t>{};
   ranked_run = false;
 }
 
@@ -497,11 +343,8 @@ void ranked_menu(float *base, float *tips, bool list_open) {
 }
 
 // The host takes runs to the leaderboard, before the game starts: the Ranked
-// box shows. `platform` names it in the replays it records (1, the browser).
-__attribute__((export_name("game_leaderboard_enable"))) void game_leaderboard_enable(int platform) {
-  ranked_enabled = true;
-  ranked_platform = platform == 1 ? "web" : "native";
-}
+// box shows.
+__attribute__((export_name("game_leaderboard_enable"))) void game_leaderboard_enable() { ranked_enabled = true; }
 // The player's public key, as hex, for the host's sign-in.
 __attribute__((export_name("game_identity_public_key"))) const char *game_identity_public_key() {
   static char key[65];
