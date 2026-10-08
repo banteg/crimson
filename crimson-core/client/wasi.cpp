@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <sys/random.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
@@ -130,6 +131,13 @@ u32 w2c_wasi__snapshot__preview1_clock_time_get(struct w2c_wasi__snapshot__previ
   struct timespec now;
   clock_gettime(clock == 0 ? CLOCK_REALTIME : CLOCK_MONOTONIC, &now);
   store64(result, (uint64_t)now.tv_sec * 1000000000u + now.tv_nsec);
+  return ESUCCESS;
+}
+// A run's seed (host/session.inc).
+u32 w2c_wasi__snapshot__preview1_random_get(struct w2c_wasi__snapshot__preview1 *, u32 at, u32 length) {
+  for (u32 done = 0; done < length; done += 256)
+    if (getentropy(memory() + at + done, length - done < 256 ? length - done : 256))
+      return EIO_;
   return ESUCCESS;
 }
 u32 w2c_wasi__snapshot__preview1_fd_prestat_get(struct w2c_wasi__snapshot__preview1 *, u32 fd, u32 result) {

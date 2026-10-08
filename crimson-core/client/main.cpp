@@ -128,10 +128,13 @@ void key(SDL_Scancode scancode, bool down) {
 }
 
 // CRIMSON_CAPTURE=<directory> saves the back buffer of the frames listed in
-// CRIMSON_CAPTURE_FRAMES (comma-separated) as frame_<n>.ppm, then quits.
+// CRIMSON_CAPTURE_FRAMES (comma-separated: host frames that draw) as
+// frame_<n>.ppm, then quits. Such a run keeps a fixed 60 Hz clock, so its
+// frames and scripted input (CRIMSON_INPUT) repeat from run to run.
 std::vector<int> capture_frames;
-int presented;
+int presented, frames;
 bool capture_done;
+const bool unattended = getenv("CRIMSON_CAPTURE");
 void capture_frame() {
   ++presented;
   const char *directory = getenv("CRIMSON_CAPTURE");
@@ -142,11 +145,11 @@ void capture_frame() {
       capture_frames.push_back(atoi(p));
   capture_done = true;
   for (size_t i = 0; i < capture_frames.size(); ++i) {
-    if (capture_frames[i] != presented)
+    if (capture_frames[i] != frames)
       continue;
     int width, height;
     std::vector<unsigned char> pixels = renderer_capture(width, height);
-    std::string path = std::string(directory) + "/frame_" + std::to_string(presented) + ".ppm";
+    std::string path = std::string(directory) + "/frame_" + std::to_string(frames) + ".ppm";
     if (FILE *fp = fopen(path.c_str(), "wb")) {
       fprintf(fp, "P6\n%d %d\n255\n", width, height);
       for (int y = 0; y < height; ++y)
@@ -161,7 +164,8 @@ void capture_frame() {
   }
 }
 
-// CRIMSON_INPUT scripts input for unattended runs: "frame:action;..." where an
+// CRIMSON_INPUT scripts input for unattended runs: "frame:action;..." (host
+// frames) where an
 // action is "move x y" (back-buffer pixels), "press button" or "release button"
 // (0 left, 1 right), or "key code" / "unkey code" (DirectInput scancodes, hex).
 struct Scripted {
@@ -222,7 +226,11 @@ void w2c_host_fatal(struct w2c_host *, u32 message) { client_fatal((const char *
 void w2c_host_message(struct w2c_host *, u32 text, u32 caption) {
   fprintf(stderr, "%s: %s\n", (const char *)client_memory() + caption, (const char *)client_memory() + text);
 }
-u32 w2c_host_time_ms(struct w2c_host *) { return (u32)SDL_GetTicks(); }
+// An unattended run's clock moves 16 ms a frame, and a millisecond each time it is read.
+u32 w2c_host_time_ms(struct w2c_host *) {
+  static u32 reads;
+  return unattended ? (u32)frames * 16 + reads++ : (u32)SDL_GetTicks();
+}
 void w2c_host_present(struct w2c_host *) {
   int width, height;
   SDL_GetWindowSizeInPixels(window, &width, &height);
@@ -250,7 +258,8 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   window = SDL_CreateWindow("Crimsonland", 1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
   if (!window || !(context = SDL_GL_CreateContext(window)))
     client_fatal(SDL_GetError());
-  SDL_GL_SetSwapInterval(1);
+  // Unattended captures run unthrottled: a hidden window would otherwise wait on vsync.
+  SDL_GL_SetSwapInterval(unattended ? 0 : 1);
   SDL_HideCursor();
   SDL_StartTextInput(window);
   renderer_init();
@@ -333,7 +342,7 @@ SDL_AppResult SDL_AppIterate(void *) {
   if (v.back_width) {
     float scale = (float)pixel_width / width;
     float gx = (x * scale - v.x) / v.width * v.back_width, gy = (y * scale - v.y) / v.height * v.back_height;
-    run_script(presented + 1);
+    run_script(frames + 1);
     if (scripted_x >= 0) {
       gx = scripted_x;
       gy = scripted_y;
@@ -346,7 +355,14 @@ SDL_AppResult SDL_AppIterate(void *) {
     wheel = 0;
     w2c_game_game_mouse_move(&game, gx, gy);
   }
+  int before = presented;
+  ++frames;
   bool running = w2c_game_game_frame(&game);
+  // A pass of a run that covered no tick drew nothing: show the last frame again.
+  if (running && presented == before) {
+    renderer_present(pixel_width, pixel_height);
+    SDL_GL_SwapWindow(window);
+  }
   for (int button = 0; button < 8; ++button)
     if (hold_frames[button] && !--hold_frames[button] && !held[button])
       input()->mouse_buttons[button] = 0;

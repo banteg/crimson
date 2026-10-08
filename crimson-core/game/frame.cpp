@@ -51,6 +51,8 @@ bool grim_joystick_poll(void);
 bool grim_mouse_poll(void);
 
 extern "C" int crimsonland_main_exit(void);
+extern "C" int game_live_frame(void);
+extern "C" void game_live_quit(void);
 
 static bool quit_posted;
 
@@ -58,8 +60,10 @@ static bool quit_posted;
 
 // One pass of Grim's run loop; false once the game has quit.
 GAME_EXPORT(game_frame) int game_frame() {
-  if (quit_posted)
+  if (quit_posted) {
+    game_live_quit();
     return 0;
+  }
   if (!grim_dc_mode_active)
     grim_timing_update();
   if (!grim_paused_flag && !grim_dc_mode_active && grim_device_ready && !grim_timing_frozen) {
@@ -84,11 +88,16 @@ GAME_EXPORT(game_frame) int game_frame() {
     return 1;
   grim_device_ready = grim_d3d_device->TestCooperativeLevel() == D3D_OK;
   if (grim_device_restore_callback_pending) {
-    grim_on_device_restore();
+    ((bool (*)(void))grim_on_device_restore)();
     grim_device_restore_callback_pending = false;
   }
+  // A run the client plays draws once per pass that ticks; the host shows the
+  // last frame again for one that does not (host/session.inc).
+  if (game_live_frame() == 0)
+    return 1;
   if (!grim_frame_callback()) {
     quit_posted = true;
+    game_live_quit();
     return 0;
   }
   if (grim_input_provider)

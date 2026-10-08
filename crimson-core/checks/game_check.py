@@ -2,6 +2,7 @@
 
 Every stream the gate replays (the bot corpus and the supported recorded fixtures)
 runs through both modules in lockstep; `game_compare.mjs` compares each snapshot.
+With --live, the sessions run inside the original after it loads its assets.
 """
 
 import argparse
@@ -20,6 +21,11 @@ def main() -> None:
     parser.add_argument("--fixtures", type=Path, default=ROOT / "tests/fixtures/replays")
     parser.add_argument("--core", type=Path, default=CORE / "build/wasm/core.wasm")
     parser.add_argument("--game", type=Path, default=CORE / "build/game/game.wasm")
+    parser.add_argument(
+        "--live",
+        type=Path,
+        help="Original game directory: run the sessions inside the original, booted with its assets",
+    )
     args = parser.parse_args()
     streams, unsupported = load_streams(args.corpus, args.fixtures)
     recorded = sum(stream.recorded is not None for stream in streams)
@@ -32,7 +38,8 @@ def main() -> None:
             path.write_bytes(stream.payload)
             paths.append(str(path))
         compare = CORE / "checks/game_compare.mjs"
-        code = subprocess.call([shutil.which("node"), str(compare), str(args.core), str(args.game), *paths])
+        live = ["--live", str(args.live)] if args.live else []
+        code = subprocess.call([shutil.which("node"), str(compare), *live, str(args.core), str(args.game), *paths])
     print(f"{len(streams)} streams; {len(unsupported)} fixtures unsupported: {', '.join(sorted(unsupported))}")
     sys.exit(code)
 

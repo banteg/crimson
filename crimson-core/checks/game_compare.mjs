@@ -4,11 +4,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { WASI } from "node:wasi";
 import { CORE, decode, init, loadCore, names, record, state, step } from "./engine.mjs";
 
-// Fields only presentation code writes; the verifier stubs that code.
+// Fields only presentation reads: the HUD's popup timer, which the verifier's
+// stubbed HUD never counts down, and the weapons' sound ids, which only choose
+// the sample sfx_play_panned plays and are the original's loaded ids in a run
+// inside the original (the verifier loads no sounds).
 export const PRESENTATION = new Set(
-  names.filter((n) => /^globals\.player_weapon_popup_timer\[/.test(n)),
+  names.filter((n) => /^globals\.player_weapon_popup_timer\[|^weapons\[\d+\]\.(shot_sfx_base_id|reload_sfx_id)$/.test(n)),
 );
 
 
@@ -65,6 +69,40 @@ export function loadGame(wasm) {
   return e;
 }
 
+// The original running from a game directory, settled on its main menu after
+// loading every asset: sessions then run inside it, as the client plays them.
+export function loadLiveGame(wasm, directory) {
+  const module = new WebAssembly.Module(fs.readFileSync(wasm));
+  const wasi = new WASI({ version: "preview1", preopens: { ".": directory }, returnOnExit: true });
+  let memory, clock = 0;
+  const text = (at) => {
+    const bytes = new Uint8Array(memory.buffer, at);
+    return Buffer.from(bytes.subarray(0, bytes.indexOf(0))).toString("latin1");
+  };
+  const host = new Proxy(
+    {},
+    {
+      get: (_, name) =>
+        (...args) => {
+          if (name === "fatal") throw Error(`game module: ${text(args[0])}`);
+          if (name === "message") throw Error(`${text(args[1])}: ${text(args[0])}`);
+          if (name === "time_ms") return clock++;
+        },
+    },
+  );
+  const instance = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi.wasiImport, host });
+  memory = instance.exports.memory;
+  wasi.initialize(instance);
+  const e = instance.exports;
+  if (!e.game_start()) throw Error("startup failed");
+  // The startup sequence shares the main menu's screen id and ends after about 14 s.
+  for (let frame = 0; frame < 1200; frame++) {
+    clock += 16;
+    if (!e.game_frame()) throw Error("the game quit");
+  }
+  return e;
+}
+
 // A tick nothing can refuse except a run that is over (host.cpp's run-down).
 const NEUTRAL = record([0, 0, 0, 0, 0]);
 
@@ -106,9 +144,12 @@ export function compareStream(input, core, game, coreWasm) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const [coreWasm, gameWasm, ...streams] = process.argv.slice(2);
+  const args = process.argv.slice(2);
+  const live = args[0] === "--live" ? args.splice(0, 2)[1] : null;
+  const [coreWasm, gameWasm, ...streams] = args;
   const core = loadCore(coreWasm ?? new URL("build/wasm/core.wasm", CORE));
-  const game = loadGame(gameWasm ?? new URL("build/game/game.wasm", CORE));
+  const gamePath = gameWasm ?? new URL("build/game/game.wasm", CORE);
+  const game = live ? loadLiveGame(gamePath, live) : loadGame(gamePath);
   const files = streams.length
     ? streams
     : fs.readdirSync(new URL("build/fixtures", CORE)).map((f) => path.join(new URL("build/fixtures", CORE).pathname, f));
