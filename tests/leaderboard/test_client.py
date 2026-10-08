@@ -5,13 +5,14 @@ import json
 import stat
 from typing import Any
 
+import msgspec
 import pytest
 from nacl.exceptions import BadSignatureError
 from nacl.signing import VerifyKey
 
 from crimson.leaderboard import Identity, Leaderboard, LeaderboardError, OnlineScore, SyncStatus
 from crimson.leaderboard.identity import IDENTITY_FILE, login_message, run_message
-from crimson.replay import load_replay
+from crimson.replay import REPLAY_FORMAT_VERSION, load_replay
 from crimson.replay.codec import inflate_replay_payload
 from tests.support.replay_runner_helpers import RECORDED_REPLAYS
 
@@ -20,7 +21,9 @@ _URL = "https://crimson.test/api"
 
 @pytest.fixture(scope="module")
 def replay():
-    return load_replay(min(RECORDED_REPLAYS, key=lambda path: path.stat().st_size).read_bytes())
+    # A recorded fixture as the game holds a run: in the current format.
+    recorded = load_replay(min(RECORDED_REPLAYS, key=lambda path: path.stat().st_size).read_bytes())
+    return msgspec.structs.replace(recorded, format_version=REPLAY_FORMAT_VERSION)
 
 
 class _Service:

@@ -25,7 +25,7 @@ and the [recovered core gate](https://github.com/banteg/crimson/tree/master/crim
 | --- | ---: | --- |
 | CDT container | 2 | `crimson-re/src/crimson_re/dbg/schema.py` |
 | CDT payload schema | 21 | `crimson-re/src/crimson_re/dbg/schema.py` |
-| CRD replay | 30 | `src/crimson/replay/types.py` |
+| CRD replay | 31 | `src/crimson/replay/types.py` |
 
 These artifacts are throwaway debugging data. Readers require exactly these
 versions; they do not translate, normalize, or salvage an older recording.

@@ -28,7 +28,7 @@ from crimson.replay.codec import (
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.driver.setup import ReplayRunnerError
 from crimson.replay.ranked import RankedTickMonitor, outcome_reasons, ranked_board, ranked_run_spec, unranked_reasons
-from crimson.replay.types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, current_recorder
+from crimson.replay.types import REPLAY_FORMAT_VERSION, REPLAY_RULES, Replay, ReplayTick, current_recorder
 from crimson.replay.versioning import current_replay_game_version
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import PlayerRunResult, RunOutcome, RunResult
@@ -87,6 +87,7 @@ def _base_replay() -> Replay:
     return Replay(
         format_version=REPLAY_FORMAT_VERSION,
         game_version=current_replay_game_version(),
+        rules=REPLAY_RULES,
         recorder=current_recorder(),
         run=ranked_run_spec(GameMode.SURVIVAL, seed=0x1234ABCD),
         result=result,
@@ -215,7 +216,7 @@ def ranked_run() -> tuple[str, str]:
 
     def replay(ticks: list[ReplayTick], result: RunResult) -> Replay:
         return Replay(
-            REPLAY_FORMAT_VERSION, current_replay_game_version(), current_recorder(),
+            REPLAY_FORMAT_VERSION, current_replay_game_version(), REPLAY_RULES, current_recorder(),
             ranked_run_spec(GameMode.SURVIVAL, seed=0xC0FFEE), result, ticks,
         )
 
