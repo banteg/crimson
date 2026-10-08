@@ -371,8 +371,9 @@ void renderer_present(int window_width, int window_height) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, exact ? GL_NEAREST : GL_LINEAR);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindTexture(GL_TEXTURE_2D, 0);
-  bind_target();
 }
+
+void renderer_resume() { bind_target(); }
 
 // The back buffer as top-down RGBA rows.
 std::vector<unsigned char> renderer_capture(int &width, int &height) {

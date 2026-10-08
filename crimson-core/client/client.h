@@ -12,7 +12,11 @@ void client_wasi_init();
 
 // renderer.cpp: the Direct3D 8 subset the game module's device sends.
 void renderer_init();
+// The back buffer to the window's framebuffer, which stays bound for the swap
+// (macOS shows a black window when the swap finds another framebuffer bound);
+// renderer_resume binds the game's render target again after it.
 void renderer_present(int window_width, int window_height);
+void renderer_resume();
 // The rectangle of the window the back buffer fills, letterboxed.
 struct Viewport {
   float x, y, width, height;
