@@ -2,8 +2,9 @@
 // directory (grim.dll, crimson.paq, sfx.paq and music/), its menus start a
 // Survival run, and the run plays as a session (host/session.inc). A scripted
 // player aims at the nearest creature and fires in bursts, opens the perk menu
-// with Space and picks from it, and pauses with Escape and resumes, at frame
-// times that run several ticks a frame or none. After every frame of play the
+// with Space and picks from it (and asks again at once), pauses with Escape and
+// resumes, and taps the console key, which a run ignores, at frame times that
+// run several ticks a frame or none. After every frame of play the
 // verifier replays the run's own recording to the same tick and must agree on
 // every snapshot field; when the run ends the verifier must end it at the same
 // tick, and the replay the game saved must be the one it recorded.
@@ -51,7 +52,7 @@ if (!game.game_start()) throw Error("startup failed");
 // game_state_id_t
 const MAIN_MENU = 0, PLAY_GAME_MENU = 1, PAUSE_MENU = 5, PERK_SELECTION = 6, GAMEPLAY = 9;
 // DirectInput scancodes.
-const [ESCAPE, W, A, S, D, SPACE] = [0x01, 0x11, 0x1e, 0x1f, 0x20, 0x39];
+const [ESCAPE, W, A, S, D, CONSOLE, SPACE] = [0x01, 0x11, 0x1e, 0x1f, 0x20, 0x29, 0x39];
 // Where a fresh 1024x768 profile lays out the perk menu's first choice (the
 // rest follow 19 pixels apart) and the pause menu's Resume.
 const PERK_CHOICE = [150, 216], RESUME = [232, 397];
@@ -70,7 +71,7 @@ function frame(dt, { cursor, buttons = 0, keys = [], taps = [] }) {
     input.setInt32(276, n + 1, true);
   }
   held = new Set(taps);
-  for (const key of [W, A, S, D, ESCAPE, SPACE]) input.setUint8(key, keys.includes(key) || held.has(key) ? 0x80 : 0);
+  for (const key of [W, A, S, D, ESCAPE, CONSOLE, SPACE]) input.setUint8(key, keys.includes(key) || held.has(key) ? 0x80 : 0);
   input.setInt32(256, Math.round(game.game_motion_x(cursor[0])), true);
   input.setInt32(260, Math.round(game.game_motion_y(cursor[1])), true);
   input.setUint8(268, buttons & 1 ? 0x80 : 0);
@@ -120,11 +121,12 @@ function target() {
 
 // Frame times from 4 ms (most frames run no tick) to 50 ms (three ticks).
 const times = [16, 7, 33, 16, 50, 4, 16, 12, 21];
-let started = false, ticks = 0, frames = 0, idle = 0, choice = 0, pauses = 0;
+let started = false, ticks = 0, frames = 0, idle = 0, choice = 0, pauses = 0, picked = false;
 while (true) {
   const screen = game.game_state();
   if (screen === PERK_SELECTION) {
     click(PERK_SELECTION, [PERK_CHOICE[0], PERK_CHOICE[1] + 19 * (choice++ % 5)]);
+    picked = true;
     continue;
   }
   if (screen === PAUSE_MENU) {
@@ -137,7 +139,10 @@ while (true) {
     const { aim, away } = target();
     cursor = aim;
     keys = [Math.abs(away[0]) > Math.abs(away[1]) ? (away[0] < 0 ? A : D) : away[1] < 0 ? W : S];
-    if (field(core, "globals.perk_pending_count") > 0 && frames % 30 === 0) taps.push(SPACE);
+    // Another request right after a pick, which the pick may have used up.
+    if (picked || (field(core, "globals.perk_pending_count") > 0 && frames % 30 === 0)) taps.push(SPACE);
+    picked = false;
+    if (frames % 997 === 500) taps.push(CONSOLE);
     if (ticks > 1200 * (pauses + 1) && pauses < 2) {
       taps.push(ESCAPE);
       ++pauses;

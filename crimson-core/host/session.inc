@@ -4,6 +4,11 @@
 // so the recording replays in the verifier exactly as it played
 // (portable_step_many). The perk screen and the pause menu run between ticks
 // and reach the run only as commands.
+//
+// The settings and progress a tick reads are the verifier's (portable_init sets
+// them up); between ticks the original shows and keeps the player's. What a
+// tick changes carries over: the counters it advances add to the player's
+// progress, and the settings it changes replace the player's.
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
@@ -15,12 +20,17 @@ extern float grim_frame_dt;
 extern int ui_elements_timeline;
 extern unsigned char console_open_flag, ui_transition_direction;
 int ui_elements_max_timeline(void);
-extern cvar_float_t *cv_padAimDistMul;
+extern cvar_float_t *cv_padAimDistMul, *cv_bodiesFade;
 }
+struct LiveSettings {
+  crimson_cfg_t config;
+  game_status_t status;
+  float bodies_fade; // which keeps or removes corpses
+};
 
 static struct {
-  // The player's own settings: bindings and schemes, restored when the run ends.
-  crimson_cfg_t shell;
+  LiveSettings run;             // the verifier's, between ticks
+  player_input_t player_keys[2]; // the players' own, which the run's codes replace
   float banked; // seconds of play not yet ticked
   int due;      // ticks this frame
   // Presses since the last tick, which only the next tick sees.
@@ -46,10 +56,43 @@ static void live_append(const void *data, size_t size) {
   live.replay.insert(live.replay.end(), (const unsigned char *)data, (const unsigned char *)data + size);
 }
 
+static LiveSettings live_settings() { return {config_blob, game_status_blob, cv_bodiesFade->value}; }
+static void live_install(const LiveSettings &settings) {
+  config_blob = settings.config;
+  game_status_blob = settings.status;
+  cv_bodiesFade->value = settings.bodies_fade;
+}
+// Word by word, what the tick changed reaches the player's settings: a status
+// counter by its increase, anything else by its new value.
+template <class T> static void live_carry(const T &before, const T &after, T &player, bool add) {
+  auto *b = (const uint32_t *)&before, *a = (const uint32_t *)&after;
+  auto *p = (uint32_t *)&player;
+  for (size_t i = 0; i < sizeof(T) / 4; ++i)
+    if (a[i] != b[i])
+      p[i] = add ? p[i] + (a[i] - b[i]) : a[i];
+}
+// A tick between the verifier's settings.
+static int live_step(uint32_t count) {
+  LiveSettings player = live_settings();
+  live_install(live.run);
+  int accepted = portable_step_many(count);
+  LiveSettings after = live_settings();
+  live_carry(live.run.config, after.config, player.config, false);
+  live_carry(live.run.status, after.status, player.status, true);
+  live.run = after;
+  live_install(player);
+  return accepted;
+}
+
 // The original has set the run up (game_state_set): the session takes its
 // place, seeded afresh, with the player's progress and settings.
 static void live_begin() {
-  live.shell = config_blob;
+  LiveSettings player = live_settings();
+  for (int i = 0; i < 2; ++i)
+    live.player_keys[i] = player_state_table[i].input;
+  // The console's flag pauses parts of a tick; a run keeps it closed.
+  if (console_log_queue.open)
+    console_log_queue.console_set_open(0);
   cfg = {};
   getentropy(&cfg.seed, sizeof cfg.seed);
   cfg.mode = config_blob.game_mode;
@@ -64,7 +107,16 @@ static void live_begin() {
   cfg.retry = quest_fail_retry_count;
   cfg.preserve_bugs = 1; // the original's rules
   memcpy(cfg.weapon_usage, game_status_blob.weapon_usage_counts, sizeof cfg.weapon_usage);
-  if (!portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor)) {
+  // The run's strings live in the session's arena, which the next run reuses.
+  bool heap_strings = game_heap_strings;
+  game_heap_strings = false;
+  bool ready = portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor);
+  game_heap_strings = heap_strings;
+  live.run = live_settings();
+  // The verifier keeps corpses (cv_bodiesFade, host.cpp).
+  live.run.bodies_fade = 1;
+  live_install(player);
+  if (!ready) {
     game_session = false;
     return;
   }
@@ -91,8 +143,9 @@ static void live_save() {
 
 static void live_end() {
   live_save();
-  // The run's own keys and volumes were the verifier's; the player's return.
-  config_blob = live.shell;
+  // The run's key codes were the verifier's; the players' own return.
+  for (int i = 0; i < 2; ++i)
+    player_state_table[i].input = live.player_keys[i];
   game_live = game_session = false;
 }
 
@@ -101,9 +154,9 @@ static void live_end() {
 static int game_live_key(int code) {
   if (!game_live)
     return code;
-  return code == 100   ? live.shell.input_config[0].fire_key
-         : code == 101 ? live.shell.key_reload
-         : code == 102 ? live.shell.key_pick_perk
+  return code == 100   ? config_blob.input_config[0].fire_key
+         : code == 101 ? config_blob.key_reload
+         : code == 102 ? config_blob.key_pick_perk
                        : code;
 }
 static bool live_down(int code) { return session_grim.IGrim2D_cpp::grim_is_key_active(code); }
@@ -112,9 +165,14 @@ static float live_axis(int code) { return session_grim.IGrim2D_cpp::grim_get_con
 
 // Every pass of the run loop: presses between ticks reach the next one.
 static void live_poll() {
-  const player_input_config_t &keys = live.shell.input_config[0];
-  bool fire = live_down(keys.fire_key), reload = live_down(live.shell.key_reload),
-       pick = live_down(live.shell.key_pick_perk);
+  const player_input_config_t &keys = config_blob.input_config[0];
+  bool fire = live_down(keys.fire_key), reload = live_down(config_blob.key_reload),
+       pick = live_down(config_blob.key_pick_perk);
+  // Escape asks for the pause menu (game_frame_update), also on a pass with no tick.
+  if (session_grim.IGrim2D_cpp::grim_was_key_pressed(1)) {
+    ui_transition_direction = 0;
+    live.pausing = true;
+  }
   live.fire_pressed |= fire && !live.fire_down;
   live.reload_pressed |= reload && !live.reload_down;
   // gameplay_update_and_render opens the perk menu on the pick key, Space or
@@ -128,9 +186,9 @@ static void live_poll() {
 
 // The tick's input as the player's scheme reads it (src/crimson/local_input.py).
 static PortableInput live_input() {
-  const player_input_config_t &keys = live.shell.input_config[0];
+  const player_input_config_t &keys = config_blob.input_config[0];
   const player_state_t &player = player_state_table[0];
-  int move_mode = live.shell.movement_schemes[0], aim_scheme = live.shell.aim_schemes[0];
+  int move_mode = config_blob.movement_schemes[0], aim_scheme = config_blob.aim_schemes[0];
   bool forward = live_down_or_arrow(keys.move_key_forward, 0xc8),
        backward = live_down_or_arrow(keys.move_key_backward, 0xd0),
        left = live_down_or_arrow(keys.turn_key_left, 0xcb), right = live_down_or_arrow(keys.turn_key_right, 0xcd);
@@ -149,7 +207,7 @@ static PortableInput live_input() {
     input.move_x = fminf(fmaxf(live_axis(keys.axis_move_x), -1.0f), 1.0f);
     input.move_y = fminf(fmaxf(live_axis(keys.axis_move_y), -1.0f), 1.0f);
   } else if (move_mode == 4) { // point and click: the reload key drops the target
-    if (live_down(live.shell.key_reload)) {
+    if (live_down(config_blob.key_reload)) {
       live.move_target_x = world_x;
       live.move_target_y = world_y;
     }
@@ -173,8 +231,8 @@ static PortableInput live_input() {
     input.aim_y = length > 0 ? y / length * reach : 0;
   } else if (aim_scheme == 2 || aim_scheme == -1) { // joystick hat
     int hat = session_grim.IGrim2D_cpp::grim_get_joystick_pov(0);
-    turn_left = hat == live.shell.aim_pov_left;
-    turn_right = hat == live.shell.aim_pov_right;
+    turn_left = hat == config_blob.aim_pov_left;
+    turn_right = hat == config_blob.aim_pov_right;
   }
   input.flags = (live.fire_down ? 1u : 0) | (live.fire_pressed ? 2u : 0) | (live.reload_pressed ? 4u : 0) |
                 8u | (forward ? 16u : 0) | (backward ? 32u : 0) | (left ? 64u : 0) | (right ? 128u : 0) |
@@ -187,8 +245,12 @@ static PortableInput live_input() {
 // One recorded tick; false once the run stops ticking this frame.
 static bool live_tick() {
   in = live_input();
-  // A perk menu request the verifier would refuse is dropped, as the original ignores it.
-  if (live.open_requested && config_blob.game_mode != GAME_MODE_RUSH && perk_pending_count > 0 &&
+  // A perk menu request the verifier would refuse is dropped, as the original
+  // ignores it: in Rush, with no perk left after the queued picks, or once dead.
+  int picks = 0;
+  for (int i = 0; i < live.queued_count; ++i)
+    picks += live.queued[i].type == 1;
+  if (live.open_requested && config_blob.game_mode != GAME_MODE_RUSH && perk_pending_count > picks &&
       player_state_table[0].health > 0 && live.queued_count < 16)
     live.queued[live.queued_count++] = {2, 0};
   uint32_t count = live.queued_count;
@@ -199,7 +261,7 @@ static bool live_tick() {
   live.fire_pressed = live.reload_pressed = live.open_requested = false;
   live.queued_count = 0;
   live.requested = GAME_STATE_PENDING_IDLE_SENTINEL;
-  if (!portable_step_many(count)) {
+  if (!live_step(count)) {
     // The run is over: its screen follows, as the timeline would have shown it.
     live.replay.resize(live.replay.size() - sizeof in - sizeof count - count * sizeof(PortableCommand));
     live_end();
@@ -252,6 +314,11 @@ void gameplay_update_and_render() {
 // The perk screen's choice (perk_selection_screen_update) reaches the run as a
 // command with its next tick.
 bool game_live_run() { return game_live; }
+// The game quits (game/frame.cpp): an unfinished run still keeps its recording.
+void game_live_quit() {
+  if (game_live)
+    live_end();
+}
 bool game_live_pause() {
   live.pausing |= game_live;
   return game_live;
@@ -268,9 +335,10 @@ void game_state_set(game_state_id_t state) {
     live.requested = state;
     return;
   }
-  // Leaving the run for anything but its own screens ends it unfinished.
+  // Leaving the run for anything but its own screens (the perk menu, and the
+  // pause menu with its options) ends it unfinished.
   if (game_live && state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&
-      state != GAME_STATE_PAUSE_MENU)
+      state != GAME_STATE_PAUSE_MENU && state != GAME_STATE_OPTIONS_MENU && state != GAME_STATE_CONTROLS_MENU)
     live_end();
   bool starts = state == GAME_STATE_GAMEPLAY && !run_active && live_eligible();
   game_state_set_recovered(state);

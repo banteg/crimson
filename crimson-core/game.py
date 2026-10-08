@@ -222,7 +222,14 @@ def adapt_game(src, txt):
             "            game_state_pending = GAME_STATE_PAUSE_MENU;",
             src,
         )
-        txt = 'extern "C" bool game_live_pause();\n' + txt
+        # The console's flag pauses parts of a tick: a run keeps it closed.
+        txt = replace_once(
+            txt,
+            "    if (grim_interface_ptr->grim_was_key_pressed(0x29)) {",
+            "    if (!game_live_run() && grim_interface_ptr->grim_was_key_pressed(0x29)) {",
+            src,
+        )
+        txt = 'extern "C" bool game_live_pause();\nextern "C" bool game_live_run();\n' + txt
     if src.stem == "crimsonland_main":
         # The host owns the main loop: startup ends where Grim's run loop began,
         # and the code after the loop becomes its own entry point (game/frame.cpp).
@@ -364,13 +371,14 @@ def simulation_names(root):
 
 
 # What a run inside the running original keeps although the simulation names
-# it: the texture, sound and music handles the original loaded, its settings,
-# the player's progress, and the screen's transition, which only the UI reads.
+# it: the texture, sound and music handles the original loaded, and the screen's
+# transition, which only the UI reads. Settings and progress reset with the
+# rest; the player's own stay outside ticks (host/session.inc).
 # Sessions inside the original after it loads its
 # assets agree with the verifier on every gate stream (checks/game_check.py --live).
 SESSION_KEEPS = re.compile(
     r"_texture$|^terrain_texture_|^sfx_|^music_(track_|entry_table$|playlist$|playlist_entry_count$|ready$|fade_out_flags$)"
-    r"|^audio_asset_id_table$|^config_|^game_status_blob$"
+    r"|^audio_asset_id_table$"
     r"|^creature_type_table$|^bonus_icon_|^ui_element|^ui_transition_",
 )
 

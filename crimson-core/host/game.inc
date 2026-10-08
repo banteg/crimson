@@ -61,16 +61,10 @@ void platform_headless_device();
 extern "C" void portable_reset_engine_data();
 extern "C" void portable_reset_simulation_data();
 extern "C" unsigned char grim_render_disabled;
-static void game_reset_run_data() {
-  if (game_original)
-    portable_reset_simulation_data();
-  else
-    portable_reset_data();
-}
-// Inside the original, a run keeps what it loaded and the player set
-// (game.py's SESSION_KEEPS); the verifier's setup still assigns its own music
-// ids and volumes, which only choose and voice the tracks. The run plays the
-// tracks the original loaded, at the player's volumes.
+// Inside the original, a run keeps what it loaded (game.py's SESSION_KEEPS); the
+// verifier's setup still assigns its own music ids and volumes, which only
+// choose and voice the tracks. The run plays the tracks the original loaded, at
+// the player's volumes, saved before the reset.
 static struct {
   int intro, shortie_monk, crimson_theme, crimsonquest, game_playlist, extra_1, playlist_count;
   music_playlist_t playlist;
@@ -97,9 +91,15 @@ static void game_run_ready() {
   config_blob.music_volume = a.music_volume;
   config_blob.sfx_volume = a.sfx_volume;
 }
-static void game_init_run() {
-  if (game_original)
+static void game_reset_run_data() {
+  if (game_original) {
     game_save_shell_audio();
+    portable_reset_simulation_data();
+  } else {
+    portable_reset_data();
+  }
+}
+static void game_init_run() {
   static bool booted;
   if (!booted && !game_original) {
     game_heap_strings = true;
