@@ -67,6 +67,7 @@ const RED = "rgb(250,70,60)";
 const GREEN = "rgb(128,255,153)";
 const GOLD = "rgb(240,200,90)";
 const WINDOW_S = 15;
+const LABEL_GAP = 24;
 // ui_wicons: an 8x8 grid of 32px cells; each icon is two cells wide, at frame icon_index * 2.
 const ICON_CELL = 32;
 
@@ -193,8 +194,21 @@ function ExperienceChart(props: { run: RunTimeline; cursor: Cursor; rivals: Riva
   const { x, track } = axis(run);
   const top = 12;
   const plot = 190;
-  const healthTop = plot + 18;
+  // Level-ups as ticks on the time axis: their spacing shows the pace, round levels get a taller tick and a label.
+  const ticks = plot + 12;
+  const tickH = 10;
+  const healthTop = ticks + tickH + 24;
   const healthH = 46;
+  const milestone = roundStep((run.levels.at(-1)?.level ?? 0) / 10);
+  // Labels are kept from the last level back, each at least LABEL_GAP left of the one after it.
+  const labelled = () => {
+    const kept: typeof run.levels = [];
+    for (const level of [...run.levels].reverse()) {
+      const after = kept.at(-1);
+      if (!after || (level.level % milestone === 0 && x(after.t) - x(level.t) >= LABEL_GAP)) kept.push(level);
+    }
+    return kept;
+  };
   // A longer rival only counts up to this run's end, which is where its line is cut.
   const peak = () => Math.max(run.samples.at(-1)!.xp, ...drawn(props.rivals).map((other) => at(other.run.samples, run.duration_s).xp));
   const step = () => roundStep(peak() / 4);
@@ -221,13 +235,19 @@ function ExperienceChart(props: { run: RunTimeline; cursor: Cursor; rivals: Riva
         {(other) => <polyline points={line(other.run.samples.filter((s) => s.t <= run.duration_s))} class="rival" stroke={other.rival.color} />}
       </For>
       <polyline points={line(run.samples)} fill="none" stroke={BLUE} stroke-width="2" />
+      <text x={LEFT - 8} y={ticks + tickH} class="axis" text-anchor="end">
+        level
+      </text>
       <For each={run.levels}>
         {(level) => (
-          <circle cx={x(level.t)} cy={y(at(run.samples, level.t).xp)} r="3" fill="#fff">
-            <title>
-              {clock(level.t)} level {level.level}
-            </title>
-          </circle>
+          <line x1={x(level.t)} x2={x(level.t)} y1={level.level % milestone === 0 ? ticks - 3 : ticks} y2={ticks + tickH} stroke="#fff" stroke-opacity={level.level % milestone === 0 ? 1 : 0.55} />
+        )}
+      </For>
+      <For each={labelled()}>
+        {(level) => (
+          <text x={x(level.t)} y={ticks + tickH + 14} class="axis small" text-anchor="middle">
+            {level.level}
+          </text>
         )}
       </For>
       <text x={LEFT - 8} y={healthTop + 18} class="axis" text-anchor="end">
