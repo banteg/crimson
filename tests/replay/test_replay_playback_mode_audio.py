@@ -9,6 +9,8 @@ import pytest
 from crimson.game_modes import GameMode
 from crimson.modes import replay_playback_mode
 from crimson.modes.replay_playback_mode import ReplayPlaybackMode
+from crimson.perks.ids import PerkId
+from crimson.perks.selection import PerkPick
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.replay import Replay, ReplayRecorder, load_replay
@@ -314,9 +316,12 @@ def test_esc_returns_to_the_screen_below_once(open_playback: OpenPlayback, mocke
     assert view.take_action() is None
 
 
-def test_closing_gives_the_music_back_to_the_track_that_was_playing(tmp_path: Path, assets_dir: Path, mocker) -> None:
-    music = MusicState(ready=True, enabled=True, volume=1.0, active_track="crimson_theme")
-    audio = AudioState(ready=True, music=music, sfx=init_sfx_state(ready=False, enabled=False, volume=1.0, rng=Crand(0)))
+def test_closing_gives_back_the_music_and_the_sound_randomness_the_replay_found(
+    tmp_path: Path, assets_dir: Path, mocker,
+) -> None:
+    music = MusicState(ready=True, enabled=True, volume=1.0, active_track="crimson_theme", game_tune_started=True)
+    game_rng = Crand(0)
+    audio = AudioState(ready=True, music=music, sfx=init_sfx_state(ready=False, enabled=False, volume=1.0, rng=game_rng))
     cfg = ensure_crimson_cfg(tmp_path)
     console = create_console(tmp_path, assets_dir=assets_dir)
     register_core_cvars(console, cfg.display.width, cfg.display.height)
@@ -327,14 +332,16 @@ def test_closing_gives_the_music_back_to_the_track_that_was_playing(tmp_path: Pa
         console=console,
         audio=audio,
     )
-    play_music = mocker.patch.object(replay_playback_mode, "play_music")
-    stop_music = mocker.patch.object(replay_playback_mode, "stop_music")
+    resume_music = mocker.patch.object(replay_playback_mode, "resume_music")
     view.open()
+    assert audio.sfx.rng is not game_rng
+    music.game_tune_started = False
 
     view.close()
 
-    stop_music.assert_called_once_with(music)
-    play_music.assert_called_once_with(music, "crimson_theme")
+    resume_music.assert_called_once_with(music, "crimson_theme")
+    assert music.game_tune_started
+    assert audio.sfx.rng is game_rng
 
 
 def test_a_run_that_reaches_its_recorded_result_says_so_and_a_doctored_one_does_not(open_playback: OpenPlayback) -> None:
@@ -372,8 +379,7 @@ def test_a_perk_pick_shows_the_offered_perks_with_the_chosen_one(open_playback: 
     while view._skip_target is not None:
         view._advance_skip()
 
-    pick = view._pick
-    assert pick is not None
+    [(pick, _level)] = view._picks
     assert pick.chosen == command.choice_index
     assert pick.perk_id == pick.offered[command.choice_index]
     draw_text = mocker.spy(replay_playback_mode, "draw_small_text")
@@ -381,3 +387,14 @@ def test_a_perk_pick_shows_the_offered_perks_with_the_chosen_one(open_playback: 
     texts = [call.args[1] for call in draw_text.call_args_list]
     assert any(text.endswith("perk picked") for text in texts)
     assert any(text.startswith("> ") for text in texts)
+
+
+def test_picks_in_one_frame_each_get_their_popup_in_turn(open_playback: OpenPlayback) -> None:
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 4))
+    first, second = PerkPick(offered=(PerkId.DODGER,), chosen=0), PerkPick(offered=(PerkId.NINJA,), chosen=0)
+    view._picks.extend([(first, 2), (second, 3)])
+    view._pick_seconds = 0.5
+
+    view.update(0.6)
+
+    assert list(view._picks) == [(second, 3)]

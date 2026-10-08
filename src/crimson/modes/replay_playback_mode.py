@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import deque
+
 import msgspec
 
 from grim import canvas
@@ -13,8 +15,8 @@ from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.music import play_music, stop_music
-from grim.rand import Crand
+from grim.music import resume_music, stop_music
+from grim.rand import Crand, CrandLike
 from grim.raylib_api import rl, rl_color, rl_rectangle, rl_vector2
 from grim.view import ViewContext
 
@@ -138,15 +140,17 @@ class ReplayPlaybackMode:
 
         self._audio = audio
         self._audio_rng: Crand | None = None
-        # The music playing when the replay opened, played again when it closes.
+        # The game's music and sound effect randomness when the replay opened, given back when it closes.
         self._resume_track: str | None = None
+        self._resume_game_tune_started = False
+        self._resume_sfx_rng: CrandLike | None = None
         self._skip_target: int | None = None
         # Why playback stopped before the replay's end: a tick the simulation refused.
         self._stopped_reason: str | None = None
         # At the end: whether the run reached the result it recorded.
         self._played_as_recorded: bool | None = None
-        self._pick: PerkPick | None = None
-        self._pick_level = 0
+        # The picks still to show, each with its level; the first is on screen for its time.
+        self._picks: deque[tuple[PerkPick, int]] = deque()
         self._pick_seconds = 0.0
 
     @property
@@ -294,11 +298,17 @@ class ReplayPlaybackMode:
         self._driver = None
 
         self._audio_rng = Crand(int(replay.run.seed) & 0xFFFFFFFF)
-        self._resume_track = None if self._audio is None else self._audio.music.active_track
+        audio = self._audio
+        if audio is not None:
+            self._resume_track = audio.music.active_track
+            self._resume_game_tune_started = audio.music.game_tune_started
+            # The replay's sounds draw their variations from its own randomness, not the game's.
+            self._resume_sfx_rng = audio.sfx.rng
+            audio.sfx.rng = self._audio_rng
         self._skip_target = None
         self._stopped_reason = None
         self._played_as_recorded = None
-        self._pick = None
+        self._picks.clear()
 
         preserve_bugs = bool(replay.run.preserve_bugs)
         rtx_mode = mode_from_rtx_flag(self._rtx)
@@ -356,9 +366,13 @@ class ReplayPlaybackMode:
         audio = self._audio
         if audio is not None:
             # The replay's tunes give way to the music that was playing.
-            stop_music(audio.music)
-            if self._resume_track is not None:
-                play_music(audio.music, self._resume_track)
+            if self._resume_track is None:
+                stop_music(audio.music)
+            else:
+                resume_music(audio.music, self._resume_track)
+            audio.music.game_tune_started = self._resume_game_tune_started
+            if self._resume_sfx_rng is not None:
+                audio.sfx.rng = self._resume_sfx_rng
         self._audio_rng = None
 
     def take_action(self) -> ScreenAction | None:
@@ -429,11 +443,12 @@ class ReplayPlaybackMode:
         self._tick_index = int(advance.next_tick_index)
 
         apply_presentation_plans(plans=advance.plans, runtime=runtime)
+        level = int(runtime.world.players[0].level)
         for tick_result in advance.tick_results:
             for pick in tick_result.payload.perk_picks:
-                self._pick = pick
-                self._pick_level = int(runtime.world.players[0].level)
-                self._pick_seconds = _PICK_POPUP_SECONDS
+                if not self._picks:
+                    self._pick_seconds = _PICK_POPUP_SECONDS
+                self._picks.append((pick, level))
         if advance.refused_tick is not None:
             self._stopped_reason = f"This run stops playing here (tick {advance.refused_tick})"
             self._finished = True
@@ -475,6 +490,10 @@ class ReplayPlaybackMode:
                 audio_bridge.sfx_enabled = sfx_enabled
         if self._finished or self._tick_index >= target:
             self._skip_target = None
+            # Of the picks the skip passed, only the last shows.
+            while len(self._picks) > 1:
+                self._picks.popleft()
+            self._pick_seconds = _PICK_POPUP_SECONDS if self._picks else 0.0
         self._clock.reset()
         self._dt_accum = 0.0
 
@@ -498,7 +517,11 @@ class ReplayPlaybackMode:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
             self._skip_forward_seconds(_SKIP_LONG_SECONDS)
 
-        self._pick_seconds = max(0.0, self._pick_seconds - max(0.0, float(dt)))
+        if self._picks and self._skip_target is None:
+            self._pick_seconds -= max(0.0, float(dt))
+            if self._pick_seconds <= 0.0:
+                self._picks.popleft()
+                self._pick_seconds = _PICK_POPUP_SECONDS if self._picks else 0.0
         if self._skip_target is not None and not self._finished:
             self._advance_skip()
         elif not self._finished and bool(self._paused) and bool(self._step_once_pending):
@@ -655,8 +678,8 @@ class ReplayPlaybackMode:
 
         if bool(self._show_replay_widget):
             self._draw_replay_widget()
-            if self._pick is not None and self._pick_seconds > 0.0:
-                self._draw_pick_popup(self._pick)
+            if self._picks and self._skip_target is None:
+                self._draw_pick_popup(*self._picks[0])
             if self._finished:
                 self._draw_result_panel()
 
@@ -664,14 +687,14 @@ class ReplayPlaybackMode:
         rl.draw_rectangle(int(x), int(y), int(w), int(h), rl_color(0, 0, 0, 190))
         rl.draw_rectangle_lines(int(x), int(y), int(w), int(h), rl_color(120, 120, 140, 200))
 
-    def _draw_pick_popup(self, pick: PerkPick) -> None:
+    def _draw_pick_popup(self, pick: PerkPick, level: int) -> None:
         """The perks the menu offered at a pick, the chosen one highlighted, beside the play area."""
         violence_disabled = int(self._replay.run.violence_disabled)
         line_h = 16.0
         x, y = 12.0, float(canvas.height()) * 0.5 - (len(pick.offered) + 1) * line_h * 0.5
         self._draw_panel(x - 6.0, y - 6.0, 230.0, (len(pick.offered) + 1) * line_h + 12.0)
         fade = min(1.0, self._pick_seconds / 0.5)
-        self._draw_ui_text(f"Level {self._pick_level}: perk picked", Vec2(x, y), rl_color(230, 230, 230, int(230 * fade)))
+        self._draw_ui_text(f"Level {level}: perk picked", Vec2(x, y), rl_color(230, 230, 230, int(230 * fade)))
         for index, perk_id in enumerate(pick.offered):
             chosen = index == pick.chosen
             color = rl_color(128, 255, 153, int(255 * fade)) if chosen else rl_color(150, 150, 160, int(200 * fade))

@@ -196,6 +196,7 @@ def run_replay_render_benchmark(
     tick_total = _tick_total(replay, max_ticks)
     planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0) + (1 if telemetry_requested else 0)
     run_bar = tqdm(total=planned_steps, unit="run", desc="render benchmark", leave=False, disable=not show_progress)
+    audio = None
     try:
         resources = load_runtime_resources(runtime_assets_dir)
         audio = None if mute_audio else open_replay_audio(cfg, ctx, console)
