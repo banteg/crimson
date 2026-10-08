@@ -675,14 +675,32 @@ Native behavior:
 - In game, bullets show only their trails, and plasma shots only their glow.
   At most a filtered edge texel can flicker near a spawning shot.
 
+Why it's likely a bug:
+
+- The heads used to show. In the freeware builds (1.0.2, 1.3.0, 1.3.1 and
+  1.4.0) the last UV change before the pass is a `grim_set_uv(0, 0, 1, 1)` in
+  an earlier pass, so every head drew the whole brass slug
+  (`bullet_real_16.tga`, the same image as the later `bullet16.tga`), as
+  freeware captures show. From 1.8.7 on, the glow pass right before it selects
+  frame 13, and the heads vanish in every later build.
+- Every shipped `grim.dll` binds a texture without touching the UVs, so only
+  `crimsonland.exe` changed.
+- The skip list never grew with the glowing and sprite shots. With the heads
+  hidden, nothing showed a slug inside a Fire Bullets streak, an ion beam or a
+  plasma glow.
+
 Rewrite behavior:
 
-- Documented and preserved in both modes: the pass samples the same texels, so
-  heads and cores stay invisible as in the original.
+- Default: the pass samples the whole sprite. It also skips Ion Rifle, Ion
+  Minigun, Ion Cannon, Shrinkifier, Blade Gun, Spider Plasma, Plasma Cannon,
+  Splitter Gun, Plague Spreader and Fire Bullets, so heads show on bullets and
+  pellets only.
+- `--preserve-bugs`: the pass samples the same texels as native, so no head shows.
 
 Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (Fire Bullets
-glow and late bullet pass), `effect_select_texture`, and captures of the
-original with Plasma Shooter spiders. Executable-backed coverage is in
+glow and late bullet pass), `effect_select_texture`, the head passes of every
+build in `game_bins/crimsonland/`, captures of 1.9.93 on Windows (no heads,
+Plasma Shooter spiders included) and of freeware 1.4.0 (heads). Executable-backed coverage is in
 `tests/native_oracle/test_projectile_render.py`; the original texture's invisible
 sampled corner is also checked on the GPU in
 `tests/render/test_late_bullet_pass.py`.
@@ -809,3 +827,67 @@ Evidence: `decomp/1.9/crimsonland/crimsonland/creature_handle_death.c` (the
 bonus spawn at the top) and `creature_spawn_template` (the only template that
 sets the flag).
 
+
+## 34) The Fire Bullets glow follows the last projectile slot
+
+Native behavior:
+
+- `projectile_render`'s Fire Bullets glow loop tests
+  `projectile->type_id`, a pointer the sprite pass leaves on the last pool slot
+  (95), instead of the projectile it is drawing.
+- So while slot 95 holds a Fire Bullets type, every projectile in flight gets
+  the 64 px glow, pistol and ion shots included. The slot keeps its type after
+  the shot ends, so the glow stays until another type takes the slot.
+- Otherwise no projectile glows, Fire Bullets shots included. Spawns take the
+  first free slot, so slot 95 fills only when the pool is full.
+
+Why it's likely a bug:
+
+- The loop draws at each projectile's own position and angle; only the type
+  test reads another slot, through a pointer left over from an earlier loop.
+
+Rewrite behavior:
+
+- Default: each Fire Bullets shot in flight gets the glow, and nothing else does.
+- `--preserve-bugs`: the glow follows slot 95, as native.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (the glow
+loop after the Plague Spreader pass). Executable-backed coverage is in
+`tests/native_oracle/test_projectile_render.py`.
+
+## 35) Rocket detonation flashes draw the whole particle atlas
+
+Native behavior:
+
+- `bonus_render` draws each detonation's two orange flashes (64 and 200 units
+  at full scale) after the particle pool, with `particles` still bound.
+- Before them it calls `grim_set_uv(0, 0, 1, 1)`, so each flash stretches the
+  entire particle atlas, debris, blood, explosion and ring cells included,
+  rather than one glow cell.
+- The atlas's ring cell sits in its bottom-right quarter, so a thin ring grows
+  down-right of each blast, with small debris blobs up-left.
+
+Why it's likely a bug:
+
+- In 1.4.0 the flash binds the standalone `glow` texture (`glow64.tga`, one
+  64x64 soft glow) by name before the same `grim_set_uv(0, 0, 1, 1)`, so the
+  whole texture is the glow.
+- By 1.8.7 the loose effect textures had moved into the `game\particles.jaz`
+  atlas. The flash lost its own bind and kept the full-texture UVs, so it took
+  the whole atlas the particle pass left bound, as 1.9.93 still does.
+- The same move hid the bullet heads in
+  [28)](#28-bullet-heads-and-plasma-cores-are-never-visible), in the opposite
+  direction.
+- The atlas keeps `glow64.tga` as 4x4 frame 6 (effect `0x10`), pixel for pixel.
+  The ring is a separate cell (effect `0x01`); freeware drew its own
+  `shockwave.tga` in other passes, not in this flash.
+
+Rewrite behavior:
+
+- Default: the flashes draw the soft glow cell, as freeware did.
+- `--preserve-bugs`: they stretch the whole atlas, as native.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/bonus_render.cpp` (the detonation
+loop), the detonation flashes of the 1.4.0 and 1.8.7 builds in
+`game_bins/crimsonland/`, captures of 1.9.93 on Windows showing the atlas in the
+flash, and `tests/native_oracle/test_projectile_render.py`.
