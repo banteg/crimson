@@ -4,7 +4,7 @@ import { type Env, json, refuse } from "./http";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
 import type { Board } from "./ranked";
 import { postRun, timelineFor } from "./runs";
-import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView, runDetailView } from "./views";
+import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView, runDetailView, SHOWN_NAME } from "./views";
 
 // Links, OAuth callbacks and the session cookie follow the request's origin, so the site answers only over
 // HTTPS, and browsers are told to stay there. Plain-HTTP localhost stays for wrangler dev.
@@ -76,7 +76,8 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     return run ? json(run) : refuse(404, "no such run");
   }
   if ((match = /^GET \/api\/runs\/([0-9a-f]{64})\/timeline$/.exec(route))) {
-    const timeline = await timelineFor(env, match[1]!);
+    const run = await env.DB.prepare("SELECT 1 FROM runs WHERE id = ? AND hidden = 0").bind(match[1]).first();
+    const timeline = run && (await timelineFor(env, match[1]!));
     return timeline ? json(timeline) : refuse(404, "no such run");
   }
   if (route === "GET /api/me") return json({ account: await sessionAccount(request, env) });
@@ -157,7 +158,9 @@ async function routeTitle(env: Env, path: string): Promise<string | null> {
     return player ? (player.name ?? player.fingerprint) : null;
   }
   if ((match = /^\/runs\/([0-9a-f]{64})$/.exec(path))) {
-    const run = await env.DB.prepare("SELECT name, board, quest FROM runs WHERE id = ? AND hidden = 0")
+    const run = await env.DB.prepare(
+      `SELECT ${SHOWN_NAME} AS name, r.board, r.quest FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND r.hidden = 0`,
+    )
       .bind(match[1])
       .first<{ name: string; board: Board; quest: string }>();
     return run ? `${run.name} · ${boardTitle(run.board, run.quest)}` : null;

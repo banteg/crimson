@@ -2,7 +2,7 @@ import { env, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { concat, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256 } from "../../src/crypto";
 import { decodeReplay, inflateReplay } from "../../src/replay";
-import type { BoardView, RunDetailView } from "../../src/api-types";
+import type { BoardView, ProfileView, RunDetailView } from "../../src/api-types";
 import vectors from "../vectors.json";
 
 const ORIGIN = "https://crimson.land";
@@ -34,6 +34,15 @@ function post(path: string, body: unknown): Promise<Response> {
 
 async function reason(response: Response): Promise<string> {
   return ((await response.json()) as { reason: string }).reason;
+}
+
+// The game's sign-in: a signed challenge buys a one-time login link.
+async function login(player: Player): Promise<string> {
+  const { challenge } = (await (await post("/api/auth/challenge", { public_key: player.publicKey })).json()) as { challenge: string };
+  const signature = await player.sign(concat(LOGIN_DOMAIN, new TextEncoder().encode(challenge)));
+  const response = await post("/api/auth/login", { public_key: player.publicKey, challenge, signature });
+  expect(response.status).toBe(200);
+  return ((await response.json()) as { url: string }).url;
 }
 
 describe("runs", () => {
@@ -113,6 +122,38 @@ describe("runs", () => {
     });
   });
 
+  it("a hidden name shows only the fingerprint, on boards, run pages, the game's scores and the profile", async () => {
+    const player = await Player.create();
+    const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
+    const { fingerprint } = (await env.DB.prepare("SELECT fingerprint FROM keys").first<{ fingerprint: string }>())!;
+    await env.DB.prepare("UPDATE accounts SET name_hidden = 1").run();
+    const get = async <T>(path: string) => (await (await SELF.fetch(`${ORIGIN}${path}`)).json()) as T;
+
+    const detail = await get<RunDetailView>(`/api/runs/${id}`);
+    expect([detail.name, detail.player.name]).toEqual([fingerprint, null]);
+    expect((await get<BoardView>("/api/boards/survival")).rows[0]!.player.name).toBeNull();
+    const { scores } = (await (await post("/api/scores", { board: "survival", quest: "" })).json()) as { scores: { name: string }[] };
+    expect(scores[0]!.name).toBe(fingerprint);
+    expect((await get<ProfileView>(`/api/players/${detail.player.id}`)).names).toEqual([]);
+    expect(await (await SELF.fetch(`${ORIGIN}/runs/${id}`)).text()).toContain(`<title>${fingerprint} · Survival · crimson.land</title>`);
+  });
+
+  it("a timeline goes with its run: hidden runs and deleted accounts have none", async () => {
+    const player = await Player.create();
+    const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
+    const timeline = () => SELF.fetch(`${ORIGIN}/api/runs/${id}/timeline`);
+    expect((await timeline()).status).toBe(200);
+
+    await env.DB.prepare("UPDATE runs SET hidden = 1").run();
+    expect((await timeline()).status).toBe(404);
+    await env.DB.prepare("UPDATE runs SET hidden = 0").run();
+
+    const cookie = (await SELF.fetch(await login(player), { redirect: "manual" })).headers.get("set-cookie")!.split(";")[0]!;
+    expect((await SELF.fetch(`${ORIGIN}/api/account/delete`, { method: "POST", headers: { cookie, origin: ORIGIN } })).status).toBe(200);
+    expect((await env.REPLAYS.list()).objects).toEqual([]);
+    expect((await timeline()).status).toBe(404);
+  });
+
   it("a run is accepted once, whoever sends it again", async () => {
     const [owner, copier] = [await Player.create(), await Player.create()];
     expect((await owner.upload(vectors.ranked_run, "owner")).status).toBe(201);
@@ -143,14 +184,6 @@ describe("runs", () => {
 });
 
 describe("site login", () => {
-  async function login(player: Player): Promise<string> {
-    const { challenge } = (await (await post("/api/auth/challenge", { public_key: player.publicKey })).json()) as { challenge: string };
-    const signature = await player.sign(concat(LOGIN_DOMAIN, new TextEncoder().encode(challenge)));
-    const response = await post("/api/auth/login", { public_key: player.publicKey, challenge, signature });
-    expect(response.status).toBe(200);
-    return ((await response.json()) as { url: string }).url;
-  }
-
   it("a signed challenge buys a one-time link that sets a session", async () => {
     const url = await login(await Player.create());
     expect(url.startsWith(`${ORIGIN}/login/`)).toBe(true);
