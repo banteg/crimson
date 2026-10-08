@@ -32,9 +32,12 @@
     addEventListener(type, (event) => {
       if (!away || !event.isTrusted || event.pointerType !== "mouse") return;
       away = false;
-      const bit = (button) => 1 << [0, 2, 1][button]; // MouseEvent.button to its MouseEvent.buttons bit
-      const held = type === "pointerdown" ? event.buttons & ~bit(event.button) : event.buttons;
-      for (const button of [0, 1, 2])
+      // MouseEvent.button to its MouseEvent.buttons bit: left, middle, right, back, forward.
+      const bit = (button) => 1 << [0, 2, 1, 3, 4][button];
+      // A press, also one chorded onto a held button (a pointermove), names its button.
+      const pressing = event.button >= 0 && event.buttons & bit(event.button);
+      const held = pressing ? event.buttons & ~bit(event.button) : event.buttons;
+      for (const button of [0, 1, 2, 3, 4])
         if (!(held & bit(button)))
           document.dispatchEvent(new PointerEvent("pointerup", {
             pointerType: "mouse", pointerId: event.pointerId, button, buttons: held,
