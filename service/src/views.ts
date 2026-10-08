@@ -1,10 +1,11 @@
 // The read API's JSON (src/api-types.ts): the boards, the quest menu, profiles and the join confirmation.
 
-import type { Board, BoardView, GameScore, JoinView, PlayerView, ProfileView, ProviderName, QuestMenuView, RunDetailView, RunView } from "./api-types";
+import type { Board, BoardView, Category, GameScore, JoinView, Pilot, PlayerView, ProfileView, ProviderName, QuestMenuView, RunDetailView, RunView } from "./api-types";
 import type { Env } from "./http";
 import { configuredProviders } from "./oauth";
 import { LOWER_IS_BETTER } from "./ranked";
 import type { RunResult } from "./replay";
+import { accountModeration, runModeration } from "./moderation";
 import { timelineFor } from "./runs";
 import questTitles from "./quests.json";
 import { formatScore } from "../web/src/format";
@@ -18,6 +19,11 @@ const WEAPONS: Record<string, { name: string }> = weaponData;
 // fingerprint once a moderator hid the account's name.
 const FINGERPRINT = "(SELECT fingerprint FROM keys WHERE account_id = a.id ORDER BY added_at LIMIT 1)";
 export const SHOWN_NAME = `CASE WHEN a.name_hidden THEN ${FINGERPRINT} ELSE r.name END`;
+// SQL over accounts `a` and the runs `run` of that account: the run's category (docs/rewrite/bots.md). A moderator's
+// choice for the run wins, else a declared pilot or the account's bot mark make it a bot run.
+export const runCategory = (run: string) => `coalesce(${run}.category, CASE WHEN ${run}.pilot != '' OR a.bot THEN 'bot' ELSE 'human' END)`;
+
+export const parsePilot = (pilot: string): Pilot | null => (pilot ? (JSON.parse(pilot) as Pilot) : null);
 
 function linkUrl(provider: ProviderName, handle: string, subject: string): string {
   switch (provider) {
@@ -35,14 +41,14 @@ export async function players(env: Env, ids: number[]): Promise<Map<number, Play
   if (!ids.length) return found;
   const marks = ids.map(() => "?").join(",");
   const { results: accounts } = await env.DB.prepare(
-    `SELECT a.id, a.name, a.name_hidden,
+    `SELECT a.id, a.name, a.name_hidden, a.bot,
        ${FINGERPRINT} AS fingerprint,
        (SELECT count(*) FROM accounts b WHERE b.id != a.id AND (lower(b.name) = lower(a.name) AND b.name != ''
           OR EXISTS (SELECT 1 FROM links l WHERE l.account_id = b.id AND lower(l.handle) = lower(a.name)))) AS clashes
      FROM accounts a WHERE a.id IN (${marks})`,
   )
     .bind(...ids)
-    .all<{ id: number; name: string; name_hidden: number; fingerprint: string; clashes: number }>();
+    .all<{ id: number; name: string; name_hidden: number; bot: number; fingerprint: string; clashes: number }>();
   const { results: links } = await env.DB.prepare(
     `SELECT account_id, provider, subject, handle, avatar_url FROM links WHERE account_id IN (${marks})`,
   )
@@ -61,6 +67,7 @@ export async function players(env: Env, ids: number[]): Promise<Map<number, Play
         avatar_url: link.avatar_url,
         url: linkUrl(link.provider, link.handle, link.subject),
       })),
+      bot: account.bot !== 0,
     });
   }
   return found;
@@ -76,30 +83,33 @@ interface BestRun {
   name: string;
   score: number;
   result: string;
+  pilot: string;
   accepted_at: number;
 }
 
-// Each account's best run on a board; equal scores keep the earlier accepted run ahead.
-async function bestRuns(env: Env, board: Board, quest: string, limit: number): Promise<BestRun[]> {
+// Each account's best run on a board in a category; equal scores keep the earlier accepted run ahead.
+async function bestRuns(env: Env, board: Board, quest: string, category: Category, limit: number): Promise<BestRun[]> {
   const order = LOWER_IS_BETTER[board] ? "ASC" : "DESC";
   const { results } = await env.DB.prepare(
-    `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.score, r.result, r.accepted_at FROM runs r JOIN accounts a ON a.id = r.account_id
-     WHERE r.board = ? AND r.quest = ? AND r.hidden = 0 AND a.banned = 0
+    `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.score, r.result, r.pilot, r.accepted_at FROM runs r JOIN accounts a ON a.id = r.account_id
+     WHERE r.board = ? AND r.quest = ? AND r.hidden = 0 AND a.banned = 0 AND ${runCategory("r")} = ?
        AND r.id = (SELECT id FROM runs b WHERE b.account_id = r.account_id AND b.board = r.board AND b.quest = r.quest AND b.hidden = 0
+                     AND ${runCategory("b")} = ?
                    ORDER BY b.score ${order}, b.accepted_at LIMIT 1)
      ORDER BY r.score ${order}, r.accepted_at LIMIT ?`,
   )
-    .bind(board, quest, limit)
+    .bind(board, quest, category, category, limit)
     .all<BestRun>();
   return results;
 }
 
-export async function boardView(env: Env, board: Board, quest: string, limit: number): Promise<BoardView> {
-  const results = await bestRuns(env, board, quest, limit);
+export async function boardView(env: Env, board: Board, quest: string, category: Category, limit: number): Promise<BoardView> {
+  const results = await bestRuns(env, board, quest, category, limit);
   const who = await players(env, results.map((row) => row.account_id));
   return {
     board,
     quest,
+    category,
     title: boardTitle(board, quest),
     rows: results.map((row, i) => {
       const result = JSON.parse(row.result) as RunResult;
@@ -110,6 +120,7 @@ export async function boardView(env: Env, board: Board, quest: string, limit: nu
         elapsed_ms: result.elapsed_ms,
         most_used_weapon_id: result.players[0]!.most_used_weapon_id,
         player: who.get(row.account_id)!,
+        pilot: parsePilot(row.pilot),
       };
     }),
   };
@@ -118,12 +129,13 @@ export async function boardView(env: Env, board: Board, quest: string, limit: nu
 // The board holds each account's best run; a run that is not its player's best has no rank.
 const BOARD_SCAN = 1000;
 
-// A run's page without its timeline, which the page's preview tags and card can go without or fetch themselves.
-export type RunSummary = Omit<RunDetailView, "timeline">;
+// A run's page without its timeline and moderation, which the page's preview tags and card can go without or fetch
+// themselves.
+export type RunSummary = Omit<RunDetailView, "timeline" | "moderation">;
 
-export async function runDetailView(env: Env, id: string): Promise<RunDetailView | null> {
+export async function runDetailView(env: Env, id: string, moderator: boolean): Promise<RunDetailView | null> {
   const run = await runSummary(env, id);
-  return run && { ...run, timeline: await timelineFor(env, id) };
+  return run && { ...run, timeline: await timelineFor(env, id), moderation: moderator ? await runModeration(env, id) : null };
 }
 
 // A run anyone may see by its id: not hidden, and not a banned account's, as the boards filter.
@@ -135,16 +147,17 @@ export async function visibleRun(env: Env, id: string): Promise<boolean> {
 
 export async function runSummary(env: Env, id: string): Promise<RunSummary | null> {
   const run = await env.DB.prepare(
-    `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.board, r.quest, r.score, r.accepted_at, r.game_version, r.client,
-       r.client_version, r.platform, r.result FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND ${VISIBLE_RUN}`,
+    `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.board, r.quest, ${runCategory("r")} AS category, r.pilot, r.score, r.accepted_at,
+       r.game_version, r.client, r.client_version, r.platform, r.result FROM runs r JOIN accounts a ON a.id = r.account_id
+     WHERE r.id = ? AND ${VISIBLE_RUN}`,
   )
     .bind(id)
     .first<{
-      id: string; account_id: number; name: string; board: Board; quest: string; score: number; accepted_at: number; game_version: string;
-      client: string; client_version: string; platform: string; result: string;
+      id: string; account_id: number; name: string; board: Board; quest: string; category: Category; pilot: string; score: number;
+      accepted_at: number; game_version: string; client: string; client_version: string; platform: string; result: string;
     }>();
   if (!run) return null;
-  const board = await bestRuns(env, run.board, run.quest, BOARD_SCAN);
+  const board = await bestRuns(env, run.board, run.quest, run.category, BOARD_SCAN);
   const rank = board.findIndex((row) => row.id === id);
   const top = board[0] && board[0].id !== id ? board[0] : null;
   const best = board.find((row) => row.account_id === run.account_id);
@@ -154,6 +167,8 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
     id,
     board: run.board,
     quest: run.quest,
+    category: run.category,
+    pilot: parsePilot(run.pilot),
     title: boardTitle(run.board, run.quest),
     name: run.name,
     player: who.get(run.account_id)!,
@@ -195,8 +210,8 @@ export function runDescription(run: RunSummary): string {
   return `${playerLabel(run.player)} ${what}${run.rank ? `, #${run.rank} on the board` : ""}. ${numbers.join(", ")}. Verified by replay.`;
 }
 
-export async function gameScores(env: Env, board: Board, quest: string, limit: number): Promise<GameScore[]> {
-  return (await bestRuns(env, board, quest, limit)).map((run) => {
+export async function gameScores(env: Env, board: Board, quest: string, category: Category, limit: number): Promise<GameScore[]> {
+  return (await bestRuns(env, board, quest, category, limit)).map((run) => {
     const result = JSON.parse(run.result) as RunResult;
     const player = result.players[0]!;
     return {
@@ -214,15 +229,17 @@ export async function gameScores(env: Env, board: Board, quest: string, limit: n
   });
 }
 
-export async function questMenuView(env: Env, board: "quests" | "quests-hardcore", stage: number): Promise<QuestMenuView> {
+export async function questMenuView(env: Env, board: "quests" | "quests-hardcore", stage: number, category: Category): Promise<QuestMenuView> {
   const { results } = await env.DB.prepare(
-    "SELECT quest, count(DISTINCT account_id) AS players FROM runs WHERE board = ? AND quest LIKE ? AND hidden = 0 GROUP BY quest",
+    `SELECT r.quest, count(DISTINCT r.account_id) AS players FROM runs r JOIN accounts a ON a.id = r.account_id
+     WHERE r.board = ? AND r.quest LIKE ? AND r.hidden = 0 AND a.banned = 0 AND ${runCategory("r")} = ? GROUP BY r.quest`,
   )
-    .bind(board, `${stage}.%`)
+    .bind(board, `${stage}.%`, category)
     .all<{ quest: string; players: number }>();
   const counts = new Map(results.map((row) => [row.quest, row.players]));
   return {
     board,
+    category,
     stage,
     quests: Array.from({ length: 10 }, (_, i) => {
       const quest = `${stage}.${i + 1}`;
@@ -231,7 +248,7 @@ export async function questMenuView(env: Env, board: "quests" | "quests-hardcore
   };
 }
 
-export async function profileView(env: Env, accountId: number, viewer: number | null): Promise<ProfileView | null> {
+export async function profileView(env: Env, accountId: number, viewer: number | null, moderator: boolean): Promise<ProfileView | null> {
   const player = (await players(env, [accountId])).get(accountId);
   if (!player) return null;
   // A hidden name hides the account's earlier names too.
@@ -241,7 +258,8 @@ export async function profileView(env: Env, accountId: number, viewer: number | 
     .bind(accountId, accountId)
     .all<{ name: string }>();
   const { results: runs } = await env.DB.prepare(
-    "SELECT id, board, quest, score, game_version, accepted_at FROM runs WHERE account_id = ? AND hidden = 0 ORDER BY accepted_at DESC LIMIT 100",
+    `SELECT r.id, r.board, r.quest, ${runCategory("r")} AS category, r.score, r.game_version, r.accepted_at FROM runs r
+     JOIN accounts a ON a.id = r.account_id WHERE r.account_id = ? AND r.hidden = 0 ORDER BY r.accepted_at DESC LIMIT 100`,
   )
     .bind(accountId)
     .all<RunView>();
@@ -254,6 +272,7 @@ export async function profileView(env: Env, accountId: number, viewer: number | 
       viewer === accountId
         ? { providers: configuredProviders(env).map((p) => ({ name: p.name, label: p.label, linked: linked.has(p.name) })) }
         : null,
+    moderation: moderator ? await accountModeration(env, accountId) : null,
   };
 }
 

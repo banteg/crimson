@@ -132,7 +132,7 @@ static void ranked_result(Msgpack &m) {
 // its claimed result and every tick the recording holds.
 static std::vector<uint8_t> ranked_payload() {
   Msgpack m;
-  m.map(7);
+  m.map(8);
   m.str("format_version"), m.integer(CRIMSON_REPLAY_FORMAT);
   m.str("game_version"), m.str(CRIMSON_GAME_VERSION);
   m.str("rules"), m.integer(CRIMSON_REPLAY_RULES);
@@ -140,6 +140,8 @@ static std::vector<uint8_t> ranked_payload() {
   m.str("client"), m.str("crimson-core");
   m.str("version"), m.str(CRIMSON_GAME_VERSION);
   m.str("platform"), m.str(ranked_platform);
+  // A player plays these runs: no pilot.
+  m.str("pilot"), m.nil();
   m.str("run"), m.map(14);
   m.str("game_mode_id"), m.integer(cfg.mode);
   m.str("seed"), m.integer(cfg.seed);

@@ -75,15 +75,16 @@ streams in `build/fixtures`. Two hunter scenarios prefer the perks ranked fixes
 touch (Jinxed, Pyrokinetic, Highlander, Death Clock, Bandage, the
 Regenerations) and hold G at times. The matrix compares 36,343 named fields at
 initialization and **every tick** between native and WASM, then checks A/B/A
-reuse in both. It also probes rejection of bad input, commands and entitlement,
-and that a large movement vector does not move faster than a unit one.
+reuse in both. It also probes rejection of bad input, commands, entitlement and
+picks the perk menu does not allow, and that a large movement vector does not
+move faster than a unit one.
 
-The [results](results/matrix.json) cover 357,500 ticks. All 50 quests run to an
+The [results](results/matrix.json) cover 363,188 ticks. All 50 quests run to an
 outcome; the bot completes 1.1, 1.3 and 1.5. Coverage includes game over in
-every mode, quest completion and failure, spawn stalls, reloads, perk menus,
-ordered picks, several weapons, freeze, Reflex Boost and weapon power-ups, and
-a settings case varying hardcore, retry scaling, detail, violence, friendly
-fire and weapon-usage history. The snapshot is a diagnostic schema: pointers
+every mode, quest completion and failure, spawn stalls, reloads, perk menus, a
+pick followed by reopening the menu, several weapons, freeze, Reflex Boost and
+weapon power-ups, and a settings case varying hardcore, retry scaling, detail,
+violence, friendly fire and weapon-usage history. The snapshot is a diagnostic schema: pointers
 become pool indices, and padding, static addresses, draw vertices and
 presentation-only HUD slots are left out. It is not a save-state format.
 

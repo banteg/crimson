@@ -85,7 +85,8 @@ opens a login link only when it leads to the service's own host.
   case, the board adds the first four hex digits of its key's hash: `banteg · 3f2a`. A linked account shows its
   handle, so an impersonator always looks different from the player they copy.
 - Moderators can hide an entry, hide a name (the account then shows only its fingerprint) and ban a key or an
-  account. Every action is logged.
+  account. They also mark accounts as bots and move single runs between the human and bot boards, from the site
+  ([bots and moderation](bots.md)). Every action is logged.
 
 ## Signing in on the site
 
