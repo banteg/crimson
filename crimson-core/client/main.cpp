@@ -3,6 +3,7 @@
 // time, or asks for the folder that holds the game's files.
 #define SDL_MAIN_USE_CALLBACKS
 #include "client.h"
+#include "../game/host_input.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #ifdef __EMSCRIPTEN__
@@ -12,20 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
-// The module's DirectInput state (game/dinput.cpp).
-struct HostInput {
-  unsigned char keys[256];
-  int mouse_dx, mouse_dy, mouse_dz;
-  unsigned char mouse_buttons[8];
-  int key_event_count;
-  struct {
-    unsigned char key, down;
-  } key_events[32];
-  int pad_axes[4];
-  unsigned pad_hat;
-  unsigned char pad_buttons[32];
-};
 
 struct w2c_host {};
 struct w2c_wasi__snapshot__preview1 {};
@@ -134,8 +121,8 @@ void key(SDL_Scancode scancode, bool down) {
 
 // CRIMSON_CAPTURE=<directory> saves the back buffer of the frames listed in
 // CRIMSON_CAPTURE_FRAMES (comma-separated: host frames that draw) as
-// frame_<n>.ppm, then quits. Such a run keeps a fixed 60 Hz clock, so its
-// frames and scripted input (CRIMSON_INPUT) repeat from run to run.
+// frame_<n>.ppm, then quits. Such a run's clock moves 16 ms a frame, so
+// scripted input (CRIMSON_INPUT) lands on the same frames every time.
 std::vector<int> capture_frames;
 int presented, frames;
 bool capture_done;
@@ -258,8 +245,11 @@ void client_fatal(const char *message) {
 
 extern "C" {
 void w2c_host_fatal(struct w2c_host *, u32 message) { client_fatal((const char *)client_memory() + message); }
+// The original's message boxes: startup failures and warnings the player must see.
 void w2c_host_message(struct w2c_host *, u32 text, u32 caption) {
-  fprintf(stderr, "%s: %s\n", (const char *)client_memory() + caption, (const char *)client_memory() + text);
+  const char *body = (const char *)client_memory() + text, *title = (const char *)client_memory() + caption;
+  fprintf(stderr, "%s: %s\n", title, body);
+  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, title, body, window);
 }
 // An unattended run's clock moves 16 ms a frame, and a millisecond each time it is read.
 u32 w2c_host_time_ms(struct w2c_host *) {

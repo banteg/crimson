@@ -4,8 +4,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { WASI } from "node:wasi";
 import { CORE, decode, init, loadCore, names, record, state, step } from "./engine.mjs";
+import { bootGame } from "./game_host.mjs";
 
 // Fields only presentation reads: the HUD's popup timer, which the verifier's
 // stubbed HUD never counts down, and the weapons' sound ids, which only choose
@@ -56,7 +56,6 @@ export function loadGame(wasm) {
             throw Error(`game module: ${text(message)}`);
           },
           time_ms: () => (clock += 2),
-          file_size: () => -1,
         }[i.name] ??
           (() => {
             throw Error(`headless game module called host ${i.name}`);
@@ -72,35 +71,10 @@ export function loadGame(wasm) {
 // The original running from a game directory, settled on its main menu after
 // loading every asset: sessions then run inside it, as the client plays them.
 export function loadLiveGame(wasm, directory) {
-  const module = new WebAssembly.Module(fs.readFileSync(wasm));
-  const wasi = new WASI({ version: "preview1", preopens: { ".": directory }, returnOnExit: true });
-  let memory, clock = 0;
-  const text = (at) => {
-    const bytes = new Uint8Array(memory.buffer, at);
-    return Buffer.from(bytes.subarray(0, bytes.indexOf(0))).toString("latin1");
-  };
-  const host = new Proxy(
-    {},
-    {
-      get: (_, name) =>
-        (...args) => {
-          if (name === "fatal") throw Error(`game module: ${text(args[0])}`);
-          if (name === "message") throw Error(`${text(args[1])}: ${text(args[0])}`);
-          if (name === "time_ms") return clock++;
-        },
-    },
-  );
-  const instance = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi.wasiImport, host });
-  memory = instance.exports.memory;
-  wasi.initialize(instance);
-  const e = instance.exports;
-  if (!e.game_start()) throw Error("startup failed");
+  const run = bootGame(wasm, directory);
   // The startup sequence shares the main menu's screen id and ends after about 14 s.
-  for (let frame = 0; frame < 1200; frame++) {
-    clock += 16;
-    if (!e.game_frame()) throw Error("the game quit");
-  }
-  return e;
+  for (let frame = 0; frame < 1200; frame++) run.frame(16);
+  return run.game;
 }
 
 // A tick nothing can refuse except a run that is over (host.cpp's run-down).

@@ -5,10 +5,10 @@
 // (portable_step_many). The perk screen and the pause menu run between ticks
 // and reach the run only as commands.
 //
-// The settings and progress a tick reads are the verifier's (portable_init sets
-// them up); between ticks the original shows and keeps the player's. What a
-// tick changes carries over: the counters it advances add to the player's
-// progress, and the settings it changes replace the player's.
+// The settings, progress and key codes a tick reads are the verifier's
+// (portable_init sets them up); between ticks the original shows and keeps the
+// player's. What a tick changes carries over: the counters it advances add to
+// the player's progress, and the settings it changes replace the player's.
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
@@ -25,13 +25,13 @@ extern cvar_float_t *cv_padAimDistMul, *cv_bodiesFade;
 struct LiveSettings {
   crimson_cfg_t config;
   game_status_t status;
-  float bodies_fade; // which keeps or removes corpses
+  float bodies_fade;      // which keeps or removes corpses
+  player_input_t keys[2]; // the codes each player's input reads
 };
 
 static struct {
-  LiveSettings run;              // the verifier's, between ticks
-  player_input_t run_keys[2];    // the codes the verifier's input answers (portable_init)
-  player_input_t player_keys[2]; // the players' own, which the run's codes replace
+  LiveSettings run;     // the verifier's, between ticks
+  LiveSettings outside; // the player's, while a tick runs
   float banked; // seconds of play not yet ticked
   int due;      // ticks this frame
   // Presses since the last tick, which only the next tick sees.
@@ -58,11 +58,18 @@ static void live_append(const void *data, size_t size) {
   live.replay.insert(live.replay.end(), (const unsigned char *)data, (const unsigned char *)data + size);
 }
 
-static LiveSettings live_settings() { return {config_blob, game_status_blob, cv_bodiesFade->value}; }
+static LiveSettings live_settings() {
+  return {config_blob,
+          game_status_blob,
+          cv_bodiesFade->value,
+          {player_state_table[0].input, player_state_table[1].input}};
+}
 static void live_install(const LiveSettings &settings) {
   config_blob = settings.config;
   game_status_blob = settings.status;
   cv_bodiesFade->value = settings.bodies_fade;
+  for (int i = 0; i < 2; ++i)
+    player_state_table[i].input = settings.keys[i];
 }
 // Word by word, what the tick changed reaches the player's settings: a status
 // counter by its increase, anything else by its new value.
@@ -73,23 +80,16 @@ template <class T> static void live_carry(const T &before, const T &after, T &pl
     if (a[i] != b[i])
       p[i] = add ? p[i] + (a[i] - b[i]) : a[i];
 }
-// A tick between the verifier's settings. The controls menu may have set the
-// players' keys meanwhile: those wait for the run's end, and the tick reads
-// the run's codes.
+// A tick between the verifier's settings.
 static int live_step(uint32_t count) {
-  for (int i = 0; i < 2; ++i) {
-    if (memcmp(&player_state_table[i].input, &live.run_keys[i], sizeof(player_input_t)))
-      live.player_keys[i] = player_state_table[i].input;
-    player_state_table[i].input = live.run_keys[i];
-  }
-  LiveSettings player = live_settings();
+  live.outside = live_settings();
   live_install(live.run);
   int accepted = portable_step_many(count);
   LiveSettings after = live_settings();
-  live_carry(live.run.config, after.config, player.config, false);
-  live_carry(live.run.status, after.status, player.status, true);
+  live_carry(live.run.config, after.config, live.outside.config, false);
+  live_carry(live.run.status, after.status, live.outside.status, true);
   live.run = after;
-  live_install(player);
+  live_install(live.outside);
   return accepted;
 }
 
@@ -97,8 +97,6 @@ static int live_step(uint32_t count) {
 // place, seeded afresh, with the player's progress and settings.
 static void live_begin() {
   LiveSettings player = live_settings();
-  for (int i = 0; i < 2; ++i)
-    live.player_keys[i] = player_state_table[i].input;
   // The console's flag pauses parts of a tick; a run keeps it closed.
   if (console_log_queue.open)
     console_log_queue.console_set_open(0);
@@ -122,8 +120,6 @@ static void live_begin() {
   bool ready = portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor);
   game_heap_strings = heap_strings;
   live.run = live_settings();
-  for (int i = 0; i < 2; ++i)
-    live.run_keys[i] = player_state_table[i].input;
   // The verifier keeps corpses (cv_bodiesFade, host.cpp).
   live.run.bodies_fade = 1;
   live_install(player);
@@ -133,6 +129,7 @@ static void live_begin() {
   }
   game_live = true;
   live.banked = 0;
+  live.fire_down = live.reload_down = live.pick_down = false;
   live.fire_pressed = live.reload_pressed = live.open_requested = live.pausing = live.picked = false;
   live.move_target_x = live.move_target_y = -1;
   live.queued_count = 0;
@@ -154,20 +151,19 @@ static void live_save() {
 
 static void live_end() {
   live_save();
-  // The run's key codes were the verifier's; the players' own return.
-  for (int i = 0; i < 2; ++i)
-    player_state_table[i].input = live.player_keys[i];
   game_live = game_session = false;
 }
 
-// The verifier's codes for fire, reload and the perk key (portable_init), as the
-// player's own keys: what the original's screens read and name between ticks.
+// The screens a tick draws name keys by the configuration, which then holds the
+// verifier's codes for fire, reload and the perk key (portable_init): they name
+// the player's own.
 static int game_live_key(int code) {
-  if (!game_live)
+  if (!game_live || !game_ticking)
     return code;
-  return code == 100   ? config_blob.input_config[0].fire_key
-         : code == 101 ? config_blob.key_reload
-         : code == 102 ? config_blob.key_pick_perk
+  const crimson_cfg_t &config = live.outside.config;
+  return code == 100   ? config.input_config[0].fire_key
+         : code == 101 ? config.key_reload
+         : code == 102 ? config.key_pick_perk
                        : code;
 }
 static bool live_down(int code) { return session_grim.IGrim2D_cpp::grim_is_key_active(code); }

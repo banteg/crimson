@@ -10,8 +10,7 @@ The whole recovered game is one wasm32 **game module**: every executable and
 Grim source file except a small Windows surface. The port replaces only what
 lies below Grim: a Direct3D 8 device, DirectInput, DirectSound and a few Win32
 calls, implemented over a small host interface. One C host (SDL3 and an owned
-OpenGL renderer) runs the module natively, and the same host is meant for the
-browser.
+OpenGL renderer) runs the module natively and in the browser.
 
 The module runs two ways. **As the original** (`game_start`, `game_frame`), it
 is the 2003 executable: its startup, menus, variable timestep and input, one
@@ -22,17 +21,19 @@ verifier does and gameplay RNG may only be drawn inside run start and ticks.
 Everything the module sends the host returns nothing, so presentation cannot
 feed back into either.
 
-Python stays the reference port and the desktop product until the client plays
-sessions that pass the gates below.
+Python stays the reference port and the ranked client: it records the `.crd`
+replays the leaderboard takes and signs their upload, which the client does
+not yet (phase 9).
 
 ## Architecture
 
 ### The seam is below Grim
 
 The spec first placed the seam at the Grim2D interface, reimplementing its 84
-methods over a modern renderer. Compiling the recovered Grim changed that: 147
-of its 171 source files build for wasm32 unmodified, and the rest are window,
-dialog and device-creation code. The recovered Grim already reproduces the
+methods over a modern renderer. Compiling the recovered Grim changed that: 156
+of its 171 source files build for wasm32 as recovered (through the same
+declaration repairs as the executable), and the rest are window, dialog and
+device-creation code. The recovered Grim already reproduces the
 original's vertex math, text layout, batching, texture slots and render
 targets; Python's [`src/grim`](../src/grim) shows how many quirks a
 reimplementation has to chase instead (UV insets, rotation origins, blend state
@@ -145,9 +146,10 @@ a run, and only choose samples.
   module and the verifier through every gate stream (the 134-run bot corpus
   under both bug policies and the 8 supported recordings) and compares all
   36,343 snapshot fields after every tick; where a run ends, both must refuse
-  the next tick. All 142 agree, with the whole executable linked. The one
-  expected difference is `player_weapon_popup_timer`, which the restored HUD
-  counts down and only the HUD reads.
+  the next tick. All 142 agree, with the whole executable linked. Fields only
+  presentation reads stay out of the comparison: `player_weapon_popup_timer`,
+  which the restored HUD counts down, and the weapons' sound ids, which hold
+  the original's loaded ids in a run inside it.
 - `game_check.py --live <game directory>` runs the same 142 streams back to
   back inside the original booted with its assets, sounds and music, each run
   starting from the state the previous one left, and all agree.
@@ -221,10 +223,13 @@ directory the client uses the folder chosen last time, or asks for the one
 Crimsonland is installed in. `--package` lays out what ships in `build/dist`:
 a macOS app bundle or a Linux folder carrying SDL3, or the web page's files;
 [`client.yml`](../.github/workflows/client.yml) builds all three on every
-change. For
-unattended runs, `CRIMSON_CAPTURE=<dir>` with `CRIMSON_CAPTURE_FRAMES=n,...`
+change; nothing yet runs the packaged executables, and the checks above run the
+module before `wasm2c`.
+
+For unattended runs, `CRIMSON_CAPTURE=<dir>` with `CRIMSON_CAPTURE_FRAMES=n,...`
 saves those frames' back buffers and quits, and `CRIMSON_INPUT` scripts the
-mouse and keys; such a run keeps a fixed 60 Hz clock, so it repeats
+mouse and keys; such a run's clock moves 16 ms a frame, so scripted input lands
+on the same frames (a run's seed still differs)
 ([`client/main.cpp`](client/main.cpp)).
 
 ## Running the web client
@@ -255,7 +260,7 @@ no cross-origin isolation.
 | 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates with the game files and audio loaded | Done ([#555](https://github.com/banteg/crimson/pull/555)) |
 | 6. Verifier convergence | Dropped: the verifier stays its own artifact and holds every client build to it ([Packaging](#packaging)) | |
 | 7. Product parity | Gamepads as the original's joystick; the web client takes the player's own game folder | Done ([#556](https://github.com/banteg/crimson/pull/556)) |
-| 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client finds the game folder; next, a Windows host (the WASI layer is POSIX), signing, and hosting the web build | This change |
+| 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client finds the game folder; next, a Windows host (the WASI layer is POSIX), signing, and hosting the web build | Done ([#557](https://github.com/banteg/crimson/pull/557)) |
 | 9. Ranked play from the client | `.crd` replays, the leaderboard's signed upload, replay browsing | |
 
 ## Acceptance gates

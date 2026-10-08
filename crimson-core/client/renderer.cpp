@@ -26,7 +26,6 @@ namespace {
 
 // Direct3D 8 values the device forwards.
 enum {
-  RS_ZENABLE = 7,
   RS_ALPHATESTENABLE = 15,
   RS_SRCBLEND = 19,
   RS_DESTBLEND = 20,
@@ -60,8 +59,11 @@ unsigned render_states[256];
 unsigned stage_states[STAGES][32];
 int bound[STAGES];
 GLuint program, present_program, vertex_array, vertex_buffer, index_buffer, samplers[STAGES], gamma_texture;
+// Bound to a stage with no texture: the shader never samples it, but a sampler
+// needs a complete texture behind it.
+GLuint blank_texture;
 GLint u_target_size, u_has_texture, u_color_op, u_color_arg1, u_color_arg2, u_alpha_op, u_alpha_arg1, u_alpha_arg2,
-    u_factor, u_alpha_test, u_alpha_ref, u_alpha_func, u_present_flip;
+    u_factor, u_alpha_test, u_alpha_ref, u_alpha_func;
 
 const char *vertex_source = SHADER_HEADER R"(
 layout(location = 0) in vec4 position; // x, y, z, rhw in pixels
@@ -266,7 +268,7 @@ void bind_target() {
 
 } // namespace
 
-bool renderer_init() {
+void renderer_init() {
   program = link(vertex_source, fragment_source);
   present_program = link(present_vertex_source, present_fragment_source);
   u_target_size = glGetUniformLocation(program, "target_size");
@@ -305,6 +307,10 @@ bool renderer_init() {
   unsigned char identity[256 * 4];
   for (int i = 0; i < 256; ++i)
     identity[i * 4] = identity[i * 4 + 1] = identity[i * 4 + 2] = (unsigned char)i, identity[i * 4 + 3] = 255;
+  const unsigned char white[4] = {255, 255, 255, 255};
+  glGenTextures(1, &blank_texture);
+  glBindTexture(GL_TEXTURE_2D, blank_texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
   glGenTextures(1, &gamma_texture);
   glBindTexture(GL_TEXTURE_2D, gamma_texture);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, identity);
@@ -330,7 +336,6 @@ bool renderer_init() {
     stage_states[s][TSS_ADDRESSU] = stage_states[s][TSS_ADDRESSV] = 1;
     stage_states[s][TSS_MAGFILTER] = stage_states[s][TSS_MINFILTER] = 1;
   }
-  return true;
 }
 
 Viewport renderer_viewport(int window_width, int window_height) {
@@ -470,7 +475,7 @@ void w2c_host_draw(struct w2c_host *, u32 primitive, u32 vertices, u32 vertex_co
     aa1[s] = (GLint)stage_states[s][TSS_ALPHAARG1];
     aa2[s] = (GLint)stage_states[s][TSS_ALPHAARG2];
     glActiveTexture(GL_TEXTURE0 + s);
-    glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : 0);
+    glBindTexture(GL_TEXTURE_2D, present ? it->second.texture : blank_texture);
     glBindSampler(s, samplers[s]);
     glSamplerParameteri(samplers[s], GL_TEXTURE_WRAP_S, address(stage_states[s][TSS_ADDRESSU]));
     glSamplerParameteri(samplers[s], GL_TEXTURE_WRAP_T, address(stage_states[s][TSS_ADDRESSV]));

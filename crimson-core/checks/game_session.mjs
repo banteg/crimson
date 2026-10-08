@@ -13,9 +13,9 @@
 //   node crimson-core/checks/game_session.mjs <game directory> [core.wasm] [game.wasm]
 import fs from "node:fs";
 import path from "node:path";
-import { WASI } from "node:wasi";
 import { CONFIG_BYTES, CORE, decode, field, init, loadCore, names, record, state, step } from "./engine.mjs";
 import { PRESENTATION } from "./game_compare.mjs";
+import { bootGame, INPUT } from "./game_host.mjs";
 
 const [
   directory,
@@ -24,31 +24,8 @@ const [
 ] = process.argv.slice(2);
 if (!directory) throw Error("usage: game_session.mjs <game directory> [core.wasm] [game.wasm]");
 
-const module = new WebAssembly.Module(fs.readFileSync(gameWasm));
-const wasi = new WASI({ version: "preview1", preopens: { ".": directory }, returnOnExit: true });
-let memory;
-const text = (at) => {
-  const bytes = new Uint8Array(memory.buffer, at);
-  return Buffer.from(bytes.subarray(0, bytes.indexOf(0))).toString("latin1");
-};
-// The clock moves by each frame's time, and a millisecond each time it is read.
-let clock = 0;
-const host = new Proxy(
-  {},
-  {
-    get: (_, name) =>
-      (...args) => {
-        if (name === "fatal") throw Error(`game module: ${text(args[0])}`);
-        if (name === "message") throw Error(`${text(args[1])}: ${text(args[0])}`);
-        if (name === "time_ms") return clock++;
-      },
-  },
-);
-const instance = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi.wasiImport, host });
-memory = instance.exports.memory;
-wasi.initialize(instance);
-const game = instance.exports;
-if (!game.game_start()) throw Error("startup failed");
+const run = bootGame(gameWasm, directory);
+const { game } = run;
 
 // game_state_id_t
 const MAIN_MENU = 0, PLAY_GAME_MENU = 1, PAUSE_MENU = 5, PERK_SELECTION = 6, GAMEPLAY = 9;
@@ -58,26 +35,27 @@ const [ESCAPE, W, A, S, D, CONSOLE, SPACE] = [0x01, 0x11, 0x1e, 0x1f, 0x20, 0x29
 // rest follow 19 pixels apart) and the pause menu's Resume.
 const PERK_CHOICE = [150, 216], RESUME = [232, 397];
 
-// The module's DirectInput state (game/dinput.cpp), taken afresh each frame
-// because memory can grow. A tapped key is held for the frame and delivered as
-// a press, then released.
+// A frame of play: held keys and buttons, the cursor as DirectInput motion, and
+// tapped keys held for the frame and delivered as presses, then released. The
+// host pulls a 60 Hz frame of the mix after each, as the client does.
 let held = new Set();
 function frame(dt, { cursor, buttons = 0, keys = [], taps = [] }) {
-  const input = new DataView(memory.buffer, game.game_input());
+  const input = run.input();
   const events = [...taps.map((k) => [k, 1]), ...[...held].filter((k) => !taps.includes(k)).map((k) => [k, 0])];
   for (const [key, down] of events) {
-    const n = input.getInt32(276, true);
-    input.setUint8(280 + n * 2, key);
-    input.setUint8(281 + n * 2, down);
-    input.setInt32(276, n + 1, true);
+    const n = input.getInt32(INPUT.event_count, true);
+    input.setUint8(INPUT.events + n * 2, key);
+    input.setUint8(INPUT.events + n * 2 + 1, down);
+    input.setInt32(INPUT.event_count, n + 1, true);
   }
   held = new Set(taps);
-  for (const key of [W, A, S, D, ESCAPE, CONSOLE, SPACE]) input.setUint8(key, keys.includes(key) || held.has(key) ? 0x80 : 0);
-  input.setInt32(256, Math.round(game.game_motion_x(cursor[0])), true);
-  input.setInt32(260, Math.round(game.game_motion_y(cursor[1])), true);
-  input.setUint8(268, buttons & 1 ? 0x80 : 0);
-  clock += dt;
-  if (!game.game_frame()) throw Error("the game quit");
+  for (const key of [W, A, S, D, ESCAPE, CONSOLE, SPACE])
+    input.setUint8(INPUT.keys + key, keys.includes(key) || held.has(key) ? 0x80 : 0);
+  input.setInt32(INPUT.motion_x, Math.round(game.game_motion_x(cursor[0])), true);
+  input.setInt32(INPUT.motion_y, Math.round(game.game_motion_y(cursor[1])), true);
+  input.setUint8(INPUT.buttons, buttons & 1 ? 0x80 : 0);
+  run.frame(dt);
+  game.game_audio(735);
 }
 
 // Holds the cursor on a spot until the screen settles, then clicks it. A menu
@@ -95,11 +73,14 @@ function click(screen, at) {
 
 // On a fresh profile the main menu shares its screen id with the startup
 // sequence, which ends after about 14 s.
-while (clock < 15000) frame(16, { cursor: [512, 384] });
+while (run.clock < 15000) frame(16, { cursor: [512, 384] });
 click(MAIN_MENU, [240, 338]);
 click(PLAY_GAME_MENU, [232, 414]);
 
-const replay = () => Buffer.from(memory.buffer, game.game_replay(), game.game_replay_size());
+// Between ticks the players hold their own key codes; a tick reads the
+// verifier's (host/session.inc).
+const SWAPPED = /^players\[\d+\]\.input\./;
+const replay = () => Buffer.from(game.memory.buffer, game.game_replay(), game.game_replay_size());
 const core = loadCore(coreWasm);
 const CREATURES = names.filter((n) => /^creatures\[\d+\]\.active$/.test(n)).length;
 // The nearest live creature's screen position and the way away from it.
@@ -153,7 +134,7 @@ while (true) {
     }
   }
   // Fire in bursts, so presses and releases both fall between ticks.
-  const buttons = Math.floor(clock / 333) % 4 === 3 ? 0 : 1;
+  const buttons = Math.floor(run.clock / 333) % 4 === 3 ? 0 : 1;
   frame(times[frames++ % times.length], { cursor, buttons, keys, taps });
 
   const recorded = replay();
@@ -165,9 +146,9 @@ while (true) {
     init(core, recorded.subarray(0, CONFIG_BYTES));
     started = true;
   }
-  const run = decode(recorded);
-  idle = run.records.length === ticks && game.game_state() === GAMEPLAY ? idle + 1 : 0;
-  for (const tick of run.records.slice(ticks)) {
+  const recording = decode(recorded);
+  idle = recording.records.length === ticks && game.game_state() === GAMEPLAY ? idle + 1 : 0;
+  for (const tick of recording.records.slice(ticks)) {
     if (!step(core, tick)) throw Error(`the verifier refused tick ${ticks}`);
     ++ticks;
   }
@@ -175,7 +156,7 @@ while (true) {
   if (game.game_state() !== GAMEPLAY) continue;
   const expected = state(core), actual = state(game);
   for (let i = 0; i < names.length; i++) {
-    if (PRESENTATION.has(names[i])) continue;
+    if (PRESENTATION.has(names[i]) || SWAPPED.test(names[i])) continue;
     const a = expected.readUInt32LE(i * 4), b = actual.readUInt32LE(i * 4);
     if (a !== b) throw Error(`tick ${ticks}: ${names[i]} is ${b}, the verifier says ${a}`);
   }

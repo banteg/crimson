@@ -1,7 +1,7 @@
 // The Win32 calls and static-CRT wrappers the recovered executable makes. Files
 // live under the host's game directory, with Windows paths; the registry is a
-// small key/value file there; threads, DLLs and WinInet are unavailable, which
-// the recovered code already handles as failures.
+// small key/value file there; a thread runs to completion where it starts; DLLs
+// and WinInet are unavailable, which the recovered code handles as failures.
 #include <ctype.h>
 #include <direct.h>
 #include <dirent.h>

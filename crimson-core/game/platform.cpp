@@ -20,7 +20,7 @@ void platform_unimplemented(const char *method) {
 
 // Headless, the game draws into nothing: no host call is made.
 static bool outputs;
-extern "C" __attribute__((export_name("game_outputs"))) void game_outputs(int enabled) { outputs = enabled != 0; }
+extern "C" void game_outputs(int enabled) { outputs = enabled != 0; }
 
 // --- Direct3D 8 ---------------------------------------------------------------
 
