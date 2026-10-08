@@ -120,9 +120,11 @@ frame: in a run each tick draws it (`portable_step_many`), and between ticks the
 frame and the menus draw from a stream of their own. The console stays closed,
 since its flag pauses parts of a tick. The recording goes to `replays/` as the
 verifier's stream: the 65-word configuration, then each tick's input and
-commands ([`checks/replay.py`](checks/replay.py)). Commands the verifier would
-refuse (a perk request or pick with none left, in Rush, or once dead) are
-dropped, as the original ignores them.
+commands ([`checks/replay.py`](checks/replay.py)). A tick takes at most one
+perk command, judged by the state it starts from, since a pick can use up the
+last perk or kill the player; commands the verifier would refuse (in Rush, once
+dead, with no perk left) are dropped, as the original ignores them, and the
+perk menu takes one choice per opening.
 
 A tick reads exactly the verifier's state. A run resets the simulation's
 globals (the names the verifier's sources and host use) except what the
