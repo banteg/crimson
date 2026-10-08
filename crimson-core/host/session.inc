@@ -21,12 +21,19 @@ extern int ui_elements_timeline;
 extern unsigned char console_open_flag, ui_transition_direction;
 int ui_elements_max_timeline(void);
 extern cvar_float_t *cv_padAimDistMul, *cv_bodiesFade;
+extern float perk_prompt_origin_x, perk_prompt_origin_y, perk_prompt_bounds_min_x, perk_prompt_bounds_min_y,
+    perk_prompt_bounds_max_x, perk_prompt_bounds_max_y;
 }
+// The perk prompt's layout, which the original sets up and a tick hit-tests.
+static float *const live_perk_prompt[] = {&perk_prompt_origin_x,     &perk_prompt_origin_y,
+                                          &perk_prompt_bounds_min_x, &perk_prompt_bounds_min_y,
+                                          &perk_prompt_bounds_max_x, &perk_prompt_bounds_max_y};
 struct LiveSettings {
   crimson_cfg_t config;
   game_status_t status;
   float bodies_fade;      // which keeps or removes corpses
   player_input_t keys[2]; // the codes each player's input reads
+  float perk_prompt[6];   // where a click opens the perk menu
 };
 
 static struct {
@@ -59,10 +66,14 @@ static void live_append(const void *data, size_t size) {
 }
 
 static LiveSettings live_settings() {
-  return {config_blob,
-          game_status_blob,
-          cv_bodiesFade->value,
-          {player_state_table[0].input, player_state_table[1].input}};
+  LiveSettings settings = {config_blob,
+                           game_status_blob,
+                           cv_bodiesFade->value,
+                           {player_state_table[0].input, player_state_table[1].input},
+                           {}};
+  for (int i = 0; i < 6; ++i)
+    settings.perk_prompt[i] = *live_perk_prompt[i];
+  return settings;
 }
 static void live_install(const LiveSettings &settings) {
   config_blob = settings.config;
@@ -70,6 +81,8 @@ static void live_install(const LiveSettings &settings) {
   cv_bodiesFade->value = settings.bodies_fade;
   for (int i = 0; i < 2; ++i)
     player_state_table[i].input = settings.keys[i];
+  for (int i = 0; i < 6; ++i)
+    *live_perk_prompt[i] = settings.perk_prompt[i];
 }
 // Word by word, what the tick changed reaches the player's settings: a status
 // counter by its increase, anything else by its new value.
@@ -120,8 +133,11 @@ static void live_begin() {
   bool ready = portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor);
   game_heap_strings = heap_strings;
   live.run = live_settings();
-  // The verifier keeps corpses (cv_bodiesFade, host.cpp).
+  // The verifier keeps corpses (cv_bodiesFade, host.cpp) and lays out no perk
+  // prompt, so no click in a tick opens the menu; one between ticks does.
   live.run.bodies_fade = 1;
+  for (float &bound : live.run.perk_prompt)
+    bound = 0;
   live_install(player);
   if (!ready) {
     game_session = false;
@@ -140,9 +156,10 @@ static void live_begin() {
 // The replay, as the verifier's stream (checks/replay.py), into replays/.
 static void live_save() {
   mkdir("replays", 0755);
-  static const char *const modes[] = {"", "survival", "rush", "", "", "", "", "", "quest"};
+  // Sessions play Survival (1), Rush (2) and Quests (3).
+  static const char *const modes[] = {"", "survival", "rush", "quest"};
   char name[64];
-  snprintf(name, sizeof name, "replays/%s-%08x.rsi", modes[cfg.mode < 9 ? cfg.mode : 0], cfg.seed);
+  snprintf(name, sizeof name, "replays/%s-%08x.rsi", modes[cfg.mode < 4 ? cfg.mode : 0], cfg.seed);
   if (FILE *fp = platform_fopen(name, "wb")) {
     fwrite(live.replay.data(), 1, live.replay.size(), fp);
     fclose(fp);
@@ -170,6 +187,7 @@ static bool live_down(int code) { return session_grim.IGrim2D_cpp::grim_is_key_a
 static bool live_down_or_arrow(int code, int arrow) { return live_down(code) || live_down(arrow); }
 static float live_axis(int code) { return session_grim.IGrim2D_cpp::grim_get_config_float(code); }
 
+static bool live_perk_command_valid();
 // Every pass of the run loop: presses between ticks reach the next one.
 static void live_poll() {
   const player_input_config_t &keys = config_blob.input_config[0];
@@ -186,6 +204,11 @@ static void live_poll() {
   // keypad plus; a run takes the request as a command.
   live.open_requested |= (pick && !live.pick_down) || session_grim.IGrim2D_cpp::grim_was_key_pressed(57) ||
                          session_grim.IGrim2D_cpp::grim_was_key_pressed(78);
+  // So does a click on the prompt, where the original laid it out.
+  float x = ui_mouse_x - perk_prompt_origin_x, y = ui_mouse_y - perk_prompt_origin_y;
+  live.open_requested |= live_perk_command_valid() && session_grim.IGrim2D_cpp::grim_was_mouse_button_pressed(0) &&
+                         x > perk_prompt_bounds_min_x && y > perk_prompt_bounds_min_y && x < perk_prompt_bounds_max_x &&
+                         y < perk_prompt_bounds_max_y;
   live.fire_down = fire;
   live.reload_down = reload;
   live.pick_down = pick;
