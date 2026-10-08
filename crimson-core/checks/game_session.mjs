@@ -2,12 +2,13 @@
 // directory (grim.dll, crimson.paq, sfx.paq and music/), its menus start a
 // Survival run, and the run plays as a session (host/session.inc). A scripted
 // player aims at the nearest creature and fires in bursts, opens the perk menu
-// with Space and picks from it (and asks again at once), pauses with Escape and
-// resumes, and taps the console key, which a run ignores, at frame times that
-// run several ticks a frame or none. After every frame of play the
-// verifier replays the run's own recording to the same tick and must agree on
-// every snapshot field; when the run ends the verifier must end it at the same
-// tick, and the replay the game saved must be the one it recorded.
+// with Space and picks from it (double-clicking, and asking again at once),
+// pauses with Escape and resumes, and taps the console key, which a run
+// ignores, at frame times that run several ticks a frame or none. After every
+// frame of play the verifier replays the run's own recording to the same tick
+// and must agree on every snapshot field; when the run ends the verifier must
+// end it at the same tick, and the replay the game saved must be the one it
+// recorded. Each run has a fresh seed, so repeated runs explore new paths.
 //
 //   node crimson-core/checks/game_session.mjs <game directory> [core.wasm] [game.wasm]
 import fs from "node:fs";
@@ -125,7 +126,10 @@ let started = false, ticks = 0, frames = 0, idle = 0, choice = 0, pauses = 0, pi
 while (true) {
   const screen = game.game_state();
   if (screen === PERK_SELECTION) {
-    click(PERK_SELECTION, [PERK_CHOICE[0], PERK_CHOICE[1] + 19 * (choice++ % 5)]);
+    const at = [PERK_CHOICE[0], PERK_CHOICE[1] + 19 * (choice++ % 5)];
+    click(PERK_SELECTION, at);
+    // A second click as the menu closes, which picks no more than the verifier allows.
+    for (let i = 0; i < 3; ++i) frame(16, { cursor: at, buttons: 1 });
     picked = true;
     continue;
   }

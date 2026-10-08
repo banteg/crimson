@@ -252,29 +252,35 @@ static PortableInput live_input() {
   return input;
 }
 
-// Whether the verifier takes another perk command now (portable_step_many):
-// not in Rush, not once dead, and only while picks already queued leave a perk.
+// Whether the verifier takes a perk command now (portable_step_many): not in
+// Rush, not once dead, and only with a perk to pick.
 static bool live_perk_command_valid() {
-  int picks = 0;
-  for (int i = 0; i < live.queued_count; ++i)
-    picks += live.queued[i].type == 1;
-  return config_blob.game_mode != GAME_MODE_RUSH && player_state_table[0].health > 0 &&
-         perk_pending_count > picks && live.queued_count < 16;
+  return config_blob.game_mode != GAME_MODE_RUSH && player_state_table[0].health > 0 && perk_pending_count > 0;
+}
+static void live_queue(PortableCommand command) {
+  if (live.queued_count < 16)
+    live.queued[live.queued_count++] = command;
 }
 
-// One recorded tick; false once the run stops ticking this frame.
+// One recorded tick; false once the run stops ticking this frame. A tick takes
+// at most one perk command, judged by the state it starts from: a pick can use
+// up the last perk or kill the player (Grim Deal), so the next command waits
+// for the next tick, and one the verifier would refuse is dropped, as the
+// original ignores it.
 static bool live_tick() {
   in = live_input();
-  // A perk menu request the verifier would refuse is dropped, as the original ignores it.
-  if (live.open_requested && live_perk_command_valid())
-    live.queued[live.queued_count++] = {2, 0};
-  uint32_t count = live.queued_count;
-  memcpy(commands, live.queued, count * sizeof(PortableCommand));
+  if (live.open_requested)
+    live_queue({2, 0});
+  uint32_t count = 0;
+  while (live.queued_count && !count) {
+    if (live_perk_command_valid())
+      commands[count++] = live.queued[0];
+    memmove(live.queued, live.queued + 1, --live.queued_count * sizeof(PortableCommand));
+  }
   live_append(&in, sizeof in);
   live_append(&count, sizeof count);
   live_append(commands, count * sizeof(PortableCommand));
   live.fire_pressed = live.reload_pressed = live.open_requested = false;
-  live.queued_count = 0;
   live.requested = GAME_STATE_PENDING_IDLE_SENTINEL;
   if (!live_step(count)) {
     // The run is over: its screen follows, as the timeline would have shown it.
@@ -286,6 +292,12 @@ static bool live_tick() {
     return false;
   }
   if (live.requested == GAME_STATE_PERK_SELECTION) {
+    // The menu is open: requests still queued are spent.
+    int kept = 0;
+    for (int i = 0; i < live.queued_count; ++i)
+      if (live.queued[i].type != 2)
+        live.queued[kept++] = live.queued[i];
+    live.queued_count = kept;
     game_state_set_recovered(GAME_STATE_PERK_SELECTION);
     return false;
   }
@@ -340,12 +352,7 @@ bool game_live_pause() {
 }
 char *input_key_name_recovered(int code);
 char *input_key_name(int code) { return input_key_name_recovered(game_live_key(code)); }
-// A second click while the menu closes picks nothing more, nor a pick after the
-// tick that opened the menu killed the player.
-void game_live_pick(int choice) {
-  if (live_perk_command_valid())
-    live.queued[live.queued_count++] = {1, choice};
-}
+void game_live_pick(int choice) { live_queue({1, choice}); }
 // A run's metadata strings (perks_init_database, bonus_metadata_init) live in
 // the session's arena with the rest, which the next run reuses.
 char *wrap_text_to_width_alloc_recovered(char *text, int max_width_px);
