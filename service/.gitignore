@@ -3,4 +3,6 @@ node_modules/
 .dev.vars
 # Game art, exported from crimson.paq by scripts/assets.py.
 public/ui/
+# The playable game, built from crimson-core/client by `npm run play`.
+public/play/
 dist/

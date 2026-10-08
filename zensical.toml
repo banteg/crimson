@@ -192,6 +192,21 @@ nav = [
 [project.extra]
 generator = false
 
+[[project.extra.social]]
+icon = "lucide/gamepad-2"
+link = "https://crimson.land/play/"
+name = "Play in your browser"
+
+[[project.extra.social]]
+icon = "lucide/trophy"
+link = "https://crimson.land"
+name = "Leaderboard"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/banteg/crimson"
+name = "Source code"
+
 [project.theme]
 language = "en"
 logo = "images/reaper-silhouette.svg"

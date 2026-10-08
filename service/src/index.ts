@@ -11,6 +11,10 @@ import { boardTitle, boardView, gameScores, joinView, players, profileView, ques
 // HTTPS, and browsers are told to stay there. Plain-HTTP localhost stays for wrangler dev.
 const HSTS = "max-age=31536000; includeSubDomains";
 const QUEST = /^[1-5]\.(?:[1-9]|10)$/;
+// The game's files the playable game loads, from the version the bucket keeps them under; the page keeps them in the
+// player's browser after the first visit (crimson-core/client/web/shell.html).
+const GAME_FILES = new Set(["crimson.paq", "sfx.paq", "music.paq"]);
+const GAME_VERSION = "v1.9.93";
 // The game's high score tables hold 100 records (TABLE_MAX).
 const SCORES_LIMIT = 100;
 // How long the edge keeps a run's card: link previews fetch it once, and a rank or a moderator's change shows soon.
@@ -85,6 +89,30 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   }
   if (route === "GET /api/me") return json({ account: await sessionAccount(request, env) });
 
+  // The playable game: its page, built from crimson-core/client into dist/play/, and the game's files.
+  // The redirect keeps the query, which can name where the page loads the game files from.
+  if (route === "GET /play") return Response.redirect(new URL(`/play/${url.search}`, url).toString(), 301);
+  if (route === "GET /play/") {
+    // Staged by `npm run play`; a build without it has no game page.
+    const page = await env.ASSETS.fetch(request);
+    if (!page.ok) return page;
+    return withPreview(page, url, { title: "Play", description: "Crimsonland in the browser: the original game, recovered from its executable.", image: null });
+  }
+  if ((match = /^(GET|HEAD) \/play\/game\/(.+)$/.exec(route))) {
+    const key = `${GAME_VERSION}/${match[2]}`;
+    const head = match[1] === "HEAD";
+    const file = GAME_FILES.has(match[2]!) && (await (head ? env.GAME_FILES.head(key) : env.GAME_FILES.get(key)));
+    if (!file) return new Response(null, { status: 404 });
+    return new Response(head ? null : (file as R2ObjectBody).body, {
+      headers: {
+        "content-type": "application/octet-stream",
+        "content-length": String(file.size),
+        etag: file.httpEtag,
+        "cache-control": "public, max-age=86400",
+      },
+    });
+  }
+
   // Pages the server answers itself: the game's login link and replay files.
   if ((match = /^GET \/login\/([0-9a-f]{64})$/.exec(route))) return getLogin(request, env, match[1]!);
   if ((match = /^GET \/runs\/([0-9a-f]{64})\.crd$/.exec(route))) {
@@ -157,7 +185,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
 
   // The site: its files, else its page with the route's title and preview tags.
   // Quest routes end in ".1" and such, so only real file extensions count as files.
-  if (/\.(?:js|css|png|svg|ico|woff2|txt|map|webmanifest)$/i.test(url.pathname)) return env.ASSETS.fetch(request);
+  if (/\.(?:js|css|png|svg|ico|woff2|txt|map|webmanifest|wasm)$/i.test(url.pathname)) return env.ASSETS.fetch(request);
   return shell(env, url);
 }
 
@@ -168,7 +196,7 @@ interface Preview {
   image: { url: string; width: number; height: number } | null;
 }
 
-const SITE_DESCRIPTION = "Verified leaderboards for the Crimsonland port: every score is a replay the server re-simulates.";
+const SITE_DESCRIPTION = "Play Crimsonland in your browser, and verified leaderboards where every score is a replay the server re-simulates.";
 
 async function routePreview(env: Env, url: URL): Promise<Preview> {
   const path = url.pathname;
@@ -195,8 +223,11 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
 
 // The site's one page, titled for the route so shared links preview what they point at.
 async function shell(env: Env, url: URL): Promise<Response> {
-  const page = await env.ASSETS.fetch(new Request(new URL("/", url)));
-  const preview = await routePreview(env, url);
+  return withPreview(await env.ASSETS.fetch(new Request(new URL("/", url))), url, await routePreview(env, url));
+}
+
+// A page with its title and the tags shared links preview.
+function withPreview(page: Response, url: URL, preview: Preview): Response {
   const full = preview.title ? `${preview.title} · crimson.land` : "crimson.land";
   const escape = (text: string) => text.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
   const meta = (attribute: string, entries: [string, string | number][]) =>

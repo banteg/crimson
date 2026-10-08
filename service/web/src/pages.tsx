@@ -430,14 +430,19 @@ const ABOUT: Screen = {
       <>
         <h2>About</h2>
         <p>
-          crimson.land is the online leaderboard of <a href="https://github.com/banteg/crimson">Crimsonland, rebuilt</a>: the 2003 game
-          reimplemented to play exactly like the original, on Windows, macOS and Linux. Every score here is a replay of the whole run, which
-          the server plays back from start to finish before the score counts.
+          crimson.land is the home of <a href="https://github.com/banteg/crimson">Crimsonland, rebuilt</a>: the 2003 game, playable in your
+          browser, and the online leaderboard of its reimplementation. Every score here is a replay of the whole run, which the server plays
+          back from start to finish before the score counts.
         </p>
         <h3>Play</h3>
         <p>
-          Install <a href="https://docs.astral.sh/uv/getting-started/installation/">uv</a>, then run <Command>uvx crimsonland@latest</Command>. The
-          game downloads the original art and sound on first launch, distributed with permission from 10tons.
+          <a href="/play/" data-native>Play in your browser</a>, nothing to install: the original game, compiled from source recovered
+          from its executable, with your saves kept in the browser. It plays with a keyboard and mouse or a gamepad.
+        </p>
+        <p>
+          To play for the leaderboard, install <a href="https://docs.astral.sh/uv/getting-started/installation/">uv</a>, then run{" "}
+          <Command>uvx crimsonland@latest</Command>: the reimplementation for Windows, macOS and Linux, which records ranked runs. Both
+          download the original art and sound on first launch, distributed with permission from 10tons.
         </p>
       </>
     ),
@@ -446,7 +451,7 @@ const ABOUT: Screen = {
         <h3>Play for the leaderboard</h3>
         <ul>
           <li>
-            Tick <em>Ranked</em> in the Play Game menu, then play Survival or a quest. Ranked runs play the same for everyone, whatever your own save
+            In the installed game, tick <em>Ranked</em> in the Play Game menu, then play Survival or a quest. Ranked runs play the same for everyone, whatever your own save
             holds: one player, with the original's bugs fixed.
           </li>
           <li>

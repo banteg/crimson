@@ -3,21 +3,56 @@ tags:
   - docs-hub
 ---
 
-# Crimsonland documentation
+# Crimsonland, rebuilt
 
-A from-scratch rewrite of Crimsonland (2003), aiming for full parity with the
-original Windows executable. These docs cover the game's mechanics, the rewrite
-implementation, and the reverse engineering work that ties them together.
+Crimsonland (2003) rebuilt twice: a reimplementation that plays exactly like the
+original, and a matching decompilation whose source also plays the original game
+in your browser. These docs cover how the game plays, how the rebuilds work, and
+the reverse engineering that ties them to the original executable.
 
-[Blog post](https://banteg.xyz/posts/crimsonland/) • [Source code](https://github.com/banteg/crimson)
+<div class="grid cards" markdown>
 
-## Play now
+-   :lucide-gamepad-2: **Play in your browser**
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
+    ---
 
-```bash
-uvx crimsonland@latest
-```
+    The original game, compiled from the recovered source. Nothing to install;
+    saves stay in the browser. Keyboard and mouse, or a gamepad.
+
+    :lucide-arrow-right: [crimson.land/play](https://crimson.land/play/)
+
+-   :lucide-download: **Play the reimplementation**
+
+    ---
+
+    Windows, macOS and Linux, with controllers, replays and ranked play.
+    Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
+
+    ```bash
+    uvx crimsonland@latest
+    ```
+
+-   :lucide-trophy: **Leaderboard**
+
+    ---
+
+    Survival and every quest, where each score is a whole run the server
+    replays before it counts.
+
+    :lucide-arrow-right: [crimson.land](https://crimson.land)
+
+-   :lucide-code: **Source and story**
+
+    ---
+
+    The code, the progress of the matching decompilation, and how it all came
+    together.
+
+    :lucide-arrow-right: [GitHub](https://github.com/banteg/crimson) ·
+    [decomp.dev](https://decomp.dev/banteg/crimson) ·
+    [blog post](https://banteg.xyz/posts/crimsonland/)
+
+</div>
 
 ## Highlights
 
@@ -35,12 +70,30 @@ uvx crimsonland@latest
 
 ## Sections
 
-- [Mechanics](mechanics/index.md): how the game actually plays. Behavior
-  specs, reference tables, and game rules written without decompiler details.
-- [Rewrite](rewrite/index.md): the Python port and the recovered core. Architecture, module map,
-  debug views, and parity status.
-- [Reverse engineering](re/index.md): static analysis, runtime probes, struct
-  layouts, and file formats extracted from the original binary.
-- [Verification](verification/index.md): differential testing, evidence
-  ledger, and parity matrices that connect claims to proof.
-- [Contributor](contributor/index.md): setup, workflows, and project tracking.
+<div class="grid cards" markdown>
+
+-   [**Mechanics**](mechanics/index.md)
+
+    How the game actually plays: behavior specs, reference tables, and game
+    rules written without decompiler details.
+
+-   [**Rewrite**](rewrite/index.md)
+
+    The Python port and the recovered core: architecture, module map, debug
+    views, and parity status.
+
+-   [**Reverse engineering**](re/index.md)
+
+    Static analysis, runtime probes, struct layouts, and file formats extracted
+    from the original binary.
+
+-   [**Verification**](verification/index.md)
+
+    Differential testing, the evidence ledger, and parity matrices that connect
+    claims to proof.
+
+-   [**Contributor**](contributor/index.md)
+
+    Setup, workflows, and project tracking.
+
+</div>

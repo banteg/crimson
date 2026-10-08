@@ -49,7 +49,7 @@ they use:
 | D3DX texture loading (TGA, BMP, JPEG) | [`d3dx.cpp`](game/d3dx.cpp), with the IJG libjpeg 6a and zlib 1.1.3 Grim links |
 | DirectInput keyboard, mouse and joystick | [`dinput.cpp`](game/dinput.cpp): device state the host delivers each frame; an SDL gamepad is the joystick, laid out as the Logitech Dual Action the game's pad schemes are named for |
 | Grim's window procedure and run loop | [`frame.cpp`](game/frame.cpp): one loop pass per host frame; window messages as calls |
-| `grim.dll`'s embedded font and splash | [`resources.cpp`](game/resources.cpp) reads them from `grim.dll` |
+| `grim.dll`'s embedded font and splash | [`resources.cpp`](game/resources.cpp) reads them from `grim.dll`; without it, the font from `crimson.paq` and a blank splash, which nothing draws |
 | Files, registry, threads, WinInet, DLLs | [`win32.cpp`](game/win32.cpp): Windows paths under the game directory, a registry file, threads that run to completion, offline WinInet, no DLLs |
 | DirectSound | [`dsound.cpp`](game/dsound.cpp) mixes the buffers inside the module; the host pulls the mix |
 | vorbisfile | [`vorbis.cpp`](game/vorbis.cpp) over stb_vorbis |
@@ -107,8 +107,10 @@ each tick's input is built from the player's bindings and scheme as Python's
 recorder builds it ([`local_input.py`](../src/crimson/local_input.py)) and is
 recorded before the tick runs. A pass that covers no tick draws nothing, and
 the host shows the last frame again. Runs are single-player Survival, Rush and
-Quests at 1024x768, the resolution the verifier simulates (a fresh
-configuration defaults to it); the rest play as the original.
+Quests at 1024x768, the resolution the verifier simulates; the rest play as the
+original. A fresh configuration is the Python port's: windowed, since the host
+owns the window, at 1024x768. The main menu leaves out Other Games, 10tons'
+catalogue of the time, as the Python port does.
 
 Between ticks the original keeps its screens. The perk menu opens when a tick
 opens it, and its choice reaches the run as a command with the next tick.
@@ -157,7 +159,8 @@ a run, and only choose samples.
   through the menus at frame times from 4 to 50 ms (passes with no tick and
   passes with three) and, after every frame, compares the run with the verifier
   replaying the run's own recording; the run must end on the verifier's tick and
-  the saved replay must match.
+  the saved replay must match. Each run has a fresh seed; a failing run names
+  its seed, and `--seed` plays it again.
 - [`checks/game_boot.mjs`](checks/game_boot.mjs) boots the original from a fresh
   game directory under Node's WASI, clicks through the menus into Survival, and
   requires every texture to load, the menus' music to reach the mix, the run to
@@ -179,20 +182,35 @@ verifies a 21,000-tick run about as fast as the verifier (370 against 300 ms
 in Node) but is sixteen times larger (1.8 MB against 109 KB gzipped), needs
 WASI and host imports, and would change bytes whenever a menu or a texture
 loader does. The import-free verifier remains the trust anchor, and every
-client build is held to it instead: `game_check.py` in CI, and the checks
-above with the game files locally.
+client build is held to it instead: CI runs every check above, booting the
+original on the distributed files ([Assets](#assets)) and playing the session
+check on a seed whose run picks perks and pauses.
 
 ### Assets
 
-The client reads the original game directory: `grim.dll`, `crimson.paq`,
-`sfx.paq` and the `music` folder (the configuration files appear on first
-launch). The executable asks for music as `music\<name>.ogg`, which no PAQ
-entry matches, so it plays the loose files, as the GOG release ships them; the
-in-game tunes are whatever `music\game_tunes.txt` adds. The asset host's PAQs
-are the Python port's repack, with forward-slash names and replaced art, which
-the original lookup cannot read. The web client takes the player's own game
-folder when no URL serves the files, so it never needs to host them; serving
-them would let CI run the checks that need them.
+The client reads a game directory: `crimson.paq`, `sfx.paq` and the `music`
+folder, and `grim.dll` when it is there (the configuration files appear on first
+launch). The executable
+asks for music as `music\<name>.ogg`, which no PAQ entry matches, so it plays
+the loose files, as the GOG release ships them; the in-game tunes are whatever
+`music\game_tunes.txt` adds. Nothing runs `grim.dll`: Grim is in the module,
+and the DLL only holds two RCDATA images Grim's device loads, its default font
+and a splash it never draws. Both `crimson.paq` releases carry the same font as
+`load/default_font_courier.tga`, which the module reads when there is no
+`grim.dll` ([`resources.cpp`](game/resources.cpp)); the executable sets Grim's
+pack only after its device is up, so it reads the file itself.
+
+The project distributes the files from its asset host, by 10tons' permission:
+`sfx.paq` as released, `crimson.paq` repacked with the
+uncompressed art Tero sent (forward-slash names, each image in its own format,
+`game/alien.tga` where the executable asks for `game\alien.jaz`), and
+`music.paq` with the release's music and the official music addon, whose
+`music/game_tunes.txt` adds the addon tunes. Grim finds a PAQ entry by its exact
+name and decodes it by the name's extension, so the module asks for the stored
+name first ([`repack.cpp`](game/repack.cpp)); the release's `crimson.paq`
+resolves every name to itself. The clients unpack `music.paq` into `music/`.
+[`checks/game_files.py`](checks/game_files.py) lays out a game directory from
+the asset host, which CI uses for the checks that boot the original.
 
 ## Stack
 
@@ -240,14 +258,24 @@ uv run python crimson-core/client/build.py --target web   # Emscripten, SDL3 por
 
 `build/web/index.html` runs the same host on WebGL2. The game directory is
 `/game` in IndexedDB: on first launch the page fetches the game files from
-`?assets=<url>` (default `game/` beside the page), and settings, saves and
+`?assets=<url>` (default `game/` beside the page) with a progress bar; when that
+fails, it retries or takes the player's own game folder, either layout; and settings, saves and
 high scores sync back a few seconds after the game writes them, when the tab is
 hidden, and when the game quits ([`client/web/shell.html`](client/web/shell.html)).
 One tab at a time owns the directory (a Web Lock), since IndexedDB takes each
-sync as the whole tree and a stale tab would write over newer saves. As in the
+sync as the whole tree and a stale tab would write over newer saves; another
+tab's Play here asks the owner to save and reload, and takes the lock from one
+that does not answer, which then stops saving. As in the
 original, settings changed in the options reach the disk when the game quits.
 It needs a secure context (HTTPS or localhost) for the lock, and no threads, so
-no cross-origin isolation.
+no cross-origin isolation. A fullscreen icon shows when the pointer reaches its
+corner, holding Escape for the game where the browser allows it. The page wears
+the site's font and game buttons (`service/public/game.css`).
+
+crimson.land serves the page at [`/play/`](https://crimson.land/play/): the
+site's Worker answers `/play/game/<file>` from the asset bucket, same-origin,
+for the three distributed files only ([`service/src/index.ts`](../service/src/index.ts)),
+and `npm run play` in `service` stages the packaged web build for deploy.
 
 ## Plan
 
@@ -260,7 +288,7 @@ no cross-origin isolation.
 | 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates with the game files and audio loaded | Done ([#555](https://github.com/banteg/crimson/pull/555)) |
 | 6. Verifier convergence | Dropped: the verifier stays its own artifact and holds every client build to it ([Packaging](#packaging)) | |
 | 7. Product parity | Gamepads as the original's joystick; the web client takes the player's own game folder | Done ([#556](https://github.com/banteg/crimson/pull/556)) |
-| 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client finds the game folder; next, a Windows host (the WASI layer is POSIX), signing, and hosting the web build | Done ([#557](https://github.com/banteg/crimson/pull/557)) |
+| 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client finds the game folder; next, a Windows host (the WASI layer is POSIX) and signing | Done ([#557](https://github.com/banteg/crimson/pull/557)); crimson.land/play hosts the web client with the distributed files |
 | 9. Ranked play from the client | `.crd` replays, the leaderboard's signed upload, replay browsing | |
 
 ## Acceptance gates

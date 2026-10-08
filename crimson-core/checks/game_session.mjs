@@ -1,5 +1,5 @@
 // Plays a run the way the client does: the original boots from a game
-// directory (grim.dll, crimson.paq, sfx.paq and music/), its menus start a
+// directory (crimson.paq, sfx.paq and music/), its menus start a
 // Survival run, and the run plays as a session (host/session.inc). A scripted
 // player aims at the nearest creature and fires in bursts, opens the perk menu
 // with Space and picks from it (double-clicking, and asking again at once),
@@ -8,23 +8,26 @@
 // frame of play the verifier replays the run's own recording to the same tick
 // and must agree on every snapshot field; when the run ends the verifier must
 // end it at the same tick, and the replay the game saved must be the one it
-// recorded. Each run has a fresh seed, so repeated runs explore new paths.
+// recorded. Each run has a fresh seed, so repeated runs explore new paths; a
+// failing run names its seed, and --seed plays that run again.
 //
-//   node crimson-core/checks/game_session.mjs <game directory> [core.wasm] [game.wasm]
+//   node crimson-core/checks/game_session.mjs [--seed n] <game directory> [core.wasm] [game.wasm]
 import fs from "node:fs";
 import path from "node:path";
 import { CONFIG_BYTES, CORE, decode, field, init, loadCore, names, record, state, step } from "./engine.mjs";
 import { PRESENTATION } from "./game_compare.mjs";
 import { bootGame, INPUT } from "./game_host.mjs";
 
+const args = process.argv.slice(2);
+const seedAt = args.indexOf("--seed");
 const [
   directory,
   coreWasm = new URL("build/wasm/core.wasm", CORE).pathname,
   gameWasm = new URL("build/game/game.wasm", CORE).pathname,
-] = process.argv.slice(2);
-if (!directory) throw Error("usage: game_session.mjs <game directory> [core.wasm] [game.wasm]");
+] = seedAt < 0 ? args : args.toSpliced(seedAt, 2);
+if (!directory) throw Error("usage: game_session.mjs [--seed n] <game directory> [core.wasm] [game.wasm]");
 
-const run = bootGame(gameWasm, directory);
+const run = bootGame(gameWasm, directory, seedAt < 0 ? undefined : Number(args[seedAt + 1]));
 const { game } = run;
 
 // game_state_id_t
@@ -103,7 +106,7 @@ function target() {
 
 // Frame times from 4 ms (most frames run no tick) to 50 ms (three ticks).
 const times = [16, 7, 33, 16, 50, 4, 16, 12, 21];
-let started = false, ticks = 0, frames = 0, idle = 0, choice = 0, pauses = 0, picked = false;
+let started = false, seed, ticks = 0, frames = 0, idle = 0, choice = 0, pauses = 0, picked = false;
 while (true) {
   const screen = game.game_state();
   if (screen === PERK_SELECTION) {
@@ -145,6 +148,8 @@ while (true) {
     }
     init(core, recorded.subarray(0, CONFIG_BYTES));
     started = true;
+    seed = recorded.readUInt32LE(0);
+    process.on("exit", (code) => code && console.error(`the run's seed was ${seed}: --seed ${seed} plays it again`));
   }
   const recording = decode(recorded);
   idle = recording.records.length === ticks && game.game_state() === GAMEPLAY ? idle + 1 : 0;
@@ -172,4 +177,4 @@ for (const r of decode(replay()).records)
 if (!commands[1] || pauses < 2) throw Error(`the run picked ${commands[1]} perks and paused ${pauses} times`);
 const saved = fs.readdirSync(path.join(directory, "replays")).map((f) => path.join(directory, "replays", f));
 if (!saved.some((f) => fs.readFileSync(f).equals(replay()))) throw Error("the saved replay differs from the recording");
-console.log(JSON.stringify({ ticks, frames, picks: commands[1], pauses }));
+console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses }));

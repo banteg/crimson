@@ -14,10 +14,12 @@ passing port regression tests alone does not establish parity with the original.
 
 Start with [setup](../contributor/setup.md) or [coverage and scope](status.md).
 
-Python remains the fast iteration platform. The next shipped-game/verifier
-implementation will extend the recovered C/C++ and use one WASM artifact across
-desktop, browser and Workers. The core and its staged gates are documented in
-`crimson-core/README.md` and `crimson-core/ROADMAP.md`.
+Python remains the fast iteration platform and records ranked runs. The core
+also builds the whole recovered game into a WASM module that plays the original
+natively and [in the browser](https://crimson.land/play/), held to the verifier
+on every gate stream. The core and its staged gates are documented in
+`crimson-core/README.md` and `crimson-core/ROADMAP.md`, the clients in
+`crimson-core/PORT.md`.
 
 ## Architecture and contracts
 

@@ -6,7 +6,8 @@
     "dev": "vite build && wrangler dev",
     "build": "vite build",
     "assets": "cd .. && uv run --with fonttools --with brotli python service/scripts/assets.py",
-    "deploy": "npm run assets && vite build && wrangler deploy",
+    "play": "cd .. && uv run python crimson-core/client/build.py --target web --package && rm -rf service/public/play && cp -R crimson-core/build/dist/web service/public/play",
+    "deploy": "npm run assets && npm run play && vite build && wrangler deploy",
     "test": "vite build && vitest run",
     "check": "tsc --noEmit && tsc --noEmit -p web"
   },

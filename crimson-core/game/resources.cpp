@@ -1,9 +1,15 @@
 // The resources Grim loads from its own DLL (the default font and splash
-// textures), read from grim.dll's resource section in the game directory.
+// textures, device/d3d_init.cpp), read from grim.dll's resource section in the
+// game directory. Without grim.dll, which the project's distribution leaves out,
+// the font is crimson.paq's load/default_font_courier.tga, the same bytes, read
+// here since the executable sets Grim's pack only after its device is up; a
+// blank texture stands in for the splash, which nothing draws.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
+
+bool paq_same_path(const char *stored, const char *wanted, bool stems);
 
 namespace {
 
@@ -61,12 +67,51 @@ unsigned find_entry(unsigned root, unsigned directory, unsigned id) {
   return 0;
 }
 
+// RCDATA ids (grim.dll's resource script).
+const unsigned DEFAULT_FONT = 0x6f, SPLASH = 0x71;
+// A 1x1 truecolor TGA.
+const unsigned char BLANK[] = {0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 24, 0, 0, 0, 0};
+
+HRSRC packed(unsigned id) {
+  if (id == SPLASH)
+    return (HRSRC) new Resource{BLANK, sizeof BLANK};
+  FILE *fp = id == DEFAULT_FONT ? fopen("crimson.paq", "rb") : nullptr;
+  if (!fp)
+    return nullptr;
+  fseek(fp, 0, SEEK_END);
+  long size = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+  unsigned char *pack = (unsigned char *)malloc(size);
+  bool read = fread(pack, 1, size, fp) == (size_t)size;
+  fclose(fp);
+  Resource *found = nullptr;
+  // Entries: a NUL-terminated name, a little-endian size, the bytes.
+  for (long at = 4; read && !found && at < size;) {
+    const char *name = (const char *)pack + at;
+    long length = (long)strnlen(name, size - at), data = at + length + 5;
+    if (data > size)
+      break;
+    DWORD entry;
+    memcpy(&entry, pack + at + length + 1, 4);
+    if (entry > (unsigned long)(size - data))
+      break;
+    if (paq_same_path(name, "load\\default_font_courier.tga", false)) {
+      unsigned char *copy = (unsigned char *)malloc(entry);
+      memcpy(copy, pack + data, entry);
+      found = new Resource{copy, entry};
+    }
+    at = data + entry;
+  }
+  free(pack);
+  return (HRSRC)found;
+}
+
 } // namespace
 
 extern "C" {
 HRSRC WINAPI FindResourceA(HMODULE, LPCSTR name, LPCSTR type) {
   if (!load_image())
-    return nullptr;
+    return type == RT_RCDATA ? packed((unsigned)(uintptr_t)name) : nullptr;
   unsigned pe = read32(0x3c);
   long root = file_offset(read32(pe + 24 + 96 + 2 * 8));
   if (root <= 0)

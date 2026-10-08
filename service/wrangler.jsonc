@@ -18,7 +18,11 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "crimson-land", "database_id": "24e7de6e-b482-4a73-a9ed-c8359da31665", "migrations_dir": "migrations" }
   ],
-  "r2_buckets": [{ "binding": "REPLAYS", "bucket_name": "crimson-land-replays" }],
+  // GAME_FILES holds the game's files as the project distributes them (paq.crimson.banteg.xyz), which /play/ loads.
+  "r2_buckets": [
+    { "binding": "REPLAYS", "bucket_name": "crimson-land-replays" },
+    { "binding": "GAME_FILES", "bucket_name": "crimson" }
+  ],
   // Client IDs are public; each provider's secret is set with `wrangler secret put <PROVIDER>_CLIENT_SECRET`
   // (or in .dev.vars locally). A provider without both stays hidden.
   "vars": {

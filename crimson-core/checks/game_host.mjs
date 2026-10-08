@@ -1,14 +1,15 @@
 // The game module as a host runs the original: from a game directory under
 // Node's WASI, with presentation calls counted and dropped. The clock moves by
 // each frame's time and a millisecond each time it is read, since Grim's timing
-// waits for it to move.
+// waits for it to move. A given seed answers the module's entropy requests, which
+// seed its runs (host/session.inc).
 import fs from "node:fs";
 import { WASI } from "node:wasi";
 
 // HostInput's layout (game/host_input.h).
 export const INPUT = { keys: 0, motion_x: 256, motion_y: 260, buttons: 268, event_count: 276, events: 280 };
 
-export function bootGame(wasm, directory) {
+export function bootGame(wasm, directory, seed) {
   const module = new WebAssembly.Module(fs.readFileSync(wasm));
   const wasi = new WASI({ version: "preview1", preopens: { ".": directory }, returnOnExit: true });
   const calls = {};
@@ -29,6 +30,13 @@ export function bootGame(wasm, directory) {
         },
     },
   );
+  // On the import object itself: a copy would leave the WASI object unreferenced, and Node 20 collects it mid-run.
+  if (seed !== undefined)
+    wasi.wasiImport.random_get = (at, length) => {
+      const bytes = new Uint8Array(game.memory.buffer, at, length);
+      for (let i = 0; i < length; i++) bytes[i] = seed >>> (8 * (i % 4));
+      return 0;
+    };
   const instance = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi.wasiImport, host });
   game = instance.exports;
   wasi.initialize(instance);

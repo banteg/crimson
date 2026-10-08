@@ -5,6 +5,8 @@ import { fingerprint } from "./crypto";
 export interface Env {
   DB: D1Database;
   REPLAYS: R2Bucket;
+  // The game's files as the project distributes them, for the playable game.
+  GAME_FILES: R2Bucket;
   // The site (web/, built into dist/).
   ASSETS: Fetcher;
   // OAuth apps for account linking; a provider shows only with both its ID and secret.

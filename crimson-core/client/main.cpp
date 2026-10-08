@@ -284,7 +284,7 @@ std::string remembered() {
   return path;
 }
 bool has_game_files(const std::string &directory) {
-  return SDL_GetPathInfo((directory + "/grim.dll").c_str(), nullptr);
+  return SDL_GetPathInfo((directory + "/crimson.paq").c_str(), nullptr);
 }
 // The folder dialog answers on its own thread; the main loop takes the answer.
 SDL_AtomicInt answered;
@@ -310,7 +310,7 @@ SDL_AppResult wait_for_folder() {
     return SDL_APP_SUCCESS;
   if (!has_game_files(chosen)) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Crimsonland",
-                             "That folder has no grim.dll. Choose the folder Crimsonland is installed in.", window);
+                             "That folder has no crimson.paq. Choose the folder Crimsonland is installed in.", window);
     choose_folder();
     return SDL_APP_CONTINUE;
   }
@@ -344,7 +344,13 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 #endif
-  window = SDL_CreateWindow("Crimsonland", 1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+#ifdef __EMSCRIPTEN__
+  // A window title would replace the page's.
+  const char *title = nullptr;
+#else
+  const char *title = "Crimsonland";
+#endif
+  window = SDL_CreateWindow(title, 1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
   if (!window || !(context = SDL_GL_CreateContext(window)))
     client_fatal(SDL_GetError());
   // Unattended captures run unthrottled: a hidden window would otherwise wait on vsync.
