@@ -6,7 +6,7 @@ import { initWasm, Resvg } from "@resvg/resvg-wasm";
 import resvgModule from "@resvg/resvg-wasm/index_bg.wasm";
 import courierPrime from "../fonts/CourierPrime-Bold.ttf";
 import { formatScore } from "../web/src/format";
-import { playerParts } from "../web/src/names";
+import { playerLabel, playerParts } from "../web/src/names";
 import { runGround, SIZE } from "../web/src/terrain/rules";
 import weaponData from "../web/src/weapons.json";
 import type { RunDetailView, Timeline } from "./api-types";
@@ -133,7 +133,7 @@ function cardSvg(detail: RunDetailView, timeline: Timeline, art: CardArt, backgr
   ${text(RIGHT, TOP + 40, 2, "crimson.land", DIM, "end")}
   ${art.avatar ? `<image href="${art.avatar}" x="${LEFT}" y="${NAME_Y}" width="${AVATAR}" height="${AVATAR}" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/>` : ""}
   ${detail.rank ? number(RIGHT, NAME_Y + 46, 44, RIGHT - LEFT, `#${detail.rank}`, `rgb(${GOLD})`, "end") : ""}
-  ${text(art.avatar ? LEFT + AVATAR + 18 : LEFT, NAME_Y + 48, 3, detail.name)}
+  ${text(art.avatar ? LEFT + AVATAR + 18 : LEFT, NAME_Y + 48, 3, playerLabel(detail.player))}
   ${text(LEFT, TOP + 194, 2, quest ? "final time" : "experience", DIM)}
   ${number(LEFT - 4, TOP + 272, SCORE_SIZE, RIGHT - LEFT, score, BLUE)}
   ${stats.map(([label, value], i) => {

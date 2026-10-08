@@ -6,6 +6,7 @@ import { get } from "./api";
 import { GameButton } from "./button";
 import { formatScore } from "./format";
 import perkNames from "./perks.json";
+import { playerLabel } from "./names";
 import { PlayerName } from "./players";
 import { paintGround } from "./terrain/draw";
 import { type Ground, runGround } from "./terrain/rules";
@@ -576,7 +577,7 @@ export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
   ];
   const [rate, setRate] = createSignal<"kills" | "damage">("kills");
   const [held, setHeld] = createSignal(false);
-  const name = detail.player.name ?? detail.player.fingerprint;
+  const name = playerLabel(detail.player);
   return [
     header,
     () => (

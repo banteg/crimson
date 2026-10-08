@@ -75,11 +75,15 @@ opens a login link only when it leads to the service's own host.
 
 - Each ranked run's name is the one typed into the high-score name entry when it ended: at most 31 characters in
   the range 0x20..0xFF, as the entry accepts.
-- An account's display name is the name of its latest accepted run. Every board row belongs to the account, so a
-  new name relabels its older entries too. The profile lists every name the account has used.
-- Names are not unique. Where two unlinked accounts show the same name, compared without case, the board adds the
-  first four hex digits of each key's hash: `banteg · 3f2a`. A linked account shows its GitHub or Discord handle
-  with a badge instead, so an impersonator always looks different from the player they copy.
+- An unlinked account shows the name of its latest accepted run, or only its fingerprint while that is a fresh
+  config's default `10tons`. Every board row belongs to the account, so a new name relabels its older entries too.
+- A linked account shows a handle instead, beside its badges: the one its run's name matches, compared without case,
+  else the one most of its links share, else the first in X, Discord, GitHub order, which is also where its avatar
+  comes from. A mistyped name thus never hides who played, and each badge names its own handle where that differs.
+  Run pages still say what a run was played as, and the profile lists every name the account has typed.
+- Names are not unique. Where an unlinked account's name matches another account's name or handle, compared without
+  case, the board adds the first four hex digits of its key's hash: `banteg · 3f2a`. A linked account shows its
+  handle, so an impersonator always looks different from the player they copy.
 - Moderators can hide an entry, hide a name (the account then shows only its fingerprint) and ban a key or an
   account. Every action is logged.
 
