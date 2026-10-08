@@ -5,21 +5,7 @@ on:
   push:
     branches:
       - "master"
-    paths:
-      - "crimson-core/**"
-      - "decomp/**"
-      - "third_party/**"
-      - "tools/match/include/**"
-      - "tools/native/data_definitions/**"
-      - ".github/workflows/client.yml"
   pull_request:
-    paths:
-      - "crimson-core/**"
-      - "decomp/**"
-      - "third_party/**"
-      - "tools/match/include/**"
-      - "tools/native/data_definitions/**"
-      - ".github/workflows/client.yml"
   workflow_dispatch:
 
 env:
@@ -33,7 +19,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.detect.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: detect
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [[ "$EVENT_NAME" != pull_request && "$EVENT_NAME" != push ]] || [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          relevant=$(python3 scripts/ci_changed_paths.py client --base "$BASE_SHA")
+          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+
   client:
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -114,3 +121,23 @@ jobs:
         with:
           name: crimsonland-${{ matrix.name }}
           path: crimsonland-${{ matrix.name }}.tar.gz
+
+  gate:
+    name: client-gate
+    needs: [changes, client]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require client builds when relevant
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          RELEVANT: ${{ needs.changes.outputs.relevant }}
+          CLIENT_RESULT: ${{ needs.client.result }}
+        run: |
+          test "$CHANGES_RESULT" = success
+          if [[ "$RELEVANT" == true ]]; then
+            test "$CLIENT_RESULT" = success
+          else
+            test "$RELEVANT" = false
+            test "$CLIENT_RESULT" = skipped
+          fi

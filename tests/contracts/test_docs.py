@@ -4,9 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from crimson.replay.types import REPLAY_FORMAT_VERSION
-from crimson_re.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
-from scripts.check_docs import find_broken_markdown_links, find_broken_source_paths
+from scripts.check_docs import find_broken_markdown_links, find_broken_source_paths, find_format_version_errors
 
 
 def test_source_references_accept_files_directories_and_symbol_suffixes(tmp_path: Path) -> None:
@@ -69,16 +67,22 @@ def test_docs_links_cannot_escape_to_a_sibling_with_the_same_prefix(tmp_path: Pa
     assert find_broken_markdown_links(docs, [page]) == ["index.md: broken link '../docs-old/old.md'"]
 
 
-def test_documented_format_matrix_matches_current_versions() -> None:
-    page = Path(__file__).resolve().parents[2] / "docs/rewrite/cdt-trace-format.md"
-    rows = {
-        cells[1].strip(): cells[2].strip()
-        for line in page.read_text().splitlines()
-        if line.startswith("|") and len(cells := line.split("|")) >= 4
-    }
+def test_docs_check_catches_stale_format_version(tmp_path: Path) -> None:
+    docs = tmp_path / "docs"
+    (docs / "rewrite").mkdir(parents=True)
+    (docs / "rewrite/cdt-trace-format.md").write_text(
+        "| Artifact | Current version | Authority |\n"
+        "| CDT container | 1 | schema.py |\n"
+        "| CDT payload schema | 21 | schema.py |\n"
+        "| CRD replay | 30 | types.py |\n",
+    )
+    schema = tmp_path / "crimson-re/src/crimson_re/dbg/schema.py"
+    schema.parent.mkdir(parents=True)
+    schema.write_text("TRACE_FORMAT_VERSION = 2\nTRACE_SCHEMA_VERSION = 21\n")
+    replay = tmp_path / "src/crimson/replay/types.py"
+    replay.parent.mkdir(parents=True)
+    replay.write_text("REPLAY_FORMAT_VERSION = 30\n")
 
-    assert {name: rows[name] for name in ("CDT container", "CDT payload schema", "CRD replay")} == {
-        "CDT container": str(TRACE_FORMAT_VERSION),
-        "CDT payload schema": str(TRACE_SCHEMA_VERSION),
-        "CRD replay": str(REPLAY_FORMAT_VERSION),
-    }
+    assert find_format_version_errors(tmp_path, docs) == [
+        "rewrite/cdt-trace-format.md: CDT container documents 1, source is 2",
+    ]

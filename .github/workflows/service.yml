@@ -1,0 +1,95 @@
+name: Crimson service
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.detect.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: detect
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [[ "$EVENT_NAME" != pull_request && "$EVENT_NAME" != push ]] || [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          relevant=$(python3 scripts/ci_changed_paths.py service --base "$BASE_SHA")
+          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+
+  service:
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: "0.17.0"
+      - name: Build verifier WASM for Worker tests
+        run: python3 crimson-core/build.py --target wasm
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - name: Download and verify game assets
+        run: |
+          mkdir -p artifacts/assets
+          curl --fail --location --retry 3 --retry-all-errors \
+            --output artifacts/assets/crimson.paq "https://paq.crimson.banteg.xyz/v1.9.93/crimson.paq"
+          sha256sum --check <<'EOF'
+          52ae564a2cb86de9f11be261338af942377b4340595a0df2a5ae41f468042547  artifacts/assets/crimson.paq
+          EOF
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: service/package-lock.json
+      - run: npm ci
+        working-directory: service
+      - run: npm run assets
+        working-directory: service
+      - run: npm run check
+        working-directory: service
+      - run: npm test
+        working-directory: service
+
+  gate:
+    name: service-gate
+    needs: [changes, service]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require service checks when relevant
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          RELEVANT: ${{ needs.changes.outputs.relevant }}
+          SERVICE_RESULT: ${{ needs.service.result }}
+        run: |
+          test "$CHANGES_RESULT" = success
+          if [[ "$RELEVANT" == true ]]; then
+            test "$SERVICE_RESULT" = success
+          else
+            test "$RELEVANT" = false
+            test "$SERVICE_RESULT" = skipped
+          fi

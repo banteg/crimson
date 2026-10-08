@@ -1,30 +1,10 @@
 name: Decompilation progress
 
-# Only the inputs pinned by the saved evidence can change the report.
+# Run for the saved evidence, its inputs, and the Python CLI that verifies it.
 on:
   push:
     branches: [master]
-    paths:
-      - "decomp/**"
-      - "crimson-re/**"
-      - "tools/match/**"
-      - "tools/native/**"
-      - "third_party/**"
-      - "analysis/**"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/decomp.yml"
   pull_request:
-    paths:
-      - "decomp/**"
-      - "crimson-re/**"
-      - "tools/match/**"
-      - "tools/native/**"
-      - "third_party/**"
-      - "analysis/**"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/decomp.yml"
   workflow_dispatch:
 
 permissions:
@@ -34,7 +14,28 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.detect.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: detect
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [[ "$EVENT_NAME" != pull_request && "$EVENT_NAME" != push ]] || [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          relevant=$(python3 scripts/ci_changed_paths.py decomp --base "$BASE_SHA")
+          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+
   builds:
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
     outputs:
       versions: ${{ steps.registry.outputs.versions }}
@@ -130,3 +131,26 @@ jobs:
           name: ${{ matrix.version }}_report
           path: artifacts/decomp/${{ matrix.version }}/report.json
           if-no-files-found: error
+
+  gate:
+    name: decomp-gate
+    needs: [changes, builds, report]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require reports when relevant
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          RELEVANT: ${{ needs.changes.outputs.relevant }}
+          BUILDS_RESULT: ${{ needs.builds.result }}
+          REPORT_RESULT: ${{ needs.report.result }}
+        run: |
+          test "$CHANGES_RESULT" = success
+          if [[ "$RELEVANT" == true ]]; then
+            test "$BUILDS_RESULT" = success
+            test "$REPORT_RESULT" = success
+          else
+            test "$RELEVANT" = false
+            test "$BUILDS_RESULT" = skipped
+            test "$REPORT_RESULT" = skipped
+          fi
