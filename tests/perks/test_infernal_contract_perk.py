@@ -18,7 +18,6 @@ def test_infernal_contract_grants_levels_and_sets_low_health() -> None:
 
     assert owner.level == 8
     assert state.perk_selection.pending_count == 3
-    assert state.perk_selection.choices_dirty is True
     assert owner.health == f32(0.1)
     assert other.health == f32(0.1)
 

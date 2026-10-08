@@ -80,7 +80,6 @@ def perk_apply(
         case PerkId.INFERNAL_CONTRACT:
             owner.level += 3
             state.perk_selection.pending_count += 3
-            state.perk_selection.choices_dirty = True
             # Native sets its two player slots, the second being the dormant one in a one-player run;
             # the co-op fix covers every player.
             native_slots = [*players, state.dormant_player][:2]

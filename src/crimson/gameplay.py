@@ -141,7 +141,6 @@ def survival_check_level_up(state: GameplayState, player: PlayerState) -> None:
 
     if player.experience > survival_level_threshold(player.level):
         state.perk_selection.pending_count += 1
-        state.perk_selection.choices_dirty = True
         state.sfx_queue.append(SfxRequest(SfxId.UI_LEVELUP, None))
         player.level += 1
 
