@@ -49,14 +49,21 @@ def game_headers(headers):
         path,
     )
     path.write_text(text)
-    # A fresh configuration runs at 1024x768, the resolution the verifier
-    # simulates, so the client's runs replay as they played (host/session.inc).
+    # A fresh configuration is the Python port's (grim/config.py default_crimson_cfg):
+    # windowed, since the host owns the window, at 1024x768, the resolution the
+    # verifier simulates, so the client's runs replay as they played (host/session.inc).
     path = headers / "crimson_config_defaults_impl.h"
+    text = replace_once(
+        path.read_text(),
+        "CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 800;\n    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 600;",
+        "CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 1024;\n    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 768;",
+        path,
+    )
     path.write_text(
         replace_once(
-            path.read_text(),
-            "CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 800;\n    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 600;",
-            "CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 1024;\n    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 768;",
+            text,
+            "CRIMSON_CONFIG_DEFAULTS_BLOB.windowed = 0;",
+            "CRIMSON_CONFIG_DEFAULTS_BLOB.windowed = 1;",
             path,
         ),
     )
@@ -127,6 +134,25 @@ def adapt_game(src, txt):
         txt, count = re.subn(rf"\b{src.stem}\(", f"{src.stem}_recovered(", txt)
         if not count:
             raise SystemExit(f"Audit {src.name} before changing its seam")
+    if src.parent.name == "texture" and src.stem == "load_file":
+        # The distributed crimson.paq stores some images decoded, under the same
+        # path with their own extension: Grim loads the stored entry by what it
+        # holds (game/repack.cpp).
+        txt = replace_once(
+            txt,
+            "    bool found_in_lookup = false;",
+            "    path = grim_lookup_blob_entry(path);\n    bool found_in_lookup = false;",
+            src,
+        )
+        txt = "char *grim_lookup_blob_entry(char *path);\n" + txt
+    if src.parent.name == "app" and src.stem == "init_system":
+        txt = replace_once(
+            txt,
+            'grim_lookup_blob_find("load\\\\smallFnt.dat")',
+            'grim_lookup_blob_find(grim_lookup_blob_entry((char *)"load\\\\smallFnt.dat"))',
+            src,
+        )
+        txt = "char *grim_lookup_blob_entry(char *path);\n" + txt
     if src.stem == "input_key_name":
         # Its header defines it; a live run names the player's keys (host/session.inc).
         txt = "#define input_key_name input_key_name_recovered\n" + txt

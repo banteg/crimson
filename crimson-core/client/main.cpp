@@ -344,7 +344,13 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
 #endif
-  window = SDL_CreateWindow("Crimsonland", 1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+#ifdef __EMSCRIPTEN__
+  // A window title would replace the page's.
+  const char *title = nullptr;
+#else
+  const char *title = "Crimsonland";
+#endif
+  window = SDL_CreateWindow(title, 1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
   if (!window || !(context = SDL_GL_CreateContext(window)))
     client_fatal(SDL_GetError());
   // Unattended captures run unthrottled: a hidden window would otherwise wait on vsync.
