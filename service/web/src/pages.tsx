@@ -1,5 +1,5 @@
 import { type Accessor, createSignal, For, type JSX, Show } from "solid-js";
-import type { Board, BoardView, Category, FlagsView, JoinView, ModerationAction, ProfileView, QuestMenuView, Role, RunDetailView } from "../../src/api-types";
+import type { Board, BoardView, FlagsView, JoinView, ModerationAction, ProfileView, QuestMenuView, Role, RunDetailView } from "../../src/api-types";
 import { get, moderate, post } from "./api";
 import { formatScore } from "./format";
 import { GameButton } from "./button";
@@ -42,9 +42,6 @@ const RULES = `${DOCS}rewrite/ranked-rules/`;
 const BUGS = `${DOCS}rewrite/original-bugs/`;
 const BOTS = `${DOCS}rewrite/bots/`;
 
-// A board's category, as its ?category=bot asks; human runs without it.
-const categoryOf = (url: URL): Category => (url.searchParams.get("category") === "bot" ? "bot" : "human");
-const categoryQuery = (category: Category) => (category === "bot" ? "?category=bot" : "");
 
 // The signed-in account and its role.
 async function me(): Promise<{ account: number | null; role: Role }> {
@@ -76,7 +73,11 @@ function Weapon(props: { id: number }) {
   );
 }
 
-function BoardTable(props: { view: BoardView }) {
+// A board's rows; a compact table, for the home page, keeps the rank, player and score. A bot board names each run's
+// bot, as its replay declares it.
+function BoardTable(props: { view: BoardView; compact?: boolean }) {
+  const bots = () => props.view.category === "bot";
+  const full = () => !props.compact;
   return (
     <Show when={props.view.rows.length} fallback={<p class="muted">No runs yet.</p>}>
       <div class="board-table">
@@ -85,11 +86,16 @@ function BoardTable(props: { view: BoardView }) {
             <tr>
               <th class="n">#</th>
               <th>Player</th>
+              <Show when={bots() && full()}>
+                <th>Bot</th>
+              </Show>
               <th class="n">Score</th>
-              <th>Run</th>
-              <th class="n">Duration</th>
-              <th title="Most used weapon by time equipped">Weapon</th>
-              <th>Replay</th>
+              <Show when={full()}>
+                <th>Run</th>
+                <th class="n">Duration</th>
+                <th title="Most used weapon by time equipped">Weapon</th>
+                <th>Replay</th>
+              </Show>
             </tr>
           </thead>
           <tbody>
@@ -98,8 +104,8 @@ function BoardTable(props: { view: BoardView }) {
                 <tr>
                   <td class="n">{row.rank}</td>
                   <td>
-                    <PlayerName player={row.player} />
-                    <Show when={row.pilot}>
+                    <PlayerName player={row.player} tag={false} />
+                    <Show when={props.compact && row.pilot}>
                       {(pilot) => (
                         <span class="muted">
                           {" · "}
@@ -108,23 +114,32 @@ function BoardTable(props: { view: BoardView }) {
                       )}
                     </Show>
                   </td>
+                  <Show when={bots() && full()}>
+                    <td>
+                      <Show when={row.pilot} fallback={<span class="muted" title="The replay names no bot">—</span>}>
+                        {(pilot) => <PilotName pilot={pilot()} />}
+                      </Show>
+                    </td>
+                  </Show>
                   <td class="n">
                     <a class="run" href={`/runs/${row.run}`}>
                       {formatScore(props.view.board, row.score)}
                     </a>
                   </td>
-                  <td>
-                    <a class="run-details" href={`/runs/${row.run}`}>Details →</a>
-                  </td>
-                  <td class="n">{formatDuration(row.elapsed_ms)}</td>
-                  <td>
-                    <Weapon id={row.most_used_weapon_id} />
-                  </td>
-                  <td>
-                    <a href={`/runs/${row.run}.crd`} data-native>
-                      .crd
-                    </a>
-                  </td>
+                  <Show when={full()}>
+                    <td>
+                      <a class="run-details" href={`/runs/${row.run}`}>Details →</a>
+                    </td>
+                    <td class="n">{formatDuration(row.elapsed_ms)}</td>
+                    <td>
+                      <Weapon id={row.most_used_weapon_id} />
+                    </td>
+                    <td>
+                      <a href={`/runs/${row.run}.crd`} data-native>
+                        .crd
+                      </a>
+                    </td>
+                  </Show>
                 </tr>
               )}
             </For>
@@ -135,33 +150,29 @@ function BoardTable(props: { view: BoardView }) {
   );
 }
 
-// The Bots box beside a board's title: the same board's bot runs, or its human runs again.
-function CategorySwitch(props: { path: string; category: Category }) {
-  const bots = () => props.category === "bot";
-  return (
-    <a class="check" href={`${props.path}${categoryQuery(bots() ? "human" : "bot")}`} title="Runs played by programs, declared or marked by a moderator">
-      <img src={`/ui/check-${bots() ? "on" : "off"}.png`} alt="" />
-      Bots
-    </a>
-  );
-}
+// How a bot gets onto the bot boards.
+const BotInvite = () => (
+  <p class="muted">
+    Bots and tool-assisted runs, verified under the same <a href={RULES}>rules</a>. Built one? Set <code>CRIMSON_PILOT_NAME</code> when the
+    Python port records, and its runs list here under its name. See <a href={BOTS}>bots</a>.
+  </p>
+);
 
 // The game's quest screen: its layout and colors (quest_select_menu_update), red rows on hardcore.
 function QuestMenu(props: { view: QuestMenuView; current?: string }) {
   const hardcore = () => props.view.board === "quests-hardcore";
   const menu = () => (hardcore() ? "quests-hardcore" : "quests");
-  const query = () => categoryQuery(props.view.category);
   const toggle = () =>
-    (props.current
+    props.current
       ? `/boards/${hardcore() ? "quests" : "quests-hardcore"}/${props.current}`
-      : `/${hardcore() ? "quests" : "quests-hardcore"}/${props.view.stage}`) + query();
+      : `/${hardcore() ? "quests" : "quests-hardcore"}/${props.view.stage}`;
   return (
     <div class="quest-menu" classList={{ "hardcore-on": hardcore() }}>
       <span class="label">Quest:</span>
       <nav class="stages">
         <For each={STAGES}>
           {(numeral, i) => (
-            <a classList={{ on: i() + 1 === props.view.stage }} style={{ left: `${88 + i() * 36}px` }} href={`/${menu()}/${i() + 1}${query()}`}>
+            <a classList={{ on: i() + 1 === props.view.stage }} style={{ left: `${88 + i() * 36}px` }} href={`/${menu()}/${i() + 1}`}>
               <img src={`/ui/stage${i() + 1}.png`} alt={numeral} />
             </a>
           )}
@@ -175,7 +186,7 @@ function QuestMenu(props: { view: QuestMenuView; current?: string }) {
         <For each={props.view.quests}>
           {(quest) => (
             <li>
-              <a classList={{ on: quest.quest === props.current }} href={`/boards/${props.view.board}/${quest.quest}${query()}`}>
+              <a classList={{ on: quest.quest === props.current }} href={`/boards/${props.view.board}/${quest.quest}`}>
                 <span class="n">{quest.quest}</span>
                 {quest.title}
               </a>
@@ -245,7 +256,10 @@ function withNotice(url: URL, screen: Screen): Screen {
 }
 
 async function home(): Promise<Screen> {
-  const survival = (await get<BoardView>("/api/boards/survival?limit=10"))!;
+  const [humans, bots] = await Promise.all([
+    get<BoardView>("/api/boards/survival?limit=10"),
+    get<BoardView>("/api/boards/survival?limit=10&category=bot"),
+  ]);
   return {
     title: null,
     quest: null,
@@ -262,9 +276,18 @@ async function home(): Promise<Screen> {
       () => (
         <>
           <h2>Survival</h2>
-          <BoardTable view={survival} />
+          <div class="board-pair">
+            <div>
+              <h3>Humans</h3>
+              <BoardTable view={humans!} compact />
+            </div>
+            <div>
+              <h3>Bots</h3>
+              <BoardTable view={bots!} compact />
+            </div>
+          </div>
           <p>
-            <a href="/boards/survival">Full board</a> · <a href="/quests/1">Quests</a>
+            <a href="/boards/survival">Full boards</a> · <a href="/quests/1">Quests</a>
           </p>
         </>
       ),
@@ -272,51 +295,39 @@ async function home(): Promise<Screen> {
   };
 }
 
-function BoardPanel(props: { view: BoardView; path: string }) {
-  return (
-    <>
-      <div class="panel-head">
-        <h2>
-          {props.view.title}
-          <Show when={props.view.category === "bot"}> · bots</Show>
-        </h2>
-        <CategorySwitch path={props.path} category={props.view.category} />
-      </div>
-      <Show when={props.view.category === "bot"}>
-        <p class="muted">
-          Runs played by programs and tool-assisted runs, under the same <a href={RULES}>rules</a>. See <a href={BOTS}>bots</a>.
-        </p>
-      </Show>
-      <BoardTable view={props.view} />
-    </>
-  );
+// A board's human runs, then its bot runs.
+function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
+  return [
+    () => (
+      <>
+        <h2>{humans.title}</h2>
+        <BoardTable view={humans} />
+      </>
+    ),
+    () => (
+      <>
+        <h2>{bots.title} · bots</h2>
+        <BotInvite />
+        <BoardTable view={bots} />
+      </>
+    ),
+  ];
 }
 
-const boardSuffix = (view: BoardView) => (view.category === "bot" ? " · bots" : "");
-
-async function board(boardName: Board, quest: string, category: Category): Promise<Screen> {
-  const query = categoryQuery(category);
-  if (boardName === "survival") {
-    const view = (await get<BoardView>(`/api/boards/survival${query}`))!;
-    return { title: `Survival${boardSuffix(view)}`, quest: null, panels: [() => <BoardPanel view={view} path="/boards/survival" />] };
-  }
-  const stage = Number(quest.split(".")[0]);
-  const [view, menu] = await Promise.all([
-    get<BoardView>(`/api/boards/${boardName}/${quest}${query}`),
-    get<QuestMenuView>(`/api/quests/${boardName}/${stage}${query}`),
-  ]);
+async function board(boardName: Board, quest: string): Promise<Screen> {
+  const path = boardName === "survival" ? "/api/boards/survival" : `/api/boards/${boardName}/${quest}`;
+  const [humans, bots] = await Promise.all([get<BoardView>(path), get<BoardView>(`${path}?category=bot`)]);
+  if (boardName === "survival") return { title: "Survival", quest: null, panels: boardPanels(humans!, bots!) };
+  const menu = (await get<QuestMenuView>(`/api/quests/${boardName}/${Number(quest.split(".")[0])}`))!;
   return {
-    title: `${view!.title}${boardSuffix(view!)}`,
+    title: humans!.title,
     quest,
-    panels: [
-      keep("quest-menu", { menu: menu!, quest }, (data) => <QuestMenu view={data().menu} current={data().quest} />),
-      () => <BoardPanel view={view!} path={`/boards/${boardName}/${quest}`} />,
-    ],
+    panels: [keep("quest-menu", { menu, quest }, (data) => <QuestMenu view={data().menu} current={data().quest} />), ...boardPanels(humans!, bots!)],
   };
 }
 
-async function quests(boardName: "quests" | "quests-hardcore", stage: number, category: Category): Promise<Screen> {
-  const menu = (await get<QuestMenuView>(`/api/quests/${boardName}/${stage}${categoryQuery(category)}`))!;
+async function quests(boardName: "quests" | "quests-hardcore", stage: number): Promise<Screen> {
+  const menu = (await get<QuestMenuView>(`/api/quests/${boardName}/${stage}`))!;
   return { title: `Quests ${STAGES[stage - 1]}`, quest: `${stage}.1`, panels: [keep("quest-menu", { menu, quest: undefined }, (data) => <QuestMenu view={data().menu} current={data().quest} />)] };
 }
 
@@ -435,7 +446,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                     {(run) => (
                       <tr>
                         <td>
-                          <a href={`/boards/${run.board}${run.quest ? `/${run.quest}` : ""}${categoryQuery(run.category)}`}>
+                          <a href={`/boards/${run.board}${run.quest ? `/${run.quest}` : ""}`}>
                             {BOARD_NAMES[run.board]} {run.quest}
                           </a>
                           <Show when={run.category === "bot"}>
@@ -660,8 +671,8 @@ const ABOUT: Screen = {
           for <a href={BUGS}>bugs in the original game</a>.
         </p>
         <p>
-          Bots are welcome on boards of their own. A program that plays declares itself in its replay and lists under the bot's name, and
-          moderators move undeclared bots there. Tick <em>Bots</em> above a board to see them. See <a href={BOTS}>bots</a>.
+          Bots are welcome too. Every board ranks them next to the humans: a program that plays declares itself in its replay and lists
+          under the bot's name, and moderators move undeclared bots there. See <a href={BOTS}>bots</a>.
         </p>
       </>
     ),
@@ -771,12 +782,10 @@ export async function resolve(url: URL, nav: Navigator): Promise<Screen> {
   let match: RegExpExecArray | null;
   let screen: Screen;
   if (path === "/") screen = await home();
-  else if (path === "/boards/survival") screen = await board("survival", "", categoryOf(url));
-  else if ((match = /^\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(path)) && QUEST.test(match[2]!))
-    screen = await board(match[1] as Board, match[2]!, categoryOf(url));
-  else if ((match = /^\/(quests|quests-hardcore)\/([1-5])$/.exec(path)))
-    screen = await quests(match[1] as "quests" | "quests-hardcore", Number(match[2]), categoryOf(url));
-  else if (path === "/quests") screen = await quests("quests", 1, categoryOf(url));
+  else if (path === "/boards/survival") screen = await board("survival", "");
+  else if ((match = /^\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(path)) && QUEST.test(match[2]!)) screen = await board(match[1] as Board, match[2]!);
+  else if ((match = /^\/(quests|quests-hardcore)\/([1-5])$/.exec(path))) screen = await quests(match[1] as "quests" | "quests-hardcore", Number(match[2]));
+  else if (path === "/quests") screen = await quests("quests", 1);
   else if (path === "/mod") screen = await moderation(nav);
   else if ((match = /^\/players\/(\d+)$/.exec(path))) screen = await profile(Number(match[1]), nav);
   else if ((match = /^\/join\/([0-9a-f]{64})$/.exec(path))) screen = await join(match[1]!, nav);

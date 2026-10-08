@@ -108,3 +108,4 @@ svg .rival{fill:none;stroke-width:1.5;stroke-dasharray:5 4;stroke-opacity:.85}
 .tag{margin-left:6px;padding:0 4px;border:1px solid var(--dim);color:var(--label);font-size:12px;line-height:16px;vertical-align:1px;white-space:nowrap}
 a.check{color:var(--label);text-decoration:none;white-space:nowrap}a.check:hover{color:#fff}a.check img{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
 .pilot{white-space:nowrap}.flag,.tile b.flag{color:#ff7a5c}
+.board-pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:4px 28px}.board-pair h3{margin-top:0}
