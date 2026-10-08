@@ -1,5 +1,6 @@
 import { type Accessor, createSignal, For, type Setter, Show, untrack } from "solid-js";
 import { render } from "solid-js/web";
+import type { Role } from "../../src/api-types";
 import { get } from "./api";
 import { GameButton } from "./button";
 import { type Navigator, type Panel, resolve, type Screen } from "./pages";
@@ -50,7 +51,7 @@ function App() {
   const [panels, setPanels] = createSignal<Shown[]>([]);
   const [grounds, setGrounds] = createSignal<Layer[]>([]);
   const [path, setPath] = createSignal(location.pathname);
-  const [me, setMe] = createSignal<number | null>(null);
+  const [me, setMe] = createSignal<{ account: number | null; role: Role }>({ account: null, role: "" });
   let navigation = 0;
   let groundKey: string | null = null;
   // Pages without a quest keep one random ground for the visit; a reload rolls a new one, as the game does.
@@ -74,7 +75,7 @@ function App() {
     if (history_ === "push") history.pushState(null, "", url);
     else if (history_ === "replace") history.replaceState(null, "", url);
     setPath(url.pathname);
-    void get<{ account: number | null }>("/api/me").then((answer) => setMe(answer!.account));
+    void get<{ account: number | null; role: Role }>("/api/me").then((answer) => setMe(answer!));
     const moving = animate && motion();
     const old = panels();
     const started = performance.now();
@@ -126,7 +127,10 @@ function App() {
       <header>
         <nav class="menu buttons">
           <For each={MENU}>{(item) => <GameButton label={item.label} href={item.href} native={item.native} on={item.on(path())} />}</For>
-          <Show when={me()}>{(id) => <GameButton label="Profile" href={`/players/${id()}`} on={path() === `/players/${id()}`} />}</Show>
+          <Show when={me().account}>{(id) => <GameButton label="Profile" href={`/players/${id()}`} on={path() === `/players/${id()}`} />}</Show>
+          <Show when={me().role}>
+            <GameButton label="Mod" href="/mod" on={path() === "/mod"} />
+          </Show>
         </nav>
         <a class="sign" href="/">
           <img src="/ui/sign.png" width="512" height="128" alt="Crimsonland" />

@@ -24,6 +24,7 @@ from tests.support.factories import player_input
 
 def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() -> None:
     session, world = make_session()
+    session.perk_menu_open = True
     world.state.perk_selection.pending_count = 1
 
     tick = session.step_tick(
@@ -39,6 +40,7 @@ def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() 
 
 def test_session_step_tick_rejects_stale_perk_pick() -> None:
     session, _world = make_session()
+    session.perk_menu_open = True
 
     with pytest.raises(IllegalCommandError, match="perk_pick without a pending perk"):
         session.step_tick(

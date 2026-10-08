@@ -58,6 +58,15 @@ export const Flags = {
 } as const;
 const AIM_SCHEMES = new Set([0, 1, 2, 3, 4, 5, 7]);
 
+// A tick's movement scheme and aim scheme. Like Python's decoder, recordings without them ran static movement when they
+// held movement keys, else the pad, with mouse aim; the 3-bit aim field stores the -1 scheme as all ones.
+export function tickControls(flags: number): { moveMode: number; aimScheme: number } {
+  const moveKeys = Boolean(flags & Flags.MOVE_KEYS_PRESENT);
+  const moveMode = flags & Flags.MOVE_MODE_PRESENT ? (flags >>> Flags.MOVE_MODE_SHIFT) & Flags.MASK3 : moveKeys ? 2 : 3;
+  const aimRaw = (flags >>> Flags.AIM_SCHEME_SHIFT) & Flags.MASK3;
+  return { moveMode, aimScheme: flags & Flags.AIM_SCHEME_PRESENT ? (aimRaw === Flags.MASK3 ? -1 : aimRaw) : 0 };
+}
+
 export interface QuestLevel {
   major: number;
   minor: number;
@@ -121,11 +130,18 @@ export interface Recorder {
   version: string;
   platform: string;
 }
+// The program that played the run, when the replay declares one (docs/rewrite/bots.md).
+export interface Pilot {
+  name: string;
+  model: string;
+  url: string;
+}
 export interface Replay {
   format_version: number;
   game_version: string;
   rules: number;
   recorder: Recorder;
+  pilot: Pilot | null;
   run: RunSpec;
   result: RunResult;
   ticks: Tick[];
@@ -209,6 +225,7 @@ class Schema {
       game_version: this.str(fields.game_version, "game_version"),
       rules: format_version === 30 ? V30_RULES : this.int(fields.rules, "rules"),
       recorder: this.recorder(fields.recorder),
+      pilot: null,
       run: this.runSpec(fields.run),
       result: this.result(fields.result),
       ticks: this.array(fields.ticks, "ticks").map((tick, i) => this.tick(tick, `ticks[${i}]`)),

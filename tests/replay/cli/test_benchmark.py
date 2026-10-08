@@ -714,7 +714,7 @@ def test_replay_benchmark_profile_outputs_hotspots_and_pstats(tmp_path: Path) ->
     assert profile_out.is_file()
 
 
-def test_replay_benchmark_rejects_perk_pick_without_pending_perk(tmp_path: Path) -> None:
+def test_replay_benchmark_rejects_perk_pick_without_an_open_menu(tmp_path: Path) -> None:
     replay = _build_replay(mode=GameMode.SURVIVAL, ticks=1)
     _inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
     replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -734,7 +734,7 @@ def test_replay_benchmark_rejects_perk_pick_without_pending_perk(tmp_path: Path)
     )
 
     assert result.exit_code == 1
-    assert "without a pending perk" in result.output
+    assert "perk_pick without an open perk menu" in result.output
 
 
 def test_replay_benchmark_rejects_removed_lenient_events_option(tmp_path: Path) -> None:

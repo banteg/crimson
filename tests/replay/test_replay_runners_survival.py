@@ -146,16 +146,16 @@ def _with_commands(replay, commands):
 
 
 @pytest.mark.parametrize(
-    "commands",
+    ("commands", "reason"),
     [
-        [PerkPickCommand(player_index=0, choice_index=0)],
-        [PerkMenuOpenCommand(player_index=0)],
+        ([PerkPickCommand(player_index=0, choice_index=0)], "perk_pick without an open perk menu"),
+        ([PerkMenuOpenCommand(player_index=0)], "perk_menu_open without a pending perk"),
     ],
 )
-def test_survival_runner_rejects_perk_commands_without_pending_perk(commands) -> None:
+def test_survival_runner_rejects_perk_commands_the_menu_does_not_allow(commands, reason) -> None:
     replay = _with_commands(finish_replay(_blank_survival_replay(ticks=1, seed=0x1234)), commands)
 
-    with pytest.raises(ReplayRunnerError, match="without a pending perk"):
+    with pytest.raises(ReplayRunnerError, match=reason):
         _run_verify_playback(replay)
 
 
@@ -165,6 +165,7 @@ def test_survival_runner_rejects_unoffered_perk_choice() -> None:
         [PerkPickCommand(player_index=0, choice_index=6)],
     )
     driver = PlaybackDriver(replay)
+    driver.session.perk_menu_open = True
     perk = driver.world.state.perk_selection
     perk.pending_count = 1
     perk.choices_dirty = False
@@ -174,17 +175,43 @@ def test_survival_runner_rejects_unoffered_perk_choice() -> None:
         driver.step_tick(0)
 
 
-def test_survival_runner_menu_open_allows_same_tick_perk_pick() -> None:
-    replay = _with_commands(
-        finish_replay(_blank_survival_replay(ticks=1, seed=0x1234)),
-        [PerkMenuOpenCommand(player_index=0), PerkPickCommand(player_index=0, choice_index=0)],
-    )
+def _perk_menu_replay(*ticks: list) -> PlaybackDriver:
+    replay = finish_replay(_blank_survival_replay(ticks=len(ticks), seed=0x1234))
+    for index, commands in enumerate(ticks):
+        replay.ticks[index] = msgspec.structs.replace(replay.ticks[index], commands=list(commands))
     driver = PlaybackDriver(replay)
-    driver.world.state.perk_selection.pending_count = 1
+    driver.world.state.perk_selection.pending_count = 2
+    return driver
 
-    driver.step_tick(0)
 
-    assert driver.world.state.perk_selection.pending_count == 0
+OPEN = PerkMenuOpenCommand(player_index=0)
+PICK = PerkPickCommand(player_index=0, choice_index=0)
+
+
+def test_survival_runner_picks_on_the_tick_after_the_menu_opens() -> None:
+    # The second pick follows the same tick's reopening, as picking and pressing the perk key again does.
+    driver = _perk_menu_replay([OPEN], [PICK, OPEN], [PICK])
+
+    for tick in range(3):
+        driver.step_tick(tick)
+
+    assert sum(driver.world.state.perks.counts) == 2
+
+
+@pytest.mark.parametrize(
+    "ticks",
+    [
+        pytest.param([[OPEN, PICK]], id="the tick that opens it"),
+        pytest.param([[OPEN], [PICK, PICK]], id="a second pick"),
+        pytest.param([[OPEN], [], [PICK]], id="after a cancel"),
+    ],
+)
+def test_survival_runner_rejects_a_pick_the_open_menu_does_not_allow(ticks) -> None:
+    driver = _perk_menu_replay(*ticks)
+
+    with pytest.raises(ReplayRunnerError, match="perk_pick without an open perk menu"):
+        for tick in range(len(ticks)):
+            driver.step_tick(tick)
 
 
 def test_survival_runner_allows_the_run_down_then_rejects_further_ticks() -> None:

@@ -1,13 +1,13 @@
 // A run's page: its stats, experience against the board's top run and the player's best, kill rate or damage, weapons,
 // perks and timed bonuses, and where it was played, all from the timeline verification recorded (src/timeline.ts).
 import { type Accessor, createMemo, createResource, createSignal, For, type JSX, Show } from "solid-js";
-import type { RunDetailView, Timeline } from "../../src/api-types";
-import { get } from "./api";
+import { type Category, type RunDetailView, type SignalName, type Timeline } from "../../src/api-types";
+import { get, moderate } from "./api";
 import { GameButton } from "./button";
 import { formatScore } from "./format";
 import perkNames from "./perks.json";
 import { playerLabel } from "./names";
-import { PlayerName } from "./players";
+import { PilotName, PlayerName } from "./players";
 import { paintGround } from "./terrain/draw";
 import { type Ground, runGround } from "./terrain/rules";
 import weaponData from "./weapons.json";
@@ -529,11 +529,65 @@ function QuestScore(props: { detail: RunDetailView }) {
 }
 
 function boardPath(detail: RunDetailView): string {
-  return detail.board === "survival" ? "/boards/survival" : `/boards/${detail.board}/${detail.quest}`;
+  return `${detail.board === "survival" ? "/boards/survival" : `/boards/${detail.board}/${detail.quest}`}${detail.category === "bot" ? "?category=bot" : ""}`;
+}
+
+export const SIGNAL_LABELS: Record<SignalName, string> = {
+  aim_on_creature: "Aim on a creature",
+  exact_moves: "Exact pad moves",
+  reversals_per_min: "Reversals a minute",
+  aim_jump_p99: "Aim jump, p99",
+  one_tick_fire: "One-tick fire",
+};
+
+const CATEGORY_SOURCES = {
+  moderator: "a moderator set it",
+  pilot: "the replay declares a pilot",
+  account: "a moderator marked the account as a bot",
+  default: "no pilot, and the account is not marked",
+};
+
+// A moderator's view of the run: why it is in its category, its input signals, and the category controls.
+function RunModerationPanel(props: { detail: RunDetailView; reload: () => void }) {
+  const moderation = props.detail.moderation!;
+  const set = async (category: Category | null) => (await moderate(`/api/mod/runs/${props.detail.id}`, { category })) && props.reload();
+  return (
+    <>
+      <h3>Moderation</h3>
+      <p class="muted">
+        A {props.detail.category} run: {CATEGORY_SOURCES[moderation.source]}.
+      </p>
+      <Show when={moderation.signals} fallback={<p class="muted">The run's signals could not be measured.</p>}>
+        {(signals) => (
+          <div class="tiles">
+            <For each={Object.keys(SIGNAL_LABELS) as SignalName[]}>
+              {(name) => (
+                <div class="tile" classList={{ flag: moderation.flagged.includes(name) }}>
+                  <span class="muted">{SIGNAL_LABELS[name]}</span>
+                  <b classList={{ flag: moderation.flagged.includes(name) }}>{signals()[name]}</b>
+                </div>
+              )}
+            </For>
+          </div>
+        )}
+      </Show>
+      <p class="buttons">
+        <Show when={props.detail.category !== "bot"}>
+          <GameButton label="Bot run" onClick={() => set("bot")} />
+        </Show>
+        <Show when={props.detail.category !== "human"}>
+          <GameButton label="Human run" onClick={() => set("human")} />
+        </Show>
+        <Show when={moderation.override}>
+          <GameButton label="Follow the account" onClick={() => set(null)} />
+        </Show>
+      </p>
+    </>
+  );
 }
 
 // The run's panels; the top run's and the player's best's timelines load when their boxes are ticked.
-export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
+export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX.Element)[] {
   const run = detail.timeline ? prepare(detail.timeline, detail) : null;
   const header = () => (
     <div class="run-overview">
@@ -541,6 +595,9 @@ export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
         <h2>
           {detail.title}
           <Show when={detail.rank}>{(rank) => <> · #{rank()}</>}</Show>
+          <Show when={detail.category === "bot"}>
+            <span class="tag">bot</span>
+          </Show>
         </h2>
         <p class="run-player">
           <PlayerName player={detail.player} heading />
@@ -548,6 +605,13 @@ export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
             <span class="muted"> · played as {detail.name}</span>
           </Show>
         </p>
+        <Show when={detail.pilot}>
+          {(pilot) => (
+            <p class="run-player muted">
+              Played by <PilotName pilot={pilot()} />
+            </p>
+          )}
+        </Show>
         <Show when={detail.result.outcome === "quest_completed"}><p class="score-label muted">Final time</p></Show>
         <p class="run-score">{formatScore(detail.board, detail.score)}</p>
         <Show when={detail.result.outcome === "quest_completed"}><QuestScore detail={detail} /></Show>
@@ -562,7 +626,8 @@ export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
       <Show when={run}>{(run) => <Stats run={run()} detail={detail} />}</Show>
     </div>
   );
-  if (!run) return [header, () => <p class="muted">This run's timeline is not available.</p>];
+  const moderation = detail.moderation ? [() => <RunModerationPanel detail={detail} reload={reload} />] : [];
+  if (!run) return [header, () => <p class="muted">This run's timeline is not available.</p>, ...moderation];
   const [t, set] = createSignal<number | null>(null);
   const cursor: Cursor = { t, set };
   const [showTop, setShowTop] = createSignal(detail.top !== null);
@@ -580,6 +645,7 @@ export function runPanels(detail: RunDetailView): (() => JSX.Element)[] {
   const name = playerLabel(detail.player);
   return [
     header,
+    ...moderation,
     () => (
       <>
         <div class="panel-head">

@@ -7,6 +7,8 @@ import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
 import type { Board } from "./ranked";
 import { postRun, timelineFor } from "./runs";
 import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView, runDescription, runDetailView, runSummary, visibleRun } from "./views";
+import { CATEGORIES, type Category } from "./api-types";
+import { flagsView, isModerator, markAccount, measureRuns, moderationLog, roleOf, setRole, setRunCategory } from "./moderation";
 
 // Links, OAuth callbacks and the session cookie follow the request's origin, so the site answers only over
 // HTTPS, and browsers are told to stay there. Plain-HTTP localhost stays for wrangler dev.
@@ -23,6 +25,8 @@ const CARD_MAX_AGE_S = 600;
 const REPLAY_MAX_AGE_S = 300;
 
 const signedOut = (request: Request) => `${SESSION_COOKIE}=; Path=/; HttpOnly;${secure(request)} SameSite=Lax; Max-Age=0`;
+
+const categoryOf = (value: unknown): Category | null => (CATEGORIES.includes(value as Category) ? (value as Category) : null);
 
 function redirect(location: string, headers: HeadersInit = {}): Response {
   return new Response(null, { status: 303, headers: { Location: location, ...headers } });
@@ -57,38 +61,65 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     case "POST /api/auth/login":
       return postLogin(request, env);
     case "POST /api/scores": {
-      // The high score screen's Update scores: a board's best runs as high score records, {board, quest}.
-      const body = (await request.json().catch(() => ({}))) as { board?: unknown; quest?: unknown };
+      // The high score screen's Update scores: a board's best runs as high score records, {board, quest, category}.
+      const body = (await request.json().catch(() => ({}))) as { board?: unknown; quest?: unknown; category?: unknown };
       const quest = String(body.quest ?? "");
-      if (body.board === "survival" && quest === "") return json({ scores: await gameScores(env, "survival", "", SCORES_LIMIT) });
+      const category = categoryOf(body.category ?? "human");
+      if (category === null) return refuse(400, "no such category");
+      if (body.board === "survival" && quest === "") return json({ scores: await gameScores(env, "survival", "", category, SCORES_LIMIT) });
       if ((body.board === "quests" || body.board === "quests-hardcore") && QUEST.test(quest))
-        return json({ scores: await gameScores(env, body.board, quest, SCORES_LIMIT) });
+        return json({ scores: await gameScores(env, body.board, quest, category, SCORES_LIMIT) });
       return refuse(400, "no such board");
     }
   }
 
-  // The site's read API.
+  // The site's read API. Boards and the quest menu take ?category=bot; they show human runs without it.
+  const category = categoryOf(url.searchParams.get("category") ?? "human");
+  if (url.pathname.startsWith("/api/") && category === null) return refuse(400, "no such category");
   if (route === "GET /api/boards/survival") {
     const limit = Math.min(100, Number(url.searchParams.get("limit")) || 100);
-    return json(await boardView(env, "survival", "", limit));
+    return json(await boardView(env, "survival", "", category!, limit));
   }
   if ((match = /^GET \/api\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(route)) && QUEST.test(match[2]!))
-    return json(await boardView(env, match[1] as Board, match[2]!, 100));
+    return json(await boardView(env, match[1] as Board, match[2]!, category!, 100));
   if ((match = /^GET \/api\/quests\/(quests|quests-hardcore)\/([1-5])$/.exec(route)))
-    return json(await questMenuView(env, match[1] as "quests" | "quests-hardcore", Number(match[2])));
+    return json(await questMenuView(env, match[1] as "quests" | "quests-hardcore", Number(match[2]), category!));
+  const viewer = await sessionAccount(request, env);
+  const role = await roleOf(env, viewer);
   if ((match = /^GET \/api\/players\/(\d+)$/.exec(route))) {
-    const profile = await profileView(env, Number(match[1]), await sessionAccount(request, env));
+    const profile = await profileView(env, Number(match[1]), viewer, isModerator(role));
     return profile ? json(profile) : refuse(404, "no such player");
   }
   if ((match = /^GET \/api\/runs\/([0-9a-f]{64})$/.exec(route))) {
-    const run = await runDetailView(env, match[1]!);
+    const run = await runDetailView(env, match[1]!, isModerator(role));
     return run ? json(run) : refuse(404, "no such run");
   }
   if ((match = /^GET \/api\/runs\/([0-9a-f]{64})\/timeline$/.exec(route))) {
     const timeline = (await visibleRun(env, match[1]!)) && (await timelineFor(env, match[1]!));
     return timeline ? json(timeline) : refuse(404, "no such run");
   }
-  if (route === "GET /api/me") return json({ account: await sessionAccount(request, env) });
+  if (route === "GET /api/me") return json({ account: viewer, role });
+
+  // Moderation (docs/rewrite/bots.md), for signed-in moderators on the site's own pages.
+  if (url.pathname.startsWith("/api/mod/")) {
+    if (request.method === "POST" && request.headers.get("origin") !== url.origin) return refuse(403, "cross-site request refused");
+    if (viewer === null || !isModerator(role)) return refuse(403, "moderators only");
+    if (route === "GET /api/mod/flags") return json(await flagsView(env));
+    if (route === "GET /api/mod/log") return json({ actions: await moderationLog(env) });
+    if (route === "POST /api/mod/measure") return json({ unmeasured: await measureRuns(env) });
+    const body = (await request.json().catch(() => ({}))) as { bot?: unknown; category?: unknown; role?: unknown; note?: unknown };
+    const note = String(body.note ?? "").slice(0, 500);
+    const done = (changed: boolean) => (changed ? json({ ok: true }) : refuse(404, "no such account or run"));
+    if ((match = /^POST \/api\/mod\/accounts\/(\d+)$/.exec(route)) && typeof body.bot === "boolean")
+      return done(await markAccount(env, viewer, Number(match[1]), body.bot, note));
+    if ((match = /^POST \/api\/mod\/runs\/([0-9a-f]{64})$/.exec(route)) && (body.category === null || categoryOf(body.category)))
+      return done(await setRunCategory(env, viewer, match[1]!, body.category === null ? null : categoryOf(body.category), note));
+    if ((match = /^POST \/api\/mod\/roles\/(\d+)$/.exec(route)) && (body.role === "" || body.role === "mod")) {
+      if (role !== "admin") return refuse(403, "the admin only");
+      return done(await setRole(env, viewer, Number(match[1]), body.role, note));
+    }
+    return refuse(400, "no such moderation request");
+  }
 
   // The playable game: its page, built from crimson-core/client into dist/play/, and the game's files.
   // The redirect keeps the query, which can name where the page loads the game files from.
@@ -140,7 +171,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   }
 
   // Linking: the provider's sign-in and its callback, which hand back to the site's pages.
-  const accountId = await sessionAccount(request, env);
+  const accountId = viewer;
   const token = sessionToken(request);
   if ((match = /^GET \/auth\/([a-z]+)\/(start|callback)$/.exec(route))) {
     const chosen = provider(env, match[1]!);

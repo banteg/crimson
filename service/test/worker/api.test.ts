@@ -261,3 +261,106 @@ describe("site login", () => {
     expect((await post("/api/auth/login", { public_key: player.publicKey, challenge, signature })).status).toBe(401);
   });
 });
+
+// A site session for the player, as the game's Profile button opens one.
+async function signIn(player: Player): Promise<string> {
+  const response = await SELF.fetch(await login(player), { redirect: "manual" });
+  return response.headers.get("set-cookie")!.split(";")[0]!;
+}
+
+function asSession(cookie: string) {
+  return {
+    get: (path: string) => SELF.fetch(`${ORIGIN}${path}`, { headers: { cookie } }),
+    post: (path: string, body: unknown) =>
+      SELF.fetch(`${ORIGIN}${path}`, { method: "POST", body: JSON.stringify(body), headers: { cookie, origin: ORIGIN, "content-type": "application/json" } }),
+  };
+}
+
+const board = async (query = "") => (await (await SELF.fetch(`${ORIGIN}/api/boards/survival${query}`)).json()) as BoardView;
+
+describe("bots and moderation", () => {
+  async function moderatedRun(role: "mod" | "admin") {
+    const [player, moderator] = [await Player.create(), await Player.create()];
+    const { id } = (await (await player.upload(vectors.ranked_run, "astra")).json()) as { id: string };
+    const session = asSession(await signIn(moderator));
+    const { account } = (await (await session.get("/api/me")).json()) as { account: number };
+    await env.DB.prepare("UPDATE accounts SET role = ? WHERE id = ?").bind(role, account).run();
+    const owner = (await env.DB.prepare("SELECT account_id FROM runs WHERE id = ?").bind(id).first<{ account_id: number }>())!.account_id;
+    return { id, owner, moderator: account, session };
+  }
+
+  it("a run lists on its category's board, and an account marked as a bot moves its runs there", async () => {
+    const { id, owner, session } = await moderatedRun("mod");
+    expect((await board()).rows.map((row) => row.run)).toEqual([id]);
+    expect((await board("?category=bot")).rows).toEqual([]);
+
+    expect((await session.post(`/api/mod/accounts/${owner}`, { bot: true, note: "Astra" })).status).toBe(200);
+    expect((await board()).rows).toEqual([]);
+    const bots = await board("?category=bot");
+    expect(bots).toMatchObject({ category: "bot", rows: [{ rank: 1, run: id, player: { id: owner, bot: true }, pilot: null }] });
+    const detail = (await (await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).json()) as RunDetailView;
+    expect(detail).toMatchObject({ category: "bot", rank: 1, moderation: null });
+    // The game's high score screen shows the human board unless it asks for the bots'.
+    expect(((await (await post("/api/scores", { board: "survival", quest: "" })).json()) as { scores: unknown[] }).scores).toEqual([]);
+    expect(((await (await post("/api/scores", { board: "survival", quest: "", category: "bot" })).json()) as { scores: unknown[] }).scores).toHaveLength(1);
+    expect((await SELF.fetch(`${ORIGIN}/api/boards/survival?category=tas`)).status).toBe(400);
+  });
+
+  it("a moderator's category for a run wins over the account's mark, and every action is logged", async () => {
+    const { id, owner, moderator, session } = await moderatedRun("mod");
+    await session.post(`/api/mod/accounts/${owner}`, { bot: true, note: "" });
+    expect((await session.post(`/api/mod/runs/${id}`, { category: "human", note: "played by hand" })).status).toBe(200);
+    expect((await board()).rows.map((row) => row.run)).toEqual([id]);
+    const detail = (await (await session.get(`/api/runs/${id}`)).json()) as RunDetailView;
+    expect(detail.moderation).toMatchObject({ source: "moderator", override: "human" });
+
+    await session.post(`/api/mod/runs/${id}`, { category: null, note: "" });
+    expect((await board("?category=bot")).rows.map((row) => row.run)).toEqual([id]);
+    const { actions } = (await (await session.get("/api/mod/log")).json()) as { actions: { actor: string; action: string; target: string; note: string }[] };
+    expect(actions.map((action) => [action.actor, action.action, action.target, action.note])).toEqual([
+      [`account ${moderator}`, "category follows account", `run ${id}`, ""],
+      [`account ${moderator}`, "category human", `run ${id}`, "played by hand"],
+      [`account ${moderator}`, "mark bot", `account ${owner}`, ""],
+    ]);
+  });
+
+  it("moderators see a run's signals, measured at upload or later from its replay", async () => {
+    const { id, owner, session } = await moderatedRun("mod");
+    const detail = (await (await session.get(`/api/runs/${id}`)).json()) as RunDetailView;
+    expect(detail.moderation).toMatchObject({ source: "default", override: null, flagged: [] });
+    const signals = detail.moderation!.signals!;
+    expect(signals.ticks).toBeGreaterThan(0);
+
+    await env.DB.prepare("UPDATE runs SET signals = NULL").run();
+    expect(((await (await session.get("/api/mod/flags")).json()) as { unmeasured: number }).unmeasured).toBe(1);
+    expect(await (await session.post("/api/mod/measure", {})).json()).toEqual({ unmeasured: 0 });
+    expect(JSON.parse((await env.DB.prepare("SELECT signals FROM runs WHERE id = ?").bind(id).first<{ signals: string }>())!.signals)).toEqual(signals);
+
+    // A flagged human run is listed; once it is a bot run it is not.
+    await env.DB.prepare("UPDATE runs SET signals = ?").bind(JSON.stringify({ ...signals, aim_on_creature: 0.3 })).run();
+    const flags = (await (await session.get("/api/mod/flags")).json()) as { runs: { id: string; flagged: string[] }[] };
+    expect(flags.runs).toEqual([expect.objectContaining({ id, flagged: ["aim_on_creature"] })]);
+    await session.post(`/api/mod/accounts/${owner}`, { bot: true, note: "" });
+    expect(((await (await session.get("/api/mod/flags")).json()) as { runs: unknown[] }).runs).toEqual([]);
+
+    const profile = (await (await session.get(`/api/players/${owner}`)).json()) as ProfileView;
+    expect(profile).toMatchObject({ player: { bot: true }, moderation: { role: "", overlapping_runs: 0 }, runs: [{ id, category: "bot" }] });
+  });
+
+  it("only moderators moderate, and only the admin makes moderators", async () => {
+    const { owner, moderator, session } = await moderatedRun("mod");
+    const outsider = asSession(await signIn(await Player.create()));
+    expect((await outsider.get("/api/mod/flags")).status).toBe(403);
+    expect((await outsider.post(`/api/mod/accounts/${owner}`, { bot: true })).status).toBe(403);
+    expect((await SELF.fetch(`${ORIGIN}/api/players/${owner}`, {}).then((r) => r.json()) as ProfileView).moderation).toBeNull();
+    expect((await session.post(`/api/mod/roles/${owner}`, { role: "mod" })).status).toBe(403);
+    // A moderation request from another site is refused.
+    expect((await SELF.fetch(`${ORIGIN}/api/mod/accounts/${owner}`, { method: "POST", body: "{}", headers: { origin: "https://example.com" } })).status).toBe(403);
+
+    await env.DB.prepare("UPDATE accounts SET role = 'admin' WHERE id = ?").bind(moderator).run();
+    expect((await session.post(`/api/mod/roles/${owner}`, { role: "mod", note: "welcome" })).status).toBe(200);
+    expect(await env.DB.prepare("SELECT role FROM accounts WHERE id = ?").bind(owner).first()).toEqual({ role: "mod" });
+    // The admin's own role is not one a request can take away.
+    expect((await session.post(`/api/mod/roles/${moderator}`, { role: "" })).status).toBe(404);
+  });
+});
