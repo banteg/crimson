@@ -11,6 +11,7 @@ CORE_DIRS = (
     "crimson-core/",
     "decomp/",
     "third_party/headers/",
+    "third_party/sources/",
     "tools/match/include/",
     "tools/native/data_definitions/",
     "src/",
@@ -23,6 +24,7 @@ CLIENT_DIRS = (
     "third_party/",
     "tools/match/include/",
     "tools/native/data_definitions/",
+    "src/",  # The game build imports the Python replay version and its dependencies.
 )
 DECOMP_DIRS = (
     "decomp/",
@@ -31,6 +33,7 @@ DECOMP_DIRS = (
     "tools/native/",
     "third_party/",
     "analysis/",
+    "src/",  # The report runs through the Python application's CLI.
 )
 SERVICE_DIRS = (
     "service/",
@@ -40,8 +43,9 @@ SERVICE_DIRS = (
     "tools/match/include/",
     "tools/native/data_definitions/",
     "src/grim/",
+    "tests/fixtures/replays/",
 )
-SHARED_FILES = ("pyproject.toml", "uv.lock", "scripts/ci_changed_paths.py")
+SHARED_FILES = ("pyproject.toml", "crimson-re/pyproject.toml", "uv.lock", "scripts/ci_changed_paths.py")
 DOC_SUFFIXES = {".md", ".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp", ".css"}
 
 
@@ -56,7 +60,7 @@ def relevant(category: str, paths: list[str]) -> bool:
 
     directories, files = {
         "core": (CORE_DIRS, (*SHARED_FILES, ".github/workflows/core.yml")),
-        "client": (CLIENT_DIRS, ("scripts/ci_changed_paths.py", ".github/workflows/client.yml")),
+        "client": (CLIENT_DIRS, (*SHARED_FILES, ".github/workflows/client.yml")),
         "decomp": (DECOMP_DIRS, (*SHARED_FILES, ".github/workflows/decomp.yml")),
         "service": (SERVICE_DIRS, (*SHARED_FILES, ".github/workflows/service.yml")),
     }[category]

@@ -87,7 +87,8 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          if [[ "$(python3 scripts/ci_changed_paths.py docs-only --base "$BASE_SHA")" == true ]]; then
+          docs_only=$(python3 scripts/ci_changed_paths.py docs-only --base "$BASE_SHA")
+          if [[ "$docs_only" == true ]]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 

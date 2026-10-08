@@ -1,6 +1,6 @@
 name: Decompilation progress
 
-# Only the inputs pinned by the saved evidence can change the report.
+# Run for the saved evidence, its inputs, and the Python CLI that verifies it.
 on:
   push:
     branches: [master]
@@ -30,7 +30,8 @@ jobs:
             exit 0
           fi
           git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          echo "relevant=$(python3 scripts/ci_changed_paths.py decomp --base "$BASE_SHA")" >> "$GITHUB_OUTPUT"
+          relevant=$(python3 scripts/ci_changed_paths.py decomp --base "$BASE_SHA")
+          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
 
   builds:
     needs: changes

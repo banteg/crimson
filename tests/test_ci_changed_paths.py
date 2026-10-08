@@ -10,27 +10,26 @@ from scripts.ci_changed_paths import changed_paths, relevant
 
 
 @pytest.mark.parametrize(
-    ("category", "path", "expected"),
+    ("category", "path"),
     [
-        ("core", "src/crimson/game.py", True),
-        ("core", "service/src/index.ts", False),
-        ("client", "src/crimson/game.py", False),
-        ("client", "third_party/SDL3/header.h", True),
-        ("decomp", "analysis/decomp/1.9.93.json", True),
-        ("service", "service/src/index.ts", True),
-        ("service", "crimson-core/host/api.h", True),
-        ("service", "src/grim/assets.py", True),
-        ("service", "uv.lock", True),
-        ("service", "docs/index.md", False),
+        ("core", "third_party/sources/zlib/adler32.c"),
+        ("client", "src/crimson/replay/types.py"),
+        ("client", "pyproject.toml"),
+        ("client", "uv.lock"),
+        ("decomp", "src/crimson/cli/__init__.py"),
+        ("service", "src/grim/assets.py"),
+        ("service", "tests/fixtures/replays/run.crd"),
     ],
 )
-def test_suite_paths(category: str, path: str, expected: bool) -> None:
-    assert relevant(category, [path]) is expected
+def test_external_suite_inputs_run_their_consumers(category: str, path: str) -> None:
+    assert relevant(category, [path])
 
 
 @pytest.mark.parametrize("category", ["core", "client", "decomp", "service"])
 def test_filter_change_runs_every_suite(category: str) -> None:
     assert relevant(category, ["scripts/ci_changed_paths.py"])
+    assert relevant(category, ["crimson-re/pyproject.toml"])
+    assert not relevant(category, ["README.md", "docs/index.md"])
 
 
 def test_docs_only_requires_all_paths_to_be_docs() -> None:
