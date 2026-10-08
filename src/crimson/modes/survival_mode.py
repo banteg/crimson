@@ -17,7 +17,7 @@ from ..game_modes import GameMode
 from ..gameplay import survival_check_level_up
 from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
-from ..replay import Replay, ReplayRecorder
+from ..replay import ReplayRecorder
 from ..sim.mode_updates import SurvivalSpawnState
 from ..sim.sessions import DeterministicSessionTick
 from ..weapon_runtime import weapon_assign_player
@@ -59,10 +59,6 @@ class SurvivalMode(BaseGameplayMode):
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return self._session_elapsed_ms()
 
-    def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
-        _ = replay
-        score = int(self.player.experience)
-        return f"survival_{stamp}_score{score}"
 
     def open(self) -> None:
         super().open()

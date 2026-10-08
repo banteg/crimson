@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import datetime as dt
 from collections.abc import Sequence
 from contextlib import nullcontext
 from typing import TYPE_CHECKING
@@ -33,7 +32,7 @@ from ..persistence.highscores import HighScoreRecord
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world.viewport import DEFAULT_VIEW_CAP
-from ..replay import REPLAY_TICK_RATE, Replay, ReplayRecorder
+from ..replay import REPLAY_TICK_RATE, ReplayRecorder
 from ..replay.checkpoints import (
     DEFAULT_CHECKPOINT_SAMPLE_RATE,
     ReplayCheckpoint,
@@ -43,6 +42,7 @@ from ..replay.checkpoints import (
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
+from ..replay.library import next_replay_number, replay_file_name
 from ..replay.ranked import (
     RANKED_MODES,
     RANKED_PAD_AIM_DIST_MUL,
@@ -599,11 +599,6 @@ class BaseGameplayMode:
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return float(self._world_runtime.presentation_elapsed_ms)
 
-    def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
-        _ = replay
-        mode_name = str(self.__class__.__name__).replace("Mode", "").lower() or "replay"
-        return f"{mode_name}_{stamp}"
-
     def _record_replay_checkpoint(
         self,
         tick_index: int,
@@ -633,24 +628,25 @@ class BaseGameplayMode:
         )
         self._replay_checkpoints_last_tick = int(tick_index)
 
-    def _save_replay(self) -> None:
+    def _save_replay(self) -> int:
+        """Save the run's replay; returns its number for the run's high score record, 0 when there is none."""
         recorder = self._replay_recorder
         if recorder is None:
-            return
+            return 0
         if recorder.tick_index <= 0:
             # Nothing was simulated (e.g. a run left before its first tick).
             self._reset_replay_capture_state(clear_recorder=True)
-            return
+            return 0
 
         self._record_replay_checkpoint(max(0, int(recorder.tick_index) - 1), force=True)
         result = self._replay_result
         assert result is not None, "a non-empty recording has a result snapshot"
         replay = recorder.finish(result)
 
-        stamp = dt.datetime.now(tz=dt.UTC).astimezone().strftime("%Y%m%d_%H%M%S")
+        replay_dir = self._base_dir / "replays"
+        number = self.replay_saver.allocate(replay_dir) if self.replay_saver is not None else next_replay_number(replay_dir)
         job = ReplaySaveJob(
-            replay_dir=self._base_dir / "replays",
-            base_name=self._replay_output_basename(stamp=stamp, replay=replay),
+            path=replay_dir / replay_file_name(number, GameMode(replay.run.game_mode_id)),
             replay=replay,
             checkpoints=ReplayCheckpoints(
                 version=CHECKPOINTS_FORMAT_VERSION,
@@ -665,12 +661,13 @@ class BaseGameplayMode:
             self.leaderboard.hold(replay)
         if self.replay_saver is not None:
             self.replay_saver.submit(job)
-            return
+            return number
         lines = job.run()
         if self._console is not None:
             for line in lines:
                 self._console.log.log(line)
             self._console.log.flush()
+        return number
 
     def _player_name_default(self) -> str:
         return str(self.config.profile.player_name or "")
@@ -809,7 +806,7 @@ class BaseGameplayMode:
         )
         self._game_over_ui.open()
         self._game_over_active = True
-        self._save_replay()
+        self._game_over_record.replay_number = self._save_replay()
 
     def _finish_run(self, outcome: RunOutcome) -> None:
         """React to the session ending the run; survival, rush and Typ-o show game over."""

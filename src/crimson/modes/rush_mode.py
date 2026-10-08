@@ -12,7 +12,7 @@ from grim.view import ViewContext
 from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..input_codes import PadCode, pad_nav_pressed
-from ..replay import Replay, ReplayRecorder
+from ..replay import ReplayRecorder
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
@@ -65,10 +65,6 @@ class RushMode(BaseGameplayMode):
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return self._session_elapsed_ms()
 
-    def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
-        _ = replay
-        kills = int(self.creatures.kill_count)
-        return f"rush_{stamp}_kills{kills}"
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))

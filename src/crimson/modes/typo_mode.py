@@ -11,7 +11,6 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..persistence.highscores import scores_path_for_mode
-from ..replay import Replay
 from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.input import PlayerInput
 from ..typo.names import load_typo_dictionary, load_typo_highscore_names
@@ -120,10 +119,6 @@ class TypoShooterMode(BaseGameplayMode):
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return self._session_elapsed_ms()
 
-    def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
-        _ = replay
-        score = int(self.player.experience)
-        return f"typo_{stamp}_score{score}"
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)

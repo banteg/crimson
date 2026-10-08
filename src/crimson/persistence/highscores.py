@@ -217,11 +217,13 @@ class HighScoreRecord(msgspec.Struct):
         struct.pack_into("<I", self.data, 0x38, int(value) & 0xFFFFFFFF)
 
     @property
-    def reserved(self) -> int:
+    def replay_number(self) -> int:
+        """The run's replay, `replays/<n>-<mode>.crd` (crimson.replay.library); 0 for none. The original reserved
+        these bytes and never read them; its duplicate check leaves them out."""
         return int(struct.unpack_from("<I", self.data, 0x3C)[0])
 
-    @reserved.setter
-    def reserved(self, value: int) -> None:
+    @replay_number.setter
+    def replay_number(self, value: int) -> None:
         struct.pack_into("<I", self.data, 0x3C, int(value) & 0xFFFFFFFF)
 
     @property
