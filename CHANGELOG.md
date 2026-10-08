@@ -2,6 +2,30 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.13.0
+
+### For players
+
+#### Ranked quests follow the campaign
+
+- A ranked quest now plays on the save that has just unlocked it, instead of with every quest unlocked. A quest offers the weapons and perks the campaign has handed out before it, not its own reward. A hardcore quest plays with the whole normal campaign done and the hardcore quests before it, so the Splitter Gun first turns up in hardcore 5.1. Ranked Survival still plays with every quest done. [The ranked rules](https://crimson.banteg.xyz/rewrite/ranked-rules/) have the details.
+- This is a new ruleset. The quest runs ranked under the old rule have left the boards, and quest runs recorded with 0.12 no longer rank, so update to play ranked quests. Survival runs are unaffected.
+
+#### Play the original in your browser
+
+- **[crimson.land/play](https://crimson.land/play/)** runs the original 1.9.93 game in the browser, compiled from the recovered source, with the same documented bug fixes the port plays by default. It downloads the game's files on your first visit, or plays from your own Crimsonland folder, and keeps its saves in the browser.
+- Its Play Game menu has the same **Ranked** box and **Profile** button, and its high score screen's **Update scores** reads the boards. Ranked runs from the browser go to the same boards as the port's.
+
+#### Other changes
+
+- The main menu no longer has a Mods entry. The original's mods are Windows plugins, which the port cannot run.
+- Projectiles draw closer to the original: the Fire Bullets glow, the detonation flash, Plaguebearer sprites and rounded ends on Ion chain arcs. Bullet heads now show, fixing an original bug; `--preserve-bugs` keeps them invisible.
+- On **[crimson.land](https://crimson.land)**, a shared run's link unfurls into a card of the run, quest run pages say how the final time was made, and level-ups show as a strip under the experience chart. A hidden name now stays hidden everywhere, and deleting an account also removes its runs' timelines.
+
+### Under the hood
+
+- The recovered original builds as one WebAssembly module, which an SDL3 host plays natively and in the browser. Each run plays as a session of the leaderboard's verifier inside the original, and CI checks the browser client's ranked runs against the verifier on every build. [The feature matrix](https://crimson.banteg.xyz/rewrite/feature-matrix/) compares the port with the browser and native clients.
+
 ## 0.12.2
 
 ### For players
