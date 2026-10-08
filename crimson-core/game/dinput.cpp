@@ -2,25 +2,9 @@
 // delivers before each frame (game_input). Keys are DirectInput scancodes.
 #include "com_defaults.h"
 #include "host_abi.h"
-#include <stddef.h>
+#include "host_input.h"
 #include <string.h>
 
-// Filled by the host; drained by the devices as Grim polls them.
-struct HostInput {
-  unsigned char keys[256]; // 0x80 while held
-  int mouse_dx, mouse_dy, mouse_dz;
-  unsigned char mouse_buttons[8];
-  int key_event_count; // presses and releases since the last poll, oldest first
-  struct {
-    unsigned char key, down;
-  } key_events[32];
-  // A gamepad as the Logitech Dual Action the game's pad schemes are named for:
-  // left stick X/Y, right stick Z/Rz (-1000 to 1000), buttons (0x80 while
-  // held), and the d-pad as the hat (hundredths of a degree, or ~0 centred).
-  int pad_axes[4];
-  unsigned pad_hat;
-  unsigned char pad_buttons[32];
-};
 static HostInput input;
 extern "C" __attribute__((export_name("game_input"))) HostInput *game_input() { return &input; }
 

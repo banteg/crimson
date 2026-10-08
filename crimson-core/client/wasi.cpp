@@ -195,8 +195,15 @@ u32 w2c_wasi__snapshot__preview1_path_open(struct w2c_wasi__snapshot__preview1 *
     if ((opened.fd = open(host.c_str(), flags, 0644)) < 0)
       return errno_code();
   }
-  files.push_back(opened);
-  store32(result, (u32)files.size() - 1);
+  // A closed descriptor's slot, past the standard streams and the preopen.
+  u32 fd = 4;
+  while (fd < files.size() && file(fd))
+    ++fd;
+  if (fd == files.size())
+    files.push_back(opened);
+  else
+    files[fd] = opened;
+  store32(result, fd);
   return ESUCCESS;
 }
 u32 w2c_wasi__snapshot__preview1_fd_close(struct w2c_wasi__snapshot__preview1 *, u32 fd) {

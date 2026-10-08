@@ -80,7 +80,8 @@
   };
   const missing = () => ASSETS.filter((name) => !FS.analyzePath("/game/" + name).exists);
 
-  // The files the player picks, matched by name inside the chosen folder.
+  // The files the player picks, matched by name inside the chosen folder. The
+  // folder supplies every game file, so a partial download never mixes with it.
   function pickFolder() {
     const pick = document.getElementById("pick");
     pick.hidden = false;
@@ -90,17 +91,14 @@
         const files = new Map(
           [...event.target.files].map((f) => [f.webkitRelativePath.split("/").slice(1).join("/").toLowerCase(), f]),
         );
-        // The whole music folder: game_tunes.txt can name tunes of the player's own.
-        const wanted = new Set([...missing(), ...[...files.keys()].filter((name) => name.startsWith("music/"))]);
-        for (const name of wanted) {
-          const file = files.get(name);
-          if (file) store(name, new Uint8Array(await file.arrayBuffer()));
-        }
-        const still = missing();
-        if (still.length) {
-          status.textContent = "That folder lacks " + still.join(", ") + ".";
+        const lacking = ASSETS.filter((name) => !files.has(name));
+        if (lacking.length) {
+          status.textContent = "That folder lacks " + lacking.join(", ") + ".";
           return;
         }
+        // The whole music folder too: game_tunes.txt can name tunes of the player's own.
+        for (const [name, file] of files)
+          if (ASSETS.includes(name) || name.startsWith("music/")) store(name, new Uint8Array(await file.arrayBuffer()));
         pick.hidden = true;
         resolve();
       };

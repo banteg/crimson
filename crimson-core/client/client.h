@@ -11,7 +11,7 @@ const std::string &client_game_directory();
 void client_wasi_init();
 
 // renderer.cpp: the Direct3D 8 subset the game module's device sends.
-bool renderer_init();
+void renderer_init();
 void renderer_present(int window_width, int window_height);
 // The rectangle of the window the back buffer fills, letterboxed.
 struct Viewport {

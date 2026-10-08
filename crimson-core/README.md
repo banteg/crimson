@@ -2,9 +2,10 @@
 
 The recovered C/C++ gameplay from [`decomp/`](../decomp) built into one
 deterministic simulation, as a native executable and an import-free WASM
-module. It is being developed into the shared core of the shipped game and the
-replay verifier, so live play, the web build and leaderboard verification run
-the same module. Python stays the reference port for fast iteration.
+module: the replay verifier. The native and web clients run the whole recovered
+game around the same gameplay sources and are held to this verifier on every
+gate stream ([PORT.md](PORT.md)). Python stays the reference port for fast
+iteration.
 
 `decomp/` stays the matching source of truth. The core compiles generated
 copies of 168 recovered translation units; everything it adds lives here.
@@ -39,7 +40,7 @@ copies of 168 recovered translation units; everything it adds lives here.
 | [`checks/`](checks) | Native/WASM matrix, Python whole-run gate, original-executable oracles, Wasmtime probe. |
 | [`results/`](results) | Checked-in results of those checks. |
 | [`worker/`](worker) | Diagnostic Cloudflare Worker that runs the WASM module. |
-| [`game.py`](game.py), [`game/`](game), [`client/`](client) | The game module (the whole recovered game over a platform layer) and its native client; see [PORT.md](PORT.md). |
+| [`game.py`](game.py), [`game/`](game), [`client/`](client) | The game module (the whole recovered game over a platform layer) and its native and web clients; see [PORT.md](PORT.md). |
 
 ## Build
 
@@ -157,9 +158,8 @@ the Worker in [wasmtime-py](https://bytecodealliance.github.io/wasmtime-py/),
 compares the hash of every snapshot of a smoke set (one run per mode, bug
 policy and control family) and checks A/B/A resets in one instance, without
 adding a project dependency; the matrix already compares every run between
-native and Node. A rendered desktop client still needs graphics and audio
-imports. Linear memory stays at **2.5 MiB** and the stripped module is about
-**357 KiB**.
+native and Node. Linear memory stays at **2.5 MiB** and the stripped module is
+about **357 KiB**.
 
 ### Worker
 

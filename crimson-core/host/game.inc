@@ -6,7 +6,6 @@ extern unsigned char game_ticking;
 void register_core_cvars();
 }
 void grim_state_init();
-static int game_live_key(int code);
 class SessionGrim final : public IGrim2D_cpp {
 public:
 #define GAME_TICK_QUERY(ret, name, params, args)                               \
@@ -22,6 +21,7 @@ public:
   GAME_TICK_QUERY(int, grim_get_key_char, (void), ())
   GAME_TICK_QUERY(void, grim_set_key_char_buffer, (unsigned char *buffer, int *count, int size), (buffer, count, size))
   GAME_TICK_QUERY(void, grim_set_mouse_pos, (float x, float y), (x, y))
+  GAME_TICK_QUERY(unsigned char, grim_is_key_active, (int key), (key))
   GAME_TICK_QUERY(unsigned char, grim_is_mouse_button_down, (int button), (button))
   GAME_TICK_QUERY(bool, grim_was_mouse_button_pressed, (int button), (button))
   GAME_TICK_QUERY(float, grim_get_mouse_wheel_delta, (void), ())
@@ -38,10 +38,6 @@ public:
   GAME_TICK_QUERY(int, grim_get_joystick_pov, (int index), (index))
   GAME_TICK_QUERY(unsigned char, grim_is_joystick_button_down, (int button), (button))
 #undef GAME_TICK_QUERY
-  // Between a live run's ticks, the verifier's key codes read the player's keys.
-  unsigned char grim_is_key_active(int key) override {
-    return game_ticking ? headless_grim.grim_is_key_active(key) : IGrim2D_cpp::grim_is_key_active(game_live_key(key));
-  }
   // The interface outlives every caller; the original deleted its heap copy.
   void grim_release(void) override {}
 };

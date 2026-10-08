@@ -122,14 +122,20 @@ struct Buffer final : UnimplementedIDirectSoundBuffer {
       float r = stereo ? sample(at, 1) + (sample(next, 1) - sample(at, 1)) * t : l;
       out[i * 2] += l * volume * left;
       out[i * 2 + 1] += r * volume * right;
-      frame += step;
-      if (frame >= length) {
-        if (looping) {
-          frame = fmod(frame, length);
-        } else {
-          playing = false;
-          frame = 0;
-        }
+      advance(step);
+    }
+  }
+  // Moves the cursor on, as playing does: a looping buffer wraps, a one-shot
+  // stops and rewinds.
+  void advance(double frames_played) {
+    DWORD length = frames();
+    frame += frames_played;
+    if (frame >= length) {
+      if (looping) {
+        frame = fmod(frame, length);
+      } else {
+        playing = false;
+        frame = 0;
       }
     }
   }
@@ -177,6 +183,14 @@ extern "C" HRESULT WINAPI DirectSoundCreate8(LPCGUID, LPDIRECTSOUND8 *device, LP
 
 // The next frames of the mix (at most MAX_FRAMES), as interleaved 16-bit stereo
 // at 44.1 kHz.
+// Frames of the mix that would be dropped unheard: the voices move on without
+// mixing (a host that could not play for a while).
+extern "C" __attribute__((export_name("game_audio_skip"))) void game_audio_skip(int frames) {
+  for (Buffer *buffer : buffers)
+    if (buffer->playing)
+      buffer->advance((double)buffer->frequency / RATE * frames);
+}
+
 extern "C" __attribute__((export_name("game_audio"))) short *game_audio(int frames) {
   static float mix[MAX_FRAMES * 2];
   frames = frames < MAX_FRAMES ? frames : MAX_FRAMES;

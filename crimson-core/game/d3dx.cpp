@@ -4,7 +4,6 @@
 // links.
 #include "com_defaults.h"
 #include "grim_d3dx8.h"
-#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -147,11 +146,8 @@ bool decode_bmp(const unsigned char *data, size_t size, Image &image) {
   return true;
 }
 
-struct JpegError {
-  jpeg_error_mgr base;
-  jmp_buf jump;
-};
-void jpeg_fail(j_common_ptr context) { longjmp(((JpegError *)context->err)->jump, 1); }
+// A corrupt JPEG stops the module: wasm32 has no setjmp to recover with.
+[[noreturn]] void jpeg_fail(j_common_ptr) { platform_unimplemented("recovery from a corrupt JPEG"); }
 void jpeg_noop(j_decompress_ptr) {}
 boolean jpeg_fill(j_decompress_ptr context) {
   static const JOCTET eoi[2] = {0xff, JPEG_EOI};
@@ -171,14 +167,10 @@ bool decode_jpeg(const unsigned char *data, size_t size, Image &image) {
   if (size < 3 || data[0] != 0xff || data[1] != 0xd8)
     return false;
   jpeg_decompress_struct context;
-  JpegError error;
+  jpeg_error_mgr error;
   jpeg_source_mgr source = {data, size, jpeg_noop, jpeg_fill, jpeg_skip, jpeg_resync_to_restart, jpeg_noop};
-  context.err = jpeg_std_error(&error.base);
-  error.base.error_exit = jpeg_fail;
-  if (setjmp(error.jump)) {
-    jpeg_destroy_decompress(&context);
-    return false;
-  }
+  context.err = jpeg_std_error(&error);
+  error.error_exit = jpeg_fail;
   jpeg_create_decompress(&context);
   context.src = &source;
   jpeg_read_header(&context, TRUE);
@@ -231,6 +223,7 @@ int create_texture(IDirect3DDevice8 *device, Image &image, D3DFORMAT format, Gri
 } // namespace
 
 extern "C" {
+// Grim's JAZ codec recovers from a corrupt payload with longjmp (include/setjmp.h).
 void platform_longjmp(void) { platform_unimplemented("recovery from a corrupt image"); }
 
 // The memory source Grim's JAZ codec reads its JPEG payload through.

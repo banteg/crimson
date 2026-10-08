@@ -31,6 +31,34 @@ HERE = Path(__file__).resolve().parent
 HOST = HERE / "host"
 
 
+EXPORTS = (
+    "portable_init",
+    "portable_step",
+    "portable_snapshot",
+    "portable_input",
+    "portable_config",
+    "portable_output",
+    "portable_commands",
+    "portable_step_many",
+    "portable_builder_probe",
+    "portable_math_probe",
+    "portable_player_x",
+    "portable_player_y",
+    "portable_player_health",
+    "portable_shake_x",
+    "portable_shake_y",
+    "portable_probe",
+)
+# Player one and the shake, for the service's ranked aim bound (host/api.h).
+PROBE_READS = {
+    "portable_player_x",
+    "portable_player_y",
+    "portable_player_health",
+    "portable_shake_x",
+    "portable_shake_y",
+}
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--root", type=Path, default=HERE.parent)
@@ -222,22 +250,12 @@ def main():
         link += [
             "-mexec-model=reactor",
             *(["-Wl,--strip-debug"] if a.target == "wasm" else []),
-            "-Wl,--export=portable_init",
-            "-Wl,--export=portable_step",
-            "-Wl,--export=portable_snapshot",
-            "-Wl,--export=portable_input",
-            "-Wl,--export=portable_config",
-            "-Wl,--export=portable_output",
-            "-Wl,--export=portable_commands",
-            "-Wl,--export=portable_step_many",
-            "-Wl,--export=portable_builder_probe",
-            "-Wl,--export=portable_math_probe",
-            "-Wl,--export=portable_player_x",
-            "-Wl,--export=portable_player_y",
-            "-Wl,--export=portable_player_health",
-            "-Wl,--export=portable_shake_x",
-            "-Wl,--export=portable_shake_y",
-            "-Wl,--export=portable_probe",
+            *(
+                f"-Wl,--export={name}"
+                for name in EXPORTS
+                # The verifier's probes serve its service and oracles, not the game module.
+                if a.target == "wasm" or not (name.endswith("_probe") or name in PROBE_READS)
+            ),
             "-Wl,-z,stack-size=1048576",
         ]
     proc = subprocess.run(link, env=env, capture_output=True, text=True, check=False)
