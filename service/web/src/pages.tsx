@@ -158,6 +158,16 @@ function QuestMenu(props: { view: QuestMenuView; current?: string }) {
   );
 }
 
+// The main menu's Play Game item (ui_element_render): the label over the plate, then again additively, at the hover's alpha.
+function PlayGame() {
+  return (
+    <a class="menu-item" href="/play/" data-native aria-label="Play Game">
+      <img src="/ui/play-game.png" alt="" />
+      <img src="/ui/play-game.png" alt="" />
+    </a>
+  );
+}
+
 // A command to type, in the game console's colors; a click copies it.
 function Command(props: { children: string }) {
   const [copied, setCopied] = createSignal(false);
@@ -203,21 +213,29 @@ function withNotice(url: URL, screen: Screen): Screen {
 }
 
 async function home(): Promise<Screen> {
-  const [survival, quests] = await Promise.all([get<BoardView>("/api/boards/survival?limit=25"), get<QuestMenuView>("/api/quests/quests/1")]);
+  const survival = (await get<BoardView>("/api/boards/survival?limit=10"))!;
   return {
     title: null,
     quest: null,
     panels: [
       () => (
         <>
-          <h2>Survival</h2>
-          <BoardTable view={survival!} />
           <p>
-            <a href="/boards/survival">Full board</a>
+            Crimsonland, the 2003 top-down shooter, back in your browser. It's the original game rebuilt from its own code, so it plays
+            exactly like you remember, now with modern gamepads and a cheat-proof leaderboard.
+          </p>
+          <PlayGame />
+        </>
+      ),
+      () => (
+        <>
+          <h2>Survival</h2>
+          <BoardTable view={survival} />
+          <p>
+            <a href="/boards/survival">Full board</a> · <a href="/quests/1">Quests</a>
           </p>
         </>
       ),
-      () => <QuestMenu view={quests!} />,
     ],
   };
 }

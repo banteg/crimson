@@ -102,3 +102,6 @@ svg .rival{fill:none;stroke-width:1.5;stroke-dasharray:5 4;stroke-opacity:.85}
 .arena-row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
 .arena{width:min(480px,100%);aspect-ratio:1;background-size:100% auto;background-position:top;background-color:rgb(63,56,25)}
 .arena svg{display:block;width:100%;height:100%}.arena-note{flex:1;min-width:200px;margin-top:0}
+.menu-item{position:relative;display:block;width:256px;height:56px;margin:4px 0 8px;background:url(/ui/menu-item.png)}
+.menu-item img{position:absolute;left:86px;top:14px;width:122px;height:28px;opacity:.39;transition:opacity .25s linear}
+.menu-item img+img{mix-blend-mode:plus-lighter}.menu-item:hover img{opacity:1;transition-duration:.167s}
