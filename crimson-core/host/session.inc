@@ -132,7 +132,7 @@ static void live_begin() {
   cfg.friendly_fire = cv_friendlyFire->value != 0;
   cfg.hardcore = config_blob.hardcore;
   cfg.retry = quest_fail_retry_count;
-  cfg.preserve_bugs = 1; // the original's rules
+  cfg.preserve_bugs = 0; // the port's policy: the documented fixes (docs/rewrite/original-bugs.md)
   memcpy(cfg.weapon_usage, game_status_blob.weapon_usage_counts, sizeof cfg.weapon_usage);
   ranked_run = ranked_attempt();
   if (ranked_run)

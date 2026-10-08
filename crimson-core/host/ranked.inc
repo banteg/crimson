@@ -27,7 +27,8 @@ static bool ranked_attempt() {
 }
 
 // The ranked rules (ranked_run_spec): full detail with violence on, no friendly
-// fire, the documented fixes, every quest unlocked and no weapon used yet.
+// fire, every quest unlocked and no weapon used yet; the documented fixes, as
+// every run plays.
 static void ranked_spec(PortableConfig &config) {
   config.unlock = config.unlock_full = 50;
   config.detail = 5;
@@ -35,7 +36,6 @@ static void ranked_spec(PortableConfig &config) {
   config.friendly_fire = 0;
   config.hardcore = config.mode == GAME_MODE_QUEST && config.hardcore;
   config.retry = 0;
-  config.preserve_bugs = 0;
   memset(config.weapon_usage, 0, sizeof config.weapon_usage);
 }
 
