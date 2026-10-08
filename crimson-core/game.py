@@ -83,6 +83,12 @@ def game_platform():
     return sorted(GAME.glob("*.cpp"))
 
 
+# The vendored C the platform layer links (game/leaderboard.cpp): zstd 1.5.7's
+# compressor and Monocypher 4.0.2 with its Ed25519.
+def game_vendor_c():
+    return [GAME / "vendor" / name for name in ("zstd_compress.c", "monocypher.c", "monocypher-ed25519.c")]
+
+
 def replace_once(text, old, new, src):
     if text.count(old) != 1:
         raise SystemExit(f"Audit {src.name} before changing this game adapter: {old!r}")
@@ -168,6 +174,56 @@ def adapt_game(src, txt):
         # The original writes a missing crimson.cfg with violence off; a fresh
         # configuration is the Python port's, which keeps it on.
         txt = replace_once(txt, "    config_violence_disabled = 1;\n", "", src)
+    if src.stem == "play_game_menu_update":
+        # The Ranked row (host/ranked.inc): a ranked attempt lists only the modes
+        # that rank, Quests and Survival, and plays one player.
+        txt, count = re.subn(
+            r"(\n(\s+)ui_button_update\(\(float \*\)&position, \(ui_button_t \*\)&rush_button\);\n"
+            r"\s+if \(show_play_counts\) \{\n(?:.*\n)*?\2\}\n\2position\.y \+= (?:32|28)\.0f;\n)",
+            lambda m: f"\n{m[2]}if (!ranked_checked) {{{m[1]}{m[2]}}}\n",
+            txt,
+        )
+        if count != 2:
+            raise SystemExit(f"Audit {src.name}: Rush rows ({count})")
+        txt = replace_once(txt, "        if (game_is_full_version()) {", "        if (!ranked_checked && game_is_full_version()) {", src)
+        txt = replace_once(
+            txt,
+            "            }\n        }\n        position.y += 28.0f;\n\n        if (quest_play_counts[11]",
+            "            }\n        }\n        if (!ranked_checked)\n            position.y += 28.0f;\n\n        if (quest_play_counts[11]",
+            src,
+        )
+        txt, count = re.subn(
+            r"if \((mode_play_rush \+ quest_play_counts\[11\] \+ mode_play_survival|quest_play_counts\[11\] \+ mode_play_survival \+ mode_play_rush) ([<>]=? 0)\)",
+            r"if (!ranked_checked && \1 \2)",
+            txt,
+        )
+        if count != 4:
+            raise SystemExit(f"Audit {src.name}: tutorial rows ({count})")
+        txt = replace_once(
+            txt,
+            "    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);\n    int selected = ui_list_widget_update(",
+            "    player_count_list.enabled = !ranked_checked;\n"
+            "    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);\n    int selected = ui_list_widget_update(",
+            src,
+        )
+        txt = replace_once(
+            txt,
+            "    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);\n\n    if (quests_button.hover_anim > 0) {",
+            "    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);\n"
+            "    ranked_menu(base_position.v, position.v, player_count_list.open != 0);\n\n"
+            "    if (quests_button.hover_anim > 0) {",
+            src,
+        )
+        txt = 'extern "C" bool ranked_checked;\nextern "C" void ranked_menu(float *base, float *tips, bool list_open);\n' + txt
+    if src.stem == "ui_menu_layout_init":
+        # The Play Game panel grows by the Ranked row (host/ranked.inc).
+        txt = replace_once(
+            txt,
+            "    for (int calc_index = 0; calc_index < 41; calc_index++) {",
+            "    ranked_layout();\n    for (int calc_index = 0; calc_index < 41; calc_index++) {",
+            src,
+        )
+        txt = 'extern "C" void ranked_layout(void);\n' + txt
     if src.stem == "input_key_name":
         # Its header defines it; a live run names the player's keys (host/session.inc).
         txt = "#define input_key_name input_key_name_recovered\n" + txt

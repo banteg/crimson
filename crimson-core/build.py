@@ -21,6 +21,7 @@ from game import (
     game_platform,
     game_sources,
     game_third_party,
+    game_vendor_c,
     object_name,
     session_seam,
     simulation_names,
@@ -129,6 +130,11 @@ def main():
     ]
     if not wasm and os.uname().sysname == "Darwin":
         flags.append("-mmacosx-version-min=11.0")
+    if a.target == "game":
+        # The version a ranked replay names, as the Python port names its own (host/ranked.inc).
+        from crimson.replay.types import current_replay_game_version
+
+        flags.append(f'-DCRIMSON_GAME_VERSION="{current_replay_game_version()}"')
     sources = json.loads((HERE / "sources.json").read_text())
     if a.target == "game":
         sources += game_sources(a.root)
@@ -197,6 +203,30 @@ def main():
         if proc.returncode:
             print(proc.stderr)
             raise SystemExit(1)
+    vendor = game_vendor_c() if a.target == "game" else []
+    for src in vendor:
+        proc = subprocess.run(
+            [
+                zig,
+                "cc",
+                "-target",
+                "wasm32-wasi",
+                "-std=c11",
+                "-O2",
+                "-w",
+                "-c",
+                str(src),
+                "-o",
+                str(a.out / f"vendor_{src.stem}.o"),
+            ],
+            env=env,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if proc.returncode:
+            print(proc.stderr)
+            raise SystemExit(1)
     for src in glue:
         proc = subprocess.run(
             cc + flags + ["-c", str(src), "-o", str(a.out / (src.stem + ".o"))],
@@ -239,6 +269,7 @@ def main():
     subprocess.run(mathcmd, env=env, check=True)
     objs = [str(a.out / (name(f) + ".o")) for f in sources] + [str(a.out / (src.stem + ".o")) for src in glue]
     objs += [str(a.out / f"third_party_{src.stem}.o") for src in third_party]
+    objs += [str(a.out / f"vendor_{src.stem}.o") for src in vendor]
     objs.append(str(a.out / "math.o"))
     link = (
         cc

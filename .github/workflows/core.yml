@@ -87,12 +87,16 @@ jobs:
       # Each check boots the original from a fresh copy of the files crimson.land
       # serves, since the game writes its profile into its directory. The session
       # check plays a seed whose run picks perks and pauses; some runs end sooner.
+      # The ranked runs (a Survival run and quest 1.1) must queue the replay the
+      # leaderboard takes.
       - name: Run the game module inside the original with its files
         run: |
           uv run --no-sync python crimson-core/checks/game_files.py "$RUNNER_TEMP/game"
           fresh() { rm -rf "$RUNNER_TEMP/run" && cp -R "$RUNNER_TEMP/game" "$RUNNER_TEMP/run" && echo "$RUNNER_TEMP/run"; }
           node crimson-core/checks/game_boot.mjs "$(fresh)"
           node crimson-core/checks/game_session.mjs --seed 4069574050 "$(fresh)"
+          node crimson-core/checks/game_session.mjs --ranked --seed 4069574050 "$(fresh)"
+          node crimson-core/checks/game_session.mjs --ranked --quest --seed 1 "$(fresh)"
           uv run --no-sync python crimson-core/checks/game_check.py --live "$(fresh)"
 
       - name: Download original executable

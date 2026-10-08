@@ -143,7 +143,7 @@ def main():
             "-sALLOW_MEMORY_GROWTH",
             "-sSTACK_SIZE=1048576",
             "-sEXIT_RUNTIME=0",
-            "-sEXPORTED_RUNTIME_METHODS=FS,IDBFS,addRunDependency,removeRunDependency",
+            "-sEXPORTED_RUNTIME_METHODS=FS,IDBFS,addRunDependency,removeRunDependency,ccall",
             "-lidbfs.js",
             "--shell-file",
             str(HERE / "web/shell.html"),

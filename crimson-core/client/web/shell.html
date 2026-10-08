@@ -263,6 +263,7 @@
       }
     }
     hydrated = true;
+    upload();
   }
 
   // One tab owns the directory: another would write its stale copy over this
@@ -328,7 +329,61 @@
     };
   }
 
+  // The leaderboard (host/ranked.inc): the game queues each finished ranked run
+  // in /game/leaderboard/outbox/ and asks for an upload, or for the player's
+  // profile. As the Python port (src/crimson/leaderboard/client.py): a run the
+  // service took, or already has, leaves the outbox; one it refuses moves to
+  // rejected/ with the reason; offline, runs wait for the next try.
+  const OUTBOX = "/game/leaderboard/outbox", REJECTED = "/game/leaderboard/rejected";
+  const post = (path, body) =>
+    fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body });
+  let uploading = null;
+  function upload() {
+    uploading ??= (async () => {
+      let names = [];
+      try {
+        names = FS.readdir(OUTBOX).filter((name) => name.endsWith(".json"));
+      } catch {}
+      for (const name of names) {
+        const path = `${OUTBOX}/${name}`, entry = FS.readFile(path, { encoding: "utf8" });
+        let response;
+        try {
+          response = await post("/api/runs", entry);
+        } catch {
+          break;
+        }
+        if (response.status >= 500) break;
+        if (!response.ok && response.status !== 409) {
+          const reason = (await response.json().catch(() => ({}))).reason ?? `HTTP ${response.status}`;
+          FS.mkdirTree(REJECTED);
+          FS.writeFile(`${REJECTED}/${name}`, JSON.stringify({ ...JSON.parse(entry), reason }));
+        }
+        FS.unlink(path);
+      }
+      if (names.length) await persist();
+    })().finally(() => (uploading = null));
+    return uploading;
+  }
+  // The profile opens signed in as the game's key: the tab opens on the click,
+  // while the browser still lets it, and goes to the sign-in link once signed.
+  async function profile() {
+    const tab = window.open("", "_blank");
+    try {
+      const public_key = Module.ccall("client_public_key", "string", [], []);
+      const { challenge } = await (await post("/api/auth/challenge", JSON.stringify({ public_key }))).json();
+      const signature = Module.ccall("client_sign_login", "string", ["string"], [challenge]);
+      const { url } = await (await post("/api/auth/login", JSON.stringify({ public_key, challenge, signature }))).json();
+      if (new URL(url).origin !== location.origin) throw Error("unexpected sign-in link");
+      tab.location = url;
+    } catch {
+      tab?.close();
+    }
+  }
+  setInterval(upload, 600000);
+
   var Module = {
+    // HOST_LEADERBOARD_PROFILE, HOST_LEADERBOARD_UPLOAD (game/host_abi.h).
+    leaderboard: (request) => (request === 1 ? profile() : upload()),
     canvas,
     arguments: ["/game"],
     preRun: [() => {

@@ -251,6 +251,15 @@ void w2c_host_message(struct w2c_host *, u32 text, u32 caption) {
   fprintf(stderr, "%s: %s\n", title, body);
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, title, body, window);
 }
+// The leaderboard (host/ranked.inc): the page signs in and uploads
+// (client/web/shell.html); the native client takes no runs to it yet.
+void w2c_host_leaderboard(struct w2c_host *, u32 request) {
+#ifdef __EMSCRIPTEN__
+  MAIN_THREAD_EM_ASM({ Module.leaderboard($0); }, request);
+#else
+  (void)request;
+#endif
+}
 // An unattended run's clock moves 16 ms a frame, and a millisecond each time it is read.
 u32 w2c_host_time_ms(struct w2c_host *) {
   static u32 reads;
@@ -272,8 +281,23 @@ bool start_game() {
   wasm2c_game_instantiate(&game, &host, &wasi);
   w2c_game_0x5Finitialize(&game);
   started = true;
+#ifdef __EMSCRIPTEN__
+  w2c_game_game_leaderboard_enable(&game, 1);
+#endif
   return w2c_game_game_start(&game);
 }
+
+#ifdef __EMSCRIPTEN__
+// The page's sign-in (client/web/shell.html): the player's public key, and the
+// signature of a challenge, both as hex.
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_public_key() {
+  return (const char *)client_memory() + w2c_game_game_identity_public_key(&game);
+}
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_sign_login(const char *challenge) {
+  snprintf((char *)client_memory() + w2c_game_game_login_challenge(&game), 65, "%s", challenge);
+  return (const char *)client_memory() + w2c_game_game_login_signature(&game);
+}
+#endif
 
 #ifndef __EMSCRIPTEN__
 // The game directory the player chose, remembered between launches.
