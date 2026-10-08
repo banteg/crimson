@@ -29,7 +29,8 @@ struct LiveSettings {
 };
 
 static struct {
-  LiveSettings run;             // the verifier's, between ticks
+  LiveSettings run;              // the verifier's, between ticks
+  player_input_t run_keys[2];    // the codes the verifier's input answers (portable_init)
   player_input_t player_keys[2]; // the players' own, which the run's codes replace
   float banked; // seconds of play not yet ticked
   int due;      // ticks this frame
@@ -71,8 +72,15 @@ template <class T> static void live_carry(const T &before, const T &after, T &pl
     if (a[i] != b[i])
       p[i] = add ? p[i] + (a[i] - b[i]) : a[i];
 }
-// A tick between the verifier's settings.
+// A tick between the verifier's settings. The controls menu may have set the
+// players' keys meanwhile: those wait for the run's end, and the tick reads
+// the run's codes.
 static int live_step(uint32_t count) {
+  for (int i = 0; i < 2; ++i) {
+    if (memcmp(&player_state_table[i].input, &live.run_keys[i], sizeof(player_input_t)))
+      live.player_keys[i] = player_state_table[i].input;
+    player_state_table[i].input = live.run_keys[i];
+  }
   LiveSettings player = live_settings();
   live_install(live.run);
   int accepted = portable_step_many(count);
@@ -113,6 +121,8 @@ static void live_begin() {
   bool ready = portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor);
   game_heap_strings = heap_strings;
   live.run = live_settings();
+  for (int i = 0; i < 2; ++i)
+    live.run_keys[i] = player_state_table[i].input;
   // The verifier keeps corpses (cv_bodiesFade, host.cpp).
   live.run.bodies_fade = 1;
   live_install(player);
@@ -242,16 +252,21 @@ static PortableInput live_input() {
   return input;
 }
 
-// One recorded tick; false once the run stops ticking this frame.
-static bool live_tick() {
-  in = live_input();
-  // A perk menu request the verifier would refuse is dropped, as the original
-  // ignores it: in Rush, with no perk left after the queued picks, or once dead.
+// Whether the verifier takes another perk command now (portable_step_many):
+// not in Rush, not once dead, and only while picks already queued leave a perk.
+static bool live_perk_command_valid() {
   int picks = 0;
   for (int i = 0; i < live.queued_count; ++i)
     picks += live.queued[i].type == 1;
-  if (live.open_requested && config_blob.game_mode != GAME_MODE_RUSH && perk_pending_count > picks &&
-      player_state_table[0].health > 0 && live.queued_count < 16)
+  return config_blob.game_mode != GAME_MODE_RUSH && player_state_table[0].health > 0 &&
+         perk_pending_count > picks && live.queued_count < 16;
+}
+
+// One recorded tick; false once the run stops ticking this frame.
+static bool live_tick() {
+  in = live_input();
+  // A perk menu request the verifier would refuse is dropped, as the original ignores it.
+  if (live.open_requested && live_perk_command_valid())
     live.queued[live.queued_count++] = {2, 0};
   uint32_t count = live.queued_count;
   memcpy(commands, live.queued, count * sizeof(PortableCommand));
@@ -325,9 +340,22 @@ bool game_live_pause() {
 }
 char *input_key_name_recovered(int code);
 char *input_key_name(int code) { return input_key_name_recovered(game_live_key(code)); }
+// A second click while the menu closes picks nothing more, nor a pick after the
+// tick that opened the menu killed the player.
 void game_live_pick(int choice) {
-  if (live.queued_count < 16)
+  if (live_perk_command_valid())
     live.queued[live.queued_count++] = {1, choice};
+}
+// A run's metadata strings (perks_init_database, bonus_metadata_init) live in
+// the session's arena with the rest, which the next run reuses.
+char *wrap_text_to_width_alloc_recovered(char *text, int max_width_px);
+char *wrap_text_to_width_alloc(char *text, int max_width_px) {
+  char *wrapped = wrap_text_to_width_alloc_recovered(text, max_width_px);
+  if (game_heap_strings)
+    return wrapped;
+  char *kept = strdup_malloc(wrapped);
+  delete[] wrapped;
+  return kept;
 }
 void game_state_set(game_state_id_t state) {
   if (game_ticking) {

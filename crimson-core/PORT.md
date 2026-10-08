@@ -112,21 +112,30 @@ configuration defaults to it); the rest play as the original.
 Between ticks the original keeps its screens. The perk menu opens when a tick
 opens it, and its choice reaches the run as a command with the next tick.
 Escape runs the pause timeline down by the ticks' time, then the pause menu
-opens and the run waits. The end of the run shows the original's end screen
-after the verifier's 500 ms run-down; leaving any other way ends it unfinished.
-The original's frame draws a gameplay random number every frame: in a run each
-tick draws it (`portable_step_many`), and between ticks the frame and the menus
-draw from a stream of their own. The recording goes to `replays/` as the
+opens and the run waits, also through its options and controls screens. The
+end of the run shows the original's end screen after the verifier's 500 ms
+run-down; leaving any other way, quitting included, ends it unfinished and
+keeps its recording. The original's frame draws a gameplay random number every
+frame: in a run each tick draws it (`portable_step_many`), and between ticks the
+frame and the menus draw from a stream of their own. The console stays closed,
+since its flag pauses parts of a tick. The recording goes to `replays/` as the
 verifier's stream: the 65-word configuration, then each tick's input and
-commands ([`checks/replay.py`](checks/replay.py)).
+commands ([`checks/replay.py`](checks/replay.py)). Commands the verifier would
+refuse (a perk request or pick with none left, in Rush, or once dead) are
+dropped, as the original ignores them.
 
-A run resets only the simulation's globals: the names the verifier's sources
-and host use, less what the original loaded and the player set (texture, sound
-and music handles, settings, progress; `SESSION_KEEPS` in
-[`game.py`](game.py)). The verifier's setup assigns its own music ids and
+A tick reads exactly the verifier's state. A run resets the simulation's
+globals (the names the verifier's sources and host use) except what the
+original loaded: texture, sound and music handles, and the screen transition
+(`SESSION_KEEPS` in [`game.py`](game.py)). The settings and progress a tick
+reads (the configuration, the status, the corpse-fade cvar, the players' key
+codes) are the verifier's, swapped in for each tick; between ticks the
+original shows and keeps the player's. What a tick changes carries over: the
+counters it advances add to the player's progress, the settings it changes
+replace the player's. The verifier's setup assigns its own music ids and
 volumes, which only choose and voice tracks; the run plays the original's. The
-weapons' sound ids are snapshot fields that hold the original's loaded ids in a
-run, and only choose samples.
+weapons' sound ids are snapshot fields that hold the original's loaded ids in
+a run, and only choose samples.
 
 ### Evidence
 

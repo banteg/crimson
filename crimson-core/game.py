@@ -82,9 +82,10 @@ def replace_once(text, old, new, src):
     return text.replace(old, new)
 
 
-# Recovered functions host/game.inc wraps: a simulation tick must run some as
-# the verifier does, and a sound entry the device never created stays silent.
-# The recovered body keeps a _recovered name.
+# Recovered functions host/game.inc and host/session.inc wrap: a simulation tick
+# must run some as the verifier does, a run the client plays drives others, a
+# sound entry the device never created stays silent, and a run's wrapped
+# strings live in its arena. The recovered body keeps a _recovered name.
 SEAMS = (
     "game_state_set",
     "gameplay_update_and_render",
@@ -92,6 +93,7 @@ SEAMS = (
     "play_time_get",
     "sfx_entry_start_playback",
     "ui_elements_update_and_render",
+    "wrap_text_to_width_alloc",
 )
 
 
