@@ -126,10 +126,17 @@ export async function runDetailView(env: Env, id: string): Promise<RunDetailView
   return run && { ...run, timeline: await timelineFor(env, id) };
 }
 
+// A run anyone may see by its id: not hidden, and not a banned account's, as the boards filter.
+const VISIBLE_RUN = "r.hidden = 0 AND a.banned = 0";
+
+export async function visibleRun(env: Env, id: string): Promise<boolean> {
+  return !!(await env.DB.prepare(`SELECT 1 FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND ${VISIBLE_RUN}`).bind(id).first());
+}
+
 export async function runSummary(env: Env, id: string): Promise<RunSummary | null> {
   const run = await env.DB.prepare(
     `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.board, r.quest, r.score, r.accepted_at, r.game_version, r.client,
-       r.client_version, r.platform, r.result FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND r.hidden = 0`,
+       r.client_version, r.platform, r.result FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND ${VISIBLE_RUN}`,
   )
     .bind(id)
     .first<{
@@ -193,6 +200,7 @@ export async function gameScores(env: Env, board: Board, quest: string, limit: n
     const result = JSON.parse(run.result) as RunResult;
     const player = result.players[0]!;
     return {
+      run: run.id,
       name: run.name,
       score: run.score,
       elapsed_ms: result.elapsed_ms,
