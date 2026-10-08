@@ -80,15 +80,26 @@ jobs:
         with:
           fetch-depth: ${{ matrix.task == 'match-regressions' && '0' || '1' }}
 
+      - name: Detect documentation-only pull request
+        id: docs_only
+        if: ${{ github.event_name == 'pull_request' && (matrix.task == 'pytest' || matrix.task == 'native-oracle') }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          if [[ "$(python3 scripts/ci_changed_paths.py docs-only --base "$BASE_SHA")" == true ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install uv
-        if: matrix.use_uv
+        if: matrix.use_uv && steps.docs_only.outputs.skip != 'true'
         uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.13"
           enable-cache: true
 
       - name: Ensure uv cache dir exists
-        if: matrix.use_uv
+        if: matrix.use_uv && steps.docs_only.outputs.skip != 'true'
         run: |
           # setup-uv enables caching via UV_CACHE_DIR; create it eagerly for prune stability.
           if [[ -n "${UV_CACHE_DIR:-}" ]]; then
@@ -96,7 +107,7 @@ jobs:
           fi
 
       - name: Install virtual display and GL libraries
-        if: ${{ matrix.task == 'pytest' }}
+        if: ${{ matrix.task == 'pytest' && steps.docs_only.outputs.skip != 'true' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -124,11 +135,11 @@ jobs:
         run: npm install --global @ast-grep/cli
 
       - name: Install dependencies
-        if: matrix.do_sync
+        if: matrix.do_sync && steps.docs_only.outputs.skip != 'true'
         run: uv sync --frozen ${{ matrix.sync_args }}
 
       - name: Download provenance artifacts
-        if: ${{ matrix.task == 'pytest' || matrix.task == 'native-oracle' || matrix.task == 'native-closure' }}
+        if: ${{ (matrix.task == 'pytest' || matrix.task == 'native-oracle' || matrix.task == 'native-closure') && steps.docs_only.outputs.skip != 'true' }}
         run: |
           game_dir="game_bins/crimsonland/1.9.93-gog"
           base_url="https://paq.crimson.banteg.xyz/v1.9.93"
@@ -148,7 +159,7 @@ jobs:
           EOF
 
       - name: Download runtime assets
-        if: ${{ matrix.task == 'pytest' }}
+        if: ${{ matrix.task == 'pytest' && steps.docs_only.outputs.skip != 'true' }}
         run: |
           mkdir -p artifacts/assets
           curl --fail --location --retry 3 --retry-all-errors \
@@ -158,6 +169,7 @@ jobs:
           EOF
 
       - name: Run check
+        if: steps.docs_only.outputs.skip != 'true'
         env:
           MATCH_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: ${{ matrix.command }}

@@ -18,18 +18,6 @@ on:
       - "uv.lock"
       - ".github/workflows/core.yml"
   pull_request:
-    paths:
-      - "crimson-core/**"
-      - "decomp/**"
-      - "third_party/headers/**"
-      - "tools/match/include/**"
-      - "tools/native/data_definitions/**"
-      - "src/**"
-      - "crimson-re/**"
-      - "tests/fixtures/replays/**"
-      - "pyproject.toml"
-      - "uv.lock"
-      - ".github/workflows/core.yml"
   workflow_dispatch:
 
 env:
@@ -40,7 +28,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.detect.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: detect
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [[ "${{ github.event_name }}" != pull_request ]]; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          echo "relevant=$(python3 scripts/ci_changed_paths.py core --base "$BASE_SHA")" >> "$GITHUB_OUTPUT"
+
   core:
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -142,3 +149,23 @@ jobs:
             crimson-core/build/*/link.log
             crimson-core/build/native/core
             crimson-core/build/wasm/core.wasm
+
+  gate:
+    name: core-gate
+    needs: [changes, core]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require core when relevant
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          RELEVANT: ${{ needs.changes.outputs.relevant }}
+          CORE_RESULT: ${{ needs.core.result }}
+        run: |
+          test "$CHANGES_RESULT" = success
+          if [[ "$RELEVANT" == true ]]; then
+            test "$CORE_RESULT" = success
+          else
+            test "$RELEVANT" = false
+            test "$CORE_RESULT" = skipped
+          fi
