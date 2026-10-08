@@ -106,7 +106,7 @@ CRIMSON_CFG_STRUCT = Struct(
     "keybind_reload" / Int32sl,
 )
 
-_DEFAULT_PROFILE_NAME = "10tons"
+DEFAULT_PROFILE_NAME = "10tons"
 _DEFAULT_SAVED_NAMES: tuple[str, str, str, str, str, str, str, str] = (
     "default",
     "default",
@@ -463,7 +463,7 @@ def default_crimson_cfg(path: Path = Path("<memory>")) -> CrimsonConfig:
         show_internet_scores=False,
         score_date_mode=HighScoreDateMode.ALL_TIME,
     )
-    profile.set_player_name_input(_DEFAULT_PROFILE_NAME)
+    profile.set_player_name_input(DEFAULT_PROFILE_NAME)
     profile.player_name_input_len = 0
     return CrimsonConfig(
         path=path,

@@ -75,11 +75,15 @@ opens a login link only when it leads to the service's own host.
 
 - Each ranked run's name is the one typed into the high-score name entry when it ended: at most 31 characters in
   the range 0x20..0xFF, as the entry accepts.
-- An account's display name is the name of its latest accepted run. Every board row belongs to the account, so a
-  new name relabels its older entries too. The profile lists every name the account has used.
-- Names are not unique. Where two unlinked accounts show the same name, compared without case, the board adds the
-  first four hex digits of each key's hash: `banteg · 3f2a`. A linked account shows its GitHub or Discord handle
-  with a badge instead, so an impersonator always looks different from the player they copy.
+- An unlinked account shows the name of its latest accepted run, or only its fingerprint while that is a fresh
+  config's default `10tons`. Every board row belongs to the account, so a new name relabels its older entries too.
+- A linked account shows a handle instead, beside its badges: the one its run's name matches, compared without case,
+  else the one most of its links share, else the first in X, Discord, GitHub order, which is also where its avatar
+  comes from. A mistyped name thus never hides who played, and each badge names its own handle where that differs.
+  Run pages still say what a run was played as, and the profile lists every name the account has typed.
+- Names are not unique. Where an unlinked account's name matches another account's name or handle, compared without
+  case, the board adds the first four hex digits of its key's hash: `banteg · 3f2a`. A linked account shows its
+  handle, so an impersonator always looks different from the player they copy.
 - Moderators can hide an entry, hide a name (the account then shows only its fingerprint) and ban a key or an
   account. Every action is logged.
 
@@ -113,9 +117,9 @@ replays, names, links, keys and sessions. `/privacy` and `/terms` say the same i
   Ranked is ticked; it follows the box in focus order. It opens the signed login link. The button's plate is 32 px
   tall against the box's 16, so the row is 40 px and the box sits centred on the plate. At 640x480 the grown panel
   would push Back off the window, so the panel and Back rise by the overflow instead.
-- The Ranked tooltip names the player, "Play for the online leaderboard as banteg.", when that fits the panel. The
-  Profile tooltip says how many runs wait to upload, or that the leaderboard can't be reached after a failed
-  login. Both stay on one line, above the bottom row.
+- The Ranked tooltip names the player, "Play for the online leaderboard as banteg.", when that fits the panel and
+  the name is not a fresh config's default `10tons`. The Profile tooltip says how many runs wait to upload, or that
+  the leaderboard can't be reached after a failed login. Both stay on one line, above the bottom row.
 - The high score screen's **Update scores** works as the original's did against `scores.crimsonland.com`
   ([online high scores](../crimsonland-exe/online-scores.md)): it sends the waiting runs, then receives the shown
   board, with the original's status lines under the buttons and Play a game disabled meanwhile. Only the verified

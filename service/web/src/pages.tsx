@@ -3,6 +3,7 @@ import type { Board, BoardView, JoinView, ProfileView, QuestMenuView, RunDetailV
 import { get, post } from "./api";
 import { formatScore } from "./format";
 import { GameButton } from "./button";
+import { playerLabel } from "./names";
 import { PlayerName, PROVIDER_LABELS } from "./players";
 import { runPanels } from "./run";
 import weaponData from "./weapons.json";
@@ -186,7 +187,7 @@ function Command(props: { children: string }) {
 async function runPage(id: string): Promise<Screen> {
   const detail = await get<RunDetailView>(`/api/runs/${id}`);
   if (!detail) return notFound();
-  return { title: `${detail.name} · ${detail.title}`, quest: detail.quest || null, panels: runPanels(detail) };
+  return { title: `${playerLabel(detail.player)} · ${detail.title}`, quest: detail.quest || null, panels: runPanels(detail) };
 }
 
 function notFound(): Screen {
@@ -291,7 +292,7 @@ function AccountControls(props: { profile: ProfileView; nav: Navigator }) {
       <h2>Your account</h2>
       <Show when={props.profile.account!.providers.length}>
         <p class="muted">
-          Linking shows your handle next to your name and lets you add another computer's game to this account by signing in with the
+          Linking shows your handle in place of the name you typed and lets you add another computer's game to this account by signing in with the
           same login there. See <a href="/privacy">what linking stores</a>.
         </p>
         <p class="buttons">
@@ -329,9 +330,10 @@ function AccountControls(props: { profile: ProfileView; nav: Navigator }) {
 async function profile(id: number, nav: Navigator): Promise<Screen> {
   const view = await get<ProfileView>(`/api/players/${id}`);
   if (!view) return notFound();
-  const history = view.names.length > 1 || view.player.name === null;
+  // The typed names, where they say more than the shown one.
+  const history = view.names.some((name) => name !== view.player.name);
   return {
-    title: view.player.name ?? view.player.fingerprint,
+    title: playerLabel(view.player),
     quest: null,
     panels: [
       () => (
@@ -342,7 +344,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
               <span class="muted fingerprint"> {view.player.fingerprint}</span>
             </Show>
           </h2>
-          <Show when={history && view.names.length}>
+          <Show when={history}>
             <p class="muted">Names: {view.names.join(", ")}</p>
           </Show>
           <h3>Runs</h3>
@@ -433,7 +435,7 @@ async function join(token: string, nav: Navigator): Promise<Screen> {
             account, and removes this one. Do it only if both are yours.
           </p>
           <p class="buttons">
-            <GameButton label={`Join ${view.destination.name ?? view.destination.fingerprint}`} onClick={confirmJoin} />
+            <GameButton label={`Join ${playerLabel(view.destination)}`} onClick={confirmJoin} />
             <GameButton label="Cancel" href="/account" />
           </p>
         </>
@@ -487,7 +489,7 @@ const ABOUT: Screen = {
         <p>
           You don't need to sign up. The game makes a keypair on first launch, and that keypair is your account. You show up under the name
           from your latest run, and your <em>Profile</em> in the Play Game menu lists every name you've used. Link GitHub, Discord or X to
-          show your handle, so no one can take your name, and to keep your runs when you switch computers or clear your browser's site data.
+          show your handle instead, so no one can take your name, and to keep your runs when you switch computers or clear your browser's site data.
         </p>
         <h3>Replays, other ports and docs</h3>
         <p>

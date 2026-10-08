@@ -8,6 +8,7 @@ import type { RunResult } from "./replay";
 import { timelineFor } from "./runs";
 import questTitles from "./quests.json";
 import { formatScore } from "../web/src/format";
+import { playerLabel, shownName } from "../web/src/names";
 import weaponData from "../web/src/weapons.json";
 
 export const QUEST_TITLES: Record<string, string> = questTitles;
@@ -36,7 +37,8 @@ export async function players(env: Env, ids: number[]): Promise<Map<number, Play
   const { results: accounts } = await env.DB.prepare(
     `SELECT a.id, a.name, a.name_hidden,
        ${FINGERPRINT} AS fingerprint,
-       (SELECT count(*) FROM accounts b WHERE lower(b.name) = lower(a.name) AND b.id != a.id AND b.name != '') AS clashes
+       (SELECT count(*) FROM accounts b WHERE b.id != a.id AND (lower(b.name) = lower(a.name) AND b.name != ''
+          OR EXISTS (SELECT 1 FROM links l WHERE l.account_id = b.id AND lower(l.handle) = lower(a.name)))) AS clashes
      FROM accounts a WHERE a.id IN (${marks})`,
   )
     .bind(...ids)
@@ -46,21 +48,21 @@ export async function players(env: Env, ids: number[]): Promise<Map<number, Play
   )
     .bind(...ids)
     .all<{ account_id: number; provider: ProviderName; subject: string; handle: string; avatar_url: string | null }>();
-  for (const account of accounts)
+  for (const account of accounts) {
+    const own = links.filter((link) => link.account_id === account.id);
     found.set(account.id, {
       id: account.id,
-      name: account.name && !account.name_hidden ? account.name : null,
+      name: account.name_hidden ? null : shownName(account.name, own),
       fingerprint: account.fingerprint,
       clash: account.clashes > 0,
-      links: links
-        .filter((link) => link.account_id === account.id)
-        .map((link) => ({
-          provider: link.provider,
-          handle: link.handle,
-          avatar_url: link.avatar_url,
-          url: linkUrl(link.provider, link.handle, link.subject),
-        })),
+      links: own.map((link) => ({
+        provider: link.provider,
+        handle: link.handle,
+        avatar_url: link.avatar_url,
+        url: linkUrl(link.provider, link.handle, link.subject),
+      })),
     });
+  }
   return found;
 }
 
@@ -140,13 +142,14 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
   const top = board[0] && board[0].id !== id ? board[0] : null;
   const best = board.find((row) => row.account_id === run.account_id);
   const result = JSON.parse(run.result) as RunResult;
+  const who = await players(env, top ? [run.account_id, top.account_id] : [run.account_id]);
   return {
     id,
     board: run.board,
     quest: run.quest,
     title: boardTitle(run.board, run.quest),
     name: run.name,
-    player: (await players(env, [run.account_id])).get(run.account_id)!,
+    player: who.get(run.account_id)!,
     score: run.score,
     rank: rank === -1 ? null : rank + 1,
     accepted_at: run.accepted_at,
@@ -163,7 +166,7 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
       experience: result.players[0]!.experience,
       most_used_weapon_id: result.players[0]!.most_used_weapon_id,
     },
-    top: top && { id: top.id, name: top.name, score: top.score },
+    top: top && { id: top.id, name: playerLabel(who.get(top.account_id)!), score: top.score },
     best: best && best.id !== id ? { id: best.id, score: best.score } : null,
   };
 }
@@ -182,7 +185,7 @@ export function runDescription(run: RunSummary): string {
     ...(result.shots_fired ? [`${Math.round((result.shots_hit / result.shots_fired) * 100)}% accuracy`] : []),
     ...(weapon ? [`mostly the ${weapon.name}`] : []),
   ];
-  return `${run.name} ${what}${run.rank ? `, #${run.rank} on the board` : ""}. ${numbers.join(", ")}. Verified by replay.`;
+  return `${playerLabel(run.player)} ${what}${run.rank ? `, #${run.rank} on the board` : ""}. ${numbers.join(", ")}. Verified by replay.`;
 }
 
 export async function gameScores(env: Env, board: Board, quest: string, limit: number): Promise<GameScore[]> {

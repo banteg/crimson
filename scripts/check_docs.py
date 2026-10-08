@@ -6,11 +6,13 @@ Checks:
 - literal source references resolve and links do not point into a developer's home
 - nav coverage includes all docs markdown files
 - pages have frontmatter tags, with explicit temporary allowlist
+- CDT/CRD version table agrees with source constants
 """
 
 from __future__ import annotations
 
 import argparse
+import ast
 import re
 import tomllib
 from collections import Counter
@@ -161,6 +163,37 @@ def load_allowlist(path: Path) -> set[str]:
     return items
 
 
+def read_int_constant(path: Path, name: str) -> int:
+    """Read a version declaration without importing the application's dependencies."""
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == name for target in node.targets):
+            value = ast.literal_eval(node.value)
+            if type(value) is int:
+                return value
+    raise ValueError(f"{path}: expected integer constant {name}")
+
+
+def find_format_version_errors(root: Path, docs_dir: Path) -> list[str]:
+    """Compare the documented CDT/CRD version table with its source constants."""
+    page = docs_dir / "rewrite/cdt-trace-format.md"
+    rows = {
+        cells[1].strip(): cells[2].strip()
+        for line in page.read_text(encoding="utf-8").splitlines()
+        if line.startswith("|") and len(cells := line.split("|")) >= 4
+    }
+    expected = {
+        "CDT container": read_int_constant(root / "crimson-re/src/crimson_re/dbg/schema.py", "TRACE_FORMAT_VERSION"),
+        "CDT payload schema": read_int_constant(root / "crimson-re/src/crimson_re/dbg/schema.py", "TRACE_SCHEMA_VERSION"),
+        "CRD replay": read_int_constant(root / "src/crimson/replay/types.py", "REPLAY_FORMAT_VERSION"),
+    }
+    return [
+        f"{page.relative_to(docs_dir)}: {name} documents {rows.get(name, '<missing>')}, source is {version}"
+        for name, version in expected.items()
+        if rows.get(name) != str(version)
+    ]
+
+
 def main() -> int:
     args = parse_args()
 
@@ -179,6 +212,7 @@ def main() -> int:
 
     broken_links = find_broken_markdown_links(docs_dir, docs_files)
     broken_source_paths = find_broken_source_paths(root, docs_dir, docs_files)
+    format_version_errors = find_format_version_errors(root, docs_dir)
 
     nav_missing = sorted(nav_set - docs_rel_set)
     nav_orphans = sorted(docs_rel_set - nav_set)
@@ -201,6 +235,12 @@ def main() -> int:
         has_errors = True
         print(f"Broken markdown links ({len(broken_links)}):")
         for error in broken_links:
+            print(f"  - {error}")
+
+    if format_version_errors:
+        has_errors = True
+        print("Format version issues:")
+        for error in format_version_errors:
             print(f"  - {error}")
 
     if nav_missing or nav_orphans or nav_duplicates:
