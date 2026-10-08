@@ -677,10 +677,12 @@ Native behavior:
 
 Why it's likely a bug:
 
-- The heads used to show. In 1.0.2, 1.3.0, 1.3.1 and 1.4.0 the last UV change
-  before the pass is a `grim_set_uv(0, 0, 1, 1)` in an earlier pass, so
-  every head drew the whole brass slug. From 1.8.7 on, the glow pass right
-  before it selects frame 13, and the heads vanish in every later build.
+- The heads used to show. In the freeware builds (1.0.2, 1.3.0, 1.3.1 and
+  1.4.0) the last UV change before the pass is a `grim_set_uv(0, 0, 1, 1)` in
+  an earlier pass, so every head drew the whole brass slug
+  (`bullet_real_16.tga`, the same image as the later `bullet16.tga`), as
+  freeware captures show. From 1.8.7 on, the glow pass right before it selects
+  frame 13, and the heads vanish in every later build.
 - Every shipped `grim.dll` binds a texture without touching the UVs, so only
   `crimsonland.exe` changed.
 - The skip list never grew with the glowing and sprite shots. With the heads
@@ -697,8 +699,8 @@ Rewrite behavior:
 
 Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (Fire Bullets
 glow and late bullet pass), `effect_select_texture`, the head passes of every
-build in `game_bins/crimsonland/`, and captures of the original with Plasma
-Shooter spiders. Executable-backed coverage is in
+build in `game_bins/crimsonland/`, captures of 1.9.93 on Windows (no heads,
+Plasma Shooter spiders included) and of freeware 1.4.0 (heads). Executable-backed coverage is in
 `tests/native_oracle/test_projectile_render.py`; the original texture's invisible
 sampled corner is also checked on the GPU in
 `tests/render/test_late_bullet_pass.py`.
@@ -877,4 +879,5 @@ Rewrite behavior:
 
 Evidence: `decomp/1.9/crimsonland/crimsonland/bonus_render.cpp` (the detonation
 loop), the detonation flashes of the 1.4.0 and 1.8.7 builds in
-`game_bins/crimsonland/`, and `tests/native_oracle/test_projectile_render.py`.
+`game_bins/crimsonland/`, captures of 1.9.93 on Windows showing the atlas in the
+flash, and `tests/native_oracle/test_projectile_render.py`.
