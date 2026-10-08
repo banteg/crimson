@@ -1,15 +1,8 @@
 // A ground drawn as src/grim/terrain_render.py draws it: the clear color, then each layer's stamps with the layer's
 // tint and the DX8 alpha test, as an image URL the page shows behind its panels.
 
-import { crtRand, generate, generateRandom, type Ground, questSlots, SIZE } from "./rules";
+import { ALPHA_REF, CLEAR, crtRand, generate, generateRandom, type Ground, LAYER_ALPHA, PATCH, questSlots, SIZE, TINT_RGB } from "./rules";
 
-const PATCH = 128;
-const CLEAR = "rgb(63, 56, 25)";
-// Layer tints: RGB 178/255 on every layer, alpha 230, 230 and 153.
-const TINT_RGB = 178 / 255;
-const LAYER_ALPHA = [230, 230, 153];
-// Texels at or below 4/255 after the tint are discarded.
-const ALPHA_REF = 4;
 // The random terrain of a save with every quest unlocked.
 const UNLOCK_INDEX = 50;
 
@@ -58,7 +51,7 @@ export async function paintGround(ground: Ground, height = SIZE): Promise<string
   canvas.width = SIZE;
   canvas.height = height;
   const context = canvas.getContext("2d")!;
-  context.fillStyle = CLEAR;
+  context.fillStyle = `rgb(${CLEAR.join()})`;
   context.fillRect(0, 0, SIZE, height);
   ground.layers.forEach((stamps, i) => {
     const texture = tinted(images[i]!, LAYER_ALPHA[i]!);

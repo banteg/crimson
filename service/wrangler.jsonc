@@ -2,6 +2,8 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "crimson-land",
   "main": "src/index.ts",
+  // Fonts the run cards render with (src/card.ts), bundled as bytes.
+  "rules": [{ "type": "Data", "globs": ["**/*.ttf"] }],
   // The site, built by Vite from web/ (with public/'s game art) into dist/. The Worker sees every request first: it
   // answers the API and server pages, serves files, and titles the site's page for each route.
   "assets": { "directory": "./dist", "binding": "ASSETS", "run_worker_first": true },

@@ -1,10 +1,11 @@
 import { confirmMerge, deleteAccount, linkIdentity, pendingJoin, unlink } from "./accounts";
 import { getLogin, postChallenge, postLogin, SESSION_COOKIE, secure, sessionAccount, sessionToken, tokenHash } from "./auth";
+import { CARD_HEIGHT, CARD_WIDTH, runCard } from "./card";
 import { type Env, json, refuse } from "./http";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
 import type { Board } from "./ranked";
 import { postRun, timelineFor } from "./runs";
-import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView, runDetailView, SHOWN_NAME } from "./views";
+import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView, runDescription, runDetailView, runSummary } from "./views";
 
 // Links, OAuth callbacks and the session cookie follow the request's origin, so the site answers only over
 // HTTPS, and browsers are told to stay there. Plain-HTTP localhost stays for wrangler dev.
@@ -12,6 +13,8 @@ const HSTS = "max-age=31536000; includeSubDomains";
 const QUEST = /^[1-5]\.(?:[1-9]|10)$/;
 // The game's high score tables hold 100 records (TABLE_MAX).
 const SCORES_LIMIT = 100;
+// How long the edge keeps a run's card: link previews fetch it once, and a rank or a moderator's change shows soon.
+const CARD_MAX_AGE_S = 600;
 
 const signedOut = (request: Request) => `${SESSION_COOKIE}=; Path=/; HttpOnly;${secure(request)} SameSite=Lax; Max-Age=0`;
 
@@ -93,6 +96,16 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     });
   }
 
+  if ((match = /^GET \/runs\/([0-9a-f]{64})\.png$/.exec(route))) {
+    const cached = await caches.default.match(request);
+    if (cached) return cached;
+    const card = await runCard(env, url.origin, match[1]!);
+    if (!card) return new Response("No such run.", { status: 404 });
+    const response = new Response(card, { headers: { "content-type": "image/png", "cache-control": `public, max-age=${CARD_MAX_AGE_S}` } });
+    await caches.default.put(request, response.clone());
+    return response;
+  }
+
   // Linking: the provider's sign-in and its callback, which hand back to the site's pages.
   const accountId = await sessionAccount(request, env);
   const token = sessionToken(request);
@@ -148,41 +161,58 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   return shell(env, url);
 }
 
-async function routeTitle(env: Env, path: string): Promise<string | null> {
+// What a shared link previews: the route's title, and for a run, what happened and its card.
+interface Preview {
+  title: string | null;
+  description: string;
+  image: { url: string; width: number; height: number } | null;
+}
+
+const SITE_DESCRIPTION = "Verified leaderboards for the Crimsonland port: every score is a replay the server re-simulates.";
+
+async function routePreview(env: Env, url: URL): Promise<Preview> {
+  const path = url.pathname;
+  const titled = (title: string | null): Preview => ({ title, description: SITE_DESCRIPTION, image: null });
   let match: RegExpExecArray | null;
-  if (path === "/boards/survival") return boardTitle("survival", "");
-  if ((match = /^\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(path)) && QUEST.test(match[2]!)) return boardTitle(match[1] as Board, match[2]!);
-  if ((match = /^\/(quests|quests-hardcore)\/([1-5])$/.exec(path))) return `Quests ${["I", "II", "III", "IV", "V"][Number(match[2]) - 1]}`;
+  if (path === "/boards/survival") return titled(boardTitle("survival", ""));
+  if ((match = /^\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(path)) && QUEST.test(match[2]!)) return titled(boardTitle(match[1] as Board, match[2]!));
+  if ((match = /^\/(quests|quests-hardcore)\/([1-5])$/.exec(path))) return titled(`Quests ${["I", "II", "III", "IV", "V"][Number(match[2]) - 1]}`);
   if ((match = /^\/players\/(\d+)$/.exec(path))) {
     const player = (await players(env, [Number(match[1])])).get(Number(match[1]));
-    return player ? (player.name ?? player.fingerprint) : null;
+    return titled(player ? (player.name ?? player.fingerprint) : null);
   }
   if ((match = /^\/runs\/([0-9a-f]{64})$/.exec(path))) {
-    const run = await env.DB.prepare(
-      `SELECT ${SHOWN_NAME} AS name, r.board, r.quest FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND r.hidden = 0`,
-    )
-      .bind(match[1])
-      .first<{ name: string; board: Board; quest: string }>();
-    return run ? `${run.name} · ${boardTitle(run.board, run.quest)}` : null;
+    const run = await runSummary(env, match[1]!);
+    if (!run) return titled(null);
+    return {
+      title: `${run.name} · ${run.title}`,
+      description: runDescription(run),
+      image: { url: `${url.origin}/runs/${run.id}.png`, width: CARD_WIDTH, height: CARD_HEIGHT },
+    };
   }
-  return ({ "/about": "About", "/privacy": "Privacy", "/terms": "Terms" } as Record<string, string>)[path] ?? null;
+  return titled(({ "/about": "About", "/privacy": "Privacy", "/terms": "Terms" } as Record<string, string>)[path] ?? null);
 }
 
 // The site's one page, titled for the route so shared links preview what they point at.
 async function shell(env: Env, url: URL): Promise<Response> {
   const page = await env.ASSETS.fetch(new Request(new URL("/", url)));
-  const title = await routeTitle(env, url.pathname);
-  const full = title ? `${title} · crimson.land` : "crimson.land";
-  const description = "Verified leaderboards for the Crimsonland port: every score is a replay the server re-simulates.";
+  const preview = await routePreview(env, url);
+  const full = preview.title ? `${preview.title} · crimson.land` : "crimson.land";
   const escape = (text: string) => text.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
+  const meta = (attribute: string, entries: [string, string | number][]) =>
+    entries.map(([key, value]) => `<meta ${attribute}="${key}" content="${escape(String(value))}">`);
   const tags = [
-    `<meta name="description" content="${escape(description)}">`,
-    ...[
+    ...meta("name", [["description", preview.description]]),
+    ...meta("property", [
       ["og:title", full],
-      ["og:description", description],
-      ["og:image", `${url.origin}/ui/sign.png`],
+      ["og:description", preview.description],
       ["og:url", url.toString()],
-    ].map(([key, value]) => `<meta property="${key}" content="${escape(value!)}">`),
+      ...(preview.image
+        ? ([["og:image", preview.image.url], ["og:image:width", preview.image.width], ["og:image:height", preview.image.height]] as [string, string | number][])
+        : ([["og:image", `${url.origin}/ui/sign.png`]] as [string, string][])),
+    ]),
+    // X shows a large image only when asked to.
+    ...meta("name", [["twitter:card", preview.image ? "summary_large_image" : "summary"]]),
   ];
   return new HTMLRewriter()
     .on("title", { element: (element) => void element.setInnerContent(full) })

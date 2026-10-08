@@ -7,8 +7,11 @@ import { LOWER_IS_BETTER } from "./ranked";
 import type { RunResult } from "./replay";
 import { timelineFor } from "./runs";
 import questTitles from "./quests.json";
+import { formatScore } from "../web/src/format";
+import weaponData from "../web/src/weapons.json";
 
 export const QUEST_TITLES: Record<string, string> = questTitles;
+const WEAPONS: Record<string, { name: string }> = weaponData;
 
 // SQL over accounts `a` and runs `r`: the account's key fingerprint, and the name a run shows, which is the
 // fingerprint once a moderator hid the account's name.
@@ -113,7 +116,15 @@ export async function boardView(env: Env, board: Board, quest: string, limit: nu
 // The board holds each account's best run; a run that is not its player's best has no rank.
 const BOARD_SCAN = 1000;
 
+// A run's page without its timeline, which the page's preview tags and card can go without or fetch themselves.
+export type RunSummary = Omit<RunDetailView, "timeline">;
+
 export async function runDetailView(env: Env, id: string): Promise<RunDetailView | null> {
+  const run = await runSummary(env, id);
+  return run && { ...run, timeline: await timelineFor(env, id) };
+}
+
+export async function runSummary(env: Env, id: string): Promise<RunSummary | null> {
   const run = await env.DB.prepare(
     `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.board, r.quest, r.score, r.accepted_at, r.game_version, r.client,
        r.client_version, r.platform, r.result FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND r.hidden = 0`,
@@ -150,11 +161,28 @@ export async function runDetailView(env: Env, id: string): Promise<RunDetailView
       shots_fired: result.shots_fired,
       shots_hit: result.shots_hit,
       experience: result.players[0]!.experience,
+      most_used_weapon_id: result.players[0]!.most_used_weapon_id,
     },
-    timeline: await timelineFor(env, id),
     top: top && { id: top.id, name: top.name, score: top.score },
     best: best && best.id !== id ? { id: best.id, score: best.score } : null,
   };
+}
+
+// What a shared run's link says under its title.
+export function runDescription(run: RunSummary): string {
+  const result = run.result;
+  const seconds = Math.floor(result.elapsed_ms / 1000);
+  const what =
+    run.board === "survival"
+      ? `survived ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")} for ${formatScore(run.board, run.score)}`
+      : `finished ${run.quest} ${QUEST_TITLES[run.quest]}${run.board === "quests-hardcore" ? " on hardcore" : ""} in ${formatScore(run.board, run.score)}`;
+  const weapon = WEAPONS[result.most_used_weapon_id];
+  const numbers = [
+    `${result.kills.toLocaleString("en-US")} kills`,
+    ...(result.shots_fired ? [`${Math.round((result.shots_hit / result.shots_fired) * 100)}% accuracy`] : []),
+    ...(weapon ? [`mostly the ${weapon.name}`] : []),
+  ];
+  return `${run.name} ${what}${run.rank ? `, #${run.rank} on the board` : ""}. ${numbers.join(", ")}. Verified by replay.`;
 }
 
 export async function gameScores(env: Env, board: Board, quest: string, limit: number): Promise<GameScore[]> {
