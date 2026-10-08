@@ -22,6 +22,7 @@
     "wrangler": "^4.147.0"
   },
   "dependencies": {
+    "@resvg/resvg-wasm": "^2.6.2",
     "fzstd": "^0.1.1",
     "simple-icons": "^16.34.0",
     "solid-js": "^1.9.15"

@@ -3,6 +3,14 @@
 // the Python generator.
 
 export const SIZE = 1024;
+// How terrain_render paints the stamps (src/grim/terrain_render.py): 128px patches over the clear color, each layer
+// tinted RGB 178/255 with alpha 230, 230 and 153, and texels at or below 4/255 after the tint discarded (the DX8
+// alpha test).
+export const PATCH = 128;
+export const CLEAR = [63, 56, 25] as const;
+export const TINT_RGB = 178 / 255;
+export const LAYER_ALPHA = [230, 230, 153];
+export const ALPHA_REF = 4;
 // Unlock-gated quest terrains of terrain_generate_random: quests 4.2, 3.2 and 2.2.
 const UNLOCK_SLOTS: [number, Slots][] = [[40, [6, 7, 6]], [30, [4, 5, 4]], [20, [2, 3, 2]]];
 
