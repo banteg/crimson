@@ -30,14 +30,14 @@ export function bootGame(wasm, directory, seed) {
         },
     },
   );
-  const wasiImport = { ...wasi.wasiImport };
+  // On the import object itself: a copy would leave the WASI object unreferenced, and Node 20 collects it mid-run.
   if (seed !== undefined)
-    wasiImport.random_get = (at, length) => {
+    wasi.wasiImport.random_get = (at, length) => {
       const bytes = new Uint8Array(game.memory.buffer, at, length);
       for (let i = 0; i < length; i++) bytes[i] = seed >>> (8 * (i % 4));
       return 0;
     };
-  const instance = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasiImport, host });
+  const instance = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi.wasiImport, host });
   game = instance.exports;
   wasi.initialize(instance);
   if (!game.game_start()) throw Error("startup failed");
