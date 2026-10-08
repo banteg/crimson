@@ -12,7 +12,8 @@ WASM module; it verifies replays and agrees with Python under both bug policies.
 Native behavior is established from the executable and recovered source;
 passing port regression tests alone does not establish parity with the original.
 
-Start with [setup](../contributor/setup.md) or [coverage and scope](status.md).
+Start with [setup](../contributor/setup.md), [coverage and scope](status.md), or the
+[feature matrix](feature-matrix.md) of the Python port and the web and native clients.
 
 Python remains the fast iteration platform and records ranked runs. The core
 also builds the whole recovered game into a WASM module that plays the original

@@ -81,7 +81,8 @@ the reverse engineering that ties them to the original executable.
 -   [**Rewrite**](rewrite/index.md)
 
     The Python port and the recovered core: architecture, module map, debug
-    views, and parity status.
+    views, parity status, and a [feature matrix](rewrite/feature-matrix.md) of
+    every client.
 
 -   [**Reverse engineering**](re/index.md)
 
