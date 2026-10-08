@@ -32,7 +32,14 @@ DECOMP_DIRS = (
     "third_party/",
     "analysis/",
 )
-SERVICE_DIRS = ("service/",)
+SERVICE_DIRS = (
+    "service/",
+    "crimson-core/",
+    "decomp/",
+    "third_party/headers/",
+    "tools/match/include/",
+    "tools/native/data_definitions/",
+)
 SHARED_FILES = ("pyproject.toml", "uv.lock", "scripts/ci_changed_paths.py")
 DOC_SUFFIXES = {".md", ".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp", ".css"}
 

@@ -40,19 +40,24 @@ jobs:
     if: needs.changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: service
     steps:
       - uses: actions/checkout@v5
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: "0.17.0"
+      - name: Build verifier WASM for Worker tests
+        run: python3 crimson-core/build.py --target wasm
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
           cache: npm
           cache-dependency-path: service/package-lock.json
       - run: npm ci
+        working-directory: service
       - run: npm run check
+        working-directory: service
       - run: npm test
+        working-directory: service
 
   gate:
     name: service-gate

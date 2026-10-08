@@ -18,6 +18,7 @@ from scripts.ci_changed_paths import changed_paths, relevant
         ("client", "third_party/SDL3/header.h", True),
         ("decomp", "analysis/decomp/1.9.93.json", True),
         ("service", "service/src/index.ts", True),
+        ("service", "crimson-core/host/api.h", True),
         ("service", "docs/index.md", False),
     ],
 )
