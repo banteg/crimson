@@ -6,146 +6,193 @@ tags:
 
 # Watching replays
 
-The plan for watching any run from the high score screen, in every client:
-your own runs and the leaderboard's. Each client already records every run and
-the service already serves every ranked run's replay; what is missing is a link
-from a high score row to its replay, and a way to play it inside the game.
+The plan for watching runs from the high score screen, in every client: your
+own runs and the leaderboard's. Each client already records its runs and the
+service already serves every ranked run's replay. Missing are a link from a
+high score row to its replay, and playback inside the game.
 
 We own every client, the service and the formats between them, so this changes
 them where that is cleaner rather than working around them.
 
 ## Decisions
 
-- **Watch** shows on every row whose replay the client can play: local runs it
-  recorded and leaderboard runs.
-- A replay recorded by another `game_version` plays with a warning. A replay
-  the client knows it cannot play, an older replay format or a version before
-  the current rules epoch, shows why instead of Watch.
-- A perk pick shows as a popup: the perks that were offered, with the chosen
-  one marked. Playback does not stop for it.
+- **Watch** shows on every row whose replay the client can play.
+- Watch needs the same simulation rules. A replay recorded under other rules,
+  or in a format the client cannot read, says so instead of offering Watch. A
+  replay from another build under the same rules plays, naming the build it
+  came from.
+- A perk pick shows as a popup: the offered perks, the chosen one marked.
+  Playback does not stop for it.
 
-## One replay format, one naming
+## What each client can play
 
-Every client saves a `.crd` (format 30) for every run, named by its seed:
-`replays/<mode>-<seed>.crd`, with `-1`, `-2`... when a name is taken.
+| Run | Python port | Web and native client |
+| --- | --- | --- |
+| One player, Survival, Rush, Quests | Yes | Yes |
+| Co-op | Yes | No: the session simulates one player |
+| Typ-o-Shooter, Tutorial | Yes | No: the verifier does not run them |
+| Recorded by the other client | Yes | Yes, within the row above |
+
+The web and native client records only the runs it can play back, which are
+the runs it plays as sessions today (one player at 1024x768). Playback shows
+the 1024x768 run scaled to the window. A run it cannot play shows "This run
+needs the Python port" on its card.
+
+## Replays
+
+Every client saves a `.crd` for every run it can play back, numbered:
+`replays/<n>-<mode>.crd`, where `n` is one more than the highest number in
+`replays/`. A replay is listed only once its file is written whole.
 
 - The Python port renames its `<mode>_<timestamp>.crd`.
-- The web and native client stops writing its raw recording (`.rsi`, the
-  verifier's transport) and writes the same `.crd` the ranked upload sends: the
-  payload writer in `host/ranked.inc` becomes the writer for every run, and a
-  ranked run uploads that file. The transport stays a service-side encoding.
+- The web and native client stops writing its raw recording (`.rsi`) and
+  writes `.crd`s with a general writer: the run's spec, its actual result
+  (`incomplete` for an abandoned run, not `death`), its ticks, and recorder
+  metadata the native client sets too. A ranked upload sends that same file.
 
-The `.rsi` files a browser holds today become unreadable; the clients' own
-earlier replays are not migrated.
+The `.rsi` recordings a browser holds today are not migrated.
 
-## A row names its run
+### The rules a replay was recorded under
 
-Both clients keep the original's 72-byte high score record. Its reserved word at
-`0x3C`, which the game's own scores never read and the duplicate check leaves out,
-holds the run's seed:
+Replay format 31 adds `rules`: an integer each client carries, raised whenever
+a change makes earlier replays play differently. It is what Watch compares;
+`game_version` stays the build, shown but not compared. Rules start at 1, and
+a format 30 replay counts as rules 1: no change since format 30 makes them play
+differently (the Survival board's top run, recorded with 0.12.2, verifies on
+0.13.1). The service decodes both formats and keeps ranking by `game_version`
+as the ranked rules say.
 
-- A local record gets it when the client saves the record for a run.
-- A leaderboard record gets it from the scores answer.
+## A row names its replay
 
-Watch finds the replay by seed: a local row opens `replays/<mode>-<seed>*.crd`
-whose result matches the record (mode, quest, score, time and kills); a
-leaderboard row looks its seed up in the board's scores answer and downloads
-that run. A record saved before this change has no seed and no Watch.
+Both clients keep the original's 72-byte high score record.
+
+- **A local record** holds its replay's number in the reserved word at `0x3C`,
+  which the game's scores never read and the original's duplicate check leaves
+  out. Zero is no replay: records saved before this change have none.
+- **A leaderboard row** is not written into the local tables any more. Each
+  client keeps the board's last scores answer and merges its rows into the
+  table when it shows it, as the Python port already does; every merged row
+  keeps its run id through the merge and the sort. The web and native client's
+  "Update scores" (`game_scores_received`) changes from saving records to
+  keeping the answer.
+- The scores answer gains `run`, the run's id.
 
 ## Service
 
-1. `runs.seed`: a migration adds the column; a script fills it for the stored
-   runs from their replays, and an upload sets it.
-2. The scores answer gains `run` (the run id) and `seed` for each score.
-   Clients that do not know them ignore them.
-3. `GET /runs/<id>.crd` already serves a visible run's replay. It gains a short
-   `cache-control` (the bytes never change; hiding, bans and deletions still
-   have to take effect) and the tests it lacks.
-
-Separately, the routes that take a run id serve a banned account's run; only the
-boards filter bans. That is a fix of its own.
+1. `run` in each score of the scores answer.
+2. Replay format 31 decoded beside 30 (above).
+3. The routes that take a run id (`/api/runs/<id>`, its timeline, its card and
+   `/runs/<id>.crd`) refuse a banned account's run, as the boards do.
+4. `/runs/<id>.crd` gains a short `cache-control`; hiding, bans and deletions
+   still take effect within it. Tests for the route, a 404 kept apart from a
+   failed download.
 
 ## Playability
 
-A client decides before offering Watch:
-
-| The replay | Watch |
+| The replay | The card |
 | --- | --- |
-| Decodes, same `game_version` | Plays |
-| Decodes, another `game_version` at or after the client's rules epoch | Plays, with "recorded with 0.12.2, it may play differently" |
-| Another replay format, or a `game_version` before the rules epoch | "Recorded with 0.11, which this version cannot play" |
-| Download failed or the run is gone | "This run is no longer on the leaderboard" |
+| Same rules | Watch (and the build, if another) |
+| Other rules | "Recorded under other rules (0.12.2)" |
+| Unreadable format | "Recorded by a version this one cannot read" |
+| A run this client cannot simulate | "This run needs the Python port" |
+| Gone from the leaderboard | "This run is no longer on the leaderboard" |
+| Download failed | "Could not download this run" |
 
-The rules epoch is a version each client carries, raised when a change makes
-earlier replays play differently. A replay that still plays differently, which
-the client finds when its result at the end differs from the recorded one, ends
-on "This run played differently in this version".
+During playback, a tick the simulation refuses stops playback on that tick
+with "This run stops playing here" and its tick. At the end, the full result is
+compared with the recorded one; a difference shows "This run played
+differently".
 
 ## Watching
 
 The same in every client:
 
 - **The high score screen** pins a row's card on click (hover still previews
-  the others). The pinned card shows Watch, the warning or the reason.
-- **Playback** runs the replay in the game's own view, with a replay strip
-  (time, length, speed). Esc returns to the scores with the row still pinned;
-  Space pauses; `[` and `]` change speed; Right skips 5 s and Page Down 30 s,
-  muted while skipping.
+  the others). The pinned card shows Watch or the reason.
+- **Playback** runs the replay in the game's own view under a replay strip
+  (time, length, speed). Esc returns to the scores with the row still pinned.
+  Space pauses at once. `[` and `]` change speed. Right skips 5 s and Page Down
+  30 s: a skip runs every tick, in bounded chunks per frame, with sound effects
+  muted; music still changes as it would.
 - **A perk pick** shows a popup beside the play area for a few seconds: the
   offered perks in the menu's order, the chosen one highlighted with its
-  description, and the level it came with. A menu closed without a pick shows
-  nothing.
+  description, and the level. The simulation reports each pick as it applies
+  it (the offers, the chosen index, the level and the tick); drawing the popup
+  never regenerates choices or draws random numbers. A menu closed without a
+  pick shows nothing.
 - **The end** holds the last frame under the run's result: how it ended, its
   score and time, and whether it played as recorded. Esc returns.
 
-Watching never changes the player's save, scores, statistics or replays.
+Watching writes nothing: no save, statistics, play counts, scores or replays.
+The writes are suppressed where they happen, not undone afterwards.
 
 ## Python port
 
-1. `ReplayPlaybackMode` becomes a screen: it takes the game's audio and console
-   instead of making its own, returns to the screen below it at the end, and
-   `crimson replay play` runs the same screen in the app.
-2. The replay saver names files by seed and reports the path; the high score
-   record reads and writes its seed at `0x3C`, set when a run's record is built
-   and when a leaderboard row is made.
-3. The leaderboard client keeps `run` and `seed` from the scores answer and
-   downloads `/runs/<id>.crd` on its worker into `replays/online/<id>.crd`.
-4. The high score view pins rows and pushes the playback screen; the perk popup
+1. `ReplayPlaybackMode` becomes a screen that uses the game's audio and console
+   instead of its own, holds its last frame until Esc, and returns to the screen
+   below it. `crimson replay play` runs the same screen in the app.
+2. Picks become presentation events carrying their offers.
+3. The replay saver numbers files and reports the path once written; the
+   record's builder stores the number at `0x3C`.
+4. Leaderboard rows keep their `run` from the merge to the card; Watch downloads
+   `/runs/<id>.crd` on the client's worker into `replays/online/<id>.crd`.
+5. The high score view pins rows and pushes the playback screen; the perk popup
    and the result panel are new widgets.
 
 ## Web and native client
 
-1. **Replays.** Every run saves its `.crd`; a ranked run's upload is that file
-   (above).
-2. **A `.crd` reader in the module.** The vendored zstd 1.5.7 gains its
-   decompressor beside the compressor, and a canonical msgpack reader joins the
-   writer, so the module reads its own replays, the Python port's and the
-   leaderboard's, native included.
-3. **A session plays from a source.** `host/session.inc` runs a session from the
-   player (as now) or from a replay: config, input and commands from the
-   replay; no settings carried into the save, no saved replay, no ranked
-   upload, no play counts, no high score entry and no results screen. Quest
-   completion saves the player's status inside the tick, so the session keeps
-   the player's status and restores it. A replay session ends on the high score
-   screen.
-4. **Viewer controls.** Pause is the run-down pause the client already has;
-   speed scales the time the session banks; a skip runs ticks muted.
-5. **High score screen.** The original's screen (`highscore_screen`), adapted:
-   pinned rows, the card's Watch, and the seed written where the record is
-   saved and where a leaderboard row arrives.
+1. **Replays.** The general `.crd` writer; numbered files; the number in the
+   record when the run's record is saved.
+2. **A `.crd` reader.** The vendored zstd 1.5.7 gains its decompressor and a
+   canonical msgpack reader joins the writer, with bounds on the sizes they
+   accept.
+3. **A playback session.** `host/session.inc` gains a session kind for playback:
+   config, input and commands from the replay; no settings carried back, no
+   recording, no upload. It is set up before the recovered `game_state_set`
+   runs, so the play counts it raises on entering gameplay and the status
+   `quest_mode_update` saves on completion are suppressed at the source. A tick
+   reports accepted, end of replay or refused, and only the first ends the
+   session normally. A perk command never opens the interactive menu.
+   Presentation random numbers stay legal while the session presents.
+4. **Viewer controls.** A viewer pause stops ticking at once, unlike the run's
+   own run-down pause; speed scales the time the session banks; a skip runs
+   ticks in bounded chunks with sound effects muted.
+5. **The high score screen** (`highscore_screen`), adapted: pinned rows, the
+   card's Watch, leaderboard rows merged from the kept answer.
 6. **The perk popup and result panel**, drawn with the original's panel, font
-   and perk names after the game's frame, as the Ranked box is.
-7. **Leaderboard runs** (web): a new host request has the page download
-   `/runs/<id>.crd` into a buffer the module reads. The native client has no
-   network yet, so it watches its own runs.
-8. **Checks.** A new check records a run, watches it from the high score screen
-   and requires the watched run to end in the recorded result, with the save,
-   the scores and `replays/` unchanged.
+   and perk names after the game's frame, as the Ranked box is. The session
+   records each pick's offers when it applies the pick.
+7. **Leaderboard runs** (web): a host request has the page download
+   `/runs/<id>.crd` into a buffer the module reads. Downloads are cached with a
+   size limit, and a storage quota failure is reported, not ignored. The native
+   client has no network yet and watches its own runs.
+
+## Privacy
+
+A Typ-o replay carries the local high score names its run read. The Python
+port plays them locally; they are not uploaded, since Typ-o does not rank.
+Leaderboard replays carry the name the player submitted, which a hidden name
+does not cover; the identity page should say so.
+
+## Checks
+
+- Each client watches its own recorded runs and the other client's (fixtures),
+  and the watched run reproduces the recorded result and intermediate state.
+- The web and native client refuses co-op, Typ-o and Tutorial replays with the
+  reason.
+- Abandoned runs, quest completion and early exit, a refused tick, speeds and
+  skips, audio on and off, watching twice in a row.
+- Malformed and oversized files, an unknown format, other rules.
+- No persistence write happens during playback (the file layer refuses one),
+  not merely identical files afterwards.
+- Hidden, banned and deleted leaderboard runs; a failed download; the browser's
+  quota.
 
 ## Order
 
-1. Service: `runs.seed`, `run` and `seed` in scores, the replay route's caching
-   and tests.
-2. Python: the playback screen, seed naming and links, then leaderboard Watch.
-3. Web and native: `.crd` replays and the reader, then the replay session with
-   local Watch, then the screen, popup and leaderboard Watch.
+1. Service: `run` in scores, format 31, run-route visibility, the replay
+   route's caching and tests.
+2. Python: format 31 and `rules`, numbered replays and record links, pick
+   events, the playback screen, then leaderboard Watch.
+3. Web and native: the general writer and the reader, then the playback session
+   with local Watch, then the screen, popup and leaderboard Watch.
