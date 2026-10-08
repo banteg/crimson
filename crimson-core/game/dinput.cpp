@@ -1,7 +1,8 @@
-// DirectInput 8 keyboard and mouse devices over the state the host delivers
-// before each frame (game_input). Keys are DirectInput scancodes.
+// DirectInput 8 keyboard, mouse and joystick devices over the state the host
+// delivers before each frame (game_input). Keys are DirectInput scancodes.
 #include "com_defaults.h"
 #include "host_abi.h"
+#include <stddef.h>
 #include <string.h>
 
 // Filled by the host; drained by the devices as Grim polls them.
@@ -13,6 +14,12 @@ struct HostInput {
   struct {
     unsigned char key, down;
   } key_events[32];
+  // A gamepad as the Logitech Dual Action the game's pad schemes are named for:
+  // left stick X/Y, right stick Z/Rz (-1000 to 1000), buttons (0x80 while
+  // held), and the d-pad as the hat (hundredths of a degree, or ~0 centred).
+  int pad_axes[4];
+  unsigned pad_hat;
+  unsigned char pad_buttons[32];
 };
 static HostInput input;
 extern "C" __attribute__((export_name("game_input"))) HostInput *game_input() { return &input; }
@@ -67,6 +74,46 @@ struct Device : UnimplementedIDirectInputDevice8A {
 };
 Device keyboard(true), mouse(false);
 
+// Always attached, so a pad plugged in after startup works; with none it rests.
+const GUID pad_guid = {0x6f1d2b70, 0xd5a0, 0x11cf, {0xbf, 0xc7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}};
+struct Joystick : UnimplementedIDirectInputDevice8A {
+  STDMETHOD_(ULONG, AddRef)(THIS) override { return 1; }
+  STDMETHOD_(ULONG, Release)(THIS) override { return 0; }
+  STDMETHOD(SetDataFormat)(THIS_ LPCDIDATAFORMAT) override { return DI_OK; }
+  STDMETHOD(SetCooperativeLevel)(THIS_ HWND, DWORD) override { return DI_OK; }
+  STDMETHOD(SetProperty)(THIS_ REFGUID, LPCDIPROPHEADER) override { return DI_OK; }
+  STDMETHOD(Acquire)(THIS) override { return DI_OK; }
+  STDMETHOD(Unacquire)(THIS) override { return DI_OK; }
+  STDMETHOD(Poll)(THIS) override { return DI_OK; }
+  // The axes, which Grim ranges to -1000..1000 (grim_joystick_configure_axis).
+  STDMETHOD(EnumObjects)(THIS_ LPDIENUMDEVICEOBJECTSCALLBACKA callback, LPVOID ref, DWORD) override {
+    static const DWORD offsets[] = {offsetof(DIJOYSTATE2, lX), offsetof(DIJOYSTATE2, lY), offsetof(DIJOYSTATE2, lZ),
+                                    offsetof(DIJOYSTATE2, lRz)};
+    for (DWORD i = 0; i < 4; ++i) {
+      DIDEVICEOBJECTINSTANCEA object = {};
+      object.dwSize = sizeof object;
+      object.dwOfs = offsets[i];
+      object.dwType = DIDFT_ABSAXIS | DIDFT_MAKEINSTANCE(i);
+      if (callback(&object, ref) == DIENUM_STOP)
+        break;
+    }
+    return DI_OK;
+  }
+  STDMETHOD(GetDeviceState)(THIS_ DWORD size, LPVOID data) override {
+    DIJOYSTATE2 state = {};
+    state.lX = input.pad_axes[0];
+    state.lY = input.pad_axes[1];
+    state.lZ = input.pad_axes[2];
+    state.lRz = input.pad_axes[3];
+    memset(state.rgdwPOV, 0xff, sizeof state.rgdwPOV);
+    state.rgdwPOV[0] = input.pad_hat;
+    memcpy(state.rgbButtons, input.pad_buttons, sizeof input.pad_buttons);
+    memcpy(data, &state, size < sizeof state ? size : sizeof state);
+    return DI_OK;
+  }
+};
+Joystick joystick;
+
 struct DirectInput : UnimplementedIDirectInput8A {
   STDMETHOD_(ULONG, AddRef)(THIS) override { return 1; }
   STDMETHOD_(ULONG, Release)(THIS) override { return 0; }
@@ -75,12 +122,24 @@ struct DirectInput : UnimplementedIDirectInput8A {
       *device = &keyboard;
     else if (!memcmp(guid, &GUID_SysMouse, sizeof(GUID)))
       *device = &mouse;
+    else if (!memcmp(guid, &pad_guid, sizeof(GUID)))
+      *device = &joystick;
     else
       return E_FAIL;
     return DI_OK;
   }
-  // No joysticks yet.
-  STDMETHOD(EnumDevices)(THIS_ DWORD, LPDIENUMDEVICESCALLBACKA, LPVOID, DWORD) override { return DI_OK; }
+  STDMETHOD(EnumDevices)(THIS_ DWORD type, LPDIENUMDEVICESCALLBACKA callback, LPVOID ref, DWORD) override {
+    if (type == DI8DEVCLASS_GAMECTRL) {
+      DIDEVICEINSTANCEA instance = {};
+      instance.dwSize = sizeof instance;
+      instance.guidInstance = instance.guidProduct = pad_guid;
+      instance.dwDevType = DI8DEVTYPE_GAMEPAD;
+      strcpy(instance.tszInstanceName, "Gamepad");
+      strcpy(instance.tszProductName, "Gamepad");
+      callback(&instance, ref);
+    }
+    return DI_OK;
+  }
 };
 DirectInput direct_input;
 

@@ -46,7 +46,7 @@ they use:
 | --- | --- |
 | Direct3D 8 device, textures, surfaces, vertex and index buffers (about 40 methods) | [`platform.cpp`](game/platform.cpp) forwards draws, state and texels to the host |
 | D3DX texture loading (TGA, BMP, JPEG) | [`d3dx.cpp`](game/d3dx.cpp), with the IJG libjpeg 6a and zlib 1.1.3 Grim links |
-| DirectInput keyboard and mouse | [`dinput.cpp`](game/dinput.cpp): device state the host delivers each frame |
+| DirectInput keyboard, mouse and joystick | [`dinput.cpp`](game/dinput.cpp): device state the host delivers each frame; an SDL gamepad is the joystick, laid out as the Logitech Dual Action the game's pad schemes are named for |
 | Grim's window procedure and run loop | [`frame.cpp`](game/frame.cpp): one loop pass per host frame; window messages as calls |
 | `grim.dll`'s embedded font and splash | [`resources.cpp`](game/resources.cpp) reads them from `grim.dll` |
 | Files, registry, threads, WinInet, DLLs | [`win32.cpp`](game/win32.cpp): Windows paths under the game directory, a registry file, threads that run to completion, offline WinInet, no DLLs |
@@ -169,9 +169,16 @@ pad aim distance (verifier 128, original 96; recorded pad aim replaces it).
 
 The native client embeds the module through `wasm2c`, so the simulation keeps
 wasm32 layout everywhere. The browser build uses the same host through
-Emscripten. The verifier converges onto the game module once the client plays
-sessions: the Worker instantiates the same module with presentation imports
-that are never called, and the 64-bit native core build retires.
+Emscripten.
+
+The verifier stays its own artifact. The plan was for it to converge onto the
+game module once the client played sessions; measured, the game module
+verifies a 21,000-tick run about as fast as the verifier (370 against 300 ms
+in Node) but is sixteen times larger (1.8 MB against 109 KB gzipped), needs
+WASI and host imports, and would change bytes whenever a menu or a texture
+loader does. The import-free verifier remains the trust anchor, and every
+client build is held to it instead: `game_check.py` in CI, and the checks
+above with the game files locally.
 
 ### Assets
 
@@ -181,8 +188,9 @@ launch). The executable asks for music as `music\<name>.ogg`, which no PAQ
 entry matches, so it plays the loose files, as the GOG release ships them; the
 in-game tunes are whatever `music\game_tunes.txt` adds. The asset host's PAQs
 are the Python port's repack, with forward-slash names and replaced art, which
-the original lookup cannot read; serving the original files as well would let
-the client and CI fetch them.
+the original lookup cannot read. The web client takes the player's own game
+folder when no URL serves the files, so it never needs to host them; serving
+them would let CI run the checks that need them.
 
 ## Stack
 
@@ -239,10 +247,11 @@ no cross-origin isolation.
 | 2. Native client | The whole executable in the module; SDL3/OpenGL host over `wasm2c`; the original game boots, menus and runs play | Done ([#552](https://github.com/banteg/crimson/pull/552)) |
 | 3. Web client | The same host through Emscripten; game files in IndexedDB | Done ([#553](https://github.com/banteg/crimson/pull/553)) |
 | 4. Audio | DirectSound mixed in the module, vorbisfile over stb_vorbis; the host plays the pulled mix | Done ([#554](https://github.com/banteg/crimson/pull/554)) |
-| 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates with the game files and audio loaded | This change |
-| 6. Verifier convergence | The service and gate run the game module; the native core retires | |
-| 7. Product parity | Controllers, letterboxing options, replay browsing, `.crd` replays and ranked upload | |
-| 8. Distribution | Packaged desktop builds and the hosted web build | |
+| 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates with the game files and audio loaded | Done ([#555](https://github.com/banteg/crimson/pull/555)) |
+| 6. Verifier convergence | Dropped: the verifier stays its own artifact and holds every client build to it ([Packaging](#packaging)) | |
+| 7. Product parity | Gamepads as the original's joystick; the web client takes the player's own game folder | This change |
+| 8. Distribution | CI builds of the native and web clients; packaged desktop builds; the hosted web build | |
+| 9. Ranked play from the client | `.crd` replays, the leaderboard's signed upload, replay browsing | |
 
 ## Acceptance gates
 

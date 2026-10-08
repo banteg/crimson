@@ -8,15 +8,19 @@
   html, body { margin: 0; height: 100%; background: #000; color: #ccc; font: 14px sans-serif; overflow: hidden; }
   canvas { display: block; width: 100vw; height: 100vh; outline: none; }
   #status { position: fixed; inset: auto 0 1rem 0; text-align: center; pointer-events: none; }
+  #pick { position: fixed; inset: 40% 0 auto 0; text-align: center; }
+  #pick label { padding: 0.6rem 1rem; border: 1px solid #666; border-radius: 4px; cursor: pointer; }
+  #pick input { display: none; }
 </style>
 </head>
 <body>
 <canvas id="canvas" tabindex="-1"></canvas>
 <div id="status">Loading…</div>
+<div id="pick" hidden><label>Choose your Crimsonland folder…<input type="file" webkitdirectory></label></div>
 <script>
   // The game reads and writes its directory, /game, kept in IndexedDB. Files it
   // lacks (grim.dll, two PAQs and the music) come from ?assets=<url>, default
-  // ./game/.
+  // ./game/, or else from the player's own game folder.
   const ASSETS = ["grim.dll", "crimson.paq", "sfx.paq", "music/game_tunes.txt",
     ...["intro", "shortie_monk", "crimson_theme", "crimsonquest", "gt1_ingame", "gt2_harppen"].map((n) => `music/${n}.ogg`)];
   const base = new URLSearchParams(location.search).get("assets") ?? "game/";
@@ -70,15 +74,50 @@
     return syncing;
   }
 
+  const store = (name, bytes) => {
+    FS.mkdirTree("/game/" + name.slice(0, name.lastIndexOf("/") + 1));
+    FS.writeFile("/game/" + name, bytes);
+  };
+  const missing = () => ASSETS.filter((name) => !FS.analyzePath("/game/" + name).exists);
+
+  // The files the player picks, matched by name inside the chosen folder.
+  function pickFolder() {
+    const pick = document.getElementById("pick");
+    pick.hidden = false;
+    status.textContent = "";
+    return new Promise((resolve) => {
+      pick.querySelector("input").onchange = async (event) => {
+        const files = new Map(
+          [...event.target.files].map((f) => [f.webkitRelativePath.split("/").slice(1).join("/").toLowerCase(), f]),
+        );
+        // The whole music folder: game_tunes.txt can name tunes of the player's own.
+        const wanted = new Set([...missing(), ...[...files.keys()].filter((name) => name.startsWith("music/"))]);
+        for (const name of wanted) {
+          const file = files.get(name);
+          if (file) store(name, new Uint8Array(await file.arrayBuffer()));
+        }
+        const still = missing();
+        if (still.length) {
+          status.textContent = "That folder lacks " + still.join(", ") + ".";
+          return;
+        }
+        pick.hidden = true;
+        resolve();
+      };
+    });
+  }
+
   async function hydrate() {
     await new Promise((resolve, reject) => FS.syncfs(true, (error) => (error ? reject(error) : resolve())));
-    for (const name of ASSETS) {
-      if (FS.analyzePath("/game/" + name).exists) continue;
-      status.textContent = "Downloading " + name + "…";
-      FS.mkdirTree("/game/" + name.slice(0, name.lastIndexOf("/") + 1));
-      const response = await fetch(new URL(name, new URL(base, location.href)));
-      if (!response.ok) throw Error(name + ": " + response.status);
-      FS.writeFile("/game/" + name, new Uint8Array(await response.arrayBuffer()));
+    try {
+      for (const name of missing()) {
+        status.textContent = "Downloading " + name + "…";
+        const response = await fetch(new URL(name, new URL(base, location.href)));
+        if (!response.ok) throw Error(name + ": " + response.status);
+        store(name, new Uint8Array(await response.arrayBuffer()));
+      }
+    } catch {
+      await pickFolder();
     }
     hydrated = true;
   }
