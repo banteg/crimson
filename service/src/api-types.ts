@@ -38,8 +38,10 @@ export interface BoardView {
   rows: BoardRow[];
 }
 
-// A board row as the game's high score screen shows it: the run's own name and the fields of a high score record.
+// A board row as the game's high score screen shows it: the run's id (its replay is /runs/<run>.crd), its own name
+// and the fields of a high score record.
 export interface GameScore {
+  run: string;
   name: string;
   score: number;
   elapsed_ms: number;
