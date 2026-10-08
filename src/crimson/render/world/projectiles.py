@@ -436,6 +436,10 @@ def _draw_streak(
     # Ion Gun Master stretches the chain's reach, not its thickness.
     reach = effect_scale * (1.2 if PerkId.ION_GUN_MASTER in frame.state.perks else 1.0) * 40.0
     tint = RGBA(0.5, 0.6, 1.0, base_alpha).to_rl()
+    # Each strip stretches the glow's centre column, so native ends it in a hard
+    # cut that the smaller creature glow cannot hide (original bug 36). The
+    # rewrite closes both ends with the glow's halves, which continue that column.
+    capped = not frame.state.preserve_bugs
     # Native walks `creature_find_in_radius(pos, reach, 1)`: the inner strip, the
     # outer strip, then the glow on that creature, one creature at a time.
     for creature in frame.creatures.entries[1:]:
@@ -452,15 +456,21 @@ def _draw_streak(
         rl.rl_begin(rd.RL_QUADS)
         for half in (10.0, 14.0):
             offset = side * (half * effect_scale * scale)
+            # Body, then the end caps: the glow's left half before the shot, its right half past the creature.
+            quads = [(screen, target, 0.625, 0.625)]
+            if capped:
+                along = side_dir * (half * effect_scale * scale)
+                quads += [(screen - along, screen, 0.5, 0.625), (target, target + along, 0.625, 0.75)]
             rl.rl_color4ub(tint.r, tint.g, tint.b, tint.a)
-            for point, v in (
-                (screen - offset, 0.0),
-                (screen + offset, 0.25),
-                (target + offset, 0.25),
-                (target - offset, 0.0),
-            ):
-                rl.rl_tex_coord2f(0.625, v)
-                rl.rl_vertex2f(point.x, point.y)
+            for start, end, u_start, u_end in quads:
+                for point, u, v in (
+                    (start - offset, u_start, 0.0),
+                    (start + offset, u_start, 0.25),
+                    (end + offset, u_end, 0.25),
+                    (end - offset, u_end, 0.0),
+                ):
+                    rl.rl_tex_coord2f(u, v)
+                    rl.rl_vertex2f(point.x, point.y)
         rl.rl_end()
         rl.rl_set_texture(0)
         _draw_atlas(
