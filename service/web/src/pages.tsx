@@ -223,7 +223,7 @@ async function home(): Promise<Screen> {
         <>
           <p>
             Crimsonland, the 2003 top-down shooter, back in your browser. It's the original game rebuilt from its own code, so it plays
-            exactly like you remember, now with modern gamepads and a cheat-proof leaderboard.
+            exactly like you remember, now with modern gamepads and a leaderboard where every score is verified by replay.
           </p>
           <PlayGame />
         </>
@@ -458,7 +458,7 @@ const ABOUT: Screen = {
         <p>
           I reverse engineered the original game back into C/C++ source that compiles to the same machine code as the original .exe. That
           source is what you <a href="/play/" data-native>play in your browser</a>. It plays exactly like you remember, the same weapons,
-          perks, quests and bugs, because it <em>is</em> the same code. On top of that it supports modern gamepads and has an online
+          perks and quests, because it <em>is</em> the same code. On top of that it supports modern gamepads and has an online
           leaderboard. Your saves are kept in your browser, and the original art and sound are used with permission from 10tons.
         </p>
       </>
@@ -474,12 +474,13 @@ const ABOUT: Screen = {
           Survival is ranked by experience and quests by time, with a separate board for hardcore. Only your best run counts.
         </p>
         <p>
-          It can't be cheated, because a score is not a number you send. It's a recording of every input in the whole run, signed with your
-          key. The server runs the same game code and plays the recording from start to finish. The score only counts if the result
-          matches.
+          Every score comes with a recording of the run. The server plays it back using the same game code and checks that the result
+          matches. Anyone can download the replay and verify it themselves. Bots can produce valid replays too, so verification confirms
+          the score, not whether a human played.
         </p>
         <p>
-          Ranked runs are the same for everyone: one player, a fresh save, and the <a href={BUGS}>original bugs</a> fixed.
+          Ranked runs on each board use the same starting conditions: one player, a standard progression profile, and documented fixes
+          for <a href={BUGS}>bugs in the original game</a>.
         </p>
       </>
     ),
@@ -489,7 +490,8 @@ const ABOUT: Screen = {
         <p>
           You don't need to sign up. The game makes a keypair on first launch, and that keypair is your account. You show up under the name
           from your latest run, and your <em>Profile</em> in the Play Game menu lists every name you've used. Link GitHub, Discord or X to
-          show your handle instead, so no one can take your name, and to keep your runs when you switch computers or clear your browser's site data.
+          show your handle so other players can identify you by your linked accounts, and to keep your runs when you switch computers or
+          clear your browser's site data.
         </p>
         <h3>Replays, other ports and docs</h3>
         <p>
