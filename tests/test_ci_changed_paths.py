@@ -19,6 +19,8 @@ from scripts.ci_changed_paths import changed_paths, relevant
         ("decomp", "analysis/decomp/1.9.93.json", True),
         ("service", "service/src/index.ts", True),
         ("service", "crimson-core/host/api.h", True),
+        ("service", "src/grim/assets.py", True),
+        ("service", "uv.lock", True),
         ("service", "docs/index.md", False),
     ],
 )
