@@ -15,7 +15,10 @@ from ..sim.commands import GameCommand
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
 
-REPLAY_FORMAT_VERSION = 30
+REPLAY_FORMAT_VERSION = 31
+# The simulation rules this build plays: raised whenever a change makes earlier replays play differently. A replay
+# plays back only under the rules it was recorded under (docs/rewrite/watch-replays.md).
+REPLAY_RULES = 1
 # Replays step a fixed 60 Hz schedule; every tick uses this float32 delta.
 REPLAY_TICK_RATE = 60
 REPLAY_TICK_DT = f32(1.0 / REPLAY_TICK_RATE)
@@ -188,8 +191,10 @@ class Recorder(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 
 class Replay(msgspec.Struct, forbid_unknown_fields=True):
     format_version: int
-    # The rules the run was recorded under: the build of the simulation and ranked rules it follows.
+    # The build that recorded the run, which the ranked rules version boards by.
     game_version: str
+    # The simulation rules the run plays under (REPLAY_RULES).
+    rules: int
     recorder: Recorder
     run: RunSpec
     result: RunResult

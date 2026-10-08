@@ -128,13 +128,14 @@ static void ranked_result(Msgpack &m) {
   m.str("most_used_weapon_id"), m.integer(best);
 }
 
-// The replay (src/crimson/replay/types.py Replay, format 30): the run's
-// configuration, its claimed result and every tick the recording holds.
+// The replay (src/crimson/replay/types.py Replay): the run's configuration,
+// its claimed result and every tick the recording holds.
 static std::vector<uint8_t> ranked_payload() {
   Msgpack m;
-  m.map(6);
-  m.str("format_version"), m.integer(30);
+  m.map(7);
+  m.str("format_version"), m.integer(CRIMSON_REPLAY_FORMAT);
   m.str("game_version"), m.str(CRIMSON_GAME_VERSION);
+  m.str("rules"), m.integer(CRIMSON_REPLAY_RULES);
   m.str("recorder"), m.map(3);
   m.str("client"), m.str("crimson-core");
   m.str("version"), m.str(CRIMSON_GAME_VERSION);

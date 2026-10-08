@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
-from .types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, current_recorder, current_replay_game_version
+from .types import (
+    REPLAY_FORMAT_VERSION,
+    REPLAY_RULES,
+    Replay,
+    ReplayTick,
+    current_recorder,
+    current_replay_game_version,
+)
 
 
 class ReplayRecorder:
@@ -32,6 +39,7 @@ class ReplayRecorder:
         return Replay(
             format_version=REPLAY_FORMAT_VERSION,
             game_version=self._game_version,
+            rules=REPLAY_RULES,
             recorder=self._recorder,
             run=self._run,
             result=result,

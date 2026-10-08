@@ -42,8 +42,9 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `30` |
-| `game_version` | str | Rules the run was recorded under: the build of the simulation and ranked rules (see below) |
+| `format_version` | int | `31` |
+| `game_version` | str | The build that recorded the run, which boards are versioned by (see below) |
+| `rules` | int | The simulation rules the run plays under (since v31) |
 | `recorder` | `Recorder` | The program that recorded the run (since v30) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
@@ -54,11 +55,15 @@ installed package (`0.11.0`), else `<version>+g<12-hex commit>`. A checkout
 whose `src/` differs from that commit (modified or new unignored files) appends
 `.dirty`.
 
+`rules` is a number each build carries (`REPLAY_RULES`), raised whenever a change makes earlier replays play
+differently: a replay plays back only under the rules it was recorded under. Readers accept v30, which had no
+`rules`, as rules 1; writers always write v31.
+
 `Recorder` is a map of `client` (`crimson` for this port; another client, such as a native crimson-core build,
 names itself), `version` (that client's own build, in `game_version`'s form) and `platform` (`<os>-<cpu>`, such
 as `macos-arm64`; `unknown` for the fixtures recorded before v30). Each is 1..64 printable ASCII characters.
-Verification ignores it: `game_version` names the rules, `recorder` who followed them, so boards can show, filter
-or withdraw runs by client.
+Verification ignores it: `game_version` names the build, `recorder` who recorded the run, so boards can show,
+filter or withdraw runs by client.
 
 ### RunSpec
 
