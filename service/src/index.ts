@@ -185,7 +185,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
 
   // The site: its files, else its page with the route's title and preview tags.
   // Quest routes end in ".1" and such, so only real file extensions count as files.
-  if (/\.(?:js|css|png|svg|ico|woff2|txt|map|webmanifest|wasm)$/i.test(url.pathname)) return env.ASSETS.fetch(request);
+  if (/\.(?:js|css|png|jpg|svg|ico|woff2|txt|map|webmanifest|wasm)$/i.test(url.pathname)) return env.ASSETS.fetch(request);
   return shell(env, url);
 }
 
@@ -197,6 +197,8 @@ interface Preview {
 }
 
 const SITE_DESCRIPTION = "Play Crimsonland in your browser, and verified leaderboards where every score is a replay the server re-simulates.";
+// The preview of a page with no image of its own: a moment of the Survival board's top run (public/og.jpg).
+const SITE_IMAGE = { path: "/og.jpg", width: CARD_WIDTH, height: CARD_HEIGHT };
 
 async function routePreview(env: Env, url: URL): Promise<Preview> {
   const path = url.pathname;
@@ -229,6 +231,7 @@ async function shell(env: Env, url: URL): Promise<Response> {
 // A page with its title and the tags shared links preview.
 function withPreview(page: Response, url: URL, preview: Preview): Response {
   const full = preview.title ? `${preview.title} · crimson.land` : "crimson.land";
+  const image = preview.image ?? { ...SITE_IMAGE, url: `${url.origin}${SITE_IMAGE.path}` };
   const escape = (text: string) => text.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
   const meta = (attribute: string, entries: [string, string | number][]) =>
     entries.map(([key, value]) => `<meta ${attribute}="${key}" content="${escape(String(value))}">`);
@@ -238,12 +241,12 @@ function withPreview(page: Response, url: URL, preview: Preview): Response {
       ["og:title", full],
       ["og:description", preview.description],
       ["og:url", url.toString()],
-      ...(preview.image
-        ? ([["og:image", preview.image.url], ["og:image:width", preview.image.width], ["og:image:height", preview.image.height]] as [string, string | number][])
-        : ([["og:image", `${url.origin}/ui/sign.png`]] as [string, string][])),
+      ["og:image", image.url],
+      ["og:image:width", image.width],
+      ["og:image:height", image.height],
     ]),
     // X shows a large image only when asked to.
-    ...meta("name", [["twitter:card", preview.image ? "summary_large_image" : "summary"]]),
+    ...meta("name", [["twitter:card", "summary_large_image"]]),
   ];
   return new HTMLRewriter()
     .on("title", { element: (element) => void element.setInnerContent(full) })
