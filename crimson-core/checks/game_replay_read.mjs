@@ -42,5 +42,23 @@ for (const name of fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).so
   if (!recording.equals(fs.readFileSync(expected))) throw Error(`${name}: reads differently from checks/replay.py`);
   ++read;
 }
+// Broken replays read as unreadable, and never trap the module.
+const broken = {
+  truncated: "data[: len(data) // 2]",
+  "too many commands": "pack({**wire, 'ticks': [[wire['ticks'][0][0], [{'type': 'perk_menu_open', 'player_index': 0}] * 17]]})",
+  "infinite aim": "pack({**wire, 'ticks': [[[[0.0, 0.0, 1e300, 0.0, 0]], []]]})",
+  "no run": "pack({'format_version': wire['format_version'], 'rules': 1})",
+};
+for (const [name, expression] of Object.entries(broken)) {
+  const file = path.join(directory, "replays", "broken.crd");
+  const script =
+    "import sys, msgspec, zstandard; data = open(sys.argv[1], 'rb').read(); " +
+    "wire = msgspec.msgpack.decode(zstandard.ZstdDecompressor().decompress(data)); " +
+    "pack = lambda value: zstandard.ZstdCompressor().compress(msgspec.msgpack.encode(value)); " +
+    `open(sys.argv[2], 'wb').write(${expression})`;
+  execFileSync("uv", ["run", "--no-sync", "python", "-c", script, path.join(fixtures, "survival-135302.crd"), file]);
+  memory().write("replays/broken.crd\0", game.game_replay_path(), "latin1");
+  if (game.game_replay_open()) throw Error(`a replay with ${name} reads as playable`);
+}
 fs.rmSync(scratch, { recursive: true });
-console.log(JSON.stringify({ read }));
+console.log(JSON.stringify({ read, broken: Object.keys(broken).length }));

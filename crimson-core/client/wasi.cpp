@@ -318,4 +318,31 @@ u32 w2c_wasi__snapshot__preview1_path_create_directory(struct w2c_wasi__snapshot
     return errno_code();
   return ESUCCESS;
 }
+// A replay is written aside, then renamed into place (host/replay.inc).
+u32 w2c_wasi__snapshot__preview1_path_rename(struct w2c_wasi__snapshot__preview1 *, u32 from_fd, u32 from_at,
+                                             u32 from_length, u32 to_fd, u32 to_at, u32 to_length) {
+  File *from_dir = file(from_fd), *to_dir = file(to_fd);
+  if (!from_dir || !from_dir->dir || !to_dir || !to_dir->dir)
+    return EBADF_;
+  std::string from_relative = guest_string(from_at, from_length), to_relative = guest_string(to_at, to_length);
+  std::string from, to;
+  if (!resolve(from_dir->path.empty() ? from_relative : from_dir->path + "/" + from_relative, from) ||
+      !resolve(to_dir->path.empty() ? to_relative : to_dir->path + "/" + to_relative, to))
+    return EACCES_;
+  if (rename(from.c_str(), to.c_str()))
+    return errno_code();
+  return ESUCCESS;
+}
+u32 w2c_wasi__snapshot__preview1_path_unlink_file(struct w2c_wasi__snapshot__preview1 *, u32 dirfd, u32 path_at,
+                                                  u32 path_length) {
+  File *dir = file(dirfd);
+  if (!dir || !dir->dir)
+    return EBADF_;
+  std::string relative = guest_string(path_at, path_length), host;
+  if (!resolve(dir->path.empty() ? relative : dir->path + "/" + relative, host))
+    return EACCES_;
+  if (unlink(host.c_str()))
+    return errno_code();
+  return ESUCCESS;
+}
 }

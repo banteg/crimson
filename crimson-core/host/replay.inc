@@ -3,6 +3,7 @@
 // its own (src/crimson/replay/library.py) and named by its high score record
 // (docs/rewrite/watch-replays.md). A ranked run uploads the same replay.
 #include "../game/leaderboard.h"
+#include <cmath>
 #include <dirent.h>
 #include <string>
 
@@ -190,7 +191,8 @@ static int replay_reserve_number() {
 }
 
 // Saves the run's replay, whole or not at all: written aside, then renamed.
-// Returns its number, or 0 for a run left before its first tick.
+// Returns its number, or 0 when there is none: a run left before its first
+// tick, or a save that failed (its number stays used).
 static int replay_save(const std::vector<uint8_t> &payload) {
   if (live.replay.size() <= sizeof(PortableConfig))
     return 0;
@@ -200,12 +202,14 @@ static int replay_save(const std::vector<uint8_t> &payload) {
   char name[64];
   snprintf(name, sizeof name, "replays/%d-%s.crd", number, modes[cfg.mode]);
   std::vector<uint8_t> file = zstd_pack(payload);
-  if (FILE *fp = platform_fopen("replays/.writing", "wb")) {
-    bool written = fwrite(file.data(), 1, file.size(), fp) == file.size();
-    if (fclose(fp) == 0 && written)
-      rename("replays/.writing", name);
-  }
-  return number;
+  FILE *fp = file.empty() ? nullptr : platform_fopen("replays/.writing", "wb");
+  bool written = fp && fwrite(file.data(), 1, file.size(), fp) == file.size();
+  if (fp)
+    written = fclose(fp) == 0 && written;
+  if (written && rename("replays/.writing", name) == 0)
+    return number;
+  unlink("replays/.writing");
+  return 0;
 }
 
 extern "C" {
@@ -350,7 +354,7 @@ static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedRepl
       for (uint32_t m = r.map(); r.ok && m; --m) {
         std::string field = r.str();
         if (field == "quest_unlock_index") config.unlock = (uint32_t)r.integer();
-        else if (field == "quest_unlock_index_full") config.unlock_full = (uint32_t)r.integer();
+        else if (field == "quest_unlock_index_full") config.unlock_full = (uint32_t)r.integer(); // the replay format's key; name-audit: keep
         else if (field == "weapon_usage_counts") {
           uint32_t count = r.array();
           for (uint32_t i = 0; r.ok && i < count; ++i) {
@@ -369,26 +373,37 @@ static void replay_read_ticks(MsgpackReader &r, LoadedReplay &out) {
   for (uint32_t n = r.array(); r.ok && n && out.reason.empty(); --n) {
     if (r.array() != 2 || r.array() != 1 || r.array() != 5)
       return void(out.reason = "This run needs the Python port");
-    PortableInput input;
-    input.move_x = (float)r.real(), input.move_y = (float)r.real();
-    input.aim_x = (float)r.real(), input.aim_y = (float)r.real();
-    input.flags = (uint32_t)r.integer();
-    std::vector<PortableCommand> commands(r.array());
+    // Inputs are float32 values, stored as float64 (docs/formats/replay.md).
+    float axes[4];
+    for (float &axis : axes) {
+      double value = r.real();
+      axis = (float)value;
+      if (!std::isfinite(value) || (double)axis != value)
+        r.ok = false;
+    }
+    PortableInput input = {axes[0], axes[1], axes[2], axes[3], (uint32_t)r.integer()};
+    uint32_t count = r.array();
+    // A tick carries at most portable_step_many's commands (checks/replay.py).
+    if (!r.ok || count > 16)
+      return void(r.ok = false);
+    std::vector<PortableCommand> commands(count);
     for (PortableCommand &command : commands) {
       std::string type;
       int32_t choice = 0;
+      int64_t player = 0;
       for (uint32_t m = r.map(); r.ok && m; --m) {
         std::string field = r.str();
         if (field == "type") type = r.str();
+        else if (field == "player_index") player = r.integer();
         else if (field == "choice_index") choice = (int32_t)r.integer();
         else r.skip();
       }
       // Kind 1 picks a perk, kind 2 opens the menu (crimson-core/checks/replay.py); Typ-o's need the Python port.
+      if (player != 0) return void(out.reason = "This run needs the Python port");
       if (type == "perk_pick") command = {1, choice};
       else if (type == "perk_menu_open") command = {2, 0};
       else return void(out.reason = "This run needs the Python port");
     }
-    uint32_t count = (uint32_t)commands.size();
     const auto append = [&](const void *data, size_t size) {
       out.recording.insert(out.recording.end(), (const uint8_t *)data, (const uint8_t *)data + size);
     };
@@ -403,20 +418,23 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
   MsgpackReader r{payload.data(), payload.data() + payload.size()};
   PortableConfig config = {};
   int format = 0;
+  bool run = false;
   out.recording.resize(sizeof config);
   for (uint32_t n = payload.empty() ? (r.ok = false, 0) : r.map(); r.ok && n && out.reason.empty(); --n) {
     std::string key = r.str();
     if (key == "format_version") format = (int)r.integer();
     else if (key == "game_version") out.game_version = r.str();
     else if (key == "rules") out.rules = (int)r.integer();
-    else if (key == "run") replay_read_run(r, config, out);
+    else if (key == "run") replay_read_run(r, config, out), run = true;
     else if (key == "ticks") replay_read_ticks(r, out);
     else r.skip();
   }
   // Format 30 had no rules; its replays play under rules 1 (docs/formats/replay.md).
   if (format == 30)
     out.rules = 1;
-  if (!r.ok || (format != 30 && format != CRIMSON_REPLAY_FORMAT))
+  // A whole replay: its run, a tick, and nothing after its map.
+  bool whole = r.at == r.end && run && out.recording.size() > sizeof config && !out.game_version.empty();
+  if (out.reason.empty() && (!r.ok || !whole || (format != 30 && format != CRIMSON_REPLAY_FORMAT)))
     out.reason = "This version cannot read its replay";
   else if (out.reason.empty() && out.rules != CRIMSON_REPLAY_RULES)
     out.reason = "Recorded under other rules (" + out.game_version.substr(0, out.game_version.find('+')) + ")";
