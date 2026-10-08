@@ -21,6 +21,9 @@ struct HostInput {
   struct {
     unsigned char key, down;
   } key_events[32];
+  int pad_axes[4];
+  unsigned pad_hat;
+  unsigned char pad_buttons[32];
 };
 
 struct w2c_host {};
@@ -35,6 +38,7 @@ std::string game_directory = ".";
 SDL_Window *window;
 SDL_GLContext context;
 float wheel;
+SDL_Gamepad *gamepad;
 bool held[8];
 int hold_frames[8];
 
@@ -211,6 +215,36 @@ void run_script(int frame) {
   }
 }
 
+// The gamepad, as the Logitech Dual Action layout the module's joystick reports
+// (game/dinput.cpp): buttons 1-4 are the west, south, east and north faces, then
+// the shoulders, the triggers, back, start and the stick clicks.
+void pad(HostInput *in) {
+  memset(in->pad_axes, 0, sizeof in->pad_axes);
+  memset(in->pad_buttons, 0, sizeof in->pad_buttons);
+  in->pad_hat = ~0u;
+  if (!gamepad)
+    return;
+  static const SDL_GamepadAxis axes[] = {SDL_GAMEPAD_AXIS_LEFTX, SDL_GAMEPAD_AXIS_LEFTY, SDL_GAMEPAD_AXIS_RIGHTX,
+                                         SDL_GAMEPAD_AXIS_RIGHTY};
+  for (int i = 0; i < 4; ++i)
+    in->pad_axes[i] = SDL_GetGamepadAxis(gamepad, axes[i]) * 1000 / 32767;
+  static const SDL_GamepadButton buttons[] = {SDL_GAMEPAD_BUTTON_WEST,       SDL_GAMEPAD_BUTTON_SOUTH,
+                                              SDL_GAMEPAD_BUTTON_EAST,       SDL_GAMEPAD_BUTTON_NORTH,
+                                              SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER};
+  for (int i = 0; i < 6; ++i)
+    in->pad_buttons[i] = SDL_GetGamepadButton(gamepad, buttons[i]) ? 0x80 : 0;
+  in->pad_buttons[6] = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) > 16384 ? 0x80 : 0;
+  in->pad_buttons[7] = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) > 16384 ? 0x80 : 0;
+  static const SDL_GamepadButton rest[] = {SDL_GAMEPAD_BUTTON_BACK, SDL_GAMEPAD_BUTTON_START,
+                                           SDL_GAMEPAD_BUTTON_LEFT_STICK, SDL_GAMEPAD_BUTTON_RIGHT_STICK};
+  for (int i = 0; i < 4; ++i)
+    in->pad_buttons[8 + i] = SDL_GetGamepadButton(gamepad, rest[i]) ? 0x80 : 0;
+  int x = SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_DPAD_RIGHT) - SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_DPAD_LEFT);
+  int y = SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_DPAD_DOWN) - SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_DPAD_UP);
+  if (x || y)
+    in->pad_hat = ((int)lroundf(atan2f((float)x, (float)-y) * 18000 / (float)M_PI) + 36000) % 36000;
+}
+
 } // namespace
 
 u8 *client_memory() { return w2c_game_memory(&game)->data; }
@@ -243,7 +277,7 @@ void w2c_host_present(struct w2c_host *) {
 SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   if (argc > 1)
     game_directory = argv[1];
-  if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
+  if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMEPAD))
     client_fatal(SDL_GetError());
 #ifdef __EMSCRIPTEN__
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
@@ -322,6 +356,24 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
       input()->mouse_buttons[button] = down ? 0x80 : 0;
     break;
   }
+  case SDL_EVENT_GAMEPAD_ADDED:
+    if (!gamepad)
+      gamepad = SDL_OpenGamepad(event->gdevice.which);
+    break;
+  case SDL_EVENT_GAMEPAD_REMOVED:
+    if (gamepad && SDL_GetGamepadID(gamepad) == event->gdevice.which) {
+      SDL_CloseGamepad(gamepad);
+      gamepad = nullptr;
+      // Another pad still connected takes over.
+      int count;
+      if (SDL_JoystickID *pads = SDL_GetGamepads(&count)) {
+        for (int i = 0; i < count && !gamepad; ++i)
+          if (pads[i] != event->gdevice.which)
+            gamepad = SDL_OpenGamepad(pads[i]);
+        SDL_free(pads);
+      }
+    }
+    break;
   case SDL_EVENT_MOUSE_WHEEL:
     wheel += event->wheel.y * 120;
     break;
@@ -355,6 +407,7 @@ SDL_AppResult SDL_AppIterate(void *) {
     wheel = 0;
     w2c_game_game_mouse_move(&game, gx, gy);
   }
+  pad(input());
   int before = presented;
   ++frames;
   bool running = w2c_game_game_frame(&game);
