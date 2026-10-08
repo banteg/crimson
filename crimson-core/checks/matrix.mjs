@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import { compare } from "./compare.mjs";
 import {
   CORE,
+  index,
   loadCore,
   init,
   state,
@@ -86,6 +87,13 @@ const PERK = {
 // FIRE_BULLETS_KEY_DOWN_FLAG in src/crimson/replay/types.py: the G key.
 const G_KEY = 131072;
 
+// Snapshot byte offsets of the creature fields the bot reads every tick.
+const CREATURES = Array.from({ length: 384 }, (_, c) =>
+  Object.fromEntries(
+    ["active", "health", "pos_x", "pos_y"].map((f) => [f, index.get(`creatures[${c}].${f}`) * 4]),
+  ),
+);
+
 // `hunt` steers a bot towards fixed behaviour: `prefer` lists perks to pick when offered, `gKey` holds G at times.
 function play(cfg, bot, limit, scheme, hunt = {}) {
   init(e, cfg);
@@ -117,7 +125,7 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
     final;
   const mode = cfg.readUInt32LE(4);
   for (let tick = 0; tick < limit; tick++) {
-    state(e);
+    const snapshot = state(e);
     const f = (name) => field(e, name, true),
       u = (name) => field(e, name);
     const x = f("players[0].pos_x"),
@@ -126,12 +134,12 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
     let nearest = Infinity,
       target,
       active = 0;
-    for (let c = 0; c < 384; c++) {
-      if (!u(`creatures[${c}].active`) || f(`creatures[${c}].health`) <= 0)
+    for (const c of CREATURES) {
+      if (!snapshot.readUInt32LE(c.active) || snapshot.readFloatLE(c.health) <= 0)
         continue;
       active++;
-      const cx = f(`creatures[${c}].pos_x`),
-        cy = f(`creatures[${c}].pos_y`),
+      const cx = snapshot.readFloatLE(c.pos_x),
+        cy = snapshot.readFloatLE(c.pos_y),
         d = Math.hypot(cx - x, cy - y);
       if (d < nearest) {
         nearest = d;
