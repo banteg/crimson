@@ -102,6 +102,7 @@ def replace_once(text, old, new, src):
 SEAMS = (
     "game_state_set",
     "gameplay_update_and_render",
+    "highscore_sync_worker",
     "input_primary_just_pressed",
     "play_time_get",
     "sfx_entry_start_playback",

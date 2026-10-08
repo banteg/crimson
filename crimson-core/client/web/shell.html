@@ -392,11 +392,21 @@
       tell("Can't reach the leaderboard.");
     }
   }
+  // Update scores: waiting runs go first, then the board comes back to the screen.
+  async function scores() {
+    let answer = null;
+    try {
+      await upload();
+      const response = await post("/api/scores", Module.ccall("client_scores_request", "string", [], []));
+      if (response.ok) answer = await response.text();
+    } catch {}
+    Module.ccall("client_scores_received", null, ["string"], [answer]);
+  }
   setInterval(upload, 600000);
 
   var Module = {
-    // HOST_LEADERBOARD_PROFILE, HOST_LEADERBOARD_UPLOAD (game/host_abi.h).
-    leaderboard: (request) => (request === 1 ? profile() : upload()),
+    // HOST_LEADERBOARD_PROFILE, _UPLOAD and _SCORES (game/host_abi.h).
+    leaderboard: (request) => [profile, upload, scores][request - 1](),
     canvas,
     arguments: ["/game"],
     preRun: [() => {

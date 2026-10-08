@@ -6,7 +6,10 @@
 // client.py), signed by the player's key. The host uploads the outbox.
 #include "../game/host_abi.h"
 #include "../game/leaderboard.h"
+#include <cmath>
 #include <dirent.h>
+#include <string>
+#include <time.h>
 
 static bool ranked_enabled; // the host takes runs to the leaderboard (game_leaderboard_enable)
 extern "C" bool ranked_checked; // the Ranked box, which a launch starts unticked (play_game_menu_update)
@@ -26,7 +29,8 @@ static bool ranked_attempt() {
 }
 
 // The ranked rules (ranked_run_spec): full detail with violence on, no friendly
-// fire, the documented fixes, every quest unlocked and no weapon used yet.
+// fire, every quest unlocked and no weapon used yet; the documented fixes, as
+// every run plays.
 static void ranked_spec(PortableConfig &config) {
   config.unlock = config.unlock_full = 50;
   config.detail = 5;
@@ -34,7 +38,6 @@ static void ranked_spec(PortableConfig &config) {
   config.friendly_fire = 0;
   config.hardcore = config.mode == GAME_MODE_QUEST && config.hardcore;
   config.retry = 0;
-  config.preserve_bugs = 0;
   memset(config.weapon_usage, 0, sizeof config.weapon_usage);
 }
 
@@ -253,7 +256,153 @@ static int ranked_waiting() {
   return count;
 }
 
+// The high score screen's Update scores (highscore_sync_worker): the board on
+// screen comes from the leaderboard as the Python port shows it
+// (screens/high_scores_view/records.py): each run a received record, which
+// the original saves with its own and updates where it already holds the run.
+#include "crimsonland_highscore.h"
 extern "C" {
+extern int online_sync_status; // 1 while updating, 0 done, 6 failed (highscore_screen)
+void highscore_sync_worker_recovered(void *arg);
+void highscore_load_table_thunk(void);
+}
+// The board the screen asked for, kept for its answer: the screen's own
+// settings can change while the request is out.
+static struct {
+  game_mode_id_t mode;
+  int major, minor;
+  unsigned char hardcore;
+} scores_board_asked;
+static char scores_request[64];
+static std::vector<char> scores_response;
+
+// One-player Survival and quests have a board; other tables have none.
+static bool scores_board() {
+  bool quest = config_blob.game_mode == GAME_MODE_QUEST;
+  if (config_blob.player_count != 1 || (!quest && config_blob.game_mode != GAME_MODE_SURVIVAL))
+    return false;
+  scores_board_asked = {config_blob.game_mode, quest ? quest_stage_major : 0, quest ? quest_stage_minor : 0,
+                        (unsigned char)(quest && config_blob.hardcore)};
+  if (quest)
+    snprintf(scores_request, sizeof scores_request, "{\"board\": \"%s\", \"quest\": \"%d.%d\"}",
+             config_blob.hardcore ? "quests-hardcore" : "quests", quest_stage_major, quest_stage_minor);
+  else
+    snprintf(scores_request, sizeof scores_request, "{\"board\": \"survival\", \"quest\": \"\"}");
+  return true;
+}
+
+#include "json.inc"
+
+// A whole number in [0, max] under `key`.
+static bool scores_count(const Json &run, const char *key, double max, double &out) {
+  const Json *value = run.field(key, Json::NUMBER);
+  if (!value || value->number < 0 || value->number > max || value->number != floor(value->number))
+    return false;
+  out = value->number;
+  return true;
+}
+
+// A run of the service's board ({"scores": [{"name": ..., "score": ..., ...}]})
+// as the record the original keeps for it, or false when a field is missing
+// or out of the record's range.
+static bool scores_record(const Json &run, highscore_record_t &record) {
+  const Json *name = run.field("name", Json::STRING);
+  // accepted_at is in milliseconds, whole up to 2^53 as a double.
+  double score, elapsed, experience, weapon, fired, hit, kills, accepted_at;
+  if (!name || !scores_count(run, "score", UINT32_MAX, score) || !scores_count(run, "elapsed_ms", UINT32_MAX, elapsed) ||
+      !scores_count(run, "experience", UINT32_MAX, experience) ||
+      !scores_count(run, "most_used_weapon_id", std::size(game_status_blob.weapon_usage_counts) - 1, weapon) ||
+      !scores_count(run, "shots_fired", UINT32_MAX, fired) || !scores_count(run, "shots_hit", UINT32_MAX, hit) ||
+      !scores_count(run, "kills", UINT32_MAX, kills) || !scores_count(run, "accepted_at", 0x1p53, accepted_at))
+    return false;
+  bool quest = scores_board_asked.mode == GAME_MODE_QUEST;
+  snprintf(record.player_name, sizeof record.player_name, "%s", name->text.c_str());
+  record.game_mode_id = (unsigned char)scores_board_asked.mode;
+  record.quest_stage_major = (unsigned char)scores_board_asked.major;
+  record.quest_stage_minor = (unsigned char)scores_board_asked.minor;
+  record.score_xp = (unsigned)experience;
+  // A quest record's time is its final time, which the quest boards rank.
+  record.run_elapsed_ms = (unsigned)(quest ? score : elapsed);
+  record.most_used_weapon_id = (unsigned char)weapon;
+  record.shots_fired = (unsigned)fired;
+  record.shots_hit = (unsigned)hit;
+  record.creature_kill_count = (unsigned)kills;
+  // The day the board took the run.
+  time_t when = (time_t)(accepted_at / 1000);
+  if (struct tm *day = localtime(&when)) {
+    record.day = (unsigned char)day->tm_mday;
+    record.month = (unsigned char)(day->tm_mon + 1);
+    record.year_offset = (unsigned char)(day->tm_year + 1900 - 2000);
+    record.date_week = (unsigned char)highscore_iso_week(day->tm_year + 1900, day->tm_mon + 1, day->tm_mday);
+  }
+  record.flags = 1;
+  record.hardcore_marker = scores_board_asked.hardcore ? 0x75 : 0;
+  record.sentinel_pipe = 0x7c;
+  record.sentinel_ff = 0xff;
+  return true;
+}
+
+// Saves the received runs to the asked board's table: highscore_save_record
+// picks the table from the settings, and sets the active record up for each,
+// which the original keeps around a sync.
+static void scores_save(const std::vector<Json> &runs) {
+  highscore_record_t active = highscore_active_record;
+  game_mode_id_t mode = config_blob.game_mode;
+  int major = quest_stage_major, minor = quest_stage_minor;
+  unsigned char hardcore = config_blob.hardcore;
+  config_blob.game_mode = scores_board_asked.mode;
+  config_blob.hardcore = scores_board_asked.hardcore;
+  quest_stage_major = scores_board_asked.major;
+  quest_stage_minor = scores_board_asked.minor;
+  for (const Json &run : runs) {
+    highscore_record_t record = {};
+    if (scores_record(run, record))
+      highscore_save_record(&record);
+  }
+  config_blob.game_mode = mode;
+  config_blob.hardcore = hardcore;
+  quest_stage_major = major;
+  quest_stage_minor = minor;
+  highscore_active_record = active;
+}
+
+extern "C" {
+void highscore_sync_worker(void *arg) {
+  if (!ranked_enabled)
+    return highscore_sync_worker_recovered(arg);
+  // A table with no board is up to date, so Update all goes on past it.
+  if (!scores_board()) {
+    online_sync_status = 0;
+    return;
+  }
+  online_sync_status = 1;
+  host_leaderboard(HOST_LEADERBOARD_SCORES);
+}
+// The board the screen asks for, as the request's JSON body.
+__attribute__((export_name("game_scores_request"))) const char *game_scores_request() { return scores_request; }
+// Room for the service's answer, which the host writes, then hands over
+// (game_scores_received), or a negative size when it could not fetch it.
+__attribute__((export_name("game_scores_buffer"))) char *game_scores_buffer(int size) {
+  scores_response.assign(size + 1, 0);
+  return scores_response.data();
+}
+__attribute__((export_name("game_scores_received"))) void game_scores_received(int size) {
+  Json answer;
+  const Json *runs = size >= 0 && (size_t)size < scores_response.size() && json_parse(scores_response.data(), size, answer)
+                         ? answer.field("scores", Json::ARRAY)
+                         : nullptr;
+  if (!runs) {
+    online_sync_status = 6;
+    return;
+  }
+  scores_save(runs->items);
+  // As the original after a sync: all-time scores, the internet's shown.
+  config_blob.highscore_date_mode = 0;
+  config_blob.show_online_scores = 1;
+  highscore_load_table_thunk();
+  online_sync_status = 0;
+}
+
 bool ui_checkbox_update(float *xy, ui_checkbox_t *checkbox);
 bool ui_button_update(float *xy, ui_button_t *button);
 extern ui_element_t ui_element_slot_11, ui_element_slot_12_layout_a;
