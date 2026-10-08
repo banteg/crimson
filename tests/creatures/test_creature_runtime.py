@@ -6,7 +6,13 @@ import pytest
 
 import crimson.creatures.runtime as creature_runtime
 from crimson.bonuses import BonusId
-from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, PHANTOM_CREATURE_INDEX, CreaturePool, CreatureState
+from crimson.creatures.runtime import (
+    CREATURE_LIFECYCLE_ALIVE,
+    PHANTOM_CREATURE_INDEX,
+    CreaturePool,
+    CreatureState,
+    _TargetPlayerResolution,
+)
 from crimson.creatures.spawn import (
     NATIVE_SPAWN_SLOT_COUNT,
     RANDOM_HEADING_SENTINEL,
@@ -688,6 +694,37 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
     assert_float_close(dead_player.health, 0.0)
 
 
+def test_single_player_creature_keeps_the_dormant_target_after_the_player_gets_back_up() -> None:
+    world = make_world()
+    state = world.state
+    pool = world.creatures
+
+    # A MediKit picked up during the death animation put the player back above 0 health.
+    player = world.players[0]
+    player.pos = Vec2(400.0, 400.0)
+    player.health = 7.825
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
+
+    creature = pool.entries[0]
+    creature.active = True
+    creature.hp = 50.0
+    creature.death_timer = CREATURE_LIFECYCLE_ALIVE
+    creature.flags = CreatureFlags(0)
+    creature.ai_mode = CreatureAiMode.FLANK_PLAYER
+    creature.move_speed = 0.0
+    creature.size = 45.0
+    creature.contact_damage = 10.0
+    creature.target_player = 1
+    creature.pos = Vec2(410.0, 400.0)
+
+    state.rng = RecordingCrand(Crand(0x1234))
+    step_creatures(world, 1.0 / 60.0)
+
+    assert creature.target_player == 1
+    assert creature.attack_cooldown == 0.0
+    assert_float_close(player.health, 7.825)
+
+
 def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     world = make_world(player_count=2)
     state = world.state
@@ -739,7 +776,7 @@ def test_creature_retarget_keeps_current_player_when_native_distances_round_equa
         players[1].pos.x,
         players[1].pos.y,
     )
-    resolution = pool._resolve_target_player(creature, players)
+    resolution = pool._resolve_target_player(creature, players, len(players))
     assert resolution.target_player == 0
     assert creature.target_player == 0
 
@@ -842,11 +879,14 @@ def test_creature_auto_target_keeps_current_slot_when_native_distances_round_equ
 
     pool._update_player_auto_target(
         players=[player],
-        preserve_bugs=preserve_bugs,
-        player_index=0,
+        native=preserve_bugs,
+        resolution=_TargetPlayerResolution(
+            target_player=0,
+            auto_target_player=0,
+            native_auto_target_distance=x87_pc24_hypot(candidate.pos.x, candidate.pos.y) if precomputed else None,
+        ),
         creature_index=1,
         creature=candidate,
-        native_candidate_distance=x87_pc24_hypot(candidate.pos.x, candidate.pos.y) if precomputed else None,
     )
 
     assert player.auto_target == 0
