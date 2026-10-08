@@ -6,6 +6,7 @@ extern unsigned char game_ticking;
 void register_core_cvars();
 }
 void grim_state_init();
+static int game_live_key(int code);
 class SessionGrim final : public IGrim2D_cpp {
 public:
 #define GAME_TICK_QUERY(ret, name, params, args)                               \
@@ -30,7 +31,6 @@ public:
   GAME_TICK_QUERY(float, grim_get_mouse_dy, (void), ())
   GAME_TICK_QUERY(float, grim_get_mouse_dx_indexed, (int index), (index))
   GAME_TICK_QUERY(float, grim_get_mouse_dy_indexed, (int index), (index))
-  GAME_TICK_QUERY(unsigned char, grim_is_key_active, (int key), (key))
   GAME_TICK_QUERY(float, grim_get_config_float, (int id), (id))
   GAME_TICK_QUERY(int, grim_get_joystick_x, (void), ())
   GAME_TICK_QUERY(int, grim_get_joystick_y, (void), ())
@@ -38,6 +38,10 @@ public:
   GAME_TICK_QUERY(int, grim_get_joystick_pov, (int index), (index))
   GAME_TICK_QUERY(unsigned char, grim_is_joystick_button_down, (int button), (button))
 #undef GAME_TICK_QUERY
+  // Between a live run's ticks, the verifier's key codes read the player's keys.
+  unsigned char grim_is_key_active(int key) override {
+    return game_ticking ? headless_grim.grim_is_key_active(key) : IGrim2D_cpp::grim_is_key_active(game_live_key(key));
+  }
   // The interface outlives every caller; the original deleted its heap copy.
   void grim_release(void) override {}
 };
@@ -48,12 +52,56 @@ unsigned char game_ticking;
 static bool game_heap_strings;
 // A run the verifier could replay: run start and ticks own the gameplay RNG.
 static bool game_session;
+// The original is running (game_start): its engine, device and loaded assets
+// outlive a run.
+static bool game_original;
+// The client is playing a run inside it (host/session.inc).
+static bool game_live;
 void platform_headless_device();
 extern "C" void portable_reset_engine_data();
+extern "C" void portable_reset_simulation_data();
 extern "C" unsigned char grim_render_disabled;
+static void game_reset_run_data() {
+  if (game_original)
+    portable_reset_simulation_data();
+  else
+    portable_reset_data();
+}
+// Inside the original, a run keeps what it loaded and the player set
+// (game.py's SESSION_KEEPS); the verifier's setup still assigns its own music
+// ids and volumes, which only choose and voice the tracks. The run plays the
+// tracks the original loaded, at the player's volumes.
+static struct {
+  int intro, shortie_monk, crimson_theme, crimsonquest, game_playlist, extra_1, playlist_count;
+  music_playlist_t playlist;
+  float music_volume, sfx_volume;
+} game_shell_audio;
+static void game_save_shell_audio() {
+  game_shell_audio = {music_track_intro_id, music_track_shortie_monk_id, music_track_crimson_theme_id,
+                      music_track_crimsonquest_id, music_track_game_playlist, music_track_extra_1,
+                      music_playlist_entry_count, {}, config_blob.music_volume, config_blob.sfx_volume};
+  memcpy(game_shell_audio.playlist, music_playlist, sizeof(music_playlist));
+}
+static void game_run_ready() {
+  if (!game_original)
+    return;
+  auto &a = game_shell_audio;
+  music_track_intro_id = a.intro;
+  music_track_shortie_monk_id = a.shortie_monk;
+  music_track_crimson_theme_id = a.crimson_theme;
+  music_track_crimsonquest_id = a.crimsonquest;
+  music_track_game_playlist = a.game_playlist;
+  music_track_extra_1 = a.extra_1;
+  music_playlist_entry_count = a.playlist_count;
+  memcpy(music_playlist, a.playlist, sizeof(music_playlist));
+  config_blob.music_volume = a.music_volume;
+  config_blob.sfx_volume = a.sfx_volume;
+}
 static void game_init_run() {
+  if (game_original)
+    game_save_shell_audio();
   static bool booted;
-  if (!booted) {
+  if (!booted && !game_original) {
     game_heap_strings = true;
     portable_reset_engine_data();
     grim_state_init();
@@ -79,15 +127,8 @@ struct GameTick {
 // The executable's own seams: the verifier's session policy inside ticks, the
 // recovered behaviour elsewhere.
 extern "C" {
-void game_state_set_recovered(game_state_id_t state);
 bool input_primary_just_pressed_recovered();
 int play_time_get_recovered();
-void game_state_set(game_state_id_t state) {
-  if (game_ticking)
-    game_state_pending = state;
-  else
-    game_state_set_recovered(state);
-}
 bool input_primary_just_pressed() {
   return game_ticking ? (in.flags & 2) != 0 : input_primary_just_pressed_recovered();
 }
@@ -136,6 +177,7 @@ void bonus_meta_global_construct_and_register() {
 void game_static_init();
 __attribute__((export_name("game_start"))) int game_start() {
   game_session = false;
+  game_original = true;
   game_heap_strings = true;
   portable_reset_engine_data();
   portable_reset_data();

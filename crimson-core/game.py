@@ -49,6 +49,17 @@ def game_headers(headers):
         path,
     )
     path.write_text(text)
+    # A fresh configuration runs at 1024x768, the resolution the verifier
+    # simulates, so the client's runs replay as they played (host/session.inc).
+    path = headers / "crimson_config_defaults_impl.h"
+    path.write_text(
+        replace_once(
+            path.read_text(),
+            "CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 800;\n    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 600;",
+            "CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 1024;\n    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 768;",
+            path,
+        ),
+    )
     # The gameplay header declares sfx_play void; it returns the voice (crimsonland_audio.h).
     path = headers / "crimsonland_gameplay.h"
     path.write_text(
@@ -76,6 +87,7 @@ def replace_once(text, old, new, src):
 # The recovered body keeps a _recovered name.
 SEAMS = (
     "game_state_set",
+    "gameplay_update_and_render",
     "input_primary_just_pressed",
     "play_time_get",
     "sfx_entry_start_playback",
@@ -113,6 +125,28 @@ def adapt_game(src, txt):
         txt, count = re.subn(rf"\b{src.stem}\(", f"{src.stem}_recovered(", txt)
         if not count:
             raise SystemExit(f"Audit {src.name} before changing its seam")
+    if src.stem == "input_key_name":
+        # Its header defines it; a live run names the player's keys (host/session.inc).
+        txt = "#define input_key_name input_key_name_recovered\n" + txt
+    if src.stem == "perk_selection_screen_update":
+        # In a run the client plays, the choice reaches the run as a command with
+        # its next tick (host/session.inc), which applies it as the verifier does.
+        pick = """        perk_apply(perk_choice_ids[perk_selection_index]);
+        ui_transition_direction = 0;
+        game_state_pending = GAME_STATE_GAMEPLAY;
+        --perk_pending_count;
+        perk_choices_dirty = 1;"""
+        txt = replace_once(
+            txt,
+            pick,
+            "        if (game_live_run()) {\n"
+            "            game_live_pick(perk_selection_index);\n"
+            "            ui_transition_direction = 0;\n"
+            "            game_state_pending = GAME_STATE_GAMEPLAY;\n"
+            f"        }} else {{\n{pick}\n        }}",
+            src,
+        )
+        txt = 'extern "C" bool game_live_run();\nextern "C" void game_live_pick(int choice);\n' + txt
     # Declaration repairs: the recovered translation units disagree about these
     # signatures, which wasm32 calls cannot tolerate. Each matches the callers.
     # Some callers declare sfx_play void; it returns the voice, which they ignore.
@@ -179,6 +213,16 @@ def adapt_game(src, txt):
         # Its loading-screen calls pass a stage the function never reads.
         txt = re.sub(r"game_is_full_version\([123]\);", "game_is_full_version();", txt)
         txt = replace_once(txt, "void config_sync_from_grim(void);", "bool config_sync_from_grim(void);", src)
+        # Escape in a run the client plays asks the run for the pause menu: the
+        # pending state is simulation state, which only ticks write (host/session.inc).
+        txt = replace_once(
+            txt,
+            "        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_PAUSE_MENU;",
+            "        ui_transition_direction = 0;\n        if (!game_live_pause())\n"
+            "            game_state_pending = GAME_STATE_PAUSE_MENU;",
+            src,
+        )
+        txt = 'extern "C" bool game_live_pause();\n' + txt
     if src.stem == "crimsonland_main":
         # The host owns the main loop: startup ends where Grim's run loop began,
         # and the code after the loop becomes its own entry point (game/frame.cpp).
@@ -310,28 +354,57 @@ def image_entries(root, image):
     return entries
 
 
-def game_data(root, out, engine):
+def simulation_names(root):
+    # Every identifier the verifier's sources and host name: a superset of the
+    # executable's globals a simulation reads or writes.
+    sources = json.loads((root / "crimson-core/sources.json").read_text())
+    texts = [(root / rel).read_text() for rel in sources]
+    texts += [path.read_text() for path in (root / "crimson-core/host").glob("*.*")]
+    return {name for text in texts for name in re.findall(r"[A-Za-z_]\w*", text)}
+
+
+# What a run inside the running original keeps although the simulation names
+# it: the texture, sound and music handles the original loaded, its settings,
+# the player's progress, and the screen's transition, which only the UI reads.
+# Sessions inside the original after it loads its
+# assets agree with the verifier on every gate stream (checks/game_check.py --live).
+SESSION_KEEPS = re.compile(
+    r"_texture$|^terrain_texture_|^sfx_|^music_(track_|entry_table$|playlist$|playlist_entry_count$|ready$|fade_out_flags$)"
+    r"|^audio_asset_id_table$|^config_|^game_status_blob$"
+    r"|^creature_type_table$|^bonus_icon_|^ui_element|^ui_transition_",
+)
+
+
+def game_data(root, out, engine, simulation):
     # wasm32 keeps the original pointer width, so each image's data keeps its
     # original layout: aggregates read through a first symbol, overreads and
     # interior names land on the original bytes. Engine state (Grim's, and the
     # executable's named engine globals) resets once; the rest at every run.
+    # A run inside the running original resets only the simulation's globals,
+    # so the presentation the original loaded and laid out survives it.
     exe = image_entries(root, "crimsonland.exe")
     names = {e["name"] for e in exe}
     # The compiler emits Grim's interface vtable; its other symbol tables, and the
     # names both images define, belong to the statically linked D3DX.
     grim = [e for e in image_entries(root, "grim.dll") if "initializer_symbols" not in e and e["name"] not in names]
     lines = ["#include <stdint.h>", "#include <string.h>", 'extern "C" {']
-    resets = {"run": [], "engine": []}
+    resets = {"run": [], "engine": [], "presentation": []}
     for image, entries in (("exe", exe), ("grim", grim)):
         base = min(int(e["address"], 16) for e in entries)
         size = max(int(e["address"], 16) + e["size"] for e in entries) - base
         lines.append(f"alignas(16) unsigned char game_image_{image}[{size}];")
-        clears, fills = {"run": [], "engine": []}, {"run": [], "engine": []}
+        clears, fills = {kind: [] for kind in resets}, {kind: [] for kind in resets}
         for e in sorted(entries, key=lambda e: int(e["address"], 16)):
             offset = int(e["address"], 16) - base
             if re.fullmatch(r"[A-Za-z_]\w*", e["name"]):
                 lines.append(f'asm(".globl {e["name"]}\\n.set {e["name"]}, game_image_{image}+{offset}\\n");')
-            kind = "engine" if image == "grim" or e["name"] in engine else "run"
+            kind = (
+                "engine"
+                if image == "grim" or e["name"] in engine
+                else "run"
+                if e["name"] in simulation and not SESSION_KEEPS.search(e["name"])
+                else "presentation"
+            )
             clears[kind].append(f"memset(game_image_{image}+{offset},0,{e['size']});")
             if (data := e.get("initializer_hex", "")) and any(bytes.fromhex(data)):
                 values = ",".join(map(str, bytes.fromhex(data)))
@@ -344,12 +417,24 @@ def game_data(root, out, engine):
                     f"{{extern unsigned char {target}[]; uint32_t p=(uint32_t)(uintptr_t){target};"
                     f" memcpy(game_image_{image}+{offset},&p,4);}}",
                 )
-        for kind in resets:
-            resets[kind] += clears[kind] + fills[kind]
+        for kind, parts in resets.items():
+            parts.append((clears[kind], fills[kind]))
     # game_frame_update reads the cursor and both aim points as one aggregate.
     lines.append('asm(".globl frame_cursor_state\\n.set frame_cursor_state, ui_mouse_x\\n");')
-    lines += ["void portable_reset_data() {", *resets["run"], "}"]
-    lines += ["void portable_reset_engine_data() {", *resets["engine"], "}", "}"]
+
+    def reset(name, *kinds):
+        # Every clear before any initializer: interior names overlap aggregates.
+        parts = [part for kind in kinds for part in resets[kind]]
+        return [
+            f"void {name}() {{",
+            *(c for clears, _ in parts for c in clears),
+            *(f for _, fills in parts for f in fills),
+            "}",
+        ]
+
+    lines += reset("portable_reset_data", "run", "presentation")
+    lines += reset("portable_reset_simulation_data", "run")
+    lines += [*reset("portable_reset_engine_data", "engine"), "}"]
     (out / "data.cpp").write_text("\n".join(lines) + "\n")
 
 

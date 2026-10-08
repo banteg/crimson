@@ -74,9 +74,16 @@ static cvar_float_t friendly, transparency, verbose, pad_distance, bodies_fade;
 // recovered implementation.
 extern "C" int crt_rand() {
 #ifdef CRIMSON_GAME
-  // In a session, gameplay RNG belongs to run start and ticks; presentation must not draw it.
-  if (game_session && !game_ticking)
-    abort();
+  // In a session, gameplay RNG belongs to run start and ticks; presentation must
+  // not draw it. Between a live run's ticks, the original's frame and menus draw
+  // a stream of their own (the tick draws the frame's value, portable_step_many).
+  if (game_session && !game_ticking) {
+    if (!game_live)
+      abort();
+    static uint32_t presentation = 1;
+    presentation = presentation * 214013u + 2531011u;
+    return (presentation >> 16) & 0x7fff;
+  }
 #endif
   rng = rng * 214013u + 2531011u;
   return (rng >> 16) & 0x7fff;
@@ -280,7 +287,11 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
       (major < 1 || major > 5 || minor < 1 || minor > 10))
     return 0;
   trace_init("reset data");
+#ifdef CRIMSON_GAME
+  game_reset_run_data();
+#else
   portable_reset_data();
+#endif
   string_used = 0;
   rng = seed;
   menu_requested = false;
@@ -393,6 +404,9 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   music_track_crimsonquest_id = track;
   music_track_game_playlist = track + 1;
   music_track_extra_1 = track + 2;
+#ifdef CRIMSON_GAME
+  game_run_ready();
+#endif
   crt_rand();
   probe_reset(mode);
   ready = true;
@@ -487,6 +501,9 @@ extern "C" int portable_step_many(uint32_t count) {
   ++tick;
   return 1;
 }
+#ifdef CRIMSON_GAME
+#include "session.inc"
+#endif
 extern "C" int portable_step(int command, int argument) {
   if (command == 0)
     return portable_step_many(0);

@@ -88,11 +88,45 @@ Voice stealing draws the C library's `rand`, which never touches the gameplay
 the verifier's headless Grim does, and the executable's own session-sensitive
 functions (`game_state_set`, the run-down timeline, primary input, play time)
 take the verifier's behaviour. Outside those scopes the recovered behaviour
-runs. In a session, `crt_rand` aborts outside run start and ticks.
+runs. In a headless session, `crt_rand` aborts outside run start and ticks.
 
 Headless, a session sets Grim's own `grim_render_disabled` switch and owns a
 device that never becomes ready: the recovered state calls run, and draws stop
 inside Grim.
+
+### Runs the client plays
+
+A run the client plays is a verifier session inside the running original
+([`host/session.inc`](host/session.inc)). The original's menus start it: where
+`game_state_set` sets a run up, the session takes over with a fresh seed, the
+player's progress and settings (unlocks, weapon usage, detail, hardcore,
+violence, friendly fire, retries) and the original's rules (bugs preserved).
+Each pass of the run loop banks wall time and runs the 60 Hz ticks it covers;
+each tick's input is built from the player's bindings and scheme as Python's
+recorder builds it ([`local_input.py`](../src/crimson/local_input.py)) and is
+recorded before the tick runs. A pass that covers no tick draws nothing, and
+the host shows the last frame again. Runs are single-player Survival, Rush and
+Quests at 1024x768, the resolution the verifier simulates (a fresh
+configuration defaults to it); the rest play as the original.
+
+Between ticks the original keeps its screens. The perk menu opens when a tick
+opens it, and its choice reaches the run as a command with the next tick.
+Escape runs the pause timeline down by the ticks' time, then the pause menu
+opens and the run waits. The end of the run shows the original's end screen
+after the verifier's 500 ms run-down; leaving any other way ends it unfinished.
+The original's frame draws a gameplay random number every frame: in a run each
+tick draws it (`portable_step_many`), and between ticks the frame and the menus
+draw from a stream of their own. The recording goes to `replays/` as the
+verifier's stream: the 65-word configuration, then each tick's input and
+commands ([`checks/replay.py`](checks/replay.py)).
+
+A run resets only the simulation's globals: the names the verifier's sources
+and host use, less what the original loaded and the player set (texture, sound
+and music handles, settings, progress; `SESSION_KEEPS` in
+[`game.py`](game.py)). The verifier's setup assigns its own music ids and
+volumes, which only choose and voice tracks; the run plays the original's. The
+weapons' sound ids are snapshot fields that hold the original's loaded ids in a
+run, and only choose samples.
 
 ### Evidence
 
@@ -103,6 +137,14 @@ inside Grim.
   the next tick. All 142 agree, with the whole executable linked. The one
   expected difference is `player_weapon_popup_timer`, which the restored HUD
   counts down and only the HUD reads.
+- `game_check.py --live <game directory>` runs the same 142 streams back to
+  back inside the original booted with its assets, sounds and music, each run
+  starting from the state the previous one left, and all agree.
+- [`checks/game_session.mjs`](checks/game_session.mjs) plays a Survival run
+  through the menus at frame times from 4 to 50 ms (passes with no tick and
+  passes with three) and, after every frame, compares the run with the verifier
+  replaying the run's own recording; the run must end on the verifier's tick and
+  the saved replay must match.
 - [`checks/game_boot.mjs`](checks/game_boot.mjs) boots the original from a fresh
   game directory under Node's WASI, clicks through the menus into Survival, and
   requires every texture to load, the menus' music to reach the mix, the run to
@@ -158,7 +200,8 @@ crimson-core/build/app/crimson <game directory>
 It needs wabt's `wasm2c`, SDL3 and the original game directory. For
 unattended runs, `CRIMSON_CAPTURE=<dir>` with `CRIMSON_CAPTURE_FRAMES=n,...`
 saves those frames' back buffers and quits, and `CRIMSON_INPUT` scripts the
-mouse and keys ([`client/main.cpp`](client/main.cpp)).
+mouse and keys; such a run keeps a fixed 60 Hz clock, so it repeats
+([`client/main.cpp`](client/main.cpp)).
 
 ## Running the web client
 
@@ -184,10 +227,10 @@ no cross-origin isolation.
 | 1. Game module | Recovered Grim and presentation in wasm32; sessions match the verifier on all gate streams | Done ([#550](https://github.com/banteg/crimson/pull/550)) |
 | 2. Native client | The whole executable in the module; SDL3/OpenGL host over `wasm2c`; the original game boots, menus and runs play | Done ([#552](https://github.com/banteg/crimson/pull/552)) |
 | 3. Web client | The same host through Emscripten; game files in IndexedDB | Done ([#553](https://github.com/banteg/crimson/pull/553)) |
-| 4. Audio | DirectSound mixed in the module, vorbisfile over stb_vorbis; the host plays the pulled mix | This change |
-| 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates with the game files and audio loaded | |
+| 4. Audio | DirectSound mixed in the module, vorbisfile over stb_vorbis; the host plays the pulled mix | Done ([#554](https://github.com/banteg/crimson/pull/554)) |
+| 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates with the game files and audio loaded | This change |
 | 6. Verifier convergence | The service and gate run the game module; the native core retires | |
-| 7. Product parity | Controllers, letterboxing options, replay browsing, ranked upload | |
+| 7. Product parity | Controllers, letterboxing options, replay browsing, `.crd` replays and ranked upload | |
 | 8. Distribution | Packaged desktop builds and the hosted web build | |
 
 ## Acceptance gates

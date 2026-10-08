@@ -1,0 +1,287 @@
+// A run the client plays: the verifier's session inside the running original.
+// The original's menus start the run and its screens follow it; the run itself
+// is fixed 60 Hz ticks, each fed the player's input as the replay records it,
+// so the recording replays in the verifier exactly as it played
+// (portable_step_many). The perk screen and the pause menu run between ticks
+// and reach the run only as commands.
+#include <sys/stat.h>
+#include <unistd.h>
+#include <vector>
+extern game_status_t game_status_blob;
+extern "C" {
+void game_state_set_recovered(game_state_id_t state);
+void gameplay_update_and_render_recovered();
+extern float grim_frame_dt;
+extern int ui_elements_timeline;
+extern unsigned char console_open_flag, ui_transition_direction;
+int ui_elements_max_timeline(void);
+extern cvar_float_t *cv_padAimDistMul;
+}
+
+static struct {
+  // The player's own settings: bindings and schemes, restored when the run ends.
+  crimson_cfg_t shell;
+  float banked; // seconds of play not yet ticked
+  int due;      // ticks this frame
+  // Presses since the last tick, which only the next tick sees.
+  bool fire_down, reload_down, pick_down, fire_pressed, reload_pressed, open_requested;
+  bool pausing; // Escape: the timeline runs down to the pause menu
+  float move_target_x, move_target_y; // point-click movement's target
+  PortableCommand queued[16];
+  int queued_count;
+  game_state_id_t requested; // a state a tick asked for
+  std::vector<unsigned char> replay;
+} live;
+
+// Runs a single player plays in Survival, Rush or Quests, at the resolution the
+// verifier simulates (1024x768); the rest play as the original.
+static bool live_eligible() {
+  return game_original && config_blob.player_count == 1 && config_blob.screen_width == 1024 &&
+         config_blob.screen_height == 768 &&
+         (config_blob.game_mode == GAME_MODE_SURVIVAL || config_blob.game_mode == GAME_MODE_RUSH ||
+          config_blob.game_mode == GAME_MODE_QUEST);
+}
+
+static void live_append(const void *data, size_t size) {
+  live.replay.insert(live.replay.end(), (const unsigned char *)data, (const unsigned char *)data + size);
+}
+
+// The original has set the run up (game_state_set): the session takes its
+// place, seeded afresh, with the player's progress and settings.
+static void live_begin() {
+  live.shell = config_blob;
+  cfg = {};
+  getentropy(&cfg.seed, sizeof cfg.seed);
+  cfg.mode = config_blob.game_mode;
+  cfg.major = cfg.mode == GAME_MODE_QUEST ? quest_stage_major : 1;
+  cfg.minor = cfg.mode == GAME_MODE_QUEST ? quest_stage_minor : 1;
+  cfg.unlock = game_status_blob.quest_unlock_index;
+  cfg.unlock_full = game_status_blob.quest_unlock_index_hardcore;
+  cfg.detail = config_blob.detail_preset;
+  cfg.violence = config_blob.violence_disabled;
+  cfg.friendly_fire = cv_friendlyFire->value != 0;
+  cfg.hardcore = config_blob.hardcore;
+  cfg.retry = quest_fail_retry_count;
+  cfg.preserve_bugs = 1; // the original's rules
+  memcpy(cfg.weapon_usage, game_status_blob.weapon_usage_counts, sizeof cfg.weapon_usage);
+  if (!portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor)) {
+    game_session = false;
+    return;
+  }
+  game_live = true;
+  live.banked = 0;
+  live.fire_pressed = live.reload_pressed = live.open_requested = live.pausing = false;
+  live.move_target_x = live.move_target_y = -1;
+  live.queued_count = 0;
+  live.replay.clear();
+  live_append(&cfg, sizeof cfg);
+}
+
+// The replay, as the verifier's stream (checks/replay.py), into replays/.
+static void live_save() {
+  mkdir("replays", 0755);
+  static const char *const modes[] = {"", "survival", "rush", "", "", "", "", "", "quest"};
+  char name[64];
+  snprintf(name, sizeof name, "replays/%s-%08x.rsi", modes[cfg.mode < 9 ? cfg.mode : 0], cfg.seed);
+  if (FILE *fp = platform_fopen(name, "wb")) {
+    fwrite(live.replay.data(), 1, live.replay.size(), fp);
+    fclose(fp);
+  }
+}
+
+static void live_end() {
+  live_save();
+  // The run's own keys and volumes were the verifier's; the player's return.
+  config_blob = live.shell;
+  game_live = game_session = false;
+}
+
+// The verifier's codes for fire, reload and the perk key (portable_init), as the
+// player's own keys: what the original's screens read and name between ticks.
+static int game_live_key(int code) {
+  if (!game_live)
+    return code;
+  return code == 100   ? live.shell.input_config[0].fire_key
+         : code == 101 ? live.shell.key_reload
+         : code == 102 ? live.shell.key_pick_perk
+                       : code;
+}
+static bool live_down(int code) { return session_grim.IGrim2D_cpp::grim_is_key_active(code); }
+static bool live_down_or_arrow(int code, int arrow) { return live_down(code) || live_down(arrow); }
+static float live_axis(int code) { return session_grim.IGrim2D_cpp::grim_get_config_float(code); }
+
+// Every pass of the run loop: presses between ticks reach the next one.
+static void live_poll() {
+  const player_input_config_t &keys = live.shell.input_config[0];
+  bool fire = live_down(keys.fire_key), reload = live_down(live.shell.key_reload),
+       pick = live_down(live.shell.key_pick_perk);
+  live.fire_pressed |= fire && !live.fire_down;
+  live.reload_pressed |= reload && !live.reload_down;
+  // gameplay_update_and_render opens the perk menu on the pick key, Space or
+  // keypad plus; a run takes the request as a command.
+  live.open_requested |= (pick && !live.pick_down) || session_grim.IGrim2D_cpp::grim_was_key_pressed(57) ||
+                         session_grim.IGrim2D_cpp::grim_was_key_pressed(78);
+  live.fire_down = fire;
+  live.reload_down = reload;
+  live.pick_down = pick;
+}
+
+// The tick's input as the player's scheme reads it (src/crimson/local_input.py).
+static PortableInput live_input() {
+  const player_input_config_t &keys = live.shell.input_config[0];
+  const player_state_t &player = player_state_table[0];
+  int move_mode = live.shell.movement_schemes[0], aim_scheme = live.shell.aim_schemes[0];
+  bool forward = live_down_or_arrow(keys.move_key_forward, 0xc8),
+       backward = live_down_or_arrow(keys.move_key_backward, 0xd0),
+       left = live_down_or_arrow(keys.turn_key_left, 0xcb), right = live_down_or_arrow(keys.turn_key_right, 0xcd);
+  float world_x = ui_mouse_x - camera_offset_x, world_y = ui_mouse_y - camera_offset_y;
+  PortableInput input = {0, 0, player.aim.x, player.aim.y, 0};
+  if (move_mode == 1) { // relative
+    input.move_x = (float)right - (float)left;
+    input.move_y = (float)backward - (float)forward;
+  } else if (move_mode == 2) { // static, in player_update's precedence
+    input.move_x = right ? 1.0f : left ? -1.0f : 0.0f;
+    if (forward || backward) {
+      input.move_x = left ? -1.0f : right ? 1.0f : 0.0f;
+      input.move_y = backward ? 1.0f : -1.0f;
+    }
+  } else if (move_mode == 3) { // dual-action pad
+    input.move_x = fminf(fmaxf(live_axis(keys.axis_move_x), -1.0f), 1.0f);
+    input.move_y = fminf(fmaxf(live_axis(keys.axis_move_y), -1.0f), 1.0f);
+  } else if (move_mode == 4) { // point and click: the reload key drops the target
+    if (live_down(live.shell.key_reload)) {
+      live.move_target_x = world_x;
+      live.move_target_y = world_y;
+    }
+    input.move_x = live.move_target_x;
+    input.move_y = live.move_target_y;
+  }
+  bool turn_left = false, turn_right = false;
+  if (aim_scheme == 0) { // mouse: the world point under the cursor
+    input.aim_x = world_x;
+    input.aim_y = world_y;
+  } else if (aim_scheme == 1) { // keyboard
+    turn_left = live_down(keys.aim_key_left);
+    turn_right = live_down(keys.aim_key_right);
+  } else if (aim_scheme == 3) { // mouse relative: the cursor itself
+    input.aim_x = ui_mouse_x;
+    input.aim_y = ui_mouse_y;
+  } else if (aim_scheme == 4) { // dual-action pad: the stick's reach
+    float x = live_axis(keys.axis_aim_x), y = live_axis(keys.axis_aim_y), length = sqrtf(x * x + y * y);
+    float reach = fminf(length, 1.0f) * cv_padAimDistMul->value + 42.0f;
+    input.aim_x = length > 0 ? x / length * reach : 0;
+    input.aim_y = length > 0 ? y / length * reach : 0;
+  } else if (aim_scheme == 2 || aim_scheme == -1) { // joystick hat
+    int hat = session_grim.IGrim2D_cpp::grim_get_joystick_pov(0);
+    turn_left = hat == live.shell.aim_pov_left;
+    turn_right = hat == live.shell.aim_pov_right;
+  }
+  input.flags = (live.fire_down ? 1u : 0) | (live.fire_pressed ? 2u : 0) | (live.reload_pressed ? 4u : 0) |
+                8u | (forward ? 16u : 0) | (backward ? 32u : 0) | (left ? 64u : 0) | (right ? 128u : 0) |
+                0x100u | (unsigned)(move_mode & 7) << 9 | 0x1000u | (unsigned)(aim_scheme & 7) << 13 |
+                (live.reload_down ? 1u << 16 : 0) | (live_down(0x22) ? 1u << 17 : 0) |
+                (turn_left ? 1u << 18 : 0) | (turn_right ? 1u << 19 : 0);
+  return input;
+}
+
+// One recorded tick; false once the run stops ticking this frame.
+static bool live_tick() {
+  in = live_input();
+  // A perk menu request the verifier would refuse is dropped, as the original ignores it.
+  if (live.open_requested && config_blob.game_mode != GAME_MODE_RUSH && perk_pending_count > 0 &&
+      player_state_table[0].health > 0 && live.queued_count < 16)
+    live.queued[live.queued_count++] = {2, 0};
+  uint32_t count = live.queued_count;
+  memcpy(commands, live.queued, count * sizeof(PortableCommand));
+  live_append(&in, sizeof in);
+  live_append(&count, sizeof count);
+  live_append(commands, count * sizeof(PortableCommand));
+  live.fire_pressed = live.reload_pressed = live.open_requested = false;
+  live.queued_count = 0;
+  live.requested = GAME_STATE_PENDING_IDLE_SENTINEL;
+  if (!portable_step_many(count)) {
+    // The run is over: its screen follows, as the timeline would have shown it.
+    live.replay.resize(live.replay.size() - sizeof in - sizeof count - count * sizeof(PortableCommand));
+    live_end();
+    ui_elements_timeline = 0;
+    game_state_set_recovered(game_state_pending);
+    game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
+    return false;
+  }
+  if (live.requested == GAME_STATE_PERK_SELECTION) {
+    game_state_set_recovered(GAME_STATE_PERK_SELECTION);
+    return false;
+  }
+  // The screen's timeline runs by the ticks' time (ui_elements_update_and_render,
+  // which a tick leaves alone). Escape asked for the pause menu
+  // (game_frame_update): the timeline runs down while the run plays on, then the
+  // menu opens and the run waits.
+  if (!console_open_flag)
+    ui_elements_timeline += ui_transition_direction ? frame_dt_ms : -frame_dt_ms;
+  if (ui_elements_timeline > ui_elements_max_timeline())
+    ui_elements_timeline = ui_elements_max_timeline();
+  if (live.pausing && ui_elements_timeline < 0) {
+    ui_elements_timeline = 0;
+    live.pausing = false;
+    game_state_set_recovered(GAME_STATE_PAUSE_MENU);
+    return false;
+  }
+  return true;
+}
+
+extern "C" {
+// game_frame (game/frame.cpp), after polling input: the ticks this pass runs,
+// or -1 when no run is playing. A pass with none draws nothing new.
+int game_live_frame() {
+  if (!game_live || game_state_id != GAME_STATE_GAMEPLAY)
+    return -1;
+  live_poll();
+  live.banked += fminf(grim_frame_dt, 0.1f);
+  live.due = (int)(live.banked * 60.0f + 1e-4f);
+  live.banked -= live.due / 60.0f;
+  return live.due;
+}
+void gameplay_update_and_render() {
+  if (!game_live || game_ticking) {
+    gameplay_update_and_render_recovered();
+    return;
+  }
+  for (int i = 0; i < live.due && live_tick(); ++i) {
+  }
+}
+// The perk screen's choice (perk_selection_screen_update) reaches the run as a
+// command with its next tick.
+bool game_live_run() { return game_live; }
+bool game_live_pause() {
+  live.pausing |= game_live;
+  return game_live;
+}
+char *input_key_name_recovered(int code);
+char *input_key_name(int code) { return input_key_name_recovered(game_live_key(code)); }
+void game_live_pick(int choice) {
+  if (live.queued_count < 16)
+    live.queued[live.queued_count++] = {1, choice};
+}
+void game_state_set(game_state_id_t state) {
+  if (game_ticking) {
+    game_state_pending = state;
+    live.requested = state;
+    return;
+  }
+  // Leaving the run for anything but its own screens ends it unfinished.
+  if (game_live && state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&
+      state != GAME_STATE_PAUSE_MENU)
+    live_end();
+  bool starts = state == GAME_STATE_GAMEPLAY && !run_active && live_eligible();
+  game_state_set_recovered(state);
+  if (starts) {
+    live_begin();
+    live.banked = 0;
+  }
+  // Back from a menu, the run picks up where it stopped, without catching up.
+  if (game_live && state == GAME_STATE_GAMEPLAY)
+    live.banked = 0;
+}
+__attribute__((export_name("game_replay"))) const unsigned char *game_replay() { return live.replay.data(); }
+__attribute__((export_name("game_replay_size"))) int game_replay_size() { return (int)live.replay.size(); }
+}

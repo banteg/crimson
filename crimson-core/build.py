@@ -23,6 +23,7 @@ from game import (
     game_third_party,
     object_name,
     session_seam,
+    simulation_names,
 )
 from rules import apply_patches, load_patches
 
@@ -70,7 +71,7 @@ def main():
             lines.extend(f"put({f});" for f in group["fields"])
     (headers / "snapshot.inc").write_text("\n".join(lines) + "\n")
     if a.target == "game":
-        game_data(a.root, a.out, engine_globals(a.root))
+        game_data(a.root, a.out, engine_globals(a.root), simulation_names(a.root))
     else:
         data_source(a.root, a.out)
     env = dict(os.environ, ZIG_GLOBAL_CACHE_DIR=str(a.out / "zig-global"), ZIG_LOCAL_CACHE_DIR=str(a.out / "zig-local"))

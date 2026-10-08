@@ -40,13 +40,13 @@ wasi.initialize(instance);
 const game = instance.exports;
 if (!game.game_start()) throw Error("startup failed");
 
-// A fresh profile runs at 800x600 without mods: on the main menu, Play Game;
+// A fresh profile runs at 1024x768 without mods: on the main menu, Play Game;
 // on the Play Game screen, Survival. Each click lands once its screen has
 // settled; the main menu shares its screen id with the startup sequence, which
 // ends after about 14 s.
 const steps = [
-  { screen: 0, at: [240, 286] },
-  { screen: 1, at: [232, 362] },
+  { screen: 0, at: [240, 338] },
+  { screen: 1, at: [232, 414] },
 ];
 let cursor = [512, 384],
   playing = 0,
@@ -82,6 +82,8 @@ const failed = log.split("\n").filter((line) => line.includes("failed"));
 if (failed.length) throw Error(`assets failed to load:\n${failed.join("\n")}`);
 if ((calls.texture_create ?? 0) < 60) throw Error(`only ${calls.texture_create} textures`);
 if (playing < 600) throw Error(`the Survival run lasted ${playing} frames`);
+// The client plays the run as a session, which records it (host/session.inc).
+if (game.game_replay_size() <= 260) throw Error("the Survival run did not play as a session");
 // The run itself is quiet: its music starts at the first hit, and nothing fires.
 if (audible < 1000) throw Error(`only ${audible} frames made sound`);
 console.log(JSON.stringify({ ...calls, audible }));
