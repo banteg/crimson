@@ -13,9 +13,8 @@ extern char *grim_lookup_blob;
 extern int grim_lookup_blob_size;
 extern unsigned char grim_lookup_blob_loaded;
 
-namespace {
 // The same path but for separators and case, up to the extensions when `stems`.
-bool same_path(const char *stored, const char *wanted, bool stems) {
+bool paq_same_path(const char *stored, const char *wanted, bool stems) {
   const char *stored_dot = strrchr(stored, '.'), *wanted_dot = strrchr(wanted, '.');
   size_t n = stems && stored_dot ? stored_dot - stored : strlen(stored);
   size_t m = stems && wanted_dot ? wanted_dot - wanted : strlen(wanted);
@@ -29,7 +28,6 @@ bool same_path(const char *stored, const char *wanted, bool stems) {
   }
   return true;
 }
-} // namespace
 
 // The name the entry for `path` is stored under: the same path, else the same
 // path in another format; `path` itself when the pack holds neither.
@@ -40,7 +38,7 @@ char *grim_lookup_blob_entry(char *path) {
     for (int offset = (int)strlen(grim_lookup_blob_magic) + 1; offset < grim_lookup_blob_size;) {
       char *name = grim_lookup_blob + offset;
       int length = (int)strlen(name);
-      if (same_path(name, path, stems))
+      if (paq_same_path(name, path, stems))
         return name;
       offset += length + 5 + *(int *)(name + length + 1);
     }

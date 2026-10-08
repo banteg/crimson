@@ -284,7 +284,7 @@ std::string remembered() {
   return path;
 }
 bool has_game_files(const std::string &directory) {
-  return SDL_GetPathInfo((directory + "/grim.dll").c_str(), nullptr);
+  return SDL_GetPathInfo((directory + "/crimson.paq").c_str(), nullptr);
 }
 // The folder dialog answers on its own thread; the main loop takes the answer.
 SDL_AtomicInt answered;
@@ -310,7 +310,7 @@ SDL_AppResult wait_for_folder() {
     return SDL_APP_SUCCESS;
   if (!has_game_files(chosen)) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Crimsonland",
-                             "That folder has no grim.dll. Choose the folder Crimsonland is installed in.", window);
+                             "That folder has no crimson.paq. Choose the folder Crimsonland is installed in.", window);
     choose_folder();
     return SDL_APP_CONTINUE;
   }

@@ -19,6 +19,7 @@
   #progress { width: min(360px, 80vw); height: 4px; background: rgb(255 255 255 / 0.1); }
   #progress div { height: 100%; width: 0; background: var(--row-on); transition: width 0.1s linear; }
   #touch { max-width: 420px; color: var(--dim); }
+  #again:not([hidden]) { display: flex; gap: 16px; align-items: center; }
   button, #pick label { font: inherit; color: rgb(255 255 255 / 0.7); background: rgb(30 40 55 / 0.85);
     border: 1px solid rgb(70 180 240 / 0.4); border-radius: 3px; padding: 4px 12px; cursor: pointer; }
   button:hover, #pick label:hover { color: #fff; border-color: var(--row-on); }
@@ -41,16 +42,17 @@
   <div id="status">Loading…</div>
   <div id="progress" hidden><div></div></div>
   <div id="pick" hidden><label>Choose your Crimsonland folder…<input type="file" webkitdirectory></label></div>
+  <div id="again" hidden><button type="button" onclick="location.reload()">Play again</button> <a href="/">crimson.land</a></div>
   <p id="touch" hidden>Crimsonland plays with a keyboard and mouse, or a gamepad.</p>
 </div>
 <nav id="bar" hidden><span id="notice" hidden></span><a href="/">crimson.land</a><button id="fullscreen" type="button">Fullscreen</button></nav>
 <script>
   // The game reads and writes its directory, /game, kept in IndexedDB. Files it
   // lacks come from ?assets=<url>, default ./game/ (the project's distribution:
-  // grim.dll, crimson.paq, sfx.paq, and music.paq, which is unpacked into music/,
-  // where the executable plays its music from), or else from the player's own
-  // game folder.
-  const FILES = ["grim.dll", "crimson.paq", "sfx.paq"];
+  // crimson.paq, sfx.paq, and music.paq, which is unpacked into music/, where the
+  // executable plays its music from), or else from the player's own game folder,
+  // whose grim.dll comes along (game/resources.cpp).
+  const FILES = ["crimson.paq", "sfx.paq"];
   // The music the executable plays by name, and the file naming the in-game tunes.
   const MUSIC = ["intro", "crimson_theme", "crimsonquest", "shortie_monk"].map((name) => `music/${name}.ogg`);
   const TUNES = "music/game_tunes.txt";
@@ -155,7 +157,8 @@
   // A PAQ's entries: a NUL-terminated name, a little-endian size, the bytes.
   function paq(bytes) {
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-    if (new TextDecoder("latin1").decode(bytes.subarray(0, 4)) !== "paq\0") throw Error("not a PAQ");
+    // "paq\0" as a number: the minified page would hold a raw NUL, which HTML replaces.
+    if (bytes.length < 4 || view.getUint32(0) !== 0x70617100) throw Error("not a PAQ");
     const entries = [];
     for (let at = 4; at < bytes.length; ) {
       const end = bytes.indexOf(0, at);
@@ -186,14 +189,15 @@
         );
         try {
           for (const [name, file] of files)
-            if (FILES.includes(name) || name.startsWith("music/")) store(name, new Uint8Array(await file.arrayBuffer()));
+            if (FILES.includes(name) || name === "grim.dll" || name.startsWith("music/")) store(name, new Uint8Array(await file.arrayBuffer()));
           if (files.has("music.paq")) storeMusic(new Uint8Array(await files.get("music.paq").arrayBuffer()));
         } catch (error) {
           return say("Could not read that folder: " + (error.message ?? error));
         }
         // Nothing reaches IndexedDB until the directory is complete.
-        const lacking = missing();
-        if (lacking.length) return say("That folder lacks " + lacking.join(", ") + ".");
+        const lacking = missing(), named = lacking.filter((name) => !name.startsWith("music/"));
+        const music = lacking.length - named.length;
+        if (lacking.length) return say(`That folder lacks ${[...named, ...(music ? [`${music} music files`] : [])].join(", ")}.`);
         pick.hidden = true;
         resolve();
       };
@@ -216,7 +220,8 @@
         chunks.push(value);
         received += value.length;
         if (total) progress.firstElementChild.style.width = (100 * Math.min(received / total, 1)) + "%";
-        say(`Downloading the game: ${(received / 1048576).toFixed(1)} MB${total ? " of " + (total / 1048576).toFixed(1) : ""}`);
+        const mb = (bytes) => (bytes / 1048576).toFixed(1);
+        say(`Downloading the game: ${total ? `${mb(received)} of ${mb(total)}` : mb(received)} MB`);
       }
       const bytes = new Uint8Array(chunks.reduce((sum, chunk) => sum + chunk.length, 0));
       chunks.reduce((at, chunk) => (bytes.set(chunk, at), at + chunk.length), 0);
@@ -277,7 +282,9 @@
       bar.hidden = true;
       progress.hidden = true;
       say("Saving…");
-      say((await persist()) ? "Reload the page to play again." : notice.textContent);
+      const saved = await persist();
+      say(saved ? "Your progress is saved." : notice.textContent);
+      document.getElementById("again").hidden = false;
     },
   };
   // Saves and settings reach IndexedDB a few seconds after the game writes them,

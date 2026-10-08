@@ -1,5 +1,5 @@
 // Plays a run the way the client does: the original boots from a game
-// directory (grim.dll, crimson.paq, sfx.paq and music/), its menus start a
+// directory (crimson.paq, sfx.paq and music/), its menus start a
 // Survival run, and the run plays as a session (host/session.inc). A scripted
 // player aims at the nearest creature and fires in bursts, opens the perk menu
 // with Space and picks from it (double-clicking, and asking again at once),

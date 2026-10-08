@@ -49,7 +49,7 @@ they use:
 | D3DX texture loading (TGA, BMP, JPEG) | [`d3dx.cpp`](game/d3dx.cpp), with the IJG libjpeg 6a and zlib 1.1.3 Grim links |
 | DirectInput keyboard, mouse and joystick | [`dinput.cpp`](game/dinput.cpp): device state the host delivers each frame; an SDL gamepad is the joystick, laid out as the Logitech Dual Action the game's pad schemes are named for |
 | Grim's window procedure and run loop | [`frame.cpp`](game/frame.cpp): one loop pass per host frame; window messages as calls |
-| `grim.dll`'s embedded font and splash | [`resources.cpp`](game/resources.cpp) reads them from `grim.dll` |
+| `grim.dll`'s embedded font and splash | [`resources.cpp`](game/resources.cpp) reads them from `grim.dll`; without it, the font from `crimson.paq` and a blank splash, which nothing draws |
 | Files, registry, threads, WinInet, DLLs | [`win32.cpp`](game/win32.cpp): Windows paths under the game directory, a registry file, threads that run to completion, offline WinInet, no DLLs |
 | DirectSound | [`dsound.cpp`](game/dsound.cpp) mixes the buffers inside the module; the host pulls the mix |
 | vorbisfile | [`vorbis.cpp`](game/vorbis.cpp) over stb_vorbis |
@@ -188,14 +188,20 @@ check on a seed whose run picks perks and pauses.
 
 ### Assets
 
-The client reads a game directory: `grim.dll`, `crimson.paq`, `sfx.paq` and the
-`music` folder (the configuration files appear on first launch). The executable
+The client reads a game directory: `crimson.paq`, `sfx.paq` and the `music`
+folder, and `grim.dll` when it is there (the configuration files appear on first
+launch). The executable
 asks for music as `music\<name>.ogg`, which no PAQ entry matches, so it plays
 the loose files, as the GOG release ships them; the in-game tunes are whatever
-`music\game_tunes.txt` adds.
+`music\game_tunes.txt` adds. Nothing runs `grim.dll`: Grim is in the module,
+and the DLL only holds two RCDATA images Grim's device loads, its default font
+and a splash it never draws. Both `crimson.paq` releases carry the same font as
+`load/default_font_courier.tga`, which the module reads when there is no
+`grim.dll` ([`resources.cpp`](game/resources.cpp)); the executable sets Grim's
+pack only after its device is up, so it reads the file itself.
 
 The project distributes the files from its asset host, by 10tons' permission:
-`grim.dll` and `sfx.paq` as released, `crimson.paq` repacked with the
+`sfx.paq` as released, `crimson.paq` repacked with the
 uncompressed art Tero sent (forward-slash names, each image in its own format,
 `game/alien.tga` where the executable asks for `game\alien.jaz`), and
 `music.paq` with the release's music and the official music addon, whose
@@ -266,7 +272,7 @@ game where the browser allows it.
 
 crimson.land serves the page at [`/play/`](https://crimson.land/play/): the
 site's Worker answers `/play/game/<file>` from the asset bucket, same-origin,
-for the four distributed files only ([`service/src/index.ts`](../service/src/index.ts)),
+for the three distributed files only ([`service/src/index.ts`](../service/src/index.ts)),
 and `npm run play` in `service` stages the packaged web build for deploy.
 
 ## Plan

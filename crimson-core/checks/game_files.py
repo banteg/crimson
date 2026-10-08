@@ -1,9 +1,10 @@
 """Lay out a game directory from the files the project distributes.
 
-grim.dll, crimson.paq and sfx.paq as they are, and music.paq unpacked into
-music/, where the executable plays its music from (the official addon's tunes
-come in through music/game_tunes.txt). The checks that boot the original run
-from this directory.
+crimson.paq and sfx.paq as they are, and music.paq unpacked into music/, where
+the executable plays its music from (the official addon's tunes come in through
+music/game_tunes.txt). No grim.dll: the module takes Grim's default font from
+crimson.paq (game/resources.cpp). The checks that boot the original run from
+this directory.
 """
 
 import argparse
@@ -13,7 +14,7 @@ from pathlib import Path
 
 from crimson.assets_fetch import ASSET_BASE_URL
 
-FILES = ("grim.dll", "crimson.paq", "sfx.paq")
+FILES = ("crimson.paq", "sfx.paq")
 
 
 def paq_entries(data):

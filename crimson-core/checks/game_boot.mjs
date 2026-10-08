@@ -1,4 +1,4 @@
-// Boots the original game from a game directory (grim.dll, crimson.paq, sfx.paq
+// Boots the original game from a game directory (crimson.paq, sfx.paq
 // and music/), headless under Node's WASI, then clicks through to a Survival
 // run. No asset may fail to load, the menus' music must reach the mix, the run
 // must play as a session and keep drawing, and losing the window must stop the

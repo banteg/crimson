@@ -12,7 +12,7 @@ const HSTS = "max-age=31536000; includeSubDomains";
 const QUEST = /^[1-5]\.(?:[1-9]|10)$/;
 // The game's files the playable game loads, from the version the bucket keeps them under; the page keeps them in the
 // player's browser after the first visit (crimson-core/client/web/shell.html).
-const GAME_FILES = new Set(["grim.dll", "crimson.paq", "sfx.paq", "music.paq"]);
+const GAME_FILES = new Set(["crimson.paq", "sfx.paq", "music.paq"]);
 const GAME_VERSION = "v1.9.93";
 // The game's high score tables hold 100 records (TABLE_MAX).
 const SCORES_LIMIT = 100;
