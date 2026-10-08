@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from concurrent.futures import Future
+from pathlib import Path
+
 from crimson.game_states import GameStateId
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScreenAction, StartRun, WatchReplay
@@ -51,9 +54,12 @@ from ..high_scores_layout import (
 from ..menu_screen import MenuScreen
 from ..quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from .main_panel import draw_main_panel
-from .records import load_records, online_board
+from .records import load_records, online_board, online_runs, run_key
 from .right_panel import draw_right_panel, local_card_pos
-from .watch import WatchTarget, local_watch_target
+from .watch import WatchTarget, local_watch_target, replay_watch_target
+
+# A board run's card while its replay downloads; looked at again every frame until the download ends.
+_DOWNLOADING = WatchTarget(None, "Downloading the run...")
 
 DATE_FILTER_ITEMS = ("Best of all time", "Best of month", "Best of week", "Best of day")
 # Native lists two players; the port plays up to four.
@@ -95,6 +101,9 @@ class HighScoresView(MenuScreen):
         self._watch_target: tuple[int, WatchTarget | None] | None = None
         self.watch_button = UiButtonState("Watch", force_wide=False)
         self._watch_action: ScreenAction | None = None
+        # The run id of each received row on screen, and the board run whose replay is downloading.
+        self._online_runs: dict[tuple[str, int, int], str] = {}
+        self._download: tuple[str, Future[Path | None]] | None = None
 
     def open(self) -> None:
         super().open()
@@ -127,13 +136,39 @@ class HighScoresView(MenuScreen):
         return super().take_action()
 
     def watch_target(self) -> WatchTarget | None:
-        """The pinned row's replay, or why it does not play; read once per pin."""
+        """The pinned row's replay, or why it does not play: a local run's by its number, a board run's downloaded.
+        Read once per pin, and each frame while a download runs."""
         pinned = self.pinned
         if pinned is None or not 0 <= pinned < len(self._records):
             return None
-        if self._watch_target is None or self._watch_target[0] != pinned:
-            self._watch_target = (pinned, local_watch_target(self.state.base_dir / "replays", self._records[pinned]))
-        return self._watch_target[1]
+        if self._watch_target is not None and self._watch_target[0] == pinned:
+            return self._watch_target[1]
+        record = self._records[pinned]
+        replays = self.state.base_dir / "replays"
+        target = local_watch_target(replays, record) or self._board_watch_target(record, replays / "online")
+        if target is not _DOWNLOADING:
+            self._watch_target = (pinned, target)
+        return target
+
+    def _board_watch_target(self, record: HighScoreRecord, replay_dir: Path) -> WatchTarget | None:
+        run = self._online_runs.get(run_key(record))
+        leaderboard = self.state.leaderboard
+        if run is None or leaderboard is None:
+            return None
+        if self._download is None or self._download[0] != run:
+            self._download = (run, leaderboard.fetch_replay(run, replay_dir))
+        future = self._download[1]
+        if not future.done():
+            return _DOWNLOADING
+        try:
+            path = future.result()
+        except OSError:
+            # The next pin tries again.
+            self._download = None
+            return WatchTarget(None, "Could not download this run")
+        if path is None:
+            return WatchTarget(None, "This run is no longer on the leaderboard")
+        return replay_watch_target(path)
 
     def close(self) -> None:
         super().close()
@@ -285,6 +320,7 @@ class HighScoresView(MenuScreen):
         row = ui_scrollbar_row_under_mouse(bar, list_pos, Vec2.from_xy(mouse))
         if click and row != -1:
             self.pinned = None if self.pinned == row else row
+            self._watch_target = None
         ui_scrollbar_update(
             self.state.focus,
             bar,
@@ -360,6 +396,7 @@ class HighScoresView(MenuScreen):
         ):
             leaderboard.sync(board)
         self._records = load_records(self.state, self._request)
+        self._online_runs = online_runs(self.state, self._request)
         self.pinned = None
         self._watch_target = None
         items = []

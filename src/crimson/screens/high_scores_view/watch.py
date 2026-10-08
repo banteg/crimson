@@ -27,6 +27,12 @@ def local_watch_target(replay_dir: Path, record: HighScoreRecord) -> WatchTarget
     path = numbered_replay(replay_dir, record.replay_number)
     if path is None:
         return WatchTarget(None, "Its replay was not saved")
+    return replay_watch_target(path)
+
+
+def replay_watch_target(path: Path) -> WatchTarget:
+    """A replay file as a row's Watch: it plays, or the reason it does not."""
+
     try:
         replay = load_replay_file(path)
     except ReplayCodecError:

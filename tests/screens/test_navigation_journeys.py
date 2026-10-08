@@ -8,11 +8,12 @@ import pytest
 from crimson.game import resources as resources_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
+from crimson.leaderboard import Leaderboard, OnlineScore
 from crimson.modes.base_gameplay_mode import BaseGameplayMode
 from crimson.modes.replay_playback_mode import ReplayPlaybackMode
 from crimson.persistence.highscores import HighScoreRecord, scores_path_for_config, upsert_highscore_record
 from crimson.quests.level import QuestLevel
-from crimson.replay import ReplayRecorder, dump_replay_file
+from crimson.replay import ReplayRecorder, dump_replay, dump_replay_file
 from crimson.replay.input_codec import pack_tick
 from crimson.replay.library import replay_file_name
 from crimson.screens import menu
@@ -305,3 +306,31 @@ def test_watch_plays_a_pinned_rows_replay_over_the_scores_and_esc_returns(loop, 
     mocker.patch.object(rl, "is_key_pressed", return_value=False)
     assert state.screens.active is scores
     assert scores.pinned == 0
+
+
+def test_watch_downloads_a_board_runs_replay_for_its_row(loop, tmp_path) -> None:
+    state = loop.state
+    state.config.gameplay.mode = GameMode.SURVIVAL
+    state.config.profile.show_internet_scores = True
+    recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=9))
+    recorder.record(pack_tick([player_input()], []))
+    replay = finish_replay(recorder)
+    run = "c" * 64
+    leaderboard = Leaderboard(tmp_path, url="https://crimson.test/api", transport=lambda *_: (200, {}), download=lambda _url: dump_replay(replay))
+    leaderboard.scores[("survival", "")] = [
+        OnlineScore(name="ranker", score=99, elapsed_ms=1000, experience=99, most_used_weapon_id=1, shots_fired=0, shots_hit=0, kills=0, accepted_at=0, run=run),
+    ]
+    state.leaderboard = leaderboard
+
+    loop.navigation.navigate(ShowScores(ScoreQuery(GameMode.SURVIVAL)))
+    finish_transition(loop)
+    scores = state.screens.active
+    assert isinstance(scores, scores_module.HighScoresView)
+    scores.pinned = 0
+
+    target = scores.watch_target()
+    while target is not None and target.note == "Downloading the run...":
+        target = scores.watch_target()
+
+    assert target is not None and target.replay == replay
+    assert (state.base_dir / "replays" / "online" / f"{run}.crd").exists()

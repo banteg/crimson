@@ -51,16 +51,26 @@ def _online_record(score: OnlineScore, request: ScoreQuery, *, hardcore: bool) -
     return record
 
 
-def _run_key(record: HighScoreRecord) -> tuple[str, int, int]:
+def run_key(record: HighScoreRecord) -> tuple[str, int, int]:
     return record.name(), record.run_elapsed_ms, record.score_xp
+
+
+def online_runs(state: GameState, request: ScoreQuery) -> dict[tuple[str, int, int], str]:
+    """The run id of each received row on screen, by the row's run key, so Watch can download its replay."""
+    board = online_board(state, request)
+    leaderboard = state.leaderboard
+    if leaderboard is None or board not in leaderboard.scores:
+        return {}
+    hardcore = state.config.gameplay.hardcore
+    return {run_key(_online_record(score, request, hardcore=hardcore)): score.run for score in leaderboard.scores[board] if score.run}
 
 
 def _with_online(local: list[HighScoreRecord], online: list[HighScoreRecord]) -> list[HighScoreRecord]:
     """The local records and the received ones; a local run the board holds turns green instead of showing twice."""
-    received = {_run_key(record): record for record in online}
+    received = {run_key(record): record for record in online}
     merged = []
     for record in local:
-        if received.pop(_run_key(record), None) is not None:
+        if received.pop(run_key(record), None) is not None:
             record = record.copy()
             record.flags |= RECEIVED_FLAG
         merged.append(record)
@@ -95,4 +105,4 @@ def load_records(state: GameState, request: ScoreQuery) -> list[HighScoreRecord]
     )
 
 
-__all__ = ["load_records", "online_board"]
+__all__ = ["load_records", "online_board", "online_runs", "run_key"]
