@@ -474,7 +474,8 @@ void ranked_menu(float *base, float *tips, bool list_open) {
   char ranked_tip[64], profile_text[64];
   const char *name = config_blob.player_name;
   snprintf(ranked_tip, sizeof ranked_tip, "Play for the online leaderboard as %s.", name);
-  if (!*name || grim_interface_ptr->grim_measure_text_width(ranked_tip) >
+  // A fresh config's default name (config defaults) is nobody's, so the tip leaves it out.
+  if (!*name || !strcmp(name, "10tons") || grim_interface_ptr->grim_measure_text_width(ranked_tip) >
                     grim_interface_ptr->grim_measure_text_width((char *)"Unlock new weapons and perks in Quest mode."))
     snprintf(ranked_tip, sizeof ranked_tip, "Play for the online leaderboard.");
   int waiting = ranked_waiting();

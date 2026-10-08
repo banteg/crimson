@@ -113,9 +113,9 @@ replays, names, links, keys and sessions. `/privacy` and `/terms` say the same i
   Ranked is ticked; it follows the box in focus order. It opens the signed login link. The button's plate is 32 px
   tall against the box's 16, so the row is 40 px and the box sits centred on the plate. At 640x480 the grown panel
   would push Back off the window, so the panel and Back rise by the overflow instead.
-- The Ranked tooltip names the player, "Play for the online leaderboard as banteg.", when that fits the panel. The
-  Profile tooltip says how many runs wait to upload, or that the leaderboard can't be reached after a failed
-  login. Both stay on one line, above the bottom row.
+- The Ranked tooltip names the player, "Play for the online leaderboard as banteg.", when that fits the panel and
+  the name is not a fresh config's default `10tons`. The Profile tooltip says how many runs wait to upload, or that
+  the leaderboard can't be reached after a failed login. Both stay on one line, above the bottom row.
 - The high score screen's **Update scores** works as the original's did against `scores.crimsonland.com`
   ([online high scores](../crimsonland-exe/online-scores.md)): it sends the waiting runs, then receives the shown
   board, with the original's status lines under the buttons and Play a game disabled meanwhile. Only the verified
