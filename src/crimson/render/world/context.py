@@ -57,7 +57,8 @@ class WorldRenderCtx(msgspec.Struct, frozen=True):
 # `projectile_render`'s late pass binds `bullet_i` without resetting the UVs left
 # by the Fire Bullets glow's `effect_select_texture(13)`. It therefore samples the
 # texture's transparent top-right quarter, so bullet heads and plasma cores never
-# show in the original even though their quads are drawn.
+# show in the original even though their quads are drawn. Up to 1.4 the preceding
+# passes left the whole texture selected and the heads showed.
 _LATE_BULLET_PASS_EFFECT_ID = 13
 
 
@@ -77,9 +78,13 @@ def draw_late_bullet_pass_sprite(
     size: float,
     angle: float,
     alpha: float,
+    native_uvs: bool,
 ) -> None:
-    src = effect_cell_src(texture, _LATE_BULLET_PASS_EFFECT_ID)
-    assert src is not None
+    if native_uvs:
+        src = effect_cell_src(texture, _LATE_BULLET_PASS_EFFECT_ID)
+        assert src is not None
+    else:
+        src = rl_rectangle(0.0, 0.0, float(texture.width), float(texture.height))
     dst = rl_rectangle(screen_pos.x, screen_pos.y, size, size)
     origin = rl_vector2(size * 0.5, size * 0.5)
     tint = rl_color(204, 204, 204, int(clamp(alpha * 0.9, 0.0, 1.0) * 255.0))

@@ -525,16 +525,22 @@ def _plague_pass(render_ctx: WorldRenderCtx, *, alpha: float, atlas_state: tuple
 
 
 def _fire_bullets_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
-    """Glow over each Fire Bullets head in flight."""
+    """Fire Bullets glow over every projectile in flight, gated on the last pool slot.
 
+    Native tests the type through the pointer the sprite pass left on the last
+    slot, not each projectile's own. So every shot glows while that slot holds
+    Fire Bullets, even a spent one, and none glow otherwise.
+    """
+
+    entries = render_ctx.frame.state.projectiles.entries
+    if int(entries[-1].type_id) != ProjectileTemplateId.FIRE_BULLETS:
+        return
     texture = render_ctx.frame.resources.texture(TextureId.PARTICLES)
     src = _glow_src(texture)
     scale = render_ctx.view.scale
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    for proj in render_ctx.frame.state.projectiles.entries:
+    for proj in entries:
         if not proj.active or float(proj.life_timer) < 0.4:
-            continue
-        if int(proj.type_id) != ProjectileTemplateId.FIRE_BULLETS:
             continue
         _draw_quad(
             texture,
@@ -548,26 +554,43 @@ def _fire_bullets_glow_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None
 
 
 def _bullet_head_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
-    """`bullet_i` heads for every projectile in flight but the plasma pair and Pulse."""
+    """`bullet_i` heads for every projectile in flight but the plasma pair and Pulse.
 
+    Native samples a transparent corner, so no head shows (original bug 28). The
+    rewrite draws the whole sprite and also skips the glowing and sprite shots,
+    which the hidden heads kept off the native list.
+    """
+
+    preserve_bugs = render_ctx.frame.state.preserve_bugs
     texture = render_ctx.frame.resources.texture(TextureId.BULLET_I)
     scale = render_ctx.view.scale
     for proj in render_ctx.frame.state.projectiles.entries:
         if not proj.active or float(proj.life_timer) < 0.4:
             continue
         type_id = int(proj.type_id)
-        if type_id in (
-            ProjectileTemplateId.PLASMA_RIFLE,
-            ProjectileTemplateId.PLASMA_MINIGUN,
-            ProjectileTemplateId.PULSE_GUN,
-        ):
-            continue
+        match type_id:
+            case ProjectileTemplateId.PLASMA_RIFLE | ProjectileTemplateId.PLASMA_MINIGUN | ProjectileTemplateId.PULSE_GUN:
+                continue
+            case (
+                ProjectileTemplateId.ION_RIFLE
+                | ProjectileTemplateId.ION_MINIGUN
+                | ProjectileTemplateId.ION_CANNON
+                | ProjectileTemplateId.SHRINKIFIER
+                | ProjectileTemplateId.BLADE_GUN
+                | ProjectileTemplateId.SPIDER_PLASMA
+                | ProjectileTemplateId.PLASMA_CANNON
+                | ProjectileTemplateId.SPLITTER_GUN
+                | ProjectileTemplateId.PLAGUE_SPREADER
+                | ProjectileTemplateId.FIRE_BULLETS
+            ) if not preserve_bugs:
+                continue
         draw_late_bullet_pass_sprite(
             texture,
             screen_pos=render_ctx.world_to_screen(proj.pos),
             size=late_bullet_pass_size(type_id, scale=scale),
             angle=float(proj.angle),
             alpha=alpha,
+            native_uvs=preserve_bugs,
         )
 
 
@@ -654,10 +677,14 @@ def _secondary_flame_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
 
 
 def secondary_detonation_pass(render_ctx: WorldRenderCtx) -> None:
-    """Detonation flashes; `bonus_render` draws them after the particle pool."""
+    """Detonation flashes; `bonus_render` draws them after the particle pool.
+
+    Native resets the UVs to the whole bound texture, so each flash stretches
+    the entire `particles` atlas rather than one glow cell.
+    """
 
     texture = render_ctx.frame.resources.texture(TextureId.PARTICLES)
-    src = _glow_src(texture)
+    src = rl_rectangle(0.0, 0.0, float(texture.width), float(texture.height))
     scale = render_ctx.view.scale
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     for proj in render_ctx.frame.state.secondary_projectiles.entries:

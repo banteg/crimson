@@ -675,14 +675,30 @@ Native behavior:
 - In game, bullets show only their trails, and plasma shots only their glow.
   At most a filtered edge texel can flicker near a spawning shot.
 
+Why it's likely a bug:
+
+- The heads used to show. In 1.0.2, 1.3.0, 1.3.1 and 1.4.0 the last UV change
+  before the pass is a `grim_set_uv(0, 0, 1, 1)` in an earlier pass, so
+  every head drew the whole brass slug. From 1.8.7 on, the glow pass right
+  before it selects frame 13, and the heads vanish in every later build.
+- Every shipped `grim.dll` binds a texture without touching the UVs, so only
+  `crimsonland.exe` changed.
+- The skip list never grew with the glowing and sprite shots. With the heads
+  hidden, nothing showed a slug inside a Fire Bullets streak, an ion beam or a
+  plasma glow.
+
 Rewrite behavior:
 
-- Documented and preserved in both modes: the pass samples the same texels, so
-  heads and cores stay invisible as in the original.
+- Default: the pass samples the whole sprite. It also skips Ion Rifle, Ion
+  Minigun, Ion Cannon, Shrinkifier, Blade Gun, Spider Plasma, Plasma Cannon,
+  Splitter Gun, Plague Spreader and Fire Bullets, so heads show on bullets and
+  pellets only.
+- `--preserve-bugs`: the pass samples the same texels as native, so no head shows.
 
 Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (Fire Bullets
-glow and late bullet pass), `effect_select_texture`, and captures of the
-original with Plasma Shooter spiders. Executable-backed coverage is in
+glow and late bullet pass), `effect_select_texture`, the head passes of every
+build in `game_bins/crimsonland/`, and captures of the original with Plasma
+Shooter spiders. Executable-backed coverage is in
 `tests/native_oracle/test_projectile_render.py`; the original texture's invisible
 sampled corner is also checked on the GPU in
 `tests/render/test_late_bullet_pass.py`.
@@ -809,3 +825,41 @@ Evidence: `decomp/1.9/crimsonland/crimsonland/creature_handle_death.c` (the
 bonus spawn at the top) and `creature_spawn_template` (the only template that
 sets the flag).
 
+
+## 34) The Fire Bullets glow follows the last projectile slot
+
+Native behavior:
+
+- `projectile_render`'s Fire Bullets glow loop tests
+  `projectile->type_id`, a pointer the sprite pass leaves on the last pool slot
+  (95), instead of the projectile it is drawing.
+- So while slot 95 holds a Fire Bullets type, every projectile in flight gets
+  the 64 px glow, pistol and ion shots included. The slot keeps its type after
+  the shot ends, so the glow stays until another type takes the slot.
+- Otherwise no projectile glows, Fire Bullets shots included. Spawns take the
+  first free slot, so slot 95 fills only when the pool is full.
+
+Rewrite behavior:
+
+- Documented and preserved in both modes.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (the glow
+loop after the Plague Spreader pass). Executable-backed coverage is in
+`tests/native_oracle/test_projectile_render.py`.
+
+## 35) Rocket detonation flashes draw the whole particle atlas
+
+Native behavior:
+
+- `bonus_render` draws each detonation's two orange flashes (64 and 200 units
+  at full scale) after the particle pool, with `particles` still bound.
+- Before them it calls `grim_set_uv(0, 0, 1, 1)`, so each flash stretches the
+  entire particle atlas, debris, blood, explosion and ring cells included,
+  rather than one glow cell.
+
+Rewrite behavior:
+
+- Documented and preserved in both modes.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/bonus_render.cpp` (the detonation
+loop) and `tests/native_oracle/test_projectile_render.py`.

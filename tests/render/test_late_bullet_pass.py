@@ -21,12 +21,14 @@ def _quarter_texture(*, top_right_opaque: bool) -> rl.Texture:
     return texture
 
 
-def _lit_pixels(texture: rl.Texture) -> int:
+def _lit_pixels(texture: rl.Texture, *, native_uvs: bool = True) -> int:
     target = rl.load_render_texture(32, 32)
     try:
         rl.begin_texture_mode(target)
         rl.clear_background(rl.BLACK)
-        draw_late_bullet_pass_sprite(texture, screen_pos=Vec2(16.0, 16.0), size=24.0, angle=0.0, alpha=1.0)
+        draw_late_bullet_pass_sprite(
+            texture, screen_pos=Vec2(16.0, 16.0), size=24.0, angle=0.0, alpha=1.0, native_uvs=native_uvs,
+        )
         rl.end_texture_mode()
         image = rl.load_image_from_texture(target.texture)
         try:
@@ -60,5 +62,7 @@ def test_original_bullet_texture_keeps_late_heads_invisible(raylib_context, asse
     assert texture is not None
     try:
         assert _lit_pixels(texture) == 0
+        # The rewrite draws the whole sprite, as the pass did up to 1.4.
+        assert _lit_pixels(texture, native_uvs=False) > 0
     finally:
         rl.unload_texture(texture)
