@@ -346,9 +346,6 @@ std::string remembered() {
   SDL_free(pref);
   return path;
 }
-bool has_game_files(const std::string &directory) {
-  return SDL_GetPathInfo((directory + "/crimson.paq").c_str(), nullptr);
-}
 // The folder dialog answers on its own thread; the main loop takes the answer.
 SDL_AtomicInt answered;
 std::string chosen;
@@ -371,9 +368,8 @@ SDL_AppResult wait_for_folder() {
   }
   if (chosen.empty())
     return SDL_APP_SUCCESS;
-  if (!has_game_files(chosen)) {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Crimsonland",
-                             "That folder has no crimson.paq. Choose the folder Crimsonland is installed in.", window);
+  if (std::string error = client_prepare_assets(chosen); !error.empty()) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Crimsonland", error.c_str(), window);
     choose_folder();
     return SDL_APP_CONTINUE;
   }
@@ -423,7 +419,8 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   renderer_init();
   audio_init();
 #ifndef __EMSCRIPTEN__
-  if (!has_game_files(game_directory)) {
+  if (std::string error = client_prepare_assets(game_directory); !error.empty()) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Crimsonland", error.c_str(), window);
     choose_folder();
     return SDL_APP_CONTINUE;
   }
