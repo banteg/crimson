@@ -210,6 +210,17 @@ value) is set by the host at run start.
 | 27 | Enemy projectiles do not hurt through Death Clock |
 | 33 | A bonus carrier drops its bonus once |
 
+Fixes that only change what is drawn are patches in
+[`game/patches/`](game/patches), which only the game module applies, so the
+verifier stays byte-identical:
+
+| Patch | Fix |
+| --- | --- |
+| 28 | Bullets and pellets show their heads |
+| 34 | Each Fire Bullets shot glows, and nothing else does |
+| 35 | Rocket detonation flashes draw the soft glow cell |
+| 36 | Ion chain arcs close in round end caps |
+
 The other entries are out of the core's scope (co-op, Typ-o, HUD, menus or
 live input) or are documentation only.
 

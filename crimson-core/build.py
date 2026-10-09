@@ -26,7 +26,7 @@ from game import (
     session_seam,
     simulation_names,
 )
-from rules import apply_patches, load_patches
+from rules import GAME_PATCHES, PATCHES, apply_patches, load_patches
 
 HERE = Path(__file__).resolve().parent
 HOST = HERE / "host"
@@ -156,9 +156,9 @@ def main():
         sources += game_sources(a.root)
     name = object_name if a.target == "game" else lambda rel: Path(rel).stem
 
-    hunks = load_patches()
+    hunks = load_patches(PATCHES, *([GAME_PATCHES] if a.target == "game" else []))
     if missing := sorted(set(hunks) - {Path(rel).stem for rel in sources}):
-        raise SystemExit(f"Rule patches for sources outside sources.json: {', '.join(missing)}")
+        raise SystemExit(f"Patches for sources outside the build: {', '.join(missing)}")
 
     def compile_one(rel):
         src = a.root / rel

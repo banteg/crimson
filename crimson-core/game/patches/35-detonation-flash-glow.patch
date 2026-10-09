@@ -1,0 +1,16 @@
+Original bug 35: rocket detonation flashes draw the whole particle atlas. The fix draws the soft glow cell, as freeware did.
+--- a/bonus_render.cpp
++++ b/bonus_render.cpp
+@@ -408,7 +408,11 @@
+ 
+     grim_interface_ptr->grim_set_config_var(0x13, 5u);
+     grim_interface_ptr->grim_set_config_var(0x14, 2u);
+-    grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
++    if (portable_preserve_bugs) {
++        grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
++    } else {
++        effect_select_texture(16);
++    }
+     grim_interface_ptr->grim_set_rotation(0.0f);
+     grim_interface_ptr->grim_begin_batch();
+     for (int secondary_index = 0;

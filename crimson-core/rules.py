@@ -1,5 +1,8 @@
 """The ranked rules: `patches/NN-*.patch` fix original bug NN of docs/rewrite/original-bugs.md.
 
+The game module also applies `game/patches/NN-*.patch`, the fixes that only change what is drawn, so they leave the
+verifier untouched.
+
 Each patch is a unified diff against the adapted copy of a recovered source (as written to build/), keeping the
 native code behind `portable_preserve_bugs`. Hunks are matched by their exact old text, which must occur once;
 line numbers are ignored because adapters shift them.
@@ -8,15 +11,17 @@ line numbers are ignored because adapters shift them.
 import re
 from pathlib import Path
 
-PATCHES = Path(__file__).resolve().parent / "patches"
+HERE = Path(__file__).resolve().parent
+PATCHES = HERE / "patches"
+GAME_PATCHES = HERE / "game" / "patches"
 _HUNK = re.compile(r"@@ -\d+(?:,(\d+))? \+\d+(?:,(\d+))? @@")
 
 
-def load_patches() -> dict[str, list[tuple[str, str, str]]]:
+def load_patches(*folders: Path) -> dict[str, list[tuple[str, str, str]]]:
     """(patch name, old text, new text) hunks by source stem."""
 
     hunks: dict[str, list[tuple[str, str, str]]] = {}
-    for patch in sorted(PATCHES.glob("*.patch")):
+    for patch in sorted(path for folder in folders for path in folder.glob("*.patch")):
         lines = patch.read_text().splitlines(keepends=True)
         stem = None
         i = 0
