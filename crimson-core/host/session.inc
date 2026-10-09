@@ -93,7 +93,7 @@ static void live_install(const LiveSettings &settings) {
 // The run's settings in place of the player's, kept in live.outside. The run
 // draws with the player's display choices (direction arrows, detail, the perk
 // prompt's hint): the verifier sets none of them (host.cpp), and only drawing
-// reads them.
+// reads them. A replay's viewer picks no perks, so it shows no hint to.
 static void live_enter_run() {
   live.outside = live_settings();
   auto &run = live.run.config;
@@ -102,7 +102,7 @@ static void live_enter_run() {
   run.shadows_enabled = player.shadows_enabled;
   run.flame_glow_enabled = player.flame_glow_enabled;
   run.smoke_enabled = player.smoke_enabled;
-  run.ui_info_texts = player.ui_info_texts;
+  run.ui_info_texts = live.watching ? 0 : player.ui_info_texts;
   live_install(live.run);
 }
 // Word by word, what the tick changed reaches the player's settings: a status
