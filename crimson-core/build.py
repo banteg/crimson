@@ -144,7 +144,7 @@ def main():
         flags.append("-mmacosx-version-min=11.0")
     if a.target == "game":
         # The version, format and rules a replay names, as the Python port names its own (host/ranked.inc).
-        from crimson.replay.types import REPLAY_FORMAT_VERSION, REPLAY_RULES, current_replay_game_version
+        from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES, current_replay_game_version
 
         flags += [
             f'-DCRIMSON_GAME_VERSION="{current_replay_game_version()}"',

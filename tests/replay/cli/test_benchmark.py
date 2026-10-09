@@ -7,7 +7,7 @@ from typing import cast
 import msgspec
 from typer.testing import CliRunner
 
-from crimson.cli import app
+from crimson.cli.app import app
 from crimson.game_modes import GameMode
 from crimson.replay.driver.replay_benchmark import (
     BenchmarkAggregate,

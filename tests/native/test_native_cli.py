@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 from typer.testing import CliRunner
 
-from crimson.cli import app
+from crimson.cli.app import app
 from crimson_re.match import NativeLinkStatus
 from crimson_re.native_link import NativeAuditArtifacts
 

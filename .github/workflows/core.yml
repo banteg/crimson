@@ -19,25 +19,25 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      relevant: ${{ steps.detect.outputs.relevant }}
+      core: ${{ steps.detect.outputs.core }}
+      gate: ${{ steps.detect.outputs.core-gate }}
+      game: ${{ steps.detect.outputs.core-game }}
     steps:
       - uses: actions/checkout@v5
       - id: detect
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-          EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [[ "$EVENT_NAME" != pull_request && "$EVENT_NAME" != push ]] || [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
-            echo "relevant=true" >> "$GITHUB_OUTPUT"
-            exit 0
+          base=()
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            base=(--base "$BASE_SHA")
           fi
-          git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          relevant=$(python3 scripts/ci_changed_paths.py core --base "$BASE_SHA")
-          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+          python3 scripts/ci_changed_paths.py changed "${base[@]}" core core-gate core-game | tee -a "$GITHUB_OUTPUT"
 
   core:
     needs: changes
-    if: needs.changes.outputs.relevant == 'true'
+    if: needs.changes.outputs.core == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -63,11 +63,15 @@ jobs:
         with:
           node-version: "24"
 
-      # The cores depend only on the recovered sources, the host and the toolchains,
-      # so a change elsewhere (most often the Python port) reuses them.
-      - name: Name the toolchains
-        id: toolchain
-        run: echo "id=$(clang++ --version | head -1 | sha256sum | cut -c1-16)-zig$(zig version)" >> "$GITHUB_OUTPUT"
+      # The cores and the bot corpus are keyed by everything they read (scripts/ci_changed_paths.py) and the
+      # toolchains. A cache is saved only when the whole job passes, so a restored corpus already passed the
+      # native/WASM matrix with exactly these inputs.
+      - name: Name the inputs
+        id: inputs
+        run: |
+          toolchains="$(clang++ --version | head -1 | sha256sum | cut -c1-16)-zig$(zig version)-node$(node --version)"
+          echo "cores=$toolchains-$(python3 scripts/ci_changed_paths.py hash core-build)" >> "$GITHUB_OUTPUT"
+          echo "corpus=$toolchains-$(python3 scripts/ci_changed_paths.py hash core-corpus)" >> "$GITHUB_OUTPUT"
 
       - name: Restore native and WASM cores
         id: cores
@@ -76,7 +80,7 @@ jobs:
           path: |
             crimson-core/build/native/core
             crimson-core/build/wasm/core.wasm
-          key: cores-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('crimson-core/*.py', 'crimson-core/*.json', 'crimson-core/host/**', 'crimson-core/patches/**', 'decomp/**', 'third_party/headers/**', 'third_party/sources/**', 'tools/match/include/**', 'tools/native/data_definitions/**') }}
+          key: cores-${{ runner.os }}-${{ steps.inputs.outputs.cores }}
 
       - name: Build native and WASM cores
         if: steps.cores.outputs.cache-hit != 'true'
@@ -84,15 +88,27 @@ jobs:
           uv run --no-sync python crimson-core/build.py
           uv run --no-sync python crimson-core/build.py --target wasm
 
+      - name: Restore the bot corpus
+        id: corpus
+        uses: actions/cache@v4
+        with:
+          path: |
+            crimson-core/build/fixtures
+            crimson-core/build/report.json
+          key: corpus-${{ runner.os }}-${{ steps.inputs.outputs.corpus }}
+
       - name: Compare all modes and resets
+        if: steps.corpus.outputs.cache-hit != 'true'
         env:
           CRIMSON_CORE_TRACE_INIT: "1"
         run: node crimson-core/checks/matrix.mjs
 
       - name: Compare whole runs with Python under the original rules
+        if: needs.changes.outputs.gate == 'true'
         run: uv run --no-sync python crimson-core/checks/gate.py
 
       - name: Build the game module
+        if: needs.changes.outputs.game == 'true'
         run: uv run --no-sync python crimson-core/build.py --target game
       # Each check boots the original from a fresh copy of the files crimson.land
       # serves, since the game writes its profile into its directory. The session
@@ -102,6 +118,7 @@ jobs:
       # and watches each to the result it recorded, and the high score screen shows
       # the leaderboard's runs and watches them.
       - name: Run the game module inside the original with its files
+        if: needs.changes.outputs.game == 'true'
         run: |
           uv run --no-sync python crimson-core/checks/game_files.py "$RUNNER_TEMP/game"
           fresh() { rm -rf "$RUNNER_TEMP/run" && cp -R "$RUNNER_TEMP/game" "$RUNNER_TEMP/run" && echo "$RUNNER_TEMP/run"; }
@@ -168,7 +185,7 @@ jobs:
       - name: Require core when relevant
         env:
           CHANGES_RESULT: ${{ needs.changes.result }}
-          RELEVANT: ${{ needs.changes.outputs.relevant }}
+          RELEVANT: ${{ needs.changes.outputs.core }}
           CORE_RESULT: ${{ needs.core.result }}
         run: |
           test "$CHANGES_RESULT" = success

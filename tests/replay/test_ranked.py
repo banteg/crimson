@@ -5,6 +5,7 @@ import pytest
 
 from crimson.aim_schemes import AimScheme
 from crimson.game_modes import GameMode
+from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES
 from crimson.movement_controls import MovementControlType
 from crimson.quests.level import QuestLevel
 from crimson.replay.driver.playback_driver import PlaybackDriver
@@ -16,7 +17,7 @@ from crimson.replay.ranked import (
     ranked_run_spec,
     unranked_reasons,
 )
-from crimson.replay.types import REPLAY_FORMAT_VERSION, REPLAY_RULES, Replay, ReplayTick, current_recorder
+from crimson.replay.types import Replay, ReplayTick, current_recorder
 from crimson.sim.input import PlayerInput
 from crimson.sim.run_result import RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec, RunStatus

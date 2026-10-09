@@ -30,6 +30,7 @@ import msgspec
 from replay import encode
 
 from crimson.game_modes import GameMode
+from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES
 from crimson.quests.level import QuestLevel
 from crimson.quests.results import compute_quest_final_time
 from crimson.replay.checkpoint_diff import compare_checkpoints
@@ -37,7 +38,7 @@ from crimson.replay.checkpoints import ReplayCheckpoint, load_checkpoints_file
 from crimson.replay.codec import load_replay_file
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.driver.setup import ReplayRunnerError
-from crimson.replay.types import REPLAY_FORMAT_VERSION, REPLAY_RULES, Replay, ReplayTick, current_recorder
+from crimson.replay.types import Replay, ReplayTick, current_recorder
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import (
     PlayerRunResult,

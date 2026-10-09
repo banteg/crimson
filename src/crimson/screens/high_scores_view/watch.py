@@ -6,10 +6,11 @@ from pathlib import Path
 
 import msgspec
 
+from ...game_version import REPLAY_RULES, current_replay_game_version
 from ...persistence.highscores import HighScoreRecord
 from ...replay import ReplayCodecError, load_replay_file
 from ...replay.library import numbered_replay
-from ...replay.types import REPLAY_RULES, Replay, current_replay_game_version
+from ...replay.types import Replay
 
 
 class WatchTarget(msgspec.Struct, frozen=True):

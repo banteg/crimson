@@ -22,53 +22,63 @@ jobs:
       matrix:
         include:
           - task: docs-check
+            suite: ""
             use_uv: true
             do_sync: false
             command: uv run --no-sync python scripts/check_docs.py
             sync_args: ""
           - task: resolved-name-audit
+            suite: ""
             use_uv: true
             do_sync: true
             command: uv run --no-sync crimson match resolved-name-audit --check
             sync_args: ""
           - task: ast-grep
+            suite: ""
             use_uv: false
             do_sync: false
             command: ast-grep scan && ast-grep test
             sync_args: ""
           - task: ruff
+            suite: ""
             use_uv: true
             do_sync: true
             command: uv run --no-sync ruff check .
             sync_args: --only-group dev
           - task: ty
+            suite: ""
             use_uv: true
             do_sync: true
             command: uv run --no-sync ty check src crimson-re/src tests
             sync_args: --group dev
           - task: pytest
+            suite: "pytest"
             use_uv: true
             do_sync: true
             # A virtual display with software GL runs the render and terrain tests that need a raylib window.
             command: xvfb-run -a uv run --no-sync pytest --run-terrain
             sync_args: --group dev
           - task: native-oracle
+            suite: "native-oracle"
             use_uv: true
             do_sync: true
             # Fail if Unicorn is missing instead of silently skipping the oracle tests.
             command: uv run --no-sync python -c "import unicorn" && CRIMSON_NATIVE_ORACLE=1 uv run --no-sync pytest -q tests/native_oracle
             sync_args: --group dev
           - task: native-closure
+            suite: "re-audits"
             use_uv: true
             do_sync: true
             command: uv run --no-sync crimson native verify --require-game-closure --allow-absent-toolchain
             sync_args: ""
           - task: match-regressions
+            suite: "re-audits"
             use_uv: true
             do_sync: true
             command: uv run --no-sync crimson match regressions --base "$MATCH_BASE"
             sync_args: ""
           - task: build
+            suite: ""
             use_uv: true
             do_sync: false
             command: uv build
@@ -80,27 +90,33 @@ jobs:
         with:
           fetch-depth: ${{ matrix.task == 'match-regressions' && '0' || '1' }}
 
-      - name: Detect documentation-only pull request
-        id: docs_only
-        if: ${{ github.event_name == 'pull_request' && (matrix.task == 'pytest' || matrix.task == 'native-oracle') }}
+      # A check with a suite runs only when the change touches what the suite reads (scripts/ci_changed_paths.py).
+      - name: Skip unless the change touches what this check reads
+        id: inputs
+        if: ${{ matrix.suite != '' }}
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          SUITE: ${{ matrix.suite }}
         run: |
-          git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          docs_only=$(python3 scripts/ci_changed_paths.py docs-only --base "$BASE_SHA")
-          if [[ "$docs_only" == true ]]; then
+          base=()
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            base=(--base "$BASE_SHA")
+          fi
+          changed=$(python3 scripts/ci_changed_paths.py changed "${base[@]}" "$SUITE")
+          if [[ "$changed" == "$SUITE=false" ]]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Install uv
-        if: matrix.use_uv && steps.docs_only.outputs.skip != 'true'
+        if: matrix.use_uv && steps.inputs.outputs.skip != 'true'
         uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.13"
           enable-cache: true
 
       - name: Ensure uv cache dir exists
-        if: matrix.use_uv && steps.docs_only.outputs.skip != 'true'
+        if: matrix.use_uv && steps.inputs.outputs.skip != 'true'
         run: |
           # setup-uv enables caching via UV_CACHE_DIR; create it eagerly for prune stability.
           if [[ -n "${UV_CACHE_DIR:-}" ]]; then
@@ -108,7 +124,7 @@ jobs:
           fi
 
       - name: Install virtual display and GL libraries
-        if: ${{ matrix.task == 'pytest' && steps.docs_only.outputs.skip != 'true' }}
+        if: ${{ matrix.task == 'pytest' && steps.inputs.outputs.skip != 'true' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -136,11 +152,11 @@ jobs:
         run: npm install --global @ast-grep/cli
 
       - name: Install dependencies
-        if: matrix.do_sync && steps.docs_only.outputs.skip != 'true'
+        if: matrix.do_sync && steps.inputs.outputs.skip != 'true'
         run: uv sync --frozen ${{ matrix.sync_args }}
 
       - name: Download provenance artifacts
-        if: ${{ (matrix.task == 'pytest' || matrix.task == 'native-oracle' || matrix.task == 'native-closure') && steps.docs_only.outputs.skip != 'true' }}
+        if: ${{ (matrix.task == 'pytest' || matrix.task == 'native-oracle' || matrix.task == 'native-closure') && steps.inputs.outputs.skip != 'true' }}
         run: |
           game_dir="game_bins/crimsonland/1.9.93-gog"
           base_url="https://paq.crimson.banteg.xyz/v1.9.93"
@@ -160,7 +176,7 @@ jobs:
           EOF
 
       - name: Download runtime assets
-        if: ${{ matrix.task == 'pytest' && steps.docs_only.outputs.skip != 'true' }}
+        if: ${{ matrix.task == 'pytest' && steps.inputs.outputs.skip != 'true' }}
         run: |
           mkdir -p artifacts/assets
           curl --fail --location --retry 3 --retry-all-errors \
@@ -170,7 +186,7 @@ jobs:
           EOF
 
       - name: Run check
-        if: steps.docs_only.outputs.skip != 'true'
+        if: steps.inputs.outputs.skip != 'true'
         env:
           MATCH_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: ${{ matrix.command }}

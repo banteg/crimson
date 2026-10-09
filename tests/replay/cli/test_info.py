@@ -5,7 +5,7 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from crimson.cli import app
+from crimson.cli.app import app
 from crimson.game_modes import GameMode
 from crimson.sim.commands import PerkMenuOpenCommand
 from crimson.weapons import WeaponId

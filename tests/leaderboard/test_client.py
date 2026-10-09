@@ -183,7 +183,7 @@ def test_login_signs_the_challenge_and_stays_on_the_service(tmp_path) -> None:
 def test_a_key_moves_between_machines_by_export_and_import(tmp_path) -> None:
     from typer.testing import CliRunner
 
-    from crimson.cli import app
+    from crimson.cli.app import app
 
     runner = CliRunner()
     home, laptop = tmp_path / "home", tmp_path / "laptop"
