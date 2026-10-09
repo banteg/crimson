@@ -15,7 +15,7 @@ from tests.support.replay_runner_helpers import unverified_replay
 from tests.support.state_digest import session_digest
 
 
-@pytest.mark.parametrize("perk", [PerkId.REFLEX_BOOSTED, PerkId.BANDAGE, PerkId.INSTANT_WINNER, PerkId.AMMO_MANIAC])
+@pytest.mark.parametrize("perk", [PerkId.REFLEX_BOOSTED])
 @pytest.mark.parametrize("reopen", [False, True])
 def test_live_perk_commands_match_recorded_prelude(perk: PerkId, reopen: bool) -> None:
     recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF))

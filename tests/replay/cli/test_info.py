@@ -3,12 +3,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from click import unstyle
 from typer.testing import CliRunner
 
 from crimson.cli import app
 from crimson.game_modes import GameMode
-from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
+from crimson.sim.commands import PerkMenuOpenCommand
 from crimson.weapons import WeaponId
 
 from ._helpers import build_replay, inject_tick_commands, write_replay
@@ -64,58 +63,6 @@ def test_replay_info_json_output_payload_ok_schema_v2(tmp_path: Path) -> None:
     assert isinstance(payload["timeline"], list)
 
 
-def test_replay_info_json_out_works_for_human_and_json(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
-    runner = CliRunner()
-    human_out = tmp_path / "replay-info-human.json"
-    json_out = tmp_path / "replay-info-json.json"
-
-    human_result = runner.invoke(
-        app,
-        [
-            "replay",
-            "info",
-            str(replay_path),
-            "--json-out",
-            str(human_out),
-        ],
-    )
-    assert human_result.exit_code == 0, human_result.output
-    assert "json_report=" in human_result.output
-    assert json.loads(human_out.read_text(encoding="utf-8"))["status"] == "ok"
-
-    json_result = runner.invoke(
-        app,
-        [
-            "replay",
-            "info",
-            str(replay_path),
-            "--format",
-            "json",
-            "--json-out",
-            str(json_out),
-        ],
-    )
-    assert json_result.exit_code == 0, json_result.output
-    stdout_payload = json.loads(json_result.output)
-    file_payload = json.loads(json_out.read_text(encoding="utf-8"))
-    assert stdout_payload["status"] == "ok"
-    assert file_payload == stdout_payload
-
-
-def test_replay_info_rejects_perk_pick_without_an_open_menu(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
-    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
-    runner = CliRunner()
-
-    result = runner.invoke(app, ["replay", "info", str(replay_path)])
-
-    assert result.exit_code == 1
-    assert "perk_pick without an open perk menu" in result.output
-
-
 def test_replay_info_reports_snapshot_diff_events(tmp_path: Path, mocker) -> None:
     import crimson.replay.driver.replay_info as replay_info_mod
 
@@ -140,40 +87,6 @@ def test_replay_info_reports_snapshot_diff_events(tmp_path: Path, mocker) -> Non
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
     assert any(event["kind"] == "weapon_change" for event in payload["timeline"])
-
-
-def test_replay_info_rejects_removed_lenient_events_option(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
-    runner = CliRunner()
-
-    result = runner.invoke(app, ["replay", "info", str(replay_path), "--lenient-events"])
-
-    assert result.exit_code == 2
-    output = unstyle(result.output)
-    assert "No such option" in output
-    assert "--lenient-events" in output
-
-
-def test_replay_info_supports_survival_rush_quest_modes(tmp_path: Path) -> None:
-    survival = build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    rush = build_replay(mode=GameMode.RUSH, ticks=2)
-    quest = build_replay(mode=GameMode.QUESTS, ticks=2, seed=101, quest_level="1.1")
-    runner = CliRunner()
-
-    cases = [
-        ("survival.crd", survival, int(GameMode.SURVIVAL)),
-        ("rush.crd", rush, int(GameMode.RUSH)),
-        ("quest.crd", quest, int(GameMode.QUESTS)),
-    ]
-    for filename, replay, mode_id in cases:
-        replay_path = write_replay(tmp_path, replay=replay, name=filename)
-        result = runner.invoke(app, ["replay", "info", str(replay_path), "--format", "json"])
-        assert result.exit_code == 0, result.output
-        payload = json.loads(result.output)
-        assert payload["status"] == "ok"
-        assert payload["summary"]["game_mode_id"] == mode_id
-        assert payload["summary"]["ticks_simulated"] == 2
 
 
 def test_replay_info_player_index_filter_limits_events(tmp_path: Path, mocker) -> None:

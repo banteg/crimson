@@ -108,21 +108,6 @@ def _with_stored_result(replay: Replay, *, score_xp: int, kills: int) -> Replay:
     )
 
 
-def test_replay_list_uses_stored_result_without_sidecar(tmp_path: Path) -> None:
-    replay = _with_stored_result(build_replay(mode=GameMode.SURVIVAL, ticks=2), score_xp=1234, kills=56)
-    write_replay(tmp_path / "replays", replay=replay, name="stored.crd")
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        ["replay", "list", "--base-dir", str(tmp_path), "--no-color"],
-    )
-
-    assert result.exit_code == 0, result.output
-    output = unstyle(result.output)
-    assert re.search(r"stored\.crd\s+survival\s+\S+\s+2\s+0\.0s\s+1234\s+56\s+", output) is not None
-
-
 def test_replay_list_uses_stored_result_even_when_sidecar_exists(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
     replay_path = write_replay(

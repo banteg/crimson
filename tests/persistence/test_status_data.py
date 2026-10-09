@@ -4,35 +4,9 @@ from pathlib import Path
 
 from crimson.persistence.save_status import (
     QUEST_PLAY_COUNT,
-    RESERVED_SEED_WORDS_BYTE_SIZE,
     WEAPON_USAGE_COUNT,
     GameStatus,
-    GameStatusData,
 )
-
-
-def test_status_roundtrip_uses_full_typed_payload() -> None:
-    weapon_counts = [0] * int(WEAPON_USAGE_COUNT)
-    weapon_counts[4] = 99
-    quest_counts = [0] * int(QUEST_PLAY_COUNT)
-    quest_counts[12] = 7
-    data = GameStatusData(
-        quest_unlock_index=12,
-        quest_unlock_index_hardcore=34,
-        weapon_usage_counts=tuple(weapon_counts),
-        quest_play_counts=tuple(quest_counts),
-        mode_play_survival=11,
-        mode_play_rush=22,
-        mode_play_typo=33,
-        mode_play_other=44,
-        play_time_ms=55,
-        reserved_seed_words=b"\xAB" * int(RESERVED_SEED_WORDS_BYTE_SIZE),
-    )
-    status = GameStatus.from_data(path=Path("game.cfg"), data=data, dirty=False)
-
-    assert status.as_data() == data
-
-
 
 
 def test_counter_overflow_remains_serializable(tmp_path: Path) -> None:

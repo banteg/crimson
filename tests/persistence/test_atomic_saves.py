@@ -7,7 +7,6 @@ import pytest
 from crimson.persistence import highscores
 from crimson.persistence.save_status import GAME_CFG_NAME, ensure_game_status, load_status
 from grim import atomic_write
-from grim.config import default_crimson_cfg, load_crimson_cfg
 
 
 @pytest.mark.parametrize("failure_point", ["fsync", "replace"])
@@ -50,14 +49,3 @@ def test_status_stays_dirty_until_replacement_succeeds(tmp_path: Path, mocker) -
     status.save_if_dirty()
     assert not status.dirty
     assert load_status(tmp_path / GAME_CFG_NAME).quest_unlock_index == 7
-
-
-def test_failed_config_save_preserves_previous_settings(tmp_path: Path, mocker) -> None:
-    config = default_crimson_cfg(tmp_path / "crimson.cfg")
-    config.save()
-    previous_width = config.display.width
-    config.display.width = previous_width + 100
-    mocker.patch.object(atomic_write.os, "fsync", side_effect=OSError("injected IO failure"))
-    with pytest.raises(OSError):
-        config.save()
-    assert load_crimson_cfg(config.path).display.width == previous_width

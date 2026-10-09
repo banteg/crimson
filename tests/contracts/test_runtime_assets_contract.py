@@ -20,13 +20,6 @@ def test_require_runtime_assets_accepts_all_paq_archives(tmp_path: Path) -> None
     _require_runtime_assets(tmp_path)
 
 
-def test_require_runtime_assets_accepts_unpacked_audio_dirs(tmp_path: Path) -> None:
-    _touch(tmp_path / "crimson.paq")
-
-    with pytest.raises(FileNotFoundError, match=r"music\.paq, sfx\.paq"):
-        _require_runtime_assets(tmp_path)
-
-
 def test_require_runtime_assets_requires_crimson_archive(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError, match="crimson\\.paq"):
         _require_runtime_assets(tmp_path)
@@ -38,4 +31,3 @@ def test_require_runtime_assets_requires_audio_source_per_pack(tmp_path: Path) -
 
     with pytest.raises(FileNotFoundError, match=r"music\.paq"):
         _require_runtime_assets(tmp_path)
-

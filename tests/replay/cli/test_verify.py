@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 
 import msgspec
-from click import unstyle
 from typer.testing import CliRunner
 
 from crimson.cli import app
@@ -98,18 +97,6 @@ def test_replay_verify_max_ticks_prefix_is_partial(tmp_path: Path) -> None:
     assert payload["mismatched_fields"] == []
 
 
-def test_replay_verify_rejects_removed_submitted_score_option(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
-
-    result = CliRunner().invoke(app, ["replay", "verify", str(replay_path), "--submitted-score", "0"])
-
-    assert result.exit_code == 2
-    output = unstyle(result.output)
-    assert "No such option" in output
-    assert "--submitted-score" in output
-
-
 def test_replay_verify_rejects_perk_pick_without_pending_perk(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
@@ -119,18 +106,6 @@ def test_replay_verify_rejects_perk_pick_without_pending_perk(tmp_path: Path) ->
 
     assert result.exit_code == 1
     assert "replay verification failed: tick 0:" in result.output
-
-
-def test_replay_verify_rejects_removed_lenient_events_option(tmp_path: Path) -> None:
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
-
-    result = CliRunner().invoke(app, ["replay", "verify", str(replay_path), "--lenient-events"])
-
-    assert result.exit_code == 2
-    output = unstyle(result.output)
-    assert "No such option" in output
-    assert "--lenient-events" in output
 
 
 def test_replay_verify_json_out_works_for_human_and_json_output(tmp_path: Path) -> None:

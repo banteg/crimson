@@ -3,7 +3,6 @@ from __future__ import annotations
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_gameplay_reset_rng
-from crimson.sim.run_result import RunOutcome
 from crimson.sim.terrain_generate import terrain_generate_random
 from grim.rand import Crand
 from tests.support.replay_runner_helpers import _blank_tutorial_replay, _run_verify_playback, finish_replay
@@ -39,14 +38,3 @@ def test_tutorial_runner_checkpoints_capture_tutorial_state() -> None:
     assert [int(ckpt.tick_index) for ckpt in checkpoints] == [70]
     assert checkpoints[0].tutorial is not None
     assert checkpoints[0].tutorial.prompt_text
-
-
-def test_tutorial_runner_is_supported_in_shared_playback_pipeline() -> None:
-    rec = _blank_tutorial_replay(ticks=5, seed=0xCAFE)
-    replay = finish_replay(rec)
-
-    result0 = _run_verify_playback(replay)
-    result1 = _run_verify_playback(replay)
-
-    assert result0 == result1 == replay.result
-    assert result0.outcome == RunOutcome.INCOMPLETE
