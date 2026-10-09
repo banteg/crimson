@@ -186,7 +186,7 @@ async function fetchAvatar(link: string | null): Promise<string | null> {
 
 // A run's card as a PNG, or null when there is no such run or its timeline is gone.
 export async function runCard(env: Env, origin: string, id: string): Promise<Uint8Array | null> {
-  const detail = await runDetailView(env, id);
+  const detail = await runDetailView(env, id, false);
   if (!detail?.timeline) return null;
   const [art, avatar] = await Promise.all([loadArt(env, origin), fetchAvatar(playerParts(detail.player).avatar)]);
   return renderCard(detail, detail.timeline, { ...art, avatar });

@@ -92,7 +92,7 @@ static void replay_result(Msgpack &m, const char *outcome) {
 // its result and every tick the recording holds.
 static std::vector<uint8_t> replay_payload(const char *outcome) {
   Msgpack m;
-  m.map(7);
+  m.map(8);
   m.str("format_version"), m.integer(CRIMSON_REPLAY_FORMAT);
   m.str("game_version"), m.str(CRIMSON_GAME_VERSION);
   m.str("rules"), m.integer(CRIMSON_REPLAY_RULES);
@@ -100,6 +100,8 @@ static std::vector<uint8_t> replay_payload(const char *outcome) {
   m.str("client"), m.str("crimson-core");
   m.str("version"), m.str(CRIMSON_GAME_VERSION);
   m.str("platform"), m.str(replay_platform);
+  // A player plays these runs: no pilot.
+  m.str("pilot"), m.nil();
   m.str("run"), m.map(14);
   m.str("game_mode_id"), m.integer(cfg.mode);
   m.str("seed"), m.integer(cfg.seed);
@@ -434,7 +436,8 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
     out.rules = 1;
   // A whole replay: its run, a tick, and nothing after its map.
   bool whole = r.at == r.end && run && out.recording.size() > sizeof config && !out.game_version.empty();
-  if (out.reason.empty() && (!r.ok || !whole || (format != 30 && format != CRIMSON_REPLAY_FORMAT)))
+  // Formats 30 to this build's read alike: each adds a field (docs/formats/replay.md).
+  if (out.reason.empty() && (!r.ok || !whole || format < 30 || format > CRIMSON_REPLAY_FORMAT))
     out.reason = "This version cannot read its replay";
   else if (out.reason.empty() && out.rules != CRIMSON_REPLAY_RULES)
     out.reason = "Recorded under other rules (" + out.game_version.substr(0, out.game_version.find('+')) + ")";

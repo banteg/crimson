@@ -22,7 +22,7 @@ def game_sources(root):
             str(path.relative_to(root))
             for path in tree.rglob("*")
             if path.suffix in (".c", ".cpp")
-            and ".claude" not in path.parts
+            and ".claude" not in path.relative_to(root).parts
             and path.relative_to(tree).as_posix() not in replaced
             and str(path.relative_to(root)) not in verifier
         )
@@ -633,7 +633,9 @@ def game_initializers(root, out):
     # Each initializer is declared with its recovered return type: a wasm call
     # through the CRT's void(void) type would not match.
     sources = {
-        path.stem: path for path in (root / "decomp/1.9/crimsonland").rglob("*.c*") if ".claude" not in path.parts
+        path.stem: path
+        for path in (root / "decomp/1.9/crimsonland").rglob("*.c*")
+        if ".claude" not in path.relative_to(root).parts
     }
     lines = ['extern "C" {']
     for name in STATIC_INITIALIZERS:

@@ -101,6 +101,8 @@ class DeterministicSession(msgspec.Struct):
     terrain_fx: TerrainFxScratch = msgspec.field(default_factory=TerrainFxScratch)
 
     mode_state: ModeState = None
+    # The perk menu opened in the last tick: the next tick may start with one pick, and closes it either way.
+    perk_menu_open: bool = False
 
     def __post_init__(self) -> None:
         state = self.world.state
@@ -204,9 +206,14 @@ class DeterministicSession(msgspec.Struct):
         post_apply_sfx: list[SfxId] = []
         typo_commands: list[TypoCommand] = []
         open_perk_menu = False
+        # The perk screen pauses the game: a pick comes right after the menu opened, and a tick without one is Cancel.
+        menu_open, self.perk_menu_open = self.perk_menu_open, False
         for command in commands or ():
             match command:
                 case PerkPickCommand():
+                    if not menu_open:
+                        raise IllegalCommandError("perk_pick without an open perk menu")
+                    menu_open = False
                     sfx = self.apply_command(command, dt=dt)
                     if sfx is not None:
                         post_apply_sfx.append(sfx)
@@ -252,6 +259,7 @@ class DeterministicSession(msgspec.Struct):
                 elapsed_ms=elapsed_before_ms,
                 open_perk_menu=open_perk_menu,
             )
+            self.perk_menu_open = events.perk_menu_opened
 
         quest_spawn = self.mode_state if isinstance(self.mode_state, QuestSpawnState) else None
         if quest_spawn is not None and quest_spawn.play_hit_sfx:

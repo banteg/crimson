@@ -291,6 +291,8 @@ def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float
     elif 2000.0 < timer <= 2050.0:
         timer = 2051.0
         spawn.play_completion_music = True
+        # `music_play_exclusive(music_track_crimsonquest_id)` clears the playlist latch.
+        state.game_tune_started = False
     elif timer > 2500.0:
         advance_quest_unlocks(state.status, next_unlock=level.global_index + 1, hardcore=state.hardcore)
         spawn.completed = True

@@ -24,7 +24,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
-import { CONFIG_BYTES, CORE, decode, field, init, loadCore, names, record, state, step } from "./engine.mjs";
+import { CONFIG_BYTES, CORE, decode, field, fieldRanges, firstDifference, init, loadCore, names, record, state, step } from "./engine.mjs";
 import { PRESENTATION } from "./game_compare.mjs";
 import { bootGame, INPUT } from "./game_host.mjs";
 
@@ -109,6 +109,7 @@ if (quest) {
 // Between ticks the players hold their own key codes; a tick reads the
 // verifier's (host/session.inc).
 const SWAPPED = /^players\[\d+\]\.input\./;
+const COMPARED = fieldRanges((name) => !PRESENTATION.has(name) && !SWAPPED.test(name));
 const replay = () => Buffer.from(game.memory.buffer, game.game_replay(), game.game_replay_size());
 const core = loadCore(coreWasm);
 const CREATURES = names.filter((n) => /^creatures\[\d+\]\.active$/.test(n)).length;
@@ -186,11 +187,8 @@ while (true) {
   if (![GAMEPLAY, PERK_SELECTION, PAUSE_MENU].includes(game.game_state())) break;
   if (game.game_state() !== GAMEPLAY) continue;
   const expected = state(core), actual = state(game);
-  for (let i = 0; i < names.length; i++) {
-    if (PRESENTATION.has(names[i]) || SWAPPED.test(names[i])) continue;
-    const a = expected.readUInt32LE(i * 4), b = actual.readUInt32LE(i * 4);
-    if (a !== b) throw Error(`tick ${ticks}: ${names[i]} is ${b}, the verifier says ${a}`);
-  }
+  const i = firstDifference(expected, actual, COMPARED);
+  if (i >= 0) throw Error(`tick ${ticks}: ${names[i]} is ${actual.readUInt32LE(i * 4)}, the verifier says ${expected.readUInt32LE(i * 4)}`);
   if (idle > 120) throw Error(`the run stopped ticking at tick ${ticks}`);
   if (frames > 60000) throw Error("the run never ended");
 }

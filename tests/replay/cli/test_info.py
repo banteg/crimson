@@ -104,7 +104,7 @@ def test_replay_info_json_out_works_for_human_and_json(tmp_path: Path) -> None:
     assert file_payload == stdout_payload
 
 
-def test_replay_info_rejects_perk_pick_without_pending_perk(tmp_path: Path) -> None:
+def test_replay_info_rejects_perk_pick_without_an_open_menu(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=1)
     inject_tick_commands(replay, 0, [PerkPickCommand(player_index=0, choice_index=0)])
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -113,7 +113,7 @@ def test_replay_info_rejects_perk_pick_without_pending_perk(tmp_path: Path) -> N
     result = runner.invoke(app, ["replay", "info", str(replay_path)])
 
     assert result.exit_code == 1
-    assert "without a pending perk" in result.output
+    assert "perk_pick without an open perk menu" in result.output
 
 
 def test_replay_info_reports_snapshot_diff_events(tmp_path: Path, mocker) -> None:
