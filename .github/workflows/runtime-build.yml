@@ -15,6 +15,7 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  ZIG_VERSION: "0.17.0"
 
 jobs:
   build:
@@ -28,17 +29,13 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --no-dev
         if: inputs.target == 'game'
-      - uses: mlugg/setup-zig@v2
-        with:
-          version: "0.17.0"
-          cache-key: ${{ inputs.target }}
       - name: Name the compiler inputs
         id: inputs
         env:
           TARGET: ${{ inputs.target }}
           SUITE: ${{ inputs.suite }}
         run: |
-          compiler="zig$(zig version)"
+          compiler="zig$ZIG_VERSION"
           if [[ "$TARGET" == native ]]; then
             compiler="$compiler-$(clang++ --version | sha256sum | cut -c1-16)"
           fi
@@ -57,6 +54,11 @@ jobs:
         with:
           path: crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}
           key: ${{ steps.inputs.outputs.key }}
+      - uses: mlugg/setup-zig@v2
+        if: steps.binary.outputs.cache-hit != 'true'
+        with:
+          version: ${{ env.ZIG_VERSION }}
+          cache-key: ${{ inputs.target }}
       - name: Compile the module
         if: steps.binary.outputs.cache-hit != 'true'
         env:
