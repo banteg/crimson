@@ -19,7 +19,14 @@ CORE = Path(__file__).resolve().parents[1]
 CONFIG_BYTES = 260
 
 
-SMOKE = {"rush-evade", "survival-hunt-highlander-ranked", "survival-relative-keyboard", "quest-point-click-ranked", "quest-settings"}
+SMOKE = {
+    "rush-evade",
+    "survival-command-batches-ranked",
+    "survival-relative-keyboard",
+    "quest-point-click",
+    "quest-5.6-ranked",
+    "quest-settings",
+}
 
 
 def decode(data):

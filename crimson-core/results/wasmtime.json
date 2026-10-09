@@ -1,8 +1,8 @@
 {
   "wasmtime_version": "49.0.0",
-  "module_sha256": "9e6a410012e0865088385adabf5691eaa88356c827343d7d2f30cb696c499817",
-  "cases": 5,
-  "ticks": 36953,
+  "module_sha256": "558844faabea3a81f06abc9153e30e618b9fc64260f6253ffc2245b030f6ed6d",
+  "cases": 6,
+  "ticks": 16488,
   "fields_per_snapshot": 36343,
   "comparison": "every snapshot hash matches native/Node",
   "reset": "all Wasmtime A/B/A passed",
@@ -14,9 +14,9 @@
       "sha256": "818a6c95f46b34386f24c2651a486a3353c0faea6005371db16137aa7da14a16"
     },
     {
-      "name": "survival-hunt-highlander-ranked",
-      "ticks": 30000,
-      "sha256": "d431a42d13aaa07270e488942ab059f2266091fdc7db2cb7b958737b2330d0bc"
+      "name": "survival-command-batches-ranked",
+      "ticks": 8328,
+      "sha256": "4ea19062703e6d851555dad453d206e824d0c594b000d3e2c8a6f7baedd92354"
     },
     {
       "name": "survival-relative-keyboard",
@@ -24,9 +24,14 @@
       "sha256": "15719f25aa6db568084f5c121a5785400e99fcffb8c828d7622bac04ce0c5d43"
     },
     {
-      "name": "quest-point-click-ranked",
+      "name": "quest-point-click",
       "ticks": 999,
-      "sha256": "6f8428aadf83be43c635164b1ddb4e749e045cb832ffdcbfe7752c603b9f6aed"
+      "sha256": "a5ab93598a95f9ea9752c1314669555bee3db54942287d4a353bb20ca3cef3e9"
+    },
+    {
+      "name": "quest-5.6-ranked",
+      "ticks": 1207,
+      "sha256": "92bd3f56d2319ae644e7c4c52172de484eddb612653f444b74c370a51670799f"
     },
     {
       "name": "quest-settings",

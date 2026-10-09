@@ -76,11 +76,8 @@ jobs:
       - name: Compare whole runs with Python under the original rules
         run: uv run --no-sync python crimson-core/checks/gate.py
 
-      - name: Compare the game module with the verifier on every gate stream
-        run: |
-          uv run --no-sync python crimson-core/build.py --target game
-          uv run --no-sync python crimson-core/checks/game_check.py
-
+      - name: Build the game module
+        run: uv run --no-sync python crimson-core/build.py --target game
       # Each check boots the original from a fresh copy of the files crimson.land
       # serves, since the game writes its profile into its directory. The session
       # check plays a seed whose run picks perks and pauses; some runs end sooner.

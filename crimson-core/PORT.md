@@ -225,14 +225,14 @@ tell a dropped run from a failed download, which the next pin tries again.
 ### Evidence
 
 - [`checks/game_check.py`](checks/game_check.py) runs sessions in the game
-  module and the verifier through every gate stream (the 134-run bot corpus
-  under both bug policies and the 9 supported recordings) and compares all
+  module and the verifier through every gate stream (the 101-run bot corpus
+  and the 9 supported recordings) and compares all
   36,343 snapshot fields after every tick; where a run ends, both must refuse
-  the next tick. All 143 agree, with the whole executable linked. Fields only
+  the next tick. All 110 agree, with the whole executable linked. Fields only
   presentation reads stay out of the comparison: `player_weapon_popup_timer`,
   which the restored HUD counts down, and the weapons' sound ids, which hold
   the original's loaded ids in a run inside it.
-- `game_check.py --live <game directory>` runs the same 143 streams back to
+- `game_check.py --live <game directory>` runs the same 110 streams back to
   back inside the original booted with its assets, sounds and music, each run
   starting from the state the previous one left, and all agree.
 - [`checks/game_session.mjs`](checks/game_session.mjs) plays a Survival run
