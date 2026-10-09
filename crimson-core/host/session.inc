@@ -90,13 +90,18 @@ static void live_install(const LiveSettings &settings) {
     player_state_table[i].input = settings.keys[i];
 }
 // The run's settings in place of the player's, kept in live.outside. The run
-// draws at the player's detail: the verifier sets no display flags (host.cpp),
-// and only drawing reads them.
+// draws with the player's display choices (direction arrows, detail, the perk
+// prompt's hint): the verifier sets none of them (host.cpp), and only drawing
+// reads them.
 static void live_enter_run() {
   live.outside = live_settings();
-  live.run.config.shadows_enabled = live.outside.config.shadows_enabled;
-  live.run.config.flame_glow_enabled = live.outside.config.flame_glow_enabled;
-  live.run.config.smoke_enabled = live.outside.config.smoke_enabled;
+  auto &run = live.run.config;
+  const auto &player = live.outside.config;
+  memcpy(run.direction_arrow_flags, player.direction_arrow_flags, sizeof run.direction_arrow_flags);
+  run.shadows_enabled = player.shadows_enabled;
+  run.flame_glow_enabled = player.flame_glow_enabled;
+  run.smoke_enabled = player.smoke_enabled;
+  run.ui_info_texts = player.ui_info_texts;
   live_install(live.run);
 }
 // Word by word, what the tick changed reaches the player's settings: a status
