@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { type Head, Reader } from "../../src/msgpack";
 import { outcomeReasons, rankedBoard, unrankedReasons } from "../../src/ranked";
 import { decodeReplay, inflateReplay, ReplayError } from "../../src/replay";
 import { encodeTransport, TransportError } from "../../src/transport";
@@ -37,4 +38,47 @@ describe("payloads the Python codec refuses are refused", () => {
       expect(() => decodeReplay(base64(vector.payload))).toThrow(ReplayError);
     });
   }
+});
+
+// After egornomic's #615: the ticks decode as they stream, so their framing is refused as strictly as a whole tree's.
+describe("the replay's tick array keeps canonical framing", () => {
+  const payload = base64(vectors.valid_payload);
+  const reader = new Reader(payload);
+  const entries: { start: number; valueStart: number; end: number }[] = [];
+  const fields = (reader.token() as Head).length;
+  for (let field = 0; field < fields; field++) {
+    const start = reader.offset;
+    reader.key();
+    const valueStart = reader.offset;
+    reader.value();
+    entries.push({ start, valueStart, end: reader.offset });
+  }
+  const ticks = entries.at(-1)!;
+  const tickCount = new Reader(payload.subarray(ticks.valueStart)).token() as Head;
+  const tickDataStart = ticks.valueStart + (tickCount.length < 16 ? 1 : tickCount.length < 0x10000 ? 3 : 5);
+  const withTickHeader = (header: number[]) =>
+    Buffer.concat([payload.subarray(0, ticks.valueStart), Buffer.from(header), payload.subarray(tickDataStart)]);
+  const rootWith = (selected: typeof entries) =>
+    Buffer.concat([Buffer.from([0x80 | selected.length]), ...selected.map(({ start, end }) => payload.subarray(start, end))]);
+  const invalid: [string, Uint8Array][] = [
+    ["duplicate ticks field", rootWith([...entries, ticks])],
+    ["missing ticks field", rootWith(entries.slice(0, -1))],
+    ["ticks before result", rootWith([...entries.slice(0, -2), ticks, entries.at(-2)!])],
+    ["extra field after ticks", rootWith([...entries, entries[0]!])],
+    ["ticks is null", withTickHeader([0xc0])],
+    ["ticks is a map", withTickHeader([0x80])],
+    ["non-minimal array16", withTickHeader([0xdc, tickCount.length >> 8, tickCount.length & 255])],
+    ["non-minimal array32", withTickHeader([0xdd, 0, 0, tickCount.length >> 8, tickCount.length & 255])],
+    ["truncated array32 header", Buffer.concat([payload.subarray(0, ticks.valueStart), Buffer.from([0xdd, 255])])],
+    ["huge tick count without a tick", Buffer.concat([payload.subarray(0, ticks.valueStart), Buffer.from([0xdd, 255, 255, 255, 255])])],
+    ["trailing bytes after ticks", Buffer.concat([payload, Buffer.from([0, 0])])],
+  ];
+  for (const [name, bytes] of invalid) {
+    it(`refuses ${name}`, () => {
+      expect(() => decodeReplay(bytes)).toThrow(ReplayError);
+    });
+  }
+  it("refuses every truncated prefix of a real payload", () => {
+    for (let end = 0; end < payload.length; end++) expect(() => decodeReplay(payload.subarray(0, end))).toThrow(ReplayError);
+  });
 });

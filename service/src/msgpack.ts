@@ -41,6 +41,10 @@ export class Reader {
     return this.offset === this.bytes.length;
   }
 
+  get remaining(): number {
+    return this.bytes.length - this.offset;
+  }
+
   value(): Value {
     const token = this.token();
     if (!(token instanceof Head)) return token;

@@ -271,6 +271,9 @@ class Schema {
   private ticks(players: number): Ticks {
     const count = this.length("array");
     require(count >= 0, "ticks must be an array");
+    // The columns are sized from the count, so it must fit the bytes left: a tick takes at least its three headers
+    // and, per input, a header, four float64 axes and a flag byte.
+    require(count * (3 + players * 38) <= this.reader.remaining, "ticks are fewer than the array declares");
     const axes = new Float32Array(count * players * 4);
     const flags = new Uint32Array(count * players);
     const commands = new Map<number, Command[]>();
