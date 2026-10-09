@@ -1,10 +1,13 @@
 // The leaderboard on the high score screen (host/ranked.inc) and watching its
 // runs (host/watch.inc), as the browser host serves them: ticking Show internet
-// scores fetches the Survival board quietly, and its runs join the table. A
-// pinned run's replay is asked for once and, written to replays/online/, plays
-// to the result it recorded; a run the leaderboard no longer has gives no
-// Watch. Update scores replaces the board's runs whole. Nothing online is
-// stored: no score table is written, and only the downloaded replay is new.
+// scores fetches the Survival board quietly, and its runs join the table in
+// place of a leaderboard row an earlier build saved. A pinned run's replay is
+// asked for once and, written to replays/online/, plays to the result it
+// recorded; a run the leaderboard no longer has gives no Watch; a failed
+// download is asked for again when the row is pinned again; two runs with the
+// same name and numbers keep their own ids. Update scores replaces the board's
+// runs whole. Nothing online is stored: the score table stays as it was, and
+// only the downloaded replay is new.
 //
 //   node crimson-core/checks/game_online.mjs <game directory> [game.wasm]
 import fs from "node:fs";
@@ -27,7 +30,7 @@ const [ESCAPE, PAGE_DOWN] = [0x01, 0xd1];
 // its High scores, Show internet scores, the first two rows, Update scores, a
 // spot clear of the panels, and the pinned card's Watch.
 const STATISTICS = [200, 458], HIGH_SCORES = [275, 316], INTERNET = [682, 261];
-const ROWS = [[180, 305], [180, 321]], UPDATE = [209, 480], CLEAR = [700, 650], WATCH = [745, 421];
+const ROWS = [305, 321, 337, 353].map((y) => [180, y]), UPDATE = [209, 480], CLEAR = [700, 650], WATCH = [745, 421];
 
 function frame({ cursor = CLEAR, buttons = 0, taps = [] } = {}) {
   const input = run.input();
@@ -72,6 +75,29 @@ function answerScores(scores) {
   game.game_scores_received(body.length);
 }
 
+// A Survival row an earlier build saved from the leaderboard (flags 1: received),
+// as highscore_write_record writes it: each byte offset, the checksum over the
+// signed bytes.
+function savedBoardRow() {
+  const record = Buffer.alloc(72);
+  record.write("stale", 0, "latin1");
+  record.writeUInt32LE(512000, 0x20);
+  record.writeUInt32LE(999999, 0x24);
+  record[0x28] = 1;
+  [record[0x40], record[0x42], record[0x43]] = [1, 1, 26];
+  [record[0x44], record[0x46], record[0x47]] = [1, 0x7c, 0xff];
+  let checksum = 0;
+  for (let i = 0; i < 72; ++i) checksum = (checksum + (i + 3) * ((record[i] << 24) >> 24) * 7) | 0;
+  for (let i = 0; i < 72; ++i) record[i] = (record[i] + (i * 5 + 1) * i + 6) & 0xff;
+  const wire = Buffer.alloc(76);
+  record.copy(wire);
+  wire.writeInt32LE(checksum, 72);
+  return wire;
+}
+const table = path.join(directory, "scores5/survival.hi");
+fs.mkdirSync(path.dirname(table), { recursive: true });
+fs.writeFileSync(table, savedBoardRow());
+
 // On a fresh profile the main menu shares its screen id with the startup sequence.
 while (run.clock < 15000) frame();
 click(STATISTICS);
@@ -81,7 +107,7 @@ waitFor("the high scores", () => game.game_state() === HIGHSCORES);
 if (requests.length) throw Error("the screen fetched a board before Show internet scores was ticked");
 click(INTERNET);
 waitFor("a quiet fetch", () => requests.length);
-answerScores([score("r1", "pilot", 135302), score("gone", "ghost", 1000)]);
+answerScores([score("r1", "pilot", 135302), score("gone", "ghost", 1000), score("twin-a", "twin", 500), score("twin-b", "twin", 500)]);
 for (let i = 0; i < 30; ++i) frame();
 if (requests.length) throw Error("the screen fetched the board twice");
 
@@ -114,8 +140,25 @@ for (let i = 0; i < 120; ++i) frame();
 if (game.game_watch_status() !== -1) throw Error("a run gone from the leaderboard plays");
 if (requests.length) throw Error("the card asked again for a run the leaderboard no longer has");
 
-// Update scores fetches the board again and replaces its runs: the gone run's
-// row is the first run's now, which pins and plays without another fetch.
+// A failed download is asked for again once the row is pinned again, and the
+// twin row asks for its own run.
+const download = (row) => {
+  click(row);
+  for (let i = 0; i < 10; ++i) frame();
+  if (requests.shift() !== REPLAY || requests.length) throw Error("the card did not ask for the run once");
+  return text(game.game_replay_download());
+};
+const twin = download(ROWS[2]);
+game.game_replay_downloaded(2);
+click(ROWS[2]);
+if (download(ROWS[2]) !== twin) throw Error("the retry asked for another run");
+game.game_replay_downloaded(2);
+const other = download(ROWS[3]);
+game.game_replay_downloaded(2);
+if ([twin, other].sort().join() !== "twin-a,twin-b") throw Error(`the twin rows asked for ${twin} and ${other}`);
+
+// Update scores fetches the board again and replaces its runs: the first
+// run's row pins and plays without another fetch.
 click(UPDATE);
 waitFor("Update scores", () => requests.length);
 answerScores([score("r1", "pilot", 135302)]);
@@ -127,9 +170,7 @@ if (requests.length) throw Error(`watching again asked for ${requests.join()}`);
 frame({ taps: [ESCAPE] });
 waitFor("the return to the scores", () => game.game_state() === HIGHSCORES);
 
-const scores = path.join(directory, "scores5");
-const written = fs.existsSync(scores) ? fs.readdirSync(scores) : [];
-if (written.length) throw Error(`the board's runs were stored: ${written.join(", ")}`);
+if (!fs.readFileSync(table).equals(savedBoardRow())) throw Error("the score table changed");
 const replays = fs.readdirSync(path.join(directory, "replays"), { recursive: true }).filter((name) => name.endsWith(".crd"));
 if (replays.join() !== path.join("online", "r1.crd")) throw Error(`the replays are ${replays.join(", ")}`);
 console.log(JSON.stringify({ watched: 2 }));

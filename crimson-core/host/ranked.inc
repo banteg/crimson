@@ -258,28 +258,31 @@ extern "C" {
 // after its own records while Show internet scores is ticked: a record the
 // board holds (by name, time and experience, as the Python port matches them)
 // turns green and takes the board's run instead of showing twice. Asks for a
-// board it has not fetched yet.
+// board it has not fetched yet. Rows earlier builds saved from the leaderboard
+// (received, not the player's: the original's internet rows) stay out, since
+// the board's latest answer replaces them.
 FILE *highscore_table_open(char *path) {
   static char *table;
   FILE *file = platform_fopen(path, "rb");
   scores_shown.clear();
+  if (!ranked_enabled)
+    return file;
   ScoresBoard board;
-  if (!ranked_enabled || !config_blob.show_online_scores || !scores_board(board))
-    return file;
-  auto kept = scores_kept.find(board);
-  if (kept == scores_kept.end()) {
-    if (!scores_out && !scores_asked.count(board))
+  std::vector<ScoresRun> runs;
+  if (config_blob.show_online_scores && scores_board(board)) {
+    auto kept = scores_kept.find(board);
+    if (kept != scores_kept.end())
+      runs = kept->second;
+    else if (!scores_out && !scores_asked.count(board))
       scores_send(board, true);
-    return file;
   }
-  std::vector<ScoresRun> runs = kept->second;
   size_t size = 0;
   free(table);
   table = nullptr;
   FILE *out = open_memstream(&table, &size);
   highscore_record_t record;
   while (file && !feof(file)) {
-    if (!highscore_read_record((char *)&record, file))
+    if (!highscore_read_record((char *)&record, file) || ((record.flags & 1) && !(record.flags & 2)))
       continue;
     for (size_t i = 0; i < runs.size(); ++i)
       if (!strcmp(runs[i].record.player_name, record.player_name) &&
@@ -341,6 +344,12 @@ __attribute__((export_name("game_scores_received"))) void game_scores_received(i
         continue;
       if (const Json *id = run.field("run", Json::STRING); id && scores_run_id(id->text))
         shown.run = id->text;
+      // The record's tag names its run (FNV-1a), so two runs with the same
+      // name, numbers and day stay apart in the table.
+      uint32_t tag = 2166136261u;
+      for (char c : shown.run)
+        tag = (tag ^ (uint8_t)c) * 16777619u;
+      shown.record.random_tag = tag;
       kept.push_back(shown);
     }
   }
@@ -352,8 +361,8 @@ __attribute__((export_name("game_scores_received"))) void game_scores_received(i
       config_blob.show_online_scores = 1;
     }
   }
-  if (runs)
-    highscore_load_table_thunk();
+  // The table reads the board's new runs, and asks for a board shown meanwhile.
+  highscore_load_table_thunk();
   // Update scores pressed while a quiet request was out asks for the board shown now.
   ScoresBoard board;
   if (scores_update_waiting && !scores_out) {

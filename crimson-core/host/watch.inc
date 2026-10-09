@@ -373,6 +373,8 @@ static void watch_render() {
 // newest few stay there for the next watch.
 enum WatchDownload { WATCH_DOWNLOADING, WATCH_GONE, WATCH_FAILED };
 static std::map<std::string, WatchDownload> watch_downloads;
+static std::map<std::string, int> watch_failed_pin; // the pin a failed download failed under
+static int watch_pins; // counts pins, each of which the card looks at afresh
 static std::string watch_download; // the run the host is fetching
 static int watch_downloads_done;   // counts finished downloads, which the card looks at again
 static constexpr int WATCH_ONLINE_KEPT = 32;
@@ -402,10 +404,11 @@ static const char *watch_online_note(const std::string &run) {
   auto known = watch_downloads.find(run);
   if (known != watch_downloads.end() && known->second == WATCH_GONE)
     return "This run is no longer on the leaderboard";
+  // A failed download shows while its pin lasts; the next pin tries again.
   if (known != watch_downloads.end() && known->second == WATCH_FAILED) {
-    // The next pin tries again.
+    if (watch_failed_pin[run] == watch_pins)
+      return "Could not download this run";
     watch_downloads.erase(known);
-    return "Could not download this run";
   }
   if (watch_download.empty()) {
     mkdir("replays", 0755);
@@ -451,6 +454,7 @@ int highscore_watch_row(int hovered, int rows, int *selected) {
     if (!memcmp(&highscore_table[i], &pinned, sizeof pinned))
       row = i;
   if (click && hovered >= 0) {
+    ++watch_pins;
     has_pin = hovered != row;
     row = has_pin ? hovered : -1;
     if (has_pin)
@@ -465,18 +469,22 @@ int highscore_watch_row(int hovered, int rows, int *selected) {
 // the record's replay plays, or the card says why not.
 void highscore_watch(float *card, highscore_record_t *record) {
   static highscore_record_t shown;
-  static int downloads_seen;
+  static std::string shown_run;
+  static int downloads_seen, pins_seen;
   static LoadedReplay target;
   static std::string note;
   static bool named, playable;
   static ui_button_t button = {(char *)"Watch", 0, 0, 1, 0, 0, 0, 1.0f};
-  if (memcmp(record, &shown, sizeof shown) || downloads_seen != watch_downloads_done) {
+  const std::string *run = scores_run(*record);
+  if (memcmp(record, &shown, sizeof shown) || (run ? *run : "") != shown_run || downloads_seen != watch_downloads_done ||
+      pins_seen != watch_pins) {
     shown = *record;
+    shown_run = run ? *run : "";
     downloads_seen = watch_downloads_done;
+    pins_seen = watch_pins;
     // A local run's replay by its number; a board run's by its id.
     int number;
     memcpy(&number, record->reserved0, sizeof number);
-    const std::string *run = scores_run(*record);
     char path[96];
     bool local = number > 0 && replay_numbered(number, path, sizeof path);
     named = number > 0 || run;
@@ -533,6 +541,7 @@ __attribute__((export_name("game_replay_downloaded"))) void game_replay_download
     watch_downloads.erase(watch_download);
   else
     watch_downloads[watch_download] = result == 1 ? WATCH_GONE : WATCH_FAILED;
+  watch_failed_pin[watch_download] = watch_pins;
   watch_download.clear();
   ++watch_downloads_done;
 }
