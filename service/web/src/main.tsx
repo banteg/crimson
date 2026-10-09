@@ -3,7 +3,7 @@ import { render } from "solid-js/web";
 import type { Role } from "../../src/api-types";
 import { get } from "./api";
 import { GameButton } from "./button";
-import { type Navigator, type Panel, resolve, type Screen } from "./pages";
+import { DOCS, type Navigator, type Panel, resolve, type Screen } from "./pages";
 import "./style.css";
 import { drawGround } from "./terrain/draw";
 
@@ -147,7 +147,7 @@ function App() {
       </main>
       <footer>
         <p>
-          <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/banteg/crimson">GitHub</a> ·{" "}
+          <a href={DOCS}>Docs</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="https://github.com/banteg/crimson">GitHub</a> ·{" "}
           <a href="https://t.me/+NEHzXtv5_fphZDYy">Telegram</a>
         </p>
         <p class="credit">
