@@ -410,7 +410,7 @@ class ProjectilePool:
                         ProjectileTemplateId.GAUSS_GUN,
                         ProjectileTemplateId.BLADE_GUN,
                     )
-                    if proj.life_timer != 0.25 and stop_on_hit:
+                    if stop_on_hit:
                         proj.life_timer = 0.25
                         jitter = rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER) & 3
                         # Native rounds the multiply and add as separate PC24 operations.
