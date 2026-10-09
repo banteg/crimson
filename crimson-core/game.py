@@ -1,5 +1,6 @@
 """The game module: the verifier selection plus recovered presentation, Grim and a platform layer."""
 
+import functools
 import json
 import re
 from pathlib import Path
@@ -96,6 +97,74 @@ def replace_once(text, old, new, src):
     return text.replace(old, new)
 
 
+def _blank_comments(text):
+    # Comments as spaces, so offsets into the code are offsets into the text.
+    return re.sub(r"//[^\n]*|/\*.*?\*/", lambda m: re.sub(r"[^\n]", " ", m.group()), text, flags=re.DOTALL)
+
+
+@functools.cache
+def _rng_draws(tree):
+    # crt_rand and every recovered function that reaches it, by file name.
+    bodies = {path.stem: _blank_comments(path.read_text()) for path in tree.rglob("*") if path.suffix in (".c", ".cpp")}
+    names = {"crt_rand"}
+    while new := {
+        stem
+        for stem, body in bodies.items()
+        if stem not in names and re.search(rf"\b(?:{'|'.join(sorted(names))})\s*\(", body)
+    }:
+        names |= new
+    return re.compile(rf"\b(?:{'|'.join(sorted(names))})\s*\(")
+
+
+def _arguments(text, open_paren):
+    # The (start, end) span of each argument of the call whose "(" is at open_paren.
+    spans, depth, start = [], 0, open_paren + 1
+    for i in range(open_paren, len(text)):
+        if text[i] in "([{":
+            depth += 1
+        elif text[i] in ")]}":
+            depth -= 1
+            if not depth:
+                return spans + [(start, i)]
+        elif text[i] == "," and depth == 1:
+            spans.append((start, i))
+            start = i + 1
+    raise SystemExit("Unbalanced call")
+
+
+def msvc_argument_order(src, txt):
+    # The original's compiler evaluates call arguments right to left; clang goes
+    # left to right. Where two arguments of a call draw the RNG, they move into
+    # temporaries ahead of the statement in MSVC's order, so each draw lands
+    # where the original put it (a terrain stamp's y before its x, a Typ-o name's
+    # last part first). The count of draws stays the same.
+    draws = _rng_draws(Path(*src.parts[: src.parts.index("1.9") + 1]))
+    code = _blank_comments(txt)
+    sites = []
+    for call in re.finditer(r"\b\w+\s*\(", code):
+        spans = _arguments(code, call.end() - 1)
+        drawing = [span for span in spans if draws.search(code[slice(*span)])]
+        if len(drawing) >= 2:
+            sites.append((call.start(), drawing))
+    if not sites:
+        return txt
+    for n, (start, drawing) in enumerate(reversed(sites)):
+        statement = max(code.rfind(c, 0, start) for c in ";{}") + 1
+        if not re.fullmatch(r"\s*(?:[\w:<>*& ]+\s)?", code[statement:start]):
+            raise SystemExit(f"Audit {src.name}: a call that draws in argument order inside an expression")
+        line = code.rfind("\n", 0, start) + 1
+        indent = re.match(r"[ \t]*", code[line:]).group()
+        hoisted = ""
+        for i, (a, b) in enumerate(reversed(drawing)):
+            name = f"msvc_argument_{n}_{i}"
+            argument = txt[a:b].strip()
+            hoisted += f"{indent}auto {name} = {' '.join(argument.split())};\n"
+            a = txt.index(argument, a)
+            txt = txt[:a] + name + txt[a + len(argument) :]
+        txt = txt[:line] + hoisted + txt[line:]
+    return txt
+
+
 # Recovered functions host/game.inc and host/session.inc wrap: a simulation tick
 # must run some as the verifier does, a run the client plays drives others, a
 # tick saves nothing, a sound entry the device never created stays silent, and
@@ -134,6 +203,7 @@ def adapt_game(src, txt):
             r'extern "C" \2 \3(',
             txt,
         )
+    txt = msvc_argument_order(src, txt)
     # Files open through the platform layer, which takes Windows paths.
     txt = re.sub(r"\bfopen\(", "platform_fopen(", txt)
     # The static CRT behind the crt_ wrappers has C linkage, whatever a file declares.
@@ -193,7 +263,12 @@ def adapt_game(src, txt):
         )
         if count != 2:
             raise SystemExit(f"Audit {src.name}: Rush rows ({count})")
-        txt = replace_once(txt, "        if (game_is_full_version()) {", "        if (!ranked_checked && game_is_full_version()) {", src)
+        txt = replace_once(
+            txt,
+            "        if (game_is_full_version()) {",
+            "        if (!ranked_checked && game_is_full_version()) {",
+            src,
+        )
         txt = replace_once(
             txt,
             "            }\n        }\n        position.y += 28.0f;\n\n        if (quest_play_counts[11]",
@@ -222,7 +297,10 @@ def adapt_game(src, txt):
             "    if (quests_button.hover_anim > 0) {",
             src,
         )
-        txt = 'extern "C" bool ranked_checked;\nextern "C" void ranked_menu(float *base, float *tips, bool list_open);\n' + txt
+        txt = (
+            'extern "C" bool ranked_checked;\nextern "C" void ranked_menu(float *base, float *tips, bool list_open);\n'
+            + txt
+        )
     if src.stem == "highscore_load_table":
         # The table reads the leaderboard's runs after its own records (host/ranked.inc).
         txt = replace_once(txt, '    fp = platform_fopen(path, "rb");', "    fp = highscore_table_open(path);", src)
