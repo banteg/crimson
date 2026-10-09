@@ -48,6 +48,7 @@ static struct {
   bool pausing; // Escape: the timeline runs down to the pause menu
   bool picked;  // the perk menu, once opened, takes one choice
   float move_target_x, move_target_y; // point-click movement's target
+  float aim_heading; // where the aim last faced, which a resting pad stick keeps
   PortableCommand queued[16];
   int queued_count;
   game_state_id_t requested; // a state a tick asked for
@@ -89,6 +90,21 @@ static void live_install(const LiveSettings &settings) {
   for (int i = 0; i < 2; ++i)
     player_state_table[i].input = settings.keys[i];
 }
+// The run's settings in place of the player's, kept in live.outside. The run
+// draws with the player's display choices (direction arrows, detail, the perk
+// prompt's hint): the verifier sets none of them (host.cpp), and only drawing
+// reads them.
+static void live_enter_run() {
+  live.outside = live_settings();
+  auto &run = live.run.config;
+  const auto &player = live.outside.config;
+  memcpy(run.direction_arrow_flags, player.direction_arrow_flags, sizeof run.direction_arrow_flags);
+  run.shadows_enabled = player.shadows_enabled;
+  run.flame_glow_enabled = player.flame_glow_enabled;
+  run.smoke_enabled = player.smoke_enabled;
+  run.ui_info_texts = player.ui_info_texts;
+  live_install(live.run);
+}
 // Word by word, what the tick changed reaches the player's settings: a status
 // counter by its increase, anything else by its new value.
 template <class T> static void live_carry(const T &before, const T &after, T &player, bool add) {
@@ -100,8 +116,7 @@ template <class T> static void live_carry(const T &before, const T &after, T &pl
 }
 // A tick between the verifier's settings.
 static int live_step(uint32_t count) {
-  live.outside = live_settings();
-  live_install(live.run);
+  live_enter_run();
   int accepted = portable_step_many(count);
   LiveSettings after = live_settings();
   // A replay changes nothing of the player's; a ranked run plays on a detached
@@ -147,6 +162,7 @@ static bool live_start() {
   live.fire_down = live.reload_down = live.pick_down = false;
   live.fire_pressed = live.reload_pressed = live.open_requested = live.pausing = live.picked = false;
   live.move_target_x = live.move_target_y = -1;
+  live.aim_heading = player_state_table[0].aim_heading;
   live.queued_count = 0;
   return true;
 }
@@ -266,15 +282,25 @@ static PortableInput live_input() {
     input.aim_y = ui_mouse_y;
   } else if (aim_scheme == 4) { // dual-action pad: the stick's reach
     float x = live_axis(keys.axis_aim_x), y = live_axis(keys.axis_aim_y), length = sqrtf(x * x + y * y);
-    // A ranked run's pad reach is the registered default (ranked.py).
-    float reach = fminf(length, 1.0f) * (ranked_run ? 96.0f : cv_padAimDistMul->value) + 42.0f;
-    input.aim_x = length > 0 ? x / length * reach : 0;
-    input.aim_y = length > 0 ? y / length * reach : 0;
+    if (length > 0.2f) {
+      // A ranked run's pad reach is the registered default (ranked.py).
+      float reach = fminf(length, 1.0f) * (ranked_run ? 96.0f : cv_padAimDistMul->value) + 42.0f;
+      input.aim_x = x / length * reach;
+      input.aim_y = y / length * reach;
+    } else { // original bug 31: a resting stick keeps the aim's direction, 60 units out
+      input.aim_x = cosf(live.aim_heading - (float)M_PI_2) * 60.0f;
+      input.aim_y = sinf(live.aim_heading - (float)M_PI_2) * 60.0f;
+    }
   } else if (aim_scheme == 2 || aim_scheme == -1) { // joystick hat
     int hat = session_grim.IGrim2D_cpp::grim_get_joystick_pov(0);
     turn_left = hat == config_blob.aim_pov_left;
     turn_right = hat == config_blob.aim_pov_right;
   }
+  // The pad's aim is an offset from the player; the others are points.
+  float facing_x = aim_scheme == 4 ? input.aim_x : input.aim_x - player.position.x,
+        facing_y = aim_scheme == 4 ? input.aim_y : input.aim_y - player.position.y;
+  if (facing_x * facing_x + facing_y * facing_y > 1e-9f)
+    live.aim_heading = atan2f(facing_y, facing_x) + (float)M_PI_2;
   input.flags = (live.fire_down ? 1u : 0) | (live.fire_pressed ? 2u : 0) | (live.reload_pressed ? 4u : 0) |
                 8u | (forward ? 16u : 0) | (backward ? 32u : 0) | (left ? 64u : 0) | (right ? 128u : 0) |
                 0x100u | (unsigned)(move_mode & 7) << 9 | 0x1000u | (unsigned)(aim_scheme & 7) << 13 |
@@ -378,8 +404,7 @@ void gameplay_render_world_recovered();
 void gameplay_render_world() {
   if (!game_live || game_ticking)
     return gameplay_render_world_recovered();
-  live.outside = live_settings();
-  live_install(live.run);
+  live_enter_run();
   gameplay_render_world_recovered();
   live_install(live.outside);
 }

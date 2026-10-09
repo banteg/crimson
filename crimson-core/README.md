@@ -220,13 +220,15 @@ verifier stays byte-identical:
 
 | Patch | Fix |
 | --- | --- |
+| 25 | A re-picked bonus's HUD indicator slides straight back in |
 | 28 | Bullets and pellets show their heads |
 | 34 | Each Fire Bullets shot glows, and nothing else does |
 | 35 | Rocket detonation flashes draw the soft glow cell |
 | 36 | Ion chain arcs close in round end caps |
 
-The other entries are out of the core's scope (co-op, Typ-o, HUD, menus or
-live input) or are documentation only.
+The client's live input ([`host/session.inc`](host/session.inc)) keeps a resting
+pad aim stick on its last direction (31). The other entries are out of the
+core's scope (co-op, Typ-o, menus) or are documentation only.
 
 ## Transport and input seam
 
