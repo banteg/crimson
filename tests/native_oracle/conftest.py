@@ -33,12 +33,19 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             item.add_marker(pytest.mark.skip(reason=reason))
 
 
+@pytest.fixture(scope="session")
+def _symbols():
+    from crimson_re.dbg.native_oracle import SymbolTable
+
+    return SymbolTable.load()
+
+
 @pytest.fixture
-def oracle():
+def oracle(_symbols):
     """A fresh oracle with the game's static initializers run (CRT stdio/locale ones trap and are skipped)."""
 
     from crimson_re.dbg.native_oracle import NativeOracle
 
-    oracle = NativeOracle(_EXE)
+    oracle = NativeOracle(_EXE, symbols=_symbols)
     oracle.run_static_initializers()
     return oracle

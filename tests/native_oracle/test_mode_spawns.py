@@ -23,7 +23,7 @@ from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import CrtRand
 
-from ._support import CREATURE_LAYOUT, CREATURE_POOL_SLOTS, CREATURE_STRIDE, Mismatch, compare_fields, mismatch_report
+from ._support import CREATURE_LAYOUT, CREATURE_STRIDE, Mismatch, compare_pool, mismatch_report
 
 _LARGE_TIMES = ((1 << 24) - 1, 1 << 24, (1 << 24) + 1, 16_777_219, 20_000_001, 33_554_435)
 
@@ -51,21 +51,8 @@ def _python_creature(creature: CreatureState) -> dict[str, float | int | None]:
     }
 
 
-
-
-def _compare_pool(oracle, case: str, pool: CreaturePool) -> tuple[list[Mismatch], int]:
-    pool_base = oracle.resolve("creature_pool")
-    mismatches: list[Mismatch] = []
-    spawned = 0
-    for index in range(CREATURE_POOL_SLOTS):
-        address = pool_base + index * CREATURE_STRIDE
-        native = oracle.read_fields(address, CREATURE_LAYOUT)
-        python = pool.entries[index]
-        if not native["active"] and not python.active:
-            continue
-        spawned += 1
-        mismatches += compare_fields(f"{case} creature[{index}]", native, _python_creature(python), address=address)
-    return mismatches, spawned
+def _compare_creatures(oracle, case: str, pool: CreaturePool) -> list[Mismatch]:
+    return compare_pool(oracle, "creature_pool", CREATURE_STRIDE, CREATURE_LAYOUT, pool.entries, _python_creature, f"{case} creature")
 
 
 def test_rush_mode_spawns_match_native(oracle) -> None:
@@ -102,9 +89,8 @@ def test_rush_mode_spawns_match_native(oracle) -> None:
         case = f"rush elapsed_ms={elapsed_ms} dt_ms={dt_ms} players={player_count} seed=0x{seed:08x}"
         if oracle.read_i32("survival_spawn_cooldown") != cooldown:
             mismatches.append(Mismatch(case, "cooldown", oracle.read_i32("survival_spawn_cooldown"), cooldown, 0))
-        case_mismatches, case_spawned = _compare_pool(oracle, case, pool)
-        mismatches += case_mismatches
-        spawned += case_spawned
+        mismatches += _compare_creatures(oracle, case, pool)
+        spawned += sum(creature.active for creature in pool.entries)
         if oracle.rand_state != crt.state:
             mismatches.append(Mismatch(case, "rand_state", oracle.rand_state, crt.state, 0))
     assert spawned >= 2 * cases, f"only {spawned} creatures spawned over {cases} cases"
@@ -138,8 +124,7 @@ def test_survival_spawn_creature_matches_native(oracle) -> None:
             survival_spawn_creature(pool, pos, crt, player_experience=experience)
 
             case = f"survival experience={experience} seed=0x{seed:08x}"
-            case_mismatches, _ = _compare_pool(oracle, case, pool)
-            mismatches += case_mismatches
+            mismatches += _compare_creatures(oracle, case, pool)
             if oracle.rand_state != crt.state:
                 mismatches.append(Mismatch(case, "rand_state", oracle.rand_state, crt.state, 0))
     assert not mismatches, mismatch_report(mismatches, total_cases=cases)

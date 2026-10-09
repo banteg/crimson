@@ -31,6 +31,7 @@ from ._support import (
     SPRITE_STRIDE,
     Mismatch,
     compare_fields,
+    compare_pool,
     mismatch_report,
     prepare_gameplay,
     python_sprite,
@@ -291,16 +292,13 @@ def test_typo_player_fire_weapon_matches_native(oracle) -> None:
         ]
         if python_sfx != native_sfx:
             mismatches.append(Mismatch(case, f"sfx {native_sfx} != {python_sfx}", len(native_sfx), len(python_sfx), 0))
-        for index, projectile in enumerate(state.projectiles.entries):
-            address = projectile_pool + index * PROJECTILE_STRIDE
-            native = oracle.read_fields(address, PROJECTILE_LAYOUT)
-            if native["active"] or projectile.active:
-                mismatches += compare_fields(f"{case} projectile[{index}]", native, _python_projectile(projectile), address=address)
-        for index, sprite in enumerate(state.sprite_effects.entries):
-            address = sprite_pool + index * SPRITE_STRIDE
-            native = oracle.read_fields(address, SPRITE_LAYOUT)
-            if native["active"] or sprite.active:
-                mismatches += compare_fields(f"{case} sprite[{index}]", native, python_sprite(sprite), address=address)
+        mismatches += compare_pool(
+            oracle, projectile_pool, PROJECTILE_STRIDE, PROJECTILE_LAYOUT, state.projectiles.entries, _python_projectile,
+            f"{case} projectile",
+        )
+        mismatches += compare_pool(
+            oracle, sprite_pool, SPRITE_STRIDE, SPRITE_LAYOUT, state.sprite_effects.entries, python_sprite, f"{case} sprite",
+        )
         if oracle.rand_state != state.rng.state:
             mismatches.append(Mismatch(case, "rand_state", oracle.rand_state, state.rng.state, 0))
     assert not mismatches, mismatch_report(mismatches, total_cases=cases)

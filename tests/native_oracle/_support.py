@@ -8,6 +8,7 @@ import struct
 from collections import Counter
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from itertools import chain
 from pathlib import Path
 
 from crimson.effects import EFFECT_POOL_SIZE, EffectPool, SpriteEffect
@@ -241,11 +242,48 @@ def compare_fields(
         native_value = native[name]
         if isinstance(native_value, float):
             python_float = float(python_value)
-            same = is_f32(python_float) and f32_bits(python_float) == f32_bits(native_value)
+            if python_float == native_value:
+                # `native_value` is a float32, so equal doubles have equal bits up to the sign of zero.
+                same = python_float != 0.0 or math.copysign(1.0, python_float) == math.copysign(1.0, native_value)
+            else:
+                same = is_f32(python_float) and f32_bits(python_float) == f32_bits(native_value)
         else:
             same = int(python_value) == native_value
         if not same:
             mismatches.append(Mismatch(case, name, native_value, python_value, address))
+    return mismatches
+
+
+def pool_rows(oracle, address: int | str, stride: int, count: int, layout: Mapping[str, tuple[int, str]]) -> list[dict | None]:
+    """One read of a native pool: each row's fields, or None for a row whose leading `active` byte is clear."""
+
+    raw = oracle.read(address, stride * count)
+    return [
+        {name: struct.unpack_from(f"<{fmt}", raw, row + offset)[0] for name, (offset, fmt) in layout.items()}
+        if raw[row]
+        else None
+        for row in range(0, stride * count, stride)
+    ]
+
+
+def compare_pool(
+    oracle,
+    address: int | str,
+    stride: int,
+    layout: Mapping[str, tuple[int, str]],
+    entries: list,
+    to_python: Callable[..., Mapping[str, float | int | None]],
+    label: str,
+) -> list[Mismatch]:
+    """Compare every pool row that is active on either side."""
+
+    base = oracle.resolve(address)
+    mismatches = []
+    for index, (native, entry) in enumerate(zip(pool_rows(oracle, base, stride, len(entries), layout), entries, strict=True)):
+        if native is None and not entry.active:
+            continue
+        row = base + index * stride
+        mismatches += compare_fields(f"{label}[{index}]", native or oracle.read_fields(row, layout), to_python(entry), address=row)
     return mismatches
 
 
@@ -256,7 +294,11 @@ _EFFECT_ENTRY_FIELDS = (
     "pos_x", "pos_y", "effect_id", "vel_x", "vel_y", "rotation", "scale", "half_width", "half_height",
     "age", "lifetime", "flags", "color_r", "color_g", "color_b", "color_a", "rotation_step", "scale_step",
 )  # fmt: skip
-_EFFECT_ENTRY_FORMAT = struct.Struct("<2fB3x8fi6f")
+_EFFECT_ENTRY_FORMAT = "2fB3x8fi6f"
+# The whole pool: each entry's fields, then its `next_free` pointer.
+_EFFECT_POOL_FORMAT = struct.Struct(
+    "<" + f"{_EFFECT_ENTRY_FORMAT}{_EFFECT_ENTRY_NEXT_FREE - struct.calcsize(_EFFECT_ENTRY_FORMAT)}xI" * EFFECT_POOL_SIZE,
+)
 # `effect_template_t` (0x3c bytes): the entry fields from `velocity` to `scale_step`.
 _EFFECT_TEMPLATE_FIELDS = _EFFECT_ENTRY_FIELDS[3:]
 _EFFECT_TEMPLATE_FORMAT = struct.Struct("<8fi6f")
@@ -272,32 +314,32 @@ def compare_effect_pool(oracle, pool: EffectPool, label: str) -> list[Mismatch]:
 
     mismatches: list[Mismatch] = []
     raw = oracle.read(base, _EFFECT_ENTRY_STRIDE * EFFECT_POOL_SIZE)
-    for slot, entry in enumerate(pool.entries):
-        offset = slot * _EFFECT_ENTRY_STRIDE
-        native = dict(zip(_EFFECT_ENTRY_FIELDS, _EFFECT_ENTRY_FORMAT.unpack_from(raw, offset), strict=True))
-        native["next_free"] = index(struct.unpack_from("<I", raw, offset + _EFFECT_ENTRY_NEXT_FREE)[0])
-        python = {
-            "pos_x": entry.pos.x,
-            "pos_y": entry.pos.y,
-            "effect_id": entry.effect_id,
-            "vel_x": entry.vel.x,
-            "vel_y": entry.vel.y,
-            "rotation": entry.rotation,
-            "scale": entry.scale,
-            "half_width": entry.half_width,
-            "half_height": entry.half_height,
-            "age": entry.age,
-            "lifetime": entry.lifetime,
-            "flags": entry.flags,
-            "color_r": entry.color.r,
-            "color_g": entry.color.g,
-            "color_b": entry.color.b,
-            "color_a": entry.color.a,
-            "rotation_step": entry.rotation_step,
-            "scale_step": entry.scale_step,
-            "next_free": entry.next_free,
-        }
-        mismatches += compare_fields(f"{label} effect[{slot}]", native, python, address=base + offset)
+    # One flat tuple in `_EFFECT_POOL_FORMAT` order, with `next_free` as the native pointer.
+    python_flat = tuple(
+        chain.from_iterable(
+            (
+                entry.pos.x, entry.pos.y, entry.effect_id, entry.vel.x, entry.vel.y, entry.rotation, entry.scale,
+                entry.half_width, entry.half_height, entry.age, entry.lifetime, entry.flags, entry.color.r,
+                entry.color.g, entry.color.b, entry.color.a, entry.rotation_step, entry.scale_step,
+                0 if entry.next_free == -1 else base + entry.next_free * _EFFECT_ENTRY_STRIDE,
+            )
+            for entry in pool.entries
+        ),
+    )  # fmt: skip
+    native_flat = _EFFECT_POOL_FORMAT.unpack(raw)
+    # Fast path: every value equal (so float32-exact) and the same bytes (so the same signed zeros).
+    try:
+        same_pool = python_flat == native_flat and _EFFECT_POOL_FORMAT.pack(*python_flat) == _EFFECT_POOL_FORMAT.pack(*native_flat)
+    except struct.error:
+        same_pool = False
+    if not same_pool:
+        width = len(_EFFECT_ENTRY_FIELDS) + 1
+        for slot, entry in enumerate(pool.entries):
+            offset = slot * _EFFECT_ENTRY_STRIDE
+            start, end = slot * width, slot * width + width - 1
+            native = {**dict(zip(_EFFECT_ENTRY_FIELDS, native_flat[start:end], strict=True)), "next_free": index(native_flat[end])}
+            python = {**dict(zip(_EFFECT_ENTRY_FIELDS, python_flat[start:end], strict=True)), "next_free": entry.next_free}
+            mismatches += compare_fields(f"{label} effect[{slot}]", native, python, address=base + offset)
 
     # The template slots are float32; the port rounds them when `effect_spawn` copies them.
     template_address = oracle.resolve("effect_template")

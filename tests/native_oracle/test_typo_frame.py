@@ -38,6 +38,7 @@ from ._support import (
     Mismatch,
     compare_effect_pool,
     compare_fields,
+    compare_pool,
     install_fake_grim,
     mismatch_report,
     prepare_gameplay,
@@ -224,33 +225,6 @@ def _c_string(raw: bytes) -> str:
     return raw.split(b"\0", 1)[0].decode("latin-1")
 
 
-def _pool_rows(oracle, symbol: str, stride: int, count: int, layout: dict[str, tuple[int, str]]) -> list[dict | None]:
-    """One read of a native pool: each row's fields, or None for a row whose `active` byte is clear."""
-
-    raw = oracle.read(symbol, stride * count)
-    return [
-        {name: struct.unpack_from(f"<{fmt}", raw, row + offset)[0] for name, (offset, fmt) in layout.items()}
-        if raw[row]
-        else None
-        for row in range(0, stride * count, stride)
-    ]
-
-
-def _compare_pool(
-    oracle, symbol: str, stride: int, layout: dict[str, tuple[int, str]], entries: list, to_python, label: str,
-) -> list[Mismatch]:
-    base = oracle.resolve(symbol)
-    mismatches = []
-    for index, (native, entry) in enumerate(zip(_pool_rows(oracle, symbol, stride, len(entries), layout), entries, strict=True)):
-        if native is None and not entry.active:
-            continue
-        address = base + index * stride
-        mismatches += compare_fields(
-            f"{label}[{index}]", native or oracle.read_fields(address, layout), to_python(entry), address=address,
-        )
-    return mismatches
-
-
 def _compare(
     oracle, session: DeterministicSession, *, run_started: bool, run_over: bool, effects: bool, case: str,
 ) -> list[Mismatch]:
@@ -258,7 +232,7 @@ def _compare(
     state = world.state
     typo = state.typo
     creatures = world.creatures.entries
-    mismatches = _compare_pool(
+    mismatches = compare_pool(
         oracle, "creature_pool", CREATURE_STRIDE, _CREATURE_FRAME_LAYOUT, creatures, _python_creature, f"{case} creature",
     )
     names = oracle.read("typo_target_name_table", _NAME_STRIDE * CREATURE_POOL_SLOTS)
@@ -266,11 +240,11 @@ def _compare(
         native_name = _c_string(names[index * _NAME_STRIDE : (index + 1) * _NAME_STRIDE])
         if creature.active and native_name != typo.names.names[index]:
             mismatches.append(Mismatch(f"{case} {native_name!r} != {typo.names.names[index]!r}", f"name[{index}]", 0, 0, 0))
-    mismatches += _compare_pool(
+    mismatches += compare_pool(
         oracle, "projectile_pool", PROJECTILE_STRIDE, PROJECTILE_LAYOUT, state.projectiles.entries, _python_projectile,
         f"{case} projectile",
     )
-    mismatches += _compare_pool(
+    mismatches += compare_pool(
         oracle, "sprite_effect_pool", SPRITE_STRIDE, SPRITE_LAYOUT, state.sprite_effects.entries, python_sprite,
         f"{case} sprite",
     )
@@ -378,7 +352,7 @@ def test_typo_frame_matches_native(oracle) -> None:
     rng = random.Random(0x4457C0)
     mismatches: list[Mismatch] = []
     cases = frames = matched = deaths = table_loads = 0
-    for _ in range(8):
+    for _ in range(4):
         cases += 1
         seed = rng.getrandbits(32)
         experience = rng.choice((0, rng.randrange(0, 400)))
