@@ -171,9 +171,12 @@ and `1` resets it, Right and Page Down skip 5 and 30 seconds with the sound
 effects muted, and Escape returns to the scores. A popup shows each perk pick
 with the choices the menu offered, and the end shows how the run ended and
 whether it played to the result it recorded. A host plays a replay file with
-`game_replay_open` and `game_watch`. Since the replay plays in the one world
-the game has, a finished run's end screen is gone once the scores it opened
-play one: their Back leaves for the Statistics menu.
+`game_replay_open` and `game_watch`, which waits for a menu to settle and gives
+way to a run the player starts; a run's page on the site links to
+`/play/?watch=<run>`, which the page plays once the game is up. Since the
+replay plays in the one world the game has, a finished run's end screen is
+gone once the scores it opened play one: their Back leaves for the Statistics
+menu.
 
 ### Ranked runs
 

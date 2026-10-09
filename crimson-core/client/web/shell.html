@@ -121,10 +121,13 @@
     canvas.focus();
   };
   // A failed save stays on screen until a save succeeds; the game plays on.
+  // Other notes (tell) keep their own time.
   const notice = document.getElementById("notice");
+  let unsaved = false;
   const saveFailed = (error) => {
     notice.textContent = "Could not save: " + (error.message ?? error);
     notice.hidden = false;
+    unsaved = true;
   };
 
   // Writes /game back to IndexedDB, one sync at a time and only once it has been
@@ -139,7 +142,10 @@
     }
     syncing = new Promise((resolve) => FS.syncfs(false, (error) => {
       if (error) saveFailed(error);
-      else notice.hidden = true;
+      else if (unsaved) {
+        unsaved = false;
+        notice.hidden = true;
+      }
       resolve(!error);
     })).then((ok) => {
       syncing = null;
@@ -371,6 +377,7 @@
     const line = href ? Object.assign(document.createElement("a"), { href, target: "_blank", textContent: text }) : text;
     notice.replaceChildren(line);
     notice.hidden = false;
+    unsaved = false;
     clearTimeout(tell.timer);
     tell.timer = setTimeout(() => (notice.hidden = true), 15000);
   }
@@ -423,6 +430,27 @@
     } catch {}
     Module.ccall("client_replay_downloaded", null, ["number"], [result]);
   }
+  // A link to a run (crimson.land/play/?watch=<run>, from its page): its replay
+  // plays once the game is up, and returns to the high scores.
+  async function watchLink(run) {
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(run)) return;
+    let response, bytes;
+    try {
+      response = await fetch(`/runs/${run}.crd`);
+      if (response.ok) bytes = new Uint8Array(await response.arrayBuffer());
+    } catch {}
+    if (!bytes || bytes.length > REPLAY_LIMIT)
+      return tell(response?.status === 404 ? "This run is no longer on the leaderboard." : "Could not download this run.");
+    const path = `replays/online/${run}.crd`;
+    FS.mkdirTree("/game/replays/online");
+    FS.writeFile(`/game/${path}`, bytes);
+    const start = () => {
+      const why = Module.ccall("client_watch", "string", ["string"], [path]);
+      if (why === "wait") setTimeout(start, 250);
+      else if (why) tell(why);
+    };
+    start();
+  }
 
   var Module = {
     // HOST_LEADERBOARD_PROFILE, _UPLOAD, _SCORES and _REPLAY (game/host_abi.h).
@@ -442,6 +470,8 @@
       fullscreen.hidden = false;
       showFullscreen(3000);
       canvas.focus();
+      const linked = new URLSearchParams(location.search).get("watch");
+      if (linked) watchLink(linked);
     },
     printErr: (text) => console.warn(text),
     // The game quit (client/main.cpp) after writing its settings and scores.

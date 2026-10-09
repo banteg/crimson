@@ -18,6 +18,9 @@
 // by the player's key, with the result the verifier derives (service/src/verify.ts).
 // With --quest the run is quest 1.1 instead, and must be completed.
 //
+// A replay a link asks for as the run starts (host/watch.inc game_watch) gives
+// way to it: the run plays, and its end screen stays.
+//
 //   node crimson-core/checks/game_session.mjs [--seed n] [--ranked] [--quest] <game directory> [core.wasm] [game.wasm]
 import { execFileSync } from "node:child_process";
 import crypto from "node:crypto";
@@ -105,6 +108,11 @@ if (quest) {
   }
   click(game.game_state(), [250, 296]);
 } else click(PLAY_GAME_MENU, [232, ranked ? 350 : 414]);
+const fixtures = new URL("../tests/fixtures/replays/", CORE).pathname;
+fs.mkdirSync(path.join(directory, "watched"), { recursive: true });
+fs.copyFileSync(path.join(fixtures, "quest-1.1-completed.crd"), path.join(directory, "watched/linked.crd"));
+Buffer.from(game.memory.buffer).write("watched/linked.crd\0", game.game_replay_path(), "latin1");
+if (!game.game_replay_open() || !game.game_watch()) throw Error("a link as the run starts does not take");
 
 // Between ticks the players hold their own key codes; a tick reads the
 // verifier's (host/session.inc).
@@ -192,6 +200,11 @@ while (true) {
   if (idle > 120) throw Error(`the run stopped ticking at tick ${ticks}`);
   if (frames > 60000) throw Error("the run never ended");
 }
+// The end screen stays: the link gave way to the run.
+const ended = game.game_state();
+for (let i = 0; i < 120; ++i) frame(16, { cursor: [700, 700] });
+if (game.game_watch_status() !== -1 || game.game_state() !== ended) throw Error("a link replaced the run's end screen");
+fs.rmSync(path.join(directory, "watched"), { recursive: true });
 // The run ended where the verifier ends it: one more tick is refused.
 if (step(core, record([0, 0, 0, 0, 0]))) throw Error(`the run ended at tick ${ticks}, but the verifier plays on`);
 // Commands by type: 1 picks a perk, 2 opens the perk menu.

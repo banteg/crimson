@@ -619,6 +619,7 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
           {new Date(detail.accepted_at).toISOString().slice(0, 10)} · {detail.recorder.client} {detail.recorder.version} · {detail.recorder.platform}
         </p>
         <p class="buttons">
+          <GameButton label="Watch" href={`/play/?watch=${detail.id}`} native />
           <GameButton label="Download replay" href={`/runs/${detail.id}.crd`} native />
           <GameButton label="Board" href={boardPath(detail)} />
         </p>
