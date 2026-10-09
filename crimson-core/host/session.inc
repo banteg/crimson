@@ -89,6 +89,16 @@ static void live_install(const LiveSettings &settings) {
   for (int i = 0; i < 2; ++i)
     player_state_table[i].input = settings.keys[i];
 }
+// The run's settings in place of the player's, kept in live.outside. The run
+// draws at the player's detail: the verifier sets no display flags (host.cpp),
+// and only drawing reads them.
+static void live_enter_run() {
+  live.outside = live_settings();
+  live.run.config.shadows_enabled = live.outside.config.shadows_enabled;
+  live.run.config.flame_glow_enabled = live.outside.config.flame_glow_enabled;
+  live.run.config.smoke_enabled = live.outside.config.smoke_enabled;
+  live_install(live.run);
+}
 // Word by word, what the tick changed reaches the player's settings: a status
 // counter by its increase, anything else by its new value.
 template <class T> static void live_carry(const T &before, const T &after, T &player, bool add) {
@@ -100,8 +110,7 @@ template <class T> static void live_carry(const T &before, const T &after, T &pl
 }
 // A tick between the verifier's settings.
 static int live_step(uint32_t count) {
-  live.outside = live_settings();
-  live_install(live.run);
+  live_enter_run();
   int accepted = portable_step_many(count);
   LiveSettings after = live_settings();
   // A replay changes nothing of the player's; a ranked run plays on a detached
@@ -378,8 +387,7 @@ void gameplay_render_world_recovered();
 void gameplay_render_world() {
   if (!game_live || game_ticking)
     return gameplay_render_world_recovered();
-  live.outside = live_settings();
-  live_install(live.run);
+  live_enter_run();
   gameplay_render_world_recovered();
   live_install(live.outside);
 }

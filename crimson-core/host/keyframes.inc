@@ -212,8 +212,7 @@ static void terrain_rebuild(size_t batches) {
   unsigned char disabled = grim_render_disabled;
   grim_render_disabled = 0;
   // The bakes draw at the run's settings (its texture scale), as its ticks do.
-  live.outside = live_settings();
-  live_install(live.run);
+  live_enter_run();
   for (size_t b = shot->batches; b < batches; ++b) {
     size_t queue_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].queue : terrain.queue.size();
     size_t rotated_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].rotated : terrain.rotated.size();
