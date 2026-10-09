@@ -10,6 +10,7 @@
 #include <emscripten.h>
 #endif
 #include <math.h>
+#include <sstream>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -376,8 +377,58 @@ std::string remembered() {
   SDL_free(pref);
   return path;
 }
-bool has_game_files(const std::string &directory) {
-  return SDL_GetPathInfo((directory + "/crimson.paq").c_str(), nullptr);
+// The files the game directory lacks: the PAQs, the music the executable plays
+// by name, and the tunes music/game_tunes.txt adds.
+std::vector<std::string> missing_files() {
+  std::vector<std::string> names = {"crimson.paq", "sfx.paq", "music/intro.ogg", "music/shortie_monk.ogg",
+                                    "music/crimson_theme.ogg", "music/crimsonquest.ogg", "music/game_tunes.txt"};
+  std::string path;
+  if (client_resolve("music/game_tunes.txt", path))
+    if (char *text = (char *)SDL_LoadFile(path.c_str(), nullptr)) {
+      std::istringstream lines(text);
+      SDL_free(text);
+      for (std::string line, command, tune; std::getline(lines, line);)
+        if (std::istringstream(line) >> command >> tune && command == "snd_addGameTune")
+          names.push_back("music/" + tune);
+    }
+  std::vector<std::string> missing;
+  for (const std::string &name : names)
+    if (!client_resolve(name, path) || !SDL_GetPathInfo(path.c_str(), nullptr))
+      missing.push_back(name);
+  return missing;
+}
+// music.paq, as the project distributes the music, fills in what music/ lacks.
+// Each entry: a NUL-terminated name, a little-endian size, the bytes.
+void unpack_music() {
+  std::string path;
+  size_t size;
+  u8 *data;
+  if (!client_resolve("music.paq", path) || !(data = (u8 *)SDL_LoadFile(path.c_str(), &size)))
+    return;
+  if (client_resolve("music", path))
+    SDL_CreateDirectory(path.c_str());
+  for (size_t at = 4; at < size;) {
+    std::string name = (const char *)data + at;
+    size_t start = at + name.size() + 5;
+    if (start > size)
+      break;
+    u32 length;
+    memcpy(&length, data + start - 4, 4);
+    if (length > size - start)
+      break;
+    if (client_resolve("music/" + name.substr(name.rfind('/') + 1), path) && !SDL_GetPathInfo(path.c_str(), nullptr))
+      SDL_SaveFile(path.c_str(), data + start, length);
+    at = start + length;
+  }
+  SDL_free(data);
+}
+// The files the game directory still lacks once music.paq has filled in music/.
+std::vector<std::string> lacking_files() {
+  std::vector<std::string> missing = missing_files();
+  if (missing.empty())
+    return missing;
+  unpack_music();
+  return missing_files();
 }
 // The folder dialog answers on its own thread; the main loop takes the answer.
 SDL_AtomicInt answered;
@@ -401,13 +452,16 @@ SDL_AppResult wait_for_folder() {
   }
   if (chosen.empty())
     return SDL_APP_SUCCESS;
-  if (!has_game_files(chosen)) {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Crimsonland",
-                             "That folder has no crimson.paq. Choose the folder Crimsonland is installed in.", window);
+  game_directory = chosen;
+  if (std::vector<std::string> lacking = lacking_files(); !lacking.empty()) {
+    std::string names;
+    for (const std::string &name : lacking)
+      names += (names.empty() ? "" : ", ") + name;
+    names = "That folder lacks " + names + ". Choose the folder Crimsonland is installed in.";
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Crimsonland", names.c_str(), window);
     choose_folder();
     return SDL_APP_CONTINUE;
   }
-  game_directory = chosen;
   if (SDL_IOStream *file = SDL_IOFromFile(remembered().c_str(), "w")) {
     SDL_WriteIO(file, chosen.data(), chosen.size());
     SDL_CloseIO(file);
@@ -453,7 +507,7 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   renderer_init();
   audio_init();
 #ifndef __EMSCRIPTEN__
-  if (!has_game_files(game_directory)) {
+  if (!lacking_files().empty()) {
     choose_folder();
     return SDL_APP_CONTINUE;
   }
