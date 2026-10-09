@@ -87,14 +87,17 @@ interface BestRun {
   accepted_at: number;
 }
 
+// A run the boards rank: shown, a verified one (not retired: migrations/0005_retired.sql) and not a banned account's.
+const RANKED_RUN = "r.hidden = 0 AND r.retired IS NULL AND a.banned = 0";
+
 // Each account's best run on a board in a category; equal scores keep the earlier accepted run ahead.
 async function bestRuns(env: Env, board: Board, quest: string, category: Category, limit: number): Promise<BestRun[]> {
   const order = LOWER_IS_BETTER[board] ? "ASC" : "DESC";
   const { results } = await env.DB.prepare(
     `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.score, r.result, r.pilot, r.accepted_at FROM runs r JOIN accounts a ON a.id = r.account_id
-     WHERE r.board = ? AND r.quest = ? AND r.hidden = 0 AND a.banned = 0 AND ${runCategory("r")} = ?
+     WHERE r.board = ? AND r.quest = ? AND ${RANKED_RUN} AND ${runCategory("r")} = ?
        AND r.id = (SELECT id FROM runs b WHERE b.account_id = r.account_id AND b.board = r.board AND b.quest = r.quest AND b.hidden = 0
-                     AND ${runCategory("b")} = ?
+                     AND b.retired IS NULL AND ${runCategory("b")} = ?
                    ORDER BY b.score ${order}, b.accepted_at LIMIT 1)
      ORDER BY r.score ${order}, r.accepted_at LIMIT ?`,
   )
@@ -138,7 +141,8 @@ export async function runDetailView(env: Env, id: string, moderator: boolean): P
   return run && { ...run, timeline: await timelineFor(env, id), moderation: moderator ? await runModeration(env, id) : null };
 }
 
-// A run anyone may see by its id: not hidden, and not a banned account's, as the boards filter.
+// A run anyone may see by its id: not hidden, and not a banned account's, as the boards filter; a retired run keeps
+// its page and replay.
 const VISIBLE_RUN = "r.hidden = 0 AND a.banned = 0";
 
 export async function visibleRun(env: Env, id: string): Promise<boolean> {
@@ -148,13 +152,14 @@ export async function visibleRun(env: Env, id: string): Promise<boolean> {
 export async function runSummary(env: Env, id: string): Promise<RunSummary | null> {
   const run = await env.DB.prepare(
     `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.board, r.quest, ${runCategory("r")} AS category, r.pilot, r.score, r.accepted_at,
-       r.game_version, r.client, r.client_version, r.platform, r.result FROM runs r JOIN accounts a ON a.id = r.account_id
+       r.game_version, r.retired, r.client, r.client_version, r.platform, r.result FROM runs r JOIN accounts a ON a.id = r.account_id
      WHERE r.id = ? AND ${VISIBLE_RUN}`,
   )
     .bind(id)
     .first<{
       id: string; account_id: number; name: string; board: Board; quest: string; category: Category; pilot: string; score: number;
-      accepted_at: number; game_version: string; client: string; client_version: string; platform: string; result: string;
+      accepted_at: number; game_version: string; retired: string | null; client: string; client_version: string; platform: string;
+      result: string;
     }>();
   if (!run) return null;
   const board = await bestRuns(env, run.board, run.quest, run.category, BOARD_SCAN);
@@ -176,6 +181,7 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
     rank: rank === -1 ? null : rank + 1,
     accepted_at: run.accepted_at,
     game_version: run.game_version,
+    retired: run.retired,
     recorder: { client: run.client, version: run.client_version, platform: run.platform },
     result: {
       outcome: result.outcome,
@@ -232,7 +238,7 @@ export async function gameScores(env: Env, board: Board, quest: string, category
 export async function questMenuView(env: Env, board: "quests" | "quests-hardcore", stage: number, category: Category): Promise<QuestMenuView> {
   const { results } = await env.DB.prepare(
     `SELECT r.quest, count(DISTINCT r.account_id) AS players FROM runs r JOIN accounts a ON a.id = r.account_id
-     WHERE r.board = ? AND r.quest LIKE ? AND r.hidden = 0 AND a.banned = 0 AND ${runCategory("r")} = ? GROUP BY r.quest`,
+     WHERE r.board = ? AND r.quest LIKE ? AND ${RANKED_RUN} AND ${runCategory("r")} = ? GROUP BY r.quest`,
   )
     .bind(board, `${stage}.%`, category)
     .all<{ quest: string; players: number }>();
@@ -258,7 +264,7 @@ export async function profileView(env: Env, accountId: number, viewer: number | 
     .bind(accountId, accountId)
     .all<{ name: string }>();
   const { results: runs } = await env.DB.prepare(
-    `SELECT r.id, r.board, r.quest, ${runCategory("r")} AS category, r.score, r.game_version, r.accepted_at FROM runs r
+    `SELECT r.id, r.board, r.quest, ${runCategory("r")} AS category, r.score, r.game_version, r.accepted_at, r.retired FROM runs r
      JOIN accounts a ON a.id = r.account_id WHERE r.account_id = ? AND r.hidden = 0 ORDER BY r.accepted_at DESC LIMIT 100`,
   )
     .bind(accountId)

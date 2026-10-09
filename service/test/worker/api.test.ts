@@ -209,6 +209,24 @@ describe("runs", () => {
     expect((await SELF.fetch(`${ORIGIN}/api/runs/${id}/timeline`)).status).toBe(404);
   });
 
+  it("a retired run leaves the boards and the game's scores, and keeps its page, reason and replay", async () => {
+    const player = await Player.create();
+    const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
+    const reason = "A perk pick from a menu left open, which the rules no longer take";
+    await env.DB.prepare("UPDATE runs SET retired = ?").bind(reason).run();
+
+    const board = (await (await SELF.fetch(`${ORIGIN}/api/boards/survival`)).json()) as BoardView;
+    expect(board.rows).toHaveLength(0);
+    const { scores } = (await (await post("/api/scores", { board: "survival", quest: "" })).json()) as { scores: unknown[] };
+    expect(scores).toHaveLength(0);
+    const detail = (await (await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).json()) as RunDetailView;
+    expect(detail).toMatchObject({ id, retired: reason, rank: null });
+    expect((await SELF.fetch(`${ORIGIN}/runs/${id}.crd`)).status).toBe(200);
+    const account = await env.DB.prepare("SELECT account_id FROM runs WHERE id = ?").bind(id).first<{ account_id: number }>();
+    const profile = (await (await SELF.fetch(`${ORIGIN}/api/players/${account!.account_id}`)).json()) as ProfileView;
+    expect(profile.runs).toMatchObject([{ id, retired: reason }]);
+  });
+
   it("a run is accepted once, whoever sends it again", async () => {
     const [owner, copier] = [await Player.create(), await Player.create()];
     expect((await owner.upload(vectors.ranked_run, "owner")).status).toBe(201);

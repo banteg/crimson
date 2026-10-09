@@ -83,6 +83,8 @@ export interface RunView {
   score: number;
   game_version: string;
   accepted_at: number;
+  // Why the verifier no longer accepts the run, which has left the boards; null for a ranked run.
+  retired: string | null;
 }
 
 export interface ProfileView {
@@ -138,6 +140,8 @@ export interface RunDetailView {
   rank: number | null;
   accepted_at: number;
   game_version: string;
+  // Why the verifier no longer accepts the run, which has left the boards; null for a ranked run.
+  retired: string | null;
   recorder: { client: string; version: string; platform: string };
   result: {
     outcome: string;

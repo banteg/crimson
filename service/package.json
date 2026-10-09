@@ -9,7 +9,8 @@
     "play": "cd .. && uv run python crimson-core/client/build.py --target web --package && rm -rf service/public/play && cp -R crimson-core/build/dist/web service/public/play",
     "deploy": "npm run assets && npm run play && vite build && wrangler deploy",
     "test": "vite build && vitest run",
-    "check": "tsc --noEmit && tsc --noEmit -p web"
+    "check": "tsc --noEmit && tsc --noEmit -p web",
+    "reverify": "node scripts/reverify.mjs"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",
