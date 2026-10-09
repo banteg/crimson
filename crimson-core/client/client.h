@@ -9,7 +9,8 @@ u8 *client_memory();
 const std::string &client_game_directory();
 [[noreturn]] void client_fatal(const char *message);
 void client_wasi_init();
-std::string client_prepare_assets(const std::string &directory);
+// The host path of a name under the game directory, matched as the game opens it.
+bool client_resolve(const std::string &relative, std::string &path);
 
 // renderer.cpp: the Direct3D 8 subset the game module's device sends.
 void renderer_init();
