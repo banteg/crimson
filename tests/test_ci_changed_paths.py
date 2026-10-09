@@ -148,3 +148,10 @@ def test_unconsumed_analysis_notes_do_not_start_matching_checks(suite: str) -> N
     assert relevant(suite, ["analysis/decomp/new-build/new-image/native.json"])
     assert relevant(suite, ["analysis/native/grim.dll/closure.json"])
     assert relevant(suite, ["analysis/ida/raw/grim.dll/segments.json"])
+
+
+def test_deployment_workflow_checks_both_published_components() -> None:
+    path = ".github/workflows/deploy.yml"
+    assert relevant("client", [path])
+    assert relevant("service", [path])
+    assert not relevant("core-build", [path])

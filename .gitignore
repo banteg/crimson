@@ -34,3 +34,9 @@ screenshots/
 .mcp.json
 .gemini/
 gha-creds-*.json
+
+# Prepared service deployment artifacts.
+/service/release-worker/
+/release.json
+/release.tar.gz
+/deployment.log

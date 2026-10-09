@@ -183,6 +183,7 @@ nav = [
     { "Setup" = "contributor/setup.md" },
     { "Workflows" = [
       { "Overview" = "contributor/workflows/index.md" },
+      { "Deploy crimson.land" = "contributor/workflows/deploy.md" },
       { "Testing conventions" = "testing-conventions.md" },
     ]},
     { "Project tracking" = [

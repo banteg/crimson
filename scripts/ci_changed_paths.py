@@ -143,7 +143,13 @@ SUITES = {
         CORE_ORACLES,
     ),
     "client": Suite(
-        (*GAME_BUILD, "crimson-core/client/", ".github/workflows/client.yml", ".github/workflows/core.yml"),
+        (
+            *GAME_BUILD,
+            "crimson-core/client/",
+            ".github/workflows/client.yml",
+            ".github/workflows/core.yml",
+            ".github/workflows/deploy.yml",
+        ),
         ("crimson-core/build.py", "crimson-core/client/*.py"),
     ),
     "service": Suite(
@@ -152,6 +158,7 @@ SUITES = {
             "service/",
             "tests/fixtures/replays/",
             ".github/workflows/service.yml",
+            ".github/workflows/deploy.yml",
             ".github/workflows/core.yml",
         ),
         ("service/scripts/assets.py",),
