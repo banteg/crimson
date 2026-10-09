@@ -98,10 +98,13 @@ def replace_once(text, old, new, src):
 
 # Recovered functions host/game.inc and host/session.inc wrap: a simulation tick
 # must run some as the verifier does, a run the client plays drives others, a
-# sound entry the device never created stays silent, and a run's wrapped
-# strings live in its arena. The recovered body keeps a _recovered name.
+# tick saves nothing, a sound entry the device never created stays silent, and
+# a run's wrapped strings live in its arena. The recovered body keeps a
+# _recovered name.
 SEAMS = (
+    "game_save_status",
     "game_state_set",
+    "gameplay_render_world",
     "gameplay_update_and_render",
     "highscore_sync_worker",
     "input_primary_just_pressed",
@@ -217,6 +220,30 @@ def adapt_game(src, txt):
             src,
         )
         txt = 'extern "C" bool ranked_checked;\nextern "C" void ranked_menu(float *base, float *tips, bool list_open);\n' + txt
+    if src.stem == "highscore_screen":
+        # A click on a row pins its card in place of the panel's settings, and the
+        # card offers the run's replay to watch (host/watch.inc).
+        txt = replace_once(
+            txt,
+            "    int hovered_score = score_scrollbar.hovered_index;\n"
+            "    if (hovered_score != -1) {\n        selected_score = hovered_score;\n    }\n",
+            "    int hovered_score = score_scrollbar.hovered_index;\n"
+            "    selected_score = highscore_watch_row(hovered_score, score_count, &score_scrollbar.selected_index);\n",
+            src,
+        )
+        txt = replace_once(
+            txt,
+            "            selected_score + 1);\n        position = saved_position;\n",
+            "            selected_score + 1);\n"
+            "        if (hovered_score == -1 && (online_sync_status == 0 || online_sync_status == 6))\n"
+            "            highscore_watch((float *)&detail_position, &highscore_table[selected_score]);\n"
+            "        position = saved_position;\n",
+            src,
+        )
+        txt = (
+            'extern "C" int highscore_watch_row(int hovered, int rows, int *selected);\n'
+            'extern "C" void highscore_watch(float *card, struct highscore_record_t *record);\n' + txt
+        )
     if src.stem == "ui_menu_layout_init":
         # The Play Game panel grows by the Ranked row (host/ranked.inc).
         txt = replace_once(
@@ -479,8 +506,10 @@ def simulation_names(root):
 # transition, which only the UI reads, and the sprite-sheet cells
 # effect_uv_tables_init lays out at startup, which effects, bonuses and the player
 # draw with and the verifier never fills: effect_spawn copies them only into quads
-# no snapshot field holds, and the perk prompt's layout, which a tick never
-# hit-tests (adapt_game). Names inside a kept aggregate stay with it.
+# no snapshot field holds, the perk prompt's layout, which a tick never
+# hit-tests (adapt_game), and the player's time played, which the frame counts
+# between ticks and only the menus show. Names inside a kept aggregate stay
+# with it.
 # Settings and progress reset with the
 # rest; the player's own stay outside ticks (host/session.inc).
 # Sessions inside the original after it loads its
@@ -489,7 +518,7 @@ SESSION_KEEPS = re.compile(
     r"_texture$|^terrain_texture_|^sfx_|^music_(track_|entry_table$|playlist$|playlist_entry_count$|ready$|fade_out_flags$)"
     r"|^audio_asset_id_table$"
     r"|^creature_type_table$|^bonus_icon_|^ui_element|^ui_transition_"
-    r"|^effect_uv(2|4|8|16|_strip16)$|^perk_prompt_(origin|bounds)_",
+    r"|^effect_uv(2|4|8|16|_strip16)$|^perk_prompt_(origin|bounds)_|^time_played_ms$",
 )
 
 

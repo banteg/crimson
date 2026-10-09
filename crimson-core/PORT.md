@@ -145,10 +145,35 @@ reads (the configuration, the status, the corpse-fade cvar, the players' key
 codes) are the verifier's, swapped in for each tick; between ticks the
 original shows and keeps the player's. What a tick changes carries over: the
 counters it advances add to the player's progress, the settings it changes
-replace the player's. The verifier's setup assigns its own music ids and
+replace the player's. A tick saves nothing: its save would write the
+verifier's settings, and the player's own reach the next save outside a tick.
+The world drawn between ticks (behind the perk menu, a paused replay) takes a
+guarded weapon away by the quests unlocked, so it draws with the run's settings
+swapped in, as a tick would. The verifier's setup assigns its own music ids and
 volumes, which only choose and voice tracks; the run plays the original's. The
 weapons' sound ids are snapshot fields that hold the original's loaded ids in
 a run, and only choose samples.
+
+### Watching replays
+
+A replay the module can play (one player in Survival, Rush or Quests, under
+the current rules) plays as a run whose ticks come from its recording
+([`host/watch.inc`](host/watch.inc), docs/rewrite/watch-replays.md). On the
+high score screen a click on a row pins its card in place of the panel's
+settings, and the card's Watch plays the replay its record names, or says why
+it does not play: another build's replay plays with the build named, one under
+other rules or one only the Python port plays does not. Watch starts the run as
+Play a game does, with the replay's mode, quest and difficulty; nothing it
+plays reaches the player (no settings or progress carry over, nothing is saved,
+the run counts in no statistics), and the menu settings come back when it ends.
+Space pauses, a period steps a tick while paused, `[` and `]` change the speed
+and `1` resets it, Right and Page Down skip 5 and 30 seconds with the sound
+effects muted, and Escape returns to the scores. A popup shows each perk pick
+with the choices the menu offered, and the end shows how the run ended and
+whether it played to the result it recorded. A host plays a replay file with
+`game_replay_open` and `game_watch`. Since the replay plays in the one world
+the game has, a finished run's end screen is gone once the scores it opened
+play one: their Back leaves for the Statistics menu.
 
 ### Ranked runs
 
