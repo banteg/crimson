@@ -1,7 +1,7 @@
 Original bug 33: a bonus carrier drops its bonus again when its death is handled again. The fix drops it once.
---- a/creature_handle_death.cpp
-+++ b/creature_handle_death.cpp
-@@ -27,6 +27,9 @@
+--- a/decomp/1.9/crimsonland/crimsonland/creature_handle_death.c
++++ b/decomp/1.9/crimsonland/crimsonland/creature_handle_death.c
+@@ -26,6 +26,9 @@
              (bonus_id_t)creature->bonus_args.bonus_id,
              creature->bonus_args.amount_override
          );

@@ -1,0 +1,23 @@
+A replay records the POV hat as its two turn flags, which can both be held.
+--- a/decomp/1.9/crimsonland/crimsonland/input_aim_pov_left_active.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/input_aim_pov_left_active.cpp
+@@ -5,6 +5,7 @@
+ 
+ extern "C" bool input_aim_pov_left_active(void)
+ {
+-    return grim_interface_ptr->grim_get_joystick_pov(0)
++    return PORTABLE_RECORDED ? portable_aim_turn_left()
++        : grim_interface_ptr->grim_get_joystick_pov(0)
+         == config_blob.aim_pov_left;
+ }
+--- a/decomp/1.9/crimsonland/crimsonland/input_aim_pov_right_active.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/input_aim_pov_right_active.cpp
+@@ -5,6 +5,7 @@
+ 
+ extern "C" bool input_aim_pov_right_active(void)
+ {
+-    return grim_interface_ptr->grim_get_joystick_pov(0)
++    return PORTABLE_RECORDED ? portable_aim_turn_right()
++        : grim_interface_ptr->grim_get_joystick_pov(0)
+         == config_blob.aim_pov_right;
+ }

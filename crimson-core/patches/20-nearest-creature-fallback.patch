@@ -1,8 +1,8 @@
 Original bug 20: a nearest-creature search that finds nothing returns slot 0. The fix returns -1: Shock Chain
 then does nothing, its chain ends, and a seeker without a target flies straight.
---- a/creature_find_nearest.cpp
-+++ b/creature_find_nearest.cpp
-@@ -18,7 +18,7 @@
+--- a/decomp/1.9/crimsonland/crimsonland/creature_find_nearest.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/creature_find_nearest.cpp
+@@ -17,7 +17,7 @@
      float min_dist)
  {
      float best_distance = 1000000.0f;
@@ -11,9 +11,9 @@ then does nothing, its chain ends, and a seeker without a target flies straight.
  
      if (exclude_id == -1) {
          int index = 0;
---- a/bonus_apply.cpp
-+++ b/bonus_apply.cpp
-@@ -141,7 +141,9 @@
+--- a/decomp/1.9/crimsonland/game/bonus_apply.cpp
++++ b/decomp/1.9/crimsonland/game/bonus_apply.cpp
+@@ -140,7 +140,9 @@
                  &player_state_table[1].shield_timer);
          }
          player_state_table[player_index].shield_timer += (float)bonus_entry->time.amount * multiplier;
@@ -24,9 +24,9 @@ then does nothing, its chain ends, and a seeker without a target flies straight.
          int owner;
          scripted_burst_active = 1;
          if (cv_friendlyFire->value != 0.0f) {
---- a/projectile_update.cpp
-+++ b/projectile_update.cpp
-@@ -346,6 +346,7 @@
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
+@@ -345,6 +345,7 @@
                                              --shock_chain_links_left;
                                              int next_id
                                                  = creature_find_nearest(position, hit_id, 100.0f);
@@ -34,15 +34,15 @@ then does nothing, its chain ends, and a seeker without a target flies straight.
                                              scripted_burst_active = 1;
                                              vec2f_t* next_position
                                                  = &creature_pool[next_id].position;
-@@ -357,6 +358,7 @@
-                                                 (float)(chain_angle - 1.5707964f) - 3.1415927f,
+@@ -356,6 +357,7 @@
+                                                 chain_angle - 1.5707964f - 3.1415927f,
                                                  PROJECTILE_TYPE_ION_RIFLE, hit_id);
                                              scripted_burst_active = 0;
 +                                            }
                                          }
                                          effect_spawn_ion_hit_core(position, 1.2f, 0.4f);
                                          effect_spawn_ion_hit_sparks(position, 1.2f);
-@@ -645,11 +647,13 @@
+@@ -644,11 +646,13 @@
                      }
                      secondary->life_timer -= frame_dt;
                  } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
@@ -57,10 +57,10 @@ then does nothing, its chain ends, and a seeker without a target flies straight.
                      creature_t* target = &creature_pool[secondary->pos.vx.vy.target_id];
                      projectile_vec2_t& target_position = *(projectile_vec2_t*)&target->position;
                      projectile_vec2_t& secondary_velocity
-@@ -667,6 +671,7 @@
-                         velocity_x -= (float)(portable_cos(secondary->angle - 1.5707964f) * frame_dt) * 800.0f;
+@@ -666,6 +670,7 @@
+                         velocity_x -= (float)cos(secondary->angle - 1.5707964f) * frame_dt * 800.0f;
                          secondary_velocity.y
-                             -= (float)(portable_sin(secondary->angle - 1.5707964f) * frame_dt) * 800.0f;
+                             -= (float)sin(secondary->angle - 1.5707964f) * frame_dt * 800.0f;
 +                    }
                      }
                      secondary->life_timer -= frame_dt * 0.5f;

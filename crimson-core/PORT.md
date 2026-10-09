@@ -61,9 +61,15 @@ wasm32 keeps the original pointer width, so each image's globals keep their
 original layout (`game_data` in [`game.py`](game.py)): aggregates read through
 a first symbol, overreads and interior names land on the original bytes.
 
-Compiling the rest of the executable needed the same kind of declaration
-repairs `adapter.py` makes for the verifier, for signatures the recovered files
-disagree on and wasm32 calls cannot tolerate; [`game.py`](game.py) lists each.
+Compiling the rest of the executable needed more repairs of the kind the
+verifier makes, for signatures the recovered files disagree on and wasm32 calls
+cannot tolerate: `GAME_PROTOTYPES` in [`game.py`](game.py) and the diffs in
+[`abi/`](abi). Where the client's host hooks into the recovered game (a run it
+plays, the Ranked row, a replay to watch, the build's name, the main loop, the
+repack's entries) and the defaults it picks are diffs in
+[`game/changes/`](game/changes); the functions it wraps are listed in
+[`game/sources.json`](game/sources.json), and each recovered body keeps a
+`_recovered` name.
 
 ### The host interface
 

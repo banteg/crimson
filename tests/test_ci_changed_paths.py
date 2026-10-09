@@ -120,6 +120,9 @@ def test_new_presentation_sources_and_headers_keep_build_coverage() -> None:
     assert relevant("game-build", ["decomp/1.9/grim/render/new_renderer.cpp"])
     assert not relevant("core-build", ["decomp/1.9/grim/render/new_renderer.cpp"])
     assert relevant("core-build", ["tools/match/include/new_header.h"])
+    assert relevant("core-build", ["crimson-core/abi/new-repair.patch"])
+    assert relevant("core-build", ["crimson-core/seams/new-input.patch"])
+    assert not relevant("core-build", ["crimson-core/game/changes/new-host.patch"])
 
 
 def test_native_oracle_does_not_import_unused_parent_fixtures() -> None:

@@ -1,7 +1,7 @@
 Original bug 2: Greater Regeneration does nothing. The fix doubles the Regeneration heal.
---- a/perks_update_effects.cpp
-+++ b/perks_update_effects.cpp
-@@ -14,6 +14,7 @@
+--- a/decomp/1.9/crimsonland/game/perks_update_effects.cpp
++++ b/decomp/1.9/crimsonland/game/perks_update_effects.cpp
+@@ -13,6 +13,7 @@
  extern "C" {
  extern int config_player_count;
  extern int perk_id_regeneration;
@@ -9,7 +9,7 @@ Original bug 2: Greater Regeneration does nothing. The fix doubles the Regenerat
  extern int perk_id_lean_mean_exp_machine;
  extern int perk_id_doctor;
  extern int perk_id_pyrokinetic;
-@@ -45,7 +46,11 @@
+@@ -44,7 +45,11 @@
                   ++player_index) {
                  if (player_state_table[0].health < 100.0f
                      && player_state_table[0].health > 0.0f) {

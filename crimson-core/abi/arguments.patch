@@ -1,0 +1,59 @@
+Calls and definitions that disagree on arguments, which wasm32 calls cannot tolerate: a C caller passes the
+full-version check a record it never takes, the loading screen a stage; the alternate texture loader takes only
+the name its callers pass, which it uses as the path too; Grim's no-op is called with a format and arguments.
+--- a/decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.c
++++ b/decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.c
+@@ -4,7 +4,7 @@
+ 
+ unsigned char highscore_submit_full_version_guard(highscore_record_t *record)
+ {
+-    if (!game_is_full_version(record)) {
++    if (!game_is_full_version()) {
+         console_printf(
+             &console_log_queue,
+             "Potentially illegal score detected.\n");
+--- a/decomp/1.9/crimsonland/game/game_frame_update.cpp
++++ b/decomp/1.9/crimsonland/game/game_frame_update.cpp
+@@ -560,21 +560,21 @@
+         ui_render_loading();
+         ui_render_loading();
+         audio_suspend_all();
+-        game_is_full_version(1);
++        game_is_full_version();
+     }
+     if (full_version_recheck_pending) {
+         full_version_recheck_pending = 0;
+         ui_render_loading();
+         ui_render_loading();
+         audio_suspend_all();
+-        game_is_full_version(2);
++        game_is_full_version();
+     }
+     if (full_version_recheck_pending_slot_3) {
+         full_version_recheck_pending_slot_3 = 0;
+         ui_render_loading();
+         ui_render_loading();
+         audio_suspend_all();
+-        game_is_full_version(3);
++        game_is_full_version();
+     }
+ 
+     if (online_sync_status == 0 && update_notice_pending
+--- a/decomp/1.9/crimsonland/crimsonland/texture_get_or_load_alt.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/texture_get_or_load_alt.cpp
+@@ -3,7 +3,7 @@
+ 
+ extern IGrim2D_cpp *grim_interface_ptr;
+ 
+-extern "C" int texture_get_or_load_alt(char *name, char *path)
++extern "C" int texture_get_or_load_alt(char *name)
+ {
+     int handle = grim_interface_ptr->grim_get_texture_handle(name);
+     if (handle == -1) {
+--- a/decomp/1.9/grim/app/noop.cpp
++++ b/decomp/1.9/grim/app/noop.cpp
+@@ -1,3 +1,3 @@
+-extern "C" void grim_noop(void)
++extern "C" void grim_noop(char *, ...)
+ {
+ }

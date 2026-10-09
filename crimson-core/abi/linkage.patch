@@ -1,0 +1,11 @@
+The resource header gives the string reader C++ linkage, as its other callers use.
+--- a/decomp/1.9/crimsonland/resource/resource_open_read.cpp
++++ b/decomp/1.9/crimsonland/resource/resource_open_read.cpp
+@@ -1,7 +1,5 @@
+ #include <stdio.h>
+ #include <string.h>
+-
+-extern "C" unsigned char resource_pack_read_cstring(FILE *fp);
+ 
+ #include "crimsonland_resource.h"
+ 

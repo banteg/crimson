@@ -1,0 +1,18 @@
+The host owns the main loop: startup ends where Grim's run loop began, and the code after the loop becomes its own
+entry point (game/frame.cpp).
+--- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
+@@ -444,7 +444,12 @@
+         player_state_table[player_index].input.axis_move_x = binding_cursor[0];
+     }
+ 
+-    grim_interface_ptr->grim_apply_settings();
++    return 1;
++}
++
++extern "C" int crimsonland_main_exit(void)
++{
++    HKEY status_key;
+ 
+     if (RegCreateKeyExA(
+             HKEY_CURRENT_USER,

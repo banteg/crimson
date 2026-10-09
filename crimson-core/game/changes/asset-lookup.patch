@@ -1,0 +1,23 @@
+The distributed crimson.paq stores some images decoded, under the same path with their own extension: Grim loads
+the stored entry by what it holds (game/repack.cpp).
+--- a/decomp/1.9/grim/texture/load_file.cpp
++++ b/decomp/1.9/grim/texture/load_file.cpp
+@@ -26,6 +26,7 @@
+     }
+     this->texture = 0;
+ 
++    path = grim_lookup_blob_entry(path);
+     bool found_in_lookup = false;
+     unsigned char *source_data = 0;
+     if (grim_lookup_blob_loaded) {
+--- a/decomp/1.9/grim/app/init_system.cpp
++++ b/decomp/1.9/grim/app/init_system.cpp
+@@ -74,7 +74,7 @@
+ 
+     grim_set_config_var(0x10, "crimson.paq");
+ 
+-    char *widths = grim_lookup_blob_find("load\\smallFnt.dat");
++    char *widths = grim_lookup_blob_find(grim_lookup_blob_entry((char *)"load\\smallFnt.dat"));
+     if (widths != 0) {
+         memcpy(grim_font2_glyph_widths, widths, 256);
+     }

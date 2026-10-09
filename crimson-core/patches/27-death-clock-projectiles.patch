@@ -1,7 +1,7 @@
 Original bug 27: enemy projectiles hurt through Death Clock. The fix ignores their hits while it runs.
---- a/projectile_update.cpp
-+++ b/projectile_update.cpp
-@@ -83,6 +83,7 @@
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
+@@ -82,6 +82,7 @@
  extern int perk_id_ion_gun_master;
  extern int perk_id_barrel_greaser;
  extern int perk_id_bloody_mess_quick_learner;
@@ -9,7 +9,7 @@ Original bug 27: enemy projectiles hurt through Death Clock. The fix ignores the
  extern int highscore_record_shots_hit;
  extern unsigned char music_playlist_randomized_latch;
  extern int music_track_game_playlist;
-@@ -206,7 +207,9 @@
+@@ -205,7 +206,9 @@
                                          }
                                          if (hit_id != -1) {
                                              projectile->pos.tail.vy.life_timer = 0.25f;

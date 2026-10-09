@@ -1,0 +1,26 @@
+The console names this build where the original named its release (host/game.inc): its corner, right-aligned for
+a build's longer name, and its banner.
+--- a/decomp/1.9/crimsonland/console/console_render.cpp
++++ b/decomp/1.9/crimsonland/console/console_render.cpp
+@@ -116,9 +116,9 @@
+             1.0f,
+             (((float)height + slide_y) / (float)height) * 0.3f);
+         grim_interface_ptr->grim_draw_text_small(
+-            screen_width_f - 210.0f,
++            screen_width_f - 10.0f - grim_interface_ptr->grim_measure_text_width(game_version_label()),
+             (float)height + slide_y - 18.0f,
+-            console_version_string);
++            game_version_label());
+         grim_interface_ptr->grim_set_color(
+             1.0f,
+             1.0f,
+--- a/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp
+@@ -146,6 +146,7 @@
+     IUnknown *direct3d = Direct3DCreate8(0xdc);
+     console_printf(&console_log_queue, "Crimsonland\n");
+     console_printf(&console_log_queue, "-----------\n");
++    console_printf(&console_log_queue, "Version: %s\n", CRIMSON_GAME_VERSION);
+     console_printf(&console_log_queue, "\n");
+     console_log_queue.flush_log("console.log");
+     if (direct3d == 0) {
