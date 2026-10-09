@@ -1,5 +1,6 @@
 // Watches replays in the game module (host/watch.inc), as a link to a run
-// plays one: every recorded fixture the module can play starts from the menus,
+// plays one: a replay asked for as the game boots plays once its startup is
+// over, then every recorded fixture the module can play starts from the menus,
 // plays a while at normal speed, holds still while paused and moves one tick
 // on a step, then skips to its end, which must be the result it recorded, with
 // the world where the verifier leaves it, though the host reads another replay
@@ -58,11 +59,24 @@ function files(dir = directory) {
   });
 }
 
-// On a fresh profile the main menu shares its screen id with the startup sequence.
-while (run.clock < 15000) frame();
-const before = files().sort().join("\n");
-fs.mkdirSync(watched, { recursive: true });
 const fixtures = path.join(ROOT, "tests/fixtures/replays");
+fs.mkdirSync(watched, { recursive: true });
+// A link opened as the game boots: the startup sequence plays out first.
+fs.copyFileSync(path.join(fixtures, "quest-1.1-completed.crd"), path.join(watched, "linked.crd"));
+memory().write("watched/linked.crd\0", game.game_replay_path(), "latin1");
+if (!game.game_replay_open() || !game.game_watch()) throw Error("a link at startup does not take");
+for (let frames = 0; game.game_watch_status() < 0; ++frames) {
+  if (frames > 2000) throw Error("a link at startup never plays");
+  frame();
+}
+if (run.clock < 12000) throw Error("a link at startup cut the startup sequence short");
+frame(16, [ESCAPE]);
+for (let frames = 0; game.game_state() !== HIGHSCORES; ++frames) {
+  if (frames > 600) throw Error("a linked replay does not return to the high scores");
+  frame();
+}
+for (let i = 0; i < 60; ++i) frame();
+const before = files().sort().join("\n");
 const core = loadCore(coreWasm);
 let played = 0;
 for (const name of fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).sort()) {

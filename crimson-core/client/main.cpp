@@ -326,6 +326,16 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_replay_download() {
 extern "C" EMSCRIPTEN_KEEPALIVE void client_replay_downloaded(int result) {
   w2c_game_game_replay_downloaded(&game, result);
 }
+// A link to a run: plays the replay at `path` (in the game folder) once the
+// game is up. "" when it will, "wait" before the game has started, else why not.
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch(const char *path) {
+  if (!started)
+    return "wait";
+  snprintf((char *)client_memory() + w2c_game_game_replay_path(&game), 256, "%s", path);
+  if (!w2c_game_game_replay_open(&game))
+    return (const char *)client_memory() + w2c_game_game_replay_reason(&game);
+  return w2c_game_game_watch(&game) ? "" : "This run cannot play now.";
+}
 #endif
 
 #ifndef __EMSCRIPTEN__

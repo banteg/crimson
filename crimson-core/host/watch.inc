@@ -32,6 +32,8 @@ static constexpr int WATCH_SKIP_TICKS_PER_FRAME = 600;
 static constexpr float WATCH_PICK_SECONDS = 3;
 
 static struct {
+  bool linked;         // a host asked for `link` (game_watch): it plays once the screen settles
+  LoadedReplay link;
   bool armed;          // Watch was pressed: the next run started plays `replay`
   LoadedReplay replay; // its own copy: the host can read another meanwhile
   // The player's time played, both counts, which a replay adds nothing to.
@@ -203,6 +205,33 @@ static void watch_skip(int seconds) {
 // game_live_frame for a replay: the viewer's keys, then the ticks this pass
 // runs. A paused replay draws its world still; once it has ended, its last
 // frame stays.
+// The replay a host asked for starts on a menu once it has come in whole and
+// stays, with no run of the player's and no Watch of the screen's own under way.
+static bool watch_on_menu() {
+  switch (game_state_id) {
+  case GAME_STATE_MAIN_MENU:
+  case GAME_STATE_PLAY_GAME_MENU:
+  case GAME_STATE_OPTIONS_MENU:
+  case GAME_STATE_CONTROLS_MENU:
+  case GAME_STATE_STATISTICS_MENU:
+  case GAME_STATE_HIGHSCORES:
+  case GAME_STATE_QUEST_SELECT:
+  case GAME_STATE_WEAPON_DATABASE:
+  case GAME_STATE_PERK_DATABASE:
+  case GAME_STATE_CREDITS:
+    return true;
+  default:
+    return false;
+  }
+}
+static void watch_follow_link() {
+  if (watch.linked && !game_live && !run_active && !watch.armed && watch_on_menu() && ui_transition_direction &&
+      ui_elements_max_timeline() > 0 && ui_elements_timeline >= ui_elements_max_timeline()) {
+    watch.linked = false;
+    watch_start(watch.link);
+  }
+}
+
 static int watch_frame() {
   auto pressed = [](int key) { return session_grim.IGrim2D_cpp::grim_was_key_pressed(key) != 0; };
   // Escape: the scores show from the next pass, which their own Escape would
@@ -544,13 +573,16 @@ __attribute__((export_name("game_replay_downloaded"))) void game_replay_download
 }
 
 // Plays the replay game_replay_open read, as Watch plays one (a link to a run,
-// checks/game_watch.mjs): 0 when it cannot, with a run playing or a replay this
+// checks/game_watch.mjs), once a menu has settled (watch_follow_link): until
+// then the startup sequence sets up its own screens. A run the player starts
+// meanwhile drops it. 0 when it cannot, with a run playing or a replay this
 // module cannot play.
 __attribute__((export_name("game_watch"))) int game_watch() {
   if (game_live || !replay_loaded.reason.empty() || replay_loaded.recording.empty() || config_blob.screen_width != 1024 ||
       config_blob.screen_height != 768)
     return 0;
-  watch_start(replay_loaded);
+  watch.link = replay_loaded;
+  watch.linked = true;
   return 1;
 }
 // Where a replay is: -1 none plays, 0 playing, then how it ended: 1 as

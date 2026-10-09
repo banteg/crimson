@@ -360,6 +360,7 @@ extern "C" {
 // game_frame (game/frame.cpp), after polling input: the ticks this pass runs,
 // or -1 when no run is playing. A pass with none draws nothing new.
 int game_live_frame() {
+  watch_follow_link();
   if (!game_live || game_state_id != GAME_STATE_GAMEPLAY)
     return -1;
   if (live.watching)
@@ -448,9 +449,12 @@ void game_state_set(game_state_id_t state) {
   bool watches = watch.armed && state == GAME_STATE_GAMEPLAY && !run_active && live_eligible();
   if (watch.armed && !watches)
     watch_disarm();
-  // Leaving the run for anything but its own screens (the perk menu, and the
-  // pause menu with its options) ends it unfinished.
-  // A replay stops for any screen.
+  // The player's own run comes before a replay a link asked for.
+  if ((state == GAME_STATE_GAMEPLAY || state == GAME_STATE_TYPO_GAMEPLAY) && !watches)
+    watch.linked = false;
+  // A replay stops for any screen; leaving a run for anything but its own
+  // screens (the perk menu, and the pause menu with its options) ends it
+  // unfinished.
   if (live.watching && state != GAME_STATE_GAMEPLAY)
     watch_stop();
   else if (game_live && state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&
