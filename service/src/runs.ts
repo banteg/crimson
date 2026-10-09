@@ -3,7 +3,7 @@
 import { concat, fromHex, hex, latin1, RUN_DOMAIN, sha256, verifyEd25519 } from "./crypto";
 import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
-import type { Timeline } from "./api-types";
+import type { Signals, Timeline } from "./api-types";
 import { decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError } from "./replay";
 import { encodeTransport } from "./transport";
 import { verifyRun } from "./verify";
@@ -82,12 +82,12 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
   await env.DB.batch([
     env.DB.prepare(
       `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, client,
-         client_version, platform, ticks, result, accepted_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         client_version, platform, pilot, ticks, result, signals, accepted_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(
       runId, hex(payloadSha), accountId, upload.public_key, upload.name, board, quest, score, replay.game_version,
-      replay.recorder.client, replay.recorder.version, replay.recorder.platform, replay.ticks.length,
-      JSON.stringify(replay.result), now,
+      replay.recorder.client, replay.recorder.version, replay.recorder.platform, replay.pilot ? JSON.stringify(replay.pilot) : "",
+      replay.ticks.length, JSON.stringify(replay.result), JSON.stringify(verdict.signals), now,
     ),
     env.DB.prepare("UPDATE accounts SET name = ? WHERE id = ?").bind(upload.name, accountId),
     env.DB.prepare(
@@ -102,6 +102,20 @@ export const timelineKey = (runId: string) => `runs/${runId}.timeline.json`;
 
 function putTimeline(env: Env, runId: string, timeline: Timeline): Promise<R2Object> {
   return env.REPLAYS.put(timelineKey(runId), JSON.stringify(timeline), { httpMetadata: { contentType: "application/json" } });
+}
+
+// A run's input signals (src/signals.ts). Runs accepted before signals were measured get theirs the first time a
+// moderator asks, by replaying their stored file; a run the verifier now refuses has those of the ticks before.
+export async function signalsFor(env: Env, runId: string): Promise<Signals | null> {
+  const run = await env.DB.prepare("SELECT signals FROM runs WHERE id = ?").bind(runId).first<{ signals: string | null }>();
+  if (!run) return null;
+  if (run.signals) return JSON.parse(run.signals) as Signals;
+  const file = await env.REPLAYS.get(`runs/${runId}.crd`);
+  if (!file) return null;
+  const replay = decodeReplay(inflateReplay(new Uint8Array(await file.arrayBuffer())));
+  const { signals } = await verifyRun(env, replay, encodeTransport(replay));
+  await env.DB.prepare("UPDATE runs SET signals = ? WHERE id = ?").bind(JSON.stringify(signals), runId).run();
+  return signals;
 }
 
 // A run's timeline. Runs accepted before timelines were recorded get theirs the first time it is asked for, by

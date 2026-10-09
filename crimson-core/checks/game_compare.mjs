@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { CORE, decode, init, loadCore, names, record, state, step } from "./engine.mjs";
+import { CORE, decode, fieldRanges, firstDifference, init, loadCore, names, record, state, step } from "./engine.mjs";
 import { bootGame } from "./game_host.mjs";
 
 // Fields only presentation reads: the HUD's popup timer, which the verifier's
@@ -14,6 +14,7 @@ import { bootGame } from "./game_host.mjs";
 export const PRESENTATION = new Set(
   names.filter((n) => /^globals\.player_weapon_popup_timer\[|^weapons\[\d+\]\.(shot_sfx_base_id|reload_sfx_id)$/.test(n)),
 );
+const COMPARED = fieldRanges((name) => !PRESENTATION.has(name));
 
 
 export function loadGame(wasm) {
@@ -104,12 +105,8 @@ export function compareStream(input, core, game, coreWasm) {
     }
     const expected = state(core),
       actual = state(game);
-    for (let i = 0; i < names.length; i++) {
-      if (PRESENTATION.has(names[i])) continue;
-      const a = expected.readUInt32LE(i * 4),
-        b = actual.readUInt32LE(i * 4);
-      if (a !== b) return { tick, field: names[i], core: a, game: b };
-    }
+    const i = firstDifference(expected, actual, COMPARED);
+    if (i >= 0) return { tick, field: names[i], core: expected.readUInt32LE(i * 4), game: actual.readUInt32LE(i * 4) };
   }
   // One neutral tick past the stream: both accept it mid-run, both refuse it after the run.
   const after = [step(core, NEUTRAL), step(game, NEUTRAL)];

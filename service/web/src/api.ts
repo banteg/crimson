@@ -12,3 +12,13 @@ export async function post<T>(path: string, body: unknown = {}): Promise<{ ok: t
   const data = await response.json().catch(() => ({}));
   return response.ok ? { ok: true, data: data as T } : { ok: false, reason: (data as { reason?: string }).reason ?? `HTTP ${response.status}` };
 }
+
+// A moderation request (docs/rewrite/bots.md), with the note the moderator types for the log; false when they cancel
+// or the service refuses it.
+export async function moderate(path: string, body: Record<string, unknown>): Promise<boolean> {
+  const note = prompt("Note for the moderation log", "");
+  if (note === null) return false;
+  const result = await post(path, { ...body, note });
+  if (!result.ok) alert(result.reason);
+  return result.ok;
+}

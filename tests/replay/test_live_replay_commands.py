@@ -16,20 +16,20 @@ from tests.support.state_digest import session_digest
 
 
 @pytest.mark.parametrize("perk", [PerkId.REFLEX_BOOSTED, PerkId.BANDAGE, PerkId.INSTANT_WINNER, PerkId.AMMO_MANIAC])
-@pytest.mark.parametrize("pick_count", [1, 2])
-def test_live_perk_commands_match_recorded_prelude(perk: PerkId, pick_count: int) -> None:
+@pytest.mark.parametrize("reopen", [False, True])
+def test_live_perk_commands_match_recorded_prelude(perk: PerkId, reopen: bool) -> None:
     recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF))
-    commands = (PerkMenuOpenCommand(player_index=0),) + (
-        PerkPickCommand(player_index=0, choice_index=0),
-    ) * pick_count
+    # The menu opened on the tick before: this tick picks, and may open it again for the next pending perk.
+    commands = (PerkPickCommand(player_index=0, choice_index=0),) + ((PerkMenuOpenCommand(player_index=0),) if reopen else ())
     inputs = (player_input(move=Vec2(1.0, 0.0), aim=Vec2(600.0, 512.0)),)
     recorder.record(pack_tick(inputs, commands))
     replay = unverified_replay(recorder)
     live = PlaybackDriver(replay)
     playback = PlaybackDriver(replay)
     for driver in (live, playback):
+        driver.session.perk_menu_open = True
         selection = driver.world.state.perk_selection
-        selection.pending_count = pick_count
+        selection.pending_count = 2
         selection.choices_dirty = False
         selection.choices = [perk] * 7
 
@@ -42,5 +42,5 @@ def test_live_perk_commands_match_recorded_prelude(perk: PerkId, pick_count: int
     assert live.world.state.perk_selection == playback.world.state.perk_selection
     assert live.session.elapsed_ms == playback.session.elapsed_ms
     assert session_digest(live.session) == session_digest(playback.session)
-    if perk == PerkId.REFLEX_BOOSTED and pick_count == 1:
+    if perk == PerkId.REFLEX_BOOSTED:
         assert live.session.elapsed_ms == 15.0

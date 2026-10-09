@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import platform
 import re
 import shutil
@@ -15,7 +16,7 @@ from ..sim.commands import GameCommand
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
 
-REPLAY_FORMAT_VERSION = 31
+REPLAY_FORMAT_VERSION = 32
 # The simulation rules this build plays: raised whenever a change makes earlier replays play differently. A replay
 # plays back only under the rules it was recorded under (docs/rewrite/watch-replays.md).
 REPLAY_RULES = 1
@@ -122,6 +123,15 @@ def current_recorder() -> Recorder:
     return Recorder(client="crimson", version=current_replay_game_version(), platform=current_platform())
 
 
+def current_pilot() -> Pilot | None:
+    """The pilot a bot harness declares through `CRIMSON_PILOT_NAME`, `CRIMSON_PILOT_MODEL` and `CRIMSON_PILOT_URL`."""
+
+    name = os.environ.get("CRIMSON_PILOT_NAME")
+    if not name:
+        return None
+    return Pilot(name=name, model=os.environ.get("CRIMSON_PILOT_MODEL", ""), url=os.environ.get("CRIMSON_PILOT_URL", ""))
+
+
 @lru_cache(maxsize=1)
 def current_replay_game_version() -> str:
     """Return replay `game_version`.
@@ -189,6 +199,20 @@ class Recorder(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     platform: str
 
 
+class Pilot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    """The program that played a run, as its operator declares it (docs/rewrite/bots.md).
+
+    Verification ignores it; a run that names one ranks on the bot boards.
+    """
+
+    # The bot's name, e.g. "Astra".
+    name: str
+    # The model or tool behind it, e.g. "gpt-5" or "TAS"; empty when not given.
+    model: str = ""
+    # An https:// page about it, such as the harness's repository; empty when not given.
+    url: str = ""
+
+
 class Replay(msgspec.Struct, forbid_unknown_fields=True):
     format_version: int
     # The build that recorded the run, which the ranked rules version boards by.
@@ -196,6 +220,8 @@ class Replay(msgspec.Struct, forbid_unknown_fields=True):
     # The simulation rules the run plays under (REPLAY_RULES).
     rules: int
     recorder: Recorder
+    # The program that played the run, when one did and says so (since v32).
+    pilot: Pilot | None
     run: RunSpec
     result: RunResult
     ticks: list[ReplayTick]

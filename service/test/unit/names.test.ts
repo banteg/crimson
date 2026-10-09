@@ -3,7 +3,7 @@ import type { PlayerView } from "../../src/api-types";
 import { playerParts, shownName } from "../../web/src/names";
 
 const link = (provider: "github" | "discord" | "x", handle: string, avatar_url: string | null = null) => ({ provider, handle, avatar_url, url: "" });
-const player = (name: string | null, links: PlayerView["links"], clash = false): PlayerView => ({ id: 1, name, fingerprint: "a2fe", clash, links });
+const player = (name: string | null, links: PlayerView["links"], clash = false): PlayerView => ({ id: 1, name, fingerprint: "a2fe", clash, links, bot: false });
 
 describe("players show as the leaderboard identity rules describe", () => {
   it("a linked account shows the handle its typed name matches, else the one most links share, else X, Discord, GitHub", () => {

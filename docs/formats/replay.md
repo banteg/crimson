@@ -42,10 +42,11 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `31` |
+| `format_version` | int | `32` |
 | `game_version` | str | The build that recorded the run, which boards are versioned by (see below) |
 | `rules` | int | The simulation rules the run plays under (since v31) |
 | `recorder` | `Recorder` | The program that recorded the run (since v30) |
+| `pilot` | `Pilot` or nil | The program that played the run, when one did and says so (since v32) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
 | `ticks` | array of `Tick` | At least one tick |
@@ -57,13 +58,19 @@ whose `src/` differs from that commit (modified or new unignored files) appends
 
 `rules` is a number each build carries (`REPLAY_RULES`), raised whenever a change makes earlier replays play
 differently: a replay plays back only under the rules it was recorded under. Readers accept v30, which had no
-`rules`, as rules 1; writers always write v31.
+`rules`, as rules 1, and v30 and v31, which had no `pilot`, as declaring none; writers always write v32.
 
 `Recorder` is a map of `client` (`crimson` for this port; another client, such as a native crimson-core build,
 names itself), `version` (that client's own build, in `game_version`'s form) and `platform` (`<os>-<cpu>`, such
 as `macos-arm64`; `unknown` for the fixtures recorded before v30). Each is 1..64 printable ASCII characters.
 Verification ignores it: `game_version` names the build, `recorder` who recorded the run, so boards can show,
 filter or withdraw runs by client.
+
+`Pilot` is a map of `name` (the bot's name, 1..31 printable ASCII characters), `model` (the model or tool behind
+it, such as `gpt-5` or `TAS`) and `url` (an `https://` page about it, such as the harness's repository), the last
+two empty when not given: at most 64 and 200 printable ASCII characters. Verification ignores it; a run that
+declares one ranks on the bot boards ([bots and moderation](../rewrite/bots.md)). The Python port writes it when
+`CRIMSON_PILOT_NAME` is set, with `CRIMSON_PILOT_MODEL` and `CRIMSON_PILOT_URL`.
 
 ### RunSpec
 
@@ -113,7 +120,7 @@ A tick is a two-element **array** `[inputs, commands]`:
 | `type` | Other keys | Rule |
 |---|---|---|
 | `perk_menu_open` | `player_index` | a perk must be pending and a player alive |
-| `perk_pick` | `player_index`, `choice_index` 0..6 | as above, and the index must name an offered choice |
+| `perk_pick` | `player_index`, `choice_index` 0..6 | as above, the menu opened on the tick before and no pick spent it yet, and the index must name an offered choice |
 | `typo_char` | `player_index`, `ch` (one character) | Typ-o only |
 | `typo_backspace` | `player_index` | Typ-o only |
 | `typo_submit` | `player_index` | Typ-o only |

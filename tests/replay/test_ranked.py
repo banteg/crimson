@@ -81,6 +81,7 @@ def _monitor(run: RunSpec, *inputs: PlayerInput) -> set[str]:
         game_version="test",
         rules=REPLAY_RULES,
         recorder=current_recorder(),
+        pilot=None,
         run=run,
         result=RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, ()),
         ticks=[ReplayTick(inputs=[pack_player_input(inp)]) for inp in inputs],

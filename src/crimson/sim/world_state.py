@@ -264,6 +264,9 @@ class WorldState(msgspec.Struct):
         # (e.g. freeze cleanup) levels next tick.
         if death_transition_ready(self.players):
             self.state.run_active = False
+            # `music_play_exclusive(music_track_shortie_monk_id)` clears the playlist latch, so the next
+            # projectile hit picks a game tune again.
+            self.state.game_tune_started = False
         if perk_progression_enabled:
             survival_check_level_up(self.state, self.players[0])
         # A perk-menu request opens here, mid-frame: native generates the choices

@@ -97,10 +97,13 @@ def test_live_run_replays_to_identical_session_state(mocker, make_mode_config, a
     mocker.patch.object(mode, "_on_tick_applied", side_effect=record_digest)
 
     while mode._replay_recorder is not None and live_ticks[0] < _TICKS and not mode._game_over_active:
-        if mode.state.perk_selection.pending_count > 0 and not mode._perk_menu.active and frame[0] % 3 == 0:
-            mode._request_perk_menu()
-            mode.record_perk_pick_command(frame[0] // 3 % 3)
+        # The menu opens mid-tick and pauses the run: the next frame picks, or now and then cancels.
+        if mode._perk_menu.open:
+            if frame[0] % 5:
+                mode.record_perk_pick_command(frame[0] // 3 % 3)
             mode._perk_menu.close()
+        elif mode.state.perk_selection.pending_count > 0 and not mode._perk_menu.active and frame[0] % 3 == 0:
+            mode._request_perk_menu()
         mode._run_deterministic_session_ticks(
             dt_frame=_FRAME_DTS[frame[0] % len(_FRAME_DTS)],
             session=session,
