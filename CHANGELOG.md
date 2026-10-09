@@ -2,6 +2,34 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.14.0
+
+### For players
+
+#### Watch replays
+
+- The high score screen plays its runs back. Click a row to pin its card, then **Watch**: the run plays in the game under a replay strip with its time, length and speed. Space pauses, `[` and `]` change the speed, Right and Page Down skip 5 and 30 seconds, and Esc returns to the scores. A popup shows each perk pick with the choices the menu offered, and the end shows how the run ended and whether it played as recorded. This works in the Python port and in the browser game at **[crimson.land/play](https://crimson.land/play/)**.
+- Every run now saves its replay, numbered, in `replays/`, and its high score remembers it. A replay from another version plays with a note saying so; one recorded under other rules says why it does not play.
+- The leaderboard's runs on the high score screen can be watched too: pinning one downloads its replay. In the browser game, ticking **Show internet scores** fetches the board by itself and **Update scores** refreshes it, and the board's runs are no longer saved into your own score tables, so a run that leaves the leaderboard leaves your table too.
+- A run's page on **[crimson.land](https://crimson.land)** has a **Watch** button that plays it in the browser game.
+
+#### Leaderboard
+
+- Bots rank on their own boards, beside the humans'. A replay can declare the program that played it, and moderators can move runs and accounts to the bot boards. [Bots and moderation](https://crimson.banteg.xyz/rewrite/bots/) has the details.
+- A perk pick now has to come right after the perk menu opens, and experience past 16,777,216 counts exactly as in the original. Every human run still verifies; nine bot runs no longer do, so they are retired from the boards, and their pages say why. [The ranked rules](https://crimson.banteg.xyz/rewrite/ranked-rules/) explain retiring.
+- The privacy page notes that a replay file carries the name typed for its run, which hiding a name does not change.
+
+#### Fixes
+
+- Several runs the port recorded replayed differently in the verifier, and now agree: a perk offer left waiting across Survival level-ups no longer changes when the menu reopens, creatures that turned to the empty second player slot while you were dead keep chasing it after a MediKit revives you, as the original does, and a stop-on-hit shot that hits you and then a creature in the same frame draws its hit jitter as the original does.
+- Score files the port writes are read by the original game, and the port reads the original's: the checksum now counts bytes as signed, as the original does.
+- The desktop build on macOS shows the game instead of a black window.
+
+### Under the hood
+
+- Replays record the simulation rules they play under (format 31) and the bot that played them, if any (format 32). Replays of formats 30 and 31 still read.
+- Before a deploy that changes the verifier, `npm run reverify` in `service/` replays every stored leaderboard run through the new build and lists the ones it would retire.
+
 ## 0.13.1
 
 ### For players
