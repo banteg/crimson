@@ -4,7 +4,7 @@
 // the two in step.
 
 import { decompress } from "fzstd";
-import { F64, MapValue, PayloadError, readPayload, type Value } from "./msgpack";
+import { F64, Head, MapValue, PayloadError, Reader, type Value } from "./msgpack";
 
 export const REPLAY_FORMAT_VERSION = 32;
 // Each readable format's keys, in order. Format 30 had no `rules`, so its replays play under rules 1; formats before
@@ -127,9 +127,22 @@ export type Command =
   | { type: "typo_char"; player_index: number; ch: string }
   | { type: "typo_backspace"; player_index: number }
   | { type: "typo_submit"; player_index: number };
-export interface Tick {
-  inputs: PlayerInput[];
-  commands: Command[];
+// A replay's ticks as columns, since a long run has a million: each player input's four axes and flag word, and the
+// few commands by tick.
+export class Ticks {
+  constructor(
+    readonly length: number,
+    private readonly players: number,
+    private readonly axes: Float32Array,
+    private readonly flags: Uint32Array,
+    readonly commands: Map<number, Command[]>,
+  ) {}
+
+  input(tick: number, player: number): PlayerInput {
+    const at = tick * this.players + player;
+    const axes = this.axes;
+    return [axes[at * 4]!, axes[at * 4 + 1]!, axes[at * 4 + 2]!, axes[at * 4 + 3]!, this.flags[at]!];
+  }
 }
 export interface Recorder {
   client: string;
@@ -150,7 +163,7 @@ export interface Replay {
   pilot: Pilot | null;
   run: RunSpec;
   result: RunResult;
-  ticks: Tick[];
+  ticks: Ticks;
 }
 
 export class ReplayError extends Error {}
@@ -202,40 +215,100 @@ function zstdFrame(data: Uint8Array): { windowSize: number; contentSize: number 
 }
 
 export function decodeReplay(payload: Uint8Array): Replay {
-  let wire: Value;
+  let replay: Replay;
   try {
-    wire = readPayload(payload);
+    replay = new Schema(new Reader(payload)).replay();
   } catch (error) {
     if (error instanceof PayloadError) throw new ReplayError(`invalid replay payload: ${error.message}`);
     throw error;
   }
-  const replay = new Schema().replay(wire);
   validateReplay(replay);
   return replay;
 }
 
-// The wire shape, as msgspec decodes it: maps with every key in declared order, typed and range-checked values.
+// The wire shape, as msgspec decodes it: maps with every key in declared order, typed and range-checked values. The
+// ticks decode straight into their columns, the rest into values first.
 class Schema {
-  replay(value: Value): Replay {
-    require(value instanceof MapValue, "replay must be a map");
-    const version = new Map(value.entries).get("format_version");
+  constructor(private readonly reader: Reader) {}
+
+  replay(): Replay {
+    const reader = this.reader;
+    const head = reader.token();
+    require(head instanceof Head && head.kind === "map", "replay must be a map");
+    const version = head.length && reader.key() === "format_version" ? reader.value() : undefined;
     const names = typeof version === "number" ? REPLAY_KEYS[version] : undefined;
     require(
       names !== undefined,
       `unsupported replay format version: ${String(version)} (this build reads versions ${Object.keys(REPLAY_KEYS).join(", ")})`,
     );
-    const fields = this.fields(value, "replay", names!);
-    const format_version = this.int(fields.format_version, "format_version");
+    const order = `replay must have exactly the keys ${names!.join(", ")} in that order`;
+    require(head.length === names!.length, order);
+    // Every format has the run before the ticks, which take its player count.
+    const fields: Partial<Record<ReplayKey, Value>> = {};
+    let run: RunSpec | null = null;
+    let ticks: Ticks | null = null;
+    for (const name of names!.slice(1)) {
+      require(reader.key() === name, order);
+      if (name === "run") run = this.runSpec(reader.value());
+      else if (name === "ticks") ticks = this.ticks(run!.player_count);
+      else fields[name] = reader.value();
+    }
+    if (!reader.done) throw new PayloadError("trailing bytes after the payload");
+    const format_version = this.int(version!, "format_version");
     return {
       format_version,
-      game_version: this.str(fields.game_version, "game_version"),
-      rules: format_version === 30 ? V30_RULES : this.int(fields.rules, "rules"),
-      recorder: this.recorder(fields.recorder),
-      pilot: format_version < 32 || fields.pilot === null ? null : this.pilot(fields.pilot),
-      run: this.runSpec(fields.run),
-      result: this.result(fields.result),
-      ticks: this.array(fields.ticks, "ticks").map((tick, i) => this.tick(tick, `ticks[${i}]`)),
+      game_version: this.str(fields.game_version!, "game_version"),
+      rules: format_version === 30 ? V30_RULES : this.int(fields.rules!, "rules"),
+      recorder: this.recorder(fields.recorder!),
+      pilot: format_version < 32 || fields.pilot === null ? null : this.pilot(fields.pilot!),
+      run: run!,
+      result: this.result(fields.result!),
+      ticks: ticks!,
     };
+  }
+
+  // Each input is checked here, as validateReplay checks the rest: its axes are kept as f32.
+  private ticks(players: number): Ticks {
+    const count = this.length("array");
+    require(count >= 0, "ticks must be an array");
+    // The columns are sized from the count, so it must fit the bytes left: a tick takes at least its three headers
+    // and, per input, a header, four float64 axes and a flag byte.
+    require(count * (3 + players * 38) <= this.reader.remaining, "ticks are fewer than the array declares");
+    const axes = new Float32Array(count * players * 4);
+    const flags = new Uint32Array(count * players);
+    const commands = new Map<number, Command[]>();
+    for (let t = 0; t < count; t++) {
+      if (this.length("array") !== 2) throw new ReplayError(`ticks[${t}] must be [inputs, commands]`);
+      const inputs = this.length("array");
+      if (inputs !== players)
+        throw new ReplayError(inputs < 0 ? `ticks[${t}].inputs must be an array` : `ticks[${t}] has ${inputs} player inputs, expected ${players}`);
+      for (let p = 0; p < players; p++) {
+        if (this.length("array") !== 5) throw new ReplayError(`ticks[${t}].inputs[${p}] must have 5 values`);
+        const at = t * players + p;
+        for (let axis = 0; axis < 4; axis++) {
+          const value = this.reader.float64();
+          if (value === undefined) throw new ReplayError(`ticks[${t}].inputs[${p}][${axis}] must be a float64`);
+          if (!Number.isFinite(value) || Math.fround(value) !== value) requireF32(value, `ticks[${t}].inputs[${p}][${axis}]`);
+          axes[at * 4 + axis] = value;
+        }
+        const flag = this.reader.value();
+        if (typeof flag !== "number") throw new ReplayError(`ticks[${t}].inputs[${p}][4] must be an integer`);
+        const error = inputFlagsError(flag);
+        if (error !== null) throw new ReplayError(`ticks[${t}].inputs[${p}].flags ${error}`);
+        flags[at] = flag;
+      }
+      const commandCount = this.length("array");
+      if (commandCount < 0) throw new ReplayError(`ticks[${t}].commands must be an array`);
+      if (commandCount)
+        commands.set(t, Array.from({ length: commandCount }, (_, c) => this.command(this.reader.value(), `ticks[${t}].commands[${c}]`)));
+    }
+    return new Ticks(count, players, axes, flags, commands);
+  }
+
+  // The length of the next array or map, or -1 when the next value is another kind.
+  private length(kind: Head["kind"]): number {
+    const token = this.reader.token();
+    return token instanceof Head && token.kind === kind ? token.length : -1;
   }
 
   private recorder(value: Value): Recorder {
@@ -340,25 +413,6 @@ class Schema {
           ),
         };
       }),
-    };
-  }
-
-  private tick(value: Value, field: string): Tick {
-    const parts = this.array(value, field);
-    require(parts.length === 2, `${field} must be [inputs, commands]`);
-    return {
-      inputs: this.array(parts[0]!, `${field}.inputs`).map((input, i) => {
-        const axes = this.array(input, `${field}.inputs[${i}]`);
-        require(axes.length === 5, `${field}.inputs[${i}] must have 5 values`);
-        return [
-          this.float(axes[0]!, `${field}.inputs[${i}][0]`),
-          this.float(axes[1]!, `${field}.inputs[${i}][1]`),
-          this.float(axes[2]!, `${field}.inputs[${i}][2]`),
-          this.float(axes[3]!, `${field}.inputs[${i}][3]`),
-          this.int(axes[4]!, `${field}.inputs[${i}][4]`),
-        ];
-      }),
-      commands: this.array(parts[1]!, `${field}.commands`).map((command, i) => this.command(command, `${field}.commands[${i}]`)),
     };
   }
 
@@ -518,14 +572,8 @@ export function validateReplay(replay: Replay): void {
   result.players.forEach((player, i) => requireF32(player.health, `result.players[${i}].health`));
 
   require(replay.ticks.length > 0, "replay must contain at least one tick");
-  replay.ticks.forEach((tick, t) => {
-    require(tick.inputs.length === run.player_count, `ticks[${t}] has ${tick.inputs.length} player inputs, expected ${run.player_count}`);
-    tick.inputs.forEach((input, p) => {
-      for (let axis = 0; axis < 4; axis++) requireF32(input[axis]!, `ticks[${t}].inputs[${p}][${axis}]`);
-      const error = inputFlagsError(input[4]);
-      require(error === null, `ticks[${t}].inputs[${p}].flags ${error}`);
-    });
-    tick.commands.forEach((command, c) => {
+  replay.ticks.commands.forEach((commands, t) => {
+    commands.forEach((command, c) => {
       const field = `ticks[${t}].commands[${c}]`;
       require(0 <= command.player_index && command.player_index < run.player_count, `${field}.player_index is out of range`);
       if (command.type === "perk_pick") requireInt(command.choice_index, 0, 6, `${field}.choice_index`);

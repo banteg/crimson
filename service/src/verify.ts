@@ -90,7 +90,7 @@ function simulate(replay: Replay, transport: Uint8Array): Verdict {
   const nearest = (x: number, y: number) => c.portable_nearest_creature(x, y);
   let at = CONFIG_BYTES;
   for (let tick = 0; tick < replay.ticks.length; tick++) {
-    const input = replay.ticks[tick]!.inputs[0]!;
+    const input = replay.ticks.input(tick, 0);
     const player = { x: c.portable_player_x(), y: c.portable_player_y(), alive: c.portable_player_health() > 0 };
     meter.record(input, player, monitor.camera!, nearest);
     const reason = monitor.check(input);

@@ -33,6 +33,13 @@ function base64(text: string): Uint8Array | null {
   }
 }
 
+// A replay file's run and its payload's digest. The payload, many times the file's size, goes with this call rather
+// than staying through verification.
+async function readReplay(file: Uint8Array): Promise<{ replay: Replay; payloadSha: Uint8Array }> {
+  const payload = inflateReplay(file);
+  return { replay: decodeReplay(payload), payloadSha: await sha256(payload) };
+}
+
 export async function postRun(request: Request, env: Env): Promise<Response> {
   if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) return refuse(413, "upload too large");
   const upload = parseUpload(await request.json().catch(() => null));
@@ -45,18 +52,16 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
   if (name === null || upload.name.length > NAME_MAX_CHARS || [...name].some((code) => code < 0x20))
     return refuse(422, `name must be at most ${NAME_MAX_CHARS} characters in 0x20..0xFF`);
 
-  let payload: Uint8Array;
   let replay: Replay;
+  let payloadSha: Uint8Array;
   try {
-    payload = inflateReplay(file);
-    replay = decodeReplay(payload);
+    ({ replay, payloadSha } = await readReplay(file));
   } catch (error) {
     if (error instanceof ReplayError) return refuse(422, error.message);
     throw error;
   }
   if (replay.rules !== REPLAY_RULES)
     return refuse(422, `replay was recorded under rules ${replay.rules}; this service verifies rules ${REPLAY_RULES}`);
-  const payloadSha = await sha256(payload);
   if (!(await verifyEd25519(publicKey, signature, concat(RUN_DOMAIN, payloadSha, name))))
     return refuse(401, "signature does not match");
 
