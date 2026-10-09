@@ -38,10 +38,8 @@ def _clamp_u32(value: int) -> int:
 def _score_checksum(data: bytes) -> int:
     if len(data) != RECORD_SIZE:
         raise ValueError(f"expected {RECORD_SIZE:#x} bytes, got {len(data):#x}")
-    checksum = 0
-    for idx, b in enumerate(data):
-        checksum = _clamp_u32(checksum + (idx + 3) * int(b) * 7)
-    return checksum
+    # highscore_write_record/highscore_read_record sum through `char *`, signed on MSVC x86.
+    return _clamp_u32(sum((idx + 3) * b * 7 for idx, b in enumerate(memoryview(data).cast("b"))))
 
 
 def _encode_byte(value: int, idx: int) -> int:
@@ -434,18 +432,27 @@ def _passes_date_filter(entry: HighScoreRecord, date_mode: HighScoreDateMode, no
 
 
 def select_highscore_table(
-    records: list[HighScoreRecord], *, game_mode_id: GameMode, date_mode: HighScoreDateMode, now: dt.date,
+    records: list[HighScoreRecord],
+    *,
+    game_mode_id: GameMode,
+    date_mode: HighScoreDateMode,
+    now: dt.date,
 ) -> list[HighScoreRecord]:
     eligible = [r for r in records if r.game_mode_id == game_mode_id and _passes_date_filter(r, date_mode, now)]
     return sort_highscores(eligible, game_mode_id=game_mode_id)[:TABLE_MAX]
 
 
 def read_highscore_table(
-    path: Path, *, game_mode_id: GameMode, date_mode: HighScoreDateMode = HighScoreDateMode.ALL_TIME,
+    path: Path,
+    *,
+    game_mode_id: GameMode,
+    date_mode: HighScoreDateMode = HighScoreDateMode.ALL_TIME,
     now: dt.date | None = None,
 ) -> list[HighScoreRecord]:
     return select_highscore_table(
-        read_highscore_records(path), game_mode_id=game_mode_id, date_mode=date_mode,
+        read_highscore_records(path),
+        game_mode_id=game_mode_id,
+        date_mode=date_mode,
         now=now or dt.datetime.now(tz=dt.UTC).astimezone().date(),
     )
 
@@ -473,7 +480,10 @@ def rank_index(records_sorted: list[HighScoreRecord], record: HighScoreRecord) -
 
 
 def upsert_highscore_record(
-    path: Path, record: HighScoreRecord, *, date_mode: HighScoreDateMode = HighScoreDateMode.ALL_TIME,
+    path: Path,
+    record: HighScoreRecord,
+    *,
+    date_mode: HighScoreDateMode = HighScoreDateMode.ALL_TIME,
     now: dt.date | None = None,
 ) -> tuple[list[HighScoreRecord], int]:
     """Save a qualifying score without discarding history outside the displayed table."""
