@@ -5,7 +5,7 @@ from typer.testing import CliRunner
 
 import grim.audio as grim_audio
 from crimson import runtime_resources_view
-from crimson.cli import app
+from crimson.cli.app import app
 from crimson.game_modes import GameMode
 from tests.replay.cli._helpers import build_replay, write_payload_bytes, write_replay
 

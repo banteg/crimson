@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typer.testing import CliRunner
 
-from crimson.cli import app
+from crimson.cli.app import app
 
 
 def test_view_autotune_requires_lighting_debug() -> None:

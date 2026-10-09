@@ -7,7 +7,7 @@ from pathlib import Path
 import msgspec
 from typer.testing import CliRunner
 
-from crimson.cli import app
+from crimson.cli.app import app
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, encode_replay_payload
 from crimson.sim.commands import PerkPickCommand

@@ -8,7 +8,7 @@ import msgspec
 from click import unstyle
 from typer.testing import CliRunner
 
-from crimson.cli import app
+from crimson.cli.app import app
 from crimson.game_modes import GameMode
 from crimson.replay import Replay
 from crimson.replay.checkpoints import dump_checkpoints_file, load_checkpoints_file

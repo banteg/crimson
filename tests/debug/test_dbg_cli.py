@@ -8,7 +8,7 @@ from typer.testing import CliRunner
 
 import crimson_re.dbg.diff as dbg_diff
 import crimson_re.dbg.trace as dbg_trace
-from crimson.cli import app
+from crimson.cli.app import app
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayRecorder, dump_replay
 from crimson.replay.input_codec import pack_tick

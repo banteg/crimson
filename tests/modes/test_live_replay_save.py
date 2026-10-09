@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from crimson.cli import app
+from crimson.cli.app import app
 from crimson.game_modes import GameMode
 from crimson.modes import base_gameplay_mode, survival_mode
 from crimson.modes.base_gameplay_mode import BaseGameplayMode
