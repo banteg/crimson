@@ -1,13 +1,24 @@
-// What a replay shows over its world (host/watch.inc, docs/rewrite/replay-viewer.md),
-// in the original's own art: a transport bar along the bottom, the HUD's top
-// plate turned over, with its buttons and a scrub bar of the Options sliders'
-// segments marked with the run's milestone waves, Energizer drops and perk
-// picks; a card for each perk pick, under where the level-up prompt swings in;
-// and the menus' panel for preparing the replay and for its end. The bar slides
-// away while the replay plays untouched.
+// What a replay shows over its world (host/watch.inc, docs/rewrite/replay-viewer.md).
+// While it plays, the viewer keeps to dim bands that stay clear of the game's
+// own HUD: a scrub bar of the Options sliders' segments along the bottom,
+// marked with the run's milestone waves, Energizer drops and perk picks, and a
+// box for each perk pick under where the level-up prompt swings in. Preparing
+// the replay and its end are the original's own: the game over screen's panel
+// and score card. The bar slides away while the replay plays untouched; a click
+// on the world pauses it.
 extern "C" {
+extern ui_element_t ui_element_slot_30; // the game over screen's panel
+extern int ui_text_reaper_texture, ui_text_well_done_texture;
 bool ui_button_update(float *xy, ui_button_t *button);
 void ui_cursor_render(void);
+void ui_element_render(ui_element_t *element);
+void ui_draw_textured_quad(int x, int y, int width, int height, int texture_id);
+void ui_text_input_render(float *xy, highscore_record_t *record, float alpha, int rank);
+char *format_ordinal_recovered(int value);
+
+// A rank the card does not know (a board run that is not its runner's best),
+// which no screen of the original's asks for: a dash.
+char *format_ordinal(int value) { return value > 0 ? format_ordinal_recovered(value) : (char *)"-"; }
 }
 
 // Survival's milestone waves (survival_update), by the stage they start.
@@ -23,41 +34,38 @@ static const char *const viewer_waves[] = {"",
                                            "Plasma spiders",
                                            "Second spider boss"};
 
-static constexpr float VIEWER_BAR_H = 64.0f;
+// The bar's band: the segments' row, with room above for the marks.
+static constexpr float VIEWER_BAR_H = 48.0f;
 static constexpr float VIEWER_IDLE_SECONDS = 2.5f;
 static constexpr float VIEWER_PIP_W = 8.0f, VIEWER_PIP_H = 16.0f;
 
 static struct {
-  int top, panel, pip_on, pip_off; // texture handles
+  int pip_on, pip_off; // texture handles
   float idle;   // seconds since the viewer moved the cursor
   float shown;  // the bar's slide: 0 away, 1 up
   float last_x, last_y;
   bool dragging, down, clicked;
   float card;   // the card's slide in: 0 off, 1 in
-  ui_button_t back, play, forward, speed, again, leave;
+  float card_box[4]; // the pick box as last drawn: x, y, width, height
+  float end;    // the end screen's slide in
+  ui_button_t again, leave;
 } viewer;
 
-// The textures the original loaded at startup, by the names it gave them: the
-// HUD's (hud_update_and_render), the menus' panel (ui_element_load names a
-// texture by its path) and the Options sliders' segments.
+// The Options sliders' segments, which the original loaded at startup, by the
+// names it gave them.
 static void viewer_reset() {
   auto handle = [](const char *name) { return grim_interface_ptr->grim_get_texture_handle((char *)name); };
-  viewer.top = handle("iGameUI");
-  viewer.panel = handle("ui\\ui_menuPanel");
   viewer.pip_on = handle("ui_rectOn");
   viewer.pip_off = handle("ui_rectOff");
   viewer.idle = 0;
   viewer.shown = 1;
   viewer.dragging = viewer.down = false;
-  viewer.card = 0;
-  const ui_button_t plate = {(char *)"", 0, 0, 1, 0, 0, 0, 1.0f, 1, 0};
-  viewer.back = viewer.play = viewer.forward = viewer.speed = viewer.again = viewer.leave = plate;
-  viewer.back.label = (char *)"<<";
-  viewer.forward.label = (char *)">>";
-  viewer.again.label = (char *)"Watch again";
-  viewer.leave.label = (char *)"Back";
-  viewer.again.force_small = viewer.leave.force_small = 0;
-  viewer.again.force_wide = viewer.leave.force_wide = 1;
+  viewer.card = viewer.end = 0;
+  // The game over screen's buttons.
+  const ui_button_t plate = {(char *)"", 0, 0, 1, 0, 0, 0, 1.0f, 0, 0};
+  viewer.again = viewer.leave = plate;
+  viewer.again.label = (char *)"Watch Again";
+  viewer.leave.label = (char *)"High scores";
 }
 
 static float viewer_w() { return (float)config_blob.screen_width; }
@@ -65,9 +73,9 @@ static float viewer_h() { return (float)config_blob.screen_height; }
 // The bar's top edge, slid by how far it is shown.
 static float viewer_bar_y() { return viewer_h() - VIEWER_BAR_H * viewer.shown; }
 // The scrub bar: its segments' left edge, count and row.
-static float viewer_scrub_x() { return 280.0f; }
-static int viewer_pips() { return (int)((viewer_w() - viewer_scrub_x() - 112.0f) / VIEWER_PIP_W); }
-static float viewer_scrub_y() { return viewer_bar_y() + 30.0f; }
+static float viewer_scrub_x() { return 112.0f; }
+static int viewer_pips() { return (int)((viewer_w() - viewer_scrub_x() - 120.0f) / VIEWER_PIP_W); }
+static float viewer_scrub_y() { return viewer_bar_y() + 18.0f; }
 static int viewer_tick_at(float x) {
   float t = (x - viewer_scrub_x()) / (viewer_pips() * VIEWER_PIP_W);
   return (int)lroundf(fminf(fmaxf(t, 0.0f), 1.0f) * watch.ticks);
@@ -99,12 +107,6 @@ static void viewer_quad(int texture, float x, float y, float w, float h, float u
   grim_interface_ptr->grim_draw_quad(x, y, w, h);
   grim_interface_ptr->grim_end_batch();
 }
-// The menus' panel, its frame and screen without the wire (ui_menuPanel, 322x234
-// of its 512x256), at `scale`.
-static void viewer_panel(float x, float y, float scale, float a) {
-  viewer_quad(viewer.panel, x, y, 322 * scale, 234 * scale, 178 / 512.0f, 14 / 256.0f, 500 / 512.0f, 248 / 256.0f, a);
-}
-static constexpr float VIEWER_PANEL_IN_X = 18, VIEWER_PANEL_IN_Y = 22; // the screen's corner inside the panel
 
 static const char *viewer_mark_label(const WatchMark &mark, char *out, size_t size) {
   if (mark.kind == WATCH_WAVE)
@@ -118,7 +120,9 @@ static const char *viewer_mark_label(const WatchMark &mark, char *out, size_t si
   return out;
 }
 
-// The cursor and the scrub bar before the frame's ticks: a drag seeks at once.
+// The cursor and the scrub bar before the frame's ticks: a drag seeks at once,
+// and a click on the world pauses or plays on.
+static bool viewer_over_card(float x, float y);
 static void viewer_update(float dt) {
   float x = watch.mouse_x, y = watch.mouse_y;
   bool down = session_grim.IGrim2D_cpp::grim_is_mouse_button_down(0) != 0, pressed = down && !viewer.down;
@@ -133,8 +137,11 @@ static void viewer_update(float dt) {
   bool want = watch.paused || watch.phase != WATCH_PLAYING || viewer.idle < VIEWER_IDLE_SECONDS || viewer.dragging ||
               y > viewer_h() - VIEWER_BAR_H - 16;
   viewer.shown = fminf(1.0f, fmaxf(0.0f, viewer.shown + (want ? dt : -dt) * 6.0f));
+  bool on_bar = viewer.shown > 0.5f && y >= viewer_bar_y();
   if (pressed && viewer.shown > 0.5f && viewer_over_scrub(x, y))
     viewer.dragging = true;
+  else if (pressed && !on_bar && !viewer_over_card(x, y) && watch.phase == WATCH_PLAYING)
+    watch.paused = !watch.paused;
   if (!down)
     viewer.dragging = false;
   if (viewer.dragging) {
@@ -144,31 +151,18 @@ static void viewer_update(float dt) {
   }
 }
 
-static void viewer_bar() {
-  float y = viewer_bar_y(), w = viewer_w();
-  // The HUD's top plate turned over: its left end, its plain middle stretched,
-  // and its left end mirrored for the right (its own right end is slanted).
-  float cap = 96, middle0 = 128 / 512.0f, middle1 = 384 / 512.0f;
-  viewer_quad(viewer.top, 0, y, cap, VIEWER_BAR_H, 0, 1, cap / 512, 0, 0.95f);
-  viewer_quad(viewer.top, cap, y, w - 2 * cap, VIEWER_BAR_H, middle0, 1, middle1, 0, 0.95f);
-  viewer_quad(viewer.top, w - cap, y, cap, VIEWER_BAR_H, cap / 512, 1, 0, 0, 0.95f);
+// Text with the game's drop shadow under it, for text on the world itself.
+static void viewer_shadowed(float x, float y, const char *text, float r, float g, float b, float a) {
+  viewer_text(x + 1, y + 1, text, 0, 0, 0, a * 0.8f);
+  viewer_text(x, y, text, r, g, b, a);
+}
 
+static void viewer_bar() {
+  // A dim band along the bottom, which keeps the segments clear of any ground,
+  // snow too, and leaves the game's own HUD its look.
+  float band[2] = {0, viewer_bar_y()}, dim[4] = {0, 0, 0, 0.45f};
+  grim_interface_ptr->grim_draw_rect_filled(band, viewer_w(), VIEWER_BAR_H, dim);
   grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
-  float by = y + 22.0f;
-  float at[2] = {14.0f, by};
-  if (ui_button_update(at, &viewer.back))
-    watch_ask(watch.tick - 5 * 60);
-  viewer.play.label = (char *)(watch.phase == WATCH_ENDED ? "Again" : watch.paused ? "Play" : "Pause");
-  at[0] = 96.0f;
-  if (ui_button_update(at, &viewer.play)) {
-    if (watch.phase == WATCH_ENDED)
-      watch_ask(1), watch.paused = false;
-    else
-      watch.paused = !watch.paused;
-  }
-  at[0] = 178.0f;
-  if (ui_button_update(at, &viewer.forward))
-    watch_ask(watch.tick + 5 * 60);
 
   // The scrub bar: segments up to where playback is, the marks over them.
   int pips = viewer_pips(), lit = watch.ticks ? (int)((int64_t)pips * watch.tick / watch.ticks) : pips;
@@ -202,21 +196,24 @@ static void viewer_bar() {
   float head[2] = {floorf(viewer_x_of(watch.tick)) - 1, sy - 3}, white[4] = {1, 1, 1, 1};
   grim_interface_ptr->grim_draw_rect_filled(head, 3, VIEWER_PIP_H + 6, white);
 
-  // Time and speed, right of the bar.
+  // Paused, or the speed, left of the bar; time right of it.
   float mx = watch.mouse_x, my = watch.mouse_y;
+  char state[16];
+  if (watch.paused)
+    snprintf(state, sizeof state, "Paused");
+  else
+    snprintf(state, sizeof state, watch_speeds[watch.speed] < 1 ? "%.2gx" : "%.0fx", watch_speeds[watch.speed]);
+  // A click on it steps the speed up, round to the slowest.
+  float lx = sx - 12 - viewer_text_w(state);
+  bool over = mx >= lx - 4 && mx < sx - 4 && my >= sy - 2 && my < sy + 18;
+  viewer_shadowed(lx, sy + 1, state, over ? 1.0f : 0.75f, over ? 1.0f : 0.78f, over ? 1.0f : 0.82f, 0.9f);
+  if (over && viewer.clicked)
+    watch.speed = (watch.speed + 1) % WATCH_SPEEDS;
   char now[16], total[16], line[48];
   viewer_clock(now, sizeof now, watch.tick);
   viewer_clock(total, sizeof total, watch.ticks);
   snprintf(line, sizeof line, "%s / %s", now, total);
-  float tx = sx + pips * VIEWER_PIP_W + 12;
-  viewer_text(tx, sy - 6, line, 0.9f, 0.9f, 0.9f, 0.9f);
-  char speed[16];
-  snprintf(speed, sizeof speed, watch_speeds[watch.speed] < 1 ? "%.2gx" : "%.0fx", watch_speeds[watch.speed]);
-  // A click on the speed steps it up, round to the slowest.
-  bool over = mx >= tx && mx < tx + 40 && my >= sy + 6 && my < sy + 24;
-  viewer_text(tx, sy + 8, speed, over ? 1.0f : 0.7f, over ? 1.0f : 0.75f, over ? 1.0f : 0.8f, 0.9f);
-  if (over && viewer.clicked)
-    watch.speed = (watch.speed + 1) % WATCH_SPEEDS;
+  viewer_shadowed(sx + pips * VIEWER_PIP_W + 12, sy + 1, line, 0.9f, 0.9f, 0.9f, 0.9f);
 
   // Under the cursor: the time, and a mark near it.
   if (viewer_over_scrub(mx, my) || viewer.dragging) {
@@ -235,6 +232,13 @@ static void viewer_bar() {
   }
 }
 
+// The pick box, right-aligned under the level-up prompt.
+static constexpr float VIEWER_CARD_Y = 88;
+static bool viewer_over_card(float x, float y) {
+  const float *box = viewer.card_box;
+  return viewer.card > 0 && x >= box[0] && x < box[0] + box[2] && y >= box[1] && y < box[1] + box[3];
+}
+
 // The last pick's card, under the level-up prompt: the menu's offers, the
 // chosen one lit, and its description.
 static void viewer_card(float dt) {
@@ -248,85 +252,100 @@ static void viewer_card(float dt) {
     return;
   }
   const WatchPick &pick = watch.picks[watch.card];
-  float scale = 0.9f, w = 322 * scale, ease = 1 - (1 - viewer.card) * (1 - viewer.card);
-  float x = viewer_w() - (w + 8) * ease, y = 88;
-  viewer_panel(x, y, scale, 1);
-  float tx = x + VIEWER_PANEL_IN_X * scale + 10, ty = y + VIEWER_PANEL_IN_Y * scale + 6;
-  grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
+  const perk_meta_t &chosen = perk_meta_table[pick.offered[pick.chosen]];
   char line[64];
-  snprintf(line, sizeof line, "Level %d: perk picked", pick.level);
-  viewer_text(tx, ty, line, 0.5f, 0.75f, 1, 1);
+  float w = 0;
+  for (int i = 0; i < pick.count; ++i)
+    w = fmaxf(w, viewer_text_w(perk_meta_table[pick.offered[i]].name));
+  w += 28;
+  float ease = 1 - (1 - viewer.card) * (1 - viewer.card);
+  float x = viewer_w() - (w + 8) * ease, y = VIEWER_CARD_Y, h = 32.0f + pick.count * 15;
+  viewer.card_box[0] = x, viewer.card_box[1] = y, viewer.card_box[2] = w, viewer.card_box[3] = h;
+  // The offers in a dim box with the perk menu's blue along its top, the chosen one lit.
+  float box[2] = {x, y}, back[4] = {0, 0, 0, 0.55f}, blue[4] = {0.27f, 0.51f, 0.86f, 0.9f};
+  grim_interface_ptr->grim_draw_rect_filled(box, w, h, back);
+  grim_interface_ptr->grim_draw_rect_filled(box, w, 2, blue);
+  snprintf(line, sizeof line, "Level %d", pick.level);
+  viewer_text(x + 12, y + 8, line, 0.5f, 0.75f, 1, 1);
   for (int i = 0; i < pick.count; ++i) {
-    const char *name = perk_meta_table[pick.offered[i]].name;
-    float ry = ty + 20 + i * 16;
-    if (i == pick.chosen) {
-      // The perk menu's lit row.
-      float row[2] = {tx - 6, ry - 1}, color[4] = {0.27f, 0.51f, 0.86f, 0.35f};
-      grim_interface_ptr->grim_draw_rect_filled(row, w - 2 * VIEWER_PANEL_IN_X * scale - 8, 16, color);
-      viewer_text(tx, ry, name, 1, 1, 1, 1);
-    } else
-      viewer_text(tx, ry, name, 0.6f, 0.62f, 0.66f, 0.8f);
+    bool lit = i == pick.chosen;
+    viewer_text(x + 12, y + 26 + i * 15, perk_meta_table[pick.offered[i]].name, lit ? 1.0f : 0.62f, lit ? 1.0f : 0.64f,
+                lit ? 1.0f : 0.68f, lit ? 1.0f : 0.75f);
   }
-  // The chosen perk's description, as the perk menu wraps it.
-  grim_interface_ptr->grim_set_config_var(0x18, 0.43f);
-  viewer_text(tx, ty + 26 + pick.count * 16, perk_meta_table[pick.offered[pick.chosen]].description, 0.8f, 0.8f, 0.8f,
-              0.9f);
   grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
 }
 
-static void viewer_center_panel(const char *const *lines, int count, bool buttons) {
-  float scale = 1.0f, w = 322 * scale, h = 234 * scale;
-  float x = (viewer_w() - w) * 0.5f, y = (viewer_h() - h) * 0.5f - 30;
-  viewer_panel(x, y, scale, 1);
-  grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
-  float ty = y + VIEWER_PANEL_IN_Y + 16;
-  for (int i = 0; i < count; ++i) {
-    float lw = viewer_text_w(lines[i]);
-    float bright = i == 0 ? 1.0f : 0.8f;
-    viewer_text(x + (w - lw) * 0.5f + 4, ty + i * 20, lines[i], bright, bright, bright, 1);
-  }
-  if (!buttons)
-    return;
-  float at[2] = {x + 22, y + h - 60};
-  if (ui_button_update(at, &viewer.again))
-    watch_ask(1), watch.paused = false;
-  at[0] = x + w - 22 - 145;
-  if (ui_button_update(at, &viewer.leave))
-    watch.leave = true;
+// The game over screen's panel, `offset` along from where the original puts it,
+// and its banner's corner, where game_over_screen_update lays out from.
+static void viewer_over_panel(float offset, float *corner) {
+  ui_element_t &panel = ui_element_slot_30;
+  unsigned char active = panel.active;
+  float ox = panel.render_offset_x, oy = panel.render_offset_y;
+  panel.active = 1;
+  panel.render_offset_x = offset;
+  panel.render_offset_y = 0;
+  ui_element_render(&panel);
+  panel.active = active;
+  panel.render_offset_x = ox;
+  panel.render_offset_y = oy;
+  corner[0] = panel.pos.x + panel.vertices[0].position.x + 180 + offset + 34;
+  corner[1] = panel.pos.y + panel.vertices[0].position.y + 40;
 }
+// The card under the banner, and the buttons under it: the original's layout
+// (game_over_screen_update), the card the taller for the runner's name and date
+// it shows outside the game over screen.
+static constexpr float VIEWER_OVER_CARD_Y = 80, VIEWER_OVER_BUTTONS_Y = 250;
 
 static void viewer_preparing() {
   float black[4] = {0, 0, 0, 1}, at[2] = {0, 0};
   grim_interface_ptr->grim_draw_rect_filled(at, viewer_w(), viewer_h(), black);
-  const char *lines[] = {"Preparing the replay", ""};
-  viewer_center_panel(lines, 1, false);
-  // Segments for how much of the recording the pass has played.
+  float corner[2];
+  viewer_over_panel(0, corner);
+  grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
+  viewer_text(corner[0] + 38, corner[1] + 30, "Preparing the replay", 1, 1, 1, 1);
+  float card[2] = {corner[0] + 30, corner[1] + VIEWER_OVER_CARD_Y};
+  ui_text_input_render(card, &watch.run.record, 1.0f, watch.run.rank);
+  // Segments for how much of the recording the pass has played, where the
+  // screen's buttons go.
   int pips = 24;
   size_t size = watch.replay.recording.size();
   int lit = size ? (int)((int64_t)pips * watch.at / size) : 0;
-  float x = (viewer_w() - pips * VIEWER_PIP_W) * 0.5f + 4, y = viewer_h() * 0.5f - 18;
+  float x = corner[0] + 38, y = corner[1] + VIEWER_OVER_BUTTONS_Y + 8;
   for (int i = 0; i < pips; ++i)
     viewer_quad(i < lit ? viewer.pip_on : viewer.pip_off, x + i * VIEWER_PIP_W, y, VIEWER_PIP_W, VIEWER_PIP_H, 0, 0, 1, 1,
                 i < lit ? 1.0f : 0.5f);
 }
 
-static void viewer_end() {
-  const LoadedReplay &replay = watch.replay;
-  char ending[64], score[64], elapsed[16];
-  if (replay.outcome == "death") {
-    viewer_clock(elapsed, sizeof elapsed, (int)(replay.elapsed_ms * 60 / 1000));
-    snprintf(ending, sizeof ending, "Died at %s", elapsed);
-  } else if (replay.outcome == "quest_completed")
-    snprintf(ending, sizeof ending, "Quest completed in %.2f s",
-             (replay.quest_final_ms >= 0 ? replay.quest_final_ms : replay.elapsed_ms) / 1000.0);
+// The run's end as the original ends one: the game over screen (a quest's
+// results or failure) with the run's card, whether it played as recorded where
+// the original says a score is too low, and its buttons.
+static void viewer_end(float dt) {
+  viewer.end = fminf(1.0f, viewer.end + dt * 2.5f);
+  float ease = 1 - (1 - viewer.end) * (1 - viewer.end), corner[2];
+  viewer_over_panel(-(1 - ease) * 560, corner);
+  // A run left before its end has no banner of the original's: it says so.
+  const std::string &outcome = watch.replay.outcome;
+  grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
+  if (outcome == "quest_completed" || outcome == "death")
+    ui_draw_textured_quad((int)(corner[0] - 2), (int)corner[1], 256, 64,
+                          outcome == "death" ? ui_text_reaper_texture : ui_text_well_done_texture);
   else
-    snprintf(ending, sizeof ending, "Left before the end");
-  snprintf(score, sizeof score, "Experience %lld, kills %lld", (long long)replay.experience, (long long)replay.kills);
+    viewer_text(corner[0] + 38, corner[1] + 30, "The run was left here.", 1, 1, 1, 1);
   const char *verdict = !watch.stopped.empty() ? watch.stopped.c_str()
-                        : watch.played         ? "Played as recorded"
-                                               : "This run played differently";
-  const char *lines[] = {ending, score, verdict};
-  viewer_center_panel(lines, 3, true);
+                        : watch.played         ? "Played as recorded."
+                                               : "This run played differently.";
+  if (watch.played)
+    viewer_text(corner[0] + 38, corner[1] + 62, verdict, 0.7f, 1, 0.7f, 0.9f);
+  else
+    viewer_text(corner[0] + 38, corner[1] + 62, verdict, 1, 0.5f, 0.5f, 0.9f);
+  float card[2] = {corner[0] + 30, corner[1] + VIEWER_OVER_CARD_Y};
+  ui_text_input_render(card, &watch.run.record, 1.0f, watch.run.rank);
+  float at[2] = {corner[0] + 52, corner[1] + VIEWER_OVER_BUTTONS_Y};
+  if (ui_button_update(at, &viewer.again))
+    watch_ask(1), watch.paused = false;
+  at[1] += 32;
+  if (ui_button_update(at, &viewer.leave))
+    watch.leave = true;
 }
 
 static void viewer_draw(float dt) {
@@ -334,7 +353,9 @@ static void viewer_draw(float dt) {
     return viewer_preparing();
   viewer_card(dt);
   if (watch.phase == WATCH_ENDED)
-    viewer_end();
+    viewer_end(dt);
+  else
+    viewer.end = 0;
   if (viewer.shown > 0)
     viewer_bar();
   if (viewer.shown > 0 || watch.phase == WATCH_ENDED)

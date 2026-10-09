@@ -7,9 +7,11 @@ tags:
 # Replay viewer
 
 How the browser and desktop game plays a replay back once
-[watching replays](watch-replays.md) has started one: a transport bar with a
-scrub bar, seeking anywhere and backwards, and a card for each perk pick, all in
-the original's own art. The Python port keeps its own viewer for now.
+[watching replays](watch-replays.md) has started one: a scrub bar that seeks
+anywhere, backwards too, and a box for each perk pick. While the replay plays,
+the viewer keeps to plain dim bands of its own, so it stays clear of the game's
+HUD; preparing and the end are the original's game over screen with the run's
+score card. The Python port keeps its own viewer for now.
 
 ## What it can afford
 
@@ -30,8 +32,9 @@ So the viewer prepares the whole run before it plays, keeps a keyframe every
 ## Preparing
 
 Watch starts the run, then a preparing pass plays the whole recording undrawn,
-a frame's share at a time (`WATCH_PASS_MS`), under the menus' panel and a bar of
-the Options sliders' segments. On the way it:
+a frame's share at a time (`WATCH_PASS_MS`), on the game over screen's panel
+with the run's score card and a bar of the Options sliders' segments. On the
+way it:
 
 - keeps a **keyframe** every 120 ticks: the executable's per-run globals (the
   spans `game.py` resets at a run's start) and the session's own (host.cpp's
@@ -64,17 +67,24 @@ play to the same tick match pixel for pixel.
 
 ## The viewer
 
-- **The transport bar**, along the bottom: the HUD's top plate turned over, the
-  original's buttons (back and forward 5 seconds, play and pause), the scrub
-  bar of segments with the marks over it, the time and the speed. It slides
-  away while the replay plays untouched and comes back with the cursor.
-  Dragging on the scrub bar seeks as it goes; hovering shows the time and the
-  mark under the cursor.
-- **The pick card**, at the top right under where the level-up prompt swings
-  in: the menus' panel with the level, the offered perks in the menu's order,
-  the chosen one lit as the perk menu lights it, and its description.
-- **The end panel**: how the run ended, its experience and kills, whether it
-  played as recorded, Watch again and Back.
+- **The scrub bar**, along the bottom on a dim band, which keeps it clear on
+  any ground, snow too: the Options sliders' segments with the marks over them,
+  Paused or the speed on its left (a click steps the speed) and the time on its
+  right. It slides away while the replay plays untouched and comes back with the
+  cursor. Dragging on it seeks as it goes; hovering shows the time and the mark
+  under the cursor. A click on the world pauses or plays on.
+- **The pick box**, at the top right under where the level-up prompt swings
+  in: the level and the offered perks in the menu's order, the chosen one lit,
+  on a dim box with the perk menu's blue along its top.
+- **The end**, as the original ends a run: the game over screen's panel with
+  The Reaper got you (Well done trooper! for a completed quest), whether it
+  played as recorded where the original says a score is too low, the run's
+  score card, and Watch Again and High scores.
+- **The score card** is the high score screen's: the runner's name, where the
+  score is from, the day, the score and its rank, the time, the weapon used
+  most, frags and hits. Watch on the high score screen shows the row's own
+  record; a link to a run builds it from the replay's result, under the name,
+  rank and day the site gives.
 - **Keys**: Space pauses (or, at the end, plays again), period and comma step a
   tick while paused, `[` and `]` change the speed from 0.25x to 32x and `1`
   resets it, Left and Right go 5 seconds, Page Up and Page Down 30, Home and End
@@ -88,7 +98,9 @@ cursor back to the viewer after they move it to the replay's aim.
 
 A link to a run (`crimson.land/play/?watch=<run>`) names the run on the page's
 cover and offers Watch; the game skips its intro, as a click would, and cuts
-from the menu straight to the replay. A host can also ask for a tick to go to
+from the menu straight to the replay. The page gives the game the runner's
+name (`game_watch_name`), and the board's rank and the day it took the run
+(`game_watch`), for the score card. A host can also ask for a tick to go to
 (`game_watch_seek`) and one to pause at (`game_watch_stop_at`); the desktop
-client takes them from `CRIMSON_WATCH`, `CRIMSON_WATCH_SEEK` and
-`CRIMSON_WATCH_STOP` for unattended captures.
+client takes them from `CRIMSON_WATCH`, `CRIMSON_WATCH_CARD`,
+`CRIMSON_WATCH_SEEK` and `CRIMSON_WATCH_STOP` for unattended captures.

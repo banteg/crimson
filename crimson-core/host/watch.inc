@@ -55,11 +55,19 @@ static constexpr size_t WATCH_KEY_BYTES = 256u << 20;
 // How long a pick's card shows, in the viewer's seconds.
 static constexpr float WATCH_PICK_SECONDS = 3;
 
+// A run's score card, as the high score screen draws it, and its rank there.
+struct WatchCard {
+  highscore_record_t record;
+  int rank;
+};
+
 static struct {
   bool linked;         // a host asked for `link` (game_watch): it plays once the screen settles
   LoadedReplay link;
+  WatchCard link_card;
   bool armed;          // Watch was pressed: the next run started plays `replay`
   LoadedReplay replay; // its own copy: the host can read another meanwhile
+  WatchCard run;       // and its card
   // The player's time played, both counts, which a replay adds nothing to.
   unsigned play_time;
   int time_played;
@@ -90,7 +98,7 @@ static struct {
   float card_left;        // the card's seconds
   bool drawn;             // a tick drew this frame
   float mouse_x, mouse_y; // the viewer's cursor, which ticks replace with the replay's aim
-  bool leave;             // the end panel's Back, taken at the next pass
+  bool leave;             // the end screen's High scores, taken at the next pass
   int stop_at;           // playback pauses on reaching this tick (game_watch_stop_at), or 0
   // The run's sound effects volume: quiet passes zero it, and the keyframes they
   // keep hold the zero.
@@ -100,12 +108,38 @@ static struct {
 // A tick the viewer asks for, from the first.
 static void watch_ask(int at) { watch.seek = std::max(1, at); }
 
+// A board run's card, from its replay's result, under the name, rank and date
+// the host gives (a link to the run): the record the original would have kept.
+static WatchCard watch_card(const LoadedReplay &replay, const char *name, int rank, int day, int month, int year) {
+  PortableConfig recorded;
+  memcpy(&recorded, replay.recording.data(), sizeof recorded);
+  highscore_record_t record = {};
+  snprintf(record.player_name, sizeof record.player_name, "%s", name);
+  record.run_elapsed_ms = (unsigned)(replay.outcome == "quest_completed" ? replay.quest_final_ms : replay.elapsed_ms);
+  record.score_xp = (unsigned)replay.experience;
+  record.game_mode_id = (unsigned char)recorded.mode;
+  record.quest_stage_major = (unsigned char)recorded.major;
+  record.quest_stage_minor = (unsigned char)recorded.minor;
+  // A weapon the table has: the card looks its name and icon up there.
+  size_t weapons = sizeof(weapon_storage_table_t) / sizeof(weapon_storage_entry_t);
+  record.most_used_weapon_id = (unsigned char)((uint64_t)replay.most_used_weapon_id < weapons ? replay.most_used_weapon_id : 0);
+  record.shots_fired = (unsigned)replay.shots_fired;
+  record.shots_hit = (unsigned)replay.shots_hit;
+  record.creature_kill_count = (unsigned)replay.kills;
+  record.day = (unsigned char)day;
+  record.month = (unsigned char)month;
+  record.year_offset = (unsigned char)(year > 2000 ? year - 2000 : 0);
+  record.flags = 1; // "Score from the Internet"
+  return {record, rank};
+}
+
 #include "viewer.inc"
 
 // The replay's run is the menu's: its mode, quest and difficulty, one player.
 // Watch pressed again before the run starts keeps the player's menu settings.
-static void watch_arm(const LoadedReplay &replay) {
+static void watch_arm(const LoadedReplay &replay, const WatchCard &card) {
   watch.replay = replay;
+  watch.run = card;
   PortableConfig recorded;
   memcpy(&recorded, replay.recording.data(), sizeof recorded);
   if (!watch.armed)
@@ -121,8 +155,8 @@ static void watch_arm(const LoadedReplay &replay) {
   watch.armed = true;
 }
 // The replay's run starts as the high score screen's Play a game starts one.
-static void watch_start(const LoadedReplay &replay) {
-  watch_arm(replay);
+static void watch_start(const LoadedReplay &replay, const WatchCard &card) {
+  watch_arm(replay, card);
   run_active = 0;
   ui_sign_crimson.focus_disabled = 0;
   ui_transition_direction = 0;
@@ -404,7 +438,7 @@ static void watch_follow_link() {
   if (!game_live && !run_active && !watch.armed && watch_on_menu() && ui_transition_direction &&
       ui_elements_max_timeline() > 0 && ui_elements_timeline > 0) {
     watch.linked = false;
-    watch_start(watch.link);
+    watch_start(watch.link, watch.link_card);
     ui_elements_timeline = 0;
   }
 }
@@ -656,8 +690,9 @@ void highscore_watch(float *card, highscore_record_t *record) {
     else
       viewer_text(at[0], at[1] + 4.0f, note.c_str(), 1.0f, 0.5f, 0.5f, 1.0f);
   }
+  // The screen's card is the table's row.
   if (pressed)
-    watch_start(target);
+    watch_start(target, {*record, (int)(record - highscore_table) + 1});
 }
 
 // The board run whose replay the host fetches into replays/online/<run>.crd.
@@ -681,11 +716,17 @@ __attribute__((export_name("game_replay_downloaded"))) void game_replay_download
 // the startup sequence, which it cuts short, sets up its own screens. A run the player starts
 // meanwhile drops it. 0 when it cannot, with a run playing or a replay this
 // module cannot play.
-__attribute__((export_name("game_watch"))) int game_watch() {
+//
+// Its card names the runner (game_watch_name, which the host fills first) with
+// the board's rank and the day the board took the run.
+static char watch_name[32];
+__attribute__((export_name("game_watch_name"))) char *game_watch_name() { return watch_name; }
+__attribute__((export_name("game_watch"))) int game_watch(int rank, int day, int month, int year) {
   if (game_live || !replay_loaded.reason.empty() || replay_loaded.recording.empty() || config_blob.screen_width != 1024 ||
       config_blob.screen_height != 768)
     return 0;
   watch.link = replay_loaded;
+  watch.link_card = watch_card(replay_loaded, watch_name, rank, day, month, year);
   watch.linked = true;
   return 1;
 }

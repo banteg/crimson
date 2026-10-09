@@ -102,6 +102,7 @@ def replace_once(text, old, new, src):
 # a run's wrapped strings live in its arena. The recovered body keeps a
 # _recovered name.
 SEAMS = (
+    "format_ordinal",
     "fx_queue_render",
     "game_save_status",
     "game_state_set",

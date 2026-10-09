@@ -280,7 +280,8 @@ void w2c_host_present(struct w2c_host *) {
 
 // CRIMSON_WATCH=<replay> plays a replay, from the game folder, as a link to a
 // run does, for unattended captures: CRIMSON_WATCH_SEEK=<tick> goes to a tick
-// once it is prepared, and CRIMSON_WATCH_STOP=<tick> pauses playback there.
+// once it is prepared, and CRIMSON_WATCH_STOP=<tick> pauses playback there;
+// CRIMSON_WATCH_CARD=<name>,<rank>,<day>,<month>,<year> gives its card's runner.
 void watch_from_env() {
   static bool asked;
   const char *path = getenv("CRIMSON_WATCH");
@@ -288,7 +289,12 @@ void watch_from_env() {
     return;
   asked = true;
   snprintf((char *)client_memory() + w2c_game_game_replay_path(&game), 256, "%s", path);
-  if (!w2c_game_game_replay_open(&game) || !w2c_game_game_watch(&game))
+  char name[32] = "";
+  int rank = 0, day = 0, month = 0, year = 2000;
+  if (const char *card = getenv("CRIMSON_WATCH_CARD"))
+    sscanf(card, "%31[^,],%d,%d,%d,%d", name, &rank, &day, &month, &year);
+  snprintf((char *)client_memory() + w2c_game_game_watch_name(&game), 32, "%s", name);
+  if (!w2c_game_game_replay_open(&game) || !w2c_game_game_watch(&game, rank, day, month, year))
     client_fatal("CRIMSON_WATCH: this replay does not play");
   if (const char *seek = getenv("CRIMSON_WATCH_SEEK"))
     w2c_game_game_watch_seek(&game, atoi(seek));
@@ -348,14 +354,17 @@ extern "C" EMSCRIPTEN_KEEPALIVE void client_replay_downloaded(int result) {
 // what its exit writes.
 extern "C" EMSCRIPTEN_KEEPALIVE void client_close() { w2c_game_game_close(&game); }
 // A link to a run: plays the replay at `path` (in the game folder) once the
-// game is up. "" when it will, "wait" before the game has started, else why not.
-extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch(const char *path) {
+// game is up, its card naming the runner with the board's rank and the day the
+// board took the run. "" when it will, "wait" before the game has started, else why not.
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch(const char *path, const char *name, int rank, int day,
+                                                         int month, int year) {
   if (!started)
     return "wait";
   snprintf((char *)client_memory() + w2c_game_game_replay_path(&game), 256, "%s", path);
+  snprintf((char *)client_memory() + w2c_game_game_watch_name(&game), 32, "%s", name);
   if (!w2c_game_game_replay_open(&game))
     return (const char *)client_memory() + w2c_game_game_replay_reason(&game);
-  return w2c_game_game_watch(&game) ? "" : "This run cannot play now.";
+  return w2c_game_game_watch(&game, rank, day, month, year) ? "" : "This run cannot play now.";
 }
 #endif
 

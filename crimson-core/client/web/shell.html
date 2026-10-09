@@ -453,16 +453,19 @@
   // which skips the intro (host/watch.inc), then returns to the high scores.
   const linked = new URLSearchParams(location.search).get("watch");
   let watching = null;
-  if (linked && /^[A-Za-z0-9_-]{1,64}$/.test(linked))
-    fetch(`/api/runs/${linked}`)
-      .then((response) => (response.ok ? response.json() : null))
-      .then((run) => {
-        if (!run) return;
-        const score = run.board === "survival" ? `${run.score.toLocaleString("en-US")} xp` : `${(run.score / 1000).toFixed(2)} s`;
-        watching = `${run.name}'s ${run.title} run, ${score}`;
-        if (!document.getElementById("ready").hidden) say(watching);
-      })
-      .catch(() => {});
+  // The run's summary, which its card waits for: null when there is none.
+  const summary =
+    linked && /^[A-Za-z0-9_-]{1,64}$/.test(linked)
+      ? fetch(`/api/runs/${linked}`)
+          .then((response) => (response.ok ? response.json() : null))
+          .catch(() => null)
+      : Promise.resolve(null);
+  summary.then((run) => {
+    if (!run) return;
+    const score = run.board === "survival" ? `${run.score.toLocaleString("en-US")} xp` : `${(run.score / 1000).toFixed(2)} s`;
+    watching = `${run.name}'s ${run.title} run, ${score}`;
+    if (!document.getElementById("ready").hidden) say(watching);
+  });
   async function watchLink(run) {
     if (!/^[A-Za-z0-9_-]{1,64}$/.test(run)) return;
     let response, bytes;
@@ -475,8 +478,18 @@
     const path = `replays/online/${run}.crd`;
     FS.mkdirTree("/game/replays/online");
     FS.writeFile(`/game/${path}`, bytes);
+    // The run's card: its runner, rank (0 for none), and the day the board took it.
+    const details = await summary;
+    const day = details ? new Date(details.accepted_at) : null;
     const start = () => {
-      const why = Module.ccall("client_watch", "string", ["string"], [path]);
+      const why = Module.ccall("client_watch", "string", ["string", "string", "number", "number", "number", "number"], [
+        path,
+        details?.name ?? "",
+        details?.rank ?? 0,
+        day ? day.getDate() : 0,
+        day ? day.getMonth() + 1 : 0,
+        day ? day.getFullYear() : 2000,
+      ]);
       if (why === "wait") setTimeout(start, 250);
       else if (why) tell(why);
     };
