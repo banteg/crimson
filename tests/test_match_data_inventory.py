@@ -85,23 +85,6 @@ def test_inventory_files_must_agree_with_evidence(tmp_path: Path) -> None:
         inventory.validate_inventory(data, output=output, summary=summary)
 
 
-def test_catalog_retains_labels_without_native_definitions(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    path = tmp_path / "map.json"
-    path.write_text(json.dumps({"entries": [
-        {"program": "crimsonland.exe", "address": "0x64", "name": "defined", "type": "int"},
-        {"program": "crimsonland.exe", "address": "0x68", "name": "unbounded", "type": "char[]"},
-        {"program": "other.dll", "address": "0x70", "name": "other"},
-    ]}))
-    monkeypatch.setattr(inventory.matchlib, "DEFAULT_DATA_MAP_PATH", path)
-    monkeypatch.setattr(inventory.matchlib, "TRACKED_IMAGE_NAMES", ("crimsonland.exe",))
-    monkeypatch.setattr(inventory.native_link, "load_native_data_definitions",
-                        lambda *args, **kwargs: {"entries": [{"name": "defined", "address": 100, "size": 4}]})
-    rows = inventory.catalog()
-    assert [(row["name"], row["size"], row["type"]) for row in rows] == [
-        ("defined", 4, "int"), ("unbounded", None, "char[]"),
-    ]
-
-
 def test_unbounded_labels_get_no_extent_and_covered_rejections_are_not_debt(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:

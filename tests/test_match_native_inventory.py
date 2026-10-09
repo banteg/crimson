@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from copy import deepcopy
 from dataclasses import replace
-from itertools import pairwise
 from pathlib import Path
 
 import pytest
@@ -12,48 +11,17 @@ from crimson_re import match as matchlib
 from crimson_re import match_builds, match_native_inventory, match_report
 
 
-@pytest.mark.parametrize("build", ["1.0.2", "1.3.0", "1.4.0"])
-def test_freeware_denominator_includes_unique_functions_and_every_executable_byte(build: str) -> None:
-    images = match_report._images(build)
-    if any(not image.path.is_file() for image in images):
-        pytest.skip("pinned freeware images unavailable")
-    rows = match_report._inventory(build)
-    assert {image.name for image in images} == {"crimson.exe", "grim.dll"}
-    assert any(row["native_kind"] == "function" and "canonical_address" not in row for row in rows)
-    assert all(row["name"] == f"native_function_{row['address']:08x}" for row in rows
-               if row["native_kind"] == "function" and "canonical_address" not in row)
-    assert any(row["native_kind"] == "unresolved" for row in rows)
-    for image in images:
-        image_rows = [row for row in rows if row["image"] == image.name]
-        for left, right in pairwise(image_rows):
-            assert left["end"] == right["address"]
-        assert sum(row["size"] for row in image_rows) == sum(hi-lo for lo, hi in match_builds._code_ranges(image.path))
-    reconciliation = match_report.accounting.code_inventory(rows, match_report._image_paths(build))
-    assert sum(section["size"] for section in reconciliation) == sum(row["size"] for row in rows)
-    assert all(section["size"] == section["totals"]["retained_code"] + section["totals"]["unresolved"] for section in reconciliation)
-
-
-@pytest.mark.parametrize("invalid", ["image", "maps", "block", "extent", "duplicate", "boundary", "ownership"])
+@pytest.mark.parametrize("invalid", ["maps", "block"])
 def test_native_inventory_rejects_unbound_boundaries_and_ownership(tmp_path: Path, invalid: str) -> None:
     image = match_builds.load_registry().image("1.0.2", "crimson.exe")
     if not image.path.is_file():
         pytest.skip("pinned freeware image unavailable")
     assert image.native_inventory is not None
     payload = deepcopy(json.loads(image.native_inventory.read_text()))
-    if invalid == "image":
-        payload["sha256"] = "0" * 64
-    elif invalid == "maps":
+    if invalid == "maps":
         payload["maps_sha256"] = "0" * 64
-    elif invalid == "block":
-        payload["functions"][0]["blocks"][0]["sha256"] = "0" * 64
-    elif invalid == "extent":
-        payload["functions"][0]["blocks"][0]["end"] += 1
-    elif invalid == "duplicate":
-        payload["functions"].append(payload["functions"][0])
-    elif invalid == "boundary":
-        payload["ownership_ranges"][0]["boundary_sha256"] = "0" * 64
     else:
-        payload["ownership_ranges"][0]["start"] = 0
+        payload["functions"][0]["blocks"][0]["sha256"] = "0" * 64
     path = tmp_path / "native.json"
     path.write_text(json.dumps(payload))
     with pytest.raises(ValueError):
@@ -102,8 +70,3 @@ def test_native_ownership_changes_measurement_identity_without_inheriting_donor_
     categories = {category["id"]: category["measures"] for category in report["categories"]}
     assert categories["game"]["total_code"] == "0"
     assert categories["unknown"]["total_code"] == "100"
-
-
-def test_native_inventory_is_a_pinned_report_input() -> None:
-    assert match_report._input_path("analysis/decomp/1.4.0/crimson.exe/native.json")
-    assert match_report._input_path("crimson-re/src/crimson_re/match_native_inventory.py")

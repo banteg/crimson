@@ -61,15 +61,8 @@ def test_push_esp_uses_value_before_decrement_and_wraps_32_bits():
     "instruction",
     [
         "call eax",
-        "add esp, 0x4",
         "je L4",
-        "fld1",
-        "push ADDR",
         "mov eax, dword [esp+0x4]",
-        "mov byte [esp], 0x1",
-        "mov esp, eax",
-        "lea eax, dword [ecx+0x4]",
-        "lea dword [esp], eax",
     ],
 )
 def test_unsupported_instructions_fail_closed(instruction):

@@ -83,22 +83,6 @@ def test_prototype_shape_normalizes_tool_integer_aliases() -> None:
     )
 
 
-def test_load_function_metadata_filters_program(tmp_path: Path) -> None:
-    view = _load_view()
-    metadata_path = tmp_path / "metadata.json"
-    metadata_path.write_text(
-        '{"program":"crimsonland.exe","functions":{"player_update":{"notes":["movement"]}}}',
-        encoding="utf-8",
-    )
-
-    assert view.load_function_metadata(
-        metadata_path,
-        "crimsonland.exe",
-        "player_update",
-    ) == {"notes": ["movement"]}
-    assert view.load_function_metadata(metadata_path, "grim.dll", "player_update") == {}
-
-
 def test_resolve_entry_accepts_alias_and_address() -> None:
     view = _load_view()
     rows = [

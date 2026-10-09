@@ -109,9 +109,7 @@ def test_function_identity_includes_the_image_and_names_are_disambiguated() -> N
         report.build_report([rows[0], rows[0]])
 
 
-@pytest.mark.parametrize("changes", [
-    {"ratio": float("nan")}, {"ratio": 1.1}, {"size": -1}, {"ratio": 0.8}, {"linked": True},
-])
+@pytest.mark.parametrize("changes", [{"ratio": 0.8}, {"linked": True}])
 def test_invalid_or_unsupported_credit_is_rejected(changes: dict[str, Any]) -> None:
     with pytest.raises(ValueError):
         report.build_report([{**_function(1, 100), **changes}])

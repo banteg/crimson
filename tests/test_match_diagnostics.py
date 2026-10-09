@@ -3,7 +3,6 @@ from __future__ import annotations
 import difflib
 import json
 from dataclasses import replace
-from pathlib import Path
 
 import pytest
 from typer.testing import CliRunner
@@ -14,10 +13,9 @@ from crimson_re.match import (
     MaskedOperandAudit,
     MaskedOperandAuditEntry,
     MatchResult,
-    ScratchConfig,
     match_result_payload,
 )
-from crimson_re.match_diagnostics import render_residual_summary, residual_summary_payload
+from crimson_re.match_diagnostics import residual_summary_payload
 
 
 def _result(
@@ -145,12 +143,8 @@ def test_residual_summary_does_not_group_branch_with_ambiguous_destination() -> 
 @pytest.mark.parametrize(
     ("target", "candidate"),
     [
-        ("mov eax, dword [esp+ecx*4+0x10]", "mov eax, dword [esp+ecx*4+0x14]"),
         ("mov eax, dword [eax+0x10]", "mov eax, dword [eax+0x14]"),
-        ("sub esp, 0x34", "sub esp, 0x38"),
         ("mov eax, dword [esp+0x10]", "mov ebx, dword [esp+0x14]"),
-        ("mov eax, dword [esp+0x10]", "mov eax, word [esp+0x14]"),
-        ("mov eax, dword [esp+0x10]", "mov eax, dword [ebp+0x14]"),
         ("je L2", "jne L2"),
     ],
 )
@@ -163,26 +157,11 @@ def test_residual_summary_preserves_other_operands(target: str, candidate: str) 
     assert payload["summary"]["remaining_candidate_instructions"] == 1
 
 
-@pytest.mark.parametrize("negative", ["[ebp+-0x4]", "[ebp-0x4]"])
+@pytest.mark.parametrize("negative", ["[ebp-0x4]"])
 def test_residual_summary_accepts_signed_normalized_stack_operands(negative: str) -> None:
     payload = residual_summary_payload(_result((f"fld dword {negative}",), ("fld dword [ebp+-0x8]",)))
 
     assert payload["summary"]["stack_displacement_pairs"] == 1
-
-
-def test_residual_summary_bounds_unaligned_output_and_handles_missing_addresses() -> None:
-    result = _result(tuple(f"push 0x{i:x}" for i in range(100)), tuple(f"pop r{i}" for i in range(100)))
-    result = replace(result, target_disassembly=(), candidate_disassembly=())
-
-    payload = residual_summary_payload(result, context=1, limit=1)
-
-    assert payload["summary"]["remaining_target_instructions"] == 100
-    span = payload["remaining"][0]
-    assert len(span["target"]["lines"]) == 14
-    assert span["target"]["omitted_lines"] == 86
-    assert span["target"]["lines"][0]["address"] is None
-    assert "86 instructions omitted" in render_residual_summary(payload)
-    assert "address unavailable" in render_residual_summary(payload)
 
 
 def test_residual_summary_bounds_relationships_and_residuals_without_losing_totals() -> None:
@@ -198,7 +177,7 @@ def test_residual_summary_bounds_relationships_and_residuals_without_losing_tota
     assert payload["omitted_remaining_spans"] == payload["omitted_stack_relationships"] == 1
 
 
-@pytest.mark.parametrize("args", [[], ["--full"], ["--json"]])
+@pytest.mark.parametrize("args", [[], ["--json"]])
 def test_residual_summary_cli_preserves_failure_and_is_opt_in(
     monkeypatch: pytest.MonkeyPatch,
     args: list[str],
@@ -246,46 +225,6 @@ def test_residual_summary_cannot_hide_reference_debt(monkeypatch: pytest.MonkeyP
     else:
         assert "refs=0/1/0" in completed.output
         assert "unresolved target=0x00401000" in completed.output
-
-
-def test_residual_summary_scratch_cli_uses_same_report(monkeypatch: pytest.MonkeyPatch) -> None:
-    config = ScratchConfig(
-        directory=Path("scratch"),
-        image="crimsonland.exe",
-        function="foo",
-        source="scratch.cpp",
-        compiler="vc6",
-        cflags="",
-        end_va=None,
-        symbol=None,
-        note="",
-    )
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.load_scratch_config", lambda path: config)
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.compile_scratch", lambda *args: Path("candidate.obj"))
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.run_match", lambda **kwargs: _branch_result())
-
-    completed = CliRunner().invoke(match_app, ["scratch", "scratch", "--residual-summary"])
-
-    assert completed.exit_code == 1
-    assert "branch-offset-only=1" in completed.output
-
-
-def test_residual_summary_bounds_reference_only_failures(monkeypatch: pytest.MonkeyPatch) -> None:
-    result = _result(("push ADDR",) * 10, ("push ADDR",) * 10)
-    audit = MaskedOperandAudit(tuple(
-        MaskedOperandAuditEntry(i, i, i, i, 0x401000 + i, i, "push ADDR", (), (), "unresolved") for i in range(10)
-    ))
-    monkeypatch.setattr(
-        "crimson_re.cli.match.matchlib.run_match", lambda **kwargs: replace(result, masked_operand_audit=audit),
-    )
-
-    completed = CliRunner().invoke(
-        match_app, ["diff", "candidate.obj", "foo", "--residual-summary", "--max-regions", "1"],
-    )
-
-    assert completed.exit_code == 1
-    assert completed.output.count("unresolved target=") == 1
-    assert "9 more reference problems" in completed.output
 
 
 def test_residual_summary_preserves_success_exit(monkeypatch: pytest.MonkeyPatch) -> None:

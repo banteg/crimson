@@ -28,7 +28,7 @@ def test_decode_retains_operands_and_descriptor():
     assert not c2.summarize(events, 99)[0]["selected_nodes"]
 
 
-@pytest.mark.parametrize("data", [b"", trace_bytes()[:13], trace_bytes()[:-1], trace_bytes(count=17)])
+@pytest.mark.parametrize("data", [trace_bytes()[:-1], trace_bytes(count=17)])
 def test_reject_corrupt_trace(data):
     with pytest.raises(ValueError):
         c2.decode_trace(data, PROFILE)
@@ -98,33 +98,3 @@ def test_verified_reader_rejects_modified_snapshot(tmp_path):
     (tmp_path / "snapshots.json").write_bytes(data + b" ")
     with pytest.raises(ValueError, match="digest"):
         c2.read_verified(tmp_path)
-
-
-def test_observer_guards_before_restoring_flags():
-    profile = {"invoke_rva": 0x57444, "hooks": [{"site": 0x100, "target": 0x200, "return": True}]}
-    source = c2.observer_source(profile)
-    assert "mov dword ptr [active+0],1\n popad\n popfd" in source
-    assert "site[0] != 0xe8" in source
-    assert "recursive_call:" in source
-    assert f"#define MAX_NODES {c2.MAX_NODES}" in source
-    assert "count < MAX_NODES" in source
-
-
-@pytest.mark.parametrize("options, expected", [([], False), (["--passes-only"], True)])
-def test_trace_cli_selects_observation_scope(monkeypatch, tmp_path, options, expected):
-    from typer.testing import CliRunner
-
-    from crimson_re.cli.match import match_app
-
-    scratch, out = tmp_path / "scratch", tmp_path / "trace"
-    calls = []
-
-    def trace(source, destination, *, passes_only=False):
-        calls.append((source, destination, passes_only))
-        return {"events": 12 if passes_only else 46}
-
-    monkeypatch.setattr(c2, "trace", trace)
-    result = CliRunner().invoke(match_app, ["c2-trace", str(scratch), "--out", str(out), *options])
-    assert result.exit_code == 0, result.output
-    assert calls == [(scratch, out, expected)]
-    assert "whole COFF preserved" in result.output

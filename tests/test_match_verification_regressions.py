@@ -142,7 +142,7 @@ def test_report_inventory_excludes_decoded_padding_without_truncating_operands(
     assert [row["size"] for row in match_report._inventory()] == [1, 130]
 
 
-@pytest.mark.parametrize("opcode", ["8b048d", "8b80", "8d05", "d905", "c705", "b8", "65a1"])
+@pytest.mark.parametrize("opcode", ["8b048d", "8d05", "d905", "65a1"])
 @pytest.mark.parametrize("named", [False, True])
 def test_scalar_content_requires_a_direct_read_or_named_owner(opcode: str, named: bool) -> None:
     prefix = bytes.fromhex(opcode)

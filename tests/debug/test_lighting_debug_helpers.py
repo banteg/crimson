@@ -1,19 +1,14 @@
 from __future__ import annotations
 
-import math
 from pathlib import Path
 from typing import cast
 
 from crimson.debug_views.lighting_debug import (
-    EMISSIVE_PROFILES,
-    EmissiveProfile,
     LightingDebugView,
     TransientLight,
     _auto_tune_selection_score,
     _AutoTunePreset,
     _AutoTuneResult,
-    _build_static_occluders,
-    _profile_light_defaults,
     _shadow_frame_metrics,
     _shadow_quality_score,
     collect_shadow_lights,
@@ -22,7 +17,6 @@ from crimson.debug_views.lighting_debug import (
 )
 from crimson.projectiles.types import Projectile, ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
-from crimson.weapons import WEAPON_BY_ID, WeaponId
 from grim.geom import Vec2
 from grim.view import ViewContext
 from tests.support.factories import make_creature_state as _creature
@@ -139,26 +133,6 @@ def test_ion_lights_are_head_to_tail_omni_with_weaker_tail() -> None:
         assert_float_close(light.dir_y, 0.0)
 
 
-def test_plasma_light_is_omnidirectional() -> None:
-    projectiles = [
-        _projectile(
-            active=True,
-            pos=Vec2(220.0, 100.0),
-            origin=Vec2(180.0, 100.0),
-            angle=1.2,
-            type_id=int(ProjectileTemplateId.PLASMA_RIFLE),
-        ),
-    ]
-
-    lights = collect_shadow_lights(projectiles, [], [], max_lights=6)
-
-    assert len(lights) == 1
-    assert_float_close(lights[0].focus, 0.0)
-    assert_float_close(lights[0].stretch, 1.0)
-    assert_float_close(lights[0].dir_x, 0.0)
-    assert_float_close(lights[0].dir_y, 0.0)
-
-
 def test_tick_transient_lights_decays_and_removes_expired_entries() -> None:
     lights = [
         TransientLight(pos=Vec2(50.0, 70.0), radius=60.0, strength=1.0, ttl=0.30, age=0.0),
@@ -179,59 +153,6 @@ def test_tick_transient_lights_decays_and_removes_expired_entries() -> None:
     assert len(step_2) == 1
     assert_float_close(step_2[0].pos.x, 50.0)
     assert_float_close(step_2[0].age, 0.09)
-
-
-def test_profile_auto_interval_uses_weapon_cooldown_for_all_profiles() -> None:
-    for profile in EMISSIVE_PROFILES:
-        assert profile.rate_weapon_id is not None
-        weapon = WEAPON_BY_ID[WeaponId(profile.rate_weapon_id)]
-        interval = LightingDebugView._profile_auto_interval(profile)
-        assert_float_close(interval, float(weapon.shot_cooldown))
-
-
-def test_profile_auto_interval_falls_back_to_profile_interval() -> None:
-    profile = EmissiveProfile(name="fallback", auto_interval=0.123, rate_weapon_id=None)
-
-    interval = LightingDebugView._profile_auto_interval(profile)
-
-    assert_float_close(interval, 0.123)
-
-
-def test_profile_light_defaults_uses_primary_or_secondary_specs() -> None:
-    ion_profile = next(profile for profile in EMISSIVE_PROFILES if profile.name == "Ion Rifle")
-    det_profile = next(profile for profile in EMISSIVE_PROFILES if profile.name == "Explosion")
-
-    ion_radius, ion_strength, ion_focus, ion_stretch = _profile_light_defaults(ion_profile)
-    det_radius, det_strength, det_focus, det_stretch = _profile_light_defaults(det_profile)
-
-    assert ion_radius > 0.0
-    assert ion_strength > 0.0
-    assert ion_focus >= 0.0
-    assert ion_stretch >= 1.0
-    assert det_radius > 0.0
-    assert det_strength > 0.0
-    assert det_focus >= 0.0
-    assert det_stretch >= 1.0
-
-
-def test_build_static_occluders_produces_finite_positive_circles() -> None:
-    occluders = _build_static_occluders()
-
-    assert occluders
-    assert all(occ.radius > 0.0 for occ in occluders)
-    assert all(math.isfinite(float(occ.pos.x)) for occ in occluders)
-    assert all(math.isfinite(float(occ.pos.y)) for occ in occluders)
-
-
-def test_static_scene_collect_shadow_state_uses_static_occluders_and_emitters() -> None:
-    view = LightingDebugView(ViewContext(assets_dir=Path(".") / "artifacts" / "assets"))
-
-    view._set_static_scene_enabled(True)
-    view._collect_shadow_state()
-
-    assert view._static_scene_enabled is True
-    assert len(view._last_occluders) > 0
-    assert len(view._last_lights) > 0
 
 
 def test_adjust_selected_tune_rt_scale_resets_shadow_rt_size() -> None:

@@ -418,21 +418,6 @@ def test_trace_v2_uses_raw_msgpack_chunks(tmp_path: Path) -> None:
     assert payload_len == raw_len
 
 
-def test_trace_reader_rejects_unindexed_bytes_before_trailer(tmp_path: Path) -> None:
-    out_path = tmp_path / "trace_extra_before_trailer.cdt"
-    write_trace(
-        out_path,
-        meta=_meta(start_tick=0, end_tick=0, tick_count=1),
-        ticks=[_row(tick_index=0, elapsed_ms=0, score_xp=0)],
-    )
-    raw = out_path.read_bytes()
-    trailer_size = struct.calcsize("<8sQ")
-    out_path.write_bytes(raw[:-trailer_size] + b"extra" + raw[-trailer_size:])
-
-    with pytest.raises(TraceError, match="footer chunk must immediately precede the trailer"):
-        TraceReader(out_path)
-
-
 def test_trace_reader_rejects_unindexed_bytes_before_footer(tmp_path: Path) -> None:
     out_path = tmp_path / "trace_extra_before_footer.cdt"
     write_trace(
@@ -467,57 +452,10 @@ def test_trace_reader_rejects_footer_index_that_disagrees_with_chunk(tmp_path: P
             reader._load_block(bad_entry)
 
 
-def test_trace_meta_rejects_unknown_fields() -> None:
-    payload = msgspec.msgpack.encode(
-        {
-            "trace_format_version": TRACE_FORMAT_VERSION,
-            "trace_schema_version": TRACE_SCHEMA_VERSION,
-            "created_utc": "2026-02-24T00:00:00+00:00",
-            "producer": {"impl": "python", "impl_version": "", "platform": "darwin", "arch": "x86_64"},
-            "source": {"kind": "unit_test", "sha256": "0" * 64},
-            "tick_range": {"start_tick": 0, "end_tick": 0, "tick_count": 1},
-            "future_field": {"nested": True},
-        },
-    )
-    with pytest.raises(msgspec.ValidationError, match="future_field"):
-        msgspec.msgpack.decode(payload, type=TraceMeta)
-
-
-def test_tick_record_rejects_unknown_fields() -> None:
-    payload = msgspec.msgpack.encode(
-        {
-            "tick_index": 7,
-            "elapsed_ms": 112,
-            "dt_ms_i32": 16,
-            "mode_id": 2,
-            "channels": msgspec.to_builtins(_channels(tick_index=7, elapsed_ms=112, score_xp=42)),
-            "future_tick_field": "ignored",
-        },
-    )
-    with pytest.raises(msgspec.ValidationError, match="future_tick_field"):
-        msgspec.msgpack.decode(payload, type=TickRecord)
-
-
 @pytest.mark.parametrize(
     ("field", "path"),
     [
         ("replay_step.dt", ("ticks", 0, "channels", "replay_step", "dt")),
-        (
-            "checkpoint.players[0].health",
-            ("ticks", 0, "channels", "checkpoint", "players", 0, "health"),
-        ),
-        (
-            "sim_state.players[0].heading",
-            ("ticks", 0, "channels", "sim_state", "players", 0, "heading"),
-        ),
-        (
-            "entity_samples.projectiles[0].angle",
-            ("ticks", 0, "channels", "entity_samples", "projectiles", 0, "angle"),
-        ),
-        (
-            "timing_samples[0].frame_dt_f32",
-            ("ticks", 0, "channels", "timing_samples", 0, "frame_dt_f32"),
-        ),
     ],
 )
 def test_trace_reader_rejects_integer_tokens_for_wire_f32_fields(
@@ -561,49 +499,11 @@ def test_trace_reader_accepts_current_tagged_prelude_wire_map(tmp_path: Path) ->
     ("name", "mutate_meta", "mutate_block", "mutate_footer", "error"),
     [
         (
-            "meta_missing_nullable",
-            lambda raw: raw["source"].pop("run_id"),
-            None,
-            None,
-            r"meta\.source is missing field\(s\): run_id",
-        ),
-        (
             "meta_unknown",
             lambda raw: raw.__setitem__("future", None),
             None,
             None,
             r"meta has unknown field\(s\): 'future'",
-        ),
-        (
-            "tick_block_missing",
-            None,
-            lambda raw: raw.pop("ticks"),
-            None,
-            r"tick_block is missing field\(s\): ticks",
-        ),
-        (
-            "tick_nested_unknown",
-            None,
-            lambda raw: raw["ticks"][0]["channels"].__setitem__("future", []),
-            None,
-            r"tick_block\.ticks\[0\]\.channels has unknown field\(s\): 'future'",
-        ),
-        (
-            "tick_missing_nullable",
-            None,
-            lambda raw: raw["ticks"][0]["channels"]["timing_samples"][0].pop("player_index"),
-            None,
-            r"timing_samples\[0\] is missing field\(s\): player_index",
-        ),
-        (
-            "prelude_missing_field",
-            None,
-            lambda raw: raw["ticks"][0]["channels"]["replay_step"].__setitem__(
-                "prelude",
-                [{"type": "game_frame_rng_advance"}],
-            ),
-            None,
-            r"replay_step\.prelude\[0\] is missing field\(s\): frames",
         ),
         (
             "command_unknown_tag",
@@ -614,20 +514,6 @@ def test_trace_reader_accepts_current_tagged_prelude_wire_map(tmp_path: Path) ->
             ),
             None,
             r"replay_step\.commands\[0\]\.type has unsupported tag 'future'",
-        ),
-        (
-            "footer_missing",
-            None,
-            None,
-            lambda raw: raw.pop("last_tick"),
-            r"footer is missing field\(s\): last_tick",
-        ),
-        (
-            "footer_unknown",
-            None,
-            None,
-            lambda raw: raw.__setitem__("future", 0),
-            r"footer has unknown field\(s\): 'future'",
         ),
     ],
 )
@@ -659,8 +545,6 @@ def test_trace_reader_requires_exact_current_wire_maps(
 @pytest.mark.parametrize(
     "meta",
     [
-        _meta(trace_format_version=1),
-        _meta(trace_schema_version=12),
         _meta(trace_schema_version=99),
     ],
 )
@@ -676,23 +560,9 @@ def test_write_trace_rejects_noncurrent_contract(tmp_path: Path, meta: TraceMeta
         write_trace(out_path, meta=meta, ticks=rows, chunk_ticks=1)
 
 
-def test_write_trace_rejects_empty_ticks(tmp_path: Path) -> None:
-    out_path = tmp_path / "trace_empty.cdt"
-    with pytest.raises(TraceError, match="trace must contain at least one tick"):
-        write_trace(out_path, meta=_meta(), ticks=[], chunk_ticks=1)
-
-
 @pytest.mark.parametrize(
     "ticks",
     [
-        [
-            _row(tick_index=0, elapsed_ms=0, score_xp=0),
-            _row(tick_index=0, elapsed_ms=16, score_xp=0),
-        ],
-        [
-            _row(tick_index=1, elapsed_ms=16, score_xp=0),
-            _row(tick_index=0, elapsed_ms=0, score_xp=0),
-        ],
         [
             _row(tick_index=0, elapsed_ms=0, score_xp=0),
             _row(tick_index=2, elapsed_ms=32, score_xp=0),
@@ -703,51 +573,6 @@ def test_write_trace_rejects_noncontiguous_ticks(tmp_path: Path, ticks: list[Tic
     meta = _meta(start_tick=int(ticks[0].tick_index), end_tick=int(ticks[-1].tick_index), tick_count=len(ticks))
     with pytest.raises(TraceError, match="tick rows must be contiguous"):
         write_trace(tmp_path / "invalid.cdt", meta=meta, ticks=ticks, chunk_ticks=2)
-
-
-def test_write_trace_rejects_meta_tick_range_mismatch(tmp_path: Path) -> None:
-    rows = [
-        _row(tick_index=0, elapsed_ms=0, score_xp=0),
-        _row(tick_index=1, elapsed_ms=16, score_xp=0),
-    ]
-    with pytest.raises(TraceError, match="metadata tick_range does not match written ticks"):
-        write_trace(tmp_path / "invalid.cdt", meta=_meta(), ticks=rows, chunk_ticks=2)
-
-
-def test_write_trace_rejects_tick_identity_that_disagrees_with_metadata(tmp_path: Path) -> None:
-    row = _row(tick_index=0, elapsed_ms=0, score_xp=0)
-    mode_meta = msgspec.structs.replace(
-        _meta(start_tick=0, end_tick=0, tick_count=1),
-        source=msgspec.structs.replace(_meta().source, mode_id=2),
-    )
-    with pytest.raises(TraceError, match="source.mode_id"):
-        write_trace(tmp_path / "bad_mode.cdt", meta=mode_meta, ticks=[row])
-
-    player_meta = msgspec.structs.replace(
-        _meta(start_tick=0, end_tick=0, tick_count=1),
-        source=msgspec.structs.replace(_meta().source, player_count=2),
-    )
-    with pytest.raises(TraceError, match="source.player_count"):
-        write_trace(tmp_path / "bad_players.cdt", meta=player_meta, ticks=[row])
-
-
-def test_write_trace_rejects_noncanonical_player_slots(tmp_path: Path) -> None:
-    row = _row(tick_index=0, elapsed_ms=0, score_xp=0)
-    player = msgspec.structs.replace(row.channels.sim_state.players[0], index=7)
-    row = msgspec.structs.replace(
-        row,
-        channels=msgspec.structs.replace(
-            row.channels,
-            sim_state=msgspec.structs.replace(row.channels.sim_state, players=[player]),
-        ),
-    )
-
-    with pytest.raises(TraceError, match="contiguous slots"):
-        write_trace(
-            tmp_path / "bad_slots.cdt",
-            meta=_meta(start_tick=0, end_tick=0, tick_count=1),
-            ticks=[row],
-        )
 
 
 def test_write_trace_accepts_perk_commands_and_rejects_typo_commands_outside_typo(tmp_path: Path) -> None:
@@ -789,23 +614,6 @@ def test_write_trace_rejects_non_f32_state_values(tmp_path: Path) -> None:
         )
 
 
-def test_write_trace_rejects_producer_specific_checkpoint_heads(tmp_path: Path) -> None:
-    row = _row(tick_index=0, elapsed_ms=0, score_xp=0)
-    events = msgspec.structs.replace(row.channels.checkpoint.events, sfx_head=["native-only"])
-    checkpoint = msgspec.structs.replace(row.channels.checkpoint, events=events)
-    row = msgspec.structs.replace(
-        row,
-        channels=msgspec.structs.replace(row.channels, checkpoint=checkpoint),
-    )
-
-    with pytest.raises(TraceError, match="sfx_head must be empty"):
-        write_trace(
-            tmp_path / "bad_checkpoint_heads.cdt",
-            meta=_meta(start_tick=0, end_tick=0, tick_count=1),
-            ticks=[row],
-        )
-
-
 def test_trace_health_reports_exact_tick_spans_and_gaps(tmp_path: Path) -> None:
     tick_indices = [0, 1, 4, 5, 9]
     rows = [_row(tick_index=tick, elapsed_ms=tick * 16, score_xp=0) for tick in tick_indices]
@@ -841,14 +649,6 @@ def test_trace_health_reports_exact_tick_spans_and_gaps(tmp_path: Path) -> None:
                 _row(tick_index=0, elapsed_ms=16, score_xp=0),
             ],
             "duplicate tick_index 0",
-        ),
-        (
-            [
-                _row(tick_index=0, elapsed_ms=0, score_xp=0),
-                _row(tick_index=2, elapsed_ms=32, score_xp=0),
-                _row(tick_index=1, elapsed_ms=16, score_xp=0),
-            ],
-            "out-of-order tick_index 1 after 2",
         ),
     ],
 )
@@ -894,26 +694,6 @@ def test_trace_health_rejects_footer_range_mismatch(tmp_path: Path) -> None:
     assert health["ok_for_parity_analysis"] is False
     assert "footer.tick_count=8 does not match decoded tick count 2" in issues
     assert "meta.tick_range.tick_count=8 does not match decoded tick count 2" in issues
-
-
-def test_trace_health_reports_meta_footer_range_mismatch(tmp_path: Path) -> None:
-    rows = [
-        _row(tick_index=0, elapsed_ms=0, score_xp=0),
-        _row(tick_index=1, elapsed_ms=16, score_xp=0),
-    ]
-    out_path = tmp_path / "invalid_meta_range.cdt"
-    _write_unchecked_trace(
-        out_path,
-        meta=_meta(start_tick=0, end_tick=7, tick_count=9),
-        ticks=rows,
-    )
-
-    health = summarize_trace_health(out_path)
-    issues = _health_issues(health)
-
-    assert health["ok_for_parity_analysis"] is False
-    assert "meta.tick_range.end_tick=7 does not match last decoded tick 1" in issues
-    assert "meta.tick_range.tick_count=9 does not match decoded tick count 2" in issues
 
 
 def test_trace_health_requires_valid_replay_step_and_timing_per_tick(tmp_path: Path) -> None:

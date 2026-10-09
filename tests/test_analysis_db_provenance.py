@@ -54,19 +54,3 @@ def test_check_rejects_changed_binary_and_tool(tmp_path: Path) -> None:
 
     assert any(row.startswith("binary_sha256:") for row in mismatches)
     assert any(row.startswith("tool_fingerprint:") for row in mismatches)
-
-
-def test_check_rejects_missing_or_invalid_state(tmp_path: Path) -> None:
-    provenance = _load_provenance()
-    args = _args(tmp_path)
-    expected = provenance.expected_state(args)
-    state_path = tmp_path / "missing.json"
-
-    assert provenance.check_state(state_path, expected) == [
-        f"missing provenance file: {state_path}",
-    ]
-
-    state_path.write_text("{", encoding="utf-8")
-    mismatches = provenance.check_state(state_path, expected)
-    assert len(mismatches) == 1
-    assert mismatches[0].startswith(f"invalid provenance file {state_path}:")

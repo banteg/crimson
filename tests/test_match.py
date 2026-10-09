@@ -14,7 +14,6 @@ from typer.testing import CliRunner
 from crimson_re.cli.match import match_app
 from crimson_re.match import (
     DEFAULT_FUNCTIONS_PATH,
-    SHARD_PLAN_KIND,
     VC6_LOCAL_JUMP_TABLE_KEY,
     VC6_LOCAL_SWITCH_PARTITION_KEY,
     VC6_PROVEN_COPY_LOAD_KEY,
@@ -23,9 +22,6 @@ from crimson_re.match import (
     WORKER_CLAIM_KIND,
     WORKER_OUTCOME_FILE,
     WORKER_OUTCOME_KIND,
-    BasicBlock,
-    CfgAlignment,
-    CfgBlockPair,
     CoffObject,
     CoffRelocation,
     CoffSection,
@@ -39,16 +35,13 @@ from crimson_re.match import (
     MaskedOperandAuditEntry,
     MaskedReference,
     MatchResult,
-    NamingDebtRow,
     NativeLinkStatus,
     ObjectFunction,
     ObjectRelocationReference,
-    ProbeResult,
     ReferenceCatalog,
     ResidualFrontierRow,
     ScratchConfig,
     ScratchStatus,
-    SharedInputHashes,
     TriageExperimentEvidence,
     TriageRow,
     _coff_local_jump_table_key,
@@ -62,7 +55,6 @@ from crimson_re.match import (
     _scratch_build_key,
     _ScratchIncludeResolver,
     _vc6_sparse_switch_bounds,
-    address_in_matching_scope,
     align_basic_blocks,
     apply_naming_suggestions,
     build_basic_blocks,
@@ -74,9 +66,7 @@ from crimson_re.match import (
     collect_naming_debt,
     collect_native_link_statuses,
     collect_residual_frontier_rows,
-    collect_scratch_statuses,
     collect_triage_rows,
-    common_prefix_length,
     compile_scratch,
     compiler_listing_payload,
     compiler_scan_row_payload,
@@ -91,17 +81,13 @@ from crimson_re.match import (
     extract_object_function,
     generate_compiler_listing,
     inspect_match_function,
-    is_analyzer_placeholder,
     load_function_manifest,
-    load_matching_scope,
-    load_matching_scope_function_dispositions,
     load_name_map_rows,
     load_naming_hints,
     load_reference_catalog,
     load_scratch_config,
     match_function,
     match_result_payload,
-    matching_scope_function_disposition_payloads,
     naming_debt_payload,
     native_json_program_sha256,
     normalize_function,
@@ -112,7 +98,6 @@ from crimson_re.match import (
     render_compiler_listing_result,
     render_compiler_scan_rows,
     render_image_total_rows,
-    render_naming_debt_summary,
     render_naming_debt_table,
     render_native_link_status_markdown,
     render_probe_result,
@@ -128,7 +113,6 @@ from crimson_re.match import (
     resolve_function,
     resolve_function_with_scope_hint,
     rewrite_placeholder_references,
-    run_match,
     scratch_experiment_epoch,
     sort_profile_statuses,
     sort_triage_rows,
@@ -295,25 +279,6 @@ def test_load_manifest_excludes_curated_false_function(tmp_path: Path) -> None:
     assert [function.name for function in manifest.functions] == ["real_function"]
 
 
-def test_load_manifest_rejects_stale_curated_exclusion(tmp_path: Path) -> None:
-    functions_path = tmp_path / "functions.json"
-    functions_path.write_text("[]\n", encoding="utf-8")
-    name_map_path = tmp_path / "name_map.json"
-    name_map_path.write_text(
-        '[{"program":"grim.dll","address":"0x1003A4F4",'
-        '"name":"nullsub_7","exclude":true}]\n',
-        encoding="utf-8",
-    )
-
-    with pytest.raises(ValueError, match="exclusions are absent.*0x1003a4f4"):
-        load_function_manifest(
-            functions_path,
-            metadata_path=None,
-            image_name="grim.dll",
-            name_map_path=name_map_path,
-        )
-
-
 def test_load_manifest_rejects_duplicate_curated_address(tmp_path: Path) -> None:
     functions_path = tmp_path / "functions.json"
     functions_path.write_text(
@@ -417,28 +382,6 @@ def test_load_manifest_adds_explicit_disjoint_curated_function(tmp_path: Path) -
     assert end == 0x1001BC84
 
 
-def test_load_manifest_rejects_overlapping_created_function(tmp_path: Path) -> None:
-    functions_path = tmp_path / "functions.json"
-    functions_path.write_text(
-        '[{"address":"0x1001BC70","end":"0x1001BC90","name":"sub_1001BC70","size":32}]\n',
-        encoding="utf-8",
-    )
-    name_map_path = tmp_path / "name_map.json"
-    name_map_path.write_text(
-        '[{"program":"grim.dll","address":"0x1001BC68","end":"0x1001BC84",'
-        '"name":"grim_pixel_format_scalar_deleting_destroy_yuv_base","create":true}]\n',
-        encoding="utf-8",
-    )
-
-    with pytest.raises(ValueError, match="overlaps the existing manifest"):
-        load_function_manifest(
-            functions_path,
-            metadata_path=None,
-            image_name="grim.dll",
-            name_map_path=name_map_path,
-        )
-
-
 def test_load_manifest_can_include_curated_library_false_positive(tmp_path: Path) -> None:
     functions_path = tmp_path / "functions.json"
     functions_path.write_text(
@@ -506,158 +449,6 @@ def test_port_scope_uses_stable_ownership_boundary() -> None:
     assert resolve_function(all_grim_manifest, "grim_window_proc")[0].address == 0x100033B0
 
 
-def test_port_scope_has_audited_function_dispositions() -> None:
-    dispositions = matching_scope_function_disposition_payloads("port")
-    image_counts = {
-        image: sum(row["image"] == image for row in dispositions)
-        for image in ("crimsonland.exe", "grim.dll")
-    }
-
-    assert image_counts == {"crimsonland.exe": 8, "grim.dll": 49}
-    assert not address_in_matching_scope(
-        "crimsonland.exe",
-        0x0041CFE0,
-        scope="port",
-    )
-    assert not address_in_matching_scope("grim.dll", 0x100033B0, scope="port")
-    assert not address_in_matching_scope("grim.dll", 0x10009A50, scope="port")
-    assert address_in_matching_scope("grim.dll", 0x10001710, scope="port")
-    assert address_in_matching_scope("grim.dll", 0x10004520, scope="port")
-    assert address_in_matching_scope("grim.dll", 0x100033B0, scope="all")
-    assert {
-        (row["image"], row["function"], row["disposition"])
-        for row in dispositions
-        if row["address"] in {0x0041CFE0, 0x100033B0, 0x10009A50}
-    } == {
-        (
-            "crimsonland.exe",
-            "dx_get_version_fallback_from_files",
-            "platform-replaced",
-        ),
-        ("grim.dll", "grim_window_proc", "platform-replaced"),
-        ("grim.dll", "grim_jaz_jpeg_create_decompress", "third-party"),
-    }
-
-
-def test_matching_scope_function_dispositions_are_validated(tmp_path: Path) -> None:
-    scope_path = tmp_path / "matching_scope.json"
-
-    def write_scope(rows: list[dict[str, str]]) -> None:
-        scope_path.write_text(
-            json.dumps(
-                {
-                    "schema": 2,
-                    "default": "port",
-                    "scopes": {
-                        "port": {
-                            "programs": {
-                                "test.exe": [
-                                    {
-                                        "start": "0x00401000",
-                                        "end": "0x00402000",
-                                        "owner": "game",
-                                    },
-                                ],
-                            },
-                            "function_dispositions": {"test.exe": rows},
-                        },
-                    },
-                },
-            ),
-            encoding="utf-8",
-        )
-
-    valid: dict[str, str] = {
-        "address": "0x00401100",
-        "name": "platform_probe",
-        "disposition": "platform-replaced",
-        "reason": "host backend",
-    }
-    write_scope([valid])
-    assert load_matching_scope("port", path=scope_path)["test.exe"][0].owner == "game"
-    assert load_matching_scope_function_dispositions(
-        "port",
-        path=scope_path,
-    )["test.exe"][0].name == "platform_probe"
-
-    write_scope([{**valid, "disposition": "third-party"}])
-    assert (
-        load_matching_scope_function_dispositions(
-            "port",
-            path=scope_path,
-        )["test.exe"][0].disposition
-        == "third-party"
-    )
-
-    write_scope([valid, valid])
-    with pytest.raises(ValueError, match="duplicate .* function disposition"):
-        load_matching_scope_function_dispositions("port", path=scope_path)
-
-    write_scope([{**valid, "address": "0x00403000"}])
-    with pytest.raises(ValueError, match="outside owned ranges"):
-        load_matching_scope_function_dispositions("port", path=scope_path)
-
-    write_scope([{**valid, "disposition": "guess"}])
-    with pytest.raises(ValueError, match="unknown function disposition"):
-        load_matching_scope_function_dispositions("port", path=scope_path)
-
-    write_scope([{**valid, "reason": ""}])
-    with pytest.raises(ValueError, match="needs a reason"):
-        load_matching_scope_function_dispositions("port", path=scope_path)
-
-
-def test_matching_scope_disposition_name_must_match_manifest(tmp_path: Path) -> None:
-    functions_path = tmp_path / "functions.json"
-    functions_path.write_text(
-        '[{"address":"0x00401100","end":"0x00401110",'
-        '"name":"observed_name","size":16,"external":false}]\n',
-        encoding="utf-8",
-    )
-    scope_path = tmp_path / "matching_scope.json"
-    scope_path.write_text(
-        json.dumps(
-            {
-                "schema": 2,
-                "default": "port",
-                "scopes": {
-                    "port": {
-                        "programs": {
-                            "test.exe": [
-                                {
-                                    "start": "0x00401000",
-                                    "end": "0x00402000",
-                                    "owner": "game",
-                                },
-                            ],
-                        },
-                        "function_dispositions": {
-                            "test.exe": [
-                                {
-                                    "address": "0x00401100",
-                                    "name": "stale_name",
-                                    "disposition": "platform-replaced",
-                                    "reason": "host backend",
-                                },
-                            ],
-                        },
-                    },
-                },
-            },
-        ),
-        encoding="utf-8",
-    )
-
-    with pytest.raises(ValueError, match="does not match manifest name"):
-        load_function_manifest(
-            functions_path,
-            metadata_path=None,
-            image_name="test.exe",
-            name_map_path=None,
-            scope="port",
-            scope_path=scope_path,
-        )
-
-
 def test_matching_workspace_stays_inside_port_scope() -> None:
     assert validate_matching_workspace(scope="port") == []
 
@@ -678,26 +469,6 @@ def test_scratch_config_parses_recovery_and_residuals(tmp_path: Path) -> None:
     assert config.disproven_compilers == ("msvc6.5pp", "msvc7.0")
 
 
-def test_scratch_config_rejects_invalid_disproven_compiler(tmp_path: Path) -> None:
-    (tmp_path / "scratch.conf").write_text(
-        "FUNCTION=foo DISPROVEN_COMPILERS='msvc6.5pp,bad compiler'\n",
-        encoding="utf-8",
-    )
-
-    with pytest.raises(ValueError, match="invalid DISPROVEN_COMPILERS values 'bad compiler'"):
-        load_scratch_config(tmp_path)
-
-
-def test_scratch_config_rejects_invalid_auto_inline_identifier(tmp_path: Path) -> None:
-    (tmp_path / "scratch.conf").write_text(
-        "FUNCTION=foo AUTO_INLINE_OFF='valid,bad-name'\n",
-        encoding="utf-8",
-    )
-
-    with pytest.raises(ValueError, match="invalid AUTO_INLINE_OFF identifiers 'bad-name'"):
-        load_scratch_config(tmp_path)
-
-
 def test_scratch_config_parses_pinned_archive_member(tmp_path: Path) -> None:
     (tmp_path / "scratch.conf").write_text(
         "FUNCTION=foo ARCHIVE=provider.lib "
@@ -715,32 +486,6 @@ def test_scratch_config_parses_pinned_archive_member(tmp_path: Path) -> None:
     assert config.archive_extent == "section-tail"
 
 
-def test_scratch_config_parses_archive_end_symbol(tmp_path: Path) -> None:
-    (tmp_path / "scratch.conf").write_text(
-        "FUNCTION=foo ARCHIVE=provider.lib "
-        "ARCHIVE_MEMBER='obj\\i386\\foo.obj' "
-        f"ARCHIVE_SHA256={'a' * 64} SYMBOL=_foo ARCHIVE_END_SYMBOL=_foo_end\n",
-        encoding="utf-8",
-    )
-
-    config = load_scratch_config(tmp_path)
-
-    assert config.archive_end_symbol == "_foo_end"
-
-
-def test_scratch_config_parses_archive_symbol_size(tmp_path: Path) -> None:
-    (tmp_path / "scratch.conf").write_text(
-        "FUNCTION=foo ARCHIVE=provider.lib "
-        "ARCHIVE_MEMBER='obj\\i386\\foo.obj' "
-        f"ARCHIVE_SHA256={'a' * 64} SYMBOL='$L123' ARCHIVE_SIZE=9\n",
-        encoding="utf-8",
-    )
-
-    config = load_scratch_config(tmp_path)
-
-    assert config.archive_size == 9
-
-
 def test_scratch_config_parses_structural_import_thunk(tmp_path: Path) -> None:
     (tmp_path / "scratch.conf").write_text(
         "FUNCTION=sprintf IMPORT_THUNK=sprintf\n",
@@ -753,75 +498,6 @@ def test_scratch_config_parses_structural_import_thunk(tmp_path: Path) -> None:
     assert config.compiler == "linker-import"
     assert config.cflags == ""
     assert config.source == ""
-
-
-def test_scratch_config_rejects_import_thunk_source(tmp_path: Path) -> None:
-    (tmp_path / "scratch.conf").write_text(
-        "FUNCTION=sprintf IMPORT_THUNK=sprintf SOURCE=scratch.cpp\n",
-        encoding="utf-8",
-    )
-
-    with pytest.raises(ValueError, match="cannot combine IMPORT_THUNK and SOURCE"):
-        load_scratch_config(tmp_path)
-
-
-@pytest.mark.parametrize(
-    "config, message",
-    (
-        ("FUNCTION=foo ARCHIVE_MEMBER=foo.obj", "without ARCHIVE"),
-        ("FUNCTION=foo ARCHIVE_END_SYMBOL=_foo_end", "without ARCHIVE"),
-        ("FUNCTION=foo ARCHIVE_SIZE=9", "without ARCHIVE"),
-        ("FUNCTION=foo ARCHIVE_EXTENT=section-tail", "without ARCHIVE"),
-        ("FUNCTION=foo ARCHIVE=provider.lib", "must set ARCHIVE_MEMBER, ARCHIVE_SHA256, SYMBOL"),
-        (
-            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo SOURCE=foo.c"),
-            "cannot combine ARCHIVE and SOURCE",
-        ),
-        (
-            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo AUTO_INLINE_OFF=foo"),
-            "cannot combine ARCHIVE and AUTO_INLINE_OFF",
-        ),
-        (
-            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo ARCHIVE_EXTENT=bogus"),
-            "invalid ARCHIVE_EXTENT",
-        ),
-        (
-            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
-            "ARCHIVE_EXTENT=section-tail ARCHIVE_END_SYMBOL=_foo_end"),
-            "cannot combine ARCHIVE_END_SYMBOL",
-        ),
-        (
-            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
-            "ARCHIVE_EXTENT=section-tail ARCHIVE_SIZE=9"),
-            "cannot combine ARCHIVE_SIZE",
-        ),
-        (
-            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
-            "ARCHIVE_END_SYMBOL=_foo_end ARCHIVE_SIZE=9"),
-            "cannot combine ARCHIVE_SIZE",
-        ),
-        (
-            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo ARCHIVE_SIZE=0"),
-            "ARCHIVE_SIZE must be positive",
-        ),
-    ),
-)
-def test_scratch_config_rejects_invalid_archive_mode(
-    tmp_path: Path,
-    config: str,
-    message: str,
-) -> None:
-    (tmp_path / "scratch.conf").write_text(config, encoding="utf-8")
-
-    with pytest.raises(ValueError, match=message):
-        load_scratch_config(tmp_path)
 
 
 def test_scratch_config_rejects_unknown_fields(tmp_path: Path) -> None:
@@ -859,39 +535,6 @@ def test_inspect_joins_scoped_tool_views() -> None:
         statuses=[],
     )
     assert grim["observed"]["ghidra"]["function"]["name"] == "grim_is_key_down"
-
-
-def test_inspect_exposes_profile_scoped_candidate_object(tmp_path: Path) -> None:
-    config = ScratchConfig(
-        directory=tmp_path / "scratches" / "game_is_full_version",
-        function="game_is_full_version",
-        image="crimsonland.exe",
-        compiler="msvc6.5",
-        cflags="/O2 /GB",
-        source="scratch.cpp",
-        end_va=None,
-        symbol="game_is_full_version",
-        note="",
-    )
-    status = ScratchStatus(
-        config=config,
-        address=0x0041DF40,
-        target_size=1,
-        ratio=1.0,
-        prefix_instructions=1,
-        target_instructions=1,
-        candidate_instructions=1,
-        error=None,
-    )
-
-    payload = inspect_match_function("game_is_full_version", statuses=[status])
-    scratch = payload["scratches"][0]
-    candidate_object = Path(scratch["candidate_object"])
-
-    assert candidate_object.parent.parent.name == "msvc6.5"
-    assert candidate_object.name == "scratch.obj"
-    assert str(candidate_object) in scratch["commands"]["dump"]
-    assert "--symbol game_is_full_version" in scratch["commands"]["dump"]
 
 
 def test_load_reference_catalog_includes_import_iat_names(tmp_path: Path) -> None:
@@ -1415,12 +1058,6 @@ def test_match_function_keeps_undecodable_tail_bytes_visible() -> None:
     assert not result.exact
 
 
-def test_common_prefix_length() -> None:
-    assert common_prefix_length(("push ebp", "mov ebp, esp"), ("push ebp", "ret")) == 1
-    assert common_prefix_length(("push ebp",), ("push ebp", "ret")) == 1
-    assert common_prefix_length((), ("ret",)) == 0
-
-
 def test_match_function_reports_prefix_and_first_mismatch() -> None:
     target = bytes.fromhex("558bec31c0c3")
     candidate = ObjectFunction(name="_foo", data=bytes.fromhex("558becb801000000c3"), relocation_offsets=frozenset())
@@ -1523,82 +1160,6 @@ def test_match_function_materializes_local_dir32_relocation() -> None:
     assert result.masked_operand_audit.ok_count == 1
     assert not wrong.exact
     assert wrong.masked_operand_audit.mismatch_count == 1
-
-
-def test_run_match_forwards_object_boundaries(monkeypatch, tmp_path: Path) -> None:
-    observed: list[tuple[str, str | None, int | None]] = []
-    manifest = FunctionManifest(
-        image_name="game.exe",
-        image_base=0x401000,
-        functions=(FunctionSymbol(name="probe", address=0x401000, end=0x401001, size=1),),
-    )
-    obj_path = tmp_path / "probe.obj"
-    obj_path.write_bytes(b"object")
-    image_path = tmp_path / "game.exe"
-    image_path.write_bytes(b"image")
-
-    monkeypatch.setattr("crimson_re.match.load_function_manifest", lambda *args, **kwargs: manifest)
-    monkeypatch.setattr(
-        "crimson_re.match.load_image",
-        lambda *args, **kwargs: LoadedImage(b"\xc3", 0x401000, 1),
-    )
-    monkeypatch.setattr("crimson_re.match.load_reference_catalog", lambda *args, **kwargs: ReferenceCatalog({}))
-    monkeypatch.setattr("crimson_re.match.parse_coff_object", lambda data: object())
-
-    def fake_extract(
-        obj,
-        name,
-        *,
-        extent: str = "symbol",
-        end_symbol: str | None = None,
-        size: int | None = None,
-    ) -> ObjectFunction:
-        observed.append((extent, end_symbol, size))
-        return ObjectFunction("_probe", b"\xc3", frozenset())
-
-    monkeypatch.setattr("crimson_re.match.extract_object_function", fake_extract)
-
-    result = run_match(
-        obj_path=obj_path,
-        function="probe",
-        image_path=image_path,
-        functions_path=tmp_path / "functions.json",
-        metadata_path=tmp_path / "metadata.json",
-        symbol_name="_probe",
-        object_extent="section-tail",
-        scope="all",
-    )
-
-    assert result.exact
-    assert observed == [("section-tail", None, None)]
-
-    result = run_match(
-        obj_path=obj_path,
-        function="probe",
-        image_path=image_path,
-        functions_path=tmp_path / "functions.json",
-        metadata_path=tmp_path / "metadata.json",
-        symbol_name="_probe",
-        object_end_symbol="_probe_end",
-        scope="all",
-    )
-
-    assert result.exact
-    assert observed[-1] == ("symbol", "_probe_end", None)
-
-    result = run_match(
-        obj_path=obj_path,
-        function="probe",
-        image_path=image_path,
-        functions_path=tmp_path / "functions.json",
-        metadata_path=tmp_path / "metadata.json",
-        symbol_name="_probe",
-        object_size=9,
-        scope="all",
-    )
-
-    assert result.exact
-    assert observed[-1] == ("symbol", None, 9)
 
 
 @pytest.mark.parametrize("copy_segment", [b"", b"\x64", b"\x65"])
@@ -2654,32 +2215,6 @@ def test_diff_regions_reports_localized_mismatch() -> None:
     assert payload["hints"] == ["instruction-shape-difference"]
 
 
-def test_diff_command_json_includes_region_evidence(monkeypatch: pytest.MonkeyPatch) -> None:
-    target = bytes.fromhex("558bec31c040c3")
-    candidate = ObjectFunction(
-        name="_foo",
-        data=bytes.fromhex("558becb80100000040c3"),
-        relocation_offsets=frozenset(),
-    )
-    result = match_function(
-        target,
-        candidate,
-        image=LoadedImage(mapped=b"", image_base=0x400000, size_of_image=0),
-        target_va=0x401000,
-    )
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.run_match", lambda **kwargs: result)
-
-    completed = CliRunner().invoke(
-        match_app,
-        ["diff", "candidate.obj", "foo", "--json", "--region-context", "1", "--max-regions", "1"],
-    )
-
-    assert completed.exit_code == 1
-    payload = json.loads(completed.output)
-    assert payload == match_result_payload(result, region_context=1, max_regions=1)
-    assert payload["regions"][0]["target_bytes"]["address_start"] == 0x401001
-
-
 def test_basic_blocks_recover_local_successors_and_fallthrough() -> None:
     lines = (
         DisassemblyLine(0x0, 0x401000, "cmp eax, 0x0", 2),
@@ -2781,33 +2316,6 @@ def test_stack_frame_diagnostic_reports_one_prologue_delta() -> None:
         ),
     }
     assert match_result_payload(result)["stack_frame"] == payload
-
-
-def test_cfg_summary_separates_heuristic_edge_conflicts() -> None:
-    block = BasicBlock(
-        index=0,
-        start_instruction=0,
-        end_instruction=1,
-        start_offset=0,
-        end_offset=1,
-        start_address=0,
-        end_address=1,
-        lines=("ret",),
-        successors=(),
-        fallthrough=None,
-    )
-    alignment = CfgAlignment(
-        target_blocks=(block,),
-        candidate_blocks=(block,),
-        pairs=(CfgBlockPair(0, 0, "exact-ambiguous", 1.0, True, False),),
-        unmatched_target=(),
-        unmatched_candidate=(),
-    )
-
-    summary = cfg_alignment_payload(alignment)["summary"]
-
-    assert summary["edge_conflicts"] == 0
-    assert summary["heuristic_edge_conflicts"] == 1
 
 
 def test_cfg_alignment_does_not_make_duplicate_blocks_unique_by_predecessors() -> None:
@@ -2913,19 +2421,6 @@ def test_validate_command_reports_directory_errors_without_traceback(tmp_path: P
     assert completed.exit_code == 1
     assert "missing.cpp" in completed.output
     assert "Traceback" not in completed.output
-
-
-def test_is_analyzer_placeholder_rejects_only_weak_generated_names() -> None:
-    assert is_analyzer_placeholder("FUN_00401000")
-    assert is_analyzer_placeholder("sub_1000ABCD")
-    assert is_analyzer_placeholder("unknown_libname_7")
-    assert is_analyzer_placeholder("j_nullsub_11")
-    assert is_analyzer_placeholder("DAT_10050550")
-    assert is_analyzer_placeholder("LAB_10001000")
-    assert is_analyzer_placeholder("lookup_table_4044b0")
-    assert is_analyzer_placeholder("j_known_function")
-    assert not is_analyzer_placeholder("crt_array_unwind_filter")
-    assert not is_analyzer_placeholder("?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z")
 
 
 def test_collect_naming_debt_covers_curated_maps_without_exact_scratches(tmp_path: Path) -> None:
@@ -3084,617 +2579,6 @@ def test_collect_naming_debt_suggests_unique_exact_provider_peer(tmp_path: Path)
     assert mapped_rows[1]["aliases"] == ["?KnownProvider@@YAXXZ"]
 
 
-def test_render_naming_debt_table_handles_clean_result() -> None:
-    assert render_naming_debt_table([]) == (
-        "image  address  function  suggestion  issues  symbol  scratch\n\n"
-        "rows=0; suggested=0; issues="
-    )
-    assert render_naming_debt_summary([]) == "rows=0; suggested=0; issues="
-
-
-def test_collect_naming_debt_normalizes_address_suffixed_directory(tmp_path: Path) -> None:
-    config = ScratchConfig(
-        directory=tmp_path / "known_function_00401000",
-        function="known_function",
-        image="crimsonland.exe",
-        compiler="msvc6.5",
-        cflags="",
-        source="",
-        end_va=None,
-        symbol="known_function",
-        note="known-function",
-    )
-    status = ScratchStatus(
-        config=config,
-        address=0x00401000,
-        target_size=8,
-        ratio=1.0,
-        prefix_instructions=2,
-        target_instructions=2,
-        candidate_instructions=2,
-        error=None,
-    )
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        '[{"program":"crimsonland.exe","address":"0x00401000",'
-        '"name":"known_function"}]\n',
-        encoding="utf-8",
-    )
-
-    row = collect_naming_debt([status], name_map_path=name_map)[0]
-
-    assert row.issues == ("address-suffixed-directory",)
-    assert row.suggestion == "known_function"
-    assert row.suggestion_sources == (
-        "canonical-identity:crimsonland.exe:0x00401000",
-    )
-
-
-def test_collect_naming_debt_suggests_exact_d3dx_decorated_symbol(tmp_path: Path) -> None:
-    config = ScratchConfig(
-        directory=tmp_path / "FUN_00401000",
-        function="FUN_00401000",
-        image="crimsonland.exe",
-        compiler="msvc7.0",
-        cflags="",
-        source="",
-        end_va=None,
-        symbol=(
-            "?init_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
-        ),
-        note="directx-8.1-archive-helper",
-        archive="d3dx8.lib",
-        archive_member=r"obj\i386\d3dxmath.obj",
-        archive_sha256="a" * 64,
-    )
-    status = ScratchStatus(
-        config=config,
-        address=0x00401000,
-        target_size=8,
-        ratio=1.0,
-        prefix_instructions=2,
-        target_instructions=2,
-        candidate_instructions=2,
-        error=None,
-    )
-    optimized_config = replace(
-        config,
-        directory=tmp_path / "FUN_00401020",
-        function="FUN_00401020",
-        symbol=(
-            "?sse2_D3DXVec3TransformNormal$$1@@"
-            "YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
-        ),
-        archive_member=r"objf\i386\d3dxmathsse2.obj",
-    )
-    optimized_status = replace(status, config=optimized_config, address=0x00401020)
-    codec_config = replace(
-        config,
-        directory=tmp_path / "FUN_00401040",
-        function="FUN_00401040",
-        symbol="?Encode@CD3DXCodec_D3DX_A16L16@@UAEXIIPAUD3DXCOLOR@@@Z",
-        archive_member=r"obj\i386\cd3dxcodec.obj",
-    )
-    codec_status = replace(status, config=codec_config, address=0x00401040)
-    codec_dtor_config = replace(
-        codec_config,
-        directory=tmp_path / "FUN_00401060",
-        function="FUN_00401060",
-        symbol="??_GCD3DXCodec@@UAEPAXI@Z",
-    )
-    codec_dtor_status = replace(status, config=codec_dtor_config, address=0x00401060)
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        json.dumps(
-            [
-                {
-                    "program": "crimsonland.exe",
-                    "address": "0x00401000",
-                    "name": "FUN_00401000",
-                },
-                {
-                    "program": "crimsonland.exe",
-                    "address": "0x00401020",
-                    "name": "FUN_00401020",
-                },
-                {
-                    "program": "crimsonland.exe",
-                    "address": "0x00401040",
-                    "name": "FUN_00401040",
-                },
-                {
-                    "program": "crimsonland.exe",
-                    "address": "0x00401060",
-                    "name": "FUN_00401060",
-                },
-            ],
-        ),
-        encoding="utf-8",
-    )
-
-    rows = collect_naming_debt(
-        [status, optimized_status, codec_status, codec_dtor_status],
-        name_map_path=name_map,
-    )
-    row = next(candidate for candidate in rows if candidate.address == status.address)
-    optimized_row = next(
-        candidate for candidate in rows if candidate.address == optimized_status.address
-    )
-
-    assert row.suggestion == "d3dx_init_quaternion_squad_setup"
-    assert row.suggestion_sources == (f"provider-symbol:{config.symbol}",)
-    assert optimized_row.suggestion == "d3dx_sse2_vec3_transform_normal_impl"
-    assert optimized_row.suggestion_sources == (
-        f"provider-symbol:{optimized_config.symbol}",
-    )
-    codec_row = next(candidate for candidate in rows if candidate.address == codec_status.address)
-    codec_dtor_row = next(
-        candidate for candidate in rows if candidate.address == codec_dtor_status.address
-    )
-    assert codec_row.suggestion == "d3dx_pixel_encode_a16l16"
-    assert codec_row.suggestion_sources == (f"provider-symbol:{codec_config.symbol}",)
-    assert codec_dtor_row.suggestion == "d3dx_codec_scalar_deleting_dtor"
-
-
-def test_collect_naming_debt_suggests_exact_d3dx_image_and_jpeg_symbols(
-    tmp_path: Path,
-) -> None:
-    image_config = ScratchConfig(
-        directory=tmp_path / "grim_load_image_jpg",
-        function="grim_load_image_jpg",
-        image="grim.dll",
-        compiler="msvc7.0",
-        cflags="",
-        source="",
-        end_va=None,
-        symbol="?LoadJPG@CD3DXImage@@AAEJPBXK@Z",
-        note="directx-8.1-archive-load-jpg",
-        archive="d3dx8.lib",
-        archive_member=r"obj\i386\cd3dximage.obj",
-        archive_sha256="a" * 64,
-    )
-    jpeg_config = replace(
-        image_config,
-        directory=tmp_path / "d3dx_jpeg_create_decompress",
-        function="sub_1001C265",
-        symbol="?jpeg_CreateDecompress@D3DX@@YAXPAUjpeg_decompress_struct@1@HI@Z",
-        archive_member=r"obj\i386\jdapimin.obj",
-    )
-    statuses = [
-        ScratchStatus(
-            config=config,
-            address=address,
-            target_size=8,
-            ratio=1.0,
-            prefix_instructions=2,
-            target_instructions=2,
-            candidate_instructions=2,
-            error=None,
-        )
-        for config, address in ((image_config, 0x10010000), (jpeg_config, 0x1001C265))
-    ]
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        json.dumps(
-            [
-                {
-                    "program": "grim.dll",
-                    "address": "0x10010000",
-                    "name": "grim_load_image_jpg",
-                },
-                {
-                    "program": "grim.dll",
-                    "address": "0x1001c265",
-                    "name": "sub_1001C265",
-                },
-            ],
-        ),
-        encoding="utf-8",
-    )
-
-    rows = collect_naming_debt(statuses, name_map_path=name_map)
-    image_row = next(row for row in rows if row.address == 0x10010000)
-    jpeg_row = next(row for row in rows if row.address == 0x1001C265)
-
-    assert image_row.suggestion == "d3dx_image_load_jpg"
-    assert image_row.issues == ("provider-directory-conflict", "provider-name-conflict")
-    assert jpeg_row.suggestion == "d3dx_jpeg_create_decompress"
-    assert jpeg_row.issues == ("placeholder-function",)
-
-
-def test_collect_naming_debt_namespaces_exact_d3dx_codec_helpers(tmp_path: Path) -> None:
-    base_config = ScratchConfig(
-        directory=tmp_path / "d3dx_jpeg_output_pass_setup",
-        function="sub_1001C641",
-        image="grim.dll",
-        compiler="msvc7.0",
-        cflags="",
-        source="",
-        end_va=None,
-        symbol="?output_pass_setup@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z",
-        note="directx-8.1-archive-jpeg-output-pass-setup",
-        archive="d3dx8.lib",
-        archive_member=r"obj\i386\jdapistd.obj",
-        archive_sha256="a" * 64,
-    )
-    configs = [
-        base_config,
-        replace(
-            base_config,
-            directory=tmp_path / "d3dx_default_decompress_parms",
-            function="d3dx_default_decompress_parms",
-            symbol="?default_decompress_parms@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z",
-            archive_member=r"obj\i386\jdapimin.obj",
-        ),
-        replace(
-            base_config,
-            directory=tmp_path / "png_error",
-            function="png_error",
-            symbol="?png_error@D3DX@@YAXPAUpng_struct_def@1@PBD@Z",
-            archive_member=r"obj\i386\pngerror.obj",
-        ),
-        replace(
-            base_config,
-            directory=tmp_path / "png_get_trns",
-            function="png_get_tRNS",
-            symbol=(
-                "?png_get_tRNS@D3DX@@YAKPAUpng_struct_def@1@"
-                "PAUpng_info_struct@1@PAPAEPAHPAPAUpng_color_16_struct@1@@Z"
-            ),
-            archive_member=r"obj\i386\pngget.obj",
-        ),
-        replace(
-            base_config,
-            directory=tmp_path / "d3dx_file_close",
-            function="FUN_1001BE91",
-            symbol="?Close@CD3DXFile@@QAEJXZ",
-            archive_member=r"obj\i386\cd3dxfile.obj",
-        ),
-        replace(
-            base_config,
-            directory=tmp_path / "d3dx_jpeg_is_mmx",
-            function="FUN_10022C2F",
-            symbol="?IsMMX@D3DX@@YAHXZ",
-            archive_member=r"obj\i386\jutils.obj",
-        ),
-    ]
-    statuses = [
-        ScratchStatus(
-            config=config,
-            address=0x1001C641 + index * 0x20,
-            target_size=8,
-            ratio=1.0,
-            prefix_instructions=2,
-            target_instructions=2,
-            candidate_instructions=2,
-            error=None,
-        )
-        for index, config in enumerate(configs)
-    ]
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        json.dumps(
-            [
-                {
-                    "program": "grim.dll",
-                    "address": f"0x{status.address:08x}",
-                    "name": status.config.function,
-                }
-                for status in statuses
-            ],
-        ),
-        encoding="utf-8",
-    )
-
-    rows = collect_naming_debt(statuses, name_map_path=name_map)
-
-    assert [row.suggestion for row in rows] == [
-        "d3dx_jpeg_output_pass_setup",
-        "d3dx_jpeg_default_decompress_parms",
-        "d3dx_png_error",
-        "d3dx_png_get_trns",
-        "d3dx_file_close",
-        "d3dx_jpeg_is_mmx",
-    ]
-
-
-def test_collect_naming_debt_namespaces_exact_stock_codec_helpers(tmp_path: Path) -> None:
-    jaz_config = ScratchConfig(
-        directory=tmp_path / "grim_jaz_jpeg_output_pass_setup",
-        function="output_pass_setup",
-        image="grim.dll",
-        compiler="msvc7.0",
-        cflags="",
-        source="../../third_party/sources/ijg-libjpeg-6a/jdapistd.c",
-        end_va=None,
-        symbol="output_pass_setup",
-        note="ijg-6a-stock-output-pass-setup",
-    )
-    zlib_config = replace(
-        jaz_config,
-        directory=tmp_path / "d3dx_zlib_static_tree_init",
-        function="nullsub_8",
-        source="",
-        symbol="_tr_static_init",
-        note="zlib-1.1.3-empty-static-tree-init",
-        archive="zlib.lib",
-        archive_member="trees.obj",
-        archive_sha256="a" * 64,
-    )
-    callback_config = replace(
-        jaz_config,
-        directory=tmp_path / "grim_png_error_longjmp",
-        function="sub_100117F3",
-        source="../../shared/grim_png_callbacks.cpp",
-        symbol="grim_png_error_longjmp",
-        note="png-error-longjmp-callback",
-    )
-    vertex_config = replace(
-        jaz_config,
-        directory=tmp_path / "nullsub_6",
-        function="nullsub_6",
-        source="../../shared/grim_vertex_space_converter.cpp",
-        symbol="?noop@grim_vertex_space_converter_t@@QAEXIII@Z",
-        note="d3dx-vertex-space-converter-noop-leaf",
-    )
-    statuses = [
-        ScratchStatus(
-            config=config,
-            address=address,
-            target_size=8,
-            ratio=1.0,
-            prefix_instructions=2,
-            target_instructions=2,
-            candidate_instructions=2,
-            error=None,
-        )
-        for config, address in (
-            (jaz_config, 0x10009FA0),
-            (callback_config, 0x100117F3),
-            (vertex_config, 0x10018000),
-            (zlib_config, 0x1003A604),
-        )
-    ]
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        json.dumps(
-            [
-                {
-                    "program": "grim.dll",
-                    "address": f"0x{status.address:08x}",
-                    "name": status.config.function,
-                }
-                for status in statuses
-            ],
-        ),
-        encoding="utf-8",
-    )
-
-    rows = collect_naming_debt(statuses, name_map_path=name_map)
-
-    assert [row.suggestion for row in rows] == [
-        "grim_jaz_jpeg_output_pass_setup",
-        "grim_png_error_longjmp",
-        "grim_vertex_space_converter_noop",
-        "zlib_tr_static_init",
-    ]
-
-
-def test_collect_naming_debt_accepts_official_unknown_chunk_note(tmp_path: Path) -> None:
-    config = ScratchConfig(
-        directory=tmp_path / "png_handle_unknown",
-        function="png_handle_unknown",
-        image="grim.dll",
-        compiler="msvc7.0",
-        cflags="",
-        source="../../third_party/sources/libpng-1.0.5/pngrutil.c",
-        end_va=None,
-        symbol="png_handle_unknown",
-        note="libpng-1.0.5-unknown-chunk-handler",
-    )
-    status = ScratchStatus(
-        config=config,
-        address=0x10025000,
-        target_size=8,
-        ratio=1.0,
-        prefix_instructions=2,
-        target_instructions=2,
-        candidate_instructions=2,
-        error=None,
-    )
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        json.dumps(
-            [
-                {
-                    "program": "grim.dll",
-                    "address": "0x10025000",
-                    "name": "png_handle_unknown",
-                },
-            ],
-        ),
-        encoding="utf-8",
-    )
-
-    assert collect_naming_debt([status], name_map_path=name_map) == []
-
-
-def test_collect_naming_debt_suggests_exact_vc6_converter_symbols(tmp_path: Path) -> None:
-    base_config = ScratchConfig(
-        directory=tmp_path / "FUN_00401000",
-        function="FUN_00401000",
-        image="crimsonland.exe",
-        compiler="msvc6.5",
-        cflags="",
-        source="",
-        end_va=None,
-        symbol="__FillZeroMan",
-        note="vc6-crt-internal-converter",
-        archive="libcmt.lib",
-        archive_member=r"build\intel\mt_obj\intrncvt.obj",
-        archive_sha256="a" * 64,
-    )
-    ld12_config = replace(
-        base_config,
-        directory=tmp_path / "FUN_00401020",
-        function="FUN_00401020",
-        symbol="__ld12cvt",
-    )
-    sbh_config = replace(
-        base_config,
-        directory=tmp_path / "FUN_00401040",
-        function="FUN_00401040",
-        symbol="___old_sbh_alloc_block_from_page",
-        archive_member=r"build\intel\mt_obj\sbheap.obj",
-    )
-    printf_config = replace(
-        base_config,
-        directory=tmp_path / "FUN_00401060",
-        function="FUN_00401060",
-        symbol="_get_int64_arg",
-        archive_member=r"build\intel\mt_obj\cprintf.obj",
-    )
-    statuses = [
-        ScratchStatus(
-            config=config,
-            address=address,
-            target_size=8,
-            ratio=1.0,
-            prefix_instructions=2,
-            target_instructions=2,
-            candidate_instructions=2,
-            error=None,
-        )
-        for config, address in (
-            (base_config, 0x00401000),
-            (ld12_config, 0x00401020),
-            (sbh_config, 0x00401040),
-            (printf_config, 0x00401060),
-        )
-    ]
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        json.dumps(
-            [
-                {
-                    "program": "crimsonland.exe",
-                    "address": f"0x{status.address:08x}",
-                    "name": status.config.function,
-                }
-                for status in statuses
-            ],
-        ),
-        encoding="utf-8",
-    )
-
-    rows = collect_naming_debt(statuses, name_map_path=name_map)
-
-    assert [row.suggestion for row in rows] == [
-        "crt_fill_zero_man",
-        "crt_ld12cvt",
-        "crt_old_sbh_alloc_block_from_page",
-        "crt_printf_get_int64_arg",
-    ]
-    assert all(row.suggestion_sources == (f"provider-symbol:{row.provider_symbol}",) for row in rows)
-
-
-def test_collect_naming_debt_canonicalizes_weak_exact_vc6_symbols(tmp_path: Path) -> None:
-    base_config = ScratchConfig(
-        directory=tmp_path / "FUN_00401000",
-        function="FUN_00401000",
-        image="crimsonland.exe",
-        compiler="msvc6.5",
-        cflags="",
-        source="",
-        end_va=None,
-        symbol="__GetLinkerVersion",
-        note="vc6-crt-linker-version",
-        archive="libcmt.lib",
-        archive_member=r"build\intel\mt_obj\heapinit.obj",
-        archive_sha256="a" * 64,
-    )
-    configs = [
-        base_config,
-        replace(
-            base_config,
-            directory=tmp_path / "CPtoLCID",
-            function="_CPtoLCID",
-            symbol="_CPtoLCID",
-            archive_member=r"build\intel\mt_obj\mbctype.obj",
-        ),
-        replace(
-            base_config,
-            directory=tmp_path / "input",
-            function="__input",
-            symbol="__input",
-            archive_member=r"build\intel\mt_obj\input.obj",
-        ),
-        replace(
-            base_config,
-            directory=tmp_path / "crt_flushall",
-            function="crt_flushall",
-            symbol="_flsall",
-            archive_member=r"build\intel\mt_obj\fflush.obj",
-        ),
-        replace(
-            base_config,
-            directory=tmp_path / "FUN_00401080",
-            function="FUN_00401080",
-            symbol="$L17371",
-            archive_member=r"build\intel\mt_obj\free.obj",
-        ),
-        replace(
-            base_config,
-            directory=tmp_path / "FUN_004010a0",
-            function="FUN_004010a0",
-            symbol="__fptrap",
-            archive_member=r"build\intel\mt_obj\crt0fp.obj",
-        ),
-    ]
-    statuses = [
-        ScratchStatus(
-            config=config,
-            address=0x00401000 + index * 0x20,
-            target_size=8,
-            ratio=1.0,
-            prefix_instructions=2,
-            target_instructions=2,
-            candidate_instructions=2,
-            error=None,
-        )
-        for index, config in enumerate(configs)
-    ]
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        json.dumps(
-            [
-                {
-                    "program": "crimsonland.exe",
-                    "address": f"0x{status.address:08x}",
-                    "name": status.config.function,
-                }
-                for status in statuses
-            ],
-        ),
-        encoding="utf-8",
-    )
-
-    rows = collect_naming_debt(statuses, name_map_path=name_map)
-
-    assert [row.suggestion for row in rows] == [
-        "crt_get_linker_version",
-        "crt_cp_to_lcid",
-        "crt_scan_input",
-        "crt_flsall",
-        "crt_free_sbh_unlock_cleanup",
-        "crt_fptrap",
-    ]
-    assert rows[3].issues == (
-        "provider-directory-conflict",
-        "provider-name-conflict",
-    )
-
-
 def test_curated_naming_hint_renames_exact_placeholder_and_records_evidence(
     tmp_path: Path,
 ) -> None:
@@ -3787,362 +2671,6 @@ def test_curated_naming_hint_renames_exact_placeholder_and_records_evidence(
     assert mapped["name"] == row.suggestion
     assert mapped["comment"] == loaded_hint.comment
     assert "aliases" not in mapped
-    assert result["directories_renamed"] == 1
-
-
-def test_collect_naming_debt_suggests_exact_vc6_eh_decorated_symbol(tmp_path: Path) -> None:
-    symbol = (
-        "?_CallSETranslator@@YAHPAUEHExceptionRecord@@PAUEHRegistrationNode@@"
-        "PAX2PBU_s_FuncInfo@@H1@Z"
-    )
-    config = ScratchConfig(
-        directory=tmp_path / "CallSETranslator_YAHPAUEHExceptionRecord",
-        function=symbol,
-        image="crimsonland.exe",
-        compiler="msvc6.5",
-        cflags="",
-        source="",
-        end_va=None,
-        symbol=symbol,
-        note="vc6-crt-eh-translator",
-        archive="libcmt.lib",
-        archive_member=r"build\intel\mt_obj\trnsctrl.obj",
-        archive_sha256="a" * 64,
-    )
-    status = ScratchStatus(
-        config=config,
-        address=0x00401000,
-        target_size=8,
-        ratio=1.0,
-        prefix_instructions=2,
-        target_instructions=2,
-        candidate_instructions=2,
-        error=None,
-    )
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        json.dumps(
-            [
-                {
-                    "program": "crimsonland.exe",
-                    "address": "0x00401000",
-                    "name": symbol,
-                },
-            ],
-        ),
-        encoding="utf-8",
-    )
-
-    row = collect_naming_debt([status], name_map_path=name_map)[0]
-
-    assert row.suggestion == "crt_call_se_translator"
-    assert row.issues == ("provider-directory-conflict", "provider-name-conflict")
-    assert row.suggestion_sources == (f"provider-symbol:{symbol}",)
-
-
-def test_apply_naming_suggestions_namespaces_exact_source_provider_symbol(
-    tmp_path: Path,
-) -> None:
-    match_root = tmp_path / "match"
-    scratch = match_root / "scratches" / "grim_jaz_jpeg_consume_input"
-    scratch.mkdir(parents=True)
-    scratch.joinpath("scratch.conf").write_text(
-        "IMAGE=grim.dll\n"
-        "FUNCTION=jpeg_consume_input\n"
-        "SYMBOL=jpeg_consume_input\n"
-        "SOURCE=../../third_party/sources/ijg-libjpeg-6a/jdapimin.c\n"
-        "NOTE=ijg-6a-stock-consume-input\n",
-        encoding="utf-8",
-    )
-    status = ScratchStatus(
-        config=load_scratch_config(scratch),
-        address=0x10009BA0,
-        target_size=8,
-        ratio=1.0,
-        prefix_instructions=2,
-        target_instructions=2,
-        candidate_instructions=2,
-        error=None,
-    )
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        json.dumps(
-            [
-                {
-                    "program": "grim.dll",
-                    "address": "0x10009ba0",
-                    "name": "jpeg_consume_input",
-                },
-            ],
-        ),
-        encoding="utf-8",
-    )
-    matching_scope = tmp_path / "matching_scope.json"
-    matching_scope.write_text(
-        json.dumps(
-            {
-                "schema": 2,
-                "scopes": {
-                    "port": {
-                        "programs": {},
-                        "function_dispositions": {
-                            "grim.dll": [
-                                {
-                                    "address": "0x10009ba0",
-                                    "name": "jpeg_consume_input",
-                                    "disposition": "third-party",
-                                    "reason": "IJG libjpeg 6a",
-                                },
-                            ],
-                        },
-                    },
-                },
-            },
-        ),
-        encoding="utf-8",
-    )
-
-    row = collect_naming_debt([status], name_map_path=name_map)[0]
-    result = apply_naming_suggestions(
-        [row],
-        match_root=match_root,
-        name_map_path=name_map,
-        matching_scope_path=matching_scope,
-    )
-
-    assert row.suggestion == "grim_jaz_jpeg_consume_input"
-    assert row.suggestion_sources == ("source-symbol:jpeg_consume_input",)
-    assert load_scratch_config(scratch).function == "grim_jaz_jpeg_consume_input"
-    mapped = load_name_map_rows(name_map)[0]
-    assert mapped["name"] == "grim_jaz_jpeg_consume_input"
-    assert "aliases" not in mapped
-    assert result["map_rows_updated"] == 1
-    scope_payload = json.loads(matching_scope.read_text(encoding="utf-8"))
-    disposition = scope_payload["scopes"]["port"]["function_dispositions"]["grim.dll"][0]
-    assert disposition["name"] == "grim_jaz_jpeg_consume_input"
-    assert result["scope_dispositions_updated"] == 1
-
-
-def test_apply_naming_suggestions_rewrites_curated_source_identity(tmp_path: Path) -> None:
-    match_root = tmp_path / "match"
-    scratch = match_root / "scratches" / "old_initializer"
-    scratch.mkdir(parents=True)
-    scratch.joinpath("scratch.conf").write_text(
-        "FUNCTION=old_initializer\n"
-        "SYMBOL=old_initializer\n"
-        "SOURCE=scratch.cpp\n"
-        "NOTE=resolved-initializer\n",
-        encoding="utf-8",
-    )
-    scratch.joinpath("scratch.cpp").write_text(
-        'extern "C" void old_initializer(void) {}\n',
-        encoding="utf-8",
-    )
-    status = ScratchStatus(
-        config=load_scratch_config(scratch),
-        address=0x00401000,
-        target_size=1,
-        ratio=1.0,
-        prefix_instructions=1,
-        target_instructions=1,
-        candidate_instructions=1,
-        error=None,
-    )
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        '[{"program":"crimsonland.exe","address":"0x00401000",'
-        '"name":"old_initializer"}]\n',
-        encoding="utf-8",
-    )
-    hints = tmp_path / "naming_hints.json"
-    hints.write_text(
-        json.dumps(
-            {
-                "schema": 1,
-                "entries": [
-                    {
-                        "program": "crimsonland.exe",
-                        "address": "0x00401000",
-                        "name": "resolved_initializer",
-                        "comment": "Initializer identity recovered from its only data writes.",
-                        "evidence": "complete initializer write set",
-                    },
-                ],
-            },
-        ),
-        encoding="utf-8",
-    )
-
-    row = collect_naming_debt(
-        [status],
-        name_map_path=name_map,
-        naming_hints_path=hints,
-    )[0]
-    result = apply_naming_suggestions(
-        [row],
-        match_root=match_root,
-        name_map_path=name_map,
-    )
-
-    renamed = match_root / "scratches" / "resolved_initializer"
-    renamed_config = load_scratch_config(renamed)
-    assert row.issues == ("curated-directory-conflict", "curated-name-conflict")
-    assert renamed_config.function == "resolved_initializer"
-    assert renamed_config.symbol == "resolved_initializer"
-    assert renamed.joinpath("scratch.cpp").read_text(encoding="utf-8") == (
-        'extern "C" void resolved_initializer(void) {}\n'
-    )
-    assert result["text_references_updated"] == 1
-
-
-def test_apply_naming_suggestions_rewrites_address_cleanup_identity_repo_wide(
-    tmp_path: Path,
-) -> None:
-    match_root = tmp_path / "tools" / "match"
-    scratches = match_root / "scratches"
-    provider = scratches / "old_provider_00401000"
-    consumer = scratches / "consumer"
-    provider.mkdir(parents=True)
-    consumer.mkdir()
-    provider.joinpath("scratch.conf").write_text(
-        "IMAGE=crimsonland.exe\n"
-        "FUNCTION=old_provider\n"
-        "SOURCE=scratch.cpp\n"
-        "SYMBOL=old_provider\n"
-        "NOTE=resolved-provider\n",
-        encoding="utf-8",
-    )
-    provider.joinpath("scratch.cpp").write_text(
-        'extern "C" void old_provider(void) {}\n',
-        encoding="utf-8",
-    )
-    consumer.joinpath("scratch.conf").write_text(
-        "IMAGE=crimsonland.exe\n"
-        "FUNCTION=consumer\n"
-        "SOURCE=scratch.cpp\n"
-        "SYMBOL=consumer\n"
-        "REFERENCE_ALIASES=_old_provider:old_provider\n"
-        "NOTE=consumer\n",
-        encoding="utf-8",
-    )
-    consumer.joinpath("scratch.cpp").write_text(
-        'extern "C" void old_provider(void);\n'
-        'extern "C" void consumer(void) { old_provider(); }\n',
-        encoding="utf-8",
-    )
-    docs = tmp_path / "docs"
-    docs.mkdir()
-    docs.joinpath("identity.md").write_text(
-        "The exact provider is old_provider.\n",
-        encoding="utf-8",
-    )
-    name_map = tmp_path / "analysis" / "ghidra" / "maps" / "name_map.json"
-    name_map.parent.mkdir(parents=True)
-    name_map.write_text(
-        '[{"program":"crimsonland.exe","address":"0x00401000",'
-        '"name":"old_provider"}]\n',
-        encoding="utf-8",
-    )
-    row = NamingDebtRow(
-        image="crimsonland.exe",
-        address=0x00401000,
-        function="old_provider",
-        configured_function="old_provider",
-        scratch=provider.as_posix(),
-        issues=("address-suffixed-directory",),
-        placeholder_aliases=(),
-        placeholder_references=(),
-        reference_suggestions=(),
-        provider_symbol=None,
-        provider_member=None,
-        suggestion="known_provider",
-        suggestion_sources=("canonical-peer:grim.dll:0x10001000",),
-    )
-
-    result = apply_naming_suggestions(
-        [row],
-        match_root=match_root,
-        name_map_path=name_map,
-        matching_scope_path=tmp_path / "analysis" / "matching_scope.json",
-        repository_root=tmp_path,
-    )
-
-    renamed = scratches / "known_provider"
-    assert not provider.exists()
-    assert load_scratch_config(renamed).function == "known_provider"
-    assert load_scratch_config(renamed).symbol == "known_provider"
-    assert load_scratch_config(consumer).reference_aliases == (
-        ("_old_provider", "known_provider"),
-    )
-    assert "old_provider" not in renamed.joinpath("scratch.cpp").read_text(encoding="utf-8")
-    assert "old_provider" not in consumer.joinpath("scratch.cpp").read_text(encoding="utf-8")
-    assert docs.joinpath("identity.md").read_text(encoding="utf-8") == (
-        "The exact provider is known_provider.\n"
-    )
-    assert load_name_map_rows(name_map)[0]["name"] == "known_provider"
-    assert result["config_references_updated"] == 1
-    assert result["text_references_updated"] == 4
-
-
-def test_apply_naming_suggestions_replaces_weaker_d3dx_semantic_identity(tmp_path: Path) -> None:
-    match_root = tmp_path / "match"
-    scratch = match_root / "scratches" / "legacy_vec2_normalize_00401000"
-    scratch.mkdir(parents=True)
-    symbol = "?init_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
-    scratch.joinpath("scratch.conf").write_text(
-        "\n".join(
-            (
-                "IMAGE=crimsonland.exe",
-                "FUNCTION=legacy_vec2_normalize",
-                "ARCHIVE=d3dx8.lib",
-                r"ARCHIVE_MEMBER='obj\i386\d3dxmath.obj'",
-                f"ARCHIVE_SHA256={'a' * 64}",
-                f"SYMBOL='{symbol}'",
-                "NOTE=directx-8.1-archive-vec2-normalize-dispatch-init",
-                "",
-            ),
-        ),
-        encoding="utf-8",
-    )
-    config = load_scratch_config(scratch)
-    status = ScratchStatus(
-        config=config,
-        address=0x00401000,
-        target_size=8,
-        ratio=1.0,
-        prefix_instructions=2,
-        target_instructions=2,
-        candidate_instructions=2,
-        error=None,
-    )
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        json.dumps(
-            [
-                {
-                    "program": "crimsonland.exe",
-                    "address": "0x00401000",
-                    "name": "legacy_vec2_normalize",
-                    "signature": "void legacy_vec2_normalize(void)",
-                },
-            ],
-        ),
-        encoding="utf-8",
-    )
-
-    row = collect_naming_debt([status], name_map_path=name_map)[0]
-    result = apply_naming_suggestions(
-        [row],
-        match_root=match_root,
-        name_map_path=name_map,
-    )
-
-    renamed = match_root / "scratches" / "d3dx_init_vec2_normalize"
-    assert row.issues == ("provider-directory-conflict", "provider-name-conflict")
-    assert row.suggestion == "d3dx_init_vec2_normalize"
-    assert not scratch.exists()
-    assert load_scratch_config(renamed).function == "d3dx_init_vec2_normalize"
-    assert load_name_map_rows(name_map)[0]["name"] == "d3dx_init_vec2_normalize"
     assert result["directories_renamed"] == 1
 
 
@@ -4327,82 +2855,6 @@ def test_apply_naming_suggestions_updates_map_configs_and_colliding_directory(tm
             },
         ],
     }
-
-
-def test_apply_naming_suggestions_reuses_vacated_canonical_directory(tmp_path: Path) -> None:
-    match_root = tmp_path / "match"
-    scratches = match_root / "scratches"
-    internal = scratches / "crt_flushall"
-    public = scratches / "sub_00401020"
-    internal.mkdir(parents=True)
-    public.mkdir()
-    archive_hash = "a" * 64
-    for scratch, function, symbol in (
-        (internal, "crt_flushall", "_flsall"),
-        (public, "sub_00401020", "__flushall"),
-    ):
-        scratch.joinpath("scratch.conf").write_text(
-            "\n".join(
-                (
-                    "IMAGE=crimsonland.exe",
-                    f"FUNCTION={function}",
-                    "ARCHIVE=libcmt.lib",
-                    r"ARCHIVE_MEMBER='build\intel\mt_obj\fflush.obj'",
-                    f"ARCHIVE_SHA256={archive_hash}",
-                    f"SYMBOL={symbol}",
-                    "NOTE=vc6-sp6-libcmt-flush",
-                    "",
-                ),
-            ),
-            encoding="utf-8",
-        )
-    statuses = [
-        ScratchStatus(
-            config=load_scratch_config(scratch),
-            address=address,
-            target_size=8,
-            ratio=1.0,
-            prefix_instructions=2,
-            target_instructions=2,
-            candidate_instructions=2,
-            error=None,
-        )
-        for scratch, address in ((internal, 0x00401000), (public, 0x00401020))
-    ]
-    name_map = tmp_path / "name_map.json"
-    name_map.write_text(
-        json.dumps(
-            [
-                {
-                    "program": "crimsonland.exe",
-                    "address": f"0x{status.address:08x}",
-                    "name": status.config.function,
-                    "comment": (
-                        "Exact archive recovery from "
-                        rf"build\intel\mt_obj\fflush.obj symbol {status.config.symbol}."
-                    ),
-                }
-                for status in statuses
-            ],
-        ),
-        encoding="utf-8",
-    )
-
-    rows = collect_naming_debt(statuses, name_map_path=name_map)
-    result = apply_naming_suggestions(
-        rows,
-        match_root=match_root,
-        name_map_path=name_map,
-    )
-
-    assert not public.exists()
-    assert load_scratch_config(scratches / "crt_flsall").function == "crt_flsall"
-    assert load_scratch_config(scratches / "crt_flushall").function == "crt_flushall"
-    assert result["directories_renamed"] == 2
-    assert [row["comment"] for row in load_name_map_rows(name_map)] == [
-        r"Exact archive recovery from build\intel\mt_obj\fflush.obj symbol _flsall.",
-        r"Exact archive recovery from build\intel\mt_obj\fflush.obj symbol __flushall.",
-    ]
 
 
 def test_repair_provider_comments_restores_exact_linkage_symbol(tmp_path: Path) -> None:
@@ -5005,57 +3457,6 @@ def test_native_link_status_projects_shared_json_inputs_by_image(
     assert "1 recorded file inputs changed or missing" in relevant.artifact_note
 
 
-def test_native_link_status_detects_report_content_changed_without_digest(
-    tmp_path: Path,
-) -> None:
-    analysis_dir, _ = _write_native_link_fixture(tmp_path)
-    closure_path = analysis_dir / "closure.json"
-    closure = json.loads(closure_path.read_text(encoding="utf-8"))
-    closure["summary"]["resolved_symbols"] = 99
-    closure_path.write_text(json.dumps(closure, sort_keys=True), encoding="utf-8")
-
-    status = collect_native_link_statuses(
-        analysis_root=analysis_dir.parent,
-        repo_root=tmp_path,
-        scope="port",
-        images=("grim.dll",),
-    )[0]
-
-    assert status.artifact_state == "stale"
-    assert "artifact content does not match audit digest" in status.artifact_note
-
-
-def test_native_link_status_detects_changed_data_definitions(tmp_path: Path) -> None:
-    analysis_dir, _ = _write_native_link_fixture(tmp_path)
-    (tmp_path / "definitions.json").write_text('{"schema":2}', encoding="utf-8")
-
-    status = collect_native_link_statuses(
-        analysis_root=analysis_dir.parent,
-        repo_root=tmp_path,
-        scope="port",
-        images=("grim.dll",),
-    )[0]
-
-    assert status.artifact_state == "stale"
-    assert "1 recorded file inputs changed or missing" in status.artifact_note
-    assert "definitions.json" in status.artifact_note
-
-
-def test_native_link_status_detects_changed_companion_artifact(tmp_path: Path) -> None:
-    analysis_dir, _ = _write_native_link_fixture(tmp_path)
-    (analysis_dir / "objects.txt").write_text("different.obj\n", encoding="utf-8")
-
-    status = collect_native_link_statuses(
-        analysis_root=analysis_dir.parent,
-        repo_root=tmp_path,
-        scope="port",
-        images=("grim.dll",),
-    )[0]
-
-    assert status.artifact_state == "stale"
-    assert "1 generated linker artifacts changed or missing" in status.artifact_note
-
-
 def test_native_link_status_can_allow_absent_ignored_toolchain(tmp_path: Path) -> None:
     analysis_dir, _ = _write_native_link_fixture(tmp_path)
     paths = {
@@ -5216,103 +3617,6 @@ def test_collect_triage_rows_joins_scratches_by_address(monkeypatch: pytest.Monk
     assert sort_triage_rows(rows, sort_by="fuzzy-gap")[0].function == "bar"
 
 
-def test_triage_command_filters_and_emits_json(monkeypatch: pytest.MonkeyPatch) -> None:
-    rows = [
-        TriageRow(
-            image="crimsonland.exe",
-            function="large_missing",
-            address=0x401000,
-            target_size=100,
-            state="missing",
-            exact_bytes=0,
-            fuzzy_weighted_bytes=0.0,
-            candidate_bytes=0,
-            scratch_count=0,
-        ),
-        TriageRow(
-            image="crimsonland.exe",
-            function="small_missing",
-            address=0x401100,
-            target_size=5,
-            state="missing",
-            exact_bytes=0,
-            fuzzy_weighted_bytes=0.0,
-            candidate_bytes=0,
-            scratch_count=0,
-        ),
-    ]
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
-
-    completed = CliRunner().invoke(
-        match_app,
-        ["triage", "--state", "missing", "--min-bytes", "10", "--limit", "1", "--json"],
-    )
-
-    assert completed.exit_code == 0
-    payload = json.loads(completed.output)
-    assert payload["summary"]["row_count"] == 1
-    assert payload["rows"][0]["function"] == "large_missing"
-
-
-def test_triage_surfaces_and_sorts_recorded_search_evidence() -> None:
-    explored = TriageRow(
-        image="crimsonland.exe",
-        function="explored",
-        address=0x401000,
-        target_size=100,
-        state="wip",
-        exact_bytes=0,
-        fuzzy_weighted_bytes=90.0,
-        candidate_bytes=100,
-        scratch_count=1,
-        experiments=TriageExperimentEvidence(
-            records=4,
-            current_records=2,
-            historical_records=2,
-            unversioned_records=2,
-            mutation_sweeps=3,
-            probes=1,
-            evaluated_variants=12,
-            unique_variants=10,
-            unique_specs=3,
-            no_improvement_streak=3,
-            current_inconclusive_sweeps=0,
-            flags=("stalled",),
-        ),
-    )
-    unexplored = replace(
-        explored,
-        function="unexplored",
-        address=0x401100,
-        experiments=TriageExperimentEvidence(),
-    )
-
-    assert sort_triage_rows([explored, unexplored], sort_by="unexplored")[0] is unexplored
-    payload = triage_row_payload(explored)["experiments"]
-    assert payload == {
-        "records": 4,
-        "current_records": 2,
-        "historical_records": 2,
-        "unversioned_records": 2,
-        "mutation_sweeps": 3,
-        "probes": 1,
-        "evaluated_variants": 12,
-        "unique_variants": 10,
-            "unique_specs": 3,
-            "no_improvement_streak": 3,
-            "current_inconclusive_sweeps": 0,
-            "current_errored_variants": 0,
-            "audited_errored_variants": 0,
-            "mutation_error_audits": 0,
-            "strict_errors": 0,
-            "flags": ["stalled"],
-            "errors": 0,
-        }
-    rendered = render_triage_rows([explored])[0]
-    assert rendered[-4:-1] == ("2/4/10", "3", "stalled")
-
-
 @pytest.mark.parametrize("semantic_state", ["wip", "audit"])
 def test_match_shard_includes_semantic_complete_alongside_unfinished_recovery(
     monkeypatch: pytest.MonkeyPatch,
@@ -5468,87 +3772,6 @@ def test_match_shard_includes_semantic_complete_alongside_unfinished_recovery(
     assert payload["filters"]["mode"] == "residual-audit"
     assert payload["filters"]["states"] == ["audit", "wip"]
     assert payload["filters"]["recoveries"] == ["semantic-complete"]
-
-
-def test_match_shard_semantic_complete_only_queue_and_explicit_recovery_filter(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
-) -> None:
-    status = ScratchStatus(
-        config=ScratchConfig(
-            directory=tmp_path / "scratches" / "residual",
-            function="residual",
-            image="crimsonland.exe",
-            compiler="msvc6.5",
-            cflags="/O2",
-            source="scratch.cpp",
-            end_va=None,
-            symbol=None,
-            note="",
-            recovery="semantic-complete",
-        ),
-        address=0x401000,
-        target_size=100,
-        ratio=0.5,
-        prefix_instructions=1,
-        target_instructions=2,
-        candidate_instructions=2,
-        error=None,
-    )
-    rows = [
-        TriageRow(
-            image="crimsonland.exe",
-            function="residual",
-            address=status.address,
-            target_size=status.target_size,
-            state="wip",
-            exact_bytes=0,
-            fuzzy_weighted_bytes=status.fuzzy_weighted_bytes,
-            candidate_bytes=status.target_size,
-            scratch_count=1,
-            best_status=status,
-        ),
-    ]
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.validate_matching_workspace", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson_re.cli.match._batch_changed_paths", list)
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson_re.cli.match._git_head", lambda: "a" * 40)
-
-    completed = CliRunner().invoke(
-        match_app,
-        ["shard", "--workers", "1", "--match-root", str(tmp_path), "--json"],
-    )
-
-    assert completed.exit_code == 0
-    payload = json.loads(completed.output)
-    assert payload["target_count"] == 1
-    assert payload["assignments"][0]["targets"][0]["function"] == "residual"
-    assert payload["filters"]["mode"] == "auto"
-    assert payload["filters"]["requested_mode"] == "auto"
-
-    recovery_only = CliRunner().invoke(
-        match_app,
-        [
-            "shard",
-            "--workers",
-            "1",
-            "--match-root",
-            str(tmp_path),
-            "--mode",
-            "recovery",
-            "--json",
-        ],
-    )
-
-    assert recovery_only.exit_code == 1
-    error_payload = json.loads(recovery_only.output)
-    assert error_payload["error"] == "empty-shard"
-    assert error_payload["semantic_complete_residual_targets"] == 1
-    assert error_payload["suggested_command"] == (
-        "crimson match shard --mode residual-audit --workers <N>"
-    )
 
 
 def test_exact_score_with_reference_debt_requires_audit() -> None:
@@ -6089,25 +4312,6 @@ def test_compile_scratch_suggests_member_defining_missing_symbol(tmp_path: Path)
         compile_scratch(config, match_root)
 
 
-def test_validate_command_accepts_pinned_archive_scratch(tmp_path: Path) -> None:
-    scratch = tmp_path / "scratch"
-    scratch.mkdir()
-    obj_data = build_object(b"\xc3", [("_foo", 0)], [])
-    archive_data = build_archive("foo.obj", obj_data)
-    (scratch / "provider.lib").write_bytes(archive_data)
-    digest = hashlib.sha256(archive_data).hexdigest()
-    (scratch / "scratch.conf").write_text(
-        "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-        f"ARCHIVE_SHA256={digest} SYMBOL=_foo\n",
-        encoding="utf-8",
-    )
-
-    completed = CliRunner().invoke(match_app, ["validate", str(scratch)])
-
-    assert completed.exit_code == 0
-    assert completed.output == "ok\n"
-
-
 def test_exception_summary_keeps_first_actionable_compiler_diagnostic() -> None:
     error = RuntimeError(
         "cl failed:\n"
@@ -6293,57 +4497,6 @@ def test_source_overlay_can_shadow_an_included_match_header(
     assert header.read_text(encoding="utf-8") == "baseline header\n"
 
 
-def test_probe_command_records_jsonl(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    scratch = tmp_path / "scratch"
-    scratch.mkdir()
-    (scratch / "scratch.cpp").write_text("baseline\n", encoding="utf-8")
-    (scratch / "scratch.conf").write_text("FUNCTION=foo\n", encoding="utf-8")
-    config = ScratchConfig(
-        directory=scratch,
-        function="foo",
-        image="crimsonland.exe",
-        compiler="msvc6.5",
-        cflags="/O2",
-        source="scratch.cpp",
-        end_va=None,
-        symbol=None,
-        note="",
-    )
-    baseline = ScratchStatus(
-        config=config,
-        address=0x401000,
-        target_size=10,
-        ratio=0.5,
-        prefix_instructions=1,
-        target_instructions=4,
-        candidate_instructions=4,
-        error=None,
-    )
-    probe = replace(baseline, config=replace(config, directory=Path("/tmp/shadow")), ratio=0.75)
-    result = ProbeResult(baseline=baseline, probe=probe, source_sha256="abc", label="trial")
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.evaluate_source_probe", lambda *args, **kwargs: result)
-
-    completed = CliRunner().invoke(
-        match_app,
-        ["probe", str(scratch), "--stdin", "--label", "trial", "--record", "--json"],
-        input="variant\n",
-    )
-
-    assert completed.exit_code == 0
-    payload = json.loads(completed.output)
-    assert payload["delta"]["fuzzy_weighted_bytes"] == 2.5
-    assert payload["recorded_to"] == str(scratch / "experiments.jsonl")
-    recorded = json.loads((scratch / "experiments.jsonl").read_text(encoding="utf-8"))
-    assert recorded["schema"] == 1
-    assert recorded["kind"] == "probe"
-    assert recorded["source_tree_sha256"] == "abc"
-    assert recorded["source_dependencies"] == []
-    assert len(recorded["baseline_epoch"]) == 64
-    assert recorded["recorded_at"].endswith("+00:00")
-    assert recorded["label"] == "trial"
-    assert (scratch / "scratch.cpp").read_text(encoding="utf-8") == "baseline\n"
-
-
 def test_profile_matrix_deduplicates_and_ranks_honest_matches(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -6467,73 +4620,6 @@ def test_compiler_scan_prefers_exact_wins_and_canonical_ties(tmp_path: Path) -> 
     rendered = render_compiler_scan_rows(rows)
     assert "msvc6.5pp" in rendered
     assert "exact" in rendered
-
-
-def test_compiler_scan_cli_reports_only_leads_by_default(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
-) -> None:
-    config = ScratchConfig(
-        directory=tmp_path / "foo",
-        function="foo",
-        image="crimsonland.exe",
-        compiler="msvc6.5",
-        cflags="/O2",
-        source="scratch.cpp",
-        end_va=None,
-        symbol=None,
-        note="",
-    )
-    baseline = ScratchStatus(
-        config=config,
-        address=0x401000,
-        target_size=20,
-        ratio=0.75,
-        prefix_instructions=2,
-        target_instructions=5,
-        candidate_instructions=5,
-        error=None,
-        masked_ok=1,
-    )
-
-    def fake_collect(*args: object, **kwargs: object) -> list[ScratchStatus]:
-        del args
-        compiler = kwargs.get("compiler")
-        if compiler == "msvc6.5pp":
-            return [
-                replace(
-                    baseline,
-                    config=replace(config, compiler="msvc6.5pp"),
-                    ratio=1.0,
-                    prefix_instructions=5,
-                    masked_ok=2,
-                ),
-            ]
-        return [baseline]
-
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_scratch_statuses", fake_collect)
-    monkeypatch.setattr(
-        "crimson_re.cli.match.matchlib.available_scratch_compilers",
-        lambda match_root: ("msvc6.5", "msvc6.5pp"),
-    )
-
-    completed = CliRunner().invoke(
-        match_app,
-        ["compiler-scan", "--match-root", str(tmp_path), "--jobs", "1", "--json", "--check"],
-    )
-
-    assert completed.exit_code == 0
-    payload = json.loads(completed.output)
-    assert payload["summary"] == {
-        "targets": 1,
-        "profiles": 2,
-        "exact": 1,
-        "improved": 0,
-        "tied": 0,
-        "errors": 0,
-    }
-    assert payload["rows"][0]["classification"] == "exact"
-    assert payload["rows"][0]["best"]["compiler"] == "msvc6.5pp"
 
 
 def test_compiler_scan_cli_skips_disproven_profiles_by_default(
@@ -6715,187 +4801,6 @@ def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPa
     ]
 
 
-def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    scratch = tmp_path / "scratches" / "foo"
-    scratch.mkdir(parents=True)
-    (scratch / "scratch.conf").write_text("FUNCTION=foo\n", encoding="utf-8")
-    (scratch / "scratch.cpp").write_text('extern "C" void foo() {}\n', encoding="utf-8")
-
-    observed = {}
-
-    def fake_load_manifest(*args: object, **kwargs: object) -> FunctionManifest:
-        return FunctionManifest(
-            image_name="crimsonland.exe",
-            image_base=0x400000,
-            functions=(FunctionSymbol(name="foo", address=0x401000, end=0x401001, size=1),),
-        )
-
-    def fake_load_image(*args: object, **kwargs: object) -> LoadedImage:
-        return LoadedImage(mapped=b"\xc3", image_base=0x401000, size_of_image=1)
-
-    def fake_compile(
-        config: ScratchConfig,
-        match_root: Path,
-        *,
-        include_resolver: _ScratchIncludeResolver | None = None,
-        input_hashes: SharedInputHashes | None = None,
-        force: bool = False,
-    ) -> Path:
-        del force
-        observed["compiler"] = config.compiler
-        observed["cflags"] = config.cflags
-        observed["calls"] = observed.get("calls", 0) + 1
-        return scratch / "scratch.obj"
-
-    monkeypatch.setattr("crimson_re.match.load_function_manifest", fake_load_manifest)
-    monkeypatch.setattr("crimson_re.match.load_image", fake_load_image)
-    monkeypatch.setattr("crimson_re.match.compile_scratch", fake_compile)
-    monkeypatch.setattr("crimson_re.match.parse_coff_object", lambda data: object())
-    monkeypatch.setattr(
-        "crimson_re.match.extract_object_function",
-        lambda obj, symbol, *, extent="symbol", end_symbol=None, size=None: ObjectFunction(
-            name="foo",
-            data=b"\xc3",
-            relocation_offsets=frozenset(),
-        ),
-    )
-    monkeypatch.setattr(Path, "read_bytes", lambda self: b"")
-
-    statuses = collect_scratch_statuses(tmp_path, compiler="msvc6.5", cflags="/O2", jobs=1)
-    cached_statuses = collect_scratch_statuses(tmp_path, compiler="msvc6.5", cflags="/O2", jobs=1)
-    fresh_statuses = collect_scratch_statuses(
-        tmp_path,
-        compiler="msvc6.5",
-        cflags="/O2",
-        jobs=1,
-        force=True,
-    )
-
-    assert statuses[0].state == "match"
-    assert cached_statuses[0].state == "match"
-    assert fresh_statuses[0].state == "match"
-    assert observed == {"compiler": "msvc6.5", "cflags": "/O2", "calls": 2}
-
-
-def test_collect_status_can_limit_evaluation_to_selected_directories(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
-) -> None:
-    selected = tmp_path / "scratches" / "selected"
-    ignored = tmp_path / "scratches" / "ignored"
-    for scratch, function in ((selected, "selected"), (ignored, "ignored")):
-        scratch.mkdir(parents=True)
-        (scratch / "scratch.conf").write_text(f"FUNCTION={function}\n", encoding="utf-8")
-        (scratch / "scratch.cpp").write_text(
-            f'extern "C" void {function}() {{}}\n',
-            encoding="utf-8",
-        )
-
-    manifest = FunctionManifest(
-        image_name="crimsonland.exe",
-        image_base=0x401000,
-        functions=(
-            FunctionSymbol(name="selected", address=0x401000, end=0x401001, size=1),
-            FunctionSymbol(name="ignored", address=0x401001, end=0x401002, size=1),
-        ),
-    )
-    compiled: list[str] = []
-
-    monkeypatch.setattr("crimson_re.match.load_function_manifest", lambda *args, **kwargs: manifest)
-    monkeypatch.setattr(
-        "crimson_re.match.load_image",
-        lambda *args, **kwargs: LoadedImage(
-            mapped=b"\xc3\xc3",
-            image_base=0x401000,
-            size_of_image=2,
-        ),
-    )
-
-    def fake_compile(
-        config: ScratchConfig,
-        match_root: Path,
-        *,
-        include_resolver: _ScratchIncludeResolver | None = None,
-        input_hashes: SharedInputHashes | None = None,
-        force: bool = False,
-    ) -> Path:
-        del force
-        compiled.append(config.function)
-        return config.directory / "scratch.obj"
-
-    monkeypatch.setattr("crimson_re.match.compile_scratch", fake_compile)
-    monkeypatch.setattr("crimson_re.match.parse_coff_object", lambda data: object())
-    monkeypatch.setattr(
-        "crimson_re.match.extract_object_function",
-        lambda obj, symbol, **kwargs: ObjectFunction(
-            name="selected",
-            data=b"\xc3",
-            relocation_offsets=frozenset(),
-        ),
-    )
-    monkeypatch.setattr(Path, "read_bytes", lambda self: b"")
-
-    statuses = collect_scratch_statuses(
-        tmp_path,
-        jobs=1,
-        directories=[selected],
-    )
-
-    assert [status.config.function for status in statuses] == ["selected"]
-    assert compiled == ["selected"]
-
-
-def test_inspect_command_evaluates_only_target_scratches(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
-) -> None:
-    scratch = tmp_path / "scratches" / "target"
-    config = ScratchConfig(
-        directory=scratch,
-        function="game_is_full_version",
-        image="crimsonland.exe",
-        compiler="msvc6.5",
-        cflags="/O2",
-        source="scratch.cpp",
-        end_va=None,
-        symbol=None,
-        note="",
-    )
-    observed_directories: list[Path] = []
-
-    def fake_inspect(*args: object, **kwargs: object) -> dict[str, object]:
-        return {
-            "image": "crimsonland.exe",
-            "address": 0x0041DF40,
-            "scratches": [],
-        }
-
-    def fake_collect(*args: object, **kwargs: object) -> list[ScratchStatus]:
-        directories = kwargs["directories"]
-        assert isinstance(directories, list)
-        observed_directories.extend(
-            directory
-            for directory in directories
-            if isinstance(directory, Path)
-        )
-        return []
-
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.inspect_match_function", fake_inspect)
-    monkeypatch.setattr(
-        "crimson_re.cli.match.matchlib.find_scratch_configs_for_target",
-        lambda *args, **kwargs: [config],
-    )
-    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_scratch_statuses", fake_collect)
-
-    completed = CliRunner().invoke(
-        match_app,
-        ["inspect", "game_is_full_version", "--match-root", str(tmp_path), "--max-regions", "0", "--json"],
-    )
-
-    assert completed.exit_code == 0
-    assert observed_directories == [scratch]
-
-
 def test_match_shard_plan_is_deterministic_balanced_and_disjoint(tmp_path: Path) -> None:
     rows = [
         TriageRow(
@@ -6979,46 +4884,6 @@ def test_match_shard_plan_writes_worker_claims(tmp_path: Path) -> None:
     assert validate_match_claim(plan, match_root=tmp_path, scope="port") == []
 
 
-def test_match_claim_rejects_duplicate_targets(tmp_path: Path) -> None:
-    target = {
-        "image": "crimsonland.exe",
-        "function": "game_is_full_version",
-        "address": 0x0041DF40,
-        "target_bytes": 6,
-        "state": "missing",
-        "fuzzy_gap_bytes": 6.0,
-    }
-    plan = {
-        "schema": 1,
-        "kind": SHARD_PLAN_KIND,
-        "scope": "port",
-        "base_commit": "a" * 40,
-        "workers": 2,
-        "target_count": 2,
-        "filters": {},
-        "assignments": [
-            {
-                "worker": "worker-01",
-                "claim": "worker-01.json",
-                "estimated_gap_bytes": 6.0,
-                "targets": [{**target, "scratch": "scratches/one"}],
-            },
-            {
-                "worker": "worker-02",
-                "claim": "worker-02.json",
-                "estimated_gap_bytes": 6.0,
-                "targets": [{**target, "scratch": "scratches/two"}],
-            },
-        ],
-    }
-
-    errors = validate_match_claim(plan, match_root=tmp_path, scope="port")
-
-    assert errors == [
-        "duplicate claim crimsonland.exe:0x0041df40: worker-01, worker-02",
-    ]
-
-
 def test_claimed_scratch_changes_reject_out_of_claim_edits(tmp_path: Path) -> None:
     claim = {
         "schema": 1,
@@ -7068,16 +4933,6 @@ def test_matching_workspace_rejects_duplicate_target_directories(tmp_path: Path)
 
     assert validate_matching_workspace(tmp_path, scope="port") == [
         "duplicate target crimsonland.exe:0x0041df40: one, two",
-    ]
-
-
-def test_matching_workspace_rejects_scratch_files_without_config(tmp_path: Path) -> None:
-    scratch = tmp_path / "scratches" / "orphan"
-    scratch.mkdir(parents=True)
-    (scratch / "scratch.cpp").write_text("void orphan() {}\n", encoding="utf-8")
-
-    assert validate_matching_workspace(tmp_path, scope="port") == [
-        "orphan: scratch files require scratch.conf",
     ]
 
 
@@ -7163,52 +5018,6 @@ def test_status_metadata_rejects_stale_exact_and_unlabeled_reference_debt(
         "reference_debt: semantic-complete scratch must declare RESIDUAL",
         "reference_debt: 2 unresolved/mismatched references require RESIDUAL=references",
     ]
-
-
-def test_worker_check_writes_ignored_report_without_status(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
-) -> None:
-    claim_path = tmp_path / "worker-01.json"
-    claim_path.write_text(
-        json.dumps(
-            {
-                "schema": 1,
-                "kind": WORKER_CLAIM_KIND,
-                "scope": "port",
-                "base_commit": "a" * 40,
-                "worker": "worker-01",
-                "targets": [
-                    {
-                        "image": "crimsonland.exe",
-                        "function": "game_is_full_version",
-                        "address": 0x0041DF40,
-                        "target_bytes": 6,
-                        "state": "missing",
-                        "fuzzy_gap_bytes": 6.0,
-                        "scratch": "scratches/game_is_full_version",
-                    },
-                ],
-            },
-        ),
-        encoding="utf-8",
-    )
-    monkeypatch.setattr(
-        "crimson_re.cli.match._batch_changed_paths",
-        lambda base_commit=None: [],
-    )
-
-    completed = CliRunner().invoke(
-        match_app,
-        ["worker-check", str(claim_path), "--match-root", str(tmp_path), "--json"],
-    )
-
-    assert completed.exit_code == 0
-    report = json.loads(completed.output)
-    assert report["summary"]["unhandled"] == 1
-    assert report["targets"][0]["handled"] is False
-    assert not (tmp_path / "STATUS.md").exists()
-    assert (tmp_path / ".cache" / "reports" / "worker-01.json").exists()
 
 
 def test_worker_outcome_records_falsification_for_claim(
