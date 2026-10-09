@@ -259,7 +259,11 @@ aim point, the shot spread and
 a projectile's hit jitter and particle velocities (creature movement multiplies
 from the cosine left to right), and the quest trig spills (Sweep Stakes and Deja
 vu spill cosine to F32 but keep sine wide). In `projectile_update` a cast trig
-result multiplied directly stays wide, while a stored one is spilled. Each
+result multiplied directly stays wide, while a stored one is spilled. Player
+XP is an int the original loads exactly (`fild`) into its first PC24 operation
+(kill rewards, Radioactive, Energizer, Jinxed, Regression Bullets, Grim Deal and
+the Survival spawn health), where a cast to `float` would round it again past
+2^24. Each
 adaptation is guarded by an expected match count.
 
 [`data.py`](data.py) recreates the globals from the recovered data manifest.
