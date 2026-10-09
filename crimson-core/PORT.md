@@ -367,7 +367,7 @@ and `npm run play` in `service` stages the packaged web build for deploy.
 | 7. Product parity | Gamepads as the original's joystick; the web client takes the player's own game folder | Done ([#556](https://github.com/banteg/crimson/pull/556)) |
 | 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client finds the game folder; next, a Windows host (the WASI layer is POSIX) and signing | Done ([#557](https://github.com/banteg/crimson/pull/557)); crimson.land/play hosts the web client with the distributed files |
 | 9. Ranked play from the client | Ranked runs from the web client: the Play Game panel's Ranked box and Profile button, `.crd` replays signed and queued as the Python port does, uploaded by the page; next, the native client's upload | Done ([#566](https://github.com/banteg/crimson/pull/566)) |
-| 10. Watching replays | Every run saves its replay; the high score screen's Watch plays local runs and the leaderboard's, with the board's runs kept for the session (docs/rewrite/watch-replays.md) | Done ([#590](https://github.com/banteg/crimson/pull/590), [#598](https://github.com/banteg/crimson/pull/598)) |
+| 10. Watching replays | Every run saves its replay; the high score screen's Watch plays local runs and the leaderboard's, with the board's runs kept for the session (docs/rewrite/watch-replays.md) | Done ([#590](https://github.com/banteg/crimson/pull/590), [#598](https://github.com/banteg/crimson/pull/598), [#602](https://github.com/banteg/crimson/pull/602)) |
 
 ## Acceptance gates
 
