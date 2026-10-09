@@ -9,14 +9,6 @@ import pytest
 from scripts.ci_changed_paths import changed_paths, relevant, version_bump_only
 
 
-def test_docs_only_requires_all_paths_to_be_docs() -> None:
-    assert relevant("docs-only", ["README.md", "docs/image.png"])
-    assert not relevant("docs-only", ["README.md", "src/crimson/game.py"])
-    assert not relevant("docs-only", ["docs/javascripts/weapons-widgets.js"])
-    assert not relevant("docs-only", ["tests/fixtures/readme.md"])
-    assert not relevant("docs-only", [])
-
-
 def test_rename_checks_both_old_and_new_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     git = shutil.which("git")
     assert git is not None
@@ -37,8 +29,8 @@ def test_rename_checks_both_old_and_new_paths(tmp_path: Path, monkeypatch: pytes
 
     monkeypatch.chdir(tmp_path)
     assert set(changed_paths(base)) == {"src/a.py", "docs/a.md"}
-    assert not relevant("docs-only", changed_paths(base))
-    assert relevant("core", changed_paths(base))
+    assert not relevant("pytest", ["docs/a.md"])
+    assert relevant("pytest", changed_paths(base))
 
 
 def test_a_release_version_bump_is_not_a_change(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -73,3 +65,17 @@ def test_a_release_version_bump_is_not_a_change(tmp_path: Path, monkeypatch: pyt
     commit(*files("0.14.1", "zstandard"))
     assert not version_bump_only(base, "pyproject.toml")
     assert not version_bump_only(base, "uv.lock")
+
+
+def test_a_suite_runs_for_the_code_its_checks_import(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(Path(__file__).resolve().parents[1])
+
+    # The gate steps the simulation; the menus never run in it.
+    assert relevant("core-gate", ["src/crimson/sim/world_state.py"])
+    assert not relevant("core-gate", ["src/crimson/screens/actions.py"])
+    # The decomp report runs the matching tools, not the trace debugger.
+    assert relevant("decomp", ["crimson-re/src/crimson_re/match.py"])
+    assert not relevant("decomp", ["crimson-re/src/crimson_re/dbg/trace.py"])
+    # The game build compiles in the version, format and rules, and imports nothing else of the port.
+    assert relevant("client", ["src/crimson/game_version.py"])
+    assert not relevant("client", ["src/crimson/sim/world_state.py"])
