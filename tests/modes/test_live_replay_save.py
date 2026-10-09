@@ -171,11 +171,13 @@ def test_perk_prompt_stays_closed_while_a_pick_is_queued(make_mode_config, asset
     selection.choices = [PerkId.BANDAGE] * 7
     assert mode._ui_pending_perk_count() == 1
 
+    session = mode._sim_session
+    assert session is not None
+    # The menu opened on the tick before.
+    session.perk_menu_open = True
     mode.record_perk_pick_command(0)
     assert mode._ui_pending_perk_count() == 0
 
-    session = mode._sim_session
-    assert session is not None
     # A frame that runs no tick moves the pick into the tick provider's queue.
     mode._run_deterministic_session_ticks(dt_frame=1 / 240, session=session, recorder=mode._replay_recorder)
     assert selection.pending_count == 1

@@ -8,6 +8,7 @@ import { tokenHash } from "./auth";
 import { timelineKey } from "./runs";
 
 const MERGE_TTL_MS = 10 * 60 * 1000;
+const ROLE_RANK = "CASE role WHEN 'admin' THEN 2 WHEN 'mod' THEN 1 ELSE 0 END";
 
 export type LinkResult = { outcome: "linked" } | { outcome: "confirm"; token: string; into: number };
 
@@ -72,6 +73,12 @@ export async function confirmMerge(env: Env, accountId: number, sessionToken: st
     env.DB.prepare(
       "UPDATE accounts SET name = coalesce((SELECT name FROM runs WHERE account_id = ? ORDER BY accepted_at DESC LIMIT 1), name) WHERE id = ?",
     ).bind(into, into),
+    // A moderator's bot mark and the stronger role go with the keys (docs/rewrite/bots.md): a merge neither moves a
+    // bot's runs to the human boards nor loses a moderator or the admin.
+    env.DB.prepare(
+      `UPDATE accounts SET bot = (SELECT max(bot) FROM accounts WHERE id IN (?, ?)),
+         role = (SELECT role FROM accounts WHERE id IN (?, ?) ORDER BY ${ROLE_RANK} DESC LIMIT 1) WHERE id = ?`,
+    ).bind(from, into, from, into, into),
     env.DB.prepare("DELETE FROM merge_requests WHERE from_account = ? OR into_account = ?").bind(from, from),
     env.DB.prepare("DELETE FROM accounts WHERE id = ?").bind(from),
   ]);
@@ -83,7 +90,10 @@ export async function unlink(env: Env, accountId: number, provider: ProviderName
 }
 
 // Delete an account and everything tied to it: runs with their replay and timeline files, names, links, keys and sessions.
-export async function deleteAccount(env: Env, accountId: number): Promise<void> {
+// The admin's account stays, since only the admin makes moderators; false when it is that one.
+export async function deleteAccount(env: Env, accountId: number): Promise<boolean> {
+  const account = await env.DB.prepare("SELECT role FROM accounts WHERE id = ?").bind(accountId).first<{ role: string }>();
+  if (account?.role === "admin") return false;
   const { results } = await env.DB.prepare("SELECT id FROM runs WHERE account_id = ?").bind(accountId).all<{ id: string }>();
   if (results.length) await env.REPLAYS.delete(results.flatMap((run) => [`runs/${run.id}.crd`, timelineKey(run.id)]));
   await env.DB.batch(
@@ -94,6 +104,7 @@ export async function deleteAccount(env: Env, accountId: number): Promise<void> 
         env.DB.prepare("DELETE FROM accounts WHERE id = ?").bind(accountId),
       ),
   );
+  return true;
 }
 
 // The join a session started, for its confirmation page; it stays pending until confirmed.

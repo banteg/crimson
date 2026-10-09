@@ -1,11 +1,11 @@
 import { type Accessor, createSignal, For, type JSX, Show } from "solid-js";
-import type { Board, BoardView, JoinView, ProfileView, QuestMenuView, RunDetailView } from "../../src/api-types";
-import { get, post } from "./api";
+import type { Board, BoardView, FlagsView, JoinView, ModerationAction, ProfileView, QuestMenuView, Role, RunDetailView } from "../../src/api-types";
+import { get, moderate, post } from "./api";
 import { formatScore } from "./format";
 import { GameButton } from "./button";
 import { playerLabel } from "./names";
-import { PlayerName, PROVIDER_LABELS } from "./players";
-import { runPanels } from "./run";
+import { PilotName, PlayerName, PROVIDER_LABELS } from "./players";
+import { runPanels, SIGNAL_LABELS } from "./run";
 import weaponData from "./weapons.json";
 
 // What a route shows once its data has arrived: the page title, the quest whose terrain the ground shows (null for
@@ -40,6 +40,14 @@ const QUEST = /^[1-5]\.(?:[1-9]|10)$/;
 const DOCS = "https://crimson.banteg.xyz/";
 const RULES = `${DOCS}rewrite/ranked-rules/`;
 const BUGS = `${DOCS}rewrite/original-bugs/`;
+const BOTS = `${DOCS}rewrite/bots/`;
+
+
+// The signed-in account and its role.
+async function me(): Promise<{ account: number | null; role: Role }> {
+  return (await get<{ account: number | null; role: Role }>("/api/me"))!;
+}
+
 
 const BOARD_NAMES: Record<Board, string> = { survival: "Survival", quests: "Quests", "quests-hardcore": "Quests, hardcore" };
 const WEAPONS: Record<string, { name: string; icon_index: number }> = weaponData;
@@ -65,7 +73,11 @@ function Weapon(props: { id: number }) {
   );
 }
 
-function BoardTable(props: { view: BoardView }) {
+// A board's rows; a compact table, for the home page, keeps the rank, player and score. A bot board names each run's
+// bot, as its replay declares it.
+function BoardTable(props: { view: BoardView; compact?: boolean }) {
+  const bots = () => props.view.category === "bot";
+  const full = () => !props.compact;
   return (
     <Show when={props.view.rows.length} fallback={<p class="muted">No runs yet.</p>}>
       <div class="board-table">
@@ -74,11 +86,16 @@ function BoardTable(props: { view: BoardView }) {
             <tr>
               <th class="n">#</th>
               <th>Player</th>
+              <Show when={bots() && full()}>
+                <th>Bot</th>
+              </Show>
               <th class="n">Score</th>
-              <th>Run</th>
-              <th class="n">Duration</th>
-              <th title="Most used weapon by time equipped">Weapon</th>
-              <th>Replay</th>
+              <Show when={full()}>
+                <th>Run</th>
+                <th class="n">Duration</th>
+                <th title="Most used weapon by time equipped">Weapon</th>
+                <th>Replay</th>
+              </Show>
             </tr>
           </thead>
           <tbody>
@@ -87,25 +104,42 @@ function BoardTable(props: { view: BoardView }) {
                 <tr>
                   <td class="n">{row.rank}</td>
                   <td>
-                    <PlayerName player={row.player} />
+                    <PlayerName player={row.player} tag={false} />
+                    <Show when={props.compact && row.pilot}>
+                      {(pilot) => (
+                        <span class="muted">
+                          {" · "}
+                          <PilotName pilot={pilot()} />
+                        </span>
+                      )}
+                    </Show>
                   </td>
+                  <Show when={bots() && full()}>
+                    <td>
+                      <Show when={row.pilot} fallback={<span class="muted" title="The replay names no bot">—</span>}>
+                        {(pilot) => <PilotName pilot={pilot()} />}
+                      </Show>
+                    </td>
+                  </Show>
                   <td class="n">
                     <a class="run" href={`/runs/${row.run}`}>
                       {formatScore(props.view.board, row.score)}
                     </a>
                   </td>
-                  <td>
-                    <a class="run-details" href={`/runs/${row.run}`}>Details →</a>
-                  </td>
-                  <td class="n">{formatDuration(row.elapsed_ms)}</td>
-                  <td>
-                    <Weapon id={row.most_used_weapon_id} />
-                  </td>
-                  <td>
-                    <a href={`/runs/${row.run}.crd`} data-native>
-                      .crd
-                    </a>
-                  </td>
+                  <Show when={full()}>
+                    <td>
+                      <a class="run-details" href={`/runs/${row.run}`}>Details →</a>
+                    </td>
+                    <td class="n">{formatDuration(row.elapsed_ms)}</td>
+                    <td>
+                      <Weapon id={row.most_used_weapon_id} />
+                    </td>
+                    <td>
+                      <a href={`/runs/${row.run}.crd`} data-native>
+                        .crd
+                      </a>
+                    </td>
+                  </Show>
                 </tr>
               )}
             </For>
@@ -115,6 +149,14 @@ function BoardTable(props: { view: BoardView }) {
     </Show>
   );
 }
+
+// How a bot gets onto the bot boards.
+const BotInvite = () => (
+  <p class="muted">
+    Bots and tool-assisted runs, verified under the same <a href={RULES}>rules</a>. Built one? Set <code>CRIMSON_PILOT_NAME</code> when the
+    Python port records, and its runs list here under its name. See <a href={BOTS}>bots</a>.
+  </p>
+);
 
 // The game's quest screen: its layout and colors (quest_select_menu_update), red rows on hardcore.
 function QuestMenu(props: { view: QuestMenuView; current?: string }) {
@@ -184,10 +226,10 @@ function Command(props: { children: string }) {
   );
 }
 
-async function runPage(id: string): Promise<Screen> {
+async function runPage(id: string, nav: Navigator): Promise<Screen> {
   const detail = await get<RunDetailView>(`/api/runs/${id}`);
   if (!detail) return notFound();
-  return { title: `${playerLabel(detail.player)} · ${detail.title}`, quest: detail.quest || null, panels: runPanels(detail) };
+  return { title: `${playerLabel(detail.player)} · ${detail.title}`, quest: detail.quest || null, panels: runPanels(detail, nav.reload) };
 }
 
 function notFound(): Screen {
@@ -214,7 +256,10 @@ function withNotice(url: URL, screen: Screen): Screen {
 }
 
 async function home(): Promise<Screen> {
-  const survival = (await get<BoardView>("/api/boards/survival?limit=10"))!;
+  const [humans, bots] = await Promise.all([
+    get<BoardView>("/api/boards/survival?limit=10"),
+    get<BoardView>("/api/boards/survival?limit=10&category=bot"),
+  ]);
   return {
     title: null,
     quest: null,
@@ -231,9 +276,18 @@ async function home(): Promise<Screen> {
       () => (
         <>
           <h2>Survival</h2>
-          <BoardTable view={survival} />
+          <div class="board-pair">
+            <div>
+              <h3>Humans</h3>
+              <BoardTable view={humans!} compact />
+            </div>
+            <div>
+              <h3>Bots</h3>
+              <BoardTable view={bots!} compact />
+            </div>
+          </div>
           <p>
-            <a href="/boards/survival">Full board</a> · <a href="/quests/1">Quests</a>
+            <a href="/boards/survival">Full boards</a> · <a href="/quests/1">Quests</a>
           </p>
         </>
       ),
@@ -241,39 +295,34 @@ async function home(): Promise<Screen> {
   };
 }
 
+// A board's human runs, then its bot runs.
+function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
+  return [
+    () => (
+      <>
+        <h2>{humans.title}</h2>
+        <BoardTable view={humans} />
+      </>
+    ),
+    () => (
+      <>
+        <h2>{bots.title} · bots</h2>
+        <BotInvite />
+        <BoardTable view={bots} />
+      </>
+    ),
+  ];
+}
+
 async function board(boardName: Board, quest: string): Promise<Screen> {
-  if (boardName === "survival") {
-    const view = (await get<BoardView>("/api/boards/survival"))!;
-    return {
-      title: "Survival",
-      quest: null,
-      panels: [
-        () => (
-          <>
-            <h2>Survival</h2>
-            <BoardTable view={view} />
-          </>
-        ),
-      ],
-    };
-  }
-  const stage = Number(quest.split(".")[0]);
-  const [view, menu] = await Promise.all([
-    get<BoardView>(`/api/boards/${boardName}/${quest}`),
-    get<QuestMenuView>(`/api/quests/${boardName}/${stage}`),
-  ]);
+  const path = boardName === "survival" ? "/api/boards/survival" : `/api/boards/${boardName}/${quest}`;
+  const [humans, bots] = await Promise.all([get<BoardView>(path), get<BoardView>(`${path}?category=bot`)]);
+  if (boardName === "survival") return { title: "Survival", quest: null, panels: boardPanels(humans!, bots!) };
+  const menu = (await get<QuestMenuView>(`/api/quests/${boardName}/${Number(quest.split(".")[0])}`))!;
   return {
-    title: view!.title,
+    title: humans!.title,
     quest,
-    panels: [
-      keep("quest-menu", { menu: menu!, quest }, (data) => <QuestMenu view={data().menu} current={data().quest} />),
-      () => (
-        <>
-          <h2>{view!.title}</h2>
-          <BoardTable view={view!} />
-        </>
-      ),
-    ],
+    panels: [keep("quest-menu", { menu, quest }, (data) => <QuestMenu view={data().menu} current={data().quest} />), ...boardPanels(humans!, bots!)],
   };
 }
 
@@ -327,8 +376,39 @@ function AccountControls(props: { profile: ProfileView; nav: Navigator }) {
   );
 }
 
+// A moderator's view of an account: its role, its overlapping runs, and the bot mark.
+function AccountModerationPanel(props: { profile: ProfileView; viewer: Role; nav: Navigator }) {
+  const id = props.profile.player.id;
+  const moderation = props.profile.moderation!;
+  const act = async (path: string, body: Record<string, unknown>) => (await moderate(path, body)) && props.nav.reload();
+  return (
+    <>
+      <h3>Moderation</h3>
+      <p class="muted">
+        Role: {moderation.role || "player"} · {moderation.overlapping_runs} runs accepted sooner after the previous one than their own game time
+      </p>
+      <p class="buttons">
+        <Show
+          when={props.profile.player.bot}
+          fallback={<GameButton label="Mark as bot" onClick={() => act(`/api/mod/accounts/${id}`, { bot: true })} />}
+        >
+          <GameButton label="Unmark bot" onClick={() => act(`/api/mod/accounts/${id}`, { bot: false })} />
+        </Show>
+        <Show when={props.viewer === "admin" && moderation.role !== "admin"}>
+          <Show
+            when={moderation.role === "mod"}
+            fallback={<GameButton label="Make moderator" onClick={() => act(`/api/mod/roles/${id}`, { role: "mod" })} />}
+          >
+            <GameButton label="Revoke moderator" onClick={() => act(`/api/mod/roles/${id}`, { role: "" })} />
+          </Show>
+        </Show>
+      </p>
+    </>
+  );
+}
+
 async function profile(id: number, nav: Navigator): Promise<Screen> {
-  const view = await get<ProfileView>(`/api/players/${id}`);
+  const [view, viewer] = await Promise.all([get<ProfileView>(`/api/players/${id}`), me()]);
   if (!view) return notFound();
   // The typed names, where they say more than the shown one.
   const history = view.names.some((name) => name !== view.player.name);
@@ -349,41 +429,150 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
           </Show>
           <h3>Runs</h3>
           <Show when={view.runs.length} fallback={<p class="muted">No ranked runs yet.</p>}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Board</th>
-                  <th class="n">Score</th>
-                  <th>Run</th>
-                  <th>Version</th>
-                  <th>Accepted</th>
-                  <th>Replay</th>
-                </tr>
-              </thead>
-              <tbody>
-                <For each={view.runs}>
-                  {(run) => (
-                    <tr>
-                      <td>
-                        <a href={`/boards/${run.board}${run.quest ? `/${run.quest}` : ""}`}>
+            <div class="board-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Board</th>
+                    <th class="n">Score</th>
+                    <th>Run</th>
+                    <th>Version</th>
+                    <th>Accepted</th>
+                    <th>Replay</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <For each={view.runs}>
+                    {(run) => (
+                      <tr>
+                        <td>
+                          <a href={`/boards/${run.board}${run.quest ? `/${run.quest}` : ""}`}>
+                            {BOARD_NAMES[run.board]} {run.quest}
+                          </a>
+                          <Show when={run.category === "bot"}>
+                            <span class="tag">bot</span>
+                          </Show>
+                        </td>
+                        <td class="n">
+                          <a class="run" href={`/runs/${run.id}`}>
+                            {formatScore(run.board, run.score)}
+                          </a>
+                        </td>
+                        <td>
+                          <a class="run-details" href={`/runs/${run.id}`}>Details →</a>
+                        </td>
+                        <td>{run.game_version}</td>
+                        <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
+                        <td>
+                          <a href={`/runs/${run.id}.crd`} data-native>
+                            .crd
+                          </a>
+                        </td>
+                      </tr>
+                    )}
+                  </For>
+                </tbody>
+              </table>
+            </div>
+          </Show>
+        </>
+      ),
+      ...(view.moderation ? [() => <AccountModerationPanel profile={view} viewer={viewer.role} nav={nav} />] : []),
+      ...(view.account ? [() => <AccountControls profile={view} nav={nav} />] : []),
+    ],
+  };
+}
+
+// A log entry's account or run, linked to its page.
+function LogSubject(props: { subject: string }) {
+  const [kind, id] = props.subject.split(" ");
+  const href = kind === "account" ? `/players/${id}` : kind === "run" ? `/runs/${id}` : null;
+  return href ? <a href={href}>{kind === "run" ? `run ${id!.slice(0, 12)}` : props.subject}</a> : <>{props.subject}</>;
+}
+
+// The flagged human runs, the runs left to measure, and the moderation log.
+async function moderation(nav: Navigator): Promise<Screen> {
+  const response = await fetch("/api/mod/flags");
+  if (!response.ok) return { title: "Moderation", quest: null, panels: [() => <p>Moderators only.</p>] };
+  const flags = (await response.json()) as FlagsView;
+  const { actions } = (await get<{ actions: ModerationAction[] }>("/api/mod/log"))!;
+  const measure = async () => {
+    const result = await post("/api/mod/measure");
+    if (result.ok) nav.reload();
+  };
+  return {
+    title: "Moderation",
+    quest: null,
+    panels: [
+      () => (
+        <>
+          <h2>Flagged runs</h2>
+          <p class="muted">
+            Human runs whose input signals look like a bot's. A flag never moves a run: mark the account, or set the run's category on its page.
+            See <a href={BOTS}>bots</a>.
+          </p>
+          <Show when={flags.unmeasured}>
+            <p class="buttons">
+              <span class="muted">{flags.unmeasured} runs not measured yet. </span>
+              <GameButton label="Measure more" onClick={measure} />
+            </p>
+          </Show>
+          <Show when={flags.runs.length} fallback={<p class="muted">No flagged runs.</p>}>
+            <div class="board-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Player</th>
+                    <th>Board</th>
+                    <th class="n">Score</th>
+                    <th>Flags</th>
+                    <th>Accepted</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <For each={flags.runs}>
+                    {(run) => (
+                      <tr>
+                        <td>
+                          <PlayerName player={run.player} />
+                        </td>
+                        <td>
                           {BOARD_NAMES[run.board]} {run.quest}
-                        </a>
-                      </td>
-                      <td class="n">
-                        <a class="run" href={`/runs/${run.id}`}>
-                          {formatScore(run.board, run.score)}
-                        </a>
-                      </td>
+                        </td>
+                        <td class="n">
+                          <a class="run" href={`/runs/${run.id}`}>
+                            {formatScore(run.board, run.score)}
+                          </a>
+                        </td>
+                        <td class="flag">{run.flagged.map((name) => SIGNAL_LABELS[name]).join(", ")}</td>
+                        <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
+                      </tr>
+                    )}
+                  </For>
+                </tbody>
+              </table>
+            </div>
+          </Show>
+        </>
+      ),
+      () => (
+        <>
+          <h3>Log</h3>
+          <Show when={actions.length} fallback={<p class="muted">Nothing yet.</p>}>
+            <table>
+              <tbody>
+                <For each={actions}>
+                  {(action) => (
+                    <tr>
+                      <td class="muted">{new Date(action.at).toISOString().slice(0, 16).replace("T", " ")}</td>
                       <td>
-                        <a class="run-details" href={`/runs/${run.id}`}>Details →</a>
+                        <LogSubject subject={action.actor} />
                       </td>
-                      <td>{run.game_version}</td>
-                      <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
+                      <td>{action.action}</td>
                       <td>
-                        <a href={`/runs/${run.id}.crd`} data-native>
-                          .crd
-                        </a>
+                        <LogSubject subject={action.target} />
                       </td>
+                      <td class="muted">{action.note}</td>
                     </tr>
                   )}
                 </For>
@@ -392,7 +581,6 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
           </Show>
         </>
       ),
-      ...(view.account ? [() => <AccountControls profile={view} nav={nav} />] : []),
     ],
   };
 }
@@ -482,6 +670,10 @@ const ABOUT: Screen = {
           Ranked runs on each board use the same starting conditions: one player, a standard progression profile, and documented fixes
           for <a href={BUGS}>bugs in the original game</a>.
         </p>
+        <p>
+          Bots are welcome too. Every board ranks them next to the humans: a program that plays declares itself in its replay and lists
+          under the bot's name, and moderators move undeclared bots there. See <a href={BOTS}>bots</a>.
+        </p>
       </>
     ),
     () => (
@@ -519,9 +711,10 @@ const PRIVACY: Screen = {
             half never leaves your computer.
           </li>
           <li>
-            <em>Each ranked run you upload:</em> the replay file, the name you typed for it, its result and score, the game version and the
-            program that recorded it, and when it was accepted. Your profile shows the name of your latest run and lists every name you have
-            used.
+            <em>Each ranked run you upload:</em> the replay file, the name you typed for it, its result and score, the game version, the
+            program that recorded it and the bot that played it if the replay names one, and when it was accepted. The service also measures
+            a few input statistics from the replay, which only moderators see. Your profile shows the name of your latest run and lists every
+            name you have used.
           </li>
           <li>
             <em>Linked accounts</em>, if you link one: the GitHub, Discord or X account's numeric ID, handle and avatar URL. We ask for the
@@ -568,11 +761,13 @@ const TERMS: Screen = {
             own Crimsonland and its assets; the port distributes the assets with their permission.
           </li>
           <li>
-            Upload runs you played yourself. Runs played by tools or other people, runs that exploit a flaw in the verifier, and names that
-            impersonate someone are not allowed. The <a href={RULES}>ranked rules</a> say which runs rank.
+            Upload runs you played yourself, or runs your own program played. A run a program played, in whole or in part, belongs on the bot
+            boards: declare it in the replay, or moderators move it there. Runs other people played, runs that exploit a flaw in the verifier,
+            and names that impersonate someone are not allowed. The <a href={RULES}>ranked rules</a> say which runs rank, and{" "}
+            <a href={BOTS}>bots</a> how bot runs are told apart.
           </li>
           <li>Uploading a run lets us store and show it and lets anyone download its replay.</li>
-          <li>We may hide or remove runs, names and accounts, and ban keys, when these terms are broken.</li>
+          <li>We may hide or remove runs, names and accounts, move runs and accounts to the bot boards, and ban keys, when these terms are broken.</li>
           <li>The service comes as is, without guarantees. It may change, go down or lose data.</li>
           <li>Changes to these terms appear on this page.</li>
         </ul>
@@ -591,10 +786,11 @@ export async function resolve(url: URL, nav: Navigator): Promise<Screen> {
   else if ((match = /^\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(path)) && QUEST.test(match[2]!)) screen = await board(match[1] as Board, match[2]!);
   else if ((match = /^\/(quests|quests-hardcore)\/([1-5])$/.exec(path))) screen = await quests(match[1] as "quests" | "quests-hardcore", Number(match[2]));
   else if (path === "/quests") screen = await quests("quests", 1);
+  else if (path === "/mod") screen = await moderation(nav);
   else if ((match = /^\/players\/(\d+)$/.exec(path))) screen = await profile(Number(match[1]), nav);
   else if ((match = /^\/join\/([0-9a-f]{64})$/.exec(path))) screen = await join(match[1]!, nav);
   else if (path === "/account") screen = await account(nav);
-  else if ((match = /^\/runs\/([0-9a-f]{64})$/.exec(path))) screen = await runPage(match[1]!);
+  else if ((match = /^\/runs\/([0-9a-f]{64})$/.exec(path))) screen = await runPage(match[1]!, nav);
   else if (path === "/about") screen = ABOUT;
   else if (path === "/privacy") screen = PRIVACY;
   else if (path === "/terms") screen = TERMS;

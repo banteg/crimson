@@ -9,6 +9,29 @@ export const names = schema.flatMap((g) =>
 );
 export const index = new Map(names.map((n, i) => [n, i]));
 
+// The snapshot's byte ranges holding the fields `compared` accepts, adjacent fields merged.
+export function fieldRanges(compared) {
+  const ranges = [];
+  names.forEach((name, i) => {
+    if (!compared(name)) return;
+    const last = ranges.at(-1);
+    if (last?.[1] === i * 4) last[1] += 4;
+    else ranges.push([i * 4, i * 4 + 4]);
+  });
+  return ranges;
+}
+
+// The index of the first field in `ranges` where two snapshots differ, or -1.
+// Whole ranges compare as memory; only a differing one is walked field by field.
+export function firstDifference(expected, actual, ranges) {
+  for (const [start, end] of ranges) {
+    if (!expected.compare(actual, start, end, start, end)) continue;
+    for (let at = start; at < end; at += 4)
+      if (expected.readUInt32LE(at) !== actual.readUInt32LE(at)) return at / 4;
+  }
+  return -1;
+}
+
 export function loadCore(wasm) {
   const module = new WebAssembly.Module(fs.readFileSync(wasm));
   if (WebAssembly.Module.imports(module).length)

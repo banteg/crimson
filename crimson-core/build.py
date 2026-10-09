@@ -49,9 +49,11 @@ EXPORTS = (
     "portable_shake_x",
     "portable_shake_y",
     "portable_probe",
+    "portable_nearest_creature",
 )
-# Player one and the shake, for the service's ranked aim bound (host/api.h).
+# Player one and the shake, for the service's ranked aim bound, and the nearest creature, for its input signals (host/api.h).
 PROBE_READS = {
+    "portable_nearest_creature",
     "portable_player_x",
     "portable_player_y",
     "portable_player_health",

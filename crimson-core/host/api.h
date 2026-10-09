@@ -50,6 +50,9 @@ float portable_player_y();
 float portable_player_health();
 float portable_shake_x();
 float portable_shake_y();
+// The distance from a world point to the nearest living creature's centre, infinity with none, for the service's
+// input signals (docs/rewrite/bots.md).
+float portable_nearest_creature(float x, float y);
 // Reads the tick into the probe and returns its address; portable_init starts its counts over.
 uintptr_t portable_probe();
 int portable_math_probe(uint32_t operation, uint32_t a, uint32_t b);
