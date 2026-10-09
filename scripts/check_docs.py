@@ -185,7 +185,7 @@ def find_format_version_errors(root: Path, docs_dir: Path) -> list[str]:
     expected = {
         "CDT container": read_int_constant(root / "crimson-re/src/crimson_re/dbg/schema.py", "TRACE_FORMAT_VERSION"),
         "CDT payload schema": read_int_constant(root / "crimson-re/src/crimson_re/dbg/schema.py", "TRACE_SCHEMA_VERSION"),
-        "CRD replay": read_int_constant(root / "src/crimson/replay/types.py", "REPLAY_FORMAT_VERSION"),
+        "CRD replay": read_int_constant(root / "src/crimson/game_version.py", "REPLAY_FORMAT_VERSION"),
     }
     return [
         f"{page.relative_to(docs_dir)}: {name} documents {rows.get(name, '<missing>')}, source is {version}"

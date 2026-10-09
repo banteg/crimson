@@ -5,11 +5,11 @@ from pathlib import Path
 import msgspec
 
 from crimson.game_modes import GameMode
+from crimson.game_version import REPLAY_RULES
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.replay import ReplayRecorder, dump_replay_file
 from crimson.replay.input_codec import pack_tick
 from crimson.replay.library import replay_file_name
-from crimson.replay.types import REPLAY_RULES
 from crimson.screens.high_scores_view.records import _with_online
 from crimson.screens.high_scores_view.watch import WatchTarget, local_watch_target
 from crimson.sim.run_spec import RunSpec

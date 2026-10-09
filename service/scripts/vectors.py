@@ -17,6 +17,7 @@ from pathlib import Path
 import msgspec
 
 from crimson.game_modes import GameMode
+from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES, current_replay_game_version
 from crimson.math_parity import f32
 from crimson.replay.codec import (
     ReplayCodecError,
@@ -28,8 +29,7 @@ from crimson.replay.codec import (
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.driver.setup import ReplayRunnerError
 from crimson.replay.ranked import RankedTickMonitor, outcome_reasons, ranked_board, ranked_run_spec, unranked_reasons
-from crimson.replay.types import REPLAY_FORMAT_VERSION, REPLAY_RULES, Pilot, Replay, ReplayTick, current_recorder
-from crimson.replay.versioning import current_replay_game_version
+from crimson.replay.types import Pilot, Replay, ReplayTick, current_recorder
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import PlayerRunResult, RunOutcome, RunResult
 

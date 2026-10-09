@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import warnings
 
+from ..game_version import REPLAY_RULES, current_replay_game_version
 from .codec import ReplayCodecError
-from .types import REPLAY_RULES, Replay, current_replay_game_version
+from .types import Replay
 
 
 class ReplayRulesError(ReplayCodecError):
