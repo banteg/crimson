@@ -73,6 +73,34 @@ def main():
             raise ValueError("The missing track was not restored")
         if (game / "music/shortie_monk.ogg").read_bytes() != custom:
             raise ValueError("An existing track was overwritten")
+        # Archive output must not follow links out of the selected folder.
+        for existing in (False, True):
+            outside = root / f"outside-{existing}.ogg"
+            if existing:
+                outside.write_bytes(custom)
+            track = game / "music/intro.ogg"
+            track.unlink()
+            track.symlink_to(outside)
+            linked = subprocess.run([str(probe), str(game)], capture_output=True, text=True, check=False)
+            if outside.exists() != existing or (existing and outside.read_bytes() != custom):
+                raise ValueError("Extraction wrote through a linked music file")
+            if linked.returncode != 1:
+                raise ValueError("A linked music file was accepted")
+            track.unlink()
+            subprocess.run([str(probe), str(game)], check=True)
+        music = game / "music"
+        saved = root / "saved-music"
+        music.rename(saved)
+        outside_directory = root / "outside-music"
+        outside_directory.mkdir()
+        music.symlink_to(outside_directory, target_is_directory=True)
+        linked = subprocess.run([str(probe), str(game)], capture_output=True, text=True, check=False)
+        if list(outside_directory.iterdir()):
+            raise ValueError("Extraction wrote through a linked music folder")
+        if linked.returncode != 1:
+            raise ValueError("A linked music folder was accepted")
+        music.unlink()
+        saved.rename(music)
         # Original installations with loose music need no archive.
         (game / "music.paq").unlink()
         subprocess.run([str(probe), str(game)], check=True)
@@ -80,7 +108,7 @@ def main():
         missing = subprocess.run([str(probe), str(game)], capture_output=True, text=True, check=False)
         if missing.returncode != 1 or "Missing music/crimsonquest.ogg" not in missing.stderr:
             raise ValueError(f"The missing loose track was not reported: {missing}")
-    print("Native assets: extraction, partial repair, existing tracks, loose music, missing music passed")
+    print("Native assets: extraction, repair, preservation, loose files, missing files and symlinks passed")
 
 
 if __name__ == "__main__":

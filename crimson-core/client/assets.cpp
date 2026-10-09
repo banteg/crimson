@@ -2,11 +2,30 @@
 // original opens. Prepare the same layout as the browser before booting it.
 #ifndef __EMSCRIPTEN__
 #include <SDL3/SDL.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
 #include <string.h>
 #include <string>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace {
-std::string unpack_music(const std::string &directory, const unsigned char *data, size_t size) {
+// Keep extraction relative to open directories; never follow a music/ link.
+int open_music_directory(const std::string &directory) {
+  int root = open(directory.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW);
+  if (root < 0)
+    return -1;
+  int music = -1;
+  if (mkdirat(root, "music", 0777) == 0 || errno == EEXIST)
+    music = openat(root, "music", O_RDONLY | O_DIRECTORY | O_NOFOLLOW);
+  int error = errno;
+  close(root);
+  errno = error;
+  return music;
+}
+
+std::string unpack_music(int music, const unsigned char *data, size_t size) {
   if (size < 4 || memcmp(data, "paq\0", 4))
     return "Invalid music.paq. Replace it with the game's music archive.";
   for (size_t at = 4; at < size;) {
@@ -26,11 +45,26 @@ std::string unpack_music(const std::string &directory, const unsigned char *data
     filename = filename.substr(filename.find_last_of("/\\") + 1);
     if (filename.empty() || filename == "." || filename == "..")
       return "Invalid filename in music.paq.";
-    const std::string path = directory + "/music/" + filename;
-    if (!SDL_GetPathInfo(path.c_str(), nullptr)) {
-      if (!SDL_CreateDirectory((directory + "/music").c_str()) ||
-          !SDL_SaveFile(path.c_str(), data + at, bytes))
-        return "Cannot unpack music.paq: " + std::string(SDL_GetError());
+    // Exclusive creation cannot follow a link or overwrite an existing file.
+    int fd = openat(music, filename.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0666);
+    if (fd < 0) {
+      struct stat st;
+      if (errno != EEXIST || fstatat(music, filename.c_str(), &st, AT_SYMLINK_NOFOLLOW) != 0)
+        return "Cannot unpack music.paq: " + std::string(strerror(errno));
+      if (!S_ISREG(st.st_mode))
+        return "Cannot unpack music.paq: music/" + filename + " must be a regular file, not a symbolic link.";
+    } else {
+      FILE *file = fdopen(fd, "wb");
+      if (!file) {
+        int error = errno;
+        close(fd);
+        return "Cannot unpack music.paq: " + std::string(strerror(error));
+      }
+      bool saved = fwrite(data + at, 1, bytes, file) == bytes;
+      if (fclose(file) != 0)
+        saved = false;
+      if (!saved)
+        return "Cannot write music/" + filename + ".";
     }
     at += bytes;
   }
@@ -49,7 +83,11 @@ std::string client_prepare_assets(const std::string &directory) {
     unsigned char *data = (unsigned char *)SDL_LoadFile(archive.c_str(), &size);
     if (!data)
       return "Cannot read music.paq: " + std::string(SDL_GetError());
-    std::string error = unpack_music(directory, data, size);
+    int music = open_music_directory(directory);
+    std::string error = music < 0 ? "Cannot open music folder (symbolic links are not allowed): " + std::string(strerror(errno))
+                                 : unpack_music(music, data, size);
+    if (music >= 0)
+      close(music);
     SDL_free(data);
     if (!error.empty())
       return error;
