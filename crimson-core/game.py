@@ -98,10 +98,13 @@ def replace_once(text, old, new, src):
 
 # Recovered functions host/game.inc and host/session.inc wrap: a simulation tick
 # must run some as the verifier does, a run the client plays drives others, a
-# sound entry the device never created stays silent, and a run's wrapped
-# strings live in its arena. The recovered body keeps a _recovered name.
+# tick saves nothing, a sound entry the device never created stays silent, and
+# a run's wrapped strings live in its arena. The recovered body keeps a
+# _recovered name.
 SEAMS = (
+    "game_save_status",
     "game_state_set",
+    "gameplay_render_world",
     "gameplay_update_and_render",
     "highscore_sync_worker",
     "input_primary_just_pressed",
@@ -217,6 +220,30 @@ def adapt_game(src, txt):
             src,
         )
         txt = 'extern "C" bool ranked_checked;\nextern "C" void ranked_menu(float *base, float *tips, bool list_open);\n' + txt
+    if src.stem == "highscore_screen":
+        # A click on a row pins its card in place of the panel's settings, and the
+        # card offers the run's replay to watch (host/watch.inc).
+        txt = replace_once(
+            txt,
+            "    int hovered_score = score_scrollbar.hovered_index;\n"
+            "    if (hovered_score != -1) {\n        selected_score = hovered_score;\n    }\n",
+            "    int hovered_score = score_scrollbar.hovered_index;\n"
+            "    selected_score = highscore_watch_row(hovered_score, score_count, &score_scrollbar.selected_index);\n",
+            src,
+        )
+        txt = replace_once(
+            txt,
+            "            selected_score + 1);\n        position = saved_position;\n",
+            "            selected_score + 1);\n"
+            "        if (hovered_score == -1 && (online_sync_status == 0 || online_sync_status == 6))\n"
+            "            highscore_watch((float *)&detail_position, &highscore_table[selected_score]);\n"
+            "        position = saved_position;\n",
+            src,
+        )
+        txt = (
+            'extern "C" int highscore_watch_row(int hovered, int rows, int *selected);\n'
+            'extern "C" void highscore_watch(float *card, struct highscore_record_t *record);\n' + txt
+        )
     if src.stem == "ui_menu_layout_init":
         # The Play Game panel grows by the Ranked row (host/ranked.inc).
         txt = replace_once(

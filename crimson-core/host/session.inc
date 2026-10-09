@@ -52,6 +52,7 @@ static struct {
   int queued_count;
   game_state_id_t requested; // a state a tick asked for
   std::vector<unsigned char> replay;
+  bool watching; // the run plays a replay (watch.inc)
 } live;
 
 #include "replay.inc"
@@ -103,9 +104,11 @@ static int live_step(uint32_t count) {
   live_install(live.run);
   int accepted = portable_step_many(count);
   LiveSettings after = live_settings();
-  live_carry(live.run.config, after.config, live.outside.config, false);
-  // A ranked run plays on a detached save: its progress stays its own.
-  if (!ranked_run) {
+  // A replay changes nothing of the player's; a ranked run plays on a detached
+  // save, so its progress stays its own.
+  if (!live.watching)
+    live_carry(live.run.config, after.config, live.outside.config, false);
+  if (!live.watching && !ranked_run) {
     live_carry(live.run.status, after.status, live.outside.status, true);
     live_carry(live.run.unlocks, after.unlocks, live.outside.unlocks, false);
   }
@@ -114,13 +117,42 @@ static int live_step(uint32_t count) {
   return accepted;
 }
 
-// The original has set the run up (game_state_set): the session takes its
-// place, seeded afresh, with the player's progress and settings.
-static void live_begin() {
+// The session takes the place of the run the original has set up
+// (game_state_set), from `cfg`: false when the verifier cannot start it.
+static bool live_start() {
   LiveSettings player = live_settings();
   // The console's flag pauses parts of a tick; a run keeps it closed.
   if (console_log_queue.open)
     console_log_queue.console_set_open(0);
+  // The run's strings live in the session's arena, which the next run reuses.
+  bool heap_strings = game_heap_strings;
+  game_heap_strings = false;
+  // The end screen offers the name the original set up for the run, which the
+  // verifier's setup clears.
+  char name[sizeof highscore_active_record.player_name];
+  memcpy(name, highscore_active_record.player_name, sizeof name);
+  bool ready = portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor);
+  memcpy(highscore_active_record.player_name, name, sizeof name);
+  game_heap_strings = heap_strings;
+  live.run = live_settings();
+  // The verifier keeps corpses (cv_bodiesFade, host.cpp).
+  live.run.bodies_fade = 1;
+  live_install(player);
+  if (!ready) {
+    game_session = false;
+    return false;
+  }
+  game_live = true;
+  live.banked = 0;
+  live.fire_down = live.reload_down = live.pick_down = false;
+  live.fire_pressed = live.reload_pressed = live.open_requested = live.pausing = live.picked = false;
+  live.move_target_x = live.move_target_y = -1;
+  live.queued_count = 0;
+  return true;
+}
+
+// A run the player plays: seeded afresh, with their progress and settings.
+static void live_begin() {
   cfg = {};
   getentropy(&cfg.seed, sizeof cfg.seed);
   cfg.mode = config_blob.game_mode;
@@ -138,30 +170,8 @@ static void live_begin() {
   ranked_run = ranked_attempt();
   if (ranked_run)
     ranked_spec(cfg);
-  // The run's strings live in the session's arena, which the next run reuses.
-  bool heap_strings = game_heap_strings;
-  game_heap_strings = false;
-  // The end screen offers the name the original set up for the run, which the
-  // verifier's setup clears.
-  char name[sizeof highscore_active_record.player_name];
-  memcpy(name, highscore_active_record.player_name, sizeof name);
-  bool ready = portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor);
-  memcpy(highscore_active_record.player_name, name, sizeof name);
-  game_heap_strings = heap_strings;
-  live.run = live_settings();
-  // The verifier keeps corpses (cv_bodiesFade, host.cpp).
-  live.run.bodies_fade = 1;
-  live_install(player);
-  if (!ready) {
-    game_session = false;
+  if (!live_start())
     return;
-  }
-  game_live = true;
-  live.banked = 0;
-  live.fire_down = live.reload_down = live.pick_down = false;
-  live.fire_pressed = live.reload_pressed = live.open_requested = live.pausing = live.picked = false;
-  live.move_target_x = live.move_target_y = -1;
-  live.queued_count = 0;
   live.replay.clear();
   live_append(&cfg, sizeof cfg);
 }
@@ -283,6 +293,15 @@ static void live_queue(PortableCommand command) {
     live.queued[live.queued_count++] = command;
 }
 
+// The screen's timeline runs by the ticks' time (ui_elements_update_and_render,
+// which a tick leaves alone).
+static void live_timeline() {
+  if (!console_open_flag)
+    ui_elements_timeline += ui_transition_direction ? frame_dt_ms : -frame_dt_ms;
+  if (ui_elements_timeline > ui_elements_max_timeline())
+    ui_elements_timeline = ui_elements_max_timeline();
+}
+
 // One recorded tick; false once the run stops ticking this frame. A tick takes
 // at most one perk command, judged by the state it starts from: a pick can use
 // up the last perk or kill the player (Grim Deal), so the next command waits
@@ -323,14 +342,9 @@ static bool live_tick() {
     game_state_set_recovered(GAME_STATE_PERK_SELECTION);
     return false;
   }
-  // The screen's timeline runs by the ticks' time (ui_elements_update_and_render,
-  // which a tick leaves alone). Escape asked for the pause menu
-  // (game_frame_update): the timeline runs down while the run plays on, then the
-  // menu opens and the run waits.
-  if (!console_open_flag)
-    ui_elements_timeline += ui_transition_direction ? frame_dt_ms : -frame_dt_ms;
-  if (ui_elements_timeline > ui_elements_max_timeline())
-    ui_elements_timeline = ui_elements_max_timeline();
+  // Escape asked for the pause menu (game_frame_update): the timeline runs down
+  // while the run plays on, then the menu opens and the run waits.
+  live_timeline();
   if (live.pausing && ui_elements_timeline < 0) {
     ui_elements_timeline = 0;
     live.pausing = false;
@@ -340,23 +354,40 @@ static bool live_tick() {
   return true;
 }
 
+#include "watch.inc"
+
 extern "C" {
 // game_frame (game/frame.cpp), after polling input: the ticks this pass runs,
 // or -1 when no run is playing. A pass with none draws nothing new.
 int game_live_frame() {
   if (!game_live || game_state_id != GAME_STATE_GAMEPLAY)
     return -1;
+  if (live.watching)
+    return watch_frame();
   live_poll();
   live.banked += fminf(grim_frame_dt, 0.1f);
   live.due = (int)(live.banked * 60.0f + 1e-4f);
   live.banked -= live.due / 60.0f;
   return live.due;
 }
+// Drawn between ticks too (the perk menu, a paused replay), the world takes a
+// guarded weapon away by the quests unlocked: the run's, as its ticks see them.
+void gameplay_render_world_recovered();
+void gameplay_render_world() {
+  if (!game_live || game_ticking)
+    return gameplay_render_world_recovered();
+  live.outside = live_settings();
+  live_install(live.run);
+  gameplay_render_world_recovered();
+  live_install(live.outside);
+}
 void gameplay_update_and_render() {
   if (!game_live || game_ticking) {
     gameplay_update_and_render_recovered();
     return;
   }
+  if (live.watching)
+    return watch_render();
   // A click on the perk prompt, where the original laid it out, also asks for
   // the perk menu, with this frame's cursor; a tick never hit-tests it, as the
   // verifier lays out no prompt (game.py).
@@ -374,7 +405,10 @@ void gameplay_update_and_render() {
 bool game_live_run() { return game_live; }
 // The game quits (game/frame.cpp): an unfinished run still keeps its recording.
 void game_live_quit() {
-  if (game_live)
+  // A replay's menu settings give way to the player's, which the game saves.
+  if (live.watching)
+    watch_stop();
+  else if (game_live)
     live_end("incomplete");
   ranked_release();
 }
@@ -410,23 +444,42 @@ void game_state_set(game_state_id_t state) {
   }
   // Leaving the end screen names the ranked run it held (ranked.inc).
   ranked_release();
+  // A replay plays from the run its Watch starts; any other screen drops it.
+  bool watches = watch.armed && state == GAME_STATE_GAMEPLAY && !run_active && live_eligible();
+  if (watch.armed && !watches)
+    watch_disarm();
   // Leaving the run for anything but its own screens (the perk menu, and the
   // pause menu with its options) ends it unfinished.
-  if (game_live && state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&
-      state != GAME_STATE_PAUSE_MENU && state != GAME_STATE_OPTIONS_MENU && state != GAME_STATE_CONTROLS_MENU)
+  // A replay stops for any screen.
+  if (live.watching && state != GAME_STATE_GAMEPLAY)
+    watch_stop();
+  else if (game_live && state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&
+           state != GAME_STATE_PAUSE_MENU && state != GAME_STATE_OPTIONS_MENU && state != GAME_STATE_CONTROLS_MENU)
     live_end("incomplete");
   bool starts = state == GAME_STATE_GAMEPLAY && !run_active && live_eligible();
+  // The run a replay starts counts in none of the player's statistics.
+  game_status_t status = game_status_blob;
   game_state_set_recovered(state);
-  if (starts) {
+  if (watches) {
+    game_status_blob = status;
+    watch_begin();
+  } else if (starts)
     live_begin();
+  if (starts)
     live.banked = 0;
-  }
   // Back from a menu, the run picks up where it stopped, without catching up,
   // and the click that left the menu is no press on the perk prompt.
   if (game_live && state == GAME_STATE_GAMEPLAY) {
     live.banked = 0;
     live.click_down = true;
   }
+}
+// A tick's save would write the verifier's settings; the player's own reach the
+// save after it (live_step), with the next one outside a tick.
+void game_save_status_recovered();
+void game_save_status() {
+  if (!game_ticking)
+    game_save_status_recovered();
 }
 __attribute__((export_name("game_replay"))) const unsigned char *game_replay() { return live.replay.data(); }
 __attribute__((export_name("game_replay_size"))) int game_replay_size() { return (int)live.replay.size(); }

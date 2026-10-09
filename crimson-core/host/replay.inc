@@ -323,11 +323,14 @@ struct MsgpackReader {
 
 // A replay read for playback: the session's recording of it (the config, then
 // each tick's input and commands, as live.replay holds a run), the rules and
-// build it was recorded with, or why this module cannot play it.
+// build it was recorded with, or why this module cannot play it; and the
+// result it recorded, as its bytes (replay_result writes them alike) and as
+// the end of a watch shows it.
 struct LoadedReplay {
-  std::vector<uint8_t> recording;
+  std::vector<uint8_t> recording, result;
   int rules = 0;
-  std::string game_version, reason;
+  std::string game_version, reason, outcome;
+  int64_t elapsed_ms = 0, quest_final_ms = -1, kills = 0, experience = 0;
 };
 
 static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedReplay &out) {
@@ -367,6 +370,26 @@ static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedRepl
   }
   if (config.mode < GAME_MODE_SURVIVAL || config.mode > GAME_MODE_QUEST)
     out.reason = "This run needs the Python port";
+}
+
+static void replay_read_result(MsgpackReader &r, LoadedReplay &out) {
+  const uint8_t *start = r.at;
+  for (uint32_t n = r.map(); r.ok && n; --n) {
+    std::string key = r.str();
+    if (key == "outcome") out.outcome = r.str();
+    else if (key == "elapsed_ms") out.elapsed_ms = r.integer();
+    else if (key == "kills") out.kills = r.integer();
+    else if (key == "quest_final_ms") out.quest_final_ms = r.nil() ? -1 : r.integer();
+    else if (key == "players")
+      for (uint32_t players = r.array(), i = 0; r.ok && i < players; ++i)
+        for (uint32_t m = r.map(); r.ok && m; --m) {
+          std::string field = r.str();
+          if (field == "experience" && i == 0) out.experience = r.integer();
+          else r.skip();
+        }
+    else r.skip();
+  }
+  out.result.assign(start, r.at);
 }
 
 static void replay_read_ticks(MsgpackReader &r, LoadedReplay &out) {
@@ -426,20 +449,34 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
     else if (key == "game_version") out.game_version = r.str();
     else if (key == "rules") out.rules = (int)r.integer();
     else if (key == "run") replay_read_run(r, config, out), run = true;
+    else if (key == "result") replay_read_result(r, out);
     else if (key == "ticks") replay_read_ticks(r, out);
     else r.skip();
   }
   // Format 30 had no rules; its replays play under rules 1 (docs/formats/replay.md).
   if (format == 30)
     out.rules = 1;
-  // A whole replay: its run, a tick, and nothing after its map.
-  bool whole = r.at == r.end && run && out.recording.size() > sizeof config && !out.game_version.empty();
+  // A whole replay: its run, its result, a tick, and nothing after its map.
+  bool whole = r.at == r.end && run && !out.result.empty() && out.recording.size() > sizeof config &&
+               !out.game_version.empty();
   if (out.reason.empty() && (!r.ok || !whole || (format != 30 && format != CRIMSON_REPLAY_FORMAT)))
     out.reason = "This version cannot read its replay";
   else if (out.reason.empty() && out.rules != CRIMSON_REPLAY_RULES)
     out.reason = "Recorded under other rules (" + out.game_version.substr(0, out.game_version.find('+')) + ")";
   memcpy(out.recording.data(), &config, sizeof config);
   return out.reason.empty();
+}
+
+// Reads the .crd at `path` (replay_read); a missing file reads as a broken one.
+static bool replay_read_file(const char *path, LoadedReplay &out) {
+  std::vector<uint8_t> file;
+  if (FILE *fp = platform_fopen(path, "rb")) {
+    uint8_t chunk[65536];
+    for (size_t n; (n = fread(chunk, 1, sizeof chunk, fp)) > 0 && file.size() <= REPLAY_MAX_PAYLOAD;)
+      file.insert(file.end(), chunk, chunk + n);
+    fclose(fp);
+  }
+  return replay_read(file, out);
 }
 
 static LoadedReplay replay_loaded;
@@ -451,14 +488,7 @@ __attribute__((export_name("game_replay_path"))) char *game_replay_path() { retu
 // Reads the replay at game_replay_path: 1 when this module can play it, else 0
 // with game_replay_reason.
 __attribute__((export_name("game_replay_open"))) int game_replay_open() {
-  std::vector<uint8_t> file;
-  if (FILE *fp = platform_fopen(replay_path, "rb")) {
-    uint8_t chunk[65536];
-    for (size_t n; (n = fread(chunk, 1, sizeof chunk, fp)) > 0 && file.size() <= REPLAY_MAX_PAYLOAD;)
-      file.insert(file.end(), chunk, chunk + n);
-    fclose(fp);
-  }
-  return replay_read(file, replay_loaded);
+  return replay_read_file(replay_path, replay_loaded);
 }
 __attribute__((export_name("game_replay_reason"))) const char *game_replay_reason() { return replay_loaded.reason.c_str(); }
 __attribute__((export_name("game_replay_recording"))) const uint8_t *game_replay_recording() {
