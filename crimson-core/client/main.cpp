@@ -286,7 +286,10 @@ bool start_game() {
   w2c_game_0x5Finitialize(&game);
   started = true;
 #ifdef __EMSCRIPTEN__
-  w2c_game_game_leaderboard_enable(&game, 1);
+  w2c_game_game_platform(&game, 1);
+  w2c_game_game_leaderboard_enable(&game);
+#else
+  w2c_game_game_platform(&game, 2);
 #endif
   return w2c_game_game_start(&game);
 }

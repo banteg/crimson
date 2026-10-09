@@ -84,9 +84,10 @@ def game_platform():
 
 
 # The vendored C the platform layer links (game/leaderboard.cpp): zstd 1.5.7's
-# compressor and Monocypher 4.0.2 with its Ed25519.
+# single-file library without its dictionary builder or threads, and Monocypher
+# 4.0.2 with its Ed25519.
 def game_vendor_c():
-    return [GAME / "vendor" / name for name in ("zstd_compress.c", "monocypher.c", "monocypher-ed25519.c")]
+    return [GAME / "vendor" / name for name in ("zstd.c", "monocypher.c", "monocypher-ed25519.c")]
 
 
 def replace_once(text, old, new, src):

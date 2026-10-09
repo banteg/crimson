@@ -40,8 +40,9 @@ export function bootGame(wasm, directory, seed, { leaderboard = false } = {}) {
   const instance = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi.wasiImport, host });
   game = instance.exports;
   wasi.initialize(instance);
-  // As the browser host does: ranked runs, which go to leaderboard/outbox/.
-  if (leaderboard) game.game_leaderboard_enable(1);
+  // As the browser host does: its replays name the browser, and ranked runs go to leaderboard/outbox/.
+  game.game_platform(1);
+  if (leaderboard) game.game_leaderboard_enable();
   if (!game.game_start()) throw Error("startup failed");
   return {
     game,

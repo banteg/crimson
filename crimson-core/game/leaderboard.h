@@ -9,6 +9,8 @@
 void sha256(const void *data, size_t size, uint8_t digest[32]);
 // The replay envelope: one zstd frame that declares its content size.
 std::vector<uint8_t> zstd_pack(const std::vector<uint8_t> &payload);
+// The payload of one such frame, at most `max_size` bytes; empty when it is not one.
+std::vector<uint8_t> zstd_unpack(const uint8_t *data, size_t size, size_t max_size);
 
 // The player's Ed25519 key: identity.key in the game directory holds its 32-byte
 // seed, as the Python port keeps it, and is made on first use.
