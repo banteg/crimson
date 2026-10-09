@@ -318,6 +318,14 @@ extern "C" EMSCRIPTEN_KEEPALIVE void client_scores_received(const char *answer) 
   }
   w2c_game_game_scores_received(&game, size);
 }
+// A board run's replay to watch: the run the page fetches into
+// /game/replays/online/<run>.crd, then how it went (0 written, 1 gone, 2 failed).
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_replay_download() {
+  return (const char *)client_memory() + w2c_game_game_replay_download(&game);
+}
+extern "C" EMSCRIPTEN_KEEPALIVE void client_replay_downloaded(int result) {
+  w2c_game_game_replay_downloaded(&game, result);
+}
 #endif
 
 #ifndef __EMSCRIPTEN__

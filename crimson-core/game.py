@@ -220,6 +220,15 @@ def adapt_game(src, txt):
             src,
         )
         txt = 'extern "C" bool ranked_checked;\nextern "C" void ranked_menu(float *base, float *tips, bool list_open);\n' + txt
+    if src.stem == "highscore_load_table":
+        # The table reads the leaderboard's runs after its own records (host/ranked.inc).
+        txt = replace_once(txt, '    fp = platform_fopen(path, "rb");', "    fp = highscore_table_open(path);", src)
+        txt = replace_once(
+            txt,
+            'extern "C" void highscore_load_table(void)',
+            'extern "C" FILE *highscore_table_open(char *path);\nextern "C" void highscore_load_table(void)',
+            src,
+        )
     if src.stem == "highscore_screen":
         # A click on a row pins its card in place of the panel's settings, and the
         # card offers the run's replay to watch (host/watch.inc).

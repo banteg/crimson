@@ -202,6 +202,20 @@ it, one it refuses moves to `rejected/` with the reason, and offline runs wait.
 Profile signs a challenge and opens the profile signed in. The native client
 has no network stack yet and shows no Ranked box.
 
+The high score screen shows the leaderboard's runs as the Python port does
+(`screens/high_scores_view/records.py`). Each board's latest answer is kept for
+the session, every fetch replacing it whole, so a hidden, banned or deleted run
+leaves at the next one; nothing online is stored. While Show internet scores is
+ticked, the table reads the board's runs after its own records, so the
+original's filters, duplicate rule and order take them in; a run of the
+player's own that the board holds (the same name, time and experience) turns
+green in its place. The screen fetches a board quietly the first time it shows
+it, and Update scores fetches the shown one again with the original's status
+lines. A pinned board run's card fetches its replay through the page into
+`replays/online/<run>.crd`, where the newest few stay, and Watch plays it;
+"This run is no longer on the leaderboard" and "Could not download this run"
+tell a dropped run from a failed download, which the next pin tries again.
+
 ### Evidence
 
 - [`checks/game_check.py`](checks/game_check.py) runs sessions in the game
@@ -352,7 +366,8 @@ and `npm run play` in `service` stages the packaged web build for deploy.
 | 6. Verifier convergence | Dropped: the verifier stays its own artifact and holds every client build to it ([Packaging](#packaging)) | |
 | 7. Product parity | Gamepads as the original's joystick; the web client takes the player's own game folder | Done ([#556](https://github.com/banteg/crimson/pull/556)) |
 | 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client finds the game folder; next, a Windows host (the WASI layer is POSIX) and signing | Done ([#557](https://github.com/banteg/crimson/pull/557)); crimson.land/play hosts the web client with the distributed files |
-| 9. Ranked play from the client | Ranked runs from the web client: the Play Game panel's Ranked box and Profile button, `.crd` replays signed and queued as the Python port does, uploaded by the page; next, the native client's upload and the high score screen's Update scores | Done ([#566](https://github.com/banteg/crimson/pull/566)) |
+| 9. Ranked play from the client | Ranked runs from the web client: the Play Game panel's Ranked box and Profile button, `.crd` replays signed and queued as the Python port does, uploaded by the page; next, the native client's upload | Done ([#566](https://github.com/banteg/crimson/pull/566)) |
+| 10. Watching replays | Every run saves its replay; the high score screen's Watch plays local runs and the leaderboard's, with the board's runs kept for the session (docs/rewrite/watch-replays.md) | Done ([#590](https://github.com/banteg/crimson/pull/590), [#598](https://github.com/banteg/crimson/pull/598)) |
 
 ## Acceptance gates
 
