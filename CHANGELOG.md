@@ -2,6 +2,24 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.14.2
+
+### For players
+
+#### Watching replays
+
+- The Python port watches replays with the same viewer as the browser game: the scrub bar that seeks anywhere, backwards too, the box for each perk pick, and the original's game over screen with the run's score card at the end. The replay plays at once while it prepares in the background; the bar draws the part it can't reach yet fainter.
+- In the browser game, a replay plays no music while it prepares, and a seek plays the tune the run has at that point instead of restarting it.
+- Long runs prepare in the browser, and **[crimson.land](https://crimson.land)** verifies an upload of a run several hours long.
+- Watching a replay no longer shows the hint to pick a perk, since a viewer picks nothing.
+
+#### The browser and desktop game
+
+- Runs draw with your detail settings, so rockets keep their glow and smoke trails, shadows are back, and the arrow over the player and the perk prompt's hint show as in the original.
+- The ground came out mirrored across its diagonal, and Typ-o names took their parts in reverse. Both now come out as in the original and the Python port.
+- The game draws the fixes listed in [the original's bugs](https://crimson.banteg.xyz/rewrite/original-bugs/): bullet heads and plasma cores show, the Fire Bullets glow goes only on Fire Bullets shots, rocket flashes no longer draw the whole particle sheet, ion chain arcs no longer end in a hard cut, a bonus picked again slides its HUD indicator straight back in, and a resting pad aim stick keeps the aim where it was.
+- The site's footer links the docs.
+
 ## 0.14.1
 
 ### For players
