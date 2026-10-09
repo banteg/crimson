@@ -1,6 +1,7 @@
 // Native installs may have music.paq rather than the loose music/ files the
 // original opens. Prepare the same layout as the browser before booting it.
 #ifndef __EMSCRIPTEN__
+#include "paths.h"
 #include <SDL3/SDL.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -11,14 +12,27 @@
 #include <unistd.h>
 
 namespace {
+std::string asset_path(const std::string &directory, const std::string &name) {
+  return directory + "/" + client_path_name(opendir(directory.c_str()), name);
+}
+
+std::string asset_name(int directory, const std::string &name) {
+  int fd = openat(directory, ".", O_RDONLY | O_DIRECTORY);
+  DIR *dir = fd >= 0 ? fdopendir(fd) : nullptr;
+  if (!dir && fd >= 0)
+    close(fd);
+  return client_path_name(dir, name);
+}
+
 // Keep extraction relative to open directories; never follow a music/ link.
 int open_music_directory(const std::string &directory) {
   int root = open(directory.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW);
   if (root < 0)
     return -1;
   int music = -1;
-  if (mkdirat(root, "music", 0777) == 0 || errno == EEXIST)
-    music = openat(root, "music", O_RDONLY | O_DIRECTORY | O_NOFOLLOW);
+  std::string name = asset_name(root, "music");
+  if (mkdirat(root, name.c_str(), 0777) == 0 || errno == EEXIST)
+    music = openat(root, name.c_str(), O_RDONLY | O_DIRECTORY | O_NOFOLLOW);
   int error = errno;
   close(root);
   errno = error;
@@ -45,6 +59,7 @@ std::string unpack_music(int music, const unsigned char *data, size_t size) {
     filename = filename.substr(filename.find_last_of("/\\") + 1);
     if (filename.empty() || filename == "." || filename == "..")
       return "Invalid filename in music.paq.";
+    filename = asset_name(music, filename);
     // Exclusive creation cannot follow a link or overwrite an existing file.
     int fd = openat(music, filename.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0666);
     if (fd < 0) {
@@ -74,10 +89,10 @@ std::string unpack_music(int music, const unsigned char *data, size_t size) {
 
 std::string client_prepare_assets(const std::string &directory) {
   for (const char *name : {"crimson.paq", "sfx.paq"})
-    if (!SDL_GetPathInfo((directory + "/" + name).c_str(), nullptr))
+    if (!SDL_GetPathInfo(asset_path(directory, name).c_str(), nullptr))
       return std::string("Missing ") + name + ". Choose the folder containing the game's files.";
 
-  const std::string archive = directory + "/music.paq";
+  const std::string archive = asset_path(directory, "music.paq");
   if (SDL_GetPathInfo(archive.c_str(), nullptr)) {
     size_t size;
     unsigned char *data = (unsigned char *)SDL_LoadFile(archive.c_str(), &size);
@@ -92,8 +107,9 @@ std::string client_prepare_assets(const std::string &directory) {
     if (!error.empty())
       return error;
   }
+  const std::string music = asset_path(directory, "music");
   for (const char *name : {"intro.ogg", "shortie_monk.ogg", "crimson_theme.ogg", "crimsonquest.ogg"})
-    if (!SDL_GetPathInfo((directory + "/music/" + name).c_str(), nullptr))
+    if (!SDL_GetPathInfo(asset_path(music, name).c_str(), nullptr))
       return std::string("Missing music/") + name + ". Add music.paq or the game's unpacked music folder.";
   return "";
 }

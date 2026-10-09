@@ -101,8 +101,28 @@ def main():
             raise ValueError("A linked music folder was accepted")
         music.unlink()
         saved.rename(music)
+        # Match the runtime's case-insensitive names on case-sensitive disks.
+        for name in ("sfx.paq", "music.paq", "crimson.paq"):
+            (game / name).rename(game / name.upper())
+            subprocess.run([str(probe), str(game)], check=True)
+        for track in music.iterdir():
+            track.rename(track.with_name(track.name.upper()))
+        music.rename(game / "MUSIC")
+        subprocess.run([str(probe), str(game)], check=True)
+        (game / "MUSIC/INTRO.OGG").unlink()
+        subprocess.run([str(probe), str(game)], check=True)
+        if (game / "MUSIC/intro.ogg").read_bytes() != expected["intro.ogg"]:
+            raise ValueError("Mixed-case music folder was not repaired")
+        if sorted(file.name.lower() for file in (game / "MUSIC").iterdir()) != sorted(expected):
+            raise ValueError("Extraction created duplicate tracks with different case")
+        (game / "MUSIC.PAQ").unlink()
+        subprocess.run([str(probe), str(game)], check=True)
+        (game / "MUSIC").rename(music)
+        for track in music.iterdir():
+            track.rename(track.with_name(track.name.lower()))
+        for name in ("crimson.paq", "sfx.paq"):
+            (game / name.upper()).rename(game / name)
         # Original installations with loose music need no archive.
-        (game / "music.paq").unlink()
         subprocess.run([str(probe), str(game)], check=True)
         (game / "music/crimsonquest.ogg").unlink()
         missing = subprocess.run([str(probe), str(game)], capture_output=True, text=True, check=False)

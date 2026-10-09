@@ -2,6 +2,7 @@
 // directory (preopened as fd 3), the clock, and console output. Windows paths
 // arrive already normalized; names match case-insensitively, as on Windows.
 #include "client.h"
+#include "paths.h"
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -78,15 +79,7 @@ bool resolve(const std::string &relative, std::string &path) {
       continue;
     if (part == "..")
       return false;
-    std::string match = part;
-    if (DIR *dir = opendir(path.c_str())) {
-      while (dirent *entry = readdir(dir))
-        if (!strcasecmp(entry->d_name, part.c_str())) {
-          match = entry->d_name;
-          break;
-        }
-      closedir(dir);
-    }
+    std::string match = client_path_name(opendir(path.c_str()), part);
     path += "/" + match;
     struct stat st;
     if (lstat(path.c_str(), &st) == 0 && S_ISLNK(st.st_mode))
