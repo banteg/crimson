@@ -254,7 +254,7 @@ def main():
         if proc.returncode:
             print(proc.stderr)
             raise SystemExit(1)
-    ziglib = Path(re.search(r'\.lib_dir = "([^"]+)"', subprocess.check_output([zig, "env"], env=env, text=True))[1])
+    ziglib = Path(re.search(r'\.lib_dir = "([^"]+)"', subprocess.check_output([zig, "env"], env=env, text=True))[1]).resolve()
     runtime = a.out / "runtime"
     # Relink every build, so a build directory from another Zig never keeps that Zig's runtime.
     runtime.unlink(missing_ok=True)
