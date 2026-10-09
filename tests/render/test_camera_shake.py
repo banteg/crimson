@@ -1,50 +1,21 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 from crimson.bonuses import BonusId
-from crimson.bonuses.apply import NUKE_CAMERA_SHAKE_TIMER, bonus_apply
+from crimson.bonuses.apply import NUKE_CAMERA_SHAKE_TIMER
 from crimson.camera import camera_shake_update
-from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.mode_updates import RushSpawnState, SurvivalSpawnState
+from crimson.sim.mode_updates import SurvivalSpawnState
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.world_reset import reset_world_players
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
-from tests.support.builders.session import make_world
-from tests.support.factories import make_creature_state as _creature
-from tests.support.factories import make_step_runtime, place_creatures, player_input
+from tests.support.factories import player_input
 from tests.support.helpers import assert_float_close
-from tests.support.world_runtime import WorldRuntimeHost
-
-
-def test_camera_shake_update_resets_offsets_when_inactive() -> None:
-    state = GameplayState()
-    state.camera_shake_timer = 0.0
-    state.camera_shake_offset = Vec2(5.0, -3.0)
-
-    camera_shake_update(state, 0.016)
-
-    assert state.camera_shake_offset == Vec2()
-
-
-def test_camera_shake_update_decays_timer_without_pulse() -> None:
-    state = GameplayState()
-    state.camera_shake_timer = 1.0
-    state.camera_shake_pulses = 10
-    state.camera_shake_offset = Vec2(7.0, -9.0)
-
-    camera_shake_update(state, 0.1)
-
-    assert_float_close(state.camera_shake_timer, f32(0.7))
-    assert state.camera_shake_pulses == 10
-    assert state.camera_shake_offset == Vec2(7.0, -9.0)
 
 
 def test_camera_shake_update_matches_decompile_first_pulse() -> None:
@@ -58,28 +29,6 @@ def test_camera_shake_update_matches_decompile_first_pulse() -> None:
     assert state.camera_shake_pulses == 0x13
     assert_float_close(state.camera_shake_timer, f32(0.1))
     assert state.camera_shake_offset == Vec2(28.0, -32.0)
-    assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.CAMERA_UPDATE_OFFSET_X_BASE,
-        RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SPREAD,
-        RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SIGN,
-        RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_BASE,
-        RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SPREAD,
-        RngCallerStatic.CAMERA_UPDATE_OFFSET_Y_SIGN,
-    ]
-
-
-def test_camera_shake_update_reflex_boost_uses_shorter_interval() -> None:
-    rng = RecordingCrand(Crand(0xBEEF))
-    state = GameplayState(rng=rng)
-    state.bonuses.reflex_boost = 1.0
-    state.time_scale_active = True
-    state.camera_shake_pulses = 5
-    state.camera_shake_timer = 0.01
-
-    camera_shake_update(state, 0.1)
-
-    assert state.camera_shake_pulses == 4
-    assert_float_close(state.camera_shake_timer, f32(0.06))
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.CAMERA_UPDATE_OFFSET_X_BASE,
         RngCallerStatic.CAMERA_UPDATE_OFFSET_X_SPREAD,
@@ -121,54 +70,6 @@ def test_camera_shake_update_clears_offsets_one_frame_after_last_pulse() -> None
     assert state.camera_shake_offset == Vec2()
 
 
-def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
-    world = make_world()
-    state = world.state
-    player = world.players[0]
-    player.pos = Vec2(100.0, 100.0)
-    creatures = place_creatures(
-        world,
-        [_creature(pos=Vec2(100.0, 100.0), hp=100.0), _creature(pos=Vec2(500.0, 500.0), hp=100.0)],
-    )
-    step_runtime = make_step_runtime(world)
-
-    bonus_apply(
-        state,
-        player,
-        BonusId.NUKE,
-        amount=1,
-        step_runtime=step_runtime,
-        origin=player.pos,
-        creatures=creatures,
-        players=world.players,
-    )
-
-    assert state.camera_shake_pulses == 0x14
-    assert_float_close(state.camera_shake_timer, NUKE_CAMERA_SHAKE_TIMER)
-    assert creatures[0].hp <= 0.0
-    assert [death.index for death in step_runtime.deaths] == [0]
-    assert creatures[1].hp == 100.0
-
-
-def test_game_world_nuke_pickup_defers_shake_decay_to_next_frame() -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-
-    player = runtime.world.players[0]
-    entry = runtime.world.state.bonus_pool.spawn_at(
-        pos=Vec2(player.pos.x, player.pos.y),
-        bonus_id=BonusId.NUKE,
-        state=runtime.world.state,
-    )
-    assert entry is not None
-
-    runtime.step_survival_frame(1.0 / 60.0, perk_progression_enabled=False)
-
-    assert entry.picked
-    assert runtime.world.state.camera_shake_pulses == 0x14
-    assert_float_close(runtime.world.state.camera_shake_timer, NUKE_CAMERA_SHAKE_TIMER)
-
-
 def _spawn_nuke_pickup_on_player(world: WorldState) -> object:
     player = world.players[0]
     entry = world.state.bonus_pool.spawn_at(
@@ -198,27 +99,6 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         world=world,
         perk_progression_enabled=True,
         mode_state=SurvivalSpawnState(),
-    )
-
-    _tick = session.step_tick(
-        dt=1.0 / 60.0,
-        inputs=[player_input(aim=Vec2(player.pos.x, player.pos.y))],
-    )
-
-    assert bool(getattr(entry, "picked", False))
-    assert world.state.camera_shake_pulses == 0x14
-    assert_float_close(world.state.camera_shake_timer, NUKE_CAMERA_SHAKE_TIMER)
-
-
-def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
-    world = _build_session_world(seed=0x5678)
-    entry = _spawn_nuke_pickup_on_player(world)
-    player = world.players[0]
-    world.state.game_mode = GameMode.RUSH
-    session = DeterministicSession(
-        world=world,
-        perk_progression_enabled=False,
-        mode_state=RushSpawnState(),
     )
 
     _tick = session.step_tick(

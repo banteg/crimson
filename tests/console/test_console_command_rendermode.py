@@ -22,19 +22,6 @@ def test_rendermode_reports_and_sets_mode(make_game_state) -> None:
     assert state.console.log.lines[-1] == "Render mode set to 'classic'."
 
 
-def test_rendermode_invalid_usage_keeps_mode(make_game_state) -> None:
-    state = make_game_state()
-    handlers = _boot_command_handlers(state)
-
-    handlers["rendermode"](["invalid"])
-    assert state.rtx_mode is RtxRenderMode.CLASSIC
-    assert state.console.log.lines[-1] == "rendermode <classic|rtx>"
-
-    handlers["rendermode"](["rtx", "extra"])
-    assert state.rtx_mode is RtxRenderMode.CLASSIC
-    assert state.console.log.lines[-1] == "rendermode <classic|rtx>"
-
-
 def test_togglertx_cycles_mode(make_game_state) -> None:
     state = make_game_state()
     handlers = _boot_command_handlers(state)

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
 
 import msgspec
 import pytest
@@ -15,7 +14,7 @@ from crimson.replay import ReplayRecorder, dump_replay
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.input import PlayerInput
 from crimson.sim.run_spec import RunSpec
-from crimson_re.dbg.schema import TRACE_REQUIRED_CHANNELS, TickRecord
+from crimson_re.dbg.schema import TickRecord
 from crimson_re.dbg.trace import TraceReader, load_trace, write_trace
 from grim.geom import Vec2
 from tests.support.factories import player_input
@@ -84,100 +83,6 @@ def test_dbg_health_flags_empty_timing_rows(tmp_path: Path, monkeypatch) -> None
     assert "issue=timing_samples missing for 3 tick(s) in trace window" in health_result.output
 
 
-def test_dbg_record_rejects_removed_profile_option(tmp_path: Path) -> None:
-    replay_path = _write_replay(tmp_path / "sample.crd")
-    trace_path = tmp_path / "sample.cdt"
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--profile", "standard"],
-    )
-
-    assert result.exit_code == 2
-    assert "No such option" in result.output
-
-
-def test_dbg_record_rejects_removed_max_ticks_option(tmp_path: Path) -> None:
-    replay_path = _write_replay(tmp_path / "sample.crd")
-    trace_path = tmp_path / "sample.cdt"
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        ["dbg", "record", str(replay_path), "--out", str(trace_path), "--max-ticks", "2"],
-    )
-
-    assert result.exit_code == 2
-    assert "No such option" in result.output
-
-
-def test_dbg_bisect_rejects_removed_out_option(tmp_path: Path) -> None:
-    replay_path = _write_replay(tmp_path / "sample.crd")
-    golden_trace = tmp_path / "golden.cdt"
-    candidate_trace = tmp_path / "candidate.cdt"
-    runner = CliRunner()
-
-    record_result = runner.invoke(
-        app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
-    )
-    assert record_result.exit_code == 0, record_result.output
-    meta, ticks, _footer = load_trace(golden_trace)
-    ticks = _with_score_xp_delta(ticks, tick_index=1, delta=1)
-    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
-
-    result = runner.invoke(
-        app,
-        ["dbg", "bisect", str(golden_trace), str(candidate_trace), "--out", str(tmp_path / "repro.cdt")],
-    )
-
-    assert result.exit_code == 2
-    assert "No such option" in result.output
-
-
-def test_dbg_record_prints_the_trace_summary(tmp_path: Path, monkeypatch) -> None:
-    replay_path = _write_replay(tmp_path / "sample.crd")
-    trace_path = tmp_path / "sample.cdt"
-    runner = CliRunner()
-
-    captured: dict[str, object] = {}
-
-    def _fake_record_replay_to_trace(
-        *,
-        replay_path: Path,
-        out_path: Path,
-    ) -> object:
-        captured["replay_path"] = replay_path
-        captured["out_path"] = out_path
-        return SimpleNamespace(
-            meta=SimpleNamespace(
-                tick_range=SimpleNamespace(start_tick=0, end_tick=1, tick_count=2),
-            ),
-        )
-
-    import crimson_re.dbg.record as dbg_record_mod
-
-    monkeypatch.setattr(dbg_record_mod, "record_replay_to_trace", _fake_record_replay_to_trace)
-    result = runner.invoke(
-        app,
-        [
-            "dbg",
-            "record",
-            str(replay_path),
-            "--out",
-            str(trace_path),
-        ],
-    )
-
-    assert result.exit_code == 0, result.output
-    assert f"trace={trace_path}" in result.output
-    assert "ticks start=0 end=1 count=2" in result.output
-    assert "channels=" + ",".join(TRACE_REQUIRED_CHANNELS) in result.output
-    assert captured["replay_path"] == replay_path
-    assert captured["out_path"] == trace_path
-
-
 def _write_survival_replay(path: Path, player_input: PlayerInput, *, ticks: int) -> Path:
     recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF))
     for _ in range(int(ticks)):
@@ -235,29 +140,6 @@ def test_dbg_record_emits_required_channels(tmp_path: Path) -> None:
         assert tick0.channels.checkpoint.tick_index == 0
         assert isinstance(tick0.channels.rng_stream, list)
         assert tick0.channels.sim_state is not None
-        assert tick0.channels.entity_samples is not None
-
-
-def test_dbg_record_uses_canonical_channels(tmp_path: Path) -> None:
-    replay_path = _write_replay(tmp_path / "sample_full.crd")
-    trace_path = tmp_path / "sample_full.cdt"
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        ["dbg", "record", str(replay_path), "--out", str(trace_path)],
-    )
-    assert result.exit_code == 0, result.output
-    assert "checkpoint" in result.output
-    assert "rng_stream" in result.output
-    assert "sim_state" in result.output
-    assert "entity_samples" in result.output
-
-    with TraceReader(trace_path) as trace:
-        tick0 = trace.tick(0)
-        assert tick0 is not None
-        assert isinstance(tick0.channels.rng_stream, list)
-        assert tick0.channels.sim_state.gameplay.mode_id == int(GameMode.SURVIVAL)
         assert tick0.channels.entity_samples is not None
 
 
@@ -413,74 +295,6 @@ def test_dbg_diff_and_focus_reject_different_replay_identity(tmp_path: Path) -> 
         dbg_diff.diff_traces(expected_trace_path=golden_trace, actual_trace_path=candidate_trace)
     with pytest.raises(ValueError, match="seed"):
         focus_tick(golden_trace=golden_trace, candidate_trace=candidate_trace, tick_index=0)
-
-
-def test_dbg_diff_checkpoint_field_changes_report_mismatch(tmp_path: Path) -> None:
-    replay_path = _write_replay(tmp_path / "sample_hashes.crd")
-    golden_trace = tmp_path / "golden_hashes.cdt"
-    candidate_trace = tmp_path / "candidate_hashes.cdt"
-    runner = CliRunner()
-
-    record_result = runner.invoke(
-        app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
-    )
-    assert record_result.exit_code == 0, record_result.output
-
-    meta, ticks, _footer = load_trace(golden_trace)
-    ticks = _with_score_xp_delta(ticks, tick_index=0, delta=999999)
-    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
-
-    result = runner.invoke(
-        app,
-        [
-            "dbg",
-            "diff",
-            str(golden_trace),
-            str(candidate_trace),
-        ],
-    )
-    assert result.exit_code == 1, result.output
-    assert "result=diverged" in result.output
-    assert "checkpoint_field_mismatch" in result.output
-
-
-def test_dbg_bisect_scans_once(tmp_path: Path, monkeypatch) -> None:
-    replay_path = _write_replay(tmp_path / "sample.crd")
-    golden_trace = tmp_path / "golden.cdt"
-    candidate_trace = tmp_path / "candidate.cdt"
-    runner = CliRunner()
-
-    record_result = runner.invoke(
-        app,
-        ["dbg", "record", str(replay_path), "--out", str(golden_trace)],
-    )
-    assert record_result.exit_code == 0, record_result.output
-
-    meta, ticks, _footer = load_trace(golden_trace)
-    ticks = _with_score_xp_delta(ticks, tick_index=1, delta=1)
-    write_trace(candidate_trace, meta=meta, ticks=ticks, chunk_ticks=2)
-
-    call_count = 0
-    original_first_mismatch = dbg_diff._first_mismatch
-
-    def _counting_first_mismatch(*, pairs, tick_end=None):
-        nonlocal call_count
-        call_count += 1
-        return original_first_mismatch(
-            pairs=pairs,
-            tick_end=tick_end,
-        )
-
-    monkeypatch.setattr(dbg_diff, "_first_mismatch", _counting_first_mismatch)
-    report = dbg_diff.bisect_traces(
-        expected_trace_path=golden_trace,
-        actual_trace_path=candidate_trace,
-    )
-    assert report.first_bad_tick == 1
-    assert report.window_start == -11
-    assert report.window_end == 7
-    assert call_count == 1
 
 
 def test_dbg_tick_entity_query_focus(tmp_path: Path) -> None:

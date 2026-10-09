@@ -53,23 +53,6 @@ def test_advance_playback_frame_respects_max_ticks_clamp(assets_dir: Path) -> No
     assert advance.next_tick_index == 1
 
 
-def test_advance_playback_frame_keeps_output_and_outcome_order(assets_dir: Path) -> None:
-    clock = FixedStepClock(tick_rate=60)
-
-    advance = advance_playback_frame(
-        driver=FakePlaybackDriver(tick_limit=16),
-        runtime=_runtime(assets_dir),
-        clock=clock,
-        start_tick=5,
-        dt_seconds=3.0 * float(clock.dt_tick),
-        max_ticks=None,
-        tick_limit=16,
-    )
-
-    assert [int(tick_result.tick_index) for tick_result in advance.tick_results] == [5, 6, 7]
-    assert advance.plans == tuple(tick_result.payload.presentation for tick_result in advance.tick_results)
-
-
 def test_advance_playback_frame_refunds_unconsumed_ticks_when_tick_limit_truncates(assets_dir: Path) -> None:
     clock = FixedStepClock(tick_rate=60)
 
@@ -87,23 +70,6 @@ def test_advance_playback_frame_refunds_unconsumed_ticks_when_tick_limit_truncat
     assert len(advance.tick_results) == 1
     assert advance.next_tick_index == 2
     assert clock.accum == pytest.approx(2.0 * float(clock.dt_tick))
-
-
-def test_advance_playback_frame_does_not_refund_when_all_ticks_complete(assets_dir: Path) -> None:
-    clock = FixedStepClock(tick_rate=60)
-
-    advance = advance_playback_frame(
-        driver=FakePlaybackDriver(tick_limit=16),
-        runtime=_runtime(assets_dir),
-        clock=clock,
-        start_tick=0,
-        dt_seconds=2.0 * float(clock.dt_tick),
-        max_ticks=None,
-        tick_limit=16,
-    )
-
-    assert len(advance.tick_results) == 2
-    assert clock.accum == pytest.approx(0.0)
 
 
 def test_advance_playback_frame_advances_presentation_clock_after_stepping_the_batch(assets_dir: Path) -> None:

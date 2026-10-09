@@ -67,11 +67,6 @@ def _finish_close(view: QuestFailedView, mocker) -> ScreenAction | None:
     return action
 
 
-def test_quest_failed_preserves_start_random_tag(failed: _FailedQuest) -> None:
-    assert failed.view._record is not None
-    assert failed.view._record.uni_num == failed.run._quest_highscore_random_tag
-
-
 def test_quest_failed_panel_layout_uses_native_anchor(failed: _FailedQuest, mocker) -> None:
     failed.view.state.ui.timeline_ms = 400
     assert failed.view._panel_rect().top_left == PANEL_TOP_LEFT

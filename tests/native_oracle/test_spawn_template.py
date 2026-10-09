@@ -19,12 +19,12 @@ from grim.rand import CrtRand
 
 from ._support import (
     CREATURE_LAYOUT,
-    CREATURE_POOL_SLOTS,
     CREATURE_STRIDE,
     SPAWN_SLOT_LAYOUT,
     SPAWN_SLOT_STRIDE,
     Mismatch,
     compare_fields,
+    compare_pool,
     mismatch_report,
 )
 
@@ -108,7 +108,6 @@ def test_spawn_template_stats_match_native(oracle) -> None:
     oracle.write_u32("terrain_texture_width", _TERRAIN_SIZE)
     oracle.write_u32("terrain_texture_height", _TERRAIN_SIZE)
     pristine = oracle.snapshot()
-    pool_base = oracle.resolve("creature_pool")
     pos_arg = oracle.alloc(8)
 
     mismatches: list[Mismatch] = []
@@ -128,13 +127,9 @@ def test_spawn_template_stats_match_native(oracle) -> None:
         pool = CreaturePool()
         pool.spawn_template(template_id, pos, heading, state=state, detail_preset=5)
 
-        for index in range(CREATURE_POOL_SLOTS):
-            address = pool_base + index * CREATURE_STRIDE
-            native = oracle.read_fields(address, CREATURE_LAYOUT)
-            python = pool.entries[index]
-            if not native["active"] and not python.active:
-                continue
-            mismatches += compare_fields(f"{case} creature[{index}]", native, _python_creature(python), address=address)
+        mismatches += compare_pool(
+            oracle, "creature_pool", CREATURE_STRIDE, CREATURE_LAYOUT, pool.entries, _python_creature, f"{case} creature",
+        )
         mismatches += compare_spawn_slots(oracle, case, pool)
         if oracle.rand_state != rng.state:
             mismatches.append(Mismatch(case, "rand_state", oracle.rand_state, rng.state, 0))

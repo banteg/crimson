@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from pathlib import Path
 
 import pytest
 
 from crimson.render.pipeline import RaylibDrawScope, RenderDrawScope, RenderPipeline
-from crimson.render.sink import VideoSink, VideoTransport, WindowSink
 
 
 def test_render_pipeline_lifecycle_and_resize_behavior() -> None:
@@ -111,93 +109,3 @@ def test_raylib_draw_scope_balances_begin_end_on_draw_error() -> None:
         scope.draw(_raise_draw)
 
     assert events == ["begin", "draw", "end"]
-
-
-def test_render_pipeline_resets_open_state_when_close_fails() -> None:
-    events: list[str] = []
-
-    class _Sink:
-        def __init__(self) -> None:
-            self.raise_on_close = False
-
-        def open(self) -> None:
-            events.append("sink.open")
-
-        def present(self) -> None:
-            events.append("sink.present")
-
-        def flush(self) -> None:
-            events.append("sink.flush")
-
-        def close(self) -> None:
-            events.append("sink.close")
-            if self.raise_on_close:
-                raise RuntimeError("close failed")
-
-    sink = _Sink()
-    pipeline = RenderPipeline(sink=sink)
-    pipeline.render(draw_frame=lambda: events.append("draw.1"), width=640, height=480)
-
-    sink.raise_on_close = True
-    with pytest.raises(RuntimeError, match="close failed"):
-        pipeline.close()
-
-    sink.raise_on_close = False
-    pipeline.render(draw_frame=lambda: events.append("draw.2"), width=640, height=480)
-    pipeline.close()
-
-    assert events.count("sink.open") == 2
-
-
-def test_window_sink_raises_on_present_error() -> None:
-    def _raise_present() -> None:
-        raise RuntimeError("boom")
-
-    sink = WindowSink(present_frame=_raise_present)
-    sink.open()
-    with pytest.raises(RuntimeError, match="boom"):
-        sink.present()
-    sink.flush()
-    sink.close()
-
-
-def test_video_sink_transport_and_fail_fast_behavior(tmp_path: Path) -> None:
-    events: list[str] = []
-
-    class _EventVideoTransport(VideoTransport):
-        def open(self) -> None:
-            events.append("open")
-
-        def present_frame(self) -> None:
-            events.append("present")
-
-        def flush(self) -> None:
-            events.append("flush")
-
-        def close(self) -> None:
-            events.append("close")
-
-    sink = VideoSink(
-        output_path=tmp_path / "nested" / "out.mp4",
-        transport=_EventVideoTransport(),
-    )
-    sink.open()
-    sink.present()
-    sink.flush()
-    sink.close()
-
-    assert events == ["open", "present", "flush", "close"]
-
-    class _FailingVideoTransport(VideoTransport):
-        def present_frame(self) -> None:
-            raise RuntimeError("present failed")
-
-    sink = VideoSink(
-        output_path=tmp_path / "out.mp4",
-        transport=_FailingVideoTransport(),
-    )
-    sink.open()
-    with pytest.raises(RuntimeError, match="present failed"):
-        sink.present()
-    sink.close()
-

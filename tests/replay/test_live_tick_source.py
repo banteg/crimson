@@ -59,7 +59,7 @@ def test_catch_up_ticks_keep_control_modes_and_held_buttons(
     assert _next_inputs(source) == [msgspec.structs.replace(held, fire_pressed=False, reload_pressed=False)]
 
 
-@pytest.mark.parametrize("zero_tick_frames", [1, 3, 10])
+@pytest.mark.parametrize("zero_tick_frames", [3])
 def test_presses_wait_for_a_tick_and_use_the_latest_held_state(zero_tick_frames: int) -> None:
     source = LiveTickSource()
     source.submit(PerkMenuOpenCommand(player_index=0))

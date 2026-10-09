@@ -7,8 +7,6 @@ from PIL import Image
 from grim import paq as grim_paq
 from grim.assets import _select_texture_asset
 from scripts.build_uncompressed_crimson_paq import (
-    _allows_alpha_mismatch,
-    _allows_visual_mismatch,
     _alpha_stats,
     _hybrid_rects,
     _replacement_differs_visibly,
@@ -66,16 +64,6 @@ def test_alpha_stats_counts_soft_and_nonopaque_pixels() -> None:
 
     assert _alpha_stats(image).nonopaque == 2
     assert _alpha_stats(image).soft == 1
-
-
-def test_source_art_allowlists_are_limited_to_known_runtime_matches() -> None:
-    assert _allows_alpha_mismatch("ter/fb_q1.jaz")
-    assert _allows_alpha_mismatch("ui/ui_indPanel.jaz")
-    assert _allows_visual_mismatch("ui/ui_indPanel.jaz")
-    assert _allows_alpha_mismatch("ui/ui_textLevelUp.jaz")
-    assert _allows_visual_mismatch("ui/ui_textLevelUp.jaz")
-    assert not _allows_alpha_mismatch("ui/ui_wicons.jaz")
-    assert not _allows_visual_mismatch("ui/ui_wicons.jaz")
 
 
 def test_hybrid_rects_use_runtime_sprite_bounds() -> None:

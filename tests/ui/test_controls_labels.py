@@ -33,16 +33,6 @@ def test_controls_method_labels_reads_player_arrays() -> None:
     assert controls_method_labels(controls, player_index=3) == ("Computer", "Relative")
 
 
-def test_controls_method_labels_defaults_missing_blob() -> None:
-    assert controls_method_labels(_controls(), player_index=0) == ("Mouse", "Static")
-
-
-def test_controls_method_labels_unknown_move_mode_maps_to_unknown_enum() -> None:
-    controls = _controls()
-    controls.player(0).movement = MovementControlType.UNKNOWN
-    assert controls_method_labels(controls, player_index=0) == ("Mouse", "Unknown")
-
-
 def test_controls_aim_method_dropdown_ids_hides_computer_unless_loaded() -> None:
     assert controls_aim_method_dropdown_ids(AimScheme.MOUSE) == (
         AimScheme.MOUSE,

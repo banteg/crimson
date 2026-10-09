@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
-from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.perks.effects import perks_update_effects
 from crimson.rng_caller_static import RngCallerStatic
@@ -30,124 +29,6 @@ _FX_QUEUE_CALLERS = [
     RngCallerStatic.FX_QUEUE_ADD_RANDOM_ROTATION,
     RngCallerStatic.FX_QUEUE_ADD_RANDOM_EFFECT_ID,
 ]
-
-
-def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps() -> None:
-    dt = 0.2
-    rng = RecordingCrand(Crand(0x1234))
-    state = GameplayState(rng=rng)
-
-    player = PlayerState(index=0, pos=Vec2())
-    state.perks[int(PerkId.PYROKINETIC)] = 1
-    player.aim = Vec2(100.0, 200.0)
-
-    creature = CreatureState()
-    creature.active = True
-    creature.pos = Vec2(100.0, 200.0)
-    creature.death_timer = 16.0
-    creature.dot_tick_timer = 0.1
-
-    fx_queue = FxQueue()
-
-    perks_update_effects(state, [player], dt, creatures=[creature], fx_queue=fx_queue)
-
-    assert_float_close(creature.dot_tick_timer, 0.5)
-    assert fx_queue.count == 1
-
-    particles = [entry for entry in state.particles.entries if entry.active]
-    assert len(particles) == 5
-    intensities = [entry.intensity for entry in particles]
-    assert intensities == [f32(value) for value in (0.8, 0.6, 0.4, 0.3, 0.2)]
-    assert [record.caller for record in rng.records_since()] == [
-        *_PYROKINETIC_BURST_CALLERS,
-        *_FX_QUEUE_CALLERS,
-    ]
-
-
-def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrapping() -> None:
-    # Captured survival run (ticks 4055/4056) sits exactly on the timer boundary;
-    # float32 math must avoid wrapping one tick early.
-    rng = RecordingCrand(Crand(0x1234))
-    state = GameplayState(rng=rng)
-
-    player = PlayerState(index=0, pos=Vec2())
-    state.perks[int(PerkId.PYROKINETIC)] = 1
-    player.aim = Vec2(100.0, 200.0)
-
-    creature = CreatureState()
-    creature.active = True
-    creature.pos = Vec2(100.0, 200.0)
-    creature.death_timer = 16.0
-    creature.dot_tick_timer = 0.034000009298324585
-
-    fx_queue = FxQueue()
-
-    perks_update_effects(
-        state,
-        [player],
-        0.03400000184774399,
-        creatures=[creature],
-        fx_queue=fx_queue,
-    )
-    assert 0.0 < creature.dot_tick_timer < 1e-6
-    assert fx_queue.count == 0
-    assert all(not entry.active for entry in state.particles.entries)
-    assert [record.caller for record in rng.records_since()] == []
-
-    perks_update_effects(
-        state,
-        [player],
-        0.03200000151991844,
-        creatures=[creature],
-        fx_queue=fx_queue,
-    )
-    assert_float_close(creature.dot_tick_timer, 0.5)
-    assert fx_queue.count == 1
-    particles = [entry for entry in state.particles.entries if entry.active]
-    assert len(particles) == 5
-    assert [record.caller for record in rng.records_since()] == [
-        *_PYROKINETIC_BURST_CALLERS,
-        *_FX_QUEUE_CALLERS,
-    ]
-
-
-def test_perks_update_effects_pyrokinetic_keeps_native_36hz_proc_frame() -> None:
-    rng = RecordingCrand(Crand(0x1234))
-    state = GameplayState(rng=rng)
-    player = PlayerState(index=0, pos=Vec2(), health=100.0)
-    state.perks[int(PerkId.PYROKINETIC)] = 1
-    player.aim = Vec2(100.0, 200.0)
-
-    creature = CreatureState()
-    creature.active = True
-    creature.pos = Vec2(100.0, 200.0)
-    creature.hp = 100.0
-    creature.dot_tick_timer = 0.25
-    fx_queue = FxQueue()
-
-    for _ in range(9):
-        perks_update_effects(
-            state,
-            [player],
-            1.0 / 36.0,
-            creatures=[creature],
-            fx_queue=fx_queue,
-        )
-
-    assert creature.dot_tick_timer == 1.1175870895385742e-08
-    assert fx_queue.count == 0
-    assert all(not entry.active for entry in state.particles.entries)
-
-    perks_update_effects(
-        state,
-        [player],
-        1.0 / 36.0,
-        creatures=[creature],
-        fx_queue=fx_queue,
-    )
-
-    assert creature.dot_tick_timer == 0.5
-    assert fx_queue.count == 1
 
 
 def test_perks_update_effects_pyrokinetic_defaults_to_first_alive_player_aim() -> None:

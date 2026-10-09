@@ -5,7 +5,6 @@ from pathlib import Path
 import crimson.world.audio_bridge as audio_bridge_module
 from crimson.bonuses import BonusId
 from crimson.perks import PerkId
-from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.weapons import WeaponId
 from grim.audio import AudioState
 from grim.geom import Vec2
@@ -13,8 +12,6 @@ from grim.music import init_music_state
 from grim.rand import Crand
 from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
-from grim.sfx_types import SfxRequest
-from tests.support.builders.tick_payload import make_tick_payload
 from tests.support.factories import player_input
 from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
@@ -166,20 +163,6 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     assert entry.picked
     assert play_sfx.call_count == 2
     assert {call.args[1] for call in play_sfx.call_args_list} == {SfxId.UI_BONUS, SfxId.EXPLOSION_MEDIUM}
-
-
-def test_presentation_apply_plays_post_apply_bonus_sfx(mocker) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    runtime.audio = _audio_state_stub()
-    runtime.audio_rng = Crand(0)
-    step = make_tick_payload(post_apply_sfx=(SfxRequest(SfxId.UI_BONUS),))
-
-    apply_presentation_plans(plans=[step.presentation], runtime=runtime)
-
-    play_sfx.assert_called_once()
-    assert play_sfx.call_args.args[1] == SfxId.UI_BONUS
 
 
 def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:

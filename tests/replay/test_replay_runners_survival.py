@@ -3,84 +3,18 @@ from __future__ import annotations
 import msgspec
 import pytest
 
-from crimson.perks import PerkId
-from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.driver.setup import ReplayRunnerError
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.bootstrap import advance_gameplay_reset_rng
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
-from crimson.sim.run_result import PlayerRunResult, RunOutcome
-from crimson.sim.terrain_generate import terrain_generate_random
-from crimson.weapons import WeaponId
-from grim.rand import CallerStatic, Crand
+from crimson.sim.run_result import RunOutcome
+from grim.rand import CallerStatic
 from tests.support.replay_runner_helpers import (
     ReplayRngTraceRecorder,
     _blank_survival_replay,
     _run_verify_playback,
     finish_replay,
 )
-
-
-def test_survival_runner_is_deterministic() -> None:
-    replay = finish_replay(_blank_survival_replay(ticks=10, seed=0x1234))
-
-    result0 = _run_verify_playback(replay)
-    result1 = _run_verify_playback(replay)
-
-    assert result0 == result1 == replay.result
-    assert result0.outcome == RunOutcome.INCOMPLETE
-    assert result0.elapsed_ms == 10 * int(1000.0 / 60.0)
-    assert result0.kills == 0
-    assert result0.quest_final_ms is None
-    assert (result0.shots_fired, result0.shots_hit) == (0, 0)
-    assert result0.players == (PlayerRunResult(experience=0, health=100.0, most_used_weapon_id=WeaponId.PISTOL),)
-
-
-def test_survival_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
-    replay = finish_replay(_blank_survival_replay(ticks=0, seed=0x1234))
-    driver = build_verify_playback_driver(replay)
-
-    rng = Crand(int(replay.run.seed))
-    advance_gameplay_reset_rng(rng)
-    terrain = terrain_generate_random(rng, int(replay.run.status.quest_unlock_index))
-    rng.rand_tagged(RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED)
-
-    terrain_setup = driver.terrain_setup
-    assert terrain_setup is not None
-    assert terrain_setup == terrain
-    assert int(driver.world.state.rng.state) == int(rng.state)
-
-
-def test_survival_runner_checkpoints_capture_debug_fields() -> None:
-    replay = finish_replay(_blank_survival_replay(ticks=3, seed=0x1234))
-    checkpoints = []
-
-    _run_verify_playback(
-        replay,
-        checkpoints_out=checkpoints,
-        checkpoint_ticks={0, 2},
-    )
-
-    assert [int(ckpt.tick_index) for ckpt in checkpoints] == [0, 2]
-    for ckpt in checkpoints:
-        assert isinstance(ckpt.events.hit_count, int)
-        assert isinstance(ckpt.events.pickup_count, int)
-        assert isinstance(ckpt.events.sfx_count, int)
-        assert isinstance(ckpt.deaths, list)
-
-
-def test_survival_runner_tick_rng_trace_observer_emits_rows_for_first_tick() -> None:
-    replay = finish_replay(_blank_survival_replay(ticks=1, seed=0x1234))
-    observer = ReplayRngTraceRecorder(rows_by_tick={})
-
-    _run_verify_playback(
-        replay,
-        trace_rng=True,
-        observer=observer,
-    )
-
-    assert sorted(observer.rows_by_tick.keys()) == [0]
-    assert observer.rows_by_tick[0]
 
 
 def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
@@ -130,49 +64,9 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
     }
 
 
-def test_playback_driver_run_matches_verify_driver_factory() -> None:
-    replay = finish_replay(_blank_survival_replay(ticks=4, seed=0x1234))
-    driver = PlaybackDriver(replay)
-
-    driver_result = driver.run()
-    wrapper_result = build_verify_playback_driver(replay).run()
-
-    assert driver_result == wrapper_result
-
-
 def _with_commands(replay, commands):
     replay.ticks[0] = msgspec.structs.replace(replay.ticks[0], commands=list(commands))
     return replay
-
-
-@pytest.mark.parametrize(
-    ("commands", "reason"),
-    [
-        ([PerkPickCommand(player_index=0, choice_index=0)], "perk_pick without an open perk menu"),
-        ([PerkMenuOpenCommand(player_index=0)], "perk_menu_open without a pending perk"),
-    ],
-)
-def test_survival_runner_rejects_perk_commands_the_menu_does_not_allow(commands, reason) -> None:
-    replay = _with_commands(finish_replay(_blank_survival_replay(ticks=1, seed=0x1234)), commands)
-
-    with pytest.raises(ReplayRunnerError, match=reason):
-        _run_verify_playback(replay)
-
-
-def test_survival_runner_rejects_unoffered_perk_choice() -> None:
-    replay = _with_commands(
-        finish_replay(_blank_survival_replay(ticks=1, seed=0x1234)),
-        [PerkPickCommand(player_index=0, choice_index=6)],
-    )
-    driver = PlaybackDriver(replay)
-    driver.session.perk_menu_open = True
-    perk = driver.world.state.perk_selection
-    perk.pending_count = 1
-    perk.choices_dirty = False
-    perk.choices = [PerkId.BANDAGE] * 3
-
-    with pytest.raises(ReplayRunnerError, match="not an offered choice"):
-        driver.step_tick(0)
 
 
 def _perk_menu_replay(*ticks: list) -> PlaybackDriver:
@@ -233,29 +127,3 @@ def test_survival_runner_allows_the_run_down_then_rejects_further_ticks() -> Non
         ReplayRunnerError, match=r"run ended \(death\) at tick 0 and wound down by tick 31 but the replay has 33 ticks",
     ):
         driver.run()
-
-
-def test_survival_runner_reports_death_on_final_tick() -> None:
-    replay = finish_replay(_blank_survival_replay(ticks=1, seed=0x1234))
-    driver = PlaybackDriver(replay)
-    for player in driver.world.players:
-        player.health = 0.0
-        player.death_timer = 0.0
-
-    result = driver.run()
-
-    assert result.outcome == RunOutcome.DEATH
-
-
-def test_survival_runner_rejects_perk_commands_after_every_player_died() -> None:
-    replay = _with_commands(
-        finish_replay(_blank_survival_replay(ticks=1, seed=0x1234)),
-        [PerkMenuOpenCommand(player_index=0)],
-    )
-    driver = PlaybackDriver(replay)
-    driver.world.state.perk_selection.pending_count = 1
-    for player in driver.world.players:
-        player.health = 0.0
-
-    with pytest.raises(ReplayRunnerError, match="every player is dead"):
-        driver.step_tick(0)

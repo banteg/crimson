@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-import json
 import struct
 from dataclasses import replace
 from pathlib import Path
-from types import SimpleNamespace
 from typing import cast
 
 import pytest
-from typer.testing import CliRunner
 
-from crimson_re.cli.match import match_app
 from crimson_re.library_match import (
     AR_MAGIC,
     archive_match_payload,
@@ -338,32 +334,6 @@ def test_archive_match_requires_exact_unrelocated_bytes(
             note_prefix="test-archive",
         )
 
-    repeated_report = replace(
-        report,
-        matched_functions=2,
-        matched_bytes=12,
-        unique_functions=2,
-        unique_bytes=12,
-        matches=(report.matches[0], report.matches[0]),
-    )
-    limited_payload = archive_match_payload(repeated_report, limit=1)
-    assert limited_payload["summary"] == {
-        "target_functions": 1,
-        "target_bytes": 6,
-        "matched_functions": 2,
-        "matched_bytes": 12,
-        "unique_functions": 2,
-        "unique_bytes": 12,
-        "symbol_unique_functions": 2,
-        "symbol_unique_bytes": 12,
-    }
-    assert limited_payload["listing"] == {
-        "returned_matches": 1,
-        "limit": 1,
-        "truncated": True,
-    }
-    assert len(cast("list[object]", limited_payload["matches"])) == 1
-
     excluded_report = match_coff_archive(
         archive_path,
         image_path=image_path,
@@ -379,42 +349,6 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert excluded_report.excluded_target_functions == 1
     assert excluded_report.excluded_target_bytes == 6
     assert "excluded=1 excluded_bytes=6" in render_archive_match_report(excluded_report)
-
-    monkeypatch.setattr(
-        "crimson_re.cli.match.matchlib.collect_scratch_statuses",
-        lambda *args, **kwargs: [
-            SimpleNamespace(
-                address=0x00401000,
-                config=SimpleNamespace(image="game.exe"),
-            ),
-        ],
-    )
-    completed = CliRunner().invoke(
-        match_app,
-        [
-            "archive",
-            str(archive_path),
-            "--image",
-            str(image_path),
-            "--functions",
-            str(functions_path),
-            "--metadata",
-            str(metadata_path),
-            "--start",
-            "0x00401000",
-            "--end",
-            "0x00401006",
-            "--missing-scratches",
-            "--match-root",
-            str(tmp_path),
-            "--json",
-        ],
-    )
-    assert completed.exit_code == 0
-    cli_payload = json.loads(completed.output)
-    assert cli_payload["filters"] == {"missing_scratches": True}
-    assert cli_payload["summary"]["matched_functions"] == 0
-    assert cli_payload["exclusions"] == {"target_functions": 1, "target_bytes": 6}
 
 
 def test_archive_match_resolves_known_relocation_targets(

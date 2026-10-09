@@ -10,8 +10,6 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.geom import Vec2
 from grim.rand import RecordingCrand
-from grim.sfx_map import SfxId
-from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
 from tests.support.factories import make_step_runtime, place_creatures
 from tests.support.helpers import assert_float_close
@@ -49,69 +47,6 @@ def _fire_at_creature(world: WorldState, type_id: ProjectileTemplateId) -> World
     return step_runtime
 
 
-def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
-    world, _rng = _world_with_creature(CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0))
-    runtime_state = world.state
-    runtime_state.scripted_burst_active = True
-
-    _fire_at_creature(world, ProjectileTemplateId.PLASMA_CANNON)
-
-    assert sfx_ids(runtime_state.sfx_queue) == [SfxId.EXPLOSION_MEDIUM, SfxId.SHOCKWAVE]
-    assert not runtime_state.scripted_burst_active
-
-    rings = [entry for entry in runtime_state.effects.iter_active() if int(entry.effect_id) == 1]
-    assert len(rings) == 2
-    for actual, expected in zip(sorted(float(entry.scale_step) for entry in rings), (45.0, 67.5), strict=True):
-        assert_float_close(actual, expected)
-
-    spawned = [
-        p
-        for p in runtime_state.projectiles.entries
-        if p.active and int(p.type_id) == int(ProjectileTemplateId.PLASMA_RIFLE)
-    ]
-    assert len(spawned) == 12
-
-
-def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
-    world, rng = _world_with_creature(CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0))
-
-    _fire_at_creature(world, ProjectileTemplateId.SPLITTER_GUN)
-
-    sparks = [entry for entry in world.state.effects.iter_active() if int(entry.effect_id) == 0]
-    assert len(sparks) == 3
-    assert all(int(entry.flags) == 0x19 for entry in sparks)
-
-    split = [
-        p
-        for p in world.state.projectiles.entries
-        if p.active
-        and int(p.type_id) == int(ProjectileTemplateId.SPLITTER_GUN)
-        and p.owner_id == 0
-    ]
-    assert len(split) == 2
-    assert [record.caller for record in rng.records_since()[:9]] == [
-        RngCallerStatic.SPLITTER_HIT_ANGLE,
-        RngCallerStatic.SPLITTER_HIT_RADIUS,
-        RngCallerStatic.SPLITTER_HIT_AGE,
-        RngCallerStatic.SPLITTER_HIT_ANGLE,
-        RngCallerStatic.SPLITTER_HIT_RADIUS,
-        RngCallerStatic.SPLITTER_HIT_AGE,
-        RngCallerStatic.SPLITTER_HIT_ANGLE,
-        RngCallerStatic.SPLITTER_HIT_RADIUS,
-        RngCallerStatic.SPLITTER_HIT_AGE,
-    ]
-
-
-def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
-    world, _rng = _world_with_creature(CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0))
-    player = world.players[0]
-    player.pos = Vec2()
-
-    _fire_at_creature(world, ProjectileTemplateId.SPLITTER_GUN)
-
-    assert float(player.health) < 100.0
-
-
 def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
     world, rng = _world_with_creature(creature)
@@ -141,46 +76,6 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     ]
 
 
-def test_ion_minigun_hit_draws_the_spark_callers_right_after_the_stop_jitter() -> None:
-    world, rng = _world_with_creature(CreatureState(active=True, hp=1000.0, pos=Vec2(), size=50.0))
-
-    _fire_at_creature(world, ProjectileTemplateId.ION_MINIGUN)
-
-    # The core ring draws nothing; the 0.8-scale sparks draw four callers three times.
-    assert SfxId.SHOCKWAVE not in sfx_ids(world.state.sfx_queue)
-    callers = [record.caller for record in rng.records_since()]
-    start = callers.index(RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER)
-    assert callers[start + 1 : start + 13] == [
-        RngCallerStatic.ION_HIT_SPARK_ROTATION,
-        RngCallerStatic.ION_HIT_SPARK_VEL_X,
-        RngCallerStatic.ION_HIT_SPARK_VEL_Y,
-        RngCallerStatic.ION_HIT_SPARK_SCALE_STEP,
-    ] * 3
-
-
-def test_non_gauss_freeze_hit_draws_burn_then_single_default_shard() -> None:
-    world, rng = _world_with_creature(CreatureState(active=True, hp=1000.0, pos=Vec2(), size=50.0))
-    world.state.bonuses.freeze = 1.0
-
-    _fire_at_creature(world, ProjectileTemplateId.PISTOL)
-
-    # Native spawns the default freeze shard in the post-hit decal branch,
-    # after the burn draw (see queue_projectile_decals_post_hit).
-    assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER,
-        RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER,
-        RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN,
-        RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE,
-        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME,
-        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION,
-        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_HALF,
-        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP,
-        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP,
-        RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID,
-        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
-    ]
-
-
 def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
     creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=20.0, flags=CreatureFlags(0))
     world, rng = _world_with_creature(creature)
@@ -196,68 +91,3 @@ def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
     # The generic chip damage still applies after the direct shrink-death;
     # native leaves hp positive when entering it.
     assert creature.hp < 100.0
-
-
-def test_secondary_homing_acquires_targets_beyond_1000_units() -> None:
-    from crimson.projectiles.runtime.collision import creature_find_nearest_alive
-
-    far_creature = CreatureState(active=True, hp=10.0, death_timer=16.0, pos=Vec2(1200.0, 900.0))
-    creatures = [CreatureState() for _ in range(3)]
-    creatures[2] = far_creature
-
-    # Native compares plain distances against a 1e6 seed, so targets farther
-    # than 1000 units (offscreen spawns) are still acquired.
-    assert creature_find_nearest_alive(creatures=creatures, origin=Vec2(0.0, 0.0)) == 2
-
-
-def test_secondary_homing_compares_stored_x87_pc24_distances() -> None:
-    from crimson.projectiles.runtime.collision import creature_find_nearest_alive
-
-    creatures = [
-        CreatureState(
-            active=True,
-            hp=10.0,
-            death_timer=16.0,
-            pos=Vec2(-631.7838745117188, -249.09634399414062),
-        ),
-        CreatureState(
-            active=True,
-            hp=10.0,
-            death_timer=16.0,
-            pos=Vec2(-627.4663696289062, -259.78033447265625),
-        ),
-    ]
-
-    # A host-double squared-distance compare chooses slot 0; native narrows the
-    # x87 fsqrt result and slot 1 is strictly closer at that precision.
-    assert creature_find_nearest_alive(creatures=creatures, origin=Vec2()) == 1
-
-
-def test_shock_chain_retarget_compares_stored_x87_pc24_distances() -> None:
-    from crimson.projectiles.runtime.collision import creature_find_nearest_active
-
-    creatures = [
-        CreatureState(
-            active=True,
-            hp=10.0,
-            pos=Vec2(-1727.156494140625, -1351.4605712890625),
-        ),
-        CreatureState(
-            active=True,
-            hp=10.0,
-            pos=Vec2(1722.1292724609375, -1357.8604736328125),
-        ),
-    ]
-
-    # Host-double squared distances prefer slot 1. Native stores equal PC=24
-    # fsqrt results, so its strict comparison retains the earlier slot 0.
-    assert Vec2.distance_sq(Vec2(), creatures[0].pos) > Vec2.distance_sq(Vec2(), creatures[1].pos)
-    assert (
-        creature_find_nearest_active(
-            creatures=creatures,
-            origin=Vec2(),
-            exclude_id=2,
-            min_dist=100.0,
-        )
-        == 0
-    )

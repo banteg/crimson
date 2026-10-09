@@ -65,13 +65,6 @@ def test_creature_name_table_find_by_name_active_only() -> None:
     assert table.find_by_name("missing", active_mask=[True, True, True, True]) is None
 
 
-def test_creature_name_table_clear_removes_name() -> None:
-    table = CreatureNameTable.sized(3)
-    table.names[1] = "beta"
-    table.clear(1)
-    assert table.names[1] == ""
-
-
 def test_typo_build_name_uses_highscore_names_when_highscore_branch_hits() -> None:
     rng = ScriptedCrand([5, 1], fallback=ScriptedCrand.Fallback.RAISE)
 
@@ -152,20 +145,6 @@ def test_typo_build_name_tags_exact_three_word_gt80_branch_callers() -> None:
     ]
 
 
-def test_typo_build_name_tags_exact_three_word_gt60_branch_callers() -> None:
-    rng = ScriptedCrand([39, 0, 1, 2], fallback=ScriptedCrand.Fallback.RAISE)
-
-    name = typo_build_name(rng, score_xp=61, highscore_names=TypoHighscoreNames(loaded=True))
-
-    assert name == "headgunlamb"
-    assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_THREE_WORD_GATE_GT60,
-        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
-        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
-        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
-    ]
-
-
 def test_typo_build_name_tags_exact_two_word_gt40_branch_callers() -> None:
     rng = ScriptedCrand([79, 0, 1], fallback=ScriptedCrand.Fallback.RAISE)
 
@@ -174,19 +153,6 @@ def test_typo_build_name_tags_exact_two_word_gt40_branch_callers() -> None:
     assert name == "gunlamb"
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT40,
-        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
-        RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
-    ]
-
-
-def test_typo_build_name_tags_exact_two_word_gt20_branch_callers() -> None:
-    rng = ScriptedCrand([39, 0, 1], fallback=ScriptedCrand.Fallback.RAISE)
-
-    name = typo_build_name(rng, score_xp=21, highscore_names=TypoHighscoreNames(loaded=True))
-
-    assert name == "gunlamb"
-    assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT20,
         RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
         RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
     ]

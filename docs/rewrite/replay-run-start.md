@@ -193,5 +193,5 @@ Every run's reset ends with `terrain_generate_random`. Quests then draw the scor
 quest terrain with `terrain_generate`: two complete generations, of which only the second is shown. The
 first one's draws stay; only its stamps are discarded. The menu ground uses `terrain_generate_random` on
 the application RNG, which stands in for native startup's generation outside the recorded run.
-See `tests/sim/test_terrain_generate.py`, `tests/render/test_ground_stamp_cases.py` and
+See `tests/native_oracle/test_terrain_generate.py`, `tests/render/test_ground_stamp_cases.py` and
 `tests/render/test_terrain_runtime_boundaries.py` for the boundary tests.

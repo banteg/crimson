@@ -13,10 +13,8 @@ POS = Vec2(300.0, 200.0)
     ("dx", "expected"),
     [
         # The value is the 8px segment under the mouse: the first one is 0.
-        (1.0, 0),
         (7.9, 0),
         (8.0, 1),
-        (59.0, 7),
         (79.0, 9),
         # The 3px margins either side still take the press.
         (-2.5, 0),

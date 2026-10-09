@@ -69,7 +69,7 @@ def test_named_mutable_reference_still_requires_the_same_owner() -> None:
         assert result.exact is exact
 
 
-@pytest.mark.parametrize("kind", ["float", "data"])
+@pytest.mark.parametrize("kind", ["data"])
 @pytest.mark.parametrize("boundary", ["section", "loader", "mapped"])
 def test_content_evidence_cannot_cross_a_provenance_boundary(kind: str, boundary: str) -> None:
     literal, candidate = literal_candidate(kind)

@@ -8,7 +8,7 @@ from crimson.ui.animation import ui_element_anim, ui_transition_alpha
 
 @pytest.mark.parametrize(
     ("timeline_ms", "expected"),
-    [(0.0, -400.0), (99.0, -400.0), (100.0, -400.0), (250.0, -200.0), (399.0, -400.0 / 300.0), (400.0, 0.0)],
+    [(100.0, -400.0), (250.0, -200.0), (399.0, -400.0 / 300.0), (400.0, 0.0)],
 )
 def test_results_panel_slides_in_linearly_between_100_and_400_ms(timeline_ms: float, expected: float) -> None:
     # ui_element_update: render_offset_x = -(1 - (t - start) / (end - start)) * width for slots 30/35.

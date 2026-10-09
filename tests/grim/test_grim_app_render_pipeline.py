@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import Any
 
 import grim.app as grim_app
 from grim.raylib_api import rl
@@ -119,8 +119,6 @@ class _ViewSpy:
 
 
 class _PipelineSpy:
-    instances: ClassVar[list[_PipelineSpy]] = []
-
     def __init__(
         self,
         *,
@@ -134,7 +132,6 @@ class _PipelineSpy:
         self.draw_calls: list[tuple[int, int]] = []
         self.present_calls = 0
         self.close_calls = 0
-        _PipelineSpy.instances.append(self)
 
     def draw(self, *, draw_frame: Any, width: int, height: int) -> None:
         self.draw_calls.append((width, height))
@@ -145,35 +142,6 @@ class _PipelineSpy:
 
     def close(self) -> None:
         self.close_calls += 1
-
-
-def test_run_view_uses_render_pipeline(monkeypatch) -> None:
-    fake_rl = _FakeRl()
-    view = _ViewSpy()
-    sink_sentinel = object()
-    draw_scope_sentinel = object()
-
-    monkeypatch.setattr(grim_app, "rl", fake_rl)
-    monkeypatch.setattr(grim_app, "Canvas", _CanvasStub)
-    monkeypatch.setattr(grim_app, "WindowSink", lambda: sink_sentinel)
-    monkeypatch.setattr(grim_app, "RaylibDrawScope", lambda *, raylib: draw_scope_sentinel)
-    _PipelineSpy.instances.clear()
-    monkeypatch.setattr(grim_app, "RenderPipeline", _PipelineSpy)
-
-    grim_app.run_view(view, width=800, height=450, title="Render Test", fps=60)
-
-    assert len(_PipelineSpy.instances) == 1
-    pipeline = _PipelineSpy.instances[0]
-    assert pipeline.sink is sink_sentinel
-    assert pipeline.draw_scope is draw_scope_sentinel
-    assert pipeline.draw_calls == [(800, 450)]
-    assert pipeline.present_calls == 1
-    assert pipeline.close_calls == 1
-    assert view.open_calls == 1
-    assert len(view.update_dts) == 1
-    assert view.draw_calls == 1
-    assert view.close_calls == 1
-    assert fake_rl.close_calls == 1
 
 
 def test_run_view_uses_explicit_quit_and_screenshot_callbacks(mocker, tmp_path) -> None:

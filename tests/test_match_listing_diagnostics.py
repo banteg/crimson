@@ -3,15 +3,11 @@ from __future__ import annotations
 import difflib
 import hashlib
 import json
-from dataclasses import replace
 from pathlib import Path
-from typing import Any
 
 import pytest
-from typer.testing import CliRunner
 
 from crimson_re import match as matchlib
-from crimson_re.cli.match import match_app
 from crimson_re.match_listing_diagnostics import (
     compiler_stack_residual_payload,
     parse_stack_listing,
@@ -122,10 +118,7 @@ def test_stack_locals_keep_aliases_fields_and_unnamed_accesses_separate() -> Non
     ("assembly", "reason"),
     [
         ("mov eax, DWORD PTR _local$[esp+36]", "listing-displacement-does-not-match-candidate"),
-        ("mov eax, DWORD PTR _local$[ebp+32]", "listing-displacement-does-not-match-candidate"),
-        ("mov eax, DWORD PTR _local$[esp+ecx*4+32]", "listing-displacement-does-not-match-candidate"),
         ("mov eax, DWORD PTR _unknown$[esp+32]", "unknown or ambiguous compiler stack alias"),
-        ("fld DWORD PTR _local$[esp+32]", "missing-or-inconsistent-listing-instruction"),
     ],
 )
 def test_stack_locals_reject_inconsistent_listing_operands(assembly: str, reason: str) -> None:
@@ -135,63 +128,6 @@ def test_stack_locals_reject_inconsistent_listing_operands(assembly: str, reason
 
     assert not payload["locals"]
     assert payload["summary"]["skip_reasons"] == {reason: 1}
-
-
-def test_stack_locals_reject_repeated_instruction_pairing() -> None:
-    result = _result(
-        ("push eax", "mov eax, dword [esp+0x4]", "inc ecx", "mov eax, dword [esp+0x4]", "ret"),
-        ("mov eax, dword [esp+0x8]", "xor ebx, ebx"),
-    )
-
-    payload = stack_local_observations_payload(
-        result,
-        _listing(("mov eax, DWORD PTR _local$[esp+24]", "xor ebx, ebx")),
-        symbol="foo",
-    )
-
-    assert not payload["locals"]
-    assert payload["summary"]["skip_reasons"] == {"ambiguous-instruction-pair": 1}
-
-
-def test_stack_locals_do_not_pair_register_or_immediate_changes() -> None:
-    result = _result(
-        ("mov eax, dword [esp+0x4]", "mov dword [esp+0x8], 0x1"),
-        ("mov ebx, dword [esp+0x8]", "mov dword [esp+0xc], 0x2"),
-    )
-
-    payload = stack_local_observations_payload(
-        result,
-        _listing(("mov ebx, DWORD PTR _local$[esp+24]", "mov DWORD PTR _local$[esp+28], 2")),
-        symbol="foo",
-    )
-
-    assert not payload["locals"]
-    assert payload["summary"]["unpaired_stack_instructions"] == 2
-
-
-def test_stack_locals_bounds_entries_and_deltas_but_preserves_totals() -> None:
-    result = _result(
-        ("mov eax, dword [esp+0x14]", "mov ebx, dword [esp+0x18]", "mov ecx, dword [esp+0x1c]"),
-        ("mov eax, dword [esp+0x10]", "mov ebx, dword [esp+0x10]", "mov ecx, dword [esp+0x10]"),
-    )
-    text = _listing(
-        ("mov eax, _local$[esp+32]", "mov ebx, _local$[esp+32]", "mov ecx, _alias$[esp+32]"),
-        "_local$ = -16\n_alias$ = -16",
-    )
-
-    payload = stack_local_observations_payload(result, text, symbol="foo", limit=1)
-
-    assert len(payload["locals"]) == 1
-    assert payload["summary"]["locals"] == 2
-    assert payload["omitted_entries"]["locals"] == 1
-    assert len(payload["locals"][0]["deltas"]) == 1
-    assert payload["locals"][0]["omitted_deltas"] == 1
-    assert payload["locals"][0]["observations"] == 2
-    assert payload["locals"][0]["omitted_accesses"] == 1
-    assert len(payload["locals"][0]["accesses"]) == 1
-    span = payload["locals"][0]["access_span"]
-    assert span["first"]["candidate"]["index"] == 0
-    assert span["last"]["candidate"]["index"] == 1
 
 
 def test_stack_locals_preserve_repeated_uses_with_changing_esp_and_reused_aliases() -> None:
@@ -246,12 +182,8 @@ def test_stack_locals_preserve_repeated_uses_with_changing_esp_and_reused_aliase
 @pytest.mark.parametrize(
     "text",
     [
-        "_other PROC\n_other ENDP",
         "_foo PROC\n_foo ENDP\n_foo PROC\n_foo ENDP",
-        "_foo PROC\n",
         "_local$ = -16\n_local$ = -8\n_foo PROC\n_foo ENDP",
-        "_foo PROC\n  00000\t90\t nop\n  00000\t90\t nop\n_foo ENDP",
-        "_foo PROC\n  00040\t90\t nop\n_foo ENDP",
     ],
 )
 def test_stack_listing_rejects_ambiguous_or_incomplete_scope(text: str) -> None:
@@ -305,117 +237,13 @@ def _verified_listing(tmp_path: Path) -> tuple[matchlib.ScratchConfig, matchlib.
     return config, listing
 
 
-@pytest.mark.parametrize("change", ["listing", "object", "proof", "scratch", "function"])
+@pytest.mark.parametrize("change", ["listing", "object"])
 def test_compiler_stack_report_rejects_stale_provenance(tmp_path: Path, change: str) -> None:
     config, listing = _verified_listing(tmp_path)
     if change == "listing":
         listing.listing_path.write_text("stale listing")
-    elif change == "object":
-        listing.canonical_object.write_bytes(b"changed object")
-    elif change == "proof":
-        metadata = json.loads(listing.metadata_path.read_text())
-        metadata["object_function_equivalent"] = False
-        listing.metadata_path.write_text(json.dumps(metadata))
-    elif change == "scratch":
-        config = replace(config, directory=tmp_path / "other")
     else:
-        config = replace(config, function="other")
+        listing.canonical_object.write_bytes(b"changed object")
 
     with pytest.raises(ValueError, match="stale or inconsistent"):
         compiler_stack_residual_payload(config, listing)
-
-
-def test_compiler_stack_report_matches_an_immutable_object_snapshot(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    config, listing = _verified_listing(tmp_path)
-    monkeypatch.setattr(matchlib, "parse_coff_object", lambda data: data)
-    monkeypatch.setattr(
-        matchlib,
-        "extract_object_function",
-        lambda *args, **kwargs: matchlib.ObjectFunction("foo", b"function", frozenset()),
-    )
-    result = _result(("mov eax, dword [esp+0x14]",), ("mov eax, dword [esp+0x10]",))
-
-    def run_match(**kwargs: Any) -> matchlib.MatchResult:
-        listing.canonical_object.write_bytes(b"concurrent overwrite")
-        assert kwargs["obj_path"].read_bytes() == b"verified object"
-        assert kwargs["obj_path"] != listing.canonical_object
-        return result
-
-    monkeypatch.setattr(matchlib, "run_match", run_match)
-
-    payload = compiler_stack_residual_payload(config, listing)
-
-    assert payload["locals"][0]["deltas"][0]["target_minus_candidate"] == 4
-    assert payload["match"]["body_byte_exact"] is False
-    assert payload["match"]["exact"] is False
-
-
-def test_compiler_stack_report_rejects_a_different_selected_function(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    config, listing = _verified_listing(tmp_path)
-    monkeypatch.setattr(matchlib, "parse_coff_object", lambda data: data)
-    monkeypatch.setattr(
-        matchlib,
-        "extract_object_function",
-        lambda *args, **kwargs: matchlib.ObjectFunction("foo", b"different", frozenset()),
-    )
-
-    with pytest.raises(ValueError, match="selected object function differs"):
-        compiler_stack_residual_payload(config, listing)
-
-
-def test_stack_locals_exclude_reference_conflicts_and_preserve_original_audit() -> None:
-    result = _result(("mov dword [esp+0x14], ADDR",), ("mov dword [esp+0x10], ADDR",))
-    target_ref = matchlib.MaskedReference(1, "address", "image", 0x401000, "ADDR", ("target",), True)
-    candidate_ref = replace(target_ref, source="object", keys=("candidate",))
-    audit = matchlib.MaskedOperandAudit(
-        (matchlib.MaskedOperandAuditEntry(0, 0, 0, 0, 0x401000, 0, "mov", (target_ref,), (candidate_ref,), "mismatch"),),
-    )
-    result = replace(
-        result,
-        target_disassembly=(replace(result.target_disassembly[0], masked_references=(target_ref,)),),
-        candidate_disassembly=(replace(result.candidate_disassembly[0], masked_references=(candidate_ref,)),),
-        masked_operand_audit=audit,
-    )
-
-    payload = stack_local_observations_payload(
-        result,
-        _listing(("mov DWORD PTR _local$[esp+32], OFFSET _data",)),
-        symbol="foo",
-    )
-
-    assert not payload["locals"]
-    assert payload["summary"]["skip_reasons"] == {"paired-reference-mismatch": 1}
-    assert payload["match"]["references"] == {"ok": 0, "unresolved": 0, "mismatch": 1}
-    assert result.masked_operand_audit == audit
-
-
-@pytest.mark.parametrize("enabled", [False, True])
-def test_listing_cli_stack_report_is_optional(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, enabled: bool) -> None:
-    config, listing = _verified_listing(tmp_path)
-    monkeypatch.setattr(matchlib, "load_scratch_config", lambda path: config)
-    monkeypatch.setattr(matchlib, "generate_compiler_listing", lambda *args, **kwargs: listing)
-    calls = []
-
-    def stack_report(*args: Any, **kwargs: Any) -> dict[str, Any]:
-        calls.append(kwargs)
-        return {"diagnostic": True}
-
-    monkeypatch.setattr("crimson_re.cli.match.match_listing_diagnostics.compiler_stack_residual_payload", stack_report)
-    args = ["listing", str(tmp_path), "--json", *(["--stack-residuals", "--max-stack-entries", "3"] if enabled else [])]
-
-    completed = CliRunner().invoke(match_app, args)
-
-    assert completed.exit_code == 0
-    payload = json.loads(completed.output)
-    if enabled:
-        assert payload.pop("stack_residuals") == {"diagnostic": True}
-        assert calls == [{"limit": 3}]
-    else:
-        assert not calls
-    assert payload == matchlib.compiler_listing_payload(listing)

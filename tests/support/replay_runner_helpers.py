@@ -17,7 +17,6 @@ from crimson.replay.driver.playback_driver import (
     RngTraceDraw,
     build_verify_playback_driver,
 )
-from crimson.replay.driver.replay_info import ReplayInfoResult, collect_replay_info
 from crimson.replay.input_codec import pack_tick
 from crimson.replay.types import current_recorder, current_replay_game_version
 from crimson.sim.hooks import TickResult
@@ -89,10 +88,6 @@ def _blank_survival_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str 
     return _blank_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=seed), ticks=ticks, game_version=game_version)
 
 
-def _blank_rush_replay(*, ticks: int, seed: int = 0xBEEF, game_version: str | None = None) -> ReplayRecorder:
-    return _blank_replay(RunSpec(game_mode_id=GameMode.RUSH, seed=seed), ticks=ticks, game_version=game_version)
-
-
 def _blank_typo_replay(
     *,
     ticks: int,
@@ -107,11 +102,6 @@ def _blank_typo_replay(
         typo_dictionary_words=tuple(typo_dictionary_words),
         typo_highscore_names=tuple(typo_highscore_names),
     )
-    return _blank_replay(run, ticks=ticks, game_version=game_version)
-
-
-def _blank_quest_replay(*, ticks: int, seed: int = 101, game_version: str | None = None) -> ReplayRecorder:
-    run = RunSpec(game_mode_id=GameMode.QUESTS, seed=seed, quest_level=QuestLevel(1, 1))
     return _blank_replay(run, ticks=ticks, game_version=game_version)
 
 
@@ -199,21 +189,3 @@ def _run_verify_playback(
     )
 
 
-def _collect_verify_replay_info(
-    replay,
-    *,
-    max_ticks: int | None = None,
-    player_index: int | None = None,
-    include_extra_events: bool = True,
-) -> ReplayInfoResult:
-    driver = build_verify_playback_driver(
-        replay,
-        max_ticks=max_ticks,
-        warn_on_version_mismatch=True,
-        trace_rng=False,
-    )
-    return collect_replay_info(
-        driver,
-        player_index=player_index,
-        include_extra_events=bool(include_extra_events),
-    )

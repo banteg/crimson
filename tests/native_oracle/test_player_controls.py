@@ -1,4 +1,4 @@
-"""Whole-frame `player_update` (0x004136b0) under every movement x aim scheme vs the port's input pipeline.
+"""Whole-frame `player_update` (0x004136b0) under every movement and aim scheme vs the port's input pipeline.
 
 Each case seeds one player slot of a 1-4 player game (position, heading, aim, speed,
 weapon, perks, Reflex Boost), a few creatures, the held keys, stick axes, POV hat and
@@ -15,6 +15,7 @@ runs with `preserve_bugs`, as native behaves (the Stationary Reloader preload, P
 
 from __future__ import annotations
 
+import functools
 import random
 import struct
 from dataclasses import dataclass, field
@@ -48,6 +49,7 @@ from ._support import (
     PROJECTILE_STRIDE,
     Mismatch,
     compare_fields,
+    compare_pool,
     mismatch_report,
     prepare_gameplay,
 )
@@ -362,6 +364,7 @@ class _Native:
         return oracle.read_fields(player, _PLAYER_LAYOUT)
 
 
+@functools.cache
 def _weapon_slot(weapon_id: WeaponId) -> WeaponSlot:
     world = make_world()
     player = world.players[0]
@@ -485,16 +488,27 @@ _AIM_SCHEMES = (
 )
 
 
+# Native `player_update` (and the port) couples the two schemes in two places only: computer movement
+# or computer aim runs the auto-target scan, and keyboard aim turns only under relative or static
+# movement. Those pairs run in full; every other move and aim block is independent of the other
+# scheme, so each remaining scheme runs once.
+_SCHEME_PAIRS = (
+    *((move_mode, AimScheme.COMPUTER) for move_mode in _MOVE_MODES),
+    *((MovementControlType.COMPUTER, aim_scheme) for aim_scheme in _AIM_SCHEMES if aim_scheme is not AimScheme.COMPUTER),
+    *((move_mode, AimScheme.KEYBOARD) for move_mode in _MOVE_MODES if move_mode is not MovementControlType.COMPUTER),
+    (MovementControlType.UNKNOWN, AimScheme.UNKNOWN),
+    (MovementControlType.RELATIVE, AimScheme.MOUSE_RELATIVE),
+    (MovementControlType.STATIC, AimScheme.JOYSTICK),
+    (MovementControlType.DUAL_ACTION_PAD, AimScheme.DUAL_ACTION_PAD),
+    (MovementControlType.MOUSE_POINT_CLICK, AimScheme.MOUSE),
+)
+
+
 @pytest.mark.parametrize(
     ("move_mode", "aim_scheme"),
     [
-        pytest.param(
-            move_mode,
-            aim_scheme,
-            id=f"{move_mode.name.lower()}-{aim_scheme.name.lower()}",
-        )
-        for move_mode in _MOVE_MODES
-        for aim_scheme in _AIM_SCHEMES
+        pytest.param(move_mode, aim_scheme, id=f"{move_mode.name.lower()}-{aim_scheme.name.lower()}")
+        for move_mode, aim_scheme in _SCHEME_PAIRS
     ],
 )
 def test_player_update_controls_match_native(
@@ -523,16 +537,10 @@ def test_player_update_controls_match_native(
         label = case.label()
         address = native.player(case.player_index)
         mismatches += compare_fields(label, native_fields, _python_fields(player, slot), address=address)
-        for index, projectile in enumerate(world.state.projectiles.entries):
-            projectile_address = projectile_pool + index * PROJECTILE_STRIDE
-            native_projectile = oracle.read_fields(projectile_address, PROJECTILE_LAYOUT)
-            if native_projectile["active"] or projectile.active:
-                mismatches += compare_fields(
-                    f"{label} projectile[{index}]",
-                    native_projectile,
-                    _python_projectile(projectile),
-                    address=projectile_address,
-                )
+        mismatches += compare_pool(
+            oracle, projectile_pool, PROJECTILE_STRIDE, PROJECTILE_LAYOUT, world.state.projectiles.entries,
+            _python_projectile, f"{label} projectile",
+        )
         if oracle.rand_state != world.state.rng.state:
             mismatches.append(Mismatch(label, "rand_state", oracle.rand_state, world.state.rng.state, 0))
     assert not mismatches, mismatch_report(mismatches, total_cases=_CASES_PER_COMBO)

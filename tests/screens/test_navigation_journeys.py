@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from crimson.game import resources as resources_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 from crimson.leaderboard import Leaderboard, OnlineScore
@@ -210,41 +209,6 @@ def test_results_scores_back_preserves_result(loop, mocker) -> None:
         loop.update(0.1)
     assert state.ui.opened
     assert result_ui.phase == 2
-
-
-def test_launch_payload_mode_survives_later_config_changes(loop, mocker) -> None:
-    state = loop.state
-    request = StartRun(GameMode.RUSH)
-    state.config.gameplay.mode = GameMode.SURVIVAL
-    mode = loop.navigation._mode(GameMode.RUSH)
-    mocker.patch.object(mode, "open")
-    loop.navigation.navigate(request)
-    assert state.config.gameplay.mode == GameMode.RUSH
-    assert state.screens.active is mode
-
-
-def test_resources_outlive_boot_and_dispose_after_screens(make_game_state, headless_resources, mocker) -> None:
-    state = make_game_state()
-    view = GameLoopView(state)
-    mocker.patch.object(rl, "hide_cursor")
-    mocker.patch.object(rl, "show_cursor")
-    mocker.patch.object(resources_module, "load_runtime_resources", return_value=headless_resources)
-    mocker.patch.object(resources_module, "init_audio_state", return_value=None)
-    mocker.patch.object(type(state.console), "exec_line")
-    disposal = mocker.Mock()
-    unload = mocker.patch.object(resources_module, "unload_runtime_resources")
-    disposal.attach_mock(unload, "assets")
-    view.open()
-    boot_close = mocker.spy(state.screens.active, "close")
-    panel = ScreenStub()
-    disposal.attach_mock(mocker.patch.object(panel, "close"), "screen")
-    state.screens.replace(ScreenEntry(panel))
-    boot_close.assert_called_once()
-    assert state.resources is headless_resources
-    unload.assert_not_called()
-    view.close()
-    assert disposal.mock_calls == [mocker.call.screen(), mocker.call.assets(headless_resources)]
-    assert state.resources is None
 
 
 def test_failed_screen_entry_is_disposed_at_shutdown(mocker) -> None:

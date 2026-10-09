@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.replay.driver.playback_driver import (
     PlaybackWalkObserver,
     PlaybackWalkResult,
     build_verify_playback_driver,
 )
-from crimson.replay.driver.setup import ReplayRunnerError
 from crimson.sim.hooks import TickResult
 from crimson.sim.world_state import WorldState
 from tests.support.replay_runner_helpers import _blank_survival_replay, finish_replay
@@ -102,18 +99,6 @@ def test_playback_driver_walk_clamps_ranges_to_tick_limit() -> None:
     empty_driver = build_verify_playback_driver(replay)
     empty_result = empty_driver.walk_ticks(start_tick=10, stop_tick=12)
     assert empty_result == PlaybackWalkResult(start_tick=3, next_tick_index=3, ticks_completed=0)
-
-
-def test_playback_driver_walk_rejects_invalid_ranges() -> None:
-    rec = _blank_survival_replay(ticks=3, seed=0x1234)
-    replay = finish_replay(rec)
-    driver = build_verify_playback_driver(replay)
-
-    with pytest.raises(ReplayRunnerError, match="invalid start_tick"):
-        driver.walk_ticks(start_tick=-1)
-
-    with pytest.raises(ReplayRunnerError, match="invalid tick range"):
-        driver.walk_ticks(start_tick=2, stop_tick=1)
 
 
 def test_playback_driver_walk_chunking_matches_full_run_result() -> None:

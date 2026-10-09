@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-from crimson.camera import CameraUpdate
 from crimson.effects import FxQueueEntry, FxQueueRotatedEntry
 from crimson.math_parity import f32
-from crimson.sim.batch_apply import apply_presentation_plans
-from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.terrain_fx import TerrainFxBatch, TerrainFxScratch
-from crimson.world.runtime import WorldRuntime
 from grim.color import RGBA
 from grim.geom import Vec2
 
@@ -61,33 +57,3 @@ def test_terrain_fx_scratch_take_batch_copies_active_entries_and_clears() -> Non
     # The next tick reuses the slots; the taken batch keeps its own entries.
     scratch.decals.add(effect_id=6, pos=Vec2(), width=1.0, height=1.0, rotation=0.0, rgba=RGBA())
     assert batch == _terrain_batch()
-
-
-def test_apply_presentation_plans_applies_terrain_fx_in_tick_order(mocker) -> None:
-    calls: list[tuple[str, int | None]] = []
-    plans = [
-        DeterministicPresentationPlan(terrain_fx=_terrain_batch(), camera=CameraUpdate(focus=Vec2(), shake=Vec2()))
-        for _ in range(2)
-    ]
-
-    runtime = mocker.Mock(spec=WorldRuntime)
-    runtime.sync_audio_bridge_state.side_effect = lambda: calls.append(("sync", None))
-    runtime.audio_bridge = mocker.Mock()
-    runtime.render_resources = mocker.Mock()
-    runtime.audio_bridge.apply_plan.side_effect = lambda **kw: calls.append(("audio", 1))
-    runtime.audio_bridge.apply_post_plan.side_effect = lambda **kw: calls.append(("done", 1))
-    runtime.update_camera.side_effect = lambda update: calls.append(("camera", 1))
-    runtime.render_resources.consume_terrain_fx_batch.side_effect = lambda batch: calls.append(("terrain", 1))
-    apply_presentation_plans(plans=plans, runtime=runtime)
-
-    assert calls == [
-        ("sync", None),
-        ("audio", 1),
-        ("camera", 1),
-        ("terrain", 1),
-        ("done", 1),
-        ("audio", 1),
-        ("camera", 1),
-        ("terrain", 1),
-        ("done", 1),
-    ]

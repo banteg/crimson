@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from crimson.render.world import viewport
 from grim import canvas
 from grim.config import CrimsonConfig, default_crimson_cfg
@@ -35,21 +33,6 @@ def test_world_clamp_is_stable_when_screen_matches_world_width() -> None:
 
 def test_world_camera_screen_size_fits_widescreen_uniformly() -> None:
     size = viewport.camera_screen_size(config=_config(1280, 720), runtime_w=0.0, runtime_h=0.0)
-    assert_float_close(size.x, 1024.0)
-    assert_float_close(size.y, 576.0)
-
-
-def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(assets_dir: Path, mocker) -> None:
-    world = WorldRuntimeHost(assets_dir=assets_dir, config=_config(1024, 768))
-    mocker.patch.object(canvas, "width", return_value=1280)
-    mocker.patch.object(canvas, "height", return_value=720)
-    size = world.view_transform().screen_size
-    assert_float_close(size.x, 1024.0)
-    assert_float_close(size.y, 576.0)
-
-
-def test_world_camera_screen_size_uses_frame_snapshot_when_provided() -> None:
-    size = viewport.camera_screen_size(config=_config(1024, 768), runtime_w=1280.0, runtime_h=720.0)
     assert_float_close(size.x, 1024.0)
     assert_float_close(size.y, 576.0)
 
@@ -89,10 +72,3 @@ def test_view_transform_is_stable_and_runtime_conversion_uses_current_camera(ass
     assert view.world_to_screen(Vec2(100, 200)) == screen
     assert world.world_to_screen(Vec2(100, 200)) == Vec2(0, 120)
     assert world.screen_to_world(Vec2(0, 120)) == Vec2(100, 200)
-
-
-def test_runtime_build_render_frame_requires_bound_resources(assets_dir: Path) -> None:
-    world = WorldRuntimeHost(assets_dir=assets_dir)
-
-    with pytest.raises(AssertionError, match="runtime resources must be loaded before use"):
-        world.build_render_frame()

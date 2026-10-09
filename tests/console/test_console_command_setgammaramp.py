@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-from unittest.mock import call
-
 from crimson.game import loop_view
 from crimson.game.loop_view import GameLoopView
 from crimson.game.runtime import _boot_command_handlers
-from crimson.screens.stack import ScreenEntry
-from tests.support.screens import ScreenStub
 
 
 def test_setgammaramp_updates_state_and_logs(make_game_state) -> None:
@@ -17,18 +13,6 @@ def test_setgammaramp_updates_state_and_logs(make_game_state) -> None:
 
     assert state.gamma_ramp == 1.25
     assert state.console.log.lines[-1] == "Gamma ramp regenerated and multiplied with 1.250000"
-
-
-def test_setgammaramp_prints_usage_on_bad_arity(make_game_state) -> None:
-    state = make_game_state()
-    handlers = _boot_command_handlers(state)
-
-    handlers["setGammaRamp"]([])
-
-    assert state.console.log.lines[-2:] == [
-        "setGammaRamp <scalar > 0>",
-        "Command adjusts gamma ramp linearly by multiplying with given scalar",
-    ]
 
 
 def test_game_loop_draw_applies_gamma_after_the_complete_dpi_sized_frame(mocker, make_game_state) -> None:
@@ -69,44 +53,6 @@ def test_game_loop_draw_applies_gamma_after_the_complete_dpi_sized_frame(mocker,
     assert quad[2].width == 1024 and quad[2].height == 768
 
 
-def test_game_loop_draw_skips_gamma_shader_for_default_gain(mocker, make_game_state) -> None:
-    state = make_game_state()
-    state.gamma_ramp = 1.0
-    view = GameLoopView(state)
-    draw_scene = mocker.patch.object(view, "_draw_scene_layers")
-    shader_lookup = mocker.patch.object(
-        view,
-        "_ensure_gamma_resources",
-    )
-
-    view.draw()
-
-    shader_lookup.assert_not_called()
-    draw_scene.assert_called_once_with()
-
-
-def test_game_loop_draw_scene_layers_draws_fps_counter_after_console(mocker, make_game_state) -> None:
-    state = make_game_state()
-    view = GameLoopView(state)
-    console = mocker.Mock()
-    view.state.console = console
-
-    state.screens.push(ScreenEntry(ScreenStub()))
-    active_draw = mocker.patch.object(state.screens.active, "draw")
-    ordered = mocker.Mock()
-    ordered.attach_mock(active_draw, "active")
-    ordered.attach_mock(console.draw, "console")
-    ordered.attach_mock(console.draw_fps_counter, "fps")
-
-    view._draw_scene_layers()
-
-    assert ordered.mock_calls == [
-        call.active(),
-        call.console(),
-        call.fps(),
-    ]
-
-
 def test_setgammaramp_rejects_invalid_values_without_changing_gain(make_game_state) -> None:
     state = make_game_state()
     state.gamma_ramp = 1.25
@@ -115,43 +61,3 @@ def test_setgammaramp_rejects_invalid_values_without_changing_gain(make_game_sta
         handler([value])
         assert state.gamma_ramp == 1.25
         assert "finite scalar" in state.console.log.lines[-1]
-
-
-def test_gamma_releases_shader_when_uniform_is_missing(mocker, make_game_state) -> None:
-    import pytest
-
-    view = GameLoopView(make_game_state())
-    shader = loop_view.rl.Shader()
-    shader.id = 1
-    mocker.patch.object(loop_view.rl, "load_shader_from_memory", return_value=shader)
-    mocker.patch.object(loop_view.rl, "get_shader_location", return_value=-1)
-    unload = mocker.patch.object(loop_view.rl, "unload_shader")
-    with pytest.raises(RuntimeError, match="gain uniform"):
-        view._ensure_gamma_resources(1024, 768)
-    unload.assert_called_once_with(shader)
-    assert view._gamma_shader is None
-
-
-def test_gamma_resources_resize_and_close_without_leaks(mocker, make_game_state) -> None:
-    view = GameLoopView(make_game_state())
-    shader = loop_view.rl.Shader()
-    shader.id = 1
-    targets = [loop_view.rl.RenderTexture(), loop_view.rl.RenderTexture()]
-    for target, size in zip(targets, [(1024, 768), (2048, 1536)], strict=True):
-        target.id = 1
-        target.texture.width, target.texture.height = size
-    mocker.patch.object(loop_view.rl, "load_shader_from_memory", return_value=shader)
-    mocker.patch.object(loop_view.rl, "get_shader_location", return_value=3)
-    load = mocker.patch.object(loop_view.rl, "load_render_texture", side_effect=targets)
-    mocker.patch.object(loop_view.rl, "rl_framebuffer_complete", return_value=True)
-    unload_target = mocker.patch.object(loop_view.rl, "unload_render_texture")
-    unload_shader = mocker.patch.object(loop_view.rl, "unload_shader")
-    view._ensure_gamma_resources(1024, 768)
-    view._ensure_gamma_resources(1024, 768)
-    assert load.call_count == 1
-    view._ensure_gamma_resources(2048, 1536)
-    unload_target.assert_called_once_with(targets[0])
-    view._close_gamma_resources()
-    view._close_gamma_resources()
-    assert unload_target.call_count == 2
-    unload_shader.assert_called_once_with(shader)

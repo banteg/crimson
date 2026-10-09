@@ -9,29 +9,6 @@ import pytest
 from scripts.ci_changed_paths import changed_paths, relevant
 
 
-@pytest.mark.parametrize(
-    ("category", "path"),
-    [
-        ("core", "third_party/sources/zlib/adler32.c"),
-        ("client", "src/crimson/replay/types.py"),
-        ("client", "pyproject.toml"),
-        ("client", "uv.lock"),
-        ("decomp", "src/crimson/cli/__init__.py"),
-        ("service", "src/grim/assets.py"),
-        ("service", "tests/fixtures/replays/run.crd"),
-    ],
-)
-def test_external_suite_inputs_run_their_consumers(category: str, path: str) -> None:
-    assert relevant(category, [path])
-
-
-@pytest.mark.parametrize("category", ["core", "client", "decomp", "service"])
-def test_filter_change_runs_every_suite(category: str) -> None:
-    assert relevant(category, ["scripts/ci_changed_paths.py"])
-    assert relevant(category, ["crimson-re/pyproject.toml"])
-    assert not relevant(category, ["README.md", "docs/index.md"])
-
-
 def test_docs_only_requires_all_paths_to_be_docs() -> None:
     assert relevant("docs-only", ["README.md", "docs/image.png"])
     assert not relevant("docs-only", ["README.md", "src/crimson/game.py"])

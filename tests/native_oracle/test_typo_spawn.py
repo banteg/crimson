@@ -20,7 +20,7 @@ from crimson.typo.state import reset_typo_state
 from grim.geom import Vec2
 from grim.rand import CrtRand
 
-from ._support import CREATURE_LAYOUT, CREATURE_POOL_SLOTS, CREATURE_STRIDE, Mismatch, compare_fields, mismatch_report
+from ._support import CREATURE_LAYOUT, CREATURE_STRIDE, Mismatch, compare_pool, mismatch_report
 
 _SPAWN_BLOCK_START = 0x00445A62
 _SPAWN_BLOCK_END = 0x00445C85
@@ -74,7 +74,6 @@ def test_typo_spawn_block_matches_native(oracle) -> None:
     oracle.write_u32("terrain_texture_height", TERRAIN_SIZE)
     oracle.write_u32("config_player_count", 1)
     pristine = oracle.snapshot()
-    pool_base = oracle.resolve("creature_pool")
 
     rng = random.Random(0x445A62)
     mismatches: list[Mismatch] = []
@@ -106,14 +105,11 @@ def test_typo_spawn_block_matches_native(oracle) -> None:
         native_cooldown = oracle.read_i32("survival_spawn_cooldown")
         if native_cooldown != world.state.typo.spawn_cooldown_ms:
             mismatches.append(Mismatch(case, "spawn_cooldown_ms", native_cooldown, world.state.typo.spawn_cooldown_ms, 0))
-        for index in range(CREATURE_POOL_SLOTS):
-            address = pool_base + index * CREATURE_STRIDE
-            native = oracle.read_fields(address, CREATURE_LAYOUT)
-            python = world.creatures.entries[index]
-            if not native["active"] and not python.active:
-                continue
-            spawned += 1
-            mismatches += compare_fields(f"{case} creature[{index}]", native, _python_creature(python), address=address)
+        mismatches += compare_pool(
+            oracle, "creature_pool", CREATURE_STRIDE, CREATURE_LAYOUT, world.creatures.entries, _python_creature,
+            f"{case} creature",
+        )
+        spawned += sum(creature.active for creature in world.creatures.entries)
         if oracle.rand_state != world.state.rng.state:
             mismatches.append(Mismatch(case, "rand_state", oracle.rand_state, world.state.rng.state, 0))
     assert spawned >= 2 * cases, f"only {spawned} creatures spawned over {cases} cases"

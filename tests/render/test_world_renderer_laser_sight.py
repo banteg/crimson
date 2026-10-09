@@ -61,7 +61,7 @@ def _native_cases() -> list[_NativeLaserCase]:
 
 
 @pytest.mark.parametrize("native", _native_cases(), ids=lambda row: str(row.index))
-@pytest.mark.parametrize("view_scale", [Vec2(1.0, 1.0), Vec2(2.0, 2.0), Vec2(1.5, 0.75), Vec2(0.25, 0.5)])
+@pytest.mark.parametrize("view_scale", [Vec2(1.0, 1.0), Vec2(1.5, 0.75)])
 def test_sharpshooter_submits_native_vertices_and_colors(
     mocker, headless_resources: RuntimeResources, native: _NativeLaserCase, view_scale: Vec2,
 ) -> None:

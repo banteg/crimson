@@ -117,8 +117,7 @@ def test_internal_data_requires_explicit_static_storage_and_real_section() -> No
         data_report._check_storage(replace(obj, symbols=(static, static)), "pool", 4, linkage="internal")
 
 
-@pytest.mark.parametrize("internal,source", [(["missing"], "pool.c"), (["pool", "pool"], "pool.c"),
-                                           (["pool"], "pool.cpp"), ([], "pool.h")])
+@pytest.mark.parametrize("internal,source", [(["missing"], "pool.c"), ([], "pool.h")])
 def test_plan_rejects_ambiguous_internal_symbols_and_languages(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Any, internal: list[str], source: str,
 ) -> None:

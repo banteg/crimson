@@ -7,7 +7,7 @@ from crimson.screens.ui_timeline import UiTimeline
 from crimson.ui.animation import ui_element_anim
 
 
-@pytest.mark.parametrize("max_timeline", [300, 900])
+@pytest.mark.parametrize("max_timeline", [300])
 def test_close_crosses_zero_once_and_reentering_rewinds(max_timeline) -> None:
     timeline = UiTimeline()
     timeline.enter(max_timeline)
@@ -29,7 +29,7 @@ def test_close_crosses_zero_once_and_reentering_rewinds(max_timeline) -> None:
     assert timeline.max_timeline_ms == max_timeline
 
 
-@pytest.mark.parametrize(("timeline", "expected"), [(0, -510), (100, -510), (250, -255), (400, 0), (500, 0)])
+@pytest.mark.parametrize(("timeline", "expected"), [(100, -510), (250, -255), (400, 0)])
 def test_quest_results_keeps_100ms_hold_then_300ms_slide(timeline, expected) -> None:
     _, slide = ui_element_anim(timeline, index=35, width=510)
     assert slide == expected

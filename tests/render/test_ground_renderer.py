@@ -8,7 +8,6 @@ import pytest
 from grim import canvas
 from grim.geom import Vec2
 from grim.raylib_api import rd, rl
-from grim.shaders import AlphaTestShader
 from grim.terrain_render import (
     TERRAIN_BASE_TINT,
     TERRAIN_CLEAR_COLOR,
@@ -21,7 +20,6 @@ from grim.terrain_render import (
 )
 from grim.terrain_stamps import TerrainLayers, TerrainStamp
 from grim.texture_mode import texture_mode
-from tests.support.helpers import assert_float_close
 
 type Rgba = tuple[int, int, int, int]
 
@@ -324,25 +322,6 @@ def test_terrain_rt_blend_keeps_target_alpha_and_restores_alpha_writes(gpu: _Gpu
     assert blended == pytest.approx((128, 0, 0, 191), abs=1)
 
 
-def test_draw_stamps_scales_native_top_left_into_raylib_origin(headless_window, mocker) -> None:
-    mocker.patch.object(rl, "get_window_scale_dpi", return_value=rl.Vector2(1.0, 1.0))
-    ground = _ground()
-    ground.render_target = _render_texture(512, 512)
-    texture = rl.Texture()
-    texture.width = 128
-    texture.height = 128
-
-    ground._draw_stamps(texture, TERRAIN_BASE_TINT, (TerrainStamp(rotation=1.5, x=-64.0, y=100.0),))
-
-    (_, src, dst, origin, degrees, tint), _ = headless_window.draw_texture_pro.call_args
-    assert (src.x, src.y, src.width, src.height) == (0.0, 0.0, 128.0, 128.0)
-    # `position *= inv_scale` gives the top-left (-32, 50); raylib places the 64-unit quad by its center.
-    assert (dst.x, dst.y, dst.width, dst.height) == (0.0, 82.0, 64.0, 64.0)
-    assert (origin.x, origin.y) == (32.0, 32.0)
-    assert_float_close(degrees, 85.94366926962348)
-    assert tint == TERRAIN_BASE_TINT
-
-
 def test_bake_decals_returns_false_without_render_target() -> None:
     decal = GroundDecal(
         texture=rl.Texture(),
@@ -357,15 +336,6 @@ def test_bake_decals_returns_false_without_render_target() -> None:
 
 # A live GL context can't be made to fail on demand, so the tests below inject
 # failures at the raylib boundary and hand out render-target structs in its place.
-
-
-def test_alpha_test_shader_invalid_handle_raises(mocker) -> None:
-    mocker.patch.object(rl, "load_shader_from_memory", return_value=rl.Shader())
-    alpha_test = AlphaTestShader()
-
-    with pytest.raises(RuntimeError, match="invalid shader id"), alpha_test.scope():
-        pass
-    assert alpha_test.shader is None
 
 
 def test_ensure_render_target_recovers_after_previous_failure(mocker) -> None:
@@ -385,17 +355,6 @@ def test_ensure_render_target_recovers_after_previous_failure(mocker) -> None:
     ground._ensure_render_target(1.0)
     assert ground.texture_failed is False
     assert ground.render_target is candidate
-
-
-def test_load_render_target_rejects_incomplete_framebuffer(mocker) -> None:
-    ground = _ground()
-    candidate = _render_texture(1024, 1024)
-    mocker.patch.object(rl, "load_render_texture", return_value=candidate)
-    mocker.patch.object(rl, "rl_framebuffer_complete", return_value=False)
-    unload = mocker.patch.object(rl, "unload_render_texture")
-
-    assert ground._load_render_target(1024, 1024) is False
-    unload.assert_called_once_with(candidate)
 
 
 def test_render_target_setup_failure_releases_candidate(mocker) -> None:

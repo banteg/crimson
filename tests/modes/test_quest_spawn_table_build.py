@@ -7,14 +7,12 @@ from crimson.quests.runtime import (
     apply_hardcore_spawn_table_adjustment,
     build_quest_spawn_table,
 )
-from crimson.quests.tier1 import quest_build_target_practice, quest_build_the_random_factor
-from crimson.quests.tier2 import quest_build_sweep_stakes
-from crimson.quests.tier3 import quest_build_deja_vu, quest_build_the_killing
+from crimson.quests.tier3 import quest_build_the_killing
 from crimson.quests.tier4 import quest_build_the_end_of_all
 from crimson.quests.types import QuestContext, SpawnEntry
 from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
-from grim.rand import Crand, RecordingCrand
+from grim.rand import Crand
 from tests.support.helpers import ScriptedCrand
 
 
@@ -139,30 +137,3 @@ def test_the_killing_discards_pick_rolls_and_cycles_by_wave_index() -> None:
         *wave_pick_callers * 5,
         *spawner_callers,
     ]
-
-
-def test_quest_rng_builders_use_exact_native_callers() -> None:
-    target_practice_rng = RecordingCrand(Crand(0x1234))
-    quest_build_target_practice(QuestContext(player_count=1, rng=target_practice_rng))
-    assert [record.caller for record in target_practice_rng.records_since()] == [
-        RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_ANGLE,
-        RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_RADIUS,
-    ] * 30
-
-    random_factor_rng = RecordingCrand(Crand(0x1234))
-    quest_build_the_random_factor(QuestContext(player_count=1, rng=random_factor_rng))
-    assert [record.caller for record in random_factor_rng.records_since()] == [
-        RngCallerStatic.QUEST_BUILD_THE_RANDOM_FACTOR_ALIEN_BIG_GRAY_GATE,
-    ] * 10
-
-    sweep_stakes_rng = RecordingCrand(Crand(0x1234))
-    quest_build_sweep_stakes(QuestContext(player_count=1, rng=sweep_stakes_rng))
-    assert [record.caller for record in sweep_stakes_rng.records_since()] == [
-        RngCallerStatic.QUEST_BUILD_SWEEP_STAKES_ANGLE,
-    ] * 16
-
-    deja_vu_rng = RecordingCrand(Crand(0x1234))
-    quest_build_deja_vu(QuestContext(player_count=1, rng=deja_vu_rng))
-    assert [record.caller for record in deja_vu_rng.records_since()] == [
-        RngCallerStatic.QUEST_BUILD_DEJA_VU_ANGLE,
-    ] * 18

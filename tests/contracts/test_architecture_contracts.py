@@ -13,54 +13,15 @@ from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.run_spec import RunSpec
 from crimson.sim.sessions import DeterministicSession
 from crimson.world import WorldRuntime
-from crimson.world.audio_bridge import AudioBridge
 from crimson.world.standalone_tick_harness import StandaloneTickHarness
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
 from grim.rand import Crand
-from grim.raylib_api import rl
 from grim.sfx import init_sfx_state
 from tests.support.audio import sfx_ids
-from tests.support.builders.session import make_session
 from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import idle_replay
-
-
-def test_contract_1_pure_headless_execution_no_render_or_audio_dependencies(mocker) -> None:
-    session, _world = make_session()
-    ticks = LiveTickSource()
-    play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx", wraps=audio_bridge_module.play_sfx)
-
-    for _ in range(60):
-        ticks.poll([player_input(aim=Vec2(512.0, 512.0))])
-        step = step_replay_tick(session, ticks.next_tick())
-        assert isinstance(step.presentation, DeterministicPresentationPlan)
-
-    assert play_sfx.call_count == 0
-
-
-def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mocker) -> None:
-    session, _world = make_session()
-    ticks = LiveTickSource()
-    ticks.poll([player_input()])
-    audio = AudioState(
-        ready=False,
-        music=init_music_state(ready=False, enabled=False, volume=1.0),
-        sfx=init_sfx_state(ready=False, enabled=False, volume=1.0, rng=Crand(0x1234)),
-    )
-    audio_bridge = AudioBridge(audio=audio, audio_rng=Crand(0xBEEF))
-    play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    draw_text = mocker.patch.object(rl, "draw_text")
-
-    plan = step_replay_tick(session, ticks.next_tick()).presentation
-    # No audio or rendering happened during deterministic step
-    assert play_sfx.call_count == 0
-    assert draw_text.call_count == 0
-
-    # SFX only materialize when the presentation plan is explicitly applied
-    audio_bridge.apply_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
-    assert [call.args[1] for call in play_sfx.call_args_list] == sfx_ids(plan.sfx)
 
 
 def test_contract_6_state_apply_and_presentation_apply_stay_separate(mocker, tmp_path: Path) -> None:

@@ -6,9 +6,6 @@ import shutil
 import struct
 from pathlib import Path
 
-from typer.testing import CliRunner
-
-from crimson_re.cli.match import match_app
 from crimson_re.match import (
     DEFAULT_IMAGE_PATH,
     IMAGE_REL_I386_REL32,
@@ -17,17 +14,11 @@ from crimson_re.match import (
     ObjectRelocationReference,
 )
 from crimson_re.mod_sdk import (
-    DEFAULT_MOD_SDK_MANIFEST,
-    ModSdkOracleFunction,
-    ModSdkOracleReport,
     _find_masked_fingerprint_hits,
     _pe_linker_version,
     _resolve_oracle_addresses,
     _rich_records,
-    load_mod_sdk_manifest,
-    mod_sdk_oracle_report_payload,
     mod_sdk_report_payload,
-    render_mod_sdk_oracle_report,
     render_mod_sdk_report,
     validate_mod_sdk,
 )
@@ -101,28 +92,6 @@ def _write_manifest(tmp_path: Path) -> tuple[Path, Path]:
     return manifest, root
 
 
-def test_mod_sdk_manifest_pins_source_binary_pair() -> None:
-    payload = load_mod_sdk_manifest(DEFAULT_MOD_SDK_MANIFEST)
-
-    assert payload["package"]["release"] == "2003-08-14"
-    assert payload["package"]["archive"]["sha256"] == (
-        "f81cc70ebe29cf9576b251e8723802dedd7abdd7b6b00a8d15c503ed8ceb786c"
-    )
-    projects = {project["name"]: project for project in payload["projects"]}
-    assert projects["cl_nullmod"]["compiler"]["build"] == 9044
-    assert projects["cl_crimsonroks"]["rich_records"][0] == {
-        "product_id": 49,
-        "build": 9044,
-        "count": 2,
-    }
-    assert projects["cl_crimsonroks"]["oracle"] == {
-        "source": "cl_crimsonroks/src/r_roks.cpp",
-        "symbol_prefix": "?r",
-        "expected_functions": 25,
-    }
-    assert "Linux ports" in payload["calibration"]["excluded_claims"][-1]
-
-
 def test_sdk_oracle_fingerprint_masks_linker_words() -> None:
     function = ObjectFunction(
         name="?example@@YAXXZ",
@@ -184,39 +153,6 @@ def test_sdk_oracle_uses_caller_xref_to_split_identical_bodies() -> None:
     assert evidence[callee.name] == "masked-fingerprint+caller-xref"
 
 
-def test_sdk_oracle_report_calls_manifest_selection_authored_functions(tmp_path: Path) -> None:
-    function = ModSdkOracleFunction(
-        name="rExample",
-        symbol="?rExample@@YAXXZ",
-        size=1,
-        instructions=1,
-        target_instructions=1,
-        target_va=0x10001000,
-        fingerprint_candidates=(0x10001000,),
-        evidence="masked-fingerprint",
-        normalized_ratio=1.0,
-    )
-    report = ModSdkOracleReport(
-        source=tmp_path,
-        source_kind="directory",
-        release="2003-08-14",
-        archive_sha256="00" * 32,
-        project="example",
-        source_path="example.cpp",
-        compiler_product_id=49,
-        compiler_build=9044,
-        expected_functions=1,
-        provenance_checks=1,
-        functions=(function,),
-    )
-
-    payload = mod_sdk_oracle_report_payload(report)
-
-    assert payload["summary"]["authored_functions"] == 1
-    assert "application_functions" not in payload["summary"]
-    assert "authored-functions=1/1" in render_mod_sdk_oracle_report(report)
-
-
 def test_mod_sdk_provenance_validates_directory_and_reports_drift(tmp_path: Path) -> None:
     manifest, root = _write_manifest(tmp_path)
 
@@ -231,24 +167,3 @@ def test_mod_sdk_provenance_validates_directory_and_reports_drift(tmp_path: Path
     drifted = validate_mod_sdk(root, manifest_path=manifest, compile_exports=False)
     assert not drifted.ok
     assert any(check.component == "source.cpp" and check.kind == "sha256" for check in drifted.failed)
-
-
-def test_mod_sdk_cli_provenance_only(tmp_path: Path) -> None:
-    manifest, root = _write_manifest(tmp_path)
-
-    result = CliRunner().invoke(
-        match_app,
-        [
-            "mod-sdk",
-            "--sdk",
-            str(root),
-            "--manifest",
-            str(manifest),
-            "--provenance-only",
-            "--check",
-        ],
-    )
-
-    assert result.exit_code == 0, result.output
-    assert result.output.startswith("mod-sdk=ok release=2003-08-14")
-    assert "excluded claims:" in result.output

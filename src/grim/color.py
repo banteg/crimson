@@ -23,26 +23,6 @@ class RGBA(msgspec.Struct, frozen=True):
             return value
         return cls(float(value[0]), float(value[1]), float(value[2]), float(value[3]))
 
-    @classmethod
-    def from_rl(cls, value: rl.Color) -> RGBA:
-        inv_255 = 1.0 / 255.0
-        return cls(
-            float(value.r) * inv_255,
-            float(value.g) * inv_255,
-            float(value.b) * inv_255,
-            float(value.a) * inv_255,
-        )
-
-    @staticmethod
-    def lerp(a: RGBA, b: RGBA, t: float) -> RGBA:
-        t = float(t)
-        return RGBA(
-            r=a.r + (b.r - a.r) * t,
-            g=a.g + (b.g - a.g) * t,
-            b=a.b + (b.b - a.b) * t,
-            a=a.a + (b.a - a.a) * t,
-        )
-
     def to_tuple(self) -> tuple[float, float, float, float]:
         return (self.r, self.g, self.b, self.a)
 
@@ -77,15 +57,6 @@ class RGBA(msgspec.Struct, frozen=True):
 
     def with_alpha(self, alpha: float) -> RGBA:
         return self.replace(a=alpha)
-
-    def scaled(self, factor: float) -> RGBA:
-        factor = float(factor)
-        return RGBA(
-            r=self.r * factor,
-            g=self.g * factor,
-            b=self.b * factor,
-            a=self.a * factor,
-        )
 
     def scaled_alpha(self, factor: float) -> RGBA:
         return self.with_alpha(self.a * float(factor))

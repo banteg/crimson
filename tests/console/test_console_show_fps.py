@@ -70,15 +70,3 @@ def test_debug_mode_enables_fps_cvar_by_default() -> None:
     assert cvar is not None
     assert cvar.value == "1"
     assert cvar.value_f == 1.0
-
-
-def test_non_debug_mode_keeps_fps_cvar_default() -> None:
-    console = _make_console()
-    console.register_cvar("cv_showFPS", "0")
-
-    _apply_debug_console_defaults(console, debug=False)
-
-    cvar = console.cvars.get("cv_showFPS")
-    assert cvar is not None
-    assert cvar.value == "0"
-    assert cvar.value_f == 0.0

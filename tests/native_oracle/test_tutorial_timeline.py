@@ -37,6 +37,7 @@ from ._support import (
     CREATURE_STRIDE,
     PLAYER_OFFSETS,
     PLAYER_STRIDE,
+    pool_rows,
     prepare_gameplay,
 )
 
@@ -201,12 +202,12 @@ def test_tutorial_timeline_matches_native(oracle) -> None:
             if native_id:
                 check(f"bonus[{slot}].amount", oracle.read_i32(address + 0x18), entry.amount)
                 check(f"bonus[{slot}].pos", (oracle.read_f32(address + 0x10), oracle.read_f32(address + 0x14)), (entry.pos.x, entry.pos.y))
+        rows = pool_rows(oracle, pool, CREATURE_STRIDE, CREATURE_POOL_SLOTS, CREATURE_LAYOUT)
         for index in range(fillers + 1, CREATURE_POOL_SLOTS):
-            address = pool + index * CREATURE_STRIDE
-            native = oracle.read_fields(address, CREATURE_LAYOUT)
+            native = rows[index]
             python = world.creatures.entries[index]
-            check(f"creature[{index}].active", int(native["active"]), int(python.active))
-            if not native["active"]:
+            check(f"creature[{index}].active", native["active"] if native else 0, int(python.active))
+            if not native:
                 continue
             spawned += 1
             check(f"creature[{index}].type", native["type_id"], int(python.type_id))

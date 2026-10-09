@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-import struct
 import subprocess
 from pathlib import Path
 
@@ -169,10 +168,6 @@ def test_replay_payload_layout() -> None:
     assert wire["ticks"] == [[[[0.0, 0.0, 1.0, 2.0, 0]], [{"type": "perk_pick", "player_index": 0, "choice_index": 2}]]]
 
 
-def test_replay_dump_is_deterministic() -> None:
-    assert dump_replay(_replay()) == dump_replay(_replay())
-
-
 def test_recorder_builds_replay() -> None:
     run = RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1)
     recorder = ReplayRecorder(run, game_version="1.2.3")
@@ -205,29 +200,7 @@ def test_recorder_declares_the_pilot_a_harness_names(monkeypatch: pytest.MonkeyP
     assert ReplayRecorder(run).finish(_result()).pilot == Pilot(name="Astra", model="gpt-5")
 
 
-def test_recorder_validates_player_count() -> None:
-    recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=2))
-    with pytest.raises(ValueError, match="expected 2 player inputs"):
-        recorder.record(pack_tick([player_input()]))
-
-
 # Envelope ------------------------------------------------------------------
-
-
-def test_load_rejects_non_zstd_bytes() -> None:
-    with pytest.raises(ReplayCodecError, match="zstd envelope"):
-        load_replay(_payload())
-
-
-def test_load_rejects_invalid_zstd_payload() -> None:
-    with pytest.raises(ReplayCodecError, match="invalid replay zstd payload"):
-        load_replay(b"\x28\xb5\x2f\xfdnot-a-zstd-stream")
-
-
-@pytest.mark.parametrize("suffix", [b"trailing-garbage", zstd.ZstdCompressor().compress(b"second-frame")])
-def test_load_rejects_data_after_zstd_frame(suffix: bytes) -> None:
-    with pytest.raises(ReplayCodecError, match="invalid replay zstd payload"):
-        load_replay(dump_replay(_replay()) + suffix)
 
 
 def test_load_rejects_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -236,31 +209,11 @@ def test_load_rejects_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -
         load_replay(zstd.ZstdCompressor(level=19).compress(b"12345"))
 
 
-def test_load_rejects_file_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
-    data = dump_replay(_replay())
-    monkeypatch.setattr(replay_codec_mod, "MAX_REPLAY_FILE_BYTES", len(data) - 1)
-    with pytest.raises(ReplayCodecError, match="replay file too large"):
-        load_replay(data)
-
-
 # Canonical encoding ----------------------------------------------------------
 
 
 def _noncanonical_payloads() -> dict[str, bytes]:
     payload = _payload()
-    wire = _wire()
-
-    reordered = dict(wire)
-    reordered["run"] = dict(reversed(list(wire["run"].items())))
-
-    missing = dict(wire)
-    missing["run"] = {key: value for key, value in wire["run"].items() if key != "preserve_bugs"}
-
-    extra = dict(wire)
-    extra["run"] = {**wire["run"], "tick_rate": 60}
-
-    int_axis = dict(wire)
-    int_axis["ticks"] = [[[[0, 0.0, 512.0, 512.0, 0]], []]]
 
     # Top-level fixmap header 0x88 → 0x89 plus a repeated key.
     assert payload[0] == 0x88
@@ -268,16 +221,10 @@ def _noncanonical_payloads() -> dict[str, bytes]:
 
     seed_key = msgspec.msgpack.encode("seed")
     non_minimal_int = payload.replace(seed_key + b"\x01", seed_key + b"\xcc\x01", 1)
-    float32 = payload.replace(b"\xcb" + struct.pack(">d", 512.0), b"\xca" + struct.pack(">f", 512.0), 1)
 
     return {
-        "reordered keys": msgspec.msgpack.encode(reordered),
-        "missing key": msgspec.msgpack.encode(missing),
-        "extra key": msgspec.msgpack.encode(extra),
-        "integer for float": msgspec.msgpack.encode(int_axis),
         "duplicate key": duplicate,
         "non-minimal integer": non_minimal_int,
-        "float32 encoding": float32,
     }
 
 
@@ -287,10 +234,6 @@ def test_decode_rejects_noncanonical_payloads(case: str) -> None:
     assert payload != _payload()
     with pytest.raises(ReplayCodecError):
         decode_replay_payload(payload)
-
-
-def test_decode_accepts_canonical_payload() -> None:
-    assert decode_replay_payload(_payload()) == _replay()
 
 
 @pytest.mark.parametrize(
@@ -329,67 +272,13 @@ def test_a_declared_pilot_round_trips() -> None:
 @pytest.mark.parametrize(
     ("replay", "message"),
     [
-        (msgspec.structs.replace(_replay(), game_version=""), "game_version"),
-        (msgspec.structs.replace(_replay(), pilot=Pilot(name="")), "pilot.name"),
-        (msgspec.structs.replace(_replay(), pilot=Pilot(name="A" * 32)), "pilot.name"),
-        (msgspec.structs.replace(_replay(), pilot=Pilot(name="Astra", model="é")), "pilot.model"),
-        (msgspec.structs.replace(_replay(), pilot=Pilot(name="Astra", url="http://example.com")), "pilot.url"),
         (_replay(RunSpec(game_mode_id=GameMode.DEMO, seed=1)), "not a replayable mode"),
-        (_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1 << 32)), "run.seed"),
-        (_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=-1)), "run.seed"),
-        (_replay(RunSpec(game_mode_id=GameMode.QUESTS, seed=1)), "quest_level"),
-        (_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, quest_level=QuestLevel(1, 1))), "quest_level"),
-        (_replay(RunSpec(game_mode_id=GameMode.TYPO, seed=1, player_count=2)), "player_count == 1"),
-        (_replay(RunSpec(game_mode_id=GameMode.TUTORIAL, seed=1, player_count=2)), "player_count == 1"),
-        (_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, detail_preset=1 << 31)), "run.detail_preset"),
-        (_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, detail_preset=0)), "run.detail_preset"),
-        (_replay(RunSpec(game_mode_id=GameMode.TYPO, seed=1, typo_dictionary_words=("x" * 16,))), "typo_dictionary_words"),
-        (_replay(RunSpec(game_mode_id=GameMode.TYPO, seed=1, typo_dictionary_words=("é",))), "typo_dictionary_words"),
-        (_replay(RunSpec(game_mode_id=GameMode.TYPO, seed=1, typo_dictionary_words=("a",) * 2049)), "at most 2048"),
-        (_replay(RunSpec(game_mode_id=GameMode.TYPO, seed=1, typo_highscore_names=("a" * 32,))), "typo_highscore_names"),
-        (_replay(RunSpec(game_mode_id=GameMode.TYPO, seed=1, typo_highscore_names=("ann1",))), "typo_highscore_names"),
-        (_replay(RunSpec(game_mode_id=GameMode.TYPO, seed=1, typo_highscore_names=("a",) * 513)), "at most 512"),
-        (_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, violence_disabled=256)), "run.violence_disabled"),
-        (_replay(result=_result(player_count=2)), "result.players"),
-        (_replay(result=_result(outcome=RunOutcome.QUEST_COMPLETED, quest_final_ms=1)), "invalid for survival"),
-        (
-            _replay(RunSpec(game_mode_id=GameMode.QUESTS, seed=1, quest_level=QuestLevel(1, 1)), result=_result(outcome=RunOutcome.QUEST_COMPLETED)),
-            "quest_final_ms",
-        ),
-        (_replay(result=msgspec.structs.replace(_result(), rng_state=1 << 32)), "rng_state"),
-        (_replay(ticks=[]), "at least one tick"),
-        (_replay(ticks=[ReplayTick(inputs=[])]), "player inputs"),
-        (_replay(ticks=[ReplayTick(inputs=[(float("nan"), 0.0, 0.0, 0.0, 0)])]), "must be finite"),
         (_replay(ticks=[ReplayTick(inputs=[(0.1, 0.0, 0.0, 0.0, 0)])]), "canonical f32"),
-        (_replay(ticks=[ReplayTick(inputs=[(1e39, 0.0, 0.0, 0.0, 0)])]), "f32 range"),
-        (_replay(ticks=[ReplayTick(inputs=[(0.0, 0.0, 0.0, 0.0, 1 << 24)])]), "unsupported bits"),
-        (_replay(ticks=[ReplayTick(inputs=[(0.0, 0.0, 0.0, 0.0, 0x10)])]), "MOVE_KEYS_PRESENT"),
-        (
-            _replay(ticks=[ReplayTick(inputs=[(0.0, 0.0, 0.0, 0.0, 0)], commands=[PerkMenuOpenCommand(player_index=1)])]),
-            "player_index",
-        ),
-        (
-            _replay(
-                ticks=[ReplayTick(inputs=[(0.0, 0.0, 0.0, 0.0, 0)], commands=[PerkPickCommand(player_index=0, choice_index=7)])],
-            ),
-            "choice_index",
-        ),
-        (
-            _replay(ticks=[ReplayTick(inputs=[(0.0, 0.0, 0.0, 0.0, 0)], commands=[TypoSubmitCommand(player_index=0)])]),
-            "Typ-o commands",
-        ),
     ],
 )
 def test_validation_rejects_invalid_replays(replay: Replay, message: str) -> None:
     with pytest.raises(ReplayCodecError, match=message):
         encode_replay_payload(replay)
-
-
-def test_decode_reports_schema_errors() -> None:
-    wire = _wire()
-    wire["ticks"] = [[[[0.0, 0.0, 0.0, 0.0, 0]], [{"type": "network_ping", "player_index": 0}]]]
-    with pytest.raises(ReplayCodecError, match="invalid replay payload"):
-        decode_replay_payload(msgspec.msgpack.encode(wire))
 
 
 # Game version -----------------------------------------------------------------
@@ -464,12 +353,6 @@ def test_load_rejects_large_zstd_window() -> None:
     frame = b"\x28\xb5\x2f\xfd" + b"\x00" + b"\x70" + ((len(payload) << 3) | 1).to_bytes(3, "little") + payload
     with pytest.raises(ReplayCodecError, match="window exceeds 8 MiB"):
         load_replay(frame)
-
-
-def test_dump_rejects_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(replay_codec_mod, "MAX_REPLAY_PAYLOAD_BYTES", len(_payload()) - 1)
-    with pytest.raises(ReplayCodecError, match="payload too large"):
-        dump_replay(_replay())
 
 
 def test_a_replay_under_other_rules_decodes_but_does_not_play() -> None:

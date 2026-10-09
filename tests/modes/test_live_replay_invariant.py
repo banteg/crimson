@@ -29,8 +29,9 @@ from tests.support.state_digest import session_digest
 # Frame times in seconds: high refresh rates, a 0.1 s lag spike (six ticks) and odd rates.
 _FRAME_DTS = (1 / 144, 1 / 144, 1 / 120, 0.1, 1 / 60, 0.033, 1 / 240, 0.05, 1 / 75)
 _TICKS = 3600
-# Complete-state digests are costly; a split never heals, so sampling still finds it.
-_DIGEST_EVERY = 8
+# Complete-state digests cost ~33 ms each; a split never heals, so sampling still finds it.
+# 3599 = 59 * 61, so the run's last tick is sampled too.
+_DIGEST_EVERY = 59
 
 
 def _axis(value: float) -> float:

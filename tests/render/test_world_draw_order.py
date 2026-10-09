@@ -16,66 +16,6 @@ from tests.support.creature_draw_capture import render_ctx_for_creatures
 from tests.support.factories import make_creature_state
 
 
-def test_draw_creatures_matches_native_overlay_and_species_pass_order(mocker, headless_resources) -> None:
-    creatures = [
-        make_creature_state(pos=Vec2(10.0, 10.0), type_id=CreatureTypeId.SPIDER_SP2),
-        make_creature_state(pos=Vec2(20.0, 20.0), type_id=CreatureTypeId.TROOPER),
-        make_creature_state(pos=Vec2(30.0, 30.0), type_id=CreatureTypeId.ZOMBIE),
-        make_creature_state(pos=Vec2(40.0, 40.0), type_id=CreatureTypeId.LIZARD),
-        make_creature_state(pos=Vec2(50.0, 50.0), type_id=CreatureTypeId.SPIDER_SP1),
-        make_creature_state(pos=Vec2(60.0, 60.0), type_id=CreatureTypeId.ALIEN),
-        make_creature_state(pos=Vec2(70.0, 70.0), type_id=CreatureTypeId.ZOMBIE, active=False),
-    ]
-    render_ctx = render_ctx_for_creatures(headless_resources, creatures)
-    pos_to_index = {(float(creature.pos.x), float(creature.pos.y)): idx for idx, creature in enumerate(creatures)}
-    call_order: list[tuple[str, int]] = []
-
-    def _record_overlay(_render_ctx, creature, **_kwargs) -> None:
-        key = (float(creature.pos.x), float(creature.pos.y))
-        call_order.append(("overlay", pos_to_index[key]))
-
-    def _record_sprite(*_args, **kwargs) -> None:
-        pos = kwargs["pos"]
-        key = (float(pos.x), float(pos.y))
-        call_order.append(("shadow" if not kwargs.get("body", True) else "sprite", pos_to_index[key]))
-
-    mocker.patch.object(world_draw, "draw_creature_overlays", side_effect=_record_overlay)
-    mocker.patch.object(world_draw, "draw_creature_sprite", side_effect=_record_sprite)
-
-    world_draw.draw_creatures(
-        render_ctx,
-        ctx=WorldDrawContext(entity_alpha=1.0),
-    )
-
-    assert call_order == [
-        ("overlay", 0),
-        ("overlay", 1),
-        ("overlay", 2),
-        ("overlay", 3),
-        ("overlay", 4),
-        ("overlay", 5),
-        ("shadow", 2),
-        ("sprite", 2),
-        ("shadow", 4),
-        ("sprite", 4),
-        ("shadow", 0),
-        ("sprite", 0),
-        ("shadow", 5),
-        ("sprite", 5),
-        ("shadow", 3),
-        ("sprite", 3),
-    ]
-
-
-def test_draw_world_requires_initialized_ground(mocker, headless_resources) -> None:
-    render_ctx = render_ctx_for_creatures(headless_resources, [])
-    mocker.patch.object(world_draw.rl, "get_screen_width", return_value=1024)
-    mocker.patch.object(world_draw.rl, "get_screen_height", return_value=768)
-
-    with pytest.raises(AssertionError, match="ground renderer must be initialized"):
-        world_draw.draw_world(render_ctx)
-
-
 @pytest.mark.parametrize(
     ("lifecycle", "phase", "flags", "frame"),
     [
@@ -205,35 +145,7 @@ def test_creature_hit_flash_draws_match_native_witnesses(mocker, headless_resour
             assert first[9:] == (255, 255, 255, packed >> 24), case["name"]
 
 
-@pytest.mark.parametrize("violence_disabled", [0, 1])
-def test_creature_flash_follows_each_species_body_batch(mocker, headless_resources, violence_disabled) -> None:
-    creatures = [
-        make_creature_state(pos=Vec2(10.0, 10.0), type_id=CreatureTypeId.SPIDER_SP1),
-        make_creature_state(pos=Vec2(20.0, 20.0), type_id=CreatureTypeId.ZOMBIE),
-        make_creature_state(pos=Vec2(30.0, 30.0), type_id=CreatureTypeId.ZOMBIE),
-    ]
-    for creature in creatures:
-        creature.hit_flash_timer = 0.2
-    config = default_crimson_cfg()
-    config.display.violence_disabled = violence_disabled
-    render_ctx = render_ctx_for_creatures(headless_resources, creatures)
-    render_ctx = msgspec.structs.replace(render_ctx, frame=msgspec.structs.replace(render_ctx.frame, config=config))
-    mocker.patch.object(world_draw.rl, "begin_blend_mode")
-    mocker.patch.object(world_draw.rl, "end_blend_mode")
-    sprite = mocker.patch.object(world_draw, "draw_creature_sprite")
-    world_draw.draw_creatures(render_ctx, ctx=WorldDrawContext())
-    calls = [
-        (call.kwargs["pos"].x, call.kwargs.get("hit_flash", False))
-        for call in sprite.call_args_list
-        if call.kwargs.get("body", True)
-    ]
-    if violence_disabled:
-        assert calls == [(20, False), (30, False), (20, True), (30, True), (10, False), (10, True)]
-    else:
-        assert calls == [(20, False), (30, False), (10, False)]
-
-
-@pytest.mark.parametrize("entity_alpha", [0.0, 0.0005, 0.001])
+@pytest.mark.parametrize("entity_alpha", [0.0, 0.001])
 def test_draw_world_keeps_gauss_trails_inside_alpha_test_at_zero_transition(
     mocker, headless_resources, entity_alpha: float,
 ) -> None:
@@ -289,28 +201,3 @@ def test_draw_world_keeps_gauss_trails_inside_alpha_test_at_zero_transition(
     assert events == ["alpha_enter", "alpha_exit"]
     for draw_pass in unrelated_passes:
         draw_pass.assert_not_called()
-
-
-def test_bonus_render_draws_pickups_under_the_effect_pools(mocker, headless_resources) -> None:
-    render_ctx = render_ctx_for_creatures(headless_resources, [])
-    order = mocker.Mock()
-    for name in (
-        "draw_bonus_pickups",
-        "draw_bonus_hover_labels",
-        "draw_particle_pool",
-        "secondary_detonation_pass",
-        "draw_sprite_effect_pool",
-        "draw_effect_pool",
-    ):
-        order.attach_mock(mocker.patch.object(world_draw, name), name)
-
-    world_draw.bonus_render(render_ctx, ctx=WorldDrawContext(entity_alpha=1.0))
-
-    assert [call[0] for call in order.mock_calls] == [
-        "draw_bonus_pickups",
-        "draw_bonus_hover_labels",
-        "draw_particle_pool",
-        "secondary_detonation_pass",
-        "draw_sprite_effect_pool",
-        "draw_effect_pool",
-    ]

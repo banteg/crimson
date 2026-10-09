@@ -89,10 +89,6 @@ class Vec2(msgspec.Struct, frozen=True):
     def distance_to(self, other: Vec2) -> float:
         return (other - self).length()
 
-    def direction_to(self, other: Vec2, *, epsilon: float = 1e-6) -> Vec2:
-        direction, _ = (other - self).normalized_with_length(epsilon=epsilon)
-        return direction
-
     @classmethod
     def from_angle(cls, theta: float) -> Vec2:
         return cls(x=math.cos(theta), y=math.sin(theta))
@@ -115,17 +111,11 @@ class Vec2(msgspec.Struct, frozen=True):
     def to_heading(self) -> float:
         return self.to_angle() + math.pi / 2.0
 
-    def to_polar(self) -> tuple[float, float]:
-        return self.to_angle(), self.length()
-
     def offset(self, *, dx: float = 0.0, dy: float = 0.0) -> Vec2:
         return Vec2(self.x + dx, self.y + dy)
 
     def perp_left(self) -> Vec2:
         return Vec2(-self.y, self.x)
-
-    def perp_right(self) -> Vec2:
-        return Vec2(self.y, -self.x)
 
     def to_rl(self) -> rl.Vector2:
         from grim.raylib_api import rl_vector2
@@ -140,14 +130,6 @@ class Vec2(msgspec.Struct, frozen=True):
             "y": round(self.y, ndigits),
         }
 
-    def rotated(self, theta: float) -> Vec2:
-        cos_theta = math.cos(theta)
-        sin_theta = math.sin(theta)
-        return Vec2(
-            x=self.x * cos_theta - self.y * sin_theta,
-            y=self.x * sin_theta + self.y * cos_theta,
-        )
-
     def clamp_rect(self, min_x: float, min_y: float, max_x: float, max_y: float) -> Vec2:
         return Vec2(
             x=clamp(self.x, min_x, max_x),
@@ -160,28 +142,11 @@ class Vec2(msgspec.Struct, frozen=True):
         dy = b.y - a.y
         return dx * dx + dy * dy
 
-    @staticmethod
-    def lerp(a: Vec2, b: Vec2, t: float) -> Vec2:
-        return Vec2(
-            x=a.x + (b.x - a.x) * t,
-            y=a.y + (b.y - a.y) * t,
-        )
-
-
 class Rect(msgspec.Struct, frozen=True):
     x: float = 0.0
     y: float = 0.0
     w: float = 0.0
     h: float = 0.0
-
-    @classmethod
-    def from_xywh(cls, value: Rect | rl.Rectangle) -> Rect:
-        return cls(
-            x=value.x,
-            y=value.y,
-            w=float(value.width),
-            h=float(value.height),
-        )
 
     @classmethod
     def from_top_left(cls, top_left: SupportsXY, width: float, height: float) -> Rect:
@@ -239,25 +204,8 @@ class Rect(msgspec.Struct, frozen=True):
     def center(self) -> Vec2:
         return Vec2(self.x + self.w * 0.5, self.y + self.h * 0.5)
 
-    @classmethod
-    def from_center(cls, center: SupportsXY, width: float, height: float) -> Rect:
-        return cls(
-            x=center.x - width * 0.5,
-            y=center.y - height * 0.5,
-            w=width,
-            h=height,
-        )
-
     def offset(self, *, dx: float = 0.0, dy: float = 0.0) -> Rect:
         return Rect(x=self.x + dx, y=self.y + dy, w=self.w, h=self.h)
-
-    def inset(self, *, dx: float = 0.0, dy: float = 0.0) -> Rect:
-        return Rect(
-            x=self.x + dx,
-            y=self.y + dy,
-            w=max(0.0, self.w - 2.0 * dx),
-            h=max(0.0, self.h - 2.0 * dy),
-        )
 
     def contains(self, point: SupportsXY) -> bool:
         px = point.x

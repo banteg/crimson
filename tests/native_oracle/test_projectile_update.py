@@ -35,6 +35,7 @@ from ._support import (
     Mismatch,
     compare_effect_pool,
     compare_fields,
+    compare_pool,
     mismatch_report,
     prepare_gameplay,
 )
@@ -452,13 +453,10 @@ def test_primary_special_hits_match_native(oracle, type_id: ProjectileTemplateId
         )
 
         case = f"{type_id.name} seed=0x{seed:08x}"
-        for slot, projectile in enumerate(state.projectiles.entries):
-            address = pool_base + slot * PROJECTILE_STRIDE
-            native = oracle.read_fields(address, PROJECTILE_LAYOUT)
-            if native["active"] or projectile.active:
-                mismatches += compare_fields(
-                    f"{case} projectile[{slot}]", native, _python_projectile(projectile), address=address,
-                )
+        mismatches += compare_pool(
+            oracle, pool_base, PROJECTILE_STRIDE, PROJECTILE_LAYOUT, state.projectiles.entries, _python_projectile,
+            f"{case} projectile",
+        )
         mismatches += _compare_creatures(oracle, world, creature_count, case)
         for name, python_value in (
             ("shock_chain_projectile_id", state.shock_chain_projectile_id),
@@ -527,11 +525,10 @@ def test_shock_chain_bonus_matches_native(oracle) -> None:
         )
 
         case = f"shock chain seed=0x{seed:08x} origin=({origin.x!r}, {origin.y!r})"
-        for slot, projectile in enumerate(state.projectiles.entries):
-            address = pool_base + slot * PROJECTILE_STRIDE
-            native = oracle.read_fields(address, PROJECTILE_LAYOUT)
-            if native["active"] or projectile.active:
-                mismatches += compare_fields(f"{case} projectile[{slot}]", native, _python_projectile(projectile), address=address)
+        mismatches += compare_pool(
+            oracle, pool_base, PROJECTILE_STRIDE, PROJECTILE_LAYOUT, state.projectiles.entries, _python_projectile,
+            f"{case} projectile",
+        )
         for name, python_value in (
             ("shock_chain_projectile_id", state.shock_chain_projectile_id),
             ("shock_chain_links_left", state.shock_chain_links_left),

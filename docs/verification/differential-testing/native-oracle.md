@@ -87,13 +87,12 @@ stores a wider double where native stores a float32.
 | `test_creature_anim` | Animation phase step in `creature_update_all` `0x00426e22..0x00426f35` | `creature_anim_advance_phase` |
 | `test_camera_shake` | `camera_update` `0x00409500` over whole Nuke shakes | `camera_shake_update` |
 | `test_sprite_effects` | Sprite loop of `projectile_update` `0x0042246a..0x004224e8` | `SpriteEffectPool.update` |
-| `test_experience_award` | Kill XP award in `creature_handle_death` `0x0041eb34..0x0041ebb5`, with Double Experience | `award_experience_from_reward` |
 | `test_creature_handle_death` | `creature_handle_death` `0x0041e910`: corpses, eaten deaths, split-on-death children, Quick Learner, Double Experience, Freeze and the kill-drop guard | `CreaturePool.handle_death` |
 | `test_effect_spawns` | Every effect spawner through the shared `effect_template`, `effects_update` and pool exhaustion | `EffectPool`, projectile-hit and bonus effect spawns |
 | `test_freeze_effects` | `effect_spawn_freeze_shatter` and its shards | `EffectPool.spawn_freeze_shatter` |
 | `test_terrain_generate` | `terrain_generate` and `terrain_generate_random` draw calls through a recording Grim | The terrain generators |
 | `test_tutorial_timeline` | `tutorial_timeline_update`, including the raw-key stages | `tutorial_timeline_update` |
-| `test_player_controls` | Whole-frame `player_update` `0x004136b0` under every movement and aim scheme, 1-4 players, keys, sticks, POV hat and mouse | `LocalInputInterpreter` through a replay tick into `player_update` |
+| `test_player_controls` | Whole-frame `player_update` `0x004136b0` under every movement scheme and aim scheme, and the pairs that interact (computer movement or aim, keyboard aim), 1-4 players, keys, sticks, POV hat and mouse | `LocalInputInterpreter` through a replay tick into `player_update` |
 | `test_player_update` | `player_update` movement, steering-heading, turn, Angry Reloader, Reflex Boost restore/spread/reload and aim fragments; `player_heading_approach_target` `0x00413540`; `player_apply_move_with_spawn_avoidance` `0x0041e290`; the level threshold at `0x0040afae` | `crimson.gameplay` movement helpers, `player_update`, `survival_level_threshold` |
 
 ## Limitations

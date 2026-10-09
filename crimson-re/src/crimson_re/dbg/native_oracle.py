@@ -107,7 +107,8 @@ _TRAMPOLINE_X87_INPUTS = _TRAMPOLINE_BASE + 0x810
 _STACK_HEADROOM = 0x100
 # Longest stub patch: `fld dword [slot]` + `ret imm16`.
 _STUB_PATCH_SIZE = 9
-_DEFAULT_INSTRUCTION_BUDGET = 20_000_000
+# A wall-clock limit per call: an instruction count makes Unicorn hook every instruction (~8x slower).
+_DEFAULT_TIMEOUT_US = 10_000_000
 # `crt_get_thread_data` returns the per-thread `_tiddata`; `_holdrand` sits at +0x14.
 _TIDDATA_SIZE = 0x74
 _TIDDATA_HOLDRAND = 0x14
@@ -344,13 +345,13 @@ class NativeOracle:
         *,
         symbols: SymbolTable | None = None,
         control_word: int = GAMEPLAY_CONTROL_WORD,
-        instruction_budget: int = _DEFAULT_INSTRUCTION_BUDGET,
+        timeout_us: int = _DEFAULT_TIMEOUT_US,
     ) -> None:
         if not exe_path.is_file():
             raise NativeOracleError(f"original executable not found: {exe_path}")
         self.symbols = symbols if symbols is not None else SymbolTable.load()
         self.control_word = control_word
-        self.instruction_budget = instruction_budget
+        self.timeout_us = timeout_us
         self._trap: NativeTrap | None = None
         self._disassembler = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
         self._stubs: dict[int, _Stub] = {}
@@ -786,7 +787,7 @@ class NativeOracle:
         self._uc.reg_write(x86.UC_X86_REG_EFLAGS, 0x202)
         self._trap = None
         try:
-            self._uc.emu_start(_TRAMPOLINE_BASE, stop, count=self.instruction_budget)
+            self._uc.emu_start(_TRAMPOLINE_BASE, stop, timeout=self.timeout_us)
         except UcError as exc:
             if self._trap is not None:
                 raise self._trap from None
@@ -797,8 +798,8 @@ class NativeOracle:
         pc = int(self._uc.reg_read(x86.UC_X86_REG_EIP))
         if pc != stop:
             raise NativeTrap(
-                "budget",
-                f"instruction budget ({self.instruction_budget}) exhausted at {self.describe(pc)}",
+                "timeout",
+                f"emulation timed out after {self.timeout_us / 1e6:g} s at {self.describe(pc)}",
                 pc=pc,
             )
 

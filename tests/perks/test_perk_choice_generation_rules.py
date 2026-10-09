@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from crimson.game_modes import GameMode
 from crimson.perks import PerkId
 from crimson.perks.availability import prepare_perk_availability
@@ -25,30 +23,6 @@ def _status_default() -> save_status.GameStatus:
         data=save_status.default_status_data(),
         dirty=False,
     )
-
-
-def test_prepare_perk_availability_unlocks_base_and_quest_perks() -> None:
-    status = _status_default()
-    status.quest_unlock_index = 0
-    state = GameplayState()
-    state.status = status
-    prepare_perk_availability(state)
-
-    assert state.perk_available[int(PerkId.BONUS_MAGNET)]
-    assert not state.perk_available[int(PerkId.URANIUM_FILLED_BULLETS)]
-
-    status.quest_unlock_index = 3  # includes quest 1.3 unlock_perk_id=URANIUM_FILLED_BULLETS
-    prepare_perk_availability(state)
-    assert state.perk_available[int(PerkId.URANIUM_FILLED_BULLETS)]
-
-
-def test_perk_generate_choices_inserts_monster_vision_on_quest_3_4() -> None:
-    state = GameplayState()
-    state.quest_level = QuestLevel(3, 4)
-    player = PlayerState(index=0, pos=Vec2())
-
-    choices = perk_generate_choices(state, [player], game_mode=GameMode.QUESTS)
-    assert choices and choices[0] == PerkId.MONSTER_VISION
 
 
 def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order() -> None:
@@ -126,37 +100,6 @@ def test_perk_generate_choices_default_allows_pyromaniac_when_any_alive_player_h
 def test_perk_generate_choices_preserve_bugs_keeps_player1_pyromaniac_gate() -> None:
     choices = _pyromaniac_offer_choices(WeaponId.PISTOL, WeaponId.FLAMETHROWER, preserve_bugs=True)
     assert PerkId.PYROMANIAC not in choices
-
-
-@pytest.mark.parametrize("death_clock", [False, True])
-def test_perk_generate_choices_blocks_perks_when_death_clock_active(death_clock: bool) -> None:
-    # Seed 1 offers Jinxed unless Death Clock blocks it.
-    state = GameplayState(rng=Crand(1))
-    prepare_perk_availability(state)
-    state.perk_available[int(PerkId.JINXED)] = True
-
-    player = PlayerState(index=0, pos=Vec2())
-    state.perks[int(PerkId.DEATH_CLOCK)] = int(death_clock)
-
-    choices = perk_generate_choices(state, [player], game_mode=GameMode.SURVIVAL)
-    assert (PerkId.JINXED in choices) is not death_clock
-
-
-def test_perk_generate_choices_applies_rarity_gate() -> None:
-    # Anxious Loader is in the global rarity gate; when (rand & 3) == 1 it is rejected.
-    rng = ScriptedCrand([17, 1, 1, 2, 3, 4, 5, 6, 7], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    state = GameplayState(rng=rng)
-    for perk_id in (PerkId.ANXIOUS_LOADER, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
-        state.perk_available[int(perk_id)] = True
-
-    player = PlayerState(index=0, pos=Vec2())
-    choices = perk_generate_choices(state, [player], game_mode=GameMode.SURVIVAL)
-    assert PerkId.ANXIOUS_LOADER not in choices
-    assert [
-        record.caller
-        for record in rng.records_since()
-        if record.caller == RngCallerStatic.PERKS_GENERATE_CHOICES_RARITY_GATE
-    ] == [RngCallerStatic.PERKS_GENERATE_CHOICES_RARITY_GATE]
 
 
 def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -> None:

@@ -5,32 +5,6 @@ from pathlib import Path
 from grim import config as grim_config
 
 
-def test_crimson_cfg_roundtrip_default() -> None:
-    cfg = grim_config.default_crimson_cfg()
-    blob = grim_config.encode_crimson_cfg(cfg)
-    assert len(blob) == grim_config.CRIMSON_CFG_SIZE
-    parsed = grim_config.CRIMSON_CFG_STRUCT.parse(blob)
-    assert list(parsed["direction_arrow_flags"][:4]) == [1, 1, 1, 1]
-    assert list(parsed["direction_arrow_flags"][4:]) == [0] * 6
-    assert int(parsed["ten_tons_logging_completed"]) == 1
-    assert int(parsed["sound_freq_adjustment_enabled"]) == 1
-    assert int(parsed["ui_info_texts"]) == 1
-    assert int(parsed["keybind_pick_perk"]) == 0x101
-    assert int(parsed["keybind_reload"]) == 0x102
-    assert float(parsed["mouse_sensitivity"]) == 0.5
-    assert list(parsed["saved_name_order"]) == list(range(grim_config.SAVED_NAME_SLOT_COUNT))
-    rebuilt = grim_config.CRIMSON_CFG_STRUCT.build(parsed)
-    assert rebuilt == blob
-
-
-def test_crimson_cfg_save_load(tmp_path: Path) -> None:
-    cfg = grim_config.ensure_crimson_cfg(tmp_path)
-    raw = cfg.path.read_bytes()
-    loaded = grim_config.load_crimson_cfg(cfg.path)
-    rebuilt = grim_config.encode_crimson_cfg(loaded)
-    assert rebuilt == raw
-
-
 def test_crimson_cfg_save_keeps_fields_the_port_does_not_edit() -> None:
     data = grim_config.CRIMSON_CFG_STRUCT.parse(grim_config.encode_crimson_cfg(grim_config.default_crimson_cfg()))
     data["unique_id_1"] = 0x1234

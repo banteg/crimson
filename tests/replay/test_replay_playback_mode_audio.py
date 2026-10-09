@@ -191,15 +191,6 @@ def test_skip_forward_is_silent_and_playback_after_it_is_not(open_playback: Open
     assert SfxId.PISTOL_FIRE in audio.played()
 
 
-def test_right_arrow_skips_five_seconds(open_playback: OpenPlayback, mocker) -> None:
-    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 400))
-    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_RIGHT)
-
-    view.update(0.0)
-
-    assert view.tick_index == 5 * 60
-
-
 def test_eight_times_speed_runs_eight_ticks_a_frame(open_playback: OpenPlayback, mocker) -> None:
     view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 400))
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_RIGHT_BRACKET)

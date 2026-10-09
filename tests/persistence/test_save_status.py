@@ -6,8 +6,6 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.persistence import save_status
-from crimson.weapon_usage import weapon_usage_slot_for_weapon_id
-from crimson.weapons import WeaponId
 
 
 def test_game_cfg_roundtrip(tmp_path: Path) -> None:
@@ -63,17 +61,3 @@ def test_a_detached_status_never_writes_a_file(tmp_path: Path, monkeypatch: pyte
 
     assert list(tmp_path.iterdir()) == []
     assert status.quest_unlock_index == 7
-
-
-def test_game_status_weapon_usage_slots_skip_untracked_ids() -> None:
-    status = save_status.GameStatus.from_data(
-        path=Path("game.cfg"),
-        data=save_status.default_status_data(),
-        dirty=False,
-    )
-    pistol_slot = weapon_usage_slot_for_weapon_id(WeaponId.PISTOL)
-    assert pistol_slot is not None
-
-    assert status.increment_weapon_usage_slot(pistol_slot) == 1
-    assert status.weapon_usage_count_slot(pistol_slot) == 1
-    assert weapon_usage_slot_for_weapon_id(WeaponId.NUKE_LAUNCHER) is None

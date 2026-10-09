@@ -4,7 +4,6 @@ import pytest
 
 from crimson import input_codes
 from crimson.game_modes import GameMode
-from crimson.input_codes import INPUT_CODE_UNBOUND, input_code_name
 from crimson.local_input import LocalInputInterpreter
 from crimson.replay.input_codec import unpack_player_input
 from crimson.replay.ticks import LiveTickSource, step_replay_tick
@@ -13,11 +12,6 @@ from crimson.sim.run_init import initialize_run
 from crimson.sim.run_spec import RunSpec
 from grim.config import default_crimson_cfg
 from grim.geom import Vec2
-
-
-def test_input_code_name_unbound_and_rawinput_fallback() -> None:
-    assert input_code_name(INPUT_CODE_UNBOUND) == "unbound"
-    assert input_code_name(0x17F) == "RawInput ?"
 
 
 def test_axis_z_and_rot_x_bindings_use_distinct_raylib_axes() -> None:
