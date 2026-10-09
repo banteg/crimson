@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ..game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES
 from .codec import (
     ReplayCodecError,
     decode_replay_payload,
@@ -24,8 +25,6 @@ from .types import (
     MOVE_MODE_PRESENT_FLAG,
     MOVE_MODE_SHIFT,
     RELOAD_PRESSED_FLAG,
-    REPLAY_FORMAT_VERSION,
-    REPLAY_RULES,
     REPLAY_TICK_DT,
     REPLAY_TICK_RATE,
     TURN_LEFT_FLAG,

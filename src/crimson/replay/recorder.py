@@ -1,16 +1,9 @@
 from __future__ import annotations
 
+from ..game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES, current_replay_game_version
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
-from .types import (
-    REPLAY_FORMAT_VERSION,
-    REPLAY_RULES,
-    Replay,
-    ReplayTick,
-    current_pilot,
-    current_recorder,
-    current_replay_game_version,
-)
+from .types import Replay, ReplayTick, current_pilot, current_recorder
 
 
 class ReplayRecorder:

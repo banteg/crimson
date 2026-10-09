@@ -5,6 +5,7 @@ from pathlib import Path
 import msgspec
 
 from crimson.game_modes import GameMode
+from crimson.game_version import current_replay_game_version
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
@@ -18,7 +19,7 @@ from crimson.replay.driver.playback_driver import (
     build_verify_playback_driver,
 )
 from crimson.replay.input_codec import pack_tick
-from crimson.replay.types import current_recorder, current_replay_game_version
+from crimson.replay.types import current_recorder
 from crimson.sim.hooks import TickResult
 from crimson.sim.run_result import RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec

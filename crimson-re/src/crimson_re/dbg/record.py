@@ -8,6 +8,7 @@ from pathlib import Path
 import msgspec
 
 from crimson.game_modes import GameMode
+from crimson.game_version import current_replay_game_version
 from crimson.math_parity import f32
 from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.persistence.save_status import GameStatusData
@@ -20,7 +21,6 @@ from crimson.replay.driver.playback_driver import (
     build_verify_playback_driver,
 )
 from crimson.replay.payloads import BuiltinObject
-from crimson.replay.types import current_replay_game_version
 from crimson.sim.hooks import TickResult
 from crimson.sim.run_spec import RunSpec
 from crimson.sim.timing import ftol_ms_i32, reflex_boost_time_scale_factor

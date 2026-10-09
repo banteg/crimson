@@ -9,6 +9,7 @@ import zstandard as zstd
 from grim.atomic_write import atomic_write_bytes
 
 from ..game_modes import GameMode
+from ..game_version import REPLAY_FORMAT_VERSION
 from ..math_parity import f32
 from ..sim.commands import PerkPickCommand, TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.run_result import RunOutcome, RunResult
@@ -22,7 +23,7 @@ from ..typo.names import (
     is_typo_highscore_name,
 )
 from ..typo.state import TypoCarry
-from .types import REPLAY_FORMAT_VERSION, Pilot, Recorder, Replay, ReplayTick, input_flags_validation_error
+from .types import Pilot, Recorder, Replay, ReplayTick, input_flags_validation_error
 
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 # Level 9 writes a long survival replay in ~16 ms and its checkpoint sidecar in ~95 ms; 19 took 0.4 s and

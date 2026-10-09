@@ -10,8 +10,10 @@ import zstandard as zstd
 
 import crimson
 import crimson.replay.codec as replay_codec_mod
+from crimson import game_version
 from crimson.aim_schemes import AimScheme
 from crimson.game_modes import GameMode
+from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES, current_replay_game_version
 from crimson.math_parity import f32
 from crimson.movement_controls import MovementControlType
 from crimson.quests.level import QuestLevel
@@ -29,7 +31,7 @@ from crimson.replay import (
 from crimson.replay import types as replay_types
 from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
 from crimson.replay.input_codec import pack_player_input, pack_tick, unpack_player_input
-from crimson.replay.types import REPLAY_FORMAT_VERSION, REPLAY_RULES, Pilot, Recorder, current_replay_game_version
+from crimson.replay.types import Pilot, Recorder
 from crimson.replay.versioning import ReplayRulesError
 from crimson.sim.commands import (
     PerkMenuOpenCommand,
@@ -177,7 +179,7 @@ def test_recorder_builds_replay() -> None:
 
     assert replay.run == run
     # The live game names itself and where it ran, apart from the rules version.
-    assert (replay.recorder.client, replay.recorder.version) == ("crimson", replay_types.current_replay_game_version())
+    assert (replay.recorder.client, replay.recorder.version) == ("crimson", current_replay_game_version())
     assert re.fullmatch(r"[a-z]+-[a-z0-9_]+", replay.recorder.platform)
     controls = (
         replay_types.MOVE_KEYS_PRESENT_FLAG
@@ -297,7 +299,7 @@ def test_a_replay_from_another_game_version_verifies_with_a_warning() -> None:
 def _fake_git(monkeypatch: pytest.MonkeyPatch, *, tags: bytes, status: bytes) -> None:
     current_replay_game_version.cache_clear()
     monkeypatch.setattr(crimson, "__version__", "1.2.3")
-    monkeypatch.setattr(replay_types.shutil, "which", lambda _name: "/usr/bin/git")
+    monkeypatch.setattr(game_version.shutil, "which", lambda _name: "/usr/bin/git")
 
     def _check_output(args: list[str], **_kwargs: object) -> bytes:
         match args[1]:
@@ -309,7 +311,7 @@ def _fake_git(monkeypatch: pytest.MonkeyPatch, *, tags: bytes, status: bytes) ->
                 return status
         raise AssertionError(f"unexpected git args: {args!r}")
 
-    monkeypatch.setattr(replay_types.subprocess, "check_output", _check_output)
+    monkeypatch.setattr(game_version.subprocess, "check_output", _check_output)
 
 
 @pytest.mark.parametrize(
@@ -340,7 +342,7 @@ def test_installed_package_inside_an_unrelated_repo_records_the_plain_version(
     (site_packages / "crimson" / "replay").mkdir(parents=True)
     current_replay_game_version.cache_clear()
     monkeypatch.setattr(crimson, "__version__", "1.2.3")
-    monkeypatch.setattr(replay_types, "__file__", str(site_packages / "crimson" / "replay" / "types.py"))
+    monkeypatch.setattr(game_version, "__file__", str(site_packages / "crimson" / "game_version.py"))
     try:
         assert current_replay_game_version() == "1.2.3"
     finally:

@@ -74,12 +74,12 @@ def test_docs_check_catches_stale_format_version(tmp_path: Path) -> None:
         "| Artifact | Current version | Authority |\n"
         "| CDT container | 1 | schema.py |\n"
         "| CDT payload schema | 21 | schema.py |\n"
-        "| CRD replay | 30 | types.py |\n",
+        "| CRD replay | 30 | game_version.py |\n",
     )
     schema = tmp_path / "crimson-re/src/crimson_re/dbg/schema.py"
     schema.parent.mkdir(parents=True)
     schema.write_text("TRACE_FORMAT_VERSION = 2\nTRACE_SCHEMA_VERSION = 21\n")
-    replay = tmp_path / "src/crimson/replay/types.py"
+    replay = tmp_path / "src/crimson/game_version.py"
     replay.parent.mkdir(parents=True)
     replay.write_text("REPLAY_FORMAT_VERSION = 30\n")
 

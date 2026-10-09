@@ -22,21 +22,19 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      relevant: ${{ steps.detect.outputs.relevant }}
+      relevant: ${{ steps.detect.outputs.client }}
     steps:
       - uses: actions/checkout@v5
       - id: detect
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-          EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [[ "$EVENT_NAME" != pull_request && "$EVENT_NAME" != push ]] || [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
-            echo "relevant=true" >> "$GITHUB_OUTPUT"
-            exit 0
+          base=()
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            base=(--base "$BASE_SHA")
           fi
-          git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          relevant=$(python3 scripts/ci_changed_paths.py client --base "$BASE_SHA")
-          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+          python3 scripts/ci_changed_paths.py changed "${base[@]}" client | tee -a "$GITHUB_OUTPUT"
 
   client:
     needs: changes

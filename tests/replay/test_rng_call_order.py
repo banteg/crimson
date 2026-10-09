@@ -6,7 +6,7 @@ import msgspec
 from pytest_mock import MockerFixture
 from typer.testing import CliRunner
 
-from crimson.cli import app
+from crimson.cli.app import app
 from crimson.replay import Replay, load_replay_file
 from crimson.replay.checkpoints import load_checkpoints_file
 from crimson.replay.driver.playback_driver import PlaybackDriver, PlaybackWalkObserver, build_verify_playback_driver

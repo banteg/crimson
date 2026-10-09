@@ -1,20 +1,19 @@
 from __future__ import annotations
 
+import sys
 from importlib.metadata import entry_points
 
-from . import identity as _identity
-from . import replay as _replay
-from . import root as _root
-
-app = _root.app
-replay_app = _replay.replay_app
-
-app.add_typer(replay_app, name="replay")
-app.add_typer(_identity.identity_app, name="identity")
-# Development tools (the crimson-re workspace package) add their command groups here.
-for entry_point in entry_points(group="crimson.cli"):
-    app.add_typer(entry_point.load(), name=entry_point.name)
+import typer
 
 
 def main(argv: list[str] | None = None) -> None:
-    app(prog_name="crimson", args=argv)
+    args = sys.argv[1:] if argv is None else argv
+    # A development command group (crimson-re's `match`, `native`, `dbg`) runs without loading the game's
+    # commands, so `crimson match ...` imports only what that group needs.
+    tools = {entry_point.name: entry_point for entry_point in entry_points(group="crimson.cli")}
+    if args and args[0] in tools:
+        app = typer.Typer(add_completion=False)
+        app.add_typer(tools[args[0]].load(), name=args[0])
+    else:
+        from .app import app
+    app(prog_name="crimson", args=args)

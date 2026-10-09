@@ -20,21 +20,19 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      relevant: ${{ steps.detect.outputs.relevant }}
+      relevant: ${{ steps.detect.outputs.service }}
     steps:
       - uses: actions/checkout@v5
       - id: detect
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-          EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [[ "$EVENT_NAME" != pull_request && "$EVENT_NAME" != push ]] || [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
-            echo "relevant=true" >> "$GITHUB_OUTPUT"
-            exit 0
+          base=()
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            base=(--base "$BASE_SHA")
           fi
-          git fetch --no-tags --depth=1 origin "$BASE_SHA"
-          relevant=$(python3 scripts/ci_changed_paths.py service --base "$BASE_SHA")
-          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+          python3 scripts/ci_changed_paths.py changed "${base[@]}" service | tee -a "$GITHUB_OUTPUT"
 
   service:
     needs: changes
@@ -46,15 +44,16 @@ jobs:
       - uses: mlugg/setup-zig@v2
         with:
           version: "0.17.0"
-      - name: Name the toolchain
-        id: zig
-        run: echo "version=$(zig version)" >> "$GITHUB_OUTPUT"
+      # Keyed by everything the core build reads (scripts/ci_changed_paths.py) and the toolchain.
+      - name: Name the inputs
+        id: inputs
+        run: echo "wasm=zig$(zig version)-$(python3 scripts/ci_changed_paths.py hash core-build)" >> "$GITHUB_OUTPUT"
       - name: Restore verifier WASM
         id: wasm
         uses: actions/cache@v4
         with:
           path: crimson-core/build/wasm/core.wasm
-          key: core-wasm-${{ runner.os }}-zig${{ steps.zig.outputs.version }}-${{ hashFiles('crimson-core/*.py', 'crimson-core/*.json', 'crimson-core/host/**', 'crimson-core/patches/**', 'decomp/**', 'third_party/headers/**', 'third_party/sources/**', 'tools/match/include/**', 'tools/native/data_definitions/**') }}
+          key: core-wasm-${{ runner.os }}-${{ steps.inputs.outputs.wasm }}
       - name: Build verifier WASM for Worker tests
         if: steps.wasm.outputs.cache-hit != 'true'
         run: python3 crimson-core/build.py --target wasm
