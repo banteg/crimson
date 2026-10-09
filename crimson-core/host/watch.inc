@@ -572,6 +572,22 @@ __attribute__((export_name("game_replay_downloaded"))) void game_replay_download
   ++watch_downloads_done;
 }
 
+// The board run whose replay the host fetches into replays/online/<run>.crd.
+__attribute__((export_name("game_replay_download"))) const char *game_replay_download() { return watch_download.c_str(); }
+// The host's fetch ended: 0 the file is written, 1 the leaderboard no longer
+// has the run, 2 it could not be fetched.
+__attribute__((export_name("game_replay_downloaded"))) void game_replay_downloaded(int result) {
+  if (watch_download.empty())
+    return;
+  if (result == 0)
+    watch_downloads.erase(watch_download);
+  else
+    watch_downloads[watch_download] = result == 1 ? WATCH_GONE : WATCH_FAILED;
+  watch_failed_pin[watch_download] = watch_pins;
+  watch_download.clear();
+  ++watch_downloads_done;
+}
+
 // Plays the replay game_replay_open read, as Watch plays one (a link to a run,
 // checks/game_watch.mjs), once a menu has settled (watch_follow_link): until
 // then the startup sequence sets up its own screens. A run the player starts

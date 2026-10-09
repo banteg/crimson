@@ -218,6 +218,20 @@ lines. A pinned board run's card fetches its replay through the page into
 "This run is no longer on the leaderboard" and "Could not download this run"
 tell a dropped run from a failed download, which the next pin tries again.
 
+The high score screen shows the leaderboard's runs as the Python port does
+(`screens/high_scores_view/records.py`). Each board's latest answer is kept for
+the session, every fetch replacing it whole, so a hidden, banned or deleted run
+leaves at the next one; nothing online is stored. While Show internet scores is
+ticked, the table reads the board's runs after its own records, so the
+original's filters, duplicate rule and order take them in; a run of the
+player's own that the board holds (the same name, time and experience) turns
+green in its place. The screen fetches a board quietly the first time it shows
+it, and Update scores fetches the shown one again with the original's status
+lines. A pinned board run's card fetches its replay through the page into
+`replays/online/<run>.crd`, where the newest few stay, and Watch plays it;
+"This run is no longer on the leaderboard" and "Could not download this run"
+tell a dropped run from a failed download, which the next pin tries again.
+
 ### Evidence
 
 - [`checks/game_check.py`](checks/game_check.py) runs sessions in the game
