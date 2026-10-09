@@ -1,9 +1,19 @@
-// Watching a replay (docs/rewrite/watch-replays.md): the high score screen's
-// Watch starts the run its replay recorded, as its Play a game starts one, and
-// the session feeds each tick the recording's input and commands in place of
-// the player's. Nothing the replay plays reaches the player: no setting or
-// progress carries over (live_step), nothing is saved, and the menu settings it
-// plays under are put back when it ends. Escape returns to the scores.
+// Watching a replay (docs/rewrite/watch-replays.md, docs/rewrite/replay-viewer.md):
+// the high score screen's Watch starts the run its replay recorded, as its Play
+// a game starts one, and the session feeds each tick the recording's input and
+// commands in place of the player's. Nothing the replay plays reaches the
+// player: no setting or progress carries over (live_step), nothing is saved,
+// and the menu settings it plays under are put back when it ends. Escape
+// returns to the scores.
+//
+// Before it plays, a preparing pass runs the whole replay undrawn: it keeps a
+// keyframe every few seconds and logs every bake into the terrain
+// (host/keyframes.inc), so the viewer seeks anywhere, backwards too, and it
+// collects the marks the scrub bar shows (Survival's milestone waves, Energizer
+// drops, perk picks) and whether the run plays to the result it recorded. While
+// it plays, a frame draws only its last tick; the others bake the terrain
+// undrawn, and a frame with no tick shows the last drawn one again
+// (host_frame_hold) under the viewer (host/viewer.inc).
 //
 // The replay plays in the one world the game has, so a finished run's end
 // screen, which the scores were opened from, is gone once one plays: the
@@ -13,22 +23,36 @@
 #include <map>
 #include <sys/stat.h>
 extern "C" {
-extern unsigned char run_active, screen_fade_ramp_flag;
+extern unsigned char run_active, screen_fade_ramp_flag, startup_skip_requested;
 extern ui_element_t ui_sign_crimson;
 void music_fade_out_all(int sfx_id);
 void music_play_exclusive(int sfx_id);
 }
 
-// A perk pick as the menu showed it: its choices, the one taken, and the level
-// it came with.
+// A perk pick as the menu showed it: when, its choices, the one taken, and the
+// level it came with.
 struct WatchPick {
-  int level, chosen, count, offered[7];
+  int tick, level, chosen, count, offered[7];
 };
-static const float watch_speeds[] = {0.25f, 0.5f, 1, 2, 4, 8};
+// A mark on the scrub bar: a Survival milestone wave (its stage), an Energizer
+// drop, or a perk pick (its index in the picks).
+enum WatchMarkKind { WATCH_WAVE, WATCH_ENERGIZER, WATCH_PICK };
+struct WatchMark {
+  int tick;
+  WatchMarkKind kind;
+  int value;
+};
+enum WatchPhase { WATCH_PREPARING, WATCH_PLAYING, WATCH_ENDED };
+
+static const float watch_speeds[] = {0.25f, 0.5f, 1, 2, 4, 8, 16, 32};
 static constexpr int WATCH_NORMAL_SPEED = 2;
-// A skip runs every tick, this many a frame, so a long one keeps the window live.
-static constexpr int WATCH_SKIP_TICKS_PER_FRAME = 600;
-// How long a pick's popup shows, in the viewer's seconds.
+static constexpr int WATCH_SPEEDS = (int)(sizeof watch_speeds / sizeof *watch_speeds);
+// A frame's share of the preparing pass, in milliseconds, which keeps the window live.
+static constexpr unsigned WATCH_PASS_MS = 28;
+// Keyframes start 2 s apart and spread out, every other one dropped, past the budget.
+static constexpr int WATCH_KEY_TICKS = 120;
+static constexpr size_t WATCH_KEY_BYTES = 256u << 20;
+// How long a pick's card shows, in the viewer's seconds.
 static constexpr float WATCH_PICK_SECONDS = 3;
 
 static struct {
@@ -46,16 +70,37 @@ static struct {
     decltype(config_blob.player_count) player_count;
     int major, minor;
   } menu;
+  WatchPhase phase;
   size_t at;       // the next tick's place in the recording
-  int tick, ticks; // ticks played, and the recording's
+  int tick, ticks; // ticks played, and the run's: the recording's, or up to a refused tick
   int speed;       // in watch_speeds
-  int skip;        // ticks a skip has still to run
-  bool paused, step, ended;
-  std::string stopped; // why it stopped before the recording's end
-  bool played;         // at the end: the run ended as it recorded
-  std::deque<WatchPick> picks;
-  float pick_left; // seconds the first pick's popup still shows
+  bool paused, step;
+  int seek;            // a tick the viewer asked for (from 1), or 0
+  std::string stopped; // why it stops before the recording's end
+  bool played;         // the run ends as it recorded
+  std::vector<Keyframe> keys;
+  int key_ticks; // keyframe spacing
+  size_t key_bytes;
+  std::vector<WatchPick> picks;
+  std::vector<WatchMark> marks;
+  int stage;              // the Survival spawn stage before the tick (the pass)
+  bool energizer[16];     // bonus slots holding an Energizer before the tick (the pass)
+  size_t next_pick;       // the first pick still ahead of playback
+  int card;               // the pick the card shows, or -1
+  float card_left;        // the card's seconds
+  bool drawn;             // a tick drew this frame
+  float mouse_x, mouse_y; // the viewer's cursor, which ticks replace with the replay's aim
+  bool leave;             // the end panel's Back, taken at the next pass
+  int stop_at;           // playback pauses on reaching this tick (game_watch_stop_at), or 0
+  // The run's sound effects volume: quiet passes zero it, and the keyframes they
+  // keep hold the zero.
+  float volume;
 } watch;
+
+// A tick the viewer asks for, from the first.
+static void watch_ask(int at) { watch.seek = std::max(1, at); }
+
+#include "viewer.inc"
 
 // The replay's run is the menu's: its mode, quest and difficulty, one player.
 // Watch pressed again before the run starts keeps the player's menu settings.
@@ -96,6 +141,24 @@ static void watch_disarm() {
   watch.armed = false;
 }
 
+static void watch_keep() {
+  if (watch.phase == WATCH_PREPARING)
+    terrain_shoot(watch.tick);
+  watch.keys.push_back(keyframe_capture(watch.tick, watch.at, terrain.batches.size()));
+  watch.key_bytes += watch.keys.back().packed.size();
+  // Past the budget, every other keyframe goes and the spacing doubles.
+  while (watch.key_bytes > WATCH_KEY_BYTES && watch.keys.size() > 2) {
+    std::vector<Keyframe> kept;
+    watch.key_bytes = 0;
+    for (size_t i = 0; i < watch.keys.size(); i += 2) {
+      watch.key_bytes += watch.keys[i].packed.size();
+      kept.push_back(std::move(watch.keys[i]));
+    }
+    watch.keys = std::move(kept);
+    watch.key_ticks *= 2;
+  }
+}
+
 static void watch_leave();
 static void watch_begin() {
   watch.armed = false;
@@ -103,20 +166,38 @@ static void watch_begin() {
   watch.time_played = time_played_ms;
   memcpy(&cfg, watch.replay.recording.data(), sizeof cfg);
   ranked_run = false;
+  terrain_reset();
   if (!live_start())
     return watch_leave();
   live.watching = true;
+  watch.volume = live.run.config.sfx_volume;
+  watch.phase = WATCH_PREPARING;
   watch.at = sizeof cfg;
-  watch.tick = watch.ticks = watch.skip = 0;
-  for (size_t at = sizeof cfg; at < watch.replay.recording.size(); ++watch.ticks) {
-    uint32_t count;
-    memcpy(&count, &watch.replay.recording[at + sizeof(PortableInput)], sizeof count);
-    at += sizeof(PortableInput) + sizeof count + count * sizeof(PortableCommand);
-  }
+  watch.tick = watch.ticks = 0;
   watch.speed = WATCH_NORMAL_SPEED;
-  watch.paused = watch.step = watch.ended = watch.played = false;
+  watch.paused = watch.step = watch.played = false;
   watch.stopped.clear();
+  watch.keys.clear();
+  watch.key_ticks = WATCH_KEY_TICKS;
+  watch.key_bytes = 0;
   watch.picks.clear();
+  watch.marks.clear();
+  watch.stage = survival_spawn_stage;
+  for (int i = 0; i < 16; ++i)
+    watch.energizer[i] = bonus_pool[i].bonus_id == BONUS_ID_ENERGIZER;
+  watch.card = -1;
+  watch.next_pick = 0;
+  viewer_reset();
+  watch_keep();
+  terrain.logging = true;
+}
+// The ticks playback runs this frame, short of a tick it stops at.
+static int watch_due(int due) {
+  if (watch.stop_at > watch.tick && watch.tick + due >= watch.stop_at) {
+    watch.paused = true;
+    return watch.stop_at - watch.tick;
+  }
+  return due;
 }
 
 // The replay stops, and the menu settings are the player's again.
@@ -126,9 +207,13 @@ static void watch_stop() {
     time_played_ms = watch.time_played;
   }
   live.watching = false;
+  terrain.logging = terrain.baking = false;
   game_live = game_session = false;
   watch_disarm();
-  watch.picks.clear();
+  watch.keys.clear();
+  watch.keys.shrink_to_fit();
+  watch.seek = watch.stop_at = 0;
+  terrain_reset();
 }
 
 // Back to the scores, with the menu's music.
@@ -144,10 +229,11 @@ static void watch_leave() {
   game_state_set_recovered(GAME_STATE_HIGHSCORES);
 }
 
-// The recording ran out, or a tick of it was refused (`stopped`). A run that
-// played to its end, or to where it was left, ends with the result recorded.
-static void watch_end(const char *stopped) {
-  watch.ended = true;
+// The pass reached the run's end: the recording ran out, or a tick of it was
+// refused (`stopped`). A run that played to its end, or to where it was left,
+// ends with the result recorded.
+static void watch_judge(const char *stopped) {
+  watch.ticks = watch.tick;
   watch.stopped = stopped;
   if (*stopped)
     return;
@@ -159,18 +245,36 @@ static void watch_end(const char *stopped) {
   watch.played = m.out == watch.replay.result;
 }
 
-// One recorded tick; false once the replay has ended.
+// The pass's marks for the tick just played.
+static void watch_mark(int chosen, int choices) {
+  if (chosen >= 0) {
+    WatchPick pick = {watch.tick, player_state_table[0].level, chosen, choices, {}};
+    memcpy(pick.offered, perk_choice_ids, choices * sizeof(int));
+    watch.marks.push_back({watch.tick, WATCH_PICK, (int)watch.picks.size()});
+    watch.picks.push_back(pick);
+  }
+  if (survival_spawn_stage != watch.stage)
+    watch.marks.push_back({watch.tick, WATCH_WAVE, survival_spawn_stage});
+  watch.stage = survival_spawn_stage;
+  for (int i = 0; i < 16; ++i) {
+    bool energizer = bonus_pool[i].bonus_id == BONUS_ID_ENERGIZER && !bonus_pool[i].picked;
+    if (energizer && !watch.energizer[i])
+      watch.marks.push_back({watch.tick, WATCH_ENERGIZER, i});
+    watch.energizer[i] = energizer;
+  }
+}
+
+// One recorded tick; false once the run has no more (the pass judges it).
 static bool watch_tick() {
   const std::vector<uint8_t> &recording = watch.replay.recording;
-  if (watch.at >= recording.size())
-    return watch_end(""), false;
+  if (watch.phase == WATCH_PREPARING ? watch.at >= recording.size() : watch.tick >= watch.ticks)
+    return false;
   uint32_t count;
   memcpy(&in, &recording[watch.at], sizeof in);
   memcpy(&count, &recording[watch.at + sizeof in], sizeof count);
   memcpy(commands, &recording[watch.at + sizeof in + sizeof count], count * sizeof(PortableCommand));
-  watch.at += sizeof in + sizeof count + count * sizeof(PortableCommand);
   // The menu's choices, as portable_step_many counts them, before the pick can
-  // add one (Perk Expert, Perk Master); of a tick's picks, the popup shows the last.
+  // add one (Perk Expert, Perk Master); of a tick's picks, the card shows the last.
   const int *counts = player_state_table[0].perk_counts;
   int choices = counts[PERK_ID_PERK_MASTER] > 0 ? 7 : counts[PERK_ID_PERK_EXPERT] > 0 ? 6 : 5, chosen = -1;
   for (uint32_t i = 0; i < count; ++i)
@@ -181,30 +285,97 @@ static bool watch_tick() {
   if (!live_step(count)) {
     char stopped[64];
     snprintf(stopped, sizeof stopped, "This run stops playing here (tick %d)", watch.tick);
-    watch_end(stopped);
+    watch_judge(stopped);
     return false;
   }
+  watch.at += sizeof in + sizeof count + count * sizeof(PortableCommand);
   ++watch.tick;
-  if (chosen >= 0) {
-    WatchPick pick = {player_state_table[0].level, chosen, choices, {}};
-    memcpy(pick.offered, perk_choice_ids, choices * sizeof(int));
-    if (watch.picks.empty())
-      watch.pick_left = WATCH_PICK_SECONDS;
-    watch.picks.push_back(pick);
-  }
+  if (watch.phase == WATCH_PREPARING)
+    watch_mark(chosen, choices);
   live_timeline();
   if (ui_elements_timeline < 0)
     ui_elements_timeline = 0;
   return true;
 }
 
-static void watch_skip(int seconds) {
-  watch.skip = std::min(watch.ticks - watch.tick, watch.skip + seconds * 60);
+// `count` ticks, at most to the run's end, drawing only the last; a quiet run
+// (a seek) plays no sound. The terrain takes every tick's bake.
+static int watch_run(int count, bool quiet) {
+  count = std::min(count, watch.ticks - watch.tick);
+  live.run.config.sfx_volume = quiet ? 0 : watch.volume;
+  terrain.baking = true;
+  int ran = 0;
+  for (; ran < count; ++ran) {
+    grim_render_disabled = ran + 1 < count;
+    if (!watch_tick())
+      break;
+  }
+  grim_render_disabled = 0;
+  terrain.baking = false;
+  live.run.config.sfx_volume = watch.volume;
+  // The last tick drew unless the run ended first.
+  if (ran > 0 && ran == count)
+    watch.drawn = true;
+  return ran;
 }
 
-// game_live_frame for a replay: the viewer's keys, then the ticks this pass
-// runs. A paused replay draws its world still; once it has ended, its last
-// frame stays.
+// Playback goes to `target` (a tick count from the start, at least one, so a
+// tick draws): forward from where it is when no keyframe is nearer, else from
+// the nearest keyframe before it, with the terrain rebuilt to it.
+static void watch_seek(int target) {
+  target = std::max(1, std::min(target, watch.ticks));
+  auto key = std::upper_bound(watch.keys.begin(), watch.keys.end(), target - 1,
+                              [](int t, const Keyframe &k) { return t < k.tick; }) -
+             1;
+  if (watch.tick >= target || watch.tick < key->tick) {
+    terrain_rebuild(key->batches);
+    keyframe_restore(*key);
+    watch.tick = key->tick;
+    watch.at = key->at;
+  }
+  watch_run(target - watch.tick, true);
+  watch.next_pick = std::upper_bound(watch.picks.begin(), watch.picks.end(), watch.tick,
+                                     [](int t, const WatchPick &p) { return t < p.tick; }) -
+                    watch.picks.begin();
+  watch.card = -1;
+  viewer.card = 0;
+  watch.phase = watch.tick >= watch.ticks ? WATCH_ENDED : WATCH_PLAYING;
+  if (watch.stop_at && watch.tick == watch.stop_at)
+    watch.paused = true;
+}
+
+// A frame's share of the preparing pass; at the run's end, playback starts.
+static void watch_prepare() {
+  live.run.config.sfx_volume = 0;
+  grim_render_disabled = 1;
+  // The pass bakes the terrain as it goes, for the copies it keeps.
+  terrain.baking = true;
+  unsigned start = host_time_ms();
+  bool done = false;
+  for (int n = 1;; ++n) {
+    if (!watch_tick()) {
+      done = true;
+      break;
+    }
+    if (watch.tick % watch.key_ticks == 0)
+      watch_keep();
+    if (n % 64 == 0 && host_time_ms() - start >= WATCH_PASS_MS)
+      break;
+  }
+  grim_render_disabled = 0;
+  terrain.baking = false;
+  live.run.config.sfx_volume = watch.volume;
+  if (!done)
+    return;
+  if (watch.stopped.empty() && watch.at >= watch.replay.recording.size())
+    watch_judge("");
+  terrain.logging = false;
+  watch.phase = WATCH_PLAYING;
+  // A host may have asked for a tick meanwhile (game_watch_seek).
+  watch_seek(watch.seek ? watch.seek : 1);
+  watch.seek = 0;
+}
+
 // The replay a host asked for starts on a menu once it has come in whole and
 // stays, with no run of the player's and no Watch of the screen's own under way.
 static bool watch_on_menu() {
@@ -224,179 +395,112 @@ static bool watch_on_menu() {
     return false;
   }
 }
+// A link skips the intro, as a click does (game_startup_init), and starts as
+// the menu comes in after it, cutting straight to the replay.
 static void watch_follow_link() {
-  if (watch.linked && !game_live && !run_active && !watch.armed && watch_on_menu() && ui_transition_direction &&
-      ui_elements_max_timeline() > 0 && ui_elements_timeline >= ui_elements_max_timeline()) {
+  if (!watch.linked)
+    return;
+  startup_skip_requested = 1;
+  if (!game_live && !run_active && !watch.armed && watch_on_menu() && ui_transition_direction &&
+      ui_elements_max_timeline() > 0 && ui_elements_timeline > 0) {
     watch.linked = false;
     watch_start(watch.link);
+    ui_elements_timeline = 0;
   }
 }
 
+// game_live_frame for a replay: the viewer's keys. Every pass draws, so the
+// viewer follows the cursor; Escape leaves.
 static int watch_frame() {
   auto pressed = [](int key) { return session_grim.IGrim2D_cpp::grim_was_key_pressed(key) != 0; };
   // Escape: the scores show from the next pass, which their own Escape would
   // otherwise take as well.
-  if (pressed(1)) {
+  if (pressed(1) || watch.leave) {
+    watch.leave = false;
     watch_leave();
     return 0;
   }
-  if (pressed(57)) // Space
-    watch.paused = !watch.paused;
-  watch.step |= watch.paused && pressed(0x34); // period: one tick
-  if (pressed(0x1a)) // [
-    watch.speed = std::max(watch.speed - 1, 0);
-  if (pressed(0x1b)) // ]
-    watch.speed = std::min(watch.speed + 1, (int)(sizeof watch_speeds / sizeof *watch_speeds) - 1);
-  if (pressed(0x02)) // 1
-    watch.speed = WATCH_NORMAL_SPEED;
-  if (pressed(0xcd)) // Right
-    watch_skip(5);
-  if (pressed(0xd1)) // Page Down
-    watch_skip(30);
   // The frame counts a run's time as played (game_frame_update): a replay's
   // never adds up.
   play_time_ms = watch.play_time;
   time_played_ms = watch.time_played;
-  if (watch.ended)
-    return 0;
-  float dt = fminf(grim_frame_dt, 0.1f);
-  if (!watch.picks.empty() && !watch.skip && (watch.pick_left -= dt) <= 0) {
-    watch.picks.pop_front();
-    watch.pick_left = watch.picks.empty() ? 0 : WATCH_PICK_SECONDS;
-  }
-  if (watch.skip)
-    live.due = std::min(watch.skip, WATCH_SKIP_TICKS_PER_FRAME);
-  else if (watch.paused)
-    live.due = watch.step ? 1 : 0;
-  else {
-    live.banked += dt * watch_speeds[watch.speed];
-    live.due = (int)(live.banked * 60.0f + 1e-4f);
-    live.banked -= live.due / 60.0f;
-  }
-  watch.step = false;
-  return live.due || watch.paused ? 1 : 0;
+  if (watch.phase == WATCH_PREPARING)
+    return 1;
+  int second = 60;
+  if (pressed(57)) // Space: pause, or from the end, play again
+    watch.phase == WATCH_ENDED ? (void)(watch_ask(1), watch.paused = false) : (void)(watch.paused = !watch.paused);
+  if (pressed(0x34) && watch.paused) // period: a tick on
+    watch.step = true;
+  if (pressed(0x33) && watch.paused) // comma: a tick back
+    watch_ask(watch.tick - 1);
+  if (pressed(0x1a)) // [
+    watch.speed = std::max(watch.speed - 1, 0);
+  if (pressed(0x1b)) // ]
+    watch.speed = std::min(watch.speed + 1, WATCH_SPEEDS - 1);
+  if (pressed(0x02)) // 1
+    watch.speed = WATCH_NORMAL_SPEED;
+  if (pressed(0xcb)) // Left
+    watch_ask(watch.tick - 5 * second);
+  if (pressed(0xcd)) // Right
+    watch_ask(watch.tick + 5 * second);
+  if (pressed(0xc9)) // Page Up
+    watch_ask(watch.tick - 30 * second);
+  if (pressed(0xd1)) // Page Down
+    watch_ask(watch.tick + 30 * second);
+  if (pressed(0xc7)) // Home
+    watch_ask(1);
+  if (pressed(0xcf)) // End
+    watch_ask(watch.ticks);
+  return 1;
 }
 
-static void watch_text(float x, float y, const char *text, float r, float g, float b, float a) {
-  grim_interface_ptr->grim_set_color(r, g, b, a);
-  grim_interface_ptr->grim_draw_text_small(x, y, (char *)text);
-}
-static float watch_text_width(const char *text) {
-  return (float)grim_interface_ptr->grim_measure_text_width((char *)text);
-}
-static void watch_panel(float x, float y, float w, float h) {
-  float at[2] = {x, y}, fill[4] = {0, 0, 0, 0.75f};
-  grim_interface_ptr->grim_draw_rect_filled(at, w, h, fill);
-  grim_interface_ptr->grim_set_color(0.47f, 0.47f, 0.55f, 0.78f);
-  grim_interface_ptr->grim_draw_rect_outline(at, w, h);
-}
-static void watch_clock(char *out, size_t size, int seconds) {
-  snprintf(out, size, "%d:%02d", seconds / 60, seconds % 60);
-}
-
-// What the replay shows over its world (modes/replay_playback_mode.py): where
-// it is and how fast it plays, the last perk pick, and at the end, how the run
-// ended and whether it played as recorded.
-static void watch_draw() {
-  grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
-  char line[96], elapsed[16], total[16];
-  float x = (float)config_blob.screen_width - 192.0f, y = 11.0f, w = 182.0f;
-  snprintf(line, sizeof line, "%s %.2fx", watch.paused ? "PAUSE" : "REPLAY", watch_speeds[watch.speed]);
-  if (watch.paused)
-    watch_text(x, y, line, 0.96f, 0.82f, 0.47f, 0.9f);
-  else
-    watch_text(x, y, line, 0.9f, 0.9f, 0.9f, 0.86f);
-  watch_clock(elapsed, sizeof elapsed, watch.tick / 60);
-  watch_clock(total, sizeof total, watch.ticks / 60);
-  float total_x = x + w - 4.0f - watch_text_width(total), bar_x = x + watch_text_width(elapsed) + 6.0f;
-  float bar_w = fmaxf(8.0f, total_x - 6.0f - bar_x), progress = watch.ticks ? (float)watch.tick / watch.ticks : 1;
-  float bar[2] = {bar_x, y + 23.0f}, back[4] = {0.18f, 0.26f, 0.38f, 0.59f}, fill[4] = {0.27f, 0.51f, 0.86f, 0.88f};
-  grim_interface_ptr->grim_draw_rect_filled(bar, bar_w, 4.0f, back);
-  grim_interface_ptr->grim_draw_rect_filled(bar, bar_w * progress, 4.0f, fill);
-  watch_text(x, y + 18.0f, elapsed, 0.86f, 0.86f, 0.86f, 0.82f);
-  watch_text(total_x, y + 18.0f, total, 0.86f, 0.86f, 0.86f, 0.82f);
-
-  if (!watch.picks.empty() && !watch.skip) {
-    const WatchPick &pick = watch.picks.front();
-    float line_h = 16.0f, fade = fminf(1.0f, watch.pick_left / 0.5f);
-    float px = 12.0f, py = (float)config_blob.screen_height * 0.5f - (pick.count + 1) * line_h * 0.5f;
-    watch_panel(px - 6.0f, py - 6.0f, 230.0f, (pick.count + 1) * line_h + 12.0f);
-    snprintf(line, sizeof line, "Level %d: perk picked", pick.level);
-    watch_text(px, py, line, 0.9f, 0.9f, 0.9f, 0.9f * fade);
-    for (int i = 0; i < pick.count; ++i) {
-      bool chosen = i == pick.chosen;
-      snprintf(line, sizeof line, "%c %s", chosen ? '>' : ' ', perk_meta_table[pick.offered[i]].name);
-      if (chosen)
-        watch_text(px, py + line_h * (i + 1), line, 0.5f, 1.0f, 0.6f, fade);
-      else
-        watch_text(px, py + line_h * (i + 1), line, 0.59f, 0.59f, 0.63f, 0.78f * fade);
-    }
-  }
-
-  if (!watch.ended)
-    return;
-  const LoadedReplay &replay = watch.replay;
-  char ending[64], score[64];
-  if (replay.outcome == "death") {
-    watch_clock(elapsed, sizeof elapsed, (int)(replay.elapsed_ms / 1000));
-    snprintf(ending, sizeof ending, "Died at %s", elapsed);
-  } else if (replay.outcome == "quest_completed")
-    snprintf(ending, sizeof ending, "Quest completed, final time %.2f s",
-             (replay.quest_final_ms >= 0 ? replay.quest_final_ms : replay.elapsed_ms) / 1000.0);
-  else
-    snprintf(ending, sizeof ending, "Left before the end");
-  snprintf(score, sizeof score, "Experience %lld, kills %lld", (long long)replay.experience, (long long)replay.kills);
-  struct Line {
-    const char *text;
-    float r, g, b, a;
-  } lines[] = {
-      {ending, 0.9f, 0.9f, 0.9f, 0.94f},
-      {score, 0.78f, 0.78f, 0.82f, 0.9f},
-      !watch.stopped.empty() ? Line{watch.stopped.c_str(), 1.0f, 0.5f, 0.5f, 0.94f}
-      : watch.played         ? Line{"Played as recorded", 0.5f, 1.0f, 0.6f, 0.94f}
-                             : Line{"This run played differently", 1.0f, 0.5f, 0.5f, 0.94f},
-      {"Esc returns", 0.59f, 0.59f, 0.63f, 0.86f},
-  };
-  float line_h = 18.0f, width = 0;
-  for (const auto &l : lines)
-    width = fmaxf(width, watch_text_width(l.text));
-  width += 24.0f;
-  float px = ((float)config_blob.screen_width - width) * 0.5f, py = (float)config_blob.screen_height * 0.5f - 2 * line_h;
-  watch_panel(px, py - 8.0f, width, 4 * line_h + 12.0f);
-  for (int i = 0; i < 4; ++i)
-    watch_text(px + 12.0f, py + i * line_h, lines[i].text, lines[i].r, lines[i].g, lines[i].b, lines[i].a);
-}
-
-// gameplay_update_and_render for a replay: the frame's ticks, a skip's muted and
-// drawn only at its last, then what the replay shows over them.
+// gameplay_update_and_render for a replay: the frame's ticks, or the viewer's
+// seek, then the viewer over the last drawn frame.
 static void watch_render() {
-  int due = live.due, ran = 0;
-  bool skipping = watch.skip > 0;
-  float volume = live.run.config.sfx_volume;
-  if (skipping)
-    live.run.config.sfx_volume = 0;
-  for (; ran < due; ++ran) {
-    grim_render_disabled = skipping && ran + 1 < due;
-    if (!watch_tick())
-      break;
-  }
-  grim_render_disabled = 0;
-  live.run.config.sfx_volume = volume;
-  if (skipping) {
-    watch.skip -= ran;
-    if (watch.ended || !watch.skip) {
-      // Of the picks the skip passed, the popup shows the last.
-      watch.skip = 0;
-      while (watch.picks.size() > 1)
-        watch.picks.pop_front();
-      watch.pick_left = watch.picks.empty() ? 0 : WATCH_PICK_SECONDS;
+  watch.mouse_x = ui_mouse_x;
+  watch.mouse_y = ui_mouse_y;
+  watch.drawn = false;
+  float dt = fminf(grim_frame_dt, 0.1f);
+  if (watch.phase == WATCH_PREPARING)
+    watch_prepare();
+  else {
+    viewer_update(dt);
+    if (watch.seek) {
+      watch_seek(watch.seek);
+      watch.seek = 0;
+    } else if (watch.phase == WATCH_PLAYING && (!watch.paused || watch.step)) {
+      int due = 1;
+      if (!watch.paused) {
+        live.banked += dt * watch_speeds[watch.speed];
+        due = (int)(live.banked * 60.0f + 1e-4f);
+        live.banked -= due / 60.0f;
+      }
+      int from = watch.tick;
+      due = watch_due(due);
+      if (due)
+        watch_run(due, false);
+      // The card shows the last pick playback passed.
+      while (watch.next_pick < watch.picks.size() && watch.picks[watch.next_pick].tick <= watch.tick) {
+        if (watch.picks[watch.next_pick].tick > from) {
+          watch.card = (int)watch.next_pick;
+          watch.card_left = WATCH_PICK_SECONDS;
+        }
+        ++watch.next_pick;
+      }
+      if (watch.tick >= watch.ticks)
+        watch.phase = WATCH_ENDED;
     }
+    watch.step = false;
   }
-  if (ran == 0 || (skipping && ran < due))
-    gameplay_render_world();
-  watch_draw();
+  // Ticks put the replay's aim on the cursor: the viewer's comes back.
+  ui_mouse_x = watch.mouse_x;
+  ui_mouse_y = watch.mouse_y;
+  if (watch.drawn)
+    host_frame_hold(HOST_FRAME_SAVE);
+  else if (watch.phase != WATCH_PREPARING)
+    host_frame_hold(HOST_FRAME_SHOW);
+  viewer_draw(dt);
 }
-
 // A board run's replay, which the host fetches from /runs/<run>.crd into
 // replays/online/<run>.crd (HOST_LEADERBOARD_REPLAY), one at a time; the
 // newest few stay there for the next watch.
@@ -548,9 +652,9 @@ void highscore_watch(float *card, highscore_record_t *record) {
   grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
   if (!note.empty()) {
     if (playable)
-      watch_text(at[0], at[1] + 4.0f, note.c_str(), 0.75f, 0.75f, 0.78f, 1.0f);
+      viewer_text(at[0], at[1] + 4.0f, note.c_str(), 0.75f, 0.75f, 0.78f, 1.0f);
     else
-      watch_text(at[0], at[1] + 4.0f, note.c_str(), 1.0f, 0.5f, 0.5f, 1.0f);
+      viewer_text(at[0], at[1] + 4.0f, note.c_str(), 1.0f, 0.5f, 0.5f, 1.0f);
   }
   if (pressed)
     watch_start(target);
@@ -573,8 +677,8 @@ __attribute__((export_name("game_replay_downloaded"))) void game_replay_download
 }
 
 // Plays the replay game_replay_open read, as Watch plays one (a link to a run,
-// checks/game_watch.mjs), once a menu has settled (watch_follow_link): until
-// then the startup sequence sets up its own screens. A run the player starts
+// checks/game_watch.mjs), once a menu comes in (watch_follow_link): until then
+// the startup sequence, which it cuts short, sets up its own screens. A run the player starts
 // meanwhile drops it. 0 when it cannot, with a run playing or a replay this
 // module cannot play.
 __attribute__((export_name("game_watch"))) int game_watch() {
@@ -585,9 +689,16 @@ __attribute__((export_name("game_watch"))) int game_watch() {
   watch.linked = true;
   return 1;
 }
+// Where playback is and the run's length, in ticks (0 until the replay is
+// prepared); a tick to go to, and one to pause on reaching, as the viewer's
+// seeks and a link to a moment use them.
+__attribute__((export_name("game_watch_tick"))) int game_watch_tick() { return watch.tick; }
+__attribute__((export_name("game_watch_ticks"))) int game_watch_ticks() { return watch.ticks; }
+__attribute__((export_name("game_watch_seek"))) void game_watch_seek(int at) { watch_ask(at); }
+__attribute__((export_name("game_watch_stop_at"))) void game_watch_stop_at(int at) { watch.stop_at = at; }
 // Where a replay is: -1 none plays, 0 playing, then how it ended: 1 as
 // recorded, 2 differently, 3 stopped before its end.
 __attribute__((export_name("game_watch_status"))) int game_watch_status() {
-  return !live.watching ? -1 : !watch.ended ? 0 : !watch.stopped.empty() ? 3 : watch.played ? 1 : 2;
+  return !live.watching ? -1 : watch.phase != WATCH_ENDED ? 0 : !watch.stopped.empty() ? 3 : watch.played ? 1 : 2;
 }
 }

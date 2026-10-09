@@ -354,6 +354,7 @@ static bool live_tick() {
   return true;
 }
 
+#include "keyframes.inc"
 #include "watch.inc"
 
 extern "C" {

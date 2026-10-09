@@ -73,8 +73,30 @@ function Weapon(props: { id: number }) {
   );
 }
 
-// A board's rows; a compact table, for the home page, keeps the rank, player and score. A bot board names each run's
-// bot, as its replay declares it.
+// A run's replay: watched in the browser game, or downloaded. A retired run no longer plays as recorded, so it only
+// downloads; a compact row keeps the Watch icon.
+function ReplayLinks(props: { run: string; retired?: string | null; compact?: boolean }) {
+  return (
+    <span class="replay-links">
+      <Show when={!props.retired}>
+        <a class="watch" href={`/play/?watch=${props.run}`} data-native title="Watch the replay in the game">
+          <svg viewBox="0 0 10 10" aria-hidden="true">
+            <path d="M2 1l7 4-7 4z" fill="currentColor" />
+          </svg>
+          <Show when={!props.compact}>Watch</Show>
+        </a>
+      </Show>
+      <Show when={!props.compact}>
+        <a class="crd" href={`/runs/${props.run}.crd`} data-native title="Download the replay file">
+          .crd
+        </a>
+      </Show>
+    </span>
+  );
+}
+
+// A board's rows; a compact table, for the home page, keeps the rank, player and score, and Watch. A bot board names
+// each run's bot, as its replay declares it.
 function BoardTable(props: { view: BoardView; compact?: boolean }) {
   const bots = () => props.view.category === "bot";
   const full = () => !props.compact;
@@ -90,7 +112,7 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                 <th>Bot</th>
               </Show>
               <th class="n">Score</th>
-              <Show when={full()}>
+              <Show when={full()} fallback={<th />}>
                 <th>Run</th>
                 <th class="n">Duration</th>
                 <th title="Most used weapon by time equipped">Weapon</th>
@@ -135,9 +157,12 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                       <Weapon id={row.most_used_weapon_id} />
                     </td>
                     <td>
-                      <a href={`/runs/${row.run}.crd`} data-native>
-                        .crd
-                      </a>
+                      <ReplayLinks run={row.run} />
+                    </td>
+                  </Show>
+                  <Show when={!full()}>
+                    <td>
+                      <ReplayLinks run={row.run} compact />
                     </td>
                   </Show>
                 </tr>
@@ -467,9 +492,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                         <td>{run.game_version}</td>
                         <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
                         <td>
-                          <a href={`/runs/${run.id}.crd`} data-native>
-                            .crd
-                          </a>
+                          <ReplayLinks run={run.id} retired={run.retired} />
                         </td>
                       </tr>
                     )}
