@@ -2,9 +2,10 @@
 // plays one: every recorded fixture the module can play starts from the menus,
 // plays a while at normal speed, holds still while paused and moves one tick
 // on a step, then skips to its end, which must be the result it recorded, with
-// the world where the verifier leaves it. Escape returns to the high scores.
-// Watching writes nothing: the save, the scores and the replays stay as they
-// were.
+// the world where the verifier leaves it, though the host reads another replay
+// meanwhile. Escape returns to the high scores. Watching writes nothing: once
+// the game has quit, the save, the settings, the scores, the replays and the
+// play time are as they were, with Watch pressed twice for a replay too.
 //
 //   node crimson-core/checks/game_watch.mjs <game directory> [core.wasm] [game.wasm]
 import crypto from "node:crypto";
@@ -44,12 +45,14 @@ const memory = () => Buffer.from(game.memory.buffer);
 const compared = names.map((name, i) => [name, i]).filter(([name]) => !PRESENTATION.has(name) && !/^players\[\d+\]\.input\./.test(name));
 const differences = (a, b) => compared.filter(([, i]) => a.readUInt32LE(i * 4) !== b.readUInt32LE(i * 4)).map(([name]) => name);
 
-// Every file of the game folder but the replays this check gives it, by digest.
-const watched = path.join(directory, "watched");
+// Every file of the game folder by digest, but the replays this check gives it,
+// the game's log, and the registry, where quitting adds the time played.
+const watched = path.join(directory, "watched"), registry = path.join(directory, "registry.cfg");
+const skipped = [watched, path.join(directory, "console.log"), registry];
 function files(dir = directory) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(dir, entry.name);
-    if (file === watched) return [];
+    if (skipped.includes(file)) return [];
     if (entry.isDirectory()) return files(file);
     return [`${path.relative(directory, file)} ${crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex")}`];
   });
@@ -67,11 +70,13 @@ for (const name of fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).so
   memory().write(`watched/${name}\0`, game.game_replay_path(), "latin1");
   if (!game.game_replay_open()) continue; // one the Python port plays (game_replay_read.mjs)
   const recording = Buffer.from(memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size()));
-  if (!game.game_watch()) throw Error(`${name}: Watch does not start`);
+  if (!game.game_watch() || (!played && !game.game_watch())) throw Error(`${name}: Watch does not start`);
   for (let frames = 0; game.game_watch_status() < 0; ++frames) {
     if (frames > 600) throw Error(`${name}: the replay never started`);
     frame();
   }
+  // The host reads the next replay while this one plays.
+  game.game_replay_open();
   for (let i = 0; i < 120; ++i) frame(i % 2 ? 33 : 16);
   frame(16, [SPACE]);
   const paused = Buffer.from(state(game));
@@ -107,7 +112,17 @@ for (const name of fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).so
   ++played;
 }
 if (played < 2) throw Error(`only ${played} fixtures played`);
+game.game_close();
+try {
+  frame();
+} catch (error) {
+  if (error.message !== "the game quit") throw error;
+}
+game.game_exit();
 const after = files().sort().join("\n");
 if (after !== before) throw Error(`watching changed the game folder:\n${before}\n---\n${after}`);
+// A fresh profile that only watched has played for no time.
+const played_ms = /timePlayed=(\d+)/.exec(fs.readFileSync(registry, "latin1"))?.[1];
+if (played_ms !== "0") throw Error(`watching counted ${played_ms} ms as played`);
 fs.rmSync(watched, { recursive: true });
 console.log(JSON.stringify({ played }));

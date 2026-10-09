@@ -30,7 +30,11 @@ static constexpr int WATCH_SKIP_TICKS_PER_FRAME = 600;
 static constexpr float WATCH_PICK_SECONDS = 3;
 
 static struct {
-  bool armed; // Watch was pressed: the next run started plays replay_loaded
+  bool armed;          // Watch was pressed: the next run started plays `replay`
+  LoadedReplay replay; // its own copy: the host can read another meanwhile
+  // The player's time played, both counts, which a replay adds nothing to.
+  unsigned play_time;
+  int time_played;
   // The player's menu settings, while the replay's are in their place.
   struct {
     decltype(config_blob.game_mode) mode;
@@ -50,11 +54,14 @@ static struct {
 } watch;
 
 // The replay's run is the menu's: its mode, quest and difficulty, one player.
-static void watch_arm() {
+// Watch pressed again before the run starts keeps the player's menu settings.
+static void watch_arm(const LoadedReplay &replay) {
+  watch.replay = replay;
   PortableConfig recorded;
-  memcpy(&recorded, replay_loaded.recording.data(), sizeof recorded);
-  watch.menu = {config_blob.game_mode, config_blob.hardcore, config_blob.player_count, quest_stage_major,
-                quest_stage_minor};
+  memcpy(&recorded, replay.recording.data(), sizeof recorded);
+  if (!watch.armed)
+    watch.menu = {config_blob.game_mode, config_blob.hardcore, config_blob.player_count, quest_stage_major,
+                  quest_stage_minor};
   config_blob.game_mode = (decltype(config_blob.game_mode))recorded.mode;
   config_blob.hardcore = (decltype(config_blob.hardcore))recorded.hardcore;
   config_blob.player_count = 1;
@@ -65,8 +72,8 @@ static void watch_arm() {
   watch.armed = true;
 }
 // The replay's run starts as the high score screen's Play a game starts one.
-static void watch_start() {
-  watch_arm();
+static void watch_start(const LoadedReplay &replay) {
+  watch_arm(replay);
   run_active = 0;
   ui_sign_crimson.focus_disabled = 0;
   ui_transition_direction = 0;
@@ -88,16 +95,18 @@ static void watch_disarm() {
 static void watch_leave();
 static void watch_begin() {
   watch.armed = false;
-  memcpy(&cfg, replay_loaded.recording.data(), sizeof cfg);
+  watch.play_time = play_time_ms;
+  watch.time_played = time_played_ms;
+  memcpy(&cfg, watch.replay.recording.data(), sizeof cfg);
   ranked_run = false;
   if (!live_start())
     return watch_leave();
   live.watching = true;
   watch.at = sizeof cfg;
   watch.tick = watch.ticks = watch.skip = 0;
-  for (size_t at = sizeof cfg; at < replay_loaded.recording.size(); ++watch.ticks) {
+  for (size_t at = sizeof cfg; at < watch.replay.recording.size(); ++watch.ticks) {
     uint32_t count;
-    memcpy(&count, &replay_loaded.recording[at + sizeof(PortableInput)], sizeof count);
+    memcpy(&count, &watch.replay.recording[at + sizeof(PortableInput)], sizeof count);
     at += sizeof(PortableInput) + sizeof count + count * sizeof(PortableCommand);
   }
   watch.speed = WATCH_NORMAL_SPEED;
@@ -108,6 +117,10 @@ static void watch_begin() {
 
 // The replay stops, and the menu settings are the player's again.
 static void watch_stop() {
+  if (live.watching) {
+    play_time_ms = watch.play_time;
+    time_played_ms = watch.time_played;
+  }
   live.watching = false;
   game_live = game_session = false;
   watch_disarm();
@@ -139,12 +152,12 @@ static void watch_end(const char *stopped) {
                                                                          : "death";
   Msgpack m;
   replay_result(m, outcome);
-  watch.played = m.out == replay_loaded.result;
+  watch.played = m.out == watch.replay.result;
 }
 
 // One recorded tick; false once the replay has ended.
 static bool watch_tick() {
-  const std::vector<uint8_t> &recording = replay_loaded.recording;
+  const std::vector<uint8_t> &recording = watch.replay.recording;
   if (watch.at >= recording.size())
     return watch_end(""), false;
   uint32_t count;
@@ -209,6 +222,10 @@ static int watch_frame() {
     watch_skip(5);
   if (pressed(0xd1)) // Page Down
     watch_skip(30);
+  // The frame counts a run's time as played (game_frame_update): a replay's
+  // never adds up.
+  play_time_ms = watch.play_time;
+  time_played_ms = watch.time_played;
   if (watch.ended)
     return 0;
   float dt = fminf(grim_frame_dt, 0.1f);
@@ -287,7 +304,7 @@ static void watch_draw() {
 
   if (!watch.ended)
     return;
-  const LoadedReplay &replay = replay_loaded;
+  const LoadedReplay &replay = watch.replay;
   char ending[64], score[64];
   if (replay.outcome == "death") {
     watch_clock(elapsed, sizeof elapsed, (int)(replay.elapsed_ms / 1000));
@@ -437,10 +454,8 @@ void highscore_watch(float *card, highscore_record_t *record) {
     else
       watch_text(at[0], at[1] + 4.0f, note.c_str(), 1.0f, 0.5f, 0.5f, 1.0f);
   }
-  if (pressed) {
-    replay_loaded = target;
-    watch_start();
-  }
+  if (pressed)
+    watch_start(target);
 }
 
 // Plays the replay game_replay_open read, as Watch plays one (a link to a run,
@@ -450,7 +465,7 @@ __attribute__((export_name("game_watch"))) int game_watch() {
   if (game_live || !replay_loaded.reason.empty() || replay_loaded.recording.empty() || config_blob.screen_width != 1024 ||
       config_blob.screen_height != 768)
     return 0;
-  watch_start();
+  watch_start(replay_loaded);
   return 1;
 }
 // Where a replay is: -1 none plays, 0 playing, then how it ended: 1 as

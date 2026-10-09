@@ -374,6 +374,18 @@ static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedRepl
     out.reason = "This run needs the Python port";
 }
 
+// A run the verifier sets up (portable_init's checks), read before the
+// original sets up its quest.
+static bool replay_config_valid(const PortableConfig &config) {
+  bool quest = config.mode != GAME_MODE_QUEST || (config.major >= 1 && config.major <= 5 && config.minor >= 1 &&
+                                                  config.minor <= 10);
+  bool counts = true;
+  for (uint32_t n : config.weapon_usage)
+    counts = counts && n <= 2147483647u;
+  return quest && counts && config.detail <= 5 && config.unlock <= 50 && config.unlock_full <= 50 &&
+         config.retry <= 2147483647u && config.preserve_bugs <= 1;
+}
+
 static void replay_read_result(MsgpackReader &r, LoadedReplay &out) {
   const uint8_t *start = r.at;
   for (uint32_t n = r.map(); r.ok && n; --n) {
@@ -462,7 +474,7 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
   bool whole = r.at == r.end && run && !out.result.empty() && out.recording.size() > sizeof config &&
                !out.game_version.empty();
   // Formats 30 to this build's read alike: each adds a field (docs/formats/replay.md).
-  if (out.reason.empty() && (!r.ok || !whole || format < 30 || format > CRIMSON_REPLAY_FORMAT))
+  if (out.reason.empty() && (!r.ok || !whole || format < 30 || format > CRIMSON_REPLAY_FORMAT || !replay_config_valid(config)))
     out.reason = "This version cannot read its replay";
   else if (out.reason.empty() && out.rules != CRIMSON_REPLAY_RULES)
     out.reason = "Recorded under other rules (" + out.game_version.substr(0, out.game_version.find('+')) + ")";

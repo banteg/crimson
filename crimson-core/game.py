@@ -506,8 +506,10 @@ def simulation_names(root):
 # transition, which only the UI reads, and the sprite-sheet cells
 # effect_uv_tables_init lays out at startup, which effects, bonuses and the player
 # draw with and the verifier never fills: effect_spawn copies them only into quads
-# no snapshot field holds, and the perk prompt's layout, which a tick never
-# hit-tests (adapt_game). Names inside a kept aggregate stay with it.
+# no snapshot field holds, the perk prompt's layout, which a tick never
+# hit-tests (adapt_game), and the player's time played, which the frame counts
+# between ticks and only the menus show. Names inside a kept aggregate stay
+# with it.
 # Settings and progress reset with the
 # rest; the player's own stay outside ticks (host/session.inc).
 # Sessions inside the original after it loads its
@@ -516,7 +518,7 @@ SESSION_KEEPS = re.compile(
     r"_texture$|^terrain_texture_|^sfx_|^music_(track_|entry_table$|playlist$|playlist_entry_count$|ready$|fade_out_flags$)"
     r"|^audio_asset_id_table$"
     r"|^creature_type_table$|^bonus_icon_|^ui_element|^ui_transition_"
-    r"|^effect_uv(2|4|8|16|_strip16)$|^perk_prompt_(origin|bounds)_",
+    r"|^effect_uv(2|4|8|16|_strip16)$|^perk_prompt_(origin|bounds)_|^time_played_ms$",
 )
 
 

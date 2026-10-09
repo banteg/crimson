@@ -48,6 +48,7 @@ const broken = {
   "too many commands": "pack({**wire, 'ticks': [[wire['ticks'][0][0], [{'type': 'perk_menu_open', 'player_index': 0}] * 17]]})",
   "infinite aim": "pack({**wire, 'ticks': [[[[0.0, 0.0, 1e300, 0.0, 0]], []]]})",
   "no run": "pack({'format_version': wire['format_version'], 'rules': 1})",
+  "no quest 6.1": "pack({**wire, 'run': {**wire['run'], 'game_mode_id': 3, 'quest_level': {'major': 6, 'minor': 1}}})",
 };
 for (const [name, expression] of Object.entries(broken)) {
   const file = path.join(directory, "replays", "broken.crd");
