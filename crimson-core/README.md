@@ -272,7 +272,10 @@ pointer-bearing pools use host `sizeof`, and metadata aliases use the host
 stride. Spans the native code reads past their first symbol stay contiguous:
 the creature type table runs through `creature_type_count`, which native reads
 as the corpse frame of ping-pong-strip creatures (type 7), and the HUD gets a
-sentinel slot for a one-past lookup.
+sentinel slot for a one-past lookup. Each span is 16-aligned and keeps native
+offsets, so many names sit below the 16 bytes the x86-64 ABI promises a large
+array (`weapon_usage_time` at 4); the build gives every `extern` declaration of
+such a name its real alignment, or clang vectorizes copies into `movaps`.
 
 [`host/host.cpp`](host/host.cpp) owns the seed, fixed timing, input dispatch,
 initialization and output. Its frame step is `game_frame_update`'s: Reflex

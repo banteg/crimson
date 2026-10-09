@@ -51,6 +51,8 @@ EXPORTS = (
     "portable_probe",
     "portable_nearest_creature",
 )
+# An extern declaration of one name, optionally an array: the alignment a name really has goes before its `;`.
+EXTERN = re.compile(r"(\bextern\b[^;{}()]*?\b(\w+)\s*(?:\[[^\]]*\])?)\s*;")
 # Player one and the shake, for the service's ranked aim bound, and the nearest creature, for its input signals (host/api.h).
 PROBE_READS = {
     "portable_nearest_creature",
@@ -72,8 +74,20 @@ def main():
     a.out.mkdir(parents=True, exist_ok=True)
     headers = a.out / "include"
     headers.mkdir(exist_ok=True)
+    if a.target == "game":
+        game_data(a.root, a.out, engine_globals(a.root), simulation_names(a.root))
+        alignments = {}
+    else:
+        alignments = data_source(a.root, a.out)
+
+    def align_externs(text):
+        return EXTERN.sub(
+            lambda m: f"{m[1]} __attribute__((aligned({alignments[m[2]]})));" if m[2] in alignments else m[0],
+            text,
+        )
+
     for f in (a.root / "tools/match/include").glob("*.h"):
-        text = f.read_text()
+        text = align_externs(f.read_text())
         if f.name == "grim2d_cpp.h":
             text = text.replace("(unsigned int)value", "(unsigned int)(uintptr_t)value")
             text = "#include <stdint.h>\n" + text
@@ -101,10 +115,6 @@ def main():
         else:
             lines.extend(f"put({f});" for f in group["fields"])
     (headers / "snapshot.inc").write_text("\n".join(lines) + "\n")
-    if a.target == "game":
-        game_data(a.root, a.out, engine_globals(a.root), simulation_names(a.root))
-    else:
-        data_source(a.root, a.out)
     env = dict(os.environ, ZIG_GLOBAL_CACHE_DIR=str(a.out / "zig-global"), ZIG_LOCAL_CACHE_DIR=str(a.out / "zig-local"))
     zig = shutil.which("zig")
     if not zig or subprocess.check_output([zig, "version"], text=True).strip() != "0.17.0":
@@ -154,7 +164,7 @@ def main():
         src = a.root / rel
         txt = src.read_text()
         seam = session_seam if a.target == "game" else session_only
-        txt = apply_patches(src.stem, adapt(src, txt, seam), hunks)
+        txt = align_externs(apply_patches(src.stem, adapt(src, txt, seam), hunks))
         if a.target == "game":
             txt = adapt_game(src, txt)
         dst = a.out / (name(rel) + ".cpp")

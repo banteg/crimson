@@ -66,6 +66,9 @@ def data_source(root, out):
     ]
     resets = []
     reloc = []
+    # Each block is 16-aligned and its names keep their native offsets, so many sit at a lower alignment than the
+    # x86-64 ABI promises a large array. Declarations of these names say so (see build.py).
+    alignments = {}
     for i, (a, b) in enumerate(blocks):
         # Pointer-bearing storage expands on 64-bit hosts. Interior names below refer to first-record fields.
         size = b - a
@@ -93,6 +96,8 @@ def data_source(root, out):
             if not re.fullmatch(r"[A-Za-z_]\w*", name):
                 continue
             lines.append(f'asm(".globl " P "{name}\\n.set " P "{name}, " P "portable_data_{i}+{v - a}\\n");')
+            if (v - a) % 16:
+                alignments[name] = (v - a) & -(v - a)
             h = e.get("initializer_hex", "")
             if h and any(bytes.fromhex(h)):
                 vals = ",".join(map(str, bytes.fromhex(h)))
@@ -123,3 +128,4 @@ def data_source(root, out):
         ]
     lines += ["void portable_reset_data() {", *resets, *reloc, "}", "}"]
     (out / "data.cpp").write_text("\n".join(lines) + "\n")
+    return alignments
