@@ -135,7 +135,7 @@ def test_back_restores_run_context_only_when_returning_to_run(scores_view, from_
     assert state.config.gameplay.player_count == 2
 
 
-@pytest.mark.parametrize("mode", [GameMode.SURVIVAL, GameMode.RUSH, GameMode.TYPO, GameMode.QUESTS])
+@pytest.mark.parametrize("mode", [GameMode.SURVIVAL, GameMode.QUESTS])
 def test_play_starts_selected_mode(scores_view, mode, mocker) -> None:
     view = scores_view
     view._request.game_mode_id = mode

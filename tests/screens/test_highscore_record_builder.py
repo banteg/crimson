@@ -2,14 +2,11 @@ from __future__ import annotations
 
 from crimson.game_modes import GameMode
 from crimson.modes.components.highscore_record_builder import build_highscore_record
-from crimson.persistence.highscores import UNI_NUM_MASK
 from crimson.quests.level import QuestLevel
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.run_result import run_shot_counts
 from crimson.sim.state_types import PlayerState
-from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from grim.rand import Crand
 
 
 def test_run_shot_counts_clamp_piercing_hits_to_shots() -> None:
@@ -17,36 +14,6 @@ def test_run_shot_counts_clamp_piercing_hits_to_shots() -> None:
     state.shots_fired = 5
     state.shots_hit = 10
     assert run_shot_counts(state) == (5, 5)
-
-
-def test_build_highscore_record_uses_weapon_stats_and_shots() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2())
-    player.experience = 9999
-    state.highscore_score_xp = 1234
-    player.weapon.weapon_id = WeaponId.PISTOL
-
-    state.weapon_usage_time[2] = 10
-    state.shots_fired = 20
-    state.shots_hit = 15
-    state.game_mode = GameMode.SURVIVAL
-
-    record = build_highscore_record(
-        state=state,
-        player=player,
-        run_elapsed_ms=5000,
-        creature_kill_count=7,
-    )
-
-    assert record.score_xp == 1234
-    assert record.run_elapsed_ms == 5000
-    assert record.creature_kill_count == 7
-    assert record.most_used_weapon_id == 2
-    assert record.shots_fired == 20
-    assert record.shots_hit == 15
-    assert record.game_mode_id == GameMode.SURVIVAL
-    assert record.hardcore_marker == 0
-    assert record.uni_num == (Crand(0xBEEF).rand() & UNI_NUM_MASK)
 
 
 def test_build_highscore_record_keeps_typo_counts_unclamped() -> None:

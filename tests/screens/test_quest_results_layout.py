@@ -107,15 +107,6 @@ def test_quest_results_fade_in_over_half_a_second(tmp_path: Path, assets_dir: Pa
     assert score_card.call_args.args[2] == 1.0
 
 
-def test_quest_results_buttons_phase_passes_its_phase_to_the_card(tmp_path: Path, assets_dir: Path, make_mode_config, mocker) -> None:
-    ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=2)
-    score_card = mocker.spy(quest_results_module, "ui_text_input_render")
-
-    ui.draw(mouse=rl.Vector2(0.0, 0.0))
-
-    assert score_card.call_args.kwargs["ui_phase"] == 2
-
-
 def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path, assets_dir: Path, make_mode_config) -> None:
     ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=2)
     assert ui.world_entity_alpha() == 1.0

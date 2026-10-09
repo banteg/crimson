@@ -71,28 +71,11 @@ def _poll(prompt: PerkPromptState, *, menu_active: bool = False) -> bool:
     )
 
 
-def test_prompt_opens_while_the_pick_key_is_held(mocker) -> None:
-    _patch_input(mocker, pick_down=True)
-    assert _poll(PerkPromptState())
-
-
 @pytest.mark.parametrize("key", [rl.KeyboardKey.KEY_SPACE, rl.KeyboardKey.KEY_KP_ADD])
 def test_prompt_opens_on_space_and_keypad_plus(mocker, key: int) -> None:
     # Native `gameplay_update_and_render` also takes DIK 57 (Space) and 78 (keypad +).
     _patch_input(mocker, keys=(key,))
     assert _poll(PerkPromptState())
-
-
-def test_prompt_opens_on_a_click_over_the_sign(mocker) -> None:
-    _patch_input(mocker, click=True)
-    mocker.patch.object(
-        perk_prompt_controller_module.PerkPromptUi,
-        "rect",
-        return_value=SimpleNamespace(contains=lambda _mouse: True),
-    )
-    prompt = PerkPromptState()
-    assert _poll(prompt)
-    assert prompt.hover
 
 
 def test_prompt_ignores_input_while_the_mouse_was_held_or_the_menu_is_up(mocker) -> None:

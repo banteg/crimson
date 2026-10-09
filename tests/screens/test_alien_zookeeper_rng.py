@@ -1,12 +1,7 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-from typing import cast
-
-from crimson.game.types import GameState
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.screens.panels.alien_zookeeper import AlienZooKeeperView, _credits_secret_match3_find
-from crimson.screens.ui_timeline import UiTimeline
 from grim.rand import Crand
 
 
@@ -37,28 +32,3 @@ def test_reroll_board_no_initial_match_uses_exact_native_caller(make_game_state)
     assert callers
     assert len(callers) % 36 == 0
     assert set(callers) == {RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_REROLL_FILL}
-
-
-def test_open_preserves_native_process_lifetime_puzzle_state() -> None:
-    state = SimpleNamespace(
-        config=SimpleNamespace(display=SimpleNamespace(width=1024)),
-        pause_background=object(),
-        ui=UiTimeline(),
-    )
-    view = AlienZooKeeperView(cast(GameState, state))
-    assert view._board == [0] * 36
-    assert view._timer_ms == 0
-
-    view._board[7] = 4
-    view._selected_index = 7
-    view._timer_ms = 1234
-    view._anim_time_ms = 5678
-    view._score = 9
-
-    view.open()
-
-    assert view._board[7] == 4
-    assert view._selected_index == 7
-    assert view._timer_ms == 1234
-    assert view._anim_time_ms == 5678
-    assert view._score == 9

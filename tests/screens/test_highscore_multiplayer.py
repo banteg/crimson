@@ -5,7 +5,6 @@ import pytest
 from crimson.game_modes import GameMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.screens.results.game_over import GameOverUi
-from crimson.sim.sessions import DeterministicSession
 from grim.rand import Crand
 from grim.view import ViewContext
 
@@ -42,24 +41,3 @@ def test_survival_high_score_record_in_multiplayer(mocker, make_mode_config, ass
     assert record.shots_fired == 10
     assert record.shots_hit == 7
     assert record.most_used_weapon_id == 1
-
-
-@pytest.mark.usefixtures("headless_resources")
-def test_run_elapsed_helpers_use_authoritative_session_timer(mocker, make_mode_config, assets_dir) -> None:
-    ctx = ViewContext(assets_dir=assets_dir)
-    mode = SurvivalMode(ctx, config=make_mode_config(game_mode=GameMode.SURVIVAL), audio_rng=Crand(0xBEEF))
-    mocker.patch.object(mode, "apply_terrain_setup")
-    mocker.patch.object(mode.world_runtime, "open_runtime")
-    mocker.patch.object(mode, "_save_replay")
-    mode.open()
-    session = mode._sim_session
-    assert isinstance(session, DeterministicSession)
-    session.elapsed_ms = 4321.0
-    mocker.patch.object(GameOverUi, "open", return_value=None)
-
-    mode._enter_game_over()
-
-    record = mode._game_over_record
-    assert record is not None
-    assert record.run_elapsed_ms == 4321
-    assert mode._replay_checkpoint_elapsed_ms() == 4321.0

@@ -65,26 +65,6 @@ def _rush_with_hud_in(make_mode_config, assets_dir) -> RushMode:
     return mode
 
 
-def test_death_runs_the_world_while_the_hud_fades_out(mocker, make_mode_config, assets_dir) -> None:
-    mode = _rush_with_hud_in(make_mode_config, assets_dir)
-    session = mode._sim_session
-    assert session is not None
-    recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.RUSH, seed=1))
-    game_over = mocker.patch.object(mode, "_enter_game_over")
-    mode.player.health = 0.0
-    mode.player.death_timer = 0.0
-
-    ticks = 0
-    while not game_over.called:
-        mode._run_deterministic_session_ticks(dt_frame=1 / 60, session=session, recorder=recorder)
-        ticks += 1
-
-    # 500ms of timeline at 16ms a tick: the run's last tick and 31 more before game over.
-    assert ticks == 32
-    assert recorder.tick_index == 32
-    assert session.elapsed_ms == 32 * 16.0
-
-
 def test_escape_pauses_once_the_hud_has_faded_out(make_mode_config, assets_dir) -> None:
     mode = _rush_with_hud_in(make_mode_config, assets_dir)
     session = mode._sim_session

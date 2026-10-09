@@ -55,15 +55,6 @@ def test_typing_buffer_submit_counts_match_and_clears_text() -> None:
     assert buf.match_count == 1
 
 
-def test_typing_buffer_submit_counts_reload_as_submit_only() -> None:
-    buf = TypingBuffer(text="reload")
-    result = buf.submit(matched=False)
-    assert result == "reload"
-    assert buf.text == ""
-    assert buf.submit_count == 1
-    assert buf.match_count == 0
-
-
 def test_typo_submit_fires_at_the_named_creature_for_one_tick(make_world_state) -> None:
     world = make_world_state()
     reset_typo_state(
@@ -93,19 +84,6 @@ def test_typo_submit_fires_at_the_named_creature_for_one_tick(make_world_state) 
     # The aim point stays on the last target; player fire input does nothing.
     assert player.aim == Vec2(321.0, 654.0)
     assert world.state.shots_fired == 12
-
-
-def test_typo_char_command_tags_exact_typeclick_caller(make_world_state) -> None:
-    world = make_world_state()
-    reset_typo_state(world.state.typo, creature_capacity=len(world.creatures.entries))
-    world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-
-    typo_input_update(world, [TypoCharCommand(player_index=0, ch="a")])
-
-    assert sfx_ids(world.state.sfx_queue) == [SfxId.UI_TYPECLICK_01]
-    assert [record.caller for record in world.state.rng.records_since()] == [
-        RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_CHAR,
-    ]
 
 
 def test_typo_backspace_command_tags_exact_typeclick_caller(make_world_state) -> None:

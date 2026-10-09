@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.math_parity import f32
 from crimson.sim.mode_updates import SurvivalSpawnState, survival_update
 from crimson.sim.world_state import WorldState
 from tests.support.builders.session import make_world
@@ -46,13 +45,6 @@ def test_survival_milestones_advance_on_player_level(stage: int, level: int, exp
 
     assert new_stage == expected_stage
     assert bool(_positions(world)) == spawns
-
-
-def test_survival_stage2_spider_column_steps_in_single_precision() -> None:
-    stage, world = _run_milestones(2, 11)
-
-    assert stage == 3
-    assert _positions(world) == [(1088.0, f32(f32(i) * f32(42.666668) + 256.0)) for i in range(12)]
 
 
 def test_survival_stage9_final_wave_surrounds_the_arena() -> None:

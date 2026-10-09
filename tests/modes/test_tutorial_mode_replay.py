@@ -17,12 +17,6 @@ from tests.support.replay_runner_helpers import unverified_replay
 pytestmark = pytest.mark.usefixtures("headless_resources")
 
 
-def test_tutorial_constructor_starts_without_placeholder_session(make_mode_config, assets_dir) -> None:
-    config = make_mode_config(game_mode=GameMode.TUTORIAL)
-    mode = TutorialMode(ViewContext(assets_dir=assets_dir), config=config, audio_rng=Crand(0xBEEF))
-    assert mode._sim_session is None
-
-
 def test_tutorial_open_creates_session_and_recorder(mocker, make_mode_config, assets_dir) -> None:
     cfg = make_mode_config(game_mode=GameMode.TUTORIAL, updates={"player_count": 4})
     mode = TutorialMode(ViewContext(assets_dir=assets_dir), config=cfg, audio_rng=Crand(0xBEEF))

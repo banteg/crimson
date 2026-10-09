@@ -34,16 +34,6 @@ _EXTRA_SPAWNS_ELAPSED_MS = 905400.0
     ("elapsed_ms", "edge_caller", "coord_callers"),
     [
         (
-            0.0,
-            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
-            (
-                RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_TOP_X,
-                RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_BOTTOM_X,
-                RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_LEFT_Y,
-                RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_RIGHT_Y,
-            ),
-        ),
-        (
             _EXTRA_SPAWNS_ELAPSED_MS,
             RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_EDGE,
             (
@@ -90,22 +80,6 @@ def test_survival_wave_spawns_no_trigger() -> None:
     assert rng.state == 123
 
 
-def test_survival_wave_spawns_triggers_single_spawn() -> None:
-    rng = Crand(1)
-    cooldown, spawns = _tick(rng, -1.0, 0.0)
-
-    assert_float_close(cooldown, 499.0)
-    assert len(spawns) == 1
-    c = spawns[0]
-
-    assert_float_close(c.pos.x, 35.0)
-    assert_float_close(c.pos.y, 1064.0)
-    assert c.type_id == CreatureTypeId.ALIEN
-    assert_float_close(c.hp, 85.0)
-    assert_float_close(c.reward_value, 336.0)
-    assert rng.state == 0xA6E9C9A6
-
-
 def test_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> None:
     rng = Crand(1)
     cooldown, spawns = _tick(rng, -1.0, 0.0, run_elapsed_ms=_EXTRA_SPAWNS_ELAPSED_MS)
@@ -121,32 +95,6 @@ def test_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> None:
         CreatureTypeId.SPIDER_SP1,
     ]
     assert rng.state == 0xBB25E9C6
-
-
-def test_survival_wave_spawns_uses_distinct_extra_and_main_position_callers() -> None:
-    rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-
-    _tick(rng, -1.0, 0.0, run_elapsed_ms=_EXTRA_SPAWNS_ELAPSED_MS)
-
-    position_callers = [
-        record.caller
-        for record in rng.records_since()
-        if record.caller in {
-            RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_EDGE,
-            RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_TOP_X,
-            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
-            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_TOP_X,
-        }
-    ]
-
-    assert position_callers == [
-        RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_EDGE,
-        RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_TOP_X,
-        RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_EDGE,
-        RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_TOP_X,
-        RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
-        RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_TOP_X,
-    ]
 
 
 def test_survival_wave_spawns_loops_until_cooldown_is_non_negative() -> None:

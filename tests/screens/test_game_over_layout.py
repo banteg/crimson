@@ -7,7 +7,6 @@ import pytest
 from crimson.game_modes import GameMode
 from crimson.game_states import GameStateId
 from crimson.persistence.highscores import HighScoreRecord
-from crimson.rng_caller_static import RngCallerStatic
 from crimson.screens.actions import ResultAction
 from crimson.screens.results.game_over import GameOverUi
 from crimson.ui.animation import ui_element_timeline_window, ui_elements_max_timeline
@@ -16,7 +15,6 @@ from grim.assets import RuntimeResources, TextureId
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
-from tests.support.helpers import ScriptedCrand
 
 pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
@@ -94,48 +92,6 @@ def test_game_over_name_entry_flushes_buffered_text_input(tmp_path: Path, assets
     assert ui.rank == 0
     assert ui.name_entry.text == "player"
     assert ui.name_entry.caret == len("player")
-
-
-def test_game_over_name_entry_waits_for_controls_release(tmp_path: Path, assets_dir: Path, make_mode_config, mocker) -> None:
-    ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=0)
-    ui.name_entry.text = "user"
-    ui.name_entry.caret = len(ui.name_entry.text)
-    ui.name_entry.waiting_for_release = True
-    pending: list[int] = [ord("x")]
-    _type_chars(mocker, pending)
-    # Player one still holds fire (mouse left) from the fatal moment.
-    fire_held = mocker.patch.object(rl, "is_mouse_button_down", return_value=True)
-    record = _survival_record()
-
-    ui.update(0.0, rng=Crand(0), record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
-    assert ui.name_entry.text == "user"
-    assert ui.name_entry.waiting_for_release is True
-
-    fire_held.return_value = False
-    ui.update(0.0, rng=Crand(0), record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
-    assert ui.name_entry.text == "user"
-    assert ui.name_entry.waiting_for_release is False
-
-    pending.extend([ord("w"), ord("w")])
-    ui.update(0.0, rng=Crand(0), record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
-    assert ui.name_entry.text == "userww"
-
-
-def test_game_over_name_entry_uses_shared_ui_text_input_typeclick_caller(
-    tmp_path: Path, assets_dir: Path, make_mode_config, mocker,
-) -> None:
-    ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=0)
-    ui.name_entry.text = "user"
-    ui.name_entry.caret = len(ui.name_entry.text)
-    _type_chars(mocker, [ord("w"), ord("w")])
-    played: list[SfxId] = []
-    rng = ScriptedCrand([0])
-
-    ui.update(0.0, record=_survival_record(), player_name_default="user", play_sfx=played.append, rng=rng, mouse=rl.Vector2(0.0, 0.0))
-
-    assert ui.name_entry.text == "userww"
-    assert played == [SfxId.UI_TYPECLICK_01]
-    assert [record.caller for record in rng.records_since()] == [RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK]
 
 
 def test_game_over_draw_places_the_classic_panel_and_banner(

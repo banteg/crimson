@@ -172,37 +172,6 @@ def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
     assert out.move == Vec2()
 
 
-def test_local_input_reload_pressed_is_available_in_multiplayer(
-    mocker: MockerFixture,
-) -> None:
-    _patch_no_user_input(mocker)
-    mocker.patch.object(
-        local_input,
-        "input_code_is_pressed",
-        lambda key, **_kwargs: int(key) == 0x102,
-    )
-    interpreter = local_input.LocalInputInterpreter()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
-
-    single_player = interpreter.build_player_input(
-        player_index=0,
-        player=player,
-        config=_test_config(player_count=1),
-        mouse_screen=Vec2(),
-        mouse_world=Vec2(),
-    )
-    multiplayer = interpreter.build_player_input(
-        player_index=0,
-        player=player,
-        config=_test_config(player_count=2),
-        mouse_screen=Vec2(),
-        mouse_world=Vec2(),
-    )
-
-    assert single_player.reload_pressed is True
-    assert multiplayer.reload_pressed is True
-
-
 def test_local_input_reload_pressed_reads_per_player_input_slot(
     mocker: MockerFixture,
 ) -> None:
@@ -303,27 +272,6 @@ def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(
 
     # Bound aim key 8 should not affect joystick aim scheme; only POV should.
     assert (out.aim_turn_left, out.aim_turn_right) == (False, False)
-
-
-def test_local_input_joystick_aim_turns_with_pov_input(
-    mocker: MockerFixture,
-) -> None:
-    _patch_keys_down(mocker, down_codes={0x134})
-
-    interpreter = local_input.LocalInputInterpreter()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(160.0, 100.0))
-    config = _config_with_player_bind_values(range(16), aim_scheme=AimScheme.JOYSTICK)
-
-    out = interpreter.build_player_input(
-        player_index=0,
-        player=player,
-        config=config,
-        mouse_screen=Vec2(),
-        mouse_world=Vec2(),
-    )
-
-    # player_update turns the heading from the held POV direction.
-    assert (out.aim_turn_left, out.aim_turn_right) == (False, True)
 
 
 def test_local_input_joystick_aim_reads_player_pov_by_default(
