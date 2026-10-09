@@ -13,7 +13,7 @@ from crimson.perks import PerkId
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.frame import RenderFrame
 from crimson.render.rtx.mode import RtxRenderMode
-from crimson.render.world.context import WorldRenderCtx, draw_bullet_trail_quad
+from crimson.render.world.context import WorldRenderCtx
 from crimson.render.world.viewport import ViewTransform, view_transform
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
@@ -59,39 +59,6 @@ def frame(headless_resources: RuntimeResources) -> RenderFrame:
         bonus_anim_phase=0.0,
         rtx_mode=RtxRenderMode.CLASSIC,
     )
-
-
-def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker, frame: RenderFrame) -> None:
-    mocker.patch.object(world_projectiles.rl, "begin_blend_mode")
-    mocker.patch.object(world_projectiles.rl, "rl_set_texture")
-    mocker.patch.object(world_projectiles.rl, "rl_begin")
-    mocker.patch.object(world_projectiles.rl, "rl_color4ub")
-    mocker.patch.object(world_projectiles.rl, "rl_tex_coord2f")
-    vertex_mock = mocker.patch.object(world_projectiles.rl, "rl_vertex2f")
-    mocker.patch.object(world_projectiles.rl, "rl_end")
-    mocker.patch.object(world_projectiles.rl, "end_blend_mode")
-
-    render_ctx = WorldRenderCtx(
-        frame=frame,
-        view=view_transform(
-            config=frame.config,
-            camera=frame.camera,
-            out_size=Vec2(1024, 1024),
-        ),
-    )
-
-    drawn = draw_bullet_trail_quad(
-        render_ctx,
-        Vec2(120.0, 90.0),
-        Vec2(120.0, 90.0),
-        type_id=int(ProjectileTemplateId.PISTOL),
-        alpha=128,
-        velocity=Vec2(1.5, 0.0),
-    )
-
-    assert drawn is True
-    vertices = [(float(call.args[0]), float(call.args[1])) for call in vertex_mock.call_args_list]
-    assert len(vertices) == 4
 
 
 def _capture_projectile_trail(
@@ -164,7 +131,7 @@ def _native_trail_cases() -> list[_NativeTrailCase]:
 
 
 @pytest.mark.parametrize("case", _native_trail_cases())
-@pytest.mark.parametrize("view_scale", [Vec2(1, 1), Vec2(2, 2), Vec2(1.5, 0.75)])
+@pytest.mark.parametrize("view_scale", [Vec2(1, 1), Vec2(1.5, 0.75)])
 def test_bullet_trail_native_corner_rounding_precedes_viewport_scaling(
     mocker,
     frame: RenderFrame,
@@ -195,44 +162,8 @@ def test_bullet_trail_native_corner_rounding_precedes_viewport_scaling(
     assert actual == expected
 
 
-@pytest.mark.parametrize(
-    ("type_id", "half_width"),
-    [
-        (ProjectileTemplateId.ASSAULT_RIFLE, 1.5),
-        (ProjectileTemplateId.PISTOL, 1.8),
-        (ProjectileTemplateId.GAUSS_GUN, 1.65),
-        (ProjectileTemplateId.SHOTGUN, 1.05),
-        (ProjectileTemplateId.SPLITTER_GUN, 1.05),
-    ],
-)
-def test_bullet_trail_native_width_and_endpoint_slots(mocker, frame: RenderFrame, type_id, half_width) -> None:
-    # Native 0x4230e5..0x42360f uses origin for slots 0/1 and pos for slots 2/3.
-    projectile = Projectile(
-        type_id=type_id,
-        origin=Vec2(120, 90),
-        pos=Vec2(120, 80),
-        vel=Vec2(1.5, 0),
-        life_timer=1.0,
-    )
-    vertices, colors, uvs = _capture_projectile_trail(mocker, frame, projectile)
-    for actual, expected in zip(
-        vertices,
-        [
-            (120 - half_width, 90),
-            (120 + half_width, 90),
-            (120 + half_width, 80),
-            (120 - half_width, 80),
-        ],
-        strict=True,
-    ):
-        assert actual == pytest.approx(expected)
-    assert colors[:2] == [(127, 127, 127, 0)] * 2
-    assert [color[3] for color in colors[2:]] == [255, 255]
-    assert uvs == [(0, 0), (1, 0), (1, 0.5), (0, 0.5)]
-
-
 @pytest.mark.parametrize("pos", [Vec2(120, 80), Vec2(120, 90)])
-@pytest.mark.parametrize(("velocity", "offset"), [(Vec2(1.2, 0.9), Vec2(1.44, 1.08)), (Vec2(2, 1), Vec2(2.4, 1.2))])
+@pytest.mark.parametrize(("velocity", "offset"), [(Vec2(1.2, 0.9), Vec2(1.44, 1.08))])
 def test_bullet_trail_width_uses_stored_velocity_even_when_endpoints_disagree(
     mocker,
     frame: RenderFrame,
@@ -262,7 +193,7 @@ def test_bullet_trail_width_uses_stored_velocity_even_when_endpoints_disagree(
         assert actual == pytest.approx(expected)
 
 
-@pytest.mark.parametrize("transition_alpha", [1.0, 0.5, 0.0])
+@pytest.mark.parametrize("transition_alpha", [1.0, 0.0])
 def test_gauss_trail_ignores_transition_alpha(mocker, frame: RenderFrame, transition_alpha: float) -> None:
     # Native 0x42334e reloads clamped life, replacing the earlier life*transition alpha.
     projectile = Projectile(

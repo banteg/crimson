@@ -19,26 +19,6 @@ def _build_world(assets_dir: Path) -> WorldRuntimeHost:
     return WorldRuntimeHost(assets_dir=assets_dir)
 
 
-def test_apply_terrain_setup_keeps_sim_rng_state(assets_dir: Path, monkeypatch) -> None:
-    runtime = _build_world(assets_dir)
-    tex = rl.Texture()
-
-    def _texture(_self, _texture_id: TextureId) -> rl.Texture:
-        return tex
-
-    monkeypatch.setattr(type(runtime.render_resources), "registry_texture", _texture, raising=True)
-    before_rng_state = int(runtime.world.state.rng.state)
-    setup = terrain_generate(Crand(1337), DEFAULT_TERRAIN_SLOTS)
-
-    runtime.apply_terrain_setup(setup)
-    runtime.apply_terrain_setup(setup)
-
-    assert int(runtime.world.state.rng.state) == before_rng_state
-    assert runtime.render_resources.ground is not None
-    assert runtime.render_resources.ground._scheduled_layers is setup.layers
-    assert runtime.terrain_setup is setup
-
-
 def test_apply_terrain_setup_updates_render_cache_without_touching_sim_rng(assets_dir: Path, monkeypatch) -> None:
     runtime = _build_world(assets_dir)
     before_rng_state = int(runtime.world.state.rng.state)

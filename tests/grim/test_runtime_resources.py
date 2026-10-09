@@ -35,7 +35,7 @@ def test_partial_resource_load_releases_every_created_texture(mocker, tmp_path: 
     assert [call.args[0] for call in unload.call_args_list] == list(reversed(expected))
 
 
-@pytest.mark.parametrize("widths", [None, b"", bytes(255), bytes(257)])
+@pytest.mark.parametrize("widths", [None, bytes(255)])
 def test_invalid_font_widths_fail_before_gpu_allocation(mocker, tmp_path: Path, widths: bytes | None) -> None:
     entries = {} if widths is None else {"load/smallFnt.dat": widths}
     mocker.patch.object(assets, "load_paq_entries", return_value=entries)

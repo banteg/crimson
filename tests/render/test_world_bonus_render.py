@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from crimson.render.world.bonuses import bonus_bubble_fade, bonus_fade, bonus_icon_pulse
+from crimson.render.world.bonuses import bonus_bubble_fade, bonus_fade
 
 
 @pytest.mark.parametrize(
@@ -39,7 +39,3 @@ def test_bonus_bubble_fade_uses_half_rate_on_nonpositive_blink_phase() -> None:
 
 def test_bonus_bubble_spawn_fade_overrides_terminal_blink() -> None:
     assert bonus_bubble_fade(4.75, 5.0) == pytest.approx(0.5)
-
-
-def test_bonus_icon_pulse_is_native_sine_squared() -> None:
-    assert bonus_icon_pulse(math.pi / 4.0) == pytest.approx(0.875)

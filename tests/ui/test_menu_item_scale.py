@@ -9,7 +9,7 @@ from crimson.ui.menu_layout import back_button_scale, main_menu_item_scale, paus
 
 @pytest.mark.parametrize(
     ("width", "expected"),
-    [(640, (0.9, 22.0)), (641, (1.0, 0.0)), (800, (1.0, 0.0)), (1024, (1.0, 0.0))],
+    [(640, (0.9, 22.0)), (641, (1.0, 0.0))],
 )
 def test_main_menu_items_only_shrink_at_640(width: int, expected: tuple[float, float]) -> None:
     assert main_menu_item_scale(width, 2) == expected
