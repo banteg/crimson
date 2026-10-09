@@ -15,6 +15,9 @@ import {
   record,
   step,
   names,
+  decode,
+  fieldRanges,
+  firstDifference,
 } from "./engine.mjs";
 
 const out = path.resolve(
@@ -24,7 +27,9 @@ const native = path.join(out, "native/core"),
   wasm = path.join(out, "wasm/core.wasm");
 const e = loadCore(wasm);
 const terminal = new Set([7, 8, 12]);
+// The corpus is rewritten whole: the gate and game checks read every stream here.
 const fixtures = path.join(out, "fixtures");
+fs.rmSync(fixtures, { recursive: true, force: true });
 fs.mkdirSync(fixtures, { recursive: true });
 
 // Movement schemes (`MovementControlType`) and aim schemes (`AimScheme`, -1 stored as 7).
@@ -353,7 +358,7 @@ function displacement(magnitude) {
 if (JSON.stringify(displacement(1)) !== JSON.stringify(displacement(100)))
   throw Error("Large vector speeds up movement");
 
-// [name, config arguments, bot, tick limit, controls, hunt]; every scenario runs under both bug policies.
+// [name, config arguments, bot, tick limit, controls, hunt].
 const scenarios = [
   ["rush-idle", [2], false, 6000, PAD],
   ["rush-bot", [2], true, 30000, MOUSE],
@@ -399,35 +404,45 @@ scenarios.push([
   30000,
   PAD,
 ]);
-// The original's bugs, and the documented fixes of the ranked rules.
-const policies = [
-  ["", 1],
-  ["-ranked", 0],
-];
+// Every field except the Shock Chain slot's starting value, which the host sets
+// from the bug policy at run start (bug 32).
+const POLICY_FREE = fieldRanges((n) => n !== "globals.shock_chain_projectile_id");
+const twin = loadCore(wasm);
+
+// Whether the ranked rules play `run`'s own input to the same state on every tick.
+// The bot reads only state, so its ranked run would be this run again.
+function rankedPlaysAlike(run, cfg) {
+  const { config: original, records } = decode(run.input);
+  init(e, original);
+  init(twin, cfg);
+  for (let tick = -1; tick < records.length; tick++) {
+    if (tick >= 0 && step(e, records[tick]) !== step(twin, records[tick])) return false;
+    if (firstDifference(state(e), state(twin), POLICY_FREE) >= 0) return false;
+  }
+  return true;
+}
+
 const report = {
   guards: "15 native/WASM rejection probes; large-vector speed cap",
   cases: [],
 };
-for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] of scenarios)
-  for (const [suffix, preserveBugs] of policies) {
-  const name = scenario + suffix;
-  const cfg = config(mode, major, minor, { ...options, preserveBugs });
-  console.log(`${name}: generating input stream`);
-  const run = play(cfg, bot, limit, scheme, hunt);
-  const filename = path.join(fixtures, `${name}.rsi`);
-  fs.writeFileSync(filename, run.input);
-  console.log(`${name}: comparing ${run.input.length} input bytes`);
-  const parity = await compare(run.input, native, wasm);
-  const result = { name, ...parity, final: run.final, coverage: run.coverage };
-  report.cases.push(result);
-  fs.writeFileSync(
-    path.join(out, "report.json"),
-    JSON.stringify(report, null, 2) + "\n",
-  );
-  console.log(
-    `${name}: ${parity.ticks} ticks, terminal ${run.final.pending}, native/WASM + reset passed`,
-  );
+// Each scenario plays under the original's bugs, and again under the documented
+// fixes of the ranked rules wherever those change the run.
+for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] of scenarios) {
+  console.log(`${scenario}: generating input stream`);
+  const runs = [[scenario, play(config(mode, major, minor, { ...options, preserveBugs: 1 }), bot, limit, scheme, hunt)]];
+  const ranked = config(mode, major, minor, { ...options, preserveBugs: 0 });
+  if (rankedPlaysAlike(runs[0][1], ranked)) console.log(`${scenario}: the ranked rules play the same run`);
+  else runs.push([`${scenario}-ranked`, play(ranked, bot, limit, scheme, hunt)]);
+  for (const [name, run] of runs) {
+    fs.writeFileSync(path.join(fixtures, `${name}.rsi`), run.input);
+    console.log(`${name}: comparing ${run.input.length} input bytes`);
+    const parity = await compare(run.input, native, wasm);
+    report.cases.push({ name, ...parity, final: run.final, coverage: run.coverage });
+    fs.writeFileSync(path.join(out, "report.json"), JSON.stringify(report, null, 2) + "\n");
+    console.log(`${name}: ${parity.ticks} ticks, terminal ${run.final.pending}, native/WASM + reset passed`);
   }
+}
 // A pick needs the menu the tick before opened: not in the opening tick itself, and not after a cancel.
 {
   const name = "survival-bot-ranked";

@@ -16,7 +16,7 @@ the shared WASM artifact.
    supported scope; Typ-o support remains.
 2. **Ranked rules.** Python's documented fixes run in the core behind a runtime
    policy flag; both policies pass the gate, and default-policy Python replays
-   verify. Done: 143 of 143 streams agree, the nine recordings included.
+   verify. Done: 110 of 110 streams agree, the nine recordings included.
 3. **Rules definition.** Done: [ranked rules](../docs/rewrite/ranked-rules.md)
    define the boards, the pinned profile, human controls, the 1024x768 aim
    bound, finite inputs, command order, UI pause and timing, versioned by
