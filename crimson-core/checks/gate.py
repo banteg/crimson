@@ -127,7 +127,9 @@ def _from_bits(bits: int, floating: bool):
 class Stream:
     """An input/command stream in the core's transport: its config and tick records."""
 
-    def __init__(self, name: str, payload: bytes, recorded: Replay | None = None, checkpoints: tuple[ReplayCheckpoint, ...] = ()):
+    def __init__(
+        self, name: str, payload: bytes, recorded: Replay | None = None, checkpoints: tuple[ReplayCheckpoint, ...] = (),
+    ):
         self.name = name
         self.payload = payload
         # A recorded fixture: Python replays the recording itself and checks its claims.
@@ -344,11 +346,16 @@ def compare(stream: Stream, native: Path) -> dict:
         result_mismatches=mismatches,
         python_result=_result_json(expected),
         core_result=_result_json(actual),
-        checkpoints=None if checkpoint_diff is None else {
+        checkpoints=None
+        if checkpoint_diff is None
+        else {
             "checked": checkpoint_diff.checked_count,
             "ok": checkpoint_diff.ok,
-            "failure": None if checkpoint_diff.failure is None else {
-                "kind": checkpoint_diff.failure.kind, "tick": checkpoint_diff.failure.tick_index,
+            "failure": None
+            if checkpoint_diff.failure is None
+            else {
+                "kind": checkpoint_diff.failure.kind,
+                "tick": checkpoint_diff.failure.tick_index,
             },
         },
         claim_mismatches=None if claimed is None else run_result_mismatches(claimed, expected),
@@ -379,6 +386,36 @@ def _compare_job(args):
     return stream.name, compare(stream, native)
 
 
+def shard_streams(streams: list[Stream], index: int, count: int) -> list[Stream]:
+    """Assign longest streams first, deterministically, without dropping or duplicating a stream."""
+    shards: list[list[Stream]] = [[] for _ in range(count)]
+    loads = [0] * count
+    for stream in sorted(streams, key=lambda s: (-len(s.ticks), s.name)):
+        target = min(range(count), key=lambda i: (loads[i], i))
+        shards[target].append(stream)
+        loads[target] += len(stream.ticks)
+    return shards[index - 1]
+
+
+def merge_reports(paths: list[Path], names: set[str], unsupported: dict[str, str]) -> dict:
+    results = {}
+    for path in paths:
+        report = json.loads(path.read_text())
+        if report["unsupported"] != unsupported:
+            raise ValueError(f"{path}: unsupported fixtures differ")
+        if duplicate := results.keys() & report["streams"].keys():
+            raise ValueError(f"{path}: duplicate streams {sorted(duplicate)}")
+        results.update(report["streams"])
+    if set(results) != names:
+        raise ValueError(f"missing {sorted(names - results.keys())}; unexpected {sorted(results.keys() - names)}")
+    return {
+        "streams": dict(sorted(results.items())),
+        "unsupported": unsupported,
+        "agree": sum(r["agree"] for r in results.values()),
+        "total": len(results),
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--native", type=Path, default=CORE / "build/native/core")
@@ -387,10 +424,16 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=CORE / "build/gate.json")
     parser.add_argument("--only", action="append", default=[], help="Stream name to compare; repeat for several")
     parser.add_argument("--jobs", type=int, default=os.cpu_count())
+    parser.add_argument("--shard", help="One of COUNT balanced shards, INDEX/COUNT (1-based)")
+    parser.add_argument(
+        "--merge", type=Path, action="append", default=[], help="Merge complete, disjoint shard reports",
+    )
     args = parser.parse_args()
 
     streams, unsupported = load_streams(args.corpus, args.fixtures)
     names = {stream.name for stream in streams}
+    if args.only and (args.shard or args.merge) or args.shard and args.merge:
+        parser.error("--only, --shard and --merge are mutually exclusive")
     if args.only:
         if unknown := sorted(set(args.only) - names):
             parser.error(f"unknown streams: {', '.join(unknown)}")
@@ -400,15 +443,27 @@ def main() -> None:
         cases = json.loads((CORE / "results/matrix.json").read_text())["cases"]
         if missing := sorted({case["name"] + ".rsi" for case in cases} - names):
             parser.error(f"{len(missing)} bot streams missing from {args.corpus}; run checks/matrix.mjs")
-    jobs = [(stream, args.native) for stream in streams]
-    with ProcessPoolExecutor(max_workers=args.jobs) as pool:
-        results = dict(pool.map(_compare_job, jobs))
-    report = {
-        "streams": dict(sorted(results.items())),
-        "unsupported": unsupported,
-        "agree": sum(r["agree"] for r in results.values()),
-        "total": len(results),
-    }
+    if args.merge:
+        report = merge_reports(args.merge, names, unsupported)
+    else:
+        if args.shard:
+            try:
+                index, count = map(int, args.shard.split("/"))
+            except ValueError:
+                parser.error("--shard must be INDEX/COUNT")
+            if not 1 <= index <= count <= len(streams):
+                parser.error("--shard requires 1 <= INDEX <= COUNT <= stream count")
+            streams = shard_streams(streams, index, count)
+        # A long final task leaves other workers idle. Start the longest runs first inside each shard too.
+        jobs = [(stream, args.native) for stream in sorted(streams, key=lambda s: (-len(s.ticks), s.name))]
+        with ProcessPoolExecutor(max_workers=args.jobs) as pool:
+            results = dict(pool.map(_compare_job, jobs))
+        report = {
+            "streams": dict(sorted(results.items())),
+            "unsupported": unsupported,
+            "agree": sum(r["agree"] for r in results.values()),
+            "total": len(results),
+        }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, indent=2) + "\n")
     for name, result in report["streams"].items():

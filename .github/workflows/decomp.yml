@@ -13,11 +13,16 @@ permissions:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
       relevant: ${{ steps.detect.outputs.decomp }}
+      versions: ${{ steps.registry.outputs.versions }}
     steps:
       - uses: actions/checkout@v5
       - id: detect
@@ -31,15 +36,8 @@ jobs:
           fi
           python3 scripts/ci_changed_paths.py changed "${base[@]}" decomp | tee -a "$GITHUB_OUTPUT"
 
-  builds:
-    needs: changes
-    if: needs.changes.outputs.relevant == 'true'
-    runs-on: ubuntu-latest
-    outputs:
-      versions: ${{ steps.registry.outputs.versions }}
-    steps:
-      - uses: actions/checkout@v5
       - id: registry
+        if: steps.detect.outputs.decomp == 'true'
         name: Select reported builds
         run: |
           python - <<'PY' >> "$GITHUB_OUTPUT"
@@ -49,11 +47,12 @@ jobs:
           PY
 
   report:
-    needs: builds
+    needs: changes
+    if: needs.changes.outputs.relevant == 'true'
     strategy:
       fail-fast: false
       matrix:
-        version: ${{ fromJSON(needs.builds.outputs.versions) }}
+        version: ${{ fromJSON(needs.changes.outputs.versions || '[]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -132,7 +131,7 @@ jobs:
 
   gate:
     name: decomp-gate
-    needs: [changes, builds, report]
+    needs: [changes, report]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -140,15 +139,12 @@ jobs:
         env:
           CHANGES_RESULT: ${{ needs.changes.result }}
           RELEVANT: ${{ needs.changes.outputs.relevant }}
-          BUILDS_RESULT: ${{ needs.builds.result }}
           REPORT_RESULT: ${{ needs.report.result }}
         run: |
           test "$CHANGES_RESULT" = success
           if [[ "$RELEVANT" == true ]]; then
-            test "$BUILDS_RESULT" = success
             test "$REPORT_RESULT" = success
           else
             test "$RELEVANT" = false
-            test "$BUILDS_RESULT" = skipped
             test "$REPORT_RESULT" = skipped
           fi

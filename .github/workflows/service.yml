@@ -1,10 +1,7 @@
 name: Crimson service
 
 on:
-  push:
-    branches: [master]
-  pull_request:
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -12,51 +9,17 @@ permissions:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      relevant: ${{ steps.detect.outputs.service }}
-    steps:
-      - uses: actions/checkout@v5
-      - id: detect
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          base=()
-          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
-            base=(--base "$BASE_SHA")
-          fi
-          python3 scripts/ci_changed_paths.py changed "${base[@]}" service | tee -a "$GITHUB_OUTPUT"
-
   service:
-    needs: changes
-    if: needs.changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
-      - uses: mlugg/setup-zig@v2
+      - name: Download the shared verifier
+        uses: actions/download-artifact@v4
         with:
-          version: "0.17.0"
-      # Keyed by everything the core build reads (scripts/ci_changed_paths.py) and the toolchain.
-      - name: Name the inputs
-        id: inputs
-        run: echo "wasm=zig$(zig version)-$(python3 scripts/ci_changed_paths.py hash core-build)" >> "$GITHUB_OUTPUT"
-      - name: Restore verifier WASM
-        id: wasm
-        uses: actions/cache@v4
-        with:
-          path: crimson-core/build/wasm/core.wasm
-          key: core-wasm-${{ runner.os }}-${{ steps.inputs.outputs.wasm }}
-      - name: Build verifier WASM for Worker tests
-        if: steps.wasm.outputs.cache-hit != 'true'
-        run: python3 crimson-core/build.py --target wasm
+          name: runtime-wasm
+          path: crimson-core/build/wasm
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.13"
@@ -82,23 +45,3 @@ jobs:
         working-directory: service
       - run: npm test
         working-directory: service
-
-  gate:
-    name: service-gate
-    needs: [changes, service]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Require service checks when relevant
-        env:
-          CHANGES_RESULT: ${{ needs.changes.result }}
-          RELEVANT: ${{ needs.changes.outputs.relevant }}
-          SERVICE_RESULT: ${{ needs.service.result }}
-        run: |
-          test "$CHANGES_RESULT" = success
-          if [[ "$RELEVANT" == true ]]; then
-            test "$SERVICE_RESULT" = success
-          else
-            test "$RELEVANT" = false
-            test "$SERVICE_RESULT" = skipped
-          fi

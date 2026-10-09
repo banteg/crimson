@@ -12,22 +12,6 @@ from pathlib import Path
 
 from adapter import DIFFS, PROTOTYPES, adapt, apply_diffs, load_diffs, prototypes
 from data import data_source
-from game import (
-    GAME_DIFFS,
-    adapt_game,
-    com_defaults,
-    engine_globals,
-    game_data,
-    game_header,
-    game_initializers,
-    game_platform,
-    game_sources,
-    game_third_party,
-    game_vendor_c,
-    game_wrapped,
-    object_name,
-    simulation_names,
-)
 
 HERE = Path(__file__).resolve().parent
 HOST = HERE / "host"
@@ -81,6 +65,23 @@ def main():
     headers = a.out / "include"
     headers.mkdir(exist_ok=True)
     if a.target == "game":
+        from game import (
+            GAME_DIFFS,
+            adapt_game,
+            com_defaults,
+            engine_globals,
+            game_data,
+            game_header,
+            game_initializers,
+            game_platform,
+            game_sources,
+            game_third_party,
+            game_vendor_c,
+            game_wrapped,
+            object_name,
+            simulation_names,
+        )
+
         game_data(a.root, a.out, engine_globals(a.root), simulation_names(a.root))
         alignments = {}
     else:
@@ -123,7 +124,10 @@ def main():
         else:
             lines.extend(f"put({f});" for f in group["fields"])
     (headers / "snapshot.inc").write_text("\n".join(lines) + "\n")
-    env = dict(os.environ, ZIG_GLOBAL_CACHE_DIR=str(a.out / "zig-global"), ZIG_LOCAL_CACHE_DIR=str(a.out / "zig-local"))
+    # setup-zig supplies persisted caches. Keep isolated defaults for ordinary local builds.
+    env = dict(os.environ)
+    env.setdefault("ZIG_GLOBAL_CACHE_DIR", str(a.out / "zig-global"))
+    env.setdefault("ZIG_LOCAL_CACHE_DIR", str(a.out / "zig-local"))
     zig = shutil.which("zig")
     if not zig or subprocess.check_output([zig, "version"], text=True).strip() != "0.17.0":
         raise SystemExit("The shared math adapter requires Zig 0.17.0")
@@ -278,7 +282,9 @@ def main():
         if proc.returncode:
             print(proc.stderr)
             raise SystemExit(1)
-    ziglib = Path(re.search(r'\.lib_dir = "([^"]+)"', subprocess.check_output([zig, "env"], env=env, text=True))[1]).resolve()
+    ziglib = Path(
+        re.search(r'\.lib_dir = "([^"]+)"', subprocess.check_output([zig, "env"], env=env, text=True))[1],
+    ).resolve()
     runtime = a.out / "runtime"
     # Relink every build, so a build directory from another Zig never keeps that Zig's runtime.
     runtime.unlink(missing_ok=True)

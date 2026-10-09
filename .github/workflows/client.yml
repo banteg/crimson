@@ -1,12 +1,10 @@
 name: Crimson client
 
-# The client compiles the whole recovered game, so the decompiled sources count.
 on:
-  push:
-    branches:
-      - "master"
-  pull_request:
-  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
@@ -14,31 +12,8 @@ env:
   SDL_VERSION: "3.4.18"
   EMSDK_VERSION: "6.0.10"
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      relevant: ${{ steps.detect.outputs.client }}
-    steps:
-      - uses: actions/checkout@v5
-      - id: detect
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-        run: |
-          base=()
-          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
-            base=(--base "$BASE_SHA")
-          fi
-          python3 scripts/ci_changed_paths.py changed "${base[@]}" client | tee -a "$GITHUB_OUTPUT"
-
   client:
-    needs: changes
-    if: needs.changes.outputs.relevant == 'true'
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -62,19 +37,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
+      - name: Download the shared game module
+        uses: actions/download-artifact@v4
         with:
-          python-version: "3.13"
-          enable-cache: true
-
-      - name: Install dependencies
-        run: uv sync --frozen --group dev
-
-      - name: Setup Zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: "0.17.0"
+          name: runtime-game
+          path: crimson-core/build/game
 
       - name: Install wabt
         run: |
@@ -126,7 +93,7 @@ jobs:
           echo "PKG_CONFIG_PATH=$RUNNER_TEMP/sdl/lib/pkgconfig" >> "$GITHUB_ENV"
 
       - name: Build the client
-        run: uv run --no-sync python crimson-core/client/build.py --target ${{ matrix.target }} --package
+        run: python3 crimson-core/client/build.py --target ${{ matrix.target }} --skip-game --package
 
       # An artifact drops file modes: a tarball keeps the executables runnable.
       - name: Archive the build
@@ -137,23 +104,3 @@ jobs:
         with:
           name: crimsonland-${{ matrix.name }}
           path: crimsonland-${{ matrix.name }}.tar.gz
-
-  gate:
-    name: client-gate
-    needs: [changes, client]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Require client builds when relevant
-        env:
-          CHANGES_RESULT: ${{ needs.changes.result }}
-          RELEVANT: ${{ needs.changes.outputs.relevant }}
-          CLIENT_RESULT: ${{ needs.client.result }}
-        run: |
-          test "$CHANGES_RESULT" = success
-          if [[ "$RELEVANT" == true ]]; then
-            test "$CLIENT_RESULT" = success
-          else
-            test "$RELEVANT" = false
-            test "$CLIENT_RESULT" = skipped
-          fi

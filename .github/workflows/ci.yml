@@ -63,7 +63,7 @@ jobs:
             use_uv: true
             do_sync: true
             # Fail if Unicorn is missing instead of silently skipping the oracle tests.
-            command: uv run --no-sync python -c "import unicorn" && CRIMSON_NATIVE_ORACLE=1 uv run --no-sync pytest -q tests/native_oracle
+            command: uv run --no-sync python -c "import unicorn" && CRIMSON_NATIVE_ORACLE=1 uv run --no-sync pytest --confcutdir=tests/native_oracle -q tests/native_oracle
             sync_args: --group dev
           - task: native-closure
             suite: "re-audits"
