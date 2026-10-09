@@ -527,9 +527,6 @@ void highscore_watch(float *card, highscore_record_t *record) {
     watch_start(target);
 }
 
-// Plays the replay game_replay_open read, as Watch plays one (a link to a run,
-// checks/game_watch.mjs): 0 when it cannot, with a run playing or a replay this
-// module cannot play.
 // The board run whose replay the host fetches into replays/online/<run>.crd.
 __attribute__((export_name("game_replay_download"))) const char *game_replay_download() { return watch_download.c_str(); }
 // The host's fetch ended: 0 the file is written, 1 the leaderboard no longer
@@ -546,6 +543,9 @@ __attribute__((export_name("game_replay_downloaded"))) void game_replay_download
   ++watch_downloads_done;
 }
 
+// Plays the replay game_replay_open read, as Watch plays one (a link to a run,
+// checks/game_watch.mjs): 0 when it cannot, with a run playing or a replay this
+// module cannot play.
 __attribute__((export_name("game_watch"))) int game_watch() {
   if (game_live || !replay_loaded.reason.empty() || replay_loaded.recording.empty() || config_blob.screen_width != 1024 ||
       config_blob.screen_height != 768)
