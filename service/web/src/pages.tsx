@@ -37,7 +37,7 @@ export interface Navigator {
 
 const STAGES = ["I", "II", "III", "IV", "V"];
 const QUEST = /^[1-5]\.(?:[1-9]|10)$/;
-const DOCS = "https://crimson.banteg.xyz/";
+export const DOCS = "https://crimson.banteg.xyz/";
 const RULES = `${DOCS}rewrite/ranked-rules/`;
 const BUGS = `${DOCS}rewrite/original-bugs/`;
 const BOTS = `${DOCS}rewrite/bots/`;
