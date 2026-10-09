@@ -173,9 +173,10 @@ with the choices the menu offered, and the end shows how the run ended and
 whether it played to the result it recorded. A host plays a replay file with
 `game_replay_open` and `game_watch`, which waits for a menu to settle and gives
 way to a run the player starts; a run's page on the site links to
-`/play/?watch=<run>`, which the page plays once the game is up. Since the replay plays in the one world
-the game has, a finished run's end screen is gone once the scores it opened
-play one: their Back leaves for the Statistics menu.
+`/play/?watch=<run>`, which the page plays once the game is up. Since the
+replay plays in the one world the game has, a finished run's end screen is
+gone once the scores it opened play one: their Back leaves for the Statistics
+menu.
 
 ### Ranked runs
 
@@ -203,20 +204,6 @@ is queued and every ten minutes: a run the service took or already has leaves
 it, one it refuses moves to `rejected/` with the reason, and offline runs wait.
 Profile signs a challenge and opens the profile signed in. The native client
 has no network stack yet and shows no Ranked box.
-
-The high score screen shows the leaderboard's runs as the Python port does
-(`screens/high_scores_view/records.py`). Each board's latest answer is kept for
-the session, every fetch replacing it whole, so a hidden, banned or deleted run
-leaves at the next one; nothing online is stored. While Show internet scores is
-ticked, the table reads the board's runs after its own records, so the
-original's filters, duplicate rule and order take them in; a run of the
-player's own that the board holds (the same name, time and experience) turns
-green in its place. The screen fetches a board quietly the first time it shows
-it, and Update scores fetches the shown one again with the original's status
-lines. A pinned board run's card fetches its replay through the page into
-`replays/online/<run>.crd`, where the newest few stay, and Watch plays it;
-"This run is no longer on the leaderboard" and "Could not download this run"
-tell a dropped run from a failed download, which the next pin tries again.
 
 The high score screen shows the leaderboard's runs as the Python port does
 (`screens/high_scores_view/records.py`). Each board's latest answer is kept for
