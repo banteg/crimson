@@ -24,7 +24,7 @@ def require(suite: str, needs: dict) -> None:
 
     if suite == "core":
         python, game, oracles = (flag(name) for name in ("python", "game", "oracles"))
-        if flag("core") != (python or game or oracles) or flag("corpus") != (python or game):
+        if flag("core") != (python or game or oracles) or flag("corpus") != flag("core"):
             raise ValueError("inconsistent core relevance")
         checks = {
             "build-native": flag("core"),

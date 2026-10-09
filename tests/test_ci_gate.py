@@ -17,7 +17,7 @@ def core_needs(python: bool, game: bool, oracles: bool) -> dict:
                 "python": str(python).lower(),
                 "game": str(game).lower(),
                 "oracles": str(oracles).lower(),
-                "corpus": str(python or game).lower(),
+                "corpus": str(core).lower(),
             },
         },
     }
@@ -25,7 +25,7 @@ def core_needs(python: bool, game: bool, oracles: bool) -> dict:
         "build-native": core,
         "build-wasm": core,
         "build-game": game,
-        "corpus": python or game,
+        "corpus": core,
         "python": python,
         "python-report": python,
         "game-smoke": game,

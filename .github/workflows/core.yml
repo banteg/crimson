@@ -39,7 +39,7 @@ jobs:
             base=(--base "$BASE_SHA")
           fi
           python3 scripts/ci_changed_paths.py changed "${base[@]}" core core-gate core-game core-oracles client service | tee -a "$GITHUB_OUTPUT"
-          if grep -Eq '^core-(gate|game)=true$' "$GITHUB_OUTPUT"; then
+          if grep -q '^core=true$' "$GITHUB_OUTPUT"; then
             echo "corpus=true" >> "$GITHUB_OUTPUT"
           else
             echo "corpus=false" >> "$GITHUB_OUTPUT"
@@ -84,6 +84,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
+      - name: Check native snapshot framing
+        run: node --test crimson-core/checks/compare.test.mjs
       - uses: actions/download-artifact@v4
         with:
           name: runtime-native
@@ -269,7 +271,7 @@ jobs:
           path: crimson-core/build/timings.jsonl
 
   oracles:
-    needs: [changes, build-native, build-wasm]
+    needs: [changes, build-native, build-wasm, corpus]
     if: needs.changes.outputs.oracles == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -292,6 +294,10 @@ jobs:
         with:
           name: runtime-wasm
           path: crimson-core/build/wasm
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-corpus
+          path: crimson-core/build
       - name: Download original executable
         run: |
           game_dir="game_bins/crimsonland/1.9.93-gog"

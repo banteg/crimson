@@ -78,6 +78,7 @@ CORE_CORPUS = (
     "crimson-core/checks/matrix.mjs",
     "crimson-core/checks/engine.mjs",
     "crimson-core/checks/compare.mjs",
+    "crimson-core/checks/compare.test.mjs",
 )
 CORE_GATE = ("crimson-core/checks/gate.py", "crimson-core/checks/replay.py")
 CORE_GAME = ("crimson-core/checks/game_*", "crimson-core/build.py", *CORE_GATE)
@@ -94,7 +95,12 @@ RE_TOOLS = Suite(
         "tools/match/",
         "tools/native/",
         "third_party/",
-        "analysis/",
+        "analysis/decomp/",
+        "analysis/native/",
+        "analysis/ghidra/maps/",
+        "analysis/ida/raw/",
+        "analysis/library_provenance.json",
+        "analysis/matching_scope.json",
         "crimson-re/src/crimson_re/match*.py",
         "crimson-re/src/crimson_re/library*.py",
         "crimson-re/src/crimson_re/native_link.py",

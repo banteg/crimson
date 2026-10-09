@@ -126,3 +126,22 @@ def test_native_oracle_does_not_import_unused_parent_fixtures() -> None:
     assert not relevant("native-oracle", ["tests/conftest.py"])
     assert not relevant("native-oracle", ["src/crimson/modes/replay_playback_mode.py"])
     assert relevant("native-oracle", ["src/crimson/sim/world_state.py"])
+
+
+def test_matching_suites_cover_every_pinned_report_input() -> None:
+    from crimson_re.match_report import _input_path
+    from scripts.ci_changed_paths import tracked_files
+
+    for path in tracked_files():
+        if _input_path(path):
+            assert relevant("decomp", [path]), path
+            assert relevant("re-audits", [path]), path
+
+
+@pytest.mark.parametrize("suite", ["decomp", "re-audits"])
+def test_unconsumed_analysis_notes_do_not_start_matching_checks(suite: str) -> None:
+    assert not relevant(suite, ["analysis/frida/readme.md"])
+    assert not relevant(suite, ["analysis/historical/readme.md"])
+    assert relevant(suite, ["analysis/decomp/new-build/new-image/native.json"])
+    assert relevant(suite, ["analysis/native/grim.dll/closure.json"])
+    assert relevant(suite, ["analysis/ida/raw/grim.dll/segments.json"])
