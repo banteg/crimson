@@ -11,8 +11,9 @@ records. There is no file header. Each record has a `0x48`-byte payload followed
 by a little-endian `u32` checksum, for a `0x4c`-byte wire record.
 
 For byte index `i`, encoding adds `(i * 5 + 1) * i + 6`, modulo 256. The checksum
-is the sum of `(i + 3) * decoded_byte * 7`, modulo 2³². Readers skip invalid
-checksums and ignore an incomplete trailing record.
+is the sum of `(i + 3) * decoded_byte * 7`, modulo 2³², with each byte read as a
+signed `char` (`0xFF` counts as `-1`). Readers skip invalid checksums and ignore
+an incomplete trailing record.
 
 The name occupies the first `0x20` bytes. Time at offset `0x20` is a signed
 32-bit millisecond value: quest bonuses can make it negative. The score field

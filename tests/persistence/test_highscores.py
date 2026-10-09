@@ -19,6 +19,8 @@ def test_ensure_date_fields_sets_native_date_week_byte() -> None:
     assert record.date_week == highscore_date_week(2026, 5, 28)
 
 
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -95,3 +97,54 @@ def test_negative_quest_final_time_survives_saving_and_loading(tmp_path: Path) -
     record.run_elapsed_ms = -500
     upsert_highscore_record(path, record)
     assert read_highscore_table(path, game_mode_id=GameMode.QUESTS)[0].run_elapsed_ms == -500
+
+
+@pytest.fixture(scope="module")
+def original_record_io(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    root = Path(__file__).resolve().parents[2]
+    # Clang, as the recovered sources build: the stub headers' WINAPI is __stdcall, which GCC rejects.
+    cc = shutil.which("clang")
+    assert cc is not None
+    exe = tmp_path_factory.mktemp("highscore") / "highscore_record_harness"
+    subprocess.run(
+        [
+            cc,
+            "-w",
+            "-fsigned-char",  # MSVC x86 char
+            f"-I{root / 'crimson-core/game/include'}",
+            f"-I{root / 'tools/match/include'}",
+            f"-I{root / 'third_party/headers'}",
+            str(Path(__file__).with_name("highscore_record_harness.c")),
+            str(root / "decomp/1.9/crimsonland/highscore/highscore_read_record.c"),
+            str(root / "decomp/1.9/crimsonland/highscore/highscore_write_record.c"),
+            "-o",
+            str(exe),
+        ],
+        check=True,
+    )
+    return exe
+
+
+def test_score_files_round_trip_with_the_original_record_io(tmp_path: Path, original_record_io: Path) -> None:
+    records = []
+    for name, mode, elapsed_ms, score in [
+        ("Player", GameMode.SURVIVAL, 754_321, 98_765),
+        ("\xc4\xe9\xff", GameMode.RUSH, 61_000, 0),
+        ("Quester", GameMode.QUESTS, -500, 0x8000_0000),
+    ]:
+        record = HighScoreRecord.blank(rand_value=0x7FFF)
+        record.set_name(name)
+        record.game_mode_id = mode
+        record.run_elapsed_ms = elapsed_ms
+        record.score_xp = score
+        record.ensure_date_fields(dt.date(2026, 10, 9))
+        records.append(record)
+    path = tmp_path / "scores.hi"
+
+    write_highscore_records(path, records)
+    loaded = subprocess.run([original_record_io, "read"], input=path.read_bytes(), capture_output=True, check=True)
+    assert loaded.stdout == b"".join(bytes(r.data) for r in records)
+
+    written = subprocess.run([original_record_io, "write"], input=loaded.stdout, capture_output=True, check=True)
+    path.write_bytes(written.stdout)
+    assert read_highscore_records(path) == records
