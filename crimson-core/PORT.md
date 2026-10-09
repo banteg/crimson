@@ -112,7 +112,9 @@ Quests at 1024x768, the resolution the verifier simulates; the rest play as the
 original. A fresh configuration is the Python port's: windowed, since the host
 owns the window, at 1024x768, with violence on (the original turns it off when
 it writes a missing `crimson.cfg`). The main menu leaves out Other Games, 10tons'
-catalogue of the time, as the Python port does.
+catalogue of the time, as the Python port does. The console names the build,
+the version a replay records, in its corner where the original named its
+release, and in its log under its banner.
 
 Between ticks the original keeps its screens. The perk menu opens when a tick
 opens it, and its choice reaches the run as a command with the next tick.

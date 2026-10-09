@@ -372,7 +372,26 @@ def adapt_game(src, txt):
             src,
         )
         txt = 'extern "C" bool game_live_pause();\nextern "C" bool game_live_run();\n' + txt
+    if src.stem == "console_render":
+        # The console's corner names this build where the original named its release
+        # (host/game.inc), right-aligned for a build's longer name.
+        txt = replace_once(
+            txt,
+            "            screen_width_f - 210.0f,\n            (float)height + slide_y - 18.0f,\n            console_version_string);",
+            "            screen_width_f - 10.0f - grim_interface_ptr->grim_measure_text_width(game_version_label()),\n"
+            "            (float)height + slide_y - 18.0f,\n            game_version_label());",
+            src,
+        )
+        txt = 'extern "C" char *game_version_label();\n' + txt
     if src.stem == "crimsonland_main":
+        # The console's banner names the build, as its corner does (host/game.inc).
+        txt = replace_once(
+            txt,
+            '    console_printf(&console_log_queue, "-----------\\n");\n',
+            '    console_printf(&console_log_queue, "-----------\\n");\n'
+            '    console_printf(&console_log_queue, "Version: %s\\n", CRIMSON_GAME_VERSION);\n',
+            src,
+        )
         # The host owns the main loop: startup ends where Grim's run loop began,
         # and the code after the loop becomes its own entry point (game/frame.cpp).
         txt = replace_once(

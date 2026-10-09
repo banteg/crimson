@@ -137,6 +137,13 @@ int sfx_entry_start_playback(music_entry_t *entry) {
 // During a run the host owns the run-down this UI timeline drives in the
 // original (portable_step_many), exactly as in the verifier.
 void ui_elements_update_and_render_recovered();
+// This build, as the console's corner names it.
+char *game_version_label() {
+  static char label[64];
+  if (!*label)
+    snprintf(label, sizeof label, "crimson.land %s", CRIMSON_GAME_VERSION);
+  return label;
+}
 void ui_elements_update_and_render() {
   if (!game_ticking)
     ui_elements_update_and_render_recovered();
