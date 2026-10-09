@@ -169,7 +169,8 @@ the run counts in no statistics), and the menu settings come back when it ends.
 The [replay viewer](../docs/rewrite/replay-viewer.md) prepares the whole run
 first, keeping keyframes and the terrain's history ([`host/keyframes.inc`](host/keyframes.inc)),
 so it seeks anywhere, backwards too, with the terrain rebuilt exactly; its
-transport bar, scrub bar marks, pick card and end panel use the original's art
+scrub bar and pick box keep to dim bands clear of the HUD, and it prepares and
+ends on the original's game over screen with the run's score card
 ([`host/viewer.inc`](host/viewer.inc)). A host plays a replay file with
 `game_replay_open` and `game_watch`, which skips the intro, cuts in from the
 menu and gives way to a run the player starts; a run's page on the site links to

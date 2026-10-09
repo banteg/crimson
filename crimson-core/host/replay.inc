@@ -333,6 +333,7 @@ struct LoadedReplay {
   int rules = 0;
   std::string game_version, reason, outcome;
   int64_t elapsed_ms = 0, quest_final_ms = -1, kills = 0, experience = 0;
+  int64_t shots_fired = 0, shots_hit = 0, most_used_weapon_id = 0;
 };
 
 static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedReplay &out) {
@@ -393,12 +394,15 @@ static void replay_read_result(MsgpackReader &r, LoadedReplay &out) {
     if (key == "outcome") out.outcome = r.str();
     else if (key == "elapsed_ms") out.elapsed_ms = r.integer();
     else if (key == "kills") out.kills = r.integer();
+    else if (key == "shots_fired") out.shots_fired = r.integer();
+    else if (key == "shots_hit") out.shots_hit = r.integer();
     else if (key == "quest_final_ms") out.quest_final_ms = r.nil() ? -1 : r.integer();
     else if (key == "players")
       for (uint32_t players = r.array(), i = 0; r.ok && i < players; ++i)
         for (uint32_t m = r.map(); r.ok && m; --m) {
           std::string field = r.str();
           if (field == "experience" && i == 0) out.experience = r.integer();
+          else if (field == "most_used_weapon_id" && i == 0) out.most_used_weapon_id = r.integer();
           else r.skip();
         }
     else r.skip();
