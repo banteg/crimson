@@ -178,6 +178,17 @@ static int texture_id(IDirect3DBaseTexture8 *texture) {
   return texture ? static_cast<Texture *>(static_cast<IDirect3DTexture8 *>(texture))->id : 0;
 }
 
+// The host's id for the texture a Grim handle names (host_texture_copy), or 0.
+struct GrimSlot {
+  char *name;
+  IDirect3DTexture8 *texture;
+};
+extern "C" GrimSlot *grim_texture_slots[256];
+extern "C" int platform_texture_host_id(int handle) {
+  GrimSlot *slot = handle >= 0 && handle < 256 ? grim_texture_slots[handle] : nullptr;
+  return slot ? texture_id(slot->texture) : 0;
+}
+
 struct Device final : UnimplementedIDirect3DDevice8 {
   ULONG refs = 1;
   UINT width, height;

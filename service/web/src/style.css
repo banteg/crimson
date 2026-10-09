@@ -73,6 +73,8 @@ footer p{margin:0 0 6px}footer .credit{color:var(--dim)}footer .credit a{color:v
 /* A run's page; a board's scores link to it. */
 a.run{color:inherit;text-decoration:none}a.run:hover{color:var(--row-on);text-decoration:underline}
 a.run-details{white-space:nowrap}
+.replay-links{display:inline-flex;gap:10px;align-items:center;white-space:nowrap}
+a.watch{display:inline-flex;gap:5px;align-items:center}a.watch svg{width:10px;height:10px}a.crd{color:var(--dim)}a.crd:hover{color:var(--row-on)}
 .run-player{margin:4px 0}.run-score{margin:6px 0;color:#fff;font:bold 32px/36px "Courier New",Courier,monospace}
 /* Keep the game's pixel font at its native 16px size so its square pixels stay legible. */
 .score-label{margin:10px 0 0}.quest-score{margin:8px 0 16px}

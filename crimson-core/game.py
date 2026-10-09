@@ -102,6 +102,7 @@ def replace_once(text, old, new, src):
 # a run's wrapped strings live in its arena. The recovered body keeps a
 # _recovered name.
 SEAMS = (
+    "fx_queue_render",
     "game_save_status",
     "game_state_set",
     "gameplay_render_world",
@@ -545,6 +546,8 @@ def game_data(root, out, engine, simulation):
     grim = [e for e in image_entries(root, "grim.dll") if "initializer_symbols" not in e and e["name"] not in names]
     lines = ["#include <stdint.h>", "#include <string.h>", 'extern "C" {']
     resets = {"run": [], "engine": [], "presentation": []}
+    # The spans a run's state lives in, coalesced, for its keyframes (host/keyframes.inc).
+    run_spans = []
     for image, entries in (("exe", exe), ("grim", grim)):
         base = min(int(e["address"], 16) for e in entries)
         size = max(int(e["address"], 16) + e["size"] for e in entries) - base
@@ -573,6 +576,11 @@ def game_data(root, out, engine, simulation):
             kept = any(s <= start and end <= f and f - s > e["size"] for s, f in kept_spans)
             kind = "presentation" if kept and own[e["name"]] == "run" else own[e["name"]]
             clears[kind].append(f"memset(game_image_{image}+{offset},0,{e['size']});")
+            if kind == "run":
+                if run_spans and run_spans[-1][0] == image and run_spans[-1][2] >= offset:
+                    run_spans[-1][2] = max(run_spans[-1][2], offset + e["size"])
+                else:
+                    run_spans.append([image, offset, offset + e["size"]])
             if (data := e.get("initializer_hex", "")) and any(bytes.fromhex(data)):
                 values = ",".join(map(str, bytes.fromhex(data)))
                 fills[kind].append(
@@ -599,6 +607,12 @@ def game_data(root, out, engine, simulation):
             "}",
         ]
 
+    spans = ",".join(f"{{game_image_{image}+{start},{end - start}}}" for image, start, end in run_spans)
+    lines += [
+        "struct GameSpan { unsigned char *at; uint32_t size; };",
+        f"extern const GameSpan game_run_spans[] = {{{spans}}};",
+        f"extern const int game_run_span_count = {len(run_spans)};",
+    ]
     lines += reset("portable_reset_data", "run", "presentation")
     lines += reset("portable_reset_simulation_data", "run")
     lines += [*reset("portable_reset_engine_data", "engine"), "}"]

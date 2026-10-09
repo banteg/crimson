@@ -278,6 +278,24 @@ void w2c_host_present(struct w2c_host *) {
 }
 }
 
+// CRIMSON_WATCH=<replay> plays a replay, from the game folder, as a link to a
+// run does, for unattended captures: CRIMSON_WATCH_SEEK=<tick> goes to a tick
+// once it is prepared, and CRIMSON_WATCH_STOP=<tick> pauses playback there.
+void watch_from_env() {
+  static bool asked;
+  const char *path = getenv("CRIMSON_WATCH");
+  if (asked || !path)
+    return;
+  asked = true;
+  snprintf((char *)client_memory() + w2c_game_game_replay_path(&game), 256, "%s", path);
+  if (!w2c_game_game_replay_open(&game) || !w2c_game_game_watch(&game))
+    client_fatal("CRIMSON_WATCH: this replay does not play");
+  if (const char *seek = getenv("CRIMSON_WATCH_SEEK"))
+    w2c_game_game_watch_seek(&game, atoi(seek));
+  if (const char *stop = getenv("CRIMSON_WATCH_STOP"))
+    w2c_game_game_watch_stop_at(&game, atoi(stop));
+}
+
 bool started;
 bool start_game() {
   wasm_rt_init();
@@ -326,6 +344,9 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_replay_download() {
 extern "C" EMSCRIPTEN_KEEPALIVE void client_replay_downloaded(int result) {
   w2c_game_game_replay_downloaded(&game, result);
 }
+// The page leaves: the game quits as it would itself, so Module.quit commits
+// what its exit writes.
+extern "C" EMSCRIPTEN_KEEPALIVE void client_close() { w2c_game_game_close(&game); }
 // A link to a run: plays the replay at `path` (in the game folder) once the
 // game is up. "" when it will, "wait" before the game has started, else why not.
 extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch(const char *path) {
@@ -539,6 +560,7 @@ SDL_AppResult SDL_AppIterate(void *) {
   pad(input());
   int before = presented;
   ++frames;
+  watch_from_env();
   bool running = w2c_game_game_frame(&game);
   // A pass of a run that covered no tick drew nothing: show the last frame again.
   if (running && presented == before)

@@ -22,12 +22,15 @@
   /* Focus shows as the game's hover fill. */
   .button:focus-visible { outline: none; color: #fff; }
   .button:focus-visible::before { opacity: 1; }
-  /* Fullscreen, in the corner: shown while the cursor is near it, and briefly once the game starts. */
-  #fullscreen { position: fixed; top: 6px; right: 6px; width: 32px; height: 32px; padding: 6px; border: 0; border-radius: 4px;
+  /* Fullscreen and back to the site, in the top corners: shown while the cursor is near them, and briefly once the game
+     starts. */
+  .corner { position: fixed; top: 6px; width: 32px; height: 32px; padding: 6px; border: 0; border-radius: 4px; box-sizing: border-box;
     background: rgb(11 10 7 / 0.6); color: rgb(255 255 255 / 0.7); cursor: pointer; transition: opacity 0.3s; opacity: 0; pointer-events: none; }
-  #fullscreen.shown { opacity: 1; pointer-events: auto; }
-  #fullscreen:hover { color: #fff; }
-  #fullscreen svg { display: block; width: 20px; height: 20px; }
+  .corner.shown { opacity: 1; pointer-events: auto; }
+  .corner:hover { color: #fff; }
+  .corner svg { display: block; width: 20px; height: 20px; }
+  #fullscreen { right: 6px; }
+  #home { left: 6px; }
   #fullscreen .exit, :fullscreen #fullscreen .enter { display: none; }
   :fullscreen #fullscreen .exit { display: block; }
   #notice { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); padding: 4px 12px; border-radius: 4px;
@@ -54,7 +57,10 @@
   </div>
   <p id="touch" hidden>On a phone, Crimsonland plays with a gamepad: connect one to play.</p>
 </div>
-<button id="fullscreen" type="button" title="Fullscreen" aria-label="Fullscreen" hidden>
+<a id="home" class="corner shown" href="/" title="crimson.land" aria-label="Back to crimson.land">
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4l-6 6 6 6"/></svg>
+</a>
+<button id="fullscreen" class="corner" type="button" title="Fullscreen" aria-label="Fullscreen" hidden>
   <svg class="enter" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7V2h5M13 2h5v5M18 13v5h-5M7 18H2v-5"/></svg>
   <svg class="exit" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v5H2M18 7h-5V2M13 18v-5h5M2 13h5v5"/></svg>
 </button>
@@ -106,14 +112,25 @@
   // Fullscreen shows while the cursor is near its corner. It keeps Escape for the
   // game where the browser allows it (the Keyboard Lock API); holding Escape
   // still leaves.
-  const fullscreen = document.getElementById("fullscreen");
+  const fullscreen = document.getElementById("fullscreen"), home = document.getElementById("home");
   let hide;
   const showFullscreen = (ms) => {
     fullscreen.classList.add("shown");
+    home.classList.add("shown");
     clearTimeout(hide);
-    hide = setTimeout(() => fullscreen.classList.remove("shown"), ms);
+    hide = setTimeout(() => cover.hidden && (fullscreen.classList.remove("shown"), home.classList.remove("shown")), ms);
   };
-  addEventListener("pointermove", (event) => event.clientY < 80 && event.clientX > innerWidth - 80 && showFullscreen(1500));
+  // Leaving mid-game quits it first, as closing the game does, and goes once a
+  // run's replay and the exit's saves reach IndexedDB; else the quit screen says
+  // why. A second click leaves regardless.
+  let leaving = false;
+  home.onclick = (event) => {
+    if (!cover.hidden || leaving) return;
+    event.preventDefault();
+    leaving = true;
+    Module.ccall("client_close", null, [], []);
+  };
+  addEventListener("pointermove", (event) => event.clientY < 80 && (event.clientX > innerWidth - 80 || event.clientX < 80) && showFullscreen(1500));
   fullscreen.onclick = async () => {
     if (document.fullscreenElement) return document.exitFullscreen();
     await document.documentElement.requestFullscreen();
@@ -300,10 +317,11 @@
   // intro.
   function ready() {
     const buttons = document.getElementById("ready");
-    say("");
+    say(watching ?? "");
     progress.hidden = true;
     buttons.hidden = false;
     const play = document.getElementById("play");
+    if (linked) play.firstChild.textContent = "Watch";
     play.focus();
     play.onclick = () => {
       buttons.hidden = true;
@@ -430,8 +448,21 @@
     } catch {}
     Module.ccall("client_replay_downloaded", null, ["number"], [result]);
   }
-  // A link to a run (crimson.land/play/?watch=<run>, from its page): its replay
-  // plays once the game is up, and returns to the high scores.
+  // A link to a run (crimson.land/play/?watch=<run>, from its page): the cover
+  // names the run and offers Watch, and its replay plays once the game is up,
+  // which skips the intro (host/watch.inc), then returns to the high scores.
+  const linked = new URLSearchParams(location.search).get("watch");
+  let watching = null;
+  if (linked && /^[A-Za-z0-9_-]{1,64}$/.test(linked))
+    fetch(`/api/runs/${linked}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((run) => {
+        if (!run) return;
+        const score = run.board === "survival" ? `${run.score.toLocaleString("en-US")} xp` : `${(run.score / 1000).toFixed(2)} s`;
+        watching = `${run.name}'s ${run.title} run, ${score}`;
+        if (!document.getElementById("ready").hidden) say(watching);
+      })
+      .catch(() => {});
   async function watchLink(run) {
     if (!/^[A-Za-z0-9_-]{1,64}$/.test(run)) return;
     let response, bytes;
@@ -470,7 +501,6 @@
       fullscreen.hidden = false;
       showFullscreen(3000);
       canvas.focus();
-      const linked = new URLSearchParams(location.search).get("watch");
       if (linked) watchLink(linked);
     },
     printErr: (text) => console.warn(text),
@@ -478,9 +508,11 @@
     quit: async () => {
       cover.hidden = false;
       fullscreen.hidden = true;
+      home.classList.add("shown");
       progress.hidden = true;
       say("Saving…");
       const saved = await persist();
+      if (saved && leaving) return location.assign(home.href);
       say(saved ? "Your progress is saved." : notice.textContent);
       document.getElementById("again").hidden = false;
     },

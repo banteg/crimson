@@ -69,9 +69,9 @@ void sha256(const void *data, size_t size, uint8_t digest[32]) {
 }
 
 // Level 9, as the Python port packs replays (src/crimson/replay/codec.py).
-std::vector<uint8_t> zstd_pack(const std::vector<uint8_t> &payload) {
+std::vector<uint8_t> zstd_pack(const std::vector<uint8_t> &payload, int level) {
   std::vector<uint8_t> out(ZSTD_compressBound(payload.size()));
-  size_t size = ZSTD_compress(out.data(), out.size(), payload.data(), payload.size(), 9);
+  size_t size = ZSTD_compress(out.data(), out.size(), payload.data(), payload.size(), level);
   out.resize(ZSTD_isError(size) ? 0 : size);
   return out;
 }

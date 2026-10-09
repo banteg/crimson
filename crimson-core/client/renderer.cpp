@@ -375,6 +375,9 @@ void renderer_present(int window_width, int window_height) {
 
 void renderer_resume() { bind_target(); }
 
+// The kept frame (host_frame_hold): the back buffer copied aside, and back.
+Target held;
+
 // The back buffer as top-down RGBA rows.
 std::vector<unsigned char> renderer_capture(int &width, int &height) {
   Target &back = textures[0];
@@ -390,6 +393,40 @@ std::vector<unsigned char> renderer_capture(int &width, int &height) {
 // --- The game module's host interface ---------------------------------------------
 
 extern "C" {
+void w2c_host_frame_hold(struct w2c_host *, u32 op) {
+  Target &back = textures[0];
+  if (!back.framebuffer)
+    return;
+  if (held.width != back.width || held.height != back.height) {
+    release(held);
+    held.width = back.width;
+    held.height = back.height;
+    held.flags = 1;
+    allocate(held);
+  }
+  bool save = op == 1; // HOST_FRAME_SAVE (game/host_abi.h); 2 shows it
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, save ? back.framebuffer : held.framebuffer);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, save ? held.framebuffer : back.framebuffer);
+  glBlitFramebuffer(0, 0, back.width, back.height, 0, 0, back.width, back.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  bind_target();
+}
+void w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {
+  Target &from = target_or_back((int)source);
+  if (!from.framebuffer)
+    return;
+  Target &to = textures[(int)destination];
+  if (to.width != from.width || to.height != from.height || !to.framebuffer) {
+    release(to);
+    to.width = from.width;
+    to.height = from.height;
+    to.flags = 1;
+    allocate(to);
+  }
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, from.framebuffer);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to.framebuffer);
+  glBlitFramebuffer(0, 0, from.width, from.height, 0, 0, from.width, from.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  bind_target();
+}
 void w2c_host_back_buffer(struct w2c_host *, u32 width, u32 height) {
   Target &back = textures[0];
   release(back);

@@ -24,6 +24,13 @@ HOST_IMPORT(clear) void host_clear(unsigned color);
 HOST_IMPORT(draw) void host_draw(int primitive, const void *vertices, int vertex_count, const unsigned short *indices,
                                  int primitive_count);
 HOST_IMPORT(present) void host_present(void);
+// The last drawn frame, kept and shown again under what a replay draws over it
+// while no tick draws (host/watch.inc): save the back buffer, or show the saved one.
+enum { HOST_FRAME_SAVE = 1, HOST_FRAME_SHOW = 2 };
+HOST_IMPORT(frame_hold) void host_frame_hold(int op);
+// A render target's pixels copied into another texture, made like it if it is
+// new: a replay keeps its terrain at points along the run (host/keyframes.inc).
+HOST_IMPORT(texture_copy) void host_texture_copy(int destination, int source);
 HOST_IMPORT(gamma_ramp) void host_gamma_ramp(const unsigned short *red, const unsigned short *green,
                                              const unsigned short *blue);
 HOST_IMPORT(fatal) [[noreturn]] void host_fatal(const char *message);

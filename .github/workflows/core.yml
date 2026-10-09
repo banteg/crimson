@@ -98,6 +98,7 @@ jobs:
           node crimson-core/checks/game_session.mjs --ranked --quest --seed 1 "$(fresh)"
           node crimson-core/checks/game_replay_read.mjs "$(fresh)"
           node crimson-core/checks/game_watch.mjs "$(fresh)"
+          node crimson-core/checks/game_seek.mjs "$(fresh)"
           node crimson-core/checks/game_online.mjs "$(fresh)"
           uv run --no-sync python crimson-core/checks/game_check.py --live "$(fresh)"
 

@@ -53,6 +53,7 @@ nav = [
       { "Leaderboard identity" = "rewrite/leaderboard-identity.md" },
       { "Bots and moderation" = "rewrite/bots.md" },
       { "Watching replays" = "rewrite/watch-replays.md" },
+      { "Replay viewer" = "rewrite/replay-viewer.md" },
       { "Quest identifiers" = "rewrite/quest-identifiers.md" },
       { "CDT trace format" = "rewrite/cdt-trace-format.md" },
       { "RNG caller mapping workflow" = "rewrite/rng-caller-mapping-workflow.md" },
