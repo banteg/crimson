@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+import msgspec
+
 from ..game_modes import GameMode
 from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
@@ -230,6 +232,17 @@ def perk_selection_open_choices(
     return perk_selection_prepared_choices(state)
 
 
+class PerkPick(msgspec.Struct, frozen=True):
+    """A pick as the perk menu offered it: the visible choices in the menu's order and the one chosen."""
+
+    offered: tuple[PerkId, ...]
+    chosen: int
+
+    @property
+    def perk_id(self) -> PerkId:
+        return self.offered[self.chosen]
+
+
 def perk_selection_pick(
     state: GameplayState,
     players: list[PlayerState],
@@ -238,7 +251,7 @@ def perk_selection_pick(
     game_mode: GameMode,
     dt: float,
     creatures: Sequence[CreatureState],
-) -> PerkId | None:
+) -> PerkPick | None:
     """Pick a perk from the current choice list and apply it.
 
     On success, decrements `pending_count` (one perk resolved) and marks the
@@ -255,9 +268,9 @@ def perk_selection_pick(
     idx = int(choice_index)
     if idx < 0 or idx >= len(choices):
         return None
-    perk_id = choices[idx]
-    perk_apply(state, players, perk_id, dt=dt, creatures=creatures)
+    pick = PerkPick(offered=tuple(choices), chosen=idx)
+    perk_apply(state, players, pick.perk_id, dt=dt, creatures=creatures)
     assert int(perk_state.pending_count) > 0, "picked perk must leave a pending perk to resolve"
     perk_state.pending_count -= 1
     perk_state.choices_dirty = True
-    return perk_id
+    return pick

@@ -75,6 +75,9 @@ def _score_uni_num_from_rand(rand_value: int) -> int:
 
 class HighScoreRecord(msgspec.Struct):
     data: bytearray
+    # The leaderboard run a received record shows (its replay is the site's /runs/<run>.crd); kept in memory only,
+    # never in the record's bytes.
+    run: str = ""
 
     @classmethod
     def blank(cls, *, rng: CrandLike | None = None, rand_value: int | None = None) -> HighScoreRecord:
@@ -96,7 +99,7 @@ class HighScoreRecord(msgspec.Struct):
         return cls(data=bytearray(data))
 
     def copy(self) -> HighScoreRecord:
-        return HighScoreRecord(data=bytearray(self.data))
+        return HighScoreRecord(data=bytearray(self.data), run=self.run)
 
     def name(self) -> str:
         raw = bytes(self.data[:NAME_SIZE])
@@ -217,11 +220,13 @@ class HighScoreRecord(msgspec.Struct):
         struct.pack_into("<I", self.data, 0x38, int(value) & 0xFFFFFFFF)
 
     @property
-    def reserved(self) -> int:
+    def replay_number(self) -> int:
+        """The run's replay, `replays/<n>-<mode>.crd` (crimson.replay.library); 0 for none. The original reserved
+        these bytes and never read them; its duplicate check leaves them out."""
         return int(struct.unpack_from("<I", self.data, 0x3C)[0])
 
-    @reserved.setter
-    def reserved(self, value: int) -> None:
+    @replay_number.setter
+    def replay_number(self, value: int) -> None:
         struct.pack_into("<I", self.data, 0x3C, int(value) & 0xFFFFFFFF)
 
     @property

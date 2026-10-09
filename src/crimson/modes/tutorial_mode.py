@@ -70,9 +70,6 @@ class TutorialMode(BaseGameplayMode):
         self._replay_recorder = None
         super().close()
 
-    def _replay_output_basename(self, *, stamp: str, replay) -> str:
-        _ = replay
-        return f"tutorial_{stamp}"
 
     def _handle_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):

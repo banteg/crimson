@@ -11,6 +11,7 @@ from ..camera import camera_update_for_players
 from ..game_modes import GameMode
 from ..perks.availability import prepare_perk_availability
 from ..perks.selection import (
+    PerkPick,
     perk_selection_pick,
 )
 from ..rng_caller_static import RngCallerStatic
@@ -49,6 +50,8 @@ class DeterministicSessionTick(msgspec.Struct):
     save_status: bool = False
     # Set on the tick that ends the run; a valid replay ends on this tick.
     outcome: RunOutcome | None = None
+    # The perks picked before this tick, as the menu offered them.
+    perk_picks: tuple[PerkPick, ...] = ()
 
 
 class IllegalCommandError(ValueError):
@@ -175,7 +178,7 @@ class DeterministicSession(msgspec.Struct):
         if all_players_dead(self.world.players):
             raise IllegalCommandError(f"{name} while every player is dead")
 
-    def apply_command(self, command: GameCommand, *, dt: float) -> SfxId | None:
+    def apply_command(self, command: GameCommand, *, dt: float) -> PerkPick:
         match command:
             case PerkPickCommand(choice_index=choice_index):
                 self._require_perk_command_allowed("perk_pick")
@@ -191,10 +194,9 @@ class DeterministicSession(msgspec.Struct):
                 )
                 if picked is None:
                     raise IllegalCommandError(f"perk_pick choice_index={int(choice_index)} is not an offered choice")
-                return SfxId.UI_BONUS
+                return picked
             case _:
                 raise RuntimeError(f"unhandled command type: {type(command).__name__}")
-        return None
 
     def step_tick(
         self,
@@ -204,6 +206,7 @@ class DeterministicSession(msgspec.Struct):
         commands: Sequence[GameCommand] | None = None,
     ) -> DeterministicSessionTick:
         post_apply_sfx: list[SfxId] = []
+        perk_picks: list[PerkPick] = []
         typo_commands: list[TypoCommand] = []
         open_perk_menu = False
         # The perk screen pauses the game: a pick comes right after the menu opened, and a tick without one is Cancel.
@@ -214,9 +217,8 @@ class DeterministicSession(msgspec.Struct):
                     if not menu_open:
                         raise IllegalCommandError("perk_pick without an open perk menu")
                     menu_open = False
-                    sfx = self.apply_command(command, dt=dt)
-                    if sfx is not None:
-                        post_apply_sfx.append(sfx)
+                    perk_picks.append(self.apply_command(command, dt=dt))
+                    post_apply_sfx.append(SfxId.UI_BONUS)
                 case PerkMenuOpenCommand():
                     # Live play requests the menu only while it may open.
                     self._require_perk_command_allowed("perk_menu_open")
@@ -277,6 +279,7 @@ class DeterministicSession(msgspec.Struct):
             timing=timing,
             events=events,
             presentation=presentation,
+            perk_picks=tuple(perk_picks),
         )
         self.elapsed_ms = elapsed_before_ms + dt_sim_ms
 

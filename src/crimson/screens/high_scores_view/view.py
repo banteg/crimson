@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from concurrent.futures import Future
+from pathlib import Path
+
 from crimson.game_states import GameStateId
 from crimson.quests.level import QuestLevel
-from crimson.screens.actions import Route, ScreenAction, StartRun
+from crimson.screens.actions import Route, ScreenAction, StartRun, WatchReplay
 from crimson.ui.animation import ui_transition_alpha
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_sign
@@ -16,13 +19,13 @@ from grim.sfx_map import SfxId
 
 from ...game.types import GameState
 from ...game_modes import GameMode
-from ...leaderboard import SyncStatus
+from ...leaderboard import LeaderboardError, SyncStatus
 from ...persistence.highscores import HighScoreRecord
 from ...ui.button import UiButtonState, button_update
 from ...ui.checkbox import UiCheckbox, ui_checkbox_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_update
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
-from ...ui.scrollbar import UiScrollbar, ui_scrollbar_update
+from ...ui.scrollbar import UiScrollbar, ui_scrollbar_row_under_mouse, ui_scrollbar_update
 from ...ui.text_input import UiTextInput, ui_text_input_focus, update_name_entry_text
 from ..actions import ShowScores
 from ..assets import require_runtime_resources
@@ -32,6 +35,7 @@ from ..high_scores_layout import (
     HS_BUTTON_STEP_Y,
     HS_BUTTON_X,
     HS_BUTTON_Y0,
+    HS_CARD_WATCH_OFFSET,
     HS_HARDCORE_CHECKBOX_OFFSET,
     HS_QUEST_ARROW_X,
     HS_QUEST_ARROW_Y,
@@ -51,7 +55,11 @@ from ..menu_screen import MenuScreen
 from ..quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from .main_panel import draw_main_panel
 from .records import load_records, online_board
-from .right_panel import draw_right_panel
+from .right_panel import draw_right_panel, local_card_pos
+from .watch import WatchTarget, local_watch_target, replay_watch_target
+
+# A board run's card while its replay downloads; looked at again every frame until the download ends.
+_DOWNLOADING = WatchTarget(None, "Downloading the run...")
 
 DATE_FILTER_ITEMS = ("Best of all time", "Best of month", "Best of week", "Best of day")
 # Native lists two players; the port plays up to four.
@@ -88,6 +96,13 @@ class HighScoresView(MenuScreen):
         self.game_mode_list = UiListWidget()
         self.internet_checkbox = UiCheckbox("Show internet scores")
         self.hardcore_checkbox = UiCheckbox("Hardcore")
+        # A clicked row keeps its card shown, with its Watch button; clicking it again lets it go.
+        self.pinned: int | None = None
+        self._watch_target: tuple[int, WatchTarget | None] | None = None
+        self.watch_button = UiButtonState("Watch", force_wide=False)
+        self._watch_action: ScreenAction | None = None
+        # The board run whose replay is downloading.
+        self._download: tuple[str, Future[Path | None]] | None = None
 
     def open(self) -> None:
         super().open()
@@ -106,8 +121,58 @@ class HighScoresView(MenuScreen):
         self._sync_seen = SyncStatus.IDLE if leaderboard is None else leaderboard.sync_status
 
         self._close_lists()
+        self.pinned = None
+        self._watch_target = None
+        self._watch_action = None
 
         self._reload_records()
+
+    def take_action(self) -> ScreenAction | None:
+        # Watch opens the replay at once, over this screen, which resumes as it was.
+        if self._watch_action is not None:
+            action, self._watch_action = self._watch_action, None
+            return action
+        return super().take_action()
+
+    def watch_target(self) -> WatchTarget | None:
+        """The pinned row's replay, or why it does not play: a local run's by its number, a board run's downloaded.
+        Read once per pin, and each frame while a download runs."""
+        pinned = self.pinned
+        if pinned is None or not 0 <= pinned < len(self._records):
+            return None
+        if self._watch_target is not None and self._watch_target[0] == pinned:
+            return self._watch_target[1]
+        record = self._records[pinned]
+        replays = self.state.base_dir / "replays"
+        target = local_watch_target(replays, record)
+        # A run the board holds plays from its replay there when the local one is gone.
+        if (target is None or target.replay is None) and record.run:
+            target = self._board_watch_target(record.run, replays / "online")
+        if target is not _DOWNLOADING:
+            self._watch_target = (pinned, target)
+        return target
+
+    def _board_watch_target(self, run: str, replay_dir: Path) -> WatchTarget | None:
+        leaderboard = self.state.leaderboard
+        if leaderboard is None:
+            return None
+        if self._download is None or self._download[0] != run:
+            try:
+                self._download = (run, leaderboard.fetch_replay(run, replay_dir))
+            except LeaderboardError:
+                return WatchTarget(None, "Could not download this run")
+        future = self._download[1]
+        if not future.done():
+            return _DOWNLOADING
+        try:
+            path = future.result()
+        except OSError:
+            # The next pin tries again.
+            self._download = None
+            return WatchTarget(None, "Could not download this run")
+        if path is None:
+            return WatchTarget(None, "This run is no longer on the leaderboard")
+        return replay_watch_target(path)
 
     def close(self) -> None:
         super().close()
@@ -230,16 +295,40 @@ class HighScoresView(MenuScreen):
             self._begin_close_transition(Route.BACK)
 
         # Native only runs the right panel's widgets while no score card covers them.
-        if self.score_scroll.hovered_index == -1 and self._request.highlight_rank is None:
+        if self.score_scroll.hovered_index == -1 and self._request.highlight_rank is None and self.pinned is None:
             self._update_right_panel_widgets(right_top_left=right_panel_top_left, resources=resources)
+        elif self.score_scroll.hovered_index == -1 and self.pinned is not None:
+            target = self.watch_target()
+            card = local_card_pos(self, right_panel_top_left)
+            if (
+                target is not None
+                and target.replay is not None
+                and button_update(
+                    resources,
+                    self.watch_button,
+                    focus=focus,
+                    pos=card + HS_CARD_WATCH_OFFSET,
+                    dt_ms=dt_ms,
+                    mouse=mouse,
+                    click=click,
+                )
+            ):
+                if self.state.audio is not None:
+                    play_sfx(self.state.audio.sfx, SfxId.UI_BUTTONCLICK)
+                self._watch_action = WatchReplay(target.replay)
 
     def _update_score_scroll(self, left_panel_top_left: Vec2, *, mouse: rl.Vector2, click: bool) -> None:
-        """`highscore_screen`'s `ui_scrollbar_update` over the scores; the port adds Home/End."""
+        """`highscore_screen`'s `ui_scrollbar_update` over the scores; the port adds Home/End and pinning a row."""
         bar = self.score_scroll
+        list_pos = left_panel_top_left + Vec2(HS_SCORE_FRAME_X, HS_SCORE_FRAME_Y)
+        row = ui_scrollbar_row_under_mouse(bar, list_pos, Vec2.from_xy(mouse))
+        if click and row != -1:
+            self.pinned = None if self.pinned == row else row
+            self._watch_target = None
         ui_scrollbar_update(
             self.state.focus,
             bar,
-            left_panel_top_left + Vec2(HS_SCORE_FRAME_X, HS_SCORE_FRAME_Y),
+            list_pos,
             mouse=Vec2.from_xy(mouse),
             click=click,
             down=rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT),
@@ -311,6 +400,8 @@ class HighScoresView(MenuScreen):
         ):
             leaderboard.sync(board)
         self._records = load_records(self.state, self._request)
+        self.pinned = None
+        self._watch_target = None
         items = []
         for rank, record in enumerate(self._records, start=1):
             flags = record.flags

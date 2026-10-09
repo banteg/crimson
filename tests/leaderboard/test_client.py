@@ -118,7 +118,7 @@ def test_update_scores_sends_waiting_runs_then_receives_the_board(tmp_path, repl
     _finish(offline)
     score = {
         "name": "banteg", "score": 749, "elapsed_ms": 30000, "experience": 749, "most_used_weapon_id": 1,
-        "shots_fired": 90, "shots_hit": 60, "kills": 40, "accepted_at": 1_791_000_000_000,
+        "shots_fired": 90, "shots_hit": 60, "kills": 40, "accepted_at": 1_791_000_000_000, "run": "d" * 64,
     }
     service = _Service(201, scores=[score])
     leaderboard = Leaderboard(tmp_path, url=_URL, transport=service)
@@ -129,7 +129,7 @@ def test_update_scores_sends_waiting_runs_then_receives_the_board(tmp_path, repl
     assert [url.rsplit("/", 1)[1] for url, _body in service.calls] == ["runs", "scores"]
     assert service.calls[1][1] == {"board": "survival", "quest": ""}
     assert leaderboard.sync_status == SyncStatus.DONE
-    assert leaderboard.scores[("survival", "")] == [OnlineScore(**score)]
+    assert leaderboard.scores[("survival", "")] == [msgspec.convert(score, OnlineScore)]
     assert leaderboard.waiting == 0
 
 
@@ -212,3 +212,23 @@ def test_without_a_service_runs_stay_on_the_machine(tmp_path, replay) -> None:
     assert leaderboard.waiting == 1
     with pytest.raises(LeaderboardError):
         leaderboard.login().result()
+
+
+def test_a_board_runs_replay_downloads_once_from_the_site_and_a_gone_one_is_none(tmp_path) -> None:
+    run, gone = "a" * 64, "b" * 64
+    requested: list[str] = []
+
+    def download(url: str) -> bytes | None:
+        requested.append(url)
+        return b"replay" if url.endswith(f"/{run}.crd") else None
+
+    leaderboard = Leaderboard(tmp_path, url=_URL, transport=_Service(201), download=download)
+    replay_dir = tmp_path / "replays" / "online"
+
+    assert leaderboard.fetch_replay(run, replay_dir).result() == replay_dir / f"{run}.crd"
+    assert leaderboard.fetch_replay(run, replay_dir).result() == replay_dir / f"{run}.crd"
+    assert leaderboard.fetch_replay(gone, replay_dir).result() is None
+    assert requested == [f"https://crimson.test/runs/{run}.crd", f"https://crimson.test/runs/{gone}.crd"]
+    assert (replay_dir / f"{run}.crd").read_bytes() == b"replay"
+    with pytest.raises(LeaderboardError):
+        leaderboard.fetch_replay("../escape", replay_dir)

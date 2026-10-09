@@ -13,8 +13,10 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import http.client
 import json
 import os
+import re
 import urllib.error
 import urllib.request
 from collections.abc import Callable
@@ -29,7 +31,7 @@ import msgspec
 from grim.atomic_write import atomic_write_bytes
 
 from .. import __version__
-from ..replay.codec import encode_replay_payload, zstd_pack
+from ..replay.codec import MAX_REPLAY_FILE_BYTES, encode_replay_payload, zstd_pack
 from ..replay.types import Replay
 from .identity import Identity
 
@@ -39,6 +41,8 @@ RETRY_INTERVAL_S = 600.0
 _TIMEOUT_S = 10.0
 
 type Transport = Callable[[str, dict[str, Any]], tuple[int, dict[str, Any]]]
+type Download = Callable[[str], bytes | None]
+_RUN_ID = re.compile(r"[0-9a-f]{64}")
 
 
 class LeaderboardError(OSError):
@@ -64,6 +68,24 @@ def post_json(url: str, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
             return response.status, _json_object(response.read())
     except urllib.error.HTTPError as exc:
         return exc.code, _json_object(exc.read())
+
+
+def get_bytes(url: str) -> bytes | None:
+    """GET a replay file's bytes, at most a replay file's size; None when the service has no such file. Raises
+    LeaderboardError when it is unreachable, fails or answers more."""
+    request = urllib.request.Request(url, headers={"User-Agent": f"crimsonland/{__version__}"})
+    try:
+        with urllib.request.urlopen(request, timeout=_TIMEOUT_S) as response:
+            data = response.read(MAX_REPLAY_FILE_BYTES + 1)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return None
+        raise LeaderboardError(f"HTTP {exc.code}") from exc
+    except (OSError, http.client.HTTPException) as exc:
+        raise LeaderboardError(str(exc)) from exc
+    if len(data) > MAX_REPLAY_FILE_BYTES:
+        raise LeaderboardError(f"{url} is larger than a replay")
+    return data
 
 
 def _json_object(data: bytes) -> dict[str, Any]:
@@ -93,7 +115,8 @@ class SyncStatus(IntEnum):
 
 class OnlineScore(msgspec.Struct, frozen=True):
     """A verified board's run with a high score record's fields; `score` is the board's (experience, or a quest's
-    final time) and `accepted_at` is in Unix milliseconds."""
+    final time) and `accepted_at` is in Unix milliseconds. `run` names its replay, empty from a service that does not
+    send it yet."""
 
     name: str
     score: int
@@ -104,6 +127,7 @@ class OnlineScore(msgspec.Struct, frozen=True):
     shots_hit: int
     kills: int
     accepted_at: int
+    run: str = ""
 
 
 # A verified board: its name and, for quests, the "major.minor" level.
@@ -111,12 +135,17 @@ type Board = tuple[str, str]
 
 
 class Leaderboard:
-    def __init__(self, base_dir: Path, *, url: str | None = None, transport: Transport = post_json) -> None:
+    def __init__(
+        self, base_dir: Path, *, url: str | None = None, transport: Transport = post_json, download: Download = get_bytes,
+    ) -> None:
         self.identity = Identity.load_or_create(base_dir)
         self._outbox = base_dir / "leaderboard" / "outbox"
         self._rejected = base_dir / "leaderboard" / "rejected"
         self._url = leaderboard_url() if url is None else url
         self._transport = transport
+        self._download = download
+        # Replays download beside uploads, so watching a board's run never waits behind a long upload pass.
+        self._download_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="leaderboard-download")
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="leaderboard")
         # Logins run beside uploads, so a long upload pass never keeps the Profile button waiting.
         self._login_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="leaderboard-login")
@@ -168,9 +197,30 @@ class Leaderboard:
         """Queue a run still held under `name` and finish the started jobs; passes not yet started are dropped."""
         self._queue_held(name)
         self._login_executor.shutdown(wait=False, cancel_futures=True)
+        self._download_executor.shutdown(wait=False, cancel_futures=True)
         self._executor.shutdown(wait=True, cancel_futures=True)
         self._pending = [future for future in self._pending if not future.cancelled()]
         return self.drain()
+
+    def fetch_replay(self, run: str, replay_dir: Path) -> Future[Path | None]:
+        """Download a board run's replay into `replay_dir/<run>.crd`, once; None when the board no longer has it."""
+        if not self._url:
+            raise LeaderboardError("no leaderboard service is configured")
+        if not _RUN_ID.fullmatch(run):
+            raise LeaderboardError(f"not a run id: {run!r}")
+        return self._download_executor.submit(self._fetch_replay, run, replay_dir)
+
+    def _fetch_replay(self, run: str, replay_dir: Path) -> Path | None:
+        path = replay_dir / f"{run}.crd"
+        if path.exists():
+            return path
+        # The API is the site's /api; a run's replay is one of the site's own files.
+        data = self._download(f"{self._url.removesuffix('/api')}/runs/{run}.crd")
+        if data is None:
+            return None
+        replay_dir.mkdir(parents=True, exist_ok=True)
+        atomic_write_bytes(path, data)
+        return path
 
     def _queue_held(self, name: str) -> bool:
         replay, self._held = self._held, None

@@ -23,7 +23,7 @@ from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.level import QuestLevel
 from ..quests.types import QuestDefinition
-from ..replay import Replay, ReplayRecorder
+from ..replay import ReplayRecorder
 from ..sim.mode_updates import QuestSpawnState
 from ..sim.run_result import RunOutcome
 from ..sim.sessions import DeterministicSessionTick
@@ -97,12 +97,6 @@ class QuestMode(BaseGameplayMode):
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return float(self._quest_spawn_state.spawn_timeline_ms)
 
-    def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
-        replay_level = "" if replay.run.quest_level is None else replay.run.quest_level.text
-        level = self._quest_level.text if self._quest_level is not None else (replay_level or "quest")
-        kind = str(self._outcome.kind) if self._outcome is not None else "quest"
-        base_time_ms = int(self._quest_spawn_state.spawn_timeline_ms)
-        return f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
 
     def _finish_run(self, outcome: RunOutcome) -> None:
         self._close_run("completed" if outcome == RunOutcome.QUEST_COMPLETED else "failed")
@@ -207,7 +201,9 @@ class QuestMode(BaseGameplayMode):
                     rand_value=int(self._quest_highscore_random_tag),
                 ),
             )
-        self._save_replay()
+        # A second close finds the replay saved already.
+        if replay_number := self._save_replay():
+            self._outcome.record.replay_number = replay_number
         self.close_requested = True
 
     def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:

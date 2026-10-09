@@ -9,7 +9,7 @@ def test_blank_highscore_record_initializes_native_uni_num_from_rand_value() -> 
     record = HighScoreRecord.blank(rand_value=0x7FFF)
 
     assert record.uni_num == 0x50F
-    assert record.reserved == 0
+    assert record.replay_number == 0
 
 
 def test_ensure_date_fields_sets_native_date_week_byte() -> None:

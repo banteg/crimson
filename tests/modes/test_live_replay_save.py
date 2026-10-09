@@ -56,7 +56,7 @@ def _run_ticks(mode: BaseGameplayMode, *, ticks: int) -> None:
 
 def _saved_files(base_dir: Path) -> list[Path]:
     replays_dir = base_dir / "replays"
-    return sorted(replays_dir.iterdir()) if replays_dir.is_dir() else []
+    return sorted(path for path in replays_dir.glob("*") if not path.name.startswith(".")) if replays_dir.is_dir() else []
 
 
 def test_game_over_replay_result_is_taken_before_the_highscore_rng_draw(
@@ -82,6 +82,10 @@ def test_game_over_replay_result_is_taken_before_the_highscore_rng_draw(
 
     assert mode._game_over_active
     [replay_path] = _saved_files(tmp_path)
+    # The run's record names its replay by number.
+    assert replay_path.name == "1-rush.crd"
+    record = mode._game_over_record
+    assert record is not None and record.replay_number == 1
     replay = load_replay(replay_path.read_bytes())
     assert len(replay.ticks) == 1
     assert replay.result.outcome == RunOutcome.DEATH

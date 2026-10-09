@@ -123,6 +123,8 @@ def draw_main_panel(
     hovered_index = ui_scrollbar_row_under_mouse(view.score_scroll, list_pos, mouse)
     if hovered_index != -1:
         selected_rank = hovered_index
+    elif view.pinned is not None:
+        selected_rank = view.pinned
     if not view._records:
         draw_small_text(
             font,

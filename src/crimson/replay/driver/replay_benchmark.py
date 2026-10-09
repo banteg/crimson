@@ -13,12 +13,13 @@ from typing import Any, Literal, cast
 import msgspec
 from tqdm import tqdm
 
+from grim.audio import AudioState, shutdown_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
-from ...modes.replay_playback_mode import ReplayPlaybackMode
+from ...modes.replay_playback_mode import ReplayPlaybackMode, open_replay_audio
 from ...replay import Replay
 from ...sim.run_result import RunResult, run_result_mismatches
 from .playback_driver import PlaybackWalkObserver, build_verify_playback_driver
@@ -195,8 +196,10 @@ def run_replay_render_benchmark(
     tick_total = _tick_total(replay, max_ticks)
     planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0) + (1 if telemetry_requested else 0)
     run_bar = tqdm(total=planned_steps, unit="run", desc="render benchmark", leave=False, disable=not show_progress)
+    audio = None
     try:
         resources = load_runtime_resources(runtime_assets_dir)
+        audio = None if mute_audio else open_replay_audio(cfg, ctx, console)
 
         def _run_once(tick_desc: str, telemetry_session: RenderTelemetrySession | None = None) -> _RenderOnceResult:
             with tqdm(total=tick_total, unit="tick", desc=tick_desc, leave=False, disable=not show_progress) as bar:
@@ -207,6 +210,7 @@ def run_replay_render_benchmark(
                     console=console,
                     max_ticks=max_ticks,
                     rtx=bool(rtx),
+                    audio=audio,
                     telemetry_session=telemetry_session,
                     observer=_TickBar(bar=bar),
                 )
@@ -277,6 +281,8 @@ def run_replay_render_benchmark(
             _step_done(run_bar, "phase=telemetry")
     finally:
         run_bar.close()
+        if audio is not None:
+            shutdown_audio(audio)
         unload_runtime_resources(resources)
         if window_open:
             rl.close_window()
@@ -440,6 +446,7 @@ def _run_render_once(
     console: ConsoleState,
     max_ticks: int | None,
     rtx: bool,
+    audio: AudioState | None,
     telemetry_session: RenderTelemetrySession | None = None,
     observer: PlaybackWalkObserver | None = None,
 ) -> _RenderOnceResult:
@@ -450,6 +457,7 @@ def _run_render_once(
         console=console,
         max_ticks=max_ticks,
         rtx=bool(rtx),
+        audio=audio,
     )
     mode.open()
     try:

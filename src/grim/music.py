@@ -209,6 +209,20 @@ def play_music(state: MusicState, track_name: str, *, fade_in: bool = False) -> 
     state.active_track = track_name
 
 
+def resume_music(state: MusicState, track_name: str) -> None:
+    """Give the music back to `track_name` after something else played: a track still fading out fades back in from
+    where it is, a silent one starts again, and every other track fades out."""
+    if not state.ready or not state.enabled:
+        return
+    track = state.tracks.get(track_name)
+    if track is None or track.volume <= 0.0:
+        play_music(state, track_name)
+        return
+    for key, other in state.tracks.items():
+        other.muted = key != track_name
+    state.active_track = track_name
+
+
 def stop_music(state: MusicState) -> None:
     if not state.ready or not state.enabled:
         return

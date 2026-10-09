@@ -18,19 +18,14 @@ from .types import Replay
 
 
 class ReplaySaveJob(msgspec.Struct, frozen=True):
-    replay_dir: Path
-    base_name: str
+    path: Path
     replay: Replay
     checkpoints: ReplayCheckpoints | None = None
 
     def run(self) -> list[str]:
-        """Write the replay under the first free name, then its sidecar; returns the console lines to log."""
-        self.replay_dir.mkdir(parents=True, exist_ok=True)
-        path = self.replay_dir / f"{self.base_name}.crd"
-        counter = 1
-        while path.exists():
-            path = self.replay_dir / f"{self.base_name}_{counter}.crd"
-            counter += 1
+        """Write the replay, then its sidecar; returns the console lines to log."""
+        path = self.path
+        path.parent.mkdir(parents=True, exist_ok=True)
         try:
             dump_replay_file(path, self.replay)
         except ReplayCodecError as exc:
@@ -45,7 +40,7 @@ class ReplaySaveJob(msgspec.Struct, frozen=True):
 
 
 class ReplaySaver:
-    """Runs save jobs on one worker, in the order runs finished, so the free-name search never races.
+    """Runs save jobs on one worker, in the order runs finished.
 
     The console is not thread-safe, so the lines each job logs come back through `drain` on the main thread.
     """
