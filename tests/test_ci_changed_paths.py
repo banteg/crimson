@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.ci_changed_paths import changed_paths, relevant
+from scripts.ci_changed_paths import changed_paths, relevant, version_bump_only
 
 
 def test_docs_only_requires_all_paths_to_be_docs() -> None:
@@ -39,3 +39,37 @@ def test_rename_checks_both_old_and_new_paths(tmp_path: Path, monkeypatch: pytes
     assert set(changed_paths(base)) == {"src/a.py", "docs/a.md"}
     assert not relevant("docs-only", changed_paths(base))
     assert relevant("core", changed_paths(base))
+
+
+def test_a_release_version_bump_is_not_a_change(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    git = shutil.which("git")
+    assert git is not None
+
+    def commit(pyproject: str, lock: str) -> str:
+        (tmp_path / "pyproject.toml").write_text(pyproject)
+        (tmp_path / "uv.lock").write_text(lock)
+        subprocess.run([git, "add", "."], cwd=tmp_path, check=True)
+        subprocess.run(
+            [git, "-c", "user.name=CI", "-c", "user.email=ci@example.invalid", "commit", "-qm", "c"], cwd=tmp_path, check=True,
+        )
+        return subprocess.check_output([git, "rev-parse", "HEAD"], cwd=tmp_path, text=True).strip()
+
+    def files(version: str, dependency: str) -> tuple[str, str]:
+        pyproject = f'[project]\nname = "crimsonland"\nversion = "{version}"\ndependencies = ["{dependency}"]\n'
+        lock = (
+            f'[[package]]\nname = "crimsonland"\nversion = "{version}"\nsource = {{ editable = "." }}\n\n'
+            f'[[package]]\nname = "{dependency}"\nversion = "1.0"\nsource = {{ registry = "https://pypi.org/simple" }}\n'
+        )
+        return pyproject, lock
+
+    subprocess.run([git, "init", "-q"], cwd=tmp_path, check=True)
+    base = commit(*files("0.14.0", "msgspec"))
+    monkeypatch.chdir(tmp_path)
+
+    commit(*files("0.14.1", "msgspec"))
+    assert version_bump_only(base, "pyproject.toml")
+    assert version_bump_only(base, "uv.lock")
+
+    commit(*files("0.14.1", "zstandard"))
+    assert not version_bump_only(base, "pyproject.toml")
+    assert not version_bump_only(base, "uv.lock")
