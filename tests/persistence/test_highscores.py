@@ -102,7 +102,8 @@ def test_negative_quest_final_time_survives_saving_and_loading(tmp_path: Path) -
 @pytest.fixture(scope="module")
 def original_record_io(tmp_path_factory: pytest.TempPathFactory) -> Path:
     root = Path(__file__).resolve().parents[2]
-    cc = shutil.which("cc")
+    # Clang, as the recovered sources build: the stub headers' WINAPI is __stdcall, which GCC rejects.
+    cc = shutil.which("clang")
     assert cc is not None
     exe = tmp_path_factory.mktemp("highscore") / "highscore_record_harness"
     subprocess.run(
