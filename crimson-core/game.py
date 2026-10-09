@@ -110,6 +110,7 @@ SEAMS = (
     "gameplay_update_and_render",
     "highscore_sync_worker",
     "input_primary_just_pressed",
+    "music_play_exclusive",
     "play_time_get",
     "sfx_entry_start_playback",
     "ui_elements_update_and_render",
