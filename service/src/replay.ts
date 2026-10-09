@@ -4,7 +4,7 @@
 // the two in step.
 
 import { decompress } from "fzstd";
-import { F64, MapValue, PayloadError, readPayload, type Value } from "./msgpack";
+import { F64, MapValue, PayloadError, PayloadReader, type Value } from "./msgpack";
 
 export const REPLAY_FORMAT_VERSION = 32;
 // Each readable format's keys, in order. Format 30 had no `rules`, so its replays play under rules 1; formats before
@@ -202,29 +202,39 @@ function zstdFrame(data: Uint8Array): { windowSize: number; contentSize: number 
 }
 
 export function decodeReplay(payload: Uint8Array): Replay {
-  let wire: Value;
+  const reader = new PayloadReader(payload);
+  let replay: Replay;
   try {
-    wire = readPayload(payload);
+    replay = new Schema().replay(reader);
+    reader.finish();
   } catch (error) {
     if (error instanceof PayloadError) throw new ReplayError(`invalid replay payload: ${error.message}`);
     throw error;
   }
-  const replay = new Schema().replay(wire);
   validateReplay(replay);
   return replay;
 }
 
 // The wire shape, as msgspec decodes it: maps with every key in declared order, typed and range-checked values.
 class Schema {
-  replay(value: Value): Replay {
-    require(value instanceof MapValue, "replay must be a map");
-    const version = new Map(value.entries).get("format_version");
+  replay(reader: PayloadReader): Replay {
+    const count = reader.mapLength();
+    require(reader.value() === "format_version", "replay must start with format_version");
+    const version = reader.value();
     const names = typeof version === "number" ? REPLAY_KEYS[version] : undefined;
     require(
       names !== undefined,
       `unsupported replay format version: ${String(version)} (this build reads versions ${Object.keys(REPLAY_KEYS).join(", ")})`,
     );
-    const fields = this.fields(value, "replay", names!);
+    require(count === names.length, `replay must have exactly ${names.length} fields`);
+    const metadataNames = names.slice(0, -1);
+    const entries: [string, Value][] = [["format_version", version]];
+    for (const name of metadataNames.slice(1)) {
+      require(reader.value() === name, `replay must have ${name} in its declared position`);
+      entries.push([name, reader.value()]);
+    }
+    require(reader.value() === "ticks", "replay must end with ticks");
+    const fields = this.fields(new MapValue(entries), "replay", metadataNames);
     const format_version = this.int(fields.format_version, "format_version");
     return {
       format_version,
@@ -234,8 +244,16 @@ class Schema {
       pilot: format_version < 32 || fields.pilot === null ? null : this.pilot(fields.pilot),
       run: this.runSpec(fields.run),
       result: this.result(fields.result),
-      ticks: this.array(fields.ticks, "ticks").map((tick, i) => this.tick(tick, `ticks[${i}]`)),
+      ticks: this.ticks(reader),
     };
+  }
+
+  private ticks(reader: PayloadReader): Tick[] {
+    const count = reader.arrayLength();
+    const ticks: Tick[] = [];
+    // Convert each tick before reading the next; never retain a second full tick tree.
+    for (let tick = 0; tick < count; tick++) ticks.push(this.tick(reader.value(), `ticks[${tick}]`));
+    return ticks;
   }
 
   private recorder(value: Value): Recorder {

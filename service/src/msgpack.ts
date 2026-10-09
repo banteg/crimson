@@ -19,14 +19,7 @@ export class PayloadError extends Error {}
 // ignoreBOM keeps a leading U+FEFF in the string, as msgspec does.
 const textDecoder = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 
-export function readPayload(bytes: Uint8Array): Value {
-  const reader = new Reader(bytes);
-  const value = reader.value();
-  if (reader.offset !== bytes.length) throw new PayloadError("trailing bytes after the payload");
-  return value;
-}
-
-class Reader {
+export class PayloadReader {
   offset = 0;
   private readonly view: DataView;
 
@@ -34,12 +27,30 @@ class Reader {
     this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   }
 
+  finish(): void {
+    if (this.offset !== this.bytes.length) throw new PayloadError("trailing bytes after the payload");
+  }
+
+  arrayLength(byte = this.u8()): number {
+    if (byte >= 0x90 && byte <= 0x9f) return byte & 0x0f;
+    if (byte === 0xdc) return this.length(this.view.getUint16(this.take(2), false), 0x10);
+    if (byte === 0xdd) return this.length(this.view.getUint32(this.take(4), false), 0x10000);
+    throw new PayloadError("expected an array");
+  }
+
+  mapLength(byte = this.u8()): number {
+    if (byte >= 0x80 && byte <= 0x8f) return byte & 0x0f;
+    if (byte === 0xde) return this.length(this.view.getUint16(this.take(2), false), 0x10);
+    if (byte === 0xdf) return this.length(this.view.getUint32(this.take(4), false), 0x10000);
+    throw new PayloadError("expected a map");
+  }
+
   value(): Value {
     const byte = this.u8();
     if (byte <= 0x7f) return byte;
     if (byte >= 0xe0) return byte - 0x100;
-    if (byte >= 0x80 && byte <= 0x8f) return this.map(byte & 0x0f);
-    if (byte >= 0x90 && byte <= 0x9f) return this.array(byte & 0x0f);
+    if (byte >= 0x80 && byte <= 0x8f) return this.map(this.mapLength(byte));
+    if (byte >= 0x90 && byte <= 0x9f) return this.array(this.arrayLength(byte));
     if (byte >= 0xa0 && byte <= 0xbf) return this.str(byte & 0x1f);
     switch (byte) {
       case 0xc0:
@@ -81,13 +92,11 @@ class Reader {
       case 0xdb:
         return this.str(this.length(this.view.getUint32(this.take(4), false), 0x10000));
       case 0xdc:
-        return this.array(this.length(this.view.getUint16(this.take(2), false), 0x10));
       case 0xdd:
-        return this.array(this.length(this.view.getUint32(this.take(4), false), 0x10000));
+        return this.array(this.arrayLength(byte));
       case 0xde:
-        return this.map(this.length(this.view.getUint16(this.take(2), false), 0x10));
       case 0xdf:
-        return this.map(this.length(this.view.getUint32(this.take(4), false), 0x10000));
+        return this.map(this.mapLength(byte));
       case 0xca:
         throw new PayloadError("float32 instead of float64");
       default:
