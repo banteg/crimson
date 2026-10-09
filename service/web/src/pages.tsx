@@ -452,6 +452,9 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                           <Show when={run.category === "bot"}>
                             <span class="tag">bot</span>
                           </Show>
+                          <Show when={run.retired}>
+                            {(reason) => <span class="tag" title={reason()}>retired</span>}
+                          </Show>
                         </td>
                         <td class="n">
                           <a class="run" href={`/runs/${run.id}`}>
@@ -728,7 +731,10 @@ const PRIVACY: Screen = {
           </li>
         </ul>
         <h3>What is public</h3>
-        <p>Boards, profiles and replays: your names, key fingerprint, linked handles and avatars, run results, and the replay files, which anyone can download.</p>
+        <p>
+          Boards, profiles and replays: your names, key fingerprint, linked handles and avatars, run results, and the replay files, which
+          anyone can download. A replay file carries the name you typed for its run, so a name a moderator hides still shows in the file.
+        </p>
         <h3>Where it lives</h3>
         <p>
           Cloudflare hosts the site and stores the data (Workers, D1 for the database, R2 for replay files). Cloudflare handles the service's

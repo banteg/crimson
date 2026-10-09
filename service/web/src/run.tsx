@@ -618,8 +618,13 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
         <p class="muted">
           {new Date(detail.accepted_at).toISOString().slice(0, 10)} · {detail.recorder.client} {detail.recorder.version} · {detail.recorder.platform}
         </p>
+        <Show when={detail.retired}>
+          {(reason) => <p class="muted">Retired from the boards: {reason()}. The game no longer plays it as recorded.</p>}
+        </Show>
         <p class="buttons">
-          <GameButton label="Watch" href={`/play/?watch=${detail.id}`} native />
+          <Show when={!detail.retired}>
+            <GameButton label="Watch" href={`/play/?watch=${detail.id}`} native />
+          </Show>
           <GameButton label="Download replay" href={`/runs/${detail.id}.crd`} native />
           <GameButton label="Board" href={boardPath(detail)} />
         </p>

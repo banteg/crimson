@@ -34,6 +34,20 @@ Each board ranks human runs and bot runs apart, under these same rules. A run
 is a bot run when its replay declares a pilot or a moderator puts it there; see
 [bots and moderation](bots.md).
 
+## When the verifier changes
+
+A run stays on the boards while the current verifier still plays it to its
+result. Before a release that changes the simulation or what a replay may do,
+`npm run reverify` in `service/` replays every stored run through the new build,
+as the service verifies an upload. A run that no longer verifies is retired with
+the reason (`runs.retired`, set by a migration): it leaves the boards and the
+game's scores, keeps its page, which says why, and its replay stays
+downloadable.
+
+0.14 retired nine bot runs and no human one: six picked a perk from a menu left
+open, while a pick now comes with the tick right after the menu opened, and
+three passed 16,777,216 experience, which now counts exactly as in the original.
+
 ## The ranked profile
 
 A ranked run starts from the same profile whatever the player's save holds, so
