@@ -48,6 +48,7 @@ def _online_record(score: OnlineScore, request: ScoreQuery, *, hardcore: bool) -
     record.ensure_date_fields(dt.datetime.fromtimestamp(score.accepted_at / 1000, tz=dt.UTC).astimezone().date())
     record.flags = RECEIVED_FLAG
     record.hardcore_marker = HARDCORE_MARKER if hardcore and request.game_mode_id == GameMode.QUESTS else 0
+    record.run = score.run
     return record
 
 
@@ -56,15 +57,20 @@ def _run_key(record: HighScoreRecord) -> tuple[str, int, int]:
 
 
 def _with_online(local: list[HighScoreRecord], online: list[HighScoreRecord]) -> list[HighScoreRecord]:
-    """The local records and the received ones; a local run the board holds turns green instead of showing twice."""
-    received = {_run_key(record): record for record in online}
+    """The local records and the received ones; a local run the board holds turns green instead of showing twice, and
+    takes the board's run id."""
+    received: dict[tuple[str, int, int], list[HighScoreRecord]] = {}
+    for record in online:
+        received.setdefault(_run_key(record), []).append(record)
     merged = []
     for record in local:
-        if received.pop(_run_key(record), None) is not None:
+        if same := received.get(_run_key(record)):
+            board_record = same.pop(0)
             record = record.copy()
             record.flags |= RECEIVED_FLAG
+            record.run = board_record.run
         merged.append(record)
-    return merged + list(received.values())
+    return merged + [record for same in received.values() for record in same]
 
 
 def load_records(state: GameState, request: ScoreQuery) -> list[HighScoreRecord]:

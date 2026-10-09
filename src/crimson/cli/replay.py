@@ -359,10 +359,12 @@ def cmd_replay_play(
 ) -> None:
     """Play back a recorded replay."""
     from grim.app import RunViewHooks, run_view
+    from grim.audio import shutdown_audio
     from grim.view import ViewContext
 
-    from ..modes.replay_playback_mode import ReplayPlaybackMode
+    from ..modes.replay_playback_mode import ReplayPlaybackMode, open_replay_audio
     from ..replay import ReplayCodecError, load_replay_file, warn_on_game_version_mismatch
+    from ..replay.versioning import require_playable_rules
     from ..runtime_boot import boot_runtime
     from ..runtime_resources_view import RuntimeResourcesView
 
@@ -372,6 +374,7 @@ def cmd_replay_play(
     replay_path = _require_replay_path(replay_file, base_dir=base_dir)
     try:
         replay = load_replay_file(replay_path)
+        require_playable_rules(replay)
         warn_on_game_version_mismatch(replay, action="playback")
     except ReplayCodecError as exc:
         typer.echo(f"replay playback failed: {exc}", err=True)
@@ -379,17 +382,21 @@ def cmd_replay_play(
     boot = boot_runtime(base_dir, assets_dir, width=width, height=height)
 
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
-    view = ReplayPlaybackMode(ctx, replay=replay, config=boot.config, console=boot.console)
+    audio = open_replay_audio(boot.config, ctx, boot.console)
+    view = ReplayPlaybackMode(ctx, replay=replay, config=boot.config, console=boot.console, audio=audio)
     title = f"Replay — {replay_path.name}"
 
-    run_view(
-        RuntimeResourcesView(view, assets_dir=assets_dir),
-        width=boot.width,
-        height=boot.height,
-        title=title,
-        fps=fps,
-        hooks=RunViewHooks(should_close=view.should_close, consume_screenshot_request=view.consume_screenshot_request),
-    )
+    try:
+        run_view(
+            RuntimeResourcesView(view, assets_dir=assets_dir),
+            width=boot.width,
+            height=boot.height,
+            title=title,
+            fps=fps,
+            hooks=RunViewHooks(should_close=view.should_close, consume_screenshot_request=view.consume_screenshot_request),
+        )
+    finally:
+        shutdown_audio(audio)
 
 
 @replay_app.command("list")

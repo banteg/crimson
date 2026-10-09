@@ -6,6 +6,7 @@ from typing import cast
 
 import pytest
 
+import grim.audio as grim_audio
 from crimson.replay.driver.replay_render import (
     ReplayRenderError,
     _build_audio_sync_filter,
@@ -68,6 +69,8 @@ def test_capture_audio_track_counts_captured_ticks(mocker, tmp_path: Path) -> No
             return
 
     mocker.patch.object(replay_playback_mode_mod, "ReplayPlaybackMode", _FakeMode)
+    mocker.patch.object(replay_playback_mode_mod, "open_replay_audio", return_value=object())
+    mocker.patch.object(grim_audio, "shutdown_audio")
 
     class _FakeCapture:
         def __init__(self, *, rl, output_path: Path, sample_rate: int, channels: int) -> None:

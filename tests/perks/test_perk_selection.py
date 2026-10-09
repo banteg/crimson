@@ -6,6 +6,8 @@ from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.perks.selection import (
     PERK_ID_MAX,
+    PerkPick,
+    perk_choice_count,
     perk_generate_choices,
     perk_select_random,
     perk_selection_open_choices,
@@ -34,7 +36,7 @@ def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:
 
     picked = perk_selection_pick(state, [player], 0, game_mode=GameMode.QUESTS, dt=0.0, creatures=[])
 
-    assert picked == PerkId.INSTANT_WINNER
+    assert picked is not None and picked.perk_id == PerkId.INSTANT_WINNER
     assert perk_state.pending_count == 0
     assert perk_state.choices_dirty is True
     assert state.perks[int(PerkId.INSTANT_WINNER)] == 1
@@ -54,7 +56,7 @@ def test_perk_selection_pick_infernal_contract_adds_pending_perks() -> None:
 
     picked = perk_selection_pick(state, [player], 0, game_mode=GameMode.QUESTS, dt=0.0, creatures=[])
 
-    assert picked == PerkId.INFERNAL_CONTRACT
+    assert picked is not None and picked.perk_id == PerkId.INFERNAL_CONTRACT
     assert player.level == 4
     assert player.health == f32(0.1)
     assert perk_state.pending_count == 3
@@ -146,7 +148,8 @@ def test_perk_selection_pick_prepares_choices_when_dirty() -> None:
 
     picked = perk_selection_pick(state, world.players, 0, game_mode=GameMode.QUESTS, dt=0.0, creatures=[])
 
-    assert picked == expected[0]
+    # The pick carries the choices the menu showed, in its order.
+    assert picked == PerkPick(offered=tuple(expected[: perk_choice_count(expected_world.state.perks)]), chosen=0)
     assert state.perks[int(expected[0])] == 1
 
 
@@ -182,7 +185,7 @@ def test_perk_selection_pick_thick_skinned_scales_every_player_health() -> None:
 
     picked = perk_selection_pick(state, [p1, p2], 0, game_mode=GameMode.QUESTS, dt=0.0, creatures=[])
 
-    assert picked == PerkId.THICK_SKINNED
+    assert picked is not None and picked.perk_id == PerkId.THICK_SKINNED
     assert state.perks[int(PerkId.THICK_SKINNED)] == 1
     assert_float_close(p1.health, 60.0)
     assert_float_close(p2.health, 40.0)

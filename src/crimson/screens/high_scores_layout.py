@@ -63,6 +63,10 @@ HS_BUTTON_STEP_Y = 33.0
 
 HS_BACK_BUTTON_X = 400.0  # x0=302
 HS_BACK_BUTTON_Y = 301.0  # y0=495
+# A pinned card's Watch button, or the line saying why its run does not play, below the card.
+HS_CARD_WATCH_OFFSET = Vec2(0.0, 150.0)
+# The note beside the Watch button.
+HS_CARD_WATCH_NOTE_DX = 92.0
 
 # Left score-list frame (white border + black fill).
 # state_14: [112,295]..[362,459] and inner [113,296]..[361,458]

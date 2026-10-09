@@ -110,7 +110,7 @@ def test_replay_step_once_eos_is_terminal_not_stall(mocker, replay_playback_view
     view._tick_index = 2  # already at tick_limit
     view._max_ticks = None
 
-    _set_private(view, "_driver", SimpleNamespace())
+    _set_private(view, "_driver", SimpleNamespace(complete=False))
     _set_private(view, "_survival", object())
 
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
