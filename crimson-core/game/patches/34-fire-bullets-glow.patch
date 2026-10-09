@@ -1,0 +1,12 @@
+Original bug 34: the Fire Bullets glow follows the last projectile slot. The fix tests the type of the projectile it draws.
+--- a/projectile_render.cpp
++++ b/projectile_render.cpp
+@@ -1065,7 +1065,7 @@
+          projectile_index < PROJECTILE_POOL_CAPACITY;
+          ++projectile_index) {
+         if (projectile_pool[projectile_index].active
+-            && projectile->pos.tail.vy.type_id
++            && (portable_preserve_bugs ? projectile : &projectile_pool[projectile_index])->pos.tail.vy.type_id
+                 == PROJECTILE_TYPE_FIRE_BULLETS
+             && projectile_pool[projectile_index].pos.tail.vy.life_timer == 0.4f) {
+             grim_interface_ptr->grim_set_rotation(projectile_pool[projectile_index].angle);

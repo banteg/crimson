@@ -1,0 +1,33 @@
+Original bug 28: bullet heads and plasma cores are never visible. The fix samples the whole bullet sprite and draws heads on bullets and pellets only.
+--- a/projectile_render.cpp
++++ b/projectile_render.cpp
+@@ -1087,6 +1087,9 @@
+     grim_interface_ptr->grim_set_color(
+         0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);
+     grim_interface_ptr->grim_bind_texture(projectile_bullet_texture, 0);
++    if (!portable_preserve_bugs) {
++        grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
++    }
+     grim_interface_ptr->grim_begin_batch();
+     for (projectile_index = 0;
+          projectile_index < PROJECTILE_POOL_CAPACITY;
+@@ -1100,6 +1103,19 @@
+         if (type_id == PROJECTILE_TYPE_PLASMA_RIFLE
+             || type_id == PROJECTILE_TYPE_PLASMA_MINIGUN
+             || type_id == PROJECTILE_TYPE_PULSE_GUN) {
++            continue;
++        }
++        if (!portable_preserve_bugs
++            && (type_id == PROJECTILE_TYPE_ION_RIFLE
++                || type_id == PROJECTILE_TYPE_ION_MINIGUN
++                || type_id == PROJECTILE_TYPE_ION_CANNON
++                || type_id == PROJECTILE_TYPE_SHRINKIFIER
++                || type_id == PROJECTILE_TYPE_BLADE_GUN
++                || type_id == PROJECTILE_TYPE_SPIDER_PLASMA
++                || type_id == PROJECTILE_TYPE_PLASMA_CANNON
++                || type_id == PROJECTILE_TYPE_SPLITTER_GUN
++                || type_id == PROJECTILE_TYPE_PLAGUE_SPREADER
++                || type_id == PROJECTILE_TYPE_FIRE_BULLETS)) {
+             continue;
+         }
+         grim_interface_ptr->grim_set_rotation(projectile->angle);

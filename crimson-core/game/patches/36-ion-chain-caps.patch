@@ -1,0 +1,66 @@
+Original bug 36: ion chain arcs end in a hard cut. The fix closes each strip with end caps cut from the glow's halves.
+--- a/projectile_render.cpp
++++ b/projectile_render.cpp
+@@ -99,6 +99,40 @@
+ };
+ 
+ extern "C" projectile_render_vec2_t camera_offset;
++
++// The end caps of an ion strip from point0/point1 at the shot to point2/point3
++// at the creature: the glow's left half before the shot, its right half past
++// the creature, each one half-width long. The strip's UVs are restored after.
++static void projectile_render_ion_caps(
++    projectile_render_vec2_t point0,
++    projectile_render_vec2_t point1,
++    projectile_render_vec2_t point2,
++    projectile_render_vec2_t point3,
++    projectile_render_vec2_t side,
++    float half)
++{
++    projectile_render_vec2_t along(side.y * half, -side.x * half);
++    projectile_render_vec2_t before0 = point0 - along;
++    projectile_render_vec2_t before1 = point1 - along;
++    projectile_render_vec2_t past2 = point2 + along;
++    projectile_render_vec2_t past3 = point3 + along;
++    grim_interface_ptr->grim_set_uv_point(0, 0.5f, 0.0f);
++    grim_interface_ptr->grim_set_uv_point(1, 0.5f, 0.25f);
++    grim_interface_ptr->grim_set_uv_point(2, 0.625f, 0.25f);
++    grim_interface_ptr->grim_set_uv_point(3, 0.625f, 0.0f);
++    grim_interface_ptr->grim_draw_quad_points(
++        before0.x, before0.y, before1.x, before1.y,
++        point1.x, point1.y, point0.x, point0.y);
++    grim_interface_ptr->grim_set_uv_point(0, 0.625f, 0.0f);
++    grim_interface_ptr->grim_set_uv_point(1, 0.625f, 0.25f);
++    grim_interface_ptr->grim_set_uv_point(2, 0.75f, 0.25f);
++    grim_interface_ptr->grim_set_uv_point(3, 0.75f, 0.0f);
++    grim_interface_ptr->grim_draw_quad_points(
++        point3.x, point3.y, point2.x, point2.y,
++        past2.x, past2.y, past3.x, past3.y);
++    grim_interface_ptr->grim_set_uv_point(2, 0.625f, 0.25f);
++    grim_interface_ptr->grim_set_uv_point(3, 0.625f, 0.0f);
++}
+ 
+ #define camera_offset_x camera_offset.x
+ #define camera_offset_y camera_offset.y
+@@ -935,6 +969,10 @@
+                         point2.y,
+                         point3.x,
+                         point3.y);
++                    if (!portable_preserve_bugs) {
++                        projectile_render_ion_caps(
++                            point0, point1, point2, point3, direction, scale * 10.0f);
++                    }
+                     point2 += direction * scale * 4.0f;
+                     point3 -= direction * scale * 4.0f;
+                     point0 -= direction * scale * 4.0f;
+@@ -948,6 +986,10 @@
+                         point2.y,
+                         point3.x,
+                         point3.y);
++                    if (!portable_preserve_bugs) {
++                        projectile_render_ion_caps(
++                            point0, point1, point2, point3, direction, scale * 14.0f);
++                    }
+                     grim_interface_ptr->grim_set_atlas_frame(4, 2);
+                     grim_interface_ptr->grim_draw_quad(
+                         camera_offset[0] + creature_pool[creature_index].pos_x
