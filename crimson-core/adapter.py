@@ -90,6 +90,37 @@ def adapt(src, txt, seam=session_only):
             if txt.count(expression) != 1:
                 raise ValueError("Audit the shock chain link angle before changing this adapter")
             txt = txt.replace(expression, wide)
+    if src.stem in ("creature_handle_death", "creature_update_all", "perks_update_effects", "survival_spawn_creature"):
+        # `fild` loads the int XP exactly and only the first PC24 operation rounds (kills 0x0041eb5b, Radioactive
+        # 0x0042704b, Jinxed 0x004070a6); converting to float first rounds it too, which past 2^24 drifts.
+        txt, adds = re.subn(
+            r"\(int\)\(\s*\(float\)player_state_table\[0\]\.experience\b",
+            "(int)(float)((double)player_state_table[0].experience",
+            txt,
+        )
+        txt, muls = re.subn(
+            r"\(float\)player_state_table\[0\]\.experience \* 0\.00125f",
+            "portable_mul32((double)player_state_table[0].experience, 0.00125f)",
+            txt,
+        )
+        expected = {"creature_handle_death": (2, 0), "creature_update_all": (2, 0), "perks_update_effects": (1, 0)}
+        if (adds, muls) != expected.get(src.stem, (0, 1)):
+            raise ValueError("Audit the exact XP load boundaries before changing this adapter")
+    if src.stem == "player_update_heading":
+        # Regression Bullets: `fild` the XP, `fsubp` the PC24 cost, then `_ftol`.
+        txt, count = re.subn(
+            r"player->experience = player->experience\s*- (weapon_table\[player->weapon_id\]\.reload_time \* [0-9.]+f);",
+            r"player->experience = (int)(float)((double)player->experience - \1);",
+            txt,
+        )
+        if count != 2:
+            raise ValueError("Audit the Regression Bullets XP boundary before changing this adapter")
+    if src.stem == "perk_apply":
+        # Grim Deal: `fild` the XP into the PC24 multiply.
+        expression = "(int)(player_experience * 0.18f)"
+        if txt.count(expression) != 1:
+            raise ValueError("Audit the Grim Deal XP boundary before changing this adapter")
+        txt = txt.replace(expression, "(int)portable_mul32((double)player_experience, 0.18f)")
     if src.stem in ("input_aim_pov_left_active", "input_aim_pov_right_active"):
         # A replay records the POV hat as its two turn flags, which can both be held.
         side = src.stem.split("_")[3]
