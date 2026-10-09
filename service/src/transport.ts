@@ -14,8 +14,9 @@ export function encodeTransport(replay: Replay): Uint8Array {
   const run = replay.run;
   if (run.player_count !== 1 || ![GameMode.SURVIVAL, GameMode.RUSH, GameMode.QUESTS].includes(run.game_mode_id as 1 | 2 | 3))
     throw new TransportError("The core supports one player in Rush, Survival or Quests");
-  const commandCount = replay.ticks.reduce((sum, tick) => sum + tick.commands.length, 0);
-  const bytes = new Uint8Array(CONFIG_BYTES + replay.ticks.length * TICK_BYTES + commandCount * COMMAND_BYTES);
+  const ticks = replay.ticks;
+  const commandCount = [...ticks.commands.values()].reduce((sum, commands) => sum + commands.length, 0);
+  const bytes = new Uint8Array(CONFIG_BYTES + ticks.length * TICK_BYTES + commandCount * COMMAND_BYTES);
   const view = new DataView(bytes.buffer);
   const config = [
     run.seed,
@@ -34,14 +35,15 @@ export function encodeTransport(replay: Replay): Uint8Array {
   ];
   config.forEach((word, i) => view.setUint32(i * 4, word >>> 0, true));
   let at = CONFIG_BYTES;
-  for (const tick of replay.ticks) {
-    if (tick.commands.length > MAX_TICK_COMMANDS) throw new TransportError("Unsupported player or command count");
-    const [mx, my, ax, ay, flags] = tick.inputs[0]!;
+  for (let tick = 0; tick < ticks.length; tick++) {
+    const commands = ticks.commands.get(tick) ?? [];
+    if (commands.length > MAX_TICK_COMMANDS) throw new TransportError("Unsupported player or command count");
+    const [mx, my, ax, ay, flags] = ticks.input(tick, 0);
     [mx, my, ax, ay].forEach((axis, i) => view.setFloat32(at + i * 4, axis, true));
     view.setUint32(at + 16, flags, true);
-    view.setUint32(at + 20, tick.commands.length, true);
+    view.setUint32(at + 20, commands.length, true);
     at += TICK_BYTES;
-    for (const command of tick.commands) {
+    for (const command of commands) {
       if (command.player_index !== 0) throw new TransportError("Unsupported command player");
       if (command.type === "perk_pick") view.setInt32(at, 1, true), view.setInt32(at + 4, command.choice_index, true);
       else if (command.type === "perk_menu_open") view.setInt32(at, 2, true), view.setInt32(at + 4, 0, true);

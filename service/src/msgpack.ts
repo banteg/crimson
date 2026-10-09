@@ -3,9 +3,11 @@
 // The payload must be canonical: one byte string per value. Rather than decode and re-encode, the reader refuses
 // every encoding the canonical writer (msgspec) never produces, so a payload it accepts is the only encoding of its
 // value: the shortest header for every integer, string, array and map, float64 for every float, and no bin or ext.
-// Maps keep their key order, which the schema checks.
+// Maps keep their key order, which the schema checks. A reader yields one token at a time, so a caller can decode a
+// long array into its own form rather than a value per element.
 
-export type Value = null | boolean | number | F64 | string | Value[] | MapValue;
+export type Scalar = null | boolean | number | F64 | string;
+export type Value = Scalar | Value[] | MapValue;
 // float64 values stay apart from integers: an integer in a float field, or the reverse, is not canonical.
 export class F64 {
   constructor(readonly value: number) {}
@@ -14,19 +16,20 @@ export class MapValue {
   constructor(readonly entries: [string, Value][]) {}
 }
 
+// An array or map's header; its elements follow.
+export class Head {
+  constructor(
+    readonly kind: "array" | "map",
+    readonly length: number,
+  ) {}
+}
+
 export class PayloadError extends Error {}
 
 // ignoreBOM keeps a leading U+FEFF in the string, as msgspec does.
 const textDecoder = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true });
 
-export function readPayload(bytes: Uint8Array): Value {
-  const reader = new Reader(bytes);
-  const value = reader.value();
-  if (reader.offset !== bytes.length) throw new PayloadError("trailing bytes after the payload");
-  return value;
-}
-
-class Reader {
+export class Reader {
   offset = 0;
   private readonly view: DataView;
 
@@ -34,12 +37,35 @@ class Reader {
     this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   }
 
+  get done(): boolean {
+    return this.offset === this.bytes.length;
+  }
+
   value(): Value {
+    const token = this.token();
+    if (!(token instanceof Head)) return token;
+    return token.kind === "array" ? this.array(token.length) : this.map(token.length);
+  }
+
+  // A map's key.
+  key(): string {
+    const key = this.value();
+    if (typeof key !== "string") throw new PayloadError("map key is not a string");
+    return key;
+  }
+
+  // The next float64's value, or undefined, reading nothing, when the next value is another kind.
+  float64(): number | undefined {
+    if (this.bytes[this.offset] !== 0xcb) return undefined;
+    return this.view.getFloat64(this.take(9) + 1, false);
+  }
+
+  token(): Scalar | Head {
     const byte = this.u8();
     if (byte <= 0x7f) return byte;
     if (byte >= 0xe0) return byte - 0x100;
-    if (byte >= 0x80 && byte <= 0x8f) return this.map(byte & 0x0f);
-    if (byte >= 0x90 && byte <= 0x9f) return this.array(byte & 0x0f);
+    if (byte >= 0x80 && byte <= 0x8f) return new Head("map", byte & 0x0f);
+    if (byte >= 0x90 && byte <= 0x9f) return new Head("array", byte & 0x0f);
     if (byte >= 0xa0 && byte <= 0xbf) return this.str(byte & 0x1f);
     switch (byte) {
       case 0xc0:
@@ -81,13 +107,13 @@ class Reader {
       case 0xdb:
         return this.str(this.length(this.view.getUint32(this.take(4), false), 0x10000));
       case 0xdc:
-        return this.array(this.length(this.view.getUint16(this.take(2), false), 0x10));
+        return new Head("array", this.length(this.view.getUint16(this.take(2), false), 0x10));
       case 0xdd:
-        return this.array(this.length(this.view.getUint32(this.take(4), false), 0x10000));
+        return new Head("array", this.length(this.view.getUint32(this.take(4), false), 0x10000));
       case 0xde:
-        return this.map(this.length(this.view.getUint16(this.take(2), false), 0x10));
+        return new Head("map", this.length(this.view.getUint16(this.take(2), false), 0x10));
       case 0xdf:
-        return this.map(this.length(this.view.getUint32(this.take(4), false), 0x10000));
+        return new Head("map", this.length(this.view.getUint32(this.take(4), false), 0x10000));
       case 0xca:
         throw new PayloadError("float32 instead of float64");
       default:
@@ -141,11 +167,7 @@ class Reader {
 
   private map(length: number): MapValue {
     const entries: [string, Value][] = [];
-    for (let i = 0; i < length; i++) {
-      const key = this.value();
-      if (typeof key !== "string") throw new PayloadError("map key is not a string");
-      entries.push([key, this.value()]);
-    }
+    for (let i = 0; i < length; i++) entries.push([this.key(), this.value()]);
     return new MapValue(entries);
   }
 }
