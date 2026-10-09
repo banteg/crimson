@@ -1,7 +1,7 @@
 Original bug 25: a re-picked bonus's HUD indicator can stay hidden for seconds. The fix parks an expired slot just past the hidden edge, so a re-pick slides straight back in.
---- a/bonus_hud_slot_update_and_render.cpp
-+++ b/bonus_hud_slot_update_and_render.cpp
-@@ -60,5 +60,8 @@
+--- a/decomp/1.9/crimsonland/ui_render/bonus_hud_slot_update_and_render.cpp
++++ b/decomp/1.9/crimsonland/ui_render/bonus_hud_slot_update_and_render.cpp
+@@ -60,6 +60,9 @@
      if (*slot->slide.timer_ptr <= 0.0f) {
          if (!slot->slide.alt_timer_ptr || *slot->slide.alt_timer_ptr <= 0.0f) {
              slot->slide.slide_x -= frame_dt * 320.0f;
@@ -10,3 +10,4 @@ Original bug 25: a re-picked bonus's HUD indicator can stay hidden for seconds. 
 +            }
          } else {
              slot->slide.slide_x += frame_dt * 350.0f;
+         }

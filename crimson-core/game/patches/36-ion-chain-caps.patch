@@ -1,6 +1,6 @@
 Original bug 36: ion chain arcs end in a hard cut. The fix closes each strip with end caps cut from the glow's halves.
---- a/projectile_render.cpp
-+++ b/projectile_render.cpp
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
 @@ -99,6 +99,40 @@
  };
  

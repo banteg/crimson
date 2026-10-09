@@ -1,0 +1,24 @@
+A click on a high score row pins its card in place of the panel's settings, and the card offers the run's replay
+to watch (host/watch.inc).
+--- a/decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp
++++ b/decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp
+@@ -414,9 +414,7 @@
+     }
+     position.y += 168.0f;
+     int hovered_score = score_scrollbar.hovered_index;
+-    if (hovered_score != -1) {
+-        selected_score = hovered_score;
+-    }
++    selected_score = highscore_watch_row(hovered_score, score_count, &score_scrollbar.selected_index);
+ 
+     position.x += 16.0f;
+     grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
+@@ -896,6 +894,8 @@
+             &highscore_table[selected_score],
+             1.0f,
+             selected_score + 1);
++        if (hovered_score == -1 && (online_sync_status == 0 || online_sync_status == 6))
++            highscore_watch((float *)&detail_position, &highscore_table[selected_score]);
+         position = saved_position;
+     }
+ 

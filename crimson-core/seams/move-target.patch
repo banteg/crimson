@@ -1,0 +1,15 @@
+Point-click movement records the move target the reload key and cursor set (0x00413f5e); it reaches the scheme
+the way Python's replay carries it.
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -511,7 +511,9 @@
+         && config_movement_schemes[current_player_index] != 5) {
+         int move_mode = config_movement_schemes[current_player_index];
+         if (move_mode == 4) {
+-            if (grim_interface_ptr->grim_is_key_active(config_key_reload)) {
++            if (PORTABLE_RECORDED) {
++                *(vec2_t *)&player->move_target = vec2_t(portable_move_x(), portable_move_y());
++            } else if (grim_interface_ptr->grim_is_key_active(config_key_reload)) {
+                 vec2_t target =
+                     *(vec2_t *)&player_aim_screen_x[current_player_index * 2]
+                     - *(vec2_t *)&camera_offset_x;

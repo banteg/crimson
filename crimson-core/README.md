@@ -36,7 +36,7 @@ copies of 168 recovered translation units; everything it adds lives here.
 | [`build.py`](build.py), [`adapter.py`](adapter.py), [`data.py`](data.py) | Generate, adapt and compile the recovered sources; recreate the globals. |
 | [`sources.json`](sources.json), [`schema.json`](schema.json) | Selected bodies, snapshot fields. |
 | [`host/`](host) | The host the recovered code runs in: API, input, timing, stubs, portable math. |
-| [`rules.py`](rules.py), [`patches/`](patches) | The ranked rules: one patch per fixed original bug. |
+| [`abi/`](abi), [`seams/`](seams), [`patches/`](patches) | Diffs against `decomp/`: compiler repairs at one place, the recording in place of live reads, and the ranked rules, one patch per fixed original bug. |
 | [`checks/`](checks) | Native/WASM matrix, Python whole-run gate, original-executable oracles, Wasmtime probe. |
 | [`results/`](results) | Checked-in results of those checks. |
 | [`worker/`](worker) | Diagnostic Cloudflare Worker that runs the WASM module. |
@@ -54,9 +54,12 @@ uv run python crimson-core/build.py --target wasm
 ```
 
 Outputs land in `crimson-core/build/{native,wasm}`. Recovered sources are read
-as they are: every adapter seam asserts how many times it matches and every
-rule patch hunk must match its exact text once, so a decomp edit that moves a
-seam stops the build there.
+as they are and changed in generated copies ([How the build
+works](#how-the-build-works)): every diff hunk must match its exact text once
+and every pass its expected number of sites, so a decomp edit that moves one
+stops the build there. `--prepare` writes the adapted sources and
+`adapted.diff`, everything the target changes from `decomp/`, without
+compiling.
 
 ## Checks
 
@@ -194,8 +197,8 @@ reaches is a patch in [`patches/`](patches), named after its entry in
 [`docs/rewrite/original-bugs.md`](../docs/rewrite/original-bugs.md). The fix
 sits at the native site behind the flag, `if (portable_preserve_bugs) {native}
 else {fix}`, so the RNG call order matches Python under both policies, and
-`decomp/` stays untouched. [`rules.py`](rules.py) applies the patches to the
-adapted copies by exact text, ignoring line numbers; a hunk that no longer
+`decomp/` stays untouched. The patches are diffs against `decomp/`, which the
+build applies by exact text, ignoring line numbers; a hunk that no longer
 matches exactly once stops the build. Bug 32 (the Shock Chain slot's starting
 value) is set by the host at run start.
 
@@ -266,10 +269,25 @@ scheme's POV hat reads the same turn bits.
 
 ## How the build works
 
-[`adapter.py`](adapter.py) applies the modern-compiler changes to generated
-copies: C linkage, const references for VC6 temporaries, declaration repairs
-and shared math calls. It also keeps the x87 evaluation boundaries the original
-executable shows, which the C syntax alone does not: wide angle returns
+Every source is read as `decomp/` has it and changed in two steps
+([`adapter.py`](adapter.py)). Diffs make the edits that belong to one place:
+[`abi/`](abi) repairs what a modern compiler rejects (a `LARGE_INTEGER` view,
+calls and definitions that disagree on arguments, `size_t` spelled as a 32-bit
+int), [`seams/`](seams) puts the recording where the original reads live input,
+behind `PORTABLE_RECORDED`, which the verifier fixes at 1 and the game module
+sets inside a tick, and [`patches/`](patches) holds the ranked rules; the game
+module adds [`game/changes/`](game/changes) and [`game/patches/`](game/patches).
+A diff names its files by their paths from the repository root and reads
+against them as `decomp/` has them; a hunk matches by its exact old text, which
+must occur once. Passes then make the edits a rule decides, each expecting its
+number of sites, and the code a diff adds takes them too: the x87 boundaries
+below, C linkage, const references for VC6 temporaries, the signatures the
+recovered files disagree on (`PROTOTYPES`: every declaration takes its
+definition's) and shared math calls. Every recovered source sees
+[`host/hooks.h`](host/hooks.h), which declares what the edits call.
+
+The x87 passes keep the evaluation boundaries the original executable shows,
+which the C syntax alone does not: wide angle returns
 (the creature target heading, the Shock Chain link angles), the first trig
 multiply of player, projectile, seeker and creature motion and of the player's
 aim point, the shot spread and
@@ -280,8 +298,9 @@ result multiplied directly stays wide, while a stored one is spilled. Player
 XP is an int the original loads exactly (`fild`) into its first PC24 operation
 (kill rewards, Radioactive, Energizer, Jinxed, Regression Bullets, Grim Deal and
 the Survival spawn health), where a cast to `float` would round it again past
-2^24. Each
-adaptation is guarded by an expected match count.
+2^24. Each pass names its expected sites; the quest spills apply wherever a
+builder uses them, and [`checks/builder_oracle.py`](checks/builder_oracle.py)
+runs every builder against the original executable.
 
 [`data.py`](data.py) recreates the globals from the recovered data manifest.
 Adjacent globals stay separate because 64-bit pointers need more storage;

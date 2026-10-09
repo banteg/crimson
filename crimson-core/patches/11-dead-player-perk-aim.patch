@@ -1,7 +1,7 @@
 Original bug 11: Doctor, Pyrokinetic and Evil Eyes keep working from a dead player's aim. The fix skips them.
---- a/perks_update_effects.cpp
-+++ b/perks_update_effects.cpp
-@@ -104,7 +104,9 @@
+--- a/decomp/1.9/crimsonland/game/perks_update_effects.cpp
++++ b/decomp/1.9/crimsonland/game/perks_update_effects.cpp
+@@ -108,7 +108,9 @@
      }
  
      perk_doctor_target_creature_id = -1;

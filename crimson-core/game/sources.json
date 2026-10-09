@@ -11,6 +11,22 @@
     "perks/perk_meta.cpp",
     "platform/grim_load_interface.cpp"
   ],
+  "exe_wrapped": [
+    "audio/music_play_exclusive.cpp",
+    "crimsonland/fx_queue_render.cpp",
+    "crimsonland/highscore_sync_worker.cpp",
+    "game/format_ordinal.c",
+    "game/gameplay_render_world.cpp",
+    "game/gameplay_update_and_render.cpp",
+    "game/input_key_name.cpp",
+    "gameplay/game_save_status.c",
+    "perks/wrap_text_to_width_alloc.cpp",
+    "platform/play_time_get.cpp",
+    "sound/sfx_entry_start_playback.cpp",
+    "ui_elements/game_state_set.cpp",
+    "ui_elements/input_primary_just_pressed.cpp",
+    "ui_render/ui_elements_update_and_render.cpp"
+  ],
   "grim_replaced": [
     "api/dll_main.cpp",
     "api/get_interface.cpp",

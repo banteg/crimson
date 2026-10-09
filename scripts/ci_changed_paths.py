@@ -38,8 +38,10 @@ class Suite:
 CORE_BUILD = (
     "crimson-core/*.py",
     "crimson-core/*.json",
+    "crimson-core/abi/",
     "crimson-core/host/",
     "crimson-core/patches/",
+    "crimson-core/seams/",
     "decomp/",
     "third_party/headers/",
     "third_party/sources/",

@@ -1,0 +1,46 @@
+A fresh configuration is the Python port's (grim/config.py default_crimson_cfg): windowed, since the host owns the
+window, at 1024x768, the resolution the verifier simulates, so the client's runs replay as they played
+(host/session.inc), with violence on. No version runs mods (docs/rewrite/status.md), so the main menu never offers
+them.
+--- a/tools/match/include/crimson_config_defaults_impl.h
++++ b/tools/match/include/crimson_config_defaults_impl.h
+@@ -59,7 +59,7 @@
+     CRIMSON_CONFIG_DEFAULTS_BLOB.config_for = 0;
+ 
+     CRIMSON_CONFIG_DEFAULTS_BLOB.display_bpp = 32;
+-    CRIMSON_CONFIG_DEFAULTS_BLOB.windowed = 0;
++    CRIMSON_CONFIG_DEFAULTS_BLOB.windowed = 1;
+     CRIMSON_CONFIG_DEFAULTS_BLOB.game_mode = GAME_MODE_SURVIVAL;
+     CRIMSON_CONFIG_DEFAULTS_BLOB.shadows_enabled = 1;
+     CRIMSON_CONFIG_DEFAULTS_BLOB.sharp_ground_enabled = 0;
+@@ -76,8 +76,8 @@
+     CRIMSON_CONFIG_DEFAULTS_BLOB.aim_pov_right = 9000;
+     CRIMSON_CONFIG_DEFAULTS_BLOB.aim_pov_left = 27000;
+     *(int *)&CRIMSON_CONFIG_DEFAULTS_BLOB.reserved1_1a4[0] = 100;
+-    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 800;
+-    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 600;
++    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 1024;
++    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 768;
+     CRIMSON_CONFIG_DEFAULTS_BLOB.sfx_volume = 1.0f;
+     CRIMSON_CONFIG_DEFAULTS_BLOB.music_volume = 1.0f;
+ 
+--- a/decomp/1.9/crimsonland/crimsonland/config_ensure_file.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/config_ensure_file.cpp
+@@ -16,7 +16,6 @@
+         return;
+     }
+ 
+-    config_violence_disabled = 1;
+     fp = crt_fopen(game_build_path("crimson.cfg"), "wb");
+     if (fp != 0) {
+         crt_fwrite(&config_blob, 0x480, 1, fp);
+--- a/decomp/1.9/crimsonland/mods/mods_any_available.cpp
++++ b/decomp/1.9/crimsonland/mods/mods_any_available.cpp
+@@ -6,6 +6,7 @@
+ 
+ extern "C" bool mods_any_available(void)
+ {
++    return false;
+     int count = 0;
+     _finddata_t finddata;
+     long handle = crt_findfirst("mods\\*.dll", &finddata);

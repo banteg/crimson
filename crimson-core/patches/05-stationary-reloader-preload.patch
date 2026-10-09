@@ -1,8 +1,8 @@
 Original bug 5: the reload preload looks one unscaled frame ahead, so Stationary Reloader can skip it.
 The fix looks ahead by the scaled reload step.
---- a/player_update_heading.cpp
-+++ b/player_update_heading.cpp
-@@ -859,7 +859,14 @@
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -873,7 +873,14 @@
          }
      }
  

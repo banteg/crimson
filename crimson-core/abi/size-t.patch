@@ -1,0 +1,26 @@
+VC6 spells size_t as the 32-bit unsigned int it was.
+--- a/decomp/1.9/grim/codec/jaz_decode.cpp
++++ b/decomp/1.9/grim/codec/jaz_decode.cpp
+@@ -1,4 +1,4 @@
+-void *__cdecl operator new(unsigned int size);
++void *__cdecl operator new(size_t size);
+ 
+ extern "C" int zlib_uncompress(
+     unsigned char *output,
+--- a/decomp/1.9/crimsonland/platform/vorbis_mem_open.cpp
++++ b/decomp/1.9/crimsonland/platform/vorbis_mem_open.cpp
+@@ -2,10 +2,10 @@
+ 
+ unsigned char vorbis_stream_t::open(void *buffer, unsigned int size)
+ {
+-    callbacks.read_func = vorbis_mem_read;
+-    callbacks.seek_func = vorbis_mem_seek;
+-    callbacks.close_func = vorbis_mem_close_callback;
+-    callbacks.tell_func = vorbis_mem_tell;
++    callbacks.read_func = (decltype(callbacks.read_func))vorbis_mem_read;
++    callbacks.seek_func = (decltype(callbacks.seek_func))vorbis_mem_seek;
++    callbacks.close_func = (decltype(callbacks.close_func))vorbis_mem_close_callback;
++    callbacks.tell_func = (decltype(callbacks.tell_func))vorbis_mem_tell;
+     bitstream = 0;
+     memory_source = buffer;
+ 

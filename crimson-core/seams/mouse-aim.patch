@@ -1,0 +1,15 @@
+Mouse aim is recorded as a canonical world point. Reconstructing a screen point and subtracting the camera again
+can lose one F32 ULP.
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -949,8 +949,8 @@
+                 (player_update_vec2_t *)&player_aim_screen_x[
+                     current_player_index * 2];
+             *(vec2_t *)&player->aim = vec2_t(
+-                mouse_screen->x - camera_offset_x,
+-                mouse_screen->y - camera_offset_y);
++                PORTABLE_RECORDED ? portable_aim_x() : mouse_screen->x - camera_offset_x,
++                PORTABLE_RECORDED ? portable_aim_y() : mouse_screen->y - camera_offset_y);
+             player->aim_heading =
+                 VEC2_Angle(
+                     *(vec2_t *)&player->position - *(vec2_t *)&player->aim)

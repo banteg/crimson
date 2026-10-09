@@ -1,7 +1,7 @@
 Original bug 3: Bandage multiplies health by its 1..50 roll. The fix adds the roll, to living players only.
---- a/perk_apply.cpp
-+++ b/perk_apply.cpp
-@@ -123,7 +123,15 @@
+--- a/decomp/1.9/crimsonland/game/perk_apply.cpp
++++ b/decomp/1.9/crimsonland/game/perk_apply.cpp
+@@ -122,7 +122,15 @@
  
      if (perk_id == perk_id_bandage) {
          for (i = 0; i < player_count; ++i) {

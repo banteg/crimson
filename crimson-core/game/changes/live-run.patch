@@ -1,0 +1,55 @@
+A run the client plays (host/session.inc). The verifier lays out no perk prompt, so a click in a tick never opens
+the menu; the run takes a click on it between ticks. The perk choice reaches the run as a command with its next
+tick, which applies it as the verifier does. Escape asks the run for the pause menu: the pending state is
+simulation state, which only ticks write. The console's flag pauses parts of a tick: a run keeps it closed.
+--- a/decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp
++++ b/decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp
+@@ -249,7 +249,7 @@
+                     perk_choices_dirty = 0;
+                 }
+                 game_state_set(GAME_STATE_PERK_SELECTION);
+-            } else if (relative_mouse.x > perk_prompt_bounds_min_x
++            } else if (!game_ticking && relative_mouse.x > perk_prompt_bounds_min_x
+                        && relative_mouse.y > perk_prompt_bounds_min_y
+                        && relative_mouse.x < perk_prompt_bounds_max_x
+                        && relative_mouse.y < perk_prompt_bounds_max_y) {
+--- a/decomp/1.9/crimsonland/game/perk_selection_screen_update.cpp
++++ b/decomp/1.9/crimsonland/game/perk_selection_screen_update.cpp
+@@ -225,10 +225,16 @@
+         && perk_selection_index >= 0
+         && choice_items[perk_selection_index].activated) {
+         sfx_play(sfx_ui_buttonclick, 1.0f);
++        if (game_live_run()) {
++            game_live_pick(perk_selection_index);
++            ui_transition_direction = 0;
++            game_state_pending = GAME_STATE_GAMEPLAY;
++        } else {
+         perk_apply(perk_choice_ids[perk_selection_index]);
+         ui_transition_direction = 0;
+         game_state_pending = GAME_STATE_GAMEPLAY;
+         --perk_pending_count;
+         perk_choices_dirty = 1;
++        }
+     }
+ }
+--- a/decomp/1.9/crimsonland/game/game_frame_update.cpp
++++ b/decomp/1.9/crimsonland/game/game_frame_update.cpp
+@@ -207,7 +207,7 @@
+     }
+ 
+     game_time_ms += frame_dt_ms;
+-    if (grim_interface_ptr->grim_was_key_pressed(0x29)) {
++    if (!game_live_run() && grim_interface_ptr->grim_was_key_pressed(0x29)) {
+         console_log_queue.console_set_open(!console_log_queue.open);
+     }
+     console_log_queue.update();
+@@ -434,7 +434,8 @@
+             || game_state_id == GAME_STATE_PLUGIN_RUNTIME
+             || game_state_id == GAME_STATE_TYPO_GAMEPLAY)) {
+         ui_transition_direction = 0;
+-        game_state_pending = GAME_STATE_PAUSE_MENU;
++        if (!game_live_pause())
++            game_state_pending = GAME_STATE_PAUSE_MENU;
+         if (plugin_interface_ptr != 0) {
+             plugin_interface_ptr->parms.fields.onPause = 1;
+         }
