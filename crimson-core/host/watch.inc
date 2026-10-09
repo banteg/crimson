@@ -27,6 +27,10 @@ extern unsigned char run_active, screen_fade_ramp_flag, startup_skip_requested;
 extern ui_element_t ui_sign_crimson;
 void music_fade_out_all(int sfx_id);
 void music_play_exclusive(int sfx_id);
+void sfx_entry_stop(sfx_entry_t *entry);
+extern music_entry_t music_entry_table[];
+extern sfx_volume_table_t music_track_volume;
+extern music_fade_out_flags_t music_fade_out_flags;
 }
 
 // A perk pick as the menu showed it: when, its choices, the one taken, and the
@@ -43,6 +47,10 @@ struct WatchMark {
   int value;
 };
 enum WatchPhase { WATCH_PREPARING, WATCH_PLAYING, WATCH_ENDED };
+// A tune the run starts playing at a tick (its music track).
+struct WatchTune {
+  int tick, track;
+};
 
 static const float watch_speeds[] = {0.25f, 0.5f, 1, 2, 4, 8, 16, 32};
 static constexpr int WATCH_NORMAL_SPEED = 2;
@@ -91,6 +99,7 @@ static struct {
   size_t key_bytes;
   std::vector<WatchPick> picks;
   std::vector<WatchMark> marks;
+  std::vector<WatchTune> tunes; // the tunes the run starts, which a seek plays (watch_tune)
   int stage;              // the Survival spawn stage before the tick (the pass)
   bool energizer[16];     // bonus slots holding an Energizer before the tick (the pass)
   size_t next_pick;       // the first pick still ahead of playback
@@ -100,9 +109,6 @@ static struct {
   float mouse_x, mouse_y; // the viewer's cursor, which ticks replace with the replay's aim
   bool leave;             // the end screen's High scores, taken at the next pass
   int stop_at;           // playback pauses on reaching this tick (game_watch_stop_at), or 0
-  // The run's sound effects volume: quiet passes zero it, and the keyframes they
-  // keep hold the zero.
-  float volume;
 } watch;
 
 // A tick the viewer asks for, from the first.
@@ -204,7 +210,6 @@ static void watch_begin() {
   if (!live_start())
     return watch_leave();
   live.watching = true;
-  watch.volume = live.run.config.sfx_volume;
   watch.phase = WATCH_PREPARING;
   watch.at = sizeof cfg;
   watch.tick = watch.ticks = 0;
@@ -216,6 +221,7 @@ static void watch_begin() {
   watch.key_bytes = 0;
   watch.picks.clear();
   watch.marks.clear();
+  watch.tunes.clear();
   watch.stage = survival_spawn_stage;
   for (int i = 0; i < 16; ++i)
     watch.energizer[i] = bonus_pool[i].bonus_id == BONUS_ID_ENERGIZER;
@@ -332,11 +338,93 @@ static bool watch_tick() {
   return true;
 }
 
+// Ticks nobody hears (the preparing pass, a seek) start no sound, and the music
+// plays on as it was: they still pick the in-game tune as the run did (the
+// playlist latch and its random draw are the run's), but the tracks' volumes
+// and fades, which the music calls set, come back after them.
+struct WatchUnheard {
+  bool unheard; // the outermost of nested passes keeps the music
+  sfx_volume_table_t volume;
+  music_fade_out_flags_t fades;
+  explicit WatchUnheard(bool quiet) : unheard(quiet && !sound_unheard) {
+    if (!unheard)
+      return;
+    memcpy(volume, music_track_volume, sizeof volume);
+    memcpy(fades, music_fade_out_flags, sizeof fades);
+    sound_unheard = true;
+  }
+  ~WatchUnheard() {
+    if (!unheard)
+      return;
+    memcpy(music_track_volume, volume, sizeof volume);
+    memcpy(music_fade_out_flags, fades, sizeof fades);
+    sound_unheard = false;
+  }
+};
+
+// The tune playing: the track a music call started and none faded since, or -1.
+static int watch_playing() {
+  for (int track = 0; track < 128; ++track)
+    if (!music_fade_out_flags[track] && music_track_volume[track] > 0)
+      return track;
+  return -1;
+}
+extern "C" {
+void music_play_exclusive_recovered(int sfx_id);
+// The run's music calls (the first hit's in-game tune, the game over tune), as
+// the original makes them; the preparing pass notes the tune each one picks,
+// whatever plays: the in-game tune is the playlist's entry the call's random
+// draw chose, drawn again from where the stream stood.
+void music_play_exclusive(int sfx_id) {
+  uint32_t stream = rng;
+  unsigned char latched = music_playlist_randomized_latch;
+  music_play_exclusive_recovered(sfx_id);
+  if (!live.watching || watch.phase != WATCH_PREPARING)
+    return;
+  int track = sfx_id;
+  if (sfx_id == music_track_game_playlist) {
+    if (latched || !music_playlist_randomized_latch)
+      return;
+    uint32_t after = rng;
+    rng = stream;
+    track = music_playlist[crt_rand() % music_playlist_entry_count];
+    rng = after;
+  }
+  if (watch.tunes.empty() || watch.tunes.back().track != track)
+    watch.tunes.push_back({watch.tick + 1, track});
+}
+}
+// After a seek, the tune the run has there: the one it last started, or before
+// the first, an in-game tune already playing (a scrub back keeps it) and none
+// other. The music calls clear the run's playlist latch, which stays the run's.
+static void watch_tune() {
+  auto next = std::upper_bound(watch.tunes.begin(), watch.tunes.end(), watch.tick,
+                               [](int t, const WatchTune &tune) { return t < tune.tick; });
+  int want = next == watch.tunes.begin() ? -1 : (next - 1)->track, playing = watch_playing();
+  if (want == playing)
+    return;
+  bool in_game = std::find(music_playlist, music_playlist + music_playlist_entry_count, playing) !=
+                 music_playlist + music_playlist_entry_count;
+  if (want < 0 && (playing < 0 || in_game))
+    return;
+  unsigned char latch = music_playlist_randomized_latch;
+  if (want < 0)
+    music_fade_out_all(playing);
+  else {
+    music_play_exclusive_recovered(want);
+    // A tune still fading out (scrubbing back from just after the death) comes
+    // back up, which the call leaves to one that has stopped.
+    if (music_track_volume[want] > 0)
+      music_fade_out_flags[want] = 0;
+  }
+  music_playlist_randomized_latch = latch;
+}
+
 // `count` ticks, at most to the run's end, drawing only the last; a quiet run
-// (a seek) plays no sound. The terrain takes every tick's bake.
+// (a seek) is unheard. The terrain takes every tick's bake.
 static int watch_run(int count, bool quiet) {
   count = std::min(count, watch.ticks - watch.tick);
-  live.run.config.sfx_volume = quiet ? 0 : watch.volume;
+  WatchUnheard unheard(quiet);
   terrain.baking = true;
   int ran = 0;
   for (; ran < count; ++ran) {
@@ -346,7 +434,6 @@ static int watch_run(int count, bool quiet) {
   }
   grim_render_disabled = 0;
   terrain.baking = false;
-  live.run.config.sfx_volume = watch.volume;
   // The last tick drew unless the run ended first.
   if (ran > 0 && ran == count)
     watch.drawn = true;
@@ -368,6 +455,7 @@ static void watch_seek(int target) {
     watch.at = key->at;
   }
   watch_run(target - watch.tick, true);
+  watch_tune();
   watch.next_pick = std::upper_bound(watch.picks.begin(), watch.picks.end(), watch.tick,
                                      [](int t, const WatchPick &p) { return t < p.tick; }) -
                     watch.picks.begin();
@@ -380,25 +468,26 @@ static void watch_seek(int target) {
 
 // A frame's share of the preparing pass; at the run's end, playback starts.
 static void watch_prepare() {
-  live.run.config.sfx_volume = 0;
   grim_render_disabled = 1;
   // The pass bakes the terrain as it goes, for the copies it keeps.
   terrain.baking = true;
   unsigned start = host_time_ms();
   bool done = false;
-  for (int n = 1;; ++n) {
-    if (!watch_tick()) {
-      done = true;
-      break;
+  {
+    WatchUnheard unheard(true);
+    for (int n = 1;; ++n) {
+      if (!watch_tick()) {
+        done = true;
+        break;
+      }
+      if (watch.tick % watch.key_ticks == 0)
+        watch_keep();
+      if (n % 64 == 0 && host_time_ms() - start >= WATCH_PASS_MS)
+        break;
     }
-    if (watch.tick % watch.key_ticks == 0)
-      watch_keep();
-    if (n % 64 == 0 && host_time_ms() - start >= WATCH_PASS_MS)
-      break;
   }
   grim_render_disabled = 0;
   terrain.baking = false;
-  live.run.config.sfx_volume = watch.volume;
   if (!done)
     return;
   if (watch.stopped.empty() && watch.at >= watch.replay.recording.size())
@@ -440,6 +529,10 @@ static void watch_follow_link() {
     watch.linked = false;
     watch_start(watch.link, watch.link_card);
     ui_elements_timeline = 0;
+    // The menu's theme, which the skipped intro started, stops at once: the link
+    // cut the menu, and the theme's fade would play over the preparing pass.
+    music_track_volume[music_track_crimson_theme_id] = 0;
+    sfx_entry_stop(&music_entry_table[music_track_crimson_theme_id]);
   }
 }
 

@@ -129,10 +129,16 @@ bool input_primary_just_pressed() {
   return game_ticking ? (in.flags & 2) != 0 : input_primary_just_pressed_recovered();
 }
 int play_time_get() { return game_ticking ? 0 : play_time_get_recovered(); }
-// Headless, the verifier's silent audio has no buffers to play.
+// Headless, the verifier's silent audio has no buffers to play. Ticks nobody
+// hears (a replay's preparing pass and seeks, host/watch.inc) play none either:
+// they get the first buffer, unplayed, which callers set up as they would a
+// playing one.
+static bool sound_unheard;
 int sfx_entry_start_playback_recovered(music_entry_t *entry);
 int sfx_entry_start_playback(music_entry_t *entry) {
-  return entry->buffers[0] ? sfx_entry_start_playback_recovered(entry) : -1;
+  if (!entry->buffers[0])
+    return -1;
+  return sound_unheard ? 0 : sfx_entry_start_playback_recovered(entry);
 }
 // During a run the host owns the run-down this UI timeline drives in the
 // original (portable_step_many), exactly as in the verifier.

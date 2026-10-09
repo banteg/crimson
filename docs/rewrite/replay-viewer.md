@@ -61,6 +61,15 @@ logged bakes after it through the original's own `fx_queue_render`, so blood
 and corpses lie exactly where straight play left them. Ticks that are not drawn
 still bake, so a skip leaves the terrain whole too.
 
+Ticks nobody hears, the preparing pass's and a seek's, play no sound: the run
+still picks its in-game tune as it did (the playlist latch and its random draw
+are the run's), but no track starts and the music's volumes and fades come back
+after them. A link stops the menu theme its skipped intro started. After a
+seek, the music is the tune the run has there, from the tunes the preparing
+pass noted it starting: scrubbing within the run never restarts it, Watch Again
+fades the game over tune out, and before the first hit an in-game tune already
+playing plays on.
+
 `checks/game_seek.mjs` seeks across a fixture in a shuffled order and requires
 the verifier's world at every tick; a native capture of a seek and of straight
 play to the same tick match pixel for pixel.
