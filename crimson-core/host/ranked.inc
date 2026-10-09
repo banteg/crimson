@@ -6,6 +6,7 @@
 // client.py), signed by the player's key. The host uploads the outbox.
 #include "../game/host_abi.h"
 #include "../game/leaderboard.h"
+#include <cctype>
 #include <cmath>
 #include <dirent.h>
 #include <string>
@@ -111,39 +112,72 @@ static int ranked_waiting() {
   return count;
 }
 
-// The high score screen's Update scores (highscore_sync_worker): the board on
-// screen comes from the leaderboard as the Python port shows it
-// (screens/high_scores_view/records.py): each run a received record, which
-// the original saves with its own and updates where it already holds the run.
+// The leaderboard's runs on the high score screen, as the Python port shows
+// them (screens/high_scores_view/records.py, docs/rewrite/watch-replays.md):
+// each board's latest answer is kept for the session, every fetch replacing it
+// whole, and nothing online is stored. While Show internet scores is ticked the
+// table reads the board's runs after its own records, so the original's
+// filters and order take them in; a run of the player's own that the board
+// holds turns green in its place. The screen fetches a board quietly the first
+// time it shows it; Update scores fetches the shown one with the original's
+// status lines.
 #include "crimsonland_highscore.h"
+#include <map>
+#include <tuple>
 extern "C" {
 extern int online_sync_status; // 1 while updating, 0 done, 6 failed (highscore_screen)
 void highscore_sync_worker_recovered(void *arg);
 void highscore_load_table_thunk(void);
+char *highscore_read_record(char *buffer, FILE *fp);
+void highscore_write_record(highscore_record_t *record, FILE *fp);
 }
-// The board the screen asked for, kept for its answer: the screen's own
-// settings can change while the request is out.
-static struct {
+// A board: Survival's, or a quest's on either difficulty.
+struct ScoresBoard {
   game_mode_id_t mode;
   int major, minor;
   unsigned char hardcore;
-} scores_board_asked;
+  auto key() const { return std::tie(mode, major, minor, hardcore); }
+  bool operator<(const ScoresBoard &other) const { return key() < other.key(); }
+};
+// A board's run as the table reads it, and its id on the leaderboard ("" when
+// the answer named none).
+struct ScoresRun {
+  highscore_record_t record;
+  std::string run;
+};
+static std::map<ScoresBoard, std::vector<ScoresRun>> scores_kept;
+static std::map<ScoresBoard, bool> scores_asked; // the boards fetched this session
+// The runs the table read last, as it read them, for the card's Watch.
+static std::vector<ScoresRun> scores_shown;
+// One request is out at a time, for the board it asked: the screen's own
+// settings can change while it is. Update scores pressed meanwhile waits for it.
+static ScoresBoard scores_board_asked;
+static bool scores_out, scores_out_quiet, scores_update_waiting;
 static char scores_request[64];
 static std::vector<char> scores_response;
 
 // One-player Survival and quests have a board; other tables have none.
-static bool scores_board() {
+static bool scores_board(ScoresBoard &board) {
   bool quest = config_blob.game_mode == GAME_MODE_QUEST;
   if (config_blob.player_count != 1 || (!quest && config_blob.game_mode != GAME_MODE_SURVIVAL))
     return false;
-  scores_board_asked = {config_blob.game_mode, quest ? quest_stage_major : 0, quest ? quest_stage_minor : 0,
-                        (unsigned char)(quest && config_blob.hardcore)};
-  if (quest)
+  board = {config_blob.game_mode, quest ? quest_stage_major : 0, quest ? quest_stage_minor : 0,
+           (unsigned char)(quest && config_blob.hardcore)};
+  return true;
+}
+// Asks for a board's runs; a quiet request shows no status and its failure
+// leaves the board's runs out.
+static void scores_send(const ScoresBoard &board, bool quiet) {
+  scores_board_asked = board;
+  scores_asked[board] = true;
+  scores_out = true;
+  scores_out_quiet = quiet;
+  if (board.mode == GAME_MODE_QUEST)
     snprintf(scores_request, sizeof scores_request, "{\"board\": \"%s\", \"quest\": \"%d.%d\"}",
-             config_blob.hardcore ? "quests-hardcore" : "quests", quest_stage_major, quest_stage_minor);
+             board.hardcore ? "quests-hardcore" : "quests", board.major, board.minor);
   else
     snprintf(scores_request, sizeof scores_request, "{\"board\": \"survival\", \"quest\": \"\"}");
-  return true;
+  host_leaderboard(HOST_LEADERBOARD_SCORES);
 }
 
 #include "json.inc"
@@ -157,10 +191,10 @@ static bool scores_count(const Json &run, const char *key, double max, double &o
   return true;
 }
 
-// A run of the service's board ({"scores": [{"name": ..., "score": ..., ...}]})
+// A run of the service's board ({"scores": [{"run": ..., "name": ..., ...}]})
 // as the record the original keeps for it, or false when a field is missing
 // or out of the record's range.
-static bool scores_record(const Json &run, highscore_record_t &record) {
+static bool scores_record(const Json &run, const ScoresBoard &board, highscore_record_t &record) {
   const Json *name = run.field("name", Json::STRING);
   // accepted_at is in milliseconds, whole up to 2^53 as a double.
   double score, elapsed, experience, weapon, fired, hit, kills, accepted_at;
@@ -170,11 +204,11 @@ static bool scores_record(const Json &run, highscore_record_t &record) {
       !scores_count(run, "shots_fired", UINT32_MAX, fired) || !scores_count(run, "shots_hit", UINT32_MAX, hit) ||
       !scores_count(run, "kills", UINT32_MAX, kills) || !scores_count(run, "accepted_at", 0x1p53, accepted_at))
     return false;
-  bool quest = scores_board_asked.mode == GAME_MODE_QUEST;
+  bool quest = board.mode == GAME_MODE_QUEST;
   snprintf(record.player_name, sizeof record.player_name, "%s", name->text.c_str());
-  record.game_mode_id = (unsigned char)scores_board_asked.mode;
-  record.quest_stage_major = (unsigned char)scores_board_asked.major;
-  record.quest_stage_minor = (unsigned char)scores_board_asked.minor;
+  record.game_mode_id = (unsigned char)board.mode;
+  record.quest_stage_major = (unsigned char)board.major;
+  record.quest_stage_minor = (unsigned char)board.minor;
   record.score_xp = (unsigned)experience;
   // A quest record's time is its final time, which the quest boards rank.
   record.run_elapsed_ms = (unsigned)(quest ? score : elapsed);
@@ -191,34 +225,84 @@ static bool scores_record(const Json &run, highscore_record_t &record) {
     record.date_week = (unsigned char)highscore_iso_week(day->tm_year + 1900, day->tm_mon + 1, day->tm_mday);
   }
   record.flags = 1;
-  record.hardcore_marker = scores_board_asked.hardcore ? 0x75 : 0;
+  record.hardcore_marker = board.hardcore ? 0x75 : 0;
   record.sentinel_pipe = 0x7c;
   record.sentinel_ff = 0xff;
   return true;
 }
 
-// Saves the received runs to the asked board's table: highscore_save_record
-// picks the table from the settings, and sets the active record up for each,
-// which the original keeps around a sync.
-static void scores_save(const std::vector<Json> &runs) {
-  highscore_record_t active = highscore_active_record;
-  game_mode_id_t mode = config_blob.game_mode;
-  int major = quest_stage_major, minor = quest_stage_minor;
-  unsigned char hardcore = config_blob.hardcore;
-  config_blob.game_mode = scores_board_asked.mode;
-  config_blob.hardcore = scores_board_asked.hardcore;
-  quest_stage_major = scores_board_asked.major;
-  quest_stage_minor = scores_board_asked.minor;
-  for (const Json &run : runs) {
-    highscore_record_t record = {};
-    if (scores_record(run, record))
-      highscore_save_record(&record);
+// A run id names a file (replays/online/<run>.crd): letters, digits, - and _.
+static bool scores_run_id(const std::string &run) {
+  if (run.empty() || run.size() > 64)
+    return false;
+  for (char c : run)
+    if (!isalnum((unsigned char)c) && c != '-' && c != '_')
+      return false;
+  return true;
+}
+
+// The board run the table shows as `record`, or null. The table marks each
+// name's best board run in its flags (highscore_load_table), so they differ.
+static const std::string *scores_run(const highscore_record_t &record) {
+  highscore_record_t row = record;
+  for (const ScoresRun &shown : scores_shown) {
+    row.flags = shown.record.flags;
+    if (!shown.run.empty() && !memcmp(&shown.record, &row, sizeof row))
+      return &shown.run;
   }
-  config_blob.game_mode = mode;
-  config_blob.hardcore = hardcore;
-  quest_stage_major = major;
-  quest_stage_minor = minor;
-  highscore_active_record = active;
+  return nullptr;
+}
+
+extern "C" {
+// The table's file for highscore_load_table, with the shown board's kept runs
+// after its own records while Show internet scores is ticked: a record the
+// board holds (by name, time and experience, as the Python port matches them)
+// turns green and takes the board's run instead of showing twice. Asks for a
+// board it has not fetched yet. Rows earlier builds saved from the leaderboard
+// (received, not the player's: the original's internet rows) stay out, since
+// the board's latest answer replaces them.
+FILE *highscore_table_open(char *path) {
+  static char *table;
+  FILE *file = platform_fopen(path, "rb");
+  scores_shown.clear();
+  if (!ranked_enabled)
+    return file;
+  ScoresBoard board;
+  std::vector<ScoresRun> runs;
+  if (config_blob.show_online_scores && scores_board(board)) {
+    auto kept = scores_kept.find(board);
+    if (kept != scores_kept.end())
+      runs = kept->second;
+    else if (!scores_out && !scores_asked.count(board))
+      scores_send(board, true);
+  }
+  size_t size = 0;
+  free(table);
+  table = nullptr;
+  FILE *out = open_memstream(&table, &size);
+  highscore_record_t record;
+  while (file && !feof(file)) {
+    if (!highscore_read_record((char *)&record, file) || ((record.flags & 1) && !(record.flags & 2)))
+      continue;
+    for (size_t i = 0; i < runs.size(); ++i)
+      if (!strcmp(runs[i].record.player_name, record.player_name) &&
+          runs[i].record.run_elapsed_ms == record.run_elapsed_ms && runs[i].record.score_xp == record.score_xp) {
+        record.flags |= 1;
+        scores_shown.push_back({record, runs[i].run});
+        runs.erase(runs.begin() + (ptrdiff_t)i);
+        break;
+      }
+    highscore_write_record(&record, out);
+  }
+  if (file)
+    fclose(file);
+  for (ScoresRun &run : runs) {
+    highscore_write_record(&run.record, out);
+    scores_shown.push_back(run);
+  }
+  fclose(out);
+  return fmemopen(table, size, "rb");
+}
 }
 
 extern "C" {
@@ -226,12 +310,16 @@ void highscore_sync_worker(void *arg) {
   if (!ranked_enabled)
     return highscore_sync_worker_recovered(arg);
   // A table with no board is up to date, so Update all goes on past it.
-  if (!scores_board()) {
+  ScoresBoard board;
+  if (!scores_board(board)) {
     online_sync_status = 0;
     return;
   }
   online_sync_status = 1;
-  host_leaderboard(HOST_LEADERBOARD_SCORES);
+  if (scores_out)
+    scores_update_waiting = true;
+  else
+    scores_send(board, false);
 }
 // The board the screen asks for, as the request's JSON body.
 __attribute__((export_name("game_scores_request"))) const char *game_scores_request() { return scores_request; }
@@ -246,16 +334,44 @@ __attribute__((export_name("game_scores_received"))) void game_scores_received(i
   const Json *runs = size >= 0 && (size_t)size < scores_response.size() && json_parse(scores_response.data(), size, answer)
                          ? answer.field("scores", Json::ARRAY)
                          : nullptr;
-  if (!runs) {
-    online_sync_status = 6;
-    return;
+  scores_out = false;
+  if (runs) {
+    std::vector<ScoresRun> &kept = scores_kept[scores_board_asked];
+    kept.clear();
+    for (const Json &run : runs->items) {
+      ScoresRun shown = {};
+      if (!scores_record(run, scores_board_asked, shown.record))
+        continue;
+      if (const Json *id = run.field("run", Json::STRING); id && scores_run_id(id->text))
+        shown.run = id->text;
+      // The record's tag names its run (FNV-1a), so two runs with the same
+      // name, numbers and day stay apart in the table.
+      uint32_t tag = 2166136261u;
+      for (char c : shown.run)
+        tag = (tag ^ (uint8_t)c) * 16777619u;
+      shown.record.random_tag = tag;
+      kept.push_back(shown);
+    }
   }
-  scores_save(runs->items);
-  // As the original after a sync: all-time scores, the internet's shown.
-  config_blob.highscore_date_mode = 0;
-  config_blob.show_online_scores = 1;
+  if (!scores_out_quiet) {
+    online_sync_status = runs ? 0 : 6;
+    // As the original after a sync: all-time scores, the internet's shown.
+    if (runs) {
+      config_blob.highscore_date_mode = 0;
+      config_blob.show_online_scores = 1;
+    }
+  }
+  // The table reads the board's new runs, and asks for a board shown meanwhile.
   highscore_load_table_thunk();
-  online_sync_status = 0;
+  // Update scores pressed while a quiet request was out asks for the board shown now.
+  ScoresBoard board;
+  if (scores_update_waiting && !scores_out) {
+    scores_update_waiting = false;
+    if (scores_board(board))
+      scores_send(board, false);
+    else
+      online_sync_status = 0;
+  }
 }
 
 bool ui_checkbox_update(float *xy, ui_checkbox_t *checkbox);

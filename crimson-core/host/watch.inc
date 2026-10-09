@@ -10,6 +10,8 @@
 // screen's Back then leaves for the Statistics menu.
 #include <algorithm>
 #include <deque>
+#include <map>
+#include <sys/stat.h>
 extern "C" {
 extern unsigned char run_active, screen_fade_ramp_flag;
 extern ui_element_t ui_sign_crimson;
@@ -366,6 +368,59 @@ static void watch_render() {
   watch_draw();
 }
 
+// A board run's replay, which the host fetches from /runs/<run>.crd into
+// replays/online/<run>.crd (HOST_LEADERBOARD_REPLAY), one at a time; the
+// newest few stay there for the next watch.
+enum WatchDownload { WATCH_DOWNLOADING, WATCH_GONE, WATCH_FAILED };
+static std::map<std::string, WatchDownload> watch_downloads;
+static std::map<std::string, int> watch_failed_pin; // the pin a failed download failed under
+static int watch_pins; // counts pins, each of which the card looks at afresh
+static std::string watch_download; // the run the host is fetching
+static int watch_downloads_done;   // counts finished downloads, which the card looks at again
+static constexpr int WATCH_ONLINE_KEPT = 32;
+
+static void watch_online_path(const std::string &run, char *path, size_t size) {
+  snprintf(path, size, "replays/online/%s.crd", run.c_str());
+}
+// Makes room for one more download: the oldest past the newest few go.
+static void watch_online_prune() {
+  std::vector<std::pair<time_t, std::string>> files;
+  if (DIR *dir = opendir("replays/online")) {
+    while (dirent *entry = readdir(dir)) {
+      std::string path = std::string("replays/online/") + entry->d_name;
+      struct stat st;
+      if (strstr(entry->d_name, ".crd") && !stat(path.c_str(), &st))
+        files.emplace_back(st.st_mtime, path);
+    }
+    closedir(dir);
+  }
+  std::sort(files.begin(), files.end());
+  for (size_t i = 0; i + WATCH_ONLINE_KEPT <= files.size(); ++i)
+    unlink(files[i].second.c_str());
+}
+// The card's note for a board run whose replay is not here yet: asks the host
+// for it, or says why it does not come.
+static const char *watch_online_note(const std::string &run) {
+  auto known = watch_downloads.find(run);
+  if (known != watch_downloads.end() && known->second == WATCH_GONE)
+    return "This run is no longer on the leaderboard";
+  // A failed download shows while its pin lasts; the next pin tries again.
+  if (known != watch_downloads.end() && known->second == WATCH_FAILED) {
+    if (watch_failed_pin[run] == watch_pins)
+      return "Could not download this run";
+    watch_downloads.erase(known);
+  }
+  if (watch_download.empty()) {
+    mkdir("replays", 0755);
+    mkdir("replays/online", 0755);
+    watch_online_prune();
+    watch_download = run;
+    watch_downloads[run] = WATCH_DOWNLOADING;
+    host_leaderboard(HOST_LEADERBOARD_REPLAY);
+  }
+  return "Downloading the run...";
+}
+
 // The numbered replay a local high score record names (replay_save), or none.
 static bool replay_numbered(int number, char *path, size_t size) {
   bool found = false;
@@ -399,6 +454,7 @@ int highscore_watch_row(int hovered, int rows, int *selected) {
     if (!memcmp(&highscore_table[i], &pinned, sizeof pinned))
       row = i;
   if (click && hovered >= 0) {
+    ++watch_pins;
     has_pin = hovered != row;
     row = has_pin ? hovered : -1;
     if (has_pin)
@@ -413,21 +469,34 @@ int highscore_watch_row(int hovered, int rows, int *selected) {
 // the record's replay plays, or the card says why not.
 void highscore_watch(float *card, highscore_record_t *record) {
   static highscore_record_t shown;
+  static std::string shown_run;
+  static int downloads_seen, pins_seen;
   static LoadedReplay target;
   static std::string note;
   static bool named, playable;
   static ui_button_t button = {(char *)"Watch", 0, 0, 1, 0, 0, 0, 1.0f};
-  if (memcmp(record, &shown, sizeof shown)) {
+  const std::string *run = scores_run(*record);
+  if (memcmp(record, &shown, sizeof shown) || (run ? *run : "") != shown_run || downloads_seen != watch_downloads_done ||
+      pins_seen != watch_pins) {
     shown = *record;
+    shown_run = run ? *run : "";
+    downloads_seen = watch_downloads_done;
+    pins_seen = watch_pins;
+    // A local run's replay by its number; a board run's by its id.
     int number;
     memcpy(&number, record->reserved0, sizeof number);
-    named = number > 0;
-    char path[64];
+    char path[96];
+    bool local = number > 0 && replay_numbered(number, path, sizeof path);
+    named = number > 0 || run;
     playable = false;
+    if (!local && run)
+      watch_online_path(*run, path, sizeof path);
     if (!named)
       note.clear();
-    else if (!replay_numbered(number, path, sizeof path))
+    else if (!local && !run)
       note = "Its replay was not saved";
+    else if (!local && access(path, F_OK))
+      note = watch_online_note(*run);
     else if (!replay_read_file(path, target))
       note = target.reason;
     else if (config_blob.screen_width != 1024 || config_blob.screen_height != 768)
@@ -456,6 +525,22 @@ void highscore_watch(float *card, highscore_record_t *record) {
   }
   if (pressed)
     watch_start(target);
+}
+
+// The board run whose replay the host fetches into replays/online/<run>.crd.
+__attribute__((export_name("game_replay_download"))) const char *game_replay_download() { return watch_download.c_str(); }
+// The host's fetch ended: 0 the file is written, 1 the leaderboard no longer
+// has the run, 2 it could not be fetched.
+__attribute__((export_name("game_replay_downloaded"))) void game_replay_downloaded(int result) {
+  if (watch_download.empty())
+    return;
+  if (result == 0)
+    watch_downloads.erase(watch_download);
+  else
+    watch_downloads[watch_download] = result == 1 ? WATCH_GONE : WATCH_FAILED;
+  watch_failed_pin[watch_download] = watch_pins;
+  watch_download.clear();
+  ++watch_downloads_done;
 }
 
 // Plays the replay game_replay_open read, as Watch plays one (a link to a run,

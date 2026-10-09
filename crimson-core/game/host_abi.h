@@ -31,8 +31,9 @@ HOST_IMPORT(fatal) [[noreturn]] void host_fatal(const char *message);
 HOST_IMPORT(message) void host_message(const char *text, const char *caption);
 HOST_IMPORT(time_ms) unsigned host_time_ms(void);
 // The leaderboard (host/ranked.inc): open the player's profile, signed in
-// (game_login_challenge), upload the runs waiting in leaderboard/outbox/, or
-// fetch a board's scores for the high score screen (game_scores_request).
-enum { HOST_LEADERBOARD_PROFILE = 1, HOST_LEADERBOARD_UPLOAD = 2, HOST_LEADERBOARD_SCORES = 3 };
+// (game_login_challenge), upload the runs waiting in leaderboard/outbox/,
+// fetch a board's scores for the high score screen (game_scores_request), or
+// fetch a board run's replay to watch (game_replay_download, host/watch.inc).
+enum { HOST_LEADERBOARD_PROFILE = 1, HOST_LEADERBOARD_UPLOAD = 2, HOST_LEADERBOARD_SCORES = 3, HOST_LEADERBOARD_REPLAY = 4 };
 HOST_IMPORT(leaderboard) void host_leaderboard(int request);
 }
