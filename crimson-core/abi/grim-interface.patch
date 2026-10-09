@@ -1,0 +1,21 @@
+A Grim config value holds a pointer in a 32-bit word, and VC6 converts a string literal to char *, where C++17
+would pick the bool overload.
+--- a/tools/match/include/grim2d_cpp.h
++++ b/tools/match/include/grim2d_cpp.h
+@@ -1,5 +1,6 @@
+ #ifndef GRIM2D_CPP_H
+ #define GRIM2D_CPP_H
++#include <stdint.h>
+ 
+ #include "cl_build.h"
+ 
+@@ -10,7 +11,8 @@
+     grim_config_value_t(unsigned int value) { words[0] = value; }
+     grim_config_value_t(float value) { *(float *)words = value; }
+     grim_config_value_t(bool value) { *(bool *)words = value; }
+-    grim_config_value_t(char *value) { words[3] = (unsigned int)value; }
++    grim_config_value_t(const char *value) { words[3] = (unsigned int)(uintptr_t)value; }
++    grim_config_value_t(char *value) { words[3] = (unsigned int)(uintptr_t)value; }
+ 
+     operator bool() const { return *(const bool *)words; }
+ };

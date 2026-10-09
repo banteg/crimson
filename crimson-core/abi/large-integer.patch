@@ -1,0 +1,13 @@
+The SDK header's LARGE_INTEGER lacks the QuadPart view; the counter overwrites it anyway.
+--- a/decomp/1.9/crimsonland/crimsonland/game_startup_init_prelude.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/game_startup_init_prelude.cpp
+@@ -57,7 +57,8 @@
+     grim_interface_ptr->grim_set_config_var(0x10, s_empty_string);
+ 
+     LARGE_INTEGER counter;
+-    counter.QuadPart = local_system_time.wMilliseconds;
++    counter.LowPart = local_system_time.wMilliseconds;
++    counter.HighPart = 0;
+     QueryPerformanceCounter(&counter);
+     crt_srand(counter.LowPart);
+ 

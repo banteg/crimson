@@ -5,8 +5,24 @@ import json
 import re
 from pathlib import Path
 
+from adapter import DIFFS, NOT_CPP_LINKAGE, prototypes, sub
+
 HERE = Path(__file__).resolve().parent
 GAME = HERE / "game"
+# changes/: what the client changes in the recovered game, where its host hooks in and which defaults it picks;
+# patches/: the ranked fixes that only change what is drawn (`NN-*.patch` fixes original bug NN), so they leave the
+# verifier untouched.
+GAME_DIFFS = (*DIFFS, GAME / "changes", GAME / "patches")
+# Signatures the recovered files disagree on, as the game module's definitions have them (adapter.PROTOTYPES): some
+# callers declare sfx_play void, but it returns the voice, which they ignore.
+GAME_PROTOTYPES = {
+    "void sfx_play(int sfx_id, float volume);": "int sfx_play(int sfx_id, float volume);",
+    "void sfx_play(int sfx_id, float gain);": "int sfx_play(int sfx_id, float gain);",
+    "void config_load_presets(int reset);": 'extern "C" bool config_load_presets(bool skip_grim_settings);',
+    "void ui_checkbox_update(float *xy, ui_checkbox_t *checkbox);": "bool ui_checkbox_update(float *xy, ui_checkbox_t *checkbox);",
+    "unsigned char game_is_full_version(...);": "unsigned char game_is_full_version(void);",
+    "void config_sync_from_grim(void);": "bool config_sync_from_grim(void);",
+}
 
 
 def game_sources(root):
@@ -30,54 +46,31 @@ def game_sources(root):
     return found
 
 
+def game_wrapped(root):
+    # The recovered functions the host wraps, by the file that defines each: a
+    # simulation tick must run some as the verifier does, a run the client plays
+    # drives others, a tick saves nothing, a sound entry the device never created
+    # stays silent, a run's wrapped strings live in its arena and a live run names
+    # the player's keys.
+    spec = json.loads((GAME / "sources.json").read_text())
+    wrapped = [f"decomp/1.9/crimsonland/{name}" for name in spec["exe_wrapped"]]
+    if missing := [rel for rel in wrapped if not (root / rel).exists()]:
+        raise SystemExit(f"Wrapped sources not found: {', '.join(missing)}")
+    return set(wrapped)
+
+
 def object_name(rel):
     # Grim and the executable reuse file names; the path keeps objects apart.
     return re.sub(r"[^A-Za-z0-9_]", "_", str(Path(rel).with_suffix("")).removeprefix("decomp/1.9/"))
 
 
-def game_headers(headers):
-    # Recovered Grim defines every interface method itself.
-    path = headers / "grim2d_cpp.h"
-    text, count = re.subn(r"\) = 0;", ");", path.read_text())
-    if count != 62:
-        raise SystemExit(f"Audit the Grim interface before building the game module ({count} pure methods)")
-    # VC6 converts a string literal to char *; C++17 would pick the bool overload.
-    text = replace_once(
-        text,
-        "    grim_config_value_t(char *value) {",
-        "    grim_config_value_t(const char *value) { words[3] = (unsigned int)(uintptr_t)value; }\n"
-        "    grim_config_value_t(char *value) {",
-        path,
-    )
-    path.write_text(text)
-    # A fresh configuration is the Python port's (grim/config.py default_crimson_cfg):
-    # windowed, since the host owns the window, at 1024x768, the resolution the
-    # verifier simulates, so the client's runs replay as they played (host/session.inc).
-    path = headers / "crimson_config_defaults_impl.h"
-    text = replace_once(
-        path.read_text(),
-        "CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 800;\n    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 600;",
-        "CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 1024;\n    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 768;",
-        path,
-    )
-    path.write_text(
-        replace_once(
-            text,
-            "CRIMSON_CONFIG_DEFAULTS_BLOB.windowed = 0;",
-            "CRIMSON_CONFIG_DEFAULTS_BLOB.windowed = 1;",
-            path,
-        ),
-    )
-    # The gameplay header declares sfx_play void; it returns the voice (crimsonland_audio.h).
-    path = headers / "crimsonland_gameplay.h"
-    path.write_text(
-        replace_once(
-            path.read_text(),
-            "void sfx_play(int sfx_id, float volume);",
-            "int sfx_play(int sfx_id, float volume);",
-            path,
-        ),
-    )
+def game_header(path, text):
+    """The game module's passes over a recovered header."""
+
+    if path.name == "grim2d_cpp.h":
+        # Recovered Grim defines every interface method itself.
+        text = sub(path, r"\) = 0;", ");", text, 62)
+    return prototypes(path, text, GAME_PROTOTYPES)
 
 
 def game_platform():
@@ -89,12 +82,6 @@ def game_platform():
 # 4.0.2 with its Ed25519.
 def game_vendor_c():
     return [GAME / "vendor" / name for name in ("zstd.c", "monocypher.c", "monocypher-ed25519.c")]
-
-
-def replace_once(text, old, new, src):
-    if text.count(old) != 1:
-        raise SystemExit(f"Audit {src.name} before changing this game adapter: {old!r}")
-    return text.replace(old, new)
 
 
 def _blank_comments(text):
@@ -165,325 +152,36 @@ def msvc_argument_order(src, txt):
     return txt
 
 
-# Recovered functions host/game.inc and host/session.inc wrap: a simulation tick
-# must run some as the verifier does, a run the client plays drives others, a
-# tick saves nothing, a sound entry the device never created stays silent, and
-# a run's wrapped strings live in its arena. The recovered body keeps a
-# _recovered name.
-SEAMS = (
-    "format_ordinal",
-    "fx_queue_render",
-    "game_save_status",
-    "game_state_set",
-    "gameplay_render_world",
-    "gameplay_update_and_render",
-    "highscore_sync_worker",
-    "input_primary_just_pressed",
-    "music_play_exclusive",
-    "play_time_get",
-    "sfx_entry_start_playback",
-    "ui_elements_update_and_render",
-    "wrap_text_to_width_alloc",
-)
+def adapt_game(src, txt, wrapped=False):
+    """The game module's passes, after the verifier's (adapter.adapt)."""
 
-
-def session_seam(session, original, statement=False):
-    # The game module takes the recorded input only inside a session (host/game.inc).
-    if statement:
-        return f"if (game_ticking) {{\n{session}\n}} else {{\n{original}\n}}"
-    return f"(game_ticking ? ({session}) : ({original}))"
-
-
-def adapt_game(src, txt):
     if src.suffix == ".c":
         # The adapter gives C linkage to the common return types; the rest of a
         # C file's top-level functions need it too.
-        txt = re.sub(
-            r'(?m)^(?!static |typedef |return |extern "C")(extern )?((?:(?:unsigned|signed|const|struct) )*\w+ ?\**) ?(\w+)\(',
+        txt = sub(
+            src,
+            rf'(?m)^(?!static |typedef |return |extern "C")(extern )?((?:(?:unsigned|signed|const|struct) )*\w+ ?\**) ?'
+            rf"{NOT_CPP_LINKAGE}(\w+)\(",
             r'extern "C" \2 \3(',
             txt,
+            None,
         )
     txt = msvc_argument_order(src, txt)
     # Files open through the platform layer, which takes Windows paths.
-    txt = re.sub(r"\bfopen\(", "platform_fopen(", txt)
+    txt = sub(src, r"\bfopen\(", "platform_fopen(", txt, None)
     # The static CRT behind the crt_ wrappers has C linkage, whatever a file declares.
-    txt = re.sub(
+    txt = sub(
+        src,
         r'(?m)^(?!extern "C")((?:(?:unsigned|const|struct) )*\w+ ?\**) ?(crt_\w+)\(',
         r'extern "C" \1 \2(',
         txt,
+        None,
     )
-    if "game_ticking" in txt:
-        txt = 'extern "C" unsigned char game_ticking;\n' + txt
-    if src.stem in SEAMS:
-        txt, count = re.subn(rf"\b{src.stem}\(", f"{src.stem}_recovered(", txt)
-        if not count:
-            raise SystemExit(f"Audit {src.name} before changing its seam")
-    if src.parent.name == "texture" and src.stem == "load_file":
-        # The distributed crimson.paq stores some images decoded, under the same
-        # path with their own extension: Grim loads the stored entry by what it
-        # holds (game/repack.cpp).
-        txt = replace_once(
-            txt,
-            "    bool found_in_lookup = false;",
-            "    path = grim_lookup_blob_entry(path);\n    bool found_in_lookup = false;",
-            src,
-        )
-        txt = "char *grim_lookup_blob_entry(char *path);\n" + txt
-    if src.parent.name == "app" and src.stem == "init_system":
-        txt = replace_once(
-            txt,
-            'grim_lookup_blob_find("load\\\\smallFnt.dat")',
-            'grim_lookup_blob_find(grim_lookup_blob_entry((char *)"load\\\\smallFnt.dat"))',
-            src,
-        )
-        txt = "char *grim_lookup_blob_entry(char *path);\n" + txt
-    if src.stem == "gameplay_update_and_render":
-        # The verifier lays out no perk prompt, so a click in a tick never opens
-        # the menu; the run takes a click on it between ticks (host/session.inc).
-        txt = replace_once(
-            txt,
-            "            } else if (relative_mouse.x > perk_prompt_bounds_min_x",
-            "            } else if (!game_ticking && relative_mouse.x > perk_prompt_bounds_min_x",
-            src,
-        )
-        if 'extern "C" unsigned char game_ticking;' not in txt:
-            txt = 'extern "C" unsigned char game_ticking;\n' + txt
-    if src.stem == "config_ensure_file":
-        # The original writes a missing crimson.cfg with violence off; a fresh
-        # configuration is the Python port's, which keeps it on.
-        txt = replace_once(txt, "    config_violence_disabled = 1;\n", "", src)
-    if src.stem == "play_game_menu_update":
-        # The Ranked row (host/ranked.inc): a ranked attempt lists only the modes
-        # that rank, Quests and Survival, and plays one player.
-        txt, count = re.subn(
-            r"(\n(\s+)ui_button_update\(\(float \*\)&position, \(ui_button_t \*\)&rush_button\);\n"
-            r"\s+if \(show_play_counts\) \{\n(?:.*\n)*?\2\}\n\2position\.y \+= (?:32|28)\.0f;\n)",
-            lambda m: f"\n{m[2]}if (!ranked_checked) {{{m[1]}{m[2]}}}\n",
-            txt,
-        )
-        if count != 2:
-            raise SystemExit(f"Audit {src.name}: Rush rows ({count})")
-        txt = replace_once(
-            txt,
-            "        if (game_is_full_version()) {",
-            "        if (!ranked_checked && game_is_full_version()) {",
-            src,
-        )
-        txt = replace_once(
-            txt,
-            "            }\n        }\n        position.y += 28.0f;\n\n        if (quest_play_counts[11]",
-            "            }\n        }\n        if (!ranked_checked)\n            position.y += 28.0f;\n\n        if (quest_play_counts[11]",
-            src,
-        )
-        txt, count = re.subn(
-            r"if \((mode_play_rush \+ quest_play_counts\[11\] \+ mode_play_survival|quest_play_counts\[11\] \+ mode_play_survival \+ mode_play_rush) ([<>]=? 0)\)",
-            r"if (!ranked_checked && \1 \2)",
-            txt,
-        )
-        if count != 4:
-            raise SystemExit(f"Audit {src.name}: tutorial rows ({count})")
-        txt = replace_once(
-            txt,
-            "    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);\n    int selected = ui_list_widget_update(",
-            "    player_count_list.enabled = !ranked_checked;\n"
-            "    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.81f);\n    int selected = ui_list_widget_update(",
-            src,
-        )
-        txt = replace_once(
-            txt,
-            "    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);\n\n    if (quests_button.hover_anim > 0) {",
-            "    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);\n"
-            "    ranked_menu(base_position.v, position.v, player_count_list.open != 0);\n\n"
-            "    if (quests_button.hover_anim > 0) {",
-            src,
-        )
-        txt = (
-            'extern "C" bool ranked_checked;\nextern "C" void ranked_menu(float *base, float *tips, bool list_open);\n'
-            + txt
-        )
-    if src.stem == "highscore_load_table":
-        # The table reads the leaderboard's runs after its own records (host/ranked.inc).
-        txt = replace_once(txt, '    fp = platform_fopen(path, "rb");', "    fp = highscore_table_open(path);", src)
-        txt = replace_once(
-            txt,
-            'extern "C" void highscore_load_table(void)',
-            'extern "C" FILE *highscore_table_open(char *path);\nextern "C" void highscore_load_table(void)',
-            src,
-        )
-    if src.stem == "highscore_screen":
-        # A click on a row pins its card in place of the panel's settings, and the
-        # card offers the run's replay to watch (host/watch.inc).
-        txt = replace_once(
-            txt,
-            "    int hovered_score = score_scrollbar.hovered_index;\n"
-            "    if (hovered_score != -1) {\n        selected_score = hovered_score;\n    }\n",
-            "    int hovered_score = score_scrollbar.hovered_index;\n"
-            "    selected_score = highscore_watch_row(hovered_score, score_count, &score_scrollbar.selected_index);\n",
-            src,
-        )
-        txt = replace_once(
-            txt,
-            "            selected_score + 1);\n        position = saved_position;\n",
-            "            selected_score + 1);\n"
-            "        if (hovered_score == -1 && (online_sync_status == 0 || online_sync_status == 6))\n"
-            "            highscore_watch((float *)&detail_position, &highscore_table[selected_score]);\n"
-            "        position = saved_position;\n",
-            src,
-        )
-        txt = (
-            'extern "C" int highscore_watch_row(int hovered, int rows, int *selected);\n'
-            'extern "C" void highscore_watch(float *card, struct highscore_record_t *record);\n' + txt
-        )
-    if src.stem == "ui_menu_layout_init":
-        # The Play Game panel grows by the Ranked row (host/ranked.inc).
-        txt = replace_once(
-            txt,
-            "    for (int calc_index = 0; calc_index < 41; calc_index++) {",
-            "    ranked_layout();\n    for (int calc_index = 0; calc_index < 41; calc_index++) {",
-            src,
-        )
-        txt = 'extern "C" void ranked_layout(void);\n' + txt
-    if src.stem == "mods_any_available":
-        # No version runs mods (docs/rewrite/status.md), so the main menu never offers them.
-        txt = replace_once(txt, "    int count = 0;", "    return false;\n    int count = 0;", src)
-    if src.stem == "input_key_name":
-        # Its header defines it; a live run names the player's keys (host/session.inc).
-        txt = "#define input_key_name input_key_name_recovered\n" + txt
-    if src.stem == "perk_selection_screen_update":
-        # In a run the client plays, the choice reaches the run as a command with
-        # its next tick (host/session.inc), which applies it as the verifier does.
-        pick = """        perk_apply(perk_choice_ids[perk_selection_index]);
-        ui_transition_direction = 0;
-        game_state_pending = GAME_STATE_GAMEPLAY;
-        --perk_pending_count;
-        perk_choices_dirty = 1;"""
-        txt = replace_once(
-            txt,
-            pick,
-            "        if (game_live_run()) {\n"
-            "            game_live_pick(perk_selection_index);\n"
-            "            ui_transition_direction = 0;\n"
-            "            game_state_pending = GAME_STATE_GAMEPLAY;\n"
-            f"        }} else {{\n{pick}\n        }}",
-            src,
-        )
-        txt = 'extern "C" bool game_live_run();\nextern "C" void game_live_pick(int choice);\n' + txt
-    # Declaration repairs: the recovered translation units disagree about these
-    # signatures, which wasm32 calls cannot tolerate. Each matches the callers.
-    # Some callers declare sfx_play void; it returns the voice, which they ignore.
-    txt = re.sub(r"\bvoid sfx_play\(int sfx_id, float (gain|volume)\);", r"int sfx_play(int sfx_id, float \1);", txt)
-    if src.stem == "ui_elements_update_and_render":
-        txt = replace_once(
-            txt,
-            "void config_load_presets(int reset);",
-            'extern "C" bool config_load_presets(bool skip_grim_settings);',
-            src,
-        )
-    if src.stem == "game_startup_init_prelude":
-        # The SDK header's LARGE_INTEGER lacks the QuadPart view; the counter overwrites it anyway.
-        txt = replace_once(
-            txt,
-            "counter.QuadPart = local_system_time.wMilliseconds;",
-            "counter.LowPart = local_system_time.wMilliseconds;\n    counter.HighPart = 0;",
-            src,
-        )
-    if src.stem == "highscore_submit_full_version_guard":
-        # A C caller passed an argument the function never takes.
-        txt = replace_once(txt, "game_is_full_version(record)", "game_is_full_version()", src)
-    if src.stem == "controls_menu_update":
-        # This helper flips the list it is given; it is no VC6 temporary.
-        txt = replace_once(txt, "const ui_list_widget_t &list)", "ui_list_widget_t &list)", src)
-    if src.stem == "vorbis_mem_open":
-        # The callbacks spell size_t as the 32-bit unsigned int it was.
-        for field in ("read_func", "seek_func", "close_func", "tell_func"):
-            txt = re.sub(rf"(callbacks\.{field} = )(\w+);", rf"\1(decltype(callbacks.{field}))\2;", txt)
-    if src.stem == "resource_open_read":
-        # The resource header gives this reader C++ linkage, as its other callers use.
-        txt = replace_once(txt, 'extern "C" unsigned char resource_pack_read_cstring(FILE *fp);\n', "", src)
-    if src.stem == "resource_pack_read_cstring":
-        txt = replace_once(
-            txt,
-            'extern "C" unsigned char resource_pack_read_cstring(',
-            "unsigned char resource_pack_read_cstring(",
-            src,
-        )
-    if src.stem == "texture_get_or_load_alt":
-        # Callers pass only the name, which it uses as the path too.
-        txt = replace_once(
-            txt,
-            "texture_get_or_load_alt(char *name, char *path)",
-            "texture_get_or_load_alt(char *name)",
-            src,
-        )
-    if src.stem == "options_menu_update":
-        txt = replace_once(
-            txt,
-            "void ui_checkbox_update(float *xy, ui_checkbox_t *checkbox);",
-            "bool ui_checkbox_update(float *xy, ui_checkbox_t *checkbox);",
-            src,
-        )
-    if src.stem == "tutorial_prompt_dialog":
-        txt = replace_once(txt, "void console_input_poll(void);", "int console_input_poll(void);", src)
-    if src.stem == "game_frame_update":
-        txt = replace_once(
-            txt,
-            "unsigned char game_is_full_version(...);",
-            "unsigned char game_is_full_version(void);",
-            src,
-        )
-        # Its loading-screen calls pass a stage the function never reads.
-        txt = re.sub(r"game_is_full_version\([123]\);", "game_is_full_version();", txt)
-        txt = replace_once(txt, "void config_sync_from_grim(void);", "bool config_sync_from_grim(void);", src)
-        # Escape in a run the client plays asks the run for the pause menu: the
-        # pending state is simulation state, which only ticks write (host/session.inc).
-        txt = replace_once(
-            txt,
-            "        ui_transition_direction = 0;\n        game_state_pending = GAME_STATE_PAUSE_MENU;",
-            "        ui_transition_direction = 0;\n        if (!game_live_pause())\n"
-            "            game_state_pending = GAME_STATE_PAUSE_MENU;",
-            src,
-        )
-        # The console's flag pauses parts of a tick: a run keeps it closed.
-        txt = replace_once(
-            txt,
-            "    if (grim_interface_ptr->grim_was_key_pressed(0x29)) {",
-            "    if (!game_live_run() && grim_interface_ptr->grim_was_key_pressed(0x29)) {",
-            src,
-        )
-        txt = 'extern "C" bool game_live_pause();\nextern "C" bool game_live_run();\n' + txt
-    if src.stem == "console_render":
-        # The console's corner names this build where the original named its release
-        # (host/game.inc), right-aligned for a build's longer name.
-        txt = replace_once(
-            txt,
-            "            screen_width_f - 210.0f,\n            (float)height + slide_y - 18.0f,\n            console_version_string);",
-            "            screen_width_f - 10.0f - grim_interface_ptr->grim_measure_text_width(game_version_label()),\n"
-            "            (float)height + slide_y - 18.0f,\n            game_version_label());",
-            src,
-        )
-        txt = 'extern "C" char *game_version_label();\n' + txt
-    if src.stem == "crimsonland_main":
-        # The console's banner names the build, as its corner does (host/game.inc).
-        txt = replace_once(
-            txt,
-            '    console_printf(&console_log_queue, "-----------\\n");\n',
-            '    console_printf(&console_log_queue, "-----------\\n");\n'
-            '    console_printf(&console_log_queue, "Version: %s\\n", CRIMSON_GAME_VERSION);\n',
-            src,
-        )
-        # The host owns the main loop: startup ends where Grim's run loop began,
-        # and the code after the loop becomes its own entry point (game/frame.cpp).
-        txt = replace_once(
-            txt,
-            "    grim_interface_ptr->grim_apply_settings();\n",
-            '    return 1;\n}\n\nextern "C" int crimsonland_main_exit(void)\n{\n    HKEY status_key;\n',
-            src,
-        )
-    if src.stem == "jaz_decode":
-        # The VC6 declaration spells size_t as a 32-bit unsigned int.
-        txt = replace_once(txt, "operator new(unsigned int size)", "operator new(size_t size)", src)
-    if src.stem == "noop" and "grim" in src.parts:
-        txt = replace_once(txt, 'extern "C" void grim_noop(void)', 'extern "C" void grim_noop(char *, ...)', src)
+    txt = prototypes(src, txt, GAME_PROTOTYPES)
+    if wrapped:
+        # The host wraps this function (game/sources.json); the recovered body keeps a _recovered name, in its
+        # header's declarations too.
+        txt = f"#define {src.stem} {src.stem}_recovered\n" + txt
     return txt
 
 

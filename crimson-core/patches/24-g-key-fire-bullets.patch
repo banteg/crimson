@@ -1,7 +1,7 @@
 Original bug 24: holding G while firing grants free Fire Bullets. The fix ignores the key.
---- a/player_update_heading.cpp
-+++ b/player_update_heading.cpp
-@@ -1157,7 +1157,7 @@
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -1198,7 +1198,7 @@
              - 1.5707964f;
  
  #if CL_BUILD != 10908

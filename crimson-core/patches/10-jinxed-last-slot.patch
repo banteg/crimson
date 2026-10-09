@@ -1,7 +1,7 @@
 Original bug 10: Jinxed picks its creature with `% 0x17f`, so the last pool slot is never hit. The fix uses 0x180.
---- a/perks_update_effects.cpp
-+++ b/perks_update_effects.cpp
-@@ -185,12 +185,12 @@
+--- a/decomp/1.9/crimsonland/game/perks_update_effects.cpp
++++ b/decomp/1.9/crimsonland/game/perks_update_effects.cpp
+@@ -189,12 +189,12 @@
          return;
      }
  

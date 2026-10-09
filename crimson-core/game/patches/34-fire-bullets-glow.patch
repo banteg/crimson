@@ -1,6 +1,6 @@
 Original bug 34: the Fire Bullets glow follows the last projectile slot. The fix tests the type of the projectile it draws.
---- a/projectile_render.cpp
-+++ b/projectile_render.cpp
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
 @@ -1065,7 +1065,7 @@
           projectile_index < PROJECTILE_POOL_CAPACITY;
           ++projectile_index) {

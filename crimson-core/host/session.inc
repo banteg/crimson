@@ -417,7 +417,7 @@ void gameplay_update_and_render() {
     return watch_render();
   // A click on the perk prompt, where the original laid it out, also asks for
   // the perk menu, with this frame's cursor; a tick never hit-tests it, as the
-  // verifier lays out no prompt (game.py).
+  // verifier lays out no prompt (game/changes/live-run.patch).
   // A press is the button going down since the last pass of play.
   bool down = session_grim.IGrim2D_cpp::grim_is_mouse_button_down(0) != 0, pressed = down && !live.click_down;
   live.click_down = down;

@@ -2,6 +2,7 @@
 
 import argparse
 import concurrent.futures
+import difflib
 import json
 import os
 import re
@@ -9,24 +10,24 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from adapter import adapt, session_only
+from adapter import DIFFS, PROTOTYPES, adapt, apply_diffs, load_diffs, prototypes
 from data import data_source
 from game import (
+    GAME_DIFFS,
     adapt_game,
     com_defaults,
     engine_globals,
     game_data,
-    game_headers,
+    game_header,
     game_initializers,
     game_platform,
     game_sources,
     game_third_party,
     game_vendor_c,
+    game_wrapped,
     object_name,
-    session_seam,
     simulation_names,
 )
-from rules import GAME_PATCHES, PATCHES, apply_patches, load_patches
 
 HERE = Path(__file__).resolve().parent
 HOST = HERE / "host"
@@ -69,6 +70,11 @@ def main():
     p.add_argument("--root", type=Path, default=HERE.parent)
     p.add_argument("--target", choices=["native", "wasm", "game"], default="native")
     p.add_argument("--out", type=Path)
+    p.add_argument(
+        "--prepare",
+        action="store_true",
+        help="Write the adapted sources and adapted.diff, their changes from decomp/, without compiling",
+    )
     a = p.parse_args()
     a.out = (a.out or HERE / "build" / a.target).resolve()
     a.out.mkdir(parents=True, exist_ok=True)
@@ -86,12 +92,15 @@ def main():
             text,
         )
 
-    for f in (a.root / "tools/match/include").glob("*.h"):
-        text = align_externs(f.read_text())
-        if f.name == "grim2d_cpp.h":
-            text = text.replace("(unsigned int)value", "(unsigned int)(uintptr_t)value")
-            text = "#include <stdint.h>\n" + text
-        (headers / f.name).write_text(text)
+    hunks = load_diffs(GAME_DIFFS if a.target == "game" else DIFFS)
+    adapted = {}  # repository-relative path: (decomp text, adapted text)
+    for f in sorted((a.root / "tools/match/include").glob("*.h")):
+        rel, raw = str(f.relative_to(a.root)), f.read_text()
+        text = prototypes(f, apply_diffs(rel, raw, hunks), PROTOTYPES)
+        if a.target == "game":
+            text = game_header(f, text)
+        adapted[rel] = (raw, align_externs(text))
+        (headers / f.name).write_text(adapted[rel][1])
     (headers / "ogg").mkdir(exist_ok=True)
     (headers / "ogg/config_types.h").write_text(
         "#include <stdint.h>\ntypedef int16_t ogg_int16_t; typedef uint16_t ogg_uint16_t; typedef int32_t ogg_int32_t; typedef uint32_t ogg_uint32_t; typedef int64_t ogg_int64_t;\n",
@@ -99,7 +108,6 @@ def main():
     (headers / "new.h").write_text("#include <new>\n")
     wasm = a.target != "native"
     if a.target == "game":
-        game_headers(headers)
         com_defaults(a.root, headers)
     schema = json.loads((HERE / "schema.json").read_text())
     lines = []
@@ -156,22 +164,27 @@ def main():
         sources += game_sources(a.root)
     name = object_name if a.target == "game" else lambda rel: Path(rel).stem
 
-    hunks = load_patches(PATCHES, *([GAME_PATCHES] if a.target == "game" else []))
-    if missing := sorted(set(hunks) - {Path(rel).stem for rel in sources}):
-        raise SystemExit(f"Patches for sources outside the build: {', '.join(missing)}")
+    # The game module compiles every source the verifier does, so every diff applies there; the verifier skips
+    # the ones for files it leaves out.
+    if a.target == "game" and (missing := sorted(set(hunks) - set(sources) - set(adapted))):
+        raise SystemExit(f"Diffs for files outside the build: {', '.join(missing)}")
+    wrapped = game_wrapped(a.root) if a.target == "game" else set()
 
     def compile_one(rel):
         src = a.root / rel
-        txt = src.read_text()
-        seam = session_seam if a.target == "game" else session_only
-        txt = align_externs(apply_patches(src.stem, adapt(src, txt, seam), hunks))
+        raw = src.read_text()
+        txt = align_externs(adapt(src, apply_diffs(rel, raw, hunks)))
         if a.target == "game":
-            txt = adapt_game(src, txt)
+            txt = adapt_game(src, txt, rel in wrapped)
+        adapted[rel] = (raw, txt)
         dst = a.out / (name(rel) + ".cpp")
         dst.write_text(f'#line 1 "{src}"\n' + txt)
+        if a.prepare:
+            return None
         obj = a.out / (name(rel) + ".o")
         proc = subprocess.run(
-            cc + flags + ["-c", str(dst), "-o", str(obj)],
+            # Every recovered source sees what the edits to it call (host/hooks.h).
+            cc + flags + ["-include", str(HOST / "hooks.h"), "-c", str(dst), "-o", str(obj)],
             env=env,
             capture_output=True,
             text=True,
@@ -183,6 +196,17 @@ def main():
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
         errors = [r for r in pool.map(compile_one, sources) if r]
+    if a.prepare:
+        changed = {rel: texts for rel, texts in sorted(adapted.items()) if texts[0] != texts[1]}
+        (a.out / "adapted.diff").write_text(
+            "".join(
+                line
+                for rel, (old, new) in changed.items()
+                for line in difflib.unified_diff(old.splitlines(True), new.splitlines(True), f"a/{rel}", f"b/{rel}")
+            ),
+        )
+        print(f"{len(changed)}/{len(adapted)} files differ from decomp/: {a.out / 'adapted.diff'}")
+        return
     (a.out / "errors.txt").write_text("\n".join(f"{s}\n{e}" for s, e in errors))
     print(f"{len(sources) - len(errors)}/{len(sources)} compiled; errors: {a.out / 'errors.txt'}")
     if errors:

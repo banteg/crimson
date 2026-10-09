@@ -1,6 +1,6 @@
 Original bug 28: bullet heads and plasma cores are never visible. The fix samples the whole bullet sprite and draws heads on bullets and pellets only.
---- a/projectile_render.cpp
-+++ b/projectile_render.cpp
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
 @@ -1087,6 +1087,9 @@
      grim_interface_ptr->grim_set_color(
          0.8f, 0.8f, 0.8f, transition_alpha * 0.9f);

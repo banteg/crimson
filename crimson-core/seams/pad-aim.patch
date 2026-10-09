@@ -1,0 +1,22 @@
+Pad aim is recorded as the stick's reach (0x0041539e..0x004153ba); it still lands on the position movement just
+produced.
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -959,6 +959,9 @@
+                 - 1.5707964f;
+         }
+         if (aim_scheme == 4) {
++            if (PORTABLE_RECORDED) {
++                *(vec2_t *)&player->aim = vec2_t(portable_aim_x(), portable_aim_y()) + *(vec2_t *)&player->position;
++            } else {
+             scalar = grim_interface_ptr->grim_get_config_float(
+                 player->input.axis_aim_y);
+             vec2_t pad;
+@@ -976,6 +979,7 @@
+             D3DXVec2Normalize(&pad, &pad);
+             float distance = scalar * cv_padAimDistMul->value + 42.0f;
+             *(vec2_t *)&player->aim = pad * distance + *(vec2_t *)&player->position;
++            }
+             player->aim_heading =
+                 VEC2_Angle(
+                     *(vec2_t *)&player->position - *(vec2_t *)&player->aim)
