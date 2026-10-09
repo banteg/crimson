@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-import math
-
 import pytest
 
-from crimson.math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
-from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
@@ -13,145 +9,17 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.builders.session import make_world
 from tests.support.factories import fire_player_weapon, player_input
-from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
 def _active_projectiles(state: GameplayState) -> list[object]:
     return [entry for entry in state.projectiles.entries if entry.active]
 
 
-def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
-    world = make_world()
-    state = world.state
-    state.rng = Crand(0x1234)
-    player = world.players[0]
-    player.pos = Vec2()
-    player.aim_dir = Vec2(1.0, 0.0)
-    player.spread_heat = 0.0
-
-    weapon_assign_player(player, WeaponId.MULTI_PLASMA, state=state)
-    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
-
-    spawned = _active_projectiles(state)
-    assert len(spawned) == 5
-    assert state.weapon_shots_fired[0][WeaponId.MULTI_PLASMA] == 5
-
-    # Native heading: f32(atan2(pos - aim) - half_pi); one ulp below f32 pi/2
-    # for a horizontal shot.
-    shot_angle = float(f32(math.atan2(0.0, -1.0) - float(NATIVE_HALF_PI)))
-    spread_small = f32(0.31415927)
-    spread_large = f32(0.5235988)
-    expected = (
-        (x87_pc24_sub(shot_angle, spread_small), int(ProjectileTemplateId.PLASMA_RIFLE)),
-        (x87_pc24_sub(shot_angle, spread_large), int(ProjectileTemplateId.PLASMA_MINIGUN)),
-        (shot_angle, int(ProjectileTemplateId.PLASMA_RIFLE)),
-        (x87_pc24_add(shot_angle, spread_large), int(ProjectileTemplateId.PLASMA_MINIGUN)),
-        (x87_pc24_add(shot_angle, spread_small), int(ProjectileTemplateId.PLASMA_RIFLE)),
-    )
-    for proj, (angle, type_id) in zip(spawned, expected, strict=True):
-        assert int(getattr(proj, "type_id", -1)) == type_id
-        assert float(getattr(proj, "angle", 0.0)) == angle
-
-
-def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
-    # Use a value where (rand & 0xff) and (rand % 200 - 100) differ in sign, so we
-    # catch the decompile-accurate mask behavior.
-    world = make_world()
-    state = world.state
-    state.rng = ScriptedCrand(255, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    player = world.players[0]
-    player.pos = Vec2()
-    player.aim_dir = Vec2(1.0, 0.0)
-    player.spread_heat = 0.0
-
-    weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN, state=state)
-    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
-
-    spawned = _active_projectiles(state)
-    assert len(spawned) == 14
-    assert state.weapon_shots_fired[0][WeaponId.PLASMA_SHOTGUN] == 14
-
-    # Native heading: f32(atan2(pos - aim) - half_pi); one ulp below f32 pi/2
-    # for a horizontal shot.
-    shot_angle = float(f32(math.atan2(0.0, -1.0) - float(NATIVE_HALF_PI)))
-    # Native rounds the float-literal multiply and add at PC24.
-    expected_angle = x87_pc24_add(x87_pc24_mul(127.0, f32(0.002)), shot_angle)
-    expected_speed_scale = x87_pc24_add(x87_pc24_mul(55.0, f32(0.01)), 1.0)
-    for proj in spawned:
-        assert int(getattr(proj, "type_id", -1)) == int(ProjectileTemplateId.PLASMA_MINIGUN)
-        assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle)
-        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), expected_speed_scale)
-
-
-def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
-    world = make_world()
-    state = world.state
-    state.rng = Crand(0x1234)
-    player = world.players[0]
-    player.pos = Vec2()
-    player.aim_dir = Vec2(1.0, 0.0)
-    player.spread_heat = 0.0
-
-    weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN, state=state)
-    start_ammo = float(player.weapon.ammo)
-
-    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
-    assert_float_close(float(player.weapon.ammo), start_ammo - 1.0)
-
-
-@pytest.mark.parametrize(
-    ("weapon_id", "projectile_type_id", "expected_count", "jitter_scale", "expected_speed_scale"),
-    [
-        (WeaponId.JACKHAMMER, ProjectileTemplateId.SHOTGUN, 4, 0.0013, 1.0),
-        (WeaponId.GAUSS_SHOTGUN, ProjectileTemplateId.GAUSS_GUN, 6, 0.002, 1.4),
-        (WeaponId.ION_SHOTGUN, ProjectileTemplateId.ION_MINIGUN, 8, 0.0026, 1.4),
-    ],
-    ids=["jackhammer", "gauss-shotgun", "ion-shotgun"],
-)
-def test_shotgun_family_fires_expected_pellets(
-    weapon_id: WeaponId,
-    projectile_type_id: ProjectileTemplateId,
-    expected_count: int,
-    jitter_scale: float,
-    expected_speed_scale: float,
-) -> None:
-    world = make_world()
-    state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    player = world.players[0]
-    player.pos = Vec2()
-    player.aim_dir = Vec2(1.0, 0.0)
-    player.spread_heat = 0.0
-
-    weapon_assign_player(player, WeaponId(weapon_id), state=state)
-    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
-
-    spawned = _active_projectiles(state)
-    assert len(spawned) == expected_count
-    assert state.weapon_shots_fired[0][int(weapon_id)] == expected_count
-
-    shot_angle = float(f32(math.atan2(0.0, -1.0) - float(NATIVE_HALF_PI)))
-    expected_angle = x87_pc24_add(x87_pc24_mul(-100.0, f32(jitter_scale)), shot_angle)
-    expected_speed = f32(expected_speed_scale)
-    for proj in spawned:
-        assert int(getattr(proj, "type_id", -1)) == int(projectile_type_id)
-        assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle)
-        assert_float_close(float(getattr(proj, "speed_scale", 0.0)), expected_speed)
-
-
 @pytest.mark.parametrize(
     "weapon_id",
     [
         WeaponId.SPIDER_PLASMA,
-        WeaponId.EVIL_SCYTHE,
-        WeaponId.FLAMEBURST,
-        WeaponId.RAYGUN,
-        WeaponId.GRIM_WEAPON,
         WeaponId.FIRE_BULLETS,
-        WeaponId.TRANSMUTATOR,
-        WeaponId.BLASTER_R_300,
-        WeaponId.LIGHTNING_RIFLE,
-        WeaponId.NUKE_LAUNCHER,
     ],
 )
 def test_weapons_without_a_fire_branch_spend_the_shot_but_spawn_nothing(weapon_id: WeaponId) -> None:

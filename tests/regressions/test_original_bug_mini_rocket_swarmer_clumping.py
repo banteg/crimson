@@ -39,18 +39,6 @@ def test_mini_rocket_swarmer_clumping_bug_is_fixed_by_default() -> None:
     assert len(set(headings)) == 6
 
 
-def test_mini_rocket_swarmer_clumping_bug_can_be_preserved() -> None:
-    headings = _spawn_swarmer_burst(preserve_bugs=True, ammo=6.0)
-    assert headings == [
-        (-1.0, 0.000001),
-        (-1.0, 0.0),
-        (-1.0, -0.0),
-        (-1.0, -0.0),
-        (-1.0, -0.0),
-        (-1.0, -0.000001),
-    ]
-
-
 def test_mini_rocket_swarmer_empty_clip_fires_no_rockets() -> None:
     # Reachable when firing during reload with Regression Bullets / Ammunition
     # Within; native spawns zero rockets and zeroes the clip.

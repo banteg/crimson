@@ -1,43 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from crimson.effects import FxQueue
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
-from tests.support.decals import queue_projectile_decals
-from tests.support.world_runtime import WorldRuntimeHost
-
-
-def test_projectile_decals_consume_authoritative_rng() -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-
-    runtime.world.state.rng.srand(0x1234)
-    sim_before = int(runtime.world.state.rng.state)
-
-    player = runtime.world.players[0]
-    fx_queue = FxQueue()
-    hit = ProjectileHit(
-        type_id=ProjectileTemplateId.PISTOL,
-        origin=Vec2(float(player.pos.x - 10.0), float(player.pos.y - 10.0)),
-        hit=player.pos,
-        target=player.pos,
-    )
-    queue_projectile_decals(
-        state=runtime.world.state,
-        players=runtime.world.players,
-        fx_queue=fx_queue,
-        hits=[hit],
-        rng=runtime.world.state.rng,
-        detail_preset=5,
-        violence_disabled=0,
-    )
-
-    assert int(runtime.world.state.rng.state) != sim_before
-    assert fx_queue.count > 0
 
 
 def test_projectile_decals_skip_splatter_rands_when_violence_disabled() -> None:

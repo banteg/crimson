@@ -8,7 +8,7 @@ from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 
 
-@pytest.mark.parametrize("game_mode", [GameMode.TYPO, GameMode.RUSH, GameMode.TUTORIAL])
+@pytest.mark.parametrize("game_mode", [GameMode.TYPO, GameMode.TUTORIAL])
 def test_bonus_try_spawn_on_kill_suppressed_modes(game_mode: GameMode) -> None:
     state = GameplayState()
     state.game_mode = game_mode

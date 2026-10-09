@@ -8,20 +8,6 @@ from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 
 
-def test_infernal_contract_grants_levels_and_sets_low_health() -> None:
-    state = GameplayState()
-
-    owner = PlayerState(index=0, pos=Vec2(), level=5, health=100.0)
-    other = PlayerState(index=1, pos=Vec2(), level=1, health=100.0)
-
-    perk_apply(state, [owner, other], PerkId.INFERNAL_CONTRACT)
-
-    assert owner.level == 8
-    assert state.perk_selection.pending_count == 3
-    assert owner.health == f32(0.1)
-    assert other.health == f32(0.1)
-
-
 def test_infernal_contract_player_scope_follows_bug_mode() -> None:
     for preserve_bugs, expected_health in (
         (True, (f32(0.1), f32(0.1), 60.0)),

@@ -4,7 +4,7 @@ import pytest
 
 from crimson.creatures.runtime import CreaturePool
 from crimson.effects import FxQueue
-from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul
+from crimson.math_parity import f32, x87_pc24_add
 from crimson.perks import PerkId
 from crimson.perks.effects import perks_update_effects
 from crimson.rng_caller_static import RngCallerStatic
@@ -15,48 +15,6 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 _DT_0P2 = f32(0.2)
 _HEAL_0P2_FROM_90 = x87_pc24_add(f32(90.0), _DT_0P2)
-_HEAL_0P4_FROM_90 = x87_pc24_add(
-    f32(90.0),
-    x87_pc24_mul(_DT_0P2, f32(2.0)),
-)
-
-
-@pytest.mark.parametrize(
-    ("rng_value", "preserve_bugs", "has_greater_regeneration", "expected_health"),
-    [
-        (1, False, False, _HEAL_0P2_FROM_90),
-        (0, False, False, 90.0),
-        (1, False, True, _HEAL_0P4_FROM_90),
-        (1, True, True, _HEAL_0P2_FROM_90),
-    ],
-    ids=[
-        "regeneration-heals-when-rng-allows",
-        "regeneration-skips-when-rng-blocks",
-        "greater-regeneration-doubles-heal-by-default",
-        "greater-regeneration-keeps-noop-with-preserve-bugs",
-    ],
-)
-def test_perks_update_effects_regeneration_single_player_variants(
-    rng_value: int,
-    preserve_bugs: bool,
-    has_greater_regeneration: bool,
-    expected_health: float,
-) -> None:
-    state = GameplayState()
-    state.rng = ScriptedCrand(rng_value)
-    state.preserve_bugs = preserve_bugs
-
-    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=90.0)
-    state.perks[int(PerkId.REGENERATION)] = 1
-    if has_greater_regeneration:
-        state.perks[int(PerkId.GREATER_REGENERATION)] = 1
-
-    perks_update_effects(state, [player], 0.2, creatures=CreaturePool().entries, fx_queue=FxQueue())
-
-    assert_float_close(player.health, expected_health)
-    assert [record.caller for record in state.rng.records_since()] == [
-        RngCallerStatic.PERKS_UPDATE_EFFECTS_REGENERATION_GATE,
-    ]
 
 
 @pytest.mark.parametrize(

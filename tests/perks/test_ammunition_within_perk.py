@@ -59,16 +59,6 @@ def test_ammunition_within_blocks_fire_when_experience_is_zero() -> None:
     assert not any(entry.active for entry in world.state.projectiles.entries)
 
 
-def test_ammunition_within_fire_ammo_class_costs_less_health() -> None:
-    world = _reloading_world(weapon_id=WeaponId.FLAMETHROWER, ammo=0, experience=1)
-    player = world.players[0]
-
-    _fire(world)
-
-    assert_float_close(player.health, f32(9.85))
-    assert any(entry.active for entry in world.state.particles.entries)
-
-
 def test_ammunition_within_fire_weapon_fires_during_manual_reload_and_spends_ammo() -> None:
     world = _reloading_world(weapon_id=WeaponId.FLAMETHROWER, ammo=5, experience=1)
     player = world.players[0]

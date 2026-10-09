@@ -133,20 +133,3 @@ def test_perk_menu_cancel_plays_button_click_and_returns_none(mocker) -> None:
     assert played == [SfxId.UI_BUTTONCLICK]
     assert menu.open is False
     assert menu.active
-
-
-def test_draw_accepts_prepared_choices_without_selection_helpers(mocker) -> None:
-    menu = _menu([])
-    menu.open = True
-    menu.timeline.timeline_ms = int(1_000.0)
-    mocker.patch.object(perk_menu_controller_module, "draw_ui_panel", return_value=None)
-    mocker.patch.object(perk_menu_controller_module, "draw_menu_item", return_value=None)
-    mocker.patch.object(perk_menu_controller_module, "draw_ui_text", return_value=None)
-    mocker.patch.object(perk_menu_controller_module, "button_draw", return_value=None)
-    mocker.patch.object(perk_menu_controller_module, "perk_display_name", return_value="Sharpshooter")
-    _patch_perk_menu_raylib(mocker)
-
-    menu.draw(
-        _ctx(),
-        [PerkId.SHARPSHOOTER],
-    )

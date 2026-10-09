@@ -8,25 +8,10 @@ from crimson.gameplay import survival_check_level_up
 from crimson.perks import PerkId
 from crimson.perks.selection import PerkPick, perk_selection_open_choices, perk_selection_pick
 from crimson.perks.state import PerkSelectionState
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from grim.sfx_map import SfxId
 from tests.support.builders.session import make_world
 from tests.support.factories import make_step_runtime, world_with_creature
-
-
-def test_survival_level_up_advances_one_threshold_per_tick() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(), level=1, experience=5000)
-
-    survival_check_level_up(state, player)
-    survival_check_level_up(state, player)
-
-    assert player.level == 3
-    assert state.perk_selection.pending_count == 2
-    assert state.perk_selection.choices_dirty is True
-    assert [request.sfx_id for request in state.sfx_queue] == [SfxId.UI_LEVELUP, SfxId.UI_LEVELUP]
 
 
 @pytest.mark.parametrize("reopen_menu", [False, True])

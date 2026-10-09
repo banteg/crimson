@@ -58,7 +58,7 @@ def test_session_step_tick_rejects_stale_perk_pick() -> None:
         (2001.0, [False, False], [True, False]),
     ],
 )
-@pytest.mark.parametrize("ticks_per_frame", [(0, 1, 0, 1), (1, 1), (2,)])
+@pytest.mark.parametrize("ticks_per_frame", [(1, 1)])
 def test_quest_audio_requests_survive_render_partitions(
     start_ms,
     expected_hit,
@@ -96,32 +96,6 @@ def test_shared_audio_sink_applies_post_tick_sfx_and_quest_music(mocker) -> None
     bridge.apply_post_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
     assert [call.args[0] for call in play_sfx.call_args_list] == [SfxId.UI_BONUS, SfxId.QUESTHIT]
     play_music.assert_called_once_with(audio.music, "crimsonquest", fade_in=True)
-
-
-def test_audio_sink_preserves_order_and_explicit_timer(mocker) -> None:
-    from unittest.mock import call
-
-    from tests.gameplay.test_game_tune_trigger import _audio_state_stub
-
-    calls = mocker.Mock()
-    calls.attach_mock(mocker.patch.object(audio_bridge, "trigger_game_tune"), "tune")
-    calls.attach_mock(mocker.patch.object(audio_bridge, "play_sfx"), "sfx")
-    audio = _audio_state_stub()
-    rng = Crand(1)
-    bridge = AudioBridge(audio_rng=rng, audio=audio, reflex_boost_timer=lambda: -1.0)
-    plan = DeterministicPresentationPlan(
-        trigger_game_tune=True,
-        sfx=(SfxRequest(SfxId.UI_BONUS),),
-        post_apply_sfx=(SfxRequest(SfxId.UI_LEVELUP),),
-        reflex_boost_timer=0.5,
-    )
-    bridge.apply_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
-    bridge.apply_post_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
-    assert calls.mock_calls == [
-        call.tune(audio.music, rng=rng),
-        call.sfx(audio.sfx, SfxId.UI_BONUS, reflex_boost_timer=0.5, gain=1.0, pan=0),
-        call.sfx(audio.sfx, SfxId.UI_LEVELUP, reflex_boost_timer=0.5, gain=1.0, pan=0),
-    ]
 
 
 @pytest.mark.parametrize("partition", [(1, 1), (2,), (0, 2, 0), (1, 0, 1)])

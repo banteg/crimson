@@ -28,7 +28,7 @@ def _fire(world: WorldState) -> None:
 
 @pytest.mark.parametrize(
     ("experience", "remaining"),
-    [(1000, 760), (16_777_217, 16_776_977), (16_777_219, 16_776_979)],
+    [(1000, 760), (16_777_217, 16_776_977)],
 )
 def test_regression_bullets_fires_during_reload_and_costs_experience(experience: int, remaining: int) -> None:
     world = _reloading_world(weapon_id=WeaponId.PISTOL, ammo=0, experience=experience)

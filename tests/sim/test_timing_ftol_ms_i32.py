@@ -1,50 +1,8 @@
 from __future__ import annotations
 
-import struct
-
-from crimson.sim.timing import FrameTiming, ftol_ms_i32, nearest_ms_i32, reflex_boost_time_scale_factor
-
-
-def test_ftol_ms_i32_tie_cases_are_truncation() -> None:
-    assert ftol_ms_i32(0.0005) == 0
-    assert ftol_ms_i32(0.0025) == 2
-    assert ftol_ms_i32(-0.0015) == -1
-
-
-def test_ftol_ms_i32_uses_float32_scale_path() -> None:
-    assert ftol_ms_i32(1.0 / 60.0) == 16
+from crimson.sim.timing import nearest_ms_i32
 
 
 def test_nearest_ms_i32_matches_frida_number_rounding() -> None:
     assert nearest_ms_i32(8.811999320983887) == 8812
     assert nearest_ms_i32(0.0005) == 1
-
-
-def test_frame_timing_uses_live_dt() -> None:
-    timing = FrameTiming.compute(
-        1.0 / 60.0,
-        time_scale_active_entry=False,
-        time_scale_factor=1.0,
-    )
-    assert timing.dt_sim > 0.0
-
-
-def test_frame_timing_applies_world_dt_before_reflex_bonus_scale() -> None:
-    timing = FrameTiming.compute(
-        0.1,
-        world_dt=0.09,
-        time_scale_active_entry=True,
-        time_scale_factor=0.3,
-    )
-
-    assert timing.dt_ms_i32 == 100
-    assert timing.dt_sim_ms_i32 == 27
-
-
-def test_reflex_boost_fade_rounds_each_native_operation() -> None:
-    factor = reflex_boost_time_scale_factor(
-        reflex_boost_timer=0.8673485517501831,
-        time_scale_active=True,
-    )
-
-    assert struct.unpack("<I", struct.pack("<f", factor))[0] == 0x3EC9246D

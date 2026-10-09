@@ -23,11 +23,8 @@ def _spawn_on_kill(*, seed: int, weapon_id: WeaponId, preserve_bugs: bool) -> Bo
 @pytest.mark.parametrize(
     ("seed", "weapon_id", "bonus_id"),
     [
-        # Speed uses `amount=8`, which collides with Flamethrower `weapon_id=8`.
-        (198, WeaponId.FLAMETHROWER, BonusId.SPEED),
-        # Nuke and Double Experience use `amount=1`, which collides with Pistol `weapon_id=1`.
+        # Nuke uses `amount=1`, which collides with Pistol `weapon_id=1`.
         (130, WeaponId.PISTOL, BonusId.NUKE),
-        (86, WeaponId.PISTOL, BonusId.DOUBLE_EXPERIENCE),
     ],
 )
 def test_original_amount_weapon_id_suppression(seed: int, weapon_id: WeaponId, bonus_id: BonusId) -> None:

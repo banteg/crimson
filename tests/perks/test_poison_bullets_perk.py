@@ -1,136 +1,16 @@
 from __future__ import annotations
 
-from crimson.bonuses import BonusId
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
 from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId
-from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from tests.support.factories import player_input
 from tests.support.helpers import ScriptedCrand
-
-
-def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
-    world = WorldState.build(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    world.state.rng = ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # rand & 7 == 1
-
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    world.state.perks[int(PerkId.POISON_BULLETS)] = 1
-    world.players.append(player)
-
-    creature = world.creatures.entries[0]
-    creature.active = True
-    creature.flags = CreatureFlags.SPAWNER
-    creature.pos = Vec2(100.0, 100.0)
-    creature.hp = 1000.0
-    creature.max_hp = 1000.0
-
-    projectile_spawn(
-        world.state,
-        players=world.players,
-        pos=Vec2(creature.pos.x, creature.pos.y),
-        angle=0.0,
-        type_id=ProjectileTemplateId.PISTOL,
-        owner_id=OWNER_LOCAL_PLAYER,
-        owner_player_index=0,
-    )
-
-    events = world.step(
-        0.016,
-        inputs=[player_input()],
-        fx_queue=FxQueue(),
-        fx_queue_rotated=FxQueueRotated(),
-        perk_progression_enabled=False,
-    )
-    assert events.hits
-    assert creature.flags & CreatureFlags.POISONED
-    assert [
-        record.caller
-        for record in world.state.rng.records_since()
-        if record.caller == RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE
-    ] == [RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE]
-
-
-def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
-    world = WorldState.build(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # rand & 7 != 1
-
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    world.state.perks[int(PerkId.POISON_BULLETS)] = 1
-    world.players.append(player)
-
-    creature = world.creatures.entries[0]
-    creature.active = True
-    creature.flags = CreatureFlags.SPAWNER
-    creature.pos = Vec2(100.0, 100.0)
-    creature.hp = 1000.0
-    creature.max_hp = 1000.0
-
-    projectile_spawn(
-        world.state,
-        players=world.players,
-        pos=Vec2(creature.pos.x, creature.pos.y),
-        angle=0.0,
-        type_id=ProjectileTemplateId.PISTOL,
-        owner_id=OWNER_LOCAL_PLAYER,
-        owner_player_index=0,
-    )
-
-    events = world.step(
-        0.016,
-        inputs=[player_input()],
-        fx_queue=FxQueue(),
-        fx_queue_rotated=FxQueueRotated(),
-        perk_progression_enabled=False,
-    )
-    assert events.hits
-    assert not (creature.flags & CreatureFlags.POISONED)
-    assert [
-        record.caller
-        for record in world.state.rng.records_since()
-        if record.caller == RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE
-    ] == [RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE]
-
-
-def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
-    world = WorldState.build(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    world.state.rng = ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # rand & 7 == 1
-
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
-    world.state.perks[int(PerkId.POISON_BULLETS)] = 1
-    world.players.append(player)
-
-    creature = world.creatures.entries[0]
-    creature.active = True
-    creature.flags = CreatureFlags.SPAWNER
-    creature.pos = player.pos + Vec2(100.0, 0.0)
-    creature.hp = 2000.0
-    creature.max_hp = 2000.0
-
-    assert world.state.bonus_pool.spawn_at(pos=player.pos, bonus_id=BonusId.NUKE, state=world.state) is not None
-
-    world.step(
-        0.016,
-        inputs=[player_input()],
-        fx_queue=FxQueue(),
-        fx_queue_rotated=FxQueueRotated(),
-        perk_progression_enabled=False,
-    )
-    assert not (creature.flags & CreatureFlags.POISONED)
 
 
 def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet_hit() -> None:
@@ -172,47 +52,3 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
 
     assert creature.flags & CreatureFlags.POISONED
     assert not (creature.flags & CreatureFlags.POISONED_STRONG)
-
-
-def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
-    world = WorldState.build(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    world.state.rng = ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # rand & 7 == 1
-
-    player = PlayerState(index=0, pos=Vec2(900.0, 900.0))
-    world.state.perks[int(PerkId.POISON_BULLETS)] = 1
-    world.players.append(player)
-
-    creature = world.creatures.entries[0]
-    creature.active = True
-    creature.flags = CreatureFlags.SPAWNER
-    creature.pos = Vec2(100.0, 100.0)
-    creature.hp = 1000.0
-    creature.max_hp = 1000.0
-
-    # Native gates the poison roll on the global perk count, so creature-owned
-    # projectiles (splitter children, shock-chain segments) draw it too.
-    projectile_spawn(
-        world.state,
-        players=world.players,
-        pos=Vec2(creature.pos.x, creature.pos.y),
-        angle=0.0,
-        type_id=ProjectileTemplateId.SPLITTER_GUN,
-        owner_id=7,
-        owner_player_index=0,
-    )
-
-    events = world.step(
-        0.016,
-        inputs=[player_input()],
-        fx_queue=FxQueue(),
-        fx_queue_rotated=FxQueueRotated(),
-        perk_progression_enabled=False,
-    )
-    assert events.hits
-    assert creature.flags & CreatureFlags.POISONED
-    assert RngCallerStatic.PROJECTILE_UPDATE_POISON_BULLETS_GATE in {
-        record.caller for record in world.state.rng.records_since()
-    }

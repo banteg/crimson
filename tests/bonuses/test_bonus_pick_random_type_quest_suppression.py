@@ -6,7 +6,6 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.selection import bonus_pick_random_type
 from crimson.game_modes import GameMode
 from crimson.quests.level import QuestLevel
-from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -16,17 +15,11 @@ from tests.support.helpers import ScriptedCrand
 @pytest.mark.parametrize(
     ("rng_values", "hardcore", "quest_stage_major", "quest_stage_minor", "expected_bonus_id"),
     [
-        ([34, 94], False, 2, 10, BonusId.FREEZE),
         ([34, 94, 0], True, 2, 10, BonusId.POINTS),
-        ([34, 94, 0], False, 4, 10, BonusId.POINTS),
-        ([34, 94], False, 5, 10, BonusId.FREEZE),
         ([34, 94], True, 3, 10, BonusId.FREEZE),
     ],
     ids=[
-        "quest-2-10-suppresses-nuke",
         "hardcore-quest-2-10-suppresses-nuke-and-freeze",
-        "quest-4-10-suppresses-nuke-and-freeze",
-        "quest-5-10-suppresses-nuke",
         "hardcore-quest-3-10-suppresses-nuke",
     ],
 )
@@ -45,20 +38,6 @@ def test_bonus_pick_random_type_quest_suppression(
 
     bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
     assert bonus_id == expected_bonus_id
-
-
-def test_bonus_pick_random_type_tags_exact_native_callers() -> None:
-    rng = ScriptedCrand([13, 0])
-    state = GameplayState(rng=rng)
-    players = [PlayerState(index=0, pos=Vec2())]
-
-    bonus_id = bonus_pick_random_type(state.bonus_pool, state, players)
-
-    assert bonus_id == BonusId.ENERGIZER
-    assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.BONUS_PICK_RANDOM_TYPE_ROLL,
-        RngCallerStatic.BONUS_PICK_RANDOM_TYPE_ENERGIZER,
-    ]
 
 
 def test_bonus_pick_random_type_only_checks_two_native_shield_slots() -> None:

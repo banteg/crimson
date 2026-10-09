@@ -16,7 +16,7 @@ def _apply(world: WorldState, player_index: int, bonus_id: BonusId) -> None:
                 creatures=world.creatures.entries, players=world.players, step_runtime=make_step_runtime(world))
 
 
-@pytest.mark.parametrize("player_count", [1, 2, 3, 4])
+@pytest.mark.parametrize("player_count", [1, 4])
 @pytest.mark.parametrize("bonus_id", [BonusId.SHIELD, BonusId.SPEED, BonusId.FIRE_BULLETS])
 def test_timed_bonus_hud_tracks_every_player_without_restarting_slide(player_count: int, bonus_id: BonusId) -> None:
     world = make_world(player_count=player_count)

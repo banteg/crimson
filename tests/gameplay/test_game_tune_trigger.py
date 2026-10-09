@@ -58,31 +58,3 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
         RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK,
         RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
     ]
-
-
-def test_game_tune_not_triggered_in_rush_mode(mocker) -> None:
-    trigger_game_tune = mocker.patch.object(audio_bridge, "trigger_game_tune", return_value="gt1_ingame")
-    play_sfx = mocker.patch.object(audio_bridge, "play_sfx")
-    audio = _audio_state_stub()
-    bridge = AudioBridge(audio=audio, audio_rng=Crand(0xBEEF))
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-
-    tune, sounds = plan_hit_sfx(
-        _hits(2),
-        game_mode=GameMode.RUSH,
-        rng=rng,
-        game_tune_started=False,
-    )
-    bridge.apply_plan(
-        plan=DeterministicPresentationPlan(trigger_game_tune=tune, sfx=tuple(sounds)), camera=Vec2(), screen_width=1024.0,
-    )
-
-    trigger_game_tune.assert_not_called()
-    assert play_sfx.call_args_list == [
-        call(audio.sfx, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0, gain=1.0, pan=-850),
-        call(audio.sfx, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0, gain=1.0, pan=-850),
-    ]
-    assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
-        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
-    ]

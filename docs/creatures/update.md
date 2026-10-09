@@ -48,7 +48,7 @@ player attack cooldown:
 
 Spawn-slot timers run in the owning creature's update: subtract `dt`, add the
 interval once if negative, and spawn/increment only while below the count limit.
-The timer still advances at the limit. See `tests/creatures/test_spawn_slots.py`.
+The timer still advances at the limit.
 
 ## Synchronous death handling
 

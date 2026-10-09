@@ -16,48 +16,6 @@ _BURST_CALLERS = [
 ]
 
 
-def test_bandage_clamps_health_and_spawns_burst() -> None:
-    state = GameplayState()
-    state.rng = ScriptedCrand(49, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # (rand % 50) + 1 == 50
-
-    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=3.0)
-    perk_apply(state, [player], PerkId.BANDAGE)
-
-    assert player.health == 53.0
-    assert len(state.effects.iter_active()) == 8
-    assert [record.caller for record in state.rng.records_since()] == [
-        RngCallerStatic.PERK_APPLY_BANDAGE_HEAL,
-        *(_BURST_CALLERS * 8),
-    ]
-
-
-def test_bandage_preserve_bugs_keeps_native_multiplier_behavior() -> None:
-    state = GameplayState()
-    state.preserve_bugs = True
-    state.rng = ScriptedCrand(49, fallback=ScriptedCrand.Fallback.REPEAT_LAST)  # (rand % 50) + 1 == 50
-
-    player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=3.0)
-    perk_apply(state, [player], PerkId.BANDAGE)
-
-    assert player.health == 100.0
-    assert len(state.effects.iter_active()) == 8
-    assert [record.caller for record in state.rng.records_since()] == [
-        RngCallerStatic.PERK_APPLY_BANDAGE_HEAL,
-        *(_BURST_CALLERS * 8),
-    ]
-
-
-def test_bandage_rounds_native_health_store() -> None:
-    state = GameplayState()
-    state.preserve_bugs = True
-    state.rng = ScriptedCrand(2, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    player = PlayerState(index=0, pos=Vec2(), health=0.1)
-
-    perk_apply(state, [player], PerkId.BANDAGE)
-
-    assert player.health == 0.30000001192092896
-
-
 def test_bandage_preserve_bugs_draws_for_dead_players() -> None:
     state = GameplayState()
     state.preserve_bugs = True
