@@ -2,6 +2,22 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.14.1
+
+### For players
+
+#### Watching replays in the browser game
+
+- The replay viewer is rebuilt. It prepares the run first, in a second or so, and then seeks anywhere, backwards too, with the blood and corpses on the ground exactly where they were. Drag along the scrub bar at the bottom to move through the run; it marks Survival's milestone waves, Energizer drops and perk picks, and hovering shows the time and what happened there. Click the game to pause. Space pauses, period and comma step a tick, `[` and `]` change the speed from 0.25x to 32x, Left and Right go 5 seconds, Page Up and Page Down 30, and Home and End jump to the start and the end.
+- The viewer keeps out of the game's way: the scrub bar and each perk pick's box sit on dim bands of their own, clear of the HUD. Preparing and the end use the original's game over screen with the run's score card, showing the runner, the day, the score and rank, the time, the weapon used most, frags and hits, under The Reaper got you or Well done trooper!
+- A link to a run skips the intro and the menu and goes straight to the replay, the page's button says **Watch**, and a link in the corner returns to **[crimson.land](https://crimson.land)** after the game saves.
+- On **[crimson.land](https://crimson.land)**, the boards, including both on the front page, and the player pages link each run to watching it, with its `.crd` beside it.
+
+#### Other changes
+
+- The console names the version in its corner and in `console.log`, which helps with bug reports.
+- The desktop build unpacks the music from `music.paq` when the game folder has only the packed files. Without the music, replays stopped early.
+
 ## 0.14.0
 
 ### For players
