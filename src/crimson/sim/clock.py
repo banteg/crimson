@@ -42,3 +42,15 @@ class FixedStepClock(msgspec.Struct):
             self.accum = 0.0
         return int(ticks)
 
+
+
+class PresentationClock(msgspec.Struct):
+    """The render-only clocks (animations, the bonus spin) that each simulated tick advances."""
+
+    elapsed_ms: float = 0.0
+    bonus_anim_phase: float = 0.0
+
+    def advance(self, dt_sim: float) -> None:
+        if float(dt_sim) > 0.0:
+            self.elapsed_ms += float(dt_sim) * 1000.0
+            self.bonus_anim_phase += float(dt_sim) * 1.3

@@ -32,7 +32,7 @@ def test_advance_playback_frame_advances_tick_index(assets_dir: Path) -> None:
     assert advance.next_tick_index == 6
     assert advance.ticks_requested == 2
     assert len(advance.tick_results) == 2
-    assert runtime.presentation_elapsed_ms == pytest.approx(2.0 * 1000.0 / 60.0)
+    assert runtime.presentation.elapsed_ms == pytest.approx(2.0 * 1000.0 / 60.0)
 
 
 def test_advance_playback_frame_respects_max_ticks_clamp(assets_dir: Path) -> None:
@@ -80,7 +80,7 @@ def test_advance_playback_frame_advances_presentation_clock_after_stepping_the_b
     advance = advance_playback_frame(
         driver=FakePlaybackDriver(
             tick_limit=2,
-            on_step=lambda: elapsed_at_step.append(runtime.presentation_elapsed_ms),
+            on_step=lambda: elapsed_at_step.append(runtime.presentation.elapsed_ms),
         ),
         runtime=runtime,
         clock=clock,
@@ -92,5 +92,5 @@ def test_advance_playback_frame_advances_presentation_clock_after_stepping_the_b
 
     assert len(advance.tick_results) == 2
     assert elapsed_at_step == [0.0, 0.0]
-    assert runtime.presentation_elapsed_ms == pytest.approx(2.0 * 1000.0 / 60.0)
-    assert runtime.bonus_anim_phase == pytest.approx(2.0 * 1.3 / 60.0)
+    assert runtime.presentation.elapsed_ms == pytest.approx(2.0 * 1000.0 / 60.0)
+    assert runtime.presentation.bonus_anim_phase == pytest.approx(2.0 * 1.3 / 60.0)

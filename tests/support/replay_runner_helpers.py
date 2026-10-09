@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
 
 import msgspec
@@ -19,7 +20,9 @@ from crimson.replay.driver.playback_driver import (
 )
 from crimson.replay.input_codec import pack_tick
 from crimson.replay.types import current_recorder, current_replay_game_version
+from crimson.sim.commands import GameCommand
 from crimson.sim.hooks import TickResult
+from crimson.sim.input import PlayerInput
 from crimson.sim.run_result import RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec
 from crimson.sim.world_state import WorldState
@@ -75,6 +78,21 @@ def finish_replay(rec: ReplayRecorder) -> Replay:
     """Finish a synthesized recording, stamping the result its ticks simulate to."""
 
     return replay_with_simulated_result(unverified_replay(rec))
+
+
+def record_replay(
+    run: RunSpec,
+    ticks: int,
+    *,
+    inputs: PlayerInput | None = None,
+    commands: Sequence[Sequence[GameCommand]] = (),
+) -> Replay:
+    """Record `ticks` of `inputs` (idle by default), with `commands[i]` on tick i, and stamp the simulated result."""
+    recorder = ReplayRecorder(run)
+    held = player_input() if inputs is None else inputs
+    for tick in range(ticks):
+        recorder.record(pack_tick([held], list(commands[tick]) if tick < len(commands) else []))
+    return finish_replay(recorder)
 
 
 def _blank_replay(run: RunSpec, *, ticks: int, game_version: str | None = None) -> ReplayRecorder:

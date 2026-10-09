@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from grim.config import CrimsonConfig
 
     from ..modes.quest_mode import QuestRunOutcome
+    from ..persistence.highscores import HighScoreRecord
     from ..replay.types import Replay
 
 
@@ -78,9 +79,11 @@ class ShowQuestOutcome(msgspec.Struct, frozen=True):
 
 
 class WatchReplay(msgspec.Struct, frozen=True):
-    """Play a run's replay above the high scores, which Esc returns to."""
+    """Play a run's replay above the high scores, which Esc returns to, with the row's score card and rank."""
 
     replay: Replay
+    record: HighScoreRecord
+    rank: int
 
 
 class ResultAction(Enum):

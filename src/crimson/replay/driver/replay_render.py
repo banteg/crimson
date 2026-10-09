@@ -214,7 +214,6 @@ def run_replay_render_video(
                 config=cfg,
                 console=console,
                 max_ticks=max_ticks,
-                show_replay_widget=False,
             )
             mode.open()
             video_transport = _FfmpegVideoTransport(
@@ -247,8 +246,6 @@ def run_replay_render_video(
                         width=capture_width,
                         height=capture_height,
                     )
-                    if mode.close_requested:
-                        raise ReplayRenderError("replay render aborted: replay playback requested close")
                     render_pipeline.present()
                     frame_count += 1
                     bar.set_postfix(frames=frame_count, refresh=False)
@@ -451,7 +448,6 @@ def _capture_replay_audio_track(
             config=cfg,
             console=console,
             max_ticks=max_ticks,
-            show_replay_widget=False,
             audio=audio,
         )
         mode.open()
@@ -467,8 +463,6 @@ def _capture_replay_audio_track(
         with tqdm(total=total_ticks, unit="tick", desc="replay audio", disable=not show_progress) as bar:
             while not mode.finished:
                 mode.update(tick_dt)
-                if mode.close_requested:
-                    raise ReplayRenderError("audio capture aborted: replay playback requested close")
                 capture.flush_pending()
                 bar.update(mode.tick_index - bar.n)
                 next_tick_deadline += tick_dt

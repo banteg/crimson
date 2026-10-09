@@ -20,7 +20,7 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 
 from ...modes.replay_playback_mode import ReplayPlaybackMode, open_replay_audio
-from ...replay import Replay
+from ...replay import REPLAY_TICK_DT, Replay
 from ...sim.run_result import RunResult, run_result_mismatches
 from .playback_driver import PlaybackWalkObserver, build_verify_playback_driver
 from .render_telemetry import RenderTelemetryFrame, RenderTelemetrySession
@@ -461,9 +461,7 @@ def _run_render_once(
     )
     mode.open()
     try:
-        step_dt = float(mode._dt)
-        if step_dt <= 0.0:
-            step_dt = 1.0 / 60.0
+        step_dt = REPLAY_TICK_DT
 
         frame_index = 0
         while not bool(mode.finished):
@@ -499,24 +497,14 @@ def _run_render_once(
                     frame_ms=float(frame_ns) / 1_000_000.0,
                 )
 
-            if bool(mode.close_requested):
-                raise ReplayBenchmarkError("render benchmark aborted: replay playback requested close")
-
             frame_index += 1
 
         return _RenderOnceResult(
-            run_result=_run_result_for_replay_mode(mode=mode),
+            run_result=mode.driver.build_result(),
             telemetry_frames=(telemetry_session.frames if telemetry_session is not None else ()),
         )
     finally:
         mode.close()
-
-
-def _run_result_for_replay_mode(*, mode: ReplayPlaybackMode) -> RunResult:
-    driver = mode._driver
-    if driver is None:
-        raise ReplayBenchmarkError("render benchmark failed: replay driver was not available")
-    return driver.build_result()
 
 
 def _assert_consistent_run_result(expected: RunResult, actual: RunResult, *, where: str) -> None:

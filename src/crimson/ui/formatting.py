@@ -4,7 +4,10 @@ _MONTH_LABELS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", 
 
 
 def format_ordinal(value: int) -> str:
-    """`format_ordinal`: 8..20 take "th"; otherwise the last digit picks st/nd/rd."""
+    """`format_ordinal`: 8..20 take "th"; otherwise the last digit picks st/nd/rd. A rank the card does not know (a
+    replay watched from its file), which no screen of the original's asks for, is a dash."""
+    if value <= 0:
+        return "-"
     if value < 8 or value > 20:
         match value % 10:
             case 1:

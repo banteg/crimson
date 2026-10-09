@@ -32,7 +32,7 @@ def test_contract_6_state_apply_and_presentation_apply_stay_separate(mocker, tmp
     )
     runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(0xBEEF), audio=audio)
     runtime.world.players[0].weapon.shot_cooldown = 0.0
-    session = DeterministicSession(
+    session = DeterministicSession.start(
         world=runtime.world,
         perk_progression_enabled=False,
     )
@@ -44,19 +44,19 @@ def test_contract_6_state_apply_and_presentation_apply_stay_separate(mocker, tmp
         ticks.poll([player_input(aim=Vec2(700.0, 512.0), fire_down=True, fire_pressed=True)])
         step = step_replay_tick(session, ticks.next_tick())
         camera = runtime.camera
-        runtime.advance_presentation_clock(dt_sim=step.dt_sim)
+        runtime.presentation.advance(step.dt_sim)
         # Advancing the presentation clock applies no presentation output.
         assert runtime.camera == camera
         assert play_sfx.call_count == 0
         plans.append(step.presentation)
-    clock = (runtime.presentation_elapsed_ms, runtime.bonus_anim_phase)
+    clock = (runtime.presentation.elapsed_ms, runtime.presentation.bonus_anim_phase)
     assert clock[0] > 0.0
 
     apply_presentation_plans(plans=plans, runtime=runtime)
 
     # Presentation output does not touch the presentation clock, syncs audio
     # once per batch, and plays each plan's sounds in tick order.
-    assert (runtime.presentation_elapsed_ms, runtime.bonus_anim_phase) == clock
+    assert (runtime.presentation.elapsed_ms, runtime.presentation.bonus_anim_phase) == clock
     assert sync_audio.call_count == 1
     expected_sfx = [sfx for plan in plans for sfx in (*sfx_ids(plan.sfx), *sfx_ids(plan.post_apply_sfx))]
     assert expected_sfx
@@ -88,6 +88,6 @@ def test_contract_8_live_and_replay_frames_advance_the_presentation_clock_alike(
         next_tick = advance.next_tick_index
 
         assert len(advance.tick_results) == live_ticks
-        assert replay_runtime.presentation_elapsed_ms == live_runtime.presentation_elapsed_ms
-        assert replay_runtime.bonus_anim_phase == live_runtime.bonus_anim_phase
+        assert replay_runtime.presentation.elapsed_ms == live_runtime.presentation.elapsed_ms
+        assert replay_runtime.presentation.bonus_anim_phase == live_runtime.presentation.bonus_anim_phase
     assert next_tick > 0

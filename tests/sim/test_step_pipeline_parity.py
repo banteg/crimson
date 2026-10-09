@@ -69,7 +69,7 @@ def _live_runtime_checkpoints(
     for tick_index in range(len(replay.ticks)):
         tick = driver.step_tick(tick_index)
         step = tick.payload
-        runtime.advance_presentation_clock(dt_sim=step.dt_sim)
+        runtime.presentation.advance(step.dt_sim)
         runtime.render_resources.consume_terrain_fx_batch(step.presentation.terrain_fx)
 
         checkpoints.append(

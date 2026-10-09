@@ -597,7 +597,7 @@ class BaseGameplayMode:
         return float(session.elapsed_ms)
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
-        return float(self._world_runtime.presentation_elapsed_ms)
+        return float(self._world_runtime.presentation.elapsed_ms)
 
     def _record_replay_checkpoint(
         self,
@@ -882,7 +882,7 @@ class BaseGameplayMode:
         return self.camera
 
     def console_elapsed_ms(self) -> float:
-        return float(self._world_runtime.presentation_elapsed_ms)
+        return float(self._world_runtime.presentation.elapsed_ms)
 
     def regenerate_terrain_for_console(self) -> None:
         setup = self._world_runtime.terrain_setup
@@ -995,7 +995,7 @@ class BaseGameplayMode:
                 else nullcontext()
             ):
                 step = step_replay_tick(session, tick)
-            self._world_runtime.advance_presentation_clock(dt_sim=step.dt_sim)
+            self._world_runtime.presentation.advance(step.dt_sim)
             plans.append(step.presentation)
             if tick_index is not None:
                 self._record_replay_checkpoint(

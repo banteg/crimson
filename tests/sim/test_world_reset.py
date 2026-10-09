@@ -19,12 +19,12 @@ def test_runtime_reset_drops_a_started_session_without_touching_its_world(tmp_pa
     first = runtime.world
     replacement = WorldState.build(hardcore=False, quest_fail_retry_count=0)
     replacement.players.append(PlayerState(index=0, pos=Vec2(10.0, 20.0), health=17.0))
-    runtime.start_session(DeterministicSession(world=replacement, perk_progression_enabled=True))
+    runtime.start_session(DeterministicSession.start(world=replacement, perk_progression_enabled=True))
     assert runtime.world is replacement
-    runtime.advance_presentation_clock(dt_sim=0.5)
+    runtime.presentation.advance(0.5)
 
     runtime.reset(seed=123, player_count=2)
-    assert (runtime.presentation_elapsed_ms, runtime.bonus_anim_phase) == (0.0, 0.0)
+    assert (runtime.presentation.elapsed_ms, runtime.presentation.bonus_anim_phase) == (0.0, 0.0)
     assert runtime.session is None
     assert runtime.world is not first and runtime.world is not replacement
     assert runtime.world.state.rng.state == 123

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -72,11 +71,14 @@ class RenderResources(msgspec.Struct):
             self.ground.overlay = overlay
             self.ground.overlay_detail = detail
 
+    @property
+    def texture_scale(self) -> float:
+        return 1.0 if self.config is None else self.config.display.texture_scale
+
     def schedule_ground_stamps(self, layers: TerrainLayers) -> None:
         if self.ground is None:
             return
-        texture_scale = 1.0 if self.config is None else self.config.display.texture_scale
-        self.ground.schedule_stamps(layers, texture_scale=texture_scale)
+        self.ground.schedule_stamps(layers, texture_scale=self.texture_scale)
 
     def process_ground_pending(self) -> None:
         if self.ground is None:
@@ -92,10 +94,7 @@ class RenderResources(msgspec.Struct):
         pending = tuple(self._pending_terrain_fx_batches)
         self._pending_terrain_fx_batches.clear()
         for batch in pending:
-            self._bake_terrain_fx_batch(
-                batch,
-                corpse_frame_for_type=creature_corpse_frame_for_type,
-            )
+            self.bake_terrain_fx_batch(batch, self.ground)
 
     def open(self) -> None:
         self.close()
@@ -123,21 +122,15 @@ class RenderResources(msgspec.Struct):
     def clear_pending_terrain_fx(self) -> None:
         self._pending_terrain_fx_batches.clear()
 
-    def _bake_terrain_fx_batch(
-        self,
-        batch: TerrainFxBatch,
-        *,
-        corpse_frame_for_type: Callable[[int], int] = creature_corpse_frame_for_type,
-    ) -> None:
-        if self.ground is None or self.fx_textures is None:
-            return
-        if batch.is_empty():
+    def bake_terrain_fx_batch(self, batch: TerrainFxBatch, ground: GroundRenderer) -> None:
+        """Bakes a tick's decals and corpses into `ground`: the run's, or another copy of its terrain."""
+        if self.fx_textures is None or batch.is_empty():
             return
         bake_terrain_fx_batch(
-            self.ground,
+            ground,
             batch=batch,
             textures=self.fx_textures,
-            corpse_frame_for_type=corpse_frame_for_type,
+            corpse_frame_for_type=creature_corpse_frame_for_type,
         )
 
     def consume_terrain_fx_batch(

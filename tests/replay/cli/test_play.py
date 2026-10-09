@@ -14,6 +14,7 @@ def test_replay_play_owns_runtime_resources_at_cli_boundary(tmp_path, mocker) ->
     import grim.app as grim_app
     from crimson import runtime_boot
     from crimson.modes import replay_playback_mode
+    from crimson.screens import replay_viewer
 
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -23,8 +24,8 @@ def test_replay_play_owns_runtime_resources_at_cli_boundary(tmp_path, mocker) ->
     unload_runtime_resources = mocker.patch.object(runtime_resources_view, "unload_runtime_resources")
     mocker.patch.object(replay_playback_mode, "open_replay_audio", return_value=object())
     mocker.patch.object(grim_audio, "shutdown_audio")
-    inner_open = mocker.patch.object(replay_playback_mode.ReplayPlaybackMode, "open")
-    inner_close = mocker.patch.object(replay_playback_mode.ReplayPlaybackMode, "close")
+    inner_open = mocker.patch.object(replay_viewer.ReplayViewer, "open")
+    inner_close = mocker.patch.object(replay_viewer.ReplayViewer, "close")
     run_view = mocker.patch.object(grim_app, "run_view")
 
     runner = CliRunner()

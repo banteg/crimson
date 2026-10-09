@@ -25,7 +25,7 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
         state=runtime.world.state,
         detail_preset=5,
     )
-    session = DeterministicSession(
+    session = DeterministicSession.start(
         world=runtime.world,
         perk_progression_enabled=False,
     )
@@ -36,7 +36,7 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
         step = step_replay_tick(session, ticks.next_tick())
         if not step.presentation.terrain_fx.is_empty():
             break
-        runtime.advance_presentation_clock(dt_sim=step.dt_sim)
+        runtime.presentation.advance(step.dt_sim)
         apply_presentation_plans(plans=[step.presentation], runtime=runtime)
 
     assert not step.presentation.terrain_fx.is_empty()

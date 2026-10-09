@@ -74,7 +74,7 @@ class WorldRuntimeHost(WorldRuntime):
 
         self.world.state.detail_preset = detail_preset
         self.world.state.violence_disabled = violence_disabled
-        session = DeterministicSession(
+        session = DeterministicSession.start(
             world=self.world,
             perk_progression_enabled=perk_progression_enabled,
             mode_state=self._survival_test_spawn_state,
@@ -88,6 +88,6 @@ class WorldRuntimeHost(WorldRuntime):
         )
         self._survival_test_elapsed_ms = float(session.elapsed_ms)
 
-        self.advance_presentation_clock(dt_sim=tick.dt_sim)
+        self.presentation.advance(tick.dt_sim)
         apply_presentation_plans(plans=[tick.presentation], runtime=self)
         return tick

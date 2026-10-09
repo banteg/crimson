@@ -9,7 +9,6 @@ from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 from crimson.leaderboard import Leaderboard, OnlineScore
 from crimson.modes.base_gameplay_mode import BaseGameplayMode
-from crimson.modes.replay_playback_mode import ReplayPlaybackMode
 from crimson.persistence.highscores import HighScoreRecord, scores_path_for_config, upsert_highscore_record
 from crimson.quests.level import QuestLevel
 from crimson.replay import ReplayRecorder, dump_replay, dump_replay_file
@@ -31,6 +30,7 @@ from crimson.screens.panels.controls import ControlsMenuView
 from crimson.screens.panels.options import OptionsMenuView
 from crimson.screens.pause_menu import PauseMenuView
 from crimson.screens.quest_views.quest_results import QuestResultsView
+from crimson.screens.replay_viewer import ReplayViewer
 from crimson.screens.stack import ScreenEntry, ScreenStack
 from crimson.sim.run_result import RunOutcome
 from crimson.sim.run_spec import RunSpec
@@ -263,7 +263,7 @@ def test_watch_plays_a_pinned_rows_replay_over_the_scores_and_esc_returns(loop, 
     loop.update(0.016)
     mocker.patch.object(rl, "is_mouse_button_pressed", return_value=False)
     watching = state.screens.active
-    assert isinstance(watching, ReplayPlaybackMode)
+    assert isinstance(watching, ReplayViewer)
 
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
     loop.update(0.016)
