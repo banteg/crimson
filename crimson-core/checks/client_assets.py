@@ -1,10 +1,13 @@
 """Check native asset preparation against a directory containing the shipped PAQs."""
 
 import argparse
+import resource
 import shlex
 import shutil
+import signal
 import subprocess
 import tempfile
+from functools import partial
 from pathlib import Path
 
 from game_files import fetch, paq_entries
@@ -22,6 +25,11 @@ int main(int argc, char **argv) {
   if (!error.empty()) { fprintf(stderr, "%s\\n", error.c_str()); return 1; }
 }
 """
+
+
+def limit_file_size(action):
+    resource.setrlimit(resource.RLIMIT_FSIZE, (4096, 4096))
+    signal.signal(signal.SIGXFSZ, action)
 
 
 def main():
@@ -73,6 +81,24 @@ def main():
             raise ValueError("The missing track was not restored")
         if (game / "music/shortie_monk.ogg").read_bytes() != custom:
             raise ValueError("An existing track was overwritten")
+        # A failed write or a killed extractor must not publish a partial track.
+        for action in (signal.SIG_IGN, signal.SIG_DFL):
+            track = game / "music/intro.ogg"
+            track.unlink()
+            interrupted = subprocess.run(
+                [str(probe), str(game)],
+                capture_output=True,
+                text=True,
+                check=False,
+                preexec_fn=partial(limit_file_size, action),
+            )
+            if interrupted.returncode == 0:
+                raise ValueError("Extraction ignored the write limit")
+            if track.exists():
+                raise ValueError("Interrupted extraction published an incomplete track")
+            subprocess.run([str(probe), str(game)], check=True)
+            if track.read_bytes() != expected["intro.ogg"]:
+                raise ValueError("Retry did not restore the complete track")
         # Archive output must not follow links out of the selected folder.
         for existing in (False, True):
             outside = root / f"outside-{existing}.ogg"
@@ -113,7 +139,8 @@ def main():
         subprocess.run([str(probe), str(game)], check=True)
         if (game / "MUSIC/intro.ogg").read_bytes() != expected["intro.ogg"]:
             raise ValueError("Mixed-case music folder was not repaired")
-        if sorted(file.name.lower() for file in (game / "MUSIC").iterdir()) != sorted(expected):
+        tracks = [file.name.lower() for file in (game / "MUSIC").iterdir() if file.name.lower() in expected]
+        if sorted(tracks) != sorted(expected):
             raise ValueError("Extraction created duplicate tracks with different case")
         (game / "MUSIC.PAQ").unlink()
         subprocess.run([str(probe), str(game)], check=True)

@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <string>
+#include <sys/random.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -39,6 +40,41 @@ int open_music_directory(const std::string &directory) {
   return music;
 }
 
+// Publish only a complete file, without replacing an existing file or link.
+std::string save_music(int music, const std::string &name, const unsigned char *data, size_t size) {
+  struct stat st;
+  if (fstatat(music, name.c_str(), &st, AT_SYMLINK_NOFOLLOW) == 0)
+    return S_ISREG(st.st_mode) ? "" : "Cannot unpack music.paq: music/" + name + " must be a regular file, not a symbolic link.";
+  if (errno != ENOENT)
+    return "Cannot unpack music.paq: " + std::string(strerror(errno));
+
+  unsigned long long nonce;
+  if (getentropy(&nonce, sizeof nonce) != 0)
+    return "Cannot create temporary music file: " + std::string(strerror(errno));
+  char temporary[40];
+  snprintf(temporary, sizeof temporary, ".crimson-%016llx.tmp", nonce);
+  int fd = openat(music, temporary, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0666);
+  if (fd < 0)
+    return "Cannot create temporary music file: " + std::string(strerror(errno));
+  FILE *file = fdopen(fd, "wb");
+  if (!file) {
+    int error = errno;
+    close(fd);
+    unlinkat(music, temporary, 0);
+    return "Cannot unpack music.paq: " + std::string(strerror(error));
+  }
+  bool saved = fwrite(data, 1, size, file) == size;
+  if (fclose(file) != 0)
+    saved = false;
+  std::string error;
+  if (!saved)
+    error = "Cannot write music/" + name + ".";
+  else if (linkat(music, temporary, music, name.c_str(), 0) != 0)
+    error = "Cannot publish music/" + name + ": " + strerror(errno);
+  unlinkat(music, temporary, 0);
+  return error;
+}
+
 std::string unpack_music(int music, const unsigned char *data, size_t size) {
   if (size < 4 || memcmp(data, "paq\0", 4))
     return "Invalid music.paq. Replace it with the game's music archive.";
@@ -60,27 +96,9 @@ std::string unpack_music(int music, const unsigned char *data, size_t size) {
     if (filename.empty() || filename == "." || filename == "..")
       return "Invalid filename in music.paq.";
     filename = asset_name(music, filename);
-    // Exclusive creation cannot follow a link or overwrite an existing file.
-    int fd = openat(music, filename.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, 0666);
-    if (fd < 0) {
-      struct stat st;
-      if (errno != EEXIST || fstatat(music, filename.c_str(), &st, AT_SYMLINK_NOFOLLOW) != 0)
-        return "Cannot unpack music.paq: " + std::string(strerror(errno));
-      if (!S_ISREG(st.st_mode))
-        return "Cannot unpack music.paq: music/" + filename + " must be a regular file, not a symbolic link.";
-    } else {
-      FILE *file = fdopen(fd, "wb");
-      if (!file) {
-        int error = errno;
-        close(fd);
-        return "Cannot unpack music.paq: " + std::string(strerror(error));
-      }
-      bool saved = fwrite(data + at, 1, bytes, file) == bytes;
-      if (fclose(file) != 0)
-        saved = false;
-      if (!saved)
-        return "Cannot write music/" + filename + ".";
-    }
+    std::string error = save_music(music, filename, data + at, bytes);
+    if (!error.empty())
+      return error;
     at += bytes;
   }
   return "";
