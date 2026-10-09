@@ -88,15 +88,24 @@ jobs:
         uses: mymindstorm/setup-emsdk@v16
         with:
           version: ${{ env.EMSDK_VERSION }}
+          actions-cache-folder: emsdk-cache
 
       - name: Install SDL3
         if: matrix.os == 'macos-latest'
         run: brew install sdl3 pkg-config
 
-      # Ubuntu has no SDL3 package yet: build the release with its X11, Wayland
-      # and audio backends.
-      - name: Build SDL3
+      - name: Restore SDL3
         if: matrix.name == 'linux'
+        id: sdl
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/sdl
+          key: sdl3-${{ env.SDL_VERSION }}-${{ runner.os }}-${{ runner.arch }}
+
+      # Ubuntu has no SDL3 package yet: build the release with its X11, Wayland
+      # and audio backends, once per version.
+      - name: Build SDL3
+        if: matrix.name == 'linux' && steps.sdl.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build libgl-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
@@ -107,6 +116,15 @@ jobs:
             -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/sdl" -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF
           cmake --build "$RUNNER_TEMP/sdl-build"
           cmake --install "$RUNNER_TEMP/sdl-build"
+
+      # The client links OpenGL itself; a restored SDL3 still needs its headers.
+      - name: Use SDL3
+        if: matrix.name == 'linux'
+        run: |
+          if [[ "${{ steps.sdl.outputs.cache-hit }}" == true ]]; then
+            sudo apt-get update
+            sudo apt-get install -y libgl-dev
+          fi
           echo "PKG_CONFIG_PATH=$RUNNER_TEMP/sdl/lib/pkgconfig" >> "$GITHUB_ENV"
 
       - name: Build the client

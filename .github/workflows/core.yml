@@ -63,7 +63,23 @@ jobs:
         with:
           node-version: "24"
 
+      # The cores depend only on the recovered sources, the host and the toolchains,
+      # so a change elsewhere (most often the Python port) reuses them.
+      - name: Name the toolchains
+        id: toolchain
+        run: echo "id=$(clang++ --version | head -1 | sha256sum | cut -c1-16)-zig$(zig version)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore native and WASM cores
+        id: cores
+        uses: actions/cache@v4
+        with:
+          path: |
+            crimson-core/build/native/core
+            crimson-core/build/wasm/core.wasm
+          key: cores-${{ runner.os }}-${{ steps.toolchain.outputs.id }}-${{ hashFiles('crimson-core/*.py', 'crimson-core/*.json', 'crimson-core/host/**', 'crimson-core/patches/**', 'decomp/**', 'third_party/headers/**', 'third_party/sources/**', 'tools/match/include/**', 'tools/native/data_definitions/**') }}
+
       - name: Build native and WASM cores
+        if: steps.cores.outputs.cache-hit != 'true'
         run: |
           uv run --no-sync python crimson-core/build.py
           uv run --no-sync python crimson-core/build.py --target wasm
