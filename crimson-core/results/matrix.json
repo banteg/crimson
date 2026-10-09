@@ -569,127 +569,40 @@
     },
     {
       "name": "survival-hunt-jinxed",
-      "ticks": 8333,
+      "ticks": 23297,
       "fields_per_snapshot": 36343,
-      "sha256": "90b383f9f011f8c19e0410aeb8fa73463f8e5f7d7410d36d1381f0cd7d786504",
-      "final_sha256": "93fbd51ecc07b17b7e5476d67064d9aa336bdd7a9040d14b41ec64e41a6ef6d6",
+      "sha256": "4d9f8785e28b28a0a82687436c798faefbf3575f143ae2218c654e231231e564",
+      "final_sha256": "4facda8ac163be292c0fe5627c57f698b53cda4ce909a568aa34da44df92ce3c",
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
         "pending": 7,
-        "xp": 23840,
+        "xp": 87332,
         "health": 0,
-        "elapsed_ms": 133328,
-        "timeline_ms": 133328,
-        "rng": 921937906
-      },
-      "coverage": {
-        "weapons": [
-          1,
-          12,
-          20
-        ],
-        "perks": [
-          1,
-          6,
-          13,
-          35,
-          42
-        ],
-        "bonuses": [
-          "double_xp"
-        ],
-        "menu": 5,
-        "reload": 61,
-        "max_commands": 1,
-        "peak_creatures": 65,
-        "stall": false,
-        "transitions": false,
-        "run_down": 31
-      }
-    },
-    {
-      "name": "survival-hunt-jinxed-ranked",
-      "ticks": 8154,
-      "fields_per_snapshot": 36343,
-      "sha256": "2827c9b6b4e8c52f736c8b52b6d7f966248627086c06fd327a14cab44381bc00",
-      "final_sha256": "6058e0932faa4efd513414f9944dd1c5cb59d55514138e73efaa50820f57db9f",
-      "wasm_memory_mib": 2.5,
-      "reset": "native and WASM A/B/A passed",
-      "imports": 0,
-      "final": {
-        "pending": 7,
-        "xp": 19119,
-        "health": -0.06662893295288086,
-        "elapsed_ms": 130464,
-        "timeline_ms": 130464,
-        "rng": 2259171242
-      },
-      "coverage": {
-        "weapons": [
-          1,
-          12
-        ],
-        "perks": [
-          6,
-          20,
-          24,
-          29,
-          31,
-          42,
-          48
-        ],
-        "bonuses": [
-          "weapon_power_up"
-        ],
-        "menu": 7,
-        "reload": 60,
-        "max_commands": 1,
-        "peak_creatures": 64,
-        "stall": false,
-        "transitions": false,
-        "run_down": 31
-      }
-    },
-    {
-      "name": "survival-hunt-highlander",
-      "ticks": 25606,
-      "fields_per_snapshot": 36343,
-      "sha256": "dcb42fe0462e4a9bc52dff9e8c3a92fbec02b5cdaf262f93b44d2ab39a0c72e1",
-      "final_sha256": "f74fba746abbc36cfabb1801ff609613374e7525af5e7a2b8bd758e0088912e3",
-      "wasm_memory_mib": 2.5,
-      "reset": "native and WASM A/B/A passed",
-      "imports": 0,
-      "final": {
-        "pending": 7,
-        "xp": 85957,
-        "health": -5.180668830871582,
-        "elapsed_ms": 399567,
-        "timeline_ms": 399567,
-        "rng": 1635674563
+        "elapsed_ms": 357560,
+        "timeline_ms": 357560,
+        "rng": 1045471099
       },
       "coverage": {
         "weapons": [
           1,
           2,
-          9,
-          17,
           18,
-          19,
-          22,
-          23
+          30
         ],
         "perks": [
-          5,
-          15,
-          24,
-          38,
-          45,
+          1,
+          6,
+          11,
+          13,
+          17,
+          33,
+          42,
           47,
           48,
-          51,
-          55
+          50,
+          53
         ],
         "bonuses": [
           "double_xp",
@@ -698,53 +611,85 @@
           "weapon_power_up"
         ],
         "menu": 11,
-        "reload": 187,
+        "reload": 170,
         "max_commands": 1,
-        "peak_creatures": 73,
+        "peak_creatures": 60,
         "stall": false,
         "transitions": false,
         "run_down": 31
       }
     },
     {
-      "name": "survival-hunt-highlander-ranked",
-      "ticks": 30000,
+      "name": "survival-hunt-jinxed-ranked",
+      "ticks": 12581,
       "fields_per_snapshot": 36343,
-      "sha256": "d431a42d13aaa07270e488942ab059f2266091fdc7db2cb7b958737b2330d0bc",
-      "final_sha256": "8db5647022d4a4ffc55400c88d248c0827ad6702d847232a205b6f7fa92b8207",
+      "sha256": "c682ae1b3a418c1bb0550d4514ba1575d063efe039995ce4c6e51a534eea0aa5",
+      "final_sha256": "2dc136300bca237364b58db1c51807992a28fd721335419d518eac4898b66c3e",
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
-        "pending": 25,
-        "xp": 140909,
-        "health": 100,
-        "elapsed_ms": 464808,
-        "timeline_ms": 464808,
-        "rng": 3250949754
+        "pending": 7,
+        "xp": 24910,
+        "health": -1.3809542655944824,
+        "elapsed_ms": 191167,
+        "timeline_ms": 191167,
+        "rng": 965687443
       },
       "coverage": {
         "weapons": [
           1,
-          2,
-          9,
-          11,
-          12,
-          17,
-          18,
-          19,
-          23,
-          30
+          18
         ],
         "perks": [
-          5,
+          6,
           11,
-          15,
-          24,
-          26,
+          29,
           30,
+          42
+        ],
+        "bonuses": [
+          "double_xp",
+          "freeze",
+          "reflex_boost",
+          "weapon_power_up"
+        ],
+        "menu": 5,
+        "reload": 92,
+        "max_commands": 1,
+        "peak_creatures": 96,
+        "stall": false,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "survival-hunt-highlander",
+      "ticks": 17526,
+      "fields_per_snapshot": 36343,
+      "sha256": "ed83b009ce576b9f3f7efb0d31b5881bfd702f8b12c3ff865c1a85cd8f2ca3b8",
+      "final_sha256": "abb1b57d675360faac5341f33f1a2fcb3a16cd60a762add57dbc172018a5359e",
+      "wasm_memory_mib": 2.5,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 40040,
+        "health": 0,
+        "elapsed_ms": 263426,
+        "timeline_ms": 263426,
+        "rng": 908571410
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          20,
+          23
+        ],
+        "perks": [
           38,
           41,
+          44,
           45,
           47,
           49,
@@ -753,16 +698,61 @@
         "bonuses": [
           "double_xp",
           "freeze",
-          "reflex_boost",
-          "weapon_power_up"
+          "reflex_boost"
         ],
-        "menu": 15,
-        "reload": 219,
+        "menu": 7,
+        "reload": 128,
         "max_commands": 1,
-        "peak_creatures": 75,
+        "peak_creatures": 99,
         "stall": false,
         "transitions": false,
-        "run_down": 0
+        "run_down": 31
+      }
+    },
+    {
+      "name": "survival-hunt-highlander-ranked",
+      "ticks": 17526,
+      "fields_per_snapshot": 36343,
+      "sha256": "e78b4fa180a3b53000e43a6cddc6cafdcc06c84c8e697627bdf93e451c9e002c",
+      "final_sha256": "abb1b57d675360faac5341f33f1a2fcb3a16cd60a762add57dbc172018a5359e",
+      "wasm_memory_mib": 2.5,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 40040,
+        "health": 0,
+        "elapsed_ms": 263426,
+        "timeline_ms": 263426,
+        "rng": 908571410
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          20,
+          23
+        ],
+        "perks": [
+          38,
+          41,
+          44,
+          45,
+          47,
+          49,
+          51
+        ],
+        "bonuses": [
+          "double_xp",
+          "freeze",
+          "reflex_boost"
+        ],
+        "menu": 7,
+        "reload": 128,
+        "max_commands": 1,
+        "peak_creatures": 99,
+        "stall": false,
+        "transitions": false,
+        "run_down": 31
       }
     },
     {

@@ -79,7 +79,7 @@ reuse in both. It also probes rejection of bad input, commands, entitlement and
 picks the perk menu does not allow, and that a large movement vector does not
 move faster than a unit one.
 
-The [results](results/matrix.json) cover 363,188 ticks. All 50 quests run to an
+The [results](results/matrix.json) cover 362,025 ticks. All 50 quests run to an
 outcome; the bot completes 1.1, 1.3 and 1.5. Coverage includes game over in
 every mode, quest completion and failure, spawn stalls, reloads, perk menus, a
 pick followed by reopening the menu, several weapons, freeze, Reflex Boost and
