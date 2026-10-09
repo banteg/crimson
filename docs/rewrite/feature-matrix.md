@@ -49,7 +49,7 @@ what a modern release needs. All three fix the
 | | Python port | Web | Native |
 | --- | --- | --- | --- |
 | Every run recorded | Yes, as `.crd` | Yes, in site storage, with no way to take it out | Yes, in the game folder |
-| Watch a replay | `crimson replay play` | No | No |
+| Watch a replay | From the high scores and `crimson replay play`, seeking anywhere | From the high scores and a run's link, seeking anywhere | From the high scores, seeking anywhere |
 | Verify or render a replay | `crimson replay verify`, `render` | No | No |
 | Runs checked against the verifier | By the gate and the server | Every client build, in CI | Every client build, in CI |
 

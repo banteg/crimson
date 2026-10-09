@@ -56,7 +56,7 @@ def advance_playback_frame(
     clock.accum += float(ticks_requested - len(tick_results)) * float(clock.dt_tick)
 
     for tick_result in tick_results:
-        runtime.advance_presentation_clock(dt_sim=float(tick_result.payload.dt_sim))
+        runtime.presentation.advance(float(tick_result.payload.dt_sim))
     return PlaybackFrameAdvance(
         plans=tuple(tick_result.payload.presentation for tick_result in tick_results),
         tick_results=tuple(tick_results),

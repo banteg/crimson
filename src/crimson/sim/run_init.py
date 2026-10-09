@@ -118,7 +118,7 @@ def initialize_run(
             reset_tutorial_state(world.state.tutorial, world.state.tutorial_overlay)
         case _:
             raise ValueError(f"unsupported replay game_mode_id={int(spec.game_mode_id)}")
-    session = DeterministicSession(
+    session = DeterministicSession.start(
         world=world,
         # `gameplay_update_and_render` levels up outside Rush; Typ-o runs its own frame.
         perk_progression_enabled=spec.game_mode_id not in (GameMode.RUSH, GameMode.TYPO),

@@ -315,7 +315,7 @@ class HighScoresView(MenuScreen):
             ):
                 if self.state.audio is not None:
                     play_sfx(self.state.audio.sfx, SfxId.UI_BUTTONCLICK)
-                self._watch_action = WatchReplay(target.replay)
+                self._watch_action = WatchReplay(target.replay, self._records[self.pinned], self.pinned + 1)
 
     def _update_score_scroll(self, left_panel_top_left: Vec2, *, mouse: rl.Vector2, click: bool) -> None:
         """`highscore_screen`'s `ui_scrollbar_update` over the scores; the port adds Home/End and pinning a row."""

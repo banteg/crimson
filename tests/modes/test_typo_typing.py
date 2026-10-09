@@ -69,7 +69,7 @@ def test_typo_submit_fires_at_the_named_creature_for_one_tick(make_world_state) 
     creature.pos = Vec2(321.0, 654.0)
     world.state.typo.names.names[7] = "alpha"
     world.state.typo.typing.text = "alpha"
-    session = DeterministicSession(
+    session = DeterministicSession.start(
         world=world,
         perk_progression_enabled=False,
     )

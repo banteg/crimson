@@ -95,7 +95,7 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     world = _build_session_world(seed=0x1234)
     entry = _spawn_nuke_pickup_on_player(world)
     player = world.players[0]
-    session = DeterministicSession(
+    session = DeterministicSession.start(
         world=world,
         perk_progression_enabled=True,
         mode_state=SurvivalSpawnState(),

@@ -14,6 +14,7 @@ from ..render.rtx.mode import RtxRenderMode
 from ..render.world import viewport
 from ..render.world.context import WorldRenderCtx
 from ..render.world.draw import draw_world, ui_render_aim_indicators
+from ..sim.clock import PresentationClock
 from ..sim.sessions import DeterministicSession
 from ..sim.terrain_generate import TerrainSetup
 from ..sim.world_reset import build_reset_world
@@ -32,8 +33,7 @@ class WorldRuntime:
 
     world: WorldState
     session: DeterministicSession | None
-    presentation_elapsed_ms: float
-    bonus_anim_phase: float
+    presentation: PresentationClock
 
     def __init__(
         self,
@@ -102,8 +102,7 @@ class WorldRuntime:
             player_count=player_count,
             preserve_bugs=self.preserve_bugs,
         )
-        self.presentation_elapsed_ms = 0.0
-        self.bonus_anim_phase = 0.0
+        self.presentation = PresentationClock()
 
     def start_session(self, session: DeterministicSession) -> None:
         """Install a run: its world is the one stepped, drawn and read until the next reset."""
@@ -113,13 +112,6 @@ class WorldRuntime:
     def end_session(self) -> None:
         """Stop stepping the run; its world stays on screen until the next reset."""
         self.session = None
-
-    def advance_presentation_clock(self, *, dt_sim: float) -> None:
-        """Advance the render-only clocks by one simulated tick."""
-
-        if float(dt_sim) > 0.0:
-            self.presentation_elapsed_ms += float(dt_sim) * 1000.0
-            self.bonus_anim_phase += float(dt_sim) * 1.3
 
     def open_runtime(self) -> None:
         self.render_resources.config = self.config
@@ -190,7 +182,7 @@ class WorldRuntime:
             players=self.world.players,
             creatures=self.world.creatures,
             camera=self.camera,
-            elapsed_ms=float(self.presentation_elapsed_ms),
-            bonus_anim_phase=float(self.bonus_anim_phase),
+            elapsed_ms=float(self.presentation.elapsed_ms),
+            bonus_anim_phase=float(self.presentation.bonus_anim_phase),
             rtx_mode=self.rtx_mode,
         )

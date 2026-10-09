@@ -11,7 +11,8 @@ How the browser and desktop game plays a replay back once
 anywhere, backwards too, and a box for each perk pick. While the replay plays,
 the viewer keeps to plain dim bands of its own, so it stays clear of the game's
 HUD; preparing and the end are the original's game over screen with the run's
-score card. The Python port keeps its own viewer for now.
+score card. The Python port has the same viewer, but prepares while the replay
+plays ([below](#the-python-port)).
 
 ## What it can afford
 
@@ -114,3 +115,36 @@ name (`game_watch_name`), and the board's rank and the day it took the run
 (`game_watch_seek`) and one to pause at (`game_watch_stop_at`); the desktop
 client takes them from `CRIMSON_WATCH`, `CRIMSON_WATCH_CARD`,
 `CRIMSON_WATCH_SEEK` and `CRIMSON_WATCH_STOP` for unattended captures.
+
+## The Python port
+
+The Python simulation plays about 4,000 ticks/s early in a run and about 640
+late in a 9-minute Survival run, so preparing that run first would take about
+a minute. The port plays the replay at once and prepares in a process of its
+own (`ReplayPreparation`), which sends what it finds every half second of the
+run:
+
+- a **keyframe** every 30 ticks: the driver's session and its run-down,
+  pickled and zstd-packed (about 30 KB, 3 ms to pack, 2 ms to restore), with
+  the render-only clocks and where the camera last followed the players. A
+  seek plays at most 29 ticks after its keyframe, a few hundredths of a
+  second. Past 256 MB, every other keyframe goes;
+- the **bakes** into the terrain, zstd-packed a span at a time. The process
+  draws nothing, so the viewer keeps a terrain of its own that bakes the log
+  as it comes in and copies it as the run starts and every 30 seconds after
+  (`TerrainHistory`), for seeks to rebuild from;
+- the scrub bar's **marks**, the **perk picks** with the menu's offers, and the
+  **tunes** the run starts: the in-game tune's draw from the replay's own sound
+  randomness, the quest's completion tune, and a death's game over tune.
+
+A seek goes as far as the pass has played (or playback itself, if it is
+ahead); the bar draws the segments past that fainter. A 9-minute Survival run
+is prepared in about a minute; a quest in a few seconds. At high speeds,
+playback runs as fast as the simulation does: a frame plays at most a
+thirtieth of a second of ticks.
+
+The music is the viewer's: the run's own music calls do not play, and after
+every frame and seek the viewer plays the tune the run has there. The score
+card is the high score row's; `crimson replay play` builds it from the
+replay's result, named after its pilot and dated by its file, and its end
+screen's second button closes the window.

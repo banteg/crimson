@@ -232,7 +232,7 @@ a fixed gameplay timestep in the original.
 - `tests/modes/test_quest_spawn_timeline.py` and
   `tests/modes/test_quest_final_time.py`: quest scheduling and score conversion.
 - `tests/modes/test_tutorial_timeline_update.py`: tutorial stage timing.
-- `tests/replay/test_replay_pause_step_clock_semantics.py`: playback clock controls.
+- `tests/screens/test_replay_viewer.py`: the replay viewer's pause, step and speed.
 
 These tests describe port contracts. Passing them is not independent evidence
 that every original mode, console state, and time transform matches.

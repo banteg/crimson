@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pickle
 from collections.abc import Iterator
 from contextlib import contextmanager
 
@@ -131,6 +132,17 @@ class PlaybackDriver:
         self.rng_call_order = RngCallOrder()
 
         self.tick_limit = self.tick_count if self.max_ticks is None else min(self.tick_count, max(0, int(self.max_ticks)))
+
+    def keyframe_state(self) -> bytes:
+        """The run as it stands, which `restore` puts back exactly: the session and how far its run-down has gone."""
+
+        return pickle.dumps((self.session, self._run_down), protocol=pickle.HIGHEST_PROTOCOL)
+
+    def restore(self, state: bytes) -> None:
+        self.session, self._run_down = pickle.loads(state)
+        self.world = self.session.world
+        mode_state = self.session.mode_state
+        self._quest_spawn_state = mode_state if isinstance(mode_state, QuestSpawnState) else None
 
     def build_checkpoint(
         self,

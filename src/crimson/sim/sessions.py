@@ -107,10 +107,13 @@ class DeterministicSession(msgspec.Struct):
     # The perk menu opened in the last tick: the next tick may start with one pick, and closes it either way.
     perk_menu_open: bool = False
 
-    def __post_init__(self) -> None:
-        state = self.world.state
-        prepare_weapon_availability(state)
-        prepare_perk_availability(state)
+    @classmethod
+    def start(cls, world: WorldState, *, perk_progression_enabled: bool, mode_state: ModeState = None) -> DeterministicSession:
+        """A run's session: the weapons and perks it may hand out are fixed as it starts. Constructing one is plain,
+        so a keyframe restores a session exactly as it stood."""
+        prepare_weapon_availability(world.state)
+        prepare_perk_availability(world.state)
+        return cls(world=world, perk_progression_enabled=perk_progression_enabled, mode_state=mode_state)
 
     def timing_for_dt(self, dt: float) -> FrameTiming:
         return _session_timing(self.world, dt)

@@ -7,7 +7,6 @@ from grim.view import ViewContext
 from ..game_modes import GameMode
 from ..modes.base_gameplay_mode import BaseGameplayMode
 from ..modes.quest_mode import QuestMode
-from ..modes.replay_playback_mode import ReplayPlaybackMode
 from ..modes.rush_mode import RushMode
 from ..modes.survival_mode import SurvivalMode
 from ..modes.tutorial_mode import TutorialMode
@@ -26,6 +25,7 @@ from ..screens.panels.play_game import PlayGameMenuView
 from ..screens.panels.stats import StatisticsMenuView
 from ..screens.pause_menu import PauseMenuView
 from ..screens.quest_views import EndNoteView, QuestFailedView, QuestResultsView, QuestsMenuView
+from ..screens.replay_viewer import ReplayViewer, WatchCard
 from ..screens.stack import ScreenEntry
 from .types import GameState
 
@@ -48,14 +48,18 @@ class ScreenNavigator:
             case ShowScores():
                 view = HighScoresView(self.state, action)
                 screens.push(ScreenEntry(view, resume=view.resume))
-            case WatchReplay(replay=replay):
+            case WatchReplay(replay=replay, record=record, rank=rank):
                 state = self.state
                 ctx = ViewContext(assets_dir=state.assets_dir, preserve_bugs=state.preserve_bugs)
-                screens.push(
-                    ScreenEntry(
-                        ReplayPlaybackMode(ctx, replay=replay, config=state.config, console=state.console, audio=state.audio),
-                    ),
+                viewer = ReplayViewer(
+                    ctx,
+                    replay=replay,
+                    config=state.config,
+                    console=state.console,
+                    card=WatchCard(record, rank),
+                    audio=state.audio,
                 )
+                screens.push(ScreenEntry(viewer))
             case ShowQuestOutcome(outcome=outcome):
                 if outcome.kind == "completed":
                     view = QuestResultsView(self.state, outcome)

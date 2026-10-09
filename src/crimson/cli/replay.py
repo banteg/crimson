@@ -362,11 +362,12 @@ def cmd_replay_play(
     from grim.audio import shutdown_audio
     from grim.view import ViewContext
 
-    from ..modes.replay_playback_mode import ReplayPlaybackMode, open_replay_audio
+    from ..modes.replay_playback_mode import open_replay_audio
     from ..replay import ReplayCodecError, load_replay_file, warn_on_game_version_mismatch
     from ..replay.versioning import require_playable_rules
     from ..runtime_boot import boot_runtime
     from ..runtime_resources_view import RuntimeResourcesView
+    from ..screens.replay_viewer import ReplayViewer, replay_card
 
     if assets_dir is None:
         assets_dir = base_dir
@@ -383,7 +384,15 @@ def cmd_replay_play(
 
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
     audio = open_replay_audio(boot.config, ctx, boot.console)
-    view = ReplayPlaybackMode(ctx, replay=replay, config=boot.config, console=boot.console, audio=audio)
+    # The card names the bot that played the run, and the day its file was written.
+    card = replay_card(
+        replay,
+        name=replay.pilot.name if replay.pilot is not None else "",
+        day=datetime.fromtimestamp(replay_path.stat().st_mtime, tz=UTC).astimezone().date(),
+    )
+    view = ReplayViewer(
+        ctx, replay=replay, config=boot.config, console=boot.console, card=card, audio=audio, leave_label="Close",
+    )
     title = f"Replay — {replay_path.name}"
 
     try:

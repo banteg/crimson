@@ -67,7 +67,7 @@ def test_quest_audio_requests_survive_render_partitions(
 ) -> None:
     world = make_world(quest_level=QuestLevel(1, 1))
     world.state.game_mode = GameMode.QUESTS
-    session = DeterministicSession(
+    session = DeterministicSession.start(
         world=world, perk_progression_enabled=True, mode_state=QuestSpawnState(completion_transition_ms=start_ms),
     )
     outputs = [
@@ -125,7 +125,7 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
         world.state.bonuses.reflex_boost = f32(0.025)
         world.players[0].weapon.shot_cooldown = 0
         world.state.camera_shake_timer = 10.0
-        session = DeterministicSession(
+        session = DeterministicSession.start(
             world=world,
             perk_progression_enabled=False,
         )

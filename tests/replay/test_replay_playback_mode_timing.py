@@ -44,16 +44,15 @@ def test_replay_runner_eos_applies_partial_completed_results(mocker, replay_play
     view._runtime = _runtime()
     view._max_ticks = None
     view._tick_index = 0
-    view._finished = False
     applied_ticks: list[int] = []
     view._driver = FakePlaybackDriver(tick_limit=2)
     _capture_applied_plans(mocker, view._driver, applied_ticks)
 
-    view._advance_runner(
+    view._advance(
         dt_seconds=2.0 * float(view._dt),
         max_ticks=2,
     )
 
     assert applied_ticks == [0, 1]
-    assert view._tick_index == 2
-    assert view._finished is True
+    assert view.tick_index == 2
+    assert view.finished

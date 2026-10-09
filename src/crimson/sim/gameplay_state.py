@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import cast
-
 import msgspec
 
 from grim.geom import Vec2
@@ -37,8 +35,8 @@ class BonusTimers(msgspec.Struct):
 class GameplayState(msgspec.Struct):
     rng: CrandLike = msgspec.field(default_factory=lambda: Crand(0xBEEF))
     effects: EffectPool = msgspec.field(default_factory=EffectPool)
-    particles: ParticlePool = cast(ParticlePool, None)
-    sprite_effects: SpriteEffectPool = cast(SpriteEffectPool, None)
+    particles: ParticlePool = msgspec.field(default_factory=ParticlePool)
+    sprite_effects: SpriteEffectPool = msgspec.field(default_factory=SpriteEffectPool)
     projectiles: ProjectilePool = msgspec.field(default_factory=ProjectilePool)
     secondary_projectiles: SecondaryProjectilePool = msgspec.field(default_factory=SecondaryProjectilePool)
     bonuses: BonusTimers = msgspec.field(default_factory=BonusTimers)
@@ -99,7 +97,3 @@ class GameplayState(msgspec.Struct):
     weapon_usage_time: list[int] = msgspec.field(default_factory=lambda: [0] * WEAPON_USAGE_TIME_SLOT_COUNT)
     highscore_score_xp: int = 0
     debug_god_mode: bool = False
-
-    def __post_init__(self) -> None:
-        self.particles = ParticlePool()
-        self.sprite_effects = SpriteEffectPool()
