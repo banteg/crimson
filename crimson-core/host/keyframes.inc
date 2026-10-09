@@ -116,20 +116,56 @@ static constexpr int TERRAIN_SHOT_TICKS = 1800;
 static constexpr size_t TERRAIN_SHOTS = 32;
 static constexpr int TERRAIN_SHOT_IDS = 1 << 30; // host texture ids the copies take
 
+// A bake log, zstd-packed a block at a time: a long run bakes millions of
+// entries, more than the browser's memory holds as they are.
+template <typename T> struct PackedLog {
+  static constexpr size_t BLOCK = 1 << 16; // entries a block holds
+  std::vector<std::vector<uint8_t>> blocks;
+  std::vector<T> open; // the entries after the last whole block
+  std::vector<uint8_t> unpacked;
+  size_t unpacked_block = SIZE_MAX;
+
+  size_t size() const { return blocks.size() * BLOCK + open.size(); }
+  void push(const T &entry) {
+    open.push_back(entry);
+    if (open.size() < BLOCK)
+      return;
+    const uint8_t *bytes = (const uint8_t *)open.data();
+    blocks.push_back(zstd_pack(std::vector<uint8_t>(bytes, bytes + BLOCK * sizeof(T)), 1));
+    open.clear();
+  }
+  void clear() { *this = {}; }
+  // Entries [from, to) into `out`.
+  void read(size_t from, size_t to, T *out) {
+    for (size_t at = from; at < to;) {
+      size_t block = at / BLOCK, offset = at % BLOCK, n = std::min(to - at, BLOCK - offset);
+      const T *entries = open.data();
+      if (block < blocks.size()) {
+        if (block != unpacked_block)
+          unpacked = zstd_unpack(blocks[block].data(), blocks[block].size(), BLOCK * sizeof(T)), unpacked_block = block;
+        entries = (const T *)unpacked.data();
+      }
+      out = std::copy(entries + offset, entries + offset + n, out);
+      at += n;
+    }
+  }
+};
+
 static struct {
   bool logging, baking; // log bakes, bake on undrawn ticks
   std::vector<DecalBatch> batches;
-  std::vector<fx_queue_entry_t> queue;
-  std::vector<RotatedDecal> rotated;
+  PackedLog<fx_queue_entry_t> queue;
+  PackedLog<RotatedDecal> rotated;
   std::vector<TerrainShot> shots;
   int shot_ticks, next_shot_id;
 } terrain;
 
 static void terrain_log_batch(int at_tick) {
   terrain.batches.push_back({at_tick, terrain.queue.size(), terrain.rotated.size()});
-  terrain.queue.insert(terrain.queue.end(), fx_queue, fx_queue + fx_queue_count);
+  for (int i = 0; i < fx_queue_count; ++i)
+    terrain.queue.push(fx_queue[i]);
   for (int i = 0; i < fx_queue_rotated; ++i)
-    terrain.rotated.push_back({fx_rotated_pos_x[i], fx_rotated_scale[i], fx_rotated_rotation[i],
+    terrain.rotated.push({fx_rotated_pos_x[i], fx_rotated_scale[i], fx_rotated_rotation[i],
                                fx_rotated_creature_type_id[i], fx_rotated_color_r[i]});
 }
 
@@ -182,10 +218,12 @@ static void terrain_rebuild(size_t batches) {
     size_t queue_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].queue : terrain.queue.size();
     size_t rotated_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].rotated : terrain.rotated.size();
     fx_queue_count = (int)(queue_end - terrain.batches[b].queue);
-    std::copy(terrain.queue.begin() + terrain.batches[b].queue, terrain.queue.begin() + queue_end, fx_queue);
+    terrain.queue.read(terrain.batches[b].queue, queue_end, fx_queue);
     fx_queue_rotated = (int)(rotated_end - terrain.batches[b].rotated);
+    std::vector<RotatedDecal> rotated(fx_queue_rotated);
+    terrain.rotated.read(terrain.batches[b].rotated, rotated_end, rotated.data());
     for (int i = 0; i < fx_queue_rotated; ++i) {
-      const RotatedDecal &d = terrain.rotated[terrain.batches[b].rotated + i];
+      const RotatedDecal &d = rotated[i];
       fx_rotated_pos_x[i] = d.pos;
       fx_rotated_scale[i] = d.scale;
       fx_rotated_rotation[i] = d.rotation;

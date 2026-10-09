@@ -73,6 +73,8 @@ std::vector<uint8_t> zstd_pack(const std::vector<uint8_t> &payload, int level) {
   std::vector<uint8_t> out(ZSTD_compressBound(payload.size()));
   size_t size = ZSTD_compress(out.data(), out.size(), payload.data(), payload.size(), level);
   out.resize(ZSTD_isError(size) ? 0 : size);
+  // Kept packings (the viewer's keyframes) would otherwise hold the whole bound.
+  out.shrink_to_fit();
   return out;
 }
 

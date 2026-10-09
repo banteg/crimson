@@ -42,7 +42,8 @@ way it:
   transition), zstd-packed. Past 256 MB, every other keyframe goes and the
   spacing doubles;
 - logs every **bake into the terrain**: `fx_queue_render`'s decals and corpses,
-  batch by batch, and copies the terrain render target as the run starts and
+  batch by batch, zstd-packed 65,536 entries at a time (a long run bakes
+  millions), and copies the terrain render target as the run starts and
   every 30 seconds (at most 32 copies, the spacing doubling past them);
 - collects the **marks** the scrub bar shows: Survival's milestone waves (the
   spawn stage `survival_update` advances: alien rings, the red alien boss,
