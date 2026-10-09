@@ -42,7 +42,9 @@ def test_a_release_version_bump_is_not_a_change(tmp_path: Path, monkeypatch: pyt
         (tmp_path / "uv.lock").write_text(lock)
         subprocess.run([git, "add", "."], cwd=tmp_path, check=True)
         subprocess.run(
-            [git, "-c", "user.name=CI", "-c", "user.email=ci@example.invalid", "commit", "-qm", "c"], cwd=tmp_path, check=True,
+            [git, "-c", "user.name=CI", "-c", "user.email=ci@example.invalid", "commit", "-qm", "c"],
+            cwd=tmp_path,
+            check=True,
         )
         return subprocess.check_output([git, "rev-parse", "HEAD"], cwd=tmp_path, text=True).strip()
 
@@ -79,3 +81,48 @@ def test_a_suite_runs_for_the_code_its_checks_import(monkeypatch: pytest.MonkeyP
     # The game build compiles in the version, format and rules, and imports nothing else of the port.
     assert relevant("client", ["src/crimson/game_version.py"])
     assert not relevant("client", ["src/crimson/sim/world_state.py"])
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "crimson-core/host/session.inc",
+        "crimson-core/host/watch.inc",
+        "crimson-core/host/keyframes.inc",
+        "crimson-core/game.py",
+        "third_party/sources/zlib/inflate.c",
+    ],
+)
+def test_game_only_inputs_do_not_rebuild_or_replay_the_verifier(path: str) -> None:
+    assert relevant("game-build", [path])
+    assert relevant("core-game", [path])
+    assert relevant("client", [path])
+    for suite in ("core-build", "core-corpus", "core-gate", "core-oracles", "service"):
+        assert not relevant(suite, [path]), suite
+
+
+def test_a_compiled_gameplay_source_reaches_every_runtime_consumer() -> None:
+    path = "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp"
+    for suite in (
+        "core-build",
+        "game-build",
+        "core-corpus",
+        "core-gate",
+        "core-game",
+        "core-oracles",
+        "client",
+        "service",
+    ):
+        assert relevant(suite, [path]), suite
+
+
+def test_new_presentation_sources_and_headers_keep_build_coverage() -> None:
+    assert relevant("game-build", ["decomp/1.9/grim/render/new_renderer.cpp"])
+    assert not relevant("core-build", ["decomp/1.9/grim/render/new_renderer.cpp"])
+    assert relevant("core-build", ["tools/match/include/new_header.h"])
+
+
+def test_native_oracle_does_not_import_unused_parent_fixtures() -> None:
+    assert not relevant("native-oracle", ["tests/conftest.py"])
+    assert not relevant("native-oracle", ["src/crimson/modes/replay_playback_mode.py"])
+    assert relevant("native-oracle", ["src/crimson/sim/world_state.py"])

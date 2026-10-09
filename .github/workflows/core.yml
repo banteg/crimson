@@ -1,12 +1,13 @@
-name: Crimson core
+name: Crimson runtime
 
-# The gate also runs the Python port, so its sources and the replay fixtures count.
 on:
   push:
-    branches:
-      - "master"
+    branches: [master]
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
@@ -20,8 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       core: ${{ steps.detect.outputs.core }}
-      gate: ${{ steps.detect.outputs.core-gate }}
+      python: ${{ steps.detect.outputs.core-gate }}
       game: ${{ steps.detect.outputs.core-game }}
+      oracles: ${{ steps.detect.outputs.core-oracles }}
+      corpus: ${{ steps.detect.outputs.corpus }}
+      client: ${{ steps.detect.outputs.client }}
+      service: ${{ steps.detect.outputs.service }}
     steps:
       - uses: actions/checkout@v5
       - id: detect
@@ -33,92 +38,187 @@ jobs:
             git fetch --no-tags --depth=1 origin "$BASE_SHA"
             base=(--base "$BASE_SHA")
           fi
-          python3 scripts/ci_changed_paths.py changed "${base[@]}" core core-gate core-game | tee -a "$GITHUB_OUTPUT"
+          python3 scripts/ci_changed_paths.py changed "${base[@]}" core core-gate core-game core-oracles client service | tee -a "$GITHUB_OUTPUT"
+          if grep -Eq '^core-(gate|game)=true$' "$GITHUB_OUTPUT"; then
+            echo "corpus=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "corpus=false" >> "$GITHUB_OUTPUT"
+          fi
 
-  core:
+  build-native:
     needs: changes
     if: needs.changes.outputs.core == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+    uses: ./.github/workflows/runtime-build.yml
+    with:
+      target: native
+      suite: core-build
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
+  build-wasm:
+    needs: changes
+    if: needs.changes.outputs.core == 'true' || needs.changes.outputs.service == 'true'
+    uses: ./.github/workflows/runtime-build.yml
+    with:
+      target: wasm
+      suite: core-build
+
+  build-game:
+    needs: changes
+    if: needs.changes.outputs.game == 'true' || needs.changes.outputs.client == 'true'
+    uses: ./.github/workflows/runtime-build.yml
+    with:
+      target: game
+      suite: game-build
+
+  corpus:
+    needs: [changes, build-native, build-wasm]
+    if: needs.changes.outputs.corpus == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.13"
           enable-cache: true
-
-      - name: Install dependencies
-        run: uv sync --frozen --group dev
-
-      - name: Setup Zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: "0.17.0"
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
+      - run: uv sync --frozen --group dev
+      - uses: actions/setup-node@v6
         with:
           node-version: "24"
-
-      # The cores and the bot corpus are keyed by everything they read (scripts/ci_changed_paths.py) and the
-      # toolchains. A cache is saved only when the whole job passes, so a restored corpus already passed the
-      # native/WASM matrix with exactly these inputs.
-      - name: Name the inputs
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-native
+          path: crimson-core/build/native
+      - run: chmod +x crimson-core/build/native/core
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-wasm
+          path: crimson-core/build/wasm
+      - name: Name the validated corpus inputs
         id: inputs
         run: |
-          toolchains="$(clang++ --version | head -1 | sha256sum | cut -c1-16)-zig$(zig version)-node$(node --version)"
-          echo "cores=$toolchains-$(python3 scripts/ci_changed_paths.py hash core-build)" >> "$GITHUB_OUTPUT"
-          echo "corpus=$toolchains-$(python3 scripts/ci_changed_paths.py hash core-corpus)" >> "$GITHUB_OUTPUT"
-
-      - name: Restore native and WASM cores
-        id: cores
-        uses: actions/cache@v4
-        with:
-          path: |
-            crimson-core/build/native/core
-            crimson-core/build/wasm/core.wasm
-          key: cores-${{ runner.os }}-${{ steps.inputs.outputs.cores }}
-
-      - name: Build native and WASM cores
-        if: steps.cores.outputs.cache-hit != 'true'
-        run: |
-          uv run --no-sync python crimson-core/build.py
-          uv run --no-sync python crimson-core/build.py --target wasm
-
-      - name: Restore the bot corpus
+          compiler="$(clang++ --version | sha256sum | cut -c1-16)-zig0.17.0-node$(node --version)"
+          echo "key=corpus-v2-${{ runner.os }}-${{ runner.arch }}-$compiler-$(python3 scripts/ci_changed_paths.py hash core-corpus)" >> "$GITHUB_OUTPUT"
+      # Exact cache hits reuse a complete corpus already validated with these sources and toolchains.
+      - name: Restore the validated bot corpus
         id: corpus
         uses: actions/cache@v4
         with:
           path: |
             crimson-core/build/fixtures
             crimson-core/build/report.json
-          key: corpus-${{ runner.os }}-${{ steps.inputs.outputs.corpus }}
-
+          key: ${{ steps.inputs.outputs.key }}
       - name: Compare all modes and resets
         if: steps.corpus.outputs.cache-hit != 'true'
+        run: |
+          uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name matrix -- \
+            node crimson-core/checks/matrix.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: runtime-corpus
+          path: |
+            crimson-core/build/fixtures
+            crimson-core/build/report.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-corpus-timings
+          path: crimson-core/build/timings.jsonl
+
+  python:
+    needs: [changes, build-native, corpus]
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --frozen --group dev
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-native
+          path: crimson-core/build/native
+      - run: chmod +x crimson-core/build/native/core
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-corpus
+          path: crimson-core/build
+      - name: Compare complete runs with Python
         env:
-          CRIMSON_CORE_TRACE_INIT: "1"
-        run: node crimson-core/checks/matrix.mjs
+          SHARD: ${{ matrix.shard }}
+        run: |
+          uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name "python-$SHARD" -- \
+            python crimson-core/checks/gate.py --shard "$SHARD/4"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-python-${{ matrix.shard }}
+          path: |
+            crimson-core/build/gate.json
+            crimson-core/build/timings.jsonl
+          if-no-files-found: error
 
-      - name: Compare whole runs with Python under the original rules
-        if: needs.changes.outputs.gate == 'true'
-        run: uv run --no-sync python crimson-core/checks/gate.py
+  python-report:
+    needs: [changes, corpus, python]
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --frozen --group dev
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-corpus
+          path: crimson-core/build
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: runtime-python-*
+          path: crimson-core/build/shards
+      - name: Require every stream exactly once
+        run: |
+          reports=()
+          for report in crimson-core/build/shards/*/gate.json; do reports+=(--merge "$report"); done
+          uv run --no-sync python crimson-core/checks/gate.py "${reports[@]}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: runtime-python-report
+          path: crimson-core/build/gate.json
+          if-no-files-found: error
 
-      - name: Build the game module
-        if: needs.changes.outputs.game == 'true'
-        run: uv run --no-sync python crimson-core/build.py --target game
-      # Each check boots the original from a fresh copy of the files crimson.land
-      # serves, since the game writes its profile into its directory. The session
-      # check plays a seed whose run picks perks and pauses; some runs end sooner.
-      # The ranked runs (a Survival run and quest 1.1) must queue the replay the
-      # leaderboard takes, and the module reads every recorded fixture it can play
-      # and watches each to the result it recorded, and the high score screen shows
-      # the leaderboard's runs and watches them.
-      - name: Run the game module inside the original with its files
-        if: needs.changes.outputs.game == 'true'
+  game-smoke:
+    needs: [changes, build-wasm, build-game]
+    if: needs.changes.outputs.game == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --frozen --group dev
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-wasm
+          path: crimson-core/build/wasm
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-game
+          path: crimson-core/build/game
+      - name: Boot, play, rank, read, watch, seek, and load online scores
         run: |
           uv run --no-sync python crimson-core/checks/game_files.py "$RUNNER_TEMP/game"
           fresh() { rm -rf "$RUNNER_TEMP/run" && cp -R "$RUNNER_TEMP/game" "$RUNNER_TEMP/run" && echo "$RUNNER_TEMP/run"; }
@@ -130,8 +230,68 @@ jobs:
           node crimson-core/checks/game_watch.mjs "$(fresh)"
           node crimson-core/checks/game_seek.mjs "$(fresh)"
           node crimson-core/checks/game_online.mjs "$(fresh)"
-          uv run --no-sync python crimson-core/checks/game_check.py --live "$(fresh)"
+  game-parity:
+    needs: [changes, build-wasm, build-game, corpus]
+    if: needs.changes.outputs.game == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --frozen --group dev
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-wasm
+          path: crimson-core/build/wasm
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-game
+          path: crimson-core/build/game
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-corpus
+          path: crimson-core/build
+      - name: Compare every game stream inside the original
+        run: |
+          uv run --no-sync python crimson-core/checks/game_files.py "$RUNNER_TEMP/game"
+          uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name game-parity -- \
+            python crimson-core/checks/game_check.py --live "$RUNNER_TEMP/game"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-game-parity-timings
+          path: crimson-core/build/timings.jsonl
 
+  oracles:
+    needs: [changes, build-native, build-wasm]
+    if: needs.changes.outputs.oracles == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --frozen --group dev
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-native
+          path: crimson-core/build/native
+      - run: chmod +x crimson-core/build/native/core
+      - uses: actions/download-artifact@v4
+        with:
+          name: runtime-wasm
+          path: crimson-core/build/wasm
       - name: Download original executable
         run: |
           game_dir="game_bins/crimsonland/1.9.93-gog"
@@ -160,38 +320,57 @@ jobs:
           uv run --no-sync --with wasmtime==49.0.0 python crimson-core/checks/wasmtime_check.py \
             --out crimson-core/build/wasmtime.json
 
-      - name: Upload results
-        if: always()
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: crimson-core-results
+          name: runtime-oracles
           path: |
-            crimson-core/build/report.json
-            crimson-core/build/gate.json
             crimson-core/build/oracle.json
             crimson-core/build/math-oracle.json
             crimson-core/build/wasmtime.json
-            crimson-core/build/*/errors.txt
-            crimson-core/build/*/link.log
-            crimson-core/build/native/core
-            crimson-core/build/wasm/core.wasm
+          if-no-files-found: error
 
-  gate:
+  client:
+    needs: [changes, build-game]
+    if: needs.changes.outputs.client == 'true'
+    uses: ./.github/workflows/client.yml
+
+  service:
+    needs: [changes, build-wasm]
+    if: needs.changes.outputs.service == 'true'
+    uses: ./.github/workflows/service.yml
+
+  core-gate:
     name: core-gate
-    needs: [changes, core]
+    needs: [changes, build-native, build-wasm, build-game, corpus, python, python-report, game-smoke, game-parity, oracles]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Require core when relevant
+      - uses: actions/checkout@v5
+      - name: Require successful relevant jobs and skipped irrelevant jobs
         env:
-          CHANGES_RESULT: ${{ needs.changes.result }}
-          RELEVANT: ${{ needs.changes.outputs.core }}
-          CORE_RESULT: ${{ needs.core.result }}
-        run: |
-          test "$CHANGES_RESULT" = success
-          if [[ "$RELEVANT" == true ]]; then
-            test "$CORE_RESULT" = success
-          else
-            test "$RELEVANT" = false
-            test "$CORE_RESULT" = skipped
-          fi
+          NEEDS: ${{ toJSON(needs) }}
+        run: python3 scripts/ci_gate.py core
+
+  client-gate:
+    name: client-gate
+    needs: [changes, build-game, client]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Require successful relevant jobs and skipped irrelevant jobs
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: python3 scripts/ci_gate.py client
+
+  service-gate:
+    name: service-gate
+    needs: [changes, build-wasm, service]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Require successful relevant jobs and skipped irrelevant jobs
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: python3 scripts/ci_gate.py service

@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import ast
 import hashlib
+import json
 import re
 import shutil
 import subprocess
@@ -25,7 +26,13 @@ PACKAGE_ROOTS = {"crimson": "src", "grim": "src", "crimson_re": "crimson-re/src"
 IMPORT_RE = re.compile(r"\b(?:from|import)\s+((?:crimson_re|crimson|grim|tests)(?:\.\w+)*)")
 
 PROJECT_FILES = ("pyproject.toml", "crimson-re/pyproject.toml", "uv.lock")
-SHARED_FILES = (*PROJECT_FILES, "scripts/ci_changed_paths.py")
+SHARED_FILES = (
+    *PROJECT_FILES,
+    "scripts/ci_changed_paths.py",
+    "scripts/ci_gate.py",
+    "scripts/ci_benchmark.py",
+    ".github/workflows/runtime-build.yml",
+)
 
 
 @dataclass(frozen=True)
@@ -34,23 +41,51 @@ class Suite:
     python: tuple[str, ...] = ()
 
 
-# The native and WASM cores: the recovered sources, the host and the build scripts.
+# The verifier compiles this manifest, not the recovered presentation or the game-only host includes.
+# Keep directory patterns for headers and patches: adding either can affect an existing compilation.
 CORE_BUILD = (
-    "crimson-core/*.py",
-    "crimson-core/*.json",
-    "crimson-core/host/",
+    "crimson-core/build.py",
+    "crimson-core/adapter.py",
+    "crimson-core/data.py",
+    "crimson-core/rules.py",
+    "crimson-core/sources.json",
+    "crimson-core/schema.json",
+    "crimson-core/host/host.cpp",
+    "crimson-core/host/grim.inc",
+    "crimson-core/host/*.h",
+    "crimson-core/host/*.zig",
     "crimson-core/patches/",
-    "decomp/",
     "third_party/headers/",
-    "third_party/sources/",
     "tools/match/include/",
-    "tools/native/data_definitions/",
+    "tools/native/data_definitions/crimsonland.exe.json",
+    *json.loads((Path(__file__).resolve().parents[1] / "crimson-core/sources.json").read_text()),
+)
+# The game discovers recovered sources and constructors in these trees, scans every host file for reset
+# ownership, and links its own platform layer and vendor libraries. New files in those trees count too.
+GAME_BUILD = (
+    *CORE_BUILD,
+    "crimson-core/game.py",
+    "crimson-core/game/",
+    "crimson-core/host/",
+    "decomp/1.9/crimsonland/",
+    "decomp/1.9/grim/",
+    "third_party/sources/",
+    "tools/native/data_definitions/grim.dll.json",
 )
 # The bot corpus: the matrix plays it on the WASM core and compares native with WASM.
-CORE_CORPUS = (*CORE_BUILD, "crimson-core/checks/matrix.mjs", "crimson-core/checks/engine.mjs", "crimson-core/checks/compare.mjs")
+CORE_CORPUS = (
+    *CORE_BUILD,
+    "crimson-core/checks/matrix.mjs",
+    "crimson-core/checks/engine.mjs",
+    "crimson-core/checks/compare.mjs",
+)
 CORE_GATE = ("crimson-core/checks/gate.py", "crimson-core/checks/replay.py")
 CORE_GAME = ("crimson-core/checks/game_*", "crimson-core/build.py", *CORE_GATE)
-CORE_ORACLES = ("crimson-core/checks/builder_oracle.py", "crimson-core/checks/math_oracle.py", "crimson-core/checks/wasmtime_check.py")
+CORE_ORACLES = (
+    "crimson-core/checks/builder_oracle.py",
+    "crimson-core/checks/math_oracle.py",
+    "crimson-core/checks/wasmtime_check.py",
+)
 # The matching and native-link tooling behind `crimson match` and `crimson native`. The decomp report also pins
 # the matching code it scores with by content (crimson_re.match_report._input_path), imported or not.
 RE_TOOLS = Suite(
@@ -72,37 +107,72 @@ RE_TOOLS = Suite(
 
 SUITES = {
     "core-build": Suite(CORE_BUILD),
+    "game-build": Suite(GAME_BUILD, ("src/crimson/game_version.py",)),
     "core-corpus": Suite(CORE_CORPUS),
     "core-gate": Suite(
-        (*CORE_CORPUS, *CORE_GATE, "crimson-core/results/matrix.json", "tests/fixtures/replays/", ".github/workflows/core.yml"),
+        (
+            *CORE_CORPUS,
+            *CORE_GATE,
+            "crimson-core/results/matrix.json",
+            "tests/fixtures/replays/",
+            ".github/workflows/core.yml",
+        ),
         CORE_GATE,
     ),
     "core-game": Suite(
-        (*CORE_CORPUS, *CORE_GAME, "crimson-core/game/", "tests/fixtures/replays/", ".github/workflows/core.yml"),
+        (*GAME_BUILD, *CORE_CORPUS, *CORE_GAME, "tests/fixtures/replays/", ".github/workflows/core.yml"),
         CORE_GAME,
     ),
     # The oracles resolve the original executable's symbols from the name and data maps.
     "core-oracles": Suite(
-        (*CORE_CORPUS, *CORE_ORACLES, "crimson-core/checks/*_probe.mjs", "analysis/ghidra/maps/", ".github/workflows/core.yml"),
+        (
+            *CORE_BUILD,
+            *CORE_ORACLES,
+            "crimson-core/checks/engine.mjs",
+            "crimson-core/checks/*_probe.mjs",
+            "analysis/ghidra/maps/",
+            ".github/workflows/core.yml",
+        ),
         CORE_ORACLES,
     ),
     "client": Suite(
-        (*CORE_BUILD, "crimson-core/game/", "crimson-core/client/", ".github/workflows/client.yml"),
+        (*GAME_BUILD, "crimson-core/client/", ".github/workflows/client.yml", ".github/workflows/core.yml"),
         ("crimson-core/build.py", "crimson-core/client/*.py"),
     ),
     "service": Suite(
-        (*CORE_BUILD, "service/", "tests/fixtures/replays/", ".github/workflows/service.yml"),
+        (
+            *CORE_BUILD,
+            "service/",
+            "tests/fixtures/replays/",
+            ".github/workflows/service.yml",
+            ".github/workflows/core.yml",
+        ),
         ("service/scripts/assets.py",),
     ),
     "decomp": Suite((*RE_TOOLS.paths, ".github/workflows/decomp.yml"), RE_TOOLS.python),
     "re-audits": Suite((*RE_TOOLS.paths, ".github/workflows/ci.yml"), RE_TOOLS.python),
     # Unicorn runs the original executable; the support module reads Grim's interface layout.
     "native-oracle": Suite(
-        ("tests/native_oracle/", "tests/conftest.py", "analysis/ghidra/maps/", "tools/match/include/grim2d_cpp.h", ".github/workflows/ci.yml"),
-        ("tests/native_oracle/*.py", "tests/conftest.py"),
+        (
+            "tests/native_oracle/",
+            "analysis/ghidra/maps/",
+            "tools/match/include/grim2d_cpp.h",
+            ".github/workflows/ci.yml",
+        ),
+        ("tests/native_oracle/*.py",),
     ),
     "pytest": Suite(
-        ("src/", "crimson-re/", "tests/", "scripts/", "decomp/", "analysis/", "tools/", "third_party/", ".github/workflows/ci.yml"),
+        (
+            "src/",
+            "crimson-re/",
+            "tests/",
+            "scripts/",
+            "decomp/",
+            "analysis/",
+            "tools/",
+            "third_party/",
+            ".github/workflows/ci.yml",
+        ),
     ),
 }
 # A job that runs several suites' steps runs when any of them can change.
@@ -139,7 +209,9 @@ def module_file(name: str) -> str | None:
     if root is None:
         return None
     base = PurePosixPath(root, *name.split("."))
-    return next((str(path) for path in (base.with_suffix(".py"), base / "__init__.py") if str(path) in _tracked_set()), None)
+    return next(
+        (str(path) for path in (base.with_suffix(".py"), base / "__init__.py") if str(path) in _tracked_set()), None,
+    )
 
 
 @cache
@@ -198,7 +270,12 @@ def python_inputs(entry_patterns: tuple[str, ...]) -> frozenset[str]:
     # A module of an importable package is walked like any import; other files (check scripts, Node checks
     # running Python snippets) name the modules they run.
     pending = {_module_name(path) for path in entries if _in_package(path)}
-    pending.update(module for path in entries if not _in_package(path) for module in IMPORT_RE.findall(Path(path).read_text(errors="replace")))
+    pending.update(
+        module
+        for path in entries
+        if not _in_package(path)
+        for module in IMPORT_RE.findall(Path(path).read_text(errors="replace"))
+    )
     seen: set[str] = set()
     files: set[str] = set()
     while pending:
@@ -281,7 +358,11 @@ def main() -> None:
         paths = (
             None
             if not args.base or re.fullmatch(r"0+", args.base)
-            else [path for path in changed_paths(args.base) if path not in PROJECT_FILES or not version_bump_only(args.base, path)]
+            else [
+                path
+                for path in changed_paths(args.base)
+                if path not in PROJECT_FILES or not version_bump_only(args.base, path)
+            ]
         )
         for suite in args.suites:
             # Without a base (a new branch, a manual run) every suite runs.
