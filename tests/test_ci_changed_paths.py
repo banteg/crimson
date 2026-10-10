@@ -101,8 +101,11 @@ def test_game_only_inputs_do_not_rebuild_or_replay_the_verifier(path: str) -> No
         assert not relevant(suite, [path]), suite
 
 
-def test_a_compiled_gameplay_source_reaches_every_runtime_consumer() -> None:
-    path = "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp"
+@pytest.mark.parametrize(
+    "path",
+    ["decomp/1.9/crimsonland/gameplay/player_update_heading.cpp", "crimson-core/optimizations/new-optimization.patch"],
+)
+def test_a_compiled_gameplay_source_reaches_every_runtime_consumer(path: str) -> None:
     for suite in (
         "core-build",
         "game-build",
@@ -121,6 +124,7 @@ def test_new_presentation_sources_and_headers_keep_build_coverage() -> None:
     assert not relevant("core-build", ["decomp/1.9/grim/render/new_renderer.cpp"])
     assert relevant("core-build", ["tools/match/include/new_header.h"])
     assert relevant("core-build", ["crimson-core/abi/new-repair.patch"])
+    assert relevant("core-build", ["crimson-core/optimizations/new-optimization.patch"])
     assert relevant("core-build", ["crimson-core/seams/new-input.patch"])
     assert not relevant("core-build", ["crimson-core/game/changes/new-host.patch"])
 

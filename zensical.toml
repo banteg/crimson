@@ -177,6 +177,7 @@ nav = [
     ]},
     { "Evidence ledger" = "verification/evidence-ledger/index.md" },
     { "Parity matrix" = "verification/parity-matrix/index.md" },
+    { "Survival spawn profile" = "verification/survival-spawn-profile.md" },
   ]},
   { "Contributor" = [
     { "Overview" = "contributor/index.md" },

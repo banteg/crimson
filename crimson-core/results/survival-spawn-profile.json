@@ -1,0 +1,97 @@
+{
+  "date": "2026-10-10",
+  "baseline_commit": "f8e743454598b1fc408b84c124943e2bb54ffb2f",
+  "host": {
+    "cpu": "Apple M1 Pro",
+    "ram_gib": 32
+  },
+  "replay_id": "209b0cdb6d9345e8c2dc4eaeac654e929338eecf07aaad28aaf9137dd9bc38d6",
+  "replay_crd_sha256": "d6ad07f0702ff21ac829aca3d0d7deb05adac9c1f4107bcd715bf2110cee036a",
+  "sha256": {
+    "replay": "209b0cdb6d9345e8c2dc4eaeac654e929338eecf07aaad28aaf9137dd9bc38d6",
+    "before": "558844faabea3a81f06abc9153e30e618b9fc64260f6253ffc2245b030f6ed6d",
+    "after": "7c2d435cadf473a6d812c50566515b0f6142b1bdf5ced6d2d9e0b44b4c7e6f6c"
+  },
+  "ticks": 210268,
+  "snapshot_fields": 36343,
+  "terminal_snapshot_sha256": "a657da8fc761450c41647eb2ad6d13d5de5cf28673621a03f32a2772a5c6e979",
+  "preserve_bugs": 0,
+  "browser": {
+    "before": {
+      "wall_ms": 96701.2,
+      "frame_ms": 96022.0,
+      "frames": 1842,
+      "p99_ms": 104.1,
+      "max_ms": 237.3,
+      "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
+    },
+    "after": {
+      "wall_ms": 62027.7,
+      "frame_ms": 61465.7,
+      "frames": 1585,
+      "p99_ms": 82.6,
+      "max_ms": 172,
+      "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)"
+    },
+    "shorter_percent": 35.856,
+    "earlier_baseline_wall_ms": 102070.2,
+    "replicates_per_build": 1
+  },
+  "core": {
+    "runs": [
+      {
+        "repeat": 0,
+        "ms": 46618.877,
+        "hash": "a657da8fc761450c41647eb2ad6d13d5de5cf28673621a03f32a2772a5c6e979",
+        "build": "before"
+      },
+      {
+        "repeat": 0,
+        "ms": 26669.673,
+        "hash": "a657da8fc761450c41647eb2ad6d13d5de5cf28673621a03f32a2772a5c6e979",
+        "build": "optimized"
+      },
+      {
+        "repeat": 1,
+        "ms": 26554.01,
+        "hash": "a657da8fc761450c41647eb2ad6d13d5de5cf28673621a03f32a2772a5c6e979",
+        "build": "optimized"
+      },
+      {
+        "repeat": 1,
+        "ms": 45993.502,
+        "hash": "a657da8fc761450c41647eb2ad6d13d5de5cf28673621a03f32a2772a5c6e979",
+        "build": "before"
+      },
+      {
+        "repeat": 2,
+        "ms": 45585.016,
+        "hash": "a657da8fc761450c41647eb2ad6d13d5de5cf28673621a03f32a2772a5c6e979",
+        "build": "before"
+      },
+      {
+        "repeat": 2,
+        "ms": 26439.402,
+        "hash": "a657da8fc761450c41647eb2ad6d13d5de5cf28673621a03f32a2772a5c6e979",
+        "build": "optimized"
+      }
+    ],
+    "warm_median_ms": {
+      "before": 45789.259,
+      "after": 26496.706
+    },
+    "shorter_percent": 42.133,
+    "timed_block_ticks": 600,
+    "snapshots_outside_timing": true
+  },
+  "validation": {
+    "baseline_vs_optimized_streams": 102,
+    "ticks": 508609,
+    "fields_per_snapshot": 36343,
+    "batch_cases": 640,
+    "native_wasm_matrix_scenarios": 101,
+    "original_x86_spawn_cases": 7,
+    "optimized_game_vs_core_ticks": 210268,
+    "optimized_game_vs_core_excludes": "presentation-only popup timers and weapon sound IDs"
+  }
+}
