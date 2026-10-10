@@ -62,10 +62,24 @@ and web package for this master commit, without repeating corpus, parity,
 oracles or desktop builds. Existing required checks must already be green;
 checks and master are rechecked after the artifact build and before upload.
 
-Compiler/package caches preserve the embedded replay version, which includes
-the commit. A new commit needs a fresh game/browser build even when game
-sources did not change. Exact cache hits mainly accelerate retries of the
-same commit; deployment preparation may take a few minutes on its first run.
+Compiler/package cache keys use content identities: unchanged game inputs
+reuse the module across commits; unchanged client inputs and module bytes reuse
+the web package. Manifests retain the original build commit and artifact hashes
+when reused. The release manifest separately identifies the commit being deployed.
+A source or toolchain change invalidates the affected build; a first cold
+preparation can still take a few minutes.
+
+A fingerprint names build inputs, not replay compatibility or permission to
+promote an old workflow run. The full SHA-256 is in each build manifest; replay
+labels display its first 24 hex characters. The shared input inventory lives in
+`scripts/build_identity.py`, and compiler flags are covered by the build-script
+hashes. Keep that inventory and its invalidation tests current when adding inputs.
+
+A trusted runtime run for the deployment commit can restore an unchanged module
+or client from a prior build, verify its identity and bytes, and upload it as an
+artifact of the current run. Its manifest keeps the original build commit. The
+deployment preflight still refuses runs of another commit and requires all green
+checks; a fingerprint never substitutes for runtime validation or replay checks.
 Job reruns can retain older artifacts with the same name; the preflight
 validates the newest ID per name and pins exact downloads in the manifest.
 
@@ -112,7 +126,8 @@ release window.
 ## Evidence and rollback
 
 The `crimson-land-release` artifact contains the prepared release tarball and
-`release.json`: commit, runtime run, selected artifact IDs and SHA-256 hashes of the Worker modules,
+`release.json`: deployment commit, runtime run, selected artifact IDs, original
+verifier/game/client build provenance and SHA-256 hashes of the Worker modules,
 site files, verifier and Wrangler config. The deployment summary and
 `crimson-land-deployment` artifact retain Wrangler output, including the
 Cloudflare version ID. The generated `/deployment.txt` identifies the published

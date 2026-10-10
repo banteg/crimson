@@ -310,6 +310,7 @@ bool start_game() {
   wasm2c_game_instantiate(&game, &host, &wasi);
   w2c_game_0x5Finitialize(&game);
   started = true;
+  snprintf((char *)client_memory() + w2c_game_game_recorder_version(&game), 64, "%s", CRIMSON_CLIENT_VERSION);
 #ifdef __EMSCRIPTEN__
   w2c_game_game_platform(&game, 1);
   w2c_game_game_leaderboard_enable(&game);

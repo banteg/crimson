@@ -39,16 +39,14 @@ jobs:
       - name: Name the web package inputs
         if: matrix.name == 'web'
         id: inputs
-        run: |
-          game=$(sha256sum crimson-core/build/game/game.wasm | cut -d' ' -f1)
-          echo "key=client-web-v1-${{ runner.os }}-${{ runner.arch }}-wabt$WABT_VERSION-emsdk$EMSDK_VERSION-$(python3 scripts/ci_changed_paths.py hash client)-$game" >> "$GITHUB_OUTPUT"
+        run: python3 scripts/build_identity.py client web --wabt "$WABT_VERSION" --emscripten "$EMSDK_VERSION" --github-output "$GITHUB_OUTPUT"
       - name: Restore the web package
         if: matrix.name == 'web'
         id: web
         uses: actions/cache@v4
         with:
           path: crimson-core/build/dist/web
-          key: ${{ steps.inputs.outputs.key }}
+          key: client-web-v2-${{ runner.os }}-${{ runner.arch }}-${{ steps.inputs.outputs.fingerprint }}
 
       - name: Install wabt
         if: matrix.name != 'web' || steps.web.outputs.cache-hit != 'true'
@@ -103,6 +101,12 @@ jobs:
       - name: Build the client
         if: matrix.name != 'web' || steps.web.outputs.cache-hit != 'true'
         run: python3 crimson-core/client/build.py --target ${{ matrix.name == 'web' && 'web' || 'native' }} --skip-game --package
+
+      - name: Verify the web identity and bytes
+        if: matrix.name == 'web'
+        env:
+          FINGERPRINT: ${{ steps.inputs.outputs.fingerprint }}
+        run: python3 scripts/build_identity.py check crimson-core/build/dist/web/build.json "$FINGERPRINT"
 
       # An artifact drops file modes: a tarball keeps the executables runnable.
       - name: Archive the build

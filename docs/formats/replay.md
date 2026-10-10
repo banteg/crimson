@@ -51,18 +51,29 @@ alternative encoding "wins".
 | `result` | `RunResult` | Result the recorder derived |
 | `ticks` | array of `Tick` | At least one tick |
 
-`game_version` is the package version for a release-tagged build or an
-installed package (`0.11.0`), else `<version>+g<12-hex commit>`. A checkout
-whose `src/` differs from that commit (modified or new unignored files) appends
-`.dirty`.
+`game_version` identifies the recording implementation as
+`<package version>+build.<24 hex characters>`. The full SHA-256 fingerprint is
+in its build manifest. It hashes actual source inputs and the build recipe;
+Git commit and dirty status are provenance beside the identity, not part of it.
+Python distributions carry generated `_build.json` metadata; editable checkouts
+hash current inputs, including uncommitted files. The recovered module includes
+its compiler/target recipe. A tagged release keeps its fingerprint too.
+
+Existing plain release versions and `+g<commit>[.dirty]` labels remain readable.
+Neither label style decides compatibility: `rules` gates playback and the
+service still re-simulates ranked runs.
 
 `rules` is a number each build carries (`REPLAY_RULES`), raised whenever a change makes earlier replays play
 differently: a replay plays back only under the rules it was recorded under. Readers accept v30, which had no
 `rules`, as rules 1, and v30 and v31, which had no `pilot`, as declaring none; writers always write v32.
 
 `Recorder` is a map of `client` (`crimson` for this port; another client, such as a native crimson-core build,
-names itself), `version` (that client's own build, in `game_version`'s form) and `platform` (`<os>-<cpu>`, such
+names itself), `version` (that client's own content identity, in `game_version`'s form) and `platform` (`<os>-<cpu>`, such
 as `macos-arm64`; `unknown` for the fixtures recorded before v30). Each is 1..64 printable ASCII characters.
+The packaged web/desktop host supplies its own fingerprint, covering the game
+module bytes, client sources and client toolchain. A raw module uses its game
+identity as the default recorder version.
+
 Verification ignores it: `game_version` names the build, `recorder` who recorded the run, so boards can show,
 filter or withdraw runs by client.
 

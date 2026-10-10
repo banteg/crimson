@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-import subprocess
 from pathlib import Path
 
 import msgspec
@@ -296,55 +295,29 @@ def test_a_replay_from_another_game_version_verifies_with_a_warning() -> None:
     assert result == replay.result
 
 
-def _fake_git(monkeypatch: pytest.MonkeyPatch, *, tags: bytes, status: bytes) -> None:
+def test_python_checkout_names_the_actual_content_identity() -> None:
+    from scripts.build_identity import python_identity
+
     current_replay_game_version.cache_clear()
-    monkeypatch.setattr(crimson, "__version__", "1.2.3")
-    monkeypatch.setattr(game_version.shutil, "which", lambda _name: "/usr/bin/git")
-
-    def _check_output(args: list[str], **_kwargs: object) -> bytes:
-        match args[1]:
-            case "rev-parse":
-                return b"abcdef123456\n"
-            case "tag":
-                return tags
-            case "status":
-                return status
-        raise AssertionError(f"unexpected git args: {args!r}")
-
-    monkeypatch.setattr(game_version.subprocess, "check_output", _check_output)
-
-
-@pytest.mark.parametrize(
-    ("tags", "status", "expected"),
-    [
-        (b"", b"", "1.2.3+gabcdef123456"),
-        (b"v1.2.3\n", b"", "1.2.3"),
-        (b"", b" M src/crimson/gameplay.py\n", "1.2.3+gabcdef123456.dirty"),
-        (b"v1.2.3\n", b" M src/crimson/gameplay.py\n", "1.2.3+gabcdef123456.dirty"),
-    ],
-)
-def test_current_replay_game_version(monkeypatch: pytest.MonkeyPatch, tags: bytes, status: bytes, expected: str) -> None:
-    _fake_git(monkeypatch, tags=tags, status=status)
     try:
-        assert current_replay_game_version() == expected
+        assert current_replay_game_version() == python_identity()["version"]
     finally:
         current_replay_game_version.cache_clear()
 
 
-def test_installed_package_inside_an_unrelated_repo_records_the_plain_version(
-    monkeypatch: pytest.MonkeyPatch,
-    tmp_path: Path,
+@pytest.mark.parametrize("metadata", [None, '{"version":"1.2.3+build.abcdef"}'])
+def test_installed_package_reads_generated_metadata_without_consulting_git(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, metadata: str | None,
 ) -> None:
-    git = ["git", "-c", "user.name=t", "-c", "user.email=t@t", "-C", str(tmp_path)]
-    subprocess.run([*git, "init", "-q"], check=True)
-    subprocess.run([*git, "commit", "-q", "--allow-empty", "-m", "unrelated"], check=True)
-    site_packages = tmp_path / ".venv" / "lib" / "python3.13" / "site-packages"
-    (site_packages / "crimson" / "replay").mkdir(parents=True)
-    current_replay_game_version.cache_clear()
+    package = tmp_path / "site-packages/crimson"
+    package.mkdir(parents=True)
+    if metadata is not None:
+        (package / "_build.json").write_text(metadata)
     monkeypatch.setattr(crimson, "__version__", "1.2.3")
-    monkeypatch.setattr(game_version, "__file__", str(site_packages / "crimson" / "game_version.py"))
+    monkeypatch.setattr(game_version, "__file__", str(package / "game_version.py"))
+    current_replay_game_version.cache_clear()
     try:
-        assert current_replay_game_version() == "1.2.3"
+        assert current_replay_game_version() == ("1.2.3" if metadata is None else "1.2.3+build.abcdef")
     finally:
         current_replay_game_version.cache_clear()
 

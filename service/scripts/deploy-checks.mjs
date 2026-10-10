@@ -22,14 +22,55 @@ export function packageFiles(directory) {
   });
 }
 
+// Match Python's canonical build-input JSON; provenance and artifact hashes are outside the identity.
+function canonical(value) {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (value && typeof value === "object") return `{${Object.keys(value).sort((a, b) => Buffer.compare(Buffer.from(a), Buffer.from(b))).map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`).join(",")}}`;
+  return JSON.stringify(value);
+}
+
+export function requireBuildIdentity(build, kind) {
+  assert.equal(build.schema, 1, "Unknown build identity schema");
+  assert.equal(build.kind, kind, "Wrong build kind");
+  const expected = kind === "wasm" ? ["core.wasm"] : kind === "game" ? ["game.wasm"] : ["index.html", "index.js", "index.wasm"];
+  assert.deepEqual(Object.keys(build.artifacts).sort(), expected, "Incomplete build artifact manifest");
+  const inputs = Object.fromEntries(["schema", "kind", "recipe", "inputs"].map((key) => [key, build[key]]));
+  assert.equal(createHash("sha256").update(canonical(inputs)).digest("hex"), build.fingerprint, "Changed build identity");
+  const version = build.recipe.version;
+  assert.equal(build.version, `${version}${version.includes("+") ? "." : "+"}build.${build.fingerprint.slice(0, 24)}`, "Wrong build label");
+  assert.match(build.origin.commit, /^[a-f0-9]{40}$/, "Missing source commit provenance");
+  assert.equal(build.origin.dirty, false, "Production build has modified inputs");
+}
+
+function builds() {
+  const verifier = JSON.parse(readFileSync("../crimson-core/build/wasm/core.wasm.build.json", "utf8"));
+  const client = JSON.parse(readFileSync("dist/play/build.json", "utf8"));
+  requireBuildIdentity(verifier, "wasm");
+  requireBuildIdentity(client, "client");
+  requireBuildIdentity(client.game, "game");
+  assert.equal(client.recipe.game, client.game.artifacts["game.wasm"], "Wrong game module in client provenance");
+  for (const [build, directory] of [[verifier, "../crimson-core/build/wasm"], [client, "dist/play"]]) {
+    for (const [name, hash] of Object.entries(build.artifacts)) {
+      assert.ok(name && name !== "." && name !== ".." && !name.includes("/") && !name.includes("\\"), "Invalid build artifact path");
+      assert.equal(createHash("sha256").update(readFileSync(join(directory, name))).digest("hex"), hash, `Changed build artifact: ${name}`);
+    }
+  }
+  return { verifier, client };
+}
+
+function releaseFiles() {
+  return [...packageFiles("dist"), ...packageFiles("release-worker"), "../crimson-core/build/wasm/core.wasm", "../crimson-core/build/wasm/core.wasm.build.json", "wrangler.jsonc"];
+}
+
 export function packageManifest() {
   for (const path of ["dist/index.html", "dist/play/index.html", "dist/play/index.js", "dist/play/index.wasm", "dist/ui/small.ttf", "dist/ui/small.woff2", "release-worker/index.js"]) {
     assert.ok(statSync(path).size > 0, `Missing or empty deployment file: ${path}`);
   }
   const release = JSON.parse(readFileSync("../release.json", "utf8"));
   writeFileSync("dist/deployment.txt", `${release.sha}\n`);
-  const files = [...packageFiles("dist"), ...packageFiles("release-worker"), "../crimson-core/build/wasm/core.wasm", "wrangler.jsonc"];
+  const files = releaseFiles();
   const manifest = JSON.parse(readFileSync("../release.json", "utf8"));
+  manifest.builds = builds();
   manifest.files = Object.fromEntries(files.map((path) => [path, createHash("sha256").update(readFileSync(path)).digest("hex")]));
   writeFileSync("../release.json", `${JSON.stringify(manifest, null, 2)}\n`);
 }
@@ -37,8 +78,9 @@ export function packageManifest() {
 export function verifyManifest(sha = process.env.GITHUB_SHA) {
   const manifest = JSON.parse(readFileSync("../release.json", "utf8"));
   assert.equal(manifest.sha, sha, "Release belongs to another commit");
-  const expected = [...packageFiles("dist"), ...packageFiles("release-worker"), "../crimson-core/build/wasm/core.wasm", "wrangler.jsonc"].sort();
+  const expected = releaseFiles().sort();
   assert.deepEqual(Object.keys(manifest.files).sort(), expected, "Release file list changed");
+  assert.deepEqual(manifest.builds, builds(), "Build provenance changed");
   for (const [path, hash] of Object.entries(manifest.files)) {
     assert.equal(createHash("sha256").update(readFileSync(path)).digest("hex"), hash, `Changed release file: ${path}`);
   }

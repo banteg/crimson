@@ -8,10 +8,14 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from adapter import DIFFS, PROTOTYPES, adapt, apply_diffs, load_diffs, prototypes
 from data import data_source
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts.build_identity import ZIG_VERSION, runtime_identity, write_manifest
 
 HERE = Path(__file__).resolve().parent
 HOST = HERE / "host"
@@ -129,8 +133,8 @@ def main():
     env.setdefault("ZIG_GLOBAL_CACHE_DIR", str(a.out / "zig-global"))
     env.setdefault("ZIG_LOCAL_CACHE_DIR", str(a.out / "zig-local"))
     zig = shutil.which("zig")
-    if not zig or subprocess.check_output([zig, "version"], text=True).strip() != "0.17.0":
-        raise SystemExit("The shared math adapter requires Zig 0.17.0")
+    if not zig or subprocess.check_output([zig, "version"], text=True).strip() != ZIG_VERSION:
+        raise SystemExit(f"The shared math adapter requires Zig {ZIG_VERSION}")
     cc = [zig, "c++", "-target", "wasm32-wasi"] if wasm else ["clang++"]
     flags = [
         "-g",
@@ -154,12 +158,13 @@ def main():
     ]
     if not wasm and os.uname().sysname == "Darwin":
         flags.append("-mmacosx-version-min=11.0")
+    build_identity = runtime_identity(a.target, a.root)
     if a.target == "game":
         # The version, format and rules a replay names, as the Python port names its own (host/ranked.inc).
-        from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES, current_replay_game_version
+        from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES
 
         flags += [
-            f'-DCRIMSON_GAME_VERSION="{current_replay_game_version()}"',
+            f'-DCRIMSON_GAME_VERSION="{build_identity["version"]}"',
             f"-DCRIMSON_REPLAY_FORMAT={REPLAY_FORMAT_VERSION}",
             f"-DCRIMSON_REPLAY_RULES={REPLAY_RULES}",
         ]
@@ -341,6 +346,9 @@ def main():
         print(proc.stderr[-12000:])
     if wasm and "function signature mismatch" in proc.stderr:
         raise SystemExit("WASM ABI warning; see link.log")
+    if proc.returncode == 0:
+        binary = a.out / {"native": "core", "wasm": "core.wasm", "game": "game.wasm"}[a.target]
+        write_manifest(binary.with_name(binary.name + ".build.json"), build_identity, [binary])
     raise SystemExit(proc.returncode)
 
 

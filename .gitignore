@@ -40,3 +40,6 @@ gha-creds-*.json
 /release.json
 /release.tar.gz
 /deployment.log
+
+# Generated Python distribution provenance.
+/src/crimson/_build.json

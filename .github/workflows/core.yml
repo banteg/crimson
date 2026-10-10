@@ -74,7 +74,6 @@ jobs:
     uses: ./.github/workflows/runtime-build.yml
     with:
       target: native
-      suite: core-build
 
   build-wasm:
     needs: changes
@@ -82,7 +81,6 @@ jobs:
     uses: ./.github/workflows/runtime-build.yml
     with:
       target: wasm
-      suite: core-build
 
   build-game:
     needs: changes
@@ -90,7 +88,6 @@ jobs:
     uses: ./.github/workflows/runtime-build.yml
     with:
       target: game
-      suite: game-build
 
   corpus:
     needs: [changes, build-native, build-wasm]

@@ -65,7 +65,7 @@ jobs:
         run: |
           mkdir -p service/public/play
           tar -xzf artifacts/client/crimsonland-web.tar.gz -C artifacts/client
-          cp artifacts/client/web/index.{html,js,wasm} service/public/play/
+          cp artifacts/client/web/index.{html,js,wasm} artifacts/client/web/build.json service/public/play/
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.13"
@@ -89,7 +89,7 @@ jobs:
           npx --no-install wrangler deploy release-worker/index.js --no-bundle --dry-run
       - name: Archive the complete release
         run: |
-          tar -czf release.tar.gz release.json service/dist service/release-worker crimson-core/build/wasm/core.wasm
+          tar -czf release.tar.gz release.json service/dist service/release-worker crimson-core/build/wasm/core.wasm crimson-core/build/wasm/core.wasm.build.json
           cat release.json >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
