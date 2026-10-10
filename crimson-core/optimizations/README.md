@@ -22,6 +22,18 @@ uv run python crimson-core/checks/spawn_batch.py \
 
 CI runs both checks.
 
+`survival-spawn-overflow.patch` skips a full pool's rewrites. Once the batch's
+cursor reaches the overflow slot, every later attempt writes that slot whole,
+and the batch's last attempt rewrites every field but `flags`, where a type 3
+keeps 0x80. So the attempts before the last only take their random draws (the
+side, the position and the spawn body's, stepped through the host's
+`crt_rand_stream`) and set 0x80 for a type 3; the last runs as recorded. The
+batch's attempt count follows from the cooldown and the elapsed time alone.
+Verbose logging, which writes once per attempt, keeps every attempt.
+`spawn_batch.py` also compares three consecutive `survival_update` calls with
+unoptimized ones across elapsed times, frame times, player counts, cooldowns,
+experience bands, pool fill and verbose logging.
+
 ## Existing Python optimizations and core transfers
 
 The [survey](../../docs/verification/optimization-survey.md) inventories the

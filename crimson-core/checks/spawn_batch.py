@@ -31,13 +31,20 @@ def batches():
         for rel in (
             "decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.c",
             "decomp/1.9/crimsonland/game/survival_spawn_creature.cpp",
+            "decomp/1.9/crimsonland/game/survival_update.cpp",
         ):
             path = ROOT / rel
             for label, hunks in (("baseline", baseline), ("optimized", optimized)):
                 text = adapter.adapt(path, adapter.apply_diffs(rel, path.read_text(), hunks))
                 if label == "baseline":
-                    text = 'extern "C" int creature_alloc_slot(void);\n' + text
-                    for name in ("creature_alloc_slot", "survival_spawn_creature"):
+                    # The header declares these with C++ linkage; the baselines are C.
+                    text = text.replace(
+                        '#include "crimsonland_gameplay.h"\n',
+                        '#include "crimsonland_gameplay.h"\n'
+                        'extern "C" int creature_alloc_slot(void);\n'
+                        'extern "C" void survival_spawn_creature(const vec2f_t *pos);\n',
+                    )
+                    for name in ("creature_alloc_slot", "survival_spawn_creature", "survival_update"):
                         text = text.replace(name, "baseline_" + name)
                 source = out / (label + "_" + path.stem + ".cpp")
                 source.write_text(text)
@@ -53,6 +60,7 @@ def batches():
                 "-ffp-contract=off",
                 "-Wno-ignored-attributes",
                 "-Wno-write-strings",
+                "-Wno-address-of-temporary",
                 "-include",
                 str(CORE / "host/hooks.h"),
                 "-I" + str(CORE / "host"),
