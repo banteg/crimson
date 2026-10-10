@@ -1,4 +1,5 @@
 #include "api.h"
+#include "crt_rand.h"
 #include "rules.h"
 #include "crimsonland_gameplay.h"
 #include "crimsonland_metadata.h"
@@ -75,7 +76,7 @@ void perk_apply(int);
 static cvar_float_t friendly, transparency, verbose, pad_distance, bodies_fade;
 // Device output does not consume gameplay RNG. Music selection keeps the
 // recovered implementation.
-extern "C" int crt_rand() {
+extern "C" uint32_t *crt_rand_stream() {
 #ifdef CRIMSON_GAME
   // In a session, gameplay RNG belongs to run start and ticks; presentation must
   // not draw it. Between a live run's ticks, the original's frame and menus draw
@@ -84,13 +85,12 @@ extern "C" int crt_rand() {
     if (!game_live)
       abort();
     static uint32_t presentation = 1;
-    presentation = presentation * 214013u + 2531011u;
-    return (presentation >> 16) & 0x7fff;
+    return &presentation;
   }
 #endif
-  rng = rng * 214013u + 2531011u;
-  return (rng >> 16) & 0x7fff;
+  return &rng;
 }
+extern "C" int crt_rand() { return crt_rand_step(crt_rand_stream()); }
 #ifdef CRIMSON_GAME
 // Strings made while the engine boots (cvar names among them) outlive runs;
 // a run's own strings live in the arena that run start empties.

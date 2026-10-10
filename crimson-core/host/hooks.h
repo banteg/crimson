@@ -2,6 +2,7 @@
 // Included ahead of every recovered source (build.py): what the edits to them
 // (adapter.py) call.
 #include "api.h"
+#include "crt_rand.h"
 #include "portable_math.h"
 #include "rules.h"
 #ifdef CRIMSON_GAME
