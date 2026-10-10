@@ -1,0 +1,81 @@
+--- a/decomp/1.9/crimsonland/game/survival_update.cpp
++++ b/decomp/1.9/crimsonland/game/survival_update.cpp
+@@ -40,6 +40,55 @@
+ extern "C" survival_vec2_t survival_first_kill_pos[3];
+ 
+ extern "C" void demo_mode_start(void);
++
++// A wave batch's spawn attempts. The interval reads only the elapsed time, so
++// every pass of the outer loop repeats the same inner run.
++static int survival_wave_attempts(void)
++{
++    if (survival_spawn_cooldown >= 0)
++        return 0;
++    int interval = 500 - run_elapsed_ms / 1800;
++    int inner = interval < 0 ? (1 - interval) / 2 : 0;
++    interval += 2 * inner;
++    if (interval < 1)
++        interval = 1;
++    long long passes = (-(long long)survival_spawn_cooldown + interval - 1) / interval;
++    return (int)(passes * (inner + 1));
++}
++
++// A full pool's attempt before the batch's last. Every attempt writes the
++// overflow slot (creature_alloc_slot's 0x180) all over, and the last rewrites
++// every field but flags, which keeps type 3's 0x80; so the others need only
++// take their draws: the side and position here, then survival_spawn_creature's.
++static bool survival_overflow_skip(void)
++{
++    // Verbose, every attempt logs the full pool.
++    if (cv_verbose->value != 0.0f)
++        return false;
++    uint32_t *stream = crt_rand_stream();
++    uint32_t state = *stream;
++    auto draw = [&state] { return crt_rand_step(&state); };
++    draw(); // side
++    draw(); // position
++    int experience = player_state_table[0].experience;
++    int type_roll = draw() % 10;
++    bool type_3 = experience < 12000   ? type_roll > 8
++                  : experience < 25000 ? type_roll >= 4 && type_roll <= 8
++                  : experience < 42000 ? type_roll > 4 && draw() % 2 == 0
++                                       : false;
++    if ((draw() & 0x1f) == 2)
++        type_3 = true;
++    for (int i = 0; i < 6; ++i) // size, heading, health, green, blue, reward
++        draw();
++    if (draw() % 180 >= 2 && draw() % 240 >= 2) // the tinted variants
++        draw();
++    if (draw() % 1320 >= 4) // the giants
++        draw();
++    if (type_3)
++        creature_pool[0x180].flags |= 0x80;
++    *stream = state;
++    return true;
++}
+ 
+ extern "C" void survival_update(void)
+ {
+@@ -219,9 +268,13 @@
+     // This batch only fills slots: the first free slot never moves backwards.
+     // Keep the cursor local so deaths, resets and replay seeks need no invalidation.
+     int next_slot = 0;
++    // The batch's attempts, counted down: with the pool full, all but the last skip.
++    int attempts = survival_wave_attempts();
+     while (survival_spawn_cooldown < 0) {
+         int interval = 500 - run_elapsed_ms / 1800;
+         while (interval < 0) {
++            if (--attempts > 0 && next_slot == 0x180 && survival_overflow_skip()) {
++            } else
+             switch (crt_rand() & 3) {
+             case 0: {
+                 vec2f_t top;
+@@ -269,6 +322,8 @@
+         }
+         survival_spawn_cooldown += interval;
+ 
++        if (--attempts > 0 && next_slot == 0x180 && survival_overflow_skip()) {
++        } else
+         switch (crt_rand() & 3) {
+         case 0: {
+             vec2f_t top;
