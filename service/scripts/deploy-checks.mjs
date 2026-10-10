@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { setTimeout as delay } from "node:timers/promises";
 
 export function requireMigrations(local, remote) {
   assert.ok(Array.isArray(remote) && remote.length === 1 && remote[0].success === true, "Invalid migration query result");
@@ -43,12 +44,37 @@ export function verifyManifest(sha = process.env.GITHUB_SHA) {
   }
 }
 
-export async function smoke(origin = "https://crimson.land", sha = process.env.GITHUB_SHA, request = fetch) {
-  for (const path of ["/deployment.txt", "/", "/api/boards/survival", "/play/", "/play/index.js", "/play/index.wasm", "/play/game/crimson.paq", "/play/game/sfx.paq", "/play/game/music.paq"]) {
+// Wait for the uploaded release to reach the public route before checking its assets.
+export async function waitForRelease(origin, sha, request = fetch, {
+  timeoutMs = 60000, intervalMs = 2000, now = Date.now, pause = delay,
+} = {}) {
+  const deadline = now() + timeoutMs;
+  let lastError;
+  for (;;) {
+    try {
+      const response = await request(`${origin}/deployment.txt`, {
+        headers: { "Cache-Control": "no-cache" },
+        signal: AbortSignal.timeout(Math.max(1, Math.min(10000, deadline - now()))),
+      });
+      assert.equal(response.status, 200, `/deployment.txt: HTTP ${response.status}`);
+      assert.equal((await response.text()).trim(), sha, "Production is serving another release");
+      console.log("GET /deployment.txt: ok");
+      return;
+    } catch (error) {
+      lastError = error;
+    }
+    const remaining = deadline - now();
+    if (remaining <= 0) throw new Error(`Timed out waiting for production release ${sha}: ${lastError.message}`, { cause: lastError });
+    await pause(Math.min(intervalMs, remaining));
+  }
+}
+
+export async function smoke(origin = "https://crimson.land", sha = process.env.GITHUB_SHA, request = fetch, polling = {}) {
+  await waitForRelease(origin, sha, request, polling);
+  for (const path of ["/", "/api/boards/survival", "/play/", "/play/index.js", "/play/index.wasm", "/play/game/crimson.paq", "/play/game/sfx.paq", "/play/game/music.paq"]) {
     const head = path.endsWith(".paq");
     const response = await request(`${origin}${path}`, { method: head ? "HEAD" : "GET", headers: { "Cache-Control": "no-cache" }, signal: AbortSignal.timeout(30000) });
     assert.equal(response.status, 200, `${path}: HTTP ${response.status}`);
-    if (path === "/deployment.txt") assert.equal((await response.text()).trim(), sha, "Production is serving another release");
     if (path.endsWith(".js")) assert.match(response.headers.get("content-type") || "", /javascript/, "Game JS is not JavaScript");
     if (path.startsWith("/api/")) assert.ok((await response.json()).board, "Leaderboard did not return board JSON");
     if (path.endsWith(".wasm")) assert.deepEqual(new Uint8Array(await response.arrayBuffer()).slice(0, 4), new Uint8Array([0, 97, 115, 109]), "Game WASM is not a WASM file");

@@ -21,17 +21,15 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   WRANGLER_SEND_METRICS: "false"
 
-# Do not interrupt an upload when another release is requested.
-concurrency:
-  group: crimson-land-production
-  cancel-in-progress: false
-
 jobs:
   prepare:
-    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Require master before preparing a release
+        env:
+          DEPLOY_REF: ${{ github.ref }}
+        run: test "$DEPLOY_REF" = refs/heads/master || { echo 'Run deployment from master'; exit 1; }
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v6
         with:
@@ -67,18 +65,14 @@ jobs:
           enable-cache: true
       - run: uv sync --frozen --no-dev
       - name: Download and verify game art
-        run: |
-          mkdir -p artifacts/assets
-          curl --fail --location --retry 3 --retry-all-errors \
-            --output artifacts/assets/crimson.paq "https://paq.crimson.banteg.xyz/v1.9.93/crimson.paq"
-          sha256sum --check <<'EOF'
-          52ae564a2cb86de9f11be261338af942377b4340595a0df2a5ae41f468042547  artifacts/assets/crimson.paq
-          EOF
+        uses: ./.github/actions/game-art
       - run: npm ci
         working-directory: service
       - run: npm run assets
         working-directory: service
       - run: npm run check && npm test
+        working-directory: service
+      - run: npm run build
         working-directory: service
       - name: Bundle the Worker without production credentials
         working-directory: service
@@ -103,6 +97,10 @@ jobs:
     if: github.ref == 'refs/heads/master' && !inputs.dry_run
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Dry runs never enter or replace a pending production deployment.
+    concurrency:
+      group: crimson-land-production
+      cancel-in-progress: false
     environment:
       name: production
       url: https://crimson.land

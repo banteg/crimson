@@ -54,13 +54,20 @@ repository secrets if credentials should be available only to production jobs.
    every active production run before uploading. It checks master and required
    checks again immediately before upload.
 
-Path-filtered CI may not have produced both the verifier and browser artifacts
-on a site-only or documentation-only commit. If the workflow reports missing
-artifacts, run **Crimson runtime** manually on `master`, wait for success, then
-retry. Manual runtime runs build all targets. Expired artifacts require the
-same procedure. No deployment compiler rebuild is hidden in this workflow.
+Every master push publishes the verifier and browser artifacts, even when
+runtime tests or desktop builds are irrelevant. Exact compiler/package cache
+hits reuse unchanged inputs; slow checks retain their path filters. Both
+artifacts still belong to the selected commit's successful runtime run.
 
-Deployments are serialized and are not automatically cancelled during upload.
+If artifacts expired or the commit predates this workflow, run **Crimson
+runtime** manually on `master`, wait for success, then retry. Manual runtime
+runs build and test all targets. No deployment compiler rebuild is hidden in
+this workflow.
+
+Production jobs are serialized and are not automatically cancelled during upload.
+Dry runs prepare releases independently and cannot replace a pending production job.
+By default, GitHub keeps one pending production job; a newer production request
+replaces an older pending request.
 An older request is rejected if master advanced while it waited. A master
 change after the last check is still possible; the release always remains
 pinned to the recorded commit.
@@ -73,7 +80,13 @@ separately with Wrangler before retrying. An untracked production schema
 change is not detected by comparing migration names.
 
 `service/scripts/reverify.mjs` reads the current active run IDs from production
-D1 and downloads their replays from R2 into a temporary cache. A failed run
+D1 each time and downloads missing replays from R2 with at most four concurrent
+requests into a local cache. Only complete downloads are reused. Download and verification timings are logged.
+The local cache is not uploaded to Actions caches: active runs include hidden
+and banned runs that the public replay route refuses, and fork PRs can read
+default-branch Actions caches. Every active replay is verified against this
+release's WASM and TypeScript verifier on every deployment. A matching WASM
+hash alone cannot bypass changes in the TypeScript verifier. A failed run
 blocks upload and reports possible retirement SQL; the workflow does not
 execute that SQL. Follow the [ranked rules](../../rewrite/ranked-rules.md#when-the-verifier-changes)
 to decide whether to fix the verifier or retire affected runs.
@@ -89,8 +102,10 @@ The `crimson-land-release` artifact contains the prepared release tarball and
 `release.json`: commit, runtime run and SHA-256 hashes of the Worker modules,
 site files, verifier and Wrangler config. The deployment summary and
 `crimson-land-deployment` artifact retain Wrangler output, including the
-Cloudflare version ID. The generated `/deployment.txt` identifies the published commit; the smoke
-check rejects a different revision. Production smoke checks cover the site, leaderboard
+Cloudflare version ID. The generated `/deployment.txt` identifies the published
+commit. The smoke check polls it for up to 60 seconds to allow propagation and
+rejects a different revision before checking assets. Production smoke checks
+cover the site, leaderboard
 API, game page, JS/WASM and availability of all three game archives.
 
 A smoke-check failure marks the workflow failed after deployment; it does not

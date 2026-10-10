@@ -156,6 +156,7 @@ SUITES = {
         (
             *CORE_BUILD,
             "service/",
+            ".github/actions/game-art/",
             "tests/fixtures/replays/",
             ".github/workflows/service.yml",
             ".github/workflows/deploy.yml",
@@ -181,6 +182,7 @@ SUITES = {
             "crimson-re/",
             "tests/",
             "scripts/",
+            ".github/actions/game-art/",
             "decomp/",
             "analysis/",
             "tools/",

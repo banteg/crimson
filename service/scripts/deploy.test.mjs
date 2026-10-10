@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { downloadReplays } from "./reverify-cache.mjs";
 import { requireArtifacts, requireGreenChecks, requireTrustedRun, REQUIRED_CHECKS } from "./deploy-preflight.mjs";
-import { requireMigrations, packageManifest, verifyManifest, smoke } from "./deploy-checks.mjs";
+import { requireMigrations, packageManifest, verifyManifest, smoke, waitForRelease } from "./deploy-checks.mjs";
 
 const sha = "a".repeat(40);
 const run = { head_repository: { full_name: "banteg/crimson" }, head_branch: "master", head_sha: sha, path: ".github/workflows/core.yml", event: "push", status: "completed", conclusion: "success" };
@@ -87,11 +88,56 @@ test("production smoke rejects another release, HTML instead of game files and m
     return new Response("ok");
   };
   await smoke("https://example.test", sha, responseFor);
-  await assert.rejects(smoke("https://example.test", "b".repeat(40), responseFor), /another release/);
+  await assert.rejects(smoke("https://example.test", "b".repeat(40), responseFor, { timeoutMs: 0 }), /another release/);
   for (const path of ["/play/index.js", "/play/index.wasm", "/play/game/music.paq"]) {
     await assert.rejects(smoke("https://example.test", sha, (url) => {
       if (new URL(url).pathname === path) return new Response("<html>", { status: path.endsWith(".paq") ? 404 : 200 });
       return responseFor(url);
     }));
+  }
+});
+
+
+test("waits for propagation through old releases, HTTP failures and transient network errors", async () => {
+  let time = 0;
+  const polling = { timeoutMs: 6000, intervalMs: 2000, now: () => time, pause: async (ms) => { time += ms; } };
+  const attempts = [() => { throw new Error("connection reset"); }, () => new Response("unavailable", { status: 503 }), () => new Response("old"), () => new Response(sha)];
+  await waitForRelease("https://example.test", sha, async () => attempts.shift()(), polling);
+  assert.equal(time, 6000);
+  assert.equal(attempts.length, 0);
+  time = 0;
+  await assert.rejects(waitForRelease("https://example.test", sha, async () => new Response("old"), polling), /Timed out.*another release/);
+  assert.equal(time, 6000);
+});
+
+
+test("replay downloads are bounded, reuse complete files, and never keep failed partial files", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "crimson-replays-"));
+  const ids = Array.from({ length: 5 }, (_, index) => String(index).repeat(64));
+  let active = 0, maximum = 0;
+  try {
+    const fetchReplay = async (id, file) => {
+      maximum = Math.max(maximum, ++active);
+      await new Promise((resolve) => setImmediate(resolve));
+      writeFileSync(file, id);
+      active--;
+    };
+    const { runs, downloaded } = await downloadReplays(ids, directory, fetchReplay, 2);
+    assert.equal(downloaded, 5);
+    assert.equal(maximum, 2);
+    assert.equal(runs.length, 5);
+    const cached = await downloadReplays(ids, directory, async () => { throw Error("should reuse completed downloads"); });
+    assert.equal(cached.downloaded, 0);
+    rmSync(runs[0].file);
+    await assert.rejects(downloadReplays(ids, directory, async (_, file) => {
+      writeFileSync(file, "partial");
+      throw Error("download failed");
+    }), /download failed/);
+    assert.equal(existsSync(runs[0].file), false);
+    assert.equal(existsSync(`${runs[0].file}.partial`), false);
+    await assert.rejects(downloadReplays(["../bad"], directory, fetchReplay), /Invalid production run ID/);
+    await assert.rejects(downloadReplays(ids, directory, fetchReplay, 0), /Invalid download concurrency/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
   }
 });

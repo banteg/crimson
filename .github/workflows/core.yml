@@ -20,6 +20,7 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
+      release: ${{ steps.detect.outputs.release }}
       core: ${{ steps.detect.outputs.core }}
       python: ${{ steps.detect.outputs.core-gate }}
       game: ${{ steps.detect.outputs.core-game }}
@@ -32,7 +33,9 @@ jobs:
       - id: detect
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          RELEASE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         run: |
+          echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
           base=()
           if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
             git fetch --no-tags --depth=1 origin "$BASE_SHA"
@@ -55,7 +58,7 @@ jobs:
 
   build-wasm:
     needs: changes
-    if: needs.changes.outputs.core == 'true' || needs.changes.outputs.service == 'true'
+    if: needs.changes.outputs.release == 'true' || needs.changes.outputs.core == 'true' || needs.changes.outputs.service == 'true'
     uses: ./.github/workflows/runtime-build.yml
     with:
       target: wasm
@@ -63,7 +66,7 @@ jobs:
 
   build-game:
     needs: changes
-    if: needs.changes.outputs.game == 'true' || needs.changes.outputs.client == 'true'
+    if: needs.changes.outputs.release == 'true' || needs.changes.outputs.game == 'true' || needs.changes.outputs.client == 'true'
     uses: ./.github/workflows/runtime-build.yml
     with:
       target: game
@@ -337,8 +340,10 @@ jobs:
 
   client:
     needs: [changes, build-game]
-    if: needs.changes.outputs.client == 'true'
+    if: needs.changes.outputs.release == 'true' || needs.changes.outputs.client == 'true'
     uses: ./.github/workflows/client.yml
+    with:
+      desktop: ${{ needs.changes.outputs.client == 'true' }}
 
   service:
     needs: [changes, build-wasm]

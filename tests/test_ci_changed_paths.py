@@ -155,3 +155,10 @@ def test_deployment_workflow_checks_both_published_components() -> None:
     assert relevant("client", [path])
     assert relevant("service", [path])
     assert not relevant("core-build", [path])
+
+
+def test_shared_game_art_action_invalidates_its_consumers() -> None:
+    path = ".github/actions/game-art/action.yml"
+    assert relevant("service", [path])
+    assert relevant("pytest", [path])
+    assert not relevant("client", [path])

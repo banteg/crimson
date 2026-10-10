@@ -22,6 +22,8 @@ def require(suite: str, needs: dict) -> None:
             raise ValueError(f"{name}: invalid relevance {value!r}")
         return value == "true"
 
+    release = flag("release")
+
     if suite == "core":
         python, game, oracles = (flag(name) for name in ("python", "game", "oracles"))
         if flag("core") != (python or game or oracles) or flag("corpus") != flag("core"):
@@ -35,13 +37,13 @@ def require(suite: str, needs: dict) -> None:
             "game-parity": game,
             "oracles": oracles,
         }
-        if flag("core"):
+        if flag("core") or release:
             result("build-wasm", "success")
-        if game:
+        if game or release:
             result("build-game", "success")
     elif suite == "client":
-        checks = {"client": flag("client")}
-        if flag("client"):
+        checks = {"client": flag("client") or release}
+        if flag("client") or release:
             result("build-game", "success")
     elif suite == "service":
         checks = {"service": flag("service")}

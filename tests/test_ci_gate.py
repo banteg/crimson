@@ -13,6 +13,7 @@ def core_needs(python: bool, game: bool, oracles: bool) -> dict:
         "changes": {
             "result": "success",
             "outputs": {
+                "release": "false",
                 "core": str(core).lower(),
                 "python": str(python).lower(),
                 "game": str(game).lower(),
@@ -77,7 +78,7 @@ def test_unrelated_client_and_service_builds_do_not_fail_the_core_gate() -> None
 @pytest.mark.parametrize("suite,build", [("client", "build-game"), ("service", "build-wasm")])
 def test_client_and_service_require_both_the_build_and_consumer(suite: str, build: str) -> None:
     needs = {
-        "changes": {"result": "success", "outputs": {suite: "true"}},
+        "changes": {"result": "success", "outputs": {suite: "true", "release": "false"}},
         build: {"result": "success"},
         suite: {"result": "success"},
     }
@@ -101,3 +102,31 @@ def test_missing_and_inconsistent_relevance_cannot_pass() -> None:
     needs["changes"]["outputs"]["corpus"] = ""
     with pytest.raises(ValueError):
         require("core", needs)
+
+
+@pytest.mark.parametrize("outcome", ["failure", "cancelled", "skipped"])
+@pytest.mark.parametrize("job", ["build-wasm", "build-game"])
+def test_master_requires_release_builds_even_when_tests_are_irrelevant(job: str, outcome: str) -> None:
+    needs = core_needs(False, False, False)
+    needs["changes"]["outputs"]["release"] = "true"
+    needs["build-wasm"]["result"] = "success"
+    needs["build-game"]["result"] = "success"
+    require("core", needs)
+    needs[job]["result"] = outcome
+    with pytest.raises(ValueError):
+        require("core", needs)
+
+
+def test_master_requires_web_package_without_running_service_or_desktop_tests() -> None:
+    needs = {
+        "changes": {"result": "success", "outputs": {"release": "true", "client": "false", "service": "false"}},
+        "build-game": {"result": "success"},
+        "build-wasm": {"result": "success"},
+        "client": {"result": "success"},
+        "service": {"result": "skipped"},
+    }
+    require("client", needs)
+    require("service", needs)
+    needs["client"]["result"] = "skipped"
+    with pytest.raises(ValueError):
+        require("client", needs)

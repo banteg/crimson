@@ -1,0 +1,13 @@
+name: Verified game art
+description: Download the pinned Crimsonland 1.9.93 art archive
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        mkdir -p artifacts/assets
+        curl --fail --location --retry 3 --retry-all-errors \
+          --output artifacts/assets/crimson.paq "https://paq.crimson.banteg.xyz/v1.9.93/crimson.paq"
+        sha256sum --check <<'EOF'
+        52ae564a2cb86de9f11be261338af942377b4340595a0df2a5ae41f468042547  artifacts/assets/crimson.paq
+        EOF
