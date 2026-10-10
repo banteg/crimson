@@ -1,0 +1,172 @@
+name: Deploy crimson.land
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Assemble and validate without accessing or changing production
+        type: boolean
+        default: true
+      runtime_run_id:
+        description: Optional successful Crimson runtime run ID for this master commit
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  actions: read
+  checks: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  prepare:
+    permissions:
+      contents: read
+      checks: read
+      # Request a lightweight same-commit artifact build only when normal CI omitted it.
+      actions: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Require master before preparing a release
+        env:
+          DEPLOY_REF: ${{ github.ref }}
+        run: test "$DEPLOY_REF" = refs/heads/master || { echo 'Run deployment from master'; exit 1; }
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: service/package-lock.json
+      - name: Require green master checks and trusted runtime artifacts
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUNTIME_RUN_ID: ${{ inputs.runtime_run_id }}
+        run: node service/scripts/deploy-preflight.mjs
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.source.outputs.wasm_artifact_id }}
+          merge-multiple: true
+          run-id: ${{ steps.source.outputs.runtime_run_id }}
+          github-token: ${{ github.token }}
+          path: crimson-core/build/wasm
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.source.outputs.web_artifact_id }}
+          merge-multiple: true
+          run-id: ${{ steps.source.outputs.runtime_run_id }}
+          github-token: ${{ github.token }}
+          path: artifacts/client
+      - name: Stage the tested browser client
+        run: |
+          mkdir -p service/public/play
+          tar -xzf artifacts/client/crimsonland-web.tar.gz -C artifacts/client
+          cp artifacts/client/web/index.{html,js,wasm} service/public/play/
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --frozen --no-dev
+      - name: Download and verify game art
+        uses: ./.github/actions/game-art
+      - run: npm ci
+        working-directory: service
+      - run: npm run assets
+        working-directory: service
+      - run: npm run check && npm test
+        working-directory: service
+      - run: npm run build
+        working-directory: service
+      - name: Bundle the Worker without production credentials
+        working-directory: service
+        run: |
+          npx --no-install wrangler deploy --dry-run --outdir release-worker
+          node scripts/deploy-checks.mjs package
+          npx --no-install wrangler deploy release-worker/index.js --no-bundle --dry-run
+      - name: Archive the complete release
+        run: |
+          tar -czf release.tar.gz release.json service/dist service/release-worker crimson-core/build/wasm/core.wasm
+          cat release.json >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crimson-land-release
+          path: |
+            release.tar.gz
+            release.json
+          if-no-files-found: error
+
+  deploy:
+    needs: prepare
+    if: github.ref == 'refs/heads/master' && !inputs.dry_run
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Dry runs never enter or replace a pending production deployment.
+    concurrency:
+      group: crimson-land-production
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: https://crimson.land
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: service/package-lock.json
+      - run: npm ci
+        working-directory: service
+      - uses: actions/download-artifact@v4
+        with:
+          name: crimson-land-release
+          path: artifacts/release
+      - run: tar -xzf artifacts/release/release.tar.gz
+      - name: Check the assembled release hashes
+        working-directory: service
+        run: node scripts/deploy-checks.mjs verify
+      - name: Require configured deployment credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo 'Add CLOUDFLARE_API_TOKEN to Actions secrets'; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo 'Add CLOUDFLARE_ACCOUNT_ID to Actions secrets'; exit 1; }
+      - name: Require reviewed migrations already applied
+        working-directory: service
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/deploy-checks.mjs migrations
+      - name: Reverify all active production runs
+        working-directory: service
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm run reverify
+      - name: Reject a superseded commit or newly failing checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node service/scripts/deploy-preflight.mjs --checks-only
+      - name: Deploy the prepared Worker and assets
+        working-directory: service
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --no-install wrangler deploy release-worker/index.js --no-bundle \
+            --tag "$GITHUB_SHA" --message "GitHub deployment $GITHUB_SHA" | tee ../deployment.log
+          cat ../deployment.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Smoke-check production pages, API and game files
+        working-directory: service
+        run: node scripts/deploy-checks.mjs smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: crimson-land-deployment
+          path: |
+            release.json
+            deployment.log

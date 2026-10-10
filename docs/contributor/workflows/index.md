@@ -8,6 +8,9 @@ tags:
 
 Operational runbooks and recurring maintenance flows.
 
+[Deploy crimson.land](deploy.md) through the manual Actions workflow, including
+production credentials, replay checks and rollback.
+
 ## Documentation maintenance
 
 Keep each behavior or contract in one reference page. Update the owning page

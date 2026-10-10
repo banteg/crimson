@@ -1,6 +1,10 @@
 """Required gates must reject failures and unexpected skips without coupling unrelated suites."""
 
+import os
+import shutil
+import subprocess
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
@@ -13,6 +17,7 @@ def core_needs(python: bool, game: bool, oracles: bool) -> dict:
         "changes": {
             "result": "success",
             "outputs": {
+                "release": "false",
                 "core": str(core).lower(),
                 "python": str(python).lower(),
                 "game": str(game).lower(),
@@ -77,7 +82,7 @@ def test_unrelated_client_and_service_builds_do_not_fail_the_core_gate() -> None
 @pytest.mark.parametrize("suite,build", [("client", "build-game"), ("service", "build-wasm")])
 def test_client_and_service_require_both_the_build_and_consumer(suite: str, build: str) -> None:
     needs = {
-        "changes": {"result": "success", "outputs": {suite: "true"}},
+        "changes": {"result": "success", "outputs": {suite: "true", "release": "false"}},
         build: {"result": "success"},
         suite: {"result": "success"},
     }
@@ -101,3 +106,59 @@ def test_missing_and_inconsistent_relevance_cannot_pass() -> None:
     needs["changes"]["outputs"]["corpus"] = ""
     with pytest.raises(ValueError):
         require("core", needs)
+
+
+@pytest.mark.parametrize("outcome", ["failure", "cancelled", "skipped"])
+@pytest.mark.parametrize("job", ["build-wasm", "build-game"])
+def test_master_requires_release_builds_even_when_tests_are_irrelevant(job: str, outcome: str) -> None:
+    needs = core_needs(False, False, False)
+    needs["changes"]["outputs"]["release"] = "true"
+    needs["build-wasm"]["result"] = "success"
+    needs["build-game"]["result"] = "success"
+    require("core", needs)
+    needs[job]["result"] = outcome
+    with pytest.raises(ValueError):
+        require("core", needs)
+
+
+def test_master_requires_web_package_without_running_service_or_desktop_tests() -> None:
+    needs = {
+        "changes": {"result": "success", "outputs": {"release": "true", "client": "false", "service": "false"}},
+        "build-game": {"result": "success"},
+        "build-wasm": {"result": "success"},
+        "client": {"result": "success"},
+        "service": {"result": "skipped"},
+    }
+    require("client", needs)
+    require("service", needs)
+    needs["client"]["result"] = "skipped"
+    with pytest.raises(ValueError):
+        require("client", needs)
+
+
+@pytest.mark.parametrize("release,branch,success", [(False, "master", True), (True, "master", True), (True, "feature", False)])
+def test_release_only_detector_keeps_slow_suites_skipped_and_rejects_other_branches(
+    tmp_path: Path, release: bool, branch: str, success: bool,
+) -> None:
+    root = Path(__file__).resolve().parents[1]
+    workflow = (root / ".github/workflows/core.yml").read_text()
+    block = workflow.split("      - id: detect\n", 1)[1].split("\n  build-native:", 1)[0]
+    script = "\n".join(line[10:] for line in block.split("        run: |\n", 1)[1].splitlines())
+    output = tmp_path / "outputs"
+    bash = shutil.which("bash")
+    assert bash is not None
+    result = subprocess.run(
+        [bash, "-e", "-o", "pipefail", "-c", script],
+        cwd=root,
+        env={**os.environ, "RELEASE": str(release).lower(), "BUILD_REF": f"refs/heads/{branch}", "BASE_SHA": "HEAD", "GITHUB_OUTPUT": str(output)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert (result.returncode == 0) == success
+    if success:
+        values = dict(line.split("=", 1) for line in output.read_text().splitlines())
+        assert values.pop("release") == str(release).lower()
+        assert set(values.values()) == {"false"}
+    else:
+        assert "require master" in result.stdout

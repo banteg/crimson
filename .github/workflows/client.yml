@@ -2,6 +2,11 @@ name: Crimson client
 
 on:
   workflow_call:
+    inputs:
+      desktop:
+        description: Also build Linux and macOS clients when their inputs changed
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -15,24 +20,12 @@ env:
 jobs:
   client:
     name: ${{ matrix.name }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.name == 'macos' && 'macos-latest' || 'ubuntu-latest' }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: web
-            os: ubuntu-latest
-            target: web
-            wabt: linux-x64
-          - name: linux
-            os: ubuntu-latest
-            target: native
-            wabt: linux-x64
-          - name: macos
-            os: macos-latest
-            target: native
-            wabt: macos-arm64
+        name: ${{ fromJSON(inputs.desktop && '["web", "linux", "macos"]' || '["web"]') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -43,20 +36,35 @@ jobs:
           name: runtime-game
           path: crimson-core/build/game
 
-      - name: Install wabt
+      - name: Name the web package inputs
+        if: matrix.name == 'web'
+        id: inputs
         run: |
-          curl -sSfL "https://github.com/WebAssembly/wabt/releases/download/${WABT_VERSION}/wabt-${WABT_VERSION}-${{ matrix.wabt }}.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          game=$(sha256sum crimson-core/build/game/game.wasm | cut -d' ' -f1)
+          echo "key=client-web-v1-${{ runner.os }}-${{ runner.arch }}-wabt$WABT_VERSION-emsdk$EMSDK_VERSION-$(python3 scripts/ci_changed_paths.py hash client)-$game" >> "$GITHUB_OUTPUT"
+      - name: Restore the web package
+        if: matrix.name == 'web'
+        id: web
+        uses: actions/cache@v4
+        with:
+          path: crimson-core/build/dist/web
+          key: ${{ steps.inputs.outputs.key }}
+
+      - name: Install wabt
+        if: matrix.name != 'web' || steps.web.outputs.cache-hit != 'true'
+        run: |
+          curl -sSfL "https://github.com/WebAssembly/wabt/releases/download/${WABT_VERSION}/wabt-${WABT_VERSION}-${{ matrix.name == 'macos' && 'macos-arm64' || 'linux-x64' }}.tar.gz" | tar xz -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/wabt-${WABT_VERSION}/bin" >> "$GITHUB_PATH"
 
       - name: Setup Emscripten
-        if: matrix.target == 'web'
+        if: matrix.name == 'web' && steps.web.outputs.cache-hit != 'true'
         uses: mymindstorm/setup-emsdk@v16
         with:
           version: ${{ env.EMSDK_VERSION }}
           actions-cache-folder: emsdk-cache
 
       - name: Install SDL3
-        if: matrix.os == 'macos-latest'
+        if: matrix.name == 'macos'
         run: brew install sdl3 pkg-config
 
       - name: Restore SDL3
@@ -93,7 +101,8 @@ jobs:
           echo "PKG_CONFIG_PATH=$RUNNER_TEMP/sdl/lib/pkgconfig" >> "$GITHUB_ENV"
 
       - name: Build the client
-        run: python3 crimson-core/client/build.py --target ${{ matrix.target }} --skip-game --package
+        if: matrix.name != 'web' || steps.web.outputs.cache-hit != 'true'
+        run: python3 crimson-core/client/build.py --target ${{ matrix.name == 'web' && 'web' || 'native' }} --skip-game --package
 
       # An artifact drops file modes: a tarball keeps the executables runnable.
       - name: Archive the build
