@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { appendFileSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
+import { setTimeout as delay } from "node:timers/promises";
 
 export const REQUIRED_CHECKS = [
   "ast-grep", "build", "client-gate", "core-gate", "decomp-gate", "docs-check",
@@ -47,22 +48,69 @@ export function requireArtifacts(artifacts, sha) {
   return selected;
 }
 
-async function api(path) {
+async function api(path, options = {}) {
   const response = await fetch(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/${path}`, {
     headers: { Authorization: `Bearer ${process.env.GH_TOKEN}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" },
     signal: AbortSignal.timeout(30000),
+    ...options,
   });
   assert.ok(response.ok, `GitHub ${path}: HTTP ${response.status}`);
-  return response.json();
+  return response.status === 204 ? null : response.json();
 }
 
-async function pages(path, key) {
+async function pages(path, key, request = api) {
   const rows = [];
   for (let page = 1; ; page++) {
-    const data = await api(`${path}${path.includes("?") ? "&" : "?"}per_page=100&page=${page}`);
+    const data = await request(`${path}${path.includes("?") ? "&" : "?"}per_page=100&page=${page}`);
     rows.push(...data[key]);
     if (data[key].length < 100) return rows;
   }
+}
+
+// Normal push CI can omit either artifact. Request only their producers, after master checks are green.
+export async function resolveRuntimeBuild(repository, sha, requested = "", {
+  request = api, pause = delay, now = Date.now, timeoutMs = 600000, intervalMs = 10000,
+} = {}) {
+  const find = async () => {
+    const candidates = requested
+      ? [await request(`actions/runs/${requested}`)]
+      : await pages(`actions/workflows/core.yml/runs?branch=master&head_sha=${sha}&status=success`, "workflow_runs", request);
+    for (const run of candidates) {
+      try {
+        requireTrustedRun(run, repository, sha);
+      } catch (error) {
+        if (requested) throw error;
+        continue;
+      }
+      const rows = await pages(`actions/runs/${run.id}/artifacts`, "artifacts", request);
+      try {
+        const artifacts = requireArtifacts(rows, sha);
+        return { sha, runtime_run_id: run.id, runtime_run_attempt: run.run_attempt, runtime_url: run.html_url, artifacts };
+      } catch (error) {
+        if (requested) throw error;
+      }
+    }
+  };
+  if (requested) assert.match(requested, /^\d+$/, "Runtime run ID must be numeric");
+  const existing = await find();
+  if (existing) return existing;
+  if (requested) throw Error("Requested runtime run does not contain valid deployment artifacts");
+  const current = async () => assert.equal((await request("branches/master")).commit.sha, sha, "Deployment is superseded by a newer master commit");
+  await current();
+  console.log("Requesting same-commit release-only runtime build (no corpus, parity, oracles or desktop builds)");
+  await request("actions/workflows/core.yml/dispatches", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${process.env.GH_TOKEN}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json" },
+    body: JSON.stringify({ ref: "master", inputs: { release_only: true } }),
+  });
+  const deadline = now() + timeoutMs;
+  while (now() < deadline) {
+    await pause(Math.min(intervalMs, deadline - now()));
+    await current();
+    const release = await find();
+    if (release) return release;
+  }
+  throw Error("Timed out waiting for release-only runtime artifacts; inspect Crimson runtime on master");
 }
 
 async function main() {
@@ -74,28 +122,13 @@ async function main() {
   requireGreenChecks(await pages(`commits/${sha}/check-runs?filter=all`, "check_runs"));
   if (process.argv.includes("--checks-only")) return;
 
-  const requested = process.env.RUNTIME_RUN_ID;
-  if (requested) assert.match(requested, /^\d+$/, "Runtime run ID must be numeric");
-  const candidates = requested
-    ? [await api(`actions/runs/${requested}`)]
-    : await pages(`actions/workflows/core.yml/runs?branch=master&head_sha=${sha}&status=success`, "workflow_runs");
-  for (const run of candidates) {
-    let artifacts;
-    try {
-      requireTrustedRun(run, repository, sha);
-      artifacts = requireArtifacts(await pages(`actions/runs/${run.id}/artifacts`, "artifacts"), sha);
-    } catch (error) {
-      if (requested) throw error;
-      console.log(`Skipping runtime run ${run.id}: ${error.message}`);
-      continue;
-    }
-    const release = { sha, runtime_run_id: run.id, runtime_run_attempt: run.run_attempt, runtime_url: run.html_url, artifacts };
-    writeFileSync("release.json", `${JSON.stringify(release, null, 2)}\n`);
-    appendFileSync(process.env.GITHUB_OUTPUT, `runtime_run_id=${run.id}\nwasm_artifact_id=${artifacts["runtime-wasm"]}\nweb_artifact_id=${artifacts["crimsonland-web"]}\n`);
-    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `Deploying \`${sha}\` from [runtime run ${run.id}](${run.html_url}).\n`);
-    return;
-  }
-  throw Error("No complete successful runtime build for this master commit. Run Crimson runtime manually on master, then retry deployment.");
+  const release = await resolveRuntimeBuild(repository, sha, process.env.RUNTIME_RUN_ID || "");
+  // A dispatch produces new gate checks; require their completion and recheck master before packaging.
+  assert.equal((await api("branches/master")).commit.sha, sha, "Deployment is superseded by a newer master commit");
+  requireGreenChecks(await pages(`commits/${sha}/check-runs?filter=all`, "check_runs"));
+  writeFileSync("release.json", `${JSON.stringify(release, null, 2)}\n`);
+  appendFileSync(process.env.GITHUB_OUTPUT, `runtime_run_id=${release.runtime_run_id}\nwasm_artifact_id=${release.artifacts["runtime-wasm"]}\nweb_artifact_id=${release.artifacts["crimsonland-web"]}\n`);
+  appendFileSync(process.env.GITHUB_STEP_SUMMARY, `Deploying \`${sha}\` from [runtime run ${release.runtime_run_id}](${release.runtime_url}).\n`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();

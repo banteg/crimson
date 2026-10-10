@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { downloadReplays } from "./reverify-cache.mjs";
-import { requireArtifacts, requireGreenChecks, requireTrustedRun, REQUIRED_CHECKS } from "./deploy-preflight.mjs";
+import { requireArtifacts, requireGreenChecks, requireTrustedRun, resolveRuntimeBuild, REQUIRED_CHECKS } from "./deploy-preflight.mjs";
 import { requireMigrations, packageManifest, verifyManifest, smoke, waitForRelease } from "./deploy-checks.mjs";
 
 const sha = "a".repeat(40);
@@ -145,4 +145,56 @@ test("replay downloads are bounded, reuse complete files, and never keep failed 
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+});
+
+
+test("reuses a successful same-commit build without dispatching new CI", async () => {
+  const request = async (path) => {
+    if (path.startsWith("actions/workflows/core.yml/runs?")) return { workflow_runs: [{ ...run, id: 123 }] };
+    assert.ok(path.startsWith("actions/runs/123/artifacts?"));
+    return { artifacts };
+  };
+  const release = await resolveRuntimeBuild("banteg/crimson", sha, "", { request });
+  assert.equal(release.runtime_run_id, 123);
+  assert.deepEqual(release.artifacts, { "runtime-wasm": 1, "crimsonland-web": 2 });
+});
+
+test("requests only release producers when artifacts are missing, then pins the completed build", async () => {
+  let dispatched = false, time = 0;
+  const request = async (path, options) => {
+    if (path === "branches/master") return { commit: { sha } };
+    if (path.endsWith("/dispatches")) {
+      assert.equal(options.method, "POST");
+      assert.deepEqual(JSON.parse(options.body), { ref: "master", inputs: { release_only: true } });
+      dispatched = true;
+      return null;
+    }
+    if (path.startsWith("actions/workflows/core.yml/runs?")) return { workflow_runs: [{ ...run, id: dispatched ? 456 : 123 }] };
+    return { artifacts: dispatched ? artifacts : artifacts.slice(1) };
+  };
+  const release = await resolveRuntimeBuild("banteg/crimson", sha, "", {
+    request, now: () => time, pause: async (ms) => { time += ms; }, intervalMs: 2000,
+  });
+  assert.equal(dispatched, true);
+  assert.equal(release.runtime_run_id, 456);
+  assert.equal(time, 2000);
+});
+
+test("artifact build waits are bounded and reject advancing master or invalid explicit run IDs", async () => {
+  let time = 0;
+  const request = async (path) => {
+    if (path === "branches/master") return { commit: { sha: time ? "b".repeat(40) : sha } };
+    if (path.endsWith("/dispatches")) return null;
+    if (path.startsWith("actions/workflows/core.yml/runs?")) return { workflow_runs: [] };
+    return { ...run, event: "pull_request" };
+  };
+  const options = { request, now: () => time, pause: async (ms) => { time += ms; }, timeoutMs: 2000, intervalMs: 1000 };
+  await assert.rejects(resolveRuntimeBuild("banteg/crimson", sha, "", options), /superseded/);
+  time = 0;
+  await assert.rejects(resolveRuntimeBuild("banteg/crimson", sha, "", {
+    ...options, request: async (path) => path === "branches/master" ? { commit: { sha } } : request(path),
+  }), /Timed out/);
+  assert.equal(time, 2000);
+  await assert.rejects(resolveRuntimeBuild("banteg/crimson", sha, "123", options), /PR builds/);
+  await assert.rejects(resolveRuntimeBuild("banteg/crimson", sha, "bad", options), /must be numeric/);
 });

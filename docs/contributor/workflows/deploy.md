@@ -54,18 +54,28 @@ repository secrets if credentials should be available only to production jobs.
    every active production run before uploading. It checks master and required
    checks again immediately before upload.
 
-Every master push publishes the verifier and browser artifacts, even when
-runtime tests or desktop builds are irrelevant. Exact compiler/package cache
-hits reuse unchanged inputs; slow checks retain their path filters. Both
-artifacts still belong to the selected commit's successful runtime run. Job
-reruns can retain older artifacts with the same name; the preflight selects the
-newest ID for each name, validates it and pins the exact download IDs in the
-release manifest.
+Normal push CI keeps its path filters, so service-only, client-only, site and
+documentation commits may omit a deployment artifact. With no runtime run ID
+specified, the deployment preflight requests a **release-only** Crimson
+runtime run when no suitable build exists. It builds the verifier, game module
+and web package for this master commit, without repeating corpus, parity,
+oracles or desktop builds. Existing required checks must already be green;
+checks and master are rechecked after the artifact build and before upload.
 
-If artifacts expired or the commit predates this workflow, run **Crimson
-runtime** manually on `master`, wait for success, then retry. Manual runtime
-runs build and test all targets. No deployment compiler rebuild is hidden in
-this workflow.
+Compiler/package caches preserve the embedded replay version, which includes
+the commit. A new commit needs a fresh game/browser build even when game
+sources did not change. Exact cache hits mainly accelerate retries of the
+same commit; deployment preparation may take a few minutes on its first run.
+Job reruns can retain older artifacts with the same name; the preflight
+validates the newest ID per name and pins exact downloads in the manifest.
+
+An explicitly supplied runtime run ID must already contain valid artifacts;
+it never falls back to another build. Expired artifacts can be rebuilt with
+**Crimson runtime** on `master`, with **release_only** checked. Leave that
+option unchecked for the complete validation suite. Release-only builds
+from other branches or a master commit whose required checks are not already
+green fail explicitly. The release-only compilation and its
+logs are retained in the selected runtime workflow run.
 
 Production jobs are serialized and are not automatically cancelled during upload.
 Dry runs prepare releases independently and cannot replace a pending production job.

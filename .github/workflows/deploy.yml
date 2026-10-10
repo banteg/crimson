@@ -23,6 +23,11 @@ env:
 
 jobs:
   prepare:
+    permissions:
+      contents: read
+      checks: read
+      # Request a lightweight same-commit artifact build only when normal CI omitted it.
+      actions: write
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

@@ -1,6 +1,10 @@
 """Required gates must reject failures and unexpected skips without coupling unrelated suites."""
 
+import os
+import shutil
+import subprocess
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
@@ -130,3 +134,31 @@ def test_master_requires_web_package_without_running_service_or_desktop_tests() 
     needs["client"]["result"] = "skipped"
     with pytest.raises(ValueError):
         require("client", needs)
+
+
+@pytest.mark.parametrize("release,branch,success", [(False, "master", True), (True, "master", True), (True, "feature", False)])
+def test_release_only_detector_keeps_slow_suites_skipped_and_rejects_other_branches(
+    tmp_path: Path, release: bool, branch: str, success: bool,
+) -> None:
+    root = Path(__file__).resolve().parents[1]
+    workflow = (root / ".github/workflows/core.yml").read_text()
+    block = workflow.split("      - id: detect\n", 1)[1].split("\n  build-native:", 1)[0]
+    script = "\n".join(line[10:] for line in block.split("        run: |\n", 1)[1].splitlines())
+    output = tmp_path / "outputs"
+    bash = shutil.which("bash")
+    assert bash is not None
+    result = subprocess.run(
+        [bash, "-e", "-o", "pipefail", "-c", script],
+        cwd=root,
+        env={**os.environ, "RELEASE": str(release).lower(), "BUILD_REF": f"refs/heads/{branch}", "BASE_SHA": "HEAD", "GITHUB_OUTPUT": str(output)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert (result.returncode == 0) == success
+    if success:
+        values = dict(line.split("=", 1) for line in output.read_text().splitlines())
+        assert values.pop("release") == str(release).lower()
+        assert set(values.values()) == {"false"}
+    else:
+        assert "require master" in result.stdout

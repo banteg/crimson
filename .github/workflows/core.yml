@@ -5,9 +5,15 @@ on:
     branches: [master]
   pull_request:
   workflow_dispatch:
+    inputs:
+      release_only:
+        description: Build deployment artifacts on master without repeating already-green validation
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+  checks: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
@@ -30,14 +36,28 @@ jobs:
       service: ${{ steps.detect.outputs.service }}
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        if: github.event_name == 'workflow_dispatch' && inputs.release_only
+        with:
+          node-version: "24"
+      # A direct release-only dispatch must not replace a failing validation gate with a green artifact gate.
+      - name: Require already-green master before release-only builds
+        if: github.event_name == 'workflow_dispatch' && inputs.release_only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node service/scripts/deploy-preflight.mjs --checks-only
       - id: detect
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-          RELEASE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+          RELEASE: ${{ github.event_name == 'workflow_dispatch' && inputs.release_only }}
+          BUILD_REF: ${{ github.ref }}
         run: |
           echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
           base=()
-          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+          if [[ "$RELEASE" == true ]]; then
+            test "$BUILD_REF" = refs/heads/master || { echo 'Release-only builds require master'; exit 1; }
+            base=(--base HEAD)
+          elif [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
             git fetch --no-tags --depth=1 origin "$BASE_SHA"
             base=(--base "$BASE_SHA")
           fi
