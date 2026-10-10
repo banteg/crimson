@@ -71,7 +71,6 @@ def package(out, web):
         app = dist / "Crimsonland.app/Contents"
         (app / "MacOS").mkdir(parents=True)
         (app / "Frameworks").mkdir()
-        shutil.copy2(out / "build.json", app / "build.json")
         binary = app / "MacOS/crimson"
         shutil.copy2(out / "crimson", binary)
         linked = subprocess.check_output([tool("otool"), "-L", str(binary)], text=True)
@@ -94,7 +93,9 @@ def package(out, web):
             [tool("codesign"), "--force", "--deep", "--sign", "-", str(dist / "Crimsonland.app")],
             check=True,
         )
-        write_manifest(app / "build.json", read_manifest(out / "build.json"), [binary])
+        # Keep provenance outside the sealed app: its final binary hash includes the signature.
+        write_manifest(dist / "build.json", read_manifest(out / "build.json"), [binary])
+        subprocess.run([tool("codesign"), "--verify", "--deep", "--strict", str(dist / "Crimsonland.app")], check=True)
         return dist / "Crimsonland.app"
     folder = dist / "crimsonland"
     folder.mkdir(parents=True)
