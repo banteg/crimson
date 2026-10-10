@@ -1,0 +1,27 @@
+--- a/decomp/1.9/crimsonland/crimsonland/plaguebearer_spread_infection.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/plaguebearer_spread_infection.cpp
+@@ -4,7 +4,10 @@
+ static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
+ {
+     float dx = lhs->x - rhs->x;
++    // Outside either axis, the rounded distance cannot be inside the strict radius.
++    if (dx <= -45.0f || dx >= 45.0f) return 45.0f;
+     float dy = lhs->y - rhs->y;
++    if (dy <= -45.0f || dy >= 45.0f) return 45.0f;
+     float distance_sq = dx * dx;
+     distance_sq += dy * dy;
+     return (float)sqrt(distance_sq);
+--- a/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
+@@ -521,7 +521,10 @@
+                         }
+ 
+                         if (perk_count_get(perk_id_plaguebearer) != 0
+-                            && plaguebearer_infection_count < 60) {
++                            && plaguebearer_infection_count < 60
++                            // Its return value is ignored here; a strong uninfected origin changes no state.
++                            && (creatures[creature_index].plague_infected
++                                || creatures[creature_index].health < 150.0f)) {
+                             plaguebearer_spread_infection(creature_index);
+                         }
+ 

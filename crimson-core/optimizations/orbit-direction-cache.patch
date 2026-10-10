@@ -1,0 +1,75 @@
+--- a/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
+@@ -8,6 +8,21 @@
+ 
+ #define CRIMSONLAND_USE_ORIGINAL_CONFIG_OWNER
+ #include "crimsonland_config_owner.h"
++
++// Allocation and splitting keep phase_seed in [0, 384). The cache contains only
++// derived math, so reset/seek needs no invalidation. Keep trig wide until the first multiply.
++struct optimization_orbit_trig { bool ready; double cosine; double sine; };
++static optimization_orbit_trig optimization_orbit_cache[384];
++static inline const optimization_orbit_trig &optimization_orbit(int seed, float phase)
++{
++    auto &entry = optimization_orbit_cache[seed];
++    if (!entry.ready) {
++        entry.cosine = cos(phase);
++        entry.sine = sin(phase);
++        entry.ready = true;
++    }
++    return entry;
++}
+ 
+ struct creature_vec2_t {
+     float x;
+@@ -277,20 +292,20 @@
+                             } else {
+                                 target_player_index = creatures[creature_index].target_player;
+                                 creatures[creature_index].target_x =
+-                                    (float)cos(phase_angle) * distance * 0.85f
++                                    (float)optimization_orbit(creatures[creature_index].phase_seed, phase_angle).cosine * distance * 0.85f
+                                     + player_state_table[target_player_index].position.x;
+                                 creatures[creature_index].target_y =
+-                                    (float)sin(phase_angle) * distance * 0.85f
++                                    (float)optimization_orbit(creatures[creature_index].phase_seed, phase_angle).sine * distance * 0.85f
+                                     + player_state_table[target_player_index].position.y;
+                             }
+                         } else if (ai_mode == CREATURE_AI_FLANK_PLAYER_WIDE) {
+                             target_player_index =
+                                 creatures[creature_index].target_player;
+                             creatures[creature_index].target_x =
+-                                (float)cos(phase_angle) * distance * 0.9f
++                                (float)optimization_orbit(creatures[creature_index].phase_seed, phase_angle).cosine * distance * 0.9f
+                                 + player_state_table[target_player_index].position.x;
+                             creatures[creature_index].target_y =
+-                                (float)sin(phase_angle) * distance * 0.9f
++                                (float)optimization_orbit(creatures[creature_index].phase_seed, phase_angle).sine * distance * 0.9f
+                                 + player_state_table[target_player_index].position.y;
+                         } else if (ai_mode == CREATURE_AI_FLANK_PLAYER_TIGHT) {
+                             if (distance > 800.0f) {
+@@ -302,10 +317,10 @@
+                             } else {
+                                 target_player_index = creatures[creature_index].target_player;
+                                 creatures[creature_index].target_x =
+-                                    (float)cos(phase_angle) * distance * 0.55f
++                                    (float)optimization_orbit(creatures[creature_index].phase_seed, phase_angle).cosine * distance * 0.55f
+                                     + player_state_table[target_player_index].position.x;
+                                 creatures[creature_index].target_y =
+-                                    (float)sin(phase_angle) * distance * 0.55f
++                                    (float)optimization_orbit(creatures[creature_index].phase_seed, phase_angle).sine * distance * 0.55f
+                                     + player_state_table[target_player_index].position.y;
+                             }
+                         } else if (ai_mode == CREATURE_AI_FOLLOW_LINK) {
+@@ -360,10 +375,10 @@
+                                 } else {
+                                     target_player_index = creatures[creature_index].target_player;
+                                     creatures[creature_index].target_x =
+-                                        (float)cos(phase_angle) * distance * 0.85f
++                                        (float)optimization_orbit(creatures[creature_index].phase_seed, phase_angle).cosine * distance * 0.85f
+                                         + player_state_table[target_player_index].position.x;
+                                     creatures[creature_index].target_y =
+-                                        (float)sin(phase_angle) * distance * 0.85f
++                                        (float)optimization_orbit(creatures[creature_index].phase_seed, phase_angle).sine * distance * 0.85f
+                                         + player_state_table[target_player_index].position.y;
+                                 }
+                             } else {
