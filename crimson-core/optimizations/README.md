@@ -53,8 +53,8 @@ itself; do not substitute nearest-neighbor or live-collision semantics.
 
 Cache wide cosine/sine for the immutable phase seed. Allocation masks seeds with
 `0x17f`, and splitting with `0xff`, so 384 entries suffice. Original phase spills
-and every multiply remain unchanged. `adapter.x87` explicitly preserves the wide
-cached value into the first PC24 multiply, and audits all eight cached callsites.
+and every multiply remain unchanged. The patch explicitly uses `portable_mul32`
+to preserve the wide cached value into the first PC24 multiply.
 The cache contains derived constants only: it survives reset/seek without being
 serialized or changing snapshots. It uses 9 KiB on the measured ABI.
 
