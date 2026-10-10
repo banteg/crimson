@@ -15,9 +15,10 @@ import re
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-# abi/: compiler repairs at one place; seams/: where the recording replaces a live read; patches/: the ranked rules,
+# abi/: compiler repairs at one place; seams/: where the recording replaces a live read;
+# optimizations/: behavior-preserving performance changes; patches/: the ranked rules,
 # where `patches/NN-*.patch` fixes original bug NN of docs/rewrite/original-bugs.md behind `portable_preserve_bugs`.
-DIFFS = (HERE / "abi", HERE / "seams", HERE / "patches")
+DIFFS = (HERE / "abi", HERE / "seams", HERE / "optimizations", HERE / "patches")
 _HUNK = re.compile(r"@@ -\d+(?:,(\d+))? \+\d+(?:,(\d+))? @@")
 # C files give their functions C linkage, except where the header their callers use declares C++ (the resource reader):
 # a lookahead for the definitions' names.

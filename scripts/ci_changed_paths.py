@@ -54,6 +54,7 @@ CORE_BUILD = (
     "crimson-core/host/*.h",
     "crimson-core/host/*.zig",
     "crimson-core/abi/",
+    "crimson-core/optimizations/",
     "crimson-core/patches/",
     "crimson-core/seams/",
     "third_party/headers/",
@@ -84,6 +85,7 @@ CORE_CORPUS = (
 CORE_GATE = ("crimson-core/checks/gate.py", "crimson-core/checks/replay.py")
 CORE_GAME = ("crimson-core/checks/game_*", "crimson-core/build.py", *CORE_GATE)
 CORE_ORACLES = (
+    "crimson-core/checks/spawn_batch.*",
     "crimson-core/checks/builder_oracle.py",
     "crimson-core/checks/math_oracle.py",
     "crimson-core/checks/wasmtime_check.py",
