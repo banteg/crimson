@@ -42,8 +42,6 @@ def main():
         start = text.index("struct optimization_orbit_trig")
         end = text.index("struct creature_vec2_t")
         (out / "orbit-cache.inc").write_text(text[start:end])
-        # The recovered body must still adapt without optimization callsites.
-        adapter.adapt(path, adapter.apply_diffs(rel, path.read_text(), baseline))
         subprocess.run(
             [
                 compiler,

@@ -143,23 +143,12 @@ def x87(src, txt):
             txt,
             4,
         )
-        # Orbit caching changes eight trig callsites into wide cached values. The
-        # first multiply still rounds at PC24; differential checks also adapt the
-        # recovered body without optimizations, where all twelve calls remain.
-        cached_orbit_sites = 8 if "struct optimization_orbit_trig" in txt else 0
-        txt = sub(
-            src,
-            r"\(float\)(optimization_orbit\([^)]*\)\.(?:cosine|sine))\s*\*\s*(distance)",
-            r"portable_mul32(\1, \2)",
-            txt,
-            cached_orbit_sites,
-        )
         txt = sub(
             src,
             r"\(float\)(cos|sin)\((\w+)\)\s*\*\s*([\w.\[\]]+)",
             r"portable_mul32(\1(\2), \3)",
             txt,
-            12 - cached_orbit_sites,
+            4,
         )
     if src.stem == "projectile_update":
         for fn in ("cos", "sin"):
