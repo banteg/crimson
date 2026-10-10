@@ -1,0 +1,24 @@
+--- a/decomp/1.9/crimsonland/effects/effects_render.cpp
++++ b/decomp/1.9/crimsonland/effects/effects_render.cpp
+@@ -79,8 +79,11 @@
+     grim_interface_ptr->grim_bind_texture(particles_texture, 0);
+     grim_interface_ptr->grim_begin_batch();
+ 
++    // The effects only draw. Where nothing draws, the batches' render states
++    // stay, which carry into the frames that do, and the effects go.
++    int count = PORTABLE_DRAWING ? 512 : 0;
+     int index;
+-    for (index = 0; index < 512; ++index) {
++    for (index = 0; index < count; ++index) {
+         effect_entry_t *entry = &effect_pool[index];
+         int flags = entry->flags;
+         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) != 0) {
+@@ -92,7 +95,7 @@
+     grim_interface_ptr->grim_set_config_var(0x14, 2u);
+     grim_interface_ptr->grim_begin_batch();
+ 
+-    for (index = 0; index < 512; ++index) {
++    for (index = 0; index < count; ++index) {
+         effect_entry_t *entry = &effect_pool[index];
+         int flags = entry->flags;
+         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) == 0) {
