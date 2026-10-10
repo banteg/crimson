@@ -335,6 +335,11 @@ jobs:
             --exe game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
             --out crimson-core/build/oracle.json
 
+      - name: Compare Survival spawn batches and original late-game behavior
+        run: |
+          uv run --no-sync python crimson-core/checks/spawn_batch.py \
+            --exe game_bins/crimsonland/1.9.93-gog/crimsonland.exe
+
       - name: Compare gameplay math to original x87
         run: |
           uv run --no-sync python crimson-core/checks/math_oracle.py \

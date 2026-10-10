@@ -1,0 +1,155 @@
+--- a/decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.c
++++ b/decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.c
+@@ -1,9 +1,11 @@
+ #include "crimsonland_gameplay.h"
+ 
+-int creature_alloc_slot(void)
++// Batch callers guarantee that every slot below first is occupied and none is freed.
++// Passing zero retains the original allocator for all other callers.
++int creature_alloc_slot_from(int first)
+ {
+     int index;
+-    for (index = 0; index < 0x180; index++) {
++    for (index = first; index < 0x180; index++) {
+         if (!creature_pool[index].active) {
+             int spawned_count;
+             creature_pool[index].flags = 0;
+@@ -21,3 +21,8 @@
+     }
+     return 0x180;
+ }
++
++int creature_alloc_slot(void)
++{
++    return creature_alloc_slot_from(0);
++}
+--- a/decomp/1.9/crimsonland/game/survival_spawn_creature.cpp
++++ b/decomp/1.9/crimsonland/game/survival_spawn_creature.cpp
+@@ -18,9 +18,10 @@
+         : r(red), g(green), b(blue), a(alpha) {}
+ };
+ 
+-extern "C" void survival_spawn_creature(const vec2f_t *pos)
++extern "C" int survival_spawn_creature_from(const vec2f_t *pos, int first)
+ {
+-    creature_t *creature = &creature_pool[creature_alloc_slot()];
++    int slot = creature_alloc_slot_from(first);
++    creature_t *creature = &creature_pool[slot];
+ 
+     creature->position = *pos;
+     creature->plague_infected = 0;
+@@ -211,4 +212,10 @@
+     } else if (color->a > 1.0f) {
+         color->a = 1.0f;
+     }
++    return slot;
+ }
++
++extern "C" void survival_spawn_creature(const vec2f_t *pos)
++{
++    survival_spawn_creature_from(pos, 0);
++}
+--- a/decomp/1.9/crimsonland/game/survival_update.cpp
++++ b/decomp/1.9/crimsonland/game/survival_update.cpp
+@@ -216,6 +216,9 @@
+ update_wave_spawns:
+     survival_spawn_cooldown -= frame_dt_ms * config_player_count;
+     current_player_index = 0;
++    // This batch only fills slots: the first free slot never moves backwards.
++    // Keep the cursor local so deaths, resets and replay seeks need no invalidation.
++    int next_slot = 0;
+     while (survival_spawn_cooldown < 0) {
+         int interval = 500 - run_elapsed_ms / 1800;
+         while (interval < 0) {
+@@ -226,7 +229,7 @@
+                 int roll = crt_rand();
+                 top.x = (float)(roll % width);
+                 top.y = -40.0f;
+-                survival_spawn_creature(&top);
++                next_slot = survival_spawn_creature_from(&top, next_slot);
+                 break;
+             }
+             case 1: {
+@@ -235,7 +238,7 @@
+                 int roll = crt_rand();
+                 bottom.x = (float)(roll % width);
+                 bottom.y = (float)terrain_texture_height + 40.0f;
+-                survival_spawn_creature(&bottom);
++                next_slot = survival_spawn_creature_from(&bottom, next_slot);
+                 break;
+             }
+             case 2: {
+@@ -244,7 +247,7 @@
+                 int roll = crt_rand();
+                 left.x = -40.0f;
+                 left.y = (float)(roll % height);
+-                survival_spawn_creature(&left);
++                next_slot = survival_spawn_creature_from(&left, next_slot);
+                 break;
+             }
+             case 3: {
+@@ -254,7 +257,7 @@
+                 float y = (float)(roll % height);
+                 right.x = (float)terrain_texture_width + 40.0f;
+                 right.y = y;
+-                survival_spawn_creature(&right);
++                next_slot = survival_spawn_creature_from(&right, next_slot);
+                 break;
+             }
+             }
+@@ -273,7 +276,7 @@
+             int roll = crt_rand();
+             top.x = (float)(roll % width);
+             top.y = -40.0f;
+-            survival_spawn_creature(&top);
++            next_slot = survival_spawn_creature_from(&top, next_slot);
+             break;
+         }
+         case 1: {
+@@ -282,7 +285,7 @@
+             int roll = crt_rand();
+             bottom.x = (float)(roll % width);
+             bottom.y = (float)terrain_texture_height + 40.0f;
+-            survival_spawn_creature(&bottom);
++            next_slot = survival_spawn_creature_from(&bottom, next_slot);
+             break;
+         }
+         case 2: {
+@@ -291,7 +294,7 @@
+             int roll = crt_rand();
+             left.x = -40.0f;
+             left.y = (float)(roll % height);
+-            survival_spawn_creature(&left);
++            next_slot = survival_spawn_creature_from(&left, next_slot);
+             break;
+         }
+         case 3: {
+@@ -301,7 +304,7 @@
+             float y = (float)(roll % height);
+             right.x = (float)terrain_texture_width + 40.0f;
+             right.y = y;
+-            survival_spawn_creature(&right);
++            next_slot = survival_spawn_creature_from(&right, next_slot);
+             break;
+         }
+         }
+--- a/tools/match/include/crimsonland_gameplay.h
++++ b/tools/match/include/crimsonland_gameplay.h
+@@ -365,6 +365,7 @@
+     vec2f_t *pos,
+     vec2f_t *delta);
+ int creature_alloc_slot(void);
++// Batch callers guarantee that every slot below first is occupied and none is freed.
++// Passing zero retains the original allocator for all other callers.
++int creature_alloc_slot_from(int first);
+ int creature_spawn_tinted(
+     const vec2f_t *pos,
+     const effect_color_t *color,
+@@ -375,6 +376,7 @@
+     const vec2f_t *pos,
+     float heading);
+ void survival_spawn_creature(const vec2f_t *pos);
++int survival_spawn_creature_from(const vec2f_t *pos, int first);
+ int creature_find_nearest(
+     const vec2f_t *pos,
+     int exclude_id,

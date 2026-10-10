@@ -938,11 +938,13 @@ def _survival_tint_inverse_bucket(xp: int, divisor: int) -> float:
     return x87_pc24_div(f32(1.0), x87_pc24_add(float(xp // divisor), f32(10.0)))
 
 
-def survival_spawn_creature(pool: CreaturePool, pos: Vec2, rng: CrandLike, *, player_experience: int) -> int:
+def survival_spawn_creature(
+    pool: CreaturePool, pos: Vec2, rng: CrandLike, *, player_experience: int, start_index: int = 0,
+) -> int:
     """Port of `survival_spawn_creature` (0x00407510): a Survival wave creature scaled by player 1's XP."""
     xp = int(player_experience)
 
-    creature_idx = pool.alloc_slot(rng)
+    creature_idx = pool.alloc_slot(rng, start_index=start_index)
     creature = pool.creature(creature_idx)
     creature.pos = f32_vec2(pos)
     creature.plague_infected = False

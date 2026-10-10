@@ -56,6 +56,20 @@ def game_module(root: Path) -> dict:
     return identity
 
 
+@pytest.mark.parametrize("target", ["wasm", "game"])
+def test_optimization_patches_change_runtime_identity(source: Path, target: str) -> None:
+    before = build.runtime_identity(target, source)
+    patch = source / "crimson-core/optimizations/survival.patch"
+    patch.parent.mkdir(parents=True)
+    patch.write_text("optimization patch")
+    added = build.runtime_identity(target, source)
+    assert added["fingerprint"] != before["fingerprint"]
+    assert added["origin"]["dirty"] is True
+    commit(source)
+    patch.write_text("updated optimization patch")
+    assert build.runtime_identity(target, source)["fingerprint"] != added["fingerprint"]
+
+
 def test_unrelated_commits_and_tags_preserve_identity_but_record_new_provenance(source: Path) -> None:
     before = build.runtime_identity("game", source)
     (source / "docs/readme.md").write_text("another document")

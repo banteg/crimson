@@ -36,6 +36,7 @@ CORE_BUILD = (
     "crimson-core/host/*.h",
     "crimson-core/host/*.zig",
     "crimson-core/abi/",
+    "crimson-core/optimizations/",
     "crimson-core/patches/",
     "crimson-core/seams/",
     "third_party/headers/",

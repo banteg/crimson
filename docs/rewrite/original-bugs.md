@@ -10,7 +10,7 @@ once you read the decompile and trace their gameplay impact.
 
 The gameplay fixes below apply **by default** where specified. For parity work
 and future differential testing, you can re-enable those original behaviors with
-`--preserve-bugs`. Original text quirks are documented only and always preserved.
+`--preserve-bugs`. Original text quirks and the late-game Survival spawn rate are documented only and always preserved.
 
 ## 1) Bonus drop suppression: `amount == current weapon id`
 
@@ -917,3 +917,56 @@ Rewrite behavior:
 
 Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (the
 `creature_find_in_radius` loop) and `tests/native_oracle/test_projectile_render.py`.
+
+
+## 37) Survival spawning grows without bound after fifteen minutes
+
+Native behavior:
+
+- `survival_update` (`0x00407cd0`) starts each wave with
+  `interval = 500 - run_elapsed_ms / 1800`, using integer division.
+- At 15:00 the interval reaches zero. At 15:01.800 it becomes negative.
+  For each negative interval the inner loop spawns a creature and adds 2,
+  then clamps the remaining interval to at least 1 ms. The outer loop keeps
+  spawning until it catches up with `frame_dt_ms * config_player_count`.
+- With a zero starting cooldown and one player, a 16 ms update at 30:00
+  attempts 4,016 spawns. At 35:54.555 it attempts 5,584. Slow-motion bonuses
+  change the game's elapsed-time increment and therefore the work per tick.
+- Each attempt scans the 384 creature slots from zero. When all are occupied,
+  `creature_alloc_slot` (`0x00428140`) returns slot 384, the constructed
+  overflow slot. `survival_spawn_creature` (`0x00407510`) still draws its
+  random values and writes that slot, even though it creates no usable enemy.
+
+Why it's likely a bug:
+
+- Spawn demand grows indefinitely despite the fixed-size pool. A saturated
+  pool repeatedly incurs a complete scan and initializes the same overflow
+  creature, thousands of times per tick. This also slows live simulation;
+  preparing a replay amplifies it by running the whole recording at once.
+- Profiling [this 35:54.555 recording](https://crimson.land/play/?watch=209b0cdb6d9345e8c2dc4eaeac654e929338eecf07aaad28aaf9137dd9bc38d6)
+  counted 219,862,950 Survival spawn attempts over 210,268 input ticks.
+  Browser preparation took 102.07 s on an Apple M1 Pro; sampled allocator
+  self time was 35.67 s. These are host-specific measurements.
+
+Rewrite behavior:
+
+- Both bug policies preserve the spawn rate, RNG consumption and overflow
+  writes. Clamping the rate or dropping failed spawns would change recorded
+  runs, including subsequent random outcomes.
+- The recovered C/C++ core, game and Python rewrite apply a behavior-preserving optimization:
+  a local cursor resumes the first-free search within a wave batch. This batch
+  only fills slots, so the first free slot cannot move backwards. Once the
+  cursor reaches 384, later attempts perform no pool scan, while retaining
+  the original full-pool logging and spawn body. Each update starts from zero;
+  other allocation callers retain their original search.
+- Python uses the same update-local cursor through `CreaturePool.alloc_slot`.
+  Successful allocations still update generation and allocation/spawn counters;
+  failed allocations still execute the complete spawn body against the phantom.
+
+Evidence: the recovered `survival_update`, `survival_spawn_creature` and
+`creature_alloc_slot` bodies, and
+[`spawn_batch.py`](../../crimson-core/checks/spawn_batch.py), which executes
+those late-game cases in the original x86 executable and compares optimized
+batches against unoptimized recovered bodies. The
+[profile and validation notes](../verification/survival-spawn-profile.md)
+describe the measurements and remaining costs.

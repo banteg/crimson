@@ -36,7 +36,7 @@ copies of 168 recovered translation units; everything it adds lives here.
 | [`build.py`](build.py), [`adapter.py`](adapter.py), [`data.py`](data.py) | Generate, adapt and compile the recovered sources; recreate the globals. |
 | [`sources.json`](sources.json), [`schema.json`](schema.json) | Selected bodies, snapshot fields. |
 | [`host/`](host) | The host the recovered code runs in: API, input, timing, stubs, portable math. |
-| [`abi/`](abi), [`seams/`](seams), [`patches/`](patches) | Diffs against `decomp/`: compiler repairs at one place, the recording in place of live reads, and the ranked rules, one patch per fixed original bug. |
+| [`abi/`](abi), [`seams/`](seams), [`optimizations/`](optimizations), [`patches/`](patches) | Diffs against `decomp/`: compiler repairs, the recording in place of live reads, behavior-preserving optimizations, and the ranked rules, one patch per fixed original bug. |
 | [`checks/`](checks) | Native/WASM matrix, Python whole-run gate, original-executable oracles, Wasmtime probe. |
 | [`results/`](results) | Checked-in results of those checks. |
 | [`worker/`](worker) | Diagnostic Cloudflare Worker that runs the WASM module. |
@@ -275,8 +275,9 @@ Every source is read as `decomp/` has it and changed in two steps
 calls and definitions that disagree on arguments, `size_t` spelled as a 32-bit
 int), [`seams/`](seams) puts the recording where the original reads live input,
 behind `PORTABLE_RECORDED`, which the verifier fixes at 1 and the game module
-sets inside a tick, and [`patches/`](patches) holds the ranked rules; the game
-module adds [`game/changes/`](game/changes) and [`game/patches/`](game/patches).
+sets inside a tick, [`optimizations/`](optimizations) changes performance while
+preserving both bug policies, and [`patches/`](patches) holds the ranked rules;
+the game module adds [`game/changes/`](game/changes) and [`game/patches/`](game/patches).
 A diff names its files by their paths from the repository root and reads
 against them as `decomp/` has them; a hunk matches by its exact old text, which
 must occur once. Passes then make the edits a rule decides, each expecting its
