@@ -1,8 +1,12 @@
 """Build inputs, compatibility and deployment provenance must remain distinct."""
 
 import json
+import os
 import shutil
 import subprocess
+import sys
+import tarfile
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -154,3 +158,41 @@ def test_an_unrelated_parent_repo_is_not_package_provenance(source: Path) -> Non
     (extracted / "src/crimson").mkdir(parents=True)
     (extracted / "src/crimson/game_version.py").write_text("unpacked package")
     assert build.python_identity(extracted)["origin"] == {"commit": None, "dirty": None}
+
+
+def test_wheel_from_sdist_retains_identity_and_source_provenance_without_git(tmp_path: Path) -> None:
+    root = Path(__file__).resolve().parents[1]
+    source = tmp_path / "source"
+    source.mkdir()
+    for name in ("pyproject.toml", "uv.lock", "pypi.md", "build_backend.py"):
+        shutil.copy2(root / name, source / name)
+    for name in ("src", "crimson-re/src"):
+        shutil.copytree(root / name, source / name, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "_build.json"))
+    shutil.copy2(root / "crimson-re/pyproject.toml", source / "crimson-re/pyproject.toml")
+    (source / "scripts").mkdir()
+    shutil.copy2(root / "scripts/build_identity.py", source / "scripts/build_identity.py")
+    git = shutil.which("git")
+    uv = shutil.which("uv")
+    assert git is not None and uv is not None
+    subprocess.run([git, "init", "-q", str(source)], check=True)
+    commit(source)
+    expected = build.python_identity(source)
+    distributions = tmp_path / "dist"
+    # uv's default builds the wheel from the sdist, exercising both PEP 517 hooks.
+    subprocess.run([uv, "build", "--out-dir", str(distributions)], cwd=source, check=True, capture_output=True)
+    with tarfile.open(next(distributions.glob("*.tar.gz"))) as archive:
+        member = next(item for item in archive.getmembers() if item.name.endswith("/src/crimson/_build.json"))
+        extracted = archive.extractfile(member)
+        assert extracted is not None
+        assert json.loads(extracted.read())["fingerprint"] == expected["fingerprint"]
+    installation = tmp_path / "installed"
+    with zipfile.ZipFile(next(distributions.glob("*.whl"))) as archive:
+        metadata = json.loads(archive.read("crimson/_build.json"))
+        archive.extractall(installation)
+    assert metadata["fingerprint"] == expected["fingerprint"]
+    assert metadata["origin"] == expected["origin"]
+    assert not (source / "src/crimson/_build.json").exists()
+    # Only this wheel and the standard library; no Git executable on PATH.
+    script = "from crimson.game_version import current_replay_game_version; print(current_replay_game_version())"
+    result = subprocess.check_output([sys.executable, "-S", "-c", script], cwd=tmp_path, env={**os.environ, "PYTHONPATH": str(installation), "PATH": ""}, text=True)
+    assert result.strip() == expected["version"]

@@ -105,7 +105,7 @@ def provenance(root: Path, paths: dict[str, str]) -> dict[str, Any]:
     if git is None:
         return {"commit": None, "dirty": None}
     try:
-        tracked = set(subprocess.check_output([git, "ls-files", "-z", "--", "pyproject.toml", *paths], cwd=root).decode().split("\0"))
+        tracked = set(subprocess.check_output([git, "ls-files", "-z", "--", "pyproject.toml", *paths], cwd=root, stderr=subprocess.DEVNULL).decode().split("\0"))
         if "pyproject.toml" not in tracked:
             return {"commit": None, "dirty": None}
         commit = subprocess.check_output([git, "rev-parse", "HEAD"], cwd=root, stderr=subprocess.DEVNULL, text=True).strip()
