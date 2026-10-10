@@ -44,13 +44,15 @@ jobs:
         run: node service/scripts/deploy-preflight.mjs
       - uses: actions/download-artifact@v4
         with:
-          name: runtime-wasm
+          artifact-ids: ${{ steps.source.outputs.wasm_artifact_id }}
+          merge-multiple: true
           run-id: ${{ steps.source.outputs.runtime_run_id }}
           github-token: ${{ github.token }}
           path: crimson-core/build/wasm
       - uses: actions/download-artifact@v4
         with:
-          name: crimsonland-web
+          artifact-ids: ${{ steps.source.outputs.web_artifact_id }}
+          merge-multiple: true
           run-id: ${{ steps.source.outputs.runtime_run_id }}
           github-token: ${{ github.token }}
           path: artifacts/client

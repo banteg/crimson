@@ -57,7 +57,10 @@ repository secrets if credentials should be available only to production jobs.
 Every master push publishes the verifier and browser artifacts, even when
 runtime tests or desktop builds are irrelevant. Exact compiler/package cache
 hits reuse unchanged inputs; slow checks retain their path filters. Both
-artifacts still belong to the selected commit's successful runtime run.
+artifacts still belong to the selected commit's successful runtime run. Job
+reruns can retain older artifacts with the same name; the preflight selects the
+newest ID for each name, validates it and pins the exact download IDs in the
+release manifest.
 
 If artifacts expired or the commit predates this workflow, run **Crimson
 runtime** manually on `master`, wait for success, then retry. Manual runtime
@@ -99,7 +102,7 @@ release window.
 ## Evidence and rollback
 
 The `crimson-land-release` artifact contains the prepared release tarball and
-`release.json`: commit, runtime run and SHA-256 hashes of the Worker modules,
+`release.json`: commit, runtime run, selected artifact IDs and SHA-256 hashes of the Worker modules,
 site files, verifier and Wrangler config. The deployment summary and
 `crimson-land-deployment` artifact retain Wrangler output, including the
 Cloudflare version ID. The generated `/deployment.txt` identifies the published

@@ -10,7 +10,7 @@ import { requireMigrations, packageManifest, verifyManifest, smoke, waitForRelea
 const sha = "a".repeat(40);
 const run = { head_repository: { full_name: "banteg/crimson" }, head_branch: "master", head_sha: sha, path: ".github/workflows/core.yml", event: "push", status: "completed", conclusion: "success" };
 const checks = REQUIRED_CHECKS.map((name, id) => ({ id, name, app: { slug: "github-actions" }, status: "completed", conclusion: "success" }));
-const artifacts = ["runtime-wasm", "crimsonland-web"].map((name) => ({ name, expired: false, size_in_bytes: 100, workflow_run: { head_sha: sha } }));
+const artifacts = ["runtime-wasm", "crimsonland-web"].map((name, index) => ({ id: index + 1, name, expired: false, size_in_bytes: 100, workflow_run: { head_sha: sha } }));
 
 test("requires every check, rejects external checks and failed newer reruns", () => {
   requireGreenChecks(checks);
@@ -30,10 +30,15 @@ test("accepts only successful same-commit runtime builds from this repository's 
   ]) assert.throws(() => requireTrustedRun({ ...run, ...patch }, "banteg/crimson", sha));
 });
 
-test("requires both complete unexpired artifacts from the selected commit", () => {
-  requireArtifacts(artifacts, sha);
+test("pins the newest artifact IDs across job reruns and refuses invalid newest artifacts", () => {
+  assert.deepEqual(requireArtifacts(artifacts, sha), { "runtime-wasm": 1, "crimsonland-web": 2 });
   assert.throws(() => requireArtifacts(artifacts.slice(1), sha), /runtime-wasm/);
-  assert.throws(() => requireArtifacts([...artifacts, artifacts[0]], sha), /one unexpired/);
+  const newer = { ...artifacts[0], id: 100 };
+  assert.deepEqual(requireArtifacts([newer, ...artifacts], sha), { "runtime-wasm": 100, "crimsonland-web": 2 });
+  for (const patch of [{ expired: true }, { size_in_bytes: 0 }, { workflow_run: { head_sha: "b".repeat(40) } }]) {
+    assert.throws(() => requireArtifacts([...artifacts, { ...newer, ...patch }], sha));
+  }
+  assert.throws(() => requireArtifacts([{ ...artifacts[0], id: "1" }, artifacts[1]], sha), /Invalid.*ID/);
   for (const patch of [{ expired: true }, { size_in_bytes: 0 }, { workflow_run: { head_sha: "b".repeat(40) } }]) {
     assert.throws(() => requireArtifacts([{ ...artifacts[0], ...patch }, artifacts[1]], sha));
   }

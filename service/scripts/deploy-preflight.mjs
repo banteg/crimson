@@ -32,12 +32,19 @@ export function requireTrustedRun(run, repository, sha) {
 }
 
 export function requireArtifacts(artifacts, sha) {
+  const selected = {};
   for (const name of ["runtime-wasm", "crimsonland-web"]) {
-    const matches = artifacts.filter((artifact) => artifact.name === name && !artifact.expired);
-    assert.equal(matches.length, 1, `Need one unexpired ${name} artifact; run Crimson runtime manually on master first`);
-    assert.equal(matches[0].workflow_run?.head_sha, sha, `Wrong commit in ${name}`);
-    assert.ok(matches[0].size_in_bytes > 0, `Empty ${name} artifact`);
+    const matches = artifacts.filter((artifact) => artifact.name === name);
+    assert.ok(matches.length > 0, `Missing ${name} artifact; run Crimson runtime manually on master first`);
+    for (const artifact of matches) assert.ok(Number.isSafeInteger(artifact.id) && artifact.id > 0, `Invalid ${name} artifact ID`);
+    // Job reruns retain earlier artifacts with the same name. Pin the newest ID rather than rely on name lookup.
+    const latest = matches.reduce((a, b) => a.id > b.id ? a : b);
+    assert.equal(latest.expired, false, `Expired ${name} artifact; run Crimson runtime manually on master first`);
+    assert.equal(latest.workflow_run?.head_sha, sha, `Wrong commit in ${name}`);
+    assert.ok(latest.size_in_bytes > 0, `Empty ${name} artifact`);
+    selected[name] = latest.id;
   }
+  return selected;
 }
 
 async function api(path) {
@@ -73,17 +80,18 @@ async function main() {
     ? [await api(`actions/runs/${requested}`)]
     : await pages(`actions/workflows/core.yml/runs?branch=master&head_sha=${sha}&status=success`, "workflow_runs");
   for (const run of candidates) {
+    let artifacts;
     try {
       requireTrustedRun(run, repository, sha);
-      requireArtifacts(await pages(`actions/runs/${run.id}/artifacts`, "artifacts"), sha);
+      artifacts = requireArtifacts(await pages(`actions/runs/${run.id}/artifacts`, "artifacts"), sha);
     } catch (error) {
       if (requested) throw error;
       console.log(`Skipping runtime run ${run.id}: ${error.message}`);
       continue;
     }
-    const release = { sha, runtime_run_id: run.id, runtime_run_attempt: run.run_attempt, runtime_url: run.html_url };
+    const release = { sha, runtime_run_id: run.id, runtime_run_attempt: run.run_attempt, runtime_url: run.html_url, artifacts };
     writeFileSync("release.json", `${JSON.stringify(release, null, 2)}\n`);
-    appendFileSync(process.env.GITHUB_OUTPUT, `runtime_run_id=${run.id}\n`);
+    appendFileSync(process.env.GITHUB_OUTPUT, `runtime_run_id=${run.id}\nwasm_artifact_id=${artifacts["runtime-wasm"]}\nweb_artifact_id=${artifacts["crimsonland-web"]}\n`);
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, `Deploying \`${sha}\` from [runtime run ${run.id}](${run.html_url}).\n`);
     return;
   }
