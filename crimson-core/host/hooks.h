@@ -27,7 +27,11 @@ char *game_version_label();
 // The repack's stored entry for a path (game/repack.cpp).
 char *grim_lookup_blob_entry(char *path);
 #define PORTABLE_RECORDED game_ticking
+// Grim's own switch: set, it draws nothing (a replay's undrawn ticks, host/watch.inc).
+extern unsigned char grim_render_disabled;
+#define PORTABLE_DRAWING (!grim_render_disabled)
 #else
-// The verifier always takes the recording.
+// The verifier always takes the recording, and draws nothing (host/grim.inc).
 #define PORTABLE_RECORDED 1
+#define PORTABLE_DRAWING 0
 #endif

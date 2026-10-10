@@ -34,6 +34,17 @@ Verbose logging, which writes once per attempt, keeps every attempt.
 unoptimized ones across elapsed times, frame times, player counts, cooldowns,
 experience bands, pool fill and verbose logging.
 
+`headless-effects.patch` skips the effects' vertex math where nothing draws.
+`effects_render` only draws: per effect it builds a rotation matrix and a packed
+color and submits them, and Grim drops submits while `grim_render_disabled` is
+set. The verifier never draws (`PORTABLE_DRAWING`, host/hooks.h), and the game
+draws nothing on a replay's undrawn ticks: the preparing pass, seeks, and all
+but a frame's last tick at high speed. The batches' state calls stay, since
+Grim keeps their blend modes and texture for the frames that do draw. Other
+render passes write gameplay state (`creature_render_type` frees corpse slots,
+`projectile_render` retires projectiles, `bonus_render` picks bonuses up), so
+they run everywhere.
+
 ## Existing Python optimizations and core transfers
 
 The [survey](../../docs/verification/optimization-survey.md) inventories the
