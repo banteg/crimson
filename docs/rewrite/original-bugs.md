@@ -953,13 +953,15 @@ Rewrite behavior:
 - Both bug policies preserve the spawn rate, RNG consumption and overflow
   writes. Clamping the rate or dropping failed spawns would change recorded
   runs, including subsequent random outcomes.
-- The recovered C/C++ core and game apply a behavior-preserving optimization:
+- The recovered C/C++ core, game and Python rewrite apply a behavior-preserving optimization:
   a local cursor resumes the first-free search within a wave batch. This batch
   only fills slots, so the first free slot cannot move backwards. Once the
   cursor reaches 384, later attempts perform no pool scan, while retaining
   the original full-pool logging and spawn body. Each update starts from zero;
   other allocation callers retain their original search.
-- The Python rewrite retains its existing spawning implementation.
+- Python uses the same update-local cursor through `CreaturePool.alloc_slot`.
+  Successful allocations still update generation and allocation/spawn counters;
+  failed allocations still execute the complete spawn body against the phantom.
 
 Evidence: the recovered `survival_update`, `survival_spawn_creature` and
 `creature_alloc_slot` bodies, and

@@ -158,6 +158,8 @@ def survival_update(world: WorldState, spawn: SurvivalSpawnState, *, elapsed_ms:
     # spawns an extra creature per 2 ms below zero.
     experience = player.experience
     cooldown = f32(f32(spawn.spawn_cooldown_ms) - f32(f32(len(world.players)) * f32(dt_ms)))
+    # This loop only fills slots; later updates must start searching from zero again.
+    next_slot = 0
     while cooldown < 0.0:
         interval = 500 - int(elapsed_ms) // 1800
         while interval < 0:
@@ -174,7 +176,9 @@ def survival_update(world: WorldState, spawn: SurvivalSpawnState, *, elapsed_ms:
                 case _:
                     y = rng.rand_tagged(RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_RIGHT_Y) % TERRAIN_SIZE
                     pos = Vec2(TERRAIN_SIZE + 40.0, float(y))
-            survival_spawn_creature(world.creatures, pos, rng, player_experience=experience)
+            next_slot = survival_spawn_creature(
+                world.creatures, pos, rng, player_experience=experience, start_index=next_slot,
+            )
             interval += 2
 
         if interval < 1:
@@ -194,7 +198,9 @@ def survival_update(world: WorldState, spawn: SurvivalSpawnState, *, elapsed_ms:
             case _:
                 y = rng.rand_tagged(RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_RIGHT_Y) % TERRAIN_SIZE
                 pos = Vec2(TERRAIN_SIZE + 40.0, float(y))
-        survival_spawn_creature(world.creatures, pos, rng, player_experience=experience)
+        next_slot = survival_spawn_creature(
+            world.creatures, pos, rng, player_experience=experience, start_index=next_slot,
+        )
     spawn.spawn_cooldown_ms = float(cooldown)
 
 

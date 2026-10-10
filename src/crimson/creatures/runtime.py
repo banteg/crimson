@@ -403,14 +403,16 @@ class CreaturePool:
             return self.phantom
         return self._entries[index]
 
-    def alloc_slot(self, rng: CrandLike) -> int:
+    def alloc_slot(self, rng: CrandLike, *, start_index: int = 0) -> int:
         """Port of `creature_alloc_slot` (0x00428140).
 
         Clears the first inactive slot's flags and draws its phase seed; a full pool returns
         `PHANTOM_CREATURE_INDEX` without touching the phantom slot or the RNG.
+        A fill-only batch may skip a prefix it already knows is active via `start_index`.
         """
 
-        for index, entry in enumerate(self._entries):
+        for index in range(start_index, len(self._entries)):
+            entry = self._entries[index]
             if not entry.active:
                 entry.flags = CreatureFlags(0)
                 entry.phase_seed = rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED) & 0x17F

@@ -12,11 +12,13 @@ from __future__ import annotations
 
 import random
 
+import pytest
+
 from crimson.creatures.runtime import PHANTOM_CREATURE_INDEX, CreaturePool
 from crimson.creatures.spawn import SpawnId, survival_spawn_creature
 from crimson.math_parity import f32
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.mode_updates import RushSpawnState, rush_mode_update
+from crimson.sim.mode_updates import RushSpawnState, SurvivalSpawnState, rush_mode_update, survival_update
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
@@ -168,3 +170,31 @@ def test_rush_spawns_into_a_nearly_full_pool_match_native(oracle) -> None:
             mismatches.append(Mismatch(case, "rand_state", oracle.rand_state, crand.state, 0))
 
     assert not mismatches, mismatch_report(mismatches, total_cases=cases)
+
+
+@pytest.mark.parametrize("elapsed_ms", (901_800, 1_800_000, 2_154_555))
+@pytest.mark.parametrize("free_slots", (set(), {0, 17, 383}))
+def test_survival_wave_batch_matches_native(oracle, elapsed_ms: int, free_slots: set[int]) -> None:
+    _prepare(oracle)
+    oracle.write_u32("config_player_count", 1)
+    oracle.write_u32("survival_spawn_stage", 10)
+    oracle.write_u32("player_experience", 143_802_723)
+    oracle.write_u32("run_elapsed_ms", elapsed_ms)
+    oracle.write_u32("frame_dt_ms", 16)
+    oracle.write_u32("survival_spawn_cooldown", 0)
+    # Suppress the elapsed-time weapon handout on both sides.
+    oracle.write_u32("survival_reward_damage_seen", 1)
+    oracle.rand_state = 97
+    pool = _nearly_full_pool(oracle, free_slots)
+    crand = CrtRand(97)
+    world = WorldState(state=GameplayState(rng=crand), players=[PlayerState(index=0, pos=Vec2())], creatures=pool)
+    world.state.survival_shrinkifier_handout_enabled = False
+    world.players[0].experience = 143_802_723
+    spawn = SurvivalSpawnState(stage=10)
+    oracle.call("survival_update")
+    survival_update(world, spawn, elapsed_ms=elapsed_ms, dt_ms=16)
+
+    mismatches = _compare_pool(oracle, f"survival wave {elapsed_ms}", pool, free_slots)
+    assert not mismatches, mismatch_report(mismatches, total_cases=1)
+    assert oracle.rand_state == crand.state
+    assert oracle.read_u32("survival_spawn_cooldown") == int(spawn.spawn_cooldown_ms)

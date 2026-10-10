@@ -92,6 +92,176 @@
     "native_wasm_matrix_scenarios": 101,
     "original_x86_spawn_cases": 7,
     "optimized_game_vs_core_ticks": 210268,
-    "optimized_game_vs_core_excludes": "presentation-only popup timers and weapon sound IDs"
+    "optimized_game_vs_core_excludes": "presentation-only popup timers and weapon sound IDs",
+    "python_gate_streams": 110,
+    "python_gate_agree": 110,
+    "python_native_wave_cases": 6,
+    "python_batch_regression_cases": 9
+  },
+  "python": {
+    "scope": "Single saturated Survival wave update, one player, seed 97, XP 143802723, stage 10; excludes world construction and serialization, not full replay preparation.",
+    "repetitions_per_build": 4,
+    "warm_repetitions": [
+      1,
+      2,
+      3
+    ],
+    "order": "baseline then optimized, no competing CPU work",
+    "python_version": "3.13.15",
+    "rows": [
+      {
+        "elapsed_ms": 900000,
+        "dt_ms": 16,
+        "before": [
+          {
+            "repeat": 0,
+            "ms": 0.36287494003772736,
+            "hash": "5b01b41c1f8386bfa4f57e513f9a26aa47ae1cec2d5404c3d9c1bc72ccf99db3"
+          },
+          {
+            "repeat": 1,
+            "ms": 0.336499884724617,
+            "hash": "5b01b41c1f8386bfa4f57e513f9a26aa47ae1cec2d5404c3d9c1bc72ccf99db3"
+          },
+          {
+            "repeat": 2,
+            "ms": 0.3530830144882202,
+            "hash": "5b01b41c1f8386bfa4f57e513f9a26aa47ae1cec2d5404c3d9c1bc72ccf99db3"
+          },
+          {
+            "repeat": 3,
+            "ms": 0.3244583494961262,
+            "hash": "5b01b41c1f8386bfa4f57e513f9a26aa47ae1cec2d5404c3d9c1bc72ccf99db3"
+          }
+        ],
+        "after": [
+          {
+            "repeat": 0,
+            "ms": 0.32066600397229195,
+            "hash": "5b01b41c1f8386bfa4f57e513f9a26aa47ae1cec2d5404c3d9c1bc72ccf99db3"
+          },
+          {
+            "repeat": 1,
+            "ms": 0.22687483578920364,
+            "hash": "5b01b41c1f8386bfa4f57e513f9a26aa47ae1cec2d5404c3d9c1bc72ccf99db3"
+          },
+          {
+            "repeat": 2,
+            "ms": 0.21345820277929306,
+            "hash": "5b01b41c1f8386bfa4f57e513f9a26aa47ae1cec2d5404c3d9c1bc72ccf99db3"
+          },
+          {
+            "repeat": 3,
+            "ms": 0.21066609770059586,
+            "hash": "5b01b41c1f8386bfa4f57e513f9a26aa47ae1cec2d5404c3d9c1bc72ccf99db3"
+          }
+        ],
+        "before_warm_median_ms": 0.336499884724617,
+        "after_warm_median_ms": 0.21345820277929306,
+        "shorter_percent": 36.56514831974405
+      },
+      {
+        "elapsed_ms": 1800000,
+        "dt_ms": 16,
+        "before": [
+          {
+            "repeat": 0,
+            "ms": 75.14020800590515,
+            "hash": "003a88bab2d8fb3d7dfda29362575d5be1a8a08dd68a0ea80d7d4252ff71166d"
+          },
+          {
+            "repeat": 1,
+            "ms": 74.53399989753962,
+            "hash": "003a88bab2d8fb3d7dfda29362575d5be1a8a08dd68a0ea80d7d4252ff71166d"
+          },
+          {
+            "repeat": 2,
+            "ms": 75.0638754107058,
+            "hash": "003a88bab2d8fb3d7dfda29362575d5be1a8a08dd68a0ea80d7d4252ff71166d"
+          },
+          {
+            "repeat": 3,
+            "ms": 76.1223747394979,
+            "hash": "003a88bab2d8fb3d7dfda29362575d5be1a8a08dd68a0ea80d7d4252ff71166d"
+          }
+        ],
+        "after": [
+          {
+            "repeat": 0,
+            "ms": 47.69391706213355,
+            "hash": "003a88bab2d8fb3d7dfda29362575d5be1a8a08dd68a0ea80d7d4252ff71166d"
+          },
+          {
+            "repeat": 1,
+            "ms": 47.27612482383847,
+            "hash": "003a88bab2d8fb3d7dfda29362575d5be1a8a08dd68a0ea80d7d4252ff71166d"
+          },
+          {
+            "repeat": 2,
+            "ms": 48.56125032529235,
+            "hash": "003a88bab2d8fb3d7dfda29362575d5be1a8a08dd68a0ea80d7d4252ff71166d"
+          },
+          {
+            "repeat": 3,
+            "ms": 48.470625188201666,
+            "hash": "003a88bab2d8fb3d7dfda29362575d5be1a8a08dd68a0ea80d7d4252ff71166d"
+          }
+        ],
+        "before_warm_median_ms": 75.0638754107058,
+        "after_warm_median_ms": 48.470625188201666,
+        "shorter_percent": 35.42749435331092
+      },
+      {
+        "elapsed_ms": 2154555,
+        "dt_ms": 16,
+        "before": [
+          {
+            "repeat": 0,
+            "ms": 102.67270915210247,
+            "hash": "9b7e8509b0b67364a709edb7fbe9a7e563eb4456d7d2dd8e24ba6f00d4ab0dd7"
+          },
+          {
+            "repeat": 1,
+            "ms": 104.21545896679163,
+            "hash": "9b7e8509b0b67364a709edb7fbe9a7e563eb4456d7d2dd8e24ba6f00d4ab0dd7"
+          },
+          {
+            "repeat": 2,
+            "ms": 104.01112493127584,
+            "hash": "9b7e8509b0b67364a709edb7fbe9a7e563eb4456d7d2dd8e24ba6f00d4ab0dd7"
+          },
+          {
+            "repeat": 3,
+            "ms": 103.4762910567224,
+            "hash": "9b7e8509b0b67364a709edb7fbe9a7e563eb4456d7d2dd8e24ba6f00d4ab0dd7"
+          }
+        ],
+        "after": [
+          {
+            "repeat": 0,
+            "ms": 66.08995795249939,
+            "hash": "9b7e8509b0b67364a709edb7fbe9a7e563eb4456d7d2dd8e24ba6f00d4ab0dd7"
+          },
+          {
+            "repeat": 1,
+            "ms": 66.53837533667684,
+            "hash": "9b7e8509b0b67364a709edb7fbe9a7e563eb4456d7d2dd8e24ba6f00d4ab0dd7"
+          },
+          {
+            "repeat": 2,
+            "ms": 67.52745807170868,
+            "hash": "9b7e8509b0b67364a709edb7fbe9a7e563eb4456d7d2dd8e24ba6f00d4ab0dd7"
+          },
+          {
+            "repeat": 3,
+            "ms": 66.56908383592963,
+            "hash": "9b7e8509b0b67364a709edb7fbe9a7e563eb4456d7d2dd8e24ba6f00d4ab0dd7"
+          }
+        ],
+        "before_warm_median_ms": 104.01112493127584,
+        "after_warm_median_ms": 66.56908383592963,
+        "shorter_percent": 35.99811185590542
+      }
+    ]
   }
 }

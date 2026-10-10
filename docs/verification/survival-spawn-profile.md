@@ -88,8 +88,41 @@ records each repetition, module/replay hashes, frame statistics and validation
 coverage. The earlier 49.2 s baseline belongs to the initial profiling session;
 the paired benchmark above is the before/after comparison.
 
+## Python wave updates
+
+Python has the same negative-interval loop and first-free pool scan. It now uses
+the same local cursor, reset to zero on every update. For a saturated pool at
+35:54.555, slot reads fall from 5,584 × 384 = 2,144,256 to 384 per update.
+All 5,584 spawn bodies and 83,533 random draws still execute.
+
+A bounded benchmark times only one saturated wave update, with one player,
+16 ms delta, zero starting cooldown, stage 10, seed 97 and 143,802,723 XP.
+World construction and state serialization are outside the timing window.
+Each build ran four sequential repetitions without competing CPU work; the
+table gives the median of the last three.
+
+| Elapsed game time | Attempts | Python baseline | Python optimized |
+| --- | ---: | ---: | ---: |
+| 15:00 | 16 | 0.336 ms | 0.213 ms |
+| 30:00 | 4,016 | 75.06 ms | 48.47 ms |
+| 35:54.555 | 5,584 | 104.01 ms | 66.57 ms |
+
+The late update is **36.0% shorter**. These are synthetic saturated-pool wave
+measurements, not complete Python replay preparation. Before/after hashes of
+the full usable pool, phantom, allocation/spawn counters, RNG state and
+cooldown/stage match in every repetition. Python still pays for all spawn
+initialization and float-parity calculations.
+
 ## Validation
 
+- Python differential tests compare complete creature/phantom/spawn-slot state,
+  counters, generations and tagged RNG traces against searches from zero, under
+  both bug policies, empty/fragmented/full pools, co-op and later slot reuse.
+  Six actual wave updates also match the original executable at the onset and
+  two late-game times, including fragmented and saturated pools.
+- The updated Python rewrite agrees with the native core on all 110 supported
+  replay-gate streams (101 bot scenarios and nine recordings); the established
+  unsupported fixture remains excluded.
 - The original x86 executable, executed through Unicorn with its allocator
   and spawn body intact, reproduces 16 spawn attempts at 15:00, 32 at
   15:01.800, 4,016 at 30:00 and 5,584 at 35:54.555 for a 16 ms update,
@@ -111,7 +144,18 @@ the paired benchmark above is the before/after comparison.
 
 ## Reproduction
 
-Run the bounded batch check:
+Run the Python wave benchmark in each checkout, using the same environment:
+
+```sh
+PYTHONPATH=.:src uv run python crimson-core/checks/profile_python_wave.py --out python-wave.json
+CRIMSON_NATIVE_ORACLE=1 uv run pytest tests/native_oracle/test_spawn_full_pool.py
+```
+
+The baseline checkout can use the benchmark script from the optimized checkout.
+Compare every snapshot hash as well as times; use the original executable under
+`game_bins/` for native checks.
+
+Run the bounded core batch check:
 
 ```sh
 uv run python crimson-core/checks/spawn_batch.py \
