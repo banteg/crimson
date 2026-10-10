@@ -17,6 +17,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from scripts.build_identity import client_identity, read_manifest, write_manifest
+
 HERE = Path(__file__).resolve().parent
 CORE = HERE.parent
 
@@ -60,7 +63,7 @@ def package(out, web):
     shutil.rmtree(dist, ignore_errors=True)
     if web:
         (dist / "web").mkdir(parents=True)
-        for name in ("index.html", "index.js", "index.wasm"):
+        for name in ("index.html", "index.js", "index.wasm", "build.json"):
             shutil.copy2(out / name, dist / "web" / name)
         return dist / "web"
     libdir = Path(pkg_config("--variable=libdir")[0])
@@ -68,6 +71,7 @@ def package(out, web):
         app = dist / "Crimsonland.app/Contents"
         (app / "MacOS").mkdir(parents=True)
         (app / "Frameworks").mkdir()
+        shutil.copy2(out / "build.json", app / "build.json")
         binary = app / "MacOS/crimson"
         shutil.copy2(out / "crimson", binary)
         linked = subprocess.check_output([tool("otool"), "-L", str(binary)], text=True)
@@ -90,9 +94,11 @@ def package(out, web):
             [tool("codesign"), "--force", "--deep", "--sign", "-", str(dist / "Crimsonland.app")],
             check=True,
         )
+        write_manifest(app / "build.json", read_manifest(out / "build.json"), [binary])
         return dist / "Crimsonland.app"
     folder = dist / "crimsonland"
     folder.mkdir(parents=True)
+    shutil.copy2(out / "build.json", folder)
     shutil.copy2(out / "crimson", folder)
     for library in libdir.glob("libSDL3.so*"):
         shutil.copy2(library, folder, follow_symlinks=False)
@@ -113,12 +119,13 @@ def main():
     wasm2c, runtime, include = wasm2c_runtime()
     subprocess.run([wasm2c, str(CORE / "build/game/game.wasm"), "-n", "game", "-o", str(out / "game.c")], check=True)
 
+    build_identity = client_identity(args.target)
     web = args.target == "web"
     cc, cxx = (tool("emcc"), tool("em++")) if web else (tool("clang"), tool("clang++"))
     cflags = ["-O2", "-I" + str(out), "-I" + str(runtime), "-I" + str(include), "-I" + str(HERE)]
     # The browser build has no threads; wasm2c then guards memory by bounds checks.
     cflags += ["-sUSE_SDL=3", "-DWASM_RT_USE_PTHREADS=0"] if web else []
-    cxxflags = [*cflags, "-std=c++17", *([] if web else pkg_config("--cflags"))]
+    cxxflags = [*cflags, "-std=c++17", f'-DCRIMSON_CLIENT_VERSION="{build_identity["version"]}"', *([] if web else pkg_config("--cflags"))]
     objects = compile_all(
         [
             [cc, *cflags, "-c", str(out / "game.c"), "-o", str(out / "game.o")],
@@ -155,6 +162,8 @@ def main():
         system = ["-framework", "OpenGL"] if sys.platform == "darwin" else ["-lGL", "-Wl,-rpath,$ORIGIN"]
         link = [cxx, *objects, *pkg_config("--libs"), *system, "-o", str(out / "crimson")]
     subprocess.run(link, check=True)
+    artifacts = [out / name for name in (("index.html", "index.js", "index.wasm") if web else ("crimson",))]
+    write_manifest(out / "build.json", build_identity, artifacts)
     print(package(out, web) if args.package else out / ("index.html" if web else "crimson"))
 
 

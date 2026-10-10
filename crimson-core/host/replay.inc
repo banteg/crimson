@@ -9,6 +9,8 @@
 
 // The host the replays name in their recorder (game_platform).
 static const char *replay_platform = "native";
+// A raw module names itself; a packaged host supplies its own content identity.
+static char replay_client_version[64] = CRIMSON_GAME_VERSION;
 
 // Canonical msgpack, as msgspec writes it and the server reads it (service/src/msgpack.ts):
 // the shortest header for every integer, string, array and map, float64 for every float.
@@ -98,7 +100,7 @@ static std::vector<uint8_t> replay_payload(const char *outcome) {
   m.str("rules"), m.integer(CRIMSON_REPLAY_RULES);
   m.str("recorder"), m.map(3);
   m.str("client"), m.str("crimson-core");
-  m.str("version"), m.str(CRIMSON_GAME_VERSION);
+  m.str("version"), m.str(replay_client_version);
   m.str("platform"), m.str(replay_platform);
   // A player plays these runs: no pilot.
   m.str("pilot"), m.nil();
@@ -215,6 +217,7 @@ static int replay_save(const std::vector<uint8_t> &payload) {
 }
 
 extern "C" {
+__attribute__((export_name("game_recorder_version"))) char *game_recorder_version() { return replay_client_version; }
 // The host this module runs in, named in the replays it records: 1 the
 // browser, 2 a desktop.
 __attribute__((export_name("game_platform"))) void game_platform(int platform) {

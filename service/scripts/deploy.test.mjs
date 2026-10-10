@@ -1,16 +1,26 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import test from "node:test";
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { downloadReplays } from "./reverify-cache.mjs";
 import { requireArtifacts, requireGreenChecks, requireTrustedRun, resolveRuntimeBuild, REQUIRED_CHECKS } from "./deploy-preflight.mjs";
-import { requireMigrations, packageManifest, verifyManifest, smoke, waitForRelease } from "./deploy-checks.mjs";
+import { requireBuildIdentity, requireMigrations, packageManifest, verifyManifest, smoke, waitForRelease } from "./deploy-checks.mjs";
 
 const sha = "a".repeat(40);
 const run = { head_repository: { full_name: "banteg/crimson" }, head_branch: "master", head_sha: sha, path: ".github/workflows/core.yml", event: "push", status: "completed", conclusion: "success" };
 const checks = REQUIRED_CHECKS.map((name, id) => ({ id, name, app: { slug: "github-actions" }, status: "completed", conclusion: "success" }));
 const artifacts = ["runtime-wasm", "crimsonland-web"].map((name, index) => ({ id: index + 1, name, expired: false, size_in_bytes: 100, workflow_run: { head_sha: sha } }));
+
+function build(kind, artifactFiles, game = null) {
+  // Keys are inserted in the canonical order shared with the Python planner.
+  const recipe = game ? { game: game.artifacts["game.wasm"], version: "1.2.3" } : { version: "1.2.3" };
+  const payload = { inputs: {}, kind, recipe, schema: 1 };
+  const fingerprint = createHash("sha256").update(JSON.stringify(payload)).digest("hex");
+  return { ...payload, fingerprint, version: `1.2.3+build.${fingerprint.slice(0, 24)}`, origin: { commit: sha, dirty: false },
+    artifacts: Object.fromEntries(artifactFiles.map(([name, contents]) => [name, createHash("sha256").update(contents).digest("hex")])), ...(game ? { game } : {}) };
+}
 
 test("requires every check, rejects external checks and failed newer reruns", () => {
   requireGreenChecks(checks);
@@ -68,6 +78,9 @@ test("release manifest requires a complete package and detects tampering or a di
       mkdirSync(join(file, ".."), { recursive: true });
       writeFileSync(file, "fixture");
     }
+    const game = build("game", [["game.wasm", "game module"]]);
+    writeFileSync("../crimson-core/build/wasm/core.wasm.build.json", JSON.stringify(build("wasm", [["core.wasm", "fixture"]])));
+    writeFileSync("dist/play/build.json", JSON.stringify(build("client", ["index.html", "index.js", "index.wasm"].map((name) => [name, "fixture"]), game)));
     packageManifest();
     verifyManifest(sha);
     assert.equal(readFileSync("dist/deployment.txt", "utf8").trim(), sha);
@@ -76,7 +89,7 @@ test("release manifest requires a complete package and detects tampering or a di
     assert.throws(() => verifyManifest(sha), /file list changed/);
     rmSync("dist/extra.txt");
     writeFileSync("dist/play/index.wasm", "changed");
-    assert.throws(() => verifyManifest(sha), /Changed release file/);
+    assert.throws(() => verifyManifest(sha), /Changed build artifact/);
   } finally {
     process.chdir(previous);
     rmSync(root, { recursive: true, force: true });
@@ -197,4 +210,14 @@ test("artifact build waits are bounded and reject advancing master or invalid ex
   assert.equal(time, 2000);
   await assert.rejects(resolveRuntimeBuild("banteg/crimson", sha, "123", options), /PR builds/);
   await assert.rejects(resolveRuntimeBuild("banteg/crimson", sha, "bad", options), /must be numeric/);
+});
+
+
+test("build fingerprints preserve origin and reject identity, label or dirty-source tampering", () => {
+  const original = build("game", [["game.wasm", "module"]]);
+  requireBuildIdentity(original, "game");
+  requireBuildIdentity({ ...original, origin: { commit: "b".repeat(40), dirty: false } }, "game");
+  assert.throws(() => requireBuildIdentity({ ...original, recipe: { version: "9.9.9" } }, "game"), /Changed build identity/);
+  assert.throws(() => requireBuildIdentity({ ...original, version: "fake" }, "game"), /Wrong build label/);
+  assert.throws(() => requireBuildIdentity({ ...original, origin: { commit: sha, dirty: true } }, "game"), /modified inputs/);
 });

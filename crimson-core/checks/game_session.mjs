@@ -46,6 +46,8 @@ if (!directory) throw Error("usage: game_session.mjs [--seed n] [--ranked] [--qu
 
 const run = bootGame(gameWasm, directory, seedOverride, { leaderboard: ranked });
 const { game } = run;
+const clientVersion = "0.14.2+build.000000000000000000000000";
+Buffer.from(game.memory.buffer).write(`${clientVersion}\0`, game.game_recorder_version(), "ascii");
 
 // game_state_id_t
 const MAIN_MENU = 0, PLAY_GAME_MENU = 1, PAUSE_MENU = 5, PERK_SELECTION = 6, GAME_OVER = 7, QUEST_RESULTS = 8, GAMEPLAY = 9;
@@ -220,6 +222,7 @@ const savedPayload = zlib.zstdDecompressSync(fs.readFileSync(path.join(directory
 unrankedReasons(savedPayload);
 const savedCrd = unpack(savedPayload);
 requireRecording(savedCrd, "the saved replay");
+if (savedCrd.recorder.version !== clientVersion || savedCrd.game_version === clientVersion) throw Error("replay conflates the host and game identities");
 if (savedCrd.result.outcome !== (quest ? "quest_completed" : "death")) throw Error(`the saved replay ends in ${savedCrd.result.outcome}`);
 // The module reads its own replay back as the run it recorded.
 const memory = () => Buffer.from(game.memory.buffer);

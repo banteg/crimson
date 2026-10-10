@@ -6,16 +6,12 @@ on:
       target:
         required: true
         type: string
-      suite:
-        required: true
-        type: string
 
 permissions:
   contents: read
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  ZIG_VERSION: "0.17.0"
 
 jobs:
   build:
@@ -33,31 +29,19 @@ jobs:
         id: inputs
         env:
           TARGET: ${{ inputs.target }}
-          SUITE: ${{ inputs.suite }}
-        run: |
-          compiler="zig$ZIG_VERSION"
-          if [[ "$TARGET" == native ]]; then
-            compiler="$compiler-$(clang++ --version | sha256sum | cut -c1-16)"
-          fi
-          version=""
-          if [[ "$TARGET" == game ]]; then
-            version="-$(uv run --no-sync python -c 'from crimson.game_version import current_replay_game_version; print(current_replay_game_version())')"
-          fi
-          binary=core
-          if [[ "$TARGET" == wasm ]]; then binary=core.wasm; fi
-          if [[ "$TARGET" == game ]]; then binary=game.wasm; fi
-          echo "binary=$binary" >> "$GITHUB_OUTPUT"
-          echo "key=runtime-v2-$TARGET-${{ runner.os }}-${{ runner.arch }}-$compiler-$(python3 scripts/ci_changed_paths.py hash "$SUITE")$version" >> "$GITHUB_OUTPUT"
+        run: uv run --no-sync python scripts/build_identity.py runtime "$TARGET" --github-output "$GITHUB_OUTPUT"
       - name: Restore the compiled module
         id: binary
         uses: actions/cache@v4
         with:
-          path: crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}
-          key: ${{ steps.inputs.outputs.key }}
+          path: |
+            crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}
+            crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}.build.json
+          key: runtime-v3-${{ runner.os }}-${{ runner.arch }}-${{ steps.inputs.outputs.fingerprint }}
       - uses: mlugg/setup-zig@v2
         if: steps.binary.outputs.cache-hit != 'true'
         with:
-          version: ${{ env.ZIG_VERSION }}
+          version: ${{ steps.inputs.outputs.zig_version }}
           cache-key: ${{ inputs.target }}
       - name: Compile the module
         if: steps.binary.outputs.cache-hit != 'true'
@@ -66,10 +50,18 @@ jobs:
         run: |
           uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name "build-$TARGET" -- \
             python crimson-core/build.py --target "$TARGET"
+      - name: Verify the restored or compiled identity and bytes
+        env:
+          BINARY: ${{ steps.inputs.outputs.binary }}
+          FINGERPRINT: ${{ steps.inputs.outputs.fingerprint }}
+          TARGET: ${{ inputs.target }}
+        run: uv run --no-sync python scripts/build_identity.py check "crimson-core/build/$TARGET/$BINARY.build.json" "$FINGERPRINT"
       - uses: actions/upload-artifact@v4
         with:
           name: runtime-${{ inputs.target }}
-          path: crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}
+          path: |
+            crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}
+            crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}.build.json
           if-no-files-found: error
       - name: Upload build diagnostics
         if: always()

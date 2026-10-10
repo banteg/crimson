@@ -11,7 +11,6 @@ from __future__ import annotations
 import argparse
 import ast
 import hashlib
-import json
 import re
 import shutil
 import subprocess
@@ -20,6 +19,11 @@ from dataclasses import dataclass
 from fnmatch import fnmatchcase
 from functools import cache
 from pathlib import Path, PurePosixPath
+
+try:
+    from .build_identity import core_paths, game_paths
+except ImportError:
+    from build_identity import core_paths, game_paths
 
 # Where each importable top-level package lives.
 PACKAGE_ROOTS = {"crimson": "src", "grim": "src", "crimson_re": "crimson-re/src", "tests": "."}
@@ -41,38 +45,9 @@ class Suite:
     python: tuple[str, ...] = ()
 
 
-# The verifier compiles this manifest, not the recovered presentation or the game-only host includes.
-# Keep directory patterns for headers and patches: adding either can affect an existing compilation.
-CORE_BUILD = (
-    "crimson-core/build.py",
-    "crimson-core/adapter.py",
-    "crimson-core/data.py",
-    "crimson-core/sources.json",
-    "crimson-core/schema.json",
-    "crimson-core/host/host.cpp",
-    "crimson-core/host/grim.inc",
-    "crimson-core/host/*.h",
-    "crimson-core/host/*.zig",
-    "crimson-core/abi/",
-    "crimson-core/patches/",
-    "crimson-core/seams/",
-    "third_party/headers/",
-    "tools/match/include/",
-    "tools/native/data_definitions/crimsonland.exe.json",
-    *json.loads((Path(__file__).resolve().parents[1] / "crimson-core/sources.json").read_text()),
-)
-# The game discovers recovered sources and constructors in these trees, scans every host file for reset
-# ownership, and links its own platform layer and vendor libraries. New files in those trees count too.
-GAME_BUILD = (
-    *CORE_BUILD,
-    "crimson-core/game.py",
-    "crimson-core/game/",
-    "crimson-core/host/",
-    "decomp/1.9/crimsonland/",
-    "decomp/1.9/grim/",
-    "third_party/sources/",
-    "tools/native/data_definitions/grim.dll.json",
-)
+# Build/cache identities and path filters share the compile-input inventory.
+CORE_BUILD = core_paths()
+GAME_BUILD = game_paths()
 # The bot corpus: the matrix plays it on the WASM core and compares native with WASM.
 CORE_CORPUS = (
     *CORE_BUILD,

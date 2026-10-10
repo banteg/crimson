@@ -62,10 +62,12 @@ and web package for this master commit, without repeating corpus, parity,
 oracles or desktop builds. Existing required checks must already be green;
 checks and master are rechecked after the artifact build and before upload.
 
-Compiler/package caches preserve the embedded replay version, which includes
-the commit. A new commit needs a fresh game/browser build even when game
-sources did not change. Exact cache hits mainly accelerate retries of the
-same commit; deployment preparation may take a few minutes on its first run.
+Compiler/package cache keys use content identities: unchanged game inputs
+reuse the module across commits; unchanged client inputs and module bytes reuse
+the web package. Manifests retain the original build commit and artifact hashes
+when reused. The release manifest separately identifies the commit being deployed.
+A source or toolchain change invalidates the affected build; a first cold
+preparation can still take a few minutes.
 Job reruns can retain older artifacts with the same name; the preflight
 validates the newest ID per name and pins exact downloads in the manifest.
 
@@ -112,7 +114,8 @@ release window.
 ## Evidence and rollback
 
 The `crimson-land-release` artifact contains the prepared release tarball and
-`release.json`: commit, runtime run, selected artifact IDs and SHA-256 hashes of the Worker modules,
+`release.json`: deployment commit, runtime run, selected artifact IDs, original
+verifier/game/client build provenance and SHA-256 hashes of the Worker modules,
 site files, verifier and Wrangler config. The deployment summary and
 `crimson-land-deployment` artifact retain Wrangler output, including the
 Cloudflare version ID. The generated `/deployment.txt` identifies the published

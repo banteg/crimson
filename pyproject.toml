@@ -41,10 +41,12 @@ charts = [
 
 [build-system]
 requires = ["uv_build>=0.9.18,<0.10.0"]
-build-backend = "uv_build"
+build-backend = "build_backend"
+backend-path = ["."]
 
 [tool.uv.build-backend]
 module-name = ["crimson", "grim"]
+source-include = ["build_backend.py", "scripts/build_identity.py", "uv.lock"]
 
 [tool.uv.workspace]
 members = ["crimson-re"]
