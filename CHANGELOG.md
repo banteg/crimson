@@ -2,6 +2,22 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.14.3
+
+### For players
+
+#### Long runs
+
+- Long Survival runs verify, prepare and replay much faster, and play exactly as before. Past fifteen minutes the original keeps trying to spawn more creatures every tick than the pool can hold, thousands per tick by the half hour, and each try still rewrites a spare slot nobody sees (bug 37 in [the original's bugs](https://crimson.banteg.xyz/rewrite/original-bugs/#37-survival-spawning-grows-without-bound-after-fifteen-minutes)). The game and the verifier now skip the work those tries throw away while drawing the same random numbers.
+- Replays also skip the effects' drawing math on the ticks they don't draw: while the browser game prepares a replay, while it seeks, and at high speeds.
+- Measured headless on an Apple M1 Pro, against the build before these last two changes: the 54-minute bot run on the board verifies in 19 s instead of 53 s and the 36-minute one in 9 s instead of 20 s; every Survival run on the board takes about a fifth less time. The game module prepares the 36-minute replay in 22 s instead of 32 s (Node, without drawing).
+- The Python port spends less time in late Survival too: a full creature pool no longer gets searched from the start for every spawn.
+
+### Under the hood
+
+- Optimizations to the recovered sources live in `crimson-core/optimizations/`, each with a check comparing it with the unoptimized code: Survival's spawn batches and full-pool skip, Plaguebearer's infection search, and cached orbit directions. Every Survival run on the board matches the previous build on every tick.
+- CI reuses game and client builds across commits, and builds carry their identity into the wheel.
+
 ## 0.14.2
 
 ### For players
