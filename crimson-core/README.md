@@ -29,6 +29,30 @@ copies of 168 recovered translation units; everything it adds lives here.
   [the input seam](#transport-and-input-seam). Typ-o, the tutorial and more players fail explicitly.
 - The run's bug policy comes with its configuration; see [Rules](#rules).
 
+## Low-level bot API
+
+The verifier's initialization and stepping exports are a supported low-level API
+for bot harnesses: `portable_config`, `portable_init`, `portable_input`,
+`portable_commands`, `portable_step_many` and the single-command wrapper
+`portable_step`. Their buffer layouts are declared in [`host/api.h`](host/api.h);
+the [input seam](#transport-and-input-seam) defines command timing. An instance
+holds one run, so concurrent simulations require separate module instances.
+Breaking API or layout changes must include migration notes for callers.
+
+Write the configuration before initializing, then write the input and up to 16
+commands before each step. Initialization and stepping return 1 on success and
+0 on refusal. After a refused step, reinitialize before continuing: earlier
+commands may already have changed the state, so retrying is not transactional.
+`portable_refusal` returns a NUL-terminated human-readable reason for the last
+step, empty after a successful step. Copy it before stepping again. It does not
+diagnose initialization failures, and its wording can change; do not parse it
+as a machine-readable error code.
+
+Internal parity snapshots (`portable_snapshot`, `portable_output` and
+`schema.json`) and diagnostic probes can change with the implementation. A bot
+using them must pin its core build and schema together. This API does not define
+a stable bot observation format or a language-specific SDK.
+
 ## Layout
 
 | Path | Contents |
@@ -251,9 +275,11 @@ choice bounds, dead-player restrictions and terminal states; a rejected tick
 leaves the instance unsteppable until it is reinitialized.
 
 The seam is **gameplay ticks plus semantic commands**, not original UI frames.
-Commands run in order before a tick; menu requests generate offers and picks
-consume entitlement, and a pick can generate dirty offers without a preceding
-menu request. Paused menu frames are absent, and the host clears the pending
+Commands run in order before a tick. A menu request opens the menu during that
+tick; the following tick may pick once, consuming entitlement, and a tick
+without a pick cancels the menu. A pick may request another menu in the same
+tick if it leaves a pending perk and a living player. Paused menu frames are
+absent, and the host clears the pending
 perk-screen transition. A client must freeze its gameplay clock while showing
 that UI and submit commands at this same seam. This is a deliberate modern
 rule; native perk-screen timing and RNG equivalence is not claimed.

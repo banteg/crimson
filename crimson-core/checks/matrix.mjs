@@ -340,6 +340,12 @@ rejects(
   record([0, 0, 512, 512, schemeFlags(MOUSE)], [[2, 0]]),
   "perk command in Rush",
 );
+rejects(
+  "Rush perk pick",
+  config(2),
+  record([0, 0, 512, 512, schemeFlags(MOUSE)], [[1, 0]]),
+  "perk command in Rush",
+);
 rejects("unknown command", normal, record([0, 0, 512, 512, schemeFlags(MOUSE)], [[99, 0]]), "unknown command");
 rejects(
   "command count overflow",
@@ -460,6 +466,12 @@ for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] o
   if (opened < 0) throw Error(`${name} never opened the perk menu`);
   const withCommands = (r, commands) => record([0, 4, 8, 12].map((at) => r.readFloatLE(at)).concat(r.readUInt32LE(16)), commands);
   const unopened = "perk_pick without an open perk menu";
+  rejects(
+    "pick outside the offered slots",
+    cfg,
+    [...records.slice(0, opened + 1), withCommands(records[opened + 1], [[1, 6]])],
+    "perk_pick of a choice that is not offered",
+  );
   rejects("pick in the tick that opens the menu", cfg, [...records.slice(0, opened), withCommands(records[opened], [[2, 0], [1, 0]])], unopened);
   rejects(
     "pick after a cancel",

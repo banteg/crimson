@@ -196,7 +196,7 @@ class DeterministicSession(msgspec.Struct):
                     creatures=self.world.creatures.entries,
                 )
                 if picked is None:
-                    raise IllegalCommandError(f"perk_pick choice_index={int(choice_index)} is not an offered choice")
+                    raise IllegalCommandError("perk_pick of a choice that is not offered")
                 return picked
             case _:
                 raise RuntimeError(f"unhandled command type: {type(command).__name__}")
@@ -215,6 +215,8 @@ class DeterministicSession(msgspec.Struct):
         # The perk screen pauses the game: a pick comes right after the menu opened, and a tick without one is Cancel.
         menu_open, self.perk_menu_open = self.perk_menu_open, False
         for command in commands or ():
+            if self.world.state.game_mode == GameMode.RUSH and isinstance(command, (PerkPickCommand, PerkMenuOpenCommand)):
+                raise IllegalCommandError("perk command in Rush")
             match command:
                 case PerkPickCommand():
                     if not menu_open:

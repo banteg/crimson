@@ -3,17 +3,20 @@ from __future__ import annotations
 import msgspec
 import pytest
 
+from crimson.game_modes import GameMode
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.driver.setup import ReplayRunnerError
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import RunOutcome
+from crimson.sim.run_spec import RunSpec
 from grim.rand import CallerStatic
 from tests.support.replay_runner_helpers import (
     ReplayRngTraceRecorder,
     _blank_survival_replay,
     _run_verify_playback,
     finish_replay,
+    record_replay,
 )
 
 
@@ -127,3 +130,20 @@ def test_survival_runner_allows_the_run_down_then_rejects_further_ticks() -> Non
         ReplayRunnerError, match=r"run ended \(death\) at tick 0 and wound down by tick 31 but the replay has 33 ticks",
     ):
         driver.run()
+
+
+def test_survival_runner_rejects_a_slot_outside_the_offered_choices() -> None:
+    driver = _perk_menu_replay([OPEN], [PerkPickCommand(player_index=0, choice_index=6)])
+    driver.step_tick(0)
+
+    with pytest.raises(ReplayRunnerError, match="perk_pick of a choice that is not offered"):
+        driver.step_tick(1)
+
+
+@pytest.mark.parametrize("command", [OPEN, PICK])
+def test_rush_runner_refuses_perk_commands_before_menu_guards(command) -> None:
+    replay = record_replay(RunSpec(game_mode_id=GameMode.RUSH, seed=0x1234), ticks=1)
+    driver = PlaybackDriver(_with_commands(replay, [command]))
+
+    with pytest.raises(ReplayRunnerError, match="perk command in Rush"):
+        driver.step_tick(0)
