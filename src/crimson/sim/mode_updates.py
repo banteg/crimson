@@ -178,6 +178,7 @@ def survival_update(world: WorldState, spawn: SurvivalSpawnState, *, elapsed_ms:
                     pos = Vec2(TERRAIN_SIZE + 40.0, float(y))
             next_slot = survival_spawn_creature(
                 world.creatures, pos, rng, player_experience=experience, start_index=next_slot,
+                skip_overflow=True,  # Every extra is followed by this pass's main spawn.
             )
             interval += 2
 
@@ -200,6 +201,7 @@ def survival_update(world: WorldState, spawn: SurvivalSpawnState, *, elapsed_ms:
                 pos = Vec2(TERRAIN_SIZE + 40.0, float(y))
         next_slot = survival_spawn_creature(
             world.creatures, pos, rng, player_experience=experience, start_index=next_slot,
+            skip_overflow=cooldown < 0.0,  # A later pass overwrites the full pool's phantom.
         )
     spawn.spawn_cooldown_ms = float(cooldown)
 

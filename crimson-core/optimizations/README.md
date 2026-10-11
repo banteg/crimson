@@ -30,6 +30,10 @@ side, the position and the spawn body's, stepped through the host's
 `crt_rand_stream`) and set 0x80 for a type 3; the last runs as recorded. The
 batch's attempt count follows from the cooldown and the elapsed time alone.
 Verbose logging, which writes once per attempt, keeps every attempt.
+Python's Survival wave also skips intermediate phantom writes, while retaining
+all tagged RNG draws. Every extra attempt has a later main spawn, and a main
+attempt is transient only while its updated cooldown stays negative; no
+separate attempt count is needed. Standalone spawns always write normally.
 `spawn_batch.py` also compares three consecutive `survival_update` calls with
 unoptimized ones across elapsed times, frame times, player counts, cooldowns,
 experience bands, pool fill and verbose logging.

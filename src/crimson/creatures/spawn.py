@@ -938,14 +938,64 @@ def _survival_tint_inverse_bucket(xp: int, divisor: int) -> float:
     return x87_pc24_div(f32(1.0), x87_pc24_add(float(xp // divisor), f32(10.0)))
 
 
+def _survival_spawn_overflow(creature: CreatureState, rng: CrandLike, xp: int) -> None:
+    """An intermediate full-pool spawn: retain draws and accumulating flags.
+
+    The batch's last spawn rewrites the phantom's other fields. Keep each
+    caller tag as well as the RNG state, including the conditional draws.
+    """
+    draw = rng.rand_tagged
+    type_roll = draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_TYPE_ROLL) % 10
+    if xp < 12000:
+        type_3 = type_roll > 8
+    elif xp < 25000:
+        type_3 = 4 <= type_roll <= 8
+    elif xp < 42000:
+        type_3 = type_roll > 4 and draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_PARITY_PICK) % 2 == 0
+    else:
+        type_3 = False
+    if (draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_OVERRIDE) & 0x1F) == 2:
+        type_3 = True
+    draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_SIZE)
+    draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEADING)
+    draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEALTH)
+    if xp < 50000:
+        draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_LOW_TINT_G)
+        draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_LOW_TINT_B)
+    elif xp < 100000:
+        draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_MID_TINT_G)
+        draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_MID_TINT_B)
+    else:
+        draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HIGH_TINT_G)
+        draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HIGH_TINT_B)
+    draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_REWARD_BONUS)
+    if (
+        draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_RED) % 180 >= 2
+        and draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_GREEN) % 240 >= 2
+    ):
+        draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_BLUE)
+    if draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_PURPLE) % 1320 >= 4:
+        draw(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_YELLOW)
+    if type_3:
+        creature.flags |= CreatureFlags.STOP_AND_GO
+
+
 def survival_spawn_creature(
     pool: CreaturePool, pos: Vec2, rng: CrandLike, *, player_experience: int, start_index: int = 0,
+    skip_overflow: bool = False,
 ) -> int:
-    """Port of `survival_spawn_creature` (0x00407510): a Survival wave creature scaled by player 1's XP."""
+    """Port of `survival_spawn_creature` (0x00407510), scaled by player 1's XP.
+
+    `skip_overflow` requires a later spawn in the same fill-only batch to
+    overwrite the phantom. Standalone spawns must keep the default.
+    """
     xp = int(player_experience)
 
     creature_idx = pool.alloc_slot(rng, start_index=start_index)
     creature = pool.creature(creature_idx)
+    if skip_overflow and creature is pool.phantom:
+        _survival_spawn_overflow(creature, rng, xp)
+        return creature_idx
     creature.pos = f32_vec2(pos)
     creature.plague_infected = False
     creature.dot_tick_timer = 0.0

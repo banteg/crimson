@@ -93,7 +93,7 @@ the paired benchmark above is the before/after comparison.
 Python has the same negative-interval loop and first-free pool scan. It now uses
 the same local cursor, reset to zero on every update. For a saturated pool at
 35:54.555, slot reads fall from 5,584 × 384 = 2,144,256 to 384 per update.
-All 5,584 spawn bodies and 83,533 random draws still execute.
+With the cursor alone, all 5,584 spawn bodies and 83,533 random draws still execute.
 
 A bounded benchmark times only one saturated wave update, with one player,
 16 ms delta, zero starting cooldown, stage 10, seed 97 and 143,802,723 XP.
@@ -110,8 +110,29 @@ table gives the median of the last three.
 The late update is **36.0% shorter**. These are synthetic saturated-pool wave
 measurements, not complete Python replay preparation. Before/after hashes of
 the full usable pool, phantom, allocation/spawn counters, RNG state and
-cooldown/stage match in every repetition. Python still pays for all spawn
-initialization and float-parity calculations.
+cooldown/stage match in every repetition. The cursor-only implementation still
+pays for all spawn initialization and float-parity calculations.
+
+### Python overflow follow-up
+
+The Python transfer of `survival-spawn-overflow.patch` skips intermediate
+phantom writes, preserving each RNG draw and caller tag and accumulating the
+stop-and-go flag. The final attempt still writes normally. Every extra has a
+later main spawn; a main has a later pass exactly when the updated cooldown
+is negative, so Python needs no separate attempt count. Standalone calls keep
+the original path.
+
+The same bounded benchmark, rerun on M1 Pro with Python 3.13, gives:
+
+| Elapsed game time | Cursor only | Cursor + overflow skip | Speedup |
+| --- | ---: | ---: | ---: |
+| 15:00 | 0.231 ms | 0.110 ms | 2.11x |
+| 30:00 | 47.17 ms | 15.90 ms | 2.97x |
+| 35:54.555 | 65.03 ms | 21.72 ms | 2.99x |
+
+All before/after snapshot hashes match. These remain saturated-wave timings;
+they do not measure complete replay preparation. The existing reproduction
+commands below run both the benchmark and original-executable comparisons.
 
 ## Validation
 
