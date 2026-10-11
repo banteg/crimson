@@ -489,7 +489,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                         <td>
                           <a class="run-details" href={`/runs/${run.id}`}>Details →</a>
                         </td>
-                        <td>{run.game_version}</td>
+                        <td>{run.game_version.split("+", 1)[0]}</td>
                         <td>{new Date(run.accepted_at).toISOString().slice(0, 10)}</td>
                         <td>
                           <ReplayLinks run={run.id} retired={run.retired} />

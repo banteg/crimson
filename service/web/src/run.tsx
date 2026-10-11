@@ -618,6 +618,7 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
         <p class="muted">
           {new Date(detail.accepted_at).toISOString().slice(0, 10)} · {detail.recorder.client} {detail.recorder.version} · {detail.recorder.platform}
         </p>
+        <p class="muted">Game version: {detail.game_version}</p>
         <Show when={detail.retired}>
           {(reason) => <p class="muted">Retired from the boards: {reason()}. The game no longer plays it as recorded.</p>}
         </Show>
