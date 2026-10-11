@@ -123,6 +123,40 @@ bool LeaderboardNetwork::run_id(const std::string &id) {
            return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
          });
 }
+std::string LeaderboardNetwork::replay_link(const std::string &text,
+                                            const std::string &api) {
+  if (run_id(text))
+    return text;
+  Url link(text), service(api);
+  if (link.origin().empty() || link.origin() != service.origin() ||
+      !link.part(CURLUPART_FRAGMENT).empty())
+    return {};
+  std::string route = link.part(CURLUPART_PATH),
+              query = link.part(CURLUPART_QUERY);
+  if (route == "/play/" || route == "/play") {
+    std::string run;
+    for (size_t at = 0; at < query.size();) {
+      size_t end = query.find('&', at);
+      if (end == std::string::npos)
+        end = query.size();
+      std::string part = query.substr(at, end - at);
+      if (part.compare(0, 6, "watch=") == 0) {
+        if (!run.empty() || !run_id(part.substr(6)))
+          return {};
+        run = part.substr(6);
+      }
+      at = end + 1;
+    }
+    return run;
+  }
+  if (!query.empty() || route.compare(0, 6, "/runs/"))
+    return {};
+  std::string run = route.substr(6);
+  if (run.size() > 4 && run.substr(run.size() - 4) == ".crd")
+    run.resize(run.size() - 4);
+  return run_id(run) ? run : std::string{};
+}
+
 std::string LeaderboardNetwork::quote(const std::string &text) {
   std::string out = "\"";
   for (unsigned char c : text) {
@@ -204,7 +238,7 @@ void LeaderboardNetwork::work(int lane) {
   // Scores follow the upload pass, as Update scores does in the web host.
   // Login and replay downloads never wait behind that pass.
   auto belongs = [lane](const Request &r) {
-    return lane == (r.kind == REPLAY                         ? 2
+    return lane == ((r.kind == REPLAY || r.kind == LINK)     ? 2
                     : r.kind == CHALLENGE || r.kind == LOGIN ? 1
                                                              : 0);
   };
@@ -423,6 +457,28 @@ LeaderboardNetwork::Event LeaderboardNetwork::perform(const Request &request) {
     }
     if (!event.ok)
       event.error = "Can't sign in to the leaderboard";
+    return event;
+  }
+  if (request.kind == LINK) {
+    Event event = perform({REPLAY, request.body});
+    event.kind = LINK;
+    if (event.ok) {
+      event.body = "replays/online/" + request.body + ".crd";
+      Event card =
+          http(LINK, api_ + "/runs/" + request.body, nullptr, JSON_LIMIT);
+      Json details;
+      if (card.ok && card.status == 200 && object(card.body, details)) {
+        if (const Json *name = details.field("name", Json::STRING))
+          event.runner = name->text;
+        if (const Json *rank = details.field("rank", Json::NUMBER);
+            rank && rank->number >= 0 && rank->number <= INT32_MAX &&
+            rank->number == floor(rank->number))
+          event.rank = (int)rank->number;
+        if (const Json *date = details.field("accepted_at", Json::NUMBER);
+            date && date->number >= 0 && date->number <= 0x1p53)
+          event.accepted_at = date->number;
+      }
+    }
     return event;
   }
   if (!run_id(request.body))

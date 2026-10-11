@@ -11,12 +11,15 @@
 // the main thread drains completions before running the next game frame.
 class LeaderboardNetwork {
 public:
-  enum Kind { UPLOAD, SCORES, CHALLENGE, LOGIN, REPLAY, COUNT };
+  enum Kind { UPLOAD, SCORES, CHALLENGE, LOGIN, REPLAY, LINK, COUNT };
   struct Event {
     Kind kind;
     bool ok = false;
     int status = 0;
     std::string body, error;
+    std::string runner;
+    int rank = 0;
+    double accepted_at = 0;
   };
   LeaderboardNetwork(std::string api, std::string directory,
                      std::string version);
@@ -24,6 +27,8 @@ public:
   bool enabled() const { return !api_.empty(); }
   bool request(Kind kind, std::string body = {});
   bool poll(Event &event);
+  static std::string replay_link(const std::string &text,
+                                 const std::string &api);
   static bool run_id(const std::string &id);
   static std::string quote(const std::string &latin1);
 

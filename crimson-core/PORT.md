@@ -335,6 +335,7 @@ its workarounds are already solved.
 ```sh
 uv run python crimson-core/client/build.py      # game module, wasm2c, SDL3 host
 crimson-core/build/app/crimson [game directory]
+crimson-core/build/app/crimson [game directory] --watch <run-id-or-replay-link>
 ```
 
 It needs wabt's `wasm2c`, SDL3, libcurl and the original game files.
@@ -344,7 +345,9 @@ directory the client uses the folder chosen last time, or asks for the one
 Crimsonland is installed in. `--package` lays out what ships in `build/dist`:
 a macOS app bundle or a Linux folder carrying SDL3, or the web page's files;
 [`client.yml`](../.github/workflows/client.yml) builds all three on every
-change; nothing yet runs the packaged executables, and the checks above run the
+change. Linux CI also boots the packaged executable under Xvfb against a
+loopback service, verifies an outbox upload and a linked replay download, and
+checks that the viewer advances. The full simulation checks above run the
 module before `wasm2c`.
 
 For unattended runs, `CRIMSON_CAPTURE=<dir>` with `CRIMSON_CAPTURE_FRAMES=n,...`
@@ -354,6 +357,11 @@ on the same frames (a run's seed still differs)
 ([`client/main.cpp`](client/main.cpp)). `CRIMSON_MUTE=1` silences the output
 device and nothing else: the game still mixes its sounds and music, so a muted
 run plays the same game ([`client/audio.cpp`](client/audio.cpp)).
+
+`--watch` accepts a run id or a service link such as
+`https://crimson.land/play/?watch=<run-id>`; links must name the configured
+leaderboard's origin. The replay downloads while startup runs, then opens in
+the same viewer as Watch from the high scores, with the run's card details.
 
 The transport's loopback HTTP/TLS checks run on Linux and macOS in client CI:
 

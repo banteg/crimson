@@ -190,6 +190,35 @@ class NativeNetwork(unittest.TestCase):
         self.reply = b"x" * ((4 << 20) + 1)
         self.assertFalse(self.request(1, body)[0])
 
+    def test_replay_links(self):
+        origin = self.api.removesuffix("/api")
+        for link in (
+            RUN,
+            origin + "/play/?watch=" + RUN,
+            origin + "/runs/" + RUN,
+            origin + "/runs/" + RUN + ".crd",
+            origin + "/play/?x=1&watch=" + RUN,
+        ):
+            done = subprocess.check_output([str(self.binary), self.api, str(self.root), "link", link])
+            self.assertEqual(done, RUN.encode())
+        for link in (
+            "../escape",
+            "https://evil.example/play/?watch=" + RUN,
+            origin + "/play/?watch=" + RUN + "&watch=" + RUN,
+            origin + "/play/?watch=wrong",
+            origin + "/other/" + RUN,
+            origin + "/runs/" + RUN + "#fragment",
+        ):
+            done = subprocess.check_output([str(self.binary), self.api, str(self.root), "link", link])
+            self.assertEqual(done, b"")
+
+    def test_linked_download(self):
+        self.reply = b"replay"
+        ok, _, path = self.request(5, RUN)
+        self.assertTrue(ok)
+        self.assertEqual(path, f"replays/online/{RUN}.crd".encode())
+        self.assertEqual([call[1] for call in self.calls], [f"/runs/{RUN}.crd", f"/api/runs/{RUN}"])
+
     def test_profile_challenge(self):
         self.reply = json.dumps({"challenge": RUN}).encode()
         self.assertEqual(self.request(2, '{"public_key":"key"}'), (True, 200, RUN.encode()))
@@ -246,6 +275,14 @@ class NativeNetwork(unittest.TestCase):
         self.upload_delay = 4
         self.reply = json.dumps({"challenge": RUN}).encode()
         self.assertEqual(self.request("parallel"), (True, 200, RUN.encode()))
+
+    def test_replay_link_is_not_blocked_by_upload(self):
+        self.queue()
+        self.upload_delay = 4
+        self.reply = b"replay"
+        ok, _, target = self.request("parallel", "link")
+        self.assertTrue(ok)
+        self.assertEqual(target, f"replays/online/{RUN}.crd".encode())
 
     def test_shutdown_after_lane_wakeup(self):
         subprocess.run([str(self.binary), self.api, str(self.root), "shutdown", ""], check=True, timeout=5)

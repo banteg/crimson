@@ -5,6 +5,7 @@
 #include "client.h"
 #include "network.h"
 #include <memory>
+#include <ctime>
 #include "../game/host_input.h"
 #include "../game/leaderboard_requests.h"
 #include <SDL3/SDL.h>
@@ -128,7 +129,7 @@ void key(SDL_Scancode scancode, bool down) {
 // frame_<n>.ppm, then quits. Such a run's clock moves 16 ms a frame, so
 // scripted input (CRIMSON_INPUT) lands on the same frames every time.
 std::vector<int> capture_frames;
-int presented, frames;
+int presented, frames, captured_frame = -1;
 bool capture_done;
 const bool unattended = getenv("CRIMSON_CAPTURE");
 void capture_frame() {
@@ -153,6 +154,7 @@ void capture_frame() {
           fwrite(&pixels[((size_t)y * width + x) * 4], 1, 3, fp);
       fclose(fp);
     }
+    captured_frame = frames;
     capture_frames.erase(capture_frames.begin() + i);
     if (capture_frames.empty())
       w2c_game_game_close(&game);
@@ -313,6 +315,7 @@ void watch_from_env() {
 #ifndef __EMSCRIPTEN__
 namespace {
 std::unique_ptr<LeaderboardNetwork> network;
+std::string linked_replay;
 std::string profile_key;
 bool profile_pending;
 Uint64 next_upload;
@@ -370,6 +373,33 @@ void network_update() {
       w2c_game_game_replay_downloaded(&game, event.ok              ? 0
                                              : event.status == 404 ? 1
                                                                    : 2);
+    } else if (event.kind == N::LINK) {
+      const char *reason = event.status == 404
+                               ? "This run is no longer on the leaderboard."
+                               : "Could not download this run.";
+      if (event.ok) {
+        snprintf((char *)client_memory() + w2c_game_game_replay_path(&game),
+                 256, "%s", event.body.c_str());
+        snprintf((char *)client_memory() + w2c_game_game_watch_name(&game), 32,
+                 "%s", event.runner.c_str());
+        int day = 0, month = 0, year = 2000;
+        time_t when = (time_t)(event.accepted_at / 1000);
+        if (event.accepted_at && (when >= 0))
+          if (tm *date = localtime(&when)) {
+            day = date->tm_mday;
+            month = date->tm_mon + 1;
+            year = date->tm_year + 1900;
+          }
+        if (!w2c_game_game_replay_open(&game))
+          reason = (char *)client_memory() + w2c_game_game_replay_reason(&game);
+        else if (w2c_game_game_watch(&game, event.rank, day, month, year))
+          reason = nullptr;
+        else
+          reason = "This run cannot play now.";
+      }
+      if (reason)
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Replay", reason,
+                                 window);
     } else if (event.kind == N::CHALLENGE && event.ok) {
       snprintf((char *)client_memory() + w2c_game_game_login_challenge(&game),
                65, "%s", event.body.c_str());
@@ -434,7 +464,15 @@ bool start_game() {
   if (network->enabled())
     w2c_game_game_leaderboard_enable(&game);
 #endif
-  return w2c_game_game_start(&game);
+  bool running = w2c_game_game_start(&game);
+#ifndef __EMSCRIPTEN__
+  if (running && !linked_replay.empty()) {
+    if (!network->enabled())
+      client_fatal("Watching an online run needs a leaderboard service.");
+    network->request(LeaderboardNetwork::LINK, linked_replay);
+  }
+#endif
+  return running;
 }
 
 #ifdef __EMSCRIPTEN__
@@ -590,13 +628,35 @@ SDL_AppResult wait_for_folder() {
 #endif
 
 SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
-  if (argc > 1)
-    game_directory = argv[1];
+  bool directory_given = false;
+  for (int i = 1; i < argc; ++i) {
 #ifndef __EMSCRIPTEN__
-  else if (size_t size; char *saved = (char *)SDL_LoadFile(remembered().c_str(), &size)) {
-    game_directory.assign(saved, size);
-    SDL_free(saved);
+    if (!strcmp(argv[i], "--watch")) {
+      if (++i == argc)
+        client_fatal(
+            "Usage: crimson [game directory] [--watch <run id or replay URL>]");
+      const char *api = getenv("CRIMSON_LEADERBOARD_URL");
+      linked_replay = LeaderboardNetwork::replay_link(
+          argv[i], api ? api : "https://crimson.land/api");
+      if (linked_replay.empty())
+        client_fatal(
+            "Expected a run id or a replay link on the leaderboard service.");
+      continue;
+    }
+#endif
+    if (directory_given)
+      client_fatal(
+          "Usage: crimson [game directory] [--watch <run id or replay URL>]");
+    game_directory = argv[i];
+    directory_given = true;
   }
+#ifndef __EMSCRIPTEN__
+  if (!directory_given)
+    if (size_t size;
+        char *saved = (char *)SDL_LoadFile(remembered().c_str(), &size)) {
+      game_directory.assign(saved, size);
+      SDL_free(saved);
+    }
 #endif
   if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMEPAD))
     client_fatal(SDL_GetError());
@@ -747,7 +807,23 @@ SDL_AppResult SDL_AppIterate(void *) {
   ++frames;
   watch_from_env();
   bool running = w2c_game_game_frame(&game);
-  // A pass of a run that covered no tick drew nothing: show the last frame again.
+  // Snapshot viewer state after the frame returns; never re-enter the module
+  // from its presentation import. Used by packaged-client integration checks.
+  if (captured_frame >= 0) {
+    std::string path = std::string(getenv("CRIMSON_CAPTURE")) + "/frame_" +
+                       std::to_string(captured_frame) + ".json";
+    if (FILE *fp = fopen(path.c_str(), "w")) {
+      fprintf(fp,
+              "{\"watch_status\":%d,\"watch_tick\":%d,\"watch_ticks\":%d}\n",
+              (int)w2c_game_game_watch_status(&game),
+              (int)w2c_game_game_watch_tick(&game),
+              (int)w2c_game_game_watch_ticks(&game));
+      fclose(fp);
+    }
+    captured_frame = -1;
+  }
+  // A pass of a run that covered no tick drew nothing: show the last frame
+  // again.
   if (running && presented == before)
     show_frame(pixel_width, pixel_height);
   for (int button = 0; button < 8; ++button)

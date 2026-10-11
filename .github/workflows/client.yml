@@ -90,7 +90,7 @@ jobs:
 
       - name: Install desktop networking
         if: matrix.name == 'linux'
-        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev xvfb
 
       # The client links OpenGL itself; a restored SDL3 still needs its headers.
       - name: Use SDL3
@@ -109,6 +109,13 @@ jobs:
       - name: Build the client
         if: matrix.name != 'web' || steps.web.outputs.cache-hit != 'true'
         run: python3 crimson-core/client/build.py --target ${{ matrix.name == 'web' && 'web' || 'native' }} --skip-game --package
+
+      - name: Exercise the packaged desktop client
+        if: matrix.name == 'linux'
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          SDL_AUDIODRIVER: dummy
+        run: xvfb-run -a -s "-screen 0 1280x1024x24" python3 crimson-core/checks/native_client_network.py crimson-core/build/dist/crimsonland/crimson
 
       - name: Verify the web identity and bytes
         if: matrix.name == 'web'

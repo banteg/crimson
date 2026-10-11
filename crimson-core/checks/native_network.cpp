@@ -12,6 +12,10 @@ int main(int argc, char **argv) {
     }
     return 0;
   }
+  if (std::string(argv[3]) == "link") {
+    printf("%s", LeaderboardNetwork::replay_link(argv[4], argv[1]).c_str());
+    return 0;
+  }
   LeaderboardNetwork net(argv[1], argv[2], "test");
   if (std::string(argv[3]) == "cancel") {
     net.request(LeaderboardNetwork::REPLAY, argv[4]);
@@ -20,10 +24,15 @@ int main(int argc, char **argv) {
   }
   if (std::string(argv[3]) == "parallel") {
     net.request(LeaderboardNetwork::UPLOAD);
-    net.request(LeaderboardNetwork::CHALLENGE, "{}");
+    auto parallel_kind = std::string(argv[4]) == "link"
+                             ? LeaderboardNetwork::LINK
+                             : LeaderboardNetwork::CHALLENGE;
+    net.request(parallel_kind, parallel_kind == LeaderboardNetwork::LINK
+                                   ? std::string(64, 'a')
+                                   : "{}");
     LeaderboardNetwork::Event event{LeaderboardNetwork::UPLOAD};
     for (int i = 0; i < 150; ++i) {
-      if (net.poll(event) && event.kind == LeaderboardNetwork::CHALLENGE) {
+      if (net.poll(event) && event.kind == parallel_kind) {
         printf("%d %d\n%s", event.ok, event.status, event.body.c_str());
         return 0;
       }

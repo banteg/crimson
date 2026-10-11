@@ -123,6 +123,8 @@ SUITES = {
             *GAME_BUILD,
             "crimson-core/client/",
             "crimson-core/checks/native_network.*",
+            "crimson-core/checks/native_client_network.py",
+            "tests/fixtures/replays/quest-1.1-completed.crd",
             ".github/workflows/client.yml",
             ".github/workflows/core.yml",
             ".github/workflows/deploy.yml",
