@@ -12,7 +12,7 @@ from crimson.sim.gameplay_state import GameplayState
 @pytest.mark.parametrize(
     ("perk_id", "expected"),
     [
-        (PerkId.RANDOM_WEAPON, (True, True, False, False, True, True)),
+        (PerkId.RANDOM_WEAPON, (True, True, False, False, False, False)),
         (PerkId.BREATHING_ROOM, (True, False, True, False, True, False)),
     ],
     ids=["random-weapon", "breathing-room"],

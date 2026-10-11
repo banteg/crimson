@@ -75,11 +75,11 @@ def perk_can_offer(
     # specific runtime modes, not "only in this mode":
     # - in quest mode, offered perks must have bit 0x1 set
     # - in multiplayer, offered perks must have bit 0x2 set
-    # The native branch is specifically `player_count == 2`; unsupported
-    # higher counts fall through without applying the two-player allow-list.
+    # Native only knows 1-2 players and tests `player_count == 2`; the rewrite's
+    # 3-4 player extension applies the same allow-list.
     if game_mode == GameMode.QUESTS and (flags & PerkFlags.QUEST_MODE_ALLOWED) == 0:
         return False
-    if player_count == 2 and (flags & PerkFlags.MULTIPLAYER_ALLOWED) == 0:
+    if player_count > 1 and (flags & PerkFlags.MULTIPLAYER_ALLOWED) == 0:
         return False
 
     return not (meta.prereq and any(state.perks[req] <= 0 for req in meta.prereq))

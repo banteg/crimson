@@ -61,7 +61,7 @@ clip runs dry.
 Six perks are never offered with two players: Grim Deal, Alternate Weapon,
 Fatal Lottery, Random Weapon, Final Revenge and Highlander (see
 [how perk offers work](../perks.md#how-perk-offers-work)). The rewrite
-offers them again with three or four.
+leaves them out with three or four players too.
 
 ## More players, more creatures
 

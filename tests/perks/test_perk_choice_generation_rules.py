@@ -170,3 +170,32 @@ def test_perk_generate_choices_caches_offerability_checks(mocker) -> None:
         PerkId.INSTANT_WINNER,
     ]
     assert calls <= PERK_ID_MAX
+
+
+_TWO_PLAYER_EXCLUDED = {
+    PerkId.GRIM_DEAL,
+    PerkId.ALTERNATE_WEAPON,
+    PerkId.FATAL_LOTTERY,
+    PerkId.RANDOM_WEAPON,
+    PerkId.FINAL_REVENGE,
+    PerkId.HIGHLANDER,
+}
+
+
+def _offered_over_seeds(player_count: int) -> set[PerkId]:
+    offered: set[PerkId] = set()
+    for seed in range(64):
+        state = GameplayState(rng=Crand(seed))
+        status = _status_default()
+        status.quest_unlock_index = 49
+        state.status = status
+        prepare_perk_availability(state)
+        players = [PlayerState(index=index, pos=Vec2()) for index in range(player_count)]
+        offered.update(perk_generate_choices(state, players, game_mode=GameMode.SURVIVAL))
+    return offered
+
+
+def test_perk_generate_choices_excludes_two_player_perks_for_every_coop_count() -> None:
+    assert _offered_over_seeds(1) >= _TWO_PLAYER_EXCLUDED
+    for player_count in (2, 3, 4):
+        assert not _TWO_PLAYER_EXCLUDED & _offered_over_seeds(player_count)
