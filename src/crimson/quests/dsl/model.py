@@ -31,6 +31,7 @@ class SourceLocation:
 @dataclass(frozen=True)
 class QuestPlan:
     title: str
+    author: str | None
     version: int
     start_weapon_id: WeaponId
     terrain_slots: TerrainSlotTriplet

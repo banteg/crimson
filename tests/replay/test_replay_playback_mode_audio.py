@@ -150,7 +150,7 @@ def test_quest_replay_draws_the_title_over_its_spawn_timer(open_playback: OpenPl
     quest_spawn = view.driver.quest_spawn_state
     assert quest_spawn is not None
     title_overlay.assert_called_once_with(
-        view._grim_mono, quest.title, level.text, timer_ms=quest_spawn.spawn_timeline_ms,
+        view._grim_mono, quest.title, level.text, timer_ms=quest_spawn.spawn_timeline_ms, subtitle="",
     )
     banner_overlay.assert_called_once_with(
         _runtime(view).render_resources.resources.texture(TextureId.UI_TEXT_LEVEL_COMPLETE),

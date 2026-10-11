@@ -46,11 +46,13 @@ def quest_complete_banner_alpha(timer_ms: float) -> float:
     return 0.0
 
 
-def draw_quest_title_timer_overlay(font: GrimMonoFont, title: str, number: str, *, timer_ms: float) -> None:
+def draw_quest_title_timer_overlay(
+    font: GrimMonoFont, title: str, number: str, *, timer_ms: float, subtitle: str = "",
+) -> None:
     alpha = quest_title_alpha(float(timer_ms))
     if alpha <= 0.0:
         return
-    draw_quest_title_overlay(font, title, number, alpha=alpha)
+    draw_quest_title_overlay(font, title, number, alpha=alpha, subtitle=subtitle)
 
 
 def draw_quest_complete_banner_overlay(texture: rl.Texture, *, timer_ms: float) -> None:

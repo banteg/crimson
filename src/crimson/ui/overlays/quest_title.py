@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from grim import canvas
-from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text
+from grim.fonts.grim_mono import GRIM_MONO_LINE_HEIGHT, GrimMonoFont, draw_grim_mono_text
 from grim.geom import Vec2
 from grim.raylib_api import rl_color
 
@@ -36,6 +36,8 @@ class QuestTitleOverlayLayout(msgspec.Struct, frozen=True):
     title_scale: float
     number_pos: Vec2
     number_scale: float
+    # A custom quest's byline: centred a line below the title, styled as the number.
+    subtitle_pos: Vec2
 
 
 def quest_title_base_scale(screen_width: int) -> float:
@@ -53,6 +55,7 @@ def layout_quest_title_overlay(
     title: str,
     number: str,
     font_advance: float,
+    subtitle: str = "",
 ) -> QuestTitleOverlayLayout:
     title_scale = quest_title_base_scale(int(screen_width))
     number_scale = quest_number_scale(title_scale)
@@ -70,16 +73,20 @@ def layout_quest_title_overlay(
         - QUEST_NUMBER_FIXED_OFFSET
     )
     number_y = title_pos.y + (number_scale * QUEST_NUMBER_Y_MULTIPLIER)
+    subtitle_width = len(subtitle) * font_advance * number_scale
 
     return QuestTitleOverlayLayout(
         title_pos=title_pos,
         title_scale=title_scale,
         number_pos=Vec2(number_x, number_y),
         number_scale=number_scale,
+        subtitle_pos=Vec2(center_x - subtitle_width / 2.0, title_pos.y + GRIM_MONO_LINE_HEIGHT * title_scale),
     )
 
 
-def draw_quest_title_overlay(font: GrimMonoFont, title: str, number: str, *, alpha: float = 1.0) -> None:
+def draw_quest_title_overlay(
+    font: GrimMonoFont, title: str, number: str, *, alpha: float = 1.0, subtitle: str = "",
+) -> None:
     alpha = max(0.0, min(1.0, float(alpha)))
     layout = layout_quest_title_overlay(
         screen_width=canvas.width(),
@@ -87,6 +94,7 @@ def draw_quest_title_overlay(font: GrimMonoFont, title: str, number: str, *, alp
         title=title,
         number=number,
         font_advance=font.advance,
+        subtitle=subtitle,
     )
 
     title_color = rl_color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * alpha))
@@ -100,3 +108,4 @@ def draw_quest_title_overlay(font: GrimMonoFont, title: str, number: str, *, alp
         layout.number_scale,
         number_color,
     )
+    draw_grim_mono_text(font, subtitle, layout.subtitle_pos, layout.number_scale, number_color)

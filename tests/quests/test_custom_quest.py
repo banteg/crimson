@@ -7,7 +7,7 @@ import pytest
 
 from crimson.creatures.spawn_ids import SpawnId
 from crimson.quests.custom import CustomQuest, validate_custom_quest
-from crimson.quests.dsl import build_custom_quest, compile_quest
+from crimson.quests.dsl import QuestCompileError, build_custom_quest, compile_quest
 from crimson.quests.dsl.stock import stock_source
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -32,9 +32,9 @@ def test_variants_share_tables_a_recipe_does_not_vary():
     assert quest.variants == (0,) * 8
 
 
-def test_the_digest_covers_gameplay_not_the_title():
+def test_the_digest_covers_gameplay_not_the_title_or_author():
     quest = build_custom_quest(example("crosswind"))
-    renamed = msgspec.structs.replace(quest, title="Another name")
+    renamed = msgspec.structs.replace(quest, title="Another name", author="someone")
     rearmed = msgspec.structs.replace(quest, start_weapon_id=WeaponId.PISTOL)
     assert renamed.digest() == quest.digest()
     assert rearmed.digest() != quest.digest()
@@ -50,6 +50,8 @@ def replace_first_entry(quest: CustomQuest, **changes) -> CustomQuest:
     [
         (lambda q: msgspec.structs.replace(q, title=""), "title"),
         (lambda q: msgspec.structs.replace(q, title="café"), "title"),
+        (lambda q: msgspec.structs.replace(q, author=""), "author"),
+        (lambda q: msgspec.structs.replace(q, author="x" * 32), "author"),
         (lambda q: msgspec.structs.replace(q, start_weapon_id=WeaponId.NONE), "starting weapon"),
         (lambda q: msgspec.structs.replace(q, terrain_slots=(0, 8, 0)), "terrain"),
         (lambda q: msgspec.structs.replace(q, variants=(0,) * 7), "variants"),
@@ -73,3 +75,21 @@ def test_invalid_definitions_are_rejected(edit, message):
     quest = build_custom_quest(example("crosswind"))
     with pytest.raises(ValueError, match=message):
         validate_custom_quest(edit(quest))
+
+
+def test_the_recipe_names_its_author_for_the_byline():
+    source = example("crosswind").replace(
+        'quest "Crosswind" version 1\n', 'quest "Crosswind" version 1\nauthor "banteg"\n',
+    )
+    quest = build_custom_quest(source)
+    assert (quest.author, quest.byline) == ("banteg", "by banteg")
+    assert compile_quest(source).author == "banteg"
+    assert build_custom_quest(example("crosswind")).byline == ""
+
+
+@pytest.mark.parametrize(
+    ("setting", "message"), [('author ""', "author"), ('author "a"\nauthor "b"', "duplicate author")],
+)
+def test_bad_author_settings_are_rejected(setting, message):
+    with pytest.raises(QuestCompileError, match=message):
+        compile_quest(f'quest "Bylined" version 1\n{setting}\nat 1s:\n    spawn alien.small_gray at center')

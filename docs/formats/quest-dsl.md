@@ -74,6 +74,7 @@ is an opaque game primitive: offspring, formation members and AI remain native.
 | Syntax | Meaning |
 | --- | --- |
 | `quest "Title" version 1` | Required header |
+| `author "Name"` | Optional byline under the title: 1..31 printable ASCII characters; presentation only |
 | `weapon pistol` | Starting weapon; lowercase `WeaponId` name, default `pistol` |
 | `terrain (0, 1, 0)` | Three terrain-slot IDs in 0..7, default `(0, 1, 0)` |
 | `order chronological` | Stable sort by trigger time, retaining construction order for ties; default |

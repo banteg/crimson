@@ -26,6 +26,7 @@ from ..custom import (
     MAX_TRIGGER_MS,
     VARIANT_COUNT,
     CustomQuest,
+    check_author,
     check_table,
     validate_custom_quest,
     variant_index,
@@ -134,6 +135,7 @@ def _settings(tree: Tree) -> tuple[dict[str, Any], list[Tree]]:
         raise QuestCompileError(str(exc), _line(header)) from exc
     metadata: dict[str, Any] = {
         "title": title,
+        "author": None,
         "order": "chronological",
         "weapon": WeaponId.PISTOL,
         "terrain": (0, 1, 0),
@@ -141,13 +143,19 @@ def _settings(tree: Tree) -> tuple[dict[str, Any], list[Tree]]:
     seen: set[str] = set()
     statements = []
     for node in rest:
-        if node.data not in ("order", "weapon", "terrain"):
+        if node.data not in ("author", "order", "weapon", "terrain"):
             statements.append(node)
             continue
         if node.data in seen:
             raise QuestCompileError(f"duplicate {node.data} setting", _line(node))
         seen.add(node.data)
         match node.data:
+            case "author":
+                try:
+                    metadata["author"] = _string(str(node.children[0]))
+                    check_author(metadata["author"])
+                except ValueError as exc:
+                    raise QuestCompileError(str(exc), _line(node)) from exc
             case "order":
                 metadata["order"] = str(node.children[0])
             case "weapon":
@@ -866,6 +874,7 @@ def compile_quest(
         raise QuestCompileError(str(exc)) from exc
     return QuestPlan(
         title=metadata["title"],
+        author=metadata["author"],
         version=1,
         start_weapon_id=metadata["weapon"],
         terrain_slots=metadata["terrain"],
@@ -895,6 +904,7 @@ def build_custom_quest(source: str, *, seed: int = 0, limits: CompileLimits = _D
             variants[variant_index(player_count=player_count, hardcore=hardcore)] = tables.index(entries)
     quest = CustomQuest(
         title=metadata["title"],
+        author=metadata["author"],
         start_weapon_id=metadata["weapon"],
         terrain_slots=metadata["terrain"],
         tables=tuple(tables),

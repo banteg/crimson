@@ -93,6 +93,7 @@ class ReplayPlaybackMode:
         self._grim_mono: GrimMonoFont | None = None
         self._quest_title = ""
         self._quest_number = ""
+        self._quest_subtitle = ""
 
         self._dt = REPLAY_TICK_DT
         self._clock = FixedStepClock(tick_rate=REPLAY_TICK_RATE)
@@ -206,6 +207,7 @@ class ReplayPlaybackMode:
             # A custom quest has a title but no stock number.
             self._quest_title = quest.title if quest is not None else custom.title if custom is not None else ""
             self._quest_number = quest.level.text if quest is not None else ""
+            self._quest_subtitle = custom.byline if custom is not None else ""
             self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
 
     def close(self) -> None:
@@ -323,6 +325,7 @@ class ReplayPlaybackMode:
             title,
             self._quest_number,
             timer_ms=float(driver.quest_spawn_state.stage_banner_timer_ms),
+            subtitle=self._quest_subtitle,
         )
 
     def _draw_quest_complete_banner(self) -> None:

@@ -5,7 +5,8 @@ start: _NL? header setting* statement*
 
 header: "quest" STRING "version" INT _NL
 
-?setting: "order" ORDER _NL -> order
+?setting: "author" STRING _NL -> author
+        | "order" ORDER _NL -> order
         | "weapon" NAME _NL -> weapon
         | "terrain" "(" INT "," INT "," INT ")" _NL -> terrain
 

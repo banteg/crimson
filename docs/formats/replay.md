@@ -112,7 +112,8 @@ a run scores only its own words unless `preserve_bugs`), and
 name cache, so this run's first highscore-name pick skips the table load's RNG
 draws).
 
-`CustomQuest` is a map of `title` (1..64 printable ASCII characters), `start_weapon_id` (int, not 0),
+`CustomQuest` is a map of `title` (1..64 printable ASCII characters), `author` (1..31 printable ASCII
+characters or nil; like the title, presentation), `start_weapon_id` (int, not 0),
 `terrain_slots` (three ints 0..7), `tables` (arrays of 1..256 `SpawnEntry` maps) and `variants` (8 ints): the
 table each player count 1..4 plays, normal then hardcore, using every table. A `SpawnEntry` is a map of `pos`
 (`{x, y}` f32 map, each coordinate in −1024..2048), `heading` (f32), `spawn_id` (a spawn template other than `0x02`), `trigger_ms` (int

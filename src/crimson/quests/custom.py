@@ -26,6 +26,8 @@ MAX_TRIGGER_MS = 60 * 60 * 1000
 MIN_COORDINATE = -1024.0
 MAX_COORDINATE = 2048.0
 MAX_TITLE_CHARS = 64
+# As long as a player name, which a published quest's author will be.
+MAX_AUTHOR_CHARS = 31
 VARIANT_COUNT = 8
 
 
@@ -34,7 +36,7 @@ def variant_index(*, player_count: int, hardcore: bool) -> int:
     return (player_count - 1) * 2 + int(hardcore)
 
 
-class CustomQuest(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+class CustomQuest(msgspec.Struct, frozen=True, kw_only=True, forbid_unknown_fields=True):
     """A custom quest as every runtime plays it: resolved entries, no recipe.
 
     `tables` holds each distinct table with base counts and `variants` picks one per
@@ -43,6 +45,8 @@ class CustomQuest(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     """
 
     title: str
+    # Presentation, like the title: who wrote it, as the recipe says until publishing vouches for it.
+    author: str | None = None
     start_weapon_id: WeaponId
     terrain_slots: TerrainSlotTriplet
     tables: tuple[tuple[SpawnEntry, ...], ...]
@@ -52,8 +56,13 @@ class CustomQuest(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
         table = self.tables[self.variants[variant_index(player_count=player_count, hardcore=hardcore)]]
         return tuple(apply_hardcore_spawn_table_adjustment(list(table))) if hardcore else table
 
+    @property
+    def byline(self) -> str:
+        """What the quest title shows under a custom quest's title."""
+        return "" if self.author is None else f"by {self.author}"
+
     def digest(self) -> str:
-        """SHA-256 of everything that plays; the title is presentation."""
+        """SHA-256 of everything that plays; the title and author are presentation."""
         gameplay = (self.start_weapon_id, self.terrain_slots, self.tables, self.variants)
         return hashlib.sha256(msgspec.msgpack.encode(gameplay)).hexdigest()
 
@@ -95,10 +104,21 @@ def _check_f32(value: float, what: str) -> None:
         raise ValueError(f"{what} must be finite float32 values")
 
 
+def _printable(text: str, limit: int) -> bool:
+    return 1 <= len(text) <= limit and all(" " <= char <= "~" for char in text)
+
+
+def check_author(author: str) -> None:
+    if not _printable(author, MAX_AUTHOR_CHARS):
+        raise ValueError(f"author must be 1..{MAX_AUTHOR_CHARS} printable ASCII characters")
+
+
 def validate_custom_quest(quest: CustomQuest) -> None:
     """Everything a runtime needs to trust before it plays a custom quest."""
-    if not 1 <= len(quest.title) <= MAX_TITLE_CHARS or not all(" " <= char <= "~" for char in quest.title):
+    if not _printable(quest.title, MAX_TITLE_CHARS):
         raise ValueError(f"title must be 1..{MAX_TITLE_CHARS} printable ASCII characters")
+    if quest.author is not None:
+        check_author(quest.author)
     if quest.start_weapon_id == WeaponId.NONE:
         raise ValueError("a custom quest needs a starting weapon")
     if not all(0 <= slot <= 7 for slot in quest.terrain_slots):

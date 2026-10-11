@@ -313,16 +313,17 @@ class QuestMode(BaseGameplayMode):
             return
         quest, custom = self._quest_def, self._custom_quest
         if quest is not None:
-            title, number = quest.title, quest.level.text
+            title, number, subtitle = quest.title, quest.level.text, ""
         elif custom is not None:
-            # A custom quest has a title but no stock number.
-            title, number = custom.title, ""
+            # A custom quest has no stock number; its author's byline goes under the title.
+            title, number, subtitle = custom.title, "", custom.byline
         else:
             return
         draw_quest_title_timer_overlay(
             font,
             title,
             number,
+            subtitle=subtitle,
             timer_ms=float(self._quest_spawn_state.stage_banner_timer_ms),
         )
 
