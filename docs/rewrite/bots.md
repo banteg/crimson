@@ -73,11 +73,8 @@ opening it. The verifiers enforce this for every category:
 - A tick without a pick after the menu opened is the player pressing Cancel: the menu closes, and the next pick
   needs a new `perk_menu_open`.
 
-A pick may be followed by a new `perk_menu_open` in the same tick: the player picked a perk and opened the menu again
-for the next one. Each command is checked against the state the commands before it left, so that
-`perk_menu_open` is legal only when the pick left another perk pending and the player alive. It is refused after a
-pick that spent the last pending perk, and after a pick that killed the player: Grim Deal always does, and Fatal
-Lottery half the time, which a bot can't know before it picks. A refused command refuses the whole run.
+Commands apply in order, so a `perk_menu_open` after a pick in the same tick requires another pending perk and a
+living player; a refused command refuses the whole run.
 
 ## Signals
 
