@@ -2,6 +2,23 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.14.4
+
+### For players
+
+#### Browser and desktop game
+
+- Clicking a key binding in Options → Controls no longer crashes the game. The slot waits for a key again, as in the original.
+- Opening a link to a run is quiet while the replay prepares. The intro's tune no longer fades out over it, and a quest replay no longer plays its weapon's reload sound before playback starts.
+
+#### Long runs
+
+- The Python port also skips the work that Survival's full-pool spawn tries throw away, as the game and the verifier have since 0.14.3. It draws the same random numbers and leaves the same state. A saturated late wave takes about a third of the time it did.
+
+### Under the hood
+
+- `CRIMSON_MUTE=1` silences the desktop client's sound output for unattended runs. The game still mixes its sound, so a muted run plays the same game.
+
 ## 0.14.3
 
 ### For players
