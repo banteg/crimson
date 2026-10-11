@@ -337,7 +337,9 @@ For unattended runs, `CRIMSON_CAPTURE=<dir>` with `CRIMSON_CAPTURE_FRAMES=n,...`
 saves those frames' back buffers and quits, and `CRIMSON_INPUT` scripts the
 mouse and keys; such a run's clock moves 16 ms a frame, so scripted input lands
 on the same frames (a run's seed still differs)
-([`client/main.cpp`](client/main.cpp)).
+([`client/main.cpp`](client/main.cpp)). `CRIMSON_MUTE=1` silences the output
+device and nothing else: the game still mixes its sounds and music, so a muted
+run plays the same game ([`client/audio.cpp`](client/audio.cpp)).
 
 ## Running the web client
 

@@ -3,10 +3,12 @@
 // quarter second behind the wall clock: with no output device, or one that
 // stops draining (a failure, the browser's autoplay lock), the surplus is
 // dropped (game_audio_skip moves the voices on unmixed), so the game's play
-// cursors and voice status move as they would with sound.
+// cursors and voice status move as they would with sound. CRIMSON_MUTE silences
+// the device only: the game mixes and the device drains as they would aloud.
 #include "client.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 namespace {
 // The module's mix: 16-bit stereo at 44.1 kHz, at most 4096 frames a pull.
@@ -30,6 +32,8 @@ void audio_init() {
     depth = SDL_max(depth, (Sint64)device_frames * RATE / device.freq * 2);
   if (!stream || !SDL_ResumeAudioStreamDevice(stream))
     fprintf(stderr, "crimson: no audio output (%s)\n", SDL_GetError());
+  else if (getenv("CRIMSON_MUTE"))
+    SDL_SetAudioStreamGain(stream, 0);
 }
 
 void audio_update(w2c_game *game) {
