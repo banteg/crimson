@@ -228,7 +228,7 @@ Native: `lea edi, [esi+0xc]; mov [esp+0x10], edi; mov [esp+0x10], ebx`, heading 
 template via `[edi]`.
 
 - **The heading base follows from the copy.** In the four-byte witness
-  ([evidence](../../evidence/timeline-four-byte-home-2026-09-13/README.md)), replacing
+  ([evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/timeline-four-byte-home-2026-09-13/README.md)), replacing
   `((float *)template_id)[-1]` with plain `entry->heading` gives the same body, still
   `mov eax, [edi-4]`. Traced: the group loop's strength reduction sees `&entry->template_id` as a
   value (the copy's source), keeps `entry + 12` (#216), and hoists the heading and y addresses as

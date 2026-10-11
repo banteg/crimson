@@ -235,7 +235,7 @@ throughout the evaluation.
 The `decomp-report` pre-push hook runs the same saved-evidence verification as
 CI when matching or report inputs change. If it reports stale evidence, run
 the refresh command above and commit the generated evidence before pushing.
-This includes source controls and verifier scripts under `tools/match/evidence/`,
+This includes source controls and verifier scripts under [evidence](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence),
 which are part of the recorded input inventory even when canonical scratches
 stay unchanged. The hook verifies evidence; it does not regenerate it.
 

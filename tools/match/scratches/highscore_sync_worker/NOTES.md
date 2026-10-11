@@ -262,7 +262,7 @@ relocations outside the loop** unchanged, allowing only two branch displacements
 to follow the relocated end of the loop. The extra cleanup `mov edx, eax`
 already exists in that baseline. The new source adds no outside instruction
 defect, and the first 340 native instructions have same-index reference proof.
-[The executable verifier and receipts](../../evidence/highscore-cursor-2026-09-09/README.md)
+[The executable verifier and receipts](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/highscore-cursor-2026-09-09/README.md)
 explain this manual recovery without weakening automatic mutation acceptance.
 
 The one-variant cursor reversion reproduces 92.571429%, prefix 130, 525
@@ -274,13 +274,13 @@ ceiling or exact match is claimed.
 
 ## Distinct VC6 build controls (2026-09-09)
 
-The [bounded address-allocation record](../../evidence/address-allocation-controls-2026-09-09/README.md)
+The [bounded address-allocation record](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/address-allocation-controls-2026-09-09/README.md)
 compares the current source across five independently fingerprinted VC6 builds.
 None improves this candidate; canonical source and configuration are unchanged.
 
 ## PCH and debug-information controls (2026-09-09)
 
-The [compiler-context record](../../evidence/compiler-context-controls-2026-09-09/README.md)
+The [compiler-context record](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/compiler-context-controls-2026-09-09/README.md)
 verifies identical full-function objects across Wine and the repaired wibo
 fork for plain compilation, PCH creation, and PCH reuse, normalizing only
 the COFF timestamp. `/Zd` and `/Zi` also retain the baseline metrics.
@@ -288,7 +288,7 @@ The runner fixes restore PCH support but produce no matching gain; source
 and canonical compiler flags are unchanged.
 ## Independent backend replay (2026-09-09)
 
-The [VC6 intermediate-stream proof](../../evidence/vc6-intermediate-replay-2026-09-09/README.md)
+The [VC6 intermediate-stream proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-intermediate-replay-2026-09-09/README.md)
 captures this unchanged source between C1XX and C2, then replays its four streams
 in a standalone backend process. Normal, captured, and replayed COFF objects
 agree completely except for the header timestamp. The matcher still reports

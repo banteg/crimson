@@ -16,7 +16,7 @@ A VC6 member `operator+` returning a two-float object by value produces the
 same 26 native bytes, using `[ESP+4]` as its hidden return buffer and
 `[ESP+8]` as its right-hand reference. Ordinary composed callers can also be
 byte-identical. See the
-[reproducible contract controls](../../evidence/vector-return-contract-2026-09-08/README.md).
+[reproducible contract controls](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vector-return-contract-2026-09-08/README.md).
 
 The saved Binary Ninja prototype now places `self` in `ECX` and types it and
 the right operand as `vec2f_t`, replacing its former three-argument cdecl

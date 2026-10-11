@@ -238,7 +238,7 @@ Notes:
   `1.0f / transparency`, at gameplay x87 PC=24 precision. Corpse size is stored
   unchanged, with top-left position computed by subtracting half that size.
   Native queue and staged-death witnesses are recorded in the
-  [corpse queue proof](https://github.com/banteg/crimson/tree/master/tools/match/evidence/corpse-queue-2026-09-11).
+  [corpse queue proof](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/corpse-queue-2026-09-11).
 
 ## Effect entries (`effect_pool_pos_x` pool)
 

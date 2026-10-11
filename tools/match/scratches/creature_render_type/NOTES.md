@@ -2,7 +2,7 @@
 
 ## Exact recovery (2026-09-12)
 
-The [indexed-entry ownership proof](../../evidence/creature-render-exact-2026-09-12/README.md)
+The [indexed-entry ownership proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-render-exact-2026-09-12/README.md)
 recovers **765/765 instructions, 2,834/2,834 encoded body bytes and 145/0/0
 references**. Both normalized and encoded-body exactness are true.
 
@@ -19,7 +19,7 @@ Compiler flags, reference aliases and matching rules are unchanged. Source SHA-2
 
 ## Native sprite colours (2026-09-11)
 
-The [colour audit](../../evidence/creature-render-colors-2026-09-11/README.md)
+The [colour audit](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-render-colors-2026-09-11/README.md)
 records 4,320 quads from 40 native/C++ comparisons and executes Grim2D packing
 for 375 unique colour inputs. Both ports now preserve PC24 blend/fade order
 and truncate scaled channels as native does. Exact body/shadow float words
@@ -30,7 +30,7 @@ fixture arithmetic and CPU submissions; it does not certify GPU pixels.
 
 ## Native sprite passes and dimensions (2026-09-11)
 
-The [pass-order proof](../../evidence/creature-pass-order-2026-09-11/README.md)
+The [pass-order proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-pass-order-2026-09-11/README.md)
 records 1,056 native quads across 80 native/C++ comparisons. Both ports now
 batch all shadows before bodies within each species. Python also uses actual
 creature dimensions at the current atlas resolution, and Zig retains native
@@ -52,7 +52,7 @@ description of these pairs as valid native cursor controls refers only to
 compilation; their execution does not preserve the original loop behavior.
 Those results must not rule out correctly advancing cursor loops.
 
-The [cursor execution verifier](../../evidence/creature-render-execution-2026-09-09/verify_cursors.py)
+The [cursor execution verifier](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-render-execution-2026-09-09/verify_cursors.py)
 reproduces both failures with a fixture whose only active entry is the last pool
 slot. Native returns; both historical candidates reach the instruction/time
 limit. The corrected combination advances unconditionally and agrees with
@@ -373,7 +373,7 @@ now has SHA-256
 
 ## Bounded native/candidate execution audit (2026-09-09)
 
-The [execution verifier](../../evidence/creature-render-execution-2026-09-09/README.md)
+The [execution verifier](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-render-execution-2026-09-09/README.md)
 compares the original x86 body with the relocated VC6 object under modeled Grim2D
 observers. All 130 scenarios agree on exact drawing argument bits, call order,
 and observed creature/spawn-slot writes, collectively executing all 765 native
@@ -389,7 +389,7 @@ changes are retained; 79.74%, `139/0/5`, and both exactness flags remain unchang
 
 ## Port frame-selection correction (2026-09-11)
 
-The [species-table frame matrix](../../evidence/creature-frame-selection-2026-09-11/README.md)
+The [species-table frame matrix](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-frame-selection-2026-09-11/README.md)
 compares 36 original/C++ scenarios across PC24 and PC64, with all observed calls
 and writes equal. Its 2,640 PC24 frame witnesses identify 270 differences in
 the previous Python caller/helper path, 229 differences in 2,628 comparable

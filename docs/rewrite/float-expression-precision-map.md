@@ -30,7 +30,7 @@ Runtime assumption for this map:
   operation. Preserve extended transcendental results until the following
   arithmetic operation or store, as described in the policy.
 - The frame witness matrix in
-  `tools/match/evidence/creature-frame-selection-2026-09-11/results.json`
+  [results.json](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-frame-selection-2026-09-11/results.json)
   demonstrates 126 frame-index differences between PC24 and PC64 on the same
   stored inputs. Port regressions use the PC24 observations.
 
@@ -72,19 +72,19 @@ Historical IDA whole-view scan:
 
 `E14` is an exception to treating both direction components as stored floats.
 The original-image witnesses in
-`tools/match/evidence/player-aim-direction-2026-09-11/results.json` pin the
+[results.json](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/player-aim-direction-2026-09-11/results.json) pin the
 asymmetry and held-turn ordering. Python is tested against 1,050 point and 240
 turn witnesses; see that evidence package for modeled boundaries and limits.
 
 `E15` is checked against the original executable's submitted corner words in
-`tools/match/evidence/conventional-corner-rounding-2026-09-11/`. Python's
+[conventional-corner-rounding-2026-09-11](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/conventional-corner-rounding-2026-09-11). Python's
 `bullet_trail_corners` preserves the game's PC24 arithmetic before applying
 the rewrite's viewport scale. The evidence package separately documents the
 native wider-register/store asymmetries under diagnostic PC64; those are not
 a reason to use binary64 arithmetic for the Python gameplay renderer.
 
 `E16` uses the native 15-unit angled near endpoint and 2.2-unit total width.
-The witnesses in `tools/match/evidence/laser-trig-rounding-2026-09-11/`
+The witnesses in [laser-trig-rounding-2026-09-11](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/laser-trig-rounding-2026-09-11)
 check Python's actual submitted corners against native PC24 values at four
 viewport scales and in both perk-ownership modes. Native Grim2D color-setter
 execution also pins red near vertices, black far vertices, and truncating

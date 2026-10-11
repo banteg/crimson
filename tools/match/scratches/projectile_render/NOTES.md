@@ -2,7 +2,7 @@
 
 ## Byte-exact vector API reconstruction (2026-09-28)
 
-[The vector API evidence](../../evidence/projectile-vector-api-2026-09-28/README.md)
+[The vector API evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-vector-api-2026-09-28/README.md)
 completes the stock MSVC 6.5 match: **3,021/3,021 instructions, prefix 3,021,
 544/0/0 references, 412-byte frame, `body_byte_exact=True`, no padding**.
 
@@ -20,7 +20,7 @@ below is retained as historical evidence.
 
 ## Independent plague scheduling correction (2026-09-28)
 
-[The isolated K9 correction](../../evidence/projectile-plague-schedule-2026-09-28/README.md)
+[The isolated K9 correction](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-plague-schedule-2026-09-28/README.md)
 works without the diagnostic ID pad. Parenthesized draw coordinates and stored
 trig expressions move the scheduling boundary and restore native argument pushes.
 The canonical score is **97.846256%**, 3,015/3,021 instructions, prefix 1,322,
@@ -35,7 +35,7 @@ extent).
 
 ## K6 to K9: one id shift and one scheduler window (2026-09-28)
 
-[The id/window evidence](../../evidence/projectile-id-window-2026-09-28/README.md)
+[The id/window evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-id-window-2026-09-28/README.md)
 accounts for every remaining region. A build with two additions is byte-exact
 (`body_byte_exact=True`, 3021/3021, 544/0/0). The canonical source is unchanged,
 because one of the two additions is a measuring device, not recovered source.
@@ -67,7 +67,7 @@ construction. The 76-byte K2 region matches with only its two verified DIR32
 fields masked. 13,046 native replay cases pass, including callback cases; a
 wrong-alpha control changes precisely the two affected calls.
 
-[Source controls, compiler traces, byte proof, and runtime receipts](../../evidence/remaining-storage-controls-2026-09-26/README.md)
+[Source controls, compiler traces, byte proof, and runtime receipts](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/remaining-storage-controls-2026-09-26/README.md)
 are pinned to the baseline and retained source. The older K2 "Unknown" entry
 below is superseded by this result. The x87-order and scheduler-window
 residuals remain.
@@ -1443,7 +1443,7 @@ the tested lifetimes, not other source owners or the remaining function.
 
 ## Recovered native head-color operation (2026-09-09)
 
-The [call-boundary audit](../../evidence/call-boundaries-2026-09-09/README.md)
+The [call-boundary audit](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/call-boundaries-2026-09-09/README.md)
 identifies the second color publication at `0x00424b11`, after the fading-ion
 head quad and before arc processing. The scratch now restores it. A compiled
 machine-window verifier checks both publications, saved alpha and RGB bits,
@@ -1467,7 +1467,7 @@ is `6dca4a01d049d243dc72dc1fc15faa7146134e7cb9f36f347cfba4a22af64e84`.
 
 ## Native small-plasma head alpha (2026-09-10)
 
-The [bounded machine comparison](../../evidence/plasma-head-alpha-2026-09-10/README.md)
+The [bounded machine comparison](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/plasma-head-alpha-2026-09-10/README.md)
 found a real color-argument mismatch: the 16px Minigun, Spider Plasma, and
 Shrinkifier heads reuse the initial `transition_alpha * 0.5f` value, whereas
 the scratch used 0.45. The three literals and both ports' shared small-plasma
@@ -1491,7 +1491,7 @@ head-anchored streak bases across its live/fading branches. Native uses
 `head - origin` and anchors the streak at `camera + origin - half_size`.
 Python and Zig already implement this direction and anchor.
 
-The [beam evidence package](../../evidence/beam-direction-2026-09-10/README.md)
+The [beam evidence package](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/beam-direction-2026-09-10/README.md)
 checks the native producer instructions, 480 complete caller-boundary machine
 fixtures, and 24 compiled wrong-direction/anchor controls. All corrected
 fixtures agree, including long and zero-length segments. Normalization is a
@@ -1511,7 +1511,7 @@ corner retains the native x87 lifetime. The native instruction window and an
 independent arithmetic oracle distinguish `0x42ba23dd` from the preceding
 `0x42ba23de` result.
 
-The [ion-chain evidence](../../evidence/ion-chain-product-2026-09-10/README.md)
+The [ion-chain evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/ion-chain-product-2026-09-10/README.md)
 verifies 384 fixtures with real native creature search, selected-index and
 quad-count oracles, and six compiled defect controls. Normalization remains
 an explicit external-call model. Other source controls that preserved the
@@ -1532,7 +1532,7 @@ renderer regression cases cover both modes, including a dead first owner.
 Native stores laser start Y before adding camera Y. Copying `start_pos` and
 then applying `+= camera_offset` preserves that store boundary; the previous
 binary addition produced `0x42e22ec1` where native publishes `0x42e22ec0`.
-The [laser evidence package](../../evidence/laser-owner-rounding-2026-09-10/README.md)
+The [laser evidence package](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/laser-owner-rounding-2026-09-10/README.md)
 checks the native operations, 438 full caller traces, an independent rounding
 oracle, and seven compiled defect cases. Another 1,064 plasma/beam/chain
 fixtures are replayed against this source. External Grim calls remain modeled.
@@ -1551,7 +1551,7 @@ store. Three pinned inputs expose one-bit X argument errors. Moving the existing
 subtractions before the call recovers native's extended X subtraction and its
 separately rounded Y sum.
 
-The [secondary-body evidence](../../evidence/secondary-body-rounding-2026-09-11/README.md)
+The [secondary-body evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/secondary-body-rounding-2026-09-11/README.md)
 checks all three native instruction windows, 1,194 complete caller fixtures,
 independent size/count/coordinate oracles, and six compiled reversion cases.
 All 1,502 previous plasma/beam/chain/laser fixtures also reproduce their pinned
@@ -1577,7 +1577,7 @@ minus corner. The shared width/screen temporaries in the previous source
 did not preserve those boundaries. Separate vector expressions per corner
 recover them; Assault retains its distinct wide head-sum behavior.
 
-The [conventional-corner proof](../../evidence/conventional-corner-rounding-2026-09-11/README.md)
+The [conventional-corner proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/conventional-corner-rounding-2026-09-11/README.md)
 verifies 4,118 native/candidate fixtures against a rational-arithmetic oracle.
 The previous source fails 61 of 1,280 discovery fixtures, all under diagnostic
 PC=64; both sources agree on that matrix under the game's PC=24 setting.
@@ -1607,7 +1607,7 @@ Moving the scale into the vector components and compound-adding the near
 offset to a player-position copy recovers the native boundaries. The
 far-end sine retains its separate float32 store before multiplication.
 
-The [laser trig proof](../../evidence/laser-trig-rounding-2026-09-11/README.md)
+The [laser trig proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/laser-trig-rounding-2026-09-11/README.md)
 passes **5,040** native/candidate fixtures at PC24 and PC64, with all **2,520**
 PC24 cases independently checked. The old source fails **19** cases, including
 **9 at PC24**. Seven local expression controls isolate the two premature
@@ -1641,7 +1641,7 @@ instructions against 3,021 native, and changes references from 471/0/13 to
 Both exactness flags remain false. Reference improvements are positional
 pairings; they do not independently establish five runtime reference fixes.
 
-The [source-style package](../../evidence/renderer-house-style-2026-09-13/README.md)
+The [source-style package](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/renderer-house-style-2026-09-13/README.md)
 contains 133 reconstructible controls and replays all 11,854 historical native
 renderer fixtures. Wider vector, scalar-reuse and indexed-owner transformations
 remain bounded controls, not a universal source-style rule.
@@ -1657,7 +1657,7 @@ Current source SHA-256:
 
 ## Fire overlay result and copy boundaries (2026-09-13)
 
-The [Fire lifetime proof](../../evidence/fire-overlay-lifetimes-2026-09-13/README.md)
+The [Fire lifetime proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/fire-overlay-lifetimes-2026-09-13/README.md)
 combines the earlier ten Y witnesses with the aggregate-copy control's three
 X witnesses. The complete `camera_offset + position - 32.0f` vector expression
 and explicit member-copy forms recover both coordinate words. Aggregate copies
@@ -1694,7 +1694,7 @@ billboard type is explicitly reloaded after the rotation callback, matching
 the load at `0x42552f`. Secondary positions remain computed before the color
 callback. Fire's slot-95 type gate is unchanged.
 
-The [position-boundary proof](../../evidence/renderer-position-boundaries-2026-09-13/README.md)
+The [position-boundary proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/renderer-position-boundaries-2026-09-13/README.md)
 preserves 83 bounded experiments plus the formatted retained control. All 656
 focused native cases pass, including 48 new billboard rounding witnesses. The
 old source fails 22 Fire and 24 billboard cases, all at PC64. Twelve transient
@@ -1721,7 +1721,7 @@ rounds the camera-plus-creature sum before subtracting the half-size. Native
 keeps each sum wide until subtraction. Only the endpoint draw's two coordinate
 arguments change; the widening expressions and corner updates remain intact.
 
-The [endpoint proof](../../evidence/ion-endpoint-rounding-2026-09-13/README.md)
+The [endpoint proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/ion-endpoint-rounding-2026-09-13/README.md)
 passes 524 native cases: 256 random geometries at PC24/PC64 and twelve small
 axis/weapon controls. The previous source fails 69 cases, all PC64 and all
 exclusively at the endpoint. Both strips agree throughout. For Ion Minigun,

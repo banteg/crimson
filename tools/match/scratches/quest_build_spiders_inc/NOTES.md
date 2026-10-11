@@ -52,7 +52,7 @@ This restores the native output-store order. Alignment improves from
 The explicit tradeoff is **106 candidate instructions versus 105 native**, up
 from 105. Both normalized and encoded-body exactness remain false.
 
-The [publication verifier](../../evidence/vc6-spiders-count-2026-09-10/README.md#current-candidate-delayed-count-publication)
+The [publication verifier](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-spiders-count-2026-09-10/README.md#current-candidate-delayed-count-publication)
 executes native, current, and historical early-field bodies for 15 widths.
 Every body instruction is covered; all 33 output records match an independent
 oracle, and the current body's 166 output writes match native order exactly.
@@ -61,7 +61,7 @@ order check in every case. This is bounded execution evidence, not proof over
 all inputs or alias arrangements. The remaining `MOV`/`SAR`/`ADD` lowering and
 schedule still differ from native `SAR`/`LEA`.
 
-The prior [count-lowering observer](../../evidence/vc6-spiders-count-2026-09-10/README.md)
+The prior [count-lowering observer](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-spiders-count-2026-09-10/README.md)
 remains replayable from its saved `early-field.cpp`. Its `canonical` label
 identifies that historical baseline. The following earlier measurements are
 historical; the current source hash is
@@ -393,6 +393,6 @@ under `msvc6.5 /O2 /GB`; this does not establish a source-level ceiling.
 
 ## Distinct VC6 build controls (2026-09-09)
 
-The [bounded address-allocation record](../../evidence/address-allocation-controls-2026-09-09/README.md)
+The [bounded address-allocation record](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/address-allocation-controls-2026-09-09/README.md)
 compares the current source across five independently fingerprinted VC6 builds.
 None improves this candidate; canonical source and configuration are unchanged.

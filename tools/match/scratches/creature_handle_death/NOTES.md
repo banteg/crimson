@@ -171,13 +171,13 @@ The checked-in mutation plans and recorded complete results bound these source f
 
 ## Distinct VC6 build controls (2026-09-09)
 
-The [bounded address-allocation record](../../evidence/address-allocation-controls-2026-09-09/README.md)
+The [bounded address-allocation record](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/address-allocation-controls-2026-09-09/README.md)
 compares the current source across five independently fingerprinted VC6 builds.
 None improves this candidate; canonical source and configuration are unchanged.
 
 ## Observed forward allocation (2026-09-10)
 
-The [allocation observation and counterfactual](../../evidence/vc6-death-allocation-2026-09-10/README.md)
+The [allocation observation and counterfactual](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-death-allocation-2026-09-10/README.md)
 traces a pointer-first member-read control through the original VC6 backend.
 Observation preserves the entire COFF object except its timestamp. Giving only
 the second index LEA an EAX preference in a separate diagnostic run produces

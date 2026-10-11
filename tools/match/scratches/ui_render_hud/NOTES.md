@@ -8,7 +8,7 @@ Native target: `crimsonland.exe` at `0x0041aed0` (7,081 bytes).
 
 Current result (2026-09-12): **1,824/1,824 instructions, 7,081/7,081 encoded
 body bytes, and 393/0/0 references**. The ordinary compiler configuration is
-unchanged. See the [exact recovery proof](../../evidence/hud-exact-2026-09-12/README.md).
+unchanged. See the [exact recovery proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/hud-exact-2026-09-12/README.md).
 
 ## Earlier recovery notes
 
@@ -334,7 +334,7 @@ classification does not make the function exact or relax its acceptance rules.
 
 ## Entry-relative stack-use map (2026-09-09)
 
-The [reproducible lifetime evidence](../../evidence/hud-lifetimes-2026-09-09/README.md)
+The [reproducible lifetime evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/hud-lifetimes-2026-09-09/README.md)
 joins all 263 checked stack instructions to concrete native ESP facts. It retains
 every access and source-line association, including branch-local reuse of -44,
 the heart/ammo/quest pair at -8/-4, and the later XP pair at -20/-16. Observed
@@ -353,7 +353,7 @@ moving XP position initialization earlier regress. Current 92.214912%,
 
 ## Direct stack-allocation trace (2026-09-10)
 
-The [stack-coloring observer](../../evidence/hud-stack-coloring-2026-09-10/README.md)
+The [stack-coloring observer](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/hud-stack-coloring-2026-09-10/README.md)
 now records the canonical compiler's 66 symbols and interference sets before
 allocation, then checks all 32 local descriptor offsets afterward. A
 scoped greedy model reproduces all nine groups, including the parameter;
@@ -378,7 +378,7 @@ one float for pulse speed, health ratio, and slide X raises its counted uses to
 66 symbols and 32 offsets. Both observed objects equal their ordinary compiled
 objects except for the COFF timestamp.
 
-The [observer package](../../evidence/hud-stack-coloring-2026-09-10/README.md#parameter-scan-and-source-controls)
+The [observer package](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/hud-stack-coloring-2026-09-10/README.md#parameter-scan-and-source-controls)
 also preserves 38 reconstructed, hash-checked source controls covering aggregates,
 scalar reuse, whole-body helper boundaries, position scopes, and clamp helpers.
 All were recompiled and remain non-exact; helper controls that do not inline
@@ -395,12 +395,12 @@ coordinate storage is neutral. Narrowing bonus-cursor scope preserves all
 1,824 instructions and 393 clean references but lowers alignment; shared-bar
 field updates and borrowed constructor arguments also fail to improve the
 canonical result. The source remains unchanged. See the
-[measured families](../../evidence/hud-stack-coloring-2026-09-10/README.md#coordinate-construction-and-bonus-cursor-controls)
+[measured families](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/hud-stack-coloring-2026-09-10/README.md#coordinate-construction-and-bonus-cursor-controls)
 for the reproducible transformations and their limits.
 
 ## Local-reuse controls (2026-09-12)
 
-The [16-way local-reuse matrix](../../evidence/hud-local-reuse-2026-09-12/README.md)
+The [16-way local-reuse matrix](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/hud-local-reuse-2026-09-12/README.md)
 records a temporary **96.271930%** candidate with **1,824 instructions**,
 prefix **100**, and **393/0/0 references**. Three float-local groups and the
 HUD/popup row lifetime interact to change stack coloring. The candidate remains
@@ -409,7 +409,7 @@ native stack offsets. Canonical source and configuration are unchanged.
 
 ## Exact HUD recovery (2026-09-12)
 
-The [exact recovery proof](../../evidence/hud-exact-2026-09-12/README.md)
+The [exact recovery proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/hud-exact-2026-09-12/README.md)
 reproduces **1,824/1,824 instructions, all 7,081 encoded body bytes, prefix
 1,824, and 393/0/0 references**, with no padding difference. Native compiler
 settings, reference aliases, math expressions, call order, and target extent

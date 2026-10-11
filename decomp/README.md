@@ -144,7 +144,7 @@ uv run crimson match scratch tools/match/scratches/console_clear_log --build 1.4
 uv run crimson match probe tools/match/scratches/console_clear_log --build 1.4.0 --source /tmp/candidate.cpp
 ```
 
-The [freeware setup record](../tools/match/evidence/freeware-setup-2026-09-30/README.md)
+The [freeware setup record](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/FREEWARE-SETUP-2026-09-30.md)
 holds the initial compiler baseline.
 
 The donor maps remain partial, but each image also has a `native.json` inventory

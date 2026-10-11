@@ -90,9 +90,9 @@ retains the compiler-generated local symbols and local relocations. Adjacent
 callbacks stay separate: shared widget types and native address order alone do
 not prove one original TU.
 
-`tools/match/evidence/reference-tu-audit-2026-09-08/` records registration addresses,
+[reference-tu-audit-2026-09-08](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/REFERENCE-TU-AUDIT-2026-09-08.md) records registration addresses,
 symbol bindings, and remaining reference classifications.
-`tools/match/evidence/lifecycle-ownership-2026-09-08/` records the callback-thunk
+[lifecycle-ownership-2026-09-08](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/LIFECYCLE-OWNERSHIP-2026-09-08.md) records the callback-thunk
 follow-up; its machine-readable evidence is
 `tools/native/translation_units/crimsonland.exe-lifecycle-evidence.json`.
 

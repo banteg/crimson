@@ -18,7 +18,7 @@ Plain float spellings stop at 96.73%. The sections below describe the earlier
 
 ## Exact recovery (2026-09-12)
 
-The [float-sine and vector-value proof](../../evidence/overlay-exact-2026-09-12/README.md)
+The [float-sine and vector-value proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/overlay-exact-2026-09-12/README.md)
 closes both remaining scheduling differences: **1,148/1,148 instructions,
 4,582/4,582 encoded body bytes, and 340/0/0 references**. Both normalized and
 encoded-body exactness are true.
@@ -34,7 +34,7 @@ unchanged. Current source SHA-256:
 
 ## Preceding ownership recovery (2026-09-12)
 
-The [size and target-position ownership proof](../../evidence/overlay-render-owners-2026-09-12/README.md)
+The [size and target-position ownership proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/overlay-render-owners-2026-09-12/README.md)
 raises alignment from **97.431432% to 99.303136%**, restores instruction parity
 at **1,148/1,148**, grows the exact prefix from 9 to **784**, and increases
 clean references from 333 to **338**. Both exactness flags remain false; the
@@ -448,7 +448,7 @@ float assignment is an independently compiled control: it loses this local
 encoded window but preserves the tested calls. Thus the tint change is
 instruction recovery, not a claimed runtime color defect.
 
-The [durable proof](../../evidence/overlay-tint-trail-2026-09-11/README.md)
+The [durable proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/overlay-tint-trail-2026-09-11/README.md)
 records 239 complete native/candidate caller traces, independent distance
 and count checks, 18 rejected distance-order/preceding-source cases, and the
 local encoded-window control. It retains the exact preceding source and
@@ -463,7 +463,7 @@ false. No matching rules, aliases, waivers, Python, or Zig code changed.
 
 ## Separate shadow and small-flash size owners (2026-09-11)
 
-The [size-ownership proof](../../evidence/overlay-size-ownership-2026-09-11/README.md)
+The [size-ownership proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/overlay-size-ownership-2026-09-11/README.md)
 separates the alive shadow and small muzzle flash from the shared `sprite_size`
 scalar. Direct stock-compiler observations show its counted uses falling from
 ten to six, letting the eight-use half-size precede it in allocation order.
@@ -498,7 +498,7 @@ sizes, operations, registers and other operands remain identical. Observed
 paired stack mismatches fall from 28 to 26 with no newly displaced access.
 The other four body-argument accesses remain at -40 instead of native -36.
 
-The [dead-body proof](../../evidence/overlay-dead-body-size-2026-09-11/README.md)
+The [dead-body proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/overlay-dead-body-size-2026-09-11/README.md)
 retains 851 matching native/before/current executions, all 199 unambiguous
 paired stack accesses, 23 reconstructible compiler controls and fresh
 stock-C2 traces. All 43 local descriptors are predicted in each source build;

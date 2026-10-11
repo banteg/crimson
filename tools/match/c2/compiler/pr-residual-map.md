@@ -1,13 +1,13 @@
 # projectile_render: map of the residual after the frame work (C2.DLL 8966)
 
-Follow-up, 2026-09-26: [the K2 alpha-copy recovery](../../evidence/remaining-storage-controls-2026-09-26/README.md)
+Follow-up, 2026-09-26: [the K2 alpha-copy recovery](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/remaining-storage-controls-2026-09-26/README.md)
 supersedes K2's unknown status in this historical map. Reusing the overlay's
 four-byte alpha wrapper in a tint constructor gives 97.75% raw, 99.40% with
 labels masked, and 544/0/0 references. A preserving C2 trace and a 76-byte
 relocation-aware region check confirm the store/load mechanism; the full
 function remains non-exact.
 
-Follow-up, 2026-09-28: [the id/window evidence](../../evidence/projectile-id-window-2026-09-28/README.md)
+Follow-up, 2026-09-28: [the id/window evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-id-window-2026-09-28/README.md)
 resolves K6 to K9 below. K6, K7 and K8 are one shift: the arc's inline `operator*` result parts need ids 288
 or 320 higher (mod 2048), which about nine or ten more 32-id chunks of reader IL anywhere after the sharpshooter
 loop give. K9 needs more FROUND nodes in the plague block before quad D. A padded build with no-op parentheses

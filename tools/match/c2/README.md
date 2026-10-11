@@ -98,18 +98,18 @@ the historical evidence scripts; the reusable commands only observe.
 ## Validation and provenance
 
 The implementation promotes the capture/replay C helpers from
-[the frontend replay experiment](../evidence/vc6-intermediate-replay-2026-09-09/README.md),
+[the frontend replay experiment](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-intermediate-replay-2026-09-09/README.md),
 the complete-operand observer from the timeline consumer investigation, and
 allocation hook locations from
-[the zero-splitting investigation](../evidence/vc6-timeline-zero-splitting-2026-09-12/README.md).
+[the zero-splitting investigation](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-timeline-zero-splitting-2026-09-12/README.md).
 Historical runners remain intact as experiment receipts; new work should use
 these commands instead of importing dated scripts or modifying observer strings.
 
-[Generalization validation](../evidence/c2-trace-generalization-2026-09-13/README.md)
+[Generalization validation](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/c2-trace-generalization-2026-09-13/README.md)
 covers an exact C control, an exact C++ control, repeated timeline compilation,
 a changed-source trace, and a deliberately wrong hook destination.
 
-[Spawn alias-budget recovery](../evidence/spawn-exact-2026-09-13/README.md)
+[Spawn alias-budget recovery](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/spawn-exact-2026-09-13/README.md)
 shows why a small instruction residual can have a distant cause. Additional
 value temporaries exhausted field-alias capacity and introduced scheduler
 store dependencies. That package extends the pinned observations to the actual

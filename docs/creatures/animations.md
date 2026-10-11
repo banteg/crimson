@@ -15,7 +15,7 @@ See also: [Creature pool struct](struct.md), [Atlas notes](../formats/atlas.md).
   rate stored in the type table (`creature_type_table`).
 
 - The phase wraps at **31** for the long strip or **15** for the short ping‑pong strip.
-- Historical evidence: `analysis/frida/creature_anim_trace_summary.json` (a Frida trace from before the
+- Historical evidence: [creature_anim_trace_summary.json](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/analysis/frida/creature_anim_trace_summary.json) (a Frida trace from before the
   tooling was retired); the recovered `creature_update_all` source is authoritative.
 
 ## Strip selection and frame mapping
@@ -28,7 +28,7 @@ The renderer (`creature_render_type`, `0x00418b60`) selects an atlas frame based
 - the creature `heading` (rotation)
 
 Frame selection is checked against
-[2,640 native PC24 witnesses](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-frame-selection-2026-09-11/README.md):
+[2,640 native PC24 witnesses](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-frame-selection-2026-09-11/README.md):
 
 - Flag `0x4` selects the short 8-frame ping‑pong strip.
 - Flag `0x40` forces the long strip even when `0x4` is set.
@@ -54,7 +54,7 @@ When `crimson.cfg` `shadows_enabled` is enabled (`config_shadows_enabled`) and t
 - alpha is derived from creature tint alpha (`tint_a * 0.4` in the decompile)
 - the sprite is slightly upscaled (~`size * 1.07`) and offset down-right before the main draw
 - for long-strip corpses (`death_timer < 0.0`), the shadow alpha decays much faster: `tint_a * 0.4 + death_timer * 0.5` (clamped to `>= 0`).
-- Historical evidence: `analysis/frida/creature_render_trace_summary.json` (a Frida trace from before the
+- Historical evidence: [creature_render_trace_summary.json](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/analysis/frida/creature_render_trace_summary.json) (a Frida trace from before the
   tooling was retired); the recovered `creature_render_type` source is authoritative.
 
 Each species finishes **all shadows before any body**, followed by its optional
@@ -62,7 +62,7 @@ hit flashes. The species order is zombie, spider_sp1, spider_sp2, alien, lizard.
 Body and flash dimensions use actual creature size; the Python port no longer
 clamps bodies to 16–128 pixels or ties their dimensions to atlas resolution.
 It preserves this ordering, including zero-alpha shadow submissions.
-See the [native pass-order and dimension audit](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-pass-order-2026-09-11/README.md).
+See the [native pass-order and dimension audit](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-pass-order-2026-09-11/README.md).
 
 ## Body and shadow colour arithmetic
 
@@ -76,7 +76,7 @@ same lower clamp. Transition alpha is multiplied last in both passes.
 The ports round each arithmetic operation at gameplay PC24 and pack each
 channel by truncating `channel * 255` and keeping its low byte. Without
 Energizer or corpse fading, tint `(0.8, 0.7, 0.6, 0.9)` at transition 0.8 becomes `(204, 178, 153, 183)`.
-See the [native colour audit](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-render-colors-2026-09-11/README.md)
+See the [native colour audit](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-render-colors-2026-09-11/README.md)
 for exact float words, packed bytes, old-port controls and proof limits.
 
 ## Hit flash with violence disabled
@@ -97,7 +97,7 @@ by the preceding body pass and do not flash.
 corpse hits. The active-creature update subtracts `frame_dt` while the timer
 is positive, before the Freeze branch, and allows it to cross below zero.
 Spawn allocation clears it. The Python port implements the flash. See the
-[native lifetime and draw audit](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-hit-flash-2026-09-11/README.md).
+[native lifetime and draw audit](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-hit-flash-2026-09-11/README.md).
 
 ## Creature flags
 

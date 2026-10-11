@@ -83,7 +83,7 @@ The vertical step is 64 units. Allocation proceeds down each column before
 moving to the next. The last child receives the requested heading and shared
 tail modifiers. Grids `0x14..0x17` also reach the native fallback that sets
 that child's health to 20; bronze grid `0x18` retains health 260 before
-difficulty modifiers. See the [native replay evidence](https://github.com/banteg/crimson/blob/master/tools/match/evidence/spawn-grid-dispatch-2026-09-11/README.md).
+difficulty modifiers. See the [native replay evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/spawn-grid-dispatch-2026-09-11/README.md).
 
 ## Algorithm sketch (high level)
 

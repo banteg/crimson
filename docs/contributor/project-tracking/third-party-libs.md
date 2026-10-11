@@ -19,8 +19,8 @@ local `game_bins/` copies (not checked in):
 uv run crimson match provenance --check
 ```
 
-The [library provenance notes](https://github.com/banteg/crimson/blob/master/analysis/library-provenance-notes.md)
-keep the dated per-function evidence: Rich-header builds, compiler profiles,
+The [0.14.6 version of this page](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/docs/contributor/project-tracking/third-party-libs.md)
+keeps the dated per-function evidence: Rich-header builds, compiler profiles,
 and the matcher and native-provider history for each module.
 
 ## DirectX 8.1 SDK (D3DX8)

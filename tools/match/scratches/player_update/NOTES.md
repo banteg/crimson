@@ -71,7 +71,7 @@ source-matching credit; the canonical source remains **94.8319%**, non-exact.
 The flag's negative priority alone does not explain its spill. The pressure
 probe records the precise split trigger; source controls which avoid it lose
 native pointer copies. See the reproducible probes, control ledger and limits
-in [the residual investigation](../../evidence/player-update-residuals-2026-09-27/README.md).
+in [the residual investigation](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/player-update-residuals-2026-09-27/README.md).
 
 ## Arithmetic grouping, turn lifetime and smoke storage (2026-09-27)
 
@@ -85,7 +85,7 @@ keyboard-turn branch retains the just-computed `current_turn_speed` for the
 body heading, then reloads the field for the aim heading. Smoke construction
 reuses the dead `scalar` home at frame-bottom `+0x10`.
 
-The [evidence package](../../evidence/player-update-arithmetic-2026-09-27/README.md)
+The [evidence package](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/player-update-arithmetic-2026-09-27/README.md)
 records 3,827 native execution fixtures, 11 relocation-aware encoded regions,
 three source ablations, 68 source-control builds and preserving C2 traces.
 The selected source agrees on every fixture; the starting source differed on
@@ -209,7 +209,7 @@ landed with the re-pinned grim provider archive (see the byte-key section).
 
 ## Shared sixteen-byte storage controls (2026-09-26)
 
-[Thirteen reproducible controls](../../evidence/remaining-storage-controls-2026-09-26/README.md#player_update-controls)
+[Thirteen reproducible controls](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/remaining-storage-controls-2026-09-26/README.md#player_update-controls)
 test the shared vector/color slot, later spawn reuse, Fire Cough vector roles,
 block scope, and the pending `turn_angle` form against `b8753fa7725a`.
 A shared sixteen-byte object recovers native's frame-bottom `0x38` slot but
@@ -2046,7 +2046,7 @@ at `0x00415753..0x004157be`, taken before Alternate Weapon and consumed
 after the swap at `0x0041590e..0x00415918`. The recovered scratch already
 preserves both lifetimes. The corresponding port correction and validation
 are documented in the
-[player/projectile boundary evidence](../../evidence/player-projectile-boundaries-2026-09-08/README.md).
+[player/projectile boundary evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/PLAYER-PROJECTILE-BOUNDARIES-2026-09-08.md).
 
 ## Native aim-point execution correction (2026-09-11)
 
@@ -2055,7 +2055,7 @@ local lifetime, preserving its wide x87 result through the PC=24 multiply.
 Native stores sine before scaling but does not store cosine there. The old
 shared `move_delta.x` store produced observable aim differences.
 
-`tools/match/evidence/player-aim-direction-2026-09-11/` contains the original
+[player-aim-direction-2026-09-11](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/player-aim-direction-2026-09-11) contains the original
 image/C++ runner, pinned before source, 3,738-case results, and shared port
 witnesses. Current ordered calls and observed final state agree in every case;
 the old C++ source differs in 46. Python gameplay/input and Zig input also
@@ -2085,7 +2085,7 @@ on the triggering shot. Normal mode ignores injected replay flags. Four
 64-tick fresh recordings agree across Python and Zig on all trace channels;
 normal-mode G on/off have identical gameplay state/RNG channels.
 
-See `tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/` for pinned
+See [player-fire-bullets-shortcut-2026-09-11](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/player-fire-bullets-shortcut-2026-09-11) for pinned
 receipts, shared native witnesses, and reproduction commands. CRD/CDT payload
 versions were then 19 and Frida raw was 27 under the current-only format
 contract; the Frida capture has since been removed.
@@ -2115,7 +2115,7 @@ candidate. The eight native instructions not visited are listed in the
 receipt: six negative CRT-remainder adjustments and two point-click sentinel
 stack pops. This is bounded coverage, not a claim of universal unreachability.
 
-See `tools/match/evidence/player-point-frame-2026-09-11/` for the exact source
+See [player-point-frame-2026-09-11](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/player-point-frame-2026-09-11) for the exact source
 transformation, generated inputs, pinned hashes, coverage, and reproduction
 command. The existing aim negative control remains different in 46/3,738
 cases; current aim and shortcut receipts are refreshed to this body.
@@ -2142,7 +2142,7 @@ data-flow and storage recovery, not score. Both exactness flags remain false.
 Source SHA is `9dce9f8ec89c75fa1dfa686271df9ac57100ffa24f47a779e4ff6aeb5c7796e1`;
 body SHA is `dca788c750812b219d28d3056b837608a7725b1b184a91fd8c13632d712cc6aa`.
 
-See `tools/match/evidence/player-fire-cough-2026-09-14/` for 31 reconstructible
+See [player-fire-cough-2026-09-14](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/player-fire-cough-2026-09-14) for 31 reconstructible
 compiler controls and the native/before/after execution proof. These are
 bounded observations, not a new whole-function match or newly demonstrated
 gameplay bug. The previous-source overlay is recorded separately in the
@@ -2178,7 +2178,7 @@ against 4,206; ratio is 64.4997583374%, prefix 7, and both exactness flags remai
 false. Source SHA is `c982bef1d0b1aa82f7aa2f2488fbe0df72959e8d9ffa31f9a69f89762234a72c`;
 body SHA is `5fe8187cade5f80168078f7bd4dccd8ec573924a6919e5b322f1a4300adc6473`.
 
-See `tools/match/evidence/player-hot-tempered-2026-09-14/` for thirteen controls,
+See [player-hot-tempered-2026-09-14](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/player-hot-tempered-2026-09-14) for thirteen controls,
 the 3,827-case native/before/after execution receipt (zero differences), frame
 checks and preserving C2 traces. The tracer's raw labels are function-relative
 here: seven blank lines before the function move physical lines but leave all
@@ -2210,7 +2210,7 @@ and heading together keeps early computation plus X/Y/`fxch`, but the
 subtract is still scheduled too early and the heading home is wrong. Denying
 all three still produces Y/X in later passes. None is a source candidate.
 
-The package `tools/match/evidence/player-angle-propagation-2026-09-22/`
+The package [player-angle-propagation-2026-09-22](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/player-angle-propagation-2026-09-22)
 retains the observer, bounded stock-source controls, complete frame-relative
 angle windows, decision checks and corruption controls. Separate array,
 struct and union storage, a double destination using `atan2f`, and a scalar

@@ -25,7 +25,7 @@ earlier residual analysis.
 
 ## Plain comparison temporary: one-instruction diagnostic residual (2026-09-28)
 
-[The new source-only witness](../../evidence/quest-plain-guard-2026-09-28/README.md)
+[The new source-only witness](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/quest-plain-guard-2026-09-28/README.md)
 reaches **99.130435%**, 115/115 instructions, prefix 88, 13/0/0 references,
 and the native 28-byte frame. It has the correct `esi + 12` pointer, dead
 pointer/zero store pair, and shared EBX zero. Only the y load differs:
@@ -45,7 +45,7 @@ the canonical function in that source context before resuming these probes.
 
 ## 1.9.8 sources and the 8966 dead-store route (2026-09-28)
 
-[These sources](../../evidence/quest-history-sources-2026-09-28/README.md)
+[These sources](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/quest-history-sources-2026-09-28/README.md)
 compile under C2 9044 exactly to the 1.9.8 body. In each, the group entry is
 re-derived from `entry_index` (or absent), and at least one spawn-loop field is
 read through the index. Some of them compile under 8966 to native's +0 anchor,
@@ -65,7 +65,7 @@ canonical source is unchanged at 91.228070%.
 
 ## Historical bodies and source controls (2026-09-28)
 
-[The historical comparison](../../evidence/quest-history-controls-2026-09-28/README.md)
+[The historical comparison](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/quest-history-controls-2026-09-28/README.md)
 finds the same 115-instruction address-masked body, including the pointer-store
 triplet, in versions 1.9.1, 1.9.9 and the 1.9.93 target. Version 1.9.8 has a
 different 113-instruction body without that triplet and carries the 9044
@@ -147,7 +147,7 @@ reference parameters, sub-object methods, fully indexed and mixed index/pointer
 forms, vec2 component loops, null guards, and `volatile` spellings). Canonical source
 is unchanged.
 
-Latest follow-up: [implicit copy aliases and stack sharing](../../evidence/timeline-copy-aliases-2026-09-22/README.md)
+Latest follow-up: [implicit copy aliases and stack sharing](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/timeline-copy-aliases-2026-09-22/README.md)
 compares a four-byte end-pointer copy with the earlier pair and guard witnesses.
 The end-pointer copy remains in two pointer-load and two spawn-call alias sets,
 preventing it from sharing spread's slot. Temporarily removing only that alias
@@ -155,7 +155,7 @@ membership during allocation recovers the 28-byte frame and ordered pointer/zero
 stores, while also changing argument scheduling. All findings are diagnostic;
 canonical source and configuration remain unchanged.
 
-The earlier [four-byte pointer-store evidence](../../evidence/timeline-four-byte-home-2026-09-13/README.md)
+The earlier [four-byte pointer-store evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/timeline-four-byte-home-2026-09-13/README.md)
 reproduces the native dead pointer store with a 28-byte frame using stock VC6.
 A redundant guard loses its last pointer read only after copy cleanup; the
 remaining intrinsic lowers to the dead store. Reversing the guard operands
@@ -321,13 +321,13 @@ and results from this run remain in `/private/tmp/timeline-review`.
 
 ## Distinct VC6 build controls (2026-09-09)
 
-The [bounded address-allocation record](../../evidence/address-allocation-controls-2026-09-09/README.md)
+The [bounded address-allocation record](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/address-allocation-controls-2026-09-09/README.md)
 compares the current source across five independently fingerprinted VC6 builds.
 None improves this candidate; canonical source and configuration are unchanged.
 
 ## Template-pointer removal trace (2026-09-10)
 
-The [verified C2 trace](../../evidence/vc6-timeline-address-2026-09-10/README.md)
+The [verified C2 trace](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-timeline-address-2026-09-10/README.md)
 locates removal of the local template-pointer `LEA` and `COPY` inside
 `C2+0x306c1`, before global allocation finishes. The preserving observer emits
 the same whole COFF object as normal compilation, except for the timestamp.
@@ -341,7 +341,7 @@ body; no new source match is claimed.
 
 ## Redundant-store research (2026-09-11)
 
-The [web research and stock-VC6 positive control](../../evidence/vc6-redundant-stores-2026-09-11/README.md)
+The [web research and stock-VC6 positive control](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-redundant-stores-2026-09-11/README.md)
 identify three adjacent overwritten stack stores in the byte-exact
 `dx_get_version_from_dxdiag` reconstruction. They arise from intrinsic zeroing
 followed by field assignments; explicit `memset` remains exact. This supplies a
@@ -384,7 +384,7 @@ where the canonical pointer is removed. These controls leave the target open.
 
 ## Dxdiag pass comparison (2026-09-11)
 
-The [preserving two-function trace](../../evidence/vc6-store-pass-comparison-2026-09-11/README.md)
+The [preserving two-function trace](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-store-pass-comparison-2026-09-11/README.md)
 locates dxdiag's intrinsic expansion in `C2+0x29511`. Its four zeroing stores
 have memory operands; the following assignments to the same field symbols
 temporarily have register/temporary operands until `C2+0x26d75`. All eight
@@ -402,7 +402,7 @@ timeline pointer home store remains unexplained.
 
 ## GPT Pro hypothesis tests (2026-09-11)
 
-The [consumer and predicate traces](../../evidence/vc6-timeline-consumers-2026-09-11/README.md)
+The [consumer and predicate traces](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-timeline-consumers-2026-09-11/README.md)
 test the consultation's proposed mechanisms. The canonical heading/ID load
 nodes still use derived bases before `C2+0x306c1`; both are rebased to entry
 inside that routine. The earlier-rewrite/later-definition-cleanup explanation
@@ -473,7 +473,7 @@ python3 tools/match/scratches/quest_spawn_timeline_update/source-shape-controls-
 
 ## Second pointer-removal route (2026-09-12)
 
-An [isolated diagnostic replay](../../evidence/vc6-timeline-late-removal-2026-09-12/README.md)
+An [isolated diagnostic replay](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-timeline-late-removal-2026-09-12/README.md)
 changes exactly one template-pointer eligibility return at `C2+0x309bb`.
 The LEA then survives `0x306c1`, but is removed inside the later `0x32216`:
 its node identity disappears and the ID load is rebased to the entry. Additional
@@ -492,7 +492,7 @@ references are unchanged.
 
 ## Rematerialization and actual cursor motion (2026-09-12)
 
-The [follow-up trace and source controls](../../evidence/vc6-timeline-rematerialization-2026-09-12/README.md)
+The [follow-up trace and source controls](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-timeline-rematerialization-2026-09-12/README.md)
 identify the late path as `0x32216 -> 0x526d3 -> 0x527b2 -> 0x1f578`.
 For the surviving canonical LEA, the candidate collector succeeds and the late
 predicate accepts substitution. Under the pinned `/O2` profile, its use-cost
@@ -518,7 +518,7 @@ two `/ZI` controls fail because `/ZI` conflicts with `/O2`.
 
 ## Source-produced dead pointer store (2026-09-12)
 
-The [next witness](../../evidence/vc6-timeline-pointer-home-2026-09-12/README.md)
+The [next witness](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-timeline-pointer-home-2026-09-12/README.md)
 reproduces `lea edi, [esi+0xc]; mov [esp+0x10], edi; mov [esp+0x10], ebx`
 with the stock compiler. A byte loop copies a two-pointer object, but only the
 last copied member is used. Global optimization recognizes a copy intrinsic;
@@ -543,7 +543,7 @@ positives from the historical equal-slot screen; the adjacent witness passes.
 
 ## Residual decomposition and stack owner (2026-09-12)
 
-The [decomposition controls](../../evidence/vc6-timeline-decomposition-2026-09-12/README.md)
+The [decomposition controls](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-timeline-decomposition-2026-09-12/README.md)
 separate pointer behavior, frame layout, and zero-register choices. A preserving
 trace of `0x33b7b` shows that `copied` reserves eight bytes at allocator offset
 -32, sharing its start with four-byte `spread`. The next vector starts at -24.
@@ -569,7 +569,7 @@ unchanged. Explicit gate checks and full replay evidence are retained.
 
 ## Zero splitting and counter-lifetime witness (2026-09-12)
 
-The [allocation follow-up](../../evidence/vc6-timeline-zero-splitting-2026-09-12/README.md)
+The [allocation follow-up](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-timeline-zero-splitting-2026-09-12/README.md)
 follows replacement zero temporaries instead of assuming the initial seed's
 arena address stays meaningful. Preserving replays show canonical eventually
 retaining an eight-use zero in EBX. The pointer-copy witness splits its nine-use
@@ -619,7 +619,7 @@ probe; canonical source and configuration are unchanged.
 
 ## Implicit copy aliases and frame interference (2026-09-22)
 
-The [new allocation evidence](../../evidence/timeline-copy-aliases-2026-09-22/README.md)
+The [new allocation evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/timeline-copy-aliases-2026-09-22/README.md)
 does not supersede the September 13 stock four-byte guard witness. It explains
 why another four-byte copy, retained by consuming its byte-loop end pointer,
 still needs a separate slot. One explicit store is not its full lifetime:

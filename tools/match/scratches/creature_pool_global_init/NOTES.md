@@ -11,7 +11,7 @@ already recovered at offset `0x74` in `player_state_t`.
 
 ## Complete sentinel storage (2026-09-09)
 
-The [native write-footprint proof](../../evidence/creature-pool-sentinel-2026-09-09/README.md)
+The [native write-footprint proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-pool-sentinel-2026-09-09/README.md)
 confirms that the last constructed record occupies `0x004aa338..0x004aa3d0`.
 The shared declaration, compiled data object, imported type, ABI size assertion,
 and data-definition extent now include all 385 records. Gameplay scan bounds

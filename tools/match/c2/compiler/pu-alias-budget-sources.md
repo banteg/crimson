@@ -149,7 +149,7 @@ five add 2 each.
   Its math uses the `f` overloads throughout.
 - **Native Fire Cough.** Native calls the out-of-line subtraction 0x417640 and consumes the result
   through `eax` (`fld [eax]; fld [eax+4]; fxch; fpatan`). That is `VEC2_Angle(a - b)`
-  ([vector-return-contract evidence](../../evidence/vector-return-contract-2026-09-08/README.md)).
+  ([vector-return-contract evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vector-return-contract-2026-09-08/README.md)).
 - **Native aim updates.** The native aim updates build a temporary and copy it with integer moves at
   nine sites (`fstp [tmp]; mov r,[tmp]; mov [edi+0x50],r`). That is `player->aim = vec2_t(...)`.
 - **The inline budget does not explain the out-of-line helpers.** `inline_budget_trace.py` shows that

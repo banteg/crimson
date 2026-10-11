@@ -41,7 +41,7 @@ document the search that isolated the mover gate.
 
 ## Causal layout isolation (2026-09-22)
 
-The [causality verifier](../../evidence/bonus-pick-layout-causality-2026-09-22/README.md)
+The [causality verifier](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/bonus-pick-layout-causality-2026-09-22/README.md)
 reproduces all 77 reachable blocks in VC6's early reverse-postorder rebuild.
 Dominance and acyclicity checks establish that changing successor visitation
 order in this captured graph cannot place stage five after the retry latch.
@@ -63,7 +63,7 @@ decision change, rather than rank alternative syntax by fuzzy score.
 
 ## Stage-five-only diagnostic and early ordering (2026-09-13)
 
-The [preserving path follow-up](../../evidence/bonus-pick-layout-trace-2026-09-13/README.md#isolating-stage-5-and-locating-the-early-reorder)
+The [preserving path follow-up](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/bonus-pick-layout-trace-2026-09-13/README.md#isolating-stage-5-and-locating-the-early-reorder)
 now isolates a stage-5-only range move. Inverting the outer hardcore-stage-2
 guard in the duplicated-Freeze-prefix control prevents stage 4 from moving with
 it. The control remains non-exact: 169 instructions, seven extra filter
@@ -78,7 +78,7 @@ Manual source order therefore does not bypass the residual. The canonical
 
 ## Preserving block-layout trace (2026-09-13)
 
-[The late-pass replay](../../evidence/bonus-pick-layout-trace-2026-09-13/README.md)
+[The late-pass replay](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/bonus-pick-layout-trace-2026-09-13/README.md)
 locates the motion in the duplicated-filter controls at C2+0x3663c, through
 the range-move helper called at C2+0x367ce. Canonical source does not invoke that
 move. Its stage-4 skip destination has a conditional predecessor; the controls
@@ -95,7 +95,7 @@ canonical source, flags, and exactness remain unchanged.
 ## Instruction-graph proof (2026-09-11)
 
 The independently replayable comparison in
-`tools/match/evidence/bonus-pick-flow-graph-2026-09-11/` maps all 156
+[bonus-pick-flow-graph-2026-09-11](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/bonus-pick-flow-graph-2026-09-11) maps all 156
 non-jump instructions one-to-one, preserves the taken and fall-through edges
 of every conditional, covers all six unconditional jumps on each side, and
 verifies all 20 reference instructions at their graph-mapped positions.
@@ -246,7 +246,7 @@ The checked-in mutation plans and recorded complete results bound these source f
 
 ## Cold-edge source replay (2026-09-11)
 
-[The replay package](../../evidence/bonus-pick-cold-edge-2026-09-11/README.md)
+[The replay package](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/bonus-pick-cold-edge-2026-09-11/README.md)
 records 166 compiling source and compiler-option controls with reconstructible
 edits and a verifier. They include acceptance and retry ownership, stage/bonus
 predicates, assigned rejection flags, helper return forms, named constants,

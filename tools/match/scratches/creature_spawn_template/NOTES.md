@@ -1059,7 +1059,7 @@ A separate verifier checks 100 PC24 grid witnesses against both real ports.
 
 ## 2026-09-13: complete native match
 
-The [exact recovery package](../../evidence/spawn-exact-2026-09-13/README.md)
+The [exact recovery package](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/spawn-exact-2026-09-13/README.md)
 reconstructs the full source progression and 254 compiling controls. Both
 normalized and relocation-aware encoded-body exactness now pass: 3,159
 instructions, 14,099 bytes, 363 references, zero residuals and zero padding.

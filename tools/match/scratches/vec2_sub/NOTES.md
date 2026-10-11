@@ -16,7 +16,7 @@ no COFF symbols or exports. A VC6 member `operator-` returning a two-float
 object by value produces the same 26 native bytes: its hidden return buffer
 occupies the destination slot and its right-hand reference occupies the other
 slot. Ordinary composed callers can also be byte-identical. See the
-[reproducible contract controls](../../evidence/vector-return-contract-2026-09-08/README.md).
+[reproducible contract controls](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vector-return-contract-2026-09-08/README.md).
 
 Binary Ninja now has the recovered `__thiscall` convention and a typed
 `vec2f_t *self`; it previously misrepresented `this` as a third cdecl stack

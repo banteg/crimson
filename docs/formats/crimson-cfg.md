@@ -223,7 +223,7 @@ recording's setting.
 Native `config_ensure_file` sets this byte to `1` when creating a missing file;
 the modern port configuration defaults to `0`. The branch audit and bounded
 native execution evidence are in
-[the violence-disabled evidence package](https://github.com/banteg/crimson/tree/master/tools/match/evidence/violence-disabled-2026-09-11).
+[the violence-disabled evidence package](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/violence-disabled-2026-09-11).
 
 ## Keybind Block Structure
 

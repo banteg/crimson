@@ -83,7 +83,7 @@ as C1 wrote it.
    (offset, size) under a parent class gets a new id, and overlapping fields of a parent get each
    other's bits. The walk stops adding fields once `0x400 - g_alias_class_count` fields exist.
    Bit indices saturate at 31 (read). `creature_update_all` uses 8 to 10 fields of a 616 budget,
-   so the budget is not a factor here, unlike [spawn-exact](../../evidence/spawn-exact-2026-09-13/README.md).
+   so the budget is not a factor here, unlike [spawn-exact](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/spawn-exact-2026-09-13/README.md).
 
 `creatures[i].field` reaches alias analysis as `[(creatures + i*152) + off]`. The base temp's
 definition is `add(temp, off)`, not `add(pointer, const)`, so it never gets a field and keeps the

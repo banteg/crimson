@@ -90,9 +90,8 @@ extend-ignore = [
 # Quest builders share QuestBuilder's signature; most ignore rng.
 # Fixtures, mock side effects and protocol fakes take arguments they don't use.
 "tests/**" = ["ARG"]
-# Frozen evidence and review probes keep the style they were recorded with.
+# Frozen analysis scripts keep the style they were recorded with.
 "analysis/**" = ["ARG", "B905", "C4", "FURB", "I001", "ISC", "RET", "SIM"]
-"tools/match/evidence/**" = ["ARG", "B905", "C4", "FURB", "I001", "ISC", "RET", "SIM"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = [

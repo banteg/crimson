@@ -40,7 +40,7 @@ hold-timer copies (`tools/match/c2/compiler/`, `scripts/c2/alias_trace.py`):
 
 ## Earlier state: pool base pointer (2026-09-22)
 
-[The pool-base evidence](../../evidence/creature-pool-base-2026-09-22/README.md)
+[The pool-base evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-pool-base-2026-09-22/README.md)
 recovers native scaled creature addressing with a stock source form: a local
 `creature_t *creatures = creature_pool;` indexed as `creatures[i].field`.
 VC6 forms one shared `152*i` offset and shifts it when `creature_pool[i]` is
@@ -77,7 +77,7 @@ Residual signature
   corpse queue; whether an inlined helper owns the native pointer lifetimes.
 ```
 
-[Flag test on 2026-09-23](../../evidence/creature-pointer-flags-2026-09-23/README.md)
+[Flag test on 2026-09-23](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-pointer-flags-2026-09-23/README.md)
 rejects operand flag `0x10` as the retention cause: it stays set on
 `&target_player` through allocation, yet that pointer is never formed, and
 the five field pointers lose it and are rebuilt. Routing all six native
@@ -86,7 +86,7 @@ contact reads through the declared pointer also forms no EBX pointer.
 The older sections below describe the pre-pool-base body; their metrics
 are superseded.
 
-[Independent review on 2026-09-23](../../evidence/creature-pool-review-2026-09-23/README.md)
+[Independent review on 2026-09-23](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-pool-review-2026-09-23/README.md)
 supports keeping this source and the base-bound mismatch waiver. All 3,480
 execution fixtures and 12 additional callback-mutation cases agree. Current
 C2 controls show that early-only health retention is byte-neutral; blocking
@@ -770,7 +770,7 @@ the updated experiment log SHA-256 is
 
 ## Native execution recovery (2026-09-11)
 
-The [replayable native/candidate audit](../../evidence/creature-state-publication-2026-09-11/README.md)
+The [replayable native/candidate audit](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-state-publication-2026-09-11/README.md)
 compares 2,472 cases under both 24-bit and 64-bit x87 precision. The preceding
 source differs in 460 state/callback traces and 886 ordered-write traces; the
 recovered source has no differences in the recorded observations.
@@ -798,7 +798,7 @@ prove whole-function equivalence or remove the remaining compiler/reference work
 
 ## Interaction distance and contact reload (2026-09-13)
 
-The [interaction proof](../../evidence/creature-interaction-boundaries-2026-09-13/README.md)
+The [interaction proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-interaction-boundaries-2026-09-13/README.md)
 revisits the later distance with the corrected direct-float length helper.
 The earlier SDK sweep used the subsequently disproven reciprocal helper, so
 its negative results did not answer this source form. Native stores with
@@ -821,7 +821,7 @@ remain open.
 
 ## Corpse half-size vectors (2026-09-13)
 
-The [corpse-vector proof](../../evidence/creature-corpse-vectors-2026-09-13/README.md)
+The [corpse-vector proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-corpse-vectors-2026-09-13/README.md)
 recovers a previously missing value boundary in both queue arms. Native stores
 half-size as a float before the X subtraction, while Y consumes the retained
 x87 half-size. Constructing a half-size vector and subtracting it from position
@@ -903,7 +903,7 @@ flags, and the verified 58.55% body are unchanged.
 
 ## 2026-09-22: split offset units from pointer retention
 
-[The preserving trace and four causal controls](../../evidence/creature-offset-units-2026-09-22/README.md)
+[The preserving trace and four causal controls](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-offset-units-2026-09-22/README.md)
 show that the extra index shift predates register allocation: C2 shares
 `152 * index` across 105 address uses, then lowers it to two LEAs and a shift.
 A diagnostic IR control restores `19 * index` plus scale-eight addresses, but
@@ -923,7 +923,7 @@ cascade” alone does not explain it. Canonical source and match credit unchange
 
 ### Health-pointer follow-through (2026-09-22)
 
-[Seven controlled replays](../../evidence/creature-pointer-rematerialization-2026-09-22/README.md)
+[Seven controlled replays](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-pointer-rematerialization-2026-09-22/README.md)
 now locate the later routes: allocation analysis (`0x32216`), spill handling
 (`0x33230`), and the final allocation loop all invoke the same reconstruction
 predicate at distinct callsites. Suppressing the first three removal routes

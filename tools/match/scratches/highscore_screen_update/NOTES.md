@@ -20,7 +20,7 @@ EDI candidate. The section below describes the earlier `double` form.
 
 The canonical scratch now matches all **2,004 instructions / 8,026 bytes**,
 with references **639/0/0** and both exactness flags true. The independent
-[complete proof](../../evidence/highscore-float-owners-2026-09-22/README.md)
+[complete proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/highscore-float-owners-2026-09-22/README.md)
 checks every positional reference and literal branch destination without
 excluding any range or adding bindings/aliases. Source SHA:
 `2a80e0b92021ecdfa8fbf692791c7d42a5e3c4a48590fbf75e50093df574ba2f`.
@@ -616,7 +616,7 @@ the 23-record ledger SHA-256 is
 
 The five native pool reset loops use signed branches. Replacing the
 reconstructed pointer walks with one shared signed index produces exactly five
-`jb` to `jl` opcode changes. The [locality proof](../../evidence/highscore-reset-loops-2026-09-13/README.md)
+`jb` to `jl` opcode changes. The [locality proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/highscore-reset-loops-2026-09-13/README.md)
 verifies all other encoded bytes and relocations are unchanged, and compares
 the complete 25-instruction native window with all ten positional references.
 
@@ -628,7 +628,7 @@ nor encoded exactness is claimed. Retained source SHA-256:
 ## Residual decomposition and signed date selection (2026-09-13)
 
 A fresh pass separates row-loop entry and dispatch, panel copies, filter
-arithmetic, and stack ownership. The [reproducible evidence](../../evidence/highscore-residual-decomposition-2026-09-13/README.md)
+arithmetic, and stack ownership. The [reproducible evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/highscore-residual-decomposition-2026-09-13/README.md)
 retains 66 bounded source controls and a preserving C2 allocator trace. A
 pretested loop restores the native entry layout and earlier shared Quest
 constant, but its higher score still has an extra reference mismatch and a
@@ -651,7 +651,7 @@ encoded exactness remain false. Source SHA-256:
 
 ## Row induction use counts and flag spelling (2026-09-22)
 
-The [row-induction proof](../../evidence/highscore-row-induction-2026-09-22/README.md)
+The [row-induction proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/highscore-row-induction-2026-09-22/README.md)
 recovers a single-entry signed indexed loop, separate Rush/Quest argument
 preparation, and the native flags-based record cursor. Writing mask 5 as
 separate bit-1 and bit-4 tests changes the compiler's induction use-list count
@@ -676,7 +676,7 @@ post-increment fixes that lifetime. Source SHA-256:
 
 ## Prefix lifetime across the row clear (2026-09-22)
 
-The [prefix-lifetime proof](../../evidence/highscore-prefix-lifetime-2026-09-22/README.md)
+The [prefix-lifetime proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/highscore-prefix-lifetime-2026-09-22/README.md)
 identifies a stock source control for the remaining row allocation: initialize
 `prefix_length` before `memset`. Its definition crosses the inline clear before
 allocation, excluding ECX and EDI and leaving EBX. The final scheduler still
@@ -704,7 +704,7 @@ sequence now obtainable without register hints or patched compiler decisions.
 
 ## Filter ownership and large-frame ordering (2026-09-22)
 
-The [filter-storage evidence](../../evidence/highscore-filter-storage-2026-09-22/README.md)
+The [filter-storage evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/highscore-filter-storage-2026-09-22/README.md)
 predicts all 182 stack-symbol offsets across five preserving C2 traces. Their
 groups total 129 bytes before alignment, triggering C2 `0x61bf0` to sort by
 uses per byte before allocating the 132-byte frame. Middle-pivot quicksort tie
@@ -728,7 +728,7 @@ initialization stage, not further declaration-order or score-only tuning.
 
 ## Floating-expression reuse and finite counterexamples (2026-09-22)
 
-The [float-reuse evidence](../../evidence/highscore-float-reuse-2026-09-22/README.md)
+The [float-reuse evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/highscore-float-reuse-2026-09-22/README.md)
 finds a semantic residual in the canonical profile label: `Y + 100` is not
 equivalent to native `(Y + 114) - 14` at 24-bit x87 precision. The cumulative
 row/filter witness has the opposite problem at 53/64-bit precision because C2
@@ -759,7 +759,7 @@ than another score-based claim of exhaustion.
 
 ## Stock label-copy and filter regions (2026-09-22)
 
-The [label-bitcopy evidence](../../evidence/highscore-label-bitcopy-2026-09-22/README.md)
+The [label-bitcopy evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/highscore-label-bitcopy-2026-09-22/README.md)
 recovers native's post-version-call EDI load through a four-byte member copy
 defined in both version branches. Unlike a named float assignment, it removes
 the extra stack home; unlike a two-member vector copy, it does not copy unused
@@ -790,7 +790,7 @@ regions must be preserved, not another score-only source sweep.
 
 ## Quest arms and row operand ordering (2026-09-22)
 
-The [quest-ordering evidence](../../evidence/highscore-quest-ordering-2026-09-22/README.md)
+The [quest-ordering evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/highscore-quest-ordering-2026-09-22/README.md)
 explains the distant allocation change. C2 sorts row additions using a key
 whose low word includes the generated cursor symbol number. The quest edit
 changes that number from `0xb2a` to `0xb28`, lowering the memory key from
@@ -819,7 +819,7 @@ newly verified region; full UI execution is not established.
 
 ## Saved-state ownership and scheduler windows (2026-09-22)
 
-The [state-owner evidence](../../evidence/highscore-state-owners-2026-09-22/README.md)
+The [state-owner evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/highscore-state-owners-2026-09-22/README.md)
 recovers saved-state restoration, right-panel/filter setup, the shared status
 tail, and the two batch-stage zero stores. Its stock `stage-reference` witness
 has 2,004 instructions, 8,026 bytes, prefix 108, references 639/0/0, and both

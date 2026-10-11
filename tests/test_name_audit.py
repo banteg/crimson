@@ -203,10 +203,11 @@ def test_collect_resolved_name_references_keeps_identity_canonical_elsewhere(
 def test_history_and_marked_lines_keep_their_names(tmp_path: Path) -> None:
     (tmp_path / "docs").mkdir()
     (tmp_path / "docs" / "page.md").write_text("old_name\nold_name  # name-audit: keep\n", encoding="utf-8")
-    evidence = tmp_path / "tools" / "match" / "evidence" / "probe-2026-09-11"
-    evidence.mkdir(parents=True)
-    (evidence / "notes.md").write_text("old_name\n", encoding="utf-8")
-    (tmp_path / "tools" / "match" / "EXACT-MATCHES-2026-09-07.md").write_text("old_name\n", encoding="utf-8")
+    history = tmp_path / "analysis" / "historical"
+    history.mkdir(parents=True)
+    (history / "notes.md").write_text("old_name\n", encoding="utf-8")
+    (tmp_path / "tools" / "match").mkdir(parents=True)
+    (tmp_path / "tools" / "match" / "PLAUSIBILITY-AUDIT-2026-09-25.md").write_text("old_name\n", encoding="utf-8")
     scratch = tmp_path / "tools" / "match" / "scratches" / "new_name"
     scratch.mkdir(parents=True)
     (scratch / "NOTES.md").write_text("old_name\n", encoding="utf-8")

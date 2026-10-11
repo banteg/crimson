@@ -1,6 +1,6 @@
 # Residual work ledger
 
-**Closed by the [exact recovery](../../evidence/projectile-exact-2026-09-13/README.md):**
+**Closed by the [exact recovery](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-exact-2026-09-13/README.md):**
 2,203 instructions, 8,409 encoded bytes, 507 positional references, 206 branch
 destinations and all 388 stack accesses agree. No residual or padding is excluded
 from the final matcher result. The compiler and reference configuration are
@@ -16,11 +16,11 @@ distinct bug; branch displacements and stack homes can reflect another region.
 
 The reproducible ledger, source steps, native receipts, and instruction-window
 audit are in
-[`projectile-residual-decomposition-2026-09-13`](../../evidence/projectile-residual-decomposition-2026-09-13/README.md).
-The [primary/secondary continuation](../../evidence/projectile-primary-secondary-residuals-2026-09-13/README.md)
+[`projectile-residual-decomposition-2026-09-13`](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-residual-decomposition-2026-09-13/README.md).
+The [primary/secondary continuation](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-primary-secondary-residuals-2026-09-13/README.md)
 adds 22 independently motivated steps and retains 46 experiments, including
-negative controls. The [ownership continuation](../../evidence/projectile-ownership-and-stack-2026-09-13/README.md)
-adds 20 further steps and 73 compiling controls. Its [compiler stack observation](../../evidence/projectile-stack-groups-2026-09-13/README.md)
+negative controls. The [ownership continuation](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-ownership-and-stack-2026-09-13/README.md)
+adds 20 further steps and 73 compiling controls. Its [compiler stack observation](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-stack-groups-2026-09-13/README.md)
 checks group membership and maps the 964-instruction primary prefix's native
 stack accesses. These packages leave the canonical scratch unchanged.
 

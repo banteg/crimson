@@ -1075,7 +1075,7 @@ addresses must be resolved before evaluation; unsupported instructions fail
 closed. The stack-call projection preserves ESP, ordered memory writes, and
 callee-saved registers. It requires a separately checked call boundary with no
 live or input EAX/ECX/EDX values. See the reproducible
-[network worker witnesses](evidence/network-micro-oracles-2026-09-09/README.md)
+[network worker witnesses](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/network-micro-oracles-2026-09-09/README.md)
 and their independent VC6 controls. This does not relax any matching gate or
 establish whole-function equivalence.
 
@@ -1097,7 +1097,7 @@ option was ignored. Older cached builds can lack this field; rebuild with
 `compile_scratch(..., force=True)` to capture it. Archive and structural import
 objects do not invoke the compiler and have no compiler output.
 
-The [VC6 intermediate replay diagnostic](evidence/vc6-intermediate-replay-2026-09-09/README.md)
+The [VC6 intermediate replay diagnostic](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/vc6-intermediate-replay-2026-09-09/README.md)
 captures the frontend's four intermediate streams and replays them through the
 original backend in a standalone process. Its two network-worker controls
 require complete COFF equality apart from the header timestamp. This exposes
@@ -1203,7 +1203,7 @@ runs `--rewrite`, which replaces every unambiguous hit (keeping the address as
 a hexadecimal literal when the curated name is already on the line).
 
 Only live files are scanned: code, headers, maps, scratch configs, the decomp,
-the core, tests and docs. Dated history (`tools/match/evidence/`, dated
+the core, tests and docs. Dated history ([evidence](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence), dated
 reports, scratch notes and experiment logs, archived analysis and captures)
 keeps the names it was written with, as do the naming tools' own test
 fixtures. A line that must keep an old name, such as a serialized key, carries
@@ -1417,5 +1417,5 @@ may be function-relative rather than absolute file lines);
 [C2 tracing guide](c2/README.md) for the pinned profile, verification controls,
 and limits. These commands are diagnostic and do not change matching credit.
 
-The bounded [Rebrew comparison](evidence/rebrew-comparison-2026-09-13/README.md)
+The bounded [Rebrew comparison](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/rebrew-comparison-2026-09-13/README.md)
 records whether its near-match classifier adds useful information to this workflow.

@@ -9,7 +9,7 @@ tags:
 Function and data recovery is recorded by native address. The old aggregate
 naming notebook duplicated format, struct and behavior pages and retained
 superseded hypotheses. Its unique observations are preserved in the
-[historical notebook](https://github.com/banteg/crimson/blob/master/analysis/archive/2026-09-05-detangling.md);
+[historical notebook](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/analysis/archive/2026-09-05-detangling.md);
 it is not a maintained reference or a backlog.
 
 ## Resolve current evidence

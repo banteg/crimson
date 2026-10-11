@@ -297,7 +297,7 @@ interventions:
 - **y6** equals `four-homes`;
 - **y10** equals `five-values`.
 
-Both are from [creature-pool-review](../../evidence/creature-pool-review-2026-09-23/README.md),
+Both are from [creature-pool-review](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/creature-pool-review-2026-09-23/README.md),
 reproduced here with its verifier. So those "retain through both mechanisms" diagnostics are
 reachable from ordinary source.
 

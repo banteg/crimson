@@ -9,7 +9,7 @@ Survival's wave loop. Only this batch has the guarantee that no occupied slot
 becomes free. The cursor is local to `survival_update`; other allocator callers
 search from zero. Full-pool attempts retain logging and overflow-slot writes.
 See [original bug 37](../../docs/rewrite/original-bugs.md#37-survival-spawning-grows-without-bound-after-fifteen-minutes)
-and the [2026-10-10 profile](../../analysis/profiles/2026-10-10-survival-spawn-profile.md).
+and the [2026-10-10 profile](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/docs/verification/survival-spawn-profile.md).
 
 Run `uv run python crimson-core/checks/spawn_batch.py` to compare spawn batches
 against the same recovered bodies without optimization. To also confirm the
@@ -63,7 +63,7 @@ they run everywhere.
 
 ## Existing Python optimizations and core transfers
 
-The [2026-10-10 survey](../../analysis/profiles/2026-10-10-optimization-survey.md)
+The [2026-10-10 survey](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/docs/verification/optimization-survey.md)
 measured the transfers below. Keep Python implementations in their domain modules; this directory
 holds only diffs to generated recovered C/C++. Compiler/ABI repairs stay in
 `abi/`, runtime seams in `seams/`, and original gameplay bug fixes in `patches/`.
@@ -116,5 +116,5 @@ node crimson-core/checks/profile_replay.mjs run.rsi before.wasm after.wasm timin
 The timing pass runs three repetitions per build, reversing the order on the
 middle one, and requires matching terminal snapshots. For Python's Survival
 wave, run `PYTHONPATH=.:src uv run python crimson-core/checks/profile_python_wave.py --out python-wave.json`
-in each checkout and compare its snapshot hashes as well as its times. Record
-results with their host, commit and replay hash under `analysis/profiles/`.
+in each checkout and compare its snapshot hashes as well as its times. Put the
+results, with their host, commit and replay hash, in the change's description.

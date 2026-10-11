@@ -2,7 +2,7 @@
 
 ## Exact recovery (2026-09-13)
 
-The [exact recovery proof](../../evidence/projectile-exact-2026-09-13/README.md)
+The [exact recovery proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-exact-2026-09-13/README.md)
 verifies all **2,203 instructions, 8,409 encoded body bytes, and 507 references**,
 with no padding difference. The compiler configuration and reference aliases are
 unchanged. Full positional checking also verifies all 206 branch destinations
@@ -21,7 +21,7 @@ are superseded by this full encoded match.
 
 ## Movement and ion-chain boundaries (2026-09-13)
 
-The [native replay proof](../../evidence/projectile-rounding-boundaries-2026-09-13/README.md)
+The [native replay proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-rounding-boundaries-2026-09-13/README.md)
 recovers a microstep rounding boundary and the ion-chain `atan2f` wrapper.
 Splitting the squared-distance accumulation makes VC6 store both updated delta
 components before loading them for the length. This clears four PC64 movement
@@ -1282,7 +1282,7 @@ those omissions are explicit in the evidence package.
 
 ## Inactive-target Bubblegun expiry proof
 
-`tools/match/evidence/particle-bubble-expiry-2026-09-11/` executes the native
+[particle-bubble-expiry-2026-09-11](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/particle-bubble-expiry-2026-09-11) executes the native
 particle loop and real `creature_handle_death` through its inactive return.
 All 224 PC24/PC64 cases agree with current C++ in complete observed state,
 ordered writes/calls, and RNG. The matrix crosses initial recent-death counts
@@ -1302,7 +1302,7 @@ are outside the new native matrix. C++ and static matching counts are unchanged.
 ## Primary four-unit movement threshold
 
 The native/C++ microstep length branch agrees in 605 focused PC24 executions in
-`tools/match/evidence/primary-microstep-threshold-2026-09-11/`. Python's previous
+[primary-microstep-threshold-2026-09-11](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/primary-microstep-threshold-2026-09-11). Python's previous
 `acc.length()` kept double precision, delaying movement/collision checks when
 native PC24 length rounded to four. Case 22 has delta
 `(-0.7636322975158691, -3.926431655883789)`: double length is
@@ -1320,7 +1320,7 @@ Static matching counts and the C++ source remain unchanged.
 
 ## Primary effect template and 1.5× decal vector value
 
-`tools/match/evidence/primary-impact-template-2026-09-11/` restores two native
+[primary-impact-template-2026-09-11](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/primary-impact-template-2026-09-11) restores two native
 boundaries. Assigning `effect_template.flags` before the color copy lets VC6
 schedule the flags store between the G/B color stores, as native does, without
 manually interleaving component assignments. Constructing the 1.5× decal offset
@@ -1354,7 +1354,7 @@ whole-function semantic or encoded-body debt.
 
 ## Primary presentation parity in Python and Zig
 
-`tools/match/evidence/primary-impact-presentation-2026-09-11/` extends native
+[primary-impact-presentation-2026-09-11](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/primary-impact-presentation-2026-09-11) extends native
 execution through blood-splatter, damage, and randomized-FX helpers. The ports
 now carry the original projectile angle into presentation instead of deriving
 it from rounded positions, and preserve native PC24 decal and blood-splatter
@@ -1374,7 +1374,7 @@ unchanged.
 
 ## Post-hit position and freeze-shard parity
 
-`tools/match/evidence/primary-post-hit-position-2026-09-11/` extends the prior
+[primary-post-hit-position-2026-09-11](https://github.com/banteg/crimson/tree/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/primary-post-hit-position-2026-09-11) extends the prior
 matrix to 480 Pistol/Pulse Gun impacts with Freeze off/on, executing the actual
 native freeze-shard helper. C++ matches all recorded state, globals, calls,
 RNG, and ordered writes in this matrix. Python now uses live post-jitter and
