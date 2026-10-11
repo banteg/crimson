@@ -35,7 +35,7 @@ def ftol_ms_i32(dt_seconds: float) -> int:
 
 
 def nearest_ms_i32(seconds: float) -> int:
-    """Encode canonical f32 seconds using Frida's nearest-millisecond rule."""
+    """Encode canonical f32 seconds as the nearest millisecond, half up."""
 
     seconds_f32 = f32(seconds)
     return int(math.floor(float(seconds_f32) * 1000.0 + 0.5))

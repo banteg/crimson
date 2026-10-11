@@ -52,10 +52,6 @@ def read_paq(source: str | Path) -> list[tuple[str, bytes]]:
     return list(iter_entries(source))
 
 
-def decode_bytes(data: bytes) -> list[tuple[str, bytes]]:
-    return list(iter_entries_bytes(data))
-
-
 def build_entries(entries: Iterable[tuple[str, bytes]]) -> bytes:
     built_entries = []
     for name, data in entries:

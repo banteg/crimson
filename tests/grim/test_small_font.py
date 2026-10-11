@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import grim.fonts.small as small_module
-from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_height, measure_small_text_width
+from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -29,4 +29,3 @@ def test_draw_small_text_uses_full_glyph_uvs_for_point_filter(mocker) -> None:
 def test_small_text_metrics_are_fixed_scale() -> None:
     font = _font(width=7)
     assert measure_small_text_width(font, "A\nAA") == 14.0
-    assert measure_small_text_height(font, "A\nAA") == 32.0

@@ -3,8 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import cast
 
+import pytest
+
 from crimson.game_modes import GameMode
-from crimson.persistence.highscores import scores_path_for_mode
+from crimson.persistence.highscores import scores_path_for_config, scores_path_for_mode
+from crimson.quests.level import QuestLevel
+from grim.config import default_crimson_cfg
 
 
 def test_scores_path_for_mode(tmp_path: Path) -> None:
@@ -77,3 +81,22 @@ def test_scores_path_for_mode(tmp_path: Path) -> None:
 def test_named_score_lists_append_their_name_after_the_extension(tmp_path: Path) -> None:
     root = tmp_path / "scores5"
     assert scores_path_for_mode(tmp_path, GameMode.SURVIVAL, player_count=2, named_list="Bob") == root / "survival_2.hiBob"
+
+
+@pytest.mark.parametrize(
+    ("player_count", "expected_name"),
+    [
+        (1, "questhc4_7.hi"),
+        (2, "questhc4_7_2.hi"),
+    ],
+)
+def test_scores_path_for_config_quest_mode_uses_config_stage_fields(
+    tmp_path: Path,
+    player_count: int,
+    expected_name: str,
+) -> None:
+    config = default_crimson_cfg(tmp_path / "crimson.cfg")
+    config.gameplay.mode = GameMode.QUESTS
+    config.gameplay.player_count = player_count
+    config.gameplay.quest_level = QuestLevel(4, 7)
+    assert scores_path_for_config(tmp_path, config) == tmp_path / "scores5" / expected_name

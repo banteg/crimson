@@ -18,7 +18,7 @@ from crimson.sim.state_types import PlayerState
 from grim.assets import RuntimeResources, TextureId
 from grim.geom import Vec2
 
-EVIDENCE = Path(__file__).resolve().parents[2] / "tools/match/evidence/laser-trig-rounding-2026-09-11"
+FIXTURE = Path(__file__).resolve().parents[2] / "tests/fixtures/native/laser-sight.jsonl"
 
 
 class _NativeLaserCase(NamedTuple):
@@ -29,35 +29,8 @@ class _NativeLaserCase(NamedTuple):
 
 
 def _native_cases() -> list[_NativeLaserCase]:
-    color_receipt = json.loads((EVIDENCE / "native-colors.json").read_text())
-    palettes = {row["alpha"]: row["packed_argb"] for row in color_receipt["cases"] if row["fpcw"] == 0x007F}
-    selected = []
-    for line in (EVIDENCE / "fixtures.jsonl").read_text().splitlines():
-        row = json.loads(line)
-        case = row["case"]
-        if case["fpcw"] != 0x007F:
-            continue
-        players = case["players"]
-        include = (
-            (case["group"] == "discovery" and row["index"] < 32)
-            or not row["before_agrees"]
-            or (
-                case["group"] == "axes-and-cancellation"
-                and case["camera"] == [0.0, 0.0]
-                and players[0]["position"] == [0.0, 0.0]
-            )
-            or (
-                case["group"] == "gates-and-alpha"
-                and case["player_count"] == 2
-                and all(p["sharpshooter"] == 1 and p["health"] == 100.0 for p in players)
-                and case["glow"] == 0
-                and 1e-3 < case["alpha"] <= 1.0
-            )
-        )
-        if include:
-            selected.append(_NativeLaserCase(row["index"], case, row["native_corners"], palettes[case["alpha"]]))
-    assert len(selected) == 38
-    return selected
+    rows = [json.loads(line) for line in FIXTURE.read_text().splitlines()]
+    return [_NativeLaserCase(row["index"], row["case"], row["corners"], row["colors"]) for row in rows]
 
 
 @pytest.mark.parametrize("native", _native_cases(), ids=lambda row: str(row.index))

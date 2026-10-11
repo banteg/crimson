@@ -66,20 +66,18 @@ class GroundDumpCase:
 
 def _load_cases() -> list[GroundDumpCase]:
     data = json.loads(CASES_PATH.read_text(encoding="utf-8"))
-    cases: list[GroundDumpCase] = []
-    for row in data:
-        cases.append(
-            GroundDumpCase(
-                fixture=row["fixture"],
-                seed=int(row["seed"]),
-                width=int(row["width"]),
-                height=int(row["height"]),
-                tex0_index=int(row["tex0_index"]),
-                tex1_index=int(row["tex1_index"]),
-                tex2_index=int(row["tex2_index"]),
-            ),
+    return [
+        GroundDumpCase(
+            fixture=row["fixture"],
+            seed=int(row["seed"]),
+            width=int(row["width"]),
+            height=int(row["height"]),
+            tex0_index=int(row["tex0_index"]),
+            tex1_index=int(row["tex1_index"]),
+            tex2_index=int(row["tex2_index"]),
         )
-    return cases[-3:]
+        for row in data
+    ]
 
 
 @pytest.fixture(scope="module")

@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
 
-from grim.config import CrimsonControlsConfig
-
 from ...aim_schemes import AimScheme
 from ...movement_controls import MovementControlType
 
@@ -53,13 +51,6 @@ def input_scheme_label(scheme: MovementControlType) -> str:
         MovementControlType.COMPUTER: "Computer",
     }
     return labels.get(scheme, "Unknown")
-
-
-def controls_method_labels(controls: CrimsonControlsConfig, *, player_index: int) -> tuple[str, str]:
-    player = controls.player(player_index)
-    aim_scheme = player.aim_scheme
-    move_mode = player.movement
-    return input_configure_for_label(aim_scheme), input_scheme_label(move_mode)
 
 
 def controls_aim_method_dropdown_ids(current_aim_scheme: AimScheme) -> tuple[AimScheme, ...]:

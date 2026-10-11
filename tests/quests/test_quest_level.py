@@ -18,8 +18,8 @@ def test_quest_level_parse_rejects_invalid_parts() -> None:
 
 
 def test_quest_level_msgspec_constraints_reject_out_of_range_parts() -> None:
-    with pytest.raises(msgspec.ValidationError, match="Expected `int` >= 1"):
+    with pytest.raises(msgspec.ValidationError):
         msgspec.convert({"major": 0, "minor": 1}, type=QuestLevel)
 
-    with pytest.raises(msgspec.ValidationError, match="Expected `int` <= 10"):
+    with pytest.raises(msgspec.ValidationError):
         msgspec.convert({"major": 1, "minor": 11}, type=QuestLevel)

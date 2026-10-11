@@ -119,17 +119,4 @@ self-comparison control. Neither is integrated.
 
 The regular tests cover byte preservation, coverage rejection, independent
 reference checks, affine grouping, joins, loops, partial writes, call clobbers,
-and return-value lifetime boundaries. Run actual external-engine controls with:
-
-```sh
-CRIMSON_TEST_OBJDIFF=/path/to/objdiff-cli \
-CRIMSON_TEST_ASM_DIFFER=/path/to/asm-differ/diff.py \
-CRIMSON_TEST_ASM_PYTHON=/path/to/venv/bin/python \
-CRIMSON_TEST_OBJDUMP=/path/to/GNU/objdump \
-uv run --group match-explain pytest tests/test_match_explain.py
-```
-
-These controls require both tools to distinguish a relocated ECX/EDX load,
-wrong reference, ESP and ESI displacement changes, a branch-target change, and
-instruction reordering, while accepting a self-control. Without these environment
-variables, only the seven external-engine cases are skipped.
+and return-value lifetime boundaries.

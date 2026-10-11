@@ -101,32 +101,21 @@ class _NativeTrailCase(NamedTuple):
 
 
 def _native_trail_cases() -> list[_NativeTrailCase]:
-    path = (
-        Path(__file__).resolve().parents[2]
-        / "tools/match/evidence/conventional-corner-rounding-2026-09-11/fixtures.jsonl"
-    )
+    path = Path(__file__).resolve().parents[2] / "tests/fixtures/native/projectile-trail.jsonl"
     cases = []
-    with path.open() as stream:
-        for line in stream:
-            row = json.loads(line)
-            if row["index"] >= 128:
-                break
-            fixture = row["case"]
-            if fixture["fpcw"] != 0x007F:
-                continue
-            assert fixture["group"] == "discovery" and len(fixture["records"]) == 1
-            projectile = fixture["records"][0]
-            cases.append(
-                _NativeTrailCase(
-                    origin=Vec2(*projectile["origin"]),
-                    position=Vec2(*projectile["position"]),
-                    velocity=Vec2(*projectile["velocity"]),
-                    camera=Vec2(*fixture["camera"]),
-                    type_id=ProjectileTemplateId(projectile["type_id"]),
-                    words=tuple(row["corners"][0]),
-                ),
-            )
-    assert len(cases) == 64
+    for line in path.read_text().splitlines():
+        row = json.loads(line)
+        projectile = row["case"]["records"][0]
+        cases.append(
+            _NativeTrailCase(
+                origin=Vec2(*projectile["origin"]),
+                position=Vec2(*projectile["position"]),
+                velocity=Vec2(*projectile["velocity"]),
+                camera=Vec2(*row["case"]["camera"]),
+                type_id=ProjectileTemplateId(projectile["type_id"]),
+                words=tuple(row["corners"][0]),
+            ),
+        )
     return cases
 
 

@@ -1,7 +1,7 @@
 """
 Layout constants for the classic high scores screen (state_id=14).
 
-Measured from analysis/frida/ui_render_trace_oracle_1024x768.json.
+Measured from a native UI render trace of the original at 1024x768 (in git history).
 """
 
 from __future__ import annotations

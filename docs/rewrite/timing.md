@@ -232,7 +232,7 @@ a fixed gameplay timestep in the original.
 
 ## Existing regression references
 
-- `tests/sim/test_timing_ftol_ms_i32.py`: conversion and timing-domain behavior.
+- `tests/sim/test_timing_nearest_ms.py`: nearest-millisecond conversion.
 - `tests/sim/test_render_partition_parity.py`: port tick behavior across render rates.
 - `tests/modes/test_survival_spawn.py`, `tests/modes/test_rush_mode_spawn.py`,
   and `tests/modes/test_typo_spawns.py`: mode scheduler behavior.

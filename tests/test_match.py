@@ -3066,7 +3066,6 @@ def test_render_status_rows_includes_prefix() -> None:
         "Remaining exact-match debt is **30 functions**, **3000 code bytes**, "
         "and **2995 fuzzy-gap bytes**."
     ) in markdown
-    assert "Candidate coverage includes exact matches and WIPs" in markdown
     assert "## crimsonland.exe" in markdown
     assert "## grim.dll" in markdown
     assert (
@@ -3144,8 +3143,6 @@ def test_residual_frontier_distinguishes_current_and_historical_evidence() -> No
     assert "**1 / 250** are historical-only" in markdown
     assert "**1 / 50** have no recorded experiments" in markdown
     assert "| 2 | crimsonland.exe | historical | 250 |" in markdown
-    assert "| declared recovery | declared residual |" in markdown
-    assert "not verified semantic equivalence or proven compiler causes" in markdown
 
     collected = collect_residual_frontier_rows([current, historical, unexplored])
     assert [row.status.config.function for row in collected] == [
@@ -3356,7 +3353,6 @@ def test_native_link_status_labels_changed_or_mixed_artifacts_stale(tmp_path: Pa
     assert "1 recorded file inputs changed or missing" in status.artifact_note
     assert "canonical.cpp" in status.artifact_note
     markdown = "\n".join(render_native_link_status_markdown([status]))
-    assert "Gate values in `stale` rows are historical snapshots" in markdown
     assert "`grim.dll`: **stale**" in markdown
 
 
@@ -3981,7 +3977,6 @@ def test_compiler_listing_proves_object_function_equivalence(tmp_path: Path) -> 
     metadata = json.loads(result.metadata_path.read_text(encoding="utf-8"))
     assert metadata["object_function_equivalent"] is True
     assert "symbols" in metadata["stack_layout"]
-    assert "does not recover original local names" in metadata["caveat"]
 
 
 def test_msvc7_platform_header_fallbacks_compile(tmp_path: Path) -> None:

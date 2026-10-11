@@ -60,11 +60,6 @@ def draw_small_text(font: SmallFontData, text: str, pos: Vec2, color: rl.Color) 
         x_pos += float(width)
 
 
-def measure_small_text_height(font: SmallFontData, text: str) -> float:
-    line_count = text.count("\n") + 1
-    return float(font.cell_size * line_count)
-
-
 def measure_small_text_width(font: SmallFontData, text: str) -> float:
     """Return the maximum line width for `text` when rendered with `draw_small_text`."""
     x = 0.0

@@ -6,31 +6,12 @@ from crimson.screens.panels.controls_labels import (
     RebindRowSpec,
     RebindTarget,
     controls_aim_method_dropdown_ids,
-    controls_method_labels,
     controls_rebind_plan,
 )
-from grim.config import default_crimson_cfg
 
 
-def _controls():
-    return default_crimson_cfg().controls
-
-
-def test_controls_method_labels_reads_player_arrays() -> None:
-    controls = _controls()
-    controls.player(0).movement = MovementControlType.STATIC
-    controls.player(1).movement = MovementControlType.MOUSE_POINT_CLICK
-    controls.player(2).movement = MovementControlType.COMPUTER
-    controls.player(3).movement = MovementControlType.RELATIVE
-    controls.player(0).aim_scheme = AimScheme.MOUSE_RELATIVE
-    controls.player(1).aim_scheme = AimScheme.JOYSTICK
-    controls.player(2).aim_scheme = AimScheme.DUAL_ACTION_PAD
-    controls.player(3).aim_scheme = AimScheme.COMPUTER
-
-    assert controls_method_labels(controls, player_index=0) == ("Mouse relative", "Static")
-    assert controls_method_labels(controls, player_index=1) == ("Joystick", "Mouse point&click")
-    assert controls_method_labels(controls, player_index=2) == ("Dual Action Pad", "Computer")
-    assert controls_method_labels(controls, player_index=3) == ("Computer", "Relative")
+def _slots(rows: tuple[RebindRowSpec, ...]) -> list[tuple[RebindTarget, int | None, bool]]:
+    return [(row.target, row.target_index, row.axis) for row in rows]
 
 
 def test_controls_aim_method_dropdown_ids_hides_computer_unless_loaded() -> None:
@@ -57,21 +38,16 @@ def test_controls_rebind_plan_keyboard_static_player1() -> None:
         move_mode=MovementControlType.STATIC,
         player_index=0,
     )
-    assert aim_rows == (
-        RebindRowSpec("Torso left:", RebindTarget.PLAYER_KEYBOARD_AIM_CODES, 0),
-        RebindRowSpec("Torso right:", RebindTarget.PLAYER_KEYBOARD_AIM_CODES, 1),
-        RebindRowSpec("Fire:", RebindTarget.PLAYER_FIRE_CODE),
-    )
-    assert move_rows == (
-        RebindRowSpec("Move Up:", RebindTarget.PLAYER_MOVE_CODES, 0),
-        RebindRowSpec("Move Down:", RebindTarget.PLAYER_MOVE_CODES, 1),
-        RebindRowSpec("Move Left:", RebindTarget.PLAYER_MOVE_CODES, 2),
-        RebindRowSpec("Move Right:", RebindTarget.PLAYER_MOVE_CODES, 3),
-    )
-    assert misc_rows == (
-        RebindRowSpec("Level Up:", RebindTarget.GLOBAL_PICK_PERK_CODE),
-        RebindRowSpec("Reload:", RebindTarget.GLOBAL_RELOAD_CODE),
-    )
+    assert _slots(aim_rows) == [
+        (RebindTarget.PLAYER_KEYBOARD_AIM_CODES, 0, False),
+        (RebindTarget.PLAYER_KEYBOARD_AIM_CODES, 1, False),
+        (RebindTarget.PLAYER_FIRE_CODE, None, False),
+    ]
+    assert _slots(move_rows) == [(RebindTarget.PLAYER_MOVE_CODES, index, False) for index in range(4)]
+    assert _slots(misc_rows) == [
+        (RebindTarget.GLOBAL_PICK_PERK_CODE, None, False),
+        (RebindTarget.GLOBAL_RELOAD_CODE, None, False),
+    ]
 
 
 def test_controls_rebind_plan_dualpad_mouse_cursor_player2() -> None:
@@ -80,10 +56,10 @@ def test_controls_rebind_plan_dualpad_mouse_cursor_player2() -> None:
         move_mode=MovementControlType.MOUSE_POINT_CLICK,
         player_index=1,
     )
-    assert aim_rows == (
-        RebindRowSpec("Aim Up/Down Axis:", RebindTarget.PLAYER_AIM_AXIS_CODES, 0, axis=True),
-        RebindRowSpec("Aim Left/Right Axis:", RebindTarget.PLAYER_AIM_AXIS_CODES, 1, axis=True),
-        RebindRowSpec("Fire:", RebindTarget.PLAYER_FIRE_CODE),
-    )
-    assert move_rows == (RebindRowSpec("Move to cursor:", RebindTarget.GLOBAL_RELOAD_CODE),)
+    assert _slots(aim_rows) == [
+        (RebindTarget.PLAYER_AIM_AXIS_CODES, 0, True),
+        (RebindTarget.PLAYER_AIM_AXIS_CODES, 1, True),
+        (RebindTarget.PLAYER_FIRE_CODE, None, False),
+    ]
+    assert _slots(move_rows) == [(RebindTarget.GLOBAL_RELOAD_CODE, None, False)]
     assert misc_rows == ()

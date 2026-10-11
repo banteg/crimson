@@ -119,65 +119,6 @@ def test_relocated_lea_is_not_a_numeric_constant():
     assert address.trace_return(instructions, 0, frozenset({5}))[11].get("ebx") is None
 
 
-@pytest.mark.parametrize(
-    ("name", "left", "right", "symbols"),
-    [
-        ("self", "8b0d00000000c3", "8b0d00000000c3", ("global", "global")),
-        ("wrong-reference", "8b0d00000000c3", "8b0d00000000c3", ("global", "wrong")),
-        ("reordering", "b8010000008d4a04c3", "8d4a04b801000000c3", (None, None)),
-    ],
-)
-def test_optional_real_engines(tmp_path, name, left, right, symbols):
-    """Opt in with CRIMSON_TEST_{OBJDIFF,ASM_DIFFER,ASM_PYTHON,OBJDUMP}."""
-    import json
-    import os
-    from pathlib import Path
-
-    settings = {
-        key: os.environ.get("CRIMSON_TEST_" + key.upper()) for key in ("objdiff", "asm_differ", "asm_python", "objdump")
-    }
-    if not all(settings.values()):
-        pytest.skip("Optional external alignment tools not configured")
-    for side, code, symbol in zip(("target", "candidate"), (left, right), symbols, strict=True):
-        raw = bytes.fromhex(code)
-        refs = (
-            {} if symbol is None else {0: m.MaskedReference(1, "disp", "test", None, symbol, ("name:" + symbol,), True)}
-        )
-        data = evidence(raw, refs)
-        lines = tuple(
-            m.DisassemblyLine(
-                i["offset"],
-                i["address"],
-                i["text"],
-                i["size"],
-                tuple(m.MaskedReference(**v) for v in i["masked_references"]),
-            )
-            for i in data["instructions"]
-        )
-        obj, receipt = explain.wrapper(raw, lines, side, "diagnostic_function")
-        (tmp_path / f"{side}.obj").write_bytes(obj)
-        explain.write_json(tmp_path / f"{side}-evidence.json", receipt)
-    summary = explain.compare_bundle(
-        tmp_path,
-        engine="both",
-        objdiff=str(settings["objdiff"]),
-        asm_differ=Path(str(settings["asm_differ"])),
-        asm_python=str(settings["asm_python"]),
-        objdump=str(settings["objdump"]),
-    )
-    asm = json.loads((tmp_path / "levenshtein-raw.json").read_text())
-    obj = json.loads((tmp_path / "objdiff-raw.json").read_text())
-    changed = any(
-        row.get("diff_kind", "DIFF_NONE") != "DIFF_NONE"
-        for side in ("left", "right")
-        for symbol in obj[side]["symbols"]
-        for row in symbol.get("instructions", [])
-    )
-    assert (asm["current_score"] > 0) == changed == (name != "self")
-    if name == "wrong-reference":
-        assert all(counts["mismatch"] == 1 for counts in summary["reference_counts"].values())
-
-
 def test_next_origin_call_ends_return_value_lifetime():
     # Second call returns a new value. Ending the first lifetime prevents an
     # unrelated next iteration from erasing the first one's retained index.

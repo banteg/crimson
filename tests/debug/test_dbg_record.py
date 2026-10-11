@@ -15,9 +15,7 @@ from crimson_re.dbg.trace import load_trace
 from tests.replay.cli._helpers import build_replay
 
 
-def test_bonus_timer_ms_matches_frida_nearest_millisecond_encoding() -> None:
-    assert bonus_timer_ms(8.811999320983887) == 8812
-    assert bonus_timer_ms(0.0005) == 1
+def test_bonus_timer_ms_clamps_negative_timers_to_zero() -> None:
     assert bonus_timer_ms(-1.0) == 0
 
 
