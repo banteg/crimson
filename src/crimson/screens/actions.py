@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from ..game_modes import GameMode
+from ..quests.custom import CustomQuest
 from ..quests.level import QuestLevel
 
 if TYPE_CHECKING:
@@ -35,10 +36,11 @@ class Route(Enum):
 
 
 class StartRun(msgspec.Struct, frozen=True):
-    """Start a run of `mode` with the configured player count and hardcore flag."""
+    """Start a run of `mode` with the configured player count and hardcore flag; a quest is a level or a custom quest."""
 
     mode: GameMode
     quest_level: QuestLevel | None = None
+    custom_quest: CustomQuest | None = None
 
 
 class ScoreQuery(msgspec.Struct):

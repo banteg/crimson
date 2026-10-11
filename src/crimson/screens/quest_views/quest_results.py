@@ -50,6 +50,7 @@ class QuestResultsView:
         self._unlock_perk_name = ""
         self._ui = None
         level = outcome.level
+        assert level is not None, "stock results need a stock level"
         self._quest_level = level
 
         quest = quest_by_level(level)

@@ -10,17 +10,20 @@ An experimental authoring language for #638. A recipe runs once and produces a
 finite, ordered table of existing spawn-template invocations. It has no callbacks
 during gameplay and cannot change creature behavior, collision or arena geometry.
 
-The Python compiler and recipes for all 50 stock quests are implemented.
-Custom run initialization, browser loading, replay embedding and publication are
-not implemented by this prototype. Its JSON output is an inspection artifact,
-not a frozen interchange or replay format. Existing stock builders remain the
-game's authoritative implementation.
+The Python compiler and recipes for all 50 stock quests are implemented, and the
+Python port plays custom quests: a recipe resolves into a `CustomQuest`
+definition, which a run starts the way the original starts a quest and which its
+replay carries ([replay format 33](replay.md#runspec)). crimson-core, the browser
+game and publication cannot start custom quests yet, so these runs never rank.
+The compiler's JSON output is an inspection artifact, not an interchange format.
+Existing stock builders remain the game's authoritative implementation.
 
 ## Try it
 
 From a checkout with the Python dependencies installed:
 
 ```sh
+uv run crimson --custom-quest src/crimson/quests/dsl/examples/crosswind.quest
 uv run python -m crimson.quests.dsl --stock 4.7 --seed 0xBEEF
 uv run python -m crimson.quests.dsl --stock 4.7 --players 4 --hardcore
 uv run python -m crimson.quests.dsl --file src/crimson/quests/dsl/examples/clockwork.quest --output /tmp/clockwork.json
@@ -246,11 +249,20 @@ entry-for-entry equality. Crosswind retains the design discussion's exact eight
 waves, while the named scenario sketches now have concrete timings and counts.
 
 ```python
-from crimson.quests.dsl import compile_quest
+from crimson.quests.dsl import build_custom_quest, compile_quest
 
 plan = compile_quest(source, seed=0xBEEF, player_count=1, hardcore=False)
 entries = plan.entries
+quest = build_custom_quest(source, seed=0xBEEF)
 ```
+
+`compile_quest` constructs the table one variant plays. `build_custom_quest`
+resolves every player count and hardcore setting into the definition a run plays
+(`RunSpec.custom_quest`): the title, starting weapon, terrain slots and each
+distinct table with base counts. `crimson --custom-quest` builds one with
+construction seed 0 and starts it straight after boot. Its runs save replays as
+usual; their end shows the time and offers Play Again, with no high scores,
+unlocks or stock progress.
 
 ## Bounds and runtime semantics
 

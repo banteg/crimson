@@ -217,6 +217,7 @@ def run_game(config: GameConfig) -> None:
             replay_checkpoints=config.replay_checkpoints,
             leaderboard=Leaderboard(base_dir),
             skip_intro=config.no_intro,
+            custom_quest=config.custom_quest,
             resources=None,
             audio=None,
             session_start=time.monotonic(),

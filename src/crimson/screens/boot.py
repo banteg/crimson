@@ -11,7 +11,8 @@ from grim.music import play_music, stop_music
 from grim.raylib_api import rl, rl_color, rl_vector2
 
 from ..game.types import GameState
-from .actions import Route
+from ..game_modes import GameMode
+from .actions import Route, StartRun
 
 SPLASH_ALPHA_SCALE = 2.0
 LOGO_TIME_SCALE = 1.1
@@ -121,9 +122,12 @@ class BootView:
     def close(self) -> None:
         pass
 
-    def take_action(self) -> Route | None:
+    def take_action(self) -> Route | StartRun | None:
         if not self._theme_started:
             return None
+        custom_quest = self.state.custom_quest
+        if custom_quest is not None:
+            return StartRun(GameMode.QUESTS, custom_quest=custom_quest)
         return Route.MENU
 
     def _start_theme(self) -> None:

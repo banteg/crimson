@@ -17,7 +17,6 @@ from grim.view import ViewContext
 
 from ..camera import CameraUpdate
 from ..game_modes import GameMode
-from ..quests.level import QuestLevel
 from ..render.rtx.mode import mode_from_rtx_flag
 from ..replay import (
     REPLAY_TICK_DT,
@@ -93,7 +92,7 @@ class ReplayPlaybackMode:
         self._frame_dt_ms = 0.0
         self._grim_mono: GrimMonoFont | None = None
         self._quest_title = ""
-        self._quest_level: QuestLevel | None = None
+        self._quest_number = ""
 
         self._dt = REPLAY_TICK_DT
         self._clock = FixedStepClock(tick_rate=REPLAY_TICK_RATE)
@@ -202,9 +201,11 @@ class ReplayPlaybackMode:
             runtime.apply_terrain_setup(terrain_setup)
 
         quest = driver.quest_definition
-        if quest is not None:
-            self._quest_title = str(quest.title)
-            self._quest_level = quest.level
+        custom = replay.run.custom_quest
+        if quest is not None or custom is not None:
+            # A custom quest has a title but no stock number.
+            self._quest_title = quest.title if quest is not None else custom.title if custom is not None else ""
+            self._quest_number = quest.level.text if quest is not None else ""
             self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
 
     def close(self) -> None:
@@ -311,8 +312,7 @@ class ReplayPlaybackMode:
         if font is None:
             return
         title = str(self._quest_title or "")
-        level = self._quest_level
-        if not title or level is None:
+        if not title:
             return
         driver = self._driver
         if driver is None or driver.quest_spawn_state is None:
@@ -321,7 +321,7 @@ class ReplayPlaybackMode:
         draw_quest_title_timer_overlay(
             font,
             title,
-            level.text,
+            self._quest_number,
             timer_ms=float(driver.quest_spawn_state.stage_banner_timer_ms),
         )
 

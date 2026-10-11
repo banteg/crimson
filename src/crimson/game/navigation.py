@@ -61,7 +61,8 @@ class ScreenNavigator:
                 )
                 screens.push(ScreenEntry(viewer))
             case ShowQuestOutcome(outcome=outcome):
-                if outcome.kind == "completed":
+                # A custom quest has no stock results: its end shows on the quest-failed panel either way.
+                if outcome.kind == "completed" and outcome.custom_quest is None:
                     view = QuestResultsView(self.state, outcome)
                     screens.push(ScreenEntry(view, resume=view.resume))
                 else:
@@ -169,7 +170,7 @@ class ScreenNavigator:
     def _start_run(self, request: StartRun) -> None:
         config = self.state.config
         config.gameplay.mode = request.mode
-        if request.mode == GameMode.QUESTS:
+        if request.mode == GameMode.QUESTS and request.custom_quest is None:
             assert request.quest_level is not None
             unlock = (
                 self.state.status.quest_unlock_index_hardcore
@@ -196,9 +197,12 @@ class ScreenNavigator:
             gameplay.typo_session = self.state.typo
         self.state.screens.push(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))
         if isinstance(gameplay, QuestMode):
-            assert request.quest_level is not None
             gameplay.quest_fail_retry_count = self.state.quest_fail_retry_count
-            gameplay.start_run(request.quest_level, status=self.state.status)
+            if request.custom_quest is not None:
+                gameplay.start_custom_run(request.custom_quest, status=self.state.status)
+            else:
+                assert request.quest_level is not None
+                gameplay.start_run(request.quest_level, status=self.state.status)
 
     def capture_ground(self) -> None:
         gameplay = self.state.screens.gameplay

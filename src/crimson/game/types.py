@@ -13,6 +13,7 @@ from ..game_states import GameStateId
 from ..leaderboard import Leaderboard
 from ..paths import default_runtime_dir
 from ..pause_background import PauseBackground
+from ..quests.custom import CustomQuest
 from ..render.rtx.mode import RtxRenderMode
 from ..replay.saver import ReplaySaver
 from ..screens.stack import ScreenStack
@@ -49,6 +50,8 @@ class GameConfig(msgspec.Struct, frozen=True):
     rtx: bool = False
     preserve_bugs: bool = False
     replay_checkpoints: bool = False
+    # A custom quest to play straight after boot instead of opening the menu.
+    custom_quest: CustomQuest | None = None
 
 
 class Screen(Protocol):
@@ -102,6 +105,7 @@ class GameState(msgspec.Struct):
     session_start: float
     rtx_mode: RtxRenderMode = msgspec.field(default_factory=_default_rtx_render_mode)
     skip_intro: bool = False
+    custom_quest: CustomQuest | None = None
     gamma_ramp: float = 1.0
     snd_freq_adjustment_enabled: bool = True
     menu_ground: GroundRenderer | None = None

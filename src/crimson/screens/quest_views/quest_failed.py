@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from crimson.screens.actions import Route, StartRun
@@ -61,7 +62,9 @@ class QuestFailedView(MenuScreen):
         self._quest_list_button = UiButtonState("Play Another", force_wide=True)
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
         outcome = self._outcome
-        if outcome is not None:
+        if outcome is not None and outcome.custom_quest is not None:
+            self._quest_title = outcome.custom_quest.title
+        elif outcome is not None and outcome.level is not None:
             from ...quests import quest_by_level
 
             quest = quest_by_level(outcome.level)
@@ -87,7 +90,7 @@ class QuestFailedView(MenuScreen):
         if self.state.focus.escape:
             self._activate_main_menu()
             return
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_Q):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_Q) and not self._custom():
             self._activate_play_another()
             return
 
@@ -99,44 +102,19 @@ class QuestFailedView(MenuScreen):
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         resources = require_runtime_resources(self.state)
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
-
-        if button_update(
-            resources,
-            self._retry_button,
-            focus=self.state.focus,
-            pos=button_pos,
-            dt_ms=dt_ms,
-            mouse=mouse,
-            click=click,
-        ):
-            self._activate_retry()
-            return
-        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
-
-        if button_update(
-            resources,
-            self._quest_list_button,
-            focus=self.state.focus,
-            pos=button_pos,
-            dt_ms=dt_ms,
-            mouse=mouse,
-            click=click,
-        ):
-            self._activate_play_another()
-            return
-        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
-
-        if button_update(
-            resources,
-            self._main_menu_button,
-            focus=self.state.focus,
-            pos=button_pos,
-            dt_ms=dt_ms,
-            mouse=mouse,
-            click=click,
-        ):
-            self._activate_main_menu()
-            return
+        for button, activate in self._buttons():
+            if button_update(
+                resources,
+                button,
+                focus=self.state.focus,
+                pos=button_pos,
+                dt_ms=dt_ms,
+                mouse=mouse,
+                click=click,
+            ):
+                activate()
+                return
+            button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
     def draw(self) -> None:
         self._assert_open()
@@ -147,46 +125,33 @@ class QuestFailedView(MenuScreen):
         draw_ui_panel(resources, 35, panel, shadow=self.state.config.display.shadows_enabled)
         panel_top_left = panel.top_left
 
-        reaper_tex = resources.texture(TextureId.UI_TEXT_REAPER)
-        src = rl_rectangle(0.0, 0.0, float(reaper_tex.width), float(reaper_tex.height))
         banner_pos = panel_top_left + Vec2(QUEST_FAILED_BANNER_X_OFFSET, QUEST_FAILED_BANNER_Y_OFFSET)
-        dst = rl_rectangle(
-            banner_pos.x,
-            banner_pos.y,
-            float(QUEST_FAILED_BANNER_W),
-            float(QUEST_FAILED_BANNER_H),
-        )
-        rl.draw_texture_pro(reaper_tex, src, dst, rl_vector2(0.0, 0.0), 0.0, rl.WHITE)
+        if self._completed():
+            # A completed custom quest: the level-complete text, at the banner's height.
+            banner_tex = resources.texture(TextureId.UI_TEXT_LEVEL_COMPLETE)
+            width = QUEST_FAILED_BANNER_H * float(banner_tex.width) / float(banner_tex.height)
+            banner_pos = banner_pos.offset(dx=(QUEST_FAILED_BANNER_W - width) * 0.5)
+        else:
+            banner_tex = resources.texture(TextureId.UI_TEXT_REAPER)
+            width = QUEST_FAILED_BANNER_W
+        src = rl_rectangle(0.0, 0.0, float(banner_tex.width), float(banner_tex.height))
+        dst = rl_rectangle(banner_pos.x, banner_pos.y, float(width), float(QUEST_FAILED_BANNER_H))
+        rl.draw_texture_pro(banner_tex, src, dst, rl_vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         font = resources.small_font
         text_color = rl_color(235, 235, 235, 255)
         draw_small_text(
             font,
-            self._failure_message(),
+            self._message(),
             panel_top_left + Vec2(QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET),
             text_color,
         )
         self._draw_score_preview(panel_top_left=panel_top_left)
 
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
-
-        button_draw(resources, self._retry_button, focus=self.state.focus, pos=button_pos)
-        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
-
-        button_draw(
-            resources,
-            self._quest_list_button,
-            focus=self.state.focus,
-            pos=button_pos,
-        )
-        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
-
-        button_draw(
-            resources,
-            self._main_menu_button,
-            focus=self.state.focus,
-            pos=button_pos,
-        )
+        for button, _activate in self._buttons():
+            button_draw(resources, button, focus=self.state.focus, pos=button_pos)
+            button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
         ui_cursor_render(resources, dt=self.state.frame_dt)
 
@@ -208,7 +173,23 @@ class QuestFailedView(MenuScreen):
         """`quest_failed_screen_update` lays out on `ui_element_slot_35`'s panel."""
         return ui_panel_rect(35, self.state.ui.timeline_ms, canvas.width())
 
-    def _failure_message(self) -> str:
+    def _custom(self) -> bool:
+        return self._outcome is not None and self._outcome.custom_quest is not None
+
+    def _completed(self) -> bool:
+        return self._outcome is not None and self._outcome.kind == "completed"
+
+    def _buttons(self) -> list[tuple[UiButtonState, Callable[[], None]]]:
+        buttons = [(self._retry_button, self._activate_retry)]
+        # A custom quest is not in the quest list.
+        if not self._custom():
+            buttons.append((self._quest_list_button, self._activate_play_another))
+        buttons.append((self._main_menu_button, self._activate_main_menu))
+        return buttons
+
+    def _message(self) -> str:
+        if self._completed():
+            return "Quest complete, play it again?"
         retry_count = int(self.state.quest_fail_retry_count)
         if retry_count == 1:
             return "You didn't make it, do try again."
@@ -234,6 +215,12 @@ class QuestFailedView(MenuScreen):
     def _activate_retry(self) -> None:
         outcome = self._outcome
         if outcome is None:
+            return
+        if outcome.custom_quest is not None:
+            # Only a failure scales the next attempt, as for the original's quests.
+            if not self._completed():
+                self.state.quest_fail_retry_count = int(self.state.quest_fail_retry_count) + 1
+            self._begin_close_transition(StartRun(GameMode.QUESTS, custom_quest=outcome.custom_quest))
             return
         self.state.quest_fail_retry_count = int(self.state.quest_fail_retry_count) + 1
         level = outcome.level
