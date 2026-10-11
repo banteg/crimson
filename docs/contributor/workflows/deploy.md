@@ -9,7 +9,7 @@ tags:
 The **Deploy crimson.land** Actions workflow is manually triggered from
 `master`. It assembles the Worker, site and browser game using a successful
 **Crimson runtime** build of the exact same commit. PR artifacts and builds of
-other commits cannot be promoted. All 14 required checks must be green.
+other commits cannot be promoted. Every check it requires (`REQUIRED_CHECKS` in `service/scripts/deploy-preflight.mjs`) must be green.
 
 ## Credentials
 
@@ -130,8 +130,8 @@ The `crimson-land-release` artifact contains the prepared release tarball and
 verifier/game/client build provenance and SHA-256 hashes of the Worker modules,
 site files, verifier and Wrangler config. The deployment summary and
 `crimson-land-deployment` artifact retain Wrangler output, including the
-Cloudflare version ID. The generated `/deployment.txt` identifies the published
-commit. The smoke check polls it for up to 60 seconds to allow propagation and
+Cloudflare version ID. The `/deployment.txt` the workflow generates identifies
+the published commit. The smoke check polls it for up to 60 seconds to allow propagation and
 rejects a different revision before checking assets. Production smoke checks
 cover the site, leaderboard
 API, game page, JS/WASM and availability of all three game archives.
@@ -143,6 +143,17 @@ Deployments page to restore the chosen version. Worker rollback does not undo
 D1 migrations or R2 changes. Keep schema changes compatible with the previous
 Worker where a code rollback is intended.
 
-Local deployment remains available through `npm --prefix service run deploy`.
-Build the verifier first with `uv run python crimson-core/build.py --target wasm`
-and perform the same migration and replay checks before publishing locally.
+Local deployment remains available through `npm --prefix service run deploy`. It
+rebuilds the site assets and the browser game, so it needs the game art and the
+client toolchain (Zig, wabt, Emscripten). Build the verifier first with
+`uv run python crimson-core/build.py --target wasm`, and run
+`node scripts/deploy-checks.mjs migrations` and `npm run reverify` from `service/`
+before publishing. A local deploy writes no `/deployment.txt`.
+
+## Game archives
+
+The game archives are not part of a deploy. `/play/game/<name>.paq` serves
+`v1.9.93/<name>.paq` from the `crimson` R2 bucket, the same objects the asset host
+publishes for the Python game and the desktop client. Replace them separately,
+after deploying any client change they depend on; the smoke check only confirms
+they are reachable.

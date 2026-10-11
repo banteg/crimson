@@ -11,6 +11,15 @@ Operational runbooks and recurring maintenance flows.
 [Deploy crimson.land](deploy.md) through the manual Actions workflow, including
 production credentials, replay checks and rollback.
 
+## Releases
+
+Open a `chore(release): release X.Y.Z` PR that bumps the version in
+`pyproject.toml` and `uv.lock` and adds a `## X.Y.Z` section to `CHANGELOG.md`.
+After it merges, push an annotated `vX.Y.Z` tag on the merge commit. The Release
+workflow checks the tag against the package version, takes the release notes
+from that changelog section, publishes to PyPI and creates the GitHub release.
+Deploy crimson.land afterwards so the site and browser game carry the release.
+
 ## Documentation maintenance
 
 Keep each behavior or contract in one reference page. Update the owning page

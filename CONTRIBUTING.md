@@ -8,14 +8,19 @@ src/
   grim/             engine layer: raylib wrapper, PAQ/JAZ decoders, audio, fonts
 decomp/             recovered C/C++ source and builds.json (every pinned build)
 crimson-re/         reverse-engineering tools (`crimson match|native|dbg`), a workspace package kept out of the game wheel
-crimson-core/       recovered C/C++ gameplay built as a native and WASM simulation (replay verifier)
+crimson-core/       recovered C/C++ built native and to WASM: the replay verifier, and the whole game behind
+                    the browser and desktop clients (client/)
+service/            crimson.land: leaderboard, replay verification and the site (Cloudflare Worker)
+tools/              matching scratches and evidence (match/), native link tooling (native/), ast-grep rules
+third_party/        SDK headers and upstream library sources the original links
+game_bins/          the original releases' binaries, local only (gitignored)
 analysis/
   ghidra/           name/type maps (source of truth) and structured snapshots
   binary_ninja/     preferred live analysis databases
   ida/              structured function/import/string snapshots
   decomp/           decomp.dev evidence and per-build maps
   frida/            trace summaries from past Frida sessions
-docs/               100+ pages: formats, structs, algorithms, parity tracking
+docs/               formats, structs, algorithms, parity tracking
 scripts/            analysis and utility tools
 tests/              gameplay, replay, parity and regression tests
 ```
@@ -27,7 +32,7 @@ tests/              gameplay, replay, parity and regression tests
 3. Port behavior into `src/` with deterministic simulation contracts. Float behavior is part of the contract: see the [float parity policy](docs/rewrite/float-parity-policy.md).
 4. Verify against recorded replays and their per-tick checkpoints with headless tools, and keep the
    [recovered core gate](crimson-core/README.md#whole-run-gate) green: the matching decompilation must play
-   every replay fixture and bot run exactly as the port does.
+   every bot run and supported replay fixture exactly as the port does.
 
 [provenance.md](docs/contributor/project-tracking/provenance.md) has the exact binary hashes of the target build.
 
@@ -109,26 +114,29 @@ uv run pytest              # test suite
 uv run ruff check .        # lint
 uv run ty check src crimson-re/src tests  # type check
 ast-grep scan              # ast-grep code scan
-just check                 # all of the above
-zensical serve             # docs site from docs/ (uv tool install zensical)
+just check                 # all of the above, plus the docs check, ast-grep tests, name audit,
+                           # native closure and match regressions
+uv run zensical serve      # docs site from docs/
 ```
 
 ### required pre-commit checks
 - Install hooks once per clone/worktree: `prek install -c prek.toml -t pre-commit -t pre-push`
 - `pre-commit` runs fast checks only (ruff/ty/docs/ast-grep) and is file-scoped.
 - `pre-push` runs the packaging and decomp report checks and is file-scoped.
-- Full pytest runs in CI.
+- Full pytest (with terrain tests) and the native-oracle suite run in CI when a change touches their inputs.
 - Manual runs:
   - `prek run --stage pre-commit`
   - `prek run --stage pre-push`
-  - `prek run py-pytest`
-- CI-equivalent local run for Python/docs/tooling changes (`src/`, `tests/`, `docs/`, `tools/`, etc.): `just check && uv build`
+  - `prek run --stage manual --all-files py-pytest`
+- Closest local equivalent of CI for Python/docs/tooling changes (`src/`, `tests/`, `docs/`, `tools/`, etc.):
+  `just check --run-terrain && CRIMSON_NATIVE_ORACLE=1 uv run pytest tests/native_oracle && uv build`
 
 ## quick playbooks
 
 ### parity bug investigation
 1. Reproduce using the canonical replay.
-2. Generate a divergence report (`dbg diff`/`dbg bisect` on recorded traces).
+2. Record traces with `crimson dbg record <replay> --out <trace.cdt>` and generate a divergence report with
+   `crimson dbg diff` / `crimson dbg bisect <golden> <candidate>`.
 3. Isolate the **first sustained mismatch** and identify the subsystem.
 4. Fix the **root cause** (not the symptom).
 5. Re-run the **same** replay and confirm the mismatch moves/disappears for the right reason.
@@ -155,7 +163,7 @@ zensical serve             # docs site from docs/ (uv tool install zensical)
 When using `gh`:
 
 - PR title must be in the form of a conventional commit
-- When ask to merge, use `gh pr merge --squash <pr>`
+- When asked to merge, use `gh pr merge --squash <pr>`
 
 - To avoid escaping issues, write the PR description to a file and use:
   - `gh pr create --body-file <file>`

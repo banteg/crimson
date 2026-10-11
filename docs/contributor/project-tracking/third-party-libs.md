@@ -5,13 +5,14 @@ tags:
 
 # Third-party libraries
 
-This page tracks third-party libraries referenced by the Crimsonland binaries
-and our current analysis status. The goal is to pin versions so we can align
+This page tracks third-party libraries referenced by the original Crimsonland
+binaries and our current analysis status; the ports' own dependencies are
+pinned in their manifests and the [port notes](https://github.com/banteg/crimson/blob/master/crimson-core/PORT.md). The goal is to pin versions so we can align
 headers and types with the actual runtime behavior.
 
 `analysis/library_provenance.json` is the machine-readable source of truth for
 artifact hashes, embedded ranges, imports, and version fingerprints. Verify it
-against the checked-in binaries with:
+against your local `game_bins/` copies of the binaries (not checked in) with:
 
 ```sh
 uv run crimson match provenance --check
@@ -481,17 +482,17 @@ normalized output hashes, 18 required libjpeg address matches, and zlib's
 
 ### libvorbisfile / libvorbis / libogg (Ogg Vorbis Win32 SDK 1.0)
 - Evidence: `vorbisfile.dll` string in `analysis/ghidra/raw/crimsonland.exe_strings.txt:130`.
-- Evidence: .ogg asset paths and errors in `analysis/ghidra/raw/crimsonland.exe_strings.txt:884` and later.
-- Evidence: bundled DLL hash (sha256) for `game_bins/crimsonland/1.9.93-gog/VORBISFILE.DLL`:
+- Evidence: .ogg asset paths and Ogg errors in `analysis/ghidra/raw/crimsonland.exe_strings.txt`.
+- Evidence: bundled DLL hash (sha256) for `game_bins/crimsonland/1.9.93-gog/vorbisfile.dll`:
   `f44472c6d9a64045c14583d12c0cfab5b4aa268aceb8bc9e3e1236b3008306f2`.
 
 - Evidence (binary string): `Xiph.Org libVorbis I 20020717` found in
-  `game_bins/crimsonland/1.9.93-gog/VORBIS.DLL` (strings offset `0x14460`).
+  `game_bins/crimsonland/1.9.93-gog/vorbis.dll` (strings offset `0x14460`).
 
-- Evidence (headers): ogg.h `last mod` $Id: ogg.h,v 1.18 2002/07/13$ at
-  `third_party/headers/ogg/ogg.h:12`; vorbisfile.h $Id: vorbisfile.h,v 1.17 2002/03/07$
-  at `third_party/headers/vorbis/vorbisfile.h:12`; codec.h $Id: codec.h,v 1.40 2002/02/28$
-  at `third_party/headers/vorbis/codec.h:12`.
+- Evidence (headers): ogg.h `last mod` $Id: ogg.h,v 1.18 2002/07/13$ in
+  `third_party/headers/ogg/ogg.h`; vorbisfile.h $Id: vorbisfile.h,v 1.17 2002/03/07$
+  in `third_party/headers/vorbis/vorbisfile.h`; codec.h $Id: codec.h,v 1.40 2002/02/28$
+  in `third_party/headers/vorbis/codec.h`.
 
 - Evidence (tag match): xiph/vorbis tag v1.0.0 (tagged 2002-07-19) contains identical
   header $Id lines for `include/vorbis/vorbisfile.h` and `include/vorbis/codec.h`.
@@ -503,9 +504,9 @@ normalized output hashes, 18 required libjpeg address matches, and zlib's
   Fri Jul 19 11:34:39 2002 and VORBIS.DLL compiled Fri Jul 19 11:34:55 2002.
 
 - Evidence: bundled DLL hashes (sha256) for:
-  `game_bins/crimsonland/1.9.93-gog/OGG.DLL` →
+  `game_bins/crimsonland/1.9.93-gog/ogg.dll` →
   `308540dbd488f3bceca2dbadefe02cf29d10a27c4ac096bb3da053e3e0b923ea`,
-  `game_bins/crimsonland/1.9.93-gog/VORBIS.DLL` →
+  `game_bins/crimsonland/1.9.93-gog/vorbis.dll` →
   `b4fa55cfe7547ade0a2d5b800ef085ce20cdd71f61898d2461ea61eb0241812b`.
 
 - Evidence: the archived official `OggVorbis-win32sdk-1.0.zip` has SHA-256

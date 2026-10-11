@@ -6,7 +6,7 @@
 [![1.3.0](https://decomp.dev/banteg/crimson/1.3.0.svg?mode=shield&measure=code&category=game&label=1.3.0)](https://decomp.dev/banteg/crimson/1.3.0?category=game)
 [![1.0.2](https://decomp.dev/banteg/crimson/1.0.2.svg?mode=shield&measure=code&category=game&label=1.0.2)](https://decomp.dev/banteg/crimson/1.0.2?category=game)
 
-[Crimsonland](https://en.wikipedia.org/wiki/Crimsonland) 1.9.93 (2003, GOG "Crimsonland Classic"), rebuilt twice:
+[Crimsonland](https://en.wikipedia.org/wiki/Crimsonland) (2003), as its 1.9.93 GOG "Crimsonland Classic" release (2011), rebuilt twice:
 
 - **A playable reimplementation** in Python and raylib that matches the original's timings, random rolls, float32 rounding, UI layout and quirks, checked tick by tick against the original code.
 - **A matching decompilation**: C/C++ source that Visual C++ 6 compiles back into the original `crimsonland.exe` and `grim.dll`, instruction for instruction. Compiled to WebAssembly, the same source plays the original game [in your browser](https://crimson.land/play/).
@@ -30,6 +30,8 @@ uv run crimson
 The original Crimsonland Classic assets are distributed with permission from the original developer, and the game downloads them into its runtime directory on first launch. Saves, config, high scores and replays live in your per-user data directory; set `CRIMSON_RUNTIME_DIR` or pass `--base-dir` to keep them elsewhere.
 
 `--width`/`--height` set the game resolution (1024x768 is native, 1024x1024 shows the whole arena) and `--fullscreen`/`--windowed` the window mode; both are saved. Fullscreen scales the game to fit the screen, and Alt+Enter toggles it. On Linux the game runs natively on Wayland but still links `libX11`.
+
+**Desktop**: the browser build also runs natively over SDL3 ([`crimson-core/client`](crimson-core/client), built from source per the [port notes](crimson-core/PORT.md#running-the-native-client)). It downloads the game files on first launch and shares the installed game's data folder.
 
 ### Controllers
 
@@ -79,7 +81,7 @@ The port plays like the 2003 game, and adds what a modern release needs:
 
 - **Runs anywhere.** Windows, macOS and Linux (Wayland included) instead of Direct3D 8 on Windows, at any resolution, with borderless fullscreen that keeps the aspect ratio.
 - **Modern controllers.** PlayStation, Xbox and Switch Pro controllers are recognized on connect and switch a player to twin-stick controls, with reload on the shoulder like the 2014 remake. Every menu, list and slider works from the controller, with the focus always visible, and each co-op player can use their own controller.
-- **Original bugs fixed, and kept on request.** [27 gameplay bugs](https://crimson.banteg.xyz/rewrite/original-bugs/) are fixed by default, each traced to the decompiled code: Greater Regeneration did nothing, Bandage multiplied health instead of healing, some bonuses never dropped while you held certain weapons, and several co-op perks only worked for player 1. `--preserve-bugs` restores every one of them, exactly as the original behaves. The original's text stays as written, typos like "Fire Caugh" and "Plague Sphreader Gun" included.
+- **Original bugs fixed, and kept on request.** [The original's gameplay bugs](https://crimson.banteg.xyz/rewrite/original-bugs/) are fixed by default, each traced to the decompiled code: Greater Regeneration did nothing, Bandage multiplied health instead of healing, some bonuses never dropped while you held certain weapons, and several co-op perks only worked for player 1. `--preserve-bugs` restores every one of them, exactly as the original behaves. The original's text stays as written, typos like "Fire Caugh" and "Plague Sphreader Gun" included.
 - **Replays.** Every run is recorded and can be played back, verified tick by tick, or rendered to 60 fps video.
 - **Sharper art.** Textures come from the original uncompressed source art wherever it matches what shipped.
 

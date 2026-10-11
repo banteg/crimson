@@ -9,8 +9,12 @@ tags:
 ## Environment
 
 - Python 3.13+ with [uv](https://docs.astral.sh/uv/)
-- `just` task runner and ast-grep
-- for `crimson-core/`: clang++, Zig 0.17.0 (builds its math helper) and Node.js
+- `just` task runner, ast-grep, and [prek](https://github.com/j178/prek) for the git hooks
+  (`prek install -c prek.toml -t pre-commit -t pre-push`)
+- for `crimson-core/`: clang++ (native verifier), Zig (the version `scripts/build_identity.py` pins;
+  it builds the shared math helper and compiles the WASM targets) and Node.js
+- for the browser and desktop clients: wabt's `wasm2c`, SDL3, libcurl, and Emscripten for the
+  browser build; see the [port notes](https://github.com/banteg/crimson/blob/master/crimson-core/PORT.md)
 
 ## First run
 
@@ -28,7 +32,10 @@ just docs-build
 ## Run and inspect
 
 `crimson` and `crimsonland` both resolve to `crimson.cli:main`. With no subcommand
-they launch the Python game. Use command help as the authority for options and
+they launch the Python game. On first launch it downloads `crimson.paq`, `sfx.paq`
+and `music.paq` from the project's asset host into its data folder
+(`CRIMSON_RUNTIME_DIR`, else the platform's per-user data directory); the desktop
+client shares that folder. Use command help as the authority for options and
 error behavior; subcommands have different validation and mismatch exit codes.
 
 ```bash

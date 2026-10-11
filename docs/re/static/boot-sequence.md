@@ -43,7 +43,7 @@ The game pre-loads specific textures needed for the splash screen and loading sc
 
 ## 3. Splash Screen Rendering (Runtime Evidence)
 
-Runtime capture (`artifacts/frida/share/splash_draw_calls.jsonl`) shows the
+A historical Frida capture (`artifacts/frida/share/splash_draw_calls.jsonl`; the tooling has since been removed and the capture is not in the repo) shows the
 exact draw calls for the splash/loading screen at 800x600. Key facts:
 
 - **Background:** black clear. No `backplasma` or `mockup` draw calls appear in
@@ -208,7 +208,7 @@ Once loading is complete, `game_startup_init` runs
 
 ### Boot music handoff (runtime evidence)
 
-Frida trace (`artifacts/frida/share/music_intro_trace.jsonl`) shows the **intro
+A historical Frida trace (`artifacts/frida/share/music_intro_trace.jsonl`; tooling since removed, not in the repo) shows the **intro
 track is played inside `game_startup_init`**, then muted and replaced by
 `crimson_theme`:
 

@@ -25,8 +25,8 @@ what a modern release needs. All three fix the
 | --- | --- | --- | --- |
 | Platforms | Windows, macOS, Linux | Any browser with WebGL2 | macOS, Linux; Windows not yet |
 | Install | `uvx crimsonland@latest` | Nothing | CI builds only, no signed release channel |
-| Game files | Downloaded on first launch | Downloaded on first visit, or your own Crimsonland folder | Your own Crimsonland folder |
-| Saves | Per-user data directory | The browser's site storage | The game folder |
+| Game files | Downloaded on first launch | Downloaded on first visit, or your own Crimsonland folder | Downloaded on first launch, or a folder named on the command line |
+| Saves | Per-user data directory | The browser's site storage | The Python port's per-user data directory, shared with it |
 
 ## Playing
 
@@ -48,7 +48,7 @@ what a modern release needs. All three fix the
 
 | | Python port | Web | Native |
 | --- | --- | --- | --- |
-| Every run recorded | Yes, as `.crd` | Yes, in site storage, with no way to take it out | Yes, in the game folder |
+| Every run recorded | Yes, as `.crd` | Yes, in site storage, with no way to take it out | Yes, in the shared data directory |
 | Watch a replay | From the high scores and `crimson replay play`, seeking anywhere | From the high scores and a run's link, seeking anywhere | From the high scores and `--watch` links, seeking anywhere |
 | Verify or render a replay | `crimson replay verify`, `render` | No | No |
 | Runs checked against the verifier | By the gate and the server | Every client build, in CI | Every client build, in CI |
@@ -61,7 +61,7 @@ what a modern release needs. All three fix the
 | Uploads, offline queue | Yes | Yes | Yes |
 | Profile, signed in | Yes | Yes | Yes, in your browser |
 | Update scores on the high score screen | Yes | Yes | Yes |
-| Your key | `identity.key`; export and import with `crimson identity` | Site storage, no export; link an account to keep your runs | `identity.key` in the game folder |
+| Your key | `identity.key`; export and import with `crimson identity` | Site storage, no export; link an account to keep your runs | `identity.key` in the shared data directory |
 
 ## Next
 
