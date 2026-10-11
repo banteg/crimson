@@ -32,12 +32,21 @@ Why it’s likely a bug:
 
 Examples of the accidental hard bans (native metadata):
 
+- `Nuke` / `Double Experience` / `Shock Chain` / `Fireblast` (`amount=1`, the
+  `bonus_meta_cpp_t` constructor default that `bonus_metadata_init` never
+  overrides) while holding `Pistol` (`weapon_id=1`)
 - `Reflex Boost` (`amount=3`) while holding `Shotgun` (`weapon_id=3`)
 - `Fire Bullets` (`amount=4`) while holding `Sawed-off Shotgun` (`weapon_id=4`)
 - `Freeze` (`amount=5`) while holding `Submachine Gun` (`weapon_id=5`)
 - `Shield` (`amount=7`) while holding `Mean Minigun` (`weapon_id=7`)
-- `Speed` (`amount=8`) while holding `Flamethrower` (`weapon_id=8`)
+- `Speed` / `Energizer` (`amount=8`) while holding `Flamethrower` (`weapon_id=8`)
 - `Weapon Power Up` / `MediKit` (`amount=10`) while holding `Multi-Plasma` (`weapon_id=10`)
+
+The check sits on the normal drop path only; the Pistol's forced Weapon drop
+has its own checks. Evidence:
+`decomp/1.9/crimsonland/crimsonland/bonus_try_spawn_on_kill.cpp` (the reject
+after the 56-unit conversion), `gameplay/bonus_meta_entry_init.cpp` and
+`gameplay/bonus_metadata_init.cpp`.
 
 Rewrite behavior:
 

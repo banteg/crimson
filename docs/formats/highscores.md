@@ -35,9 +35,12 @@ every record written before replays were numbered; a number whose file is
 missing is a replay that was not saved.
 
 Normal quest files use `questhcM_N.hi`; hardcore uses `questM_N.hi`. That apparent
-inversion is native behavior. The port adds `_2`, `_3`, or `_4` before `.hi` for
-separate local co-op tables. Other modes use `survival.hi`, `rush.hi`, and
-`typo.hi`.
+inversion is native behavior. Survival and Rush use `survival.hi` and `rush.hi`.
+The original has no Typ-o name: `highscore_build_path` falls through to
+`scores5\unknown.hi`, relative to the working directory rather than the game
+folder, and Typ-o's high-score target names read that file too. The port saves
+and reads Typ-o scores as `typo.hi`. Two-player tables add `_2` before `.hi`;
+the port adds `_3` or `_4` for its larger co-op tables.
 
 Names are trimmed in the stored copy before encoding. Native trimming preserves
 character zero even for an all-space name; the name-entry UI requires a

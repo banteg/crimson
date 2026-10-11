@@ -1,39 +1,30 @@
-const WEAPONS = [
-  { id: 1, name: "Pistol", multiplier: 4.1 },
-  { id: 2, name: "Assault Rifle", multiplier: 1.0 },
-  { id: 3, name: "Shotgun", multiplier: 1.2 },
-  { id: 4, name: "Sawed-off Shotgun", multiplier: 1.0 },
-  { id: 5, name: "Submachine Gun", multiplier: 1.0 },
-  { id: 6, name: "Gauss Gun", multiplier: 1.0 },
-  { id: 7, name: "Mean Minigun", multiplier: 1.0 },
-  { id: 8, name: "Flamethrower", multiplier: 1.0 },
-  { id: 9, name: "Plasma Rifle", multiplier: 5.0 },
-  { id: 10, name: "Multi-Plasma", multiplier: 1.0 },
-  { id: 11, name: "Plasma Minigun", multiplier: 2.1 },
-  { id: 12, name: "Rocket Launcher", multiplier: 1.0 },
-  { id: 13, name: "Seeker Rockets", multiplier: 1.0 },
-  { id: 14, name: "Plasma Shotgun", multiplier: 1.0 },
-  { id: 15, name: "Blow Torch", multiplier: 1.0 },
-  { id: 17, name: "Mini-Rocket Swarmers", multiplier: 1.0 },
-  { id: 18, name: "Rocket Minigun", multiplier: 1.0 },
-  { id: 19, name: "Pulse Gun", multiplier: 1.0 },
-  { id: 20, name: "Jackhammer", multiplier: 1.0 },
-  { id: 21, name: "Ion Rifle", multiplier: 3.0 },
-  { id: 22, name: "Ion Minigun", multiplier: 1.4 },
-  { id: 23, name: "Ion Cannon", multiplier: 16.7 },
-  { id: 24, name: "Shrinkifier 5k", multiplier: 0.0 },
-  { id: 25, name: "Blade Gun", multiplier: 11.0 },
-  { id: 28, name: "Plasma Cannon", multiplier: 28.0 },
-  { id: 29, name: "Splitter Gun", multiplier: 6.0 },
-  { id: 30, name: "Gauss Shotgun", multiplier: 1.0 },
-  { id: 31, name: "Ion Shotgun", multiplier: 1.0 },
+// Direct-hit multipliers, grouped by the projectile each weapon actually fires.
+// Rockets and flamers don't use the bullet formula, so they're left out.
+const SHOTS = [
+  { name: "Pistol, Mean Minigun", multiplier: 4.1 },
+  { name: "Assault Rifle, Submachine Gun, Pulse Gun", multiplier: 1.0 },
+  { name: "Shotgun, Sawed-off, Jackhammer pellet", multiplier: 1.2 },
+  { name: "Plasma Rifle, Multi-Plasma inner bolt", multiplier: 5.0 },
+  { name: "Plasma Minigun, Plasma Shotgun pellet, Multi-Plasma outer bolt", multiplier: 2.1 },
+  { name: "Ion Rifle direct hit", multiplier: 3.0 },
+  { name: "Ion Minigun, Ion Shotgun pellet direct hit", multiplier: 1.4 },
+  { name: "Ion Cannon direct hit", multiplier: 16.7 },
+  { name: "Plasma Cannon", multiplier: 28.0 },
+  { name: "Splitter Gun", multiplier: 6.0 },
+  { name: "Shrinkifier 5k", multiplier: 0.0 },
+  { name: "Blade Gun last hit", multiplier: 11.0 },
+  { name: "Gauss Gun, Gauss Shotgun last hit", multiplier: 1.0 },
+  { name: "Fire Bullets last hit", multiplier: 0.25 },
 ];
 
+// Piercing shots: pool and the multiplier of their last, normal hit.
 const POOL_WEAPONS = [
-  { name: "Gauss Gun", pool: 300, trail: "51, 128, 255" },
-  { name: "Fire Bullets", pool: 240, trail: "255, 153, 26" },
-  { name: "Blade Gun", pool: 50, trail: "240, 120, 255" },
+  { name: "Gauss Gun", pool: 300, multiplier: 1.0, trail: "51, 128, 255" },
+  { name: "Fire Bullets", pool: 240, multiplier: 0.25, trail: "255, 153, 26" },
+  { name: "Blade Gun", pool: 50, multiplier: 11.0, trail: "240, 120, 255" },
 ];
+
+const MAX_ENEMIES = 6;
 
 const ENEMIES = [
   { name: "Small alien", hp: 20, sprite: "alien" },
@@ -110,8 +101,8 @@ function initDamageCalculator(container) {
   controls.className = "widget-controls";
 
   const select = buildSelect(
-    WEAPONS,
-    (w) => w.id,
+    SHOTS,
+    (_, i) => i,
     (w) => `${w.name} (${w.multiplier}x)`,
   );
 
@@ -123,7 +114,7 @@ function initDamageCalculator(container) {
   let view;
 
   function update() {
-    const weapon = WEAPONS.find((w) => w.id === Number(select.value));
+    const weapon = SHOTS[Number(select.value)];
     const spec = falloffSpec(weapon.multiplier);
     if (view) view.finalize();
     vegaEmbed(chartDiv, spec, { actions: false, renderer: "svg" }).then((result) => {
@@ -153,6 +144,14 @@ function initDamagePool(container) {
   const rows = document.createElement("div");
   rows.className = "pool-rows";
 
+  function formatPool(value) {
+    return value >= 10000 ? `${Math.round(value / 1000)}k` : `${Math.round(value)}`;
+  }
+
+  // Simulates one shot through a line of identical enemies, without damage perks.
+  // Each hit spends 1 from the pool and deals the rest; the pool then becomes
+  // that damage minus the target's remaining health (overkill counts back in).
+  // A spent shot lands one last normal hit on the next contact and stops.
   function renderRow(weapon, enemy) {
     const row = document.createElement("div");
     row.className = "pool-viz";
@@ -165,27 +164,33 @@ function initDamagePool(container) {
     hpRow.className = "pool-hp-row";
 
     let pool = weapon.pool;
-    let drained = false;
-    let hitCount = 0;
-    const maxEnemies = Math.ceil(weapon.pool / enemy.hp) + 1;
+    let reached = 0;
+    let lastHitOn = -1;
+    let kills = 0;
 
-    for (let i = 0; i < maxEnemies; i++) {
-      const hit = pool > 0;
-      const dealt = hit ? Math.min(pool, enemy.hp) : 0;
-      const remaining = enemy.hp - dealt;
-      const killed = hit && remaining === 0;
-      if (hit) hitCount++;
-
+    for (let i = 0; i < MAX_ENEMIES && lastHitOn === -1; i++) {
+      reached++;
+      let hp = enemy.hp;
       const poolLabel = document.createElement("div");
       poolLabel.className = "pool-cell";
-      if (hit) {
-        poolLabel.textContent = `${pool}`;
-      } else if (!drained) {
-        poolLabel.textContent = "0";
-        drained = true;
+
+      if (pool <= 0) {
+        poolLabel.textContent = "last";
+        lastHitOn = i;
+      } else {
+        poolLabel.textContent = formatPool(pool);
+        while (hp > 0 && pool > 0) {
+          pool -= 1;
+          if (pool <= 0) break;
+          hp -= pool;
+          pool -= hp;
+        }
+        if (hp > 0) lastHitOn = i;
       }
       poolRow.appendChild(poolLabel);
 
+      const killed = hp <= 0;
+      if (killed) kills++;
       const sprite = document.createElement("img");
       sprite.src = killed ? `/images/creatures/${enemy.sprite}-dead.png` : `/images/creatures/${enemy.sprite}.png`;
       sprite.alt = enemy.name;
@@ -194,19 +199,24 @@ function initDamagePool(container) {
 
       const hpLabel = document.createElement("div");
       hpLabel.className = "pool-cell";
-      if (!killed) hpLabel.textContent = `${remaining}`;
+      if (!killed) hpLabel.textContent = `${Math.round(hp)}`;
       hpRow.appendChild(hpLabel);
-
-      if (hit) pool = Math.max(0, pool - enemy.hp);
     }
 
     const trail = document.createElement("div");
     trail.className = "pool-trail";
     const c = weapon.trail;
-    trail.style.width = `calc(${hitCount * 32 - 16}px + 1rem)`;
+    trail.style.width = `calc(${reached * 32 - 16}px + 1rem)`;
     trail.style.background = `linear-gradient(to right, rgba(${c}, 0.25), rgba(${c}, 0.8))`;
 
-    row.append(poolRow, spriteRow, hpRow);
+    const lastHit = Math.round(calcDamage(50, weapon.multiplier));
+    const caption = document.createElement("div");
+    caption.style.fontSize = "0.7rem";
+    caption.textContent = lastHitOn === -1
+      ? `${enemy.name} (${enemy.hp} HP): still going after ${kills} kills, pool ${formatPool(pool)}`
+      : `${enemy.name} (${enemy.hp} HP): ${kills} kills, then one last normal hit (up to ${lastHit})`;
+
+    row.append(caption, poolRow, spriteRow, hpRow);
     spriteRow.appendChild(trail);
     return row;
   }

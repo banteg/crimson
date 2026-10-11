@@ -8,45 +8,45 @@ tags:
 
 # Rush
 
-Pure reaction mode. The player is locked to the Assault Rifle with
-infinite ammo. No bonuses, no perks, no pickups. Score is survival time.
+Pure reaction mode. You're locked to the Assault Rifle with endless ammo.
+No bonuses or perks. Score is survival time.
 
 ## Starting conditions
 
-- Weapon: Assault Rifle (forced). Cannot be changed.
-- Ammo is refilled to full clip every frame.
-- Bonuses: disabled.
-- Perks: disabled.
+- Weapon: Assault Rifle, always.
+- Ammo never runs out.
+- Bonuses: off.
+- Perks: off.
 
 ## Spawning
 
-Every 250 ms, two creatures spawn simultaneously:
+Every 250 ms, two creatures enter at once, 64 units off the side edges:
 
-- **Right edge**: Alien (type 2).
-- **Left edge**: Spider (type 3), 1.4× faster than the right-side alien.
+- **Right edge**: an alien.
+- **Left edge**: a jerky spider, 1.4× faster than the alien.
 
-Both spawn positions oscillate vertically using sine/cosine of elapsed
-time.
+The two spawn points sweep up and down their edges, up to 256 units either
+side of the middle, a quarter-cycle apart. A full sweep takes 6.3 seconds.
 
-Spawn cooldown decreases by `player_count × frame_dt`, so multiplayer
-speeds up the pace.
+In co-op the gap halves to 125 ms.
 
 ### Scaling over time
 
-All creatures scale with elapsed time:
+Every creature gets tougher with the clock:
 
-| Stat | Formula |
-| --- | --- |
-| Health | `10 + elapsed_ms × 0.0001` |
-| Size | `47 + elapsed_ms × 0.00001` |
-| Move speed (right) | `2.5 + elapsed_ms × 0.00001` |
-| Move speed (left) | right speed × 1.4 |
-| Contact damage | 4.0 (fixed) |
+| Stat | Start | Per minute |
+| --- | ---: | ---: |
+| Health | 10 | +6 |
+| Size | 47 | +0.6 |
+| Speed (alien) | 2.5 | +0.6 |
+| Speed (spider) | 3.5 | +0.84 |
+| Contact damage | 4 | — |
 
 ## Scoring
 
-Ranked by longest survival time. The end-of-run record includes kills.
+Ranked by survival time, to 0.01 s. The score card also shows game time,
+most-used weapon, kills and hit %.
 
 ## Game over
 
-The run ends when all players are dead.
+The run ends once the last player's death animation finishes.

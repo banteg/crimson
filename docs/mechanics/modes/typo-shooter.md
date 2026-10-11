@@ -8,71 +8,77 @@ tags:
 
 # Typ-o-Shooter
 
-Shooting is replaced by typing. Creatures are labeled with names, and
-typing a name followed by Enter fires at the matching creature.
+Shooting is replaced by typing. Every creature carries a name; type it and
+press Enter to shoot it.
 
-Unlocked after completing all tier 1-4 quests on normal difficulty.
+Unlocked once you clear quest 4.10, on either difficulty.
 
 ## Starting conditions
 
-- Weapon: Shotgun (weapon ID 3), controlled by the mode and not selectable.
-- Bonuses: disabled. Weapon Power Up and Reflex Boost timers are cleared
-  every frame.
-- Perks: disabled.
+- Weapon: Shotgun, always.
+- You stand still in the middle of the arena.
+- Bonuses: off.
+- Perks: off.
 - Single-player only.
 
 ## Input
 
-- Type characters to build a buffer, displayed in a panel at the bottom
-  of the screen.
-- Press Enter to match the buffer against living creature names. On a
-  match, the player fires at that creature.
-- Backspace deletes the last character.
-- The mouse does not aim: the trooper keeps aiming at the last creature it
-  shot, even into the next run.
+- Type to fill the line at the bottom of the screen. Backspace deletes the
+  last letter.
+- Enter checks the line against every living creature's name. On a match,
+  you fire one 12-pellet blast at that creature. There's no cooldown or
+  reload, so you shoot as fast as you type.
+- Pellets kill anything in their way.
+- The mouse doesn't aim: the trooper keeps facing the last creature it shot,
+  even into the next run.
 
-## Creature names
+## Creatures
 
-Names are randomly generated from a pool of 52 word parts (e.g. "lamb",
-"gun", "head", "fox", "boom"). Names start as single parts and grow
-to 2, 3, then 4 concatenated parts as the player's score increases
-past 20, 60, and 120. Higher part counts become more probable at each
-threshold. Names must
-be unique among living creatures (up to 200 reroll attempts). Maximum
-length is 16 characters.
+Every creature has 1 HP and does 100 contact damage, so one touch kills
+you. Aliens move at 1.7; spiders move at 2.04, in jerky bursts. Their stats
+never change during a run.
+
+## Names
+
+Names are built from 52 short words like "lamb", "gun", "head", "fox" and
+"boom". "The" can only start a name. Longer names come in as your kills
+grow:
+
+| Kills | Name length |
+| ---: | --- |
+| Up to 20 | 1 word |
+| 21–40 | 40% 2 words |
+| 41–60 | 80% 2 words |
+| 61–80 | 40% 3 words |
+| 81–120 | 80% 3 words |
+| Over 120 | 10% a high-score name, else 80% 4 words |
+
+Names that miss their roll fall back to the shorter lengths. High-score
+names come from your Typ-o high-score list ("quickbrownfox" if it has none).
+
+Names are at most 15 letters; longer ones are rerolled up to 100 times. No
+two living creatures share a name (the rewrite gives up after 200 tries).
 
 !!! tip "Custom dictionary"
 
-    The rewrite supports loading a custom word list from
-    `typo_dictionary.txt` placed in the game directory. One word per
-    line, max 15 characters each. Lines starting with `#` are comments.
-    When present, names are built by concatenating words from this file
-    instead of the built-in parts.
+    The rewrite can load your own words from `typo_dictionary.txt` in the
+    game directory. One word per line, up to 15 characters. Anything after
+    `#` is a comment, and duplicates are dropped. Names are built from these
+    words instead, with no word repeated within a name. Past 120 kills, the
+    1-in-10 slot uses a single dictionary word.
 
 ## Spawning
 
-Spawn cooldown decreases by `frame_dt × player_count` each frame. When
-it crosses zero, a symmetric pair spawns from opposite edges: a spider
-on the right and an alien on the left. Cooldown resets to:
-
-`3500 − elapsed_ms / 800` (milliseconds, minimum 100)
-
-Creatures are tinted based on elapsed time, shifting through color over
-the course of a run.
-
-## Player state
-
-The mode forces the Shotgun and overrides its normal behavior every frame:
-shot cooldown is zeroed, spread is reset, ammo is kept full, and reload is
-inactive. Typing a creature name is what requests its bespoke twelve-pellet
-shot.
+A spider and an alien enter together, one off each side at the same height.
+That height sweeps up and down the edges. A new pair comes every 3.5
+seconds at first, 75 ms sooner each minute, down to 0.1 s at 45:20.
 
 ## Scoring
 
-Ranked by elapsed time. The record includes shots fired (Enter presses)
-and shots hit (successful name matches). The original keeps counting
-these across runs in one session; the rewrite counts each run's own.
+Score is kills, 1 point each, and ranks the high-score table. Hit % is
+matched names out of Enter presses. The original keeps counting those
+across runs in one session; the rewrite counts each run's own.
 
 ## Game over
 
-The run ends when the player dies and the death timer completes.
+The run ends once your death animation finishes.

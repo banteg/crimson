@@ -8,34 +8,36 @@ tags:
 
 # Tutorial
 
-A guided onboarding sequence that teaches movement, shooting, pickups,
-and perks through a fixed series of stages. Single-player only. No score
-is recorded.
+A short guided run that teaches movement, shooting, pickups and perks.
+Single-player only. No score is recorded.
 
 ## Starting conditions
 
 - Weapon: Pistol.
-- Bonuses: placed by the tutorial script (not random drops). Bonuses
-  persist indefinitely until picked up.
-- Perks: enabled at the perk lesson stage.
+- You can't die: health stays at 100.
+- XP stays at 0, except during the perk lesson.
+- Bonuses: placed by the script, never random. They stay until you pick
+  them up.
 
 ## Stages
 
-The tutorial advances through 9 stages. An intro message displays for 6
-seconds, then the player learns movement (press a movement key), bonus
-pickup (collect placed bonuses), shooting (press fire), and aiming (kill
-the spawned creatures). Stage 5 runs 7 combat waves from alternating
-sides. The first 5 waves include a bonus carrier that drops Speed,
-Weapon (Shotgun), Double Experience, Nuke, and Reflex Boost in order,
-with a hint panel describing each. Waves 6 and 7 have no bonus carrier.
-After the waves, experience is set to 3000 to trigger a level-up and
-perk selection. A final wave follows, then the player chooses Play or
-Repeat.
+1. **Intro**: a welcome message for 6 seconds.
+2. **Move**: press a movement key. Three Points bonuses appear (500, 1000
+   and 500).
+3. **Pick up**: collect all three.
+4. **Shoot**: press fire. Three aliens come in from the left.
+5. **Aim**: kill them. Three more come from the right.
+6. **Practice**: 7 waves of three aliens, alternating left and right. Each
+   wave starts once the last one is dead and its bonus collected. Waves 1–5
+   bring a carrier from a bottom corner that drops, in order, Speed, Weapon
+   (Submachine Gun), Double Experience, Nuke and Reflex Boost. Killing a
+   carrier brings two more aliens near the top-left and shows a hint about
+   its bonus. Wave 4 adds a spider from the bottom.
+7. **Perks**: your XP jumps to 3,000, one level. Pick a perk from the
+   level-up sign.
+8. **Final wave**: seven aliens, three from each side and one from the
+   top-left corner. Kill them all.
+9. **Done**: choose Play a game or Repeat tutorial.
 
-A skip button appears after 1 second on each stage except the last,
-which shows Play and Repeat buttons instead.
-
-## Forced state
-
-The player's health is locked to 100 throughout the tutorial. Experience
-is forced to 0 outside the perk lesson.
+A Skip tutorial button fades in after the first second and stays up until
+the last stage.

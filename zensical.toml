@@ -10,7 +10,6 @@ extra_javascript = [
     "https://cdn.jsdelivr.net/npm/vega-lite@6",
     "https://cdn.jsdelivr.net/npm/vega-embed@7",
     "javascripts/weapons-widgets.js",
-    "javascripts/survival-compare-widgets.js",
 ]
 
 nav = [
@@ -19,17 +18,24 @@ nav = [
     { "Overview" = "mechanics/index.md" },
     { "Modes" = [
       { "Survival" = "mechanics/modes/survival.md" },
-      { "Survival in the remake" = "mechanics/modes/remake-survival.md" },
       { "Rush" = "mechanics/modes/rush.md" },
       { "Quests" = "mechanics/modes/quests.md" },
       { "Typ-o-Shooter" = "mechanics/modes/typo-shooter.md" },
       { "Tutorial" = "mechanics/modes/tutorial.md" },
     ]},
-    { "Weapons" = "mechanics/combat/weapons.md" },
+    { "Combat" = [
+      { "Player" = "mechanics/combat/player.md" },
+      { "Creatures" = "mechanics/combat/creatures.md" },
+      { "Weapons" = "mechanics/combat/weapons.md" },
+    ]},
     { "Systems" = [
-      { "Bonuses" = "mechanics/systems/bonuses.md" },
-      { "Secret weapons" = "mechanics/secret-weapons.md" },
       { "Perks" = "mechanics/perks.md" },
+      { "Bonuses" = "mechanics/systems/bonuses.md" },
+      { "Co-op" = "mechanics/systems/co-op.md" },
+      { "Scores and leaderboards" = "mechanics/systems/scores.md" },
+      { "Secret weapons" = "mechanics/secret-weapons.md" },
+      { "Secrets" = "mechanics/systems/secrets.md" },
+      { "Classic quirks" = "mechanics/systems/classic-quirks.md" },
     ]},
   ]},
   { "Rewrite" = [

@@ -21,7 +21,9 @@ the same checks (`src/crimson/replay/ranked.py`).
 | `quests` | Quests | final quest time, lower wins |
 | `quests-hardcore` | Quests on hardcore | final quest time, lower wins |
 
-Hardcore changes only quests, so Survival has one board. Each quest level ranks
+Ranked play applies Hardcore only to quests, so Survival has one board. (In
+the original, a saved Hardcore setting also toughens Survival's milestone
+waves; a ranked Survival run always plays with it off.) Each quest level ranks
 on its own. Equal scores keep the earlier submission ahead. Accounts, uploads and
 names are in [leaderboard identity](leaderboard-identity.md). Rush, Typ-o, the
 Tutorial and co-op do not rank yet; the recovered core verifies one player in
