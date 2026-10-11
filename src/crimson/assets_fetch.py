@@ -9,10 +9,12 @@ from pathlib import Path
 
 import msgspec
 
+from grim import paq
 from grim.console import ConsoleState
 
 ASSET_BASE_URL = "https://paq.crimson.banteg.xyz/v1.9.93"
 DEFAULT_PAQ_FILES = ("crimson.paq", "music.paq", "sfx.paq")
+MUSIC_PAQ = "music.paq"
 
 
 class DownloadResult(msgspec.Struct, frozen=True):
@@ -70,3 +72,26 @@ def download_missing_paqs(
         console.log.log(f"assets: downloaded {name}")
     console.log.flush()
     return tuple(results)
+
+
+def music_entry_name(name: str) -> str:
+    """The name the original asks music.paq for: `music\\<file>`."""
+    return "music\\" + name.replace("\\", "/").rsplit("/", 1)[-1]
+
+
+def migrate_music_paq(assets_dir: Path) -> bool:
+    """Rename an earlier repack's entries (`intro.ogg`, `music/game_tunes.txt`) to the names the original asks for.
+
+    The native and web clients run the original's own pack lookup, which matches whole names.
+    """
+    path = assets_dir / MUSIC_PAQ
+    if not path.is_file():
+        return False
+    entries = paq.read_paq(path)
+    renamed = [(music_entry_name(name), data) for name, data in entries]
+    if renamed == entries:
+        return False
+    tmp_path = path.with_name(path.name + ".tmp")
+    paq.write_paq(tmp_path, renamed)
+    tmp_path.replace(path)
+    return True

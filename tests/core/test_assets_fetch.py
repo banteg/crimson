@@ -5,7 +5,8 @@ import urllib.request
 from pathlib import Path
 from typing import cast
 
-from crimson.assets_fetch import _download_file
+from crimson.assets_fetch import _download_file, migrate_music_paq
+from grim import paq
 
 
 class _FakeResponse(io.BytesIO):
@@ -35,3 +36,18 @@ def test_download_file_uses_unique_tempfile(mocker, tmp_path: Path) -> None:
     tmp_source = cast("Path", replace.call_args.args[0])
     assert tmp_source.parent == dest.parent
     assert tmp_source != dest.with_suffix(dest.suffix + ".tmp")
+
+
+def test_migrate_music_paq_renames_an_earlier_repack_once(tmp_path: Path) -> None:
+    paq.write_paq(
+        tmp_path / "music.paq",
+        [("intro.ogg", b"intro"), ("music/game_tunes.txt", b"snd_addGameTune gt1_ingame.ogg\n")],
+    )
+
+    assert migrate_music_paq(tmp_path)
+    assert paq.read_paq(tmp_path / "music.paq") == [
+        ("music\\intro.ogg", b"intro"),
+        ("music\\game_tunes.txt", b"snd_addGameTune gt1_ingame.ogg\n"),
+    ]
+    assert not migrate_music_paq(tmp_path)
+    assert not (tmp_path / "music.paq.tmp").exists()

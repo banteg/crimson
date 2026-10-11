@@ -68,11 +68,11 @@
 <script>
   // The game reads and writes its directory, /game, kept in IndexedDB. Files it
   // lacks come from ?assets=<url>, default ./game/ (the project's distribution:
-  // crimson.paq, sfx.paq, and music.paq, which is unpacked into music/, where the
-  // executable plays its music from), or else from the player's own game folder,
-  // whose grim.dll comes along (game/resources.cpp).
+  // crimson.paq, sfx.paq and music.paq), or else from the player's own game
+  // folder, whose grim.dll comes along (game/resources.cpp).
   const FILES = ["crimson.paq", "sfx.paq"];
-  // The music the executable plays by name, and the file naming the in-game tunes.
+  // Without music.paq, the loose music the GOG release ships: what the executable
+  // plays by name, and the file naming the in-game tunes.
   const MUSIC = ["intro", "crimson_theme", "crimsonquest", "shortie_monk"].map((name) => `music/${name}.ogg`);
   const TUNES = "music/game_tunes.txt";
   const base = new URLSearchParams(location.search).get("assets") ?? "game/";
@@ -180,6 +180,7 @@
   const exists = (name) => FS.analyzePath("/game/" + name).exists;
   // The game files /game lacks, the tunes game_tunes.txt adds among them.
   function missing() {
+    if (exists("music.paq")) return FILES.filter((name) => !exists(name));
     const tunes = exists(TUNES)
       ? [...FS.readFile("/game/" + TUNES, { encoding: "utf8" }).matchAll(/^snd_addGameTune\s+(\S+)/gm)].map((m) => "music/" + m[1])
       : [TUNES];
@@ -202,8 +203,22 @@
     }
     return entries;
   }
+  // The executable's own pack lookup finds music.paq's entries by their whole
+  // names, music\intro.ogg and the rest; an earlier repack stored intro.ogg and
+  // music/game_tunes.txt, renamed here as the Python game does
+  // (src/crimson/assets_fetch.py).
   const storeMusic = (bytes) => {
-    for (const [name, data] of paq(bytes)) store("music/" + name.split("/").pop(), data);
+    const entries = paq(bytes).map(([name, data]) => [new TextEncoder().encode("music\\" + name.split(/[\\/]/).pop()), data]);
+    const out = new Uint8Array(entries.reduce((sum, [name, data]) => sum + name.length + 5 + data.length, 4));
+    const view = new DataView(out.buffer);
+    view.setUint32(0, 0x70617100);
+    entries.reduce((at, [name, data]) => {
+      out.set(name, at);
+      view.setUint32(at + name.length + 1, data.length, true);
+      out.set(data, at + name.length + 5);
+      return at + name.length + 5 + data.length;
+    }, 4);
+    store("music.paq", out);
   };
 
   // The files the player picks, matched by name inside the chosen folder: the

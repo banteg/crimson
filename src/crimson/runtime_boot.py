@@ -7,7 +7,7 @@ import msgspec
 from grim.config import CrimsonConfig, ensure_crimson_cfg
 from grim.console import ConsoleState, create_console, register_core_cvars
 
-from .assets_fetch import download_missing_paqs
+from .assets_fetch import download_missing_paqs, migrate_music_paq
 
 
 class RuntimeBoot(msgspec.Struct, frozen=True):
@@ -35,4 +35,6 @@ def boot_runtime(
     console = create_console(base_dir, assets_dir=assets_dir)
     register_core_cvars(console, width, height)
     download_missing_paqs(assets_dir, console)
+    if migrate_music_paq(assets_dir):
+        console.log.log("assets: renamed music.paq's entries to the original's music\\ names")
     return RuntimeBoot(config=config, console=console, width=width, height=height)

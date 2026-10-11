@@ -1,10 +1,11 @@
 // Boots the original game from a game directory (crimson.paq, sfx.paq
-// and music/), headless under Node's WASI, then clicks through to a Survival
-// run. No asset may fail to load, the menus' music must reach the mix, the run
+// and music.paq), headless under Node's WASI, then clicks through to a Survival
+// run. No asset or tune may fail to load, the menus' music must reach the mix, the run
 // must play as a session and keep drawing, and losing the window must stop the
 // run until it returns.
 //
 //   node crimson-core/checks/game_boot.mjs <game directory> [game.wasm]
+import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { CORE } from "./engine.mjs";
@@ -60,8 +61,12 @@ for (let frame = 1; frame <= 3000; frame++) {
   if (mix.some((v) => v !== 0)) ++audible;
   if (game.game_state() === GAMEPLAY && run.calls.draw > draws) ++playing;
 }
+// The console log is whole once the game quits.
+game.game_close();
+assert.throws(() => run.frame(16), /the game quit/);
+game.game_exit();
 const log = fs.readFileSync(path.join(directory, "console.log"), "latin1");
-const failed = log.split("\n").filter((line) => line.includes("failed"));
+const failed = log.split("\n").filter((line) => line.includes("failed") || /^SFX Tune .* FAILED|^Cannot open file 'music/.test(line));
 if (failed.length) throw Error(`assets failed to load:\n${failed.join("\n")}`);
 if (playing < 600) throw Error(`the Survival run drew ${playing} frames`);
 // The client plays the run as a session, which records it (host/session.inc).

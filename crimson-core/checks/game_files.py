@@ -1,32 +1,19 @@
 """Lay out a game directory from the files the project distributes.
 
-crimson.paq and sfx.paq as they are, and music.paq unpacked into music/, where
-the executable plays its music from (the official addon's tunes come in through
-music/game_tunes.txt). No grim.dll: the module takes Grim's default font from
-crimson.paq (game/resources.cpp). The checks that boot the original run from
-this directory.
+crimson.paq, sfx.paq and music.paq as the clients keep them: music.paq's entries
+under the names the executable asks for (music\\intro.ogg, and the
+music\\game_tunes.txt that brings in the official addon's tunes), as
+crimson.assets_fetch.migrate_music_paq renames an earlier repack's. No
+grim.dll: the module takes Grim's default font from crimson.paq
+(game/resources.cpp). The checks that boot the original run from this
+directory.
 """
 
 import argparse
-import struct
 import urllib.request
 from pathlib import Path
 
-from crimson.assets_fetch import ASSET_BASE_URL
-
-FILES = ("crimson.paq", "sfx.paq")
-
-
-def paq_entries(data):
-    if data[:4] != b"paq\0":
-        raise SystemExit("not a PAQ")
-    offset = 4
-    while offset < len(data):
-        end = data.index(b"\0", offset)
-        name = data[offset:end].decode("latin1")
-        (size,) = struct.unpack_from("<I", data, end + 1)
-        yield name, data[end + 5 : end + 5 + size]
-        offset = end + 5 + size
+from crimson.assets_fetch import ASSET_BASE_URL, DEFAULT_PAQ_FILES, migrate_music_paq
 
 
 def fetch(name, base):
@@ -41,11 +28,10 @@ def main():
     parser.add_argument("directory", type=Path)
     parser.add_argument("--base", default=ASSET_BASE_URL)
     args = parser.parse_args()
-    (args.directory / "music").mkdir(parents=True, exist_ok=True)
-    for name in FILES:
+    args.directory.mkdir(parents=True, exist_ok=True)
+    for name in DEFAULT_PAQ_FILES:
         (args.directory / name).write_bytes(fetch(name, args.base))
-    for name, data in paq_entries(fetch("music.paq", args.base)):
-        (args.directory / "music" / name.split("/")[-1]).write_bytes(data)
+    migrate_music_paq(args.directory)
 
 
 if __name__ == "__main__":

@@ -6,12 +6,15 @@
 // crimson.paq resolves every name to itself.
 #include <ctype.h>
 #include <initializer_list>
+#include <stdio.h>
 #include <string.h>
 
 extern char *grim_lookup_blob_magic;
 extern char *grim_lookup_blob;
 extern int grim_lookup_blob_size;
 extern unsigned char grim_lookup_blob_loaded;
+extern unsigned char resource_pack_enabled;
+unsigned char resource_read_alloc(char *path, void **out_data, unsigned int *out_size);
 
 // The same path but for separators and case, up to the extensions when `stems`.
 bool paq_same_path(const char *stored, const char *wanted, bool stems) {
@@ -43,4 +46,22 @@ char *grim_lookup_blob_entry(char *path) {
       offset += length + 5 + *(int *)(name + length + 1);
     }
   return path;
+}
+
+// The distributed music.paq: the music under the names the executable asks for
+// (music\intro.ogg), which audio_init_music's pack lookup finds, and the
+// music\game_tunes.txt it execs while that pack is set. A script the folder
+// lacks is read from the pack in its place.
+extern "C" FILE *resource_pack_open_script(char *path) {
+  void *data;
+  unsigned int size;
+  if (!resource_pack_enabled || !resource_read_alloc(path, &data, &size))
+    return nullptr;
+  FILE *script = fmemopen(nullptr, size + 1, "w+");
+  if (script) {
+    fwrite(data, 1, size, script);
+    rewind(script);
+  }
+  delete[] (char *)data;
+  return script;
 }

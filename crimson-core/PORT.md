@@ -289,12 +289,13 @@ check on a seed whose run picks perks and pauses.
 
 ### Assets
 
-The client reads a game directory: `crimson.paq`, `sfx.paq` and the `music`
-folder, and `grim.dll` when it is there (the configuration files appear on first
-launch). The executable
-asks for music as `music\<name>.ogg`, which no PAQ entry matches, so it plays
-the loose files, as the GOG release ships them; the in-game tunes are whatever
-`music\game_tunes.txt` adds. Nothing runs `grim.dll`: Grim is in the module,
+The client reads a game directory: `crimson.paq`, `sfx.paq` and `music.paq`, or
+the GOG release's loose `music` folder in its place, and `grim.dll` when it is
+there (the configuration files appear on first launch). The executable sets
+`music.paq` as its pack and asks it for `music\<name>.ogg`, falling back to
+the loose file; the in-game tunes are whatever `music\game_tunes.txt` adds,
+which `exec` reads from the folder, or else from the pack (a module change,
+[`repack.cpp`](game/repack.cpp)). Nothing runs `grim.dll`: Grim is in the module,
 and the DLL only holds two RCDATA images Grim's device loads, its default font
 and a splash it never draws. Both `crimson.paq` releases carry the same font as
 `load/default_font_courier.tga`, which the module reads when there is no
@@ -305,12 +306,15 @@ The project distributes the files from its asset host, by 10tons' permission:
 `sfx.paq` as released, `crimson.paq` repacked with the
 uncompressed art Tero sent (forward-slash names, each image in its own format,
 `game/alien.tga` where the executable asks for `game\alien.jaz`), and
-`music.paq` with the release's music and the official music addon, whose
-`music/game_tunes.txt` adds the addon tunes. Grim finds a PAQ entry by its exact
+`music.paq` with the release's music and the official music addon, stored
+under the names the executable asks for (`music\intro.ogg`), whose
+`music\game_tunes.txt` adds the addon tunes. An earlier repack stored bare
+names (`intro.ogg`), which the lookup misses; every client renames those in
+place (`crimson.assets_fetch.migrate_music_paq`). Grim finds a PAQ entry by its exact
 name and decodes it by the name's extension, so the module asks for the stored
 name first ([`repack.cpp`](game/repack.cpp)); the release's `crimson.paq`
-resolves every name to itself. The clients unpack `music.paq` into `music/`;
-the native client downloads the PAQs a folder lacks, as the Python game does.
+resolves every name to itself. The native client downloads the PAQs a folder
+lacks, as the Python game does.
 [`checks/game_files.py`](checks/game_files.py) lays out a game directory from
 the asset host, which CI uses for the checks that boot the original.
 

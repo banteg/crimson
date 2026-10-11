@@ -1,0 +1,23 @@
+The distributed music.paq stores the music under the names the executable asks for, music\intro.ogg and the
+rest, which its own pack lookup finds; exec reads music\game_tunes.txt from the pack too, when the folder holds no
+loose copy (game/repack.cpp).
+--- a/decomp/1.9/crimsonland/console/console_cmd_exec.cpp
++++ b/decomp/1.9/crimsonland/console/console_cmd_exec.cpp
+@@ -6,6 +6,7 @@
+ extern "C" FILE *crt_fopen(char *path, char *mode);
+ extern "C" char *crt_fgets(char *dst, int dst_len, FILE *fp);
+ extern "C" int crt_fclose(FILE *fp);
++extern "C" FILE *resource_pack_open_script(char *path);
+ 
+ extern "C" void console_cmd_exec(void)
+ {
+@@ -16,6 +17,9 @@
+ 
+     FILE *fp = crt_fopen(console_cmd_name[1], "rt");
+     if (fp == 0) {
++        fp = resource_pack_open_script(console_cmd_name[1]);
++    }
++    if (fp == 0) {
+         console_printf(
+             &console_log_queue,
+             "Cannot open file '%s'\n",

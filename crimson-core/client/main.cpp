@@ -548,50 +548,63 @@ bool present(const std::string &name) {
   std::string path;
   return client_resolve(name, path) && SDL_GetPathInfo(path.c_str(), nullptr);
 }
-// The files the game directory lacks: the PAQs, the music the executable plays
-// by name, and the tunes music/game_tunes.txt adds.
+// The files the game directory lacks: the PAQs, and the music, which music.paq
+// holds or else the loose files the GOG release ships: the music the executable
+// plays by name, and the tunes music/game_tunes.txt adds.
 std::vector<std::string> missing_files() {
-  std::vector<std::string> names = {"crimson.paq", "sfx.paq", "music/intro.ogg", "music/shortie_monk.ogg",
-                                    "music/crimson_theme.ogg", "music/crimsonquest.ogg", "music/game_tunes.txt"};
-  std::string path;
-  if (client_resolve("music/game_tunes.txt", path))
-    if (char *text = (char *)SDL_LoadFile(path.c_str(), nullptr)) {
-      std::istringstream lines(text);
-      SDL_free(text);
-      for (std::string line, command, tune; std::getline(lines, line);)
-        if (std::istringstream(line) >> command >> tune && command == "snd_addGameTune")
-          names.push_back("music/" + tune);
-    }
+  std::vector<std::string> names = {"crimson.paq", "sfx.paq"};
+  if (!present("music.paq")) {
+    names.insert(names.end(), {"music/intro.ogg", "music/shortie_monk.ogg", "music/crimson_theme.ogg",
+                               "music/crimsonquest.ogg", "music/game_tunes.txt"});
+    std::string path;
+    if (client_resolve("music/game_tunes.txt", path))
+      if (char *text = (char *)SDL_LoadFile(path.c_str(), nullptr)) {
+        std::istringstream lines(text);
+        SDL_free(text);
+        for (std::string line, command, tune; std::getline(lines, line);)
+          if (std::istringstream(line) >> command >> tune && command == "snd_addGameTune")
+            names.push_back("music/" + tune);
+      }
+  }
   std::vector<std::string> missing;
   for (const std::string &name : names)
     if (!present(name))
       missing.push_back(name);
   return missing;
 }
-// music.paq, as the project distributes the music, fills in what music/ lacks.
-// Each entry: a NUL-terminated name, a little-endian size, the bytes.
-void unpack_music() {
+// The executable's own pack lookup finds music.paq's entries by their whole
+// names, music\intro.ogg and the rest; an earlier repack stored intro.ogg and
+// music/game_tunes.txt, renamed here as the Python game does
+// (src/crimson/assets_fetch.py). Each entry: a NUL-terminated name, a
+// little-endian size, the bytes.
+void migrate_music_paq() {
   std::string path;
   size_t size;
   u8 *data;
   if (!client_resolve("music.paq", path) || !(data = (u8 *)SDL_LoadFile(path.c_str(), &size)))
     return;
-  if (client_resolve("music", path))
-    SDL_CreateDirectory(path.c_str());
+  std::string renamed(data, data + 4);
+  bool changed = false, whole = true;
   for (size_t at = 4; at < size;) {
     std::string name = (const char *)data + at;
     size_t start = at + name.size() + 5;
-    if (start > size)
+    u32 length = 0;
+    if (start <= size)
+      memcpy(&length, data + start - 4, 4);
+    if (start > size || length > size - start) {
+      whole = false;
       break;
-    u32 length;
-    memcpy(&length, data + start - 4, 4);
-    if (length > size - start)
-      break;
-    if (client_resolve("music/" + name.substr(name.rfind('/') + 1), path) && !SDL_GetPathInfo(path.c_str(), nullptr))
-      SDL_SaveFile(path.c_str(), data + start, length);
+    }
+    std::string wanted = "music\\" + name.substr(name.find_last_of("/\\") + 1);
+    changed |= wanted != name;
+    renamed += wanted;
+    renamed.append(data + at + name.size(), data + start + length);
     at = start + length;
   }
   SDL_free(data);
+  std::string partial = path + ".part";
+  if (whole && changed && SDL_SaveFile(partial.c_str(), renamed.data(), renamed.size()))
+    rename(partial.c_str(), path.c_str());
 }
 // The PAQs the folder lacks come from the project's asset host, as the Python
 // game fetches them (src/crimson/assets_fetch.py), through a partial file.
@@ -620,17 +633,17 @@ void download(const std::string &name) {
     remove(partial.c_str());
 }
 // Before the game starts: a folder lacking the game's files gets the PAQs it
-// lacks, then music.paq fills in music/.
+// lacks.
 void fetch_assets() {
-  if (missing_files().empty())
-    return;
-  curl_global_init(CURL_GLOBAL_DEFAULT);
-  for (const char *name : {"crimson.paq", "music.paq", "sfx.paq"})
-    if (!present(name)) {
-      fprintf(stderr, "crimson: downloading %s into %s\n", name, game_directory.c_str());
-      download(name);
-    }
-  unpack_music();
+  if (!missing_files().empty()) {
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    for (const char *name : {"crimson.paq", "music.paq", "sfx.paq"})
+      if (!present(name)) {
+        fprintf(stderr, "crimson: downloading %s into %s\n", name, game_directory.c_str());
+        download(name);
+      }
+  }
+  migrate_music_paq();
   std::vector<std::string> missing = missing_files();
   if (missing.empty())
     return;
