@@ -104,7 +104,7 @@ static std::vector<uint8_t> replay_payload(const char *outcome) {
   m.str("platform"), m.str(replay_platform);
   // A player plays these runs: no pilot.
   m.str("pilot"), m.nil();
-  m.str("run"), m.map(14);
+  m.str("run"), m.map(15);
   m.str("game_mode_id"), m.integer(cfg.mode);
   m.str("seed"), m.integer(cfg.seed);
   m.str("quest_level");
@@ -132,6 +132,8 @@ static std::vector<uint8_t> replay_payload(const char *outcome) {
   m.str("submit_count"), m.integer(0);
   m.str("match_count"), m.integer(0);
   m.str("highscore_names_loaded"), m.boolean(false);
+  // The original's quests only: custom quests need their own start (since format 33).
+  m.str("custom_quest"), m.nil();
   m.str("result");
   replay_result(m, outcome);
   // The recording after its configuration: each tick's input, then its commands.
@@ -351,6 +353,9 @@ static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedRepl
           std::string field = r.str();
           (field == "major" ? config.major : config.minor) = (uint32_t)r.integer();
         }
+    } else if (key == "custom_quest") {
+      // This build starts only the original's quests.
+      if (!r.nil()) r.skip(), out.reason = "This run needs the Python port";
     } else if (key == "player_count") {
       if (r.integer() != 1) out.reason = "This run needs the Python port";
     } else if (key == "hardcore") config.hardcore = r.boolean();

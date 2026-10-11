@@ -322,11 +322,29 @@ def run_terrain_vectors() -> list[dict]:
     return vectors
 
 
+def custom_quest_payload() -> str:
+    """A valid replay of a custom quest, which the Python codec reads and the service does not rank."""
+    from crimson.quests.dsl import build_custom_quest
+    from crimson.quests.level import QuestLevel
+
+    source = (ROOT / "src/crimson/quests/dsl/examples/crosswind.quest").read_text(encoding="utf-8")
+    base = _base_replay()
+    run = msgspec.structs.replace(
+        ranked_run_spec(GameMode.QUESTS, seed=0x1234ABCD, quest_level=QuestLevel(1, 1)),
+        quest_level=None,
+        custom_quest=build_custom_quest(source),
+    )
+    result = msgspec.structs.replace(base.result, outcome=RunOutcome.INCOMPLETE)
+    payload = encode_replay_payload(msgspec.structs.replace(base, run=run, result=result))
+    assert decode_replay_payload(payload).run == run
+    return base64.b64encode(payload).decode("ascii")
+
+
 def main() -> None:
     base, corrupted = corrupted_vectors()
     ranked, inflated, piloted, illegal = ranked_run()
     vectors = {
-        "fixtures": fixture_vectors(), "valid_payload": base, "corrupted": corrupted, "ranked_run": ranked,
+        "fixtures": fixture_vectors(), "valid_payload": base, "corrupted": corrupted, "custom_quest_run": custom_quest_payload(), "ranked_run": ranked,
         "ranked_run_inflated": inflated, "piloted_run": piloted, "illegal_command_run": illegal,
         "unranked_run": base64.b64encode((FIXTURES / "rush-kills103.crd").read_bytes()).decode("ascii"),
         "terrain": terrain_vectors(),

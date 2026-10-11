@@ -40,6 +40,10 @@ describe("payloads the Python codec refuses are refused", () => {
   }
 });
 
+it("a custom quest, which the verifier cannot start, is refused for what it is", () => {
+  expect(() => decodeReplay(base64(vectors.custom_quest_run))).toThrow("this service ranks only the original's quests");
+});
+
 // After egornomic's #615: the ticks decode as they stream, so their framing is refused as strictly as a whole tree's.
 describe("the replay's tick array keeps canonical framing", () => {
   const payload = base64(vectors.valid_payload);

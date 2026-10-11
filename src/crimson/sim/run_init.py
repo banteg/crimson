@@ -45,12 +45,16 @@ def initialize_run(
     Playback owns a detached copy of the same pre-start status snapshot.
     """
     quest = None
+    custom = spec.custom_quest
     if spec.game_mode_id == GameMode.QUESTS:
-        if spec.quest_level is None:
-            raise ValueError("quest runs require a quest_level")
-        quest = quest_by_level(spec.quest_level)
-        if quest is None:
-            raise ValueError(f"unknown quest_level={spec.quest_level.text!r}")
+        if (spec.quest_level is None) == (custom is None):
+            raise ValueError("quest runs require either a quest_level or a custom_quest")
+        if spec.quest_level is not None:
+            quest = quest_by_level(spec.quest_level)
+            if quest is None:
+                raise ValueError(f"unknown quest_level={spec.quest_level.text!r}")
+    elif custom is not None:
+        raise ValueError("only quest runs play a custom quest")
 
     world = WorldState.build(
         hardcore=spec.hardcore,
@@ -79,23 +83,31 @@ def initialize_run(
         case GameMode.RUSH:
             mode_state = RushSpawnState()
         case GameMode.QUESTS:
-            assert quest is not None
             # `quest_start_selected` draws the score tag, then generates the quest terrain over the
             # reset's random one: that first terrain's draws stay, its stamps are never shown.
             highscore_tag = world.state.rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
-            terrain = terrain_generate(world.state.rng, quest.terrain_slots)
-            generated_entries = build_quest_spawn_table(
-                quest, QuestContext(player_count=spec.player_count, hardcore=spec.hardcore, rng=world.state.rng),
-            )
-            world.state.quest_level = quest.level
-            weapon_id = quest.start_weapon_id if start_weapon_id is None else start_weapon_id
+            if custom is not None:
+                # A custom quest starts the same way, loading its table where a stock builder would run:
+                # no builder draws, no stock level and no stock play counters.
+                terrain = terrain_generate(world.state.rng, custom.terrain_slots)
+                generated_entries = custom.entries(player_count=spec.player_count, hardcore=spec.hardcore)
+                quest_weapon_id = custom.start_weapon_id
+            else:
+                assert quest is not None
+                terrain = terrain_generate(world.state.rng, quest.terrain_slots)
+                generated_entries = build_quest_spawn_table(
+                    quest, QuestContext(player_count=spec.player_count, hardcore=spec.hardcore, rng=world.state.rng),
+                )
+                world.state.quest_level = quest.level
+                quest_weapon_id = quest.start_weapon_id
+            weapon_id = quest_weapon_id if start_weapon_id is None else start_weapon_id
             if weapon_id == WeaponId.NONE:
                 weapon_id = WeaponId.PISTOL
             for player in world.players:
                 weapon_assign_player(player, weapon_id, state=world.state)
             entries = generated_entries if spawn_entries is None else spawn_entries
             mode_state = QuestSpawnState(spawn_entries=entries, total_creatures=sum(entry.count for entry in entries))
-            index = tracked_quest_games_counter_index(quest.level)
+            index = None if quest is None else tracked_quest_games_counter_index(quest.level)
             if index is not None:
                 world.state.status.increment_quest_play_count(index)
         case GameMode.TYPO:

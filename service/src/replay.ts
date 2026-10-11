@@ -6,15 +6,21 @@
 import { decompress } from "fzstd";
 import { F64, Head, MapValue, PayloadError, Reader, type Value } from "./msgpack";
 
-export const REPLAY_FORMAT_VERSION = 32;
+export const REPLAY_FORMAT_VERSION = 33;
 // Each readable format's keys, in order. Format 30 had no `rules`, so its replays play under rules 1; formats before
-// 32 had no `pilot`, so their runs declare none.
+// 32 had no `pilot`, so their runs declare none; format 33 adds `run.custom_quest` (RUN_KEYS).
 type ReplayKey = "format_version" | "game_version" | "rules" | "recorder" | "pilot" | "run" | "result" | "ticks";
 const REPLAY_KEYS: Record<number, readonly ReplayKey[]> = {
   30: ["format_version", "game_version", "recorder", "run", "result", "ticks"],
   31: ["format_version", "game_version", "rules", "recorder", "run", "result", "ticks"],
   32: ["format_version", "game_version", "rules", "recorder", "pilot", "run", "result", "ticks"],
+  33: ["format_version", "game_version", "rules", "recorder", "pilot", "run", "result", "ticks"],
 };
+const RUN_KEYS = [
+  "game_mode_id", "seed", "quest_level", "player_count", "hardcore", "preserve_bugs", "quest_fail_retry_count",
+  "detail_preset", "violence_disabled", "friendly_fire", "status", "typo_dictionary_words",
+  "typo_highscore_names", "typo_carry",
+] as const;
 const V30_RULES = 1;
 // The simulation rules this service verifies (src/crimson/replay/types.py REPLAY_RULES).
 export const REPLAY_RULES = 1;
@@ -249,7 +255,7 @@ class Schema {
     let ticks: Ticks | null = null;
     for (const name of names!.slice(1)) {
       require(reader.key() === name, order);
-      if (name === "run") run = this.runSpec(reader.value());
+      if (name === "run") run = this.runSpec(reader.value(), version as number);
       else if (name === "ticks") ticks = this.ticks(run!.player_count);
       else fields[name] = reader.value();
     }
@@ -325,12 +331,10 @@ class Schema {
     return { name: this.str(f.name, "pilot.name"), model: this.str(f.model, "pilot.model"), url: this.str(f.url, "pilot.url") };
   }
 
-  private runSpec(value: Value): RunSpec {
-    const f = this.fields(value, "run", [
-      "game_mode_id", "seed", "quest_level", "player_count", "hardcore", "preserve_bugs", "quest_fail_retry_count",
-      "detail_preset", "violence_disabled", "friendly_fire", "status", "typo_dictionary_words",
-      "typo_highscore_names", "typo_carry",
-    ]);
+  private runSpec(value: Value, format: number): RunSpec {
+    const f = this.fields(value, "run", format < 33 ? RUN_KEYS : [...RUN_KEYS, "custom_quest"]);
+    // The verifier starts only the original's quests; custom quests are not ranked (docs/formats/replay.md).
+    require(format < 33 || f.custom_quest === null, "run.custom_quest: this service ranks only the original's quests");
     const game_mode_id = this.int(f.game_mode_id, "run.game_mode_id");
     require(KNOWN_GAME_MODES.has(game_mode_id), `run.game_mode_id ${game_mode_id} is not a game mode`);
     let quest_level: QuestLevel | null = null;

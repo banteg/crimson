@@ -286,11 +286,11 @@ def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float
     # animation still plays, the quest completes despite the player dying.
     timer = spawn.completion_transition_ms
     state.bonuses.reflex_boost = 0.0
+    # A custom quest has no stock level: it leaves the stock counters and unlocks alone.
     level = state.quest_level
-    assert level is not None
     if timer < 0.0:
         timer = 0.0
-        completed_index = tracked_quest_completed_counter_index(level)
+        completed_index = None if level is None else tracked_quest_completed_counter_index(level)
         if completed_index is not None:
             state.status.increment_quest_play_count(completed_index)
     elif 800.0 < timer <= 850.0:
@@ -302,7 +302,8 @@ def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float
         # `music_play_exclusive(music_track_crimsonquest_id)` clears the playlist latch.
         state.game_tune_started = False
     elif timer > 2500.0:
-        advance_quest_unlocks(state.status, next_unlock=level.global_index + 1, hardcore=state.hardcore)
+        if level is not None:
+            advance_quest_unlocks(state.status, next_unlock=level.global_index + 1, hardcore=state.hardcore)
         spawn.completed = True
     spawn.completion_transition_ms = timer + dt_ms
 

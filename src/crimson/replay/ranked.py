@@ -113,6 +113,9 @@ def unranked_reasons(run: RunSpec) -> list[str]:
     reasons = []
     if run.game_mode_id not in RANKED_MODES:
         reasons.append("mode")
+    # The verifier starts only the original's quests.
+    if run.custom_quest is not None:
+        reasons.append("custom_quest")
     if run.player_count != 1:
         reasons.append("players")
     if run.preserve_bugs:

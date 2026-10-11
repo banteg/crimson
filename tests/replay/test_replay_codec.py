@@ -246,14 +246,16 @@ def test_decode_rejects_noncanonical_payloads(case: str) -> None:
     ],
 )
 def test_decode_names_the_format_of_another_version(wire: dict, version: int) -> None:
-    with pytest.raises(ReplayCodecError, match=rf"format version: {version} \(this build reads versions 30, 31, {REPLAY_FORMAT_VERSION}\)"):
+    with pytest.raises(ReplayCodecError, match=rf"format version: {version} \(this build reads versions 30, 31, 32, {REPLAY_FORMAT_VERSION}\)"):
         decode_replay_payload(msgspec.msgpack.encode(wire))
 
 
-@pytest.mark.parametrize(("version", "left_out"), [(30, {"rules", "pilot"}), (31, {"pilot"})])
+@pytest.mark.parametrize(("version", "left_out"), [(30, {"rules", "pilot"}), (31, {"pilot"}), (32, set())])
 def test_earlier_formats_read_with_what_they_left_out_and_are_written_as_the_current_format(version: int, left_out: set) -> None:
     wire = {key: value for key, value in _wire().items() if key not in left_out}
     wire["format_version"] = version
+    # Runs had no custom quest before v33.
+    wire["run"] = {key: value for key, value in wire["run"].items() if key != "custom_quest"}
 
     replay = decode_replay_payload(msgspec.msgpack.encode(wire))
 

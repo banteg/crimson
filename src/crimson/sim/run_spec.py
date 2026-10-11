@@ -5,6 +5,7 @@ import msgspec
 from ..game_modes import GameMode
 from ..msgspec_types import NonNegativeInt, PlayerCount
 from ..persistence.save_status import GameStatusData
+from ..quests.custom import CustomQuest
 from ..quests.level import QuestLevel
 from ..typo.state import TypoCarry
 from ..weapon_usage import ZERO_WEAPON_USAGE_COUNTS, WeaponUsageCounts
@@ -32,8 +33,8 @@ class RunStatus(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
         return GameStatusData(**msgspec.structs.asdict(self))
 
 
-class RunSpec(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    """Inputs captured before any run-start mutation, shared by live and replay."""
+class RunSpecV32(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
+    """Run start settings as replay formats 30 to 32 carry them; `RunSpec` adds what later formats do."""
 
     game_mode_id: GameMode
     seed: int
@@ -53,3 +54,10 @@ class RunSpec(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     # earlier run of the process (see `typo_carry`), or the table as this run would load it.
     typo_highscore_names: tuple[str, ...] = ()
     typo_carry: TypoCarry = msgspec.field(default_factory=TypoCarry)
+
+
+class RunSpec(RunSpecV32, frozen=True, forbid_unknown_fields=True):
+    """Inputs captured before any run-start mutation, shared by live and replay."""
+
+    # A quest run plays either a stock level or a custom quest (since replay format 33).
+    custom_quest: CustomQuest | None = None

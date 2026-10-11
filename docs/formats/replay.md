@@ -42,7 +42,7 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `32` |
+| `format_version` | int | `33` |
 | `game_version` | str | The build that recorded the run, which boards are versioned by (see below) |
 | `rules` | int | The simulation rules the run plays under (since v31) |
 | `recorder` | `Recorder` | The program that recorded the run (since v30) |
@@ -65,7 +65,8 @@ service still re-simulates ranked runs.
 
 `rules` is a number each build carries (`REPLAY_RULES`), raised whenever a change makes earlier replays play
 differently: a replay plays back only under the rules it was recorded under. Readers accept v30, which had no
-`rules`, as rules 1, and v30 and v31, which had no `pilot`, as declaring none; writers always write v32.
+`rules`, as rules 1, v30 and v31, which had no `pilot`, as declaring none, and v30 to v32, which had no
+`run.custom_quest`, as playing stock quests; writers always write v33.
 
 `Recorder` is a map of `client` (`crimson` for this port; another client, such as a native crimson-core build,
 names itself), `version` (that client's own content identity, in `game_version`'s form) and `platform` (`<os>-<cpu>`, such
@@ -89,7 +90,7 @@ declares one ranks on the bot boards ([bots and moderation](../rewrite/bots.md))
 |---|---|---|
 | `game_mode_id` | int | 1 Survival, 2 Rush, 3 Quests, 4 Typ-o, 8 Tutorial |
 | `seed` | u32 | CRT RNG state entering `gameplay_reset_state()` at run start |
-| `quest_level` | `{major, minor}` map or nil | Required for quests only; 1..5 / 1..10 |
+| `quest_level` | `{major, minor}` map or nil | A stock quest, 1..5 / 1..10; quests carry it or `custom_quest`, other modes neither |
 | `player_count` | int | 1..4; Typ-o and Tutorial require 1 |
 | `hardcore` | bool | |
 | `preserve_bugs` | bool | Native quirks mode |
@@ -101,6 +102,7 @@ declares one ranks on the bot boards ([bots and moderation](../rewrite/bots.md))
 | `typo_dictionary_words` | array of str | Optional custom Typ-o dictionary: at most 2048 words of 1..15 printable ASCII characters |
 | `typo_highscore_names` | array of str | Typ-o name pool from the local score table: at most 512 names of 1..31 ASCII letters or `.` |
 | `typo_carry` | `TypoCarry` | Typ-o state the game keeps between runs (since v28); defaults outside Typ-o |
+| `custom_quest` | `CustomQuest` or nil | The quest a custom run plays in place of `quest_level` (since v33) |
 
 `TypoCarry` is a map of `target_world` (`{x, y}` f32 map or nil: the aim point
 the last Typ-o run left, nil before the game's first Typ-o run),
@@ -109,6 +111,15 @@ a run scores only its own words unless `preserve_bugs`), and
 `highscore_names_loaded` (bool: an earlier run already loaded the score-table
 name cache, so this run's first highscore-name pick skips the table load's RNG
 draws).
+
+`CustomQuest` is a map of `title` (1..64 printable ASCII characters), `start_weapon_id` (int, not 0),
+`terrain_slots` (three ints 0..7), `tables` (arrays of 1..256 `SpawnEntry` maps) and `variants` (8 ints): the
+table each player count 1..4 plays, normal then hardcore, using every table. A `SpawnEntry` is a map of `pos`
+(`{x, y}` f32 map), `heading` (f32), `spawn_id` (a spawn template other than `0x02`), `trigger_ms` (int
+0..3600000) and `count` (int). Counts are base counts: the run applies the game's hardcore rule, and the
+result must respect the [quest spawn limits](quest-dsl.md#bounds-and-runtime-semantics). The run starts as
+`quest_start_selected` does, loading the table where a stock builder would run, and leaves the stock quest
+counters and unlocks alone. Verifiers that cannot start a custom quest refuse these replays.
 
 `RunStatus` is a map of `quest_unlock_index` (i32), `quest_unlock_index_hardcore`
 (i32) and `weapon_usage_counts` (exactly 53 u32 values). Unlock indices gate

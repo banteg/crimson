@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
+from typing import Any
 
 import msgspec
 import zstandard as zstd
@@ -11,9 +12,10 @@ from grim.atomic_write import atomic_write_bytes
 from ..game_modes import GameMode
 from ..game_version import REPLAY_FORMAT_VERSION
 from ..math_parity import f32
+from ..quests.custom import validate_custom_quest
 from ..sim.commands import PerkPickCommand, TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.run_result import RunOutcome, RunResult
-from ..sim.run_spec import RunSpec
+from ..sim.run_spec import RunSpec, RunSpecV32
 from ..typo.names import (
     HIGHSCORE_NAME_MAX_CHARS,
     MAX_TYPO_DICTIONARY_WORDS,
@@ -57,7 +59,7 @@ class _ReplayV30(msgspec.Struct, forbid_unknown_fields=True):
     format_version: int
     game_version: str
     recorder: Recorder
-    run: RunSpec
+    run: RunSpecV32
     result: RunResult
     ticks: list[ReplayTick]
 
@@ -69,7 +71,20 @@ class _ReplayV31(msgspec.Struct, forbid_unknown_fields=True):
     game_version: str
     rules: int
     recorder: Recorder
-    run: RunSpec
+    run: RunSpecV32
+    result: RunResult
+    ticks: list[ReplayTick]
+
+
+class _ReplayV32(msgspec.Struct, forbid_unknown_fields=True):
+    """Format 32, whose runs had no `custom_quest`: they play stock quests."""
+
+    format_version: int
+    game_version: str
+    rules: int
+    recorder: Recorder
+    pilot: Pilot | None
+    run: RunSpecV32
     result: RunResult
     ticks: list[ReplayTick]
 
@@ -82,21 +97,25 @@ _V30_RULES = 1
 _ENCODER = msgspec.msgpack.Encoder()
 _DECODERS: dict[int, msgspec.msgpack.Decoder] = {
     REPLAY_FORMAT_VERSION: msgspec.msgpack.Decoder(type=Replay),
+    32: msgspec.msgpack.Decoder(type=_ReplayV32),
     31: msgspec.msgpack.Decoder(type=_ReplayV31),
     30: msgspec.msgpack.Decoder(type=_ReplayV30),
 }
 
 
-def _upgrade(decoded: Replay | _ReplayV31 | _ReplayV30) -> Replay:
+def _upgrade(decoded: Replay | _ReplayV32 | _ReplayV31 | _ReplayV30) -> Replay:
     """A replay read from an earlier format, with what that format left out."""
 
+    if isinstance(decoded, Replay):
+        return decoded
+    fields: dict[str, Any] = {**msgspec.structs.asdict(decoded), "run": RunSpec(**msgspec.structs.asdict(decoded.run))}
     match decoded:
         case _ReplayV30():
-            return Replay(**msgspec.structs.asdict(decoded), rules=_V30_RULES, pilot=None)
+            return Replay(**fields, rules=_V30_RULES, pilot=None)
         case _ReplayV31():
-            return Replay(**msgspec.structs.asdict(decoded), pilot=None)
-        case _:
-            return decoded
+            return Replay(**fields, pilot=None)
+        case _ReplayV32():
+            return Replay(**fields)
 _FORMAT_PROBE = msgspec.msgpack.Decoder(type=_FormatVersion)
 
 
@@ -166,9 +185,14 @@ def _validate_run(run: RunSpec) -> None:
     _require(mode in _REPLAY_MODES, f"run.game_mode_id {int(mode)} is not a replayable mode")
     _require_int(run.seed, low=0, high=_U32_MAX, field="run.seed")
     _require(
-        (run.quest_level is not None) == (mode == GameMode.QUESTS),
-        "run.quest_level must be set for quests and only for quests",
+        ((run.quest_level is not None) != (run.custom_quest is not None)) == (mode == GameMode.QUESTS),
+        "quests need exactly one of run.quest_level and run.custom_quest; other modes need neither",
     )
+    if run.custom_quest is not None:
+        try:
+            validate_custom_quest(run.custom_quest)
+        except ValueError as exc:
+            raise ReplayCodecError(f"run.custom_quest: {exc}") from exc
     _require(
         mode not in _SINGLE_PLAYER_MODES or run.player_count == 1,
         f"{mode.name.lower()} replays require player_count == 1",
