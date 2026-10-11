@@ -11,7 +11,15 @@ from crimson.quests.dsl import build_custom_quest
 from crimson.screens.actions import Route, ScreenAction, ShowQuestOutcome, StartRun
 from crimson.screens.boot import BootView
 from crimson.screens.quest_views import QuestFailedView
+from crimson.screens.quest_views.shared import (
+    QUEST_FAILED_BANNER_H,
+    QUEST_FAILED_BANNER_W,
+    QUEST_FAILED_BANNER_X_OFFSET,
+    QUEST_FAILED_BANNER_Y_OFFSET,
+)
 from crimson.sim.run_result import RunOutcome
+from grim.assets import TextureId
+from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from tests.support.audio import HeadlessAudio
 from tests.support.screens import start_run, update_frame
@@ -90,3 +98,19 @@ def test_escape_leaves_a_custom_quest_for_the_menu(make_game_state, headless_res
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
     update_frame(view, state)
     assert _settle(view, mocker) == Route.MENU
+
+
+def test_the_clear_banner_fits_the_banner_slot(make_game_state, headless_resources, mocker, quest):
+    state, view = _ended(make_game_state, headless_resources, mocker, quest, RunOutcome.QUEST_COMPLETED)
+    update_frame(view, state)
+    draw = mocker.patch.object(rl, "draw_texture_pro")
+    view.draw()
+    slot = Rect.from_top_left(
+        view._panel_rect().top_left + Vec2(QUEST_FAILED_BANNER_X_OFFSET, QUEST_FAILED_BANNER_Y_OFFSET),
+        QUEST_FAILED_BANNER_W,
+        QUEST_FAILED_BANNER_H,
+    )
+    texture = headless_resources.texture(TextureId.UI_TEXT_LEVEL_COMPLETE)
+    [banner] = [call.args[2] for call in draw.call_args_list if call.args[0] is texture]
+    assert slot.left <= banner.x and banner.x + banner.width <= slot.left + slot.width
+    assert slot.top <= banner.y and banner.y + banner.height <= slot.top + slot.height

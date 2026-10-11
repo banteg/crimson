@@ -19,6 +19,7 @@ from ...ui.animation import ui_transition_alpha
 from ...ui.button import UiButtonState, button_draw, button_update
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
+from ...ui.overlays.quest_run import QUEST_COMPLETE_BANNER_BASE_H, QUEST_COMPLETE_BANNER_BASE_W
 from ..assets import require_runtime_resources
 from ..menu_screen import MenuScreen
 from .shared import (
@@ -127,15 +128,15 @@ class QuestFailedView(MenuScreen):
 
         banner_pos = panel_top_left + Vec2(QUEST_FAILED_BANNER_X_OFFSET, QUEST_FAILED_BANNER_Y_OFFSET)
         if self._completed():
-            # A completed custom quest: the level-complete text, at the banner's height.
+            # A completed custom quest: the level-complete text at the size the game draws it, centred in the slot.
             banner_tex = resources.texture(TextureId.UI_TEXT_LEVEL_COMPLETE)
-            width = QUEST_FAILED_BANNER_H * float(banner_tex.width) / float(banner_tex.height)
-            banner_pos = banner_pos.offset(dx=(QUEST_FAILED_BANNER_W - width) * 0.5)
+            size = Vec2(QUEST_COMPLETE_BANNER_BASE_W, QUEST_COMPLETE_BANNER_BASE_H)
+            banner_pos += (Vec2(QUEST_FAILED_BANNER_W, QUEST_FAILED_BANNER_H) - size) * 0.5
         else:
             banner_tex = resources.texture(TextureId.UI_TEXT_REAPER)
-            width = QUEST_FAILED_BANNER_W
+            size = Vec2(QUEST_FAILED_BANNER_W, QUEST_FAILED_BANNER_H)
         src = rl_rectangle(0.0, 0.0, float(banner_tex.width), float(banner_tex.height))
-        dst = rl_rectangle(banner_pos.x, banner_pos.y, float(width), float(QUEST_FAILED_BANNER_H))
+        dst = rl_rectangle(banner_pos.x, banner_pos.y, size.x, size.y)
         rl.draw_texture_pro(banner_tex, src, dst, rl_vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         font = resources.small_font
