@@ -1,6 +1,6 @@
 --- a/decomp/1.9/crimsonland/game/survival_update.cpp
 +++ b/decomp/1.9/crimsonland/game/survival_update.cpp
-@@ -40,6 +40,55 @@
+@@ -40,6 +40,100 @@
  extern "C" survival_vec2_t survival_first_kill_pos[3];
  
  extern "C" void demo_mode_start(void);
@@ -20,11 +20,35 @@
 +    return (int)(passes * (inner + 1));
 +}
 +
-+// A full pool's attempt before the batch's last. Every attempt writes the
++// The stream n draws on is a multiply and an add away, so a draw whose place is
++// known reads from the attempt's first state without the draws before it.
++struct rand_jump_t {
++    uint32_t mul, add;
++};
++static constexpr rand_jump_t rand_jump(int n)
++{
++    rand_jump_t jump = {1, 0};
++    for (int i = 0; i < n; ++i) {
++        jump.mul *= 214013u;
++        jump.add = jump.add * 214013u + 2531011u;
++    }
++    return jump;
++}
++template <int N> static inline uint32_t rand_ahead(uint32_t state)
++{
++    constexpr rand_jump_t jump = rand_jump(N);
++    return state * jump.mul + jump.add;
++}
++template <int N> static inline int rand_draw(uint32_t state)
++{
++    return (rand_ahead<N>(state) >> 16) & 0x7fff;
++}
++
++// A full pool's attempts before the batch's last. Every attempt writes the
 +// overflow slot (creature_alloc_slot's 0x180) all over, and the last rewrites
 +// every field but flags, which keeps type 3's 0x80; so the others need only
 +// take their draws: the side and position here, then survival_spawn_creature's.
-+static bool survival_overflow_skip(void)
++static bool survival_overflow_skip(int count)
 +{
 +    // Verbose, every attempt logs the full pool.
 +    if (cv_verbose->value != 0.0f)
@@ -32,22 +56,43 @@
 +    uint32_t *stream = crt_rand_stream();
 +    uint32_t state = *stream;
 +    auto draw = [&state] { return crt_rand_step(&state); };
-+    draw(); // side
-+    draw(); // position
 +    int experience = player_state_table[0].experience;
-+    int type_roll = draw() % 10;
-+    bool type_3 = experience < 12000   ? type_roll > 8
-+                  : experience < 25000 ? type_roll >= 4 && type_roll <= 8
-+                  : experience < 42000 ? type_roll > 4 && draw() % 2 == 0
-+                                       : false;
-+    if ((draw() & 0x1f) == 2)
-+        type_3 = true;
-+    for (int i = 0; i < 6; ++i) // size, heading, health, green, blue, reward
-+        draw();
-+    if (draw() % 180 >= 2 && draw() % 240 >= 2) // the tinted variants
-+        draw();
-+    if (draw() % 1320 >= 4) // the giants
-+        draw();
++    // The band whose type takes a second draw.
++    bool plain = experience < 25000 || experience >= 42000;
++    // Once a type 3 has set 0x80, no later type matters.
++    bool type_3 = (creature_pool[0x180].flags & 0x80) != 0;
++    for (; count > 0; --count) {
++        // Outside that band, 97.8% of attempts take the same 15 draws: no
++        // tinted variant at the 11th and 12th and no giant at the 14th. Those
++        // three and the type's two read ahead, so the next attempt waits on
++        // one multiply, not on 15 in a row. The rest step draw by draw.
++        if (plain && rand_draw<11>(state) % 180 >= 2 && rand_draw<12>(state) % 240 >= 2
++            && rand_draw<14>(state) % 1320 >= 4) {
++            if (!type_3) {
++                int type_roll = rand_draw<3>(state) % 10;
++                type_3 = (experience < 12000 ? type_roll > 8 : experience < 25000 && type_roll >= 4 && type_roll <= 8)
++                         || (rand_draw<4>(state) & 0x1f) == 2;
++            }
++            state = rand_ahead<15>(state);
++            continue;
++        }
++        draw(); // side
++        draw(); // position
++        int type_roll = draw() % 10;
++        if (experience < 12000 ? type_roll > 8
++            : experience < 25000 ? type_roll >= 4 && type_roll <= 8
++            : experience < 42000 ? type_roll > 4 && draw() % 2 == 0
++                                 : false)
++            type_3 = true;
++        if ((draw() & 0x1f) == 2)
++            type_3 = true;
++        for (int i = 0; i < 6; ++i) // size, heading, health, green, blue, reward
++            draw();
++        if (draw() % 180 >= 2 && draw() % 240 >= 2) // the tinted variants
++            draw();
++        if (draw() % 1320 >= 4) // the giants
++            draw();
++    }
 +    if (type_3)
 +        creature_pool[0x180].flags |= 0x80;
 +    *stream = state;
@@ -56,7 +101,7 @@
  
  extern "C" void survival_update(void)
  {
-@@ -219,9 +268,13 @@
+@@ -219,9 +313,21 @@
      // This batch only fills slots: the first free slot never moves backwards.
      // Keep the cursor local so deaths, resets and replay seeks need no invalidation.
      int next_slot = 0;
@@ -65,16 +110,24 @@
      while (survival_spawn_cooldown < 0) {
          int interval = 500 - run_elapsed_ms / 1800;
          while (interval < 0) {
-+            if (--attempts > 0 && next_slot == 0x180 && survival_overflow_skip()) {
-+            } else
++            // A pass's inner attempts skip together.
++            int rest = (1 - interval) / 2;
++            if (rest >= attempts)
++                rest = attempts - 1;
++            if (rest > 0 && next_slot == 0x180 && survival_overflow_skip(rest)) {
++                attempts -= rest;
++                interval += 2 * rest;
++                continue;
++            }
++            --attempts;
              switch (crt_rand() & 3) {
              case 0: {
                  vec2f_t top;
-@@ -269,6 +322,8 @@
+@@ -269,6 +375,8 @@
          }
          survival_spawn_cooldown += interval;
  
-+        if (--attempts > 0 && next_slot == 0x180 && survival_overflow_skip()) {
++        if (--attempts > 0 && next_slot == 0x180 && survival_overflow_skip(1)) {
 +        } else
          switch (crt_rand() & 3) {
          case 0: {

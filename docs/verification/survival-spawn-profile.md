@@ -134,6 +134,37 @@ All before/after snapshot hashes match. These remain saturated-wave timings;
 they do not measure complete replay preparation. The existing reproduction
 commands below run both the benchmark and original-executable comparisons.
 
+### Core read-ahead follow-up
+
+A skipped attempt still stepped the random stream once per draw, about 15
+times, each step waiting on the one before. The stream n draws on is one
+multiply and one add from where an attempt starts, so the core's skip now reads
+the rolls that decide an attempt's draw count (the tinted variants and the
+giant) at their places, and jumps the 15 draws of an attempt that rolls none of
+them. The 2.2% of attempts that roll one, and those in the 25,000 to 42,000
+experience band, step draw by draw as before.
+
+The same recording through the zero-import WASM verifier, timed by
+`crimson-core/checks/profile_replay.mjs` (three repetitions per build, the
+middle one in reverse order) under Node 22 on a Ryzen 9 3950X with other jobs
+running on the machine. The table gives the median stepping time per tick in
+each span of game time; lower is better.
+
+| Game time | Ticks | Overflow skip | With read-ahead | Change |
+| --- | ---: | ---: | ---: | ---: |
+| 0:00–15:00 | 87,600 | 48.3 µs | 48.7 µs | within noise |
+| 15:00–20:00 | 41,400 | 81.7 µs | 78.0 µs | 4.4% shorter |
+| 20:00–25:00 | 32,400 | 78.8 µs | 68.8 µs | 12.6% shorter |
+| 25:00–30:00 | 22,200 | 101.9 µs | 76.8 µs | 24.6% shorter |
+| 30:00–35:00 | 22,200 | 115.4 µs | 82.2 µs | 28.7% shorter |
+| 35:00–35:54 | 4,468 | 117.4 µs | 86.5 µs | 26.3% shorter |
+| Whole run | 210,268 | 73.9 µs | 64.6 µs | 12.5% shorter |
+
+The whole run steps in 13.59 s instead of 15.53 s. After minute 30 a tick costs
+what it does in minutes 15 to 20, when the pool first fills. The tool's
+`--compare` mode finds all 36,343 snapshot fields equal after every one of the
+210,268 ticks.
+
 ## Validation
 
 - Python differential tests compare complete creature/phantom/spawn-slot state,
