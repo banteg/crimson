@@ -9,7 +9,7 @@ from pathlib import Path
 
 REPLAY_FORMAT_VERSION = 32
 # Raised whenever a change makes earlier replays play differently. Content fingerprints
-# identify builds; only rules decide compatibility (docs/rewrite/watch-replays.md).
+# identify builds; only rules decide compatibility (docs/formats/replay.md).
 REPLAY_RULES = 1
 
 

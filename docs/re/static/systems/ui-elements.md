@@ -98,10 +98,6 @@ The per-frame loop (`ui_elements_update_and_render`) iterates the table in
 reverse: it starts at `ui_element_table_start` and decrements down to
 `ui_element_table_end`. This means "earlier" pointers render on top.
 
-Runtime cross-check (`analysis/frida/gameplay_state_capture_summary.json`) saw
-heavy writes to `0x004902f0/0x004902f4` and periodic writes to
-`0x004902e8/0x004902ec`, matching the static cursor/aim animation update paths.
-
 ## Struct view (ui_element_t)
 
 Offsets are relative to the UI element base pointer. The three 0xe8-byte

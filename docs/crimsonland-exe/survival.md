@@ -146,7 +146,7 @@ See: `docs/creatures/update.md` for the death contract details.
 
 ### Level thresholds
 
-HUD and progression use a pow-based threshold (via `crt_ci_pow`, exponent ≈ `1.8`):
+HUD and progression use a pow-based threshold (`crt_ci_pow`, exponent `1.8f`):
 
 - `level_threshold(level) = 1000 + int(pow(level, 1.8) * 1000)`
 
@@ -156,7 +156,8 @@ The Survival progress bar uses:
 - next threshold for `level`
 - ratio = `(player_experience - prev) / (next - prev)`
 
-Rewrite model: `src/crimson/gameplay.py:survival_level_threshold` (validate against decompile if it drifts).
+Native: `gameplay_update_and_render` (level-up check, skipped in Rush) and
+`ui_render_hud` (progress bar). Rewrite: `src/crimson/gameplay.py:survival_level_threshold`.
 
 ### Perk flow (native vs rewrite)
 

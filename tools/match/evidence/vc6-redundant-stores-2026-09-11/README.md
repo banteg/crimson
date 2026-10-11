@@ -37,7 +37,7 @@ timeline pair and three pairs in `dx_get_version_from_dxdiag`. No direct branch
 within either function targets the second instruction of these pairs. This is
 a narrow pattern scan, not exhaustive dead-store analysis.
 
-The [dxdiag reconstruction](../../scratches/dx_get_version_from_dxdiag/scratch.cpp)
+The [dxdiag reconstruction](../../../../decomp/1.9/crimsonland/dxversion/dx_get_version_from_dxdiag.cpp)
 uses `ZeroMemory(&params, sizeof(params))` followed by four field assignments.
 Stock `msvc6.5`, `/O2 /GB /W3 /GR-`, reproduces its entire 190-instruction body
 exactly with 12 clean references. For example:

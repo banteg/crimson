@@ -19,9 +19,8 @@ From the repository root:
 
 ```sh
 uv run --with unicorn==2.1.4 --with capstone python tools/match/evidence/particle-bubble-expiry-2026-09-11/verify.py --out /tmp/crimson-bubble-expiry-proof
-cmp /tmp/crimson-bubble-expiry-proof/particle-bubble-expiry.json crimson-zig/src/runtime/testdata/particle-bubble-expiry.json
+cmp /tmp/crimson-bubble-expiry-proof/particle-bubble-expiry.json tests/fixtures/native/particle-bubble-expiry.json
 uv run pytest tests/gameplay/test_particle_bubble_expiry_native.py tests/gameplay/test_death_timing.py
-cd crimson-zig && zig build test
 ```
 
 The runner is derived from the prior particle-impact execution runner. It adds
@@ -41,13 +40,15 @@ between native execution and the current C++ candidate. No sound or RNG draw
 occurs. Unknown control transfers and writes outside the declared memory fail;
 ESP, callee-saved registers, x87 control word, and empty x87 stack are checked.
 
-The 112 PC24 witnesses are exported directly for both runtime regressions.
+The 112 PC24 witnesses were exported directly for both runtime regressions;
+the Python one remains.
 Python executes particle update through `_WorldStepRuntime` and the real
 `CreaturePool.handle_death`; it also checks the recorded death count and that an
-inactive creature retains its owner. Zig executes its real `killNoCorpse`.
+inactive creature retains its owner. The since-removed Zig port executed its
+real `killNoCorpse`.
 Against parent commit `8a2c119b9002b964ed486eaa0de40d330fc65a07`, all 112 Python cases failed: unsaturated history cases
 missed updates, and saturated cases missed the death-handler invocation. The
-Zig regression failed at its first history check. Both pass after the change.
+Zig regression failed at its first history check. Both passed after the change.
 The existing active, zero-HP bubble expiry test remains an audio/RNG control.
 
 This matrix does not execute forced-bonus emission, active-target death side
@@ -56,9 +57,9 @@ this bounded proof; it does not establish whole-function or encoded equality.
 
 ## Validation
 
-The full Python suite passes with 3,334 tests, 13 skips, and 135 snapshots.
-Zig Debug and ReleaseFast each pass all 681 tests; the optimized native and
-WebAssembly builds pass. Ruff, type/import checks, documentation checks,
+The full Python suite passed with 3,334 tests, 13 skips, and 135 snapshots.
+Zig Debug and ReleaseFast each passed all 681 tests; the optimized native and
+WebAssembly builds passed. Ruff, type/import checks, documentation checks,
 ast-grep rules/tests, strict experiment validation, current native-closure
-verification, and matching regression checks pass. No matching function source
+verification, and matching regression checks passed. No matching function source
 changed in this slice.

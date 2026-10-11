@@ -123,7 +123,7 @@ uv run python tools/match/evidence/overlay-size-ownership-2026-09-11/verify_cont
 uv run python tools/match/evidence/overlay-size-ownership-2026-09-11/verify_stack.py --out /tmp/crimson-overlay-size-stack-after
 uv run python tools/match/evidence/overlay-size-ownership-2026-09-11/verify_stack.py --source tools/match/evidence/overlay-size-ownership-2026-09-11/before.cpp --out /tmp/crimson-overlay-size-stack-before
 uv run --with unicorn==2.1.4 --with capstone python tools/match/evidence/overlay-tint-trail-2026-09-11/verify.py --out /tmp/crimson-overlay-size-prior-proof
-uv run pytest tests/test_match*.py tests/native --no-cov
+uv run pytest tests/test_match*.py tests/native
 ```
 
 Unicorn requires local JIT permission. The compiler observer requires the

@@ -5,7 +5,8 @@ four units or the microstep budget ends. Python used a double-precision length
 at that branch. The native x87 PC24 length can round to exactly four while the
 double result remains below four, delaying Python's movement and collision
 checks. The correction uses the existing `x87_pc24_hypot` at this one threshold.
-The C++ reconstruction and Zig runtime already preserve the measured behavior.
+The C++ reconstruction and the since-removed Zig runtime already preserved the
+measured behavior.
 No matching source, matcher, global vector method, or matching score changes.
 
 In case 22, the accumulated vector is
@@ -21,11 +22,10 @@ From the repository root:
 
 ```sh
 uv run --with unicorn==2.1.4 --with capstone python tools/match/evidence/primary-microstep-threshold-2026-09-11/verify.py --out /tmp/crimson-primary-microstep-proof
-cmp /tmp/crimson-primary-microstep-proof/primary-microstep-threshold.json crimson-zig/src/runtime/testdata/primary-microstep-threshold.json
+cmp /tmp/crimson-primary-microstep-proof/primary-microstep-threshold.json tests/fixtures/native/primary-microstep-threshold.json
 PYTHONPATH=. uv run python tools/match/evidence/primary-microstep-threshold-2026-09-11/verify_ports.py --native-results /tmp/crimson-primary-microstep-proof/witnesses.json --out /tmp/crimson-primary-python.json
 PYTHONPATH=. uv run python tools/match/evidence/primary-microstep-threshold-2026-09-11/verify_ports.py --native-results /tmp/crimson-primary-microstep-proof/witnesses.json --out /tmp/crimson-primary-python-legacy.json --legacy-threshold
 uv run pytest tests/gameplay/test_primary_microstep_native.py
-cd crimson-zig && zig build test
 ```
 
 The negative control temporarily substitutes the exact former
@@ -62,9 +62,10 @@ original query method and uses `_WorldStepRuntime` with the actual player-damage
 helper. Corrected Python matches all 605 witnesses. The old-arithmetic control
 fails 126 cases on cadence, including 21 incorrect player-health results.
 The shared 156-case file retains the first 32 no-hit cases, every discovered
-cadence counterexample, and all 105 player controls. Both ports check the
-projectile fields, player state, and RNG; Python additionally checks each
-collision-query position. Zig's implementation needs no correction.
+cadence counterexample, and all 105 player controls. Python checks the
+projectile fields, player state, RNG, and each collision-query position. At
+this revision Zig checked the same fixture without collision-query positions;
+its implementation needed no correction.
 
 This proof covers these PC24 primary-movement paths and player-hit branches.
 It does not cover active-creature impact effects, every primary projectile
@@ -74,10 +75,10 @@ not asserted as port observables.
 
 ## Validation
 
-The full Python suite passes with 3,490 tests, 13 skips, and 135 snapshots.
-Zig Debug and ReleaseFast each pass 682 tests; native ReleaseFast and WebAssembly
-builds pass. Ruff, type/import checks, documentation checks, Zig lint,
+The full Python suite passed with 3,490 tests, 13 skips, and 135 snapshots.
+Zig Debug and ReleaseFast each passed 682 tests; native ReleaseFast and WebAssembly
+builds passed. Ruff, type/import checks, documentation checks, Zig lint,
 ast-grep rules/tests, strict experiment validation, current native closure,
-and matching regression checks pass. The pre-change behavior was reproduced
+and matching regression checks passed. The pre-change behavior was reproduced
 against parent `7ec7c1918e110e24f267c6877b2712c1f5608e76` and by the preserved
 old-arithmetic control.

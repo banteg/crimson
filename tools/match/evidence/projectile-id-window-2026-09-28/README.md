@@ -91,8 +91,9 @@ regresses to 95.91%.
 
 ```sh
 uv run python scripts/c2/id_delta_profile.py tools/match/scratches/projectile_render --out /tmp/pr-ids --probe --jobs 8
-git apply tools/match/evidence/projectile-id-window-2026-09-28/pad-and-parens.diff
-uv run crimson match scratch tools/match/scratches/projectile_render   # body_byte_exact=True
-git checkout tools/match/scratches/projectile_render/scratch.cpp
 uv run python scripts/c2/sched_trace.py tools/match/scratches/projectile_render --out /tmp/pr-sched
 ```
+
+`pad-and-parens.diff` patches the `scratch.cpp` of this revision, where applying it gave
+`body_byte_exact=True`. The scratch now reads `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp`
+through `SOURCE=`, and that source has moved on, so the diff no longer applies.

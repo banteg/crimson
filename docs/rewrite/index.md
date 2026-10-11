@@ -15,27 +15,13 @@ passing port regression tests alone does not establish parity with the original.
 Start with [setup](../contributor/setup.md), [coverage and scope](status.md), or the
 [feature matrix](feature-matrix.md) of the Python port and the web and native clients.
 
-Python remains the fast iteration platform and records ranked runs. The core
-also builds the whole recovered game into a WASM module that plays the original
-natively and [in the browser](https://crimson.land/play/), held to the verifier
-on every gate stream. The core and its staged gates are documented in
-`crimson-core/README.md` and `crimson-core/ROADMAP.md`, the clients in
-`crimson-core/PORT.md`.
+Python remains the reference port and the fast iteration platform. The core
+also builds the whole recovered game, which plays the original natively and
+[in the browser](https://crimson.land/play/), held to the verifier on every gate
+stream; the Python port and both clients play ranked runs. The core and its
+staged gates are documented in `crimson-core/README.md` and
+`crimson-core/ROADMAP.md`, the clients in `crimson-core/PORT.md`.
 
-## Architecture and contracts
-
-- [Module map](module-map.md): package boundaries, screen ownership, and runtime components.
-- [Deterministic session](deterministic-step-pipeline.md): live/replay tick order, input, and presentation.
-- [Timing domains and mode scheduling](timing.md): original clocks, mode differences, and Python counterparts.
-- [Run startup](replay-run-start.md): shared initialization, the run boundary, and terrain RNG.
-- [Perks architecture](perks-architecture.md): explicit effect phases and ordering.
-- [Rendering pipeline](rendering-pipeline.md) and [terrain](terrain.md): drawing and decal application.
-- [Local multiplayer](local-multiplayer.md): the 3/4-player extension to native 1/2-player behavior.
-
-## Parity work
-
-- [Original bugs](original-bugs.md): intentional fixes and `--preserve-bugs` behavior.
-- [Float policy](float-parity-policy.md) and [precision map](float-expression-precision-map.md).
-- [CDT trace format](cdt-trace-format.md).
-- [Evidence records](../verification/evidence-ledger/index.md).
-- [RNG caller mapping](rng-caller-mapping-workflow.md).
+Pages under Architecture and Modules describe how the port is built, Contracts
+the rules a change must keep (tick order, timing, replays, ranked play, traces,
+float precision), and Parity what differs from the original and why.

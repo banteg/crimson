@@ -32,7 +32,7 @@ def main():
     assert unicorn.__version__ == "2.1.4"
     image_sha = parent.sha(match.default_image_path().read_bytes())
     assert image_sha == "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
-    source = ROOT / "crimson-zig/src/runtime/testdata/primary-impact-presentation.json"
+    source = ROOT / "tests/fixtures/native/primary-impact-presentation.json"
     source_sha = hashlib.sha256(source.read_bytes()).hexdigest()
     assert source_sha == "7a7b5f27b414cf279e88e47d72f43ab9ff71f15471ed5748950ab8a0289ca98a"
     parent_sources = {

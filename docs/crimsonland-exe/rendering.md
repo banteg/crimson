@@ -111,13 +111,12 @@ current `player_state.auto_target`. `perks_init_database`
 
 ### Player sprite layers
 
-From `decomp/1.9/crimsonland/crimsonland/player_render.cpp` (a historical
-Frida summary, `analysis/frida/player_sprite_trace_summary.json`, agrees):
+From `decomp/1.9/crimsonland/crimsonland/player_render.cpp`:
 
 - Alive (`player_state_table.health > 0`): draws **two** sprite layers (UV frames `0..14` and `+0x10`) with a shadow/outline pass (scaled `~1.02/1.03` and offset) before the main pass; rotations come from `heading` vs `aim_heading`.
 - Dead: draws a **single** sprite layer, frame `(int)((1 - death_timer / 16) * 20 + 32)` (`32..52`), or `52` once `death_timer < 0`, also with shadow+main passes.
 
-### Player sprite UV tables (2026-01-26)
+### Player sprite UV tables
 
 `player_render` uses two UV tables for the trooper sprite:
 
@@ -130,7 +129,7 @@ This table is not filled separately; it aliases into `effect_uv8`, which is popu
 The legs and torso passes therefore draw paired frames `(0,16) … (14,30)`; the trooper atlas
 (`game/trooper.jaz`) has fully empty frames at 15 and 31.
 
-### Recoil / muzzle-flash kick (2026-01-26)
+### Recoil / muzzle-flash kick
 
 Recoil is driven by `player_state.muzzle_flash_alpha`:
 

@@ -21,9 +21,8 @@ function it describes is an exact match, as is all of the game and engine code;
 see `tools/match/STATUS.md` for evidence status. This page does not claim a new
 native runtime comparison.
 
-For conversion and precision rules, see [delta-time parity](parity/delta-time.md)
-and [float policy](float-parity-policy.md). For execution ownership, see the
-[deterministic session](deterministic-step-pipeline.md).
+For precision rules, see the [float policy](float-parity-policy.md). For
+execution ownership, see the [deterministic session](deterministic-step-pipeline.md).
 
 ## Native clocks and deltas
 
@@ -70,13 +69,20 @@ The Reflex Boosted **perk** and Reflex Boost **bonus** are separate transforms:
 The final bonus timer-second itself counts down in simulation time, so its
 easing window is not necessarily one wall-clock second.
 
+For a supplied `1/60` second tick (`0.016666668`) with the perk and a bonus timer
+of 0.5: the outer delta is `0.015` (15 ms), the factor `0.65`, the world delta
+`0.00975` (9 ms), and movement gets `0.009000001`, restored to `0.00975`.
+
 ### Seconds and milliseconds can disagree
 
 `frame_dt_ms` is derived by truncating `frame_dt * 1000`, with native float
-precision. It is not an independent high-resolution clock and there is no
-fractional-millisecond carry between these conversions. A supplied `1/60`
-second tick produces 16 ms; 60 such additions produce 960 ms even though the
-seconds-domain deltas total approximately one second. Native engine sampling
+precision. `__ftol` at `0x00461054` sets the x87 rounding control to chop
+(`or ah, 0x0c` at `0x00461063`) before converting, so this and every other
+float-to-int conversion truncates toward zero: 0.5 → 0, 2.5 → 2, −1.5 → −1, not
+round-to-nearest. `frame_dt_ms` is not an independent high-resolution clock and
+there is no fractional-millisecond carry between these conversions. A supplied
+`1/60` second tick produces 16 ms; 60 such additions produce 960 ms even though
+the seconds-domain deltas total approximately one second. Native engine sampling
 starts with integer milliseconds, so this example describes a supplied 60 Hz
 delta, not a claim that every native frame measures exactly `1/60` second.
 
@@ -167,8 +173,9 @@ down by each tick's simulated milliseconds; the frame stops when that run-down i
 over and the mode leaves gameplay, or when a mode callback ends the batch.
 
 Replay execution reaches the same session through
-`src/crimson/replay/driver/playback_driver.py`; playback pacing is separate from
-the delta supplied to each session tick. See [deterministic session](deterministic-step-pipeline.md)
+`src/crimson/replay/driver/playback_driver.py`. Replays store no timing: every
+tick steps the fixed float32 `REPLAY_TICK_DT` (1/60 s), and playback pacing is
+separate from that delta. See [deterministic session](deterministic-step-pipeline.md)
 for the input/presentation boundary.
 
 `src/crimson/sim/timing.py` makes the domains explicit:
@@ -178,7 +185,7 @@ for the input/presentation boundary.
 | `FrameTiming.dt` / `dt_ms_i32` | Input tick delta and its truncated milliseconds, before optional outer perk transformation. “Raw” here means session input, not Windows wall time. |
 | `FrameTiming.dt_sim` / `dt_sim_ms_i32` | World delta after optional perk transformation, bonus scaling, and zero gate. |
 | `FrameTiming.dt_audio` | World delta before bonus scaling/zero gate; the counterpart of native's saved audio delta. |
-| `ftol_ms_i32` | Float32 scaling plus truncation for integer cadence. |
+| `ftol_ms_i32` | `dt` rounded to float32, scaled by 1000 in float32, truncated. The only parity-critical seconds-to-milliseconds conversion. |
 | `reflex_boost_time_scale_factor` | Native-style bonus easing with PC24 operation boundaries. |
 
 `_session_timing` in `src/crimson/sim/sessions.py` computes these once per tick.

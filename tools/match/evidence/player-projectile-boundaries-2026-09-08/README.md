@@ -27,7 +27,7 @@ three-control branch/copy family retains the minimal branch-only change.
 label: all four conventional trail branches placed current position at vertices
 0/1 and origin at 2/3. Native does the reverse. The corrected pairs improve
 alignment while preserving the materialized vector lifetimes.
-[Endpoint evidence](scratches/projectile_render/CONVENTIONAL-ENDPOINT-EVIDENCE-2026-09-08.md)
+[Endpoint evidence](../../scratches/projectile_render/CONVENTIONAL-ENDPOINT-EVIDENCE-2026-09-08.md)
 records the field offsets and each native branch address.
 
 The ledgers retain 56 complete canonical-config mutation controls: 18 for player
@@ -36,7 +36,7 @@ The extra three vector-angle controls used a separately documented alias config;
 they do not masquerade as canonical-epoch experiments. Neither vector-angle form
 improved the caller. Native helper bytes admit both explicit output pointers and
 hidden object-return buffers; the old decorated-symbol claims were unsupported.
-[Reproducible ABI evidence](evidence/vector-return-contract-2026-09-08/README.md)
+[Reproducible ABI evidence](../vector-return-contract-2026-09-08/README.md)
 records that ambiguity without changing the exact helper implementations.
 
 ## Alternate Weapon firing

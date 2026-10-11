@@ -47,18 +47,18 @@ executed baseline Python module hashes were checked against that commit.
 bullet-hit sound selection, position, and gain. The native callback models
 the loaded six-sound array as indices; it does not validate sound-file loading.
 
-Zig Debug and ReleaseFast pass all 480 cases for represented projectile and
+Zig Debug and ReleaseFast passed all 480 cases for represented projectile and
 creature state, spawned-effect and final-decal fields, shots-hit count, and RNG
 value/caller/state. The initial Zig regression failed on a one-ULP shard
 velocity difference; correcting velocity exposed the separate signed-zero
-scale-step difference. Zig's test does not observe audio or private helper
-arguments, and its state does not represent native hit-flash/state-flag fields.
+scale-step difference. Zig's test did not observe audio or private helper
+arguments, and its state did not represent native hit-flash/state-flag fields.
 
 The committed shared fixture selects one complete 48-combination cycle and
-includes the positive-zero scale-step control. All 3,658 Python tests pass,
-with 13 skips and 135 snapshots; all 683 Zig tests pass. ReleaseFast executable
-and WASM builds pass. The earlier 1,000-case Python presentation matrix also
-continues to agree with its checked native observations.
+includes the positive-zero scale-step control. All 3,658 Python tests passed,
+with 13 skips and 135 snapshots; all 683 Zig tests passed. ReleaseFast executable
+and WASM builds passed. The earlier 1,000-case Python presentation matrix also
+continued to agree with its checked native observations.
 
 This is a PC24, high-health, scale-one template proof. Effect allocation,
 final FX enqueue, and audio implementations remain recording boundaries.
@@ -74,9 +74,8 @@ From the repository root:
 
 ```sh
 uv run --with unicorn==2.1.4 --with capstone python tools/match/evidence/primary-post-hit-position-2026-09-11/verify.py --out /tmp/crimson-primary-post-position-full
-uv run python tools/match/evidence/primary-post-hit-position-2026-09-11/verify_ports.py --witnesses /tmp/crimson-primary-post-position-full/witnesses.json --out /tmp/crimson-primary-post-position-full/python.json
 uv run python tools/match/evidence/primary-post-hit-position-2026-09-11/export_regressions.py --witnesses /tmp/crimson-primary-post-position-full/witnesses.json --out /tmp/crimson-primary-post-position-shared.json
-cmp /tmp/crimson-primary-post-position-shared.json crimson-zig/src/runtime/testdata/primary-post-hit-position.json
+cmp /tmp/crimson-primary-post-position-shared.json tests/fixtures/native/primary-post-hit-position.json
 uv run pytest tests/gameplay/test_primary_impact_native.py
 ```
 
@@ -87,9 +86,3 @@ mkdir -p /tmp/crimson-primary-post-position-before
 git archive 944d2b1827bb10c3be44a6e757d7e1909202bda3 src | tar -x -C /tmp/crimson-primary-post-position-before
 PYTHONPATH=/tmp/crimson-primary-post-position-before/src uv run python tools/match/evidence/primary-post-hit-position-2026-09-11/verify_ports.py --witnesses /tmp/crimson-primary-post-position-full/witnesses.json --out /tmp/crimson-primary-post-position-full/python-before.json --allow-differences
 ```
-
-For the full Zig matrix, temporarily copy the generated `witnesses.json` over
-`crimson-zig/src/runtime/testdata/primary-post-hit-position.json`. Run
-`zig build test --summary all` and
-`zig build test -Doptimize=ReleaseFast --summary all` from `crimson-zig`, then
-restore the deterministic 48-case selection with `export_regressions.py`.

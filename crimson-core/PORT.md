@@ -1,8 +1,8 @@
 # Native and web port
 
-The plan for a playable native and web build of the recovered game, the seam it
-ports at, and what each phase has established. Started 2026-10-07; updated as
-phases land.
+How the recovered game plays natively and in the browser: the seam it ports at,
+the host below it, and the checks that hold every client build to the
+verifier. Open work is in the [roadmap](ROADMAP.md).
 
 ## Summary
 
@@ -29,10 +29,11 @@ Python port does ([Ranked runs](#ranked-runs)); the native host uses the same pr
 
 ### The seam is below Grim
 
-The spec first placed the seam at the Grim2D interface, reimplementing its 84
-methods over a modern renderer. Compiling the recovered Grim changed that: 156
-of its 171 source files build for wasm32 as recovered (through the same
-declaration repairs as the executable), and the rest are window, dialog and
+The first design placed the seam at the Grim2D interface, reimplementing its 84
+methods over a modern renderer. Compiling the recovered Grim changed that: all
+but a handful of its source files build for wasm32 as recovered (through the
+same declaration repairs as the executable), and the rest (`grim_replaced` in
+[`game/sources.json`](game/sources.json)) are window, dialog and
 device-creation code. The recovered Grim already reproduces the
 original's vertex math, text layout, batching, texture slots and render
 targets; Python's [`src/grim`](../src/grim) shows how many quirks a
@@ -135,7 +136,7 @@ since its flag pauses parts of a tick. The run's replay goes to `replays/` as
 the next numbered `.crd`, `<n>-<mode>.crd`, the replay the Python port records
 and the leaderboard takes ([`host/replay.inc`](host/replay.inc)), with how the
 run ended, or `incomplete`; the run's high score record keeps its number in the
-bytes the original reserved (docs/rewrite/watch-replays.md). A tick takes at most one
+bytes the original reserved ([high score records](../docs/formats/highscores.md)). A tick takes at most one
 perk command, judged by the state it starts from, since a pick can use up the
 last perk or kill the player; commands the verifier would refuse (in Rush, once
 dead, with no perk left) are dropped, as the original ignores them, and the
@@ -165,94 +166,69 @@ a run, and only choose samples.
 ### Watching replays
 
 A replay the module can play (one player in Survival, Rush or Quests, under
-the current rules) plays as a run whose ticks come from its recording
-([`host/watch.inc`](host/watch.inc), docs/rewrite/watch-replays.md). On the
-high score screen a click on a row pins its card in place of the panel's
-settings, and the card's Watch plays the replay its record names, or says why
-it does not play: another build's replay plays with the build named, one under
-other rules or one only the Python port plays does not. Watch starts the run as
-Play a game does, with the replay's mode, quest and difficulty; nothing it
-plays reaches the player (no settings or progress carry over, nothing is saved,
-the run counts in no statistics), and the menu settings come back when it ends.
-The [replay viewer](../docs/rewrite/replay-viewer.md) prepares the whole run
-first, keeping keyframes and the terrain's history ([`host/keyframes.inc`](host/keyframes.inc)),
-so it seeks anywhere, backwards too, with the terrain rebuilt exactly; its
-scrub bar and pick box keep to dim bands clear of the HUD, and it prepares and
-ends on the original's game over screen with the run's score card
-([`host/viewer.inc`](host/viewer.inc)). A host plays a replay file with
-`game_replay_open` and `game_watch`, which skips the intro, cuts in from the
-menu and gives way to a run the player starts; a run's page on the site links to
-`/play/?watch=<run>`, which the page names and plays. Since the
+the current [rules](../docs/formats/replay.md)) plays as a run whose ticks come
+from its recording ([`host/watch.inc`](host/watch.inc)); the card of one it
+cannot play says why ([`host/replay.inc`](host/replay.inc)). Nothing it plays
+reaches the player: no settings or progress carry over, nothing is saved, and
+the run counts in no statistics. The [replay viewer](../docs/rewrite/replay-viewer.md)
+covers preparing, seeking, the viewer, links and practice
+([`host/keyframes.inc`](host/keyframes.inc), [`host/viewer.inc`](host/viewer.inc)).
+A host plays a replay file with `game_replay_open` and `game_watch`. Since the
 replay plays in the one world the game has, a finished run's end screen is
 gone once the scores it opened play one: their Back leaves for the Statistics
 menu.
 
 ### Ranked runs
 
-The Play Game panel grows by a Ranked box under the player-count list, as the
-Python port's does (`screens/panels/play_game.py`), when the host takes runs
-to the leaderboard (the web and native clients; [`host/ranked.inc`](host/ranked.inc)).
-Ticked, it lists only the modes that rank, Quests and Survival, makes the game
-one player's, and shows a Profile button. A run started that way, with a
-player's movement and aim, plays the ranked rules (`ranked_run_spec`): full
-detail with violence on, no friendly fire, the documented fixes, the quests the
-run's own place in the campaign unlocks (`ranked_status`), no weapon used yet
-and the registered pad reach, on a detached save whose progress stays its own.
+The Ranked box, the Profile button and the ranked profile are the Python
+port's ([playing a ranked run](../docs/rewrite/ranked-rules.md#playing-a-ranked-run)),
+as are the signed outbox, its upload protocol and the high score screen's
+board runs ([leaderboard identity](../docs/rewrite/leaderboard-identity.md));
+the module shows them when the host takes runs to the leaderboard
+([`host/ranked.inc`](host/ranked.inc)). A ranked run's replay is built from the
+recording: the canonical msgpack the server reads (`service/src/msgpack.ts`),
+with the result the server derives from the verifier's state after the last
+tick (`deriveResult`). zstd 1.5.7's compressor and Monocypher 4.0.2, vendored in
+[`game/vendor`](game/vendor), pack and sign it.
 
-When it ends as the board takes it, a death in Survival or a completed quest,
-the run's replay is built from the recording: the canonical msgpack the server
-reads (`service/src/msgpack.ts`), with the configuration and the result the
-server derives from the verifier's state after the last tick (`deriveResult`).
-Leaving the end screen, or quitting on it, signs it with the player's key
-under the name the end screen took and queues it in `leaderboard/outbox/` as
-the Python port does: one zstd frame, an Ed25519 signature over the payload's
-digest and the name (`identity.py`), and the key kept as a 32-byte seed in
-`identity.key`. zstd 1.5.7's compressor and Monocypher 4.0.2 are vendored in
-[`game/vendor`](game/vendor). The page uploads the outbox at start, when a run
-is queued and every ten minutes: a run the service took or already has leaves
-it, one it refuses moves to `rejected/` with the reason, and offline runs wait.
-Profile signs a challenge and opens the profile signed in. The native client
-uses libcurl on worker threads; only the main thread reads the module's key,
-signs its challenge and applies board/replay responses. Signed uploads remain
-in the outbox on connection failures, rate limits or service errors; permanent
-rejections are saved with their reason before the queued entry is removed.
-Online replays download into `replays/online/` atomically, at most 16 MiB;
-a missing run is distinguished from a failed download. Profile login links
-must have the configured service's origin before the native host opens them
-in the browser. TLS verification stays enabled and requests never redirect.
+The web page uploads the outbox at start, when a run is queued and every ten
+minutes ([`client/web/shell.html`](client/web/shell.html)). The native client
+uses libcurl on worker threads ([`client/network.cpp`](client/network.cpp));
+only the main thread reads the module's key, signs its challenge and applies
+board and replay responses. Pending runs retry at startup, on Update scores and
+every ten minutes, and stay in the outbox on connection failures, rate limits
+or service errors; a refused run is saved to `rejected/` with its reason before
+its queued entry goes. Shutdown cancels pending work; runs queued while
+quitting wait for the next launch. TLS verification stays on, requests never
+redirect, and a profile login link must have the configured service's origin
+before the host opens it in the browser. An empty `CRIMSON_LEADERBOARD_URL`
+disables networking and the Ranked box.
 
-As in Python, `CRIMSON_LEADERBOARD_URL` selects the API root (default
-`https://crimson.land/api`); an empty value disables networking and the Ranked
-box. Pending runs retry at startup, on Update scores and every ten minutes.
-Network shutdown cancels pending work; files queued while quitting wait for the next launch.
-
-The high score screen shows the leaderboard's runs as the Python port does
-(`screens/high_scores_view/records.py`). Each board's latest answer is kept for
-the session, every fetch replacing it whole, so a hidden, banned or deleted run
-leaves at the next one; nothing online is stored. While Show internet scores is
-ticked, the table reads the board's runs after its own records, so the
-original's filters, duplicate rule and order take them in; a run of the
-player's own that the board holds (the same name, time and experience) turns
-green in its place. The screen fetches a board quietly the first time it shows
-it, and Update scores fetches the shown one again with the original's status
-lines. A pinned board run's card fetches its replay through the page into
-`replays/online/<run>.crd`, where the newest few stay, and Watch plays it;
+A pinned board run's card fetches its replay into `replays/online/<run>.crd`,
+atomically and at most 16 MiB, where the newest few stay, and Watch plays it;
 "This run is no longer on the leaderboard" and "Could not download this run"
 tell a dropped run from a failed download, which the next pin tries again.
 
 ### Evidence
 
+Two gates hold every client build to the verifier: the **simulation** gate,
+where every gate stream agrees on every snapshot field after every tick, and
+the **session** gate, where play through the menus at uneven frame rates,
+pauses, perk picks and a lost window gives the verifier's state and result.
+CI fails on any disagreement. What has no check yet (audio, graphics,
+persistence) is in the [roadmap](ROADMAP.md#client-checks).
+
 - [`checks/game_check.py`](checks/game_check.py) runs sessions in the game
-  module and the verifier through every gate stream (the 101-run bot corpus
-  and the 9 supported recordings) and compares all
-  36,343 snapshot fields after every tick; where a run ends, both must refuse
-  the next tick. All 110 agree, with the whole executable linked. Fields only
-  presentation reads stay out of the comparison: `player_weapon_popup_timer`,
+  module and the verifier through every [gate](README.md#whole-run-gate) stream
+  and compares every snapshot field ([`schema.json`](schema.json)) after every
+  tick; where a run ends, both must refuse the next tick. The whole executable
+  is linked. Fields only presentation reads stay out of the comparison
+  ([`game_compare.mjs`](checks/game_compare.mjs)): `player_weapon_popup_timer`,
   which the restored HUD counts down, and the weapons' sound ids, which hold
   the original's loaded ids in a run inside it.
-- `game_check.py --live <game directory>` runs the same 110 streams back to
-  back inside the original booted with its assets, sounds and music, each run
-  starting from the state the previous one left, and all agree.
+- `game_check.py --live <game directory>` runs the same streams back to back
+  inside the original booted with its assets, sounds and music, each run
+  starting from the state the previous one left.
 - [`checks/game_session.mjs`](checks/game_session.mjs) plays a Survival run
   through the menus at frame times from 4 to 50 ms (passes with no tick and
   passes with three) and, after every frame, compares the run with the verifier
@@ -402,28 +378,3 @@ crimson.land serves the page at [`/play/`](https://crimson.land/play/): the
 site's Worker answers `/play/game/<file>` from the asset bucket, same-origin,
 for the three distributed files only ([`service/src/index.ts`](../service/src/index.ts)),
 and `npm run play` in `service` stages the packaged web build for deploy.
-
-## Plan
-
-| Phase | Delivers | State |
-| --- | --- | --- |
-| 1. Game module | Recovered Grim and presentation in wasm32; sessions match the verifier on all gate streams | Done ([#550](https://github.com/banteg/crimson/pull/550)) |
-| 2. Native client | The whole executable in the module; SDL3/OpenGL host over `wasm2c`; the original game boots, menus and runs play | Done ([#552](https://github.com/banteg/crimson/pull/552)) |
-| 3. Web client | The same host through Emscripten; game files in IndexedDB | Done ([#553](https://github.com/banteg/crimson/pull/553)) |
-| 4. Audio | DirectSound mixed in the module, vorbisfile over stb_vorbis; the host plays the pulled mix | Done ([#554](https://github.com/banteg/crimson/pull/554)) |
-| 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates with the game files and audio loaded | Done ([#555](https://github.com/banteg/crimson/pull/555)) |
-| 6. Verifier convergence | Dropped: the verifier stays its own artifact and holds every client build to it ([Packaging](#packaging)) | |
-| 7. Product parity | Gamepads as the original's joystick; the web client takes the player's own game folder | Done ([#556](https://github.com/banteg/crimson/pull/556)) |
-| 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client downloads the game files into the Python game's data folder; next, a Windows host (the WASI layer is POSIX) and signing | Done ([#557](https://github.com/banteg/crimson/pull/557)); crimson.land/play hosts the web client with the distributed files |
-| 9. Ranked play from the client | Ranked runs from the web client: the Play Game panel's Ranked box and Profile button, `.crd` replays signed and queued as the Python port does, uploaded by the page; native uploads use the same signed outbox | Done ([#566](https://github.com/banteg/crimson/pull/566)) |
-| 10. Watching replays | Every run saves its replay; the high score screen's Watch plays local runs and the leaderboard's, with the board's runs kept for the session (docs/rewrite/watch-replays.md) | Done ([#590](https://github.com/banteg/crimson/pull/590), [#598](https://github.com/banteg/crimson/pull/598), [#602](https://github.com/banteg/crimson/pull/602)) |
-
-## Acceptance gates
-
-| Gate | Evidence required |
-| --- | --- |
-| Simulation | Every gate stream through each release artifact agrees with the verifier on every snapshot field after every tick. |
-| Session | Identical input and commands at 30, 60 and 144 Hz display rates, including frames with zero or several ticks, pauses, perk and menu transitions, restarts and tab suspension, give identical state and results. |
-| Audio | Identical simulation results with real audio, a null sink, muting, autoplay lock, voice saturation and device failure. |
-| Graphics | Captures of terrain persistence, corpse and decal bakes, alpha threshold, blend factors, write masks, fonts, texture edges and gamma against the original, with documented tolerances. |
-| Persistence | Saves survive relaunch and reload; a failed asset or storage operation is visible and never changes a ranked run's setup. |

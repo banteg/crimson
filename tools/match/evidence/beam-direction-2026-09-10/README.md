@@ -4,7 +4,7 @@ Ion Rifle (21), Ion Minigun (22), Ion Cannon (23), and Fire Bullets (45)
 draw their streak **from the stored origin toward the projectile head**.
 The scratch previously used the opposite direction and anchored the streak at
 the head. Both live and fading branches were wrong. Python and Zig already
-use the native direction and origin, so this correction changes only the scratch.
+used the native direction and origin, so this correction changes only the scratch.
 
 Native loads the primary cursor as `projectile_pool + 0x14` at `0x00424184`.
 Relative to this cursor, head X/Y are `-0xc/-8` and origin X/Y are `-4/0`.

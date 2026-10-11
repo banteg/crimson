@@ -1,12 +1,12 @@
 # Native creature frame selection
 
-Python and Zig now select shadow/body atlas frames directly from lifecycle and
-animation state, with PC24 rounding before integer conversion. Both agree with
-all **2,640 native witnesses**. The previous Python caller/helper path differs
+This change made Python and Zig select shadow/body atlas frames directly from
+lifecycle and animation state, with PC24 rounding before integer conversion.
+Both then agreed with all **2,640 native witnesses**. The previous Python caller/helper path differs
 on **270** witnesses. The previous Zig atlas path differs on **229 of 2,628**
 comparable witnesses; its signed-mask implementation also panics in Debug on
 a negative ping-pong input representing 12 excluded rows. The new implementation
-handles all 2,640 rows in both Debug and ReleaseFast.
+handled all 2,640 rows in both Debug and ReleaseFast.
 
 This corrects port behavior. The C++ matching source remains **79.737705%**,
 760/765 instructions, `139/0/5` references, and neither normalized nor encoded
@@ -79,20 +79,21 @@ supported by `grim_d3d_init`'s `CreateDevice` flags `0x20` without
 `D3DCREATE_FPU_PRESERVE` (`0x02`). The precision-map introduction is corrected
 to distinguish the earlier CRT startup setting from post-device gameplay.
 
-[verify_ports.py](verify_ports.py) compares the shared native witnesses with
-the actual current Python helper and compiled Zig `window_atlas` path. It
-reconstructs the previous Python caller adaptation and loads the old helper
-from immutable commit `76a92bf522e3ee8591fcbab324009201683d6dea`. It compiles
+A port-side verifier compared the shared native witnesses with
+the then-current Python helper and compiled Zig `window_atlas` path. It
+reconstructed the previous Python caller adaptation and loaded the old helper
+from immutable commit `76a92bf522e3ee8591fcbab324009201683d6dea`. It compiled
 that commit's old Zig atlas/animation files in a private copy of unchanged
-dependencies. Twelve diagnostic panic rows are listed explicitly; one is
-executed separately and its actual integer-overflow failure is required.
+dependencies. Twelve diagnostic panic rows are listed explicitly; one was
+executed separately and its actual integer-overflow failure was required. That
+port-side check was removed with the Zig port.
 
 [results.json](results.json) records native cases, call/write hashes, coverage,
 negative controls, and input identities. [port-results.json](port-results.json)
-records source hashes, every old mismatch, explicit exclusions, and both current
-Zig build modes. The common
-[witness file](../../../../crimson-zig/src/runtime/testdata/creature-frame-selection.json)
-is consumed by Python and Zig tests. Python rendering integration tests also
+records source hashes, every old mismatch, explicit exclusions, and both
+then-current Zig build modes. The common
+[witness file](../../../../tests/fixtures/native/creature-frame-selection.json)
+is consumed by Python tests. Python rendering integration tests also
 inspect the texture source rectangles for three concrete boundaries.
 
 ## Reproduce
@@ -102,20 +103,16 @@ uv run --with unicorn==2.1.4 python \
   tools/match/evidence/creature-frame-selection-2026-09-11/verify.py \
   --out /tmp/crimson-creature-frame-selection-native
 cmp /tmp/crimson-creature-frame-selection-native/witnesses.json \
-  crimson-zig/src/runtime/testdata/creature-frame-selection.json
-uv run python tools/match/evidence/creature-frame-selection-2026-09-11/verify_ports.py \
-  --out /tmp/crimson-creature-frame-selection-ports
+  tests/fixtures/native/creature-frame-selection.json
 uv run pytest tests/creatures/test_creature_frame_native.py \
-  tests/render/test_world_draw_order.py --no-cov
+  tests/render/test_world_draw_order.py
 ```
 
-Run `zig build test --summary all` and
-`zig build test -Doptimize=ReleaseFast --summary all` from `crimson-zig` for
-the same embedded witnesses. Native execution on macOS requires Unicorn's JIT
-memory allocation to be permitted.
+Native execution on macOS requires Unicorn's JIT memory allocation to be
+permitted.
 
 The complete validation for this change passed 3,662 Python tests and 135
 snapshots, 687 Zig tests in each build mode, native and WebAssembly builds,
 native game-owned closure verification, and the matching checkpoint with no
-regression or metadata errors. The atlas module is explicitly included in the
-Zig library test root so these witnesses run under the standard test command.
+regression or metadata errors. The atlas module was explicitly included in the
+Zig library test root so these witnesses ran under the standard test command.

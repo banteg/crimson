@@ -1,7 +1,7 @@
 // A run's replay (src/crimson/replay/types.py Replay), saved for every run a
 // session plays as replays/<n>-<mode>.crd, numbered as the Python port numbers
 // its own (src/crimson/replay/library.py) and named by its high score record
-// (docs/rewrite/watch-replays.md). A ranked run uploads the same replay.
+// (docs/formats/replay.md). A ranked run uploads the same replay.
 #include "../game/leaderboard.h"
 #include <cmath>
 #include <dirent.h>

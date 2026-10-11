@@ -11,15 +11,8 @@ tags:
 ---
 
 # Detangling notes
-This page tracks high-value functions to name and the evidence gathered so far.
-Use the hotspot script to refresh the lists when structured function snapshots
-are regenerated.
-
-## Hotspot script
-
-```
-uv run scripts/function_hotspots.py --top 12 --only-fun
-```
+This page tracked high-value functions to name and the evidence gathered so far.
+The hotspot script that refreshed its lists has since been removed.
 
 ## Name/data map workflow
 
@@ -327,7 +320,7 @@ grim.dll_functions.json
 - `0x0043c590` -> `music_stream_fill`
   - Evidence: decodes Ogg data and writes the next streaming chunk.
 
-Audio entries are 0x84-byte `audio_entry_t` records; see [Audio](../../re/static/reference/audio.md)
+Audio entries are 0x84-byte `audio_entry_t` records; see [Audio](../../docs/re/static/reference/audio.md)
 for the field layout used by `sfx_entry_table` and `music_entry_table`.
 
 ### Audio playback + streaming (high confidence)
@@ -964,7 +957,7 @@ Init timing note:
 
 - `0x0043caa0` -> `audio_init_sfx`
   - Evidence: loads `sfx.paq` and registers the sound effect ids.
-  - See [Audio](../../re/static/reference/audio.md) for SFX IDs, usage hotspots, and data labels.
+  - See [Audio](../../docs/re/static/reference/audio.md) for SFX IDs, usage hotspots, and data labels.
 - `0x0043c740` -> `sfx_load_sample`
   - Evidence: allocates a free slot in `sfx_entry_table_state`, loads `.ogg`/`.wav` data, and returns the
     sample id.
@@ -1070,7 +1063,7 @@ Init timing note:
     name/description tables via `wrap_text_to_width_alloc`.
 
   - For extracted id/name metadata and runtime references, see
-    `src/crimson/perks/ids.py` and [Perk runtime reference](perks-runtime-reference.md).
+    `src/crimson/perks/ids.py` and [Perk runtime reference](../../docs/re/static/perks-runtime-reference.md).
 - `0x0042fb10` -> `perk_can_offer`
   - Evidence: checks mode gates and perk flags, then returns a nonzero byte if the perk is eligible.
 - `0x0042fbd0` -> `perk_select_random`
@@ -1276,7 +1269,7 @@ Button struct (size `0x18`, used by `demo_trial_purchase_button` / `tutorial_pro
   | 0x90 | AI mode | selects movement pattern (cases 0/1/3/4/5/6/7/8 in update loop). |
   | 0x94 | anim phase | accumulates and wraps (31/15) to drive sprite animation timing. |
 
-See [Creature pool struct](../../creatures/struct.md) for the expanded field map and cross-links.
+See [Creature pool struct](../../docs/creatures/struct.md) for the expanded field map and cross-links.
 
 - Creature-type table carving updates:
   - `creature_type_table` is now typed as `creature_type_table_t` (6 entries, stride `0x44`).
@@ -1318,7 +1311,7 @@ See [Creature pool struct](../../creatures/struct.md) for the expanded field map
   | 0x34 | hit radius | Used for creature collision checks. |
   | 0x3c | owner id | Used to skip the shooter in hit tests. |
 
-See [Projectile struct](../../structs/projectile.md) for the expanded field map and notes.
+See [Projectile struct](../../docs/structs/projectile.md) for the expanded field map and notes.
 ### Effects pools (medium confidence)
 
 - `0x00420130` -> `fx_spawn_particle`
@@ -1335,7 +1328,7 @@ See [Projectile struct](../../structs/projectile.md) for the expanded field map 
   - Evidence: allocates a `0x2c`-byte entry in `sprite_effect_pool` (`0x00496820`) with position,
     velocity, tint, and a scalar parameter used by the renderer.
 
-- Layouts and fields are tracked in [Effects pools](../../structs/effects.md).
+- Layouts and fields are tracked in [Effects pools](../../docs/structs/effects.md).
 ### Bonus / pickup pool (medium confidence)
 
 - `0x0041f580` -> `bonus_alloc_slot`
@@ -1360,7 +1353,7 @@ See [Projectile struct](../../structs/projectile.md) for the expanded field map 
   - Evidence: applies bonus effects based on entry type (`param_2[0]`), spawns effects via
     effect_spawn (`0x0042e120`), and plays bonus SFX (sfx_play_panned (`0x0043d260`)).
 
-- See [Bonus ID map](../../re/static/reference/bonus-id-map.md) for the id-to-name table and default amounts.
+- See [Bonus ID map](../../docs/re/static/reference/bonus-id-map.md) for the id-to-name table and default amounts.
 - Layout (entry size `0x1c`, base `bonus_pool` (`0x00482948`), 16 entries):
 
   | Offset | Field | Evidence |
@@ -1374,7 +1367,7 @@ See [Projectile struct](../../structs/projectile.md) for the expanded field map 
   | 0x18 | amount/duration (`bonus_amount`) | used by `bonus_apply` when applying certain bonus types. |
 ### Game mode selector (partial)
 
-- `config_game_mode` (`0x00480360`) holds the current game mode (typed as `game_mode_id_t`). See [Game mode map](../../re/static/modes/game-mode-map.md) for the observed
+- `config_game_mode` (`0x00480360`) holds the current game mode (typed as `game_mode_id_t`). See [Game mode map](../../docs/re/static/modes/game-mode-map.md) for the observed
   values and evidence.
 
 - `0x00412960` -> `game_mode_label`

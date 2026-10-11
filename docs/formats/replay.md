@@ -11,7 +11,18 @@ A replay (`.crd`) records one run: the settings it started from, every tick's
 inputs, and the result the recording game derived when the run ended. A
 verifier re-simulates the ticks and must derive the identical result.
 
-Replays are recorded by the port's live game.
+## Where replays are kept
+
+Every client records its runs: the Python port's live game in every mode, and
+the web and native clients' sessions (`crimson-core/host/replay.inc`), which
+play Survival, Rush and quests. Each run's replay is saved in the runtime
+directory as `replays/<n>-<mode>.crd`, with `<mode>` one of `survival`, `rush`,
+`quest`, `typo` and `tutorial`. `n` is one more than the highest number handed
+out so far; `replays/.last-number` keeps it, so a deleted replay's number is
+never reused. A file appears only once it is written whole. The run's high
+score record names its replay by `n` ([local high scores](highscores.md)). A
+leaderboard run downloaded for watching is kept as
+`replays/online/<run id>.crd`.
 
 ## Envelope
 
@@ -67,9 +78,10 @@ service still re-simulates ranked runs.
 differently: a replay plays back only under the rules it was recorded under. Readers accept v30, which had no
 `rules`, as rules 1, and v30 and v31, which had no `pilot`, as declaring none; writers always write v32.
 
-`Recorder` is a map of `client` (`crimson` for this port; another client, such as a native crimson-core build,
-names itself), `version` (that client's own content identity, in `game_version`'s form) and `platform` (`<os>-<cpu>`, such
-as `macos-arm64`; `unknown` for the fixtures recorded before v30). Each is 1..64 printable ASCII characters.
+`Recorder` is a map of `client` (`crimson` for the Python port, `crimson-core` for the web and native clients),
+`version` (that client's own content identity, in `game_version`'s form) and `platform` (the Python port's
+`<os>-<cpu>`, such as `macos-arm64`; `web` or `native` from the other clients; `unknown` for the fixtures recorded
+before v30). Each is 1..64 printable ASCII characters.
 The packaged web/desktop host supplies its own fingerprint, covering the game
 module bytes, client sources and client toolchain. A raw module uses its game
 identity as the default recorder version.
@@ -131,7 +143,7 @@ A tick is a two-element **array** `[inputs, commands]`:
 | `type` | Other keys | Rule |
 |---|---|---|
 | `perk_menu_open` | `player_index` | a perk must be pending and a player alive |
-| `perk_pick` | `player_index`, `choice_index` 0..6 | as above, the menu opened on the tick before and no pick spent it yet, and the index must name an offered choice |
+| `perk_pick` | `player_index`, `choice_index` 0..6 | as above, the menu opened on the tick before and no pick spent it yet, and the index must name an offered choice; a tick without a pick closes the menu, as Cancel does |
 | `typo_char` | `player_index`, `ch` (one character) | Typ-o only |
 | `typo_backspace` | `player_index` | Typ-o only |
 | `typo_submit` | `player_index` | Typ-o only |

@@ -24,7 +24,8 @@ type or spelling.
 
 ## 1. Lowering of the copy (verified)
 
-Trace: `scripts/c2/aggregate_trace.py` over the HOLD_TIMER arm of `creature_update_all`.
+Trace: an ad hoc `aggregate_trace.py` (not committed) over the HOLD_TIMER arm of `creature_update_all`.
+`scripts/c2/il_stage_trace.py --preset globopt` dumps the same globopt stages.
 
 | Stage | IL for `creatures[i].target_position = *position` |
 |---|---|
@@ -190,9 +191,9 @@ to the function's opening line (here source line − 112).
 ## Open questions
 
 - v1 against v3: why an arm-local `creature` loses the value-numbered `creature + 0x14` owner that a
-  declaration dominating `position` keeps. The `fold.ret` stage of `aggregate_trace.py` shows v1
-  materialising a new temp (#1307) where v3 keeps the owner (#2307). The kill that separates them
-  was not traced.
+  declaration dominating `position` keeps. The `fold.ret` stage of that trace (`fold` in
+  `il_stage_trace.py`) shows v1 materialising a new temp (#1307) where v3 keeps the owner (#2307).
+  The kill that separates them was not traced.
 - 0x1071acfd returns the class of a directly addressed object when the base is `&symbol + ...`
   (read only). Global-array accesses (`creature_pool[i].f`) presumably get creature_pool's own class.
   That path was not exercised.

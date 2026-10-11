@@ -1,7 +1,7 @@
 # Creature body and shadow colours
 
-The Python and Zig sprite renderers now preserve the native colour arithmetic:
-Energizer uses `(1 - t) * base + t * target`, corpse fading follows that blend,
+This change made the Python and Zig sprite renderers preserve the native colour
+arithmetic: Energizer uses `(1 - t) * base + t * target`, corpse fading follows that blend,
 and transition alpha is applied last. Each operation rounds at gameplay PC24.
 Grim2D truncates each scaled channel and keeps its low byte; the ports previously
 rounded and clamped their body colours.
@@ -46,28 +46,31 @@ images, source, body, parent script, layout, traces, coverage and witnesses.
 
 ## Port execution and regressions
 
-The shared [native records](../../../../crimson-zig/src/runtime/testdata/creature-render-colors.json)
-feed both ordinary test suites. Python and Zig each check **2,160 body/shadow
-records**, including exact pre-packing binary32 words. Checking float words
+The shared [native records](../../../../tests/fixtures/native/creature-render-colors.json)
+feed the ordinary Python test suite, as they fed the since-removed Zig suite at
+this revision. Python checks **2,160 body/shadow records**, including exact
+pre-packing binary32 words. Checking float words
 prevents byte quantization from hiding incorrect blend order. Native shadow
 RGB is ignored by its ZERO/INVSRCALPHA blend; the ports retain their black
 silhouette adapter and compare the exact native alpha.
 
-[verify_ports.py](verify_ports.py) additionally executes the actual Python draw
-caller and sprite helper, and compiles unchanged rendering functions extracted
-from Zig's `window_main.zig`. [ports.zig](ports.zig) binds their required state,
+A port-side verifier additionally executed the actual Python draw
+caller and sprite helper, and compiled unchanged rendering functions extracted
+from Zig's `window_main.zig`. A small Zig harness bound their required state,
 texture lookup and draw boundary; atlas, animation, perk and colour helpers
-come from production modules. Eight current function bodies are extracted;
+came from production modules. Eight function bodies were extracted;
 the immutable baseline also includes its former local tint helper. This
-checks production rendering paths through the texture-call boundary without
-requiring a graphical window. Native and WebAssembly builds check integration.
+checked production rendering paths through the texture-call boundary without
+requiring a graphical window. Native and WebAssembly builds checked integration.
+That check was removed with the Zig port;
+[port-results.json](port-results.json) is the record.
 
-Python's observer identifies shadows from the sprite call's shadow argument,
-so a black body remains a body. The Zig observer identifies the pass from
+Python's observer identified shadows from the sprite call's shadow argument,
+so a black body remains a body. The Zig observer identified the pass from
 quad dimensions and additive state, with independent position/size assertions.
-Both record the submitted RGBA bytes, creature index, pass and atlas frame.
+Both recorded the submitted RGBA bytes, creature index, pass and atlas frame.
 
-All **4,320 draws** match in Python at atlas widths **256 and 512**, and in Zig
+All **4,320 draws** matched in Python at atlas widths **256 and 512**, and in Zig
 **Debug and ReleaseFast** at both widths. Immutable baseline
 `4e9ef68d2464228c4b67fd4db87bf0972f032a47` differs in every matrix case:
 
@@ -78,7 +81,7 @@ All **4,320 draws** match in Python at atlas widths **256 and 512**, and in Zig
 
 Counts are per atlas width. [port-results.json](port-results.json) stores
 source/extraction hashes, compiler version, output digests and representative
-failures. The earlier pass-order/dimension observer also still passes all
+failures. The earlier pass-order/dimension observer also still passed all
 1,056 records with the updated helpers.
 
 The proof concerns CPU arguments inside species rendering, not GPU pixels,
@@ -93,19 +96,13 @@ uv run --with unicorn==2.1.4 python \
   tools/match/evidence/creature-render-colors-2026-09-11/verify.py \
   --out /tmp/crimson-creature-colors-native
 cmp /tmp/crimson-creature-colors-native/witnesses.json \
-  crimson-zig/src/runtime/testdata/creature-render-colors.json
-uv run python tools/match/evidence/creature-render-colors-2026-09-11/verify_ports.py \
-  --out /tmp/crimson-creature-colors-ports
-uv run pytest --no-cov tests/render/test_creature_render_colors.py \
+  tests/fixtures/native/creature-render-colors.json
+uv run pytest tests/render/test_creature_render_colors.py \
   tests/render/test_creature_pass_order.py tests/render/test_world_draw_order.py
 ```
 
-From `crimson-zig`, run `zig build test --summary all`,
-`zig build test -Doptimize=ReleaseFast --summary all`,
-`zig build -Doptimize=ReleaseFast` and `zig build wasm`.
 The native verifier needs Unicorn JIT permission on macOS. Compiler-backed
-checks require access to their normal caches. The compiled draw observer is
-additional to the ordinary Zig suite's exact colour-word regressions.
+checks require access to their normal caches.
 
 Final validation passed **3,866 Python tests** (10 skipped) and **135 snapshots**,
 **753 Zig tests** in each mode, and both native/WebAssembly builds. Ruff,

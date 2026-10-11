@@ -121,20 +121,18 @@ The draw helper accepts world positions and applies the viewport transform to
 the completed native corners. Unequal viewport scales therefore apply to each
 coordinate independently, instead of averaging the axes for width alone.
 
-`verify_ports.py` checks **1,161 recorded native fixtures at three viewport
-scales**: `(1, 1)`, `(2, 2)`, and `(1.5, 0.75)`. All 3,483 current cases pass.
+A port-side verifier checked **1,161 recorded native fixtures at three viewport
+scales**: `(1, 1)`, `(2, 2)`, and `(1.5, 0.75)`. All 3,483 then-current cases passed.
 The exact preceding Python modules from commit `544af3e05` fail 726 cases at
 unit scale, 726 at doubled scale, and 1,160 at unequal scales. All recorded
 non-vertex GL calls remain identical between the two renderers, including
 colors, UVs, texture selection, and blend/batch calls. The regular renderer
 tests cover 64 native records at each scale, adding 192 exact argument checks.
 
-```sh
-uv run --no-sync python tools/match/evidence/conventional-corner-rounding-2026-09-11/verify_ports.py --out /tmp/conventional-python
-```
-
-This command consumes the already verified native fixture file; it does not
-require Unicorn or execute the original binary again. `port-results.json`
+That verifier read the per-function `scratch.cpp` and Python renderer modules
+that have since moved, so it no longer ran and was removed. It consumed the
+already verified native fixture file without executing the original binary
+again. `port-results.json`
 records the native receipt and fixture hashes, current and historical Python
 source hashes, submitted-vertex/trace hashes, and old-renderer differences.
 It covers positive-alpha trails for the six represented Python types

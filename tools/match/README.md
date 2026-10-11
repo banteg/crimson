@@ -6,14 +6,7 @@ normalized x86 assembly against the
 function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe` or
 `grim.dll`.
 
-See [Matching Status](STATUS.md) for generated progress and
-[Remaining EXE batches](BATCHES.md) for the current function map, focused hypotheses,
-and campaign order. See the [eight exact recoveries](EXACT-MATCHES-2026-09-07.md),
-[22 lifecycle ownership groups](LIFECYCLE-OWNERSHIP-2026-09-08.md),
-[five-target follow-up](FRONTIER-FOLLOWUP-2026-09-06.md),
-[batches 01–08 results](BATCHES-01-08-RESULTS.md),
-[exact-match follow-up](EXACT-FOLLOWUP-2026-09-05.md), and
-[UI storage follow-up](UI-STORAGE-FOLLOWUP-2026-09-05.md) for the recent campaigns.
+See [Matching Status](STATUS.md) for generated progress.
 
 ## Matching Scope
 
@@ -177,8 +170,8 @@ initializers reproduce 1,285 bytes and 453 instructions with all 19 references
 resolved. Their canonical scratches remain bound to the original archive
 members, which is stronger provenance than a recompile.
 
-A complete compiler scan of the current 61 game-owned WIPs produced zero exact
-or improved build-9178 profiles and zero evaluation errors. Do not sweep or
+A complete compiler scan of the game-owned WIPs remaining at the time produced
+zero exact or improved build-9178 profiles and zero evaluation errors. Do not sweep or
 promote `msvc7.0ddk` for the port scope without new object-local evidence;
 retain `msvc6.5 /O2 /GB` as the game-code search profile.
 
@@ -212,20 +205,17 @@ Do not substitute 8168 or another nearby build and label the result 8047.
 
 The pinned VC6 SP6 `msvcrt.lib` explains why 8047 appears without such a
 compiler bundle. Its COFF members contain 3 product-4, 26 product-10, and
-4 product-11 records with build 8047. The current structural Grim relink,
+4 product-11 records with build 8047. The structural Grim relink,
 which resolves the DLL's CRT seam through that archive, carries 2 product-4,
 1 product-10, and 2 product-11 build-8047 records. The product-4 and
 product-11 counts exactly equal the reference image, while the partial
 product-10 reproduction is sufficient to falsify the inference that the
 aggregate C record count belongs to engine code.
 
-Corpus-wide controls also reject a hidden SP6 backend split. Across the current
-137-function Grim corpus, the available 8966 and 9782 optimizers produce
-`0` wins, `0` losses, and `137` ties: both report 131 exact functions,
-14,938 exact bytes, six WIPs, 20,800.513 fuzzy-weighted bytes, and total
-reference debt 1. Across all 671 executable scratches the same comparison is
-also byte-for-byte tied: 561 exact functions, 115,403 exact bytes, 110 WIPs,
-282,305.057 fuzzy-weighted bytes, and reference debt 103.
+Corpus-wide controls also reject a hidden SP6 backend split. Across the whole
+Grim corpus and all executable scratches, the available 8966 and 9782
+optimizers tie on every function: no wins, no losses, and identical exact
+counts, exact bytes, fuzzy-weighted bytes and reference debt.
 
 Do not spend matching time searching for an 8047 game compiler unless new
 object-local evidence separates an engine translation unit from the confirmed
@@ -304,13 +294,16 @@ chmod +x tools/match/bin/wibo
 Create `tools/match/scratches/<function>/` with:
 
 - `scratch.conf`: shell variables consumed by `match.sh`
-- a candidate implementation, normally `scratch.cpp`
+- a candidate implementation: usually a `SOURCE=` path to a shared body under
+  `decomp/` (or `tools/match/shared/`, `third_party/sources/`); `scratch.cpp`
+  in the scratch directory when `SOURCE` is omitted
 
 `SOURCE` is resolved relative to the scratch directory and may point at a
-shared canonical body elsewhere in the repository. This is how
-`decomp/1.9/grim/` keeps recovered source centralized while each
-function retains its own matcher configuration and evidence. Omitting
-`SOURCE` keeps the `scratch.cpp` default.
+shared canonical body elsewhere in the repository. This is how `decomp/`
+keeps recovered source centralized while each function retains its own
+matcher configuration and evidence. Omitting `SOURCE` keeps the `scratch.cpp`
+default. Archive scratches, described below, link a historical object
+instead and take no source.
 
 Minimum config:
 
@@ -434,13 +427,12 @@ tools/match/match.sh tools/match/scratches/<function> --regions
 label offsets removed and `eax`/`ecx`/`edx` (and their byte/word forms)
 generalized. VC6 hands out those caller-saved registers in rotation, so one
 extra temporary renames every later scratch register and one size change
-relabels every later branch. For example, `player_update` is 64.50% normalized
-but 77.16% structural. The listing prints the remaining structural hunks. It is
+relabels every later branch, so a WIP can score far higher structurally than
+normalized. The listing prints the remaining structural hunks. It is
 a triage view and never grants matching credit. It also prints
 `structural_stack_masked`, which additionally masks ESP displacements to
 separate frame layout (which local owns which slot) from instruction structure:
-`projectile_render` is 65.40% normalized, 72.41% structural and 90.19% with
-stack offsets masked, so most of its residual is slot assignment.
+when that score is much higher again, most of the residual is slot assignment.
 
 Inspect one target through the matching state and all three analysis views:
 
@@ -988,8 +980,7 @@ requires a one-to-one mapping of all other instructions. Conditional edges stay
 ordered as taken and fallthrough. Registers, stack operands, and constants must
 agree, and every masked reference is checked at its graph-mapped position using
 the existing owner rules. Every instruction, including the traversed jumps, must
-be covered. The bonus selector currently maps 156 operations, six jumps per side,
-and 20 reference instructions while remaining non-exact.
+be covered.
 
 The result is `matched`, `different`, or `unsupported`. Indirect/external jumps,
 local calls, jump-only cycles, missing evidence, and uncovered instructions are

@@ -4,8 +4,9 @@ tags:
 ---
 
 # Entrypoint trace
-This page captures a top-down call trace starting at the PE entrypoint so we
-can hang names and subsystems off a stable boot sequence.
+Top-down call trace from the PE entrypoint through the VC6 CRT startup into
+`crimsonland_main`. The game's own startup continues in
+[Boot / Loading Sequence](boot-sequence.md).
 
 ## Entry address
 
@@ -92,73 +93,10 @@ High-level call order:
 14) `crt_exit(exit_code)` → exit handling
 15) `crt_exception_filter(exception_code, exception_ptr)` → CRT exception filter
 
-Notes:
-
-- `crimsonland_main()` includes DirectX version checks, Grim2D loading, config
-  load/apply, input/audio/renderer setup, and the game loop + shutdown.
-
-## Pre-logo loading pipeline (inside `crimsonland_main`)
-
-This is the simplified startup slice **before** the logo/splash assets are first
-loaded. All callsites below are in `crimsonland_main` at `0x0042c450`
-(`decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp`).
-
-1) Seed + DirectX check:
-   - `crt_time` → `crt_srand`.
-   - `dx_get_version` → MessageBox + early exit when too old.
-   - `Direct3DCreate8` used as a presence check, then released.
-2) Core paths + logging:
-   - `crt_getcwd` → `game_base_path`.
-   - Console banner prints + `console_flush_log`.
-3) Config file + console commands:
-   - `config_ensure_file`.
-   - Registers commands: `setGammaRamp`, `snd_addGameTune`, `generateterrain`,
-     `telltimesurvived`, `setresourcepaq`, `loadtexture`, `openurl`,
-     `sndfreqadjustment`.
-
-4) Grim2D interface:
-   - `grim_load_interface` (dev path), fallback to `grim.dll`.
-   - The developer-hint print block after this call never runs: its guard,
-     `grim_interface_ptr == grim_interface_ptr + 1`, is always false.
-
-   - `register_core_cvars`.
-5) Config + save bootstrap:
-   - `config_load_presets`.
-   - `game_load_status` + `play_time_load`.
-6) Grim config dialog + settings:
-   - `grim_apply_config` (`vtable +0x10`).
-   - `config_sync_from_grim`, then `config_load_presets` again.
-   - `grim_get_config_var` (`vtable +0x24`) reads texture scale, windowed flag,
-     screen dimensions, and backend flags.
-
-   - `grim_set_config_var` (`vtable +0x20`) repeated while applying settings (config/state IDs include D3D render state values).
-7) Input + system init:
-   - Logs: keyboard/mouse/joystick.
-   - `grim_init_system` (`vtable +0x14`) → initializes D3D/input + loads
-     `smallFnt.dat`. On failure, shows `grim_get_error_text` and exits.
-
-8) Post-init setup:
-   - `console_exec_line("exec autoexec.txt")`.
-   - Registers `v_width` / `v_height` cvars from the screen size.
-   - `init_audio_and_terrain`.
-9) **Logo assets load (first appearance of splash resources)**:
-   - `texture_get_or_load("backplasma", "load\\backplasma.jaz")`
-   - `texture_get_or_load("mockup", "load\\mockup.jaz")`
-   - `texture_get_or_load("logo_esrb", "load\\esrb_mature.jaz")`
-   - `texture_get_or_load("loading", "load\\loading.jaz")`
-   - `texture_get_or_load("cl_logo", "load\\logo_crimsonland.tga")`
-
-The "pre-logo" phase ends at step 8; step 9 is the earliest point where the
-logo/splash textures become available.
-
-## Game startup init boundary
-
-`crimsonland_main` installs `game_startup_init` (`0x0042b290`,
-`decomp/1.9/crimsonland/crimsonland/game_startup_init.cpp`) as Grim's frame
-callback (`grim_set_config_var(0x2d, ...)`); it owns the loading screen, the
-intro music play/mute, and the theme switch. `game_startup_init_prelude` (`0x0042b090`,
-`decomp/1.9/crimsonland/crimsonland/game_startup_init_prelude.cpp`) is a
-separate function it calls once texture loading finishes.
+`crimsonland_main` (`decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp`)
+covers DirectX checks, Grim2D loading, config, input/audio/renderer setup, the
+game loop and shutdown; [Boot / Loading Sequence](boot-sequence.md) walks it in
+order.
 
 The `crt_*` functions are byte-exact archive matches against the VC6 SP6
 `LIBCMT.LIB` (see `analysis/library_provenance.json`).

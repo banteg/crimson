@@ -35,13 +35,14 @@ source boundaries; they do not establish the original spelling of either owner.
 - The function remains WIP, with neither normalized nor encoded-body exactness.
 - Python matches all 1,039 applicable PC24 witnesses, including every observed
   particle field, RNG values, caller tags, and state for real-seed fixtures.
-  Python and Zig both run the same 80 native regression cases, selected by
-  `export_regressions.py`, under the normal test suites.
+  Python runs 80 native regression cases, selected by
+  `export_regressions.py`, under the normal test suite; the since-removed Zig
+  port ran the same cases.
 
 The runtime changes restore left-to-right PC24 multiplication through velocity,
 particle decay/spin/steering/shade arithmetic, and the native bubble movement
 render guard. Python also uses the native f32 0.8 expiry threshold. Steering
-retains wide trigonometric results until the speed multiply. Zig tags the two
+retains wide trigonometric results until the speed multiply. Zig tagged the two
 alternate flame styles with their actual native steering caller.
 
 ## Execution scope
@@ -74,11 +75,8 @@ required for native execution. From the repository root:
 uv run --no-sync --with unicorn==2.1.4 python tools/match/evidence/projectile-particle-update-2026-09-11/verify.py --out /tmp/projectile-particle-proof
 PYTHONPATH=. uv run --no-sync python tools/match/evidence/projectile-particle-update-2026-09-11/verify_ports.py --native-results /tmp/projectile-particle-proof/port-witnesses.json --out /tmp/projectile-particle-proof/python-ports.json
 uv run --no-sync python tools/match/evidence/projectile-particle-update-2026-09-11/export_regressions.py --native-results /tmp/projectile-particle-proof/port-witnesses.json --out /tmp/particle-update.json
-cmp /tmp/particle-update.json crimson-zig/src/runtime/testdata/particle-update.json
+cmp /tmp/particle-update.json tests/fixtures/native/particle-update.json
 uv run --no-sync pytest tests/gameplay/test_particle_update_native.py
-cd crimson-zig
-zig build test --summary all
-zig build test -Doptimize=ReleaseFast --summary all
 ```
 
 The generated `cases.json` and full `port-witnesses.json` remain in the chosen

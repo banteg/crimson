@@ -2046,7 +2046,7 @@ at `0x00415753..0x004157be`, taken before Alternate Weapon and consumed
 after the swap at `0x0041590e..0x00415918`. The recovered scratch already
 preserves both lifetimes. The corresponding port correction and validation
 are documented in the
-[player/projectile boundary evidence](../../PLAYER-PROJECTILE-BOUNDARIES-2026-09-08.md).
+[player/projectile boundary evidence](../../evidence/player-projectile-boundaries-2026-09-08/README.md).
 
 ## Native aim-point execution correction (2026-09-11)
 
@@ -2087,7 +2087,8 @@ normal-mode G on/off have identical gameplay state/RNG channels.
 
 See `tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/` for pinned
 receipts, shared native witnesses, and reproduction commands. CRD/CDT payload
-versions are 19 and Frida raw is 27 under the current-only format contract.
+versions were then 19 and Frida raw was 27 under the current-only format
+contract; the Frida capture has since been removed.
 
 ### Point-click frame-delta lifetime and expanded native proof (2026-09-11)
 

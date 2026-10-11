@@ -52,25 +52,28 @@ shot setup/casing work; no port callback there reads the timer. The native call
 and write happen after the jitter work described above.
 
 The exported shared fixture is
-`crimson-zig/src/runtime/testdata/player-fire-bullets-shortcut.json`.
-Python and Zig tests check timer assignment, firing, current-shot projectile
-type, ammo preservation, policy gating, and input decoding. Console-open cases
-remain native witnesses: the port pauses the whole frame outside these weapon
-unit tests. Live-input and Frida tests check the held key independently of the
-configured firing binding; input-provider tests retain it through catch-up.
+[`tests/fixtures/native/player-fire-bullets-shortcut.json`](../../../../tests/fixtures/native/player-fire-bullets-shortcut.json).
+Python tests check timer assignment, firing, current-shot projectile type, ammo
+preservation, policy gating, and input decoding; the since-removed Zig port
+checked the same fixture. Console-open cases remain native witnesses: the port
+pauses the whole frame outside these weapon unit tests. Live-input tests check
+the held key independently of the configured firing binding; live tick-source
+tests retain it as a held control. At this revision Frida capture tests also
+checked it; that tooling has since been removed.
 
-`verify_ports.py` records four fresh 64-tick CRDs with preserve-bugs and G each
-on/off, including a release/re-hold interval. Python and Zig agree on every
+A port-side verifier recorded four fresh 64-tick CRDs with preserve-bugs and G each
+on/off, including a release/re-hold interval. Python and Zig agreed on every
 canonical trace channel for all 256 ticks with no diagnostics. The three
-non-cheat controls have identical gameplay-channel hashes, excluding the
-intentional input flag difference. The enabled case ends with timer
-`9.900001525878906`, two fired shots, and all ten rounds; the controls end with
+non-cheat controls had identical gameplay-channel hashes, excluding the
+intentional input flag difference. The enabled case ended with timer
+`9.900001525878906`, two fired shots, and all ten rounds; the controls ended with
 zero timer, one fired shot, and nine rounds. `port-results.json` pins the
-sources and tested Zig binary.
+sources and tested Zig binary. That check was removed with the Zig port.
 
 This recovery introduced CRD 19, CDT payload 19, and Frida raw 27. The later
-[input-capture repair](../player-input-capture-2026-09-11/README.md) advances
-Frida raw to 28; the replay and trace layouts remain the same.
+[input-capture repair](../player-input-capture-2026-09-11/README.md) advanced
+Frida raw to 28; the replay and trace layouts remained the same. The Frida raw
+capture format has since been removed.
 CDT container 2, checkpoint 5, and evidence sidecar 3 retain their layouts.
 Older recordings must be regenerated; there is no silent migration.
 
@@ -78,11 +81,7 @@ Older recordings must be regenerated; there is no silent migration.
 
 ```sh
 uv run --with unicorn==2.1.4 python tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/verify.py --out /tmp/fire-shortcut-native
-cd crimson-zig
-zig build -Doptimize=ReleaseFast
-cd ..
-uv run python tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/verify_ports.py --out /tmp/fire-shortcut-ports
-uv run pytest -q tests/gameplay/test_fire_bullets_shortcut.py tests/debug/test_fire_bullets_shortcut_capture.py tests/sim/test_input_provider_semantics.py
+uv run pytest -q tests/gameplay/test_fire_bullets_shortcut.py tests/replay/test_live_tick_source.py
 ```
 
 The native runner requires executable-memory support for Unicorn and the local

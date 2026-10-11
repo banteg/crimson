@@ -6,10 +6,8 @@ tags:
 
 # Leaderboard identity
 
-Status: the game side is built (`src/crimson/leaderboard/`); the service (`service/`) runs at crimson.land, a
-Solid app over a JSON API. The
-[ranked rules](ranked-rules.md) decide which runs rank; this page decides whose runs they are and what name they
-show under.
+The [ranked rules](ranked-rules.md) decide which runs rank; this page decides whose runs they are and what name
+they show under. The game side is `src/crimson/leaderboard/`; the service (`service/`) runs at crimson.land.
 
 The original game had no accounts: it posted scores to `scores.crimsonland.com` as the HTTP user `guest` with the
 chosen name in the payload ([online high scores](../crimsonland-exe/online-scores.md)). The port keeps that
@@ -30,6 +28,8 @@ low-friction spirit. Nobody needs an account to rank, and ranked play never need
 ## Uploads
 
 - Replays stay free of identity. A `.crd` carries the run, not the player, so anyone can still verify any replay.
+  A Typ-o replay does carry the names of the local high score table its run read; Typ-o does not rank, so these
+  never upload.
 - The game signs each upload: the replay, the name, the public key and an Ed25519 signature over the SHA-256 of the
   replay's uncompressed payload and the name. The service rejects an upload whose signature does not verify; Workers
   verify Ed25519 with WebCrypto, so the service needs no library for it.
@@ -53,7 +53,7 @@ hex, except the replay, which is base64.
 | `runs` | `replay` (the `.crd` file), `name`, `public_key`, `signature` | 200 or 201 accepted, 409 already accepted, other 4xx refused with a `reason`, 5xx retried later |
 | `auth/challenge` | `public_key` | 200 with `challenge` (ASCII) |
 | `auth/login` | `public_key`, `challenge`, `signature` | 200 with `url`, a login link on the service's own host |
-| `scores` | `board`, `quest` (`"major.minor"`, empty for Survival) | 200 with `scores`: each account's best run, up to 100, as the run's name and a high score record's fields |
+| `scores` | `board`, `quest` (`"major.minor"`, empty for Survival) | 200 with `scores`: each account's best human run, up to 100, as the run's id (`run`), its name and a high score record's fields |
 
 The signatures cover byte strings that start with their purpose, so a run signature never passes as a login:
 
@@ -132,9 +132,14 @@ replays, names, links, keys and sessions. `/privacy` and `/terms` say the same i
 
 ## Run pages
 
-Every accepted run has a page at `/runs/<run id>`, linked from its score on the boards and profiles. While the
-service replays a run to verify it, crimson-core's `portable_probe` reads player one after every tick, and the service
-keeps a timeline next to the replay (`runs/<id>.timeline.json` in R2, `service/src/timeline.ts`):
+Every accepted run has a page at `/runs/<run id>`, linked from its score on the boards and profiles, and its replay
+at `/runs/<run id>.crd`. The page, its API (`/api/runs/<run id>` and its timeline), its card (`/runs/<run id>.png`)
+and the replay refuse a hidden run and a banned account's, as the boards do; a retired run keeps them. The replay
+is cached only briefly (`REPLAY_MAX_AGE_S` in `service/src/index.ts`), so hiding, bans and deletions take effect
+within that.
+
+While the service replays a run to verify it, crimson-core's `portable_probe` reads player one after every tick,
+and the service keeps a timeline next to the replay (`runs/<id>.timeline.json` in R2, `service/src/timeline.ts`):
 
 - once a second, experience, level, health, kills and the damage creatures took (overkill excluded);
 - ten times a second, the position;
@@ -145,6 +150,4 @@ seed. A run accepted before timelines existed gets its timeline the first time i
 
 ## Open
 
-- The service itself is gate 5 in `crimson-core/ROADMAP.md`: the endpoints above, uploads verified by
-  crimson-core, storage, the site and the boards. Until it answers, ranked runs wait in the outbox.
 - Showing a linked handle in the game needs the service to say whether the key's account is linked.

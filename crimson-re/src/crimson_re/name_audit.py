@@ -86,7 +86,6 @@ HISTORY_PATHS = (
     "analysis/historical",
     "analysis/ida",
     "analysis/native",
-    "analysis/reviews",
     "crimson-core/results",
     "tools/match/c2",
     "tools/match/evidence",
@@ -105,7 +104,7 @@ def _live(relative: str) -> bool:
         return False
     if relative.startswith("tools/match/scratches/"):
         return relative.endswith("/scratch.conf")
-    # Dated reports such as tools/match/EXACT-MATCHES-2026-09-07.md.
+    # Dated reports such as tools/match/PLAUSIBILITY-AUDIT-2026-09-25.md.
     return _DATED_RECORD_RE.search(Path(relative).name) is None
 
 

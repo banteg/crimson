@@ -6,13 +6,38 @@ tags:
 
 # Replay viewer
 
-How the browser and desktop game plays a replay back once
-[watching replays](watch-replays.md) has started one: a scrub bar that seeks
-anywhere, backwards too, and a box for each perk pick. While the replay plays,
-the viewer keeps to plain dim bands of its own, so it stays clear of the game's
-HUD; preparing and the end are the original's game over screen with the run's
-score card. The Python port has the same viewer, but prepares while the replay
-plays ([below](#the-python-port)).
+How the browser and desktop game plays a replay back once Watch on the high
+score screen, or a link, has started one: a scrub bar that seeks anywhere,
+backwards too, and a box for each perk pick. While the replay plays, the viewer
+keeps to plain dim bands of its own, so it stays clear of the game's HUD;
+preparing and the end are the original's game over screen with the run's score
+card. The Python port has the same viewer, but prepares while the replay plays
+([below](#the-python-port)). Playing a replay writes nothing: no save,
+statistics or scores, and no replay of its own.
+
+## Watch
+
+A click on a high score row pins its card; the card offers Watch when the row's
+replay plays, or says why not. A local record names its replay by number
+([local high scores](../formats/highscores.md)); a leaderboard row by its run,
+whose replay is downloaded when the row is pinned
+([where replays are kept](../formats/replay.md#where-replays-are-kept)).
+
+| The row's replay | The card |
+| --- | --- |
+| Plays, recorded by this build | Watch |
+| Plays, recorded by another build under the same rules | Watch, with "Recorded with 0.14.2" |
+| Recorded under other rules | "Recorded under other rules (0.12.2)" |
+| A file or format this build cannot read | "This version cannot read its replay" |
+| A local run whose replay was not saved | "Its replay was not saved" |
+| A board run still downloading | "Downloading the run..." |
+| A board run no longer on the board | "This run is no longer on the leaderboard" |
+| A failed download | "Could not download this run" |
+| Web and native: co-op, Typ-o or the Tutorial | "This run needs the Python port" |
+| Web and native: a screen other than 1024x768 | "Watching needs the 1024x768 screen" |
+
+A tick the simulation refuses stops the run there: the end screen says "This
+run stops playing here" with the tick.
 
 ## What it can afford
 

@@ -34,9 +34,12 @@ From the repository root with the existing VC6 toolchain:
 
 ```sh
 uv run --with unicorn==2.1.4 --with capstone python tools/match/evidence/primary-impact-template-2026-09-11/verify.py --out /tmp/crimson-primary-impact-template-full
-cmp /tmp/crimson-primary-impact-template-full/recovered/scratch.cpp tools/match/scratches/projectile_update/scratch.cpp
 uv run --with unicorn==2.1.4 --with capstone python tools/match/evidence/primary-impact-template-2026-09-11/replay.py --out /tmp/crimson-primary-impact-template-replay
 ```
+
+At this revision `recovered/scratch.cpp` equaled the canonical scratch source.
+That source is now `decomp/1.9/crimsonland/crimsonland/projectile_update.cpp`
+(the scratch's `SOURCE=`) and has since moved on.
 
 `before.cpp` and the native image are SHA-256 pinned. `recover.py` reconstructs
 each control without modifying the canonical scratch. The proof records

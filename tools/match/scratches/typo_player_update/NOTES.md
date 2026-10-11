@@ -17,11 +17,10 @@ The signature and source are grounded in the live Binary Ninja disassembly.
 The authoritative name map now persists the leading argument as
 `const vec2f_t *`, preventing map replay from degrading the recovered
 two-float aim aggregate back to `float *`.
-The ports mirror the Typ-o frame reset and command-to-aim/fire/reload policy in
-`src/crimson/typo/player.py`, `src/crimson/typo/runtime.py`, and
-`crimson-zig/src/typo/player.zig`. Both now retain the native Shotgun weapon id
-3; Sawed-off Shotgun id 4 has distinct ordinary-runtime recipes and is not the
-mode loadout.
+The port mirrors the Typ-o frame reset and command-to-aim/fire/reload policy in
+`src/crimson/typo/player.py` and `src/crimson/typo/runtime.py`. It retains the
+native Shotgun weapon id 3; Sawed-off Shotgun id 4 has distinct
+ordinary-runtime recipes and is not the mode loadout.
 
 ## Exact effect and pellet lifetimes (2026-09-07)
 

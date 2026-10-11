@@ -13,15 +13,31 @@ and the iterative asset loader `load_textures_step`.
 ## 1. System Initialization
 (`crimsonland_main` start)
 
-1. **DirectX Check:** `dx_get_version` requires DX 8.1+; `Direct3DCreate8` is a presence check.
-2. **Path Setup:** Stores the current working directory (`crt_getcwd`).
-3. **Config File + Commands:** `config_ensure_file`, then console commands (`console_register_command`).
-4. **Grim2D Load:** `grim_load_interface`, then core cvars (`register_core_cvars`).
-5. **Config Load:** `config_load_presets` reads `crimson.cfg`; `game_load_status` and `play_time_load`.
-6. **Grim Config:** `grim_apply_config` (resolution/window mode dialog), then `config_sync_from_grim`.
-7. **Grim2D Init:** `grim_init_system`.
-8. **Autoexec:** executes `autoexec.txt`.
-9. **Audio/Terrain Init:** `init_audio_and_terrain` (`0x0042a9f0`).
+1. **Seed + DirectX check:** `crt_srand(crt_time(0))`; `dx_get_version` requires
+   DX 8.1+ (a MessageBox offers the download page, then the game exits).
+2. **Paths + log:** `crt_getcwd` stores `game_base_path`; `Direct3DCreate8` is a
+   presence check; the console banner is flushed to `console.log`.
+3. **Config file + commands:** `config_ensure_file`, then the
+   [startup console commands](systems/console.md#startup-commands-registered-in-crimsonland_main).
+4. **Grim2D load:** `grim_load_interface` tries the developer build
+   `..\grim_grSystem_c\Release\grim.dll`, then `grim.dll`. The developer-hint
+   print block after it never runs: its guard,
+   `grim_interface_ptr == grim_interface_ptr + 1`, is always false. Then
+   `register_core_cvars`.
+5. **Config load:** `config_load_presets` reads `crimson.cfg`; `game_load_status`
+   and `play_time_load`.
+6. **Grim config:** `grim_apply_config` (resolution/window mode dialog; cancel
+   exits), `config_sync_from_grim`, then `config_load_presets` again without the
+   Grim settings. `grim_get_config_var` reads back texture scale, windowed flag,
+   screen size and backend flags.
+7. **Callbacks + Grim2D init:** `grim_set_config_var(0x2d, game_startup_init)`
+   installs the frame callback (audio suspend/resume callbacks use `5`/`6`);
+   keyboard, mouse and joystick are enabled; `grim_init_system` brings up D3D,
+   input and `smallFnt.dat`, or shows `grim_get_error_text` and exits.
+8. **Autoexec:** `exec autoexec.txt`, then `v_width`/`v_height` cvars from the
+   screen size.
+9. **Audio/Terrain Init:** `init_audio_and_terrain` (`0x0042a9f0`), then the
+   resource paq is set to `crimson.paq`.
 
 ## 2. Splash Assets Loading
 (`crimsonland_main` continued)
@@ -41,67 +57,35 @@ The game pre-loads specific textures needed for the splash screen and loading sc
 > **Note:** `splash10tons` and `splashReflexive` are loaded in `game_startup_init`
 > after the main texture steps complete, not directly inside `crimsonland_main`.
 
-## 3. Splash Screen Rendering (Runtime Evidence)
+After loading the first five, `crimsonland_main` alternates `grim_clear_color`
+with `grim_set_config_var(0x36, …)` (`IDirect3DDevice8::Present`; see the
+[Grim config API](../../grim2d/api.md)) so the window starts black.
 
-A historical Frida capture (`artifacts/frida/share/splash_draw_calls.jsonl`; the tooling has since been removed and the capture is not in the repo) shows the
-exact draw calls for the splash/loading screen at 800x600. Key facts:
+## 3. Loading Screen
 
-- **Background:** black clear. No `backplasma` or `mockup` draw calls appear in
-  the captured splash frame.
-
-- **Drawn textures:** `cl_logo`, `loading`, `logo_esrb`.
-- **Band frame:** untextured 1px rectangle around the logo band.
-
-### Geometry (800x600)
-
-- **Logo:** `x=144, y=268, w=512, h=64` (centered).
-- **Loading text:** `x=528, y=316, w=128, h=32` (right-aligned to logo).
-- **ESRB:** `x=543, y=471, w=256, h=128` (bottom-right, 1px margin).
-- **Band frame:** a 808x128 rectangle centered on the logo:
-  - Top: `x=-4, y=232, w=808, h=1`
-  - Bottom: `x=-4, y=360, w=809, h=1`
-  - Left: `x=-4, y=232, w=1, h=128`
-  - Right: `x=804, y=232, w=1, h=128`
-
-### Colors / alpha
-
-- Logo/Loading/ESRB are drawn with a shared fade alpha (observed sequence:
-  `0.03, 0.23, 0.42, 0.598, 0.772, 0.932, 1.0`).
-
-- Band frame color ≈ `#95AFC6` (r=0.5843, g=0.6863, b=0.7765).
-- Band frame alpha = `logo_alpha * 0.7`.
-
-> **Note:** The capture only logs splash draws in frame 0, so timing/duration
-> cannot be inferred from this capture alone; the static timing model below
-> supplies the fade schedule.
-
-## 4. Splash Render Routine (Static + Runtime)
-
-The draw calls above are inside `game_startup_init` (`0x0042b290`), with the
-loading-screen draw block around `0x0042be90`–`0x0042c1e2`. The routine:
+`game_startup_init` (`0x0042b290`,
+`decomp/1.9/crimsonland/crimsonland/game_startup_init.cpp`) draws the loading
+screen on a black clear while `load_textures_step` runs. `backplasma` and
+`mockup` are loaded but never drawn here.
 
 ### State / fade
 
-- `startup_splash_timer` (`0x004aaf90`) is incremented each tick by `frame_dt` (`0x00480840`).
-- `alpha = clamp(2.0 * startup_splash_timer, 0.0, 1.0)`; clamped by comparing against
-  constants `1.0` and `0.0`.
-
-- The same `alpha` is used for `logo_esrb`, `loading`, and `cl_logo`.
-- The band frame uses `alpha * 0.7` (validated in runtime capture).
+- `startup_splash_timer` (`0x004aaf90`) grows by `frame_dt` each tick. Once
+  loading finishes it shrinks by `frame_dt` instead; at `0` it sets
+  `startup_loading_fade_complete` and frees `loading` and `logo_esrb`.
+- `loading_alpha = clamp(2.0 * startup_splash_timer, 0.0, 1.0)` tints
+  `logo_esrb`, `loading`, and `cl_logo`.
 
 ### Render setup (per frame)
 
-From the assembly around `0x0042be90`:
-
-- `grim_clear_color(0, 0, 0, 1)` (vtable +0x2c).
-- `grim_set_config_var(0x15, 1)` (vtable +0x20; D3D filter/texture state ID).
-- `grim_set_color(1, 1, 1, alpha)` (vtable +0x114).
-- `grim_set_uv(0, 0, 1, 1)` (vtable +0x100).
-- `grim_set_rotation(0)` (vtable +0xfc).
+- `grim_clear_color(0, 0, 0, 1)`.
+- `grim_set_config_var(0x15, 1)` (texture filter state).
+- `grim_set_color(1, 1, 1, loading_alpha)`.
+- `grim_set_uv(0, 0, 1, 1)`, `grim_set_rotation(0)`.
 
 ### Draw order (per pass)
 
-Each pass uses `grim_get_texture_handle` + `grim_bind_texture`, then
+Each textured pass uses `grim_get_texture_handle` + `grim_bind_texture`, then
 `grim_begin_batch` → `grim_draw_quad` → `grim_end_batch`:
 
 1. **ESRB** (`logo_esrb`)
@@ -122,13 +106,16 @@ Each pass uses `grim_get_texture_handle` + `grim_bind_texture`, then
    - Left: `x = -4`, `y = (screen_height * 0.5) - 68`, `w = 1`, `h = 128`
    - Right: `x = screen_width + 4`, `y = (screen_height * 0.5) - 68`, `w = 1`, `h = 128`
 
-> The band frame is `startup_render_loading_outline` in
-> `decomp/1.9/crimsonland/crimsonland/game_startup_init.cpp`: one
-> `grim_draw_rect_outline(-4, h/2 - 68, w + 8, 128)` call, which
-> `decomp/1.9/grim/render/draw_rect_outline.cpp` expands into the four quads
-> above. Its tint is `render_tint_color_*` with alpha `loading_alpha * 0.7`.
+Unless `cv_silentloads` is set, `Grim GFX n/m` and `Grim SFX: n/81` progress
+lines are drawn under the logo at `loading_alpha * 0.7` before the band frame.
 
-## 5. Company Logo Sequence (Static)
+The band frame is `startup_render_loading_outline`: one
+`grim_draw_rect_outline(-4, h/2 - 68, w + 8, 128)` call, which
+`decomp/1.9/grim/render/draw_rect_outline.cpp` expands into the four quads
+above. Its tint is `render_tint_color` (`#95AFC6`, set in
+`render_tint_color_global_init.cpp`) with alpha `loading_alpha * 0.7`.
+
+## 4. Company Logo Sequence
 
 The company logo sequence runs inside `game_startup_init` after
 `load_textures_step` completes and the splash fade-out finishes.
@@ -137,40 +124,44 @@ The company logo sequence runs inside `game_startup_init` after
 
 - When textures finish, the game loads `splashReflexive` and `splash10Tons`,
   runs `game_startup_init_prelude`, starts the sound thread, and clamps
-  `startup_splash_timer` to `0.5` if it is larger. `[static]`
+  `startup_splash_timer` to `0.5` if it is larger.
 
 - This handoff is gated by startup latches:
   `startup_bootstrap_pending` (`0x004aaf86`) -> `startup_logo_sequence_active` (`0x004aaf9c`),
-  with `startup_skip_requested` (`0x004aaf94`) controlling fast-forward behavior. `[static]`
+  with `startup_skip_requested` (`0x004aaf94`) controlling fast-forward behavior.
 
 - A 5-tick delay (`Sleep(5)` per tick) runs before the logos display, tracked by
-  `startup_post_load_settle_ticks` (`0x004aaf98`). `[static]`
+  `startup_post_load_settle_ticks` (`0x004aaf98`).
 
 ### Timing model
 
-- The internal timer (`startup_splash_timer`) advances by `frame_dt * 1.1`. `[static]`
-- For logo rendering, it uses `t = startup_splash_timer - 2.0`. `[static]`
-- If the user skips (key/mouse), time jumps to `t = 16.0` when not inside a
-  fade window; otherwise it accelerates by `frame_dt * 4.0`. `[static]`
+- The internal timer (`startup_splash_timer`) advances by `frame_dt * 1.1`.
+- For logo rendering, it uses `t = startup_splash_timer - 2.0`.
+- If the user skips (key/mouse), `t` accelerates by `frame_dt * 4.0` inside a
+  logo window (`[1, 5)` or `[7, 11)`) and jumps to `16.0` outside one.
 
 ### 10tons logo (512×128)
 
-- Fade in: `t` in `[1.0, 2.0)` → alpha = `t - 1.0` (0→1). `[static]`
-- Hold: `t` in `[2.0, 4.0)` → alpha = 1.0. `[static]`
-- Fade out: `t` in `[4.0, 5.0)` → alpha = `1.0 - (t - 4.0)` (1→0). `[static]`
+- Fade in: `t` in `[1.0, 2.0)` → alpha = `t - 1.0` (0→1).
+- Hold: `t` in `[2.0, 4.0)` → alpha = 1.0.
+- Fade out: `t` in `[4.0, 5.0)` → alpha = `1.0 - (t - 4.0)` (1→0).
 
 ### Reflexive logo (512×256)
 
-- Fade in: `t` in `[7.0, 8.0)` → alpha = `t - 7.0`. `[static]`
-- Hold: `t` in `[8.0, 10.0)` → alpha = 1.0. `[static]`
-- Fade out: `t` in `[10.0, 11.0)` → alpha = `1.0 - (t - 10.0)`. `[static]`
+- Fade in: `t` in `[7.0, 8.0)` → alpha = `t - 7.0`.
+- Hold: `t` in `[8.0, 10.0)` → alpha = 1.0.
+- Fade out: `t` in `[10.0, 11.0)` → alpha = `1.0 - (t - 10.0)`.
 
 ### Handoff to theme
 
-- When `startup_splash_timer > 14.0`, the intro is muted and `crimson_theme` (or
-  `crimsonquest` in demo mode) begins, ending the logo sequence. `[static+runtime]`
+- While the logos run (`startup_intro_enabled`), `music_play_exclusive` keeps
+  the intro track playing.
+- When `startup_splash_timer > 14.0`, `music_fade_out_all` mutes the intro and
+  `crimson_theme` starts in the same frame (or `crimsonquest` plus
+  `demo_mode_start` in the demo), ending the logo sequence. The splash textures
+  are freed and `game_frame_update` becomes the frame callback.
 
-## 6. Main Asset Loading Loop (`load_textures_step`)
+## 5. Main Asset Loading Loop (`load_textures_step`)
 
 The game enters a loop where it calls `load_textures_step` (`0x0042abd0`) repeatedly.
 While this loop runs, the `loading` texture (`load\loading.jaz`) is displayed on screen.
@@ -193,7 +184,7 @@ While this loop runs, the `loading` texture (`load\loading.jaz`) is displayed on
 | **8** | **Muzzle Flash & Dropdowns:** `muzzleFlash`, `ui_dropDown` (On/Off). |
 | **9** | **Finalization:** Creates `bullet_i` and `aim64` sprites. Sets `game_state_id = 0`. |
 
-## 7. Startup Finalization
+## 6. Startup Finalization
 (`game_startup_init_prelude` @ `0x0042b090`)
 
 Once loading is complete, `game_startup_init` runs
@@ -206,37 +197,7 @@ Once loading is complete, `game_startup_init` runs
 5. **Gameplay Reset:** `gameplay_reset_state`, `terrain_generate_random`.
 6. **Registry:** Reads the `timePlayed` counter into `time_played_ms`.
 
-### Boot music handoff (runtime evidence)
-
-A historical Frida trace (`artifacts/frida/share/music_intro_trace.jsonl`; tooling since removed, not in the repo) shows the **intro
-track is played inside `game_startup_init`**, then muted and replaced by
-`crimson_theme`:
-
-- `music_play_exclusive(music_track_intro_id)` at `0x0042b69a`
-- `music_fade_out_all(music_track_intro_id)` at `0x0042b556`
-- `music_play_exclusive(music_track_crimson_theme_id)` at `0x0042b584`
-
-Measured timing from the same trace:
-
-- Intro starts ~20.4s after process start and plays for ~12.7s.
-- Theme starts immediately after intro mute (same frame).
-
-Additional `music_fade_out_all` calls with return addresses in `ui_menu_click_back_contextual`
-(`0x00447420`) occur later during UI transitions (menu flow), not the boot
-sequence.
-
-## 8. Main Loop
+## 7. Main Loop
 
 The game enters the main loop with `game_state_id = 0` (Main Menu). The per-frame
 input/hotkey pass here is `game_frame_update` (`0x0040c1c0`).
-
-## Post-logo render setup
-
-The early `grim_clear_color` calls clear the target; config ID `0x36` invokes
-`IDirect3DDevice8::Present`. The subsequent loading and logo draw loop is
-`game_startup_init`, described above. See the [Grim config API](../../grim2d/api.md)
-and `decomp/1.9/grim/config/set_var.cpp` for state-ID semantics.
-
-For visual verification, compare logo/loading/ESRB geometry, layering and fades
-at the target resolution. `load\loading.jaz` is the 128×32 loading label shown
-above, not a fullscreen background.

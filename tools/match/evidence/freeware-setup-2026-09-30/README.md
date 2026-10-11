@@ -47,7 +47,7 @@ ty passed, and a fresh `build-map --check` verified all committed maps.
 The original bootstrap used partial donor maps and did not publish percentages.
 The follow-up adds independent native discovery, reviewed ownership clusters,
 and a full executable-byte denominator; see
-[the reporting policy](../../analysis/decomp/README.md#freeware). All 183, 200 and
+[the reporting policy](../../../../analysis/decomp/README.md#freeware). All 183, 200 and
 252 original source matches also pass the encoded-body check with the retained
 native extents. The maps and compiler baseline support recovery of changed
 bodies with `scratch --build` and `probe --build`.

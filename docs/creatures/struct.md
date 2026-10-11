@@ -107,8 +107,8 @@ Field map:
 | `0x4c` | force-target flag | `creature_force_target` | set when target is too near/far; snaps target position to player. |
 | `0x50` | target_x | `creature_target_x` | derived from player/formation/linked enemy. |
 | `0x54` | target_y | `creature_target_y` | derived from player/formation/linked enemy. |
-| `0x58` | contact damage | `creature_contact_damage` | Passed to `player_take_damage` (`0x00425e50`) on player contact; seeded as `size * 0.0952381` in `FUN_00407611`. |
-| `0x5c` | move speed | `creature_move_speed` | Per-type speed scalar used to compute velocity; seeded to `0.9..` range in `FUN_00407611`. |
+| `0x58` | contact damage | `creature_contact_damage` | Passed to `player_take_damage` (`0x00425e50`) on player contact; Survival seeds it as `size * 0.0952381` in `survival_spawn_creature` (`0x00407510`); spawn templates set fixed values. |
+| `0x5c` | move speed | `creature_move_speed` | Per-type speed scalar used to compute velocity; Survival seeds `0.9 + 0.045 * (xp / 4000)` (type-scaled, capped at `3.5`) in `survival_spawn_creature`; spawn templates set fixed values. |
 | `0x60` | attack cooldown | `creature_attack_cooldown` | Decremented in the living update; shared cooldown for melee and ranged attacks. |
 | `0x64` | reward value | `creature_reward_value` | Seeded from health/contact/speed (`health * 0.4 + contact * 0.8 + speed * 5 + rand(10..19)`), then scaled by `0.8` in the spawner. |
 | `0x6c` | type id | `creature_type_id` | written from spawn param; indexes behavior tables. |

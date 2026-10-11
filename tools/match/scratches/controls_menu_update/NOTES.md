@@ -885,4 +885,4 @@ residuals was too broad: five were tooling overreads.
 
 The shared-table, invalid-guard, changed-case, and padding controls are matcher
 tests, not source experiments. Full classification and TU evidence are in
-`tools/match/REFERENCE-TU-AUDIT-2026-09-08.md`.
+`tools/match/evidence/reference-tu-audit-2026-09-08/README.md`.

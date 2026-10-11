@@ -109,15 +109,6 @@ Animation note:
 - When `config_blob.shadows_enabled` (`0x00480356`) is enabled, `ui_element_render` also draws a
   shadow pass with `+7,+7` offset and tint `0x44444444` using the same transform (rotation matrix).
 
-Historical runtime check (Frida, before the decompilation was complete; consistent with
-`decomp/1.9/crimsonland/ui_elements/ui_element_update.cpp`):
-
-- Summary: `analysis/frida/menu_logo_pivot_trace_summary.json`
-- Logged `logo_update` / `logo_render` while `ui_elements_timeline <= 350` (or when the logo angle is non-zero).
-- Observed:
-  - Play / Options: `logo_update.update_disabled == 1` and `angle_deg == 0` for the whole close (no pivot).
-  - Quit: `logo_update.update_disabled == 0` and `angle_deg` ramps from `0` to `-90` as `timeline` goes `299 -> 0`.
-
 ### `ui_menuItem.jaz` (menu item button)
 
 - `width = 512.0`

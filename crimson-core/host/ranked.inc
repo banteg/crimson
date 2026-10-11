@@ -124,7 +124,7 @@ static int ranked_waiting() {
 }
 
 // The leaderboard's runs on the high score screen, as the Python port shows
-// them (screens/high_scores_view/records.py, docs/rewrite/watch-replays.md):
+// them (screens/high_scores_view/records.py, docs/rewrite/leaderboard-identity.md):
 // each board's latest answer is kept for the session, every fetch replacing it
 // whole, and nothing online is stored. While Show internet scores is ticked the
 // table reads the board's runs after its own records, so the original's

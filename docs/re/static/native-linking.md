@@ -55,48 +55,46 @@ one-function translation units remain the default so pooling, inlining,
 constructor ordering, and static symbol changes cannot disturb established
 evidence.
 
-Recovered Grim-owned bodies now live under
-`decomp/1.9/grim/`. The module directories form a plausible
-logical source layout, not a claim about historical filenames or physical
-objects. They cover all 139 canonical Grim functions and 41 additional
-recovered platform/provider functions. Scratch directories keep their matcher
-configuration and experimental evidence while their `SOURCE` fields bind to
-the central body. The accompanying `layout.json` distinguishes inferred
-subsystem grouping from native-proven translation-unit ownership and is
-checked against all 171 source files and 180 source/config bindings in the
-native-link tests.
+Recovered Grim-owned bodies live under `decomp/1.9/grim/`. The module
+directories form a plausible logical source layout, not a claim about
+historical filenames or physical objects. They cover every canonical Grim
+function plus the recovered platform/provider functions. Scratch directories
+keep their matcher configuration and experimental evidence while their
+`SOURCE` fields bind to the central body. `decomp/1.9/grim/layout.json`
+distinguishes inferred subsystem grouping from native-proven translation-unit
+ownership; the native-link tests check it against every source file and
+source/config binding.
 
-The executable has six explicitly modeled ownership groups in
-`tools/native/translation_units/crimsonland.exe.json`. VC6 generates each
-quest, bonus, or perk metadata array's initializer, registrar, and finalizer
-as four COFF-local functions in the translation unit that owns the global
-array. Compiling those functions separately turns the registrar's local
-finalizer relocation into a false external game-function dependency. The
-translation-unit config binds the four recovered native functions to their
-actual `$E4/$E1/$E3/$E2` members and includes the physical object once.
+`tools/native/translation_units/crimsonland.exe.json` lists the executable's
+ownership clusters (`tools/match/STATUS.md` tabulates the current counts). Each is a proven minimum co-resident group, not a complete
+original source file. Two shapes recur:
+
+- **Metadata lifecycles.** VC6 generates each quest, bonus, or perk metadata
+  array's initializer, registrar, and finalizer as four COFF-local functions
+  in the translation unit that owns the global array. Compiling them
+  separately turns the registrar's local finalizer relocation into a false
+  external game-function dependency. The cluster binds the four recovered
+  functions to their actual `$E4/$E1/$E3/$E2` members and includes the
+  physical object once.
+- **Callback local-static destructors.** A database or screen callback's
+  canonical object emits its local-static destructor thunks as COFF-local `$E`
+  functions, and native registration pushes to `crt_atexit` identify each
+  thunk. Binding them to the callback removes redundant standalone objects.
 
 Every configured member is still compared independently with its reference
 function using the canonical scratch boundaries. The audit rejects a cluster
-that lowers the byte ratio or adds unresolved or mismatched references. This
-is source-provenance modeling, not a linker alias: the object retains the
-compiler-generated local symbols and local relocations.
+that lowers the byte ratio, adds unresolved or mismatched references, or loses
+an already exact encoded body even when normalized instructions and references
+still agree. This is source-provenance modeling, not a linker alias: the object
+retains the compiler-generated local symbols and local relocations. Adjacent
+callbacks stay separate: shared widget types and native address order alone do
+not prove one original TU.
 
-Three more groups bind the weapons database, perks database, and high-score
-screen callbacks to their own compiler-generated local-static destructor
-thunks. Native registration pushes identify all 13 thunks, and the canonical
-callback objects emit them as COFF-local `$E` functions. Selecting those
-members removes 13 redundant standalone objects while retaining every native
-function's independent comparison. The two database callbacks and all 13
-thunks retain encoded-body identity; the high-score callback preserves its
-existing non-exact result. The gate rejects loss of an already exact encoded
-body even when normalized instructions and references still agree.
-
-These are proven minimum co-resident groups, not complete original source
-files. The adjacent weapons and perks callbacks remain separate: shared
-widget types and native address order alone do not prove one original TU.
-The repository audit at `tools/match/REFERENCE-TU-AUDIT-2026-09-08.md` records
-registration addresses, symbol bindings, and all remaining reference
-classifications.
+`tools/match/evidence/reference-tu-audit-2026-09-08/` records registration addresses,
+symbol bindings, and remaining reference classifications.
+`tools/match/evidence/lifecycle-ownership-2026-09-08/` records the callback-thunk
+follow-up; its machine-readable evidence is
+`tools/native/translation_units/crimsonland.exe-lifecycle-evidence.json`.
 
 The Grim configuration models four proven source islands: the slot-state
 accessors, line renderer and local vector destructor, monochrome text renderer,
@@ -175,8 +173,8 @@ link list contains each physical object exactly once.
 The executable audit keeps any remaining closure debt explicit:
 same-display-name definitions with incompatible decorated linkage are not
 treated as resolutions, absent definitions remain visible, and repeated
-non-COMDAT `.bss` owners remain hard duplicates. The modeled metadata
-lifecycle clusters close the executable's current game-function debt without
+non-COMDAT `.bss` owners remain hard duplicates. The modeled ownership
+clusters close the executable's current game-function debt without
 weakening those rules.
 
 Known compiler helpers are classified as toolchain references. CRT entry
@@ -226,28 +224,28 @@ just native-link grim.dll
 ```
 
 `tools/native/providers/grim.dll.json` must cover the unresolved-symbol set
-exactly. It distinguishes 20 exports that the reference PE really imports
-from `MSVCRT.dll`, `USER32.dll`, `WINMM.dll`, and `d3d8.dll`. The original
-VC6 SP6 `MSVCRT.LIB` supplies 15 of those imports plus the exact
-`atonexit.obj` runtime adapter and `dllsupp.obj` toolchain absolutes. The
-original DirectX 8.1 `d3dx8.lib` supplies six closure symbols, including
-byte-proven aliases from the recovered `d3dx_copy_texture_filtered` name to
-the archive's `D3DXComputeNormalMap` and from `jpeg_std_error` to the archive's
-namespaced IJG body. Deterministic VC6 builds from the pinned IJG 6a and zlib
-1.1.3 sources supply eight more closure symbols. Five closure imports use
-generated import libraries, and the recovered platform archive supplies all
-16 host-replaced closure functions.
+exactly. It distinguishes exports that the reference PE really imports from
+`MSVCRT.dll`, `USER32.dll`, `WINMM.dll`, and `d3d8.dll`. The original VC6 SP6
+`MSVCRT.LIB` supplies the MSVCRT imports plus the exact `atonexit.obj` runtime
+adapter and `dllsupp.obj` toolchain absolutes. The original DirectX 8.1
+`d3dx8.lib` supplies the D3DX closure symbols, including byte-proven aliases
+from the recovered `d3dx_copy_texture_filtered` name to the archive's
+`D3DXComputeNormalMap` and from `jpeg_std_error` to the archive's namespaced
+IJG body. Deterministic VC6 builds from the pinned IJG 6a and zlib 1.1.3
+sources supply the codec symbols. The remaining closure imports use generated
+import libraries, and the recovered platform archive supplies the
+host-replaced closure functions.
 
-The recovered platform and D3DX archives also need 70 transitive symbols while
+The recovered platform and D3DX archives also need transitive symbols while
 the linker selects and prunes their members. These are modeled as
 `link-dependency` providers, not counted as closure coverage. The exact
 `grim_window_proc` callback is retained through this boundary together with a
 weak alias from its matcher-only `grim_noop_value` spelling to the native
 `grim_noop`. Every recovered-platform member, including that callback, is
-raw-byte exact. `/OPT:REF` retains 59 link-dependency imports in
-the output and discards `FindResourceW`; every retained output import is
-required to exist in the pinned reference PE table. Every provider group cites
-repository evidence.
+raw-byte exact. `/OPT:REF` discards unused link-dependency imports; every
+retained output import is required to exist in the pinned reference PE table.
+Every provider group cites repository evidence. Per-provider symbol counts are
+in the `summary` of `analysis/native/grim.dll/link/link.json`.
 
 All provider archives are ignored inputs pinned by size and SHA-256 to
 `analysis/library_provenance.json`. Extract the proprietary historical
@@ -272,8 +270,8 @@ uv run python scripts/build_native_codec_providers.py \
 
 The codec recipe verifies its pinned source and tool hashes, applies IJG's
 documented one-byte Windows `boolean` ABI, normalizes archive and COFF
-timestamps, and requires exact matches for 18 libjpeg functions plus zlib's
-`uncompress` entry before publishing either archive.
+timestamps, and requires exact matches for the recovered libjpeg functions
+plus zlib's `uncompress` entry before publishing either archive.
 
 The recovered platform archives (`grim-platform.lib` and
 `crimsonland-platform.lib`) need no manual step. They are built from the exact
@@ -288,14 +286,14 @@ in `analysis/library_provenance.json` and the archive entry in
 
 The link command rebuilds the canonical audit and any stale recovered platform
 archive, rejects other archive drift,
-synthesizes the five remaining closure imports and 24 D3DX link dependencies
+synthesizes the remaining closure imports and D3DX link dependencies
 with the recorded VC6 tools, emits deterministic weak COFF aliases where
 compiler decoration differs from the reference export name, and creates an
 explicitly labeled per-symbol COMDAT placeholder COFF object for the remaining
 providers. It
 then invokes the VC6 release linker with the recovered entry point, image
-base, export definition, and dead-code elimination. It verifies all 20
-configured closure exports plus the complete output import-table subset
+base, export definition, and dead-code elimination. It verifies every
+configured closure export plus the complete output import-table subset
 against the reference image. It writes
 `analysis/native/grim.dll/link/link.json`; bulk PE, map, library, response,
 log, and provider outputs remain ignored. Generated archive, object, PE
@@ -304,9 +302,9 @@ inputs produce the same linked-image hash.
 
 This remains a structural linker milestone, not a runtime test or whole-image
 byte-match claim. No placeholder COMDAT remains, so the canonical Grim receipt
-now reports `runnable=true`. It validates 99 output imports against the
-reference PE and emits a deterministic 385,024-byte image with entry RVA
-`0x62d0`, image size `0x5e000`, and a normalized zero timestamp. The separate
+now reports `runnable=true`. It validates every output import against the
+reference PE and emits a deterministic image with a normalized zero timestamp;
+`link.json` records the output's PE header fields and hash. The separate
 closure report still classifies imports, toolchain symbols, and deliberately
 excluded functions at the port boundary; the provider-backed link is what
 proves those required edges are concretely linkable.
@@ -322,17 +320,17 @@ runtime is the statically linked VC6 SP6 `LIBCMT.LIB` rather than Grim's
 just native-link crimsonland.exe
 ```
 
-`tools/native/providers/crimsonland.exe.json` covers the current 97-symbol
-non-game closure exactly. The pinned VC6 archive supplies 57 excluded CRT
-functions plus `__fltused` and `sscanf`; the pinned DirectX 8.1 archive
-supplies `D3DXVec2Normalize`; generated import libraries supply 34 exports
-that are present in the reference PE; a deterministic recovered-source archive
-supplies the exact registry helpers and the complete legacy DirectX version
-island. No closure symbol remains a placeholder.
+`tools/native/providers/crimsonland.exe.json` covers the non-game closure
+exactly. The pinned VC6 archive supplies the excluded CRT functions plus
+`__fltused` and `sscanf`; the pinned DirectX 8.1 archive supplies
+`D3DXVec2Normalize`; generated import libraries supply exports that are
+present in the reference PE; a deterministic recovered-source archive supplies
+the exact registry helpers and the complete legacy DirectX version island. No
+closure symbol remains a placeholder.
 
-The recovered-source recipe compiles eight exact all-scope platform functions:
-the DirectX wrapper, its DxDiag query, the 2,920-byte file-version fallback,
-three version-resource leaves, and the two registry helpers. It rejects any
+The recovered-source recipe compiles the exact all-scope platform functions:
+the DirectX wrapper, its DxDiag query, the file-version fallback, the
+version-resource leaves, and the two registry helpers. It rejects any
 instruction or reference regression before publishing the normalized archive.
 The DxDiag member also carries the two byte-proven GUID definitions from its
 original translation unit.
@@ -348,27 +346,23 @@ are D3DX8's `init_D3DXVec2Normalize` and `_D3DXVec2Normalize@8` in
 `d3dxmath.obj`. Recovered callsites now use the original archive identity
 directly, so this provider needs no compatibility alias.
 
-The combined archive-backed graph declares 99 transitive symbols. Eighty-seven
-map to reference-backed KERNEL32, ADVAPI32, OLE32, OLEAUT32, or VERSION imports,
-and two more resolve to `__snprintf` and `_tolower` in the pinned VC6 archive.
-The other ten archive imports
-(`EnumSystemLocalesA`, `FatalAppExitA`, `GetCurrentThread`, `GetLocaleInfoA`,
-`GetLocaleInfoW`, `GetUserDefaultLCID`, `IsValidCodePage`, `IsValidLocale`,
-`SetConsoleCtrlHandler`, and `TlsFree`) are absent from the reference import
-boundary. They remain explicitly configured as link-only placeholders, but
-per-symbol COMDATs let `/OPT:REF` prove that all ten are discarded and do not
+The archive-backed graph's transitive symbols mostly map to reference-backed
+KERNEL32, ADVAPI32, OLE32, OLEAUT32, or VERSION imports; a few resolve to CRT
+members such as `__snprintf` and `_tolower` in the pinned VC6 archive. Archive
+imports absent from the reference import boundary (locale, console-handler and
+TLS helpers) stay explicitly configured as link-only placeholders, but
+per-symbol COMDATs let `/OPT:REF` prove that they are discarded and do not
 survive in the produced PE.
 
-The canonical structural link retains all 87 reference-backed dependencies.
-Its 121 output imports are all present in the reference table, including
-DSOUND ordinal 11 and OLEAUT32 ordinals 8 and 9. All ten configured
-link-only placeholders are discarded, so the CLI reports
-`placeholders=0/10 runnable=True`. The current PE file is 839,680 bytes with
-an 872,448-byte in-memory image, entry RVA `0x4f4ae`, i386 machine type,
-Windows GUI subsystem, base `0x00400000`, and normalized zero timestamp. The
-checked record is
-`analysis/native/crimsonland.exe/link/link.json`; the PE, map, response, log,
-generated provider libraries, aliases, and placeholder object remain ignored.
+Every output import of the canonical structural link is present in the
+reference table, including DSOUND ordinal 11 and OLEAUT32 ordinals 8 and 9.
+Every link-only placeholder is discarded, so the CLI reports
+`placeholders=0/N runnable=True`. The output is an i386 Windows GUI PE at base
+`0x00400000` with a normalized zero timestamp. The checked record,
+`analysis/native/crimsonland.exe/link/link.json`, holds the symbol counts,
+discarded placeholders, and output PE header fields; the PE, map, response,
+log, generated provider libraries, aliases, and placeholder object remain
+ignored.
 
 ## ABI boundary
 
@@ -388,11 +382,11 @@ headers preserve analysis layouts but are not a replacement SDK for native
 
 `analysis/ghidra/maps/data_map.json` supplies curated identities;
 `tools/native/data_definitions/<image>.json` supplies the proven sizes,
-alignments, and initializers used to emit linkable data objects. The current
-EXE audit has complete definitions for all 1,788 mapped entries; Grim still
-has partially specified rows. Neither count claims that every original data
-object is mapped. Unknown extents are not inferred from adjacent labels, and
-`.data` membership does not imply a zero initializer.
+alignments, and initializers used to emit linkable data objects. The audit's
+`analysis/native/<image>/data.json` summary reports coverage: every mapped EXE
+entry is fully specified, while Grim still has partially specified rows.
+Neither claims that every original data object is mapped. Unknown extents are not inferred from
+adjacent labels, and `.data` membership does not imply a zero initializer.
 
 Tracked artifacts and their exact field contract are described in
 `analysis/native/README.md`.

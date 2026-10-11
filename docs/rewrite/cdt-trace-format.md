@@ -27,9 +27,11 @@ and the [recovered core gate](https://github.com/banteg/crimson/tree/master/crim
 | CDT payload schema | 21 | `crimson-re/src/crimson_re/dbg/schema.py` |
 | CRD replay | 32 | `src/crimson/game_version.py` |
 
-These artifacts are throwaway debugging data. Readers require exactly these
-versions; they do not translate, normalize, or salvage an older recording.
-Re-record a trace when a version changes.
+`scripts/check_docs.py` keeps this table in step with the sources. Traces are
+throwaway debugging data: a trace reader requires exactly the CDT versions and
+does not translate, normalize, or salvage an older recording. Re-record a trace
+when a version changes. `dbg record` reads replays as the
+[replay format](../formats/replay.md) allows.
 
 ## File layout
 
@@ -103,11 +105,7 @@ time scaling and completion pauses. Other modes use the summed unscaled replay
 clock. `dt_ms_i32` always remains the unscaled frame delta. Outside Quest mode,
 canonical quest stage fields are `0.0`; stale native globals belong in evidence.
 
-Schema 19 changes these semantics and allocation generations. Earlier traces
-are rejected and must be regenerated; rewriting their version number cannot
-recover missing allocation events or correct their clocks.
-
-## Channel contract (schema 21)
+## Channel contract
 
 Every tick requires all six channels:
 
@@ -146,8 +144,9 @@ Effective hit and pickup counts are cross-producer fields. The non-equivalent
 audio count, detailed death rows, and SFX/hit heads are zero or empty in CDT.
 Replay-only checkpoint sidecars may retain their fully typed rows. This makes the shared
 channel strictly comparable without producer masks.
-It carries the compact deterministic state used for fast divergence detection, including
-`rng_callers_crc32`, the CRC32 of the tick's RNG call-site tags in draw order that `rng_stream` lists.
+It carries the compact deterministic state used for fast divergence detection, as a checkpoint sidecar does
+([replay run start](replay-run-start.md#current-replay-contract)); its `rng_callers_crc32` covers the call sites
+`rng_stream` lists.
 
 ### `sim_state`
 

@@ -118,13 +118,13 @@ uv run --no-sync python tools/match/evidence/remaining-storage-controls-2026-09-
 For each `historic`, `positions`, and `ion` suite:
 
 ```sh
-uv run --no-sync python tools/match/evidence/remaining-storage-controls-2026-09-26/verify_execution.py --source tools/match/scratches/projectile_render/scratch.cpp --suite historic --out /tmp/storage-historic
+uv run --no-sync python tools/match/evidence/remaining-storage-controls-2026-09-26/verify_execution.py --source decomp/1.9/crimsonland/crimsonland/projectile_render.cpp --suite historic --out /tmp/storage-historic
 ```
 
 For each `conventional` and `laser` suite, use the unchanged historical verifier:
 
 ```sh
-uv run --no-sync python tools/match/evidence/renderer-house-style-2026-09-13/replay.py --source tools/match/scratches/projectile_render/scratch.cpp --suite conventional --out /tmp/storage-conventional
+uv run --no-sync python tools/match/evidence/renderer-house-style-2026-09-13/replay.py --source decomp/1.9/crimsonland/crimsonland/projectile_render.cpp --suite conventional --out /tmp/storage-conventional
 ```
 
 The preserving compiler trace can be regenerated with:

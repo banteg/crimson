@@ -5,7 +5,8 @@ tags:
 
 # Binary Analysis
 
-Static analysis findings for `crimsonland.exe` and `grim.dll` to aid decompilation.
+PE-level facts about `crimsonland.exe` and `grim.dll`: build metadata, sections,
+imports, resources, and notable addresses.
 
 ## Build Information
 
@@ -23,35 +24,12 @@ Static analysis findings for `crimsonland.exe` and `grim.dll` to aid decompilati
 
 ### Toolchain provenance
 
-The former VC++ 7.1 attribution on this page was an early heuristic and is
-superseded by object-level evidence:
-
-- the executable's optional-header linker version is 6.0;
-- its Rich header contains product-10/product-11 build-9782 records consistent
-  with the VC6 SP6 code generator;
-- product-28/product-29 build-9178 records identify VC7-generation objects
-  produced by the Windows XP DDK's 13.00.9176/9178 compiler, while product 25
-  build 9210 is `Implib700` metadata rather than the final linker;
-- the exact pinned DirectX 8.1 `d3dx8.lib` carries those build-9178 compiler
-  records and matches the native D3DX ranges, establishing library-provider
-  ancestry without implying a partial game-source migration;
-- controlled Processor Pack objects use product 48/49 build 9044, which is
-  absent from the executable; and
-- the build-8047 records in `grim.dll` can be reproduced from members of the
-  VC6 SP6 `msvcrt.lib` archive, so they do not identify an 8047 engine-code
-  frontend.
-
-An authentic VS6 RTM compile reports build 8168, ruling out RTM as a hidden
-8047 compiler. Corpus-wide comparison also produces identical output from the
-available 8966 and 9782 optimizers across all current Crimsonland and Grim
-scratches. The exact XP-DDK build-9178 compiler closes four historical D3DX
-source controls, but produces no exact or improved result across the current
-61 game-owned WIPs. Matching therefore uses `msvc6.5 /O2 /GB` as the compact
-canonical profile; alternate compiler profiles are search controls, not
-provenance claims.
-
-See `tools/match/README.md` in the repository for the compiler inventory,
-hashes, Rich-header controls, and current corpus comparison.
+Both images are VC6 SP6 builds: game and engine code matches under the
+canonical `msvc6.5 /O2 /GB` profile, and the VC7-generation Rich-header records
+come from bundled provider libraries such as DirectX 8.1 `d3dx8.lib`, not from
+game source. The evidence lives in the
+[`tools/match/README.md` toolchain notes](https://github.com/banteg/crimson/blob/master/tools/match/README.md#toolchain)
+and [Third-party libraries](../../contributor/project-tracking/third-party-libs.md).
 
 ## Security Features (None)
 
@@ -205,7 +183,7 @@ The exact function inventory, with each function's recovered source or library
 archive and its byte-match proof, is the match report
 `analysis/decomp/1.9.93.json`.
 
-## Useful Addresses for Decompilation
+## Notable addresses
 
 ### crimsonland.exe
 

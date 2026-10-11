@@ -126,28 +126,19 @@ Spawn ids include mapped creature names from `src/crimson/creatures/spawn.py`.
 
 ## Quest spawn scripts
 
-Spawn scripts are captured as code in `src/crimson/quests/` (Tier 1 in
-`src/crimson/quests/tier1.py`, Tier 2 in `src/crimson/quests/tier2.py`). Use the
+Spawn scripts live in `src/crimson/quests/`, one module per tier
+(`tier1.py` through `tier5.py`). Use the
 CLI (`crimson quests <level>`) to print the resolved entries for a given quest,
 including creature labels from `src/crimson/creatures/spawn.py`.
 
-## Validation notes
+## Validation
 
-- The Spanking Of The Dead (5.2) uses 132 (0x84) entries; validated on 2026-01-19
-  with a Frida count hook.
+The [builder oracle](https://github.com/banteg/crimson/blob/master/crimson-core/README.md#original-executable)
+runs every quest builder in the original executable through Unicorn and
+compares the full spawn table, entry count, and final RNG state with the port
+across seeds and hardcore mode
+([results](https://github.com/banteg/crimson/blob/master/crimson-core/results/builder-oracle.json)).
 
-- Runtime quest-build capture on 2026-01-19 (Frida, output summarized in `analysis/frida/quest_builds_summary.json`) matches the Python
-  reimplementation for deterministic fields (x/y/spawn_id/trigger/count) across
-  all non-random quests. Randomized quests (1.3, 1.6, 2.5, 3.3, 3.9) vary by RNG.
-
-- Heading values often appear uninitialized in the runtime table for builders that
-  do not explicitly write headings, so treat heading as undefined unless the quest
-  explicitly sets it.
-
-- Quest spawn ids (`spawn_id`) are interpreted by `creature_spawn_template` (`0x00430af0`), which is
-  an algorithm (it can spawn formations, configure spawn slots, and applies difficulty/hardcore tail
-  modifiers). For human-readable labels we use the partial index in `src/crimson/creatures/spawn.py`.
-
-- Target Practice (`quest_build_target_practice.cpp`) sets each heading to
-  `atan2(pos - (512, 512)) - 1.57079637f`, i.e. the spawn angle around the
-  arena center minus a quarter turn.
+Quest spawn ids are interpreted by `creature_spawn_template` (`0x00430af0`),
+which is an algorithm (formations, spawn slots, difficulty/hardcore tail
+modifiers); see [Spawning](../../../creatures/spawning.md).

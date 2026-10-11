@@ -1,15 +1,11 @@
----
-tags:
-  - verification
-  - performance
----
-
 # Late-game Survival spawn profile
 
-[Original bug 37](../rewrite/original-bugs.md#37-survival-spawning-grows-without-bound-after-fifteen-minutes)
-explains the spawn-rate escalation. The core's
-[batch optimization](../../crimson-core/optimizations/survival-spawn-batch.patch) removes
-redundant first-free searches while preserving that original behavior.
+Moved from `docs/verification/survival-spawn-profile.md` on 2026-10-12: a dated
+record of the 2026-10-10 profile and its follow-ups. The lasting contracts are
+[original bug 37](../../docs/rewrite/original-bugs.md#37-survival-spawning-grows-without-bound-after-fifteen-minutes),
+which explains the spawn-rate escalation, and the
+[optimization notes](../../crimson-core/optimizations/README.md) for the
+behavior-preserving patches measured here.
 
 ## Recording and baseline
 

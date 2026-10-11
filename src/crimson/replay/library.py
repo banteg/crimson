@@ -1,5 +1,5 @@
 """Where a client keeps its replays: one numbered file per run, `replays/<n>-<mode>.crd`, which a high score record
-names by its number (docs/rewrite/watch-replays.md).
+names by its number (docs/formats/replay.md).
 
 A number is never handed out twice: `.last-number` keeps the last one, written when it is reserved, so a replay still
 being written or since deleted keeps its number. A run whose replay failed to save names a file that never appears.

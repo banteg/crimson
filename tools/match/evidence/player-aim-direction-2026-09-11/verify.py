@@ -151,11 +151,11 @@ def main():
     witness_bytes = encoded({"witnesses": witnesses})
     assert len(witnesses) == 1050
     (args.out / "player-aim-point.json").write_bytes(witness_bytes)
-    assert witness_bytes == (ROOT / "crimson-zig/src/runtime/testdata/player-aim-point.json").read_bytes()
+    assert witness_bytes == (ROOT / "tests/fixtures/native/player-aim-point.json").read_bytes()
     assert len(turn_witnesses) == 240
     turn_bytes = encoded({"witnesses": turn_witnesses})
     (args.out / "player-aim-turns.json").write_bytes(turn_bytes)
-    assert turn_bytes == (ROOT / "crimson-zig/src/runtime/testdata/player-aim-turns.json").read_bytes()
+    assert turn_bytes == (ROOT / "tests/fixtures/native/player-aim-turns.json").read_bytes()
     manifest = e.match.load_function_manifest(scope="all")
     helpers = {}
     for name in (

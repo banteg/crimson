@@ -5,11 +5,11 @@ and its queue omitted native alpha adjustment. Python retained the tint but
 used double-precision direct division for nonzero transparency. Both ports
 also imposed a minimum corpse size of one that the native caller does not use.
 
-The ports now preserve the caller's tint and size, store float32 fields, and
-apply the native alpha operation order at gameplay x87 PC=24 precision:
+The correction made the ports preserve the caller's tint and size, store float32
+fields, and apply the native alpha operation order at gameplay x87 PC=24 precision:
 `alpha * 0.8f` when `cv_terrainBodiesTransparency` is zero, otherwise
 `alpha * (1.0f / transparency)`. Division and multiplication round separately.
-Zig frame batching appends the adjusted entry without attenuating it again.
+Zig frame batching appended the adjusted entry without attenuating it again.
 
 ## Evidence
 
@@ -45,23 +45,20 @@ omit the queue attempt and complete this stage even with a full queue.
 [results.json](results.json) records image/source/runner identities, queue
 observation hashes, coverage and detected controls for missing attenuation,
 direct division, white tint and the minimum-size clamp. The shared
-[fixture](../../../../crimson-zig/src/runtime/testdata/corpse-queue.json)
-checks actual Python and Zig queue implementations and creature updates.
-A separate Zig live-runner test advances two simulation ticks in one frame
-and checks that the presentation batch retains the once-adjusted tint.
-The library test root now explicitly includes `live_runner`, whose tests had
-only been referenced through a dependency module and were not executing.
-Enabling its fifteen tests also exposed a temporary-pointer snapshot bug and
-a pending-perk versus actual-pause reporting bug; both are fixed. Two existing
-input/audio tests now establish aligned starting headings and an expired
-weapon cooldown so they test input routing rather than native startup rules.
+[fixture](../../../../tests/fixtures/native/corpse-queue.json)
+checks the actual Python queue implementation and creature updates. At this
+revision it also checked the since-removed Zig port, whose live-runner test
+advanced two simulation ticks in one frame and checked that the presentation
+batch retained the once-adjusted tint. Enabling Zig's fifteen `live_runner`
+tests, which had not been executing, also exposed a temporary-pointer snapshot
+bug and a pending-perk versus actual-pause reporting bug; both were fixed then.
 
 ## Boundaries
 
 The caller runner still models RNG, blood effects, sound and other callbacks;
 the caller fixture checks corpse entries, lifecycle and kill count, not the
 ping-pong blood burst's complete particle/RNG state. `cv_bodiesFade` is fixed
-to one, matching the ports' current behavior. Nondefault transparency and
+to one, matching the ports' behavior at this revision. Nondefault transparency and
 texture-failure options are helper APIs; this change does not wire console
 variables into deterministic session configuration. No GPU or native Grim2D
 rendering executes, and this does not establish packed-color or pixel parity.
@@ -75,9 +72,8 @@ uv run --with unicorn==2.1.4 python \
   tools/match/evidence/corpse-queue-2026-09-11/verify.py \
   --out /tmp/crimson-corpse-queue
 cmp /tmp/crimson-corpse-queue/witnesses.json \
-  crimson-zig/src/runtime/testdata/corpse-queue.json
-uv run pytest --no-cov tests/creatures/test_corpse_queue_native.py
+  tests/fixtures/native/corpse-queue.json
+uv run pytest tests/creatures/test_corpse_queue_native.py
 ```
 
-Run `zig build test --summary all` and `zig build test -Doptimize=ReleaseFast`
-from `crimson-zig`. Unicorn needs JIT memory permission on macOS.
+Unicorn needs JIT memory permission on macOS.

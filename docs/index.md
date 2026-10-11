@@ -57,9 +57,10 @@ the reverse engineering that ties them to the original executable.
 
 ## Highlights
 
-- [Matching decompilation](https://decomp.dev/banteg/crimson): all 858 game
-  and engine functions of 1.9.93 come from recovered C/C++ source that compiles
-  to the original machine code. 1.9.8 is measured from the same source.
+- [Matching decompilation](https://decomp.dev/banteg/crimson): every game and
+  engine function of 1.9.93 comes from
+  [recovered C/C++ source](https://github.com/banteg/crimson/tree/master/decomp)
+  that compiles to the original machine code. 1.9.8 is measured from the same source.
 
 - [Perks](mechanics/perks.md): all 58 perks with exact numbers, interaction
   rules, and original bug notes verified against two builds of the binary.

@@ -1,9 +1,9 @@
 # Creature sprite pass order and dimensions
 
-Both ports now finish every shadow of a species before drawing its bodies and
-hit flashes. Python also uses the creature's actual size, divided by the atlas
-cell width, instead of clamping a hard-coded `size / 64` scale. Zig preserves
-native draw submission for fully transparent shadows.
+This change made both ports finish every shadow of a species before drawing its
+bodies and hit flashes. Python also uses the creature's actual size, divided by
+the atlas cell width, instead of clamping a hard-coded `size / 64` scale. Zig
+preserved native draw submission for fully transparent shadows.
 
 For two zombies followed by one spider, the sprite sequence is now
 `zombie shadows → zombie bodies → zombie flashes → spider shadow → spider body
@@ -48,10 +48,11 @@ source, parent files, call traces and coverage are identified in
 
 ## Port evidence and regressions
 
-[verify_ports.py](verify_ports.py) checks the shared
-[native witnesses](../../../../crimson-zig/src/runtime/testdata/creature-pass-order.json)
-against both current ports and immutable baseline
-`c8c9cda9922d15a5f95c00ca1247994dd52e51bc`.
+A port-side verifier checked the shared
+[native witnesses](../../../../tests/fixtures/native/creature-pass-order.json)
+against both then-current ports and immutable baseline
+`c8c9cda9922d15a5f95c00ca1247994dd52e51bc`. That check was removed with the Zig
+port; [port-results.json](port-results.json) is the record.
 
 Python runs the production world draw function and sprite helper, intercepting
 Raylib texture calls. It supplies snapshot/configuration fixtures and replaces
@@ -59,19 +60,19 @@ the unrelated overlay pass and perk query. The regression checks exact creature
 and pass sequence, atlas frame, and body/flash dimensions. Shadow dimensions
 allow a relative tolerance of `1e-6` for the existing backend arithmetic.
 
-The Zig observer compiles **eight current function bodies** extracted from
+The Zig observer compiled **eight function bodies** extracted from
 `window_main.zig`, including the species loops, flash loop, atlas drawing,
 conversion helpers (the immutable baseline also extracts its former local
-tint helper). It imports the actual atlas, animation, perk and
-state modules. [ports.zig](ports.zig) provides only the state envelope,
+tint helper). It imported the actual atlas, animation, perk and
+state modules. A small Zig harness provided only the state envelope,
 texture lookup and drawing boundary needed to record those functions. The
-renderer reaches the production atlas-rectangle calculation before the draw
-observer. This is execution of the extracted production paths, not a second
+renderer reached the production atlas-rectangle calculation before the draw
+observer. This was execution of the extracted production paths, not a second
 implementation of their loops. Full native and WebAssembly builds separately
-check their integration into the window application.
+checked their integration into the window application.
 
-All **1,056 witnesses** pass at atlas widths **256 and 512** in Python and in
-Zig **Debug and ReleaseFast**. Baseline controls fail as expected:
+All **1,056 witnesses** passed at atlas widths **256 and 512** in Python and in
+Zig **Debug and ReleaseFast**. Baseline controls failed as expected:
 
 - Both old ports have the wrong ordered sequence in the four combinations
   where shadows are enabled and Monster Vision is absent.
@@ -84,8 +85,6 @@ Zig **Debug and ReleaseFast**. Baseline controls fail as expected:
 [port-results.json](port-results.json) records source/extraction hashes, compiler
 version, observation digests, mismatch counts and representative failures.
 The Python native-witness regression runs under the ordinary pytest suite.
-The compiled Zig draw observer is reproduced by the evidence command below;
-it is additional to the standard Zig suite.
 
 This verifies CPU draw order, selection and dimensions. It does not certify
 GPU pixels, exact shadow geometry, tint/alpha arithmetic, rotation conversion,
@@ -104,16 +103,11 @@ uv run --with unicorn==2.1.4 python \
   tools/match/evidence/creature-pass-order-2026-09-11/verify.py \
   --out /tmp/crimson-creature-pass-native
 cmp /tmp/crimson-creature-pass-native/witnesses.json \
-  crimson-zig/src/runtime/testdata/creature-pass-order.json
-uv run python tools/match/evidence/creature-pass-order-2026-09-11/verify_ports.py \
-  --out /tmp/crimson-creature-pass-ports
-uv run pytest --no-cov tests/render/test_creature_pass_order.py \
+  tests/fixtures/native/creature-pass-order.json
+uv run pytest tests/render/test_creature_pass_order.py \
   tests/render/test_world_draw_order.py
 ```
 
-Run `zig build test --summary all`,
-`zig build test -Doptimize=ReleaseFast --summary all`,
-`zig build -Doptimize=ReleaseFast` and `zig build wasm` from `crimson-zig`.
 The native verifier requires Unicorn JIT permission on macOS; compiler-backed
 checks require access to their normal caches.
 

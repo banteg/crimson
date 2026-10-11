@@ -1,8 +1,8 @@
 # Native creature hit flashes
 
-Python and Zig now draw the native white hit-flash pass when violence is
-disabled. Zig also tracks the timer through damage, active updates, replay
-residue, and slot allocation. The previous Python renderer omitted the pass;
+This change made Python and Zig draw the native white hit-flash pass when
+violence is disabled. Zig also gained the timer through damage, active updates,
+replay residue, and slot allocation. The previous Python renderer omitted the pass;
 the previous Zig runtime had no timer field and its renderer omitted the pass.
 
 The native effect draws each eligible sprite **twice with additive blending**
@@ -10,7 +10,7 @@ after its species' body batch. Its alpha is
 `min(hit_flash_timer * 5, 1) * transition_alpha`, followed by Grim2D's truncated
 byte packing. A dying long-strip shock creature omits the `+32` offset used by
 its body. The flash preserves actual creature size, including sizes outside
-the then-current Python body's clamp. Zig now uses the recovered species order
+the then-current Python body's clamp. Zig then adopted the recovered species order
 `zombie, spider_sp1, spider_sp2, alien, lizard` to place these batches correctly.
 
 The timer is set to `0.2f` before native damage checks, including zero damage,
@@ -49,14 +49,14 @@ call/write digests, and that import binding are recorded in
 [results.json](results.json). Deliberately wrong fade, single-quad, and
 inactive-damage-gate controls must be detected.
 
-The shared [witness file](../../../../crimson-zig/src/runtime/testdata/creature-hit-flash.json)
-drives Python and Zig lifetime/selection regressions. Python also intercepts
+The shared [witness file](../../../../tests/fixtures/native/creature-hit-flash.json)
+drives the Python lifetime/selection regressions. Python also intercepts
 the production draw calls and checks frame, size, position, rotation, packed
 alpha, duplicate quads, blend restoration, the violence gate, and per-species
-flash placement. Zig checks the selection and packed-alpha helper used by its
-window renderer. Both ports additionally check all **2,640** preexisting
-native flash-frame witnesses. Zig's existing primary-impact regressions now
-compare the native timer field too.
+flash placement. It additionally checks all **2,640** preexisting native
+flash-frame witnesses. At this revision the since-removed Zig port ran the same
+lifetime/selection, packed-alpha and flash-frame checks, and its primary-impact
+regressions compared the native timer field.
 
 Python replay playback copies the recording's gore setting into its rendering
 configuration. Two opposite-preference regressions check that both the replay
@@ -77,11 +77,9 @@ uv run --with unicorn==2.1.4 python \
   tools/match/evidence/creature-hit-flash-2026-09-11/verify.py \
   --out /tmp/crimson-creature-hit-flash
 cmp /tmp/crimson-creature-hit-flash/witnesses.json \
-  crimson-zig/src/runtime/testdata/creature-hit-flash.json
-uv run pytest --no-cov tests/creatures/test_creature_hit_flash.py \
+  tests/fixtures/native/creature-hit-flash.json
+uv run pytest tests/creatures/test_creature_hit_flash.py \
   tests/creatures/test_creature_frame_native.py tests/render/test_world_draw_order.py
 ```
 
-Run `zig build test --summary all` and
-`zig build test -Doptimize=ReleaseFast --summary all` from `crimson-zig`.
 Unicorn execution on macOS requires permission for JIT memory allocation.

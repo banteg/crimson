@@ -13,35 +13,17 @@ tags:
   - game-over highscore record source
   - perk pick prompt/input ownership
 
-## Implemented wiring
+Native controls are described in
+[local multiplayer controls](../crimsonland-exe/local-multiplayer-controls.md).
 
-- Config persistence:
-  - P1-P4 keybind blocks use source-defined `input_config[0..3]`; the on-disk array has ten slots.
-  - per-player HUD direction-arrow toggles use source-defined `direction_arrow_flags[0..3]`; that array also has ten slots.
-  - Code: `src/grim/config.py`
-- Input backend:
-  - per-player `is_down`/`is_pressed` and axis reads (keyboard/mouse/joy/RIM code families).
-  - frame-latched edge semantics are keyed by `(player_index, input_code)`.
-  - Code: `src/crimson/input_codes.py`
-- Gamepads:
-  - player N reads controller N; standard controller codes (`0x200+`) name sticks, triggers and face buttons by position.
-  - when a player's controller is connected, bindings still at their stock values move to the standard codes (a fully stock player also switches to Dual Action Pad aim and move once the controller is used), and the config is saved.
-  - the Controls Reset button restores stock bindings, or the full controller profile when that player's controller is connected.
-  - Code: `src/crimson/gamepad_profile.py`, `src/crimson/input_codes.py`
-- Control-scheme interpretation:
-  - per-player conversion from controls profile + bind block to `PlayerInput`.
-  - supports native mode IDs for move/aim schemes.
-  - Code: `src/crimson/local_input.py`
-- Gameplay mode wiring:
-  - Survival/Rush/Quest now feed per-player input lists (not mirrored player-0 input).
-  - Tutorial/Typ-o remain single-player.
-  - Code: `src/crimson/modes/survival_mode.py`, `src/crimson/modes/rush_mode.py`, `src/crimson/modes/quest_mode.py`
-- Controls UI:
-  - player selector supports players `1..4`.
-  - per-slot rebind capture supports cancel/default/unbind flows.
-  - writes route to per-player persisted blocks (or legacy global slots where applicable).
-  - Code: `src/crimson/screens/panels/controls.py`
-- Quest results:
-  - life bonus aggregation supports N-player health values for 3/4-player runs.
-  - 1/2-player scoring behavior is preserved.
-  - Code: `src/crimson/quests/results.py`, `src/crimson/modes/quest_mode.py`
+## Code
+
+- `src/grim/config.py`: per-player bind blocks and direction-arrow flags in the
+  config's ten-slot arrays.
+- `src/crimson/input_codes.py`: per-player input queries; edges latch per
+  `(player_index, input_code)`.
+- `src/crimson/gamepad_profile.py`: the modern controller profile that replaces
+  a player's stock bindings when their pad connects.
+- `src/crimson/local_input.py`: control scheme plus bind block to `PlayerInput`.
+- `src/crimson/screens/panels/controls.py`: player selector and rebinding.
+- `src/crimson/quests/results.py`: life bonus over every player's health.

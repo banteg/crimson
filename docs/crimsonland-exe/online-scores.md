@@ -60,7 +60,7 @@ High scores:
 - Extra headers (exact string):
   - `Content-Disposition: inline; filename="test"\r\nContent-type: application/octet-stream`
 
-Version check (adjacent logic, likely not needed for leaderboard server):
+Version check (`statistics_update_check_worker`):
 
 - Host: `www.crimsonland.com`
 - Port: `80`
@@ -81,13 +81,13 @@ Header layout (offsets are from start of payload):
 0x01 u8  0x48
 0x02 u8  0xF3
 0x03 u8  0x85
-0x04 u8  name_slot_valid (1 if config_name_slot_selected != 0 and full version; else 0)
+0x04 u8  name_slot_valid (1 if config_selected_saved_name_slot != 0 and full version; else 0)
 0x05 u8  score_count (filled later; 0 in demo)
 0x06 u8  mode_or_hardcore (config_hardcore ? 5 : config_game_mode)
 0x07 u8  quest_stage_major
 0x08 u8  quest_stage_minor
 0x09 u8  config_player_count
-0x0A ..  selected name (NUL-terminated, from config_saved_names[config_name_slot_selected])
+0x0A ..  selected name (NUL-terminated, from config_saved_name_0[config_selected_saved_name_slot])
 ```
 
 Score records:
@@ -101,10 +101,10 @@ Score records:
 
 Selection logic:
 
-- Iterates the high score table (`DAT_00482b54` flags, `highscore_table_count` count).
-- Skips entries where flag bit 0 is set and bit 1 is not set. (Flags live at
-  record offset `0x44`: bit 0 gates submission/update; bit 1 marks replacement
-  records and bypasses that gate.)
+- Iterates `highscore_table` up to `highscore_table_count`.
+- Skips entries whose `flags` (record offset `0x44`) have bit 0 set and bit 1
+  clear: bit 0 gates submission/update; bit 1 marks replacement records and
+  bypasses that gate.
 
 - Calls `highscore_submit_full_version_guard` (illegal-score guard) per entry; on failure, logs
   "Detected a potential illegal score" and does not include that entry.

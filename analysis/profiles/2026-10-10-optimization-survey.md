@@ -1,12 +1,10 @@
----
-tags:
-  - verification
-  - performance
----
-
 # Optimization survey
 
-The [catalog](https://github.com/banteg/crimson/blob/master/crimson-core/optimizations/README.md)
+Moved from `docs/verification/optimization-survey.md` on 2026-10-12. A dated
+measurement; the current dispositions live in the
+[optimization notes](../../crimson-core/optimizations/README.md).
+
+The [catalog](../../crimson-core/optimizations/README.md)
 records which earlier Python optimizations transfer to the verifier/game.
 Plaguebearer culling and orbit caching transfer as separate behavior-preserving
 patches. Direct collision culling regressed 4–7%; a native spatial index needs

@@ -4,12 +4,13 @@ tags:
 ---
 
 # State machine
-This page tracks the main runtime state flags in `crimsonland.exe` and the
-known state ids. Names are inferred from call sites and screen behavior.
+This page tracks the main runtime state flags in `crimsonland.exe` and how
+state transitions happen. The id-by-id table is the
+[State id glossary](state-ids.md).
 
 ## Key globals
 
-| Symbol | Meaning (inferred) | Evidence |
+| Symbol | Meaning | Evidence |
 | --- | --- | --- |
 | `game_state_id` (`0x00487270`) | current state id | set in `game_state_set` (`0x004461c0`), checked throughout render/update loops |
 | `game_state_prev` (`0x0048726c`) | previous state id | set in `game_state_set` (`0x004461c0`) before changing state |
@@ -20,30 +21,6 @@ known state ids. Names are inferred from call sites and screen behavior.
 | `run_active` (`0x00487240`) | render gating | dispatcher uses it to choose terrain-only vs full pass |
 | `game_paused_flag` (`0x004808b8`) | pause toggle | checked in the main frame loop |
 | `demo_mode_active` (`0x0048700d`) | demo/attract gating | disables HUD and alters update behavior |
-
-## Known state ids
-
-For the complete id-by-id glossary (`0x00..0x1a`, including unreachable legacy ids),
-see [State id glossary](state-ids.md).
-
-| Id | Label (inferred) | Evidence |
-| --- | --- | --- |
-| `0` | main menu / root UI | `game_state_set` (`0x004461c0(0)`), load step sets `game_state_id` (`0x00487270`) = `0` |
-| `0xb` | quest select menu | `game_state_set(0xb)` enables quest-select UI and installs `quest_select_menu_update` |
-| `5` | pause (console/mod pause) | `mod_api_cl_enter_menu` (`0x0040e690`) sets `game_state_pending` (`0x00487274`) = `5` on `game_pause` |
-| `6` | perk selection | direct `game_state_set` (`0x004461c0(6)`) when perk prompt is accepted |
-| `7` | game over / high score entry | `game_over_screen_update` checks `game_state_id` (`0x00487270`) == `7` |
-| `8` | quest results | `quest_results_screen_update` checks `game_state_id` (`0x00487270`) == `8` |
-| `9` | gameplay | `gameplay_update_and_render` runs creature/projectile/player updates only when 9 |
-| `10` | quit transition | main-menu Quit callback sets `game_state_pending = 10`; `ui_elements_update_and_render` checks `game_state_id == 10` |
-| `0xc` | quest failed | `quest_failed_screen_update` checks `game_state_id` (`0x00487270`) == `0xc` |
-| `0xe` | high scores | post-run High scores buttons queue `game_state_pending = 0xe` |
-| `0x11` | credits | `game_state_set(0x11)` installs `credits_screen_update` |
-| `0x12` | Typ-o-Shooter gameplay | `typo_gameplay_update_and_render` (`0x004457c0`) updates when `game_state_id` (`0x00487270`) == `0x12` |
-| `0x14` | mods browser / plugin fallback | `game_state_set(0x14)` installs `mods_menu_update` (mods menu); plugin flow queues `0x14` on exit/failure |
-| `0x15` | final quest end note | dispatch routes to `game_update_victory_screen()` when `game_state_id == 0x15` |
-| `0x16` | modal/plugin flow | `plugin_runtime_update_and_render` drives a DLL-backed interface (`plugin_interface_ptr`), with `plugin_runtime_needs_init` and `plugin_runtime_active_latch` controlling init/resume paths |
-| `0x1a` | credits secret flow | credits "Secret" button queues `0x1a`; `game_state_set(0x1a)` installs `credits_secret_alien_zookeeper_update` |
 
 ## Transition rules
 
@@ -57,9 +34,3 @@ see [State id glossary](state-ids.md).
 - Player death sets `game_state_pending` (`0x00487274`) = `7` for non-quest modes or `0xc` for quests.
 - Perk selection uses a direct `game_state_set` (`0x004461c0(6)`) instead of a queued transition.
 - `game_pause` (console/mod command) sets `game_state_pending` (`0x00487274`) = `5`.
-
-## Notes
-
-- `0x19` is used as an idle sentinel for `game_state_pending` (`0x00487274`), not as a real state id.
-- `0x0d`, `0x13`, `0x17` and `0x18` are named in `game_state_id_t` but nothing in the
-  recovered source queues or sets them, so they are unreachable in 1.9.93 (see `state-ids.md`).

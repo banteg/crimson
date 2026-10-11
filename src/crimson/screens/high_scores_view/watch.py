@@ -1,4 +1,4 @@
-"""What a high score row can be watched as: its replay, or why it does not play (docs/rewrite/watch-replays.md)."""
+"""What a high score row can be watched as: its replay, or why it does not play (docs/rewrite/replay-viewer.md)."""
 
 from __future__ import annotations
 

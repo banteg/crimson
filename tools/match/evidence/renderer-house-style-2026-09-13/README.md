@@ -102,13 +102,13 @@ uv run --no-sync python tools/match/evidence/renderer-house-style-2026-09-13/ver
 for suite in historic conventional laser; do
   uv run --no-sync --with unicorn==2.1.4 python \
     tools/match/evidence/renderer-house-style-2026-09-13/replay.py \
-    --source tools/match/scratches/projectile_render/scratch.cpp \
+    --source decomp/1.9/crimsonland/crimsonland/projectile_render.cpp \
     --suite "$suite" --out "/private/tmp/renderer-house-$suite"
 done
 
 uv run --no-sync --with unicorn==2.1.4 python \
   tools/match/evidence/renderer-house-style-2026-09-13/fire_probe.py \
-  --source tools/match/scratches/projectile_render/scratch.cpp \
+  --source decomp/1.9/crimsonland/crimsonland/projectile_render.cpp \
   --out /private/tmp/renderer-house-fire
 ```
 

@@ -4,9 +4,8 @@ tags:
 ---
 
 # Crimsonland.exe overview (by concern)
-This folder splits the old single-page overview into concern-based notes for the
-classic Windows build (v1.9.93). The classic build is the source of truth for
-behavior and ordering.
+Notes on the classic Windows build (v1.9.93), one concern per page. The classic
+build is the source of truth for behavior and ordering.
 
 Sections:
 

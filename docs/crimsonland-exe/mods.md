@@ -49,7 +49,7 @@ seeds the tail values (`1.0f`, `3`) before copying.
 | `0x00` | `name[0x20]` | Mod display name (NUL-terminated) | Mod DLLs zero 0x20 bytes then copy `"Null Example Mod"` / `"CrimsonRoks"` into the base. |
 | `0x20` | `author[0x20]` | Author string (NUL-terminated) | Mod DLLs copy `"temper / 10tons"` into the second 0x20 block. |
 | `0x40` | `version` (`float`) | Mod version | `cl_nullmod` writes `1.0f`; `cl_crimsonroks` writes `0.2f`. |
-| `0x44` | `usesApiVersion` (`u32`) | Mod API/version marker | Both mods write `3` (`CL_API_VERSION` in `cl_mod_sdk_v1/ClMod.h`); the exe seeds `DAT_00481ccc = 3` during init. |
+| `0x44` | `usesApiVersion` (`u32`) | Mod API/version marker | Both mods write `3` (`CL_API_VERSION` in `cl_mod_sdk_v1/ClMod.h`); `mod_load_info`'s static `mod_info_block` defaults to `3`. |
 
 ## Loading a mod interface
 

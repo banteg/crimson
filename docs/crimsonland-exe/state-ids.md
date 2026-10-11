@@ -54,14 +54,3 @@ Source anchors:
   ternary of literals) from the reachable set, so `0x0d`, `0x13`, `0x17` and
   `0x18` are never entered in 1.9.93.
 - State `0x19` is only a sentinel for `game_state_pending` and should not be treated as a normal `game_state_id`.
-
-## Historical runtime capture (2026-02-06)
-
-Before the decompilation was complete, a Frida capture
-(`analysis/frida/gameplay_state_capture_summary.json`, ~694 s) recorded the
-`game_state_set` targets `0,1,2,3,4,5,6,7,8,9,10,11,12,14,15,16,17,26`, with the
-most frequent transitions `1 -> 9`, `9 -> 6 -> 9`, `9 -> 8 -> 9` and
-`7 -> 14 -> 7`. The UI render oracle
-(`analysis/frida/ui_render_trace_oracle_1024x768.json`) labels frames with
-decimal ids (`state_14:High scores - ...`). Both are consistent with the
-recovered source above.

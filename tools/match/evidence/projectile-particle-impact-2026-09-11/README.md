@@ -14,9 +14,8 @@ Run from the repository root with the existing VC6 toolchain:
 uv run --with unicorn==2.1.4 --with capstone python tools/match/evidence/projectile-particle-impact-2026-09-11/verify.py --out /tmp/crimson-particle-impact-proof
 PYTHONPATH=. uv run python tools/match/evidence/projectile-particle-impact-2026-09-11/verify_ports.py --native-results /tmp/crimson-particle-impact-proof/port-witnesses.json --out /tmp/crimson-particle-impact-python.json
 uv run python tools/match/evidence/projectile-particle-impact-2026-09-11/export_regressions.py --native-results /tmp/crimson-particle-impact-proof/port-witnesses.json --out /tmp/particle-impact.json
-cmp /tmp/particle-impact.json crimson-zig/src/runtime/testdata/particle-impact.json
+cmp /tmp/particle-impact.json tests/fixtures/native/particle-impact.json
 uv run pytest tests/gameplay/test_particle_impact_native.py
-cd crimson-zig && zig build test
 ```
 
 `before.cpp` is the prior source, pinned by SHA-256. `recover.py` reconstructs the
@@ -78,16 +77,16 @@ ordered-write or encoded-body equality claim.
 
 ## Runtime corrections
 
-Python and Zig now round the collision vector operations at PC24 boundaries,
-keep the `atan2` result wide until native wrap arithmetic, keep sine/cosine wide
-until multiplication by 82, and apply the once-scaled RNG factor. RGBA clamping
-runs only inside the native bright-tint branch. Python also uses the native
+This change made Python and Zig round the collision vector operations at PC24
+boundaries, keep the `atan2` result wide until native wrap arithmetic, keep
+sine/cosine wide until multiplication by 82, and apply the once-scaled RNG
+factor. RGBA clamping runs only inside the native bright-tint branch. Python also uses the native
 float literals and operation boundaries for decal grayscale and rotation.
 
-Zig particle damage now takes the fire path, native kind 4. The previous bullet
-path applied unrelated bullet perks and consumed heading-jitter RNG. Pyromaniac
-now runs only for a positive-health target, matching the native helper's corpse
-boundary. The compact shared fixture selects 135 independently generated native
+Zig particle damage then switched to the fire path, native kind 4. The previous
+bullet path applied unrelated bullet perks and consumed heading-jitter RNG.
+Pyromaniac then ran only for a positive-health target, matching the native
+helper's corpse boundary. The compact shared fixture selects 135 independently generated native
 cases, including every explicit color and damage-perk boundary. The complete
 663-case Python comparison is also recorded. The Zig test was additionally run
 against all 663 cases before selecting the smaller committed fixture.
@@ -95,7 +94,7 @@ against all 663 cases before selecting the smaller committed fixture.
 The port comparisons check particle fields, representable creature position,
 velocity, health, lifecycle, heading and tint, spawned sprites, decal arguments,
 and complete RNG values/callers/state. Python additionally checks the damage
-call arguments and hit-flash timer. Zig has no hit-flash field. Both ports omit
+call arguments and hit-flash timer; Zig had no hit-flash field. Both ports omitted
 the native creature `state_flag`; this package does not claim that field is
 unnecessary. Decal positions are converted from the ports' center representation
 to native enqueue top-left coordinates for comparison.

@@ -63,7 +63,7 @@ flag, which is what opens the path.
 
 ## Unverified weapons
 
-17 named weapons exist in the weapon table but are absent from the quest
+Several named weapons exist in the weapon table but are absent from the quest
 unlock sequence. Beyond the three listed above, no verified unlock path is
 currently documented. See
 [weapon candidates (RE/static)](../re/static/secrets/weapon-candidates.md)

@@ -27,6 +27,13 @@ display limit. The week filter compares the stored native week and year, not
 Python's ISO week number. Saving a qualifying score retains historical records
 outside the selected table. Port writes atomically replace the file.
 
+The word at `0x3C` was reserved in the original, which never reads it and
+leaves it out of its duplicate check. Every client stores the run's replay
+number there, naming `replays/<n>-<mode>.crd`
+([replay format](replay.md#where-replays-are-kept)). Zero is no replay, as in
+every record written before replays were numbered; a number whose file is
+missing is a replay that was not saved.
+
 Normal quest files use `questhcM_N.hi`; hardcore uses `questM_N.hi`. That apparent
 inversion is native behavior. The port adds `_2`, `_3`, or `_4` before `.hi` for
 separate local co-op tables. Other modes use `survival.hi`, `rush.hi`, and
@@ -36,6 +43,7 @@ Names are trimmed in the stored copy before encoding. Native trimming preserves
 character zero even for an all-space name; the name-entry UI requires a
 non-space character. A failed score write leaves name entry available for retry.
 
-Implementation: `src/crimson/persistence/highscores.py`. The native behavior is in the
+Implementation: `src/crimson/persistence/highscores.py`; the web and native clients set the replay
+number in `crimson-core/host/session.inc` (`live_end`). The native behavior is in the
 recovered sources under `decomp/1.9/crimsonland/highscore/` (`highscore_save_record.c`,
 `highscore_load_table.c`, and the `highscore_compare_*` comparators).

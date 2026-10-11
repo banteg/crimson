@@ -25,12 +25,8 @@ nav = [
       { "Typ-o-Shooter" = "mechanics/modes/typo-shooter.md" },
       { "Tutorial" = "mechanics/modes/tutorial.md" },
     ]},
-    { "Combat" = [
-      { "Overview" = "mechanics/combat/index.md" },
-      { "Weapons" = "mechanics/combat/weapons.md" },
-    ]},
+    { "Weapons" = "mechanics/combat/weapons.md" },
     { "Systems" = [
-      { "Overview" = "mechanics/systems/index.md" },
       { "Bonuses" = "mechanics/systems/bonuses.md" },
       { "Secret weapons" = "mechanics/secret-weapons.md" },
       { "Perks" = "mechanics/perks.md" },
@@ -40,19 +36,16 @@ nav = [
     { "Overview" = "rewrite/index.md" },
     { "Feature matrix" = "rewrite/feature-matrix.md" },
     { "Architecture" = [
-      { "Overview" = "rewrite/architecture/index.md" },
       { "Module map" = "rewrite/module-map.md" },
       { "Perks architecture" = "rewrite/perks-architecture.md" },
     ]},
     { "Contracts" = [
-      { "Overview" = "rewrite/contracts/index.md" },
       { "Deterministic session" = "rewrite/deterministic-step-pipeline.md" },
       { "Timing domains and mode scheduling" = "rewrite/timing.md" },
       { "Replay run start" = "rewrite/replay-run-start.md" },
       { "Ranked rules" = "rewrite/ranked-rules.md" },
       { "Leaderboard identity" = "rewrite/leaderboard-identity.md" },
       { "Bots and moderation" = "rewrite/bots.md" },
-      { "Watching replays" = "rewrite/watch-replays.md" },
       { "Replay viewer" = "rewrite/replay-viewer.md" },
       { "Quest identifiers" = "rewrite/quest-identifiers.md" },
       { "CDT trace format" = "rewrite/cdt-trace-format.md" },
@@ -62,7 +55,6 @@ nav = [
       { "Local multiplayer" = "rewrite/local-multiplayer.md" },
     ]},
     { "Modules" = [
-      { "Overview" = "rewrite/modules/index.md" },
       { "Rendering pipeline" = "rewrite/rendering-pipeline.md" },
       { "Terrain" = "rewrite/terrain.md" },
       { "Beam rendering (classic + RTX)" = "rewrite/beam-rendering.md" },
@@ -72,7 +64,6 @@ nav = [
       { "Status" = "rewrite/status.md" },
       { "Original bugs" = "rewrite/original-bugs.md" },
       { "Typ-o-Shooter text input" = "rewrite/parity/typo-mode-text-input.md" },
-      { "Delta-time parity reference" = "rewrite/parity/delta-time.md" },
       { "Settings that steer the RNG" = "rewrite/parity/environment-rng.md" },
     ]},
   ]},
@@ -88,10 +79,7 @@ nav = [
       { "Source recovery references" = "re/static/detangling.md" },
       { "Perk runtime reference" = "re/static/perks-runtime-reference.md" },
       { "Fire Bullets 1.9.8 vs 1.9.93" = "re/static/fire-bullets-1.9.8-vs-1.9.93.md" },
-      { "Modes" = [
-        { "Overview" = "re/static/modes/index.md" },
-        { "Game mode map" = "re/static/modes/game-mode-map.md" },
-      ]},
+      { "Game mode map" = "re/static/modes/game-mode-map.md" },
       { "Systems" = [
         { "Overview" = "re/static/systems/index.md" },
         { "UI elements" = "re/static/systems/ui-elements.md" },
@@ -141,8 +129,7 @@ nav = [
       ]},
     ]},
     { "Formats" = [
-      { "Overview" = "re/formats/index.md" },
-      { "Formats overview" = "formats/index.md" },
+      { "Overview" = "formats/index.md" },
       { "PAQ" = "formats/paq.md" },
       { "JAZ" = "formats/jaz.md" },
       { "Fonts" = "formats/fonts.md" },
@@ -154,8 +141,7 @@ nav = [
       { "Config blob (crimson.cfg)" = "formats/crimson-cfg.md" },
     ]},
     { "Structs" = [
-      { "Overview" = "re/structs/index.md" },
-      { "Structs overview" = "structs/index.md" },
+      { "Overview" = "structs/index.md" },
       { "Player" = "structs/player.md" },
       { "Projectile" = "structs/projectile.md" },
       { "Effects" = "structs/effects.md" },
@@ -176,9 +162,6 @@ nav = [
       { "Native execution oracle" = "verification/differential-testing/native-oracle.md" },
     ]},
     { "Evidence ledger" = "verification/evidence-ledger/index.md" },
-    { "Parity matrix" = "verification/parity-matrix/index.md" },
-    { "Survival spawn profile" = "verification/survival-spawn-profile.md" },
-    { "Optimization survey" = "verification/optimization-survey.md" },
   ]},
   { "Contributor" = [
     { "Overview" = "contributor/index.md" },
@@ -189,7 +172,6 @@ nav = [
       { "Testing conventions" = "testing-conventions.md" },
     ]},
     { "Project tracking" = [
-      { "Overview" = "contributor/project-tracking/index.md" },
       { "Build provenance and hashes" = "contributor/project-tracking/provenance.md" },
       { "Third-party libraries" = "contributor/project-tracking/third-party-libs.md" },
     ]},

@@ -19,7 +19,7 @@ whereas the previous source publishes `0x3ea147ae` (about 0.315). The Python dra
 boundary consequently packs alpha 89 rather than 80. The focused renderer
 regression failed for all three small-head types before the fix and passed
 for Rifle/Cannon controls; all five pass after the correction. Python's and
-Zig's shared small-plasma configuration now use 0.5.
+Zig's shared small-plasma configuration were set to 0.5.
 
 ## Bounded machine verification
 

@@ -61,7 +61,7 @@ executes machine x87 and native `crt_ftol` under control word `0x037f`, and chec
 stack balance, callee-saved registers, allowed instruction addresses, and absence
 of non-stack writes. Secondary, primary, player, and creature state hashes agree.
 These are caller-behavior fixtures under the documented external-call models,
-not GPU/pixel identity or all-input equivalence. The Python and Zig ports use
+not GPU/pixel identity or all-input equivalence. The Python and Zig ports used
 centered sprite helpers; no port float-bit identity is claimed or changed here.
 
 ## Source controls and matching

@@ -19,7 +19,7 @@ The observer records every invoked Grim2D operation in order. Float arguments
 are compared as their exact 32-bit words, with no tolerance; color pointers are
 read at the call. Configuration IDs 19 and 20 compare the ID and first value word,
 which are the fields consumed by the exact
-[`grim_set_config_var`](../../scratches/grim_set_config_var/scratch.cpp) branches.
+[`grim_set_config_var`](../../../../decomp/1.9/grim/config/set_var.cpp) branches.
 The other three value words are uninitialized by the recovered constructor and
 are not read by those branches. Virtual calls model the recovered `__thiscall`
 stack cleanup and overwrite caller-saved integer registers and flags. The perk

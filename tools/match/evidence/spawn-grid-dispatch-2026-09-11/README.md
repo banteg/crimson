@@ -47,15 +47,16 @@ PC24 multiplication helper and the float32 literal, as Zig already did.
 - Deliberate 16-unit-stride and missing-last-row controls must be detected by
   both final state and random-draw checks. This independently checks the
   observations used to correct the runtime grid loops.
-- `verify_ports.py` compares 100 PC24 native grid witnesses with the actual
-  Python plan builder and the built Zig `spawn-plan` CLI. It checks counts,
+- A port-side verifier compared 100 PC24 native grid witnesses with the actual
+  Python plan builder and the built Zig `spawn-plan` CLI. It checked counts,
   positions, target offsets, type, health, heading, links and RNG state with
-  float32 bit comparisons. It additionally checks Python phase seeds; the
-  Zig CLI omits those, so its dedicated runtime test checks them directly.
+  float32 bit comparisons. It additionally checked Python phase seeds; the
+  Zig CLI omitted those, so its dedicated runtime test checked them directly.
   This is a selected-field port comparison, not an assertion that every
   stored native byte has a corresponding port field. Skipped witness IDs and
   reasons are recorded: PC64 arithmetic is outside the runtime model, and
-  negative retry counts are rejected by the Zig CLI.
+  negative retry counts were rejected by the Zig CLI. That check was removed
+  with the Zig port; `ports.json` is the record.
 
 Fresh before and after static results are both **88.89240506329114%**, with
 3161 candidate / 3159 native instructions, prefix 23, and references 357/0/1.
@@ -73,11 +74,6 @@ From the repository root, with local Unicorn JIT permission:
 uv run --offline --no-sync --with unicorn==2.1.4 python \
   tools/match/evidence/spawn-grid-dispatch-2026-09-11/verify.py \
   --out /tmp/crimson-spawn-grid-proof
-(cd crimson-zig && zig build -Doptimize=ReleaseFast)
-uv run --no-sync python tools/match/evidence/spawn-grid-dispatch-2026-09-11/verify_ports.py \
-  --native-results /tmp/crimson-spawn-grid-proof/results.json \
-  --zig-binary crimson-zig/zig-out/bin/crimson-zig \
-  --out /tmp/crimson-spawn-grid-ports.json
 ```
 
 For pre-promotion review, the native verifier accepts `--candidate-source` and

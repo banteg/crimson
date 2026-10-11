@@ -1,4 +1,4 @@
-// Watching a replay (docs/rewrite/watch-replays.md, docs/rewrite/replay-viewer.md):
+// Watching a replay (docs/rewrite/replay-viewer.md):
 // the high score screen's Watch starts the run its replay recorded, as its Play
 // a game starts one, and the session feeds each tick the recording's input and
 // commands in place of the player's. Nothing the replay plays reaches the

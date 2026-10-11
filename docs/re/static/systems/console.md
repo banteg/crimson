@@ -19,13 +19,10 @@ back the tilde/backquote console behavior.
   - Writes `console_open_flag` (`0x0047eec8`) via the console state struct.
   - Writes `console_input_enabled` (`0x0047f4d4`).
   - Calls Grim2D vtable `+0x4c` to flush input.
-- Runtime capture shows the tilde hotkey path calls `console_set_open` from
-  `0x0040c39a` (call stack: `0x0040c39a -> console_set_open -> DINPUT8::GetDeviceState -> grim`).
+- The tilde hotkey calls `console_set_open` from `game_frame_update`
+  (`0x0040c1c0`, call site `0x0040c39a`).
 
-- The containing per-frame input/update function starts at `0x0040c1c0`
-  (no EBP frame; begins with `sub esp, 0x28`).
-
-#### Hotkey check (runtime)
+#### Hotkey check
 
 The hotkey check is performed via Grim2D key polling:
 
@@ -136,31 +133,10 @@ The cvar paths emit:
 - `openurl` → `console_cmd_open_url` (`0x0042a890`).
 - `sndfreqadjustment` → `console_cmd_snd_freq_adjustment` (`0x0042a930`).
 
-## Command implementation status (rewrite)
-
-Tracking which console commands are implemented in `src/` vs still partial.
-
-| Command | Origin | Status | Notes |
-| --- | --- | --- | --- |
-| `cmdlist` | core | implemented | Prints registered commands. |
-| `vars` | core | implemented | Prints registered cvars. |
-| `set` | core | implemented | Exactly `set <var> <value>`, like native; `<cvar> <value>` assigns only with one value. |
-| `echo` | core | implemented | `echo off` silences every console line until `echo on`; other args are printed. |
-| `quit` | core | implemented | Sets quit flag. |
-| `clear` | core | implemented | Clears console log. |
-| `extendconsole` | core | implemented | Expands console height to 480. |
-| `minimizeconsole` | core | implemented | Restores console height to 300. |
-| `exec` | core | implemented | Executes scripts; ignores `//` comment lines. |
-| `setGammaRamp` | startup | implemented | Applies gamma gain in draw path via shader and logs updated scalar. |
-| `snd_addGameTune` | startup | implemented | Loads `music/<name>` and queues. |
-| `generateterrain` | startup | implemented | Requests terrain regeneration for menu and active gameplay terrain. |
-| `telltimesurvived` | startup | implemented | Reports active gameplay elapsed time (seconds). |
-| `setresourcepaq` | startup | stub | Mod support; prints that the rewrite does not swap resource paqs. |
-| `loadtexture` | startup | stub | Mod support; prints that the rewrite does not load textures by id. |
-| `openurl` | startup | implemented | Launches browser. |
-| `sndfreqadjustment` | startup | implemented | Toggles runtime flag with native-style enabled/disabled log text. |
-| `rendermode`, `togglertx` | rewrite | implemented | Rewrite-only: switch the RTX render mode. |
-| `gamepads` | rewrite | implemented | Rewrite-only: lists connected pads and each player's bindings. |
+The rewrite implements every core and startup command except `setresourcepaq`
+and `loadtexture`, which print that they are unsupported, and adds the
+rewrite-only `rendermode`, `togglertx`, and `gamepads`
+(`src/crimson/game/runtime.py`).
 
 ## Known console variables (cvars)
 
@@ -192,8 +168,3 @@ These can be used for debugging or tweaking engine behavior:
 
 - Console output can be flushed to `console.log` via `console_flush_log`
   (`0x00402860`), which uses `game_build_path` to resolve the filename.
-
-## Open questions
-
-- None for the console hotkey path right now; the function entry at `0x0040c1c0`
-  is confirmed in WinDbg.

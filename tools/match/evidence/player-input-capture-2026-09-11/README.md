@@ -1,5 +1,9 @@
 # Preserve native query ownership and accepted firing intent
 
+The Frida capture agent this package repaired, its Python finalizer and the
+Zig port have since been removed. The native findings stand; the capture and
+transport sections are a historical record.
+
 The capture agent had three input errors:
 
 - A Grim query filtered out by `onEnter` still popped the thread's context stack
@@ -25,14 +29,14 @@ The G shortcut remains restricted to `preserve_bugs` in both ports.
 
 ## Native and callback evidence
 
-`verify.py` executes 48 original `player_update` cases and the current compiled
-C++ body. All observed state bytes and ordered modeled calls agree; the first
+A native verifier executed 48 original `player_update` cases and the then-current
+compiled C++ body. All observed state bytes and ordered modeled calls agree; the first
 38 native observation hashes also agree with the existing G-shortcut proof.
 The additional cases cover computer fire without G, distant aim, cooldown, and
 Man Bomb / Hot Tempered projectile creation for both player indices.
 
-The runner records each native key query's return address. `harness.js` feeds
-those events through the production Frida callbacks, player-key state updates,
+The runner recorded each native key query's return address. A Node harness fed
+those events through the then-production Frida callbacks, player-key state updates,
 replay-intent builder, and packed input encoder. It models the native keyboard
 method's nested call to `grim_is_key_down` (return address `0x100071a2`).
 
@@ -53,28 +57,28 @@ correctly. The `input_any_key_pressed` boundary model supplies false in AL for
 all 381 queried keys. The console-open primary-helper controls execute without
 external callbacks.
 
-`verify_controls.py` also runs seven callback controls against both bodies.
+A control script also ran seven callback controls against both bodies.
 The old body fails nested primary ownership, tracked/interleaved ownership,
 byte decoding, and both selected auto-fire controls. Both unchanged controls
 pass: full-width integer returns and an unrelated query with projectile counts.
 The current body passes all seven. The larger pytest matrix also checks both
 G values, invalid owners, later false physical queries, and callsite isolation.
 
-`before-input-hooks.js` is the exact input-hook block from commit `744be669f`,
+The old callback block is the exact input-hook block from commit `744be669f`,
 SHA-256 `ba1cf2f034135e8b561dd03fd214d42f679d52439619cae8df9701088271333f`.
 The negative control uses the current surrounding capture helpers with that
 old callback block; the new firing helper is unused by the old block.
 
 ## Replay transport
 
-`verify_ports.py` records eight two-player CRDs from the four auto-fire capture
-witnesses, each using old or current packets. A neutral second lets the normal
+A port-side verifier recorded eight two-player CRDs from the four auto-fire capture
+witnesses, each using old or current packets. A neutral second let the normal
 reset cooldown expire, followed by one captured packet and released input.
-All 640 complete Python/Zig ticks agree on every canonical trace channel.
+All 640 complete Python/Zig ticks agreed on every canonical trace channel.
 
-Old packets produce no shots. Current packets produce one shot from the
-intended player. G grants the timer only to that player; without G the timer
-stays zero. Per-player shot counters are checked separately from replay claimed
+Old packets produced no shots. Current packets produced one shot from the
+intended player. G granted the timer only to that player; without G the timer
+stayed zero. Per-player shot counters are checked separately from replay claimed
 stats, which describe player zero. This tests transport and playback from the
 normal reset state; it is not a native whole-frame simulation comparison.
 
@@ -86,34 +90,28 @@ private directory so this proof does not overwrite canonical match objects.
 
 The shared native runner executes original movement, heading, vector, and CRT
 conversion helpers. Input, RNG, allocation, effects, damage, reload, and sound
-boundaries are explicit models. The Node harness models Frida dispatch, memory
+boundaries are explicit models. The Node harness modeled Frida dispatch, memory
 reads, and event sinks; no live injected-game capture is claimed here.
 
 ## Format and reproduction
 
-Raw capture and producer version advance to 28 so old captures cannot silently
-retain the former input semantics. CRD 19, CDT container 2 / schema 19,
-checkpoint 5, and evidence sidecar 3 retain their layouts. Agent, Python
-finalizer, Zig verifier, and format documentation agree on the current tuple.
+Raw capture and producer version advanced to 28 so old captures could not
+silently retain the former input semantics. CRD 19, CDT container 2 / schema 19,
+checkpoint 5, and evidence sidecar 3 retained their layouts. Agent, Python
+finalizer, Zig verifier, and format documentation agreed on the then-current
+tuple.
 
-```sh
-uv run --with unicorn==2.1.4 python tools/match/evidence/player-input-capture-2026-09-11/verify.py --out /tmp/player-input-capture
-uv run python tools/match/evidence/player-input-capture-2026-09-11/verify_controls.py --out /tmp/player-input-controls
-cd crimson-zig
-zig build -Doptimize=ReleaseFast
-cd ..
-uv run python tools/match/evidence/player-input-capture-2026-09-11/verify_ports.py --native /tmp/player-input-capture/results.json --out /tmp/player-input-ports
-uv run pytest --no-cov tests/debug/test_frida_input_hooks.py tests/debug/test_fire_bullets_shortcut_capture.py tests/debug/test_dbg_frida_finalize.py tests/debug/test_format_contract.py
-```
-
-Native execution requires Unicorn executable-memory access and the local VC6 /
-Wibo toolchain. The callback and transport checks require Node. This slice
-changes capture tooling and its version agreement; it retains the existing
-C++ body and makes no new exact-match claim.
+The verifiers, callback controls and Node harness read the removed
+`scripts/frida/gameplay_diff_capture.js`, and the port check also needed the
+removed Zig binary, so they were removed with that tooling; the receipts are
+the record. The
+G-key policy remains covered by `tests/gameplay/test_fire_bullets_shortcut.py`.
+This slice changed capture tooling and its version agreement; it retains the
+existing C++ body and makes no new exact-match claim.
 
 Validation also passed 293 related Python tests (one imported-capture fixture
 skip), all 732 Zig tests, the native ReleaseFast build, and the existing
 256-tick G-policy replay matrix. Ruff, type checks, import contracts, docs,
 structural rules/tests, current format checks, native closure, strict experiment
-validation, and matching regressions pass. The report's function evidence is
+validation, and matching regressions passed. The report's function evidence is
 unchanged; its repository-input hashes are refreshed.

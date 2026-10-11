@@ -2,23 +2,26 @@
 
 The recovered C/C++ gameplay from [`decomp/`](../decomp) built into one
 deterministic simulation, as a native executable and an import-free WASM
-module: the replay verifier. The native and web clients run the whole recovered
+module: the replay verifier, which the leaderboard runs on every upload
+([`service/src/verify.ts`](../service/src/verify.ts)). The native and web clients run the whole recovered
 game around the same gameplay sources and are held to this verifier on every
 gate stream ([PORT.md](PORT.md)). Python stays the reference port for fast
 iteration.
 
 `decomp/` stays the matching source of truth. The core compiles generated
-copies of 168 recovered translation units; everything it adds lives here.
+copies of the recovered translation units in [`sources.json`](sources.json);
+everything it adds lives here.
 
 ## Status
 
 - Whole runs agree with Python under both bug policies: the **original rules**
   (`preserve_bugs=True`) and the **ranked rules** (`preserve_bugs=False`, the
-  documented fixes). The [gate](#whole-run-gate) checks all 110 streams in CI,
-  including the nine supported recordings, whose claimed results the core
-  reproduces.
-- Native and WASM snapshots are bit-exact on 101 bot runs, including resets.
-  Quest builders and gameplay math match the original executable.
+  documented fixes). The [gate](#whole-run-gate) checks every bot stream and
+  supported recording in CI, and the core reproduces the recordings' claimed
+  results.
+- Native and WASM snapshots are bit-exact on every bot run, including resets
+  ([matrix](#nativewasm-matrix)). Quest builders and gameplay math match the
+  original executable.
 
 ## Scope
 
@@ -63,7 +66,6 @@ a stable bot observation format or a language-specific SDK.
 | [`abi/`](abi), [`seams/`](seams), [`optimizations/`](optimizations), [`patches/`](patches) | Diffs against `decomp/`: compiler repairs, the recording in place of live reads, behavior-preserving optimizations, and the ranked rules, one patch per fixed original bug. |
 | [`checks/`](checks) | Native/WASM matrix, Python whole-run gate, original-executable oracles, Wasmtime probe. |
 | [`results/`](results) | Checked-in results of those checks. |
-| [`worker/`](worker) | Diagnostic Cloudflare Worker that runs the WASM module. |
 | [`game.py`](game.py), [`game/`](game), [`client/`](client) | The game module (the whole recovered game over a platform layer) and its native and web clients; see [PORT.md](PORT.md). |
 
 ## Build
@@ -94,25 +96,25 @@ node crimson-core/checks/matrix.mjs
 ```
 
 An ordinary bot reads state, chooses inputs and perks, and never edits
-simulation state. Each of its 67 scenarios runs under the original rules,
+simulation state. Each of its scenarios runs under the original rules,
 alternating mouse and pad aim, with one scenario per other movement and aim
 scheme, and continuing through the run-down after the end. The matrix then
 replays that input under the ranked rules: where every tick reaches the same
 state (apart from the Shock Chain slot the host sets per policy), the ranked
 run would be the same run and is not kept; elsewhere the bot plays it again as
-a `-ranked` stream. That gives 101 input-only `.rsi` streams in
-`build/fixtures`, 34 of them ranked. Two hunter scenarios prefer the perks ranked fixes
+a `-ranked` stream. The input-only `.rsi` streams land in `build/fixtures`.
+Two hunter scenarios prefer the perks ranked fixes
 touch (Jinxed, Pyrokinetic, Highlander, Death Clock, Bandage, the
 Regenerations) and hold G at times; the Highlander hunter's run reaches no
-fix, so it runs once. The matrix compares 36,343 named fields at
-initialization and **every tick** between native and WASM, then checks A/B/A
+fix, so it runs once. The matrix compares every named field of
+[`schema.json`](schema.json) at initialization and **every tick** between native and WASM, then checks A/B/A
 reuse in both. It also probes rejection of bad input, commands, entitlement and
 picks and menu requests the perk rules do not allow, each for the reason both
 builds give (`portable_refusal`), and that a large movement vector does not
 move faster than a unit one.
 
-The [results](results/matrix.json) cover 298,341 ticks. All 50 quests run to an
-outcome; the bot completes 1.1, 1.3 and 1.5. Coverage includes game over in
+The [results](results/matrix.json) list each stream with its ticks, coverage
+and hashes. All 50 quests run to an outcome; the bot completes 1.1, 1.3 and 1.5. Coverage includes game over in
 every mode, quest completion and failure, spawn stalls, reloads, perk menus, a
 pick followed by reopening the menu, several weapons, freeze, Reflex Boost and
 weapon power-ups, and a settings case varying hardcore, retry scaling, detail,
@@ -142,20 +144,19 @@ to run on a partial bot corpus or unknown `--only` names.
 
 Python steps each stream through its verification `PlaybackDriver`, so a
 recorded fixture is also checked against its claimed result and every `.chk`
-checkpoint in the same pass. The [baseline](results/gate.json) agrees on **all 110** streams, including the
-nine supported recorded fixtures (Quests 1.1, 2.3, 2.5, 2.10 and 4.10, two Survival
-runs and a Rush run, with pad, keyboard-and-mouse and tank controls, and one of
-those Survival runs without a perk pick, so its dead player gets back up from a
-MediKit);
-the Typ-o fixture is not supported yet. CI fails on any
-disagreement. A new divergence is reduced to its first differing state and
+checkpoint in the same pass. The [baseline](results/gate.json) records each
+stream's agreement, including the supported recorded fixtures (quests, Survival
+and Rush, with pad, keyboard-and-mouse and tank controls, one of them a
+Survival run whose dead player gets back up from a MediKit), and lists the
+unsupported Typ-o fixture. CI fails on any disagreement. A new divergence is reduced to its first differing state and
 decided against the original through Unicorn or its disassembly.
 
 ### Original executable
 
 The oracles call the original code through Unicorn, using the ignored game
-binary. Unicorn's JIT must run outside the command sandbox, as documented in
-`tests/native_oracle/conftest.py`.
+binary; CI downloads it and runs both oracles and the [Wasmtime
+probe](#same-wasm-from-python). Unicorn's JIT must run outside the command
+sandbox, as documented in `tests/native_oracle/conftest.py`.
 
 ```sh
 uv run python crimson-core/checks/builder_oracle.py \
@@ -167,15 +168,16 @@ uv run python crimson-core/checks/math_oracle.py \
 ```
 
 - [Quest builders](results/builder-oracle.json): all spawn-table fields, entry
-  counts and final RNG states for 50 builders × 32 seeds × normal/hardcore
-  agree, 3,200 cases, native and WASM alike. Later quest-start difficulty
-  adjustments are not covered.
-- [Gameplay math](results/math-oracle.json): 7,877 cases against original x87
+  counts and final RNG states for every builder over fixed seeds (`SEEDS` in
+  [`builder_oracle.py`](checks/builder_oracle.py)), normal and hardcore, agree,
+  native and WASM alike. Later quest-start difficulty adjustments are not
+  covered.
+- [Gameplay math](results/math-oracle.json): cases checked against original x87
   instructions, covering Normalize (near-unit, `FLT_MIN` and every finite F32
   exponent range, separate and in-place destinations), CRT power and level
-  thresholds, and movement trig products. The core has no mismatches. Python
-  has three extreme vector discrepancies (six with alias modes) from rounding
-  a subnormal result straight to F32 instead of to PC24 first.
+  thresholds, and movement trig products. The core has no mismatches. Python's
+  few extreme vector discrepancies (`python_original_mismatches`) come from
+  rounding a subnormal result straight to F32 instead of to PC24 first.
 These are bounded checks of selected seams, not whole-run equivalence. An
 earlier one-off check stepped a sampled movement state through the original
 code and established that the movement trig result is not spilled before its
@@ -189,30 +191,11 @@ uv run --with wasmtime==49.0.0 python crimson-core/checks/wasmtime_check.py \
 ```
 
 The [probe](results/wasmtime.json) loads the exact `core.wasm` used by Node and
-the Worker in [wasmtime-py](https://bytecodealliance.github.io/wasmtime-py/),
-compares the hash of every snapshot of a smoke set (one run per mode, bug
+the [service](../service/src/verify.ts) in
+[wasmtime-py](https://bytecodealliance.github.io/wasmtime-py/), compares the hash of every snapshot of a smoke set (one run per mode, bug
 policy and control family) and checks A/B/A resets in one instance, without
 adding a project dependency; the matrix already compares every run between
-native and Node. Linear memory stays at **2.5 MiB** and the stripped module is
-about **357 KiB**.
-
-### Worker
-
-```sh
-cd crimson-core/worker
-WRANGLER_SEND_METRICS=false wrangler dev --local --ip 127.0.0.1 --port 8799
-```
-
-Then, from the repository root, `node crimson-core/worker/worker_check.mjs`
-compares every stream's final-state hash with native and WASM, including reuse
-of one instance across requests. Nothing is deployed. The endpoint takes the
-private transport, capped at 4 MiB, 60,000 ticks and 16 commands per tick, and
-always reinitializes before the next request. Initialization through copying
-the final snapshot is synchronous, so requests cannot interleave simulation
-state. There is no leaderboard, challenge, server-owned configuration or public
-replay admission. Workers limits are documented by
-[Cloudflare](https://developers.cloudflare.com/workers/platform/limits/); local
-workerd does not prove them.
+native and Node. The results record the module's hash and its linear memory.
 
 ## Rules
 
@@ -261,7 +244,9 @@ core's scope (co-op, Typ-o, menus) or are documentation only.
 ## Transport and input seam
 
 [`checks/replay.py`](checks/replay.py) converts a `.crd` replay into `.rsi`, the
-core's private test transport. It carries no claimed score:
+core's input stream as a test file; the service builds the same stream in
+memory ([`service/src/transport.ts`](../service/src/transport.ts)). It carries
+no claimed score:
 
 - 260-byte config: 65 little-endian uint32 values (12 settings ending with
   `preserve_bugs`, then 53 weapon usage counts), laid out in

@@ -50,7 +50,7 @@ compiler observations; no observer or intervention is used for acceptance.
 
 ## Rebuilt source controls
 
-[verify.py](verify.py) independently rebuilds the previous canonical source,
+Its `verify.py` (removed once the scratch source moved into `decomp/`) independently rebuilt the previous canonical source,
 the final source, and seven controls with the normal compiler profile.
 [results.json](results.json) retains identities, reference audits and frames.
 
@@ -91,8 +91,6 @@ From the repository root, choose fresh output directories:
 
 ```sh
 uv run crimson match scratch tools/match/scratches/projectile_render
-uv run python tools/match/evidence/projectile-vector-api-2026-09-28/verify.py \
-  --out /tmp/projectile-vector-controls
 uv run python scripts/c2/id_delta_profile.py tools/match/scratches/projectile_render \
   --out /tmp/projectile-vector-ids
 ```
@@ -102,7 +100,7 @@ For `historic`, `positions` and `ion`, repeat with the corresponding suite:
 ```sh
 uv run --with unicorn==2.1.4 python \
   tools/match/evidence/remaining-storage-controls-2026-09-26/verify_execution.py \
-  --source tools/match/scratches/projectile_render/scratch.cpp \
+  --source decomp/1.9/crimsonland/crimsonland/projectile_render.cpp \
   --suite historic --out /tmp/projectile-vector-historic
 ```
 

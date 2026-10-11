@@ -91,27 +91,22 @@ and input preferences can still apply live.
 
 ## Current replay contract
 
-Only the current [replay/trace formats](cdt-trace-format.md#versioning) are supported;
-the replay layout itself is specified in [Replays](../formats/replay.md). A
-replay's `RunSpec` holds the run seed, mode, player count, the run-relevant
+The replay layout, and which older formats readers still accept, is specified
+in [Replays](../formats/replay.md); traces support only their
+[current formats](cdt-trace-format.md#versioning). A replay's `RunSpec` holds the run seed, mode, player count, the run-relevant
 status fields, quest and presentation settings, and the Typ-o state a run
 inherits from earlier runs of the process (`typo_carry`); port runs always start from
-a fresh creature pool. Replay envelopes are capped at 65 MiB compressed and
-64 MiB decoded. Checkpoint sidecars use the same single-frame zstd rule with
-checkpoint format 7, capped at 257 MiB compressed and 256 MiB decoded. Each
-checkpoint pins the tick's RNG state and `rng_callers_crc32`, a CRC32 of the
-tick's RNG call-site tags in draw order, which catches draws reordered within the
-tick.
+a fresh creature pool. Checkpoint sidecars (`<replay>.crd.chk`, written with
+`--replay-checkpoints`) use the replay's single-frame zstd envelope with their
+own format version and size caps (`src/crimson/replay/checkpoints.py`). Each
+checkpoint pins the RNG state after its tick, which a reorder of draws within the
+tick leaves unchanged, so it also carries `rng_callers_crc32`: a CRC32 of the
+tick's RNG call-site tags in draw order. A reorder fails at its tick.
 
 Every tick runs at the fixed float32 1/60 s delta and carries one f32-quantized
-packed input row per player plus an ordered command list. Perk picks apply
-before frame timing is derived, so a Reflex Boosted pick affects the same tick
-in live play and playback, and each pick's immediate effects see the timing
-established by earlier picks. A perk menu request opens where native opens it:
-after the level-up check and before `bonus_update`, so the choices draw from the
-RNG between the tick's render-time pickups and its bonus timers. Typ-o commands
-apply inside the tick, at the start of `typo_gameplay_update`, as native reads
-the typed text first. Live play and playback share one command handler.
+packed input row per player plus an ordered command list; where in the tick
+each command applies is in [the replay format](../formats/replay.md#tick). Live
+play and playback share one command handler.
 
 There is no independent replay-input stream or inferred movement input.
 `replay_step` is the single authority for what drove the tick.
@@ -145,7 +140,8 @@ recoverable session snapshot.
 
 ## Latest-only policy
 
-- Readers require the current [version matrix](cdt-trace-format.md#versioning).
+- Trace readers require the current [version matrix](cdt-trace-format.md#versioning);
+  replay readers accept only the formats [the replay format](../formats/replay.md#payload) lists.
 - Unknown fields and incomplete lifecycle rows are rejected.
 - Older throwaway artifacts are regenerated, not migrated.
 

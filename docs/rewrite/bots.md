@@ -48,45 +48,31 @@ score screen shows the human board.
 
 ## The pilot
 
-A replay may carry `pilot`, the program that played it ([replay format](../formats/replay.md)):
-
-| Field | Meaning |
-| --- | --- |
-| `name` | the bot's name, e.g. `Astra` |
-| `model` | optional: the model or tool behind it, e.g. `gpt-5` or `TAS` |
-| `url` | optional: an `https://` page about it, such as the harness's repository |
-
-Verification ignores the pilot, the same as the recorder. The upload signs the whole payload, so only the key's
-owner can add or change it. The Python port writes it when `CRIMSON_PILOT_NAME` is set, with
-`CRIMSON_PILOT_MODEL` and `CRIMSON_PILOT_URL` as the optional fields. A harness that builds its own replays sets
-the field itself. The bot board and the run page show the pilot next to the operator's account.
+A replay may carry `pilot`, the program that played it: the bot's name, and optionally the model or tool behind it
+and a page about it ([replay format](../formats/replay.md)). Verification ignores it, the same as the recorder. The
+upload signs the whole payload, so only the key's owner can add or change it. The bot board and the run page show
+the pilot next to the operator's account.
 
 ## The perk menu
 
 The perk screen pauses the game, so a stock client can't play on while the menu is open or pick a perk without
-opening it. The verifiers enforce this for every category:
-
-- `perk_menu_open` is legal while a perk is pending and a player is alive (unchanged). The menu opens at the
-  native mid-tick point, when it may open there.
-- `perk_pick` is legal only as the first perk command of the tick right after the menu opened. One pick spends
-  the open menu.
-- A tick without a pick after the menu opened is the player pressing Cancel: the menu closes, and the next pick
-  needs a new `perk_menu_open`.
-
-Commands apply in order, so a `perk_menu_open` after a pick in the same tick requires another pending perk and a
-living player; a refused command refuses the whole run.
+opening it. The verifiers hold every category to this ([perk commands](../formats/replay.md#tick)); a refused
+command refuses the whole run.
 
 ## Signals
 
 The verifier measures each run's inputs while it replays them, over the ticks where player one is alive:
 
-| Signal | What it measures | Flag above | Astra (3 runs) | Humans (4 runs) |
-| --- | --- | --- | --- | --- |
-| `aim_on_creature` | share of ticks whose aim point is within 0.5 units of a living creature's centre | 0.02 | 0.15–0.20 | ≤0.0015 |
-| `exact_moves` | share of dual-action-pad move ticks off the eight key directions whose stick is exactly unit length | 0.5 | 1.0 | 0 |
-| `reversals_per_min` | move direction turns of more than 90° from one tick to the next, per minute | 30 | 257–337 | ≤1.7 |
-| `aim_jump_p99` | the 99th percentile of the aim point's movement per tick, in units | 120 | 213–247 | ≤35 |
-| `one_tick_fire` | fire presses held for exactly one tick | 50 | 327–915 | 0 |
+| Signal | What it measures |
+| --- | --- |
+| `aim_on_creature` | share of ticks whose aim point is within 0.5 units of a living creature's centre |
+| `exact_moves` | share of dual-action-pad move ticks off the eight key directions whose stick is exactly unit length |
+| `reversals_per_min` | move direction turns of more than 90° from one tick to the next, per minute |
+| `aim_jump_p99` | the 99th percentile of the aim point's movement per tick, in units |
+| `one_tick_fire` | fire presses held for exactly one tick |
+
+A signal above its threshold flags the run. The thresholds, and what Astra's and human runs measured against them,
+are in `service/src/signals.ts` (`SIGNAL_FLAGS`).
 
 The aim point is the world point the aim scheme reaches. That is the mouse point, the player's position plus
 the pad's reach, or the cursor through the camera under relative mouse aim. Keyboard and joystick aim have none.

@@ -131,7 +131,7 @@ not a mapped in-binary runtime draw/use path.
   are flagged. This resolves the gating question: the code path to the button is physically unreachable
   until the puzzle is solved.
 
-- **Runtime capture (2026-01-19)**: when the last required line is flagged, the unlock flag
+- **Unlock** (`decomp/1.9/crimsonland/credits/credits_screen_update.cpp`): when the last required line is flagged, the unlock flag
   `credits_secret_unlock_flag` is set and the secret lines are injected into the credits line table at base index
   `credits_secret_line_base_index = 0x54`. The injected lines (all flags `0x4`) are:
 
@@ -219,8 +219,7 @@ Final decoded message:
   only writes the board, selection, score, timer (adds 2000 ms on a match), and
   animation state, plus `game_state_pending` when leaving to the statistics menu.
   It never touches `weapon_table`, quest unlock indices, `credits_secret_unlock_flag`,
-  or the save file. A runtime check on 2026-02-09 (fully cleared board, score `12`)
-  likewise showed no external side effects.
+  or the save file.
 
 - **Color mapping (render tint)**: Confirmed via `credits_secret_alien_zookeeper_update` draw calls:
   - `0 = (1.0, 0.5, 0.5)` Red
@@ -242,12 +241,7 @@ Final decoded message:
 
 ## Open questions
 
-- **Partially resolved (inference)**: the decoded line strongly matches the
-  Blade Gun Survival handout gate (centroid of first 3 death points + low HP).
-  See [Survival weapon handouts](survival-weapon-handouts.md#decoded-blade-hint-mapping-inference).
-  - Remaining ambiguity: no direct static xref ties the string block to
-    `survival_update`.
-  - "First Blood" is still interpretive wording; runtime logic is
-    `survival_first_kill_count == 3` using the first three stored positions.
+- Does the decoded line describe the Blade Gun handout? See
+  [Survival weapon handouts](survival-weapon-handouts.md#decoded-blade-hint-mapping-inference).
 - Are there any **out-of-main-exe** consumers (e.g., other modules/builds) for the startup `balloon.tga` preload gate?
 - Are any of these flags version-specific (v1.9.93 vs earlier)?

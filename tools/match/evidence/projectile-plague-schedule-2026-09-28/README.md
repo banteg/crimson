@@ -15,7 +15,7 @@ instead of `[esp+0x18]` because those arguments are already on the stack.
 
 ## Verification
 
-[verify.py](verify.py) freshly compiles the source at `39f6d6465` and the retained
+Its `verify.py` (removed once the scratch source moved into `decomp/`) compiled the source at `39f6d6465` and the retained
 source, using the unmodified MSVC 6.5 profile. [results.json](results.json) records:
 
 - Only the 24-byte candidate interval `+0x2510..+0x2528` changes. Every byte and
@@ -39,12 +39,6 @@ to all angle definitions gives 97.680583%. Coordinates plus stored trig values
 give the retained result; including all angle parentheses as well emits the
 same retained body. This supports the window-boundary explanation rather than
 a change to the arithmetic itself.
-
-```sh
-uv run --no-sync --with unicorn==2.1.4 python \
-  tools/match/evidence/projectile-plague-schedule-2026-09-28/verify.py \
-  --out /tmp/projectile-plague-proof
-```
 
 K6/K7's ion operand ordering and K8's resulting scheduling difference remain.
 `quest_spawn_timeline_update` and `player_update` are unchanged.

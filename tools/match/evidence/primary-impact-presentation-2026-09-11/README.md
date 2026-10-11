@@ -9,7 +9,7 @@ and add at PC24 precision.
 The correction carries the projectile angle into presentation and recovers
 those arithmetic boundaries. Python's optional `ProjectileHit.angle` preserves
 decoding of older events and the fallback for callers that supply only points.
-Zig passes the existing angle to its private presentation functions.
+Zig passed the existing angle to its private presentation functions.
 
 Executing the real native blood-splatter helper also exposed different float
 constants and intermediate rounding in Python, an unsigned rotation subtraction
@@ -61,18 +61,18 @@ already agreed and remain equal. The 458 additional cases counted by the
 first row have gore disabled, so their differing decal inputs do not produce
 visible decals.
 
-Both Zig Debug and ReleaseFast pass the full 1,000-case matrix, including every
+Both Zig Debug and ReleaseFast passed the full 1,000-case matrix, including every
 spawned-effect and final-decal field, represented projectile/creature state,
-shots-hit count, and RNG value/caller/state. The committed Zig baseline fails
+shots-hit count, and RNG value/caller/state. The committed Zig baseline failed
 the same regression at witness zero. At this audit's original revision, Zig
 did not expose native hit-flash or state-flag fields. The subsequent
-[hit-flash correction](../creature-hit-flash-2026-09-11/README.md) adds the timer
-and checks it against these shared impact fixtures. State flags and private
-presentation/damage-call arguments remain outside this Zig equality claim.
+[hit-flash correction](../creature-hit-flash-2026-09-11/README.md) added the timer
+and checked it against these shared impact fixtures. State flags and private
+presentation/damage-call arguments remained outside this Zig equality claim.
 
 The shared fixture file contains 120 cases: ten complete cycles of all twelve
-combinations. All 3,610 Python tests pass, with 13 skips and 135 snapshots;
-all 683 Zig tests pass. ReleaseFast executable and WASM builds pass.
+combinations. All 3,610 Python tests passed, with 13 skips and 135 snapshots;
+all 683 Zig tests passed. ReleaseFast executable and WASM builds passed.
 
 This package does not establish PC64 port equivalence, effect-pool allocation
 identity, audio-call argument equality, freeze/large-streak behavior, lethal
@@ -87,7 +87,7 @@ From the repository root:
 uv run --with unicorn==2.1.4 --with capstone python tools/match/evidence/primary-impact-presentation-2026-09-11/verify.py --out /tmp/crimson-primary-presentation-full
 uv run python tools/match/evidence/primary-impact-presentation-2026-09-11/verify_ports.py --witnesses /tmp/crimson-primary-presentation-full/witnesses.json --out /tmp/crimson-primary-presentation-full/python.json
 uv run python tools/match/evidence/primary-impact-presentation-2026-09-11/export_regressions.py --witnesses /tmp/crimson-primary-presentation-full/witnesses.json --out /tmp/crimson-primary-presentation-shared.json
-cmp /tmp/crimson-primary-presentation-shared.json crimson-zig/src/runtime/testdata/primary-impact-presentation.json
+cmp /tmp/crimson-primary-presentation-shared.json tests/fixtures/native/primary-impact-presentation.json
 uv run pytest tests/gameplay/test_primary_impact_native.py
 ```
 
@@ -99,10 +99,3 @@ mkdir -p /tmp/crimson-primary-presentation-before
 git archive f245c98dcdfdd8511c5e62ead534d74cffb8cc51 src | tar -x -C /tmp/crimson-primary-presentation-before
 PYTHONPATH=/tmp/crimson-primary-presentation-before/src uv run python tools/match/evidence/primary-impact-presentation-2026-09-11/verify_ports.py --witnesses /tmp/crimson-primary-presentation-full/witnesses.json --out /tmp/crimson-primary-presentation-full/python-before.json --allow-differences
 ```
-
-The Zig test accepts the complete generated witness file in place of the
-120-case selection. Copy it to
-`crimson-zig/src/runtime/testdata/primary-impact-presentation.json`, run
-`zig build test --summary all` and
-`zig build test -Doptimize=ReleaseFast --summary all` from `crimson-zig`, then
-restore the deterministic selection with `export_regressions.py`.

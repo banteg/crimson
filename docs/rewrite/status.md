@@ -22,7 +22,7 @@ supported scope, not a claim that every native branch has been verified.
 | `tests/replay/test_live_run_start.py` | Live mode startup and recorder/playback agree on complete session state, including non-default settings. |
 | `tests/sim/test_step_pipeline_parity.py` | Live tick batching and replay/headless paths preserve tested timing, input and state behavior. |
 | `tests/render/test_ground_dump_fixtures.py` | Captured terrain images agree within the test's documented tolerances; requires assets and a display. |
-| `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies, for one player in Rush, Survival and Quests with every control scheme. Typ-o, Tutorial and co-op are outside the core's scope. |
+| `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies, for one player in Rush, Survival and Quests with every control scheme. Typ-o, Tutorial and co-op are outside the verifier's scope. |
 | `tests/native_oracle/` | Ported functions agree bit for bit with the original code run under the [native execution oracle](../verification/differential-testing/native-oracle.md) on the tested cases. |
 
 `just check` runs the repository gates. Skipped display-dependent tests do not
@@ -40,7 +40,10 @@ address-keyed source evidence, a native-oracle test, or the core gate. See [evid
   and [beam rendering](beam-rendering.md).
 - Mods are out of scope in every version: the original's mods are DLL plugins, so the port and the web and
   native clients offer no Mods entry.
-- Other Games advertisement/runtime flows and native online-score submission are out of scope.
+- The original's Other Games advertisement flows and its
+  [online scores](../crimsonland-exe/online-scores.md) client for
+  `scores.crimsonland.com` are out of scope. Ranked runs go to the crimson.land
+  leaderboard under the [ranked rules](ranked-rules.md).
 - Custom network play (LAN, lockstep, rollback, relay) was removed on 2026-09-05 because it never
   restored full state. A future design must start from the deterministic session and prove full state
   restore and corrected-input resimulation before adding transport or lobby UI.

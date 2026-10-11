@@ -124,7 +124,7 @@ alpha inputs and both control words. Its MSVCRT `_ftol` import is explicitly
 modeled with the game's native converter, as in the earlier creature-color
 proofs. Stack guards, callee-saved registers, and x87 state are checked.
 
-[`verify_ports.py`](verify_ports.py) records the actual Python draw function
+A port-side verifier recorded the actual Python draw function
 for **2,376 native fixtures**, **four viewport scales**, and **both
 `preserve_bugs` modes**: **19,008 cases** agree on submitted vertex words and
 packed vertex colors. Per-player ownership mode selects that player's
@@ -132,7 +132,9 @@ independently recorded native corner words. The historical Python function
 from `07d412c426b343ee0328b543b63d73ce376509a0` fails geometry and color checks
 for every case that submits a quad: 2,168 per scale with bug preservation,
 2,176 per scale with per-player ownership. Texture, UV, blend, and draw counts
-remain unchanged. See [`port-results.json`](port-results.json).
+remain unchanged. See [`port-results.json`](port-results.json). That verifier
+read the per-function `scratch.cpp` that has since moved into `decomp/`, so it
+no longer ran and was removed.
 
 The CI test captures actual raylib submissions for **38 native fixtures at
 four scales**, including every PC24 witness that rejected the old C++ trig
@@ -143,5 +145,4 @@ compiled source remain unchanged by the Python follow-up.
 
 ```sh
 uv run --with unicorn==2.1.4 python tools/match/evidence/laser-trig-rounding-2026-09-11/verify_colors.py --out /tmp/laser-colors
-uv run python tools/match/evidence/laser-trig-rounding-2026-09-11/verify_ports.py --out /tmp/laser-python
 ```

@@ -6,14 +6,7 @@ tags:
 
 # Contributor
 
-Contributor-facing docs for setup, workflows, and project tracking.
-
-## Subsections
-
-- [Setup](setup.md)
-- [Workflows](workflows/index.md)
-- [Project tracking](project-tracking/index.md)
-
-## Related
-
-- [Build provenance and hashes](project-tracking/provenance.md)
+Start with [setup](setup.md). [Workflows](workflows/index.md) holds the release,
+deploy and documentation runbooks; [build provenance](project-tracking/provenance.md)
+and [third-party libraries](project-tracking/third-party-libs.md) pin the original
+binaries and the libraries linked into them.

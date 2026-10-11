@@ -9,9 +9,9 @@ Survival's wave loop. Only this batch has the guarantee that no occupied slot
 becomes free. The cursor is local to `survival_update`; other allocator callers
 search from zero. Full-pool attempts retain logging and overflow-slot writes.
 See [original bug 37](../../docs/rewrite/original-bugs.md#37-survival-spawning-grows-without-bound-after-fifteen-minutes)
-and the [profile](../../docs/verification/survival-spawn-profile.md).
+and the [2026-10-10 profile](../../analysis/profiles/2026-10-10-survival-spawn-profile.md).
 
-Run `uv run python crimson-core/checks/spawn_batch.py` to compare 640 batches
+Run `uv run python crimson-core/checks/spawn_batch.py` to compare spawn batches
 against the same recovered bodies without optimization. To also confirm the
 original game's late-time spawn counts through Unicorn:
 
@@ -63,9 +63,8 @@ they run everywhere.
 
 ## Existing Python optimizations and core transfers
 
-The [survey](../../docs/verification/optimization-survey.md) inventories the
-previous Python performance changes, their invariants, and measured transfer
-results. Keep Python implementations in their domain modules; this directory
+The [2026-10-10 survey](../../analysis/profiles/2026-10-10-optimization-survey.md)
+measured the transfers below. Keep Python implementations in their domain modules; this directory
 holds only diffs to generated recovered C/C++. Compiler/ABI repairs stay in
 `abi/`, runtime seams in `seams/`, and original gameplay bug fixes in `patches/`.
 
@@ -101,3 +100,21 @@ Run `uv run python crimson-core/checks/creature_optimizations.py` to compare
 Plaguebearer pool bytes and return values, strict-radius edges, strong-origin
 skipping, all 384 orbit seeds, wide trig products and repeated cache reuse.
 CI also runs the whole Python/native/WASM and game/verifier agreement gates.
+
+## Measuring
+
+Build the baseline and candidate WASM cores in separate checkouts, convert a
+recording with `checks/replay.py`, then check every field at every tick before
+timing:
+
+```sh
+uv run python crimson-core/checks/replay.py run.crd --out run.rsi
+node crimson-core/checks/profile_replay.mjs run.rsi before.wasm after.wasm comparison.json --compare
+node crimson-core/checks/profile_replay.mjs run.rsi before.wasm after.wasm timing.json
+```
+
+The timing pass runs three repetitions per build, reversing the order on the
+middle one, and requires matching terminal snapshots. For Python's Survival
+wave, run `PYTHONPATH=.:src uv run python crimson-core/checks/profile_python_wave.py --out python-wave.json`
+in each checkout and compare its snapshot hashes as well as its times. Record
+results with their host, commit and replay hash under `analysis/profiles/`.

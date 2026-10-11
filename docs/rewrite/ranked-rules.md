@@ -44,10 +44,6 @@ the reason (`runs.retired`, set by a migration): it leaves the boards and the
 game's scores, keeps its page, which says why, and its replay stays
 downloadable.
 
-0.14 retired nine bot runs and no human one: six picked a perk from a menu left
-open, while a pick now comes with the tick right after the menu opened, and
-three passed 16,777,216 experience, which now counts exactly as in the original.
-
 ## The ranked profile
 
 A ranked run starts from the same profile whatever the player's save holds, so
@@ -72,12 +68,8 @@ is pinned:
 
 The run itself keeps the replay contract: a fixed float32 1/60 s step, float32
 inputs that must be finite, commands at the tick boundary, and no draws for
-paused or menu frames ([replay run start](replay-run-start.md)).
-
-The perk screen pauses the game, so the perk commands follow it: a pick comes
-only as the first perk command of the tick right after the menu opened, and a
-tick without one closes the menu, as Cancel does. A pick may reopen the menu
-in the same tick for the next pending perk.
+paused or menu frames ([replay run start](replay-run-start.md)). Perk commands
+follow the paused perk screen ([commands](../formats/replay.md#tick)).
 
 ## Controls and aim
 

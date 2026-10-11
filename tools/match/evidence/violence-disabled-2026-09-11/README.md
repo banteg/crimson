@@ -2,9 +2,9 @@
 
 The missing Python low-health argument caused the blood helper to receive
 `violence_disabled=0` in every run. `WorldState.step` now passes the run setting
-through `player_update`. Zig already passed that setting to low-health blood;
-its perk menu and quest-unlock text now also use the active session setting,
-including command-line overrides.
+through `player_update`. The since-removed Zig port already passed that setting
+to low-health blood; this change also made its perk menu and quest-unlock text
+use the active session setting, including command-line overrides.
 
 Low health still resets its timer and plays the warning sound with gore
 disabled. It suppresses the six blood particles and their thirty RNG draws.
@@ -16,22 +16,22 @@ native behavior, independent of the ports' preserve-bugs setting.
 [verify.py](verify.py) scans the complete native function manifest for accesses
 to `config_violence_disabled` at `0x004807b4` (`config_blob + 0x46c`). The scan
 finds **eight reads in seven functions**, plus three direct writes. All seven
-readers have corresponding port behavior:
+readers have corresponding Python behavior:
 
 | Native reader | Behavior when the flag is nonzero | Port implementation |
 | --- | --- | --- |
-| `creature_render_type` | Draw doubled additive white hit flashes after each species' body batch. | [Hit-flash proof](../creature-hit-flash-2026-09-11/README.md); Python and Zig renderers. |
-| `projectile_update` | Suppress blood production, retaining RNG outside the guarded block. | Python `presentation_step.py`; Zig `projectiles.zig`; [impact proof](../primary-impact-presentation-2026-09-11/README.md). |
-| `creature_update_all` (two reads) | Suppress corpse decals and the ping-pong corpse's blood burst. | Python `CreaturePool._tick_dead`; Zig `tickDead`. |
-| `fx_queue_add_random` | Return before choosing a random blood decal. | Python `FxQueue.add_random`; Zig `FxQueue.addRandom`. |
-| `effect_spawn_blood_splatter` | Return before touching the effect template or RNG. | Python and Zig blood-splatter helpers, including the corrected low-health caller. |
-| `perks_init_database` | Give perk 1 its Quick Learner name and description. | Python and Zig perk display functions. |
-| `options_menu_update` | Refresh the same perk text after configuration changes. | Port display functions resolve the current setting when rendering text. |
+| `creature_render_type` | Draw doubled additive white hit flashes after each species' body batch. | [Hit-flash proof](../creature-hit-flash-2026-09-11/README.md); Python renderer. |
+| `projectile_update` | Suppress blood production, retaining RNG outside the guarded block. | Python `presentation_step.py`; [impact proof](../primary-impact-presentation-2026-09-11/README.md). |
+| `creature_update_all` (two reads) | Suppress corpse decals and the ping-pong corpse's blood burst. | Python `CreaturePool._tick_dead`. |
+| `fx_queue_add_random` | Return before choosing a random blood decal. | Python `FxQueue.add_random`. |
+| `effect_spawn_blood_splatter` | Return before touching the effect template or RNG. | Python blood-splatter helpers, including the corrected low-health caller. |
+| `perks_init_database` | Give perk 1 its Quick Learner name and description. | Python perk display functions. |
+| `options_menu_update` | Refresh the same perk text after configuration changes. | Python display functions resolve the current setting when rendering text. |
 
 The three direct writes belong to default initialization, configuration reload,
-and missing-file creation. Native missing-file creation writes `1`; the ports'
-modern configuration initialization defaults to `0`. Both codecs store and
-load the byte. This audit does not recreate Grim2D's Windows parental-password
+and missing-file creation. Native missing-file creation writes `1`; the port's
+modern configuration initialization defaults to `0`. Its codec stores and
+loads the byte. This audit does not recreate Grim2D's Windows parental-password
 dialogs or change the modern default.
 
 The scan also reports register-relative operands with displacement `0x46c`
@@ -61,14 +61,13 @@ A deliberately dropped flag must reproduce six unwanted allocations and
 is detected. [results.json](results.json) records the inventory, control,
 source and image identities, and per-case observation hashes.
 
-The shared [fixture](../../../../crimson-zig/src/runtime/testdata/violence-disabled-low-health.json)
-checks actual Python player updates and Zig player preprocessing against
-native timer bits, effect count, position, written template fields, sound
-selection, and final RNG state. Python additionally compares all RNG values
-and sound position/gain. Template `scale` is excluded: this helper preserves
-that field, while the runner starts its template at zero. Zig's runtime sound
-buffer retains sample IDs rather than spatial/gain data, so it does not check
-those sound fields.
+The shared [fixture](../../../../tests/fixtures/native/violence-disabled-low-health.json)
+checks actual Python player updates against native timer bits, effect count,
+position, written template fields, sound selection, all RNG values and final
+RNG state, and sound position/gain. Template `scale` is excluded: this helper
+preserves that field, while the runner starts its template at zero. At this
+revision the since-removed Zig port checked its player preprocessing against
+the same fixture, without the sound position/gain fields.
 
 Allocation, sound, input, and RNG remain explicit callback models; no audio
 backend or GPU executes in this proof. The C++ matching source is unchanged,
@@ -81,9 +80,8 @@ uv run --with unicorn==2.1.4 python \
   tools/match/evidence/violence-disabled-2026-09-11/verify.py \
   --out /tmp/crimson-violence-disabled
 cmp /tmp/crimson-violence-disabled/witnesses.json \
-  crimson-zig/src/runtime/testdata/violence-disabled-low-health.json
-uv run pytest --no-cov tests/gameplay/test_low_health_violence_native.py
+  tests/fixtures/native/violence-disabled-low-health.json
+uv run pytest tests/gameplay/test_low_health_violence_native.py
 ```
 
-Run `zig build test --summary all` from `crimson-zig`. Unicorn execution on
-macOS requires permission for JIT memory allocation.
+Unicorn execution on macOS requires permission for JIT memory allocation.

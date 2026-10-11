@@ -6,7 +6,8 @@ share function bodies. Tooling, scratch notes and experiments stay under
 `tools/match`; each scratch's `SOURCE` points into this tree.
 
 For 1.9.93 it is complete: every one of the 858 game and engine functions in
-`crimsonland.exe` and `grim.dll` compiles to the original machine code.
+`crimsonland.exe` and `grim.dll` compiles to the original machine code
+([decomp.dev](https://decomp.dev/banteg/crimson)).
 
 ```
 decomp/
@@ -106,20 +107,10 @@ match credit; a candidate must still pass the build's own instruction, encoding
 and reference checks. Function aliases and colocated object/member names retain
 the same proven addresses.
 
-The initial game-code survey (679 canonical functions) found overlap with 1.9.93 as follows:
-
-| Build | Exact | Placed |
-|---|---|---|
-| 1.0.2 | 17 | 78 |
-| 1.3.0 | 21 | 110 |
-| 1.4.0 | 58 | 151 |
-| 1.9.1 | 429 | 632 |
-| 1.9.8 | 361 | 655 |
-| 1.9.9 | 622 | 677 |
-| 1.9.92 | 647 | 678 |
-
-1.9.8 places more functions than 1.9.1, but the Processor Pack changes enough
-code generation that fewer of its bodies are exact.
+A build's overlap with 1.9.93 is its
+`analysis/decomp/<build>/<image>/functions.json`. 1.9.8 places more functions
+than 1.9.1, but the Processor Pack changes enough code generation that fewer of
+its bodies are exact.
 
 `--build` compiles a scratch with that build's compiler profile and
 `/DCL_BUILD=<n>`, and compares it against that build's image:
@@ -153,9 +144,8 @@ uv run crimson match scratch tools/match/scratches/console_clear_log --build 1.4
 uv run crimson match probe tools/match/scratches/console_clear_log --build 1.4.0 --source /tmp/candidate.cpp
 ```
 
-The initial [compiler baseline](../tools/match/FREEWARE-SETUP-2026-09-30.md)
-records 183, 200 and 252 matching source scratches respectively across both
-images, with the remaining mapped candidates classified as WIP or audit.
+The [freeware setup record](../tools/match/evidence/freeware-setup-2026-09-30/README.md)
+holds the initial compiler baseline.
 
 The donor maps remain partial, but each image also has a `native.json` inventory
 from independent Binary Ninja control-flow discovery, refined by verified
