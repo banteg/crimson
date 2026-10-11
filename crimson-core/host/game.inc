@@ -161,15 +161,18 @@ extern "C" {
 int crimsonland_main(void *, void *, char *, int);
 void game_outputs(int enabled);
 void crt_srand(unsigned int seed) { rng = seed; }
-// GRIM__GetInterface (api/get_interface.cpp): the engine's state, then its interface.
+// GRIM__GetInterface (api/get_interface.cpp): the engine's state, then its interface,
+// which Grim's own joystick direction queries call through.
 // The main menu leaves out Other Games, 10tons' catalogue of the time (Grim's
 // config var 100), as the Python port does (screens/menu.py).
 extern grim_config_value_t grim_config_values[128];
+extern IGrim2D_cpp *grim_interface_instance;
 IGrim2D_cpp *grim_load_interface(char *) {
   static bool loaded;
   if (!loaded) {
     grim_state_init();
     grim_config_values[100] = false;
+    grim_interface_instance = &session_grim;
     loaded = true;
   }
   return &session_grim;
