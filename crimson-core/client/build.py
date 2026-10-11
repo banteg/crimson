@@ -44,6 +44,12 @@ def pkg_config(*args):
     return subprocess.check_output([tool("pkg-config"), *args, "sdl3"], text=True).split()
 
 
+def curl_flags(option):
+    # macOS ships libcurl; using it keeps the app independent of Homebrew's TLS libraries.
+    command = "/usr/bin/curl-config" if sys.platform == "darwin" else tool("curl-config")
+    return subprocess.check_output([command, option], text=True).split()
+
+
 def compile_all(jobs):
     with concurrent.futures.ThreadPoolExecutor(os.cpu_count()) as pool:
         failures = [
@@ -78,6 +84,9 @@ def package(out, web):
         shutil.copy2(libdir / Path(sdl).name, app / "Frameworks")
         rpath = f"@executable_path/../Frameworks/{Path(sdl).name}"
         subprocess.run([tool("install_name_tool"), "-change", sdl, rpath, str(binary)], check=True)
+        linked = subprocess.check_output([tool("otool"), "-L", str(binary)], text=True)
+        if any(path in linked for path in ("/opt/homebrew/", "/usr/local/")):
+            raise SystemExit("The packaged app still links a build-machine library")
         (app / "Info.plist").write_bytes(
             plistlib.dumps(
                 {
@@ -126,7 +135,12 @@ def main():
     cflags = ["-O2", "-I" + str(out), "-I" + str(runtime), "-I" + str(include), "-I" + str(HERE)]
     # The browser build has no threads; wasm2c then guards memory by bounds checks.
     cflags += ["-sUSE_SDL=3", "-DWASM_RT_USE_PTHREADS=0"] if web else []
-    cxxflags = [*cflags, "-std=c++17", f'-DCRIMSON_CLIENT_VERSION="{build_identity["version"]}"', *([] if web else pkg_config("--cflags"))]
+    cxxflags = [
+        *cflags,
+        "-std=c++17",
+        f'-DCRIMSON_CLIENT_VERSION="{build_identity["version"]}"',
+        *([] if web else [*pkg_config("--cflags"), *curl_flags("--cflags"), "-pthread"]),
+    ]
     objects = compile_all(
         [
             [cc, *cflags, "-c", str(out / "game.c"), "-o", str(out / "game.o")],
@@ -161,7 +175,16 @@ def main():
     else:
         # Linux finds a packaged SDL3 beside the executable.
         system = ["-framework", "OpenGL"] if sys.platform == "darwin" else ["-lGL", "-Wl,-rpath,$ORIGIN"]
-        link = [cxx, *objects, *pkg_config("--libs"), *system, "-o", str(out / "crimson")]
+        link = [
+            cxx,
+            *objects,
+            *pkg_config("--libs"),
+            *curl_flags("--libs"),
+            "-pthread",
+            *system,
+            "-o",
+            str(out / "crimson"),
+        ]
     subprocess.run(link, check=True)
     artifacts = [out / name for name in (("index.html", "index.js", "index.wasm") if web else ("crimson",))]
     write_manifest(out / "build.json", build_identity, artifacts)

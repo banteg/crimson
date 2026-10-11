@@ -23,7 +23,7 @@ feed back into either.
 
 Python stays the reference port. The web client plays ranked runs too: it
 records the `.crd` replays the leaderboard takes and signs their upload as the
-Python port does ([Ranked runs](#ranked-runs)).
+Python port does ([Ranked runs](#ranked-runs)); the native host uses the same protocol.
 
 ## Architecture
 
@@ -191,7 +191,7 @@ menu.
 
 The Play Game panel grows by a Ranked box under the player-count list, as the
 Python port's does (`screens/panels/play_game.py`), when the host takes runs
-to the leaderboard (the web client; [`host/ranked.inc`](host/ranked.inc)).
+to the leaderboard (the web and native clients; [`host/ranked.inc`](host/ranked.inc)).
 Ticked, it lists only the modes that rank, Quests and Survival, makes the game
 one player's, and shows a Profile button. A run started that way, with a
 player's movement and aim, plays the ranked rules (`ranked_run_spec`): full
@@ -212,7 +212,19 @@ digest and the name (`identity.py`), and the key kept as a 32-byte seed in
 is queued and every ten minutes: a run the service took or already has leaves
 it, one it refuses moves to `rejected/` with the reason, and offline runs wait.
 Profile signs a challenge and opens the profile signed in. The native client
-has no network stack yet and shows no Ranked box.
+uses libcurl on a worker thread; only the main thread reads the module's key,
+signs its challenge and applies board/replay responses. Signed uploads remain
+in the outbox on connection failures, rate limits or service errors; permanent
+rejections are saved with their reason before the queued entry is removed.
+Online replays download into `replays/online/` atomically, at most 16 MiB;
+a missing run is distinguished from a failed download. Profile login links
+must have the configured service's origin before the native host opens them
+in the browser. TLS verification stays enabled and requests never redirect.
+
+As in Python, `CRIMSON_LEADERBOARD_URL` selects the API root (default
+`https://crimson.land/api`); an empty value disables networking and the Ranked
+box. Pending runs retry at startup, on Update scores and every ten minutes.
+Network shutdown cancels pending work; queued files stay for the next launch.
 
 The high score screen shows the leaderboard's runs as the Python port does
 (`screens/high_scores_view/records.py`). Each board's latest answer is kept for
@@ -325,7 +337,7 @@ uv run python crimson-core/client/build.py      # game module, wasm2c, SDL3 host
 crimson-core/build/app/crimson [game directory]
 ```
 
-It needs wabt's `wasm2c`, SDL3 and the original game files. Without a
+It needs wabt's `wasm2c`, SDL3, libcurl and the original game files. Without a
 directory the client uses the folder chosen last time, or asks for the one
 Crimsonland is installed in. `--package` lays out what ships in `build/dist`:
 a macOS app bundle or a Linux folder carrying SDL3, or the web page's files;
@@ -340,6 +352,12 @@ on the same frames (a run's seed still differs)
 ([`client/main.cpp`](client/main.cpp)). `CRIMSON_MUTE=1` silences the output
 device and nothing else: the game still mixes its sounds and music, so a muted
 run plays the same game ([`client/audio.cpp`](client/audio.cpp)).
+
+The transport's loopback HTTP/TLS checks run on Linux and macOS in client CI:
+
+```sh
+python3 crimson-core/checks/native_network.py
+```
 
 ## Running the web client
 
@@ -380,7 +398,7 @@ and `npm run play` in `service` stages the packaged web build for deploy.
 | 6. Verifier convergence | Dropped: the verifier stays its own artifact and holds every client build to it ([Packaging](#packaging)) | |
 | 7. Product parity | Gamepads as the original's joystick; the web client takes the player's own game folder | Done ([#556](https://github.com/banteg/crimson/pull/556)) |
 | 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client finds the game folder; next, a Windows host (the WASI layer is POSIX) and signing | Done ([#557](https://github.com/banteg/crimson/pull/557)); crimson.land/play hosts the web client with the distributed files |
-| 9. Ranked play from the client | Ranked runs from the web client: the Play Game panel's Ranked box and Profile button, `.crd` replays signed and queued as the Python port does, uploaded by the page; next, the native client's upload | Done ([#566](https://github.com/banteg/crimson/pull/566)) |
+| 9. Ranked play from the client | Ranked runs from the web client: the Play Game panel's Ranked box and Profile button, `.crd` replays signed and queued as the Python port does, uploaded by the page; native uploads use the same signed outbox | Done ([#566](https://github.com/banteg/crimson/pull/566)) |
 | 10. Watching replays | Every run saves its replay; the high score screen's Watch plays local runs and the leaderboard's, with the board's runs kept for the session (docs/rewrite/watch-replays.md) | Done ([#590](https://github.com/banteg/crimson/pull/590), [#598](https://github.com/banteg/crimson/pull/598), [#602](https://github.com/banteg/crimson/pull/602)) |
 
 ## Acceptance gates

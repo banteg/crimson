@@ -24,7 +24,7 @@ what a modern release needs. All three fix the
 | | Python port | Web | Native |
 | --- | --- | --- | --- |
 | Platforms | Windows, macOS, Linux | Any browser with WebGL2 | macOS, Linux; Windows not yet |
-| Install | `uvx crimsonland@latest` | Nothing | CI builds only, not released or signed |
+| Install | `uvx crimsonland@latest` | Nothing | CI builds only, no signed release channel |
 | Game files | Downloaded on first launch | Downloaded on first visit, or your own Crimsonland folder | Your own Crimsonland folder |
 | Saves | Per-user data directory | The browser's site storage | The game folder |
 
@@ -57,16 +57,14 @@ what a modern release needs. All three fix the
 
 | | Python port | Web | Native |
 | --- | --- | --- | --- |
-| Ranked play | Survival and Quests | Survival and Quests | No |
-| Uploads, offline queue | Yes | Yes | No |
-| Profile, signed in | Yes | Yes | No |
-| Update scores on the high score screen | Yes | Yes | No |
-| Your key | `identity.key`; export and import with `crimson identity` | Site storage, no export; link an account to keep your runs | No |
+| Ranked play | Survival and Quests | Survival and Quests | Survival and Quests |
+| Uploads, offline queue | Yes | Yes | Yes |
+| Profile, signed in | Yes | Yes | Yes, in your browser |
+| Update scores on the high score screen | Yes | Yes | Yes |
+| Your key | `identity.key`; export and import with `crimson identity` | Site storage, no export; link an account to keep your runs | `identity.key` in the game folder |
 
 ## Next
 
-- **Native leaderboard**: uploads and the profile need a network layer in the
-  host, after which the Ranked box can show there too.
 - **Native releases**: a Windows host, signed builds and a release channel.
 - **Web replays**: a way to download your recordings and your key, which today
   stay in the browser.

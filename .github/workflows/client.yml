@@ -88,6 +88,10 @@ jobs:
           cmake --build "$RUNNER_TEMP/sdl-build"
           cmake --install "$RUNNER_TEMP/sdl-build"
 
+      - name: Install desktop networking
+        if: matrix.name == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+
       # The client links OpenGL itself; a restored SDL3 still needs its headers.
       - name: Use SDL3
         if: matrix.name == 'linux'
@@ -97,6 +101,10 @@ jobs:
             sudo apt-get install -y libgl-dev
           fi
           echo "PKG_CONFIG_PATH=$RUNNER_TEMP/sdl/lib/pkgconfig" >> "$GITHUB_ENV"
+
+      - name: Check desktop networking
+        if: matrix.name != 'web'
+        run: python3 crimson-core/checks/native_network.py
 
       - name: Build the client
         if: matrix.name != 'web' || steps.web.outputs.cache-hit != 'true'

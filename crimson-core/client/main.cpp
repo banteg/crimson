@@ -3,7 +3,10 @@
 // time, or asks for the folder that holds the game's files.
 #define SDL_MAIN_USE_CALLBACKS
 #include "client.h"
+#include "network.h"
+#include <memory>
 #include "../game/host_input.h"
+#include "../game/host_abi.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #ifdef __EMSCRIPTEN__
@@ -244,6 +247,10 @@ void client_fatal(const char *message) {
   exit(1);
 }
 
+#ifndef __EMSCRIPTEN__
+namespace { void network_request(int request); }
+#endif
+
 extern "C" {
 void w2c_host_fatal(struct w2c_host *, u32 message) { client_fatal((const char *)client_memory() + message); }
 // The original's message boxes: startup failures and warnings the player must see.
@@ -253,12 +260,12 @@ void w2c_host_message(struct w2c_host *, u32 text, u32 caption) {
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, title, body, window);
 }
 // The leaderboard (host/ranked.inc): the page signs in and uploads
-// (client/web/shell.html); the native client takes no runs to it yet.
+// (client/web/shell.html); the native client uses the same protocol through its worker.
 void w2c_host_leaderboard(struct w2c_host *, u32 request) {
 #ifdef __EMSCRIPTEN__
   MAIN_THREAD_EM_ASM({ Module.leaderboard($0); }, request);
 #else
-  (void)request;
+  network_request((int)request);
 #endif
 }
 // An unattended run's clock moves 16 ms a frame, and a millisecond each time it is read.
@@ -303,6 +310,98 @@ void watch_from_env() {
     w2c_game_game_watch_stop_at(&game, atoi(stop));
 }
 
+#ifndef __EMSCRIPTEN__
+namespace {
+std::unique_ptr<LeaderboardNetwork> network;
+std::string profile_key;
+bool profile_pending;
+Uint64 next_upload;
+std::deque<int> network_requests;
+void network_request(int request) { network_requests.push_back(request); }
+void network_submit(int request) {
+  if (!network || !network->enabled())
+    return;
+  using N = LeaderboardNetwork;
+  if (request == HOST_LEADERBOARD_UPLOAD)
+    network->request(N::UPLOAD);
+  else if (request == HOST_LEADERBOARD_SCORES)
+    network->request(N::SCORES, (char *)client_memory() +
+                                    w2c_game_game_scores_request(&game));
+  else if (request == HOST_LEADERBOARD_REPLAY)
+    network->request(N::REPLAY, (char *)client_memory() +
+                                    w2c_game_game_replay_download(&game));
+  else if (request == HOST_LEADERBOARD_PROFILE) {
+    if (profile_pending)
+      return;
+    // The key and challenge signature are read only on the main thread.
+    std::string key =
+        (char *)client_memory() + w2c_game_game_identity_public_key(&game);
+    if (!N::run_id(key)) {
+      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Leaderboard",
+                               "Could not load your identity key.", window);
+      return;
+    }
+    if (network->request(N::CHALLENGE,
+                         "{\"public_key\":" + N::quote(key) + "}")) {
+      profile_key = key;
+      profile_pending = true;
+    }
+  }
+}
+void network_update() {
+  if (!network)
+    return;
+  while (!network_requests.empty()) {
+    int request = network_requests.front();
+    network_requests.pop_front();
+    network_submit(request);
+  }
+  using N = LeaderboardNetwork;
+  N::Event event{N::UPLOAD};
+  while (network->poll(event)) {
+    if (event.kind == N::SCORES) {
+      int size = event.ok ? (int)event.body.size() : -1;
+      if (event.ok) {
+        u32 buffer = w2c_game_game_scores_buffer(&game, size);
+        memcpy(client_memory() + buffer, event.body.data(), event.body.size());
+      }
+      w2c_game_game_scores_received(&game, size);
+    } else if (event.kind == N::REPLAY) {
+      w2c_game_game_replay_downloaded(&game, event.ok              ? 0
+                                             : event.status == 404 ? 1
+                                                                   : 2);
+    } else if (event.kind == N::CHALLENGE && event.ok) {
+      snprintf((char *)client_memory() + w2c_game_game_login_challenge(&game),
+               65, "%s", event.body.c_str());
+      std::string signature =
+          (char *)client_memory() + w2c_game_game_login_signature(&game);
+      network->request(N::LOGIN, "{\"public_key\":" + N::quote(profile_key) +
+                                     ",\"challenge\":" + N::quote(event.body) +
+                                     ",\"signature\":" + N::quote(signature) +
+                                     "}");
+    } else if (event.kind == N::LOGIN && event.ok) {
+      profile_pending = false;
+      if (!SDL_OpenURL(event.body.c_str()))
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Leaderboard",
+                                 "Could not open your browser.", window);
+    } else if (event.kind == N::CHALLENGE || event.kind == N::LOGIN) {
+      profile_pending = false;
+      SDL_ShowSimpleMessageBox(
+          SDL_MESSAGEBOX_WARNING, "Leaderboard",
+          "Can't sign in to the leaderboard. Try again later.", window);
+    }
+    if (!event.error.empty())
+      fprintf(stderr, "leaderboard: %s\n", event.error.c_str());
+  }
+  Uint64 now = SDL_GetTicks();
+  if (now >= next_upload) {
+    network->request(N::UPLOAD);
+    next_upload = now + 600000;
+  }
+}
+} // namespace
+#endif
+
 bool started;
 bool start_game() {
   wasm_rt_init();
@@ -310,12 +409,25 @@ bool start_game() {
   wasm2c_game_instantiate(&game, &host, &wasi);
   w2c_game_0x5Finitialize(&game);
   started = true;
-  snprintf((char *)client_memory() + w2c_game_game_recorder_version(&game), 64, "%s", CRIMSON_CLIENT_VERSION);
+  snprintf((char *)client_memory() + w2c_game_game_recorder_version(&game), 64,
+           "%s", CRIMSON_CLIENT_VERSION);
 #ifdef __EMSCRIPTEN__
   w2c_game_game_platform(&game, 1);
   w2c_game_game_leaderboard_enable(&game);
 #else
   w2c_game_game_platform(&game, 2);
+  const char *api = getenv("CRIMSON_LEADERBOARD_URL");
+  try {
+    network = std::make_unique<LeaderboardNetwork>(
+        api          ? api
+        : unattended ? ""
+                     : "https://crimson.land/api",
+        game_directory, CRIMSON_CLIENT_VERSION);
+  } catch (const std::exception &error) {
+    client_fatal(error.what());
+  }
+  if (network->enabled())
+    w2c_game_game_leaderboard_enable(&game);
 #endif
   return w2c_game_game_start(&game);
 }
@@ -324,7 +436,8 @@ bool start_game() {
 // The page's sign-in (client/web/shell.html): the player's public key, and the
 // signature of a challenge, both as hex.
 extern "C" EMSCRIPTEN_KEEPALIVE const char *client_public_key() {
-  return (const char *)client_memory() + w2c_game_game_identity_public_key(&game);
+  return (const char *)client_memory() +
+         w2c_game_game_identity_public_key(&game);
 }
 extern "C" EMSCRIPTEN_KEEPALIVE const char *client_sign_login(const char *challenge) {
   snprintf((char *)client_memory() + w2c_game_game_login_challenge(&game), 65, "%s", challenge);
@@ -598,6 +711,9 @@ SDL_AppResult SDL_AppIterate(void *) {
   if (!started)
     return wait_for_folder();
 #endif
+#ifndef __EMSCRIPTEN__
+  network_update();
+#endif
   // The window cursor, in back-buffer pixels, reaches DirectInput as motion.
   float x, y;
   SDL_GetMouseState(&x, &y);
@@ -644,4 +760,8 @@ SDL_AppResult SDL_AppIterate(void *) {
   return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void *, SDL_AppResult) {}
+void SDL_AppQuit(void *, SDL_AppResult) {
+#ifndef __EMSCRIPTEN__
+  network.reset(); // Cancels network work before the module and host go away.
+#endif
+}

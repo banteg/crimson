@@ -191,6 +191,7 @@ def client_identity(target: str, root: Path = ROOT, *, wabt: str | None = None, 
     else:
         recipe["clang"] = compiler_version("clang++")
         recipe["sdl"] = output("pkg-config", "--modversion", "sdl3")
+        recipe["curl"] = output("/usr/bin/curl-config" if platform.system() == "Darwin" else "curl-config", "--version")
         recipe["platform"] = f"{platform.system()}-{platform.machine()}"
     result = identity("client", root, ("crimson-core/client/", "scripts/build_identity.py"), recipe)
     result["game"] = game
