@@ -2,6 +2,29 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.14.6
+
+### For players
+
+#### Practice from a replay
+
+- **Take over** (or Enter) now hands you the run on the spot: play goes on at normal speed, aimed where your cursor is, with no prompt to move first. Resume and Retry from the Esc menu also play on at once.
+- Picking a perk carries on the run, as it does in a normal game, instead of stopping at the prompt again.
+- The click that pressed Take over or Retry doesn't fire until you let go of it.
+- The practice strip along the bottom is gone; the Esc menu still says which run and moment you are practising from.
+
+#### Desktop game
+
+- The desktop game downloads the game files by itself on first launch, like the Python game, instead of asking for a folder. It keeps them, its settings, scores and replays in the same folder as the Python game (`CRIMSON_RUNTIME_DIR` moves it). A folder named on the command line still works; one picked in the old folder dialog isn't remembered, so name it there.
+
+#### Music
+
+- `music.paq` now stores the music under the names the original game asks for, so the browser and desktop games play it straight from the pack, with the official addon's three tunes in the in-game rotation. A `music.paq` downloaded before is updated in place on the next launch, in every version of the game.
+
+### Under the hood
+
+- The game's boot check reads the whole console log and fails if any tune doesn't load.
+
 ## 0.14.5
 
 ### For players
