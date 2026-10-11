@@ -272,7 +272,8 @@ one-hour nominal time horizon. Copies are capped at 384 per entry and per trigge
 time (the size of the creature pool) and 8,192 per quest, counted after the
 hardcore adjustment; the stock quests peak at 108 per trigger time and 2,000 in
 total. Integer intermediates have at most 64 magnitude bits, and numbers and point
-coordinates must be finite. Work accounts for interpreted statements, expressions,
+coordinates must be finite. Spawn positions must lie within −1024..2048 on both axes:
+a full arena beyond each edge, which every stock arrival fits. Work accounts for interpreted statements, expressions,
 iteration and collection operations; it also stops loops that emit nothing.
 
 The compiler interprets the parse tree directly; anything outside the grammar is a

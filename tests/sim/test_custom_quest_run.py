@@ -12,8 +12,8 @@ from crimson.quests.custom import CustomQuest, variant_index
 from crimson.quests.dsl import build_custom_quest
 from crimson.quests.level import QuestLevel
 from crimson.quests.types import QuestContext, QuestDefinition
-from crimson.replay import dump_replay, load_replay
-from crimson.replay.codec import ReplayCodecError
+from crimson.replay import REPLAY_FORMAT_VERSION, dump_replay, load_replay
+from crimson.replay.codec import ReplayCodecError, decode_replay_payload
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.sim.mode_updates import QuestSpawnState
 from crimson.sim.run_init import initialize_run
@@ -102,3 +102,22 @@ def test_custom_quest_replays_round_trip_and_reject_bad_definitions():
     both = msgspec.structs.replace(run, quest_level=QuestLevel(1, 1))
     with pytest.raises(ReplayCodecError, match="exactly one"):
         dump_replay(msgspec.structs.replace(replay, run=both))
+
+
+def test_a_survival_replay_carrying_both_quests_is_refused():
+    replay = load_replay((FIXTURES / "survival-135302.crd").read_bytes())
+    run = msgspec.structs.replace(replay.run, quest_level=QuestLevel(1, 1), custom_quest=crosswind())
+    with pytest.raises(ReplayCodecError, match="other modes need neither"):
+        dump_replay(msgspec.structs.replace(replay, run=run))
+
+
+def test_an_overflowing_custom_quest_position_is_a_codec_error():
+    replay = load_replay((FIXTURES / "quest-1.1-completed.crd").read_bytes())
+    quest = crosswind()
+    table = quest.tables[0]
+    far = msgspec.structs.replace(table[0], pos=msgspec.structs.replace(table[0].pos, x=1e300))
+    quest = msgspec.structs.replace(quest, tables=((far, *table[1:]),))
+    run = msgspec.structs.replace(replay.run, quest_level=None, custom_quest=quest)
+    payload = msgspec.msgpack.encode(msgspec.structs.replace(replay, format_version=REPLAY_FORMAT_VERSION, run=run))
+    with pytest.raises(ReplayCodecError, match="run.custom_quest: positions"):
+        decode_replay_payload(payload)

@@ -66,6 +66,8 @@ class QuestMode(BaseGameplayMode):
         audio: AudioState | None = None,
         audio_rng: Crand,
     ) -> None:
+        # The base class asks whether runs rank while it sets up.
+        self._custom_quest: CustomQuest | None = None
         super().__init__(
             ctx,
             default_game_mode_id=GameMode.QUESTS,
@@ -76,7 +78,6 @@ class QuestMode(BaseGameplayMode):
         )
         self._quest_def: QuestDefinition | None = None
         self._quest_level: QuestLevel | None = self.config.gameplay.quest_level or QuestLevel(1, 1)
-        self._custom_quest: CustomQuest | None = None
         self._quest_highscore_random_tag: int = 0
         self._outcome: QuestRunOutcome | None = None
         self._quest_spawn_state = QuestSpawnState()
@@ -86,7 +87,6 @@ class QuestMode(BaseGameplayMode):
         super().open()
         self._quest_def = None
         self._quest_level = self.config.gameplay.quest_level or QuestLevel(1, 1)
-        self._custom_quest = None
         self._quest_highscore_random_tag = 0
         self._outcome = None
 
@@ -122,6 +122,11 @@ class QuestMode(BaseGameplayMode):
             return
         self._start(status=status, quest_level=quest.level)
 
+    def select_custom_quest(self, quest: CustomQuest | None) -> None:
+        """The custom quest the next run plays, or None for a stock level: known before the screen opens, whose
+        world reset already takes its seed and player count from whether the run ranks."""
+        self._custom_quest = quest
+
     def start_custom_run(self, quest: CustomQuest, *, status: GameStatus) -> None:
         self._start(status=status, custom_quest=quest)
 
@@ -130,6 +135,9 @@ class QuestMode(BaseGameplayMode):
         self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
+        # Set before the seed and player count: whether the run ranks decides both.
+        self._quest_level = quest_level
+        self._custom_quest = custom_quest
 
         hardcore_flag = self.config.gameplay.hardcore
 
@@ -147,9 +155,11 @@ class QuestMode(BaseGameplayMode):
         self._quest_spawn_state = spawn_state
         self._quest_highscore_random_tag = prepared.quest_highscore_random_tag & UNI_NUM_MASK
         self._quest_def = prepared.quest
-        self._quest_level = quest_level
-        self._custom_quest = custom_quest
         self._reset_gameplay_frame_clock()
+
+    def _ranked_attempt(self) -> bool:
+        # Only the original's quests rank: the verifier cannot start a custom one.
+        return self._custom_quest is None and super()._ranked_attempt()
 
     def _handle_input(self) -> None:
         if debug_enabled() and (not self._perk_menu.open):

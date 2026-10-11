@@ -102,6 +102,7 @@ repeat 20 as i:
         ("at 1s:\n    burst alien.small_gray at center copies 0", "copies must be positive"),
         ("at 1s:\n    spawn 999 at center", "not a valid SpawnId"),
         ("at 1s:\n    spawn alien.small_gray at point(1e309, 0)", "finite"),
+        ("at 1s:\n    spawn alien.small_gray at point(1e20, 512)", "positions must be in"),
         ("let x = 18446744073709551615 + 1 - 1", "64 bits"),
         ("let x = 9223372036854775807\nlet y = x * x * x // x // x", "64 bits"),
         ("let x = 1e308 * 10 - 1e308 * 10", "finite"),

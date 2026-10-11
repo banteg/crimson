@@ -5,6 +5,7 @@ from importlib.resources import files
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.modes import base_gameplay_mode
 from crimson.modes.quest_mode import QuestMode
 from crimson.quests.custom import CustomQuest
 from crimson.quests.dsl import build_custom_quest
@@ -114,3 +115,17 @@ def test_the_clear_banner_fits_the_banner_slot(make_game_state, headless_resourc
     [banner] = [call.args[2] for call in draw.call_args_list if call.args[0] is texture]
     assert slot.left <= banner.x and banner.x + banner.width <= slot.left + slot.width
     assert slot.top <= banner.y and banner.y + banner.height <= slot.top + slot.height
+
+
+def test_the_ranked_box_leaves_a_custom_co_op_run_alone(make_game_state, headless_resources, mocker, quest):
+    state = make_game_state(resources=headless_resources, audio=HeadlessAudio(mocker).state)
+    state.ranked = True
+    state.config.gameplay.player_count = 2
+    # An unranked run carries the session's seed on rather than a ranked draw.
+    ranked_seed = 0xDEADBEEF
+    mocker.patch.object(base_gameplay_mode, "ranked_run_seed", return_value=ranked_seed)
+    _navigator, run = start_run(state, StartRun(GameMode.QUESTS, custom_quest=quest))
+    recorder = run._replay_recorder
+    assert recorder is not None
+    assert (recorder.run.player_count, len(run.world.players), run.ranked_run) == (2, 2, False)
+    assert recorder.run.seed != ranked_seed

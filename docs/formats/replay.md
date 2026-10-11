@@ -115,7 +115,7 @@ draws).
 `CustomQuest` is a map of `title` (1..64 printable ASCII characters), `start_weapon_id` (int, not 0),
 `terrain_slots` (three ints 0..7), `tables` (arrays of 1..256 `SpawnEntry` maps) and `variants` (8 ints): the
 table each player count 1..4 plays, normal then hardcore, using every table. A `SpawnEntry` is a map of `pos`
-(`{x, y}` f32 map), `heading` (f32), `spawn_id` (a spawn template other than `0x02`), `trigger_ms` (int
+(`{x, y}` f32 map, each coordinate in −1024..2048), `heading` (f32), `spawn_id` (a spawn template other than `0x02`), `trigger_ms` (int
 0..3600000) and `count` (int). Counts are base counts: the run applies the game's hardcore rule, and the
 result must respect the [quest spawn limits](quest-dsl.md#bounds-and-runtime-semantics). The run starts as
 `quest_start_selected` does, loading the table where a stock builder would run, and leaves the stock quest

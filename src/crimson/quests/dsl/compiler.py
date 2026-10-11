@@ -26,7 +26,7 @@ from ..custom import (
     MAX_TRIGGER_MS,
     VARIANT_COUNT,
     CustomQuest,
-    check_spawn_limits,
+    check_table,
     validate_custom_quest,
     variant_index,
 )
@@ -861,7 +861,7 @@ def compile_quest(
     if hardcore:
         entries = tuple(apply_hardcore_spawn_table_adjustment(list(entries)))
     try:
-        check_spawn_limits(entries)
+        check_table(entries)
     except ValueError as exc:
         raise QuestCompileError(str(exc)) from exc
     return QuestPlan(

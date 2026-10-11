@@ -745,8 +745,7 @@ class BaseGameplayMode:
         highscore_names: tuple[str, ...] = (),
         typo_carry: TypoCarry | None = None,
     ) -> PreparedRun:
-        # Only the original's quests rank: the verifier cannot start a custom one.
-        ranked = custom_quest is None and self._ranked_attempt()
+        ranked = self._ranked_attempt()
         # A ranked run plays the canonical profile on a detached save, exactly as verification replays it.
         status = None if ranked else self._status_base
         self._world_runtime.view_cap = RANKED_VIEW if ranked else DEFAULT_VIEW_CAP

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import math
-from collections.abc import Iterable
+from collections.abc import Sequence
 
 import msgspec
 
@@ -21,6 +21,10 @@ MAX_COPIES = 384
 MAX_TRIGGER_COPIES = 384
 MAX_TOTAL_COPIES = 8192
 MAX_TRIGGER_MS = 60 * 60 * 1000
+# A full arena beyond each edge: room for every off-arena arrival the stock quests use (up to 1280), and far from
+# the distances whose squares overflow float32 in gameplay.
+MIN_COORDINATE = -1024.0
+MAX_COORDINATE = 2048.0
 MAX_TITLE_CHARS = 64
 VARIANT_COUNT = 8
 
@@ -54,10 +58,24 @@ class CustomQuest(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
         return hashlib.sha256(msgspec.msgpack.encode(gameplay)).hexdigest()
 
 
-def check_spawn_limits(entries: Iterable[SpawnEntry]) -> None:
-    """Copies are template invocations; formations and nests add their own creatures on top."""
+def check_table(entries: Sequence[SpawnEntry]) -> None:
+    """A table a run can play: its entries, and what they spawn after the hardcore rule.
+
+    Copies are template invocations; formations and nests add their own creatures on top.
+    """
+    if not 1 <= len(entries) <= MAX_ENTRIES:
+        raise ValueError(f"a table holds 1..{MAX_ENTRIES} entries")
     per_trigger: dict[int, int] = {}
     for entry in entries:
+        if entry.spawn_id == SpawnId.UNUSED_02:
+            raise ValueError("unused spawn template")
+        if not 0 <= entry.trigger_ms <= MAX_TRIGGER_MS:
+            raise ValueError(f"trigger times must be in 0..{MAX_TRIGGER_MS} ms")
+        for coordinate in (entry.pos.x, entry.pos.y):
+            if not MIN_COORDINATE <= coordinate <= MAX_COORDINATE:
+                raise ValueError(f"positions must be in {MIN_COORDINATE:g}..{MAX_COORDINATE:g}")
+            _check_f32(coordinate, "positions")
+        _check_f32(entry.heading, "headings")
         if not 1 <= entry.count <= MAX_COPIES:
             raise ValueError(f"an entry spawns {entry.count} copies; the limit is {MAX_COPIES}")
         per_trigger[entry.trigger_ms] = per_trigger.get(entry.trigger_ms, 0) + entry.count
@@ -69,8 +87,12 @@ def check_spawn_limits(entries: Iterable[SpawnEntry]) -> None:
 
 
 def _check_f32(value: float, what: str) -> None:
-    if not math.isfinite(value) or f32(value) != value:
-        raise ValueError(f"{what} must be a finite float32")
+    try:
+        canonical = math.isfinite(value) and f32(value) == value
+    except OverflowError:
+        canonical = False
+    if not canonical:
+        raise ValueError(f"{what} must be finite float32 values")
 
 
 def validate_custom_quest(quest: CustomQuest) -> None:
@@ -85,17 +107,7 @@ def validate_custom_quest(quest: CustomQuest) -> None:
         raise ValueError(
             f"variants must pick one of the tables for each of {VARIANT_COUNT} variants, using every table",
         )
-    for table in quest.tables:
-        if not 1 <= len(table) <= MAX_ENTRIES:
-            raise ValueError(f"a table holds 1..{MAX_ENTRIES} entries")
-        for entry in table:
-            if entry.spawn_id == SpawnId.UNUSED_02:
-                raise ValueError("unused spawn template")
-            if not 0 <= entry.trigger_ms <= MAX_TRIGGER_MS:
-                raise ValueError(f"trigger times must be in 0..{MAX_TRIGGER_MS} ms")
-            _check_f32(entry.pos.x, "positions")
-            _check_f32(entry.pos.y, "positions")
-            _check_f32(entry.heading, "headings")
+    # Every table is some variant's, so checking what each variant plays checks them all.
     for player_count in (1, 2, 3, 4):
         for hardcore in (False, True):
-            check_spawn_limits(quest.entries(player_count=player_count, hardcore=hardcore))
+            check_table(quest.entries(player_count=player_count, hardcore=hardcore))

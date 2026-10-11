@@ -195,6 +195,8 @@ class ScreenNavigator:
         gameplay.bind_screen_fade(self.state)
         if isinstance(gameplay, TypoShooterMode):
             gameplay.typo_session = self.state.typo
+        if isinstance(gameplay, QuestMode):
+            gameplay.select_custom_quest(request.custom_quest)
         self.state.screens.push(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))
         if isinstance(gameplay, QuestMode):
             gameplay.quest_fail_retry_count = self.state.quest_fail_retry_count

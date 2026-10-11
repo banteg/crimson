@@ -184,8 +184,9 @@ def _validate_run(run: RunSpec) -> None:
     mode = run.game_mode_id
     _require(mode in _REPLAY_MODES, f"run.game_mode_id {int(mode)} is not a replayable mode")
     _require_int(run.seed, low=0, high=_U32_MAX, field="run.seed")
+    quest_fields = (run.quest_level is not None) + (run.custom_quest is not None)
     _require(
-        ((run.quest_level is not None) != (run.custom_quest is not None)) == (mode == GameMode.QUESTS),
+        quest_fields == (1 if mode == GameMode.QUESTS else 0),
         "quests need exactly one of run.quest_level and run.custom_quest; other modes need neither",
     )
     if run.custom_quest is not None:
