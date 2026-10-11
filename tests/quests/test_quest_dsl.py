@@ -21,39 +21,29 @@ def shape(entries):
     return [(entry.spawn_id, entry.count, entry.trigger_ms) for entry in entries]
 
 
-def stock_tables(quest, players, hardcore):
-    return [
-        build_quest_spawn_table(quest, QuestContext(player_count=players, hardcore=hardcore, rng=CrtRand(seed)))
-        for seed in SEEDS
-    ]
-
-
-def free_placements(tables) -> frozenset[int]:
-    """Entries whose placement is the builder's only random choice; a recipe may draw them differently.
-
-    Where randomness decides what spawns, the recipe's draws must line up with the builder's.
-    """
-    if any(shape(table) != shape(tables[0]) for table in tables):
-        return frozenset()
-    return frozenset(
-        i for i, column in enumerate(zip(*tables, strict=False)) if len({(e.pos, e.heading) for e in column}) > 1
-    )
+# The Killing's recipe skips the original's ignored rolls, so its random alien nests are
+# drawn differently; they must still land in the original's 128..895 square.
+REDRAWN = {"3.3": SpawnId.DEN_ALIEN_BASIC_07}
 
 
 @pytest.mark.parametrize("quest", QUESTS, ids=lambda quest: quest.level.text)
 @pytest.mark.parametrize("players", (1, 2, 3, 4))
 @pytest.mark.parametrize("hardcore", (False, True))
 def test_stock_recipes_build_the_stock_tables(quest, players, hardcore):
-    tables = stock_tables(quest, players, hardcore)
-    free = free_placements(tables)
-    for seed, expected in zip(SEEDS, tables, strict=True):
+    for seed in SEEDS:
+        expected = build_quest_spawn_table(
+            quest,
+            QuestContext(player_count=players, hardcore=hardcore, rng=CrtRand(seed)),
+        )
         plan = compile_quest(stock_source(quest.level.text), seed=seed, player_count=players, hardcore=hardcore)
         assert shape(plan.entries) == shape(expected)
         for i, (entry, native) in enumerate(zip(plan.entries, expected, strict=True)):
-            if i in free:
-                continue
-            assert (entry.pos.x, entry.pos.y) == pytest.approx((native.pos.x, native.pos.y), abs=0.01), i
+            if entry.spawn_id == REDRAWN.get(quest.level.text):
+                assert 128 <= entry.pos.x < 896 and 128 <= entry.pos.y < 896, i
+            else:
+                assert (entry.pos.x, entry.pos.y) == pytest.approx((native.pos.x, native.pos.y), abs=0.01), i
             assert math.remainder(entry.heading - native.heading, math.tau) == pytest.approx(0, abs=1e-4), i
+        assert len(set(plan.locations)) == len(plan.locations)
         assert plan.start_weapon_id == quest.start_weapon_id
         assert plan.terrain_slots == quest.terrain_slots
 
@@ -87,6 +77,8 @@ at 500ms:
     assert plan.locations[0].line == 9
     assert plan.locations[-1].line == 3
     assert plan.locations[-1].iterations == (7,)
+    assert plan.locations[-1].calls == (7,)
+    assert [location.item for location in plan.locations[:3]] == [0, 1, 2]
 
 
 def test_seeded_construction_is_repeatable_without_a_gameplay_context():
@@ -111,6 +103,11 @@ repeat 20 as i:
         ("at 1s:\n    spawn 999 at center", "not a valid SpawnId"),
         ("at 1s:\n    spawn alien.small_gray at point(1e309, 0)", "finite"),
         ("let p = center * center", "points added, subtracted or scaled"),
+        ('let p = point("x", 0) * 1000', "finite number"),
+        ("let p = point(1e300, 0) * 1e300", "finite number"),
+        ('let p = edge("west", fraction="x")', "finite number"),
+        ("at 1s:\n    repeat 2 as i:\n        burst alien.small_gray at center copies 200", "per-trigger copy limit"),
+        ("repeat 30 as i:\n    at i * 1s:\n        burst alien.small_gray at center copies 300", "total copies"),
         ("let fixed = 1\nfixed = 2", "immutable"),
         ("spawn alien.small_gray at center", "inside an at"),
         ("import os", "unsupported syntax"),
@@ -187,6 +184,7 @@ def test_example_library_compiles_within_native_limits(name, entries, seed):
     plan = compile_quest(source, seed=seed)
     assert len(plan.entries) == entries
     assert plan == compile_quest(source, seed=seed)
+    assert len(set(plan.locations)) == len(plan.locations)
     assert all(a.trigger_ms <= b.trigger_ms for a, b in zip(plan.entries, plan.entries[1:], strict=False))
 
 

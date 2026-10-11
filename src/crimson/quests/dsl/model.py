@@ -16,13 +16,20 @@ class CompileLimits:
     collection: int = 4096
     entries: int = 256
     horizon_ms: int = 60 * 60 * 1000
-    copies: int = 4096
+    # Native entries spawn into a 384-creature pool.
+    copies: int = 384
+    trigger_copies: int = 384
+    total_copies: int = 8192
 
 
 @dataclass(frozen=True)
 class SourceLocation:
+    """Where an entry came from; unique per entry within a plan."""
+
     line: int
     iterations: tuple[int, ...]
+    calls: tuple[int, ...] = ()  # pattern call-site lines, outermost first
+    item: int = 0  # position within a place list
 
 
 @dataclass(frozen=True)

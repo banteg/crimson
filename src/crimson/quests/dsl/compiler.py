@@ -234,6 +234,7 @@ class _Compiler:
         self.entries: list[SpawnEntry] = []
         self.locations: list[SourceLocation] = []
         self.iterations: list[int] = []
+        self.calls: list[int] = []
         self.time: int | None = None
         self.patterns: dict[str, ast.FunctionDef] = {}
         self.active_patterns: set[str] = set()
@@ -255,7 +256,7 @@ class _Compiler:
             "int": int,
             "float": float,
             "len": len,
-            "point": Vec2,
+            "point": self.point,
             "corner": self.corner,
             "corners": self.corners,
             "polar": self.polar,
@@ -286,7 +287,18 @@ class _Compiler:
             raise ValueError("integer magnitude exceeds 64 bits")
         if isinstance(value, float) and not math.isfinite(value):
             raise ValueError("numbers must be finite")
+        if isinstance(value, Vec2):
+            self.point(value.x, value.y)
         return value
+
+    @staticmethod
+    def number(value: Any) -> int | float:
+        if not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise TypeError("expected a finite number")
+        return value
+
+    def point(self, x: Any, y: Any) -> Vec2:
+        return Vec2(self.number(x), self.number(y))
 
     @staticmethod
     def integer(value: Any) -> int:
@@ -324,9 +336,8 @@ class _Compiler:
     def ring(self, center: Vec2, radius: float, count: int, *, start: float = 0) -> tuple[Vec2, ...]:
         return tuple(self.polar(center, radius, start + i * math.tau / count) for i in self.bounded_range(count))
 
-    @staticmethod
-    def corner(name: str, *, outside: float = 64) -> Vec2:
-        near, far = -outside, 1024 + outside
+    def corner(self, name: str, *, outside: float = 64) -> Vec2:
+        near, far = -self.number(outside), 1024 + self.number(outside)
         return {
             "northwest": Vec2(near, near),
             "northeast": Vec2(far, near),
@@ -340,7 +351,7 @@ class _Compiler:
         )
 
     def edge(self, side: str, *, outside: float = 64, fraction: float = 0.5) -> Vec2:
-        along = 1024 * fraction
+        outside, along = self.number(outside), 1024 * self.number(fraction)
         return {
             "west": Vec2(-outside, along),
             "east": Vec2(1024 + outside, along),
@@ -354,7 +365,7 @@ class _Compiler:
             raise ValueError("edge_line count must be nonnegative")
         self.bounded_range(count)
         anchor = self.edge(side, outside=outside)
-        step = Vec2(0, spacing) if side in ("west", "east") else Vec2(spacing, 0)
+        step = self.point(0, spacing) if side in ("west", "east") else self.point(spacing, 0)
         start = Vec2(anchor.x - step.x * (count - 1) * 0.5, anchor.y - step.y * (count - 1) * 0.5)
         return self.line(start, step, count)
 
@@ -472,6 +483,9 @@ class _Compiler:
                 result = self.functions[name](*positional, **named)
                 if isinstance(result, (tuple, list, range)):
                     self.tick(node, len(result))
+                    for item in result:
+                        if isinstance(item, Vec2):
+                            self.bounded(item)
             case _:
                 raise ValueError(f"unsupported expression: {type(node).__name__}")
         return self.bounded(result)
@@ -490,19 +504,19 @@ class _Compiler:
         points = positions if node.func.id == "__place__" else (positions,)
         if not isinstance(points, (tuple, list)):
             raise TypeError("place requires a list of points")
-        for point in points:
+        for item, point in enumerate(points):
             self.tick(node)
             if len(self.entries) >= self.limits.entries:
                 raise ValueError("expanded spawn entry limit exceeded")
             if isinstance(point, tuple) and len(point) == 2:
-                point = Vec2(*point)
+                point = self.point(*point)
             if not isinstance(point, Vec2):
                 raise TypeError("expected a point (x, y)")
             entry = spawn(point, template, self.time, count, heading=heading)
             if not all(math.isfinite(value) for value in (entry.pos.x, entry.pos.y, entry.heading)):
                 raise ValueError("spawn positions and headings must be finite float32 values")
             self.entries.append(entry)
-            self.locations.append(SourceLocation(node.lineno, tuple(self.iterations)))
+            self.locations.append(SourceLocation(node.lineno, tuple(self.iterations), tuple(self.calls), item))
 
     def bind(self, target: ast.AST, value: Any, scope: _Scope) -> None:
         match target:
@@ -637,9 +651,11 @@ class _Compiler:
         if len(bindings) != len(names):
             raise ValueError("missing pattern arguments")
         self.active_patterns.add(name)
+        self.calls.append(call.lineno)
         try:
             self.block(definition.body, _Scope(self.root, bindings))
         finally:
+            self.calls.pop()
             self.active_patterns.remove(name)
 
 
@@ -754,6 +770,15 @@ def compile_quest(
         entries = apply_hardcore_spawn_table_adjustment(entries)
         if any(entry.count > limits.copies for entry in entries):
             raise QuestCompileError("hardcore count adjustment exceeds the copy limit")
+    # Copies are template invocations; formations and nests add their own creatures on top.
+    per_trigger: dict[int, int] = {}
+    for entry in entries:
+        per_trigger[entry.trigger_ms] = per_trigger.get(entry.trigger_ms, 0) + entry.count
+    for trigger_ms, copies in per_trigger.items():
+        if copies > limits.trigger_copies:
+            raise QuestCompileError(f"{copies} copies at {trigger_ms} ms exceed the per-trigger copy limit")
+    if sum(per_trigger.values()) > limits.total_copies:
+        raise QuestCompileError("total copies exceed the quest copy limit")
     paired = list(zip(entries, compiler.locations, strict=True))
     if metadata["order"] == "chronological":
         paired.sort(key=lambda pair: pair[0].trigger_ms)

@@ -29,8 +29,9 @@ uv run pytest tests/quests/test_quest_dsl.py -q
 ```
 
 `--seed` is a construction seed. It is not yet a gameplay start seed. JSON includes
-the resolved positions, headings, counts, trigger times, source lines/iteration
-indices, starting weapon and terrain slots.
+the resolved positions, headings, counts, trigger times, starting weapon and terrain
+slots. Each entry also has a source location that is unique within the plan: its
+line, enclosing loop iterations, pattern call-site lines and position in a `place` list.
 
 ## A recipe
 
@@ -122,9 +123,11 @@ time. So the table is a queue:
 - Clearing the arena early brings forward whatever is next in the queue. In a
   chronological table that is the next wave by time; otherwise it may be a later one.
 
-When nobody clears the arena early, any order produces the same arrivals to within
-a frame. Order matters to fast players. Several stock quests list entries out of
-time order, and early clears expose it:
+The scheduler spawns one group per frame. Groups that fall due together queue up a
+frame apart, so same-time entries split by other times, or many groups due at once,
+arrive late by a frame each, and in a dense table those frames add up. Beyond that,
+order matters only to fast players. Several stock quests list entries out of time
+order, and early clears expose it:
 
 - The Beating lists all its ghosts before its alien rings, although both arrive
   from 40 s. An early clear brings only the ghosts forward; the rings keep their time.
@@ -200,14 +203,13 @@ as the builder:
   since that is everything the scheduler reads.
 - Positions must agree within 0.01 px and headings within 1e-4 rad. Recipes use
   plain arithmetic; there is no float32 or x87 emulation.
-- Where randomness decides only where a builder places enemies, the recipe may
-  draw differently. Where it decides what spawns (The Random Factor's big aliens),
-  the recipe's draws must line up with the builder's.
+- Random choices draw from the stream in the builder's order, so Target Practice,
+  Sweep Stakes, Deja vu and The Random Factor match exactly.
 
-The Killing is the one quest where the recipe draws differently. The original
-rolls a random enemy and side for each wave, then ignores both, so its rotation is
-fixed. The recipe skips those ignored rolls, so its random nests land elsewhere
-for the same seed.
+The Killing is the one listed exception. The original rolls a random enemy and side
+for each wave, then ignores both, so its rotation is fixed. The recipe skips those
+ignored rolls, so its random nests land elsewhere for the same seed; the test checks
+they stay within the original's 128..895 square, and still checks every heading.
 
 ## Example encounter library
 
@@ -249,18 +251,22 @@ entries = plan.entries
 ## Bounds and runtime semantics
 
 Default limits: 64 KiB source, 10,000 AST nodes, syntax/pattern depth 64, 100,000
-construction work units, 4,096 items per collection, 256 emitted entries, 4,096
-copies per entry and a one-hour nominal time horizon. Integer intermediates have
-at most 64 magnitude bits. Work accounts for interpreted statements, expressions,
+construction work units, 4,096 items per collection, 256 emitted entries and a
+one-hour nominal time horizon. Copies are capped at 384 per entry and per trigger
+time (the size of the creature pool) and 8,192 per quest, counted after the
+hardcore adjustment; the stock quests peak at 108 per trigger time and 2,000 in
+total. Integer intermediates have at most 64 magnitude bits, and numbers and point
+coordinates must be finite. Work accounts for interpreted statements, expressions,
 iteration and collection operations; it also stops loops that emit nothing.
 
 The compiler interprets an allowlisted AST after lowering the surface syntax. It
 does not use Python `eval` or `exec`. Imports, arbitrary calls, private attributes,
 comprehensions, recursion and access to live game state are unavailable.
 
-These are construction limits, not a guarantee about creature/spawner occupancy
-during every possible run. Native templates can allocate many entities or create
-offspring; pool saturation reporting belongs in later playtesting work.
+Copies count template invocations, not creatures: formations bring their members
+and nests keep spawning. These limits are not a guarantee about creature or spawner
+occupancy during every possible run; pool saturation reporting belongs in later
+playtesting work.
 
 The plan assumes the existing **classic quest scheduler** and clear-all objective.
 Times are nominal gameplay-clock triggers with a strict due-time comparison;
