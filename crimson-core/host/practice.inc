@@ -1,0 +1,281 @@
+// A replay branch stays on Watch's detached save. Its input is live, but its
+// original recording, keyframes and terrain log remain immutable.
+enum PracticePhase {
+  PRACTICE_NONE,
+  PRACTICE_READY,
+  PRACTICE_PLAYING,
+  PRACTICE_PAUSED,
+  PRACTICE_ENDED
+};
+extern "C" int survival_xp_smoothed;
+static struct {
+  PracticePhase phase;
+  Keyframe anchor;
+  int speed, action, xp;
+  bool neutral, started, completed;
+  ui_button_t resume, retry, original;
+  char retry_label[48];
+} practice;
+
+static void practice_stop() {
+  host_frame_hold(HOST_FRAME_ANCHOR_DROP);
+  live.practicing = false;
+  practice = {};
+}
+static const char *practice_reason() {
+  if (!live.watching || live.practicing)
+    return "";
+  if (watch.phase == WATCH_PREPARING)
+    return "Preparing";
+  if (watch.seek || viewer.dragging)
+    return "Seeking";
+  if (player_state_table[0].health <= 0)
+    return "Player is dead";
+  if (watch.phase == WATCH_ENDED || running_down || run_ended())
+    return "Run over";
+  return nullptr;
+}
+static void practice_ready(bool clear_commands = true) {
+  practice.phase = PRACTICE_READY;
+  practice.neutral = false;
+  live.banked = 0;
+  live.due = 0;
+  live.fire_down = live.reload_down = live.pick_down = false;
+  live.fire_pressed = live.reload_pressed = live.open_requested = live.pausing =
+      false;
+  live.click_down = true;
+  live.move_target_x = live.move_target_y = -1;
+  live.aim_heading = player_state_table[0].aim_heading;
+  if (clear_commands)
+    live.queued_count = 0;
+}
+static bool practice_take() {
+  if (practice_reason())
+    return false;
+  practice.anchor = keyframe_capture(watch.tick, watch.at, 0);
+  practice.speed = watch.speed;
+  practice.xp = survival_xp_smoothed;
+  host_frame_hold(HOST_FRAME_ANCHOR_SAVE);
+  const ui_button_t plate = {(char *)"", 0, 0, 1, 0, 0, 0, 1.0f, 0, 0};
+  practice.resume = practice.retry = practice.original = plate;
+  practice.resume.label = (char *)"Resume";
+  char time[16];
+  viewer_clock(time, sizeof time, watch.tick);
+  snprintf(practice.retry_label, sizeof practice.retry_label, "Retry from %s",
+           time);
+  practice.retry.label = practice.retry_label;
+  practice.original.label = (char *)"Watch the original";
+  practice.started = false;
+  ranked_run = false;
+  live.practicing = true;
+  practice_ready();
+  return true;
+}
+// Re-render the original moment through the proven seek path, then restore the
+// exact anchor state. Practice has never appended bakes to the original log.
+static void practice_restore() {
+  float mouse_x = ui_mouse_x, mouse_y = ui_mouse_y;
+  watch.tick = watch.ticks;
+  watch_seek(practice.anchor.tick);
+  keyframe_restore(practice.anchor);
+  watch.tick = practice.anchor.tick;
+  watch.at = practice.anchor.at;
+  watch.paused = true;
+  watch.seek = watch.stop_at = 0;
+  game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
+  ui_mouse_x = mouse_x;
+  ui_mouse_y = mouse_y;
+  survival_xp_smoothed = practice.xp;
+  host_frame_hold(HOST_FRAME_ANCHOR_RESTORE);
+}
+static void practice_return() {
+  practice_restore();
+  watch.speed = practice.speed;
+  practice_stop();
+  viewer_reset();
+  viewer.down = session_grim.IGrim2D_cpp::grim_is_mouse_button_down(0) != 0;
+}
+static void practice_end() {
+  practice.completed = game_state_pending == GAME_STATE_QUEST_RESULTS;
+  practice.phase = PRACTICE_ENDED;
+  live.banked = 0;
+  live.due = 0;
+  game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
+}
+// Aiming is allowed at the gate, but only a fresh gameplay action starts time.
+// The click, Enter or Space used by the viewer must first be released.
+static bool practice_start_input() {
+  const auto &keys = config_blob.input_config[0];
+  return live_down_or_arrow(keys.move_key_forward, 0xc8) ||
+         live_down_or_arrow(keys.move_key_backward, 0xd0) ||
+         live_down_or_arrow(keys.turn_key_left, 0xcb) ||
+         live_down_or_arrow(keys.turn_key_right, 0xcd) ||
+         live_down(keys.fire_key) || live_down(config_blob.key_reload) ||
+         live_down(config_blob.key_pick_perk) || live_down(57) ||
+         live_down(78) ||
+         (config_blob.movement_schemes[0] == 3 &&
+          (fabsf(live_axis(keys.axis_move_x)) > 0.2f ||
+           fabsf(live_axis(keys.axis_move_y)) > 0.2f));
+}
+static bool practice_inputs_neutral() {
+  return !practice_start_input() && !live_down(0x1c) &&
+         !session_grim.IGrim2D_cpp::grim_is_mouse_button_down(0);
+}
+static int practice_frame() {
+  play_time_ms = watch.play_time;
+  time_played_ms = watch.time_played;
+  int action = practice.action;
+  practice.action = 0;
+  if (session_grim.IGrim2D_cpp::grim_was_key_pressed(1)) {
+    if (practice.phase == PRACTICE_PLAYING)
+      practice.phase = PRACTICE_PAUSED;
+    else if (practice.phase == PRACTICE_PAUSED)
+      action = 1;
+    else if (practice.phase == PRACTICE_ENDED || !practice.started)
+      action = 3;
+    else
+      practice.phase = PRACTICE_PAUSED;
+  }
+  if (action == 2 || action == 3) {
+    // Rebuilding terrain draws: defer it until the frame's rendering pass.
+    practice.action = action;
+    live.due = 0;
+    return 1;
+  }
+  if (action == 1 && practice.phase == PRACTICE_PAUSED)
+    practice_ready(false);
+  live.due = 0;
+  if (practice.phase == PRACTICE_READY) {
+    if (!practice.neutral) {
+      practice.neutral = practice_inputs_neutral();
+      if (practice.neutral)
+        live.click_down = false;
+      return 1;
+    }
+    if (!practice_start_input())
+      return 1;
+    practice.phase = PRACTICE_PLAYING;
+    practice.started = true;
+    live_poll();
+    live.due = 1; // the fresh action is the first tick, even on a short frame
+    live.banked = 0;
+  } else if (practice.phase == PRACTICE_PLAYING) {
+    live_poll();
+    live.banked += fminf(grim_frame_dt, 0.1f);
+    live.due = (int)(live.banked * 60.0f + 1e-4f);
+    live.banked -= live.due / 60.0f;
+  }
+  return 1; // paused states still draw their overlay
+}
+static void practice_draw() {
+  grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
+  float band[2] = {0, viewer_h() - 24}, dim[4] = {0, 0, 0, 0.7f};
+  grim_interface_ptr->grim_draw_rect_filled(band, viewer_w(), 24, dim);
+  char time[16], status[96];
+  viewer_clock(time, sizeof time, practice.anchor.tick);
+  snprintf(status, sizeof status, "Practice - Unranked - from %s", time);
+  viewer_text(12, band[1] + 5, status, 1, 1, 1, 1);
+  if (practice.phase == PRACTICE_PLAYING) {
+    viewer_text(viewer_w() - 100, band[1] + 5, "Esc: pause", 0.8f, 0.8f, 0.8f,
+                1);
+    return;
+  }
+  if (practice.phase == PRACTICE_READY) {
+    const char *lines[] = {
+        practice.neutral ? "Move or fire to start" : "Release controls to start",
+        "Aim while the world is paused.",
+        practice.started ? "Esc: practice pause" : "Esc: watch the original"};
+    float box[2] = {viewer_w() * 0.5f - 145, viewer_h() * 0.5f - 42},
+          blue[4] = {0.3f, 0.7f, 1, 1};
+    grim_interface_ptr->grim_draw_rect_filled(box, 290, 84, dim);
+    grim_interface_ptr->grim_draw_rect_filled(box, 290, 2, blue);
+    for (int i = 0; i < 3; ++i)
+      viewer_text(viewer_w() * 0.5f - viewer_text_w(lines[i]) * 0.5f,
+                  box[1] + 14 + i * 22, lines[i], 1, 1, 1, 1);
+  } else {
+    float corner[2];
+    viewer_over_panel(0, corner);
+    bool ended = practice.phase == PRACTICE_ENDED;
+    if (ended)
+      ui_draw_textured_quad((int)(corner[0] - 2), (int)corner[1], 256, 64,
+                            practice.completed ? ui_text_well_done_texture
+                                               : ui_text_reaper_texture);
+    else
+      viewer_text(corner[0] + 38, corner[1] + 30, "Practice paused", 1, 1, 1,
+                  1);
+    viewer_text(corner[0] + 38, corner[1] + 70, status, 0.8f, 0.85f, 0.9f, 1);
+    if (ended) {
+      char duration[64];
+      snprintf(duration, sizeof duration, "%d seconds played from this moment",
+               (int)(tick - practice.anchor.tick) / 60);
+      viewer_text(corner[0] + 38, corner[1] + 100, duration, 1, 1, 1, 1);
+      viewer_text(corner[0] + 38, corner[1] + 122,
+                  "Attempt not saved - no scores submitted", 0.8f, 0.8f, 0.8f,
+                  1);
+    }
+    float at[2] = {corner[0] + 52, corner[1] + 165};
+    if (!ended) {
+      if (ui_button_update(at, &practice.resume))
+        practice.action = 1;
+      at[1] += 32;
+    }
+    if (ui_button_update(at, &practice.retry))
+      practice.action = 2;
+    at[1] += 32;
+    if (ui_button_update(at, &practice.original))
+      practice.action = 3;
+  }
+  ui_cursor_render();
+}
+static void practice_render() {
+  int action = practice.action;
+  practice.action = 0;
+  if (action == 3) {
+    practice_return();
+    return watch_render();
+  }
+  if (action == 2) {
+    practice_restore();
+    practice_ready();
+  }
+  bool drew = false;
+  if (practice.phase == PRACTICE_PLAYING)
+    live_poll_prompt();
+  terrain.baking = true;
+  for (int i = 0; i < live.due && practice.phase == PRACTICE_PLAYING; ++i) {
+    unsigned before = tick;
+    bool again = live_tick();
+    drew |= tick != before;
+    if (!again)
+      break;
+  }
+  terrain.baking = false;
+  if (drew)
+    host_frame_hold(HOST_FRAME_SAVE);
+  else
+    host_frame_hold(HOST_FRAME_SHOW);
+  if (game_state_id == GAME_STATE_GAMEPLAY)
+    practice_draw();
+}
+extern "C" {
+void game_live_focus_lost() {
+  if (live.practicing && game_state_id == GAME_STATE_GAMEPLAY &&
+      practice.phase == PRACTICE_PLAYING)
+    practice.phase = PRACTICE_PAUSED;
+}
+// Host-facing practice controls, also used by the end-to-end branch check.
+__attribute__((export_name("game_practice_take"))) int game_practice_take() {
+  return practice_take();
+}
+__attribute__((export_name("game_practice_state"))) int game_practice_state() {
+  return (int)practice.phase;
+}
+__attribute__((export_name("game_practice_ticks"))) int game_practice_ticks() {
+  return live.practicing ? (int)tick - practice.anchor.tick : 0;
+}
+__attribute__((export_name("game_practice_action"))) void
+game_practice_action(int action) {
+  if (live.practicing && action >= 1 && action <= 3)
+    practice.action = action;
+}
+}

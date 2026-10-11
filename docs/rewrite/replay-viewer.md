@@ -116,6 +116,36 @@ name (`game_watch_name`), and the board's rank and the day it took the run
 client takes them from `CRIMSON_WATCH`, `CRIMSON_WATCH_CARD`,
 `CRIMSON_WATCH_SEEK` and `CRIMSON_WATCH_STOP` for unattended captures.
 
+## Practice takeover
+
+In the native and web clients, **Take over here** on the replay bar (or Enter)
+freezes the displayed alive tick. Release the viewer's controls, then move,
+fire, reload or request a perk to start at 1x. Aiming alone keeps the world
+paused. The branch uses the player's controls and the recorded run's settings;
+pending and future perks use the normal perk menu.
+
+The strip says **Practice - Unranked - from m:ss**. Escape pauses with Resume,
+Retry from the anchor and Watch the original. Resume and retry both require a
+fresh input. Before the first tick, Escape returns directly to the original.
+Focus loss pauses. Death or quest completion offers retry and return, without
+score or name entry. Return restores the original anchor, paused, at its old
+viewer speed. Preparing, seeking, dead and finished moments cannot be taken over.
+
+Practice stays on Watch's detached save: it writes no progress, unlocks,
+high scores, recordings or upload outbox entries. Attempts are unsaved in this
+version. The original recording, keyframes and terrain log remain unchanged.
+Retry rebuilds the original terrain through seek, then restores the exact
+captured anchor, while retaining the human cursor. One extra render target
+keeps the anchor frame including the animated HUD; retry and return copy it
+back after rebuilding terrain. Leaving Watch releases it.
+
+`checks/game_practice.mjs` compares alternate live inputs after a restored
+anchor with initialization plus the recorded prefix and those same inputs.
+It covers Survival, Rush and Quests, early/keyframe/late anchors, pending perk
+choices, stale input, aiming, focus loss, retry, return and persistence.
+Native frame captures additionally check the rendered terrain and HUD on
+retry and return. The Python viewer's takeover is a follow-up.
+
 ## The Python port
 
 The Python simulation plays about 4,000 ticks/s early in a run and about 640

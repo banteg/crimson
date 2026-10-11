@@ -43,13 +43,15 @@ simulation state, which only ticks write. The console's flag pauses parts of a t
          console_log_queue.console_set_open(!console_log_queue.open);
      }
      console_log_queue.update();
-@@ -434,7 +434,8 @@
+@@ -434,7 +434,9 @@
              || game_state_id == GAME_STATE_PLUGIN_RUNTIME
              || game_state_id == GAME_STATE_TYPO_GAMEPLAY)) {
-         ui_transition_direction = 0;
+-        ui_transition_direction = 0;
 -        game_state_pending = GAME_STATE_PAUSE_MENU;
-+        if (!game_live_pause())
++        if (!game_live_pause()) {
++            ui_transition_direction = 0;
 +            game_state_pending = GAME_STATE_PAUSE_MENU;
++        }
          if (plugin_interface_ptr != 0) {
              plugin_interface_ptr->parms.fields.onPause = 1;
          }

@@ -40,7 +40,7 @@ static constexpr float VIEWER_IDLE_SECONDS = 2.5f;
 static constexpr float VIEWER_PIP_W = 8.0f, VIEWER_PIP_H = 16.0f;
 
 static struct {
-  int pip_on, pip_off; // texture handles
+  int pip_on, pip_off, take_plate; // texture handles
   float idle;   // seconds since the viewer moved the cursor
   float shown;  // the bar's slide: 0 away, 1 up
   float last_x, last_y;
@@ -57,6 +57,7 @@ static void viewer_reset() {
   auto handle = [](const char *name) { return grim_interface_ptr->grim_get_texture_handle((char *)name); };
   viewer.pip_on = handle("ui_rectOn");
   viewer.pip_off = handle("ui_rectOff");
+  viewer.take_plate = handle("ui_buttonMd");
   viewer.idle = 0;
   viewer.shown = 1;
   viewer.dragging = viewer.down = false;
@@ -74,7 +75,7 @@ static float viewer_h() { return (float)config_blob.screen_height; }
 static float viewer_bar_y() { return viewer_h() - VIEWER_BAR_H * viewer.shown; }
 // The scrub bar: its segments' left edge, count and row.
 static float viewer_scrub_x() { return 112.0f; }
-static int viewer_pips() { return (int)((viewer_w() - viewer_scrub_x() - 120.0f) / VIEWER_PIP_W); }
+static int viewer_pips() { return (int)((viewer_w() - viewer_scrub_x() - 290.0f) / VIEWER_PIP_W); }
 static float viewer_scrub_y() { return viewer_bar_y() + 18.0f; }
 static int viewer_tick_at(float x) {
   float t = (x - viewer_scrub_x()) / (viewer_pips() * VIEWER_PIP_W);
@@ -142,6 +143,9 @@ static void viewer_update(float dt) {
     viewer.dragging = true;
   else if (pressed && !on_bar && !viewer_over_card(x, y) && watch.phase == WATCH_PLAYING)
     watch.paused = !watch.paused;
+  if (pressed && on_bar && x >= viewer_w() - 160 && x < viewer_w() - 15 &&
+      y >= viewer_bar_y() + 2 && y < viewer_bar_y() + 34)
+    practice_take();
   if (!down)
     viewer.dragging = false;
   if (viewer.dragging) {
@@ -214,6 +218,18 @@ static void viewer_bar() {
   viewer_clock(total, sizeof total, watch.ticks);
   snprintf(line, sizeof line, "%s / %s", now, total);
   viewer_shadowed(sx + pips * VIEWER_PIP_W + 12, sy + 1, line, 0.9f, 0.9f, 0.9f, 0.9f);
+
+  const char *reason = practice_reason();
+  float take_x = viewer_w() - 160, take_y = viewer_bar_y() + 2;
+  bool take_over = mx >= take_x && mx < take_x + 145 && my >= take_y && my < take_y + 32;
+  if (!reason && take_over) {
+    float highlight[2] = {take_x + 12, take_y + 5}, blue[4] = {0.5f, 0.5f, 0.7f, 0.7f};
+    grim_interface_ptr->grim_draw_rect_filled(highlight, 121, 22, blue);
+  }
+  viewer_quad(viewer.take_plate, take_x, take_y, 145, 32, 0, 0, 1, 1, reason ? 0.5f : 1);
+  const char *label = reason ? reason : "Take over here";
+  viewer_text(take_x + (145 - viewer_text_w(label)) * 0.5f, take_y + 10, label, 1, 1, 1, reason ? 0.5f : 1);
+  viewer_shadowed(take_x, take_y + 33, "Unranked practice - Enter", 0.75f, 0.78f, 0.82f, 0.9f);
 
   // Under the cursor: the time, and a mark near it.
   if (viewer_over_scrub(mx, my) || viewer.dragging) {

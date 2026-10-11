@@ -54,7 +54,16 @@ static struct {
   game_state_id_t requested; // a state a tick asked for
   std::vector<unsigned char> replay;
   bool watching; // the run plays a replay (watch.inc)
+  bool practicing; // detached Watch state driven by live input (practice.inc)
 } live;
+
+static bool practice_take();
+static const char *practice_reason();
+static void practice_stop();
+static void practice_ready(bool clear_commands);
+static void practice_end();
+static int practice_frame();
+static void practice_render();
 
 #include "replay.inc"
 #include "ranked.inc"
@@ -102,7 +111,7 @@ static void live_enter_run() {
   run.shadows_enabled = player.shadows_enabled;
   run.flame_glow_enabled = player.flame_glow_enabled;
   run.smoke_enabled = player.smoke_enabled;
-  run.ui_info_texts = live.watching ? 0 : player.ui_info_texts;
+  run.ui_info_texts = live.watching && !live.practicing ? 0 : player.ui_info_texts;
   live_install(live.run);
 }
 // Word by word, what the tick changed reaches the player's settings: a status
@@ -225,7 +234,7 @@ static void live_poll() {
   bool fire = live_down(keys.fire_key), reload = live_down(config_blob.key_reload),
        pick = live_down(config_blob.key_pick_perk);
   // Escape asks for the pause menu (game_frame_update), also on a pass with no tick.
-  if (session_grim.IGrim2D_cpp::grim_was_key_pressed(1)) {
+  if (!live.practicing && session_grim.IGrim2D_cpp::grim_was_key_pressed(1)) {
     ui_transition_direction = 0;
     live.pausing = true;
   }
@@ -343,12 +352,18 @@ static bool live_tick() {
       commands[count++] = live.queued[0];
     memmove(live.queued, live.queued + 1, --live.queued_count * sizeof(PortableCommand));
   }
-  live_append(&in, sizeof in);
-  live_append(&count, sizeof count);
-  live_append(commands, count * sizeof(PortableCommand));
+  if (!live.practicing) {
+    live_append(&in, sizeof in);
+    live_append(&count, sizeof count);
+    live_append(commands, count * sizeof(PortableCommand));
+  }
   live.fire_pressed = live.reload_pressed = live.open_requested = false;
   live.requested = GAME_STATE_PENDING_IDLE_SENTINEL;
   if (!live_step(count)) {
+    if (live.practicing) {
+      practice_end();
+      return false;
+    }
     // The run is over: its screen follows, as the timeline would have shown it.
     live.replay.resize(live.replay.size() - sizeof in - sizeof count - count * sizeof(PortableCommand));
     live_end(game_state_pending == GAME_STATE_QUEST_RESULTS ? "quest_completed" : "death");
@@ -380,8 +395,21 @@ static bool live_tick() {
   return true;
 }
 
+static void live_poll_prompt() {
+  // A click on the perk prompt, where the original laid it out, also asks for
+  // the perk menu, with this frame's cursor; a tick never hit-tests it, as the
+  // verifier lays out no prompt (game/changes/live-run.patch).
+  // A press is the button going down since the last pass of play.
+  bool down = session_grim.IGrim2D_cpp::grim_is_mouse_button_down(0) != 0, pressed = down && !live.click_down;
+  live.click_down = down;
+  float x = ui_mouse_x - perk_prompt_origin_x, y = ui_mouse_y - perk_prompt_origin_y;
+  live.open_requested |= pressed && live_perk_command_valid() && x > perk_prompt_bounds_min_x &&
+                         y > perk_prompt_bounds_min_y && x < perk_prompt_bounds_max_x && y < perk_prompt_bounds_max_y;
+}
+
 #include "keyframes.inc"
 #include "watch.inc"
+#include "practice.inc"
 
 extern "C" {
 // game_frame (game/frame.cpp), after polling input: the ticks this pass runs,
@@ -390,6 +418,8 @@ int game_live_frame() {
   watch_follow_link();
   if (!game_live || game_state_id != GAME_STATE_GAMEPLAY)
     return -1;
+  if (live.practicing)
+    return practice_frame();
   if (live.watching)
     return watch_frame();
   live_poll();
@@ -413,17 +443,11 @@ void gameplay_update_and_render() {
     gameplay_update_and_render_recovered();
     return;
   }
+  if (live.practicing)
+    return practice_render();
   if (live.watching)
     return watch_render();
-  // A click on the perk prompt, where the original laid it out, also asks for
-  // the perk menu, with this frame's cursor; a tick never hit-tests it, as the
-  // verifier lays out no prompt (game/changes/live-run.patch).
-  // A press is the button going down since the last pass of play.
-  bool down = session_grim.IGrim2D_cpp::grim_is_mouse_button_down(0) != 0, pressed = down && !live.click_down;
-  live.click_down = down;
-  float x = ui_mouse_x - perk_prompt_origin_x, y = ui_mouse_y - perk_prompt_origin_y;
-  live.open_requested |= pressed && live_perk_command_valid() && x > perk_prompt_bounds_min_x &&
-                         y > perk_prompt_bounds_min_y && x < perk_prompt_bounds_max_x && y < perk_prompt_bounds_max_y;
+  live_poll_prompt();
   for (int i = 0; i < live.due && live_tick(); ++i) {
   }
 }
@@ -440,6 +464,8 @@ void game_live_quit() {
   ranked_release();
 }
 bool game_live_pause() {
+  if (live.watching)
+    return true; // Watch and practice handle Escape before the recovered frame.
   live.pausing |= game_live;
   return game_live;
 }
@@ -481,7 +507,9 @@ void game_state_set(game_state_id_t state) {
   // A replay stops for any screen; leaving a run for anything but its own
   // screens (the perk menu, and the pause menu with its options) ends it
   // unfinished.
-  if (live.watching && state != GAME_STATE_GAMEPLAY)
+  if (live.practicing && state == GAME_STATE_GAMEPLAY && game_state_id == GAME_STATE_PERK_SELECTION)
+    practice_ready(false);
+  if (live.watching && state != GAME_STATE_GAMEPLAY && !(live.practicing && state == GAME_STATE_PERK_SELECTION))
     watch_stop();
   else if (game_live && state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&
            state != GAME_STATE_PAUSE_MENU && state != GAME_STATE_OPTIONS_MENU && state != GAME_STATE_CONTROLS_MENU)

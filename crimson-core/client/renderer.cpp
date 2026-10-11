@@ -376,7 +376,7 @@ void renderer_present(int window_width, int window_height) {
 void renderer_resume() { bind_target(); }
 
 // The kept frame (host_frame_hold): the back buffer copied aside, and back.
-Target held;
+Target held, anchor;
 
 // The back buffer as top-down RGBA rows.
 std::vector<unsigned char> renderer_capture(int &width, int &height) {
@@ -394,20 +394,28 @@ std::vector<unsigned char> renderer_capture(int &width, int &height) {
 
 extern "C" {
 void w2c_host_frame_hold(struct w2c_host *, u32 op) {
+  if (op == 5) { // HOST_FRAME_ANCHOR_DROP
+    release(anchor);
+    anchor = {};
+    return;
+  }
   Target &back = textures[0];
   if (!back.framebuffer)
     return;
-  if (held.width != back.width || held.height != back.height) {
-    release(held);
-    held.width = back.width;
-    held.height = back.height;
-    held.flags = 1;
-    allocate(held);
+  Target &from = op == 1 ? back : op == 4 ? anchor : held;
+  Target &to = op == 1 || op == 4 ? held : op == 3 ? anchor : back;
+  if (!from.framebuffer)
+    return;
+  if (to.width != from.width || to.height != from.height || !to.framebuffer) {
+    release(to);
+    to.width = from.width;
+    to.height = from.height;
+    to.flags = 1;
+    allocate(to);
   }
-  bool save = op == 1; // HOST_FRAME_SAVE (game/host_abi.h); 2 shows it
-  glBindFramebuffer(GL_READ_FRAMEBUFFER, save ? back.framebuffer : held.framebuffer);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, save ? held.framebuffer : back.framebuffer);
-  glBlitFramebuffer(0, 0, back.width, back.height, 0, 0, back.width, back.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, from.framebuffer);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, to.framebuffer);
+  glBlitFramebuffer(0, 0, from.width, from.height, 0, 0, to.width, to.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
   bind_target();
 }
 void w2c_host_texture_copy(struct w2c_host *, u32 destination, u32 source) {

@@ -53,6 +53,7 @@ bool grim_mouse_poll(void);
 extern "C" int crimsonland_main_exit(void);
 extern "C" int game_live_frame(void);
 extern "C" void game_live_quit(void);
+extern "C" void game_live_focus_lost(void);
 
 static bool quit_posted;
 
@@ -125,6 +126,7 @@ GAME_EXPORT(game_activate) void game_activate(int active) {
       ((bool (*)(void))grim_on_device_restore)();
     grim_timing_frozen = false;
   } else {
+    game_live_focus_lost();
     if (grim_d3d_device)
       ((bool (*)(void))grim_on_device_lost)();
     grim_timing_frozen = true;

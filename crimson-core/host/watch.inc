@@ -201,6 +201,7 @@ static void watch_keep() {
 
 static void watch_leave();
 static void watch_begin() {
+  practice_stop();
   watch.armed = false;
   watch.play_time = play_time_ms;
   watch.time_played = time_played_ms;
@@ -242,6 +243,7 @@ static int watch_due(int due) {
 
 // The replay stops, and the menu settings are the player's again.
 static void watch_stop() {
+  practice_stop();
   if (live.watching) {
     play_time_ms = watch.play_time;
     time_played_ms = watch.time_played;
@@ -543,6 +545,8 @@ static void watch_follow_link() {
 // viewer follows the cursor; Escape leaves.
 static int watch_frame() {
   auto pressed = [](int key) { return session_grim.IGrim2D_cpp::grim_was_key_pressed(key) != 0; };
+  if (pressed(0x1c) && practice_take())
+    return 1;
   // Escape: the scores show from the next pass, which their own Escape would
   // otherwise take as well.
   if (pressed(1) || watch.leave) {
@@ -595,6 +599,8 @@ static void watch_render() {
     watch_prepare();
   else {
     viewer_update(dt);
+    if (live.practicing)
+      return practice_render();
     if (watch.seek) {
       watch_seek(watch.seek);
       watch.seek = 0;

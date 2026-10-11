@@ -117,6 +117,13 @@ jobs:
           SDL_AUDIODRIVER: dummy
         run: xvfb-run -a -s "-screen 0 1280x1024x24" python3 crimson-core/checks/native_client_network.py crimson-core/build/dist/crimsonland/crimson
 
+      - name: Check practice buttons and frame restoration
+        if: matrix.name == 'linux'
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          SDL_AUDIODRIVER: dummy
+        run: xvfb-run -a -s "-screen 0 1280x1024x24" python3 crimson-core/checks/native_practice.py crimson-core/build/dist/crimsonland/crimson
+
       - name: Verify the web identity and bytes
         if: matrix.name == 'web'
         env:

@@ -814,10 +814,12 @@ SDL_AppResult SDL_AppIterate(void *) {
                        std::to_string(captured_frame) + ".json";
     if (FILE *fp = fopen(path.c_str(), "w")) {
       fprintf(fp,
-              "{\"watch_status\":%d,\"watch_tick\":%d,\"watch_ticks\":%d}\n",
+              "{\"watch_status\":%d,\"watch_tick\":%d,\"watch_ticks\":%d,\"practice_state\":%d,\"practice_ticks\":%d}\n",
               (int)w2c_game_game_watch_status(&game),
               (int)w2c_game_game_watch_tick(&game),
-              (int)w2c_game_game_watch_ticks(&game));
+              (int)w2c_game_game_watch_ticks(&game),
+              (int)w2c_game_game_practice_state(&game),
+              (int)w2c_game_game_practice_ticks(&game));
       fclose(fp);
     }
     captured_frame = -1;

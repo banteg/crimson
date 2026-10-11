@@ -26,7 +26,10 @@ HOST_IMPORT(draw) void host_draw(int primitive, const void *vertices, int vertex
 HOST_IMPORT(present) void host_present(void);
 // The last drawn frame, kept and shown again under what a replay draws over it
 // while no tick draws (host/watch.inc): save the back buffer, or show the saved one.
-enum { HOST_FRAME_SAVE = 1, HOST_FRAME_SHOW = 2 };
+enum {
+  HOST_FRAME_SAVE = 1, HOST_FRAME_SHOW = 2,
+  HOST_FRAME_ANCHOR_SAVE = 3, HOST_FRAME_ANCHOR_RESTORE = 4, HOST_FRAME_ANCHOR_DROP = 5
+};
 HOST_IMPORT(frame_hold) void host_frame_hold(int op);
 // A render target's pixels copied into another texture, made like it if it is
 // new: a replay keeps its terrain at points along the run (host/keyframes.inc).
