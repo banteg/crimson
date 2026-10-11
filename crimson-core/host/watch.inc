@@ -529,10 +529,13 @@ static void watch_follow_link() {
     watch.linked = false;
     watch_start(watch.link, watch.link_card);
     ui_elements_timeline = 0;
-    // The menu's theme, which the skipped intro started, stops at once: the link
-    // cut the menu, and the theme's fade would play over the preparing pass.
-    music_track_volume[music_track_crimson_theme_id] = 0;
-    sfx_entry_stop(&music_entry_table[music_track_crimson_theme_id]);
+    // The intro's tune and the menu's theme, which the skipped intro faded out
+    // and started, stop at once: the link cut both, and their fades would play
+    // over the preparing pass.
+    for (int track : {music_track_intro_id, music_track_crimson_theme_id}) {
+      music_track_volume[track] = 0;
+      sfx_entry_stop(&music_entry_table[track]);
+    }
   }
 }
 

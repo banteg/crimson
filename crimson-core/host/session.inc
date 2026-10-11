@@ -489,11 +489,17 @@ void game_state_set(game_state_id_t state) {
   bool starts = state == GAME_STATE_GAMEPLAY && !run_active && live_eligible();
   // The run a replay starts counts in none of the player's statistics.
   game_status_t status = game_status_blob;
-  game_state_set_recovered(state);
-  if (watches) {
-    game_status_blob = status;
-    watch_begin();
-  } else if (starts)
+  {
+    // A replay's run starts unheard (a quest's start readies its weapon), as
+    // the preparing pass that follows plays it.
+    WatchUnheard unheard(watches);
+    game_state_set_recovered(state);
+    if (watches) {
+      game_status_blob = status;
+      watch_begin();
+    }
+  }
+  if (!watches && starts)
     live_begin();
   if (starts)
     live.banked = 0;

@@ -29,7 +29,8 @@ const { game } = run;
 const HIGHSCORES = 14;
 // DirectInput scancodes: Escape, 1, [, ], period, Space, Page Down.
 const [ESCAPE, ONE, SLOWER, FASTER, STEP, SPACE, PAGE_DOWN] = [0x01, 0x02, 0x1a, 0x1b, 0x34, 0x39, 0xd1];
-// A frame after `dt` milliseconds, with keys tapped for it.
+// A frame after `dt` milliseconds, with keys tapped for it; `mixed` is its sound.
+let mixed;
 function frame(dt = 16, taps = []) {
   const input = run.input();
   for (const key of taps) {
@@ -39,7 +40,7 @@ function frame(dt = 16, taps = []) {
     input.setInt32(INPUT.event_count, n + 1, true);
   }
   run.frame(dt);
-  game.game_audio(735);
+  mixed = new Int16Array(game.memory.buffer, game.game_audio(735), 735 * 2);
 }
 const memory = () => Buffer.from(game.memory.buffer);
 // The fields a replay plays; between ticks the player holds their own key codes.
@@ -61,13 +62,18 @@ function files(dir = directory) {
 
 const fixtures = path.join(ROOT, "tests/fixtures/replays");
 fs.mkdirSync(watched, { recursive: true });
-// A link opened as the game boots skips the intro and the menu.
+// A link opened as the game boots skips the intro and the menu. It comes in
+// once the intro's tune plays, as the page's fetch does, and the preparing pass
+// that follows is silent.
 fs.copyFileSync(path.join(fixtures, "quest-1.1-completed.crd"), path.join(watched, "linked.crd"));
+while (run.clock < 1500) frame();
 memory().write("watched/linked.crd\0", game.game_replay_path(), "latin1");
 if (!game.game_replay_open() || !game.game_watch()) throw Error("a link at startup does not take");
-for (let frames = 0; game.game_watch_status() < 0; ++frames) {
+for (let frames = 0; game.game_watch_status() < 0 || !game.game_watch_ticks(); ++frames) {
   if (frames > 2000) throw Error("a link at startup never plays");
   frame();
+  if (game.game_watch_status() === 0 && !game.game_watch_ticks() && mixed.some((v) => v !== 0))
+    throw Error("a link's preparing pass is not silent");
 }
 if (run.clock > 5000) throw Error(`a link at startup waited ${run.clock} ms for the intro`);
 frame(16, [ESCAPE]);
