@@ -165,8 +165,9 @@ a run, and only choose samples.
 
 ### Watching replays
 
-A replay the module can play (one player in Survival, Rush or Quests, under
-the current [rules](../docs/formats/replay.md)) plays as a run whose ticks come
+A replay the module can play (one player in Survival, Rush or the original's
+Quests, under the current [rules](../docs/formats/replay.md); custom quests need
+the HUD's title and byline first) plays as a run whose ticks come
 from its recording ([`host/watch.inc`](host/watch.inc)); the card of one it
 cannot play says why ([`host/replay.inc`](host/replay.inc)). Nothing it plays
 reaches the player: no settings or progress carry over, nothing is saved, and

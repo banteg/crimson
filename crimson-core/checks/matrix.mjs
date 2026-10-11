@@ -1,5 +1,6 @@
 // Input-only bot and parity runner. No state mutation or score submission.
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -19,6 +20,7 @@ import {
   decode,
   fieldRanges,
   firstDifference,
+  QUEST_BYTES,
 } from "./engine.mjs";
 
 const out = path.resolve(
@@ -371,7 +373,30 @@ function displacement(magnitude) {
 if (JSON.stringify(displacement(1)) !== JSON.stringify(displacement(100)))
   throw Error("Large vector speeds up movement");
 
-// [name, config arguments, bot, tick limit, controls, hunt].
+// A malformed custom quest never starts: WASM refuses its init and the native host exits 3.
+{
+  const empty = Buffer.concat([config(3, 0, 0), Buffer.alloc(QUEST_BYTES)]);
+  let refused = false;
+  try {
+    init(e, empty);
+  } catch {
+    refused = true;
+  }
+  const n = spawnSync(native, [], { input: empty, timeout: 60000 });
+  if (!refused || n.status !== 3) throw Error(`An empty custom quest started: wasm=${!refused} native=${n.status}`);
+}
+
+// A custom quest's table, as checks/replay.py writes it from a recipe; its scenario starts the quest at stage 0.0.
+const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "custom-quest-"));
+function quest(recipe, hardcore = false) {
+  const file = path.join(scratch, `${path.basename(recipe)}${hardcore ? ".hardcore" : ""}.bin`);
+  const args = ["run", "--no-sync", "python", fileURLToPath(new URL("checks/replay.py", CORE)), "--recipe"];
+  const made = spawnSync("uv", [...args, fileURLToPath(new URL(`../src/crimson/quests/dsl/${recipe}`, CORE)), ...(hardcore ? ["--hardcore"] : []), "--out", file]);
+  if (made.status !== 0) throw Error(`${recipe}: ${made.stderr}`);
+  return fs.readFileSync(file);
+}
+
+// [name, config arguments, bot, tick limit, controls, hunt]; a `quest` option plays that custom quest.
 const scenarios = [
   ["rush-idle", [2], false, 6000, PAD],
   ["rush-bot", [2], true, 30000, MOUSE],
@@ -410,6 +435,18 @@ const scenarios = [
 for (let major = 1; major <= 5; major++)
   for (let minor = 1; minor <= 10; minor++)
     scenarios.push([`quest-${major}.${minor}`, [3, major, minor], true, 30000, minor % 2 ? PAD : MOUSE]);
+scenarios.push(
+  ["custom-crosswind", [3, 0, 0, { seed: 31, quest: quest("examples/crosswind.quest") }], true, 30000, PAD],
+  ["custom-closing-circle", [3, 0, 0, { seed: 32, quest: quest("examples/closing-circle.quest") }], true, 30000, MOUSE],
+  ["custom-1.1", [3, 0, 0, { seed: 33, quest: quest("stock/1.1.quest") }], true, 30000, MOUSE],
+  [
+    "custom-formation-parade-hardcore",
+    [3, 0, 0, { seed: 34, hardcore: 1, quest: quest("examples/formation-parade.quest", true) }],
+    true,
+    30000,
+    PAD,
+  ],
+);
 scenarios.push([
   "quest-settings",
   [3, 1, 1, { seed: 2345, detail: 0, violence: 1, hardcore: 1, retry: 3, friendly: 1, usage: true }],
@@ -436,15 +473,19 @@ function rankedPlaysAlike(run, cfg) {
 }
 
 const report = {
-  guards: "16 native/WASM rejection probes; large-vector speed cap",
+  guards: "16 native/WASM rejection probes; an unstartable custom quest; large-vector speed cap",
   cases: [],
 };
 // Each scenario plays under the original's bugs, and again under the documented
 // fixes of the ranked rules wherever those change the run.
 for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] of scenarios) {
   console.log(`${scenario}: generating input stream`);
-  const runs = [[scenario, play(config(mode, major, minor, { ...options, preserveBugs: 1 }), bot, limit, scheme, hunt)]];
-  const ranked = config(mode, major, minor, { ...options, preserveBugs: 0 });
+  const head = (preserveBugs) => {
+    const cfg = config(mode, major, minor, { ...options, preserveBugs });
+    return options?.quest ? Buffer.concat([cfg, options.quest]) : cfg;
+  };
+  const runs = [[scenario, play(head(1), bot, limit, scheme, hunt)]];
+  const ranked = head(0);
   if (rankedPlaysAlike(runs[0][1], ranked)) console.log(`${scenario}: the ranked rules play the same run`);
   else runs.push([`${scenario}-ranked`, play(ranked, bot, limit, scheme, hunt)]);
   for (const [name, run] of runs) {
@@ -490,6 +531,9 @@ if (!report.cases.some((c) => c.coverage.max_commands > 1))
   throw Error("No ordered command batch covered");
 if (!report.cases.some((c) => c.final.pending === 8))
   throw Error("No quest completion covered");
+if (!report.cases.some((c) => c.name.startsWith("custom-") && c.final.pending === 8))
+  throw Error("No custom quest completion covered");
+fs.rmSync(scratch, { recursive: true });
 if (!report.cases.some((c) => c.final.pending === 12))
   throw Error("No quest failure covered");
 if (!report.cases.some((c) => c.final.pending === 7))

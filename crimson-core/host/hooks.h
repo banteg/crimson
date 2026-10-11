@@ -5,6 +5,8 @@
 #include "crt_rand.h"
 #include "portable_math.h"
 #include "rules.h"
+// The custom quest a run plays in place of a stock one, or null (host/host.cpp, seams/custom-quest.patch).
+extern "C" struct quest_meta_t *portable_custom_quest;
 #ifdef CRIMSON_GAME
 extern "C" {
 // The game module takes the recording only inside a tick (host/game.inc).

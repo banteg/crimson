@@ -1,5 +1,5 @@
 {
-  "guards": "16 native/WASM rejection probes; large-vector speed cap",
+  "guards": "16 native/WASM rejection probes; an unstartable custom quest; large-vector speed cap",
   "cases": [
     {
       "name": "rush-idle",
@@ -3443,6 +3443,170 @@
         "reload": 7,
         "max_commands": 1,
         "peak_creatures": 8,
+        "stall": true,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "custom-crosswind",
+      "ticks": 929,
+      "fields_per_snapshot": 36343,
+      "sha256": "dab3e6c18e2f90a8b7d44b502de18aef2537b6d341c7ebb20d5cd36d4f524f32",
+      "final_sha256": "6071f12a588648b3faaf5b1ef149750e535b3939f72f545c14421be23a989ed2",
+      "wasm_memory_mib": 2.5,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 12,
+        "xp": 520,
+        "health": -10,
+        "elapsed_ms": 14864,
+        "timeline_ms": 14368,
+        "rng": 2066026008
+      },
+      "coverage": {
+        "weapons": [
+          3
+        ],
+        "perks": [],
+        "bonuses": [],
+        "menu": 0,
+        "reload": 7,
+        "max_commands": 0,
+        "peak_creatures": 16,
+        "stall": true,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "custom-closing-circle",
+      "ticks": 775,
+      "fields_per_snapshot": 36343,
+      "sha256": "2c84bc33af60682c4a8d4b4c3bbd3bb929531cdab73a888046e2c31b50e3bd47",
+      "final_sha256": "b91c196cf423ed7107f1bd781c869a21d9df95a6ce8c72985e9e1e9a5a4464ab",
+      "wasm_memory_mib": 2.5,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 12,
+        "xp": 1000,
+        "health": 0,
+        "elapsed_ms": 12400,
+        "timeline_ms": 11904,
+        "rng": 4017083581
+      },
+      "coverage": {
+        "weapons": [
+          5
+        ],
+        "perks": [],
+        "bonuses": [],
+        "menu": 0,
+        "reload": 6,
+        "max_commands": 0,
+        "peak_creatures": 36,
+        "stall": true,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "custom-closing-circle-ranked",
+      "ticks": 773,
+      "fields_per_snapshot": 36343,
+      "sha256": "434366dc35ccc1cb69164ec2695ffc08a7203f5b585bf9125dfca58c69ba2803",
+      "final_sha256": "ec319c4b9fa56306ec1a50a10d059075323687d84ecdff7d9cf79b1650aa340f",
+      "wasm_memory_mib": 2.5,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 12,
+        "xp": 1000,
+        "health": 0,
+        "elapsed_ms": 12368,
+        "timeline_ms": 11872,
+        "rng": 696522475
+      },
+      "coverage": {
+        "weapons": [
+          5
+        ],
+        "perks": [],
+        "bonuses": [],
+        "menu": 0,
+        "reload": 6,
+        "max_commands": 0,
+        "peak_creatures": 36,
+        "stall": true,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "custom-1.1",
+      "ticks": 1557,
+      "fields_per_snapshot": 36343,
+      "sha256": "a3dc864a032381ec8732f42b2c8eb9c65c133d4610ce0978b5a28e7df710e53f",
+      "final_sha256": "25aa9d7c6a90ddb1f15d68a246efbdb7ce247f1d12c23e94ea0bfcc319f3b22f",
+      "wasm_memory_mib": 2.5,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 8,
+        "xp": 1250,
+        "health": 90,
+        "elapsed_ms": 24912,
+        "timeline_ms": 21968,
+        "rng": 1145344355
+      },
+      "coverage": {
+        "weapons": [
+          1
+        ],
+        "perks": [],
+        "bonuses": [],
+        "menu": 0,
+        "reload": 12,
+        "max_commands": 0,
+        "peak_creatures": 5,
+        "stall": true,
+        "transitions": true,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "custom-formation-parade-hardcore",
+      "ticks": 1422,
+      "fields_per_snapshot": 36343,
+      "sha256": "da56a16b20336fc47f7569ace94100eb4a0bd6a872253adfed5315acb590b67c",
+      "final_sha256": "9ab08df5f0afe861d0c6678a13a0674b4577287d96d52358af2809bc0c51e03f",
+      "wasm_memory_mib": 2.5,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 12,
+        "xp": 2680,
+        "health": -20,
+        "elapsed_ms": 22752,
+        "timeline_ms": 22256,
+        "rng": 3592621899
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          2,
+          11
+        ],
+        "perks": [
+          9
+        ],
+        "bonuses": [],
+        "menu": 1,
+        "reload": 11,
+        "max_commands": 1,
+        "peak_creatures": 53,
         "stall": true,
         "transitions": false,
         "run_down": 31

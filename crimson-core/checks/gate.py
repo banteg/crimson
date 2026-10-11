@@ -27,7 +27,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import msgspec
-from replay import encode
+from replay import QUEST_BYTES, custom_quest, encode
 
 from crimson.game_modes import GameMode
 from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES
@@ -136,8 +136,14 @@ class Stream:
         self.recorded = recorded
         self.checkpoints = checkpoints
         self.config = struct.unpack_from(f"<{CONFIG_BYTES // 4}I", payload, 0)
+        # A quest at stage 0.0 plays the custom quest whose table follows the config.
+        self.custom = (
+            custom_quest(payload[CONFIG_BYTES : CONFIG_BYTES + QUEST_BYTES])
+            if self.config[1] == GameMode.QUESTS and self.config[2:4] == (0, 0)
+            else None
+        )
         self.ticks: list[ReplayTick] = []
-        offset = CONFIG_BYTES
+        offset = CONFIG_BYTES + (QUEST_BYTES if self.custom is not None else 0)
         while offset < len(payload):
             mx, my, ax, ay, flags, count = struct.unpack_from("<4fII", payload, offset)
             offset += 24
@@ -174,7 +180,8 @@ class Stream:
         return RunSpec(
             game_mode_id=mode,
             seed=seed,
-            quest_level=QuestLevel(major, minor) if mode == GameMode.QUESTS else None,
+            quest_level=QuestLevel(major, minor) if mode == GameMode.QUESTS and self.custom is None else None,
+            custom_quest=self.custom,
             hardcore=bool(hardcore),
             preserve_bugs=bool(preserve_bugs),
             quest_fail_retry_count=retry,

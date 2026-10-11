@@ -14,6 +14,10 @@
 #include <string.h>
 static PortableInput in;
 static PortableConfig cfg;
+static PortableQuest quest;
+static quest_meta_t custom_quest_meta;
+extern "C" quest_meta_t *portable_custom_quest;
+quest_meta_t *portable_custom_quest;
 extern "C" unsigned char portable_preserve_bugs;
 unsigned char portable_preserve_bugs;
 static PortableCommand commands[16];
@@ -191,6 +195,52 @@ static bool run_ended() {
          game_state_pending == GAME_STATE_QUEST_RESULTS;
 }
 extern "C" uintptr_t portable_config() { return (uintptr_t)&cfg; }
+extern "C" uintptr_t portable_quest() { return (uintptr_t)&quest; }
+// The custom quest's builder: its table, where a stock builder would construct one.
+static void custom_quest_build(quest_spawn_entry_t *entries, int *count) {
+  for (uint32_t i = 0; i < quest.count; ++i) {
+    const PortableSpawn &s = quest.entries[i];
+    entries[i].pos_x = s.x;
+    entries[i].pos_y = s.y;
+    entries[i].heading = s.heading;
+    entries[i].template_id = s.template_id;
+    entries[i].trigger_time_ms = s.trigger_ms;
+    entries[i].count = s.count;
+  }
+  *count = (int)quest.count;
+}
+// The table src/crimson/quests/custom.py's check_table accepts, after the hardcore rule quest_start_selected
+// applies: positions a full arena beyond each edge, and copies bounded per entry, per trigger time and in total.
+static bool custom_quest_valid(bool hardcore) {
+  if (quest.weapon_id < 1 || quest.weapon_id > 53 || quest.count < 1 || quest.count > 256)
+    return false;
+  for (uint32_t slot : quest.terrain)
+    if (slot > 7)
+      return false;
+  int copies[256], total = 0;
+  for (uint32_t i = 0; i < quest.count; ++i) {
+    const PortableSpawn &s = quest.entries[i];
+    if (!(s.x >= -1024 && s.x <= 2048 && s.y >= -1024 && s.y <= 2048) || !isfinite(s.heading) ||
+        s.template_id < 0 || s.template_id > 0x43 || s.template_id == 0x02 || s.trigger_ms < 0 ||
+        s.trigger_ms > 3600000 || s.count < 1 || s.count > 384)
+      return false;
+    copies[i] = s.count;
+    if (hardcore && s.count > 1 && s.template_id != 0x3c)
+      copies[i] += s.template_id == 0x2b ? 2 : 8;
+    if (copies[i] > 384)
+      return false;
+    total += copies[i];
+  }
+  for (uint32_t i = 0; i < quest.count; ++i) {
+    int at_trigger = 0;
+    for (uint32_t j = 0; j < quest.count; ++j)
+      if (quest.entries[j].trigger_ms == quest.entries[i].trigger_ms)
+        at_trigger += copies[j];
+    if (at_trigger > 384)
+      return false;
+  }
+  return total <= 8192;
+}
 extern "C" uintptr_t portable_input() { return (uintptr_t)&in; }
 extern "C" float portable_aim_x() { return in.aim_x; }
 extern "C" float portable_aim_y() { return in.aim_y; }
@@ -295,8 +345,12 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   if (mode != GAME_MODE_SURVIVAL && mode != GAME_MODE_RUSH &&
       mode != GAME_MODE_QUEST)
     return 0;
-  if (mode == GAME_MODE_QUEST &&
+  // A quest at stage 0.0 is the custom quest written at portable_quest.
+  bool custom = mode == GAME_MODE_QUEST && major == 0 && minor == 0;
+  if (mode == GAME_MODE_QUEST && !custom &&
       (major < 1 || major > 5 || minor < 1 || minor > 10))
+    return 0;
+  if (custom && !custom_quest_valid(cfg.hardcore != 0))
     return 0;
   trace_init("reset data");
 #ifdef CRIMSON_GAME
@@ -397,6 +451,15 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   keys.aim_key_right = 0x105;
   quest_stage_major = major;
   quest_stage_minor = minor;
+  // Stage 0.0 matches no level's rules, as Python's custom run has no stock level.
+  custom_quest_meta = quest_meta_t{};
+  custom_quest_meta.name = (char *)"";
+  custom_quest_meta.terrain_id = (int)quest.terrain[0];
+  custom_quest_meta.terrain_id_b = (int)quest.terrain[1];
+  custom_quest_meta.terrain_id_c = (int)quest.terrain[2];
+  custom_quest_meta.builder = custom_quest_build;
+  custom_quest_meta.start_weapon_id = (int)quest.weapon_id;
+  portable_custom_quest = custom ? &custom_quest_meta : nullptr;
   trace_init("quest start");
   if (mode == GAME_MODE_QUEST)
     quest_start_selected(major, minor);
@@ -700,6 +763,9 @@ int main(int argc, char **argv) {
   };
   std::vector<BufferedTick> saved;
   if (fread(&cfg, sizeof(cfg), 1, stdin) != 1)
+    return 2;
+  // A custom quest's stream carries its table after the config.
+  if (cfg.mode == GAME_MODE_QUEST && cfg.major == 0 && cfg.minor == 0 && fread(&quest, sizeof(quest), 1, stdin) != 1)
     return 2;
   if (!portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor))
     return 3;

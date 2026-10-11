@@ -17,6 +17,8 @@ CORE = Path(__file__).resolve().parents[1]
 
 
 CONFIG_BYTES = 260
+# `PortableQuest`, which follows the config of a quest at stage 0.0.
+QUEST_BYTES = 6164
 
 
 SMOKE = {
@@ -29,11 +31,16 @@ SMOKE = {
 }
 
 
+def head_bytes(data):
+    mode, major, minor = struct.unpack_from("<3I", data, 4)
+    return CONFIG_BYTES + (QUEST_BYTES if (mode, major, minor) == (3, 0, 0) else 0)
+
+
 def decode(data):
-    if len(data) < CONFIG_BYTES:
+    if len(data) < CONFIG_BYTES or len(data) < head_bytes(data):
         raise ValueError("Truncated config")
     records = []
-    offset = CONFIG_BYTES
+    offset = head_bytes(data)
     while offset < len(data):
         if len(data) - offset < 24:
             raise ValueError("Truncated tick")
@@ -43,7 +50,7 @@ def decode(data):
             raise ValueError("Invalid commands")
         records.append(data[offset : offset + size])
         offset += size
-    return data[:CONFIG_BYTES], records
+    return data[: head_bytes(data)], records
 
 
 def main():
@@ -65,7 +72,8 @@ def main():
     snapshot_fields = sum(g["count"] * len(g["fields"]) for g in json.loads((CORE / "schema.json").read_text()))
 
     def init(config):
-        memory.write(store, config, pointers["config"])
+        memory.write(store, config[:CONFIG_BYTES], pointers["config"])
+        memory.write(store, config[CONFIG_BYTES:], exports["portable_quest"](store))
         if not exports["portable_init"](store, *struct.unpack_from("<4I", config)):
             raise ValueError("Rejected config")
 

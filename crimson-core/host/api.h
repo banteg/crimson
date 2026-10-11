@@ -22,13 +22,27 @@ struct PortableProbe {
   int32_t pick_ids[8];
   float timers[8];
 };
+// A custom quest (src/crimson/quests/custom.py CustomQuest): the table one variant plays, with base counts, which
+// portable_init loads for a quest started at stage 0.0 where a stock quest's builder runs.
+struct PortableSpawn {
+  float x, y, heading;
+  int32_t template_id, trigger_ms, count;
+};
+struct PortableQuest {
+  uint32_t weapon_id, terrain[3], count;
+  PortableSpawn entries[256];
+};
 static_assert(sizeof(PortableConfig) == 260);
+static_assert(sizeof(PortableSpawn) == 24);
+static_assert(sizeof(PortableQuest) == 6164);
 static_assert(sizeof(PortableProbe) == 108);
 static_assert(sizeof(PortableInput) == 20);
 static_assert(sizeof(PortableCommand) == 8);
 static_assert(sizeof(float) == 4 && sizeof(int) == 4);
 extern "C" {
 uintptr_t portable_config();
+// Where the caller writes a custom quest before portable_init(seed, quest mode, 0, 0).
+uintptr_t portable_quest();
 uintptr_t portable_input();
 uintptr_t portable_output();
 uintptr_t portable_commands();

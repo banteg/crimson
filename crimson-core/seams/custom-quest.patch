@@ -1,0 +1,27 @@
+A custom quest (host/host.cpp, src/crimson/quests/custom.py) starts as the original's quests do, with its own
+entry in place of the quest table's: its terrain, starting weapon and a builder that loads its table. Completing one
+counts no stock quest (it has no stage number), as Python's custom run leaves the stock counters alone.
+--- a/decomp/1.9/crimsonland/quests/quest_start_selected.cpp
++++ b/decomp/1.9/crimsonland/quests/quest_start_selected.cpp
+@@ -54,8 +54,8 @@
+     int quest_index = tier * 10 + index - 11;
+-    quest_meta_t *quest = &quest_meta_table[quest_index];
++    quest_meta_t *quest = portable_custom_quest ? portable_custom_quest : &quest_meta_table[quest_index];
+     terrain_generate(quest);
+     weapon_assign_player(
+-        0, quest_meta_table[quest_index].start_weapon_id);
++        0, quest->start_weapon_id);
+     weapon_assign_player(
+-        1, quest_meta_table[quest_index].start_weapon_id);
++        1, quest->start_weapon_id);
+ 
+--- a/decomp/1.9/crimsonland/game/quest_mode_update.cpp
++++ b/decomp/1.9/crimsonland/game/quest_mode_update.cpp
+@@ -47,2 +47,3 @@
+         quest_transition_timer_ms = 0;
++        if (!portable_custom_quest) {
+         int quest_index = quest_stage_major * 10 + quest_stage_minor;
+@@ -51,2 +52,3 @@
+         game_status_blob.quest_play_counts[40 + quest_index] = play_count;
++        }
+     } else if (timer > 800 && timer <= 850) {

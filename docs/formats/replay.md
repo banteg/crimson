@@ -132,7 +132,8 @@ table each player count 1..4 plays, normal then hardcore, using every table. A `
 0..3600000) and `count` (int). Counts are base counts: the run applies the game's hardcore rule, and the
 result must respect the [quest spawn limits](quest-dsl.md#bounds-and-runtime-semantics). The run starts as
 `quest_start_selected` does, loading the table where a stock builder would run, and leaves the stock quest
-counters and unlocks alone. Verifiers that cannot start a custom quest refuse these replays.
+counters and unlocks alone. crimson-core's verifier starts one at stage 0.0 (`portable_quest`); the game module and the
+service do not yet, and refuse these replays.
 
 `RunStatus` is a map of `quest_unlock_index` (i32), `quest_unlock_index_hardcore`
 (i32) and `weapon_usage_counts` (exactly 53 u32 values). Unlock indices gate

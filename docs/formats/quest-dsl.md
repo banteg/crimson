@@ -13,8 +13,9 @@ during gameplay and cannot change creature behavior, collision or arena geometry
 The Python compiler and recipes for all 50 stock quests are implemented, and the
 Python port plays custom quests: a recipe resolves into a `CustomQuest`
 definition, which a run starts the way the original starts a quest and which its
-replay carries ([replay format 33](replay.md#runspec)). crimson-core, the browser
-game and publication cannot start custom quests yet, so these runs never rank.
+replay carries ([replay format 33](replay.md#runspec)). crimson-core's verifier
+starts them as the original starts a quest and agrees with Python tick for tick;
+the browser game and publication cannot start them yet, so these runs never rank.
 The compiler's JSON output is an inspection artifact, not an interchange format.
 Existing stock builders remain the game's authoritative implementation.
 

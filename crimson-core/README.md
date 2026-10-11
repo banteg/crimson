@@ -25,7 +25,8 @@ everything it adds lives here.
 
 ## Scope
 
-- One player at a fixed 60 Hz in Rush, Survival and all 50 Quests.
+- One player at a fixed 60 Hz in Rush, Survival, all 50 Quests and custom
+  quests ([`CustomQuest`](../src/crimson/quests/custom.py)).
 - Every movement scheme (relative, static, dual action pad, point-click and
   computer) and aim scheme (mouse, keyboard, joystick, mouse-relative, pad and
   computer), read from each tick's flags as Python does; see
@@ -43,7 +44,9 @@ holds one run, so concurrent simulations require separate module instances.
 Breaking API or layout changes must include migration notes for callers.
 
 Write the configuration before initializing, then write the input and up to 16
-commands before each step. Initialization and stepping return 1 on success and
+commands before each step. To play a custom quest, also write its table at
+`portable_quest` (`PortableQuest`) and initialize a quest at stage 0.0 (major and
+minor 0); initialization refuses a table the Python definition would reject. Initialization and stepping return 1 on success and
 0 on refusal. After a refused step, reinitialize before continuing: earlier
 commands may already have changed the state, so retrying is not transactional.
 `portable_refusal` returns a NUL-terminated human-readable reason for the last
@@ -114,7 +117,9 @@ builds give (`portable_refusal`), and that a large movement vector does not
 move faster than a unit one.
 
 The [results](results/matrix.json) list each stream with its ticks, coverage
-and hashes. All 50 quests run to an outcome; the bot completes 1.1, 1.3 and 1.5. Coverage includes game over in
+and hashes. All 50 quests run to an outcome; the bot completes 1.1, 1.3 and 1.5. Custom quests built from
+recipes run too (two examples, the stock 1.1 recipe, which the bot completes, and a hardcore one), after a
+probe that neither build starts a malformed one. Coverage includes game over in
 every mode, quest completion and failure, spawn stalls, reloads, perk menus, a
 pick followed by reopening the menu, several weapons, freeze, Reflex Boost and
 weapon power-ups, and a settings case varying hardcore, retry scaling, detail,
@@ -251,6 +256,11 @@ no claimed score:
 - 260-byte config: 65 little-endian uint32 values (12 settings ending with
   `preserve_bugs`, then 53 weapon usage counts), laid out in
   [`host/api.h`](host/api.h).
+- A quest at stage 0.0 plays a custom quest, whose 6,164-byte `PortableQuest`
+  follows the config: its starting weapon, three terrain slots and entry count,
+  then 256 entries of three float32 (position, heading) and three int32
+  (template, trigger time, count). It is the one-player table for the run's
+  hardcore setting with base counts; the start applies the hardcore rule.
 - Each tick: four float32 axes, uint32 flags, a uint32 command count, then that
   many `(int32 type, int32 argument)` pairs.
 - Commands: `1` picks an offered slot, `2` requests the perk menu (argument 0).
@@ -287,7 +297,7 @@ Every source is read as `decomp/` has it and changed in two steps
 calls and definitions that disagree on arguments, `size_t` spelled as a 32-bit
 int), [`seams/`](seams) puts the recording where the original reads live input,
 behind `PORTABLE_RECORDED`, which the verifier fixes at 1 and the game module
-sets inside a tick, [`optimizations/`](optimizations) changes performance while
+sets inside a tick, and a custom quest where it reads the quest table, [`optimizations/`](optimizations) changes performance while
 preserving both bug policies, and [`patches/`](patches) holds the ranked rules;
 the game module adds [`game/changes/`](game/changes) and [`game/patches/`](game/patches).
 A diff names its files by their paths from the repository root and reads

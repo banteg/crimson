@@ -41,10 +41,12 @@ export function loadCore(wasm) {
   return e;
 }
 
-export function init(e, config) {
-  if (config.length !== CONFIG_BYTES) throw Error(`Expected ${CONFIG_BYTES}-byte config`);
-  new Uint8Array(e.memory.buffer, e.portable_config(), CONFIG_BYTES).set(config);
-  if (!e.portable_init(...[0, 4, 8, 12].map((i) => config.readUInt32LE(i))))
+// A run's head: its config, then a custom quest's table when it plays one.
+export function init(e, head) {
+  if (head.length !== headBytes(head)) throw Error(`Expected a ${headBytes(head)}-byte head`);
+  new Uint8Array(e.memory.buffer, e.portable_config(), CONFIG_BYTES).set(head.subarray(0, CONFIG_BYTES));
+  if (head.length > CONFIG_BYTES) new Uint8Array(e.memory.buffer, e.portable_quest(), QUEST_BYTES).set(head.subarray(CONFIG_BYTES));
+  if (!e.portable_init(...[0, 4, 8, 12].map((i) => head.readUInt32LE(i))))
     throw Error("Rejected config");
 }
 
@@ -77,9 +79,9 @@ export function record(input, commands = []) {
 }
 
 export function decode(input) {
-  if (input.length < CONFIG_BYTES) throw Error("Truncated config");
+  if (input.length < CONFIG_BYTES || input.length < headBytes(input)) throw Error("Truncated config");
   const records = [];
-  for (let offset = CONFIG_BYTES; offset < input.length; ) {
+  for (let offset = headBytes(input); offset < input.length; ) {
     if (input.length - offset < 24) throw Error("Truncated tick");
     const count = input.readUInt32LE(offset + 20);
     if (count > 16) throw Error("Too many commands");
@@ -88,7 +90,7 @@ export function decode(input) {
     records.push(input.subarray(offset, offset + length));
     offset += length;
   }
-  return { config: input.subarray(0, CONFIG_BYTES), records };
+  return { config: input.subarray(0, headBytes(input)), records };
 }
 
 export function step(e, record) {
@@ -111,6 +113,14 @@ export function refusal(e) {
 
 // `PortableConfig` in host/api.h: 12 uint32 settings, then 53 weapon usage counts.
 export const CONFIG_BYTES = 260;
+// `PortableQuest`: the weapon, three terrain slots and the entry count, then 256 24-byte entries.
+export const QUEST_BYTES = 6164;
+
+// A stream's config and, for a quest at stage 0.0, the custom quest's table after it.
+export function headBytes(input) {
+  const custom = input.readUInt32LE(4) === 3 && input.readUInt32LE(8) === 0 && input.readUInt32LE(12) === 0;
+  return CONFIG_BYTES + (custom ? QUEST_BYTES : 0);
+}
 
 export function config(mode, major = 1, minor = 1, options = {}) {
   const b = Buffer.alloc(CONFIG_BYTES);

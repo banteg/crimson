@@ -27,6 +27,7 @@ EXPORTS = (
     "portable_snapshot",
     "portable_input",
     "portable_config",
+    "portable_quest",
     "portable_output",
     "portable_commands",
     "portable_step_many",
