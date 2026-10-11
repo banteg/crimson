@@ -27,7 +27,8 @@ cursor reaches the overflow slot, every later attempt writes that slot whole,
 and the batch's last attempt rewrites every field but `flags`, where a type 3
 keeps 0x80. So the attempts before the last only take their random draws (the
 side, the position and the spawn body's, stepped through the host's
-`crt_rand_stream`) and set 0x80 for a type 3; the last runs as recorded. The
+`crt_rand_stream` through `host/crt_rand.h`) and set 0x80 for a type 3; the last
+runs as recorded. The
 batch's attempt count follows from the cooldown and the elapsed time alone.
 Verbose logging, which writes once per attempt, keeps every attempt.
 A pass's inner attempts skip in one call, and most of them without stepping
@@ -37,6 +38,10 @@ band an attempt takes 15 draws unless it rolls a tinted variant or a giant
 (2.2% of attempts). The skip reads those three rolls and the type's two at
 their places, checks them, and jumps 15 draws; an attempt that fails the check
 steps draw by draw as before.
+The fixed draw positions deliberately couple the fast path to the spawn body's
+draw order and its draw-by-draw skip. Keep all three in sync; `spawn_batch.py`
+compares them against the unoptimized recovered body. Both stepping and jumping
+use the generator defined in `host/crt_rand.h`.
 Python's Survival wave also skips intermediate phantom writes, while retaining
 all tagged RNG draws. Every extra attempt has a later main spawn, and a main
 attempt is transient only while its updated cooldown stays negative; no
