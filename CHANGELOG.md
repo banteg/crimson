@@ -2,6 +2,30 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.14.5
+
+### For players
+
+#### Practice from a replay
+
+- While watching a replay in the browser or desktop game, **Take over here** (or Enter) stops the replay where it is and hands you the run. It waits for your first move, then plays on at normal speed as an unranked practice run, with your controls, the recorded run's settings and the usual perk menu. Aiming alone keeps the world paused.
+- Esc offers Resume, Retry from the point you took over, and Watch the original. Retry puts the run back exactly as it was at that point; Watch the original returns to the replay, paused at the speed you left it at. Losing focus pauses.
+- Practice saves nothing: no progress, unlocks, high scores, recordings or uploads.
+
+#### The desktop game online
+
+- The desktop game plays Ranked Survival and Quests on **[crimson.land](https://crimson.land)**: it uploads your runs, signs in through the browser, refreshes the online scores and downloads the board's replays to watch. Runs it can't upload yet wait in its queue and go up later.
+- `--watch` with a run id or a crimson.land replay link opens that run in the desktop game's viewer.
+
+#### Long runs
+
+- Late Survival verifies and replays faster again. Past minute 30, a tick takes about as long as it did at minute 15; the 36-minute run on the board steps through the verifier in 13.6 s instead of 15.5 s. Every tick matches the previous build.
+
+### Under the hood
+
+- When the verifier refuses an upload, it says which rule the run broke, such as `tick 0: perk_pick without an open perk menu`, in the same words as the Python verifier.
+- The bots page explains when a perk menu can be opened again right after a pick.
+
 ## 0.14.4
 
 ### For players
