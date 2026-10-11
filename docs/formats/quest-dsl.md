@@ -37,7 +37,10 @@ line, enclosing loop iterations, pattern call-site lines and position in a `plac
 
 The syntax uses indentation. Each statement occupies one line; a bracketed list
 may continue over several. Comments start with `#`; expressions use familiar
-arithmetic, comparisons and indexing.
+arithmetic, comparisons and indexing. The grammar in
+[`quest.lark`](https://github.com/banteg/crimson/blob/master/src/crimson/quests/dsl/quest.lark)
+is the syntax's specification: a [Lark](https://github.com/lark-parser/lark) LALR
+grammar, so syntax errors name the line, the unexpected token and what could come next.
 
 ```text
 quest "Clockwork" version 1
@@ -91,8 +94,9 @@ outer values. Assignments update the nearest declared `var`; loop bindings are
 local to each iteration. Patterns see their parameters and quest-scope bindings,
 and inherit the caller's `at` time. They may also contain explicit `at` blocks.
 
-Values are numbers, booleans (`true`/`false`), strings, immutable lists, points and
-template references. There are no mutable collections. `range(start, stop, step)`
+Values are numbers, booleans (`true`/`false`), double-quoted strings, immutable lists,
+points and template references. Words such as `at`, `heading` and `copies` act as
+keywords only where the grammar expects one, so they remain usable as names. There are no mutable collections. `range(start, stop, step)`
 has an exclusive stop. `+`, `-`, `*`, `/`, `//`, `%`, unary signs, `and`, `or`,
 `not`, comparisons, membership, indexing and conditional expressions are supported.
 Points add and subtract, and scale by numbers (`west + point(0, 158)`,
@@ -259,9 +263,11 @@ total. Integer intermediates have at most 64 magnitude bits, and numbers and poi
 coordinates must be finite. Work accounts for interpreted statements, expressions,
 iteration and collection operations; it also stops loops that emit nothing.
 
-The compiler interprets an allowlisted AST after lowering the surface syntax. It
-does not use Python `eval` or `exec`. Imports, arbitrary calls, private attributes,
-comprehensions, recursion and access to live game state are unavailable.
+The compiler interprets the parse tree directly; anything outside the grammar is a
+syntax error, and nothing is evaluated as Python. Calls reach only the listed helpers,
+and each helper's arguments are checked against its declared parameter types (points,
+finite numbers, integers, strings, lists) before it runs. Names beginning with `_`,
+recursion and access to live game state are unavailable.
 
 Copies count template invocations, not creatures: formations bring their members
 and nests keep spawning. These limits are not a guarantee about creature or spawner

@@ -1,0 +1,83 @@
+// Quest construction language. A statement ends at a line break; indentation
+// opens a block; brackets may continue over several lines.
+
+start: _NL? header setting* statement*
+
+header: "quest" STRING "version" INT _NL
+
+?setting: "order" ORDER _NL -> order
+        | "weapon" NAME _NL -> weapon
+        | "terrain" "(" INT "," INT "," INT ")" _NL -> terrain
+
+?statement: simple _NL | compound
+
+?simple: "let" NAME "=" expr -> let
+       | "var" NAME "=" expr -> var
+       | NAME "=" expr -> assign
+       | NAME update_op expr -> update
+       | "spawn" expr "at" expr ["heading" expr] -> spawn
+       | "burst" expr "at" expr "copies" expr ["heading" expr] -> burst
+       | "place" expr "on" expr ["heading" expr] -> place
+       | NAME "(" arguments ")" -> invoke
+       | "break" -> break_
+
+?compound: "repeat" expr "as" NAME ":" suite -> repeat
+         | "for" target "in" expr ":" suite -> for_
+         | "if" expr ":" suite elif* ["else" ":" suite] -> if_
+         | "while" expr ":" suite -> while_
+         | "at" expr ":" suite -> at
+         | "pattern" NAME "(" parameters ")" ":" suite -> pattern
+
+elif: "elif" expr ":" suite
+target: NAME | "(" NAME ("," NAME)+ ")"
+parameters: (NAME ("," NAME)* ","?)?
+suite: _NL _INDENT statement+ _DEDENT
+
+?expr: or_test
+     | or_test "if" or_test "else" expr -> conditional
+?or_test: and_test ("or" and_test)*
+?and_test: not_test ("and" not_test)*
+?not_test: "not" not_test -> not_
+         | comparison
+?comparison: sum (compare_op sum)*
+?sum: product (sum_op product)*
+?product: unary (product_op unary)*
+?unary: "-" unary -> negative
+      | "+" unary -> positive
+      | postfix
+?postfix: atom
+        | postfix "." NAME -> attribute
+        | postfix "[" expr "]" -> index
+        | NAME "(" arguments ")" -> call
+
+arguments: (argument ("," argument)* ","?)?
+?argument: expr
+         | NAME "=" expr -> keyword
+
+?atom: NUMBER -> number
+     | DURATION -> duration
+     | ANGLE -> angle
+     | STRING -> string
+     | "true" -> true
+     | "false" -> false
+     | NAME -> name
+     | "(" expr ")"
+     | "(" expr "," (expr ("," expr)* ","?)? ")" -> tuple
+     | "[" (expr ("," expr)* ","?)? "]" -> list
+
+!compare_op: "<" | ">" | "==" | "!=" | "<=" | ">=" | "in" | "not" "in"
+!sum_op: "+" | "-"
+!product_op: "*" | "/" | "//" | "%"
+!update_op: "+=" | "-=" | "*=" | "/=" | "//=" | "%="
+
+ORDER: "chronological" | "as-written"
+STRING: /"(?:[^"\\\n]|\\.)*"/
+DURATION.2: /(\d+\.\d*|\.\d+|\d+)(ms|s)\b/
+ANGLE.2: /(\d+\.\d*|\.\d+|\d+)deg\b/
+NUMBER: /(\d+\.\d*|\.\d+|\d+)([eE][+-]?\d+)?/
+INT: /\d+/
+NAME: /[A-Za-z_]\w*/
+_NL: /(\r?\n[\t ]*|#[^\n]*)+/
+
+%ignore /[\t \f]+/
+%declare _INDENT _DEDENT

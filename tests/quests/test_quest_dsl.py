@@ -106,12 +106,19 @@ repeat 20 as i:
         ('let p = point("x", 0) * 1000', "finite number"),
         ("let p = point(1e300, 0) * 1e300", "finite number"),
         ('let p = edge("west", fraction="x")', "finite number"),
+        ('let p = line("xx", "xx", 8)', "line\\(\\) argument 'start' must be a point"),
+        ("let p = line([1], [2], 8)", "line\\(\\) argument 'start' must be a point"),
+        ('let p = ring(center, "x", 3)', "argument 'radius' must be a finite number"),
+        ('let p = rotate(["x"], 1)', "rotate requires a list of points"),
+        ('let p = shuffle("abc")', "argument 'values' must be a list"),
+        ('let p = edge("up")', "unknown side 'up'"),
+        ("let p = polar(center, 1)", "missing a required argument"),
         ("at 1s:\n    repeat 2 as i:\n        burst alien.small_gray at center copies 200", "per-trigger copy limit"),
         ("repeat 30 as i:\n    at i * 1s:\n        burst alien.small_gray at center copies 300", "total copies"),
         ("let fixed = 1\nfixed = 2", "immutable"),
         ("spawn alien.small_gray at center", "inside an at"),
-        ("import os", "unsupported syntax"),
-        ("let xs = [i for i in range(10)]", "unsupported syntax"),
+        ("import os", "unexpected 'os'"),
+        ("let xs = [i for i in range(10)]", "unexpected 'for'"),
         ("let value = center.__class__", "reserved"),
         ("pattern loop():\n    loop()\nloop()", "cannot recurse"),
         ("var a = [0]\nrepeat 60 as i:\n    a = [a, a]\nlet b = a == a", "scalar"),
@@ -274,3 +281,35 @@ at 3s:
     assert [(entry.pos.x, entry.pos.y) for entry in plan.entries[3:6]] == [(100, 200), (110, 200), (120, 200)]
     assert [(entry.pos.x, entry.pos.y) for entry in plan.entries[6:]] == [(612, 512), (512, 612), (612, 512)]
     assert all(entry.heading == 0 for entry in plan.entries)
+
+
+@pytest.mark.parametrize(
+    ("body", "line", "message"),
+    [
+        ("at 1s:\n    spawn alien.small_gray at center\n  spawn alien.small_gray at center", 4, "indentation"),
+        ("at 1s:\nspawn alien.small_gray at center", 3, "expected an indented block"),
+        ("at 1s:\n    burst alien.small_gray at center copies", 3, "unexpected end of line"),
+        ("let x = 1 +", 2, "unexpected end of line"),
+        ('weapon "pistol"', 2, "unexpected"),
+    ],
+)
+def test_syntax_errors_name_the_line(body, line, message):
+    with pytest.raises(QuestCompileError, match=message) as error:
+        compile_quest('quest "Bad" version 1\n' + body)
+    assert error.value.line == line
+
+
+def test_keywords_strings_and_brackets_are_tokens_not_text():
+    plan = compile_quest("""quest "at 2s heading north copies 3" version 1
+let heading = 90deg
+let label = " heading copies "
+let spots = [
+    point(100, 100),
+    point(200, 200),
+]
+at 1s:
+    burst alien.small_gray at spots[1] copies 2 heading heading
+""")
+    assert plan.title == "at 2s heading north copies 3"
+    [entry] = plan.entries
+    assert (entry.pos.x, entry.count, entry.heading) == (200, 2, pytest.approx(math.pi / 2))
