@@ -77,7 +77,7 @@ meant the player in question.
 | Quirk | In the original | Rewrite | Page |
 | --- | --- | --- | --- |
 | Every run makes the table | Every run is saved. Past 99 runs, each new one replaces the weakest listed score, even when it scores lower. | A true top 100 | [High scores](scores.md#when-a-run-is-saved) |
-| Hardcore leaks into Survival | A Hardcore box left ticked on the quest list toughens Survival's milestone waves. | Survival is always normal | [High scores](scores.md#hardcore-and-survival) |
+| Hardcore leaks into Survival | A Hardcore box left ticked on the quest list toughens Survival's milestone waves and the Tutorial's creatures, and the run lands in the normal Survival table. | Hardcore applies only to quests | [High scores](scores.md#hardcore-and-survival) |
 | Formation tails | The last member of most rings, chains and grids is a 20 HP alien, and only it gets hardcore and retry scaling. | Kept | [Quests](../modes/quests.md#formations) |
 | Typ-o score file | Typ-o has no file name of its own, so its scores save to `scores5\unknown.hi`. | Saved to `typo.hi` | [Local high scores](../../formats/highscores.md) |
 

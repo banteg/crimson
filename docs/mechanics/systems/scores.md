@@ -66,19 +66,20 @@ the most-used weapon is player 1's.
 
 ## Hardcore and Survival
 
-Hardcore toughens quests (see [Quests](../modes/quests.md#hardcore)). The
-**Hardcore** box on the quest list is a saved setting. The original clears
-it only while you haven't beaten quest 4.10, so a box left ticked carries
-into Survival:
+Hardcore is a quest setting (see [Quests](../modes/quests.md#hardcore)).
+Survival, Rush and Typ-o have one table each and always play at normal
+strength.
 
-- [Milestone waves](../modes/survival.md#milestone-waves) get
-  [hardcore](../modes/quests.md#hardcore) creatures, with the same
-  [limit on formations](../modes/quests.md#formations).
-- Regular spawns don't change.
-- The run's record is marked hardcore but lands in the same Survival table.
-
-The rewrite plays Survival at normal strength whatever the box says, and
-ranked Survival is always normal.
+!!! bug "Original bug"
+    In the original executable, the **Hardcore** box on the quest list is a
+    saved setting that's only cleared while quest 4.10 is unbeaten, so a box
+    left ticked leaks into Survival and the Tutorial. Their scripted
+    creatures, including Survival's
+    [milestone waves](../modes/survival.md#milestone-waves), come out
+    [hardcore](../modes/quests.md#hardcore) (with the same
+    [limit on formations](../modes/quests.md#formations)), and the run lands
+    in the normal Survival table. The rewrite applies Hardcore only to
+    quests.
 
 ## Ranked play
 
