@@ -309,7 +309,8 @@ uncompressed art Tero sent (forward-slash names, each image in its own format,
 `music/game_tunes.txt` adds the addon tunes. Grim finds a PAQ entry by its exact
 name and decodes it by the name's extension, so the module asks for the stored
 name first ([`repack.cpp`](game/repack.cpp)); the release's `crimson.paq`
-resolves every name to itself. The clients unpack `music.paq` into `music/`.
+resolves every name to itself. The clients unpack `music.paq` into `music/`;
+the native client downloads the PAQs a folder lacks, as the Python game does.
 [`checks/game_files.py`](checks/game_files.py) lays out a game directory from
 the asset host, which CI uses for the checks that boot the original.
 
@@ -338,11 +339,13 @@ crimson-core/build/app/crimson [game directory]
 crimson-core/build/app/crimson [game directory] --watch <run-id-or-replay-link>
 ```
 
-It needs wabt's `wasm2c`, SDL3, libcurl and the original game files.
+It needs wabt's `wasm2c`, SDL3 and libcurl.
 The Linux package carries SDL3 and requires the system's `libcurl.so.4`;
-macOS uses the OS-provided libcurl. Without a
-directory the client uses the folder chosen last time, or asks for the one
-Crimsonland is installed in. `--package` lays out what ships in `build/dist`:
+macOS uses the OS-provided libcurl. Without a directory the client plays from
+the Python game's data folder (`CRIMSON_RUNTIME_DIR`, else `banteg/crimsonland`
+in the platform's user data), sharing its config, scores and replays. Into
+either, it downloads the game files the folder lacks from the asset host.
+`--package` lays out what ships in `build/dist`:
 a macOS app bundle or a Linux folder carrying SDL3, or the web page's files;
 [`client.yml`](../.github/workflows/client.yml) builds all three on every
 change. Linux CI also boots the packaged executable under Xvfb against a
@@ -407,7 +410,7 @@ and `npm run play` in `service` stages the packaged web build for deploy.
 | 5. Sessions in the client | Gameplay as fixed ticks fed recorded input; perk picks as commands; replays; the client artifact passes the gates with the game files and audio loaded | Done ([#555](https://github.com/banteg/crimson/pull/555)) |
 | 6. Verifier convergence | Dropped: the verifier stays its own artifact and holds every client build to it ([Packaging](#packaging)) | |
 | 7. Product parity | Gamepads as the original's joystick; the web client takes the player's own game folder | Done ([#556](https://github.com/banteg/crimson/pull/556)) |
-| 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client finds the game folder; next, a Windows host (the WASI layer is POSIX) and signing | Done ([#557](https://github.com/banteg/crimson/pull/557)); crimson.land/play hosts the web client with the distributed files |
+| 8. Distribution | CI builds and packages the web client, a macOS app and a Linux folder; the native client downloads the game files into the Python game's data folder; next, a Windows host (the WASI layer is POSIX) and signing | Done ([#557](https://github.com/banteg/crimson/pull/557)); crimson.land/play hosts the web client with the distributed files |
 | 9. Ranked play from the client | Ranked runs from the web client: the Play Game panel's Ranked box and Profile button, `.crd` replays signed and queued as the Python port does, uploaded by the page; native uploads use the same signed outbox | Done ([#566](https://github.com/banteg/crimson/pull/566)) |
 | 10. Watching replays | Every run saves its replay; the high score screen's Watch plays local runs and the leaderboard's, with the board's runs kept for the session (docs/rewrite/watch-replays.md) | Done ([#590](https://github.com/banteg/crimson/pull/590), [#598](https://github.com/banteg/crimson/pull/598), [#602](https://github.com/banteg/crimson/pull/602)) |
 

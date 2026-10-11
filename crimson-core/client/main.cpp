@@ -1,6 +1,6 @@
 // The client: an SDL3 window running the game module one frame per callback.
-// Usage: crimson [game directory]. Without one it uses the folder chosen last
-// time, or asks for the folder that holds the game's files.
+// Usage: crimson [game directory]. Without one it plays from the player's data
+// folder, the Python game's too, and downloads the game's files it lacks.
 #define SDL_MAIN_USE_CALLBACKS
 #include "client.h"
 #include "network.h"
@@ -12,6 +12,8 @@
 #include <SDL3/SDL_main.h>
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#else
+#include <curl/curl.h>
 #endif
 #include <math.h>
 #include <sstream>
@@ -527,12 +529,24 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch(const char *path, const
 #endif
 
 #ifndef __EMSCRIPTEN__
-// The game directory the player chose, remembered between launches.
-std::string remembered() {
-  char *pref = SDL_GetPrefPath("crimson", "crimsonland");
-  std::string path = std::string(pref ? pref : "") + "game-directory";
+// The player's data folder, shared with the Python game (src/crimson/paths.py):
+// CRIMSON_RUNTIME_DIR, else banteg/crimsonland in the platform's user data.
+std::string runtime_directory() {
+  if (const char *directory = getenv("CRIMSON_RUNTIME_DIR")) {
+    SDL_CreateDirectory(directory);
+    return directory;
+  }
+  char *pref = SDL_GetPrefPath("banteg", "crimsonland");
+  if (!pref)
+    client_fatal(SDL_GetError());
+  std::string directory = pref;
   SDL_free(pref);
-  return path;
+  directory.pop_back(); // the trailing separator
+  return directory;
+}
+bool present(const std::string &name) {
+  std::string path;
+  return client_resolve(name, path) && SDL_GetPathInfo(path.c_str(), nullptr);
 }
 // The files the game directory lacks: the PAQs, the music the executable plays
 // by name, and the tunes music/game_tunes.txt adds.
@@ -550,7 +564,7 @@ std::vector<std::string> missing_files() {
     }
   std::vector<std::string> missing;
   for (const std::string &name : names)
-    if (!client_resolve(name, path) || !SDL_GetPathInfo(path.c_str(), nullptr))
+    if (!present(name))
       missing.push_back(name);
   return missing;
 }
@@ -579,51 +593,51 @@ void unpack_music() {
   }
   SDL_free(data);
 }
-// The files the game directory still lacks once music.paq has filled in music/.
-std::vector<std::string> lacking_files() {
+// The PAQs the folder lacks come from the project's asset host, as the Python
+// game fetches them (src/crimson/assets_fetch.py), through a partial file.
+constexpr const char *ASSET_BASE_URL = "https://paq.crimson.banteg.xyz/v1.9.93/";
+void download(const std::string &name) {
+  std::string path = game_directory + "/" + name, partial = path + ".part";
+  FILE *file = fopen(partial.c_str(), "wb");
+  if (!file)
+    return;
+  CURL *curl = curl_easy_init();
+  curl_easy_setopt(curl, CURLOPT_URL, (ASSET_BASE_URL + name).c_str());
+  // The host refuses requests without a user agent.
+  curl_easy_setopt(curl, CURLOPT_USERAGENT, "crimsonland/" CRIMSON_CLIENT_VERSION);
+  curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, "https");
+  curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
+  curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1L);
+  curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME, 30L);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
+  CURLcode result = curl_easy_perform(curl);
+  curl_easy_cleanup(curl);
+  bool written = fclose(file) == 0 && result == CURLE_OK;
+  if (!written)
+    fprintf(stderr, "crimson: %s did not download: %s\n", name.c_str(), curl_easy_strerror(result));
+  if (!written || rename(partial.c_str(), path.c_str()) != 0)
+    remove(partial.c_str());
+}
+// Before the game starts: a folder lacking the game's files gets the PAQs it
+// lacks, then music.paq fills in music/.
+void fetch_assets() {
+  if (missing_files().empty())
+    return;
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+  for (const char *name : {"crimson.paq", "music.paq", "sfx.paq"})
+    if (!present(name)) {
+      fprintf(stderr, "crimson: downloading %s into %s\n", name, game_directory.c_str());
+      download(name);
+    }
+  unpack_music();
   std::vector<std::string> missing = missing_files();
   if (missing.empty())
-    return missing;
-  unpack_music();
-  return missing_files();
-}
-// The folder dialog answers on its own thread; the main loop takes the answer.
-SDL_AtomicInt answered;
-std::string chosen;
-void choose_folder();
-void on_folder(void *, const char *const *files, int) {
-  chosen = files && files[0] ? files[0] : "";
-  SDL_SetAtomicInt(&answered, 1);
-}
-void choose_folder() {
-  SDL_SetAtomicInt(&answered, 0);
-  SDL_ShowOpenFolderDialog(on_folder, nullptr, window, nullptr, false);
-}
-
-
-// Until the game directory is known.
-SDL_AppResult wait_for_folder() {
-  if (!SDL_GetAtomicInt(&answered)) {
-    SDL_Delay(16);
-    return SDL_APP_CONTINUE;
-  }
-  if (chosen.empty())
-    return SDL_APP_SUCCESS;
-  game_directory = chosen;
-  if (std::vector<std::string> lacking = lacking_files(); !lacking.empty()) {
-    std::string names;
-    for (const std::string &name : lacking)
-      names += (names.empty() ? "" : ", ") + name;
-    names = "That folder lacks " + names + ". Choose the folder Crimsonland is installed in.";
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Crimsonland", names.c_str(), window);
-    choose_folder();
-    return SDL_APP_CONTINUE;
-  }
-  if (SDL_IOStream *file = SDL_IOFromFile(remembered().c_str(), "w")) {
-    SDL_WriteIO(file, chosen.data(), chosen.size());
-    SDL_CloseIO(file);
-  }
-  return start_game() ? SDL_APP_CONTINUE : SDL_APP_FAILURE;
+    return;
+  std::string message = game_directory + " lacks";
+  for (const std::string &name : missing)
+    message += " " + name;
+  client_fatal((message + ". Check the connection, or name the folder Crimsonland is installed in.").c_str());
 }
 #endif
 
@@ -652,11 +666,8 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   }
 #ifndef __EMSCRIPTEN__
   if (!directory_given)
-    if (size_t size;
-        char *saved = (char *)SDL_LoadFile(remembered().c_str(), &size)) {
-      game_directory.assign(saved, size);
-      SDL_free(saved);
-    }
+    game_directory = runtime_directory();
+  fetch_assets();
 #endif
   if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMEPAD))
     client_fatal(SDL_GetError());
@@ -685,12 +696,6 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   SDL_StartTextInput(window);
   renderer_init();
   audio_init();
-#ifndef __EMSCRIPTEN__
-  if (!lacking_files().empty()) {
-    choose_folder();
-    return SDL_APP_CONTINUE;
-  }
-#endif
   return start_game() ? SDL_APP_CONTINUE : SDL_APP_FAILURE;
 }
 
@@ -772,10 +777,6 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
 }
 
 SDL_AppResult SDL_AppIterate(void *) {
-#ifndef __EMSCRIPTEN__
-  if (!started)
-    return wait_for_folder();
-#endif
 #ifndef __EMSCRIPTEN__
   network_update();
 #endif
