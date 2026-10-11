@@ -559,7 +559,8 @@ class _Compiler:
             case "sum" | "product":
                 result = self.expression(children[0], scope)
                 for op, operand in zip(children[1::2], children[2::2], strict=True):
-                    result = _arithmetic(str(op.children[0]), result, self.expression(operand, scope))
+                    # Bound every intermediate: a later operation must not hide an earlier overflow.
+                    result = self.bounded(_arithmetic(str(op.children[0]), result, self.expression(operand, scope)))
             case "or_test" | "and_test":
                 result = self.expression(children[0], scope)
                 for operand in children[1:]:
