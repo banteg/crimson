@@ -61,6 +61,21 @@ render passes write gameplay state (`creature_render_type` frees corpse slots,
 `projectile_render` retires projectiles, `bonus_render` picks bonuses up), so
 they run everywhere.
 
+`headless-creatures.patch` and `headless-projectiles.patch` do the same for
+those two passes, keeping the one write each makes. `creature_render_type`'s
+body loop frees a corpse once its death timer passes -10, and its spawner's
+slot with it; `projectile_render`'s trail loop retires an active projectile of
+type 0. Where nothing draws, the body loop only frees, the trail loop only
+retires, and the loops that only draw (the creatures' shadows, hit flashes,
+marks and freeze overlay; the plasma trails, the projectiles' sprites, ion
+arcs, glow and bullet heads, the Plague Spreader's cloud and the secondary
+projectiles) leave at
+once. `creature_render_all`'s early return still decides whether the corpses
+are freed at all. The Fire Bullets glow and the bullet heads leave on lines
+the game's fixes for original bugs 34 and 28 do not quote, so those two
+patches apply unchanged, and the glow was the only reader of the entry the
+sprite loop ends on.
+
 ## Existing Python optimizations and core transfers
 
 The [survey](../../docs/verification/optimization-survey.md) inventories the

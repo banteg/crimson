@@ -1,0 +1,96 @@
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_render.cpp
+@@ -239,6 +239,13 @@
+         if (type_id == PROJECTILE_TYPE_NONE) {
+             projectile->active = 0;
+         }
++        // Retiring a projectile of no type is all the pass does besides
++        // drawing. Where nothing draws, the trails stop here and the loops
++        // that do the work of the later batches leave at once: the batches
++        // keep their render states, and their quads go.
++        if (!PORTABLE_DRAWING) {
++            continue;
++        }
+ 
+         effect_color_t trail_color;
+         trail_color.a = tail->life_timer;
+@@ -360,6 +367,9 @@
+     for (projectile_index = 0;
+          projectile_index < PROJECTILE_POOL_CAPACITY;
+          ++projectile_index) {
++        if (!PORTABLE_DRAWING) {
++            break;
++        }
+         const vec2f_t *position = &projectile_pool[projectile_index].position;
+         if (!projectile_pool[projectile_index].active) {
+             continue;
+@@ -653,6 +663,9 @@
+          projectile_index < PROJECTILE_POOL_CAPACITY;
+          ++projectile_index) {
++        if (!PORTABLE_DRAWING) {
++            break;
++        }
+         projectile = &projectile_pool[projectile_index];
+         projectile_tail_t *primary = &projectile->pos.tail;
+         float scale;
+         projectile_render_vec2_t base;
+@@ -975,6 +988,9 @@
+     for (projectile_index = 0;
+          projectile_index < PROJECTILE_POOL_CAPACITY;
+          ++projectile_index) {
++        if (!PORTABLE_DRAWING) {
++            break;
++        }
+         projectile_t *projectile = &projectile_pool[projectile_index];
+         if (!projectile->active
+             || projectile->pos.tail.vy.type_id
+@@ -1061,7 +1077,10 @@
+     grim_interface_ptr->grim_set_color(
+         1.0f, 1.0f, 1.0f, transition_alpha);
+     grim_interface_ptr->grim_begin_batch();
+-    for (projectile_index = 0;
++    // The glow's and the bullet heads' loops leave on lines the game's fixes
++    // for original bugs 34 and 28 do not quote. Only the glow reads the
++    // entry the sprite loop ends on.
++    for (projectile_index = PORTABLE_DRAWING ? 0 : PROJECTILE_POOL_CAPACITY;
+          projectile_index < PROJECTILE_POOL_CAPACITY;
+          ++projectile_index) {
+         if (projectile_pool[projectile_index].active
+@@ -1093,4 +1112,7 @@
+          ++projectile_index) {
++        if (!PORTABLE_DRAWING) {
++            break;
++        }
+         projectile_t *projectile = &projectile_pool[projectile_index];
+         if (!projectile->active
+             || projectile->pos.tail.vy.life_timer != 0.4f) {
+@@ -1147,6 +1169,9 @@
+         for (secondary_index = 0;
+              secondary_index < 0x40;
+              ++secondary_index) {
++            if (!PORTABLE_DRAWING) {
++                break;
++            }
+             secondary_projectile_t *projectile =
+                 &secondary_projectile_pool[secondary_index];
+             if (projectile->active) {
+@@ -1181,6 +1206,9 @@
+     for (secondary_index = 0;
+          secondary_index < 0x40;
+          ++secondary_index) {
++        if (!PORTABLE_DRAWING) {
++            break;
++        }
+         secondary_projectile_t *projectile =
+             &secondary_projectile_pool[secondary_index];
+         if (!projectile->active
+@@ -1242,6 +1270,9 @@
+     for (secondary_index = 0;
+          secondary_index < 0x40;
+          ++secondary_index) {
++        if (!PORTABLE_DRAWING) {
++            break;
++        }
+         secondary_projectile_t *projectile =
+             &secondary_projectile_pool[secondary_index];
+         if (!projectile->active) {

@@ -1,0 +1,74 @@
+--- a/decomp/1.9/crimsonland/ui_render/creature_render_all.cpp
++++ b/decomp/1.9/crimsonland/ui_render/creature_render_all.cpp
+@@ -34,7 +34,10 @@
+     grim_interface_ptr->grim_set_rotation(0.0f);
+     grim_interface_ptr->grim_begin_batch();
+ 
+-    for (int creature_index = 0; creature_index < 384; creature_index++) {
++    // The marks under the creatures and the freeze overlay only draw. Where
++    // nothing draws, the batches' render states stay and the quads go.
++    int count = PORTABLE_DRAWING ? 384 : 0;
++    for (int creature_index = 0; creature_index < count; creature_index++) {
+         creature_t *creature = &creature_pool[creature_index];
+         float *death_timer = &creature->death_timer;
+         if (creature->active) {
+@@ -114,7 +117,7 @@
+ 
+         grim_interface_ptr->grim_begin_batch();
+ 
+-        for (int creature_index = 0; creature_index < 384; creature_index++) {
++        for (int creature_index = 0; creature_index < count; creature_index++) {
+             creature_t *creature = &creature_pool[creature_index];
+             if (creature->active) {
+                 grim_interface_ptr->grim_set_color(
+--- a/decomp/1.9/crimsonland/ui_render/creature_render_type.cpp
++++ b/decomp/1.9/crimsonland/ui_render/creature_render_type.cpp
+@@ -56,13 +56,16 @@
+         creature_type_table[type_id].texture_handle, 0);
+     grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
+ 
++    // The shadows and the hit flashes only draw. Where nothing draws, the
++    // batches' render states stay and the quads go.
++    int count = PORTABLE_DRAWING ? 384 : 0;
+     if (config_blob.shadows_enabled
+         && perk_count_get(perk_id_monster_vision) == 0) {
+         grim_interface_ptr->grim_set_config_var(0x13, 1u);
+         grim_interface_ptr->grim_set_config_var(0x14, 6u);
+         grim_interface_ptr->grim_begin_batch();
+ 
+-        for (int creature_index = 0; creature_index < 384; creature_index++) {
++        for (int creature_index = 0; creature_index < count; creature_index++) {
+             creature_t *creature = &creature_pool[creature_index];
+             if (!creature->active
+                 || creature_pool[creature_index].type_id != type_id) {
+@@ -140,6 +143,21 @@
+     grim_interface_ptr->grim_set_config_var(0x14, 6u);
+     grim_interface_ptr->grim_begin_batch();
+ 
++    // The body pass also frees the corpses that have faded out, under either
++    // tint. Where nothing draws, that is all it does.
++    if (!PORTABLE_DRAWING) {
++        for (int creature_index = 0; creature_index < 384; creature_index++) {
++            creature_t *creature = &creature_pool[creature_index];
++            if (creature->active
++                && creature->type_id == type_id
++                && creature->death_timer < -10.0f) {
++                creature->active = 0;
++                if ((creature->flags & CREATURE_FLAG_SPAWNER) != 0) {
++                    creature_spawn_slot_table[creature->link_index].owner = 0;
++                }
++            }
++        }
++    } else
+     if (bonus_energizer_timer > 0.0f) {
+         for (int creature_index = 0; creature_index < 384; ++creature_index) {
+             creature_t *creature = &creature_pool[creature_index];
+@@ -317,7 +335,7 @@
+         color = creature_render_color_t(1.0f, 1.0f, 1.0f, 1.0f);
+ 
+         grim_interface_ptr->grim_begin_batch();
+-        for (int creature_index = 0; creature_index < 384; creature_index++) {
++        for (int creature_index = 0; creature_index < count; creature_index++) {
+             creature_t *creature = &creature_pool[creature_index];
+             if (!creature->active
+                 || creature->type_id != type_id
