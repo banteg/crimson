@@ -1,26 +1,14 @@
 quest "Everred Pastures" version 1
-order native
-counts native
-weapon pistol
 terrain (2, 3, 2)
 
-var count = 0
-var trigger = 0
-
-var edges = edge_points()
-for wave in range(1, 9):
-    trigger = (wave - 1) * 13000 + 1500
-    count = wave
-    at trigger:
-        burst template.spider_sp1_random_32 at edges.right copies count
-    at trigger:
-        burst template.spider_sp1_random_red_33 at edges.left copies count
-    at trigger:
-        burst template.spider_sp1_random_green_34 at edges.bottom copies count
-    at trigger:
-        burst template.spider_sp2_random_35 at edges.top copies count
-    if wave == 4:
-        at 40500:
-            burst template.ai1_spider_sp1_blue_tint_1b at edges.top copies 8
-        at 40500:
-            burst template.ai1_spider_sp1_blue_tint_1b at point(edges.bottom.x, 1088.0) copies 8
+# Four spider breeds from four sides, one more each wave; blue spiders join the fourth wave.
+repeat 8 as i:
+    let size = i + 1
+    at 1.5s + i * 13s:
+        burst template.spider_sp1_random_32 at edge("east") copies size
+        burst template.spider_sp1_random_red_33 at edge("west") copies size
+        burst template.spider_sp1_random_green_34 at edge("south") copies size
+        burst template.spider_sp2_random_35 at edge("north") copies size
+        if size == 4:
+            burst template.ai1_spider_sp1_blue_tint_1b at edge("north") copies 8
+            burst template.ai1_spider_sp1_blue_tint_1b at edge("south") copies 8

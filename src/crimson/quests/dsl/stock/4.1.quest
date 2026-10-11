@@ -1,16 +1,11 @@
 quest "Major Alien Breach" version 1
-order native
-counts native
 weapon rocket_minigun
 terrain (6, 7, 6)
 
-var edges = edge_points()
-var trigger = 4000
-for offset in range(0, 1500, 15):
-    at trigger:
-        burst template.alien_random_green_20 at edges.right copies 2
-    at trigger:
-        burst template.alien_random_green_20 at edges.top copies 2
-    trigger += 2000 - offset
-    if trigger < 1000:
-        trigger = 1000
+# A hundred pairs from the east and north, each gap 15ms shorter than the last.
+var cue = 4s
+repeat 100 as i:
+    at cue:
+        burst template.alien_random_green_20 at edge("east") copies 2
+        burst template.alien_random_green_20 at edge("north") copies 2
+    cue += 2s - i * 15ms

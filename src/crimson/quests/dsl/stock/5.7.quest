@@ -1,28 +1,26 @@
 quest "Army of Three" version 1
-order native
-counts native
-weapon pistol
 terrain (3, 1, 3)
 
-at 500:
-    spawn template.formation_grid_alien_white_15 at point(-64.0, 256.0)
-at 5500:
-    spawn template.formation_grid_alien_white_15 at point(-64.0, 512.0)
-at 15000:
-    spawn template.formation_grid_alien_white_15 at point(-64.0, 768.0)
-at 19500:
-    spawn template.formation_grid_spider_sp1_white_17 at point(-64.0, 768.0)
-at 22500:
-    spawn template.formation_grid_spider_sp1_white_17 at point(-64.0, 512.0)
-at 26500:
-    spawn template.formation_grid_spider_sp1_white_17 at point(-64.0, 256.0)
-at 35500:
-    spawn template.formation_grid_lizard_white_16 at point(-64.0, 256.0)
-at 39500:
-    spawn template.formation_grid_lizard_white_16 at point(-64.0, 512.0)
-at 42500:
-    spawn template.formation_grid_lizard_white_16 at point(-64.0, 768.0)
-at 52500:
-    burst template.formation_grid_alien_white_15 at point(512.0, 1152.0) copies 3
-at 56500:
-    burst template.formation_grid_spider_sp1_white_17 at point(512.0, -256.0) copies 3
+# Three grid formations of each breed sweep in from the west, then two breeds return in force.
+at 500ms:
+    spawn formation.alien_grid at (-64, 256)
+at 5.5s:
+    spawn formation.alien_grid at (-64, 512)
+at 15s:
+    spawn formation.alien_grid at (-64, 768)
+at 19.5s:
+    spawn formation.spider_grid at (-64, 768)
+at 22.5s:
+    spawn formation.spider_grid at (-64, 512)
+at 26.5s:
+    spawn formation.spider_grid at (-64, 256)
+at 35.5s:
+    spawn formation.lizard_grid at (-64, 256)
+at 39.5s:
+    spawn formation.lizard_grid at (-64, 512)
+at 42.5s:
+    spawn formation.lizard_grid at (-64, 768)
+at 52.5s:
+    burst formation.alien_grid at edge("south", outside=128) copies 3
+at 56.5s:
+    burst formation.spider_grid at edge("north", outside=256) copies 3

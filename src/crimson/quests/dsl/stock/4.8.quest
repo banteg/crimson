@@ -1,29 +1,11 @@
 quest "Syntax Terror" version 1
-order native
-counts native
-weapon pistol
 terrain (6, 6, 7)
 
-var inner_seed = 0
-var trigger = 0
-var x = 0
-var y = 0
-
-var player_count = players + (4 if hardcore else 0)
-var outer_seed = 5321
-var outer_index = 0
-var trigger_base = 1500
-while outer_seed < 5533:
-    if player_count + 9 > 0:
-        trigger = trigger_base
-        inner_seed = 1221
-        for i in range(player_count + 9):
-            x = ((i * i * 76 + 236) * i + outer_seed * outer_index) % 896 + 64
-            y = (inner_seed * i + (outer_index * outer_index * 76 + 27) * outer_index) % 896 + 64
-            at trigger:
-                spawn nest.alien at point(float(x), float(y))
-            trigger += 300
-            inner_seed += 21
-        trigger_base += 30000
-    outer_seed += 53
-    outer_index += 1
+# Four volleys of alien nests, 30s apart, scattered by fixed arithmetic rather than chance.
+let count = players + (4 if hardcore else 0) + 9
+repeat 4 as volley:
+    repeat count as i:
+        let x = ((76 * i * i + 236) * i + (5321 + 53 * volley) * volley) % 896 + 64
+        let y = ((1221 + 21 * i) * i + (76 * volley * volley + 27) * volley) % 896 + 64
+        at 1.5s + volley * 30s + i * 300ms:
+            spawn nest.alien at (x, y)

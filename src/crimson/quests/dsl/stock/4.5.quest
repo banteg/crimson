@@ -1,18 +1,8 @@
 quest "The Massacre" version 1
-order native
-counts native
-weapon pistol
 terrain (6, 7, 6)
 
-var edges = edge_points()
-var edges_wide = edge_points(offset=128.0)
-var trigger = 1500
-var wave = 0
-while trigger < 91500:
-    at trigger:
-        burst zombie.random at edges.right copies wave + 3
-    if wave % 2 == 0:
-        at trigger:
-            burst alien.fast at edges_wide.right copies wave + 1
-    trigger += 5000
-    wave += 1
+repeat 18 as wave:
+    at 1.5s + wave * 5s:
+        burst zombie.random at edge("east") copies wave + 3
+        if wave % 2 == 0:
+            burst alien.fast at edge("east", outside=128) copies wave + 1

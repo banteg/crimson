@@ -1,82 +1,18 @@
 quest "The Unblitzkrieg" version 1
-order native
-counts native
-weapon pistol
 terrain (6, 6, 7)
 
-var x = 0
-var y = 0
-
-var trigger = 500
-var i_var5 = 0
-for idx in range(10):
-    y = float(i_var5 // 10 + 200)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d if idx % 2 == 1 else nest.alien at point(824.0, y)
-    trigger += 1800
-    i_var5 += 624
-i_var5 = 0
-var toggle = False
-for iteration in range(10):
-    x = float(824 - i_var5 // 10)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d if toggle else nest.alien at point(x, 824.0)
-    trigger += 1500
-    toggle = not toggle
-    i_var5 += 624
-at trigger:
-    spawn nest.alien at point(512.0, 512.0)
-i_var5 = 0
-toggle = False
-for iteration in range(10):
-    y = float(824 - i_var5 // 10)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d if toggle else nest.alien at point(200.0, y)
-    trigger += 1200
-    toggle = not toggle
-    i_var5 += 624
-i_var5 = 0
-toggle = False
-for iteration in range(10):
-    x = float(i_var5 // 10 + 200)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d if toggle else nest.alien at point(x, 200.0)
-    trigger += 800
-    toggle = not toggle
-    i_var5 += 624
-i_var5 = 0
-toggle = False
-for iteration in range(10):
-    y = float(i_var5 // 10 + 200)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d if toggle else nest.alien at point(824.0, y)
-    trigger += 800
-    toggle = not toggle
-    i_var5 += 624
-i_var5 = 0
-toggle = False
-for iteration in range(10):
-    x = float(824 - i_var5 // 10)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d if toggle else nest.alien at point(x, 824.0)
-    trigger += 700
-    toggle = not toggle
-    i_var5 += 624
-i_var5 = 0
-toggle = False
-for iteration in range(10):
-    y = float(824 - i_var5 // 10)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d if toggle else nest.alien at point(200.0, y)
-    trigger += 700
-    toggle = not toggle
-    i_var5 += 624
-i_var5 = 0
-toggle = False
-for iteration in range(10):
-    x = float(i_var5 // 10 + 200)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d if toggle else nest.alien at point(x, 200.0)
-    trigger += 800
-    toggle = not toggle
-    i_var5 += 624
+# Nests trace the square between 200 and 824 clockwise, twice, alternating alien and lizard
+# and picking up pace; a centre nest lands as the first lap turns north.
+let corners_cw = [point(824, 200), point(824, 824), point(200, 824), point(200, 200)]
+let headings = [point(0, 1), point(-1, 0), point(0, -1), point(1, 0)]
+let gaps = [1800ms, 1500ms, 1200ms, 800ms, 800ms, 700ms, 700ms, 800ms]
+var cue = 500ms
+repeat 8 as leg:
+    if leg == 2:
+        at cue:
+            spawn nest.alien at center
+    repeat 10 as k:
+        let pos = corners_cw[leg % 4] + headings[leg % 4] * int(k * 62.4)
+        at cue:
+            spawn (template.den_lizard_weak_slower_0d if k % 2 == 1 else nest.alien) at pos
+        cue += gaps[leg]

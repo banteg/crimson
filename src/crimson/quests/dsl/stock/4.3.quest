@@ -1,24 +1,12 @@
 quest "Lizard Zombie Pact" version 1
-order native
-counts native
-weapon pistol
 terrain (6, 7, 6)
 
-var idx = 0
-
-var edges = edge_points()
-var trigger = 1500
-var wave = 0
-while trigger < 113500:
-    at trigger:
-        burst zombie.random at edges.right copies 6
-    at trigger:
-        burst zombie.random at edges.left copies 6
-    if wave % 5 == 0:
-        idx = wave // 5
-        at trigger:
-            burst template.den_lizard_weak_0c at point(356.0, float(idx * 180 + 256)) copies idx + 1
-        at trigger:
-            burst template.den_lizard_weak_0c at point(356.0, float(idx * 180 + 384)) copies idx + 2
-    trigger += 7000
-    wave += 1
+repeat 16 as wave:
+    at 1.5s + wave * 7s:
+        burst zombie.random at edge("east") copies 6
+        burst zombie.random at edge("west") copies 6
+        if wave % 5 == 0:
+            # Every fifth wave adds a stronger pair of lizard dens, further down the west side.
+            let pair = wave // 5
+            burst template.den_lizard_weak_0c at (356, 256 + pair * 180) copies pair + 1
+            burst template.den_lizard_weak_0c at (356, 384 + pair * 180) copies pair + 2

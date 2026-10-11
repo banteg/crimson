@@ -1,12 +1,6 @@
 quest "Spider Wave Syndrome" version 1
-order native
-counts native
-weapon pistol
 terrain (0, 0, 1)
 
-var edges = edge_points()
-var trigger = 1500
-while trigger < 100500:
-    at trigger:
-        burst spider.small_blue at edges.left copies players * 2 + 6
-    trigger += 5500
+repeat 18 as wave:
+    at 1.5s + wave * 5.5s:
+        burst spider.small_blue at edge("west") copies players * 2 + 6

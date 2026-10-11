@@ -1,20 +1,12 @@
 quest "The Lizquidation" version 1
-order native
-counts native
-weapon pistol
+order as-written
 terrain (4, 4, 5)
 
-var count = 0
-
-var edges = edge_points()
-var trigger = 1500
-for wave in range(10):
-    count = wave + 6
-    at trigger:
-        burst template.lizard_random_2e at edges.right copies count
-    at trigger:
-        burst template.lizard_random_2e at edges.left copies count
+repeat 10 as wave:
+    at 1.5s + wave * 8s:
+        burst template.lizard_random_2e at edge("east") copies wave + 6
+        burst template.lizard_random_2e at edge("west") copies wave + 6
     if wave == 4:
-        at 1500:
-            burst alien.fast at point(arena_size + 128.0, edges.right.y) copies 2
-    trigger += 8000
+        # as-written: listed with the fifth wave but due at 1.5s, so it lands a frame after the first.
+        at 1.5s:
+            burst alien.fast at edge("east", outside=128) copies 2

@@ -1,22 +1,14 @@
 quest "Surrounded By Reptiles" version 1
-order native
-counts native
-weapon pistol
 terrain (4, 5, 4)
 
-var trigger = 1000
-repeat 5 as axis_index:
-    let axis = pc24_add(pc24_mul(float(axis_index * 512), f32(0.2)), 256.0)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d at point(256.0, axis)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d at point(768.0, axis)
-    trigger += 800
-trigger = 8000
-repeat 5 as axis_index:
-    let axis = pc24_add(pc24_mul(float(axis_index * 512), f32(0.2)), 256.0)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d at point(axis, 256.0)
-    at trigger:
-        spawn template.den_lizard_weak_slower_0d at point(axis, 768.0)
-    trigger += 800
+# Lizard nests fill two columns, then two rows, boxing in the centre.
+repeat 5 as i:
+    let along = 256 + i * 102.4
+    at 1s + i * 800ms:
+        spawn template.den_lizard_weak_slower_0d at (256, along)
+        spawn template.den_lizard_weak_slower_0d at (768, along)
+repeat 5 as i:
+    let along = 256 + i * 102.4
+    at 8s + i * 800ms:
+        spawn template.den_lizard_weak_slower_0d at (along, 256)
+        spawn template.den_lizard_weak_slower_0d at (along, 768)

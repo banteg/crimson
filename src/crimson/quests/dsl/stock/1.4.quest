@@ -1,41 +1,15 @@
 quest "Frontline Assault" version 1
-order native
-counts native
-weapon pistol
-terrain (0, 1, 0)
 
-var bottom_left = 0
-var bottom_right = 0
-var burst_trigger = 0
-var spawn_id = 0
-var top_left = 0
-var top_right = 0
-var trigger = 0
-
-var edges = edge_points()
-(top_left, top_right, bottom_left, bottom_right) = corners()
-var step = 2500
-for i in range(2, 22):
-    if i < 5:
-        spawn_id = alien.small_gray
-    else:
-        if i < 10:
-            spawn_id = template.ai1_alien_blue_tint_1a
-        else:
-            spawn_id = alien.small_gray
-    trigger = i * step - 5000
-    at trigger:
-        spawn spawn_id at edges.bottom
-    if i > 4:
-        at trigger:
-            spawn alien.small_gray at top_left
-    if i > 10:
-        at trigger:
-            spawn alien.small_gray at top_right
-    if i == 10:
-        burst_trigger = (step * 5 - 2500) * 2
-        at burst_trigger:
-            spawn template.alien_big_gray_29 at edges.right
-        at burst_trigger:
-            spawn template.alien_big_gray_29 at edges.left
-    step = max(step - 50, 1800)
+# The southern front speeds up; the northern corners join in, and two big aliens flank wave 8.
+var gap = 2.5s
+repeat 20 as wave:
+    at (wave + 2) * gap - 5s:
+        spawn (template.ai1_alien_blue_tint_1a if 3 <= wave < 8 else alien.small_gray) at edge("south")
+        if wave >= 3:
+            spawn alien.small_gray at corner("northwest")
+        if wave >= 9:
+            spawn alien.small_gray at corner("northeast")
+        if wave == 8:
+            spawn template.alien_big_gray_29 at edge("east")
+            spawn template.alien_big_gray_29 at edge("west")
+    gap = max(gap - 50ms, 1.8s)

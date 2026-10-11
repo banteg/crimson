@@ -1,19 +1,13 @@
 quest "Sweep Stakes" version 1
-order native
-counts native
 weapon gauss_gun
 terrain (2, 3, 2)
 
-var angle = 0
-var heading = 0
-
-var trigger = 2000
-var step = 2000
-while step > 720:
-    angle = random_angle(rand(0x437838))
-    for pos in radial(center, angle, 84, 252, 42):
-        heading = heading_from_center(pos, center)
-        at trigger:
-            spawn template.alien_delayed_start_36 at pos heading heading
-    trigger += max(step, 600)
-    step -= 80
+# Sixteen spokes of four aliens at random angles, each facing the centre; the gaps shrink.
+var cue = 2s
+repeat 16 as i:
+    let angle = rand() % 612 * 0.01
+    for radius in range(84, 252, 42):
+        let pos = polar(center, radius, angle)
+        at cue:
+            spawn template.alien_delayed_start_36 at pos heading facing(pos, center)
+    cue += 2s - i * 80ms

@@ -1,17 +1,14 @@
 quest "The Random Factor" version 1
-order native
-counts native
-weapon pistol
+order as-written
 terrain (0, 0, 1)
 
-var edges = edge_points()
-var trigger = 1500
-while trigger < 101500:
-    at trigger:
-        burst template.alien_random_1d at edges.right copies players * 2 + 4
-    at trigger + 200:
-        burst template.alien_random_1d at edges.left copies 6
-    if int(rand(0x4363df) % 5) == 3:
-        at trigger:
-            burst template.alien_big_gray_29 at point(edges.bottom.x, arena_size + 64.0) copies players
-    trigger += 10000
+# Mixed aliens from both sides; roughly one wave in five brings big aliens from the south.
+repeat 10 as wave:
+    let cue = 1.5s + wave * 10s
+    at cue:
+        burst template.alien_random_1d at edge("east") copies players * 2 + 4
+    at cue + 200ms:
+        burst template.alien_random_1d at edge("west") copies 6
+    if rand() % 5 == 3:
+        at cue:
+            burst template.alien_big_gray_29 at edge("south") copies players

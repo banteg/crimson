@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-import struct
 from dataclasses import replace
 from importlib.resources import files
 
@@ -13,29 +12,50 @@ from crimson.quests.dsl import CompileLimits, QuestCompileError, compile_quest
 from crimson.quests.dsl.stock import stock_source
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
-from grim.rand import CrtRand, RecordingCrand
+from grim.rand import CrtRand
+
+SEEDS = (0, 1, 0xBEEF, 0xFFFFFFFF)
+
+
+def shape(entries):
+    return [(entry.spawn_id, entry.count, entry.trigger_ms) for entry in entries]
+
+
+def stock_tables(quest, players, hardcore):
+    return [
+        build_quest_spawn_table(quest, QuestContext(player_count=players, hardcore=hardcore, rng=CrtRand(seed)))
+        for seed in SEEDS
+    ]
+
+
+def free_placements(tables) -> frozenset[int]:
+    """Entries whose placement is the builder's only random choice; a recipe may draw them differently.
+
+    Where randomness decides what spawns, the recipe's draws must line up with the builder's.
+    """
+    if any(shape(table) != shape(tables[0]) for table in tables):
+        return frozenset()
+    return frozenset(
+        i for i, column in enumerate(zip(*tables, strict=False)) if len({(e.pos, e.heading) for e in column}) > 1
+    )
 
 
 @pytest.mark.parametrize("quest", QUESTS, ids=lambda quest: quest.level.text)
 @pytest.mark.parametrize("players", (1, 2, 3, 4))
 @pytest.mark.parametrize("hardcore", (False, True))
-@pytest.mark.parametrize("seed", (0, 1, 0xBEEF, 0xFFFFFFFF))
-def test_all_stock_recipes_match_entries_and_rng_trace(quest, players, hardcore, seed):
-    native_rng = RecordingCrand(CrtRand(seed))
-    recipe_rng = RecordingCrand(CrtRand(seed))
-    expected = build_quest_spawn_table(quest, QuestContext(player_count=players, hardcore=hardcore, rng=native_rng))
-    plan = compile_quest(
-        stock_source(quest.level.text),
-        context=QuestContext(player_count=players, hardcore=hardcore, rng=recipe_rng),
-    )
-    assert plan.entries == expected
-    assert [struct.pack("<fff", entry.pos.x, entry.pos.y, entry.heading) for entry in plan.entries] == [
-        struct.pack("<fff", entry.pos.x, entry.pos.y, entry.heading) for entry in expected
-    ]
-    assert recipe_rng.records == native_rng.records
-    assert plan.construction_rng_state == native_rng.state
-    assert plan.start_weapon_id == quest.start_weapon_id
-    assert plan.terrain_slots == quest.terrain_slots
+def test_stock_recipes_build_the_stock_tables(quest, players, hardcore):
+    tables = stock_tables(quest, players, hardcore)
+    free = free_placements(tables)
+    for seed, expected in zip(SEEDS, tables, strict=True):
+        plan = compile_quest(stock_source(quest.level.text), seed=seed, player_count=players, hardcore=hardcore)
+        assert shape(plan.entries) == shape(expected)
+        for i, (entry, native) in enumerate(zip(plan.entries, expected, strict=True)):
+            if i in free:
+                continue
+            assert (entry.pos.x, entry.pos.y) == pytest.approx((native.pos.x, native.pos.y), abs=0.01), i
+            assert math.remainder(entry.heading - native.heading, math.tau) == pytest.approx(0, abs=1e-4), i
+        assert plan.start_weapon_id == quest.start_weapon_id
+        assert plan.terrain_slots == quest.terrain_slots
 
 
 def test_pattern_placement_sorting_and_source_mapping():
@@ -82,7 +102,7 @@ repeat 20 as i:
 @pytest.mark.parametrize(
     ("body", "message"),
     [
-        ("while true:\n    rand()", "work budget"),
+        ("var n = 0\nwhile true:\n    n = rand()", "work budget"),
         ("let xs = range(1000000000)", "collection limit"),
         ("let xs = [1]\nvar ys = xs\nys *= 1000000000", "arithmetic requires numbers"),
         ("at 1s:\n    place alien.small_gray on line(center, point(1, 0), 257)", "entry limit"),
@@ -90,6 +110,7 @@ repeat 20 as i:
         ("at 1s:\n    burst alien.small_gray at center copies 0", "copies must be positive"),
         ("at 1s:\n    spawn 999 at center", "not a valid SpawnId"),
         ("at 1s:\n    spawn alien.small_gray at point(1e309, 0)", "finite"),
+        ("let p = center * center", "points added, subtracted or scaled"),
         ("let fixed = 1\nfixed = 2", "immutable"),
         ("spawn alien.small_gray at center", "inside an at"),
         ("import os", "unsupported syntax"),

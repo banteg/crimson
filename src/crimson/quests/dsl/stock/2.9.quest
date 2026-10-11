@@ -1,23 +1,17 @@
 quest "Ghost Patrols" version 1
-order native
-counts native
-weapon pistol
+order as-written
 terrain (2, 2, 3)
 
-var x = 0
+at 1.5s:
+    burst alien.fast at edge("east", outside=128) copies 2
 
-var edges = edge_points(offset=128.0)
-at 1500:
-    burst alien.fast at edges.right copies 2
-var trigger = 2500
-for i in range(12):
-    x = edges.left.x if i % 2 == 0 else edges.right.x
-    at trigger:
-        spawn template.formation_ring_alien_5_19 at point(x, edges.left.y)
-    trigger += 2500
-var loop_count = 12
-at (loop_count - 1) * 2500:
-    spawn alien.fast at point(-264.0, edges.left.y)
-var special_trigger = (5 * loop_count + 15) * 500
-at special_trigger:
-    spawn template.formation_grid_alien_bronze_18 at point(edges.left.x, edges.left.y)
+# Five-alien rings patrol in from alternating sides.
+repeat 12 as i:
+    at 2.5s + i * 2.5s:
+        spawn template.formation_ring_alien_5_19 at edge(["west", "east"][i % 2], outside=128)
+
+# as-written: this straggler is listed after the last patrol, so an early clear brings that patrol first.
+at 27.5s:
+    spawn alien.fast at edge("west", outside=264)
+at 37.5s:
+    spawn template.formation_grid_alien_bronze_18 at edge("west", outside=128)

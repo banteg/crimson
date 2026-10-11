@@ -1,30 +1,16 @@
 quest "Monster Blues" version 1
-order native
-counts native
-weapon pistol
 terrain (0, 1, 3)
 
-var count = 0
-var spawn_id = 0
+at 500ms:
+    burst template.lizard_random_04 at edge("west", outside=50) copies 10
+at 7.5s:
+    burst template.alien_random_06 at edge("east", outside=50) copies 10
+at 17.5s:
+    burst template.spider_sp1_random_03 at edge("south") copies 12
+    burst template.spider_sp1_random_03 at edge("north") copies 12
 
-at 500:
-    burst template.lizard_random_04 at point(-50.0, float(arena_size * 0.5)) copies 10
-at 7500:
-    burst template.alien_random_06 at point(1074.0, float(arena_size * 0.5)) copies 10
-at 17500:
-    burst template.spider_sp1_random_03 at point(512.0, 1088.0) copies 12
-at 17500:
-    burst template.spider_sp1_random_03 at point(512.0, -64.0) copies 12
-var trigger = 27500
-for idx in range(64):
-    if idx % 4 == 0:
-        spawn_id = template.alien_random_06
-    else:
-        if idx % 4 == 1:
-            spawn_id = template.spider_sp1_random_03
-        else:
-            spawn_id = template.spider_sp2_random_05
-    count = idx // 8 + 2
-    at trigger:
-        burst spawn_id at point(-64.0, 512.0) copies count
-    trigger += 900
+# Then 64 groups from the west, 0.9s apart, cycling through three breeds and growing every eight.
+let breeds = [template.alien_random_06, template.spider_sp1_random_03, template.spider_sp2_random_05, template.spider_sp2_random_05]
+repeat 64 as i:
+    at 27.5s + i * 900ms:
+        burst breeds[i % 4] at edge("west") copies i // 8 + 2

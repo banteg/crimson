@@ -1,25 +1,13 @@
 quest "8-legged Terror" version 1
-order native
-counts native
-weapon pistol
 terrain (0, 0, 1)
 
-var bottom_left = 0
-var bottom_right = 0
-var top_left = 0
-var top_right = 0
+at 1s:
+    spawn spider.boss at (768, 512)
 
-at 1000:
-    spawn spider.boss at point(float(arena_size - 256), float(arena_size // 2))
-(top_left, top_right, bottom_left, bottom_right) = corners(offset=25.0)
-var trigger = 6000
-while trigger < 36800:
-    at trigger:
-        burst template.spider_sp1_random_3d at top_left copies players
-    at trigger:
-        spawn template.spider_sp1_random_3d at top_right
-    at trigger:
-        burst template.spider_sp1_random_3d at bottom_left copies players
-    at trigger:
-        spawn template.spider_sp1_random_3d at bottom_right
-    trigger += 2200
+# Spiders pour from all four corners; the western pair grows with the party.
+repeat 14 as wave:
+    at 6s + wave * 2.2s:
+        burst template.spider_sp1_random_3d at corner("northwest", outside=25) copies players
+        spawn template.spider_sp1_random_3d at corner("northeast", outside=25)
+        burst template.spider_sp1_random_3d at corner("southwest", outside=25) copies players
+        spawn template.spider_sp1_random_3d at corner("southeast", outside=25)

@@ -1,28 +1,22 @@
 quest "Spider Spawns" version 1
-order native
-counts native
-weapon pistol
+order as-written
 terrain (2, 3, 2)
 
-at 1500:
-    spawn template.den_spider_weak_10 at point(128.0, 128.0)
-at 1500:
-    spawn template.den_spider_weak_10 at point(896.0, 896.0)
-at 1500:
-    spawn template.den_spider_weak_10 at point(896.0, 128.0)
-at 1500:
-    spawn template.den_spider_weak_10 at point(128.0, 896.0)
-at 3000:
-    burst template.spider_sp1_stop_and_go_38 at point(-64.0, 512.0) copies 2
-at 18000:
-    spawn nest.spider at point(512.0, 512.0)
-at 20500:
-    spawn template.den_spider_weak_10 at point(448.0, 448.0)
-at 26000:
-    spawn template.den_spider_weak_10 at point(576.0, 448.0)
-at 21000:
-    burst template.spider_sp1_stop_and_go_38 at point(1088.0, 512.0) copies 2
-at 31500:
-    spawn template.den_spider_weak_10 at point(576.0, 576.0)
-at 22000:
-    spawn template.den_spider_weak_10 at point(448.0, 576.0)
+at 1.5s:
+    place template.den_spider_weak_10 on [point(128, 128), point(896, 896), point(896, 128), point(128, 896)]
+at 3s:
+    burst template.spider_sp1_stop_and_go_38 at edge("west") copies 2
+at 18s:
+    spawn nest.spider at center
+
+# as-written: early clears pull the inner nests forward in this listed order, ahead of the 21s and 22s arrivals.
+at 20.5s:
+    spawn template.den_spider_weak_10 at (448, 448)
+at 26s:
+    spawn template.den_spider_weak_10 at (576, 448)
+at 21s:
+    burst template.spider_sp1_stop_and_go_38 at edge("east") copies 2
+at 31.5s:
+    spawn template.den_spider_weak_10 at (576, 576)
+at 22s:
+    spawn template.den_spider_weak_10 at (448, 576)

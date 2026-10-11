@@ -1,20 +1,12 @@
 quest "Lizard Raze" version 1
-order native
-counts native
-weapon pistol
+order as-written
 terrain (4, 4, 5)
 
-var edges = edge_points()
-var trigger = 1500
-while trigger < 91500:
-    at trigger:
-        burst template.lizard_random_2e at edges.right copies 6
-    at trigger:
-        burst template.lizard_random_2e at edges.left copies 6
-    trigger += 6000
-at 10000:
-    spawn template.den_lizard_weak_0c at point(128.0, 256.0)
-at 10000:
-    spawn template.den_lizard_weak_0c at point(128.0, 384.0)
-at 10000:
-    spawn template.den_lizard_weak_0c at point(128.0, 512.0)
+repeat 15 as wave:
+    at 1.5s + wave * 6s:
+        burst template.lizard_random_2e at edge("east") copies 6
+        burst template.lizard_random_2e at edge("west") copies 6
+
+# as-written: the dens queue behind every wave, so clearing early brings lizard waves forward first.
+at 10s:
+    place template.den_lizard_weak_0c on line(point(128, 256), point(0, 128), 3)

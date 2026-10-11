@@ -6,28 +6,15 @@ import operator
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from decimal import Decimal
 from typing import Any
 
 from grim.geom import Vec2
 from grim.rand import CrtRand
 
 from ...creatures.spawn_ids import SpawnId
-from ...math_parity import NATIVE_TAU, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul, x87_pc24_sub
 from ...weapons import WeaponId
-from ..helpers import (
-    NATIVE_CENTER,
-    EdgePoints,
-    angle_step,
-    corner_points,
-    edge_midpoints,
-    heading_from_center,
-    line_points,
-    radial_points,
-    random_angle,
-    ring_point,
-    ring_points,
-    spawn,
-)
+from ..helpers import NATIVE_CENTER, spawn
 from ..runtime import apply_hardcore_spawn_table_adjustment
 from ..types import QuestContext, SpawnEntry
 from .model import CompileLimits, QuestPlan, SourceLocation
@@ -56,11 +43,10 @@ def _expression(text: str) -> str:
             return token.title()
         unit = re.fullmatch(r"(\d+(?:\.\d*)?|\.\d+)(ms|s|deg)", token)
         if unit:
-            value = float(unit[1])
             if unit[2] == "deg":
-                return repr(math.radians(value))
-            value *= 1000 if unit[2] == "s" else 1
-            if not value.is_integer():
+                return repr(math.radians(float(unit[1])))
+            value = Decimal(unit[1]) * (1000 if unit[2] == "s" else 1)
+            if value != value.to_integral_value():
                 raise QuestCompileError("time literals must resolve to whole milliseconds")
             return str(int(value))
         return token
@@ -75,7 +61,6 @@ def _lower(source: str) -> tuple[ast.Module, dict[str, Any]]:
     """
     metadata: dict[str, Any] = {
         "order": "chronological",
-        "counts": "explicit",
         "weapon": "pistol",
         "terrain": (0, 1, 0),
     }
@@ -93,7 +78,7 @@ def _lower(source: str) -> tuple[ast.Module, dict[str, Any]]:
             lowered.append(line)
             continue
         header = re.fullmatch(r'quest\s+("(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\')\s+version\s+(\d+)', text)
-        directive = re.fullmatch(r"(order|counts|weapon|terrain)\s+(.+)", text)
+        directive = re.fullmatch(r"(order|weapon|terrain)\s+(.+)", text)
         try:
             if header or directive:
                 if indent or started:
@@ -136,8 +121,8 @@ def _lower(source: str) -> tuple[ast.Module, dict[str, Any]]:
             raise QuestCompileError(str(exc), line_number) from exc
     if "quest" not in seen or metadata["version"] != 1:
         raise QuestCompileError('expected quest "Title" version 1')
-    if metadata["order"] not in ("native", "chronological") or metadata["counts"] not in ("native", "explicit"):
-        raise QuestCompileError("order must be native/chronological; counts must be native/explicit")
+    if metadata["order"] not in ("chronological", "as-written"):
+        raise QuestCompileError("order must be chronological or as-written")
     try:
         metadata["weapon"] = WeaponId[metadata["weapon"].upper()]
         if metadata["weapon"] == WeaponId.NONE:
@@ -202,6 +187,20 @@ _COMPARE: dict[type[ast.cmpop], Callable[[Any, Any], Any]] = {
     ast.In: operator.contains,
     ast.NotIn: operator.contains,
 }
+
+
+def _arithmetic(op: ast.operator, a: Any, b: Any) -> Any:
+    """Numbers combine freely; points add, subtract and scale by numbers."""
+    numbers = isinstance(a, (int, float)) and isinstance(b, (int, float))
+    points = isinstance(a, Vec2) and isinstance(b, Vec2) and isinstance(op, (ast.Add, ast.Sub))
+    scaled = (isinstance(a, Vec2) and isinstance(b, (int, float)) and isinstance(op, (ast.Mult, ast.Div))) or (
+        isinstance(a, (int, float)) and isinstance(b, Vec2) and isinstance(op, ast.Mult)
+    )
+    if not (numbers or points or scaled):
+        raise TypeError("arithmetic requires numbers, or points added, subtracted or scaled")
+    return _BINARY[type(op)](a, b)
+
+
 _ALIASES = {
     "alien": {"small_gray": SpawnId.ALIEN_SMALL_GRAY_26, "fast": SpawnId.ALIEN_DEADLY_FAST_2B},
     "spider": {
@@ -247,7 +246,6 @@ class _Compiler:
                 "arena_size": 1024,
                 "pi": math.pi,
                 "tau": math.tau,
-                "native_tau": NATIVE_TAU,
             },
         )
         self.functions: dict[str, Callable[..., Any]] = {
@@ -258,22 +256,13 @@ class _Compiler:
             "float": float,
             "len": len,
             "point": Vec2,
-            "edge_points": edge_midpoints,
-            "corners": corner_points,
-            "polar": ring_point,
-            "angle_step": angle_step,
-            "random_angle": random_angle,
-            "heading_from_center": heading_from_center,
-            "f32": f32,
-            "pc24_add": x87_pc24_add,
-            "pc24_sub": x87_pc24_sub,
-            "pc24_mul": x87_pc24_mul,
-            "pc24_div": x87_pc24_div,
+            "corner": self.corner,
+            "corners": self.corners,
+            "polar": self.polar,
+            "facing": self.facing,
             "range": self.bounded_range,
             "line": self.line,
             "ring": self.ring,
-            "ring_angles": self.ring_angles,
-            "radial": self.radial,
             "edge": self.edge,
             "edge_line": self.edge_line,
             "opposite": self.opposite,
@@ -321,25 +310,34 @@ class _Compiler:
         return function(values)
 
     def line(self, start: Vec2, step: Vec2, count: int) -> tuple[Vec2, ...]:
-        return tuple(line_points(start, step, len(self.bounded_range(count))))
+        return tuple(start + step * i for i in self.bounded_range(count))
 
-    def ring_angles(self, center: Vec2, radius: float, count: int, *, step: float, start: float = 0) -> tuple:
-        return tuple(ring_points(center, radius, len(self.bounded_range(count)), step=step, start=start))
+    @staticmethod
+    def polar(center: Vec2, radius: float, angle: float) -> Vec2:
+        return center + Vec2(math.cos(angle), math.sin(angle)) * radius
+
+    @staticmethod
+    def facing(point: Vec2, target: Vec2) -> float:
+        # A creature at heading h moves along (cos(h - pi/2), sin(h - pi/2)).
+        return math.atan2(point.y - target.y, point.x - target.x) - math.pi / 2
 
     def ring(self, center: Vec2, radius: float, count: int, *, start: float = 0) -> tuple[Vec2, ...]:
-        # Operation order deliberately matches Gauntlet: (index * native_tau) / count.
-        return tuple(
-            ring_point(
-                center,
-                radius,
-                x87_pc24_add(x87_pc24_div(x87_pc24_mul(float(i), NATIVE_TAU), float(count)), f32(start)),
-            )
-            for i in self.bounded_range(count)
-        )
+        return tuple(self.polar(center, radius, start + i * math.tau / count) for i in self.bounded_range(count))
 
-    def radial(self, center: Vec2, angle: float, start: int, stop: int, step: int) -> tuple[Vec2, ...]:
-        self.bounded_range(start, stop, step)
-        return tuple(radial_points(center, angle, start, stop, step))
+    @staticmethod
+    def corner(name: str, *, outside: float = 64) -> Vec2:
+        near, far = -outside, 1024 + outside
+        return {
+            "northwest": Vec2(near, near),
+            "northeast": Vec2(far, near),
+            "southwest": Vec2(near, far),
+            "southeast": Vec2(far, far),
+        }[name]
+
+    def corners(self, *, outside: float = 64) -> tuple[Vec2, ...]:
+        return tuple(
+            self.corner(name, outside=outside) for name in ("northwest", "northeast", "southwest", "southeast")
+        )
 
     def edge(self, side: str, *, outside: float = 64, fraction: float = 0.5) -> Vec2:
         along = 1024 * fraction
@@ -370,12 +368,7 @@ class _Compiler:
             raise ValueError("arc count must be nonnegative")
         # Both endpoints are included; a singleton is at start. Positive sweep is clockwise.
         return tuple(
-            ring_point(
-                center,
-                radius,
-                x87_pc24_add(f32(start), x87_pc24_div(x87_pc24_mul(float(i), f32(sweep)), float(max(count - 1, 1)))),
-            )
-            for i in self.bounded_range(count)
+            self.polar(center, radius, start + i * sweep / max(count - 1, 1)) for i in self.bounded_range(count)
         )
 
     def rotate(self, points: tuple | list, angle: float, *, around: Vec2 = NATIVE_CENTER) -> tuple[Vec2, ...]:
@@ -391,8 +384,8 @@ class _Compiler:
             for point in points
         )
 
-    def rand(self, caller: int | None = None) -> int:
-        return self.ctx.rng.rand() if caller is None else self.ctx.rng.rand_tagged(self.integer(caller))
+    def rand(self) -> int:
+        return self.ctx.rng.rand()
 
     def choose(self, values: tuple | list) -> Any:
         return values[self.rand() % len(values)]
@@ -426,9 +419,7 @@ class _Compiler:
                 base = self.expression(value, scope)
                 if isinstance(base, dict):
                     result = base[attr]
-                elif (isinstance(base, Vec2) and attr in ("x", "y")) or (
-                    isinstance(base, EdgePoints) and attr in ("left", "right", "top", "bottom")
-                ):
+                elif isinstance(base, Vec2) and attr in ("x", "y"):
                     result = getattr(base, attr)
                 else:
                     raise ValueError("only template aliases and point coordinates have attributes")
@@ -441,10 +432,7 @@ class _Compiler:
                 value = self.expression(operand, scope)
                 result = _UNARY[type(op)](value)
             case ast.BinOp(left=left, op=op, right=right):
-                a, b = self.expression(left, scope), self.expression(right, scope)
-                if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
-                    raise TypeError("arithmetic requires numbers")
-                result = _BINARY[type(op)](a, b)
+                result = _arithmetic(op, self.expression(left, scope), self.expression(right, scope))
             case ast.BoolOp(op=op, values=values):
                 result = self.expression(values[0], scope)
                 for value in values[1:]:
@@ -556,11 +544,7 @@ class _Compiler:
                     case ast.Assign(targets=[target], value=value):
                         self.assign(target, self.expression(value, scope), scope)
                     case ast.AugAssign(target=ast.Name(id=name), op=op, value=value):
-                        old = scope.owner(name).values[name]
-                        operand = self.expression(value, scope)
-                        if not isinstance(old, (int, float)) or not isinstance(operand, (int, float)):
-                            raise TypeError("arithmetic requires numbers")
-                        new = _BINARY[type(op)](old, operand)
+                        new = _arithmetic(op, scope.owner(name).values[name], self.expression(value, scope))
                         scope.assign(name, self.bounded(new))
                     case ast.If(test=test, body=body, orelse=orelse):
                         self.block(body if self.expression(test, scope) else orelse, _Scope(scope), in_loop=in_loop)
@@ -614,8 +598,6 @@ class _Compiler:
                             self.emit(call, scope)
                         elif name in self.patterns:
                             self.pattern(call, scope)
-                        elif name in self.functions:
-                            self.expression(call, scope)  # Explicit discarded RNG draws for native recipes.
                         else:
                             raise ValueError(f"unknown construction operation {name!r}")
                     case _:
@@ -748,42 +730,38 @@ def compile_quest(
     seed: int = 0,
     player_count: int = 1,
     hardcore: bool = False,
-    context: QuestContext | None = None,
     limits: CompileLimits = _DEFAULT_LIMITS,
 ) -> QuestPlan:
-    """Construct a finite plan. An explicit context is the stock-parity/testing path.
+    """Construct a finite plan from a construction seed; it never initializes a game.
 
-    Ordinary compilation owns a separate construction RNG; it never initializes a game.
+    Hardcore is both a recipe input and the game's count rule, applied to every table.
     """
     if len(source.encode("utf-8")) > limits.source_bytes:
         raise QuestCompileError("source byte limit exceeded")
-    if context is None and (type(seed) is not int or not 0 <= seed <= 0xFFFFFFFF):
+    if type(seed) is not int or not 0 <= seed <= 0xFFFFFFFF:
         raise QuestCompileError("seed must be a uint32")
-    ctx = context or QuestContext(player_count=player_count, hardcore=hardcore, rng=CrtRand(seed))
-    if type(ctx.player_count) is not int or not 1 <= ctx.player_count <= 4:
+    if type(player_count) is not int or not 1 <= player_count <= 4:
         raise QuestCompileError("players must be in 1..4")
-    if type(ctx.hardcore) is not bool:
+    if type(hardcore) is not bool:
         raise QuestCompileError("hardcore must be true or false")
+    ctx = QuestContext(player_count=player_count, hardcore=hardcore, rng=CrtRand(seed))
     tree, metadata = _lower(source)
     _validate(tree, limits)
     compiler = _Compiler(ctx, limits)
     compiler.block(tree.body, compiler.root)
     entries = compiler.entries
-    if ctx.hardcore and metadata["counts"] == "native":
+    if hardcore:
         entries = apply_hardcore_spawn_table_adjustment(entries)
         if any(entry.count > limits.copies for entry in entries):
-            raise QuestCompileError("native hardcore adjustment exceeds the copy limit")
+            raise QuestCompileError("hardcore count adjustment exceeds the copy limit")
     paired = list(zip(entries, compiler.locations, strict=True))
     if metadata["order"] == "chronological":
         paired.sort(key=lambda pair: pair[0].trigger_ms)
     return QuestPlan(
         title=metadata["title"],
         version=1,
-        order=metadata["order"],
-        counts=metadata["counts"],
         start_weapon_id=metadata["weapon"],
         terrain_slots=metadata["terrain"],
         entries=tuple(entry for entry, _ in paired),
         locations=tuple(location for _, location in paired),
-        construction_rng_state=ctx.rng.state,
     )

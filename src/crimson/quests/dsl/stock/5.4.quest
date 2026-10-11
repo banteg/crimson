@@ -1,25 +1,21 @@
 quest "The Gang Wars" version 1
-order native
-counts native
-weapon pistol
 terrain (0, 1, 3)
 
-var half_height = arena_size * 0.5
-at 100:
-    spawn formation.alien_ring at point(-150.0, half_height)
-at 2500:
-    spawn formation.alien_ring at point(1174.0, half_height)
-var trigger = 5500
-for iteration in range(10):
-    at trigger:
-        burst formation.alien_ring at point(1174.0, half_height) copies 2
-    trigger += 4000
-at 50500:
-    spawn template.formation_chain_alien_10_13 at point(512.0, 1152.0)
-trigger = 59500
-while trigger < 99500:
-    at trigger:
-        burst formation.alien_ring at point(-150.0, half_height) copies 2
-    trigger += 4000
-at 107500:
-    burst template.formation_chain_alien_10_13 at point(512.0, 1152.0) copies 3
+# Alien rings press from one side, then the other; chains climb in from the south between and after.
+let west = edge("west", outside=150)
+let east = edge("east", outside=150)
+let south = edge("south", outside=128)
+at 100ms:
+    spawn formation.alien_ring at west
+at 2.5s:
+    spawn formation.alien_ring at east
+repeat 10 as i:
+    at 5.5s + i * 4s:
+        burst formation.alien_ring at east copies 2
+at 50.5s:
+    spawn template.formation_chain_alien_10_13 at south
+repeat 10 as i:
+    at 59.5s + i * 4s:
+        burst formation.alien_ring at west copies 2
+at 107.5s:
+    burst template.formation_chain_alien_10_13 at south copies 3

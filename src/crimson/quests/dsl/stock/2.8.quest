@@ -1,14 +1,7 @@
 quest "Land Of Lizards" version 1
-order native
-counts native
-weapon pistol
 terrain (2, 2, 3)
 
-at 2000:
-    spawn template.alien_spawner_ring_24_0e at point(256.0, 256.0)
-at 12000:
-    spawn template.alien_spawner_ring_24_0e at point(768.0, 256.0)
-at 22000:
-    spawn template.alien_spawner_ring_24_0e at point(256.0, 768.0)
-at 32000:
-    spawn template.alien_spawner_ring_24_0e at point(768.0, 768.0)
+let spots = [point(256, 256), point(768, 256), point(256, 768), point(768, 768)]
+repeat 4 as i:
+    at 2s + i * 10s:
+        spawn template.alien_spawner_ring_24_0e at spots[i]

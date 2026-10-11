@@ -1,30 +1,17 @@
 quest "Two Fronts" version 1
-order native
-counts native
-weapon pistol
 terrain (2, 3, 2)
 
-var trigger = 0
-var trigger_a = 0
-var trigger_b = 0
-
-var edges = edge_points()
-for wave in range(40):
-    trigger_a = wave * 2000 + 1000
-    trigger_b = (wave * 5 + 5) * 400
-    at trigger_a:
-        spawn template.ai1_alien_blue_tint_1a at edges.right
-    at trigger_b:
-        spawn template.ai1_spider_sp1_blue_tint_1b at edges.left
-    if wave in (10, 20):
-        trigger = wave * 2000 + 2500
-        at trigger:
-            spawn nest.spider at point(256.0, 256.0)
-        at trigger:
-            spawn nest.alien at point(768.0, 768.0)
+# Aliens from the east and spiders from the west, one each per second; nest pairs land at waves 10, 20 and 30.
+repeat 40 as wave:
+    at wave * 2s + 1s:
+        spawn template.ai1_alien_blue_tint_1a at edge("east")
+    at wave * 2s + 2s:
+        spawn template.ai1_spider_sp1_blue_tint_1b at edge("west")
+    if wave in [10, 20]:
+        at wave * 2s + 2.5s:
+            spawn nest.spider at (256, 256)
+            spawn nest.alien at (768, 768)
     if wave == 30:
-        trigger = 62500
-        at trigger:
-            spawn nest.spider at point(768.0, 256.0)
-        at trigger:
-            spawn nest.alien at point(256.0, 768.0)
+        at wave * 2s + 2.5s:
+            spawn nest.spider at (768, 256)
+            spawn nest.alien at (256, 768)

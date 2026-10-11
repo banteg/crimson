@@ -1,23 +1,11 @@
 quest "The Collaboration" version 1
-order native
-counts native
-weapon pistol
 terrain (6, 7, 6)
 
-var count = 0
-
-var edges = edge_points()
-var trigger = 1500
-var wave = 0
-while trigger < 177500:
-    count = int(pc24_add(pc24_mul(float(wave), f32(0.8)), 7.0))
-    at trigger:
-        burst template.ai1_alien_blue_tint_1a at edges.right copies count
-    at trigger:
-        burst template.ai1_spider_sp1_blue_tint_1b at edges.bottom copies count
-    at trigger:
-        burst template.ai1_lizard_blue_tint_1c at edges.left copies count
-    at trigger:
-        burst zombie.random at edges.top copies count
-    trigger += 11000
-    wave += 1
+# Every breed at once, one per side, growing by four for every five waves.
+repeat 16 as wave:
+    let size = 7 + wave * 4 // 5
+    at 1.5s + wave * 11s:
+        burst template.ai1_alien_blue_tint_1a at edge("east") copies size
+        burst template.ai1_spider_sp1_blue_tint_1b at edge("south") copies size
+        burst template.ai1_lizard_blue_tint_1c at edge("west") copies size
+        burst zombie.random at edge("north") copies size

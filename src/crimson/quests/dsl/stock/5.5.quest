@@ -1,33 +1,29 @@
 quest "Knee-deep in the Dead" version 1
-order native
-counts native
-weapon pistol
+order as-written
 terrain (1, 1, 3)
 
-var count = 0
-
-at 100:
-    spawn template.zombie_const_green_brute_43 at point(-50.0, float(arena_size * 0.5))
-var trigger = 500
-var wave = 0
-while trigger < 96500:
+# Zombies shamble in from the west every 1.5s, a brute leads every eighth wave,
+# and new lanes open above and below as time goes on.
+# as-written: the original lane order; the last lane is listed before an earlier one and can land a frame late.
+let west = edge("west", outside=50)
+at 100ms:
+    spawn template.zombie_const_green_brute_43 at west
+repeat 64 as wave:
+    let cue = 500ms + wave * 1.5s
     if wave % 8 == 0:
-        at trigger - 2:
-            spawn template.zombie_const_green_brute_43 at point(-50.0, float(arena_size * 0.5))
-    count = 2 if wave > 32 else 1
-    at trigger:
-        burst zombie.random at point(-50.0, float(arena_size * 0.5)) copies count
-    if trigger > 12500:
-        at trigger + 500:
-            spawn zombie.random at point(-50.0, float(arena_size * 0.5 + 158.0))
-    if trigger > 24500:
-        at trigger + 1000:
-            spawn zombie.random at point(-50.0, float(arena_size * 0.5 - 158.0))
-    if trigger > 36500:
-        at trigger + 1300:
-            spawn template.zombie_small_white_42 at point(-50.0, float(arena_size * 0.5 - 258.0))
-    if trigger > 48500:
-        at trigger + 300:
-            spawn template.zombie_small_white_42 at point(-50.0, float(arena_size * 0.5 + 258.0))
-    trigger += 1500
-    wave += 1
+        at cue - 2ms:
+            spawn template.zombie_const_green_brute_43 at west
+    at cue:
+        burst zombie.random at west copies (2 if wave > 32 else 1)
+    if cue > 12.5s:
+        at cue + 500ms:
+            spawn zombie.random at west + point(0, 158)
+    if cue > 24.5s:
+        at cue + 1s:
+            spawn zombie.random at west - point(0, 158)
+    if cue > 36.5s:
+        at cue + 1.3s:
+            spawn template.zombie_small_white_42 at west - point(0, 258)
+    if cue > 48.5s:
+        at cue + 300ms:
+            spawn template.zombie_small_white_42 at west + point(0, 258)

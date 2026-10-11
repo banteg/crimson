@@ -29,10 +29,7 @@ class SourceLocation:
 class QuestPlan:
     title: str
     version: int
-    order: str
-    counts: str
     start_weapon_id: WeaponId
     terrain_slots: TerrainSlotTriplet
     entries: tuple[SpawnEntry, ...]
     locations: tuple[SourceLocation, ...]
-    construction_rng_state: int

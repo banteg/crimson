@@ -1,29 +1,18 @@
 quest "Alien Squads" version 1
-order native
-counts native
-weapon pistol
 terrain (0, 0, 1)
 
-at 1500:
-    spawn formation.alien_ring at point(-256.0, 256.0)
-at 2500:
-    spawn formation.alien_ring at point(-256.0, 768.0)
-at 5500:
-    spawn formation.alien_ring at point(768.0, -256.0)
-at 8500:
-    spawn formation.alien_ring at point(768.0, 1280.0)
-at 14500:
-    spawn formation.alien_ring at point(1280.0, 1280.0)
-at 18500:
-    spawn formation.alien_ring at point(1280.0, 768.0)
-at 25000:
-    spawn formation.alien_ring at point(-256.0, 256.0)
-at 30000:
-    spawn formation.alien_ring at point(-256.0, 768.0)
-var trigger = 36200
-while trigger < 83000:
-    at trigger - 400:
-        spawn alien.small_gray at point(-64.0, -64.0)
-    at trigger:
-        spawn alien.small_gray at point(1088.0, 1088.0)
-    trigger += 1800
+# Alien rings close in from beyond the edges, then a crossfire from opposite corners.
+let squads = [
+    ((-256, 256), 1.5s), ((-256, 768), 2.5s), ((768, -256), 5.5s), ((768, 1280), 8.5s),
+    ((1280, 1280), 14.5s), ((1280, 768), 18.5s), ((-256, 256), 25s), ((-256, 768), 30s),
+]
+for (pos, time) in squads:
+    at time:
+        spawn formation.alien_ring at pos
+
+repeat 26 as i:
+    let cue = 36.2s + i * 1.8s
+    at cue - 400ms:
+        spawn alien.small_gray at corner("northwest")
+    at cue:
+        spawn alien.small_gray at corner("southeast")

@@ -1,28 +1,16 @@
 quest "The Killing" version 1
-order native
-counts native
-weapon pistol
 terrain (4, 5, 4)
 
+# The original rolls a random enemy and side each wave, then ignores both: the rotation is fixed.
 let enemies = [template.ai1_alien_blue_tint_1a, template.ai1_spider_sp1_blue_tint_1b, template.ai1_lizard_blue_tint_1c]
-let edges = edge_points()
-let entrances = [edges.right, edges.left, edges.bottom, edges.top]
-let spawner_callers = [(4425175, 4425205), (4425256, 4425286), (4425343, 4425373)]
-
-pattern random_spawner(y_caller, x_caller):
-    let y = float(rand(y_caller) % 768) + 128.0
-    let x = float(rand(x_caller) % 768) + 128.0
-    burst nest.alien at (x, y) copies 3
-
+let sides = ["east", "west", "south", "north"]
 repeat 10 as wave:
-    # Native discards both picks and branches on the wave, but consumes both draws.
-    rand(0x4384be)
-    let enemy = enemies[wave % 3]
-    rand(0x4384f0)
+    let cue = 2s + wave * 6s
     if wave % 5 < 4:
-        at 2s + wave * 6s:
-            burst enemy at entrances[wave % 5] copies 12
+        at cue:
+            burst enemies[wave % 3] at edge(sides[wave % 5]) copies 12
     else:
+        # Every fifth wave drops three alien nests at random spots instead, a second apart.
         repeat 3 as i:
-            at 2s + wave * 6s + i * 1s:
-                random_spawner(spawner_callers[i][0], spawner_callers[i][1])
+            at cue + i * 1s:
+                burst nest.alien at (rand_int(128, 895), rand_int(128, 895)) copies 3

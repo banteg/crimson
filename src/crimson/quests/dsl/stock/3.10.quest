@@ -1,14 +1,11 @@
 quest "Zombie Masters" version 1
-order native
-counts native
-weapon pistol
 terrain (4, 4, 5)
 
-at 1000:
-    burst zombie.spawner_boss at point(256.0, 256.0) copies players
-at 6000:
-    spawn zombie.spawner_boss at point(512.0, 256.0)
-at 14000:
-    burst zombie.spawner_boss at point(768.0, 256.0) copies players
-at 18000:
-    spawn zombie.spawner_boss at point(768.0, 768.0)
+at 1s:
+    burst zombie.spawner_boss at (256, 256) copies players
+at 6s:
+    spawn zombie.spawner_boss at (512, 256)
+at 14s:
+    burst zombie.spawner_boss at (768, 256) copies players
+at 18s:
+    spawn zombie.spawner_boss at (768, 768)

@@ -1,25 +1,23 @@
 quest "Gauntlet" version 1
-order native
-counts native
-weapon pistol
+order as-written
 terrain (6, 6, 7)
 
-let population = players + (4 if hardcore else 0)
-let inner = ring(center, radius=158, count=population + 9)
-let outer = ring(center, radius=258, count=population + 17)
-let edges = edge_points()
+let size = players + (4 if hardcore else 0)
 
-repeat len(inner) as i:
-    at i * 200ms:
-        spawn nest.spider at inner[i]
+var cue = 0
+for pos in ring(center, 158, size + 9):
+    at cue:
+        spawn nest.spider at pos
+    cue += 200ms
 
-repeat len(inner) as i:
-    at 4s + i * 5500ms:
-        burst zombie.random at edges.right copies i + 2
-        burst zombie.random at edges.left copies i + 2
-        burst zombie.random at edges.bottom copies i + 2
-        burst zombie.random at edges.top copies i + 2
+repeat size + 9 as wave:
+    at 4s + wave * 5.5s:
+        for side in ["east", "west", "south", "north"]:
+            burst zombie.random at edge(side) copies wave + 2
 
-repeat len(outer) as i:
-    at 42500ms + i * 500ms:
-        spawn nest.spider at outer[i]
+# as-written: the outer ring queues behind every zombie wave, so clearing early brings zombies forward, not nests.
+cue = 42.5s
+for pos in ring(center, 258, size + 17):
+    at cue:
+        spawn nest.spider at pos
+    cue += 500ms

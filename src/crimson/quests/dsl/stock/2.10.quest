@@ -1,20 +1,15 @@
 quest "Spideroids" version 1
-order native
-counts native
-weapon pistol
 terrain (2, 2, 3)
 
-at 1000:
-    spawn spider.splitter at point(1088.0, 512.0)
-at 3000:
-    spawn spider.splitter at point(-64.0, 512.0)
-at 6000:
-    spawn spider.splitter at point(1088.0, 256.0)
-if hardcore:
-    at 9000:
-        spawn spider.splitter at point(1088.0, 762.0)
-    at 9000:
-        spawn spider.splitter at point(512.0, 1088.0)
-if players >= 2 or hardcore:
-    at 9000:
-        spawn spider.splitter at point(-64.0, 762.0)
+at 1s:
+    spawn spider.splitter at edge("east")
+at 3s:
+    spawn spider.splitter at edge("west")
+at 6s:
+    spawn spider.splitter at edge("east", fraction=0.25)
+at 9s:
+    if hardcore:
+        spawn spider.splitter at (1088, 762)
+        spawn spider.splitter at edge("south")
+    if players >= 2 or hardcore:
+        spawn spider.splitter at (-64, 762)

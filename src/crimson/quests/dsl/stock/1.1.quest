@@ -1,21 +1,10 @@
 quest "Land Hostile" version 1
-order native
-counts native
-weapon pistol
-terrain (0, 1, 0)
 
-var bottom_left = 0
-var bottom_right = 0
-var top_left = 0
-var top_right = 0
-
-var edges = edge_points()
-(top_left, top_right, bottom_left, bottom_right) = corners()
-at 500:
-    spawn alien.small_gray at edges.bottom
-at 2500:
-    burst alien.small_gray at bottom_left copies 2
-at 6500:
-    burst alien.small_gray at top_left copies 3
-at 11500:
-    burst alien.small_gray at top_right copies 4
+at 500ms:
+    spawn alien.small_gray at edge("south")
+at 2.5s:
+    burst alien.small_gray at corner("southwest") copies 2
+at 6.5s:
+    burst alien.small_gray at corner("northwest") copies 3
+at 11.5s:
+    burst alien.small_gray at corner("northeast") copies 4

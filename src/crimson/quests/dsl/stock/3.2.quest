@@ -1,17 +1,13 @@
 quest "Lizard Kings" version 1
-order native
-counts native
-weapon pistol
 terrain (4, 5, 4)
 
-at 1500:
-    spawn formation.lizard_chain at point(1152.0, 512.0)
-at 1500:
-    spawn formation.lizard_chain at point(-128.0, 512.0)
-at 1500:
-    spawn formation.lizard_chain at point(1152.0, 896.0)
-var trigger = 1500
-for (pos, angle) in ring_angles(center, 256.0, 28, step=0.34906587):
-    at trigger:
-        spawn template.lizard_random_31 at pos heading -angle
-    trigger += 900
+at 1.5s:
+    spawn formation.lizard_chain at edge("east", outside=128)
+    spawn formation.lizard_chain at edge("west", outside=128)
+    spawn formation.lizard_chain at edge("east", outside=128, fraction=0.875)
+
+# Lizards step around the centre in 20-degree turns, more than once round, one every 0.9s.
+repeat 28 as i:
+    let angle = i * 20deg
+    at 1.5s + i * 900ms:
+        spawn template.lizard_random_31 at polar(center, 256, angle) heading -angle

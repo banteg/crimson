@@ -1,14 +1,20 @@
+---
+tags:
+  - formats
+  - rewrite
+---
+
 # Quest construction language (Python prototype)
 
 An experimental authoring language for #638. A recipe runs once and produces a
 finite, ordered table of existing spawn-template invocations. It has no callbacks
 during gameplay and cannot change creature behavior, collision or arena geometry.
 
-The Python compiler and 50 independent stock-quest translations are implemented.
+The Python compiler and recipes for all 50 stock quests are implemented.
 Custom run initialization, browser loading, replay embedding and publication are
 not implemented by this prototype. Its JSON output is an inspection artifact,
 not a frozen interchange or replay format. Existing stock builders remain the
-game's authoritative implementation and the parity oracle.
+game's authoritative implementation.
 
 ## Try it
 
@@ -24,12 +30,13 @@ uv run pytest tests/quests/test_quest_dsl.py -q
 
 `--seed` is a construction seed. It is not yet a gameplay start seed. JSON includes
 the resolved positions, headings, counts, trigger times, source lines/iteration
-indices, starting weapon, terrain slots and final construction RNG state.
+indices, starting weapon and terrain slots.
 
 ## A recipe
 
-The syntax uses indentation. Each statement occupies one physical line. Comments
-start with `#`; expressions use familiar arithmetic, comparisons and indexing.
+The syntax uses indentation. Each statement occupies one line; a bracketed list
+may continue over several. Comments start with `#`; expressions use familiar
+arithmetic, comparisons and indexing.
 
 ```text
 quest "Clockwork" version 1
@@ -62,10 +69,8 @@ is an opaque game primitive: offspring, formation members and AI remain native.
 | `quest "Title" version 1` | Required header |
 | `weapon pistol` | Starting weapon; lowercase `WeaponId` name, default `pistol` |
 | `terrain (0, 1, 0)` | Three terrain-slot IDs in 0..7, default `(0, 1, 0)` |
-| `order chronological` | Stable sort by trigger time, retaining expansion order for ties; default |
-| `order native` | Preserve expansion order, including unsorted stock tables |
-| `counts explicit` | Use exactly the constructed counts; default |
-| `counts native` | Apply the stock hardcore count adjustment once, after construction |
+| `order chronological` | Stable sort by trigger time, retaining construction order for ties; default |
+| `order as-written` | Keep construction order; see [table order](#table-order) |
 | `let name = expression` | Immutable local binding |
 | `var cue = 2s` | Mutable construction-local binding |
 | `cue += 500ms` | Update a declared mutable binding |
@@ -89,8 +94,9 @@ Values are numbers, booleans (`true`/`false`), strings, immutable lists, points 
 template references. There are no mutable collections. `range(start, stop, step)`
 has an exclusive stop. `+`, `-`, `*`, `/`, `//`, `%`, unary signs, `and`, `or`,
 `not`, comparisons, membership, indexing and conditional expressions are supported.
-Collection comparisons and collection arithmetic are excluded. Comparisons use
-scalar values or points; membership uses lists of those values.
+Points add and subtract, and scale by numbers (`west + point(0, 158)`,
+`start + direction * 62.4`); lists have no arithmetic or comparisons.
+Comparisons use scalar values or points; membership uses lists of those values.
 
 Time literals `500ms`, `2s`, `2.5s` resolve to whole integer milliseconds. Bare
 integers used as times also mean milliseconds. Angle literals such as `90deg`
@@ -98,7 +104,38 @@ resolve to radians; bare angles are radians. Units are literal conveniences,
 not a dimension/type system. `at` never means time relative to a previous block.
 
 Available construction inputs are `players` (1..4), `hardcore`, `center`
-(`point(512, 512)`), `arena_size` (1024), `pi`, `tau` and `native_tau`.
+(`point(512, 512)`), `arena_size` (1024), `pi` and `tau`. In hardcore, the game
+also adds 8 copies to every entry with more than one (2 for fast aliens, none for
+plasma shooters); the compiler applies that rule after construction, as the game
+does for every quest, so recipes read `hardcore` only to change their own design.
+
+## Table order
+
+The classic scheduler keeps no separate notion of a wave. Each frame it takes the
+first due entry in table order, together with the entries immediately after it
+that share its trigger time, and spawns that group. Once the arena has been empty
+for 3 s, it takes the first remaining entry in table order early, whatever its
+time. So the table is a queue:
+
+- Entries with the same time arrive together only when they are adjacent. Two
+  same-time entries separated by another time arrive on consecutive frames.
+- Clearing the arena early brings forward whatever is next in the queue. In a
+  chronological table that is the next wave by time; otherwise it may be a later one.
+
+When nobody clears the arena early, any order produces the same arrivals to within
+a frame. Order matters to fast players. Several stock quests list entries out of
+time order, and early clears expose it:
+
+- The Beating lists all its ghosts before its alien rings, although both arrive
+  from 40 s. An early clear brings only the ghosts forward; the rings keep their time.
+- Lizard Raze lists its three lizard dens after every lizard wave. An early clear
+  brings the next wave forward; the dens still wait for 10 s.
+- Spider Spawns lists its inner nests at 20.5 s, 26 s, 31.5 s and 22 s, mixed
+  with spiders at 21 s. Early clears pull them forward in that listed order.
+
+`order chronological`, the default, gives the intuitive queue. Stock recipes for
+quests whose table is not chronological use `order as-written` and say what
+queues out of time order.
 
 ## Template vocabulary and geometry
 
@@ -121,54 +158,56 @@ These are selections from the existing catalog, not new enemy definitions.
 | --- | --- |
 | `point(x, y)` or `(x, y)` at a spawn | A position; `.x`/`.y` are available on `point` values |
 | `edge("west", outside=64, fraction=0.5)` | Point along an arena edge; also east/north/south |
-| `edge_points(offset=64)` | `.left`, `.right`, `.top`, `.bottom` midpoints |
 | `edge_line(side, count, spacing, outside=64)` | Ordered centered line outside an edge; ascending x for north/south, ascending y for west/east |
 | `opposite(side)` | The opposing cardinal edge name |
-| `corners(offset=64)` | Ordered top-left, top-right, bottom-left, bottom-right points |
+| `corner("northwest", outside=64)` | A point beyond an arena corner; also northeast/southwest/southeast |
+| `corners(outside=64)` | Ordered northwest, northeast, southwest, southeast corner points |
 | `line(start, step, count)` | Ordered positions, advancing by a vector |
 | `ring(center, radius, count, start=0)` | Ordered evenly spaced positions, clockwise in screen coordinates |
 | `polar(center, radius, angle)` | One circular position |
 | `arc(center, radius, start, sweep, count)` | Ordered positions including both endpoints; positive sweep is clockwise; a singleton is at start |
 | `rotate(points, angle, around=center)` | Rotate positions clockwise for positive angles; preserve list order and the input list |
-| `ring_angles(center, radius, count, step=..., start=0)` | Ordered `(point, angle)` pairs with an explicit native angle step |
-| `radial(center, angle, start, stop, step)` | Ordered positions along integer radii; native radial rounding |
-| `heading_from_center(point, center)` | Native outward heading calculation |
+| `facing(point, target)` | The heading that faces `target` from `point` |
 | `min`, `max`, `abs`, `int`, `float`, `len` | Construction calculations; min/max take numbers or one numeric list |
 
-Geometry helper point arguments use `point(...)` values or `center`. Off-arena
-positions are allowed because the stock quests deliberately use them. Rotating
-a position does not rotate a native formation's internal offsets.
+Geometry uses ordinary double-precision math; emitted positions and headings are
+stored as float32, like native entries. Off-arena positions are allowed because
+the stock quests deliberately use them. Rotating a position does not rotate a
+native formation's internal offsets.
 
-## Stock coverage and numerical compatibility
-
-Every campaign quest has a recipe in `src/crimson/quests/dsl/stock/`. These keep
-loops, counters, conditionals and geometry; they do not call the stock builders
-or substitute precomputed tables. Gauntlet and the spiral in The Spanking Of The
-Dead are compact examples of the authoring vocabulary.
-
-The test matrix compares all 50 recipes against `build_quest_spawn_table` with
-four seeds, players 1..4 and both hardcore settings: **1,600 cases**. It checks
-ordered entries, float32 position/heading bits, starting weapon, terrain and
-the complete RNG trace (values, states and caller addresses).
-
-Ordinary expression arithmetic uses Python numbers, with emitted positions and
-headings rounded to finite float32 values. Exact stock math sometimes needs
-explicit `f32`, `pc24_add`, `pc24_sub`, `pc24_mul`, `pc24_div`, `angle_step` and
-`random_angle`. Geometry helpers reuse the existing native rounding routines.
-These compatibility operations are useful evidence about the language's coverage;
-new recipes can usually use ordinary arithmetic.
-
-`rand()` draws from the construction MSVCRT stream. `choose(list)` and
+`rand()` draws from the construction MSVCRT stream (0..32767). `choose(list)` and
 `rand_int(low, high)` (inclusive) use a draw modulo the list length/range width;
 they are reproducible, but not unbiased sampling over arbitrary ranges.
-`rand(caller_address)` preserves a native caller tag. Standalone `rand(...)`
-statements express discarded draws, including The Killing's original bug.
 
 `shuffle(list)` returns a new immutable list using Fisher–Yates, consuming one
 construction draw for each index from N−1 down to 1. Each swap index is the draw
 modulo (index+1). Input order is preserved in the original list, and empty or
 singleton lists consume no draws. Shuffling uses the same construction stream
 as `choose` and `rand_int`.
+
+## Stock quests
+
+Every campaign quest has a recipe in `src/crimson/quests/dsl/stock/`, written as
+a designer would describe it rather than transcribed from the builder. The recipes
+are a corpus the language must express: loops, player and hardcore scaling, edge,
+corner, ring and spiral geometry, random placement, and out-of-order queues.
+
+The test compares each recipe with its stock builder for players 1..4, both
+hardcore settings and four seeds. The recipe's `rand()` uses the same seeded stream
+as the builder:
+
+- The ordered sequence of template, count and trigger time must match exactly,
+  since that is everything the scheduler reads.
+- Positions must agree within 0.01 px and headings within 1e-4 rad. Recipes use
+  plain arithmetic; there is no float32 or x87 emulation.
+- Where randomness decides only where a builder places enemies, the recipe may
+  draw differently. Where it decides what spawns (The Random Factor's big aliens),
+  the recipe's draws must line up with the builder's.
+
+The Killing is the one quest where the recipe draws differently. The original
+rolls a random enemy and side for each wave, then ignores both, so its rotation is
+fixed. The recipe skips those ignored rolls, so its random nests land elsewhere
+for the same seed.
 
 ## Example encounter library
 
@@ -200,20 +239,12 @@ They change only the title and starting weapon; a regression check preserves
 entry-for-entry equality. Crosswind retains the design discussion's exact eight
 waves, while the named scenario sketches now have concrete timings and counts.
 
-The normal API owns its RNG:
-
 ```python
 from crimson.quests.dsl import compile_quest
 
 plan = compile_quest(source, seed=0xBEEF, player_count=1, hardcore=False)
 entries = plan.entries
 ```
-
-For parity research, `compile_quest(source, context=QuestContext(...))` consumes
-the supplied RNG at its current state, just as a stock builder does. That context
-is authoritative over the convenience seed/player/hardcore arguments, and is
-mutated even if compilation subsequently fails. This is not the custom-run
-initialization contract; a future loader must define gameplay startup explicitly.
 
 ## Bounds and runtime semantics
 
@@ -232,7 +263,7 @@ during every possible run. Native templates can allocate many entities or create
 offspring; pool saturation reporting belongs in later playtesting work.
 
 The plan assumes the existing **classic quest scheduler** and clear-all objective.
-Times are nominal gameplay-clock triggers, with the existing strict due-time
-comparison and early dispatch after the arena remains empty. There is no exact
+Times are nominal gameplay-clock triggers with a strict due-time comparison;
+[table order](#table-order) decides grouping and early dispatch. There is no exact
 wall-clock scheduling, kill-triggered scripting or enforced deadline. The stock
 `time_limit_ms` metadata is deliberately not exposed as an objective.
