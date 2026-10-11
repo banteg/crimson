@@ -242,6 +242,14 @@ describe("runs", () => {
     expect(await reason(response)).toContain("players[0].experience");
   });
 
+  it("a command the rules do not allow is refused with the core's reason", async () => {
+    const response = await (await Player.create()).upload(vectors.illegal_command_run, "banteg");
+
+    expect(response.status).toBe(422);
+    // Python's verifier words it the same (scripts/vectors.py).
+    expect(await reason(response)).toBe("tick 0: perk_pick without an open perk menu");
+  });
+
   it("a signature over another name is refused", async () => {
     const response = await (await Player.create()).upload(vectors.ranked_run, "banteg", "someone");
 

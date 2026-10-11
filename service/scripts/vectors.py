@@ -206,9 +206,14 @@ def corrupted_vectors() -> tuple[str, list[dict]]:
     return base64.b64encode(base).decode("ascii"), vectors
 
 
-def ranked_run() -> tuple[str, str, str]:
+# What both verifiers say of a pick on the run's first tick (service/test/worker/api.test.ts).
+ILLEGAL_PICK = "tick 0: perk_pick without an open perk menu"
+
+
+def ranked_run() -> tuple[str, str, str, str]:
     """A ranked Survival run that verifies: static movement, firing at a point circling the arena centre until the
-    player dies, recorded through the run-down; the same run claiming more than it earned; and declaring a pilot."""
+    player dies, recorded through the run-down; the same run claiming more than it earned; declaring a pilot; and
+    picking a perk no menu offered."""
     flags = 1 | (1 << 8) | (2 << 9) | (1 << 12)  # fire, static movement, mouse aim
 
     def tick(i: int) -> ReplayTick:
@@ -244,7 +249,16 @@ def ranked_run() -> tuple[str, str, str]:
     )
     # The same run again, declaring the bot that played it.
     piloted = msgspec.structs.replace(replay(ticks, result), pilot=Pilot(name="Astra", model="gpt-5", url="https://example.com/astra"))
-    return tuple(base64.b64encode(dump_replay(r)).decode("ascii") for r in (replay(ticks, result), replay(ticks, inflated), piloted))
+    # The same run with a pick on its first tick, before any menu opened: Python refuses it as the core does.
+    illegal = replay([msgspec.structs.replace(ticks[0], commands=[PerkPickCommand(0, 0)]), *ticks[1:]], result)
+    refusal = None
+    try:
+        PlaybackDriver(illegal, version_mismatch_action=None).run()
+    except ReplayRunnerError as error:
+        refusal = str(error)
+    assert refusal == ILLEGAL_PICK, refusal
+    runs = (replay(ticks, result), replay(ticks, inflated), piloted, illegal)
+    return tuple(base64.b64encode(dump_replay(r)).decode("ascii") for r in runs)
 
 
 def terrain_vectors() -> list[dict]:
@@ -310,10 +324,10 @@ def run_terrain_vectors() -> list[dict]:
 
 def main() -> None:
     base, corrupted = corrupted_vectors()
-    ranked, inflated, piloted = ranked_run()
+    ranked, inflated, piloted, illegal = ranked_run()
     vectors = {
         "fixtures": fixture_vectors(), "valid_payload": base, "corrupted": corrupted, "ranked_run": ranked,
-        "ranked_run_inflated": inflated, "piloted_run": piloted,
+        "ranked_run_inflated": inflated, "piloted_run": piloted, "illegal_command_run": illegal,
         "unranked_run": base64.b64encode((FIXTURES / "rush-kills103.crd").read_bytes()).decode("ascii"),
         "terrain": terrain_vectors(),
         "run_terrain": run_terrain_vectors(),

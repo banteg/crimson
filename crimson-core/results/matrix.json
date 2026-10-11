@@ -1,5 +1,5 @@
 {
-  "guards": "15 native/WASM rejection probes; large-vector speed cap",
+  "guards": "16 native/WASM rejection probes; large-vector speed cap",
   "cases": [
     {
       "name": "rush-idle",

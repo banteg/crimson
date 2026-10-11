@@ -30,6 +30,7 @@ EXPORTS = (
     "portable_output",
     "portable_commands",
     "portable_step_many",
+    "portable_refusal",
     "portable_builder_probe",
     "portable_math_probe",
     "portable_player_x",

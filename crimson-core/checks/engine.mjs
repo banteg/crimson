@@ -103,6 +103,12 @@ export function step(e, record) {
   return e.portable_step_many(count);
 }
 
+// Why the core refused its last tick (`portable_refusal` in host/api.h).
+export function refusal(e) {
+  const bytes = new Uint8Array(e.memory.buffer, e.portable_refusal());
+  return Buffer.from(bytes.subarray(0, bytes.indexOf(0))).toString();
+}
+
 // `PortableConfig` in host/api.h: 12 uint32 settings, then 53 weapon usage counts.
 export const CONFIG_BYTES = 260;
 

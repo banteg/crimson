@@ -13,6 +13,7 @@ import {
   field,
   config,
   record,
+  refusal,
   step,
   names,
   decode,
@@ -293,52 +294,58 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
   return { input: Buffer.concat([cfg, ...records]), records, final, coverage };
 }
 
-// `records`: one record, or a run whose records up to the last one are accepted.
-function rejects(label, cfg, records, expected = 5) {
+// `records`: one record, or a run whose records up to the last one are accepted. Both builds give `reason`; the
+// native host reads at most 16 commands, so it stops at a longer tick itself (exit 4).
+function rejects(label, cfg, records, reason, expected = 5) {
   console.log(`Checking rejection: ${label}`);
   const run = [records].flat();
   init(e, cfg);
-  for (const r of run.slice(0, -1)) if (!step(e, r)) throw Error(`WASM refused the lead-in of ${label}`);
+  for (const r of run.slice(0, -1)) if (!step(e, r)) throw Error(`WASM refused the lead-in of ${label}: ${refusal(e)}`);
   if (step(e, run.at(-1))) throw Error(`WASM accepted ${label}`);
+  if (refusal(e) !== reason) throw Error(`WASM refused ${label} for "${refusal(e)}", not "${reason}"`);
   const n = spawnSync(native, [], {
     input: Buffer.concat([cfg, ...run]),
     // A lead-in prints a snapshot for each of its ticks.
     maxBuffer: 1 << 30,
     timeout: 60000,
   });
-  if (n.status !== expected)
+  if (n.status !== expected || (expected === 5 && !n.stderr.includes(`: ${reason} (`)))
     throw Error(`Native ${label}: status=${n.status} signal=${n.signal} error=${n.error?.message} stdout=${n.stdout.length} ${n.stderr}`);
 }
 
 const normal = config(1);
-rejects("NaN", normal, record([NaN, 0, 512, 512, schemeFlags(MOUSE)]));
-rejects("infinite aim", normal, record([0, 0, Infinity, 512, schemeFlags(MOUSE)]));
-rejects("unknown flags", normal, record([0, 0, 512, 512, schemeFlags(MOUSE) | 0x100000]));
-rejects("unsupported movement scheme", normal, record([0, 0, 512, 512, schemeFlags({ ...PAD, move: 6 })]));
-rejects("unsupported aim scheme", normal, record([0, 0, 512, 512, schemeFlags({ ...MOUSE, aim: 6 })]));
-rejects("movement scheme without presence", normal, record([0, 0, 512, 512, schemeFlags(MOUSE) & ~0x100]));
-rejects("aim scheme without presence", normal, record([0, 0, 512, 512, schemeFlags(PAD) & ~0x1000]));
-rejects("movement key without presence", normal, record([0, 0, 512, 512, schemeFlags(MOUSE) | 16]));
+rejects("NaN", normal, record([NaN, 0, 512, 512, schemeFlags(MOUSE)]), "malformed input");
+rejects("infinite aim", normal, record([0, 0, Infinity, 512, schemeFlags(MOUSE)]), "malformed input");
+rejects("unknown flags", normal, record([0, 0, 512, 512, schemeFlags(MOUSE) | 0x100000]), "malformed input");
+rejects("unsupported movement scheme", normal, record([0, 0, 512, 512, schemeFlags({ ...PAD, move: 6 })]), "malformed input");
+rejects("unsupported aim scheme", normal, record([0, 0, 512, 512, schemeFlags({ ...MOUSE, aim: 6 })]), "malformed input");
+rejects("movement scheme without presence", normal, record([0, 0, 512, 512, schemeFlags(MOUSE) & ~0x100]), "malformed input");
+rejects("aim scheme without presence", normal, record([0, 0, 512, 512, schemeFlags(PAD) & ~0x1000]), "malformed input");
+rejects("movement key without presence", normal, record([0, 0, 512, 512, schemeFlags(MOUSE) | 16]), "malformed input");
 rejects(
   "perk without entitlement",
   normal,
   record([0, 0, 512, 512, schemeFlags(MOUSE)], [[1, 0]]),
+  "perk_pick without an open perk menu",
 );
 rejects(
   "menu without entitlement",
   normal,
   record([0, 0, 512, 512, schemeFlags(MOUSE)], [[2, 0]]),
+  "perk_menu_open without a pending perk",
 );
 rejects(
   "Rush perk command",
   config(2),
   record([0, 0, 512, 512, schemeFlags(MOUSE)], [[2, 0]]),
+  "perk command in Rush",
 );
-rejects("unknown command", normal, record([0, 0, 512, 512, schemeFlags(MOUSE)], [[99, 0]]));
+rejects("unknown command", normal, record([0, 0, 512, 512, schemeFlags(MOUSE)], [[99, 0]]), "unknown command");
 rejects(
   "command count overflow",
   normal,
   record([0, 0, 512, 512, schemeFlags(MOUSE)], Array(17).fill([2, 0])),
+  "more than 16 commands",
   4,
 );
 
@@ -423,7 +430,7 @@ function rankedPlaysAlike(run, cfg) {
 }
 
 const report = {
-  guards: "15 native/WASM rejection probes; large-vector speed cap",
+  guards: "16 native/WASM rejection probes; large-vector speed cap",
   cases: [],
 };
 // Each scenario plays under the original's bugs, and again under the documented
@@ -443,7 +450,8 @@ for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] o
     console.log(`${name}: ${parity.ticks} ticks, terminal ${run.final.pending}, native/WASM + reset passed`);
   }
 }
-// A pick needs the menu the tick before opened: not in the opening tick itself, and not after a cancel.
+// A pick needs the menu the tick before opened: not in the opening tick itself, and not after a cancel. A menu
+// request after a pick needs a perk the pick left pending.
 {
   const name = "survival-bot-ranked";
   const cfg = config(1, 1, 1, { preserveBugs: 0 });
@@ -451,12 +459,20 @@ for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] o
   const opened = records.findIndex((r) => r.readUInt32LE(20) === 1 && r.readInt32LE(24) === 2);
   if (opened < 0) throw Error(`${name} never opened the perk menu`);
   const withCommands = (r, commands) => record([0, 4, 8, 12].map((at) => r.readFloatLE(at)).concat(r.readUInt32LE(16)), commands);
-  rejects("pick in the tick that opens the menu", cfg, [...records.slice(0, opened), withCommands(records[opened], [[2, 0], [1, 0]])]);
-  rejects("pick after a cancel", cfg, [
-    ...records.slice(0, opened + 1),
-    withCommands(records[opened + 1], []),
-    withCommands(records[opened + 1], [[1, 0]]),
-  ]);
+  const unopened = "perk_pick without an open perk menu";
+  rejects("pick in the tick that opens the menu", cfg, [...records.slice(0, opened), withCommands(records[opened], [[2, 0], [1, 0]])], unopened);
+  rejects(
+    "pick after a cancel",
+    cfg,
+    [...records.slice(0, opened + 1), withCommands(records[opened + 1], []), withCommands(records[opened + 1], [[1, 0]])],
+    unopened,
+  );
+  rejects(
+    "menu after the pick that spent the last perk",
+    cfg,
+    [...records.slice(0, opened + 1), withCommands(records[opened + 1], [[1, 0], [2, 0]])],
+    "perk_menu_open without a pending perk",
+  );
 }
 if (!report.cases.some((c) => c.coverage.max_commands > 1))
   throw Error("No ordered command batch covered");

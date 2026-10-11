@@ -83,7 +83,8 @@ Regenerations) and hold G at times; the Highlander hunter's run reaches no
 fix, so it runs once. The matrix compares 36,343 named fields at
 initialization and **every tick** between native and WASM, then checks A/B/A
 reuse in both. It also probes rejection of bad input, commands, entitlement and
-picks the perk menu does not allow, and that a large movement vector does not
+picks and menu requests the perk rules do not allow, each for the reason both
+builds give (`portable_refusal`), and that a large movement vector does not
 move faster than a unit one.
 
 The [results](results/matrix.json) cover 298,341 ticks. All 50 quests run to an

@@ -22,6 +22,7 @@ interface Core {
   portable_output(): number;
   portable_init(seed: number, mode: number, major: number, minor: number): number;
   portable_step_many(count: number): number;
+  portable_refusal(): number;
   portable_snapshot(): number;
   portable_player_x(): number;
   portable_player_y(): number;
@@ -98,7 +99,7 @@ function simulate(replay: Replay, transport: Uint8Array): Verdict {
     const count = view.getUint32(at + 20, true);
     new Uint8Array(c.memory.buffer, c.portable_input(), 20).set(transport.subarray(at, at + 20));
     new Uint8Array(c.memory.buffer, c.portable_commands(), count * 8).set(transport.subarray(at + TICK_BYTES, at + TICK_BYTES + count * 8));
-    if (!c.portable_step_many(count)) return refused(`tick ${tick}: an illegal command or a tick past the run's end`);
+    if (!c.portable_step_many(count)) return refused(`tick ${tick}: ${refusal(c)}`);
     at += TICK_BYTES + count * 8;
     monitor.updateCamera(c);
     recorder.record(new DataView(c.memory.buffer, c.portable_probe(), PROBE_BYTES));
@@ -110,6 +111,12 @@ function simulate(replay: Replay, transport: Uint8Array): Verdict {
   return mismatches.length
     ? refused(`the claimed result differs in ${mismatches.join(", ")}`)
     : { ok: true, timeline: recorder.finish(), signals: meter.finish() };
+}
+
+// Why the core refused its last tick (`portable_refusal` in crimson-core/host/api.h).
+function refusal(c: Core): string {
+  const bytes = new Uint8Array(c.memory.buffer, c.portable_refusal());
+  return new TextDecoder().decode(bytes.subarray(0, bytes.indexOf(0)));
 }
 
 class TickMonitor {

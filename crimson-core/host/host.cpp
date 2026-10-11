@@ -426,13 +426,28 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   trace_init("ready");
   return 1;
 }
+// Why portable_step_many refused its last tick, empty after one it took. The
+// command rules read as Python's IllegalCommandError
+// (src/crimson/sim/sessions.py).
+static const char *refusal = "";
+extern "C" uintptr_t portable_refusal() { return (uintptr_t)refusal; }
+// A refused tick leaves earlier picks applied, so the run takes no more ticks.
+static int refuse(const char *reason) {
+  ready = false;
+  refusal = reason;
+  return 0;
+}
 // The menu request is consumed at the recovered mid-tick prompt. Picks run
 // in order in the between-tick prelude, as they do in the current replay API.
 extern "C" int portable_step_many(uint32_t count) {
 #ifdef CRIMSON_GAME
   GameTick game_tick;
 #endif
-  if (!ready || count > 16 || run_down_ms < 0)
+  refusal = !ready            ? "no run in progress"
+            : count > 16      ? "more than 16 commands"
+            : run_down_ms < 0 ? "a tick past the run's end"
+                              : "";
+  if (*refusal)
     return 0;
   // Replay input flags (src/crimson/replay/types.py): buttons and held keys,
   // then the movement scheme (bits 8-11) and aim scheme (bits 12-15), each with
@@ -447,10 +462,8 @@ extern "C" int portable_step_many(uint32_t count) {
                     7u << 9 | aim_present | 7u << 13)) != 0 ||
       (!(in.flags & move_keys_present) && (in.flags & move_keys)) ||
       (!(in.flags & move_present) && move_mode != 0) || move_mode > 5 ||
-      (!(in.flags & aim_present) && aim_scheme != 0) || aim_scheme == 6) {
-    ready = false;
-    return 0;
-  }
+      (!(in.flags & aim_present) && aim_scheme != 0) || aim_scheme == 6)
+    return refuse("malformed input");
   // Like Python, the schemes come with each tick's input. Recordings without
   // them ran static movement when they held movement keys, else the pad.
   config_blob.movement_schemes[0] =
@@ -463,39 +476,37 @@ extern "C" int portable_step_many(uint32_t count) {
   perk_menu_open = false;
   for (uint32_t i = 0; i < count; ++i) {
     int command = commands[i].type, argument = commands[i].argument;
-    if ((command != 1 && command != 2) || config_game_mode == GAME_MODE_RUSH ||
-        perk_pending_count <= 0 || player_state_table[0].health <= 0) {
-      ready = false;
-      return 0;
-    }
-    if (command == 2) {
-      if (argument != 0) {
-        ready = false;
-        return 0;
-      }
+    if (command != 1 && command != 2)
+      return refuse("unknown command");
+    bool pick = command == 1;
+    if (config_game_mode == GAME_MODE_RUSH)
+      return refuse("perk command in Rush");
+    if (pick && !menu_open)
+      return refuse("perk_pick without an open perk menu");
+    if (perk_pending_count <= 0)
+      return refuse(pick ? "perk_pick without a pending perk"
+                         : "perk_menu_open without a pending perk");
+    if (player_state_table[0].health <= 0)
+      return refuse(pick ? "perk_pick while every player is dead"
+                         : "perk_menu_open while every player is dead");
+    if (!pick) {
+      if (argument != 0)
+        return refuse("perk_menu_open with an argument");
       menu_requested = true;
       continue;
-    }
-    if (!menu_open) {
-      ready = false;
-      return 0;
     }
     menu_open = false;
     int n = player_state_table[0].perk_counts[PERK_ID_PERK_MASTER] > 0   ? 7
             : player_state_table[0].perk_counts[PERK_ID_PERK_EXPERT] > 0 ? 6
                                                                          : 5;
-    if (argument < 0 || argument >= n) {
-      ready = false;
-      return 0;
-    }
+    if (argument < 0 || argument >= n)
+      return refuse("perk_pick of a choice that is not offered");
     if (perk_choices_dirty) {
       perks_generate_choices();
       perk_choices_dirty = 0;
     }
-    if (perk_choice_ids[argument] <= 0) {
-      ready = false;
-      return 0;
-    }
+    if (perk_choice_ids[argument] <= 0)
+      return refuse("perk_pick of a choice that is not offered");
     perk_apply(perk_choice_ids[argument]);
     --perk_pending_count;
     perk_choices_dirty = 1;
@@ -705,8 +716,8 @@ int main(int argc, char **argv) {
         fread(commands, sizeof(PortableCommand), count, stdin) != count)
       return 4;
     if (!portable_step_many(count)) {
-      fprintf(stderr, "reject tick %u xp %d pending %d health %g\n", tick,
-              player_state_table[0].experience, perk_pending_count,
+      fprintf(stderr, "reject tick %u: %s (xp %d pending %d health %g)\n", tick,
+              refusal, player_state_table[0].experience, perk_pending_count,
               player_state_table[0].health);
       return 5;
     }
