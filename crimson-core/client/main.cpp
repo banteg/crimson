@@ -6,7 +6,7 @@
 #include "network.h"
 #include <memory>
 #include "../game/host_input.h"
-#include "../game/host_abi.h"
+#include "../game/leaderboard_requests.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #ifdef __EMSCRIPTEN__

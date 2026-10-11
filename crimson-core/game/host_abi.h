@@ -41,6 +41,6 @@ HOST_IMPORT(time_ms) unsigned host_time_ms(void);
 // (game_login_challenge), upload the runs waiting in leaderboard/outbox/,
 // fetch a board's scores for the high score screen (game_scores_request), or
 // fetch a board run's replay to watch (game_replay_download, host/watch.inc).
-enum { HOST_LEADERBOARD_PROFILE = 1, HOST_LEADERBOARD_UPLOAD = 2, HOST_LEADERBOARD_SCORES = 3, HOST_LEADERBOARD_REPLAY = 4 };
+#include "leaderboard_requests.h"
 HOST_IMPORT(leaderboard) void host_leaderboard(int request);
 }
