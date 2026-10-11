@@ -20,6 +20,16 @@ from grim.rand import CrtRand
 
 from ...creatures.spawn_ids import SpawnId
 from ...weapons import WeaponId
+from ..custom import (
+    MAX_COPIES,
+    MAX_ENTRIES,
+    MAX_TRIGGER_MS,
+    VARIANT_COUNT,
+    CustomQuest,
+    check_spawn_limits,
+    validate_custom_quest,
+    variant_index,
+)
 from ..helpers import NATIVE_CENTER, spawn
 from ..runtime import apply_hardcore_spawn_table_adjustment
 from ..types import QuestContext, SpawnEntry
@@ -643,14 +653,14 @@ class _Compiler:
         if spawn_id == SpawnId.UNUSED_02:
             raise ValueError("unused spawn template")
         copies = 1 if count is None else self.integer(self.expression(count, scope))
-        if not 1 <= copies <= self.limits.copies:
+        if not 1 <= copies <= MAX_COPIES:
             raise ValueError("copies must be positive and within the copy limit")
         angle = 0 if heading is None else self.number(self.expression(heading, scope))
         located = self.expression(positions, scope)
         points = self.expect_items(located) if node.data == "place" else (located,)
         for item, point in enumerate(points):
             self.tick(node)
-            if len(self.entries) >= self.limits.entries:
+            if len(self.entries) >= MAX_ENTRIES:
                 raise ValueError("expanded spawn entry limit exceeded")
             if isinstance(point, tuple) and len(point) == 2:
                 point = self.point(*point)
@@ -739,7 +749,7 @@ class _Compiler:
             case "at":
                 time, body = children
                 trigger = self.integer(self.expression(time, scope))
-                if not 0 <= trigger <= self.limits.horizon_ms:
+                if not 0 <= trigger <= MAX_TRIGGER_MS:
                     raise ValueError("trigger time outside authored horizon")
                 previous, self.time = self.time, trigger
                 try:
@@ -797,6 +807,35 @@ class _Compiler:
 _DEFAULT_LIMITS = CompileLimits()
 
 
+def _check_inputs(source: str, seed: int, limits: CompileLimits) -> None:
+    if len(source.encode("utf-8")) > limits.source_bytes:
+        raise QuestCompileError("source byte limit exceeded")
+    if type(seed) is not int or not 0 <= seed <= 0xFFFFFFFF:
+        raise QuestCompileError("seed must be a uint32")
+
+
+def _construct(
+    statements: list[Tree],
+    order: str,
+    *,
+    seed: int,
+    player_count: int,
+    hardcore: bool,
+    limits: CompileLimits,
+) -> tuple[tuple[SpawnEntry, ...], tuple[SourceLocation, ...]]:
+    """Run the recipe once and order its base table; the hardcore count rule is applied by the caller."""
+    if type(player_count) is not int or not 1 <= player_count <= 4:
+        raise QuestCompileError("players must be in 1..4")
+    if type(hardcore) is not bool:
+        raise QuestCompileError("hardcore must be true or false")
+    compiler = _Compiler(QuestContext(player_count=player_count, hardcore=hardcore, rng=CrtRand(seed)), limits)
+    compiler.block(statements, compiler.root)
+    paired = list(zip(compiler.entries, compiler.locations, strict=True))
+    if order == "chronological":
+        paired.sort(key=lambda pair: pair[0].trigger_ms)
+    return tuple(entry for entry, _ in paired), tuple(location for _, location in paired)
+
+
 def compile_quest(
     source: str,
     *,
@@ -805,43 +844,64 @@ def compile_quest(
     hardcore: bool = False,
     limits: CompileLimits = _DEFAULT_LIMITS,
 ) -> QuestPlan:
-    """Construct a finite plan from a construction seed; it never initializes a game.
+    """Construct the table one variant plays, from a construction seed; it never initializes a game.
 
-    Hardcore is both a recipe input and the game's count rule, applied to every table.
+    Hardcore is both a recipe input and the game's count rule, applied here as a run start would.
     """
-    if len(source.encode("utf-8")) > limits.source_bytes:
-        raise QuestCompileError("source byte limit exceeded")
-    if type(seed) is not int or not 0 <= seed <= 0xFFFFFFFF:
-        raise QuestCompileError("seed must be a uint32")
-    if type(player_count) is not int or not 1 <= player_count <= 4:
-        raise QuestCompileError("players must be in 1..4")
-    if type(hardcore) is not bool:
-        raise QuestCompileError("hardcore must be true or false")
+    _check_inputs(source, seed, limits)
     metadata, statements = _settings(_parse(source, limits))
-    compiler = _Compiler(QuestContext(player_count=player_count, hardcore=hardcore, rng=CrtRand(seed)), limits)
-    compiler.block(statements, compiler.root)
-    entries = compiler.entries
+    entries, locations = _construct(
+        statements,
+        metadata["order"],
+        seed=seed,
+        player_count=player_count,
+        hardcore=hardcore,
+        limits=limits,
+    )
     if hardcore:
-        entries = apply_hardcore_spawn_table_adjustment(entries)
-        if any(entry.count > limits.copies for entry in entries):
-            raise QuestCompileError("hardcore count adjustment exceeds the copy limit")
-    # Copies are template invocations; formations and nests add their own creatures on top.
-    per_trigger: dict[int, int] = {}
-    for entry in entries:
-        per_trigger[entry.trigger_ms] = per_trigger.get(entry.trigger_ms, 0) + entry.count
-    for trigger_ms, copies in per_trigger.items():
-        if copies > limits.trigger_copies:
-            raise QuestCompileError(f"{copies} copies at {trigger_ms} ms exceed the per-trigger copy limit")
-    if sum(per_trigger.values()) > limits.total_copies:
-        raise QuestCompileError("total copies exceed the quest copy limit")
-    paired = list(zip(entries, compiler.locations, strict=True))
-    if metadata["order"] == "chronological":
-        paired.sort(key=lambda pair: pair[0].trigger_ms)
+        entries = tuple(apply_hardcore_spawn_table_adjustment(list(entries)))
+    try:
+        check_spawn_limits(entries)
+    except ValueError as exc:
+        raise QuestCompileError(str(exc)) from exc
     return QuestPlan(
         title=metadata["title"],
         version=1,
         start_weapon_id=metadata["weapon"],
         terrain_slots=metadata["terrain"],
-        entries=tuple(entry for entry, _ in paired),
-        locations=tuple(location for _, location in paired),
+        entries=entries,
+        locations=locations,
     )
+
+
+def build_custom_quest(source: str, *, seed: int = 0, limits: CompileLimits = _DEFAULT_LIMITS) -> CustomQuest:
+    """Resolve a recipe for every player count and hardcore setting into a playable definition."""
+    _check_inputs(source, seed, limits)
+    metadata, statements = _settings(_parse(source, limits))
+    tables: list[tuple[SpawnEntry, ...]] = []
+    variants = [0] * VARIANT_COUNT
+    for player_count in (1, 2, 3, 4):
+        for hardcore in (False, True):
+            entries, _ = _construct(
+                statements,
+                metadata["order"],
+                seed=seed,
+                player_count=player_count,
+                hardcore=hardcore,
+                limits=limits,
+            )
+            if entries not in tables:
+                tables.append(entries)
+            variants[variant_index(player_count=player_count, hardcore=hardcore)] = tables.index(entries)
+    quest = CustomQuest(
+        title=metadata["title"],
+        start_weapon_id=metadata["weapon"],
+        terrain_slots=metadata["terrain"],
+        tables=tuple(tables),
+        variants=tuple(variants),
+    )
+    try:
+        validate_custom_quest(quest)
+    except ValueError as exc:
+        raise QuestCompileError(str(exc)) from exc
+    return quest

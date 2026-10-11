@@ -9,17 +9,13 @@ from ..types import SpawnEntry
 
 @dataclass(frozen=True)
 class CompileLimits:
+    """Construction bounds; what a quest may spawn is bounded in `quests.custom`."""
+
     source_bytes: int = 64 * 1024
     syntax_nodes: int = 10000
     syntax_depth: int = 64
     work: int = 100000
     collection: int = 4096
-    entries: int = 256
-    horizon_ms: int = 60 * 60 * 1000
-    # Native entries spawn into a 384-creature pool.
-    copies: int = 384
-    trigger_copies: int = 384
-    total_copies: int = 8192
 
 
 @dataclass(frozen=True)

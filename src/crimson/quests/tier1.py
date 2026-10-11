@@ -55,8 +55,7 @@ def quest_build_target_practice(ctx: QuestContext) -> list[SpawnEntry]:
         angle = random_angle(ctx.rng.rand_tagged(RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_ANGLE))
         radius = (
             int(
-                ctx.rng.rand_tagged(RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_RADIUS)
-                % 8,
+                ctx.rng.rand_tagged(RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_RADIUS) % 8,
             )
             + 2
         ) * 32
@@ -115,8 +114,7 @@ def quest_build_the_random_factor(ctx: QuestContext) -> list[SpawnEntry]:
         entries.append(spawn(edges.left, SpawnId.ALIEN_RANDOM_1D, trigger + 200, 6))
         if (
             int(
-                ctx.rng.rand_tagged(RngCallerStatic.QUEST_BUILD_THE_RANDOM_FACTOR_ALIEN_BIG_GRAY_GATE)
-                % 5,
+                ctx.rng.rand_tagged(RngCallerStatic.QUEST_BUILD_THE_RANDOM_FACTOR_ALIEN_BIG_GRAY_GATE) % 5,
             )
             == 3
         ):

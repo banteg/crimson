@@ -56,7 +56,11 @@ def quest_spawn_timeline_update(world: WorldState, spawn: QuestSpawnState, *, dt
                 offset = -offset
             pos = entry.pos.offset(dy=offset) if offscreen_x else entry.pos.offset(dx=offset)
             world.creatures.spawn_template(
-                entry.spawn_id, pos, f32(entry.heading), state=world.state, detail_preset=world.state.detail_preset,
+                entry.spawn_id,
+                pos,
+                f32(entry.heading),
+                state=world.state,
+                detail_preset=world.state.detail_preset,
             )
         if entry.count != 0:
             entries[idx] = msgspec.structs.replace(entry, count=0)
