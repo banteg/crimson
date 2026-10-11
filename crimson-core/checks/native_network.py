@@ -155,6 +155,31 @@ class NativeNetwork(unittest.TestCase):
         self.assertTrue(source.exists())
         self.assertEqual(self.calls, [])
 
+    def test_bad_queue_does_not_block_later_run(self):
+        source = self.queue()
+        (source.parent / ("0" * 64 + ".json")).write_text("broken")
+        self.assertFalse(self.request(0)[0])
+        self.assertFalse(source.exists())
+        self.assertEqual(len(self.calls), 1)
+
+    def test_partial_entry_is_ignored(self):
+        source = self.queue()
+        source.rename(source.with_suffix(".json.part"))
+        self.assertTrue(self.request(0)[0])
+        self.assertEqual(self.calls, [])
+
+    def test_scores_fetch_with_broken_outbox(self):
+        (self.root / "leaderboard").symlink_to(self.root / "missing")
+        self.reply = b'{"scores":[]}'
+        self.assertTrue(self.request(1, "{}")[0])
+        self.assertEqual(self.calls[-1][1], "/api/scores")
+
+    def test_case_insensitive_game_paths(self):
+        source = self.queue()
+        (self.root / "leaderboard").rename(self.root / "Leaderboard")
+        self.assertTrue(self.request(0)[0])
+        self.assertFalse((self.root / "Leaderboard/outbox" / source.name).exists())
+
     def test_scores_body_and_response(self):
         self.reply = b'{"scores": []}'
         body = '{"board":"quests-hardcore","quest":"1.1"}'
@@ -221,6 +246,9 @@ class NativeNetwork(unittest.TestCase):
         self.upload_delay = 4
         self.reply = json.dumps({"challenge": RUN}).encode()
         self.assertEqual(self.request("parallel"), (True, 200, RUN.encode()))
+
+    def test_shutdown_after_lane_wakeup(self):
+        subprocess.run([str(self.binary), self.api, str(self.root), "shutdown", ""], check=True, timeout=5)
 
     def test_shutdown_cancels_inflight_request(self):
         self.delay = 4

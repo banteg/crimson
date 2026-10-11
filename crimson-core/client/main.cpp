@@ -334,8 +334,8 @@ void network_submit(int request) {
     if (profile_pending)
       return;
     // The key and challenge signature are read only on the main thread.
-    std::string key =
-        (char *)client_memory() + w2c_game_game_identity_public_key(&game);
+    u32 key_at = w2c_game_game_identity_public_key(&game);
+    std::string key = (char *)client_memory() + key_at;
     if (!N::run_id(key)) {
       SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Leaderboard",
                                "Could not load your identity key.", window);
@@ -373,12 +373,17 @@ void network_update() {
     } else if (event.kind == N::CHALLENGE && event.ok) {
       snprintf((char *)client_memory() + w2c_game_game_login_challenge(&game),
                65, "%s", event.body.c_str());
-      std::string signature =
-          (char *)client_memory() + w2c_game_game_login_signature(&game);
-      network->request(N::LOGIN, "{\"public_key\":" + N::quote(profile_key) +
-                                     ",\"challenge\":" + N::quote(event.body) +
-                                     ",\"signature\":" + N::quote(signature) +
-                                     "}");
+      u32 signature_at = w2c_game_game_login_signature(&game);
+      std::string signature = (char *)client_memory() + signature_at;
+      if (signature.empty() ||
+          !network->request(
+              N::LOGIN, "{\"public_key\":" + N::quote(profile_key) +
+                            ",\"challenge\":" + N::quote(event.body) +
+                            ",\"signature\":" + N::quote(signature) + "}")) {
+        profile_pending = false;
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "Leaderboard",
+                                 "Could not sign in. Try again later.", window);
+      }
     } else if (event.kind == N::LOGIN && event.ok) {
       profile_pending = false;
       if (!SDL_OpenURL(event.body.c_str()))

@@ -85,7 +85,8 @@ def package(out, web):
         rpath = f"@executable_path/../Frameworks/{Path(sdl).name}"
         subprocess.run([tool("install_name_tool"), "-change", sdl, rpath, str(binary)], check=True)
         linked = subprocess.check_output([tool("otool"), "-L", str(binary)], text=True)
-        if any(path in linked for path in ("/opt/homebrew/", "/usr/local/")):
+        dependencies = re.findall(r"^\s+(\S+)", linked, re.MULTILINE)
+        if any(not path.startswith(("/usr/lib/", "/System/", "@executable_path/")) for path in dependencies):
             raise SystemExit("The packaged app still links a build-machine library")
         (app / "Info.plist").write_bytes(
             plistlib.dumps(

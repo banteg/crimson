@@ -114,7 +114,10 @@ static int ranked_waiting() {
   int count = 0;
   if (DIR *dir = opendir("leaderboard/outbox")) {
     while (dirent *entry = readdir(dir))
-      count += strstr(entry->d_name, ".json") != nullptr;
+      {
+        size_t n = strlen(entry->d_name);
+        count += n > 5 && !strcmp(entry->d_name + n - 5, ".json");
+      }
     closedir(dir);
   }
   return count;

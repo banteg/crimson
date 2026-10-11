@@ -5,6 +5,13 @@
 int main(int argc, char **argv) {
   if (argc != 5)
     return 2;
+  if (std::string(argv[3]) == "shutdown") {
+    for (int i = 0; i < 300; ++i) {
+      LeaderboardNetwork net(argv[1], argv[2], "test");
+      net.request(LeaderboardNetwork::UPLOAD);
+    }
+    return 0;
+  }
   LeaderboardNetwork net(argv[1], argv[2], "test");
   if (std::string(argv[3]) == "cancel") {
     net.request(LeaderboardNetwork::REPLAY, argv[4]);

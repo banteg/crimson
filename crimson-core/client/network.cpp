@@ -1,19 +1,28 @@
 // Desktop leaderboard HTTP and file work. The web host uses shell.html instead.
 #ifndef __EMSCRIPTEN__
 #include "network.h"
-#include "../host/json.inc"
 #include <algorithm>
 #include <cctype>
 #include <cerrno>
 #include <cmath>
 #include <csignal>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <curl/curl.h>
 #include <fcntl.h>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <stdexcept>
 #include <unistd.h>
+#include <utility>
+#include <vector>
+
+// clang-format off
+// The shared parser relies on the standard declarations above.
+#include "../host/json.inc"
+// clang-format on
 
 namespace {
 namespace fs = std::filesystem;
@@ -152,7 +161,10 @@ LeaderboardNetwork::LeaderboardNetwork(std::string api, std::string directory,
     for (int lane = 0; lane < 3; ++lane)
       workers_[lane] = std::thread(&LeaderboardNetwork::work, this, lane);
   } catch (...) {
-    stop_ = true;
+    {
+      std::lock_guard lock(mutex_);
+      stop_ = true;
+    }
     ready_.notify_all();
     for (auto &worker : workers_)
       if (worker.joinable())
@@ -161,7 +173,10 @@ LeaderboardNetwork::LeaderboardNetwork(std::string api, std::string directory,
   }
 }
 LeaderboardNetwork::~LeaderboardNetwork() {
-  stop_ = true;
+  {
+    std::lock_guard lock(mutex_);
+    stop_ = true;
+  }
   ready_.notify_all();
   for (auto &worker : workers_)
     if (worker.joinable())
@@ -279,7 +294,23 @@ std::string LeaderboardNetwork::path(const std::string &relative,
   for (auto it = parts.begin(); it != parts.end(); ++it) {
     if (*it == ".." || it->is_absolute())
       throw std::runtime_error("Invalid leaderboard file path");
-    out /= *it;
+    // Match the WASI host's case-insensitive Windows file names.
+    fs::path component = *it;
+    std::error_code scan_error;
+    if (fs::is_directory(out, scan_error)) {
+      for (const auto &entry : fs::directory_iterator(out)) {
+        std::string name = entry.path().filename().string(),
+                    wanted = component.string();
+        auto lower = [](unsigned char c) { return std::tolower(c); };
+        std::transform(name.begin(), name.end(), name.begin(), lower);
+        std::transform(wanted.begin(), wanted.end(), wanted.begin(), lower);
+        if (name == wanted) {
+          component = entry.path().filename();
+          break;
+        }
+      }
+    }
+    out /= component;
     std::error_code error;
     auto status = fs::symlink_status(out, error);
     if (fs::is_symlink(status))
@@ -302,44 +333,51 @@ bool LeaderboardNetwork::upload(std::string &error) {
   for (const auto &file : files) {
     if (stop_)
       return false;
-    std::string source = path("leaderboard/outbox/" + file.filename().string()),
-                entry;
-    if (fs::file_size(source) > ENVELOPE_LIMIT || !read_file(source, entry)) {
-      error = "Could not read queued run";
-      return false;
-    }
-    Json envelope;
-    if (!object(entry, envelope)) {
-      error = "Invalid queued run JSON";
-      return false;
-    }
-    Event answer = http(UPLOAD, api_ + "/runs", &entry, JSON_LIMIT);
-    if (!answer.ok || answer.status >= 500 || answer.status == 429 ||
-        answer.status < 200 || (answer.status >= 300 && answer.status < 400)) {
-      error = "Can't reach the leaderboard; queued runs will retry";
-      return false;
-    }
-    if (answer.status >= 400 && answer.status != 409) {
-      Json response;
-      const Json *reason = object(answer.body, response)
-                               ? response.field("reason", Json::STRING)
-                               : nullptr;
-      std::string rejected =
-          path("leaderboard/rejected/" + file.filename().string(), true);
-      size_t end = entry.find_last_not_of(" \r\n\t");
-      std::string bytes =
-          entry.substr(0, end) + ",\"reason\":" +
-          quote(reason ? reason->text
-                       : "HTTP " + std::to_string(answer.status)) +
-          "}";
-      if (!atomic_write(rejected, bytes)) {
-        error = "Could not save rejected run; keeping it queued";
+    try {
+      std::string source =
+                      path("leaderboard/outbox/" + file.filename().string()),
+                  entry;
+      if (fs::file_size(source) > ENVELOPE_LIMIT || !read_file(source, entry)) {
+        error = "Could not read queued run; skipping it";
+        continue;
+      }
+      Json envelope;
+      if (!object(entry, envelope)) {
+        error = "Invalid queued run JSON; skipping it";
+        continue;
+      }
+      Event answer = http(UPLOAD, api_ + "/runs", &entry, JSON_LIMIT);
+      if (!answer.ok || answer.status >= 500 || answer.status == 429 ||
+          answer.status < 200 ||
+          (answer.status >= 300 && answer.status < 400)) {
+        error = "Can't reach the leaderboard; queued runs will retry";
         return false;
       }
+      if (answer.status >= 400 && answer.status != 409) {
+        Json response;
+        const Json *reason = object(answer.body, response)
+                                 ? response.field("reason", Json::STRING)
+                                 : nullptr;
+        std::string rejected =
+            path("leaderboard/rejected/" + file.filename().string(), true);
+        size_t end = entry.find_last_not_of(" \r\n\t");
+        std::string bytes =
+            entry.substr(0, end) + (envelope.fields.empty() ? "" : ",") +
+            "\"reason\":" +
+            quote(reason ? reason->text
+                         : "HTTP " + std::to_string(answer.status)) +
+            "}";
+        if (!atomic_write(rejected, bytes)) {
+          error = "Could not save rejected run; keeping it queued";
+          return false;
+        }
+      }
+      fs::remove(source);
+    } catch (const std::exception &) {
+      error = "Could not process queued run; skipping it";
     }
-    fs::remove(source);
   }
-  return true;
+  return error.empty();
 }
 LeaderboardNetwork::Event LeaderboardNetwork::perform(const Request &request) {
   if (request.kind == UPLOAD) {
@@ -349,8 +387,11 @@ LeaderboardNetwork::Event LeaderboardNetwork::perform(const Request &request) {
   }
   if (request.kind == SCORES) {
     std::string error;
-    upload(error); // Scores still fetch when an outbox entry waits or is
-                   // unreadable.
+    // Outbox failures do not make a read-only board request fail.
+    try {
+      upload(error);
+    } catch (const std::exception &) {
+    }
     Event event = http(SCORES, api_ + "/scores", &request.body, JSON_LIMIT);
     event.ok = event.ok && event.status == 200 &&
                event.body.find('\0') == std::string::npos;
