@@ -1,0 +1,56 @@
+quest "The End of All" version 1
+order native
+counts native
+weapon pistol
+terrain (6, 6, 7)
+
+var pos = 0
+var x = 0
+
+at 3000:
+    spawn spider.plasma at point(128.0, 128.0)
+at 6000:
+    spawn spider.plasma at point(896.0, 128.0)
+at 9000:
+    spawn spider.plasma at point(128.0, 896.0)
+at 12000:
+    spawn spider.plasma at point(896.0, 896.0)
+var trigger = 13000
+for (pos, angle) in ring_angles(center, 80.0, 6, step=1.0471976):
+    at trigger:
+        spawn nest.alien at pos
+    trigger += 300
+at trigger:
+    spawn nest.plasma at point(512.0, 512.0)
+trigger = 18000
+var y = 256
+var toggle = False
+while y < 768:
+    x = 1152.0 if toggle else -128.0
+    at trigger:
+        burst spider.plasma at point(x, float(y)) copies 2
+    trigger += 1000
+    toggle = not toggle
+    y += 128
+trigger = 43000
+for (pos, angle) in ring_angles(center, 80.0, 6, step=1.0471976, start=0.5235988):
+    at trigger:
+        spawn nest.alien at pos
+    trigger += 300
+if hardcore:
+    trigger = 62800
+    for ring_index in range(12):
+        pos = polar(center, 180.0, angle_step(ring_index + 1, 0.5235988))
+        at trigger:
+            spawn nest.alien at pos
+        trigger += 500
+trigger = 48000
+y = 256
+toggle = False
+while y < 768:
+    x = 1152.0 if toggle else -128.0
+    at trigger:
+        burst spider.plasma at point(x, float(y)) copies 2
+    trigger += 1000
+    toggle = not toggle
+    y += 128

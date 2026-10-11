@@ -1,0 +1,32 @@
+quest "The Gathering" version 1
+order native
+counts native
+weapon pistol
+terrain (2, 1, 3)
+
+at 500:
+    spawn spider.splitter at point(256.0, 512.0)
+at 9500:
+    burst spider.splitter at point(768.0, 512.0) copies 2
+at 15500:
+    burst spider.boss at point(256.0, 512.0) copies 2
+at 24500:
+    burst spider.boss at point(768.0, 512.0) copies 2
+at 30500:
+    burst zombie.spawner_boss at point(256.0, 512.0) copies 2
+at 39500:
+    burst zombie.spawner_boss at point(768.0, 512.0) copies 2
+at 54500:
+    burst spider.plasma at point(64.0, 64.0) copies 2
+at 54500:
+    spawn spider.plasma at point(960.0, 64.0)
+at 54500:
+    burst spider.plasma at point(64.0, 960.0) copies 2
+at 54500:
+    spawn spider.plasma at point(960.0, 960.0)
+at 90500:
+    burst spider.boss at point(-128.0, 512.0) copies 6
+at 99500:
+    burst spider.splitter at point(1152.0, 512.0) copies 4
+at 109500:
+    burst spider.splitter at point(1152.0, 512.0) copies 2

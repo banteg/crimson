@@ -1,0 +1,10 @@
+quest "Shuffled Threats" version 1
+weapon assault_rifle
+terrain (4, 5, 4)
+
+# A construction seed deals a reproducible order of threats and entrances.
+let threats = shuffle([formation.alien_ring, formation.lizard_chain, spider.splitter, spider.plasma])
+let entrances = shuffle(["north", "east", "south", "west"])
+repeat 8 as i:
+    at 3s + i * 6s:
+        spawn threats[i % 4] at edge(entrances[i % 4], outside=160)

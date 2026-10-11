@@ -1,0 +1,22 @@
+quest "Surrounded By Reptiles" version 1
+order native
+counts native
+weapon pistol
+terrain (4, 5, 4)
+
+var trigger = 1000
+repeat 5 as axis_index:
+    let axis = pc24_add(pc24_mul(float(axis_index * 512), f32(0.2)), 256.0)
+    at trigger:
+        spawn template.den_lizard_weak_slower_0d at point(256.0, axis)
+    at trigger:
+        spawn template.den_lizard_weak_slower_0d at point(768.0, axis)
+    trigger += 800
+trigger = 8000
+repeat 5 as axis_index:
+    let axis = pc24_add(pc24_mul(float(axis_index * 512), f32(0.2)), 256.0)
+    at trigger:
+        spawn template.den_lizard_weak_slower_0d at point(axis, 256.0)
+    at trigger:
+        spawn template.den_lizard_weak_slower_0d at point(axis, 768.0)
+    trigger += 800

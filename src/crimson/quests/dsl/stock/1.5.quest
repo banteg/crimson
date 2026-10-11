@@ -1,0 +1,16 @@
+quest "Alien Dens" version 1
+order native
+counts native
+weapon pistol
+terrain (0, 1, 0)
+
+at 1500:
+    spawn nest.alien_slow at point(256.0, 256.0)
+at 1500:
+    spawn nest.alien_slow at point(768.0, 768.0)
+at 23500:
+    burst nest.alien_slow at point(512.0, 512.0) copies players
+at 38500:
+    spawn nest.alien_slow at point(256.0, 768.0)
+at 38500:
+    spawn nest.alien_slow at point(768.0, 256.0)

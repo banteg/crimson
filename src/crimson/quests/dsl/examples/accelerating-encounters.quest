@@ -1,0 +1,10 @@
+quest "Accelerating Encounters" version 1
+weapon assault_rifle
+terrain (0, 1, 0)
+
+# Gaps shrink with an 800ms floor; copies retain native spreading behavior.
+var cue = 2s
+repeat 12 as i:
+    at cue:
+        burst alien.fast at edge(["north", "south"][i % 2]) copies 2 + i
+    cue += max(800ms, 2s - i * 100ms)

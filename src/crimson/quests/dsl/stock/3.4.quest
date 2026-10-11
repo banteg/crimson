@@ -1,0 +1,17 @@
+quest "Hidden Evil" version 1
+order native
+counts native
+weapon pistol
+terrain (4, 5, 4)
+
+var edges = edge_points()
+at 500:
+    burst template.alien_hidden_1_21 at edges.bottom copies 50
+at 15000:
+    burst template.alien_hidden_2_22 at edges.bottom copies 30
+at 25000:
+    burst template.alien_hidden_3_23 at edges.bottom copies 20
+at 30000:
+    burst template.alien_hidden_3_23 at edges.bottom copies 30
+at 35000:
+    burst template.alien_hidden_2_22 at edges.bottom copies 30

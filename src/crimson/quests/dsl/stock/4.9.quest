@@ -1,0 +1,32 @@
+quest "The Annihilation" version 1
+order native
+counts native
+weapon pistol
+terrain (6, 6, 7)
+
+var x = 0
+var y = 0
+
+var half_w = arena_size // 2
+at 500:
+    burst alien.fast at point(128.0, float(half_w)) copies 2
+var trigger = 500
+var i_var5 = 0
+for idx in range(12):
+    y = float(i_var5 // 12 + 128)
+    x = 832.0 if idx % 2 == 0 else 896.0
+    at trigger:
+        spawn nest.alien at point(x, y)
+    trigger += 500
+    i_var5 += 768
+trigger = 45000
+i_var5 = 0
+var toggle = False
+for iteration in range(12):
+    y = float(i_var5 // 12 + 128)
+    x = 832.0 if toggle else 896.0
+    at trigger:
+        spawn nest.alien at point(x, y)
+    trigger += 300
+    toggle = not toggle
+    i_var5 += 768

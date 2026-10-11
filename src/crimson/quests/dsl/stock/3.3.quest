@@ -1,0 +1,28 @@
+quest "The Killing" version 1
+order native
+counts native
+weapon pistol
+terrain (4, 5, 4)
+
+let enemies = [template.ai1_alien_blue_tint_1a, template.ai1_spider_sp1_blue_tint_1b, template.ai1_lizard_blue_tint_1c]
+let edges = edge_points()
+let entrances = [edges.right, edges.left, edges.bottom, edges.top]
+let spawner_callers = [(4425175, 4425205), (4425256, 4425286), (4425343, 4425373)]
+
+pattern random_spawner(y_caller, x_caller):
+    let y = float(rand(y_caller) % 768) + 128.0
+    let x = float(rand(x_caller) % 768) + 128.0
+    burst nest.alien at (x, y) copies 3
+
+repeat 10 as wave:
+    # Native discards both picks and branches on the wave, but consumes both draws.
+    rand(0x4384be)
+    let enemy = enemies[wave % 3]
+    rand(0x4384f0)
+    if wave % 5 < 4:
+        at 2s + wave * 6s:
+            burst enemy at entrances[wave % 5] copies 12
+    else:
+        repeat 3 as i:
+            at 2s + wave * 6s + i * 1s:
+                random_spawner(spawner_callers[i][0], spawner_callers[i][1])

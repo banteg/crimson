@@ -1,0 +1,28 @@
+quest "Spider Spawns" version 1
+order native
+counts native
+weapon pistol
+terrain (2, 3, 2)
+
+at 1500:
+    spawn template.den_spider_weak_10 at point(128.0, 128.0)
+at 1500:
+    spawn template.den_spider_weak_10 at point(896.0, 896.0)
+at 1500:
+    spawn template.den_spider_weak_10 at point(896.0, 128.0)
+at 1500:
+    spawn template.den_spider_weak_10 at point(128.0, 896.0)
+at 3000:
+    burst template.spider_sp1_stop_and_go_38 at point(-64.0, 512.0) copies 2
+at 18000:
+    spawn nest.spider at point(512.0, 512.0)
+at 20500:
+    spawn template.den_spider_weak_10 at point(448.0, 448.0)
+at 26000:
+    spawn template.den_spider_weak_10 at point(576.0, 448.0)
+at 21000:
+    burst template.spider_sp1_stop_and_go_38 at point(1088.0, 512.0) copies 2
+at 31500:
+    spawn template.den_spider_weak_10 at point(576.0, 576.0)
+at 22000:
+    spawn template.den_spider_weak_10 at point(448.0, 576.0)

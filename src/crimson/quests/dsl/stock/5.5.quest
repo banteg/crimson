@@ -1,0 +1,33 @@
+quest "Knee-deep in the Dead" version 1
+order native
+counts native
+weapon pistol
+terrain (1, 1, 3)
+
+var count = 0
+
+at 100:
+    spawn template.zombie_const_green_brute_43 at point(-50.0, float(arena_size * 0.5))
+var trigger = 500
+var wave = 0
+while trigger < 96500:
+    if wave % 8 == 0:
+        at trigger - 2:
+            spawn template.zombie_const_green_brute_43 at point(-50.0, float(arena_size * 0.5))
+    count = 2 if wave > 32 else 1
+    at trigger:
+        burst zombie.random at point(-50.0, float(arena_size * 0.5)) copies count
+    if trigger > 12500:
+        at trigger + 500:
+            spawn zombie.random at point(-50.0, float(arena_size * 0.5 + 158.0))
+    if trigger > 24500:
+        at trigger + 1000:
+            spawn zombie.random at point(-50.0, float(arena_size * 0.5 - 158.0))
+    if trigger > 36500:
+        at trigger + 1300:
+            spawn template.zombie_small_white_42 at point(-50.0, float(arena_size * 0.5 - 258.0))
+    if trigger > 48500:
+        at trigger + 300:
+            spawn template.zombie_small_white_42 at point(-50.0, float(arena_size * 0.5 + 258.0))
+    trigger += 1500
+    wave += 1

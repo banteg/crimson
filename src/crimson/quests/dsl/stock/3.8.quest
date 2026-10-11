@@ -1,0 +1,20 @@
+quest "Lizard Raze" version 1
+order native
+counts native
+weapon pistol
+terrain (4, 4, 5)
+
+var edges = edge_points()
+var trigger = 1500
+while trigger < 91500:
+    at trigger:
+        burst template.lizard_random_2e at edges.right copies 6
+    at trigger:
+        burst template.lizard_random_2e at edges.left copies 6
+    trigger += 6000
+at 10000:
+    spawn template.den_lizard_weak_0c at point(128.0, 256.0)
+at 10000:
+    spawn template.den_lizard_weak_0c at point(128.0, 384.0)
+at 10000:
+    spawn template.den_lizard_weak_0c at point(128.0, 512.0)

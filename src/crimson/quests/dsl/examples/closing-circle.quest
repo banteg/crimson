@@ -1,0 +1,9 @@
+quest "The Closing Circle" version 1
+weapon submachine_gun
+terrain (6, 7, 6)
+
+# Each front leaves a 60-degree gap. Rotate only the independent spawn positions.
+let front = arc(center, radius=440, start=30deg, sweep=300deg, count=20)
+repeat 12 as wave:
+    at 2s + wave * 5s:
+        place alien.small_gray on rotate(front, wave * 30deg)

@@ -1,0 +1,23 @@
+quest "Ghost Patrols" version 1
+order native
+counts native
+weapon pistol
+terrain (2, 2, 3)
+
+var x = 0
+
+var edges = edge_points(offset=128.0)
+at 1500:
+    burst alien.fast at edges.right copies 2
+var trigger = 2500
+for i in range(12):
+    x = edges.left.x if i % 2 == 0 else edges.right.x
+    at trigger:
+        spawn template.formation_ring_alien_5_19 at point(x, edges.left.y)
+    trigger += 2500
+var loop_count = 12
+at (loop_count - 1) * 2500:
+    spawn alien.fast at point(-264.0, edges.left.y)
+var special_trigger = (5 * loop_count + 15) * 500
+at special_trigger:
+    spawn template.formation_grid_alien_bronze_18 at point(edges.left.x, edges.left.y)

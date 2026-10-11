@@ -1,0 +1,34 @@
+quest "The Fortress" version 1
+order native
+counts native
+weapon pistol
+terrain (3, 1, 3)
+
+var x = 0
+var y = 0
+
+var half_height = arena_size * 0.5
+at 100:
+    burst spider.small_blue at point(-50.0, half_height) copies 6
+var trigger = 1100
+var y_seed = 512
+while trigger < 5300:
+    y = pc24_add(pc24_mul(float(y_seed), 0.125), 256.0)
+    at trigger:
+        spawn template.den_alien_weak_small_09 at point(768.0, y)
+    trigger += 600
+    y_seed += 512
+var entry_count = 8
+var x_seed = 384
+var one_sixth = f32(0.16666667)
+while x_seed < 2305:
+    trigger = entry_count * 600 + 5500
+    for row in range(1, 7):
+        if row != 1 or x_seed not in (1152, 1536):
+            x = pc24_add(pc24_mul(float(x_seed), one_sixth), 256.0)
+            y = pc24_sub(512.0, pc24_mul(float(row * 384), one_sixth))
+            at trigger:
+                spawn nest.spider at point(x, y)
+            trigger += 600
+            entry_count += 1
+    x_seed += 384

@@ -1,0 +1,18 @@
+quest "Same Problem, Different Weapon: Gauss Gun" version 1
+weapon gauss_gun
+terrain (4, 5, 4)
+
+# The encounter matches the Assault Rifle and Shotgun variants entry for entry.
+at 1s:
+    spawn nest.alien_slow at (256, 256)
+    spawn nest.alien_slow at (768, 768)
+
+repeat 6 as wave:
+    let side = ["north", "east", "south", "west"][wave % 4]
+    at 4s + wave * 6s:
+        place spider.small_blue on edge_line(side, count=6 + wave, spacing=40)
+        spawn spider.plasma at edge(opposite(side), outside=128)
+
+at 42s:
+    spawn spider.splitter at edge("west")
+    spawn spider.splitter at edge("east")

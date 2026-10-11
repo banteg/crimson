@@ -1,0 +1,10 @@
+quest "Formation Parade" version 1
+weapon assault_rifle
+terrain (0, 1, 0)
+
+# Native formations carry their internal linked behavior into the arena.
+let formations = [formation.alien_ring, formation.lizard_chain, formation.alien_grid, formation.spider_grid]
+let entrances = ["west", "north", "east", "south"]
+repeat 12 as wave:
+    at 2s + wave * 5s:
+        spawn formations[wave % 4] at edge(entrances[wave % 4], outside=160)

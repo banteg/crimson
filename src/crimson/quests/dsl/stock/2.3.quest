@@ -1,0 +1,25 @@
+quest "Arachnoid Farm" version 1
+order native
+counts native
+weapon pistol
+terrain (2, 3, 2)
+
+var trigger = 0
+
+if players + 4 >= 0:
+    trigger = 500
+    for pos in line(point(256.0, 256.0), point(102.4, 0.0), players + 4):
+        at trigger:
+            spawn nest.spider at pos
+        trigger += 500
+    trigger = 10500
+    for pos in line(point(256.0, 768.0), point(102.4, 0.0), players + 4):
+        at trigger:
+            spawn nest.spider at pos
+        trigger += 500
+if players + 7 >= 0:
+    trigger = 40500
+    for pos in line(point(256.0, 512.0), point(64.0, 0.0), players + 7):
+        at trigger:
+            spawn template.den_spider_weak_10 at pos
+        trigger += 3500

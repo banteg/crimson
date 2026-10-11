@@ -1,0 +1,31 @@
+quest "Nesting Grounds" version 1
+order native
+counts native
+weapon pistol
+terrain (0, 0, 1)
+
+var edges = edge_points()
+at 1500:
+    burst template.alien_random_1d at point(center.x, edges.bottom.y) copies players * 2 + 6
+at 8000:
+    spawn template.den_alien_weak_small_09 at point(256.0, 256.0)
+at 13000:
+    spawn template.den_alien_weak_small_09 at point(512.0, 512.0)
+at 18000:
+    spawn template.den_alien_weak_small_09 at point(768.0, 768.0)
+at 25000:
+    burst template.alien_random_1d at point(center.x, edges.bottom.y) copies players * 2 + 6
+at 39000:
+    burst template.alien_random_1d at point(center.x, edges.bottom.y) copies players * 3 + 3
+at 41100:
+    spawn template.den_alien_weak_small_09 at point(384.0, 512.0)
+at 42100:
+    spawn template.den_alien_weak_small_09 at point(640.0, 512.0)
+at 43100:
+    spawn template.den_alien_weak_small_09 at point(512.0, 640.0)
+at 44100:
+    spawn nest.alien_slow at point(512.0, 512.0)
+at 50000:
+    burst template.alien_random_1e at point(center.x, edges.bottom.y) copies players * 2 + 5
+at 55000:
+    burst template.alien_random_1f at point(center.x, edges.bottom.y) copies players * 2 + 2

@@ -1,0 +1,26 @@
+quest "Minor Alien Breach" version 1
+order native
+counts native
+weapon pistol
+terrain (0, 1, 0)
+
+var trigger = 0
+
+var edges = edge_points()
+at 1000:
+    burst alien.small_gray at point(256.0, 256.0) copies 2
+at 1700:
+    burst alien.small_gray at point(256.0, 128.0) copies 2
+for i in range(2, 18):
+    trigger = (i * 5 - 10) * 720
+    at trigger:
+        spawn alien.small_gray at edges.right
+    if i > 6:
+        at trigger:
+            spawn alien.small_gray at point(edges.right.x, center.y - 256.0)
+    if i == 13:
+        at 39600:
+            spawn template.alien_big_gray_29 at edges.bottom
+    if i > 10:
+        at trigger:
+            spawn alien.small_gray at point(edges.left.x, center.y + 256.0)

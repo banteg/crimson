@@ -1,0 +1,13 @@
+quest "Nest Circuit" version 1
+weapon assault_rifle
+terrain (0, 1, 0)
+
+# Follow the activation route or cut across to prevent the factory buildup.
+let sockets = ring(center, radius=360, count=12)
+var cue = 1s
+repeat 12 as i:
+    at cue:
+        spawn nest.alien_slow at sockets[i]
+    at cue + 1500ms:
+        burst alien.fast at edge(["north", "east", "south", "west"][i % 4]) copies 2
+    cue += max(1800ms, 5s - i * 300ms)

@@ -1,0 +1,13 @@
+quest "Crosswind" version 1
+weapon shotgun
+terrain (2, 3, 2)
+
+# Ranged pressure and melee arrive from opposing sides; both crowds grow.
+pattern crossfire(side, wave):
+    place spider.plasma on edge_line(side, count=2 + wave, spacing=64)
+    place spider.small_blue on edge_line(opposite(side), count=6 + wave, spacing=32)
+
+repeat 8 as i:
+    let side = ["west", "east"][i % 2]
+    at 2s + i * 7s:
+        crossfire(side, i)

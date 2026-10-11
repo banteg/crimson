@@ -1,0 +1,20 @@
+quest "The Spanking Of The Dead" version 1
+order native
+counts native
+weapon pistol
+terrain (2, 1, 3)
+
+at 500ms:
+    spawn template.alien_bonus_carrier_27 at (256, 512)
+    spawn template.alien_bonus_carrier_27 at (768, 512)
+
+repeat 128 as i:
+    let angle = angle_step(i, 0.33333334)
+    let radius = pc24_sub(512.0, pc24_mul(float(i), f32(3.8)))
+    at 5s + i * 300ms:
+        spawn zombie.random at polar(center, radius, angle) heading angle
+
+at 48400ms:
+    burst template.zombie_small_white_42 at (1280, 512) copies 16
+at 58400ms:
+    burst template.zombie_small_white_42 at (-256, 512) copies 16

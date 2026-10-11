@@ -1,0 +1,12 @@
+quest "Plasma Orchard" version 1
+weapon gauss_gun
+terrain (6, 7, 6)
+
+# Eliminate sources of ranged pressure while melee arrivals cross the arena.
+at 1s:
+    place nest.plasma on ring(center, radius=300, count=4, start=45deg)
+
+repeat 6 as wave:
+    let side = ["north", "east", "south", "west"][wave % 4]
+    at 5s + wave * 6s:
+        place spider.small_blue on edge_line(side, count=6 + wave, spacing=32)

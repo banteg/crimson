@@ -1,0 +1,16 @@
+quest "Target Practice" version 1
+order native
+counts native
+weapon pistol
+terrain (0, 1, 0)
+
+var cue = 2s
+var gap = 2s
+repeat 30 as i:
+    let angle = random_angle(rand(0x437A19))
+    let radius = (rand(0x437A38) % 8 + 2) * 32
+    let pos = polar(center, float(radius), angle)
+    at cue:
+        spawn template.alien_delayed_start_36 at pos heading heading_from_center(pos, center)
+    cue += max(gap, 1100ms)
+    gap -= 50ms

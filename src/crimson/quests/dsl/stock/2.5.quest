@@ -1,0 +1,19 @@
+quest "Sweep Stakes" version 1
+order native
+counts native
+weapon gauss_gun
+terrain (2, 3, 2)
+
+var angle = 0
+var heading = 0
+
+var trigger = 2000
+var step = 2000
+while step > 720:
+    angle = random_angle(rand(0x437838))
+    for pos in radial(center, angle, 84, 252, 42):
+        heading = heading_from_center(pos, center)
+        at trigger:
+            spawn template.alien_delayed_start_36 at pos heading heading
+    trigger += max(step, 600)
+    step -= 80

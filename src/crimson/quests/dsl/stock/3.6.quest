@@ -1,0 +1,20 @@
+quest "The Lizquidation" version 1
+order native
+counts native
+weapon pistol
+terrain (4, 4, 5)
+
+var count = 0
+
+var edges = edge_points()
+var trigger = 1500
+for wave in range(10):
+    count = wave + 6
+    at trigger:
+        burst template.lizard_random_2e at edges.right copies count
+    at trigger:
+        burst template.lizard_random_2e at edges.left copies count
+    if wave == 4:
+        at 1500:
+            burst alien.fast at point(arena_size + 128.0, edges.right.y) copies 2
+    trigger += 8000

@@ -1,0 +1,25 @@
+quest "Spiders Inc." version 1
+order native
+counts native
+weapon plasma_minigun
+terrain (4, 4, 5)
+
+var count = 0
+
+var edges = edge_points()
+at 500:
+    spawn template.spider_sp1_stop_and_go_38 at edges.bottom
+at 500:
+    spawn template.spider_sp1_stop_and_go_38 at point(center.x + 64.0, edges.bottom.y)
+at 500:
+    burst spider.small_blue at edges.top copies 4
+var trigger = 17000
+var step_count = 0
+while trigger < 107000:
+    count = step_count // 2 + 3
+    at trigger:
+        burst template.spider_sp1_stop_and_go_38 at edges.bottom copies count
+    at trigger:
+        burst template.spider_sp1_stop_and_go_38 at edges.top copies count
+    trigger += 6000
+    step_count += 1

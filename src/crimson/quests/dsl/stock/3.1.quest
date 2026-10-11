@@ -1,0 +1,53 @@
+quest "The Blighting" version 1
+order native
+counts native
+weapon pistol
+terrain (4, 5, 4)
+
+var edge_index = 0
+var spawn_id = 0
+
+var edges = edge_points()
+var edges_wide = edge_points(offset=128.0)
+at 1500:
+    burst alien.fast at edges_wide.right copies 2
+at 1500:
+    burst alien.fast at edges_wide.left copies 2
+at 2000:
+    spawn nest.alien at point(896.0, 128.0)
+at 2000:
+    spawn nest.alien at point(128.0, 128.0)
+at 2000:
+    spawn nest.alien at point(128.0, 896.0)
+at 2000:
+    spawn nest.alien at point(896.0, 896.0)
+var trigger = 4000
+for wave in range(8):
+    if wave in (2, 4):
+        at trigger:
+            burst alien.fast at edges_wide.left copies 4
+    if wave in (3, 5):
+        at trigger:
+            burst alien.fast at point(1152.0, edges_wide.right.y) copies 4
+    spawn_id = template.ai1_alien_blue_tint_1a if wave % 2 == 0 else template.ai1_lizard_blue_tint_1c
+    edge_index = wave % 5
+    if edge_index == 0:
+        at trigger:
+            burst spawn_id at edges.right copies 12
+        trigger += 15000
+    else:
+        if edge_index == 1:
+            at trigger:
+                burst spawn_id at edges.left copies 12
+            trigger += 15000
+        else:
+            if edge_index == 2:
+                at trigger:
+                    burst spawn_id at edges.bottom copies 12
+                trigger += 15000
+            else:
+                if edge_index == 3:
+                    at trigger:
+                        burst spawn_id at edges.top copies 12
+                    trigger += 15000
+    trigger += 1000

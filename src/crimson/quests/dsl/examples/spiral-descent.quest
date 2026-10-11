@@ -1,0 +1,8 @@
+quest "Spiral Descent" version 1
+weapon submachine_gun
+terrain (2, 3, 2)
+
+# A contracting spiral describes arrival positions, not subsequent enemy motion.
+repeat 60 as i:
+    at 2s + i * 300ms:
+        spawn zombie.random at polar(center, radius=480 - i * 6, angle=i * 18deg)

@@ -1,0 +1,25 @@
+quest "Gauntlet" version 1
+order native
+counts native
+weapon pistol
+terrain (6, 6, 7)
+
+let population = players + (4 if hardcore else 0)
+let inner = ring(center, radius=158, count=population + 9)
+let outer = ring(center, radius=258, count=population + 17)
+let edges = edge_points()
+
+repeat len(inner) as i:
+    at i * 200ms:
+        spawn nest.spider at inner[i]
+
+repeat len(inner) as i:
+    at 4s + i * 5500ms:
+        burst zombie.random at edges.right copies i + 2
+        burst zombie.random at edges.left copies i + 2
+        burst zombie.random at edges.bottom copies i + 2
+        burst zombie.random at edges.top copies i + 2
+
+repeat len(outer) as i:
+    at 42500ms + i * 500ms:
+        spawn nest.spider at outer[i]

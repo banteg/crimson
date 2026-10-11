@@ -1,0 +1,18 @@
+quest "Clockwork" version 1
+weapon assault_rifle
+terrain (0, 1, 0)
+
+let sockets = ring(center, radius=320, count=8)
+let entrances = ["north", "east", "south", "west"]
+
+pattern reinforcement(side):
+    spawn formation.alien_ring at edge(side, outside=160)
+
+repeat 8 as i:
+    at 1s + i * 6s:
+        spawn nest.alien_slow at sockets[i]
+    at 3s + i * 6s:
+        reinforcement(entrances[i % 4])
+
+at 50s:
+    spawn spider.boss at (768, 512)

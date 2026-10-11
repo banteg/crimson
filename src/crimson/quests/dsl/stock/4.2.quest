@@ -1,0 +1,14 @@
+quest "Zombie Time" version 1
+order native
+counts native
+weapon pistol
+terrain (6, 7, 6)
+
+var edges = edge_points()
+var trigger = 1500
+while trigger < 97500:
+    at trigger:
+        burst zombie.random at edges.right copies 8
+    at trigger:
+        burst zombie.random at edges.left copies 8
+    trigger += 8000

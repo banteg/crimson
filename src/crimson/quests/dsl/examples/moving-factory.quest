@@ -1,0 +1,14 @@
+quest "The Moving Factory" version 1
+weapon assault_rifle
+terrain (2, 3, 2)
+
+# Pursue a mobile zombie source or make space in the arriving crowds.
+at 1s:
+    spawn zombie.spawner_boss at (768, 512)
+
+repeat 8 as wave:
+    let side = ["west", "north", "east", "south"][wave % 4]
+    at 3s + wave * 6s:
+        burst zombie.random at edge(side) copies 6 + wave
+    at 5s + wave * 6s:
+        burst alien.fast at edge(opposite(side), outside=128) copies 2 + wave // 3

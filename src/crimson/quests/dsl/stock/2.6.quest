@@ -1,0 +1,20 @@
+quest "Evil Zombies At Large" version 1
+order native
+counts native
+weapon pistol
+terrain (2, 2, 3)
+
+var edges = edge_points()
+var trigger = 1500
+var count = 4
+while count <= 13:
+    at trigger:
+        burst zombie.random at edges.right copies count
+    at trigger:
+        burst zombie.random at edges.left copies count
+    at trigger:
+        burst zombie.random at edges.bottom copies count
+    at trigger:
+        burst zombie.random at edges.top copies count
+    trigger += 5500
+    count += 1

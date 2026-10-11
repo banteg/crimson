@@ -1,0 +1,39 @@
+quest "Survival Of The Fastest" version 1
+order native
+counts native
+weapon submachine_gun
+terrain (2, 2, 3)
+
+var trigger = 500
+for x in range(256, 688, 72):
+    at trigger:
+        spawn template.den_spider_weak_10 at point(float(x), 256.0)
+    trigger += 900
+trigger = 5900
+for y in range(256, 688, 72):
+    at trigger:
+        spawn template.den_spider_weak_10 at point(688.0, float(y))
+    trigger += 900
+trigger = 11300
+for x in (688, 616, 544, 472):
+    at trigger:
+        spawn template.den_spider_weak_10 at point(float(x), 688.0)
+    trigger += 900
+trigger = 14900
+for y in (688, 616, 544, 472):
+    at trigger:
+        spawn template.den_spider_weak_10 at point(400.0, float(y))
+    trigger += 900
+trigger = 18500
+for x in range(400, 544, 72):
+    at trigger:
+        spawn template.den_spider_weak_10 at point(float(x), 400.0)
+    trigger += 900
+at 22300:
+    spawn template.den_spider_weak_10 at point(128.0, 128.0)
+at 22300:
+    spawn nest.alien at point(896.0, 128.0)
+at 24300:
+    spawn nest.alien at point(128.0, 896.0)
+at 24300:
+    spawn template.den_spider_weak_10 at point(896.0, 896.0)

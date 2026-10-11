@@ -1,0 +1,13 @@
+quest "Split Decision" version 1
+weapon shotgun
+terrain (4, 5, 4)
+
+# Opposing splitters punish careless finishing positions before fast arrivals.
+repeat 5 as wave:
+    let side = ["west", "north", "east", "south"][wave % 4]
+    at 2s + wave * 10s:
+        spawn spider.splitter at edge(side)
+        spawn spider.splitter at edge(opposite(side))
+    at 6s + wave * 10s:
+        place spider.small_blue on edge_line(side, count=6 + wave * 2, spacing=32)
+        burst alien.fast at edge(opposite(side), outside=128) copies 2 + wave

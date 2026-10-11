@@ -1,0 +1,29 @@
+quest "Alien Squads" version 1
+order native
+counts native
+weapon pistol
+terrain (0, 0, 1)
+
+at 1500:
+    spawn formation.alien_ring at point(-256.0, 256.0)
+at 2500:
+    spawn formation.alien_ring at point(-256.0, 768.0)
+at 5500:
+    spawn formation.alien_ring at point(768.0, -256.0)
+at 8500:
+    spawn formation.alien_ring at point(768.0, 1280.0)
+at 14500:
+    spawn formation.alien_ring at point(1280.0, 1280.0)
+at 18500:
+    spawn formation.alien_ring at point(1280.0, 768.0)
+at 25000:
+    spawn formation.alien_ring at point(-256.0, 256.0)
+at 30000:
+    spawn formation.alien_ring at point(-256.0, 768.0)
+var trigger = 36200
+while trigger < 83000:
+    at trigger - 400:
+        spawn alien.small_gray at point(-64.0, -64.0)
+    at trigger:
+        spawn alien.small_gray at point(1088.0, 1088.0)
+    trigger += 1800

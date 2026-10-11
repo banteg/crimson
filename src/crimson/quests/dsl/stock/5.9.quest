@@ -1,0 +1,49 @@
+quest "Nagolipoli" version 1
+order native
+counts native
+weapon pistol
+terrain (1, 1, 3)
+
+var count = 0
+
+for (pos, angle) in ring_angles(center, 128.0, 8, step=0.7853982):
+    at 2000:
+        spawn spider.small_blue at pos heading angle
+for (pos, angle) in ring_angles(center, 178.0, 12, step=0.5235988):
+    at 8000:
+        spawn spider.small_blue at pos heading angle
+var trigger = 13000
+var wave = 0
+while trigger < 38600:
+    count = wave // 8 + 1
+    at trigger:
+        burst template.ai1_lizard_blue_tint_1c at point(-64.0, -64.0) copies count heading 1.0471976
+    at trigger:
+        burst template.ai1_lizard_blue_tint_1c at point(1088.0, -64.0) copies count heading -1.0471976
+    at trigger:
+        burst template.ai1_lizard_blue_tint_1c at point(-64.0, 1088.0) copies count heading -1.0471976
+    at trigger:
+        burst template.ai1_lizard_blue_tint_1c at point(1088.0, 1088.0) copies count heading 3.926991
+    trigger += 800
+    wave += 1
+var last_wave = max(wave - 1, 0)
+var base_left = (last_wave + 151 + wave * 4) * 160
+for pos in line(point(64.0, 256.0), point(0.0, 85.333336), 6):
+    at base_left:
+        spawn nest.spider at pos
+    base_left += 100
+var base_right = wave * 800 + 25000
+for pos in line(point(960.0, 256.0), point(0.0, 85.333336), 6):
+    at base_right:
+        spawn nest.spider at pos
+    base_right += 100
+var base_mid = (last_wave + 176 + wave * 4) * 160
+at base_mid:
+    spawn nest.plasma at point(512.0, 256.0) heading pi
+at base_mid:
+    spawn nest.plasma at point(512.0, 768.0) heading pi
+var base_vertical = wave * 800 + 28500
+at base_vertical:
+    burst template.ai1_lizard_blue_tint_1c at point(512.0, 1088.0) copies 8 heading 3.926991
+at base_vertical:
+    burst template.ai1_lizard_blue_tint_1c at point(512.0, -64.0) copies 8 heading 3.926991
