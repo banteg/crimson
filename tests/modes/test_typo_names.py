@@ -177,7 +177,8 @@ def test_typo_mode_open_loads_highscore_names_into_state_and_replay_header(
     assets_dir: Path,
     tmp_path: Path,
 ) -> None:
-    path = scores_path_for_mode(tmp_path, GameMode.TYPO)
+    # An original install's Typ-o table: the original has no Typ-o file name.
+    path = tmp_path / "scores5" / "unknown.hi"
     records = []
     for value in ("Alpha", "Beta.Test"):
         record = HighScoreRecord.blank()

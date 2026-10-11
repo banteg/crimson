@@ -71,6 +71,7 @@ meant the player in question.
 | [22](../../rewrite/original-bugs.md#22-the-killing-wave-picks-roll-rand-but-branch-on-the-wave-counter) | The Killing's order | Quest 3.3 runs a fixed cycle: the same edges in turn, nests on waves 5 and 10. | Kept | [Quests](../modes/quests.md#tier-3) |
 | [37](../../rewrite/original-bugs.md#37-survival-spawning-grows-without-bound-after-fifteen-minutes) | Survival after 15:00 | Spawning grows without limit until the arena holds 384 creatures. | Kept | [Survival](../modes/survival.md#waves) |
 | — | Swapped quest score files | Normal quest scores save to `questhcM_N.hi`, hardcore ones to `questM_N.hi`. | Kept | [High scores](scores.md#local-tables) |
+| — | Typ-o score file | Typ-o has no file name of its own, so its scores save to `scores5\unknown.hi`. | Kept | [Local high scores](../../formats/highscores.md) |
 
 ## Not on the bug list yet
 
@@ -79,7 +80,6 @@ meant the player in question.
 | Every run makes the table | Every run is saved. Past 99 runs, each new one replaces the weakest listed score, even when it scores lower. | A true top 100 | [High scores](scores.md#when-a-run-is-saved) |
 | Hardcore leaks into Survival | A Hardcore box left ticked on the quest list toughens Survival's milestone waves and the Tutorial's creatures, and the run lands in the normal Survival table. | Hardcore applies only to quests | [High scores](scores.md#hardcore-and-survival) |
 | Formation tails | The last member of most rings, chains and grids is a 20 HP alien, and only it gets hardcore and retry scaling. | Kept | [Quests](../modes/quests.md#formations) |
-| Typ-o score file | Typ-o has no file name of its own, so its scores save to `scores5\unknown.hi`. | Saved to `typo.hi` | [Local high scores](../../formats/highscores.md) |
 
 Two entries in the bug list, 10 and 26, are left out because no player can
 see them.

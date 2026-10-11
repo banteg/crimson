@@ -21,7 +21,8 @@ def test_scores_path_for_mode(tmp_path: Path) -> None:
     assert scores_path_for_mode(tmp_path, GameMode.RUSH, player_count=2) == root / "rush_2.hi"
     assert scores_path_for_mode(tmp_path, GameMode.RUSH, player_count=3) == root / "rush_3.hi"
     assert scores_path_for_mode(tmp_path, GameMode.RUSH, player_count=4) == root / "rush_4.hi"
-    assert scores_path_for_mode(tmp_path, GameMode.TYPO) == root / "typo.hi"
+    assert scores_path_for_mode(tmp_path, GameMode.TYPO) == root / "unknown.hi"
+    assert scores_path_for_mode(tmp_path, GameMode.TYPO, player_count=2) == root / "unknown_2.hi"
     assert (
         scores_path_for_mode(tmp_path, GameMode.QUESTS, quest_stage_major=2, quest_stage_minor=7)
         == root / "questhc2_7.hi"

@@ -38,9 +38,11 @@ Normal quest files use `questhcM_N.hi`; hardcore uses `questM_N.hi`. That appare
 inversion is native behavior. Survival and Rush use `survival.hi` and `rush.hi`.
 The original has no Typ-o name: `highscore_build_path` falls through to
 `scores5\unknown.hi`, relative to the working directory rather than the game
-folder, and Typ-o's high-score target names read that file too. The port saves
-and reads Typ-o scores as `typo.hi`. Two-player tables add `_2` before `.hi`;
-the port adds `_3` or `_4` for its larger co-op tables.
+folder, and Typ-o's high-score target names read that file too. The port keeps
+`unknown.hi`, so an original install's Typ-o scores and names carry over; at
+startup it merges tables an earlier port version saved as `typo.hi` into
+`unknown.hi`. Two-player tables add `_2` before `.hi`; the port adds `_3` or
+`_4` for its larger co-op tables.
 
 Names are trimmed in the stored copy before encoding. Native trimming preserves
 character zero even for an all-space name; the name-entry UI requires a

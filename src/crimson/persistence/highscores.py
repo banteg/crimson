@@ -304,8 +304,6 @@ def _scores_path_for_mode_root(
             return root / "survival.hi"
         case GameMode.RUSH:
             return root / "rush.hi"
-        case GameMode.TYPO:
-            return root / "typo.hi"
         case GameMode.QUESTS:
             # Native `highscore_build_path` uses `questhc*.hi` when hardcore is OFF,
             # and `quest*.hi` when hardcore is ON.
@@ -314,6 +312,7 @@ def _scores_path_for_mode_root(
             minor = int(quest_stage_minor)
             return root / f"{prefix}{major}_{minor}.hi"
         case _:
+            # Native has no Typ-o case, so Typ-o's table is the fallback file too.
             return root / "unknown.hi"
 
 
@@ -338,6 +337,21 @@ def scores_path_for_mode(
     )
     path = _with_player_count_suffix(path, player_count=int(player_count))
     return path.with_name(path.name + named_list) if named_list else path
+
+
+def migrate_typo_scores(base_dir: Path) -> list[Path]:
+    """Fold the tables an earlier port saved as `typo*.hi*` into the original's `unknown*.hi*`.
+
+    Records carry their own mode, so merging appends them. Returns the migrated tables.
+    """
+    root = scores_dir_for_base_dir(base_dir)
+    migrated: list[Path] = []
+    for path in sorted(root.glob("typo*.hi*")):
+        target = path.with_name("unknown" + path.name.removeprefix("typo"))
+        write_highscore_records(target, read_highscore_records(target) + read_highscore_records(path))
+        path.unlink()
+        migrated.append(target)
+    return migrated
 
 
 def scores_path_for_config(
