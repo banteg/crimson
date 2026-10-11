@@ -1,6 +1,6 @@
 // Branch proof: an initialized core plus the recorded prefix and alternate
 // inputs must agree with the game's restored anchor plus those same inputs.
-// Also exercise the real gate, pause/focus, retry, original, and persistence.
+// Also exercise the click latch, pause/focus, retry, original, and persistence.
 // node crimson-core/checks/game_practice.mjs <game directory> [core.wasm] [game.wasm]
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
@@ -80,40 +80,32 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
     for (let t = 0; t < target; ++t) assert.ok(step(core, records[t]));
     const anchor = Buffer.from(state(core));
     equal(anchor, state(game), `${name}:${target} prefix`);
-    // Hold the takeover click and a stale movement key. Neither can start play.
-    run.input().setUint8(INPUT.buttons, 128);
-    key(0xc8, true);
+    // Enter and the bar's click take over with the button held: play starts at
+    // once, but that click fires only once let go.
+    const latched = target === 119 || target === 120;
     if (target === 119) {
+      run.input().setUint8(INPUT.buttons, 128);
       key(0x1c, true);
       frame();
-      assert.equal(game.game_practice_state(), 1, "Enter takes over before advancing");
     } else if (target === 120) {
+      run.input().setUint8(INPUT.buttons, 128);
       key(57, true); // play and take over in the same frame, before its ticks
       run.input().setInt32(INPUT.motion_x, game.game_motion_x(900), true);
-      run.input().setInt32(INPUT.motion_y, game.game_motion_y(728), true);
+      run.input().setInt32(INPUT.motion_y, game.game_motion_y(740), true);
       frame();
-      assert.equal(game.game_practice_state(), 1, "bar click takes over before advancing");
     } else assert.ok(game.game_practice_take(), `${name}:${target} takeover`);
-    for (let i = 0; i < 8; ++i) frame();
-    assert.equal(game.game_practice_state(), 1);
-    assert.equal(game.game_practice_ticks(), 0);
-    equal(anchor, state(game), "held inputs do not advance");
-    clear();
-    key(0x2a, true);
-    frame(); // an unrelated modifier does not block the gate
-    run.input().setInt32(INPUT.motion_x, 25, true);
-    frame();
-    assert.equal(game.game_practice_ticks(), 0, "aim does not start");
+    assert.equal(game.game_practice_state(), 1, "takeover plays at once");
+    assert.equal(game.game_practice_ticks(), 0, "takeover starts from the anchor");
+    equal(anchor, state(game), "takeover frame shows the anchor");
     function alternate() {
+      clear(); // the button stays down: a latch set at the start holds
       run.input().setInt32(INPUT.motion_x, game.game_motion_x(800), true);
       run.input().setInt32(INPUT.motion_y, game.game_motion_y(300), true);
-      frame();
-      const start = game.game_practice_ticks();
       key(0xc8, true);
       run.input().setUint8(INPUT.buttons, 128);
       const sequence = [];
-      for (let i = 0; game.game_practice_ticks() - start < 64; ++i) {
-        assert.ok(i < 2000, "practice did not tick");
+      for (let i = 0; game.game_practice_ticks() < 64; ++i) {
+        assert.ok(i < 5000, "practice did not tick");
         const was = game.game_practice_ticks();
         frame();
         const now = game.game_practice_ticks();
@@ -121,7 +113,12 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
         if (now === was) continue;
         const record = Buffer.alloc(24);
         Buffer.from(game.memory.buffer).copy(record, 0, game.portable_input(), game.portable_input() + 20);
-        assert.ok(record.readUInt32LE(16) & 1, "fresh fire input reaches the tick");
+        const fires = !!(record.readUInt32LE(16) & 1);
+        if (now <= 8) assert.equal(fires, !latched, "a held takeover click does not fire");
+        else if (now === 9) assert.ok(!fires, "a released button does not fire");
+        else assert.ok(fires, "a fresh press fires");
+        // Let go for the ninth tick, then press again.
+        run.input().setUint8(INPUT.buttons, now === 8 ? 0 : 128);
         sequence.push(record);
         assert.ok(step(core, record));
         equal(state(core), state(game), `${name}:${target}+${now}`);
@@ -132,14 +129,15 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
     if (target === perkAt) {
       assert.ok(field(core, "globals.perk_pending_count") > 0, "anchor has a pending perk");
       key(57, true);
-      frame();
-      assert.equal(game.game_state(), 6, "fresh perk action opens the real menu");
+      while (game.game_practice_ticks() === 0) frame();
+      assert.equal(game.game_state(), 6, "perk action opens the real menu");
       const open = Buffer.alloc(32);
       Buffer.from(game.memory.buffer).copy(open, 0, game.portable_input(), game.portable_input() + 20);
       open.writeUInt32LE(1, 20);
       open.writeInt32LE(2, 24);
       assert.ok(step(core, open));
       equal(state(core), state(game), "perk opening follows the baseline");
+      const opened = game.game_practice_ticks();
       clear();
       for (let i = 0; i < 80; ++i) {
         run.input().setInt32(INPUT.motion_x, game.game_motion_x(150), true);
@@ -153,21 +151,18 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
         assert.ok(i < 300, "perk menu never closed");
         frame(16);
       }
-      assert.equal(game.game_practice_state(), 1, "perk choice returns through the gate");
-      const at = game.game_practice_ticks();
-      for (let i = 0; i < 5; ++i) frame();
-      assert.equal(game.game_practice_ticks(), at);
-      key(0xc8, true);
-      frame();
+      assert.equal(game.game_practice_state(), 1, "perk choice returns straight to play");
+      while (game.game_practice_ticks() === opened) frame(16);
+      assert.equal(game.game_practice_ticks(), opened + 1);
       const pick = Buffer.alloc(32);
       Buffer.from(game.memory.buffer).copy(pick, 0, game.portable_input(), game.portable_input() + 20);
       pick.writeUInt32LE(1, 20);
       pick.writeInt32LE(1, 24);
       assert.ok(step(core, pick));
-      equal(state(core), state(game), "queued perk choice survives the gate");
-      game.game_practice_action(2);
-      frame();
+      equal(state(core), state(game), "perk choice reaches the next tick");
       clear();
+      run.input().setUint8(INPUT.buttons, latched ? 128 : 0);
+      game.game_practice_action(2);
       frame();
       init(core, config);
       for (let t = 0; t < target; ++t) step(core, records[t]);
@@ -175,24 +170,26 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
     const sequence = alternate(),
       future = Buffer.from(state(game));
     game.game_activate(0);
-    assert.equal(game.game_practice_state(), 3, "focus loss pauses");
+    assert.equal(game.game_practice_state(), 2, "focus loss pauses");
     game.game_activate(1);
     for (let i = 0; i < 8; ++i) frame();
     equal(future, state(game), "paused branch stays still");
     clear();
     key(1, true);
     frame();
-    assert.equal(game.game_practice_state(), 1, "Escape resumes through the gate");
+    assert.equal(game.game_practice_state(), 1, "Escape resumes");
     key(1, false);
     frame();
-    assert.equal(game.game_practice_ticks(), 64, "resume gate stays frozen");
+    key(1, true);
+    frame();
+    assert.equal(game.game_practice_state(), 2, "Escape pauses");
+    key(1, false);
+    run.input().setUint8(INPUT.buttons, latched ? 128 : 0); // the Retry click
     game.game_practice_action(2);
     frame();
-    assert.equal(game.game_practice_state(), 1);
+    assert.equal(game.game_practice_state(), 1, "retry plays at once");
     assert.equal(game.game_practice_ticks(), 0);
     equal(anchor, state(game), "retry restores the exact anchor");
-    clear();
-    frame();
     // Reapply the same live input and compare every new state with a fresh prefix.
     init(core, config);
     for (let t = 0; t < target; ++t) step(core, records[t]);
@@ -204,14 +201,17 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
     assert.equal(game.game_practice_state(), 0);
     assert.equal(game.game_watch_tick(), target);
     equal(anchor, state(game), "original returns to the anchor");
-    // An Escape at the initial gate returns to Watch without also leaving it.
+    // Escape pauses a fresh takeover; Watch the original returns, still watching.
     clear();
     assert.ok(game.game_practice_take());
     key(1, true);
     frame();
+    assert.equal(game.game_practice_state(), 2);
+    key(1, false);
+    game.game_practice_action(3);
+    frame();
     assert.equal(game.game_watch_status(), 0);
     assert.equal(game.game_practice_state(), 0);
-    key(1, false);
     clear();
     for (let i = 0; i < 8; ++i) frame();
     assert.equal(game.game_watch_tick(), target, "original returns paused");
@@ -229,15 +229,15 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
     clear();
     frame();
     key(0xc8, true);
-    for (let i = 0; game.game_practice_state() !== 4; ++i) {
+    for (let i = 0; game.game_practice_state() !== 3; ++i) {
       assert.ok(i < 50000, "branch never ended");
       const was = game.game_practice_ticks();
       frame();
       const now = game.game_practice_ticks();
-      if (now !== was || game.game_practice_state() === 4) {
+      if (now !== was || game.game_practice_state() === 3) {
         const record = Buffer.alloc(24);
         Buffer.from(game.memory.buffer).copy(record, 0, game.portable_input(), game.portable_input() + 20);
-        assert.equal(!!step(core, record), game.game_practice_state() !== 4, "baseline ends on the same tick");
+        assert.equal(!!step(core, record), game.game_practice_state() !== 3, "baseline ends on the same tick");
         if (now !== was) equal(state(core), state(game), "alternate ending follows the baseline");
       }
       clear();
@@ -298,7 +298,7 @@ for (const phase of ["playing", "perk"]) {
   clear();
   frame();
   key(phase === "playing" ? 0xc8 : 57, true);
-  frame();
+  while (!game.game_practice_ticks()) frame();
   assert.equal(game.game_state(), phase === "playing" ? 9 : 6, "quit in the intended practice screen");
   game.game_close();
   assert.throws(() => frame(), /the game quit/);

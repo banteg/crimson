@@ -118,18 +118,17 @@ client takes them from `CRIMSON_WATCH`, `CRIMSON_WATCH_CARD`,
 
 ## Practice takeover
 
-In the native and web clients, **Take over here** on the replay bar (or Enter)
-freezes the displayed alive tick. Release the viewer's controls, then move,
-fire, reload or request a perk to start at 1x. Aiming alone keeps the world
-paused. The branch uses the player's controls and the recorded run's settings;
-pending and future perks use the normal perk menu.
+In the native and web clients, **Take over** on the replay bar (or Enter) plays
+on from the displayed alive tick at once, at 1x, aimed where the cursor is. A
+fire button held from the takeover click fires only once let go. The branch
+uses the player's controls and the recorded run's settings; pending and future
+perks use the normal perk menu, and play carries on after a pick.
 
-The strip says **Practice - Unranked - from m:ss**. Escape pauses with Resume,
-Retry from the anchor and Watch the original. Resume and retry both require a
-fresh input. Before the first tick, Escape returns directly to the original.
-Focus loss pauses. Death or quest completion offers retry and return, without
-score or name entry. Return restores the original anchor, paused, at its old
-viewer speed. Preparing, seeking, dead and finished moments cannot be taken over.
+Escape pauses with Resume, Retry from the anchor and Watch the original;
+Resume and Retry play on at once. Focus loss pauses. Death or quest completion
+offers retry and return, without score or name entry. Return restores the
+original anchor, paused, at its old viewer speed. Preparing, seeking, dead and
+finished moments cannot be taken over.
 
 Practice stays on Watch's detached save: it writes no progress, unlocks,
 high scores, recordings or upload outbox entries. Attempts are unsaved in this
@@ -142,7 +141,7 @@ back after rebuilding terrain. Leaving Watch releases it.
 `checks/game_practice.mjs` compares alternate live inputs after a restored
 anchor with initialization plus the recorded prefix and those same inputs.
 It covers Survival, Rush and Quests, early/keyframe/late anchors, pending perk
-choices, stale input, aiming, focus loss, retry, return and persistence.
+choices, the held takeover click, focus loss, retry, return and persistence.
 Native frame captures additionally check the rendered terrain and HUD on
 retry and return. The Python viewer's takeover is a follow-up.
 

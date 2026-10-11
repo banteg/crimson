@@ -14,12 +14,15 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+# Enter takes over and plays at once; Escape pauses; Retry (from the cursor at
+# 232,374) plays again from the anchor; Watch the original (232,406) returns.
 SCRIPT = (
     "1:move 512 384;610:key 1c;620:unkey 1c;640:move 800 300;"
     "645:key c8;645:press 0;700:key 1;710:unkey 1;710:unkey c8;710:release 0;"
-    "720:move 232 374;725:press 0;730:release 0;745:move 512 384;"
+    "720:move 232 374;725:press 0;730:release 0;"
     "780:key 1;790:unkey 1;800:move 232 406;805:press 0;810:release 0;820:move 512 384"
 )
+TAKE, RETRY = range(605, 625), range(720, 745)
 
 
 def pixels(path: Path) -> bytearray:
@@ -29,12 +32,10 @@ def pixels(path: Path) -> bytearray:
     return bytearray(data)
 
 
-def same_world(a: Path, b: Path, *, ready: bool) -> None:
+def same_world(a: Path, b: Path, *, cursors: tuple[tuple[int, int], ...] = ((512, 384),)) -> None:
     images = [pixels(a), pixels(b)]
-    # Viewer/practice bands differ; the human cursor animates between frames.
-    boxes = [(0, 720, 1024, 768), (432, 304, 608, 480)]
-    if ready:
-        boxes.append((367, 343, 657, 427))
+    # The viewer's bar differs; the human cursor animates between frames.
+    boxes = [(0, 720, 1024, 768), *((x - 80, y - 80, x + 96, y + 96) for x, y in cursors)]
     for data in images:
         for left, top, right, bottom in boxes:
             for y in range(top, bottom):
@@ -68,7 +69,7 @@ def main() -> None:
         env = {
             **os.environ,
             "CRIMSON_CAPTURE": str(captures),
-            "CRIMSON_CAPTURE_FRAMES": "600,630,680,720,750,800,840",
+            "CRIMSON_CAPTURE_FRAMES": ",".join(map(str, (600, *TAKE, 680, *RETRY, 840))),
             "CRIMSON_WATCH": "practice.crd",
             "CRIMSON_WATCH_SEEK": "10800",
             "CRIMSON_WATCH_STOP": "10800",
@@ -76,16 +77,23 @@ def main() -> None:
             "CRIMSON_MUTE": "1",
         }
         subprocess.run([str(binary), str(game)], env=env, check=True, timeout=90)
-        for frame, phase in ((600, 0), (630, 1), (680, 2), (720, 3), (750, 1), (800, 3), (840, 0)):
-            state = json.loads((captures / f"frame_{frame}.json").read_text())
-            assert state["watch_tick"] == 10800
-            assert state["practice_state"] == phase, (frame, state)
-            if phase == 1 or frame == 840:
-                assert state["practice_ticks"] == 0
-            if phase == 2:
-                assert state["practice_ticks"] > 0
-        same_world(captures / "frame_630.ppm", captures / "frame_750.ppm", ready=True)
-        same_world(captures / "frame_600.ppm", captures / "frame_840.ppm", ready=False)
+
+        def state(frame: int) -> dict:
+            return json.loads((captures / f"frame_{frame}.json").read_text())
+
+        def started(frames: range) -> int:
+            # The first frame playing from the anchor: it shows the anchor itself.
+            frame = next(f for f in frames if state(f)["practice_state"] == 1)
+            assert state(frame)["practice_ticks"] == 0, state(frame)
+            return frame
+
+        assert state(600)["practice_state"] == 0
+        assert state(680)["practice_state"] == 1 and state(680)["practice_ticks"] > 0, state(680)
+        assert state(RETRY[0])["practice_state"] == 2, state(RETRY[0])
+        assert state(840)["practice_state"] == 0 and state(840)["watch_tick"] == 10800, state(840)
+        take, retry = started(TAKE), started(RETRY)
+        same_world(captures / f"frame_{take}.ppm", captures / f"frame_{retry}.ppm", cursors=((512, 384), (232, 374)))
+        same_world(captures / "frame_600.ppm", captures / "frame_840.ppm")
         print(json.dumps({"takeover": True, "retry_pixels": True, "original_pixels": True}))
 
 

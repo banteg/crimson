@@ -60,7 +60,6 @@ static struct {
 static bool practice_take();
 static const char *practice_reason();
 static void practice_stop();
-static void practice_ready(bool clear_commands);
 static void practice_end();
 static int practice_frame();
 static void practice_render();
@@ -507,8 +506,6 @@ void game_state_set(game_state_id_t state) {
   // A replay stops for any screen; leaving a run for anything but its own
   // screens (the perk menu, and the pause menu with its options) ends it
   // unfinished.
-  if (live.practicing && state == GAME_STATE_GAMEPLAY && game_state_id == GAME_STATE_PERK_SELECTION)
-    practice_ready(false);
   if (live.watching && state != GAME_STATE_GAMEPLAY && !(live.practicing && state == GAME_STATE_PERK_SELECTION))
     watch_stop();
   else if (game_live && state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&

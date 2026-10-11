@@ -77,6 +77,12 @@ static float viewer_bar_y() { return viewer_h() - VIEWER_BAR_H * viewer.shown; }
 static float viewer_scrub_x() { return 112.0f; }
 static int viewer_pips() { return (int)((viewer_w() - viewer_scrub_x() - 290.0f) / VIEWER_PIP_W); }
 static float viewer_scrub_y() { return viewer_bar_y() + 18.0f; }
+// Take over, right of the time: its label on the bar's text line.
+static float viewer_take_x() { return viewer_w() - 160.0f; }
+static float viewer_take_y() { return viewer_scrub_y() - 9.0f; }
+static bool viewer_over_take(float x, float y) {
+  return x >= viewer_take_x() && x < viewer_take_x() + 145 && y >= viewer_take_y() && y < viewer_take_y() + 32;
+}
 static int viewer_tick_at(float x) {
   float t = (x - viewer_scrub_x()) / (viewer_pips() * VIEWER_PIP_W);
   return (int)lroundf(fminf(fmaxf(t, 0.0f), 1.0f) * watch.ticks);
@@ -143,8 +149,7 @@ static void viewer_update(float dt) {
     viewer.dragging = true;
   else if (pressed && !on_bar && !viewer_over_card(x, y) && watch.phase == WATCH_PLAYING)
     watch.paused = !watch.paused;
-  if (pressed && on_bar && x >= viewer_w() - 160 && x < viewer_w() - 15 &&
-      y >= viewer_bar_y() + 2 && y < viewer_bar_y() + 34)
+  if (pressed && on_bar && viewer_over_take(x, y))
     practice_take();
   if (!down)
     viewer.dragging = false;
@@ -220,16 +225,14 @@ static void viewer_bar() {
   viewer_shadowed(sx + pips * VIEWER_PIP_W + 12, sy + 1, line, 0.9f, 0.9f, 0.9f, 0.9f);
 
   const char *reason = practice_reason();
-  float take_x = viewer_w() - 160, take_y = viewer_bar_y() + 2;
-  bool take_over = mx >= take_x && mx < take_x + 145 && my >= take_y && my < take_y + 32;
-  if (!reason && take_over) {
+  float take_x = viewer_take_x(), take_y = viewer_take_y();
+  if (!reason && viewer_over_take(mx, my)) {
     float highlight[2] = {take_x + 12, take_y + 5}, blue[4] = {0.5f, 0.5f, 0.7f, 0.7f};
     grim_interface_ptr->grim_draw_rect_filled(highlight, 121, 22, blue);
   }
   viewer_quad(viewer.take_plate, take_x, take_y, 145, 32, 0, 0, 1, 1, reason ? 0.5f : 1);
-  const char *label = reason ? reason : "Take over here";
+  const char *label = reason ? reason : "Take over";
   viewer_text(take_x + (145 - viewer_text_w(label)) * 0.5f, take_y + 10, label, 1, 1, 1, reason ? 0.5f : 1);
-  viewer_shadowed(take_x, take_y + 33, "Unranked practice - Enter", 0.75f, 0.78f, 0.82f, 0.9f);
 
   // Under the cursor: the time, and a mark near it.
   if (viewer_over_scrub(mx, my) || viewer.dragging) {
