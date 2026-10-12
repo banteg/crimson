@@ -2,6 +2,14 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.15.1
+
+### For players
+
+- Fixed sound panning in the Python game: centered sounds now play evenly in both speakers, and sounds to either side pan correctly. An unintended boost to the right channel is gone.
+- Music in the Python game follows the original game's volume curve, including fades: louder at full volume and quieter at low settings.
+- These audio fixes also apply to exported replay videos.
+
 ## 0.15.0
 
 ### For players
