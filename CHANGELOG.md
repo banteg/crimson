@@ -2,6 +2,34 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.15.0
+
+### For players
+
+#### Custom quests in the Python game
+
+- Write a quest recipe and play it with `crimson --custom-quest recipe.quest`. Recipes choose the starting weapon and terrain, then arrange the original game's enemies into timed encounters, with loops, patterns and variants for co-op and hardcore. Two examples and recipes for all 50 stock quests are included.
+- Custom quests show their title and optional author, save a replay, and offer Play Again when they end. They leave campaign progress and unlocks alone and never rank. Playing and watching them in the browser or desktop game comes later.
+
+#### Cleaner artwork
+
+- The game uses Tero's uncompressed arcade source art for more of its sprites and UI, without the released pack's JPEG artifacts. Shrinkifier's icon is in its proper slot; the three weapon icons missing from the source pack still use the 1.9.93 artwork. Soft edges keep their original transparency.
+- Python, browser and desktop games update the previous distributed artwork on their next launch. A failed download keeps the installed pack, and original-release or custom packs are left alone.
+
+#### Fixes
+
+- The quest list's Hardcore box and the easier waves after a failed quest apply only to quests. They no longer harden or ease Survival's milestone waves or the tutorial. `--preserve-bugs` restores the original's behavior.
+- A dismissed perk panel stays hidden during play until you open it again.
+- Three- and four-player co-op leaves out the perks excluded in two-player games too.
+- Typ-o scores use the original game's `unknown.hi` tables. Tables earlier versions saved as `typo*.hi` move there at startup.
+- The credits restore the Finnish names in full, and the Secret Path takes the original's 37 lines again.
+- Player pages show short game versions in their score tables; a run's details show its full version.
+
+### Under the hood
+
+- Replay format 33 carries a custom quest's resolved spawn tables, title and author. Formats 30–32 still read. The recovered verifier starts custom quests and agrees with Python tick for tick; custom runs remain outside the ranked boards.
+- The asset builder copies complete source sheets unchanged and selected weapon pixels directly. Downloads verify the new pack's SHA-256 before replacing an installed file.
+
 ## 0.14.6
 
 ### For players
