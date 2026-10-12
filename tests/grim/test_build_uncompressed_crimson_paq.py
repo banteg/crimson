@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 from pathlib import Path
 
+import pytest
 from PIL import Image
 
 from grim import paq as grim_paq
@@ -98,20 +99,37 @@ def test_visible_guard_flags_large_content_changes() -> None:
 
 
 def test_hybrid_copies_rgba_including_soft_alpha_and_transparent_pixels(mocker, tmp_path: Path) -> None:
-    original = Image.new("RGBA", (128, 128), (10, 20, 30, 128))
+    original = Image.new("RGBA", (256, 256), (10, 20, 30, 128))
     source = Image.new("RGBA", original.size, (30, 40, 50, 128))
     source.putpixel((0, 0), (99, 88, 77, 0))
     # A missing source sprite retains the release exactly, including its soft alpha.
-    source.paste((0, 0, 0, 0), (32, 0, 64, 32))
-    path = tmp_path / "bonuses.tga"
+    missing = _hybrid_rects("ui/ui_wicons.jaz", original.size)[30].bbox
+    source.paste((0, 0, 0, 0), missing)
+    path = tmp_path / "ui_wicons.tga"
     source.save(path)
     mocker.patch.object(builder, "_decode_original_image", return_value=original)
-    result = _hybrid_replacement("game/bonuses.jaz", b"original", path)
+    result = _hybrid_replacement("ui/ui_wicons.jaz", b"original", path)
     assert result is not None
     output = Image.open(io.BytesIO(result.payload)).convert("RGBA")
     assert output.getpixel((0, 0)) == (99, 88, 77, 0)
     assert output.getpixel((1, 0)) == (30, 40, 50, 128)
-    assert output.crop((32, 0, 64, 32)).tobytes() == original.crop((32, 0, 64, 32)).tobytes()
+    assert output.crop(missing).tobytes() == original.crop(missing).tobytes()
+
+
+@pytest.mark.parametrize("stem", ["bonuses", "projs"])
+def test_complete_arcade_sheets_keep_source_payload(mocker, tmp_path: Path, stem: str) -> None:
+    original = Image.new("RGBA", (128, 128), (10, 20, 30, 128))
+    source = Image.new("RGBA", original.size, (30, 40, 50, 128))
+    source_root = tmp_path / "source"
+    (source_root / "game").mkdir(parents=True)
+    path = source_root / "game" / f"{stem}.tga"
+    source.save(path)
+    mocker.patch.object(builder, "_decode_original_image", return_value=original)
+    base, output = tmp_path / "base.paq", tmp_path / "out.paq"
+    grim_paq.write_paq(base, [(f"game\\{stem}.jaz", b"original")])
+    stats = build_uncompressed_crimson_paq(source_root, base, output)
+    assert stats.hybrid == 0
+    assert grim_paq.read_paq(output) == [(f"game/{stem}.tga", path.read_bytes())]
 
 
 def test_weapon_sheet_remaps_shrinkifier_and_keeps_three_release_slots(mocker, tmp_path: Path) -> None:

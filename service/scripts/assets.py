@@ -13,7 +13,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from grim.assets import load_paq_entries
+from grim.assets import _select_texture_asset, load_paq_entries
 from grim.jaz import decode_jaz_bytes
 
 OUT = Path(__file__).resolve().parents[1] / "public" / "ui"
@@ -32,25 +32,27 @@ def main() -> None:
     entries = load_paq_entries(parser.parse_args().assets)
 
     def image(name: str) -> Image.Image:
-        data = entries[name]
-        return decode_jaz_bytes(data).composite_image() if name.endswith(".jaz") else Image.open(io.BytesIO(data)).convert("RGBA")
+        selected, data = _select_texture_asset(entries, name)
+        if data is None:
+            raise FileNotFoundError(f"Missing UI asset: {name}")
+        return decode_jaz_bytes(data).composite_image() if selected.endswith(".jaz") else Image.open(io.BytesIO(data)).convert("RGBA")
 
     OUT.mkdir(parents=True, exist_ok=True)
-    panel = image("ui/ui_menuPanel.tga")
+    panel = image("ui/ui_menuPanel.jaz")
     outputs = {
-        "sign.png": image("ui/ui_signCrimson.tga"),
-        "weapons.png": image("ui/ui_wicons.tga" if "ui/ui_wicons.tga" in entries else "ui/ui_wicons.jaz"),
+        "sign.png": image("ui/ui_signCrimson.jaz"),
+        "weapons.png": image("ui/ui_wicons.jaz"),
         "panel.png": panel.crop(PANEL_FRAME),
         "wires.png": panel.crop(PANEL_WIRES),
-        "check-on.png": image("ui/ui_checkOn.tga"),
+        "check-on.png": image("ui/ui_checkOn.jaz"),
         "button-sm.png": image("ui/ui_button_64x32.jaz"),
         "button-md.png": image("ui/ui_button_128x32.jaz"),
-        "check-off.png": image("ui/ui_checkOff.tga"),
-        "menu-item.png": image("ui/ui_menuItem.tga").crop(MENU_ITEM),
-        "play-game.png": image("ui/ui_itemTexts.tga").crop(PLAY_GAME_LABEL),
+        "check-off.png": image("ui/ui_checkOff.jaz"),
+        "menu-item.png": image("ui/ui_menuItem.jaz").crop(MENU_ITEM),
+        "play-game.png": image("ui/ui_itemTexts.jaz").crop(PLAY_GAME_LABEL),
         # Terrain textures by the game's slot number (src/crimson/terrain_slots.py): base, then overlay, per quest stage.
-        **{f"ter{2 * q + layer}.png": image(f"ter/ter_q{q + 1}_{'base' if layer == 0 else 'tex1'}.tga") for q in range(4) for layer in (0, 1)},
-        **{f"stage{n}.png": image(f"ui/ui_num{n}.{'jaz' if n == 5 else 'tga'}") for n in range(1, 6)},
+        **{f"ter{2 * q + layer}.png": image(f"ter/ter_q{q + 1}_{'base' if layer == 0 else 'tex1'}.jaz") for q in range(4) for layer in (0, 1)},
+        **{f"stage{n}.png": image(f"ui/ui_num{n}.jaz") for n in range(1, 6)},
     }
     for name, art in outputs.items():
         art.save(OUT / name, optimize=True)

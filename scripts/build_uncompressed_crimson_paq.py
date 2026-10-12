@@ -40,8 +40,6 @@ RUNTIME_RESIZED_REPLACEMENTS = frozenset(
 )
 HYBRID_REPLACEMENTS = frozenset(
     {
-        "game/bonuses.jaz",
-        "game/projs.jaz",
         "ui/ui_wicons.jaz",
     },
 )
