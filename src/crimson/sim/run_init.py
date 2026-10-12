@@ -57,7 +57,9 @@ def initialize_run(
         raise ValueError("only quest runs play a custom quest")
 
     world = WorldState.build(
-        hardcore=spec.hardcore,
+        # Hardcore is a quest setting; the original applies the saved box to every run's
+        # scripted spawns, Survival's milestone waves and the Tutorial included (original bug 38).
+        hardcore=spec.hardcore and (spec.game_mode_id == GameMode.QUESTS or spec.preserve_bugs),
         quest_fail_retry_count=spec.quest_fail_retry_count, preserve_bugs=spec.preserve_bugs,
     )
     world.state.rng.srand(spec.seed)

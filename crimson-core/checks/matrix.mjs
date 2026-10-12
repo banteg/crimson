@@ -406,6 +406,8 @@ const scenarios = [
   ["survival-evade", [1], 2, 30000, MOUSE],
   ["survival-evade-1337", [1, 1, 1, { seed: 1337 }], 2, 30000, PAD],
   ["survival-command-batches", [1, 1, 1, { seed: 1337 }], 4, 30000, MOUSE],
+  // A Hardcore box left ticked toughens the milestone waves only under the original's bugs (bug 38).
+  ["survival-hardcore", [1, 1, 1, { seed: 22, hardcore: 1 }], 2, 30000, { move: MOVE.static, aim: AIM.mouse }],
   [
     "survival-hunt-jinxed",
     [1, 1, 1, { seed: 28 }],

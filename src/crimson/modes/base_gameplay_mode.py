@@ -139,7 +139,6 @@ class BaseGameplayMode:
 
         self.assets_dir = ctx.assets_dir
         # The next run's flags; the run spec carries them into the gameplay state.
-        self.hardcore = False
         self.quest_fail_retry_count = 0
         self.ranked = False
         # The runtime owns the run (session, world), audio and render mode; the mode reads them from it.
@@ -750,15 +749,17 @@ class BaseGameplayMode:
         status = None if ranked else self._status_base
         self._world_runtime.view_cap = RANKED_VIEW if ranked else DEFAULT_VIEW_CAP
         self.ranked_run = ranked
+        # Every run carries the saved Hardcore box, as the original's does; the run applies it (`initialize_run`).
+        hardcore = self.config.gameplay.hardcore
         spec = ranked_run_spec(
-            game_mode, seed=self._run_reset_seed, quest_level=quest_level, hardcore=self.hardcore,
+            game_mode, seed=self._run_reset_seed, quest_level=quest_level, hardcore=hardcore,
         ) if ranked else RunSpec(
             game_mode_id=game_mode,
             seed=self._run_reset_seed,
             quest_level=quest_level,
             custom_quest=custom_quest,
             player_count=self._runtime_player_count(),
-            hardcore=self.hardcore,
+            hardcore=hardcore,
             preserve_bugs=self.state.preserve_bugs,
             quest_fail_retry_count=self.quest_fail_retry_count,
             detail_preset=self.config.display.detail_preset,

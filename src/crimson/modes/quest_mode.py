@@ -139,9 +139,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_level = quest_level
         self._custom_quest = custom_quest
 
-        hardcore_flag = self.config.gameplay.hardcore
-
-        self.hardcore = hardcore_flag
         seed = self._next_run_seed()
         self._run_reset_seed = seed
 

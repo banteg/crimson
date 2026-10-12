@@ -79,7 +79,7 @@ strength.
     [hardcore](../modes/quests.md#hardcore) (with the same
     [limit on formations](../modes/quests.md#formations)), and the run lands
     in the normal Survival table. The rewrite applies Hardcore only to
-    quests.
+    quests; see [original bug 38](../../rewrite/original-bugs.md#38-the-saved-hardcore-setting-leaks-into-survival-and-the-tutorial).
 
 ## Ranked play
 

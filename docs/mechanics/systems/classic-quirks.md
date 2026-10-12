@@ -28,6 +28,7 @@ the page that covers it.
 | [27](../../rewrite/original-bugs.md#27-enemy-projectiles-hurt-through-death-clock) | Leaky Death Clock | Enemy shots still hit for 10 during Death Clock. | Fixed | [Perks](../perks.md#47-death-clock) |
 | [32](../../rewrite/original-bugs.md#32-projectile-slot-0-cannot-hit-the-player-at-first) | Ghost enemy shot | Until the session's first Shock Chain ends, an occasional enemy shot passes straight through you. | Fixed | — |
 | [33](../../rewrite/original-bugs.md#33-a-bonus-carrier-can-drop-its-bonus-twice) | Double carrier drop | A bonus carrier killed twice over, as by a rocket and its blast, drops its bonus twice. | Fixed | — |
+| [38](../../rewrite/original-bugs.md#38-the-saved-hardcore-setting-leaks-into-survival-and-the-tutorial) | Hardcore leaks into Survival | A Hardcore box left ticked on the quest list toughens Survival's milestone waves and the Tutorial's creatures, and the run lands in the normal Survival table. | Fixed: Hardcore applies only to quests | [High scores](scores.md#hardcore-and-survival) |
 
 ## Co-op
 
@@ -78,7 +79,6 @@ meant the player in question.
 | Quirk | In the original | Rewrite | Page |
 | --- | --- | --- | --- |
 | Every run makes the table | Every run is saved. Past 99 runs, each new one replaces the weakest listed score, even when it scores lower. | A true top 100 | [High scores](scores.md#when-a-run-is-saved) |
-| Hardcore leaks into Survival | A Hardcore box left ticked on the quest list toughens Survival's milestone waves and the Tutorial's creatures, and the run lands in the normal Survival table. | Hardcore applies only to quests | [High scores](scores.md#hardcore-and-survival) |
 | Formation tails | The last member of most rings, chains and grids is a 20 HP alien, and only it gets hardcore and retry scaling. | Kept | [Quests](../modes/quests.md#formations) |
 
 Two entries in the bug list, 10 and 26, are left out because no player can

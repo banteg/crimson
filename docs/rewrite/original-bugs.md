@@ -984,3 +984,41 @@ those late-game cases in the original x86 executable and compares optimized
 batches against unoptimized recovered bodies. The
 [optimization notes](https://github.com/banteg/crimson/blob/master/crimson-core/optimizations/README.md)
 describe how to measure them.
+
+## 38) The saved Hardcore setting leaks into Survival and the Tutorial
+
+Native behavior:
+
+- `config_blob.hardcore` is a saved setting, ticked from the quest list. It is
+  cleared only while quest 4.10 is unbeaten, by `game_frame_update`
+  (`0x0040c1c0`), in the demo build, and by the quest list and high-score
+  screens under the same condition. Starting another mode leaves it set.
+- `creature_spawn_template` (`0x00430af0`) reads it for every creature it
+  builds. Survival's milestone waves (`survival_update`, `0x00407cd0`) and
+  the Tutorial's creatures (`tutorial_timeline_update`, `0x00408990`) come
+  from the same templates, so they get the hardcore buffs: 20% more health
+  after their maximum is set, 5% more speed, 40% more contact damage, nests
+  0.2 s faster, the stop-and-go yellow spiders at 70% speed, and in most
+  formations only the last member.
+- Survival's regular spawns don't read it.
+
+Why it's likely a bug:
+
+- Hardcore is a quest setting: the box sits on the quest list, quests keep
+  separate hardcore progress and score tables, and quest builders add their
+  own hardcore extras.
+- Survival keeps a single score table, `survival.hi`, so tougher and normal
+  runs rank against each other. `highscore_record_init` marks the record as
+  hardcore, but nothing reads that marker outside quests.
+
+Rewrite behavior:
+
+- Default: Hardcore applies to quests only. Replays still record the saved
+  box, as the original's runs carry it.
+- `--preserve-bugs`: the saved box also applies to Survival and the Tutorial,
+  as native.
+
+Evidence: `decomp/1.9/crimsonland/quests/creature_spawn_template.cpp` (the
+hardcore reads after the spawn switch), `game/game_frame_update.cpp` (the
+clears), `game/survival_update.cpp`, `game/tutorial_timeline_update.cpp` and
+`highscore/highscore_record_init.c`.

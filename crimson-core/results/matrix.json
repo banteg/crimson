@@ -503,6 +503,91 @@
       }
     },
     {
+      "name": "survival-hardcore",
+      "ticks": 13173,
+      "fields_per_snapshot": 36343,
+      "sha256": "deb6724142ce685e528195ee724e56d6c2fd4f6405c96a388731123b86792ff6",
+      "final_sha256": "ccc147e4df983c17e0417c908dd0a7992ea39d2e31e42e20cf6918b866f3927a",
+      "wasm_memory_mib": 2.5,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 31454,
+        "health": -1,
+        "elapsed_ms": 205693,
+        "timeline_ms": 205693,
+        "rng": 848009221
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          9,
+          29
+        ],
+        "perks": [
+          3,
+          4,
+          8,
+          17,
+          19,
+          21,
+          24
+        ],
+        "bonuses": [
+          "reflex_boost",
+          "weapon_power_up"
+        ],
+        "menu": 7,
+        "reload": 96,
+        "max_commands": 1,
+        "peak_creatures": 80,
+        "stall": false,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "survival-hardcore-ranked",
+      "ticks": 10406,
+      "fields_per_snapshot": 36343,
+      "sha256": "83bdabc1f82eef461c1bf9d4cb040d2fa59886905132906c3eaa8e7380962c49",
+      "final_sha256": "4a926103505e8d82009d85e7007dc243f543c325e9fbcb62ba8162097a07f3e9",
+      "wasm_memory_mib": 2.5,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 17458,
+        "health": -6.000003814697266,
+        "elapsed_ms": 166496,
+        "timeline_ms": 166496,
+        "rng": 1013862365
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          29
+        ],
+        "perks": [
+          26,
+          41,
+          50,
+          51
+        ],
+        "bonuses": [
+          "double_xp"
+        ],
+        "menu": 4,
+        "reload": 76,
+        "max_commands": 1,
+        "peak_creatures": 67,
+        "stall": false,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
       "name": "survival-hunt-jinxed",
       "ticks": 23297,
       "fields_per_snapshot": 36343,
