@@ -192,6 +192,9 @@ class PerkMenuController:
         return None
 
     def draw(self, ctx: PerkMenuUiContext, choices: Sequence[PerkId]) -> None:
+        # Gameplay reuses the timeline for the HUD while cancelled choices remain prepared.
+        if not self.active:
+            return
         menu_t = clamp(self.timeline.timeline_ms / ui_elements_max_timeline(GameStateId.PERK_SELECTION), 0.0, 1.0)
         if menu_t <= 1e-3:
             return
