@@ -28,7 +28,7 @@ the page that covers it.
 | [27](../../rewrite/original-bugs.md#27-enemy-projectiles-hurt-through-death-clock) | Leaky Death Clock | Enemy shots still hit for 10 during Death Clock. | Fixed | [Perks](../perks.md#47-death-clock) |
 | [32](../../rewrite/original-bugs.md#32-projectile-slot-0-cannot-hit-the-player-at-first) | Ghost enemy shot | Until the session's first Shock Chain ends, an occasional enemy shot passes straight through you. | Fixed | — |
 | [33](../../rewrite/original-bugs.md#33-a-bonus-carrier-can-drop-its-bonus-twice) | Double carrier drop | A bonus carrier killed twice over, as by a rocket and its blast, drops its bonus twice. | Fixed | — |
-| [38](../../rewrite/original-bugs.md#38-the-saved-hardcore-setting-leaks-into-survival-and-the-tutorial) | Hardcore leaks into Survival | A Hardcore box left ticked on the quest list toughens Survival's milestone waves and the Tutorial's creatures, and the run lands in the normal Survival table. | Fixed: Hardcore applies only to quests | [High scores](scores.md#hardcore-and-survival) |
+| [38](../../rewrite/original-bugs.md#38-quest-difficulty-leaks-into-survival-and-the-tutorial) | Quest difficulty leaks into Survival | A Hardcore box left ticked on the quest list toughens Survival's milestone waves and the Tutorial's creatures; quitting a retried quest from the pause menu eases them instead. Either way the run lands in the normal Survival table. | Fixed: both apply only to quests | [High scores](scores.md#hardcore-and-survival) |
 
 ## Co-op
 

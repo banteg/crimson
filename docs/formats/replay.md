@@ -104,9 +104,9 @@ declares one ranks on the bot boards ([bots and moderation](../rewrite/bots.md))
 | `seed` | u32 | CRT RNG state entering `gameplay_reset_state()` at run start |
 | `quest_level` | `{major, minor}` map or nil | A stock quest, 1..5 / 1..10; quests carry it or `custom_quest`, other modes neither |
 | `player_count` | int | 1..4; Typ-o and Tutorial require 1 |
-| `hardcore` | bool | The saved Hardcore box; outside quests it applies only with `preserve_bugs` ([original bug 38](../rewrite/original-bugs.md#38-the-saved-hardcore-setting-leaks-into-survival-and-the-tutorial)) |
+| `hardcore` | bool | The saved Hardcore box; outside quests it applies only with `preserve_bugs` ([original bug 38](../rewrite/original-bugs.md#38-quest-difficulty-leaks-into-survival-and-the-tutorial)) |
 | `preserve_bugs` | bool | Native quirks mode |
-| `quest_fail_retry_count` | int 0..2³¹−1 | Native retry scaling counter |
+| `quest_fail_retry_count` | int 0..2³¹−1 | Native retry scaling counter; outside quests it applies only with `preserve_bugs` ([original bug 38](../rewrite/original-bugs.md#38-quest-difficulty-leaks-into-survival-and-the-tutorial)) |
 | `detail_preset` | int 1..5 | Presentation detail; native presentation code consumes RNG |
 | `violence_disabled` | int 0..255 | Native config byte; likewise |
 | `friendly_fire` | bool | `cv_friendlyFire` at run start: player shots carry `-1 - player_index` and can hit other players (since v27) |

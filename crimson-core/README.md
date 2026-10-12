@@ -109,9 +109,10 @@ a `-ranked` stream. The input-only `.rsi` streams land in `build/fixtures`.
 Two hunter scenarios prefer the perks ranked fixes
 touch (Jinxed, Pyrokinetic, Highlander, Death Clock, Bandage, the
 Regenerations) and hold G at times; the Highlander hunter's run reaches no
-fix, so it runs once. A Survival scenario with the Hardcore box ticked plays
-its milestone waves hardcore under the original rules; under the ranked rules
-it is the run with the box clear, state for state. The matrix compares every named field of
+fix, so it runs once. Two Survival scenarios carry quest difficulty: with the Hardcore box ticked
+the milestone waves play hardcore under the original rules, and with a quest
+retry count they play eased; under the ranked rules each is the plain run,
+state for state. The matrix compares every named field of
 [`schema.json`](schema.json) at initialization and **every tick** between native and WASM, then checks A/B/A
 reuse in both. It also probes rejection of bad input, commands, entitlement and
 picks and menu requests the perk rules do not allow, each for the reason both
@@ -231,7 +232,7 @@ value) is set by the host at run start.
 | 24 | Holding G grants no Fire Bullets |
 | 27 | Enemy projectiles do not hurt through Death Clock |
 | 33 | A bonus carrier drops its bonus once |
-| 38 | The saved Hardcore box applies to quests only, not to Survival's milestone waves or the Tutorial |
+| 38 | The saved Hardcore box and the failed-quest retry easing apply to quests only, not to Survival's milestone waves or the Tutorial |
 
 Fixes that only change what is drawn are patches in
 [`game/patches/`](game/patches), which only the game module applies, so the

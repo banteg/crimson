@@ -42,3 +42,35 @@ def test_ticked_hardcore_box_reaches_survival_milestones_only_under_preserve_bug
         assert (boss.hp, boss.contact_damage) == (health, contact_damage)
     finally:
         mode.close()
+
+
+@pytest.mark.usefixtures("headless_resources")
+@pytest.mark.parametrize(
+    ("preserve_bugs", "health", "contact_damage"),
+    [
+        (False, 3800.0, 40.0),
+        # Original bug 38: a retried quest quit from the pause menu eases Survival's milestone waves.
+        (True, 3040.0, 32.0),
+    ],
+)
+def test_quest_retry_count_reaches_survival_milestones_only_under_preserve_bugs(
+    make_mode_config, assets_dir: Path, preserve_bugs: bool, health: float, contact_damage: float,
+) -> None:
+    config = make_mode_config(game_mode=GameMode.SURVIVAL)
+    mode = SurvivalMode(ViewContext(assets_dir=assets_dir, preserve_bugs=preserve_bugs), config=config, audio_rng=Crand(1))
+    mode.quest_fail_retry_count = 3
+    mode.open()
+    try:
+        session = mode._sim_session
+        assert session is not None
+        recorder = mode._replay_recorder
+        assert recorder is not None
+        assert recorder.run.quest_fail_retry_count == 3
+
+        mode.player.level = 9
+        session.step_tick(dt=1.0 / 60.0, inputs=[player_input()])
+
+        [boss] = [creature for creature in mode.creatures.entries if creature.active and creature.max_hp == 3800.0]
+        assert (boss.hp, boss.contact_damage) == (health, contact_damage)
+    finally:
+        mode.close()

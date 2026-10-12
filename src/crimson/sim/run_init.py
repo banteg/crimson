@@ -56,11 +56,14 @@ def initialize_run(
     elif custom is not None:
         raise ValueError("only quest runs play a custom quest")
 
+    # Hardcore and the failed-quest retry easing are quest settings; the original applies the saved
+    # box and the retry count to every run's scripted spawns, Survival's milestone waves and the
+    # Tutorial included (original bug 38).
+    quest_settings = spec.game_mode_id == GameMode.QUESTS or spec.preserve_bugs
     world = WorldState.build(
-        # Hardcore is a quest setting; the original applies the saved box to every run's
-        # scripted spawns, Survival's milestone waves and the Tutorial included (original bug 38).
-        hardcore=spec.hardcore and (spec.game_mode_id == GameMode.QUESTS or spec.preserve_bugs),
-        quest_fail_retry_count=spec.quest_fail_retry_count, preserve_bugs=spec.preserve_bugs,
+        hardcore=spec.hardcore and quest_settings,
+        quest_fail_retry_count=spec.quest_fail_retry_count if quest_settings else 0,
+        preserve_bugs=spec.preserve_bugs,
     )
     world.state.rng.srand(spec.seed)
     # Nothing resets `shock_chain_projectile_id` before a run, and a fresh game starts it at 0,

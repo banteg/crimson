@@ -23,7 +23,7 @@ the same checks (`src/crimson/replay/ranked.py`).
 
 Hardcore applies only to quests, so Survival has one board. (The original
 leaks a saved Hardcore setting into Survival's milestone waves,
-[original bug 38](original-bugs.md#38-the-saved-hardcore-setting-leaks-into-survival-and-the-tutorial),
+[original bug 38](original-bugs.md#38-quest-difficulty-leaks-into-survival-and-the-tutorial),
 which the ranked rules fix; a ranked Survival run also records it off.) Each quest level ranks
 on its own. Equal scores keep the earlier submission ahead. Accounts, uploads and
 names are in [leaderboard identity](leaderboard-identity.md). Rush, Typ-o, the

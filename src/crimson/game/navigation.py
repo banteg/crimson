@@ -193,13 +193,14 @@ class ScreenNavigator:
         gameplay.bind_audio(self.state.audio, self.state.rng)
         gameplay.set_rtx_mode(self.state.rtx_mode)
         gameplay.bind_screen_fade(self.state)
+        # Every run carries the retry count, as the original's does; the run applies it (`initialize_run`).
+        gameplay.quest_fail_retry_count = self.state.quest_fail_retry_count
         if isinstance(gameplay, TypoShooterMode):
             gameplay.typo_session = self.state.typo
         if isinstance(gameplay, QuestMode):
             gameplay.select_custom_quest(request.custom_quest)
         self.state.screens.push(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))
         if isinstance(gameplay, QuestMode):
-            gameplay.quest_fail_retry_count = self.state.quest_fail_retry_count
             if request.custom_quest is not None:
                 gameplay.start_custom_run(request.custom_quest, status=self.state.status)
             else:

@@ -13,6 +13,7 @@ from ..debug import debug_enabled
 from ..game_states import GameStateId
 from ..gamepad_profile import PadUpgrade, auto_apply_pad_profiles
 from ..input_codes import input_begin_frame, player_gamepad_index
+from ..modes.base_gameplay_mode import BaseGameplayMode
 from ..modes.quest_mode import QuestMode
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
 from ..screens.actions import Route, ScreenAction, ShowQuestOutcome
@@ -191,8 +192,13 @@ class GameLoopView:
             gameplay.regenerate_terrain_for_console()
 
     def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: ScreenAction | None) -> ScreenAction | None:
-        # A ranked attempt plays as a first try; it leaves the regular retry count alone.
-        if isinstance(gameplay, QuestMode) and not gameplay.ranked_run:
+        # A ranked attempt plays as a first try; it leaves the regular retry count alone. Outside quests
+        # only the original rules apply the count, and a hardcore spawn clears it (original bug 38).
+        if (
+            isinstance(gameplay, BaseGameplayMode)
+            and not gameplay.ranked_run
+            and (isinstance(gameplay, QuestMode) or gameplay.world.state.preserve_bugs)
+        ):
             self.state.quest_fail_retry_count = int(gameplay.world.state.quest_fail_retry_count)
         if action is not None:
             if action is Route.MENU:

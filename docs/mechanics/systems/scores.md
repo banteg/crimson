@@ -78,8 +78,9 @@ strength.
     [milestone waves](../modes/survival.md#milestone-waves), come out
     [hardcore](../modes/quests.md#hardcore) (with the same
     [limit on formations](../modes/quests.md#formations)), and the run lands
-    in the normal Survival table. The rewrite applies Hardcore only to
-    quests; see [original bug 38](../../rewrite/original-bugs.md#38-the-saved-hardcore-setting-leaks-into-survival-and-the-tutorial).
+    in the normal Survival table. Quitting a retried quest from the pause
+    menu likewise carries its [retry easing](../modes/quests.md#retries)
+    into them. The rewrite applies both only to quests; see [original bug 38](../../rewrite/original-bugs.md#38-quest-difficulty-leaks-into-survival-and-the-tutorial).
 
 ## Ranked play
 
