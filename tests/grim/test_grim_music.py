@@ -7,6 +7,7 @@ import pytest
 
 from grim import music
 from grim import paq as grim_paq
+from grim.audio_math import native_sound_gain, raylib_pan
 from grim.rand import Crand
 from grim.raylib_api import rl
 
@@ -35,7 +36,7 @@ def test_load_music_track_loads_unpacked_file_on_demand(mocker, tmp_path: Path) 
     assert state.next_track_id == 1
     load_music_stream.assert_called_once_with(str(track_path))
     load_music_stream_from_memory.assert_not_called()
-    set_music_volume.assert_called_once_with(track, 0.4)
+    set_music_volume.assert_called_once_with(track, native_sound_gain(0.4) * raylib_pan(0)[1])
 
 
 def test_load_music_track_loads_paq_entry_on_demand(mocker, tmp_path: Path) -> None:
@@ -62,7 +63,7 @@ def test_load_music_track_loads_paq_entry_on_demand(mocker, tmp_path: Path) -> N
     assert state.paq_entries == {"music/custom.ogg": payload}
     load_music_stream.assert_not_called()
     load_music_stream_from_memory.assert_called_once_with(".ogg", payload, len(payload))
-    set_music_volume.assert_called_once_with(track, 0.4)
+    set_music_volume.assert_called_once_with(track, native_sound_gain(0.4) * raylib_pan(0)[1])
 
 
 @pytest.fixture

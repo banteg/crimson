@@ -9,6 +9,7 @@ import msgspec
 from grim.raylib_api import rl
 
 from . import paq
+from .audio_math import native_sound_gain, raylib_pan
 from .console import ConsoleState
 from .rand import CrandLike
 
@@ -21,6 +22,11 @@ MUSIC_TRACKS: dict[str, tuple[str, ...]] = {
     "gt1_ingame": ("music/gt1_ingame.ogg", "gt1_ingame.ogg"),
     "gt2_harppen": ("music/gt2_harppen.ogg", "gt2_harppen.ogg"),
 }
+
+
+def _set_stream_volume(stream: rl.Music, volume: float) -> None:
+    """Native music goes through `sfx_entry_set_volume` on a buffer it never pans."""
+    rl.set_music_volume(stream, native_sound_gain(volume) * raylib_pan(0)[1])
 
 
 class MusicTrack(msgspec.Struct):
@@ -92,7 +98,7 @@ def load_music_tracks(state: MusicState, assets_dir: Path, console: ConsoleState
             cleanup.callback(track.close)
             if not rl.is_music_valid(stream):
                 raise ValueError(f"audio: failed to decode music track '{track_name}' in {MUSIC_PAK_NAME}")
-            rl.set_music_volume(stream, state.volume)
+            _set_stream_volume(stream, state.volume)
             tracks[track_name] = track
         state.tracks.update(tracks)
         cleanup.pop_all()
@@ -163,7 +169,7 @@ def load_music_track(
     track = MusicTrack(stream=music_stream, track_id=track_id, source_data=data)
     with ExitStack() as cleanup:
         cleanup.callback(track.close)
-        rl.set_music_volume(music_stream, state.volume)
+        _set_stream_volume(music_stream, state.volume)
         state.tracks[key] = track
         cleanup.pop_all()
     if console is not None:
@@ -198,14 +204,14 @@ def play_music(state: MusicState, track_name: str, *, fade_in: bool = False) -> 
     # Callers that request a fading track keep retrying until it reaches zero.
     if track.volume <= 0.0:
         rl.stop_music_stream(track.stream)
-        rl.set_music_volume(track.stream, 0.0 if fade_in else state.volume)
+        _set_stream_volume(track.stream, 0.0 if fade_in else state.volume)
         rl.play_music_stream(track.stream)
         track.paused = False
         track.muted = False
         track.volume = state.volume
     if fade_in:
         track.volume = 0.0
-        rl.set_music_volume(track.stream, 0.0)
+        _set_stream_volume(track.stream, 0.0)
     state.active_track = track_name
 
 
@@ -271,13 +277,13 @@ def update_music(state: MusicState, dt: float) -> None:
                 if track.volume == 0.0:
                     rl.stop_music_stream(stream)
                     track.paused = False
-                rl.set_music_volume(stream, track.volume)
+                _set_stream_volume(stream, track.volume)
         else:
             if track.volume > target_volume:
                 track.volume = target_volume
             elif track.volume < target_volume:
                 track.volume = min(target_volume, track.volume + frame_dt * _MUSIC_FADE_IN_PER_SEC)
-            rl.set_music_volume(stream, track.volume)
+            _set_stream_volume(stream, track.volume)
 
 
 def set_music_volume(state: MusicState, volume: float) -> None:
@@ -287,7 +293,7 @@ def set_music_volume(state: MusicState, volume: float) -> None:
     for track in state.tracks.values():
         if not track.muted:
             track.volume = min(track.volume, state.volume)
-            rl.set_music_volume(track.stream, track.volume)
+            _set_stream_volume(track.stream, track.volume)
 
 
 def shutdown_music(state: MusicState) -> None:
