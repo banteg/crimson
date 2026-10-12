@@ -32,9 +32,9 @@ cooldowns remain separate for distinct native IDs. The port keeps its bounded
 voice pool rather than reproducing DirectSound's 16 buffers per native entry.
 When every voice of a sample is busy, the stolen voice keeps its play cursor
 and continues under the new pitch/pan/volume, as the native Stop + Play steal
-does; it is not restarted. raylib mixes into an unclamped float device
-buffer, so the backend saturates the finished mix at full scale
-([-1, 32767/32768]), matching the original's 16-bit primary output.
+does; it is not restarted. The finished mix needs no clamp of its own:
+miniaudio clips raylib's float output to full scale before the device, as the
+original's 16-bit primary buffer saturates.
 
 Music keeps selection and mute/fade intent even at zero master volume. The
 Python backend pauses streams at zero and resumes them without choosing a new

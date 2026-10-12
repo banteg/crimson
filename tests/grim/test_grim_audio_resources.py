@@ -10,7 +10,7 @@ from grim import audio, music, paq, sfx
 from grim.config import default_crimson_cfg
 from grim.console import ConsoleLog, ConsoleState
 from grim.rand import Crand
-from grim.raylib_api import ffi, rl
+from grim.raylib_api import rl
 from grim.sfx_map import SFX_SPECS, SfxId
 
 
@@ -51,28 +51,6 @@ def audio_backend(mocker):
     mocker.patch.object(rl, "set_music_volume")
     mocker.patch.object(rl, "set_sound_volume")
     return created, released, close
-
-
-def test_mixed_output_saturates_at_full_scale() -> None:
-    samples = ffi.new("float[]", [2.0, -2.0, 0.5, -1.0, 1.0, 0.25])
-    audio._saturate_mixed_output(ffi.cast("void *", samples), 3)
-    full = 32767.0 / 32768.0
-    assert list(samples) == [full, -1.0, 0.5, -1.0, full, 0.25]
-
-
-def test_output_saturation_attaches_and_detaches_once(audio_assets, audio_backend, mocker) -> None:
-    root, console = audio_assets
-    attach = mocker.patch.object(rl, "attach_audio_mixed_processor")
-    detach = mocker.patch.object(rl, "detach_audio_mixed_processor")
-    state = audio.init_audio_state(default_crimson_cfg(), root, console, Crand(0x1234))
-    callback = state.saturation_callback
-    assert callback is not None
-    attach.assert_called_once_with(callback)
-
-    audio.shutdown_audio(state)
-    audio.shutdown_audio(state)
-    assert state.saturation_callback is None
-    detach.assert_called_once_with(callback)
 
 
 def _releases(calls: Mock) -> list[tuple[str, object]]:

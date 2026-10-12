@@ -7,7 +7,6 @@ Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/
 ### For players
 
 - When all sixteen copies of a sound are already playing, the Python game now lets a playing copy play out instead of restarting it from the top, as the original did. Dense weapon and hit sounds stack less harshly.
-- Loud overlapping sounds in the Python game now saturate at full volume like the original and the desktop/browser games, instead of passing an over-level signal to the sound device.
 
 ## 0.15.1
 
