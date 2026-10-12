@@ -183,6 +183,19 @@ def test_draw_fits_and_clamps_the_window_to_the_canvas_size(gpu: _Gpu, mocker) -
     ]
 
 
+@pytest.mark.parametrize(("point_filter", "blended"), [(False, True), (True, False)])
+def test_point_filter_keeps_magnified_cell_edges_hard(gpu: _Gpu, point_filter: bool, blended: bool) -> None:
+    ground = _grid_ground(gpu)
+    ground.point_filter = point_filter
+    target = gpu.target(64, 64)
+    with texture_mode(target):
+        ground.draw_view(Vec2(-8.0, -8.0), screen_w=16.0, screen_h=16.0, out_w=64.0, out_h=64.0)
+
+    # Output pixel 31 samples terrain x = 8 + 31.5 / 4, three eighths of a texel short of the cell edge at 16.
+    [edge] = _cells(target, [(31, 10)])
+    assert (edge != (0, 0)) is blended
+
+
 def test_draw_view_without_render_target_fills_the_output_with_the_clear_color(gpu: _Gpu) -> None:
     ground = gpu.ground()
     target = gpu.target(80, 48)

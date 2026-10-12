@@ -58,4 +58,6 @@ def draw_screen_background(state: GameState, ground: GroundRenderer | None, *, e
     if background is not None:
         background.draw_pause_background(entity_alpha=entity_alpha)
     elif ground is not None:
+        terrain_filter = state.console.cvars.get("cv_terrainFilter")
+        ground.point_filter = terrain_filter is not None and terrain_filter.value_f == 2.0
         ground.draw(menu_ground_camera(state))

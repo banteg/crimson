@@ -206,7 +206,9 @@ class CreditsView(MenuScreen):
         self._lines: list[_CreditsLine] = []
         self._line_max_index = 0
         self._secret_line_base_index = 0x54
+        # `credits_secret_unlock_flag`: set once per launch, so the riddle only goes in the first time.
         self._secret_unlock = False
+        self._round_lines_marked = False
         self._scroll_time_s = 0.0
         self._scroll_line_start_index = 0
         self._scroll_line_end_index = 0
@@ -219,7 +221,7 @@ class CreditsView(MenuScreen):
     def open(self) -> None:
         super().open()
         self._lines, self._line_max_index, self._secret_line_base_index = _credits_build_lines()
-        self._secret_unlock = False
+        self._round_lines_marked = False
         self._scroll_time_s = 0.0
         self._scroll_line_start_index = 0
         self._scroll_line_end_index = 0
@@ -355,15 +357,15 @@ class CreditsView(MenuScreen):
             self._click_line(index)
 
     def _update_secret_unlock(self) -> None:
-        if self._secret_unlock:
-            return
-        if not _credits_all_round_lines_flagged(self._lines):
+        # Native rescans every frame, so unmarking a round line hides the Secret button again.
+        self._round_lines_marked = _credits_all_round_lines_flagged(self._lines)
+        if not self._round_lines_marked or self._secret_unlock:
             return
         self._secret_unlock = True
         _credits_unlock_secret_lines(self._lines, self._secret_line_base_index)
 
     def _secret_button_visible(self) -> bool:
-        return self._secret_unlock or debug_enabled()
+        return self._round_lines_marked or debug_enabled()
 
     def update(self, dt: float) -> None:
         if not self._advance(dt):

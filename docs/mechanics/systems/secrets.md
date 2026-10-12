@@ -23,14 +23,16 @@ Credits**. The credits scroll one line per second and loop.
 - Click every line that contains a lowercase "o": 37 lines, headings
   included, down to *Click the ones with the round ones!* at the very end.
   A capital "O" doesn't count.
-- A correct click highlights the line and chimes.
-- Clicking a line without an "o" plays a grunt and unmarks the nearest
-  marked line at or above it.
+- A correct click highlights the line, with a chime the first time.
+- Clicking a line without an "o" unmarks the nearest marked line at or above
+  it, with a grunt.
 - Leaving the credits clears every mark.
 
-Once every "o" line is marked, a **Secret** button appears next to **Back**,
-and a riddle replaces *You can stop watching now.* and the blank lines
-around it:
+While every "o" line is marked, a **Secret** button sits next to **Back**.
+Unmark one and it goes away until you mark it again.
+
+The first time you get there, a riddle also replaces *You can stop watching
+now.* and the blank lines around it:
 
 ```text
 Inside Dead Let Mighty Blood
@@ -44,6 +46,9 @@ Triangle Cube Last Not Flee
 (4 bits for index) <- OOOPS I meant FIVE!
 (4 bits for index)
 ```
+
+It shows once per launch: solve the puzzle again before you quit and you
+get the button but not the riddle.
 
 Number the 23 words 1 to 23 in reading order. Split the binary into 5-bit
 groups, read each as a word number, and you get:
@@ -61,6 +66,8 @@ The **Secret** button opens *AlienZooKeeper*, "a puzzle game unfinished
 ..or something more?". It's a match-3 game on a 6×6 board of alien heads in
 five colours.
 
+- Until your first **Reset**, the board is all red, *Game Over* flashes, and
+  the tiles ignore clicks.
 - **Reset** starts a game: a fresh board with no ready-made lines, score 0,
   9.6 s on the clock.
 - Click a tile, then any other tile, and they swap. They don't need to be
@@ -75,10 +82,12 @@ it until you quit the game.
 
 ## Orbes Volantes Exstare
 
-On March 3 (your computer's date), the Statistics screen can flash
-*Orbes Volantes Exstare* in faint green near the top-left corner. The game
-rolls once per launch, so 1 launch in 32 shows it, and it's gone the
-instant it appears.
+On March 3, the Statistics screen can flash *Orbes Volantes Exstare* in
+faint green near the top-left corner. It's gone the instant it appears.
+
+The game rolls once per launch, so 1 launch in 32 shows it. Each time it
+shows, the game rolls again, so it can come back. The original reads the
+date when it starts; the rewrite reads it each frame.
 
 ## Holding G
 
@@ -115,11 +124,47 @@ lists them; only an edited `crimson.cfg` selects them.
 Computer runs never rank, and the **Ranked** box is off while player 1 uses
 either scheme ([ranked rules](../../rewrite/ranked-rules.md#controls-and-aim)).
 
+## Hotkeys
+
+Fixed keys that no menu mentions and the Controls screen can't rebind.
+
+| Key | Where | Effect | Rewrite |
+| --- | --- | --- | --- |
+| **F12** | Anywhere | Saves a screenshot as `shot_000.bmp`, `shot_001.bmp` and so on in the game folder, skipping names that exist. | PNG, in the folder you run it from |
+| Left **Alt** + **Q** | Anywhere | Quits at once, intro included. | Works |
+| **F1** | In a run, except Typ'o'Shooter | Pauses and shows your keys; F1 again resumes. | Works |
+| **Space**, keypad **+** | In a run | Opens the perk picker, whatever Level Up is bound to. | Works |
+| Hold **F1** | Play Game | Times played next to each mode. | Works |
+| Hold **F1** | Quests | Completed and played counts next to each quest. | Works |
+| **←** / **→** | Quests | Changes the tier. | Works |
+| **1**–**9**, **0** | Quests | Starts that quest of the tier, if it's unlocked. | Works |
+| **Space** | Quest results | Skips the tally. | Works |
+| Hold **F1** | Statistics | Adds your total playtime from the Windows registry, Tutorial excluded, when its hours differ from the profile's. | Not shown |
+
+## Custom music
+
+At startup the game runs `music\game_tunes.txt`, and the shipped file says
+you can add your own. Each `snd_addGameTune <name>.ogg` line adds
+`music\<name>.ogg` to the tunes that play at random during a run. A name
+missing from `music.paq` loads from the `music` folder. The rewrite does the
+same.
+
+## Later-tier ground
+
+Survival, Rush and Typ'o'Shooter runs, and the menu background, normally
+use tier 1 ground. As you clear quests, each new ground gets 1-in-8 chances
+of borrowing a quest's ground instead, checked in this order:
+
+- quest 4.2's, once you've cleared 40 quests;
+- quest 3.2's, once you've cleared 30;
+- quest 2.2's, once you've cleared 20.
+
 ## Console
 
-Press **~** (the key left of 1) to open the console. Type a variable's name
-to see its value, or the name and a value to set it. Tab completes names.
-Commands in `autoexec.txt` in the game folder run at every launch.
+Press **~** (the key left of 1) to open the console, even during the intro.
+Type a variable's name to see its value, or the name and a value to set it.
+Tab completes names. Commands in `autoexec.txt` in the game folder run at
+every launch.
 
 | Variable | Default | Effect | Rewrite |
 | --- | ---: | --- | --- |
@@ -131,17 +176,30 @@ Commands in `autoexec.txt` in the game folder run at every launch.
 | `cv_aimEnhancementFade` | 0.7 | Crosshair glow opacity, 0 to 1. | Works |
 | `cv_padAimDistMul` | 96 | Dual Action Pad aim reach: the aim sits 42 + stick × this units out. | Works. Ranked uses 96. |
 | `cv_terrainBodiesTransparency` | 0 | Opacity of corpses on the ground: 0 gives 80%, anything else 1 ÷ value. | Works |
+| `cv_terrainFilter` | 1 | 2: point-filtered ground, sharp texels instead of smooth. | Works |
+| `cv_uiPointFilterPanels` | 0 | 1: point-filtered menu panels. | Ignored |
 | `cv_enableMousePointAndClickMovement` | 0 | 1: lists Mouse point&click in Controls. | Ignored |
+| `con_monoFont` | 1 | 0: the console uses the game's small font. The shipped `autoexec.txt` sets 0. | Works |
+| `cv_verbose` | 0 | 1: logs saves, spawns and terrain changes to the console. | Ignored |
+| `cv_silentloads` | 1 | 0: logs every file the game loads. | Ignored |
 
-| Command | Effect |
-| --- | --- |
-| `telltimesurvived` | Prints the current run's time in whole seconds. |
-| `generateterrain` | Paints a new random ground. |
-| `setGammaRamp <x>` | Multiplies screen brightness by x. |
-| `extendconsole` / `minimizeconsole` | Makes the console taller or shorter. |
-| `cmdlist` / `vars` | Lists every command or variable. |
-| `exec <file>` | Runs a file of console lines. |
-| `quit` | Quits the game. |
+| Command | Effect | Rewrite |
+| --- | --- | --- |
+| `telltimesurvived` | Prints the current run's time in whole seconds. | Works |
+| `generateterrain` | Paints a new random ground. | Works |
+| `setGammaRamp <x>` | Multiplies screen brightness by x. | Works |
+| `snd_addGameTune <x.ogg>` | Adds a tune to the in-run music ([custom music](#custom-music)). | Works |
+| `openurl <url>` | Opens the address in your browser. | Works |
+| `set <var> <value>` | Sets a variable, creating it if needed. | Works |
+| `echo <text>` | Prints the text. `echo off` silences all console output until `echo on`. | Works |
+| `clear` | Empties the console. | Works |
+| `extendconsole` / `minimizeconsole` | Makes the console taller or shorter. | Works |
+| `cmdlist` / `vars` | Lists every command or variable. | Works |
+| `exec <file>` | Runs a file of console lines. | Works |
+| `quit` | Quits the game. | Works |
+
+`setresourcepaq`, `loadtexture` and `sndfreqadjustment` also exist. None of
+them changes anything you'd see.
 
 ## Dead ends
 
@@ -149,8 +207,17 @@ Commands in `autoexec.txt` in the game folder run at every launch.
   AlienZooKeeper" combinations such as *CyanYellowRedYellow*, "few secret
   weapons hidden inside the game", and "Brave little haxx0r aren't you?".
   They sit in startup code that never runs.
+- The credits write *Greeting to:*, *Chaos^*, *Matricks* and *Muzzy* onto one
+  line, then blank it, so the greetings never show.
 - On September 12, November 8 and December 18 the game loads a balloon
   image at startup, then never draws it.
+- The end note after quest 5.10 is out of date. On normal it calls
+  Typ'o'Shooter a reward for finishing, and on hardcore it says you've just
+  unlocked the Splitter Gun. Both actually unlock after 4.10.
+- Typing `reload` in Typ'o'Shooter plays the reload sound and does nothing
+  else.
+- If the game can't save to the registry when you quit, its console log
+  says "Kameli was NOT hairy."
 
 Source notes: [easter eggs](../../re/static/secrets/easter-eggs.md),
 [console](../../re/static/systems/console.md).

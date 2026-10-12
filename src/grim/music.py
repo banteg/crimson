@@ -146,19 +146,19 @@ def load_music_track(
         if console is not None:
             console.log.log(f"SFX Tune {track.track_id} <- '{normalized}' ok")
         return key, track.track_id
+    # `resource_open_read`: the pack entry wins, and a loose file only fills in for a name the pack lacks.
     data = None
     music_stream = None
+    entries = _ensure_music_entries(state, assets_dir)
+    if entries is not None:
+        data = entries.get(normalized)
+        if data is None:
+            data = entries.get(Path(normalized).name)
+        if data is not None:
+            music_stream = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
     file_path = assets_dir / normalized
-    if file_path.is_file():
+    if music_stream is None and file_path.is_file():
         music_stream = rl.load_music_stream(str(file_path))
-    if music_stream is None:
-        entries = _ensure_music_entries(state, assets_dir)
-        if entries is not None:
-            data = entries.get(normalized)
-            if data is None:
-                data = entries.get(Path(normalized).name)
-            if data is not None:
-                music_stream = rl.load_music_stream_from_memory(".ogg", cast(str, data), len(data))
     if music_stream is None or not rl.is_music_valid(music_stream):
         if music_stream is not None:
             rl.unload_music_stream(music_stream)

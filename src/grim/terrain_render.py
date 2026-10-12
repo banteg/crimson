@@ -68,6 +68,8 @@ class GroundRenderer(msgspec.Struct):
     width: int = TERRAIN_TEXTURE_SIZE
     height: int = TERRAIN_TEXTURE_SIZE
     texture_failed: bool = False
+    # `terrain_render`: `cv_terrainFilter 2` samples the ground with point filtering.
+    point_filter: bool = False
     render_target: rl.RenderTexture | None = None
     alpha_test: AlphaTestShader = msgspec.field(default_factory=AlphaTestShader)
     _render_target_ready: bool = False
@@ -238,6 +240,10 @@ class GroundRenderer(msgspec.Struct):
         src_h = (v1 - v0) * float(target.texture.height)
         src = rl_rectangle(src_x, src_y, src_w, -src_h)
         dst = rl_rectangle(0.0, 0.0, out_w, out_h)
+        rl.set_texture_filter(
+            target.texture,
+            rl.TextureFilter.TEXTURE_FILTER_POINT if self.point_filter else rl.TextureFilter.TEXTURE_FILTER_BILINEAR,
+        )
         # Disable alpha blending when drawing terrain to screen - the render target's
         # alpha channel may be < 1.0 after stamp blending, but terrain should be opaque.
         with opaque_blend():

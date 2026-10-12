@@ -39,11 +39,14 @@ def test_load_music_track_loads_unpacked_file_on_demand(mocker, tmp_path: Path) 
     set_music_volume.assert_called_once_with(track, native_sound_gain(0.4) * raylib_pan(0)[1])
 
 
-def test_load_music_track_loads_paq_entry_on_demand(mocker, tmp_path: Path) -> None:
+def test_load_music_track_prefers_paq_entry_over_loose_file(mocker, tmp_path: Path) -> None:
     state = music.init_music_state(ready=True, enabled=True, volume=0.4)
     track = _music_stub()
     payload = b"OggS"
     grim_paq.write_paq(tmp_path / music.MUSIC_PAK_NAME, [("music/custom.ogg", payload)])
+    loose_path = tmp_path / "music" / "custom.ogg"
+    loose_path.parent.mkdir(parents=True, exist_ok=True)
+    loose_path.write_bytes(b"OggS loose")
 
     load_music_stream = mocker.patch.object(music.rl, "load_music_stream")
     mocker.patch.object(music.rl, "is_music_valid", return_value=True)

@@ -249,6 +249,9 @@ class BaseGameplayMode:
         self._world_runtime.apply_terrain_setup(setup)
 
     def _draw_world(self, *, entity_alpha: float = 1.0) -> None:
+        ground = self.render_resources.ground
+        if ground is not None:
+            ground.point_filter = self._cvar_float("cv_terrainFilter", 1.0) == 2.0
         self._world_runtime.draw(entity_alpha=entity_alpha)
 
     def _draw_aim_indicators(self, *, show_aim: bool, entity_alpha: float = 1.0) -> None:

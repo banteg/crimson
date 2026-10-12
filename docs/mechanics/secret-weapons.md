@@ -30,9 +30,8 @@ Shrinks whatever it hits; anything below size 16 dies
 ([details](combat/weapons.md#24-shrinkifier-5k)).
 
 In single-player Survival, stay alive for 64 seconds without firing and
-without taking a melee hit (enemy shots don't spoil it). You can't kill
-anything without firing, so you'll still be on the Pistol, and the game
-swaps it for the Shrinkifier.
+without getting hit. You can't kill anything without firing, so you'll
+still be on the Pistol, and the game swaps it for the Shrinkifier.
 
 ## Blade Gun
 
@@ -50,6 +49,9 @@ triangle. After the third kill:
 Firing before the third kill is fine; only firing after it counts. A fourth
 kill, by anything, closes the path for the run. The third kill also cancels
 the Shrinkifier. You don't need to be on the Pistol.
+
+You can get both in one run: take the Shrinkifier with fewer than three
+kills, shoot with it until your third kill, then follow the steps above.
 
 ## Everything else
 

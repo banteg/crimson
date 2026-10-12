@@ -147,6 +147,16 @@ not a mapped in-binary runtime draw/use path.
   - "(4 bits for index)"
   This confirms the secret-line injection is gated by the credits line scan.
 
+- **Lifetimes**: the scan runs every frame, so unmarking any `'o'` line hides
+  the Secret button again. `credits_secret_unlock_flag` is never cleared,
+  while re-entering the credits reruns `credits_build_lines` and restores
+  lines `0x54..0x5d`; a second solve in the same launch shows the button
+  without the riddle.
+
+- **Greetings**: `credits_build_lines` writes "Greeting to:", "Chaos^",
+  "Matricks", "Muzzy" and then an empty string all to index `0x42`, so only
+  the empty line survives.
+
 - **Secret button transition (static)**: the Secret button press sets `game_state_pending = 0x1a`,
   which maps to `credits_secret_alien_zookeeper_update` (AlienZooKeeper minigame). No other
   “Secret Path” branch is visible in the credits screen decompile.

@@ -57,3 +57,37 @@ def test_secret_path_takes_every_round_line_with_the_full_names(loop) -> None:
         credits._click_line(index)
         loop.update(0.016)
     assert credits._secret_unlock
+
+
+def test_secret_button_follows_the_marks_and_the_riddle_shows_once_per_launch(loop) -> None:
+    def open_credits() -> CreditsView:
+        loop.navigation.navigate(Route.CREDITS)
+        finish_transition(loop)
+        credits = loop.state.screens.active
+        assert isinstance(credits, CreditsView)
+        return credits
+
+    def solve(credits: CreditsView) -> None:
+        for index, line in enumerate(credits._lines):
+            if "o" in line.text:
+                credits._click_line(index)
+        loop.update(0.016)
+
+    credits = open_credits()
+    solve(credits)
+    riddle_index = credits._secret_line_base_index
+    assert credits._lines[riddle_index].text == "Inside Dead Let Mighty Blood"
+    assert credits._secret_button_visible()
+
+    last_round = max(index for index, line in enumerate(credits._lines) if "o" in line.text)
+    credits._click_line(last_round + 1)
+    loop.update(0.016)
+    assert not credits._secret_button_visible()
+
+    loop.navigation.navigate(Route.BACK)
+    finish_transition(loop)
+    credits = open_credits()
+    assert not credits._secret_button_visible()
+    solve(credits)
+    assert credits._secret_button_visible()
+    assert credits._lines[riddle_index + 3].text == "You can stop watching now."
