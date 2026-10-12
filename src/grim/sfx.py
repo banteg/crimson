@@ -50,7 +50,8 @@ class SfxVoice(msgspec.Struct):
 
     def set_volume(self, master_volume: float) -> None:
         rl.set_sound_volume(
-            self.sound, native_sound_gain(f32(master_volume) * f32(self.gain)) * self.pan_compensation,
+            self.sound,
+            native_sound_gain(f32(master_volume) * f32(self.gain)) * self.pan_compensation,
         )
 
 
@@ -69,19 +70,13 @@ class SfxSample(msgspec.Struct):
             for alias in self.aliases:
                 cleanup.callback(rl.unload_sound_alias, alias.sound)
 
-    def acquire_voice(self, rng: CrandLike) -> tuple[SfxVoice, bool]:
-        """`sfx_entry_start_playback`: the first idle voice, else a stolen one.
-
-        The second value reports a steal. Native steals with Stop + Play and no
-        rewind, so the voice keeps its play cursor and continues mid-sample
-        under the new pitch/pan/volume. raylib's `play_sound` restarts a voice
-        from frame zero, so a stolen voice must not be played again.
-        """
+    def acquire_voice(self, rng: CrandLike) -> SfxVoice:
+        """`sfx_entry_start_playback`: the first idle voice, else a random one (`rand() % 16`) to steal."""
         for voice in self.voices():
             if not rl.is_sound_playing(voice.sound):
-                return voice, False
+                return voice
         voices = [self.source, *self.aliases]
-        return voices[rng.rand() % len(voices)], True
+        return voices[rng.rand() % len(voices)]
 
 
 class SfxState(msgspec.Struct):
@@ -211,13 +206,17 @@ def play_sfx(
         reflex_boost_timer=float(reflex_boost_timer),
     )
     state.cooldowns[sfx] = f32(0.44 if sfx in (SfxId.FLAMER_FIRE_01, SfxId.FLAMER_FIRE_02) else 0.05)
-    voice, stolen = sample.acquire_voice(state.rng)
+    voice = sample.acquire_voice(state.rng)
     voice.gain = gain
     pan_value, voice.pan_compensation = raylib_pan(pan)
     rl.set_sound_pitch(voice.sound, _pitch_scale_from_rate_hz(int(state.rate_scale_hz)))
     rl.set_sound_pan(voice.sound, pan_value)
     voice.set_volume(state.volume)
-    if not stolen:
+    # Native steals with Stop + Play and no rewind: a voice still playing keeps
+    # its cursor under the new pitch/pan/volume, and one that reached its end
+    # (rewound) starts over. raylib `play_sound` always rewinds, so start only
+    # a voice that is not playing now, including a steal that ended meanwhile.
+    if not rl.is_sound_playing(voice.sound):
         rl.play_sound(voice.sound)
 
 

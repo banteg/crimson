@@ -68,6 +68,21 @@ def test_stolen_voice_is_retargeted_without_restarting(mocker) -> None:
     assert state.sample(SfxId.PISTOL_FIRE).source.gain == 0.7
 
 
+def test_stolen_voice_that_ends_before_retargeting_starts_the_request(mocker) -> None:
+    backend = stub_sfx_backend(mocker)
+    state = make_sfx_state(SfxId.PISTOL_FIRE)
+    sfx.play_sfx(state, SfxId.PISTOL_FIRE)
+    sfx.update_sfx(state, 0.1)
+
+    # Busy when picked, then the audio thread finishes it before the retarget
+    # completes: native Play on an ended (rewound) buffer starts it over.
+    mocker.patch.object(sfx.rl, "is_sound_playing", side_effect=[True, False])
+    sfx.play_sfx(state, SfxId.PISTOL_FIRE, pan=425)
+
+    assert backend.play_sound.call_count == 2
+    assert backend.mock_calls[-1] == mocker.call.play_sound(state.sample(SfxId.PISTOL_FIRE).source.sound)
+
+
 def test_volume_change_retains_each_active_voice_gain_and_pan(mocker) -> None:
     backend = stub_sfx_backend(mocker)
     state = make_sfx_state(SfxId.PISTOL_FIRE)

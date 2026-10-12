@@ -57,4 +57,4 @@ def test_busy_sample_steals_a_random_voice(mocker) -> None:
     picks = [sample.acquire_voice(rng) for _ in range(4)]
 
     # `sfx_entry_start_playback`: every voice busy, so `rand() % 16` picks the one to steal.
-    assert picks == [(voices[expected.rand() % 16], True) for _ in range(4)]
+    assert picks == [voices[expected.rand() % 16] for _ in range(4)]
