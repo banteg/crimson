@@ -71,6 +71,9 @@
   // crimson.paq, sfx.paq and music.paq), or else from the player's own game
   // folder, whose grim.dll comes along (game/resources.cpp).
   const FILES = ["crimson.paq", "sfx.paq"];
+  const ART_VERSION = /* ASSET_VERSION */ null;
+  const artHash = async (bytes) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
+    (byte) => byte.toString(16).padStart(2, "0")).join("");
   // Without music.paq, the loose music the GOG release ships: what the executable
   // plays by name, and the file naming the in-game tunes.
   const MUSIC = ["intro", "crimson_theme", "crimsonquest", "shortie_monk"].map((name) => `music/${name}.ogg`);
@@ -258,13 +261,17 @@
 
   // Downloads, with their progress across every file still to come.
   async function download(names) {
-    const responses = await Promise.all(names.map((name) => fetch(new URL(name, new URL(base, location.href)))));
+    const responses = await Promise.all(names.map((name) => {
+      const url = new URL(name, new URL(base, location.href));
+      if (name === "crimson.paq") url.searchParams.set("sha256", ART_VERSION.current);
+      return fetch(url);
+    }));
     const failed = responses.find((response) => !response.ok);
     if (failed) throw Error(failed.url + ": " + failed.status);
     const total = responses.reduce((sum, response) => sum + Number(response.headers.get("content-length") ?? 0), 0);
     let received = 0;
     progress.hidden = false;
-    return Promise.all(responses.map(async (response) => {
+    return Promise.all(responses.map(async (response, i) => {
       const chunks = [];
       for (const reader = response.body.getReader(); ; ) {
         const { done, value } = await reader.read();
@@ -277,15 +284,26 @@
       }
       const bytes = new Uint8Array(chunks.reduce((sum, chunk) => sum + chunk.length, 0));
       chunks.reduce((at, chunk) => (bytes.set(chunk, at), at + chunk.length), 0);
+      if (names[i] === "crimson.paq" && await artHash(bytes) !== ART_VERSION.current)
+        throw Error("Downloaded game art has an unexpected hash");
       return bytes;
     }));
   }
 
   async function fetchMissing() {
     const needed = missing();
+    if (exists("crimson.paq") && ART_VERSION.previous.includes(await artHash(FS.readFile("/game/crimson.paq"))))
+      needed.push("crimson.paq");
     if (!needed.length) return;
     const names = [...new Set(needed.map((name) => (name.startsWith("music/") ? "music.paq" : name)))];
-    const bytes = await download(names);
+    let bytes;
+    try {
+      bytes = await download(names);
+    } catch (error) {
+      // An offline update keeps the usable old pack and retries next launch.
+      if (!missing().length) { console.warn("game art update:", error); return; }
+      throw error;
+    }
     names.forEach((name, i) => (name === "music.paq" ? storeMusic(bytes[i]) : store(name, bytes[i])));
     if (missing().length) throw Error("incomplete download");
   }
@@ -302,6 +320,7 @@
       }
     }
     hydrated = true;
+    await persist();
     upload();
   }
 

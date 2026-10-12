@@ -30,6 +30,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Check artwork upgrade behavior
+        run: |
+          python3 crimson-core/checks/assets.py
+          node --test crimson-core/checks/assets.test.mjs
+
       - name: Download the shared game module
         uses: actions/download-artifact@v4
         with:

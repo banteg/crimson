@@ -129,6 +129,16 @@ def test_client_edit_reuses_game_and_records_its_own_build(source: Path) -> None
     assert after["game"]["origin"] == game["origin"]
 
 
+def test_artwork_manifest_invalidates_client_cache_only(source: Path) -> None:
+    game = game_module(source)
+    before = build.client_identity("web", source, wabt="1.0.42", emscripten="6.0.10")
+    path = source / "src/crimson/assets_version.json"
+    path.write_text('{"current": "new-art", "previous": ["old-art"]}\n')
+    after = build.client_identity("web", source, wabt="1.0.42", emscripten="6.0.10")
+    assert after["fingerprint"] != before["fingerprint"]
+    assert after["game"]["fingerprint"] == game["fingerprint"]
+
+
 def test_tampered_cached_binary_or_manifest_is_rejected(source: Path) -> None:
     game_module(source)
     module = source / "crimson-core/build/game/game.wasm"
@@ -202,6 +212,7 @@ def test_wheel_from_sdist_retains_identity_and_source_provenance_without_git(tmp
     installation = tmp_path / "installed"
     with zipfile.ZipFile(next(distributions.glob("*.whl"))) as archive:
         metadata = json.loads(archive.read("crimson/_build.json"))
+        assert archive.read("crimson/assets_version.json") == (source / "src/crimson/assets_version.json").read_bytes()
         archive.extractall(installation)
     assert metadata["fingerprint"] == expected["fingerprint"]
     assert metadata["origin"] == expected["origin"]

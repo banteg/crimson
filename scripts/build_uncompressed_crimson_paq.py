@@ -13,7 +13,9 @@ from crimson.atlas import rect_for_index
 from grim import jaz, paq
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SOURCE_ART_ROOT = REPO_ROOT / "artifacts" / "uncompressed_assets" / "crimsonland-2003-source-art-tga"
+DEFAULT_SOURCE_ART_ROOT = (
+    REPO_ROOT / "artifacts" / "uncompressed_assets" / "crimsonland-arcade-cabinet-game-assets-2004-10-14"
+)
 DEFAULT_BASE_PAQ = REPO_ROOT / "game_bins" / "crimsonland" / "1.9.93-gog" / "crimson.paq"
 DEFAULT_OUTPUT_PAQ = REPO_ROOT / "artifacts" / "assets" / "crimson-uncompressed.paq"
 BENIGN_ALPHA_MISMATCHES = frozenset(
@@ -208,7 +210,7 @@ def _component_uses_original(component: Component, original: Image.Image, replac
 
 def _paste_component(output: Image.Image, source: Image.Image, component: Component) -> None:
     x0, y0, _x1, _y1 = component.bbox
-    output.alpha_composite(source.crop(component.bbox), (x0, y0))
+    output.paste(source.crop(component.bbox), (x0, y0))
 
 
 def _paint_mask(mask: Image.Image, component: Component, color: tuple[int, int, int, int]) -> None:
@@ -237,10 +239,24 @@ def _hybrid_replacement(entry_name: str, original_payload: bytes, replacement: P
     if original.size != replacement_image.size:
         return None
 
-    output = original.copy()
+    if entry_name.lower() == "ui/ui_wicons.jaz":
+        components = _hybrid_rects(entry_name, original.size)
+        # Arcade slot 25 holds the released Shrinkifier (slot 23). Copy from
+        # the untouched source before retaining the release's slots 25/30/31.
+        released = original.crop(components[23].bbox)
+        moved = replacement_image.crop(components[25].bbox)
+        if (
+            released.getchannel("A").tobytes() == moved.getchannel("A").tobytes()
+            and not _replacement_differs_visibly(released, moved)
+        ):
+            replacement_image.paste(moved, components[23].bbox[:2])
+
+    output = replacement_image.copy()
     mask = Image.new("RGBA", original.size, (0, 0, 0, 0))
     for component in _hybrid_rects(entry_name, original.size):
         use_original = _component_uses_original(component, original, replacement_image)
+        if entry_name.lower() == "ui/ui_wicons.jaz":
+            use_original = component in (components[25], components[30], components[31]) or use_original
         source = original if use_original else replacement_image
         _paste_component(output, source, component)
         _paint_mask(mask, component, (255, 96, 96, 160) if use_original else (96, 180, 255, 160))
@@ -309,6 +325,7 @@ def build_uncompressed_crimson_paq(source_art_root: Path, base_paq: Path, output
         replacement = _source_replacement_for(entry_name, source_art)
         hybrid_result = _hybrid_replacement(entry_name, original_payload, replacement) if replacement else None
         if hybrid_result is not None:
+            assert replacement is not None
             payload = hybrid_result.payload
             output_name = replacement.relative_to(source_art_root).as_posix()
             replaced += 1

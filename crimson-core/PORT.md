@@ -292,6 +292,10 @@ name and decodes it by the name's extension, so the module asks for the stored
 name first ([`repack.cpp`](game/repack.cpp)); the release's `crimson.paq`
 resolves every name to itself. The native client downloads the PAQs a folder
 lacks, as the Python game does.
+Python, desktop and browser startup also recognize earlier distributed artwork
+by SHA-256 (`src/crimson/assets_version.json`) and download the current pack.
+The download is verified before replacement; unknown/custom and original release
+packs stay in place. The browser upgrades the copy it keeps in IndexedDB.
 [`checks/game_files.py`](checks/game_files.py) lays out a game directory from
 the asset host, which CI uses for the checks that boot the original.
 

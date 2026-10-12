@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include "sha256.h"
 
-void sha256(const void *data, size_t size, uint8_t digest[32]);
 // The replay envelope: one zstd frame that declares its content size.
 std::vector<uint8_t> zstd_pack(const std::vector<uint8_t> &payload, int level = 9);
 // The payload of one such frame, at most `max_size` bytes; empty when it is not one.

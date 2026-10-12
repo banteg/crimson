@@ -9,6 +9,7 @@ Requires the game module (build.py --target game) and wabt's wasm2c.
 
 import argparse
 import concurrent.futures
+import json
 import os
 import plistlib
 import re
@@ -22,6 +23,19 @@ from scripts.build_identity import client_identity, read_manifest, write_manifes
 
 HERE = Path(__file__).resolve().parent
 CORE = HERE.parent
+ASSET_VERSION_PATH = CORE.parent / "src/crimson/assets_version.json"
+
+
+def write_asset_version(out):
+    version = json.loads(ASSET_VERSION_PATH.read_text())
+    previous = ", ".join(json.dumps(digest) for digest in version["previous"])
+    (out / "assets_version.h").write_text(
+        "// Generated from src/crimson/assets_version.json.\n"
+        f'constexpr const char *CRIMSON_PAQ_SHA256 = {json.dumps(version["current"])};\n'
+        f"constexpr const char *PREVIOUS_CRIMSON_PAQ_SHA256[] = {{{previous}}};\n",
+    )
+    shell = (HERE / "web/shell.html").read_text().replace("/* ASSET_VERSION */ null", json.dumps(version))
+    (out / "shell.html").write_text(shell)
 
 
 def tool(name):
@@ -125,6 +139,7 @@ def main():
     args = parser.parse_args()
     out = (args.out or CORE / "build" / {"native": "app", "web": "web"}[args.target]).resolve()
     out.mkdir(parents=True, exist_ok=True)
+    write_asset_version(out)
     if not args.skip_game:
         subprocess.run([sys.executable, str(CORE / "build.py"), "--target", "game"], check=True)
     wasm2c, runtime, include = wasm2c_runtime()
@@ -151,7 +166,7 @@ def main():
             ),
             *(
                 [cxx, *cxxflags, "-c", str(source), "-o", str(out / f"host_{source.stem}.o")]
-                for source in sorted(HERE.glob("*.cpp"))
+                for source in [*sorted(HERE.glob("*.cpp")), CORE / "game/sha256.cpp"]
             ),
         ],
     )
@@ -169,7 +184,7 @@ def main():
             "-sEXPORTED_RUNTIME_METHODS=FS,IDBFS,addRunDependency,removeRunDependency,ccall",
             "-lidbfs.js",
             "--shell-file",
-            str(HERE / "web/shell.html"),
+            str(out / "shell.html"),
             "-o",
             str(out / "index.html"),
         ]

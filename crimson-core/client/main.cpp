@@ -4,6 +4,7 @@
 #define SDL_MAIN_USE_CALLBACKS
 #include "client.h"
 #include "network.h"
+#include "assets.h"
 #include <memory>
 #include <ctime>
 #include "../game/host_input.h"
@@ -615,7 +616,10 @@ void download(const std::string &name) {
   if (!file)
     return;
   CURL *curl = curl_easy_init();
-  curl_easy_setopt(curl, CURLOPT_URL, (ASSET_BASE_URL + name).c_str());
+  std::string url = ASSET_BASE_URL + name;
+  if (name == "crimson.paq")
+    url += std::string("?sha256=") + artwork_sha256();
+  curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
   // The host refuses requests without a user agent.
   curl_easy_setopt(curl, CURLOPT_USERAGENT, "crimsonland/" CRIMSON_CLIENT_VERSION);
   curl_easy_setopt(curl, CURLOPT_PROTOCOLS_STR, "https");
@@ -629,16 +633,22 @@ void download(const std::string &name) {
   bool written = fclose(file) == 0 && result == CURLE_OK;
   if (!written)
     fprintf(stderr, "crimson: %s did not download: %s\n", name.c_str(), curl_easy_strerror(result));
+  if (written && name == "crimson.paq" && !artwork_is_current(partial)) {
+    fprintf(stderr, "crimson: downloaded game art has an unexpected hash\n");
+    written = false;
+  }
   if (!written || rename(partial.c_str(), path.c_str()) != 0)
     remove(partial.c_str());
 }
 // Before the game starts: a folder lacking the game's files gets the PAQs it
 // lacks.
 void fetch_assets() {
-  if (!missing_files().empty()) {
+  std::string art_path;
+  bool upgrade = client_resolve("crimson.paq", art_path) && artwork_needs_update(art_path);
+  if (!missing_files().empty() || upgrade) {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     for (const char *name : {"crimson.paq", "music.paq", "sfx.paq"})
-      if (!present(name)) {
+      if (!present(name) || (upgrade && !strcmp(name, "crimson.paq"))) {
         fprintf(stderr, "crimson: downloading %s into %s\n", name, game_directory.c_str());
         download(name);
       }

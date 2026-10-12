@@ -38,6 +38,11 @@ and `music.paq` from the project's asset host into its data folder
 client shares that folder. Use command help as the authority for options and
 error behavior; subcommands have different validation and mismatch exit codes.
 
+Python, desktop and browser launches also upgrade recognized earlier Frankenasset
+packs by SHA-256. They verify the new pack before replacing the old file; original
+release and custom packs are preserved. Artwork versions are recorded in
+`src/crimson/assets_version.json`.
+
 ```bash
 uv run crimson
 uv run crimson --help
