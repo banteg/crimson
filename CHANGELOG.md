@@ -8,7 +8,7 @@ Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/
 
 #### Custom quests in the Python game
 
-- Write a quest recipe and play it with `crimson --custom-quest recipe.quest`. Recipes choose the starting weapon and terrain, then arrange the original game's enemies into timed encounters, with loops, patterns and variants for co-op and hardcore. Two examples and recipes for all 50 stock quests are included.
+- Write a quest recipe and play it with `crimson --custom-quest recipe.quest`. Recipes choose the starting weapon and terrain, then arrange the original game's enemies into timed encounters, with loops, patterns and variants for co-op and hardcore. Fourteen examples and recipes for all 50 stock quests are included.
 - Custom quests show their title and optional author, save a replay, and offer Play Again when they end. They leave campaign progress and unlocks alone and never rank. Playing and watching them in the browser or desktop game comes later.
 
 #### Cleaner artwork
