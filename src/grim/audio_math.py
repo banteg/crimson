@@ -28,28 +28,30 @@ def native_sound_gain(volume: float) -> float:
     return 10.0 ** (min(0, max(-10_000, attenuation)) / 2000.0)
 
 
-def _pan_level(value: float) -> float:
-    # raylib 5.5 raudio.c, MixAudioFrames: its stereo pan law.
-    return 0.5 * value * (3.0 - value * value)
+def _pan_level(share: float) -> float:
+    # raylib 6 raudio.c, MixAudioFrames: its stereo pan law over a channel's share.
+    return 0.5 * share * (3.0 - share * share)
 
 
 @lru_cache(maxsize=512)
 def raylib_pan(native_pan: int) -> tuple[float, float]:
     """Return raylib pan and gain compensation for native channel attenuation.
 
-    DirectSound keeps the louder channel unchanged. Raylib attenuates both
-    channels, with pan=1 meaning left. Invert its monotone channel ratio and
+    DirectSound keeps the louder channel unchanged. Raylib pan runs from -1
+    (left) to 1 (right) and attenuates both channels, splitting a share
+    ``(pan + 1) / 2`` to the right. Invert its monotone channel ratio and
     compensate its overall gain, including the centered case.
     """
     if native_pan == 0:
-        return 0.5, 1.0 / _pan_level(0.5)
+        return 0.0, 1.0 / _pan_level(0.5)
     ratio = 10.0 ** (-abs(native_pan) / 2000.0)
-    lo, hi = 0.0, 0.5
+    lo, hi = 0.5, 1.0
     for _ in range(24):
         mid = (lo + hi) * 0.5
-        if _pan_level(mid) / _pan_level(1.0 - mid) < ratio:
+        if _pan_level(1.0 - mid) / _pan_level(mid) > ratio:
             lo = mid
         else:
             hi = mid
-    quiet = (lo + hi) * 0.5
-    return (quiet if native_pan > 0 else 1.0 - quiet), 1.0 / _pan_level(1.0 - quiet)
+    loud = (lo + hi) * 0.5
+    pan = 2.0 * loud - 1.0
+    return (pan if native_pan > 0 else -pan), 1.0 / _pan_level(loud)

@@ -149,7 +149,7 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
 
     expected = run((1, 1))
     assert any(name == "play_sound" for name, _, _ in expected[1])
-    assert any(name == "set_sound_pan" and args != (0.5,) for name, _, args in expected[1])
+    assert any(name == "set_sound_pan" and args != (0.0,) for name, _, args in expected[1])
     assert run(partition) == expected
 
 

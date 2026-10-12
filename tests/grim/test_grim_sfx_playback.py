@@ -10,7 +10,8 @@ from tests.support.audio import make_sfx_state, stub_sfx_backend
 
 
 @pytest.mark.parametrize(
-    "sfx_id, cooldown", [(SfxId.PISTOL_FIRE, 0.05), (SfxId.FLAMER_FIRE_01, 0.44)],
+    "sfx_id, cooldown",
+    [(SfxId.PISTOL_FIRE, 0.05), (SfxId.FLAMER_FIRE_01, 0.44)],
 )
 def test_per_id_cooldown_blocks_before_pitch_or_voice_changes(mocker, sfx_id, cooldown) -> None:
     backend = stub_sfx_backend(mocker)
@@ -32,7 +33,7 @@ def test_per_id_cooldown_blocks_before_pitch_or_voice_changes(mocker, sfx_id, co
     assert backend.play_sound.call_count == 2
     assert state.rate_scale_hz == 44100
     # Reusing a previously panned voice for a centered request resets pan/gain.
-    assert backend.set_sound_pan.call_args.args[1] == 0.5
+    assert backend.set_sound_pan.call_args.args[1] == 0.0
     assert state.sample(sfx_id).source.gain == 1.0
 
 
@@ -77,9 +78,10 @@ def test_volume_change_retains_each_active_voice_gain_and_pan(mocker) -> None:
 @pytest.mark.parametrize("pan_db", [-10_000, -425, 0, 850])
 def test_channel_levels_match_directsound_attenuation(pan_db) -> None:
     pan, compensation = raylib_pan(pan_db)
-    # Independent reconstruction of raylib 5.5 MixAudioFrames at master gain 1.
-    left = compensation * (3 * pan - pan**3) / 2
-    right = compensation * (3 * (1 - pan) - (1 - pan) ** 3) / 2
+    # Independent reconstruction of raylib 6 MixAudioFrames at master gain 1.
+    right_share = (pan + 1) / 2
+    left = compensation * (3 * (1 - right_share) - (1 - right_share) ** 3) / 2
+    right = compensation * (3 * right_share - right_share**3) / 2
     quiet = 10 ** (-abs(pan_db) / 2000)
     expected = (1, quiet) if pan_db < 0 else (quiet, 1)
     assert (left, right) == pytest.approx(expected, abs=3e-8)
