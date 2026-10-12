@@ -1,17 +1,41 @@
 from __future__ import annotations
 
+import array
 from collections.abc import Callable
 from contextlib import ExitStack
 from pathlib import Path
 
 import msgspec
 
-from grim.raylib_api import rl
+from grim.raylib_api import ffi, rl
 
 from . import music, sfx
 from .config import CrimsonConfig
 from .console import CommandHandler, ConsoleState
 from .rand import CrandLike
+
+# raylib mixes voices into a float device buffer with no clamp (raudio
+# `MixAudioFrames`); the original's 16-bit DirectSound primary and the native
+# port's mixer both saturate at full scale. Clamp the finished mix to the
+# same range: [-1, 32767/32768] in 16-bit terms.
+_SATURATION_POSITIVE = 32767.0 / 32768.0
+_MIXED_CHANNELS = 2
+
+
+def _saturate_mixed_output(buffer_data, frames: int) -> None:
+    if frames <= 0:
+        return
+    raw = ffi.buffer(buffer_data, frames * _MIXED_CHANNELS * 4)
+    values = array.array("f")
+    values.frombytes(bytes(raw))
+    if not values or (max(values) <= _SATURATION_POSITIVE and min(values) >= -1.0):
+        return
+    for index, value in enumerate(values):
+        if value > _SATURATION_POSITIVE:
+            values[index] = _SATURATION_POSITIVE
+        elif value < -1.0:
+            values[index] = -1.0
+    raw[:] = values.tobytes()
 
 
 class AudioState(msgspec.Struct):
@@ -22,6 +46,8 @@ class AudioState(msgspec.Struct):
     # Streams and voices `suspend_audio` paused, for `resume_audio`.
     suspended_music: list[rl.Music] = msgspec.field(default_factory=list)
     suspended_sounds: list[rl.Sound] = msgspec.field(default_factory=list)
+    # The mixed-output saturation callback; kept alive while attached.
+    saturation_callback: Callable | None = None
 
 
 def suspend_audio(state: AudioState) -> None:
@@ -83,6 +109,13 @@ def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleSt
         sfx=sfx.init_sfx_state(ready=True, enabled=sfx_enabled, volume=sfx_volume, rng=rng),
         owns_device=owns_device,
     )
+
+    @ffi.callback("void(void *, unsigned int)")
+    def saturate_mixed_output(buffer_data, frames: int) -> None:
+        _saturate_mixed_output(buffer_data, frames)
+
+    state.saturation_callback = saturate_mixed_output
+    rl.attach_audio_mixed_processor(saturate_mixed_output)
     with ExitStack() as cleanup:
         cleanup.callback(shutdown_audio, state)
         sfx.load_sfx_index(state.sfx, assets_dir, console)
@@ -121,6 +154,9 @@ def update_audio(state: AudioState, dt: float, *, advance_sfx: bool = True) -> N
 
 
 def shutdown_audio(state: AudioState) -> None:
+    if state.saturation_callback is not None:
+        rl.detach_audio_mixed_processor(state.saturation_callback)
+        state.saturation_callback = None
     with ExitStack() as cleanup:
         if state.owns_device:
             cleanup.callback(rl.close_audio_device)

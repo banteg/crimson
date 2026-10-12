@@ -50,6 +50,24 @@ def test_sound_ids_sharing_an_asset_have_independent_cooldowns(mocker) -> None:
     assert len(state.cooldowns) == 2
 
 
+def test_stolen_voice_is_retargeted_without_restarting(mocker) -> None:
+    backend = stub_sfx_backend(mocker)
+    state = make_sfx_state(SfxId.PISTOL_FIRE)
+    sfx.play_sfx(state, SfxId.PISTOL_FIRE, gain=0.8)
+    assert backend.play_sound.call_count == 1
+
+    # The only voice is still playing: stealing it keeps its play cursor, so
+    # the request only retargets pitch/pan/volume instead of playing again.
+    mocker.patch.object(sfx.rl, "is_sound_playing", return_value=True)
+    sfx.update_sfx(state, 0.1)
+    sfx.play_sfx(state, SfxId.PISTOL_FIRE, gain=0.7, pan=425)
+
+    assert backend.play_sound.call_count == 1
+    assert backend.set_sound_pitch.call_count == 2
+    assert backend.set_sound_pan.call_args.args[1] == raylib_pan(425)[0]
+    assert state.sample(SfxId.PISTOL_FIRE).source.gain == 0.7
+
+
 def test_volume_change_retains_each_active_voice_gain_and_pan(mocker) -> None:
     backend = stub_sfx_backend(mocker)
     state = make_sfx_state(SfxId.PISTOL_FIRE)

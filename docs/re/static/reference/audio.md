@@ -30,6 +30,11 @@ The Python backend converts channel attenuation to raylib 6's pan law in
 per-voice gain state. Decoded sample ownership is shared by asset, while
 cooldowns remain separate for distinct native IDs. The port keeps its bounded
 voice pool rather than reproducing DirectSound's 16 buffers per native entry.
+When every voice of a sample is busy, the stolen voice keeps its play cursor
+and continues under the new pitch/pan/volume, as the native Stop + Play steal
+does; it is not restarted. raylib mixes into an unclamped float device
+buffer, so the backend saturates the finished mix at full scale
+([-1, 32767/32768]), matching the original's 16-bit primary output.
 
 Music keeps selection and mute/fade intent even at zero master volume. The
 Python backend pauses streams at zero and resumes them without choosing a new

@@ -47,7 +47,7 @@ def test_play_sfx_applies_native_reflex_rate_scaling(mocker) -> None:
     assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 1.0)
 
 
-def test_busy_sample_restarts_a_random_voice(mocker) -> None:
+def test_busy_sample_steals_a_random_voice(mocker) -> None:
     voices = [grim_sfx.SfxVoice(grim_sfx.rl.Sound()) for _ in range(16)]
     sample = grim_sfx.SfxSample("pistol.ogg", source=voices[0], aliases=voices[1:])
     mocker.patch.object(grim_sfx.rl, "is_sound_playing", return_value=True)
@@ -56,5 +56,5 @@ def test_busy_sample_restarts_a_random_voice(mocker) -> None:
 
     picks = [sample.acquire_voice(rng) for _ in range(4)]
 
-    # `sfx_entry_start_playback`: every voice busy, so `rand() % 16` picks the one to restart.
-    assert picks == [voices[expected.rand() % 16] for _ in range(4)]
+    # `sfx_entry_start_playback`: every voice busy, so `rand() % 16` picks the one to steal.
+    assert picks == [(voices[expected.rand() % 16], True) for _ in range(4)]
