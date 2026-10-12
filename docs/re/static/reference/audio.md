@@ -25,7 +25,7 @@ attenuation. These operations use native float32 constants and x87 PC=24;
 `__ftol` at `0x00461054` sets truncation mode before converting, including the
 Reflex Boost playback frequency calculation.
 
-The Python backend converts channel attenuation to raylib 5.5's pan law in
+The Python backend converts channel attenuation to raylib 6's pan law in
 `src/grim/audio_math.py`. It retains the port's explicit zero-volume mute and
 per-voice gain state. Decoded sample ownership is shared by asset, while
 cooldowns remain separate for distinct native IDs. The port keeps its bounded
@@ -45,7 +45,7 @@ shutdown closes the device only when that state opened it.
 
 See the [deterministic session](../../../rewrite/deterministic-step-pipeline.md)
 for deferred sound requests and cooldown timing. The backend conversion follows
-[raylib 5.5 `MixAudioFrames`](https://github.com/raysan5/raylib/blob/5.5/src/raudio.c)
+[raylib 6 `MixAudioFrames`](https://github.com/raysan5/raylib/blob/6.0/src/raudio.c)
 and the DirectSound [pan](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418148%28v%3Dvs.85%29)
 and [volume](https://learn.microsoft.com/en-us/previous-versions/windows/desktop/mt708939%28v%3Dvs.85%29)
 contracts.
