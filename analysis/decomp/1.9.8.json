@@ -75897,7 +75897,7 @@
     "analysis/decomp/1.9.92/grim.dll/functions.json": "75b5699c9384f02dca54a1ff7f3b3c8e394389e5441b7683088c24698d013867",
     "analysis/decomp/1.9.92/grim.dll/imports.json": "d30ce43e86b31fe759a175f89999dd2e885fa9e4bf7e06f39fe5cb4f8625e16f",
     "analysis/decomp/1.9.92/grim.dll/metadata.json": "5c964df3167d9986e6bd8774eec757021e633a6d4ee908de70f9a65bbd176978",
-    "analysis/ghidra/maps/data_map.json": "d94b8d5ba5495184125bbe5f493ab81a19744e5244bac70d63808a89c163de32",
+    "analysis/ghidra/maps/data_map.json": "c487a744ddd0d8cf6134ac51a203af9dc80184625a39249f3752b3a26d46008e",
     "analysis/ghidra/maps/name_map.json": "1cc28908091c8bb9ee15dcb6107938bce30fbccf5667ac2167191492b16f44e4",
     "analysis/ghidra/maps/winapi_32.gdt": "c2eb92558b6bb5458d1064ca1fd5fbb8ab74a6b6f5814bed47d94ed8f2935712",
     "analysis/ida/raw/crimsonland.exe/functions.json": "0a17560ed1d4d4c45c663640aa1362f46f4155dfdb40a44ac052a1c6baac9ff2",

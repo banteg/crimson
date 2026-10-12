@@ -1603,21 +1603,21 @@
     },
     {
       "address": "0x00472aec",
-      "comment": "Credits name string \"Ville M\".",
+      "comment": "Credits name string \"Ville M\u00e4ntyl\u00e4\" (cp1252).",
       "name": "credits_name_ville_m",
       "program": "crimsonland.exe",
       "type": "char[14]"
     },
     {
       "address": "0x00472c58",
-      "comment": "Credits name string \"Petri J\".",
+      "comment": "Credits name string \"Petri J\u00e4rvilehto / Remedy\" (cp1252).",
       "name": "credits_name_petri_j",
       "program": "crimsonland.exe",
       "type": "char[26]"
     },
     {
       "address": "0x00472ccc",
-      "comment": "Credits name string \"Valtteri Pihlajam\".",
+      "comment": "Credits name string \"Valtteri Pihlajam\u00e4ki\" (cp1252).",
       "name": "credits_name_valtteri_pihlajam",
       "program": "crimsonland.exe",
       "type": "char[21]"
