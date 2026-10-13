@@ -51,7 +51,7 @@ export async function replayInputs(service = SERVICE) {
     code: digest(result.outputFiles[0].text),
     wasm: Object.entries(wasm).sort(),
     art: Object.values(art).flat().sort().map((name) => [name, file(join("dist/ui", name))]),
-    scripts: ["scripts/deploy-replays.mjs", "scripts/reverify.mjs", "scripts/grounds.mjs"].map(file),
+    scripts: ["deploy-replays", "reverify", "reverify-pool", "reverify-worker", "grounds"].map((name) => file(`scripts/${name}.mjs`)),
     dependencies: ["package.json", "package-lock.json", "wrangler.jsonc"].map(file),
     migrations: readdirSync(join(service, "migrations")).sort().map((name) => [name, file(join("migrations", name))]),
   }));
