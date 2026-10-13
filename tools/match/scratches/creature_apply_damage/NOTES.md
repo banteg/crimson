@@ -148,3 +148,23 @@ the heading phase, with either a combined or independent ion guard, reaches
 100%: 237/237 instructions, 83/0/0 references, and the full 963-byte extent.
 Splitting before Doctor or leaving Ion attached to heading is byte-neutral at
 89.87%. This supersedes the earlier closed compiler-provenance conclusion.
+
+## 1.9.8 recovery (2026-10-13)
+
+The complete native body is `0x0041ffb0..0x00420321` (881 bytes),
+followed by 15 alignment NOPs. The older damage pipeline omits Living
+Fortress. The original vector operation is reconstructed with an inline
+`operator-=` for both the initial and post-death doubled impulse. Component
+stores and a scalar pointer control miss the older compiler's health reload
+and flag scheduling; the aggregate subtraction reproduces all 214 instructions
+and all 881 encoded bytes. The shared spelling also preserves 1.9.93's
+237-instruction, 963-byte encoded match.
+
+`recovered.json` pins the complete extent, the five perk globals from their
+native `perks_init_database` ID stores (28, 34, 29, 39, 51), the shared frame
+delta, and the creature-type death-SFX table. Final reference audit: 76/0/0.
+
+```sh
+uv run crimson match scratch tools/match/scratches/creature_apply_damage --build 1.9.8 --json
+uv run crimson match scratch tools/match/scratches/creature_apply_damage --json
+```

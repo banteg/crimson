@@ -444,7 +444,7 @@
     "source_sha256": "4d50fb679e67443596bff9fad9f6b9a87823595160bf28f462b716cae740d360",
     "status": "passed"
   },
-  "audit_digest": "ba6b96e8fd1f483d9cb14e2617195ca29b023aa338b376e36478a58ac4b5ce08",
+  "audit_digest": "d6d2477471d299892370f4a5977e5e2682f1cd9d19dfb05f059a8156656de225",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -76545,7 +76545,7 @@
         {
           "path": "decomp/1.9/crimsonland/crimsonland/creature_apply_damage.cpp",
           "repository_relative": true,
-          "sha256": "3b7647e42a82a2a38fe6693267055fc037c62128c72d3e8c86a84d2f9824b30c"
+          "sha256": "15b2cac383b7c06f231e5c8c2dbd477b4a9e496cb42e67b4ce9633984462265c"
         },
         {
           "path": "tools/match/scratches/creature_apply_damage/scratch.conf",
@@ -76591,10 +76591,10 @@
           "canonical_config_sha256": "bbb34dda790d65d55013f046a3913c809611f05af575234053b9ae4521ee788b",
           "canonical_scratch": "tools/match/scratches/creature_apply_damage",
           "canonical_source": "decomp/1.9/crimsonland/crimsonland/creature_apply_damage.cpp",
-          "canonical_source_sha256": "3b7647e42a82a2a38fe6693267055fc037c62128c72d3e8c86a84d2f9824b30c",
+          "canonical_source_sha256": "15b2cac383b7c06f231e5c8c2dbd477b4a9e496cb42e67b4ce9633984462265c",
           "effective_end": 4328323,
           "end": 4328323,
-          "experiment_epoch": "39d955be41e3a5d526152c72630f06fee168e8d39bcaec56906be264112689c8",
+          "experiment_epoch": "1d194b0e76062239ff4029c90ddb8840a47bec6e5cd88ea4e44838f82f7e2eed",
           "function": "creature_apply_damage",
           "match": {
             "body_byte_exact": true,
@@ -76635,7 +76635,7 @@
       "object_sha256": "34da354681f0a2433e6c0d18eb76ced4c3e6bc3ab582cc48e1e9f3cd6e182cd6",
       "scratch": "tools/match/scratches/creature_apply_damage",
       "source": "decomp/1.9/crimsonland/crimsonland/creature_apply_damage.cpp",
-      "source_sha256": "3b7647e42a82a2a38fe6693267055fc037c62128c72d3e8c86a84d2f9824b30c",
+      "source_sha256": "15b2cac383b7c06f231e5c8c2dbd477b4a9e496cb42e67b4ce9633984462265c",
       "target_size": 963,
       "translation_unit": {
         "kind": "isolated",

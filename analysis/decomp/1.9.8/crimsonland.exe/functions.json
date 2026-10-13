@@ -2708,10 +2708,10 @@
   {
     "address": "0x0041FFB0",
     "canonical_address": "0x004207C0",
-    "end": "0x00420330",
-    "evidence": "ordered",
+    "end": "0x00420321",
+    "evidence": "recovered",
     "name": "creature_apply_damage",
-    "size": 896
+    "size": 881
   },
   {
     "address": "0x00420330",

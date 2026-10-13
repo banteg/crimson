@@ -36,6 +36,13 @@
       "end": "0x4171f1",
       "body_sha256": "ebc922834ffd6e8de4e2877700cdcc77bd299665961308d3b95d08e78dfe87e4",
       "note": "Native gameplay caller has a 0x354-byte player stride and no dedicated Fire Bullets firing branch."
+    },
+    {
+      "name": "creature_apply_damage",
+      "address": "0x41ffb0",
+      "end": "0x420321",
+      "body_sha256": "3d723f80f66debcf7b1b0866ba5ebe69dd871b17d4d4a6e77742322ed5ee57f0",
+      "note": "Complete damage/perk/impulse and death pipeline; no Living Fortress modifier in 1.9.8."
     }
   ],
   "data": [
@@ -70,6 +77,62 @@
       "bytes": "b8e44c4d00",
       "offset": 116,
       "note": "Constructor cursor at damage_scale, 0x74 bytes after the storage base."
+    },
+    {
+      "name": "perk_id_uranium_filled_bullets",
+      "address": "0x4bfec8",
+      "reference": "0x42fb44",
+      "bytes": "c705c8fe4b001c000000",
+      "offset": 0,
+      "note": "Native perk initializer assigns id 28 next to its Uranium Filled Bullets text."
+    },
+    {
+      "name": "perk_id_barrel_greaser",
+      "address": "0x4bfeb4",
+      "reference": "0x42fc72",
+      "bytes": "c705b4fe4b0022000000",
+      "offset": 0,
+      "note": "Native perk initializer assigns id 34 next to Barrel Greaser metadata."
+    },
+    {
+      "name": "perk_id_doctor",
+      "address": "0x4bfe28",
+      "reference": "0x42fb76",
+      "bytes": "c70528fe4b001d000000",
+      "offset": 0,
+      "note": "Native perk initializer assigns id 29 next to Doctor metadata."
+    },
+    {
+      "name": "perk_id_pyromaniac",
+      "address": "0x4bfe9c",
+      "reference": "0x42fd83",
+      "bytes": "c7059cfe4b0027000000",
+      "offset": 0,
+      "note": "Native perk initializer assigns id 39 next to Pyromaniac metadata."
+    },
+    {
+      "name": "perk_id_ion_gun_master",
+      "address": "0x4bfed4",
+      "reference": "0x430016",
+      "bytes": "c705d4fe4b0033000000",
+      "offset": 0,
+      "note": "Native perk initializer assigns id 51 next to Ion Gun Master metadata."
+    },
+    {
+      "name": "frame_dt",
+      "address": "0x47e550",
+      "reference": "0x42011d",
+      "bytes": "d82550e54700",
+      "offset": 0,
+      "note": "Shared seconds delta used by damage death_timer and all three timed-bonus decrements in perks_update_effects."
+    },
+    {
+      "name": "creature_type_table",
+      "address": "0x480408",
+      "reference": "0x4202d2",
+      "bytes": "8b048d0c044800",
+      "offset": 4,
+      "note": "Native death SFX selection: 68-byte creature-type rows, death_sfx starts at offset 4; reset_state initializes the same table."
     }
   ]
 }

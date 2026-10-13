@@ -11,6 +11,13 @@ struct damage_vec2_t {
     {
     }
 
+    damage_vec2_t& operator-=(const damage_vec2_t& other)
+    {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
+
     damage_vec2_t operator*(float scale) const
     {
         return damage_vec2_t(x * scale, y * scale);
@@ -41,6 +48,7 @@ extern "C" int creature_apply_damage(
             damage += damage;
         }
 
+#if CL_BUILD != 10908
         if (perk_count_get(perk_id_living_fortress) != 0) {
             for (int i = 0; i < config_blob.player_count; i++) {
                 if (player_state_table[i].health > 0.0f) {
@@ -48,6 +56,8 @@ extern "C" int creature_apply_damage(
                 }
             }
         }
+
+#endif
 
         if (perk_count_get(perk_id_barrel_greaser) != 0) {
             damage *= 1.4f;
@@ -82,8 +92,8 @@ extern "C" int creature_apply_damage(
         }
 
         creature_pool[creature_id].health -= damage;
-        creature_pool[creature_id].velocity.x -= impulse->x;
-        creature_pool[creature_id].velocity.y -= impulse->y;
+        *(damage_vec2_t *)&creature_pool[creature_id].velocity
+            -= *(const damage_vec2_t *)impulse;
 
         if (creature_pool[creature_id].health <= 0.0f) {
             creature_pool[creature_id].death_timer -= frame_dt;
@@ -91,8 +101,7 @@ extern "C" int creature_apply_damage(
 
             damage_vec2_t doubled_impulse =
                 *(const damage_vec2_t *)impulse * 2.0f;
-            creature_pool[creature_id].velocity.x -= doubled_impulse.x;
-            creature_pool[creature_id].velocity.y -= doubled_impulse.y;
+            *(damage_vec2_t *)&creature_pool[creature_id].velocity -= doubled_impulse;
 
             if ((creature_pool[creature_id].flags
                     & CREATURE_FLAG_RANGED_PLASMA_RIFLE) != 0) {

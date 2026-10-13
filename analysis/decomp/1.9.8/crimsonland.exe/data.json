@@ -1276,6 +1276,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047e550",
+      "name": "frame_dt",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047e554",
       "name": "frame_dt_ms",
       "program": "1.9.8/crimsonland.exe"
@@ -1408,6 +1413,11 @@
     {
       "address": "0x004801e0",
       "name": "plugin_module_handle",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00480408",
+      "name": "creature_type_table",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2503,6 +2513,31 @@
     {
       "address": "0x004bfe08",
       "name": "perk_id_antiperk",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe28",
+      "name": "perk_id_doctor",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe9c",
+      "name": "perk_id_pyromaniac",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfeb4",
+      "name": "perk_id_barrel_greaser",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfec8",
+      "name": "perk_id_uranium_filled_bullets",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfed4",
+      "name": "perk_id_ion_gun_master",
       "program": "1.9.8/crimsonland.exe"
     },
     {
