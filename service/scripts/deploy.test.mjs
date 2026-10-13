@@ -5,6 +5,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { downloadReplays } from "./reverify-cache.mjs";
+import { verifyRuns } from "./reverify-pool.mjs";
 import { putGrounds } from "./grounds.mjs";
 import { requireArtifacts, requireGreenChecks, requireTrustedRun, resolveRuntimeBuild, REQUIRED_CHECKS } from "./deploy-preflight.mjs";
 import { requireBuildIdentity, requireMigrations, packageManifest, verifyManifest, smoke, waitForRelease } from "./deploy-checks.mjs";
@@ -13,6 +14,98 @@ const sha = "a".repeat(40);
 const run = { head_repository: { full_name: "banteg/crimson" }, head_branch: "master", head_sha: sha, path: ".github/workflows/core.yml", event: "push", status: "completed", conclusion: "success" };
 const checks = REQUIRED_CHECKS.map((name, id) => ({ id, name, app: { slug: "github-actions" }, status: "completed", conclusion: "success" }));
 const artifacts = ["runtime-wasm", "crimsonland-web"].map((name, index) => ({ id: index + 1, name, expired: false, size_in_bytes: 100, workflow_run: { head_sha: sha } }));
+
+const poolWorker = new URL(`data:text/javascript,${encodeURIComponent(`
+  import { parentPort, workerData, threadId } from "node:worker_threads";
+  const state = new Int32Array(workerData);
+  if (state[3] === 1) throw Error("startup failed");
+  parentPort.on("message", ({ id, fail, exit }) => {
+    if (fail) throw Error("replay failed");
+    if (exit !== undefined) process.exit(exit);
+    const active = Atomics.add(state, 0, 1) + 1;
+    Atomics.or(state, 1, 1 << active);
+    // The first jobs rendezvous to prove two workers can actually run together.
+    if (id < state[2]) {
+      Atomics.add(state, 4, 1);
+      Atomics.notify(state, 4);
+      while (Atomics.load(state, 4) < state[2]) Atomics.wait(state, 4, 1, 1000);
+    }
+    setTimeout(() => {
+      Atomics.sub(state, 0, 1);
+      parentPort.postMessage({ id, threadId, ok: id % 2 === 0 });
+    }, id === 0 ? 50 : 1);
+  });
+  parentPort.postMessage({ ready: true });
+`)}`);
+
+test("verification workers are bounded, reused, and retain results in input order", { timeout: 5000 }, async () => {
+  const state = new Int32Array(new SharedArrayBuffer(20));
+  state[2] = 2;
+  const completed = [];
+  const results = await verifyRuns(Array.from({ length: 6 }, (_, id) => ({ id })), {
+    jobs: 2, workerData: state.buffer, workerURL: poolWorker, onResult: (result) => completed.push(result.id),
+  });
+  assert.equal(state[1], (1 << 1) | (1 << 2));
+  assert.deepEqual(results.map(({ id }) => id), [0, 1, 2, 3, 4, 5]);
+  assert.equal(new Set(results.map(({ threadId }) => threadId)).size, 2);
+  assert.equal(completed.length, 6);
+  assert.equal(results.filter(({ ok }) => !ok).length, 3);
+  assert.equal(state[0], 0);
+});
+
+test("verification handles serial and empty queues and rejects invalid worker counts", async () => {
+  const options = { jobs: 1, workerData: new SharedArrayBuffer(20), workerURL: poolWorker };
+  const results = await verifyRuns([{ id: 0 }, { id: 1 }], options);
+  assert.equal(new Set(results.map(({ threadId }) => threadId)).size, 1);
+  assert.deepEqual(await verifyRuns([], { jobs: 4, workerURL: new URL("file:///missing-worker.mjs") }), []);
+  for (const jobs of [0, -1, 1.5, NaN]) await assert.rejects(verifyRuns([], { jobs }), /Invalid verification concurrency/);
+});
+
+test("verification rejects startup errors, job errors, unexpected exits and callback errors", { timeout: 5000 }, async () => {
+  const state = new Int32Array(new SharedArrayBuffer(20));
+  const options = { jobs: 2, workerData: state.buffer, workerURL: poolWorker };
+  state[3] = 1;
+  await assert.rejects(verifyRuns([{ id: 0 }, { id: 1 }], options), /startup failed/);
+  state[3] = 0;
+  await assert.rejects(verifyRuns([{ fail: true }, { id: 0 }], options), /replay failed/);
+  for (const exit of [0, 1])
+    await assert.rejects(verifyRuns([{ exit }, { id: 0 }], options), /exited unexpectedly/);
+  await assert.rejects(verifyRuns([{ id: 0 }], {
+    ...options, onResult: () => { throw Error("progress failed"); },
+  }), /progress failed/);
+});
+
+const service = join(import.meta.dirname, "..");
+test("parallel reverification preserves real verdicts and ground JPEGs", {
+  skip: !existsSync(join(service, "dist/ui/particles.png")) || !existsSync(join(service, "../crimson-core/build/wasm/core.wasm")),
+  timeout: 60000,
+}, async () => {
+  const directory = mkdtempSync(join(tmpdir(), "crimson-reverify-"));
+  try {
+    const vectors = JSON.parse(readFileSync(join(service, "test/vectors.json"), "utf8"));
+    const refused = join(directory, "refused.crd");
+    writeFileSync(refused, Buffer.from(vectors.illegal_command_run, "base64"));
+    const runs = [
+      { id: "quest", file: join(service, "../tests/fixtures/replays/quest-1.1-completed.crd") },
+      { id: "refused", file: refused },
+      { id: "rush", file: join(service, "../tests/fixtures/replays/rush-kills103.crd") },
+    ];
+    const check = async (jobs) => {
+      const grounds = join(directory, String(jobs));
+      mkdirSync(grounds);
+      const results = await verifyRuns(runs, { jobs, workerData: { service, art: join(service, "dist"), grounds } });
+      assert.deepEqual(results.map(({ ok }) => ok), [true, false, true]);
+      assert.equal(existsSync(join(grounds, "refused.jpg")), false);
+      return {
+        verdicts: results.map(({ seconds, ...result }) => result),
+        grounds: ["quest", "rush"].map((id) => createHash("sha256").update(readFileSync(join(grounds, `${id}.jpg`))).digest("hex")),
+      };
+    };
+    assert.deepEqual(await check(2), await check(1));
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 function build(kind, artifactFiles, game = null) {
   // Keys are inserted in the canonical order shared with the Python planner.

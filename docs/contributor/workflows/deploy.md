@@ -108,7 +108,12 @@ change is not detected by comparing migration names.
 
 `service/scripts/reverify.mjs` reads the current active run IDs from production
 D1 each time and downloads missing replays from R2 with at most four concurrent
-requests into a local cache. Only complete downloads are reused. Download and verification timings are logged.
+requests into a local cache. Only complete downloads are reused. Verification
+and ground baking use up to four worker threads, capped by the available CPU
+count. Each worker reuses its own WASM instances and decoded art. Use
+`npm run reverify -- --jobs 2` to set the worker count, or `--jobs 1` for serial
+execution; a local replay directory can also be supplied. Download and
+verification timings are logged, with progress in completion order.
 The local cache is not uploaded to Actions caches: active runs include hidden
 and banned runs that the public replay route refuses, and fork PRs can read
 default-branch Actions caches. Every active replay is verified against this
