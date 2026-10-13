@@ -830,6 +830,9 @@ SDL_AppResult SDL_AppIterate(void *) {
   int before = presented;
   ++frames;
   watch_from_env();
+  // Finish the elapsed audio before this frame creates new sounds. In
+  // particular, dropping a stall's unheard time must not eat a fresh attack.
+  audio_update(&game);
   bool running = w2c_game_game_frame(&game);
   // Snapshot viewer state after the frame returns; never re-enter the module
   // from its presentation import. Used by packaged-client integration checks.
@@ -863,7 +866,6 @@ SDL_AppResult SDL_AppIterate(void *) {
 #endif
     return SDL_APP_SUCCESS;
   }
-  audio_update(&game);
   return SDL_APP_CONTINUE;
 }
 

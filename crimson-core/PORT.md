@@ -89,6 +89,12 @@ game: the original's own no-sound path only follows a disabled sound setting.
 Voice stealing draws the C library's `rand`, which never touches the gameplay
 `crt_rand` stream.
 
+The client mixes elapsed time before running the next frame, independently of
+the device's buffer refills, so refills do not bunch shot attacks together.
+During a run, sound cooldowns advance after each simulation tick; menus use
+the original frame clock. `python3 crimson-core/checks/audio.py` checks these
+clocks, chunked output, device drift, missing or locked devices, and stalls.
+
 ### The tick seam
 
 [`host/game.inc`](host/game.inc) wraps the recovered Grim. During

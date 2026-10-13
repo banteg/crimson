@@ -11,6 +11,8 @@ extern "C" struct quest_meta_t *portable_custom_quest;
 extern "C" {
 // The game module takes the recording only inside a tick (host/game.inc).
 extern unsigned char game_ticking;
+// Cooldowns use ticks during gameplay and frames in menus (game/audio_timing.cpp).
+void game_audio_cooldowns(float dt);
 // A run the client plays (host/session.inc).
 bool game_live_run();
 bool game_live_pause();

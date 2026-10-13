@@ -35,6 +35,9 @@ jobs:
           python3 crimson-core/checks/assets.py
           node --test crimson-core/checks/assets.test.mjs
 
+      - name: Check audio timing
+        run: python3 crimson-core/checks/audio.py
+
       - name: Download the shared game module
         uses: actions/download-artifact@v4
         with:

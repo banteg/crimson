@@ -607,12 +607,20 @@ extern "C" int portable_step_many(uint32_t count) {
   // game_frame_update: Reflex Boosted slows the frame while the world renders.
   if (run_active && perk_count_get(perk_id_reflex_boosted) != 0)
     frame_dt *= 0.9f;
+#ifdef CRIMSON_GAME
+  // Keep the pre-gameplay delta, as game_frame_update's frame_dt_copy does:
+  // gameplay can temporarily scale frame_dt for the Reflex Boost bonus.
+  const float audio_dt = frame_dt;
+#endif
   frame_dt_ms = (int)(frame_dt * 1000.0f);
   // Mouse-relative aim records the cursor itself; other schemes record world aim.
   bool cursor = config_blob.aim_schemes[0] == 3;
   ui_mouse_x = cursor ? in.aim_x : in.aim_x + camera_offset_x;
   ui_mouse_y = cursor ? in.aim_y : in.aim_y + camera_offset_y;
   gameplay_update_and_render();
+#ifdef CRIMSON_GAME
+  game_audio_tick(audio_dt);
+#endif
   if (game_state_pending == GAME_STATE_PERK_SELECTION) {
     perk_menu_open = true;
     game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;

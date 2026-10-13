@@ -4,6 +4,7 @@
 extern "C" {
 extern unsigned char game_ticking;
 void register_core_cvars();
+void game_audio_tick(float dt);
 }
 void grim_state_init();
 class SessionGrim final : public IGrim2D_cpp {

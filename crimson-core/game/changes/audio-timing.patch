@@ -1,0 +1,23 @@
+During a live run, sound cooldowns advance after each simulation tick. The
+outer audio update keeps music streaming and fades, and advances cooldowns
+only when no ticks ran (menus). Otherwise high-refresh frames undercount time
+and catch-up ticks reject sounds before the outer frame expires the cooldown.
+--- a/decomp/1.9/crimsonland/audio/audio_update.cpp
++++ b/decomp/1.9/crimsonland/audio/audio_update.cpp
+@@ -4,14 +4,10 @@
+ {
+     int i;
+ 
++    game_audio_cooldowns(frame_dt_copy);
++
+     if (config_blob.sound_disabled) {
+         return;
+-    }
+-
+-    for (i = 0; i < 128; ++i) {
+-        if (sfx_cooldown_table[i] > 0.0f) {
+-            sfx_cooldown_table[i] -= frame_dt_copy;
+-        }
+     }
+ 
+     if (!music_ready) {
