@@ -55,6 +55,7 @@
     <button type="button" class="button wide" onclick="location.reload()"><span>Play again</span></button>
     <a class="button wide" href="/"><span>crimson.land</span></a>
   </div>
+  <div id="outside" class="buttons" hidden><a class="button wide"><span>Open on crimson.land</span></a></div>
   <p id="touch" hidden>On a phone, Crimsonland plays with a gamepad: connect one to play.</p>
 </div>
 <a id="home" class="corner shown" href="/" title="crimson.land" aria-label="Back to crimson.land">
@@ -93,6 +94,14 @@
   // game plays on.
   const framed = window.self !== window.top;
   if (framed) for (const link of document.querySelectorAll("a")) link.target = "_blank";
+  // Where the frame cannot keep the game (its storage refused, say), the page
+  // opens on its own.
+  const outside = document.getElementById("outside");
+  outside.firstElementChild.href = location.href;
+  const stuck = (text) => {
+    say(text);
+    outside.hidden = !framed;
+  };
   // The right button is the game's (reload, by default), not the browser's menu.
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
   // Watching needs no controls.
@@ -346,7 +355,7 @@
       () => {
         ready();
       },
-      (error) => say("Could not load the game files: " + (error.message ?? error)),
+      (error) => stuck("Could not load the game files: " + (error.message ?? error)),
     );
     channel.onmessage = async (event) => {
       if (event.data !== "play here") return;
@@ -374,7 +383,7 @@
     };
   }
   function lost(error) {
-    if (error.name !== "AbortError") return say("Could not open the game files: " + (error.message ?? error));
+    if (error.name !== "AbortError") return stuck("Could not open the game files: " + (error.message ?? error));
     moved = true;
     location.reload();
   }
@@ -545,7 +554,7 @@
       FS.mkdir("/game");
       FS.mount(IDBFS, {}, "/game");
       addRunDependency("game files");
-      if (!navigator.locks) return say("Crimsonland needs HTTPS (or localhost) to keep its saves.");
+      if (!navigator.locks) return stuck("Crimsonland needs HTTPS (or localhost) to keep its saves.");
       navigator.locks.request(LOCK, { ifAvailable: true }, (lock) => (lock ? own() : elsewhere())).catch(lost);
     }],
     // The host is running: the game takes the page.

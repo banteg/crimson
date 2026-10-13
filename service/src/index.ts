@@ -236,7 +236,7 @@ interface Preview {
 
 const SITE_DESCRIPTION = "Play Crimsonland in your browser, and verified leaderboards where every score is a replay the server re-simulates.";
 // The preview of a page with no image of its own: a moment of the Survival board's top run (public/og.jpg).
-const SITE_IMAGE = { path: "/og.jpg", width: CARD_WIDTH, height: CARD_HEIGHT };
+const SITE_IMAGE = { path: "/og.jpg", width: 1200, height: 630 };
 
 async function routePreview(env: Env, url: URL): Promise<Preview> {
   const path = url.pathname;
@@ -285,10 +285,12 @@ function withPreview(page: Response, url: URL, preview: Preview): Response {
       ["og:image:height", image.height],
     ]),
     // X shows a large image only when asked to. A page with a player plays it inside the post, the image standing in
-    // until it is opened.
+    // until it is opened; X's player card asks for its title and image under its own names.
     ...meta("name", preview.player
       ? [
           ["twitter:card", "player"],
+          ["twitter:title", full],
+          ["twitter:description", preview.description],
           ["twitter:image", image.url],
           ["twitter:player", preview.player.url],
           ["twitter:player:width", preview.player.width],

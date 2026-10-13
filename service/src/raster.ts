@@ -91,13 +91,21 @@ export class Canvas {
   }
 }
 
-// The ground over the canvas's top left `size` pixels square, from the terrain textures by slot.
-export function paintGround(canvas: Canvas, ground: Ground, textures: Pixels[], size: number): void {
+// A square of the canvas: where it draws the arena, the game's ground.
+export interface Square {
+  x: number;
+  y: number;
+  size: number;
+}
+
+// The ground over `arena`, from the terrain textures by slot.
+export function paintGround(canvas: Canvas, ground: Ground, textures: Pixels[], arena: Square): void {
+  const size = arena.size;
   const scale = size / SIZE;
   const half = PATCH / 2;
   // A rotated patch's corners stay within this of its centre.
   const reach = Math.ceil(half * Math.SQRT2 * scale) + 1;
-  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) canvas.rgb.set(CLEAR, (y * canvas.width + x) * 3);
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) canvas.rgb.set(CLEAR, ((arena.y + y) * canvas.width + arena.x + x) * 3);
   ground.layers.forEach((stamps, layer) => {
     const tinted = texture(textures[ground.slots[layer]!]!, [TINT_RGB, TINT_RGB, TINT_RGB], LAYER_ALPHA[layer]! / 255, ALPHA_REF);
     for (const [rotation, sx, sy] of stamps) {
@@ -111,17 +119,18 @@ export function paintGround(canvas: Canvas, ground: Ground, textures: Pixels[], 
         for (let x = x0; x < x1; x++) {
           // The pixel's centre back in the unrotated patch.
           const dx = x + 0.5 - cx;
-          canvas.sample(tinted, cos * dx + sin * dy + half - 0.5, cos * dy - sin * dx + half - 0.5, x, y);
+          canvas.sample(tinted, cos * dx + sin * dy + half - 0.5, cos * dy - sin * dx + half - 0.5, arena.x + x, arena.y + y);
         }
       }
     }
   });
 }
 
-// Where the player spent the run, over the ground: the 10 Hz positions binned into 32px cells of the game's ground,
-// each cell filled `color` at 0.85 of the square root of its share of the busiest, then blurred.
-export function paintHeat(canvas: Canvas, path: [t: number, x: number, y: number][], size: number, color: readonly number[], blur: number): void {
+// Where the player spent the run, over the ground in `arena`: the 10 Hz positions binned into 32px cells of the game's
+// ground, each cell filled `color` at 0.85 of the square root of its share of the busiest, then blurred.
+export function paintHeat(canvas: Canvas, path: [t: number, x: number, y: number][], arena: Square, color: readonly number[], blur: number): void {
   const CELL = 32;
+  const size = arena.size;
   const cells = SIZE / CELL;
   const bins = new Float32Array(cells * cells);
   for (const [, x, y] of path) {
@@ -156,17 +165,23 @@ export function paintHeat(canvas: Canvas, path: [t: number, x: number, y: number
   for (let y = 0; y < size; y++)
     for (let x = 0; x < size; x++) {
       const a = alpha[y * size + x]!;
-      const at = (y * canvas.width + x) * 3;
+      const at = ((arena.y + y) * canvas.width + arena.x + x) * 3;
       for (let c = 0; c < 3; c++) canvas.rgb[at + c] = color[c]! * a + canvas.rgb[at + c]! * (1 - a);
     }
 }
 
-// The canvas's left `side` columns mirrored across their right edge into the rest of its width.
-export function mirror(canvas: Canvas, side: number): void {
+// The canvas around `arena` filled with it, mirrored across its edges as many times as it takes.
+export function mirror(canvas: Canvas, arena: Square): void {
+  const fold = (d: number, start: number) => {
+    const p = (((d - start) % (2 * arena.size)) + 2 * arena.size) % (2 * arena.size);
+    return start + (p < arena.size ? p : 2 * arena.size - 1 - p);
+  };
   for (let y = 0; y < canvas.height; y++)
-    for (let x = side; x < canvas.width; x++) {
-      const row = y * canvas.width;
-      canvas.rgb.copyWithin((row + x) * 3, (row + 2 * side - 1 - x) * 3, (row + 2 * side - x) * 3);
+    for (let x = 0; x < canvas.width; x++) {
+      const [sx, sy] = [fold(x, arena.x), fold(y, arena.y)];
+      if (sx === x && sy === y) continue;
+      const from = (sy * canvas.width + sx) * 3;
+      canvas.rgb.copyWithin((y * canvas.width + x) * 3, from, from + 3);
     }
 }
 

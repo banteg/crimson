@@ -17,8 +17,9 @@ import { runDetailView } from "./views";
 
 const WEAPONS: Record<string, { name: string; icon_index: number }> = weaponData;
 
+// 4:3, the game's screen, as X shows a run's player card before it plays; other link previews take it as well.
 export const CARD_WIDTH = 1200;
-export const CARD_HEIGHT = 630;
+export const CARD_HEIGHT = 900;
 
 // The game art the card draws, from the site's own files (scripts/assets.py).
 export interface CardArt {
@@ -46,14 +47,17 @@ const TRAIL_S = 20;
 // ui_menuPanel's frame around its black screen (web/src/style.css .panel), and ui_element_render's shadow.
 const PANEL_BORDERS = { top: 18, right: 19, bottom: 19, left: 14 };
 const SHADOW = { offset: 7, shade: 0x44 / 255 };
-const PANEL = { x: CARD_HEIGHT + 10, y: 22, width: CARD_WIDTH - CARD_HEIGHT - 32, height: CARD_HEIGHT - 44 };
+// The arena, the run's ground with its heat and trail, at the card's left, middle, the size that leaves the panel room
+// for a survival score at full size; its ground goes on around it.
+const ARENA = { x: 0, y: (CARD_HEIGHT - 630) / 2, size: 630 };
+const PANEL = { x: ARENA.size + 10, y: 22, width: CARD_WIDTH - ARENA.size - 32, height: CARD_HEIGHT - 44 };
 const PADDING = 26;
 // The panel's contents.
 const LEFT = PANEL.x + PANEL_BORDERS.left + PADDING;
 const RIGHT = PANEL.x + PANEL.width - PANEL_BORDERS.right - PADDING;
 const TOP = PANEL.y + PANEL_BORDERS.top;
 const BOTTOM = PANEL.y + PANEL.height - PANEL_BORDERS.bottom;
-const NAME_Y = TOP + 74;
+const NAME_Y = TOP + 110;
 const SCORE_SIZE = 84;
 const STAT_SIZE = 46;
 const STAT_COLUMN = 260;
@@ -87,12 +91,12 @@ function number(x: number, y: number, size: number, width: number, content: stri
   return `<text x="${x}" y="${y}" font-family="Courier Prime" font-size="${fitted}" fill="${fill}" text-anchor="${anchor}" filter="url(#soft)">${escape(content)}</text>`;
 }
 
-// The ground and heat at the card's left, mirrored on under the panel, and the panel.
+// The ground and heat in the arena, mirrored on around it and under the panel, and the panel.
 function background(detail: RunDetailView, timeline: Timeline, art: CardArt): Pixels {
   const canvas = new Canvas(CARD_WIDTH, CARD_HEIGHT, [0, 0, 0]);
-  paintGround(canvas, runGround(timeline.seed, detail), art.textures, CARD_HEIGHT);
-  mirror(canvas, CARD_HEIGHT);
-  paintHeat(canvas, timeline.path, CARD_HEIGHT, GOLD, (HEAT_BLUR * CARD_HEIGHT) / SIZE);
+  paintGround(canvas, runGround(timeline.seed, detail), art.textures, ARENA);
+  mirror(canvas, ARENA);
+  paintHeat(canvas, timeline.path, ARENA, GOLD, (HEAT_BLUR * ARENA.size) / SIZE);
   paintPanel(canvas, art.panel, PANEL_BORDERS, PANEL, SHADOW.offset, SHADOW.shade);
   return canvas.pixels();
 }
@@ -128,16 +132,16 @@ function cardSvg(detail: RunDetailView, timeline: Timeline, art: CardArt, backgr
     <filter id="soft"><feGaussianBlur stdDeviation="${SOFTEN}"/></filter>
   </defs>
   <image href="${background}" width="${CARD_WIDTH}" height="${CARD_HEIGHT}"/>
-  <g transform="scale(${CARD_HEIGHT / SIZE})">${trail(detail, timeline)}</g>
-  ${text(LEFT, TOP + 40, 2, detail.title, LABEL)}
-  ${text(RIGHT, TOP + 40, 2, "crimson.land", DIM, "end")}
+  <g transform="translate(${ARENA.x} ${ARENA.y}) scale(${ARENA.size / SIZE})">${trail(detail, timeline)}</g>
+  ${text(LEFT, TOP + 60, 2, detail.title, LABEL)}
+  ${text(RIGHT, TOP + 60, 2, "crimson.land", DIM, "end")}
   ${art.avatar ? `<image href="${art.avatar}" x="${LEFT}" y="${NAME_Y}" width="${AVATAR}" height="${AVATAR}" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/>` : ""}
   ${detail.rank ? number(RIGHT, NAME_Y + 46, 44, RIGHT - LEFT, `#${detail.rank}`, `rgb(${GOLD})`, "end") : ""}
   ${text(art.avatar ? LEFT + AVATAR + 18 : LEFT, NAME_Y + 48, 3, playerLabel(detail.player))}
-  ${text(LEFT, TOP + 194, 2, quest ? "final time" : "experience", DIM)}
-  ${number(LEFT - 4, TOP + 272, SCORE_SIZE, RIGHT - LEFT, score, BLUE)}
+  ${text(LEFT, TOP + 289, 2, quest ? "final time" : "experience", DIM)}
+  ${number(LEFT - 4, TOP + 406, SCORE_SIZE, RIGHT - LEFT, score, BLUE)}
   ${stats.map(([label, value], i) => {
-    const [x, y] = [LEFT + (i % 2) * STAT_COLUMN, TOP + 330 + Math.floor(i / 2) * 84];
+    const [x, y] = [LEFT + (i % 2) * STAT_COLUMN, TOP + 492 + Math.floor(i / 2) * 125];
     return text(x, y, 2, label, DIM) + number(x - 2, y + 46, STAT_SIZE, STAT_COLUMN - 20, value);
   }).join("")}
   ${weapon ? `<svg x="${LEFT}" y="${BOTTOM - 86}" width="${ICON_CELL * 4}" height="${ICON_CELL * 2}" ${icon(weapon.icon_index * 2)}><image href="${art.weapons}" width="${ICON_CELL * 8}" height="${ICON_CELL * 8}"/></svg>${text(LEFT + 144, BOTTOM - 42, 2, weapon.name, LABEL)}` : ""}
