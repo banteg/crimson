@@ -21,12 +21,14 @@ the `crimson-land` Worker and the `crimson.land` zone:
 | --- | --- | --- |
 | Account | Workers Scripts: Edit | Publish the Worker and its static assets |
 | Account | D1: Read | Check applied migrations and select active runs |
-| Account | Workers R2 Storage: Read | Download stored replays for reverification |
+| Account | Workers R2 Storage: Edit | Download stored replays and upload baked run grounds |
 | Zone | Zone: Read | Resolve the site's zone |
 | Zone | Workers Routes: Edit | Keep the configured custom domain attached |
 
-The workflow never applies migrations, changes leaderboard data or writes R2
-objects. D1 query and R2 object-read APIs accept read permissions. The token
+The workflow never applies migrations or changes leaderboard data. D1 queries
+accept read permissions. After deploying, it writes the grounds baked during
+reverification to R2 and removes grounds for runs deleted during the upload.
+Wrangler's R2 object-write API requires Workers R2 Storage: Edit. The token
 still grants production code deployment, so give it an expiry and rotate it
 when needed. Account permission scopes may cover other Workers or storage in
 that account; do not use a global API key.
@@ -122,6 +124,16 @@ Reverification covers the run list at its start. Uploads may continue while
 the check runs; this does not create an atomic release transaction over D1,
 R2 and the Worker. Large or incompatible rule changes need a coordinated
 release window.
+
+After the Worker deploys, `npm run grounds` uploads each verified run's baked
+ground to `crimson-land-replays/runs/<id>.ground.jpg`. This avoids a cold
+reverification when a visitor or card crawler first requests an older run.
+An R2 authentication failure here leaves the new Worker live but stops the
+workflow before its smoke check. Change the deployment token's Workers R2
+Storage permission from Read to Edit, then rerun the failed deploy job: it
+reverifies and bakes the grounds again because the previous runner's files
+were temporary. The rerun still requires the deployment commit to be current
+master with green checks; if master advanced, start a new deployment instead.
 
 ## Evidence and rollback
 
