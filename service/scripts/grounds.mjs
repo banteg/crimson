@@ -7,10 +7,11 @@
 // Production moves on while reverify and the deploy run: a run deleted since gets no ground (and loses one put while
 // it went), and a run accepted since has the deployed service bake its own.
 import { execFile } from "node:child_process";
-import { readdirSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
+import { r2Bucket } from "./r2.mjs";
 
 const SERVICE = fileURLToPath(new URL("..", import.meta.url));
 const GROUNDS = join(SERVICE, ".reverify/grounds");
@@ -28,7 +29,7 @@ async function pool(items, work, concurrency) {
 // The baked grounds of runs production still has, put; then those of runs deleted meanwhile, removed; then the runs
 // accepted since the bake (not retired), baked by the deployed service. `runs` lists production's runs as {id, retired};
 // `bake` answers whether the service baked a run's ground.
-export async function putGrounds({ baked, runs, put, remove, bake, concurrency = 4 }) {
+export async function putGrounds({ baked, runs, put, remove, bake, concurrency = 16 }) {
   const before = new Set((await runs()).map(({ id }) => id));
   const kept = baked.filter((id) => before.has(id));
   await pool(kept, put, concurrency);
@@ -45,13 +46,14 @@ export async function putGrounds({ baked, runs, put, remove, bake, concurrency =
 
 async function main() {
   const wrangler = (...args) => execFileAsync("npx", ["--no-install", "wrangler", ...args, "--remote", "--config", join(SERVICE, "wrangler.jsonc")], { cwd: SERVICE });
-  const key = (id) => `crimson-land-replays/runs/${id}.ground.jpg`;
+  const bucket = r2Bucket();
+  const key = (id) => `runs/${id}.ground.jpg`;
   const started = performance.now();
   const result = await putGrounds({
     baked: readdirSync(GROUNDS).filter((name) => name.endsWith(".jpg")).map((name) => name.slice(0, -4)),
     runs: async () => JSON.parse((await wrangler("d1", "execute", "crimson-land", "--json", "--command", "SELECT id, retired FROM runs")).stdout)[0].results,
-    put: (id) => wrangler("r2", "object", "put", key(id), "--file", join(GROUNDS, `${id}.jpg`), "--content-type", "image/jpeg"),
-    remove: (id) => wrangler("r2", "object", "delete", key(id)),
+    put: (id) => bucket.put(key(id), readFileSync(join(GROUNDS, `${id}.jpg`)), "image/jpeg"),
+    remove: (id) => bucket.remove(key(id)),
     bake: async (id) => (await fetch(`${ORIGIN}/runs/${id}.ground.jpg`, { signal: AbortSignal.timeout(120000) })).ok,
   });
   console.log(`${result.put} grounds put, ${result.removed} removed for deleted runs, ${result.baked} baked by the service for newer runs, in ${((performance.now() - started) / 1000).toFixed(2)}s.`);

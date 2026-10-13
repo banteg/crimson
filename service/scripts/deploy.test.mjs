@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { downloadReplays } from "./reverify-cache.mjs";
 import { verifyRuns } from "./reverify-pool.mjs";
 import { putGrounds } from "./grounds.mjs";
+import { r2Bucket } from "./r2.mjs";
 import { replayInputs, replayPlan } from "./deploy-replays.mjs";
 import { requireArtifacts, requireGreenChecks, requireTrustedRun, resolveRuntimeBuild, REQUIRED_CHECKS } from "./deploy-preflight.mjs";
 import { requireBuildIdentity, requireMigrations, packageManifest, verifyManifest, smoke, waitForRelease } from "./deploy-checks.mjs";
@@ -358,4 +359,17 @@ test("reuses only the record of the commit production serves, unless forced", ()
   for (const [current, stored, live] of [[inputs, null, sha], [inputs, record, null], [inputs, record, "b".repeat(40)], ["2".repeat(64), record, sha]])
     assert.equal(replayPlan(current, stored, live).reverify, true);
   assert.equal(replayPlan(inputs, record, sha, true).reverify, true);
+});
+
+test("R2 calls go to the replay bucket with the token, retry rate limits and server errors, and fail on the rest", async () => {
+  const calls = [];
+  const replies = [new Response("slow down", { status: 429, headers: { "retry-after": "0" } }), new Response("crd")];
+  const bucket = r2Bucket(Promise.resolve({ token: "t", account: "acc" }), async (url, init) => {
+    calls.push([init.method ?? "GET", url, init.headers.Authorization]);
+    return replies.shift() ?? new Response("forbidden", { status: 403 });
+  });
+  assert.deepEqual(new TextDecoder().decode(await bucket.get("runs/a.crd")), "crd");
+  const url = "https://api.cloudflare.com/client/v4/accounts/acc/r2/buckets/crimson-land-replays/objects/runs/a.crd";
+  assert.deepEqual(calls, [["GET", url, "Bearer t"], ["GET", url, "Bearer t"]]);
+  await assert.rejects(bucket.put("runs/a.ground.jpg", "jpeg", "image/jpeg"), /PUT runs\/a.ground.jpg: HTTP 403 forbidden/);
 });
