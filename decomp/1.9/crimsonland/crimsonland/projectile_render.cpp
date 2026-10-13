@@ -69,8 +69,9 @@ struct projectile_render_vec2_t {
         x += other.x;
         y += other.y;
         projectile_render_vec2_t result;
-        result = *this;
-        return result;
+        result.x = x;
+        result.y = y;
+        return projectile_render_vec2_t(result);
     }
 
     projectile_render_vec2_t operator-=(
@@ -79,7 +80,8 @@ struct projectile_render_vec2_t {
         x -= other.x;
         y -= other.y;
         projectile_render_vec2_t result;
-        result = *this;
+        result.x = x;
+        result.y = y;
         return result;
     }
 
@@ -175,6 +177,46 @@ extern "C" void projectile_render(float transition_alpha)
          ++player_index) {
         player_state_t *player = &player_state_table[player_index];
         const float *aim_heading = &player->aim_heading;
+#if CL_BUILD == 10908
+        if (!(player->health <= 0.0f)) {
+            float heading = (*aim_heading - 1.5707964f);
+            projectile_render_vec2_t direction(
+                (float)cos(heading), (float)sin(heading));
+            projectile_render_vec2_t end_pos =
+                *(projectile_render_vec2_t *)&player->position
+                + direction * 512.0f;
+            float start_heading = (heading - 0.150915f);
+            // Scale before vector construction: native keeps these trig
+            // results wide through FMUL, unlike the end-position sine above.
+            projectile_render_vec2_t start_pos = *(projectile_render_vec2_t *)&player->position;
+            start_pos += projectile_render_vec2_t(
+                ((float)cos(start_heading) * 15.0f),
+                (float)sin(start_heading) * 15.0f);
+            projectile_render_vec2_t half_width(
+                (float)cos(*aim_heading) * 1.1f,
+                (float)sin(*aim_heading) * 1.1f);
+            point0 = (camera_offset + start_pos) - half_width;
+            point1 = (camera_offset + start_pos) + half_width;
+            point2 = (camera_offset + end_pos) + half_width;
+            point3 = (camera_offset + end_pos) - half_width;
+
+            if (player_state_table[0].perk_counts[perk_id_sharpshooter] > 0) {
+                grim_interface_ptr->grim_set_config_var(0x14, 2u);
+                grim_interface_ptr->grim_begin_batch();
+                grim_interface_ptr->grim_draw_quad_points(
+                    point0.x,
+                    point0.y,
+                    point1.x,
+                    point1.y,
+                    point2.x,
+                    point2.y,
+                    point3.x,
+                    point3.y);
+                grim_interface_ptr->grim_end_batch();
+                grim_interface_ptr->grim_set_config_var(0x14, 6u);
+            }
+        }
+#else
         if (player->health > 0.0f) {
             float heading = (*aim_heading - 1.5707964f);
             projectile_render_vec2_t direction(
@@ -213,9 +255,14 @@ extern "C" void projectile_render(float transition_alpha)
                 grim_interface_ptr->grim_set_config_var(0x14, 6u);
             }
         }
+#endif
     }
 
+#if CL_BUILD == 10908
+    projectile_render_tint_t trail_tint(0.5f, 0.5f, 0.5f, (transition_alpha * 0.0f));
+#else
     projectile_render_tint_t trail_tint(0.5f, 0.5f, 0.5f, 0.0f);
+#endif
     grim_interface_ptr->grim_set_color_slot(
         0, trail_tint.r, trail_tint.g, trail_tint.b, trail_tint.a.value);
     grim_interface_ptr->grim_set_color_slot(
@@ -771,11 +818,11 @@ extern "C" void projectile_render(float transition_alpha)
             float span;
             float along;
             if (distance > 256.0f) {
-                span = 256.0f;
                 along = distance - 256.0f;
+                span = 256.0f;
             } else {
-                span = distance;
                 along = 0.0f;
+                span = distance;
             }
             float step = scale * 3.1f;
             if (step > 9.0f) {
@@ -844,11 +891,11 @@ extern "C" void projectile_render(float transition_alpha)
             float span;
             float along;
             if (distance > 256.0f) {
-                span = 256.0f;
                 along = distance - 256.0f;
+                span = 256.0f;
             } else {
-                span = distance;
                 along = 0.0f;
+                span = distance;
             }
             float step = scale * 3.1f;
             if (step > 9.0f) {
@@ -858,14 +905,12 @@ extern "C" void projectile_render(float transition_alpha)
             while (along < distance) {
                 if (projectile_pool[projectile_index].pos.tail.vy.type_id
                     == PROJECTILE_TYPE_FIRE_BULLETS) {
-                    float alpha = (along - first) / span
-                        * fade
+                    float alpha = fade * ((along - first) / span)
                         * transition_alpha;
                     grim_interface_ptr->grim_set_color(
                         1.0f, 0.6f, 0.1f, alpha);
                 } else {
-                    float alpha = (along - first) / span
-                        * fade
+                    float alpha = fade * ((along - first) / span)
                         * transition_alpha;
                     grim_interface_ptr->grim_set_color(
                         0.5f, 0.6f, 1.0f, alpha);
@@ -991,7 +1036,7 @@ extern "C" void projectile_render(float transition_alpha)
                 60.0f,
                 60.0f);
 
-            float heading = projectile->angle + 1.5707964f;
+            float heading = (projectile->angle + 1.5707964f);
             grim_interface_ptr->grim_draw_quad(
                 (camera_offset[0] + projectile->pos_x
                     - 30.0f

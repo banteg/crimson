@@ -1476,6 +1476,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x00482ca8",
+      "name": "camera_offset_x",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00482cb0",
       "name": "creature_spawn_slot_table",
       "program": "1.9.8/crimsonland.exe"
@@ -2121,6 +2126,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0048d478",
+      "name": "ui_cursor_texture",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0048d4e8",
       "name": "ui_template_pool_block_00",
       "program": "1.9.8/crimsonland.exe"
@@ -2371,6 +2381,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x00492fb0",
+      "name": "secondary_projectile_pool",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00492fb8",
       "name": "secondary_proj_life_timer",
       "program": "1.9.8/crimsonland.exe"
@@ -2413,6 +2428,11 @@
     {
       "address": "0x00498ef8",
       "name": "unused_fx_rotated_creature_type_id_prefix_color",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00499008",
+      "name": "projectile_bullet_texture",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2568,6 +2588,11 @@
     {
       "address": "0x004bfe08",
       "name": "perk_id_antiperk",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe10",
+      "name": "perk_id_sharpshooter",
       "program": "1.9.8/crimsonland.exe"
     },
     {

@@ -444,7 +444,7 @@
     "source_sha256": "4d50fb679e67443596bff9fad9f6b9a87823595160bf28f462b716cae740d360",
     "status": "passed"
   },
-  "audit_digest": "d3851512f64325cfed52036de1657c13b340d95df57011ed6f812d8ca53af780",
+  "audit_digest": "8995f5121d9a1279044f3ea1ab8312e3c96339f881154468d9e1d5ca3c474d62",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -76796,7 +76796,7 @@
         {
           "path": "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp",
           "repository_relative": true,
-          "sha256": "171ce8384bf5b92f9b983049e1fd553672e68f70fe172cd5f6738fa26df75031"
+          "sha256": "3efe41163af49ac93e120d4397a7e701511285537bbd0d7a0eaed356cbe50762"
         },
         {
           "path": "tools/match/scratches/projectile_render/scratch.conf",
@@ -76862,10 +76862,10 @@
           "canonical_config_sha256": "77e21c90f48199b53fd3e62229f557c3d881294908cc7c0b72d96b50f117464d",
           "canonical_scratch": "tools/match/scratches/projectile_render",
           "canonical_source": "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp",
-          "canonical_source_sha256": "171ce8384bf5b92f9b983049e1fd553672e68f70fe172cd5f6738fa26df75031",
+          "canonical_source_sha256": "3efe41163af49ac93e120d4397a7e701511285537bbd0d7a0eaed356cbe50762",
           "effective_end": 4349303,
           "end": 4349303,
-          "experiment_epoch": "de0d9ce0f4c7fdca36c428325b58f92c606e48d9ceaf574e9c1f0e3f98c1dbb0",
+          "experiment_epoch": "6b1d632c505037cd8937adb87c11414207af81bbf66e61e45b3a805af1768ef6",
           "function": "projectile_render",
           "match": {
             "body_byte_exact": true,
@@ -76906,7 +76906,7 @@
       "object_sha256": "d5cd68b987c3b44ef95dcdba785f26555ea85ba16a0b298210dba3cd18a18330",
       "scratch": "tools/match/scratches/projectile_render",
       "source": "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp",
-      "source_sha256": "171ce8384bf5b92f9b983049e1fd553672e68f70fe172cd5f6738fa26df75031",
+      "source_sha256": "3efe41163af49ac93e120d4397a7e701511285537bbd0d7a0eaed356cbe50762",
       "target_size": 12551,
       "translation_unit": {
         "kind": "isolated",

@@ -1,5 +1,47 @@
 # `projectile_render`
 
+## Complete 1.9.8 match (2026-10-13)
+
+The shared source now matches both complete renderer bodies:
+
+| Build | Match compiler | Native extent | Instructions and prefix | Encoded body | References | Frame |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1.9.8 | `msvc6.5pp`, C2 9044 | `0x00422500..0x004254c5` | 2,957/2,957 | 12,229 bytes, exact | 542/0/0 | `0x180` |
+| 1.9.93 | `msvc6.5`, C2 8966 | `0x00422c70..0x00425d77` | 3,021/3,021 | 12,551 bytes, exact | 544/0/0 | `0x19c` |
+
+Both have `exact=True` and `body_byte_exact=True`, with no unexplained or
+mismatched references and no target padding. The COFF sections have ordinary
+trailing alignment (11 and 9 bytes respectively), outside their compared bodies.
+The 1.9.8 extent was independently recovered in the preceding extent correction;
+this recovery includes its ion arcs, Fire Bullets overlay and final head passes.
+
+Two real older behaviors are guarded as whole statements: the player laser pass
+admits unordered health through `!(health <= 0.0f)`, and the conventional-trail
+slots receive `transition_alpha * 0.0f` rather than a literal zero. The latter's
+native `fmul [0x0046d228]` reads the zero constant; retaining the multiplication
+also retains its signed-zero and non-finite behavior.
+
+The shared vector compound operators copy the return fields explicitly, and
+`operator+=` returns an explicit copy of that result. The trail assigns `along`
+before `span`, spells the fading alpha as `fade * ((along - first) / span)`, and
+retains a parenthesized plague heading. These ordinary source forms reproduce
+both compilers' operand and scheduling constraints without a code-generation
+build guard, dummy stores, compiler interventions or byte patches.
+
+Measured controls against the same source frontier:
+
+- Whole-vector return assignments retain canonical exactness but lose the older
+  ion-arc operand order (1.9.8 prefix 1,977, 99.93%).
+- Removing the explicit `operator+=` return copy retains canonical exactness but
+  reverses two older integer-reload pairs (prefix 1,650, 99.93%).
+- Explicit constructor returns in all three compound operators match 1.9.8 but
+  regress canonical instruction count to 3,011; that form is rejected.
+
+The image-bound recovered data pins resolve the camera pair, texture owner,
+bullet-head texture, Sharpshooter id and secondary pool. Their independent native
+anchors are the camera updater, labeled texture/perk initializers and secondary
+allocator, rather than a fuzzy alignment of this renderer.
+
 ## Byte-exact vector API reconstruction (2026-09-28)
 
 [The vector API evidence](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-vector-api-2026-09-28/README.md)

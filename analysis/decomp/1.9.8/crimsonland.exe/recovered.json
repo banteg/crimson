@@ -298,6 +298,46 @@
       "bytes": "c705c44e480014000000",
       "offset": 0,
       "note": "Nuke impact sets 20 camera-shake pulses beside the existing shake timer."
+    },
+    {
+      "name": "camera_offset_x",
+      "address": "0x482ca8",
+      "reference": "0x4095f2",
+      "bytes": "d905a82c4800",
+      "offset": 0,
+      "note": "Native camera update reads the horizontal offset, adds shake and stores it back; the vertical component immediately follows at 0x482cac."
+    },
+    {
+      "name": "ui_cursor_texture",
+      "address": "0x48d478",
+      "reference": "0x42a5dd",
+      "bytes": "a378d44800",
+      "offset": 0,
+      "note": "Texture initializer loads ui\\ui_cursor.jaz before this store; renderer references later members of the same texture owner at offsets 0x3c, 0x50 and 0x54."
+    },
+    {
+      "name": "projectile_bullet_texture",
+      "address": "0x499008",
+      "reference": "0x42a822",
+      "bytes": "a308904900",
+      "offset": 0,
+      "note": "Native asset initializer stores the bullet_i texture handle here; the primary bullet-head render pass binds it."
+    },
+    {
+      "name": "perk_id_sharpshooter",
+      "address": "0x4bfe10",
+      "reference": "0x42f5e5",
+      "bytes": "c70510fe4b0002000000",
+      "offset": 0,
+      "note": "Native perk initializer assigns id 2 beside the Sharpshooter label at 0x475428."
+    },
+    {
+      "name": "secondary_projectile_pool",
+      "address": "0x492fb0",
+      "reference": "0x41fb45",
+      "bytes": "b8b02f4900",
+      "offset": 0,
+      "note": "Secondary allocator begins at this base, scans 64 records with 44-byte stride and populates position at offsets 12 and 16."
     }
   ]
 }

@@ -21966,9 +21966,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 62,
+          "ok": 63,
           "positional": false,
-          "unresolved": 56
+          "unresolved": 55
         },
         "state": "wip",
         "target_instructions": 306,
@@ -22842,9 +22842,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 1,
-          "ok": 41,
+          "ok": 44,
           "positional": false,
-          "unresolved": 4
+          "unresolved": 1
         },
         "state": "wip",
         "target_instructions": 195,
@@ -23000,9 +23000,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 79,
+          "ok": 89,
           "positional": false,
-          "unresolved": 27
+          "unresolved": 17
         },
         "state": "wip",
         "target_instructions": 355,
@@ -26913,9 +26913,9 @@
         ],
         "references": {
           "mismatched": 1,
-          "ok": 141,
+          "ok": 145,
           "positional": true,
-          "unresolved": 74
+          "unresolved": 70
         },
         "state": "audit",
         "target_instructions": 306,
@@ -27030,9 +27030,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 677,
+          "ok": 683,
           "positional": false,
-          "unresolved": 77
+          "unresolved": 71
         },
         "state": "wip",
         "target_instructions": 3541,
@@ -27392,9 +27392,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 58,
+          "ok": 62,
           "positional": true,
-          "unresolved": 30
+          "unresolved": 26
         },
         "state": "audit",
         "target_instructions": 408,
@@ -27433,9 +27433,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 78,
+          "ok": 82,
           "positional": true,
-          "unresolved": 32
+          "unresolved": 28
         },
         "state": "audit",
         "target_instructions": 465,
@@ -27474,9 +27474,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 18,
+          "ok": 20,
           "positional": true,
-          "unresolved": 14
+          "unresolved": 12
         },
         "state": "audit",
         "target_instructions": 196,
@@ -27515,9 +27515,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 135,
+          "ok": 143,
           "positional": true,
-          "unresolved": 9
+          "unresolved": 1
         },
         "state": "audit",
         "target_instructions": 766,
@@ -27550,9 +27550,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 75,
+          "ok": 79,
           "positional": true,
-          "unresolved": 12
+          "unresolved": 8
         },
         "state": "audit",
         "target_instructions": 343,
@@ -27784,9 +27784,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 39,
+          "ok": 40,
           "positional": false,
-          "unresolved": 16
+          "unresolved": 15
         },
         "state": "wip",
         "target_instructions": 171,
@@ -28031,10 +28031,10 @@
       "canonical_address": 4303024,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "bonus_hud_slot_update_and_render",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 356,
         "candidate_object_sha256": "1e2ce4ae3efbaaa305dd267ccfa09e3776c04186583ce283fd369a973e9b6711",
         "candidate_padding_bytes": 6,
@@ -28053,11 +28053,11 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 69,
+          "ok": 71,
           "positional": true,
-          "unresolved": 2
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 356,
         "target_size": 1360,
         "unexplained_target_ranges": []
@@ -28094,9 +28094,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 334,
+          "ok": 345,
           "positional": false,
-          "unresolved": 53
+          "unresolved": 42
         },
         "state": "wip",
         "target_instructions": 1776,
@@ -28170,9 +28170,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 24,
+          "ok": 25,
           "positional": true,
-          "unresolved": 23
+          "unresolved": 22
         },
         "state": "audit",
         "target_instructions": 123,
@@ -29899,10 +29899,10 @@
       "canonical_address": 4318304,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "secondary_projectile_pool_global_init",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 12,
         "candidate_object_sha256": "fc9fe7de16afd242b756b0b9e6150c9e6fd1d90aa2a486708a9c62cc42e312d5",
         "candidate_padding_bytes": 7,
@@ -29915,11 +29915,11 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 0,
+          "ok": 1,
           "positional": true,
-          "unresolved": 1
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 12,
         "target_size": 41,
         "unexplained_target_ranges": []
@@ -31599,10 +31599,10 @@
       "canonical_address": 4326240,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "fx_spawn_secondary_projectile",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 66,
         "candidate_object_sha256": "f223460b176ef22c7321dd3b6d35dba434b1f49f0d49c9b8fb91c20f15594c74",
         "candidate_padding_bytes": 2,
@@ -31621,11 +31621,11 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 10,
+          "ok": 13,
           "positional": true,
-          "unresolved": 3
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 66,
         "target_size": 224,
         "unexplained_target_ranges": []
@@ -31909,13 +31909,13 @@
       "canonical_address": 4336752,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "projectile_render",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 2957,
-        "candidate_object_sha256": "15b327c6ad4e34d6a6a2013f12ef712867acfb78ea9d1618a6be290ac4c4561e",
-        "candidate_padding_bytes": 4,
+        "candidate_object_sha256": "338b7b1da0cdd390b67a397259a4c1b23f768a516d7509b67edcf8006b14a428",
+        "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
             4334848,
@@ -31925,16 +31925,16 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 426,
-          "positional": false,
-          "unresolved": 112
+          "ok": 542,
+          "positional": true,
+          "unresolved": 0
         },
-        "state": "wip",
+        "state": "match",
         "target_instructions": 2957,
         "target_size": 12229,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.9479201893811295,
+      "ratio": 1.0,
       "size": 12229,
       "source": "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp"
     },
@@ -32165,9 +32165,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 79,
+          "ok": 81,
           "positional": true,
-          "unresolved": 82
+          "unresolved": 80
         },
         "state": "audit",
         "target_instructions": 515,
@@ -32364,9 +32364,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 246,
+          "ok": 270,
           "positional": false,
-          "unresolved": 69
+          "unresolved": 45
         },
         "state": "wip",
         "target_instructions": 1177,
@@ -32440,9 +32440,9 @@
         ],
         "references": {
           "mismatched": 2,
-          "ok": 186,
+          "ok": 204,
           "positional": false,
-          "unresolved": 38
+          "unresolved": 20
         },
         "state": "wip",
         "target_instructions": 1075,
@@ -32978,9 +32978,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 153,
+          "ok": 176,
           "positional": true,
-          "unresolved": 56
+          "unresolved": 33
         },
         "state": "audit",
         "target_instructions": 252,
@@ -33726,9 +33726,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 33,
+          "ok": 35,
           "positional": false,
-          "unresolved": 5
+          "unresolved": 3
         },
         "state": "wip",
         "target_instructions": 284,
@@ -34427,9 +34427,9 @@
         ],
         "references": {
           "mismatched": 2,
-          "ok": 356,
+          "ok": 357,
           "positional": false,
-          "unresolved": 56
+          "unresolved": 55
         },
         "state": "wip",
         "target_instructions": 550,
@@ -39315,9 +39315,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 30,
+          "ok": 31,
           "positional": true,
-          "unresolved": 4
+          "unresolved": 3
         },
         "state": "audit",
         "target_instructions": 110,
@@ -40093,9 +40093,9 @@
         ],
         "references": {
           "mismatched": 8,
-          "ok": 117,
+          "ok": 118,
           "positional": false,
-          "unresolved": 127
+          "unresolved": 126
         },
         "state": "wip",
         "target_instructions": 670,
@@ -40414,9 +40414,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 121,
+          "ok": 122,
           "positional": false,
-          "unresolved": 25
+          "unresolved": 24
         },
         "state": "wip",
         "target_instructions": 515,
@@ -40922,9 +40922,9 @@
         ],
         "references": {
           "mismatched": 2,
-          "ok": 380,
+          "ok": 383,
           "positional": false,
-          "unresolved": 221
+          "unresolved": 218
         },
         "state": "wip",
         "target_instructions": 1926,
@@ -41687,9 +41687,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 18,
+          "ok": 19,
           "positional": true,
-          "unresolved": 2
+          "unresolved": 1
         },
         "state": "audit",
         "target_instructions": 111,
@@ -42738,9 +42738,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 134,
+          "ok": 137,
           "positional": false,
-          "unresolved": 131
+          "unresolved": 128
         },
         "state": "wip",
         "target_instructions": 822,
@@ -43123,9 +43123,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 20,
-          "ok": 795,
+          "ok": 796,
           "positional": false,
-          "unresolved": 502
+          "unresolved": 501
         },
         "state": "wip",
         "target_instructions": 4078,
@@ -43409,9 +43409,9 @@
         ],
         "references": {
           "mismatched": 10,
-          "ok": 174,
+          "ok": 175,
           "positional": false,
-          "unresolved": 116
+          "unresolved": 115
         },
         "state": "wip",
         "target_instructions": 773,
@@ -43806,9 +43806,9 @@
         ],
         "references": {
           "mismatched": 15,
-          "ok": 482,
+          "ok": 489,
           "positional": false,
-          "unresolved": 22
+          "unresolved": 15
         },
         "state": "wip",
         "target_instructions": 1427,
@@ -75882,11 +75882,11 @@
     "analysis/decomp/1.9.1/grim.dll/functions.json": "e66e923be09e78b5fcf73217a082d4d6bb6f198f43887448996a0940f8a08412",
     "analysis/decomp/1.9.1/grim.dll/imports.json": "a4929b2195b0aae572e9a11ba6473f48bc15213aff13465c7aae5833759002e1",
     "analysis/decomp/1.9.1/grim.dll/metadata.json": "2283281db97d8c9d22c4240bb9f1b5eed552e6ca4d7303f729a5464af296b6ac",
-    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "09b2bb9fb47a18bed2499ef07086037b2836e380b6a1f7fffc1f7244d5d50828",
+    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "f8b7908b5288960695f7bc4ca5412fd26b5465862d83ca1f3cf5dfa476587ea8",
     "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "2e63ef180accc1c8a9fe679e8ae6f421eae977e8d99dbca158df75ef01e4ff76",
     "analysis/decomp/1.9.8/crimsonland.exe/imports.json": "0c31f6358f0514e1c8815d7921c8ad3779199591dd36954c4cce4a7bd3024c18",
     "analysis/decomp/1.9.8/crimsonland.exe/metadata.json": "9b248110b10661b30a5d703fc60149baf131572ed64ec85dc77fb71e6b448e4d",
-    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "836085edfbaaeef373640d8969653be7385c80b658116528c32bbb4b3210768d",
+    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "424d6d6ef377ce7d10b79df1d92b0366b9fd3c92e8d8681bcf68f49893476e7b",
     "analysis/decomp/1.9.8/grim.dll/data.json": "6b9d95c6e1826fe8c470bfc3d2e97e5b9541db2613f36b912b0b8fae08f5ba3b",
     "analysis/decomp/1.9.8/grim.dll/functions.json": "3f5cf721ea4279c4d80280411d3ad9426f60036979e0eedc159e1af9e1a6714f",
     "analysis/decomp/1.9.8/grim.dll/imports.json": "f2e55491c2a9be4e9dcb81246e54f4366f646cf04fc5fd08f6f316e01dd14e7a",
@@ -76096,7 +76096,7 @@
     "decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp": "6175600f6f9846d6ba4b8cdb0d4a5038ce2e684315e71ad1f0587c164c1eae34",
     "decomp/1.9/crimsonland/crimsonland/projectile_pool_global_init.cpp": "33eac9acaa6c0cbfc1b28410fc5fb483b6208b3de5e95cef3d9f9722f78a11ec",
     "decomp/1.9/crimsonland/crimsonland/projectile_pool_global_init_thunk.cpp": "dd9899c6954bc5cfc92b7061c225b345c2a4be8794df54a01c6667a345a6d43c",
-    "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp": "171ce8384bf5b92f9b983049e1fd553672e68f70fe172cd5f6738fa26df75031",
+    "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp": "3efe41163af49ac93e120d4397a7e701511285537bbd0d7a0eaed356cbe50762",
     "decomp/1.9/crimsonland/crimsonland/projectile_reset_pools.cpp": "6fd86d551f9164413ec0820df2ab2ad2c6545466e31386e2feaf8a11f1383868",
     "decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp": "5f05fe918596f928a0556b2973bb1f58484671003140cb6693fcb5bd31560621",
     "decomp/1.9/crimsonland/crimsonland/projectile_update.cpp": "202f1dfbf5f37d672d9cf8c9f3ce0515a777f69cf1bd84cf9230848b121304bb",
