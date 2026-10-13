@@ -8,6 +8,10 @@ function bytes in `game_bins/crimsonland/1.9.93-gog/crimsonland.exe` or
 
 See [Matching Status](STATUS.md) for generated progress.
 
+When a function will not match, check
+[MSVC 6 code generation](../../docs/re/static/msvc-codegen.md) for the compiler
+behaviors the scratch notes have already established.
+
 ## Matching Scope
 
 The default `port` scope is defined in `analysis/matching_scope.json`. It

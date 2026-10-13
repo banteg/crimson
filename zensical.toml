@@ -80,6 +80,7 @@ nav = [
       { "Binary analysis" = "re/static/binary-analysis.md" },
       { "Entrypoint trace" = "re/static/entrypoint.md" },
       { "Native linking" = "re/static/native-linking.md" },
+      { "MSVC 6 code generation" = "re/static/msvc-codegen.md" },
       { "Diagnostic alignments" = "re/diagnostic-alignments.md" },
       { "Boot / loading sequence" = "re/static/boot-sequence.md" },
       { "Source recovery references" = "re/static/detangling.md" },
