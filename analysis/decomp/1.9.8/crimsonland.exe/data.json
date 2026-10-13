@@ -1366,6 +1366,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047e5b4",
+      "name": "perk_lean_mean_exp_tick_timer_s",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047e698",
       "name": "credits_line_table",
       "program": "1.9.8/crimsonland.exe"
@@ -1803,6 +1808,11 @@
     {
       "address": "0x00484f44",
       "name": "screen_fade_alpha",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484f48",
+      "name": "perk_doctor_target_creature_id",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2391,8 +2401,18 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004a83e4",
+      "name": "current_player_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004a83f0",
       "name": "fx_queue_count",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004a83f4",
+      "name": "perk_jinxed_proc_timer_s",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2521,6 +2541,31 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004bfe2c",
+      "name": "perk_id_pyrokinetic",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe30",
+      "name": "perk_id_jinxed",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe4c",
+      "name": "perk_id_lean_mean_exp_machine",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe50",
+      "name": "perk_id_evil_eyes",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe78",
+      "name": "perk_id_regeneration",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004bfe9c",
       "name": "perk_id_pyromaniac",
       "program": "1.9.8/crimsonland.exe"
@@ -2538,6 +2583,11 @@
     {
       "address": "0x004bfed4",
       "name": "perk_id_ion_gun_master",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfedc",
+      "name": "perk_id_death_clock",
       "program": "1.9.8/crimsonland.exe"
     },
     {

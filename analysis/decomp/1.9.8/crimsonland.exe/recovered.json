@@ -43,6 +43,13 @@
       "end": "0x420321",
       "body_sha256": "3d723f80f66debcf7b1b0866ba5ebe69dd871b17d4d4a6e77742322ed5ee57f0",
       "note": "Complete damage/perk/impulse and death pipeline; no Living Fortress modifier in 1.9.8."
+    },
+    {
+      "name": "perks_update_effects",
+      "address": "0x405b60",
+      "end": "0x4060ff",
+      "body_sha256": "5b542f50533ed416a2b5a5a0ff1c2cd0ed96a2b416ffaf46a2091209d832d273",
+      "note": "Complete timed bonus and perk-effect update; older Jinxed comparison and no freeze gate."
     }
   ],
   "data": [
@@ -133,6 +140,86 @@
       "bytes": "8b048d0c044800",
       "offset": 4,
       "note": "Native death SFX selection: 68-byte creature-type rows, death_sfx starts at offset 4; reset_state initializes the same table."
+    },
+    {
+      "name": "perk_id_regeneration",
+      "address": "0x4bfe78",
+      "reference": "0x42fd42",
+      "bytes": "c70578fe4b0026000000",
+      "offset": 0,
+      "note": "Native initializer assigns Regeneration id 38."
+    },
+    {
+      "name": "perk_id_lean_mean_exp_machine",
+      "address": "0x4bfe4c",
+      "reference": "0x42f649",
+      "bytes": "c7054cfe4b0004000000",
+      "offset": 0,
+      "note": "Native initializer assigns Lean Mean Exp Machine id 4."
+    },
+    {
+      "name": "perk_id_death_clock",
+      "address": "0x4bfedc",
+      "reference": "0x42ff4b",
+      "bytes": "c705dcfe4b002f000000",
+      "offset": 0,
+      "note": "Native initializer assigns Death Clock id 47."
+    },
+    {
+      "name": "perk_id_pyrokinetic",
+      "address": "0x4bfe2c",
+      "reference": "0x42f6a6",
+      "bytes": "c7052cfe4b0006000000",
+      "offset": 0,
+      "note": "Native initializer assigns Pyrokinetic id 6."
+    },
+    {
+      "name": "perk_id_evil_eyes",
+      "address": "0x4bfe50",
+      "reference": "0x42f7cc",
+      "bytes": "c70550fe4b000b000000",
+      "offset": 0,
+      "note": "Native initializer assigns Evil Eyes id 11."
+    },
+    {
+      "name": "perk_id_jinxed",
+      "address": "0x4bfe30",
+      "reference": "0x42fe24",
+      "bytes": "c70530fe4b002a000000",
+      "offset": 0,
+      "note": "Native initializer assigns Jinxed id 42."
+    },
+    {
+      "name": "perk_lean_mean_exp_tick_timer_s",
+      "address": "0x47e5b4",
+      "reference": "0x405c03",
+      "bytes": "c705b4e547000000803e",
+      "offset": 0,
+      "note": "Quarter-second XP tick timer, decremented by the shared frame delta."
+    },
+    {
+      "name": "current_player_index",
+      "address": "0x4a83e4",
+      "reference": "0x413c25",
+      "bytes": "8b0de4834a00",
+      "offset": 0,
+      "note": "Player update reads the same global player index that the perk loop publishes and advances."
+    },
+    {
+      "name": "perk_doctor_target_creature_id",
+      "address": "0x484f48",
+      "reference": "0x405d4a",
+      "bytes": "c705484f4800ffffffff",
+      "offset": 0,
+      "note": "Doctor target initialized to -1 and populated from creature_find_in_radius."
+    },
+    {
+      "name": "perk_jinxed_proc_timer_s",
+      "address": "0x4a83f4",
+      "reference": "0x40604a",
+      "bytes": "d91df4834a00",
+      "offset": 0,
+      "note": "Jinxed countdown reset after its 20-way RNG delay, gating random creature death."
     }
   ]
 }

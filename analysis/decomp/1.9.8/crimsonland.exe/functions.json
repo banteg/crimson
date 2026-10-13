@@ -632,10 +632,10 @@
   {
     "address": "0x00405B60",
     "canonical_address": "0x00406B40",
-    "end": "0x00406100",
-    "evidence": "ordered",
+    "end": "0x004060FF",
+    "evidence": "recovered",
     "name": "perks_update_effects",
-    "size": 1440
+    "size": 1439
   },
   {
     "address": "0x00406100",

@@ -68,3 +68,20 @@ Pyrokinetic's aim is a `vec2f_t`, the Jinxed creature cursor is a
 changes preserve the exact 352/352 instruction match and all 136 references.
 The radius query now receives `player_state_t::aim` directly, eliminating its
 last interior-field cast without changing codegen.
+
+## 1.9.8 complete recovery (2026-10-13)
+
+Native extent: `0x00405b60..0x004060ff` (1439 bytes), followed by one
+alignment NOP. The older Jinxed readiness check requires a strictly negative
+timer; the later comparison also accepts an unordered timer. The older
+creature-kill path has no Freeze gate. Both changes are build-selected whole
+statements. Inline creature-position arguments reproduce the original vector
+constructor/position scheduling without an artificial lifetime.
+
+The initializer's numeric perk ID stores independently identify the six
+previously missing perk globals. The native loop, quarter-second XP tick,
+Doctor target and Jinxed delay reset pin the remaining state globals.
+
+1.9.8: 350/350 instructions, full prefix and encoded body, 137/0/0 references.
+1.9.93 control: 352/352 instructions, full 1437-byte encoded body, 136/0/0
+references. Neither build relies on a fuzzy or positional-only reference claim.

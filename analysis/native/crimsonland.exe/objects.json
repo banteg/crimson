@@ -444,7 +444,7 @@
     "source_sha256": "4d50fb679e67443596bff9fad9f6b9a87823595160bf28f462b716cae740d360",
     "status": "passed"
   },
-  "audit_digest": "d6d2477471d299892370f4a5977e5e2682f1cd9d19dfb05f059a8156656de225",
+  "audit_digest": "1e64d71bf7f637febf0a876600a493d56b49007a4976fe18d5da35254e5475a2",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -27859,7 +27859,7 @@
         {
           "path": "decomp/1.9/crimsonland/game/perks_update_effects.cpp",
           "repository_relative": true,
-          "sha256": "0b397d5f5c0b8cae59daa07601bf31a48b5c87bfd7bdaab5e78e66670e8e9ec7"
+          "sha256": "f6f229537fc2240ac5a3977162086edc68ba1417ac851759964f3b0429c54cca"
         },
         {
           "path": "tools/match/scratches/perks_update_effects/scratch.conf",
@@ -27905,10 +27905,10 @@
           "canonical_config_sha256": "6e0bfb936713012c9d5daa90e7ccf6ae78228b0a94c76353e8a18e672eab7339",
           "canonical_scratch": "tools/match/scratches/perks_update_effects",
           "canonical_source": "decomp/1.9/crimsonland/game/perks_update_effects.cpp",
-          "canonical_source_sha256": "0b397d5f5c0b8cae59daa07601bf31a48b5c87bfd7bdaab5e78e66670e8e9ec7",
+          "canonical_source_sha256": "f6f229537fc2240ac5a3977162086edc68ba1417ac851759964f3b0429c54cca",
           "effective_end": 4223197,
           "end": 4223197,
-          "experiment_epoch": "4c04e8389c95ce58894d6b1305bfb9bf096b742015b351d29820f4d5c32207a2",
+          "experiment_epoch": "36a67a0cf4f108db2408279d74816af6550a6ec92e8f565c41ff0f4e04c2661b",
           "function": "perks_update_effects",
           "match": {
             "body_byte_exact": true,
@@ -27949,7 +27949,7 @@
       "object_sha256": "66ddac46d80e1c3d9ab76064b39a684d96431ae9cfc58e034b4b9ff6669aedbe",
       "scratch": "tools/match/scratches/perks_update_effects",
       "source": "decomp/1.9/crimsonland/game/perks_update_effects.cpp",
-      "source_sha256": "0b397d5f5c0b8cae59daa07601bf31a48b5c87bfd7bdaab5e78e66670e8e9ec7",
+      "source_sha256": "f6f229537fc2240ac5a3977162086edc68ba1417ac851759964f3b0429c54cca",
       "target_size": 1437,
       "translation_unit": {
         "kind": "isolated",

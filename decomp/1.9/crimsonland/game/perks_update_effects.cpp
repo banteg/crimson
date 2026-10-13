@@ -120,34 +120,32 @@ extern "C" void perks_update_effects(void)
                 creature_pool[creature_id].dot_tick_timer -= frame_dt;
                 if (creature_pool[creature_id].dot_tick_timer < 0.0f) {
                     creature_pool[creature_id].dot_tick_timer = 0.5f;
-                    vec2f_t *pos =
-                        &creature_pool[creature_id].position;
                     fx_spawn_particle(
-                        pos,
+                        &creature_pool[creature_id].position,
                         (float)(crt_rand() % 0x274) * 0.01f,
                         perk_effect_vec2_t(0.0f, 0.0f),
                         0.8f);
                     fx_spawn_particle(
-                        pos,
+                        &creature_pool[creature_id].position,
                         (float)(crt_rand() % 0x274) * 0.01f,
                         perk_effect_vec2_t(0.0f, 0.0f),
                         0.6f);
                     fx_spawn_particle(
-                        pos,
+                        &creature_pool[creature_id].position,
                         (float)(crt_rand() % 0x274) * 0.01f,
                         perk_effect_vec2_t(0.0f, 0.0f),
                         0.4f);
                     fx_spawn_particle(
-                        pos,
+                        &creature_pool[creature_id].position,
                         (float)(crt_rand() % 0x274) * 0.01f,
                         perk_effect_vec2_t(0.0f, 0.0f),
                         0.3f);
                     fx_spawn_particle(
-                        pos,
+                        &creature_pool[creature_id].position,
                         (float)(crt_rand() % 0x274) * 0.01f,
                         perk_effect_vec2_t(0.0f, 0.0f),
                         0.2f);
-                    fx_queue_add_random(pos);
+                    fx_queue_add_random(&creature_pool[creature_id].position);
                 }
             }
 
@@ -164,10 +162,17 @@ extern "C" void perks_update_effects(void)
     if (perk_jinxed_proc_timer_s >= 0.0f) {
         perk_jinxed_proc_timer_s -= frame_dt;
     }
+#if CL_BUILD == 10908
+    if (!(perk_jinxed_proc_timer_s < 0.0f)
+        || player_state_table[0].perk_counts[perk_id_jinxed] <= 0) {
+        return;
+    }
+#else
     if (perk_jinxed_proc_timer_s >= 0.0f
         || player_state_table[0].perk_counts[perk_id_jinxed] <= 0) {
         return;
     }
+#endif
 
     if (crt_rand() % 10 == 3) {
         player_state_table[0].health -= 5.0f;
@@ -180,9 +185,11 @@ extern "C" void perks_update_effects(void)
         + perk_jinxed_proc_timer_s
         + 2.0f;
 
+#if CL_BUILD != 10908
     if (bonus_freeze_timer > 0.0f) {
         return;
     }
+#endif
 
     int creature_id = crt_rand() % 0x17f;
     for (current_player_index = 0;
