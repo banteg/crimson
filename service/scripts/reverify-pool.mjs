@@ -1,10 +1,8 @@
-import assert from "node:assert/strict";
 import { Worker } from "node:worker_threads";
 
 // Give each isolate one replay at a time, reusing its WASM instances and decoded art.
 // Results retain input order; progress is reported as each replay finishes.
 export async function verifyRuns(runs, { jobs, workerData, onResult = () => {}, workerURL = new URL("./reverify-worker.mjs", import.meta.url) }) {
-  assert.ok(Number.isSafeInteger(jobs) && jobs > 0, "Invalid verification concurrency");
   const workers = [];
   const results = new Array(runs.length);
   let next = 0;

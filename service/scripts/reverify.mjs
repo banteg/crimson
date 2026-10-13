@@ -5,18 +5,18 @@
 //
 //   npm run reverify              every run not yet retired, from the production D1 and R2
 //   npm run reverify -- <dir>     the .crd files in <dir>
-//   npm run reverify -- --jobs 2  limit verification workers (default: up to four CPUs)
 //
 // It reads production through wrangler and writes nothing there: the runs that fail
 // are listed, with SQL to retire them for a migration. Each run that verifies also gets
 // its ground baked (src/ground.ts) into .reverify/grounds/, from the built site's art
 // (dist/ui), for `npm run grounds` to put in production once the build is deployed.
+// Runs verify on one worker thread per CPU (reverify-worker.mjs).
 import { execFile, execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { availableParallelism } from "node:os";
-import { parseArgs, promisify } from "node:util";
+import { promisify } from "node:util";
 import { downloadReplays } from "./reverify-cache.mjs";
 import { verifyRuns } from "./reverify-pool.mjs";
 
@@ -48,23 +48,15 @@ async function storedRuns(dir) {
   return runs;
 }
 
-const { values, positionals } = parseArgs({
-  options: { jobs: { type: "string", short: "j" } }, allowPositionals: true,
-});
-const jobs = values.jobs === undefined ? Math.min(4, availableParallelism()) : Number(values.jobs);
-if (!Number.isSafeInteger(jobs) || jobs < 1 || (values.jobs !== undefined && !/^\d+$/.test(values.jobs)))
-  throw Error("--jobs must be a positive integer");
-if (positionals.length > 1) throw Error("Usage: npm run reverify -- [directory] [--jobs N]");
 if (!existsSync(CORE)) throw Error(`build the core first: uv run python crimson-core/build.py --target wasm (${CORE})`);
 if (!existsSync(join(ART, "ui"))) throw Error(`build the site first: npm run assets && npm run build (${ART})`);
-const runs = await storedRuns(positionals[0]);
+const runs = await storedRuns(process.argv[2]);
 rmSync(GROUNDS, { recursive: true, force: true });
 mkdirSync(GROUNDS, { recursive: true });
 
 const started = performance.now();
-console.log(`Verifying ${runs.length} runs with ${Math.min(jobs, runs.length)} workers`);
 const results = await verifyRuns(runs, {
-  jobs,
+  jobs: availableParallelism(),
   workerData: { service: SERVICE, art: ART, grounds: GROUNDS },
   onResult: ({ id, ok, reason, seconds, ticks }) =>
     console.log(`${id}  ${ok ? "ok" : reason}  ${seconds.toFixed(2)}s (${ticks} ticks)`),
