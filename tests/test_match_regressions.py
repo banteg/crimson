@@ -48,6 +48,17 @@ def test_wip_score_drop_is_reported_without_failing_acceptance_gate() -> None:
     assert deltas[0].after.ratio == 0.8
 
 
+
+def test_audit_loss_and_error_transition_fail_regression_gate() -> None:
+    audit_before = _function(state="audit", unresolved=1, body_byte_exact=False)
+    wip_after = replace(audit_before, state="wip", ratio=0.9)
+    problems, _ = compare_manifests(_manifest(audit_before), _manifest(wip_after))
+    assert {row.check for row in problems} == {"audit-lost"}
+
+    error_after = replace(wip_after, state="error", ratio=None)
+    problems, _ = compare_manifests(_manifest(wip_after), _manifest(error_after))
+    assert {row.check for row in problems} == {"state-error"}
+
 def test_removed_targets_and_changed_scope_need_explicit_base_bound_reasons() -> None:
     before = _manifest(_function())
     problems, _ = compare_manifests(before, replace(before, scope="all", functions=()))

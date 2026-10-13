@@ -213,15 +213,15 @@ def _body(image: matchlib.LoadedImage, start: int, size: int) -> _Body:
         base_address=start,
         image=image,
     )
+    body_size = max((line.offset + line.size for line in lines), default=0)
 
     def portable(reference: matchlib.MaskedReference) -> tuple[str, ...]:
         # Literal contents survive relinking; so do offsets inside the body.
         return tuple(
             key
             for key in reference.keys
-            if not key.startswith("local:") or 0 <= int(key.removeprefix("local:"), 16) < len(data)
+            if not key.startswith("local:") or 0 <= int(key.removeprefix("local:"), 16) < body_size
         )
-
     return _Body(
         lines,
         tuple((line.text, tuple(portable(ref) for ref in line.masked_references)) for line in lines),
@@ -404,7 +404,7 @@ def _grim_virtual_calls(body: _Body, interface_address: int) -> dict[int, int]:
             registers.clear()
             continue
         opcode = line.text.split(" ", 1)[0]
-        if opcode in {"push", "cmp", "test", "nop"} or opcode.startswith("f") and opcode != "fnstsw":
+        if opcode in {"push", "cmp", "test", "nop"} or opcode.startswith("f") and opcode not in {"fnstsw", "fstsw"}:
             continue
         # Only model instructions with a single explicit register destination.
         # MUL/DIV, CDQ, XCHG and similar instructions can also overwrite tracked

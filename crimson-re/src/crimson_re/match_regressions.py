@@ -133,6 +133,10 @@ def compare_manifests(before: Manifest, after: Manifest) -> tuple[list[Regressio
             changes.append(("extent-changed", f"{old.target_size} -> {new.target_size} bytes"))
         if old.state == "match" and new.state != "match":
             changes.append(("exact-lost", f"match -> {new.state}"))
+        if old.state == "audit" and new.state not in {"match", "audit"}:
+            changes.append(("audit-lost", f"audit -> {new.state}"))
+        if old.state != "error" and new.state == "error":
+            changes.append(("state-error", f"{old.state} -> error"))
         if new.unresolved > old.unresolved:
             changes.append(("unresolved-increased", f"{old.unresolved} -> {new.unresolved}"))
         if new.mismatches > old.mismatches:

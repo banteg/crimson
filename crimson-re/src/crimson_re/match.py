@@ -2778,6 +2778,7 @@ def disassemble_normalized_function(
                 insn_offset + rel_offset in relocation_offsets
                 for rel_offset in range(insn.imm_offset, insn.imm_offset + max(insn.imm_size, 1))
             )
+            or (imm_relocation is not None and imm_relocation.local_target_offset is not None)
             if insn.imm_offset
             else False
         )
@@ -2789,6 +2790,7 @@ def disassemble_normalized_function(
                 insn_offset + rel_offset in relocation_offsets
                 for rel_offset in range(insn.disp_offset, insn.disp_offset + max(insn.disp_size, 1))
             )
+            or (disp_relocation is not None and disp_relocation.local_target_offset is not None)
             if insn.disp_offset
             else False
         )
@@ -3107,6 +3109,10 @@ def _annotate_vc6_proven_copy_loads(
                             size=copy_size,
                         ),
                     )
+                else:
+                    live_copies.clear()
+            else:
+                live_copies.clear()
             clear_copy_setup()
             continue
 
@@ -3117,15 +3123,21 @@ def _annotate_vc6_proven_copy_loads(
         elif text == "mov edi, ADDR":
             copy_destination = _line_reference_address(line, 1)
         else:
-            for register in ("ecx", "esi", "edi"):
-                if re.search(rf"\b{register}\b", text):
+            mnemonic = text.partition(" ")[0]
+            if mnemonic in {"cpuid", "popad", "popa"}:
+                clear_copy_setup()
+            for register, pattern in (
+                ("ecx", r"\b(?:ecx|cx|cl|ch)\b"),
+                ("esi", r"\b(?:esi|si|sil)\b"),
+                ("edi", r"\b(?:edi|di|dil)\b"),
+            ):
+                if re.search(pattern, text):
                     if register == "ecx":
                         copy_count = None
                     elif register == "esi":
                         copy_source = None
                     else:
                         copy_destination = None
-
         mnemonic = text.partition(" ")[0]
         if mnemonic in {"std", "cld"}:
             forward_copy = mnemonic == "cld"
@@ -3652,6 +3664,15 @@ def _encoded_body_comparison(
             displacement = reference.local_target_offset - (reference.offset + 4)
             encoded[reference.offset : reference.offset + 4] = struct.pack("<i", displacement)
             continue
+        if (
+            reference.relocation_type == IMAGE_REL_I386_DIR32
+            and reference.local_target_offset is not None
+            and 0 <= reference.local_target_offset < candidate_end
+            and 0 <= reference.offset <= candidate_end - 4
+        ):
+            target[reference.offset : reference.offset + 4] = b"\0" * 4
+            encoded[reference.offset : reference.offset + 4] = b"\0" * 4
+            continue
         for index in audited:
             line = result.candidate_disassembly[index]
             target_line = result.target_disassembly[index]
@@ -3700,11 +3721,7 @@ def match_function(
     candidate_disassembly = disassemble_normalized_function(
         bytes(candidate_data),
         relocation_offsets=candidate.relocation_offsets - materialized_local_offsets,
-        relocation_references=tuple(
-            reference
-            for reference in candidate.relocation_references
-            if reference.offset not in materialized_local_offsets
-        ),
+        relocation_references=candidate.relocation_references,
         address_range=address_range,
         reference_catalog=reference_catalog,
         image=image,
@@ -4808,9 +4825,48 @@ FORBIDDEN_SOURCE_PATTERNS = (
 )
 
 
+def _strip_c_comments_and_strings(text: str) -> str:
+    out: list[str] = []
+    index = 0
+    while index < len(text):
+        if text.startswith("//", index):
+            newline = text.find("\n", index + 2)
+            if newline < 0:
+                break
+            out.append("\n")
+            index = newline + 1
+            continue
+        if text.startswith("/*", index):
+            end = text.find("*/", index + 2)
+            if end < 0:
+                break
+            out.append(" ")
+            index = end + 2
+            continue
+        if text[index] in {'"', "'"}:
+            quote = text[index]
+            out.append(" ")
+            index += 1
+            while index < len(text):
+                if text[index] == "\\":
+                    index += 2
+                    continue
+                if text[index] == quote:
+                    index += 1
+                    break
+                if text[index] == "\n":
+                    out.append("\n")
+                index += 1
+            continue
+        out.append(text[index])
+        index += 1
+    return "".join(out)
+
+
 def _validate_scratch_source_text(text: str, source: Path) -> None:
+    stripped = _strip_c_comments_and_strings(text)
     for pattern in FORBIDDEN_SOURCE_PATTERNS:
-        if pattern.search(text):
+        if pattern.search(stripped):
             raise ValueError(
                 f"{source}: inline assembly/naked functions are not allowed in scratches (no fakematching)",
             )
@@ -4818,7 +4874,6 @@ def _validate_scratch_source_text(text: str, source: Path) -> None:
 
 def validate_scratch_source(source: Path) -> None:
     _validate_scratch_source_text(source.read_text(encoding="latin1"), source)
-
 
 def _matching_c_delimiter(text: str, start: int, opening: str, closing: str) -> int:
     if start >= len(text) or text[start] != opening:
@@ -4966,7 +5021,7 @@ class _ScratchIncludeResolver:
         for match in INCLUDE_RE.finditer(text):
             include_name = Path((match.group(1) or match.group(2)).replace("\\", "/"))
             candidates = [include_dir / include_name for include_dir in search_dirs]
-            if not source and match.group(1) is not None:
+            if match.group(1) is not None:
                 candidates.insert(0, including_path.parent / include_name)
             dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
             if dependency is None:
@@ -5090,14 +5145,13 @@ def source_probe_tree_fingerprint(
         text: str,
         *,
         including_parent: Path | None,
-        source: bool,
     ) -> tuple[Path, ...]:
         dependencies: list[Path] = []
         seen: set[Path] = set()
         for match in INCLUDE_RE.finditer(text):
             include_name = Path((match.group(1) or match.group(2)).replace("\\", "/"))
             candidates = [include_dir / include_name for include_dir in include_dirs]
-            if not source and including_parent is not None and match.group(1) is not None:
+            if including_parent is not None and match.group(1) is not None:
                 candidates.insert(0, including_parent / include_name)
             dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
             if dependency is None:
@@ -5108,11 +5162,11 @@ def source_probe_tree_fingerprint(
                 dependencies.append(resolved)
         return tuple(dependencies)
 
+    source_parent = (config.directory / config.source).resolve().parent if config.source else config.directory.resolve()
     pending = list(
         direct_dependencies(
             source_text,
-            including_parent=None,
-            source=True,
+            including_parent=source_parent,
         ),
     )
     dependencies: set[Path] = set()
@@ -5129,7 +5183,6 @@ def source_probe_tree_fingerprint(
             direct_dependencies(
                 dependency_text,
                 including_parent=dependency.parent,
-                source=False,
             ),
         )
 
@@ -5584,7 +5637,7 @@ def _import_thunk_object_bytes(import_name: str) -> bytes:
     return header + section + code + relocation + function_symbol + import_symbol + string_table
 
 
-def validate_scratch_config(config: ScratchConfig) -> None:
+def validate_scratch_config(config: ScratchConfig, match_root: Path = DEFAULT_MATCH_ROOT) -> None:
     if config.import_thunk is not None:
         obj = parse_coff_object(_import_thunk_object_bytes(config.import_thunk))
         extract_object_function(obj)
@@ -5601,7 +5654,10 @@ def validate_scratch_config(config: ScratchConfig) -> None:
             source=source,
         )
         _validate_scratch_source_text(transformed, source)
-
+    compiler_root = _compiler_executable_path(config, match_root.resolve()).parent.parent.resolve()
+    for header in _scratch_include_headers(config, match_root.resolve()):
+        if not header.resolve().is_relative_to(compiler_root):
+            validate_scratch_source(header)
 
 def _scratch_object_is_current(
     obj_path: Path,
@@ -5703,6 +5759,10 @@ def compile_scratch(
         source=source,
     )
     _validate_scratch_source_text(staged_source_text, source)
+    compiler_root = _compiler_executable_path(config, match_root).parent.parent.resolve()
+    for header in _scratch_include_headers(config, match_root, resolver=include_resolver):
+        if not header.resolve().is_relative_to(compiler_root):
+            validate_scratch_source(header)
     obj_path = _scratch_object_path(config)
     build_dir = obj_path.parent
     obj_name = obj_path.name

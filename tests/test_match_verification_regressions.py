@@ -353,3 +353,133 @@ def test_angle_includes_use_search_paths_instead_of_the_including_directory(tmp_
     selected.write_text("correct search path\n")
     resolver = matchlib._ScratchIncludeResolver(tmp_path)
     assert resolver.direct_dependencies(header, source=False, include_dirs=(search,)) == (selected,)
+
+
+def test_copy_proof_expires_on_unproven_rep_movsd_and_subregister_clobbers() -> None:
+    source, destination, other = 0x402000, 0x402100, 0x402200
+    setup = bytes.fromhex("b902000000be") + struct.pack("<I", source) + b"\xbf" + struct.pack("<I", destination)
+    # Unproven second rep movsd (ecx comes from eax) must retire the earlier proven copy range.
+    unproven_copy = bytes.fromhex("f3a58bc8be") + struct.pack("<I", other) + b"\xbf" + struct.pack("<I", destination) + bytes.fromhex("f3a5")
+    target = setup + unproven_copy + bytes.fromhex("d905") + struct.pack("<I", destination) + b"\xc3"
+    candidate = bytearray(setup + unproven_copy + bytes.fromhex("d905") + struct.pack("<I", source) + b"\xc3")
+    relocations = []
+    for offset, symbol_index in ((6, 1), (11, 2), (20, 3), (25, 2), (33, 1)):
+        candidate[offset : offset + 4] = b"\0" * 4
+        relocations.append(CoffRelocation(offset, symbol_index, 6))
+    obj = CoffObject(
+        (CoffSection(".text", bytes(candidate), 0x20, tuple(relocations)),),
+        (
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "_source", 0, 0, 0, 2),
+            CoffSymbol(2, "_destination", 0, 0, 0, 2),
+            CoffSymbol(3, "_other", 0, 0, 0, 2),
+        ),
+    )
+    result = match_function(
+        target,
+        extract_object_function(obj, "probe"),
+        image=LoadedImage(b"\0" * 0x3000, 0x400000, 0x3000),
+        target_va=0x401000,
+        reference_catalog=ReferenceCatalog({source: ("source",), destination: ("destination",), other: ("other",)}),
+    )
+    assert result.ratio == 1.0
+    assert not result.exact
+
+    # Sub-register write (`mov cl, 0`) before `rep movsd` must clear `copy_count`.
+    clobbered_setup = setup + bytes.fromhex("b100f3a5")
+    target2 = clobbered_setup + bytes.fromhex("d905") + struct.pack("<I", destination) + b"\xc3"
+    candidate2 = bytearray(clobbered_setup + bytes.fromhex("d905") + struct.pack("<I", source) + b"\xc3")
+    relocations2 = []
+    for offset, symbol_index in ((6, 1), (11, 2), (21, 1)):
+        candidate2[offset : offset + 4] = b"\0" * 4
+        relocations2.append(CoffRelocation(offset, symbol_index, 6))
+    obj2 = CoffObject(
+        (CoffSection(".text", bytes(candidate2), 0x20, tuple(relocations2)),),
+        (
+            CoffSymbol(0, "_probe", 0, 1, 0x20, 2),
+            CoffSymbol(1, "_source", 0, 0, 0, 2),
+            CoffSymbol(2, "_destination", 0, 0, 0, 2),
+        ),
+    )
+    result2 = match_function(
+        target2,
+        extract_object_function(obj2, "probe"),
+        image=LoadedImage(b"\0" * 0x3000, 0x400000, 0x3000),
+        target_va=0x401000,
+        reference_catalog=ReferenceCatalog({source: ("source",), destination: ("destination",)}),
+    )
+    assert result2.ratio == 1.0
+    assert not result2.exact
+
+
+def test_local_dir32_relocation_keeps_candidate_local_key_and_body_byte_exact() -> None:
+    function_address = 0x401000
+    local_target_offset = 6
+    target = b"\xb8" + struct.pack("<I", function_address + local_target_offset) + bytes.fromhex("c3c3")
+    candidate = matchlib.ObjectFunction(
+        name="_probe",
+        data=bytes.fromhex("b800000000c3c3"),
+        relocation_offsets=frozenset({1}),
+        relocation_references=(
+            matchlib.ObjectRelocationReference(
+                offset=1,
+                symbol_name="$Llabel",
+                key="local:+0x6",
+                explained=True,
+                local_target_offset=local_target_offset,
+                relocation_type=0x06,
+            ),
+        ),
+    )
+    result = match_function(
+        target,
+        candidate,
+        image=LoadedImage(mapped=b"\0" * 0x2000, image_base=0x400000, size_of_image=0x10000),
+        target_va=function_address,
+        reference_catalog=ReferenceCatalog({function_address + local_target_offset: ("unrelated_global",)}),
+    )
+    assert result.exact
+    assert result.body_byte_exact is True
+    assert result.masked_operand_audit.entries[0].candidate_references[0].keys == ("local:+0x6",)
+
+
+def test_validate_scratch_config_checks_included_headers_and_ignores_comments(tmp_path: Path) -> None:
+    root = tmp_path / "match"
+    include = root / "include"
+    scratch = root / "scratches/probe"
+    include.mkdir(parents=True)
+    scratch.mkdir(parents=True)
+    header = include / "helper.h"
+    header.write_text("// comment mentioning __asm and __declspec(naked)\nint helper(void);\n")
+    source = scratch / "scratch.cpp"
+    source.write_text('#include "helper.h"\n/* _asm in block comment */\nint probe(void) { return helper(); }\n')
+    (scratch / "scratch.conf").write_text("FUNCTION=probe SOURCE=scratch.cpp\n")
+    config = matchlib.load_scratch_config(scratch)
+    matchlib.validate_scratch_config(config, root)
+
+    header.write_text("inline void bad(void) { __asm { nop } }\n")
+    with pytest.raises(ValueError, match="inline assembly/naked functions are not allowed"):
+        matchlib.validate_scratch_config(config, root)
+
+
+def test_quote_includes_resolve_relative_to_top_level_source(tmp_path: Path) -> None:
+    root = tmp_path / "match"
+    include = root / "include"
+    scratch = root / "scratches/probe"
+    decomp = tmp_path / "decomp"
+    include.mkdir(parents=True)
+    scratch.mkdir(parents=True)
+    decomp.mkdir(parents=True)
+    sibling = decomp / "sibling.h"
+    sibling.write_text("#define VALUE 1\n")
+    source = decomp / "unit.cpp"
+    source.write_text('#include "sibling.h"\nint probe(void) { return VALUE; }\n')
+    (scratch / "scratch.conf").write_text("FUNCTION=probe SOURCE=../../../decomp/unit.cpp\n")
+    config = matchlib.load_scratch_config(scratch)
+    resolver = matchlib._ScratchIncludeResolver(root, repo_root=tmp_path)
+    assert resolver.direct_dependencies(source, source=True) == (sibling.resolve(),)
+    fp1, deps1 = matchlib.source_probe_tree_fingerprint(config, source.read_text(), root)
+    assert sibling.name in deps1[0]
+    sibling.write_text("#define VALUE 2\n")
+    fp2, _ = matchlib.source_probe_tree_fingerprint(config, source.read_text(), root)
+    assert fp1 != fp2

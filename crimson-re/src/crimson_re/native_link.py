@@ -1372,7 +1372,11 @@ def _capture_toolchain_snapshot(
     match_root: Path,
 ) -> NativeToolchainSnapshot:
     compiler_bundles: list[NativeCompilerBundleSnapshot] = []
-    configs_by_compiler = {config.compiler: config for config in configs}
+    configs_by_compiler = {
+        config.compiler: config
+        for config in configs
+        if config.archive is None and config.import_thunk is None
+    }
     included_trees = ("Bin", "Include")
     for compiler, config in sorted(configs_by_compiler.items()):
         executable = matchlib._compiler_executable_path(config, match_root).resolve()
@@ -1685,12 +1689,13 @@ def _binding_from_status(
     object_symbol: str,
 ) -> NativeFunctionBinding:
     config = status.config
+    source_path = (config.directory / config.source) if config.source else None
     return NativeFunctionBinding(
         function=function,
         status=status,
         object_symbol=object_symbol,
         config_sha256=_sha256(config.directory / "scratch.conf"),
-        source_sha256=_sha256(config.directory / config.source),
+        source_sha256=_sha256(source_path) if source_path is not None else None,
     )
 
 
@@ -1908,7 +1913,11 @@ def build_native_object_set(
             )
         input_hashes = dict(inputs_after)
         config_path = (status.config.directory / "scratch.conf").resolve()
-        source_path = (status.config.directory / status.config.source).resolve()
+        source_path = (
+            (status.config.directory / status.config.source).resolve()
+            if status.config.source
+            else None
+        )
         return NativeObjectRecord(
             function=function,
             status=refreshed_status,
@@ -1918,7 +1927,7 @@ def build_native_object_set(
             compile_inputs=inputs_after,
             config_sha256=input_hashes[config_path],
             object_sha256=matchlib.coff_sha256(object_data),
-            source_sha256=input_hashes[source_path],
+            source_sha256=input_hashes[source_path] if source_path is not None else None,
         )
 
     def audit_cluster(
@@ -2113,7 +2122,7 @@ def _function_binding_payload(
 ) -> dict[str, Any]:
     config = binding.status.config
     config_path = config.directory / "scratch.conf"
-    source_path = config.directory / config.source
+    source_path = (config.directory / config.source) if config.source else None
     return {
         "address": binding.function.address,
         "experiment_epoch": matchlib.scratch_experiment_epoch(
@@ -2124,8 +2133,16 @@ def _function_binding_payload(
         "canonical_config": _repo_relative(config_path, repo_root=repo_root),
         "canonical_config_sha256": binding.config_sha256 or _sha256(config_path),
         "canonical_scratch": _repo_relative(config.directory, repo_root=repo_root),
-        "canonical_source": _repo_relative(source_path, repo_root=repo_root),
-        "canonical_source_sha256": binding.source_sha256 or _sha256(source_path),
+        "canonical_source": (
+            _repo_relative(source_path, repo_root=repo_root)
+            if source_path is not None
+            else None
+        ),
+        "canonical_source_sha256": (
+            binding.source_sha256 or _sha256(source_path)
+            if source_path is not None
+            else None
+        ),
         "effective_end": (
             config.end_va
             if config.end_va is not None
@@ -2154,19 +2171,27 @@ def object_manifest_payload(
     records: list[dict[str, Any]] = []
     for record in objects.records:
         compile_config = _record_compile_config(record)
-        source_path = compile_config.directory / compile_config.source
+        source_path = (
+            compile_config.directory / compile_config.source
+            if compile_config.source
+            else None
+        )
         config_path = compile_config.directory / "scratch.conf"
         record_bindings = _record_bindings(record)
         first_binding = record_bindings[0]
         row: dict[str, Any] = {
             "address": first_binding.function.address,
             "cflags": shlex.split(compile_config.cflags),
-            "compile_argv": [
-                "/nologo",
-                "/c",
-                *shlex.split(compile_config.cflags),
-                Path(compile_config.source).name,
-            ],
+            "compile_argv": (
+                [
+                    "/nologo",
+                    "/c",
+                    *shlex.split(compile_config.cflags),
+                    Path(compile_config.source).name,
+                ]
+                if source_path is not None
+                else []
+            ),
             "compile_inputs": [
                 _snapshotted_file_payload(path, sha256, repo_root=repo_root)
                 for path, sha256 in record.compile_inputs
@@ -2198,8 +2223,16 @@ def object_manifest_payload(
                 or matchlib.coff_sha256(record.object_path.read_bytes())
             ),
             "scratch": _repo_relative(compile_config.directory, repo_root=repo_root),
-            "source": _repo_relative(source_path, repo_root=repo_root),
-            "source_sha256": record.source_sha256 or _sha256(source_path),
+            "source": (
+                _repo_relative(source_path, repo_root=repo_root)
+                if source_path is not None
+                else None
+            ),
+            "source_sha256": (
+                record.source_sha256 or _sha256(source_path)
+                if source_path is not None
+                else None
+            ),
             "target_size": first_binding.function.size,
             "translation_unit": {
                 "kind": "cluster" if record.translation_unit is not None else "isolated",
