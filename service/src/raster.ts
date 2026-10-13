@@ -170,7 +170,10 @@ export class Layer {
   // holds: modulated by `color` (0..1, alpha included) as its vertex colour does and blended by the sample's alpha;
   // or, a `shadow`, darkening what lies under by that alpha. A sample whose alpha is at most `alphaRef` (of 255) does
   // neither, as Grim's alpha test drops it.
-  drawQuad(texture: Texture, cell: Box, quad: Quad, color: readonly number[], shadow: boolean, alphaRef: number): void {
+  drawQuad(texture: Texture, cell: Box | PreparedCell, quad: Quad, color: readonly number[], shadow: boolean, alphaRef: number): void {
+    const { sMin, sMax, tMin, tMax } = "sMin" in cell ? cell : FULL_CELL;
+    if (sMin >= sMax || tMin >= tMax) return;
+    const bounded = sMin > 0 || sMax < 1 || tMin > 0 || tMax < 1;
     const cx = quad.x + quad.width / 2;
     const cy = quad.y + quad.height / 2;
     const cos = Math.cos(quad.rotation);
@@ -181,8 +184,13 @@ export class Layer {
     const tx = -sin / quad.height;
     const ty = cos / quad.height;
     const reach = (Math.abs(quad.width * sin) + Math.abs(quad.height * cos)) / 2 + 1;
-    const top = Math.max(0, Math.floor(cy - reach));
-    const bottom = Math.min(this.height, Math.ceil(cy + reach));
+    // Rotate the smaller support rectangle around the original quad centre, leaving sampling coordinates intact.
+    const ox = ((sMin + sMax) * 0.5 - 0.5) * quad.width;
+    const oy = ((tMin + tMax) * 0.5 - 0.5) * quad.height;
+    const tightCy = bounded ? cy + sin * ox + cos * oy : cy;
+    const tightReach = bounded ? (Math.abs(quad.width * (sMax - sMin) * sin) + Math.abs(quad.height * (tMax - tMin) * cos)) / 2 + 1 : reach;
+    const top = Math.max(0, Math.floor(tightCy - tightReach));
+    const bottom = Math.min(this.height, Math.ceil(tightCy + tightReach));
     const [r, g, b, alpha] = color as [number, number, number, number];
     const t = texture.data;
     for (let y = top; y < bottom; y++) {
@@ -190,8 +198,12 @@ export class Layer {
       const s0 = sx * (0.5 - cx) + sy * dy + 0.5;
       const t0 = tx * (0.5 - cx) + ty * dy + 0.5;
       // The row's columns where both lie in [0, 1).
-      const lo = Math.max(0, spanStart(s0, sx), spanStart(t0, tx));
-      const hi = Math.min(this.width, spanEnd(s0, sx), spanEnd(t0, tx));
+      let lo = Math.max(0, spanStart(s0, sx), spanStart(t0, tx));
+      let hi = Math.min(this.width, spanEnd(s0, sx), spanEnd(t0, tx));
+      if (bounded) {
+        lo = Math.max(lo, boundStart(s0, sx, sMin, sMax), boundStart(t0, tx, tMin, tMax));
+        hi = Math.min(hi, boundEnd(s0, sx, sMin, sMax), boundEnd(t0, tx, tMin, tMax));
+      }
       for (let start = lo; start < hi; ) {
         const base = start & ~31;
         const end = Math.min(hi, base + 32);
@@ -295,6 +307,40 @@ export interface Box {
   height: number;
 }
 
+const FULL_CELL = { sMin: 0, sMax: 1, tMin: 0, tMax: 1 };
+// A source cell with conservative alpha-support bounds in its unrotated 0..1 coordinates.
+export interface PreparedCell extends Box {
+  readonly sMin: number;
+  readonly sMax: number;
+  readonly tMin: number;
+  readonly tMax: number;
+}
+// Include each bilinear footprint and neighbouring atlas cells, then an extra texel of margin.
+// Sampling still uses the original cell and quad; these bounds only exclude certainly transparent regions.
+export function prepareCell(texture: Texture, cell: Box): PreparedCell {
+  if (cell.width <= 0 || cell.height <= 0) return Object.freeze({ ...cell, ...FULL_CELL });
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (let y = Math.max(0, Math.floor(cell.y + 0.5)); y <= Math.min(texture.height - 2, Math.floor(cell.y + cell.height + 0.5)); y++)
+    for (let x = Math.max(0, Math.floor(cell.x + 0.5)); x <= Math.min(texture.width - 2, Math.floor(cell.x + cell.width + 0.5)); x++)
+      if (texture.data[(y * texture.width + x) * 4 + 3]! > 0 || texture.data[(y * texture.width + x) * 4 + 7]! > 0 ||
+          texture.data[((y + 1) * texture.width + x) * 4 + 3]! > 0 || texture.data[((y + 1) * texture.width + x) * 4 + 7]! > 0) {
+        minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+      }
+  // An extra source texel on each side covers coordinate-rounding uncertainty.
+  return Object.freeze({
+    ...cell,
+    sMin: Math.max(0, (minX - cell.x - 1.5) / cell.width), sMax: Math.min(1, (maxX - cell.x + 1.5) / cell.width),
+    tMin: Math.max(0, (minY - cell.y - 1.5) / cell.height), tMax: Math.min(1, (maxY - cell.y + 1.5) / cell.height),
+  });
+}
+function boundStart(f0: number, k: number, low: number, high: number): number {
+  return k > 0 ? Math.ceil((low - f0) / k) : k < 0 ? Math.ceil((high - f0) / k) : f0 >= low && f0 < high ? 0 : Infinity;
+}
+function boundEnd(f0: number, k: number, low: number, high: number): number {
+  return k > 0 ? Math.ceil((high - f0) / k) : k < 0 ? Math.ceil((low - f0) / k) : Infinity;
+}
+
 // `art` stretched over `box` with its borders kept at their size, as CSS border-image draws web/src/style.css .panel,
 // after its silhouette `offset` pixels right and down, darkening what lies under it by `shade` of its alpha.
 export function paintPanel(canvas: Canvas, art: Pixels, borders: { top: number; right: number; bottom: number; left: number }, box: Box, offset: number, shade: number): void {
@@ -312,4 +358,3 @@ export function paintPanel(canvas: Canvas, art: Pixels, borders: { top: number; 
       }
     }
 }
-

@@ -6,7 +6,7 @@
 import { ALPHA_REF, type Ground, SIZE } from "../web/src/terrain/rules";
 import type { Env } from "./http";
 import { decodePng, type Pixels } from "./png";
-import { type Box, Canvas, Layer, paintGround, type Quad, straightTexture, type Texture } from "./raster";
+import { Canvas, Layer, paintGround, prepareCell, type PreparedCell, type Quad, straightTexture, type Texture } from "./raster";
 
 const BAKE_BYTES = 44;
 const DECALS = 0x80;
@@ -70,9 +70,21 @@ function readBake(bakes: DataView, index: number): Bake {
 }
 
 // Cell `frame` of an atlas cut `grid` cells a side, in texels of its art: the texture less its border.
-function cell(art: Texture, grid: number, frame: number): Box {
+const cells = new WeakMap<Texture, Map<number, PreparedCell>>();
+function cell(art: Texture, grid: number, frame: number): PreparedCell {
+  let cache = cells.get(art);
+  if (!cache) {
+    cache = new Map();
+    cells.set(art, cache);
+  }
+  // The largest original atlas grid is 16x16, so its frame fits in eight bits.
+  const key = grid * 256 + frame;
+  const known = cache.get(key);
+  if (known) return known;
   const [width, height] = [(art.width - 2) / grid, (art.height - 2) / grid];
-  return { x: (frame % grid) * width, y: Math.floor(frame / grid) * height, width, height };
+  const result = prepareCell(art, { x: (frame % grid) * width, y: Math.floor(frame / grid) * height, width, height });
+  cache.set(key, result);
+  return result;
 }
 
 // Bakes a chunk holds before it is drawn: the more, the more of them later ones cover.
