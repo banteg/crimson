@@ -17,6 +17,8 @@
     "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "^5.20261006.1",
     "@types/node": "^26.6.4",
+    "esbuild": "0.28.1",
+    "jsonc-parser": "3.3.1",
     "typescript": "^7.0.2",
     "vite": "^8.3.3",
     "vite-plugin-solid": "^2.11.14",

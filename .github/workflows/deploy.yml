@@ -7,6 +7,10 @@ on:
         description: Assemble and validate without accessing or changing production
         type: boolean
         default: true
+      force_reverify:
+        description: Reverify and rebake every active run even when replay inputs are unchanged
+        type: boolean
+        default: false
       runtime_run_id:
         description: Optional successful Crimson runtime run ID for this master commit
         type: string
@@ -85,6 +89,7 @@ jobs:
         working-directory: service
         run: |
           npx --no-install wrangler deploy --dry-run --outdir release-worker
+          node scripts/deploy-replays.mjs fingerprint
           node scripts/deploy-checks.mjs package
           npx --no-install wrangler deploy release-worker/index.js --no-bundle --dry-run
       - name: Archive the complete release
@@ -141,7 +146,16 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: node scripts/deploy-checks.mjs migrations
+      - name: Plan replay verification against the completed live deployment
+        id: replays
+        working-directory: service
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          FORCE_REVERIFY: ${{ inputs.force_reverify }}
+        run: node scripts/deploy-replays.mjs plan
       - name: Reverify all active production runs
+        if: steps.replays.outputs.reverify == 'true'
         working-directory: service
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -150,7 +164,9 @@ jobs:
       - name: Reject a superseded commit or newly failing checks
         env:
           GH_TOKEN: ${{ github.token }}
-        run: node service/scripts/deploy-preflight.mjs --checks-only
+        run: |
+          node service/scripts/deploy-preflight.mjs --checks-only
+          node service/scripts/deploy-replays.mjs check
       - name: Deploy the prepared Worker and assets
         working-directory: service
         env:
@@ -161,6 +177,7 @@ jobs:
             --tag "$GITHUB_SHA" --message "GitHub deployment $GITHUB_SHA" | tee ../deployment.log
           cat ../deployment.log >> "$GITHUB_STEP_SUMMARY"
       - name: Put every run's ground, as the reverify above baked it
+        if: steps.replays.outputs.grounds == 'true'
         working-directory: service
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -176,3 +193,10 @@ jobs:
           path: |
             release.json
             deployment.log
+            deployment-plan.json
+      - name: Record completed replay inputs for the next deployment
+        working-directory: service
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/deploy-replays.mjs record

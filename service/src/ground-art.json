@@ -1,0 +1,5 @@
+{
+  "terrain": ["ter0.png", "ter1.png", "ter2.png", "ter3.png", "ter4.png", "ter5.png", "ter6.png", "ter7.png"],
+  "particles": "particles.png",
+  "bodyset": "bodyset.png"
+}

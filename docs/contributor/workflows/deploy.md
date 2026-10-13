@@ -21,7 +21,7 @@ the `crimson-land` Worker and the `crimson.land` zone:
 | --- | --- | --- |
 | Account | Workers Scripts: Edit | Publish the Worker and its static assets |
 | Account | D1: Read | Check applied migrations and select active runs |
-| Account | Workers R2 Storage: Edit | Download stored replays and upload baked run grounds |
+| Account | Workers R2 Storage: Edit | Download replays, upload grounds and record completed replay inputs |
 | Zone | Zone: Read | Resolve the site's zone |
 | Zone | Workers Routes: Edit | Keep the configured custom domain attached |
 
@@ -53,8 +53,10 @@ repository secrets if credentials should be available only to production jobs.
    release without Cloudflare credentials or production access.
 4. To publish, run again with **dry_run** unchecked. The production job checks
    the package hashes, requires all migrations already applied, and reverifies
-   every active production run before uploading. It checks master and required
-   checks again immediately before upload.
+   every active production run when the replay inputs changed or no completed
+   live baseline is available. It checks master and required
+   checks again immediately before upload. Check **force_reverify** to run
+   the full reverification and ground bake regardless of the baseline.
 
 Normal push CI keeps its path filters, so service-only, client-only, site and
 documentation commits may omit a deployment artifact. With no runtime run ID
@@ -81,7 +83,8 @@ A trusted runtime run for the deployment commit can restore an unchanged module
 or client from a prior build, verify its identity and bytes, and upload it as an
 artifact of the current run. Its manifest keeps the original build commit. The
 deployment preflight still refuses runs of another commit and requires all green
-checks; a fingerprint never substitutes for runtime validation or replay checks.
+checks. Build fingerprints alone cannot authorize replay reuse; the production
+replay baseline below covers the verifier and renderer dependencies separately.
 Job reruns can retain older artifacts with the same name; the preflight
 validates the newest ID per name and pins exact downloads in the manifest.
 
@@ -113,19 +116,50 @@ D1 each time and downloads missing replays from R2 with at most four concurrent
 requests into a local cache. Only complete downloads are reused. Download and verification timings are logged.
 The local cache is not uploaded to Actions caches: active runs include hidden
 and banned runs that the public replay route refuses, and fork PRs can read
-default-branch Actions caches. Every active replay is verified against this
-release's WASM and TypeScript verifier on every deployment. A matching WASM
-hash alone cannot bypass changes in the TypeScript verifier. A failed run
+default-branch Actions caches. Reverification checks every active replay against
+this release's WASM and TypeScript verifier when replay inputs change. A matching
+WASM hash alone cannot bypass changes in the TypeScript verifier. A failed run
 blocks upload and reports possible retirement SQL; the workflow does not
 execute that SQL. Follow the [ranked rules](../../rewrite/ranked-rules.md#when-the-verifier-changes)
 to decide whether to fix the verifier or retire affected runs.
+
+`service/scripts/deploy-replays.mjs` bundles the verification entry points and
+hashes their JavaScript, referenced WASM bytes, dependency lock, Wrangler
+configuration, SQL migrations and the verification runner. Ground uploads
+also cover their storage policy. The ground identity also covers the baking
+entry point and the generated images listed in `service/src/ground-art.json`,
+which the renderer uses too. Site metadata, page styles and browser-client-only
+changes leave these identities unchanged. Dependency or configuration changes
+may conservatively require a full run even when gameplay behavior is unchanged.
+
+The prepared package includes `release-worker/replay-inputs.json` in its checked
+file hashes. After ground uploads and the production smoke check succeed, the
+workflow records the deployed commit, both identities and completed status in the replay bucket
+at `deploy/replay-inputs.json`. The next deploy skips reverification and ground
+uploads only when both identities match and the baseline commit is still served
+by `/deployment.txt`. It rechecks that live marker immediately before deploying.
+A missing, unreadable, incomplete, malformed or mismatched baseline requires the full work;
+the first deployment after introducing the gate also runs everything. Failed
+uploads, smoke checks or baseline writes cannot establish a reusable baseline.
+Before a full attempt the workflow marks completion pending, so a failed forced
+audit of the same commit cannot leave an older record reusable. This write also
+checks R2 write access before the expensive work. A rollback invalidates the
+record unless its commit still matches the live marker. **force_reverify**
+bypasses reuse and refreshes the record after success; use it after importing or
+restoring replay data outside the normal verified submission path.
+
+Ground changes still require simulation to bake each run, so they invoke the
+same reverification script even if the verification identity is unchanged.
+Changes to verification conservatively rebake grounds too. Every new run is
+verified and gets its ground when submitted; an unchanged deploy keeps the
+existing stored grounds.
 
 Reverification covers the run list at its start. Uploads may continue while
 the check runs; this does not create an atomic release transaction over D1,
 R2 and the Worker. Large or incompatible rule changes need a coordinated
 release window.
 
-After the Worker deploys, `npm run grounds` uploads each verified run's baked
+After a deploy that required reverification, `npm run grounds` uploads each verified run's baked
 ground to `crimson-land-replays/runs/<id>.ground.jpg`. This avoids a cold
 reverification when a visitor or card crawler first requests an older run.
 An R2 authentication failure here leaves the new Worker live but stops the
@@ -141,7 +175,7 @@ The `crimson-land-release` artifact contains the prepared release tarball and
 `release.json`: deployment commit, runtime run, selected artifact IDs, original
 verifier/game/client build provenance and SHA-256 hashes of the Worker modules,
 site files, verifier and Wrangler config. The deployment summary and
-`crimson-land-deployment` artifact retain Wrangler output, including the
+`crimson-land-deployment` artifact retain the replay plan and Wrangler output, including the
 Cloudflare version ID. The `/deployment.txt` the workflow generates identifies
 the published commit. The smoke check polls it for up to 60 seconds to allow propagation and
 rejects a different revision before checking assets. Production smoke checks

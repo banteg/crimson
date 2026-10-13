@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { downloadReplays } from "./reverify-cache.mjs";
 import { putGrounds } from "./grounds.mjs";
+import { replayInputs, replayPlan, beginReplayWork, productionSha, checkReplayPlan, recordReplayBaseline } from "./deploy-replays.mjs";
 import { requireArtifacts, requireGreenChecks, requireTrustedRun, resolveRuntimeBuild, REQUIRED_CHECKS } from "./deploy-preflight.mjs";
 import { requireBuildIdentity, requireMigrations, packageManifest, verifyManifest, smoke, waitForRelease } from "./deploy-checks.mjs";
 
@@ -79,6 +80,7 @@ test("release manifest requires a complete package and detects tampering or a di
       mkdirSync(join(file, ".."), { recursive: true });
       writeFileSync(file, "fixture");
     }
+    writeFileSync("release-worker/replay-inputs.json", JSON.stringify({ schema: 1, verification: "a".repeat(64), grounds: "b".repeat(64) }));
     const game = build("game", [["game.wasm", "game module"]]);
     writeFileSync("../crimson-core/build/wasm/core.wasm.build.json", JSON.stringify(build("wasm", [["core.wasm", "fixture"]])));
     writeFileSync("dist/play/build.json", JSON.stringify(build("client", ["index.html", "index.js", "index.wasm"].map((name) => [name, "fixture"]), game)));
@@ -239,4 +241,158 @@ test("puts the grounds of runs production still has, removes those deleted meanw
   });
   assert.deepEqual(calls, { put: ["a", "b"], remove: ["b"], bake: ["c", "d"] });
   assert.deepEqual(result, { put: 2, removed: 1, baked: 1, failed: ["d"] });
+});
+
+// Fingerprints must cover execution, not just the core's build label or a hand-maintained source path filter.
+
+function replayFixture() {
+  const directory = mkdtempSync(join(tmpdir(), "crimson-replay-inputs-"));
+  const service = join(directory, "service");
+  const files = {
+    "src/verify.ts": 'import core from "../../crimson-core/build/wasm/core.wasm"; import { aim } from "./aim"; import schema from "./schema.json"; export function verifyRun() { return [core, aim(), schema.fields]; }',
+    "src/aim.ts": 'export const aim = () => 1;',
+    "src/schema.json": '{"fields":1}',
+    "src/replay.ts": 'export const REPLAY_RULES = 1; export const decodeReplay = (x) => x; export const inflateReplay = (x) => x;',
+    "src/transport.ts": 'export const encodeTransport = (x) => x;',
+    "src/ranked.ts": 'export const unrankedReasons = () => []; export const outcomeReasons = () => []; export const rankedBoard = () => "survival"; export const rankedScore = () => 1;',
+    "src/ground.ts": 'export const paint = () => 1; export const groundKey = (id) => `runs/${id}.jpg`;',
+    "src/runs.ts": 'import { verifyRun } from "./verify"; import { paint } from "./ground"; export const verifyWithGround = () => [verifyRun(), paint()];',
+    "src/ground-art.json": '{"terrain":["ter0.png"],"particles":"particles.png","bodyset":"bodyset.png"}',
+    "package-lock.json": '{"lockfileVersion":3}',
+    "package.json": '{"type":"module"}',
+    "scripts/reverify.mjs": "reverify runner",
+    "scripts/grounds.mjs": "ground upload",
+    "wrangler.jsonc": '{ // comment\n"compatibility_date":"2026-08-22"}',
+    "migrations/0001.sql": 'CREATE TABLE runs (id TEXT);',
+    "dist/ui/ter0.png": "terrain",
+    "dist/ui/particles.png": "particles",
+    "dist/ui/bodyset.png": "corpses",
+    "../crimson-core/build/wasm/core.wasm": new Uint8Array([0, 97, 115, 109]),
+  };
+  const write = (file, contents) => {
+    mkdirSync(join(service, file, ".."), { recursive: true });
+    writeFileSync(join(service, file), contents);
+  };
+  for (const [file, contents] of Object.entries(files)) write(file, contents);
+  return { directory, service, write };
+}
+
+test("fingerprints exclude metadata, page styles and client code, and are independent of checkout paths", async () => {
+  const a = replayFixture(), b = replayFixture();
+  try {
+    const before = await replayInputs(a.service);
+    assert.deepEqual(await replayInputs(b.service), before);
+    for (const file of ["src/index.ts", "dist/index.html", "dist/style.css", "dist/play/index.js", "dist/ui/menu.png"])
+      a.write(file, "presentation changed");
+    assert.deepEqual(await replayInputs(a.service), before);
+  } finally { rmSync(a.directory, { recursive: true, force: true }); rmSync(b.directory, { recursive: true, force: true }); }
+});
+
+test("fingerprints invalidate for WASM, schema, rules, new transitive modules, dependencies, config and migrations", async () => {
+  const fixture = replayFixture();
+  try {
+    let previous = await replayInputs(fixture.service);
+    for (const [file, contents] of [
+      ["../crimson-core/build/wasm/core.wasm", new Uint8Array([0, 97, 115, 109, 1])],
+      ["src/schema.json", '{"fields":2}'],
+      ["src/ranked.ts", 'export const unrankedReasons = () => ["new rule"]; export const outcomeReasons = () => []; export const rankedBoard = () => "survival"; export const rankedScore = () => 1;'],
+      ["src/aim.ts", 'import { bound } from "./bound"; export const aim = () => bound;'],
+      ["src/bound.ts", 'export const bound = 3;'],
+      ["package-lock.json", '{"lockfileVersion":3,"version":"changed"}'],
+      ["wrangler.jsonc", '{"compatibility_date":"2026-09-01"}'],
+      ["migrations/0002.sql", 'ALTER TABLE runs ADD hidden INTEGER;'],
+    ]) {
+      if (file === "src/aim.ts") fixture.write("src/bound.ts", 'export const bound = 2;');
+      fixture.write(file, contents);
+      const current = await replayInputs(fixture.service);
+      assert.notEqual(current.verification, previous.verification, file);
+      assert.notEqual(current.grounds, previous.grounds, file);
+      previous = current;
+    }
+  } finally { rmSync(fixture.directory, { recursive: true, force: true }); }
+});
+
+test("ground rendering and referenced art invalidate grounds; missing or unsafe art never produces an identity", async () => {
+  const fixture = replayFixture();
+  try {
+    let previous = await replayInputs(fixture.service);
+    for (const [file, contents] of [["src/ground.ts", 'export const paint = () => 2; export const groundKey = (id) => `runs/${id}.jpg`;'], ["dist/ui/particles.png", "different pixels"], ["scripts/grounds.mjs", "new upload policy"]]) {
+      fixture.write(file, contents);
+      const current = await replayInputs(fixture.service);
+      assert.equal(current.verification, previous.verification);
+      assert.notEqual(current.grounds, previous.grounds);
+      previous = current;
+    }
+    fixture.write("src/ground-art.json", '{"terrain":["ter0.png"],"particles":"particles.png","bodyset":"bodyset.png","extra":"new.png"}');
+    await assert.rejects(replayInputs(fixture.service), /ENOENT/);
+    fixture.write("dist/ui/new.png", "new art");
+    previous = await replayInputs(fixture.service);
+    fixture.write("dist/ui/new.png", "changed new art");
+    assert.notEqual((await replayInputs(fixture.service)).grounds, previous.grounds);
+    fixture.write("src/ground-art.json", '{"terrain":["../outside.png"]}');
+    await assert.rejects(replayInputs(fixture.service), /Invalid ground art path/);
+  } finally { rmSync(fixture.directory, { recursive: true, force: true }); }
+});
+
+const replayIdentities = { schema: 1, verification: "1".repeat(64), grounds: "2".repeat(64) };
+const replayBaseline = { sha, inputs: replayIdentities, completed: true };
+
+test("reuses only completed identities for the live commit; any missing or malformed baseline falls back to full work", () => {
+  const reuse = replayPlan(replayIdentities, replayBaseline, sha);
+  assert.equal(reuse.reverify, false);
+  assert.equal(reuse.grounds, false);
+  assert.equal(reuse.baseline_sha, sha);
+  const fallback = [null, {}, { ...replayBaseline, completed: false }, { sha, inputs: replayIdentities }, { ...replayBaseline, sha: "b".repeat(40) },
+    { ...replayBaseline, inputs: { ...replayIdentities, schema: 2 } },
+    { ...replayBaseline, inputs: { ...replayIdentities, grounds: "bad" } },
+    { ...replayBaseline, inputs: { ...replayIdentities, unknown: true } }];
+  for (const baseline of fallback) {
+    const plan = replayPlan(replayIdentities, baseline, sha);
+    assert.equal(plan.reverify, true);
+    assert.equal(plan.grounds, true);
+    assert.equal(plan.baseline_sha, null);
+  }
+  assert.equal(replayPlan(replayIdentities, replayBaseline, null).reverify, true);
+  assert.equal(replayPlan(replayIdentities, replayBaseline, sha, true).reverify, true);
+  for (const key of ["verification", "grounds"])
+    assert.equal(replayPlan({ ...replayIdentities, [key]: "3".repeat(64) }, replayBaseline, sha).reverify, true);
+});
+
+test("the reuse gate rejects changed production, altered plans and failed marker requests before deployment", async () => {
+  const plan = { sha: "b".repeat(40), ...replayPlan(replayIdentities, replayBaseline, sha) };
+  const same = async () => new Response(sha);
+  await checkReplayPlan(plan, replayIdentities, plan.sha, same);
+  await assert.rejects(checkReplayPlan(plan, replayIdentities, plan.sha, async () => new Response("c".repeat(40))), /Production changed/);
+  await assert.rejects(checkReplayPlan(plan, replayIdentities, sha, same), /another release/);
+  await assert.rejects(checkReplayPlan(plan, { ...replayIdentities, grounds: "3".repeat(64) }, plan.sha, same), /inputs changed/);
+  await assert.rejects(checkReplayPlan({ ...plan, grounds: true }, replayIdentities, plan.sha, same), /Incomplete/);
+  for (const response of [new Response("old html"), new Response(sha, { status: 503 })])
+    await assert.rejects(productionSha(async () => response));
+  await assert.rejects(checkReplayPlan(plan, replayIdentities, plan.sha, async () => { throw Error("network failed"); }), /network failed/);
+  const full = { sha: plan.sha, ...replayPlan(replayIdentities, null, null) };
+  await checkReplayPlan(full, replayIdentities, full.sha, async () => { throw Error("full verification needs no baseline"); });
+});
+
+test("completion recording is bound to the live revision and propagates storage failure", async () => {
+  const recorded = [];
+  await recordReplayBaseline(replayIdentities, sha, async (value) => recorded.push(value), async () => new Response(sha));
+  assert.deepEqual(recorded, [replayBaseline]);
+  await assert.rejects(recordReplayBaseline(replayIdentities, sha, async () => assert.fail("must not write"), async () => new Response("b".repeat(40))), /Production changed/);
+  await assert.rejects(recordReplayBaseline(replayIdentities, sha, async () => { throw Error("R2 write failed"); }, async () => new Response(sha)), /R2 write failed/);
+});
+
+
+test("a failed full attempt invalidates prior completion, including a forced audit of the live commit", async () => {
+  let baseline = replayBaseline;
+  const put = async (value) => { baseline = value; };
+  const reuse = { sha, ...replayPlan(replayIdentities, baseline, sha) };
+  await beginReplayWork(reuse, async () => assert.fail("reuse must not invalidate its baseline"));
+  const full = { sha, ...replayPlan(replayIdentities, baseline, sha, true) };
+  await beginReplayWork(full, put);
+  assert.equal(baseline.completed, false);
+  // If verification, upload or smoke fails, recordReplayBaseline is never reached by the workflow.
+  assert.equal(replayPlan(replayIdentities, baseline, sha).reverify, true);
+  await recordReplayBaseline(replayIdentities, sha, put, async () => new Response(sha));
+  assert.equal(replayPlan(replayIdentities, baseline, sha).reverify, false);
+  await assert.rejects(beginReplayWork(full, async () => { throw Error("R2 permission denied"); }), /R2 permission denied/);
 });

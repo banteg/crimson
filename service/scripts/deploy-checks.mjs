@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { requireReplayInputs } from "./deploy-replays.mjs";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -63,9 +64,10 @@ function releaseFiles() {
 }
 
 export function packageManifest() {
-  for (const path of ["dist/index.html", "dist/play/index.html", "dist/play/index.js", "dist/play/index.wasm", "dist/ui/small.ttf", "dist/ui/small.woff2", "release-worker/index.js"]) {
+  for (const path of ["dist/index.html", "dist/play/index.html", "dist/play/index.js", "dist/play/index.wasm", "dist/ui/small.ttf", "dist/ui/small.woff2", "release-worker/index.js", "release-worker/replay-inputs.json"]) {
     assert.ok(statSync(path).size > 0, `Missing or empty deployment file: ${path}`);
   }
+  requireReplayInputs(JSON.parse(readFileSync("release-worker/replay-inputs.json", "utf8")));
   const release = JSON.parse(readFileSync("../release.json", "utf8"));
   writeFileSync("dist/deployment.txt", `${release.sha}\n`);
   const files = releaseFiles();
