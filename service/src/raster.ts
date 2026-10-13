@@ -154,10 +154,16 @@ const SHOWS = 1 / 512;
 export class Layer {
   readonly rgb: Float32Array;
   readonly clear: Float32Array;
+  // One bit per pixel in horizontal blocks of 32: cleared once the pixel stops showing through. Empty blocks
+  // let an older quad skip covered spans without visiting their pixels. The final block's padding is clipped.
+  private readonly blocks: number;
+  private readonly visible: Uint32Array;
 
   constructor(readonly width: number, readonly height: number) {
     this.rgb = new Float32Array(width * height * 3);
     this.clear = new Float32Array(width * height).fill(1);
+    this.blocks = Math.ceil(width / 32);
+    this.visible = new Uint32Array(this.blocks * height).fill(0xffffffff);
   }
 
   // `cell` of `texture` (a box of its texels, sampled straight) drawn as Grim draws a quad, under what this layer
@@ -186,33 +192,46 @@ export class Layer {
       // The row's columns where both lie in [0, 1).
       const lo = Math.max(0, spanStart(s0, sx), spanStart(t0, tx));
       const hi = Math.min(this.width, spanEnd(s0, sx), spanEnd(t0, tx));
-      for (let x = lo; x < hi; x++) {
-        const at = y * this.width + x;
-        const clear = this.clear[at]!;
-        if (clear < SHOWS) continue;
-        // The bilinear sample at the pixel's centre, as Canvas.sample() takes it.
-        const u = cell.x + (s0 + sx * x) * cell.width + 0.5;
-        const v = cell.y + (t0 + tx * x) * cell.height + 0.5;
-        if (u < 0 || v < 0 || u >= texture.width - 1 || v >= texture.height - 1) continue;
-        const u0 = u | 0;
-        const v0 = v | 0;
-        const fu = u - u0;
-        const fv = v - v0;
-        const w00 = (1 - fu) * (1 - fv);
-        const w10 = fu * (1 - fv);
-        const w01 = (1 - fu) * fv;
-        const w11 = fu * fv;
-        const t00 = (v0 * texture.width + u0) * 4;
-        const t01 = t00 + texture.width * 4;
-        const a = (t[t00 + 3]! * w00 + t[t00 + 7]! * w10 + t[t01 + 3]! * w01 + t[t01 + 7]! * w11) * alpha;
-        if (a * 255 <= alphaRef) continue;
-        this.clear[at] = clear * (1 - a);
-        if (shadow) continue;
-        const rgb = at * 3;
-        const k = clear * a;
-        this.rgb[rgb] = this.rgb[rgb]! + k * r * (t[t00]! * w00 + t[t00 + 4]! * w10 + t[t01]! * w01 + t[t01 + 4]! * w11);
-        this.rgb[rgb + 1] = this.rgb[rgb + 1]! + k * g * (t[t00 + 1]! * w00 + t[t00 + 5]! * w10 + t[t01 + 1]! * w01 + t[t01 + 5]! * w11);
-        this.rgb[rgb + 2] = this.rgb[rgb + 2]! + k * b * (t[t00 + 2]! * w00 + t[t00 + 6]! * w10 + t[t01 + 2]! * w01 + t[t01 + 6]! * w11);
+      for (let start = lo; start < hi; ) {
+        const base = start & ~31;
+        const end = Math.min(hi, base + 32);
+        const block = y * this.blocks + (base >>> 5);
+        let mask = this.visible[block]! & (-1 << (start - base)) & (-1 >>> (base + 32 - end));
+        start = end;
+        while (mask) {
+          // Consume the lowest set bit, keeping the surviving pixels in their original left-to-right order.
+          const bit = 31 - Math.clz32(mask & -mask);
+          mask &= mask - 1;
+          const x = base + bit;
+          const at = y * this.width + x;
+          const clear = this.clear[at]!;
+          if (clear < SHOWS) continue;
+          // The bilinear sample at the pixel's centre, as Canvas.sample() takes it.
+          const u = cell.x + (s0 + sx * x) * cell.width + 0.5;
+          const v = cell.y + (t0 + tx * x) * cell.height + 0.5;
+          if (u < 0 || v < 0 || u >= texture.width - 1 || v >= texture.height - 1) continue;
+          const u0 = u | 0;
+          const v0 = v | 0;
+          const fu = u - u0;
+          const fv = v - v0;
+          const w00 = (1 - fu) * (1 - fv);
+          const w10 = fu * (1 - fv);
+          const w01 = (1 - fu) * fv;
+          const w11 = fu * fv;
+          const t00 = (v0 * texture.width + u0) * 4;
+          const t01 = t00 + texture.width * 4;
+          const a = (t[t00 + 3]! * w00 + t[t00 + 7]! * w10 + t[t01 + 3]! * w01 + t[t01 + 7]! * w11) * alpha;
+          if (a * 255 <= alphaRef) continue;
+          this.clear[at] = clear * (1 - a);
+          // Read back the float32 result, exactly as the next quad's per-pixel cutoff does.
+          if (this.clear[at]! < SHOWS) this.visible[block] = this.visible[block]! & ~(1 << bit);
+          if (shadow) continue;
+          const rgb = at * 3;
+          const k = clear * a;
+          this.rgb[rgb] = this.rgb[rgb]! + k * r * (t[t00]! * w00 + t[t00 + 4]! * w10 + t[t01]! * w01 + t[t01 + 4]! * w11);
+          this.rgb[rgb + 1] = this.rgb[rgb + 1]! + k * g * (t[t00 + 1]! * w00 + t[t00 + 5]! * w10 + t[t01 + 1]! * w01 + t[t01 + 5]! * w11);
+          this.rgb[rgb + 2] = this.rgb[rgb + 2]! + k * b * (t[t00 + 2]! * w00 + t[t00 + 6]! * w10 + t[t01 + 2]! * w01 + t[t01 + 6]! * w11);
+        }
       }
     }
   }
@@ -225,6 +244,7 @@ export class Layer {
     }
     this.rgb.fill(0);
     this.clear.fill(1);
+    this.visible.fill(0xffffffff);
   }
 }
 
