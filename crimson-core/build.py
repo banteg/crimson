@@ -6,6 +6,7 @@ import difflib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -58,6 +59,21 @@ PROBE_READS = {
     "portable_shake_x",
     "portable_shake_y",
 }
+
+
+# The pinned wasi-sdk: WASI_SDK_PATH, else the main checkout's artifacts/wasi-sdk (which its worktrees share), else
+# /opt/wasi-sdk.
+def wasi_sdk() -> Path:
+    if "WASI_SDK_PATH" in os.environ:
+        candidates = [Path(os.environ["WASI_SDK_PATH"])]
+    else:
+        git = shutil.which("git") or "git"
+        common = subprocess.check_output([git, "rev-parse", "--path-format=absolute", "--git-common-dir"], cwd=HERE, text=True).strip()
+        candidates = [Path(common).parent / "artifacts/wasi-sdk", Path("/opt/wasi-sdk")]
+    for sdk in candidates:
+        if (sdk / "VERSION").is_file() and (sdk / "VERSION").read_text().split()[0] == WASI_SDK_VERSION:
+            return sdk
+    raise SystemExit(f"WASM targets require wasi-sdk {WASI_SDK_VERSION} at one of: {', '.join(map(str, candidates))}")
 
 
 def main():
@@ -136,9 +152,7 @@ def main():
             lines.extend(f"put({f});" for f in group["fields"])
     (headers / "snapshot.inc").write_text("\n".join(lines) + "\n")
     if wasm:
-        sdk = Path(os.environ.get("WASI_SDK_PATH", "/opt/wasi-sdk"))
-        if not (sdk / "VERSION").is_file() or (sdk / "VERSION").read_text().split()[0] != WASI_SDK_VERSION:
-            raise SystemExit(f"WASM targets require wasi-sdk {WASI_SDK_VERSION} at WASI_SDK_PATH")
+        sdk = wasi_sdk()
         c, cc = ([str(sdk / "bin" / tool), "--target=wasm32-wasip1"] for tool in ("clang", "clang++"))
     else:
         c, cc = ["clang"], ["clang++"]
