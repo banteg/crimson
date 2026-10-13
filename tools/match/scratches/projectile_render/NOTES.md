@@ -2027,3 +2027,18 @@ and the missing-stream control. The first observed phase-0 difference keeps
 the same **3,843** nodes but changes their shape; this is compiler evidence
 for the source change, not a reconstruction of native C2 IR. Exact prefix
 remains zero, and both full exactness flags remain false.
+
+## 1.9.8 native extent correction (2026-10-13)
+
+Independent Binary Ninja control-flow discovery gives one contiguous body
+`0x00422500..0x004254c5`: 12,229 bytes and 2,957 instructions, with its final
+return at `0x004254c4`. The previous ordered map stopped at `0x00424bb3`
+(9,907 bytes), omitting 2,322 bytes of the same function. No mapped function
+identity lies inside the corrected extent.
+
+The image-bound body hash and complete extent are now retained in
+`analysis/decomp/1.9.8/crimsonland.exe/recovered.json`. The added bytes move
+from unresolved executable coverage into this retained function and its
+matching denominator. Identity/extent recovery grants no compiled match
+credit; the entire 1.9.8 renderer remains WIP until its own reference and
+encoded-body checks pass.

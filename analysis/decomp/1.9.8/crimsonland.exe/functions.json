@@ -2724,10 +2724,10 @@
   {
     "address": "0x00422500",
     "canonical_address": "0x00422C70",
-    "end": "0x00424BB3",
-    "evidence": "ordered",
+    "end": "0x004254C5",
+    "evidence": "recovered",
     "name": "projectile_render",
-    "size": 9907
+    "size": 12229
   },
   {
     "address": "0x004254D0",

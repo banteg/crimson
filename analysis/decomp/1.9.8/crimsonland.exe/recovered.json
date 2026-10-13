@@ -57,6 +57,13 @@
       "end": "0x40a135",
       "body_sha256": "1753d8fd6ffe082bb1eea5fb5462834706bda345b5dd1e792b8029a9f14a686e",
       "note": "Complete bonus application, including Fire Bullets pickup/reset and older nuke axis comparisons."
+    },
+    {
+      "name": "projectile_render",
+      "address": "0x422500",
+      "end": "0x4254c5",
+      "body_sha256": "fa4842c5606d9e761631a85d538ad6b26c82d8b775bac63313cac1e741457603",
+      "note": "Independent Binary Ninja control flow recovers one contiguous complete renderer body, including late ion, fire-overlay and primary head passes; final return at 0x4254c4."
     }
   ],
   "data": [

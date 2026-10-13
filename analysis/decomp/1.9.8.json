@@ -3563,7 +3563,7 @@
           "start": 4334838
         },
         {
-          "end": 4344755,
+          "end": 4347077,
           "kind": "retained_code",
           "owner": "crimsonland.exe/00422500",
           "start": 4334848
@@ -3571,7 +3571,7 @@
         {
           "end": 4347088,
           "kind": "unresolved",
-          "start": 4344755
+          "start": 4347077
         },
         {
           "end": 4347289,
@@ -11048,8 +11048,8 @@
       "totals": {
         "embedded_data": 0,
         "padding": 0,
-        "retained_code": 398379,
-        "unresolved": 42797
+        "retained_code": 400701,
+        "unresolved": 40475
       }
     },
     {
@@ -31919,23 +31919,23 @@
         "compared_target_ranges": [
           [
             4334848,
-            4344755
+            4347077
           ]
         ],
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 337,
+          "ok": 426,
           "positional": false,
-          "unresolved": 84
+          "unresolved": 112
         },
         "state": "wip",
-        "target_instructions": 2402,
-        "target_size": 9907,
+        "target_instructions": 2957,
+        "target_size": 12229,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.8512782235491696,
-      "size": 9907,
+      "ratio": 0.9479201893811295,
+      "size": 12229,
       "source": "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp"
     },
     {
@@ -75834,7 +75834,7 @@
     }
   ],
   "identities": {
-    "inventory": "86bdba414a52b5f65bb48be6c360738bfb21209c795cf988329f93ad43477926",
+    "inventory": "e6f1f5c63fef220f1c8a6e59ce2bdba674d14acd6f91bbff675a17b01486abd6",
     "inventory_policy": "curated-functions-v2; canonical-ownership-v1; data-extents-v1; executable-gaps-unresolved-v1",
     "scoring": "c7960bb4e70067842d2ec2d5e7a217cb3ead1716ee55e64480e2268036c6b080",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1",
@@ -75883,10 +75883,10 @@
     "analysis/decomp/1.9.1/grim.dll/imports.json": "a4929b2195b0aae572e9a11ba6473f48bc15213aff13465c7aae5833759002e1",
     "analysis/decomp/1.9.1/grim.dll/metadata.json": "2283281db97d8c9d22c4240bb9f1b5eed552e6ca4d7303f729a5464af296b6ac",
     "analysis/decomp/1.9.8/crimsonland.exe/data.json": "09b2bb9fb47a18bed2499ef07086037b2836e380b6a1f7fffc1f7244d5d50828",
-    "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "80f23da6899a9ad45c4de1b1f1876c7fc1f5568ab0d703e8338dd6b64ab52e88",
+    "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "2e63ef180accc1c8a9fe679e8ae6f421eae977e8d99dbca158df75ef01e4ff76",
     "analysis/decomp/1.9.8/crimsonland.exe/imports.json": "0c31f6358f0514e1c8815d7921c8ad3779199591dd36954c4cce4a7bd3024c18",
     "analysis/decomp/1.9.8/crimsonland.exe/metadata.json": "9b248110b10661b30a5d703fc60149baf131572ed64ec85dc77fb71e6b448e4d",
-    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "243b5d3588ffe672dee218d136e9011f928da1179f588f78985a45930cc65fb0",
+    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "836085edfbaaeef373640d8969653be7385c80b658116528c32bbb4b3210768d",
     "analysis/decomp/1.9.8/grim.dll/data.json": "6b9d95c6e1826fe8c470bfc3d2e97e5b9541db2613f36b912b0b8fae08f5ba3b",
     "analysis/decomp/1.9.8/grim.dll/functions.json": "3f5cf721ea4279c4d80280411d3ad9426f60036979e0eedc159e1af9e1a6714f",
     "analysis/decomp/1.9.8/grim.dll/imports.json": "f2e55491c2a9be4e9dcb81246e54f4366f646cf04fc5fd08f6f316e01dd14e7a",
