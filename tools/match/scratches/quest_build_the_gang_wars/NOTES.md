@@ -1,5 +1,17 @@
 # `quest_build_the_gang_wars`
 
+## 1.9.8 complete match (2026-10-13)
+
+The reviewed native body is `0x00434790..0x00434936`: 422 bytes, 92
+instructions and five basic blocks. Its final return precedes ten alignment
+NOPs. Independent Binary Ninja control flow and the pinned body SHA-256 establish
+the full boundary.
+
+Resolving the terrain owner closes the four height references without changing
+recovered source. All 92 instructions and encoded bytes match, prefix 92, with
+all eight positional references resolved and equal. Canonical exactness is
+unchanged.
+
 ## Current result: exact (2026-09-04)
 
 The first repeated wave uses a zero-based wave index, with trigger derived as

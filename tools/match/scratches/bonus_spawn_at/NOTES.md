@@ -1,5 +1,18 @@
 # bonus_spawn_at
 
+## 1.9.8 complete match (2026-10-13)
+
+The reviewed native body is `0x0041ee30..0x0041f00f`: 479 bytes, 128
+instructions and 21 basic blocks, with every return path included. The one
+following NOP is alignment. Independent Binary Ninja control flow and the pinned
+body SHA-256 establish the boundary.
+
+Resolving the terrain owner also resolves its width/height members, closing the
+last two operands without changing recovered source. The pinned body now passes
+all 128 instructions and encoded bytes, prefix 128, and all 28 positional
+references with zero unresolved or mismatched operands. Canonical exactness is
+unchanged.
+
 ## Plausibility pass (2026-09-25)
 
 Countdown `do`/`while` loops were replaced with counted `for` loops. C2 reverses an unused counted index into the same `dec`/`jne`. The source stays exact, byte for byte. Any older description below of the replaced spelling is historical. See [the audit](../../PLAUSIBILITY-AUDIT-2026-09-25.md).

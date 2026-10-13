@@ -2106,6 +2106,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0048d210",
+      "name": "terrain_render_target",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0048d268",
       "name": "bonus_hud_slot_table",
       "program": "1.9.8/crimsonland.exe"
@@ -2471,6 +2476,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004a842c",
+      "name": "projectile_update_tick",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004a8478",
       "name": "effect_template_position",
       "program": "1.9.8/crimsonland.exe"
@@ -2591,6 +2601,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004bfe0c",
+      "name": "perk_id_bloody_mess_quick_learner",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004bfe10",
       "name": "perk_id_sharpshooter",
       "program": "1.9.8/crimsonland.exe"
@@ -2638,6 +2653,11 @@
     {
       "address": "0x004bfeb8",
       "name": "perk_id_bonus_economist",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfebc",
+      "name": "perk_id_poison_bullets",
       "program": "1.9.8/crimsonland.exe"
     },
     {

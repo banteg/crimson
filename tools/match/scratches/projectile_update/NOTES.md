@@ -1,5 +1,20 @@
 # `projectile_update`
 
+## 1.9.8 reviewed extent and operands (2026-10-13)
+
+Independent Binary Ninja control flow recovers one contiguous native body at
+`0x00420330..0x004224f6`: 8,646 bytes, 2,223 instructions and 288 basic
+blocks. The final return is at `0x004224f5`; the following ten NOPs are
+alignment. `recovered.json` pins this full extent and its body hash.
+
+Native initializer and counter references independently establish
+`projectile_update_tick`, `terrain_render_target`, `perk_id_poison_bullets`
+and `perk_id_bloody_mess_quick_learner`. Their reviewed pins resolve the
+remaining unknown updater globals. The unchanged recovered source still has
+2,213 candidate instructions and three aligned reference mismatches, and remains
+WIP. The prior matcher already recognized terminal padding: pinning this extent
+does not remove ten native body instructions or award updater match credit.
+
 ## Exact recovery (2026-09-13)
 
 The [exact recovery proof](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/projectile-exact-2026-09-13/README.md)

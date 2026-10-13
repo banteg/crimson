@@ -2580,10 +2580,10 @@
   {
     "address": "0x0041EE30",
     "canonical_address": "0x0041F5B0",
-    "end": "0x0041F010",
-    "evidence": "ordered",
+    "end": "0x0041F00F",
+    "evidence": "recovered",
     "name": "bonus_spawn_at",
-    "size": 480
+    "size": 479
   },
   {
     "address": "0x0041F010",
@@ -2716,10 +2716,10 @@
   {
     "address": "0x00420330",
     "canonical_address": "0x00420B90",
-    "end": "0x00422500",
-    "evidence": "ordered",
+    "end": "0x004224F6",
+    "evidence": "recovered",
     "name": "projectile_update",
-    "size": 8656
+    "size": 8646
   },
   {
     "address": "0x00422500",
@@ -3382,10 +3382,10 @@
   {
     "address": "0x00434790",
     "canonical_address": "0x00435120",
-    "end": "0x00434940",
-    "evidence": "referenced",
+    "end": "0x00434936",
+    "evidence": "recovered",
     "name": "quest_build_the_gang_wars",
-    "size": 432
+    "size": 422
   },
   {
     "address": "0x00434940",

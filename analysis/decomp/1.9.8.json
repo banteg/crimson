@@ -22626,9 +22626,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 83,
+          "ok": 95,
           "positional": false,
-          "unresolved": 55
+          "unresolved": 43
         },
         "state": "wip",
         "target_instructions": 528,
@@ -26913,9 +26913,9 @@
         ],
         "references": {
           "mismatched": 1,
-          "ok": 145,
+          "ok": 147,
           "positional": true,
-          "unresolved": 70
+          "unresolved": 68
         },
         "state": "audit",
         "target_instructions": 306,
@@ -27030,9 +27030,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 683,
+          "ok": 685,
           "positional": false,
-          "unresolved": 71
+          "unresolved": 69
         },
         "state": "wip",
         "target_instructions": 3541,
@@ -27392,9 +27392,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 62,
+          "ok": 64,
           "positional": true,
-          "unresolved": 26
+          "unresolved": 24
         },
         "state": "audit",
         "target_instructions": 408,
@@ -27433,9 +27433,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 82,
+          "ok": 108,
           "positional": true,
-          "unresolved": 28
+          "unresolved": 2
         },
         "state": "audit",
         "target_instructions": 465,
@@ -27474,9 +27474,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 20,
+          "ok": 21,
           "positional": true,
-          "unresolved": 12
+          "unresolved": 11
         },
         "state": "audit",
         "target_instructions": 196,
@@ -30913,9 +30913,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 76,
+          "ok": 77,
           "positional": true,
-          "unresolved": 11
+          "unresolved": 10
         },
         "state": "audit",
         "target_instructions": 205,
@@ -31195,10 +31195,10 @@
       "canonical_address": 4322736,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "bonus_spawn_at",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 128,
         "candidate_object_sha256": "a6acfecc266d539fab55da40b1ddccb88f5c19dede5da6e7c77e5523d3ede912",
         "candidate_padding_bytes": 1,
@@ -31208,22 +31208,16 @@
             4321295
           ]
         ],
-        "excluded_target_ranges": [
-          {
-            "end": 4321296,
-            "reason": "recognized terminal padding",
-            "start": 4321295
-          }
-        ],
+        "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 26,
+          "ok": 28,
           "positional": true,
-          "unresolved": 2
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 128,
-        "target_size": 480,
+        "target_size": 479,
         "unexplained_target_ranges": []
       },
       "ratio": 1.0,
@@ -31881,22 +31875,16 @@
             4334838
           ]
         ],
-        "excluded_target_ranges": [
-          {
-            "end": 4334848,
-            "reason": "recognized terminal padding",
-            "start": 4334838
-          }
-        ],
+        "excluded_target_ranges": [],
         "references": {
           "mismatched": 3,
-          "ok": 456,
+          "ok": 464,
           "positional": false,
-          "unresolved": 8
+          "unresolved": 0
         },
         "state": "wip",
         "target_instructions": 2223,
-        "target_size": 8656,
+        "target_size": 8646,
         "unexplained_target_ranges": []
       },
       "ratio": 0.7019837691614067,
@@ -32165,9 +32153,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 81,
+          "ok": 82,
           "positional": true,
-          "unresolved": 80
+          "unresolved": 79
         },
         "state": "audit",
         "target_instructions": 515,
@@ -32978,9 +32966,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 176,
+          "ok": 178,
           "positional": true,
-          "unresolved": 33
+          "unresolved": 31
         },
         "state": "audit",
         "target_instructions": 252,
@@ -34427,9 +34415,9 @@
         ],
         "references": {
           "mismatched": 2,
-          "ok": 357,
+          "ok": 361,
           "positional": false,
-          "unresolved": 55
+          "unresolved": 51
         },
         "state": "wip",
         "target_instructions": 550,
@@ -34684,9 +34672,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 8,
+          "ok": 9,
           "positional": false,
-          "unresolved": 3
+          "unresolved": 2
         },
         "state": "wip",
         "target_instructions": 113,
@@ -34978,10 +34966,10 @@
       "canonical_address": 4411680,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "quest_build_the_gang_wars",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 92,
         "candidate_object_sha256": "21791b337edb83584ad68f0608da1e11e028b46cbd5afb24719ed26e85e76f2f",
         "candidate_padding_bytes": 10,
@@ -34991,22 +34979,16 @@
             4409654
           ]
         ],
-        "excluded_target_ranges": [
-          {
-            "end": 4409664,
-            "reason": "recognized terminal padding",
-            "start": 4409654
-          }
-        ],
+        "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 4,
+          "ok": 8,
           "positional": true,
-          "unresolved": 4
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 92,
-        "target_size": 432,
+        "target_size": 422,
         "unexplained_target_ranges": []
       },
       "ratio": 1.0,
@@ -35123,9 +35105,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 0,
+          "ok": 8,
           "positional": false,
-          "unresolved": 8
+          "unresolved": 0
         },
         "state": "wip",
         "target_instructions": 166,
@@ -36780,9 +36762,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 0,
+          "ok": 8,
           "positional": false,
-          "unresolved": 8
+          "unresolved": 0
         },
         "state": "wip",
         "target_instructions": 105,
@@ -36856,9 +36838,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 41,
+          "ok": 43,
           "positional": true,
-          "unresolved": 8
+          "unresolved": 6
         },
         "state": "audit",
         "target_instructions": 115,
@@ -75882,11 +75864,11 @@
     "analysis/decomp/1.9.1/grim.dll/functions.json": "e66e923be09e78b5fcf73217a082d4d6bb6f198f43887448996a0940f8a08412",
     "analysis/decomp/1.9.1/grim.dll/imports.json": "a4929b2195b0aae572e9a11ba6473f48bc15213aff13465c7aae5833759002e1",
     "analysis/decomp/1.9.1/grim.dll/metadata.json": "2283281db97d8c9d22c4240bb9f1b5eed552e6ca4d7303f729a5464af296b6ac",
-    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "f8b7908b5288960695f7bc4ca5412fd26b5465862d83ca1f3cf5dfa476587ea8",
-    "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "2e63ef180accc1c8a9fe679e8ae6f421eae977e8d99dbca158df75ef01e4ff76",
+    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "c51faba1fe24eb2bdf25c5b27d82d86241c99a7be11b30f34251ed24988a931c",
+    "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "39ecc0f744046c8f9dbfb4d8138606256a6f77d96b0321b717268768f77a528f",
     "analysis/decomp/1.9.8/crimsonland.exe/imports.json": "0c31f6358f0514e1c8815d7921c8ad3779199591dd36954c4cce4a7bd3024c18",
     "analysis/decomp/1.9.8/crimsonland.exe/metadata.json": "9b248110b10661b30a5d703fc60149baf131572ed64ec85dc77fb71e6b448e4d",
-    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "424d6d6ef377ce7d10b79df1d92b0366b9fd3c92e8d8681bcf68f49893476e7b",
+    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "309b1dc7d56e8b49ef8eb3c8ab95debef51fb2a98902a2120101695dc6508b2a",
     "analysis/decomp/1.9.8/grim.dll/data.json": "6b9d95c6e1826fe8c470bfc3d2e97e5b9541db2613f36b912b0b8fae08f5ba3b",
     "analysis/decomp/1.9.8/grim.dll/functions.json": "3f5cf721ea4279c4d80280411d3ad9426f60036979e0eedc159e1af9e1a6714f",
     "analysis/decomp/1.9.8/grim.dll/imports.json": "f2e55491c2a9be4e9dcb81246e54f4366f646cf04fc5fd08f6f316e01dd14e7a",
