@@ -2,11 +2,32 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
-## Unreleased
+## 0.15.2
 
 ### For players
 
+#### Runs on crimson.land
+
+- A run's page and its link preview show the arena as the run left it: the blood, scorch marks and corpses the game baked into the ground, with the run's last 20 seconds and how it ended drawn over it. The heat map is gone.
+- The preview is now 4:3: the whole arena and the run's numbers in one of the game's menu panels.
+- A run's link shared on X plays its replay right in the post: tap the preview to watch. Inside another page, the game opens crimson.land in a new tab, hides fullscreen where the page doesn't allow it, and offers to open the run on crimson.land if it can't keep its files.
+- The leaderboards show how many runs they hold, their kills, and the time played or survived.
+
+#### Sound
+
+- Weapon sounds in the browser and desktop games keep their timing. They no longer bunch up when the browser asks for audio in large blocks, a browser that only allows sound after a click no longer plays everything about 0.3 seconds late, and repeated sounds follow the game's ticks.
 - When all sixteen copies of a sound are already playing, the Python game now lets a playing copy play out instead of restarting it from the top, as the original did. Dense weapon and hit sounds stack less harshly.
+- Replays in the Python game pace repeated sounds by the run's ticks, so paused, stepped and fast-forwarded replays sound like the run.
+
+#### Secrets
+
+- In the Python game, the credits' secret button follows the marks every frame and the riddle shows once per launch, music in `music.paq` wins over loose music files, and the terrain filter setting 2 shows the ground unfiltered, as in the original.
+
+### Under the hood
+
+- The verifier hands out what each tick bakes into the ground, and crimson.land stamps it into the run's terrain as the original draws it. A long run bakes millions of blood splats, so the service draws them newest first and skips what later ones cover. Grounds are kept as JPEGs beside the replays; a deploy bakes every run's again while it reverifies them.
+- The verifier keeps the original's terrain body transparency, which sets the corpses' alpha in those bakes.
+- More of 1.9.8 matches: creature damage, perk effects, bonus application, the projectile renderer and the player heading helper.
 
 ## 0.15.1
 
