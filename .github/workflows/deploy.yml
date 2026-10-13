@@ -89,7 +89,6 @@ jobs:
         working-directory: service
         run: |
           npx --no-install wrangler deploy --dry-run --outdir release-worker
-          node scripts/deploy-replays.mjs fingerprint
           node scripts/deploy-checks.mjs package
           npx --no-install wrangler deploy release-worker/index.js --no-bundle --dry-run
       - name: Archive the complete release
@@ -146,7 +145,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: node scripts/deploy-checks.mjs migrations
-      - name: Plan replay verification against the completed live deployment
+      - name: Reuse the live deployment's replay checks if their inputs are unchanged
         id: replays
         working-directory: service
         env:
@@ -164,9 +163,7 @@ jobs:
       - name: Reject a superseded commit or newly failing checks
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          node service/scripts/deploy-preflight.mjs --checks-only
-          node service/scripts/deploy-replays.mjs check
+        run: node service/scripts/deploy-preflight.mjs --checks-only
       - name: Deploy the prepared Worker and assets
         working-directory: service
         env:
@@ -177,7 +174,7 @@ jobs:
             --tag "$GITHUB_SHA" --message "GitHub deployment $GITHUB_SHA" | tee ../deployment.log
           cat ../deployment.log >> "$GITHUB_STEP_SUMMARY"
       - name: Put every run's ground, as the reverify above baked it
-        if: steps.replays.outputs.grounds == 'true'
+        if: steps.replays.outputs.reverify == 'true'
         working-directory: service
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -194,7 +191,7 @@ jobs:
             release.json
             deployment.log
             deployment-plan.json
-      - name: Record completed replay inputs for the next deployment
+      - name: Record this deployment's replay inputs for the next one
         working-directory: service
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
