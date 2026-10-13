@@ -1391,7 +1391,7 @@ Seen in:
   `turn_speed` with `fst`, keeps it for the body heading and reloads the field
   for the aim heading; a named `current_turn_speed` used only first reproduces
   it.
-- [music_update_fades][]: using the stored `sfx_volume_table[i]` for both the
+- [music_update_fades][]: using the stored `music_track_volume[i]` for both the
   clamp compare and the argument recovers native store, pop and reload.
 - [creature_spawn_template][]: templates keep randomized size on x87 with
   non-popping stores, and one random tint scalar across the channel stores.
