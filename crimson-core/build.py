@@ -11,7 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from adapter import DIFFS, PROTOTYPES, adapt, apply_diffs, load_diffs, prototypes
+from adapter import DIFFS, PROTOTYPES, adapt, apply_diffs, load_diffs, prototypes, wrap
 from data import data_source
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -41,11 +41,17 @@ EXPORTS = (
     "portable_shake_y",
     "portable_probe",
     "portable_nearest_creature",
+    "portable_bakes",
 )
+# The recovered functions the verifier's host wraps (host/host.cpp), as the game module's are (game/sources.json):
+# fx_queue_render, whose bakes it hands out.
+CORE_WRAPPED = {"decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp"}
 # An extern declaration of one name, optionally an array: the alignment a name really has goes before its `;`.
 EXTERN = re.compile(r"(\bextern\b[^;{}()]*?\b(\w+)\s*(?:\[[^\]]*\])?)\s*;")
-# Player one and the shake, for the service's ranked aim bound, and the nearest creature, for its input signals (host/api.h).
+# Player one and the shake, for the service's ranked aim bound, the nearest creature, for its input signals, and each
+# tick's bakes, for a run's ground (host/api.h).
 PROBE_READS = {
+    "portable_bakes",
     "portable_nearest_creature",
     "portable_player_x",
     "portable_player_y",
@@ -179,7 +185,7 @@ def main():
     # the ones for files it leaves out.
     if a.target == "game" and (missing := sorted(set(hunks) - set(sources) - set(adapted))):
         raise SystemExit(f"Diffs for files outside the build: {', '.join(missing)}")
-    wrapped = game_wrapped(a.root) if a.target == "game" else set()
+    wrapped = game_wrapped(a.root) if a.target == "game" else CORE_WRAPPED
 
     def compile_one(rel):
         src = a.root / rel
@@ -187,6 +193,8 @@ def main():
         txt = align_externs(adapt(src, apply_diffs(rel, raw, hunks)))
         if a.target == "game":
             txt = adapt_game(src, txt, rel in wrapped)
+        elif rel in wrapped:
+            txt = wrap(src, txt)
         adapted[rel] = (raw, txt)
         dst = a.out / (name(rel) + ".cpp")
         dst.write_text(f'#line 1 "{src}"\n' + txt)

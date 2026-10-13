@@ -1,5 +1,5 @@
 """Write the site's game art to service/public/ui/ from crimson.paq: the sign, the menu panel's frame and wires, the
-button plates, the main menu's Play Game item, the quest screen's label, stage icons and checkboxes, and the terrain textures the browser stamps the ground with. The files are generated, not checked in;
+button plates, the main menu's Play Game item, the quest screen's label, stage icons and checkboxes, the terrain textures the browser stamps the ground with, and the particles and corpses a run's ground bakes in. The files are generated, not checked in;
 `npm run deploy` writes them first.
 
 Run from the repository root: uv run python service/scripts/assets.py [--assets artifacts/assets]
@@ -53,6 +53,9 @@ def main() -> None:
         # Terrain textures by the game's slot number (src/crimson/terrain_slots.py): base, then overlay, per quest stage.
         **{f"ter{2 * q + layer}.png": image(f"ter/ter_q{q + 1}_{'base' if layer == 0 else 'tex1'}.jaz") for q in range(4) for layer in (0, 1)},
         **{f"stage{n}.png": image(f"ui/ui_num{n}.jaz") for n in range(1, 6)},
+        # The atlases fx_queue_render bakes decals and corpses from (src/ground.ts).
+        "particles.png": image("game/particles.jaz"),
+        "bodyset.png": image("game/bodyset.jaz"),
     }
     for name, art in outputs.items():
         art.save(OUT / name, optimize=True)

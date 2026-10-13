@@ -319,6 +319,32 @@ extern "C" uintptr_t portable_probe() {
   memcpy(probe.timers, timers, sizeof(timers));
   return (uintptr_t)&probe;
 }
+#ifndef CRIMSON_GAME
+// The verifier draws nothing, so it hands out what each tick bakes into the
+// terrain instead, as the original's fx_queue_render (wrapped, build.py) finds
+// its queues; the game module bakes them itself (host/keyframes.inc).
+static PortableBakes bakes;
+extern "C" creature_type_table_t creature_type_table;
+extern "C" void fx_queue_render_recovered();
+extern "C" void fx_queue_render() {
+  for (int i = 0; i < fx_queue_count; ++i) {
+    const fx_queue_entry_t &e = fx_queue[i];
+    int size_code = effect_id_table[e.effect_id].size_code;
+    bakes.decal[i] = {e.pos_x, e.pos_y, e.width, e.height, e.rotation, e.color.r, e.color.g, e.color.b, e.color.a,
+                      0x100 / size_code, effect_id_table[e.effect_id].frame};
+  }
+  for (int i = 0; i < fx_queue_rotated; ++i) {
+    const effect_color_t &c = fx_rotated_color_r[i];
+    bakes.corpse[i] = {fx_rotated_pos_x[i].x, fx_rotated_pos_x[i].y, fx_rotated_scale[i], fx_rotated_scale[i],
+                       fx_rotated_rotation[i], c.r, c.g, c.b, c.a,
+                       4, creature_type_table[fx_rotated_creature_type_id[i]].corpse_frame};
+  }
+  bakes.decals = fx_queue_count;
+  bakes.corpses = fx_queue_rotated;
+  fx_queue_render_recovered();
+}
+extern "C" uintptr_t portable_bakes() { return (uintptr_t)&bakes; }
+#endif
 extern "C" uintptr_t portable_commands() { return (uintptr_t)commands; }
 extern "C" uintptr_t portable_output() { return (uintptr_t)output; }
 static void trace_init(const char *stage) {
@@ -375,7 +401,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
 #else
   grim_interface_ptr = &headless_grim;
   friendly.value = cfg.friendly_fire ? 1 : 0;
-  transparency.value = 0.8f;
+  transparency.value = 0;
   verbose.value = 0;
   pad_distance.value = 128;
   extern cvar_float_t *cv_bodiesFade;
@@ -535,6 +561,9 @@ extern "C" int portable_step_many(uint32_t count) {
   // The 3-bit field stores the -1 scheme as all ones.
   config_blob.aim_schemes[0] = aim_scheme == 7 ? -1 : (int)aim_scheme;
   menu_requested = false;
+#ifndef CRIMSON_GAME
+  bakes.decals = bakes.corpses = 0;
+#endif
   bool menu_open = perk_menu_open;
   perk_menu_open = false;
   for (uint32_t i = 0; i < count; ++i) {

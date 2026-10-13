@@ -5,7 +5,7 @@ import json
 import re
 from pathlib import Path
 
-from adapter import DIFFS, NOT_CPP_LINKAGE, prototypes, sub
+from adapter import DIFFS, NOT_CPP_LINKAGE, prototypes, sub, wrap
 
 HERE = Path(__file__).resolve().parent
 GAME = HERE / "game"
@@ -178,11 +178,8 @@ def adapt_game(src, txt, wrapped=False):
         None,
     )
     txt = prototypes(src, txt, GAME_PROTOTYPES)
-    if wrapped:
-        # The host wraps this function (game/sources.json); the recovered body keeps a _recovered name, in its
-        # header's declarations too.
-        txt = f"#define {src.stem} {src.stem}_recovered\n" + txt
-    return txt
+    # The host wraps this function (game/sources.json).
+    return wrap(src, txt) if wrapped else txt
 
 
 # The COM interfaces the recovered Grim calls; the platform layer overrides the

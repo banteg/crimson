@@ -5,7 +5,10 @@ import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
 import type { Signals, Timeline } from "./api-types";
 import { decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError } from "./replay";
+import { GroundBake, groundArt, groundKey } from "./ground";
+import { encodeJpeg } from "./jpeg";
 import { encodeTransport } from "./transport";
+import { runGround, SIZE } from "../web/src/terrain/rules";
 import { verifyRun } from "./verify";
 
 const MAX_BODY_BYTES = 16 * 1024 * 1024;
@@ -74,16 +77,19 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
   const runId = hex(await sha256(transport));
   if (await env.DB.prepare("SELECT 1 FROM runs WHERE id = ?").bind(runId).first()) return refuse(409, "this run was already accepted");
 
-  const verdict = await verifyRun(env, replay, transport);
+  const ground = await groundBake(env, new URL(request.url).origin, replay);
+  const verdict = await verifyRun(env, replay, transport, (bakes) => ground.bake(bakes));
   if (!verdict.ok) return refuse(422, verdict.reason);
 
   const board = rankedBoard(replay.run)!;
-  const quest = replay.run.quest_level ? `${replay.run.quest_level.major}.${replay.run.quest_level.minor}` : "";
+  const quest = questOf(replay);
+
   const score = rankedScore(replay.run, replay.result);
   const now = Date.now();
   const accountId = await accountForKey(env, upload.public_key, publicKey, now);
   await env.REPLAYS.put(`runs/${runId}.crd`, file, { httpMetadata: { contentType: "application/octet-stream" } });
   await putTimeline(env, runId, verdict.timeline);
+  await putGround(env, runId, ground);
   await env.DB.batch([
     env.DB.prepare(
       `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, client,
@@ -104,6 +110,19 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
 }
 
 export const timelineKey = (runId: string) => `runs/${runId}.timeline.json`;
+
+const questOf = (replay: Replay) => (replay.run.quest_level ? `${replay.run.quest_level.major}.${replay.run.quest_level.minor}` : "");
+
+// The run's ground, to bake as its replay verifies, on the terrain its seed generates.
+async function groundBake(env: Env, origin: string, replay: Replay): Promise<GroundBake> {
+  return new GroundBake(runGround(replay.run.seed, { board: rankedBoard(replay.run)!, quest: questOf(replay) }), await groundArt(env, origin), SIZE);
+}
+
+async function putGround(env: Env, runId: string, ground: GroundBake): Promise<Uint8Array> {
+  const jpeg = await encodeJpeg(ground.pixels());
+  await env.REPLAYS.put(groundKey(runId), jpeg, { httpMetadata: { contentType: "image/jpeg" } });
+  return jpeg;
+}
 
 function putTimeline(env: Env, runId: string, timeline: Timeline): Promise<R2Object> {
   return env.REPLAYS.put(timelineKey(runId), JSON.stringify(timeline), { httpMetadata: { contentType: "application/json" } });
@@ -135,4 +154,18 @@ export async function timelineFor(env: Env, runId: string): Promise<Timeline | n
   if (!verdict.ok) throw new Error(`run ${runId} no longer verifies: ${verdict.reason}`);
   await putTimeline(env, runId, verdict.timeline);
   return verdict.timeline;
+}
+
+// A run's ground as it ended (src/ground.ts), as a JPEG. Runs accepted before grounds were baked get theirs the first
+// time it is asked for, by replaying their stored file again; null when there is no such replay.
+export async function groundFor(env: Env, origin: string, runId: string): Promise<Uint8Array | null> {
+  const stored = await env.REPLAYS.get(groundKey(runId));
+  if (stored) return new Uint8Array(await stored.arrayBuffer());
+  const file = await env.REPLAYS.get(`runs/${runId}.crd`);
+  if (!file) return null;
+  const replay = decodeReplay(inflateReplay(new Uint8Array(await file.arrayBuffer())));
+  const ground = await groundBake(env, origin, replay);
+  const verdict = await verifyRun(env, replay, encodeTransport(replay), (bakes) => ground.bake(bakes));
+  if (!verdict.ok) throw new Error(`run ${runId} no longer verifies: ${verdict.reason}`);
+  return putGround(env, runId, ground);
 }

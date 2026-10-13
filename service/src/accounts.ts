@@ -5,6 +5,7 @@ import type { Identity, ProviderName } from "./oauth";
 
 import { randomToken } from "./crypto";
 import { tokenHash } from "./auth";
+import { groundKey } from "./ground";
 import { timelineKey } from "./runs";
 
 const MERGE_TTL_MS = 10 * 60 * 1000;
@@ -95,7 +96,7 @@ export async function deleteAccount(env: Env, accountId: number): Promise<boolea
   const account = await env.DB.prepare("SELECT role FROM accounts WHERE id = ?").bind(accountId).first<{ role: string }>();
   if (account?.role === "admin") return false;
   const { results } = await env.DB.prepare("SELECT id FROM runs WHERE account_id = ?").bind(accountId).all<{ id: string }>();
-  if (results.length) await env.REPLAYS.delete(results.flatMap((run) => [`runs/${run.id}.crd`, timelineKey(run.id)]));
+  if (results.length) await env.REPLAYS.delete(results.flatMap((run) => [`runs/${run.id}.crd`, timelineKey(run.id), groundKey(run.id)]));
   await env.DB.batch(
     ["runs", "names", "links", "keys", "sessions", "login_links"]
       .map((table) => env.DB.prepare(`DELETE FROM ${table} WHERE account_id = ?`).bind(accountId))

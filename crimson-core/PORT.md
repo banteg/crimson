@@ -244,9 +244,10 @@ persistence) is in the [roadmap](ROADMAP.md#client-checks).
   requires every texture to load, the menus' music to reach the mix, the run to
   keep drawing, and a lost and regained window to suspend and resume it.
 
-The verifier's hand-set cvars differ from the registered defaults for two
-values it never reads: terrain body transparency (verifier 0.8, original 0) and
-pad aim distance (verifier 128, original 96; recorded pad aim replaces it).
+The verifier's hand-set cvars differ from the registered defaults for pad aim
+distance (verifier 128, original 96; recorded pad aim replaces it). Terrain body
+transparency keeps the original's 0: it sets the corpses' alpha in the bakes the
+verifier hands out for a run's ground (`portable_bakes`, service/src/ground.ts).
 
 ### Packaging
 

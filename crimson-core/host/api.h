@@ -22,6 +22,18 @@ struct PortableProbe {
   int32_t pick_ids[8];
   float timers[8];
 };
+// What a tick baked into the terrain (fx_queue_render), for a run's ground (service/src/ground.ts): its decals, as
+// fx_queue holds them, then its corpses, as fx_queue_add_rotated's arrays do. A decal's position is its centre; a
+// corpse's its top left. Each draws the cell `frame` of an atlas cut `grid` cells a side (effect_select_texture for
+// particles.png, creature_type_table's corpse_frame of effect_uv4's for bodyset.png). Colours are 0..1.
+struct PortableBake {
+  float x, y, width, height, rotation, r, g, b, a;
+  int32_t grid, frame;
+};
+struct PortableBakes {
+  int32_t decals, corpses;
+  PortableBake decal[0x80], corpse[0x40];
+};
 // A custom quest (src/crimson/quests/custom.py CustomQuest): the table one variant plays, with base counts, which
 // portable_init loads for a quest started at stage 0.0 where a stock quest's builder runs.
 struct PortableSpawn {
@@ -36,6 +48,7 @@ static_assert(sizeof(PortableConfig) == 260);
 static_assert(sizeof(PortableSpawn) == 24);
 static_assert(sizeof(PortableQuest) == 6164);
 static_assert(sizeof(PortableProbe) == 108);
+static_assert(sizeof(PortableBake) == 44);
 static_assert(sizeof(PortableInput) == 20);
 static_assert(sizeof(PortableCommand) == 8);
 static_assert(sizeof(float) == 4 && sizeof(int) == 4);
@@ -72,6 +85,8 @@ float portable_shake_y();
 float portable_nearest_creature(float x, float y);
 // Reads the tick into the probe and returns its address; portable_init starts its counts over.
 uintptr_t portable_probe();
+// The bakes of the last tick.
+uintptr_t portable_bakes();
 int portable_math_probe(uint32_t operation, uint32_t a, uint32_t b);
 int portable_builder_probe(uint32_t seed, uint32_t index, uint32_t hardcore,
                            uint32_t players);

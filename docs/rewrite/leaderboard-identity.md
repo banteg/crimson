@@ -133,8 +133,8 @@ replays, names, links, keys and sessions. `/privacy` and `/terms` say the same i
 ## Run pages
 
 Every accepted run has a page at `/runs/<run id>`, linked from its score on the boards and profiles, and its replay
-at `/runs/<run id>.crd`. The page, its API (`/api/runs/<run id>` and its timeline), its card (`/runs/<run id>.png`)
-and the replay refuse a hidden run and a banned account's, as the boards do; a retired run keeps them. The replay
+at `/runs/<run id>.crd`. The page, its API (`/api/runs/<run id>` and its timeline), its card (`/runs/<run id>.png`),
+its ground (`/runs/<run id>.ground.jpg`) and the replay refuse a hidden run and a banned account's, as the boards do; a retired run keeps them. The replay
 is cached only briefly (`REPLAY_MAX_AGE_S` in `service/src/index.ts`), so hiding, bans and deletions take effect
 within that.
 
@@ -145,8 +145,16 @@ and the service keeps a timeline next to the replay (`runs/<id>.timeline.json` i
 - ten times a second, the position;
 - weapon changes, level-ups, perk picks, Nukes and the spans of the timed bonuses.
 
-The page draws them against the board's top run and the player's own best, and rebuilds the run's terrain from its
-seed. A run accepted before timelines existed gets its timeline the first time its page asks, by replaying its file.
+The page draws them against the board's top run and the player's own best. A run accepted before timelines existed
+gets its timeline the first time its page asks, by replaying its file.
+
+The same pass bakes the run's ground as it ended: `portable_bakes` hands out each tick's decals and corpses as the
+original's `fx_queue_render` finds them, and the service stamps them into the terrain the run's seed generates, as
+that function draws them into the game's terrain (`service/src/ground.ts`). A long run bakes over a million blood
+splats, each pixel under hundreds, so the service draws them in chunks, newest first, and stops sampling a pixel once
+what lies under it no longer shows. The ground is kept as a 1024² JPEG (`runs/<id>.ground.jpg` in R2, quality 88 at
+full chroma) and drawn by the run's page and its card; a run accepted before grounds existed gets its ground the same
+way it would a timeline.
 
 ## Open
 

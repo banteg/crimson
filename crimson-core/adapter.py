@@ -87,6 +87,11 @@ def sub(src, pattern, repl, txt, count=1, flags=0):
     return txt
 
 
+def wrap(src, txt):
+    """A function the host wraps: the recovered body keeps a _recovered name, in its header's declarations too."""
+    return f"#define {src.stem} {src.stem}_recovered\n" + txt
+
+
 def prototypes(src, txt, table):
     for old, new in table.items():
         txt = sub(src, rf"(?m)^{re.escape(old)}", new.replace("\\", r"\\"), txt, count=None)

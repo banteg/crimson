@@ -172,6 +172,11 @@ describe("runs", () => {
     const header = new DataView(await card.arrayBuffer());
     expect([header.getUint32(16), header.getUint32(20)]).toEqual([1200, 900]);
     expect((await SELF.fetch(`${ORIGIN}/runs/${"0".repeat(64)}.png`)).status).toBe(404);
+
+    const ground = await SELF.fetch(`${ORIGIN}/runs/${id}.ground.jpg`);
+    expect(ground.headers.get("content-type")).toBe("image/jpeg");
+    expect([...new Uint8Array(await ground.arrayBuffer()).subarray(0, 2)]).toEqual([0xff, 0xd8]);
+    expect((await SELF.fetch(`${ORIGIN}/runs/${"0".repeat(64)}.ground.jpg`)).status).toBe(404);
   });
 
   it("a timeline goes with its run: hidden runs and deleted accounts have none", async () => {

@@ -1,5 +1,5 @@
-// A run's preview card, the image a shared link unfurls into: the run's own ground with where the player spent it, as
-// the run page's arena shows it, and the game's menu panel with the board, the player, the score and the run's
+// A run's preview card, the image a shared link unfurls into: the run's ground as it ended (src/ground.ts), as the
+// run page's arena shows it, and the game's menu panel with the board, the player, the score and the run's
 // numbers in the game's small font. The raster layers are painted in src/raster.ts; resvg draws the rest over them.
 
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
@@ -7,12 +7,14 @@ import resvgModule from "@resvg/resvg-wasm/index_bg.wasm";
 import courierPrime from "../fonts/CourierPrime-Bold.ttf";
 import { formatScore } from "../web/src/format";
 import { playerLabel, playerParts } from "../web/src/names";
-import { runGround, SIZE } from "../web/src/terrain/rules";
+import { SIZE } from "../web/src/terrain/rules";
 import weaponData from "../web/src/weapons.json";
 import type { RunDetailView, Timeline } from "./api-types";
 import type { Env } from "./http";
 import { decodePng, encodePng, type Pixels } from "./png";
-import { Canvas, mirror, paintGround, paintHeat, paintPanel } from "./raster";
+import { Canvas, paintImage, paintPanel, shrink } from "./raster";
+import { decodeJpeg } from "./jpeg";
+import { groundFor } from "./runs";
 import { runDetailView } from "./views";
 
 const WEAPONS: Record<string, { name: string; icon_index: number }> = weaponData;
@@ -26,8 +28,8 @@ export interface CardArt {
   // The game's small font; the numbers are set in Courier, as the site and grim's mono font set them.
   font: Uint8Array;
   panel: Pixels;
-  // The terrain textures by slot.
-  textures: Pixels[];
+  // The run's ground as it ended.
+  ground: Pixels;
   // ui_wicons, as a data URL.
   weapons: string;
   // The player's avatar as a data URL, when a linked account has one.
@@ -41,23 +43,32 @@ const GREEN = "rgb(128,255,153)";
 const GOLD = [240, 200, 90];
 const LABEL = "#b3b3b3";
 const DIM = "#7d7d7d";
-// The arena's heat blur and the end marks are web/src/run.tsx Arena's, in the game's ground pixels.
-const HEAT_BLUR = 14;
+// The end marks are web/src/run.tsx Arena's, in the game's ground pixels.
 const TRAIL_S = 20;
 // ui_menuPanel's frame around its black screen (web/src/style.css .panel), and ui_element_render's shadow.
 const PANEL_BORDERS = { top: 18, right: 19, bottom: 19, left: 14 };
 const SHADOW = { offset: 7, shade: 0x44 / 255 };
-// The arena, the run's ground with its heat and trail, at the card's left, middle, the size that leaves the panel room
-// for a survival score at full size; its ground goes on around it.
-const ARENA = { x: 0, y: (CARD_HEIGHT - 630) / 2, size: 630 };
-const PANEL = { x: ARENA.size + 10, y: 22, width: CARD_WIDTH - ARENA.size - 32, height: CARD_HEIGHT - 44 };
+// One menu panel across the card, its screen holding the run's whole ground at the left and its numbers at the right,
+// over that ground blurred and dimmed.
+const SCREEN = { x: 44, y: 130, width: CARD_WIDTH - 93, height: 620 };
+const PANEL = {
+  x: SCREEN.x - PANEL_BORDERS.left,
+  y: SCREEN.y - PANEL_BORDERS.top,
+  width: SCREEN.width + PANEL_BORDERS.left + PANEL_BORDERS.right,
+  height: SCREEN.height + PANEL_BORDERS.top + PANEL_BORDERS.bottom,
+};
+const ARENA = { x: SCREEN.x + 10, y: SCREEN.y + 10, width: 600, height: 600 };
+// The backdrop: the ground covering the card, its pixels averaged in blocks this wide, then dimmed.
+const BACKDROP = { x: 0, y: (CARD_HEIGHT - CARD_WIDTH) / 2, width: CARD_WIDTH, height: CARD_WIDTH };
+const BACKDROP_BLUR = 16;
+const BACKDROP_DIM = 0.45;
 const PADDING = 26;
-// The panel's contents.
-const LEFT = PANEL.x + PANEL_BORDERS.left + PADDING;
-const RIGHT = PANEL.x + PANEL.width - PANEL_BORDERS.right - PADDING;
-const TOP = PANEL.y + PANEL_BORDERS.top;
-const BOTTOM = PANEL.y + PANEL.height - PANEL_BORDERS.bottom;
-const NAME_Y = TOP + 110;
+// The numbers, right of the ground.
+const LEFT = ARENA.x + ARENA.width + 10 + PADDING;
+const RIGHT = SCREEN.x + SCREEN.width - PADDING;
+const TOP = SCREEN.y;
+const BOTTOM = SCREEN.y + SCREEN.height;
+const NAME_Y = TOP + 84;
 const SCORE_SIZE = 84;
 const STAT_SIZE = 46;
 const STAT_COLUMN = 260;
@@ -91,13 +102,13 @@ function number(x: number, y: number, size: number, width: number, content: stri
   return `<text x="${x}" y="${y}" font-family="Courier Prime" font-size="${fitted}" fill="${fill}" text-anchor="${anchor}" filter="url(#soft)">${escape(content)}</text>`;
 }
 
-// The ground and heat in the arena, mirrored on around it and under the panel, and the panel.
-function background(detail: RunDetailView, timeline: Timeline, art: CardArt): Pixels {
+// The backdrop, the panel and the ground in it.
+function background(art: CardArt): Pixels {
   const canvas = new Canvas(CARD_WIDTH, CARD_HEIGHT, [0, 0, 0]);
-  paintGround(canvas, runGround(timeline.seed, detail), art.textures, ARENA);
-  mirror(canvas, ARENA);
-  paintHeat(canvas, timeline.path, ARENA, GOLD, (HEAT_BLUR * ARENA.size) / SIZE);
+  paintImage(canvas, shrink(art.ground, BACKDROP_BLUR), BACKDROP);
+  canvas.dim(BACKDROP_DIM);
   paintPanel(canvas, art.panel, PANEL_BORDERS, PANEL, SHADOW.offset, SHADOW.shade);
+  paintImage(canvas, art.ground, ARENA);
   return canvas.pixels();
 }
 
@@ -132,16 +143,16 @@ function cardSvg(detail: RunDetailView, timeline: Timeline, art: CardArt, backgr
     <filter id="soft"><feGaussianBlur stdDeviation="${SOFTEN}"/></filter>
   </defs>
   <image href="${background}" width="${CARD_WIDTH}" height="${CARD_HEIGHT}"/>
-  <g transform="translate(${ARENA.x} ${ARENA.y}) scale(${ARENA.size / SIZE})">${trail(detail, timeline)}</g>
-  ${text(LEFT, TOP + 60, 2, detail.title, LABEL)}
-  ${text(RIGHT, TOP + 60, 2, "crimson.land", DIM, "end")}
+  <g transform="translate(${ARENA.x} ${ARENA.y}) scale(${ARENA.width / SIZE})">${trail(detail, timeline)}</g>
+  ${text(LEFT, TOP + 45, 2, detail.title, LABEL)}
+  ${text(RIGHT, TOP + 45, 2, "crimson.land", DIM, "end")}
   ${art.avatar ? `<image href="${art.avatar}" x="${LEFT}" y="${NAME_Y}" width="${AVATAR}" height="${AVATAR}" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/>` : ""}
   ${detail.rank ? number(RIGHT, NAME_Y + 46, 44, RIGHT - LEFT, `#${detail.rank}`, `rgb(${GOLD})`, "end") : ""}
   ${text(art.avatar ? LEFT + AVATAR + 18 : LEFT, NAME_Y + 48, 3, playerLabel(detail.player))}
-  ${text(LEFT, TOP + 289, 2, quest ? "final time" : "experience", DIM)}
-  ${number(LEFT - 4, TOP + 406, SCORE_SIZE, RIGHT - LEFT, score, BLUE)}
+  ${text(LEFT, TOP + 219, 2, quest ? "final time" : "experience", DIM)}
+  ${number(LEFT - 4, TOP + 307, SCORE_SIZE, RIGHT - LEFT, score, BLUE)}
   ${stats.map(([label, value], i) => {
-    const [x, y] = [LEFT + (i % 2) * STAT_COLUMN, TOP + 492 + Math.floor(i / 2) * 125];
+    const [x, y] = [LEFT + (i % 2) * STAT_COLUMN, TOP + 373 + Math.floor(i / 2) * 95];
     return text(x, y, 2, label, DIM) + number(x - 2, y + 46, STAT_SIZE, STAT_COLUMN - 20, value);
   }).join("")}
   ${weapon ? `<svg x="${LEFT}" y="${BOTTOM - 86}" width="${ICON_CELL * 4}" height="${ICON_CELL * 2}" ${icon(weapon.icon_index * 2)}><image href="${art.weapons}" width="${ICON_CELL * 8}" height="${ICON_CELL * 8}"/></svg>${text(LEFT + 144, BOTTOM - 42, 2, weapon.name, LABEL)}` : ""}
@@ -152,19 +163,18 @@ let ready: Promise<unknown> | null = null;
 
 export async function renderCard(detail: RunDetailView, timeline: Timeline, art: CardArt, wasm: WebAssembly.Module | BufferSource = resvgModule): Promise<Uint8Array> {
   await (ready ??= initWasm(wasm));
-  const svg = cardSvg(detail, timeline, art, dataUrl(encodePng(background(detail, timeline, art)), "image/png"));
+  const svg = cardSvg(detail, timeline, art, dataUrl(encodePng(background(art)), "image/png"));
   return new Resvg(svg, { font: { fontBuffers: [art.font, new Uint8Array(courierPrime)], loadSystemFonts: false, defaultFontFamily: "Crimson Small" } }).render().asPng();
 }
 
 // The site's art, read from its own files once per isolate.
-let siteArt: Promise<Omit<CardArt, "avatar">> | null = null;
+let siteArt: Promise<Omit<CardArt, "avatar" | "ground">> | null = null;
 
-function loadArt(env: Env, origin: string): Promise<Omit<CardArt, "avatar">> {
+function loadArt(env: Env, origin: string): Promise<Omit<CardArt, "avatar" | "ground">> {
   const file = async (name: string) => new Uint8Array(await (await env.ASSETS.fetch(new URL(`/ui/${name}`, origin))).arrayBuffer());
   return (siteArt ??= (async () => ({
     font: await file("small.ttf"),
     panel: await decodePng(await file("panel.png")),
-    textures: await Promise.all(Array.from({ length: 8 }, async (_, slot) => decodePng(await file(`ter${slot}.png`)))),
     weapons: dataUrl(await file("weapons.png"), "image/png"),
   }))());
 }
@@ -188,10 +198,10 @@ async function fetchAvatar(link: string | null): Promise<string | null> {
   return response.ok && type.startsWith("image/") ? dataUrl(new Uint8Array(await response.arrayBuffer()), type) : null;
 }
 
-// A run's card as a PNG, or null when there is no such run or its timeline is gone.
+// A run's card as a PNG, or null when there is no such run or its timeline or replay is gone.
 export async function runCard(env: Env, origin: string, id: string): Promise<Uint8Array | null> {
   const detail = await runDetailView(env, id, false);
   if (!detail?.timeline) return null;
-  const [art, avatar] = await Promise.all([loadArt(env, origin), fetchAvatar(playerParts(detail.player).avatar)]);
-  return renderCard(detail, detail.timeline, { ...art, avatar });
+  const [art, avatar, ground] = await Promise.all([loadArt(env, origin), fetchAvatar(playerParts(detail.player).avatar), groundFor(env, origin, id)]);
+  return ground && renderCard(detail, detail.timeline, { ...art, avatar, ground: await decodeJpeg(ground) });
 }

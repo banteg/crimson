@@ -424,35 +424,19 @@ function Perks(props: { run: RunTimeline }) {
   );
 }
 
-function Arena(props: { run: RunTimeline; cursor: Cursor; outcome: string }) {
+function Arena(props: { id: string; run: RunTimeline; cursor: Cursor; outcome: string }) {
   const run = props.run;
-  const [ground] = createResource(() => paintGround(run.terrain));
-  // Where the player spent the run: the 10 Hz positions binned into 32px cells.
-  const CELL = 32;
-  const bins = new Map<number, number>();
-  for (const [, x, y] of run.path) {
-    const key = Math.floor(y / CELL) * 64 + Math.floor(x / CELL);
-    bins.set(key, (bins.get(key) ?? 0) + 1);
-  }
-  const most = Math.max(...bins.values());
+  // The ground as the run left it, baked by the service; the run's bare terrain stands in until it arrives.
+  const [terrain] = createResource(() => paintGround(run.terrain));
+  const layers = () => [`url(/runs/${props.id}.ground.jpg)`, ...(terrain() ? [`url(${terrain()})`] : [])].join(", ");
   const TRAIL_S = 20;
   const now = () => props.cursor.t() ?? run.duration_s;
   const trail = () => run.path.filter(([t]) => t > now() - TRAIL_S && t <= now());
   const here = () => at(run.path, now(), (p) => p[0]);
   return (
     <div class="arena-row">
-      <div class="arena" style={{ "background-image": ground() ? `url(${ground()})` : "none" }}>
+      <div class="arena" style={{ "background-image": layers() }}>
         <svg viewBox="0 0 1024 1024">
-          <filter id="heat-blur">
-            <feGaussianBlur stdDeviation="14" />
-          </filter>
-          <g filter="url(#heat-blur)">
-          <For each={[...bins]}>
-            {([key, count]) => (
-              <rect x={(key % 64) * CELL} y={Math.floor(key / 64) * CELL} width={CELL} height={CELL} fill={GOLD} fill-opacity={0.85 * Math.sqrt(count / most)} />
-            )}
-          </For>
-          </g>
           <polyline points={trail().map(([, x, y]) => `${x},${y}`).join(" ")} fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" stroke-opacity="0.9" />
           <Show
             when={props.cursor.t() !== null}
@@ -473,7 +457,7 @@ function Arena(props: { run: RunTimeline; cursor: Cursor; outcome: string }) {
         </svg>
       </div>
       <p class="muted arena-note">
-        Gold is where the player spent the run. The white line is their last {TRAIL_S} seconds before the time under the cursor, or before
+        The ground is as the run left it. The white line is their last {TRAIL_S} seconds before the time under the cursor, or before
         the run ended. {props.outcome === "quest_completed" ? "The green check marks quest completion." : props.outcome === "death" ? "The red X marks death." : "The gold circle marks the end of the run."}
       </p>
     </div>
@@ -704,7 +688,7 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
     () => (
       <>
         <h3>Arena</h3>
-        <Arena run={run} cursor={cursor} outcome={detail.result.outcome} />
+        <Arena id={detail.id} run={run} cursor={cursor} outcome={detail.result.outcome} />
       </>
     ),
   ];

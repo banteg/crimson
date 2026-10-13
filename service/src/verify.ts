@@ -11,6 +11,7 @@ import type { Env } from "./http";
 import { type Replay, type RunResult, tickControls } from "./replay";
 import { type Signals, SignalMeter } from "./signals";
 import { PROBE_BYTES, TimelineRecorder } from "./timeline";
+import { BAKES_BYTES } from "./ground";
 import { CONFIG_BYTES, TICK_BYTES } from "./transport";
 
 interface Core {
@@ -31,6 +32,7 @@ interface Core {
   portable_shake_y(): number;
   portable_probe(): number;
   portable_nearest_creature(x: number, y: number): number;
+  portable_bakes(): number;
 }
 
 // One instance per isolate. Nothing awaits between init and the final snapshot, so requests never interleave
@@ -72,11 +74,12 @@ const MOVE_POINT_CLICK = 4;
 // The signals cover the ticks replayed, up to a refused one.
 export type Verdict = ({ ok: true; timeline: Timeline } | { ok: false; reason: string }) & { signals: Signals };
 
-export async function verifyRun(_env: Env, replay: Replay, transport: Uint8Array): Promise<Verdict> {
-  return simulate(replay, transport);
+// `bake` sees what each tick bakes into the terrain (PortableBakes in crimson-core/host/api.h), for the run's ground.
+export async function verifyRun(_env: Env, replay: Replay, transport: Uint8Array, bake?: (bakes: DataView) => void): Promise<Verdict> {
+  return simulate(replay, transport, bake);
 }
 
-function simulate(replay: Replay, transport: Uint8Array): Verdict {
+function simulate(replay: Replay, transport: Uint8Array, bake?: (bakes: DataView) => void): Verdict {
   const c = core();
   const view = new DataView(transport.buffer, transport.byteOffset, transport.byteLength);
   const meter = new SignalMeter();
@@ -103,6 +106,7 @@ function simulate(replay: Replay, transport: Uint8Array): Verdict {
     at += TICK_BYTES + count * 8;
     monitor.updateCamera(c);
     recorder.record(new DataView(c.memory.buffer, c.portable_probe(), PROBE_BYTES));
+    bake?.(new DataView(c.memory.buffer, c.portable_bakes(), BAKES_BYTES));
   }
 
   if (c.portable_snapshot() !== fieldIndex.size) throw new Error("crimson-core snapshot schema mismatch");

@@ -5,7 +5,7 @@ import { type Env, json, refuse } from "./http";
 import { playerLabel } from "../web/src/names";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
 import type { Board } from "./ranked";
-import { postRun, timelineFor } from "./runs";
+import { groundFor, postRun, timelineFor } from "./runs";
 import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView, runDescription, runDetailView, runSummary, visibleRun } from "./views";
 import { VIEW_H, VIEW_W } from "./verify";
 import { CATEGORIES, type Category } from "./api-types";
@@ -159,6 +159,13 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
         "cache-control": `public, max-age=${REPLAY_MAX_AGE_S}, must-revalidate`,
       },
     });
+  }
+
+  if ((match = /^GET \/runs\/([0-9a-f]{64})\.ground\.jpg$/.exec(route))) {
+    const ground = (await visibleRun(env, match[1]!)) && (await groundFor(env, url.origin, match[1]!));
+    if (!ground) return new Response("No such run.", { status: 404 });
+    // As a replay: it never changes, and the short life lets hiding, bans and deletions take effect.
+    return new Response(ground, { headers: { "content-type": "image/jpeg", "cache-control": `public, max-age=${REPLAY_MAX_AGE_S}, must-revalidate` } });
   }
 
   if ((match = /^GET \/runs\/([0-9a-f]{64})\.png$/.exec(route))) {
