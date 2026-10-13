@@ -164,7 +164,8 @@ describe("runs", () => {
     const html = await (await SELF.fetch(`${ORIGIN}/runs/${id}`)).text();
     expect(html).toMatch(/<meta property="og:description" content="banteg survived \d+:\d\d for [\d,]+ xp, #1 on the board\. [\d,]+ kills/);
     expect(html).toContain(`<meta property="og:image" content="${ORIGIN}/runs/${id}.png">`);
-    expect(html).toContain('<meta name="twitter:card" content="summary_large_image">');
+    expect(html).toContain('<meta name="twitter:card" content="player">');
+    expect(html).toContain(`<meta name="twitter:player" content="${ORIGIN}/play/?watch=${id}">`);
 
     const card = await SELF.fetch(`${ORIGIN}/runs/${id}.png`);
     expect(card.headers.get("content-type")).toBe("image/png");

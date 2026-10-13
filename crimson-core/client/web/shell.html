@@ -84,9 +84,19 @@
   const cover = document.getElementById("cover");
   const canvas = document.getElementById("canvas");
   const say = (text) => (status.textContent = text);
+  // A link to a run (crimson.land/play/?watch=<run>, from its page or an X post's
+  // player card): the cover names the run and offers Watch, and its replay plays
+  // once the game is up, which skips the intro (host/watch.inc), then returns to
+  // the high scores.
+  const linked = new URLSearchParams(location.search).get("watch");
+  // Inside another page (that player card), the site opens in a new tab and the
+  // game plays on.
+  const framed = window.self !== window.top;
+  if (framed) for (const link of document.querySelectorAll("a")) link.target = "_blank";
   // The right button is the game's (reload, by default), not the browser's menu.
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
-  if (matchMedia("(pointer: coarse)").matches && !matchMedia("(any-pointer: fine)").matches)
+  // Watching needs no controls.
+  if (!linked && matchMedia("(pointer: coarse)").matches && !matchMedia("(any-pointer: fine)").matches)
     document.getElementById("touch").hidden = false;
 
   // A button released while the page was away never reaches SDL, which then
@@ -128,7 +138,7 @@
   // why. A second click leaves regardless.
   let leaving = false;
   home.onclick = (event) => {
-    if (!cover.hidden || leaving) return;
+    if (framed || !cover.hidden || leaving) return;
     event.preventDefault();
     leaving = true;
     Module.ccall("client_close", null, [], []);
@@ -482,10 +492,6 @@
     } catch {}
     Module.ccall("client_replay_downloaded", null, ["number"], [result]);
   }
-  // A link to a run (crimson.land/play/?watch=<run>, from its page): the cover
-  // names the run and offers Watch, and its replay plays once the game is up,
-  // which skips the intro (host/watch.inc), then returns to the high scores.
-  const linked = new URLSearchParams(location.search).get("watch");
   let watching = null;
   // The run's summary, which its card waits for: null when there is none.
   const summary =
@@ -545,7 +551,8 @@
     // The host is running: the game takes the page.
     onRuntimeInitialized: () => {
       cover.hidden = true;
-      fullscreen.hidden = false;
+      // An embedding page can withhold fullscreen.
+      fullscreen.hidden = !document.fullscreenEnabled;
       showFullscreen(3000);
       canvas.focus();
       if (linked) watchLink(linked);

@@ -7,6 +7,7 @@ import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
 import type { Board } from "./ranked";
 import { postRun, timelineFor } from "./runs";
 import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView, runDescription, runDetailView, runSummary, visibleRun } from "./views";
+import { VIEW_H, VIEW_W } from "./verify";
 import { CATEGORIES, type Category } from "./api-types";
 import { flagsView, isModerator, markAccount, measureRuns, moderationLog, roleOf, setRole, setRunCategory } from "./moderation";
 
@@ -128,7 +129,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     // Staged by `npm run play`; a build without it has no game page.
     const page = await env.ASSETS.fetch(request);
     if (!page.ok) return page;
-    return withPreview(page, url, { title: "Play", description: "Crimsonland in the browser: the original game, recovered from its executable.", image: null });
+    return withPreview(page, url, { title: "Play", description: "Crimsonland in the browser: the original game, recovered from its executable.", image: null, player: null });
   }
   if ((match = /^(GET|HEAD) \/play\/game\/(.+)$/.exec(route))) {
     const key = `${GAME_VERSION}/${match[2]}`;
@@ -225,11 +226,12 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   return shell(env, url);
 }
 
-// What a shared link previews: the route's title, and for a run, what happened and its card.
+// What a shared link previews: the route's title, and for a run, what happened, its card and its replay to watch.
 interface Preview {
   title: string | null;
   description: string;
   image: { url: string; width: number; height: number } | null;
+  player: { url: string; width: number; height: number } | null;
 }
 
 const SITE_DESCRIPTION = "Play Crimsonland in your browser, and verified leaderboards where every score is a replay the server re-simulates.";
@@ -238,7 +240,7 @@ const SITE_IMAGE = { path: "/og.jpg", width: CARD_WIDTH, height: CARD_HEIGHT };
 
 async function routePreview(env: Env, url: URL): Promise<Preview> {
   const path = url.pathname;
-  const titled = (title: string | null): Preview => ({ title, description: SITE_DESCRIPTION, image: null });
+  const titled = (title: string | null): Preview => ({ title, description: SITE_DESCRIPTION, image: null, player: null });
   let match: RegExpExecArray | null;
   if (path === "/boards/survival") return titled(boardTitle("survival", ""));
   if ((match = /^\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(path)) && QUEST.test(match[2]!)) return titled(boardTitle(match[1] as Board, match[2]!));
@@ -254,6 +256,7 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
       title: `${playerLabel(run.player)} · ${run.title}`,
       description: runDescription(run),
       image: { url: `${url.origin}/runs/${run.id}.png`, width: CARD_WIDTH, height: CARD_HEIGHT },
+      player: { url: `${url.origin}/play/?watch=${run.id}`, width: VIEW_W, height: VIEW_H },
     };
   }
   return titled(({ "/about": "About", "/privacy": "Privacy", "/terms": "Terms" } as Record<string, string>)[path] ?? null);
@@ -281,8 +284,17 @@ function withPreview(page: Response, url: URL, preview: Preview): Response {
       ["og:image:width", image.width],
       ["og:image:height", image.height],
     ]),
-    // X shows a large image only when asked to.
-    ...meta("name", [["twitter:card", "summary_large_image"]]),
+    // X shows a large image only when asked to. A page with a player plays it inside the post, the image standing in
+    // until it is opened.
+    ...meta("name", preview.player
+      ? [
+          ["twitter:card", "player"],
+          ["twitter:image", image.url],
+          ["twitter:player", preview.player.url],
+          ["twitter:player:width", preview.player.width],
+          ["twitter:player:height", preview.player.height],
+        ]
+      : [["twitter:card", "summary_large_image"]]),
   ];
   return new HTMLRewriter()
     .on("title", { element: (element) => void element.setInnerContent(full) })

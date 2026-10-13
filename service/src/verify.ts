@@ -58,8 +58,8 @@ const TERMINAL_OUTCOMES: Record<number, string> = {
 const WEAPON_USAGE_SLOTS = 53;
 
 // The ranked view (src/crimson/replay/ranked.py).
-const VIEW_W = 1024;
-const VIEW_H = 768;
+export const VIEW_W = 1024;
+export const VIEW_H = 768;
 const TERRAIN_SIZE = 1024;
 const PAD_AIM_REACH = 96 + 42;
 const AIM_SLACK = 0.01;
