@@ -205,7 +205,6 @@ export class Layer {
           const x = base + bit;
           const at = y * this.width + x;
           const clear = this.clear[at]!;
-          if (clear < SHOWS) continue;
           // The bilinear sample at the pixel's centre, as Canvas.sample() takes it.
           const u = cell.x + (s0 + sx * x) * cell.width + 0.5;
           const v = cell.y + (t0 + tx * x) * cell.height + 0.5;
@@ -223,7 +222,7 @@ export class Layer {
           const a = (t[t00 + 3]! * w00 + t[t00 + 7]! * w10 + t[t01 + 3]! * w01 + t[t01 + 7]! * w11) * alpha;
           if (a * 255 <= alphaRef) continue;
           this.clear[at] = clear * (1 - a);
-          // Read back the float32 result, exactly as the next quad's per-pixel cutoff does.
+          // Read back the float32 result so the visibility cutoff uses the stored precision.
           if (this.clear[at]! < SHOWS) this.visible[block] = this.visible[block]! & ~(1 << bit);
           if (shadow) continue;
           const rgb = at * 3;
