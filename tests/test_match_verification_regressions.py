@@ -462,7 +462,7 @@ def test_validate_scratch_config_checks_included_headers_and_ignores_comments(tm
         matchlib.validate_scratch_config(config, root)
 
 
-def test_quote_includes_resolve_relative_to_top_level_source(tmp_path: Path) -> None:
+def test_top_level_source_includes_match_staged_compiler_search_order(tmp_path: Path) -> None:
     root = tmp_path / "match"
     include = root / "include"
     scratch = root / "scratches/probe"
@@ -470,16 +470,17 @@ def test_quote_includes_resolve_relative_to_top_level_source(tmp_path: Path) -> 
     include.mkdir(parents=True)
     scratch.mkdir(parents=True)
     decomp.mkdir(parents=True)
-    sibling = decomp / "sibling.h"
-    sibling.write_text("#define VALUE 1\n")
+    (decomp / "shared.h").write_text("inline void bad(void) { __asm { nop } }\n")
+    staged_header = include / "shared.h"
+    staged_header.write_text("#define VALUE 1\n")
     source = decomp / "unit.cpp"
-    source.write_text('#include "sibling.h"\nint probe(void) { return VALUE; }\n')
+    source.write_text('#include "shared.h"\nint probe(void) { return VALUE; }\n')
     (scratch / "scratch.conf").write_text("FUNCTION=probe SOURCE=../../../decomp/unit.cpp\n")
     config = matchlib.load_scratch_config(scratch)
     resolver = matchlib._ScratchIncludeResolver(root, repo_root=tmp_path)
-    assert resolver.direct_dependencies(source, source=True) == (sibling.resolve(),)
-    fp1, deps1 = matchlib.source_probe_tree_fingerprint(config, source.read_text(), root)
-    assert sibling.name in deps1[0]
-    sibling.write_text("#define VALUE 2\n")
+    assert resolver.direct_dependencies(source, source=True) == (staged_header.resolve(),)
+    matchlib.validate_scratch_config(config, root)
+    fp1, _ = matchlib.source_probe_tree_fingerprint(config, source.read_text(), root)
+    staged_header.write_text("#define VALUE 2\n")
     fp2, _ = matchlib.source_probe_tree_fingerprint(config, source.read_text(), root)
     assert fp1 != fp2

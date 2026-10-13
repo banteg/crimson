@@ -5021,7 +5021,7 @@ class _ScratchIncludeResolver:
         for match in INCLUDE_RE.finditer(text):
             include_name = Path((match.group(1) or match.group(2)).replace("\\", "/"))
             candidates = [include_dir / include_name for include_dir in search_dirs]
-            if match.group(1) is not None:
+            if not source and match.group(1) is not None:
                 candidates.insert(0, including_path.parent / include_name)
             dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
             if dependency is None:
@@ -5145,13 +5145,14 @@ def source_probe_tree_fingerprint(
         text: str,
         *,
         including_parent: Path | None,
+        source: bool,
     ) -> tuple[Path, ...]:
         dependencies: list[Path] = []
         seen: set[Path] = set()
         for match in INCLUDE_RE.finditer(text):
             include_name = Path((match.group(1) or match.group(2)).replace("\\", "/"))
             candidates = [include_dir / include_name for include_dir in include_dirs]
-            if including_parent is not None and match.group(1) is not None:
+            if not source and including_parent is not None and match.group(1) is not None:
                 candidates.insert(0, including_parent / include_name)
             dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
             if dependency is None:
@@ -5162,11 +5163,11 @@ def source_probe_tree_fingerprint(
                 dependencies.append(resolved)
         return tuple(dependencies)
 
-    source_parent = (config.directory / config.source).resolve().parent if config.source else config.directory.resolve()
     pending = list(
         direct_dependencies(
             source_text,
-            including_parent=source_parent,
+            including_parent=None,
+            source=True,
         ),
     )
     dependencies: set[Path] = set()
@@ -5183,6 +5184,7 @@ def source_probe_tree_fingerprint(
             direct_dependencies(
                 dependency_text,
                 including_parent=dependency.parent,
+                source=False,
             ),
         )
 

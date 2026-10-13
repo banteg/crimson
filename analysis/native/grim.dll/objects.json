@@ -444,7 +444,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "4aeb5569df6cecd048e1b04b38b5ab76788bd3e88f70f0b4ee5389ffeb3b2b54",
+  "audit_digest": "8f5101e187a8e61739c5a3ff092faad461efbdee73ec25bf72278cad31827563",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -31953,7 +31953,7 @@
       {
         "path": "crimson-re/src/crimson_re/match.py",
         "repository_relative": true,
-        "sha256": "131e433129855fb835cd69dc0447f4d2ce8f8aca470791447e1ad70974b82a29"
+        "sha256": "d54428540c371abdd228167df4926209b179fa1c6a1c4a59e731d8a7b18aad82"
       },
       {
         "path": "crimson-re/src/crimson_re/match_process.py",
