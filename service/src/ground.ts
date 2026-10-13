@@ -6,7 +6,7 @@
 import { ALPHA_REF, type Ground, SIZE } from "../web/src/terrain/rules";
 import type { Env } from "./http";
 import { decodePng, type Pixels } from "./png";
-import { type Box, Canvas, Layer, paintGround, type Quad, type Texture, texture } from "./raster";
+import { type Box, Canvas, Layer, paintGround, type Quad, straightTexture, type Texture } from "./raster";
 
 const BAKE_BYTES = 44;
 const DECALS = 0x80;
@@ -96,8 +96,8 @@ export class GroundBake {
     this.layer = new Layer(size, size);
     this.scale = size / SIZE;
     paintGround(this.canvas, ground, art.terrain, { x: 0, y: 0, size });
-    this.particles = texture(art.particles);
-    this.bodyset = texture(art.bodyset);
+    this.particles = straightTexture(art.particles);
+    this.bodyset = straightTexture(art.bodyset);
   }
 
   bake(bakes: DataView): void {

@@ -69,9 +69,7 @@ const vite = await createServer({
 });
 const { decodeReplay, inflateReplay } = await vite.ssrLoadModule("/src/replay.ts");
 const { encodeTransport } = await vite.ssrLoadModule("/src/transport.ts");
-const { verifyRun } = await vite.ssrLoadModule("/src/verify.ts");
-const { groundBake } = await vite.ssrLoadModule("/src/runs.ts");
-const { encodeJpeg } = await vite.ssrLoadModule("/src/jpeg.ts");
+const { verifyWithGround } = await vite.ssrLoadModule("/src/runs.ts");
 // The worker's site files, as its ASSETS binding serves them.
 const env = { ASSETS: { fetch: async (url) => new Response(readFileSync(join(ART, new URL(url).pathname))) } };
 rmSync(GROUNDS, { recursive: true, force: true });
@@ -82,10 +80,9 @@ const failed = [];
 for (const { id, file } of runs) {
   const replay = decodeReplay(inflateReplay(new Uint8Array(readFileSync(file))));
   const start = performance.now();
-  const ground = await groundBake(env, "https://crimson.land", replay);
-  const verdict = await verifyRun(env, replay, encodeTransport(replay), (bakes) => ground.bake(bakes));
+  const { verdict, ground } = await verifyWithGround(env, "https://crimson.land", replay, encodeTransport(replay));
   if (!verdict.ok) failed.push({ id, reason: verdict.reason });
-  else writeFileSync(join(GROUNDS, `${id}.jpg`), await encodeJpeg(ground.pixels()));
+  else writeFileSync(join(GROUNDS, `${id}.jpg`), ground);
   console.log(`${id}  ${verdict.ok ? "ok" : verdict.reason}  ${((performance.now() - start) / 1000).toFixed(2)}s (${replay.ticks.length} ticks)`);
 }
 await vite.close();

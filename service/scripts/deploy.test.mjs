@@ -5,6 +5,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { downloadReplays } from "./reverify-cache.mjs";
+import { putGrounds } from "./grounds.mjs";
 import { requireArtifacts, requireGreenChecks, requireTrustedRun, resolveRuntimeBuild, REQUIRED_CHECKS } from "./deploy-preflight.mjs";
 import { requireBuildIdentity, requireMigrations, packageManifest, verifyManifest, smoke, waitForRelease } from "./deploy-checks.mjs";
 
@@ -220,4 +221,22 @@ test("build fingerprints preserve origin and reject identity, label or dirty-sou
   assert.throws(() => requireBuildIdentity({ ...original, recipe: { version: "9.9.9" } }, "game"), /Changed build identity/);
   assert.throws(() => requireBuildIdentity({ ...original, version: "fake" }, "game"), /Wrong build label/);
   assert.throws(() => requireBuildIdentity({ ...original, origin: { commit: sha, dirty: true } }, "game"), /modified inputs/);
+});
+
+test("puts the grounds of runs production still has, removes those deleted meanwhile and has newer runs baked", async () => {
+  // x was deleted before the deploy, b while its ground went up; c and d came after the bake, e retired.
+  const snapshots = [
+    ["a", "b", "c"].map((id) => ({ id, retired: null })),
+    [{ id: "a", retired: null }, { id: "c", retired: null }, { id: "d", retired: null }, { id: "e", retired: "refused" }],
+  ];
+  const calls = { put: [], remove: [], bake: [] };
+  const result = await putGrounds({
+    baked: ["a", "b", "x"],
+    runs: async () => snapshots.shift(),
+    put: async (id) => calls.put.push(id),
+    remove: async (id) => calls.remove.push(id),
+    bake: async (id) => calls.bake.push(id) && id !== "d",
+  });
+  assert.deepEqual(calls, { put: ["a", "b"], remove: ["b"], bake: ["c", "d"] });
+  assert.deepEqual(result, { put: 2, removed: 1, baked: 1, failed: ["d"] });
 });

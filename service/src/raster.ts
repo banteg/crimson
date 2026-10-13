@@ -6,8 +6,9 @@
 import { ALPHA_REF, CLEAR, type Ground, LAYER_ALPHA, PATCH, SIZE, TINT_RGB } from "../web/src/terrain/rules";
 import type { Pixels } from "./png";
 
-// A texture ready to sample: premultiplied floats, colour in 0..255 and alpha in 0..1, inside a transparent border
-// one texel wide, so bilinear samples at the edges fade out without bounds checks.
+// A texture ready to sample: floats, colour in 0..255 and alpha in 0..1, inside a transparent border one texel wide,
+// so bilinear samples at the edges fade out without bounds checks. texture() premultiplies the colour by its alpha;
+// straightTexture() keeps it straight.
 export interface Texture {
   width: number;
   height: number;
@@ -25,6 +26,21 @@ export function texture(pixels: Pixels, tint: readonly number[] = [1, 1, 1], alp
       const to = ((y + 1) * width + x + 1) * 4;
       for (let c = 0; c < 3; c++) data[to + c] = (pixels.data[from + c]! * tint[c]! * a) / 255;
       data[to + 3] = a / 255;
+    }
+  return { width, height: pixels.height + 2, data };
+}
+
+// A texture whose colour and alpha interpolate apart, as Grim's device filters the atlases fx_queue_render draws
+// from: Layer.drawQuad then weighs the filtered colour by the filtered alpha.
+export function straightTexture(pixels: Pixels): Texture {
+  const width = pixels.width + 2;
+  const data = new Float32Array(width * (pixels.height + 2) * 4);
+  for (let y = 0; y < pixels.height; y++)
+    for (let x = 0; x < pixels.width; x++) {
+      const from = (y * pixels.width + x) * 4;
+      const to = ((y + 1) * width + x + 1) * 4;
+      for (let c = 0; c < 3; c++) data[to + c] = pixels.data[from + c]!;
+      data[to + 3] = pixels.data[from + 3]! / 255;
     }
   return { width, height: pixels.height + 2, data };
 }
@@ -144,9 +160,10 @@ export class Layer {
     this.clear = new Float32Array(width * height).fill(1);
   }
 
-  // `cell` of `texture` (a box of its texels) drawn as Grim draws a quad, under what this layer holds: modulated by
-  // `color` (0..1, alpha included) as its vertex colour does and blended by the sample's alpha, unless that is at most
-  // `alphaRef` (of 255), as its alpha test drops it; or, a `shadow`, darkening what lies under by that alpha.
+  // `cell` of `texture` (a box of its texels, sampled straight) drawn as Grim draws a quad, under what this layer
+  // holds: modulated by `color` (0..1, alpha included) as its vertex colour does and blended by the sample's alpha;
+  // or, a `shadow`, darkening what lies under by that alpha. A sample whose alpha is at most `alphaRef` (of 255) does
+  // neither, as Grim's alpha test drops it.
   drawQuad(texture: Texture, cell: Box, quad: Quad, color: readonly number[], shadow: boolean, alphaRef: number): void {
     const cx = quad.x + quad.width / 2;
     const cy = quad.y + quad.height / 2;
@@ -160,7 +177,7 @@ export class Layer {
     const reach = (Math.abs(quad.width * sin) + Math.abs(quad.height * cos)) / 2 + 1;
     const top = Math.max(0, Math.floor(cy - reach));
     const bottom = Math.min(this.height, Math.ceil(cy + reach));
-    const [r, g, b, alpha] = [color[0]! * color[3]!, color[1]! * color[3]!, color[2]! * color[3]!, color[3]!];
+    const [r, g, b, alpha] = color as [number, number, number, number];
     const t = texture.data;
     for (let y = top; y < bottom; y++) {
       const dy = y + 0.5 - cy;
@@ -188,16 +205,14 @@ export class Layer {
         const t00 = (v0 * texture.width + u0) * 4;
         const t01 = t00 + texture.width * 4;
         const a = (t[t00 + 3]! * w00 + t[t00 + 7]! * w10 + t[t01 + 3]! * w01 + t[t01 + 7]! * w11) * alpha;
-        if (shadow) {
-          this.clear[at] = clear * (1 - a);
-          continue;
-        }
         if (a * 255 <= alphaRef) continue;
-        const rgb = at * 3;
-        this.rgb[rgb] = this.rgb[rgb]! + clear * r * (t[t00]! * w00 + t[t00 + 4]! * w10 + t[t01]! * w01 + t[t01 + 4]! * w11);
-        this.rgb[rgb + 1] = this.rgb[rgb + 1]! + clear * g * (t[t00 + 1]! * w00 + t[t00 + 5]! * w10 + t[t01 + 1]! * w01 + t[t01 + 5]! * w11);
-        this.rgb[rgb + 2] = this.rgb[rgb + 2]! + clear * b * (t[t00 + 2]! * w00 + t[t00 + 6]! * w10 + t[t01 + 2]! * w01 + t[t01 + 6]! * w11);
         this.clear[at] = clear * (1 - a);
+        if (shadow) continue;
+        const rgb = at * 3;
+        const k = clear * a;
+        this.rgb[rgb] = this.rgb[rgb]! + k * r * (t[t00]! * w00 + t[t00 + 4]! * w10 + t[t01]! * w01 + t[t01 + 4]! * w11);
+        this.rgb[rgb + 1] = this.rgb[rgb + 1]! + k * g * (t[t00 + 1]! * w00 + t[t00 + 5]! * w10 + t[t01 + 1]! * w01 + t[t01 + 5]! * w11);
+        this.rgb[rgb + 2] = this.rgb[rgb + 2]! + k * b * (t[t00 + 2]! * w00 + t[t00 + 6]! * w10 + t[t01 + 2]! * w01 + t[t01 + 6]! * w11);
       }
     }
   }

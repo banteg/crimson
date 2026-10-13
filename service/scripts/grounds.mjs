@@ -1,39 +1,64 @@
-// Puts the grounds `npm run reverify` baked (.reverify/grounds/) into production's R2 once that build is deployed:
-// every unretired run's, so each run's card and page draw the ground the deployed service bakes (src/ground.ts),
-// and no run's first view waits for its replay to be verified again.
+// Puts the grounds `npm run reverify` baked (.reverify/grounds/) into production's R2 once that build is deployed, so
+// each run's card and page draw the ground the deployed service bakes (src/ground.ts) and no run's first view waits
+// for its replay to be verified again.
 //
 //   npm run grounds
-import { execFile, execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
+//
+// Production moves on while reverify and the deploy run: a run deleted since gets no ground (and loses one put while
+// it went), and a run accepted since has the deployed service bake its own.
+import { execFile } from "node:child_process";
+import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 
 const SERVICE = fileURLToPath(new URL("..", import.meta.url));
 const GROUNDS = join(SERVICE, ".reverify/grounds");
-const CONCURRENCY = 4;
+const ORIGIN = "https://crimson.land";
 const execFileAsync = promisify(execFile);
-const wrangler = (...args) => ["--no-install", "wrangler", ...args, "--remote", "--config", join(SERVICE, "wrangler.jsonc")];
 
-const [{ results }] = JSON.parse(
-  execFileSync("npx", wrangler("d1", "execute", "crimson-land", "--json", "--command", "SELECT id FROM runs WHERE retired IS NULL"), {
-    cwd: SERVICE,
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "inherit"],
-  }),
-);
-const missing = results.filter(({ id }) => !existsSync(join(GROUNDS, `${id}.jpg`)));
-if (missing.length) throw Error(`no baked ground for ${missing.length} runs: run npm run reverify first (${missing.map(({ id }) => id).join(", ")})`);
+// `work` over `items`, `concurrency` at a time.
+async function pool(items, work, concurrency) {
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+    while (next < items.length) await work(items[next++]);
+  }));
+}
 
-const started = performance.now();
-let next = 0;
-await Promise.all(
-  Array.from({ length: CONCURRENCY }, async () => {
-    while (next < results.length) {
-      const { id } = results[next++];
-      await execFileAsync("npx", wrangler("r2", "object", "put", `crimson-land-replays/runs/${id}.ground.jpg`,
-        "--file", join(GROUNDS, `${id}.jpg`), "--content-type", "image/jpeg"), { cwd: SERVICE });
-    }
-  }),
-);
-console.log(`${results.length} grounds put in ${((performance.now() - started) / 1000).toFixed(2)}s.`);
+// The baked grounds of runs production still has, put; then those of runs deleted meanwhile, removed; then the runs
+// accepted since the bake (not retired), baked by the deployed service. `runs` lists production's runs as {id, retired};
+// `bake` answers whether the service baked a run's ground.
+export async function putGrounds({ baked, runs, put, remove, bake, concurrency = 4 }) {
+  const before = new Set((await runs()).map(({ id }) => id));
+  const kept = baked.filter((id) => before.has(id));
+  await pool(kept, put, concurrency);
+  const after = await runs();
+  const present = new Set(after.map(({ id }) => id));
+  const removed = kept.filter((id) => !present.has(id));
+  await pool(removed, remove, concurrency);
+  const known = new Set(baked);
+  const newer = after.filter(({ id, retired }) => !retired && !known.has(id)).map(({ id }) => id);
+  const failed = [];
+  for (const id of newer) if (!(await bake(id))) failed.push(id);
+  return { put: kept.length, removed: removed.length, baked: newer.length - failed.length, failed };
+}
+
+async function main() {
+  const wrangler = (...args) => execFileAsync("npx", ["--no-install", "wrangler", ...args, "--remote", "--config", join(SERVICE, "wrangler.jsonc")], { cwd: SERVICE });
+  const key = (id) => `crimson-land-replays/runs/${id}.ground.jpg`;
+  const started = performance.now();
+  const result = await putGrounds({
+    baked: readdirSync(GROUNDS).filter((name) => name.endsWith(".jpg")).map((name) => name.slice(0, -4)),
+    runs: async () => JSON.parse((await wrangler("d1", "execute", "crimson-land", "--json", "--command", "SELECT id, retired FROM runs")).stdout)[0].results,
+    put: (id) => wrangler("r2", "object", "put", key(id), "--file", join(GROUNDS, `${id}.jpg`), "--content-type", "image/jpeg"),
+    remove: (id) => wrangler("r2", "object", "delete", key(id)),
+    bake: async (id) => (await fetch(`${ORIGIN}/runs/${id}.ground.jpg`, { signal: AbortSignal.timeout(120000) })).ok,
+  });
+  console.log(`${result.put} grounds put, ${result.removed} removed for deleted runs, ${result.baked} baked by the service for newer runs, in ${((performance.now() - started) / 1000).toFixed(2)}s.`);
+  if (result.failed.length) {
+    console.log(`The service could not bake these runs' grounds (do they still verify?): ${result.failed.join(", ")}`);
+    process.exitCode = 1;
+  }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();
