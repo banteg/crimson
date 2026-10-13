@@ -133,6 +133,13 @@ extern "C" int crt_sprintf(char *dst, const char *fmt, ...) {
   va_end(v);
   return n;
 }
+#if defined(__wasm__) && !defined(CRIMSON_GAME)
+// core.wasm imports nothing. wasi-libc's stdio locks through futex waits (WASI clock_time_get) and libc++abi's
+// pure-virtual handler prints to stderr (fd_write), on paths this single-threaded module never takes.
+extern "C" void __cxa_pure_virtual() { __builtin_trap(); }
+extern "C" int __lockfile(FILE *) { return 0; }
+extern "C" void __unlockfile(FILE *) {}
+#endif
 #ifndef CRIMSON_GAME
 extern "C" void console_printf(console_queue_t *, char *, ...) {}
 extern "C" int console_input_poll() { return 0; }

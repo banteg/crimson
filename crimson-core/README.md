@@ -73,7 +73,8 @@ a stable bot observation format or a language-specific SDK.
 
 ## Build
 
-Run from the repository root. Requires clang++, Zig **0.17.0**, Node.js and the
+Run from the repository root. Requires clang++, wasi-sdk **34.0** (at
+`WASI_SDK_PATH`, default `/opt/wasi-sdk`; WASM targets only), Node.js and the
 project's Python environment. Tested on macOS ARM64; CI runs Linux x86-64.
 The transport assumes little-endian hosts.
 

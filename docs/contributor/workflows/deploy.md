@@ -157,7 +157,7 @@ Worker where a code rollback is intended.
 
 Local deployment remains available through `npm --prefix service run deploy`. It
 rebuilds the site assets and the browser game, so it needs the game art and the
-client toolchain (Zig, wabt, Emscripten). Build the verifier first with
+client toolchain (wasi-sdk, wabt, Emscripten). Build the verifier first with
 `uv run python crimson-core/build.py --target wasm`, and run
 `node scripts/deploy-checks.mjs migrations` and `npm run reverify` from `service/`
 before publishing. A local deploy writes no `/deployment.txt`.

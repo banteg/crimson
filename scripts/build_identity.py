@@ -20,7 +20,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
-ZIG_VERSION = "0.17.0"
+WASI_SDK_VERSION = "34.0"
 
 # The verifier compiles this manifest, not the recovered presentation or the game-only host includes.
 # Keep directory patterns for headers and patches: adding either can affect an existing compilation.
@@ -157,10 +157,12 @@ def tool_version(command: str) -> str:
 
 
 def runtime_identity(target: str, root: Path = ROOT) -> dict[str, Any]:
-    recipe = {"target": target, "zig": ZIG_VERSION, "python": f"{platform.python_version_tuple()[0]}.{platform.python_version_tuple()[1]}", "version": project_version(root)}
+    recipe = {"target": target, "python": f"{platform.python_version_tuple()[0]}.{platform.python_version_tuple()[1]}", "version": project_version(root)}
     if target == "native":
         recipe["clang"] = compiler_version("clang++")
         recipe["platform"] = f"{platform.system()}-{platform.machine()}"
+    else:
+        recipe["wasi_sdk"] = WASI_SDK_VERSION
     return identity(target, root, game_paths(root) if target == "game" else core_paths(root), recipe)
 
 
@@ -229,7 +231,7 @@ def main() -> None:
     print(result["fingerprint"])
     if args.github_output:
         with args.github_output.open("a") as stream:
-            stream.write(f"fingerprint={result['fingerprint']}\nzig_version={ZIG_VERSION}\n")
+            stream.write(f"fingerprint={result['fingerprint']}\nwasi_sdk_version={WASI_SDK_VERSION}\n")
             if args.command == "runtime":
                 binary = {"native": "core", "wasm": "core.wasm", "game": "game.wasm"}[args.target]
                 stream.write(f"binary={binary}\n")

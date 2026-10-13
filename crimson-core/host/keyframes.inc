@@ -7,6 +7,8 @@
 // pass bakes every tick and copies the terrain as the run starts and every
 // half minute after), then every logged bake up to the keyframe, through the
 // original's own fx_queue_render.
+#include <algorithm>
+
 extern "C" {
 struct GameSpan {
   unsigned char *at;

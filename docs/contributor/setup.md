@@ -11,8 +11,9 @@ tags:
 - Python 3.13+ with [uv](https://docs.astral.sh/uv/)
 - `just` task runner, ast-grep, and [prek](https://github.com/j178/prek) for the git hooks
   (`prek install -c prek.toml -t pre-commit -t pre-push`)
-- for `crimson-core/`: clang++ (native verifier), Zig (the version `scripts/build_identity.py` pins;
-  it builds the shared math helper and compiles the WASM targets) and Node.js
+- for `crimson-core/`: clang++ (native verifier), [wasi-sdk](https://github.com/WebAssembly/wasi-sdk)
+  (the version `scripts/build_identity.py` pins, at `WASI_SDK_PATH` or `/opt/wasi-sdk`; it compiles the
+  WASM targets) and Node.js
 - for the browser and desktop clients: wabt's `wasm2c`, SDL3, libcurl, and Emscripten for the
   browser build; see the [port notes](https://github.com/banteg/crimson/blob/master/crimson-core/PORT.md)
 

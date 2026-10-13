@@ -38,15 +38,31 @@ jobs:
             crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}
             crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}.build.json
           key: runtime-v3-${{ runner.os }}-${{ runner.arch }}-${{ steps.inputs.outputs.fingerprint }}
-      - uses: mlugg/setup-zig@v2
-        if: steps.binary.outputs.cache-hit != 'true'
+      - name: Restore wasi-sdk
+        id: wasi-sdk
+        if: steps.binary.outputs.cache-hit != 'true' && inputs.target != 'native'
+        uses: actions/cache@v4
         with:
-          version: ${{ steps.inputs.outputs.zig_version }}
-          cache-key: ${{ inputs.target }}
+          path: ${{ runner.temp }}/wasi-sdk
+          key: wasi-sdk-${{ runner.os }}-${{ runner.arch }}-${{ steps.inputs.outputs.wasi_sdk_version }}
+      - name: Download wasi-sdk
+        if: steps.binary.outputs.cache-hit != 'true' && inputs.target != 'native' && steps.wasi-sdk.outputs.cache-hit != 'true'
+        env:
+          VERSION: ${{ steps.inputs.outputs.wasi_sdk_version }}
+        run: |
+          archive="wasi-sdk-$VERSION-x86_64-linux.tar.gz"
+          curl --fail --location --retry 3 --retry-all-errors --output "$RUNNER_TEMP/$archive" \
+            "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${VERSION%%.*}/$archive"
+          sha256sum --check <<EOF
+          b761e3a0721dbae9c09a0059e5fdb2bf917d1b4a8a7b430fb3b5aafb0984b2c4  $RUNNER_TEMP/$archive
+          EOF
+          mkdir -p "$RUNNER_TEMP/wasi-sdk"
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP/wasi-sdk" --strip-components=1
       - name: Compile the module
         if: steps.binary.outputs.cache-hit != 'true'
         env:
           TARGET: ${{ inputs.target }}
+          WASI_SDK_PATH: ${{ runner.temp }}/wasi-sdk
         run: |
           uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name "build-$TARGET" -- \
             python crimson-core/build.py --target "$TARGET"

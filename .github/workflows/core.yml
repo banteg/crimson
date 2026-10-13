@@ -118,7 +118,7 @@ jobs:
       - name: Name the validated corpus inputs
         id: inputs
         run: |
-          compiler="$(clang++ --version | sha256sum | cut -c1-16)-zig0.17.0-node$(node --version)"
+          compiler="$(clang++ --version | sha256sum | cut -c1-16)-wasi-sdk$(python3 -c 'import sys; sys.path.insert(0, "scripts"); from build_identity import WASI_SDK_VERSION; print(WASI_SDK_VERSION)')-node$(node --version)"
           echo "key=corpus-v2-${{ runner.os }}-${{ runner.arch }}-$compiler-$(python3 scripts/ci_changed_paths.py hash core-corpus)" >> "$GITHUB_OUTPUT"
       # Exact cache hits reuse a complete corpus already validated with these sources and toolchains.
       - name: Restore the validated bot corpus
