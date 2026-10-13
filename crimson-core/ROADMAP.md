@@ -83,5 +83,5 @@ independent simulation implementation.
 
 Keep one pinned implementation of the portable numerical helpers owned by the
 recovered core, with original x87 oracle cases as its regression contract; the
-CRT power model is duplicated today in [`host/math.zig`](host/math.zig) and
+CRT power model is duplicated today in [`host/math.c`](host/math.c) and
 Python's `crimson.math_parity`.

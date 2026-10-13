@@ -297,37 +297,15 @@ def main():
         if proc.returncode:
             print(proc.stderr)
             raise SystemExit(1)
-    ziglib = Path(
-        re.search(r'\.lib_dir = "([^"]+)"', subprocess.check_output([zig, "env"], env=env, text=True))[1],
-    ).resolve()
-    runtime = a.out / "runtime"
-    # Relink every build, so a build directory from another Zig never keeps that Zig's runtime.
-    runtime.unlink(missing_ok=True)
-    runtime.symlink_to(ziglib, target_is_directory=True)
-    (a.out / "runtime_bridge.zig").write_text(
-        'pub const sin = @import("runtime/compiler_rt/sin.zig");\npub const cos = @import("runtime/compiler_rt/cos.zig");\n',
+    # The portable math (host/math.c over musl's sources) is C for the same compiler as everything else.
+    subprocess.run(
+        [*([zig, "cc", "-target", "wasm32-wasi"] if wasm else ["clang"])]
+        + (["-mmacosx-version-min=11.0"] if not wasm and os.uname().sysname == "Darwin" else [])
+        + ["-std=c11", "-O2", "-ffp-contract=off", "-fno-builtin", "-I" + str(HOST / "musl/shim")]
+        + ["-I" + str(HOST / "musl/src/internal"), "-c", str(HOST / "math.c"), "-o", str(a.out / "math.o")],
+        env=env,
+        check=True,
     )
-    mathcmd = [
-        zig,
-        "build-obj",
-        "-O",
-        "ReleaseFast",
-        "-fno-omit-frame-pointer",
-        "--dep",
-        "rt",
-        "-Mroot=" + str(HOST / "math.zig"),
-        "-Mrt=" + str(a.out / "runtime_bridge.zig"),
-        "-femit-bin=" + str(a.out / "math.o"),
-    ]
-    if wasm:
-        mathcmd[2:2] = ["-target", "wasm32-wasi"]
-    elif os.uname().sysname != "Darwin":
-        # Linux clang links PIE executables by default. The imported compiler
-        # runtime must not optimize its memory loops into calls to themselves.
-        mathcmd[2:2] = ["-fPIC", "-mcpu=baseline", "-fno-builtin"]
-    elif os.uname().sysname == "Darwin":
-        mathcmd[2:2] = ["-target", "aarch64-macos.11.0" if os.uname().machine == "arm64" else "x86_64-macos.11.0"]
-    subprocess.run(mathcmd, env=env, check=True)
     objs = [str(a.out / (name(f) + ".o")) for f in sources] + [str(a.out / (src.stem + ".o")) for src in glue]
     objs += [str(a.out / f"third_party_{src.stem}.o") for src in third_party]
     objs += [str(a.out / f"vendor_{src.stem}.o") for src in vendor]

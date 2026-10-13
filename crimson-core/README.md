@@ -353,10 +353,10 @@ distinct ids in `audio_init_music`'s load order. This is a defined environment,
 not a reconstruction of every original startup path.
 `CRIMSON_CORE_TRACE_INIT=1` traces native initialization.
 
-[`host/math.zig`](host/math.zig) supplies trig from Zig's bundled math and the
-CRT PC24 power model to both targets, so neither depends on the host libc. On
-Linux it builds for a baseline CPU with `-fno-builtin`, so the compiler runtime
-cannot turn its memory routines into calls to themselves.
+[`host/math.c`](host/math.c) builds musl 1.2.5's `sin`, `cos`, `atan2`, `pow`
+and `log2` ([`host/musl`](host/musl), verbatim) and the CRT PC24 power model
+into every target, so no result depends on the host libm or on fused
+multiply-add.
 
 Native/WASM agreement establishes modern-build determinism, and one compiled
 module removes cross-target layout and compiler variation. Neither makes
