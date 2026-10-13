@@ -92,6 +92,20 @@
       "end": "0x413c0d",
       "body_sha256": "be0c47824b9ba36421a0c572460a527597d4a2da06af5bdd67cba97e2342dc5a",
       "note": "Independent Binary Ninja control flow covers all 22 blocks, 96 instructions and the final return at 0x413c0c; the following three NOPs are alignment."
+    },
+    {
+      "name": "weapon_refresh_available",
+      "address": "0x450a20",
+      "end": "0x450ac3",
+      "body_sha256": "2de438d4a5b29346621c839b44ae261d47d085e1b902e972734affb216f29773",
+      "note": "Clears every weapon availability byte (0x78 stride), re-enables the unlocked quest weapons and the pistol, and gates on the config interface; both returns. Gameplay reset calls it."
+    },
+    {
+      "name": "perks_rebuild_available",
+      "address": "0x42f3e0",
+      "end": "0x42f457",
+      "body_sha256": "e35990e5d67519eee103eb66862c6ded7eb669dbf21b713fc40ba50a0c12712d",
+      "note": "Clears the perk availability bytes, enables the table and the unlocked quest perks; 1.9.93 additionally forces four perks on. Gameplay reset calls it."
     }
   ],
   "data": [
@@ -622,6 +636,78 @@
       "note": "Native survival reward path tests this latch, unlocks Fire Bullets (id 24) and sets it; gameplay reset clears it and player firing also sets it.",
       "offset": 0,
       "reference": "0x406cc9"
+    },
+    {
+      "name": "survival_shrinkifier_handout_enabled",
+      "address": "0x484c88",
+      "reference": "0x413387",
+      "bytes": "c605884c480001",
+      "offset": 0,
+      "note": "Gameplay reset sets this first byte of the run-state block to 1; its fields follow at the 1.9.93 offsets (Shock Chain links +0x14, Fire Bullets latch +0x3c)."
+    },
+    {
+      "name": "survival_reward_handout_aux_enabled",
+      "address": "0x484c89",
+      "reference": "0x413380",
+      "bytes": "c605894c480001",
+      "offset": 0,
+      "note": "Gameplay reset sets the run-state byte after the Shrinkifier handout flag to 1."
+    },
+    {
+      "name": "creature_type_count",
+      "address": "0x480620",
+      "reference": "0x4133d3",
+      "bytes": "c7052006480006000000",
+      "offset": 0,
+      "note": "Gameplay reset stores 6 creature types, as in 1.9.93."
+    },
+    {
+      "name": "gameplay_reset_unused_timer",
+      "address": "0x4a83fc",
+      "reference": "0x4137ce",
+      "bytes": "c705fc834a0000000000",
+      "offset": 0,
+      "note": "Gameplay reset zeroes this float between the highscore tag and the bonus phase accumulator, as in 1.9.93."
+    },
+    {
+      "name": "bonus_update_phase_accumulator",
+      "address": "0x4a8404",
+      "reference": "0x4137f1",
+      "bytes": "c70504844a00000080bf",
+      "offset": 0,
+      "note": "Gameplay reset stores -1.0f, as in 1.9.93."
+    },
+    {
+      "name": "perk_prompt_timer",
+      "address": "0x48d204",
+      "reference": "0x4137fb",
+      "bytes": "891d04d24800",
+      "offset": 0,
+      "note": "Gameplay reset clears the perk prompt timer after the bonus phase accumulator, as in 1.9.93."
+    },
+    {
+      "name": "player_weapon_popup_timer",
+      "address": "0x484eb0",
+      "reference": "0x413819",
+      "bytes": "8915b04e4800",
+      "offset": 0,
+      "note": "Gameplay reset clears both players' weapon popup timers (+0 and +4) in its player loop."
+    },
+    {
+      "name": "fx_queue_rotated",
+      "address": "0x4a8414",
+      "reference": "0x4138f7",
+      "bytes": "891d14844a00",
+      "offset": 0,
+      "note": "Gameplay reset clears the rotated effect queue count at its end, as in 1.9.93."
+    },
+    {
+      "name": "sfx_cooldown_table",
+      "address": "0x4c0f40",
+      "reference": "0x43c7ff",
+      "bytes": "d904b5400f4c00",
+      "offset": 0,
+      "note": "sfx_play reads the per-sample cooldown and rearms it with 0.05 or 0.44, as in 1.9.93; sfx_play_panned does the same at 0x43c94f."
     }
   ]
 }

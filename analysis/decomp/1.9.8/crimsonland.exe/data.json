@@ -1456,6 +1456,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x00480620",
+      "name": "creature_type_count",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00480628",
       "name": "bonus_pool",
       "program": "1.9.8/crimsonland.exe"
@@ -1676,6 +1681,16 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x00484c88",
+      "name": "survival_shrinkifier_handout_enabled",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484c89",
+      "name": "survival_reward_handout_aux_enabled",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00484c9c",
       "name": "shock_chain_links_left",
       "program": "1.9.8/crimsonland.exe"
@@ -1853,6 +1868,11 @@
     {
       "address": "0x00484eac",
       "name": "ui_mouse_blocked",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484eb0",
+      "name": "player_weapon_popup_timer",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2173,6 +2193,11 @@
     {
       "address": "0x0048ceec",
       "name": "ui_perk_prompt_element",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0048d204",
+      "name": "perk_prompt_timer",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2566,8 +2591,23 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004a83fc",
+      "name": "gameplay_reset_unused_timer",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004a8404",
+      "name": "bonus_update_phase_accumulator",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004a840c",
       "name": "player_spread_damping_gate",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004a8414",
+      "name": "fx_queue_rotated",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2868,6 +2908,11 @@
     {
       "address": "0x004c0f38",
       "name": "buffer_reader_offset",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004c0f40",
+      "name": "sfx_cooldown_table",
       "program": "1.9.8/crimsonland.exe"
     },
     {

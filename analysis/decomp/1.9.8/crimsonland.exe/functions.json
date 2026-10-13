@@ -3237,6 +3237,14 @@
     "size": 96
   },
   {
+    "address": "0x0042F3E0",
+    "end": "0x0042F457",
+    "size": 119,
+    "canonical_address": "0x0042FC30",
+    "name": "perks_rebuild_available",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x0042F460",
     "canonical_address": "0x0042FCF0",
     "end": "0x0042F46C",
@@ -5322,12 +5330,12 @@
     "size": 224
   },
   {
-    "address": "0x00450A4C",
+    "address": "0x00450A20",
     "canonical_address": "0x00452E40",
-    "end": "0x00450AD0",
-    "evidence": "ordered",
+    "end": "0x00450AC3",
+    "evidence": "recovered",
     "name": "weapon_refresh_available",
-    "size": 132
+    "size": 163
   },
   {
     "address": "0x00450AD0",
