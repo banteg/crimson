@@ -166,14 +166,15 @@ def x87(src, txt):
         # Seeker steering keeps the trig result wide into its first multiply as well.
         txt = sub(
             src,
-            r"\(float\)(cos|sin)\(secondary->angle - 1\.5707964f\) \* frame_dt \* 800\.0f",
-            r"(float)(\1(secondary->angle - 1.5707964f) * frame_dt) * 800.0f",
+            r"\(float\)(cos|sin)\(secondary_projectile_pool\[secondary_index\]\.angle - 1\.5707964f\) \* frame_dt \* 800\.0f",
+            r"(float)(\1(secondary_projectile_pool[secondary_index].angle - 1.5707964f) * frame_dt) * 800.0f",
             txt,
             4,
         )
         # A cast trig result multiplied directly stays wide into that multiply (e.g. the hit jitter at
         # 0x004211da, the particle velocities at 0x0042219f); stored ones are spilled (0x00421dfe).
-        txt = sub(src, r"\(float\)(cos|sin)\(([^()]+)\) \* ([\w.]+)", r"portable_mul32(\1(\2), \3)", txt, 14)
+        # 14 sites, plus 8 in the 1.9.8-only branches (seeker steps, particle steering) that never compile here.
+        txt = sub(src, r"\(float\)(cos|sin)\(([^()]+)\) \* ([\w.]+)", r"portable_mul32(\1(\2), \3)", txt, 22)
         # 0x004212e5: the chain link's `fpatan` stays wide; each subtraction rounds.
         txt = replace(src, txt, "float chain_angle\n", "double chain_angle\n")
         txt = replace(src, txt, "= (float)atan2f(next_position->y", "= atan2f(next_position->y")
