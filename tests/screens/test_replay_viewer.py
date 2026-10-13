@@ -20,10 +20,12 @@ from crimson.sim.clock import PresentationClock
 from crimson.sim.commands import PerkPickCommand
 from crimson.sim.run_spec import RunSpec
 from crimson.world.render_resources import RenderResources
+from grim import music
 from grim.audio import AudioState
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
 from grim.geom import Vec2
+from grim.math import f32
 from grim.music import MusicState
 from grim.rand import Crand
 from grim.raylib_api import rl
@@ -278,3 +280,42 @@ def test_the_music_is_the_tune_the_run_has_where_playback_is(open_viewer: OpenVi
     viewer.update(0.0)
     assert completion.track == "crimsonquest"
     play_music.assert_called_once_with(music, "crimsonquest", fade_in=True)
+
+
+@pytest.mark.parametrize("fps", [30, 60, 120, 240])
+@pytest.mark.parametrize("speed", [0.25, 1.0, 8.0])
+def test_viewer_sound_cooldowns_follow_ticks_at_any_speed(open_viewer: OpenViewer, mocker, fps: int, speed: float) -> None:
+    audio = HeadlessAudio(mocker)
+    viewer = open_viewer(record_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 120), audio=audio.state)
+    viewer.speed = replay_viewer.SPEEDS.index(speed)
+    audio.state.sfx.cooldowns[SfxId.FLAMER_FIRE_01] = f32(0.44)
+
+    for _ in range(fps * 2 // 15):
+        viewer.update(1.0 / fps)
+
+    assert viewer.tick == int(8 * speed)
+    expected = f32(0.44)
+    for _ in range(viewer.tick):
+        if expected > 0.0:
+            expected = f32(expected - f32(1.0 / 60.0))
+    assert audio.state.sfx.cooldowns[SfxId.FLAMER_FIRE_01] == expected
+
+
+def test_paused_viewer_keeps_sound_cooldowns_but_updates_music(open_viewer: OpenViewer, mocker) -> None:
+    audio = HeadlessAudio(mocker)
+    viewer = open_viewer(record_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 30), audio=audio.state)
+    viewer.paused = True
+    audio.state.sfx.cooldowns[SfxId.FLAMER_FIRE_01] = f32(0.44)
+    update_music = mocker.spy(music, "update_music")
+
+    for _ in range(10):
+        viewer.update(1.0 / 60.0)
+
+    assert viewer.tick == 0
+    assert audio.state.sfx.cooldowns[SfxId.FLAMER_FIRE_01] == f32(0.44)
+    assert update_music.call_count == 10
+
+    _press(mocker, rl.KeyboardKey.KEY_PERIOD)
+    viewer.update(0.0)
+    assert viewer.tick == 1
+    assert audio.state.sfx.cooldowns[SfxId.FLAMER_FIRE_01] == f32(f32(0.44) - f32(1.0 / 60.0))

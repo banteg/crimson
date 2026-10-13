@@ -298,9 +298,11 @@ class ReplayPlaybackMode:
     def update(self, dt: float) -> None:
         """Straight playback at the replay's own pace."""
         self._frame_dt_ms = max(0.0, float(dt)) * 1000.0
-        ran = self._advance(dt_seconds=min(max(0.0, float(dt)), 0.1))
+        self._advance(dt_seconds=min(max(0.0, float(dt)), 0.1))
         if self._audio is not None:
-            update_audio(self._audio, float(dt), advance_sfx=ran == 0)
+            # Presentation plans already age sound cooldowns per replay tick.
+            # Frames without a tick must only stream music and update its fades.
+            update_audio(self._audio, float(dt), advance_sfx=False)
 
     def set_frame_dt(self, dt: float) -> None:
         """The frame's own delta, which the HUD's animations take."""

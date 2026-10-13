@@ -19,11 +19,14 @@ from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig, ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
+from grim.math import f32
 from grim.music import MusicState, MusicTrack
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx import init_sfx_state
+from grim.sfx_map import SfxId
 from grim.view import ViewContext
+from tests.support.audio import HeadlessAudio
 from tests.support.replay_runner_helpers import record_replay
 
 pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
@@ -33,10 +36,10 @@ type OpenPlayback = Callable[..., ReplayPlaybackMode]
 
 @pytest.fixture
 def open_playback(tmp_path: Path, assets_dir: Path) -> OpenPlayback:
-    """Open the replay player on `replay`, with audio off (no device in tests)."""
+    """Open the replay player on `replay`, optionally with stub audio (no device in tests)."""
 
     def _open(
-        replay: Replay, *, config: CrimsonConfig | None = None,
+        replay: Replay, *, config: CrimsonConfig | None = None, audio: AudioState | None = None,
     ) -> ReplayPlaybackMode:
         cfg = config if config is not None else ensure_crimson_cfg(tmp_path)
         cfg.audio.music_disabled = True
@@ -48,6 +51,7 @@ def open_playback(tmp_path: Path, assets_dir: Path) -> OpenPlayback:
             replay=replay,
             config=cfg,
             console=console,
+            audio=audio,
         )
         view.open()
         return view
@@ -240,3 +244,19 @@ def test_a_tick_the_simulation_refuses_stops_playback_there(open_playback: OpenP
     assert view.tick_index == 1
     assert view.ticks == 1
     assert view.stopped_reason == "This run stops playing here (tick 1)"
+
+
+@pytest.mark.parametrize("fps", [30, 60, 120, 240])
+def test_playback_sound_cooldowns_follow_ticks_at_any_refresh_rate(open_playback: OpenPlayback, mocker, fps: int) -> None:
+    audio = HeadlessAudio(mocker)
+    view = open_playback(record_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 30), audio=audio.state)
+    audio.state.sfx.cooldowns[SfxId.FLAMER_FIRE_01] = f32(0.44)
+
+    for _ in range(fps * 2 // 15):
+        view.update(1.0 / fps)
+
+    assert view.tick_index == 8
+    expected = f32(0.44)
+    for _ in range(view.tick_index):
+        expected = f32(expected - f32(1.0 / 60.0))
+    assert audio.state.sfx.cooldowns[SfxId.FLAMER_FIRE_01] == expected

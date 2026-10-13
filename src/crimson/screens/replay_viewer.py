@@ -285,19 +285,20 @@ class ReplayViewer:
         self._keys()
         self._pointer(dt)
         from_tick = self.tick
-        ran = 0
         if self._seek:
             self.seek(self._seek)
             self._seek = 0
         elif not self.ended and (not self.paused or self._step):
-            ran = self._play(dt)
+            self._play(dt)
             self._show_picks(from_tick)
         self._step = False
         self._update_card(dt)
         self._update_end(dt)
         self._tune()
         if self._audio is not None:
-            update_audio(self._audio, dt, advance_sfx=ran == 0)
+            # Replay ticks own sound cooldowns, including while stepping.
+            # Paused and zero-tick frames still stream music without aging them.
+            update_audio(self._audio, dt, advance_sfx=False)
 
     def _play(self, dt: float) -> int:
         """The frame's ticks at the viewer's speed (a paused step: one), as many as a frame's share affords."""
