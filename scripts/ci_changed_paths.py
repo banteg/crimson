@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import ast
 import hashlib
+import json
 import re
 import shutil
 import subprocess
@@ -55,11 +56,15 @@ CORE_CORPUS = (
     "crimson-core/checks/engine.mjs",
     "crimson-core/checks/compare.mjs",
     "crimson-core/checks/compare.test.mjs",
+    "crimson-core/checks/replay.py",
+    "src/crimson/quests/custom.py",
+    "src/crimson/quests/dsl/",
 )
 CORE_GATE = ("crimson-core/checks/gate.py", "crimson-core/checks/replay.py")
 CORE_GAME = ("crimson-core/checks/game_*", "crimson-core/build.py", *CORE_GATE)
 CORE_ORACLES = (
     "crimson-core/checks/spawn_batch.*",
+    "crimson-core/checks/creature_optimizations.*",
     "crimson-core/checks/builder_oracle.py",
     "crimson-core/checks/math_oracle.py",
     "crimson-core/checks/wasmtime_check.py",
@@ -109,9 +114,8 @@ SUITES = {
     # The oracles resolve the original executable's symbols from the name and data maps.
     "core-oracles": Suite(
         (
-            *CORE_BUILD,
+            *CORE_CORPUS,
             *CORE_ORACLES,
-            "crimson-core/checks/engine.mjs",
             "crimson-core/checks/*_probe.mjs",
             "analysis/ghidra/maps/",
             ".github/workflows/core.yml",
@@ -123,10 +127,15 @@ SUITES = {
             *GAME_BUILD,
             "crimson-core/client/",
             "src/crimson/assets_version.json",
-            "crimson-core/checks/native_network.*",
             "crimson-core/checks/assets.*",
+            "crimson-core/checks/audio.py",
+            "crimson-core/checks/audio_timing.cpp",
+            "crimson-core/checks/client_audio.cpp",
+            "crimson-core/checks/native_network.*",
             "crimson-core/checks/native_client_network.py",
+            "crimson-core/checks/native_practice.py",
             "tests/fixtures/replays/quest-1.1-completed.crd",
+            "tests/fixtures/replays/survival-238852.crd",
             ".github/workflows/client.yml",
             ".github/workflows/core.yml",
             ".github/workflows/deploy.yml",
@@ -163,6 +172,7 @@ SUITES = {
             "crimson-re/",
             "tests/",
             "scripts/",
+            "build_backend.py",
             ".github/actions/game-art/",
             "decomp/",
             "analysis/",
@@ -306,7 +316,12 @@ def relevant(suite: str, paths: list[str]) -> bool:
 def inputs_hash(suite: str) -> str:
     digest = hashlib.sha256()
     for path in inputs(suite):
-        digest.update(path.encode() + b"\0" + Path(path).read_bytes() + b"\0")
+        content = (
+            json.dumps(_unversioned(Path(path).read_text()), sort_keys=True).encode()
+            if path in PROJECT_FILES
+            else Path(path).read_bytes()
+        )
+        digest.update(path.encode() + b"\0" + content + b"\0")
     return digest.hexdigest()
 
 

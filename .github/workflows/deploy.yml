@@ -51,14 +51,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RUNTIME_RUN_ID: ${{ inputs.runtime_run_id }}
         run: node service/scripts/deploy-preflight.mjs
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           artifact-ids: ${{ steps.source.outputs.wasm_artifact_id }}
           merge-multiple: true
           run-id: ${{ steps.source.outputs.runtime_run_id }}
           github-token: ${{ github.token }}
           path: crimson-core/build/wasm
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           artifact-ids: ${{ steps.source.outputs.web_artifact_id }}
           merge-multiple: true
@@ -74,16 +74,16 @@ jobs:
         with:
           python-version: "3.13"
           enable-cache: true
-      - run: uv sync --frozen --no-dev
       - name: Download and verify game art
         uses: ./.github/actions/game-art
       - run: npm ci
         working-directory: service
       - run: npm run assets
         working-directory: service
+        env:
+          UV_FROZEN: "1"
+          UV_NO_DEV: "1"
       - run: npm run check && npm test
-        working-directory: service
-      - run: npm run build
         working-directory: service
       - name: Bundle the Worker without production credentials
         working-directory: service
@@ -95,7 +95,7 @@ jobs:
         run: |
           tar -czf release.tar.gz release.json service/dist service/release-worker crimson-core/build/wasm/core.wasm crimson-core/build/wasm/core.wasm.build.json
           cat release.json >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: crimson-land-release
           path: |
@@ -124,7 +124,7 @@ jobs:
           cache-dependency-path: service/package-lock.json
       - run: npm ci
         working-directory: service
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: crimson-land-release
           path: artifacts/release
@@ -183,7 +183,7 @@ jobs:
       - name: Smoke-check production pages, API and game files
         working-directory: service
         run: node scripts/deploy-checks.mjs smoke
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: crimson-land-deployment

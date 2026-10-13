@@ -56,6 +56,16 @@ GAME_BUILD = (
     "third_party/sources/",
     "tools/native/data_definitions/grim.dll.json",
 )
+CLIENT_BUILD = (
+    "crimson-core/client/",
+    "crimson-core/game/host_input.h",
+    "crimson-core/game/leaderboard_requests.h",
+    "crimson-core/game/sha256.cpp",
+    "crimson-core/game/sha256.h",
+    "crimson-core/host/json.inc",
+    "src/crimson/assets_version.json",
+    "scripts/build_identity.py",
+)
 
 
 def core_paths(root: Path = ROOT) -> tuple[str, ...]:
@@ -196,7 +206,7 @@ def client_identity(target: str, root: Path = ROOT, *, wabt: str | None = None, 
         recipe["sdl"] = output("pkg-config", "--modversion", "sdl3")
         recipe["curl"] = output("/usr/bin/curl-config" if platform.system() == "Darwin" else "curl-config", "--version")
         recipe["platform"] = f"{platform.system()}-{platform.machine()}"
-    result = identity("client", root, ("crimson-core/client/", "src/crimson/assets_version.json", "scripts/build_identity.py"), recipe)
+    result = identity("client", root, CLIENT_BUILD, recipe)
     result["game"] = game
     return result
 

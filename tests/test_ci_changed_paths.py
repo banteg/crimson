@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.ci_changed_paths import changed_paths, relevant, version_bump_only
+from scripts.ci_changed_paths import changed_paths, inputs_hash, relevant, tracked_files, version_bump_only
 
 
 def test_rename_checks_both_old_and_new_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -60,14 +60,19 @@ def test_a_release_version_bump_is_not_a_change(tmp_path: Path, monkeypatch: pyt
     base = commit(*files("0.14.0", "msgspec"))
     monkeypatch.chdir(tmp_path)
 
+    tracked_files.cache_clear()
+    before_hash = inputs_hash("core-corpus")
+
     commit(*files("0.14.1", "msgspec"))
     assert version_bump_only(base, "pyproject.toml")
     assert version_bump_only(base, "uv.lock")
+    assert inputs_hash("core-corpus") == before_hash
 
     commit(*files("0.14.1", "zstandard"))
     assert not version_bump_only(base, "pyproject.toml")
     assert not version_bump_only(base, "uv.lock")
-
+    assert inputs_hash("core-corpus") != before_hash
+    tracked_files.cache_clear()
 
 def test_a_suite_runs_for_the_code_its_checks_import(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(Path(__file__).resolve().parents[1])
@@ -166,3 +171,30 @@ def test_shared_game_art_action_invalidates_its_consumers() -> None:
     assert relevant("service", [path])
     assert relevant("pytest", [path])
     assert not relevant("client", [path])
+
+
+def test_corpus_and_oracle_suites_cover_quest_recipes_and_check_drivers() -> None:
+    for path in (
+        "crimson-core/checks/replay.py",
+        "src/crimson/quests/custom.py",
+        "src/crimson/quests/dsl/examples/crosswind.quest",
+        "crimson-core/checks/matrix.mjs",
+    ):
+        assert relevant("core-corpus", [path]), path
+        assert relevant("core-oracles", [path]), path
+        assert relevant("core", [path]), path
+    for path in ("crimson-core/checks/creature_optimizations.py", "crimson-core/checks/creature_optimizations.cpp"):
+        assert relevant("core-oracles", [path]), path
+        assert relevant("core", [path]), path
+
+
+def test_client_and_pytest_suites_cover_audio_practice_and_build_backend() -> None:
+    for path in (
+        "crimson-core/checks/audio.py",
+        "crimson-core/checks/audio_timing.cpp",
+        "crimson-core/checks/client_audio.cpp",
+        "crimson-core/checks/native_practice.py",
+        "tests/fixtures/replays/survival-238852.crd",
+    ):
+        assert relevant("client", [path]), path
+    assert relevant("pytest", ["build_backend.py"])

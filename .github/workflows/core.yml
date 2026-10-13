@@ -96,22 +96,17 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v7
-        with:
-          python-version: "3.13"
-          enable-cache: true
-      - run: uv sync --frozen --group dev
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
       - name: Check native snapshot framing
         run: node --test crimson-core/checks/compare.test.mjs
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-native
           path: crimson-core/build/native
       - run: chmod +x crimson-core/build/native/core
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-wasm
           path: crimson-core/build/wasm
@@ -123,26 +118,33 @@ jobs:
       # Exact cache hits reuse a complete corpus already validated with these sources and toolchains.
       - name: Restore the validated bot corpus
         id: corpus
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             crimson-core/build/fixtures
             crimson-core/build/report.json
           key: ${{ steps.inputs.outputs.key }}
+      - uses: astral-sh/setup-uv@v7
+        if: steps.corpus.outputs.cache-hit != 'true'
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --frozen --group dev
+        if: steps.corpus.outputs.cache-hit != 'true'
       - name: Compare all modes and resets
         if: steps.corpus.outputs.cache-hit != 'true'
         run: |
           uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name matrix -- \
             node crimson-core/checks/matrix.mjs
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: runtime-corpus
           path: |
             crimson-core/build/fixtures
             crimson-core/build/report.json
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - uses: actions/upload-artifact@v7
+        if: always() && steps.corpus.outputs.cache-hit != 'true'
         with:
           name: runtime-corpus-timings
           path: crimson-core/build/timings.jsonl
@@ -163,12 +165,12 @@ jobs:
           python-version: "3.13"
           enable-cache: true
       - run: uv sync --frozen --group dev
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-native
           path: crimson-core/build/native
       - run: chmod +x crimson-core/build/native/core
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-corpus
           path: crimson-core/build
@@ -178,7 +180,7 @@ jobs:
         run: |
           uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name "python-$SHARD" -- \
             python crimson-core/checks/gate.py --shard "$SHARD/4"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: runtime-python-${{ matrix.shard }}
@@ -198,11 +200,11 @@ jobs:
           python-version: "3.13"
           enable-cache: true
       - run: uv sync --frozen --group dev
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-corpus
           path: crimson-core/build
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: runtime-python-*
           path: crimson-core/build/shards
@@ -211,7 +213,7 @@ jobs:
           reports=()
           for report in crimson-core/build/shards/*/gate.json; do reports+=(--merge "$report"); done
           uv run --no-sync python crimson-core/checks/gate.py "${reports[@]}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: runtime-python-report
           path: crimson-core/build/gate.json
@@ -232,11 +234,11 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-wasm
           path: crimson-core/build/wasm
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-game
           path: crimson-core/build/game
@@ -268,15 +270,15 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-wasm
           path: crimson-core/build/wasm
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-game
           path: crimson-core/build/game
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-corpus
           path: crimson-core/build
@@ -285,7 +287,7 @@ jobs:
           uv run --no-sync python crimson-core/checks/game_files.py "$RUNNER_TEMP/game"
           uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name game-parity -- \
             python crimson-core/checks/game_check.py --live "$RUNNER_TEMP/game"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: runtime-game-parity-timings
@@ -306,16 +308,16 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-native
           path: crimson-core/build/native
       - run: chmod +x crimson-core/build/native/core
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-wasm
           path: crimson-core/build/wasm
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: runtime-corpus
           path: crimson-core/build
@@ -355,7 +357,7 @@ jobs:
           uv run --no-sync --with wasmtime==49.0.0 python crimson-core/checks/wasmtime_check.py \
             --out crimson-core/build/wasmtime.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: runtime-oracles
           path: |

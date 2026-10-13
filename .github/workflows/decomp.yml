@@ -114,7 +114,7 @@ jobs:
           done
 
       - name: Upload measurement diagnostics
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.version }}_measurement
           path: |
@@ -123,7 +123,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload progress report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.version }}_report
           path: artifacts/decomp/${{ matrix.version }}/report.json

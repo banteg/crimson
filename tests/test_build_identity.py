@@ -118,16 +118,28 @@ def test_toolchain_change_invalidates_game_and_client_inputs(source: Path, monke
         assert build.client_identity("web", source, wabt=wabt, emscripten=emscripten)["fingerprint"] != before["fingerprint"]
 
 
-def test_client_edit_reuses_game_and_records_its_own_build(source: Path) -> None:
+@pytest.mark.parametrize(
+    "path",
+    [
+        "crimson-core/client/main.cpp",
+        "crimson-core/game/host_input.h",
+        "crimson-core/game/leaderboard_requests.h",
+        "crimson-core/game/sha256.cpp",
+        "crimson-core/game/sha256.h",
+        "crimson-core/host/json.inc",
+    ],
+)
+def test_client_edit_reuses_game_and_records_its_own_build(source: Path, path: str) -> None:
     game = game_module(source)
     before = build.client_identity("web", source, wabt="1.0.42", emscripten="6.0.10")
-    (source / "crimson-core/client/main.cpp").write_text("another client")
+    changed = source / path
+    changed.parent.mkdir(parents=True, exist_ok=True)
+    changed.write_text("another client input")
     after = build.client_identity("web", source, wabt="1.0.42", emscripten="6.0.10")
-    assert build.runtime_identity("game", source)["fingerprint"] == game["fingerprint"]
     assert after["fingerprint"] != before["fingerprint"]
+    assert after["origin"]["dirty"] is True
     assert after["version"] != game["version"]
     assert after["game"]["origin"] == game["origin"]
-
 
 def test_artwork_manifest_invalidates_client_cache_only(source: Path) -> None:
     game = game_module(source)

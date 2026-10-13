@@ -6,6 +6,9 @@ on:
       - "master"
   pull_request:
 
+permissions:
+  contents: read
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
@@ -17,6 +20,7 @@ jobs:
   checks:
     name: ${{ matrix.task }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -75,7 +79,12 @@ jobs:
             suite: "re-audits"
             use_uv: true
             do_sync: true
-            command: uv run --no-sync crimson match regressions --base "$MATCH_BASE"
+            command: |
+              base=HEAD
+              if [[ -n "$MATCH_BASE" && ! "$MATCH_BASE" =~ ^0+$ ]]; then
+                base="$MATCH_BASE"
+              fi
+              uv run --no-sync crimson match regressions --base "$base"
             sync_args: ""
           - task: build
             suite: ""
@@ -87,8 +96,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          fetch-depth: ${{ matrix.task == 'match-regressions' && '0' || '1' }}
 
       # A check with a suite runs only when the change touches what the suite reads (scripts/ci_changed_paths.py).
       - name: Skip unless the change touches what this check reads
@@ -149,7 +156,7 @@ jobs:
 
       - name: Install ast-grep
         if: ${{ matrix.task == 'ast-grep' }}
-        run: npm install --global @ast-grep/cli
+        run: npm install --global @ast-grep/cli@0.50.0
 
       - name: Install dependencies
         if: matrix.do_sync && steps.inputs.outputs.skip != 'true'
