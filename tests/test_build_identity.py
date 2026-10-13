@@ -110,7 +110,7 @@ def test_python_content_tracks_its_sources_and_dependency_lock(source: Path) -> 
 
 def test_toolchain_change_invalidates_game_and_client_inputs(source: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     before = build.runtime_identity("game", source)
-    monkeypatch.setattr(build, "ZIG_VERSION", "next-compiler")
+    monkeypatch.setattr(build, "WASI_SDK_VERSION", "next-compiler")
     assert build.runtime_identity("game", source)["fingerprint"] != before["fingerprint"]
     game_module(source)
     before = build.client_identity("web", source, wabt="1.0.42", emscripten="6.0.10")
@@ -147,7 +147,7 @@ def test_tampered_cached_binary_or_manifest_is_rejected(source: Path) -> None:
         build.client_identity("web", source, wabt="1.0.42", emscripten="6.0.10")
     manifest = module.with_name(module.name + ".build.json")
     data = json.loads(manifest.read_text())
-    data["recipe"]["zig"] = "another compiler"
+    data["recipe"]["wasi_sdk"] = "another compiler"
     manifest.write_text(json.dumps(data))
     with pytest.raises(ValueError, match="Invalid build identity"):
         build.read_manifest(manifest)

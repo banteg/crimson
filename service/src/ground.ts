@@ -3,6 +3,7 @@
 // (decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp). The verifier hands the bakes out tick by tick
 // (PortableBakes in crimson-core/host/api.h); the ground is kept beside the run's replay.
 
+import artFiles from "./ground-art.json";
 import { ALPHA_REF, type Ground, SIZE } from "../web/src/terrain/rules";
 import type { Env } from "./http";
 import { decodePng, type Pixels } from "./png";
@@ -36,9 +37,9 @@ let siteArt: Promise<GroundArt> | null = null;
 export function groundArt(env: Env, origin: string): Promise<GroundArt> {
   const file = async (name: string) => decodePng(new Uint8Array(await (await env.ASSETS.fetch(new URL(`/ui/${name}`, origin))).arrayBuffer()));
   return (siteArt ??= (async () => ({
-    terrain: await Promise.all(Array.from({ length: 8 }, (_, slot) => file(`ter${slot}.png`))),
-    particles: await file("particles.png"),
-    bodyset: await file("bodyset.png"),
+    terrain: await Promise.all(artFiles.terrain.map(file)),
+    particles: await file(artFiles.particles),
+    bodyset: await file(artFiles.bodyset),
   }))());
 }
 

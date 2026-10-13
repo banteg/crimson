@@ -73,7 +73,8 @@ a stable bot observation format or a language-specific SDK.
 
 ## Build
 
-Run from the repository root. Requires clang++, Zig **0.17.0**, Node.js and the
+Run from the repository root. Requires clang++, wasi-sdk **34.0** (at
+`WASI_SDK_PATH`, default `/opt/wasi-sdk`; WASM targets only), Node.js and the
 project's Python environment. Tested on macOS ARM64; CI runs Linux x86-64.
 The transport assumes little-endian hosts.
 
@@ -353,10 +354,10 @@ distinct ids in `audio_init_music`'s load order. This is a defined environment,
 not a reconstruction of every original startup path.
 `CRIMSON_CORE_TRACE_INIT=1` traces native initialization.
 
-[`host/math.zig`](host/math.zig) supplies trig from Zig's bundled math and the
-CRT PC24 power model to both targets, so neither depends on the host libc. On
-Linux it builds for a baseline CPU with `-fno-builtin`, so the compiler runtime
-cannot turn its memory routines into calls to themselves.
+[`host/math.c`](host/math.c) builds musl 1.2.5's `sin`, `cos`, `atan2`, `pow`
+and `log2` ([`host/musl`](host/musl), verbatim) and the CRT PC24 power model
+into every target, so no result depends on the host libm or on fused
+multiply-add.
 
 Native/WASM agreement establishes modern-build determinism, and one compiled
 module removes cross-target layout and compiler variation. Neither makes

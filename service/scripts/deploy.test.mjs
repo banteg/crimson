@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { downloadReplays } from "./reverify-cache.mjs";
 import { verifyRuns } from "./reverify-pool.mjs";
 import { putGrounds } from "./grounds.mjs";
+import { replayInputs, replayPlan } from "./deploy-replays.mjs";
 import { requireArtifacts, requireGreenChecks, requireTrustedRun, resolveRuntimeBuild, REQUIRED_CHECKS } from "./deploy-preflight.mjs";
 import { requireBuildIdentity, requireMigrations, packageManifest, verifyManifest, smoke, waitForRelease } from "./deploy-checks.mjs";
 
@@ -274,4 +275,84 @@ test("puts the grounds of runs production still has, removes those deleted meanw
   });
   assert.deepEqual(calls, { put: ["a", "b"], remove: ["b"], bake: ["c", "d"] });
   assert.deepEqual(result, { put: 2, removed: 1, baked: 1, failed: ["d"] });
+});
+
+// The replay identity must cover what executes, not a hand-maintained path filter.
+
+function replayFixture() {
+  const directory = mkdtempSync(join(tmpdir(), "crimson-replay-inputs-"));
+  const service = join(directory, "service");
+  const files = {
+    "src/verify.ts": 'import core from "../../crimson-core/build/wasm/core.wasm"; import { aim } from "./aim"; import schema from "./schema.json"; export function verifyRun() { return [core, aim(), schema.fields]; }',
+    "src/aim.ts": 'export const aim = () => 1;',
+    "src/schema.json": '{"fields":1}',
+    "src/replay.ts": 'export const REPLAY_RULES = 1; export const decodeReplay = (x) => x; export const inflateReplay = (x) => x;',
+    "src/transport.ts": 'export const encodeTransport = (x) => x;',
+    "src/ranked.ts": 'export const unrankedReasons = () => []; export const outcomeReasons = () => []; export const rankedBoard = () => "survival"; export const rankedScore = () => 1;',
+    "src/ground.ts": 'export const paint = () => 1; export const groundKey = (id) => `runs/${id}.jpg`;',
+    "src/runs.ts": 'import { verifyRun } from "./verify"; import { paint } from "./ground"; export const verifyWithGround = () => [verifyRun(), paint()];',
+    "src/ground-art.json": '{"terrain":["ter0.png"],"particles":"particles.png","bodyset":"bodyset.png"}',
+    "package-lock.json": '{"lockfileVersion":3}',
+    "package.json": '{"type":"module"}',
+    "scripts/deploy-replays.mjs": "planner",
+    "scripts/reverify.mjs": "reverify runner",
+    "scripts/grounds.mjs": "ground upload",
+    "wrangler.jsonc": '{"compatibility_date":"2026-08-22"}',
+    "migrations/0001.sql": 'CREATE TABLE runs (id TEXT);',
+    "dist/ui/ter0.png": "terrain",
+    "dist/ui/particles.png": "particles",
+    "dist/ui/bodyset.png": "corpses",
+    "../crimson-core/build/wasm/core.wasm": new Uint8Array([0, 97, 115, 109]),
+  };
+  const write = (file, contents) => {
+    mkdirSync(join(service, file, ".."), { recursive: true });
+    writeFileSync(join(service, file), contents);
+  };
+  for (const [file, contents] of Object.entries(files)) write(file, contents);
+  return { directory, service, write };
+}
+
+test("replay identity ignores metadata, page styles and client code, and checkout paths", async () => {
+  const a = replayFixture(), b = replayFixture();
+  try {
+    const before = await replayInputs(a.service);
+    assert.equal(await replayInputs(b.service), before);
+    for (const file of ["src/index.ts", "dist/index.html", "dist/style.css", "dist/play/index.js", "dist/ui/menu.png"])
+      a.write(file, "presentation changed");
+    assert.equal(await replayInputs(a.service), before);
+  } finally { rmSync(a.directory, { recursive: true, force: true }); rmSync(b.directory, { recursive: true, force: true }); }
+});
+
+test("replay identity changes with WASM, rules, new transitive modules, ground rendering, art, scripts and dependencies", async () => {
+  const fixture = replayFixture();
+  try {
+    let previous = await replayInputs(fixture.service);
+    for (const [file, contents] of [
+      ["../crimson-core/build/wasm/core.wasm", new Uint8Array([0, 97, 115, 109, 1])],
+      ["src/schema.json", '{"fields":2}'],
+      ["src/ranked.ts", 'export const unrankedReasons = () => ["new rule"]; export const outcomeReasons = () => []; export const rankedBoard = () => "survival"; export const rankedScore = () => 1;'],
+      ["src/aim.ts", 'import { bound } from "./bound"; export const aim = () => bound;'],
+      ["src/bound.ts", 'export const bound = 3;'],
+      ["src/ground.ts", 'export const paint = () => 2; export const groundKey = (id) => `runs/${id}.jpg`;'],
+      ["dist/ui/particles.png", "different pixels"],
+      ["scripts/grounds.mjs", "new upload policy"],
+      ["package-lock.json", '{"lockfileVersion":3,"version":"changed"}'],
+      ["wrangler.jsonc", '{"compatibility_date":"2026-09-01"}'],
+      ["migrations/0002.sql", 'ALTER TABLE runs ADD hidden INTEGER;'],
+    ]) {
+      if (file === "src/aim.ts") fixture.write("src/bound.ts", 'export const bound = 2;');
+      fixture.write(file, contents);
+      const current = await replayInputs(fixture.service);
+      assert.notEqual(current, previous, file);
+      previous = current;
+    }
+  } finally { rmSync(fixture.directory, { recursive: true, force: true }); }
+});
+
+test("reuses only the record of the commit production serves, unless forced", () => {
+  const inputs = "1".repeat(64), record = { sha, inputs };
+  assert.deepEqual(replayPlan(inputs, record, sha), { inputs, reuse: sha, reverify: false });
+  for (const [current, stored, live] of [[inputs, null, sha], [inputs, record, null], [inputs, record, "b".repeat(40)], ["2".repeat(64), record, sha]])
+    assert.equal(replayPlan(current, stored, live).reverify, true);
+  assert.equal(replayPlan(inputs, record, sha, true).reverify, true);
 });
