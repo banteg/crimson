@@ -32,9 +32,20 @@ struct vec2_t : vec2f_t {
 
 typedef vec2_t player_update_vec2_t;
 
+inline vec2_t pu_polar (const float &angle, const float &radius)
+{
+	return vec2_t (cosf(angle) * radius, sinf(angle) * radius);
+}
+
 inline float VEC2_Length (const vec2_t &v)
 {
 	return sqrtf(v.x * v.x + v.y * v.y);
+}
+inline float VEC2_Length2 (const vec2_t &v)
+{
+	float squared = v.x * v.x;
+	squared += v.y * v.y;
+	return sqrtf(squared);
 }
 
 inline float VEC2_Angle (const vec2_t &v)
@@ -173,6 +184,11 @@ static __inline float abs_bits(float value)
     return *(float *)&bits;
 }
 
+#if CL_BUILD == 10908
+// 1.9.8 reads the mouse position through the original UI state aggregate (prologue store order).
+#define CRIMSONLAND_USE_ORIGINAL_UI_OWNER
+#include "crimsonland_ui_state_owner.h"
+#endif
 extern "C" float player_heading_approach_target(float target_heading)
 {
     int player_index = current_player_index;
@@ -221,7 +237,6 @@ extern "C" void player_update(void)
     float rocket_step;
     float fire_heading;
     float angle_step;
-    float scalar;
     float speed_scale;
     float dir_x;
     float dir_y;
@@ -233,12 +248,21 @@ extern "C" void player_update(void)
         return;
     }
 
+#if CL_BUILD == 10908
+    // 1.9.8 copies the mouse position before it takes the player record.
+    player_update_vec2_t *aim_screen =
+        (player_update_vec2_t *)&player_aim_screen_x[current_player_index * 2];
+    *aim_screen = *(player_update_vec2_t *)&ui_mouse_x;
+
+    player_state_t *player = &player_state_table[current_player_index];
+#else
     int player_index = current_player_index;
     player_update_vec2_t *aim_screen =
         (player_update_vec2_t *)&player_aim_screen_x[player_index * 2];
     *aim_screen = *(player_update_vec2_t *)&ui_mouse_x;
 
     player_state_t *player = &player_state_table[player_index];
+#endif
     vec2_t previous_pos = *(vec2_t *)&player->position;
 
     if (player->health <= 0.0f) {
@@ -253,6 +277,13 @@ extern "C" void player_update(void)
     if (player->bleed_drip_timer != 100.0f && player->health < 20.0f) {
         player->bleed_drip_timer = player->bleed_drip_timer - frame_dt;
         if (player->bleed_drip_timer < 0.0f) {
+#if CL_BUILD == 10908
+            // 1.9.8 builds the drip offset with the polar helper.
+            float heading = player->aim_heading + 1.5707964f - 0.5f;
+            vec2_t blood_position = pu_polar(heading, -6.0f);
+            float angle = player->aim_heading;
+            blood_position += *(vec2_t *)&player->position;
+#else
             float heading = player->aim_heading;
             float dx = cosf(heading + 1.5707964f - 0.5f) * -6.0f;
             vec2_t blood_position;
@@ -261,6 +292,7 @@ extern "C" void player_update(void)
             float angle = player->aim_heading;
             blood_position.x = dx;
             blood_position += *(vec2_t *)&player->position;
+#endif
             effect_spawn_blood_splatter(&blood_position, angle, 0.0f);
             effect_spawn_blood_splatter(&blood_position, angle, 0.0f);
             effect_spawn_blood_splatter(&blood_position, angle, 0.0f);
@@ -272,10 +304,9 @@ extern "C" void player_update(void)
         }
     }
 
-    float *muzzle_flash_alpha = &player->muzzle_flash_alpha;
-    *muzzle_flash_alpha = *muzzle_flash_alpha - (frame_dt + frame_dt);
-    if (*muzzle_flash_alpha < 0.0f) {
-        *muzzle_flash_alpha = 0.0f;
+    player->muzzle_flash_alpha = player->muzzle_flash_alpha - (frame_dt + frame_dt);
+    if (player->muzzle_flash_alpha < 0.0f) {
+        player->muzzle_flash_alpha = 0.0f;
     }
 
     if (bonus_weapon_power_up_timer > 0.0f) {
@@ -480,7 +511,7 @@ extern "C" void player_update(void)
         int target_index = player->auto_target;
         float nearest_distance;
         if (!creature_pool[target_index].active
-            || creature_pool[target_index].health <= 0.0f) {
+            || !(creature_pool[target_index].health > 0.0f)) {
             nearest_distance = 100000.0f;
         } else {
             nearest_distance = VEC2_Length(*(vec2_t *)&player->position
@@ -502,6 +533,7 @@ extern "C" void player_update(void)
         } while (creature_index < 384);
     }
 
+    float movement_gap;
     if (demo_mode_active == 0
         && config_movement_schemes[current_player_index] != 5) {
         int move_mode = config_movement_schemes[current_player_index];
@@ -522,15 +554,26 @@ extern "C" void player_update(void)
                         movement_heading = movement_heading + 6.2831855f;
                     }
                     if (movement_heading != -1.0f) {
-                        angle_step = player_heading_approach_target(
+                        movement_gap = player_heading_approach_target(
                             movement_heading);
                         player_accelerate_move_speed(player);
                         player_apply_move_speed_cap(player);
 
+#if CL_BUILD == 10908
+                        // 1.9.8 multiplies by the move speed last.
+                        player->move_dx = cosf(player->heading - 1.5707964f)
+                            * (3.1415927f - movement_gap) * speed_scale * player->move_speed * 7.957747f;
+#else
                         player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
-                            * (3.1415927f - angle_step) * speed_scale * 7.957747f;
+                            * (3.1415927f - movement_gap) * speed_scale * 7.957747f;
+#endif
+#if CL_BUILD == 10908
+                        player->move_dy = sinf(player->heading - 1.5707964f)
+                            * (3.1415927f - movement_gap) * speed_scale * player->move_speed * 7.957747f;
+#else
                         player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
-                            * (3.1415927f - angle_step) * speed_scale * 7.957747f;
+                            * (3.1415927f - movement_gap) * speed_scale * 7.957747f;
+#endif
                         vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                         player_apply_move_with_spawn_avoidance(
                             current_player_index,
@@ -563,28 +606,39 @@ extern "C" void player_update(void)
                 -grim_interface_ptr->grim_get_config_float(player->input.axis_move_x),
                 -grim_interface_ptr->grim_get_config_float(player->input.axis_move_y));
 
-            movement_heading = -1.0f;
+            float pad_heading = -1.0f;
             if (VEC2_Length(pad)
                 > 0.2f) {
                 D3DXVec2Normalize(&pad, &pad);
-                movement_heading =
+                pad_heading =
                     VEC2_Angle(pad)
                     - 1.5707964f;
-                while (movement_heading < 0.0f) {
-                    movement_heading = movement_heading + 6.2831855f;
+                while (pad_heading < 0.0f) {
+                    pad_heading = pad_heading + 6.2831855f;
                 }
             }
 
-            if (movement_heading != -1.0f) {
-                angle_step = player_heading_approach_target(
-                    movement_heading);
+            if (pad_heading != -1.0f) {
+                float pad_gap = player_heading_approach_target(
+                    pad_heading);
                 player_accelerate_move_speed(player);
                 player_apply_move_speed_cap(player);
 
+#if CL_BUILD == 10908
+                // 1.9.8 multiplies by the move speed last.
+                player->move_dx = cosf(player->heading - 1.5707964f)
+                    * (3.1415927f - pad_gap) * speed_scale * player->move_speed * 7.957747f;
+#else
                 player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
-                    * (3.1415927f - angle_step) * speed_scale * 7.957747f;
+                    * (3.1415927f - pad_gap) * speed_scale * 7.957747f;
+#endif
+#if CL_BUILD == 10908
+                player->move_dy = sinf(player->heading - 1.5707964f)
+                    * (3.1415927f - pad_gap) * speed_scale * player->move_speed * 7.957747f;
+#else
                 player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
-                    * (3.1415927f - angle_step) * speed_scale * 7.957747f;
+                    * (3.1415927f - pad_gap) * speed_scale * 7.957747f;
+#endif
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
                     current_player_index,
@@ -640,7 +694,7 @@ extern "C" void player_update(void)
                 turned = true;
             }
 
-            movement_heading = 1.0f;
+            float phase_direction = 1.0f;
             if (grim_interface_ptr->grim_is_key_active(
                     player->input.move_key_forward)
                 || (config_player_count == 1
@@ -663,7 +717,7 @@ extern "C" void player_update(void)
                 || (config_player_count == 1
                     && grim_interface_ptr->grim_is_key_down(player2_move_key_backward))) {
                 player_accelerate_move_speed(player);
-                movement_heading = -1.0f;
+                phase_direction = -1.0f;
                 player->move_dx =
                     cosf(player->heading - 1.5707964f)
                     * player->move_speed * speed_scale * -25.0f;
@@ -693,7 +747,7 @@ extern "C" void player_update(void)
                     &move);
             }
 
-            player->move_phase = movement_heading * player->move_speed * frame_dt
+            player->move_phase = phase_direction * player->move_speed * frame_dt
                 * 19.0f + player->move_phase;
         } else if (move_mode == 2) {
             turn_angle = -1.0f;
@@ -758,16 +812,27 @@ extern "C" void player_update(void)
             }
 
             if (turn_angle != -1.0f) {
-                angle_step = player_heading_approach_target(turn_angle);
+                movement_gap = player_heading_approach_target(turn_angle);
                 player->aim_heading =
                     player->aim_heading + player_heading_turn_delta;
                 player_accelerate_move_speed(player);
                 player_apply_move_speed_cap(player);
 
+#if CL_BUILD == 10908
+                // 1.9.8 multiplies by the move speed last.
+                player->move_dx = cosf(player->heading - 1.5707964f)
+                    * (3.1415927f - movement_gap) * speed_scale * player->move_speed * 7.957747f;
+#else
                 player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
-                    * (3.1415927f - angle_step) * speed_scale * 7.957747f;
+                    * (3.1415927f - movement_gap) * speed_scale * 7.957747f;
+#endif
+#if CL_BUILD == 10908
+                player->move_dy = sinf(player->heading - 1.5707964f)
+                    * (3.1415927f - movement_gap) * speed_scale * player->move_speed * 7.957747f;
+#else
                 player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
-                    * (3.1415927f - angle_step) * speed_scale * 7.957747f;
+                    * (3.1415927f - movement_gap) * speed_scale * 7.957747f;
+#endif
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
                     current_player_index,
@@ -792,31 +857,43 @@ extern "C" void player_update(void)
         }
     } else {
         vec2_t center(512.0f, 512.0f);
+        float demo_heading;
         if (player->auto_target < 0
-            || creature_pool[player->auto_target].health <= 0.0f) {
-            movement_heading =
+            || !(creature_pool[player->auto_target].health > 0.0f)) {
+            demo_heading =
                 VEC2_Angle(*(vec2_t *)&player->position - center) + 3.1415927f;
         } else {
             vec2_t direction;
-            if (VEC2_Length(*(vec2_t *)&player->position - center) > 300.0f) {
+            if (VEC2_Length2(*(vec2_t *)&player->position - center) > 300.0f) {
                 direction = *(vec2_t *)&player->position - center;
             } else {
                 direction = *(vec2_t *)&player->position
                     - *(vec2_t *)&creature_pool[player->auto_target].position;
             }
-            movement_heading = VEC2_Angle(direction) - 1.5707964f;
+            demo_heading = VEC2_Angle(direction) - 1.5707964f;
         }
 
-        if (movement_heading != -1.0f) {
-            angle_step = player_heading_approach_target(
-                movement_heading);
+        if (demo_heading != -1.0f) {
+            float demo_gap = player_heading_approach_target(
+                demo_heading);
             player_accelerate_move_speed(player);
             player_apply_move_speed_cap(player);
 
+#if CL_BUILD == 10908
+            // 1.9.8 multiplies by the move speed last.
+            player->move_dx = cosf(player->heading - 1.5707964f)
+                * (3.1415927f - demo_gap) * speed_scale * player->move_speed * 7.957747f;
+#else
             player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
-                * (3.1415927f - angle_step) * speed_scale * 7.957747f;
+                * (3.1415927f - demo_gap) * speed_scale * 7.957747f;
+#endif
+#if CL_BUILD == 10908
+            player->move_dy = sinf(player->heading - 1.5707964f)
+                * (3.1415927f - demo_gap) * speed_scale * player->move_speed * 7.957747f;
+#else
             player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
-                * (3.1415927f - angle_step) * speed_scale * 7.957747f;
+                * (3.1415927f - demo_gap) * speed_scale * 7.957747f;
+#endif
             vec2_t move = frame_dt * *(vec2_t *)&player->movement;
             player_apply_move_with_spawn_avoidance(
                 current_player_index,
@@ -884,8 +961,13 @@ extern "C" void player_update(void)
 #endif
     }
 
+#if CL_BUILD == 10908
+    // 1.9.8 has no reload_timer_max > 0.5 gate on Angry Reloader.
+    if (perk_count_get(perk_id_angry_reloader) != 0) {
+#else
     if (perk_count_get(perk_id_angry_reloader) != 0
         && player->reload_timer_max > 0.5f) {
+#endif
         float half_reload = player->reload_timer_max * 0.5f;
         if (half_reload < player->reload_timer) {
             player->reload_timer = player->reload_timer - reload_scale * frame_dt;
@@ -952,22 +1034,23 @@ extern "C" void player_update(void)
                 - 1.5707964f;
         }
         if (aim_scheme == 4) {
-            scalar = grim_interface_ptr->grim_get_config_float(
+            float aim_y = grim_interface_ptr->grim_get_config_float(
                 player->input.axis_aim_y);
             vec2_t pad;
             pad.x = grim_interface_ptr->grim_get_config_float(
                 player->input.axis_aim_x);
-            pad.y = scalar;
+            pad.y = aim_y;
+            float aim_length;
             float length = sqrtf(
                 pad.x * pad.x
-                + scalar * scalar);
+                + aim_y * aim_y);
             if (1.0f < length) {
-                scalar = 1.0f;
+                aim_length = 1.0f;
             } else {
-                scalar = length;
+                aim_length = length;
             }
             D3DXVec2Normalize(&pad, &pad);
-            float distance = scalar * cv_padAimDistMul->value + 42.0f;
+            float distance = aim_length * cv_padAimDistMul->value + 42.0f;
             *(vec2_t *)&player->aim = pad * distance + *(vec2_t *)&player->position;
             player->aim_heading =
                 VEC2_Angle(
@@ -1031,18 +1114,30 @@ extern "C" void player_update(void)
     } else {
         vec2_t aim_delta = *(vec2_t *)&creature_pool[player->auto_target].position
             - *(vec2_t *)&player->aim;
-        scalar = VEC2_Length(aim_delta);
-        if (!(scalar >= 4.0f)) {
+        float target_distance = VEC2_Length2(aim_delta);
+#if CL_BUILD == 10908
+        // 1.9.8 tests the distance directly and scales the delta with the vector operator.
+        if (target_distance < 4.0f) {
             *(vec2_t *)&player->aim = *(vec2_t *)&creature_pool[player->auto_target].position;
         } else {
             D3DXVec2Normalize(&aim_delta, &aim_delta);
-            angle_step = (scalar * 6.0f) * frame_dt;
+            angle_step = (target_distance * 6.0f) * frame_dt;
+            vec2_t aim_step = aim_delta * angle_step;
+            *(vec2_t *)&player->aim += aim_step;
+        }
+#else
+        if (!(target_distance >= 4.0f)) {
+            *(vec2_t *)&player->aim = *(vec2_t *)&creature_pool[player->auto_target].position;
+        } else {
+            D3DXVec2Normalize(&aim_delta, &aim_delta);
+            angle_step = (target_distance * 6.0f) * frame_dt;
             vec2_t aim_step;
             aim_step.x = aim_delta.x * angle_step;
             aim_step.y = aim_delta.y * angle_step;
             *(vec2_t *)&player->aim += aim_step;
         }
-        if (scalar < 128.0f && creature_pool[player->auto_target].health > 0.0f) {
+#endif
+        if (target_distance < 128.0f && creature_pool[player->auto_target].health > 0.0f) {
             auto_fire = true;
         }
     }
@@ -1124,9 +1219,10 @@ extern "C" void player_update(void)
 
         if ((weapon_table[player->weapon_id].flags & 1) != 0) {
             effect_color_t smoke_color;
-            scalar = (float)(crt_rand() & 0x3f) * 0.01f
+            float smoke_angle = (float)(crt_rand() & 0x3f) * 0.01f
                 + fire_heading;
             float smoke_speed = (float)(crt_rand() & 0x3f) * 0.022727273f + 1.0f;
+            vec2_t drift(cosf(smoke_angle) * smoke_speed, sinf(smoke_angle) * smoke_speed);
             smoke_color.r = 1.0f;
             smoke_color.g = 1.0f;
             smoke_color.b = 1.0f;
@@ -1135,7 +1231,6 @@ extern "C" void player_update(void)
             effect_template.color = smoke_color;
             effect_template.lifetime = 0.15f;
             effect_template.age = 0.0f;
-            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);
             effect_template.rotation =
                 (float)((crt_rand() & 0x3f) - 0x20) * 0.1f;
             effect_template.half_extent.y = 2.0f;
@@ -1148,11 +1243,11 @@ extern "C" void player_update(void)
             effect_spawn(0x12, &(muzzle_offset + *(vec2_t *)&player->position));
         }
 
-        if (*muzzle_flash_alpha > 1.0f) {
-            *muzzle_flash_alpha = 1.0f;
+        if (player->muzzle_flash_alpha > 1.0f) {
+            player->muzzle_flash_alpha = 1.0f;
         }
 
-        scalar = 1.0f;
+        float ammo_cost = 1.0f;
         if (cv_friendlyFire->value != 0.0f) {
             owner_id = -1 - current_player_index;
         } else {
@@ -1196,12 +1291,12 @@ extern "C" void player_update(void)
             if (weapon_table[player->weapon_id].pellet_count == 1) {
                 player->shot_cooldown =
                     fire_bullets_fallback_shot_cooldown;
-                *muzzle_flash_alpha = *muzzle_flash_alpha
+                player->muzzle_flash_alpha = player->muzzle_flash_alpha
                     + fire_bullets_fallback_spread_heat;
             } else {
                 player->shot_cooldown =
                     weapon_table[player->weapon_id].shot_cooldown;
-                *muzzle_flash_alpha = *muzzle_flash_alpha
+                player->muzzle_flash_alpha = player->muzzle_flash_alpha
                     + weapon_table[player->weapon_id].spread_heat;
             }
 
@@ -1236,7 +1331,7 @@ extern "C" void player_update(void)
 #endif
             player->shot_cooldown =
                 weapon_table[player->weapon_id].shot_cooldown;
-            *muzzle_flash_alpha = *muzzle_flash_alpha
+            player->muzzle_flash_alpha = player->muzzle_flash_alpha
                 + weapon_table[player->weapon_id].spread_heat;
             sfx_play_panned(
                 crt_rand()
@@ -1440,7 +1535,7 @@ extern "C" void player_update(void)
                         &player->movement,
                         1.0f);
                 }
-                scalar = 0.1f;
+                ammo_cost = 0.1f;
             } else if (player->weapon_id == WEAPON_ID_HR_FLAMER) {
                 {
                     owner_id = fx_spawn_particle(
@@ -1452,7 +1547,7 @@ extern "C" void player_update(void)
                 if (owner_id != -1) {
                     particle_pool[owner_id].style_id = 2;
                 }
-                scalar = 0.1f;
+                ammo_cost = 0.1f;
             } else if (player->weapon_id == WEAPON_ID_BLOW_TORCH) {
                 {
                     owner_id = fx_spawn_particle(
@@ -1464,7 +1559,7 @@ extern "C" void player_update(void)
                 if (owner_id != -1) {
                     particle_pool[owner_id].style_id = 1;
                 }
-                scalar = 0.05f;
+                ammo_cost = 0.05f;
             } else if (player->weapon_id == WEAPON_ID_SUBMACHINE_GUN) {
                 {
                     vec2_t velocity;
@@ -1745,7 +1840,7 @@ extern "C" void player_update(void)
                         ++rocket_count;
                     } while ((float)rocket_count < player->ammo);
                 }
-                scalar = player->ammo;
+                ammo_cost = player->ammo;
             } else if (player->weapon_id == WEAPON_ID_ROCKET_MINIGUN) {
                 {
                     vec2_t velocity(cosf(fire_heading) * 25.0f, sinf(fire_heading) * 25.0f);
@@ -1829,7 +1924,7 @@ extern "C" void player_update(void)
                         angle_step - 1.5707964f,
                         &player->movement);
                 }
-                scalar = 0.15f;
+                ammo_cost = 0.15f;
             }
 
             if (perk_count_get(perk_id_sharpshooter) == 0) {
@@ -1837,7 +1932,7 @@ extern "C" void player_update(void)
                     + weapon_table[player->weapon_id].spread_heat * 1.3f;
             }
             if (bonus_reflex_boost_timer <= 0.0f) {
-                player->ammo = player->ammo - scalar;
+                player->ammo = player->ammo - ammo_cost;
             }
         }
 
@@ -1879,7 +1974,7 @@ extern "C" void player_update(void)
     if ((float)terrain_texture_height - half_size < player->position.y) {
         player->position.y = (float)terrain_texture_height - half_size;
     }
-    if (*muzzle_flash_alpha > 0.8f) {
-        *muzzle_flash_alpha = 0.8f;
+    if (player->muzzle_flash_alpha > 0.8f) {
+        player->muzzle_flash_alpha = 0.8f;
     }
 }

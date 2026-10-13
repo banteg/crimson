@@ -2,6 +2,52 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## 1.9.8 exact (2026-10-14)
+
+`--build 1.9.8` (C2 9044) is byte-exact: 3,541 instructions and 769 references. 1.9.93 stays exact
+(4,206/918), and the heading helper stays exact on both builds.
+
+**Per-purpose locals.** Each value now gets its own local instead of reusing `scalar`,
+`movement_heading` and `movement_gap`:
+
+- the aim pad's axis value `aim_y` and its clamped `aim_length`;
+- the auto-aim `target_distance`, `smoke_angle` and `ammo_cost`;
+- separate heading and gap pairs for move mode 3 (`pad_heading`, `pad_gap`) and the demo walk
+  (`demo_heading`, `demo_gap`).
+
+Both builds compile this to their native code. In 1.9.8 it matters through two parts of 9044's frame
+packer and one sort-key tie:
+
+- **Liveness.** It is clipped to "possibly defined before" (a forward analysis over predecessors). An
+  integer-view store such as `x = 1.0f` ends a live range only when it is the object's first
+  definition on every path. With one `scalar`, `scalar = 1.0f` before the fire block never ended the
+  range, so the smoke conversion temps could not reuse its slot (`[esp+0x14]` instead of native
+  `[esp+0x20]`). `ammo_cost` is first defined there and is not live earlier.
+- **Slot order.** Slots go by size class, then use count, then object index, and each object joins
+  the newest compatible slot. A model of this reproduces C2's assignment. It needs the ammo object
+  ahead of the movement and earlier `scalar` objects, which takes light per-purpose objects (six uses
+  or fewer).
+- **Square order.** The extra locals renumber symbols, which moved the move-mode-3 pad length's two
+  squares (hash `(96*id + 44) & 0xffff`) onto either side of the wrap at id 3413 and swapped them.
+  The mode-3 heading and gap pair moves both ids past it.
+
+**Guards.** Each `CL_BUILD == 10908` block was tried with the other build's branch on both builds.
+Two health tests became shared: `!(health > 0.0f)`, equal to `<= 0.0f` for any real health.
+
+The demo walk's two products would also compile exactly in either spelling, but they stay guarded.
+crimson-core reproduces x87 rounding from the spelled product order, and 1.9.93's order is the one its
+precision rule follows.
+
+What remains:
+- prologue copy order, plus the UI state aggregate include it reads through (guarded, so the canonical
+  object is unchanged);
+- the drip offset helper;
+- the move-speed factor order at four movement sites;
+- the auto-aim distance test;
+- Angry Reloader's missing `reload_timer_max > 0.5` gate, which is behavioural (only the condition is
+  guarded now);
+- the three feature guards (`CL_BUILD != 10908`).
+
 ## Exact: the translation unit precedes player_update with its heading helper (2026-09-28)
 
 **Byte-exact**: 4206/4206 instructions, refs 918/0/0. The source inside the function did not change.

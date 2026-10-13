@@ -444,7 +444,7 @@
     "source_sha256": "4d50fb679e67443596bff9fad9f6b9a87823595160bf28f462b716cae740d360",
     "status": "passed"
   },
-  "audit_digest": "ff0ce3b99a2ae9306dcf3ac1f54cf605be791cab808aa84cac54f2e81e7ad0b4",
+  "audit_digest": "53e64bc5326ceefa324b9c9636fb0e9026b25424e84007a491460211b6530d76",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -57816,7 +57816,7 @@
         {
           "path": "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp",
           "repository_relative": true,
-          "sha256": "8f4d42144aa9c80c309752ae6083c15a017291165887f368a4ec7539c70e75eb"
+          "sha256": "e41b77364eee302b9046226b846582b202462e29e4a98dea09fb6cf9ffc22717"
         },
         {
           "path": "tools/match/scratches/player_update/scratch.conf",
@@ -57864,6 +57864,11 @@
           "sha256": "9e8335120c9b33cdddc65120232cfeaf63ba0b8dc2ee9f28c0040baac1808ae1"
         },
         {
+          "path": "tools/match/include/crimsonland_ui_state_owner.h",
+          "repository_relative": true,
+          "sha256": "0f0823f9a27a324e7fe72750d76cc5f1b7d636bbacd6ed9e3358376dcf1a8a3c"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
           "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
@@ -57882,10 +57887,10 @@
           "canonical_config_sha256": "fd765e12a021a0b1ff5a57554aa4e2be2b9ea0967c4c946ba4c109e71044d2e2",
           "canonical_scratch": "tools/match/scratches/player_heading_approach_target",
           "canonical_source": "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp",
-          "canonical_source_sha256": "8f4d42144aa9c80c309752ae6083c15a017291165887f368a4ec7539c70e75eb",
+          "canonical_source_sha256": "e41b77364eee302b9046226b846582b202462e29e4a98dea09fb6cf9ffc22717",
           "effective_end": 4273826,
           "end": 4273826,
-          "experiment_epoch": "3f4ddc87a3647504530e6e4731636cf0de79c49e3281b9dad017077e65697c72",
+          "experiment_epoch": "353691dad52f6df8f5e9ec7dea5215d79991d78858b3241e079ad97cc2c36cfa",
           "function": "player_heading_approach_target",
           "match": {
             "body_byte_exact": true,
@@ -57911,10 +57916,10 @@
           "canonical_config_sha256": "1625235103ba1896e1f792c5988c5d11cf659af6877ba8ad26279eabe83732a4",
           "canonical_scratch": "tools/match/scratches/player_update",
           "canonical_source": "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp",
-          "canonical_source_sha256": "8f4d42144aa9c80c309752ae6083c15a017291165887f368a4ec7539c70e75eb",
+          "canonical_source_sha256": "e41b77364eee302b9046226b846582b202462e29e4a98dea09fb6cf9ffc22717",
           "effective_end": 4290097,
           "end": 4290097,
-          "experiment_epoch": "49c4cd38330563acce3a791d0e32860b363559676713ea0e79ba35f82013685d",
+          "experiment_epoch": "b3654961c66695278d403f205c3dabc7d1bb298958caa4c73ef7e47d70904eb2",
           "function": "player_update",
           "match": {
             "body_byte_exact": true,
@@ -57955,7 +57960,7 @@
       "object_sha256": "9cc000fbb1036531a8eb3ff778f4a99ff6d9d8ed0de4033dcfdef00934dd26bd",
       "scratch": "tools/match/scratches/player_update",
       "source": "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp",
-      "source_sha256": "8f4d42144aa9c80c309752ae6083c15a017291165887f368a4ec7539c70e75eb",
+      "source_sha256": "e41b77364eee302b9046226b846582b202462e29e4a98dea09fb6cf9ffc22717",
       "target_size": 354,
       "translation_unit": {
         "config": "tools/native/translation_units/crimsonland.exe.json",

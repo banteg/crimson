@@ -21475,7 +21475,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 32,
-        "candidate_object_sha256": "251b00df436d178f903724ae5d782c1782b49cbd7c2e674de2e9ced881b1b486",
+        "candidate_object_sha256": "c32b780ecb3bf7a3eaced9e09bcef6242b137ef9c24cf6d24417aa4c6ecde6ba",
         "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
@@ -21492,9 +21492,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 3,
+          "ok": 5,
           "positional": true,
-          "unresolved": 4
+          "unresolved": 2
         },
         "state": "audit",
         "target_instructions": 32,
@@ -21516,7 +21516,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 30,
-        "candidate_object_sha256": "ec6bc8b9e891aa857eb1d2c2e8d8a62be56c4be4be3826511f3b50853d39428e",
+        "candidate_object_sha256": "fb8cc3708aedd10c83f5bfd602ed1430a13fdde9401e0fddcd500f3a752c8dae",
         "candidate_padding_bytes": 12,
         "compared_target_ranges": [
           [
@@ -21533,9 +21533,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 1,
+          "ok": 3,
           "positional": true,
-          "unresolved": 4
+          "unresolved": 2
         },
         "state": "audit",
         "target_instructions": 30,
@@ -21639,7 +21639,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 139,
-        "candidate_object_sha256": "9eb764a5a235afc5381abbd6e848c0163f09edc2c341f58aec3c8a915002acfb",
+        "candidate_object_sha256": "6ca94f95d498bf884046c8bc4d3ca984df74827b9778f242de25ef1b3e315214",
         "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
@@ -21655,10 +21655,10 @@
           }
         ],
         "references": {
-          "mismatched": 1,
-          "ok": 18,
+          "mismatched": 3,
+          "ok": 20,
           "positional": false,
-          "unresolved": 30
+          "unresolved": 26
         },
         "state": "wip",
         "target_instructions": 138,
@@ -22492,7 +22492,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 108,
-        "candidate_object_sha256": "615a32d32a53087583d3e3e481d27c820fdf54a4949fbf8e928080b5892aa984",
+        "candidate_object_sha256": "c2e2c8201cbb648606f45b636a5ea2fc617e546af1e280fd6c901c61a1794366",
         "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
@@ -22509,9 +22509,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 36,
+          "ok": 37,
           "positional": true,
-          "unresolved": 16
+          "unresolved": 15
         },
         "state": "audit",
         "target_instructions": 108,
@@ -22615,7 +22615,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 509,
-        "candidate_object_sha256": "c3f43c71f0f7cf660670d01d051a1429bd18a60fe65ba4309bcc72d9766b72a7",
+        "candidate_object_sha256": "ec38b240d6f92a3aa85ebcdea84f63f2e1e40b9224bb1144c14120e79710bac6",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -22626,9 +22626,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 95,
+          "ok": 100,
           "positional": false,
-          "unresolved": 43
+          "unresolved": 38
         },
         "state": "wip",
         "target_instructions": 528,
@@ -22796,7 +22796,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 691,
-        "candidate_object_sha256": "88884214a8e8271aa83502aceeab343b0b3799c44a09e92816a50b1a60b47085",
+        "candidate_object_sha256": "0db820fe80948096f83c2cab04697fb1cccc643c4d95ae81dc9919617a2c9f66",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -22807,9 +22807,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 114,
+          "ok": 115,
           "positional": false,
-          "unresolved": 75
+          "unresolved": 74
         },
         "state": "wip",
         "target_instructions": 704,
@@ -22831,7 +22831,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 251,
-        "candidate_object_sha256": "dd29c7e4daf3bdd4722e6f8c498d2ccdc2c94a8821a5b83a7ba0b6a7750606bf",
+        "candidate_object_sha256": "49a73c3c9809d2c5f8665d482242e639611da559ed7434d1122489f6c13f66ad",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -22842,9 +22842,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 1,
-          "ok": 44,
+          "ok": 45,
           "positional": false,
-          "unresolved": 1
+          "unresolved": 0
         },
         "state": "wip",
         "target_instructions": 195,
@@ -22983,7 +22983,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 355,
-        "candidate_object_sha256": "966c24b0d12ae91b78d1968a993c722c1b18501394a70d64d614a2fadabb22be",
+        "candidate_object_sha256": "8a1e4ee71baf9881dc95ae20dd311c4e81a75cce22460115969ab21f4e942117",
         "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
@@ -23000,9 +23000,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 89,
+          "ok": 90,
           "positional": false,
-          "unresolved": 17
+          "unresolved": 16
         },
         "state": "wip",
         "target_instructions": 355,
@@ -23129,7 +23129,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 715,
-        "candidate_object_sha256": "ad003a79e142e9309b0e5ff7093a3c2cdb34e15392f097b933ae378d47ea0d02",
+        "candidate_object_sha256": "b82235e75e29b5d09633367b7333270621104304672e2ccaaeae0bc262724980",
         "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
@@ -23146,9 +23146,9 @@
         ],
         "references": {
           "mismatched": 4,
-          "ok": 133,
+          "ok": 142,
           "positional": false,
-          "unresolved": 45
+          "unresolved": 36
         },
         "state": "wip",
         "target_instructions": 799,
@@ -24665,7 +24665,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 13,
-        "candidate_object_sha256": "5624192255f300c714fa387906d4b478d152d74233f50f5b9eaa95e3c6eb525d",
+        "candidate_object_sha256": "3390ff3f46c5c95bc05b175ee9b86d6cc96d2a0380a7f066643ffacfaa80c3d6",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -24682,9 +24682,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 1,
+          "ok": 2,
           "positional": true,
-          "unresolved": 2
+          "unresolved": 1
         },
         "state": "audit",
         "target_instructions": 13,
@@ -26937,7 +26937,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 70,
-        "candidate_object_sha256": "dbb5b3d659f61120703af72fa452cf236e850a39924c37288115ed6b034e84a1",
+        "candidate_object_sha256": "dbe35fb2ae3c2a3bf0d3037de32a6b185f6b7bbbeee4de5d4147c43cb041b033",
         "candidate_padding_bytes": 7,
         "compared_target_ranges": [
           [
@@ -26954,9 +26954,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 25,
+          "ok": 27,
           "positional": true,
-          "unresolved": 3
+          "unresolved": 1
         },
         "state": "audit",
         "target_instructions": 70,
@@ -27008,13 +27008,13 @@
       "canonical_address": 4273840,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "player_update",
       "proof": {
-        "body_byte_exact": false,
-        "candidate_instructions": 3547,
-        "candidate_object_sha256": "a8ceb9a2bb2b97794a55ec6435fea7c5fe8ecc38bf2bccd1d4d9d6507fb7bf59",
-        "candidate_padding_bytes": 14,
+        "body_byte_exact": true,
+        "candidate_instructions": 3541,
+        "candidate_object_sha256": "27dd32a4b8f6ed5fdd1e3632687bb6a4cd71d64d031580551f5f873a3601ba22",
+        "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
             4275216,
@@ -27024,16 +27024,16 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 686,
-          "positional": false,
-          "unresolved": 68
+          "ok": 769,
+          "positional": true,
+          "unresolved": 0
         },
-        "state": "wip",
+        "state": "match",
         "target_instructions": 3541,
         "target_size": 13793,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.7711625282167043,
+      "ratio": 1.0,
       "size": 13793,
       "source": "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp"
     },
@@ -27451,7 +27451,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 196,
-        "candidate_object_sha256": "b8e840e048f660b909283f7f7cedbe7cc99e9454103886eb6134370e6bddbd6b",
+        "candidate_object_sha256": "69d67e4bc225ba2f1d18f90512054938041bdd691326c10e4885b9d0ac66d42a",
         "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
@@ -27468,9 +27468,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 21,
+          "ok": 23,
           "positional": true,
-          "unresolved": 11
+          "unresolved": 9
         },
         "state": "audit",
         "target_instructions": 196,
@@ -27533,7 +27533,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 343,
-        "candidate_object_sha256": "3762758b84e815ecff7b396ab7b73ef0d64b3d9b87ec6935d12f8ca7ae2eb9c4",
+        "candidate_object_sha256": "a1bb4f8f5c4a64b3373809eecb2d9c42d44f6806c3e89dad86e677f7b147352a",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -27544,9 +27544,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 79,
+          "ok": 83,
           "positional": true,
-          "unresolved": 8
+          "unresolved": 4
         },
         "state": "audit",
         "target_instructions": 343,
@@ -27761,7 +27761,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 171,
-        "candidate_object_sha256": "450b9fdccf25535e520a737ffb7a5fad1f5f5a937720e56b237bd74f6ff1575d",
+        "candidate_object_sha256": "95399e99b73c150521d4a3e1f4917c8dedc1f118e0f4a732c149e8b3bdf8424d",
         "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
@@ -27778,9 +27778,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 40,
+          "ok": 45,
           "positional": false,
-          "unresolved": 15
+          "unresolved": 10
         },
         "state": "wip",
         "target_instructions": 171,
@@ -27843,7 +27843,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 102,
-        "candidate_object_sha256": "8142bcf326cb39f89c96d4ba6bc2b6b34179bc023156a64cdb10d2d77995be5f",
+        "candidate_object_sha256": "eb70f3b399d780d0ead62c0b34907812253d7aeccacf0a5d649d102e2482433f",
         "candidate_padding_bytes": 12,
         "compared_target_ranges": [
           [
@@ -27860,9 +27860,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 33,
+          "ok": 34,
           "positional": true,
-          "unresolved": 7
+          "unresolved": 6
         },
         "state": "audit",
         "target_instructions": 102,
@@ -28147,7 +28147,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 123,
-        "candidate_object_sha256": "6a75ef121b458c7c3b23b80224803b39a7db286e9c4c054f3cbf2faa1a57a497",
+        "candidate_object_sha256": "22ea4332ff1b5b5f4fb24e2e781ea934b24528096925ce7f616a84243d074e7d",
         "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
@@ -28164,9 +28164,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 25,
+          "ok": 26,
           "positional": true,
-          "unresolved": 22
+          "unresolved": 21
         },
         "state": "audit",
         "target_instructions": 123,
@@ -29717,7 +29717,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 132,
-        "candidate_object_sha256": "4d4318dcf8f90e61d4a13f008e4d2706916ce17befdc77617b9c3b92c2a6758e",
+        "candidate_object_sha256": "c5d1f0ca23bfce2b718d57a5deebf165007d83e94adbd7f7c6ee52f62dce645c",
         "candidate_padding_bytes": 8,
         "compared_target_ranges": [
           [
@@ -29734,9 +29734,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 7,
+          "ok": 8,
           "positional": false,
-          "unresolved": 1
+          "unresolved": 0
         },
         "state": "wip",
         "target_instructions": 133,
@@ -30890,7 +30890,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 205,
-        "candidate_object_sha256": "c498a3f85d24835299fa7b076fce4933a7319954577a5852b56f74a09e537027",
+        "candidate_object_sha256": "7b3185f3a67e3ea17c4714a2a3de5c407b99ec35f9cbc31e9ee63803bce24f4f",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -30907,9 +30907,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 77,
+          "ok": 78,
           "positional": true,
-          "unresolved": 10
+          "unresolved": 9
         },
         "state": "audit",
         "target_instructions": 205,
@@ -31387,7 +31387,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 119,
-        "candidate_object_sha256": "d4ece94ae2106749938a73a358db3430b9309d9b4ea9eab5ca418dc2ea04fb6b",
+        "candidate_object_sha256": "d015135768bed17f7e7d7eaa41c60a00b486a28da01134cfb8db458c6707d6fe",
         "candidate_padding_bytes": 5,
         "compared_target_ranges": [
           [
@@ -31403,10 +31403,10 @@
           }
         ],
         "references": {
-          "mismatched": 0,
+          "mismatched": 1,
           "ok": 13,
           "positional": false,
-          "unresolved": 4
+          "unresolved": 3
         },
         "state": "wip",
         "target_instructions": 120,
@@ -32130,7 +32130,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 515,
-        "candidate_object_sha256": "c37c1583206ce7d4d520f93c6af579068bbf371589a74b601ee18e36de55147e",
+        "candidate_object_sha256": "015e08fdd353016cc6c87a7d30b0c2e6f6cf98a8a4d5de9df93b3526247cf313",
         "candidate_padding_bytes": 8,
         "compared_target_ranges": [
           [
@@ -32147,9 +32147,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 82,
+          "ok": 84,
           "positional": true,
-          "unresolved": 79
+          "unresolved": 77
         },
         "state": "audit",
         "target_instructions": 515,
@@ -32405,7 +32405,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1082,
-        "candidate_object_sha256": "8ca134b5130a5228d6547ba95f6020fa5f2974b4dac7b5dc283fc8c6f45a6cce",
+        "candidate_object_sha256": "545688c8ca02bac82aaa5628d492c16ac6389930096d7f9a3a9297cc9a27a503",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -32422,9 +32422,9 @@
         ],
         "references": {
           "mismatched": 2,
-          "ok": 204,
+          "ok": 214,
           "positional": false,
-          "unresolved": 20
+          "unresolved": 10
         },
         "state": "wip",
         "target_instructions": 1075,
@@ -33691,7 +33691,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 199,
-        "candidate_object_sha256": "2c5a7d034954742f6cc70422d6254c931e43737736e4a3363675a75d0b09fbbe",
+        "candidate_object_sha256": "731ddd81dd76faf1ef54e092cba79fff1323cefbcd65b698b75e36d7c4f1851b",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -33708,9 +33708,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 35,
+          "ok": 37,
           "positional": false,
-          "unresolved": 3
+          "unresolved": 1
         },
         "state": "wip",
         "target_instructions": 284,
@@ -34392,7 +34392,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 587,
-        "candidate_object_sha256": "f5b8cbcde0da6a3a4c2e5335e45ecb98ce572cf3e19fafb61dd17eae9444ca5e",
+        "candidate_object_sha256": "5d586feb88a8e28dbe34484156bbc64b8d04b7a7a9cd94abe6bae0e7c9b2992c",
         "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
@@ -34409,9 +34409,9 @@
         ],
         "references": {
           "mismatched": 2,
-          "ok": 361,
+          "ok": 370,
           "positional": false,
-          "unresolved": 51
+          "unresolved": 42
         },
         "state": "wip",
         "target_instructions": 550,
@@ -39695,7 +39695,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 215,
-        "candidate_object_sha256": "a61fdcf1b8478b36842239afe470364894f732951ee8d1f559fc014331262a2a",
+        "candidate_object_sha256": "1921dfc442ac4147009243ad6813a4c2602ff8ec7f67a91530750c5ba930c3a6",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -39712,9 +39712,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 29,
+          "ok": 30,
           "positional": false,
-          "unresolved": 6
+          "unresolved": 5
         },
         "state": "wip",
         "target_instructions": 215,
@@ -40770,7 +40770,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 892,
-        "candidate_object_sha256": "fc7283a094de47fd670bfb6b04f1bb541972a31cdf9cf3bf900f5cc265374bd3",
+        "candidate_object_sha256": "5f4593cf6e42d6e777781e025eb2a10356a8ddcf60ccbf82e8a2f2dfe5e6bd00",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40787,9 +40787,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 185,
+          "ok": 191,
           "positional": false,
-          "unresolved": 55
+          "unresolved": 49
         },
         "state": "wip",
         "target_instructions": 892,
@@ -40881,7 +40881,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1915,
-        "candidate_object_sha256": "a2a326e9b117b642ad21602235ab2c8e0e9ee4335a2e32b4c2fd0b42cad3dff4",
+        "candidate_object_sha256": "958ed7665f8e744ba4750dd38142c6578bc3ce741b3ea2dcc0abb379dbfca46c",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -40898,9 +40898,9 @@
         ],
         "references": {
           "mismatched": 2,
-          "ok": 383,
+          "ok": 387,
           "positional": false,
-          "unresolved": 218
+          "unresolved": 214
         },
         "state": "wip",
         "target_instructions": 1926,
@@ -41641,12 +41641,12 @@
       "canonical_address": 4478464,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "typo_target_name_draw_labels",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 111,
-        "candidate_object_sha256": "0f6002933a91d60e361781f5201e0e8f9260c1a53fd188e4baabfff8d2b5a885",
+        "candidate_object_sha256": "fe372f2646bd26e4ae08f61696f96f664bd0531dc21839ec8628a55844a3d704",
         "candidate_padding_bytes": 12,
         "compared_target_ranges": [
           [
@@ -41663,11 +41663,11 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 19,
+          "ok": 20,
           "positional": true,
-          "unresolved": 1
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 111,
         "target_size": 448,
         "unexplained_target_ranges": []
@@ -42020,7 +42020,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 219,
-        "candidate_object_sha256": "a59c8a209b4f44abaa7d626202bf3a16233b800c53b62664323539ff1695c4b0",
+        "candidate_object_sha256": "24b40cdd325617a14f8f8ba2ee08ce4476744a6c32181450bea8fb78e8616871",
         "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
@@ -42037,9 +42037,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 15,
+          "ok": 17,
           "positional": false,
-          "unresolved": 9
+          "unresolved": 7
         },
         "state": "wip",
         "target_instructions": 211,
@@ -42056,12 +42056,12 @@
       "canonical_address": 4484160,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "ui_element_render",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 517,
-        "candidate_object_sha256": "e7bdc7a4f14d73f5258d2e45651ff18766a38d03b1529fecc2f88800d6f8f053",
+        "candidate_object_sha256": "446443c0a90acd96dcdc76f43e49e8515899f27bedd81277cc51d19aa61347d3",
         "candidate_padding_bytes": 15,
         "compared_target_ranges": [
           [
@@ -42078,11 +42078,11 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 63,
+          "ok": 64,
           "positional": true,
-          "unresolved": 1
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 517,
         "target_size": 1792,
         "unexplained_target_ranges": []
@@ -42697,7 +42697,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 788,
-        "candidate_object_sha256": "798513d868a75f5e243fec36f8357c65996b77a9716c114da790cb7351713121",
+        "candidate_object_sha256": "1abdaee511b908eeb39226f1cd16fc81c515e699b073dee87edc3050d5e87d76",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -42714,9 +42714,9 @@
         ],
         "references": {
           "mismatched": 0,
-          "ok": 137,
+          "ok": 141,
           "positional": false,
-          "unresolved": 128
+          "unresolved": 124
         },
         "state": "wip",
         "target_instructions": 822,
@@ -43088,7 +43088,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 5161,
-        "candidate_object_sha256": "b89abd9cf23546c82ab4528a772c9fb2cbdb9774065781745471f329f2a51665",
+        "candidate_object_sha256": "4761d91eb4ffb9554f461633640c565b40d2c388088950dde6049beecda4baa0",
         "candidate_padding_bytes": 1,
         "compared_target_ranges": [
           [
@@ -43099,9 +43099,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 20,
-          "ok": 796,
+          "ok": 800,
           "positional": false,
-          "unresolved": 501
+          "unresolved": 497
         },
         "state": "wip",
         "target_instructions": 4078,
@@ -75858,11 +75858,11 @@
     "analysis/decomp/1.9.1/grim.dll/functions.json": "e66e923be09e78b5fcf73217a082d4d6bb6f198f43887448996a0940f8a08412",
     "analysis/decomp/1.9.1/grim.dll/imports.json": "a4929b2195b0aae572e9a11ba6473f48bc15213aff13465c7aae5833759002e1",
     "analysis/decomp/1.9.1/grim.dll/metadata.json": "2283281db97d8c9d22c4240bb9f1b5eed552e6ca4d7303f729a5464af296b6ac",
-    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "2f551c6874de1c48c823405f122e81c1a88e46d43680c63461b91cc3c2b0399f",
+    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "5f81efd1ef84772e420b64f15542b325a111a625f0d561abe9da039a9833a86e",
     "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "c845abb450310c63c8c6ee0274e23dfe2522e1631cf83b611828d7be430c738a",
     "analysis/decomp/1.9.8/crimsonland.exe/imports.json": "0c31f6358f0514e1c8815d7921c8ad3779199591dd36954c4cce4a7bd3024c18",
     "analysis/decomp/1.9.8/crimsonland.exe/metadata.json": "9b248110b10661b30a5d703fc60149baf131572ed64ec85dc77fb71e6b448e4d",
-    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "3e7a3b2b0b77f3960be1a734db0103550da3a10cc8ad240a0aa2a189f912206d",
+    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "79c9e4ed3e989fd01b57f83c69ebf1300c5f8ee006ce0787b8c6658ff32fd737",
     "analysis/decomp/1.9.8/grim.dll/data.json": "6b9d95c6e1826fe8c470bfc3d2e97e5b9541db2613f36b912b0b8fae08f5ba3b",
     "analysis/decomp/1.9.8/grim.dll/functions.json": "3f5cf721ea4279c4d80280411d3ad9426f60036979e0eedc159e1af9e1a6714f",
     "analysis/decomp/1.9.8/grim.dll/imports.json": "f2e55491c2a9be4e9dcb81246e54f4366f646cf04fc5fd08f6f316e01dd14e7a",
@@ -76213,7 +76213,7 @@
     "decomp/1.9/crimsonland/gameplay/highscore_init_sentinels_thunk.cpp": "f3db7c518895dc5e62e466e612348ae9c934fadb32b0bd781d361a410cf80621",
     "decomp/1.9/crimsonland/gameplay/play_time_load.c": "7dc8abcf7f936626000b405d2a629c40154fd344b308144adca52c16fd27dfd1",
     "decomp/1.9/crimsonland/gameplay/player_start_reload.c": "d7335661ccd51c90c5d36fabd8961b91b2b6ee779069e37b221b7a844c254096",
-    "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp": "8f4d42144aa9c80c309752ae6083c15a017291165887f368a4ec7539c70e75eb",
+    "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp": "e41b77364eee302b9046226b846582b202462e29e4a98dea09fb6cf9ffc22717",
     "decomp/1.9/crimsonland/gameplay/quest_meta.cpp": "cb39ede47db83b614764c2c2f66c6c6baea89b236be9154f117f459c879e66b7",
     "decomp/1.9/crimsonland/gameplay/quest_meta_entry_init.cpp": "8d8a186d1e65cb20615b92c6a50da0886399e1f02194a7c4d83e98f958141172",
     "decomp/1.9/crimsonland/gameplay/quest_meta_entry_release.cpp": "48b3f5c7aaa441fed4ffd3c884265b4a8ed0df32af586a293b9cb1e73778be46",

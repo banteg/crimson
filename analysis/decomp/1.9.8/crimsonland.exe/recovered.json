@@ -406,6 +406,222 @@
       "note": "Native player_heading_approach_target stores this delta, reloads it and adds it to the selected player heading before returning.",
       "offset": 0,
       "reference": "0x413bef"
+    },
+    {
+      "address": "0x4bfec4",
+      "bytes": "c705c4fe4b001f000000",
+      "name": "perk_id_hot_tempered",
+      "note": "Native perk database writes id 31 alongside the Hot Tempered name and description.",
+      "offset": 0,
+      "reference": "0x42fbdd"
+    },
+    {
+      "address": "0x4bfe1c",
+      "bytes": "c7051cfe4b0005000000",
+      "name": "perk_id_long_distance_runner",
+      "note": "Native perk database writes id 5 alongside the Long Distance Runner name and description.",
+      "offset": 0,
+      "reference": "0x42f67b"
+    },
+    {
+      "address": "0x4bfe58",
+      "bytes": "c70558fe4b0012000000",
+      "name": "perk_id_anxious_loader",
+      "note": "Native perk database writes id 18 alongside the Anxious Loader name and description.",
+      "offset": 0,
+      "reference": "0x42f93a"
+    },
+    {
+      "address": "0x4bfed8",
+      "bytes": "c705d8fe4b0034000000",
+      "name": "perk_id_stationary_reloader",
+      "note": "Native perk database writes id 52 alongside the Stationary Reloader name and description.",
+      "offset": 0,
+      "reference": "0x430048"
+    },
+    {
+      "address": "0x4bfee8",
+      "bytes": "c705e8fe4b0032000000",
+      "name": "perk_id_angry_reloader",
+      "note": "Native perk database writes id 50 alongside the Angry Reloader name and description.",
+      "offset": 0,
+      "reference": "0x42ffda"
+    },
+    {
+      "address": "0x4bfe3c",
+      "bytes": "c7053cfe4b0009000000",
+      "name": "perk_id_alternate_weapon",
+      "note": "Native perk database writes id 9 alongside the Alternate Weapon name and description.",
+      "offset": 0,
+      "reference": "0x42f75b"
+    },
+    {
+      "address": "0x4bfe98",
+      "bytes": "c70598fe4b0017000000",
+      "name": "perk_id_regression_bullets",
+      "note": "Native perk database writes id 23 alongside the Regression Bullets name and description.",
+      "offset": 0,
+      "reference": "0x42fa47"
+    },
+    {
+      "address": "0x4bfe90",
+      "bytes": "c70590fe4b0023000000",
+      "name": "perk_id_ammunition_within",
+      "note": "Native perk database writes id 35 alongside the Ammunition Within name and description.",
+      "offset": 0,
+      "reference": "0x42fcae"
+    },
+    {
+      "address": "0x4bfe18",
+      "bytes": "c70518fe4b000e000000",
+      "name": "perk_id_fastshot",
+      "note": "Native perk database writes id 14 alongside the Fastshot name and description.",
+      "offset": 0,
+      "reference": "0x42f85b"
+    },
+    {
+      "address": "0x47ccc8",
+      "bytes": "a0c8cc4700",
+      "name": "console_open_flag",
+      "note": "Native console-open guard is the first instruction of player_update; the same byte suspends bonus/creature updates and normal gameplay processing.",
+      "offset": 0,
+      "reference": "0x413c10"
+    },
+    {
+      "address": "0x484ecc",
+      "bytes": "d805cc4e4800",
+      "name": "ui_mouse_x",
+      "note": "Native UI update adds Grim mouse X delta (vtable +0x78) here, and Y delta (+0x7c) at +4. Player reset initializes the pair to 320/140; player_update copies it into the selected aim pair.",
+      "offset": 0,
+      "reference": "0x40c822"
+    },
+    {
+      "address": "0x484ed4",
+      "bytes": "8904cdd44e4800",
+      "name": "player_aim_screen_x",
+      "note": "Native player_update copies ui_mouse_x/y into the current_player_index-strided eight-byte aim pair before simulation; the UI update also owns the same aim-pair array.",
+      "offset": 0,
+      "reference": "0x413c30"
+    },
+    {
+      "address": "0x4712dc",
+      "bytes": "d81ddc124700",
+      "name": "perk_hot_tempered_trigger_interval_s",
+      "note": "Native Hot Tempered timer comparison, timer subtraction and randomized interval write at 0x413eeb all address this float.",
+      "offset": 0,
+      "reference": "0x413e39"
+    },
+    {
+      "address": "0x4a840c",
+      "bytes": "d9050c844a00",
+      "name": "player_spread_damping_gate",
+      "note": "Native player update tests this gate immediately before the spread damping scalar decrease/recovery and 0.3/1.0 clamps.",
+      "offset": 0,
+      "reference": "0x413ef9"
+    },
+    {
+      "address": "0x471a04",
+      "bytes": "d905041a4700",
+      "name": "player_spread_damping_scalar",
+      "note": "Native scalar subtracts frame_dt under the gate, otherwise recovers by frame_dt*0.8, with 0.3 and 1.0 clamps; player rendering reads the same scalar.",
+      "offset": 0,
+      "reference": "0x413f0e"
+    },
+    {
+      "address": "0x484cee",
+      "bytes": "881dee4c4800",
+      "name": "time_scale_active",
+      "note": "Native gameplay reset clears the active byte immediately before resetting time_scale_factor to 1.0. Gameplay, camera and render paths share the pair.",
+      "offset": 0,
+      "reference": "0x41372c"
+    },
+    {
+      "address": "0x484cf0",
+      "bytes": "c705f04c48000000803f",
+      "name": "time_scale_factor",
+      "note": "Native gameplay reset sets this factor to 1.0; the active time-scale path initializes it to 0.3 and rescales frame_dt in player_update.",
+      "offset": 0,
+      "reference": "0x413732"
+    },
+    {
+      "address": "0x47e07c",
+      "bytes": "a37ce04700",
+      "name": "config_movement_schemes",
+      "note": "Native config defaults initialize the leading movement-scheme slots; the controls menu and player update index this ten-entry array at config_blob+0x1c.",
+      "offset": 0,
+      "reference": "0x402964"
+    },
+    {
+      "address": "0x47e0a4",
+      "bytes": "8915a4e04700",
+      "name": "config_aim_schemes",
+      "note": "Native config defaults initialize the leading aim-scheme slots; the controls menu and player update index this array at config_blob+0x44.",
+      "offset": 0,
+      "reference": "0x40296e"
+    },
+    {
+      "address": "0x47e4dc",
+      "bytes": "c705dce4470002010000",
+      "name": "config_key_reload",
+      "note": "Native config defaults store key 0x102 at config_blob+0x47c. Controls rebinding and the move-to-cursor/reload paths read the same field.",
+      "offset": 0,
+      "reference": "0x402881"
+    },
+    {
+      "address": "0x48ec14",
+      "bytes": "c70514ec4800c8000000",
+      "name": "player2_move_key_forward",
+      "note": "Native input defaults assign DIK_UP 0xc8; the second-player forward paths read this value.",
+      "offset": 0,
+      "reference": "0x41ea8d"
+    },
+    {
+      "address": "0x48ec18",
+      "bytes": "c70518ec4800d0000000",
+      "name": "player2_move_key_backward",
+      "note": "Native input defaults assign DIK_DOWN 0xd0; the second-player backward paths read this value.",
+      "offset": 0,
+      "reference": "0x41ea97"
+    },
+    {
+      "address": "0x48ec1c",
+      "bytes": "c7051cec4800cb000000",
+      "name": "player2_turn_key_left",
+      "note": "Native input defaults assign DIK_LEFT 0xcb; the second-player left-turn paths read this value.",
+      "offset": 0,
+      "reference": "0x41eaa1"
+    },
+    {
+      "address": "0x48ec20",
+      "bytes": "c70520ec4800cd000000",
+      "name": "player2_turn_key_right",
+      "note": "Native input defaults assign DIK_RIGHT 0xcd; the second-player right-turn paths read this value.",
+      "offset": 0,
+      "reference": "0x41eaab"
+    },
+    {
+      "address": "0x482cac",
+      "bytes": "d91dac2c4800",
+      "name": "camera_offset_y",
+      "note": "Native camera update adds the Y shake component and stores this float immediately after the camera_offset_x update; Y clamping follows.",
+      "offset": 0,
+      "reference": "0x40960a"
+    },
+    {
+      "address": "0x484e7c",
+      "bytes": "c7057c4e4800c8000000",
+      "name": "player_alt_weapon_swap_cooldown_ms",
+      "note": "Native alternate-weapon path decrements this millisecond countdown, stores 200 after a swap and clears it when the reload key is released.",
+      "offset": 0,
+      "reference": "0x415923"
+    },
+    {
+      "address": "0x484cc4",
+      "bytes": "a0c44c4800",
+      "name": "survival_reward_fire_seen",
+      "note": "Native survival reward path tests this latch, unlocks Fire Bullets (id 24) and sets it; gameplay reset clears it and player firing also sets it.",
+      "offset": 0,
+      "reference": "0x406cc9"
     }
   ]
 }

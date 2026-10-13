@@ -1087,6 +1087,11 @@ Seen in:
 - [grim_state_init][]: a shared function-scope `y` plus a block-local column in
   every atlas loop keeps the spills at `[esp+0xc]`/`[esp+0x10]`; a uniform row
   cursor shrinks the frame and coalesces both spills.
+- [player_update][]: under 9044 (1.9.8), liveness stops before an object's
+  first possible definition, and an integer-view store (`x = 1.0f`) ends a
+  range only when it is the first definition on every path. A reused `scalar`
+  stayed live into the smoke block; per-purpose locals give native's slots in
+  both builds.
 
 Braces alone are sometimes neutral ([mods_menu_update][]), and repeated
 assignment of one named object can keep assignment temporaries
