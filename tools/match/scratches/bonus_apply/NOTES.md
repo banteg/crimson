@@ -72,3 +72,19 @@ The Pyrokinetic radius test is different: it indexes owning creature and bonus
 records, so its direct operands now use `creature_t::position` and
 `bonus_entry_t::time.position`. This stronger source shape remains exact at
 668/668 instructions and 216/0/0 references.
+
+## 1.9.8 complete recovery (2026-10-13)
+
+Native extent: `0x004096a0..0x0040a135` (2709 bytes), followed by eleven
+alignment NOPs. The older nuke axis rejection uses `distance > 256` rather
+than requiring ordered `distance <= 256`; the inline predicate retains the
+version-specific unordered comparison behavior while leaving 1.9.93 exact.
+
+The numeric Bonus Economist ID store, labeled timer-to-HUD bindings, native
+Shock Chain initialization and nuke camera-shake stores independently pin
+the remaining data identities in `recovered.json`.
+
+1.9.8: 669/669 instructions, full 2709-byte encoded body, 218/0/0 references.
+1.9.93: 668/668 instructions, full 2693-byte encoded body, 216/0/0 references.
+Fire Bullets pickup duration, stacking, reload/ammo resets and cooldown stores
+are now included in a complete compiled proof for both builds.

@@ -10,6 +10,15 @@ static __inline float abs_bits(float value)
     return *(float *)&bits;
 }
 
+static __inline bool nuke_axis_in_range(float distance)
+{
+#if CL_BUILD == 10908
+    return !(distance > 256.0f);
+#else
+    return distance <= 256.0f;
+#endif
+}
+
 static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
 {
     float dx = lhs->x - rhs->x;
@@ -252,9 +261,9 @@ extern "C" void bonus_apply(int player_index, bonus_entry_t *bonus_entry)
             if (creature_pool[creature_iter].active) {
                 abs_delta = abs_bits(
                     creature_pool[creature_iter].position.x - bonus_pos->x);
-                if (abs_delta <= 256.0f) {
+                if (nuke_axis_in_range(abs_delta)) {
                     abs_delta = abs_bits(creature_pool[creature_iter].position.y - bonus_entry->time.position.y);
-                    if (abs_delta <= 256.0f) {
+                    if (nuke_axis_in_range(abs_delta)) {
                         float damage = 256.0f - vec2_distance(
                             &creature_pool[creature_iter].position,
                             bonus_pos);

@@ -50,6 +50,13 @@
       "end": "0x4060ff",
       "body_sha256": "5b542f50533ed416a2b5a5a0ff1c2cd0ed96a2b416ffaf46a2091209d832d273",
       "note": "Complete timed bonus and perk-effect update; older Jinxed comparison and no freeze gate."
+    },
+    {
+      "name": "bonus_apply",
+      "address": "0x4096a0",
+      "end": "0x40a135",
+      "body_sha256": "1753d8fd6ffe082bb1eea5fb5462834706bda345b5dd1e792b8029a9f14a686e",
+      "note": "Complete bonus application, including Fire Bullets pickup/reset and older nuke axis comparisons."
     }
   ],
   "data": [
@@ -220,6 +227,70 @@
       "bytes": "d91df4834a00",
       "offset": 0,
       "note": "Jinxed countdown reset after its 20-way RNG delay, gating random creature death."
+    },
+    {
+      "name": "perk_id_bonus_economist",
+      "address": "0x4bfeb8",
+      "reference": "0x42fc0f",
+      "bytes": "c705b8fe4b0020000000",
+      "offset": 0,
+      "note": "Native perk initializer identifies Bonus Economist."
+    },
+    {
+      "name": "bonus_reflex_boost_timer",
+      "address": "0x484cf4",
+      "reference": "0x409789",
+      "bytes": "68f44c4800",
+      "offset": 0,
+      "note": "Reflex Boost arm binds this timer to its labeled HUD slot and adds pickup amount times the economist multiplier."
+    },
+    {
+      "name": "bonus_freeze_timer",
+      "address": "0x484cf8",
+      "reference": "0x4099b2",
+      "bytes": "68f84c4800",
+      "offset": 0,
+      "note": "Freeze arm binds this timer to its labeled HUD slot and adds pickup amount times the economist multiplier."
+    },
+    {
+      "name": "shock_chain_links_left",
+      "address": "0x484c9c",
+      "reference": "0x409bf1",
+      "bytes": "c7059c4c480020000000",
+      "offset": 0,
+      "note": "Shock Chain bonus initializes 32 remaining links before spawning its first ion shot."
+    },
+    {
+      "name": "shock_chain_projectile_id",
+      "address": "0x484ca0",
+      "reference": "0x409c40",
+      "bytes": "a3a04c4800",
+      "offset": 0,
+      "note": "Shock Chain bonus stores the returned projectile index used by the native projectile updater."
+    },
+    {
+      "name": "bonus_energizer_timer",
+      "address": "0x484d00",
+      "reference": "0x409da4",
+      "bytes": "68004d4800",
+      "offset": 0,
+      "note": "Energizer arm binds this timer to its labeled HUD slot before adding its eight-second duration."
+    },
+    {
+      "name": "bonus_double_xp_timer",
+      "address": "0x484d04",
+      "reference": "0x409df2",
+      "bytes": "68044d4800",
+      "offset": 0,
+      "note": "Double Experience arm binds this timer to its labeled HUD slot before adding its six-second duration."
+    },
+    {
+      "name": "camera_shake_pulses",
+      "address": "0x484ec4",
+      "reference": "0x409f01",
+      "bytes": "c705c44e480014000000",
+      "offset": 0,
+      "note": "Nuke impact sets 20 camera-shake pulses beside the existing shake timer."
     }
   ]
 }

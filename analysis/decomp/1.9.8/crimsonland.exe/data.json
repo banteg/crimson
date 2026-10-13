@@ -1636,6 +1636,16 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x00484c9c",
+      "name": "shock_chain_links_left",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484ca0",
+      "name": "shock_chain_projectile_id",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00484cb0",
       "name": "quest_spawn_timeline",
       "program": "1.9.8/crimsonland.exe"
@@ -1661,8 +1671,28 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x00484cf4",
+      "name": "bonus_reflex_boost_timer",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484cf8",
+      "name": "bonus_freeze_timer",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00484cfc",
       "name": "bonus_weapon_power_up_timer",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484d00",
+      "name": "bonus_energizer_timer",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484d04",
+      "name": "bonus_double_xp_timer",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1778,6 +1808,11 @@
     {
       "address": "0x00484ec0",
       "name": "camera_shake_timer",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484ec4",
+      "name": "camera_shake_pulses",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2573,6 +2608,11 @@
     {
       "address": "0x004bfeb4",
       "name": "perk_id_barrel_greaser",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfeb8",
+      "name": "perk_id_bonus_economist",
       "program": "1.9.8/crimsonland.exe"
     },
     {
