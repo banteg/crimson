@@ -1,6 +1,6 @@
 // The read API's JSON (src/api-types.ts): the boards, the quest menu, profiles and the join confirmation.
 
-import type { Board, BoardView, Category, GameScore, JoinView, Pilot, PlayerView, ProfileView, ProviderName, QuestMenuView, RunDetailView, RunView } from "./api-types";
+import type { Board, BoardTotals, BoardView, Category, GameScore, JoinView, Pilot, PlayerView, ProfileView, ProviderName, QuestMenuView, RunDetailView, RunView } from "./api-types";
 import type { Env } from "./http";
 import { configuredProviders } from "./oauth";
 import { LOWER_IS_BETTER } from "./ranked";
@@ -89,14 +89,16 @@ interface BestRun {
 
 // A run the boards rank: shown, a verified one (not retired: migrations/0005_retired.sql) and not a banned account's.
 const RANKED_RUN = "r.hidden = 0 AND r.retired IS NULL AND a.banned = 0";
+// The ranked runs `r` of a board in a category, with their accounts `a`; binds the board, quest and category.
+const BOARD_RUNS = `FROM runs r JOIN accounts a ON a.id = r.account_id
+  WHERE r.board = ? AND r.quest = ? AND ${RANKED_RUN} AND ${runCategory("r")} = ?`;
 
 // Each account's best run on a board in a category; equal scores keep the earlier accepted run ahead.
 async function bestRuns(env: Env, board: Board, quest: string, category: Category, limit: number): Promise<BestRun[]> {
   const order = LOWER_IS_BETTER[board] ? "ASC" : "DESC";
   const { results } = await env.DB.prepare(
-    `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.score, r.result, r.pilot, r.accepted_at FROM runs r JOIN accounts a ON a.id = r.account_id
-     WHERE r.board = ? AND r.quest = ? AND ${RANKED_RUN} AND ${runCategory("r")} = ?
-       AND r.id = (SELECT id FROM runs b WHERE b.account_id = r.account_id AND b.board = r.board AND b.quest = r.quest AND b.hidden = 0
+    `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.score, r.result, r.pilot, r.accepted_at ${BOARD_RUNS}
+       AND r.id =(SELECT id FROM runs b WHERE b.account_id = r.account_id AND b.board = r.board AND b.quest = r.quest AND b.hidden = 0
                      AND b.retired IS NULL AND ${runCategory("b")} = ?
                    ORDER BY b.score ${order}, b.accepted_at LIMIT 1)
      ORDER BY r.score ${order}, r.accepted_at LIMIT ?`,
@@ -106,23 +108,25 @@ async function bestRuns(env: Env, board: Board, quest: string, category: Categor
   return results;
 }
 
+async function boardTotals(env: Env, board: Board, quest: string, category: Category): Promise<BoardTotals> {
+  const totals = await env.DB.prepare(
+    `SELECT count(*) AS runs, total(json_extract(r.result, '$.kills')) AS kills, total(json_extract(r.result, '$.elapsed_ms')) AS elapsed_ms
+     ${BOARD_RUNS}`,
+  )
+    .bind(board, quest, category)
+    .first<BoardTotals>();
+  return totals!;
+}
+
 export async function boardView(env: Env, board: Board, quest: string, category: Category, limit: number): Promise<BoardView> {
-  const [results, totals] = await Promise.all([
-    bestRuns(env, board, quest, category, limit),
-    env.DB.prepare(
-      `SELECT coalesce(sum(json_extract(r.result, '$.kills')), 0) AS kills,
-         coalesce(sum(json_extract(r.result, '$.elapsed_ms')), 0) AS elapsed_ms
-       FROM runs r JOIN accounts a ON a.id = r.account_id
-       WHERE r.board = ? AND r.quest = ? AND ${RANKED_RUN} AND ${runCategory("r")} = ?`,
-    ).bind(board, quest, category).first<BoardView["totals"]>(),
-  ]);
+  const [results, totals] = await Promise.all([bestRuns(env, board, quest, category, limit), boardTotals(env, board, quest, category)]);
   const who = await players(env, results.map((row) => row.account_id));
   return {
     board,
     quest,
     category,
     title: boardTitle(board, quest),
-    totals: totals!,
+    totals,
     rows: results.map((row, i) => {
       const result = JSON.parse(row.result) as RunResult;
       return {

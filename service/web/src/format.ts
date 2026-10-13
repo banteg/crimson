@@ -1,19 +1,20 @@
 import type { Board } from "../../src/api-types";
 
-export function formatSurvived(ms: number): string {
-  let seconds = Math.floor(ms / 1000);
-  const units: [string, number][] = [
-    ["year", 365 * 86400], ["month", 30 * 86400], ["day", 86400],
-    ["hour", 3600], ["minute", 60], ["second", 1],
-  ];
-  const parts: string[] = [];
-  for (const [unit, size] of units) {
-    const value = Math.floor(seconds / size);
-    seconds %= size;
-    if (value) parts.push(`${value} ${unit}${value === 1 ? "" : "s"}`);
-    if (parts.length === 3) break;
-  }
-  return parts.join(" ") || "0 seconds";
+export const quantity = (count: number, unit: string): string => `${count.toLocaleString("en-US")} ${unit}${count === 1 ? "" : "s"}`;
+
+// Seconds in each unit of a long duration, largest first; a month is a twelfth of a 365-day year.
+const DURATION_UNITS: [string, number][] = [
+  ["year", 31_536_000], ["month", 2_628_000], ["day", 86_400], ["hour", 3_600], ["minute", 60], ["second", 1],
+];
+
+// A duration in its largest unit and, when not zero, the next one down: "2 years 3 months", "5 hours".
+export function formatLongDuration(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const index = DURATION_UNITS.findIndex(([, size]) => size <= Math.max(seconds, 1));
+  const [unit, size] = DURATION_UNITS[index]!;
+  const next = DURATION_UNITS[index + 1];
+  const rest = next ? Math.floor((seconds % size) / next[1]) : 0;
+  return [quantity(Math.floor(seconds / size), unit), ...(rest ? [quantity(rest, next![0])] : [])].join(" ");
 }
 
 // A board's score: experience for Survival, the final time for quests, which bonuses can take below zero.

@@ -1,16 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { formatSurvived } from "../../web/src/format";
+import { formatLongDuration } from "../../web/src/format";
 
-describe("total survived", () => {
+const DAY = 86_400_000;
+
+describe("formatLongDuration", () => {
   it.each([
     [0, "0 seconds"],
     [999, "0 seconds"],
-    [1000, "1 second"],
-    [61000, "1 minute 1 second"],
-    [90061000, "1 day 1 hour 1 minute"],
-    [(365 * 2 + 30 * 3 + 4) * 86400000 + 3661000, "2 years 3 months 4 days"],
-    [(365 * 86400 + 3600 + 2) * 1000, "1 year 1 hour 2 seconds"],
+    [61_000, "1 minute 1 second"],
+    [3_659_000, "1 hour"],
+    [DAY + 3_661_000, "1 day 1 hour"],
+    [360 * DAY, "11 months 25 days"],
+    [365 * DAY + 3_600_000, "1 year"],
+    [(2 * 365 + 92) * DAY, "2 years 3 months"],
+    [1001 * 365 * DAY, "1,001 years"],
   ])("formats %i ms as %s", (ms, expected) => {
-    expect(formatSurvived(ms)).toBe(expected);
+    expect(formatLongDuration(ms)).toBe(expected);
   });
 });

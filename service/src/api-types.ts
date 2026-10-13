@@ -51,7 +51,14 @@ export interface BoardView {
   category: Category;
   title: string;
   rows: BoardRow[];
-  totals: { kills: number; elapsed_ms: number };
+  totals: BoardTotals;
+}
+
+// Every ranked run on a board, not only the best of each account its rows show: how many, and their kills and time.
+export interface BoardTotals {
+  runs: number;
+  kills: number;
+  elapsed_ms: number;
 }
 
 // A board row as the game's high score screen shows it: the run's id (its replay is /runs/<run>.crd), its own name

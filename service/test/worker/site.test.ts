@@ -96,8 +96,8 @@ describe("site", () => {
     expect((await call("/api/boards/quests/9.9")).status).toBe(404);
   });
 
-  it("board totals include every ranked run in the category, independent of the displayed scores", async () => {
-    expect((await api<BoardView>("/api/boards/survival")).totals).toEqual({ kills: 0, elapsed_ms: 0 });
+  it("board totals count every ranked run in the category, not only the best runs the board shows", async () => {
+    expect((await api<BoardView>("/api/boards/survival")).totals).toEqual({ runs: 0, kills: 0, elapsed_ms: 0 });
     await env.DB.batch([
       env.DB.prepare("INSERT INTO accounts (id, created_at, bot, banned) VALUES (1, 0, 0, 0), (2, 0, 1, 0), (3, 0, 0, 1)"),
       env.DB.prepare("INSERT INTO keys (public_key, account_id, fingerprint, added_at) VALUES ('key', 1, 'human', 0), ('bot-key', 2, 'bot', 0)"),
@@ -124,8 +124,8 @@ describe("site", () => {
     }
     const humans = await api<BoardView>("/api/boards/survival?limit=1");
     expect(humans.rows.map((row) => row.run)).toEqual(["best"]);
-    expect(humans.totals).toEqual({ kills: 30, elapsed_ms: 183000 });
-    expect((await api<BoardView>("/api/boards/survival?category=bot&limit=1")).totals).toEqual({ kills: 20, elapsed_ms: 122000 });
+    expect(humans.totals).toEqual({ runs: 3, kills: 30, elapsed_ms: 183000 });
+    expect((await api<BoardView>("/api/boards/survival?category=bot&limit=1")).totals).toEqual({ runs: 2, kills: 20, elapsed_ms: 122000 });
   });
 
   it("a profile shows its links, and to its owner the providers configured with both ID and secret", async () => {

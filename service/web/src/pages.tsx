@@ -1,7 +1,7 @@
 import { type Accessor, createSignal, For, type JSX, Show } from "solid-js";
 import type { Board, BoardView, FlagsView, JoinView, ModerationAction, ProfileView, QuestMenuView, Role, RunDetailView } from "../../src/api-types";
 import { get, moderate, post } from "./api";
-import { formatScore, formatSurvived } from "./format";
+import { formatLongDuration, formatScore, quantity } from "./format";
 import { GameButton } from "./button";
 import { playerLabel } from "./names";
 import { PilotName, PlayerName, PROVIDER_LABELS } from "./players";
@@ -304,13 +304,13 @@ async function home(): Promise<Screen> {
           <div class="board-pair">
             <div>
               <h3>Humans</h3>
+              <BoardTotals view={humans!} />
               <BoardTable view={humans!} compact />
-              <BoardTotals totals={humans!.totals} />
             </div>
             <div>
               <h3>Bots</h3>
+              <BoardTotals view={bots!} />
               <BoardTable view={bots!} compact />
-              <BoardTotals totals={bots!.totals} />
             </div>
           </div>
           <p>
@@ -322,11 +322,16 @@ async function home(): Promise<Screen> {
   };
 }
 
-function BoardTotals(props: { totals: BoardView["totals"] }) {
+// Every ranked run on a board together, under its heading; Survival counts the time survived, a quest the time played.
+function BoardTotals(props: { view: BoardView }) {
+  const totals = () => props.view.totals;
   return (
-    <p class="board-totals muted">
-      Total kills: {props.totals.kills.toLocaleString("en-US")} · Total survived: {formatSurvived(props.totals.elapsed_ms)}
-    </p>
+    <Show when={totals().runs}>
+      <p class="board-totals muted">
+        {quantity(totals().runs, "run")} · {quantity(totals().kills, "kill")} · {formatLongDuration(totals().elapsed_ms)}{" "}
+        {props.view.board === "survival" ? "survived" : "played"}
+      </p>
+    </Show>
   );
 }
 
@@ -336,15 +341,15 @@ function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
     () => (
       <>
         <h2>{humans.title}</h2>
-        <BoardTotals totals={humans.totals} />
+        <BoardTotals view={humans} />
         <BoardTable view={humans} />
       </>
     ),
     () => (
       <>
         <h2>{bots.title} · bots</h2>
+        <BoardTotals view={bots} />
         <BotInvite />
-        <BoardTotals totals={bots.totals} />
         <BoardTable view={bots} />
       </>
     ),
