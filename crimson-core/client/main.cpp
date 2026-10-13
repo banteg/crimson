@@ -451,7 +451,10 @@ bool start_game() {
            "%s", CRIMSON_CLIENT_VERSION);
 #ifdef __EMSCRIPTEN__
   w2c_game_game_platform(&game, 1);
-  w2c_game_game_leaderboard_enable(&game);
+  // Inside another site's page (a post's player card) the browser keeps the
+  // game's storage apart, so its key would start an account of its own: there
+  // the game reads the leaderboard, and ranked play waits for crimson.land.
+  w2c_game_game_leaderboard_enable(&game, !EM_ASM_INT({ return window.self !== window.top; }));
 #else
   w2c_game_game_platform(&game, 2);
   const char *api = getenv("CRIMSON_LEADERBOARD_URL");
@@ -465,7 +468,7 @@ bool start_game() {
     client_fatal(error.what());
   }
   if (network->enabled())
-    w2c_game_game_leaderboard_enable(&game);
+    w2c_game_game_leaderboard_enable(&game, true);
 #endif
   bool running = w2c_game_game_start(&game);
 #ifndef __EMSCRIPTEN__

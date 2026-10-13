@@ -114,8 +114,17 @@ export interface AccountModeration {
 export interface JoinView {
   destination: PlayerView;
   destination_runs: number;
+  // The signed-in account, which joining moves into the destination and removes.
+  source: PlayerView;
   moving: { keys: number; runs: number; names: number };
   provider: string;
+}
+
+// A login link's confirmation page: who it signs in as, and who the browser is signed in as now, if someone else.
+export interface LoginView {
+  account: PlayerView;
+  runs: number;
+  current: PlayerView | null;
 }
 
 // A run's timeline (src/timeline.ts): one sample a second, [t, experience, level, health, kills, damage dealt], the

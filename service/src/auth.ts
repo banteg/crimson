@@ -4,7 +4,7 @@ import { concat, fromHex, hex, LOGIN_DOMAIN, randomToken, sha256, verifyEd25519 
 import { accountForKey, type Env, json, refuse } from "./http";
 
 const CHALLENGE_TTL_MS = 5 * 60 * 1000;
-const LOGIN_LINK_TTL_MS = 60 * 1000;
+const LOGIN_LINK_TTL_MS = 5 * 60 * 1000;
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const SESSION_COOKIE = "session";
 
@@ -52,19 +52,34 @@ export async function postLogin(request: Request, env: Env): Promise<Response> {
   return json({ url: `${new URL(request.url).origin}/login/${token}` });
 }
 
-// GET /login/<token>: trade the link for a session cookie, once.
-export async function getLogin(request: Request, env: Env, token: string): Promise<Response> {
+// The account a login link signs in as, without spending it. Opening /login/<token> only shows this: the browser
+// switches accounts when the player confirms (postLoginLink), so a link someone else made for their own key cannot
+// sign this browser in to their account unseen.
+export async function loginLink(env: Env, token: string): Promise<number | null> {
+  const link = await env.DB.prepare("SELECT account_id FROM login_links WHERE token_hash = ? AND expires_at >= ?")
+    .bind(await tokenHash(token), Date.now())
+    .first<{ account_id: number }>();
+  return link?.account_id ?? null;
+}
+
+// POST /api/login {token}, from the site's own pages: trade the link for a session cookie, once. The browser's
+// previous session, if any, ends with it.
+export async function postLoginLink(request: Request, env: Env): Promise<Response> {
+  const { token } = await body(request);
   const now = Date.now();
   const link = await env.DB.prepare("DELETE FROM login_links WHERE token_hash = ? AND expires_at >= ? RETURNING account_id")
-    .bind(await tokenHash(token), now)
+    .bind(await tokenHash(String(token)), now)
     .first<{ account_id: number }>();
-  if (!link) return new Response("This login link has expired. Open your profile from the game again.", { status: 410 });
+  if (!link) return refuse(410, "this sign-in link has expired; open your profile from the game again");
+  const previous = sessionToken(request);
   const session = randomToken();
-  await env.DB.prepare("INSERT INTO sessions (token_hash, account_id, expires_at) VALUES (?, ?, ?)")
-    .bind(await tokenHash(session), link.account_id, now + SESSION_TTL_MS)
-    .run();
+  await env.DB.batch([
+    ...(previous ? [env.DB.prepare("DELETE FROM sessions WHERE token_hash = ?").bind(await tokenHash(previous))] : []),
+    env.DB.prepare("INSERT INTO sessions (token_hash, account_id, expires_at) VALUES (?, ?, ?)")
+      .bind(await tokenHash(session), link.account_id, now + SESSION_TTL_MS),
+  ]);
   const cookie = `${SESSION_COOKIE}=${session}; Path=/; HttpOnly;${secure(request)} SameSite=Lax; Max-Age=${SESSION_TTL_MS / 1000}`;
-  return new Response(null, { status: 303, headers: { Location: `/players/${link.account_id}`, "Set-Cookie": cookie } });
+  return json({ account: link.account_id }, 200, { "Set-Cookie": cookie });
 }
 
 // Secure everywhere but plain-HTTP local development, where some browsers refuse Secure cookies on localhost.

@@ -1,12 +1,12 @@
 import { confirmMerge, deleteAccount, linkIdentity, pendingJoin, unlink } from "./accounts";
-import { getLogin, postChallenge, postLogin, SESSION_COOKIE, secure, sessionAccount, sessionToken, tokenHash } from "./auth";
+import { loginLink, postChallenge, postLogin, postLoginLink, SESSION_COOKIE, secure, sessionAccount, sessionToken, tokenHash } from "./auth";
 import { CARD_HEIGHT, CARD_WIDTH, runCard } from "./card";
 import { type Env, json, refuse } from "./http";
 import { playerLabel } from "../web/src/names";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
 import type { Board } from "./ranked";
 import { groundFor, postRun, timelineFor } from "./runs";
-import { boardTitle, boardView, gameScores, joinView, players, profileView, questMenuView, runDescription, runDetailView, runSummary, visibleRun } from "./views";
+import { boardTitle, boardView, gameScores, joinView, loginView, players, profileView, questMenuView, runDescription, runDetailView, runSummary, visibleRun } from "./views";
 import { VIEW_H, VIEW_W } from "./verify";
 import { CATEGORIES, type Category } from "./api-types";
 import { flagsView, isModerator, markAccount, measureRuns, moderationLog, roleOf, setRole, setRunCategory } from "./moderation";
@@ -151,8 +151,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     });
   }
 
-  // Pages the server answers itself: the game's login link and replay files.
-  if ((match = /^GET \/login\/([0-9a-f]{64})$/.exec(route))) return getLogin(request, env, match[1]!);
+  // Pages the server answers itself: replay files.
   if ((match = /^GET \/runs\/([0-9a-f]{64})\.crd$/.exec(route))) {
     const file = (await visibleRun(env, match[1]!)) && (await env.REPLAYS.get(`runs/${match[1]}.crd`));
     if (!file) return new Response("No such replay.", { status: 404 });
@@ -189,7 +188,12 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   if ((match = /^GET \/auth\/([a-z]+)\/(start|callback)$/.exec(route))) {
     const chosen = provider(env, match[1]!);
     if (!chosen || accountId === null || token === null) return redirect("/account");
-    if (match[2] === "start") return redirect(await authorizeUrl(env, url.origin, chosen, token));
+    // The profile's link names the account it showed; a tab left open while the browser signed in to another account
+    // must not link a login to that one.
+    if (match[2] === "start")
+      return url.searchParams.get("account") === String(accountId)
+        ? redirect(await authorizeUrl(env, url.origin, chosen, token))
+        : redirect(`/players/${accountId}?notice=switched`);
     const notice = (kind: string) => redirect(`/players/${accountId}?notice=${kind}&provider=${chosen.name}`);
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
@@ -200,10 +204,25 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     return linked.outcome === "confirm" ? redirect(`/join/${linked.token}`) : notice("linked");
   }
 
+  // A login link's confirmation page asks who it signs in as; confirming it, from the site's own page, signs in.
+  if ((match = /^GET \/api\/login\/([0-9a-f]{64})$/.exec(route))) {
+    const account = await loginLink(env, match[1]!);
+    return account === null ? refuse(410, "this sign-in link has expired; open your profile from the game again") : json(await loginView(env, account, viewer));
+  }
+  if (route === "POST /api/login") {
+    if (request.headers.get("origin") !== url.origin) return refuse(403, "cross-site request refused");
+    return postLoginLink(request, env);
+  }
+
   // The signed-in account's API, for the site's own pages only.
   if (url.pathname.startsWith("/api/account/") || url.pathname.startsWith("/api/join") || url.pathname === "/api/logout") {
     if (request.method === "POST" && request.headers.get("origin") !== url.origin) return refuse(403, "cross-site request refused");
     if (accountId === null || token === null) return refuse(401, "sign in from the game");
+    const body = request.method === "POST" ? ((await request.json().catch(() => ({}))) as { token?: unknown; account?: unknown }) : {};
+    // Each change names the account its page showed: a tab left open while the browser signed in to another account
+    // must not act on that one.
+    if (request.method === "POST" && route !== "POST /api/logout" && body.account !== accountId)
+      return refuse(409, "this browser is signed in to another account now; reload the page");
     const expired = () => refuse(410, "this request expired; link again to join the accounts");
     if ((match = /^GET \/api\/join\/([0-9a-f]{64})$/.exec(route))) {
       const pending = await pendingJoin(env, accountId, token, match[1]!);
@@ -212,7 +231,6 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
       return json(await joinView(env, accountId, pending.into, label));
     }
     if (route === "POST /api/join") {
-      const body = (await request.json().catch(() => ({}))) as { token?: unknown };
       const into = await confirmMerge(env, accountId, token, String(body.token ?? ""));
       return into === null ? expired() : json({ account: into });
     }
@@ -275,8 +293,11 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
 }
 
 // The site's one page, titled for the route so shared links preview what they point at.
+// The site's pages never show inside another site's: only the game (/play/) does, as a post's player card.
 async function shell(env: Env, url: URL): Promise<Response> {
-  return withPreview(await env.ASSETS.fetch(new Request(new URL("/", url))), url, await routePreview(env, url));
+  const page = withPreview(await env.ASSETS.fetch(new Request(new URL("/", url))), url, await routePreview(env, url));
+  page.headers.set("Content-Security-Policy", "frame-ancestors 'none'");
+  return page;
 }
 
 // A page with its title and the tags shared links preview.

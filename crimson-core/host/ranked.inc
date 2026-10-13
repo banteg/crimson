@@ -14,6 +14,9 @@
 #include <unistd.h>
 
 static bool ranked_enabled; // the host takes runs to the leaderboard (game_leaderboard_enable)
+// and offers ranked play: not inside another site's page, whose storage keeps a key of its own, which would start an
+// account of its own
+static bool ranked_offered;
 extern "C" bool ranked_checked; // the Ranked box, which a launch starts unticked (play_game_menu_update)
 bool ranked_checked;
 static bool ranked_run;     // the run playing is a ranked attempt
@@ -394,7 +397,7 @@ extern ui_element_t ui_element_slot_11, ui_element_slot_12_layout_a;
 // elements' bounds).
 static const float RANKED_ROW = 40.0f;
 void ranked_layout() {
-  if (!ranked_enabled)
+  if (!ranked_offered)
     return;
   // The panel is ui_menuPanelTallSmall's 3-slice; its bottom slice moves down.
   for (int i = 4; i < 8; ++i)
@@ -406,7 +409,7 @@ void ranked_layout() {
 // (play_game_menu_update, with `base` its content origin and `tips` where it
 // draws the modes' tips). Ticking the box makes the game one player's.
 void ranked_menu(float *base, float *tips, bool list_open) {
-  if (!ranked_enabled)
+  if (!ranked_offered)
     return;
   static ui_checkbox_t box = {0, 0, 0, 0, (char *)"Ranked"};
   // As the original constructs its buttons (play_game_menu_update): drawn opaque.
@@ -471,7 +474,10 @@ void ranked_menu(float *base, float *tips, bool list_open) {
 
 // The host takes runs to the leaderboard, before the game starts: the Ranked
 // box shows.
-__attribute__((export_name("game_leaderboard_enable"))) void game_leaderboard_enable() { ranked_enabled = true; }
+__attribute__((export_name("game_leaderboard_enable"))) void game_leaderboard_enable(bool ranked) {
+  ranked_enabled = true;
+  ranked_offered = ranked;
+}
 // The player's public key, as hex, for the host's sign-in.
 __attribute__((export_name("game_identity_public_key"))) const char *game_identity_public_key() {
   static char key[65];

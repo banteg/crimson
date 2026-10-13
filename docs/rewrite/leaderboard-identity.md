@@ -93,10 +93,16 @@ opens a login link only when it leads to the service's own host.
 The game opens the site already signed in:
 
 1. The game asks the service for a one-time challenge.
-2. It signs the challenge with its key; the service answers with a login link that works once, within a minute.
-3. The game opens the link in the browser, which is then signed in as that key's account.
+2. It signs the challenge with its key; the service answers with a login link that works once, within five minutes.
+3. The game opens the link in the browser. The page names the link's account, and the browser it is already signed
+   in to if that is another one, and signs in only once the player confirms it. Confirming is a POST from the site's
+   own page, so neither a link someone else sends nor another site can sign the browser in to their account unseen.
+   The browser game shares the site's origin, so its Profile button spends the link itself and opens the profile.
 
-The link sets a session cookie for 30 days, which the site keeps only as a hash.
+Signing in sets a session cookie for 30 days, which the site keeps only as a hash, and ends the browser's previous
+session. Each change the profile makes (unlinking, deleting, joining, starting a link) names the account its page
+showed, and the service refuses it once the browser has signed in to another account, as a tab left open would. The
+site's pages refuse to show inside another site's page (`frame-ancestors 'none'`); only the game does.
 
 ## Linking
 
@@ -109,13 +115,17 @@ provider's token reads the profile once and is discarded; the link keeps the acc
 
 Signing in with a login another account has linked, matched by the provider's account ID and never the handle,
 shows that account and asks before moving this key, its runs and its names into it, which is how a second computer
-joins. The move happens in one transaction once confirmed, from the session that asked. The profile unlinks a provider and deletes the account with its runs,
+joins. The question names both accounts and warns that the key moved in signs in to the joined account from then
+on, so a player signed in to someone else's account by mistake can tell. The move happens in one transaction once confirmed, from the session that asked. The profile unlinks a provider and deletes the account with its runs,
 replays, names, links, keys and sessions. `/privacy` and `/terms` say the same in plain words.
 
 ## In the game
 
 - The Play Game panel shows a **Profile** button at the left of its bottom row, opposite the Ranked box, only while
-  Ranked is ticked; it follows the box in focus order. It opens the signed login link. The button's plate is 32 px
+  Ranked is ticked; it follows the box in focus order. It opens the signed login link.
+- Inside another site's page, such as a post's player card, the browser keeps the game's storage apart from
+  crimson.land's, so the game there has a key of its own. It offers no Ranked box or Profile button, so that key
+  never starts an account; it still receives the boards and plays their runs. The button's plate is 32 px
   tall against the box's 16, so the row is 40 px and the box sits centred on the plate. At 640x480 the grown panel
   would push Back off the window, so the panel and Back rise by the overflow instead.
 - The Ranked tooltip names the player, "Play for the online leaderboard as banteg.", when that fits the panel and
