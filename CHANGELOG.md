@@ -2,6 +2,17 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.16.0
+
+### For players
+
+- A crimson.land/play link shared on X opens the browser game right in the post.
+
+### Under the hood
+
+- The leaderboard's verifier is compiled with wasi-sdk instead of Zig, and the core's portable math is built from musl's sources. Gameplay math is bit-identical; only the HUD and console pulses use a different `pow`.
+- Deploys skip reverifying stored runs and re-uploading their grounds when nothing that verifies or bakes them has changed, and reverification runs on every CPU when they do.
+
 ## 0.15.2
 
 ### For players
