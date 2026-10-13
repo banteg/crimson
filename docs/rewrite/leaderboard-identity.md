@@ -153,8 +153,10 @@ original's `fx_queue_render` finds them, and the service stamps them into the te
 that function draws them into the game's terrain (`service/src/ground.ts`). A long run bakes over a million blood
 splats, each pixel under hundreds, so the service draws them in chunks, newest first, and stops sampling a pixel once
 what lies under it no longer shows. The ground is kept as a 1024² JPEG (`runs/<id>.ground.jpg` in R2, quality 88 at
-full chroma) and drawn by the run's page and its card; a run accepted before grounds existed gets its ground the same
-way it would a timeline.
+full chroma) and drawn by the run's page and its card. A deploy bakes every stored run's ground again as it reverifies
+them (`npm run reverify`) and puts them in R2 once the build is live (`npm run grounds`), so grounds follow the
+deployed baking and no run's first view waits for its replay; a run the service lacks one for still gets it on
+first request, as it would a timeline.
 
 ## Open
 

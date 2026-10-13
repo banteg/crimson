@@ -7,9 +7,11 @@
 //   npm run reverify -- <dir>     the .crd files in <dir>
 //
 // It reads production through wrangler and writes nothing there: the runs that fail
-// are listed, with SQL to retire them for a migration.
+// are listed, with SQL to retire them for a migration. Each run that verifies also gets
+// its ground baked (src/ground.ts) into .reverify/grounds/, from the built site's art
+// (dist/ui), for `npm run grounds` to put in production once the build is deployed.
 import { execFile, execFileSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
@@ -19,6 +21,8 @@ import { downloadReplays } from "./reverify-cache.mjs";
 const SERVICE = fileURLToPath(new URL("..", import.meta.url));
 const CORE = join(SERVICE, "../crimson-core/build/wasm/core.wasm");
 const CACHE = join(SERVICE, ".reverify");
+const GROUNDS = join(CACHE, "grounds");
+const ART = join(SERVICE, "dist");
 const execFileAsync = promisify(execFile);
 
 const wrangler = (...args) =>
@@ -43,8 +47,9 @@ async function storedRuns(dir) {
 }
 
 if (!existsSync(CORE)) throw Error(`build the core first: uv run python crimson-core/build.py --target wasm (${CORE})`);
+if (!existsSync(join(ART, "ui"))) throw Error(`build the site first: npm run assets && npm run build (${ART})`);
 const runs = await storedRuns(process.argv[2]);
-// The service's own modules, with the worker's wasm import as the compiled module it binds.
+// The service's own modules, with the worker's wasm imports as the compiled modules it binds.
 const vite = await createServer({
   configFile: false,
   root: SERVICE,
@@ -53,12 +58,11 @@ const vite = await createServer({
   appType: "custom",
   plugins: [
     {
-      name: "core-module",
+      name: "wasm-modules",
       enforce: "pre",
-      resolveId: (id) => (id.endsWith("crimson-core/build/wasm/core.wasm") ? "\0core.wasm" : null),
       load: (id) =>
-        id === "\0core.wasm"
-          ? `import { readFileSync } from "node:fs"; export default new WebAssembly.Module(readFileSync(${JSON.stringify(CORE)}));`
+        id.endsWith(".wasm")
+          ? `import { readFileSync } from "node:fs"; export default new WebAssembly.Module(readFileSync(${JSON.stringify(id)}));`
           : null,
     },
   ],
@@ -66,18 +70,26 @@ const vite = await createServer({
 const { decodeReplay, inflateReplay } = await vite.ssrLoadModule("/src/replay.ts");
 const { encodeTransport } = await vite.ssrLoadModule("/src/transport.ts");
 const { verifyRun } = await vite.ssrLoadModule("/src/verify.ts");
+const { groundBake } = await vite.ssrLoadModule("/src/runs.ts");
+const { encodeJpeg } = await vite.ssrLoadModule("/src/jpeg.ts");
+// The worker's site files, as its ASSETS binding serves them.
+const env = { ASSETS: { fetch: async (url) => new Response(readFileSync(join(ART, new URL(url).pathname))) } };
+rmSync(GROUNDS, { recursive: true, force: true });
+mkdirSync(GROUNDS, { recursive: true });
 
 const started = performance.now();
 const failed = [];
 for (const { id, file } of runs) {
   const replay = decodeReplay(inflateReplay(new Uint8Array(readFileSync(file))));
   const start = performance.now();
-  const verdict = await verifyRun({}, replay, encodeTransport(replay));
+  const ground = await groundBake(env, "https://crimson.land", replay);
+  const verdict = await verifyRun(env, replay, encodeTransport(replay), (bakes) => ground.bake(bakes));
   if (!verdict.ok) failed.push({ id, reason: verdict.reason });
+  else writeFileSync(join(GROUNDS, `${id}.jpg`), await encodeJpeg(ground.pixels()));
   console.log(`${id}  ${verdict.ok ? "ok" : verdict.reason}  ${((performance.now() - start) / 1000).toFixed(2)}s (${replay.ticks.length} ticks)`);
 }
 await vite.close();
-console.log(`\n${runs.length - failed.length} of ${runs.length} runs verify in ${((performance.now() - started) / 1000).toFixed(2)}s.`);
+console.log(`\n${runs.length - failed.length} of ${runs.length} runs verify in ${((performance.now() - started) / 1000).toFixed(2)}s; their grounds are in ${GROUNDS}.`);
 if (failed.length) {
   console.log("To retire the rest (write each reason for players):");
   for (const { id, reason } of failed) console.log(`UPDATE runs SET retired = '${reason.replaceAll("'", "''")}' WHERE id = '${id}';`);

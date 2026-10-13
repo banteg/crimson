@@ -10,7 +10,8 @@
     "deploy": "npm run assets && npm run play && vite build && wrangler deploy",
     "test": "vite build && vitest run && node --test scripts/deploy.test.mjs",
     "check": "tsc --noEmit && tsc --noEmit -p web",
-    "reverify": "node scripts/reverify.mjs"
+    "reverify": "node scripts/reverify.mjs",
+    "grounds": "node scripts/grounds.mjs"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",

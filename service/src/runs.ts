@@ -113,8 +113,9 @@ export const timelineKey = (runId: string) => `runs/${runId}.timeline.json`;
 
 const questOf = (replay: Replay) => (replay.run.quest_level ? `${replay.run.quest_level.major}.${replay.run.quest_level.minor}` : "");
 
-// The run's ground, to bake as its replay verifies, on the terrain its seed generates.
-async function groundBake(env: Env, origin: string, replay: Replay): Promise<GroundBake> {
+// The run's ground, to bake as its replay verifies, on the terrain its seed generates; scripts/reverify.mjs bakes
+// every stored run's this way for a deploy.
+export async function groundBake(env: Env, origin: string, replay: Replay): Promise<GroundBake> {
   return new GroundBake(runGround(replay.run.seed, { board: rankedBoard(replay.run)!, quest: questOf(replay) }), await groundArt(env, origin), SIZE);
 }
 
