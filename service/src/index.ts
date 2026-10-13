@@ -129,7 +129,12 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     // Staged by `npm run play`; a build without it has no game page.
     const page = await env.ASSETS.fetch(request);
     if (!page.ok) return page;
-    return withPreview(page, url, { title: "Play", description: "Crimsonland in the browser: the original game, recovered from its executable.", image: null, player: null });
+    return withPreview(page, url, {
+      title: "Play",
+      description: "Crimsonland in the browser: the original game, recovered from its executable.",
+      image: null,
+      player: { url: url.toString(), width: VIEW_W, height: VIEW_H },
+    });
   }
   if ((match = /^(GET|HEAD) \/play\/game\/(.+)$/.exec(route))) {
     const key = `${GAME_VERSION}/${match[2]}`;
