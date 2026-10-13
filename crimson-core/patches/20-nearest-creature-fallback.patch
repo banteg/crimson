@@ -10,7 +10,7 @@ then does nothing, its chain ends, and a seeker without a target flies straight.
 +    int best_index = portable_preserve_bugs ? 0 : -1;
  
      if (exclude_id == -1) {
-         int index = 0;
+         for (int index = 0; index < 0x180; ++index) {
 --- a/decomp/1.9/crimsonland/game/bonus_apply.cpp
 +++ b/decomp/1.9/crimsonland/game/bonus_apply.cpp
 @@ -140,7 +140,9 @@

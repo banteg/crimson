@@ -13,16 +13,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_cross_fire(
@@ -34,10 +24,9 @@ extern "C" void quest_build_cross_fire(
     spawns[entry_count].pos = quest_vec2_t(
         1074.0f,
         (float)terrain_texture_height * 0.5f);
-    int *first_trigger = &spawns[entry_count].trigger_time_ms;
-    first_trigger[-1] = SPAWN_ID_SPIDER_SMALL_BLUE_40;
-    first_trigger[0] = 100;
-    first_trigger[1] = 6;
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_SMALL_BLUE_40;
+    spawns[entry_count].trigger_time_ms = 100;
+    spawns[entry_count].count = 6;
     ++entry_count;
 
     spawns[entry_count].pos = quest_vec2_t(-40.0f, 512.0f);
@@ -48,8 +37,9 @@ extern "C" void quest_build_cross_fire(
     ++entry_count;
 
     spawns[entry_count].pos = next_position;
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C, 15500, 6);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;
+    spawns[entry_count].trigger_time_ms = 15500;
+    spawns[entry_count].count = 6;
     ++entry_count;
 
     spawns[entry_count].pos = quest_vec2_t(512.0f, 512.0f);
@@ -60,8 +50,9 @@ extern "C" void quest_build_cross_fire(
     ++entry_count;
 
     spawns[entry_count].pos = next_position_2;
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C, 25500, 8);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_PLASMA_SHOOTER_3C;
+    spawns[entry_count].trigger_time_ms = 25500;
+    spawns[entry_count].count = 8;
     ++entry_count;
 
     spawns[entry_count].pos = quest_vec2_t(512.0f, 1152.0f);
@@ -72,8 +63,9 @@ extern "C" void quest_build_cross_fire(
     ++entry_count;
 
     spawns[entry_count].pos = next_position_3;
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_SPIDER_SMALL_BLUE_40, 26000, 6);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_SMALL_BLUE_40;
+    spawns[entry_count].trigger_time_ms = 26000;
+    spawns[entry_count].count = 6;
     ++entry_count;
 
     *count = entry_count;

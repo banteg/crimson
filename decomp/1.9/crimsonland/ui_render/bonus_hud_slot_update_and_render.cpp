@@ -72,20 +72,14 @@ extern "C" void bonus_hud_slot_update_and_render(float *y, int slot_index, float
     }
 
     if (slot->slide.slide_x < -184.0f) {
-        int check_index = 15;
-        if (slot_index <= check_index) {
-            bonus_hud_slot_t *check_slot = &bonus_hud_slot_table[15];
-            do {
-                if (slot_index != check_index) {
-                    if (check_slot->active) {
-                        break;
-                    }
-                } else {
-                    slot->active = 0;
+        for (int check_index = 15; slot_index <= check_index; --check_index) {
+            if (slot_index != check_index) {
+                if (bonus_hud_slot_table[check_index].active) {
+                    break;
                 }
-                --check_index;
-                --check_slot;
-            } while (slot_index <= check_index);
+            } else {
+                slot->active = 0;
+            }
         }
         *y += 52.0f;
         return;

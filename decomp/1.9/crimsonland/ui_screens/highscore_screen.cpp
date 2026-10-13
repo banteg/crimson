@@ -1,5 +1,4 @@
 #include <process.h>
-#include <stddef.h>
 #include <string.h>
 #include <windows.h>
 
@@ -8,9 +7,6 @@
 #include "grim2d_cpp.h"
 
 extern IGrim2D_cpp *grim_interface_ptr;
-
-#define HIGHSCORE_RECORD_FROM_FLAGS(record_flags) \
-    ((highscore_record_t *)((record_flags) - offsetof(highscore_record_t, flags)))
 
 struct highscore_vec2_t {
     float x;

@@ -20,8 +20,7 @@ extern "C" void creatures_apply_radius_damage(
 {
     vec2f_t impulse = {0.0f, 0.0f};
 
-    int creature_id = 0;
-    do {
+    for (int creature_id = 0; creature_id < 0x180; ++creature_id) {
         if (creature_pool[creature_id].active
             && vec2_distance(
                    &creature_pool[creature_id].position,
@@ -35,6 +34,5 @@ extern "C" void creatures_apply_radius_damage(
                 damage_type,
                 &impulse);
         }
-        ++creature_id;
-    } while (creature_id < 0x180);
+    }
 }

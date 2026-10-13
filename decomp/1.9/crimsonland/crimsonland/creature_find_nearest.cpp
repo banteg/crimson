@@ -20,9 +20,7 @@ extern "C" int creature_find_nearest(
     int best_index = 0;
 
     if (exclude_id == -1) {
-        int index = 0;
-
-        do {
+        for (int index = 0; index < 0x180; ++index) {
             if (creature_pool[index].active
                 && creature_pool[index].death_timer == 16.0f) {
                 float distance = vec2_distance(
@@ -34,8 +32,7 @@ extern "C" int creature_find_nearest(
                     best_distance = distance;
                 }
             }
-            ++index;
-        } while (index < 0x180);
+        }
         return best_index;
     }
 

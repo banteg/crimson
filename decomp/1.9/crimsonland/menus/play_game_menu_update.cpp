@@ -129,11 +129,9 @@ void ui_menu_click_back_contextual(void);
 static __inline int play_game_quest_count(void)
 {
     int count = 0;
-    int index = 11;
-    do {
+    for (int index = 11; index < 51; ++index) {
         count += quest_play_counts[index];
-        ++index;
-    } while (index < 51);
+    }
     return count;
 }
 

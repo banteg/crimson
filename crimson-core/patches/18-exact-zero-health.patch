@@ -1,10 +1,10 @@
 Original bug 18: a hit leaving exactly 0 health is not lethal. The fix treats it as a death.
 --- a/decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp
-@@ -61,7 +61,8 @@
+@@ -60,6 +60,7 @@
+         }
      }
  
- post_damage:
 -    if (player_state_table[player_index].health < 0.0f) {
 +    if (player_state_table[player_index].health < 0.0f
 +        || (!portable_preserve_bugs && player_state_table[player_index].health == 0.0f)) {

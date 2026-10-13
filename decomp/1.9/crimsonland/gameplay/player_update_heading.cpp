@@ -563,14 +563,11 @@ extern "C" void player_update(void)
                         // 1.9.8 multiplies by the move speed last.
                         player->move_dx = cosf(player->heading - 1.5707964f)
                             * (3.1415927f - movement_gap) * speed_scale * player->move_speed * 7.957747f;
-#else
-                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
-                            * (3.1415927f - movement_gap) * speed_scale * 7.957747f;
-#endif
-#if CL_BUILD == 10908
                         player->move_dy = sinf(player->heading - 1.5707964f)
                             * (3.1415927f - movement_gap) * speed_scale * player->move_speed * 7.957747f;
 #else
+                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
+                            * (3.1415927f - movement_gap) * speed_scale * 7.957747f;
                         player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
                             * (3.1415927f - movement_gap) * speed_scale * 7.957747f;
 #endif
@@ -628,14 +625,11 @@ extern "C" void player_update(void)
                 // 1.9.8 multiplies by the move speed last.
                 player->move_dx = cosf(player->heading - 1.5707964f)
                     * (3.1415927f - pad_gap) * speed_scale * player->move_speed * 7.957747f;
-#else
-                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
-                    * (3.1415927f - pad_gap) * speed_scale * 7.957747f;
-#endif
-#if CL_BUILD == 10908
                 player->move_dy = sinf(player->heading - 1.5707964f)
                     * (3.1415927f - pad_gap) * speed_scale * player->move_speed * 7.957747f;
 #else
+                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
+                    * (3.1415927f - pad_gap) * speed_scale * 7.957747f;
                 player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
                     * (3.1415927f - pad_gap) * speed_scale * 7.957747f;
 #endif
@@ -822,14 +816,11 @@ extern "C" void player_update(void)
                 // 1.9.8 multiplies by the move speed last.
                 player->move_dx = cosf(player->heading - 1.5707964f)
                     * (3.1415927f - movement_gap) * speed_scale * player->move_speed * 7.957747f;
-#else
-                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
-                    * (3.1415927f - movement_gap) * speed_scale * 7.957747f;
-#endif
-#if CL_BUILD == 10908
                 player->move_dy = sinf(player->heading - 1.5707964f)
                     * (3.1415927f - movement_gap) * speed_scale * player->move_speed * 7.957747f;
 #else
+                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
+                    * (3.1415927f - movement_gap) * speed_scale * 7.957747f;
                 player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
                     * (3.1415927f - movement_gap) * speed_scale * 7.957747f;
 #endif
@@ -883,14 +874,11 @@ extern "C" void player_update(void)
             // 1.9.8 multiplies by the move speed last.
             player->move_dx = cosf(player->heading - 1.5707964f)
                 * (3.1415927f - demo_gap) * speed_scale * player->move_speed * 7.957747f;
-#else
-            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
-                * (3.1415927f - demo_gap) * speed_scale * 7.957747f;
-#endif
-#if CL_BUILD == 10908
             player->move_dy = sinf(player->heading - 1.5707964f)
                 * (3.1415927f - demo_gap) * speed_scale * player->move_speed * 7.957747f;
 #else
+            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
+                * (3.1415927f - demo_gap) * speed_scale * 7.957747f;
             player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
                 * (3.1415927f - demo_gap) * speed_scale * 7.957747f;
 #endif
@@ -1454,19 +1442,17 @@ extern "C" void player_update(void)
                     sprite_effect_pool[effect_index].color_a = 0.223f;
                 }
 
-                int pellet_count = 12;
-                do {
+                for (int pellet_count = 0; pellet_count < 12; ++pellet_count) {
                     int projectile_index = projectile_spawn(
                         &(muzzle_offset + *(vec2_t *)&player->position),
                         (float)(crt_rand() % 200 - 100) * 0.0013f
                             + angle_step,
                         PROJECTILE_TYPE_SHOTGUN,
                         owner_id);
-                    --pellet_count;
                     projectile_pool[projectile_index]
                         .fields.speed_scale =
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
-                } while (pellet_count != 0);
+                }
             } else if (player->weapon_id == WEAPON_ID_JACKHAMMER) {
                 {
                     vec2_t velocity(cosf(fire_heading) * 15.0f, sinf(fire_heading) * 15.0f);
@@ -1477,19 +1463,17 @@ extern "C" void player_update(void)
                     sprite_effect_pool[effect_index].color_a = 0.223f;
                 }
 
-                int pellet_count = 4;
-                do {
+                for (int pellet_count = 0; pellet_count < 4; ++pellet_count) {
                     int projectile_index = projectile_spawn(
                         &(muzzle_offset + *(vec2_t *)&player->position),
                         (float)(crt_rand() % 200 - 100) * 0.0013f
                             + angle_step,
                         PROJECTILE_TYPE_SHOTGUN,
                         owner_id);
-                    --pellet_count;
                     projectile_pool[projectile_index]
                         .fields.speed_scale =
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
-                } while (pellet_count != 0);
+                }
             } else if (player->weapon_id == WEAPON_ID_SAWED_OFF_SHOTGUN) {
                 {
                     vec2_t velocity;
@@ -1514,19 +1498,17 @@ extern "C" void player_update(void)
                     sprite_effect_pool[effect_index].color_a = 0.233f;
                 }
 
-                int pellet_count = 12;
-                do {
+                for (int pellet_count = 0; pellet_count < 12; ++pellet_count) {
                     int projectile_index = projectile_spawn(
                         &(muzzle_offset + *(vec2_t *)&player->position),
                         (float)(crt_rand() % 200 - 100) * 0.004f
                             + angle_step,
                         PROJECTILE_TYPE_SHOTGUN,
                         owner_id);
-                    --pellet_count;
                     projectile_pool[projectile_index]
                         .fields.speed_scale =
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
-                } while (pellet_count != 0);
+                }
             } else if (player->weapon_id == WEAPON_ID_FLAMETHROWER) {
                 {
                     fx_spawn_particle(
@@ -1691,19 +1673,17 @@ extern "C" void player_update(void)
                         owner_id);
                 }
             } else if (player->weapon_id == WEAPON_ID_ION_SHOTGUN) {
-                int pellet_count = 8;
-                do {
+                for (int pellet_count = 0; pellet_count < 8; ++pellet_count) {
                     int projectile_index = projectile_spawn(
                         &(muzzle_offset + *(vec2_t *)&player->position),
                         (float)(crt_rand() % 200 - 100) * 0.0026f
                             + angle_step,
                         PROJECTILE_TYPE_ION_MINIGUN,
                         owner_id);
-                    --pellet_count;
                     projectile_pool[projectile_index]
                         .fields.speed_scale =
                         (float)(crt_rand() % 80) * 0.01f + 1.4f;
-                } while (pellet_count != 0);
+                }
             } else if (player->weapon_id == WEAPON_ID_PLASMA_MINIGUN) {
                 {
                     projectile_spawn(
@@ -1736,19 +1716,17 @@ extern "C" void player_update(void)
                     sprite_effect_pool[effect_index].color_a = 0.263f;
                 }
 
-                int pellet_count = 6;
-                do {
+                for (int pellet_count = 0; pellet_count < 6; ++pellet_count) {
                     int projectile_index = projectile_spawn(
                         &(muzzle_offset + *(vec2_t *)&player->position),
                         (float)(crt_rand() % 200 - 100) * 0.002f
                             + angle_step,
                         PROJECTILE_TYPE_GAUSS_GUN,
                         owner_id);
-                    --pellet_count;
                     projectile_pool[projectile_index]
                         .fields.speed_scale =
                         (float)(crt_rand() % 80) * 0.01f + 1.4f;
-                } while (pellet_count != 0);
+                }
             } else if (player->weapon_id == WEAPON_ID_GAUSS_GUN) {
                 {
                     vec2_t velocity;
@@ -1888,19 +1866,17 @@ extern "C" void player_update(void)
                         owner_id);
                 }
             } else if (player->weapon_id == WEAPON_ID_PLASMA_SHOTGUN) {
-                int pellet_count = 14;
-                do {
+                for (int pellet_count = 0; pellet_count < 14; ++pellet_count) {
                     int projectile_index = projectile_spawn(
                         &(muzzle_offset + *(vec2_t *)&player->position),
                         (float)((crt_rand() & 0xff) - 0x80) * 0.002f
                             + angle_step,
                         PROJECTILE_TYPE_PLASMA_MINIGUN,
                         owner_id);
-                    --pellet_count;
                     projectile_pool[projectile_index]
                         .fields.speed_scale =
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
-                } while (pellet_count != 0);
+                }
             } else if (player->weapon_id == WEAPON_ID_PLAGUE_SPREADER_GUN) {
                 {
                     projectile_spawn(

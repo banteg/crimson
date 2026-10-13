@@ -94,41 +94,37 @@ extern "C" void quest_failed_screen_update(void)
     perk_prompt_update_and_render();
 
     quest_failed_vec2_t xy;
-    do {
-        quest_failed_vec2_t panel_xy =
-            *(quest_failed_vec2_t *)&ui_element_slot_35.pos
-            + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position
-            + quest_failed_vec2_t(180.0f, 40.0f);
+    quest_failed_vec2_t panel_xy =
+        *(quest_failed_vec2_t *)&ui_element_slot_35.pos
+        + *(quest_failed_vec2_t *)&ui_element_slot_35.vertices[0].position
+        + quest_failed_vec2_t(180.0f, 40.0f);
 
-        xy = panel_xy;
-        xy.x =
-            ui_element_slot_35.render_offset_x + xy.x + 44.0f - 10.0f;
+    xy = panel_xy;
+    xy.x =
+        ui_element_slot_35.render_offset_x + xy.x + 44.0f - 10.0f;
 
-        {
-            quest_failed_vec2_t banner_xy = xy;
+    // Native copies xy into a stack slot before the banner draw and reloads it in phase 0.
+    quest_failed_vec2_t banner_xy = xy;
 
-            ui_draw_textured_quad(
-                (int)(xy.x - 2.0f),
-                (int)xy.y,
-                256,
-                64,
-                ui_text_reaper_texture);
+    ui_draw_textured_quad(
+        (int)(xy.x - 2.0f),
+        (int)xy.y,
+        256,
+        64,
+        ui_text_reaper_texture);
 
-            if (ui_screen_phase == -1) {
-                highscore_load_table_thunk();
-                quest_failed_highscore_rank_index = highscore_rank_index();
-                highscore_active_record.game_mode_id =
-                    (unsigned char)config_game_mode;
-                grim_interface_ptr->grim_flush_input();
-                console_input_poll();
-                grim_interface_ptr->grim_was_key_pressed(0x1c);
-                ui_screen_phase = 0;
-            } else if (ui_screen_phase != 0) {
-                break;
-            }
-
-            xy = banner_xy;
-        }
+    if (ui_screen_phase == -1) {
+        highscore_load_table_thunk();
+        quest_failed_highscore_rank_index = highscore_rank_index();
+        highscore_active_record.game_mode_id =
+            (unsigned char)config_game_mode;
+        grim_interface_ptr->grim_flush_input();
+        console_input_poll();
+        grim_interface_ptr->grim_was_key_pressed(0x1c);
+        ui_screen_phase = 0;
+    }
+    if (ui_screen_phase == 0) {
+        xy = banner_xy;
 
         xy.x += 30.0f;
         xy.y += 70.0f;
@@ -224,7 +220,7 @@ extern "C" void quest_failed_screen_update(void)
             game_state_pending = GAME_STATE_MAIN_MENU;
             ui_sign_crimson.focus_disabled = 0;
         }
-    } while (false);
+    }
 
     ui_cursor_render();
 }

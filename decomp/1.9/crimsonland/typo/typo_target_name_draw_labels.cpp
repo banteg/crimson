@@ -1,6 +1,5 @@
 #include "crimsonland_gameplay.h"
 #include "grim2d_cpp.h"
-#include <stddef.h>
 
 extern "C" char typo_target_name_table[384][64];
 extern "C" float camera_offset_x;
@@ -41,16 +40,12 @@ extern "C" void typo_target_name_draw_labels(void)
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
     grim_interface_ptr->grim_set_config_var(24, 0.5f);
 
-    char *name = &typo_target_name_table[0][0];
-    float *death_timer = &creature_pool[0].death_timer;
-    do {
-        creature_t *creature = (creature_t *)(
-            (char *)death_timer
-            - offsetof(creature_t, death_timer));
-        if (creature->active) {
-            width = grim_interface_ptr->grim_measure_text_width(name);
-            alpha = *death_timer < 0.0f
-                ? (*death_timer + 10.0f) * 0.1f
+    for (int i = 0; i < 384; ++i) {
+        if (creature_pool[i].active) {
+            width = grim_interface_ptr->grim_measure_text_width(
+                typo_target_name_table[i]);
+            alpha = creature_pool[i].death_timer < 0.0f
+                ? (creature_pool[i].death_timer + 10.0f) * 0.1f
                 : 1.0f;
             if (alpha > 1.0f) {
                 alpha = 1.0f;
@@ -58,10 +53,10 @@ extern "C" void typo_target_name_draw_labels(void)
                 alpha = 0.0f;
             }
 
-            text_position.x = camera_offset_x + creature->pos_x
+            text_position.x = camera_offset_x + creature_pool[i].pos_x
                 - (float)width * 0.5f;
             text_position.y =
-                camera_offset_y + creature->pos_y - 50.0f;
+                camera_offset_y + creature_pool[i].pos_y - 50.0f;
             background_color.a = alpha * 0.67f;
             background_position.set(
                 text_position.x - 4.0f, text_position.y);
@@ -75,10 +70,7 @@ extern "C" void typo_target_name_draw_labels(void)
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, alpha);
             grim_interface_ptr->grim_draw_text_small(
-                text_position.x, text_position.y, name);
+                text_position.x, text_position.y, typo_target_name_table[i]);
         }
-        death_timer += sizeof(creature_t) / sizeof(float);
-        name += 64;
-    } while ((int)death_timer
-             < (int)&creature_pool[384].death_timer);
+    }
 }

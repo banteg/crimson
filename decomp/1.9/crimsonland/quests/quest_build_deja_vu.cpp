@@ -15,53 +15,37 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set(
-        const quest_vec2_t &position,
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        pos = position;
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_deja_vu(
     quest_spawn_entry_t *entries, int *count)
 {
+    quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
+    int entry_count = 0;
     int trigger_time_ms = 2000;
     int trigger_step_ms = 2000;
-    int *wave_trigger =
-        &((quest_entry_original_t *)entries)->trigger_time_ms;
 
     while (trigger_step_ms > 560) {
         float angle = (float)(crt_rand() % 612) * 0.01f;
         float angle_cos = (float)cos(angle);
         float angle_sin = (float)sin(angle);
-        int *entry_trigger = wave_trigger;
-        wave_trigger += 24;
 
         for (int radius = 84; radius < 252; radius += 42) {
             quest_vec2_t offset(
                 (float)radius * angle_cos,
                 (float)radius * angle_sin);
-            quest_entry_original_t *wave_entry =
-                (quest_entry_original_t *)(entry_trigger - 4);
-            wave_entry->pos = quest_vec2_t(
+            spawns[entry_count].pos = quest_vec2_t(
                 offset.x + 512.0f,
                 offset.y + 512.0f);
-            entry_trigger[-1] = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;
-            entry_trigger[0] = trigger_time_ms;
-            entry_trigger[1] = 1;
-            entry_trigger += 6;
+            spawns[entry_count].template_id = SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 1;
+            ++entry_count;
         }
 
         trigger_time_ms += trigger_step_ms;
         trigger_step_ms -= 80;
     }
 
-    *count = 72;
+    *count = entry_count;
 }

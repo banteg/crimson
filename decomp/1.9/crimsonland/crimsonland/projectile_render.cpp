@@ -179,45 +179,9 @@ extern "C" void projectile_render(float transition_alpha)
         const float *aim_heading = &player->aim_heading;
 #if CL_BUILD == 10908
         if (!(player->health <= 0.0f)) {
-            float heading = (*aim_heading - 1.5707964f);
-            projectile_render_vec2_t direction(
-                (float)cos(heading), (float)sin(heading));
-            projectile_render_vec2_t end_pos =
-                *(projectile_render_vec2_t *)&player->position
-                + direction * 512.0f;
-            float start_heading = (heading - 0.150915f);
-            // Scale before vector construction: native keeps these trig
-            // results wide through FMUL, unlike the end-position sine above.
-            projectile_render_vec2_t start_pos = *(projectile_render_vec2_t *)&player->position;
-            start_pos += projectile_render_vec2_t(
-                ((float)cos(start_heading) * 15.0f),
-                (float)sin(start_heading) * 15.0f);
-            projectile_render_vec2_t half_width(
-                (float)cos(*aim_heading) * 1.1f,
-                (float)sin(*aim_heading) * 1.1f);
-            point0 = (camera_offset + start_pos) - half_width;
-            point1 = (camera_offset + start_pos) + half_width;
-            point2 = (camera_offset + end_pos) + half_width;
-            point3 = (camera_offset + end_pos) - half_width;
-
-            if (player_state_table[0].perk_counts[perk_id_sharpshooter] > 0) {
-                grim_interface_ptr->grim_set_config_var(0x14, 2u);
-                grim_interface_ptr->grim_begin_batch();
-                grim_interface_ptr->grim_draw_quad_points(
-                    point0.x,
-                    point0.y,
-                    point1.x,
-                    point1.y,
-                    point2.x,
-                    point2.y,
-                    point3.x,
-                    point3.y);
-                grim_interface_ptr->grim_end_batch();
-                grim_interface_ptr->grim_set_config_var(0x14, 6u);
-            }
-        }
 #else
         if (player->health > 0.0f) {
+#endif
             float heading = (*aim_heading - 1.5707964f);
             projectile_render_vec2_t direction(
                 (float)cos(heading), (float)sin(heading));
@@ -255,7 +219,6 @@ extern "C" void projectile_render(float transition_alpha)
                 grim_interface_ptr->grim_set_config_var(0x14, 6u);
             }
         }
-#endif
     }
 
 #if CL_BUILD == 10908

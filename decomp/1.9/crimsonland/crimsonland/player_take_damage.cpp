@@ -43,24 +43,23 @@ extern "C" void player_take_damage(int player_index, float damage)
     if (perk_count_get(perk_id_ninja) != 0) {
         if (crt_rand() % 3 == 0) {
             dodged = 1;
-            goto post_damage;
         }
     } else {
         if (perk_count_get(perk_id_dodger) != 0 && crt_rand() % 5 == 0) {
             dodged = 1;
-            goto post_damage;
         }
     }
 
-    if (perk_count_get(perk_id_highlander) != 0) {
-        if (crt_rand() % 10 == 0) {
-            player_state_table[player_index].health = 0.0f;
+    if (!dodged) {
+        if (perk_count_get(perk_id_highlander) != 0) {
+            if (crt_rand() % 10 == 0) {
+                player_state_table[player_index].health = 0.0f;
+            }
+        } else {
+            player_state_table[player_index].health = player_state_table[player_index].health - damage_scale * damage;
         }
-    } else {
-        player_state_table[player_index].health = player_state_table[player_index].health - damage_scale * damage;
     }
 
-post_damage:
     if (player_state_table[player_index].health < 0.0f) {
         player_state_table[player_index].death_timer =
             player_state_table[player_index].death_timer - frame_dt * 28.0f;

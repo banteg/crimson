@@ -285,12 +285,10 @@ extern "C" void projectile_update(void)
 
                                     projectile_type_id_t type_id = projectile->pos.tail.vy.type_id;
                                     if (type_id == PROJECTILE_TYPE_BLADE_GUN) {
-                                        int count = 8;
-                                        do {
+                                        for (int count = 0; count < 8; ++count) {
                                             effect_spawn_blood_splatter(position,
                                                 (float)(crt_rand() & 0xff) * 0.024543693f, 0.0f);
-                                            --count;
-                                        } while (count != 0);
+                                        }
                                     } else if (type_id == PROJECTILE_TYPE_SPLITTER_GUN) {
                                         effect_spawn_splitter_hit_burst(position, 26.0f, 3);
                                         projectile_spawn(position, projectile->angle - 1.0471976f,
@@ -315,20 +313,17 @@ extern "C" void projectile_update(void)
                                     if (!config_violence_disabled) {
                                         if (perk_count_get(perk_id_bloody_mess_quick_learner)
                                             != 0) {
-                                            int count = 8;
-                                            do {
+                                            for (int count = 0; count < 8; ++count) {
                                                 effect_spawn_blood_splatter(position,
                                                     projectile->angle - 1.5707964f
                                                         + (float)((crt_rand() & 0x1f) - 0x10)
                                                             * 0.0625f,
                                                     0.0f);
-                                                --count;
-                                            } while (count != 0);
+                                            }
                                             effect_spawn_blood_splatter(position,
                                                 projectile->angle - 1.5707964f + 3.1415927f, 0.0f);
                                         } else if (bonus_freeze_timer <= 0.0f) {
-                                            int count = 2;
-                                            do {
+                                            for (int count = 0; count < 2; ++count) {
                                                 effect_spawn_blood_splatter(
                                                     position, projectile->angle - 1.5707964f, 0.0f);
                                                 if ((crt_rand() & 7) == 2) {
@@ -336,8 +331,7 @@ extern "C" void projectile_update(void)
                                                         projectile->angle - 1.5707964f + 3.1415927f,
                                                         0.0f);
                                                 }
-                                                --count;
-                                            } while (count != 0);
+                                            }
                                         }
                                     }
 
@@ -529,8 +523,7 @@ extern "C" void projectile_update(void)
                                         // 1.9.8 hoists the zero vector out of the six-shard loop (frame packing).
                                         vec2f_t zero = { 0.0f, 0.0f };
 #endif
-                                        int count = 6;
-                                        do {
+                                        for (int count = 0; count < 6; ++count) {
                                             float speed = (float)(crt_rand() % 100) * 0.1f;
                                             if (speed > 4.0f) {
                                                 speed = (float)(crt_rand() % 90 + 10) * 0.1f;
@@ -567,15 +560,13 @@ extern "C" void projectile_update(void)
                                                 creature_pool[hit_id].position.y + offset_y,
                                             };
                                             fx_queue_add_random(&decal_pos);
-                                            --count;
-                                        } while (count != 0);
+                                        }
                                     } else if (bonus_freeze_timer > 0.0f) {
                                         effect_spawn_freeze_shard(position,
                                             projectile->angle - 1.5707964f
                                                 + (float)(crt_rand() % 100) * 0.01f);
                                     } else {
-                                        int count = 3;
-                                        do {
+                                        for (int count = 0; count < 3; ++count) {
                                             float impact_heading = projectile->angle - 1.5707964f
                                                 + (float)(crt_rand() % 20 - 10) * 0.1f;
                                             offset_x = (float)cos(impact_heading) * 20.0f;
@@ -613,8 +604,7 @@ extern "C" void projectile_update(void)
                                                 creature_pos->y + decal_offset_3.y,
                                             };
                                             fx_queue_add_random(&decal_pos_3);
-                                            --count;
-                                        } while (count != 0);
+                                        }
                                     }
 
                                     if (!demo_mode_active && !music_playlist_randomized_latch
@@ -806,12 +796,10 @@ extern "C" void projectile_update(void)
                     }
 
                     if (bonus_freeze_timer > 0.0f) {
-                        int count = 4;
-                        do {
+                        for (int count = 0; count < 4; ++count) {
                             effect_spawn_freeze_shard(
                                 (vec2f_t*)&secondary_position, (float)(crt_rand() % 612) * 0.01f);
-                            --count;
-                        } while (count != 0);
+                        }
                     } else {
                         vec2f_t decal_offset_1 = {
                             (float)(crt_rand() % 20 - 10),
@@ -879,15 +867,12 @@ extern "C" void projectile_update(void)
                         secondary_projectile_pool[secondary_index].pos.vx.vel_x = 0.0f;
                         secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y = 1.0f;
                         if (bonus_freeze_timer > 0.0f) {
-                            int count = 8;
-                            do {
+                            for (int count = 0; count < 8; ++count) {
                                 effect_spawn_freeze_shard((vec2f_t*)&secondary_position,
                                     (float)(crt_rand() % 612) * 0.01f);
-                                --count;
-                            } while (count != 0);
+                            }
                         } else {
-                            int count = 20;
-                            do {
+                            for (int count = 0; count < 20; ++count) {
                                 angle = (float)(crt_rand() % 628) * 0.01f;
                                 int radius = crt_rand() % 90;
                                 vec2f_t decal_offset = {
@@ -899,23 +884,19 @@ extern "C" void projectile_update(void)
                                     decal_offset.y + creature_pool[hit_id].position.y,
                                 };
                                 fx_queue_add_random(&decal_pos);
-                                --count;
-                            } while (count != 0);
+                            }
                         }
                     } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
                         secondary_projectile_pool[secondary_index].pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
                         secondary_projectile_pool[secondary_index].pos.vx.vel_x = 0.0f;
                         secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y = 0.35f;
                         if (bonus_freeze_timer > 0.0f) {
-                            int count = 8;
-                            do {
+                            for (int count = 0; count < 8; ++count) {
                                 effect_spawn_freeze_shard((vec2f_t*)&secondary_position,
                                     (float)(crt_rand() % 612) * 0.01f);
-                                --count;
-                            } while (count != 0);
+                            }
                         } else {
-                            int count = 10;
-                            do {
+                            for (int count = 0; count < 10; ++count) {
                                 angle = (float)(crt_rand() % 628) * 0.01f;
                                 int radius = crt_rand() % 64;
                                 vec2f_t decal_offset = {
@@ -927,23 +908,19 @@ extern "C" void projectile_update(void)
                                     decal_offset.y + creature_pool[hit_id].position.y,
                                 };
                                 fx_queue_add_random(&decal_pos);
-                                --count;
-                            } while (count != 0);
+                            }
                         }
                     } else if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
                         secondary_projectile_pool[secondary_index].pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
                         secondary_projectile_pool[secondary_index].pos.vx.vel_x = 0.0f;
                         secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y = 0.25f;
                         if (bonus_freeze_timer > 0.0f) {
-                            int count = 8;
-                            do {
+                            for (int count = 0; count < 8; ++count) {
                                 effect_spawn_freeze_shard(&creature_pool[hit_id].position,
                                     (float)(crt_rand() % 612) * 0.01f);
-                                --count;
-                            } while (count != 0);
+                            }
                         } else {
-                            int count = 3;
-                            do {
+                            for (int count = 0; count < 3; ++count) {
                                 angle = (float)(crt_rand() % 628) * 0.01f;
                                 int radius = crt_rand() % 44;
                                 vec2f_t decal_offset = {
@@ -955,8 +932,7 @@ extern "C" void projectile_update(void)
                                     decal_offset.y + creature_pool[hit_id].position.y,
                                 };
                                 fx_queue_add_random(&decal_pos);
-                                --count;
-                            } while (count != 0);
+                            }
                         }
                     }
 

@@ -746,27 +746,26 @@ extern "C" void creature_update_all(void)
                             if (!config_violence_disabled
                                 && (creatures[creature_index].flags
                                     & CREATURE_FLAG_SPAWNER) != 0) {
-                                int count = 8;
-                                do {
+                                // Shared across all three loops for C++98 compatibility (VC6 rejects redeclaring `for (int count ...)` in the same block).
+                                int count;
+                                for (count = 0; count < 8; ++count) {
                                     effect_spawn_blood_splatter(
                                         position,
                                         (float)(crt_rand() % 612) * 0.01f,
                                         0.0f);
-                                } while (--count != 0);
-                                count = 6;
-                                do {
+                                }
+                                for (count = 0; count < 6; ++count) {
                                     effect_spawn_blood_splatter(
                                         position,
                                         (float)(crt_rand() % 612) * 0.01f,
                                         -0.07f);
-                                } while (--count != 0);
-                                count = 5;
-                                do {
+                                }
+                                for (count = 0; count < 5; ++count) {
                                     effect_spawn_blood_splatter(
                                         position,
                                         (float)(crt_rand() % 612) * 0.01f,
                                         -0.12f);
-                                } while (--count != 0);
+                                }
                             }
 
                             if (cv_bodiesFade->value == 0.0f) {

@@ -124,84 +124,77 @@ extern "C" void credits_screen_update(void) {
             scroll_offset -= 16.0f;
         }
 
-        int row = 0;
-        if (credits_scroll_line_end_index - credits_scroll_line_start_index >
-            0) {
-            int line_offset = 0;
-            do {
-                int index = credits_scroll_line_start_index + row;
-                if (index < 0) {
-                    index = 0;
-                }
+        for (int row = 0;
+             row < credits_scroll_line_end_index - credits_scroll_line_start_index;
+             ++row) {
+            int index = credits_scroll_line_start_index + row;
+            if (index < 0) {
+                index = 0;
+            }
 
-                int width = grim_interface_ptr->grim_measure_text_width(
-                    credits_line_table[index].text);
-                float line_y = (float)line_offset + position.y - scroll_offset;
+            int width = grim_interface_ptr->grim_measure_text_width(
+                credits_line_table[index].text);
+            float line_y = (float)(row * 16) + position.y - scroll_offset;
 
-                float alpha;
-                float edge_y = position.y - 16.0f + 24.0f;
-                if (line_y < edge_y) {
-                    alpha = 1.0f - (edge_y - line_y) / 24.0f;
+            float alpha;
+            float edge_y = position.y - 16.0f + 24.0f;
+            if (line_y < edge_y) {
+                alpha = 1.0f - (edge_y - line_y) / 24.0f;
+            } else {
+                edge_y = (float)((credits_scroll_line_end_index -
+                                  credits_scroll_line_start_index - 1) *
+                                 16) +
+                         position.y - 24.0f;
+                if (line_y > edge_y) {
+                    alpha = (edge_y - line_y) / 24.0f + 1.0f;
                 } else {
-                    edge_y = (float)((credits_scroll_line_end_index -
-                                      credits_scroll_line_start_index - 1) *
-                                     16) +
-                             position.y - 24.0f;
-                    if (line_y > edge_y) {
-                        alpha = (edge_y - line_y) / 24.0f + 1.0f;
-                    } else {
-                        alpha = 1.0f;
-                    }
-                }
-
-                if (alpha > 1.0f) {
                     alpha = 1.0f;
-                } else if (alpha < 0.0f) {
-                    alpha = 0.0f;
                 }
+            }
 
-                credits_vec2_t hit_position;
-                hit_position.x = position.x + 140.0f - (float)(width / 2);
-                hit_position.y = line_y;
-                if (ui_mouse_inside_rect((float *)&hit_position, 16, width) &&
-                    input_primary_just_pressed()) {
-                    if (strchr(credits_line_table[index].text, 'o') != 0) {
-                        if ((credits_line_table[index].flags & 4) == 0) {
-                            sfx_play(sfx_ui_bonus, 1.0f);
-                        }
-                        credits_line_table[index].flags |= 4;
-                    } else {
-                        credits_line_clear_flag(index);
-                    }
-                }
+            if (alpha > 1.0f) {
+                alpha = 1.0f;
+            } else if (alpha < 0.0f) {
+                alpha = 0.0f;
+            }
 
-                int flags = credits_line_table[index].flags;
-                if ((flags & 4) != 0) {
-                    if ((flags & 1) != 0) {
-                        grim_interface_ptr->grim_set_color(0.9f, 1.0f, 0.9f,
-                                                           alpha);
-                    } else {
-                        grim_interface_ptr->grim_set_color(0.4f, 0.7f, 0.7f,
-                                                           alpha);
+            credits_vec2_t hit_position;
+            hit_position.x = position.x + 140.0f - (float)(width / 2);
+            hit_position.y = line_y;
+            if (ui_mouse_inside_rect((float *)&hit_position, 16, width) &&
+                input_primary_just_pressed()) {
+                if (strchr(credits_line_table[index].text, 'o') != 0) {
+                    if ((credits_line_table[index].flags & 4) == 0) {
+                        sfx_play(sfx_ui_bonus, 1.0f);
                     }
+                    credits_line_table[index].flags |= 4;
                 } else {
-                    if ((flags & 1) != 0) {
-                        grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f,
-                                                           alpha);
-                    } else {
-                        grim_interface_ptr->grim_set_color(0.4f, 0.5f, 0.7f,
-                                                           alpha);
-                    }
+                    credits_line_clear_flag(index);
                 }
+            }
 
-                grim_interface_ptr->grim_draw_text_small(
-                    position.x + 140.0f - (float)(width / 2), line_y,
-                    credits_line_table[index].text);
+            int flags = credits_line_table[index].flags;
+            if ((flags & 4) != 0) {
+                if ((flags & 1) != 0) {
+                    grim_interface_ptr->grim_set_color(0.9f, 1.0f, 0.9f,
+                                                       alpha);
+                } else {
+                    grim_interface_ptr->grim_set_color(0.4f, 0.7f, 0.7f,
+                                                       alpha);
+                }
+            } else {
+                if ((flags & 1) != 0) {
+                    grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f,
+                                                       alpha);
+                } else {
+                    grim_interface_ptr->grim_set_color(0.4f, 0.5f, 0.7f,
+                                                       alpha);
+                }
+            }
 
-                ++row;
-                line_offset += 16;
-            } while (row < credits_scroll_line_end_index -
-                               credits_scroll_line_start_index);
+            grim_interface_ptr->grim_draw_text_small(
+                position.x + 140.0f - (float)(width / 2), line_y,
+                credits_line_table[index].text);
         }
 
         position.x += 100.0f;

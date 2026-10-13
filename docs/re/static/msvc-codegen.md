@@ -87,9 +87,8 @@ Seen in:
   from `while (interval < 0) { ...; interval += 2; }`.
 - [grim_get_key_char][]: an indexed shift loop reverses into the same countdown.
 
-Conversion is not automatically neutral: in
-[projectile_update][audit-exe], auto-converting its countdowns loses
-references.
+In [projectile_update][audit-exe] and [player_update][], the impact, decal and
+shotgun pellet loops also come from plain counted `for` loops.
 
 ### Loop-test signedness follows the compared source value
 

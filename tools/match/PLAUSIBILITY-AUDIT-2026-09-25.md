@@ -98,8 +98,7 @@ Notable behavior that the plain forms make visible:
   `(int)radius` cast inside the body is byte-exact and needs no guard.
 - **`controls_menu_update`.** The axis-peak scan walks seven separately
   declared globals, so it needs an array owner first.
-- **`projectile_update`.** Twelve countdowns remain. Auto-converting them
-  loses three references.
+- **`projectile_update`.** Settled: the impact and decal countdowns are plain `for (int count = 0; count < N; ++count)` loops and byte-exact on both 1.9.93 and 1.9.8.
 - **`*_global_init` countdowns.** These are compiler-generated array
   constructor loops for statics with constructors. A plain `T arr[N];` with an
   inline constructor reproduces all 13 initializers and their thunks

@@ -200,8 +200,7 @@ extern "C" void typo_player_update(
                     sprite_effect_pool[effect_index].color.a = 0.223f;
                 }
 
-                int pellet_count = 12;
-                do {
+                for (int pellet_count = 0; pellet_count < 12; ++pellet_count) {
                     vec2f_t pellet_position;
                     const vec2f_t *player_position =
                         &player_state_table[current_player_index].position;
@@ -213,11 +212,10 @@ extern "C" void typo_player_update(
                             + shot_heading,
                         PROJECTILE_TYPE_SHOTGUN,
                         -100);
-                    --pellet_count;
                     projectile_pool[projectile_index]
                         .fields.speed_scale =
                         (float)(crt_rand() % 100) * 0.01f + 1.0f;
-                } while (pellet_count != 0);
+                }
             }
 
             int sharpshooter_perk = perk_id_sharpshooter;

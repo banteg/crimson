@@ -127,13 +127,12 @@ extern "C" void unlocked_perks_database_update(void)
 
     position.y += 20.0f;
     int database_count = 0;
-    int index = 1;
-    do {
+    int index;
+    for (index = 1; index < 128; ++index) {
         if ((char)perk_meta_table[index].available != 0) {
             ++database_count;
         }
-        ++index;
-    } while (index < 128);
+    }
 
     position.y += 8.0f;
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
@@ -170,16 +169,12 @@ extern "C" void unlocked_perks_database_update(void)
 
     char *perk_names[128];
     int perk_count = 0;
-    char **name_cursor = perk_names;
-    index = 0;
-    do {
+    for (index = 0; index < 128; ++index) {
         if ((char)perk_meta_table[index].available != 0) {
-            *name_cursor = perk_meta_table[index].name;
+            perk_names[perk_count] = perk_meta_table[index].name;
             ++perk_count;
-            ++name_cursor;
         }
-        ++index;
-    } while (index < 128);
+    }
 
     static database_scrollbar_t scrollbar;
     scrollbar.items = perk_names;
@@ -189,15 +184,13 @@ extern "C" void unlocked_perks_database_update(void)
 
     if (scrollbar.hovered_index != -1) {
         int available_index = 0;
-        index = 0;
-        while (index < 128) {
+        for (index = 0; index < 128; ++index) {
             if ((char)perk_meta_table[index].available != 0) {
                 if (available_index++ == scrollbar.hovered_index) {
                     perk_id = index;
                     break;
                 }
             }
-            ++index;
         }
     }
 

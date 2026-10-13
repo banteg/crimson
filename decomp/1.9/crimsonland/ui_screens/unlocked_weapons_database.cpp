@@ -136,13 +136,12 @@ extern "C" void unlocked_weapons_database_update(void)
 
     position.y += 20.0f;
     int database_count = 0;
-    int index = 1;
-    do {
+    int index;
+    for (index = 1; index < 64; ++index) {
         if (weapon_table[index].unlocked != 0) {
             ++database_count;
         }
-        ++index;
-    } while (index < 64);
+    }
 
     position.y += 10.0f;
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
@@ -179,16 +178,12 @@ extern "C" void unlocked_weapons_database_update(void)
 
     char *weapon_names[64];
     int weapon_count = 0;
-    char **name_cursor = weapon_names;
-    index = 1;
-    do {
+    for (index = 1; index < 64; ++index) {
         if (weapon_table[index].unlocked != 0) {
-            *name_cursor = weapon_table[index].name;
+            weapon_names[weapon_count] = weapon_table[index].name;
             ++weapon_count;
-            ++name_cursor;
         }
-        ++index;
-    } while (index < 64);
+    }
 
     static database_scrollbar_t scrollbar;
     scrollbar.items = weapon_names;
@@ -198,15 +193,13 @@ extern "C" void unlocked_weapons_database_update(void)
 
     if (scrollbar.hovered_index != -1) {
         int available_index = 0;
-        index = 1;
-        while (index < 64) {
+        for (index = 1; index < 64; ++index) {
             if (weapon_table[index].unlocked != 0) {
                 if (available_index++ == scrollbar.hovered_index) {
                     weapon_id = index;
                     break;
                 }
             }
-            ++index;
         }
     }
 

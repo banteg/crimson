@@ -103,18 +103,13 @@ extern "C" void ui_segmented_slider_update(
     grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.5f);
     grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
 
-    int i = 0;
-    if (i < state->max) {
-        int offset = 0;
-        do {
-            grim_interface_ptr->grim_draw_quad(
-                draw_position.x + (float)offset,
-                draw_position.y,
-                8.0f,
-                16.0f);
-            ++i;
-            offset += 8;
-        } while (i < state->max);
+    int i;
+    for (i = 0; i < state->max; ++i) {
+        grim_interface_ptr->grim_draw_quad(
+            draw_position.x + (float)(i * 8),
+            draw_position.y,
+            8.0f,
+            16.0f);
     }
     grim_interface_ptr->grim_end_batch();
 
@@ -123,18 +118,12 @@ extern "C" void ui_segmented_slider_update(
         grim_interface_ptr->grim_begin_batch();
         grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 1.0f);
 
-        i = 0;
-        if (i < state->value) {
-            int offset = 0;
-            do {
-                grim_interface_ptr->grim_draw_quad(
-                    draw_position.x + (float)offset,
-                    draw_position.y,
-                    8.0f,
-                    16.0f);
-                ++i;
-                offset += 8;
-            } while (i < state->value);
+        for (i = 0; i < state->value; ++i) {
+            grim_interface_ptr->grim_draw_quad(
+                draw_position.x + (float)(i * 8),
+                draw_position.y,
+                8.0f,
+                16.0f);
         }
         grim_interface_ptr->grim_end_batch();
     }

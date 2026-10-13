@@ -90,21 +90,19 @@ extern "C" void terrain_generate_random(void)
     grim_interface_ptr->grim_set_color(0.7f, 0.7f, 0.7f, 0.9f);
     grim_interface_ptr->grim_begin_batch();
 
-    int index = 0;
-    if (terrain_texture_width * terrain_texture_height * 800 / 0x80000 > 0) {
+    int index;
+    // C2 hoists inv_scale * 128.0f into the guarded loop preheader when assigned inside the body.
+    for (index = 0;
+         index < terrain_texture_width * terrain_texture_height * 800 / 0x80000;
+         ++index) {
         size = inv_scale * 128.0f;
-        do {
-            grim_interface_ptr->grim_set_rotation(
-                (float)(crt_rand() % 314) * 0.01f);
-            terrain_vec2_t position(
-                (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f,
-                (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f);
-            position *= inv_scale;
-            grim_interface_ptr->grim_draw_quad_xy(&position.x, size, size);
-            ++index;
-        } while (
-            index
-            < terrain_texture_width * terrain_texture_height * 800 / 0x80000);
+        grim_interface_ptr->grim_set_rotation(
+            (float)(crt_rand() % 314) * 0.01f);
+        terrain_vec2_t position(
+            (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f,
+            (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f);
+        position *= inv_scale;
+        grim_interface_ptr->grim_draw_quad_xy(&position.x, size, size);
     }
 
     grim_interface_ptr->grim_end_batch();
@@ -112,21 +110,17 @@ extern "C" void terrain_generate_random(void)
     grim_interface_ptr->grim_set_color(0.7f, 0.7f, 0.7f, 0.9f);
     grim_interface_ptr->grim_begin_batch();
 
-    index = 0;
-    if (terrain_texture_width * terrain_texture_height * 35 / 0x80000 > 0) {
+    for (index = 0;
+         index < terrain_texture_width * terrain_texture_height * 35 / 0x80000;
+         ++index) {
         size = inv_scale * 128.0f;
-        do {
-            grim_interface_ptr->grim_set_rotation(
-                (float)(crt_rand() % 314) * 0.01f);
-            terrain_vec2_t position(
-                (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f,
-                (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f);
-            position *= inv_scale;
-            grim_interface_ptr->grim_draw_quad_xy(&position.x, size, size);
-            ++index;
-        } while (
-            index
-            < terrain_texture_width * terrain_texture_height * 35 / 0x80000);
+        grim_interface_ptr->grim_set_rotation(
+            (float)(crt_rand() % 314) * 0.01f);
+        terrain_vec2_t position(
+            (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f,
+            (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f);
+        position *= inv_scale;
+        grim_interface_ptr->grim_draw_quad_xy(&position.x, size, size);
     }
 
     grim_interface_ptr->grim_end_batch();
@@ -134,21 +128,17 @@ extern "C" void terrain_generate_random(void)
     grim_interface_ptr->grim_set_color(0.7f, 0.7f, 0.7f, 0.6f);
     grim_interface_ptr->grim_begin_batch();
 
-    index = 0;
-    if (terrain_texture_width * terrain_texture_height * 15 / 0x80000 > 0) {
+    for (index = 0;
+         index < terrain_texture_width * terrain_texture_height * 15 / 0x80000;
+         ++index) {
         size = inv_scale * 128.0f;
-        do {
-            grim_interface_ptr->grim_set_rotation(
-                (float)(crt_rand() % 314) * 0.01f);
-            terrain_vec2_t position(
-                (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f,
-                (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f);
-            position *= inv_scale;
-            grim_interface_ptr->grim_draw_quad_xy(&position.x, size, size);
-            ++index;
-        } while (
-            index
-            < terrain_texture_width * terrain_texture_height * 15 / 0x80000);
+        grim_interface_ptr->grim_set_rotation(
+            (float)(crt_rand() % 314) * 0.01f);
+        terrain_vec2_t position(
+            (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f,
+            (float)(crt_rand() % (terrain_texture_width + 128)) - 64.0f);
+        position *= inv_scale;
+        grim_interface_ptr->grim_draw_quad_xy(&position.x, size, size);
     }
 
     grim_interface_ptr->grim_end_batch();

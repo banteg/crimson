@@ -43,9 +43,8 @@ extern "C" void quest_build_the_gang_wars(
         -150.0f,
         (float)terrain_texture_height * 0.5f);
     spawns[spawn_index].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
-    int one = 1;
     spawns[spawn_index].trigger_time_ms = 100;
-    spawns[spawn_index].count = one;
+    spawns[spawn_index].count = 1;
     ++spawn_index;
 
     spawns[spawn_index].pos = quest_vec2_t(
@@ -53,7 +52,7 @@ extern "C" void quest_build_the_gang_wars(
         (float)terrain_texture_height * 0.5f);
     spawns[spawn_index].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
     spawns[spawn_index].trigger_time_ms = 2500;
-    spawns[spawn_index].count = one;
+    spawns[spawn_index].count = 1;
     ++spawn_index;
 
     int trigger_time_ms;
