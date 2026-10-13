@@ -1,5 +1,5 @@
 import { type Accessor, createSignal, For, type JSX, Show } from "solid-js";
-import type { Board, BoardView, FlagsView, JoinView, ModerationAction, ProfileView, QuestMenuView, Role, RunDetailView } from "../../src/api-types";
+import type { Board, BoardView, FlagsView, JoinView, LoginView, ModerationAction, ProfileView, QuestMenuView, Role, RunDetailView } from "../../src/api-types";
 import { get, moderate, post } from "./api";
 import { formatLongDuration, formatScore, quantity } from "./format";
 import { GameButton } from "./button";
@@ -266,6 +266,7 @@ const NOTICES: Record<string, (provider: string) => string> = {
   cancelled: (p) => `${p} sign-in was cancelled.`,
   failed: (p) => `Linking ${p} failed or expired; try again.`,
   joined: () => "This game's key joined the account.",
+  switched: () => "This browser signed in to this account in another tab. Check it's the one you meant before linking.",
   deleted: () => "Your account and its runs are deleted.",
 };
 
@@ -374,9 +375,15 @@ async function quests(boardName: "quests" | "quests-hardcore", stage: number): P
 }
 
 function AccountControls(props: { profile: ProfileView; nav: Navigator }) {
+  // Each change names this page's account, which the service refuses once the browser signed in to another one.
+  const account = props.profile.player.id;
   const act = async (path: string, then: () => void) => {
-    const result = await post(path);
+    const result = await post(path, { account });
     if (result.ok) then();
+    else {
+      alert(result.reason);
+      props.nav.reload();
+    }
   };
   return (
     <>
@@ -391,7 +398,7 @@ function AccountControls(props: { profile: ProfileView; nav: Navigator }) {
             {(provider) => (
               <Show
                 when={provider.linked}
-                fallback={<GameButton label={`Link ${provider.label}`} href={`/auth/${provider.name}/start`} native />}
+                fallback={<GameButton label={`Link ${provider.label}`} href={`/auth/${provider.name}/start?account=${account}`} native />}
               >
                 <GameButton label={`Unlink ${provider.label}`} onClick={() => act(`/api/account/unlink/${provider.name}`, props.nav.reload)} />
               </Show>
@@ -643,12 +650,51 @@ async function account(nav: Navigator): Promise<Screen> {
   return { title: "Sign in from the game", quest: null, panels: [SIGN_IN] };
 }
 
+// A login link from the game's Profile button: the browser signs in as the link's account only once the player
+// confirms here, so a link someone else sends cannot switch it to their account unseen.
+async function login(token: string, nav: Navigator): Promise<Screen> {
+  const view = await get<LoginView>(`/api/login/${token}`).catch(() => null);
+  if (!view) return { title: "Sign in", quest: null, panels: [() => <p>This sign-in link has expired. Open your profile from the game again.</p>] };
+  const signIn = async () => {
+    const result = await post<{ account: number }>("/api/login", { token });
+    if (result.ok) nav.go(`/players/${result.data.account}`, true);
+    else alert(result.reason);
+  };
+  return {
+    title: "Sign in",
+    quest: null,
+    panels: [
+      () => (
+        <>
+          <h2>Sign in as this game's account?</h2>
+          <p>
+            <PlayerName player={view.account} /> <span class="muted">· {quantity(view.runs, "run")}</span>
+          </p>
+          <Show when={view.current}>
+            {(current) => (
+              <p>
+                This browser is signed in as <PlayerName player={current()} />. Signing in switches it to the account above.
+              </p>
+            )}
+          </Show>
+          <p class="muted">Continue only if you just pressed Profile in your game. A sign-in link someone sent you signs you in to their account.</p>
+          <p class="buttons">
+            <GameButton label="Sign in" onClick={signIn} />
+            <GameButton label="Cancel" href="/" />
+          </p>
+        </>
+      ),
+    ],
+  };
+}
+
 async function join(token: string, nav: Navigator): Promise<Screen> {
   const response = await fetch(`/api/join/${token}`);
   if (!response.ok) return { title: "Join account", quest: null, panels: [response.status === 401 ? SIGN_IN : () => <p>That request expired; link again to join the accounts.</p>] };
   const view = (await response.json()) as JoinView;
   const confirmJoin = async () => {
-    const result = await post<{ account: number }>("/api/join", { token });
+    const result = await post<{ account: number }>("/api/join", { token, account: view.source.id });
+    if (!result.ok) alert(result.reason);
     nav.go(result.ok ? `/players/${result.data.account}?notice=joined` : "/account");
   };
   return {
@@ -659,11 +705,16 @@ async function join(token: string, nav: Navigator): Promise<Screen> {
         <>
           <h2>This {view.provider} login belongs to another account</h2>
           <p>
-            <PlayerName player={view.destination} /> <span class="muted">· {view.destination.fingerprint} · {view.destination_runs} runs</span>
+            <PlayerName player={view.destination} /> <span class="muted">· {view.destination.fingerprint} · {quantity(view.destination_runs, "run")}</span>
           </p>
           <p>
-            Joining moves this game's {view.moving.keys === 1 ? "key" : `${view.moving.keys} keys`}, {view.moving.runs} runs and {view.moving.names} names into that
-            account, and removes this one. Do it only if both are yours.
+            This browser is signed in as <PlayerName player={view.source} />. Joining moves its{" "}
+            {view.moving.keys === 1 ? "key" : `${view.moving.keys} keys`}, {quantity(view.moving.runs, "run")} and {quantity(view.moving.names, "name")} into the
+            account above and removes it, and from then on that key signs in to the account above.
+          </p>
+          <p>
+            Join only if you played as <PlayerName player={view.source} tag={false} /> yourself. If you don't recognise it, someone signed this browser in
+            to their account: cancel and sign out.
           </p>
           <p class="buttons">
             <GameButton label={`Join ${playerLabel(view.destination)}`} onClick={confirmJoin} />
@@ -766,7 +817,7 @@ const PRIVACY: Screen = {
           </li>
           <li>
             <em>Sessions:</em> opening your profile from the game signs you in with a random token in a cookie, which we keep only as a hash,
-            for 30 days or until you sign out. Sign-in links expire after a minute, sign-in challenges after five minutes, and account-linking
+            for 30 days or until you sign out. Sign-in links and challenges expire after five minutes, and account-linking
             requests after ten.
           </li>
         </ul>
@@ -835,6 +886,7 @@ export async function resolve(url: URL, nav: Navigator): Promise<Screen> {
   else if (path === "/mod") screen = await moderation(nav);
   else if ((match = /^\/players\/(\d+)$/.exec(path))) screen = await profile(Number(match[1]), nav);
   else if ((match = /^\/join\/([0-9a-f]{64})$/.exec(path))) screen = await join(match[1]!, nav);
+  else if ((match = /^\/login\/([0-9a-f]{64})$/.exec(path))) screen = await login(match[1]!, nav);
   else if (path === "/account") screen = await account(nav);
   else if ((match = /^\/runs\/([0-9a-f]{64})$/.exec(path))) screen = await runPage(match[1]!, nav);
   else if (path === "/about") screen = ABOUT;

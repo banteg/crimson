@@ -110,7 +110,7 @@ separately with Wrangler before retrying. An untracked production schema
 change is not detected by comparing migration names.
 
 `service/scripts/reverify.mjs` reads the current active run IDs from production
-D1 each time and downloads missing replays from R2 with at most four concurrent
+D1 each time and downloads missing replays from R2 with at most 16 concurrent
 requests into a local cache. Only complete downloads are reused. Verification
 and ground baking run on one worker thread per CPU. Download and verification
 timings are logged.

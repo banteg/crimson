@@ -1,6 +1,6 @@
 // The read API's JSON (src/api-types.ts): the boards, the quest menu, profiles and the join confirmation.
 
-import type { Board, BoardTotals, BoardView, Category, GameScore, JoinView, Pilot, PlayerView, ProfileView, ProviderName, QuestMenuView, RunDetailView, RunView } from "./api-types";
+import type { Board, BoardTotals, BoardView, Category, GameScore, JoinView, LoginView, Pilot, PlayerView, ProfileView, ProviderName, QuestMenuView, RunDetailView, RunView } from "./api-types";
 import type { Env } from "./http";
 import { configuredProviders } from "./oauth";
 import { LOWER_IS_BETTER } from "./ranked";
@@ -303,10 +303,21 @@ export async function joinView(env: Env, from: number, into: number, provider: s
     count("SELECT count(*) AS n FROM names WHERE account_id = ?", from),
     count("SELECT count(*) AS n FROM runs WHERE account_id = ?", into),
   ]);
+  const found = await players(env, [from, into]);
   return {
-    destination: (await players(env, [into])).get(into)!,
+    destination: found.get(into)!,
     destination_runs: destinationRuns,
+    source: found.get(from)!,
     moving: { keys, runs, names },
     provider,
   };
+}
+
+export async function loginView(env: Env, account: number, current: number | null): Promise<LoginView> {
+  const other = current !== null && current !== account ? current : null;
+  const [found, runs] = await Promise.all([
+    players(env, other === null ? [account] : [account, other]),
+    env.DB.prepare("SELECT count(*) AS n FROM runs WHERE account_id = ?").bind(account).first<{ n: number }>(),
+  ]);
+  return { account: found.get(account)!, runs: runs!.n, current: other === null ? null : found.get(other)! };
 }

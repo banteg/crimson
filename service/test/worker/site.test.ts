@@ -20,8 +20,9 @@ async function signIn(): Promise<{ cookie: string; accountId: number }> {
   const { challenge } = (await (await post("/api/auth/challenge", { public_key: publicKey })).json()) as { challenge: string };
   const signature = hex(new Uint8Array(await crypto.subtle.sign({ name: "Ed25519" }, key.privateKey, concat(LOGIN_DOMAIN, new TextEncoder().encode(challenge)))));
   const { url } = (await (await post("/api/auth/login", { public_key: publicKey, challenge, signature })).json()) as { url: string };
-  const landed = await call(new URL(url).pathname);
-  return { cookie: landed.headers.get("set-cookie")!.split(";")[0]!, accountId: Number(landed.headers.get("location")!.split("/").pop()) };
+  const token = new URL(url).pathname.split("/").pop();
+  const signed = await call("/api/login", { method: "POST", headers: { origin: ORIGIN }, body: JSON.stringify({ token }) });
+  return { cookie: signed.headers.get("set-cookie")!.split(";")[0]!, accountId: ((await signed.json()) as { account: number }).account };
 }
 
 // The provider's side of the sign-in: its token endpoint and profile API.
@@ -34,7 +35,8 @@ function provider(profile: object) {
 }
 
 async function link(cookie: string, name: string): Promise<{ authorize: URL; callback: (code?: string, as?: string) => Promise<Response> }> {
-  const start = await call(`/auth/${name}/start`, { headers: { cookie } });
+  const { account } = await api<{ account: number }>("/api/me", cookie);
+  const start = await call(`/auth/${name}/start?account=${account}`, { headers: { cookie } });
   expect(start.status).toBe(303);
   const authorize = new URL(start.headers.get("location")!);
   return {
@@ -201,13 +203,16 @@ describe("linking", () => {
 
     const token = /^\/join\/([0-9a-f]{64})$/.exec(landed.headers.get("location")!)![1]!;
     const pending = await api<JoinView>(`/api/join/${token}`, laptop.cookie);
-    expect(pending).toMatchObject({ destination: { id: home.accountId }, moving: { keys: 1, runs: 0, names: 0 }, provider: "GitHub" });
+    expect(pending).toMatchObject({
+      destination: { id: home.accountId }, source: { id: laptop.accountId }, moving: { keys: 1, runs: 0, names: 0 }, provider: "GitHub",
+    });
     expect([await keysOf(home.accountId), await keysOf(laptop.accountId)]).toEqual([1, 1]);
-    const confirm = (cookie: string) =>
-      call("/api/join", { method: "POST", headers: { cookie, origin: ORIGIN }, body: JSON.stringify({ token }) });
+    const confirm = (cookie: string, account: number) =>
+      call("/api/join", { method: "POST", headers: { cookie, origin: ORIGIN }, body: JSON.stringify({ token, account }) });
 
-    expect((await confirm(home.cookie)).status).toBe(410);
-    expect(await (await confirm(laptop.cookie)).json()).toEqual({ account: home.accountId });
+    expect((await confirm(home.cookie, home.accountId)).status).toBe(410);
+    expect((await confirm(laptop.cookie, home.accountId)).status).toBe(409);
+    expect(await (await confirm(laptop.cookie, laptop.accountId)).json()).toEqual({ account: home.accountId });
     expect([await keysOf(home.accountId), await keysOf(laptop.accountId)]).toEqual([2, 0]);
     expect(await env.DB.prepare("SELECT 1 FROM accounts WHERE id = ?").bind(laptop.accountId).first()).toBeNull();
   });
@@ -219,29 +224,30 @@ describe("linking", () => {
     await (await link(home.cookie, "github")).callback();
     const token = /^\/join\/([0-9a-f]{64})$/.exec((await (await link(laptop.cookie, "github")).callback()).headers.get("location")!)![1]!;
 
-    await call("/api/join", { method: "POST", headers: { cookie: laptop.cookie, origin: ORIGIN }, body: JSON.stringify({ token }) });
+    await call("/api/join", { method: "POST", headers: { cookie: laptop.cookie, origin: ORIGIN }, body: JSON.stringify({ token, account: laptop.accountId }) });
 
     expect(await env.DB.prepare("SELECT bot, role FROM accounts WHERE id = ?").bind(home.accountId).first()).toEqual({ bot: 1, role: "admin" });
   });
 });
 
 describe("account", () => {
-  const post = (path: string, cookie: string, origin = ORIGIN) => call(path, { method: "POST", headers: { cookie, origin } });
+  const post = (path: string, cookie: string, account: number, origin = ORIGIN) =>
+    call(path, { method: "POST", headers: { cookie, origin }, body: JSON.stringify({ account }) });
 
   it("unlink removes the link", async () => {
     const { cookie, accountId } = await signIn();
     provider({ id: 42, login: "banteg" });
     await (await link(cookie, "github")).callback();
 
-    expect((await post("/api/account/unlink/github", cookie)).status).toBe(200);
+    expect((await post("/api/account/unlink/github", cookie, accountId)).status).toBe(200);
     expect(await env.DB.prepare("SELECT 1 FROM links WHERE account_id = ?").bind(accountId).first()).toBeNull();
   });
 
   it("delete removes the account, its keys and sessions", async () => {
     const { cookie, accountId } = await signIn();
 
-    expect((await post("/api/account/delete", cookie, "https://evil.example")).status).toBe(403);
-    const deleted = await post("/api/account/delete", cookie);
+    expect((await post("/api/account/delete", cookie, accountId, "https://evil.example")).status).toBe(403);
+    const deleted = await post("/api/account/delete", cookie, accountId);
 
     expect(deleted.headers.get("set-cookie")).toContain("Max-Age=0");
     for (const table of ["accounts", "keys", "sessions"]) {
@@ -254,7 +260,18 @@ describe("account", () => {
     const { cookie, accountId } = await signIn();
     await env.DB.prepare("UPDATE accounts SET role = 'admin' WHERE id = ?").bind(accountId).run();
 
-    expect((await post("/api/account/delete", cookie)).status).toBe(403);
+    expect((await post("/api/account/delete", cookie, accountId)).status).toBe(403);
     expect(await env.DB.prepare("SELECT 1 FROM accounts WHERE id = ?").bind(accountId).first()).not.toBeNull();
+  });
+
+  it("a tab still showing another account changes nothing once the browser signed in elsewhere", async () => {
+    const [shown, current] = [await signIn(), await signIn()];
+    provider({ id: 42, login: "banteg" });
+
+    expect((await post("/api/account/delete", current.cookie, shown.accountId)).status).toBe(409);
+    expect((await post("/api/account/unlink/github", current.cookie, shown.accountId)).status).toBe(409);
+    const start = await call(`/auth/github/start?account=${shown.accountId}`, { headers: { cookie: current.cookie } });
+    expect(start.headers.get("location")).toBe(`/players/${current.accountId}?notice=switched`);
+    expect(await env.DB.prepare("SELECT 1 FROM accounts WHERE id = ?").bind(current.accountId).first()).not.toBeNull();
   });
 });

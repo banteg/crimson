@@ -2,7 +2,7 @@ import { env, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { concat, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256 } from "../../src/crypto";
 import { decodeReplay, inflateReplay } from "../../src/replay";
-import type { BoardView, ProfileView, RunDetailView } from "../../src/api-types";
+import type { BoardView, LoginView, ProfileView, RunDetailView } from "../../src/api-types";
 import vectors from "../vectors.json";
 
 const ORIGIN = "https://crimson.land";
@@ -189,8 +189,10 @@ describe("runs", () => {
     expect((await timeline()).status).toBe(404);
     await env.DB.prepare("UPDATE runs SET hidden = 0").run();
 
-    const cookie = (await SELF.fetch(await login(player), { redirect: "manual" })).headers.get("set-cookie")!.split(";")[0]!;
-    expect((await SELF.fetch(`${ORIGIN}/api/account/delete`, { method: "POST", headers: { cookie, origin: ORIGIN } })).status).toBe(200);
+    const cookie = await signIn(player);
+    const { account } = (await (await SELF.fetch(`${ORIGIN}/api/me`, { headers: { cookie } })).json()) as { account: number };
+    const remove = await SELF.fetch(`${ORIGIN}/api/account/delete`, { method: "POST", body: JSON.stringify({ account }), headers: { cookie, origin: ORIGIN } });
+    expect(remove.status).toBe(200);
     expect((await env.REPLAYS.list()).objects).toEqual([]);
     expect((await timeline()).status).toBe(404);
   });
@@ -271,14 +273,38 @@ describe("runs", () => {
 });
 
 describe("site login", () => {
-  it("a signed challenge buys a one-time link that sets a session", async () => {
+  it("a signed challenge buys a one-time link that signs in only once confirmed from the site's own page", async () => {
     const url = await login(await Player.create());
     expect(url.startsWith(`${ORIGIN}/login/`)).toBe(true);
+    const token = new URL(url).pathname.split("/").pop()!;
 
-    const first = await SELF.fetch(url, { redirect: "manual" });
-    expect(first.status).toBe(303);
-    expect(first.headers.get("set-cookie")).toMatch(/^session=[0-9a-f]{64}; .*HttpOnly; Secure/);
-    expect((await SELF.fetch(url, { redirect: "manual" })).status).toBe(410);
+    // Opening the link shows the confirmation page: no session, and the link stays unspent.
+    const opened = await SELF.fetch(url, { redirect: "manual" });
+    expect([opened.status, opened.headers.has("set-cookie"), opened.headers.get("content-security-policy")]).toEqual([200, false, "frame-ancestors 'none'"]);
+    expect((await SELF.fetch(`${ORIGIN}/api/login/${token}`)).status).toBe(200);
+
+    const confirm = (origin: string) =>
+      SELF.fetch(`${ORIGIN}/api/login`, { method: "POST", body: JSON.stringify({ token }), headers: { origin, "content-type": "application/json" } });
+    expect((await confirm("https://evil.example")).status).toBe(403);
+    const signed = await confirm(ORIGIN);
+    expect(signed.status).toBe(200);
+    expect(signed.headers.get("set-cookie")).toMatch(/^session=[0-9a-f]{64}; .*HttpOnly; Secure/);
+    expect((await confirm(ORIGIN)).status).toBe(410);
+    expect((await SELF.fetch(`${ORIGIN}/api/login/${token}`)).status).toBe(410);
+  });
+
+  it("someone else's link names their account, and confirming it ends the browser's own session", async () => {
+    const [victim, attacker] = [await Player.create(), await Player.create()];
+    const own = await signIn(victim);
+    const ownAccount = ((await (await SELF.fetch(`${ORIGIN}/api/me`, { headers: { cookie: own } })).json()) as { account: number }).account;
+    const token = new URL(await login(attacker)).pathname.split("/").pop()!;
+
+    const view = (await (await SELF.fetch(`${ORIGIN}/api/login/${token}`, { headers: { cookie: own } })).json()) as LoginView;
+    expect(view.current?.id).toBe(ownAccount);
+    expect(view.account.id).not.toBe(ownAccount);
+    const switched = await SELF.fetch(`${ORIGIN}/api/login`, { method: "POST", body: JSON.stringify({ token }), headers: { cookie: own, origin: ORIGIN } });
+    expect(((await switched.json()) as { account: number }).account).toBe(view.account.id);
+    expect(((await (await SELF.fetch(`${ORIGIN}/api/me`, { headers: { cookie: own } })).json()) as { account: number | null }).account).toBeNull();
   });
 
   it("a challenge works once and only for its key", async () => {
@@ -294,9 +320,10 @@ describe("site login", () => {
   });
 });
 
-// A site session for the player, as the game's Profile button opens one.
+// A site session for the player, as the game's Profile button opens one and the player confirms it.
 async function signIn(player: Player): Promise<string> {
-  const response = await SELF.fetch(await login(player), { redirect: "manual" });
+  const token = new URL(await login(player)).pathname.split("/").pop();
+  const response = await SELF.fetch(`${ORIGIN}/api/login`, { method: "POST", body: JSON.stringify({ token }), headers: { origin: ORIGIN } });
   return response.headers.get("set-cookie")!.split(";")[0]!;
 }
 

@@ -4,18 +4,15 @@
 //
 //   node scripts/deploy-replays.mjs plan     compare against the live deployment's record, set the `reverify` output
 //   node scripts/deploy-replays.mjs record   after a successful deploy, record this commit's identity
-import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { appendFileSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { appendFileSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { promisify } from "node:util";
+import { r2Bucket } from "./r2.mjs";
 
 const SERVICE = fileURLToPath(new URL("..", import.meta.url));
 const PLAN = join(SERVICE, "../deployment-plan.json");
-const RECORD = "crimson-land-replays/deploy/replay-inputs.json";
-const execFileAsync = promisify(execFile);
+const RECORD = "deploy/replay-inputs.json";
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 export async function replayInputs(service = SERVICE) {
@@ -70,24 +67,11 @@ async function productionSha() {
   } catch { return null; }
 }
 
-const wrangler = (...args) =>
-  execFileAsync("npx", ["--no-install", "wrangler", ...args, "--remote", "--config", join(SERVICE, "wrangler.jsonc")], { cwd: SERVICE });
-
-async function withTemporary(work) {
-  const directory = mkdtempSync(join(tmpdir(), "crimson-replay-record-"));
-  try { return await work(join(directory, "record.json")); } finally { rmSync(directory, { recursive: true, force: true }); }
-}
-
 async function main() {
   switch (process.argv[2]) {
     case "plan": {
       const inputs = await replayInputs();
-      const record = await withTemporary(async (path) => {
-        try {
-          await wrangler("r2", "object", "get", RECORD, "--file", path);
-          return JSON.parse(readFileSync(path, "utf8"));
-        } catch { return null; }
-      });
+      const record = await r2Bucket().get(RECORD).then((bytes) => JSON.parse(new TextDecoder().decode(bytes)), () => null);
       const plan = replayPlan(inputs, record, await productionSha(), process.env.FORCE_REVERIFY === "true");
       writeFileSync(PLAN, `${JSON.stringify(plan, null, 2)}\n`);
       const message = plan.reuse
@@ -100,10 +84,7 @@ async function main() {
     }
     case "record": {
       const { inputs } = JSON.parse(readFileSync(PLAN, "utf8"));
-      return withTemporary(async (path) => {
-        writeFileSync(path, `${JSON.stringify({ sha: process.env.GITHUB_SHA, inputs })}\n`);
-        await wrangler("r2", "object", "put", RECORD, "--file", path, "--content-type", "application/json");
-      });
+      return r2Bucket().put(RECORD, `${JSON.stringify({ sha: process.env.GITHUB_SHA, inputs })}\n`, "application/json");
     }
     default: throw Error("Expected plan or record");
   }

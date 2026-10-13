@@ -45,7 +45,7 @@ export function bootGame(wasm, directory, seed, { leaderboard = false, requests 
   wasi.initialize(instance);
   // As the browser host does: its replays name the browser, and ranked runs go to leaderboard/outbox/.
   game.game_platform(1);
-  if (leaderboard) game.game_leaderboard_enable();
+  if (leaderboard) game.game_leaderboard_enable(1);
   if (!game.game_start()) throw Error("startup failed");
   return {
     game,

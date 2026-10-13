@@ -453,8 +453,10 @@
     tell.timer = setTimeout(() => (notice.hidden = true), 15000);
   }
   // The profile opens signed in as the game's key: the tab opens on the click,
-  // while the browser still lets it, and goes to the sign-in link once signed;
-  // where the browser blocks it, the link waits in the note.
+  // while the browser still lets it, and goes to the profile once signed in;
+  // where the browser blocks it, the profile waits in the note. The game shares
+  // the site's origin, so it spends the sign-in link itself, as the link's
+  // confirmation page would, and no link leaves the page.
   async function profile() {
     const tab = window.open("", "_blank");
     try {
@@ -462,9 +464,12 @@
       const { challenge } = await (await post("/api/auth/challenge", JSON.stringify({ public_key }))).json();
       const signature = Module.ccall("client_sign_login", "string", ["string"], [challenge]);
       const { url } = await (await post("/api/auth/login", JSON.stringify({ public_key, challenge, signature }))).json();
-      if (new URL(url).origin !== location.origin) throw Error("unexpected sign-in link");
-      if (tab) tab.location = url;
-      else tell("Open your profile", url);
+      const token = new URL(url).pathname.split("/").pop();
+      const signed = await post("/api/login", JSON.stringify({ token }));
+      if (!signed.ok) throw Error("sign-in refused");
+      const page = `/players/${(await signed.json()).account}`;
+      if (tab) tab.location = page;
+      else tell("Open your profile", page);
     } catch {
       tab?.close();
       tell("Can't reach the leaderboard.");

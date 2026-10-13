@@ -26,7 +26,7 @@ then does nothing, its chain ends, and a seeker without a target flies straight.
          if (cv_friendlyFire->value != 0.0f) {
 --- a/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/projectile_update.cpp
-@@ -345,6 +345,7 @@
+@@ -411,6 +411,7 @@
                                              --shock_chain_links_left;
                                              int next_id
                                                  = creature_find_nearest(position, hit_id, 100.0f);
@@ -34,7 +34,7 @@ then does nothing, its chain ends, and a seeker without a target flies straight.
                                              scripted_burst_active = 1;
                                              vec2f_t* next_position
                                                  = &creature_pool[next_id].position;
-@@ -356,6 +357,7 @@
+@@ -422,6 +423,7 @@
                                                  chain_angle - 1.5707964f - 3.1415927f,
                                                  PROJECTILE_TYPE_ION_RIFLE, hit_id);
                                              scripted_burst_active = 0;
@@ -42,26 +42,26 @@ then does nothing, its chain ends, and a seeker without a target flies straight.
                                          }
                                          effect_spawn_ion_hit_core(position, 1.2f, 0.4f);
                                          effect_spawn_ion_hit_sparks(position, 1.2f);
-@@ -644,11 +646,13 @@
+@@ -738,11 +740,13 @@
                      }
-                     secondary->life_timer -= frame_dt;
+                     secondary_projectile_pool[secondary_index].life_timer -= frame_dt;
                  } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
--                    if (!creature_pool[secondary->pos.vx.vy.target_id].active) {
-+                    if (secondary->pos.vx.vy.target_id < 0
-+                        || !creature_pool[secondary->pos.vx.vy.target_id].active) {
-                         secondary->pos.vx.vy.target_id
+-                    if (!creature_pool[secondary_projectile_pool[secondary_index].pos.vx.vy.target_id].active) {
++                    if (secondary_projectile_pool[secondary_index].pos.vx.vy.target_id < 0
++                        || !creature_pool[secondary_projectile_pool[secondary_index].pos.vx.vy.target_id].active) {
+                         secondary_projectile_pool[secondary_index].pos.vx.vy.target_id
                              = creature_find_nearest((vec2f_t*)&secondary_position, -1, 0.0f);
                      }
  
-+                    if (secondary->pos.vx.vy.target_id >= 0) {
-                     creature_t* target = &creature_pool[secondary->pos.vx.vy.target_id];
++                    if (secondary_projectile_pool[secondary_index].pos.vx.vy.target_id >= 0) {
+                     creature_t* target = &creature_pool[secondary_projectile_pool[secondary_index].pos.vx.vy.target_id];
                      projectile_vec2_t& target_position = *(projectile_vec2_t*)&target->position;
                      projectile_vec2_t& secondary_velocity
-@@ -666,6 +670,7 @@
-                         velocity_x -= (float)cos(secondary->angle - 1.5707964f) * frame_dt * 800.0f;
-                         secondary_velocity.y
-                             -= (float)sin(secondary->angle - 1.5707964f) * frame_dt * 800.0f;
-+                    }
+@@ -776,6 +780,7 @@
+                             -= (float)sin(secondary_projectile_pool[secondary_index].angle - 1.5707964f) * frame_dt * 800.0f;
                      }
-                     secondary->life_timer -= frame_dt * 0.5f;
+ #endif
++                    }
+                     secondary_projectile_pool[secondary_index].life_timer -= frame_dt * 0.5f;
                  }
+ 
