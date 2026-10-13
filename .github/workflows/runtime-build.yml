@@ -19,11 +19,15 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
       - name: Name the compiler inputs
         id: inputs
         env:
           TARGET: ${{ inputs.target }}
-        run: python3 scripts/build_identity.py runtime "$TARGET" --github-output "$GITHUB_OUTPUT"
+        run: uv run --no-sync python scripts/build_identity.py runtime "$TARGET" --github-output "$GITHUB_OUTPUT"
       - name: Restore the compiled module
         id: binary
         uses: actions/cache@v5
@@ -32,11 +36,6 @@ jobs:
             crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}
             crimson-core/build/${{ inputs.target }}/${{ steps.inputs.outputs.binary }}.build.json
           key: runtime-v3-${{ runner.os }}-${{ runner.arch }}-${{ steps.inputs.outputs.fingerprint }}
-      - uses: astral-sh/setup-uv@v7
-        if: steps.binary.outputs.cache-hit != 'true'
-        with:
-          python-version: "3.13"
-          enable-cache: true
       - run: uv sync --frozen --no-dev
         if: steps.binary.outputs.cache-hit != 'true' && inputs.target == 'game'
       - name: Restore wasi-sdk
@@ -72,7 +71,7 @@ jobs:
           BINARY: ${{ steps.inputs.outputs.binary }}
           FINGERPRINT: ${{ steps.inputs.outputs.fingerprint }}
           TARGET: ${{ inputs.target }}
-        run: python3 scripts/build_identity.py check "crimson-core/build/$TARGET/$BINARY.build.json" "$FINGERPRINT"
+        run: uv run --no-sync python scripts/build_identity.py check "crimson-core/build/$TARGET/$BINARY.build.json" "$FINGERPRINT"
       - uses: actions/upload-artifact@v7
         with:
           name: runtime-${{ inputs.target }}
