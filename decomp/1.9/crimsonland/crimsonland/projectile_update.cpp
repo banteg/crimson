@@ -65,16 +65,21 @@ inline float projectile_vec2_dot(const vec2f_t& value)
 
 inline float projectile_vec2_length(vec2f_t& value)
 {
+#if CL_BUILD == 10908
+    // 1.9.8 squares x first.
+    float squared = value.x * value.x;
+    squared += value.y * value.y;
+    return (float)sqrt(squared);
+#else
     float squared = value.y * value.y;
     squared += value.x * value.x;
-    return (float)sqrt(squared);
+    return (float)(sqrt(squared));
+#endif
 }
 
-inline float projectile_vec2_distance(const vec2f_t* lhs, const vec2f_t* rhs)
+inline float projectile_vec2_length_of(const projectile_vec2_t& value)
 {
-    float dx = lhs->x - rhs->x;
-    float dy = lhs->y - rhs->y;
-    return (float)sqrt(dx * dx + dy * dy);
+    return (float)sqrt(value.x * value.x + value.y * value.y);
 }
 
 extern "C" {
@@ -106,6 +111,60 @@ int fx_spawn_sprite(const vec2f_t* pos, const vec2f_t* vel, float scale);
 vec2f_t* __stdcall D3DXVec2Normalize(vec2f_t* dst, const vec2f_t* src);
 }
 
+#if CL_BUILD == 10908
+/*
+ * Translation-unit context for 1.9.8. Its C2 (9044) reuses what it learned compiling earlier
+ * functions of the same unit: a call to one of them keeps the registers and globals that the
+ * callee leaves alone. vec2_add and creature_find_in_radius precede projectile_update in the
+ * original unit (see vec2_add.cpp and creature_find_in_radius.c). Without them, the miss block
+ * reloads shock_chain_projectile_id, and its compare loads projectile_index first. 1.9.93's C2
+ * (8966) ignores this, so the canonical object keeps one function per file.
+ */
+extern "C" int vec2_add(
+    vec2f_t *dst,
+    const vec2f_t *delta,
+    float)
+{
+    dst->x = dst->x + delta->x;
+    dst->y = delta->y + dst->y;
+    return 0;
+}
+
+static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
+{
+    float dx = lhs->x - rhs->x;
+    float dy = lhs->y - rhs->y;
+    float distance_sq = dx * dx;
+    distance_sq += dy * dy;
+    return (float)sqrt(distance_sq);
+}
+
+extern "C" int creature_find_in_radius(
+    const vec2f_t *pos,
+    float radius,
+    int start_index)
+{
+    int index = start_index;
+
+    while (index < 0x180) {
+        if (creature_pool[index].active
+            && vec2_distance(
+                   &creature_pool[index].position,
+                   pos)
+                    - radius
+                < creature_pool[index].size * 0.14285715f + 3.0f
+            && creature_pool[index].death_timer > 5.0f) {
+            goto found;
+        }
+        ++index;
+    }
+    return -1;
+
+found:
+    return index;
+}
+#endif
+
 static __inline void projectile_clamp_tint(float* value)
 {
     if (*value < 0.0f) {
@@ -122,7 +181,10 @@ extern "C" void projectile_update(void)
     int step_count;
     float step_x;
     float step_y;
+#if CL_BUILD != 10908
+    // 1.9.8 scopes delta to the stepping block (frame packing); no shared spelling keeps both frames.
     vec2f_t delta;
+#endif
     int step;
     ++projectile_update_tick;
     float ion_damage_scale = 1.0f;
@@ -182,6 +244,9 @@ extern "C" void projectile_update(void)
                         step_count *= 2.0f;
                     }
 
+#if CL_BUILD == 10908
+                    vec2f_t delta;
+#endif
                     delta.x = delta.y = 0.0f;
                     {
                         for (step = 0; step < step_count; step += 3) {
@@ -191,7 +256,8 @@ extern "C" void projectile_update(void)
                             float distance_sq = delta.x * delta.x;
                             distance_sq += delta.y * delta.y;
                             float distance = (float)sqrt(distance_sq);
-                            if (distance >= 4.0f || step + 3 >= step_count) {
+                            bool microstep_ready = !(distance < 4.0f);
+                            if (microstep_ready || step + 3 >= step_count) {
                                 vec2_add(position, &delta, 0.0f);
                                 int hit_id = creature_find_in_radius(
                                     position, projectile->pos.tail.vy.hit_radius, 0);
@@ -459,6 +525,10 @@ extern "C" void projectile_update(void)
                                     if (type_id == PROJECTILE_TYPE_GAUSS_GUN
                                         || type_id == PROJECTILE_TYPE_FIRE_BULLETS) {
                                         perk_count_get(perk_id_bloody_mess_quick_learner);
+#if CL_BUILD == 10908
+                                        // 1.9.8 hoists the zero vector out of the six-shard loop (frame packing).
+                                        vec2f_t zero = { 0.0f, 0.0f };
+#endif
                                         int count = 6;
                                         do {
                                             float speed = (float)(crt_rand() % 100) * 0.1f;
@@ -476,7 +546,9 @@ extern "C" void projectile_update(void)
                                                 creature_pool[hit_id].position.x + offset_x,
                                                 creature_pool[hit_id].position.y + offset_y,
                                             };
+#if CL_BUILD != 10908
                                             vec2f_t zero = { 0.0f, 0.0f };
+#endif
                                             vec2_add_inplace(hit_id, &impulse_pos, &zero);
                                             crt_rand();
 
@@ -575,41 +647,63 @@ extern "C" void projectile_update(void)
     } while (projectile_index < PROJECTILE_POOL_CAPACITY);
 
     for (int secondary_index = 0; secondary_index < 0x40; ++secondary_index) {
-        secondary_projectile_t* secondary = &secondary_projectile_pool[secondary_index];
-        if (secondary->active) {
-            if (secondary->pos.vx.vy.type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING) {
+        if (secondary_projectile_pool[secondary_index].active) {
+            if (secondary_projectile_pool[secondary_index].pos.vx.vy.type_id == SECONDARY_PROJECTILE_TYPE_EXPLODING) {
                 camera_shake_pulses = 4;
-                secondary->pos.vx.vel_x += frame_dt * 3.0f;
+                float scale = secondary_projectile_pool[secondary_index].pos.vx.vel_x + frame_dt * 3.0f;
+                secondary_projectile_pool[secondary_index].pos.vx.vel_x += frame_dt * 3.0f;
 
-                if (secondary->pos.vx.vel_x > 1.0f) {
-                    float extent = secondary->pos.vx.vy.vel_y * 256.0f;
+#if CL_BUILD == 10908
+                // 1.9.8 compares the local; 1.9.93 re-reads the field.
+                if (scale > 1.0f) {
+                    float extent = secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y * 256.0f;
                     effect_color_t color = {
                         0.0f,
                         0.0f,
                         0.0f,
                         0.25f,
                     };
-                    fx_queue_add(0x10, &secondary->position, extent, extent, 0.0f, &color);
-                    secondary->active = 0;
+                    fx_queue_add(0x10, &secondary_projectile_pool[secondary_index].position, extent, extent, 0.0f, &color);
+                    secondary_projectile_pool[secondary_index].active = 0;
                 }
 
-                float radius = secondary->pos.vx.vy.vel_y * secondary->pos.vx.vel_x * 80.0f;
+#else
+                if (secondary_projectile_pool[secondary_index].pos.vx.vel_x > 1.0f) {
+                    float extent = secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y * 256.0f;
+                    effect_color_t color = {
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        0.25f,
+                    };
+                    fx_queue_add(0x10, &secondary_projectile_pool[secondary_index].position, extent, extent, 0.0f, &color);
+                    secondary_projectile_pool[secondary_index].active = 0;
+                }
+
+#endif
+
+#if CL_BUILD == 10908
+                // 1.9.8 reuses the local for the radius.
+                float radius = scale * secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y * 80.0f;
+#else
+                float explosion_size = secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y;
+                float radius = explosion_size * secondary_projectile_pool[secondary_index].pos.vx.vel_x * 80.0f;
+#endif
                 int creature_id = 0;
                 do {
                     creature_t* creature = &creature_pool[creature_id];
                     if (creature->active && creature_pool[creature_id].health > 0.0f) {
-                        vec2f_t& explosion_position = secondary->position;
+                        vec2f_t& explosion_position = secondary_projectile_pool[secondary_index].position;
                         vec2f_t& explosion_target = creature_pool[creature_id].position;
-                        float dx = explosion_target.x - explosion_position.x;
-                        float dy = creature->position.y - explosion_position.y;
-                        float distance
-                            = projectile_vec2_distance(&explosion_target, &explosion_position);
+                        float distance = projectile_vec2_length_of(*(projectile_vec2_t*)&creature_pool[creature_id].position - *(projectile_vec2_t*)&secondary_projectile_pool[secondary_index].position);
                         if (distance < radius) {
+                            float dx = explosion_target.x - explosion_position.x;
+                            float dy = creature->position.y - explosion_position.y;
                             vec2f_t direction = { dx, dy };
                             D3DXVec2Normalize(&direction, &direction);
                             projectile_vec2_t impulse = *(projectile_vec2_t*)&direction * 0.1f;
                             creature_apply_damage(creature_id,
-                                frame_dt * secondary->pos.vx.vy.vel_y * 700.0f, 3,
+                                frame_dt * secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y * 700.0f, 3,
                                 (vec2f_t*)&impulse);
                             if (creature_pool[creature_id].health <= 0.0f) {
                                 fx_queue_add_random(&creature_pool[creature_id].position);
@@ -621,71 +715,86 @@ extern "C" void projectile_update(void)
                     ++creature_id;
                 } while (creature_id < 0x180);
             } else {
-                projectile_vec2_t& secondary_position = *(projectile_vec2_t*)&secondary->position;
+                projectile_vec2_t& secondary_position = *(projectile_vec2_t*)&secondary_projectile_pool[secondary_index].position;
                 projectile_vec2_t movement
-                    = frame_dt * *(projectile_vec2_t*)&secondary->pos.vx.velocity;
+                    = frame_dt * *(projectile_vec2_t*)&secondary_projectile_pool[secondary_index].pos.vx.velocity;
                 vec2_add((vec2f_t*)&secondary_position, (vec2f_t*)&movement, 4.0f);
 
-                secondary_projectile_type_id_t type_id = secondary->pos.vx.vy.type_id;
+                secondary_projectile_type_id_t type_id = secondary_projectile_pool[secondary_index].pos.vx.vy.type_id;
                 if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
-                    float speed = projectile_vec2_length(secondary->pos.vx.velocity);
+                    float speed = projectile_vec2_length(secondary_projectile_pool[secondary_index].pos.vx.velocity);
                     if (speed < 500.0f) {
                         float scale = frame_dt * 3.0f + 1.0f;
-                        secondary->pos.vx.vel_x *= scale;
-                        secondary->pos.vx.vy.vel_y *= scale;
+                        secondary_projectile_pool[secondary_index].pos.vx.vel_x *= scale;
+                        secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y *= scale;
                     }
-                    secondary->life_timer -= frame_dt;
+                    secondary_projectile_pool[secondary_index].life_timer -= frame_dt;
                 } else if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
-                    float speed = projectile_vec2_length(secondary->pos.vx.velocity);
+                    float speed = projectile_vec2_length(secondary_projectile_pool[secondary_index].pos.vx.velocity);
                     if (speed < 600.0f) {
                         float scale = frame_dt * 4.0f + 1.0f;
-                        secondary->pos.vx.vel_x *= scale;
-                        secondary->pos.vx.vy.vel_y *= scale;
+                        secondary_projectile_pool[secondary_index].pos.vx.vel_x *= scale;
+                        secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y *= scale;
                     }
-                    secondary->life_timer -= frame_dt;
+                    secondary_projectile_pool[secondary_index].life_timer -= frame_dt;
                 } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
-                    if (!creature_pool[secondary->pos.vx.vy.target_id].active) {
-                        secondary->pos.vx.vy.target_id
+                    if (!creature_pool[secondary_projectile_pool[secondary_index].pos.vx.vy.target_id].active) {
+                        secondary_projectile_pool[secondary_index].pos.vx.vy.target_id
                             = creature_find_nearest((vec2f_t*)&secondary_position, -1, 0.0f);
                     }
 
-                    creature_t* target = &creature_pool[secondary->pos.vx.vy.target_id];
+                    creature_t* target = &creature_pool[secondary_projectile_pool[secondary_index].pos.vx.vy.target_id];
                     projectile_vec2_t& target_position = *(projectile_vec2_t*)&target->position;
                     projectile_vec2_t& secondary_velocity
-                        = *(projectile_vec2_t*)&secondary->pos.vx.velocity;
-                    secondary->angle
+                        = *(projectile_vec2_t*)&secondary_projectile_pool[secondary_index].pos.vx.velocity;
+#if CL_BUILD == 10908
+                    // 1.9.8 keeps the seeker steps for the speed clamp instead of recomputing them.
+                    float seeker_heading = (secondary_projectile_pool[secondary_index].angle
+                        = projectile_vec2_angle(secondary_position - target_position) - 1.5707964f);
+                    float seeker_step_x = (float)cos(seeker_heading - 1.5707964f) * frame_dt * 800.0f;
+                    float seeker_x = (secondary_velocity.x += seeker_step_x);
+                    float seeker_step_y = (float)sin(seeker_heading - 1.5707964f) * frame_dt * 800.0f;
+                    float seeker_y = (secondary_velocity.y += seeker_step_y);
+                    float speed = projectile_vec2_length(secondary_projectile_pool[secondary_index].pos.vx.velocity);
+                    if (speed > 350.0f) {
+                        secondary_velocity.x = seeker_x - seeker_step_x;
+                        secondary_velocity.y = seeker_y - seeker_step_y;
+                    }
+#else
+                    secondary_projectile_pool[secondary_index].angle
                         = projectile_vec2_angle(secondary_position - target_position) - 1.5707964f;
                     secondary_velocity.x
-                        += (float)cos(secondary->angle - 1.5707964f) * frame_dt * 800.0f;
+                        += (float)cos(secondary_projectile_pool[secondary_index].angle - 1.5707964f) * frame_dt * 800.0f;
                     secondary_velocity.y
-                        += (float)sin(secondary->angle - 1.5707964f) * frame_dt * 800.0f;
+                        += (float)sin(secondary_projectile_pool[secondary_index].angle - 1.5707964f) * frame_dt * 800.0f;
 
-                    float speed = projectile_vec2_length(secondary->pos.vx.velocity);
+                    float speed = projectile_vec2_length(secondary_projectile_pool[secondary_index].pos.vx.velocity);
                     if (speed > 350.0f) {
-                        float& velocity_x = secondary->pos.vx.vel_x;
-                        velocity_x -= (float)cos(secondary->angle - 1.5707964f) * frame_dt * 800.0f;
+                        float& velocity_x = secondary_projectile_pool[secondary_index].pos.vx.vel_x;
+                        velocity_x -= (float)cos(secondary_projectile_pool[secondary_index].angle - 1.5707964f) * frame_dt * 800.0f;
                         secondary_velocity.y
-                            -= (float)sin(secondary->angle - 1.5707964f) * frame_dt * 800.0f;
+                            -= (float)sin(secondary_projectile_pool[secondary_index].angle - 1.5707964f) * frame_dt * 800.0f;
                     }
-                    secondary->life_timer -= frame_dt * 0.5f;
+#endif
+                    secondary_projectile_pool[secondary_index].life_timer -= frame_dt * 0.5f;
                 }
 
-                secondary->pos.vx.vy.trail_distance
-                    -= (m_fabs(secondary->pos.vx.vel_x) + m_fabs(secondary->pos.vx.vy.vel_y))
+                secondary_projectile_pool[secondary_index].pos.vx.vy.trail_distance
+                    -= (m_fabs(secondary_projectile_pool[secondary_index].pos.vx.vel_x) + m_fabs(secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y))
                     * frame_dt * 0.01f;
-                if (secondary->pos.vx.vy.trail_distance < 0.0f) {
+                if (secondary_projectile_pool[secondary_index].pos.vx.vy.trail_distance < 0.0f) {
                     projectile_vec2_t trail_velocity
-                        = projectile_vec2_t((float)cos(secondary->angle + 1.5707964f),
-                              (float)cos(secondary->angle + 1.5707964f))
+                        = projectile_vec2_t((float)cos(secondary_projectile_pool[secondary_index].angle + 1.5707964f),
+                              (float)cos(secondary_projectile_pool[secondary_index].angle + 1.5707964f))
                         * 90.0f;
-                    float trail_heading = secondary->angle - 1.5707964f;
+                    float trail_heading = secondary_projectile_pool[secondary_index].angle - 1.5707964f;
                     projectile_vec2_t& trail_origin = secondary_position;
                     projectile_vec2_t trail_pos = trail_origin
                         - projectile_vec2_t((float)cos(trail_heading), (float)sin(trail_heading))
                             * 9.0f;
                     int effect_id = fx_spawn_sprite(
                         (const vec2f_t*)&trail_pos, (const vec2f_t*)&trail_velocity, 14.0f);
-                    secondary->pos.vx.vy.trail_distance = 0.06f;
+                    secondary_projectile_pool[secondary_index].pos.vx.vy.trail_distance = 0.06f;
                     sprite_effect_pool[effect_id].color_a = 0.25f;
                 }
 
@@ -735,17 +844,17 @@ extern "C" void projectile_update(void)
                         fx_queue_add_random(&decal_pos_3);
                     }
 
-                    type_id = secondary->pos.vx.vy.type_id;
+                    type_id = secondary_projectile_pool[secondary_index].pos.vx.vy.type_id;
                     float damage = 150.0f;
                     if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
-                        damage = secondary->life_timer * 50.0f + 500.0f;
+                        damage = secondary_projectile_pool[secondary_index].life_timer * 50.0f + 500.0f;
                         if (config_detail_preset >= 3) {
                             effect_spawn_explosion_burst((vec2f_t*)&secondary_position, 0.4f);
                         }
                     } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
-                        damage = secondary->life_timer * 20.0f + 80.0f;
+                        damage = secondary_projectile_pool[secondary_index].life_timer * 20.0f + 80.0f;
                     } else if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
-                        damage = secondary->life_timer * 20.0f + 40.0f;
+                        damage = secondary_projectile_pool[secondary_index].life_timer * 20.0f + 40.0f;
                     }
 
                     if (!demo_mode_active && !music_playlist_randomized_latch
@@ -759,16 +868,16 @@ extern "C" void projectile_update(void)
                     inverse_dt = 1.0f / inverse_dt;
                     creature_pool[hit_id].state_flag = 1;
                     vec2f_t impulse = {
-                        inverse_dt * secondary->pos.vx.vel_x,
-                        inverse_dt * secondary->pos.vx.vy.vel_y,
+                        inverse_dt * secondary_projectile_pool[secondary_index].pos.vx.vel_x,
+                        inverse_dt * secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y,
                     };
                     creature_apply_damage(hit_id, damage, 3, &impulse);
 
-                    type_id = secondary->pos.vx.vy.type_id;
+                    type_id = secondary_projectile_pool[secondary_index].pos.vx.vy.type_id;
                     if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET) {
-                        secondary->pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
-                        secondary->pos.vx.vel_x = 0.0f;
-                        secondary->pos.vx.vy.vel_y = 1.0f;
+                        secondary_projectile_pool[secondary_index].pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
+                        secondary_projectile_pool[secondary_index].pos.vx.vel_x = 0.0f;
+                        secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y = 1.0f;
                         if (bonus_freeze_timer > 0.0f) {
                             int count = 8;
                             do {
@@ -794,9 +903,9 @@ extern "C" void projectile_update(void)
                             } while (count != 0);
                         }
                     } else if (type_id == SECONDARY_PROJECTILE_TYPE_SEEKER_ROCKET) {
-                        secondary->pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
-                        secondary->pos.vx.vel_x = 0.0f;
-                        secondary->pos.vx.vy.vel_y = 0.35f;
+                        secondary_projectile_pool[secondary_index].pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
+                        secondary_projectile_pool[secondary_index].pos.vx.vel_x = 0.0f;
+                        secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y = 0.35f;
                         if (bonus_freeze_timer > 0.0f) {
                             int count = 8;
                             do {
@@ -822,9 +931,9 @@ extern "C" void projectile_update(void)
                             } while (count != 0);
                         }
                     } else if (type_id == SECONDARY_PROJECTILE_TYPE_ROCKET_MINIGUN) {
-                        secondary->pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
-                        secondary->pos.vx.vel_x = 0.0f;
-                        secondary->pos.vx.vy.vel_y = 0.25f;
+                        secondary_projectile_pool[secondary_index].pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
+                        secondary_projectile_pool[secondary_index].pos.vx.vel_x = 0.0f;
+                        secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y = 0.25f;
                         if (bonus_freeze_timer > 0.0f) {
                             int count = 8;
                             do {
@@ -871,10 +980,10 @@ extern "C" void projectile_update(void)
                     } while (burst_index < 10);
                 }
 
-                if (secondary->life_timer <= 0.0f) {
-                    secondary->pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
-                    secondary->pos.vx.vel_x = 0.0f;
-                    secondary->pos.vx.vy.vel_y = 0.5f;
+                if (secondary_projectile_pool[secondary_index].life_timer <= 0.0f) {
+                    secondary_projectile_pool[secondary_index].pos.vx.vy.type_id = SECONDARY_PROJECTILE_TYPE_EXPLODING;
+                    secondary_projectile_pool[secondary_index].pos.vx.vel_x = 0.0f;
+                    secondary_projectile_pool[secondary_index].pos.vx.vy.vel_y = 0.5f;
                 }
             }
         }
@@ -898,13 +1007,21 @@ extern "C" void projectile_update(void)
         particle_t* particle = &particle_pool[projectile_index];
         if (particle->active) {
             projectile_vec2_t& particle_velocity = *(projectile_vec2_t*)&particle->velocity;
+#if CL_BUILD != 10908
+            // 1.9.8 steers through particle->angle directly.
             float& angle = particle->angle;
+#endif
             float& rotation = particle->rotation;
             unsigned char& active = particle->active;
             unsigned char style_id = particle->style_id;
             if (style_id == 8) {
                 particle->intensity -= frame_dt * 0.11f;
+#if CL_BUILD == 10908
+                // 1.9.8 updates the rotation field directly.
+                particle->rotation += frame_dt * 5.0f;
+#else
                 rotation += frame_dt * 5.0f;
+#endif
                 if (particle->in_flight) {
                     if (particle->intensity > 0.15f) {
                         projectile_vec2_t movement
@@ -917,7 +1034,11 @@ extern "C" void projectile_update(void)
                 }
             } else {
                 particle->intensity -= frame_dt * 0.9f;
+#if CL_BUILD == 10908
+                particle->rotation += frame_dt;
+#else
                 rotation += frame_dt;
+#endif
                 if (particle->intensity > 0.15f) {
                     projectile_vec2_t movement
                         = frame_dt * particle_velocity * 2.5f * particle->intensity;
@@ -932,9 +1053,15 @@ extern "C" void projectile_update(void)
             if (style_id == 0 && particle->intensity <= 0.0f) {
                 active = 0;
             } else if (style_id != 0 && particle->intensity <= 0.8f) {
+#if CL_BUILD == 10908
+                // 1.9.8 tests the cached style byte; 1.9.93 re-reads it through a reference.
+                active = 0;
+                if (style_id == 8 && particle->target_id != -1) {
+#else
                 active = 0;
                 const unsigned char& style = particle->style_id;
                 if (style == 8 && particle->target_id != -1) {
+#endif
                     if (creature_pool[particle->target_id].active) {
                         sfx_play_panned(
                             creature_type_table[creature_pool[particle->target_id].type_id]
@@ -951,42 +1078,82 @@ extern "C" void projectile_update(void)
                         turn_delta *= particle->intensity;
                         turn_delta *= frame_dt;
                         turn_delta *= 1.96f;
+#if CL_BUILD == 10908
+                        // 1.9.8 steers through the field, not the angle reference.
+                        particle->angle -= turn_delta;
+                        particle->velocity.x = (float)cos(particle->angle) * 82.0f;
+                        particle->velocity.y = (float)sin(particle->angle) * 82.0f;
+#else
                         angle -= turn_delta;
                         particle->velocity.x = (float)cos(angle) * 82.0f;
                         particle->velocity.y = (float)sin(angle) * 82.0f;
+#endif
                     } else if (style_id == 8) {
                         int turn = crt_rand() % 100 - 50;
                         float turn_delta = (float)turn * 0.06f;
                         turn_delta *= particle->intensity;
                         turn_delta *= frame_dt;
                         turn_delta *= 1.1f;
+#if CL_BUILD == 10908
+                        particle->angle -= turn_delta;
+                        particle->velocity.x = (float)cos(particle->angle) * 62.0f;
+                        particle->velocity.y = (float)sin(particle->angle) * 62.0f;
+#else
                         angle -= turn_delta;
                         particle->velocity.x = (float)cos(angle) * 62.0f;
                         particle->velocity.y = (float)sin(angle) * 62.0f;
+#endif
                     } else {
                         int turn = crt_rand() % 100 - 50;
                         float turn_delta = (float)turn * 0.06f;
                         turn_delta *= particle->intensity;
                         turn_delta *= frame_dt;
                         turn_delta *= 1.1f;
+#if CL_BUILD == 10908
+                        particle->angle -= turn_delta;
+                        particle->velocity.x = (float)cos(particle->angle) * 82.0f;
+                        particle->velocity.y = (float)sin(particle->angle) * 82.0f;
+#else
                         angle -= turn_delta;
                         particle->velocity.x = (float)cos(angle) * 82.0f;
                         particle->velocity.y = (float)sin(angle) * 82.0f;
+#endif
                     }
                 }
                 particle->color_a = particle->intensity > 1.0f ? 1.0f : particle->intensity;
+#if CL_BUILD == 10908
+                // 1.9.8 writes the color fields directly.
+                particle->color_r = 1.0f - particle->intensity * 0.95f;
+                particle->color_g = particle->color_r;
+#else
                 float& color_r = particle->color_r;
                 float& color_g = particle->color_g;
                 color_r = 1.0f - particle->intensity * 0.95f;
                 color_g = color_r;
+#endif
 
                 if (particle->in_flight) {
                     projectile_vec2_t& particle_position = *(projectile_vec2_t*)&particle->position;
                     int hit_id = creature_find_in_radius(
                         &particle->position, particle->intensity * 8.0f, 0);
                     if (hit_id != -1) {
+#if CL_BUILD == 10908
+                        // 1.9.8 writes the field directly.
+                        particle->in_flight = 0;
+#else
                         unsigned char& in_flight = particle->in_flight;
                         in_flight = 0;
+#endif
+#if CL_BUILD == 10908
+                        // 1.9.8 stops the particle and records the target before it snaps to the creature.
+                        if (particle->style_id == 8) {
+                            particle_velocity.x = 0.0f;
+                            particle_velocity.y = 0.0f;
+                            particle->target_id = hit_id;
+                            particle_position
+                                = *(projectile_vec2_t*)&creature_pool[hit_id].position;
+                            creature_pool[hit_id].state_flag = 0;
+#else
                         if (particle->style_id == 8) {
                             particle_position
                                 = *(projectile_vec2_t*)&creature_pool[hit_id].position;
@@ -994,6 +1161,7 @@ extern "C" void projectile_update(void)
                             particle_velocity.y = 0.0f;
                             creature_pool[hit_id].state_flag = 0;
                             particle->target_id = hit_id;
+#endif
                         } else {
                             while (particle->angle > 6.2831855f) {
                                 particle->angle -= 6.2831855f;
@@ -1032,7 +1200,8 @@ extern "C" void projectile_update(void)
                             creature_apply_damage(hit_id, particle->intensity * 10.0f, 4, &impulse);
 
                             creature_t* hit_creature = &creature_pool[hit_id];
-                            if (hit_creature->tint_r + hit_creature->tint_g + hit_creature->tint_b
+                            float tint_green = hit_creature->tint_g;
+                            if (tint_green + hit_creature->tint_r + hit_creature->tint_b
                                 > 1.6f) {
                                 float tint_scale = 1.0f - particle->intensity * 0.01f;
                                 hit_creature->tint_r *= tint_scale;
@@ -1046,9 +1215,16 @@ extern "C" void projectile_update(void)
                             }
 
                             if (projectile_index % 3 == 0) {
+#if CL_BUILD == 10908
+                                // 1.9.8 fills the jitter fields one by one instead of constructing it.
+                                projectile_vec2_t velocity;
+                                velocity.x = (float)(crt_rand() % 60 - 30);
+                                velocity.y = (float)(crt_rand() % 60 - 30);
+#else
                                 int velocity_x = crt_rand() % 60 - 30;
                                 projectile_vec2_t velocity(
                                     (float)velocity_x, (float)(crt_rand() % 60 - 30));
+#endif
                                 int effect_id = fx_spawn_sprite(
                                     (vec2f_t*)&hit_position, (vec2f_t*)&velocity, 13.0f);
                                 sprite_effect_pool[effect_id].color_a = 0.7f;

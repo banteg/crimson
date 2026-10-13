@@ -31856,13 +31856,13 @@
       "canonical_address": 4328336,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "projectile_update",
       "proof": {
-        "body_byte_exact": false,
-        "candidate_instructions": 2213,
-        "candidate_object_sha256": "77b91e263dd8f08b7a246d83f5959732b439d7638761269f1700c9a945083fff",
-        "candidate_padding_bytes": 13,
+        "body_byte_exact": true,
+        "candidate_instructions": 2223,
+        "candidate_object_sha256": "52ddca5606c8dd45c3e3390e8ed898fdc722a121ca4641ffdde3be2bddfd6762",
+        "candidate_padding_bytes": 10,
         "compared_target_ranges": [
           [
             4326192,
@@ -31871,17 +31871,17 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 3,
-          "ok": 464,
-          "positional": false,
+          "mismatched": 0,
+          "ok": 576,
+          "positional": true,
           "unresolved": 0
         },
-        "state": "wip",
+        "state": "match",
         "target_instructions": 2223,
         "target_size": 8646,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.7019837691614067,
+      "ratio": 1.0,
       "size": 8646,
       "source": "decomp/1.9/crimsonland/crimsonland/projectile_update.cpp"
     },
@@ -76075,7 +76075,7 @@
     "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp": "3efe41163af49ac93e120d4397a7e701511285537bbd0d7a0eaed356cbe50762",
     "decomp/1.9/crimsonland/crimsonland/projectile_reset_pools.cpp": "6fd86d551f9164413ec0820df2ab2ad2c6545466e31386e2feaf8a11f1383868",
     "decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp": "5f05fe918596f928a0556b2973bb1f58484671003140cb6693fcb5bd31560621",
-    "decomp/1.9/crimsonland/crimsonland/projectile_update.cpp": "202f1dfbf5f37d672d9cf8c9f3ce0515a777f69cf1bd84cf9230848b121304bb",
+    "decomp/1.9/crimsonland/crimsonland/projectile_update.cpp": "3be8289059ff72ea7cc5b546b6cceff3158daead2830563c614b807468a21365",
     "decomp/1.9/crimsonland/crimsonland/reg_read_dword_default.c": "a806888629ee1dad18692d96cd015c6a5cb78aeac4dcf69a0179b21faac9f9c7",
     "decomp/1.9/crimsonland/crimsonland/reg_write_dword.c": "f6d3dc472e430cacb6977a6edb2ef91d442324f6d08a79cc069bfd8ef9a01fb0",
     "decomp/1.9/crimsonland/crimsonland/render_tint_color_global_init.cpp": "abddd9469accb4ab13411bdc435cd79528a8ab7de7ed8489dce3377481ae3752",

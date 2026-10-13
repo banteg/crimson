@@ -2095,7 +2095,9 @@ One source may be exact for one build and miss the other. The 8966 and 9782
 optimizers tie on every function, so 1.9.93 is matched with msvc6.5.
 
 Source: `--build 1.9.8` compiles with that build's profile and
-`/DCL_BUILD=10908`; guard only behavioural changes with `CL_BUILD`.
+`/DCL_BUILD=10908`. Guard behavioural changes with `CL_BUILD`. Use a
+code-generation-only guard only when no shared spelling is exact for both
+builds, and record that search in the scratch notes.
 
 Seen in:
 
@@ -2142,8 +2144,11 @@ smoothing) are not reproduced by any available compiler.
 **Symbol ids and most code generation are per function, so compiling address
 neighbours or shared classes in one TU is normally byte-neutral.** The
 exceptions: the preceding function can decide tail cloning or merging, and
-compiler-local names (`$S`/`$E`, `$L`/`$T`) renumber with TU contents. Probe
-with `probe_neighbor_translation_unit.cpp` or a cluster in native address
+compiler-local names (`$S`/`$E`, `$L`/`$T`) renumber with TU contents. C2 9044
+(1.9.8) also remembers functions it compiled earlier in the unit. A call to one
+of them keeps the registers and globals that the callee leaves alone, so
+reloads and register choices around the call change. 8966 does not do this.
+Probe with `probe_neighbor_translation_unit.cpp` or a cluster in native address
 order.
 
 Seen in:
@@ -2155,6 +2160,11 @@ Seen in:
   `grim_draw_quad_points`), without a traced mechanism.
 - [creature_apply_damage][]: a four-function predecessor chain and the
   `projectile_update` successor in one unit are byte-identical.
+- [projectile_update][]: 1.9.8 is exact only with the real `vec2_add` and
+  `creature_find_in_radius` bodies ahead of it. Without them, the miss block
+  reloads `shock_chain_projectile_id` and the compare loads its operands in
+  the other order. With a stub callee, a pointer survives the call in ECX.
+  1.9.93 is exact either way.
 - [unlocked_perks_database_update][]: with the weapons sibling in one TU the
   bytes are identical, but the guard and thunks become `$S4`/`$E5`/`$E6`.
 

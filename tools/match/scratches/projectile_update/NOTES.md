@@ -1,5 +1,54 @@
 # `projectile_update`
 
+## 1.9.8 exact (2026-10-14)
+
+`--build 1.9.8` (C2 9044) is byte-exact: 2,223 instructions, 576 references and
+the native `0xe4` frame. The canonical 1.9.93 build stays exact.
+
+**Translation-unit context.** In 1.9.8, `vec2_add`, `creature_find_in_radius`
+and the other updater callees sit ahead of `0x420330` in the same inferred
+unit. C2 9044 remembers functions it compiled earlier in the unit, and a call
+to one keeps the registers and globals the callee leaves alone. Without the two
+bodies, the miss block at `0x4210f7` reloads `shock_chain_projectile_id` after
+`creature_find_in_radius`. The reload makes local allocation load
+`projectile_index` first; native loads the global first, as at `0x420427`.
+
+Spellings never removed that reload: operand order, locals, casts, `xor`,
+swapped arms, and the other shock-chain references. With stub bodies the
+compare matches, but a pointer survives the particle-hit call in ECX. With the
+real bodies everything matches. 8966 ignores the context, so the bodies sit
+under `CL_BUILD == 10908`, and the canonical object keeps one function per file
+for the native link.
+
+**Frame.** Native slot sharing was read off the listing, and a model of the
+packer (newest compatible slot, by size, then use count) reproduces C2 exactly.
+Three changes close the 16-byte gap:
+
+- `delta` is scoped to the stepping block in 1.9.8. At function scope its
+  address keeps it live into the secondary loop.
+- The exploding branch uses its own local:
+  `float scale = vel_x + frame_dt * 3.0f; vel_x += frame_dt * 3.0f;`. CSE gives
+  native's `fst`/`fstp`/`fld` with three uses. Reusing `offset_x`, or
+  `vel_x = (scale = ...)` with four uses, misorders the 4-byte slots.
+- Both particle arms take the canonical
+  `movement = frame_dt * particle_velocity * intensity`.
+
+**Code-generation guards.** Every remaining `CL_BUILD` block is
+code-generation-only. Each was tested with the canonical branch in 1.9.8 and
+with the 1.9.8 branch in 1.9.93, and neither direction is exact. That audit
+turned the explosion-distance form into a shared spelling. The guards:
+
+- the length helper's square order;
+- the block-scoped `delta`;
+- the hoisted zero vector of the six-shard loop;
+- the exploding branch reading `scale`, both in its compare and its radius;
+- the seeker steps kept for the speed clamp;
+- direct `particle->rotation`, `particle->angle` (three steering arms),
+  color and `in_flight` stores instead of references;
+- the cached style byte in the expiry test;
+- the style-8 hit store order;
+- field-wise velocity jitter.
+
 ## 1.9.8 reviewed extent and operands (2026-10-13)
 
 Independent Binary Ninja control flow recovers one contiguous native body at
