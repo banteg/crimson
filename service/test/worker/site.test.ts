@@ -96,6 +96,38 @@ describe("site", () => {
     expect((await call("/api/boards/quests/9.9")).status).toBe(404);
   });
 
+  it("board totals include every ranked run in the category, independent of the displayed scores", async () => {
+    expect((await api<BoardView>("/api/boards/survival")).totals).toEqual({ kills: 0, elapsed_ms: 0 });
+    await env.DB.batch([
+      env.DB.prepare("INSERT INTO accounts (id, created_at, bot, banned) VALUES (1, 0, 0, 0), (2, 0, 1, 0), (3, 0, 0, 1)"),
+      env.DB.prepare("INSERT INTO keys (public_key, account_id, fingerprint, added_at) VALUES ('key', 1, 'human', 0), ('bot-key', 2, 'bot', 0)"),
+    ]);
+    const runs = [
+      { id: "best", account: 1, score: 100 },
+      { id: "other", account: 1, score: 50 },
+      { id: "bot", account: 2 },
+      { id: "pilot", account: 1, pilot: '{"name":"Bot"}' },
+      { id: "override", account: 2, category: "human" },
+      { id: "hidden", account: 1, hidden: 1 },
+      { id: "retired", account: 1, retired: "old rules" },
+      { id: "banned", account: 3 },
+      { id: "quest", account: 1, board: "quests", quest: "1.1" },
+    ];
+    for (const run of runs) {
+      await env.DB.prepare(
+        `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, ticks,
+           result, accepted_at, pilot, category, hidden, retired)
+         VALUES (?, ?, ?, 'key', 'Player', ?, ?, ?, 'test', 1, ?, 0, ?, ?, ?, ?)`,
+      ).bind(run.id, run.id, run.account, run.board ?? "survival", run.quest ?? "", run.score ?? 1,
+        JSON.stringify({ kills: 10, elapsed_ms: 61000, players: [{ most_used_weapon_id: 1 }] }),
+        run.pilot ?? "", run.category ?? null, run.hidden ?? 0, run.retired ?? null).run();
+    }
+    const humans = await api<BoardView>("/api/boards/survival?limit=1");
+    expect(humans.rows.map((row) => row.run)).toEqual(["best"]);
+    expect(humans.totals).toEqual({ kills: 30, elapsed_ms: 183000 });
+    expect((await api<BoardView>("/api/boards/survival?category=bot&limit=1")).totals).toEqual({ kills: 20, elapsed_ms: 122000 });
+  });
+
   it("a profile shows its links, and to its owner the providers configured with both ID and secret", async () => {
     const { cookie, accountId } = await signIn();
     await env.DB.prepare("INSERT INTO links (provider, subject, account_id, handle, avatar_url, linked_at) VALUES ('discord', '9', ?, 'banteg', NULL, 0)")

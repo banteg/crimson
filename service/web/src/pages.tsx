@@ -1,7 +1,7 @@
 import { type Accessor, createSignal, For, type JSX, Show } from "solid-js";
 import type { Board, BoardView, FlagsView, JoinView, ModerationAction, ProfileView, QuestMenuView, Role, RunDetailView } from "../../src/api-types";
 import { get, moderate, post } from "./api";
-import { formatScore } from "./format";
+import { formatScore, formatSurvived } from "./format";
 import { GameButton } from "./button";
 import { playerLabel } from "./names";
 import { PilotName, PlayerName, PROVIDER_LABELS } from "./players";
@@ -305,10 +305,12 @@ async function home(): Promise<Screen> {
             <div>
               <h3>Humans</h3>
               <BoardTable view={humans!} compact />
+              <BoardTotals totals={humans!.totals} />
             </div>
             <div>
               <h3>Bots</h3>
               <BoardTable view={bots!} compact />
+              <BoardTotals totals={bots!.totals} />
             </div>
           </div>
           <p>
@@ -320,12 +322,21 @@ async function home(): Promise<Screen> {
   };
 }
 
+function BoardTotals(props: { totals: BoardView["totals"] }) {
+  return (
+    <p class="board-totals muted">
+      Total kills: {props.totals.kills.toLocaleString("en-US")} · Total survived: {formatSurvived(props.totals.elapsed_ms)}
+    </p>
+  );
+}
+
 // A board's human runs, then its bot runs.
 function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
   return [
     () => (
       <>
         <h2>{humans.title}</h2>
+        <BoardTotals totals={humans.totals} />
         <BoardTable view={humans} />
       </>
     ),
@@ -333,6 +344,7 @@ function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
       <>
         <h2>{bots.title} · bots</h2>
         <BotInvite />
+        <BoardTotals totals={bots.totals} />
         <BoardTable view={bots} />
       </>
     ),

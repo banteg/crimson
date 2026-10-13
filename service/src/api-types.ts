@@ -51,6 +51,7 @@ export interface BoardView {
   category: Category;
   title: string;
   rows: BoardRow[];
+  totals: { kills: number; elapsed_ms: number };
 }
 
 // A board row as the game's high score screen shows it: the run's id (its replay is /runs/<run>.crd), its own name

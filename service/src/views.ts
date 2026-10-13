@@ -107,13 +107,22 @@ async function bestRuns(env: Env, board: Board, quest: string, category: Categor
 }
 
 export async function boardView(env: Env, board: Board, quest: string, category: Category, limit: number): Promise<BoardView> {
-  const results = await bestRuns(env, board, quest, category, limit);
+  const [results, totals] = await Promise.all([
+    bestRuns(env, board, quest, category, limit),
+    env.DB.prepare(
+      `SELECT coalesce(sum(json_extract(r.result, '$.kills')), 0) AS kills,
+         coalesce(sum(json_extract(r.result, '$.elapsed_ms')), 0) AS elapsed_ms
+       FROM runs r JOIN accounts a ON a.id = r.account_id
+       WHERE r.board = ? AND r.quest = ? AND ${RANKED_RUN} AND ${runCategory("r")} = ?`,
+    ).bind(board, quest, category).first<BoardView["totals"]>(),
+  ]);
   const who = await players(env, results.map((row) => row.account_id));
   return {
     board,
     quest,
     category,
     title: boardTitle(board, quest),
+    totals: totals!,
     rows: results.map((row, i) => {
       const result = JSON.parse(row.result) as RunResult;
       return {
