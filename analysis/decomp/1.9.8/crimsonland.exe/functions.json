@@ -1616,10 +1616,10 @@
   {
     "address": "0x00413AA0",
     "canonical_address": "0x00413540",
-    "end": "0x00413C10",
-    "evidence": "ordered",
+    "end": "0x00413C0D",
+    "evidence": "recovered",
     "name": "player_heading_approach_target",
-    "size": 368
+    "size": 365
   },
   {
     "address": "0x00413C10",

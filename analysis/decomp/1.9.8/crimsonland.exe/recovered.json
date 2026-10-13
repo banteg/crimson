@@ -85,6 +85,13 @@
       "end": "0x434936",
       "body_sha256": "09ed24f412bdc4f460d3509209a88d509f892122b4eb957216867a4ff6a6f85f",
       "note": "Independent Binary Ninja control flow covers the complete five-block quest builder; final return at 0x434935 precedes ten alignment NOPs."
+    },
+    {
+      "name": "player_heading_approach_target",
+      "address": "0x413aa0",
+      "end": "0x413c0d",
+      "body_sha256": "be0c47824b9ba36421a0c572460a527597d4a2da06af5bdd67cba97e2342dc5a",
+      "note": "Independent Binary Ninja control flow covers all 22 blocks, 96 instructions and the final return at 0x413c0c; the following three NOPs are alignment."
     }
   ],
   "data": [
@@ -391,6 +398,14 @@
       "bytes": "c7050cfe4b0001000000",
       "offset": 0,
       "note": "Older native initializer assigns Bloody Mess id 1 beside the label at 0x475538; death and projectile-hit paths read this shared perk id."
+    },
+    {
+      "address": "0x484e78",
+      "bytes": "d91d784e4800",
+      "name": "player_heading_turn_delta",
+      "note": "Native player_heading_approach_target stores this delta, reloads it and adds it to the selected player heading before returning.",
+      "offset": 0,
+      "reference": "0x413bef"
     }
   ]
 }

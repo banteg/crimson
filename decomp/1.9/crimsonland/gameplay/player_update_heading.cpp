@@ -176,16 +176,11 @@ static __inline float abs_bits(float value)
 extern "C" float player_heading_approach_target(float target_heading)
 {
     int player_index = current_player_index;
-    float heading = player_state_table[player_index].heading;
-
-    while (heading < 0.0f) {
-        heading = player_state_table[player_index].heading + 6.2831855f;
-        player_state_table[player_index].heading = heading;
+    while (player_state_table[player_index].heading < 0.0f) {
+        player_state_table[player_index].heading += 6.2831855f;
     }
-    heading = player_state_table[player_index].heading;
-    while (heading > 6.2831855f) {
-        heading = player_state_table[player_index].heading - 6.2831855f;
-        player_state_table[player_index].heading = heading;
+    while (player_state_table[player_index].heading > 6.2831855f) {
+        player_state_table[player_index].heading -= 6.2831855f;
     }
 
     float direct = abs_bits(target_heading - player_state_table[player_index].heading);

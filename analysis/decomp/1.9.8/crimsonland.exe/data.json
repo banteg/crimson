@@ -1771,6 +1771,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x00484e78",
+      "name": "player_heading_turn_delta",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00484e98",
       "name": "reserved_color_4871b8",
       "program": "1.9.8/crimsonland.exe"
