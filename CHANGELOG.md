@@ -2,6 +2,20 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.16.1
+
+### For players
+
+- Opening your profile from the game asks before it signs the browser in, naming the account it signs in to and, if different, the one the browser is signed in to now. A sign-in link someone else sends can no longer switch your browser to their account unnoticed, so their key can't end up joined to your account. A profile tab left open no longer changes an account the browser has since switched away from.
+- Joining accounts names the account being moved in and warns that its key signs in to the joined account from then on.
+- The game inside a post's player card no longer offers Ranked or Profile. The browser keeps its saves apart from crimson.land's there, so its runs would have gone to an account of their own. It still shows the boards and plays their runs.
+
+### Under the hood
+
+- Deploys download replays and upload grounds through Cloudflare's API from one process instead of a wrangler call per file.
+- More of 1.9.8 matches: the projectile and player updates.
+- The WASM build finds wasi-sdk in the main checkout's `artifacts/wasi-sdk`, which worktrees share.
+
 ## 0.16.0
 
 ### For players
