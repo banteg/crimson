@@ -2,10 +2,12 @@
 // stream plays the mix, kept a few frames deep. Mixing follows elapsed time,
 // not device refills: a browser drains whole buffers, and filling each hole
 // in one pull would snap every new sound to those buffer boundaries.
-// The mix never falls more than a quarter second behind the wall clock: with
-// no output device, or one that stops draining (a failure, the browser's
-// autoplay lock), the surplus is
-// dropped (game_audio_skip moves the voices on unmixed), so the game's play
+// The mix runs one queue depth ahead of the wall clock. A frame that comes
+// later than that skips the gap and refills only the depth. With no output
+// device, or one that stops draining (a failure, the browser's autoplay lock),
+// the queue stays bounded and the rest is dropped; once such a device drains
+// again, its stale queue goes and the depth refills from the current mix.
+// Skipped audio still moves the voices on (game_audio_skip), so the game's play
 // cursors and voice status move as they would with sound. CRIMSON_MUTE silences
 // the device only: the game mixes and the device drains as they would aloud.
 #include "client.h"
@@ -16,6 +18,8 @@
 namespace {
 // The module's mix: 16-bit stereo at 44.1 kHz, at most 4096 frames a pull.
 constexpr int RATE = 44100, CHANNELS = 2, FRAME_BYTES = CHANNELS * 2, PULL = 4096, LAG = RATE / 4;
+// Clock steering: a sample per this many elapsed frames (0.2%), at any frame rate.
+constexpr int STEER = 512;
 SDL_AudioStream *stream;
 // Frames kept queued: about four 60 Hz frames, and at least two of the device's
 // buffers, which it drains whole.
@@ -46,14 +50,28 @@ void audio_update(w2c_game *game) {
   if (!anchor)
     anchor = now;
   Sint64 due = depth + (Sint64)((now - anchor) * RATE / SDL_NS_PER_SECOND) + correction;
-  if (stream && queued < last_queued)
+  // The device starts out draining; a quarter second without a drain is a stall.
+  bool draining = now - (last_drain ? last_drain : anchor) < SDL_NS_PER_SECOND / 4;
+  if (stream && queued < last_queued) {
+    // A device draining again after a stall (the browser's autoplay lock
+    // lifting) drops its stale queue and starts over at the normal depth.
+    if (!draining) {
+      SDL_ClearAudioStream(stream);
+      queued = 0;
+      if (Sint64 refill = depth - (due - mixed); refill > 0) {
+        correction += refill;
+        due += refill;
+      }
+    }
     last_drain = now;
+    draining = true;
+  }
   // Device and wall clocks can drift. Outside a whole buffer of slack, nudge
-  // by one sample per update, never by a refill-sized block. A stalled device
-  // must keep advancing unheard, so it does not steer this clock.
-  if (last_drain && now - last_drain < SDL_NS_PER_SECOND / 4 && due - mixed <= LAG) {
-    Sint64 projected = queued + due - mixed;
-    int adjust = projected < depth ? 1 : projected > depth * 3 / 2 && due > mixed ? -1 : 0;
+  // by a few samples, never by a refill-sized block. A stalled device must
+  // keep advancing unheard, so it does not steer this clock.
+  if (last_drain && draining && due - mixed <= LAG) {
+    Sint64 projected = queued + due - mixed, step = 1 + (due - mixed) / STEER;
+    Sint64 adjust = projected < depth ? step : projected > depth * 3 / 2 ? -SDL_min(step, due - mixed) : 0;
     correction += adjust;
     due += adjust;
   }

@@ -35,6 +35,7 @@ const char *SDL_GetError() { return "test: no device"; }
 void SDL_SetAudioStreamGain(SDL_AudioStream *, float) {}
 Uint64 SDL_GetTicksNS() { return now; }
 int SDL_GetAudioStreamQueued(SDL_AudioStream *) { return queued_frames * 4; }
+void SDL_ClearAudioStream(SDL_AudioStream *) { queued_frames = 0; }
 void SDL_PutAudioStreamData(SDL_AudioStream *, const void *data, int bytes) {
   const short *pcm = (const short *)data;
   for (int i = 0; i < bytes / 4; ++i)
@@ -58,23 +59,31 @@ void w2c_game_game_audio_skip(w2c_game *, u32 frames) {
 #include "audio-under-test.cpp"
 
 int main(int argc, char **argv) {
-  assert(argc == 3);
+  assert(argc == 4);
   quantum = atoi(argv[1]);
-  int scenario = atoi(argv[2]); // regular, locked, absent, stall, fast/slow device clock
+  // Regular, locked, absent, stall, fast/slow device clock, autoplay unlock.
+  int scenario = atoi(argv[2]);
+  int step = 44100 / atoi(argv[3]); // Frames per update at this frame rate.
   no_device = scenario == 2;
-  locked = scenario == 1;
+  locked = scenario == 1 || scenario == 6;
+  bool drift = scenario == 4 || scenario == 5;
+  Sint64 unlocked = 0;
   w2c_game game;
   audio_init();
   audio_update(&game);
   const Sint64 primed = advanced;
   Sint64 consumed = 0;
-  for (int frame = 1; frame <= (scenario >= 4 ? 36000 : 240); ++frame) {
-    Sint64 elapsed = (Sint64)frame * 735;
+  for (int frame = 1; frame <= (drift ? 36000 : 240); ++frame) {
+    Sint64 elapsed = (Sint64)frame * step;
+    if (scenario == 6 && frame == 120) {
+      locked = false;
+      unlocked = elapsed;
+    }
     if (scenario == 3 && frame >= 120) elapsed += 44100 * 30;
     now = 1 + (Uint64)elapsed * SDL_NS_PER_SECOND / 44100;
     if (!no_device && !locked) {
       Sint64 device_elapsed = scenario == 4 ? elapsed * 1001 / 1000
-                             : scenario == 5 ? elapsed * 999 / 1000 : elapsed;
+                             : scenario == 5 ? elapsed * 999 / 1000 : elapsed - unlocked;
       Sint64 due = device_elapsed / quantum * quantum;
       Sint64 drain = due - consumed;
       if (scenario != 3 || frame != 120) assert(queued_frames >= drain);
@@ -87,17 +96,19 @@ int main(int argc, char **argv) {
     if (scenario == 0 && frame % 7 == 0) attack = true;
     if (scenario == 3 && frame == 120) attack = true;
     assert(queued_frames <= depth + LAG);
+    // Once unlocked, the stale queue is gone within a device buffer.
+    if (scenario == 6 && !locked && elapsed - unlocked > quantum) assert(queued_frames <= depth * 3 / 2 + step);
     if (scenario < 3) assert(std::abs(advanced - primed - elapsed) <= 1);
     // A stall changes the device's buffer phase; clock steering is bounded
-    // to one sample per subsequent frame.
-    if (scenario == 3) assert(std::abs(advanced - primed - elapsed) <= frame);
+    // to a few samples per subsequent frame.
+    if (scenario == 3) assert(std::abs(advanced - primed - elapsed) <= frame * (1 + step / STEER));
   }
   if (scenario == 0) {
     assert(attacks.size() == 34);
     for (size_t i = 1; i < attacks.size(); ++i)
-      assert(std::abs(attacks[i] - attacks[i - 1] - 7 * 735) <= 1);
+      assert(std::abs(attacks[i] - attacks[i - 1] - 7 * step) <= 1);
   }
   if (scenario == 3) { assert(skipped > 29 * 44100); assert(attacks.size() == 1); }
-  if (scenario >= 4) { assert(!skipped); assert(submitted == advanced); assert(queued_frames < depth * 2); }
-  printf("audio quantum=%d scenario=%d: passed\n", quantum, scenario);
+  if (drift) { assert(!skipped); assert(submitted == advanced); assert(queued_frames < depth * 2); }
+  printf("audio quantum=%d scenario=%d fps=%s: passed\n", quantum, scenario, argv[3]);
 }

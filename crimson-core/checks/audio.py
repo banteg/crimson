@@ -25,8 +25,9 @@ def main():
         command = [compiler, "-std=c++17", "-ffp-contract=off", "-I" + str(out)]
         subprocess.run([*command, str(CORE / "checks/client_audio.cpp"), "-o", str(out / "client")], check=True)
         for quantum in (512, 2048, 4096):
-            for scenario in range(6):
-                subprocess.run([str(out / "client"), str(quantum), str(scenario)], check=True)
+            for scenario in range(7):
+                for fps in (60, 30):
+                    subprocess.run([str(out / "client"), str(quantum), str(scenario), str(fps)], check=True)
         (out / "crimsonland_audio.h").write_text(
             "#pragma once\nstruct Config { bool sound_disabled = false; };\n"
             "extern Config config_blob;\nextern float sfx_cooldown_table[128];\n",

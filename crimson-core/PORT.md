@@ -93,7 +93,8 @@ The client mixes elapsed time before running the next frame, independently of
 the device's buffer refills, so refills do not bunch shot attacks together.
 During a run, sound cooldowns advance after each simulation tick; menus use
 the original frame clock. `python3 crimson-core/checks/audio.py` checks these
-clocks, chunked output, device drift, missing or locked devices, and stalls.
+clocks, chunked output, device drift at 30 and 60 fps, missing, locked and
+unlocking devices, and stalls.
 
 ### The tick seam
 
