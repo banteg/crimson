@@ -14,7 +14,7 @@ from crimson.quests.level import QuestLevel
 from crimson.quests.types import QuestContext, QuestDefinition
 from crimson.replay import REPLAY_FORMAT_VERSION, dump_replay, load_replay
 from crimson.replay.codec import ReplayCodecError, decode_replay_payload
-from crimson.replay.driver.playback_driver import build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.sim.mode_updates import QuestSpawnState
 from crimson.sim.run_init import initialize_run
 from crimson.sim.run_spec import RunSpec
@@ -56,7 +56,7 @@ def test_a_stock_table_as_a_custom_quest_replays_the_stock_recording(name):
     assert quest is not None
     run = msgspec.structs.replace(replay.run, quest_level=None, custom_quest=stock_as_custom(quest))
     custom = msgspec.structs.replace(replay, run=run)
-    assert build_verify_playback_driver(custom, warn_on_version_mismatch=False).run() == replay.result
+    assert PlaybackDriver(custom, warn_on_version_mismatch=False).run() == replay.result
 
 
 @pytest.mark.parametrize("hardcore", (False, True))

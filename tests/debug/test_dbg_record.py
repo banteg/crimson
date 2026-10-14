@@ -29,18 +29,18 @@ def test_canonical_elapsed_ms_uses_unscaled_replay_clock() -> None:
 
 def test_quest_recording_preserves_scaled_simulation_clock(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     from crimson.replay.codec import dump_replay_file
-    from crimson.replay.driver.playback_driver import build_verify_playback_driver
+    from crimson.replay.driver.playback_driver import PlaybackDriver
 
     replay_path, out_path = tmp_path / "quest.crd", tmp_path / "quest.cdt"
     dump_replay_file(replay_path, build_replay(mode=GameMode.QUESTS, ticks=2, quest_level="1.1"))
 
     def boosted_driver(*args, **kwargs):
-        driver = build_verify_playback_driver(*args, **kwargs)
+        driver = PlaybackDriver(*args, **kwargs)
         driver.world.state.bonuses.reflex_boost = 5.0
         driver.world.state.time_scale_active = True
         return driver
 
-    monkeypatch.setattr(dbg_record, "build_verify_playback_driver", boosted_driver)
+    monkeypatch.setattr(dbg_record, "PlaybackDriver", boosted_driver)
     dbg_record.record_replay_to_trace(replay_path=replay_path, out_path=out_path)
     _, ticks, _ = load_trace(out_path)
     assert [tick.elapsed_ms for tick in ticks] == [5, 10]

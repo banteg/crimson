@@ -30,7 +30,6 @@ from .creatures import (
 )
 from .effects import draw_effect_pool, draw_particle_pool, draw_sprite_effect_pool
 from .overlays import draw_aim_circle, draw_clock_gauge, draw_direction_arrows
-from .profile_hooks import profile_pass
 from .projectiles import projectile_render, secondary_detonation_pass
 from .trooper import draw_player_trooper_sprite
 
@@ -71,8 +70,7 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
 
     entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
     view = render_ctx.view
-    with profile_pass("background"):
-        draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size)
+    draw_background(render_ctx, camera=view.camera, screen_size=view.screen_size, out_size=view.out_size)
     if entity_alpha <= 1e-3:
         # Native 0x405b95 still calls projectile_render at zero transition;
         # its Gauss slots retain life alpha. Keep that pass inside alpha testing.
@@ -85,18 +83,12 @@ def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None
             render_ctx,
             entity_alpha=entity_alpha,
         )
-        with profile_pass("players_dead"):
-            draw_players(render_ctx, ctx=draw_ctx, alive=False)
-        with profile_pass("creatures"):
-            draw_creatures(render_ctx, ctx=draw_ctx)
-        with profile_pass("freeze_overlay"):
-            draw_freeze_overlay(render_ctx, ctx=draw_ctx)
-        with profile_pass("players_alive"):
-            draw_players(render_ctx, ctx=draw_ctx, alive=True)
-        with profile_pass("projectile_render"):
-            projectile_render(render_ctx, alpha=draw_ctx.entity_alpha)
-        with profile_pass("bonus_render"):
-            bonus_render(render_ctx, ctx=draw_ctx)
+        draw_players(render_ctx, ctx=draw_ctx, alive=False)
+        draw_creatures(render_ctx, ctx=draw_ctx)
+        draw_freeze_overlay(render_ctx, ctx=draw_ctx)
+        draw_players(render_ctx, ctx=draw_ctx, alive=True)
+        projectile_render(render_ctx, alpha=draw_ctx.entity_alpha)
+        bonus_render(render_ctx, ctx=draw_ctx)
 
 
 def draw_background(
@@ -452,18 +444,12 @@ def bonus_render(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
     camera = render_ctx.view.camera
     view_scale = render_ctx.view.view_scale
     alpha = ctx.entity_alpha
-    with profile_pass("bonus_pickups"):
-        draw_bonus_pickups(render_ctx, camera=camera, view_scale=view_scale, scale=render_ctx.view.scale, alpha=alpha)
-    with profile_pass("bonus_labels"):
-        draw_bonus_hover_labels(render_ctx, camera=camera, view_scale=view_scale)
-    with profile_pass("particle_pool"):
-        draw_particle_pool(render_ctx, camera=camera, view_scale=view_scale)
-    with profile_pass("secondary_detonations"):
-        secondary_detonation_pass(render_ctx)
-    with profile_pass("sprite_effect_pool"):
-        draw_sprite_effect_pool(render_ctx, camera=camera, view_scale=view_scale)
-    with profile_pass("effect_pool"):
-        draw_effect_pool(render_ctx, camera=camera, view_scale=view_scale)
+    draw_bonus_pickups(render_ctx, camera=camera, view_scale=view_scale, scale=render_ctx.view.scale, alpha=alpha)
+    draw_bonus_hover_labels(render_ctx, camera=camera, view_scale=view_scale)
+    draw_particle_pool(render_ctx, camera=camera, view_scale=view_scale)
+    secondary_detonation_pass(render_ctx)
+    draw_sprite_effect_pool(render_ctx, camera=camera, view_scale=view_scale)
+    draw_effect_pool(render_ctx, camera=camera, view_scale=view_scale)
 
 
 def ui_render_aim_indicators(
@@ -482,22 +468,18 @@ def ui_render_aim_indicators(
 
 def _draw_aim_ui(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, show_aim: bool, aim_enhancement_fade: float) -> None:
     if show_aim:
-        with profile_pass("aim_indicators"):
-            draw_aim_indicators(render_ctx, ctx=ctx)
+        draw_aim_indicators(render_ctx, ctx=ctx)
 
-    with profile_pass("direction_arrows"):
-        draw_direction_arrows(
-            render_ctx,
-            camera=render_ctx.view.camera,
-            view_scale=render_ctx.view.view_scale,
-            scale=render_ctx.view.scale,
-            alpha=ctx.entity_alpha,
-        )
+    draw_direction_arrows(
+        render_ctx,
+        camera=render_ctx.view.camera,
+        view_scale=render_ctx.view.view_scale,
+        scale=render_ctx.view.scale,
+        alpha=ctx.entity_alpha,
+    )
 
     if show_aim:
-        with profile_pass("aim_enhancements"):
-            draw_aim_enhancements(render_ctx, ctx=ctx, fade=aim_enhancement_fade)
-
+        draw_aim_enhancements(render_ctx, ctx=ctx, fade=aim_enhancement_fade)
 
 __all__ = [
     "WorldDrawContext",

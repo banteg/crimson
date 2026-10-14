@@ -28,7 +28,7 @@ from crimson.replay import (
     load_replay,
 )
 from crimson.replay import types as replay_types
-from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import pack_player_input, pack_tick, unpack_player_input
 from crimson.replay.types import Pilot, Recorder
 from crimson.replay.versioning import ReplayRulesError
@@ -292,7 +292,7 @@ def test_a_replay_from_another_game_version_verifies_with_a_warning() -> None:
     older = msgspec.structs.replace(replay, game_version="0.0.1+gabc123def456")
 
     with pytest.warns(ReplayGameVersionWarning, match="another game version"):
-        result = build_verify_playback_driver(older).run()
+        result = PlaybackDriver(older).run()
 
     assert result == replay.result
 

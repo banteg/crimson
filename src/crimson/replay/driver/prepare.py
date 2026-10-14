@@ -31,7 +31,7 @@ from ...sim.run_result import RunOutcome
 from ...sim.sessions import DeterministicSessionTick
 from ...sim.terrain_fx import TerrainFxBatch
 from ..types import Replay
-from .playback_driver import PlaybackDriver, ReplayRunnerError, build_runtime_playback_driver
+from .playback_driver import PlaybackDriver, ReplayRunnerError
 
 # Keyframes start half a second apart and spread out, every other one dropped, past the budget.
 KEY_TICKS = 30
@@ -107,7 +107,7 @@ class _PreparingPass:
     """The pass over a replay, and what it found since its last span."""
 
     def __init__(self, replay: Replay, *, key_ticks: int) -> None:
-        self._driver = build_runtime_playback_driver(replay, max_ticks=None)
+        self._driver = PlaybackDriver(replay, max_ticks=None, warn_on_version_mismatch=False)
         self._key_ticks = key_ticks
         self._clock = PresentationClock()
         # The game playlist's draws, from the replay's own sound randomness.

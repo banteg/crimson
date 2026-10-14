@@ -18,7 +18,7 @@ without requiring the port to reproduce its global layout or virtual interface.
 | Archive/image decoding and asset access | `src/grim/paq.py`, `src/grim/jaz.py`, `src/grim/assets.py` |
 | Input, audio, fonts, configuration | `src/grim/input.py`, `src/grim/audio.py`, `src/grim/fonts/`, `src/grim/config.py` |
 | CLI | `src/crimson/cli/`; the `crimson-re` workspace package adds `match`, `native` and `dbg` |
-| Navigation and application resources | `src/crimson/game/navigation.py`, `src/crimson/game/resources.py` |
+| Navigation and application loop | `src/crimson/game/navigation.py`, `src/crimson/game/loop_view.py` |
 | Screens, typed actions and retained stack | `src/crimson/screens/`, `src/crimson/screens/actions.py`, `src/crimson/screens/stack.py` |
 | Gameplay shell and mode-specific UI | `src/crimson/modes/` |
 | Run inputs and initialization | `src/crimson/sim/run_spec.py`, `src/crimson/sim/run_init.py` |

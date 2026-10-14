@@ -16,7 +16,7 @@ from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.replay import load_replay
 from crimson.replay.checkpoints import load_checkpoints_file
-from crimson.replay.driver.playback_driver import build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import unpack_player_input
 from crimson.sim.commands import PerkPickCommand
 from crimson.sim.input import PlayerInput
@@ -116,7 +116,7 @@ def test_saved_live_replay_round_trips_and_verifies(
     replay = load_replay(saved[0].read_bytes())
     assert len(replay.ticks) == 5
     assert replay.result.outcome == RunOutcome.INCOMPLETE
-    assert build_verify_playback_driver(replay).run() == replay.result
+    assert PlaybackDriver(replay).run() == replay.result
     if replay_checkpoints:
         # Live play digests each tick's RNG call order as headless verification does.
         assert any(ckpt.rng_callers_crc32 != zlib.crc32(b"") for ckpt in load_checkpoints_file(saved[1]).checkpoints)

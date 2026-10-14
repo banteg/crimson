@@ -7,7 +7,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.render.terrain_fx import FxQueueTextures
-from crimson.replay.driver.playback_driver import build_runtime_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.driver.prepare import ReplayPreparation
 from crimson.sim.run_spec import RunSpec
 from crimson.world import terrain_history
@@ -54,7 +54,7 @@ def test_copies_of_the_terrain_spread_out_past_the_cap_and_a_rebuild_bakes_the_l
     )
     prep = ReplayPreparation(replay, background=False)
     prep.poll()
-    setup = build_runtime_playback_driver(replay, max_ticks=None).terrain_setup
+    setup = PlaybackDriver(replay, max_ticks=None, warn_on_version_mismatch=False).terrain_setup
     mocker.patch.object(terrain_history, "SHOT_TICKS", 60)
     mocker.patch.object(terrain_history, "SHOTS", 4)
     history = TerrainHistory(resources, setup)

@@ -560,7 +560,7 @@ def cmd_replay_verify(
     import hashlib
 
     from ..replay import ReplayCodecError, decode_replay_payload, inflate_replay_payload
-    from ..replay.driver.playback_driver import ReplayRunnerError, build_verify_playback_driver
+    from ..replay.driver.playback_driver import PlaybackDriver, ReplayRunnerError
     from ..replay.ranked import RankedTickMonitor, outcome_reasons, ranked_board, unranked_reasons
     from ..sim.run_result import run_result_mismatches
 
@@ -569,7 +569,7 @@ def cmd_replay_verify(
     try:
         replay_payload = inflate_replay_payload(Path(replay_path).read_bytes())
         replay = decode_replay_payload(replay_payload)
-        driver = build_verify_playback_driver(replay, max_ticks=max_ticks)
+        driver = PlaybackDriver(replay, max_ticks=max_ticks)
         monitor = RankedTickMonitor(replay=replay)
         result = driver.run(observer=monitor)
     except (ReplayCodecError, ReplayRunnerError) as exc:
@@ -655,13 +655,13 @@ def cmd_replay_info(
     ),
 ) -> None:
     """Simulate a replay and emit a timeline of gameplay events."""
-    from ..replay.driver.playback_driver import ReplayRunnerError, build_verify_playback_driver
+    from ..replay.driver.playback_driver import PlaybackDriver, ReplayRunnerError
     from ..replay.driver.replay_info import collect_replay_info, event_counts_by_kind
 
     replay_path, replay = _load_replay_from_arg(replay_file, base_dir=base_dir, action="replay info")
     try:
         result = collect_replay_info(
-            build_verify_playback_driver(
+            PlaybackDriver(
                 replay,
                 max_ticks=max_ticks,
                 warn_on_version_mismatch=True,
@@ -750,21 +750,6 @@ def cmd_replay_benchmark(
         "--profile-out",
         help="optional cProfile .pstats output path (used only with --profile)",
     ),
-    render_telemetry: bool = typer.Option(
-        False,
-        "--render-telemetry",
-        help="collect per-tick render telemetry (render mode only)",
-    ),
-    render_telemetry_out: Path | None = typer.Option(
-        None,
-        "--render-telemetry-out",
-        help="optional output path for full render telemetry JSON (render mode only)",
-    ),
-    render_charts_out_dir: Path | None = typer.Option(
-        None,
-        "--render-charts-out-dir",
-        help="optional output directory for render telemetry SVG charts (render mode only)",
-    ),
     output_format: Literal["human", "json"] = typer.Option(
         "human",
         "--format",
@@ -793,23 +778,9 @@ def cmd_replay_benchmark(
     replay_path = _require_replay_path(replay_file, base_dir=base_dir)
     resolved_runs = runs if runs is not None else (1 if mode == "render" else 5)
     resolved_warmup_runs = warmup_runs if warmup_runs is not None else (0 if mode == "render" else 1)
-    if mode != "render":
-        if rtx:
-            typer.echo("replay benchmark failed: --rtx is supported only with --mode render", err=True)
-            raise typer.Exit(code=1)
-        if render_telemetry:
-            typer.echo("replay benchmark failed: --render-telemetry is supported only with --mode render", err=True)
-            raise typer.Exit(code=1)
-        if render_telemetry_out is not None:
-            typer.echo("replay benchmark failed: --render-telemetry-out is supported only with --mode render", err=True)
-            raise typer.Exit(code=1)
-        if render_charts_out_dir is not None:
-            typer.echo(
-                "replay benchmark failed: --render-charts-out-dir is supported only with --mode render",
-                err=True,
-            )
-            raise typer.Exit(code=1)
-
+    if mode != "render" and rtx:
+        typer.echo("replay benchmark failed: --rtx is supported only with --mode render", err=True)
+        raise typer.Exit(code=1)
     _, replay = _load_replay_from_arg(replay_path, base_dir=base_dir, action="replay benchmark")
     try:
         if mode == "render":
@@ -824,9 +795,6 @@ def cmd_replay_benchmark(
                 profile_sort=profile_sort,
                 top=top,
                 profile_out=profile_out,
-                render_telemetry=render_telemetry,
-                render_telemetry_out=render_telemetry_out,
-                render_charts_out_dir=render_charts_out_dir,
                 rtx=rtx,
                 show_progress=(output_format == "human"),
             )
@@ -858,9 +826,6 @@ def cmd_replay_benchmark(
             "profile_sort": profile_sort,
             "top": top,
             "profile_out": _path_text(profile_out),
-            "render_telemetry": render_telemetry,
-            "render_telemetry_out": _path_text(render_telemetry_out),
-            "render_charts_out_dir": _path_text(render_charts_out_dir),
         },
         "ticks": benchmark.ticks,
         "run_result": benchmark.run_result,
@@ -872,7 +837,6 @@ def cmd_replay_benchmark(
             "realtime_x": benchmark.realtime_x,
         },
         "profile": benchmark.profile,
-        "render_telemetry": benchmark.render_telemetry,
     }
     if _emit_json_report(payload, output_format=output_format, json_out=json_out):
         return
@@ -891,37 +855,6 @@ def cmd_replay_benchmark(
         + " | "
         + _fmt_metric_agg("realtime_x", benchmark.realtime_x, digits=2),
     )
-    if benchmark.render_telemetry is not None:
-        telemetry = benchmark.render_telemetry
-        typer.echo(
-            "render_telemetry: "
-            + _fmt_metric_agg("frame_ms", telemetry.summary.frame_ms, digits=3)
-            + " | "
-            + _fmt_metric_agg("update_ms", telemetry.summary.update_ms, digits=3)
-            + " | "
-            + _fmt_metric_agg("draw_ms", telemetry.summary.draw_ms, digits=3),
-        )
-        typer.echo(_fmt_metric_agg("draw_calls_total", telemetry.summary.draw_calls_total, digits=2))
-        typer.echo("render_telemetry top_draw_ms_ticks:")
-        if not telemetry.summary.top_draw_ms_ticks:
-            typer.echo("  (none)")
-        for row in telemetry.summary.top_draw_ms_ticks:
-            typer.echo(f"  tick={int(row.tick_index)} frame={int(row.frame_index)} draw_ms={float(row.value):.3f}")
-        artifacts = telemetry.artifacts
-        if artifacts is not None:
-            typer.echo("render_telemetry artifacts:")
-            if artifacts.telemetry_json_path:
-                typer.echo(f"  telemetry_json={artifacts.telemetry_json_path}")
-            if artifacts.charts_dir:
-                typer.echo(f"  charts_dir={artifacts.charts_dir}")
-            if artifacts.frame_timing_svg:
-                typer.echo(f"  frame_timing_svg={artifacts.frame_timing_svg}")
-            if artifacts.draw_calls_svg:
-                typer.echo(f"  draw_calls_svg={artifacts.draw_calls_svg}")
-            if artifacts.pass_timing_stacked_svg:
-                typer.echo(f"  pass_timing_stacked_svg={artifacts.pass_timing_stacked_svg}")
-            if artifacts.report_md:
-                typer.echo(f"  report_md={artifacts.report_md}")
     if benchmark.profile is None:
         return
     typer.echo(
@@ -1074,7 +1007,6 @@ def cmd_replay_verify_checkpoints(
         PlaybackDriver,
         PlaybackWalkObserver,
         ReplayRunnerError,
-        build_verify_playback_driver,
     )
     from ..sim.hooks import TickResult
     from ..sim.world_state import WorldState
@@ -1127,7 +1059,7 @@ def cmd_replay_verify_checkpoints(
                     raise _CheckpointMismatchStop(tick_diff, list(self.driver.rng_call_order.callers))
 
     try:
-        driver = build_verify_playback_driver(replay, max_ticks=max_ticks)
+        driver = PlaybackDriver(replay, max_ticks=max_ticks)
 
         result = driver.run(
             observer=_CheckpointVerifyObserver(

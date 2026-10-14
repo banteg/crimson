@@ -4,7 +4,8 @@ import time
 
 from crimson.screens.chrome import ensure_menu_ground
 from grim import canvas
-from grim.audio import resume_audio, suspend_audio
+from grim.assets import load_runtime_resources, unload_runtime_resources
+from grim.audio import init_audio_state, resume_audio, shutdown_audio, suspend_audio
 from grim.blend import opaque_blend
 from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.texture_mode import texture_mode
@@ -20,7 +21,6 @@ from ..screens.actions import ScreenAction
 from ..screens.transitions import _update_screen_fade
 from ..sim.timing import ftol_ms_i32
 from .navigation import ScreenNavigator
-from .resources import GameResources
 from .types import GameState
 
 _GAMMA_RAMP_VS_330 = r"""
@@ -75,7 +75,6 @@ class GameLoopView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self.navigation = ScreenNavigator(state)
-        self.resources = GameResources(state)
         self._screenshot_requested = False
         self._focus_screen: object | None = None
         self._gamma_shader: rl.Shader | None = None
@@ -84,9 +83,15 @@ class GameLoopView:
 
     def open(self) -> None:
         rl.hide_cursor()
-        self.resources.open()
+        state = self.state
+        if state.resources is None:
+            state.resources = load_runtime_resources(state.assets_dir)
+            state.console.log.log(f"runtime resources loaded: {len(state.resources.textures)} textures")
+            state.console.log.flush()
+        if state.audio is None:
+            state.audio = init_audio_state(state.config, state.assets_dir, state.console, state.rng)
+            state.console.exec_line("exec music/game_tunes.txt")
         self.navigation.open()
-
     def should_close(self) -> bool:
         return self.state.quit_requested
 
@@ -304,7 +309,11 @@ class GameLoopView:
                 ground.close()
         finally:
             self._close_gamma_resources()
-            self.resources.close()
+            if self.state.audio is not None:
+                shutdown_audio(self.state.audio)
+                self.state.audio = None
+            unload_runtime_resources(self.state.resources)
+            self.state.resources = None
             self._log_lines(self.state.replay_saver.close())
             if self.state.leaderboard is not None:
                 self._log_lines(self.state.leaderboard.close(str(self.state.config.profile.player_name or "")))

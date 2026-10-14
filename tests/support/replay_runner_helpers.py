@@ -17,7 +17,6 @@ from crimson.replay.driver.playback_driver import (
     PlaybackDriver,
     PlaybackWalkObserver,
     RngTraceDraw,
-    build_verify_playback_driver,
 )
 from crimson.replay.input_codec import pack_tick
 from crimson.replay.types import current_recorder
@@ -71,7 +70,7 @@ def idle_replay(tick_count: int, *, run: RunSpec | None = None) -> Replay:
 def replay_with_simulated_result(replay: Replay) -> Replay:
     """Stamp a replay with the result its ticks simulate to."""
 
-    result = build_verify_playback_driver(replay, warn_on_version_mismatch=False).run()
+    result = PlaybackDriver(replay, warn_on_version_mismatch=False).run()
     return msgspec.structs.replace(replay, result=result)
 
 
@@ -188,7 +187,7 @@ def _run_verify_playback(
     start_weapon_id=None,
     observer: PlaybackWalkObserver | None = None,
 ) -> RunResult:
-    driver = build_verify_playback_driver(
+    driver = PlaybackDriver(
         replay,
         max_ticks=max_ticks,
         warn_on_version_mismatch=bool(warn_on_version_mismatch),

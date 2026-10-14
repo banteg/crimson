@@ -11,7 +11,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, load_replay_file
-from crimson.replay.driver.playback_driver import build_runtime_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.driver.prepare import MarkKind, ReplayPreparation
 from crimson.screens import replay_viewer
 from crimson.screens.actions import Route
@@ -87,7 +87,7 @@ def test_a_seek_lands_on_the_state_straight_play_reaches(open_viewer: OpenViewer
     replay = load_replay_file(RECORDED_DIR / "quest-1.1-completed.crd")
     viewer = open_viewer(replay)
     viewer.update(0.0)
-    straight = build_runtime_playback_driver(replay, max_ticks=None)
+    straight = PlaybackDriver(replay, max_ticks=None, warn_on_version_mismatch=False)
     clock = PresentationClock()
     states: dict[int, tuple[bytes, PresentationClock]] = {}
     for tick in range(len(replay.ticks)):
@@ -202,7 +202,7 @@ def test_a_seek_forward_bakes_every_tick_it_passes(open_viewer: OpenViewer, mock
 
     viewer.seek(59)
 
-    stepped = build_runtime_playback_driver(replay, max_ticks=None)
+    stepped = PlaybackDriver(replay, max_ticks=None, warn_on_version_mismatch=False)
     fx_by_tick = [stepped.step_tick(tick).payload.presentation.terrain_fx for tick in range(59)]
     expected = [fx for fx in fx_by_tick[50:] if not fx.is_empty()]
     assert expected

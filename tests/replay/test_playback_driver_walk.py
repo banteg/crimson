@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from crimson.replay.driver.playback_driver import (
+    PlaybackDriver,
     PlaybackWalkObserver,
     PlaybackWalkResult,
-    build_verify_playback_driver,
 )
 from crimson.sim.hooks import TickResult
 from crimson.sim.world_state import WorldState
@@ -41,7 +41,7 @@ class _WalkedTickObserver(PlaybackWalkObserver):
 def test_playback_driver_walk_observer_sees_pre_and_post_step_world(mocker) -> None:
     rec = _blank_survival_replay(ticks=1, seed=0x1234)
     replay = finish_replay(rec)
-    driver = build_verify_playback_driver(replay)
+    driver = PlaybackDriver(replay)
     observed_before: list[int] = []
     observed_after: list[int] = []
 
@@ -68,7 +68,7 @@ def test_playback_driver_walk_observer_sees_pre_and_post_step_world(mocker) -> N
 def test_playback_driver_walk_progress_uses_absolute_completed_tick_indexes() -> None:
     rec = _blank_survival_replay(ticks=4, seed=0x1234)
     replay = finish_replay(rec)
-    driver = build_verify_playback_driver(replay)
+    driver = PlaybackDriver(replay)
     progress_ticks: list[int] = []
 
     walk_result = driver.walk_ticks(
@@ -84,7 +84,7 @@ def test_playback_driver_walk_progress_uses_absolute_completed_tick_indexes() ->
 def test_playback_driver_walk_clamps_ranges_to_tick_limit() -> None:
     rec = _blank_survival_replay(ticks=3, seed=0x1234)
     replay = finish_replay(rec)
-    driver = build_verify_playback_driver(replay)
+    driver = PlaybackDriver(replay)
     walked_ticks: list[int] = []
 
     walk_result = driver.walk_ticks(
@@ -96,7 +96,7 @@ def test_playback_driver_walk_clamps_ranges_to_tick_limit() -> None:
     assert walk_result == PlaybackWalkResult(start_tick=2, next_tick_index=3, ticks_completed=1)
     assert walked_ticks == [2]
 
-    empty_driver = build_verify_playback_driver(replay)
+    empty_driver = PlaybackDriver(replay)
     empty_result = empty_driver.walk_ticks(start_tick=10, stop_tick=12)
     assert empty_result == PlaybackWalkResult(start_tick=3, next_tick_index=3, ticks_completed=0)
 
@@ -105,11 +105,11 @@ def test_playback_driver_walk_chunking_matches_full_run_result() -> None:
     rec = _blank_survival_replay(ticks=5, seed=0x1234)
     replay = finish_replay(rec)
 
-    full_driver = build_verify_playback_driver(replay)
+    full_driver = PlaybackDriver(replay)
     full_driver.walk_ticks()
     full_result = full_driver.build_result()
 
-    chunked_driver = build_verify_playback_driver(replay)
+    chunked_driver = PlaybackDriver(replay)
     chunk0 = chunked_driver.walk_ticks(start_tick=0, stop_tick=2)
     chunk1 = chunked_driver.walk_ticks(start_tick=chunk0.next_tick_index, stop_tick=4)
     chunk2 = chunked_driver.walk_ticks(start_tick=chunk1.next_tick_index, stop_tick=10)

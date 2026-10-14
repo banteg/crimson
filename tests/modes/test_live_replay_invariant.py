@@ -20,7 +20,7 @@ from crimson.input_codes import PadCode
 from crimson.math_parity import f32
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.replay import load_replay
-from crimson.replay.driver.playback_driver import PlaybackWalkObserver, build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver, PlaybackWalkObserver
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
@@ -119,7 +119,7 @@ def test_live_run_replays_to_identical_session_state(mocker, make_mode_config, a
     assert len(replay.ticks) == live_ticks[0] > 1000
     assert any(command for tick in replay.ticks for command in tick.commands)
 
-    driver = build_verify_playback_driver(replay, warn_on_version_mismatch=False)
+    driver = PlaybackDriver(replay, warn_on_version_mismatch=False)
     replayed_digests: list[str] = []
 
     class Digests(PlaybackWalkObserver):

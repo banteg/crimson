@@ -8,7 +8,7 @@ from crimson.modes.quest_mode import QuestMode
 from crimson.persistence.save_status import GAME_CFG_NAME, GameStatus, load_status
 from crimson.quests.level import QuestLevel
 from crimson.quests.status import tracked_quest_completed_counter_index
-from crimson.replay.driver.playback_driver import build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.screens.actions import StartRun
 from crimson.screens.quest_views.quest_failed import QuestFailedView
 from crimson.screens.quest_views.quest_results import QuestResultsView
@@ -86,7 +86,7 @@ def test_replay_playback_does_the_bookkeeping_without_writing_status(mocker) -> 
     # An empty spawn table completes at tick 152; the run-down ends the replay at tick 183.
     replay = idle_replay(184, run=RunSpec(game_mode_id=GameMode.QUESTS, seed=0x1234, quest_level=LEVEL))
     save = mocker.spy(GameStatus, "save")
-    driver = build_verify_playback_driver(replay, warn_on_version_mismatch=False, spawn_entries=())
+    driver = PlaybackDriver(replay, warn_on_version_mismatch=False, spawn_entries=())
 
     driver.run()
 

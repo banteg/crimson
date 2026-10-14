@@ -104,9 +104,6 @@ native-link image="grim.dll" *args:
 native-verify *args:
     uv run crimson native verify {{args}}
 
-schema-inventory *args:
-    uv run scripts/schema_inventory.py {{args}}
-
 save-status *args:
     uv run scripts/save_status.py {{args}}
 

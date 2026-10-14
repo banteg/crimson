@@ -118,12 +118,13 @@ class PlaybackDriver:
         max_ticks: int | None = None,
         trace_rng: bool = False,
         strict_rng_trace: bool = False,
+        warn_on_version_mismatch: bool = True,
         version_mismatch_action: str | None = "verification",
         spawn_entries: tuple[SpawnEntry, ...] | None = None,
         start_weapon_id: WeaponId | None = None,
     ) -> None:
         require_playable_rules(replay)
-        if version_mismatch_action is not None:
+        if warn_on_version_mismatch and version_mismatch_action is not None:
             warn_on_game_version_mismatch(replay, action=str(version_mismatch_action))
         self.replay = replay
         self.run_spec = replay.run
@@ -282,46 +283,6 @@ class PlaybackDriver:
     def terrain_setup(self) -> TerrainSetup | None:
         return self._terrain_setup
 
-
-def build_verify_playback_driver(
-    replay: Replay,
-    *,
-    max_ticks: int | None = None,
-    warn_on_version_mismatch: bool = True,
-    trace_rng: bool = False,
-    strict_rng_trace: bool = False,
-    spawn_entries: tuple[SpawnEntry, ...] | None = None,
-    start_weapon_id: WeaponId | None = None,
-) -> PlaybackDriver:
-    """Build the canonical headless/verification replay driver."""
-
-    return PlaybackDriver(
-        replay,
-        max_ticks=max_ticks,
-        trace_rng=bool(trace_rng),
-        strict_rng_trace=bool(strict_rng_trace),
-        version_mismatch_action=("verification" if bool(warn_on_version_mismatch) else None),
-        spawn_entries=spawn_entries,
-        start_weapon_id=start_weapon_id,
-    )
-
-
-def build_runtime_playback_driver(
-    replay: Replay,
-    *,
-    max_ticks: int | None,
-    spawn_entries: tuple[SpawnEntry, ...] | None = None,
-    start_weapon_id: WeaponId | None = None,
-) -> PlaybackDriver:
-    """Build the canonical live replay-playback driver."""
-
-    return PlaybackDriver(
-        replay,
-        max_ticks=max_ticks,
-        version_mismatch_action=None,
-        spawn_entries=spawn_entries,
-        start_weapon_id=start_weapon_id,
-    )
 
 
 def advance_playback_frame(

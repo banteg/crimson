@@ -4,7 +4,7 @@ from pathlib import Path
 
 import crimson.world.audio_bridge as audio_bridge_module
 from crimson.game_modes import GameMode
-from crimson.replay.driver.playback_driver import advance_playback_frame, build_runtime_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver, advance_playback_frame
 from crimson.replay.ticks import LiveTickSource, step_replay_tick
 from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.clock import FixedStepClock
@@ -65,7 +65,7 @@ def test_contract_8_live_and_replay_frames_advance_the_presentation_clock_alike(
     harness = StandaloneTickHarness(game_mode=GameMode.SURVIVAL, frame_inputs=lambda _dt: [player_input()])
 
     replay = idle_replay(16, run=RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0))
-    driver = build_runtime_playback_driver(replay, max_ticks=None)
+    driver = PlaybackDriver(replay, max_ticks=None, warn_on_version_mismatch=False)
     replay_runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(0))
     replay_runtime.start_session(driver.session)
     replay_clock = FixedStepClock(tick_rate=60)

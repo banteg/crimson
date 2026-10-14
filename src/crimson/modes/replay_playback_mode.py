@@ -27,7 +27,6 @@ from ..replay.driver.playback_driver import (
     PlaybackDriver,
     ReplayRunnerError,
     advance_playback_frame,
-    build_runtime_playback_driver,
 )
 from ..replay.driver.prepare import Keyframe, restore_keyframe
 from ..sim.batch_apply import (
@@ -189,7 +188,7 @@ class ReplayPlaybackMode:
         runtime.open_runtime()
 
         try:
-            self._driver = build_runtime_playback_driver(replay, max_ticks=self._max_ticks)
+            self._driver = PlaybackDriver(replay, max_ticks=self._max_ticks, warn_on_version_mismatch=False)
             driver = self._driver
             runtime.start_session(driver.session)
         except ReplayRunnerError as exc:  # pragma: no cover

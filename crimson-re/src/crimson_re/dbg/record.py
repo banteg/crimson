@@ -18,7 +18,6 @@ from crimson.replay.driver.playback_driver import (
     PlaybackDriver,
     PlaybackWalkObserver,
     RngTraceDraw,
-    build_verify_playback_driver,
 )
 from crimson.replay.payloads import BuiltinObject
 from crimson.sim.hooks import TickResult
@@ -119,7 +118,7 @@ def _replay_recording(replay: Replay) -> _TraceRecording:
 
 def _load_recording(path: Path) -> tuple[_TraceRecording, PlaybackDriver]:
     replay = load_replay_file(path)
-    return _replay_recording(replay), build_verify_playback_driver(replay, trace_rng=True, strict_rng_trace=True)
+    return _replay_recording(replay), PlaybackDriver(replay, trace_rng=True, strict_rng_trace=True)
 
 
 def _fingerprint(path: Path) -> BuiltinObject:

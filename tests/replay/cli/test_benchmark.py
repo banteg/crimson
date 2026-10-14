@@ -73,30 +73,8 @@ def test_replay_benchmark_json_output_payload_ok(tmp_path: Path) -> None:
     assert payload["benchmark"]["sample_count"] == 2
     assert len(payload["benchmark"]["samples"]) == 2
     assert payload["profile"] is None
-    assert payload["render_telemetry"] is None
     assert payload["ticks"] == 2
     assert payload["run_result"] == json.loads(msgspec.json.encode(replay.result))
-
-
-def test_replay_benchmark_headless_rejects_render_telemetry_flag(tmp_path: Path) -> None:
-    replay = _build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    replay_path = _write_replay(tmp_path, replay=replay, name="survival.crd")
-    runner = CliRunner()
-
-    result = runner.invoke(
-        app,
-        [
-            "replay",
-            "benchmark",
-            str(replay_path),
-            "--mode",
-            "headless",
-            "--render-telemetry",
-        ],
-    )
-
-    assert result.exit_code == 1
-    assert "--render-telemetry is supported only with --mode render" in result.output
 
 
 def test_replay_benchmark_profile_outputs_hotspots_and_pstats(tmp_path: Path) -> None:

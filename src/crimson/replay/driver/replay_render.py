@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from ...replay import REPLAY_TICK_RATE, Replay
 from ...sim.run_result import RunResult
-from .playback_driver import build_verify_playback_driver
+from .playback_driver import PlaybackDriver
 
 X264Preset = Literal[
     "ultrafast",
@@ -155,7 +155,7 @@ def run_replay_render_video(
         raise ReplayRenderError(f"output exists: {out_path} (pass --overwrite to replace)")
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    baseline_driver = build_verify_playback_driver(replay, max_ticks=max_ticks)
+    baseline_driver = PlaybackDriver(replay, max_ticks=max_ticks)
     baseline_result = baseline_driver.run()
     baseline_ticks = int(baseline_driver.tick_limit)
 

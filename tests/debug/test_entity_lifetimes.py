@@ -13,7 +13,7 @@ from crimson.projectiles.runtime import (
     projectile_spawn,
 )
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
-from crimson.replay.driver.playback_driver import build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson_re.dbg.record import _entity_samples_for_world
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -21,7 +21,7 @@ from tests.replay.cli._helpers import build_replay
 
 
 def test_entity_uids_follow_allocations_between_snapshots() -> None:
-    world = build_verify_playback_driver(build_replay(mode=GameMode.SURVIVAL, ticks=1)).world
+    world = PlaybackDriver(build_replay(mode=GameMode.SURVIVAL, ticks=1)).world
     world.creatures = CreaturePool()
     world.state.projectiles = ProjectilePool()
     world.state.secondary_projectiles = SecondaryProjectilePool()

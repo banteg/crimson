@@ -9,7 +9,7 @@ from typer.testing import CliRunner
 from crimson.cli.app import app
 from crimson.replay import Replay, load_replay_file
 from crimson.replay.checkpoints import load_checkpoints_file
-from crimson.replay.driver.playback_driver import PlaybackDriver, PlaybackWalkObserver, build_verify_playback_driver
+from crimson.replay.driver.playback_driver import PlaybackDriver, PlaybackWalkObserver
 from crimson.replay.rng_call_order import UNTAGGED_CALLER, caller_names
 from crimson.sim.hooks import TickResult
 from crimson.sim.world_state import WorldState
@@ -28,7 +28,7 @@ class _TickCallers(PlaybackWalkObserver):
 
 
 def _callers_by_tick(replay: Replay, *, max_ticks: int) -> list[list[int]]:
-    driver = build_verify_playback_driver(replay, max_ticks=max_ticks, warn_on_version_mismatch=False)
+    driver = PlaybackDriver(replay, max_ticks=max_ticks, warn_on_version_mismatch=False)
     observer = _TickCallers(driver=driver, callers_by_tick=[])
     driver.run(observer=observer)
     return observer.callers_by_tick
@@ -63,7 +63,7 @@ def test_verify_checkpoints_catches_draws_reordered_within_a_tick(mocker: Mocker
         return draw(self, caller)
 
     mocker.patch.object(CrtRand, "_draw", reordered_draw)
-    driver = build_verify_playback_driver(replay, max_ticks=tick + 1, warn_on_version_mismatch=False)
+    driver = PlaybackDriver(replay, max_ticks=tick + 1, warn_on_version_mismatch=False)
     driver.walk_ticks(stop_tick=tick)
     actual = driver.build_checkpoint(tick_result=driver.step_tick(tick))
     reordered = list(driver.rng_call_order.callers)
