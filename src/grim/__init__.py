@@ -9,7 +9,6 @@ __all__ = [
     "console",
     "fonts",
     "geom",
-    "input",
     "jaz",
     "math",
     "music",
