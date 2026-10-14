@@ -29,6 +29,8 @@ class CameraUpdate(msgspec.Struct, frozen=True):
 
 
 def camera_update_for_players(players: Sequence[PlayerState], shake: Vec2) -> CameraUpdate:
+    if len(players) == 1:
+        return CameraUpdate(focus=players[0].pos, shake=shake)
     alive = [player for player in players if player.health > 0.0]
     focus = None
     if alive:

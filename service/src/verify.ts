@@ -133,11 +133,8 @@ class TickMonitor {
   private moveTarget: { x: number; y: number } | null = null;
 
   updateCamera(c: Core): void {
-    let camera = this.camera;
-    if (c.portable_player_health() > 0) camera = { x: VIEW_W * 0.5 - c.portable_player_x(), y: VIEW_H * 0.5 - c.portable_player_y() };
-    if (camera === null) return;
-    const x = camera.x + c.portable_shake_x();
-    const y = camera.y + c.portable_shake_y();
+    const x = VIEW_W * 0.5 - c.portable_player_x() + c.portable_shake_x();
+    const y = VIEW_H * 0.5 - c.portable_player_y() + c.portable_shake_y();
     this.camera = {
       x: Math.max(Math.min(x, -1), VIEW_W - TERRAIN_SIZE),
       y: Math.max(Math.min(y, -1), VIEW_H - TERRAIN_SIZE),

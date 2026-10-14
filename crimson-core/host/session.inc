@@ -123,10 +123,14 @@ template <class T> static void live_carry(const T &before, const T &after, T &pl
     if (a[i] != b[i])
       p[i] = add ? p[i] + (a[i] - b[i]) : a[i];
 }
-// A tick between the verifier's settings.
+// A tick between the verifier's settings; it puts its aim on the cursor, so the
+// player's comes back with them.
 static int live_step(uint32_t count) {
+  float mouse_x = ui_mouse_x, mouse_y = ui_mouse_y;
   live_enter_run();
   int accepted = portable_step_many(count);
+  ui_mouse_x = mouse_x;
+  ui_mouse_y = mouse_y;
   LiveSettings after = live_settings();
   // A replay changes nothing of the player's; a ranked run plays on a detached
   // save, so its progress stays its own.

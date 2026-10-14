@@ -122,6 +122,29 @@ def test_aim_stays_inside_the_ranked_view() -> None:
     # A point-click target comes from the same cursor.
     point_click = MovementControlType.MOUSE_POINT_CLICK
     assert _monitor(_SURVIVAL, _input(point_click, aim=Vec2(600.0, 600.0), target=Vec2(512.0, 1000.0))) == {"aim_out_of_view"}
+    # A single dead player's camera still centers on the player before adding shake (`camera_update`), rather than
+    # accumulating shake onto the previous tick's shaken camera across the run-down.
+    driver = PlaybackDriver(
+        Replay(
+            format_version=REPLAY_FORMAT_VERSION,
+            game_version="test",
+            rules=REPLAY_RULES,
+            recorder=current_recorder(),
+            pilot=None,
+            run=_SURVIVAL,
+            result=RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, ()),
+            ticks=[ReplayTick(inputs=[pack_player_input(_input(aim=Vec2(512.0, 148.0)))]) for _ in range(4)],
+        ),
+        version_mismatch_action=None,
+    )
+    driver.world.state.camera_shake_timer = 1.0
+    driver.world.state.camera_shake_offset = Vec2(0.0, -20.0)
+    monitor = RankedTickMonitor(replay=driver.replay)
+    for tick_index in range(len(driver.replay.ticks)):
+        monitor.before_tick(tick_index, driver.world, 1.0 / 60.0)
+        driver.world.players[0].health = 0.0
+        monitor.after_tick(driver.step_tick(tick_index), driver.world)
+    assert not monitor.reasons
 
 
 def test_computer_controls_never_rank() -> None:

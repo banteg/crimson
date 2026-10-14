@@ -127,7 +127,7 @@ const CREATURES = names.filter((n) => /^creatures\[\d+\]\.active$/.test(n)).leng
 function target() {
   const f = (n) => field(core, n, true);
   const px = f("players[0].pos_x"), py = f("players[0].pos_y");
-  let best = Infinity, aim = [512, 384], away = [0, 1];
+  let best = Infinity, aim = [512, 0], away = [0, 1];
   for (let i = 0; i < CREATURES; i++) {
     if (!field(core, `creatures[${i}].active`) || f(`creatures[${i}].health`) <= 0) continue;
     const x = f(`creatures[${i}].pos_x`), y = f(`creatures[${i}].pos_y`);
@@ -159,7 +159,8 @@ while (true) {
     continue;
   }
   const taps = [];
-  let cursor = [512, 384], keys = [];
+  // Hold the cursor on the bottom edge through the multi-tick opening frame before creatures spawn.
+  let cursor = [512, 767], keys = [];
   if (started) {
     const { aim, away } = target();
     cursor = aim;
@@ -175,7 +176,8 @@ while (true) {
   }
   // Fire in bursts, so presses and releases both fall between ticks.
   const buttons = Math.floor(run.clock / 333) % 4 === 3 ? 0 : 1;
-  frame(times[frames++ % times.length], { cursor, buttons, keys, taps });
+  const dt = times[frames++ % times.length];
+  frame(started ? dt : 50, { cursor, buttons, keys, taps });
 
   const recorded = replay();
   if (!started) {
@@ -243,11 +245,15 @@ function savedUnlocks() {
   return execFileSync("uv", ["run", "--no-sync", "python", "-c", script, file], { encoding: "utf8" }).trim();
 }
 
-// Why a replay payload does not rank, as the service decides it (src/crimson/replay/ranked.py unranked_reasons).
+// Why a replay payload does not rank, as the service decides it (src/crimson/replay/ranked.py).
 function unrankedReasons(payload) {
   const script =
-    "import sys; from crimson.replay.codec import decode_replay_payload; from crimson.replay.ranked import unranked_reasons; " +
-    "print(' '.join(unranked_reasons(decode_replay_payload(sys.stdin.buffer.read()).run)))";
+    "import sys; from crimson.replay.codec import decode_replay_payload; " +
+    "from crimson.replay.driver.playback_driver import PlaybackDriver; " +
+    "from crimson.replay.ranked import RankedTickMonitor, unranked_reasons; " +
+    "r = decode_replay_payload(sys.stdin.buffer.read()); m = RankedTickMonitor(r); " +
+    "PlaybackDriver(r, version_mismatch_action=None).run(observer=m); " +
+    "print(' '.join([*unranked_reasons(r.run), *sorted(m.reasons)]))";
   return execFileSync("uv", ["run", "--no-sync", "python", "-c", script], { input: payload, encoding: "utf8" }).trim();
 }
 
