@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import datetime as dt
 import struct
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any, Self, overload
 
 import msgspec
 
@@ -71,11 +73,60 @@ def _score_uni_num_from_rand(rand_value: int) -> int:
     return int(rand_value) & UNI_NUM_MASK
 
 
+class _RecordField[T: int]:
+    @overload
+    def __init__(self: _RecordField[int], offset: int, fmt: str) -> None: ...
+
+    @overload
+    def __init__(self, offset: int, fmt: str, decode: Callable[[int], T]) -> None: ...
+
+    def __init__(self, offset: int, fmt: str, decode: Callable[[int], Any] = int) -> None:
+        self._unpack = struct.Struct(fmt)
+        self._pack = struct.Struct("<I" if fmt == "<i" else fmt)
+        self._offset = offset
+        self._mask = (1 << (self._unpack.size * 8)) - 1
+        self._decode = decode
+
+    @overload
+    def __get__(self, instance: None, owner: type[HighScoreRecord]) -> Self: ...
+
+    @overload
+    def __get__(self, instance: HighScoreRecord, owner: type[HighScoreRecord] | None = None) -> T: ...
+
+    def __get__(self, instance: HighScoreRecord | None, owner: type[HighScoreRecord] | None = None) -> T | Self:
+        if instance is None:
+            return self
+        return self._decode(int(self._unpack.unpack_from(instance.data, self._offset)[0]))
+
+    def __set__(self, instance: HighScoreRecord, value: T | int) -> None:
+        self._pack.pack_into(instance.data, self._offset, int(value) & self._mask)
+
+
 class HighScoreRecord(msgspec.Struct):
     data: bytearray
     # The leaderboard run a received record shows (its replay is the site's /runs/<run>.crd); kept in memory only,
     # never in the record's bytes.
     run: str = ""
+
+    run_elapsed_ms = _RecordField(0x20, "<i")
+    score_xp = _RecordField(0x24, "<I")
+    game_mode_id = _RecordField(0x28, "<B", _known_game_mode)
+    quest_stage_major = _RecordField(0x29, "<B")
+    quest_stage_minor = _RecordField(0x2A, "<B")
+    most_used_weapon_id = _RecordField(0x2B, "<B", WeaponId)
+    shots_fired = _RecordField(0x2C, "<I")
+    shots_hit = _RecordField(0x30, "<I")
+    creature_kill_count = _RecordField(0x34, "<I")
+    uni_num = _RecordField(0x38, "<I")
+    # The run's replay, `replays/<n>-<mode>.crd` (crimson.replay.library); 0 for none. The original reserved
+    # these bytes and never read them; its duplicate check leaves them out.
+    replay_number = _RecordField(0x3C, "<I")
+    day = _RecordField(0x40, "<B")
+    date_week = _RecordField(0x41, "<B")
+    month = _RecordField(0x42, "<B")
+    year_offset = _RecordField(0x43, "<B")
+    flags = _RecordField(0x44, "<B")
+    hardcore_marker = _RecordField(0x45, "<B")
 
     @classmethod
     def blank(cls, *, rng: CrandLike | None = None, rand_value: int | None = None) -> HighScoreRecord:
@@ -121,46 +172,6 @@ class HighScoreRecord(msgspec.Struct):
             i -= 1
 
     @property
-    def run_elapsed_ms(self) -> int:
-        return int(struct.unpack_from("<i", self.data, 0x20)[0])
-
-    @run_elapsed_ms.setter
-    def run_elapsed_ms(self, value: int) -> None:
-        struct.pack_into("<I", self.data, 0x20, int(value) & 0xFFFFFFFF)
-
-    @property
-    def score_xp(self) -> int:
-        return int(struct.unpack_from("<I", self.data, 0x24)[0])
-
-    @score_xp.setter
-    def score_xp(self, value: int) -> None:
-        struct.pack_into("<I", self.data, 0x24, int(value) & 0xFFFFFFFF)
-
-    @property
-    def game_mode_id(self) -> GameMode:
-        return _known_game_mode(int(self.data[0x28]))
-
-    @game_mode_id.setter
-    def game_mode_id(self, value: GameMode) -> None:
-        self.data[0x28] = int(value) & 0xFF
-
-    @property
-    def quest_stage_major(self) -> int:
-        return int(self.data[0x29])
-
-    @quest_stage_major.setter
-    def quest_stage_major(self, value: int) -> None:
-        self.data[0x29] = int(value) & 0xFF
-
-    @property
-    def quest_stage_minor(self) -> int:
-        return int(self.data[0x2A])
-
-    @quest_stage_minor.setter
-    def quest_stage_minor(self, value: int) -> None:
-        self.data[0x2A] = int(value) & 0xFF
-
-    @property
     def quest_level(self) -> QuestLevel | None:
         major = int(self.quest_stage_major)
         minor = int(self.quest_stage_minor)
@@ -177,100 +188,14 @@ class HighScoreRecord(msgspec.Struct):
         self.quest_stage_major = int(value.major)
         self.quest_stage_minor = int(value.minor)
 
-    @property
-    def most_used_weapon_id(self) -> WeaponId:
-        return WeaponId(int(self.data[0x2B]))
-
-    @most_used_weapon_id.setter
-    def most_used_weapon_id(self, value: WeaponId) -> None:
-        self.data[0x2B] = int(WeaponId(value)) & 0xFF
-
-    @property
-    def shots_fired(self) -> int:
-        return int(struct.unpack_from("<I", self.data, 0x2C)[0])
-
-    @shots_fired.setter
-    def shots_fired(self, value: int) -> None:
-        struct.pack_into("<I", self.data, 0x2C, int(value) & 0xFFFFFFFF)
-
-    @property
-    def shots_hit(self) -> int:
-        return int(struct.unpack_from("<I", self.data, 0x30)[0])
-
-    @shots_hit.setter
-    def shots_hit(self, value: int) -> None:
-        struct.pack_into("<I", self.data, 0x30, int(value) & 0xFFFFFFFF)
-
-    @property
-    def creature_kill_count(self) -> int:
-        return int(struct.unpack_from("<I", self.data, 0x34)[0])
-
-    @creature_kill_count.setter
-    def creature_kill_count(self, value: int) -> None:
-        struct.pack_into("<I", self.data, 0x34, int(value) & 0xFFFFFFFF)
-
-    @property
-    def uni_num(self) -> int:
-        return int(struct.unpack_from("<I", self.data, 0x38)[0])
-
-    @uni_num.setter
-    def uni_num(self, value: int) -> None:
-        struct.pack_into("<I", self.data, 0x38, int(value) & 0xFFFFFFFF)
-
-    @property
-    def replay_number(self) -> int:
-        """The run's replay, `replays/<n>-<mode>.crd` (crimson.replay.library); 0 for none. The original reserved
-        these bytes and never read them; its duplicate check leaves them out."""
-        return int(struct.unpack_from("<I", self.data, 0x3C)[0])
-
-    @replay_number.setter
-    def replay_number(self, value: int) -> None:
-        struct.pack_into("<I", self.data, 0x3C, int(value) & 0xFFFFFFFF)
-
-    @property
-    def day(self) -> int:
-        return int(self.data[0x40])
-
-    @property
-    def date_week(self) -> int:
-        return int(self.data[0x41])
-
-    @date_week.setter
-    def date_week(self, value: int) -> None:
-        self.data[0x41] = int(value) & 0xFF
-
-    @property
-    def month(self) -> int:
-        return int(self.data[0x42])
-
-    @property
-    def year_offset(self) -> int:
-        return int(self.data[0x43])
-
-    @property
-    def flags(self) -> int:
-        return int(self.data[0x44])
-
-    @flags.setter
-    def flags(self, value: int) -> None:
-        self.data[0x44] = int(value) & 0xFF
-
-    @property
-    def hardcore_marker(self) -> int:
-        return int(self.data[0x45])
-
-    @hardcore_marker.setter
-    def hardcore_marker(self, value: int) -> None:
-        self.data[0x45] = int(value) & 0xFF
-
     def ensure_date_fields(self, now: dt.date | None = None) -> None:
-        if int(self.data[0x40]) != 0:
+        if self.day != 0:
             return
         if now is None:
             now = dt.datetime.now(tz=dt.UTC).astimezone().date()
-        self.data[0x40] = int(now.day) & 0xFF
-        self.data[0x42] = int(now.month) & 0xFF
-        self.data[0x43] = int(now.year - 2000) & 0xFF
+        self.day = now.day
+        self.month = now.month
+        self.year_offset = now.year - 2000
         self.date_week = highscore_date_week(now.year, now.month, now.day)
 
 

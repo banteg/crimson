@@ -144,11 +144,8 @@ class Leaderboard:
         self._url = leaderboard_url() if url is None else url
         self._transport = transport
         self._download = download
-        # Replays download beside uploads, so watching a board's run never waits behind a long upload pass.
-        self._download_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="leaderboard-download")
-        self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="leaderboard")
-        # Logins run beside uploads, so a long upload pass never keeps the Profile button waiting.
-        self._login_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="leaderboard-login")
+        self._executor: ThreadPoolExecutor | None = None
+        self._aux_executor: ThreadPoolExecutor | None = None
         self._pending: list[Future[_Report]] = []
         self._held: Replay | None = None
         self._next_pass_s = 0.0
@@ -157,20 +154,32 @@ class Leaderboard:
         self.sync_status = SyncStatus.IDLE
         self.scores: dict[Board, list[OnlineScore]] = {}
 
+    def _submit(self, fn: Callable[..., _Report], *args: Any, **kwargs: Any) -> None:
+        if self._executor is None:
+            self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="leaderboard")
+        self._pending.append(self._executor.submit(fn, *args, **kwargs))
+
+    def _submit_aux[T](self, fn: Callable[..., T], *args: Any) -> Future[T]:
+        # Logins and replay downloads run beside uploads so a long upload pass never blocks UI actions.
+        if self._aux_executor is None:
+            self._aux_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="leaderboard-aux")
+        return self._aux_executor.submit(fn, *args)
+
     def hold(self, replay: Replay) -> None:
         """Keep a finished ranked run until its results screen closes and its name is known."""
         self._held = replay
 
     def release(self, name: str) -> None:
         """Queue the held run, if any, under `name`, then upload."""
-        if self._queue_held(name) and self._url:
-            self._pending.append(self._executor.submit(self._upload_pass))
+        replay, self._held = self._held, None
+        if replay is not None:
+            self._submit(self._queue, replay, name, upload=True)
 
     def tick(self, now_s: float) -> None:
         """Start an upload pass at launch and every `RETRY_INTERVAL_S` while runs wait and none is running."""
         if self._url and self.waiting and not self._pending and now_s >= self._next_pass_s:
             self._next_pass_s = now_s + RETRY_INTERVAL_S
-            self._pending.append(self._executor.submit(self._upload_pass))
+            self._submit(self._upload_pass)
 
     def sync(self, board: Board | None) -> None:
         """Send the waiting runs, then receive `board`'s best runs into `scores`; `sync_status` follows along."""
@@ -178,11 +187,11 @@ class Leaderboard:
             self.sync_status = SyncStatus.FAILED
             return
         self.sync_status = SyncStatus.CONNECTING
-        self._pending.append(self._executor.submit(self._sync, board))
+        self._submit(self._sync, board)
 
     def login(self) -> Future[str]:
         """The one-time link that opens the site signed in as this key."""
-        return self._login_executor.submit(self._login)
+        return self._submit_aux(self._login)
 
     def drain(self) -> list[str]:
         """The console lines of the finished jobs, in order; a job's error is raised here."""
@@ -195,12 +204,18 @@ class Leaderboard:
 
     def close(self, name: str) -> list[str]:
         """Queue a run still held under `name` and finish the started jobs; passes not yet started are dropped."""
-        self._queue_held(name)
-        self._login_executor.shutdown(wait=False, cancel_futures=True)
-        self._download_executor.shutdown(wait=False, cancel_futures=True)
-        self._executor.shutdown(wait=True, cancel_futures=True)
+        if self._aux_executor is not None:
+            self._aux_executor.shutdown(wait=False, cancel_futures=True)
+        if self._executor is not None:
+            self._executor.shutdown(wait=True, cancel_futures=True)
         self._pending = [future for future in self._pending if not future.cancelled()]
-        return self.drain()
+        lines = self.drain()
+        replay, self._held = self._held, None
+        if replay is not None:
+            report = self._queue(replay, name)
+            lines += report.lines
+            self.waiting = report.waiting
+        return lines
 
     def fetch_replay(self, run: str, replay_dir: Path) -> Future[Path | None]:
         """Download a board run's replay into `replay_dir/<run>.crd`, once; None when the board no longer has it."""
@@ -208,7 +223,7 @@ class Leaderboard:
             raise LeaderboardError("no leaderboard service is configured")
         if not _RUN_ID.fullmatch(run):
             raise LeaderboardError(f"not a run id: {run!r}")
-        return self._download_executor.submit(self._fetch_replay, run, replay_dir)
+        return self._submit_aux(self._fetch_replay, run, replay_dir)
 
     def _fetch_replay(self, run: str, replay_dir: Path) -> Path | None:
         path = replay_dir / f"{run}.crd"
@@ -222,17 +237,10 @@ class Leaderboard:
         atomic_write_bytes(path, data)
         return path
 
-    def _queue_held(self, name: str) -> bool:
-        replay, self._held = self._held, None
-        if replay is None:
-            return False
-        self._pending.append(self._executor.submit(self._queue, replay, name))
-        return True
-
     def _waiting_count(self) -> int:
         return sum(1 for _ in self._outbox.glob("*.json")) if self._outbox.is_dir() else 0
 
-    def _queue(self, replay: Replay, name: str) -> _Report:
+    def _queue(self, replay: Replay, name: str, *, upload: bool = False) -> _Report:
         payload = encode_replay_payload(replay)
         run_id = hashlib.sha256(payload).hexdigest()
         envelope = {
@@ -243,7 +251,11 @@ class Leaderboard:
         }
         self._outbox.mkdir(parents=True, exist_ok=True)
         atomic_write_bytes(self._outbox / f"{run_id}.json", json.dumps(envelope).encode())
-        return _Report([f"leaderboard: queued run {run_id[:12]} as {name!r}"], self._waiting_count())
+        queued_line = f"leaderboard: queued run {run_id[:12]} as {name!r}"
+        if not upload or not self._url:
+            return _Report([queued_line], self._waiting_count())
+        sent = self._upload_pass()
+        return _Report([queued_line, *sent.lines], sent.waiting)
 
     def _upload_pass(self) -> _Report:
         lines: list[str] = []

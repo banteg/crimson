@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import contextlib
+import struct
 from pathlib import Path
 from typing import Annotated, Any, Final
 
 import msgspec
-from construct import Array, Bytes, Int16ul, Int32ul, Struct
 
 from grim.atomic_write import atomic_write_bytes
 
@@ -35,23 +34,14 @@ type QuestPlayCounts = Annotated[
 
 _ZERO_QUEST_PLAY_COUNTS: Final[QuestPlayCounts] = tuple(0 for _ in range(QUEST_PLAY_COUNT))
 _ZERO_RESERVED_SEED_WORDS: Final[bytes] = b"\x00" * RESERVED_SEED_WORDS_BYTE_SIZE
-GAME_STATUS_STRUCT = Struct(
-    "quest_unlock_index" / Int16ul,
-    "quest_unlock_index_hardcore" / Int16ul,
-    "weapon_usage_counts" / Array(WEAPON_USAGE_COUNT, Int32ul),
-    "quest_play_counts" / Array(QUEST_PLAY_COUNT, Int32ul),
-    "mode_play_survival" / Int32ul,
-    "mode_play_rush" / Int32ul,
-    "mode_play_typo" / Int32ul,
-    "mode_play_other" / Int32ul,
-    "play_time_ms" / Int32ul,
-    "reserved_seed_words" / Bytes(RESERVED_SEED_WORDS_BYTE_SIZE),
+_WEAPON_END: Final = 2 + WEAPON_USAGE_COUNT
+_QUEST_END: Final = _WEAPON_END + QUEST_PLAY_COUNT
+GAME_STATUS_STRUCT = struct.Struct(
+    f"<HH{WEAPON_USAGE_COUNT}I{QUEST_PLAY_COUNT}I5I{RESERVED_SEED_WORDS_BYTE_SIZE}s",
 )
-
-GAME_CFG_STRUCT = Struct(
-    "encoded" / Bytes(BLOB_SIZE),
-    "checksum" / Int32ul,
-)
+GAME_CFG_STRUCT = struct.Struct(f"<{BLOB_SIZE}sI")
+assert GAME_STATUS_STRUCT.size == BLOB_SIZE
+assert GAME_CFG_STRUCT.size == FILE_SIZE
 
 
 class GameStatusData(msgspec.Struct, forbid_unknown_fields=True):
@@ -67,9 +57,7 @@ class GameStatusData(msgspec.Struct, forbid_unknown_fields=True):
     reserved_seed_words: bytes = _ZERO_RESERVED_SEED_WORDS
 
 
-# `GameStatusData` spells out the blob fields in `GAME_STATUS_STRUCT` order; everything else walks them.
 _STATUS_FIELD_NAMES: Final[tuple[str, ...]] = GameStatusData.__struct_fields__
-assert tuple(subcon.name for subcon in GAME_STATUS_STRUCT.subcons) == _STATUS_FIELD_NAMES
 
 
 class GameStatus(GameStatusData, kw_only=True):
@@ -78,14 +66,9 @@ class GameStatus(GameStatusData, kw_only=True):
     dirty: bool = False
 
     def __setattr__(self, name: str, value: object) -> None:
-        mark_dirty = name in _STATUS_FIELD_NAMES
-        current = _MISSING
-        if mark_dirty:
-            with contextlib.suppress(AttributeError):
-                current = object.__getattribute__(self, name)
-        super().__setattr__(name, value)
-        if mark_dirty and current is not _MISSING and current != value:
+        if name in _STATUS_FIELD_NAMES and getattr(self, name, value) != value:
             super().__setattr__("dirty", True)
+        super().__setattr__(name, value)
 
     @classmethod
     def from_data(cls, *, path: Path | None, data: GameStatusData, dirty: bool = False) -> GameStatus:
@@ -144,13 +127,6 @@ class GameStatus(GameStatusData, kw_only=True):
             self.save()
 
 
-class _Missing:
-    pass
-
-
-_MISSING: Final = _Missing()
-
-
 def _mode_count_field_for_mode(game_mode: GameMode) -> str:
     mode = game_mode if isinstance(game_mode, GameMode) else GameMode(int(game_mode))
     match mode:
@@ -182,14 +158,34 @@ def default_status_data() -> GameStatusData:
 def parse_status_blob(decoded: bytes) -> GameStatusData:
     if len(decoded) != BLOB_SIZE:
         raise ValueError(f"expected decoded blob of {BLOB_SIZE:#x} bytes, got {len(decoded):#x}")
-    raw = GAME_STATUS_STRUCT.parse(decoded)
-    # construct parses the arrays as lists; the struct holds tuples.
-    fields: dict[str, Any] = {name: raw[name] for name in _STATUS_FIELD_NAMES}
-    return msgspec.convert(fields, GameStatusData)
+    unpacked = GAME_STATUS_STRUCT.unpack(decoded)
+    return GameStatusData(
+        quest_unlock_index=unpacked[0],
+        quest_unlock_index_hardcore=unpacked[1],
+        weapon_usage_counts=unpacked[2:_WEAPON_END],
+        quest_play_counts=unpacked[_WEAPON_END:_QUEST_END],
+        mode_play_survival=unpacked[_QUEST_END],
+        mode_play_rush=unpacked[_QUEST_END + 1],
+        mode_play_typo=unpacked[_QUEST_END + 2],
+        mode_play_other=unpacked[_QUEST_END + 3],
+        play_time_ms=unpacked[_QUEST_END + 4],
+        reserved_seed_words=unpacked[_QUEST_END + 5],
+    )
 
 
 def build_status_blob(data: GameStatusData) -> bytes:
-    return GAME_STATUS_STRUCT.build(_status_fields(data))
+    return GAME_STATUS_STRUCT.pack(
+        data.quest_unlock_index,
+        data.quest_unlock_index_hardcore,
+        *data.weapon_usage_counts,
+        *data.quest_play_counts,
+        data.mode_play_survival,
+        data.mode_play_rush,
+        data.mode_play_typo,
+        data.mode_play_other,
+        data.play_time_ms,
+        data.reserved_seed_words,
+    )
 
 
 def to_s8(value: int) -> int:
@@ -235,9 +231,7 @@ def load_status(path: Path) -> GameStatus:
     raw = path.read_bytes()
     if len(raw) != FILE_SIZE:
         raise ValueError(f"expected {FILE_SIZE:#x} bytes, got {len(raw):#x}")
-    parsed = GAME_CFG_STRUCT.parse(raw)
-    encoded = bytes(parsed["encoded"])
-    stored_checksum = int(parsed["checksum"])
+    encoded, stored_checksum = GAME_CFG_STRUCT.unpack(raw)
     decoded = decode_blob(encoded)
     computed = compute_checksum(decoded)
     if stored_checksum != computed:
@@ -249,7 +243,7 @@ def save_status(path: Path, status: GameStatusData) -> None:
     decoded = build_status_blob(status)
     checksum = compute_checksum(decoded)
     encoded = encode_blob(decoded)
-    atomic_write_bytes(path, GAME_CFG_STRUCT.build({"encoded": encoded, "checksum": checksum}))
+    atomic_write_bytes(path, GAME_CFG_STRUCT.pack(encoded, checksum))
 
 
 def ensure_game_status(base_dir: Path) -> GameStatus:
