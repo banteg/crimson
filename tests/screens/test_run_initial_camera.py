@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import pytest
 
+from crimson import local_input
 from crimson.game_modes import GameMode
 from crimson.quests.dsl import build_custom_quest
+from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import unpack_player_input
 from crimson.replay.ranked import RankedTickMonitor
 from crimson.screens.actions import StartRun
@@ -47,4 +49,33 @@ def test_first_frame_cursor_at_top_left_stays_inside_ranked_view(
     assert first_input.aim == expected_aim
     monitor = RankedTickMonitor(replay)
     monitor.before_tick(0, world, 1.0 / 60.0)
+    assert not monitor.reasons
+
+
+@pytest.mark.parametrize(("cursor_y", "away_keys"), [(0.0, {0x1F, 0xD0}), (767.0, {0x11, 0xC8})])
+def test_long_frame_reads_the_cursor_through_each_ticks_camera(
+    make_game_state,
+    headless_resources,
+    mocker,
+    cursor_y,
+    away_keys,
+):
+    mocker.patch.object(canvas, "width", return_value=1024)
+    mocker.patch.object(canvas, "height", return_value=768)
+    mocker.patch.object(canvas, "mouse_position", return_value=Vec2(512.0, cursor_y).to_rl())
+    # Walk away from a cursor held on the screen's edge, so the camera moves between ticks.
+    mocker.patch.object(local_input, "input_code_is_down", side_effect=lambda code, player_index=0: code in away_keys)
+    state = make_game_state(resources=headless_resources, audio=HeadlessAudio(mocker).state)
+    state.ranked = True
+    _navigator, run = start_run(state, StartRun(GameMode.SURVIVAL))
+
+    for dt in [1.0 / 60.0] * 20 + [0.1]:
+        update_frame(run, state, dt=dt)
+    recorder = run._replay_recorder
+    assert recorder is not None
+    assert run._replay_result is not None
+    replay = recorder.finish(run._replay_result)
+    assert len(replay.ticks) > 21
+    monitor = RankedTickMonitor(replay)
+    PlaybackDriver(replay).run(observer=monitor)
     assert not monitor.reasons

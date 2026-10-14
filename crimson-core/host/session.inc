@@ -259,7 +259,18 @@ static PortableInput live_input() {
   bool forward = live_down_or_arrow(keys.move_key_forward, 0xc8),
        backward = live_down_or_arrow(keys.move_key_backward, 0xd0),
        left = live_down_or_arrow(keys.turn_key_left, 0xcb), right = live_down_or_arrow(keys.turn_key_right, 0xcd);
-  float world_x = ui_mouse_x - camera_offset_x, world_y = ui_mouse_y - camera_offset_y;
+  // The cursor reads through the camera the last tick left (camera_update). Tick 0 has
+  // none, only the reset camera, so it reads through the one the ranked view check
+  // starts from (service/src/verify.ts): on player one, clamped to the arena.
+  float camera_x = camera_offset_x, camera_y = camera_offset_y;
+  if (tick == 0) {
+    const crimson_cfg_t &view = live.run.config;
+    camera_x = fmaxf(fminf((float)(view.screen_width / 2) - player.position.x, -1.0f),
+                     (float)(view.screen_width - terrain_texture_width));
+    camera_y = fmaxf(fminf((float)(view.screen_height / 2) - player.position.y, -1.0f),
+                     (float)(view.screen_height - terrain_texture_height));
+  }
+  float world_x = ui_mouse_x - camera_x, world_y = ui_mouse_y - camera_y;
   PortableInput input = {0, 0, player.aim.x, player.aim.y, 0};
   if (move_mode == 1) { // relative
     input.move_x = (float)right - (float)left;

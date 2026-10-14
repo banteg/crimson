@@ -311,3 +311,26 @@ class LocalInputInterpreter:
                 ),
             )
         return out
+
+    def follow_cursor(
+        self,
+        inputs: Sequence[PlayerInput],
+        *,
+        players: Sequence[PlayerState],
+        mouse_world: Vec2,
+    ) -> list[PlayerInput]:
+        """The polled inputs with the cursor's world point read again, after the camera moved.
+
+        Only the mouse aim and a point-and-click target being dropped read it; keys and presses stay as polled.
+        """
+
+        out: list[PlayerInput] = []
+        for idx, (inp, player) in enumerate(zip(inputs, players, strict=True)):
+            if inp.move_mode is MovementControlType.MOUSE_POINT_CLICK and inp.reload_down:
+                target = Vec2(f32(mouse_world.x), f32(mouse_world.y))
+                self._state_for_player(idx, player=player).move_target = target
+                inp = msgspec.structs.replace(inp, move=target)
+            if inp.aim_scheme is AimScheme.MOUSE:
+                inp = msgspec.structs.replace(inp, aim=mouse_world)
+            out.append(inp)
+        return out
