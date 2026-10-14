@@ -58,7 +58,7 @@ def _is_struct_instance(value: object) -> bool:
 def _struct_field_names(value: object) -> tuple[str, ...]:
     fields = getattr(type(value), "__struct_fields__", None)
     if isinstance(fields, tuple) and all(isinstance(name, str) for name in fields):
-        return tuple(str(name) for name in fields)
+        return tuple(sorted(str(name) for name in fields))
     return ()
 
 

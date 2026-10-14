@@ -399,7 +399,12 @@ def _validate_and_canonicalize(checkpoints: ReplayCheckpoints) -> ReplayCheckpoi
 
 
 def dump_checkpoints(checkpoints: ReplayCheckpoints) -> bytes:
-    return zstd_pack(_CHECKPOINTS_ENCODER.encode(_validate_and_canonicalize(checkpoints)))
+    payload = _CHECKPOINTS_ENCODER.encode(_validate_and_canonicalize(checkpoints))
+    try:
+        _CHECKPOINTS_DECODER.decode(payload)
+    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
+        raise ReplayCheckpointsError(f"invalid checkpoints payload: {exc}") from exc
+    return zstd_pack(payload)
 
 
 def load_checkpoints(data: bytes) -> ReplayCheckpoints:
