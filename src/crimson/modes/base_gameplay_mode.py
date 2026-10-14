@@ -784,6 +784,9 @@ class BaseGameplayMode:
         )
         prepared = initialize_run(spec, status=status)
         self._world_runtime.start_session(prepared.session)
+        # Input uses the previous camera: center it before the first frame is polled,
+        # rather than waiting for that frame's simulation/presentation to update it.
+        self._world_runtime.update_camera()
         self._local_input.reset(players=self.world.players)
         self.apply_terrain_setup(prepared.terrain)
         self._reset_live_ticks()
