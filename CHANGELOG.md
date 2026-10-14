@@ -2,6 +2,30 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.17.0
+
+### For players
+
+#### Custom quests on crimson.land
+
+- Custom quests rank. Clear one with `crimson --custom-quest recipe.quest`, then `crimson quest publish recipe.quest` uploads the recipe with that clear as proof. Only a quest someone has beaten can be published.
+- A published quest gets its own page at `crimson.land/q/<id>`, with a preview of the arena and its timeline, a leaderboard, the proof clear to watch and the recipe to copy. crimson.land/quests/custom lists them, and crimson.land/quests/llm.txt is a one-page authoring reference to hand to an LLM.
+- The browser and desktop games play, record and watch custom quests. Custom quests rank on the same footing as stock ones, from a save with every quest unlocked, and never in hardcore.
+- Recipes can switch off bonus drops (`no_bonuses`), perk offers (`no_perks`) and weapon drops (`no_weapons`), or keep the starting weapon all run (`fixed_weapon true`). `spawn` takes one point or a list, with optional copies and heading, and every enemy family has more named templates.
+- `crimson quest build` checks a recipe and prints its digest and how much of the spawn budget it uses.
+- Custom quest replays saved by 0.16 no longer load.
+
+#### Effects
+
+- Pickup rings, hit cores, bursts and freeze shatters no longer vanish in busy fights. In the original, heavy blood from Bloody Mess or a big Freeze corpse shatter fills all of the game's effect slots; the other effects now get slots of their own. Blood and gameplay are unchanged, so runs still verify.
+
+### Under the hood
+
+- The Python game drops its construct, structlog and charts dependencies, the arsenal debug view, and a round of dead code and tautological tests.
+- Quest results, gameplay exits, replay playback, hit presentation, high score records and the leaderboard worker are simpler, with the same behavior.
+- The recovered source loses its last pointer walks, countdowns and gotos to plain loops, and 1.9.8's reset and sound globals have names.
+- CI path filters, cache keys and the matcher's copy-proof checks are tighter.
+
 ## 0.16.1
 
 ### For players
