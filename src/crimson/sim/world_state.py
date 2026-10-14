@@ -95,13 +95,16 @@ class WorldStepRuntime(msgspec.Struct):
 
     def begin_hit_presentation(self, hit: ProjectileHit) -> ProjectileDecalPostCtx:
         return queue_projectile_decals_pre_hit(
-            step_runtime=self,
+            state=self.world.state,
+            players=self.world.players,
+            fx_queue=self.fx_queue,
             hit=hit,
         )
 
     def finish_hit_presentation(self, hit: ProjectileHit, presentation: ProjectileDecalPostCtx) -> None:
         queue_projectile_decals_post_hit(
-            step_runtime=self,
+            state=self.world.state,
+            fx_queue=self.fx_queue,
             post_ctx=presentation,
             hit=hit,
         )

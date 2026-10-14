@@ -143,6 +143,7 @@ def fire_weapon(
     *,
     player: PlayerState,
     input_state: PlayerInput,
+    dt: float,
     step_runtime: WorldStepRuntime,
     fire_gate: WeaponFireGate,
 ) -> None:
@@ -186,7 +187,7 @@ def fire_weapon(
             from ..player_damage import player_take_damage
 
             cost = 0.15 if ammo_class == 1 else 1.0
-            player_take_damage(step_runtime, player, cost)
+            player_take_damage(step_runtime, player, cost, dt=dt)
     # Native player_update grants ten seconds for DIK_G on an eligible shot.
     # Keep this legacy cheat opt-in, including when replay input supplies it.
     if state.preserve_bugs and input_state.fire_bullets_key_down:

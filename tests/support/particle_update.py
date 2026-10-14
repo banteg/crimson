@@ -33,7 +33,7 @@ def compare(witness):
         entry.color_r = entry.color_g = entry.color_b = entry.color_a = 0.0
         for key in ("intensity", "angle", "rotation"):
             setattr(entry, key, f32(item[key]))
-    pool.update(case["dt"], step_runtime=make_step_runtime(world, dt=case["dt"]))
+    pool.update(step_runtime=make_step_runtime(world, dt=case["dt"]))
     for native in witness["particles"]:
         entry = pool.entries[native["index"]]
         values = {

@@ -22,20 +22,18 @@ def queue_projectile_decals(
 ) -> None:
     """Queue each hit's decals with the pre/post-hit pair the world step runs per hit."""
 
+    state.rng = rng
+    state.detail_preset = detail_preset
+    state.violence_disabled = violence_disabled
     for hit in hits:
         post_ctx = queue_projectile_decals_pre_hit(
             state=state,
             players=players,
             fx_queue=fx_queue,
             hit=hit,
-            rng=rng,
-            detail_preset=detail_preset,
-            violence_disabled=violence_disabled,
         )
         queue_projectile_decals_post_hit(
             state=state,
             fx_queue=fx_queue,
             post_ctx=post_ctx,
-            rng=rng,
-            detail_preset=detail_preset,
         )

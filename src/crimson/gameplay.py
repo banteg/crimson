@@ -999,7 +999,6 @@ def player_update(
     frame_dt = dt
     if state.time_scale_active:
         frame_dt = _player_reflex_restored_dt(movement_dt, time_scale_factor)
-    step_runtime.dt = frame_dt
     has_alt_weapon_perk = _player_tick_reload(
         player, input_state, state, frame_dt, prev_pos, move_mode, players,
     )
@@ -1062,6 +1061,7 @@ def player_update(
     _fire_weapon(
         player=player,
         input_state=input_state,
+        dt=frame_dt,
         step_runtime=step_runtime,
         fire_gate=fire_gate,
     )

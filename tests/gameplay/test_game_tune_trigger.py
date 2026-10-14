@@ -5,7 +5,8 @@ from unittest.mock import call
 from crimson.game_modes import GameMode
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.presentation_step import DeterministicPresentationPlan, plan_hit_sfx
+from crimson.sim.presentation_step import DeterministicPresentationPlan
+from crimson.sim.world_state import WorldState
 from crimson.world import audio_bridge
 from crimson.world.audio_bridge import AudioBridge
 from grim.audio import AudioState
@@ -14,6 +15,7 @@ from grim.music import init_music_state
 from grim.rand import Crand
 from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
+from tests.support.factories import make_step_runtime
 from tests.support.helpers import ScriptedCrand
 
 
@@ -39,12 +41,14 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
     bridge = AudioBridge(audio=audio, audio_rng=Crand(0xBEEF))
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
-    tune, sounds = plan_hit_sfx(
-        _hits(2),
-        game_mode=GameMode.TYPO,
-        rng=rng,
-        game_tune_started=False,
-    )
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
+    step_runtime = make_step_runtime(world)
+    world.state.game_mode = GameMode.TYPO
+    world.state.game_tune_started = False
+    world.state.rng = rng
+    for hit in _hits(2):
+        step_runtime.finish_hit_presentation(hit, step_runtime.begin_hit_presentation(hit))
+    tune, sounds = step_runtime.trigger_game_tune, step_runtime.hit_sfx
     bridge.apply_plan(
         plan=DeterministicPresentationPlan(trigger_game_tune=tune, sfx=tuple(sounds)), camera=Vec2(), screen_width=1024.0,
     )
@@ -54,7 +58,11 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
     assert play_sfx.call_args_list == [
         call(audio.sfx, SfxId.BULLET_HIT_01, reflex_boost_timer=0.0, gain=1.0, pan=-850),
     ]
-    assert [record.caller for record in rng.records_since()] == [
+    assert [
+        record.caller
+        for record in rng.records_since()
+        if record.caller in (RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK, RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX)
+    ] == [
         RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK,
         RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
     ]

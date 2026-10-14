@@ -86,19 +86,19 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     creature = _fire_at_creature(world, WeaponId.BUBBLEGUN)
     particles = world.state.particles
 
-    particles.update(0.016, step_runtime=make_step_runtime(world, dt=0.016))
+    particles.update(step_runtime=make_step_runtime(world, dt=0.016))
     particle = next(entry for entry in particles.entries if entry.active)
     attached_pos = particle.pos
     assert particle.target_id == 0
     assert not particle.in_flight
 
     creature.pos = Vec2(80.0, 40.0)
-    particles.update(0.1, step_runtime=make_step_runtime(world, dt=0.1))
+    particles.update(step_runtime=make_step_runtime(world, dt=0.1))
     assert particle.pos == attached_pos
 
     del callers[:]
     step_runtime = make_step_runtime(world, dt=2.0)
-    particles.update(2.0, step_runtime=step_runtime)
+    particles.update(step_runtime=step_runtime)
 
     assert particle.target_id == 0
     assert [death.index for death in step_runtime.deaths] == [0]

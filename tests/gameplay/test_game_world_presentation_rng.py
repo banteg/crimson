@@ -21,14 +21,13 @@ def test_projectile_decals_skip_splatter_rands_when_violence_disabled() -> None:
         target=Vec2(100.0, 100.0),
     )
 
+    state.detail_preset = 5
+    state.violence_disabled = 1
     queue_projectile_decals_pre_hit(
         state=state,
         players=[player],
         fx_queue=FxQueue(),
         hit=hit,
-        rng=state.rng,
-        detail_preset=5,
-        violence_disabled=1,
     )
 
     # Native wraps the whole splatter block (including its rand draws) in
@@ -53,14 +52,13 @@ def test_projectile_decals_bloody_mess_keeps_decal_loop_when_violence_disabled()
         target=Vec2(100.0, 100.0),
     )
 
+    state.detail_preset = 5
+    state.violence_disabled = 1
     queue_projectile_decals_pre_hit(
         state=state,
         players=[player],
         fx_queue=FxQueue(),
         hit=hit,
-        rng=state.rng,
-        detail_preset=5,
-        violence_disabled=1,
     )
 
     callers = {record.caller for record in state.rng.records_since()}

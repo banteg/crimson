@@ -166,10 +166,10 @@ def test_audio_plan_captures_typo_post_step_bonus_reset() -> None:
 
 
 def test_hit_cooldown_suppresses_playback_without_skipping_random_draws(mocker) -> None:
-    from crimson.game_modes import GameMode
     from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
-    from crimson.sim.presentation_step import plan_hit_sfx
+    from crimson.sim.presentation_step import hit_sfx_for_type
     from grim.geom import Vec2
+    from grim.sfx_types import SfxRequest
     from tests.support.audio import make_sfx_state, stub_sfx_backend
     from tests.support.helpers import ScriptedCrand
 
@@ -181,12 +181,7 @@ def test_hit_cooldown_suppresses_playback_without_skipping_random_draws(mocker) 
     )
     rng = ScriptedCrand([0] * 6)
     hits = [ProjectileHit(ProjectileTemplateId.PISTOL, Vec2(), Vec2(x, 512), Vec2()) for x in range(6)]
-    _, requests = plan_hit_sfx(
-        hits,
-        game_mode=GameMode.SURVIVAL,
-        game_tune_started=True,
-        rng=rng,
-    )
+    requests = [SfxRequest(hit_sfx_for_type(int(hit.type_id), rng=rng), hit.hit) for hit in hits]
     bridge = AudioBridge(audio=audio, audio_rng=Crand(1))
     plan = DeterministicPresentationPlan(sfx=tuple(requests), sfx_dt=1 / 60)
     bridge.apply_plan(plan=plan, camera=Vec2(), screen_width=1024.0)

@@ -998,7 +998,7 @@ class CreaturePool:
                             creature.flags |= CreatureFlags.POISONED | CreatureFlags.POISONED_STRONG
                         elif PerkId.VEINS_OF_POISON in state.perks:
                             creature.flags |= CreatureFlags.POISONED
-                    player_take_damage(step_runtime, player, creature.contact_damage)
+                    player_take_damage(step_runtime, player, creature.contact_damage, dt=dt)
                     push_dir = x87_d3dx_vec2_normalize(
                         Vec2(x87_pc24_sub(player.pos.x, creature.pos.x), x87_pc24_sub(player.pos.y, creature.pos.y)),
                     )

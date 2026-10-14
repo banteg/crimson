@@ -50,7 +50,7 @@ With the gate open, a run draws once for the playlist, then one hit-sound rand p
 later hit. With the gate closed the latch never sets, so every hit takes the tune
 branch and draws nothing.
 
-The port always takes the open-gate path (`plan_hit_sfx` and
+The port always takes the open-gate path (`WorldStepRuntime` and
 `WorldState` hit audio, `GameplayState.game_tune_started`). Its sound and
 music options only mute output. Recorded runs, and their verification, do not
 depend on the player's audio device or settings.

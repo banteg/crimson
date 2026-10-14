@@ -5,14 +5,13 @@ from crimson.game_modes import GameMode
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.presentation_step import (
-    plan_hit_sfx,
-)
 from crimson.sim.state_types import PlayerState
+from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
 from tests.support.decals import queue_projectile_decals
+from tests.support.factories import make_step_runtime
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
@@ -30,23 +29,26 @@ def _hits(count: int, *, type_id: ProjectileTemplateId = ProjectileTemplateId.PI
     return hits
 
 
-def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
+def test_finish_hit_presentation_skips_first_hit_when_tune_not_started() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    trigger_game_tune, keys = plan_hit_sfx(
-        _hits(2),
-        game_mode=GameMode.SURVIVAL,
-        game_tune_started=False,
-        rng=rng,
-    )
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
+    step_runtime = make_step_runtime(world)
+    world.state.game_mode = GameMode.SURVIVAL
+    world.state.game_tune_started = False
+    world.state.rng = rng
+    for hit in _hits(2):
+        step_runtime.finish_hit_presentation(hit, step_runtime.begin_hit_presentation(hit))
 
-    assert trigger_game_tune is True
-    assert sfx_ids(keys) == [SfxId.BULLET_HIT_01]
-    assert rng.calls == 2
-    assert [record.caller for record in rng.records_since()] == [
+    assert step_runtime.trigger_game_tune is True
+    assert sfx_ids(step_runtime.hit_sfx) == [SfxId.BULLET_HIT_01]
+    assert [
+        record.caller
+        for record in rng.records_since()
+        if record.caller in (RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK, RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX)
+    ] == [
         RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK,
         RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
     ]
-
 
 def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(mocker) -> None:
     state = GameplayState()

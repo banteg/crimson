@@ -190,7 +190,7 @@ class ParticlePool:
     def iter_active(self) -> list[Particle]:
         return [entry for entry in self._entries if entry.active]
 
-    def update(self, dt: float | None = None, *, step_runtime: WorldStepRuntime) -> None:
+    def update(self, *, step_runtime: WorldStepRuntime) -> None:
         """Advance particles and deactivate expired entries.
 
         This is a minimal port of the particle loop inside `projectile_update`
@@ -198,10 +198,9 @@ class ParticlePool:
         visual lifetimes and the weapon-driven collision damage.
         """
 
-        resolved_dt = step_runtime.dt if dt is None else dt
-        if resolved_dt <= 0.0:
+        if step_runtime.dt <= 0.0:
             return
-        dt = f32(resolved_dt)
+        dt = f32(step_runtime.dt)
         creatures = step_runtime.world.creatures.entries
         fx_queue = step_runtime.fx_queue
         sprite_effects = step_runtime.world.state.sprite_effects

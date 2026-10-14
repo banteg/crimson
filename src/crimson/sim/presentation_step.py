@@ -14,7 +14,6 @@ from grim.sfx_types import SfxRequest
 from ..bonuses.fire_bullets import queue_large_hit_decal_streak
 from ..camera import CameraUpdate
 from ..effects import FxQueue
-from ..game_modes import GameMode
 from ..math_parity import (
     NATIVE_HALF_PI,
     NATIVE_PI,
@@ -34,8 +33,6 @@ from .terrain_fx import TerrainFxBatch
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
-
-    from .world_state import WorldStepRuntime
 
 _BULLET_HIT_SFX = (
     SfxId.BULLET_HIT_01,
@@ -71,26 +68,6 @@ def hit_sfx_for_type(
     return _BULLET_HIT_SFX[rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX) % len(_BULLET_HIT_SFX)]
 
 
-def plan_hit_sfx(
-    hits: Sequence[ProjectileHit],
-    *,
-    game_mode: GameMode,
-    game_tune_started: bool,
-    rng: CrandLike,
-) -> tuple[bool, list[SfxRequest]]:
-    trigger_game_tune = False
-    local_game_tune_started = bool(game_tune_started)
-    sfx: list[SfxRequest] = []
-    for hit in hits:
-        if game_mode != GameMode.RUSH and not local_game_tune_started:
-            trigger_game_tune = True
-            local_game_tune_started = True
-            _ = rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
-            continue
-        sfx.append(SfxRequest(hit_sfx_for_type(int(hit.type_id), rng=rng), hit.hit))
-    return trigger_game_tune, sfx
-
-
 class ProjectileDecalPostCtx(msgspec.Struct, frozen=True):
     hit: ProjectileHit
     base_angle: float
@@ -100,26 +77,14 @@ class ProjectileDecalPostCtx(msgspec.Struct, frozen=True):
 
 def queue_projectile_decals_pre_hit(
     *,
+    state: GameplayState,
+    players: Sequence[PlayerState],
+    fx_queue: FxQueue,
     hit: ProjectileHit,
-    step_runtime: WorldStepRuntime | None = None,
-    state: GameplayState | None = None,
-    players: Sequence[PlayerState] | None = None,
-    fx_queue: FxQueue | None = None,
-    rng: CrandLike | None = None,
-    detail_preset: int | None = None,
-    violence_disabled: int | None = None,
 ) -> ProjectileDecalPostCtx:
-    if step_runtime is not None:
-        if state is None:
-            state = step_runtime.world.state
-        if players is None:
-            players = step_runtime.world.players
-        if fx_queue is None:
-            fx_queue = step_runtime.fx_queue
-    assert state is not None and players is not None and fx_queue is not None
-    rng = state.rng if rng is None else rng
-    detail_preset = state.detail_preset if detail_preset is None else detail_preset
-    violence_disabled = state.violence_disabled if violence_disabled is None else violence_disabled
+    rng = state.rng
+    detail_preset = state.detail_preset
+    violence_disabled = state.violence_disabled
     freeze_active = float(state.bonuses.freeze) > 0.0
     bloody = bool(players) and PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks
 
@@ -232,22 +197,13 @@ def queue_projectile_decals_pre_hit(
 
 def queue_projectile_decals_post_hit(
     *,
+    state: GameplayState,
+    fx_queue: FxQueue,
     post_ctx: ProjectileDecalPostCtx,
     hit: ProjectileHit | None = None,
-    step_runtime: WorldStepRuntime | None = None,
-    state: GameplayState | None = None,
-    fx_queue: FxQueue | None = None,
-    rng: CrandLike | None = None,
-    detail_preset: int | None = None,
 ) -> None:
-    if step_runtime is not None:
-        if state is None:
-            state = step_runtime.world.state
-        if fx_queue is None:
-            fx_queue = step_runtime.fx_queue
-    assert state is not None and fx_queue is not None
-    rng = state.rng if rng is None else rng
-    detail_preset = state.detail_preset if detail_preset is None else detail_preset
+    rng = state.rng
+    detail_preset = state.detail_preset
     hit = post_ctx.hit if hit is None else hit
     base_angle = float(post_ctx.base_angle)
 

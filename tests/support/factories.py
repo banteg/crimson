@@ -155,6 +155,7 @@ def fire_player_weapon(
     fire_weapon(
         player=player,
         input_state=input_state,
+        dt=dt,
         step_runtime=make_step_runtime(world, dt=dt) if step_runtime is None else step_runtime,
         fire_gate=capture_fire_gate(player, world.state.perks),
     )

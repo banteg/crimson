@@ -52,7 +52,7 @@ def compare(witness):
     for perk in case.get("perks", []):
         world.state.perks[perk] = 1
 
-    pool.update(case["dt"], step_runtime=make_step_runtime(world, dt=case["dt"], fx_queue=fx))
+    pool.update(step_runtime=make_step_runtime(world, dt=case["dt"], fx_queue=fx))
     _check_fields(
         witness["index"],
         "particle",

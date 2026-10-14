@@ -78,7 +78,7 @@ def test_particle_hit_applies_fire_damage() -> None:
     pool = ParticlePool()
     pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=world.state.rng)
 
-    pool.update(0.016, step_runtime=make_step_runtime(world, dt=0.016))
+    pool.update(step_runtime=make_step_runtime(world, dt=0.016))
 
     # intensity (1 - 0.016 * 0.9) * 10 fire damage, scaled x1.5 by Pyromaniac.
     assert_float_close(creatures[0].hp, f32(85.216))
