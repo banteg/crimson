@@ -19,7 +19,8 @@ from ..screens.panels.alien_zookeeper import AlienZooKeeperView
 from ..screens.panels.base import PanelMenuView
 from ..screens.panels.controls import ControlsMenuView
 from ..screens.panels.credits import CreditsView
-from ..screens.panels.databases import UnlockedPerksDatabaseView, UnlockedWeaponsDatabaseView
+from ..screens.panels.databases_perks import UnlockedPerksDatabaseView
+from ..screens.panels.databases_weapons import UnlockedWeaponsDatabaseView
 from ..screens.panels.options import OptionsMenuView
 from ..screens.panels.play_game import PlayGameMenuView
 from ..screens.panels.stats import StatisticsMenuView
@@ -199,14 +200,7 @@ class ScreenNavigator:
             gameplay.typo_session = self.state.typo
         if isinstance(gameplay, QuestMode):
             gameplay.select_custom_quest(request.custom_quest)
-        self.state.screens.push(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))
-        if isinstance(gameplay, QuestMode):
-            if request.custom_quest is not None:
-                gameplay.start_custom_run(request.custom_quest, status=self.state.status)
-            else:
-                assert request.quest_level is not None
-                gameplay.start_run(request.quest_level, status=self.state.status)
-
+        self.state.screens.push(ScreenEntry(gameplay, resume=gameplay.resume))
     def capture_ground(self) -> None:
         gameplay = self.state.screens.gameplay
         if gameplay is None:

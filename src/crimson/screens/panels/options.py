@@ -40,7 +40,7 @@ class OptionsMenuView(PanelMenuView):
 
     def __init__(self, state: GameState) -> None:
         super().__init__(
-            state, game_state=GameStateId.OPTIONS_MENU, panel_element=31, back_element=32, title="Options", back_action=Route.BACK,
+            state, game_state=GameStateId.OPTIONS_MENU, panel_element=31, back_element=32, back_action=Route.BACK,
         )
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = UiSegmentedSlider(value=10)

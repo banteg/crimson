@@ -63,7 +63,6 @@ def test_update_game_over_ui_routes_high_scores(make_mode_config, assets_dir) ->
         ScoreQuery(mode.default_game_mode_id),
         ScoreReturnContext.capture(mode.config),
     )
-    assert mode.close_requested is False
 
 
 def test_game_over_requests_result_music_until_the_exit_transition(make_mode_config, assets_dir) -> None:
@@ -89,7 +88,6 @@ def test_update_game_over_ui_routes_main_menu(make_mode_config, assets_dir) -> N
     _press_result_button(mode, ResultAction.MAIN_MENU)
 
     assert mode.take_action() == Route.MENU
-    assert mode.close_requested is True
 
 
 def test_update_game_over_ui_calls_open_on_play_again(mocker, make_mode_config, assets_dir) -> None:

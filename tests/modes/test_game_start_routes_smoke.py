@@ -28,7 +28,6 @@ def test_start_requests_create_modes_on_first_entry(make_game_state, mocker, mod
     loop = GameLoopView(state)
     assert loop.navigation._modes == {}
     mocker.patch.object(mode_type, "open")
-    mocker.patch.object(QuestMode, "start_run")
     level = QuestLevel(1, 1) if mode_id == GameMode.QUESTS else None
     request = StartRun(mode_id, level)
     loop.navigation.navigate(request)
@@ -45,11 +44,11 @@ def test_quest_retry_counter_flows_through_persistent_mode(make_game_state, mock
     loop = GameLoopView(state)
     mode = loop.navigation._mode(GameMode.QUESTS)
     assert isinstance(mode, QuestMode)
-    mocker.patch.object(mode, "open")
-    start_run = mocker.patch.object(mode, "start_run")
+    open_mode = mocker.patch.object(mode, "open")
     loop.navigation.navigate(StartRun(GameMode.QUESTS, QuestLevel(1, 1)))
     assert mode.quest_fail_retry_count == 3
-    start_run.assert_called_once_with(QuestLevel(1, 1), status=state.status)
+    assert state.config.gameplay.quest_level == QuestLevel(1, 1)
+    open_mode.assert_called_once_with()
     mode.world.state.quest_fail_retry_count = 0
     assert loop._resolve_gameplay_action(mode, None) is None
     assert state.quest_fail_retry_count == 0

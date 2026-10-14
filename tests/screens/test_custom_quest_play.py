@@ -45,10 +45,11 @@ def _ended(make_game_state, headless_resources, mocker, quest: CustomQuest, outc
     assert recorder is not None
     assert (recorder.run.custom_quest, recorder.run.quest_level, run.ranked_run) == (quest, None, False)
     run._finish_run(outcome)
-    ended = run.consume_outcome()
-    assert ended is not None
+    action = run.take_action()
+    assert isinstance(action, ShowQuestOutcome)
+    ended = action.outcome
     assert (ended.level, ended.custom_quest) == (None, quest)
-    navigator.navigate(ShowQuestOutcome(ended))
+    navigator.navigate(action)
     view = state.screens.active
     assert isinstance(view, QuestFailedView)
     return state, view

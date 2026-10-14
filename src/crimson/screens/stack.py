@@ -5,16 +5,15 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from ..modes.base_gameplay_mode import BaseGameplayMode
+
 if TYPE_CHECKING:
-    from ..game.types import GameplayScreen, Screen
-    from ..pause_background import PauseBackground
+    from ..game.types import Screen
 
 
 class ScreenEntry(msgspec.Struct, frozen=True):
     view: Screen
     resume: Callable[[], None] | None = None
-    gameplay: GameplayScreen | None = None
-
 
 class ScreenStack:
     """Own open screens; only the top updates, retained runs supply backgrounds."""
@@ -27,20 +26,22 @@ class ScreenStack:
         return self._entries[-1].view
 
     @property
-    def active_gameplay(self) -> GameplayScreen | None:
-        return self._entries[-1].gameplay if self._entries else None
+    def active_gameplay(self) -> BaseGameplayMode | None:
+        if not self._entries:
+            return None
+        view = self._entries[-1].view
+        return view if isinstance(view, BaseGameplayMode) else None
 
     @property
-    def gameplay(self) -> GameplayScreen | None:
+    def gameplay(self) -> BaseGameplayMode | None:
         for entry in reversed(self._entries):
-            if entry.gameplay is not None:
-                return entry.gameplay
+            if isinstance(entry.view, BaseGameplayMode):
+                return entry.view
         return None
 
     @property
-    def background(self) -> PauseBackground | None:
+    def background(self) -> BaseGameplayMode | None:
         return None if self.active_gameplay is not None else self.gameplay
-
     def push(self, entry: ScreenEntry) -> None:
         if self._entries:
             assert self._entries[-1].resume is not None, "retained screen must define resumption"

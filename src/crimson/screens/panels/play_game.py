@@ -69,7 +69,6 @@ class PlayGameMenuView(PanelMenuView):
             game_state=GameStateId.PLAY_GAME_MENU,
             panel_element=11,
             back_element=12,
-            title="Play Game",
             panel_grow=self._RANKED_ROW,
         )
         # Native lists two players; the port plays up to four.

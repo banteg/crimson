@@ -28,9 +28,9 @@ def end_note(make_game_state, headless_resources, mocker):
     navigator, run = start_run(state, StartRun(GameMode.QUESTS, FINAL_QUEST))
     assert isinstance(run, QuestMode)
     run._finish_run(RunOutcome.QUEST_COMPLETED)
-    outcome = run.consume_outcome()
-    assert outcome is not None
-    navigator.navigate(ShowQuestOutcome(outcome))
+    action = run.take_action()
+    assert isinstance(action, ShowQuestOutcome)
+    navigator.navigate(action)
     assert isinstance(state.screens.active, QuestResultsView)
     audio.backend.reset_mock()
     navigator.navigate(Route.END_NOTE)

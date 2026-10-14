@@ -7,7 +7,7 @@ from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.persistence.save_status import GAME_CFG_NAME, GameStatus, load_status
 from crimson.quests.level import QuestLevel
-from crimson.quests.status import quest_completed_counter_index
+from crimson.quests.status import tracked_quest_completed_counter_index
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.screens.actions import StartRun
 from crimson.screens.quest_views.quest_failed import QuestFailedView
@@ -16,7 +16,9 @@ from crimson.sim.run_spec import RunSpec
 from tests.support.replay_runner_helpers import idle_replay
 
 LEVEL = QuestLevel(1, 1)
-COMPLETED = quest_completed_counter_index(LEVEL)
+_completed = tracked_quest_completed_counter_index(LEVEL)
+assert _completed is not None
+COMPLETED: int = _completed
 
 
 def _start_cleared_quest(loop: GameLoopView) -> QuestMode:

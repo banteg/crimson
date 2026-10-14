@@ -44,9 +44,9 @@ def failed(make_game_state, headless_resources, mocker) -> _FailedQuest:
     navigator, run = start_run(state, StartRun(GameMode.QUESTS, LEVEL))
     assert isinstance(run, QuestMode)
     run._finish_run(RunOutcome.DEATH)
-    outcome = run.consume_outcome()
-    assert outcome is not None
-    navigator.navigate(ShowQuestOutcome(outcome))
+    action = run.take_action()
+    assert isinstance(action, ShowQuestOutcome)
+    navigator.navigate(action)
     view = state.screens.active
     assert isinstance(view, QuestFailedView)
     return _FailedQuest(state, run, view, audio.played)

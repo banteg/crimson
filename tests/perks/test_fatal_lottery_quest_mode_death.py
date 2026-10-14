@@ -8,6 +8,7 @@ from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.persistence.save_status import GameStatus, GameStatusData
 from crimson.quests.level import QuestLevel
+from crimson.screens.actions import ShowQuestOutcome
 from grim.rand import Crand
 from grim.view import ViewContext
 
@@ -34,12 +35,12 @@ def test_quest_mode_closes_run_when_player_dies_during_perk_menu_transition(mock
 
     mode.update(1.0 / 60.0)
 
-    assert mode.close_requested is False
+    assert mode.take_action() is None
+    action = None
     for _ in range(120):
         mode.update(1.0 / 60.0)
-        if mode.close_requested:
+        action = mode.take_action()
+        if action is not None:
             break
-    assert mode.close_requested is True
-    outcome = mode.consume_outcome()
-    assert outcome is not None
-    assert outcome.kind == "failed"
+    assert isinstance(action, ShowQuestOutcome)
+    assert action.outcome.kind == "failed"

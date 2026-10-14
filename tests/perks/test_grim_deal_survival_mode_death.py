@@ -9,6 +9,7 @@ from crimson.perks import PerkId
 from crimson.perks.apply import perk_apply
 from crimson.persistence.save_status import GameStatus, GameStatusData
 from crimson.quests.level import QuestLevel
+from crimson.screens.actions import ShowQuestOutcome
 from grim.rand import Crand
 from grim.view import ViewContext
 
@@ -16,7 +17,7 @@ from grim.view import ViewContext
 def _is_dead(mode: SurvivalMode | QuestMode) -> bool:
     if isinstance(mode, SurvivalMode):
         return mode._game_over_active
-    return mode._outcome is not None and mode._outcome.kind == "failed"
+    return isinstance(mode._action, ShowQuestOutcome) and mode._action.outcome.kind == "failed"
 
 
 @pytest.mark.usefixtures("headless_resources")

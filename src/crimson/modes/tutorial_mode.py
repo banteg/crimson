@@ -14,6 +14,7 @@ from ..game_modes import GameMode
 from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayRecorder
+from ..screens.actions import Route
 from ..ui.button import UiButtonState, button_draw, button_update, button_width
 from ..ui.overlays.tutorial_run import (
     TUTORIAL_PANEL_POS,
@@ -81,13 +82,11 @@ class TutorialMode(BaseGameplayMode):
         if restart:
             self.open()
             return
-        self.close_requested = True
+        self._action = Route.MENU
 
     def _update_prompt_buttons(self, *, dt_ms: float, mouse: rl.Vector2, click: bool) -> None:
         tutorial = self.state.tutorial
         overlay = self.state.tutorial_overlay
-        font = self._small
-        assert font is not None, "tutorial buttons require loaded small font"
         stage = int(tutorial.stage_index)
         prompt_alpha = float(overlay.prompt_alpha)
         if stage == 8:
@@ -143,7 +142,7 @@ class TutorialMode(BaseGameplayMode):
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(dt)
-        if frame is None or self.close_requested:
+        if frame is None:
             return
         dt, dt_ui_ms = frame.dt, frame.dt_ui_ms
 
@@ -197,8 +196,6 @@ class TutorialMode(BaseGameplayMode):
             measure_line_height=self._ui_line_height,
         )
         resources = self.render_resources.resources
-        font = self._small
-        assert font is not None, "tutorial prompts require loaded small font"
 
         stage = int(self.state.tutorial.stage_index)
         if stage == 8:

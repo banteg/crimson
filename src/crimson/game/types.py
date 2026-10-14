@@ -8,11 +8,8 @@ import msgspec
 from crimson.screens.actions import ScreenAction
 from grim.rand import Crand
 
-from ..game_modes import GameMode
-from ..game_states import GameStateId
 from ..leaderboard import Leaderboard
 from ..paths import default_runtime_dir
-from ..pause_background import PauseBackground
 from ..quests.custom import CustomQuest
 from ..render.rtx.mode import RtxRenderMode
 from ..replay.saver import ReplaySaver
@@ -34,8 +31,8 @@ if TYPE_CHECKING:
     from grim.geom import Vec2
     from grim.terrain_render import GroundRenderer
 
+    from ..modes.base_gameplay_mode import BaseGameplayMode
     from ..persistence.save_status import GameStatus
-
 
 class GameConfig(msgspec.Struct, frozen=True):
     base_dir: Path = msgspec.field(default_factory=default_runtime_dir)
@@ -64,30 +61,6 @@ class Screen(Protocol):
     def draw(self) -> None: ...
 
     def take_action(self) -> ScreenAction | None: ...
-
-
-class GameplayScreen(Screen, PauseBackground, Protocol):
-    close_requested: bool
-    default_game_mode_id: GameMode
-
-    @property
-    def game_state_id(self) -> GameStateId: ...
-
-    def bind_status(self, status: GameStatus) -> None: ...
-
-    def bind_screen_fade(self, fade: GameState | None) -> None: ...
-
-    def bind_audio(self, audio: AudioState | None, audio_rng: Crand) -> None: ...
-
-    def steal_ground_for_menu(self) -> GroundRenderer | None: ...
-
-    def menu_ground_camera(self) -> Vec2: ...
-
-    def console_elapsed_ms(self) -> float: ...
-
-    def regenerate_terrain_for_console(self) -> None: ...
-
-    def set_rtx_mode(self, mode: RtxRenderMode) -> None: ...
 
 
 
@@ -132,14 +105,12 @@ class GameState(msgspec.Struct):
     focus: UiFocus = msgspec.field(default_factory=UiFocus)
 
     @property
-    def pause_background(self) -> PauseBackground | None:
+    def pause_background(self) -> BaseGameplayMode | None:
         return self.screens.background
 
 
 __all__ = [
     "GameConfig",
     "GameState",
-    "GameplayScreen",
-    "PauseBackground",
     "Screen",
 ]

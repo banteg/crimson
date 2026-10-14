@@ -25,6 +25,7 @@ from ..quests.custom import CustomQuest
 from ..quests.level import QuestLevel
 from ..quests.types import QuestDefinition
 from ..replay import ReplayRecorder
+from ..screens.actions import ShowQuestOutcome
 from ..sim.mode_updates import QuestSpawnState
 from ..sim.run_result import RunOutcome
 from ..sim.sessions import DeterministicSessionTick
@@ -32,8 +33,6 @@ from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
 )
-from ..weapon_runtime import weapon_assign_player
-from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
@@ -41,8 +40,6 @@ from .components.highscore_record_builder import build_highscore_record
 
 UI_HINT_COLOR = rl_color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl_color(255, 255, 255, int(255 * 0.5))
-
-_DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 
 
 class QuestRunOutcome(msgspec.Struct, frozen=True):
@@ -79,21 +76,12 @@ class QuestMode(BaseGameplayMode):
         self._quest_def: QuestDefinition | None = None
         self._quest_level: QuestLevel | None = self.config.gameplay.quest_level or QuestLevel(1, 1)
         self._quest_highscore_random_tag: int = 0
-        self._outcome: QuestRunOutcome | None = None
         self._quest_spawn_state = QuestSpawnState()
         self._replay_recorder: ReplayRecorder | None = None
 
     def open(self) -> None:
         super().open()
-        self._quest_def = None
-        self._quest_level = self.config.gameplay.quest_level or QuestLevel(1, 1)
-        self._quest_highscore_random_tag = 0
-        self._outcome = None
-
-        self._reset_gameplay_frame_clock()
-        self._replay_recorder = None
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
+        self._prepare_selected_quest()
 
     def close(self) -> None:
         self._world_runtime.end_session()
@@ -106,21 +94,10 @@ class QuestMode(BaseGameplayMode):
     def _finish_run(self, outcome: RunOutcome) -> None:
         self._close_run("completed" if outcome == RunOutcome.QUEST_COMPLETED else "failed")
 
-    def consume_outcome(self) -> QuestRunOutcome | None:
-        outcome = self._outcome
-        self._outcome = None
-        return outcome
-
     def start_run(self, level: QuestLevel, *, status: GameStatus) -> None:
-        quest = quest_by_level(level)
-        if quest is None:
-            self._quest_def = None
-            self._quest_level = level
-            self._custom_quest = None
-            self._quest_highscore_random_tag = 0
-            self._world_runtime.end_session()
-            return
-        self._start(status=status, quest_level=quest.level)
+        self.config.gameplay.quest_level = level
+        self._custom_quest = None
+        self._start(status=status)
 
     def select_custom_quest(self, quest: CustomQuest | None) -> None:
         """The custom quest the next run plays, or None for a stock level: known before the screen opens, whose
@@ -128,16 +105,15 @@ class QuestMode(BaseGameplayMode):
         self._custom_quest = quest
 
     def start_custom_run(self, quest: CustomQuest, *, status: GameStatus) -> None:
-        self._start(status=status, custom_quest=quest)
+        self._custom_quest = quest
+        self._start(status=status)
 
-    def _start(self, *, status: GameStatus, quest_level: QuestLevel | None = None, custom_quest: CustomQuest | None = None) -> None:
-        self._outcome = None
+    def _start(self, *, status: GameStatus) -> None:
         self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
         # Set before the seed and player count: whether the run ranks decides both.
-        self._quest_level = quest_level
-        self._custom_quest = custom_quest
+        self._quest_level = None if self._custom_quest is not None else (self.config.gameplay.quest_level or QuestLevel(1, 1))
 
         seed = self._next_run_seed()
         self._run_reset_seed = seed
@@ -146,6 +122,30 @@ class QuestMode(BaseGameplayMode):
         self.world_runtime.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._local_input.reset(players=self.world.players)
         self.bind_status(status)
+        self._prepare_selected_quest()
+
+    def _prepare_selected_quest(self) -> None:
+        self._quest_def = None
+        self._quest_highscore_random_tag = 0
+        self._reset_gameplay_frame_clock()
+        if self._custom_quest is not None:
+            self._quest_level = None
+            self._prepare_run(custom_quest=self._custom_quest)
+            return
+        level = self.config.gameplay.quest_level or QuestLevel(1, 1)
+        self._quest_level = level
+        quest = quest_by_level(level)
+        if quest is None:
+            self._world_runtime.end_session()
+            return
+        self._prepare_run(quest_level=quest.level)
+
+    def _prepare_run(
+        self,
+        *,
+        quest_level: QuestLevel | None = None,
+        custom_quest: CustomQuest | None = None,
+    ) -> None:
         prepared = self._initialize_run(GameMode.QUESTS, quest_level=quest_level, custom_quest=custom_quest)
         spawn_state = prepared.session.mode_state
         assert isinstance(spawn_state, QuestSpawnState)
@@ -180,18 +180,6 @@ class QuestMode(BaseGameplayMode):
             self._request_pause()
             return
 
-    def _debug_cycle_weapon(self, delta: int) -> None:
-        weapon_ids = _DEBUG_WEAPON_IDS
-        if not weapon_ids:
-            return
-        current = self.player.weapon.weapon_id
-        try:
-            idx = weapon_ids.index(current)
-        except ValueError:
-            idx = 0
-        weapon_id = WeaponId(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
-        weapon_assign_player(self.player, weapon_id, state=self.state)
-
     def _tick_death_timers(self, dt: float, *, rate: float = 20.0) -> None:
         delta = float(dt) * float(rate)
         if delta <= 0.0:
@@ -204,29 +192,28 @@ class QuestMode(BaseGameplayMode):
             player.death_timer = float(player.death_timer) - delta
 
     def _close_run(self, kind: str) -> None:
-        if self._outcome is None:
-            assert self._quest_level is not None or self._custom_quest is not None, "a quest outcome needs its quest"
-            base_time_ms = int(self._quest_spawn_state.spawn_timeline_ms)
-            self._outcome = QuestRunOutcome(
+        assert self._quest_level is not None or self._custom_quest is not None, "a quest outcome needs its quest"
+        base_time_ms = int(self._quest_spawn_state.spawn_timeline_ms)
+        record = build_highscore_record(
+            state=self.state,
+            player=self.player,
+            run_elapsed_ms=base_time_ms,
+            creature_kill_count=int(self.creatures.kill_count),
+            rand_value=int(self._quest_highscore_random_tag),
+        )
+        if replay_number := self._save_replay():
+            record.replay_number = replay_number
+        self._action = ShowQuestOutcome(
+            QuestRunOutcome(
                 kind=kind,
                 level=self._quest_level,
                 custom_quest=self._custom_quest,
                 base_time_ms=base_time_ms,
                 player_health_values=tuple(float(player.health) for player in self.world.players),
                 pending_perk_count=int(self.state.perk_selection.pending_count),
-                record=build_highscore_record(
-                    state=self.state,
-                    player=self.player,
-                    run_elapsed_ms=base_time_ms,
-                    creature_kill_count=int(self.creatures.kill_count),
-                    rand_value=int(self._quest_highscore_random_tag),
-                ),
-            )
-        # A second close finds the replay saved already.
-        if replay_number := self._save_replay():
-            self._outcome.record.replay_number = replay_number
-        self.close_requested = True
-
+                record=record,
+            ),
+        )
     def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
         if tick.save_status:
             # Native `quest_mode_update` calls `game_save_status` itself, so the completion and the unlock
@@ -241,8 +228,6 @@ class QuestMode(BaseGameplayMode):
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))
         if frame is None:
-            return
-        if bool(self.close_requested):
             return
 
         self._update_perk_ui(dt_ui_ms=float(frame.dt_ui_ms))

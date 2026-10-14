@@ -34,7 +34,7 @@ class PanelMenuView(MenuScreen):
         game_state: GameStateId,
         panel_element: int,
         back_element: int,
-        title: str,
+        title: str = "",
         body: str | None = None,
         back_action: ScreenAction = Route.MENU,
         panel_grow: float = 0.0,

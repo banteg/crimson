@@ -8,6 +8,7 @@ from crimson.modes.quest_mode import QuestMode
 from crimson.persistence.save_status import GameStatus, GameStatusData
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
+from crimson.screens.actions import ShowQuestOutcome
 from crimson.sim.run_result import RunOutcome
 from crimson.weapons import WEAPON_BY_ID
 from grim.config import ensure_crimson_cfg
@@ -29,8 +30,9 @@ def test_quest_failed_outcome_captures_all_player_health_and_the_start_tag(tmp_p
     for idx, health in enumerate(health_values):
         mode.world.players[idx].health = float(health)
     mode._finish_run(RunOutcome.DEATH)
-    outcome = mode.consume_outcome()
-    assert outcome is not None
+    action = mode.take_action()
+    assert isinstance(action, ShowQuestOutcome)
+    outcome = action.outcome
     assert outcome.kind == "failed"
     assert outcome.player_health_values == health_values
     assert outcome.record.quest_level == QuestLevel(1, 1)

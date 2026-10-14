@@ -187,11 +187,8 @@ def test_results_scores_back_preserves_result(loop, mocker) -> None:
     loop.update(0.016)
     results = state.screens.active
     assert isinstance(results, QuestResultsView)
-    result_ui = results._ui
-    assert result_ui is not None
-    update_ui = mocker.patch.object(type(result_ui), "update", return_value=ResultAction.HIGH_SCORES)
-    loop.update(0.016)
-    update_ui.return_value = None
+    results._activate_high_scores()
+    _update_until(loop, scores_module.HighScoresView)
     scores = state.screens.active
     assert isinstance(scores, scores_module.HighScoresView)
     scores._request.quest_level = QuestLevel(1, 2)
@@ -200,16 +197,13 @@ def test_results_scores_back_preserves_result(loop, mocker) -> None:
     for _ in range(4):
         loop.update(0.1)
     assert state.screens.active is results
-    assert results._ui is result_ui
     assert state.config.gameplay.quest_level == QuestLevel(1, 1)
     assert state.pause_background is run
     # The results slide back in on their buttons.
-    mocker.stop(update_ui)
     for _ in range(6):
         loop.update(0.1)
     assert state.ui.opened
-    assert result_ui.phase == 2
-
+    assert results.phase == 2
 
 def test_failed_screen_entry_is_disposed_at_shutdown(mocker) -> None:
     stack = ScreenStack()

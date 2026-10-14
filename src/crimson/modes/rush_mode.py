@@ -55,7 +55,6 @@ class RushMode(BaseGameplayMode):
         if self._game_over_active:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
                 self._action = Route.MENU
-                self.close_requested = True
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):

@@ -91,7 +91,6 @@ class TypoShooterMode(BaseGameplayMode):
         if self._game_over_active:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
                 self._action = Route.MENU
-                self.close_requested = True
             return
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -126,7 +125,7 @@ class TypoShooterMode(BaseGameplayMode):
         dt = self._tick_frame(dt)[0]
         self._game_time_s += dt
         self._handle_input()
-        if self._action == Route.PAUSE:
+        if self._action is not None:
             return
 
         if self._game_over_active:

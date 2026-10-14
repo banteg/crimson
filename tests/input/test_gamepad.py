@@ -31,7 +31,7 @@ from crimson.input_codes import (
     input_code_is_down,
 )
 from crimson.local_input import LocalInputInterpreter
-from crimson.modes.components.perk_prompt_ui import PerkPromptUi
+from crimson.modes.components.perk_prompt_controller import PerkPromptState
 from crimson.movement_controls import MovementControlType
 from crimson.sim.state_types import PlayerState
 from grim.config import (
@@ -457,6 +457,6 @@ def test_auto_profile_uses_each_players_pad_and_only_active_players() -> None:
 
 def test_perk_prompt_names_the_bound_level_up_input() -> None:
     config = default_crimson_cfg(Path("<memory>"))
-    assert PerkPromptUi.label(config) == "Press Mouse2 to pick a perk"
+    assert PerkPromptState.label(config) == "Press Mouse2 to pick a perk"
     apply_pad_profile(config.controls, 0)
-    assert PerkPromptUi.label(config) == "Press Triangle / Y to pick a perk"
+    assert PerkPromptState.label(config) == "Press Triangle / Y to pick a perk"

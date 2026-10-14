@@ -135,7 +135,6 @@ class ControlsMenuView(PanelMenuView):
             game_state=GameStateId.CONTROLS_MENU,
             panel_element=14,
             back_element=18,
-            title="Controls",
             back_action=Route.BACK,
         )
         self._config_player = 1

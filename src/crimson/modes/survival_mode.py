@@ -20,8 +20,6 @@ from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayRecorder
 from ..sim.mode_updates import SurvivalSpawnState
 from ..sim.sessions import DeterministicSessionTick
-from ..weapon_runtime import weapon_assign_player
-from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
@@ -30,8 +28,6 @@ UI_TEXT_COLOR = rl_color(220, 220, 220, 255)
 UI_HINT_COLOR = rl_color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl_color(255, 255, 255, int(255 * 0.5))
 UI_ERROR_COLOR = rl_color(240, 80, 80, 255)
-
-_DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 
 
 class SurvivalMode(BaseGameplayMode):
@@ -78,7 +74,6 @@ class SurvivalMode(BaseGameplayMode):
         if self._game_over_active:
             if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
                 self._action = Route.MENU
-                self.close_requested = True
             return
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
@@ -104,18 +99,6 @@ class SurvivalMode(BaseGameplayMode):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
             self._request_pause()
             return
-
-    def _debug_cycle_weapon(self, delta: int) -> None:
-        weapon_ids = _DEBUG_WEAPON_IDS
-        if not weapon_ids:
-            return
-        current = self.player.weapon.weapon_id
-        try:
-            idx = weapon_ids.index(current)
-        except ValueError:
-            idx = 0
-        weapon_id = WeaponId(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
-        weapon_assign_player(self.player, weapon_id, state=self.state)
 
     def _enter_game_over(self) -> None:
         self._perk_menu.close()

@@ -16,12 +16,12 @@ from ..input_codes import input_begin_frame, player_gamepad_index
 from ..modes.base_gameplay_mode import BaseGameplayMode
 from ..modes.quest_mode import QuestMode
 from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
-from ..screens.actions import Route, ScreenAction, ShowQuestOutcome
+from ..screens.actions import ScreenAction
 from ..screens.transitions import _update_screen_fade
 from ..sim.timing import ftol_ms_i32
 from .navigation import ScreenNavigator
 from .resources import GameResources
-from .types import GameplayScreen, GameState
+from .types import GameState
 
 _GAMMA_RAMP_VS_330 = r"""
 #version 330
@@ -191,28 +191,12 @@ class GameLoopView:
         if gameplay is not None:
             gameplay.regenerate_terrain_for_console()
 
-    def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: ScreenAction | None) -> ScreenAction | None:
+    def _resolve_gameplay_action(self, gameplay: BaseGameplayMode, action: ScreenAction | None) -> ScreenAction | None:
         # A ranked attempt plays as a first try; it leaves the regular retry count alone. Outside quests
         # only the original rules apply the count, and a hardcore spawn clears it (original bug 38).
-        if (
-            isinstance(gameplay, BaseGameplayMode)
-            and not gameplay.ranked_run
-            and (isinstance(gameplay, QuestMode) or gameplay.world.state.preserve_bugs)
-        ):
+        if not gameplay.ranked_run and (isinstance(gameplay, QuestMode) or gameplay.world.state.preserve_bugs):
             self.state.quest_fail_retry_count = int(gameplay.world.state.quest_fail_retry_count)
-        if action is not None:
-            if action is Route.MENU:
-                gameplay.close_requested = False
-            return action
-        if not gameplay.close_requested:
-            return None
-        gameplay.close_requested = False
-        if isinstance(gameplay, QuestMode):
-            outcome = gameplay.consume_outcome()
-            if outcome is not None:
-                return ShowQuestOutcome(outcome)
-        return Route.MENU
-
+        return action
     def _set_rtx_mode(self, mode: RtxRenderMode, *, source: str) -> None:
         if mode is self.state.rtx_mode:
             return

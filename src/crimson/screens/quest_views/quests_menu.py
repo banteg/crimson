@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from crimson.game_states import GameStateId
 from crimson.quests.level import QUEST_COUNT, QuestLevel
-from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
+from crimson.quests.status import tracked_quest_completed_counter_index, tracked_quest_games_counter_index
 from crimson.screens.actions import Route, StartRun
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_sign
@@ -312,54 +312,13 @@ class QuestsMenuView(MenuScreen):
         return (rl_color(r, g, b, 153), rl_color(r, g, b, 255))
 
     def _quest_counts(self, *, stage: int, row: int) -> tuple[int, int] | None:
-        # In `quest_select_menu_update`, counts are indexed by (row + stage*10) and split across two
-        # arrays at offsets 0xDC (games) and 0x17C (completed) within game.cfg.
-        #
-        # Stage 5 does not fit cleanly in the saved blob:
-        # - The "games" index range would overlap stage-1 completion counters.
-        # - The "completed" index range reads into trailing fields (mode counters,
-        #   play_time_ms, and unknown tail bytes), and the last row would run past
-        #   the decoded payload.
-        #
-        # We emulate this layout so the debug `F1` overlay matches the classic build.
         level = QuestLevel(int(stage), int(row) + 1)
-        global_index = int(level.global_index)
-
-        status = self.state.status
-        games_idx = quest_games_counter_index(level)
-        completed_idx = quest_completed_counter_index(level)
-        try:
-            games = int(status.quest_play_count(games_idx))
-        except IndexError:
+        games_idx = tracked_quest_games_counter_index(level)
+        completed_idx = tracked_quest_completed_counter_index(level)
+        if games_idx is None or completed_idx is None:
             return None
-
-        try:
-            completed = int(status.quest_play_count(completed_idx))
-        except IndexError:
-            # Stage-5 completed reads into trailing fields (and beyond).
-            if int(stage) != 5:
-                return None
-            tail_slot = int(global_index) - 40
-            if tail_slot == 0:
-                completed = int(status.mode_play_count_for_mode(GameMode.SURVIVAL))
-            elif tail_slot == 1:
-                completed = int(status.mode_play_count_for_mode(GameMode.RUSH))
-            elif tail_slot == 2:
-                completed = int(status.mode_play_count_for_mode(GameMode.TYPO))
-            elif tail_slot == 3:
-                completed = int(status.mode_play_other)
-            elif tail_slot == 4:
-                completed = int(status.play_time_ms)
-            elif 5 <= tail_slot <= 8:
-                tail = status.reserved_seed_words
-                off = (tail_slot - 5) * 4
-                if len(tail) < off + 4:
-                    completed = 0
-                else:
-                    completed = int.from_bytes(tail[off : off + 4], "little") & 0xFFFFFFFF
-            else:
-                completed = 0
-        return completed, games
+        status = self.state.status
+        return int(status.quest_play_count(completed_idx)), int(status.quest_play_count(games_idx))
 
     def _draw_contents(self) -> None:
         resources = require_runtime_resources(self.state)

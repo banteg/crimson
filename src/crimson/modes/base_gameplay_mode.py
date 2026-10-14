@@ -13,7 +13,7 @@ from grim.audio import AudioState, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
-from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
+from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
 from grim.music import play_music, stop_music
@@ -73,11 +73,14 @@ from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline,
 from ..ui.focus import UiFocus
 from ..ui.hud import HudRenderContext, HudState, draw_hud_overlay, draw_target_health_bar, ui_transparency
 from ..ui.keybind_help import ui_render_keybind_help
+from ..weapon_runtime import weapon_assign_player
+from ..weapons import WEAPON_BY_ID, WeaponId
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import build_highscore_record
 from .components.perk_menu_controller import PerkMenuController, PerkMenuUiContext
 from .components.perk_prompt_controller import PerkPromptState
 
+_DEBUG_WEAPON_IDS = tuple(sorted(WEAPON_BY_ID))
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
@@ -110,7 +113,6 @@ class BaseGameplayMode:
         audio_rng: Crand,
     ) -> None:
         self._assets_root = ctx.assets_dir
-        self._small: SmallFontData | None = None
         self._grim_mono: GrimMonoFont | None = None
         self._hud_state = HudState()
         self.default_game_mode_id = default_game_mode_id
@@ -123,7 +125,6 @@ class BaseGameplayMode:
         self.leaderboard: Leaderboard | None = None
         self._base_dir = self.config.path.parent
 
-        self.close_requested = False
         self._action: ScreenAction | None = None
         # Native `game_paused_flag` and `pause_keybind_help_alpha_ms`.
         self._paused = False
@@ -228,6 +229,10 @@ class BaseGameplayMode:
     @property
     def audio_rng(self) -> CrandLike:
         return self._world_runtime.audio_rng
+
+    @property
+    def _small(self) -> SmallFontData:
+        return self.render_resources.resources.small_font
 
     @property
     def rtx_mode(self) -> RtxRenderMode:
@@ -363,19 +368,13 @@ class BaseGameplayMode:
             update_audio(self.audio, dt, advance_sfx=self._game_over_active)
 
     def _ui_line_height(self) -> int:
-        if self._small is not None:
-            return int(self._small.cell_size)
-        return 20
+        return int(self._small.cell_size)
 
     def _ui_text_width(self, text: str) -> int:
-        font = self._small
-        assert font is not None, "small font must be loaded before ui text measurement"
-        return int(measure_small_text_width(font, text))
+        return int(measure_small_text_width(self._small, text))
 
     def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color) -> None:
-        font = self._small
-        assert font is not None, "small font must be loaded before ui text draw"
-        draw_small_text(font, text, pos, color)
+        draw_small_text(self._small, text, pos, color)
 
     def _perk_menu_ui_context(self) -> PerkMenuUiContext:
         return PerkMenuUiContext(
@@ -476,14 +475,13 @@ class BaseGameplayMode:
     def _draw_keybind_help(self) -> None:
         if self._keybind_help_alpha_ms <= 0:
             return
-        small = self._small
         mono = self._grim_mono
-        assert small is not None and mono is not None, "key info needs the loaded fonts"
+        assert mono is not None, "key info needs the loaded fonts"
         ui_render_keybind_help(
             Vec2(float(canvas.width()) * 0.5 - 256.0, float(canvas.height()) * 0.5 - 128.0),
             self._keybind_help_alpha_ms * 0.001,
             config=self.config,
-            small=small,
+            small=self._small,
             mono=mono,
         )
 
@@ -548,7 +546,7 @@ class BaseGameplayMode:
             self._perk_menu.close()
         else:
             self._handle_input()
-        if self._action == Route.PAUSE:
+        if self._action is not None:
             return None
         return _ModeFrameState(
             dt=float(frame_dt),
@@ -573,6 +571,18 @@ class BaseGameplayMode:
         if self._console is not None:
             self._console.log.log("replay: recording stopped (debug cheat used)")
 
+
+    def _debug_cycle_weapon(self, delta: int) -> None:
+        weapon_ids = _DEBUG_WEAPON_IDS
+        if not weapon_ids:
+            return
+        current = self.player.weapon.weapon_id
+        try:
+            idx = weapon_ids.index(current)
+        except ValueError:
+            idx = 0
+        weapon_id = WeaponId(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
+        weapon_assign_player(self.player, weapon_id, state=self.state)
     def _ui_pending_perk_count(self) -> int:
         """Pending perks the UI may offer right now.
 
@@ -700,11 +710,9 @@ class BaseGameplayMode:
         raise NotImplementedError(f"{self.__class__.__name__}.draw() must be implemented by gameplay mode")
 
     def open(self) -> None:
-        self.close_requested = False
         self._action = None
         self._paused = False
         self._keybind_help_alpha_ms = 0
-        self._small = load_small_font(self._assets_root)
         self._grim_mono = load_grim_mono_font(self._assets_root)
         self._hud_state = HudState()
 
@@ -791,8 +799,6 @@ class BaseGameplayMode:
 
     def close(self) -> None:
         self._game_over_ui.close()
-        if self._small is not None:
-            self._small = None
         self._reset_live_ticks()
         self._reset_replay_capture_state(clear_recorder=True)
         self._world_runtime.close_runtime()
@@ -862,7 +868,6 @@ class BaseGameplayMode:
             return
         if action == ResultAction.MAIN_MENU:
             self._action = Route.MENU
-            self.close_requested = True
 
     def _world_entity_alpha(self) -> float:
         if self._game_over_active:
