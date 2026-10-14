@@ -78,15 +78,17 @@ class _RecordField[T: int]:
     def __init__(self: _RecordField[int], offset: int, fmt: str) -> None: ...
 
     @overload
-    def __init__(self, offset: int, fmt: str, decode: Callable[[int], T]) -> None: ...
+    def __init__(self, offset: int, fmt: str, decode: Callable[[int], T], encode: Callable[[Any], int] = int) -> None: ...
 
-    def __init__(self, offset: int, fmt: str, decode: Callable[[int], Any] = int) -> None:
+    def __init__(
+        self, offset: int, fmt: str, decode: Callable[[int], Any] = int, encode: Callable[[Any], int] = int,
+    ) -> None:
         self._unpack = struct.Struct(fmt)
         self._pack = struct.Struct("<I" if fmt == "<i" else fmt)
         self._offset = offset
         self._mask = (1 << (self._unpack.size * 8)) - 1
         self._decode = decode
-
+        self._encode = encode
     @overload
     def __get__(self, instance: None, owner: type[HighScoreRecord]) -> Self: ...
 
@@ -99,7 +101,7 @@ class _RecordField[T: int]:
         return self._decode(int(self._unpack.unpack_from(instance.data, self._offset)[0]))
 
     def __set__(self, instance: HighScoreRecord, value: T | int) -> None:
-        self._pack.pack_into(instance.data, self._offset, int(value) & self._mask)
+        self._pack.pack_into(instance.data, self._offset, int(self._encode(value)) & self._mask)
 
 
 class HighScoreRecord(msgspec.Struct):
@@ -113,7 +115,7 @@ class HighScoreRecord(msgspec.Struct):
     game_mode_id = _RecordField(0x28, "<B", _known_game_mode)
     quest_stage_major = _RecordField(0x29, "<B")
     quest_stage_minor = _RecordField(0x2A, "<B")
-    most_used_weapon_id = _RecordField(0x2B, "<B", WeaponId)
+    most_used_weapon_id = _RecordField(0x2B, "<B", WeaponId, WeaponId)
     shots_fired = _RecordField(0x2C, "<I")
     shots_hit = _RecordField(0x30, "<I")
     creature_kill_count = _RecordField(0x34, "<I")

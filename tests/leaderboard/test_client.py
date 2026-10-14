@@ -232,3 +232,40 @@ def test_a_board_runs_replay_downloads_once_from_the_site_and_a_gone_one_is_none
     assert (replay_dir / f"{run}.crd").read_bytes() == b"replay"
     with pytest.raises(LeaderboardError):
         leaderboard.fetch_replay("../escape", replay_dir)
+
+
+def test_close_saves_held_run_even_when_a_background_job_failed(tmp_path, replay) -> None:
+    def broken_transport(url: str, body: dict[str, object]) -> tuple[int, dict[str, object]]:
+        raise RuntimeError("boom")
+
+    leaderboard = Leaderboard(tmp_path, url=_URL, transport=broken_transport)
+    leaderboard.sync(("survival", ""))
+    leaderboard.hold(replay)
+    with pytest.raises(RuntimeError, match="boom"):
+        leaderboard.close("banteg")
+    assert leaderboard.waiting == 1
+    assert len(list((tmp_path / "leaderboard" / "outbox").glob("*.json"))) == 1
+
+
+def test_queued_replay_downloads_do_not_block_login(tmp_path) -> None:
+    import threading
+
+    started = threading.Event()
+    unblock = threading.Event()
+
+    def slow_download(url: str) -> bytes | None:
+        started.set()
+        unblock.wait(timeout=5.0)
+        return b"replay"
+
+    leaderboard = Leaderboard(tmp_path, url=_URL, transport=_Service(), download=slow_download)
+    replay_dir = tmp_path / "replays" / "online"
+    first = leaderboard.fetch_replay("a" * 64, replay_dir)
+    second = leaderboard.fetch_replay("b" * 64, replay_dir)
+    assert started.wait(timeout=2.0)
+    try:
+        assert leaderboard.login().result(timeout=1.0) == "https://crimson.test/login/once"
+    finally:
+        unblock.set()
+        first.result(timeout=2.0)
+        second.result(timeout=2.0)

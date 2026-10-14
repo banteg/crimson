@@ -145,7 +145,9 @@ class Leaderboard:
         self._transport = transport
         self._download = download
         self._executor: ThreadPoolExecutor | None = None
-        self._aux_executor: ThreadPoolExecutor | None = None
+        self._download_executor: ThreadPoolExecutor | None = None
+        self._login_executor: ThreadPoolExecutor | None = None
+        self._closed = False
         self._pending: list[Future[_Report]] = []
         self._held: Replay | None = None
         self._next_pass_s = 0.0
@@ -154,16 +156,15 @@ class Leaderboard:
         self.sync_status = SyncStatus.IDLE
         self.scores: dict[Board, list[OnlineScore]] = {}
 
+    def _require_open(self) -> None:
+        if self._closed:
+            raise RuntimeError("cannot schedule new futures after shutdown")
+
     def _submit(self, fn: Callable[..., _Report], *args: Any, **kwargs: Any) -> None:
+        self._require_open()
         if self._executor is None:
             self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="leaderboard")
         self._pending.append(self._executor.submit(fn, *args, **kwargs))
-
-    def _submit_aux[T](self, fn: Callable[..., T], *args: Any) -> Future[T]:
-        # Logins and replay downloads run beside uploads so a long upload pass never blocks UI actions.
-        if self._aux_executor is None:
-            self._aux_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="leaderboard-aux")
-        return self._aux_executor.submit(fn, *args)
 
     def hold(self, replay: Replay) -> None:
         """Keep a finished ranked run until its results screen closes and its name is known."""
@@ -191,8 +192,11 @@ class Leaderboard:
 
     def login(self) -> Future[str]:
         """The one-time link that opens the site signed in as this key."""
-        return self._submit_aux(self._login)
-
+        self._require_open()
+        # Logins run beside uploads and downloads, so the Profile button never waits behind either.
+        if self._login_executor is None:
+            self._login_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="leaderboard-login")
+        return self._login_executor.submit(self._login)
     def drain(self) -> list[str]:
         """The console lines of the finished jobs, in order; a job's error is raised here."""
         lines: list[str] = []
@@ -204,18 +208,20 @@ class Leaderboard:
 
     def close(self, name: str) -> list[str]:
         """Queue a run still held under `name` and finish the started jobs; passes not yet started are dropped."""
-        if self._aux_executor is not None:
-            self._aux_executor.shutdown(wait=False, cancel_futures=True)
+        self._closed = True
+        for executor in (self._login_executor, self._download_executor):
+            if executor is not None:
+                executor.shutdown(wait=False, cancel_futures=True)
         if self._executor is not None:
             self._executor.shutdown(wait=True, cancel_futures=True)
         self._pending = [future for future in self._pending if not future.cancelled()]
-        lines = self.drain()
+        held_lines: list[str] = []
         replay, self._held = self._held, None
         if replay is not None:
             report = self._queue(replay, name)
-            lines += report.lines
+            held_lines = report.lines
             self.waiting = report.waiting
-        return lines
+        return [*self.drain(), *held_lines]
 
     def fetch_replay(self, run: str, replay_dir: Path) -> Future[Path | None]:
         """Download a board run's replay into `replay_dir/<run>.crd`, once; None when the board no longer has it."""
@@ -223,7 +229,11 @@ class Leaderboard:
             raise LeaderboardError("no leaderboard service is configured")
         if not _RUN_ID.fullmatch(run):
             raise LeaderboardError(f"not a run id: {run!r}")
-        return self._submit_aux(self._fetch_replay, run, replay_dir)
+        self._require_open()
+        # Replays download beside uploads, so watching a board's run never waits behind a long upload pass.
+        if self._download_executor is None:
+            self._download_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="leaderboard-download")
+        return self._download_executor.submit(self._fetch_replay, run, replay_dir)
 
     def _fetch_replay(self, run: str, replay_dir: Path) -> Path | None:
         path = replay_dir / f"{run}.crd"
