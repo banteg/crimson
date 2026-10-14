@@ -20,6 +20,7 @@ from ..camera import camera_update_for_players
 from ..game_modes import GameMode
 from ..local_input import PAD_AIM_DIST_MUL_DEFAULT
 from ..movement_controls import MovementControlType
+from ..quests.custom import CustomQuest
 from ..quests.level import QUEST_COUNT, QuestLevel
 from ..render.world.viewport import clamp_camera
 from ..sim.hooks import TickResult
@@ -74,14 +75,22 @@ def ranked_run_seed() -> int:
     return secrets.randbits(32)
 
 
-def ranked_run_spec(game_mode: GameMode, *, seed: int, quest_level: QuestLevel | None = None, hardcore: bool = False) -> RunSpec:
-    """The run a ranked attempt plays; hardcore only changes quests, so Survival has one board."""
+def ranked_run_spec(
+    game_mode: GameMode,
+    *,
+    seed: int,
+    quest_level: QuestLevel | None = None,
+    custom_quest: CustomQuest | None = None,
+    hardcore: bool = False,
+) -> RunSpec:
+    """The run a ranked attempt plays; hardcore only changes stock quests, so Survival and custom quests have one board."""
 
-    hardcore = hardcore and game_mode == GameMode.QUESTS
+    hardcore = hardcore and game_mode == GameMode.QUESTS and custom_quest is None
     return RunSpec(
         game_mode_id=game_mode,
         seed=seed,
         quest_level=quest_level,
+        custom_quest=custom_quest,
         player_count=1,
         hardcore=hardcore,
         preserve_bugs=False,
@@ -113,9 +122,6 @@ def unranked_reasons(run: RunSpec) -> list[str]:
     reasons = []
     if run.game_mode_id not in RANKED_MODES:
         reasons.append("mode")
-    # The verifier starts only the original's quests.
-    if run.custom_quest is not None:
-        reasons.append("custom_quest")
     if run.player_count != 1:
         reasons.append("players")
     if run.preserve_bugs:
@@ -126,7 +132,7 @@ def unranked_reasons(run: RunSpec) -> list[str]:
         reasons.append("violence_disabled")
     if run.friendly_fire:
         reasons.append("friendly_fire")
-    if run.hardcore and run.game_mode_id != GameMode.QUESTS:
+    if run.hardcore and (run.game_mode_id != GameMode.QUESTS or run.custom_quest is not None):
         reasons.append("hardcore")
     if run.quest_fail_retry_count:
         reasons.append("quest_retry")

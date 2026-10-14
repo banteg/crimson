@@ -90,6 +90,52 @@ static void replay_result(Msgpack &m, const char *outcome) {
   m.str("most_used_weapon_id"), m.integer(best);
 }
 
+static void replay_write_custom_quest(Msgpack &m) {
+  m.map(8);
+  m.str("title"), m.str(*custom_quest_title ? custom_quest_title : "Custom quest");
+  m.str("author");
+  if (*custom_quest_author)
+    m.str(custom_quest_author);
+  else
+    m.nil();
+  m.str("start_weapon_id"), m.integer(quest.weapon_id);
+  m.str("terrain_slots"), m.array(3);
+  for (uint32_t slot : quest.terrain)
+    m.integer(slot);
+  m.str("entries"), m.array(quest.count);
+  for (uint32_t i = 0; i < quest.count; ++i) {
+    const PortableSpawn &s = quest.entries[i];
+    m.map(5);
+    m.str("pos"), m.map(2), m.str("x"), m.real(s.x), m.str("y"), m.real(s.y);
+    m.str("heading"), m.real(s.heading);
+    m.str("spawn_id"), m.integer(s.template_id);
+    m.str("trigger_ms"), m.integer(s.trigger_ms);
+    m.str("count"), m.integer(s.count);
+  }
+  uint32_t bonuses = 0, perks = 0, weapons = 0;
+  for (int i = 2; i <= 14; ++i)
+    if (quest.disable_bonuses & (1u << i))
+      ++bonuses;
+  for (int i = 1; i <= 57; ++i)
+    if (quest.disable_perks[i >> 5] & (1u << (i & 31)))
+      ++perks;
+  for (int i = 2; i <= 33; ++i)
+    if (quest.disable_weapons[i >> 5] & (1u << (i & 31)))
+      ++weapons;
+  m.str("no_bonuses"), m.array(bonuses);
+  for (int i = 2; i <= 14; ++i)
+    if (quest.disable_bonuses & (1u << i))
+      m.integer(i);
+  m.str("no_perks"), m.array(perks);
+  for (int i = 1; i <= 57; ++i)
+    if (quest.disable_perks[i >> 5] & (1u << (i & 31)))
+      m.integer(i);
+  m.str("no_weapons"), m.array(weapons);
+  for (int i = 2; i <= 33; ++i)
+    if (quest.disable_weapons[i >> 5] & (1u << (i & 31)))
+      m.integer(i);
+}
+
 // The replay (src/crimson/replay/types.py Replay): the run's configuration,
 // its result and every tick the recording holds.
 static std::vector<uint8_t> replay_payload(const char *outcome) {
@@ -107,8 +153,9 @@ static std::vector<uint8_t> replay_payload(const char *outcome) {
   m.str("run"), m.map(15);
   m.str("game_mode_id"), m.integer(cfg.mode);
   m.str("seed"), m.integer(cfg.seed);
+  bool custom = cfg.mode == GAME_MODE_QUEST && cfg.major == 0 && cfg.minor == 0;
   m.str("quest_level");
-  if (cfg.mode == GAME_MODE_QUEST)
+  if (cfg.mode == GAME_MODE_QUEST && !custom)
     m.map(2), m.str("major"), m.integer(cfg.major), m.str("minor"), m.integer(cfg.minor);
   else
     m.nil();
@@ -132,12 +179,16 @@ static std::vector<uint8_t> replay_payload(const char *outcome) {
   m.str("submit_count"), m.integer(0);
   m.str("match_count"), m.integer(0);
   m.str("highscore_names_loaded"), m.boolean(false);
-  // The original's quests only: custom quests need their own start (since format 33).
-  m.str("custom_quest"), m.nil();
+  m.str("custom_quest");
+  if (custom)
+    replay_write_custom_quest(m);
+  else
+    m.nil();
   m.str("result");
   replay_result(m, outcome);
   // The recording after its configuration: each tick's input, then its commands.
-  const unsigned char *at = live.replay.data() + sizeof(PortableConfig), *end = live.replay.data() + live.replay.size();
+  const unsigned char *at = live.replay.data() + sizeof(PortableConfig) + (custom ? sizeof(PortableQuest) : 0),
+                      *end = live.replay.data() + live.replay.size();
   std::vector<std::pair<PortableInput, std::vector<PortableCommand>>> ticks;
   while (at < end) {
     PortableInput input;
@@ -200,7 +251,8 @@ static int replay_reserve_number() {
 // Returns its number, or 0 when there is none: a run left before its first
 // tick, or a save that failed (its number stays used).
 static int replay_save(const std::vector<uint8_t> &payload) {
-  if (live.replay.size() <= sizeof(PortableConfig))
+  bool custom = cfg.mode == GAME_MODE_QUEST && cfg.major == 0 && cfg.minor == 0;
+  if (live.replay.size() <= sizeof(PortableConfig) + (custom ? sizeof(PortableQuest) : 0))
     return 0;
   // Sessions play Survival (1), Rush (2) and Quests (3).
   static const char *const modes[] = {"", "survival", "rush", "quest"};
@@ -336,26 +388,135 @@ struct MsgpackReader {
 struct LoadedReplay {
   std::vector<uint8_t> recording, result;
   int rules = 0;
-  std::string game_version, reason, outcome;
+  std::string game_version, reason, outcome, quest_title, quest_author;
   int64_t elapsed_ms = 0, quest_final_ms = -1, kills = 0, experience = 0;
   int64_t shots_fired = 0, shots_hit = 0, most_used_weapon_id = 0;
 };
 
+static bool replay_printable(const std::string &s, size_t max_len) {
+  if (s.empty() || s.size() > max_len)
+    return false;
+  for (unsigned char c : s)
+    if (c < 0x20 || c > 0x7e)
+      return false;
+  return true;
+}
+
+static bool replay_read_custom_quest(MsgpackReader &r, PortableQuest &q, LoadedReplay &out) {
+  q = {};
+  bool has_title = false, has_weapon = false, has_terrain = false, has_entries = false;
+  for (uint32_t n = r.map(); r.ok && n; --n) {
+    std::string key = r.str();
+    if (key == "title") {
+      out.quest_title = r.str();
+      has_title = replay_printable(out.quest_title, 64);
+    } else if (key == "author") {
+      if (!r.nil()) {
+        out.quest_author = r.str();
+        if (!replay_printable(out.quest_author, 31))
+          r.ok = false;
+      }
+    } else if (key == "start_weapon_id") {
+      q.weapon_id = (uint32_t)r.integer();
+      has_weapon = true;
+    } else if (key == "terrain_slots") {
+      if (r.array() != 3)
+        r.ok = false;
+      for (uint32_t &slot : q.terrain)
+        slot = (uint32_t)r.integer();
+      has_terrain = true;
+    } else if (key == "entries") {
+      uint32_t count = r.array();
+      if (!r.ok || count < 1 || count > 256)
+        return r.ok = false;
+      q.count = count;
+      has_entries = true;
+      for (uint32_t i = 0; r.ok && i < count; ++i) {
+        PortableSpawn &s = q.entries[i];
+        for (uint32_t m = r.map(); r.ok && m; --m) {
+          std::string field = r.str();
+          if (field == "pos") {
+            for (uint32_t p = r.map(); r.ok && p; --p) {
+              std::string axis = r.str();
+              double v = r.real();
+              float fv = (float)v;
+              if (!std::isfinite(v) || (double)fv != v)
+                r.ok = false;
+              (axis == "x" ? s.x : s.y) = fv;
+            }
+          } else if (field == "heading") {
+            double v = r.real();
+            s.heading = (float)v;
+            if (!std::isfinite(v) || (double)s.heading != v)
+              r.ok = false;
+          } else if (field == "spawn_id")
+            s.template_id = (int32_t)r.integer();
+          else if (field == "trigger_ms")
+            s.trigger_ms = (int32_t)r.integer();
+          else if (field == "count")
+            s.count = (int32_t)r.integer();
+          else
+            r.ok = false;
+        }
+      }
+    } else if (key == "no_bonuses") {
+      int64_t prev = 1;
+      for (uint32_t count = r.array(); r.ok && count; --count) {
+        int64_t id = r.integer();
+        if (id <= prev || id > 14)
+          r.ok = false;
+        else
+          q.disable_bonuses |= 1u << id;
+        prev = id;
+      }
+    } else if (key == "no_perks") {
+      int64_t prev = 0;
+      for (uint32_t count = r.array(); r.ok && count; --count) {
+        int64_t id = r.integer();
+        if (id <= prev || id > 57)
+          r.ok = false;
+        else
+          q.disable_perks[id >> 5] |= 1u << (id & 31);
+        prev = id;
+      }
+    } else if (key == "no_weapons") {
+      int64_t prev = 1;
+      for (uint32_t count = r.array(); r.ok && count; --count) {
+        int64_t id = r.integer();
+        if (id <= prev || id > 33)
+          r.ok = false;
+        else
+          q.disable_weapons[id >> 5] |= 1u << (id & 31);
+        prev = id;
+      }
+    } else
+      r.ok = false;
+  }
+  return r.ok && has_title && has_weapon && has_terrain && has_entries && custom_quest_valid_for(q);
+}
+
 static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedReplay &out) {
   config.major = config.minor = 1;
+  bool has_level = false, has_custom = false;
+  PortableQuest custom = {};
   for (uint32_t n = r.map(); r.ok && n; --n) {
     std::string key = r.str();
     if (key == "game_mode_id") config.mode = (uint32_t)r.integer();
     else if (key == "seed") config.seed = (uint32_t)r.integer();
     else if (key == "quest_level") {
-      if (!r.nil())
+      if (!r.nil()) {
+        has_level = true;
         for (uint32_t m = r.map(); r.ok && m; --m) {
           std::string field = r.str();
           (field == "major" ? config.major : config.minor) = (uint32_t)r.integer();
         }
+      }
     } else if (key == "custom_quest") {
-      // This build starts only the original's quests.
-      if (!r.nil()) r.skip(), out.reason = "This run needs the Python port";
+      if (!r.nil()) {
+        has_custom = true;
+        if (!replay_read_custom_quest(r, custom, out))
+          r.ok = false;
+      }
     } else if (key == "player_count") {
       if (r.integer() != 1) out.reason = "This run needs the Python port";
     } else if (key == "hardcore") config.hardcore = r.boolean();
@@ -381,18 +542,28 @@ static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedRepl
   }
   if (config.mode < GAME_MODE_SURVIVAL || config.mode > GAME_MODE_QUEST)
     out.reason = "This run needs the Python port";
+  if ((int)has_level + (int)has_custom != (config.mode == GAME_MODE_QUEST ? 1 : 0))
+    r.ok = false;
+  if (has_custom) {
+    if (config.hardcore)
+      r.ok = false;
+    config.major = config.minor = 0;
+    out.recording.insert(out.recording.begin() + sizeof config, (const uint8_t *)&custom,
+                         (const uint8_t *)&custom + sizeof custom);
+  }
 }
 
 // A run the verifier sets up (portable_init's checks), read before the
 // original sets up its quest.
 static bool replay_config_valid(const PortableConfig &config) {
-  bool quest = config.mode != GAME_MODE_QUEST || (config.major >= 1 && config.major <= 5 && config.minor >= 1 &&
-                                                  config.minor <= 10);
+  bool custom = config.mode == GAME_MODE_QUEST && config.major == 0 && config.minor == 0;
+  bool quest = config.mode != GAME_MODE_QUEST || custom ||
+               (config.major >= 1 && config.major <= 5 && config.minor >= 1 && config.minor <= 10);
   bool counts = true;
   for (uint32_t n : config.weapon_usage)
     counts = counts && n <= 2147483647u;
-  return quest && counts && config.detail <= 5 && config.unlock <= 50 && config.unlock_full <= 50 &&
-         config.retry <= 2147483647u && config.preserve_bugs <= 1;
+  return quest && counts && (!custom || !config.hardcore) && config.detail <= 5 && config.unlock <= 50 &&
+         config.unlock_full <= 50 && config.retry <= 2147483647u && config.preserve_bugs <= 1;
 }
 
 static void replay_read_result(MsgpackReader &r, LoadedReplay &out) {
@@ -483,7 +654,8 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
   if (format == 30)
     out.rules = 1;
   // A whole replay: its run, its result, a tick, and nothing after its map.
-  bool whole = r.at == r.end && run && !out.result.empty() && out.recording.size() > sizeof config &&
+  size_t head = sizeof config + (config.mode == GAME_MODE_QUEST && !config.major && !config.minor ? sizeof(PortableQuest) : 0);
+  bool whole = r.at == r.end && run && !out.result.empty() && out.recording.size() > head &&
                !out.game_version.empty();
   // Formats 30 to this build's read alike: each adds a field (docs/formats/replay.md).
   if (out.reason.empty() && (!r.ok || !whole || format < 30 || format > CRIMSON_REPLAY_FORMAT || !replay_config_valid(config)))

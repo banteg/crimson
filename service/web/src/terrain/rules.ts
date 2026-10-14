@@ -74,13 +74,14 @@ const RESET_DRAWS = 1 + 0x180 + 1;
 // The terrain a ranked run on `board` (and `quest`, "major.minor", on a quest board) starts on, from its seed: the
 // reset's random terrain for its save's unlocks, or for a quest its score tag draw and then the quest's own terrain
 // over it (src/crimson/sim/run_init.py).
-export function runGround(seed: number, run: { board: Board; quest: string }): Ground {
-  const [major, minor] = run.quest.split(".").map(Number);
-  const quest = run.quest ? { major: major!, minor: minor! } : null;
+export function runGround(seed: number, run: { board: Board; quest: string; customSlots?: Slots }): Ground {
+  const [major, minor] = run.quest.includes(".") ? run.quest.split(".").map(Number) : [];
+  const quest = major && minor ? { major, minor } : null;
   const rand = crtRand(seed);
   for (let i = 0; i < RESET_DRAWS; i++) rand();
   const ground = generateRandom(rand, rankedUnlocks(quest, run.board === "quests-hardcore")[0]);
-  if (quest === null) return ground;
+  const slots = run.customSlots ?? (quest ? questSlots(quest.major, quest.minor) : null);
+  if (slots === null) return ground;
   rand();
-  return generate(rand, questSlots(quest.major, quest.minor));
+  return generate(rand, slots);
 }

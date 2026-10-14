@@ -206,14 +206,19 @@ static void watch_begin() {
   watch.play_time = play_time_ms;
   watch.time_played = time_played_ms;
   memcpy(&cfg, watch.replay.recording.data(), sizeof cfg);
+  bool custom = cfg.mode == GAME_MODE_QUEST && cfg.major == 0 && cfg.minor == 0;
+  if (custom) {
+    memcpy(&quest, watch.replay.recording.data() + sizeof cfg, sizeof quest);
+    snprintf(custom_quest_title, sizeof custom_quest_title, "%s", watch.replay.quest_title.c_str());
+    snprintf(custom_quest_author, sizeof custom_quest_author, "%s", watch.replay.quest_author.c_str());
+  }
   ranked_run = false;
   terrain_reset();
   if (!live_start())
     return watch_leave();
   live.watching = true;
   watch.phase = WATCH_PREPARING;
-  watch.at = sizeof cfg;
-  watch.tick = watch.ticks = 0;
+  watch.at = sizeof cfg + (custom ? sizeof quest : 0);
   watch.speed = WATCH_NORMAL_SPEED;
   watch.paused = watch.step = watch.played = false;
   watch.stopped.clear();
@@ -522,14 +527,33 @@ static bool watch_on_menu() {
 }
 // A link skips the intro, as a click does (game_startup_init), and starts as
 // the menu comes in after it, cutting straight to the replay.
+static bool custom_quest_linked;
 static void watch_follow_link() {
-  if (!watch.linked)
+  if (!watch.linked && !custom_quest_linked)
     return;
   startup_skip_requested = 1;
   if (!game_live && !run_active && !watch.armed && watch_on_menu() && ui_transition_direction &&
       ui_elements_max_timeline() > 0 && ui_elements_timeline > 0) {
-    watch.linked = false;
-    watch_start(watch.link, watch.link_card);
+    if (watch.linked) {
+      watch.linked = false;
+      watch_start(watch.link, watch.link_card);
+    } else {
+      custom_quest_linked = false;
+      config_blob.game_mode = GAME_MODE_QUEST;
+      config_blob.hardcore = 0;
+      config_blob.player_count = 1;
+      quest_stage_major = 0;
+      quest_stage_minor = 0;
+      ranked_checked = true;
+      run_active = 0;
+      ui_sign_crimson.focus_disabled = 0;
+      ui_transition_direction = 0;
+      game_state_pending = GAME_STATE_GAMEPLAY;
+      music_fade_out_all(music_track_crimson_theme_id);
+      music_fade_out_all(music_track_shortie_monk_id);
+      music_fade_out_all(music_track_game_playlist);
+      screen_fade_ramp_flag = 1;
+    }
     ui_elements_timeline = 0;
     // The intro's tune and the menu's theme, which the skipped intro faded out
     // and started, stop at once: the link cut both, and their fades would play
@@ -843,5 +867,13 @@ __attribute__((export_name("game_watch_stop_at"))) void game_watch_stop_at(int a
 // recorded, 2 differently, 3 stopped before its end.
 __attribute__((export_name("game_watch_status"))) int game_watch_status() {
   return !live.watching ? -1 : watch.phase != WATCH_ENDED ? 0 : !watch.stopped.empty() ? 3 : watch.played ? 1 : 2;
+}
+__attribute__((export_name("game_custom_quest_title"))) char *game_custom_quest_title() { return custom_quest_title; }
+__attribute__((export_name("game_custom_quest_author"))) char *game_custom_quest_author() { return custom_quest_author; }
+__attribute__((export_name("game_custom_quest_play"))) int game_custom_quest_play() {
+  if (game_live || !custom_quest_valid() || config_blob.screen_width != 1024 || config_blob.screen_height != 768)
+    return 0;
+  custom_quest_linked = true;
+  return 1;
 }
 }

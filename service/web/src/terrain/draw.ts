@@ -1,7 +1,7 @@
 // A ground drawn as src/grim/terrain_render.py draws it: the clear color, then each layer's stamps with the layer's
 // tint and the DX8 alpha test, as an image URL the page shows behind its panels.
 
-import { ALPHA_REF, CLEAR, crtRand, generate, generateRandom, type Ground, LAYER_ALPHA, PATCH, questSlots, SIZE, TINT_RGB } from "./rules";
+import { ALPHA_REF, CLEAR, crtRand, generate, generateRandom, type Ground, LAYER_ALPHA, PATCH, questSlots, SIZE, type Slots, TINT_RGB } from "./rules";
 
 // The random terrain of a save with every quest unlocked.
 const UNLOCK_INDEX = 50;
@@ -38,8 +38,13 @@ function tinted(image: HTMLImageElement, alpha: number): HTMLCanvasElement {
 export async function drawGround(quest: string | null): Promise<{ url: string; height: number }> {
   const height = Math.max(SIZE, Math.ceil(Math.max(window.screen.height, window.innerHeight) / 64) * 64);
   const rand = crtRand(crypto.getRandomValues(new Uint32Array(1))[0]!);
-  const ground: Ground = quest
-    ? generate(rand, questSlots(...(quest.split(".").map(Number) as [number, number])), SIZE, height)
+  const slots: Slots | null = quest?.startsWith("slots:")
+    ? (quest.slice(6).split(",").map(Number) as Slots)
+    : quest?.includes(".")
+      ? questSlots(...(quest.split(".").map(Number) as [number, number]))
+      : null;
+  const ground: Ground = slots
+    ? generate(rand, slots, SIZE, height)
     : generateRandom(rand, UNLOCK_INDEX, SIZE, height);
   return { url: await paintGround(ground, height), height };
 }

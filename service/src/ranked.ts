@@ -25,7 +25,7 @@ export function unrankedReasons(run: RunSpec): string[] {
   if (run.detail_preset !== RANKED_DETAIL_PRESET) reasons.push("detail_preset");
   if (run.violence_disabled) reasons.push("violence_disabled");
   if (run.friendly_fire) reasons.push("friendly_fire");
-  if (run.hardcore && run.game_mode_id !== GameMode.QUESTS) reasons.push("hardcore");
+  if (run.hardcore && (run.game_mode_id !== GameMode.QUESTS || run.custom_quest !== null)) reasons.push("hardcore");
   if (run.quest_fail_retry_count) reasons.push("quest_retry");
   const [unlocks, unlocksHardcore] = rankedUnlocks(run.quest_level, run.hardcore);
   if (run.status.quest_unlock_index !== unlocks || run.status.quest_unlock_index_hardcore !== unlocksHardcore)

@@ -1,9 +1,24 @@
 import { type Accessor, createSignal, For, type JSX, Show } from "solid-js";
-import type { Board, BoardView, FlagsView, JoinView, LoginView, ModerationAction, ProfileView, QuestMenuView, Role, RunDetailView } from "../../src/api-types";
+import type {
+  Board,
+  BoardView,
+  CustomQuest,
+  CustomQuestDetailView,
+  CustomQuestsListView,
+  FlagsView,
+  JoinView,
+  LoginView,
+  ModerationAction,
+  ProfileView,
+  QuestMenuView,
+  Role,
+  RunDetailView,
+} from "../../src/api-types";
 import { get, moderate, post } from "./api";
 import { formatLongDuration, formatScore, quantity } from "./format";
 import { GameButton } from "./button";
 import { playerLabel } from "./names";
+import perkNames from "./perks.json";
 import { PilotName, PlayerName, PROVIDER_LABELS } from "./players";
 import { runPanels, SIGNAL_LABELS } from "./run";
 import weaponData from "./weapons.json";
@@ -51,6 +66,22 @@ async function me(): Promise<{ account: number | null; role: Role }> {
 
 const BOARD_NAMES: Record<Board, string> = { survival: "Survival", quests: "Quests", "quests-hardcore": "Quests, hardcore" };
 const WEAPONS: Record<string, { name: string; icon_index: number }> = weaponData;
+const PERKS: Record<string, string> = perkNames;
+const BONUS_NAMES: Record<number, string> = {
+  2: "Energizer",
+  3: "Weapon",
+  4: "Weapon Power Up",
+  5: "Nuke",
+  6: "Double XP",
+  7: "Shock Chain",
+  8: "Fireblast",
+  9: "Reflex Boost",
+  10: "Shield",
+  11: "Freeze",
+  12: "MediKit",
+  13: "Speed",
+  14: "Fire Bullets",
+};
 
 function formatDuration(ms: number): string {
   const seconds = Math.floor(ms / 1000);
@@ -222,6 +253,9 @@ function QuestMenu(props: { view: QuestMenuView; current?: string }) {
           )}
         </For>
       </ol>
+      <p class="muted" style={{ "margin-top": "12px" }}>
+        <a href="/quests/custom">Custom Quests →</a> · <a href="/quests/llm.txt" data-native>Authoring &amp; LLM Guide</a>
+      </p>
     </div>
   );
 }
@@ -254,7 +288,7 @@ function Command(props: { children: string }) {
 async function runPage(id: string, nav: Navigator): Promise<Screen> {
   const detail = await get<RunDetailView>(`/api/runs/${id}`);
   if (!detail) return notFound();
-  return { title: `${playerLabel(detail.player)} · ${detail.title}`, quest: detail.quest || null, panels: runPanels(detail, nav.reload) };
+  return { title: `${playerLabel(detail.player)} · ${detail.title}`, quest: detail.quest.includes(".") ? detail.quest : null, panels: runPanels(detail, nav.reload) };
 }
 
 function notFound(): Screen {
@@ -372,6 +406,211 @@ async function board(boardName: Board, quest: string): Promise<Screen> {
 async function quests(boardName: "quests" | "quests-hardcore", stage: number): Promise<Screen> {
   const menu = (await get<QuestMenuView>(`/api/quests/${boardName}/${stage}`))!;
   return { title: `Quests ${STAGES[stage - 1]}`, quest: `${stage}.1`, panels: [keep("quest-menu", { menu, quest: undefined }, (data) => <QuestMenu view={data().menu} current={data().quest} />)] };
+}
+
+function spawnColor(spawnId: number): string {
+  if (spawnId >= 0x07 && spawnId <= 0x10 && spawnId !== 0x0e && spawnId !== 0x0f) return "#e8a838";
+  if (spawnId >= 0x11 && spawnId <= 0x19) return "#c084fc";
+  if (spawnId === 0x00 || spawnId >= 0x41) return "#a3e635";
+  if (spawnId === 0x04 || spawnId === 0x1c || (spawnId >= 0x2e && spawnId <= 0x31)) return "#34d399";
+  if (spawnId === 0x01 || spawnId === 0x03 || spawnId === 0x05 || spawnId === 0x1b || (spawnId >= 0x32 && spawnId <= 0x40 && spawnId !== 0x36)) return "#60a5fa";
+  return "#f87171";
+}
+
+function QuestPreviewSvg(props: { quest: CustomQuest }) {
+  const entries = () => props.quest.entries;
+  const totalCopies = () => entries().reduce((sum, e) => sum + e.count, 0);
+  const maxTriggerMs = () => Math.max(1000, ...entries().map((e) => e.trigger_ms));
+  const toMap = (coord: number) => 32 + ((coord + 256) / 1536) * 256;
+  const arenaStart = toMap(0);
+  const arenaSize = toMap(1024) - arenaStart;
+  return (
+    <div class="quest-preview" style={{ display: "flex", gap: "20px", "flex-wrap": "wrap", "align-items": "center", margin: "12px 0" }}>
+      <svg viewBox="0 0 320 320" width="240" height="240" style={{ background: "rgba(0,0,0,0.35)", "border-radius": "6px", border: "1px solid rgba(255,255,255,0.12)" }}>
+        <rect x={arenaStart} y={arenaStart} width={arenaSize} height={arenaSize} fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.28)" stroke-width="1" />
+        <line x1={toMap(512)} y1={arenaStart} x2={toMap(512)} y2={arenaStart + arenaSize} stroke="rgba(255,255,255,0.08)" stroke-dasharray="3 3" />
+        <line x1={arenaStart} y1={toMap(512)} x2={arenaStart + arenaSize} y2={toMap(512)} stroke="rgba(255,255,255,0.08)" stroke-dasharray="3 3" />
+        <circle cx={toMap(512)} cy={toMap(512)} r="3" fill="#fff" opacity="0.7" />
+        <For each={entries()}>
+          {(entry) => (
+            <circle
+              cx={Math.max(8, Math.min(312, toMap(entry.pos.x)))}
+              cy={Math.max(8, Math.min(312, toMap(entry.pos.y)))}
+              r={Math.min(9, 2.5 + Math.log2(entry.count + 1) * 1.4)}
+              fill={spawnColor(entry.spawn_id)}
+              opacity="0.78"
+            />
+          )}
+        </For>
+      </svg>
+      <div style={{ flex: "1", "min-width": "240px" }}>
+        <p class="muted" style={{ margin: "0 0 6px" }}>
+          Entry budget: <b>{entries().length} / 256</b> entries · <b>{totalCopies().toLocaleString("en-US")}</b> template copies · horizon{" "}
+          <b>{formatDuration(maxTriggerMs())}</b>
+        </p>
+        <svg viewBox="0 0 400 44" width="100%" height="44" style={{ background: "rgba(0,0,0,0.35)", "border-radius": "4px", border: "1px solid rgba(255,255,255,0.12)" }}>
+          <For each={entries()}>
+            {(entry) => {
+              const x = 12 + (entry.trigger_ms / maxTriggerMs()) * 376;
+              const h = Math.min(32, 6 + Math.log2(entry.count + 1) * 6);
+              return <line x1={x} y1={38 - h} x2={x} y2={38} stroke={spawnColor(entry.spawn_id)} stroke-width="2" opacity="0.8" />;
+            }}
+          </For>
+        </svg>
+        <p class="muted" style={{ "font-size": "12px", margin: "4px 0 0" }}>
+          <span style={{ color: "#f87171" }}>●</span> Aliens · <span style={{ color: "#60a5fa" }}>●</span> Spiders ·{" "}
+          <span style={{ color: "#34d399" }}>●</span> Lizards · <span style={{ color: "#a3e635" }}>●</span> Zombies ·{" "}
+          <span style={{ color: "#e8a838" }}>●</span> Nests · <span style={{ color: "#c084fc" }}>●</span> Formations
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function QuestRestrictions(props: { quest: CustomQuest }) {
+  const fixedWeapon = () => props.quest.no_weapons.length === 32 && props.quest.no_bonuses.includes(3);
+  const bonuses = () => props.quest.no_bonuses.map((id) => BONUS_NAMES[id] ?? `Bonus ${id}`);
+  const perks = () => props.quest.no_perks.map((id) => PERKS[id] ?? `Perk ${id}`);
+  const weapons = () => (fixedWeapon() ? [] : props.quest.no_weapons.map((id) => WEAPONS[id]?.name ?? `Weapon ${id}`));
+  return (
+    <Show when={fixedWeapon() || bonuses().length || perks().length || weapons().length}>
+      <p class="muted">
+        <Show when={fixedWeapon()}>
+          <b>Fixed weapon</b> (weapon drops &amp; weapon perks disabled)
+          <Show when={bonuses().length > 1 || perks().length > 2}> · </Show>
+        </Show>
+        <Show when={bonuses().length}>
+          No bonuses: {bonuses().join(", ")}
+          <Show when={perks().length || weapons().length}> · </Show>
+        </Show>
+        <Show when={perks().length}>
+          No perks: {perks().join(", ")}
+          <Show when={weapons().length}> · </Show>
+        </Show>
+        <Show when={weapons().length}>No weapon drops: {weapons().join(", ")}</Show>
+      </p>
+    </Show>
+  );
+}
+
+async function customQuests(): Promise<Screen> {
+  const list = (await get<CustomQuestsListView>("/api/quests/custom"))!;
+  return {
+    title: "Custom Quests",
+    quest: null,
+    panels: [
+      () => (
+        <>
+          <h2>Custom Quests</h2>
+          <p class="muted">
+            Community encounters authored in the <code>.quest</code> language. Every published quest is backed by a verified completion replay.
+            Describe an encounter to an LLM using <a href="/quests/llm.txt" data-native>/quests/llm.txt</a>, beat it with{" "}
+            <Command>uv run crimson --custom-quest my.quest</Command>, and publish with <Command>uv run crimson quest publish my.quest</Command>.
+          </p>
+          <p>
+            <a href="/quests/1">← Campaign Quests</a> · <a href="/quests/llm.txt" data-native>LLM Authoring Reference (.txt)</a>
+          </p>
+          <Show when={list.quests.length} fallback={<p class="muted">No custom quests published yet.</p>}>
+            <div class="board-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Quest</th>
+                    <th>Author</th>
+                    <th>Weapon</th>
+                    <th class="n">Entries</th>
+                    <th class="n">Best</th>
+                    <th class="n">Players</th>
+                    <th>Play</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <For each={list.quests}>
+                    {(q) => (
+                      <tr>
+                        <td>
+                          <a href={`/q/${q.id}`}>{q.title}</a>
+                        </td>
+                        <td>
+                          <PlayerName player={q.creator} tag={false} />
+                        </td>
+                        <td>
+                          <Weapon id={q.start_weapon_id} />
+                        </td>
+                        <td class="n">{q.entry_count}</td>
+                        <td class="n">{q.top_score !== null ? formatScore("quests", q.top_score) : "—"}</td>
+                        <td class="n">{q.players}</td>
+                        <td>
+                          <a class="watch" href={`/play/?quest=${q.id}`} data-native>
+                            Play →
+                          </a>
+                        </td>
+                      </tr>
+                    )}
+                  </For>
+                </tbody>
+              </table>
+            </div>
+          </Show>
+        </>
+      ),
+    ],
+  };
+}
+
+async function customQuestPage(id: string): Promise<Screen> {
+  const [detail, bots] = await Promise.all([
+    get<CustomQuestDetailView>(`/api/q/${id}`),
+    get<BoardView>(`/api/boards/quests/${id}?category=bot`),
+  ]);
+  if (!detail || !bots) return notFound();
+  const def = detail.definition;
+  const slots = `slots:${def.terrain_slots.join(",")}`;
+  return {
+    title: detail.title,
+    quest: slots,
+    panels: [
+      () => (
+        <>
+          <h2>{detail.title}</h2>
+          <p class="muted">
+            Published by <PlayerName player={detail.creator} tag={false} />
+            <Show when={detail.author && detail.author !== detail.creator.name}> · recipe by {detail.author}</Show> ·{" "}
+            {new Date(detail.created_at).toISOString().slice(0, 10)} · ID <code>{detail.id}</code>
+          </p>
+          <p>
+            Starting weapon: <Weapon id={def.start_weapon_id} />
+          </p>
+          <QuestRestrictions quest={def} />
+          <QuestPreviewSvg quest={def} />
+          <p class="buttons">
+            <GameButton label="Play in browser" href={`/play/?quest=${detail.id}`} native />
+            <GameButton label="Watch proof clear" href={`/play/?watch=${detail.first_run_id}`} native />
+            <GameButton label="All custom quests" href="/quests/custom" />
+          </p>
+        </>
+      ),
+      ...boardPanels(detail.board, bots),
+      ...(detail.source
+        ? [
+            () => (
+              <>
+                <h3>Recipe (.quest)</h3>
+                <p class="muted">
+                  Construction seed: <code>{detail.seed}</code> · <a href="/quests/llm.txt" data-native>LLM Remix Reference</a>
+                </p>
+                <pre style={{ overflow: "auto", padding: "12px", background: "rgba(0,0,0,0.4)", "border-radius": "4px" }}>
+                  <code>{detail.source}</code>
+                </pre>
+                <p>
+                  Click to copy recipe: <Command>{detail.source!}</Command>
+                </p>
+              </>
+            ),
+          ]
+        : []),
+    ],
+  };
 }
 
 function AccountControls(props: { profile: ProfileView; nav: Navigator }) {
@@ -495,7 +734,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                     {(run) => (
                       <tr>
                         <td>
-                          <a href={`/boards/${run.board}${run.quest ? `/${run.quest}` : ""}`}>
+                          <a href={run.quest && !run.quest.includes(".") ? `/q/${run.quest}` : `/boards/${run.board}${run.quest ? `/${run.quest}` : ""}`}>
                             {BOARD_NAMES[run.board]} {run.quest}
                           </a>
                           <Show when={run.category === "bot"}>
@@ -882,7 +1121,9 @@ export async function resolve(url: URL, nav: Navigator): Promise<Screen> {
   else if (path === "/boards/survival") screen = await board("survival", "");
   else if ((match = /^\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(path)) && QUEST.test(match[2]!)) screen = await board(match[1] as Board, match[2]!);
   else if ((match = /^\/(quests|quests-hardcore)\/([1-5])$/.exec(path))) screen = await quests(match[1] as "quests" | "quests-hardcore", Number(match[2]));
+  else if (path === "/quests/custom") screen = await customQuests();
   else if (path === "/quests") screen = await quests("quests", 1);
+  else if ((match = /^\/q\/([0-9a-f]{12})$/.exec(path))) screen = await customQuestPage(match[1]!);
   else if (path === "/mod") screen = await moderation(nav);
   else if ((match = /^\/players\/(\d+)$/.exec(path))) screen = await profile(Number(match[1]), nav);
   else if ((match = /^\/join\/([0-9a-f]{64})$/.exec(path))) screen = await join(match[1]!, nav);

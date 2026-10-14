@@ -37,10 +37,8 @@ def quest() -> CustomQuest:
 
 def _ended(make_game_state, headless_resources, mocker, quest: CustomQuest, outcome: RunOutcome):
     state = make_game_state(resources=headless_resources, audio=HeadlessAudio(mocker).state)
-    state.ranked = True
     navigator, run = start_run(state, StartRun(GameMode.QUESTS, custom_quest=quest))
     assert isinstance(run, QuestMode)
-    # The Ranked box is on, but a custom quest records an unranked run of itself.
     recorder = run._replay_recorder
     assert recorder is not None
     assert (recorder.run.custom_quest, recorder.run.quest_level, run.ranked_run) == (quest, None, False)
@@ -120,19 +118,20 @@ def test_the_clear_banner_fits_the_banner_slot(make_game_state, headless_resourc
     assert slot.top <= banner.y and banner.y + banner.height <= slot.top + slot.height
 
 
-def test_the_ranked_box_leaves_a_custom_co_op_run_alone(make_game_state, headless_resources, mocker, quest):
+def test_the_ranked_box_starts_a_custom_quest_under_ranked_rules(make_game_state, headless_resources, mocker, quest):
     state = make_game_state(resources=headless_resources, audio=HeadlessAudio(mocker).state)
     state.ranked = True
     state.config.gameplay.player_count = 2
-    # An unranked run carries the session's seed on rather than a ranked draw.
+    state.config.gameplay.hardcore = True
     ranked_seed = 0xDEADBEEF
     mocker.patch.object(base_gameplay_mode, "ranked_run_seed", return_value=ranked_seed)
     _navigator, run = start_run(state, StartRun(GameMode.QUESTS, custom_quest=quest))
     recorder = run._replay_recorder
     assert recorder is not None
-    assert (recorder.run.player_count, len(run.world.players), run.ranked_run) == (2, 2, False)
-    assert recorder.run.seed != ranked_seed
-
+    assert (recorder.run.player_count, len(run.world.players), run.ranked_run) == (1, 1, True)
+    assert not recorder.run.hardcore
+    assert (recorder.run.status.quest_unlock_index, recorder.run.status.quest_unlock_index_hardcore) == (50, 50)
+    assert recorder.run.seed == ranked_seed
 
 def test_a_custom_quest_title_carries_its_authors_byline(make_game_state, headless_resources, mocker, quest):
     quest = msgspec.structs.replace(quest, author="banteg")

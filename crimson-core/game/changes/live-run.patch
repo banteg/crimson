@@ -55,3 +55,43 @@ simulation state, which only ticks write. The console's flag pauses parts of a t
          if (plugin_interface_ptr != 0) {
              plugin_interface_ptr->parms.fields.onPause = 1;
          }
+--- a/decomp/1.9/crimsonland/ui_elements/game_state_set.cpp
++++ b/decomp/1.9/crimsonland/ui_elements/game_state_set.cpp
+@@ -186,2 +186,3 @@
++                if (!portable_custom_quest)
+                 ++game_status_blob.quest_play_counts[
+                     quest_stage_major * 10 + quest_stage_minor];
+--- a/decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp
++++ b/decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp
+@@ -185,4 +185,5 @@
++        quest_meta_t *quest = portable_custom_quest ? portable_custom_quest : &quest_meta_table[quest_index];
+         quest_results_unlock_weapon_id =
+-            quest_meta_table[quest_index].unlock_weapon_id;
++            quest->unlock_weapon_id;
+         quest_results_unlock_perk_id =
+-            quest_meta_table[quest_index].unlock_perk_id;
++            quest->unlock_perk_id;
+--- a/decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp
++++ b/decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp
+@@ -500,6 +500,2 @@
+-                int quest_name_length = strlen(
+-                    quest_meta_table[
+-                        quest_stage_minor
+-                        + quest_stage_major * 10
+-                        - 11]
+-                        .name);
++                char *quest_name = (portable_custom_quest ? portable_custom_quest : &quest_meta_table[quest_stage_minor + quest_stage_major * 10 - 11])->name;
++                int quest_name_length = strlen(quest_name);
+@@ -521,6 +518,3 @@
+                     name_y,
+-                    quest_meta_table[
+-                        quest_stage_minor
+-                        + quest_stage_major * 10
+-                        - 11]
+-                        .name);
++                    quest_name);
++                if (!portable_custom_quest) {
+@@ -557,2 +551,3 @@
+                         - stage_scale * 16.0f,
+                     quest_stage_label_buffer);
++                }

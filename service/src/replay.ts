@@ -83,6 +83,23 @@ export interface QuestLevel {
   major: number;
   minor: number;
 }
+export interface SpawnEntry {
+  pos: { x: number; y: number };
+  heading: number;
+  spawn_id: number;
+  trigger_ms: number;
+  count: number;
+}
+export interface CustomQuest {
+  title: string;
+  author: string | null;
+  start_weapon_id: number;
+  terrain_slots: [number, number, number];
+  entries: SpawnEntry[];
+  no_bonuses: number[];
+  no_perks: number[];
+  no_weapons: number[];
+}
 export interface RunStatus {
   quest_unlock_index: number;
   quest_unlock_index_hardcore: number;
@@ -98,6 +115,7 @@ export interface RunSpec {
   game_mode_id: number;
   seed: number;
   quest_level: QuestLevel | null;
+  custom_quest: CustomQuest | null;
   player_count: number;
   hardcore: boolean;
   preserve_bugs: boolean;
@@ -331,10 +349,50 @@ class Schema {
     return { name: this.str(f.name, "pilot.name"), model: this.str(f.model, "pilot.model"), url: this.str(f.url, "pilot.url") };
   }
 
+  private customQuest(value: Value): CustomQuest {
+    const f = this.fields(value, "run.custom_quest", [
+      "title", "author", "start_weapon_id", "terrain_slots", "entries", "no_bonuses", "no_perks", "no_weapons",
+    ]);
+    const terrain = this.array(f.terrain_slots, "run.custom_quest.terrain_slots");
+    require(terrain.length === 3, "run.custom_quest.terrain_slots must have 3 entries");
+    const entries = this.array(f.entries, "run.custom_quest.entries").map((entry, i) => {
+      const e = this.fields(entry, `run.custom_quest.entries[${i}]`, ["pos", "heading", "spawn_id", "trigger_ms", "count"]);
+      const pos = this.fields(e.pos, `run.custom_quest.entries[${i}].pos`, ["x", "y"]);
+      return {
+        pos: {
+          x: this.float(pos.x, `run.custom_quest.entries[${i}].pos.x`),
+          y: this.float(pos.y, `run.custom_quest.entries[${i}].pos.y`),
+        },
+        heading: this.float(e.heading, `run.custom_quest.entries[${i}].heading`),
+        spawn_id: this.int(e.spawn_id, `run.custom_quest.entries[${i}].spawn_id`),
+        trigger_ms: this.int(e.trigger_ms, `run.custom_quest.entries[${i}].trigger_ms`),
+        count: this.int(e.count, `run.custom_quest.entries[${i}].count`),
+      };
+    });
+    return {
+      title: this.str(f.title, "run.custom_quest.title"),
+      author: f.author === null ? null : this.str(f.author, "run.custom_quest.author"),
+      start_weapon_id: this.int(f.start_weapon_id, "run.custom_quest.start_weapon_id"),
+      terrain_slots: [
+        this.int(terrain[0]!, "run.custom_quest.terrain_slots[0]"),
+        this.int(terrain[1]!, "run.custom_quest.terrain_slots[1]"),
+        this.int(terrain[2]!, "run.custom_quest.terrain_slots[2]"),
+      ],
+      entries,
+      no_bonuses: this.array(f.no_bonuses, "run.custom_quest.no_bonuses").map((id, i) =>
+        this.int(id, `run.custom_quest.no_bonuses[${i}]`),
+      ),
+      no_perks: this.array(f.no_perks, "run.custom_quest.no_perks").map((id, i) =>
+        this.int(id, `run.custom_quest.no_perks[${i}]`),
+      ),
+      no_weapons: this.array(f.no_weapons, "run.custom_quest.no_weapons").map((id, i) =>
+        this.int(id, `run.custom_quest.no_weapons[${i}]`),
+      ),
+    };
+  }
+
   private runSpec(value: Value, format: number): RunSpec {
     const f = this.fields(value, "run", format < 33 ? RUN_KEYS : [...RUN_KEYS, "custom_quest"]);
-    // The verifier starts only the original's quests; custom quests are not ranked (docs/formats/replay.md).
-    require(format < 33 || f.custom_quest === null, "run.custom_quest: this service ranks only the original's quests");
     const game_mode_id = this.int(f.game_mode_id, "run.game_mode_id");
     require(KNOWN_GAME_MODES.has(game_mode_id), `run.game_mode_id ${game_mode_id} is not a game mode`);
     let quest_level: QuestLevel | null = null;
@@ -345,7 +403,11 @@ class Schema {
         minor: this.range(this.int(level.minor, "run.quest_level.minor"), 1, 10, "run.quest_level.minor"),
       };
     }
-    require((quest_level !== null) === (game_mode_id === GameMode.QUESTS), "run.quest_level must be set for quests and only for quests");
+    const custom_quest = format < 33 || f.custom_quest === null ? null : this.customQuest(f.custom_quest!);
+    require(
+      Number(quest_level !== null) + Number(custom_quest !== null) === (game_mode_id === GameMode.QUESTS ? 1 : 0),
+      "quests need exactly one of run.quest_level and run.custom_quest; other modes need neither",
+    );
     const status = this.fields(f.status, "run.status", [
       "quest_unlock_index", "quest_unlock_index_full", "weapon_usage_counts",
     ]);
@@ -363,6 +425,7 @@ class Schema {
       game_mode_id,
       seed: this.int(f.seed, "run.seed"),
       quest_level,
+      custom_quest,
       player_count: this.range(this.int(f.player_count, "run.player_count"), 1, 4, "run.player_count"),
       hardcore: this.bool(f.hardcore, "run.hardcore"),
       preserve_bugs: this.bool(f.preserve_bugs, "run.preserve_bugs"),
@@ -514,6 +577,43 @@ export function inputFlagsError(value: number): string | null {
 const isPrintableAscii = (text: string) => [...text].every((ch) => ch >= " " && ch <= "~");
 const isHighscoreName = (text: string) => /^[A-Za-z.]+$/.test(text) && text.length <= HIGHSCORE_NAME_MAX_CHARS;
 
+function requireAscending(values: number[], low: number, high: number, field: string): void {
+  let prev = low - 1;
+  for (const value of values) {
+    require(value > prev && value <= high, `${field} must be strictly ascending IDs in ${low}..${high}`);
+    prev = value;
+  }
+}
+
+export function validateCustomQuest(quest: CustomQuest): void {
+  require(quest.title.length >= 1 && quest.title.length <= 64 && isPrintableAscii(quest.title), "run.custom_quest: title must be 1..64 printable ASCII characters");
+  if (quest.author !== null)
+    require(quest.author.length >= 1 && quest.author.length <= 31 && isPrintableAscii(quest.author), "run.custom_quest: author must be 1..31 printable ASCII characters");
+  const w = quest.start_weapon_id;
+  require(w >= 1 && w <= MAX_WEAPON_ID && (w < 34 || w > 40) && (w < 46 || w > 49), "run.custom_quest: a custom quest needs a starting weapon");
+  require(quest.terrain_slots.every((slot) => slot >= 0 && slot <= 7), "run.custom_quest: terrain slots must be in 0..7");
+  requireAscending(quest.no_bonuses, 2, 14, "run.custom_quest: no_bonuses");
+  requireAscending(quest.no_perks, 1, 57, "run.custom_quest: no_perks");
+  requireAscending(quest.no_weapons, 2, 33, "run.custom_quest: no_weapons");
+  require(quest.entries.length >= 1 && quest.entries.length <= 256, "run.custom_quest: a table holds 1..256 entries");
+  const perTrigger = new Map<number, number>();
+  let total = 0;
+  for (const entry of quest.entries) {
+    require(entry.spawn_id >= 0 && entry.spawn_id <= 0x43 && entry.spawn_id !== 2, "run.custom_quest: unused spawn template");
+    require(entry.trigger_ms >= 0 && entry.trigger_ms <= 3600000, "run.custom_quest: trigger times must be in 0..3600000 ms");
+    for (const coord of [entry.pos.x, entry.pos.y]) {
+      require(coord >= -1024 && coord <= 2048, "run.custom_quest: positions must be in -1024..2048");
+      requireF32(coord, "run.custom_quest: positions");
+    }
+    requireF32(entry.heading, "run.custom_quest: headings");
+    require(entry.count >= 1 && entry.count <= 384, "run.custom_quest: copies must be in 1..384");
+    const copies = (perTrigger.get(entry.trigger_ms) ?? 0) + entry.count;
+    require(copies <= 384, "run.custom_quest: copies exceed the per-trigger copy limit");
+    perTrigger.set(entry.trigger_ms, copies);
+    total += entry.count;
+  }
+  require(total <= 8192, "run.custom_quest: total copies exceed the quest copy limit");
+}
 export function validateReplay(replay: Replay): void {
   require(Boolean(replay.game_version), "game_version must be non-empty");
   require(replay.rules >= 1, "rules must be at least 1");
@@ -543,7 +643,14 @@ export function validateReplay(replay: Replay): void {
   const mode = run.game_mode_id;
   require(REPLAY_MODES.has(mode), `run.game_mode_id ${mode} is not a replayable mode`);
   requireInt(run.seed, 0, U32_MAX, "run.seed");
-  require((run.quest_level !== null) === (mode === GameMode.QUESTS), "run.quest_level must be set for quests and only for quests");
+  require(
+    Number(run.quest_level !== null) + Number(run.custom_quest !== null) === (mode === GameMode.QUESTS ? 1 : 0),
+    "quests need exactly one of run.quest_level and run.custom_quest; other modes need neither",
+  );
+  if (run.custom_quest !== null) {
+    require(!run.hardcore, "custom quests do not use hardcore");
+    validateCustomQuest(run.custom_quest);
+  }
   require(!SINGLE_PLAYER_MODES.has(mode) || run.player_count === 1, "typo and tutorial replays require player_count == 1");
   requireInt(run.quest_fail_retry_count, 0, I32_MAX, "run.quest_fail_retry_count");
   requireInt(run.detail_preset, 1, 5, "run.detail_preset");

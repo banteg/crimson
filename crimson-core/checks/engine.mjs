@@ -113,8 +113,8 @@ export function refusal(e) {
 
 // `PortableConfig` in host/api.h: 12 uint32 settings, then 53 weapon usage counts.
 export const CONFIG_BYTES = 260;
-// `PortableQuest`: the weapon, three terrain slots and the entry count, then 256 24-byte entries.
-export const QUEST_BYTES = 6164;
+// `PortableQuest`: the weapon, three terrain slots, entry count, restriction bitmasks, then 256 24-byte entries.
+export const QUEST_BYTES = 6184;
 
 // A stream's config and, for a quest at stage 0.0, the custom quest's table after it.
 export function headBytes(input) {

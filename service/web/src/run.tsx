@@ -513,7 +513,8 @@ function QuestScore(props: { detail: RunDetailView }) {
 }
 
 function boardPath(detail: RunDetailView): string {
-  return detail.board === "survival" ? "/boards/survival" : `/boards/${detail.board}/${detail.quest}`;
+  if (detail.board === "survival") return "/boards/survival";
+  return detail.quest.includes(".") ? `/boards/${detail.board}/${detail.quest}` : `/q/${detail.quest}`;
 }
 
 export const SIGNAL_LABELS: Record<SignalName, string> = {

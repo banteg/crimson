@@ -530,6 +530,21 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch(const char *path, const
     return (const char *)client_memory() + w2c_game_game_replay_reason(&game);
   return w2c_game_game_watch(&game, rank, day, month, year) ? "" : "This run cannot play now.";
 }
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_play_quest(const char *path, const char *title, const char *author) {
+  if (!started)
+    return "wait";
+  size_t size = 0;
+  void *bytes = SDL_LoadFile((game_directory + "/" + path).c_str(), &size);
+  if (!bytes || size != 6184) {
+    SDL_free(bytes);
+    return "Could not load this quest.";
+  }
+  memcpy(client_memory() + w2c_game_portable_quest(&game), bytes, 6184);
+  SDL_free(bytes);
+  snprintf((char *)client_memory() + w2c_game_game_custom_quest_title(&game), 65, "%s", title);
+  snprintf((char *)client_memory() + w2c_game_game_custom_quest_author(&game), 32, "%s", author);
+  return w2c_game_game_custom_quest_play(&game) ? "" : "This quest cannot start now.";
+}
 #endif
 
 #ifndef __EMSCRIPTEN__

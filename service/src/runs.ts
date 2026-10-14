@@ -4,10 +4,10 @@ import { concat, fromHex, hex, latin1, RUN_DOMAIN, sha256, verifyEd25519 } from 
 import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
 import type { Signals, Timeline } from "./api-types";
-import { decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError } from "./replay";
+import { type CustomQuest, decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError } from "./replay";
 import { GroundBake, groundArt, groundKey } from "./ground";
 import { encodeJpeg } from "./jpeg";
-import { encodeTransport } from "./transport";
+import { encodePortableQuest, encodeTransport } from "./transport";
 import { runGround, SIZE } from "../web/src/terrain/rules";
 import { type Verdict, verifyRun } from "./verify";
 
@@ -19,13 +19,26 @@ interface Upload {
   name: string;
   public_key: string;
   signature: string;
+  source?: string | null;
+  seed?: number;
 }
 
 function parseUpload(body: unknown): Upload | null {
   if (typeof body !== "object" || body === null) return null;
-  const { replay, name, public_key, signature } = body as Record<string, unknown>;
+  const { replay, name, public_key, signature, source, seed } = body as Record<string, unknown>;
   if ([replay, name, public_key, signature].some((field) => typeof field !== "string")) return null;
-  return { replay, name, public_key, signature } as Upload;
+  if (source !== undefined && source !== null && (typeof source !== "string" || source.length === 0 || source.length > 65536))
+    return null;
+  if (seed !== undefined && (typeof seed !== "number" || !Number.isInteger(seed) || seed < 0 || seed > 0xffffffff))
+    return null;
+  return {
+    replay: replay as string,
+    name: name as string,
+    public_key: public_key as string,
+    signature: signature as string,
+    source: typeof source === "string" ? source : null,
+    seed: typeof seed === "number" ? seed : 0,
+  };
 }
 
 function base64(text: string): Uint8Array | null {
@@ -43,7 +56,11 @@ async function readReplay(file: Uint8Array): Promise<{ replay: Replay; payloadSh
   return { replay: decodeReplay(payload), payloadSha: await sha256(payload) };
 }
 
-export async function postRun(request: Request, env: Env): Promise<Response> {
+export async function customQuestDigest(quest: CustomQuest): Promise<string> {
+  return hex(await sha256(encodePortableQuest(quest)));
+}
+
+export async function postRun(request: Request, env: Env, options: { requireCustomQuest?: boolean } = {}): Promise<Response> {
   if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) return refuse(413, "upload too large");
   const upload = parseUpload(await request.json().catch(() => null));
   if (upload === null) return refuse(400, "expected replay, name, public_key and signature");
@@ -63,6 +80,8 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
     if (error instanceof ReplayError) return refuse(422, error.message);
     throw error;
   }
+  if (options.requireCustomQuest && replay.run.custom_quest === null)
+    return refuse(422, "expected a custom quest replay");
   if (replay.rules !== REPLAY_RULES)
     return refuse(422, `replay was recorded under rules ${replay.rules}; this service verifies rules ${REPLAY_RULES}`);
   if (!(await verifyEd25519(publicKey, signature, concat(RUN_DOMAIN, payloadSha, name))))
@@ -75,13 +94,32 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
 
   const transport = encodeTransport(replay);
   const runId = hex(await sha256(transport));
-  if (await env.DB.prepare("SELECT 1 FROM runs WHERE id = ?").bind(runId).first()) return refuse(409, "this run was already accepted");
+  const custom = replay.run.custom_quest;
+  const digest = custom ? await customQuestDigest(custom) : null;
+  const quest = digest ? digest.slice(0, 12) : questOf(replay);
+  const existing = await env.DB.prepare("SELECT account_id FROM runs WHERE id = ?").bind(runId).first<{ account_id: number }>();
+  if (existing) {
+    if (options.requireCustomQuest && custom && digest) {
+      const now = Date.now();
+      const accountId = await accountForKey(env, upload.public_key, publicKey, now);
+      await env.DB.prepare(
+        `INSERT INTO custom_quests (id, digest, account_id, first_run_id, title, author, source, seed, definition, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT (id) DO UPDATE SET
+           source = coalesce(custom_quests.source, excluded.source),
+           seed = CASE WHEN custom_quests.source IS NULL AND excluded.source IS NOT NULL THEN excluded.seed ELSE custom_quests.seed END`,
+      )
+        .bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source ?? null, upload.seed ?? 0, JSON.stringify(custom), now)
+        .run();
+      return json({ id: runId, board: "quests", quest, digest, url: `/q/${quest}` }, 200);
+    }
+    return refuse(409, "this run was already accepted");
+  }
 
   const { verdict, ground } = await verifyWithGround(env, new URL(request.url).origin, replay, transport);
   if (!verdict.ok) return refuse(422, verdict.reason);
 
   const board = rankedBoard(replay.run)!;
-  const quest = questOf(replay);
 
   const score = rankedScore(replay.run, replay.result);
   const now = Date.now();
@@ -89,7 +127,7 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
   await env.REPLAYS.put(`runs/${runId}.crd`, file, { httpMetadata: { contentType: "application/octet-stream" } });
   await putTimeline(env, runId, verdict.timeline);
   await putGround(env, runId, ground!);
-  await env.DB.batch([
+  const statements = [
     env.DB.prepare(
       `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, client,
          client_version, platform, pilot, ticks, result, signals, accepted_at)
@@ -104,8 +142,20 @@ export async function postRun(request: Request, env: Env): Promise<Response> {
       `INSERT INTO names (account_id, name, first_at, last_at) VALUES (?, ?, ?, ?)
        ON CONFLICT (account_id, name) DO UPDATE SET last_at = excluded.last_at`,
     ).bind(accountId, upload.name, now, now),
-  ]);
-  return json({ id: runId, board, quest, score }, 201);
+  ];
+  if (custom && digest) {
+    statements.push(
+      env.DB.prepare(
+        `INSERT INTO custom_quests (id, digest, account_id, first_run_id, title, author, source, seed, definition, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT (id) DO UPDATE SET
+           source = coalesce(custom_quests.source, excluded.source),
+           seed = CASE WHEN custom_quests.source IS NULL AND excluded.source IS NOT NULL THEN excluded.seed ELSE custom_quests.seed END`,
+      ).bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source ?? null, upload.seed ?? 0, JSON.stringify(custom), now),
+    );
+  }
+  await env.DB.batch(statements);
+  return json(custom ? { id: runId, board, quest, score, digest, url: `/q/${quest}` } : { id: runId, board, quest, score }, 201);
 }
 
 export const timelineKey = (runId: string) => `runs/${runId}.timeline.json`;
@@ -120,7 +170,11 @@ let baking: Promise<unknown> = Promise.resolve();
 // the bake's buffers are let go before anything waits on storage.
 export function verifyWithGround(env: Env, origin: string, replay: Replay, transport: Uint8Array): Promise<{ verdict: Verdict; ground: Uint8Array | null }> {
   const run = baking.then(async () => {
-    const terrain = runGround(replay.run.seed, { board: rankedBoard(replay.run)!, quest: questOf(replay) });
+    const terrain = runGround(replay.run.seed, {
+      board: rankedBoard(replay.run)!,
+      quest: questOf(replay),
+      customSlots: replay.run.custom_quest?.terrain_slots,
+    });
     const bake = new GroundBake(terrain, await groundArt(env, origin), SIZE);
     const verdict = await verifyRun(env, replay, transport, (bakes) => bake.bake(bakes));
     return { verdict, ground: verdict.ok ? await encodeJpeg(bake.pixels()) : null };

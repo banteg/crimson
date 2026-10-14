@@ -388,10 +388,10 @@ if (JSON.stringify(displacement(1)) !== JSON.stringify(displacement(100)))
 
 // A custom quest's table, as checks/replay.py writes it from a recipe; its scenario starts the quest at stage 0.0.
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "custom-quest-"));
-function quest(recipe, hardcore = false) {
-  const file = path.join(scratch, `${path.basename(recipe)}${hardcore ? ".hardcore" : ""}.bin`);
+function quest(recipe) {
+  const file = path.join(scratch, `${path.basename(recipe)}.bin`);
   const args = ["run", "--no-sync", "python", fileURLToPath(new URL("checks/replay.py", CORE)), "--recipe"];
-  const made = spawnSync("uv", [...args, fileURLToPath(new URL(`../src/crimson/quests/dsl/${recipe}`, CORE)), ...(hardcore ? ["--hardcore"] : []), "--out", file]);
+  const made = spawnSync("uv", [...args, fileURLToPath(new URL(`../src/crimson/quests/dsl/${recipe}`, CORE)), "--out", file]);
   if (made.status !== 0) throw Error(`${recipe}: ${made.stderr}`);
   return fs.readFileSync(file);
 }
@@ -444,8 +444,8 @@ scenarios.push(
   ["custom-closing-circle", [3, 0, 0, { seed: 32, quest: quest("examples/closing-circle.quest") }], true, 30000, MOUSE],
   ["custom-1.1", [3, 0, 0, { seed: 33, quest: quest("stock/1.1.quest") }], true, 30000, MOUSE],
   [
-    "custom-formation-parade-hardcore",
-    [3, 0, 0, { seed: 34, hardcore: 1, quest: quest("examples/formation-parade.quest", true) }],
+    "custom-formation-parade",
+    [3, 0, 0, { seed: 34, quest: quest("examples/formation-parade.quest") }],
     true,
     30000,
     PAD,

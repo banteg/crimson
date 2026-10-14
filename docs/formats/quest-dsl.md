@@ -11,11 +11,12 @@ finite, ordered table of existing spawn-template invocations. It has no callback
 during gameplay and cannot change creature behavior, collision or arena geometry.
 
 The Python compiler and recipes for all 50 stock quests are implemented, and the
-Python port plays custom quests: a recipe resolves into a `CustomQuest`
+Python port, the browser/desktop `crimson-core` client, and the leaderboard service
+play, verify, and rank custom quests: a recipe resolves into a `CustomQuest`
 definition, which a run starts the way the original starts a quest and which its
-replay carries ([replay format 33](replay.md#runspec)). crimson-core's verifier
-starts them as the original starts a quest and agrees with Python tick for tick;
-the browser game and publication cannot start them yet, so these runs never rank.
+replay carries ([replay format 33](replay.md#runspec)). Publishing a custom quest
+(`crimson quest publish` / `POST /api/quests`) requires a verified completion replay
+and creates its page and leaderboard at `/q/<id>`.
 The compiler's JSON output is an inspection artifact, not an interchange format.
 Existing stock builders remain the game's authoritative implementation.
 
@@ -80,6 +81,10 @@ is an opaque game primitive: offspring, formation members and AI remain native.
 | `terrain (0, 1, 0)` | Three terrain-slot IDs in 0..7, default `(0, 1, 0)` |
 | `order chronological` | Stable sort by trigger time, retaining construction order for ties; default |
 | `order as-written` | Keep construction order; see [table order](#table-order) |
+| `no_bonuses [...]` | Disable random bonus drops (bonus IDs 2..14; `points` stays enabled) |
+| `no_perks [...]` | Disable perk offers (perk IDs 1..57) |
+| `no_weapons [...]` | Disable specific weapons (IDs 2..33) from random weapon drops |
+| `fixed_weapon true` | Lock the run to the starting weapon (disables `weapon` bonus, weapon perks, and non-Pistol weapon drops) |
 | `let name = expression` | Immutable local binding |
 | `var cue = 2s` | Mutable construction-local binding |
 | `cue += 500ms` | Update a declared mutable binding |
@@ -88,9 +93,9 @@ is an opaque game primitive: offspring, formation members and AI remain native.
 | `if condition:` / `elif` / `else:` | Construction-time decisions |
 | `while condition:` / `break` | Construction-only loops, bounded by the compiler work budget |
 | `at time:` | Absolute nominal quest time; applies to enclosed spawn/pattern operations |
-| `spawn template at point` | One native template invocation, count 1 |
-| `burst template at point copies N` | One native entry with count N and native alternating offsets |
-| `place template on points` | One entry per point, each with count 1 |
+| `spawn template at point_or_points [copies N]` | Emit one entry per point (single point or list of points), default count 1 |
+| `burst template at point copies N` | Alias for `spawn` on a single point with count N |
+| `place template on points [copies N]` | Alias for `spawn` on a list of points |
 | `heading angle` | Optional suffix on spawn/burst/place; default 0 radians |
 | `pattern name(args):` | Reusable construction block; declared before use; no recursion or return values |
 
@@ -259,12 +264,12 @@ quest = build_custom_quest(source, seed=0xBEEF)
 ```
 
 `compile_quest` constructs the table one variant plays. `build_custom_quest`
-resolves every player count and hardcore setting into the definition a run plays
-(`RunSpec.custom_quest`): the title, starting weapon, terrain slots and each
-distinct table with base counts. `crimson --custom-quest` builds one with
-construction seed 0 and starts it straight after boot. Its runs save replays as
-usual; their end shows the time and offers Play Again, with no high scores,
-unlocks or stock progress.
+resolves a recipe into the single-table definition a custom quest run plays
+(`RunSpec.custom_quest`): the title, author, starting weapon, terrain slots,
+resolved `entries`, and drop/offer restrictions (`no_bonuses`, `no_perks`, `no_weapons`).
+`crimson --custom-quest` builds one with construction seed 0 and starts it in ranked mode
+straight after boot; `crimson quest publish` uploads the recipe alongside a completed
+replay to establish its leaderboard on `crimson.land/q/<id>`.
 
 ## Bounds and runtime semantics
 

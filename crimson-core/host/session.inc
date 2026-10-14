@@ -198,6 +198,8 @@ static void live_begin() {
     return;
   live.replay.clear();
   live_append(&cfg, sizeof cfg);
+  if (cfg.mode == GAME_MODE_QUEST && cfg.major == 0 && cfg.minor == 0)
+    live_append(&quest, sizeof quest);
 }
 
 // The run is over (`outcome`: "death", "quest_completed", or "incomplete" for a
@@ -518,6 +520,19 @@ void game_state_set(game_state_id_t state) {
     // A replay's run starts unheard (a quest's start readies its weapon), as
     // the preparing pass that follows plays it.
     WatchUnheard unheard(watches);
+    if (starts) {
+      bool custom = config_blob.game_mode == GAME_MODE_QUEST && quest_stage_major == 0 && quest_stage_minor == 0;
+      if (custom) {
+        custom_quest_meta = quest_meta_t{};
+        custom_quest_meta.name = custom_quest_title;
+        custom_quest_meta.terrain_id = (int)quest.terrain[0];
+        custom_quest_meta.terrain_id_b = (int)quest.terrain[1];
+        custom_quest_meta.terrain_id_c = (int)quest.terrain[2];
+        custom_quest_meta.builder = custom_quest_build;
+        custom_quest_meta.start_weapon_id = (int)quest.weapon_id;
+      }
+      portable_custom_quest = custom ? &custom_quest_meta : nullptr;
+    }
     game_state_set_recovered(state);
     if (watches) {
       game_status_blob = status;

@@ -49,6 +49,8 @@ def initialize_run(
     if spec.game_mode_id == GameMode.QUESTS:
         if (spec.quest_level is None) == (custom is None):
             raise ValueError("quest runs require either a quest_level or a custom_quest")
+        if custom is not None and spec.hardcore:
+            raise ValueError("custom quests do not use hardcore")
         if spec.quest_level is not None:
             quest = quest_by_level(spec.quest_level)
             if quest is None:
@@ -95,7 +97,7 @@ def initialize_run(
                 # A custom quest starts the same way, loading its table where a stock builder would run:
                 # no builder draws, no stock level and no stock play counters.
                 terrain = terrain_generate(world.state.rng, custom.terrain_slots)
-                generated_entries = custom.entries(player_count=spec.player_count, hardcore=spec.hardcore)
+                generated_entries = custom.entries
                 quest_weapon_id = custom.start_weapon_id
             else:
                 assert quest is not None
@@ -141,6 +143,13 @@ def initialize_run(
         perk_progression_enabled=spec.game_mode_id not in (GameMode.RUSH, GameMode.TYPO),
         mode_state=mode_state,
     )
+    if custom is not None:
+        for bonus_id in custom.no_bonuses:
+            world.state.bonus_available[int(bonus_id)] = False
+        for perk_id in custom.no_perks:
+            world.state.perk_available[int(perk_id)] = False
+        for weapon_id in custom.no_weapons:
+            world.state.weapon_available[int(weapon_id)] = False
     # Run setup happens inside a frame; `game_frame_update` ends it with its discarded draw.
     world.state.rng.rand_tagged(RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED)
     return PreparedRun(session=session, terrain=terrain, quest=quest, quest_highscore_random_tag=highscore_tag)

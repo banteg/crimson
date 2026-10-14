@@ -1,18 +1,38 @@
 // The read API's JSON (src/api-types.ts): the boards, the quest menu, profiles and the join confirmation.
 
-import type { Board, BoardTotals, BoardView, Category, GameScore, JoinView, LoginView, Pilot, PlayerView, ProfileView, ProviderName, QuestMenuView, RunDetailView, RunView } from "./api-types";
+import type {
+  Board,
+  BoardTotals,
+  BoardView,
+  Category,
+  CustomQuest,
+  CustomQuestDetailView,
+  CustomQuestsListView,
+  GameScore,
+  JoinView,
+  LoginView,
+  Pilot,
+  PlayerView,
+  ProfileView,
+  ProviderName,
+  QuestMenuView,
+  RunDetailView,
+  RunView,
+} from "./api-types";
 import type { Env } from "./http";
 import { configuredProviders } from "./oauth";
 import { LOWER_IS_BETTER } from "./ranked";
 import type { RunResult } from "./replay";
 import { accountModeration, runModeration } from "./moderation";
 import { timelineFor } from "./runs";
+import { encodePortableQuest } from "./transport";
 import questTitles from "./quests.json";
 import { formatScore } from "../web/src/format";
 import { playerLabel, shownName } from "../web/src/names";
 import weaponData from "../web/src/weapons.json";
 
 export const QUEST_TITLES: Record<string, string> = questTitles;
+export const CUSTOM_QUEST_ID = /^[0-9a-f]{12}$/;
 const WEAPONS: Record<string, { name: string }> = weaponData;
 
 // SQL over accounts `a` and runs `r`: the account's key fingerprint, and the name a run shows, which is the
@@ -73,8 +93,11 @@ export async function players(env: Env, ids: number[]): Promise<Map<number, Play
   return found;
 }
 
-export function boardTitle(board: Board, quest: string): string {
-  return board === "survival" ? "Survival" : `${quest} ${QUEST_TITLES[quest]}${board === "quests-hardcore" ? " · hardcore" : ""}`;
+export function boardTitle(board: Board, quest: string, customTitle?: string): string {
+  if (board === "survival") return "Survival";
+  if (customTitle) return customTitle;
+  const stock = QUEST_TITLES[quest];
+  return stock ? `${quest} ${stock}${board === "quests-hardcore" ? " · hardcore" : ""}` : `Quest ${quest}`;
 }
 
 interface BestRun {
@@ -118,14 +141,14 @@ async function boardTotals(env: Env, board: Board, quest: string, category: Cate
   return totals!;
 }
 
-export async function boardView(env: Env, board: Board, quest: string, category: Category, limit: number): Promise<BoardView> {
+export async function boardView(env: Env, board: Board, quest: string, category: Category, limit: number, customTitle?: string): Promise<BoardView> {
   const [results, totals] = await Promise.all([bestRuns(env, board, quest, category, limit), boardTotals(env, board, quest, category)]);
   const who = await players(env, results.map((row) => row.account_id));
   return {
     board,
     quest,
     category,
-    title: boardTitle(board, quest),
+    title: boardTitle(board, quest, customTitle),
     totals,
     rows: results.map((row, i) => {
       const result = JSON.parse(row.result) as RunResult;
@@ -175,7 +198,12 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
       result: string;
     }>();
   if (!run) return null;
-  const board = await bestRuns(env, run.board, run.quest, run.category, BOARD_SCAN);
+  const [board, customRow] = await Promise.all([
+    bestRuns(env, run.board, run.quest, run.category, BOARD_SCAN),
+    CUSTOM_QUEST_ID.test(run.quest)
+      ? env.DB.prepare("SELECT title FROM custom_quests WHERE id = ?").bind(run.quest).first<{ title: string }>()
+      : Promise.resolve(null),
+  ]);
   const rank = board.findIndex((row) => row.id === id);
   const top = board[0] && board[0].id !== id ? board[0] : null;
   const best = board.find((row) => row.account_id === run.account_id);
@@ -187,7 +215,7 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
     quest: run.quest,
     category: run.category,
     pilot: parsePilot(run.pilot),
-    title: boardTitle(run.board, run.quest),
+    title: boardTitle(run.board, run.quest, customRow?.title),
     name: run.name,
     player: who.get(run.account_id)!,
     score: run.score,
@@ -219,7 +247,7 @@ export function runDescription(run: RunSummary): string {
   const what =
     run.board === "survival"
       ? `survived ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")} for ${formatScore(run.board, run.score)}`
-      : `finished ${run.quest} ${QUEST_TITLES[run.quest]}${run.board === "quests-hardcore" ? " on hardcore" : ""} in ${formatScore(run.board, run.score)}`;
+      : `finished ${run.title}${run.board === "quests-hardcore" ? " on hardcore" : ""} in ${formatScore(run.board, run.score)}`;
   const weapon = WEAPONS[result.most_used_weapon_id];
   const numbers = [
     `${result.kills.toLocaleString("en-US")} kills`,
@@ -263,6 +291,99 @@ export async function questMenuView(env: Env, board: "quests" | "quests-hardcore
     quests: Array.from({ length: 10 }, (_, i) => {
       const quest = `${stage}.${i + 1}`;
       return { quest, title: QUEST_TITLES[quest]!, players: counts.get(quest) ?? 0 };
+    }),
+  };
+}
+
+export async function customQuestDetailView(env: Env, id: string, category: Category): Promise<CustomQuestDetailView | null> {
+  const row = await env.DB.prepare(
+    "SELECT id, digest, account_id, first_run_id, title, author, source, seed, definition, created_at FROM custom_quests WHERE id = ?",
+  )
+    .bind(id)
+    .first<{
+      id: string;
+      digest: string;
+      account_id: number;
+      first_run_id: string;
+      title: string;
+      author: string | null;
+      source: string | null;
+      seed: number;
+      definition: string;
+      created_at: number;
+    }>();
+  if (!row) return null;
+  const definition = JSON.parse(row.definition) as CustomQuest;
+  const [who, board] = await Promise.all([
+    players(env, [row.account_id]),
+    boardView(env, "quests", id, category, 100, row.title),
+  ]);
+  return {
+    id: row.id,
+    digest: row.digest,
+    title: row.title,
+    author: row.author,
+    source: row.source,
+    seed: row.seed,
+    created_at: row.created_at,
+    creator: who.get(row.account_id)!,
+    first_run_id: row.first_run_id,
+    definition,
+    board,
+  };
+}
+
+export async function customQuestPortableBytes(env: Env, id: string): Promise<Uint8Array | null> {
+  const row = await env.DB.prepare("SELECT definition FROM custom_quests WHERE id = ?")
+    .bind(id)
+    .first<{ definition: string }>();
+  if (!row) return null;
+  return encodePortableQuest(JSON.parse(row.definition) as CustomQuest);
+}
+
+export async function customQuestsListView(env: Env, category: Category, limit = 100): Promise<CustomQuestsListView> {
+  const { results } = await env.DB.prepare(
+    `SELECT q.id, q.account_id, q.title, q.author, q.source IS NOT NULL AS has_source, q.definition, q.created_at,
+       (SELECT count(DISTINCT r.account_id) FROM runs r JOIN accounts a ON a.id = r.account_id
+        WHERE r.board = 'quests' AND r.quest = q.id AND ${RANKED_RUN} AND ${runCategory("r")} = ?) AS players,
+       (SELECT min(r.score) FROM runs r JOIN accounts a ON a.id = r.account_id
+        WHERE r.board = 'quests' AND r.quest = q.id AND ${RANKED_RUN} AND ${runCategory("r")} = ?) AS top_score
+     FROM custom_quests q JOIN accounts ca ON ca.id = q.account_id
+     WHERE ca.banned = 0 ORDER BY q.created_at DESC LIMIT ?`,
+  )
+    .bind(category, category, limit)
+    .all<{
+      id: string;
+      account_id: number;
+      title: string;
+      author: string | null;
+      has_source: number;
+      definition: string;
+      created_at: number;
+      players: number;
+      top_score: number | null;
+    }>();
+  const who = await players(env, [...new Set(results.map((r) => r.account_id))]);
+  return {
+    category,
+    quests: results.map((row) => {
+      const def = JSON.parse(row.definition) as CustomQuest;
+      return {
+        id: row.id,
+        title: row.title,
+        author: row.author,
+        creator: who.get(row.account_id)!,
+        start_weapon_id: def.start_weapon_id,
+        entry_count: def.entries.length,
+        total_copies: def.entries.reduce((sum, e) => sum + e.count, 0),
+        no_bonuses: def.no_bonuses,
+        no_perks: def.no_perks,
+        no_weapons: def.no_weapons,
+        has_source: Boolean(row.has_source),
+        players: row.players,
+        top_score: row.top_score,
+        created_at: row.created_at,
+      };
     }),
   };
 }

@@ -90,6 +90,7 @@
   // once the game is up, which skips the intro (host/watch.inc), then returns to
   // the high scores.
   const linked = new URLSearchParams(location.search).get("watch");
+  const linkedQuest = new URLSearchParams(location.search).get("quest");
   // Inside another page (that player card), the site opens in a new tab and the
   // game plays on.
   const framed = window.self !== window.top;
@@ -520,6 +521,41 @@
     watching = `${run.name}'s ${run.title} run, ${score}`;
     if (!document.getElementById("ready").hidden) say(watching);
   });
+  const questSummary =
+    !linked && linkedQuest && /^[0-9a-f]{12}$/.test(linkedQuest)
+      ? fetch(`/api/q/${linkedQuest}`)
+          .then((response) => (response.ok ? response.json() : null))
+          .catch(() => null)
+      : Promise.resolve(null);
+  questSummary.then((q) => {
+    if (!q) return;
+    watching = `${q.title}${q.author ? ` by ${q.author}` : ""}`;
+    if (!document.getElementById("ready").hidden) say(watching);
+  });
+  async function questLink(id) {
+    if (!/^[0-9a-f]{12}$/.test(id)) return;
+    let response, bytes;
+    try {
+      response = await fetch(`/q/${id}.bin`);
+      if (response.ok) bytes = new Uint8Array(await response.arrayBuffer());
+    } catch {}
+    if (!bytes || bytes.length !== 6184)
+      return tell(response?.status === 404 ? "This quest was not found." : "Could not download this quest.");
+    const path = `quests/online/${id}.bin`;
+    FS.mkdirTree("/game/quests/online");
+    FS.writeFile(`/game/${path}`, bytes);
+    const details = await questSummary;
+    const start = () => {
+      const why = Module.ccall("client_play_quest", "string", ["string", "string", "string"], [
+        path,
+        details?.title ?? "Custom quest",
+        details?.author ?? "",
+      ]);
+      if (why === "wait") setTimeout(start, 250);
+      else if (why) tell(why);
+    };
+    start();
+  }
   async function watchLink(run) {
     if (!/^[A-Za-z0-9_-]{1,64}$/.test(run)) return;
     let response, bytes;
@@ -570,6 +606,7 @@
       showFullscreen(3000);
       canvas.focus();
       if (linked) watchLink(linked);
+      else if (linkedQuest) questLink(linkedQuest);
     },
     printErr: (text) => console.warn(text),
     // The game quit (client/main.cpp) after writing its settings and scores.

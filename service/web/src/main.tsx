@@ -43,7 +43,7 @@ function slideOut(panels: Shown[]): number {
 const MENU: { label: string; href: string; native?: boolean; on: (path: string) => boolean }[] = [
   { label: "Play", href: "/play/", native: true, on: () => false },
   { label: "Survival", href: "/boards/survival", on: (path) => path === "/boards/survival" },
-  { label: "Quests", href: "/quests/1", on: (path) => /^\/(?:boards\/)?quests/.test(path) },
+  { label: "Quests", href: "/quests/1", on: (path) => /^\/(?:(?:boards\/)?quests|q\/)/.test(path) },
   { label: "About", href: "/about", on: (path) => path === "/about" },
 ];
 

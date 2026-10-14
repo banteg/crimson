@@ -18,7 +18,7 @@ CORE = Path(__file__).resolve().parents[1]
 
 CONFIG_BYTES = 260
 # `PortableQuest`, which follows the config of a quest at stage 0.0.
-QUEST_BYTES = 6164
+QUEST_BYTES = 6184
 
 
 SMOKE = {

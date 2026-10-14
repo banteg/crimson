@@ -18,18 +18,19 @@ from lark.indenter import DedentError, Indenter
 from grim.geom import Vec2
 from grim.rand import CrtRand
 
+from ...bonuses.ids import BonusId
 from ...creatures.spawn_ids import SpawnId
+from ...perks.ids import PerkId
 from ...weapons import WeaponId
 from ..custom import (
+    DROPPABLE_WEAPONS,
     MAX_COPIES,
     MAX_ENTRIES,
     MAX_TRIGGER_MS,
-    VARIANT_COUNT,
     CustomQuest,
     check_author,
     check_table,
     validate_custom_quest,
-    variant_index,
 )
 from ..helpers import NATIVE_CENTER, spawn
 from ..runtime import apply_hardcore_spawn_table_adjustment
@@ -124,6 +125,33 @@ def _line(node: Tree | Token) -> int:
     return getattr(node.meta, "line", 1)
 
 
+_PERK_ALIASES: dict[str, PerkId] = {
+    **{name.lower(): member for name, member in PerkId.__members__.items() if member != PerkId.ANTIPERK},
+    "bloody_mess": PerkId.BLOODY_MESS_QUICK_LEARNER,
+    "quick_learner": PerkId.BLOODY_MESS_QUICK_LEARNER,
+}
+_BONUS_ALIASES: dict[str, BonusId] = {
+    name.lower(): member for name, member in BonusId.__members__.items() if member not in (BonusId.UNUSED, BonusId.POINTS)
+}
+_WEAPON_DROP_ALIASES: dict[str, WeaponId] = {weapon.name.lower(): weapon for weapon in DROPPABLE_WEAPONS}
+_SETTING_NODES = ("author", "order", "weapon", "terrain", "no_bonuses", "no_perks", "no_weapons", "fixed_weapon")
+
+
+def _parse_id_list[T](node: Tree, table: dict[str, T], kind: str, *, line: int) -> list[T]:
+    names = [str(token) for token in node.children[0].children]
+    seen: set[str] = set()
+    out: list[T] = []
+    for raw in names:
+        key = raw.lower()
+        if key in seen:
+            raise QuestCompileError(f"duplicate {kind} {raw!r}", line)
+        if key not in table:
+            raise QuestCompileError(f"unknown or disallowed {kind} {raw!r}", line)
+        seen.add(key)
+        out.append(table[key])
+    return out
+
+
 def _settings(tree: Tree) -> tuple[dict[str, Any], list[Tree]]:
     header, *rest = tree.children
     title, version = (str(child) for child in header.children)
@@ -139,11 +167,15 @@ def _settings(tree: Tree) -> tuple[dict[str, Any], list[Tree]]:
         "order": "chronological",
         "weapon": WeaponId.PISTOL,
         "terrain": (0, 1, 0),
+        "no_bonuses": [],
+        "no_perks": [],
+        "no_weapons": [],
+        "fixed_weapon": False,
     }
     seen: set[str] = set()
     statements = []
     for node in rest:
-        if node.data not in ("author", "order", "weapon", "terrain"):
+        if node.data not in _SETTING_NODES:
             statements.append(node)
             continue
         if node.data in seen:
@@ -160,7 +192,7 @@ def _settings(tree: Tree) -> tuple[dict[str, Any], list[Tree]]:
                 metadata["order"] = str(node.children[0])
             case "weapon":
                 weapon = WeaponId.__members__.get(str(node.children[0]).upper(), WeaponId.NONE)
-                if weapon == WeaponId.NONE:
+                if weapon == WeaponId.NONE or weapon.name.startswith("UNUSED_"):
                     raise QuestCompileError(f"unknown starting weapon {str(node.children[0])!r}", _line(node))
                 metadata["weapon"] = weapon
             case "terrain":
@@ -168,8 +200,25 @@ def _settings(tree: Tree) -> tuple[dict[str, Any], list[Tree]]:
                 if not all(0 <= slot <= 7 for slot in slots):
                     raise QuestCompileError("terrain must be three slot IDs in 0..7", _line(node))
                 metadata["terrain"] = slots
+            case "no_bonuses":
+                metadata["no_bonuses"] = _parse_id_list(node, _BONUS_ALIASES, "bonus", line=_line(node))
+            case "no_perks":
+                metadata["no_perks"] = _parse_id_list(node, _PERK_ALIASES, "perk", line=_line(node))
+            case "no_weapons":
+                metadata["no_weapons"] = _parse_id_list(node, _WEAPON_DROP_ALIASES, "weapon drop", line=_line(node))
+            case "fixed_weapon":
+                metadata["fixed_weapon"] = node.children[0].data == "true"
+    no_bonuses = set(metadata["no_bonuses"])
+    no_perks = set(metadata["no_perks"])
+    no_weapons = set(metadata["no_weapons"])
+    if metadata["fixed_weapon"]:
+        no_bonuses.add(BonusId.WEAPON)
+        no_perks.update((PerkId.ALTERNATE_WEAPON, PerkId.RANDOM_WEAPON))
+        no_weapons.update(DROPPABLE_WEAPONS)
+    metadata["no_bonuses"] = tuple(sorted(no_bonuses))
+    metadata["no_perks"] = tuple(sorted(no_perks))
+    metadata["no_weapons"] = tuple(sorted(no_weapons))
     return metadata, statements
-
 
 def _string(text: str) -> str:
     try:
@@ -241,24 +290,69 @@ def _choice(table: dict[str, Any], key: Any, kind: str) -> Any:
 
 
 _ALIASES = {
-    "alien": {"small_gray": SpawnId.ALIEN_SMALL_GRAY_26, "fast": SpawnId.ALIEN_DEADLY_FAST_2B},
+    "alien": {
+        "small_gray": SpawnId.ALIEN_SMALL_GRAY_26,
+        "fast": SpawnId.ALIEN_DEADLY_FAST_2B,
+        "small_green": SpawnId.ALIEN_SMALL_GREEN_MAN_25,
+        "green": SpawnId.ALIEN_CONST_GREEN_24,
+        "purple": SpawnId.ALIEN_CONST_PURPLE_28,
+        "big_gray": SpawnId.ALIEN_BIG_GRAY_29,
+        "gray_fast": SpawnId.ALIEN_CONST_GREY_FAST_2A,
+        "boss": SpawnId.ALIEN_CONST_RED_BOSS_2C,
+        "cyan": SpawnId.ALIEN_CONST_CYAN_AI2_2D,
+        "ghost": SpawnId.ALIEN_GHOST_0F,
+        "bonus_carrier": SpawnId.ALIEN_BONUS_CARRIER_27,
+        "delayed": SpawnId.ALIEN_DELAYED_START_36,
+        "flanker": SpawnId.AI1_ALIEN_BLUE_TINT_1A,
+        "spawner_ring": SpawnId.ALIEN_SPAWNER_RING_24_0E,
+        "random": SpawnId.ALIEN_RANDOM_06,
+    },
     "spider": {
         "small_blue": SpawnId.SPIDER_SMALL_BLUE_40,
         "plasma": SpawnId.SPIDER_PLASMA_SHOOTER_3C,
         "splitter": SpawnId.SPIDER_SP2_SPLITTER_01,
         "boss": SpawnId.SPIDER_BOSS_3A,
+        "red_boss": SpawnId.SPIDER_SP1_CONST_RED_BOSS_3B,
+        "white_fast": SpawnId.SPIDER_SP1_CONST_WHITE_FAST_3E,
+        "small_brown": SpawnId.SPIDER_SP1_CONST_BROWN_SMALL_3F,
+        "ranged": SpawnId.SPIDER_SP2_RANGED_VARIANT_37,
+        "stop_and_go": SpawnId.SPIDER_SP1_STOP_AND_GO_38,
+        "stop_and_go_weak": SpawnId.SPIDER_SP1_STOP_AND_GO_WEAK_39,
+        "flanker": SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
+        "random": SpawnId.SPIDER_SP1_RANDOM_03,
+        "random_red": SpawnId.SPIDER_SP1_RANDOM_RED_33,
+        "random_green": SpawnId.SPIDER_SP1_RANDOM_GREEN_34,
     },
-    "zombie": {"random": SpawnId.ZOMBIE_RANDOM_41, "spawner_boss": SpawnId.ZOMBIE_BOSS_SPAWNER_00},
+    "lizard": {
+        "gray": SpawnId.LIZARD_CONST_GREY_2F,
+        "boss": SpawnId.LIZARD_CONST_YELLOW_BOSS_30,
+        "flanker": SpawnId.AI1_LIZARD_BLUE_TINT_1C,
+        "random": SpawnId.LIZARD_RANDOM_04,
+    },
+    "zombie": {
+        "random": SpawnId.ZOMBIE_RANDOM_41,
+        "spawner_boss": SpawnId.ZOMBIE_BOSS_SPAWNER_00,
+        "small_white": SpawnId.ZOMBIE_SMALL_WHITE_42,
+        "brute": SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43,
+    },
     "nest": {
         "alien": SpawnId.DEN_ALIEN_BASIC_07,
         "alien_slow": SpawnId.DEN_ALIEN_BASIC_SLOWER_08,
+        "alien_weak": SpawnId.DEN_ALIEN_WEAK_SMALL_09,
         "spider": SpawnId.DEN_SPIDER_BASIC_0A,
         "plasma": SpawnId.DEN_SPIDER_PLASMA_SHOOTERS_0B,
+        "spider_weak": SpawnId.DEN_SPIDER_WEAK_10,
+        "lizard": SpawnId.DEN_LIZARD_WEAK_0C,
+        "lizard_slow": SpawnId.DEN_LIZARD_WEAK_SLOWER_0D,
     },
     "formation": {
         "alien_ring": SpawnId.FORMATION_RING_ALIEN_8_12,
+        "alien_ring_small": SpawnId.FORMATION_RING_ALIEN_5_19,
+        "alien_chain": SpawnId.FORMATION_CHAIN_ALIEN_10_13,
         "lizard_chain": SpawnId.FORMATION_CHAIN_LIZARD_4_11,
         "alien_grid": SpawnId.FORMATION_GRID_ALIEN_WHITE_15,
+        "alien_grid_green": SpawnId.FORMATION_GRID_ALIEN_GREEN_14,
+        "alien_grid_bronze": SpawnId.FORMATION_GRID_ALIEN_BRONZE_18,
         "lizard_grid": SpawnId.FORMATION_GRID_LIZARD_WHITE_16,
         "spider_grid": SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17,
     },
@@ -325,10 +419,15 @@ class _Compiler:
 
     @staticmethod
     def expect_point(value: Any) -> Vec2:
-        if not isinstance(value, Vec2):
-            raise TypeError("expected a point")
-        return value
-
+        if isinstance(value, Vec2):
+            return value
+        if (
+            isinstance(value, tuple)
+            and len(value) == 2
+            and all(not isinstance(item, bool) and isinstance(item, (int, float)) and math.isfinite(item) for item in value)
+        ):
+            return Vec2(value[0], value[1])
+        raise TypeError("expected a point")
     @staticmethod
     def expect_string(value: Any) -> str:
         if not isinstance(value, str):
@@ -357,11 +456,13 @@ class _Compiler:
             if parameter.annotation not in self._CHECKS:
                 continue
             check, description = self._CHECKS[parameter.annotation]
-            for item in value if parameter.kind is inspect.Parameter.VAR_POSITIONAL else (value,):
-                try:
-                    check(item)
-                except TypeError as exc:
-                    raise TypeError(f"{name}() argument {parameter_name!r} must be {description}") from exc
+            try:
+                if parameter.kind is inspect.Parameter.VAR_POSITIONAL:
+                    bound.arguments[parameter_name] = tuple(check(item) for item in value)
+                else:
+                    bound.arguments[parameter_name] = check(value)
+            except TypeError as exc:
+                raise TypeError(f"{name}() argument {parameter_name!r} must be {description}") from exc
         return self._FUNCTIONS[name](self, *bound.args, **bound.kwargs)
 
     # Construction helpers.
@@ -456,9 +557,10 @@ class _Compiler:
         )
 
     def rotate(self, points: Items, angle: float, *, around: Vec2 = NATIVE_CENTER) -> tuple[Vec2, ...]:
-        vectors = [point for point in points if isinstance(point, Vec2)]
-        if len(vectors) != len(points):
-            raise TypeError("rotate requires a list of points")
+        try:
+            vectors = [self.expect_point(point) for point in points]
+        except TypeError as exc:
+            raise TypeError("rotate requires a list of points") from exc
         cosine, sine = math.cos(angle), math.sin(angle)
         return tuple(
             Vec2(
@@ -612,11 +714,7 @@ class _Compiler:
     def emit(self, node: Tree, scope: _Scope) -> None:
         if self.time is None:
             raise ValueError("spawn operations must be inside an at block")
-        if node.data == "burst":
-            template, positions, count, heading = node.children
-        else:
-            template, positions, heading = node.children
-            count = None
+        template, positions, count, heading = node.children
         spawn_id = SpawnId(self.integer(self.expression(template, scope)))
         if spawn_id == SpawnId.UNUSED_02:
             raise ValueError("unused spawn template")
@@ -625,14 +723,23 @@ class _Compiler:
             raise ValueError("copies must be positive and within the copy limit")
         angle = 0 if heading is None else self.number(self.expression(heading, scope))
         located = self.expression(positions, scope)
-        points = self.expect_items(located) if node.data == "place" else (located,)
+        if node.data == "place":
+            points = self.expect_items(located)
+        elif node.data == "burst" or isinstance(located, Vec2) or (
+            isinstance(located, tuple)
+            and len(located) == 2
+            and all(not isinstance(item, bool) and isinstance(item, (int, float)) for item in located)
+        ):
+            points = (located,)
+        else:
+            points = self.expect_items(located)
         for item, point in enumerate(points):
             self.tick(node)
             if len(self.entries) >= MAX_ENTRIES:
                 raise ValueError("expanded spawn entry limit exceeded")
-            if isinstance(point, tuple) and len(point) == 2:
-                point = self.point(*point)
-            entry = spawn(self.expect_point(point), spawn_id, self.time, copies, heading=angle)
+            coerced = self.expect_point(point)
+            self.point(coerced.x, coerced.y)
+            entry = spawn(coerced, spawn_id, self.time, copies, heading=angle)
             if not all(math.isfinite(value) for value in (entry.pos.x, entry.pos.y, entry.heading)):
                 raise ValueError("spawn positions and headings must be finite float32 values")
             self.entries.append(entry)
@@ -883,48 +990,33 @@ def compile_quest(
         terrain_slots=metadata["terrain"],
         entries=entries,
         locations=locations,
+        no_bonuses=metadata["no_bonuses"],
+        no_perks=metadata["no_perks"],
+        no_weapons=metadata["no_weapons"],
     )
 
 
-def _referenced_names(statements: list[Tree]) -> set[str]:
-    return {
-        str(node.children[0]) for statement in statements for node in statement.iter_subtrees() if node.data == "name"
-    }
-
-
 def build_custom_quest(source: str, *, seed: int = 0, limits: CompileLimits = _DEFAULT_LIMITS) -> CustomQuest:
-    """Resolve a recipe for every player count and hardcore setting into a playable definition."""
+    """Resolve a recipe into a playable custom quest definition."""
     _check_inputs(source, seed, limits)
     metadata, statements = _settings(_parse(source, limits))
-    names = _referenced_names(statements)
-    uses_players = "players" in names
-    uses_hardcore = "hardcore" in names
-    constructed: dict[tuple[int, bool], int] = {}
-    tables: list[tuple[SpawnEntry, ...]] = []
-    variants = [0] * VARIANT_COUNT
-    for player_count in (1, 2, 3, 4):
-        for hardcore in (False, True):
-            key = (player_count if uses_players else 1, hardcore if uses_hardcore else False)
-            if key not in constructed:
-                entries, _ = _construct(
-                    statements,
-                    metadata["order"],
-                    seed=seed,
-                    player_count=key[0],
-                    hardcore=key[1],
-                    limits=limits,
-                )
-                if entries not in tables:
-                    tables.append(entries)
-                constructed[key] = tables.index(entries)
-            variants[variant_index(player_count=player_count, hardcore=hardcore)] = constructed[key]
+    entries, _ = _construct(
+        statements,
+        metadata["order"],
+        seed=seed,
+        player_count=1,
+        hardcore=False,
+        limits=limits,
+    )
     quest = CustomQuest(
         title=metadata["title"],
         author=metadata["author"],
         start_weapon_id=metadata["weapon"],
         terrain_slots=metadata["terrain"],
-        tables=tuple(tables),
-        variants=tuple(variants),
+        entries=entries,
+        no_bonuses=metadata["no_bonuses"],
+        no_perks=metadata["no_perks"],
+        no_weapons=metadata["no_weapons"],
     )
     try:
         validate_custom_quest(quest)

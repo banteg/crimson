@@ -39,9 +39,14 @@ static bool ranked_attempt() {
 // done.
 static void ranked_spec(PortableConfig &config) {
   if (config.mode == GAME_MODE_QUEST) {
-    int quest = (config.major - 1) * 10 + (config.minor - 1);
-    config.unlock = config.hardcore ? 50 : quest;
-    config.unlock_full = config.hardcore ? quest : 0;
+    if (config.major == 0 && config.minor == 0) {
+      config.hardcore = 0;
+      config.unlock = config.unlock_full = 50;
+    } else {
+      int quest = (config.major - 1) * 10 + (config.minor - 1);
+      config.unlock = config.hardcore ? 50 : quest;
+      config.unlock_full = config.hardcore ? quest : 0;
+    }
   } else {
     config.hardcore = 0;
     config.unlock = config.unlock_full = 50;

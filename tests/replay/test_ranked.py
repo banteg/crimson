@@ -7,6 +7,7 @@ from crimson.aim_schemes import AimScheme
 from crimson.game_modes import GameMode
 from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES
 from crimson.movement_controls import MovementControlType
+from crimson.quests.dsl import build_custom_quest
 from crimson.quests.level import QuestLevel
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import pack_player_input
@@ -28,13 +29,21 @@ _SURVIVAL = ranked_run_spec(GameMode.SURVIVAL, seed=0x1234)
 
 def test_the_ranked_profile_ranks_on_its_board() -> None:
     quest = ranked_run_spec(GameMode.QUESTS, seed=1, quest_level=QuestLevel(2, 3), hardcore=True)
+    custom = ranked_run_spec(
+        GameMode.QUESTS,
+        seed=1,
+        custom_quest=build_custom_quest('quest "Test" version 1\nat 1s:\n    spawn alien.fast at center'),
+        hardcore=True,
+    )
 
-    assert unranked_reasons(_SURVIVAL) == unranked_reasons(quest) == []
+    assert unranked_reasons(_SURVIVAL) == unranked_reasons(quest) == unranked_reasons(custom) == []
     assert ranked_board(_SURVIVAL) == "survival"
     assert ranked_board(quest) == "quests-hardcore"
-    # Hardcore only changes quests, so Survival has one board.
+    assert ranked_board(custom) == "quests"
+    assert (custom.status.quest_unlock_index, custom.status.quest_unlock_index_hardcore) == (50, 50)
+    # Hardcore only changes stock quests, so Survival and custom quests have one board.
     assert not ranked_run_spec(GameMode.SURVIVAL, seed=1, hardcore=True).hardcore
-
+    assert not custom.hardcore
 
 def test_a_quest_plays_on_the_save_that_unlocked_it() -> None:
     normal = ranked_run_spec(GameMode.QUESTS, seed=1, quest_level=QuestLevel(2, 3))

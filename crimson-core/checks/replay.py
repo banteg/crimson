@@ -10,46 +10,21 @@ import argparse
 import struct
 from pathlib import Path
 
-from crimson.creatures.spawn_ids import SpawnId
-from crimson.quests.custom import CustomQuest, variant_index
-from crimson.quests.types import SpawnEntry
+from crimson.quests.custom import PORTABLE_QUEST_BYTES, CustomQuest
 from crimson.replay.codec import load_replay_file
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
-from crimson.weapons import WeaponId
-from grim.geom import Vec2
 
-# `PortableQuest` in host/api.h: the weapon, three terrain slots and the entry count, then 256 entries.
-QUEST_HEAD = struct.Struct("<5I")
-QUEST_SPAWN = struct.Struct("<3f3i")
-QUEST_BYTES = QUEST_HEAD.size + 256 * QUEST_SPAWN.size
+QUEST_BYTES = PORTABLE_QUEST_BYTES
 
 
-def portable_quest(quest: CustomQuest, *, hardcore: bool) -> bytes:
-    """The table the core plays: the one-player variant for the run's hardcore setting, with base counts."""
-    table = quest.tables[quest.variants[variant_index(player_count=1, hardcore=hardcore)]]
-    head = QUEST_HEAD.pack(quest.start_weapon_id, *quest.terrain_slots, len(table))
-    entries = b"".join(
-        QUEST_SPAWN.pack(e.pos.x, e.pos.y, e.heading, e.spawn_id, e.trigger_ms, e.count) for e in table
-    )
-    return (head + entries).ljust(QUEST_BYTES, b"\0")
+def portable_quest(quest: CustomQuest) -> bytes:
+    """The table and restriction bitmasks the core plays."""
+    return quest.to_portable_bytes()
 
 
 def custom_quest(blob: bytes) -> CustomQuest:
-    """The definition a `PortableQuest` holds: its one table plays every variant; the title is a stand-in."""
-    weapon, *terrain, count = QUEST_HEAD.unpack_from(blob)
-    table = tuple(
-        SpawnEntry(pos=Vec2(x, y), heading=heading, spawn_id=SpawnId(template), trigger_ms=trigger, count=copies)
-        for x, y, heading, template, trigger, copies in QUEST_SPAWN.iter_unpack(
-            blob[QUEST_HEAD.size : QUEST_HEAD.size + count * QUEST_SPAWN.size],
-        )
-    )
-    return CustomQuest(
-        title="Custom quest",
-        start_weapon_id=WeaponId(weapon),
-        terrain_slots=(terrain[0], terrain[1], terrain[2]),
-        tables=(table,),
-        variants=(0,) * 8,
-    )
+    """The definition a `PortableQuest` holds; the title is a stand-in."""
+    return CustomQuest.from_portable_bytes(blob)
 
 
 def encode(replay, limit):
@@ -76,7 +51,7 @@ def encode(replay, limit):
         *run.status.weapon_usage_counts,
     )
     if custom is not None:
-        config += portable_quest(custom, hardcore=run.hardcore)
+        config += portable_quest(custom)
     records = []
     for tick in replay.ticks[:limit]:
         if len(tick.inputs) != 1 or len(tick.commands) > 16:
@@ -105,7 +80,6 @@ def main():
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("replay", type=Path, nargs="?")
     source.add_argument("--recipe", type=Path, help="write a quest recipe's PortableQuest instead")
-    parser.add_argument("--hardcore", action="store_true", help="with --recipe: the hardcore variant")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--ticks", type=int, default=None)
     args = parser.parse_args()
@@ -113,7 +87,7 @@ def main():
         from crimson.quests.dsl import build_custom_quest
 
         quest = build_custom_quest(args.recipe.read_text(encoding="utf-8"))
-        args.out.write_bytes(portable_quest(quest, hardcore=args.hardcore))
+        args.out.write_bytes(portable_quest(quest))
     else:
         args.out.write_bytes(encode(load_replay_file(args.replay), args.ticks))
 

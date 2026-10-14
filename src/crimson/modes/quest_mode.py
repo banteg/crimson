@@ -128,10 +128,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_def = prepared.quest
         self._reset_gameplay_frame_clock()
 
-    def _ranked_attempt(self) -> bool:
-        # Only the original's quests rank: the verifier cannot start a custom one.
-        return self._custom_quest is None and super()._ranked_attempt()
-
     def _handle_input(self) -> None:
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):

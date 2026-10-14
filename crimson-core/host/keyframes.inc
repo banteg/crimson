@@ -92,6 +92,8 @@ static void keyframe_restore(const Keyframe &key) {
   ui_elements_timeline = host.timeline;
   live.run = host.run;
   memcpy(string_arena, in, string_used);
+  portable_custom_quest =
+      (cfg.mode == GAME_MODE_QUEST && cfg.major == 0 && cfg.minor == 0) ? &custom_quest_meta : nullptr;
 }
 
 // A corpse fx_queue_render bakes (fx_queue_add_rotated's arrays, one entry).

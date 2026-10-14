@@ -760,10 +760,10 @@ class BaseGameplayMode:
         status = None if ranked else self._status_base
         self._world_runtime.view_cap = RANKED_VIEW if ranked else DEFAULT_VIEW_CAP
         self.ranked_run = ranked
-        # Every run carries the saved Hardcore box, as the original's does; the run applies it (`initialize_run`).
-        hardcore = self.config.gameplay.hardcore
+        # Every stock run carries the saved Hardcore box, as the original's does; custom quests do not use hardcore.
+        hardcore = False if custom_quest is not None else self.config.gameplay.hardcore
         spec = ranked_run_spec(
-            game_mode, seed=self._run_reset_seed, quest_level=quest_level, hardcore=hardcore,
+            game_mode, seed=self._run_reset_seed, quest_level=quest_level, custom_quest=custom_quest, hardcore=hardcore,
         ) if ranked else RunSpec(
             game_mode_id=game_mode,
             seed=self._run_reset_seed,

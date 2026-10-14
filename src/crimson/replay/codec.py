@@ -190,6 +190,7 @@ def _validate_run(run: RunSpec) -> None:
         "quests need exactly one of run.quest_level and run.custom_quest; other modes need neither",
     )
     if run.custom_quest is not None:
+        _require(not run.hardcore, "custom quests do not use hardcore")
         try:
             validate_custom_quest(run.custom_quest)
         except ValueError as exc:

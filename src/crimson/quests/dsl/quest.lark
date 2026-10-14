@@ -9,6 +9,13 @@ header: "quest" STRING "version" INT _NL
         | "order" ORDER _NL -> order
         | "weapon" NAME _NL -> weapon
         | "terrain" "(" INT "," INT "," INT ")" _NL -> terrain
+        | "no_bonuses" name_list _NL -> no_bonuses
+        | "no_perks" name_list _NL -> no_perks
+        | "no_weapons" name_list _NL -> no_weapons
+        | "fixed_weapon" boolean _NL -> fixed_weapon
+
+boolean: "true" -> true | "false" -> false
+name_list: "[" (NAME ("," NAME)* ","?)? "]"
 
 ?statement: simple _NL | compound
 
@@ -16,9 +23,9 @@ header: "quest" STRING "version" INT _NL
        | "var" NAME "=" expr -> var
        | NAME "=" expr -> assign
        | NAME update_op expr -> update
-       | "spawn" expr "at" expr ["heading" expr] -> spawn
+       | "spawn" expr "at" expr ["copies" expr] ["heading" expr] -> spawn
        | "burst" expr "at" expr "copies" expr ["heading" expr] -> burst
-       | "place" expr "on" expr ["heading" expr] -> place
+       | "place" expr "on" expr ["copies" expr] ["heading" expr] -> place
        | NAME "(" arguments ")" -> invoke
        | "break" -> break_
 

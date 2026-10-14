@@ -1,28 +1,73 @@
 // The crimson-core input stream for a replay, a port of crimson-core/checks/replay.py: a 65-word config, then per
 // tick the player's four f32 axes, the flag word, the command count and each command as (kind, argument).
 
-import { GameMode, type Replay } from "./replay";
+import { type CustomQuest, GameMode, type Replay } from "./replay";
 
 export const CONFIG_BYTES = 65 * 4;
+export const QUEST_HEAD_BYTES = 10 * 4;
+export const QUEST_SPAWN_BYTES = 24;
+export const QUEST_BYTES = QUEST_HEAD_BYTES + 256 * QUEST_SPAWN_BYTES;
 export const TICK_BYTES = 24;
 const COMMAND_BYTES = 8;
 export const MAX_TICK_COMMANDS = 16;
 
 export class TransportError extends Error {}
 
+export function encodePortableQuest(quest: CustomQuest): Uint8Array {
+  const bytes = new Uint8Array(QUEST_BYTES);
+  const view = new DataView(bytes.buffer);
+  let bonuses = 0;
+  for (const id of quest.no_bonuses) bonuses |= 1 << id;
+  let perksLo = 0, perksHi = 0;
+  for (const id of quest.no_perks) {
+    if (id < 32) perksLo |= 1 << id;
+    else perksHi |= 1 << (id - 32);
+  }
+  let weaponsLo = 0, weaponsHi = 0;
+  for (const id of quest.no_weapons) {
+    if (id < 32) weaponsLo |= 1 << id;
+    else weaponsHi |= 1 << (id - 32);
+  }
+  const head = [
+    quest.start_weapon_id,
+    quest.terrain_slots[0],
+    quest.terrain_slots[1],
+    quest.terrain_slots[2],
+    quest.entries.length,
+    bonuses >>> 0,
+    perksLo >>> 0,
+    perksHi >>> 0,
+    weaponsLo >>> 0,
+    weaponsHi >>> 0,
+  ];
+  head.forEach((word, i) => view.setUint32(i * 4, word >>> 0, true));
+  quest.entries.forEach((e, i) => {
+    const at = QUEST_HEAD_BYTES + i * QUEST_SPAWN_BYTES;
+    view.setFloat32(at, e.pos.x, true);
+    view.setFloat32(at + 4, e.pos.y, true);
+    view.setFloat32(at + 8, e.heading, true);
+    view.setInt32(at + 12, e.spawn_id, true);
+    view.setInt32(at + 16, e.trigger_ms, true);
+    view.setInt32(at + 20, e.count, true);
+  });
+  return bytes;
+}
+
 export function encodeTransport(replay: Replay): Uint8Array {
   const run = replay.run;
   if (run.player_count !== 1 || ![GameMode.SURVIVAL, GameMode.RUSH, GameMode.QUESTS].includes(run.game_mode_id as 1 | 2 | 3))
     throw new TransportError("The core supports one player in Rush, Survival or Quests");
+  const custom = run.custom_quest;
+  const headBytes = CONFIG_BYTES + (custom ? QUEST_BYTES : 0);
   const ticks = replay.ticks;
   const commandCount = [...ticks.commands.values()].reduce((sum, commands) => sum + commands.length, 0);
-  const bytes = new Uint8Array(CONFIG_BYTES + ticks.length * TICK_BYTES + commandCount * COMMAND_BYTES);
+  const bytes = new Uint8Array(headBytes + ticks.length * TICK_BYTES + commandCount * COMMAND_BYTES);
   const view = new DataView(bytes.buffer);
   const config = [
     run.seed,
     run.game_mode_id,
-    run.quest_level?.major ?? 1,
-    run.quest_level?.minor ?? 1,
+    custom ? 0 : (run.quest_level?.major ?? 1),
+    custom ? 0 : (run.quest_level?.minor ?? 1),
     run.status.quest_unlock_index,
     run.status.quest_unlock_index_hardcore,
     run.detail_preset,
@@ -34,7 +79,8 @@ export function encodeTransport(replay: Replay): Uint8Array {
     ...run.status.weapon_usage_counts,
   ];
   config.forEach((word, i) => view.setUint32(i * 4, word >>> 0, true));
-  let at = CONFIG_BYTES;
+  if (custom) bytes.set(encodePortableQuest(custom), CONFIG_BYTES);
+  let at = headBytes;
   for (let tick = 0; tick < ticks.length; tick++) {
     const commands = ticks.commands.get(tick) ?? [];
     if (commands.length > MAX_TICK_COMMANDS) throw new TransportError("Unsupported player or command count");

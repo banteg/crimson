@@ -11,8 +11,8 @@ export const CATEGORIES: readonly Category[] = ["human", "bot"];
 export type Role = "" | "mod" | "admin";
 
 // The program that played a run, as its replay declares it: the operator's claim.
-export type { Pilot } from "./replay";
-import type { Pilot } from "./replay";
+export type { CustomQuest, Pilot, SpawnEntry } from "./replay";
+import type { CustomQuest, Pilot } from "./replay";
 
 export interface LinkView {
   provider: ProviderName;
@@ -81,6 +81,42 @@ export interface QuestMenuView {
   category: Category;
   stage: number;
   quests: { quest: string; title: string; players: number }[];
+}
+
+export interface CustomQuestSummary {
+  id: string;
+  title: string;
+  author: string | null;
+  creator: PlayerView;
+  start_weapon_id: number;
+  entry_count: number;
+  total_copies: number;
+  no_bonuses: number[];
+  no_perks: number[];
+  no_weapons: number[];
+  has_source: boolean;
+  players: number;
+  top_score: number | null;
+  created_at: number;
+}
+
+export interface CustomQuestsListView {
+  category: Category;
+  quests: CustomQuestSummary[];
+}
+
+export interface CustomQuestDetailView {
+  id: string;
+  digest: string;
+  title: string;
+  author: string | null;
+  source: string | null;
+  seed: number;
+  created_at: number;
+  creator: PlayerView;
+  first_run_id: string;
+  definition: CustomQuest;
+  board: BoardView;
 }
 
 export interface RunView {

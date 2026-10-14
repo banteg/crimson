@@ -5,8 +5,10 @@ from importlib.resources import files
 import msgspec
 import pytest
 
+from crimson.bonuses.ids import BonusId
 from crimson.creatures.spawn_ids import SpawnId
-from crimson.quests.custom import CustomQuest, validate_custom_quest
+from crimson.perks.ids import PerkId
+from crimson.quests.custom import DROPPABLE_WEAPONS, CustomQuest, validate_custom_quest
 from crimson.quests.dsl import QuestCompileError, build_custom_quest, compile_quest
 from crimson.quests.dsl.stock import stock_source
 from crimson.weapons import WeaponId
@@ -17,33 +19,28 @@ def example(name: str) -> str:
     return files("crimson.quests.dsl").joinpath("examples", f"{name}.quest").read_text(encoding="utf-8")
 
 
-def test_every_variant_plays_what_the_compiler_constructs():
+def test_custom_quest_plays_what_the_compiler_constructs():
     source = stock_source("4.7")
     quest = build_custom_quest(source, seed=7)
-    for player_count in (1, 2, 3, 4):
-        for hardcore in (False, True):
-            plan = compile_quest(source, seed=7, player_count=player_count, hardcore=hardcore)
-            assert quest.entries(player_count=player_count, hardcore=hardcore) == plan.entries
+    plan = compile_quest(source, seed=7, player_count=1, hardcore=False)
+    assert quest.entries == plan.entries
 
 
-def test_variants_share_tables_a_recipe_does_not_vary():
-    quest = build_custom_quest(example("crosswind"))
-    assert len(quest.tables) == 1
-    assert quest.variants == (0,) * 8
-
-
-def test_the_digest_covers_gameplay_not_the_title_or_author():
+def test_the_digest_covers_gameplay_and_restrictions_not_the_title_or_author():
     quest = build_custom_quest(example("crosswind"))
     renamed = msgspec.structs.replace(quest, title="Another name", author="someone")
     rearmed = msgspec.structs.replace(quest, start_weapon_id=WeaponId.PISTOL)
+    restricted = msgspec.structs.replace(quest, no_bonuses=(BonusId.NUKE,))
     assert renamed.digest() == quest.digest()
     assert rearmed.digest() != quest.digest()
+    assert restricted.digest() != quest.digest()
 
 
 def replace_first_entry(quest: CustomQuest, **changes) -> CustomQuest:
-    table = quest.tables[0]
-    return msgspec.structs.replace(quest, tables=((msgspec.structs.replace(table[0], **changes), *table[1:]),))
-
+    return msgspec.structs.replace(
+        quest,
+        entries=(msgspec.structs.replace(quest.entries[0], **changes), *quest.entries[1:]),
+    )
 
 @pytest.mark.parametrize(
     ("edit", "message"),
@@ -54,11 +51,12 @@ def replace_first_entry(quest: CustomQuest, **changes) -> CustomQuest:
         (lambda q: msgspec.structs.replace(q, author="x" * 32), "author"),
         (lambda q: msgspec.structs.replace(q, start_weapon_id=WeaponId.NONE), "starting weapon"),
         (lambda q: msgspec.structs.replace(q, terrain_slots=(0, 8, 0)), "terrain"),
-        (lambda q: msgspec.structs.replace(q, variants=(0,) * 7), "variants"),
-        (lambda q: msgspec.structs.replace(q, variants=(1,) * 8), "variants"),
-        (lambda q: msgspec.structs.replace(q, tables=(q.tables[0], q.tables[0])), "variants"),
-        (lambda q: msgspec.structs.replace(q, tables=((),)), "1..256 entries"),
-        (lambda q: msgspec.structs.replace(q, tables=(q.tables[0] * 3,)), "1..256 entries"),
+        (lambda q: msgspec.structs.replace(q, entries=()), "1..256 entries"),
+        (lambda q: msgspec.structs.replace(q, entries=q.entries * 3), "1..256 entries"),
+        (lambda q: msgspec.structs.replace(q, no_bonuses=(BonusId.POINTS,)), "no_bonuses"),
+        (lambda q: msgspec.structs.replace(q, no_bonuses=(BonusId.FREEZE, BonusId.NUKE)), "no_bonuses"),
+        (lambda q: msgspec.structs.replace(q, no_perks=(PerkId.ANTIPERK,)), "no_perks"),
+        (lambda q: msgspec.structs.replace(q, no_weapons=(WeaponId.PISTOL,)), "no_weapons"),
         (lambda q: replace_first_entry(q, spawn_id=SpawnId.UNUSED_02), "unused"),
         (lambda q: replace_first_entry(q, trigger_ms=-1), "trigger"),
         (lambda q: replace_first_entry(q, pos=Vec2(0.1, 0.0)), "float32"),
@@ -68,7 +66,7 @@ def replace_first_entry(quest: CustomQuest, **changes) -> CustomQuest:
         (lambda q: replace_first_entry(q, pos=Vec2(512.0, -1025.0)), "positions must be in"),
         (lambda q: replace_first_entry(q, heading=float("nan")), "float32"),
         (lambda q: replace_first_entry(q, count=0), "copies"),
-        (lambda q: replace_first_entry(q, count=380), "hardcore|per-trigger"),
+        (lambda q: replace_first_entry(q, count=385), "copies"),
     ],
 )
 def test_invalid_definitions_are_rejected(edit, message):
@@ -97,19 +95,43 @@ def test_bad_author_settings_are_rejected(setting, message):
         compile_quest(f'quest "Bylined" version 1\n{setting}\nat 1s:\n    spawn alien.small_gray at center')
 
 
-@pytest.mark.parametrize(
-    ("body", "expected_tables", "expected_variants"),
-    [
-        ("burst alien.small_gray at center copies players", 4, (0, 0, 1, 1, 2, 2, 3, 3)),
-        ("burst alien.small_gray at center copies (3 if hardcore else 1)", 2, (0, 1, 0, 1, 0, 1, 0, 1)),
-    ],
-)
-def test_single_axis_recipes_deduplicate_variant_tables(body, expected_tables, expected_variants):
-    source = f'quest "Single Axis" version 1\nat 1s:\n    {body}'
-    quest = build_custom_quest(source)
-    assert len(quest.tables) == expected_tables
-    assert quest.variants == expected_variants
-    for player_count in (1, 2, 3, 4):
-        for hardcore in (False, True):
-            plan = compile_quest(source, player_count=player_count, hardcore=hardcore)
-            assert quest.entries(player_count=player_count, hardcore=hardcore) == plan.entries
+def test_dsl_restrictions_and_fixed_weapon_expand_cleanly():
+    quest = build_custom_quest(
+        """quest "Restricted" version 1
+weapon shotgun
+no_bonuses [nuke, freeze]
+no_perks [poison_bullets, bloody_mess]
+no_weapons [ion_cannon]
+at 1s:
+    spawn alien.fast at corners() copies 2
+""",
+    )
+    assert quest.no_bonuses == (BonusId.NUKE, BonusId.FREEZE)
+    assert quest.no_perks == (PerkId.BLOODY_MESS_QUICK_LEARNER, PerkId.POISON_BULLETS)
+    assert quest.no_weapons == (WeaponId.ION_CANNON,)
+    assert len(quest.entries) == 4
+    assert all(entry.count == 2 for entry in quest.entries)
+
+    fixed = build_custom_quest(example("same-problem-shotgun"))
+    assert fixed.no_bonuses == (BonusId.WEAPON,)
+    assert fixed.no_perks == (PerkId.ALTERNATE_WEAPON, PerkId.RANDOM_WEAPON)
+    assert fixed.no_weapons == DROPPABLE_WEAPONS
+
+
+def test_tuple_points_and_expanded_aliases_work_across_helpers():
+    quest = build_custom_quest(
+        """quest "Tuples and Aliases" version 1
+at 1s:
+    spawn lizard.flanker at ring((512, 512), 120, 4) copies 2 heading facing((256, 512), (512, 512))
+    spawn nest.alien_weak at rotate([(256, 256), (768, 256)], 90deg, around=(512, 512))
+""",
+    )
+    assert len(quest.entries) == 6
+    assert [entry.spawn_id for entry in quest.entries] == [
+        SpawnId.AI1_LIZARD_BLUE_TINT_1C,
+        SpawnId.AI1_LIZARD_BLUE_TINT_1C,
+        SpawnId.AI1_LIZARD_BLUE_TINT_1C,
+        SpawnId.AI1_LIZARD_BLUE_TINT_1C,
+        SpawnId.DEN_ALIEN_WEAK_SMALL_09,
+        SpawnId.DEN_ALIEN_WEAK_SMALL_09,
+    ]

@@ -16,6 +16,10 @@ static PortableInput in;
 static PortableConfig cfg;
 static PortableQuest quest;
 static quest_meta_t custom_quest_meta;
+static char custom_quest_title[65] = "Custom quest";
+static char custom_quest_author[32] = "";
+static bool custom_quest_valid_for(const PortableQuest &q);
+static void custom_quest_build(quest_spawn_entry_t *entries, int *count);
 extern "C" quest_meta_t *portable_custom_quest;
 quest_meta_t *portable_custom_quest;
 extern "C" unsigned char portable_preserve_bugs;
@@ -203,8 +207,17 @@ static bool run_ended() {
 }
 extern "C" uintptr_t portable_config() { return (uintptr_t)&cfg; }
 extern "C" uintptr_t portable_quest() { return (uintptr_t)&quest; }
-// The custom quest's builder: its table, where a stock builder would construct one.
+// The custom quest's builder: its table and drop/offer restrictions, where a stock builder would construct one.
 static void custom_quest_build(quest_spawn_entry_t *entries, int *count) {
+  for (int i = 2; i <= 14; ++i)
+    if (quest.disable_bonuses & (1u << i))
+      bonus_meta_table[i].enabled = 0;
+  for (int i = 1; i <= 57; ++i)
+    if (quest.disable_perks[i >> 5] & (1u << (i & 31)))
+      perk_meta_table[i].available = 0;
+  for (int i = 2; i <= 33; ++i)
+    if (quest.disable_weapons[i >> 5] & (1u << (i & 31)))
+      weapon_table[i].unlocked = 0;
   for (uint32_t i = 0; i < quest.count; ++i) {
     const PortableSpawn &s = quest.entries[i];
     entries[i].pos_x = s.x;
@@ -216,38 +229,39 @@ static void custom_quest_build(quest_spawn_entry_t *entries, int *count) {
   }
   *count = (int)quest.count;
 }
-// The table src/crimson/quests/custom.py's check_table accepts, after the hardcore rule quest_start_selected
-// applies: positions a full arena beyond each edge, and copies bounded per entry, per trigger time and in total.
-static bool custom_quest_valid(bool hardcore) {
-  if (quest.weapon_id < 1 || quest.weapon_id > 53 || quest.count < 1 || quest.count > 256)
+// The table src/crimson/quests/custom.py's validate_custom_quest accepts: positions a full arena beyond each edge,
+// copies bounded per entry, per trigger time and in total, and restriction bitmasks within the droppable/offerable IDs.
+static bool custom_quest_valid_for(const PortableQuest &q) {
+  if (q.weapon_id < 1 || q.weapon_id > 53 || (q.weapon_id >= 34 && q.weapon_id <= 40) ||
+      (q.weapon_id >= 46 && q.weapon_id <= 49) || q.count < 1 || q.count > 256)
     return false;
-  for (uint32_t slot : quest.terrain)
+  if ((q.disable_bonuses & ~0x7ffcu) || (q.disable_perks[0] & 1u) ||
+      (q.disable_perks[1] & ~0x03ffffffu) || (q.disable_weapons[0] & 3u) || (q.disable_weapons[1] & ~3u))
+    return false;
+  for (uint32_t slot : q.terrain)
     if (slot > 7)
       return false;
   int copies[256], total = 0;
-  for (uint32_t i = 0; i < quest.count; ++i) {
-    const PortableSpawn &s = quest.entries[i];
+  for (uint32_t i = 0; i < q.count; ++i) {
+    const PortableSpawn &s = q.entries[i];
     if (!(s.x >= -1024 && s.x <= 2048 && s.y >= -1024 && s.y <= 2048) || !isfinite(s.heading) ||
         s.template_id < 0 || s.template_id > 0x43 || s.template_id == 0x02 || s.trigger_ms < 0 ||
         s.trigger_ms > 3600000 || s.count < 1 || s.count > 384)
       return false;
     copies[i] = s.count;
-    if (hardcore && s.count > 1 && s.template_id != 0x3c)
-      copies[i] += s.template_id == 0x2b ? 2 : 8;
-    if (copies[i] > 384)
-      return false;
     total += copies[i];
   }
-  for (uint32_t i = 0; i < quest.count; ++i) {
+  for (uint32_t i = 0; i < q.count; ++i) {
     int at_trigger = 0;
-    for (uint32_t j = 0; j < quest.count; ++j)
-      if (quest.entries[j].trigger_ms == quest.entries[i].trigger_ms)
+    for (uint32_t j = 0; j < q.count; ++j)
+      if (q.entries[j].trigger_ms == q.entries[i].trigger_ms)
         at_trigger += copies[j];
     if (at_trigger > 384)
       return false;
   }
   return total <= 8192;
 }
+static bool custom_quest_valid() { return custom_quest_valid_for(quest); }
 extern "C" uintptr_t portable_input() { return (uintptr_t)&in; }
 extern "C" float portable_aim_x() { return in.aim_x; }
 extern "C" float portable_aim_y() { return in.aim_y; }
@@ -383,7 +397,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   if (mode == GAME_MODE_QUEST && !custom &&
       (major < 1 || major > 5 || minor < 1 || minor > 10))
     return 0;
-  if (custom && !custom_quest_valid(cfg.hardcore != 0))
+  if (custom && (cfg.hardcore != 0 || !custom_quest_valid()))
     return 0;
   trace_init("reset data");
 #ifdef CRIMSON_GAME
@@ -486,7 +500,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   quest_stage_minor = minor;
   // Stage 0.0 matches no level's rules, as Python's custom run has no stock level.
   custom_quest_meta = quest_meta_t{};
-  custom_quest_meta.name = (char *)"";
+  custom_quest_meta.name = custom_quest_title;
   custom_quest_meta.terrain_id = (int)quest.terrain[0];
   custom_quest_meta.terrain_id_b = (int)quest.terrain[1];
   custom_quest_meta.terrain_id_c = (int)quest.terrain[2];

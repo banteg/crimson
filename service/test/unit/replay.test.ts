@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { type Head, Reader } from "../../src/msgpack";
 import { outcomeReasons, rankedBoard, unrankedReasons } from "../../src/ranked";
 import { decodeReplay, inflateReplay, ReplayError } from "../../src/replay";
-import { encodeTransport, TransportError } from "../../src/transport";
+import { encodePortableQuest, encodeTransport, TransportError } from "../../src/transport";
 import vectors from "../vectors.json";
 
 const FIXTURES = join(import.meta.dirname, "../../../tests/fixtures/replays");
@@ -40,8 +40,12 @@ describe("payloads the Python codec refuses are refused", () => {
   }
 });
 
-it("a custom quest, which the verifier cannot start, is refused for what it is", () => {
-  expect(() => decodeReplay(base64(vectors.custom_quest_run))).toThrow("this service ranks only the original's quests");
+it("a custom quest decodes, ranks under the canonical profile, and matches Python's portable quest and transport bytes", () => {
+  const replay = decodeReplay(base64(vectors.custom_quest_run.payload));
+  expect(unrankedReasons(replay.run)).toEqual([]);
+  expect(outcomeReasons(replay.run, replay.result)).toEqual([]);
+  expect(sha256(encodePortableQuest(replay.run.custom_quest!))).toBe(vectors.custom_quest_run.digest);
+  expect(sha256(encodeTransport(replay))).toBe(vectors.custom_quest_run.transport_sha256);
 });
 
 // After egornomic's #615: the ticks decode as they stream, so their framing is refused as strictly as a whole tree's.

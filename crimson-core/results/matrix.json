@@ -3745,7 +3745,7 @@
       }
     },
     {
-      "name": "custom-formation-parade-hardcore",
+      "name": "custom-formation-parade",
       "ticks": 1422,
       "fields_per_snapshot": 36343,
       "sha256": "da56a16b20336fc47f7569ace94100eb4a0bd6a872253adfed5315acb590b67c",

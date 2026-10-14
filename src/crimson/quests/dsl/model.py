@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from ...bonuses.ids import BonusId
+from ...perks.ids import PerkId
 from ...terrain_slots import TerrainSlotTriplet
 from ...weapons import WeaponId
 from ..types import SpawnEntry
@@ -37,3 +39,6 @@ class QuestPlan:
     terrain_slots: TerrainSlotTriplet
     entries: tuple[SpawnEntry, ...]
     locations: tuple[SourceLocation, ...]
+    no_bonuses: tuple[BonusId, ...] = ()
+    no_perks: tuple[PerkId, ...] = ()
+    no_weapons: tuple[WeaponId, ...] = ()

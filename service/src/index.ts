@@ -6,7 +6,24 @@ import { playerLabel } from "../web/src/names";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
 import type { Board } from "./ranked";
 import { groundFor, postRun, timelineFor } from "./runs";
-import { boardTitle, boardView, gameScores, joinView, loginView, players, profileView, questMenuView, runDescription, runDetailView, runSummary, visibleRun } from "./views";
+import {
+  boardTitle,
+  boardView,
+  CUSTOM_QUEST_ID,
+  customQuestDetailView,
+  customQuestPortableBytes,
+  customQuestsListView,
+  gameScores,
+  joinView,
+  loginView,
+  players,
+  profileView,
+  questMenuView,
+  runDescription,
+  runDetailView,
+  runSummary,
+  visibleRun,
+} from "./views";
 import { VIEW_H, VIEW_W } from "./verify";
 import { CATEGORIES, type Category } from "./api-types";
 import { flagsView, isModerator, markAccount, measureRuns, moderationLog, roleOf, setRole, setRunCategory } from "./moderation";
@@ -57,6 +74,8 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   switch (route) {
     case "POST /api/runs":
       return postRun(request, env);
+    case "POST /api/quests":
+      return postRun(request, env, { requireCustomQuest: true });
     case "POST /api/auth/challenge":
       return postChallenge(request, env);
     case "POST /api/auth/login":
@@ -68,7 +87,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
       const category = categoryOf(body.category ?? "human");
       if (category === null) return refuse(400, "no such category");
       if (body.board === "survival" && quest === "") return json({ scores: await gameScores(env, "survival", "", category, SCORES_LIMIT) });
-      if ((body.board === "quests" || body.board === "quests-hardcore") && QUEST.test(quest))
+      if ((body.board === "quests" || body.board === "quests-hardcore") && (QUEST.test(quest) || (body.board === "quests" && CUSTOM_QUEST_ID.test(quest))))
         return json({ scores: await gameScores(env, body.board, quest, category, SCORES_LIMIT) });
       return refuse(400, "no such board");
     }
@@ -81,10 +100,16 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     const limit = Math.min(100, Number(url.searchParams.get("limit")) || 100);
     return json(await boardView(env, "survival", "", category!, limit));
   }
-  if ((match = /^GET \/api\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(route)) && QUEST.test(match[2]!))
+  if ((match = /^GET \/api\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(route)) && (QUEST.test(match[2]!) || (match[1] === "quests" && CUSTOM_QUEST_ID.test(match[2]!))))
     return json(await boardView(env, match[1] as Board, match[2]!, category!, 100));
   if ((match = /^GET \/api\/quests\/(quests|quests-hardcore)\/([1-5])$/.exec(route)))
     return json(await questMenuView(env, match[1] as "quests" | "quests-hardcore", Number(match[2]), category!));
+  if (route === "GET /api/quests/custom")
+    return json(await customQuestsListView(env, category!));
+  if ((match = /^GET \/api\/q\/([0-9a-f]{12})$/.exec(route))) {
+    const quest = await customQuestDetailView(env, match[1]!, category!);
+    return quest ? json(quest) : refuse(404, "no such quest");
+  }
   const viewer = await sessionAccount(request, env);
   const role = await roleOf(env, viewer);
   if ((match = /^GET \/api\/players\/(\d+)$/.exec(route))) {
@@ -160,6 +185,16 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
       headers: {
         "content-type": "application/octet-stream",
         "content-disposition": `attachment; filename="${match[1]!.slice(0, 12)}.crd"`,
+        "cache-control": `public, max-age=${REPLAY_MAX_AGE_S}, must-revalidate`,
+      },
+    });
+  }
+  if ((match = /^GET \/q\/([0-9a-f]{12})\.bin$/.exec(route))) {
+    const bytes = await customQuestPortableBytes(env, match[1]!);
+    if (!bytes) return new Response("No such quest.", { status: 404 });
+    return new Response(bytes, {
+      headers: {
+        "content-type": "application/octet-stream",
         "cache-control": `public, max-age=${REPLAY_MAX_AGE_S}, must-revalidate`,
       },
     });
@@ -275,6 +310,18 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
   if (path === "/boards/survival") return titled(boardTitle("survival", ""));
   if ((match = /^\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(path)) && QUEST.test(match[2]!)) return titled(boardTitle(match[1] as Board, match[2]!));
   if ((match = /^\/(quests|quests-hardcore)\/([1-5])$/.exec(path))) return titled(`Quests ${["I", "II", "III", "IV", "V"][Number(match[2]) - 1]}`);
+  if (path === "/quests/custom") return titled("Custom Quests");
+  if ((match = /^\/q\/([0-9a-f]{12})$/.exec(path))) {
+    const quest = await customQuestDetailView(env, match[1]!, "human");
+    if (!quest) return titled(null);
+    const byline = quest.author ? ` by ${quest.author}` : "";
+    return {
+      title: `${quest.title}${byline}`,
+      description: `Play "${quest.title}"${byline} in the browser (${quest.definition.entries.length} spawn entries) and compete on its verified leaderboard.`,
+      image: { url: `${url.origin}/runs/${quest.first_run_id}.png`, width: CARD_WIDTH, height: CARD_HEIGHT },
+      player: { url: `${url.origin}/play/?quest=${quest.id}`, width: VIEW_W, height: VIEW_H },
+    };
+  }
   if ((match = /^\/players\/(\d+)$/.exec(path))) {
     const player = (await players(env, [Number(match[1])])).get(Number(match[1]));
     return titled(player ? playerLabel(player) : null);

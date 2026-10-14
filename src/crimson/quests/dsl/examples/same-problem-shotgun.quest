@@ -1,6 +1,7 @@
 quest "Same Problem, Different Weapon: Shotgun" version 1
 weapon shotgun
 terrain (4, 5, 4)
+fixed_weapon true
 
 # The encounter matches the Assault Rifle and Gauss Gun variants entry for entry.
 at 1s:

@@ -1,0 +1,139 @@
+# Crimsonland Custom Quest Language (`.quest`) — LLM Authoring Reference
+
+Give this file to any LLM and describe the encounter you want. The LLM should output a valid `.quest` recipe.
+
+## 1. Overview & Execution Model
+- A `.quest` recipe runs once at construction time and emits a finite table of native creature spawn instructions (`1..256` entries).
+- Arena coordinates are `0..1024` in both `x` and `y` (`center` is `(512, 512)`). Off-arena arrival coordinates may range from `-1024` to `2048` (`edge()` and `corner()` default to `64` units outside the arena).
+- Limits enforced by the compiler and verifier:
+  - `1..256` total spawn entries
+  - `1..384` copies per entry (`copies N`)
+  - At most `384` total copies sharing the exact same trigger millisecond
+  - At most `8192` total copies across the whole quest
+  - Trigger times in `0s..3600s` (`0..3600000` ms)
+- Scheduler rule: Each frame, the game spawns the first due entry in table order together with adjacent entries that share its exact timestamp. If the arena has been empty of active creatures for 3 seconds (after `1.7s` elapsed), the next remaining group spawns early.
+
+## 2. Header & Settings
+Every recipe starts with `quest "Title" version 1`, followed by optional settings before any statements:
+
+```text
+quest "Crosswind" version 1
+author "banteg"
+weapon shotgun
+terrain (2, 3, 2)
+order chronological
+fixed_weapon true
+no_bonuses [nuke, freeze]
+no_perks [poison_bullets, plaguebearer]
+no_weapons [ion_cannon, plasma_cannon]
+```
+
+- `author "Name"`: 1..31 printable ASCII characters (optional).
+- `weapon <name>`: Starting weapon (default `pistol`). Valid weapon names:
+  `pistol`, `assault_rifle`, `shotgun`, `sawed_off_shotgun`, `submachine_gun`, `gauss_gun`, `mean_minigun`, `flamethrower`, `plasma_rifle`, `multi_plasma`, `plasma_minigun`, `rocket_launcher`, `seeker_rockets`, `plasma_shotgun`, `blow_torch`, `hr_flamer`, `mini_rocket_swarmers`, `rocket_minigun`, `pulse_gun`, `jackhammer`, `ion_rifle`, `ion_minigun`, `ion_cannon`, `shrinkifier_5k`, `blade_gun`, `spider_plasma`, `evil_scythe`, `plasma_cannon`, `splitter_gun`, `gauss_shotgun`, `ion_shotgun`, `flameburst`, `raygun`.
+- `terrain (a, b, c)`: Three terrain texture slot IDs in `0..7` (default `(0, 1, 0)`). Classic pairs: `(0, 1, 0)`, `(2, 3, 2)`, `(4, 5, 4)`, `(6, 7, 6)`.
+- `order chronological | as-written`: `chronological` (default) sorts emitted entries by trigger time; `as-written` preserves emission order (useful when early-clear pulls should follow emission order rather than timestamp order).
+- `fixed_weapon true | false`: Locks the player to the starting weapon (disables `weapon` bonus drops, `random_weapon` and `alternate_weapon` perks, and all non-Pistol weapon drops).
+- `no_bonuses [...]`: Disable random bonus drops. Valid names:
+  `energizer`, `weapon`, `weapon_power_up`, `nuke`, `double_experience`, `shock_chain`, `fireblast`, `reflex_boost`, `shield`, `freeze`, `medikit`, `speed`, `fire_bullets`. (`points` cannot be disabled.)
+- `no_perks [...]`: Disable perk offers. Valid names include:
+  `bloody_mess`, `sharpshooter`, `fastloader`, `lean_mean_exp_machine`, `long_distance_runner`, `pyrokinetic`, `instant_winner`, `grim_deal`, `alternate_weapon`, `plaguebearer`, `evil_eyes`, `ammo_maniac`, `radioactive`, `fastshot`, `fatal_lottery`, `random_weapon`, `mr_melee`, `anxious_loader`, `final_revenge`, `telekinetic`, `perk_expert`, `unstoppable`, `regression_bullets`, `infernal_contract`, `poison_bullets`, `dodger`, `bonus_magnet`, `uranium_filled_bullets`, `doctor`, `monster_vision`, `hot_tempered`, `bonus_economist`, `thick_skinned`, `barrel_greaser`, `ammunition_within`, `veins_of_poison`, `toxic_avenger`, `regeneration`, `pyromaniac`, `ninja`, `highlander`, `jinxed`, `perk_master`, `reflex_boosted`, `greater_regeneration`, `breathing_room`, `death_clock`, `my_favourite_weapon`, `bandage`, `angry_reloader`, `ion_gun_master`, `stationary_reloader`, `man_bomb`, `fire_caugh`, `living_fortress`, `tough_reloader`, `lifeline_50_50`.
+- `no_weapons [...]`: Disable specific weapons (`assault_rifle`..`raygun`) from random weapon drops.
+
+## 3. Statements & Control Flow
+```text
+let sockets = ring(center, radius=320, count=8)
+var cue = 2s
+
+pattern wave_pair(side, n):
+    spawn spider.small_blue at edge_line(side, count=6 + n, spacing=36)
+    spawn spider.plasma at edge(opposite(side), outside=128) copies 2
+
+repeat 6 as i:
+    at cue:
+        wave_pair(["west", "east"][i % 2], i)
+    cue += 6s
+```
+- `let name = expr` (immutable), `var name = expr` (mutable, updated with `=`, `+=`, `-=`, `*=`, `/=`, `//=`, `%=`).
+- `at <time>:` sets the trigger time for enclosed spawns (`500ms`, `2s`, `2.5s`, or integer ms).
+- `spawn <template> at <point_or_points> [copies <int>] [heading <angle>]`:
+  - `<point_or_points>` can be a single point (`center`, `(256, 512)`, `edge("west")`) OR a list of points (`corners()`, `ring(center, 240, 8)`, `edge_line("north", 6, 48)`).
+  - `burst <template> at <point> copies <int>` and `place <template> on <points> [copies <int>]` are also supported as aliases.
+- `repeat N as i:`, `for x in items:`, `for (x, y) in items:`, `if cond:` / `elif cond:` / `else:`, `while cond:`, `break`, `pattern name(args):`.
+
+## 4. Built-in Constants & Geometry Helpers
+- Constants: `center` (`(512, 512)`), `arena_size` (`1024`), `pi`, `tau`.
+- Point & geometry helpers (accept `point(x, y)` or `(x, y)` tuples):
+  - `point(x, y)` or `(x, y)` — 2D coordinate. Points support `+`, `-`, and scalar `*` / `/`.
+  - `edge(side, outside=64, fraction=0.5)` — point outside `"north"`, `"south"`, `"east"`, or `"west"`.
+  - `opposite(side)` — opposite cardinal side (`"west"` <-> `"east"`, `"north"` <-> `"south"`).
+  - `edge_line(side, count, spacing, outside=64)` — centered line of `count` points along `side`.
+  - `corner(name, outside=64)` — `"northwest"`, `"northeast"`, `"southwest"`, or `"southeast"`.
+  - `corners(outside=64)` — all 4 corners in NW, NE, SW, SE order.
+  - `line(start, step, count)` — `count` points starting at `start` stepping by `step`.
+  - `ring(center, radius, count, start=0)` — `count` points evenly spaced around a circle.
+  - `arc(center, radius, start, sweep, count)` — `count` points along an arc (both endpoints included).
+  - `polar(center, radius, angle)` — `center + (cos(angle), sin(angle)) * radius`.
+  - `facing(point, target)` — heading angle from `point` toward `target`.
+  - `rotate(points, angle, around=center)` — rotate a list of points around `around`.
+- Math & seeded RNG helpers:
+  - `min(...)`, `max(...)`, `abs(x)`, `int(x)`, `float(x)`, `len(items)`, `range(...)`
+  - `rand()`, `rand_int(low, high)`, `choose(items)`, `shuffle(items)`
+
+## 5. Creature Templates
+- **Aliens (`alien.*`)**:
+  `alien.small_gray`, `alien.fast`, `alien.small_green`, `alien.green`, `alien.purple`, `alien.big_gray`, `alien.gray_fast`, `alien.boss`, `alien.cyan`, `alien.ghost`, `alien.bonus_carrier`, `alien.delayed`, `alien.flanker`, `alien.spawner_ring`, `alien.random`
+- **Spiders (`spider.*`)**:
+  `spider.small_blue`, `spider.plasma`, `spider.splitter`, `spider.boss`, `spider.red_boss`, `spider.white_fast`, `spider.small_brown`, `spider.ranged`, `spider.stop_and_go`, `spider.stop_and_go_weak`, `spider.flanker`, `spider.random`, `spider.random_red`, `spider.random_green`
+- **Lizards (`lizard.*`)**:
+  `lizard.gray`, `lizard.boss`, `lizard.flanker`, `lizard.random`
+- **Zombies (`zombie.*`)**:
+  `zombie.random`, `zombie.spawner_boss`, `zombie.small_white`, `zombie.brute`
+- **Nests / Spawners (`nest.*`)**:
+  `nest.alien`, `nest.alien_slow`, `nest.alien_weak`, `nest.spider`, `nest.plasma`, `nest.spider_weak`, `nest.lizard`, `nest.lizard_slow`
+- **Formations (`formation.*`)**:
+  `formation.alien_ring`, `formation.alien_ring_small`, `formation.alien_chain`, `formation.lizard_chain`, `formation.alien_grid`, `formation.alien_grid_green`, `formation.alien_grid_bronze`, `formation.lizard_grid`, `formation.spider_grid`
+
+## 6. Complete Examples
+
+### Example 1: Fixed-Weapon Arena Trial
+```text
+quest "Shotgun Trial: Split Decision" version 1
+author "banteg"
+weapon shotgun
+terrain (4, 5, 4)
+fixed_weapon true
+no_bonuses [nuke, freeze]
+
+repeat 5 as wave:
+    let side = ["west", "north", "east", "south"][wave % 4]
+    at 2s + wave * 10s:
+        spawn spider.splitter at [edge(side), edge(opposite(side))]
+    at 6s + wave * 10s:
+        spawn spider.small_blue at edge_line(side, count=6 + wave * 2, spacing=32)
+        spawn alien.fast at edge(opposite(side), outside=128) copies 2 + wave
+```
+
+### Example 2: Rotating Escape Gap
+```text
+quest "Closing Circle" version 1
+weapon plasma_rifle
+terrain (6, 7, 6)
+
+repeat 12 as wave:
+    let gap_start = wave * 30deg
+    at 2s + wave * 5s:
+        spawn alien.small_gray at arc(center, radius=480 - wave * 18, start=gap_start + 60deg, sweep=300deg, count=20)
+```
+
+## 7. Play & Publish Workflow
+```sh
+# 1. Playtest locally (runs under ranked rules and saves replay to ~/.crimson/replays/)
+uv run crimson --custom-quest my_quest.quest
+
+# 2. Validate & inspect compiled JSON plan
+uv run crimson quest build my_quest.quest
+
+# 3. Publish quest + verified clear replay to crimson.land
+uv run crimson quest publish my_quest.quest
+```

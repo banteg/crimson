@@ -24,20 +24,27 @@ def gate(monkeypatch: pytest.MonkeyPatch):
     return module
 
 
-@pytest.mark.parametrize("hardcore", (False, True))
-def test_a_custom_quest_stream_carries_the_table_its_run_plays(gate, hardcore: bool) -> None:
-    quest = build_custom_quest(files("crimson.quests.dsl").joinpath("stock", "4.7.quest").read_text())
+def test_a_custom_quest_stream_carries_the_table_and_restrictions_its_run_plays(gate) -> None:
+    quest = build_custom_quest(files("crimson.quests.dsl").joinpath("examples", "same-problem-shotgun.quest").read_text())
     replay = load_replay((ROOT / "tests/fixtures/replays/quest-1.1-completed.crd").read_bytes())
-    run = msgspec.structs.replace(replay.run, quest_level=None, custom_quest=quest, hardcore=hardcore)
+    run = msgspec.structs.replace(replay.run, quest_level=None, custom_quest=quest, hardcore=False)
     stream = gate.Stream("custom.rsi", gate.encode(msgspec.structs.replace(replay, run=run), None))
 
     assert stream.config[1:4] == (3, 0, 0)
     assert stream.ticks == replay.ticks
     spec = stream.run_spec()
     assert spec.quest_level is None and spec.custom_quest is not None
-    played = spec.custom_quest.entries(player_count=1, hardcore=hardcore)
-    assert played == quest.entries(player_count=1, hardcore=hardcore)
-    assert (spec.custom_quest.start_weapon_id, spec.custom_quest.terrain_slots) == (
+    assert spec.custom_quest.entries == quest.entries
+    assert (
+        spec.custom_quest.start_weapon_id,
+        spec.custom_quest.terrain_slots,
+        spec.custom_quest.no_bonuses,
+        spec.custom_quest.no_perks,
+        spec.custom_quest.no_weapons,
+    ) == (
         quest.start_weapon_id,
         quest.terrain_slots,
+        quest.no_bonuses,
+        quest.no_perks,
+        quest.no_weapons,
     )

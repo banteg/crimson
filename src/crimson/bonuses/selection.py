@@ -28,7 +28,7 @@ def _bonus_pick_suppressed(
     bonus_id: BonusId,
     has_fire_bullets_drop: bool,
 ) -> bool:
-    if not _bonus_enabled(bonus_id):
+    if not _bonus_enabled(bonus_id) or not state.bonus_available[int(bonus_id)]:
         return True
     if state.shock_chain_links_left > 0 and bonus_id == BonusId.SHOCK_CHAIN:
         return True

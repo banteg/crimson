@@ -42,11 +42,12 @@ struct PortableSpawn {
 };
 struct PortableQuest {
   uint32_t weapon_id, terrain[3], count;
+  uint32_t disable_bonuses, disable_perks[2], disable_weapons[2];
   PortableSpawn entries[256];
 };
 static_assert(sizeof(PortableConfig) == 260);
 static_assert(sizeof(PortableSpawn) == 24);
-static_assert(sizeof(PortableQuest) == 6164);
+static_assert(sizeof(PortableQuest) == 6184);
 static_assert(sizeof(PortableProbe) == 108);
 static_assert(sizeof(PortableBake) == 44);
 static_assert(sizeof(PortableInput) == 20);

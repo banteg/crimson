@@ -12,12 +12,13 @@ import { type Replay, type RunResult, tickControls } from "./replay";
 import { type Signals, SignalMeter } from "./signals";
 import { PROBE_BYTES, TimelineRecorder } from "./timeline";
 import { BAKES_BYTES } from "./ground";
-import { CONFIG_BYTES, TICK_BYTES } from "./transport";
+import { CONFIG_BYTES, QUEST_BYTES, TICK_BYTES } from "./transport";
 
 interface Core {
   memory: WebAssembly.Memory;
   _initialize(): void;
   portable_config(): number;
+  portable_quest(): number;
   portable_input(): number;
   portable_commands(): number;
   portable_output(): number;
@@ -84,7 +85,10 @@ function simulate(replay: Replay, transport: Uint8Array, bake?: (bakes: DataView
   const view = new DataView(transport.buffer, transport.byteOffset, transport.byteLength);
   const meter = new SignalMeter();
   const refused = (reason: string): Verdict => ({ ok: false, reason, signals: meter.finish() });
+  const custom = replay.run.custom_quest !== null;
   new Uint8Array(c.memory.buffer, c.portable_config(), CONFIG_BYTES).set(transport.subarray(0, CONFIG_BYTES));
+  if (custom)
+    new Uint8Array(c.memory.buffer, c.portable_quest(), QUEST_BYTES).set(transport.subarray(CONFIG_BYTES, CONFIG_BYTES + QUEST_BYTES));
   if (!c.portable_init(...([0, 4, 8, 12].map((at) => view.getUint32(at, true)) as [number, number, number, number])))
     return refused("the core refused the run's settings");
 
@@ -92,7 +96,7 @@ function simulate(replay: Replay, transport: Uint8Array, bake?: (bakes: DataView
   monitor.updateCamera(c);
   const recorder = new TimelineRecorder(replay.run.seed);
   const nearest = (x: number, y: number) => c.portable_nearest_creature(x, y);
-  let at = CONFIG_BYTES;
+  let at = CONFIG_BYTES + (custom ? QUEST_BYTES : 0);
   for (let tick = 0; tick < replay.ticks.length; tick++) {
     const input = replay.ticks.input(tick, 0);
     const player = { x: c.portable_player_x(), y: c.portable_player_y(), alive: c.portable_player_health() > 0 };

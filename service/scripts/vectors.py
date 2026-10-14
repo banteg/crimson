@@ -321,23 +321,60 @@ def run_terrain_vectors() -> list[dict]:
     return vectors
 
 
-def custom_quest_payload() -> str:
-    """A valid replay of a custom quest, which the Python codec reads and the service does not rank."""
+def custom_quest_payload() -> dict[str, object]:
+    """A valid ranked custom quest replay that completes and verifies, plus its source, digest, and transport digest."""
     from crimson.quests.dsl import build_custom_quest
-    from crimson.quests.level import QuestLevel
 
-    source = (ROOT / "src/crimson/quests/dsl/examples/crosswind.quest").read_text(encoding="utf-8")
-    base = _base_replay()
-    run = msgspec.structs.replace(
-        ranked_run_spec(GameMode.QUESTS, seed=0x1234ABCD, quest_level=QuestLevel(1, 1)),
-        quest_level=None,
-        custom_quest=build_custom_quest(source),
+    source = (
+        'quest "Quick Clear" version 1\n'
+        'author "banteg"\n'
+        'weapon shotgun\n'
+        'terrain (2, 3, 2)\n'
+        'fixed_weapon true\n'
+        'at 500ms:\n'
+        '    spawn alien.small_gray at (512, 420)\n'
     )
-    result = msgspec.structs.replace(base.result, outcome=RunOutcome.INCOMPLETE)
-    payload = encode_replay_payload(msgspec.structs.replace(base, run=run, result=result))
-    assert decode_replay_payload(payload).run == run
-    return base64.b64encode(payload).decode("ascii")
+    quest = build_custom_quest(source)
+    run = ranked_run_spec(GameMode.QUESTS, seed=0x1234ABCD, custom_quest=quest)
+    flags = 1 | (1 << 8) | (2 << 9) | (1 << 12)
+    tick = ReplayTick(inputs=[(0.0, 0.0, 512.0, 420.0, flags)])
+    provisional = RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, (PlayerRunResult(0, 0.0, 1),))
 
+    def build_replay(ticks: list[ReplayTick], result: RunResult) -> Replay:
+        return Replay(
+            REPLAY_FORMAT_VERSION,
+            current_replay_game_version(),
+            REPLAY_RULES,
+            current_recorder(),
+            None,
+            run,
+            result,
+            ticks,
+        )
+
+    long = build_replay([tick] * 600, provisional)
+    driver = PlaybackDriver(long, version_mismatch_action=None)
+    end = 0
+    try:
+        for end in range(len(long.ticks)):
+            driver.step_tick(end)
+    except ReplayRunnerError:
+        pass
+    ticks = long.ticks[: end + 1]
+    result = PlaybackDriver(build_replay(ticks, provisional), version_mismatch_action=None).run()
+    recorded = build_replay(ticks, result)
+    assert result.outcome == RunOutcome.QUEST_COMPLETED
+    assert not unranked_reasons(recorded.run) and not outcome_reasons(recorded.run, result)
+    payload = encode_replay_payload(recorded)
+    assert decode_replay_payload(payload).run == run
+    return {
+        "payload": base64.b64encode(payload).decode("ascii"),
+        "file": base64.b64encode(dump_replay(recorded)).decode("ascii"),
+        "source": source,
+        "digest": quest.digest(),
+        "score": int(result.quest_final_ms or 0),
+        "transport_sha256": _sha(_core_transport()(recorded, None)),
+    }
 
 def main() -> None:
     base, corrupted = corrupted_vectors()

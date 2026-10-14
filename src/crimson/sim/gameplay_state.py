@@ -68,6 +68,7 @@ class GameplayState(msgspec.Struct):
     tutorial: TutorialState = msgspec.field(default_factory=TutorialState)
     tutorial_overlay: TutorialOverlayState = msgspec.field(default_factory=TutorialOverlayState)
     typo: TypoState = msgspec.field(default_factory=TypoState)
+    bonus_available: list[bool] = msgspec.field(default_factory=lambda: [False, *([True] * 14)])
     perk_available: list[bool] = msgspec.field(default_factory=lambda: [False] * PERK_COUNT_SIZE)
     weapon_available: list[bool] = msgspec.field(default_factory=lambda: [False] * WEAPON_COUNT_SIZE)
     friendly_fire_enabled: bool = False
