@@ -37,8 +37,8 @@ RANKED_PAD_AIM_DIST_MUL = PAD_AIM_DIST_MUL_DEFAULT
 _PAD_AIM_REACH = RANKED_PAD_AIM_DIST_MUL + 42.0
 # Aim points are stored as f32; this absorbs their rounding, not a real reach.
 _AIM_SLACK = 0.01
-# Generous margin around the 1024x768 view: covers Nuke screen shake (up to 65) and a capped 100 ms frame of movement.
-_VIEW_SLACK = 128.0
+# Margin around the 1024x768 view: covers Nuke screen shake (up to 65) and a capped 100 ms frame of movement (up to 21).
+_VIEW_SLACK = 96.0
 RANKED_DETAIL_PRESET = 5
 HUMAN_MOVEMENT = frozenset({
     MovementControlType.RELATIVE,
