@@ -2,6 +2,14 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.17.2
+
+### For players
+
+- Custom quest clears and ranked runs no longer get refused with "aim outside the 1024x768 view". A run now starts with the camera on the player, and the leaderboard tolerates a Nuke's screen shake and a slow frame with the cursor at the screen's edge.
+- After you die in a single-player run, the camera stays on your body as it does in the original, instead of drifting with the screen shake.
+- Custom quests can no longer use the ranged spider (`spider.ranged`, template `0x37`). The original never gives it a projectile type, so it crashed the game or fired garbage.
+
 ## 0.17.1
 
 ### For players
