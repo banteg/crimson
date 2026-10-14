@@ -20,31 +20,13 @@ Notes from assets:
 from __future__ import annotations
 
 import io
+import struct
 import zlib
-from pathlib import Path
 
-from construct import Bytes, Int8ul, Int32ul, Struct, this
 from PIL import Image
 
-JAZ_HEADER = Struct(
-    "method" / Int8ul,
-    "comp_size" / Int32ul,
-    "raw_size" / Int32ul,
-)
-
-JAZ_FILE = Struct(
-    "header" / JAZ_HEADER,
-    "compressed" / Bytes(this.header.comp_size),
-)
-
-
-def jaz_payload(raw_size: int) -> Struct:
-    return Struct(
-        "jpeg_len" / Int32ul,
-        "jpeg" / Bytes(this.jpeg_len),
-        "alpha_rle" / Bytes(raw_size - 4 - this.jpeg_len),
-    )
-
+_JAZ_HEADER = struct.Struct("<BII")
+_U32 = struct.Struct("<I")
 
 class JazImage:
     def __init__(self, width: int, height: int, jpeg: bytes, alpha: bytes) -> None:
@@ -83,29 +65,36 @@ def decode_alpha_rle(data: bytes, expected: int) -> bytes:
     return bytes(out)
 
 
-def _parse_jaz_payload(data: bytes):
-    parsed = JAZ_FILE.parse(data)
-    header = parsed.header
-    if header.method != 1:
-        raise ValueError(f"unsupported compression method: {header.method}")
-    raw = zlib.decompress(parsed.compressed)
-    if len(raw) != header.raw_size:
-        raise ValueError(f"raw size mismatch: {len(raw)} != {header.raw_size}")
-    return jaz_payload(header.raw_size).parse(raw)
+def _parse_jaz_payload(data: bytes) -> tuple[bytes, bytes]:
+    if len(data) < _JAZ_HEADER.size:
+        raise ValueError("truncated JAZ header")
+    method, comp_size, raw_size = _JAZ_HEADER.unpack_from(data, 0)
+    if method != 1:
+        raise ValueError(f"unsupported compression method: {method}")
+    comp_end = _JAZ_HEADER.size + comp_size
+    if len(data) < comp_end:
+        raise ValueError("truncated JAZ compressed stream")
+    raw = zlib.decompress(data[_JAZ_HEADER.size : comp_end])
+    if len(raw) != raw_size:
+        raise ValueError(f"raw size mismatch: {len(raw)} != {raw_size}")
+    if len(raw) < _U32.size:
+        raise ValueError("truncated JAZ payload")
+    (jpeg_len,) = _U32.unpack_from(raw, 0)
+    jpeg_end = _U32.size + jpeg_len
+    if jpeg_end > len(raw):
+        raise ValueError("truncated JAZ JPEG stream")
+    return raw[_U32.size : jpeg_end], raw[jpeg_end:]
 
 
 def jaz_size(data: bytes) -> tuple[int, int]:
     """Return (width, height) from the embedded JPEG header without decoding pixels."""
-    return Image.open(io.BytesIO(_parse_jaz_payload(data).jpeg)).size
+    jpeg, _alpha_rle = _parse_jaz_payload(data)
+    return Image.open(io.BytesIO(jpeg)).size
 
 
 def decode_jaz_bytes(data: bytes) -> JazImage:
-    payload = _parse_jaz_payload(data)
-    img = Image.open(io.BytesIO(payload.jpeg))
+    jpeg, alpha_rle = _parse_jaz_payload(data)
+    img = Image.open(io.BytesIO(jpeg))
     width, height = img.size
-    alpha = decode_alpha_rle(payload.alpha_rle, width * height)
-    return JazImage(width, height, payload.jpeg, alpha)
-
-
-def decode_jaz(path: str | Path) -> JazImage:
-    return decode_jaz_bytes(Path(path).read_bytes())
+    alpha = decode_alpha_rle(alpha_rle, width * height)
+    return JazImage(width, height, jpeg, alpha)

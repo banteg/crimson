@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import struct
 from collections import defaultdict
 from collections.abc import Callable, Sequence
 from enum import IntEnum
@@ -7,7 +8,6 @@ from pathlib import Path
 from typing import Any, NamedTuple, cast
 
 import msgspec
-from construct import Array, Byte, Bytes, Float32l, Int32sl, Struct
 
 from crimson.aim_schemes import AimScheme
 from crimson.game_modes import GameMode
@@ -33,77 +33,138 @@ DEFAULT_RELOAD_CODE = 0x102
 RESERVED_KEYBIND_SLOT_COUNT = 2
 PADDING_KEYBIND_SLOT_COUNT = 3
 
-PLAYER_BIND_BLOCK_STRUCT = Struct(
-    "move_forward" / Int32sl,
-    "move_backward" / Int32sl,
-    "turn_left" / Int32sl,
-    "turn_right" / Int32sl,
-    "fire" / Int32sl,
-    "reserved_keys" / Array(RESERVED_KEYBIND_SLOT_COUNT, Int32sl),
-    "aim_left" / Int32sl,
-    "aim_right" / Int32sl,
-    "axis_aim_y" / Int32sl,
-    "axis_aim_x" / Int32sl,
-    "axis_move_y" / Int32sl,
-    "axis_move_x" / Int32sl,
-    "padding" / Array(PADDING_KEYBIND_SLOT_COUNT, Int32sl),
+class _Subcon:
+    def __init__(
+        self, name: str, fmt: str, count: int | None = None, *, nested: _StructSpec | None = None,
+    ) -> None:
+        self.name = name
+        self.fmt = fmt
+        self.count = count
+        self.nested = nested
+        if nested is None:
+            self.struct: struct.Struct | None = struct.Struct(f"<{count or ''}{fmt}")
+            self.size = self.struct.size
+        else:
+            self.struct = None
+            self.size = nested.size * (count or 1)
+
+
+class _StructSpec:
+    def __init__(self, *subcons: _Subcon) -> None:
+        self.subcons = subcons
+        self.size = sum(sub.size for sub in subcons)
+
+    def parse(self, data: bytes) -> dict[str, Any]:
+        if len(data) != self.size:
+            raise ValueError(f"expected {self.size} bytes, got {len(data)}")
+        out: dict[str, Any] = {}
+        offset = 0
+        for sub in self.subcons:
+            if sub.nested is not None:
+                step = sub.nested.size
+                out[sub.name] = [
+                    sub.nested.parse(data[offset + i * step : offset + (i + 1) * step])
+                    for i in range(sub.count or 1)
+                ]
+            elif sub.count is not None and sub.fmt != "s":
+                assert sub.struct is not None
+                out[sub.name] = list(sub.struct.unpack_from(data, offset))
+            else:
+                assert sub.struct is not None
+                out[sub.name] = sub.struct.unpack_from(data, offset)[0]
+            offset += sub.size
+        return out
+
+    def build(self, data: dict[str, Any]) -> bytes:
+        buf = bytearray(self.size)
+        offset = 0
+        for sub in self.subcons:
+            val = data[sub.name]
+            if sub.nested is not None:
+                step = sub.nested.size
+                for i, item in enumerate(val):
+                    buf[offset + i * step : offset + (i + 1) * step] = sub.nested.build(item)
+            elif sub.count is not None and sub.fmt != "s":
+                assert sub.struct is not None
+                sub.struct.pack_into(buf, offset, *val)
+            else:
+                assert sub.struct is not None
+                sub.struct.pack_into(buf, offset, val)
+            offset += sub.size
+        return bytes(buf)
+
+
+PLAYER_BIND_BLOCK_STRUCT = _StructSpec(
+    _Subcon("move_forward", "i"),
+    _Subcon("move_backward", "i"),
+    _Subcon("turn_left", "i"),
+    _Subcon("turn_right", "i"),
+    _Subcon("fire", "i"),
+    _Subcon("reserved_keys", "i", RESERVED_KEYBIND_SLOT_COUNT),
+    _Subcon("aim_left", "i"),
+    _Subcon("aim_right", "i"),
+    _Subcon("axis_aim_y", "i"),
+    _Subcon("axis_aim_x", "i"),
+    _Subcon("axis_move_y", "i"),
+    _Subcon("axis_move_x", "i"),
+    _Subcon("padding", "i", PADDING_KEYBIND_SLOT_COUNT),
 )
 
-CRIMSON_CFG_STRUCT = Struct(
-    "sound_disabled" / Byte,
-    "music_disabled" / Byte,
-    "highscore_date_mode" / Byte,
-    "highscore_duplicate_mode" / Byte,
-    "direction_arrow_flags" / Array(CONFIG_PLAYER_SLOT_COUNT, Byte),
-    "shadows_enabled" / Byte,
-    "sharp_ground_enabled" / Byte,
-    "flame_glow_enabled" / Byte,
-    "smoke_enabled" / Byte,
-    "padding_12" / Bytes(2),
-    "player_count" / Int32sl,
-    "game_mode" / Int32sl,
-    "movement_schemes" / Array(CONFIG_PLAYER_SLOT_COUNT, Int32sl),
-    "aim_schemes" / Array(CONFIG_PLAYER_SLOT_COUNT, Int32sl),
-    "config_for" / Int32sl,
-    "texture_scale" / Float32l,
-    "player_name_buf" / Bytes(12),
-    "selected_saved_name_slot" / Int32sl,
-    "saved_name_count" / Int32sl,
-    "saved_name_order" / Array(SAVED_NAME_SLOT_COUNT, Int32sl),
-    "saved_names" / Bytes(SAVED_NAMES_BLOB_SIZE),
-    "player_name" / Bytes(PLAYER_NAME_SIZE),
-    "player_name_len" / Int32sl,
-    "reserved_1a4" / Int32sl,
-    "reserved_1a8" / Int32sl,
-    "reserved_1ac" / Int32sl,
-    "aim_pov_right" / Int32sl,
-    "aim_pov_left" / Int32sl,
-    "screen_bpp" / Int32sl,
-    "screen_width" / Int32sl,
-    "screen_height" / Int32sl,
-    "windowed_flag" / Byte,
-    "windowed_padding" / Bytes(3),
-    "input_config" / Array(CONFIG_PLAYER_SLOT_COUNT, PLAYER_BIND_BLOCK_STRUCT),
-    "hardcore_flag" / Byte,
-    "ui_info_texts" / Byte,
-    "hardcore_info_padding" / Bytes(2),
-    "level_up_count" / Int32sl,
-    "ten_tons_logging_completed" / Int32sl,
-    "unique_id_1" / Int32sl,
-    "unique_id_2" / Int32sl,
-    "reserved_identity_word" / Int32sl,
-    "sound_freq_adjustment_enabled" / Byte,
-    "sound_frequency_padding" / Bytes(3),
-    "sfx_volume" / Float32l,
-    "music_volume" / Float32l,
-    "violence_disabled" / Byte,
-    "show_online_scores" / Byte,
-    "safe_mode_backend_enabled" / Byte,
-    "detail_padding" / Byte,
-    "detail_preset" / Int32sl,
-    "mouse_sensitivity" / Float32l,
-    "keybind_pick_perk" / Int32sl,
-    "keybind_reload" / Int32sl,
+CRIMSON_CFG_STRUCT = _StructSpec(
+    _Subcon("sound_disabled", "B"),
+    _Subcon("music_disabled", "B"),
+    _Subcon("highscore_date_mode", "B"),
+    _Subcon("highscore_duplicate_mode", "B"),
+    _Subcon("direction_arrow_flags", "B", CONFIG_PLAYER_SLOT_COUNT),
+    _Subcon("shadows_enabled", "B"),
+    _Subcon("sharp_ground_enabled", "B"),
+    _Subcon("flame_glow_enabled", "B"),
+    _Subcon("smoke_enabled", "B"),
+    _Subcon("padding_12", "s", 2),
+    _Subcon("player_count", "i"),
+    _Subcon("game_mode", "i"),
+    _Subcon("movement_schemes", "i", CONFIG_PLAYER_SLOT_COUNT),
+    _Subcon("aim_schemes", "i", CONFIG_PLAYER_SLOT_COUNT),
+    _Subcon("config_for", "i"),
+    _Subcon("texture_scale", "f"),
+    _Subcon("player_name_buf", "s", 12),
+    _Subcon("selected_saved_name_slot", "i"),
+    _Subcon("saved_name_count", "i"),
+    _Subcon("saved_name_order", "i", SAVED_NAME_SLOT_COUNT),
+    _Subcon("saved_names", "s", SAVED_NAMES_BLOB_SIZE),
+    _Subcon("player_name", "s", PLAYER_NAME_SIZE),
+    _Subcon("player_name_len", "i"),
+    _Subcon("reserved_1a4", "i"),
+    _Subcon("reserved_1a8", "i"),
+    _Subcon("reserved_1ac", "i"),
+    _Subcon("aim_pov_right", "i"),
+    _Subcon("aim_pov_left", "i"),
+    _Subcon("screen_bpp", "i"),
+    _Subcon("screen_width", "i"),
+    _Subcon("screen_height", "i"),
+    _Subcon("windowed_flag", "B"),
+    _Subcon("windowed_padding", "s", 3),
+    _Subcon("input_config", "", CONFIG_PLAYER_SLOT_COUNT, nested=PLAYER_BIND_BLOCK_STRUCT),
+    _Subcon("hardcore_flag", "B"),
+    _Subcon("ui_info_texts", "B"),
+    _Subcon("hardcore_info_padding", "s", 2),
+    _Subcon("level_up_count", "i"),
+    _Subcon("ten_tons_logging_completed", "i"),
+    _Subcon("unique_id_1", "i"),
+    _Subcon("unique_id_2", "i"),
+    _Subcon("reserved_identity_word", "i"),
+    _Subcon("sound_freq_adjustment_enabled", "B"),
+    _Subcon("sound_frequency_padding", "s", 3),
+    _Subcon("sfx_volume", "f"),
+    _Subcon("music_volume", "f"),
+    _Subcon("violence_disabled", "B"),
+    _Subcon("show_online_scores", "B"),
+    _Subcon("safe_mode_backend_enabled", "B"),
+    _Subcon("detail_padding", "B"),
+    _Subcon("detail_preset", "i"),
+    _Subcon("mouse_sensitivity", "f"),
+    _Subcon("keybind_pick_perk", "i"),
+    _Subcon("keybind_reload", "i"),
 )
 
 DEFAULT_PROFILE_NAME = "10tons"

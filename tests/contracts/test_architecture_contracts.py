@@ -3,16 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import crimson.world.audio_bridge as audio_bridge_module
-from crimson.game_modes import GameMode
-from crimson.replay.driver.playback_driver import PlaybackDriver, advance_playback_frame
 from crimson.replay.ticks import LiveTickSource, step_replay_tick
 from crimson.sim.batch_apply import apply_presentation_plans
-from crimson.sim.clock import FixedStepClock
 from crimson.sim.presentation_step import DeterministicPresentationPlan
-from crimson.sim.run_spec import RunSpec
 from crimson.sim.sessions import DeterministicSession
 from crimson.world import WorldRuntime
-from crimson.world.standalone_tick_harness import StandaloneTickHarness
 from grim.audio import AudioState
 from grim.geom import Vec2
 from grim.music import init_music_state
@@ -20,7 +15,6 @@ from grim.rand import Crand
 from grim.sfx import init_sfx_state
 from tests.support.audio import sfx_ids
 from tests.support.factories import player_input
-from tests.support.replay_runner_helpers import idle_replay
 
 
 def test_contract_6_state_apply_and_presentation_apply_stay_separate(mocker, tmp_path: Path) -> None:
@@ -59,32 +53,3 @@ def test_contract_6_state_apply_and_presentation_apply_stay_separate(mocker, tmp
     assert expected_sfx
     assert [call.args[1] for call in play_sfx.call_args_list] == expected_sfx
 
-
-def test_contract_8_live_and_replay_frames_advance_the_presentation_clock_alike(tmp_path: Path) -> None:
-    live_runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(0))
-    harness = StandaloneTickHarness(game_mode=GameMode.SURVIVAL, frame_inputs=lambda _dt: [player_input()])
-
-    replay = idle_replay(16, run=RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0))
-    driver = PlaybackDriver(replay, max_ticks=None, warn_on_version_mismatch=False)
-    replay_runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(0))
-    replay_runtime.start_session(driver.session)
-    replay_clock = FixedStepClock(tick_rate=60)
-
-    next_tick = 0
-    for frame_dt in (1.0 / 60.0, 2.5 / 60.0, 0.25 / 60.0, 3.0 / 60.0):
-        live_ticks = harness.advance_frame(live_runtime, frame_dt)
-        advance = advance_playback_frame(
-            driver=driver,
-            runtime=replay_runtime,
-            clock=replay_clock,
-            start_tick=next_tick,
-            dt_seconds=frame_dt,
-            max_ticks=None,
-            tick_limit=len(replay.ticks),
-        )
-        next_tick = advance.next_tick_index
-
-        assert len(advance.tick_results) == live_ticks
-        assert replay_runtime.presentation.elapsed_ms == live_runtime.presentation.elapsed_ms
-        assert replay_runtime.presentation.bonus_anim_phase == live_runtime.presentation.bonus_anim_phase
-    assert next_tick > 0

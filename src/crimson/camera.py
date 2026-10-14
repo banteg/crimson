@@ -40,18 +40,6 @@ def camera_update_for_players(players: Sequence[PlayerState], shake: Vec2) -> Ca
     return CameraUpdate(focus=focus, shake=shake)
 
 
-def camera_shake_start(state: GameplayState, *, pulses: int, timer: float) -> None:
-    """Start a camera shake sequence.
-
-    Mirrors the nuke path in `bonus_apply`, which sets:
-      - `camera_shake_pulses = 0x14`
-      - `camera_shake_timer = 0.2`
-    """
-
-    state.camera_shake_pulses = int(pulses)
-    state.camera_shake_timer = f32(timer)
-
-
 def camera_shake_update(state: GameplayState, dt: float) -> None:
     """Update camera shake offsets and timers.
 

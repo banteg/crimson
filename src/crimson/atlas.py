@@ -17,8 +17,6 @@ compute UVs or crop subimages.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-
 from PIL import Image
 
 GRID_SIZE_BY_CODE = {
@@ -83,13 +81,3 @@ def rect_for_index(width: int, height: int, grid: int, index: int) -> tuple[int,
 def slice_index(image: Image.Image, grid: int, index: int) -> Image.Image:
     return image.crop(rect_for_index(image.width, image.height, grid, index))
 
-
-def slice_grid(image: Image.Image, grid: int) -> list[Image.Image]:
-    frames = []
-    for idx in range(grid * grid):
-        frames.append(slice_index(image, grid, idx))
-    return frames
-
-
-def slice_by_indices(image: Image.Image, grid: int, indices: Iterable[int]) -> list[Image.Image]:
-    return [slice_index(image, grid, idx) for idx in indices]

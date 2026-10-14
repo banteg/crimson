@@ -700,16 +700,6 @@ def _input_primary_any_down(*, fire_codes: Sequence[int], player_count: int) -> 
     return False
 
 
-def input_primary_is_down(*, fire_codes: Sequence[int], player_count: int) -> bool:
-    down = _input_primary_any_down(fire_codes=fire_codes, player_count=player_count)
-    _PRESSED_STATE.mark_down(
-        player_index=_PRIMARY_EDGE_SENTINEL_PLAYER,
-        key_code=_PRIMARY_EDGE_SENTINEL_KEY,
-        is_down=down,
-    )
-    return bool(down)
-
-
 def input_primary_just_pressed(*, fire_codes: Sequence[int], player_count: int) -> bool:
     down = _input_primary_any_down(fire_codes=fire_codes, player_count=player_count)
     return _PRESSED_STATE.is_pressed(

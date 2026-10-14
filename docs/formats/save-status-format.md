@@ -6,8 +6,8 @@ tags:
 # Save/status file (game.cfg)
 
 Crimsonland stores quest progress and several counters in `game.cfg` (the “status” file). The
-format is small but obfuscated and checksummed. This page documents the recovered layout and
-links the editor script in `scripts/save_status.py`.
+format is small but obfuscated and checksummed. This page documents the recovered layout
+implemented in `src/crimson/persistence/save_status.py`.
 
 ## File layout
 
@@ -80,25 +80,6 @@ Offsets are relative to the decoded payload (`game_status_blob`).
 | `0x250` | u32 | `mode_play_other` | Incremented for other modes (e.g. tutorial). |
 | `0x254` | u32 | `play_time_ms` | Native `playTime` counter in milliseconds; used by statistics/demo limits and synchronized with the registry value named `sequence`. |
 | `0x258` | u32[4] | `reserved_seed_words` | Four constructor seeds (`rand() % 345354345`), named `reserved1..reserved4` in the recovered source header. |
-
-## Editor tool
-
-Use the helper script to inspect and edit `game.cfg`:
-
-```
-uv run scripts/save_status.py info game_bins/crimsonland/1.9.93-gog/game.cfg
-uv run scripts/save_status.py set game.cfg --set quest_unlock_index=30 --set weapon_usage.5=12
-```
-
-Supported edits:
-
-- `quest_unlock_index`, `quest_unlock_index_hardcore`, `play_time_ms`
-- `weapon_usage.<slot>` (0–52; status slot, not full weapon-id domain)
-- `quest_play.<index>` (0–90)
-- `mode_play.<survival|rush|typo|other>`
-
-The script validates the checksum, applies updates to the decoded blob, and rewrites the
-obfuscated file with a fresh checksum.
 
 ## Port counter updates
 

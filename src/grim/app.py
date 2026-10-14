@@ -179,26 +179,3 @@ def run_view(
             render_pipeline.close()
             rl.close_window()
 
-
-def run_window(
-    width: int = 1280,
-    height: int = 720,
-    title: str = "Crimsonland",
-    fps: int = 60,
-) -> None:
-    """Open a minimal Raylib window for the reference implementation."""
-
-    class _EmptyView:
-        def open(self) -> None:
-            return None
-
-        def update(self, dt: float) -> None:  # noqa: ARG002 - View protocol signature
-            return None
-
-        def draw(self) -> None:
-            rl.clear_background(rl.BLACK)
-
-        def close(self) -> None:
-            return None
-
-    run_view(_EmptyView(), width=width, height=height, title=title, fps=fps)

@@ -2,11 +2,11 @@
 from __future__ import annotations
 
 import argparse
+import struct
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
-from construct import ConstructError
 from PIL import Image, UnidentifiedImageError
 
 from crimson.atlas import rect_for_index
@@ -232,7 +232,7 @@ def _hybrid_replacement(entry_name: str, original_payload: bytes, replacement: P
             return None
         original = original.convert("RGBA")
         replacement_image = Image.open(replacement).convert("RGBA")
-    except (ConstructError, OSError, UnidentifiedImageError, ValueError):
+    except (OSError, UnidentifiedImageError, ValueError, struct.error):
         return None
     if original.size != replacement_image.size:
         return None
@@ -278,7 +278,7 @@ def _replacement_degrades_alpha(entry_name: str, original_payload: bytes, replac
 
         original_alpha = _alpha_stats(original)
         replacement_alpha = _alpha_stats(Image.open(replacement))
-    except (ConstructError, OSError, UnidentifiedImageError, ValueError):
+    except (OSError, UnidentifiedImageError, ValueError, struct.error):
         return False
     return (
         replacement_alpha.size != original_alpha.size
@@ -301,7 +301,7 @@ def _replacement_degrades_visual(entry_name: str, original_payload: bytes, repla
         if original is None:
             return False
         return _replacement_differs_visibly(original, Image.open(replacement))
-    except (ConstructError, OSError, UnidentifiedImageError, ValueError):
+    except (OSError, UnidentifiedImageError, ValueError, struct.error):
         return False
 
 

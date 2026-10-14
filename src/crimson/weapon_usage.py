@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Annotated, Any, cast
+from typing import Annotated
 
 import msgspec
 
@@ -30,14 +30,3 @@ def weapon_usage_slot_for_weapon_id(weapon_id: int) -> int | None:
         return weapon_id
     return None
 
-
-def normalize_weapon_usage_counts(values: object) -> WeaponUsageCounts:
-    if not isinstance(values, (list, tuple)):
-        return ZERO_WEAPON_USAGE_COUNTS
-    normalized: list[int] = [0] * WEAPON_USAGE_SLOT_COUNT
-    for idx, value in enumerate(values[:WEAPON_USAGE_SLOT_COUNT]):
-        try:
-            normalized[idx] = int(cast(Any, value)) & 0xFFFFFFFF
-        except (TypeError, ValueError, OverflowError):
-            normalized[idx] = 0
-    return tuple(normalized)

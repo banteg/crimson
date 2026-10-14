@@ -104,9 +104,6 @@ native-link image="grim.dll" *args:
 native-verify *args:
     uv run crimson native verify {{args}}
 
-save-status *args:
-    uv run scripts/save_status.py {{args}}
-
 spawn-templates:
     uv run scripts/gen_spawn_templates.py
 

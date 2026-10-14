@@ -13,14 +13,12 @@ classifiers = [
 readme = { file = "pypi.md", content-type = "text/markdown" }
 requires-python = ">=3.13"
 dependencies = [
-    "construct>=2.10.70",
     "lark>=1.3.1",
     "msgspec>=0.20.0",
     "pillow>=12.1.0",
     "platformdirs>=4.5.1",
     "pynacl>=1.6.2",
     "raylib>=6.0.1.0",
-    "structlog>=25.1.0",
     "tqdm>=4.67.3",
     "typer>=0.21.1",
     "zstandard>=0.25.0",
@@ -33,12 +31,6 @@ Repository = "https://github.com/banteg/crimson"
 [project.scripts]
 crimsonland = "crimson.cli:main"
 crimson = "crimson.cli:main"
-
-[project.optional-dependencies]
-charts = [
-    "altair>=6.0.0",
-    "vl-convert-python>=1.9.0.post1",
-]
 
 [build-system]
 requires = ["uv_build>=0.9.18,<0.10.0"]

@@ -11,36 +11,34 @@ File layout:
 
 from __future__ import annotations
 
+import struct
 from collections.abc import Iterable, Iterator
-from io import BytesIO
 from pathlib import Path
 
-from construct import Bytes, Const, ConstructError, CString, GreedyRange, Int32ul, Struct, Terminated
-
 MAGIC = b"paq\x00"
-
-
-PAQ_ENTRY = Struct(
-    "name" / CString("utf8"),
-    "size" / Int32ul,
-    "payload" / Bytes(lambda ctx: ctx.size),
-)
-
-PAQ = Struct(
-    "magic" / Const(MAGIC),
-    "entries" / GreedyRange(PAQ_ENTRY),
-    Terminated,
-)
+_U32 = struct.Struct("<I")
 
 
 def iter_entries_bytes(data: bytes) -> Iterator[tuple[str, bytes]]:
-    stream = BytesIO(data)
-    try:
-        parsed = PAQ.parse_stream(stream)
-    except ConstructError as exc:
-        raise ValueError(f"Invalid PAQ archive at offset {stream.tell()}: {exc}") from exc
-    for entry in parsed.entries:
-        yield entry.name, entry.payload
+    if not data.startswith(MAGIC):
+        raise ValueError("Invalid PAQ archive at offset 0: missing magic")
+    pos = len(MAGIC)
+    total = len(data)
+    while pos < total:
+        nul = data.find(b"\x00", pos)
+        if nul < 0 or nul + 1 + _U32.size > total:
+            raise ValueError(f"Invalid PAQ archive at offset {pos}: truncated entry header")
+        try:
+            name = data[pos:nul].decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ValueError(f"Invalid PAQ archive at offset {pos}: {exc}") from exc
+        (size,) = _U32.unpack_from(data, nul + 1)
+        payload_start = nul + 1 + _U32.size
+        payload_end = payload_start + size
+        if payload_end > total:
+            raise ValueError(f"Invalid PAQ archive at offset {payload_end}: truncated payload")
+        yield name, data[payload_start:payload_end]
+        pos = payload_end
 
 
 def iter_entries(source: str | Path) -> Iterator[tuple[str, bytes]]:
@@ -53,26 +51,15 @@ def read_paq(source: str | Path) -> list[tuple[str, bytes]]:
 
 
 def build_entries(entries: Iterable[tuple[str, bytes]]) -> bytes:
-    built_entries = []
+    parts: list[bytes] = [MAGIC]
     for name, data in entries:
-        if isinstance(name, Path):
-            name = str(name)
-        if isinstance(data, memoryview):
-            data = data.tobytes()
-        built_entries.append(
-            {
-                "name": str(name),
-                "size": len(data),
-                "payload": bytes(data),
-            },
-        )
-    return PAQ.build({"magic": MAGIC, "entries": built_entries})
+        payload = data.tobytes() if isinstance(data, memoryview) else bytes(data)
+        parts.append(str(name).encode("utf-8"))
+        parts.append(b"\x00")
+        parts.append(_U32.pack(len(payload)))
+        parts.append(payload)
+    return b"".join(parts)
 
 
 def write_paq(dest: str | Path, entries: Iterable[tuple[str, bytes]]) -> None:
-    data = build_entries(entries)
-    Path(dest).write_bytes(data)
-
-
-def encode_bytes(entries: Iterable[tuple[str, bytes]]) -> bytes:
-    return build_entries(entries)
+    Path(dest).write_bytes(build_entries(entries))

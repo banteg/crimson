@@ -16,7 +16,7 @@ without requiring the port to reproduce its global layout or virtual interface.
 | --- | --- |
 | Window, loop, debug view protocol | `src/grim/app.py`, `src/grim/view.py` |
 | Archive/image decoding and asset access | `src/grim/paq.py`, `src/grim/jaz.py`, `src/grim/assets.py` |
-| Input, audio, fonts, configuration | `src/grim/input.py`, `src/grim/audio.py`, `src/grim/fonts/`, `src/grim/config.py` |
+| Audio, fonts, configuration | `src/grim/audio.py`, `src/grim/fonts/`, `src/grim/config.py` |
 | CLI | `src/crimson/cli/`; the `crimson-re` workspace package adds `match`, `native` and `dbg` |
 | Navigation and application loop | `src/crimson/game/navigation.py`, `src/crimson/game/loop_view.py` |
 | Screens, typed actions and retained stack | `src/crimson/screens/`, `src/crimson/screens/actions.py`, `src/crimson/screens/stack.py` |
@@ -47,6 +47,5 @@ resource consumers.
 there is no second renderer-owned copy of the camera or world dimensions.
 
 All five gameplay modes and replay initialize through `initialize_run`.
-Debug views use `src/crimson/world/standalone_tick_harness.py`
-for their separately configured sessions. See the [session contract](deterministic-step-pipeline.md)
-and [startup contract](replay-run-start.md) for ordering requirements.
+See the [session contract](deterministic-step-pipeline.md) and
+[startup contract](replay-run-start.md) for ordering requirements.

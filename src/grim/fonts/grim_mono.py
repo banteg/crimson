@@ -98,7 +98,3 @@ def draw_grim_mono_text(font: GrimMonoFont, text: str, pos: Vec2, scale: float, 
 
         _draw_mono_glyph(font, value, x_pos, y_pos + 1.0, draw_size, origin, color)
 
-
-def measure_grim_mono_text_height(text: str, scale: float) -> float:
-    line_count = text.count("\n") + 1
-    return GRIM_MONO_LINE_HEIGHT * scale * line_count

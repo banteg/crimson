@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from grim import canvas
+from grim.assets import runtime_resources_for
 from grim.config import default_crimson_cfg
-from grim.fonts.small import SmallFontData, load_small_font
+from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl, rl_color
 from grim.view import ViewContext
@@ -11,7 +12,6 @@ from ..gamepad_profile import apply_pad_profile
 from ..input_codes import GAMEPAD_SLOT_COUNT, gamepad_snapshot, input_begin_frame
 from ..local_input import LocalInputInterpreter
 from ..sim.state_types import PlayerState
-from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import ViewInstance, register_view
 
 BG_COLOR = rl_color(12, 12, 14, 255)
@@ -50,8 +50,7 @@ class GamepadDebugView:
         self._fire = [False] * GAMEPAD_SLOT_COUNT
 
     def open(self) -> None:
-        self._small = load_small_font(self._assets_root)
-
+        self._small = runtime_resources_for(self._assets_root).small_font
     def close(self) -> None:
         self._small = None
 
@@ -74,12 +73,13 @@ class GamepadDebugView:
     def draw(self) -> None:
         rl.clear_background(BG_COLOR)
         margin = 16.0
-        line_h = float(ui_line_height(self._small))
-        draw_ui_text(
+        assert self._small is not None
+        line_h = float(self._small.cell_size)
+        draw_small_text(
             self._small,
             "gamepad view: left stick moves (green), right stick aims (red), R2/RT fires",
             Vec2(margin, margin),
-            color=TEXT_COLOR,
+            TEXT_COLOR,
         )
         y = margin + line_h * 1.5
         for pad in range(GAMEPAD_SLOT_COUNT):
@@ -87,18 +87,18 @@ class GamepadDebugView:
             y += PANEL_HEIGHT
 
     def _draw_pad(self, pad: int, origin: Vec2, line_h: float) -> None:
+        assert self._small is not None
         snapshot = gamepad_snapshot(pad)
         if snapshot is None:
-            draw_ui_text(self._small, f"pad {pad}: not connected", origin, color=HINT_COLOR)
+            draw_small_text(self._small, f"pad {pad}: not connected", origin, HINT_COLOR)
             return
-        draw_ui_text(self._small, f"pad {pad}: {snapshot.name}", origin, color=TEXT_COLOR)
+        draw_small_text(self._small, f"pad {pad}: {snapshot.name}", origin, TEXT_COLOR)
         y = origin.y + line_h
         for label, value in snapshot.axes:
-            draw_ui_text(self._small, f"{label:<14} {value:+.3f}", Vec2(origin.x, y), color=TEXT_COLOR)
+            draw_small_text(self._small, f"{label:<14} {value:+.3f}", Vec2(origin.x, y), TEXT_COLOR)
             y += line_h
         held = ", ".join(snapshot.held) if snapshot.held else "-"
-        draw_ui_text(self._small, f"held: {held}", Vec2(origin.x, y), color=HELD_COLOR)
-
+        draw_small_text(self._small, f"held: {held}", Vec2(origin.x, y), HELD_COLOR)
         center = Vec2(float(canvas.width()) - ARENA_RADIUS * 2.0, origin.y + PANEL_HEIGHT * 0.5)
         rl.draw_circle_lines(int(center.x), int(center.y), ARENA_RADIUS, RING_COLOR)
         move = self._move[pad]
@@ -106,11 +106,11 @@ class GamepadDebugView:
             rl.draw_line_ex(center.to_rl(), (center + move * ARENA_RADIUS).to_rl(), 3.0, MOVE_COLOR)
         aim_point = center + self._aim[pad] * 0.4
         rl.draw_circle(int(aim_point.x), int(aim_point.y), 8.0 if self._fire[pad] else 5.0, AIM_COLOR)
-        draw_ui_text(
+        draw_small_text(
             self._small,
             f"move {move.x:+.2f} {move.y:+.2f}",
             Vec2(center.x - ARENA_RADIUS * 3.5, center.y - line_h),
-            color=MOVE_COLOR,
+            MOVE_COLOR,
         )
 
 

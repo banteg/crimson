@@ -39,6 +39,3 @@ def clamp(value: float, low: float, high: float) -> float:
 def clamp01(value: float) -> float:
     return clamp(value, 0.0, 1.0)
 
-
-def lerp(a: float, b: float, t: float) -> float:
-    return a + (b - a) * t

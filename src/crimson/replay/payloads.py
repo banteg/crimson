@@ -44,18 +44,6 @@ def to_builtin_object(value: object, *, field: str) -> BuiltinObject:
     return built
 
 
-def to_builtin_rows(value: object, *, field: str) -> BuiltinRows:
-    built = to_builtin_value(value, field=field)
-    if not isinstance(built, list):
-        raise TypeError(f"{field} must convert to a row list payload")
-    rows: BuiltinRows = []
-    for index, item in enumerate(built):
-        if not isinstance(item, dict):
-            raise TypeError(f"{field}[{index}] must be a mapping payload")
-        rows.append(item)
-    return rows
-
-
 def builtin_object_or_empty(value: BuiltinValue | None) -> BuiltinObject:
     if not isinstance(value, dict):
         return {}

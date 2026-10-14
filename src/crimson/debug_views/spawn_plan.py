@@ -5,7 +5,8 @@ import math
 import msgspec
 
 from grim import canvas
-from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
+from grim.assets import runtime_resources_for
+from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl, rl_color
@@ -21,12 +22,10 @@ from ..creatures.spawn import (
     tick_spawn_slot,
 )
 from ..sim.gameplay_state import GameplayState
-from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import ViewInstance, register_view
 
 BASE_POS = Vec2(512.0, 512.0)
 
-UI_TEXT_SCALE = 1
 UI_TEXT_COLOR = rl_color(220, 220, 220, 255)
 UI_HINT_COLOR = rl_color(140, 140, 140, 255)
 
@@ -91,17 +90,17 @@ class SpawnPlanView:
 
     def open(self) -> None:
         self._missing_assets.clear()
-        self._small = load_small_font(self._assets_root)
+        self._small = runtime_resources_for(self._assets_root).small_font
 
     def close(self) -> None:
-        if self._small is not None:
-            self._small = None
+        self._small = None
 
     def _draw_ui_label(self, label: str, value: str, pos: Vec2) -> None:
+        assert self._small is not None
         label_text = f"{label}: "
-        draw_ui_text(self._small, label_text, pos, scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
-        label_w = measure_small_text_width(self._small, label_text) if self._small else 0.0
-        draw_ui_text(self._small, value, Vec2(pos.x + label_w, pos.y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+        draw_small_text(self._small, label_text, pos, UI_HINT_COLOR)
+        label_w = measure_small_text_width(self._small, label_text)
+        draw_small_text(self._small, value, Vec2(pos.x + label_w, pos.y), UI_TEXT_COLOR)
 
     def _rebuild_plan(self) -> None:
         spawn_id = self._template_ids[self._index]
@@ -224,20 +223,19 @@ class SpawnPlanView:
         rl.clear_background(BG_COLOR)
         self._draw_grid()
 
+        assert self._small is not None
         margin = 16.0
-        line_h = float(ui_line_height(self._small, scale=UI_TEXT_SCALE))
+        line_h = float(self._small.cell_size)
 
         spawn_id = self._template_ids[self._index] if self._template_ids else 0
-        draw_ui_text(
+        draw_small_text(
             self._small,
             f"spawn-template view  (template 0x{spawn_id:02x})",
             Vec2(margin, margin),
-            scale=0.8,
-            color=UI_TEXT_COLOR,
+            UI_TEXT_COLOR,
         )
         hints = "Left/Right: id  Up/Down: seed  R: random seed  [,]: scale  H: hardcore  ,/.: retry-count  Space: sim  Backspace: reset"
-        draw_ui_text(self._small, hints, Vec2(margin, margin + line_h), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
-
+        draw_small_text(self._small, hints, Vec2(margin, margin + line_h), UI_HINT_COLOR)
         y = margin + line_h * 2.0 + 4.0
         self._draw_ui_label("seed", f"0x{self._seed:08x}", Vec2(margin, y))
         y += line_h
@@ -268,10 +266,10 @@ class SpawnPlanView:
             )
             y += line_h
         if self._sim_events:
-            draw_ui_text(self._small, "events:", Vec2(margin, y + 2.0), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
+            draw_small_text(self._small, "events:", Vec2(margin, y + 2.0), UI_HINT_COLOR)
             y += line_h
             for ev in self._sim_events[-5:]:
-                draw_ui_text(self._small, ev, Vec2(margin, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
+                draw_small_text(self._small, ev, Vec2(margin, y), UI_TEXT_COLOR)
                 y += line_h
 
         spawned = self._spawned()

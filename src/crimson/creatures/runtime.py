@@ -199,13 +199,6 @@ def _movement_delta_from_heading_f32(
     return Vec2(vx, vy)
 
 
-def _velocity_from_delta_f32(delta: Vec2, *, dt: float) -> Vec2:
-    if dt <= 0.0:
-        return Vec2()
-    inv_dt = 1.0 / float(dt)
-    return Vec2(f32(float(delta.x) * inv_dt), f32(float(delta.y) * inv_dt))
-
-
 def _advance_pos_by_delta_f32(pos: Vec2, delta: Vec2) -> Vec2:
     return Vec2(
         f32(float(pos.x) + float(delta.x)),

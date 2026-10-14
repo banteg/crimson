@@ -177,13 +177,6 @@ def iter_active_creature_overlay_pass(creatures: Sequence[CreatureState]) -> Ite
             yield creature
 
 
-def iter_native_creature_sprite_pass(creatures: Sequence[CreatureState]) -> Iterator[CreatureState]:
-    for type_id in _NATIVE_CREATURE_SPRITE_DRAW_ORDER:
-        for creature in creatures:
-            if creature.active and creature.type_id == type_id:
-                yield creature
-
-
 def draw_creature_overlays(
     render_ctx: WorldRenderCtx,
     creature: CreatureState,
