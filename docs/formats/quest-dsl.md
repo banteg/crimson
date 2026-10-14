@@ -244,7 +244,6 @@ creatures or offspring. All recipes fit the existing 256-entry table.
 | `plasma-orchard.quest` | 55 | Choose which ranged nest to eliminate while melee crosses the arena |
 | `moving-factory.quest` | 17 | Pursue a mobile spawner or create space in its crowds |
 | `split-decision.quest` | 65 | Choose safe finishing positions for opposing splitters |
-| `domino-theory.quest` | 16 | Pierce splitter columns with a fixed Gauss Gun while plasma pressures the flanks |
 | `formation-parade.quest` | 12 | Break native rings, chains and grids before the next arrival |
 | `closing-circle.quest` | 240 | Preserve an escape route through a rotating 60-degree gap |
 | `nest-circuit.quest` | 24 | Follow a tightening nest activation schedule or cut across it |
