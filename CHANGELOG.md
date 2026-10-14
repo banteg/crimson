@@ -2,6 +2,14 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.17.1
+
+### For players
+
+- crimson.land's pages are named after its menu: Survival is at `/survival`, quests at `/quests/2` and `/quests/2.3` with hardcore under `/quests/hardcore/`, and custom quests at `/custom` and `/custom/<id>`. Old board links still work.
+- Custom quests have their own Custom button in the menu. The quest screen no longer draws their links over its title, and the authoring reference moved to crimson.land/custom/llm.txt.
+- `crimson quest publish` sends quests to the new address. The 0.17.0 command can no longer publish.
+
 ## 0.17.0
 
 ### For players
