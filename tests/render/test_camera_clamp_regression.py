@@ -50,6 +50,13 @@ def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(asset
     assert_float_close(runtime.camera.x, 0.0)
     assert_float_close(runtime.camera.y, -224.0)
 
+    # A dead single player still centers the camera before adding shake (`camera_update`).
+    player.health = 0.0
+    runtime.world.state.camera_shake_offset = Vec2(0.0, -20.0)
+    runtime.update_camera()
+    runtime.update_camera()
+    assert_float_close(runtime.camera.y, -244.0)
+
 
 def test_view_transform_is_stable_and_runtime_conversion_uses_current_camera(assets_dir: Path, mocker) -> None:
     world = WorldRuntimeHost(assets_dir=assets_dir)

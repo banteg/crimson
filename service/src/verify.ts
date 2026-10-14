@@ -29,8 +29,6 @@ interface Core {
   portable_player_x(): number;
   portable_player_y(): number;
   portable_player_health(): number;
-  portable_shake_x(): number;
-  portable_shake_y(): number;
   portable_probe(): number;
   portable_nearest_creature(x: number, y: number): number;
   portable_bakes(): number;
@@ -66,6 +64,7 @@ export const VIEW_H = 768;
 const TERRAIN_SIZE = 1024;
 const PAD_AIM_REACH = 96 + 42;
 const AIM_SLACK = 0.01;
+const VIEW_SLACK = 65 + 21 + AIM_SLACK;
 const HUMAN_MOVEMENT = new Set([1, 2, 3, 4]);
 const HUMAN_AIM = new Set([0, 1, 2, 3, 4]);
 const AIM_MOUSE = 0;
@@ -133,11 +132,9 @@ class TickMonitor {
   private moveTarget: { x: number; y: number } | null = null;
 
   updateCamera(c: Core): void {
-    const x = VIEW_W * 0.5 - c.portable_player_x() + c.portable_shake_x();
-    const y = VIEW_H * 0.5 - c.portable_player_y() + c.portable_shake_y();
     this.camera = {
-      x: Math.max(Math.min(x, -1), VIEW_W - TERRAIN_SIZE),
-      y: Math.max(Math.min(y, -1), VIEW_H - TERRAIN_SIZE),
+      x: Math.max(Math.min(VIEW_W * 0.5 - c.portable_player_x(), -1), VIEW_W - TERRAIN_SIZE),
+      y: Math.max(Math.min(VIEW_H * 0.5 - c.portable_player_y(), -1), VIEW_H - TERRAIN_SIZE),
     };
   }
 
@@ -158,7 +155,7 @@ class TickMonitor {
 }
 
 function inView(x: number, y: number): boolean {
-  return -AIM_SLACK <= x && x <= VIEW_W + AIM_SLACK && -AIM_SLACK <= y && y <= VIEW_H + AIM_SLACK;
+  return -VIEW_SLACK <= x && x <= VIEW_W + VIEW_SLACK && -VIEW_SLACK <= y && y <= VIEW_H + VIEW_SLACK;
 }
 
 function deriveResult(snapshot: DataView, mode: number): RunResult {

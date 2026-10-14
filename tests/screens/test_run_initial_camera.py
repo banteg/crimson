@@ -55,7 +55,7 @@ def test_first_frame_cursor_at_top_left_stays_inside_ranked_view(
 @pytest.mark.parametrize("size", [Vec2(1024, 768), Vec2(1920, 1080)])
 @pytest.mark.parametrize("point_click", [False, True])
 @pytest.mark.parametrize(("cursor_y", "away_keys"), [(0.0, {0x1F, 0xD0}), (1.0, {0x11, 0xC8})])
-def test_long_frame_reads_the_cursor_through_each_ticks_camera(
+def test_long_frame_and_screen_shake_stay_inside_ranked_view(
     make_game_state,
     headless_resources,
     mocker,
@@ -78,6 +78,8 @@ def test_long_frame_reads_the_cursor_through_each_ticks_camera(
     # Walk away from a cursor held on the screen's edge, so the camera moves between ticks.
     mocker.patch.object(local_input, "input_code_is_down", side_effect=lambda code, player_index=0: code in held)
     _navigator, run = start_run(state, StartRun(GameMode.SURVIVAL))
+    run.state.camera_shake_pulses = 20
+    run.state.camera_shake_timer = 0.01
 
     if point_click:
         opposite_y = (1.0 - cursor_y) * (size.y - 1.0)

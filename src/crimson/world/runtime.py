@@ -142,10 +142,6 @@ class WorldRuntime:
     def update_camera(self, update: CameraUpdate | None = None) -> None:
         if update is None:
             update = camera_update_for_players(self.world.players, self.world.state.camera_shake_offset)
-        self.camera = self.next_camera(self.camera, update)
-
-    def next_camera(self, camera: Vec2, update: CameraUpdate) -> Vec2:
-        """The camera one tick's update leaves: on the focus, or kept without one, shaken and clamped to the arena."""
 
         screen_size = viewport.camera_screen_size(
             config=self.config,
@@ -153,8 +149,12 @@ class WorldRuntime:
             runtime_h=float(canvas.height()),
             view_cap=self.view_cap,
         )
-        camera = camera if update.focus is None else screen_size * 0.5 - update.focus
-        return viewport.clamp_camera(camera=camera + update.shake, screen_size=screen_size)
+        camera = self.camera if update.focus is None else screen_size * 0.5 - update.focus
+        camera = camera + update.shake
+        self.camera = viewport.clamp_camera(
+            camera=camera,
+            screen_size=screen_size,
+        )
 
     def draw(self, *, entity_alpha: float = 1.0) -> None:
         self.render_resources.process_ground_pending()
@@ -168,9 +168,9 @@ class WorldRuntime:
     def _render_ctx(self) -> WorldRenderCtx:
         return WorldRenderCtx(frame=self.build_render_frame(), view=self.view_transform())
 
-    def view_transform(self, camera: Vec2 | None = None) -> viewport.ViewTransform:
+    def view_transform(self) -> viewport.ViewTransform:
         return viewport.view_transform(
-            config=self.config, camera=self.camera if camera is None else camera,
+            config=self.config, camera=self.camera,
             out_size=Vec2(float(canvas.width()), float(canvas.height())),
             view_cap=self.view_cap,
         )

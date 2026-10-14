@@ -998,14 +998,7 @@ class BaseGameplayMode:
         session.terrain_fx.corpses.bodies_transparency = self._cvar_float("cv_terrainBodiesTransparency")
         self._live_ticks.poll(self._build_local_inputs())
         plans: list[DeterministicPresentationPlan] = []
-        # Each tick reads the cursor through the camera the tick before it left, as the ranked view
-        # check does; the drawn camera catches up with the frame's ticks only after them.
-        camera = self._world_runtime.camera
         for _ in range(self._tick_clock.advance(float(dt_frame))):
-            mouse_world = self._world_runtime.view_transform(camera).screen_to_world(self._ui_mouse)
-            self._live_ticks.hold(
-                self._local_input.follow_cursor(self._live_ticks.inputs, players=self.world.players, mouse_world=mouse_world),
-            )
             tick = self._live_ticks.next_tick()
             tick_index = recorder.record(tick) if recorder is not None else None
             with (
@@ -1016,8 +1009,6 @@ class BaseGameplayMode:
                 step = step_replay_tick(session, tick)
             self._world_runtime.presentation.advance(step.dt_sim)
             plans.append(step.presentation)
-            if step.presentation.camera is not None:
-                camera = self._world_runtime.next_camera(camera, step.presentation.camera)
             if tick_index is not None:
                 self._record_replay_checkpoint(
                     tick_index,

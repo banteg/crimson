@@ -16,7 +16,6 @@ import msgspec
 from grim.geom import Vec2
 
 from ..aim_schemes import AimScheme
-from ..camera import camera_update_for_players
 from ..game_modes import GameMode
 from ..local_input import PAD_AIM_DIST_MUL_DEFAULT
 from ..movement_controls import MovementControlType
@@ -38,6 +37,8 @@ RANKED_PAD_AIM_DIST_MUL = PAD_AIM_DIST_MUL_DEFAULT
 _PAD_AIM_REACH = RANKED_PAD_AIM_DIST_MUL + 42.0
 # Aim points are stored as f32; this absorbs their rounding, not a real reach.
 _AIM_SLACK = 0.01
+# Screen shake (at most `19 * 3 - 1 + 9 = 65` on a Nuke) and a 100 ms frame of movement at full speed (`6 * 3.5 = 21`).
+_VIEW_SLACK = 65.0 + 21.0 + _AIM_SLACK
 RANKED_DETAIL_PRESET = 5
 HUMAN_MOVEMENT = frozenset({
     MovementControlType.RELATIVE,
@@ -155,10 +156,8 @@ def outcome_reasons(run: RunSpec, result: RunResult) -> list[str]:
 class RankedTickMonitor(PlaybackWalkObserver):
     """Checks each tick's controls and aim against the ranked view while a replay plays back.
 
-    The aim a tick carries was read through the camera the previous tick left, so the camera is
-    rebuilt after every tick the way live play builds it: centred on the living players, plus
-    the shake, clamped to the arena, for the 1024x768 view. A smaller live view always lies
-    inside that rectangle.
+    The camera is centred on player one and clamped to the arena for the 1024x768 view, with slack for screen
+    shake and a multi-tick frame of movement. A smaller live view always lies inside that rectangle.
     """
 
     replay: Replay
@@ -191,14 +190,11 @@ class RankedTickMonitor(PlaybackWalkObserver):
         self._update_camera(world)
 
     def _update_camera(self, world: WorldState) -> None:
-        update = camera_update_for_players(world.players, world.state.camera_shake_offset)
-        camera = self.camera if update.focus is None else RANKED_VIEW * 0.5 - update.focus
-        if camera is not None:
-            self.camera = clamp_camera(camera=camera + update.shake, screen_size=RANKED_VIEW)
+        self.camera = clamp_camera(camera=RANKED_VIEW * 0.5 - world.players[0].pos, screen_size=RANKED_VIEW)
 
 
 def _in_view(screen: Vec2) -> bool:
-    return -_AIM_SLACK <= screen.x <= RANKED_VIEW.x + _AIM_SLACK and -_AIM_SLACK <= screen.y <= RANKED_VIEW.y + _AIM_SLACK
+    return -_VIEW_SLACK <= screen.x <= RANKED_VIEW.x + _VIEW_SLACK and -_VIEW_SLACK <= screen.y <= RANKED_VIEW.y + _VIEW_SLACK
 
 
 __all__ = [

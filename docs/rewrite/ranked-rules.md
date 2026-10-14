@@ -86,8 +86,8 @@ player can see, and Telekinetic, Pyrokinetic and point-click movement act at
 the aim point. Ranked runs fix the view at the native **1024x768**:
 
 - a mouse aim point, and each new point-click target, lies inside the 1024x768
-  view around the camera the previous tick left (centred on the player, plus
-  the screen shake, clamped to the arena);
+  view around the camera the previous tick left (centred on the player and
+  clamped to the arena, with margin for screen shake and a frame of movement);
 - a dual action pad aim reaches at most 138 units, the stick's full reach at
   the default `cv_padAimDistMul` of 96;
 - relative mouse aim and keyboard or joystick aim only turn, so they carry no

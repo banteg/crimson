@@ -26,9 +26,8 @@ class LiveTickSource:
     """Turns polled local input and queued commands into replay ticks.
 
     Input is polled once per rendered frame, which can run zero or several
-    ticks. Held controls follow the latest poll, though the mode re-reads the
-    cursor's world point through each tick's camera (`hold`); a press edge
-    waits for the next tick even across frames that run none, then fires once.
+    ticks. Held controls and aim follow the latest poll; a press edge waits for
+    the next tick even across frames that run none, then fires once.
     """
 
     def __init__(self) -> None:
@@ -45,15 +44,6 @@ class LiveTickSource:
             )
             for index, inp in enumerate(inputs)
         ]
-
-    @property
-    def inputs(self) -> tuple[PlayerInput, ...]:
-        return tuple(self._inputs)
-
-    def hold(self, inputs: Sequence[PlayerInput]) -> None:
-        """Replace the polled inputs between a frame's ticks; their press edges carry over as they are."""
-
-        self._inputs = list(inputs)
 
     def submit(self, command: GameCommand) -> None:
         self._commands.append(command)
