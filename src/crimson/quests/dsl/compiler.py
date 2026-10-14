@@ -288,6 +288,7 @@ class _Compiler:
                 "tau": math.tau,
             },
         )
+
     _FUNCTIONS: dict[str, Callable[..., Any]]
     _SIGNATURES: dict[str, inspect.Signature]
     _CHECKS: dict[Any, tuple[Callable[[Any], Any], str]]
@@ -771,7 +772,6 @@ class _Compiler:
             self.active_patterns.remove(name)
 
 
-
 _Compiler._FUNCTIONS = {
     "min": _Compiler.minimum,
     "max": _Compiler.maximum,
@@ -798,7 +798,13 @@ _Compiler._FUNCTIONS = {
     "shuffle": _Compiler.shuffle,
 }
 _Compiler._SIGNATURES = {
-    name: inspect.Signature(list(inspect.signature(function, eval_str=True).parameters.values())[1:])
+    name: inspect.Signature(
+        [
+            param
+            for param_name, param in inspect.signature(function, eval_str=True).parameters.items()
+            if param_name != "self"
+        ],
+    )
     for name, function in _Compiler._FUNCTIONS.items()
 }
 _Compiler._CHECKS = {
@@ -882,10 +888,7 @@ def compile_quest(
 
 def _referenced_names(statements: list[Tree]) -> set[str]:
     return {
-        str(node.children[0])
-        for statement in statements
-        for node in statement.iter_subtrees()
-        if node.data == "name"
+        str(node.children[0]) for statement in statements for node in statement.iter_subtrees() if node.data == "name"
     }
 
 

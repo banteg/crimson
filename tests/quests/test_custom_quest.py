@@ -79,7 +79,8 @@ def test_invalid_definitions_are_rejected(edit, message):
 
 def test_the_recipe_names_its_author_for_the_byline():
     source = example("crosswind").replace(
-        'quest "Crosswind" version 1\n', 'quest "Crosswind" version 1\nauthor "banteg"\n',
+        'quest "Crosswind" version 1\n',
+        'quest "Crosswind" version 1\nauthor "banteg"\n',
     )
     quest = build_custom_quest(source)
     assert (quest.author, quest.byline) == ("banteg", "by banteg")
@@ -88,8 +89,27 @@ def test_the_recipe_names_its_author_for_the_byline():
 
 
 @pytest.mark.parametrize(
-    ("setting", "message"), [('author ""', "author"), ('author "a"\nauthor "b"', "duplicate author")],
+    ("setting", "message"),
+    [('author ""', "author"), ('author "a"\nauthor "b"', "duplicate author")],
 )
 def test_bad_author_settings_are_rejected(setting, message):
     with pytest.raises(QuestCompileError, match=message):
         compile_quest(f'quest "Bylined" version 1\n{setting}\nat 1s:\n    spawn alien.small_gray at center')
+
+
+@pytest.mark.parametrize(
+    ("body", "expected_tables", "expected_variants"),
+    [
+        ("burst alien.small_gray at center copies players", 4, (0, 0, 1, 1, 2, 2, 3, 3)),
+        ("burst alien.small_gray at center copies (3 if hardcore else 1)", 2, (0, 1, 0, 1, 0, 1, 0, 1)),
+    ],
+)
+def test_single_axis_recipes_deduplicate_variant_tables(body, expected_tables, expected_variants):
+    source = f'quest "Single Axis" version 1\nat 1s:\n    {body}'
+    quest = build_custom_quest(source)
+    assert len(quest.tables) == expected_tables
+    assert quest.variants == expected_variants
+    for player_count in (1, 2, 3, 4):
+        for hardcore in (False, True):
+            plan = compile_quest(source, player_count=player_count, hardcore=hardcore)
+            assert quest.entries(player_count=player_count, hardcore=hardcore) == plan.entries
