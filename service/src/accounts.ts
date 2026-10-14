@@ -58,10 +58,10 @@ export async function confirmMerge(env: Env, accountId: number, sessionToken: st
   const into = request.into_account;
   await env.DB.batch([
     env.DB.prepare("UPDATE keys SET account_id = ? WHERE account_id = ?").bind(into, from),
+    env.DB.prepare("UPDATE custom_quests SET account_id = ? WHERE account_id = ?").bind(into, from),
     env.DB.prepare("UPDATE runs SET account_id = ? WHERE account_id = ?").bind(into, from),
     env.DB.prepare("UPDATE sessions SET account_id = ? WHERE account_id = ?").bind(into, from),
     env.DB.prepare("UPDATE login_links SET account_id = ? WHERE account_id = ?").bind(into, from),
-    // The target keeps its own link where both have one for a provider.
     env.DB.prepare("UPDATE OR IGNORE links SET account_id = ? WHERE account_id = ?").bind(into, from),
     env.DB.prepare("DELETE FROM links WHERE account_id = ?").bind(from),
     env.DB.prepare("UPDATE links SET handle = ?, avatar_url = ? WHERE provider = ? AND subject = ?")
@@ -96,15 +96,22 @@ export async function deleteAccount(env: Env, accountId: number): Promise<boolea
   const account = await env.DB.prepare("SELECT role FROM accounts WHERE id = ?").bind(accountId).first<{ role: string }>();
   if (account?.role === "admin") return false;
   const { results } = await env.DB.prepare("SELECT id FROM runs WHERE account_id = ?").bind(accountId).all<{ id: string }>();
+  await env.DB.batch([
+    env.DB.prepare(
+      `UPDATE custom_quests SET
+         account_id = (SELECT account_id FROM runs WHERE board = 'quests' AND quest = custom_quests.id AND account_id != ? ORDER BY accepted_at LIMIT 1),
+         first_run_id = (SELECT id FROM runs WHERE board = 'quests' AND quest = custom_quests.id AND account_id != ? ORDER BY accepted_at LIMIT 1)
+       WHERE (account_id = ? OR first_run_id IN (SELECT id FROM runs WHERE account_id = ?))
+         AND EXISTS (SELECT 1 FROM runs WHERE board = 'quests' AND quest = custom_quests.id AND account_id != ?)`,
+    ).bind(accountId, accountId, accountId, accountId, accountId),
+    env.DB.prepare("DELETE FROM custom_quests WHERE account_id = ? OR first_run_id IN (SELECT id FROM runs WHERE account_id = ?)").bind(accountId, accountId),
+    ...["runs", "names", "links", "keys", "sessions", "login_links"].map((table) =>
+      env.DB.prepare(`DELETE FROM ${table} WHERE account_id = ?`).bind(accountId),
+    ),
+    env.DB.prepare("DELETE FROM merge_requests WHERE from_account = ? OR into_account = ?").bind(accountId, accountId),
+    env.DB.prepare("DELETE FROM accounts WHERE id = ?").bind(accountId),
+  ]);
   if (results.length) await env.REPLAYS.delete(results.flatMap((run) => [`runs/${run.id}.crd`, timelineKey(run.id), groundKey(run.id)]));
-  await env.DB.batch(
-    ["runs", "names", "links", "keys", "sessions", "login_links"]
-      .map((table) => env.DB.prepare(`DELETE FROM ${table} WHERE account_id = ?`).bind(accountId))
-      .concat(
-        env.DB.prepare("DELETE FROM merge_requests WHERE from_account = ? OR into_account = ?").bind(accountId, accountId),
-        env.DB.prepare("DELETE FROM accounts WHERE id = ?").bind(accountId),
-      ),
-  );
   return true;
 }
 

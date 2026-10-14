@@ -43,7 +43,7 @@ function prepare(timeline: Timeline, detail: RunDetailView): RunTimeline {
     samples: timeline.samples.map(([t, xp, level, health, kills, damage]) => ({ t, xp, level, health, kills, damage })),
     weapons: timeline.weapons.map(({ t, id }) => ({ t, name: WEAPONS[id]?.name ?? `weapon ${id}` })),
     perks: timeline.perks.map(({ t, id }) => ({ t, name: PERKS[id] ?? `perk ${id}` })),
-    terrain: runGround(timeline.seed, detail),
+    terrain: runGround(timeline.seed, { board: detail.board, quest: detail.quest, customSlots: detail.custom_slots ?? undefined }),
   };
 }
 

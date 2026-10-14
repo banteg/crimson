@@ -127,7 +127,7 @@ draws).
 `CustomQuest` is a map of `title` (1..64 printable ASCII characters), `author` (1..31 printable ASCII
 characters or nil; like the title, presentation), `start_weapon_id` (int, not 0),
 `terrain_slots` (three ints 0..7), `entries` (1..256 `SpawnEntry` maps), `no_bonuses` (strictly ascending bonus IDs in 2..14),
-`no_perks` (strictly ascending perk IDs in 1..57) and `no_weapons` (strictly ascending weapon IDs in 2..33). A `SpawnEntry` is a map of `pos`
+`no_perks` (strictly ascending perk IDs in 1..57, excluding `instant_winner` = 7) and `no_weapons` (strictly ascending weapon IDs in 2..33). A `SpawnEntry` is a map of `pos`
 (`{x, y}` f32 map, each coordinate in −1024..2048), `heading` (f32), `spawn_id` (a spawn template other than `0x02`), `trigger_ms` (int
 0..3600000) and `count` (int). Custom quests never use `hardcore`, and their entries must respect the
 [quest spawn limits](quest-dsl.md#bounds-and-runtime-semantics). The run starts as

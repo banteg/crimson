@@ -12,10 +12,13 @@ from grim.atomic_write import atomic_write_bytes
 from ..game_modes import GameMode
 from ..game_version import REPLAY_FORMAT_VERSION
 from ..math_parity import f32
-from ..quests.custom import validate_custom_quest
+from ..quests.custom import CustomQuest, validate_custom_quest
+from ..quests.level import QuestLevel
+from ..quests.types import SpawnEntry
 from ..sim.commands import PerkPickCommand, TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.run_result import RunOutcome, RunResult
-from ..sim.run_spec import RunSpec, RunSpecV32
+from ..sim.run_spec import RunSpec, RunSpecV32, RunStatus
+from ..terrain_slots import TerrainSlotTriplet
 from ..typo.names import (
     HIGHSCORE_NAME_MAX_CHARS,
     MAX_TYPO_DICTIONARY_WORDS,
@@ -89,6 +92,46 @@ class _ReplayV32(msgspec.Struct, forbid_unknown_fields=True):
     ticks: list[ReplayTick]
 
 
+
+class _CustomQuestV33Legacy(msgspec.Struct, frozen=True, kw_only=True, forbid_unknown_fields=True):
+    title: str
+    author: str | None = None
+    start_weapon_id: int
+    terrain_slots: TerrainSlotTriplet
+    tables: tuple[tuple[SpawnEntry, ...], ...]
+    variants: tuple[int, ...]
+
+
+class _RunSpecV33Legacy(msgspec.Struct, frozen=True, kw_only=True, forbid_unknown_fields=True):
+    game_mode_id: GameMode
+    seed: int
+    quest_level: QuestLevel | None = None
+    player_count: int = 1
+    hardcore: bool = False
+    preserve_bugs: bool = False
+    quest_fail_retry_count: int = 0
+    detail_preset: int = 5
+    violence_disabled: int = 0
+    friendly_fire: bool = False
+    status: RunStatus = msgspec.field(default_factory=RunStatus)
+    typo_dictionary_words: tuple[str, ...] = ()
+    typo_highscore_names: tuple[str, ...] = ()
+    typo_carry: TypoCarry = msgspec.field(default_factory=TypoCarry)
+    custom_quest: _CustomQuestV33Legacy | None = None
+
+
+class _ReplayV33Legacy(msgspec.Struct, forbid_unknown_fields=True):
+    """Early format-33 replays whose `custom_quest` stored `tables` and `variants`."""
+
+    format_version: int
+    game_version: str
+    rules: int
+    recorder: Recorder
+    pilot: Pilot | None
+    run: _RunSpecV33Legacy
+    result: RunResult
+    ticks: list[ReplayTick]
+
 class _FormatVersion(msgspec.Struct):
     format_version: int | None = None
 
@@ -101,13 +144,45 @@ _DECODERS: dict[int, msgspec.msgpack.Decoder] = {
     31: msgspec.msgpack.Decoder(type=_ReplayV31),
     30: msgspec.msgpack.Decoder(type=_ReplayV30),
 }
+_DECODER_V33_LEGACY = msgspec.msgpack.Decoder(type=_ReplayV33Legacy)
 
 
-def _upgrade(decoded: Replay | _ReplayV32 | _ReplayV31 | _ReplayV30) -> Replay:
+def _upgrade_v33_custom_quest(cq: _CustomQuestV33Legacy, *, player_count: int) -> CustomQuest:
+    from ..weapons import WeaponId
+
+    _require(
+        len(cq.variants) == 8 and sorted(set(cq.variants)) == list(range(len(cq.tables))),
+        "run.custom_quest: invalid legacy variants table",
+    )
+    idx = max(0, min(7, (player_count - 1) * 2))
+    return CustomQuest(
+        title=cq.title,
+        author=cq.author,
+        start_weapon_id=WeaponId(cq.start_weapon_id),
+        terrain_slots=cq.terrain_slots,
+        entries=cq.tables[cq.variants[idx]],
+    )
+
+
+def _upgrade(decoded: Replay | _ReplayV33Legacy | _ReplayV32 | _ReplayV31 | _ReplayV30) -> Replay:
     """A replay read from an earlier format, with what that format left out."""
 
     if isinstance(decoded, Replay):
         return decoded
+    if isinstance(decoded, _ReplayV33Legacy):
+        run_fields = msgspec.structs.asdict(decoded.run)
+        cq = decoded.run.custom_quest
+        run_fields["custom_quest"] = None if cq is None else _upgrade_v33_custom_quest(cq, player_count=decoded.run.player_count)
+        return Replay(
+            format_version=decoded.format_version,
+            game_version=decoded.game_version,
+            rules=decoded.rules,
+            recorder=decoded.recorder,
+            pilot=decoded.pilot,
+            run=RunSpec(**run_fields),
+            result=decoded.result,
+            ticks=decoded.ticks,
+        )
     fields: dict[str, Any] = {**msgspec.structs.asdict(decoded), "run": RunSpec(**msgspec.structs.asdict(decoded.run))}
     match decoded:
         case _ReplayV30():
@@ -390,7 +465,13 @@ def decode_replay_payload(payload: bytes) -> Replay:
     try:
         decoded = (decoder or _DECODERS[REPLAY_FORMAT_VERSION]).decode(payload)
     except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise ReplayCodecError(f"invalid replay payload: {exc}") from exc
+        if version == 33:
+            try:
+                decoded = _DECODER_V33_LEGACY.decode(payload)
+            except (msgspec.DecodeError, msgspec.ValidationError):
+                raise ReplayCodecError(f"invalid replay payload: {exc}") from exc
+        else:
+            raise ReplayCodecError(f"invalid replay payload: {exc}") from exc
     _require(_ENCODER.encode(decoded) == payload, "replay payload is not canonically encoded")
     replay = _upgrade(decoded)
     validate_replay(replay)

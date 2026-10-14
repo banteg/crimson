@@ -184,6 +184,7 @@ export interface RunDetailView {
   id: string;
   board: Board;
   quest: string;
+  custom_slots?: [number, number, number] | null;
   category: Category;
   pilot: Pilot | null;
   title: string;

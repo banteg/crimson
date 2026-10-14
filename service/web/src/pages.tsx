@@ -288,7 +288,8 @@ function Command(props: { children: string }) {
 async function runPage(id: string, nav: Navigator): Promise<Screen> {
   const detail = await get<RunDetailView>(`/api/runs/${id}`);
   if (!detail) return notFound();
-  return { title: `${playerLabel(detail.player)} · ${detail.title}`, quest: detail.quest.includes(".") ? detail.quest : null, panels: runPanels(detail, nav.reload) };
+  const quest = detail.custom_slots ? `slots:${detail.custom_slots.join(",")}` : detail.quest.includes(".") ? detail.quest : null;
+  return { title: `${playerLabel(detail.player)} · ${detail.title}`, quest, panels: runPanels(detail, nav.reload) };
 }
 
 function notFound(): Screen {

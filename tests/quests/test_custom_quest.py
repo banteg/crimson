@@ -56,6 +56,7 @@ def replace_first_entry(quest: CustomQuest, **changes) -> CustomQuest:
         (lambda q: msgspec.structs.replace(q, no_bonuses=(BonusId.POINTS,)), "no_bonuses"),
         (lambda q: msgspec.structs.replace(q, no_bonuses=(BonusId.FREEZE, BonusId.NUKE)), "no_bonuses"),
         (lambda q: msgspec.structs.replace(q, no_perks=(PerkId.ANTIPERK,)), "no_perks"),
+        (lambda q: msgspec.structs.replace(q, no_perks=(PerkId.INSTANT_WINNER,)), "instant_winner"),
         (lambda q: msgspec.structs.replace(q, no_weapons=(WeaponId.PISTOL,)), "no_weapons"),
         (lambda q: replace_first_entry(q, spawn_id=SpawnId.UNUSED_02), "unused"),
         (lambda q: replace_first_entry(q, trigger_ms=-1), "trigger"),
@@ -118,6 +119,8 @@ at 1s:
     assert fixed.no_weapons == DROPPABLE_WEAPONS
 
 
+    with pytest.raises(QuestCompileError, match="instant_winner"):
+        compile_quest('quest "Bad" version 1\nno_perks [instant_winner]\nat 1s:\n    spawn alien.small_gray at center')
 def test_tuple_points_and_expanded_aliases_work_across_helpers():
     quest = build_custom_quest(
         """quest "Tuples and Aliases" version 1

@@ -187,10 +187,12 @@ def validate_custom_quest(quest: CustomQuest) -> None:
         not 2 <= int(bonus_id) <= 14 for bonus_id in quest.no_bonuses
     ):
         raise ValueError("no_bonuses must be strictly ascending bonus IDs in 2..14")
-    if list(quest.no_perks) != sorted(set(quest.no_perks)) or any(
-        not 1 <= int(perk_id) <= 57 for perk_id in quest.no_perks
+    if (
+        list(quest.no_perks) != sorted(set(quest.no_perks))
+        or PerkId.INSTANT_WINNER in quest.no_perks
+        or any(not 1 <= int(perk_id) <= 57 for perk_id in quest.no_perks)
     ):
-        raise ValueError("no_perks must be strictly ascending perk IDs in 1..57")
+        raise ValueError("no_perks must be strictly ascending perk IDs in 1..57 (excluding instant_winner)")
     if list(quest.no_weapons) != sorted(set(quest.no_weapons)) or any(
         not 2 <= int(weapon_id) <= 33 for weapon_id in quest.no_weapons
     ):

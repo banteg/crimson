@@ -219,6 +219,7 @@ static void watch_begin() {
   live.watching = true;
   watch.phase = WATCH_PREPARING;
   watch.at = sizeof cfg + (custom ? sizeof quest : 0);
+  watch.tick = watch.ticks = 0;
   watch.speed = WATCH_NORMAL_SPEED;
   watch.paused = watch.step = watch.played = false;
   watch.stopped.clear();
@@ -255,6 +256,7 @@ static void watch_stop() {
   }
   live.watching = false;
   terrain.logging = terrain.baking = false;
+  portable_custom_quest = nullptr;
   game_live = game_session = false;
   watch_disarm();
   watch.keys.clear();
@@ -539,6 +541,12 @@ static void watch_follow_link() {
       watch_start(watch.link, watch.link_card);
     } else {
       custom_quest_linked = false;
+      if (!custom_quest_restore_menu) {
+        watch.menu = {config_blob.game_mode, config_blob.hardcore, config_blob.player_count, quest_stage_major,
+                      quest_stage_minor};
+        custom_quest_saved_ranked = ranked_checked;
+        custom_quest_restore_menu = true;
+      }
       config_blob.game_mode = GAME_MODE_QUEST;
       config_blob.hardcore = 0;
       config_blob.player_count = 1;

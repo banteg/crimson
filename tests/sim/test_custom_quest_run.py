@@ -105,6 +105,36 @@ def test_custom_quest_replays_round_trip_and_reject_bad_definitions():
         dump_replay(msgspec.structs.replace(replay, run=both))
 
 
+def test_legacy_v33_custom_quest_replays_upgrade_on_decode():
+    from crimson.replay.codec import _CustomQuestV33Legacy, _ReplayV33Legacy, _RunSpecV33Legacy
+
+    replay = load_replay((FIXTURES / "quest-1.1-completed.crd").read_bytes())
+    quest = crosswind()
+    legacy_cq = _CustomQuestV33Legacy(
+        title=quest.title,
+        author=quest.author,
+        start_weapon_id=int(quest.start_weapon_id),
+        terrain_slots=quest.terrain_slots,
+        tables=(quest.entries,),
+        variants=(0,) * 8,
+    )
+    run_dict = msgspec.structs.asdict(replay.run)
+    run_dict["quest_level"] = None
+    run_dict["custom_quest"] = legacy_cq
+    legacy_replay = _ReplayV33Legacy(
+        format_version=33,
+        game_version=replay.game_version,
+        rules=replay.rules,
+        recorder=replay.recorder,
+        pilot=replay.pilot,
+        run=_RunSpecV33Legacy(**run_dict),
+        result=replay.result,
+        ticks=replay.ticks,
+    )
+    payload = msgspec.msgpack.encode(legacy_replay)
+    decoded = decode_replay_payload(payload)
+    assert decoded.run.custom_quest == quest
+
 def test_a_survival_replay_carrying_both_quests_is_refused():
     replay = load_replay((FIXTURES / "survival-135302.crd").read_bytes())
     run = msgspec.structs.replace(replay.run, quest_level=QuestLevel(1, 1), custom_quest=crosswind())

@@ -492,6 +492,34 @@ describe("custom quests", () => {
     const binBytes = new Uint8Array(await bin.arrayBuffer());
     expect(binBytes.byteLength).toBe(6184);
     expect(hex(await sha256(binBytes))).toBe(vectors.custom_quest_run.digest);
+    const runView = (await (await SELF.fetch(`${ORIGIN}/api/runs/${published.id}`)).json()) as RunDetailView;
+    expect(runView.custom_slots).toEqual([2, 3, 2]);
+
+    const other = await Player.create();
+    const otherSig = await other.sign(concat(RUN_DOMAIN, payloadSha, new TextEncoder().encode("other")));
+    const hijack = await post("/api/quests", {
+      replay: file,
+      name: "other",
+      public_key: other.publicKey,
+      signature: otherSig,
+      source: vectors.custom_quest_run.source,
+    });
+    expect(hijack.status).toBe(403);
+
+    const badSource = await post("/api/quests", {
+      replay: file,
+      name: "banteg",
+      public_key: player.publicKey,
+      signature,
+      source: 'quest "Wrong Title" version 1\nauthor "banteg"\nterrain (2, 3, 2)\nat 0s:\n    spawn alien.small_gray at (512, 448)\n',
+    });
+    expect(badSource.status).toBe(422);
+
+    const session = asSession(await signIn(player));
+    const me = (await (await session.get("/api/me")).json()) as { account: number };
+    const deleted = await session.post("/api/account/delete", { account: me.account });
+    expect(deleted.status).toBe(200);
+    expect((await SELF.fetch(`${ORIGIN}/api/q/${questId}`)).status).toBe(404);
   });
 
   it("POST /api/quests refuses a survival replay", async () => {

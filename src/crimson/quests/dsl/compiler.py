@@ -126,7 +126,11 @@ def _line(node: Tree | Token) -> int:
 
 
 _PERK_ALIASES: dict[str, PerkId] = {
-    **{name.lower(): member for name, member in PerkId.__members__.items() if member != PerkId.ANTIPERK},
+    **{
+        name.lower(): member
+        for name, member in PerkId.__members__.items()
+        if member not in (PerkId.ANTIPERK, PerkId.INSTANT_WINNER)
+    },
     "bloody_mess": PerkId.BLOODY_MESS_QUICK_LEARNER,
     "quick_learner": PerkId.BLOODY_MESS_QUICK_LEARNER,
 }

@@ -349,26 +349,64 @@ class Schema {
     return { name: this.str(f.name, "pilot.name"), model: this.str(f.model, "pilot.model"), url: this.str(f.url, "pilot.url") };
   }
 
+  private spawnEntries(value: Value, field: string): SpawnEntry[] {
+    return this.array(value, field).map((entry, i) => {
+      const e = this.fields(entry, `${field}[${i}]`, ["pos", "heading", "spawn_id", "trigger_ms", "count"]);
+      const pos = this.fields(e.pos, `${field}[${i}].pos`, ["x", "y"]);
+      return {
+        pos: {
+          x: this.float(pos.x, `${field}[${i}].pos.x`),
+          y: this.float(pos.y, `${field}[${i}].pos.y`),
+        },
+        heading: this.float(e.heading, `${field}[${i}].heading`),
+        spawn_id: this.int(e.spawn_id, `${field}[${i}].spawn_id`),
+        trigger_ms: this.int(e.trigger_ms, `${field}[${i}].trigger_ms`),
+        count: this.int(e.count, `${field}[${i}].count`),
+      };
+    });
+  }
+
   private customQuest(value: Value): CustomQuest {
+    require(value instanceof MapValue, "run.custom_quest must be a map");
+    const keys = value.entries.map(([key]) => key);
+    const legacy = keys.includes("tables");
+    if (legacy) {
+      const f = this.fields(value, "run.custom_quest", [
+        "title", "author", "start_weapon_id", "terrain_slots", "tables", "variants",
+      ]);
+      const terrain = this.array(f.terrain_slots, "run.custom_quest.terrain_slots");
+      require(terrain.length === 3, "run.custom_quest.terrain_slots must have 3 entries");
+      const tables = this.array(f.tables, "run.custom_quest.tables").map((t, i) =>
+        this.spawnEntries(t, `run.custom_quest.tables[${i}]`),
+      );
+      const variants = this.array(f.variants, "run.custom_quest.variants").map((v, i) =>
+        this.int(v, `run.custom_quest.variants[${i}]`),
+      );
+      const used = [...new Set(variants)].sort((a, b) => a - b);
+      require(
+        variants.length === 8 && tables.length >= 1 && used.length === tables.length && used.every((idx, i) => idx === i),
+        "run.custom_quest.variants must pick one of the tables for each of 8 variants",
+      );
+      return {
+        title: this.str(f.title, "run.custom_quest.title"),
+        author: f.author === null ? null : this.str(f.author, "run.custom_quest.author"),
+        start_weapon_id: this.int(f.start_weapon_id, "run.custom_quest.start_weapon_id"),
+        terrain_slots: [
+          this.int(terrain[0]!, "run.custom_quest.terrain_slots[0]"),
+          this.int(terrain[1]!, "run.custom_quest.terrain_slots[1]"),
+          this.int(terrain[2]!, "run.custom_quest.terrain_slots[2]"),
+        ],
+        entries: tables[variants[0]!]!,
+        no_bonuses: [],
+        no_perks: [],
+        no_weapons: [],
+      };
+    }
     const f = this.fields(value, "run.custom_quest", [
       "title", "author", "start_weapon_id", "terrain_slots", "entries", "no_bonuses", "no_perks", "no_weapons",
     ]);
     const terrain = this.array(f.terrain_slots, "run.custom_quest.terrain_slots");
     require(terrain.length === 3, "run.custom_quest.terrain_slots must have 3 entries");
-    const entries = this.array(f.entries, "run.custom_quest.entries").map((entry, i) => {
-      const e = this.fields(entry, `run.custom_quest.entries[${i}]`, ["pos", "heading", "spawn_id", "trigger_ms", "count"]);
-      const pos = this.fields(e.pos, `run.custom_quest.entries[${i}].pos`, ["x", "y"]);
-      return {
-        pos: {
-          x: this.float(pos.x, `run.custom_quest.entries[${i}].pos.x`),
-          y: this.float(pos.y, `run.custom_quest.entries[${i}].pos.y`),
-        },
-        heading: this.float(e.heading, `run.custom_quest.entries[${i}].heading`),
-        spawn_id: this.int(e.spawn_id, `run.custom_quest.entries[${i}].spawn_id`),
-        trigger_ms: this.int(e.trigger_ms, `run.custom_quest.entries[${i}].trigger_ms`),
-        count: this.int(e.count, `run.custom_quest.entries[${i}].count`),
-      };
-    });
     return {
       title: this.str(f.title, "run.custom_quest.title"),
       author: f.author === null ? null : this.str(f.author, "run.custom_quest.author"),
@@ -378,7 +416,7 @@ class Schema {
         this.int(terrain[1]!, "run.custom_quest.terrain_slots[1]"),
         this.int(terrain[2]!, "run.custom_quest.terrain_slots[2]"),
       ],
-      entries,
+      entries: this.spawnEntries(f.entries, "run.custom_quest.entries"),
       no_bonuses: this.array(f.no_bonuses, "run.custom_quest.no_bonuses").map((id, i) =>
         this.int(id, `run.custom_quest.no_bonuses[${i}]`),
       ),
@@ -594,6 +632,7 @@ export function validateCustomQuest(quest: CustomQuest): void {
   require(quest.terrain_slots.every((slot) => slot >= 0 && slot <= 7), "run.custom_quest: terrain slots must be in 0..7");
   requireAscending(quest.no_bonuses, 2, 14, "run.custom_quest: no_bonuses");
   requireAscending(quest.no_perks, 1, 57, "run.custom_quest: no_perks");
+  require(!quest.no_perks.includes(7), "run.custom_quest: no_perks cannot disable instant_winner");
   requireAscending(quest.no_weapons, 2, 33, "run.custom_quest: no_weapons");
   require(quest.entries.length >= 1 && quest.entries.length <= 256, "run.custom_quest: a table holds 1..256 entries");
   const perTrigger = new Map<number, number>();

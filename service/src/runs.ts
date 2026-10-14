@@ -19,8 +19,8 @@ interface Upload {
   name: string;
   public_key: string;
   signature: string;
-  source?: string | null;
-  seed?: number;
+  source: string | null;
+  seed: number;
 }
 
 function parseUpload(body: unknown): Upload | null {
@@ -60,6 +60,41 @@ export async function customQuestDigest(quest: CustomQuest): Promise<string> {
   return hex(await sha256(encodePortableQuest(quest)));
 }
 
+function validateRecipeSource(source: string, quest: CustomQuest): boolean {
+  const lines = source
+    .split(/\r?\n/)
+    .map((line) => line.replace(/#.*$/, "").trim())
+    .filter(Boolean);
+  if (lines.length < 2) return false;
+  const header = /^quest\s+("(?:[^"\\]|\\.)*")\s+version\s+1$/.exec(lines[0]!);
+  if (!header) return false;
+  try {
+    if (JSON.parse(header[1]!) !== quest.title) return false;
+  } catch {
+    return false;
+  }
+  let author: string | null = null;
+  let terrain: [number, number, number] = [0, 1, 0];
+  let hasSpawn = false;
+  for (const line of lines.slice(1)) {
+    let m: RegExpExecArray | null;
+    if ((m = /^author\s+("(?:[^"\\]|\\.)*")$/.exec(line))) {
+      try {
+        author = JSON.parse(m[1]!) as string;
+      } catch {
+        return false;
+      }
+    } else if ((m = /^terrain\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/.exec(line))) {
+      terrain = [Number(m[1]), Number(m[2]), Number(m[3])];
+    } else if (/^(?:spawn|burst|place)\b/.test(line)) {
+      hasSpawn = true;
+    }
+  }
+  if (author !== quest.author) return false;
+  if (terrain.some((slot, i) => slot !== quest.terrain_slots[i])) return false;
+  return hasSpawn;
+}
+
 export async function postRun(request: Request, env: Env, options: { requireCustomQuest?: boolean } = {}): Promise<Response> {
   if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) return refuse(413, "upload too large");
   const upload = parseUpload(await request.json().catch(() => null));
@@ -82,6 +117,8 @@ export async function postRun(request: Request, env: Env, options: { requireCust
   }
   if (options.requireCustomQuest && replay.run.custom_quest === null)
     return refuse(422, "expected a custom quest replay");
+  if (upload.source !== null && (!options.requireCustomQuest || !replay.run.custom_quest || !validateRecipeSource(upload.source, replay.run.custom_quest)))
+    return refuse(422, "recipe source does not match the replay's custom quest");
   if (replay.rules !== REPLAY_RULES)
     return refuse(422, `replay was recorded under rules ${replay.rules}; this service verifies rules ${REPLAY_RULES}`);
   if (!(await verifyEd25519(publicKey, signature, concat(RUN_DOMAIN, payloadSha, name))))
@@ -97,19 +134,31 @@ export async function postRun(request: Request, env: Env, options: { requireCust
   const custom = replay.run.custom_quest;
   const digest = custom ? await customQuestDigest(custom) : null;
   const quest = digest ? digest.slice(0, 12) : questOf(replay);
+  const existingQuest = custom
+    ? await env.DB.prepare("SELECT digest, account_id, source FROM custom_quests WHERE id = ?")
+        .bind(quest)
+        .first<{ digest: string; account_id: number; source: string | null }>()
+    : null;
+  if (existingQuest && existingQuest.digest !== digest) return refuse(409, "quest id collision");
+
   const existing = await env.DB.prepare("SELECT account_id FROM runs WHERE id = ?").bind(runId).first<{ account_id: number }>();
   if (existing) {
-    if (options.requireCustomQuest && custom && digest) {
+    if (options.requireCustomQuest && custom && digest && upload.source !== null) {
       const now = Date.now();
       const accountId = await accountForKey(env, upload.public_key, publicKey, now);
+      if (existing.account_id !== accountId || (existingQuest && existingQuest.account_id !== accountId))
+        return refuse(403, "only the quest's creator can attach its recipe");
+      if (existingQuest && existingQuest.source !== null && existingQuest.source !== upload.source)
+        return refuse(409, "this quest already has a recipe");
       await env.DB.prepare(
         `INSERT INTO custom_quests (id, digest, account_id, first_run_id, title, author, source, seed, definition, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT (id) DO UPDATE SET
            source = coalesce(custom_quests.source, excluded.source),
-           seed = CASE WHEN custom_quests.source IS NULL AND excluded.source IS NOT NULL THEN excluded.seed ELSE custom_quests.seed END`,
+           seed = CASE WHEN custom_quests.source IS NULL AND excluded.source IS NOT NULL THEN excluded.seed ELSE custom_quests.seed END
+         WHERE custom_quests.account_id = excluded.account_id AND custom_quests.digest = excluded.digest`,
       )
-        .bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source ?? null, upload.seed ?? 0, JSON.stringify(custom), now)
+        .bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source, upload.seed ?? 0, JSON.stringify(custom), now)
         .run();
       return json({ id: runId, board: "quests", quest, digest, url: `/q/${quest}` }, 200);
     }
@@ -124,6 +173,10 @@ export async function postRun(request: Request, env: Env, options: { requireCust
   const score = rankedScore(replay.run, replay.result);
   const now = Date.now();
   const accountId = await accountForKey(env, upload.public_key, publicKey, now);
+  if (upload.source !== null && existingQuest) {
+    if (existingQuest.account_id !== accountId) return refuse(403, "only the quest's creator can attach its recipe");
+    if (existingQuest.source !== null && existingQuest.source !== upload.source) return refuse(409, "this quest already has a recipe");
+  }
   await env.REPLAYS.put(`runs/${runId}.crd`, file, { httpMetadata: { contentType: "application/octet-stream" } });
   await putTimeline(env, runId, verdict.timeline);
   await putGround(env, runId, ground!);
@@ -149,8 +202,9 @@ export async function postRun(request: Request, env: Env, options: { requireCust
         `INSERT INTO custom_quests (id, digest, account_id, first_run_id, title, author, source, seed, definition, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT (id) DO UPDATE SET
-           source = coalesce(custom_quests.source, excluded.source),
-           seed = CASE WHEN custom_quests.source IS NULL AND excluded.source IS NOT NULL THEN excluded.seed ELSE custom_quests.seed END`,
+           source = CASE WHEN custom_quests.account_id = excluded.account_id AND custom_quests.source IS NULL THEN excluded.source ELSE custom_quests.source END,
+           seed = CASE WHEN custom_quests.account_id = excluded.account_id AND custom_quests.source IS NULL AND excluded.source IS NOT NULL THEN excluded.seed ELSE custom_quests.seed END
+         WHERE custom_quests.digest = excluded.digest`,
       ).bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source ?? null, upload.seed ?? 0, JSON.stringify(custom), now),
     );
   }

@@ -402,6 +402,42 @@ static bool replay_printable(const std::string &s, size_t max_len) {
   return true;
 }
 
+static bool replay_read_spawn_entries(MsgpackReader &r, PortableQuest &q) {
+  uint32_t count = r.array();
+  if (!r.ok || count < 1 || count > 256)
+    return r.ok = false;
+  q.count = count;
+  for (uint32_t i = 0; r.ok && i < count; ++i) {
+    PortableSpawn &s = q.entries[i];
+    for (uint32_t m = r.map(); r.ok && m; --m) {
+      std::string field = r.str();
+      if (field == "pos") {
+        for (uint32_t p = r.map(); r.ok && p; --p) {
+          std::string axis = r.str();
+          double v = r.real();
+          float fv = (float)v;
+          if (!std::isfinite(v) || (double)fv != v)
+            r.ok = false;
+          (axis == "x" ? s.x : s.y) = fv;
+        }
+      } else if (field == "heading") {
+        double v = r.real();
+        s.heading = (float)v;
+        if (!std::isfinite(v) || (double)s.heading != v)
+          r.ok = false;
+      } else if (field == "spawn_id")
+        s.template_id = (int32_t)r.integer();
+      else if (field == "trigger_ms")
+        s.trigger_ms = (int32_t)r.integer();
+      else if (field == "count")
+        s.count = (int32_t)r.integer();
+      else
+        r.ok = false;
+    }
+  }
+  return r.ok;
+}
+
 static bool replay_read_custom_quest(MsgpackReader &r, PortableQuest &q, LoadedReplay &out) {
   q = {};
   bool has_title = false, has_weapon = false, has_terrain = false, has_entries = false;
@@ -426,39 +462,20 @@ static bool replay_read_custom_quest(MsgpackReader &r, PortableQuest &q, LoadedR
         slot = (uint32_t)r.integer();
       has_terrain = true;
     } else if (key == "entries") {
-      uint32_t count = r.array();
-      if (!r.ok || count < 1 || count > 256)
+      has_entries = replay_read_spawn_entries(r, q);
+    } else if (key == "tables") {
+      uint32_t tables = r.array();
+      if (!r.ok || tables < 1 || tables > 8)
         return r.ok = false;
-      q.count = count;
-      has_entries = true;
-      for (uint32_t i = 0; r.ok && i < count; ++i) {
-        PortableSpawn &s = q.entries[i];
-        for (uint32_t m = r.map(); r.ok && m; --m) {
-          std::string field = r.str();
-          if (field == "pos") {
-            for (uint32_t p = r.map(); r.ok && p; --p) {
-              std::string axis = r.str();
-              double v = r.real();
-              float fv = (float)v;
-              if (!std::isfinite(v) || (double)fv != v)
-                r.ok = false;
-              (axis == "x" ? s.x : s.y) = fv;
-            }
-          } else if (field == "heading") {
-            double v = r.real();
-            s.heading = (float)v;
-            if (!std::isfinite(v) || (double)s.heading != v)
-              r.ok = false;
-          } else if (field == "spawn_id")
-            s.template_id = (int32_t)r.integer();
-          else if (field == "trigger_ms")
-            s.trigger_ms = (int32_t)r.integer();
-          else if (field == "count")
-            s.count = (int32_t)r.integer();
-          else
-            r.ok = false;
-        }
-      }
+      has_entries = replay_read_spawn_entries(r, q);
+      for (uint32_t t = 1; r.ok && t < tables; ++t)
+        r.skip();
+    } else if (key == "variants") {
+      if (r.array() != 8)
+        r.ok = false;
+      for (int i = 0; r.ok && i < 8; ++i)
+        if (r.integer() != 0 && i == 0)
+          r.ok = false;
     } else if (key == "no_bonuses") {
       int64_t prev = 1;
       for (uint32_t count = r.array(); r.ok && count; --count) {
@@ -473,7 +490,7 @@ static bool replay_read_custom_quest(MsgpackReader &r, PortableQuest &q, LoadedR
       int64_t prev = 0;
       for (uint32_t count = r.array(); r.ok && count; --count) {
         int64_t id = r.integer();
-        if (id <= prev || id > 57)
+        if (id <= prev || id > 57 || id == 7)
           r.ok = false;
         else
           q.disable_perks[id >> 5] |= 1u << (id & 31);

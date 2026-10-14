@@ -209,9 +209,8 @@ extern "C" uintptr_t portable_config() { return (uintptr_t)&cfg; }
 extern "C" uintptr_t portable_quest() { return (uintptr_t)&quest; }
 // The custom quest's builder: its table and drop/offer restrictions, where a stock builder would construct one.
 static void custom_quest_build(quest_spawn_entry_t *entries, int *count) {
-  for (int i = 2; i <= 14; ++i)
-    if (quest.disable_bonuses & (1u << i))
-      bonus_meta_table[i].enabled = 0;
+  for (int i = 1; i <= 14; ++i)
+    bonus_meta_table[i].enabled = (quest.disable_bonuses & (1u << i)) ? 0 : 1;
   for (int i = 1; i <= 57; ++i)
     if (quest.disable_perks[i >> 5] & (1u << (i & 31)))
       perk_meta_table[i].available = 0;
@@ -235,7 +234,7 @@ static bool custom_quest_valid_for(const PortableQuest &q) {
   if (q.weapon_id < 1 || q.weapon_id > 53 || (q.weapon_id >= 34 && q.weapon_id <= 40) ||
       (q.weapon_id >= 46 && q.weapon_id <= 49) || q.count < 1 || q.count > 256)
     return false;
-  if ((q.disable_bonuses & ~0x7ffcu) || (q.disable_perks[0] & 1u) ||
+  if ((q.disable_bonuses & ~0x7ffcu) || (q.disable_perks[0] & ((1u << 0) | (1u << 7))) ||
       (q.disable_perks[1] & ~0x03ffffffu) || (q.disable_weapons[0] & 3u) || (q.disable_weapons[1] & ~3u))
     return false;
   for (uint32_t slot : q.terrain)

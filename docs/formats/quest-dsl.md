@@ -82,7 +82,7 @@ is an opaque game primitive: offspring, formation members and AI remain native.
 | `order chronological` | Stable sort by trigger time, retaining construction order for ties; default |
 | `order as-written` | Keep construction order; see [table order](#table-order) |
 | `no_bonuses [...]` | Disable random bonus drops (bonus IDs 2..14; `points` stays enabled) |
-| `no_perks [...]` | Disable perk offers (perk IDs 1..57) |
+| `no_perks [...]` | Disable perk offers (perk IDs 1..57; `instant_winner` stays enabled) |
 | `no_weapons [...]` | Disable specific weapons (IDs 2..33) from random weapon drops |
 | `fixed_weapon true` | Lock the run to the starting weapon (disables `weapon` bonus, weapon perks, and non-Pistol weapon drops) |
 | `let name = expression` | Immutable local binding |

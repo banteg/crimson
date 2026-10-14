@@ -201,9 +201,10 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
   const [board, customRow] = await Promise.all([
     bestRuns(env, run.board, run.quest, run.category, BOARD_SCAN),
     CUSTOM_QUEST_ID.test(run.quest)
-      ? env.DB.prepare("SELECT title FROM custom_quests WHERE id = ?").bind(run.quest).first<{ title: string }>()
+      ? env.DB.prepare("SELECT title, definition FROM custom_quests WHERE id = ?").bind(run.quest).first<{ title: string; definition: string }>()
       : Promise.resolve(null),
   ]);
+  const customDef = customRow ? (JSON.parse(customRow.definition) as CustomQuest) : null;
   const rank = board.findIndex((row) => row.id === id);
   const top = board[0] && board[0].id !== id ? board[0] : null;
   const best = board.find((row) => row.account_id === run.account_id);
@@ -213,6 +214,7 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
     id,
     board: run.board,
     quest: run.quest,
+    custom_slots: customDef?.terrain_slots ?? null,
     category: run.category,
     pilot: parsePilot(run.pilot),
     title: boardTitle(run.board, run.quest, customRow?.title),
