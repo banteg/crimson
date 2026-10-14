@@ -166,10 +166,10 @@ def build_checkpoint(
     for player in players:
         player_ckpts.append(
             ReplayPlayerCheckpoint(
-                pos=ReplayCheckpointVec2(float(player.pos.x), float(player.pos.y)),
-                health=float(player.health),
+                pos=ReplayCheckpointVec2(f32(player.pos.x), f32(player.pos.y)),
+                health=f32(player.health),
                 weapon_id=WeaponId(player.weapon.weapon_id),
-                ammo=float(player.weapon.ammo),
+                ammo=f32(player.weapon.ammo),
                 experience=int(player.experience),
                 level=int(player.level),
             ),
@@ -206,7 +206,7 @@ def build_checkpoint(
             ReplayDeathLedgerEntry(
                 creature_index=int(death.index),
                 type_id=int(death.type_id),
-                reward_value=float(death.reward_value),
+                reward_value=f32(death.reward_value),
                 xp_awarded=int(death.xp_awarded),
             ),
         )
@@ -222,9 +222,9 @@ def build_checkpoint(
         hit_head=[
             ReplayHitSummaryEntry(
                 type_id=int(hit.type_id),
-                origin=ReplayCheckpointVec2(float(hit.origin.x), float(hit.origin.y)),
-                hit=ReplayCheckpointVec2(float(hit.hit.x), float(hit.hit.y)),
-                target=ReplayCheckpointVec2(float(hit.target.x), float(hit.target.y)),
+                origin=ReplayCheckpointVec2(f32(hit.origin.x), f32(hit.origin.y)),
+                hit=ReplayCheckpointVec2(f32(hit.hit.x), f32(hit.hit.y)),
+                target=ReplayCheckpointVec2(f32(hit.target.x), f32(hit.target.y)),
             )
             for hit in hits[:8]
         ],
@@ -247,9 +247,9 @@ def build_checkpoint(
                 None if tutorial.hint_bonus_creature_ref is None else int(tutorial.hint_bonus_creature_ref)
             ),
             prompt_text=str(overlay.prompt_text),
-            prompt_alpha=float(overlay.prompt_alpha),
+            prompt_alpha=f32(overlay.prompt_alpha),
             hint_text=str(overlay.hint_text),
-            hint_alpha_overlay=float(overlay.hint_alpha),
+            hint_alpha_overlay=f32(overlay.hint_alpha),
         )
     if state.game_mode == GameMode.TYPO:
         active_mask = [bool(creature.active) for creature in world.creatures.entries]
@@ -399,11 +399,7 @@ def _validate_and_canonicalize(checkpoints: ReplayCheckpoints) -> ReplayCheckpoi
 
 
 def dump_checkpoints(checkpoints: ReplayCheckpoints) -> bytes:
-    try:
-        decoded = _CHECKPOINTS_DECODER.decode(_CHECKPOINTS_ENCODER.encode(checkpoints))
-    except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise ReplayCheckpointsError(f"invalid checkpoints payload: {exc}") from exc
-    return zstd_pack(_CHECKPOINTS_ENCODER.encode(_validate_and_canonicalize(decoded)))
+    return zstd_pack(_CHECKPOINTS_ENCODER.encode(_validate_and_canonicalize(checkpoints)))
 
 
 def load_checkpoints(data: bytes) -> ReplayCheckpoints:

@@ -26,8 +26,7 @@ from crimson.replay.codec import (
     encode_replay_payload,
     inflate_replay_payload,
 )
-from crimson.replay.driver.playback_driver import PlaybackDriver
-from crimson.replay.driver.setup import ReplayRunnerError
+from crimson.replay.driver.playback_driver import PlaybackDriver, ReplayRunnerError
 from crimson.replay.ranked import RankedTickMonitor, outcome_reasons, ranked_board, ranked_run_spec, unranked_reasons
 from crimson.replay.types import Pilot, Replay, ReplayTick, current_recorder
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand

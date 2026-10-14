@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import crimson.replay.driver.playback_pump as playback_pump_module
 import crimson.world.audio_bridge as audio_bridge_module
 from crimson.game_modes import GameMode
-from crimson.replay.driver.playback_driver import build_runtime_playback_driver
+from crimson.replay.driver.playback_driver import advance_playback_frame, build_runtime_playback_driver
 from crimson.replay.ticks import LiveTickSource, step_replay_tick
 from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.clock import FixedStepClock
@@ -76,7 +75,7 @@ def test_contract_8_live_and_replay_frames_advance_the_presentation_clock_alike(
     next_tick = 0
     for frame_dt in (1.0 / 60.0, 2.5 / 60.0, 0.25 / 60.0, 3.0 / 60.0):
         live_ticks = harness.advance_frame(live_runtime, frame_dt)
-        advance = playback_pump_module.advance_playback_frame(
+        advance = advance_playback_frame(
             driver=driver,
             runtime=replay_runtime,
             clock=replay_clock,

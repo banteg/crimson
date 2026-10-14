@@ -67,16 +67,3 @@ def builtin_object_or_empty(value: BuiltinValue | None) -> BuiltinObject:
         return coerced
     return {}
 
-
-def builtin_rows_or_empty(value: BuiltinValue | None) -> BuiltinRows:
-    if not isinstance(value, list):
-        return []
-    rows: BuiltinRows = []
-    for item in value:
-        if not isinstance(item, dict):
-            return []
-        try:
-            rows.append(to_builtin_object(item, field="payload[]"))
-        except TypeError:
-            return []
-    return rows

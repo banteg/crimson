@@ -6,7 +6,7 @@ from collections.abc import Sequence
 import msgspec
 
 from .checkpoints import ReplayCheckpoint
-from .payloads import BuiltinObject, to_builtin_object
+from .payloads import BuiltinObject
 from .strict_compare import strict_mismatch_payload
 
 
@@ -29,21 +29,15 @@ class CheckpointDeepDiff(msgspec.Struct, frozen=True):
     diff_count: int
 
 
-def _checkpoint_to_obj(checkpoint: ReplayCheckpoint) -> BuiltinObject:
-    return to_builtin_object(checkpoint, field="checkpoint")
-
-
 def checkpoint_deepdiff(
     expected: ReplayCheckpoint,
     actual: ReplayCheckpoint,
 ) -> CheckpointDeepDiff | None:
-    expected_obj = _checkpoint_to_obj(expected)
-    actual_obj = _checkpoint_to_obj(actual)
-    mismatches, diff_count, _pretty = strict_mismatch_payload(expected_obj, actual_obj)
+    mismatches, diff_count, _pretty = strict_mismatch_payload(expected, actual)
     if int(diff_count) <= 0:
         return None
 
-    payload = to_builtin_object({"mismatches": mismatches}, field="checkpoint_diff.payload")
+    payload: BuiltinObject = {"mismatches": list(mismatches)}
     return CheckpointDeepDiff(
         payload=payload,
         pretty=json.dumps(payload, sort_keys=True, indent=2, default=repr),

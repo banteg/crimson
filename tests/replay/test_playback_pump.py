@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
+from typing import cast
 
 import pytest
 
-from crimson.replay.driver.playback_pump import advance_playback_frame
+from crimson.replay.driver.playback_driver import PlaybackDriver, advance_playback_frame
 from crimson.sim.clock import FixedStepClock
 from crimson.world import WorldRuntime
 from grim.rand import Crand
@@ -15,12 +17,16 @@ def _runtime(assets_dir: Path) -> WorldRuntime:
     return WorldRuntime(assets_dir=assets_dir, audio_rng=Crand(0))
 
 
+def _driver(*, tick_limit: int, on_step: Callable[[], None] | None = None) -> PlaybackDriver:
+    return cast("PlaybackDriver", FakePlaybackDriver(tick_limit=tick_limit, on_step=on_step))
+
+
 def test_advance_playback_frame_advances_tick_index(assets_dir: Path) -> None:
     clock = FixedStepClock(tick_rate=60)
     runtime = _runtime(assets_dir)
 
     advance = advance_playback_frame(
-        driver=FakePlaybackDriver(tick_limit=16),
+        driver=_driver(tick_limit=16),
         runtime=runtime,
         clock=clock,
         start_tick=4,
@@ -39,7 +45,7 @@ def test_advance_playback_frame_respects_max_ticks_clamp(assets_dir: Path) -> No
     clock = FixedStepClock(tick_rate=60)
 
     advance = advance_playback_frame(
-        driver=FakePlaybackDriver(tick_limit=16),
+        driver=_driver(tick_limit=16),
         runtime=_runtime(assets_dir),
         clock=clock,
         start_tick=0,
@@ -57,7 +63,7 @@ def test_advance_playback_frame_refunds_unconsumed_ticks_when_tick_limit_truncat
     clock = FixedStepClock(tick_rate=60)
 
     advance = advance_playback_frame(
-        driver=FakePlaybackDriver(tick_limit=2),
+        driver=_driver(tick_limit=2),
         runtime=_runtime(assets_dir),
         clock=clock,
         start_tick=1,
@@ -78,7 +84,7 @@ def test_advance_playback_frame_advances_presentation_clock_after_stepping_the_b
     elapsed_at_step: list[float] = []
 
     advance = advance_playback_frame(
-        driver=FakePlaybackDriver(
+        driver=_driver(
             tick_limit=2,
             on_step=lambda: elapsed_at_step.append(runtime.presentation.elapsed_ms),
         ),

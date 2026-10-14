@@ -5,7 +5,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, Literal, NoReturn
 
 import msgspec
 import typer
@@ -58,6 +58,45 @@ def _require_replay_path(replay_file: Path, *, base_dir: Path) -> Path:
         typer.echo(message, err=True)
         raise typer.Exit(code=1)
     return replay_path
+
+
+def _fail_replay(action: str, exc: Exception) -> NoReturn:
+    typer.echo(f"{action} failed: {exc}", err=True)
+    raise typer.Exit(code=1) from exc
+
+
+def _load_replay_from_arg(
+    replay_file: Path,
+    *,
+    base_dir: Path,
+    action: str,
+) -> tuple[Path, Replay]:
+    from ..replay import ReplayCodecError, load_replay_file
+
+    replay_path = _require_replay_path(replay_file, base_dir=base_dir)
+    try:
+        return replay_path, load_replay_file(replay_path)
+    except ReplayCodecError as exc:
+        _fail_replay(action, exc)
+
+
+def _emit_json_report(
+    payload: object,
+    *,
+    output_format: Literal["human", "json"],
+    json_out: Path | None,
+    echo_human_path: bool = True,
+) -> bool:
+    payload_json = msgspec.json.encode(payload)
+    if json_out is not None:
+        json_out.parent.mkdir(parents=True, exist_ok=True)
+        json_out.write_bytes(payload_json)
+        if output_format == "human" and echo_human_path:
+            typer.echo(f"json_report={json_out}")
+    if output_format == "json":
+        typer.echo(payload_json.decode("utf-8"))
+        return True
+    return False
 
 
 def _default_replay_render_output_path(replay_path: Path) -> Path:
@@ -363,7 +402,7 @@ def cmd_replay_play(
     from grim.view import ViewContext
 
     from ..modes.replay_playback_mode import open_replay_audio
-    from ..replay import ReplayCodecError, load_replay_file, warn_on_game_version_mismatch
+    from ..replay import ReplayCodecError, warn_on_game_version_mismatch
     from ..replay.versioning import require_playable_rules
     from ..runtime_boot import boot_runtime
     from ..runtime_resources_view import RuntimeResourcesView
@@ -372,14 +411,12 @@ def cmd_replay_play(
     if assets_dir is None:
         assets_dir = base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
-    replay_path = _require_replay_path(replay_file, base_dir=base_dir)
+    replay_path, replay = _load_replay_from_arg(replay_file, base_dir=base_dir, action="replay playback")
     try:
-        replay = load_replay_file(replay_path)
         require_playable_rules(replay)
         warn_on_game_version_mismatch(replay, action="playback")
     except ReplayCodecError as exc:
-        typer.echo(f"replay playback failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
+        _fail_replay("replay playback", exc)
     boot = boot_runtime(base_dir, assets_dir, width=width, height=height)
 
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
@@ -523,8 +560,7 @@ def cmd_replay_verify(
     import hashlib
 
     from ..replay import ReplayCodecError, decode_replay_payload, inflate_replay_payload
-    from ..replay.driver.playback_driver import build_verify_playback_driver
-    from ..replay.driver.setup import ReplayRunnerError
+    from ..replay.driver.playback_driver import ReplayRunnerError, build_verify_playback_driver
     from ..replay.ranked import RankedTickMonitor, outcome_reasons, ranked_board, unranked_reasons
     from ..sim.run_result import run_result_mismatches
 
@@ -537,8 +573,7 @@ def cmd_replay_verify(
         monitor = RankedTickMonitor(replay=replay)
         result = driver.run(observer=monitor)
     except (ReplayCodecError, ReplayRunnerError) as exc:
-        typer.echo(f"replay verification failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
+        _fail_replay("replay verification", exc)
 
     mismatched_fields = run_result_mismatches(replay.result, result) if driver.complete else []
     status: Literal["ok", "result_mismatch", "partial"]
@@ -549,7 +584,7 @@ def cmd_replay_verify(
     else:
         status = "ok"
     unranked = [*unranked_reasons(replay.run), *sorted(monitor.reasons), *outcome_reasons(replay.run, result)]
-    payload_json = msgspec.json.encode({
+    payload = {
         "schema_version": _REPLAY_VERIFY_SCHEMA_VERSION,
         "status": status,
         "replay": str(replay_path),
@@ -565,17 +600,8 @@ def cmd_replay_verify(
         "ranked": not unranked,
         "unranked_reasons": unranked,
         "board": ranked_board(replay.run) if not unranked else None,
-    })
-
-    if json_out is not None:
-        json_out.parent.mkdir(parents=True, exist_ok=True)
-        json_out.write_bytes(payload_json)
-        if output_format == "human":
-            typer.echo(f"json_report={json_out}")
-
-    if output_format == "json":
-        typer.echo(payload_json.decode("utf-8"))
-    else:
+    }
+    if not _emit_json_report(payload, output_format=output_format, json_out=json_out):
         player = result.players[0]
         message = (
             f"{status}: outcome={result.outcome} ticks={driver.tick_limit}/{len(replay.ticks)} "
@@ -629,16 +655,11 @@ def cmd_replay_info(
     ),
 ) -> None:
     """Simulate a replay and emit a timeline of gameplay events."""
-    from ..replay import ReplayCodecError, load_replay
-    from ..replay.driver.playback_driver import build_verify_playback_driver
+    from ..replay.driver.playback_driver import ReplayRunnerError, build_verify_playback_driver
     from ..replay.driver.replay_info import collect_replay_info, event_counts_by_kind
-    from ..replay.driver.setup import ReplayRunnerError
 
-    replay_path = _require_replay_path(replay_file, base_dir=base_dir)
-
-    replay_bytes = Path(replay_path).read_bytes()
+    replay_path, replay = _load_replay_from_arg(replay_file, base_dir=base_dir, action="replay info")
     try:
-        replay = load_replay(replay_bytes)
         result = collect_replay_info(
             build_verify_playback_driver(
                 replay,
@@ -648,11 +669,10 @@ def cmd_replay_info(
             player_index=player_index,
             include_extra_events=bool(verbose),
         )
-    except (ReplayCodecError, ReplayRunnerError) as exc:
-        typer.echo(f"replay info failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
+    except ReplayRunnerError as exc:
+        _fail_replay("replay info", exc)
 
-    payload_json = msgspec.json.encode({
+    payload = {
         "schema_version": _REPLAY_INFO_SCHEMA_VERSION,
         "status": "ok",
         "replay": str(replay_path),
@@ -666,16 +686,9 @@ def cmd_replay_info(
             "event_counts_by_kind": event_counts_by_kind(result.timeline),
         },
         "timeline": result.timeline,
-    })
-
-    if json_out is not None:
-        json_out.parent.mkdir(parents=True, exist_ok=True)
-        json_out.write_bytes(payload_json)
-
-    if output_format == "json":
-        typer.echo(payload_json.decode("utf-8"))
+    }
+    if _emit_json_report(payload, output_format=output_format, json_out=json_out, echo_human_path=False):
         return
-
     typer.echo(
         "ok: "
         f"replay={replay_path} "
@@ -770,17 +783,14 @@ def cmd_replay_benchmark(
     ),
 ) -> None:
     """Benchmark replay throughput, with optional profiler hotspots."""
-    from ..replay import ReplayCodecError, load_replay
+    from ..replay.driver.playback_driver import ReplayRunnerError
     from ..replay.driver.replay_benchmark import (
         ReplayBenchmarkError,
         run_replay_benchmark,
         run_replay_render_benchmark,
     )
-    from ..replay.driver.setup import ReplayRunnerError
 
     replay_path = _require_replay_path(replay_file, base_dir=base_dir)
-
-    replay_bytes = Path(replay_path).read_bytes()
     resolved_runs = runs if runs is not None else (1 if mode == "render" else 5)
     resolved_warmup_runs = warmup_runs if warmup_runs is not None else (0 if mode == "render" else 1)
     if mode != "render":
@@ -800,8 +810,8 @@ def cmd_replay_benchmark(
             )
             raise typer.Exit(code=1)
 
+    _, replay = _load_replay_from_arg(replay_path, base_dir=base_dir, action="replay benchmark")
     try:
-        replay = load_replay(replay_bytes)
         if mode == "render":
             benchmark = run_replay_render_benchmark(
                 replay,
@@ -832,11 +842,10 @@ def cmd_replay_benchmark(
                 profile_out=profile_out,
                 show_progress=(output_format == "human"),
             )
-    except (ReplayCodecError, ReplayBenchmarkError, ReplayRunnerError) as exc:
-        typer.echo(f"replay benchmark failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
+    except (ReplayBenchmarkError, ReplayRunnerError) as exc:
+        _fail_replay("replay benchmark", exc)
 
-    payload_json = msgspec.json.encode({
+    payload = {
         "schema_version": _REPLAY_BENCHMARK_SCHEMA_VERSION,
         "status": "ok",
         "replay": str(replay_path),
@@ -864,18 +873,9 @@ def cmd_replay_benchmark(
         },
         "profile": benchmark.profile,
         "render_telemetry": benchmark.render_telemetry,
-    })
-
-    if json_out is not None:
-        json_out.parent.mkdir(parents=True, exist_ok=True)
-        json_out.write_bytes(payload_json)
-        if output_format == "human":
-            typer.echo(f"json_report={json_out}")
-
-    if output_format == "json":
-        typer.echo(payload_json.decode("utf-8"))
+    }
+    if _emit_json_report(payload, output_format=output_format, json_out=json_out):
         return
-
     typer.echo(
         "ok: "
         f"mode={mode} "
@@ -1005,17 +1005,13 @@ def cmd_replay_render(
     ),
 ) -> None:
     """Render replay playback to video using ffmpeg."""
-    from ..replay import ReplayCodecError, load_replay
+    from ..replay.driver.playback_driver import ReplayRunnerError
     from ..replay.driver.replay_render import ReplayRenderError, run_replay_render_video
-    from ..replay.driver.setup import ReplayRunnerError
 
-    replay_path = _require_replay_path(replay_file, base_dir=base_dir)
-
+    replay_path, replay = _load_replay_from_arg(replay_file, base_dir=base_dir, action="replay render")
     output_path = Path(out) if out is not None else _default_replay_render_output_path(replay_path)
 
-    replay_bytes = Path(replay_path).read_bytes()
     try:
-        replay = load_replay(replay_bytes)
         render = run_replay_render_video(
             replay,
             replay_path=Path(replay_path),
@@ -1034,9 +1030,8 @@ def cmd_replay_render(
             mute_audio=not bool(audio),
             show_progress=True,
         )
-    except (ReplayCodecError, ReplayRenderError, ReplayRunnerError) as exc:
-        typer.echo(f"replay render failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
+    except (ReplayRenderError, ReplayRunnerError) as exc:
+        _fail_replay("replay render", exc)
 
     message = (
         f"ok: output={render.output_path} "
@@ -1068,27 +1063,23 @@ def cmd_replay_verify_checkpoints(
     ),
 ) -> None:
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
-    from ..replay import ReplayCodecError, load_replay
-    from ..replay.checkpoint_diff import compare_checkpoints
+    from ..replay.checkpoint_diff import ReplayDiffFailure, ReplayDiffResult, compare_checkpoints
     from ..replay.checkpoints import (
         ReplayCheckpoint,
         ReplayCheckpointsError,
         default_checkpoints_path,
         load_checkpoints_file,
     )
-    from ..replay.driver.playback_driver import PlaybackDriver, PlaybackWalkObserver, build_verify_playback_driver
-    from ..replay.driver.setup import ReplayRunnerError
+    from ..replay.driver.playback_driver import (
+        PlaybackDriver,
+        PlaybackWalkObserver,
+        ReplayRunnerError,
+        build_verify_playback_driver,
+    )
     from ..sim.hooks import TickResult
     from ..sim.world_state import WorldState
 
-    replay_path = _require_replay_path(replay_file, base_dir=base_dir)
-
-    replay_bytes = Path(replay_path).read_bytes()
-    try:
-        replay = load_replay(replay_bytes)
-    except ReplayCodecError as exc:
-        typer.echo(f"replay verification failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
+    replay_path, replay = _load_replay_from_arg(replay_file, base_dir=base_dir, action="replay verification")
 
     if checkpoints_file is None:
         checkpoints_path = default_checkpoints_path(replay_path)
@@ -1101,34 +1092,38 @@ def cmd_replay_verify_checkpoints(
     try:
         expected = load_checkpoints_file(checkpoints_path)
     except ReplayCheckpointsError as exc:
-        typer.echo(f"replay verification failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
+        _fail_replay("replay verification", exc)
 
-    checkpoint_ticks = {int(ckpt.tick_index) for ckpt in expected.checkpoints}
     expected_by_tick = {int(ckpt.tick_index): ckpt for ckpt in expected.checkpoints}
     actual: list[ReplayCheckpoint] = []
 
     class _CheckpointMismatchStop(Exception):
-        def __init__(self, diff: object, rng_callers: list[int]) -> None:
+        def __init__(self, diff: ReplayDiffResult, rng_callers: list[int]) -> None:
             self.diff = diff
             self.rng_callers = rng_callers
 
     class _CheckpointVerifyObserver(PlaybackWalkObserver):
         driver: PlaybackDriver
-        checkpoint_ticks: set[int]
         actual: list[ReplayCheckpoint]
 
         def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
             _ = world
             tick_index = int(tick_result.tick_index)
-            if tick_index in self.checkpoint_ticks:
+            expected_ckpt = expected_by_tick.get(tick_index)
+            if expected_ckpt is not None:
                 checkpoint = self.driver.build_checkpoint(tick_result=tick_result)
                 self.actual.append(checkpoint)
-                tick_diff = compare_checkpoints(
-                    [expected_by_tick[tick_index]],
-                    [checkpoint],
-                )
-                if not tick_diff.ok:
+                if expected_ckpt != checkpoint:
+                    tick_diff = ReplayDiffResult(
+                        ok=False,
+                        checked_count=len(self.actual),
+                        failure=ReplayDiffFailure(
+                            kind="state_mismatch",
+                            tick_index=tick_index,
+                            expected=expected_ckpt,
+                            actual=checkpoint,
+                        ),
+                    )
                     raise _CheckpointMismatchStop(tick_diff, list(self.driver.rng_call_order.callers))
 
     try:
@@ -1137,20 +1132,17 @@ def cmd_replay_verify_checkpoints(
         result = driver.run(
             observer=_CheckpointVerifyObserver(
                 driver=driver,
-                checkpoint_ticks=checkpoint_ticks,
                 actual=actual,
             ),
         )
     except _CheckpointMismatchStop as exc:
-        _render_checkpoint_diff_failure(cast("ReplayDiffResult", exc.diff), actual_rng_callers=exc.rng_callers)
+        _render_checkpoint_diff_failure(exc.diff, actual_rng_callers=exc.rng_callers)
     except ReplayRunnerError as exc:
-        typer.echo(f"replay verification failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
+        _fail_replay("replay verification", exc)
 
     diff = compare_checkpoints(expected.checkpoints, actual)
     if not diff.ok:
         _render_checkpoint_diff_failure(diff)
-
     message = (
         f"ok: {len(expected.checkpoints)} checkpoints match; ticks={driver.tick_limit} "
         f"score_xp={result.players[0].experience} kills={result.kills}"

@@ -36,8 +36,7 @@ from crimson.quests.results import compute_quest_final_time
 from crimson.replay.checkpoint_diff import compare_checkpoints
 from crimson.replay.checkpoints import ReplayCheckpoint, load_checkpoints_file
 from crimson.replay.codec import load_replay_file
-from crimson.replay.driver.playback_driver import PlaybackDriver
-from crimson.replay.driver.setup import ReplayRunnerError
+from crimson.replay.driver.playback_driver import PlaybackDriver, ReplayRunnerError
 from crimson.replay.types import Replay, ReplayTick, current_recorder
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import (

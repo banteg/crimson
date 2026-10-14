@@ -4,7 +4,7 @@ from collections.abc import Callable
 
 import pytest
 
-from crimson.render.pipeline import RaylibDrawScope, RenderDrawScope, RenderPipeline
+from grim.render_pipeline import RaylibDrawScope, RenderDrawScope, RenderPipeline
 
 
 def test_render_pipeline_lifecycle_and_resize_behavior() -> None:

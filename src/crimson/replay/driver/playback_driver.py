@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import math
 import pickle
 from collections.abc import Iterator
 from contextlib import contextmanager
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -16,17 +19,35 @@ from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.rng_call_order import RngCallOrder
 from ...replay.ticks import step_replay_tick
 from ...replay.versioning import require_playable_rules
+from ...sim.clock import FixedStepClock
 from ...sim.hooks import TickResult
 from ...sim.mode_updates import QuestSpawnState
+from ...sim.presentation_step import DeterministicPresentationPlan
 from ...sim.run_init import initialize_run
 from ...sim.run_result import RunDown, RunOutcome, RunResult, build_run_result
 from ...sim.sessions import IllegalCommandError
 from ...sim.terrain_generate import TerrainSetup
 from ...sim.world_state import WorldState
 from ...weapons import WeaponId
-from .setup import ReplayRunnerError
+
+if TYPE_CHECKING:
+    from ...world.runtime import WorldRuntime
 
 type RngTraceDraw = tuple[int, int, int, RecordedCallerStatic]
+
+
+class ReplayRunnerError(ValueError):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
+class PlaybackFrameAdvance:
+    plans: tuple[DeterministicPresentationPlan, ...]
+    tick_results: tuple[TickResult, ...]
+    next_tick_index: int
+    ticks_requested: int
+    # The tick the simulation refused (a command or input the run could not have issued); playback stops before it.
+    refused_tick: int | None = None
 
 
 @contextmanager
@@ -300,4 +321,43 @@ def build_runtime_playback_driver(
         version_mismatch_action=None,
         spawn_entries=spawn_entries,
         start_weapon_id=start_weapon_id,
+    )
+
+
+def advance_playback_frame(
+    *,
+    driver: PlaybackDriver,
+    runtime: WorldRuntime,
+    clock: FixedStepClock,
+    start_tick: int,
+    dt_seconds: float,
+    max_ticks: int | None,
+    tick_limit: int,
+) -> PlaybackFrameAdvance:
+    # Replay time, not a frame's: the viewer caps the frame dt before scaling it by the playback speed,
+    # and a skip asks for all of its seconds at once.
+    ticks_requested = int(clock.advance(float(dt_seconds), max_dt=math.inf))
+    if max_ticks is not None:
+        ticks_requested = min(ticks_requested, max(0, int(max_ticks)))
+
+    tick_results: list[TickResult] = []
+    next_tick_index = int(start_tick)
+    refused_tick: int | None = None
+    try:
+        while len(tick_results) < ticks_requested and next_tick_index < int(tick_limit):
+            tick_results.append(driver.step_tick(next_tick_index))
+            next_tick_index += 1
+    except ReplayRunnerError:
+        refused_tick = next_tick_index
+    # Time the replay has no ticks for stays on the clock.
+    clock.accum += float(ticks_requested - len(tick_results)) * float(clock.dt_tick)
+
+    for tick_result in tick_results:
+        runtime.presentation.advance(float(tick_result.payload.dt_sim))
+    return PlaybackFrameAdvance(
+        plans=tuple(tick_result.payload.presentation for tick_result in tick_results),
+        tick_results=tuple(tick_results),
+        next_tick_index=next_tick_index,
+        ticks_requested=ticks_requested,
+        refused_tick=refused_tick,
     )

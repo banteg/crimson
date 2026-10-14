@@ -8,14 +8,14 @@ import msgspec
 
 from ...bonuses.ids import BonusId, bonus_display_name
 from ...game_modes import GameMode
-from ...perks.ids import PerkId, perk_display_name
+from ...perks.ids import perk_display_name
+from ...perks.selection import PerkPick
 from ...replay import REPLAY_TICK_RATE, Replay
 from ...sim.commands import PerkMenuOpenCommand, TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ...sim.hooks import TickResult
 from ...sim.state_types import BonusPickupEvent, PerkCounts, PlayerState
 from ...weapons import WeaponId, weapon_display_name
-from .playback_driver import PlaybackDriver, PlaybackWalkObserver
-from .setup import ReplayRunnerError
+from .playback_driver import PlaybackDriver, PlaybackWalkObserver, ReplayRunnerError
 
 _EPSILON = 1e-6
 ReplayInfoCoreEventKind = Literal[
@@ -73,23 +73,18 @@ class _PlayerSnapshot(msgspec.Struct, frozen=True):
     level: int
     experience: int
     weapon_id: WeaponId
-    perk_counts: tuple[int, ...]
 
 
-def _capture_snapshots(players: list[PlayerState], perks: PerkCounts) -> list[_PlayerSnapshot]:
-    # Perk picks are attributed to player one, whose struct holds the perk table.
-    snapshots: list[_PlayerSnapshot] = []
-    for player in players:
-        snapshots.append(
-            _PlayerSnapshot(
-                health=player.health,
-                level=player.level,
-                experience=player.experience,
-                weapon_id=player.weapon.weapon_id,
-                perk_counts=tuple(perks.counts) if player.index == 0 else (),
-            ),
+def _capture_snapshots(players: list[PlayerState]) -> list[_PlayerSnapshot]:
+    return [
+        _PlayerSnapshot(
+            health=player.health,
+            level=player.level,
+            experience=player.experience,
+            weapon_id=player.weapon.weapon_id,
         )
-    return snapshots
+        for player in players
+    ]
 
 
 class _TickEvents(msgspec.Struct):
@@ -175,6 +170,8 @@ def _append_snapshot_diff_events(
     *,
     before: list[_PlayerSnapshot],
     after: list[_PlayerSnapshot],
+    perk_picks: Sequence[PerkPick],
+    perks: PerkCounts,
     violence_disabled: int,
 ) -> None:
     players_len = min(len(before), len(after))
@@ -209,27 +206,27 @@ def _append_snapshot_diff_events(
                 },
             )
 
-        perk_len = min(len(pre.perk_counts), len(post.perk_counts))
-        for perk_id in range(perk_len):
-            before_count = pre.perk_counts[perk_id]
-            after_count = post.perk_counts[perk_id]
-            if after_count <= before_count:
-                continue
-            perk_name = perk_display_name(
-                PerkId(perk_id),
-                violence_disabled=violence_disabled,
-            )
-            events.add(
-                "perk_pick",
-                idx,
-                f"p{idx} perk {perk_name} ({perk_id}) x{after_count}",
-                {
-                    "perk_id": perk_id,
-                    "perk_name": perk_name,
-                    "count_before": before_count,
-                    "count_after": after_count,
-                },
-            )
+        if idx == 0:
+            # Perk picks are attributed to player one, whose struct holds the perk table.
+            for pick in perk_picks:
+                perk_id = int(pick.perk_id)
+                after_count = int(perks.counts[perk_id])
+                before_count = after_count - 1
+                perk_name = perk_display_name(
+                    pick.perk_id,
+                    violence_disabled=violence_disabled,
+                )
+                events.add(
+                    "perk_pick",
+                    idx,
+                    f"p{idx} perk {perk_name} ({perk_id}) x{after_count}",
+                    {
+                        "perk_id": perk_id,
+                        "perk_name": perk_name,
+                        "count_before": before_count,
+                        "count_after": after_count,
+                    },
+                )
 
         health_before = pre.health
         health_after = post.health
@@ -302,7 +299,7 @@ def collect_replay_info(
     ) -> None:
         tick_index = int(tick_result.tick_index)
         tick = tick_result.payload
-        after = _capture_snapshots(after_players, perks)
+        after = _capture_snapshots(after_players)
         events = _TickEvents(
             timeline=timeline,
             tick_index=tick_index,
@@ -325,6 +322,8 @@ def collect_replay_info(
             events,
             before=before,
             after=after,
+            perk_picks=tick.perk_picks,
+            perks=perks,
             violence_disabled=replay.run.violence_disabled,
         )
 
@@ -333,7 +332,7 @@ def collect_replay_info(
 
         def before_tick(self, tick_index: int, world, dt_tick: float) -> None:
             _ = tick_index, dt_tick
-            self.before = _capture_snapshots(world.players, world.state.perks)
+            self.before = _capture_snapshots(world.players)
 
         def after_tick(self, tick_result: TickResult, world) -> None:
             before_snapshot = self.before

@@ -4,8 +4,7 @@ import msgspec
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.replay.driver.playback_driver import PlaybackDriver
-from crimson.replay.driver.setup import ReplayRunnerError
+from crimson.replay.driver.playback_driver import PlaybackDriver, ReplayRunnerError
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import RunOutcome

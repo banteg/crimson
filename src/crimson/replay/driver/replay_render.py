@@ -12,8 +12,6 @@ from typing import Literal
 import msgspec
 from tqdm import tqdm
 
-from ...render.pipeline import RaylibDrawScope, RenderPipeline
-from ...render.sink import VideoSink, VideoTransport
 from ...replay import REPLAY_TICK_RATE, Replay
 from ...sim.run_result import RunResult
 from .playback_driver import build_verify_playback_driver
@@ -51,7 +49,7 @@ class ReplayRenderResult(msgspec.Struct, frozen=True):
     run_result: RunResult
 
 
-class _FfmpegVideoTransport(VideoTransport):
+class _FfmpegVideoWriter:
     def __init__(
         self,
         *,
@@ -81,6 +79,7 @@ class _FfmpegVideoTransport(VideoTransport):
         self._flushed = False
 
     def open(self) -> None:
+        self._output_path.parent.mkdir(parents=True, exist_ok=True)
         self._proc = _spawn_ffmpeg_raw_video_process(
             ffmpeg_path=self._ffmpeg_path,
             output_path=self._output_path,
@@ -94,7 +93,7 @@ class _FfmpegVideoTransport(VideoTransport):
         )
         self._flushed = False
 
-    def present_frame(self) -> None:
+    def write_frame(self) -> None:
         proc = self._proc
         if proc is None:
             raise ReplayRenderError("ffmpeg process was not initialized")
@@ -180,7 +179,7 @@ def run_replay_render_video(
     frame_count = 0
     mode: ReplayPlaybackMode | None = None
     window_open = False
-    render_pipeline: RenderPipeline | None = None
+    video_writer: _FfmpegVideoWriter | None = None
     capture_width = 0
     capture_height = 0
     total_ticks = len(replay.ticks)
@@ -216,7 +215,7 @@ def run_replay_render_video(
                 max_ticks=max_ticks,
             )
             mode.open()
-            video_transport = _FfmpegVideoTransport(
+            video_writer = _FfmpegVideoWriter(
                 rl=rl,
                 ffmpeg_path=ffmpeg_path,
                 output_path=video_out_path,
@@ -228,34 +227,26 @@ def run_replay_render_video(
                 pixel_format=pixel_format,
                 overwrite=True if capture_audio else overwrite,
             )
-            render_pipeline = RenderPipeline(
-                sink=VideoSink(
-                    output_path=video_out_path,
-                    transport=video_transport,
-                ),
-                draw_scope=RaylibDrawScope(raylib=rl),
-            )
-            render_pipeline.open(width=capture_width, height=capture_height)
-            assert render_pipeline is not None
+            video_writer.open()
             frame_dt = 1.0 / fps
             with tqdm(total=total_ticks, unit="tick", desc="replay video", disable=not show_progress) as bar:
                 while not mode.finished:
                     mode.update(frame_dt)
-                    render_pipeline.draw(
-                        draw_frame=mode.draw,
-                        width=capture_width,
-                        height=capture_height,
-                    )
-                    render_pipeline.present()
+                    rl.begin_drawing()
+                    try:
+                        mode.draw()
+                    finally:
+                        rl.end_drawing()
+                    video_writer.write_frame()
                     frame_count += 1
                     bar.set_postfix(frames=frame_count, refresh=False)
                     bar.update(mode.tick_index - bar.n)
 
             if frame_count <= 0:
                 raise ReplayRenderError("replay render produced no frames")
-            render_pipeline.flush()
-            render_pipeline.close()
-            render_pipeline = None
+            video_writer.flush()
+            video_writer.close()
+            video_writer = None
             if mode is not None:
                 mode.close()
                 mode = None
@@ -286,25 +277,25 @@ def run_replay_render_video(
                     target_audio_frames=round(frame_count * captured_audio.effective_sample_rate / fps),
                 )
         except ReplayRenderError:
-            if render_pipeline is not None:
-                render_pipeline.close()
-                render_pipeline = None
+            if video_writer is not None:
+                video_writer.close()
+                video_writer = None
             raise
         except BrokenPipeError as exc:
-            if render_pipeline is not None:
-                render_pipeline.close()
-                render_pipeline = None
+            if video_writer is not None:
+                video_writer.close()
+                video_writer = None
             raise ReplayRenderError(f"ffmpeg stdin closed early: {exc}") from exc
         except OSError as exc:
-            if render_pipeline is not None:
-                render_pipeline.close()
-                render_pipeline = None
+            if video_writer is not None:
+                video_writer.close()
+                video_writer = None
             raise ReplayRenderError(f"ffmpeg streaming failed: {exc}") from exc
         finally:
             if mode is not None:
                 mode.close()
-            if render_pipeline is not None:
-                render_pipeline.close()
+            if video_writer is not None:
+                video_writer.close()
             unload_runtime_resources(resources)
             if window_open:
                 rl.close_window()

@@ -73,7 +73,7 @@ verification still builds the presentation plan even without rendering or audio.
 
 A `FixedStepClock` turns render-frame time into ticks for live play,
 debug views and replay playback
-(`src/crimson/replay/driver/playback_pump.py`).
+(`src/crimson/replay/driver/playback_driver.py`).
 
 ## Input and timer ownership
 

@@ -50,7 +50,7 @@ def cmd_dbg_record(
     out: Path = typer.Option(..., "--out", help="output trace path (.cdt)"),
 ) -> None:
     """Run replay simulation and record a CDT trace."""
-    from crimson.replay.driver.setup import ReplayRunnerError
+    from crimson.replay.driver.playback_driver import ReplayRunnerError
 
     from ..dbg.record import record_replay_to_trace
     from ..dbg.trace import TraceError

@@ -31,8 +31,7 @@ from ...sim.run_result import RunOutcome
 from ...sim.sessions import DeterministicSessionTick
 from ...sim.terrain_fx import TerrainFxBatch
 from ..types import Replay
-from .playback_driver import PlaybackDriver, build_runtime_playback_driver
-from .setup import ReplayRunnerError
+from .playback_driver import PlaybackDriver, ReplayRunnerError, build_runtime_playback_driver
 
 # Keyframes start half a second apart and spread out, every other one dropped, past the budget.
 KEY_TICKS = 30

@@ -9,7 +9,7 @@ import msgspec
 
 from grim.math import f32_bits_i32
 
-from .payloads import BuiltinRows, BuiltinValue, to_builtin_rows, to_builtin_value
+from .payloads import BuiltinRows, BuiltinValue, to_builtin_value
 
 
 class FieldMismatch(msgspec.Struct, frozen=True, forbid_unknown_fields=True, omit_defaults=True):
@@ -175,5 +175,5 @@ def strict_mismatches(expected: object, actual: object, *, root_path: str = "") 
 
 def strict_mismatch_payload(expected: object, actual: object, *, root_path: str = "") -> tuple[BuiltinRows, int, str]:
     mismatches = strict_mismatches(expected, actual, root_path=root_path)
-    payload = to_builtin_rows(mismatches, field=f"{root_path or 'mismatches'}")
+    payload = cast("BuiltinRows", msgspec.to_builtins(mismatches))
     return payload, len(payload), json.dumps(payload, sort_keys=True, indent=2, default=repr)
