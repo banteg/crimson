@@ -598,7 +598,11 @@ class _Compiler:
         token = str(node.children[0])
         match node.data:
             case "number":
-                return float(token) if any(mark in token for mark in ".eE") else int(token)
+                return (
+                    int(token, 16)
+                    if token.lower().startswith("0x")
+                    else (float(token) if any(mark in token for mark in ".eE") else int(token))
+                )
             case "duration":
                 unit = "ms" if token.endswith("ms") else "s"
                 value = Decimal(token.removesuffix(unit)) * (1000 if unit == "s" else 1)

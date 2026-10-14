@@ -2,7 +2,7 @@
 CREATE TABLE custom_quests (
   id TEXT PRIMARY KEY,
   digest TEXT NOT NULL UNIQUE,
-  account_id INTEGER NOT NULL REFERENCES accounts (id),
+  account_id INTEGER REFERENCES accounts (id),
   first_run_id TEXT NOT NULL REFERENCES runs (id),
   title TEXT NOT NULL,
   author TEXT,

@@ -82,7 +82,7 @@ ORDER: "chronological" | "as-written"
 STRING: /"(?:[^"\\\n]|\\.)*"/
 DURATION.2: /(\d+\.\d*|\.\d+|\d+)(ms|s)\b/
 ANGLE.2: /(\d+\.\d*|\.\d+|\d+)deg\b/
-NUMBER: /(\d+\.\d*|\.\d+|\d+)([eE][+-]?\d+)?/
+NUMBER: /0[xX][0-9a-fA-F]+|(\d+\.\d*|\.\d+|\d+)([eE][+-]?\d+)?/
 INT: /\d+/
 NAME: /[A-Za-z_]\w*/
 _NL: /(\r?\n[\t ]*|#[^\n]*)+/

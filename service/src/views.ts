@@ -305,7 +305,7 @@ export async function customQuestDetailView(env: Env, id: string, category: Cate
     .first<{
       id: string;
       digest: string;
-      account_id: number;
+      account_id: number | null;
       first_run_id: string;
       title: string;
       author: string | null;
@@ -317,7 +317,7 @@ export async function customQuestDetailView(env: Env, id: string, category: Cate
   if (!row) return null;
   const definition = JSON.parse(row.definition) as CustomQuest;
   const [who, board] = await Promise.all([
-    players(env, [row.account_id]),
+    row.account_id !== null ? players(env, [row.account_id]) : Promise.resolve(new Map()),
     boardView(env, "quests", id, category, 100, row.title),
   ]);
   return {
@@ -328,7 +328,7 @@ export async function customQuestDetailView(env: Env, id: string, category: Cate
     source: row.source,
     seed: row.seed,
     created_at: row.created_at,
-    creator: who.get(row.account_id)!,
+    creator: row.account_id !== null ? (who.get(row.account_id) ?? null) : null,
     first_run_id: row.first_run_id,
     definition,
     board,
@@ -350,13 +350,13 @@ export async function customQuestsListView(env: Env, category: Category, limit =
         WHERE r.board = 'quests' AND r.quest = q.id AND ${RANKED_RUN} AND ${runCategory("r")} = ?) AS players,
        (SELECT min(r.score) FROM runs r JOIN accounts a ON a.id = r.account_id
         WHERE r.board = 'quests' AND r.quest = q.id AND ${RANKED_RUN} AND ${runCategory("r")} = ?) AS top_score
-     FROM custom_quests q JOIN accounts ca ON ca.id = q.account_id
-     WHERE ca.banned = 0 ORDER BY q.created_at DESC LIMIT ?`,
+     FROM custom_quests q LEFT JOIN accounts ca ON ca.id = q.account_id
+     WHERE ca.banned IS NULL OR ca.banned = 0 ORDER BY q.created_at DESC LIMIT ?`,
   )
     .bind(category, category, limit)
     .all<{
       id: string;
-      account_id: number;
+      account_id: number | null;
       title: string;
       author: string | null;
       has_source: number;
@@ -365,7 +365,7 @@ export async function customQuestsListView(env: Env, category: Category, limit =
       players: number;
       top_score: number | null;
     }>();
-  const who = await players(env, [...new Set(results.map((r) => r.account_id))]);
+  const who = await players(env, [...new Set(results.map((r) => r.account_id).filter((id): id is number => id !== null))]);
   return {
     category,
     quests: results.map((row) => {
@@ -374,7 +374,7 @@ export async function customQuestsListView(env: Env, category: Category, limit =
         id: row.id,
         title: row.title,
         author: row.author,
-        creator: who.get(row.account_id)!,
+        creator: row.account_id !== null ? (who.get(row.account_id) ?? null) : null,
         start_weapon_id: def.start_weapon_id,
         entry_count: def.entries.length,
         total_copies: def.entries.reduce((sum, e) => sum + e.count, 0),

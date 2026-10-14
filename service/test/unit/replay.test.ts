@@ -6,6 +6,7 @@ import { type Head, Reader } from "../../src/msgpack";
 import { outcomeReasons, rankedBoard, unrankedReasons } from "../../src/ranked";
 import { decodeReplay, inflateReplay, ReplayError } from "../../src/replay";
 import { encodePortableQuest, encodeTransport, TransportError } from "../../src/transport";
+import questDsl from "../../src/quest-dsl.json";
 import vectors from "../vectors.json";
 
 const FIXTURES = join(import.meta.dirname, "../../../tests/fixtures/replays");
@@ -46,6 +47,10 @@ it("a custom quest decodes, ranks under the canonical profile, and matches Pytho
   expect(outcomeReasons(replay.run, replay.result)).toEqual([]);
   expect(sha256(encodePortableQuest(replay.run.custom_quest!))).toBe(vectors.custom_quest_run.digest);
   expect(sha256(encodeTransport(replay))).toBe(vectors.custom_quest_run.transport_sha256);
+});
+
+it("quest-dsl.json stays in sync with Python's weapon, bonus, perk and template tables", () => {
+  expect(questDsl).toEqual(vectors.quest_dsl);
 });
 
 // After egornomic's #615: the ticks decode as they stream, so their framing is refused as strictly as a whole tree's.

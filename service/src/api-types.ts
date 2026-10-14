@@ -87,7 +87,7 @@ export interface CustomQuestSummary {
   id: string;
   title: string;
   author: string | null;
-  creator: PlayerView;
+  creator: PlayerView | null;
   start_weapon_id: number;
   entry_count: number;
   total_copies: number;
@@ -113,7 +113,7 @@ export interface CustomQuestDetailView {
   source: string | null;
   seed: number;
   created_at: number;
-  creator: PlayerView;
+  creator: PlayerView | null;
   first_run_id: string;
   definition: CustomQuest;
   board: BoardView;

@@ -518,8 +518,8 @@ describe("custom quests", () => {
     const baseQuest = decodeReplay(inflateReplay(decode64(file))).run.custom_quest!;
     expect(
       validateRecipeSource(
-        'quest "Quick # Clear" version 1 # comment\nauthor "banteg #1"\nweapon shotgun\nterrain (2, 3, 2)\nfixed_weapon true\nat 500ms:\n    spawn alien.small_gray at (512, 420)\n',
-        { ...baseQuest, title: "Quick # Clear", author: "banteg #1" },
+        'quest "Quick (Wave #2 [beta]" version 1 # comment\nauthor "banteg [1] #1"\nweapon shotgun\nterrain (2, 3, 2)\nfixed_weapon true\nat 500ms:\n    spawn 0x26 at (512, 420)\n',
+        { ...baseQuest, title: "Quick (Wave #2 [beta]", author: "banteg [1] #1" },
       ),
     ).toBe(true);
     expect(
@@ -535,10 +535,26 @@ describe("custom quests", () => {
       ),
     ).toBe(false);
 
+    const otherSession = asSession(await signIn(other));
+    const otherMe = (await (await otherSession.get("/api/me")).json()) as { account: number };
+    await env.DB.prepare(
+      `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, client,
+         client_version, platform, pilot, ticks, result, signals, accepted_at)
+       SELECT ?, payload_sha256, ?, ?, 'other', board, quest, score + 100, game_version, client,
+         client_version, platform, pilot, ticks, result, signals, accepted_at + 1
+       FROM runs WHERE id = ?`,
+    ).bind("b".repeat(64), otherMe.account, other.publicKey, published.id).run();
+
     const session = asSession(await signIn(player));
     const me = (await (await session.get("/api/me")).json()) as { account: number };
     const deleted = await session.post("/api/account/delete", { account: me.account });
     expect(deleted.status).toBe(200);
+
+    const surviving = (await (await SELF.fetch(`${ORIGIN}/api/q/${questId}`)).json()) as CustomQuestDetailView;
+    expect(surviving.creator).toBeNull();
+    expect(surviving.first_run_id).toBe("b".repeat(64));
+
+    expect((await otherSession.post("/api/account/delete", { account: otherMe.account })).status).toBe(200);
     expect((await SELF.fetch(`${ORIGIN}/api/q/${questId}`)).status).toBe(404);
   });
 

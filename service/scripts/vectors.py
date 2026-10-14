@@ -377,6 +377,8 @@ def custom_quest_payload() -> dict[str, object]:
     }
 
 def main() -> None:
+    from quests import quest_dsl_tables
+
     base, corrupted = corrupted_vectors()
     ranked, inflated, piloted, illegal = ranked_run()
     vectors = {
@@ -385,6 +387,7 @@ def main() -> None:
         "unranked_run": base64.b64encode((FIXTURES / "rush-kills103.crd").read_bytes()).decode("ascii"),
         "terrain": terrain_vectors(),
         "run_terrain": run_terrain_vectors(),
+        "quest_dsl": quest_dsl_tables(),
     }
     OUT.write_text(json.dumps(vectors, indent=1) + "\n")
     print(f"wrote {OUT.relative_to(ROOT)}")

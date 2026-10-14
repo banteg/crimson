@@ -533,7 +533,7 @@ async function customQuests(): Promise<Screen> {
                           <a href={`/q/${q.id}`}>{q.title}</a>
                         </td>
                         <td>
-                          <PlayerName player={q.creator} tag={false} />
+                          {q.creator ? <PlayerName player={q.creator} tag={false} /> : (q.author ?? "—")}
                         </td>
                         <td>
                           <Weapon id={q.start_weapon_id} />
@@ -575,8 +575,14 @@ async function customQuestPage(id: string): Promise<Screen> {
         <>
           <h2>{detail.title}</h2>
           <p class="muted">
-            Published by <PlayerName player={detail.creator} tag={false} />
-            <Show when={detail.author && detail.author !== detail.creator.name}> · recipe by {detail.author}</Show> ·{" "}
+            <Show when={detail.creator}>
+              {(creator) => (
+                <>
+                  Published by <PlayerName player={creator()} tag={false} /> ·{" "}
+                </>
+              )}
+            </Show>
+            <Show when={detail.author && detail.author !== detail.creator?.name}>recipe by {detail.author} · </Show>
             {new Date(detail.created_at).toISOString().slice(0, 10)} · ID <code>{detail.id}</code>
           </p>
           <p>

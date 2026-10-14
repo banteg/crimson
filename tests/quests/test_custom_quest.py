@@ -138,3 +138,12 @@ at 1s:
         SpawnId.DEN_ALIEN_WEAK_SMALL_09,
         SpawnId.DEN_ALIEN_WEAK_SMALL_09,
     ]
+
+def test_hex_and_numeric_template_ids_compile():
+    quest = build_custom_quest(
+        """quest "Hex Template" version 1
+at 1s:
+    spawn 0x26 at center
+""",
+    )
+    assert [entry.spawn_id for entry in quest.entries] == [SpawnId.ALIEN_SMALL_GRAY_26]

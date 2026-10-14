@@ -160,12 +160,12 @@ All implemented `SpawnId` members have a canonical reference such as
 `template.alien_small_gray_26`. The unused `0x02` template is excluded. Numeric
 native IDs are also accepted. Short aliases currently cover:
 
-- `alien.small_gray`, `alien.fast`
-- `zombie.random`, `zombie.spawner_boss`
-- `spider.small_blue`, `spider.plasma`, `spider.splitter`, `spider.boss`
-- `nest.alien`, `nest.alien_slow`, `nest.spider`, `nest.plasma`
-- `formation.alien_ring`, `formation.lizard_chain`, `formation.alien_grid`,
-  `formation.spider_grid`, `formation.lizard_grid`
+- `alien`: `small_gray`, `fast`, `small_green`, `green`, `purple`, `big_gray`, `gray_fast`, `boss`, `cyan`, `ghost`, `bonus_carrier`, `delayed`, `flanker`, `spawner_ring`, `random`
+- `spider`: `small_blue`, `plasma`, `splitter`, `boss`, `red_boss`, `white_fast`, `small_brown`, `ranged`, `stop_and_go`, `stop_and_go_weak`, `flanker`, `random`, `random_red`, `random_green`
+- `lizard`: `gray`, `boss`, `flanker`, `random`
+- `zombie`: `random`, `spawner_boss`, `small_white`, `brute`
+- `nest`: `alien`, `alien_slow`, `alien_weak`, `spider`, `plasma`, `spider_weak`, `lizard`, `lizard_slow`
+- `formation`: `alien_ring`, `alien_ring_small`, `alien_chain`, `lizard_chain`, `alien_grid`, `alien_grid_green`, `alien_grid_bronze`, `lizard_grid`, `spider_grid`
 
 These are selections from the existing catalog, not new enemy definitions.
 `place alien.small_gray on ring(...)` creates independent enemies; spawning
