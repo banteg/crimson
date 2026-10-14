@@ -75,12 +75,10 @@ float portable_move_x();
 float portable_move_y();
 bool portable_aim_turn_left();
 bool portable_aim_turn_right();
-// Player one's position and health and the screen shake, for the ranked aim bound.
+// Player one's position and health, for the ranked aim bound and input signals.
 float portable_player_x();
 float portable_player_y();
 float portable_player_health();
-float portable_shake_x();
-float portable_shake_y();
 // The distance from a world point to the nearest living creature's centre, infinity with none, for the service's
 // input signals (docs/rewrite/bots.md).
 float portable_nearest_creature(float x, float y);

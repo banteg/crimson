@@ -37,8 +37,6 @@ EXPORTS = (
     "portable_player_x",
     "portable_player_y",
     "portable_player_health",
-    "portable_shake_x",
-    "portable_shake_y",
     "portable_probe",
     "portable_nearest_creature",
     "portable_bakes",
@@ -48,7 +46,7 @@ EXPORTS = (
 CORE_WRAPPED = {"decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp"}
 # An extern declaration of one name, optionally an array: the alignment a name really has goes before its `;`.
 EXTERN = re.compile(r"(\bextern\b[^;{}()]*?\b(\w+)\s*(?:\[[^\]]*\])?)\s*;")
-# Player one and the shake, for the service's ranked aim bound, the nearest creature, for its input signals, and each
+# Player one, for the service's ranked aim bound, the nearest creature, for its input signals, and each
 # tick's bakes, for a run's ground (host/api.h).
 PROBE_READS = {
     "portable_bakes",
@@ -56,8 +54,6 @@ PROBE_READS = {
     "portable_player_x",
     "portable_player_y",
     "portable_player_health",
-    "portable_shake_x",
-    "portable_shake_y",
 }
 
 
