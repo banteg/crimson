@@ -288,41 +288,9 @@ class _Compiler:
                 "tau": math.tau,
             },
         )
-        self.functions: dict[str, Callable[..., Any]] = {
-            "min": self.minimum,
-            "max": self.maximum,
-            "abs": self.absolute,
-            "int": self.to_int,
-            "float": self.to_float,
-            "len": self.length,
-            "point": self.point,
-            "corner": self.corner,
-            "corners": self.corners,
-            "polar": self.polar,
-            "facing": self.facing,
-            "range": self.bounded_range,
-            "line": self.line,
-            "ring": self.ring,
-            "edge": self.edge,
-            "edge_line": self.edge_line,
-            "opposite": self.opposite,
-            "arc": self.arc,
-            "rotate": self.rotate,
-            "rand": self.rand,
-            "choose": self.choose,
-            "rand_int": self.rand_int,
-            "shuffle": self.shuffle,
-        }
-        self.signatures = {
-            name: inspect.signature(function, eval_str=True) for name, function in self.functions.items()
-        }
-        self.checks: dict[Any, tuple[Callable[[Any], Any], str]] = {
-            Vec2: (self.expect_point, "a point"),
-            float: (self.number, "a finite number"),
-            int: (self.integer, "an integer"),
-            str: (self.expect_string, "a string"),
-            Items: (self.expect_items, "a list"),
-        }
+    _FUNCTIONS: dict[str, Callable[..., Any]]
+    _SIGNATURES: dict[str, inspect.Signature]
+    _CHECKS: dict[Any, tuple[Callable[[Any], Any], str]]
 
     def tick(self, node: Tree | Token, amount: int = 1) -> None:
         self.work += amount
@@ -378,22 +346,22 @@ class _Compiler:
             raise TypeError("comparisons require scalar values or points")
 
     def call(self, name: str, positional: list[Any], named: dict[str, Any]) -> Any:
-        signature = self.signatures[name]
+        signature = self._SIGNATURES[name]
         try:
             bound = signature.bind(*positional, **named)
         except TypeError as exc:
             raise TypeError(f"{name}(): {exc}") from exc
         for parameter_name, value in bound.arguments.items():
             parameter = signature.parameters[parameter_name]
-            if parameter.annotation not in self.checks:
+            if parameter.annotation not in self._CHECKS:
                 continue
-            check, description = self.checks[parameter.annotation]
+            check, description = self._CHECKS[parameter.annotation]
             for item in value if parameter.kind is inspect.Parameter.VAR_POSITIONAL else (value,):
                 try:
                     check(item)
                 except TypeError as exc:
                     raise TypeError(f"{name}() argument {parameter_name!r} must be {description}") from exc
-        return self.functions[name](*bound.args, **bound.kwargs)
+        return self._FUNCTIONS[name](self, *bound.args, **bound.kwargs)
 
     # Construction helpers.
 
@@ -411,20 +379,16 @@ class _Compiler:
             raise TypeError("min/max require numbers")
         return function(values)
 
-    @staticmethod
-    def absolute(value: float) -> int | float:
+    def absolute(self, value: float) -> int | float:
         return abs(value)
 
-    @staticmethod
-    def to_int(value: float) -> int:
+    def to_int(self, value: float) -> int:
         return int(value)
 
-    @staticmethod
-    def to_float(value: float) -> float:
+    def to_float(self, value: float) -> float:
         return float(value)
 
-    @staticmethod
-    def length(values: Items) -> int:
+    def length(self, values: Items) -> int:
         return len(values)
 
     def point(self, x: float, y: float) -> Vec2:
@@ -436,20 +400,17 @@ class _Compiler:
     def line(self, start: Vec2, step: Vec2, count: int) -> tuple[Vec2, ...]:
         return tuple(start + step * i for i in self.bounded_range(count))
 
-    @staticmethod
-    def polar(center: Vec2, radius: float, angle: float) -> Vec2:
+    def polar(self, center: Vec2, radius: float, angle: float) -> Vec2:
         return center + Vec2(math.cos(angle), math.sin(angle)) * radius
 
-    @staticmethod
-    def facing(point: Vec2, target: Vec2) -> float:
+    def facing(self, point: Vec2, target: Vec2) -> float:
         # A creature at heading h moves along (cos(h - pi/2), sin(h - pi/2)).
         return math.atan2(point.y - target.y, point.x - target.x) - math.pi / 2
 
     def ring(self, center: Vec2, radius: float, count: int, *, start: float = 0) -> tuple[Vec2, ...]:
         return tuple(self.polar(center, radius, start + i * math.tau / count) for i in self.bounded_range(count))
 
-    @staticmethod
-    def corner(name: str, *, outside: float = 64) -> Vec2:
+    def corner(self, name: str, *, outside: float = 64) -> Vec2:
         near, far = -outside, 1024 + outside
         corners = {
             "northwest": Vec2(near, near),
@@ -464,8 +425,7 @@ class _Compiler:
             self.corner(name, outside=outside) for name in ("northwest", "northeast", "southwest", "southeast")
         )
 
-    @staticmethod
-    def edge(side: str, *, outside: float = 64, fraction: float = 0.5) -> Vec2:
+    def edge(self, side: str, *, outside: float = 64, fraction: float = 0.5) -> Vec2:
         along = 1024 * fraction
         edges = {
             "west": Vec2(-outside, along),
@@ -483,8 +443,7 @@ class _Compiler:
         step = Vec2(0, spacing) if side in ("west", "east") else Vec2(spacing, 0)
         return self.line(anchor - step * ((count - 1) * 0.5), step, count)
 
-    @staticmethod
-    def opposite(side: str) -> str:
+    def opposite(self, side: str) -> str:
         return _choice({"west": "east", "east": "west", "north": "south", "south": "north"}, side, "side")
 
     def arc(self, center: Vec2, radius: float, start: float, sweep: float, count: int) -> tuple[Vec2, ...]:
@@ -618,7 +577,7 @@ class _Compiler:
 
     def invoke(self, node: Tree, scope: _Scope) -> Any:
         name, arguments = str(node.children[0]), node.children[1]
-        if name not in self.functions:
+        if name not in self._FUNCTIONS:
             raise ValueError(f"unknown function {name!r}")
         positional, named = self.arguments(arguments, scope)
         for argument in (*positional, *named.values()):
@@ -688,7 +647,7 @@ class _Compiler:
             scope.mutable.add(name)
 
     def declare(self, name: str, value: Any, scope: _Scope, *, mutable: bool) -> None:
-        if name in scope.values or name in self.functions or name in self.patterns:
+        if name in scope.values or name in self._FUNCTIONS or name in self.patterns:
             raise ValueError(f"duplicate or reserved name {name!r}")
         scope.values[name] = value
         if mutable:
@@ -767,7 +726,7 @@ class _Compiler:
             case "pattern":
                 name = str(children[0])
                 parameters = [str(parameter) for parameter in children[1].children]
-                if scope is not self.root or name in self.patterns or name in self.functions or name in scope.values:
+                if scope is not self.root or name in self.patterns or name in self._FUNCTIONS or name in scope.values:
                     raise ValueError("patterns must have unique names and be declared at quest scope")
                 if len(set(parameters)) != len(parameters):
                     raise ValueError("pattern parameters must be unique")
@@ -811,6 +770,44 @@ class _Compiler:
             self.calls.pop()
             self.active_patterns.remove(name)
 
+
+
+_Compiler._FUNCTIONS = {
+    "min": _Compiler.minimum,
+    "max": _Compiler.maximum,
+    "abs": _Compiler.absolute,
+    "int": _Compiler.to_int,
+    "float": _Compiler.to_float,
+    "len": _Compiler.length,
+    "point": _Compiler.point,
+    "corner": _Compiler.corner,
+    "corners": _Compiler.corners,
+    "polar": _Compiler.polar,
+    "facing": _Compiler.facing,
+    "range": _Compiler.bounded_range,
+    "line": _Compiler.line,
+    "ring": _Compiler.ring,
+    "edge": _Compiler.edge,
+    "edge_line": _Compiler.edge_line,
+    "opposite": _Compiler.opposite,
+    "arc": _Compiler.arc,
+    "rotate": _Compiler.rotate,
+    "rand": _Compiler.rand,
+    "choose": _Compiler.choose,
+    "rand_int": _Compiler.rand_int,
+    "shuffle": _Compiler.shuffle,
+}
+_Compiler._SIGNATURES = {
+    name: inspect.Signature(list(inspect.signature(function, eval_str=True).parameters.values())[1:])
+    for name, function in _Compiler._FUNCTIONS.items()
+}
+_Compiler._CHECKS = {
+    Vec2: (_Compiler.expect_point, "a point"),
+    float: (_Compiler.number, "a finite number"),
+    int: (_Compiler.integer, "an integer"),
+    str: (_Compiler.expect_string, "a string"),
+    Items: (_Compiler.expect_items, "a list"),
+}
 
 _DEFAULT_LIMITS = CompileLimits()
 
@@ -883,25 +880,41 @@ def compile_quest(
     )
 
 
+def _referenced_names(statements: list[Tree]) -> set[str]:
+    return {
+        str(node.children[0])
+        for statement in statements
+        for node in statement.iter_subtrees()
+        if node.data == "name"
+    }
+
+
 def build_custom_quest(source: str, *, seed: int = 0, limits: CompileLimits = _DEFAULT_LIMITS) -> CustomQuest:
     """Resolve a recipe for every player count and hardcore setting into a playable definition."""
     _check_inputs(source, seed, limits)
     metadata, statements = _settings(_parse(source, limits))
+    names = _referenced_names(statements)
+    uses_players = "players" in names
+    uses_hardcore = "hardcore" in names
+    constructed: dict[tuple[int, bool], int] = {}
     tables: list[tuple[SpawnEntry, ...]] = []
     variants = [0] * VARIANT_COUNT
     for player_count in (1, 2, 3, 4):
         for hardcore in (False, True):
-            entries, _ = _construct(
-                statements,
-                metadata["order"],
-                seed=seed,
-                player_count=player_count,
-                hardcore=hardcore,
-                limits=limits,
-            )
-            if entries not in tables:
-                tables.append(entries)
-            variants[variant_index(player_count=player_count, hardcore=hardcore)] = tables.index(entries)
+            key = (player_count if uses_players else 1, hardcore if uses_hardcore else False)
+            if key not in constructed:
+                entries, _ = _construct(
+                    statements,
+                    metadata["order"],
+                    seed=seed,
+                    player_count=key[0],
+                    hardcore=key[1],
+                    limits=limits,
+                )
+                if entries not in tables:
+                    tables.append(entries)
+                constructed[key] = tables.index(entries)
+            variants[variant_index(player_count=player_count, hardcore=hardcore)] = constructed[key]
     quest = CustomQuest(
         title=metadata["title"],
         author=metadata["author"],

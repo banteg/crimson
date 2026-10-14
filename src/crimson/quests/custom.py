@@ -127,7 +127,11 @@ def validate_custom_quest(quest: CustomQuest) -> None:
         raise ValueError(
             f"variants must pick one of the tables for each of {VARIANT_COUNT} variants, using every table",
         )
-    # Every table is some variant's, so checking what each variant plays checks them all.
+    # Every table is some variant's, so checking each distinct (table, hardcore) pair checks them all.
+    checked: set[tuple[int, bool]] = set()
     for player_count in (1, 2, 3, 4):
         for hardcore in (False, True):
-            check_table(quest.entries(player_count=player_count, hardcore=hardcore))
+            pair = (quest.variants[variant_index(player_count=player_count, hardcore=hardcore)], hardcore)
+            if pair not in checked:
+                checked.add(pair)
+                check_table(quest.entries(player_count=player_count, hardcore=hardcore))
