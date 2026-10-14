@@ -33,6 +33,9 @@ MAX_TITLE_CHARS = 64
 # As long as a player name, which a published quest's author will be.
 MAX_AUTHOR_CHARS = 31
 DROPPABLE_WEAPONS: tuple[WeaponId, ...] = tuple(WeaponId(i) for i in range(2, 34))
+# Templates no quest table may hold: 0x02 has no creature, and 0x37's ranged spider fires whatever projectile type
+# the slot's stale `orbit_radius` bits name, which the original never initializes.
+UNPLAYABLE_TEMPLATES = frozenset((SpawnId.UNUSED_02, SpawnId.SPIDER_SP2_RANGED_VARIANT_37))
 PORTABLE_QUEST_HEAD = struct.Struct("<10I")
 PORTABLE_QUEST_SPAWN = struct.Struct("<3f3i")
 PORTABLE_QUEST_BYTES = PORTABLE_QUEST_HEAD.size + MAX_ENTRIES * PORTABLE_QUEST_SPAWN.size
@@ -136,8 +139,8 @@ def check_table(entries: Sequence[SpawnEntry]) -> None:
         raise ValueError(f"a table holds 1..{MAX_ENTRIES} entries")
     per_trigger: dict[int, int] = {}
     for entry in entries:
-        if entry.spawn_id == SpawnId.UNUSED_02:
-            raise ValueError("unused spawn template")
+        if entry.spawn_id in UNPLAYABLE_TEMPLATES:
+            raise ValueError(f"spawn template {entry.spawn_id:#04x} is unplayable")
         if not 0 <= entry.trigger_ms <= MAX_TRIGGER_MS:
             raise ValueError(f"trigger times must be in 0..{MAX_TRIGGER_MS} ms")
         for coordinate in (entry.pos.x, entry.pos.y):

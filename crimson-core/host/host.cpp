@@ -245,7 +245,8 @@ static bool custom_quest_valid_for(const PortableQuest &q) {
   for (uint32_t i = 0; i < q.count; ++i) {
     const PortableSpawn &s = q.entries[i];
     if (!(s.x >= -1024 && s.x <= 2048 && s.y >= -1024 && s.y <= 2048) || !isfinite(s.heading) ||
-        s.template_id < 0 || s.template_id > 0x43 || s.template_id == 0x02 || s.trigger_ms < 0 ||
+        s.template_id < 0 || s.template_id > 0x43 || s.template_id == 0x02 ||
+        s.template_id == 0x37 || s.trigger_ms < 0 ||
         s.trigger_ms > 3600000 || s.count < 1 || s.count > 384)
       return false;
     copies[i] = s.count;

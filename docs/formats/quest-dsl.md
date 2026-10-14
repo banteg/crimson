@@ -157,11 +157,12 @@ queues out of time order.
 ## Template vocabulary and geometry
 
 All implemented `SpawnId` members have a canonical reference such as
-`template.alien_small_gray_26`. The unused `0x02` template is excluded. Numeric
+`template.alien_small_gray_26`. Two templates are excluded: the unused `0x02`, and
+`0x37`, a ranged spider whose projectile type the original never sets. Numeric
 native IDs are also accepted. Short aliases currently cover:
 
 - `alien`: `small_gray`, `fast`, `small_green`, `green`, `purple`, `big_gray`, `gray_fast`, `boss`, `cyan`, `ghost`, `bonus_carrier`, `delayed`, `flanker`, `spawner_ring`, `random`
-- `spider`: `small_blue`, `plasma`, `splitter`, `boss`, `red_boss`, `white_fast`, `small_brown`, `ranged`, `stop_and_go`, `stop_and_go_weak`, `flanker`, `random`, `random_red`, `random_green`
+- `spider`: `small_blue`, `plasma`, `splitter`, `boss`, `red_boss`, `white_fast`, `small_brown`, `stop_and_go`, `stop_and_go_weak`, `flanker`, `random`, `random_red`, `random_green`
 - `lizard`: `gray`, `boss`, `flanker`, `random`
 - `zombie`: `random`, `spawner_boss`, `small_white`, `brute`
 - `nest`: `alien`, `alien_slow`, `alien_weak`, `spider`, `plasma`, `spider_weak`, `lizard`, `lizard_slow`
@@ -243,6 +244,7 @@ creatures or offspring. All recipes fit the existing 256-entry table.
 | `plasma-orchard.quest` | 55 | Choose which ranged nest to eliminate while melee crosses the arena |
 | `moving-factory.quest` | 17 | Pursue a mobile spawner or create space in its crowds |
 | `split-decision.quest` | 65 | Choose safe finishing positions for opposing splitters |
+| `domino-theory.quest` | 16 | Pierce splitter columns with a fixed Gauss Gun while plasma pressures the flanks |
 | `formation-parade.quest` | 12 | Break native rings, chains and grids before the next arrival |
 | `closing-circle.quest` | 240 | Preserve an escape route through a rotating 60-degree gap |
 | `nest-circuit.quest` | 24 | Follow a tightening nest activation schedule or cut across it |

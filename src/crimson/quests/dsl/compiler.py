@@ -27,6 +27,7 @@ from ..custom import (
     MAX_COPIES,
     MAX_ENTRIES,
     MAX_TRIGGER_MS,
+    UNPLAYABLE_TEMPLATES,
     CustomQuest,
     check_author,
     check_table,
@@ -319,7 +320,6 @@ _ALIASES = {
         "red_boss": SpawnId.SPIDER_SP1_CONST_RED_BOSS_3B,
         "white_fast": SpawnId.SPIDER_SP1_CONST_WHITE_FAST_3E,
         "small_brown": SpawnId.SPIDER_SP1_CONST_BROWN_SMALL_3F,
-        "ranged": SpawnId.SPIDER_SP2_RANGED_VARIANT_37,
         "stop_and_go": SpawnId.SPIDER_SP1_STOP_AND_GO_38,
         "stop_and_go_weak": SpawnId.SPIDER_SP1_STOP_AND_GO_WEAK_39,
         "flanker": SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
@@ -360,7 +360,7 @@ _ALIASES = {
         "lizard_grid": SpawnId.FORMATION_GRID_LIZARD_WHITE_16,
         "spider_grid": SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17,
     },
-    "template": {member.name.lower(): member for member in SpawnId if member != SpawnId.UNUSED_02},
+    "template": {member.name.lower(): member for member in SpawnId if member not in UNPLAYABLE_TEMPLATES},
 }
 
 
@@ -724,8 +724,8 @@ class _Compiler:
             raise ValueError("spawn operations must be inside an at block")
         template, positions, count, heading = node.children
         spawn_id = SpawnId(self.integer(self.expression(template, scope)))
-        if spawn_id == SpawnId.UNUSED_02:
-            raise ValueError("unused spawn template")
+        if spawn_id in UNPLAYABLE_TEMPLATES:
+            raise ValueError(f"spawn template {spawn_id:#04x} is unplayable")
         copies = 1 if count is None else self.integer(self.expression(count, scope))
         if not 1 <= copies <= MAX_COPIES:
             raise ValueError("copies must be positive and within the copy limit")

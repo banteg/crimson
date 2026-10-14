@@ -84,7 +84,7 @@ repeat 6 as i:
 - **Aliens (`alien.*`)**:
   `alien.small_gray`, `alien.fast`, `alien.small_green`, `alien.green`, `alien.purple`, `alien.big_gray`, `alien.gray_fast`, `alien.boss`, `alien.cyan`, `alien.ghost`, `alien.bonus_carrier`, `alien.delayed`, `alien.flanker`, `alien.spawner_ring`, `alien.random`
 - **Spiders (`spider.*`)**:
-  `spider.small_blue`, `spider.plasma`, `spider.splitter`, `spider.boss`, `spider.red_boss`, `spider.white_fast`, `spider.small_brown`, `spider.ranged`, `spider.stop_and_go`, `spider.stop_and_go_weak`, `spider.flanker`, `spider.random`, `spider.random_red`, `spider.random_green`
+  `spider.small_blue`, `spider.plasma`, `spider.splitter`, `spider.boss`, `spider.red_boss`, `spider.white_fast`, `spider.small_brown`, `spider.stop_and_go`, `spider.stop_and_go_weak`, `spider.flanker`, `spider.random`, `spider.random_red`, `spider.random_green`
 - **Lizards (`lizard.*`)**:
   `lizard.gray`, `lizard.boss`, `lizard.flanker`, `lizard.random`
 - **Zombies (`zombie.*`)**:
