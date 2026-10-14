@@ -1,0 +1,134 @@
+Original bug 39: blood splatters and corpse shatters can exhaust the 511-slot effect pool. The fix adds a non-blood overflow pool and decal queue.
+--- a/decomp/1.9/crimsonland/effects/effect_spawn.cpp
++++ b/decomp/1.9/crimsonland/effects/effect_spawn.cpp
+@@ -1,4 +1,5 @@
+ #include "crimsonland_gameplay.h"
++#include "effect_overflow.h"
+ 
+ struct effect_spawn_vec2_t {
+     float x;
+@@ -61,14 +62,9 @@
+         }
+     }
+ 
+-    effect_entry_t *entry = effect_free_list_head;
++    effect_entry_t *entry = game_effects_allocate(effect_id);
+     int size_code = effect_id_table[effect_id].size_code;
+     int frame = effect_id_table[effect_id].frame;
+-    if (entry->next_free != 0) {
+-        effect_free_list_head = entry->next_free;
+-    } else {
+-        entry = &effect_discard_entry;
+-    }
+ 
+     *(effect_template_t *)&entry->velocity = effect_template;
+     entry->position = *pos;
+--- a/decomp/1.9/crimsonland/effects/effect_free.c
++++ b/decomp/1.9/crimsonland/effects/effect_free.c
+@@ -1,7 +1,10 @@
+ #include "crimsonland_gameplay.h"
++#include "effect_overflow.h"
+ 
+ void effect_free(effect_entry_t *entry)
+ {
++    if (game_effects_free(entry))
++        return;
+     entry->next_free = effect_free_list_head;
+     entry->flags = 0;
+     effect_free_list_head = entry;
+--- a/decomp/1.9/crimsonland/effects/effect_defaults_reset.c
++++ b/decomp/1.9/crimsonland/effects/effect_defaults_reset.c
+@@ -1,4 +1,5 @@
+ #include "crimsonland_gameplay.h"
++#include "effect_overflow.h"
+ 
+ extern effect_vec2_t effect_template_position;
+ extern int effect_defaults_reserved_zero;
+@@ -43,4 +44,5 @@
+     effect_init_entry(&effect_pool_pos_x[510]);
+     effect_free_list_head = &effect_pool_pos_x[0];
+     effect_pool_reserved_zero = 0;
++    game_effects_reset();
+ }
+--- a/decomp/1.9/crimsonland/effects/effects_update.c
++++ b/decomp/1.9/crimsonland/effects/effects_update.c
+@@ -1,31 +1,37 @@
+ #include "crimsonland_gameplay.h"
++#include "effect_overflow.h"
+ 
+ void effects_update(void)
+ {
+     int index;
++    int count = game_effects_extent();
+ 
+-    for (index = 0; index < 512; ++index) {
+-        effect_entry_t *entry = &effect_pool[index];
++    for (index = 0; index < count; ++index) {
++        effect_entry_t *entry = game_effects_entry(index);
+         int flags = entry->flags;
+ 
+         if (flags != 0) {
+             entry->age += frame_dt;
+ 
+             if (entry->age >= entry->lifetime) {
+                 if ((flags & 0x80) != 0) {
+                     if ((flags & 0x100) != 0) {
+                         entry->color.a = 0.35f;
+                     } else {
+                         entry->color.a = 0.8f;
+                     }
+-                    fx_queue_add(
+-                        entry->effect_id,
+-                        &entry->position,
+-                        entry->half_width + entry->half_width,
+-                        entry->half_height + entry->half_height,
+-                        entry->rotation,
+-                        &entry->color
+-                    );
++                    if (index < GAME_EFFECT_POOL_CAPACITY) {
++                        fx_queue_add(
++                            entry->effect_id,
++                            &entry->position,
++                            entry->half_width + entry->half_width,
++                            entry->half_height + entry->half_height,
++                            entry->rotation,
++                            &entry->color
++                        );
++                    } else {
++                        game_effects_decal(entry);
++                    }
+                 }
+                 effect_free(entry);
+             } else if (entry->age >= 0.0f) {
+--- a/decomp/1.9/crimsonland/effects/effects_render.cpp
++++ b/decomp/1.9/crimsonland/effects/effects_render.cpp
+@@ -1,6 +1,7 @@
+ #include <math.h>
+ 
+ #include "crimsonland_gameplay.h"
++#include "effect_overflow.h"
+ #include "grim2d_cpp.h"
+ 
+ extern IGrim2D_cpp *grim_interface_ptr;
+@@ -81,10 +82,10 @@
+ 
+     // The effects only draw. Where nothing draws, the batches' render states
+     // stay, which carry into the frames that do, and the effects go.
+-    int count = PORTABLE_DRAWING ? 512 : 0;
++    int count = PORTABLE_DRAWING ? game_effects_extent() : 0;
+     int index;
+     for (index = 0; index < count; ++index) {
+-        effect_entry_t *entry = &effect_pool[index];
++        effect_entry_t *entry = game_effects_entry(index);
+         int flags = entry->flags;
+         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) != 0) {
+             effect_render_entry(entry, color);
+@@ -96,7 +97,7 @@
+     grim_interface_ptr->grim_begin_batch();
+ 
+     for (index = 0; index < count; ++index) {
+-        effect_entry_t *entry = &effect_pool[index];
++        effect_entry_t *entry = game_effects_entry(index);
+         int flags = entry->flags;
+         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) == 0) {
+             effect_render_entry(entry, color);

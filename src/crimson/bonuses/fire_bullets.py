@@ -19,6 +19,7 @@ def queue_large_hit_decal_streak(
     rng: CrandLike,
     freeze_effects: EffectPool | None,
     detail_preset: int,
+    preserve_bugs: bool,
 ) -> None:
     """Queue the large decal streak used by Fire Bullets impact hits."""
     direction = Vec2.from_angle(base_angle)
@@ -44,6 +45,7 @@ def queue_large_hit_decal_streak(
                 angle=freeze_angle,
                 rng=rng,
                 detail_preset=detail_preset,
+                preserve_bugs=preserve_bugs,
             )
         fx_queue.add_random(
             pos=hit.target + direction * (dist * 20.0),

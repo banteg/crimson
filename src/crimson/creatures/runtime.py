@@ -973,7 +973,13 @@ class CreaturePool:
                 if creature.max_hp < 380.0 and state.bonuses.energizer > 0.0:
                     # Native double-pays the eat kill: this direct store plus creature_handle_death's award.
                     players[0].experience = experience_plus_reward(players[0].experience, creature.reward_value)
-                    state.effects.spawn_burst(pos=creature.pos, count=6, rng=rng, detail_preset=detail_preset)
+                    state.effects.spawn_burst(
+                        pos=creature.pos,
+                        count=6,
+                        rng=rng,
+                        detail_preset=detail_preset,
+                        preserve_bugs=state.preserve_bugs,
+                    )
                     sfx.append(SfxRequest(SfxId.UI_BONUS, creature.pos, gain=0.8))
                     state.scripted_burst_active = True
                     self.handle_death(step_runtime, idx, keep_corpse=False)
@@ -1094,7 +1100,9 @@ class CreaturePool:
                     self.phantom = child
                 else:
                     self._entries[child_idx] = child
-            state.effects.spawn_burst(pos=creature.pos, count=8, rng=rng, detail_preset=detail_preset)
+            state.effects.spawn_burst(
+                pos=creature.pos, count=8, rng=rng, detail_preset=detail_preset, preserve_bugs=state.preserve_bugs,
+            )
 
         if keep_corpse:
             creature.death_timer = x87_pc24_sub(creature.death_timer, f32(step_runtime.dt))
@@ -1121,12 +1129,24 @@ class CreaturePool:
                     float(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE) % 612),
                     f32(0.01),
                 )
-                state.effects.spawn_freeze_shard(pos=creature.pos, angle=angle, rng=rng, detail_preset=detail_preset)
+                state.effects.spawn_freeze_shard(
+                    pos=creature.pos,
+                    angle=angle,
+                    rng=rng,
+                    detail_preset=detail_preset,
+                    preserve_bugs=state.preserve_bugs,
+                )
             angle = x87_pc24_mul(
                 float(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE) % 612),
                 f32(0.01),
             )
-            state.effects.spawn_freeze_shatter(pos=creature.pos, angle=angle, rng=rng, detail_preset=detail_preset)
+            state.effects.spawn_freeze_shatter(
+                pos=creature.pos,
+                angle=angle,
+                rng=rng,
+                detail_preset=detail_preset,
+                preserve_bugs=state.preserve_bugs,
+            )
             self.kill_count += 1
             creature.active = False
             step_runtime.fx_queue.add_random(pos=creature.pos, rng=rng)

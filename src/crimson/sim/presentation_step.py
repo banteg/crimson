@@ -219,6 +219,7 @@ def queue_projectile_decals_post_hit(
             rng=rng,
             freeze_effects=state.effects if post_ctx.freeze_active else None,
             detail_preset=detail_preset,
+            preserve_bugs=state.preserve_bugs,
         )
         return
 
@@ -232,7 +233,13 @@ def queue_projectile_decals_post_hit(
                 f32(0.01),
             ),
         )
-        state.effects.spawn_freeze_shard(pos=hit.hit, angle=shard_angle, rng=rng, detail_preset=detail_preset)
+        state.effects.spawn_freeze_shard(
+            pos=hit.hit,
+            angle=shard_angle,
+            rng=rng,
+            detail_preset=detail_preset,
+            preserve_bugs=state.preserve_bugs,
+        )
         return
 
     for _ in range(3):

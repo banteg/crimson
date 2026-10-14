@@ -11,7 +11,7 @@ export const INPUT = { keys: 0, motion_x: 256, motion_y: 260, buttons: 268, even
 
 // `leaderboard` enables the leaderboard, and `requests` collects its host
 // requests (HOST_LEADERBOARD_*) for the check to answer between frames.
-export function bootGame(wasm, directory, seed, { leaderboard = false, requests } = {}) {
+export function bootGame(wasm, directory, seed, { leaderboard = false, requests, onHost } = {}) {
   const module = new WebAssembly.Module(fs.readFileSync(wasm));
   const wasi = new WASI({ version: "preview1", preopens: { ".": directory }, returnOnExit: true });
   const calls = {};
@@ -26,6 +26,7 @@ export function bootGame(wasm, directory, seed, { leaderboard = false, requests 
       get: (_, name) =>
         (...args) => {
           calls[name] = (calls[name] ?? 0) + 1;
+          onHost?.(name, args);
           if (name === "fatal") throw Error(`game module: ${text(args[0])}`);
           if (name === "message") throw Error(`${text(args[1])}: ${text(args[0])}`);
           if (name === "time_ms") return clock++;

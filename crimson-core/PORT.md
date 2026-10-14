@@ -72,6 +72,23 @@ repack's entries) and the defaults it picks are diffs in
 [`game/sources.json`](game/sources.json), and each recovered body keeps a
 `_recovered` name.
 
+### Non-blood effect overflow
+
+The game keeps the original 511 usable effect slots and adds up to 2,048
+overflow slots ([`game/effect_overflow.cpp`](game/effect_overflow.cpp),
+[`game/patches/39-effect-overflow.patch`](game/patches/39-effect-overflow.patch))
+reserved for non-blood effects (`effect_id != 7`) that would otherwise be
+discarded when blood splatters or corpse shatters fill the base pool. Blood
+admission, the original free list and gameplay RNG stay unchanged. Overflow
+entries initialize on demand up to a high-water `extent` that resets when the
+overflow drains, and bake their expiring decals through a separate overflow
+queue so original `fx_queue` entries are never displaced; replay keyframes store
+only the active `extent` prefix.
+
+`game_effects_active` exposes the live overflow count for replay seek checks,
+and `python crimson-core/checks/effect_overflow.py` exercises allocation,
+free-list reuse, expiry and resets against the adapted production code.
+
 ### The host interface
 
 [`game/host_abi.h`](game/host_abi.h) is the whole presentation boundary:

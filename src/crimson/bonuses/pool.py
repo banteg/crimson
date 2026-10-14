@@ -142,7 +142,7 @@ def _spawn_bonus_burst(
             x87_pc24_mul(float(rng.rand_tagged(scale_caller) % 100), f32(0.01)),
             f32(0.1),
         )
-        state.effects.spawn(EffectId.BURST, pos, detail_preset)
+        state.effects.spawn(EffectId.BURST, pos, detail_preset, preserve_bugs=state.preserve_bugs)
 
 class BonusPool:
     def __init__(self) -> None:

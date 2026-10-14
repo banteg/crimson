@@ -346,7 +346,13 @@ class ProjectilePool:
                         creature.flags |= CreatureFlags.POISONED
 
                     if type_id == ProjectileTemplateId.SPLITTER_GUN:
-                        effect_spawn_splitter_hit_burst(effects, pos=proj.pos, rng=rng, detail_preset=detail_preset)
+                        effect_spawn_splitter_hit_burst(
+                            effects,
+                            pos=proj.pos,
+                            rng=rng,
+                            detail_preset=detail_preset,
+                            preserve_bugs=runtime_state.preserve_bugs,
+                        )
                         # The children belong to the creature hit, so they can hit players even when the
                         # parent was the local player's.
                         projectile_spawn(
@@ -403,9 +409,21 @@ class ProjectilePool:
                     match type_id:
                         case ProjectileTemplateId.ION_MINIGUN:
                             effect_spawn_ion_hit_core(
-                                effects, pos=proj.pos, scale_step=1.5, lifetime=0.1, detail_preset=detail_preset,
+                                effects,
+                                pos=proj.pos,
+                                scale_step=1.5,
+                                lifetime=0.1,
+                                detail_preset=detail_preset,
+                                preserve_bugs=runtime_state.preserve_bugs,
                             )
-                            effect_spawn_ion_hit_sparks(effects, pos=proj.pos, scale=0.8, rng=rng, detail_preset=detail_preset)
+                            effect_spawn_ion_hit_sparks(
+                                effects,
+                                pos=proj.pos,
+                                scale=0.8,
+                                rng=rng,
+                                detail_preset=detail_preset,
+                                preserve_bugs=runtime_state.preserve_bugs,
+                            )
                         case ProjectileTemplateId.ION_RIFLE:
                             if (
                                 runtime_state.shock_chain_links_left > 0
@@ -436,14 +454,38 @@ class ProjectilePool:
                                     )
                                     runtime_state.scripted_burst_active = False
                             effect_spawn_ion_hit_core(
-                                effects, pos=proj.pos, scale_step=1.2, lifetime=0.4, detail_preset=detail_preset,
+                                effects,
+                                pos=proj.pos,
+                                scale_step=1.2,
+                                lifetime=0.4,
+                                detail_preset=detail_preset,
+                                preserve_bugs=runtime_state.preserve_bugs,
                             )
-                            effect_spawn_ion_hit_sparks(effects, pos=proj.pos, scale=1.2, rng=rng, detail_preset=detail_preset)
+                            effect_spawn_ion_hit_sparks(
+                                effects,
+                                pos=proj.pos,
+                                scale=1.2,
+                                rng=rng,
+                                detail_preset=detail_preset,
+                                preserve_bugs=runtime_state.preserve_bugs,
+                            )
                         case ProjectileTemplateId.ION_CANNON:
                             effect_spawn_ion_hit_core(
-                                effects, pos=proj.pos, scale_step=1.0, lifetime=1.0, detail_preset=detail_preset,
+                                effects,
+                                pos=proj.pos,
+                                scale_step=1.0,
+                                lifetime=1.0,
+                                detail_preset=detail_preset,
+                                preserve_bugs=runtime_state.preserve_bugs,
                             )
-                            effect_spawn_ion_hit_sparks(effects, pos=proj.pos, scale=2.2, rng=rng, detail_preset=detail_preset)
+                            effect_spawn_ion_hit_sparks(
+                                effects,
+                                pos=proj.pos,
+                                scale=2.2,
+                                rng=rng,
+                                detail_preset=detail_preset,
+                                preserve_bugs=runtime_state.preserve_bugs,
+                            )
                             sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, proj.pos))
                         case ProjectileTemplateId.PLASMA_CANNON:
                             runtime_state.scripted_burst_active = True
@@ -467,13 +509,29 @@ class ProjectilePool:
                             sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, proj.pos))
                             sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, proj.pos))
                             effect_spawn_plasma_hit_core(
-                                effects, pos=proj.pos, scale_step=1.5, lifetime=1.0, detail_preset=detail_preset,
+                                effects,
+                                pos=proj.pos,
+                                scale_step=1.5,
+                                lifetime=1.0,
+                                detail_preset=detail_preset,
+                                preserve_bugs=runtime_state.preserve_bugs,
                             )
                             effect_spawn_plasma_hit_core(
-                                effects, pos=proj.pos, scale_step=1.0, lifetime=1.0, detail_preset=detail_preset,
+                                effects,
+                                pos=proj.pos,
+                                scale_step=1.0,
+                                lifetime=1.0,
+                                detail_preset=detail_preset,
+                                preserve_bugs=runtime_state.preserve_bugs,
                             )
                         case ProjectileTemplateId.SHRINKIFIER:
-                            effect_spawn_shrinkifier_hit(effects, pos=proj.pos, rng=rng, detail_preset=detail_preset)
+                            effect_spawn_shrinkifier_hit(
+                                effects,
+                                pos=proj.pos,
+                                rng=rng,
+                                detail_preset=detail_preset,
+                                preserve_bugs=runtime_state.preserve_bugs,
+                            )
                             creature.size = x87_pc24_mul(creature.size, f32(0.65))
                             proj.life_timer = 0.25
                             if creature.size < 16.0:

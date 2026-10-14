@@ -132,7 +132,13 @@ def tutorial_timeline_update(world: WorldState, *, dt_ms: int) -> None:
                     entry = state.bonus_pool.seed_tutorial_entry(
                         index, pos=Vec2(x, y), bonus_id=BonusId.POINTS, amount=amount,
                     )
-                    state.effects.spawn_burst(pos=entry.pos, count=12, rng=state.rng, detail_preset=state.detail_preset)
+                    state.effects.spawn_burst(
+                        pos=entry.pos,
+                        count=12,
+                        rng=state.rng,
+                        detail_preset=state.detail_preset,
+                        preserve_bugs=state.preserve_bugs,
+                    )
         case 2:
             if bonuses_gone and ready:
                 tutorial.stage_transition_timer_ms = -1000

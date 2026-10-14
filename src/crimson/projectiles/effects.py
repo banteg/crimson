@@ -25,6 +25,7 @@ def effect_spawn_shrinkifier_hit(
     pos: Vec2,
     rng: CrandLike,
     detail_preset: int,
+    preserve_bugs: bool,
 ) -> None:
     """Port of `effect_spawn_shrinkifier_hit` (0x0042f080); `scale` and `rotation_step` are inherited."""
 
@@ -38,7 +39,7 @@ def effect_spawn_shrinkifier_hit(
     template.rotation = 0.0
     template.vel = Vec2()
     template.scale_step = -4.0
-    effects.spawn(EffectId.RING, pos, detail_preset)
+    effects.spawn(EffectId.RING, pos, detail_preset, preserve_bugs=preserve_bugs)
 
     template.flags = 0x1D
     template.color = RGBA(0.4, 0.5, 1.0, 0.5)
@@ -62,7 +63,7 @@ def effect_spawn_shrinkifier_hit(
         template.scale_step = x87_pc24_add(
             x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP) % 100), f32(0.01)), f32(0.1),
         )
-        effects.spawn(EffectId.BURST, pos, detail_preset)
+        effects.spawn(EffectId.BURST, pos, detail_preset, preserve_bugs=preserve_bugs)
 
 
 def effect_spawn_ion_hit_core(
@@ -72,6 +73,7 @@ def effect_spawn_ion_hit_core(
     scale_step: float,
     lifetime: float,
     detail_preset: int,
+    preserve_bugs: bool,
 ) -> None:
     """Port of `effect_spawn_ion_hit_core`; `scale` and `rotation_step` are inherited."""
 
@@ -85,7 +87,7 @@ def effect_spawn_ion_hit_core(
     template.half_height = 4.0
     template.rotation = 0.0
     template.vel = Vec2()
-    effects.spawn(EffectId.RING, pos, detail_preset)
+    effects.spawn(EffectId.RING, pos, detail_preset, preserve_bugs=preserve_bugs)
 
 
 def effect_spawn_ion_hit_sparks(
@@ -95,6 +97,7 @@ def effect_spawn_ion_hit_sparks(
     scale: float,
     rng: CrandLike,
     detail_preset: int,
+    preserve_bugs: bool,
 ) -> None:
     """Port of `effect_spawn_ion_hit_sparks`; `scale` and `rotation_step` are inherited."""
 
@@ -132,7 +135,7 @@ def effect_spawn_ion_hit_sparks(
             ),
             scale,
         )
-        effects.spawn(EffectId.BURST, pos, detail_preset)
+        effects.spawn(EffectId.BURST, pos, detail_preset, preserve_bugs=preserve_bugs)
 
 
 def effect_spawn_plasma_hit_core(
@@ -142,6 +145,7 @@ def effect_spawn_plasma_hit_core(
     scale_step: float,
     lifetime: float,
     detail_preset: int,
+    preserve_bugs: bool,
 ) -> None:
     """Port of `effect_spawn_plasma_hit_core`; `scale` and `rotation_step` are inherited."""
 
@@ -155,7 +159,7 @@ def effect_spawn_plasma_hit_core(
     template.half_height = 4.0
     template.rotation = 0.0
     template.vel = Vec2()
-    effects.spawn(EffectId.RING, pos, detail_preset)
+    effects.spawn(EffectId.RING, pos, detail_preset, preserve_bugs=preserve_bugs)
 
 
 def effect_spawn_splitter_hit_burst(
@@ -164,6 +168,7 @@ def effect_spawn_splitter_hit_burst(
     pos: Vec2,
     rng: CrandLike,
     detail_preset: int,
+    preserve_bugs: bool,
 ) -> None:
     """Port of `effect_spawn_splitter_hit_burst(pos, 26.0, 3)`; `scale` and `rotation_step` are inherited."""
 
@@ -188,7 +193,7 @@ def effect_spawn_splitter_hit_burst(
         # Native negates the integer before conversion, so a zero draw gives +0.0.
         template.age = x87_pc24_mul(float(-(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_AGE) & 0xFF)), f32(0.0012))
         template.lifetime = x87_pc24_sub(f32(0.1), template.age)
-        effects.spawn(EffectId.BURST, spawn_pos, detail_preset)
+        effects.spawn(EffectId.BURST, spawn_pos, detail_preset, preserve_bugs=preserve_bugs)
 
 
 __all__ = [

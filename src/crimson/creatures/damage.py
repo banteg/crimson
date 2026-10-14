@@ -86,6 +86,7 @@ def _damage_lethal_ranged_shock_burst(
     rng: CrandLike,
     effects: EffectPool,
     detail_preset: int,
+    preserve_bugs: bool,
 ) -> None:
     """Port the `creature_apply_damage` lethal branch for `flags & 0x10`; `age` is left to the template."""
     template = effects.template
@@ -110,7 +111,7 @@ def _damage_lethal_ranged_shock_burst(
             ),
             f32(0.3),
         )
-        effects.spawn(EffectId.BURST, creature.pos, detail_preset)
+        effects.spawn(EffectId.BURST, creature.pos, detail_preset, preserve_bugs=preserve_bugs)
 
 
 def resolve_native_death_sfx(
@@ -202,7 +203,11 @@ def creature_apply_damage(
     )
     if creature.flags & CreatureFlags.RANGED_PLASMA_RIFLE:
         _damage_lethal_ranged_shock_burst(
-            creature=creature, rng=rng, effects=state.effects, detail_preset=step_runtime.world.state.detail_preset,
+            creature=creature,
+            rng=rng,
+            effects=state.effects,
+            detail_preset=step_runtime.world.state.detail_preset,
+            preserve_bugs=state.preserve_bugs,
         )
     else:
         sound = resolve_native_death_sfx(creature, rng=rng, preserve_bugs=state.preserve_bugs)

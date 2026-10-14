@@ -137,7 +137,8 @@ def draw_effect_pool(
     frame = render_ctx.frame
     texture = frame.resources.texture(TextureId.PARTICLES)
 
-    effects = frame.state.effects.entries
+    pool = frame.state.effects
+    effects = (*pool.entries, *pool.overflow_entries) if pool.overflow_entries else pool.entries
     if not any(entry.flags and entry.age >= 0.0 for entry in effects):
         return
 

@@ -74,7 +74,9 @@ class _Case:
 def _burst(case: _Case, pos: Vec2, rng: random.Random) -> str:
     count = rng.randrange(1, 33)
     case.oracle.call("effect_spawn_burst", case.pos_arg, count)
-    case.pool.spawn_burst(pos=pos, count=count, rng=case.world.state.rng, detail_preset=case.detail)
+    case.pool.spawn_burst(
+        pos=pos, count=count, rng=case.world.state.rng, detail_preset=case.detail, preserve_bugs=True,
+    )
     return f"burst({count})"
 
 
@@ -91,21 +93,27 @@ def _blood_splatter(case: _Case, pos: Vec2, rng: random.Random) -> str:
 def _explosion_burst(case: _Case, pos: Vec2, rng: random.Random) -> str:
     scale = f32(rng.choice((0.4, 1.0, 1.8, rng.uniform(0.1, 3.0))))
     case.oracle.call("effect_spawn_explosion_burst", case.pos_arg, scale)
-    case.pool.spawn_explosion_burst(pos=pos, scale=scale, rng=case.world.state.rng, detail_preset=case.detail)
+    case.pool.spawn_explosion_burst(
+        pos=pos, scale=scale, rng=case.world.state.rng, detail_preset=case.detail, preserve_bugs=True,
+    )
     return f"explosion_burst({scale!r})"
 
 
 def _freeze_shard(case: _Case, pos: Vec2, rng: random.Random) -> str:
     angle = f32(rng.uniform(0.0, 6.2831855))
     case.oracle.call("effect_spawn_freeze_shard", case.pos_arg, angle)
-    case.pool.spawn_freeze_shard(pos=pos, angle=angle, rng=case.world.state.rng, detail_preset=case.detail)
+    case.pool.spawn_freeze_shard(
+        pos=pos, angle=angle, rng=case.world.state.rng, detail_preset=case.detail, preserve_bugs=True,
+    )
     return f"freeze_shard({angle!r})"
 
 
 def _freeze_shatter(case: _Case, pos: Vec2, rng: random.Random) -> str:
     angle = f32(rng.uniform(0.0, 6.2831855))
     case.oracle.call("effect_spawn_freeze_shatter", case.pos_arg, angle)
-    case.pool.spawn_freeze_shatter(pos=pos, angle=angle, rng=case.world.state.rng, detail_preset=case.detail)
+    case.pool.spawn_freeze_shatter(
+        pos=pos, angle=angle, rng=case.world.state.rng, detail_preset=case.detail, preserve_bugs=True,
+    )
     return f"freeze_shatter({angle!r})"
 
 
@@ -115,9 +123,21 @@ def _ion_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
     case.oracle.call("effect_spawn_ion_hit_core", case.pos_arg, core_scale_step, core_lifetime)
     case.oracle.call("effect_spawn_ion_hit_sparks", case.pos_arg, sparks_scale)
     effect_spawn_ion_hit_core(
-        case.pool, pos=pos, scale_step=core_scale_step, lifetime=core_lifetime, detail_preset=case.detail,
+        case.pool,
+        pos=pos,
+        scale_step=core_scale_step,
+        lifetime=core_lifetime,
+        detail_preset=case.detail,
+        preserve_bugs=True,
     )
-    effect_spawn_ion_hit_sparks(case.pool, pos=pos, scale=sparks_scale, rng=case.world.state.rng, detail_preset=case.detail)
+    effect_spawn_ion_hit_sparks(
+        case.pool,
+        pos=pos,
+        scale=sparks_scale,
+        rng=case.world.state.rng,
+        detail_preset=case.detail,
+        preserve_bugs=True,
+    )
     return f"ion_hit({type_id.name})"
 
 
@@ -125,22 +145,30 @@ def _plasma_cannon_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
     del rng
     case.oracle.call("effect_spawn_plasma_hit_core", case.pos_arg, 1.5, 1.0)
     case.oracle.call("effect_spawn_plasma_hit_core", case.pos_arg, 1.0, 1.0)
-    effect_spawn_plasma_hit_core(case.pool, pos=pos, scale_step=1.5, lifetime=1.0, detail_preset=case.detail)
-    effect_spawn_plasma_hit_core(case.pool, pos=pos, scale_step=1.0, lifetime=1.0, detail_preset=case.detail)
+    effect_spawn_plasma_hit_core(
+        case.pool, pos=pos, scale_step=1.5, lifetime=1.0, detail_preset=case.detail, preserve_bugs=True,
+    )
+    effect_spawn_plasma_hit_core(
+        case.pool, pos=pos, scale_step=1.0, lifetime=1.0, detail_preset=case.detail, preserve_bugs=True,
+    )
     return "plasma_cannon_hit"
 
 
 def _shrinkifier_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
     del rng
     case.oracle.call("effect_spawn_shrinkifier_hit", case.pos_arg)
-    effect_spawn_shrinkifier_hit(case.pool, pos=pos, rng=case.world.state.rng, detail_preset=case.detail)
+    effect_spawn_shrinkifier_hit(
+        case.pool, pos=pos, rng=case.world.state.rng, detail_preset=case.detail, preserve_bugs=True,
+    )
     return "shrinkifier_hit"
 
 
 def _splitter_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
     del rng
     case.oracle.call("effect_spawn_splitter_hit_burst", case.pos_arg, 26.0, 3)
-    effect_spawn_splitter_hit_burst(case.pool, pos=pos, rng=case.world.state.rng, detail_preset=case.detail)
+    effect_spawn_splitter_hit_burst(
+        case.pool, pos=pos, rng=case.world.state.rng, detail_preset=case.detail, preserve_bugs=True,
+    )
     return "splitter_hit"
 
 
@@ -158,6 +186,7 @@ def _shell_casing(case: _Case, pos: Vec2, rng: random.Random) -> str:
         aim_heading=aim_heading,
         rng=case.world.state.rng,
         detail_preset=case.detail,
+        preserve_bugs=True,
     )
     return f"shell_casing({aim_heading!r})"
 

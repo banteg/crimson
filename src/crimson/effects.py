@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from .sim.world_state import WorldStepRuntime
 
 __all__ = [
+    "EFFECT_OVERFLOW_SIZE",
     "EFFECT_POOL_SIZE",
     "FX_QUEUE_CAPACITY",
     "FX_QUEUE_MAX_COUNT",
@@ -56,6 +57,7 @@ __all__ = [
 ]
 
 EFFECT_POOL_SIZE = 0x200
+EFFECT_OVERFLOW_SIZE = 0x800
 PARTICLE_POOL_SIZE = 0x80
 SPRITE_EFFECT_POOL_SIZE = 0x180
 
@@ -454,6 +456,7 @@ class FxQueue:
     def __init__(self) -> None:
         self._entries = [FxQueueEntry() for _ in range(FX_QUEUE_CAPACITY)]
         self._count = 0
+        self._overflow: list[FxQueueEntry] = []
         # Mirrors native `config_violence_disabled` gate in `fx_queue_add_random`.
         # Nonzero suppresses violence-linked random decals.
         self.violence_disabled = 0
@@ -468,9 +471,12 @@ class FxQueue:
 
     def clear(self) -> None:
         self._count = 0
+        self._overflow.clear()
 
     def iter_active(self) -> list[FxQueueEntry]:
-        return self._entries[: self._count]
+        if not self._overflow:
+            return self._entries[: self._count]
+        return [*self._entries[: self._count], *self._overflow]
 
     def add(
         self,
@@ -495,6 +501,30 @@ class FxQueue:
         entry.width = float(width)
         entry.color = rgba
         self._count += 1
+        return True
+
+    def add_overflow(
+        self,
+        *,
+        effect_id: int,
+        pos: Vec2,
+        width: float,
+        height: float,
+        rotation: float,
+        rgba: RGBA,
+    ) -> bool:
+        if len(self._overflow) >= EFFECT_OVERFLOW_SIZE:
+            return False
+        self._overflow.append(
+            FxQueueEntry(
+                effect_id=int(effect_id),
+                rotation=float(rotation),
+                pos=pos,
+                height=float(height),
+                width=float(width),
+                color=rgba,
+            ),
+        )
         return True
 
     def add_random(self, *, pos: Vec2, rng: CrandLike) -> bool:
@@ -641,8 +671,11 @@ class EffectPool:
 
     def __init__(self) -> None:
         self._entries = [EffectEntry() for _ in range(EFFECT_POOL_SIZE)]
+        self._overflow: list[EffectEntry] = []
         self.template = EffectTemplate()
         self._free_head = 0
+        self._overflow_free = -1
+        self._overflow_active = 0
         # Native `effect_spawn_detail_skip_counter`: `effect_defaults_reset` leaves it alone, and native never
         # resets it for the whole process. This one starts with each world so replays need not record it
         # (docs/rewrite/replay-run-start.md).
@@ -652,6 +685,10 @@ class EffectPool:
     @property
     def entries(self) -> list[EffectEntry]:
         return self._entries
+
+    @property
+    def overflow_entries(self) -> list[EffectEntry]:
+        return self._overflow
 
     def reset(self) -> None:
         """Port of `effect_defaults_reset` (`game_core_init`, `gameplay_reset_state`).
@@ -684,11 +721,14 @@ class EffectPool:
             entry.scale = 1.0
             entry.color = RGBA(1.0, 1.0, 1.0, 1.0)
         self._free_head = 0
+        self._overflow.clear()
+        self._overflow_free = -1
+        self._overflow_active = 0
 
     def iter_active(self) -> list[EffectEntry]:
-        return [entry for entry in self._entries if entry.flags]
+        return [entry for entry in (*self._entries, *self._overflow) if entry.flags]
 
-    def spawn(self, effect_id: int, pos: Vec2, detail_preset: int) -> None:
+    def spawn(self, effect_id: int, pos: Vec2, detail_preset: int, *, preserve_bugs: bool) -> None:
         """Port of `effect_spawn` (0x0042e120): pop the free-list head and copy the whole template into it.
 
         Low detail presets skip every other spawn. With the free list down to its last
@@ -702,9 +742,20 @@ class EffectPool:
                 return
 
         entry = self._entries[self._free_head]
-        if entry.next_free == -1:
+        if entry.next_free != -1:
+            self._free_head = entry.next_free
+        elif preserve_bugs or int(effect_id) == int(EffectId.BLOOD_SPLATTER):
             return
-        self._free_head = entry.next_free
+        elif self._overflow_free != -1:
+            entry = self._overflow[self._overflow_free]
+            self._overflow_free = entry.next_free
+            self._overflow_active += 1
+        elif len(self._overflow) < EFFECT_OVERFLOW_SIZE:
+            entry = EffectEntry()
+            self._overflow.append(entry)
+            self._overflow_active += 1
+        else:
+            return
 
         template = self.template
         entry.vel = f32_vec2(template.vel)
@@ -730,6 +781,31 @@ class EffectPool:
         entry.flags = 0
         self._free_head = idx
 
+    def _advance_entry(self, entry: EffectEntry, dt_f32: float) -> bool:
+        age = f32(f32(entry.age) + dt_f32)
+        entry.age = age
+        lifetime = f32(entry.lifetime)
+        if age < lifetime:
+            if age >= 0.0:
+                flags = int(entry.flags)
+                move_x = f32(dt_f32 * f32(entry.vel.x))
+                move_y = f32(dt_f32 * f32(entry.vel.y))
+                entry.pos = Vec2(
+                    f32(f32(entry.pos.x) + move_x),
+                    f32(f32(entry.pos.y) + move_y),
+                )
+                if flags & 0x4:
+                    rotation_delta = f32(dt_f32 * f32(entry.rotation_step))
+                    entry.rotation = f32(f32(entry.rotation) + rotation_delta)
+                if flags & 0x8:
+                    scale_delta = f32(dt_f32 * f32(entry.scale_step))
+                    entry.scale = f32(f32(entry.scale) + scale_delta)
+                if flags & 0x10:
+                    next_alpha = f32(1.0 - f32(age / lifetime))
+                    entry.color = entry.color.with_alpha(next_alpha)
+            return False
+        return True
+
     def update(self, dt: float, *, fx_queue: FxQueue | None = None) -> None:
         """Advance active effects and enqueue terrain decals on expiry."""
 
@@ -737,30 +813,7 @@ class EffectPool:
 
         for idx, entry in enumerate(self._entries):
             flags = int(entry.flags)
-            if not flags:
-                continue
-
-            age = f32(f32(entry.age) + dt_f32)
-            entry.age = age
-            lifetime = f32(entry.lifetime)
-
-            if age < lifetime:
-                if age >= 0.0:
-                    move_x = f32(dt_f32 * f32(entry.vel.x))
-                    move_y = f32(dt_f32 * f32(entry.vel.y))
-                    entry.pos = Vec2(
-                        f32(f32(entry.pos.x) + move_x),
-                        f32(f32(entry.pos.y) + move_y),
-                    )
-                    if flags & 0x4:
-                        rotation_delta = f32(dt_f32 * f32(entry.rotation_step))
-                        entry.rotation = f32(f32(entry.rotation) + rotation_delta)
-                    if flags & 0x8:
-                        scale_delta = f32(dt_f32 * f32(entry.scale_step))
-                        entry.scale = f32(f32(entry.scale) + scale_delta)
-                    if flags & 0x10:
-                        next_alpha = f32(1.0 - f32(age / lifetime))
-                        entry.color = entry.color.with_alpha(next_alpha)
+            if not flags or not self._advance_entry(entry, dt_f32):
                 continue
 
             if fx_queue is not None and (flags & 0x80):
@@ -778,6 +831,33 @@ class EffectPool:
 
             self.free(idx)
 
+        for idx in range(len(self._overflow)):
+            entry = self._overflow[idx]
+            flags = int(entry.flags)
+            if not flags or not self._advance_entry(entry, dt_f32):
+                continue
+
+            if fx_queue is not None and (flags & 0x80):
+                alpha = f32(0.35 if (flags & 0x100) else 0.8)
+                entry.color = entry.color.with_alpha(alpha)
+                fx_queue.add_overflow(
+                    effect_id=int(entry.effect_id),
+                    pos=entry.pos,
+                    width=f32(f32(entry.half_width) + f32(entry.half_width)),
+                    height=f32(f32(entry.half_height) + f32(entry.half_height)),
+                    rotation=f32(entry.rotation),
+                    rgba=entry.color,
+                )
+
+            entry.flags = 0
+            self._overflow_active -= 1
+            if self._overflow_active == 0:
+                self._overflow_free = -1
+                self._overflow.clear()
+                break
+            entry.next_free = self._overflow_free
+            self._overflow_free = idx
+
     def spawn_shell_casing(
         self,
         *,
@@ -785,6 +865,7 @@ class EffectPool:
         aim_heading: float,
         rng: CrandLike,
         detail_preset: int,
+        preserve_bugs: bool,
     ) -> None:
         """Port of the weapon-flag-1 casing spawn in `player_update` (effect id 0x12); `scale` is inherited."""
 
@@ -817,7 +898,7 @@ class EffectPool:
             14.0,
         )
         template.scale_step = 0.0
-        self.spawn(EffectId.CASING, pos, detail_preset)
+        self.spawn(EffectId.CASING, pos, detail_preset, preserve_bugs=preserve_bugs)
 
     def spawn_blood_splatter(
         self,
@@ -867,7 +948,7 @@ class EffectPool:
                 ),
                 f32(0.1),
             )
-            self.spawn(EffectId.BLOOD_SPLATTER, pos, detail_preset)
+            self.spawn(EffectId.BLOOD_SPLATTER, pos, detail_preset, preserve_bugs=False)
 
     def spawn_burst(
         self,
@@ -876,6 +957,7 @@ class EffectPool:
         count: int,
         rng: CrandLike,
         detail_preset: int,
+        preserve_bugs: bool,
     ) -> None:
         """Port of `effect_spawn_burst` (0x0042ef60); `scale` and `rotation_step` are inherited."""
 
@@ -899,7 +981,7 @@ class EffectPool:
                 x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BURST_SCALE_STEP) % 100), f32(0.01)),
                 f32(0.1),
             )
-            self.spawn(EffectId.BURST, pos, detail_preset)
+            self.spawn(EffectId.BURST, pos, detail_preset, preserve_bugs=preserve_bugs)
 
     def spawn_freeze_shard(
         self,
@@ -908,6 +990,7 @@ class EffectPool:
         angle: float,
         rng: CrandLike,
         detail_preset: int,
+        preserve_bugs: bool,
     ) -> None:
         """Port of `effect_spawn_freeze_shard` (0x0042ec80); `scale` is inherited."""
 
@@ -947,7 +1030,12 @@ class EffectPool:
             f32(0.1),
         )
 
-        self.spawn(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID) % 3 + 8, pos, detail_preset)
+        self.spawn(
+            rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID) % 3 + 8,
+            pos,
+            detail_preset,
+            preserve_bugs=preserve_bugs,
+        )
 
     def spawn_freeze_shatter(
         self,
@@ -956,6 +1044,7 @@ class EffectPool:
         angle: float,
         rng: CrandLike,
         detail_preset: int,
+        preserve_bugs: bool,
     ) -> None:
         """Port of `effect_spawn_freeze_shatter` (0x0042ee00); `scale` is inherited."""
 
@@ -985,7 +1074,7 @@ class EffectPool:
                 ),
                 f32(1.9),
             )
-            self.spawn(EffectId.FREEZE_SHATTER, pos, detail_preset)
+            self.spawn(EffectId.FREEZE_SHATTER, pos, detail_preset, preserve_bugs=preserve_bugs)
 
         for _ in range(4):
             self.spawn_freeze_shard(
@@ -995,6 +1084,7 @@ class EffectPool:
                 ),
                 rng=rng,
                 detail_preset=detail_preset,
+                preserve_bugs=preserve_bugs,
             )
 
     def spawn_explosion_burst(
@@ -1004,6 +1094,7 @@ class EffectPool:
         scale: float,
         rng: CrandLike,
         detail_preset: int,
+        preserve_bugs: bool,
     ) -> None:
         """Port of `effect_spawn_explosion_burst` (0x0042f6c0).
 
@@ -1022,7 +1113,7 @@ class EffectPool:
         template.rotation = 0.0
         template.vel = Vec2()
         template.scale_step = x87_pc24_mul(scale, 25.0)
-        self.spawn(EffectId.RING, pos, detail_preset)
+        self.spawn(EffectId.RING, pos, detail_preset, preserve_bugs=preserve_bugs)
 
         template.flags = 0x5D
         template.color = RGBA(0.1, 0.1, 0.1, 1.0)
@@ -1042,7 +1133,7 @@ class EffectPool:
                 )
                 template.rotation_step = 1.4
                 template.scale_step = shockwave_scale_step
-                self.spawn(EffectId.EXPLOSION_PUFF, pos, detail_preset)
+                self.spawn(EffectId.EXPLOSION_PUFF, pos, detail_preset, preserve_bugs=preserve_bugs)
 
         template.flags = 0x19
         template.color = RGBA(1.0, 1.0, 1.0, 1.0)
@@ -1053,7 +1144,7 @@ class EffectPool:
         template.rotation = 0.0
         template.vel = Vec2()
         template.scale_step = x87_pc24_mul(scale, 45.0)
-        self.spawn(EffectId.BURST, pos, detail_preset)
+        self.spawn(EffectId.BURST, pos, detail_preset, preserve_bugs=preserve_bugs)
 
         template.flags = 0x1D
         template.color = RGBA(1.0, 1.0, 1.0, 1.0)
@@ -1081,4 +1172,4 @@ class EffectPool:
             template.rotation_step = float(
                 (rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION_STEP) + 3) & 7,
             )
-            self.spawn(EffectId.EXPLOSION_BURST, pos, detail_preset)
+            self.spawn(EffectId.EXPLOSION_BURST, pos, detail_preset, preserve_bugs=preserve_bugs)

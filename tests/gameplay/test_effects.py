@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from crimson.effects import (
+    EFFECT_OVERFLOW_SIZE,
+    EFFECT_POOL_SIZE,
     FX_QUEUE_MAX_COUNT,
     EffectPool,
     FxQueue,
@@ -124,7 +126,7 @@ def test_effect_pool_update_runs_zero_dt_and_has_no_lifetime_epsilon() -> None:
     template.age = 1.0
     template.lifetime = 1.0
     template.flags = 1
-    pool.spawn(0, Vec2(), 5)
+    pool.spawn(0, Vec2(), 5, preserve_bugs=False)
 
     expired = pool.entries[0]
     pool.update(0.0)
@@ -135,7 +137,7 @@ def test_effect_pool_update_runs_zero_dt_and_has_no_lifetime_epsilon() -> None:
     template.lifetime = 1e-12
     template.flags = 0x10
     template.color = RGBA(1.0, 1.0, 1.0, 0.25)
-    pool.spawn(0, Vec2(), 5)
+    pool.spawn(0, Vec2(), 5, preserve_bugs=False)
 
     fading = pool.entries[0]
     pool.update(0.0)
@@ -152,6 +154,7 @@ def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
         aim_heading=0.0,
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
         detail_preset=5,
+        preserve_bugs=False,
     )
 
     active = pool.iter_active()
@@ -170,3 +173,44 @@ def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
     assert_float_close(entry.width, 4.0)
     assert_float_close(entry.height, 4.0)
     assert entry.color.a == f32(0.35)
+
+
+def test_effect_pool_nonblood_overflow_and_preserve_bugs() -> None:
+    pool = EffectPool()
+    pos = Vec2(10.0, 20.0)
+    for _ in range(EFFECT_POOL_SIZE - 1):
+        pool.spawn(7, pos, detail_preset=5, preserve_bugs=False)
+    assert len(pool.iter_active()) == EFFECT_POOL_SIZE - 1
+    assert len(pool.overflow_entries) == 0
+
+    # Blood never enters overflow; --preserve-bugs also keeps non-blood at the 511 cap.
+    pool.spawn(7, pos, detail_preset=5, preserve_bugs=False)
+    assert len(pool.overflow_entries) == 0
+    pool.spawn(1, pos, detail_preset=5, preserve_bugs=True)
+    assert len(pool.overflow_entries) == 0
+
+    # Non-blood uses overflow, reuses freed slots below the high-water mark, and queues decals without displacing FxQueue.
+    pool.template.flags = 0x81
+    pool.template.lifetime = 0.2
+    pool.spawn(1, pos, detail_preset=5, preserve_bugs=False)
+    pool.template.lifetime = 0.5
+    pool.spawn(1, pos, detail_preset=5, preserve_bugs=False)
+    assert len(pool.overflow_entries) == 2
+
+    q = FxQueue()
+    pool.update(0.25, fx_queue=q)
+    assert q.count == 0
+    assert len(q.iter_active()) == 1
+    assert len(pool.overflow_entries) == 2
+    pool.spawn(1, pos, detail_preset=5, preserve_bugs=False)
+    assert len(pool.overflow_entries) == 2
+
+    pool.update(1.0, fx_queue=q)
+    assert len(pool.overflow_entries) == 0
+    assert len(pool.iter_active()) == 0
+
+    for _ in range(EFFECT_POOL_SIZE - 1):
+        pool.spawn(7, pos, detail_preset=5, preserve_bugs=False)
+    for _ in range(EFFECT_OVERFLOW_SIZE + 5):
+        pool.spawn(1, pos, detail_preset=5, preserve_bugs=False)
+    assert len(pool.overflow_entries) == EFFECT_OVERFLOW_SIZE

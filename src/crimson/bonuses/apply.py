@@ -98,7 +98,7 @@ def bonus_apply(
             template.rotation = 0.0
             template.vel = Vec2()
             template.scale_step = 50.0
-            state.effects.spawn(EffectId.RING, origin, detail_preset)
+            state.effects.spawn(EffectId.RING, origin, detail_preset, preserve_bugs=state.preserve_bugs)
             # Native stores these again after the spawn.
             template.rotation = 0.0
             template.vel = Vec2()
@@ -130,13 +130,21 @@ def bonus_apply(
                         float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612), f32(0.01),
                     )
                     state.effects.spawn_freeze_shard(
-                        pos=creature.pos, angle=angle, rng=state.rng, detail_preset=detail_preset,
+                        pos=creature.pos,
+                        angle=angle,
+                        rng=state.rng,
+                        detail_preset=detail_preset,
+                        preserve_bugs=state.preserve_bugs,
                     )
                 angle = x87_pc24_mul(
                     float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612), f32(0.01),
                 )
                 state.effects.spawn_freeze_shatter(
-                    pos=creature.pos, angle=angle, rng=state.rng, detail_preset=detail_preset,
+                    pos=creature.pos,
+                    angle=angle,
+                    rng=state.rng,
+                    detail_preset=detail_preset,
+                    preserve_bugs=state.preserve_bugs,
                 )
                 creature.active = False
             template = state.effects.template
@@ -149,7 +157,7 @@ def bonus_apply(
             template.rotation = 0.0
             template.vel = Vec2()
             template.scale_step = 50.0
-            state.effects.spawn(EffectId.RING, origin, detail_preset)
+            state.effects.spawn(EffectId.RING, origin, detail_preset, preserve_bugs=state.preserve_bugs)
             state.sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, origin))
             # Native stores these again after the spawn.
             template.rotation = 0.0
@@ -255,7 +263,9 @@ def bonus_apply(
                     owner_id=OWNER_LOCAL_PLAYER,
                     owner_player_index=player.index,
                 )
-            state.effects.spawn_explosion_burst(pos=origin, scale=1.0, rng=rng, detail_preset=int(detail_preset))
+            state.effects.spawn_explosion_burst(
+                pos=origin, scale=1.0, rng=rng, detail_preset=int(detail_preset), preserve_bugs=state.preserve_bugs,
+            )
             state.scripted_burst_active = True
             for idx, creature in enumerate(creatures):
                 # Corpses take the blast too, which shrinks them faster.
@@ -302,4 +312,4 @@ def bonus_apply(
                 float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_Y) % 128 - 64),
             )
             template.scale_step = 0.1
-            state.effects.spawn(EffectId.BURST, origin, detail_preset)
+            state.effects.spawn(EffectId.BURST, origin, detail_preset, preserve_bugs=state.preserve_bugs)

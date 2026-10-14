@@ -347,6 +347,7 @@ class SecondaryProjectilePool:
                             angle=shard_angle,
                             rng=rng,
                             detail_preset=int(detail_preset),
+                            preserve_bugs=runtime_state.preserve_bugs,
                         )
                 else:
                     for dx_caller, dy_caller in _SECONDARY_PRE_HIT_DECAL_CALLERS:
@@ -363,7 +364,13 @@ class SecondaryProjectilePool:
                     case SecondaryProjectileTypeId.ROCKET:
                         damage = x87_pc24_add(x87_pc24_mul(entry.life_timer, 50.0), 500.0)
                         if detail_preset >= 3:
-                            effects.spawn_explosion_burst(pos=entry.pos, scale=0.4, rng=rng, detail_preset=detail_preset)
+                            effects.spawn_explosion_burst(
+                                pos=entry.pos,
+                                scale=0.4,
+                                rng=rng,
+                                detail_preset=detail_preset,
+                                preserve_bugs=runtime_state.preserve_bugs,
+                            )
                     case SecondaryProjectileTypeId.HOMING_ROCKET:
                         damage = x87_pc24_add(x87_pc24_mul(entry.life_timer, 20.0), 80.0)
                     case SecondaryProjectileTypeId.ROCKET_MINIGUN:
@@ -415,7 +422,13 @@ class SecondaryProjectilePool:
                 if freeze_active:
                     for _ in range(8):
                         shard_angle = x87_pc24_mul(float(rng.rand_tagged(shard_caller) % 612), f32(0.01))
-                        effects.spawn_freeze_shard(pos=shard_pos, angle=shard_angle, rng=rng, detail_preset=detail_preset)
+                        effects.spawn_freeze_shard(
+                            pos=shard_pos,
+                            angle=shard_angle,
+                            rng=rng,
+                            detail_preset=detail_preset,
+                            preserve_bugs=runtime_state.preserve_bugs,
+                        )
                 else:
                     for _ in range(decal_count):
                         # Native: `(float)(crt_rand() % 628) * 0.01f`, then `cos(angle) * radius` added at PC24.

@@ -1030,3 +1030,59 @@ hardcore and retry reads after the spawn switch), `game/game_frame_update.cpp`
 `end_screens/quest_results_screen_update.cpp` (the retry count),
 `game/survival_update.cpp`, `game/tutorial_timeline_update.cpp` and
 `highscore/highscore_record_init.c`.
+
+## 39) Blood splatters and corpse shatters exhaust the 511-slot effect pool
+
+Native behavior:
+
+- `effect_pool` (`0x004ab270`) holds 512 entries, linked as `0 -> 1 -> ... -> 511`
+  by `effect_defaults_reset` (`0x0042df10`). Slot 511 is the sentinel whose
+  `next_free` is null; when `effect_free_list_head` reaches it, `effect_spawn`
+  (`0x0042e120`) writes into `effect_discard_entry` instead of allocating a
+  live particle.
+- Two paths flood the pool in busy Survival scenes:
+  - Piercing projectiles (`PROJECTILE_TYPE_FIRE_BULLETS`,
+    `PROJECTILE_TYPE_GAUSS_GUN`, `PROJECTILE_TYPE_BLADE_GUN`) step in 4-pixel
+    microsteps (`projectile_update`, `0x00420b90`), and `creature_find_in_radius`
+    (`0x004206a0`) matches dying corpses while `death_timer > 5.0f` (~0.55 s).
+    Because `damage_pool` is only decremented when `creature_pool[hit_id].health > 0.0f`,
+    a piercing shot hits each dying corpse on every 4-pixel microstep without
+    losing `damage_pool`. With Bloody Mess, each microstep hit spawns 9
+    `effect_spawn_blood_splatter` calls (`18` `effect_id = 7` particles),
+    filling all 511 slots with blood.
+  - Picking up `BONUS_ID_FREEZE` (`bonus_apply`, `0x004098f0`) loops over all
+    384 creature slots and shatters every corpse (`active && health <= 0.0f`)
+    into 8 `effect_spawn_freeze_shard`s and 1 `effect_spawn_freeze_shatter`
+    (`16` particles per corpse) before spawning the Freeze pickup ring
+    (`effect_spawn(1, ...)`) at the end of the branch. With 32 or more corpses
+    on screen, the shatter loop fills all 511 slots before the pickup ring
+    runs, even without Bloody Mess.
+- While the pool is full, subsequent non-blood effects—Reflex Boost and Freeze
+  pickup rings (`effect_id = 1`), Ion/Plasma/Shrinkifier/Explosion cores and
+  sparks (`0`, `1`, `12`, `17`), freeze shatters and shards (`8..10`, `14`) and
+  shell casings (`18`)—are discarded.
+
+Why it's likely a bug:
+
+- `effect_pool[0x200]` is a fixed-size C array whose `effect_discard_entry`
+  fallback avoids a null check in `effect_spawn`; unlike `particle_pool` and
+  `sprite_effect_pool` (which overwrite a random slot when full), a full free
+  list silently drops new effects, hiding one-shot pickup and weapon feedback.
+
+Rewrite behavior:
+
+- Default: Both the recovered game module
+  ([`crimson-core/game/effect_overflow.cpp`](../../crimson-core/game/effect_overflow.cpp))
+  and the Python rewrite ([`src/crimson/effects.py`](../../src/crimson/effects.py))
+  keep the original 511-slot `effect_pool` and its blood admissions
+  (`effect_id == 7`) intact—preserving `crt_rand()` draws, free-list order and
+  verifier snapshots—and add a 2,048-slot overflow pool and decal queue reserved
+  for non-blood effects (`effect_id != 7`) when the base pool is full.
+- `--preserve-bugs`: `effect_spawn` discards past 511 active entries, as native.
+
+Evidence: `decomp/1.9/crimsonland/effects/effect_spawn.cpp`,
+`decomp/1.9/crimsonland/crimsonland/projectile_update.cpp` (the piercing
+microstep loop and `health > 0.0f` gate),
+`decomp/1.9/crimsonland/game/bonus_apply.cpp` (the `BONUS_ID_FREEZE` corpse
+loop ahead of `effect_spawn(1, ...)`), and
+[`crimson-core/checks/effect_overflow.py`](../../crimson-core/checks/effect_overflow.py).

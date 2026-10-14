@@ -8,6 +8,7 @@
 // half minute after), then every logged bake up to the keyframe, through the
 // original's own fx_queue_render.
 #include <algorithm>
+#include "effect_overflow.h"
 
 extern "C" {
 struct GameSpan {
@@ -37,6 +38,8 @@ struct KeyframeHost {
   unsigned char transition_direction;
   int timeline;
   LiveSettings run;
+  effect_entry_t *overflow_free;
+  int overflow_active, overflow_extent;
 };
 
 struct Keyframe {
@@ -47,18 +50,33 @@ struct Keyframe {
 };
 
 static std::vector<uint8_t> keyframe_state() {
-  size_t size = sizeof(KeyframeHost) + string_used;
+  size_t overflow_bytes = (size_t)game_effect_overflow.extent * sizeof(effect_entry_t);
+  size_t size = sizeof(KeyframeHost) + overflow_bytes + string_used;
   for (int i = 0; i < game_run_span_count; ++i)
     size += game_run_spans[i].size;
   std::vector<uint8_t> state(size);
   uint8_t *out = state.data();
   for (int i = 0; i < game_run_span_count; ++i)
     out = (uint8_t *)memcpy(out, game_run_spans[i].at, game_run_spans[i].size) + game_run_spans[i].size;
-  KeyframeHost host = {cfg,         rng,         tick,        ready,
-                       menu_requested, perk_menu_open, running_down, run_down_ms,
-                       string_used, portable_preserve_bugs, music_playlist_randomized_latch,
-                       ui_transition_direction, ui_elements_timeline, live.run};
+  KeyframeHost host = {cfg,
+                       rng,
+                       tick,
+                       ready,
+                       menu_requested,
+                       perk_menu_open,
+                       running_down,
+                       run_down_ms,
+                       string_used,
+                       portable_preserve_bugs,
+                       music_playlist_randomized_latch,
+                       ui_transition_direction,
+                       ui_elements_timeline,
+                       live.run,
+                       game_effect_overflow.free,
+                       game_effect_overflow.active,
+                       game_effect_overflow.extent};
   out = (uint8_t *)memcpy(out, &host, sizeof host) + sizeof host;
+  out = (uint8_t *)memcpy(out, game_effect_overflow.entries, overflow_bytes) + overflow_bytes;
   memcpy(out, string_arena, string_used);
   return state;
 }
@@ -91,6 +109,12 @@ static void keyframe_restore(const Keyframe &key) {
   ui_transition_direction = host.transition_direction;
   ui_elements_timeline = host.timeline;
   live.run = host.run;
+  game_effect_overflow.free = host.overflow_free;
+  game_effect_overflow.active = host.overflow_active;
+  game_effect_overflow.extent = host.overflow_extent;
+  size_t overflow_bytes = (size_t)host.overflow_extent * sizeof(effect_entry_t);
+  memcpy(game_effect_overflow.entries, in, overflow_bytes);
+  in += overflow_bytes;
   memcpy(string_arena, in, string_used);
 }
 
@@ -166,6 +190,8 @@ static void terrain_log_batch(int at_tick) {
   terrain.batches.push_back({at_tick, terrain.queue.size(), terrain.rotated.size()});
   for (int i = 0; i < fx_queue_count; ++i)
     terrain.queue.push(fx_queue[i]);
+  for (int i = 0; i < game_effect_overflow.decal_count; ++i)
+    terrain.queue.push(game_effect_overflow.decals[i]);
   for (int i = 0; i < fx_queue_rotated; ++i)
     terrain.rotated.push({fx_rotated_pos_x[i], fx_rotated_scale[i], fx_rotated_rotation[i],
                                fx_rotated_creature_type_id[i], fx_rotated_color_r[i]});
@@ -216,10 +242,14 @@ static void terrain_rebuild(size_t batches) {
   // The bakes draw at the run's settings (its texture scale), as its ticks do.
   live_enter_run();
   for (size_t b = shot->batches; b < batches; ++b) {
+    size_t queue_start = terrain.batches[b].queue;
     size_t queue_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].queue : terrain.queue.size();
     size_t rotated_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].rotated : terrain.rotated.size();
-    fx_queue_count = (int)(queue_end - terrain.batches[b].queue);
-    terrain.queue.read(terrain.batches[b].queue, queue_end, fx_queue);
+    size_t total = queue_end - queue_start;
+    fx_queue_count = (int)std::min(total, (size_t)GAME_FX_QUEUE_MAX_COUNT);
+    terrain.queue.read(queue_start, queue_start + fx_queue_count, fx_queue);
+    game_effect_overflow.decal_count = (int)(total - fx_queue_count);
+    terrain.queue.read(queue_start + fx_queue_count, queue_end, game_effect_overflow.decals);
     fx_queue_rotated = (int)(rotated_end - terrain.batches[b].rotated);
     std::vector<RotatedDecal> rotated(fx_queue_rotated);
     terrain.rotated.read(terrain.batches[b].rotated, rotated_end, rotated.data());
@@ -231,7 +261,7 @@ static void terrain_rebuild(size_t batches) {
       fx_rotated_creature_type_id[i] = d.creature_type_id;
       fx_rotated_color_r[i] = d.color;
     }
-    fx_queue_render_recovered();
+    game_effects_render_decals();
   }
   live_install(live.outside);
   grim_render_disabled = disabled;
@@ -241,13 +271,13 @@ extern "C" {
 // A tick's bake into the terrain (gameplay_render_world): a replay logs it, and
 // bakes it on the ticks it does not draw too, so the terrain holds every tick's.
 void fx_queue_render() {
-  if (terrain.logging && (fx_queue_count || fx_queue_rotated))
+  if (terrain.logging && (fx_queue_count || game_effect_overflow.decal_count || fx_queue_rotated))
     terrain_log_batch((int)tick);
   if (!terrain.baking)
-    return fx_queue_render_recovered();
+    return game_effects_render_decals();
   unsigned char disabled = grim_render_disabled;
   grim_render_disabled = 0;
-  fx_queue_render_recovered();
+  game_effects_render_decals();
   grim_render_disabled = disabled;
 }
 }

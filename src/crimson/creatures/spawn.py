@@ -865,7 +865,9 @@ def creature_spawn_template(
             creature.hp = 20.0
 
     if 0.0 < creature.pos.x < TERRAIN_SIZE and 0.0 < creature.pos.y < TERRAIN_SIZE:
-        state.effects.spawn_burst(pos=creature.pos, count=8, rng=rng, detail_preset=int(detail_preset))
+        state.effects.spawn_burst(
+            pos=creature.pos, count=8, rng=rng, detail_preset=int(detail_preset), preserve_bugs=state.preserve_bugs,
+        )
 
     creature.max_hp = creature.hp
     flags = creature.flags

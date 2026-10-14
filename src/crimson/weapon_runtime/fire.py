@@ -227,6 +227,7 @@ def fire_weapon(
             aim_heading=aim_heading,
             rng=state.rng,
             detail_preset=int(step_runtime.world.state.detail_preset),
+            preserve_bugs=state.preserve_bugs,
         )
 
     shot_angle = _native_shot_angle_with_jitter(

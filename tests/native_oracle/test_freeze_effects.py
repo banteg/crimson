@@ -62,7 +62,7 @@ def test_freeze_shatter_matches_native(oracle) -> None:
 
         crand = CrtRand(seed)
         pool = EffectPool()
-        pool.spawn_freeze_shatter(pos=pos, angle=angle, rng=crand, detail_preset=5)
+        pool.spawn_freeze_shatter(pos=pos, angle=angle, rng=crand, detail_preset=5, preserve_bugs=True)
         case = f"case={case_index} angle={angle!r} seed=0x{seed:08x}"
         for index, entry_address in enumerate(entries):
             native = oracle.read_fields(entry_address, _EFFECT_LAYOUT)

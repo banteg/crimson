@@ -5,10 +5,11 @@
 // and the seeks take.
 //
 //   node crimson-core/checks/game_seek.mjs <game directory> [fixture.crd] [core.wasm] [game.wasm]
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { CORE, decode, init, loadCore, names, state, step } from "./engine.mjs";
-import { PRESENTATION } from "./game_compare.mjs";
+import { loadGame, PRESENTATION } from "./game_compare.mjs";
 import { bootGame } from "./game_host.mjs";
 
 const ROOT = new URL("..", CORE).pathname;
@@ -20,7 +21,33 @@ const [
 ] = process.argv.slice(2);
 if (!directory) throw Error("usage: game_seek.mjs <game directory> [fixture.crd] [core.wasm] [game.wasm]");
 
-const run = bootGame(gameWasm, directory, 1);
+let groundId = 0, renderTarget = 0, boundTexture = 0, srcBlend = 0, dstBlend = 0;
+const textures = new Map(), terrainAt = new Map();
+const run = bootGame(gameWasm, directory, 1, {
+  onHost(name, args) {
+    if (name === "texture_create" && (args[3] & 1)) {
+      groundId = args[0];
+      textures.set(groundId, Buffer.alloc(32));
+    } else if (name === "set_render_target") renderTarget = args[0];
+    else if (name === "set_texture" && args[0] === 0) boundTexture = args[1];
+    else if (name === "render_state") {
+      if (args[0] === 19) srcBlend = args[1];
+      else if (args[0] === 20) dstBlend = args[1];
+    } else if (name === "texture_copy") textures.set(args[0], Buffer.from(textures.get(args[1]) ?? Buffer.alloc(32)));
+    else if (name === "texture_release") textures.delete(args[0]);
+    else if ((name === "clear" || name === "draw") && renderTarget === groundId && groundId) {
+      const hash = crypto.createHash("sha256").update(textures.get(groundId));
+      if (name === "clear") hash.update(Buffer.from([0, args[0] & 255, (args[0] >>> 8) & 255, (args[0] >>> 16) & 255, (args[0] >>> 24) & 255]));
+      else {
+        hash.update(Buffer.from([1, args[0], boundTexture, srcBlend, dstBlend]));
+        hash.update(memory().subarray(args[1], args[1] + args[2] * 28));
+      }
+      const digest = hash.digest();
+      textures.set(groundId, digest);
+      if (!game.game_watch_ticks()) terrainAt.set(game.game_watch_status() < 0 ? 0 : game.game_watch_tick() + 1, digest);
+    }
+  },
+});
 const { game } = run;
 const frame = () => {
   run.frame(16);
@@ -52,18 +79,26 @@ const targets = [1, 2, 59, 60, 61, 119, 120, 121, ticks - 1, ticks];
 for (let i = 0; targets.length < 40; ++i) targets.push(1 + ((i * 7919 + 13) % ticks));
 const sorted = [...new Set(targets)].sort((a, b) => a - b);
 const core = loadCore(coreWasm);
+const straight = loadGame(gameWasm);
 const { config, records } = decode(recording);
 init(core, config);
+init(straight, config);
 const expected = new Map();
+const overflow = new Map();
 for (let t = 0, next = 0; next < sorted.length; ) {
   if (t === sorted[next]) {
     expected.set(t, Buffer.from(state(core)));
+    overflow.set(t, straight.game_effects_active());
     ++next;
     continue;
   }
-  step(core, records[t++]);
+  step(core, records[t]);
+  step(straight, records[t++]);
 }
 
+const expectedTerrain = (target) => {
+  for (let t = target; t >= 0; --t) if (terrainAt.has(t)) return terrainAt.get(t);
+};
 // Shuffled, so seeks go both ways.
 const order = sorted.map((t, i) => [t, (i * 2654435761) % 1000]).sort((a, b) => a[1] - b[1]).map(([t]) => t);
 const times = [];
@@ -76,6 +111,10 @@ for (const target of order) {
   const a = expected.get(target), b = state(game);
   const off = compared.filter(([, i]) => a.readUInt32LE(i * 4) !== b.readUInt32LE(i * 4)).map(([name]) => name);
   if (off.length) throw Error(`after a seek to ${target}, ${off.slice(0, 4).join(", ")} differ from the verifier`);
+  if (game.game_effects_active() !== overflow.get(target))
+    throw Error(`after a seek to ${target}, the overflow pool differs from straight playback`);
+  if (!textures.get(groundId)?.equals(expectedTerrain(target)))
+    throw Error(`after a seek to ${target}, the rebuilt terrain differs from straight playback`);
 }
 times.sort((a, b) => a - b);
 console.log(

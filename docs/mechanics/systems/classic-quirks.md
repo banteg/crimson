@@ -63,6 +63,7 @@ meant the player in question.
 | [34](../../rewrite/original-bugs.md#34-the-fire-bullets-glow-follows-the-last-projectile-slot) | Fire Bullets glow | Fire Bullets shots usually lack their glow; with the screen full of shots, every shot can glow. | Fixed | — |
 | [35](../../rewrite/original-bugs.md#35-rocket-detonation-flashes-draw-the-whole-particle-atlas) | Rocket flash | Rocket blasts flash the whole effects sheet: a ring down-right, specks up-left. | Fixed: a soft glow | — |
 | [36](../../rewrite/original-bugs.md#36-ion-chain-arcs-end-in-a-hard-cut) | Ion arcs | Ion chain arcs end in a straight cut across the creature. | Fixed: round ends | — |
+| [39](../../rewrite/original-bugs.md#39-blood-splatters-and-corpse-shatters-exhaust-the-511-slot-effect-pool) | Missing pickup rings and bursts | Heavy blood from Bloody Mess or a large Freeze corpse shatter fills the effect pool, so pickup rings, hit cores and bursts vanish. | Fixed | — |
 
 ## Kept in both modes
 
