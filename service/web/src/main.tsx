@@ -1,6 +1,7 @@
 import { type Accessor, createSignal, For, type Setter, Show, untrack } from "solid-js";
 import { render } from "solid-js/web";
 import type { Role } from "../../src/api-types";
+import { questPage } from "../../src/paths";
 import { get } from "./api";
 import { GameButton } from "./button";
 import { DOCS, type Navigator, type Panel, resolve, type Screen } from "./pages";
@@ -42,8 +43,9 @@ function slideOut(panels: Shown[]): number {
 // Play leaves the site's app for the game's own page.
 const MENU: { label: string; href: string; native?: boolean; on: (path: string) => boolean }[] = [
   { label: "Play", href: "/play/", native: true, on: () => false },
-  { label: "Survival", href: "/boards/survival", on: (path) => path === "/boards/survival" },
-  { label: "Quests", href: "/quests/1", on: (path) => /^\/(?:(?:boards\/)?quests|q\/)/.test(path) },
+  { label: "Survival", href: "/survival", on: (path) => path === "/survival" },
+  { label: "Quests", href: "/quests", on: (path) => questPage(path) !== null },
+  { label: "Custom", href: "/custom", on: (path) => path === "/custom" || path.startsWith("/custom/") },
   { label: "About", href: "/about", on: (path) => path === "/about" },
 ];
 

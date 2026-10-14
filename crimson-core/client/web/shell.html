@@ -523,7 +523,7 @@
   });
   const questSummary =
     !linked && linkedQuest && /^[0-9a-f]{12}$/.test(linkedQuest)
-      ? fetch(`/api/q/${linkedQuest}`)
+      ? fetch(`/api/custom/${linkedQuest}`)
           .then((response) => (response.ok ? response.json() : null))
           .catch(() => null)
       : Promise.resolve(null);
@@ -536,7 +536,7 @@
     if (!/^[0-9a-f]{12}$/.test(id)) return;
     let response, bytes;
     try {
-      response = await fetch(`/q/${id}.bin`);
+      response = await fetch(`/custom/${id}.bin`);
       if (response.ok) bytes = new Uint8Array(await response.arrayBuffer());
     } catch {}
     if (!bytes || bytes.length !== 6184)

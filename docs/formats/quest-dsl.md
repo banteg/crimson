@@ -15,8 +15,8 @@ Python port, the browser/desktop `crimson-core` client, and the leaderboard serv
 play, verify, and rank custom quests: a recipe resolves into a `CustomQuest`
 definition, which a run starts the way the original starts a quest and which its
 replay carries ([replay format 33](replay.md#runspec)). Publishing a custom quest
-(`crimson quest publish` / `POST /api/quests`) requires a verified completion replay
-and creates its page and leaderboard at `/q/<id>`.
+(`crimson quest publish` / `POST /api/custom`) requires a verified completion replay
+and creates its page and leaderboard at `/custom/<id>`.
 The compiler's JSON output is an inspection artifact, not an interchange format.
 Existing stock builders remain the game's authoritative implementation.
 
@@ -269,7 +269,7 @@ resolves a recipe into the single-table definition a custom quest run plays
 resolved `entries`, and drop/offer restrictions (`no_bonuses`, `no_perks`, `no_weapons`).
 `crimson --custom-quest` builds one with construction seed 0 and starts it in ranked mode
 straight after boot; `crimson quest publish` uploads the recipe alongside a completed
-replay to establish its leaderboard on `crimson.land/q/<id>`.
+replay to establish its leaderboard on `crimson.land/custom/<id>`.
 
 ## Bounds and runtime semantics
 

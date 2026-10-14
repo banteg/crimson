@@ -4,12 +4,11 @@ import { CARD_HEIGHT, CARD_WIDTH, runCard } from "./card";
 import { type Env, json, refuse } from "./http";
 import { playerLabel } from "../web/src/names";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
-import type { Board } from "./ranked";
+import { CUSTOM_QUEST_ID, QUEST, type QuestBoard, questPage, questsPath } from "./paths";
 import { groundFor, postRun, timelineFor } from "./runs";
 import {
   boardTitle,
   boardView,
-  CUSTOM_QUEST_ID,
   customQuestDetailView,
   customQuestPortableBytes,
   customQuestsListView,
@@ -31,7 +30,6 @@ import { flagsView, isModerator, markAccount, measureRuns, moderationLog, roleOf
 // Links, OAuth callbacks and the session cookie follow the request's origin, so the site answers only over
 // HTTPS, and browsers are told to stay there. Plain-HTTP localhost stays for wrangler dev.
 const HSTS = "max-age=31536000; includeSubDomains";
-const QUEST = /^[1-5]\.(?:[1-9]|10)$/;
 // The game's files the playable game loads, from the version the bucket keeps them under; the page keeps them in the
 // player's browser after the first visit (crimson-core/client/web/shell.html).
 const GAME_FILES = new Set(["crimson.paq", "sfx.paq", "music.paq"]);
@@ -74,7 +72,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   switch (route) {
     case "POST /api/runs":
       return postRun(request, env);
-    case "POST /api/quests":
+    case "POST /api/custom":
       return postRun(request, env, { requireCustomQuest: true });
     case "POST /api/auth/challenge":
       return postChallenge(request, env);
@@ -96,17 +94,17 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   // The site's read API. Boards and the quest menu take ?category=bot; they show human runs without it.
   const category = categoryOf(url.searchParams.get("category") ?? "human");
   if (url.pathname.startsWith("/api/") && category === null) return refuse(400, "no such category");
-  if (route === "GET /api/boards/survival") {
+  // Each page's data is at /api plus its path (paths.ts).
+  const page = request.method === "GET" && url.pathname.startsWith("/api/") ? url.pathname.slice("/api".length) : null;
+  if (page === "/survival") {
     const limit = Math.min(100, Number(url.searchParams.get("limit")) || 100);
     return json(await boardView(env, "survival", "", category!, limit));
   }
-  if ((match = /^GET \/api\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(route)) && (QUEST.test(match[2]!) || (match[1] === "quests" && CUSTOM_QUEST_ID.test(match[2]!))))
-    return json(await boardView(env, match[1] as Board, match[2]!, category!, 100));
-  if ((match = /^GET \/api\/quests\/(quests|quests-hardcore)\/([1-5])$/.exec(route)))
-    return json(await questMenuView(env, match[1] as "quests" | "quests-hardcore", Number(match[2]), category!));
-  if (route === "GET /api/quests/custom")
-    return json(await customQuestsListView(env, category!));
-  if ((match = /^GET \/api\/q\/([0-9a-f]{12})$/.exec(route))) {
+  const quests = page === null ? null : questPage(page);
+  if (quests)
+    return json(quests.quest ? await boardView(env, quests.board, quests.quest, category!, 100) : await questMenuView(env, quests.board, quests.stage, category!));
+  if (page === "/custom") return json(await customQuestsListView(env, category!));
+  if (page !== null && (match = /^\/custom\/([^/]+)$/.exec(page)) && CUSTOM_QUEST_ID.test(match[1]!)) {
     const quest = await customQuestDetailView(env, match[1]!, category!);
     return quest ? json(quest) : refuse(404, "no such quest");
   }
@@ -189,7 +187,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
       },
     });
   }
-  if ((match = /^GET \/q\/([0-9a-f]{12})\.bin$/.exec(route))) {
+  if ((match = /^GET \/custom\/([0-9a-f]{12})\.bin$/.exec(route))) {
     const bytes = await customQuestPortableBytes(env, match[1]!);
     if (!bytes) return new Response("No such quest.", { status: 404 });
     return new Response(bytes, {
@@ -288,7 +286,18 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   // The site: its files, else its page with the route's title and preview tags.
   // Quest routes end in ".1" and such, so only real file extensions count as files.
   if (/\.(?:js|css|png|jpg|svg|ico|woff2|txt|map|webmanifest|wasm)$/i.test(url.pathname)) return env.ASSETS.fetch(request);
+  const moved = movedPath(url.pathname);
+  if (moved) return Response.redirect(new URL(`${moved}${url.search}`, url).toString(), 301);
   return shell(env, url);
+}
+
+// Where shared links to the boards' old paths moved.
+function movedPath(path: string): string | null {
+  if (path === "/boards/survival") return "/survival";
+  let match = /^\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(path);
+  if (match && QUEST.test(match[2]!)) return questsPath(match[1] as QuestBoard, match[2]!);
+  match = /^\/quests-hardcore\/([1-5])$/.exec(path);
+  return match ? questsPath("quests-hardcore", match[1]!) : null;
 }
 
 // What a shared link previews: the route's title, and for a run, what happened, its card and its replay to watch.
@@ -307,11 +316,11 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
   const path = url.pathname;
   const titled = (title: string | null): Preview => ({ title, description: SITE_DESCRIPTION, image: null, player: null });
   let match: RegExpExecArray | null;
-  if (path === "/boards/survival") return titled(boardTitle("survival", ""));
-  if ((match = /^\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(path)) && QUEST.test(match[2]!)) return titled(boardTitle(match[1] as Board, match[2]!));
-  if ((match = /^\/(quests|quests-hardcore)\/([1-5])$/.exec(path))) return titled(`Quests ${["I", "II", "III", "IV", "V"][Number(match[2]) - 1]}`);
-  if (path === "/quests/custom") return titled("Custom Quests");
-  if ((match = /^\/q\/([0-9a-f]{12})$/.exec(path))) {
+  if (path === "/survival") return titled(boardTitle("survival", ""));
+  const quests = questPage(path);
+  if (quests) return titled(quests.quest ? boardTitle(quests.board, quests.quest) : `Quests ${["I", "II", "III", "IV", "V"][quests.stage - 1]}`);
+  if (path === "/custom") return titled("Custom Quests");
+  if ((match = /^\/custom\/([0-9a-f]{12})$/.exec(path))) {
     const quest = await customQuestDetailView(env, match[1]!, "human");
     if (!quest) return titled(null);
     const byline = quest.author ? ` by ${quest.author}` : "";

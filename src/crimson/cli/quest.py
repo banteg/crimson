@@ -142,7 +142,7 @@ def cmd_quest_publish(
 
     try:
         status, body = post_json(
-            f"{api}/quests",
+            f"{api}/custom",
             {
                 "replay": base64.b64encode(packed).decode("ascii"),
                 "name": player_name,
@@ -162,5 +162,5 @@ def cmd_quest_publish(
         raise typer.Exit(code=1)
 
     site = api.removesuffix("/api")
-    url_path = body.get("url") or f"/q/{digest[:12]}"
+    url_path = body.get("url") or f"/custom/{digest[:12]}"
     typer.echo(f"published: {site}{url_path}")

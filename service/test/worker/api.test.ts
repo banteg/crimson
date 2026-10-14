@@ -60,7 +60,7 @@ describe("runs", () => {
     const stored = await env.DB.prepare("SELECT client, platform FROM runs WHERE id = ?").bind(run.id).first();
     expect(stored).toMatchObject({ client: "crimson", platform: expect.stringMatching(/^[a-z]+-[a-z0-9_]+$/) });
 
-    const board = (await (await SELF.fetch(`${ORIGIN}/api/boards/survival`)).json()) as BoardView;
+    const board = (await (await SELF.fetch(`${ORIGIN}/api/survival`)).json()) as BoardView;
     const result = decodeReplay(inflateReplay(decode64(vectors.ranked_run))).result;
     expect(board.rows).toHaveLength(1);
     expect(board.rows[0]).toMatchObject({
@@ -132,7 +132,7 @@ describe("runs", () => {
 
     const detail = await get<RunDetailView>(`/api/runs/${id}`);
     expect([detail.name, detail.player.name]).toEqual([fingerprint, null]);
-    expect((await get<BoardView>("/api/boards/survival")).rows[0]!.player.name).toBeNull();
+    expect((await get<BoardView>("/api/survival")).rows[0]!.player.name).toBeNull();
     const { scores } = (await (await post("/api/scores", { board: "survival", quest: "" })).json()) as { scores: { name: string }[] };
     expect(scores[0]!.name).toBe(fingerprint);
     expect((await get<ProfileView>(`/api/players/${detail.player.id}`)).names).toEqual([]);
@@ -154,9 +154,9 @@ describe("runs", () => {
     await env.DB.prepare("INSERT INTO accounts (id, created_at) VALUES (99, 0)").run();
     await env.DB.prepare("UPDATE links SET account_id = 99").run();
     await env.DB.prepare("UPDATE accounts SET name = 'razenpok' WHERE id != 99").run();
-    expect((await get<BoardView>("/api/boards/survival")).rows[0]!.player).toMatchObject({ name: "razenpok", clash: true });
+    expect((await get<BoardView>("/api/survival")).rows[0]!.player).toMatchObject({ name: "razenpok", clash: true });
     await env.DB.prepare("UPDATE accounts SET name = '10tons' WHERE id != 99").run();
-    expect((await get<BoardView>("/api/boards/survival")).rows[0]!.player.name).toBeNull();
+    expect((await get<BoardView>("/api/survival")).rows[0]!.player.name).toBeNull();
   });
 
   it("a shared run's link previews what happened, over its card", async () => {
@@ -224,7 +224,7 @@ describe("runs", () => {
     const reason = "A perk pick from a menu left open, which the rules no longer take";
     await env.DB.prepare("UPDATE runs SET retired = ?").bind(reason).run();
 
-    const board = (await (await SELF.fetch(`${ORIGIN}/api/boards/survival`)).json()) as BoardView;
+    const board = (await (await SELF.fetch(`${ORIGIN}/api/survival`)).json()) as BoardView;
     expect(board.rows).toHaveLength(0);
     const { scores } = (await (await post("/api/scores", { board: "survival", quest: "" })).json()) as { scores: unknown[] };
     expect(scores).toHaveLength(0);
@@ -336,7 +336,7 @@ function asSession(cookie: string) {
   };
 }
 
-const board = async (query = "") => (await (await SELF.fetch(`${ORIGIN}/api/boards/survival${query}`)).json()) as BoardView;
+const board = async (query = "") => (await (await SELF.fetch(`${ORIGIN}/api/survival${query}`)).json()) as BoardView;
 
 describe("bots and moderation", () => {
   async function moderatedRun(role: "mod" | "admin") {
@@ -363,7 +363,7 @@ describe("bots and moderation", () => {
     // The game's high score screen shows the human board unless it asks for the bots'.
     expect(((await (await post("/api/scores", { board: "survival", quest: "" })).json()) as { scores: unknown[] }).scores).toEqual([]);
     expect(((await (await post("/api/scores", { board: "survival", quest: "", category: "bot" })).json()) as { scores: unknown[] }).scores).toHaveLength(1);
-    expect((await SELF.fetch(`${ORIGIN}/api/boards/survival?category=tas`)).status).toBe(400);
+    expect((await SELF.fetch(`${ORIGIN}/api/survival?category=tas`)).status).toBe(400);
   });
 
   it("a run that declares its pilot lists on the bot board under the bot's name", async () => {
@@ -445,7 +445,7 @@ describe("custom quests", () => {
     const file = vectors.custom_quest_run.file;
     const payloadSha = await sha256(inflateReplay(decode64(file)));
     const signature = await player.sign(concat(RUN_DOMAIN, payloadSha, new TextEncoder().encode("banteg")));
-    const response = await post("/api/quests", {
+    const response = await post("/api/custom", {
       replay: file,
       name: "banteg",
       public_key: player.publicKey,
@@ -461,10 +461,10 @@ describe("custom quests", () => {
       quest: questId,
       digest: vectors.custom_quest_run.digest,
       score: vectors.custom_quest_run.score,
-      url: `/q/${questId}`,
+      url: `/custom/${questId}`,
     });
 
-    const detail = (await (await SELF.fetch(`${ORIGIN}/api/q/${questId}`)).json()) as CustomQuestDetailView;
+    const detail = (await (await SELF.fetch(`${ORIGIN}/api/custom/${questId}`)).json()) as CustomQuestDetailView;
     expect(detail).toMatchObject({
       id: questId,
       digest: vectors.custom_quest_run.digest,
@@ -475,7 +475,7 @@ describe("custom quests", () => {
       board: { rows: [expect.objectContaining({ rank: 1, run: published.id, score: vectors.custom_quest_run.score })] },
     });
 
-    const list = (await (await SELF.fetch(`${ORIGIN}/api/quests/custom`)).json()) as CustomQuestsListView;
+    const list = (await (await SELF.fetch(`${ORIGIN}/api/custom`)).json()) as CustomQuestsListView;
     expect(list.quests).toEqual([
       expect.objectContaining({
         id: questId,
@@ -488,7 +488,7 @@ describe("custom quests", () => {
       }),
     ]);
 
-    const bin = await SELF.fetch(`${ORIGIN}/q/${questId}.bin`);
+    const bin = await SELF.fetch(`${ORIGIN}/custom/${questId}.bin`);
     expect(bin.status).toBe(200);
     const binBytes = new Uint8Array(await bin.arrayBuffer());
     expect(binBytes.byteLength).toBe(6184);
@@ -498,7 +498,7 @@ describe("custom quests", () => {
 
     const other = await Player.create();
     const otherSig = await other.sign(concat(RUN_DOMAIN, payloadSha, new TextEncoder().encode("other")));
-    const hijack = await post("/api/quests", {
+    const hijack = await post("/api/custom", {
       replay: file,
       name: "other",
       public_key: other.publicKey,
@@ -507,7 +507,7 @@ describe("custom quests", () => {
     });
     expect(hijack.status).toBe(403);
 
-    const badSource = await post("/api/quests", {
+    const badSource = await post("/api/custom", {
       replay: file,
       name: "banteg",
       public_key: player.publicKey,
@@ -550,19 +550,19 @@ describe("custom quests", () => {
     const deleted = await session.post("/api/account/delete", { account: me.account });
     expect(deleted.status).toBe(200);
 
-    const surviving = (await (await SELF.fetch(`${ORIGIN}/api/q/${questId}`)).json()) as CustomQuestDetailView;
+    const surviving = (await (await SELF.fetch(`${ORIGIN}/api/custom/${questId}`)).json()) as CustomQuestDetailView;
     expect(surviving.creator).toBeNull();
     expect(surviving.first_run_id).toBe("b".repeat(64));
 
     expect((await otherSession.post("/api/account/delete", { account: otherMe.account })).status).toBe(200);
-    expect((await SELF.fetch(`${ORIGIN}/api/q/${questId}`)).status).toBe(404);
+    expect((await SELF.fetch(`${ORIGIN}/api/custom/${questId}`)).status).toBe(404);
   });
 
-  it("POST /api/quests refuses a survival replay", async () => {
+  it("POST /api/custom refuses a survival replay", async () => {
     const player = await Player.create();
     const payloadSha = await sha256(inflateReplay(decode64(vectors.ranked_run)));
     const signature = await player.sign(concat(RUN_DOMAIN, payloadSha, new TextEncoder().encode("banteg")));
-    const response = await post("/api/quests", {
+    const response = await post("/api/custom", {
       replay: vectors.ranked_run,
       name: "banteg",
       public_key: player.publicKey,

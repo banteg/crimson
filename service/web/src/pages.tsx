@@ -14,6 +14,7 @@ import type {
   Role,
   RunDetailView,
 } from "../../src/api-types";
+import { boardPath, questPage, type QuestPage, questsPath } from "../../src/paths";
 import { get, moderate, post } from "./api";
 import { formatLongDuration, formatScore, quantity } from "./format";
 import { GameButton } from "./button";
@@ -51,7 +52,6 @@ export interface Navigator {
 }
 
 const STAGES = ["I", "II", "III", "IV", "V"];
-const QUEST = /^[1-5]\.(?:[1-9]|10)$/;
 export const DOCS = "https://crimson.banteg.xyz/";
 const RULES = `${DOCS}rewrite/ranked-rules/`;
 const BUGS = `${DOCS}rewrite/original-bugs/`;
@@ -217,18 +217,14 @@ const BotInvite = () => (
 // The game's quest screen: its layout and colors (quest_select_menu_update), red rows on hardcore.
 function QuestMenu(props: { view: QuestMenuView; current?: string }) {
   const hardcore = () => props.view.board === "quests-hardcore";
-  const menu = () => (hardcore() ? "quests-hardcore" : "quests");
-  const toggle = () =>
-    props.current
-      ? `/boards/${hardcore() ? "quests" : "quests-hardcore"}/${props.current}`
-      : `/${hardcore() ? "quests" : "quests-hardcore"}/${props.view.stage}`;
+  const toggle = () => questsPath(hardcore() ? "quests" : "quests-hardcore", props.current ?? props.view.stage);
   return (
     <div class="quest-menu" classList={{ "hardcore-on": hardcore() }}>
       <span class="label">Quest:</span>
       <nav class="stages">
         <For each={STAGES}>
           {(numeral, i) => (
-            <a classList={{ on: i() + 1 === props.view.stage }} style={{ left: `${88 + i() * 36}px` }} href={`/${menu()}/${i() + 1}`}>
+            <a classList={{ on: i() + 1 === props.view.stage }} style={{ left: `${88 + i() * 36}px` }} href={questsPath(props.view.board, i() + 1)}>
               <img src={`/ui/stage${i() + 1}.png`} alt={numeral} />
             </a>
           )}
@@ -242,7 +238,7 @@ function QuestMenu(props: { view: QuestMenuView; current?: string }) {
         <For each={props.view.quests}>
           {(quest) => (
             <li>
-              <a classList={{ on: quest.quest === props.current }} href={`/boards/${props.view.board}/${quest.quest}`}>
+              <a classList={{ on: quest.quest === props.current }} href={questsPath(props.view.board, quest.quest)}>
                 <span class="n">{quest.quest}</span>
                 {quest.title}
               </a>
@@ -253,9 +249,6 @@ function QuestMenu(props: { view: QuestMenuView; current?: string }) {
           )}
         </For>
       </ol>
-      <p class="muted" style={{ "margin-top": "12px" }}>
-        <a href="/quests/custom">Custom Quests →</a> · <a href="/quests/llm.txt" data-native>Authoring &amp; LLM Guide</a>
-      </p>
     </div>
   );
 }
@@ -318,8 +311,8 @@ function withNotice(url: URL, screen: Screen): Screen {
 
 async function home(): Promise<Screen> {
   const [humans, bots] = await Promise.all([
-    get<BoardView>("/api/boards/survival?limit=10"),
-    get<BoardView>("/api/boards/survival?limit=10&category=bot"),
+    get<BoardView>("/api/survival?limit=10"),
+    get<BoardView>("/api/survival?limit=10&category=bot"),
   ]);
   return {
     title: null,
@@ -350,7 +343,7 @@ async function home(): Promise<Screen> {
             </div>
           </div>
           <p>
-            <a href="/boards/survival">Full boards</a> · <a href="/quests/1">Quests</a>
+            <a href="/survival">Full boards</a> · <a href="/quests">Quests</a> · <a href="/custom">Custom quests</a>
           </p>
         </>
       ),
@@ -392,21 +385,22 @@ function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
   ];
 }
 
-async function board(boardName: Board, quest: string): Promise<Screen> {
-  const path = boardName === "survival" ? "/api/boards/survival" : `/api/boards/${boardName}/${quest}`;
-  const [humans, bots] = await Promise.all([get<BoardView>(path), get<BoardView>(`${path}?category=bot`)]);
-  if (boardName === "survival") return { title: "Survival", quest: null, panels: boardPanels(humans!, bots!) };
-  const menu = (await get<QuestMenuView>(`/api/quests/${boardName}/${Number(quest.split(".")[0])}`))!;
-  return {
-    title: humans!.title,
-    quest,
-    panels: [keep("quest-menu", { menu, quest }, (data) => <QuestMenu view={data().menu} current={data().quest} />), ...boardPanels(humans!, bots!)],
-  };
+async function survival(): Promise<Screen> {
+  const [humans, bots] = await Promise.all([get<BoardView>("/api/survival"), get<BoardView>("/api/survival?category=bot")]);
+  return { title: "Survival", quest: null, panels: boardPanels(humans!, bots!) };
 }
 
-async function quests(boardName: "quests" | "quests-hardcore", stage: number): Promise<Screen> {
-  const menu = (await get<QuestMenuView>(`/api/quests/${boardName}/${stage}`))!;
-  return { title: `Quests ${STAGES[stage - 1]}`, quest: `${stage}.1`, panels: [keep("quest-menu", { menu, quest: undefined }, (data) => <QuestMenu view={data().menu} current={data().quest} />)] };
+// A stage's quest menu, and with a quest, its boards.
+async function quests(page: QuestPage): Promise<Screen> {
+  const api = (at: number | string) => `/api${questsPath(page.board, at)}`;
+  const [menu, humans, bots] = await Promise.all([
+    get<QuestMenuView>(api(page.stage)),
+    page.quest && get<BoardView>(api(page.quest)),
+    page.quest && get<BoardView>(`${api(page.quest)}?category=bot`),
+  ]);
+  const panel = keep("quest-menu", { menu: menu!, quest: page.quest ?? undefined }, (data) => <QuestMenu view={data().menu} current={data().quest} />);
+  if (!humans || !bots) return { title: `Quests ${STAGES[page.stage - 1]}`, quest: `${page.stage}.1`, panels: [panel] };
+  return { title: humans.title, quest: page.quest, panels: [panel, ...boardPanels(humans, bots)] };
 }
 
 function spawnColor(spawnId: number): string {
@@ -495,7 +489,7 @@ function QuestRestrictions(props: { quest: CustomQuest }) {
 }
 
 async function customQuests(): Promise<Screen> {
-  const list = (await get<CustomQuestsListView>("/api/quests/custom"))!;
+  const list = (await get<CustomQuestsListView>("/api/custom"))!;
   return {
     title: "Custom Quests",
     quest: null,
@@ -505,11 +499,8 @@ async function customQuests(): Promise<Screen> {
           <h2>Custom Quests</h2>
           <p class="muted">
             Community encounters authored in the <code>.quest</code> language. Every published quest is backed by a verified completion replay.
-            Describe an encounter to an LLM using <a href="/quests/llm.txt" data-native>/quests/llm.txt</a>, beat it with{" "}
+            Describe an encounter to an LLM using <a href="/custom/llm.txt" data-native>/custom/llm.txt</a>, beat it with{" "}
             <Command>uv run crimson --custom-quest my.quest</Command>, and publish with <Command>uv run crimson quest publish my.quest</Command>.
-          </p>
-          <p>
-            <a href="/quests/1">← Campaign Quests</a> · <a href="/quests/llm.txt" data-native>LLM Authoring Reference (.txt)</a>
           </p>
           <Show when={list.quests.length} fallback={<p class="muted">No custom quests published yet.</p>}>
             <div class="board-table">
@@ -530,7 +521,7 @@ async function customQuests(): Promise<Screen> {
                     {(q) => (
                       <tr>
                         <td>
-                          <a href={`/q/${q.id}`}>{q.title}</a>
+                          <a href={`/custom/${q.id}`}>{q.title}</a>
                         </td>
                         <td>
                           {q.creator ? <PlayerName player={q.creator} tag={false} /> : (q.author ?? "—")}
@@ -561,8 +552,8 @@ async function customQuests(): Promise<Screen> {
 
 async function customQuestPage(id: string): Promise<Screen> {
   const [detail, bots] = await Promise.all([
-    get<CustomQuestDetailView>(`/api/q/${id}`),
-    get<BoardView>(`/api/boards/quests/${id}?category=bot`),
+    get<CustomQuestDetailView>(`/api/custom/${id}`),
+    get<CustomQuestDetailView>(`/api/custom/${id}?category=bot`),
   ]);
   if (!detail || !bots) return notFound();
   const def = detail.definition;
@@ -593,18 +584,18 @@ async function customQuestPage(id: string): Promise<Screen> {
           <p class="buttons">
             <GameButton label="Play in browser" href={`/play/?quest=${detail.id}`} native />
             <GameButton label="Watch proof clear" href={`/play/?watch=${detail.first_run_id}`} native />
-            <GameButton label="All custom quests" href="/quests/custom" />
+            <GameButton label="All custom quests" href="/custom" />
           </p>
         </>
       ),
-      ...boardPanels(detail.board, bots),
+      ...boardPanels(detail.board, bots.board),
       ...(detail.source
         ? [
             () => (
               <>
                 <h3>Recipe (.quest)</h3>
                 <p class="muted">
-                  Construction seed: <code>{detail.seed}</code> · <a href="/quests/llm.txt" data-native>LLM Remix Reference</a>
+                  Construction seed: <code>{detail.seed}</code> · <a href="/custom/llm.txt" data-native>LLM Remix Reference</a>
                 </p>
                 <pre style={{ overflow: "auto", padding: "12px", background: "rgba(0,0,0,0.4)", "border-radius": "4px" }}>
                   <code>{detail.source}</code>
@@ -741,7 +732,7 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                     {(run) => (
                       <tr>
                         <td>
-                          <a href={run.quest && !run.quest.includes(".") ? `/q/${run.quest}` : `/boards/${run.board}${run.quest ? `/${run.quest}` : ""}`}>
+                          <a href={boardPath(run.board, run.quest)}>
                             {BOARD_NAMES[run.board]} {run.quest}
                           </a>
                           <Show when={run.category === "bot"}>
@@ -1123,14 +1114,13 @@ const TERMS: Screen = {
 export async function resolve(url: URL, nav: Navigator): Promise<Screen> {
   const path = url.pathname.replace(/\/+$/, "") || "/";
   let match: RegExpExecArray | null;
+  let page: QuestPage | null;
   let screen: Screen;
   if (path === "/") screen = await home();
-  else if (path === "/boards/survival") screen = await board("survival", "");
-  else if ((match = /^\/boards\/(quests|quests-hardcore)\/([^/]+)$/.exec(path)) && QUEST.test(match[2]!)) screen = await board(match[1] as Board, match[2]!);
-  else if ((match = /^\/(quests|quests-hardcore)\/([1-5])$/.exec(path))) screen = await quests(match[1] as "quests" | "quests-hardcore", Number(match[2]));
-  else if (path === "/quests/custom") screen = await customQuests();
-  else if (path === "/quests") screen = await quests("quests", 1);
-  else if ((match = /^\/q\/([0-9a-f]{12})$/.exec(path))) screen = await customQuestPage(match[1]!);
+  else if (path === "/survival") screen = await survival();
+  else if ((page = questPage(path))) screen = await quests(page);
+  else if (path === "/custom") screen = await customQuests();
+  else if ((match = /^\/custom\/([0-9a-f]{12})$/.exec(path))) screen = await customQuestPage(match[1]!);
   else if (path === "/mod") screen = await moderation(nav);
   else if ((match = /^\/players\/(\d+)$/.exec(path))) screen = await profile(Number(match[1]), nav);
   else if ((match = /^\/join\/([0-9a-f]{64})$/.exec(path))) screen = await join(match[1]!, nav);

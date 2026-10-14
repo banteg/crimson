@@ -24,6 +24,7 @@ import { configuredProviders } from "./oauth";
 import { LOWER_IS_BETTER } from "./ranked";
 import type { RunResult } from "./replay";
 import { accountModeration, runModeration } from "./moderation";
+import { CUSTOM_QUEST_ID } from "./paths";
 import { timelineFor } from "./runs";
 import { encodePortableQuest } from "./transport";
 import questTitles from "./quests.json";
@@ -32,7 +33,6 @@ import { playerLabel, shownName } from "../web/src/names";
 import weaponData from "../web/src/weapons.json";
 
 export const QUEST_TITLES: Record<string, string> = questTitles;
-export const CUSTOM_QUEST_ID = /^[0-9a-f]{12}$/;
 const WEAPONS: Record<string, { name: string }> = weaponData;
 
 // SQL over accounts `a` and runs `r`: the account's key fingerprint, and the name a run shows, which is the

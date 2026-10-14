@@ -282,7 +282,7 @@ export async function postRun(request: Request, env: Env, options: { requireCust
       )
         .bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source, upload.seed ?? 0, JSON.stringify(custom), now)
         .run();
-      return json({ id: runId, board: "quests", quest, digest, url: `/q/${quest}` }, 200);
+      return json({ id: runId, board: "quests", quest, digest, url: `/custom/${quest}` }, 200);
     }
     return refuse(409, "this run was already accepted");
   }
@@ -331,7 +331,7 @@ export async function postRun(request: Request, env: Env, options: { requireCust
     );
   }
   await env.DB.batch(statements);
-  return json(custom ? { id: runId, board, quest, score, digest, url: `/q/${quest}` } : { id: runId, board, quest, score }, 201);
+  return json(custom ? { id: runId, board, quest, score, digest, url: `/custom/${quest}` } : { id: runId, board, quest, score }, 201);
 }
 
 export const timelineKey = (runId: string) => `runs/${runId}.timeline.json`;

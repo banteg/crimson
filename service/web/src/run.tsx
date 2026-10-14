@@ -2,6 +2,7 @@
 // perks and timed bonuses, and where it was played, all from the timeline verification recorded (src/timeline.ts).
 import { type Accessor, createMemo, createResource, createSignal, For, type JSX, Show } from "solid-js";
 import { type Category, type RunDetailView, type SignalName, type Timeline } from "../../src/api-types";
+import { boardPath } from "../../src/paths";
 import { get, moderate } from "./api";
 import { GameButton } from "./button";
 import { formatScore } from "./format";
@@ -512,11 +513,6 @@ function QuestScore(props: { detail: RunDetailView }) {
   );
 }
 
-function boardPath(detail: RunDetailView): string {
-  if (detail.board === "survival") return "/boards/survival";
-  return detail.quest.includes(".") ? `/boards/${detail.board}/${detail.quest}` : `/q/${detail.quest}`;
-}
-
 export const SIGNAL_LABELS: Record<SignalName, string> = {
   aim_on_creature: "Aim on a creature",
   exact_moves: "Exact pad moves",
@@ -612,7 +608,7 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
             <GameButton label="Watch" href={`/play/?watch=${detail.id}`} native />
           </Show>
           <GameButton label="Download replay" href={`/runs/${detail.id}.crd`} native />
-          <GameButton label="Board" href={boardPath(detail)} />
+          <GameButton label="Board" href={boardPath(detail.board, detail.quest)} />
         </p>
       </div>
       <Show when={run}>{(run) => <Stats run={run()} detail={detail} />}</Show>

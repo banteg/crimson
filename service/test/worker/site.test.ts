@@ -56,7 +56,7 @@ async function api<T>(path: string, cookie = ""): Promise<T> {
 
 describe("site", () => {
   it("every route gets the site's page, titled for what a shared link points at", async () => {
-    for (const [path, title] of [["/", "crimson.land"], ["/boards/quests/1.1", `1.1 ${questTitles["1.1"]} · crimson.land`], ["/about", "About · crimson.land"]]) {
+    for (const [path, title] of [["/", "crimson.land"], ["/quests/1.1", `1.1 ${questTitles["1.1"]} · crimson.land`], ["/about", "About · crimson.land"]]) {
       const html = await (await call(path!)).text();
       expect(html).toContain(`<title>${title}</title>`);
       expect(html).toContain(`<meta property="og:title" content="${title}">`);
@@ -88,18 +88,30 @@ describe("site", () => {
     expect([local.status, local.headers.has("strict-transport-security")]).toEqual([200, false]);
   });
 
+  it("links to the boards' old paths move to the new ones", async () => {
+    const moved = async (path: string) => {
+      const response = await worker.fetch(new Request(`${ORIGIN}${path}`, { redirect: "manual" }), configured);
+      return [response.status, response.headers.get("location")];
+    };
+    expect(await moved("/boards/survival?category=bot")).toEqual([301, `${ORIGIN}/survival?category=bot`]);
+    expect(await moved("/boards/quests/1.1")).toEqual([301, `${ORIGIN}/quests/1.1`]);
+    expect(await moved("/boards/quests-hardcore/2.3")).toEqual([301, `${ORIGIN}/quests/hardcore/2.3`]);
+    expect(await moved("/quests-hardcore/4")).toEqual([301, `${ORIGIN}/quests/hardcore/4`]);
+    expect((await call("/quests/hardcore/4")).status).toBe(200);
+  });
+
   it("the quest menu lists a stage's ten quests by title with their player counts", async () => {
-    const menu = await api<QuestMenuView>("/api/quests/quests-hardcore/2");
+    const menu = await api<QuestMenuView>("/api/quests/hardcore/2");
 
     expect(menu).toMatchObject({ board: "quests-hardcore", stage: 2 });
     expect(menu.quests.map((quest) => quest.quest)).toEqual(Array.from({ length: 10 }, (_, i) => `2.${i + 1}`));
     expect(menu.quests[0]).toEqual({ quest: "2.1", title: questTitles["2.1"], players: 0 });
-    expect((await api<BoardView>("/api/boards/quests-hardcore/2.3")).title).toBe(`2.3 ${questTitles["2.3"]} · hardcore`);
-    expect((await call("/api/boards/quests/9.9")).status).toBe(404);
+    expect((await api<BoardView>("/api/quests/hardcore/2.3")).title).toBe(`2.3 ${questTitles["2.3"]} · hardcore`);
+    expect((await call("/api/quests/9.9")).status).toBe(404);
   });
 
   it("board totals count every ranked run in the category, not only the best runs the board shows", async () => {
-    expect((await api<BoardView>("/api/boards/survival")).totals).toEqual({ runs: 0, kills: 0, elapsed_ms: 0 });
+    expect((await api<BoardView>("/api/survival")).totals).toEqual({ runs: 0, kills: 0, elapsed_ms: 0 });
     await env.DB.batch([
       env.DB.prepare("INSERT INTO accounts (id, created_at, bot, banned) VALUES (1, 0, 0, 0), (2, 0, 1, 0), (3, 0, 0, 1)"),
       env.DB.prepare("INSERT INTO keys (public_key, account_id, fingerprint, added_at) VALUES ('key', 1, 'human', 0), ('bot-key', 2, 'bot', 0)"),
@@ -124,10 +136,10 @@ describe("site", () => {
         JSON.stringify({ kills: 10, elapsed_ms: 61000, players: [{ most_used_weapon_id: 1 }] }),
         run.pilot ?? "", run.category ?? null, run.hidden ?? 0, run.retired ?? null).run();
     }
-    const humans = await api<BoardView>("/api/boards/survival?limit=1");
+    const humans = await api<BoardView>("/api/survival?limit=1");
     expect(humans.rows.map((row) => row.run)).toEqual(["best"]);
     expect(humans.totals).toEqual({ runs: 3, kills: 30, elapsed_ms: 183000 });
-    expect((await api<BoardView>("/api/boards/survival?category=bot&limit=1")).totals).toEqual({ runs: 2, kills: 20, elapsed_ms: 122000 });
+    expect((await api<BoardView>("/api/survival?category=bot&limit=1")).totals).toEqual({ runs: 2, kills: 20, elapsed_ms: 122000 });
   });
 
   it("a profile shows its links, and to its owner the providers configured with both ID and secret", async () => {

@@ -113,7 +113,7 @@ export async function waitForRelease(origin, sha, request = fetch, {
 
 export async function smoke(origin = "https://crimson.land", sha = process.env.GITHUB_SHA, request = fetch, polling = {}) {
   await waitForRelease(origin, sha, request, polling);
-  for (const path of ["/", "/api/boards/survival", "/play/", "/play/index.js", "/play/index.wasm", "/play/game/crimson.paq", "/play/game/sfx.paq", "/play/game/music.paq"]) {
+  for (const path of ["/", "/api/survival", "/play/", "/play/index.js", "/play/index.wasm", "/play/game/crimson.paq", "/play/game/sfx.paq", "/play/game/music.paq"]) {
     const head = path.endsWith(".paq");
     const response = await request(`${origin}${path}`, { method: head ? "HEAD" : "GET", headers: { "Cache-Control": "no-cache" }, signal: AbortSignal.timeout(30000) });
     assert.equal(response.status, 200, `${path}: HTTP ${response.status}`);
