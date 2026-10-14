@@ -30,10 +30,12 @@ def test_grim_deal_kills_player_during_perk_menu_transition(
 ) -> None:
     ctx = ViewContext(assets_dir=assets_dir)
     game_mode = GameMode.SURVIVAL if mode_cls is SurvivalMode else GameMode.QUESTS
-    mode = mode_cls(ctx, config=make_mode_config(game_mode=game_mode), audio_rng=Crand(0xBEEF))
+    config = make_mode_config(game_mode=game_mode)
+    if mode_cls is QuestMode:
+        config.gameplay.quest_level = QuestLevel(1, 1)
+    mode = mode_cls(ctx, config=config, audio_rng=Crand(0xBEEF))
+    mode.bind_status(GameStatus.detached(GameStatusData()))
     mode.open()
-    if isinstance(mode, QuestMode):
-        mode.start_run(QuestLevel(1, 1), status=GameStatus.detached(GameStatusData()))
 
     assert mode.player.health > 0.0
     mode.player.death_timer = 0.3

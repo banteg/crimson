@@ -14,9 +14,10 @@ from grim.view import ViewContext
 
 
 def _make_quest_mode(mocker, *, config, assets_dir: Path) -> QuestMode:
+    config.gameplay.quest_level = QuestLevel(1, 1)
     mode = QuestMode(ViewContext(assets_dir=assets_dir), config=config, audio_rng=Crand(0xBEEF))
+    mode.bind_status(GameStatus.detached(GameStatusData()))
     mode.open()
-    mode.start_run(QuestLevel(1, 1), status=GameStatus.detached(GameStatusData()))
     return mode
 
 

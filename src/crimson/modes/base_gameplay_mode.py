@@ -546,7 +546,7 @@ class BaseGameplayMode:
             self._perk_menu.close()
         else:
             self._handle_input()
-        if self._action is not None:
+        if self._action is not None and not self._game_over_active:
             return None
         return _ModeFrameState(
             dt=float(frame_dt),

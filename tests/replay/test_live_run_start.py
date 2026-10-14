@@ -38,9 +38,9 @@ def test_live_start_and_first_ticks_match_complete_replay_state(
     )
     status = GameStatus.from_data(path=tmp_path / "status.dat", data=GameStatusData(quest_unlock_index=15), dirty=False)
     mode.bind_status(status)
-    mode.open()
     if isinstance(mode, QuestMode):
-        mode.start_run(QuestLevel(1, 1), status=status)
+        mode.config.gameplay.quest_level = QuestLevel(1, 1)
+    mode.open()
     session = mode._sim_session
     recorder = mode._replay_recorder
     assert session is not None and recorder is not None

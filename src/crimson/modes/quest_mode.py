@@ -19,7 +19,6 @@ from ..game_modes import GameMode
 from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import UNI_NUM_MASK, HighScoreRecord
-from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.custom import CustomQuest
 from ..quests.level import QuestLevel
@@ -94,35 +93,10 @@ class QuestMode(BaseGameplayMode):
     def _finish_run(self, outcome: RunOutcome) -> None:
         self._close_run("completed" if outcome == RunOutcome.QUEST_COMPLETED else "failed")
 
-    def start_run(self, level: QuestLevel, *, status: GameStatus) -> None:
-        self.config.gameplay.quest_level = level
-        self._custom_quest = None
-        self._start(status=status)
-
     def select_custom_quest(self, quest: CustomQuest | None) -> None:
         """The custom quest the next run plays, or None for a stock level: known before the screen opens, whose
         world reset already takes its seed and player count from whether the run ranks."""
         self._custom_quest = quest
-
-    def start_custom_run(self, quest: CustomQuest, *, status: GameStatus) -> None:
-        self._custom_quest = quest
-        self._start(status=status)
-
-    def _start(self, *, status: GameStatus) -> None:
-        self._replay_recorder = None
-        self._replay_checkpoints.clear()
-        self._replay_checkpoints_last_tick = None
-        # Set before the seed and player count: whether the run ranks decides both.
-        self._quest_level = None if self._custom_quest is not None else (self.config.gameplay.quest_level or QuestLevel(1, 1))
-
-        seed = self._next_run_seed()
-        self._run_reset_seed = seed
-
-        player_count = self._runtime_player_count()
-        self.world_runtime.reset(seed=seed, player_count=max(1, min(4, player_count)))
-        self._local_input.reset(players=self.world.players)
-        self.bind_status(status)
-        self._prepare_selected_quest()
 
     def _prepare_selected_quest(self) -> None:
         self._quest_def = None

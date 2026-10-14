@@ -6,9 +6,8 @@ from crimson.persistence import save_status
 from crimson.screens.quest_views import QuestsMenuView
 
 
-def test_quest_select_f1_counts_ignore_untracked_stage5_slots(make_game_state, tmp_path: Path) -> None:
+def test_quest_select_f1_counts_stage5_reads_tail_fields(make_game_state, tmp_path: Path) -> None:
     quest_counts = [0] * int(save_status.QUEST_PLAY_COUNT)
-    quest_counts[11] = 7
     quest_counts[51] = 123
     quest_counts[55] = 456
     quest_counts[56] = 789
@@ -30,6 +29,11 @@ def test_quest_select_f1_counts_ignore_untracked_stage5_slots(make_game_state, t
     state = make_game_state(assets_root=tmp_path, status=status)
     view = QuestsMenuView(state)
 
-    assert view._quest_counts(stage=1, row=0) == (123, 7)
-    for row in range(10):
-        assert view._quest_counts(stage=5, row=row) is None
+    assert view._quest_counts(stage=5, row=0) == (111, 123)
+    assert view._quest_counts(stage=5, row=1) == (222, int(status.quest_play_count(52)))
+    assert view._quest_counts(stage=5, row=4) == (0x01020304, 456)
+
+    tail_u32 = int.from_bytes(bytes(range(4)), "little")
+    assert view._quest_counts(stage=5, row=5) == (tail_u32, 789)
+
+    assert view._quest_counts(stage=5, row=9) == (0, 999)
