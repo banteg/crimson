@@ -45,3 +45,27 @@ def test_tick_statistics_playtime_behavior(
     loop._tick_statistics_playtime(dt)
 
     assert state.status.play_time_ms == expected_value
+
+
+@pytest.mark.usefixtures("headless_window")
+def test_play_time_skips_open_console_game_over_and_typo_runs(make_game_state, headless_resources) -> None:
+    state = make_game_state(resources=headless_resources)
+    loop = GameLoopView(state)
+    loop.navigation.navigate(StartRun(GameMode.SURVIVAL))
+    loop._tick_statistics_playtime(1.0 / 60.0)
+    assert state.status.play_time_ms == 16
+
+    state.console.open_flag = True
+    loop._tick_statistics_playtime(1.0 / 60.0)
+    assert state.status.play_time_ms == 16
+
+    state.console.open_flag = False
+    run = state.screens.gameplay
+    assert run is not None
+    run._enter_game_over()
+    loop._tick_statistics_playtime(1.0 / 60.0)
+    assert state.status.play_time_ms == 16
+
+    loop.navigation.navigate(StartRun(GameMode.TYPO))
+    loop._tick_statistics_playtime(1.0 / 60.0)
+    assert state.status.play_time_ms == 16

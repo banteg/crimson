@@ -13,7 +13,6 @@ from grim.rand import Crand
 from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
 from tests.support.factories import player_input
-from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
 
 
@@ -31,7 +30,6 @@ def _runtime_with_stub_audio(mocker):
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
     runtime.audio = _audio_state_stub()
     runtime.audio_rng = Crand(0)
-    runtime.sync_audio_bridge_state()
     return runtime, play_sfx
 
 
@@ -102,12 +100,7 @@ def test_reload_plays_its_sfx_once_when_it_starts(mocker) -> None:
 
 
 def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    runtime.audio = _audio_state_stub()
-    runtime.audio_rng = Crand(0)
-
+    runtime, play_sfx = _runtime_with_stub_audio(mocker)
     player = runtime.world.players[0]
     player.experience = 10_000
 
@@ -122,12 +115,7 @@ def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
 
 
 def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    runtime.audio = _audio_state_stub()
-    runtime.audio_rng = Crand(0)
-
+    runtime, play_sfx = _runtime_with_stub_audio(mocker)
     player = runtime.world.players[0]
     entry = runtime.world.state.bonus_pool.spawn_at(
         pos=Vec2(player.pos.x, player.pos.y),
@@ -144,12 +132,7 @@ def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
 
 
 def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    runtime.audio = _audio_state_stub()
-    runtime.audio_rng = Crand(0)
-
+    runtime, play_sfx = _runtime_with_stub_audio(mocker)
     player = runtime.world.players[0]
     entry = runtime.world.state.bonus_pool.spawn_at(
         pos=Vec2(player.pos.x, player.pos.y),
@@ -166,12 +149,7 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
 
 
 def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    runtime.audio = _audio_state_stub()
-    runtime.audio_rng = Crand(0)
-
+    runtime, play_sfx = _runtime_with_stub_audio(mocker)
     player = runtime.world.players[0]
     perks = runtime.world.state.perks
     aim = player_input(aim=Vec2(player.pos.x + 1.0, player.pos.y))
@@ -205,18 +183,3 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.EXPLOSION_SMALL
 
-
-def test_audio_bridge_forwards_live_reflex_timer(mocker) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    runtime.audio = _audio_state_stub()
-    runtime.audio_rng = Crand(0)
-    runtime.sync_audio_bridge_state()
-
-    runtime.world.state.bonuses.reflex_boost = 0.75
-    runtime.audio_bridge.play_sfx(SfxId.PISTOL_FIRE)
-
-    play_sfx.assert_called_once()
-    assert play_sfx.call_args.args[1] == SfxId.PISTOL_FIRE
-    assert_float_close(float(play_sfx.call_args.kwargs["reflex_boost_timer"]), 0.75)

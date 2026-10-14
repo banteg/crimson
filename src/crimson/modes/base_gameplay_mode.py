@@ -975,9 +975,6 @@ class BaseGameplayMode:
             return False
         return True
 
-    def _sync_audio(self) -> None:
-        self._world_runtime.sync_audio_bridge_state()
-
     def _run_deterministic_session_ticks(
         self,
         *,
@@ -993,7 +990,6 @@ class BaseGameplayMode:
 
         if float(dt_frame) <= 0.0:
             return
-        self._sync_audio()
         # Presentation only: the corpse decal alpha, never read back by the sim.
         session.terrain_fx.corpses.bodies_transparency = self._cvar_float("cv_terrainBodiesTransparency")
         self._live_ticks.poll(self._build_local_inputs())

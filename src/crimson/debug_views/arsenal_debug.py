@@ -337,7 +337,6 @@ class ArsenalDebugView:
         self._audio_rng = bootstrap.audio_rng
         self._runtime.audio = self._audio
         self._runtime.audio_rng = self._audio_rng
-        self._runtime.sync_audio_bridge_state()
 
         self._small = load_small_font(self._assets_root)
 
@@ -357,7 +356,6 @@ class ArsenalDebugView:
             self._console = None
         self._runtime.audio = None
         self._runtime.audio_rng = self._audio_rng
-        self._runtime.sync_audio_bridge_state()
         self._runtime.close_runtime()
         self._aim_texture = None
 

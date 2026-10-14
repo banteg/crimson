@@ -17,7 +17,6 @@ def apply_presentation_plans(
     if not plans:
         return
 
-    runtime.sync_audio_bridge_state()
     for plan in plans:
         # Capture the viewport before this tick's post-step camera update.
         # Camera updates carry tick-local focus/shake, so batched application

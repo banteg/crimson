@@ -36,7 +36,6 @@ def test_contract_6_state_apply_and_presentation_apply_stay_separate(mocker, tmp
         perk_progression_enabled=False,
     )
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    sync_audio = mocker.spy(runtime, "sync_audio_bridge_state")
     ticks = LiveTickSource()
     plans: list[DeterministicPresentationPlan] = []
     for _ in range(2):
@@ -53,10 +52,9 @@ def test_contract_6_state_apply_and_presentation_apply_stay_separate(mocker, tmp
 
     apply_presentation_plans(plans=plans, runtime=runtime)
 
-    # Presentation output does not touch the presentation clock, syncs audio
-    # once per batch, and plays each plan's sounds in tick order.
+    # Presentation output does not touch the presentation clock and plays
+    # each plan's sounds in tick order.
     assert (runtime.presentation.elapsed_ms, runtime.presentation.bonus_anim_phase) == clock
-    assert sync_audio.call_count == 1
     expected_sfx = [sfx for plan in plans for sfx in (*sfx_ids(plan.sfx), *sfx_ids(plan.post_apply_sfx))]
     assert expected_sfx
     assert [call.args[1] for call in play_sfx.call_args_list] == expected_sfx

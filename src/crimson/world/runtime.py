@@ -139,9 +139,6 @@ class WorldRuntime:
     def close_runtime(self) -> None:
         self.render_resources.close()
 
-    def sync_audio_bridge_state(self) -> None:
-        pass
-
     def update_camera(self, update: CameraUpdate | None = None) -> None:
         if update is None:
             update = camera_update_for_players(self.world.players, self.world.state.camera_shake_offset)

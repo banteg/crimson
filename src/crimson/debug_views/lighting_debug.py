@@ -2375,7 +2375,6 @@ class LightingDebugView:
         self._audio_rng = bootstrap.audio_rng
         self._runtime.audio = self._audio
         self._runtime.audio_rng = self._audio_rng
-        self._runtime.sync_audio_bridge_state()
 
         try:
             # Load after audio/bootstrap so missing PAQs can be downloaded first.
@@ -2427,7 +2426,6 @@ class LightingDebugView:
             self._console = None
         self._runtime.audio = None
         self._runtime.audio_rng = self._audio_rng
-        self._runtime.sync_audio_bridge_state()
         self._runtime.close_runtime()
         self._aim_texture = None
 

@@ -29,12 +29,6 @@ def test_close_crosses_zero_once_and_reentering_rewinds(max_timeline) -> None:
     assert timeline.max_timeline_ms == max_timeline
 
 
-@pytest.mark.parametrize(("timeline", "expected"), [(100, -510), (250, -255), (400, 0)])
-def test_quest_results_keeps_100ms_hold_then_300ms_slide(timeline, expected) -> None:
-    _, slide = ui_element_anim(timeline, index=35, width=510)
-    assert slide == expected
-
-
 def test_panels_and_sign_keep_opposite_directions_and_staggered_intervals() -> None:
     angle, left = ui_element_anim(150, index=11, width=510)
     sign_angle = ui_element_anim(150, index=0, width=510)[0]

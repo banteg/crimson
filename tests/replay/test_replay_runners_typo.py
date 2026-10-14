@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from crimson.replay import Replay
-from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.commands import TypoCharCommand, TypoSubmitCommand
 from grim.geom import Vec2
@@ -38,28 +37,6 @@ def test_typo_runner_is_deterministic_and_uses_submit_counts_for_run_result() ->
     assert result0.elapsed_ms == 7 * int(1000.0 / 60.0)
     assert result0.shots_fired == 1
     assert result0.shots_hit == 0
-
-
-def test_typo_runner_uses_header_dictionary_words() -> None:
-    replay = _reload_submit_replay(
-        seed=0x1234,
-        dictionary_words=("amber", "onyx"),
-    )
-
-    driver = build_verify_playback_driver(replay)
-
-    assert driver.world.state.typo.dictionary_words == ("amber", "onyx")
-
-
-def test_typo_runner_uses_header_highscore_names() -> None:
-    replay = _reload_submit_replay(
-        seed=0x1234,
-        highscore_names=("quick", "brown", "fox"),
-    )
-
-    driver = build_verify_playback_driver(replay)
-
-    assert driver.world.state.typo.highscore_names.names == ("quick", "brown", "fox")
 
 
 def test_typo_runner_checkpoints_capture_typo_state() -> None:

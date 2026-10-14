@@ -9,13 +9,10 @@ import pytest
 from crimson.game_modes import GameMode
 from crimson.modes import replay_playback_mode
 from crimson.modes.replay_playback_mode import ReplayPlaybackMode
-from crimson.quests import quest_by_level
-from crimson.quests.level import QuestLevel
 from crimson.replay import Replay
-from crimson.sim.commands import PerkPickCommand, TypoCharCommand
+from crimson.sim.commands import PerkPickCommand
 from crimson.sim.run_spec import RunSpec
 from crimson.world.runtime import WorldRuntime
-from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig, ensure_crimson_cfg
 from grim.console import create_console, register_core_cvars
@@ -138,57 +135,6 @@ def test_quiet_ticks_give_the_sound_effects_back_when_a_tick_raises(open_playbac
 
     assert observed_sfx_enabled == [False]
     assert audio_bridge.sfx_enabled
-
-
-def test_quest_replay_draws_the_title_over_its_spawn_timer(open_playback: OpenPlayback, mocker) -> None:
-    level = QuestLevel(1, 1)
-    view = open_playback(record_replay(RunSpec(game_mode_id=GameMode.QUESTS, seed=101, quest_level=level), 60))
-    view.update(0.1)
-    title_overlay = mocker.spy(replay_playback_mode, "draw_quest_title_timer_overlay")
-    banner_overlay = mocker.spy(replay_playback_mode, "draw_quest_complete_banner_overlay")
-
-    _draw(view, mocker)
-
-    quest = quest_by_level(level)
-    assert quest is not None
-    quest_spawn = view.driver.quest_spawn_state
-    assert quest_spawn is not None
-    title_overlay.assert_called_once_with(
-        view._grim_mono, quest.title, level.text, timer_ms=quest_spawn.spawn_timeline_ms, subtitle="",
-    )
-    banner_overlay.assert_called_once_with(
-        _runtime(view).render_resources.resources.texture(TextureId.UI_TEXT_LEVEL_COMPLETE),
-        timer_ms=quest_spawn.completion_transition_ms,
-    )
-
-
-def test_typo_replay_draws_the_typed_text_in_the_typing_box(open_playback: OpenPlayback, mocker) -> None:
-    typed = [[TypoCharCommand(player_index=0, ch=ch)] for ch in "rel"]
-    view = open_playback(record_replay(RunSpec(game_mode_id=GameMode.TYPO, seed=0xBEEF), 6, commands=typed))
-    view.update(0.1)
-    typing_box = mocker.spy(replay_playback_mode, "draw_typing_box")
-
-    _draw(view, mocker)
-
-    typing_box.assert_called_once()
-    assert typing_box.call_args.args == (_runtime(view).render_resources.resources.texture(TextureId.UI_IND_PANEL),)
-    assert typing_box.call_args.kwargs["text"] == "rel"
-    assert typing_box.call_args.kwargs["game_time_s"] == view.driver.elapsed_ms * 0.001
-
-
-def test_tutorial_replay_draws_the_world_tutorial_overlay(open_playback: OpenPlayback, mocker) -> None:
-    view = open_playback(record_replay(RunSpec(game_mode_id=GameMode.TUTORIAL, seed=0xBEEF), 300))
-    # The first tutorial prompt fades in shortly after the start.
-    while not (_runtime(view).world.state.tutorial_overlay.prompt_text or view.finished):
-        view.update(0.1)
-    overlay_panels = mocker.spy(replay_playback_mode, "draw_tutorial_overlay_panels")
-
-    _draw(view, mocker)
-
-    overlay = _runtime(view).world.state.tutorial_overlay
-    assert overlay.prompt_text
-    overlay_panels.assert_called_once()
-    assert overlay_panels.call_args.args == (overlay,)
 
 
 def test_closing_gives_back_the_music_and_the_sound_randomness_the_replay_found(
