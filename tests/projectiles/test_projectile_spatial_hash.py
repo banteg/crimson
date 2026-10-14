@@ -10,14 +10,10 @@ from tests.support.factories import make_creature_state as _creature
 from tests.support.factories import make_step_runtime, place_creatures
 
 
-def _is_collidable(creature: CreatureState) -> bool:
-    return bool(creature.active) and float(creature.death_timer) > 5.0
-
-
 def _spatial_over(creatures: list[CreatureState]) -> tuple[list[CreatureState], CreatureSpatialHash]:
     world = make_world()
     entries = place_creatures(world, creatures)
-    return entries, CreatureSpatialHash(pool=world.creatures, is_collidable=_is_collidable)
+    return entries, CreatureSpatialHash(pool=world.creatures)
 
 
 def test_creature_spatial_hash_returns_sorted_candidates_across_cells() -> None:
@@ -94,7 +90,7 @@ def test_explosion_hits_split_children_born_during_its_index_scan() -> None:
     parent.max_hp = 400.0
     parent.size = 40.0
     step_runtime = make_step_runtime(world)
-    spatial = CreatureSpatialHash(pool=world.creatures, is_collidable=_is_collidable)
+    spatial = CreatureSpatialHash(pool=world.creatures)
     explosion = SecondaryProjectile(active=True, pos=parent.pos, detonation_scale=1.0)
     ctx = step_runtime
     _step_detonation(explosion, ctx, dt=0.1, creature_spatial=spatial, rng=world.state.rng)
@@ -105,7 +101,7 @@ def test_explosion_hits_split_children_born_during_its_index_scan() -> None:
 
 def test_creature_spatial_hash_sees_slots_allocated_after_it_was_built() -> None:
     world = make_world()
-    spatial = CreatureSpatialHash(pool=world.creatures, is_collidable=_is_collidable)
+    spatial = CreatureSpatialHash(pool=world.creatures)
     assert spatial.candidate_indices(pos=Vec2(300.0, 300.0), radius=8.0) == []
 
     index = world.creatures.alloc_slot(world.state.rng)

@@ -9,11 +9,9 @@ from .assign import (
     weapon_entry,
 )
 from .availability import prepare_weapon_availability, weapon_pick_random_available
-from .fire import WeaponFireCtx, WeaponFireResult, capture_fire_gate, fire_weapon
+from .fire import capture_fire_gate, fire_weapon
 
 __all__ = [
-    "WeaponFireCtx",
-    "WeaponFireResult",
     "capture_fire_gate",
     "fire_weapon",
     "init_default_alt_weapon",

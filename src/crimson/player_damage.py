@@ -65,9 +65,16 @@ def _final_revenge(step_runtime: WorldStepRuntime, player: PlayerState) -> None:
     state.sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, player.pos))
 
 
-def player_take_damage(step_runtime: WorldStepRuntime, player: PlayerState, damage: float, *, dt: float) -> float:
+def player_take_damage(
+    step_runtime: WorldStepRuntime,
+    player: PlayerState,
+    damage: float,
+    *,
+    dt: float | None = None,
+) -> float:
     """Port of `player_take_damage`, returning the actual damage applied."""
 
+    resolved_dt = step_runtime.dt if dt is None else dt
     state = step_runtime.world.state
     players = step_runtime.world.players
     raw_damage = f32(damage)
@@ -118,10 +125,10 @@ def player_take_damage(step_runtime: WorldStepRuntime, player: PlayerState, dama
     # Native's dodge proc jumps past the damage stores but still runs the
     # health branch: a dodged hit on an already-dead player keeps decrementing
     # the death-animation timer.
-    if lethal_hit and float(dt) > 0.0:
+    if lethal_hit and float(resolved_dt) > 0.0:
         player.death_timer = x87_pc24_sub(
             f32(player.death_timer),
-            x87_pc24_mul(f32(dt), f32(28.0)),
+            x87_pc24_mul(f32(resolved_dt), f32(28.0)),
         )
 
     # Native emits pain/death VO before heading jitter + low-health timer RNG work.

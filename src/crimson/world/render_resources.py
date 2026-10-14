@@ -1,28 +1,19 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import msgspec
 
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
-from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 from grim.terrain_stamps import TerrainLayers
 
 from ..creatures.anim import creature_corpse_frame_for_type
-from ..creatures.runtime import CreaturePool
-from ..render.frame import RenderFrame
-from ..render.rtx.mode import RtxRenderMode
 from ..render.terrain_fx import FxQueueTextures, bake_terrain_fx_batch
-from ..sim.state_types import TERRAIN_SIZE, PlayerState
+from ..sim.state_types import TERRAIN_SIZE
 from ..sim.terrain_fx import TerrainFxBatch
-
-if TYPE_CHECKING:
-    from crimson.sim.gameplay_state import GameplayState
-
 
 
 class RenderResources(msgspec.Struct):
@@ -144,27 +135,3 @@ class RenderResources(msgspec.Struct):
             return
         # Baking draws into the ground render target; it happens on the draw path.
         self._pending_terrain_fx_batches.append(batch)
-
-    def build_render_frame(
-        self,
-        *,
-        state: GameplayState,
-        players: list[PlayerState],
-        creatures: CreaturePool,
-        camera: Vec2,
-        elapsed_ms: float,
-        bonus_anim_phase: float,
-        rtx_mode: RtxRenderMode,
-    ) -> RenderFrame:
-        return RenderFrame(
-            config=self.config,
-            camera=camera,
-            ground=self.ground,
-            state=state,
-            players=players,
-            creatures=creatures,
-            resources=self.resources,
-            elapsed_ms=float(elapsed_ms),
-            bonus_anim_phase=float(bonus_anim_phase),
-            rtx_mode=rtx_mode,
-        )

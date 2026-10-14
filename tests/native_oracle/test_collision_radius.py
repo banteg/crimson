@@ -60,5 +60,5 @@ def test_collision_radius_matches_native_at_axis_boundaries_and_translated_posit
         expected = i32(oracle.call("creature_find_in_radius", origin_address, radius, 0).eax)
         actual = creature_find_in_radius(pool.entries, pos=origin, radius=radius, start_index=0)
         assert actual == expected, f"case {case}: {origin}, {position}, radius {radius}, size {size}"
-        spatial = CreatureSpatialHash(pool=pool, is_collidable=lambda c: c.active and c.death_timer > 5.0)
+        spatial = CreatureSpatialHash(pool=pool)
         assert spatial.find_in_radius(pos=origin, radius=radius) == expected

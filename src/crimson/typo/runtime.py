@@ -200,8 +200,9 @@ def typo_gameplay_update(
     for player in players:
         player_weapon_popup_timer_update(player, timing.dt)
 
-    step_runtime.sfx.extend(state.sfx_queue)
-    state.sfx_queue.clear()
-    events = step_runtime.build_events(hits=hits, secondary_hit_count=secondary_hit_count, pickups=pickups)
-    events.creature_count_before_render = creature_count_before_render
-    return events
+    return step_runtime.build_events(
+        hits=hits,
+        secondary_hit_count=secondary_hit_count,
+        pickups=pickups,
+        creature_count_before_render=creature_count_before_render,
+    )

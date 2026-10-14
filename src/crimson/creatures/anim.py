@@ -98,11 +98,8 @@ def creature_anim_advance_phase(
     local_scale: float = 1.0,
     flags: CreatureFlags = CreatureFlags(0),
     ai_mode: int = CreatureAiMode.FLANK_PLAYER,
-) -> tuple[float, float]:
-    """Advance anim_phase and wrap it the same way as creature_update_all.
-
-    Returns (new_phase, applied_step).
-    """
+) -> float:
+    """Advance anim_phase and wrap it the same way as creature_update_all."""
     phase = f32(phase)
 
     step = creature_anim_phase_step(
@@ -115,7 +112,7 @@ def creature_anim_advance_phase(
         ai_mode=ai_mode,
     )
     if step == 0.0:
-        return phase, 0.0
+        return phase
 
     phase = f32(phase + step)
 
@@ -128,7 +125,7 @@ def creature_anim_advance_phase(
         while phase > 15.0:
             phase = f32(phase - 15.0)
 
-    return phase, step
+    return phase
 
 
 def creature_anim_select_frame(
@@ -138,14 +135,13 @@ def creature_anim_select_frame(
     mirror_long: bool,
     flags: CreatureFlags = CreatureFlags(0),
     death_timer: float = 16.0,
-) -> tuple[int, bool, str]:
-    """Select the shadow/body atlas frame from lifecycle and animation state.
+) -> int:
+    """Select the shadow/body atlas frame index from lifecycle and animation state.
 
-    Returns (frame_index, mirror_applied, mode).
     The default lifecycle is alive; death staging uses its own truncation path.
     Arithmetic before integer conversion follows native gameplay PC24 rounding.
 
-    Note: mirror_applied refers to the long-strip ping-pong index mirroring
+    Note: mirror_long refers to the long-strip ping-pong index mirroring
     (frame = 0x1f - frame) when the per-type mirror flag is set, not a texture flip.
     """
     phase = f32(phase)
@@ -159,16 +155,13 @@ def creature_anim_select_frame(
             frame = (
                 base_frame + 0x0F if death_timer < 0.0 else int(f32(float(base_frame + 0x0F) - death_timer))
             )
-            mirrored = False
         else:
             frame = int(f32(phase + 0.5))
-            mirrored = False
             if mirror_long and frame > 0x0F:
                 frame = 0x1F - frame
-                mirrored = True
         if (flags_bits & _FLAG_RANGED_PLASMA_RIFLE) != 0:
             frame += 0x20
-        return frame, mirrored, "long"
+        return frame
 
     # Ping-pong strip:
     #   idx = (__ftol(phase + 0.5f) & 0x8000000f); then normalize negatives; then mirror >7.
@@ -178,8 +171,7 @@ def creature_anim_select_frame(
         idx = i32(((idx - 1) | 0xFFFFFFF0) + 1)
     if idx > 7:
         idx = 0x0F - idx
-    frame = base_frame + 0x10 + idx
-    return frame, False, "ping-pong"
+    return base_frame + 0x10 + idx
 
 
 def creature_anim_select_flash_frame(
@@ -189,7 +181,7 @@ def creature_anim_select_flash_frame(
     mirror_long: bool,
     flags: CreatureFlags = CreatureFlags(0),
     death_timer: float = 16.0,
-) -> tuple[int, bool, str]:
+) -> int:
     """Select the hit-flash frame; dying long strips omit the shock offset."""
     if f32(death_timer) < 16.0:
         flags &= ~CreatureFlags.RANGED_PLASMA_RIFLE

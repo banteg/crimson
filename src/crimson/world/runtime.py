@@ -48,8 +48,6 @@ class WorldRuntime:
         self.assets_dir = Path(assets_dir)
         self.preserve_bugs = bool(preserve_bugs)
         self.config = config
-        self.audio = audio
-        self.audio_rng = audio_rng
         self.rtx_mode = rtx_mode
 
         self._reset_world(seed=0xBEEF, player_count=1)
@@ -61,8 +59,8 @@ class WorldRuntime:
         self.render_resources = render_resources
         self.audio_bridge = AudioBridge(
             reflex_boost_timer=lambda: float(self.world.state.bonuses.reflex_boost),
-            audio=self.audio,
-            audio_rng=self.audio_rng,
+            audio=audio,
+            audio_rng=audio_rng,
         )
         # The setup the ground was last drawn from; applying it again draws the same stamps.
         self.terrain_setup: TerrainSetup | None = None
@@ -70,8 +68,21 @@ class WorldRuntime:
         self.camera = Vec2(-1.0, -1.0)
         self.view_cap = viewport.DEFAULT_VIEW_CAP
 
-        self.sync_audio_bridge_state()
+    @property
+    def audio(self) -> AudioState | None:
+        return self.audio_bridge.audio
 
+    @audio.setter
+    def audio(self, value: AudioState | None) -> None:
+        self.audio_bridge.audio = value
+
+    @property
+    def audio_rng(self) -> CrandLike:
+        return self.audio_bridge.audio_rng
+
+    @audio_rng.setter
+    def audio_rng(self, value: CrandLike) -> None:
+        self.audio_bridge.audio_rng = value
     # ------------------------------------------------------------------
     # Shared lifecycle methods (extracted from 4 identical implementations)
     # ------------------------------------------------------------------
@@ -129,10 +140,7 @@ class WorldRuntime:
         self.render_resources.close()
 
     def sync_audio_bridge_state(self) -> None:
-        self.audio_bridge.sync(
-            audio=self.audio,
-            audio_rng=self.audio_rng,
-        )
+        pass
 
     def update_camera(self, update: CameraUpdate | None = None) -> None:
         if update is None:
@@ -177,11 +185,14 @@ class WorldRuntime:
         return self.view_transform().screen_to_world(pos)
 
     def build_render_frame(self) -> RenderFrame:
-        return self.render_resources.build_render_frame(
+        return RenderFrame(
+            config=self.config,
+            camera=self.camera,
+            ground=self.render_resources.ground,
             state=self.world.state,
             players=self.world.players,
             creatures=self.world.creatures,
-            camera=self.camera,
+            resources=self.render_resources.resources,
             elapsed_ms=float(self.presentation.elapsed_ms),
             bonus_anim_phase=float(self.presentation.bonus_anim_phase),
             rtx_mode=self.rtx_mode,

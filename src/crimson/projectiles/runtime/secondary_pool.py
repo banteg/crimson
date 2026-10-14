@@ -8,11 +8,9 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
-from ...collision_math import within_native_find_radius
 from ...creatures.damage import creature_apply_damage
 from ...creatures.damage_types import CreatureDamageType
-from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
-from ...creatures.spatial_hash import CreatureSpatialHash
+from ...creatures.lifecycle import creature_lifecycle_is_alive
 from ...effects import SpriteEffectPool
 from ...effects_atlas import EffectId
 from ...math_parity import (
@@ -38,9 +36,9 @@ if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ...creatures.runtime import CreatureState
+    from ...creatures.spatial_hash import CreatureSpatialHash
     from ...sim.state_types import PlayerState
     from ...sim.world_state import WorldStepRuntime
-
 
 _SECONDARY_PRE_HIT_DECAL_CALLERS = (
     (
@@ -60,12 +58,6 @@ _SECONDARY_PRE_HIT_DECAL_CALLERS = (
 
 _DETONATION_IMPULSE_SCALE = f32(0.1)
 _TRAIL_DECAY_SCALE = f32(0.01)
-
-
-def _creature_is_collidable(creature: CreatureState) -> bool:
-    if not creature.active:
-        return False
-    return creature_lifecycle_is_collidable(creature.death_timer)
 
 
 def _step_detonation(
@@ -321,7 +313,7 @@ class SecondaryProjectilePool:
         effects = runtime_state.effects
         sprite_effects = runtime_state.sprite_effects
 
-        creature_spatial = CreatureSpatialHash(pool=step_runtime.world.creatures, is_collidable=_creature_is_collidable)
+        creature_spatial = step_runtime.creature_spatial
         hit_count = 0
 
         for entry in self._entries:
@@ -338,20 +330,8 @@ class SecondaryProjectilePool:
             _tick_rocket_trail(entry, dt=dt, sprite_effects=sprite_effects, rng=rng)
 
             # projectile_update uses creature_find_in_radius(..., 8.0, ...)
-            hit_idx: int | None = None
-            for idx in creature_spatial.candidate_indices(pos=entry.pos, radius=8.0):
-                creature = creatures[int(idx)]
-                if not _creature_is_collidable(creature):
-                    continue
-                if within_native_find_radius(
-                    origin=entry.pos,
-                    target=creature.pos,
-                    radius=8.0,
-                    target_size=float(creature.size),
-                ):
-                    hit_idx = idx
-                    break
-            if hit_idx is not None:
+            hit_idx = creature_spatial.find_in_radius(pos=entry.pos, radius=8.0)
+            if hit_idx != -1:
                 hit_count += 1
                 if creature_lifecycle_is_alive(creatures[int(hit_idx)].death_timer):
                     runtime_state.shots_hit += 1

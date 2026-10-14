@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from collections import defaultdict
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -10,12 +10,16 @@ import msgspec
 from grim.geom import Vec2
 
 from ..collision_math import native_find_size_margin, within_native_find_radius
+from .lifecycle import creature_lifecycle_is_collidable
 
 if TYPE_CHECKING:
     from .runtime import CreaturePool, CreatureState
 
 _SPATIAL_BUCKET_SIZE = 64.0
 _NATIVE_FIND_RADIUS_MARGIN_EPS = 0.001
+
+def _is_collidable(creature: CreatureState) -> bool:
+    return creature.active and creature_lifecycle_is_collidable(creature.death_timer)
 
 
 class CreatureSpatialHash(msgspec.Struct):
@@ -28,7 +32,6 @@ class CreatureSpatialHash(msgspec.Struct):
     """
 
     pool: CreaturePool
-    is_collidable: Callable[[CreatureState], bool]
     bucket_size: float = _SPATIAL_BUCKET_SIZE
     _built_alloc_count: int = -1
     _cells: dict[tuple[int, int], list[int]] = msgspec.field(default_factory=dict)
@@ -51,7 +54,7 @@ class CreatureSpatialHash(msgspec.Struct):
         self._built_alloc_count = self.pool.alloc_count
 
         for idx, creature in enumerate(self.creatures):
-            if not self.is_collidable(creature):
+            if not _is_collidable(creature):
                 continue
             cell = self._cell_for_pos(creature.pos)
             cells[cell].append(int(idx))
@@ -70,7 +73,7 @@ class CreatureSpatialHash(msgspec.Struct):
         idx = int(index)
         creature = self.creatures[idx]
         previous_cell = self._cell_by_index[idx]
-        if not self.is_collidable(creature):
+        if not _is_collidable(creature):
             if previous_cell is not None:
                 self._remove_from_cell(idx, previous_cell)
                 self._cell_by_index[idx] = None
@@ -119,7 +122,7 @@ class CreatureSpatialHash(msgspec.Struct):
         """First live collidable slot, in native pool order."""
         for index in self.candidate_indices(pos=pos, radius=radius):
             creature = self.creatures[index]
-            if self.is_collidable(creature) and within_native_find_radius(
+            if _is_collidable(creature) and within_native_find_radius(
                 origin=pos, target=creature.pos, radius=radius, target_size=creature.size,
             ):
                 return index

@@ -271,32 +271,28 @@ class DeterministicSession(msgspec.Struct):
         quest_spawn = self.mode_state if isinstance(self.mode_state, QuestSpawnState) else None
         if quest_spawn is not None and quest_spawn.play_hit_sfx:
             post_apply_sfx.append(SfxId.QUESTHIT)
+        self.elapsed_ms = elapsed_before_ms + dt_sim_ms
         presentation = DeterministicPresentationPlan(
             trigger_game_tune=events.trigger_game_tune,
             sfx=(*events.hit_sfx, *events.sfx),
             terrain_fx=self.terrain_fx.take_batch(),
             post_apply_sfx=tuple(SfxRequest(sfx) for sfx in post_apply_sfx),
-            sfx_dt=timing.dt_audio,
             play_quest_completion_music=quest_spawn is not None and quest_spawn.play_completion_music,
+            reflex_boost_timer=float(state.bonuses.reflex_boost),
+            sfx_dt=timing.dt_audio,
+            camera=camera_update_for_players(self.world.players, state.camera_shake_offset),
         )
+        # `quest_mode_update` saves the status on each frame of its `timer > 2500` branch.
         step = DeterministicSessionTick(
             dt_sim=timing.dt_sim,
             timing=timing,
             events=events,
             presentation=presentation,
+            elapsed_ms=self.elapsed_ms,
+            creature_count_world_step=events.creature_count_before_render,
+            save_status=quest_spawn is not None and quest_spawn.completed,
+            outcome=self.terminal_outcome(),
             perk_picks=tuple(perk_picks),
-        )
-        self.elapsed_ms = elapsed_before_ms + dt_sim_ms
-
-        step.elapsed_ms = self.elapsed_ms
-        step.creature_count_world_step = events.creature_count_before_render
-        # `quest_mode_update` saves the status on each frame of its `timer > 2500` branch.
-        step.save_status = quest_spawn is not None and quest_spawn.completed
-        step.outcome = self.terminal_outcome()
-        step.presentation = msgspec.structs.replace(
-            step.presentation,
-            camera=camera_update_for_players(self.world.players, state.camera_shake_offset),
-            reflex_boost_timer=float(state.bonuses.reflex_boost),
         )
         # `game_frame_update` ends every frame with a discarded draw. Frames outside
         # gameplay (pause, perk menu) draw too in native; they depend on wall-clock

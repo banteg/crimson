@@ -79,7 +79,7 @@ def test_radius_damage_matches_native_with_split_children_in_earlier_and_later_s
         damage = rng.choice((0.25, 5.0, 200.0))
         fx_queue = FxQueue()
         step = make_step_runtime(world, dt=f32(0.016), fx_queue=fx_queue)
-        spatial = CreatureSpatialHash(pool=world.creatures, is_collidable=lambda c: c.active and c.death_timer > 5.0)
+        spatial = CreatureSpatialHash(pool=world.creatures)
         oracle.call("creatures_apply_radius_damage", origin_address, radius, damage, int(CreatureDamageType.ION))
         creatures_apply_radius_damage(step, Vec2(512.0, 512.0), radius, damage, int(CreatureDamageType.ION), creature_spatial=spatial)
         if world.creatures.alloc_count:

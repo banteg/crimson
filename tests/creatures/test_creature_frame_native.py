@@ -14,7 +14,7 @@ def test_creature_frames_match_native_pc24_witnesses() -> None:
     assert data["fpcw"] == 0x7F
     assert len(data["witnesses"]) == 2640
     for witness in data["witnesses"]:
-        actual, _, _ = creature_anim_select_frame(
+        actual = creature_anim_select_frame(
             witness["phase"],
             death_timer=witness["death_timer"],
             base_frame=witness["base_frame"],
@@ -22,7 +22,7 @@ def test_creature_frames_match_native_pc24_witnesses() -> None:
             flags=CreatureFlags(witness["flags"]),
         )
         assert actual == witness["frame"], witness
-        flash, _, _ = creature_anim_select_flash_frame(
+        flash = creature_anim_select_flash_frame(
             witness["phase"],
             death_timer=witness["death_timer"],
             base_frame=witness["base_frame"],

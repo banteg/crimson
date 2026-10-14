@@ -61,20 +61,6 @@ def capture_fire_gate(player: PlayerState, perks: PerkCounts) -> WeaponFireGate:
     )
 
 
-class WeaponFireCtx(msgspec.Struct):
-    player: PlayerState
-    input_state: PlayerInput
-    dt: float
-    step_runtime: WorldStepRuntime
-    fire_gate: WeaponFireGate
-
-
-class WeaponFireResult(msgspec.Struct, frozen=True):
-    fired: bool
-    shot_count: int = 0
-    ammo_cost: float = 0.0
-
-
 class _ShotSpawner(msgspec.Struct, frozen=True):
     """The muzzle, owner and pools every `player_update` fire branch spawns into."""
 
@@ -153,21 +139,23 @@ def _pellet_speed_scale(roll: int, base: float) -> float:
     return x87_pc24_add(x87_pc24_mul(float(roll), f32(0.01)), f32(base))
 
 
-def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
-    player = ctx.player
-    input_state = ctx.input_state
-    dt = float(ctx.dt)
-    state = ctx.step_runtime.world.state
-    creatures = ctx.step_runtime.world.creatures.entries
-    fire_gate = ctx.fire_gate
+def fire_weapon(
+    *,
+    player: PlayerState,
+    input_state: PlayerInput,
+    step_runtime: WorldStepRuntime,
+    fire_gate: WeaponFireGate,
+) -> None:
+    state = step_runtime.world.state
+    creatures = step_runtime.world.creatures.entries
 
     weapon_id = player.weapon.weapon_id
     weapon = weapon_entry(weapon_id)
 
     if not (fire_gate.normal_ready or fire_gate.perk_ready):
-        return WeaponFireResult(fired=False)
+        return
     if not input_state.fire_down:
-        return WeaponFireResult(fired=False)
+        return
 
     perk_fire_ready = not fire_gate.normal_ready
     use_regression_bullets = False
@@ -198,7 +186,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             from ..player_damage import player_take_damage
 
             cost = 0.15 if ammo_class == 1 else 1.0
-            player_take_damage(ctx.step_runtime, player, cost, dt=dt)
+            player_take_damage(step_runtime, player, cost)
     # Native player_update grants ten seconds for DIK_G on an eligible shot.
     # Keep this legacy cheat opt-in, including when replay input supplies it.
     if state.preserve_bugs and input_state.fire_bullets_key_down:
@@ -237,7 +225,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             pos=muzzle,
             aim_heading=aim_heading,
             rng=state.rng,
-            detail_preset=int(ctx.step_runtime.world.state.detail_preset),
+            detail_preset=int(step_runtime.world.state.detail_preset),
         )
 
     shot_angle = _native_shot_angle_with_jitter(
@@ -250,7 +238,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     rng = state.rng
     shot = _ShotSpawner(
         state=state,
-        players=ctx.step_runtime.world.players,
+        players=step_runtime.world.players,
         creatures=creatures,
         player_index=player.index,
         muzzle=muzzle,
@@ -456,9 +444,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     muzzle_inc = weapon_spread_heat
     if is_fire_bullets and pellet_count == 1:
         muzzle_inc = fire_bullets_spread_heat
-    player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha)
-    player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha + muzzle_inc)
-    player.muzzle_flash_alpha = min(0.8, player.muzzle_flash_alpha)
+    player.muzzle_flash_alpha = min(0.8, player.muzzle_flash_alpha + muzzle_inc)
 
     if state.bonuses.reflex_boost <= 0.0 and not is_fire_bullets:
         # Native allows ammo to cross below zero for reload-time firing paths
@@ -471,4 +457,3 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         reload_start_gate_open = True
     if player.weapon.ammo <= 0.0 and reload_start_gate_open:
         player_start_reload(player, state)
-    return WeaponFireResult(fired=True, shot_count=int(shot_count), ammo_cost=float(ammo_cost))

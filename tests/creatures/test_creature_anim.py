@@ -50,7 +50,7 @@ def test_creature_killed_by_a_projectile_still_advances_its_walk_cycle_that_tick
     )
 
     assert [death.index for death in events.deaths] == [0]
-    expected_phase, _step = creature_anim_advance_phase(
+    expected_phase = creature_anim_advance_phase(
         0.0,
         anim_rate=CREATURE_ANIM[CreatureTypeId.ALIEN].anim_rate,
         move_speed=2.0,

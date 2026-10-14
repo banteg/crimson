@@ -26,11 +26,6 @@ class AudioBridge:
         self.audio = audio
         self.sfx_enabled = True
         self._reflex_boost_timer = reflex_boost_timer
-
-    def sync(self, *, audio: AudioState | None, audio_rng: CrandLike) -> None:
-        self.audio = audio
-        self.audio_rng = audio_rng
-
     def play_sfx(
         self,
         sfx: SfxId,

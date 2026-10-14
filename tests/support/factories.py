@@ -14,7 +14,7 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PerkCounts, PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
 from crimson.weapon_runtime import prepare_weapon_availability
-from crimson.weapon_runtime.fire import WeaponFireCtx, WeaponFireResult, capture_fire_gate, fire_weapon
+from crimson.weapon_runtime.fire import capture_fire_gate, fire_weapon
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
@@ -145,21 +145,18 @@ def fire_player_weapon(
     dt: float,
     *,
     step_runtime: WorldStepRuntime | None = None,
-) -> WeaponFireResult:
+) -> None:
     """Fire `player`'s weapon with the gate `player_update` would capture right now.
 
     The input's aim is the mouse point `player_update` stores in `player.aim` before the fire block.
     """
 
     player.aim = input_state.aim
-    return fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=input_state,
-            dt=dt,
-            step_runtime=make_step_runtime(world, dt=dt) if step_runtime is None else step_runtime,
-            fire_gate=capture_fire_gate(player, world.state.perks),
-        ),
+    fire_weapon(
+        player=player,
+        input_state=input_state,
+        step_runtime=make_step_runtime(world, dt=dt) if step_runtime is None else step_runtime,
+        fire_gate=capture_fire_gate(player, world.state.perks),
     )
 
 

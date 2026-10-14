@@ -863,7 +863,7 @@ class CreaturePool:
             ):
                 self._plaguebearer_spread_infection(int(idx))
 
-            creature.anim_phase, _ = creature_anim_advance_phase(
+            creature.anim_phase = creature_anim_advance_phase(
                 creature.anim_phase,
                 anim_rate=CREATURE_ANIM[creature.type_id].anim_rate,
                 move_speed=float(creature.move_speed),
@@ -998,7 +998,7 @@ class CreaturePool:
                             creature.flags |= CreatureFlags.POISONED | CreatureFlags.POISONED_STRONG
                         elif PerkId.VEINS_OF_POISON in state.perks:
                             creature.flags |= CreatureFlags.POISONED
-                    player_take_damage(step_runtime, player, creature.contact_damage, dt=dt)
+                    player_take_damage(step_runtime, player, creature.contact_damage)
                     push_dir = x87_d3dx_vec2_normalize(
                         Vec2(x87_pc24_sub(player.pos.x, creature.pos.x), x87_pc24_sub(player.pos.y, creature.pos.y)),
                     )
@@ -1131,6 +1131,8 @@ class CreaturePool:
             creature.active = False
             step_runtime.fx_queue.add_random(pos=creature.pos, rng=rng)
 
+        if step_runtime._creature_spatial is not None:
+            step_runtime._creature_spatial.sync_index(idx)
         step_runtime.deaths.append(
             CreatureDeath(
                 index=idx,

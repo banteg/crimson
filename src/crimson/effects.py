@@ -13,8 +13,6 @@ from grim.rand import CallerStatic, CrandLike
 
 from .creatures.damage import creature_apply_damage
 from .creatures.damage_types import CreatureDamageType
-from .creatures.lifecycle import creature_lifecycle_is_collidable
-from .creatures.spatial_hash import CreatureSpatialHash
 from .effects_atlas import EffectId
 from .math_parity import (
     NATIVE_HALF_PI,
@@ -192,26 +190,22 @@ class ParticlePool:
     def iter_active(self) -> list[Particle]:
         return [entry for entry in self._entries if entry.active]
 
-    def update(self, dt: float, *, step_runtime: WorldStepRuntime) -> list[int]:
+    def update(self, dt: float | None = None, *, step_runtime: WorldStepRuntime) -> None:
         """Advance particles and deactivate expired entries.
 
         This is a minimal port of the particle loop inside `projectile_update`
         (0x00420b90). It captures the per-style decay/movement rules that drive
         visual lifetimes and the weapon-driven collision damage.
-
-        Returns indices of particles that were deactivated this tick.
         """
 
-        if dt <= 0.0:
-            return []
-        dt = f32(dt)
+        resolved_dt = step_runtime.dt if dt is None else dt
+        if resolved_dt <= 0.0:
+            return
+        dt = f32(resolved_dt)
         creatures = step_runtime.world.creatures.entries
         fx_queue = step_runtime.fx_queue
         sprite_effects = step_runtime.world.state.sprite_effects
         rng = step_runtime.world.state.rng
-
-        expired: list[int] = []
-        creature_spatial: CreatureSpatialHash | None = None
 
         for idx, entry in enumerate(self._entries):
             if not entry.active:
@@ -240,7 +234,6 @@ class ParticlePool:
             alive = entry.intensity > (0.0 if style == int(ParticleStyleId.FLAMETHROWER) else f32(0.8))
             if not alive:
                 entry.active = False
-                expired.append(idx)
                 if style == int(ParticleStyleId.BUBBLEGUN) and entry.target_id != -1:
                     target_id = int(entry.target_id)
                     if 0 <= target_id < len(creatures):
@@ -274,11 +267,7 @@ class ParticlePool:
             # Native only updates color_r/color_g; color_b stays at its spawn value (1.0).
 
             if entry.in_flight:
-                if creature_spatial is None:
-                    creature_spatial = CreatureSpatialHash(
-                        pool=step_runtime.world.creatures,
-                        is_collidable=lambda c: c.active and creature_lifecycle_is_collidable(c.death_timer),
-                    )
+                creature_spatial = step_runtime.creature_spatial
                 hit_idx = creature_spatial.find_in_radius(
                     pos=entry.pos, radius=max(float(entry.intensity), 0.0) * 8.0,
                 )
@@ -376,8 +365,6 @@ class ParticlePool:
                             x87_pc24_add(creature.pos.y, x87_pc24_mul(entry.vel.y, dt)),
                         )
                         creature_spatial.sync_index(hit_idx)
-
-        return expired
 
 
 class SpriteEffect(msgspec.Struct):

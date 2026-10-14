@@ -93,7 +93,7 @@ def draw_creature_sprite(
     mirror_flag = info.mirror if mirror_long is None else mirror_long
     # Long-strip mirroring is handled by frame index selection, not texture flips.
     select_frame = creature_anim_select_flash_frame if hit_flash else creature_anim_select_frame
-    index, _, _ = select_frame(
+    index = select_frame(
         phase,
         base_frame=info.base,
         mirror_long=mirror_flag,

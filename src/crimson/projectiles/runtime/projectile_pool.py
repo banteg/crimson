@@ -13,8 +13,7 @@ from grim.sfx_types import SfxRequest
 from ...collision_math import within_native_find_radius
 from ...creatures.damage import creature_apply_damage, creatures_apply_radius_damage
 from ...creatures.damage_types import CreatureDamageType
-from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
-from ...creatures.spatial_hash import CreatureSpatialHash
+from ...creatures.lifecycle import creature_lifecycle_is_alive
 from ...creatures.spawn_ids import CreatureFlags
 from ...math_parity import (
     NATIVE_HALF_PI,
@@ -51,7 +50,6 @@ from .collision import creature_find_nearest_active
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
-    from ...creatures.runtime import CreatureState
     from ...sim.state_types import PlayerState
     from ...sim.world_state import WorldStepRuntime
 
@@ -194,12 +192,7 @@ class ProjectilePool:
         hits: list[ProjectileHit] = []
         margin = 64.0
 
-        def _creature_is_collidable(creature: CreatureState) -> bool:
-            if not creature.active:
-                return False
-            return creature_lifecycle_is_collidable(creature.death_timer)
-
-        creature_spatial = CreatureSpatialHash(pool=world.creatures, is_collidable=_creature_is_collidable)
+        creature_spatial = step_runtime.creature_spatial
 
         for proj_index, proj in enumerate(self._entries):
             if not proj.active:
@@ -294,25 +287,11 @@ class ProjectilePool:
                     )
                     acc = Vec2()
 
-                    hit_idx = None
-                    for idx in creature_spatial.candidate_indices(pos=proj.pos, radius=float(proj.hit_radius)):
-                        creature = creatures[idx]
-                        if not _creature_is_collidable(creature):
-                            continue
-                        if within_native_find_radius(
-                            origin=proj.pos,
-                            target=creature.pos,
-                            radius=float(proj.hit_radius),
-                            target_size=float(creature.size),
-                        ):
-                            hit_idx = idx
-                            break
-
-                    if hit_idx == proj.owner_id:
-                        # Native `creature_find_in_radius` does not skip owner id during
-                        # search; owner hits are discarded after the first match instead of
-                        # continuing to a later candidate in the same tick.
-                        hit_idx = None
+                    # Native `creature_find_in_radius` does not skip owner id during
+                    # search; owner hits are discarded after the first match instead of
+                    # continuing to a later candidate in the same tick.
+                    found_idx = creature_spatial.find_in_radius(pos=proj.pos, radius=float(proj.hit_radius))
+                    hit_idx = None if found_idx in (-1, proj.owner_id) else found_idx
 
                     if hit_idx is None:
                         can_hit_players = True
@@ -554,18 +533,9 @@ class ProjectilePool:
                     # Pre-hit splatter uses the collision point. Native post-hit
                     # effects/audio read the live positions after jitter and damage.
                     post_hit = msgspec.structs.replace(hit, hit=proj.pos, target=creatures[hit_idx].pos)
-                    if proj.life_timer == 0.25 and stop_on_hit:
-                        if hit_presentation is not None:
-                            step_runtime.finish_hit_presentation(post_hit, hit_presentation)
+                    step_runtime.finish_hit_presentation(post_hit, hit_presentation)
+                    if (proj.life_timer == 0.25 and stop_on_hit) or proj.damage_pool <= 0.0:
                         break
-
-                    if proj.damage_pool <= 0.0:
-                        if hit_presentation is not None:
-                            step_runtime.finish_hit_presentation(post_hit, hit_presentation)
-                        break
-
-                    if hit_presentation is not None:
-                        step_runtime.finish_hit_presentation(post_hit, hit_presentation)
 
                 step += 3
 

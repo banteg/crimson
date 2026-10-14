@@ -41,9 +41,6 @@ from .rng_caller_static import RngCallerStatic
 from .sim.state_types import TERRAIN_SIZE
 from .sim.timing import ftol_ms_i32, reflex_boost_time_scale_factor
 from .weapon_runtime import (
-    WeaponFireCtx as _WeaponFireCtx,
-)
-from .weapon_runtime import (
     capture_fire_gate as _capture_fire_gate,
 )
 from .weapon_runtime import (
@@ -1002,7 +999,7 @@ def player_update(
     frame_dt = dt
     if state.time_scale_active:
         frame_dt = _player_reflex_restored_dt(movement_dt, time_scale_factor)
-
+    step_runtime.dt = frame_dt
     has_alt_weapon_perk = _player_tick_reload(
         player, input_state, state, frame_dt, prev_pos, move_mode, players,
     )
@@ -1063,13 +1060,10 @@ def player_update(
         # Computer aim fires on its own when the target is in reach (0x00415729).
         input_state = msgspec.structs.replace(input_state, fire_down=True)
     _fire_weapon(
-        _WeaponFireCtx(
-            player=player,
-            input_state=input_state,
-            dt=frame_dt,
-            step_runtime=step_runtime,
-            fire_gate=fire_gate,
-        ),
+        player=player,
+        input_state=input_state,
+        step_runtime=step_runtime,
+        fire_gate=fire_gate,
     )
 
     while player.move_phase > 14.0:

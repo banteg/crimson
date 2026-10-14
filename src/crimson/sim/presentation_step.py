@@ -35,6 +35,7 @@ from .terrain_fx import TerrainFxBatch
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
+    from .world_state import WorldStepRuntime
 
 _BULLET_HIT_SFX = (
     SfxId.BULLET_HIT_01,
@@ -59,7 +60,7 @@ class DeterministicPresentationPlan(msgspec.Struct, frozen=True):
     camera: CameraUpdate | None = None
 
 
-def _hit_sfx_for_type(
+def hit_sfx_for_type(
     type_id: int,
     *,
     rng: CrandLike,
@@ -71,33 +72,22 @@ def _hit_sfx_for_type(
 
 
 def plan_hit_sfx(
-    hits: list[ProjectileHit],
+    hits: Sequence[ProjectileHit],
     *,
     game_mode: GameMode,
     game_tune_started: bool,
     rng: CrandLike,
 ) -> tuple[bool, list[SfxRequest]]:
-    if not hits:
-        return False, []
-
     trigger_game_tune = False
     local_game_tune_started = bool(game_tune_started)
-    # Native draws a hit-sound rand and plays the panned sample for every hit,
-    # uncapped; the per-hit world-step path already matches this.
     sfx: list[SfxRequest] = []
-    for idx in range(len(hits)):
-        if game_mode != GameMode.RUSH and (not local_game_tune_started):
-            # Mirrors `projectile_update`: first eligible hit calls
-            # `music_play_exclusive(music_track_game_playlist)` and skips the panned
-            # bullet/shock hit sound for that same hit. Native
-            # `music_play_exclusive` also performs one RNG draw to pick the
-            # playlist entry, so consume one draw here for stream parity.
+    for hit in hits:
+        if game_mode != GameMode.RUSH and not local_game_tune_started:
             trigger_game_tune = True
             local_game_tune_started = True
             _ = rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
             continue
-        type_id = int(hits[idx].type_id)
-        sfx.append(SfxRequest(_hit_sfx_for_type(type_id, rng=rng), hits[idx].hit))
+        sfx.append(SfxRequest(hit_sfx_for_type(int(hit.type_id), rng=rng), hit.hit))
     return trigger_game_tune, sfx
 
 
@@ -110,14 +100,26 @@ class ProjectileDecalPostCtx(msgspec.Struct, frozen=True):
 
 def queue_projectile_decals_pre_hit(
     *,
-    state: GameplayState,
-    players: Sequence[PlayerState],
-    fx_queue: FxQueue,
     hit: ProjectileHit,
-    rng: CrandLike,
-    detail_preset: int,
-    violence_disabled: int,
+    step_runtime: WorldStepRuntime | None = None,
+    state: GameplayState | None = None,
+    players: Sequence[PlayerState] | None = None,
+    fx_queue: FxQueue | None = None,
+    rng: CrandLike | None = None,
+    detail_preset: int | None = None,
+    violence_disabled: int | None = None,
 ) -> ProjectileDecalPostCtx:
+    if step_runtime is not None:
+        if state is None:
+            state = step_runtime.world.state
+        if players is None:
+            players = step_runtime.world.players
+        if fx_queue is None:
+            fx_queue = step_runtime.fx_queue
+    assert state is not None and players is not None and fx_queue is not None
+    rng = state.rng if rng is None else rng
+    detail_preset = state.detail_preset if detail_preset is None else detail_preset
+    violence_disabled = state.violence_disabled if violence_disabled is None else violence_disabled
     freeze_active = float(state.bonuses.freeze) > 0.0
     bloody = bool(players) and PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks
 
@@ -230,13 +232,23 @@ def queue_projectile_decals_pre_hit(
 
 def queue_projectile_decals_post_hit(
     *,
-    state: GameplayState,
-    fx_queue: FxQueue,
     post_ctx: ProjectileDecalPostCtx,
-    rng: CrandLike,
-    detail_preset: int,
+    hit: ProjectileHit | None = None,
+    step_runtime: WorldStepRuntime | None = None,
+    state: GameplayState | None = None,
+    fx_queue: FxQueue | None = None,
+    rng: CrandLike | None = None,
+    detail_preset: int | None = None,
 ) -> None:
-    hit = post_ctx.hit
+    if step_runtime is not None:
+        if state is None:
+            state = step_runtime.world.state
+        if fx_queue is None:
+            fx_queue = step_runtime.fx_queue
+    assert state is not None and fx_queue is not None
+    rng = state.rng if rng is None else rng
+    detail_preset = state.detail_preset if detail_preset is None else detail_preset
+    hit = post_ctx.hit if hit is None else hit
     base_angle = float(post_ctx.base_angle)
 
     # Native consumes one extra `crt_rand()` per creature hit before the

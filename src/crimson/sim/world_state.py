@@ -13,6 +13,7 @@ from ..bonuses.update import bonus_telekinetic_update, bonus_update, bonus_updat
 from ..camera import camera_shake_update
 from ..creatures.damage import creature_death_sfx_for_slot
 from ..creatures.runtime import CreatureDeath, CreaturePool
+from ..creatures.spatial_hash import CreatureSpatialHash
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import (
@@ -41,7 +42,7 @@ from .mode_updates import (
 )
 from .presentation_step import (
     ProjectileDecalPostCtx,
-    plan_hit_sfx,
+    hit_sfx_for_type,
     queue_projectile_decals_post_hit,
     queue_projectile_decals_pre_hit,
 )
@@ -72,53 +73,49 @@ class WorldStepRuntime(msgspec.Struct):
     sfx: list[SfxRequest]
     trigger_game_tune: bool = False
     hit_sfx: list[SfxRequest] = msgspec.field(default_factory=list)
+    _creature_spatial: CreatureSpatialHash | None = None
+
+    @property
+    def creature_spatial(self) -> CreatureSpatialHash:
+        if self._creature_spatial is None:
+            self._creature_spatial = CreatureSpatialHash(pool=self.world.creatures)
+        return self._creature_spatial
 
     def apply_player_damage(self, player_index: int, damage: float) -> None:
         player_take_projectile_damage(self.world.state, self.world.players[player_index], damage)
 
+    def _try_trigger_game_tune(self) -> bool:
+        state = self.world.state
+        if state.game_mode != GameMode.RUSH and not state.game_tune_started:
+            self.trigger_game_tune = True
+            state.game_tune_started = True
+            _ = state.rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
+            return True
+        return False
+
     def begin_hit_presentation(self, hit: ProjectileHit) -> ProjectileDecalPostCtx:
         return queue_projectile_decals_pre_hit(
-            state=self.world.state,
-            players=self.world.players,
-            fx_queue=self.fx_queue,
+            step_runtime=self,
             hit=hit,
-            rng=self.world.state.rng,
-            detail_preset=self.world.state.detail_preset,
-            violence_disabled=self.world.state.violence_disabled,
         )
 
     def finish_hit_presentation(self, hit: ProjectileHit, presentation: ProjectileDecalPostCtx) -> None:
         queue_projectile_decals_post_hit(
-            state=self.world.state,
-            fx_queue=self.fx_queue,
-            post_ctx=msgspec.structs.replace(presentation, hit=hit),
-            rng=self.world.state.rng,
-            detail_preset=self.world.state.detail_preset,
+            step_runtime=self,
+            post_ctx=presentation,
+            hit=hit,
         )
-        hit_trigger, keys = plan_hit_sfx(
-            [hit],
-            game_mode=self.world.state.game_mode,
-            game_tune_started=self.world.state.game_tune_started,
-            rng=self.world.state.rng,
-        )
-        if hit_trigger:
-            self.trigger_game_tune = True
-            self.world.state.game_tune_started = True
-        if keys:
-            self.hit_sfx.extend(keys)
+        if not self._try_trigger_game_tune():
+            self.hit_sfx.append(
+                SfxRequest(hit_sfx_for_type(int(hit.type_id), rng=self.world.state.rng), hit.hit),
+            )
 
     def play_secondary_rocket_hit_audio(self, position: Vec2) -> None:
         # Native secondary-rocket hits run the same first-hit game-tune branch
         # as bullet hits: music_play_exclusive(music_track_game_playlist) plus one
         # playlist rand outside rush, else the panned explosion sound.
-        state = self.world.state
-        if state.game_mode != GameMode.RUSH and not state.game_tune_started:
-            self.trigger_game_tune = True
-            state.game_tune_started = True
-            _ = self.world.state.rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
-            return
-        self.hit_sfx.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, position))
-
+        if not self._try_trigger_game_tune():
+            self.hit_sfx.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, position))
     def on_bubblegun_expiry_sfx(self, creature_index: int, sound_slot: int) -> None:
         idx = int(creature_index)
         if not (0 <= idx < len(self.world.creatures.entries)):
@@ -133,7 +130,12 @@ class WorldStepRuntime(msgspec.Struct):
         hits: list[ProjectileHit],
         secondary_hit_count: int,
         pickups: list[BonusPickupEvent],
+        perk_menu_opened: bool = False,
+        creature_count_before_render: int = 0,
     ) -> WorldEvents:
+        if self.world.state.sfx_queue:
+            self.sfx.extend(self.world.state.sfx_queue)
+            self.world.state.sfx_queue.clear()
         return WorldEvents(
             hits=hits,
             secondary_hit_count=int(secondary_hit_count),
@@ -142,6 +144,8 @@ class WorldStepRuntime(msgspec.Struct):
             sfx=self.sfx,
             trigger_game_tune=bool(self.trigger_game_tune),
             hit_sfx=self.hit_sfx,
+            perk_menu_opened=perk_menu_opened,
+            creature_count_before_render=creature_count_before_render,
         )
 
 
@@ -178,13 +182,12 @@ class WorldState(msgspec.Struct):
 
     def projectile_update(self, step_runtime: WorldStepRuntime) -> tuple[list[ProjectileHit], int]:
         """`projectile_update`: the primary and secondary projectiles, then the sprite and particle loops."""
-        dt = step_runtime.dt
         hits = self.state.projectiles.step(step_runtime)
         secondary_hit_count = self.state.secondary_projectiles.step(step_runtime)
         # Native updates the sprite pool before the particle loop, so sprites
         # spawned by particles only advance on the next tick.
-        self.state.sprite_effects.update(dt)
-        self.state.particles.update(dt, step_runtime=step_runtime)
+        self.state.sprite_effects.update(step_runtime.dt)
+        self.state.particles.update(step_runtime=step_runtime)
         return hits, secondary_hit_count
 
     def step(
@@ -289,14 +292,10 @@ class WorldState(msgspec.Struct):
                 detail_preset=self.state.detail_preset,
                 step_runtime=step_runtime,
             )
-        if self.state.sfx_queue:
-            step_runtime.sfx.extend(self.state.sfx_queue)
-            self.state.sfx_queue.clear()
-        events = step_runtime.build_events(
+        return step_runtime.build_events(
             hits=hits,
             secondary_hit_count=int(secondary_hit_count),
             pickups=pickups,
+            perk_menu_opened=perk_menu_opened,
+            creature_count_before_render=creature_count_before_render,
         )
-        events.perk_menu_opened = perk_menu_opened
-        events.creature_count_before_render = creature_count_before_render
-        return events

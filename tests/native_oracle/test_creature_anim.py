@@ -59,7 +59,7 @@ def test_creature_anim_phase_matches_native(oracle) -> None:
         oracle.run(_ANIM_START, _ANIM_END, regs={"esi": 0}, frame=frame)
         native = oracle.read_f32(creature + _ANIM_PHASE_OFFSET)
 
-        python, _ = creature_anim_advance_phase(
+        python = creature_anim_advance_phase(
             phase,
             anim_rate=anim_rate,
             move_speed=move_speed,

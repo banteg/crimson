@@ -47,8 +47,8 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
         deaths=[],
         sfx=[],
     )
-    expired = state.particles.update(case["dt"], step_runtime=runtime)
-    assert expired == [item["index"] for item in case["particles"]]
+    state.particles.update(step_runtime=runtime)
+    assert all(not state.particles.entries[item["index"]].active for item in case["particles"])
     assert state.survival_first_kill_count == witness["history_count"]
     assert state.survival_reward_fire_seen == bool(witness["fire_seen"])
     assert state.survival_shrinkifier_handout_enabled == bool(witness["handout_enabled"])
