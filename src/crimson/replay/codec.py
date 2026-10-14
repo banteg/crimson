@@ -154,11 +154,15 @@ def _upgrade_v33_custom_quest(cq: _CustomQuestV33Legacy, *, player_count: int) -
         len(cq.variants) == 8 and sorted(set(cq.variants)) == list(range(len(cq.tables))),
         "run.custom_quest: invalid legacy variants table",
     )
+    try:
+        weapon_id = WeaponId(cq.start_weapon_id)
+    except ValueError as exc:
+        raise ReplayCodecError(f"run.custom_quest: invalid start_weapon_id {cq.start_weapon_id}") from exc
     idx = max(0, min(7, (player_count - 1) * 2))
     return CustomQuest(
         title=cq.title,
         author=cq.author,
-        start_weapon_id=WeaponId(cq.start_weapon_id),
+        start_weapon_id=weapon_id,
         terrain_slots=cq.terrain_slots,
         entries=cq.tables[cq.variants[idx]],
     )

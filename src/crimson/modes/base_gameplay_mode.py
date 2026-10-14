@@ -52,7 +52,6 @@ from ..replay.ranked import (
     outcome_reasons,
     ranked_run_seed,
     ranked_run_spec,
-    ranked_status,
 )
 from ..replay.rng_call_order import RngCallOrder
 from ..replay.saver import ReplaySaveJob, ReplaySaver
@@ -757,15 +756,16 @@ class BaseGameplayMode:
         typo_carry: TypoCarry | None = None,
     ) -> PreparedRun:
         ranked = self._ranked_attempt()
-        # A ranked run plays the canonical profile on a detached save, exactly as verification replays it.
-        status = None if (ranked or custom_quest is not None) else self._status_base
-        self._world_runtime.view_cap = RANKED_VIEW if ranked else DEFAULT_VIEW_CAP
+        canonical = ranked or custom_quest is not None
+        # A ranked or custom-quest run plays the canonical 1024x768 profile on a detached save, as verification replays it.
+        status = None if canonical else self._status_base
+        self._world_runtime.view_cap = RANKED_VIEW if canonical else DEFAULT_VIEW_CAP
         self.ranked_run = ranked
         # Every stock run carries the saved Hardcore box, as the original's does; custom quests do not use hardcore.
         hardcore = False if custom_quest is not None else self.config.gameplay.hardcore
         spec = ranked_run_spec(
             game_mode, seed=self._run_reset_seed, quest_level=quest_level, custom_quest=custom_quest, hardcore=hardcore,
-        ) if ranked else RunSpec(
+        ) if canonical else RunSpec(
             game_mode_id=game_mode,
             seed=self._run_reset_seed,
             quest_level=quest_level,
@@ -777,7 +777,7 @@ class BaseGameplayMode:
             detail_preset=self.config.display.detail_preset,
             violence_disabled=self.config.display.violence_disabled,
             friendly_fire=self._cvar_float("cv_friendlyFire") != 0.0,
-            status=ranked_status(None) if custom_quest is not None else (RunStatus() if status is None else RunStatus.from_status_data(status)),
+            status=RunStatus() if status is None else RunStatus.from_status_data(status),
             typo_dictionary_words=dictionary_words,
             typo_highscore_names=highscore_names,
             typo_carry=TypoCarry() if typo_carry is None else typo_carry,

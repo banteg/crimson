@@ -42,6 +42,7 @@ def _ended(make_game_state, headless_resources, mocker, quest: CustomQuest, outc
     recorder = run._replay_recorder
     assert recorder is not None
     assert (recorder.run.custom_quest, recorder.run.quest_level, run.ranked_run) == (quest, None, False)
+    assert run.world_runtime.view_cap == base_gameplay_mode.RANKED_VIEW
     assert (recorder.run.status.quest_unlock_index, recorder.run.status.quest_unlock_index_hardcore) == (50, 50)
     run._finish_run(outcome)
     action = run.take_action()

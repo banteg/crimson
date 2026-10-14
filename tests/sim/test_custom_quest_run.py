@@ -134,6 +134,10 @@ def test_legacy_v33_custom_quest_replays_upgrade_on_decode():
     payload = msgspec.msgpack.encode(legacy_replay)
     decoded = decode_replay_payload(payload)
     assert decoded.run.custom_quest == quest
+    bad_weapon = msgspec.structs.replace(legacy_cq, start_weapon_id=999)
+    bad_run = msgspec.structs.replace(legacy_replay.run, custom_quest=bad_weapon)
+    with pytest.raises(ReplayCodecError, match="start_weapon_id"):
+        decode_replay_payload(msgspec.msgpack.encode(msgspec.structs.replace(legacy_replay, run=bad_run)))
 
 def test_a_survival_replay_carrying_both_quests_is_refused():
     replay = load_replay((FIXTURES / "survival-135302.crd").read_bytes())

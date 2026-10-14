@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { concat, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256 } from "../../src/crypto";
 import { decodeReplay, inflateReplay } from "../../src/replay";
 import type { BoardView, CustomQuestDetailView, CustomQuestsListView, LoginView, ProfileView, RunDetailView } from "../../src/api-types";
+import { validateRecipeSource } from "../../src/runs";
 import vectors from "../vectors.json";
 
 const ORIGIN = "https://crimson.land";
@@ -514,6 +515,25 @@ describe("custom quests", () => {
       source: 'quest "Wrong Title" version 1\nauthor "banteg"\nterrain (2, 3, 2)\nat 0s:\n    spawn alien.small_gray at (512, 448)\n',
     });
     expect(badSource.status).toBe(422);
+    const baseQuest = decodeReplay(inflateReplay(decode64(file))).run.custom_quest!;
+    expect(
+      validateRecipeSource(
+        'quest "Quick # Clear" version 1 # comment\nauthor "banteg #1"\nweapon shotgun\nterrain (2, 3, 2)\nfixed_weapon true\nat 500ms:\n    spawn alien.small_gray at (512, 420)\n',
+        { ...baseQuest, title: "Quick # Clear", author: "banteg #1" },
+      ),
+    ).toBe(true);
+    expect(
+      validateRecipeSource(
+        vectors.custom_quest_run.source.replace("weapon shotgun", "weapon pistol"),
+        baseQuest,
+      ),
+    ).toBe(false);
+    expect(
+      validateRecipeSource(
+        vectors.custom_quest_run.source.replace("alien.small_gray", "spider.small_blue"),
+        baseQuest,
+      ),
+    ).toBe(false);
 
     const session = asSession(await signIn(player));
     const me = (await (await session.get("/api/me")).json()) as { account: number };

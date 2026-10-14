@@ -209,8 +209,9 @@ extern "C" uintptr_t portable_config() { return (uintptr_t)&cfg; }
 extern "C" uintptr_t portable_quest() { return (uintptr_t)&quest; }
 // The custom quest's builder: its table and drop/offer restrictions, where a stock builder would construct one.
 static void custom_quest_build(quest_spawn_entry_t *entries, int *count) {
-  for (int i = 1; i <= 14; ++i)
-    bonus_meta_table[i].enabled = (quest.disable_bonuses & (1u << i)) ? 0 : 1;
+  for (int i = 2; i <= 14; ++i)
+    if (quest.disable_bonuses & (1u << i))
+      bonus_meta_table[i].enabled = 0;
   for (int i = 1; i <= 57; ++i)
     if (quest.disable_perks[i >> 5] & (1u << (i & 31)))
       perk_meta_table[i].available = 0;

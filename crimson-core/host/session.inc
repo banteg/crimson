@@ -211,7 +211,6 @@ static void live_end(const char *outcome) {
   int number = replay_save(payload);
   memcpy(highscore_active_record.reserved0, &number, sizeof highscore_active_record.reserved0);
   ranked_finish(payload, outcome);
-  portable_custom_quest = nullptr;
   game_live = game_session = false;
 }
 
@@ -464,11 +463,7 @@ void game_live_quit() {
     watch_stop();
   else if (game_live)
     live_end("incomplete");
-  if (custom_quest_restore_menu) {
-    watch_disarm();
-    ranked_checked = custom_quest_saved_ranked;
-    custom_quest_restore_menu = false;
-  }
+  custom_quest_restore();
   ranked_release();
 }
 bool game_live_pause() {
@@ -520,12 +515,6 @@ void game_state_set(game_state_id_t state) {
   else if (game_live && state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&
            state != GAME_STATE_PAUSE_MENU && state != GAME_STATE_OPTIONS_MENU && state != GAME_STATE_CONTROLS_MENU)
     live_end("incomplete");
-  if (custom_quest_restore_menu &&
-      (state == GAME_STATE_MAIN_MENU || state == GAME_STATE_PLAY_GAME_MENU || state == GAME_STATE_QUEST_SELECT)) {
-    watch_disarm();
-    ranked_checked = custom_quest_saved_ranked;
-    custom_quest_restore_menu = false;
-  }
   bool entering_gameplay = state == GAME_STATE_GAMEPLAY && !run_active;
   bool starts = entering_gameplay && live_eligible();
   // The run a replay starts counts in none of the player's statistics.
@@ -544,8 +533,18 @@ void game_state_set(game_state_id_t state) {
         custom_quest_meta.terrain_id_c = (int)quest.terrain[2];
         custom_quest_meta.builder = custom_quest_build;
         custom_quest_meta.start_weapon_id = (int)quest.weapon_id;
+      } else {
+        custom_quest_restore();
+        if (config_blob.game_mode == GAME_MODE_QUEST && (quest_stage_major < 1 || quest_stage_minor < 1))
+          quest_stage_major = quest_stage_minor = 1;
       }
       portable_custom_quest = custom ? &custom_quest_meta : nullptr;
+    } else if (state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&
+               state != GAME_STATE_PAUSE_MENU && state != GAME_STATE_OPTIONS_MENU &&
+               state != GAME_STATE_CONTROLS_MENU && state != GAME_STATE_QUEST_RESULTS &&
+               state != GAME_STATE_QUEST_FAILED) {
+      portable_custom_quest = nullptr;
+      custom_quest_restore();
     }
     game_state_set_recovered(state);
     if (watches) {

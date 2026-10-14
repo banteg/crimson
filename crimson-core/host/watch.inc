@@ -148,7 +148,7 @@ static void watch_arm(const LoadedReplay &replay, const WatchCard &card) {
   watch.run = card;
   PortableConfig recorded;
   memcpy(&recorded, replay.recording.data(), sizeof recorded);
-  if (!watch.armed)
+  if (!watch.armed && !custom_quest_restore_menu)
     watch.menu = {config_blob.game_mode, config_blob.hardcore, config_blob.player_count, quest_stage_major,
                   quest_stage_minor};
   config_blob.game_mode = (decltype(config_blob.game_mode))recorded.mode;
@@ -179,6 +179,13 @@ static void watch_disarm() {
   quest_stage_major = watch.menu.major;
   quest_stage_minor = watch.menu.minor;
   watch.armed = false;
+}
+static void custom_quest_restore() {
+  if (!custom_quest_restore_menu)
+    return;
+  watch_disarm();
+  ranked_checked = custom_quest_saved_ranked;
+  custom_quest_restore_menu = false;
 }
 
 static void watch_keep() {
