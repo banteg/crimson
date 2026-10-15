@@ -2,6 +2,28 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.18.0
+
+### For players
+
+#### Gamepads in the browser and desktop games
+
+- The browser and desktop games play start to finish with only a gamepad: menus, Survival, Rush and quests, perk picks, pause, the controls screen and high score name entry. PlayStation, Xbox and Switch Pro pads get the Python port's twin-stick defaults the first time you use one.
+- The d-pad or left stick moves between buttons, A presses, B goes back, L1 and R1 page, and Start pauses. Quest rows can be picked and started by pad.
+- With several pads connected, the last one pressed plays; a pad plugged back in plays again. Runs played by pad record and verify like any other.
+- A resting stick no longer drifts the menu cursor, and the mouse hovering a perk no longer overrides the pad's pick.
+
+#### Other changes
+
+- The desktop game opens fullscreen or windowed as `crimson.cfg` says, and Alt+Enter switches between them, as in the Python port. The choice is saved right away.
+- Custom quests show their author under the title in the browser and desktop games.
+- `crimson quest play recipe.quest` plays a recipe straight after boot and saves a replay of every attempt to publish with. It replaces `crimson --custom-quest`.
+- crimson.land/custom/llm.txt is now a full specification of the quest language, with setup and workflow. Recipes on quest pages are smaller and syntax-highlighted.
+
+### Under the hood
+
+- `just build` and `just run` build and launch the native client; legacy tasks were pruned from the justfile.
+
 ## 0.17.4
 
 ### For players
