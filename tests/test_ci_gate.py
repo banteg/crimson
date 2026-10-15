@@ -136,26 +136,68 @@ def test_master_requires_web_package_without_running_service_or_desktop_tests() 
         require("client", needs)
 
 
+@pytest.fixture(params=[False, True], ids=["default-env", "inherited-git-env"])
+def detector_checkout(
+    tmp_path: Path, request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch,
+) -> tuple[Path, dict[str, str]]:
+    source = Path(__file__).resolve().parents[1]
+    checkout = tmp_path / "checkout"
+    for name in ("scripts/ci_changed_paths.py", "scripts/build_identity.py", "crimson-core/sources.json"):
+        target = checkout / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source / name, target)
+
+    if request.param:
+        for name in ("GIT_DIR", "GIT_COMMON_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY"):
+            monkeypatch.setenv(name, str(tmp_path / "caller" / name))
+
+    # Worktree/hook Git variables must not redirect these commands to the caller's repository.
+    env = {name: value for name, value in os.environ.items() if not name.startswith("GIT_")}
+    env.update(
+        GIT_CONFIG_NOSYSTEM="1",
+        GIT_CONFIG_GLOBAL=os.devnull,
+        GIT_ALLOW_PROTOCOL="file",
+        GIT_CEILING_DIRECTORIES=str(tmp_path),
+    )
+    git = shutil.which("git")
+    assert git is not None
+    origin = tmp_path / "origin.git"
+    for args in (
+        ["init", "-q", "--initial-branch=master", "--template=", str(checkout)],
+        ["add", "."],
+        ["-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-qm", "fixture"],
+        ["clone", "--bare", "--quiet", "--no-hardlinks", str(checkout), str(origin)],
+        ["remote", "add", "origin", origin.as_uri()],
+    ):
+        subprocess.run([git, *args], cwd=checkout, env=env, capture_output=True, check=True)
+    # Pin Git as well as cwd: even an accidental cwd change cannot select the real repository.
+    env.update(GIT_DIR=str(checkout / ".git"), GIT_WORK_TREE=str(checkout))
+    return checkout, env
+
+
 @pytest.mark.parametrize("release,branch,success", [(False, "master", True), (True, "master", True), (True, "feature", False)])
 def test_release_only_detector_keeps_slow_suites_skipped_and_rejects_other_branches(
-    tmp_path: Path, release: bool, branch: str, success: bool,
+    detector_checkout: tuple[Path, dict[str, str]], release: bool, branch: str, success: bool,
 ) -> None:
     root = Path(__file__).resolve().parents[1]
     workflow = (root / ".github/workflows/core.yml").read_text()
     block = workflow.split("      - id: detect\n", 1)[1].split("\n  build-native:", 1)[0]
     script = "\n".join(line[10:] for line in block.split("        run: |\n", 1)[1].splitlines())
-    output = tmp_path / "outputs"
+    checkout, env = detector_checkout
+    output = checkout / "outputs"
     bash = shutil.which("bash")
     assert bash is not None
     result = subprocess.run(
         [bash, "-e", "-o", "pipefail", "-c", script],
-        cwd=root,
-        env={**os.environ, "RELEASE": str(release).lower(), "BUILD_REF": f"refs/heads/{branch}", "BASE_SHA": "HEAD", "GITHUB_OUTPUT": str(output)},
+        cwd=checkout,
+        env={**env, "RELEASE": str(release).lower(), "BUILD_REF": f"refs/heads/{branch}", "BASE_SHA": "HEAD", "GITHUB_OUTPUT": str(output)},
         capture_output=True,
         text=True,
         check=False,
     )
-    assert (result.returncode == 0) == success
+    assert (result.returncode == 0) == success, result.stderr
+    # The non-release case really runs the shallow fetch, confined to the disposable checkout.
+    assert (checkout / ".git/shallow").exists() is (not release)
     if success:
         values = dict(line.split("=", 1) for line in output.read_text().splitlines())
         assert values.pop("release") == str(release).lower()
