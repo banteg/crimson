@@ -82,7 +82,7 @@ simulation state, which only ticks write. The console's flag pauses parts of a t
 -                        .name);
 +                char *quest_name = (portable_custom_quest ? portable_custom_quest : &quest_meta_table[quest_stage_minor + quest_stage_major * 10 - 11])->name;
 +                int quest_name_length = strlen(quest_name);
-@@ -521,6 +518,3 @@
+@@ -521,6 +517,2 @@
                      name_y,
 -                    quest_meta_table[
 -                        quest_stage_minor
@@ -90,8 +90,19 @@ simulation state, which only ticks write. The console's flag pauses parts of a t
 -                        - 11]
 -                        .name);
 +                    quest_name);
+@@ -535,1 +527,2 @@
 +                if (!portable_custom_quest) {
-@@ -557,2 +551,3 @@
+                 int stage_minor = quest_stage_minor;
+@@ -557,2 +550,12 @@
                          - stage_scale * 16.0f,
                      quest_stage_label_buffer);
++                } else if (*game_custom_quest_author()) {
++                    // Match Python's custom quest title: a centered byline one line below.
++                    char byline[35]; // "by " plus the author's at most 31 characters and NUL.
++                    crt_sprintf(byline, "by %s", game_custom_quest_author());
++                    grim_interface_ptr->grim_draw_text_mono(
++                        (float)(config_screen_width / 2)
++                            - (float)strlen(byline) * stage_scale * 8.0f,
++                        name_y + name_scale * 28.0f,
++                        byline);
 +                }

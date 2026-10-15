@@ -17,6 +17,8 @@ void game_audio_cooldowns(float dt);
 bool game_live_run();
 bool game_live_pause();
 void game_live_pick(int choice);
+// Presentation metadata shared by live custom quests and their replays (host/watch.inc).
+char *game_custom_quest_author();
 // The Ranked row (host/ranked.inc). Its table reader returns a FILE, which some
 // recovered files define themselves, so highscore_load_table declares it.
 extern bool ranked_checked;
