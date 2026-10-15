@@ -4,36 +4,51 @@ tags:
   - rewrite
 ---
 
-# Quest construction language (Python prototype)
+# Quest construction language
 
-An experimental authoring language for #638. A recipe runs once and produces a
+The language custom quests are written in. A recipe runs once and produces a
 finite, ordered table of existing spawn-template invocations. It has no callbacks
 during gameplay and cannot change creature behavior, collision or arena geometry.
 
-The Python compiler and recipes for all 50 stock quests are implemented, and the
-Python port, the browser/desktop `crimson-core` client, and the leaderboard service
-play, verify, and rank custom quests: a recipe resolves into a `CustomQuest`
+The Python game, the browser and desktop `crimson-core` client, and the leaderboard
+play, verify and rank custom quests. A recipe resolves into a `CustomQuest`
 definition, which a run starts the way the original starts a quest and which its
-replay carries ([replay format 33](replay.md#runspec)). Publishing a custom quest
-(`crimson quest publish` / `POST /api/custom`) requires a verified completion replay
-and creates its page and leaderboard at `/custom/<id>`.
-The compiler's JSON output is an inspection artifact, not an interchange format.
-Existing stock builders remain the game's authoritative implementation.
+replay carries ([replay format 33](replay.md#runspec)). Publishing a quest
+(`crimson quest publish`, `POST /api/custom`) requires a completed ranked replay of
+it and creates its page and leaderboard at `crimson.land/custom/<id>`. Recipes for
+all 50 stock quests are written in it too, but the stock builders remain the game's
+authoritative implementation.
+
+[crimson.land/custom/llm.txt](https://crimson.land/custom/llm.txt) is the
+single-file version of this page for LLMs: the grammar, these semantics, creature
+and weapon numbers to balance with, and the toolchain.
 
 ## Try it
 
-From a checkout with the Python dependencies installed:
+With [uv](https://docs.astral.sh/uv/) installed, no checkout is needed:
 
 ```sh
-uv run crimson --custom-quest src/crimson/quests/dsl/examples/crosswind.quest
+uvx crimsonland@latest quest build my.quest          # compile: ID, weapon, terrain, entries, copies
+uvx crimsonland@latest quest build my.quest --json   # the resolved CustomQuest
+uvx crimsonland@latest --custom-quest my.quest       # play it; every attempt saves a replay
+uvx crimsonland@latest quest publish my.quest        # upload with your newest clear of it as proof
+```
+
+`quest publish` picks the newest clear in the replays folder whose quest matches
+the recipe; `--replay` names one instead. A quest's ID is the first 12 hex digits
+of the resolved definition's digest, so any change to what a recipe produces is a
+new quest that needs its own clear. The browser plays published quests only.
+
+From a checkout, the compiler also takes stock quests and other construction inputs:
+
+```sh
 uv run python -m crimson.quests.dsl --stock 4.7 --seed 0xBEEF
 uv run python -m crimson.quests.dsl --stock 4.7 --players 4 --hardcore
 uv run python -m crimson.quests.dsl --file src/crimson/quests/dsl/examples/clockwork.quest --output /tmp/clockwork.json
-uv run python -m crimson.quests.dsl --file src/crimson/quests/dsl/examples/crosswind.quest
 uv run pytest tests/quests/test_quest_dsl.py -q
 ```
 
-`--seed` is a construction seed. It is not yet a gameplay start seed. JSON includes
+`--seed` is a construction seed, not a gameplay start seed. JSON includes
 the resolved positions, headings, counts, trigger times, starting weapon and terrain
 slots. Each entry also has a source location that is unique within the plan: its
 line, enclosing loop iterations, pattern call-site lines and position in a `place` list.
@@ -75,9 +90,9 @@ is an opaque game primitive: offspring, formation members and AI remain native.
 
 | Syntax | Meaning |
 | --- | --- |
-| `quest "Title" version 1` | Required header |
+| `quest "Title" version 1` | Required header; title of 1..64 printable ASCII characters |
 | `author "Name"` | Optional byline under the title: 1..31 printable ASCII characters; presentation only |
-| `weapon pistol` | Starting weapon; lowercase `WeaponId` name, default `pistol` |
+| `weapon pistol` | Starting weapon; lowercase `WeaponId` name, default `pistol`. The [blanks](../mechanics/combat/weapons.md#unobtainable-weapons) and most IDs past 33 compile but fire nothing |
 | `terrain (0, 1, 0)` | Three terrain-slot IDs in 0..7, default `(0, 1, 0)` |
 | `order chronological` | Stable sort by trigger time, retaining construction order for ties; default |
 | `order as-written` | Keep construction order; see [table order](#table-order) |
@@ -92,11 +107,11 @@ is an opaque game primitive: offspring, formation members and AI remain native.
 | `for pos in points:` | Iterate a bounded list or range; tuple destructuring is supported |
 | `if condition:` / `elif` / `else:` | Construction-time decisions |
 | `while condition:` / `break` | Construction-only loops, bounded by the compiler work budget |
-| `at time:` | Absolute nominal quest time; applies to enclosed spawn/pattern operations |
+| `at time:` | Absolute nominal quest time; applies to enclosed spawn/pattern operations. Every spawn must run inside one |
 | `spawn template at point_or_points [copies N]` | Emit one entry per point (single point or list of points), default count 1 |
 | `burst template at point copies N` | Alias for `spawn` on a single point with count N |
 | `place template on points [copies N]` | Alias for `spawn` on a list of points |
-| `heading angle` | Optional suffix on spawn/burst/place; default 0 radians |
+| `heading angle` | Optional suffix on spawn/burst/place; default 0 radians, facing north. Sets the initial facing only: it does not rotate formations |
 | `pattern name(args):` | Reusable construction block; declared before use; no recursion or return values |
 
 Settings precede construction statements. Block-local declarations can shadow
@@ -123,6 +138,9 @@ Available construction inputs are `players` (1..4), `hardcore`, `center`
 also adds 8 copies to every entry with more than one (2 for fast aliens, none for
 plasma shooters); the compiler applies that rule after construction, as the game
 does for every quest, so recipes read `hardcore` only to change their own design.
+A custom quest builds once, with `players` 1, `hardcore` false and construction
+seed 0, and plays that table under the [ranked rules](../rewrite/ranked-rules.md)
+whatever the player's settings.
 
 ## Table order
 
@@ -130,7 +148,10 @@ The classic scheduler keeps no separate notion of a wave. Each frame it takes th
 first due entry in table order, together with the entries immediately after it
 that share its trigger time, and spawns that group. Once the arena has been empty
 for 3 s, it takes the first remaining entry in table order early, whatever its
-time. So the table is a queue:
+time. An entry's copies spawn in a line through its point, 40 units apart on
+alternating sides (offsets 0, −40, +80, −120, …): along x, or along y when the
+point lies off the west or east side. The quest is won once every entry has
+spawned and no creature is alive, nests included. So the table is a queue:
 
 - Entries with the same time arrive together only when they are adjacent. Two
   same-time entries separated by another time arrive on consecutive frames.
@@ -171,6 +192,8 @@ native IDs are also accepted. Short aliases currently cover:
 These are selections from the existing catalog, not new enemy definitions.
 `place alien.small_gray on ring(...)` creates independent enemies; spawning
 `formation.alien_ring` invokes the original linked formation.
+[Creatures](../mechanics/combat/creatures.md) has their health, speed, bites, nests
+and linked groups; `formation.alien_grid_green` is the one template no stock quest uses.
 
 | Helper | Result |
 | --- | --- |
@@ -187,6 +210,11 @@ These are selections from the existing catalog, not new enemy definitions.
 | `rotate(points, angle, around=center)` | Rotate positions clockwise for positive angles; preserve list order and the input list |
 | `facing(point, target)` | The heading that faces `target` from `point` |
 | `min`, `max`, `abs`, `int`, `float`, `len` | Construction calculations; min/max take numbers or one numeric list |
+
+Parameters with defaults (`outside`, `fraction`, `start`, `around`) are
+keyword-only: `ring(center, 240, 8, start=0.5)`, not `ring(center, 240, 8, 0.5)`. The y axis points down, so north
+is y = 0, `polar`/`ring`/`arc` angle 0 points east, and positive angles turn
+clockwise on screen. `edge` with `fraction` 0 is the west end of the north and south sides and the north end of the west and east sides.
 
 Geometry uses ordinary double-precision math; emitted positions and headings are
 stored as float32, like native entries. Off-arena positions are allowed because

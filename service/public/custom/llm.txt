@@ -1,172 +1,277 @@
-# Crimsonland custom quests (`.quest`): reference for LLMs
+# Crimsonland custom quests: `.quest` reference
 
-Give this file to an LLM and describe the encounter you want. The LLM writes a `.quest` recipe; you play it, beat it, and publish it to crimson.land.
+A complete reference for writing `.quest` recipes for the Crimsonland rebuild (github.com/banteg/crimson): the grammar, what the grammar leaves unsaid, the numbers you need to balance an encounter, and the toolchain. Published quests: crimson.land/custom.
 
-## 0. Context
+## Model
 
-- Crimsonland (10tons, 2003) is a top-down arena shooter. Its quests are fixed timelines of enemy arrivals; a quest is won by killing everything after the last arrival.
-- github.com/banteg/crimson rebuilds the 1.9.93 release as a Python game (`crimsonland` on PyPI, command `crimson`) and as recovered C/C++ compiled to WebAssembly, which plays at crimson.land/play.
-- A custom quest is a recipe in the `.quest` language. It runs once, before play, and emits a table of spawns using the original game's enemy templates. It cannot add enemies, change their behaviour or script anything during play.
-- Published quests live at crimson.land/custom, each with its own page at crimson.land/custom/<id>: a preview, a leaderboard, the proof clear and the recipe. Anyone can play a published quest in the browser from its page.
+A recipe is a construction-time program. It runs once, before play, and emits a table of 1..256 entries `(template, x, y, heading, trigger_ms, copies)`, which the original game's quest scheduler plays. It has no callbacks during play, so it cannot change creature behaviour, collision, the arena or the objective. Templates are the original game's spawn templates, with their native health, AI, formations and offspring.
 
-## 1. Instructions for the LLM
+Scheduler, every frame:
 
-- Output one recipe in a single ```` ```text ```` code block, then a few lines on how it plays (weapon, threats, rough length).
-- Use only the syntax, helpers, names and templates in this file. Unknown names are compile errors.
-- Indent blocks with 4 spaces. Use plain ASCII. Comments start with `#`.
-- Aim for a quest a decent player can clear: one that lasts 1 to 5 minutes, ramps up, and leaves the player room to move. Players must beat a quest before publishing it, so an impossible quest never ships.
-- Count entries as you go: every point a `spawn` lands on is one entry, and the table holds at most 256.
-- If the user reports a compile error, it names a line: fix that line and return the whole recipe again.
+- It finds the first entry in table order whose trigger time has passed, then spawns it together with the entries *immediately after it* that share its exact `trigger_ms`. Same-time entries split by an entry with another time arrive on separate frames, and a backlog of due groups drains one group per frame.
+- An entry's copies spawn in a line through its point, 40 units apart on alternating sides (offsets 0, -40, +80, -120, ...). The line runs along x, or along y when the point lies off the west or east side (x < 0 or x > 1024).
+- If no creature has been alive for 3 s (and the clock is past 1.7 s), the next remaining entry in table order spawns immediately, whatever its time. Fast clears therefore pull the timeline forward; `order` decides what gets pulled.
+- The quest is won when every entry has spawned and no creature is alive, nests included. There is no time limit, no fail-by-timeout and no other objective. The player loses by dying (100 HP).
 
-## 2. Install, play, publish
+Custom quests always build with `players = 1`, `hardcore = false` and construction seed 0, and always play the ranked profile: one player, every quest unlocked, original bugs fixed. `rand()` is deterministic, so a recipe always produces the same table.
 
-Install uv (https://docs.astral.sh/uv/getting-started/installation/). Nothing else is needed: the game downloads its assets on first launch, with permission from the original developer.
+## Grammar (verbatim `quest.lark`, Lark LALR with an indenter)
+
+```lark
+start: _NL? header setting* statement*
+
+header: "quest" STRING "version" INT _NL
+
+?setting: "author" STRING _NL -> author
+        | "order" ORDER _NL -> order
+        | "weapon" NAME _NL -> weapon
+        | "terrain" "(" INT "," INT "," INT ")" _NL -> terrain
+        | "no_bonuses" name_list _NL -> no_bonuses
+        | "no_perks" name_list _NL -> no_perks
+        | "no_weapons" name_list _NL -> no_weapons
+        | "fixed_weapon" boolean _NL -> fixed_weapon
+
+boolean: "true" -> true | "false" -> false
+name_list: "[" (NAME ("," NAME)* ","?)? "]"
+
+?statement: simple _NL | compound
+
+?simple: "let" NAME "=" expr -> let
+       | "var" NAME "=" expr -> var
+       | NAME "=" expr -> assign
+       | NAME update_op expr -> update
+       | "spawn" expr "at" expr ["copies" expr] ["heading" expr] -> spawn
+       | "burst" expr "at" expr "copies" expr ["heading" expr] -> burst
+       | "place" expr "on" expr ["copies" expr] ["heading" expr] -> place
+       | NAME "(" arguments ")" -> invoke
+       | "break" -> break_
+
+?compound: "repeat" expr "as" NAME ":" suite -> repeat
+         | "for" target "in" expr ":" suite -> for_
+         | "if" expr ":" suite elif* ["else" ":" suite] -> if_
+         | "while" expr ":" suite -> while_
+         | "at" expr ":" suite -> at
+         | "pattern" NAME "(" parameters ")" ":" suite -> pattern
+
+elif: "elif" expr ":" suite
+target: NAME | "(" NAME ("," NAME)+ ")"
+parameters: (NAME ("," NAME)* ","?)?
+suite: _NL _INDENT statement+ _DEDENT
+
+?expr: or_test
+     | or_test "if" or_test "else" expr -> conditional
+?or_test: and_test ("or" and_test)*
+?and_test: not_test ("and" not_test)*
+?not_test: "not" not_test -> not_
+         | comparison
+?comparison: sum (compare_op sum)*
+?sum: product (sum_op product)*
+?product: unary (product_op unary)*
+?unary: "-" unary -> negative
+      | "+" unary -> positive
+      | postfix
+?postfix: atom
+        | postfix "." NAME -> attribute
+        | postfix "[" expr "]" -> index
+        | NAME "(" arguments ")" -> call
+
+arguments: (argument ("," argument)* ","?)?
+?argument: expr
+         | NAME "=" expr -> keyword
+
+?atom: NUMBER -> number
+     | DURATION -> duration
+     | ANGLE -> angle
+     | STRING -> string
+     | "true" -> true
+     | "false" -> false
+     | NAME -> name
+     | "(" expr ")"
+     | "(" expr "," (expr ("," expr)* ","?)? ")" -> tuple
+     | "[" (expr ("," expr)* ","?)? "]" -> list
+
+!compare_op: "<" | ">" | "==" | "!=" | "<=" | ">=" | "in" | "not" "in"
+!sum_op: "+" | "-"
+!product_op: "*" | "/" | "//" | "%"
+!update_op: "+=" | "-=" | "*=" | "/=" | "//=" | "%="
+
+ORDER: "chronological" | "as-written"
+STRING: /"(?:[^"\\\n]|\\.)*"/
+DURATION.2: /(\d+\.\d*|\.\d+|\d+)(ms|s)\b/
+ANGLE.2: /(\d+\.\d*|\.\d+|\d+)deg\b/
+NUMBER: /0[xX][0-9a-fA-F]+|(\d+\.\d*|\.\d+|\d+)([eE][+-]?\d+)?/
+INT: /\d+/
+NAME: /[A-Za-z_]\w*/
+_NL: /(\r?\n[\t ]*|#[^\n]*)+/
+```
+
+Indent with spaces. Brackets may span lines; nothing else continues a line. `#` starts a comment.
+
+## Semantics the grammar leaves out
+
+- **Time and angles.** Every `spawn`/`burst`/`place` must execute inside an `at` block, directly or through a pattern called inside one, or compilation fails. `at t:` is absolute: it never means "after the previous block". Advance a `var` cue to sequence. `500ms`/`2s`/`2.5s` resolve to integer ms, and a bare number used as a time is ms. `90deg` resolves to radians, and bare angles are radians.
+- **Directions.** The arena runs 0..1024 on both axes, y points down, north is y = 0, and `center` = (512, 512). Positions are allowed in -1024..2048, so off-screen arrivals are normal. In `polar`/`ring`/`arc`, angle 0 points east and positive angles turn clockwise on screen. `heading` 0 faces north. Heading only sets a creature's initial facing, since creatures steer toward the player at once. It does not rotate formations.
+- **Bindings.** `let` is immutable and `var` is mutable. Assignment updates the nearest declared `var`. Block-local declarations shadow outer ones, and loop variables are fresh each iteration. Names starting with `_` are rejected. Settings must precede all statements.
+- **Patterns.** Declare a pattern before you call it. A pattern sees its parameters and quest-level bindings, but not the caller's locals. It inherits the caller's `at` time and may contain its own `at` blocks. It cannot recurse or return a value, and a call is a statement, not an expression.
+- **Values.** Values are numbers (64-bit-magnitude integers or finite floats), booleans, strings, immutable lists, points and template references. Points `+`/`-` with points and `*`/`/` with numbers, and `.x`/`.y` read them; a 2-tuple is a point wherever a point is expected. Lists have no arithmetic, comparisons apply to scalars or points, and `in` tests list membership. `range` takes Python arguments and excludes `stop`. `repeat N as i` gives `i` = 0..N-1. `while` is bounded only by the work budget.
+- **Spawning.** `spawn T at P` takes one point or a list of points and emits one entry per point. `burst T at P copies N` is the single-point form, and `place T on Ps` is the list form. `copies` defaults to 1. A template reference is `family.alias` as listed below, or `template.<canonical_name_hex>` (e.g. `template.alien_small_gray_26`), or a bare native ID; templates 0x02 and 0x37 are rejected.
+- **Order.** `order chronological` (the default) stable-sorts the table by trigger time. `order as-written` keeps emission order, which only matters for early-clear pulls and same-time adjacency.
+- **Limits.** These are checked after construction: 1..256 entries; 1..384 copies per entry; at most 384 copies per trigger time and 8192 in total; trigger times 0..3,600,000 ms; title 1..64 printable ASCII characters; `author` 1..31. The compiler also caps source at 64 KiB, the parse tree at 10,000 nodes, nesting depth at 64, lists at 4,096 items and work at 100,000 units. Copies count template invocations: formations add their members, and nests keep producing.
+- **Constants.** `center`, `arena_size` (1024), `pi`, `tau`, `players` (always 1), `hardcore` (always false).
+
+Helper signatures. Parameters after `*` are keyword-only. Sides are `"north" | "south" | "east" | "west"`. Corners are `"northwest" | "northeast" | "southwest" | "southeast"`.
+
+```text
+point(x, y)
+edge(side, *, outside=64, fraction=0.5)          # beyond an edge; fraction 0 = its west or north end
+edge_line(side, count, spacing, *, outside=64)   # centred row along that edge, ascending x or y
+opposite(side)
+corner(name, *, outside=64)
+corners(*, outside=64)                           # NW, NE, SW, SE
+line(start, step, count)                         # start + step*i
+ring(center, radius, count, *, start=0)          # start + i*tau/count
+arc(center, radius, start, sweep, count)         # both ends included
+polar(center, radius, angle)
+facing(point, target)                            # heading from point toward target
+rotate(points, angle, *, around=center)          # clockwise for positive angle
+min(...), max(...), abs, int, float, len, range
+rand()                                           # MSVCRT rand: 0..32767
+rand_int(low, high)                              # inclusive; low + rand() % width
+choose(items)                                    # items[rand() % len]
+shuffle(items)                                   # Fisher-Yates; one draw per index from len-1 down to 1
+```
+
+## Settings
+
+- `weapon <name>`: starting weapon, default `pistol`. In the table below, Fire and Reload are in seconds, and Hit is per projectile at 50 px or closer. Bullet damage falls off roughly as 1/distance; piercing shots, rockets, flames and ion blasts don't fall off.
+
+  | weapon | clip | hit | fire | reload |
+  | --- | ---: | --- | ---: | ---: |
+  | `pistol` | 12 | 243 | 0.712 | 1.2 |
+  | `assault_rifle` | 25 | 67 | 0.117 | 1.2 |
+  | `shotgun` | 12 | 12 × 78, ±7° | 0.85 | 1.9 |
+  | `sawed_off_shotgun` | 12 | 12 × 78, ±23° | 0.87 | 1.9 |
+  | `submachine_gun` | 30 | 67 | 0.088 | 1.2 |
+  | `gauss_gun` | 6 | 299, pierces | 0.6 | 1.6 |
+  | `mean_minigun` | 120 | 243; you walk at 40% | 0.09 | 4.0 |
+  | `flamethrower` | 30 | up to 10 per flame, short range | every frame | 2.0 |
+  | `plasma_rifle` | 20 | 295 | 0.291 | 1.2 |
+  | `multi_plasma` | 8 | 3 × 295 + 2 × 129 | 0.621 | 1.4 |
+  | `plasma_minigun` | 30 | 129 | 0.11 | 1.3 |
+  | `rocket_launcher` | 5 | 500–600 + 80 px blast | 0.741 | 1.2 |
+  | `seeker_rockets` | 8 | 80–120 + 28 px blast, homing | 0.311 | 1.2 |
+  | `plasma_shotgun` | 8 | 14 × 129 | 0.48 | 3.1 |
+  | `blow_torch` | 30 | 8–10 per flame, short range | every frame | 1.5 |
+  | `hr_flamer` | 30 | flamer, 0.1 ammo per flame | every frame | 1.8 |
+  | `mini_rocket_swarmers` | 5 | 5 seekers per shot | 1.8 | 1.8 |
+  | `rocket_minigun` | 16 | 40–80 + 20 px blast | 0.12 | 1.8 |
+  | `pulse_gun` | 16 | 67 | 0.1 | 0.1 |
+  | `jackhammer` | 16 | 4 × 78 | 0.14 | 3.0 |
+  | `ion_rifle` | 8 | 181 + 27 blast | 0.4 | 1.35 |
+  | `ion_minigun` | 20 | 89 + 11 blast | 0.1 | 1.8 |
+  | `ion_cannon` | 3 | 961 + 115 blast | 1.0 | 3.0 |
+  | `shrinkifier_5k` | 8 | 9.5 + shrinks the target | 0.21 | 1.22 |
+  | `blade_gun` | 6 | 49, pierces; last hit 637 | 0.35 | 3.5 |
+  | `plasma_cannon` | 3 | 1606 + ring of 12 × 295 | 0.9 | 2.7 |
+  | `splitter_gun` | 6 | 352, splits | 0.7 | 2.2 |
+  | `gauss_shotgun` | 4 | 6 × 299, pierce | 1.05 | 2.1 |
+  | `ion_shotgun` | 10 | 8 × 89 + 11 blast each | 0.85 | 1.9 |
+
+  `spider_plasma`, `evil_scythe`, `flameburst` and `raygun` compile but fire nothing. So do most of the leftover IDs `plague_spreader_gun`, `bubblegun`, `rainbow_gun`, `grim_weapon`, `fire_bullets`, `transmutator`, `blaster_r_300`, `lightning_rifle` and `nuke_launcher`: in a firing test only the first three hurt anything. With `fixed_weapon true`, a blank makes the quest unwinnable.
+- `terrain (a, b, c)`: three ground texture slots in 0..7, default `(0, 1, 0)`. The stock sets are `(0,1,0)`, `(2,3,2)`, `(4,5,4)` and `(6,7,6)`.
+- `fixed_weapon true`: removes the `weapon` bonus, the `random_weapon` and `alternate_weapon` perks, and weapon drops.
+- `no_weapons [...]`: any of `assault_rifle`..`raygun` in the table, removed from drops. Without it, every weapon can drop, since the ranked profile has every quest unlocked. While the player holds the Pistol, 3 kills in 4 try to drop a weapon pickup.
+- `no_bonuses [...]`: any of `energizer` (enemies flee and can be eaten), `weapon`, `weapon_power_up`, `nuke`, `double_experience`, `shock_chain`, `fireblast`, `reflex_boost` (slow motion), `shield`, `freeze`, `medikit`, `speed`, `fire_bullets`. `points` can't be removed.
+- `no_perks [...]`: any of `bloody_mess` (alias `quick_learner`), `sharpshooter`, `fastloader`, `lean_mean_exp_machine`, `long_distance_runner`, `pyrokinetic`, `grim_deal`, `alternate_weapon`, `plaguebearer`, `evil_eyes`, `ammo_maniac`, `radioactive`, `fastshot`, `fatal_lottery`, `random_weapon`, `mr_melee`, `anxious_loader`, `final_revenge`, `telekinetic`, `perk_expert`, `unstoppable`, `regression_bullets`, `infernal_contract`, `poison_bullets`, `dodger`, `bonus_magnet`, `uranium_filled_bullets`, `doctor`, `monster_vision`, `hot_tempered`, `bonus_economist`, `thick_skinned`, `barrel_greaser`, `ammunition_within`, `veins_of_poison`, `toxic_avenger`, `regeneration`, `pyromaniac`, `ninja`, `highlander`, `jinxed`, `perk_master`, `reflex_boosted`, `greater_regeneration`, `breathing_room`, `death_clock`, `my_favourite_weapon`, `bandage`, `angry_reloader`, `ion_gun_master`, `stationary_reloader`, `man_bomb`, `fire_caugh`, `living_fortress`, `tough_reloader`, `lifeline_50_50`. `instant_winner` can't be removed. Kills pay XP, and each level-up offers a perk.
+
+## Creatures
+
+The player has 100 HP, runs at 100 units/s, and walks through crowds; nests are solid. Creature speed 1 = 30 units/s, so speed 3.34 and up outruns the player. A creature bites within 30 units, at most once a second per creature, with no grace period between different biters. Enemy shots deal a flat 10. Creatures of size 30 or less die when they touch you and pay no XP. Most creatures curl in from a fixed compass bearing rather than beelining; *tight* ones curl closer and *chase* ones come straight at you.
+
+| template | HP | speed | bite | XP | notes |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `alien.small_gray` | 50 | 2.2 | 10 | 125 | |
+| `alien.fast` | 30 | 3.6 | 20 | 450 | outruns you |
+| `alien.small_green` | 25 | 2.5 | 3 | 125 | size 30: dies on contact |
+| `alien.green` | 20 | 2.0 | 4 | 110 | |
+| `alien.purple` | 50 | 1.7 | 8 | 150 | |
+| `alien.big_gray` | 800 | 2.5 | 20 | 450 | |
+| `alien.gray_fast` | 50 | 3.1 | 8 | 300 | |
+| `alien.boss` | 3800 | 2.0 | 40 | 1500 | |
+| `alien.cyan` | 45 | 3.1 | 3 | 200 | chases |
+| `alien.ghost` | 20 | 2.9 | 35 | 60 | |
+| `alien.bonus_carrier` | 50 | 2.1 | 10 | 125 | always drops a Submachine Gun |
+| `alien.delayed` | 10 | 1.8 | 40 | 150 | holds position on a timer before moving |
+| `alien.flanker` | 50 | 2.4 | 5 | 125 | tight |
+| `alien.random` | 63–79 | 1.1–2.8 | 4–12 | 126–154 | rolled per spawn |
+| `alien.spawner_ring` | 50 | — | 0 | 5000 | lizard nest that sheds a tight lizard every 1.05 s (64 max), plus a ring of 24 aliens (40 HP, speed 4.0, bite 30, 350 XP) that outlives it |
+| `spider.small_blue` | 70 | 2.64 | 5 | 160 | jerky |
+| `spider.plasma` | 200 | 2.4 | 20 | 200 | jerky, chases; shoots a slow plasma bolt (200 u/s) every 0.4–0.7 s from beyond 64 units |
+| `spider.splitter` | 400 | 2.0 | 17 | 1000 | splits on death while size > 35: 127 spiders and 19,388 XP in all |
+| `spider.boss` | 4500 | 2.0 | 50 | 4500 | fires a Plasma Rifle bolt (600 u/s) every second |
+| `spider.red_boss` | 1200 | 2.4 | 20 | 4000 | jerky |
+| `spider.white_fast` | 1000 | 3.36 | 40 | 500 | jerky |
+| `spider.small_brown` | 200 | 2.76 | 20 | 210 | jerky |
+| `spider.stop_and_go` | 50 | 4.8 | 10 | 433 | jerky, very fast |
+| `spider.stop_and_go_weak` | 4 | 4.8 | 10 | 50 | jerky; size 26–29, dies on contact |
+| `spider.flanker` | 40 | 2.88 | 5 | 125 | jerky, tight |
+| `spider.random`, `random_red`, `random_green` | 63–87 | 1.3–3.4 | 4–12 | 126–168 | jerky, rolled per spawn |
+| `lizard.gray` | 20 | 2.5 | 4 | 150 | |
+| `lizard.boss` | 1000 | 2.0 | 10 | 400 | |
+| `lizard.flanker` | 50 | 2.4 | 5 | 125 | tight |
+| `lizard.random` | 63–79 | 1.1–2.8 | 4–13 | 126–154 | rolled per spawn |
+| `zombie.random` | 57–89 | 1.0–1.07 | 4–13 | 132–188 | rolled per spawn |
+| `zombie.small_white` | 200 | 1.7 | 15 | 160 | |
+| `zombie.brute` | 2000 | 2.1 | 15 | 460 | |
+| `zombie.spawner_boss` | 8500 | 1.3 | 50 | 6600 | solid; walks and sheds a random zombie every 0.9 s (812 max) |
+
+"Jerky" spiders run for 0.7–1.7 s, then stand for 0.5–1.0 s; they still bite and shoot while standing. A nest never moves, releases on a timer until it reaches its limit, and stops when killed; what it released stays.
+
+| nest | HP | releases | every | max | XP |
+| --- | ---: | --- | ---: | ---: | ---: |
+| `nest.alien` | 1000 | random aliens | 2.4 s | 100 | 3000 |
+| `nest.alien_slow` | 1000 | random aliens | 3.0 s | 100 | 3000 |
+| `nest.alien_weak` | 450 | random aliens | 2.2 s | 16 | 1000 |
+| `nest.spider` | 1000 | random jerky spiders | 5.2 s | 100 | 3000 |
+| `nest.spider_weak` | 50 | random jerky spiders | 2.5 s | 100 | 800 |
+| `nest.plasma` | 3500 | `spider.plasma` | 6.2 s | 100 | 5000 |
+| `nest.lizard` | 50 | random lizards | 2.2 s | 100 | 1000 |
+| `nest.lizard_slow` | 50 | random lizards | 6.2 s | 100 | 1000 |
+
+A formation is one entry that brings a leader and linked followers. The last follower of every group except the bronze grid is a plain 20 HP alien. `alien_ring` starts stacked on the anchor and fans out; the small ring and the chains start spread up to about 250 units around it. A grid's followers fill a block 512 units west and 256 south of the anchor, so anchor grids around x = -64 to sweep in from the west.
+
+| formation | leader | followers | when the leader dies |
+| --- | --- | --- | --- |
+| `formation.alien_ring` | 200 HP | 8 aliens, 40 HP | followers fight on |
+| `formation.alien_ring_small` | 50 HP, speed 3.8 | 5 guards, 220 HP, bite 35 | followers die |
+| `formation.alien_chain` | 200 HP | 10 aliens, 60 HP, orbiting | followers fight on |
+| `formation.lizard_chain` | 1500 HP, bite 150 | 4 lizards, 60 HP, trailing | followers fight on |
+| `formation.alien_grid` | 1500 HP, chases | 27 aliens, 40 HP | followers die |
+| `formation.alien_grid_green` | 1500 HP, chases | 27 aliens, 40 HP | followers die |
+| `formation.lizard_grid` | 1500 HP, chases | 27 lizards, 40 HP | followers die |
+| `formation.spider_grid` | 1500 HP, chases | 27 spiders, 40 HP | followers die |
+| `formation.alien_grid_bronze` | 500 HP, chases | 27 aliens, 260 HP, speed 3.8, bite 35 | followers fight on |
+
+## Toolchain
+
+You need uv (docs.astral.sh/uv). The game fetches its assets on first launch, with permission from the original developer.
 
 ```sh
-# 1. Check the recipe compiles; prints its ID, weapon, terrain and entry count
-uvx crimsonland@latest quest build my.quest
-uvx crimsonland@latest quest build my.quest --json   # the resolved spawn table
-
-# 2. Play it; the game opens straight into the quest and saves a replay of every attempt
-uvx crimsonland@latest --custom-quest my.quest
-
-# 3. Publish the recipe with your newest clear of it as proof; prints the quest's page
-uvx crimsonland@latest quest publish my.quest
+uvx crimsonland@latest quest build my.quest          # compile: ID, weapon, terrain, entries/256, copies; errors name the line
+uvx crimsonland@latest quest build my.quest --json   # the resolved table
+uvx crimsonland@latest --custom-quest my.quest       # play it; every attempt saves a replay
+uvx crimsonland@latest quest publish my.quest        # upload with your newest clear as proof; prints crimson.land/custom/<id>
 ```
 
-- From a checkout (`gh repo clone banteg/crimson && cd crimson`), `uv run crimson` replaces `uvx crimsonland@latest`. The 14 examples in `src/crimson/quests/dsl/examples/` and recipes for all 50 stock quests in `src/crimson/quests/dsl/stock/` are worth reading.
-- `--windowed`, `--width 1024 --height 768` set the window. Custom quest runs always play the ranked profile: one player, a fresh save, no hardcore, fixed bugs.
-- Replays, saves and your key live in the per-user data directory: `~/Library/Application Support/banteg/crimsonland` on macOS, `%LOCALAPPDATA%\banteg\crimsonland` on Windows, `~/.local/share/banteg/crimsonland` on Linux. `CRIMSON_RUNTIME_DIR` or `--base-dir` moves it.
-- `quest publish` needs a completed run of exactly this recipe. The quest ID is the first 12 hex digits of a hash of the resolved table, title and settings: any change to the recipe's output makes a new quest that needs a new clear. `--replay <file>` picks a specific clear, `--name` the name it is signed with.
-- There is no account. The game makes a signing key on first launch; `crimsonland identity show` prints it and `identity export`/`import` move it to another machine.
-- Playing a recipe needs the installed game; the browser plays only published quests.
+- In a checkout (`gh repo clone banteg/crimson`), use `uv run crimson`. `python -m crimson.quests.dsl --stock 4.7` compiles any stock quest, and `--file` compiles a recipe with any `--seed`, `--players` and `--hardcore`.
+- A quest's ID is a hash of its resolved table, title and settings. Any change to the recipe's output makes a new quest, and publishing it needs a fresh clear of that version. `--replay <file>` picks the proof clear, and `--name` sets the signing name.
+- Replays and the signing key live in the per-user data dir: `~/Library/Application Support/banteg/crimsonland` on macOS, `%LOCALAPPDATA%\banteg\crimsonland` on Windows, `~/.local/share/banteg/crimsonland` on Linux. `CRIMSON_RUNTIME_DIR` overrides it. There are no accounts; `crimsonland identity export`/`import` move the key between machines.
+- The browser (crimson.land/play) plays published quests only, from their pages.
 
-## 3. How a quest runs
+## Examples
 
-- The recipe emits a table of `1..256` entries. Each entry is a template, a position, a heading, a trigger time and a copy count.
-- The arena is `0..1024` on both axes, with `center` at `(512, 512)`; `y` grows downward (north is `y = 0`). Positions may lie anywhere in `-1024..2048`, so enemies can arrive from off screen. `edge()` and `corner()` default to 64 units outside the arena.
-- Copies of one entry spread out in a line, 40 units apart on alternating sides (offsets 0, -40, +80, -120, ...): along `x`, or along `y` when the position is off the west or east side.
-- Each frame the game spawns the first due entry in table order, together with the entries right after it that share its exact trigger time. Same-time entries split by another time arrive a frame apart.
-- Once the arena has been empty for 3 seconds (and at least 1.7 s have passed), the next remaining entry spawns early, whatever its time. Fast players pull the timeline forward this way.
-- The quest is won when every entry has spawned and no creature is alive, nests included. There is no time limit and no other objective.
-- Limits: `1..256` entries; `1..384` copies per entry; at most `384` copies sharing one trigger time and `8192` in total; trigger times `0s..3600s`. Copies count template invocations, not creatures: formations bring their members and nests keep spawning.
-- Compiler budget: 64 KiB of source, 10,000 syntax nodes, 4,096 items per list, 100,000 work units.
-- Custom quests build with `players = 1`, `hardcore = false` and construction seed 0, so `rand()` gives the same table every time.
+Nests to clear under a stream of native rings, closed by a boss (17 entries):
 
-## 4. Header and settings
-
-The first line is `quest "Title" version 1` (title: 1..64 printable ASCII characters). Optional settings follow, in any order, before the first statement:
-
-```text
-quest "Crosswind" version 1
-author "banteg"
-weapon shotgun
-terrain (2, 3, 2)
-order chronological
-fixed_weapon true
-no_bonuses [nuke, freeze]
-no_perks [poison_bullets, plaguebearer]
-no_weapons [ion_cannon, plasma_cannon]
-```
-
-- `author "Name"`: byline under the title, 1..31 printable ASCII characters.
-- `weapon <name>`: starting weapon, default `pistol`. Any of:
-  `pistol`, `assault_rifle`, `shotgun`, `sawed_off_shotgun`, `submachine_gun`, `gauss_gun`, `mean_minigun`, `flamethrower`, `plasma_rifle`, `multi_plasma`, `plasma_minigun`, `rocket_launcher`, `seeker_rockets`, `plasma_shotgun`, `blow_torch`, `hr_flamer`, `mini_rocket_swarmers`, `rocket_minigun`, `pulse_gun`, `jackhammer`, `ion_rifle`, `ion_minigun`, `ion_cannon`, `shrinkifier_5k`, `blade_gun`, `spider_plasma`, `evil_scythe`, `plasma_cannon`, `splitter_gun`, `gauss_shotgun`, `ion_shotgun`, `flameburst`, `raygun`,
-  and the secret weapons `plague_spreader_gun`, `bubblegun`, `rainbow_gun`, `grim_weapon`, `fire_bullets`, `transmutator`, `blaster_r_300`, `lightning_rifle`, `nuke_launcher`.
-- `terrain (a, b, c)`: three terrain texture slots in `0..7`, default `(0, 1, 0)`. The classic sets are `(0, 1, 0)`, `(2, 3, 2)`, `(4, 5, 4)` and `(6, 7, 6)`.
-- `order chronological | as-written`: `chronological` (default) sorts entries by trigger time, keeping emission order for ties. `as-written` keeps emission order, so early clears pull entries forward in that order.
-- `fixed_weapon true | false`: lock the player to the starting weapon. Disables the `weapon` bonus, the `random_weapon` and `alternate_weapon` perks, and weapon drops.
-- `no_bonuses [...]`: bonuses that never drop. Any of:
-  `energizer`, `weapon`, `weapon_power_up`, `nuke`, `double_experience`, `shock_chain`, `fireblast`, `reflex_boost`, `shield`, `freeze`, `medikit`, `speed`, `fire_bullets`. (`points` always drops.)
-- `no_perks [...]`: perks never offered. Any of:
-  `bloody_mess` (or `quick_learner`), `sharpshooter`, `fastloader`, `lean_mean_exp_machine`, `long_distance_runner`, `pyrokinetic`, `grim_deal`, `alternate_weapon`, `plaguebearer`, `evil_eyes`, `ammo_maniac`, `radioactive`, `fastshot`, `fatal_lottery`, `random_weapon`, `mr_melee`, `anxious_loader`, `final_revenge`, `telekinetic`, `perk_expert`, `unstoppable`, `regression_bullets`, `infernal_contract`, `poison_bullets`, `dodger`, `bonus_magnet`, `uranium_filled_bullets`, `doctor`, `monster_vision`, `hot_tempered`, `bonus_economist`, `thick_skinned`, `barrel_greaser`, `ammunition_within`, `veins_of_poison`, `toxic_avenger`, `regeneration`, `pyromaniac`, `ninja`, `highlander`, `jinxed`, `perk_master`, `reflex_boosted`, `greater_regeneration`, `breathing_room`, `death_clock`, `my_favourite_weapon`, `bandage`, `angry_reloader`, `ion_gun_master`, `stationary_reloader`, `man_bomb`, `fire_caugh`, `living_fortress`, `tough_reloader`, `lifeline_50_50`. (`instant_winner` is always offered.)
-- `no_weapons [...]`: weapons that never drop. Any weapon from `assault_rifle` to `raygun` in the list above.
-
-## 5. Statements
-
-```text
-let sockets = ring(center, radius=320, count=8)
-var cue = 2s
-
-pattern wave_pair(side, n):
-    spawn spider.small_blue at edge_line(side, count=6 + n, spacing=36)
-    spawn spider.plasma at edge(opposite(side), outside=128) copies 2
-
-repeat 6 as i:
-    at cue:
-        wave_pair(["west", "east"][i % 2], i)
-    cue += 6s
-```
-
-- `let name = expr` binds an immutable value. `var name = expr` declares a mutable one, updated with `=`, `+=`, `-=`, `*=`, `/=`, `//=`, `%=`.
-- `at <time>:` sets the absolute trigger time of the spawns inside it. It never means "after the previous block"; use a `var` to advance a cue.
-- `spawn <template> at <point or list of points> [copies N] [heading <angle>]` emits one entry per point. `copies` defaults to 1, `heading` (initial facing) to 0.
-- `burst <template> at <point> copies N` and `place <template> on <points> [copies N]` are aliases of `spawn`.
-- `repeat N as i:` runs with `i` from 0 to N-1. `for x in items:` and `for (x, y) in items:` iterate a list or `range(...)`.
-- `if cond:` / `elif cond:` / `else:`, `while cond:` and `break` work as in Python.
-- `pattern name(args):` declares a reusable block; call it as a statement, `name(args)`. Declare patterns before use. They see their parameters and quest-level bindings, inherit the caller's `at` time, may hold their own `at` blocks, and cannot recurse or return values.
-- Every spawn, and every pattern call that spawns, must sit inside an `at` block (directly or through the caller); use `at 0s:` for the opening wave.
-
-## 6. Values and expressions
-
-- Numbers, `true`/`false`, double-quoted strings, immutable lists `[a, b, c]`, points and template references. There is no dict and no list mutation.
-- Times: `500ms`, `2s`, `2.5s`; a bare integer used as a time is milliseconds. Angles: `90deg`; a bare number used as an angle is radians.
-- Operators: `+ - * / // %`, unary `-`, comparisons, `and`, `or`, `not`, `in`, `not in`, indexing `items[i]`, and `a if cond else b`.
-- Points add and subtract, and scale by numbers (`center + point(0, 200)`, `start + step * 2`). `.x` and `.y` read their coordinates. Lists have no arithmetic.
-- `range(start, stop, step)` stops before `stop`. Names starting with `_` are not allowed.
-
-## 7. Constants and helpers
-
-- Constants: `center` (`(512, 512)`), `arena_size` (`1024`), `pi`, `tau`, `players` (always 1), `hardcore` (always false).
-- Geometry (points are `point(x, y)` or `(x, y)`; sides are `"north"`, `"south"`, `"east"`, `"west"`):
-  - `edge(side, outside=64, fraction=0.5)`: a point beyond an edge; `fraction` slides it along the edge.
-  - `opposite(side)`: the opposite side.
-  - `edge_line(side, count, spacing, outside=64)`: `count` points centred along an edge, in ascending `x` (north/south) or `y` (west/east).
-  - `corner(name, outside=64)`: a point beyond `"northwest"`, `"northeast"`, `"southwest"` or `"southeast"`.
-  - `corners(outside=64)`: all four, in NW, NE, SW, SE order.
-  - `line(start, step, count)`: `count` points from `start`, each one `step` further.
-  - `ring(center, radius, count, start=0)`: `count` points evenly around a circle, clockwise on screen.
-  - `arc(center, radius, start, sweep, count)`: `count` points along an arc, both ends included; positive sweep is clockwise.
-  - `polar(center, radius, angle)`: one point on a circle.
-  - `facing(point, target)`: the heading from `point` toward `target`.
-  - `rotate(points, angle, around=center)`: the points rotated clockwise for a positive angle.
-- Math: `min(...)`, `max(...)` (numbers or one list), `abs(x)`, `int(x)`, `float(x)`, `len(items)`, `range(...)`.
-- Seeded randomness, fixed per quest: `rand()` (0..32767), `rand_int(low, high)` (inclusive), `choose(items)`, `shuffle(items)` (returns a new list).
-
-## 8. Creature templates
-
-Templates are the original game's spawn templates. Each keeps its native health, speed, AI and offspring.
-
-- Aliens: `alien.small_gray`, `alien.fast`, `alien.small_green`, `alien.green`, `alien.purple`, `alien.big_gray`, `alien.gray_fast`, `alien.boss`, `alien.cyan`, `alien.ghost`, `alien.bonus_carrier` (drops a weapon bonus), `alien.delayed`, `alien.flanker`, `alien.spawner_ring`, `alien.random`
-- Spiders: `spider.small_blue`, `spider.plasma` (shoots plasma), `spider.splitter` (splits when killed), `spider.boss`, `spider.red_boss`, `spider.white_fast`, `spider.small_brown`, `spider.stop_and_go`, `spider.stop_and_go_weak`, `spider.flanker`, `spider.random`, `spider.random_red`, `spider.random_green`
-- Lizards: `lizard.gray`, `lizard.boss`, `lizard.flanker`, `lizard.random`
-- Zombies: `zombie.random`, `zombie.small_white`, `zombie.brute`, `zombie.spawner_boss`
-- Nests, stationary spawners that keep producing creatures until destroyed: `nest.alien`, `nest.alien_slow`, `nest.alien_weak`, `nest.spider`, `nest.plasma`, `nest.spider_weak`, `nest.lizard`, `nest.lizard_slow`
-- Formations, one entry that brings a linked group: `formation.alien_ring`, `formation.alien_ring_small`, `formation.alien_chain`, `formation.lizard_chain`, `formation.alien_grid`, `formation.alien_grid_green`, `formation.alien_grid_bronze`, `formation.lizard_grid`, `formation.spider_grid`
-
-`place alien.small_gray on ring(...)` makes independent enemies; `spawn formation.alien_ring at ...` makes the original linked ring. Rotating a position does not rotate a formation's members.
-
-## 9. Examples
-
-### Fixed-weapon trial
-```text
-quest "Shotgun Trial: Split Decision" version 1
-author "banteg"
-weapon shotgun
-terrain (4, 5, 4)
-fixed_weapon true
-no_bonuses [nuke, freeze]
-
-repeat 5 as wave:
-    let side = ["west", "north", "east", "south"][wave % 4]
-    at 2s + wave * 10s:
-        spawn spider.splitter at [edge(side), edge(opposite(side))]
-    at 6s + wave * 10s:
-        spawn spider.small_blue at edge_line(side, count=6 + wave * 2, spacing=32)
-        spawn alien.fast at edge(opposite(side), outside=128) copies 2 + wave
-```
-
-### Nests under reinforcement
 ```text
 quest "Clockwork" version 1
 weapon assault_rifle
@@ -188,7 +293,34 @@ at 50s:
     spawn spider.boss at (768, 512)
 ```
 
-### Rotating escape gap
+Alternating ranged pressure and melee crowds on an accelerating cue, with a seeded deal of entrances (78 entries):
+
+```text
+quest "Crossfire" version 1
+weapon shotgun
+terrain (2, 3, 2)
+no_bonuses [nuke]
+
+let sides = shuffle(["north", "east", "south", "west"])
+var cue = 2s
+var gap = 9s
+
+repeat 8 as wave:
+    let side = sides[wave % 4]
+    at cue:
+        spawn spider.plasma at edge(opposite(side), outside=96, fraction=0.25 + 0.5 * (wave % 2))
+        spawn spider.small_blue at edge_line(side, count=4 + wave, spacing=48) copies 1 + wave // 3
+    at cue + 1500ms:
+        spawn alien.fast at corner(choose(["northwest", "northeast", "southwest", "southeast"])) copies 2 + wave // 2
+    cue += gap
+    gap = max(gap - 700ms, 4s)
+
+at cue + 2s:
+    spawn spider.splitter at [edge("west"), edge("east")]
+```
+
+A rotating 60° escape gap through 12 closing rings (240 entries):
+
 ```text
 quest "Closing Circle" version 1
 weapon plasma_rifle
@@ -200,9 +332,4 @@ repeat 12 as wave:
         spawn alien.small_gray at arc(center, radius=480 - wave * 18, start=gap_start + 60deg, sweep=300deg, count=20)
 ```
 
-## 10. More
-
-- Language reference: https://crimson.banteg.xyz/formats/quest-dsl/
-- Grammar: https://github.com/banteg/crimson/blob/master/src/crimson/quests/dsl/quest.lark
-- Examples and stock quest recipes: https://github.com/banteg/crimson/tree/master/src/crimson/quests/dsl
-- Published quests: https://crimson.land/custom
+More: 14 design examples and recipes for all 50 stock quests at github.com/banteg/crimson/tree/master/src/crimson/quests/dsl; the language reference at crimson.banteg.xyz/formats/quest-dsl/; creatures and weapons in depth at crimson.banteg.xyz/mechanics/combat/creatures/ and crimson.banteg.xyz/mechanics/combat/weapons/.

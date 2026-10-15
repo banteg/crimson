@@ -153,6 +153,7 @@ their leader still pay their XP and can drop bonuses.
 | Lizard chain: 1,500 HP leader | Quest 3.2 | 4 lizards trailing it, 60 HP | Fight on |
 | Alien chain: 200 HP leader | Quest 5.4 | 10 aliens, 60 HP | Fight on |
 | White grid: 1,500 HP leader | Quest 5.7 | 27 aliens, spiders or lizards, 40 HP | Die |
+| Green grid: 1,500 HP leader | Custom quests only (`formation.alien_grid_green`) | 27 aliens, 40 HP | Die |
 
 White-grid followers don't hold formation: each hunts you on its own until
 the leader falls. Kill the leader of a 5.7 grid and all 27 die with it.
