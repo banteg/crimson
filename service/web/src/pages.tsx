@@ -24,6 +24,7 @@ import { gameplayPreference, setGameplayPreference } from "./analytics-preferenc
 import perkNames from "./perks.json";
 import { PilotName, PlayerName, PROVIDER_LABELS } from "./players";
 import { runPanels, SIGNAL_LABELS } from "./run";
+import { questTokens } from "./quest-source";
 import weaponData from "./weapons.json";
 
 // What a route shows once its data has arrived: the page title, the quest whose terrain the ground shows (null for
@@ -599,8 +600,9 @@ async function customQuestPage(id: string): Promise<Screen> {
                 <p class="muted">
                   Construction seed: <code>{detail.seed}</code> · <a href="/custom/llm.txt" data-native>LLM Remix Reference</a>
                 </p>
-                <pre style={{ overflow: "auto", padding: "12px", background: "rgba(0,0,0,0.4)", "border-radius": "4px" }}>
-                  <code>{detail.source}</code>
+                <pre class="quest-source" tabIndex={0} aria-label="Quest recipe source">
+                  <code><For each={questTokens(detail.source!)}>{(token) => token.kind
+                    ? <span class={`syntax-${token.kind}`}>{token.text}</span> : token.text}</For></code>
                 </pre>
                 <p>
                   Click to copy recipe: <Command>{detail.source!}</Command>

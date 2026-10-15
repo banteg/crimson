@@ -31,6 +31,11 @@ code.command{position:relative;padding:1px 6px;background:rgb(36 48 74);border:1
   font:bold 12px/16px "Courier New",Courier,monospace}code.command:hover{border-color:rgb(110 130 170)}
 code.command.copied::after{content:"copied";position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);
   padding:0 6px;background:rgb(36 48 74);border:1px solid rgb(56 68 94);font:16px/18px "Crimson Small",Arial,sans-serif}
+.quest-source{max-width:100%;overflow:auto;padding:12px;border-radius:4px;background:rgb(0 0 0/.4);
+  font:13px/20px ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;tab-size:4;-webkit-font-smoothing:auto}
+.quest-source code{color:#d4dae3}.quest-source .syntax-keyword{color:#8dc7ee}
+.quest-source .syntax-string,.quest-source .syntax-literal{color:#b7c994}.quest-source .syntax-number{color:#e6bc83}
+.quest-source .syntax-function{color:#dfd3a3}.quest-source .syntax-entity{color:#9ecac6}.quest-source .syntax-comment{color:#8a968b}
 .notice{color:#fff}ul{padding-left:20px}
 td.n,.count,.score{font:bold 14px/20px "Courier New",Courier,monospace;white-space:nowrap}
 a{color:var(--row-on)}a:hover{color:#8fd3ff}
