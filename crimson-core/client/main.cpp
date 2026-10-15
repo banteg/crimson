@@ -816,7 +816,14 @@ SDL_AppResult SDL_AppInit(void **, int argc, char **argv) {
   SDL_StartTextInput(window);
   renderer_init();
   audio_init();
-  return start_game() ? SDL_APP_CONTINUE : SDL_APP_FAILURE;
+  if (!start_game())
+    return SDL_APP_FAILURE;
+#ifndef __EMSCRIPTEN__
+  // The page's fullscreen is the player's to ask for; a desktop window opens as crimson.cfg left it.
+  if (!w2c_game_game_windowed(&game))
+    SDL_SetWindowFullscreen(window, true);
+#endif
+  return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
@@ -844,9 +851,24 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
     break;
   case SDL_EVENT_KEY_DOWN:
   case SDL_EVENT_KEY_UP:
+#ifndef __EMSCRIPTEN__
+    // Alt+Enter toggles fullscreen, as in the Python port; the game never sees that Enter.
+    if (event->type == SDL_EVENT_KEY_DOWN && event->key.scancode == SDL_SCANCODE_RETURN && (event->key.mod & SDL_KMOD_ALT)) {
+      if (!event->key.repeat)
+        SDL_SetWindowFullscreen(window, !(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN));
+      break;
+    }
+#endif
     if (!event->key.repeat)
       key(event->key.scancode, event->type == SDL_EVENT_KEY_DOWN);
     break;
+#ifndef __EMSCRIPTEN__
+  // However the window got there, crimson.cfg keeps the mode for the next launch.
+  case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+  case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
+    w2c_game_game_set_windowed(&game, event->type == SDL_EVENT_WINDOW_LEAVE_FULLSCREEN);
+    break;
+#endif
   case SDL_EVENT_TEXT_INPUT:
     for (const unsigned char *c = (const unsigned char *)event->text.text; *c; ++c)
       if (*c < 0x80)

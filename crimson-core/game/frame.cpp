@@ -139,6 +139,19 @@ GAME_EXPORT(game_activate) void game_activate(int active) {
 // WM_CLOSE.
 GAME_EXPORT(game_close) void game_close() { quit_posted = true; }
 
+// The window mode in crimson.cfg, Grim's config var 8: the host opens the window
+// in it and hands back each change. The original saves its configuration only
+// when it quits from the menu; a change saves at once, as the Python port's
+// Alt+Enter does, so closing the window keeps it.
+extern "C" bool config_sync_from_grim(void);
+GAME_EXPORT(game_windowed) int game_windowed() { return grim_config_values[8]; }
+GAME_EXPORT(game_set_windowed) void game_set_windowed(int windowed) {
+  if (grim_config_values[8] == (windowed != 0))
+    return;
+  grim_config_values[8] = windowed != 0;
+  config_sync_from_grim();
+}
+
 // The game keeps its own cursor, moved by DirectInput motion scaled by the mouse
 // sensitivity (game_frame_update). A host with an absolute pointer asks for the
 // motion that brings it there.

@@ -406,7 +406,9 @@ It needs wabt's `wasm2c`, SDL3 and libcurl.
 The Linux package carries SDL3 and requires the system's `libcurl.so.4`;
 macOS uses the OS-provided libcurl. Without a directory the client plays from
 the Python game's data folder (`CRIMSON_RUNTIME_DIR`, else `banteg/crimsonland`
-in the platform's user data), sharing its config, scores and replays. Into
+in the platform's user data), sharing its config, scores and replays. The
+window opens fullscreen or windowed as `crimson.cfg` says, Alt+Enter switches
+and saves the mode at once, as in the Python port. Into
 either, it downloads the game files the folder lacks from the asset host.
 `--package` lays out what ships in `build/dist`:
 a macOS app bundle or a Linux folder carrying SDL3, or the web page's files;

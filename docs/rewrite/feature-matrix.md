@@ -36,7 +36,7 @@ what a modern release needs. All three fix the
 | Tutorial, Typ-o-Shooter | Yes | Yes | Yes |
 | Local co-op | 2–4 players | 2 players, as the original | 2 players, as the original |
 | Original bugs | Fixed by default, kept with `--preserve-bugs` | Fixed | Fixed |
-| Resolution | Any, with borderless fullscreen | 1024x768, scaled to the page; fullscreen button | 1024x768, scaled to the window |
+| Resolution | Any, with borderless fullscreen | 1024x768, scaled to the page; fullscreen button | 1024x768, scaled to the window; Alt+Enter fullscreen |
 | Keyboard and mouse | Yes | Yes | Yes |
 | Gamepads | PlayStation, Xbox and Switch Pro, twin-stick, every menu by pad | PlayStation, Xbox and Switch Pro, twin-stick, menus by pad; one pad at a time | PlayStation, Xbox and Switch Pro, twin-stick, menus by pad; one pad at a time |
 | Music, sound, addon tunes | Yes | Yes | Yes |
