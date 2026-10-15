@@ -147,8 +147,9 @@ recipient can resume or scrub the rest of the run. While watching a public run
 in the browser, **Share from here** copies a link for the current tick (with an
 optional `stop` tick), and **Full run** returns to tick 1 with `stop` cleared.
 Out-of-range or malformed parameters and unavailable runs show a notice. The
-host API exposes `game_watch_seek`, `game_watch_stop_at`, `game_watch_run` and
-`game_replay_ticks`; the desktop client also takes `CRIMSON_WATCH`,
+host API exposes `game_watch_moment` (or `game_watch_seek` and
+`game_watch_stop_at` unchecked), `game_watch_link_run` and `game_watch_run`;
+the desktop client also takes `CRIMSON_WATCH`,
 `CRIMSON_WATCH_CARD`, `CRIMSON_WATCH_SEEK` and `CRIMSON_WATCH_STOP` for
 unattended captures.
 

@@ -519,36 +519,30 @@ extern "C" EMSCRIPTEN_KEEPALIVE void client_replay_downloaded(int result) {
 extern "C" EMSCRIPTEN_KEEPALIVE void client_close() { w2c_game_game_close(&game); }
 // A link to a run: plays the replay at `path` (in the game folder) once the
 // game is up, its card naming the runner with the board's rank and the day the
-// board took the run. "" when it will, "wait" before the game has started, else why not.
-extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch(const char *path, const char *name, int rank, int day,
-                                                         int month, int year) {
+// board took the run, which is `run` on the board. "" when it will, "wait"
+// before the game has started, else why not.
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch(const char *path, const char *run, const char *name, int rank,
+                                                         int day, int month, int year) {
   if (!started)
     return "wait";
   snprintf((char *)client_memory() + w2c_game_game_replay_path(&game), 256, "%s", path);
+  snprintf((char *)client_memory() + w2c_game_game_watch_link_run(&game), 65, "%s", run);
   snprintf((char *)client_memory() + w2c_game_game_watch_name(&game), 32, "%s", name);
   if (!w2c_game_game_replay_open(&game))
     return (const char *)client_memory() + w2c_game_game_replay_reason(&game);
   return w2c_game_game_watch(&game, rank, day, month, year) ? "" : "This run cannot play now.";
 }
+// A link to a moment of the run playing or about to (game_watch_moment): "" when it
+// takes, else why not.
 extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch_moment(int tick, int stop) {
-  int ticks = (int)w2c_game_game_watch_ticks(&game);
-  if (!ticks)
-    ticks = (int)w2c_game_game_replay_ticks(&game);
-  if (tick < 0 || stop < 0 || tick > ticks || stop > ticks || (stop && stop <= (tick ? tick : 1)))
-    return "This moment is past the end of the run.";
-  if (tick)
-    w2c_game_game_watch_seek(&game, tick);
-  w2c_game_game_watch_stop_at(&game, stop);
-  return "";
+  return w2c_game_game_watch_moment(&game, tick, stop) ? "" : "This moment is past the end of the run.";
 }
+// The board run playing, or "", and where playback is, for a link to its moment.
 extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch_run() {
   return started ? (const char *)client_memory() + w2c_game_game_watch_run(&game) : "";
 }
 extern "C" EMSCRIPTEN_KEEPALIVE int client_watch_tick() {
   return started ? (int)w2c_game_game_watch_tick(&game) : 0;
-}
-extern "C" EMSCRIPTEN_KEEPALIVE int client_watch_ticks() {
-  return started ? (int)w2c_game_game_watch_ticks(&game) : 0;
 }
 extern "C" EMSCRIPTEN_KEEPALIVE const char *client_play_quest(const char *path, const char *title, const char *author) {
   if (!started)
@@ -889,6 +883,14 @@ SDL_AppResult SDL_AppIterate(void *) {
     }
     captured_frame = -1;
   }
+#ifdef __EMSCRIPTEN__
+  // The page offers a link to a moment while a board run plays, prepared: it
+  // hears the run's ticks, or 0 once none plays.
+  static int sharing;
+  int share = *((char *)client_memory() + w2c_game_game_watch_run(&game)) ? (int)w2c_game_game_watch_ticks(&game) : 0;
+  if (share != sharing)
+    MAIN_THREAD_EM_ASM({ Module.watching($0); }, sharing = share);
+#endif
   // A pass of a run that covered no tick drew nothing: show the last frame
   // again.
   if (running && presented == before)

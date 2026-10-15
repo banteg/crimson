@@ -109,8 +109,7 @@
   const linkedQuest = query.get("quest");
   const parseTick = (value) => {
     if (value === null) return null;
-    const tick = /^[1-9]\d{0,8}$/.test(value) ? Number(value) : NaN;
-    return tick <= 0x7fffffff ? tick : NaN;
+    return /^[1-9]\d{0,8}$/.test(value) ? Number(value) : NaN;
   };
   const linkTick = parseTick(query.get("tick")), linkStop = parseTick(query.get("stop"));
   // Inside another page (that player card), the site opens in a new tab and the
@@ -161,6 +160,9 @@
   const share = document.getElementById("share"), shareStop = document.getElementById("share-stop"),
     shareFull = document.getElementById("share-full");
   let hide;
+  // The ticks of the board run playing (Module.watching), and the stop its
+  // playback was last given, which it drops on reaching.
+  let watchTicks = 0, givenStop = null;
   const showFullscreen = (ms) => {
     fullscreen.classList.add("shown");
     home.classList.add("shown");
@@ -181,7 +183,11 @@
     leaving = true;
     Module.ccall("client_close", null, [], []);
   };
-  addEventListener("pointermove", (event) => event.clientY < 80 && showFullscreen(1500));
+  // While a board run plays, the whole top edge brings the share bar.
+  addEventListener(
+    "pointermove",
+    (event) => event.clientY < 80 && (!share.hidden || event.clientX > innerWidth - 80 || event.clientX < 80) && showFullscreen(1500),
+  );
   for (const type of ["keydown", "keyup", "keypress"])
     shareStop.addEventListener(type, (event) => event.stopPropagation(), true);
   shareFull.onclick = (event) => {
@@ -190,6 +196,7 @@
     if (!run) return;
     Module.ccall("client_watch_moment", "string", ["number", "number"], [1, 0]);
     shareStop.value = "";
+    givenStop = null;
     shareFull.hidden = true;
     history.replaceState(null, "", `?watch=${encodeURIComponent(run)}`);
     canvas.focus();
@@ -197,13 +204,14 @@
   document.getElementById("share-copy").onclick = async () => {
     const run = Module.ccall("client_watch_run", "string", [], []);
     const tick = Module.ccall("client_watch_tick", "number", [], []);
-    const ticks = Module.ccall("client_watch_ticks", "number", [], []);
-    if (!run || !tick || !ticks) return;
+    if (!run || !tick) return;
     const rawStop = shareStop.value.trim();
-    const stop = rawStop ? parseTick(rawStop) : null;
-    if (stop !== null && (Number.isNaN(stop) || stop <= tick || stop > ticks))
-      return tell(`Stop tick must be between ${tick + 1} and ${ticks}.`);
-    Module.ccall("client_watch_moment", "string", ["number", "number"], [0, stop ?? 0]);
+    let stop = rawStop ? parseTick(rawStop) : null;
+    // A stop playback already reached is done with.
+    if (stop !== null && stop === givenStop && stop <= tick) (stop = null), (shareStop.value = "");
+    if (Number.isNaN(stop) || Module.ccall("client_watch_moment", "string", ["number", "number"], [0, stop ?? 0]))
+      return tell(`Stop tick must be between ${tick + 1} and ${watchTicks}.`);
+    givenStop = stop;
     const url = new URL(location.href);
     url.search = "";
     url.searchParams.set("watch", run);
@@ -636,8 +644,9 @@
     const details = await summary;
     const day = details ? new Date(details.accepted_at) : null;
     const start = () => {
-      const why = Module.ccall("client_watch", "string", ["string", "string", "number", "number", "number", "number"], [
+      const why = Module.ccall("client_watch", "string", ["string", "string", "string", "number", "number", "number", "number"], [
         path,
+        run,
         details?.name ?? "",
         details?.rank ?? 0,
         day ? day.getDate() : 0,
@@ -649,7 +658,7 @@
       if (linkTick !== null || linkStop !== null) {
         const bad = Module.ccall("client_watch_moment", "string", ["number", "number"], [linkTick ?? 0, linkStop ?? 0]);
         if (bad) return tell(bad);
-        if (linkStop !== null) shareStop.value = String(linkStop);
+        if (linkStop !== null) shareStop.value = String((givenStop = linkStop));
         shareFull.href = `?watch=${encodeURIComponent(run)}`;
         shareFull.hidden = false;
       }
@@ -678,21 +687,20 @@
       canvas.focus();
       if (linked) watchLink(linked);
       else if (linkedQuest) questLink(linkedQuest);
-      let wasWatching = false;
-      setInterval(() => {
-        const run = Module.ccall("client_watch_run", "string", [], []);
-        const ticks = run ? Module.ccall("client_watch_ticks", "number", [], []) : 0;
-        const active = cover.hidden && ticks > 0;
-        share.hidden = !active;
-        if (active && !wasWatching) showFullscreen(3000);
-        wasWatching = active;
-        if (ticks) shareStop.placeholder = `${ticks}`;
-      }, 200);
+    },
+    // A board run plays, its playback prepared, with `ticks`, or 0 once none
+    // plays (client/main.cpp): the share bar comes and goes with it.
+    watching: (ticks) => {
+      share.hidden = !ticks;
+      if (ticks && !watchTicks) showFullscreen(3000);
+      watchTicks = ticks;
+      if (ticks) shareStop.placeholder = `${ticks}`;
     },
     printErr: (text) => console.warn(text),
     // The game quit (client/main.cpp) after writing its settings and scores.
     quit: async () => {
       cover.hidden = false;
+      share.hidden = true;
       fullscreen.hidden = true;
       home.classList.add("shown");
       progress.hidden = true;

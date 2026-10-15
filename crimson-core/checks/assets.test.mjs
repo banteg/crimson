@@ -5,7 +5,13 @@ import { test } from "node:test";
 import vm from "node:vm";
 
 const shell = readFileSync(new URL("../client/web/shell.html", import.meta.url), "utf8");
-const functions = shell.slice(shell.indexOf("  // Downloads, with"), shell.indexOf("  async function hydrate()"));
+// The shell's code from one line to another, both of which must be there.
+const between = (from, to) => {
+  const start = shell.indexOf(from), end = shell.indexOf(to, start);
+  assert.ok(start >= 0 && end >= 0, `shell.html lost ${start < 0 ? from : to}`);
+  return shell.slice(start, end);
+};
+const functions = between("  // Downloads, with", "  async function hydrate()");
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const old = new TextEncoder().encode("old art"), current = new TextEncoder().encode("current art");
 
@@ -64,14 +70,16 @@ for (const [label, downloaded, unavailable] of [["stale cache", old, false], ["H
   });
 }
 
-const watchFunctions =
-  shell.slice(shell.indexOf("  const query ="), shell.indexOf("  // Inside another page")) +
-  "\n" +
-  shell.slice(shell.indexOf("  shareFull.onclick ="), shell.indexOf("  fullscreen.onclick =")) +
-  "\n" +
-  shell.slice(shell.indexOf("  const REPLAY_LIMIT ="), shell.indexOf("  var Module ="));
+const watchFunctions = [
+  between("  const query =", "  // Inside another page"),
+  between("  let watchTicks", "  const showFullscreen"),
+  between("  shareFull.onclick =", "  fullscreen.onclick ="),
+  between("  const REPLAY_LIMIT =", "  var Module ="),
+].join("\n");
 
-function watchBrowser(search, { status = 200, bytes = new Uint8Array([1, 2, 3]), watchWhy = "", runId = "run_1", tick = 240, ticks = 1000 } = {}) {
+// The game takes a moment within `ticks` past `tick` (host/watch.inc, which
+// checks/game_watch.mjs holds to its bounds), or refuses it with `momentWhy`.
+function watchBrowser(search, { status = 200, bytes = new Uint8Array([1, 2, 3]), watchWhy = "", momentWhy = "", runId = "run_1", tick = 240, ticks = 1000 } = {}) {
   const notices = [];
   const calls = [];
   const shareStop = { value: "", addEventListener() {} };
@@ -103,12 +111,9 @@ function watchBrowser(search, { status = 200, bytes = new Uint8Array([1, 2, 3]),
         if (name === "client_watch") return watchWhy;
         if (name === "client_watch_run") return runId;
         if (name === "client_watch_tick") return tick;
-        if (name === "client_watch_ticks") return ticks;
         if (name === "client_watch_moment") {
           const [start, stop] = args;
-          if (start < 0 || stop < 0 || start > ticks || stop > ticks || (stop && stop <= (start || 1)))
-            return "This moment is past the end of the run.";
-          return "";
+          return momentWhy || (!start && stop && (stop <= tick || stop > ticks) ? "refused" : "");
         }
         return "";
       },
@@ -119,8 +124,8 @@ function watchBrowser(search, { status = 200, bytes = new Uint8Array([1, 2, 3]),
       return { ok: status === 200, status, arrayBuffer: async () => bytes.buffer };
     },
   });
-  vm.runInContext(watchFunctions + "\nglobalThis.watchLink = watchLink; globalThis.linked = linked;", context);
-  return { run: () => context.watchLink(context.linked), shareCopy, shareStop, shareFull, notices, calls, replaced, copied };
+  vm.runInContext(watchFunctions + `\nwatchTicks = ${ticks}; globalThis.watchLink = watchLink; globalThis.linked = linked;`, context);
+  return { run: () => context.watchLink(context.linked), setTick: (at) => (tick = at), shareCopy, shareStop, shareFull, notices, calls, replaced, copied };
 }
 
 test("watchLink opens a moment link, shares from current tick, and returns to full run", async () => {
@@ -129,7 +134,7 @@ test("watchLink opens a moment link, shares from current tick, and returns to fu
   await b.run();
   assert.deepEqual(b.notices, []);
   assert.deepEqual(b.calls, [
-    ["client_watch", ["replays/online/run_1.crd", "Runner", 1, day.getDate(), day.getMonth() + 1, day.getFullYear()]],
+    ["client_watch", ["replays/online/run_1.crd", "run_1", "Runner", 1, day.getDate(), day.getMonth() + 1, day.getFullYear()]],
     ["client_watch_moment", [240, 360]],
   ]);
   assert.equal(b.shareStop.value, "360");
@@ -146,6 +151,14 @@ test("watchLink opens a moment link, shares from current tick, and returns to fu
   await b.shareCopy.onclick();
   assert.deepEqual(b.notices.at(-1), ["Stop tick must be between 241 and 1000.", null]);
 
+  // Playback reached the stop it was given: the next share drops it.
+  b.shareStop.value = "480";
+  b.setTick(480);
+  await b.shareCopy.onclick();
+  assert.equal(b.shareStop.value, "");
+  assert.deepEqual(b.calls.at(-1), ["client_watch_moment", [0, 0]]);
+  assert.equal(b.replaced.at(-1), "?watch=run_1&tick=480");
+
   b.shareFull.onclick({ preventDefault() {} });
   assert.deepEqual(b.calls.at(-1), ["client_watch_moment", [1, 0]]);
   assert.equal(b.shareStop.value, "");
@@ -160,15 +173,19 @@ for (const [label, search, expected] of [
   ["negative stop", "?watch=run_1&stop=-5", "This link's moment is malformed."],
   ["stop at or before start", "?watch=run_1&tick=300&stop=300", "This link's moment is malformed."],
   ["stop at tick 1 without start", "?watch=run_1&stop=1", "This link's moment is malformed."],
-  ["tick past end of run", "?watch=run_1&tick=1001", "This moment is past the end of the run."],
-  ["stop past end of run", "?watch=run_1&tick=500&stop=1001", "This moment is past the end of the run."],
 ]) {
   test(`watchLink rejects ${label}`, async () => {
-    const b = watchBrowser(search, { ticks: 1000 });
+    const b = watchBrowser(search);
     await b.run();
     assert.deepEqual(b.notices, [[expected, null]]);
   });
 }
+
+test("watchLink reports a moment the game refuses", async () => {
+  const b = watchBrowser("?watch=run_1&tick=1001", { momentWhy: "This moment is past the end of the run." });
+  await b.run();
+  assert.deepEqual(b.notices, [["This moment is past the end of the run.", null]]);
+});
 
 for (const [status, expected] of [
   [404, "This run is no longer on the leaderboard."],

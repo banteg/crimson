@@ -68,10 +68,11 @@ fs.mkdirSync(watched, { recursive: true });
 fs.copyFileSync(path.join(fixtures, "quest-1.1-completed.crd"), path.join(watched, "linked.crd"));
 while (run.clock < 1500) frame();
 memory().write("watched/linked.crd\0", game.game_replay_path(), "latin1");
-if (!game.game_replay_open() || game.game_replay_ticks() !== 1441 || !game.game_watch())
-  throw Error("a link at startup does not take");
-game.game_watch_seek(300);
-game.game_watch_stop_at(305);
+if (!game.game_replay_open() || !game.game_watch()) throw Error("a link at startup does not take");
+// A link to a moment lies within the recording's 1441 ticks, its stop past its start.
+for (const [tick, stop] of [[1442, 0], [0, 1442], [-1, 0], [300, 300], [0, 1]])
+  if (game.game_watch_moment(tick, stop)) throw Error(`a link took the moment ${tick}..${stop}`);
+if (!game.game_watch_moment(300, 305)) throw Error("a link refused the moment 300..305");
 for (let frames = 0; game.game_watch_status() < 0 || !game.game_watch_ticks(); ++frames) {
   if (frames > 2000) throw Error("a link at startup never plays");
   frame();
@@ -82,9 +83,17 @@ if (run.clock > 5000) throw Error(`a link at startup waited ${run.clock} ms for 
 if (game.game_watch_tick() !== 300) throw Error(`a link's seek to 300 landed on ${game.game_watch_tick()}`);
 for (let i = 0; i < 20; ++i) frame();
 if (game.game_watch_tick() !== 305) throw Error(`a link's stop at 305 stopped on ${game.game_watch_tick()}`);
+if (game.game_watch_moment(0, 305)) throw Error("a stop at the tick playback is on took");
 frame(16, [SPACE]);
 for (let i = 0; i < 5; ++i) frame();
 if (game.game_watch_tick() <= 305) throw Error("resuming after a stop tick did not play on");
+// A seek past a stop is done with it: scrubbing back plays through.
+if (!game.game_watch_moment(0, 400)) throw Error("a stop ahead of playback was refused");
+game.game_watch_seek(600);
+frame();
+game.game_watch_seek(390);
+for (let i = 0; i < 20; ++i) frame();
+if (game.game_watch_tick() <= 400) throw Error(`a stop a seek passed paused on ${game.game_watch_tick()}`);
 frame(16, [ESCAPE]);
 for (let frames = 0; game.game_state() !== HIGHSCORES; ++frames) {
   if (frames > 600) throw Error("a linked replay does not return to the high scores");

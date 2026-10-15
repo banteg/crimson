@@ -715,5 +715,4 @@ __attribute__((export_name("game_replay_recording"))) const uint8_t *game_replay
 __attribute__((export_name("game_replay_recording_size"))) int game_replay_recording_size() {
   return (int)replay_loaded.recording.size();
 }
-__attribute__((export_name("game_replay_ticks"))) int game_replay_ticks() { return replay_loaded.ticks; }
 }

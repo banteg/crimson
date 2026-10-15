@@ -482,9 +482,10 @@ static void watch_seek(int target) {
   watch.card = -1;
   viewer.card = 0;
   watch.phase = watch.tick >= watch.ticks ? WATCH_ENDED : WATCH_PLAYING;
-  if (watch.stop_at && watch.tick == watch.stop_at) {
+  // A stop the seek reached pauses there; one it passed is done with.
+  if (watch.stop_at && watch.tick >= watch.stop_at) {
+    watch.paused |= watch.tick == watch.stop_at;
     watch.stop_at = 0;
-    watch.paused = true;
   }
 }
 
@@ -516,6 +517,9 @@ static void watch_prepare() {
     watch_judge("");
   terrain.logging = false;
   watch.phase = WATCH_PLAYING;
+  // A run that stopped short never reaches a stop past its end.
+  if (watch.stop_at > watch.ticks)
+    watch.stop_at = 0;
   // A host may have asked for a tick meanwhile (game_watch_seek).
   watch_seek(watch.seek ? watch.seek : 1);
   watch.seek = 0;
@@ -868,6 +872,12 @@ __attribute__((export_name("game_replay_downloaded"))) void game_replay_download
 // the board's rank and the day the board took the run.
 static char watch_name[32];
 __attribute__((export_name("game_watch_name"))) char *game_watch_name() { return watch_name; }
+// The link's run on the leaderboard, which the host fills first, or "" for a
+// replay of its own; game_watch takes it.
+static char watch_link_run[65];
+__attribute__((export_name("game_watch_link_run"))) char *game_watch_link_run() { return watch_link_run; }
+// The leaderboard run playing, which a link to a moment names, or "" for
+// none, a replay of the player's or one the player took over.
 static char watch_run_id[65];
 __attribute__((export_name("game_watch_run"))) const char *game_watch_run() {
   snprintf(watch_run_id, sizeof watch_run_id, "%s", live.watching && !live.practicing ? watch.run_id.c_str() : "");
@@ -879,12 +889,8 @@ __attribute__((export_name("game_watch"))) int game_watch(int rank, int day, int
     return 0;
   watch.link = replay_loaded;
   watch.link_card = watch_card(replay_loaded, watch_name, rank, day, month, year);
-  std::string path = replay_path;
-  const char *online = "replays/online/", *ext = ".crd";
-  watch.link_id = path.compare(0, strlen(online), online) == 0 && path.size() > strlen(online) + strlen(ext) &&
-                          path.compare(path.size() - strlen(ext), strlen(ext), ext) == 0
-                      ? path.substr(strlen(online), path.size() - strlen(online) - strlen(ext))
-                      : std::string{};
+  watch.link_id = watch_link_run;
+  watch_link_run[0] = 0;
   watch.seek = watch.stop_at = 0;
   watch.linked = true;
   return 1;
@@ -896,6 +902,20 @@ __attribute__((export_name("game_watch_tick"))) int game_watch_tick() { return w
 __attribute__((export_name("game_watch_ticks"))) int game_watch_ticks() { return watch.ticks; }
 __attribute__((export_name("game_watch_seek"))) void game_watch_seek(int at) { watch_ask(at); }
 __attribute__((export_name("game_watch_stop_at"))) void game_watch_stop_at(int at) { watch.stop_at = at; }
+// A link to a moment: a tick to go to (0 stays where playback is) and one to
+// pause on reaching (0 none, else past the first), within the run, or the
+// recording of the run about to play until it is prepared. 0 when outside it.
+__attribute__((export_name("game_watch_moment"))) int game_watch_moment(int tick, int stop) {
+  bool prepared = live.watching && watch.phase != WATCH_PREPARING;
+  int ticks = prepared ? watch.ticks : live.watching ? watch.replay.ticks : watch.linked ? watch.link.ticks : 0;
+  int from = tick ? tick : prepared ? std::max(watch.tick, 1) : 1;
+  if (tick < 0 || stop < 0 || tick > ticks || stop > ticks || (stop && stop <= from))
+    return 0;
+  if (tick)
+    watch_ask(tick);
+  watch.stop_at = stop;
+  return 1;
+}
 // Where a replay is: -1 none plays, 0 playing, then how it ended: 1 as
 // recorded, 2 differently, 3 stopped before its end.
 __attribute__((export_name("game_watch_status"))) int game_watch_status() {
