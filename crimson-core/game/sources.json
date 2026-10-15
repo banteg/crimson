@@ -20,12 +20,22 @@
     "game/gameplay_update_and_render.cpp",
     "game/input_key_name.cpp",
     "gameplay/game_save_status.c",
+    "menus/controls_menu_update.cpp",
     "perks/wrap_text_to_width_alloc.cpp",
     "platform/play_time_get.cpp",
     "sound/sfx_entry_start_playback.cpp",
     "ui_elements/game_state_set.cpp",
+    "ui_elements/ui_element_render.cpp",
     "ui_elements/input_primary_just_pressed.cpp",
-    "ui_render/ui_elements_update_and_render.cpp"
+    "ui_render/ui_elements_update_and_render.cpp",
+    "ui_widgets/ui_button_update.cpp",
+    "ui_widgets/ui_checkbox_update.cpp",
+    "ui_widgets/ui_focus_set.c",
+    "ui_widgets/ui_list_widget_update.cpp",
+    "ui_widgets/ui_menu_item_update.cpp",
+    "ui_widgets/ui_scrollbar_update.cpp",
+    "ui_widgets/ui_segmented_slider_update.cpp",
+    "ui_widgets/ui_text_input_update.cpp"
   ],
   "grim_replaced": [
     "api/dll_main.cpp",

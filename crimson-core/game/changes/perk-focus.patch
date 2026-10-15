@@ -1,0 +1,9 @@
+The perk screen picks the choice under the mouse, so Enter on a focused choice picked nothing: the focused choice is
+selected too, so a keyboard or a pad walks the choices and takes one, as in the Python port
+(src/crimson/modes/components/perk_menu_controller.py).
+--- a/decomp/1.9/crimsonland/game/perk_selection_screen_update.cpp
++++ b/decomp/1.9/crimsonland/game/perk_selection_screen_update.cpp
+@@ -183,1 +183,2 @@
+-        if (choice_items[i].hovered) {
++        if (choice_items[i].hovered
++            || ui_focus_candidates[ui_focus_index] == (int)&choice_items[i]) {

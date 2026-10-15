@@ -1,0 +1,549 @@
+// A modern controller over the original's joystick, as the Python port plays
+// one (src/crimson/input_codes.py, gamepad_profile.py, ui/focus.py). The host
+// lays the pad out as the Logitech Dual Action (host_input.h), so the original's
+// Joys/JoyAxis codes keep reading the fields they always read. On top of that:
+//
+// - the standard controller codes (PadCode, 0x200-0x21f) name what the player
+//   holds, through the same joystick state (Grim's key and axis queries,
+//   changes/pad-codes.patch); a crimson.cfg the Python port saved keeps working;
+// - a stock player who picks up a pad gets the Python port's twin-stick profile;
+// - outside gameplay the pad steps the original's keyboard focus down and up
+//   the screen and presses the keys its screens read; Start pauses and resumes;
+// - the controls screen captures pad buttons and sticks as standard codes.
+#include <math.h>
+#include "crimsonland_gameplay.h"
+#include "crimsonland_ui.h"
+#include "grim2d_cpp.h"
+#include "grim_joystick_state.h"
+#include "host_input.h"
+
+extern unsigned char grim_keyboard_state[256];
+extern IGrim2D_cpp *grim_interface_ptr;
+extern float grim_frame_dt;
+extern "C" {
+HostInput *game_input();
+void config_init_defaults(void);
+bool config_sync_from_grim(void);
+void ui_menu_pause_click_resume(void);
+extern unsigned char ui_focus_input_locked;
+extern int ui_focus_frame_marker_ms;
+extern int controls_rebind_slot_index, controls_rebind_player_index;
+extern unsigned char controls_rebind_capture_armed;
+extern int config_key_pick_perk, config_key_reload;
+}
+
+namespace {
+
+// The standard codes (PadCode in src/crimson/input_codes.py), each read from
+// the host's layout: an axis, a button, or a d-pad direction of the hat.
+enum PadCode {
+  LEFT_STICK_X = 0x200,
+  LEFT_STICK_Y,
+  RIGHT_STICK_X,
+  RIGHT_STICK_Y,
+  FACE_DOWN = 0x210,
+  FACE_RIGHT,
+  FACE_LEFT,
+  FACE_UP,
+  L1,
+  R1,
+  L2,
+  R2,
+  L3,
+  R3,
+  SELECT,
+  START,
+  DPAD_UP,
+  DPAD_DOWN,
+  DPAD_LEFT,
+  DPAD_RIGHT,
+  PAD_CODE_END
+};
+struct PadSource {
+  enum { AXIS, BUTTON, HAT } kind;
+  int index; // the axis's field, the button, or the hat's direction in hundredths of a degree
+  const char *name;
+};
+const PadSource *pad_source(int code) {
+  static const PadSource axes[] = {{PadSource::AXIS, 0, "Left Stick X"},
+                                   {PadSource::AXIS, 1, "Left Stick Y"},
+                                   {PadSource::AXIS, 2, "Right Stick X"},
+                                   {PadSource::AXIS, 5, "Right Stick Y"}};
+  static const PadSource buttons[] = {
+      {PadSource::BUTTON, 1, "Cross / A"},    {PadSource::BUTTON, 2, "Circle / B"},
+      {PadSource::BUTTON, 0, "Square / X"},   {PadSource::BUTTON, 3, "Triangle / Y"},
+      {PadSource::BUTTON, 4, "L1 / LB"},      {PadSource::BUTTON, 5, "R1 / RB"},
+      {PadSource::BUTTON, 6, "L2 / LT"},      {PadSource::BUTTON, 7, "R2 / RT"},
+      {PadSource::BUTTON, 10, "L3 / LS"},     {PadSource::BUTTON, 11, "R3 / RS"},
+      {PadSource::BUTTON, 8, "Select"},       {PadSource::BUTTON, 9, "Start"},
+      {PadSource::HAT, 0, "D-Pad Up"},        {PadSource::HAT, 18000, "D-Pad Down"},
+      {PadSource::HAT, 27000, "D-Pad Left"},  {PadSource::HAT, 9000, "D-Pad Right"}};
+  if (code >= LEFT_STICK_X && code <= RIGHT_STICK_Y)
+    return &axes[code - LEFT_STICK_X];
+  if (code >= FACE_DOWN && code < PAD_CODE_END)
+    return &buttons[code - FACE_DOWN];
+  return nullptr;
+}
+
+// Raw like the original's `lX * 0.001f`: dead zones belong to whoever reads
+// both axes (the simulation's 0.2 move radius, the pad aim's).
+float axis(int index) {
+  const long *fields = &grim_joystick_state.lX;
+  return (float)fields[index] * 0.001f;
+}
+// A d-pad direction, diagonals counting for both of theirs.
+bool hat(int direction) {
+  unsigned long pov = grim_joystick_state.rgdwPOV[0];
+  if (pov == ~0ul)
+    return false;
+  long apart = ((long)pov - direction + 36000) % 36000;
+  return apart <= 4500 || apart >= 31500;
+}
+
+const float AXIS_DOWN = 0.5f; // an axis read as a button (_AXIS_DOWN_THRESHOLD)
+
+bool connected() { return game_input()->pad_connected; }
+
+} // namespace
+
+extern "C" float grim_pad_code_axis(int code) {
+  const PadSource *source = pad_source(code);
+  if (!source || source->kind != PadSource::AXIS)
+    return 0.0f;
+  float value = axis(source->index);
+  return value < -1.0f ? -1.0f : value > 1.0f ? 1.0f : value;
+}
+extern "C" unsigned char grim_pad_code_active(int code) {
+  const PadSource *source = pad_source(code);
+  if (!source)
+    return 0;
+  switch (source->kind) {
+  case PadSource::AXIS:
+    return fabsf(grim_pad_code_axis(code)) >= AXIS_DOWN;
+  case PadSource::BUTTON:
+    return grim_joystick_state.rgbButtons[source->index] >> 7;
+  case PadSource::HAT:
+    return hat(source->index);
+  }
+  return 0;
+}
+extern "C" const char *grim_pad_code_name(int code) {
+  const PadSource *source = pad_source(code);
+  return source ? source->name : nullptr;
+}
+
+namespace {
+
+// --- The modern profile (src/crimson/gamepad_profile.py) -------------------
+
+const int PROFILE_MOVE_Y = LEFT_STICK_Y, PROFILE_MOVE_X = LEFT_STICK_X;
+const int PROFILE_AIM_Y = RIGHT_STICK_Y, PROFILE_AIM_X = RIGHT_STICK_X;
+const int PROFILE_FIRE = R2;
+// Shoulder reload next to trigger fire, as in 10tons' 2014 remake.
+const int PROFILE_RELOAD = L1;
+const int PROFILE_PICK_PERK = FACE_UP;
+const int MOVEMENT_PAD = 3, AIM_PAD = 4; // the Dual Action Pad schemes
+
+enum Upgrade { METHODS = 1, MOVE_AXES = 2, AIM_AXES = 4, FIRE = 8, RELOAD = 16, LEVEL_UP = 32 };
+
+// What a fresh configuration binds (config_init_defaults), which the profile
+// replaces where the player kept it.
+const crimson_cfg_t &stock() {
+  static crimson_cfg_t defaults;
+  static bool made;
+  if (!made) {
+    crimson_cfg_t player = config_blob;
+    config_init_defaults();
+    defaults = config_blob;
+    config_blob = player;
+    made = true;
+  }
+  return defaults;
+}
+
+// The player's bindings and methods as a fresh configuration has them; the
+// direction arrow is a display choice, not a binding.
+bool bindings_stock(int player) {
+  const crimson_cfg_t &s = stock();
+  const player_input_config_t &a = config_blob.input_config[player], &b = s.input_config[player];
+  return config_blob.movement_schemes[player] == s.movement_schemes[player] &&
+         config_blob.aim_schemes[player] == s.aim_schemes[player] && a.move_key_forward == b.move_key_forward &&
+         a.move_key_backward == b.move_key_backward && a.turn_key_left == b.turn_key_left &&
+         a.turn_key_right == b.turn_key_right && a.fire_key == b.fire_key && a.aim_key_left == b.aim_key_left &&
+         a.aim_key_right == b.aim_key_right && a.axis_aim_y == b.axis_aim_y && a.axis_aim_x == b.axis_aim_x &&
+         a.axis_move_y == b.axis_move_y && a.axis_move_x == b.axis_move_x;
+}
+
+// The upgrades the next pad use would apply (pending_pad_upgrades): a fully
+// stock player switches to the pad methods; stock axes become the sticks; with
+// pad aim a stock Fire becomes R2; on any pad method the stock Reload and Level
+// Up become pad buttons. What the player changed stays.
+int pending(int player) {
+  const crimson_cfg_t &s = stock();
+  const player_input_config_t &a = config_blob.input_config[player], &b = s.input_config[player];
+  int upgrades = bindings_stock(player) ? METHODS : 0;
+  bool aim_pad = upgrades & METHODS || config_blob.aim_schemes[player] == AIM_PAD;
+  bool any_pad = aim_pad || config_blob.movement_schemes[player] == MOVEMENT_PAD;
+  if (a.axis_move_y == b.axis_move_y && a.axis_move_x == b.axis_move_x)
+    upgrades |= MOVE_AXES;
+  if (a.axis_aim_y == b.axis_aim_y && a.axis_aim_x == b.axis_aim_x)
+    upgrades |= AIM_AXES;
+  if (aim_pad && a.fire_key == b.fire_key)
+    upgrades |= FIRE;
+  // Reload and Level Up are global, owned by player one.
+  if (player == 0 && any_pad) {
+    if (config_blob.key_reload == s.key_reload)
+      upgrades |= RELOAD;
+    if (config_blob.key_pick_perk == s.key_pick_perk)
+      upgrades |= LEVEL_UP;
+  }
+  return upgrades;
+}
+
+void apply(int player, int upgrades) {
+  player_input_config_t &keys = config_blob.input_config[player];
+  if (upgrades & METHODS) {
+    config_blob.movement_schemes[player] = MOVEMENT_PAD;
+    config_blob.aim_schemes[player] = AIM_PAD;
+  }
+  if (upgrades & MOVE_AXES) {
+    keys.axis_move_y = PROFILE_MOVE_Y;
+    keys.axis_move_x = PROFILE_MOVE_X;
+  }
+  if (upgrades & AIM_AXES) {
+    keys.axis_aim_y = PROFILE_AIM_Y;
+    keys.axis_aim_x = PROFILE_AIM_X;
+  }
+  if (upgrades & FIRE)
+    keys.fire_key = PROFILE_FIRE;
+  if (upgrades & RELOAD)
+    config_blob.key_reload = PROFILE_RELOAD;
+  if (upgrades & LEVEL_UP)
+    config_blob.key_pick_perk = PROFILE_PICK_PERK;
+}
+
+// A standard button held or a stick pushed past half travel (gamepad_has_activity).
+bool pad_used() {
+  for (int code = FACE_DOWN; code < PAD_CODE_END; ++code)
+    if (grim_pad_code_active(code))
+      return true;
+  for (int code = LEFT_STICK_X; code <= RIGHT_STICK_Y; ++code)
+    if (grim_pad_code_active(code))
+      return true;
+  return false;
+}
+
+// auto_apply_pad_profiles for the host's one pad, player one's: stale stock
+// bindings upgrade once the pad is connected, and switching a fully stock
+// player's methods waits until the pad is used, so a mouse player with an idle
+// pad plugged in keeps the mouse. The configuration is saved then, as the
+// original saves it when it quits.
+void profile_update() {
+  int upgrades = connected() ? pending(0) : 0;
+  if (upgrades && (!(upgrades & METHODS) || pad_used())) {
+    apply(0, upgrades);
+    config_sync_from_grim();
+  }
+}
+
+// --- Menus (src/crimson/ui/focus.py) ----------------------------------------
+
+// DirectInput scancodes the original's screens read.
+enum Key { ESCAPE = 0x01, ENTER = 0x1c, UP = 0xc8, PAGE_UP = 0xc9, LEFT = 0xcb, RIGHT = 0xcd, DOWN = 0xd0,
+           PAGE_DOWN = 0xd1 };
+
+struct {
+  // A pad navigated since the mouse last moved: the focus stays lit, and
+  // hovering leaves it where the pad put it.
+  bool active;
+  // The pad must let go before it navigates: after gameplay (the left stick
+  // moved the player) and after the controls screen took a press as a binding.
+  bool stick_held, buttons_held;
+  // The focused widget takes the pad's up/down as arrow keys (hold), or its A
+  // as Down, which opens a closed list. Widgets set these each frame for the next.
+  bool hold_up, hold_down, enter_opens;
+  // A screen just shown, until its widgets register: then the focus goes to
+  // the first of them.
+  bool shown;
+  // The direction held, and the seconds until it steps again.
+  int direction;
+  float repeat;
+  bool buttons[PAD_CODE_END - FACE_DOWN]; // last frame's
+  float mouse_x, mouse_y;
+} nav;
+
+void press(int key) { grim_keyboard_state[key] = 0x80; }
+
+// Where each widget of the screen drew last, by its focus id: the original
+// registers them for Tab in whatever order its screens update them (the menu
+// elements from the bottom of the screen up, a panel's list after its buttons),
+// so the pad steps them as the screen shows them instead.
+struct Place {
+  int id;
+  float x, y;
+};
+Place places[64];
+int place_count;
+void place(const void *widget, float x, float y) {
+  int id = (int)(size_t)widget, at = 0;
+  while (at < place_count && places[at].id != id)
+    ++at;
+  if (at == 64)
+    return;
+  places[at] = {id, x, y};
+  place_count += at == place_count;
+}
+// Row by row, top first, then left to right; a widget never placed goes last.
+float rank(int id) {
+  for (int at = 0; at < place_count; ++at)
+    if (places[at].id == id)
+      return floorf(places[at].y / 8.0f) * 4096.0f + places[at].x;
+  return 1e9f;
+}
+// The focus candidates as the screen shows them.
+int screen_order(int order[32]) {
+  float ranks[32];
+  for (int slot = 0; slot < ui_focus_count; ++slot) {
+    ranks[slot] = rank(ui_focus_candidates[slot]);
+    int at = slot;
+    for (; at > 0 && ranks[order[at - 1]] > ranks[slot]; --at)
+      order[at] = order[at - 1];
+    order[at] = slot;
+  }
+  return ui_focus_count;
+}
+// The focus one step down or up the screen, wrapping as Tab does.
+void step(int delta) {
+  int order[32], count = screen_order(order), at = 0;
+  if (!count)
+    return;
+  while (at < count && order[at] != ui_focus_index)
+    ++at;
+  at = at == count ? (delta > 0 ? 0 : count - 1) : (at + delta + count) % count;
+  ui_focus_index = order[at];
+}
+int first_widget() {
+  int order[32];
+  return screen_order(order) ? order[0] : 0;
+}
+
+enum Direction { NONE, NORTH, SOUTH, WEST, EAST };
+// The d-pad, or the left stick past half travel, as one direction.
+Direction direction(bool stick) {
+  float x = grim_pad_code_axis(LEFT_STICK_X), y = grim_pad_code_axis(LEFT_STICK_Y);
+  bool pushed = fmaxf(fabsf(x), fabsf(y)) >= AXIS_DOWN;
+  if (!pushed)
+    nav.stick_held = false;
+  if (grim_pad_code_active(DPAD_UP))
+    return NORTH;
+  if (grim_pad_code_active(DPAD_DOWN))
+    return SOUTH;
+  if (grim_pad_code_active(DPAD_LEFT))
+    return WEST;
+  if (grim_pad_code_active(DPAD_RIGHT))
+    return EAST;
+  if (!stick || nav.stick_held || !pushed)
+    return NONE;
+  if (fabsf(y) >= fabsf(x))
+    return y > 0 ? SOUTH : NORTH;
+  return x > 0 ? EAST : WEST;
+}
+// A direction steps when pushed, then after 400 ms every 120 ms while held (UiFocus._stick_press).
+Direction stepped(Direction held) {
+  if (held != nav.direction) {
+    nav.direction = held;
+    nav.repeat = 0.4f;
+    return held;
+  }
+  if (held && (nav.repeat -= grim_frame_dt) <= 0.0f) {
+    nav.repeat = 0.12f;
+    return held;
+  }
+  return NONE;
+}
+
+// Once a frame, after Grim polls its devices: the pad's presses as the keys the
+// original's screens read, and its directions as steps of the focus. Start is
+// Escape everywhere (it pauses a run); in gameplay the rest of the pad plays.
+void navigate() {
+  bool gameplay = game_state_id == GAME_STATE_GAMEPLAY || game_state_id == GAME_STATE_TYPO_GAMEPLAY;
+  bool hold_up = nav.hold_up, hold_down = nav.hold_down, enter_opens = nav.enter_opens;
+  nav.hold_up = nav.hold_down = nav.enter_opens = false;
+  if (ui_mouse_x != nav.mouse_x || ui_mouse_y != nav.mouse_y)
+    nav.active = false;
+  nav.mouse_x = ui_mouse_x;
+  nav.mouse_y = ui_mouse_y;
+  if (!connected())
+    return;
+  if (gameplay)
+    nav.stick_held = true;
+  Direction held = direction(!gameplay);
+  bool pressed[PAD_CODE_END - FACE_DOWN], any = held != NONE;
+  for (int code = FACE_DOWN; code < PAD_CODE_END; ++code) {
+    bool down = grim_pad_code_active(code);
+    pressed[code - FACE_DOWN] = down && !nav.buttons[code - FACE_DOWN];
+    nav.buttons[code - FACE_DOWN] = down;
+    any |= down;
+  }
+  if (!any)
+    nav.buttons_held = false;
+  // A rebind waits for its input, which takes the pad's (controls_menu_update).
+  if (ui_focus_input_locked || nav.buttons_held)
+    return;
+  // Start, or B, resumes a paused run, as Start pauses it (the original resumes
+  // only from its Back item).
+  if (game_state_id == GAME_STATE_PAUSE_MENU && (pressed[START - FACE_DOWN] || pressed[FACE_RIGHT - FACE_DOWN])) {
+    ui_menu_pause_click_resume();
+    return;
+  }
+  if (pressed[START - FACE_DOWN])
+    press(ESCAPE);
+  if (gameplay)
+    return;
+  switch (stepped(held)) {
+  case NORTH:
+    hold_up ? press(UP) : step(-1);
+    break;
+  case SOUTH:
+    hold_down ? press(DOWN) : step(1);
+    break;
+  case WEST:
+    press(LEFT);
+    break;
+  case EAST:
+    press(RIGHT);
+    break;
+  case NONE:
+    break;
+  }
+  if (pressed[FACE_DOWN - FACE_DOWN])
+    press(enter_opens ? DOWN : ENTER);
+  if (pressed[FACE_RIGHT - FACE_DOWN])
+    press(ESCAPE);
+  if (pressed[L1 - FACE_DOWN])
+    press(PAGE_UP);
+  if (pressed[R1 - FACE_DOWN])
+    press(PAGE_DOWN);
+  if (any)
+    nav.active = true;
+  // The original fades the focus a second after each Tab; a pad player would
+  // lose track of it.
+  if (nav.active)
+    ui_focus_timer_ms = 1000;
+}
+
+bool focused(void *widget) { return ui_focus_candidates[ui_focus_index] == (int)(size_t)widget; }
+
+// A pad press as a binding: a standard button, or for the axis rows a stick
+// past half travel (capture_first_pressed_input_code).
+int captured(bool axes) {
+  if (axes) {
+    for (int code = LEFT_STICK_X; code <= RIGHT_STICK_Y; ++code)
+      if (grim_pad_code_active(code))
+        return code;
+    return 0;
+  }
+  for (int code = FACE_DOWN; code < PAD_CODE_END; ++code)
+    if (grim_pad_code_active(code))
+      return code;
+  return 0;
+}
+
+} // namespace
+
+extern "C" {
+// game_frame (game/frame.cpp), once Grim has polled the devices.
+void pad_frame() {
+  // A newly shown screen starts on its first widget, not on the focus index
+  // the last one left (UiFocus.screen_changed).
+  static int state = -1, marker;
+  if (game_state_id != state) {
+    state = game_state_id;
+    ui_focus_index = 0;
+    place_count = 0;
+    nav.shown = true;
+    marker = ui_focus_frame_marker_ms;
+  } else if (nav.shown && ui_focus_frame_marker_ms != marker) {
+    nav.shown = false;
+    ui_focus_index = first_widget();
+  }
+  profile_update();
+  navigate();
+}
+
+// Hovering takes the focus only while the mouse leads (ui_focus_set).
+void ui_focus_set_recovered(int id, char reset_timer);
+void ui_focus_set(int id, char reset_timer) {
+  if (!nav.active || reset_timer)
+    ui_focus_set_recovered(id, reset_timer);
+}
+
+// The widgets, each placed where it draws, from its top left corner; the menu
+// elements by their clickable bounds.
+#define PLACED(type, name, widget)                                                                             \
+  type name##_recovered(float *xy, widget *state);                                                             \
+  type name(float *xy, widget *state) {                                                                        \
+    place(state, xy[0], xy[1]);                                                                                \
+    return name##_recovered(xy, state);                                                                        \
+  }
+PLACED(bool, ui_button_update, void)
+PLACED(bool, ui_checkbox_update, void)
+PLACED(bool, ui_menu_item_update, void)
+PLACED(void, ui_segmented_slider_update, void)
+PLACED(bool, ui_text_input_update, void)
+#undef PLACED
+void ui_element_render_recovered(ui_element_t *element);
+void ui_element_render(ui_element_t *element) {
+  place(element, element->hover_min_x, (element->hover_min_y + element->hover_max_y) * 0.5f);
+  ui_element_render_recovered(element);
+}
+
+// A focused list: closed, A opens it; open, the pad's up/down walk its rows and
+// A picks one (dropdown.py).
+int ui_list_widget_update_recovered(float *xy, ui_list_widget_t *list);
+int ui_list_widget_update(float *xy, ui_list_widget_t *list) {
+  place(list, xy[0], xy[1]);
+  int result = ui_list_widget_update_recovered(xy, list);
+  if (focused(list) && list->enabled) {
+    nav.enter_opens |= list->open <= 0;
+    nav.hold_up |= list->open > 0;
+    nav.hold_down |= list->open > 0;
+  }
+  return result;
+}
+
+// A focused scroll list takes the pad's up/down until it reaches that end (scrollbar.py).
+void ui_scrollbar_update_recovered(float *xy, ui_scrollbar_t *bar);
+void ui_scrollbar_update(float *xy, ui_scrollbar_t *bar) {
+  place(bar, xy[0], xy[1]);
+  ui_scrollbar_update_recovered(xy, bar);
+  if (focused(bar)) {
+    nav.hold_up |= bar->scroll_offset > 0.0f;
+    nav.hold_down |= bar->scroll_offset < (float)(bar->item_count - bar->visible_rows);
+  }
+}
+
+// The controls screen: a rebind waiting for its input takes a pad press as the
+// standard code, ahead of the original's scan, which would take the Joys and
+// JoyAxis codes and never the d-pad. Rows 9-12 are the axes, 13 Level Up and
+// 14 Reload.
+void controls_menu_update_recovered(void);
+void controls_menu_update(void) {
+  int slot = controls_rebind_slot_index;
+  if (slot != -1 && controls_rebind_capture_armed) {
+    if (int code = captured(slot >= 9 && slot < 13)) {
+      if (slot == 13)
+        config_key_pick_perk = code;
+      else if (slot == 14)
+        config_key_reload = code;
+      else
+        config_blob.player_keys[controls_rebind_player_index * 16 + slot] = code;
+      grim_interface_ptr->grim_flush_input();
+      controls_rebind_slot_index = -1;
+      controls_rebind_capture_armed = 0;
+      nav.buttons_held = true;
+    }
+  }
+  controls_menu_update_recovered();
+}
+}

@@ -48,7 +48,7 @@ they use:
 | --- | --- |
 | Direct3D 8 device, textures, surfaces, vertex and index buffers (about 40 methods) | [`platform.cpp`](game/platform.cpp) forwards draws, state and texels to the host |
 | D3DX texture loading (TGA, BMP, JPEG) | [`d3dx.cpp`](game/d3dx.cpp), with the IJG libjpeg 6a and zlib 1.1.3 Grim links |
-| DirectInput keyboard, mouse and joystick | [`dinput.cpp`](game/dinput.cpp): device state the host delivers each frame; an SDL gamepad is the joystick, laid out as the Logitech Dual Action the game's pad schemes are named for |
+| DirectInput keyboard, mouse and joystick | [`dinput.cpp`](game/dinput.cpp): device state the host delivers each frame; the SDL gamepad used last is the joystick, laid out as the Logitech Dual Action the game's pad schemes are named for ([Gamepads](#gamepads)) |
 | Grim's window procedure and run loop | [`frame.cpp`](game/frame.cpp): one loop pass per host frame; window messages as calls |
 | `grim.dll`'s embedded font and splash | [`resources.cpp`](game/resources.cpp) reads them from `grim.dll`; without it, the font from `crimson.paq` and a blank splash, which nothing draws |
 | Files, registry, threads, WinInet, DLLs | [`win32.cpp`](game/win32.cpp): Windows paths under the game directory, a registry file, threads that run to completion, offline WinInet, no DLLs |
@@ -234,6 +234,50 @@ atomically and at most 16 MiB, where the newest few stay, and Watch plays it;
 "This run is no longer on the leaderboard" and "Could not download this run"
 tell a dropped run from a failed download, which the next pin tries again.
 
+### Gamepads
+
+SDL lays PlayStation, Xbox and Switch Pro pads out alike, the face buttons by
+position, natively and through the browser's Gamepad API. The host hands the
+pad used last to the module as the original's one joystick, the Logitech Dual
+Action its pad schemes are named for (left stick X/Y, right stick Z/Rz, the
+d-pad as the hat, the triggers as buttons); a pad plugged back in plays again,
+and none leaves the joystick at rest.
+
+That layout carries everything a modern pad has, so the original's own `Joys`
+and `JoyAxis` codes read what they always read. Its stock bindings do not suit
+one, though: the Dual Action axes they name put movement on the wrong stick,
+and Fire, Reload and Level Up sit on the mouse. The Python port answers that
+with standard controller codes (`0x200` up, [`crimson.cfg`](../docs/formats/crimson-cfg.md#port-only-controller-codes))
+and a profile it writes into the shared `crimson.cfg`, so the module reads the
+same codes rather than mapping a pad onto the original's on the host: a
+configuration either game saved works in both. Grim's key and axis queries
+answer the standard codes from the joystick state they already poll
+([`game/changes/pad-codes.patch`](game/changes/pad-codes.patch)), and
+[`game/pad.cpp`](game/pad.cpp) ports the rest of the Python port's pad support:
+
+- **Profile**: a stock player who picks up a pad gets twin sticks, R2 to fire,
+  L1 to reload and Triangle for the perk menu, as the Python port's
+  `gamepad_profile.py` decides; the configuration saves at once.
+- **Menus**: outside gameplay the pad drives the original's keyboard focus. The
+  d-pad or left stick steps the focus down and up the screen, by where each
+  widget draws, since the original registers its menu elements bottom up; A is
+  Enter, B Escape, L1 and R1 page up and down, and an open list takes the
+  d-pad. While a pad leads, the focus stays lit and hovering leaves it alone,
+  and each new screen starts on its first widget, as in the Python port. Start
+  is Escape everywhere: it pauses a run, and Start or B resumes it, as in the
+  2014 remake ([`game/changes/perk-focus.patch`](game/changes/perk-focus.patch)
+  lets the perk menu take the focused choice, which the original took only
+  from the mouse).
+- **Controls**: a rebind takes a pad button or stick as its standard code,
+  d-pad included.
+
+A run records a pad as it records any input: each tick's input is the sticks'
+move and aim under the pad schemes, so its replay verifies unchanged and the
+ranked input is the same tuple. `checks/game_session.mjs --pad` plays the
+menus, a Survival run with its perk picks and pauses, and the end screen by pad
+alone, unplugging it mid-run, while the verifier agrees on every tick. Local
+co-op on several pads follows the single player.
+
 ### Evidence
 
 Two gates hold every client build to the verifier: the **simulation** gate,
@@ -365,7 +409,7 @@ module before `wasm2c`.
 
 For unattended runs, `CRIMSON_CAPTURE=<dir>` with `CRIMSON_CAPTURE_FRAMES=n,...`
 saves those frames' back buffers and quits, and `CRIMSON_INPUT` scripts the
-mouse and keys; such a run's clock moves 16 ms a frame, so scripted input lands
+mouse, keys and a virtual gamepad; such a run's clock moves 16 ms a frame, so scripted input lands
 on the same frames (a run's seed still differs)
 ([`client/main.cpp`](client/main.cpp)). `CRIMSON_MUTE=1` silences the output
 device and nothing else: the game still mixes its sounds and music, so a muted

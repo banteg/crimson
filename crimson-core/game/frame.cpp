@@ -54,6 +54,7 @@ extern "C" int crimsonland_main_exit(void);
 extern "C" int game_live_frame(void);
 extern "C" void game_live_quit(void);
 extern "C" void game_live_focus_lost(void);
+extern "C" void pad_frame(void);
 
 static bool quit_posted;
 
@@ -78,6 +79,7 @@ GAME_EXPORT(game_frame) int game_frame() {
     }
     grim_joystick_poll();
     grim_joystick_state_ptr = &grim_joystick_state;
+    pad_frame();
     if (!grim_input_cached) {
       grim_mouse_x_cached = grim_mouse_x;
       grim_mouse_y_cached = grim_mouse_y;

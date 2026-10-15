@@ -7,7 +7,18 @@ import fs from "node:fs";
 import { WASI } from "node:wasi";
 
 // HostInput's layout (game/host_input.h).
-export const INPUT = { keys: 0, motion_x: 256, motion_y: 260, buttons: 268, event_count: 276, events: 280 };
+export const INPUT = {
+  keys: 0,
+  motion_x: 256,
+  motion_y: 260,
+  buttons: 268,
+  event_count: 276,
+  events: 280,
+  pad_axes: 344,
+  pad_hat: 360,
+  pad_buttons: 364,
+  pad_connected: 396,
+};
 
 // `leaderboard` enables the leaderboard, and `requests` collects its host
 // requests (HOST_LEADERBOARD_*) for the check to answer between frames.

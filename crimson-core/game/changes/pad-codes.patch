@@ -1,0 +1,45 @@
+Grim reads the standard controller codes the Python port binds (PadCode in src/crimson/input_codes.py, 0x200 up) from
+the joystick it polls, and names them (game/pad.cpp). The original Grim ignores these ids, so a crimson.cfg holding them
+stays loadable by the 2003 executable.
+--- a/decomp/1.9/grim/input/is_key_active.cpp
++++ b/decomp/1.9/grim/input/is_key_active.cpp
+@@ -18,1 +18,2 @@
+ extern GrimInputProvider *grim_input_provider;
++extern "C" unsigned char grim_pad_code_active(int code);
+@@ -25,6 +26,9 @@
+     GrimInputProvider *provider;
+ 
+     if (key > 0xff) {
++        if (key >= 0x200) {
++            return grim_pad_code_active(key);
++        }
+         if (key == 0x100) {
+             return grim_is_mouse_button_down(0);
+         }
+--- a/decomp/1.9/grim/config/get_float.cpp
++++ b/decomp/1.9/grim/config/get_float.cpp
+@@ -1,7 +1,12 @@
+ #include "grim2d_cpp.h"
+ #include "grim_joystick_state.h"
+ 
++extern "C" float grim_pad_code_axis(int code);
++
+ float IGrim2D_cpp::grim_get_config_float(int id)
+ {
+     if (id > 0xff) {
++        if (id >= 0x200) {
++            return grim_pad_code_axis(id);
++        }
+         if (id == 0x13f) {
+--- a/tools/match/include/input_key_name_impl.h
++++ b/tools/match/include/input_key_name_impl.h
+@@ -34,1 +34,2 @@
+ extern "C" char input_key_name_buf[64];
++extern "C" const char *grim_pad_code_name(int code);
+@@ -112,3 +113,6 @@
+         COPY_KEY_NAME(0x17b, "RIM2Btn5")
+ 
++        else if (grim_pad_code_name(key_code)) {
++            strcpy(input_key_name_buf, grim_pad_code_name(key_code));
++        }
+         else if (key_code > 0x163) {

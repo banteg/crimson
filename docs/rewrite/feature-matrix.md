@@ -38,7 +38,7 @@ what a modern release needs. All three fix the
 | Original bugs | Fixed by default, kept with `--preserve-bugs` | Fixed | Fixed |
 | Resolution | Any, with borderless fullscreen | 1024x768, scaled to the page; fullscreen button | 1024x768, scaled to the window |
 | Keyboard and mouse | Yes | Yes | Yes |
-| Gamepads | PlayStation, Xbox and Switch Pro, twin-stick, every menu by pad | One pad as the original's joystick | One pad as the original's joystick |
+| Gamepads | PlayStation, Xbox and Switch Pro, twin-stick, every menu by pad | PlayStation, Xbox and Switch Pro, twin-stick, menus by pad; one pad at a time | PlayStation, Xbox and Switch Pro, twin-stick, menus by pad; one pad at a time |
 | Music, sound, addon tunes | Yes | Yes | Yes |
 | Uncompressed source art | Yes | Yes | With the distributed files |
 | Mods | No | No | No |

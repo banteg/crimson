@@ -19,8 +19,11 @@ struct HostInput {
   int pad_axes[4];
   unsigned pad_hat;
   unsigned char pad_buttons[32];
+  unsigned char pad_connected; // a pad is there, even at rest (game/pad.cpp)
 };
 static_assert(offsetof(HostInput, mouse_dx) == 256 && offsetof(HostInput, mouse_dy) == 260 &&
                   offsetof(HostInput, mouse_buttons) == 268 && offsetof(HostInput, key_event_count) == 276 &&
-                  offsetof(HostInput, key_events) == 280,
+                  offsetof(HostInput, key_events) == 280 && offsetof(HostInput, pad_axes) == 344 &&
+                  offsetof(HostInput, pad_hat) == 360 && offsetof(HostInput, pad_buttons) == 364 &&
+                  offsetof(HostInput, pad_connected) == 396,
               "checks/game_host.mjs writes HostInput by these offsets");

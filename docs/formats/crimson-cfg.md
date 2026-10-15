@@ -257,11 +257,12 @@ for native consumers.
 
 ## Port-only controller codes
 
-The rewrite adds codes for the standard controller layout that raylib
-exposes (SDL/GLFW controller mappings with buttons named by position). They
-are ordinary int32 binding values above the native code space. Native
-`grim_is_key_active` and `grim_get_config_float` return zero for unknown IDs,
-so the original game treats them as unbound.
+The Python port, and the web and native clients with it, add codes for the
+standard controller layout (SDL/GLFW controller mappings with buttons named by
+position). They are ordinary int32 binding values above the native code space.
+Native `grim_is_key_active` and `grim_get_config_float` return zero for unknown
+IDs, so the original game treats them as unbound; the clients' Grim reads them
+from the pad ([gamepads](https://github.com/banteg/crimson/blob/master/crimson-core/PORT.md#gamepads)).
 
 | Code | Input | Code | Input |
 | --- | --- | --- | --- |
@@ -275,8 +276,9 @@ so the original game treats them as unbound.
 | `0x213` | Triangle / Y (top) | `0x21b` | Start |
 | `0x21c`–`0x21f` | D-pad up, down, left, right | | |
 
-Stick axes use +X right and +Y down. The port writes these codes when a player's
-controller is connected, replacing only values that are still stock:
+Stick axes use +X right and +Y down. The port and the clients write these codes
+when a player's controller is connected, replacing only values that are still
+stock (the clients have one pad, player 1's):
 
 - A fully stock player also switches aim and movement to Dual Action Pad, once
   the controller is used.
@@ -286,7 +288,8 @@ controller is connected, replacing only values that are still stock:
   `0x214` (L1 / LB, as in the 2014 remake) and `0x213`.
 
 Methods and changed bindings are left alone. Legacy `Joys*`/`JoyAxis*` codes keep
-working. The Controls screen's Reset button restores the selected player's stock
+working. Rebinding a control by pad captures these codes. The port's Controls
+screen also has a Reset button, which restores the selected player's stock
 bindings, or this full controller profile when their controller is connected.
 
 ## Notes

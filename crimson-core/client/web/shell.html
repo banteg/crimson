@@ -452,6 +452,17 @@
       say("Starting…");
       removeRunDependency("game files");
     };
+    // A pad's A or Start plays too (the standard mapping's buttons 0 and 9), on
+    // its release, so the game never sees the press.
+    let held = false;
+    const poll = () => {
+      if (buttons.hidden) return;
+      const down = [...navigator.getGamepads()].some((pad) => pad && (pad.buttons[0]?.pressed || pad.buttons[9]?.pressed));
+      if (held && !down) return play.click();
+      held = down;
+      requestAnimationFrame(poll);
+    };
+    requestAnimationFrame(poll);
   }
   function lost(error) {
     if (error.name !== "AbortError") return stuck("Could not open the game files: " + (error.message ?? error));
