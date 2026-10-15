@@ -1,0 +1,47 @@
+Menus a pad can play (game/pad.cpp). While a pad is connected its sticks step the focus, so the original's analog
+cursor, which a bound stick pushes around the menus, stays off; the Python port has none. The quest list's rows take the
+focus, and Enter starts the focused quest, as in the Python port (src/crimson/screens/quest_views/quests_menu.py): the
+original started one only from the mouse or the number keys.
+--- a/decomp/1.9/crimsonland/game/game_frame_update.cpp
++++ b/decomp/1.9/crimsonland/game/game_frame_update.cpp
+@@ -26,1 +26,2 @@
+ extern int ui_analog_cursor_active;
++bool game_pad_connected(void);
+@@ -327,3 +328,3 @@
+-    if (game_state_id == GAME_STATE_GAMEPLAY) {
++    if (game_state_id == GAME_STATE_GAMEPLAY || game_pad_connected()) {
+         ui_analog_cursor_active = 0;
+     }
+--- a/decomp/1.9/crimsonland/menus/quest_select_menu_update.cpp
++++ b/decomp/1.9/crimsonland/menus/quest_select_menu_update.cpp
+@@ -10,1 +10,2 @@
+ extern IGrim2D_cpp *grim_interface_ptr;
++extern "C" bool ui_focus_row(int row, float x, float y);
+@@ -261,12 +262,20 @@
+     int row = 0;
+     int next_row;
++    int focused_row = -1;
+     float hover_left = position.x - 10.0f;
+     do {
++        bool row_focused =
++            (config_hardcore ? quest_unlock_index_hardcore : quest_unlock_index)
++                >= row + quest_select_stage_major * 10 - 10
++            && ui_focus_row(row, position.x, position.y);
++        if (row_focused) {
++            focused_row = row;
++        }
+         if (ui_mouse_x <= hover_left
+             || position.y - 2.0f >= ui_mouse_y
+             || position.x + 210.0f <= ui_mouse_x
+             || position.y + 18.0f <= ui_mouse_y
+             || ui_mouse_blocked) {
+             grim_interface_ptr->grim_set_color_ptr(
+-                (float *)&row_idle_color);
++                (float *)(row_focused ? &row_hover_color : &row_idle_color));
+         } else {
+@@ -433,2 +442,5 @@
++    if (focused_row >= 0 && grim_interface_ptr->grim_was_key_pressed(0x1c)) {
++        quest_select_stage_minor_index = focused_row;
++    }
+     selected_minor = quest_select_stage_minor_index;
+     if (quest_select_stage_minor_index != -10) {

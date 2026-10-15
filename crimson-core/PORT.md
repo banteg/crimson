@@ -258,12 +258,17 @@ answer the standard codes from the joystick state they already poll
 
 - **Profile**: a stock player who picks up a pad gets twin sticks, R2 to fire,
   L1 to reload and Triangle for the perk menu, as the Python port's
-  `gamepad_profile.py` decides; the configuration saves at once.
+  `gamepad_profile.py` decides; the configuration saves at once, and the
+  player's input reads the new bindings straight away.
 - **Menus**: outside gameplay the pad drives the original's keyboard focus. The
   d-pad or left stick steps the focus down and up the screen, by where each
   widget draws, since the original registers its menu elements bottom up; A is
-  Enter, B Escape, L1 and R1 page up and down, and an open list takes the
-  d-pad. While a pad leads, the focus stays lit and hovering leaves it alone,
+  Enter, B Escape, L1 and R1 page up and down, an open list takes the
+  d-pad, and a focused name field takes A as a typed Enter. The original's
+  analog cursor, which a bound stick pushes around the menus, stays off while
+  a pad is connected, and the quest list's rows take the focus, which the
+  original left to the mouse and the number keys
+  ([`game/changes/pad-menus.patch`](game/changes/pad-menus.patch)). While a pad leads, the focus stays lit and hovering leaves it alone,
   and each new screen starts on its first widget, as in the Python port. The
   perk menu takes the focused choice, ahead of one under the mouse; the
   original took only the hovered one ([`game/changes/perk-focus.patch`](game/changes/perk-focus.patch)).
@@ -275,8 +280,9 @@ answer the standard codes from the joystick state they already poll
 A run records a pad as it records any input: each tick's input is the sticks'
 move and aim under the pad schemes, so its replay verifies unchanged and the
 ranked input is the same tuple. `checks/game_session.mjs --pad` plays the
-menus, a Survival run with its perk picks and pauses, and the end screen by pad
-alone, unplugging it mid-run, while the verifier agrees on every tick. Local
+menus, a Survival run (or with `--quest`, a quest from the quest list) with its
+perk picks and pauses, and the end screen's name entry by pad alone,
+unplugging it mid-run, while the verifier agrees on every tick. Local
 co-op on several pads follows the single player.
 
 ### Evidence

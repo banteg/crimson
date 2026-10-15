@@ -18,13 +18,15 @@
 // by the player's key, with the result the verifier derives (service/src/verify.ts).
 // With --quest the run is quest 1.1 instead, and must be completed.
 //
-// With --pad a gamepad alone plays (game/pad.cpp): the d-pad and A walk the
-// menus to the run, the left stick moves away from the nearest creature, the
-// right stick aims at it and R2 fires, Triangle asks for the perk menu and the
-// d-pad and A pick while the mouse rests on another choice, Start pauses and
-// resumes, and the pad disconnects for a
-// while mid-run and comes back. A fresh profile takes the pad profile on first
-// use, so the run records the Dual Action Pad schemes.
+// With --pad a gamepad alone plays (game/pad.cpp), a quest too with --quest:
+// the d-pad, the left stick and A walk the menus to the run, past a stick
+// resting short of a step; the left stick moves away from the nearest
+// creature, the right stick aims at it and R2 fires; Triangle asks for the perk
+// menu, and the d-pad and A pick while the mouse rests on another choice; Start
+// pauses, Start or B resumes; the pad disconnects for a while mid-run and comes
+// back; and on the end screen the name field takes A, then Main Menu. A fresh
+// profile takes the pad profile on first use, so the run records the Dual
+// Action Pad schemes.
 //
 // A replay a link asks for as the run starts (host/watch.inc game_watch) gives
 // way to it: the run plays, and its end screen stays.
@@ -58,7 +60,8 @@ const clientVersion = "0.14.2+build.000000000000000000000000";
 Buffer.from(game.memory.buffer).write(`${clientVersion}\0`, game.game_recorder_version(), "ascii");
 
 // game_state_id_t
-const MAIN_MENU = 0, PLAY_GAME_MENU = 1, PAUSE_MENU = 5, PERK_SELECTION = 6, GAME_OVER = 7, QUEST_RESULTS = 8, GAMEPLAY = 9;
+const MAIN_MENU = 0, PLAY_GAME_MENU = 1, PAUSE_MENU = 5, PERK_SELECTION = 6, GAME_OVER = 7, QUEST_RESULTS = 8, GAMEPLAY = 9,
+  QUEST_SELECT = 11;
 // DirectInput scancodes.
 const [ESCAPE, W, A, S, D, CONSOLE, SPACE] = [0x01, 0x11, 0x1e, 0x1f, 0x20, 0x29, 0x39];
 // Where a fresh 1024x768 profile lays out the perk menu's first choice (the
@@ -102,10 +105,10 @@ function frame(dt, { cursor, buttons = 0, keys = [], taps = [], pad = {} }) {
 }
 
 // Waits on a screen until it settles, false if it closes first.
-function settle(screen, cursor = PAD_CURSOR) {
+function settle(screen, cursor = PAD_CURSOR, pad = {}) {
   for (let settled = 0, frames = 0; settled < 60; ++frames) {
     if (frames > 3000) throw Error(`screen ${screen} never settled`);
-    frame(16, { cursor });
+    frame(16, { cursor, pad });
     if (settled && game.game_state() !== screen) return false;
     settled = game.game_state() === screen ? settled + 1 : 0;
   }
@@ -116,11 +119,30 @@ function tap(pad, cursor = PAD_CURSOR) {
   const screen = game.game_state();
   for (let i = 0; i < 6 && game.game_state() === screen; ++i) frame(16, { cursor, pad: i < 3 ? pad : {} });
 }
-// A after `downs` steps down the screen from its first widget.
-function choose(screen, downs) {
+// A after `downs` steps down the screen from its first widget, by the d-pad or `step`.
+function choose(screen, downs, step = { hat: HAT_DOWN }) {
   settle(screen);
-  for (let i = 0; i < downs; ++i) tap({ hat: HAT_DOWN });
+  for (let i = 0; i < downs; ++i) tap(step);
   tap({ press: [PAD_SOUTH] });
+}
+// An end screen by the pad: R2, the fire key, skips a quest's reveal of its
+// time; below Ok, the name field takes A as a typed Enter, which saves the
+// score; then Main Menu, the last of `buttons`.
+function leaveByPad(screen, buttons) {
+  settle(screen);
+  if (screen === QUEST_RESULTS) {
+    tap({ press: [PAD_R2] });
+    settle(screen);
+  }
+  tap({ hat: HAT_DOWN });
+  tap({ press: [PAD_SOUTH] });
+  const scores = path.join(directory, "scores5");
+  for (let frames = 0; !fs.existsSync(scores) || !fs.readdirSync(scores).length; ++frames) {
+    if (frames > 120) throw Error(`A on screen ${screen}'s name field saved no score`);
+    frame(16, { cursor: PAD_CURSOR });
+  }
+  choose(screen, buttons - 1);
+  settle(MAIN_MENU);
 }
 
 // Holds the cursor on a spot until the screen settles, then clicks it. A menu
@@ -140,7 +162,11 @@ function click(screen, at) {
 // sequence, which ends after about 14 s.
 while (run.clock < 15000) frame(16, { cursor: padded ? PAD_CURSOR : [512, 384] });
 if (padded) {
-  if (ranked || quest) throw Error("--pad plays Survival");
+  if (ranked) throw Error("--pad plays unranked");
+  // The original's analog cursor follows a bound stick; with a pad the stick
+  // steps the focus instead, and one resting short of a step moves nothing.
+  settle(MAIN_MENU, PAD_CURSOR, { left: [0, 350] });
+  if (game.game_motion_x(PAD_CURSOR[0]) || game.game_motion_y(PAD_CURSOR[1])) throw Error("a resting stick moved the menu cursor");
   // The main menu starts on Play Game.
   choose(MAIN_MENU, 0);
 } else click(MAIN_MENU, [240, 338]);
@@ -148,8 +174,10 @@ const unlocksBefore = savedUnlocks();
 // A fresh profile's Play Game panel lists Tutorial, Quests, Rush and Survival;
 // ticking Ranked, under the player-count list, leaves Quests and Survival.
 if (padded) {
-  // The panel starts on its player count, above Tutorial, Quests, Rush and Survival.
-  choose(PLAY_GAME_MENU, 4);
+  // The panel starts on its player count, above Tutorial, Quests, Rush and
+  // Survival, which the left stick steps to; the quest list starts on 1.1.
+  choose(PLAY_GAME_MENU, quest ? 2 : 4, { left: [0, 800] });
+  if (quest) choose(QUEST_SELECT, 0);
 } else {
   if (ranked) click(PLAY_GAME_MENU, [285, 489]);
   if (quest) {
@@ -199,7 +227,7 @@ const stick = ([x, y]) => (x || y ? [(x * 1000) / Math.hypot(x, y), (y * 1000) /
 const times = [16, 7, 33, 16, 50, 4, 16, 12, 21];
 let started = false, seed, ticks = 0, frames = 0, idle = 0, choice = 0, pauses = 0, resumes = 0, picked = false;
 // With --pad the pad is away for a stretch of the run, then comes back.
-const UNPLUGGED = [1500, 1700];
+const UNPLUGGED = quest ? [600, 800] : [1500, 1700];
 let unplugged = false;
 while (true) {
   const screen = game.game_state();
@@ -328,12 +356,9 @@ if (!game.game_replay_open()) throw Error("the module cannot play its own replay
 const reread = memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size());
 if (!reread.equals(replay())) throw Error("the saved replay reads back differently from the recording");
 if (ranked) checkRanked();
-if (padded) {
-  // The end screen by the pad: A takes the offered name, then Main Menu, two below Play Again.
-  choose(GAME_OVER, 0);
-  choose(GAME_OVER, 2);
-  settle(MAIN_MENU);
-}
+// Main Menu is the last of Play Again, High scores and Main Menu, or with
+// Play Next above them on a quest's.
+if (padded) leaveByPad(quest ? QUEST_RESULTS : GAME_OVER, quest ? 4 : 3);
 console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses, ...(padded ? { pad: true } : {}) }));
 
 // The quests the player's save unlocks (game.cfg, src/crimson/persistence/save_status.py).

@@ -457,7 +457,7 @@
     let held = false;
     const poll = () => {
       if (buttons.hidden) return;
-      const down = [...navigator.getGamepads()].some((pad) => pad && (pad.buttons[0]?.pressed || pad.buttons[9]?.pressed));
+      const down = [...(navigator.getGamepads?.() ?? [])].some((pad) => pad && (pad.buttons[0]?.pressed || pad.buttons[9]?.pressed));
       if (held && !down) return play.click();
       held = down;
       requestAnimationFrame(poll);

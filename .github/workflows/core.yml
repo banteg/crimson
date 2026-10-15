@@ -250,6 +250,7 @@ jobs:
           node crimson-core/checks/game_boot.mjs "$(fresh)"
           node crimson-core/checks/game_session.mjs --seed 4069574050 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --seed 4069574050 "$(fresh)"
+          node crimson-core/checks/game_session.mjs --pad --quest --seed 1 "$(fresh)"
           node crimson-core/checks/game_session.mjs --ranked --seed 4069574050 "$(fresh)"
           node crimson-core/checks/game_session.mjs --ranked --quest --seed 1 "$(fresh)"
           node crimson-core/checks/game_replay_read.mjs "$(fresh)"

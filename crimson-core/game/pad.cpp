@@ -25,6 +25,10 @@ HostInput *game_input();
 void config_init_defaults(void);
 bool config_sync_from_grim(void);
 void ui_menu_pause_click_resume(void);
+void game_key_char(int character);
+unsigned char ui_focus_update(int id);
+void ui_focus_draw(float *xy);
+extern int ui_screen_phase;
 extern unsigned char ui_focus_input_locked;
 extern int ui_focus_frame_marker_ms;
 extern int controls_rebind_slot_index, controls_rebind_player_index;
@@ -220,6 +224,14 @@ void apply(int player, int upgrades) {
     config_blob.key_reload = PROFILE_RELOAD;
   if (upgrades & LEVEL_UP)
     config_blob.key_pick_perk = PROFILE_PICK_PERK;
+  // The player's input reads the bindings from this copy, which the original
+  // refreshes only at startup and on the controls screen (controls_menu_update).
+  player_input_t &input = player_state_table[player].input;
+  input.axis_aim_x = keys.axis_aim_x;
+  input.axis_aim_y = keys.axis_aim_y;
+  input.axis_move_x = keys.axis_move_x;
+  input.axis_move_y = keys.axis_move_y;
+  input.fire_key = keys.fire_key;
 }
 
 // A standard button held or a stick pushed past half travel (gamepad_has_activity).
@@ -259,9 +271,10 @@ struct {
   // The pad must let go before it navigates: after gameplay (the left stick
   // moved the player) and after the controls screen took a press as a binding.
   bool stick_held, buttons_held;
-  // The focused widget takes the pad's up/down as arrow keys (hold), or its A
-  // as Down, which opens a closed list. Widgets set these each frame for the next.
-  bool hold_up, hold_down, enter_opens;
+  // The focused widget takes the pad's up/down as arrow keys (hold), its A as
+  // Down, which opens a closed list, or its A as a typed Enter, which a text
+  // field takes. Widgets set these each frame for the next.
+  bool hold_up, hold_down, enter_opens, enter_types;
   // A screen just shown, until its widgets register: then the focus goes to
   // the first of them.
   bool shown;
@@ -367,8 +380,9 @@ Direction stepped(Direction held) {
 // Escape everywhere (it pauses a run); in gameplay the rest of the pad plays.
 void navigate() {
   bool gameplay = game_state_id == GAME_STATE_GAMEPLAY || game_state_id == GAME_STATE_TYPO_GAMEPLAY;
-  bool hold_up = nav.hold_up, hold_down = nav.hold_down, enter_opens = nav.enter_opens;
-  nav.hold_up = nav.hold_down = nav.enter_opens = false;
+  bool hold_up = nav.hold_up, hold_down = nav.hold_down, enter_opens = nav.enter_opens,
+       enter_types = nav.enter_types;
+  nav.hold_up = nav.hold_down = nav.enter_opens = nav.enter_types = false;
   if (ui_mouse_x != nav.mouse_x || ui_mouse_y != nav.mouse_y)
     nav.active = false;
   nav.mouse_x = ui_mouse_x;
@@ -416,8 +430,11 @@ void navigate() {
   case NONE:
     break;
   }
-  if (pressed[FACE_DOWN - FACE_DOWN])
+  if (pressed[FACE_DOWN - FACE_DOWN]) {
     press(enter_opens ? DOWN : ENTER);
+    if (enter_types)
+      game_key_char(13);
+  }
   if (pressed[FACE_RIGHT - FACE_DOWN])
     press(ESCAPE);
   if (pressed[L1 - FACE_DOWN])
@@ -456,9 +473,11 @@ extern "C" {
 void pad_frame() {
   // A newly shown screen starts on its first widget, not on the focus index
   // the last one left (UiFocus.screen_changed).
-  static int state = -1, marker;
-  if (game_state_id != state) {
+  // The end screens show their name entry and then their buttons as phases of one state.
+  static int state = -1, phase, marker;
+  if (game_state_id != state || ui_screen_phase != phase) {
     state = game_state_id;
+    phase = ui_screen_phase;
     ui_focus_index = 0;
     place_count = 0;
     nav.shown = true;
@@ -490,8 +509,28 @@ PLACED(bool, ui_button_update, void)
 PLACED(bool, ui_checkbox_update, void)
 PLACED(bool, ui_menu_item_update, void)
 PLACED(void, ui_segmented_slider_update, void)
-PLACED(bool, ui_text_input_update, void)
 #undef PLACED
+// A focused text field takes A as a typed Enter, which submits it (ui_text_input_update).
+bool ui_text_input_update_recovered(float *xy, void *state);
+bool ui_text_input_update(float *xy, void *state) {
+  place(state, xy[0], xy[1]);
+  bool submitted = ui_text_input_update_recovered(xy, state);
+  nav.enter_types |= focused(state);
+  return submitted;
+}
+// The quest list's rows, which the original leaves to the mouse and the number
+// keys (changes/pad-menus.patch): each takes the focus, with its marker.
+bool ui_focus_row(int row, float x, float y) {
+  static char rows[10];
+  place(&rows[row], x, y);
+  bool focused = ui_focus_update((int)(size_t)&rows[row]);
+  if (focused) {
+    float at[2] = {x - 16.0f, y};
+    ui_focus_draw(at);
+  }
+  return focused;
+}
+bool game_pad_connected() { return connected(); }
 void ui_element_render_recovered(ui_element_t *element);
 void ui_element_render(ui_element_t *element) {
   place(element, element->hover_min_x, (element->hover_min_y + element->hover_max_y) * 0.5f);
