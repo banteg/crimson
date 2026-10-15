@@ -48,7 +48,7 @@ they use:
 | --- | --- |
 | Direct3D 8 device, textures, surfaces, vertex and index buffers (about 40 methods) | [`platform.cpp`](game/platform.cpp) forwards draws, state and texels to the host |
 | D3DX texture loading (TGA, BMP, JPEG) | [`d3dx.cpp`](game/d3dx.cpp), with the IJG libjpeg 6a and zlib 1.1.3 Grim links |
-| DirectInput keyboard, mouse and joystick | [`dinput.cpp`](game/dinput.cpp): device state the host delivers each frame; the SDL gamepad used last is the joystick, laid out as the Logitech Dual Action the game's pad schemes are named for ([Gamepads](#gamepads)) |
+| DirectInput keyboard, mouse and joystick | [`dinput.cpp`](game/dinput.cpp): device state the host delivers each frame; the SDL gamepad pressed last is the joystick, laid out as the Logitech Dual Action the game's pad schemes are named for ([Gamepads](#gamepads)) |
 | Grim's window procedure and run loop | [`frame.cpp`](game/frame.cpp): one loop pass per host frame; window messages as calls |
 | `grim.dll`'s embedded font and splash | [`resources.cpp`](game/resources.cpp) reads them from `grim.dll`; without it, the font from `crimson.paq` and a blank splash, which nothing draws |
 | Files, registry, threads, WinInet, DLLs | [`win32.cpp`](game/win32.cpp): Windows paths under the game directory, a registry file, threads that run to completion, offline WinInet, no DLLs |
@@ -238,9 +238,10 @@ tell a dropped run from a failed download, which the next pin tries again.
 
 SDL lays PlayStation, Xbox and Switch Pro pads out alike, the face buttons by
 position, natively and through the browser's Gamepad API. The host hands the
-pad used last to the module as the original's one joystick, the Logitech Dual
-Action its pad schemes are named for (left stick X/Y, right stick Z/Rz, the
-d-pad as the hat, the triggers as buttons); a pad plugged back in plays again,
+pad pressed last to the module as the original's one joystick, the Logitech
+Dual Action its pad schemes are named for (left stick X/Y, right stick Z/Rz,
+the d-pad as the hat, the triggers as buttons). A pad takes over with a fresh
+press or push, not with inputs it only holds; one plugged back in plays again,
 and none leaves the joystick at rest.
 
 That layout carries everything a modern pad has, so the original's own `Joys`
@@ -263,11 +264,11 @@ answer the standard codes from the joystick state they already poll
   widget draws, since the original registers its menu elements bottom up; A is
   Enter, B Escape, L1 and R1 page up and down, and an open list takes the
   d-pad. While a pad leads, the focus stays lit and hovering leaves it alone,
-  and each new screen starts on its first widget, as in the Python port. Start
-  is Escape everywhere: it pauses a run, and Start or B resumes it, as in the
-  2014 remake ([`game/changes/perk-focus.patch`](game/changes/perk-focus.patch)
-  lets the perk menu take the focused choice, which the original took only
-  from the mouse).
+  and each new screen starts on its first widget, as in the Python port. The
+  perk menu takes the focused choice, ahead of one under the mouse; the
+  original took only the hovered one ([`game/changes/perk-focus.patch`](game/changes/perk-focus.patch)).
+  Start is Escape everywhere: it pauses a run, and Start or B resumes it, as in
+  the 2014 remake.
 - **Controls**: a rebind takes a pad button or stick as its standard code,
   d-pad included.
 
