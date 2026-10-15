@@ -114,8 +114,8 @@ release, pinned by SHA-256 in [compilers.json](compilers.json). Install or
 verify them with:
 
 ```sh
-just fetch-compilers            # install missing bundles, verify installed ones
-just fetch-compilers --check    # verify only
+uv run scripts/fetch_compilers.py            # install missing bundles, verify installed ones
+uv run scripts/fetch_compilers.py --check    # verify only
 ```
 
 The scratches use `msvc6.5`, `msvc6.5pp`, `msvc7.0` and one `msvc6.0` control;
@@ -576,7 +576,7 @@ uv run crimson match checkpoint -j 8
 The checkpoint rejects duplicate scratch targets and configs outside the port
 scope, evaluates the corpus, rewrites `tools/match/STATUS.md`, runs
 `git diff --check`, and reports the current scratch change count. Both staged
-and unstaged diffs are checked. `just match-checkpoint` is the short form.
+and unstaged diffs are checked.
 The dashboard also summarizes the checked-in native object, closure, and data
 manifests. A linker row is marked current only while the three reports share
 and reproduce one audit digest, their recorded source, selection, toolchain,

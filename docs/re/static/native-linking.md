@@ -118,17 +118,8 @@ is invented and the canonical noop retains its recovered identity.
 Generate the checked-in reports:
 
 ```bash
-just native-audit grim.dll
-just native-audit crimsonland.exe
-```
-
-The equivalent direct command is:
-
-```bash
-uv run crimson native audit \
-  --image grim.dll \
-  --scope port \
-  --out-dir analysis/native/grim.dll
+uv run crimson native audit --image grim.dll --out-dir analysis/native/grim.dll
+uv run crimson native audit --image crimsonland.exe --out-dir analysis/native/crimsonland.exe
 ```
 
 The command compiles the canonical scratch set with each scratch's recorded
@@ -203,7 +194,7 @@ failures exit with status 2.
 CI verifies the checked-in artifacts for both images with:
 
 ```bash
-just native-verify --require-game-closure --allow-absent-toolchain
+uv run crimson native verify --require-game-closure --allow-absent-toolchain
 ```
 
 This recomputes the shared audit digest, checks the companion hashes and every
@@ -220,7 +211,7 @@ Grim is the first image with a checked-in provider boundary. Once its
 game-owned closure gate passes, run:
 
 ```bash
-just native-link grim.dll
+uv run crimson native link --image grim.dll --out-dir analysis/native/grim.dll/link
 ```
 
 `tools/native/providers/grim.dll.json` must cover the unresolved-symbol set
@@ -317,7 +308,7 @@ runtime is the statically linked VC6 SP6 `LIBCMT.LIB` rather than Grim's
 `MSVCRT.DLL` seam:
 
 ```bash
-just native-link crimsonland.exe
+uv run crimson native link --image crimsonland.exe --out-dir analysis/native/crimsonland.exe/link
 ```
 
 `tools/native/providers/crimsonland.exe.json` covers the non-game closure

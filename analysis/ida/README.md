@@ -3,8 +3,10 @@
 The normal IDA export commands reuse persistent, gitignored databases:
 
 ```bash
-just ida-export-exe
-just ida-export-grim
+./analysis/ida/tooling/ida-export.sh \
+  game_bins/crimsonland/1.9.93-gog/crimsonland.exe analysis/ida/raw/crimsonland.exe
+./analysis/ida/tooling/ida-export.sh \
+  game_bins/crimsonland/1.9.93-gog/grim.dll analysis/ida/raw/grim.dll
 ```
 
 Databases and their provenance records live under `analysis/ida/databases/`.
@@ -20,8 +22,10 @@ state. Rebuild deliberately when the binary or IDA installation changes, or
 when checking the persistent view against a clean analysis:
 
 ```bash
-just ida-rebuild-exe
-just ida-rebuild-grim
+./analysis/ida/tooling/ida-export.sh --rebuild \
+  game_bins/crimsonland/1.9.93-gog/crimsonland.exe analysis/ida/raw/crimsonland.exe
+./analysis/ida/tooling/ida-export.sh --rebuild \
+  game_bins/crimsonland/1.9.93-gog/grim.dll analysis/ida/raw/grim.dll
 ```
 
 A rebuild moves the previous database and provenance record into

@@ -28,6 +28,8 @@ just docs-build
 
 ## Useful commands
 
+- `just run [game directory]` — build and launch the native desktop client
+- `just build [--package]` — build the native client, optionally packaging it for distribution
 - `just check` — Python lint/type checks, docs and native-recovery checks, ast-grep scan/tests and pytest
 - `just docs-build` — build docs site
 

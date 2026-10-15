@@ -344,9 +344,11 @@ its workarounds are already solved.
 ## Running the native client
 
 ```sh
-uv run python crimson-core/client/build.py      # game module, wasm2c, SDL3 host
-crimson-core/build/app/crimson [game directory]
-crimson-core/build/app/crimson [game directory] --watch <run-id-or-replay-link>
+just run                                  # build and launch the native client
+just run /path/to/game                     # use a specific game directory
+just run --watch <run-id-or-replay-link>
+just build                                # build without launching
+just build --package                      # also produce a distributable
 ```
 
 It needs wabt's `wasm2c`, SDL3 and libcurl.

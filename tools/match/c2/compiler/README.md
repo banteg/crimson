@@ -75,7 +75,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 Apply them to a Binary Ninja database of the pinned C2.DLL:
 
 ```sh
-just binja-sync-c2
+bn py exec --target C2.DLL.bndb --script scripts/binja_c2_apply.py --format text --no-spill
 ```
 
 The script refuses any other binary. Functions that only raise internal errors from a known source file

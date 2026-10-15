@@ -237,4 +237,4 @@ Native helpers are `ui_mouse_inside_rect` (`0x004034a0`), `ui_focus_update`
 (`0x0043d830`), `ui_focus_draw` (`0x0043d940`) and `ui_button_update` (`0x0043e830`).
 The 0x18-byte button record stores its label, hover/press animation state and
 interaction flags. Use [UI elements](../re/static/systems/ui-elements.md) for the
-layout and `just analysis-function ui_button_update` for the recovered body.
+layout and `uv run scripts/analysis_view.py show ui_button_update` for the recovered body.

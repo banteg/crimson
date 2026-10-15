@@ -4,7 +4,7 @@ This directory contains deterministic reports for the classic Win32/x86
 linker track. Regenerate the Grim pilot with:
 
 ```bash
-just native-audit grim.dll
+uv run crimson native audit --image grim.dll --out-dir analysis/native/grim.dll
 ```
 
 Each image directory contains:

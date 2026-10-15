@@ -206,7 +206,7 @@ To export all textures in the tracked usage manifest into
 `artifacts/atlas/frames/`, run:
 
 ```bash
-just atlas-export-all
+uv run scripts/atlas_export.py --all --usage-json analysis/reference/atlas_usage.json --out-root artifacts/atlas/frames
 ```
 
 The output layout is:

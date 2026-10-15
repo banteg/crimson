@@ -30,54 +30,42 @@ to save a bounded current Binary Ninja bundle under
 `tools/match/.cache/evidence/`. Scratch evaluation is target-local, so this
 consultation does not rebuild the full matching corpus.
 
-`just analysis-function` remains a lightweight curated-map view when matcher
+`uv run scripts/analysis_view.py show` remains a lightweight curated-map view when matcher
 state is not needed.
 
 Check that the structured snapshots still agree with the curated map:
 
 ```bash
-just analysis-check
-just analysis-check grim.dll
+uv run scripts/analysis_view.py check --program crimsonland.exe
+uv run scripts/analysis_view.py check --program grim.dll
 ```
 
-Pass `true` as the second argument to include an open Binary Ninja session:
+Add `--binja-live` to include an open Binary Ninja session:
 
 ```bash
-just analysis-check crimsonland.exe true
+uv run scripts/analysis_view.py check --program crimsonland.exe --binja-live
 ```
 
-Refresh each tool from the shared maps. All three tools reuse local persistent
-analysis databases by default:
+Refresh an already-open Binary Ninja database from the shared maps:
 
 ```bash
-just binja-sync
-just ida-export-exe
-just ghidra-exe
-
-just binja-sync grim.dll
-just ida-export-grim
-just ghidra-grim
+bn py exec --target crimsonland.exe.bndb --script scripts/binja_import_maps.py --format text --no-spill
+bn py exec --target grim.dll.bndb --script scripts/binja_import_maps.py --format text --no-spill
 ```
 
-`binja-sync` operates on an already-open Binary Ninja database. IDA reopens the
-gitignored database under `analysis/ida/databases/`; Ghidra reopens the
-gitignored project under `analysis/ghidra/projects/`. Both reapply the shared
-maps and replace their structured snapshots after analysis.
+The [IDA](ida/README.md) and [Ghidra](ghidra/README.md) runbooks document
+refreshing their structured snapshots directly with the tool scripts. IDA
+reopens the gitignored database under `analysis/ida/databases/`; Ghidra reopens
+the gitignored project under `analysis/ghidra/projects/`. Both reapply the
+shared maps and replace their structured snapshots after analysis.
 
 Each persistent database has a provenance record containing the input binary
 hash and analysis-tool version/fingerprint. A mismatch is a hard error so a
 database cannot silently be reused for a different binary or tool build.
 
-Create a clean database explicitly when validating reproducibility or after an
-intentional input/tool change:
-
-```bash
-just ida-rebuild-exe
-just ghidra-rebuild-exe
-
-just ida-rebuild-grim
-just ghidra-rebuild-grim
-```
+Use the tool scripts' `--rebuild` option to create a clean database when
+validating reproducibility or after an intentional input/tool change; see the
+runbooks above for the complete invocations.
 
 Rebuild commands move the prior local database/project and provenance into an
 ignored `backups/` directory before starting clean.

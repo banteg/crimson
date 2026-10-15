@@ -15,7 +15,7 @@ it is not a maintained reference or a backlog.
 ## Resolve current evidence
 
 ```bash
-just analysis-function creature_handle_death
+uv run scripts/analysis_view.py show creature_handle_death
 uv run crimson match status
 ```
 

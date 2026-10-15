@@ -20,63 +20,16 @@ External inputs:
 
 ## Regenerating
 
-1. Re-run Ghidra analysis with headers in `third_party/headers/` added to the
-   C parser include paths. We use `analysis/ghidra/scripts/ImportThirdPartyHeaders.java`
-   to parse codec headers before exporting. The default flow reuses the
-   persistent project and is wrapped by the justfile shortcuts:
+Run the headless wrapper directly with the persistent project name and the
+scripts below. Each run verifies the input binary hash plus the Ghidra version
+and installation fingerprint, reapplies the shared maps, and replaces the
+structured snapshots. The first run imports the binary and creates the project.
+`FinalizeAnalysis.java` runs a whole-program post-map pass when creating a
+project, then limits later refreshes to analysis queued by current map changes.
 
-   ```bash
-   just ghidra-exe
-   ```
-
-   For Grim2D exports:
-
-   ```bash
-   just ghidra-grim
-   ```
-
-   Each run verifies the input binary hash plus the Ghidra version and
-   installation fingerprint, processes the existing program, reapplies maps,
-   and saves the updated project. The first run imports the binary and creates
-   the project. `FinalizeAnalysis.java` runs a whole-program post-map pass when
-   creating a project, then limits later refreshes to analysis queued by current
-   map changes so generated names do not drift between exports.
-
-   Use the explicit rebuild commands for a clean reproducibility baseline or
-   after intentionally changing the binary/tool:
-
-   ```bash
-   just ghidra-rebuild-exe
-   just ghidra-rebuild-grim
-   ```
-
-   Rebuilds move the previous project and provenance into
-   `analysis/ghidra/projects/backups/` before importing cleanly.
-
-## WSL regen + Windows sync
-
-If the primary workspace is on Windows and Ghidra runs in WSL, use the sync
-helper so outputs land in the Windows repo without leaving WSL dirty:
-
-```bash
-just ghidra-sync
-```
-
-This runs `ghidra-exe` and `ghidra-grim` in WSL, copies
-`analysis/ghidra/raw/` and `analysis/ghidra/derived/` back to Windows, then
-cleans the WSL outputs so `git pull` remains clean.
-
-Override the Windows repo path if needed:
-
-```bash
-CRIMSON_WIN_REPO=/mnt/c/dev/crimson just ghidra-sync
-```
-
-Override the game directory when needed:
-
-   ```bash
-   just game_dir=game_bins/crimsonland/1.9.93-gog ghidra-exe
-   ```
+Replace `--persistent` with `--rebuild` for a clean reproducibility baseline or
+after intentionally changing the binary or tool. Rebuilds back up the previous
+project and provenance under `analysis/ghidra/projects/backups/`.
 
 The header pack includes DirectX/DirectSound headers as references, and the
 import script parses codec headers (JPEG/zlib/ogg/vorbis) plus the
@@ -85,63 +38,66 @@ libpng public headers (`png.h`, `pngconf.h`, `pngasmrd.h`) are kept for
 reference but skipped in headless parsing due to Ghidra C parser limitations
 with unnamed callback parameters.
 
-   The WinAPI .gdt is kept in `analysis/ghidra/maps/winapi_32.gdt`; override it
-   via `CRIMSON_WINAPI_GDT` or the `ApplyWinapiGDT.java` script arg if needed.
-   The name/data maps can be overridden via `CRIMSON_NAME_MAP` and
-   `CRIMSON_DATA_MAP`.
+The WinAPI .gdt is kept in `analysis/ghidra/maps/winapi_32.gdt`; override it
+via `CRIMSON_WINAPI_GDT` or the `ApplyWinapiGDT.java` script arg if needed.
+The name/data maps can be overridden via `CRIMSON_NAME_MAP` and
+`CRIMSON_DATA_MAP`.
 
-2. For custom persistent analyses, pass `--persistent`, an explicit project
-   directory, and a stable project name:
+For the executable:
 
-   ```bash
-   ./analysis/ghidra/tooling/ghidra-analyze.sh \
-     --persistent \
-     --project-dir analysis/ghidra/projects \
-     --project-name crimsonland_exe \
-     --script-path analysis/ghidra/scripts \
-     -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
-     -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
-     -s FinalizeAnalysis.java \
-     -s ExportAll.java \
-     -o analysis/ghidra/raw \
-     game_bins/crimsonland/1.9.93-gog/crimsonland.exe
-   ```
+```bash
+./analysis/ghidra/tooling/ghidra-analyze.sh \
+  --persistent \
+  --project-dir analysis/ghidra/projects \
+  --project-name crimsonland_exe \
+  --script-path analysis/ghidra/scripts \
+  -s ImportThirdPartyHeaders.java -a third_party/headers \
+  -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
+  -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
+  -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
+  -s FinalizeAnalysis.java \
+  -s ExportAll.java \
+  -o analysis/ghidra/raw \
+  game_bins/crimsonland/1.9.93-gog/crimsonland.exe
+```
 
-   Use `--project-name grim_dll` with
-   `game_bins/crimsonland/1.9.93-gog/grim.dll` for Grim2D exports, and run
-   the vtable helper before applying the name map so vtable entries are created
-   as functions:
+Use `--project-name grim_dll` with
+`game_bins/crimsonland/1.9.93-gog/grim.dll` for Grim2D exports, and run
+the vtable helper before applying the name map so vtable entries are created
+as functions:
 
-   ```bash
-   ./analysis/ghidra/tooling/ghidra-analyze.sh \
-     --persistent \
-     --project-dir analysis/ghidra/projects \
-     --project-name grim_dll \
-     --script-path analysis/ghidra/scripts \
-     -s CreateGrim2DVtableFunctions.java \
-     -s CreateConfigDialogProc.java \
-     -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
-     -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
-     -s FinalizeAnalysis.java \
-     -s ExportAll.java \
-     -o analysis/ghidra/raw \
-     game_bins/crimsonland/1.9.93-gog/grim.dll
-   ```
+```bash
+./analysis/ghidra/tooling/ghidra-analyze.sh \
+  --persistent \
+  --project-dir analysis/ghidra/projects \
+  --project-name grim_dll \
+  --script-path analysis/ghidra/scripts \
+  -s ImportThirdPartyHeaders.java -a third_party/headers \
+  -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
+  -s CreateGrim2DVtableFunctions.java \
+  -s CreateConfigDialogProc.java \
+  -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
+  -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
+  -s FinalizeAnalysis.java \
+  -s ExportAll.java \
+  -o analysis/ghidra/raw \
+  game_bins/crimsonland/1.9.93-gog/grim.dll
+```
 
-3. The wrapper automatically switches from `-import` to `-process` after the
-   project is created. If operating the raw headless analyzer directly, the
-   equivalent repeated-run command is:
+The wrapper automatically switches from `-import` to `-process` after the
+project is created. If operating the raw headless analyzer directly, the
+equivalent repeated-run command is:
 
-   ```bash
-   GHIDRA_OUTPUT_DIR=analysis/ghidra/raw \
-     /opt/ghidra/support/analyzeHeadless \
-     analysis/ghidra/projects grim_dll \
-     -process grim.dll \
-     -scriptPath "/workspace/analysis/ghidra/scripts;/workspace/analysis/ghidra/tooling/ghidra_scripts" \
-     -postScript CreateGrim2DVtableFunctions.java \
-     -postScript CreateConfigDialogProc.java \
-     -postScript ApplyNameMap.java analysis/ghidra/maps/name_map.json \
-     -postScript ApplyDataMap.java analysis/ghidra/maps/data_map.json \
-     -postScript FinalizeAnalysis.java \
-     -postScript ExportAll.java
-   ```
+```bash
+GHIDRA_OUTPUT_DIR=analysis/ghidra/raw \
+  /opt/ghidra/support/analyzeHeadless \
+  analysis/ghidra/projects grim_dll \
+  -process grim.dll \
+  -scriptPath "/workspace/analysis/ghidra/scripts;/workspace/analysis/ghidra/tooling/ghidra_scripts" \
+  -postScript CreateGrim2DVtableFunctions.java \
+  -postScript CreateConfigDialogProc.java \
+  -postScript ApplyNameMap.java analysis/ghidra/maps/name_map.json \
+  -postScript ApplyDataMap.java analysis/ghidra/maps/data_map.json \
+  -postScript FinalizeAnalysis.java \
+  -postScript ExportAll.java
+```

@@ -9,7 +9,7 @@ tags:
 
 This page maps perk behavior to the native functions that execute it in
 Crimsonland v1.9.93. Resolve their current recovered bodies and binary views
-through `just analysis-function <name-or-address>`.
+through `uv run scripts/analysis_view.py show <name-or-address>`.
 
 Gameplay rules and exact effects live in [Perks](../../mechanics/perks.md).
 Python execution phases are documented in [Perks architecture](../../rewrite/perks-architecture.md).

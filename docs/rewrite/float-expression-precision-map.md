@@ -111,7 +111,7 @@ heading through `fpatan` before the float32 call boundary.
 ## Fast lookup recipes
 
 - Resolve the function and current tool snapshots:
-  - `just analysis-function player_update`
+  - `uv run scripts/analysis_view.py show player_update`
 - Search live Binary Ninja HLIL:
   - `bn search text 'fconvert\\.(t|s)|fpatan|fcos|fsin' --view hlil --target crimsonland.exe.bndb`
 - Save a reusable function artifact:
