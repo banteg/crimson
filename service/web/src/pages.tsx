@@ -503,7 +503,7 @@ async function customQuests(): Promise<Screen> {
           <p class="muted">
             Community encounters authored in the <code>.quest</code> language. Every published quest is backed by a verified completion replay.
             Describe an encounter to an LLM using <a href="/custom/llm.txt" data-native>/custom/llm.txt</a>, beat it with{" "}
-            <Command>uv run crimson --custom-quest my.quest</Command>, and publish with <Command>uv run crimson quest publish my.quest</Command>.
+            <Command>uvx crimsonland@latest quest play my.quest</Command>, and publish with <Command>uvx crimsonland@latest quest publish my.quest</Command>.
           </p>
           <Show when={list.quests.length} fallback={<p class="muted">No custom quests published yet.</p>}>
             <div class="board-table">

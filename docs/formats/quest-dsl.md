@@ -28,13 +28,15 @@ and weapon numbers to balance with, and the toolchain.
 With [uv](https://docs.astral.sh/uv/) installed, no checkout is needed:
 
 ```sh
-uvx crimsonland@latest quest build my.quest          # compile: ID, weapon, terrain, entries, copies
-uvx crimsonland@latest quest build my.quest --json   # the resolved CustomQuest
-uvx crimsonland@latest --custom-quest my.quest       # play it; every attempt saves a replay
-uvx crimsonland@latest quest publish my.quest        # upload with your newest clear of it as proof
+uvx crimsonland@latest quest build my.quest
+uvx crimsonland@latest quest play my.quest
+uvx crimsonland@latest quest publish my.quest
 ```
 
-`quest publish` picks the newest clear in the replays folder whose quest matches
+`quest build` compiles a recipe and prints its ID, weapon, terrain, entry count and
+copies; `--json` prints the resolved `CustomQuest`. `quest play` opens the game
+straight into the quest, and every attempt saves a replay. `quest publish` uploads
+the recipe with a clear of it as proof. It picks the newest clear in the replays folder whose quest matches
 the recipe; `--replay` names one instead. A quest's ID is the first 12 hex digits
 of the resolved definition's digest, so any change to what a recipe produces is a
 new quest that needs its own clear. The browser plays published quests only.
@@ -92,7 +94,7 @@ is an opaque game primitive: offspring, formation members and AI remain native.
 | --- | --- |
 | `quest "Title" version 1` | Required header; title of 1..64 printable ASCII characters |
 | `author "Name"` | Optional byline under the title: 1..31 printable ASCII characters; presentation only |
-| `weapon pistol` | Starting weapon; lowercase `WeaponId` name, default `pistol`. The [blanks](../mechanics/combat/weapons.md#unobtainable-weapons) and most IDs past 33 compile but fire nothing |
+| `weapon pistol` | Starting weapon; lowercase `WeaponId` name, default `pistol` |
 | `terrain (0, 1, 0)` | Three terrain-slot IDs in 0..7, default `(0, 1, 0)` |
 | `order chronological` | Stable sort by trigger time, retaining construction order for ties; default |
 | `order as-written` | Keep construction order; see [table order](#table-order) |
@@ -296,7 +298,7 @@ quest = build_custom_quest(source, seed=0xBEEF)
 resolves a recipe into the single-table definition a custom quest run plays
 (`RunSpec.custom_quest`): the title, author, starting weapon, terrain slots,
 resolved `entries`, and drop/offer restrictions (`no_bonuses`, `no_perks`, `no_weapons`).
-`crimson --custom-quest` builds one with construction seed 0 and starts it in ranked mode
+`crimson quest play` builds one (construction seed 0 unless `--seed`) and starts it in ranked mode
 straight after boot; `crimson quest publish` uploads the recipe alongside a completed
 replay to establish its leaderboard on `crimson.land/custom/<id>`.
 

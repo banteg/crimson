@@ -143,7 +143,7 @@ shuffle(items)                                   # Fisher-Yates; one draw per in
 
 ## Settings
 
-- `weapon <name>`: starting weapon, default `pistol`. In the table below, Fire and Reload are in seconds, and Hit is per projectile at 50 px or closer. Bullet damage falls off roughly as 1/distance; piercing shots, rockets, flames and ion blasts don't fall off.
+- `weapon <name>`: starting weapon from the table below, default `pistol`. Fire and Reload are in seconds, and Hit is per projectile at 50 px or closer. Bullet damage falls off roughly as 1/distance; piercing shots, rockets, flames and ion blasts don't fall off.
 
   | weapon | clip | hit | fire | reload |
   | --- | ---: | --- | ---: | ---: |
@@ -177,10 +177,9 @@ shuffle(items)                                   # Fisher-Yates; one draw per in
   | `gauss_shotgun` | 4 | 6 × 299, pierce | 1.05 | 2.1 |
   | `ion_shotgun` | 10 | 8 × 89 + 11 blast each | 0.85 | 1.9 |
 
-  `spider_plasma`, `evil_scythe`, `flameburst` and `raygun` compile but fire nothing. So do most of the leftover IDs `plague_spreader_gun`, `bubblegun`, `rainbow_gun`, `grim_weapon`, `fire_bullets`, `transmutator`, `blaster_r_300`, `lightning_rifle` and `nuke_launcher`: in a firing test only the first three hurt anything. With `fixed_weapon true`, a blank makes the quest unwinnable.
 - `terrain (a, b, c)`: three ground texture slots in 0..7, default `(0, 1, 0)`. The stock sets are `(0,1,0)`, `(2,3,2)`, `(4,5,4)` and `(6,7,6)`.
 - `fixed_weapon true`: removes the `weapon` bonus, the `random_weapon` and `alternate_weapon` perks, and weapon drops.
-- `no_weapons [...]`: any of `assault_rifle`..`raygun` in the table, removed from drops. Without it, every weapon can drop, since the ranked profile has every quest unlocked. While the player holds the Pistol, 3 kills in 4 try to drop a weapon pickup.
+- `no_weapons [...]`: any weapon in the table except `pistol`, removed from drops. Without it, every weapon can drop, since the ranked profile has every quest unlocked. While the player holds the Pistol, 3 kills in 4 try to drop a weapon pickup.
 - `no_bonuses [...]`: any of `energizer` (enemies flee and can be eaten), `weapon`, `weapon_power_up`, `nuke`, `double_experience`, `shock_chain`, `fireblast`, `reflex_boost` (slow motion), `shield`, `freeze`, `medikit`, `speed`, `fire_bullets`. `points` can't be removed.
 - `no_perks [...]`: any of `bloody_mess` (alias `quick_learner`), `sharpshooter`, `fastloader`, `lean_mean_exp_machine`, `long_distance_runner`, `pyrokinetic`, `grim_deal`, `alternate_weapon`, `plaguebearer`, `evil_eyes`, `ammo_maniac`, `radioactive`, `fastshot`, `fatal_lottery`, `random_weapon`, `mr_melee`, `anxious_loader`, `final_revenge`, `telekinetic`, `perk_expert`, `unstoppable`, `regression_bullets`, `infernal_contract`, `poison_bullets`, `dodger`, `bonus_magnet`, `uranium_filled_bullets`, `doctor`, `monster_vision`, `hot_tempered`, `bonus_economist`, `thick_skinned`, `barrel_greaser`, `ammunition_within`, `veins_of_poison`, `toxic_avenger`, `regeneration`, `pyromaniac`, `ninja`, `highlander`, `jinxed`, `perk_master`, `reflex_boosted`, `greater_regeneration`, `breathing_room`, `death_clock`, `my_favourite_weapon`, `bandage`, `angry_reloader`, `ion_gun_master`, `stationary_reloader`, `man_bomb`, `fire_caugh`, `living_fortress`, `tough_reloader`, `lifeline_50_50`. `instant_winner` can't be removed. Kills pay XP, and each level-up offers a perk.
 
@@ -257,11 +256,14 @@ A formation is one entry that brings a leader and linked followers. The last fol
 You need uv (docs.astral.sh/uv). The game fetches its assets on first launch, with permission from the original developer.
 
 ```sh
-uvx crimsonland@latest quest build my.quest          # compile: ID, weapon, terrain, entries/256, copies; errors name the line
-uvx crimsonland@latest quest build my.quest --json   # the resolved table
-uvx crimsonland@latest --custom-quest my.quest       # play it; every attempt saves a replay
-uvx crimsonland@latest quest publish my.quest        # upload with your newest clear as proof; prints crimson.land/custom/<id>
+uvx crimsonland@latest quest build my.quest
+uvx crimsonland@latest quest play my.quest
+uvx crimsonland@latest quest publish my.quest
 ```
+
+- `build` compiles and prints the quest's ID, weapon, terrain, entry count and copies; errors name the line. `--json` prints the resolved table.
+- `play` opens the game straight into the quest, and every attempt saves a replay.
+- `publish` uploads the recipe with your newest clear of it as proof and prints its crimson.land/custom/<id> page.
 
 - In a checkout (`gh repo clone banteg/crimson`), use `uv run crimson`. `python -m crimson.quests.dsl --stock 4.7` compiles any stock quest, and `--file` compiles a recipe with any `--seed`, `--players` and `--hardcore`.
 - A quest's ID is a hash of its resolved table, title and settings. Any change to the recipe's output makes a new quest, and publishing it needs a fresh clear of that version. `--replay <file>` picks the proof clear, and `--name` sets the signing name.

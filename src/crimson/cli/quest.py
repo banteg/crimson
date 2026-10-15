@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import base64
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import msgspec
 import typer
 
 from ..paths import default_runtime_dir
 
-quest_app = typer.Typer(add_completion=False, help="Compile, inspect, and publish custom quest recipes (.quest).")
+if TYPE_CHECKING:
+    from ..quests.custom import CustomQuest
+
+quest_app = typer.Typer(add_completion=False, help="Compile, play, and publish custom quest recipes (.quest).")
 
 _BASE_DIR = typer.Option(
     default_runtime_dir(),
@@ -16,6 +20,17 @@ _BASE_DIR = typer.Option(
     "--runtime-dir",
     help="base path for runtime files (default: per-user OS data dir; override with CRIMSON_RUNTIME_DIR)",
 )
+
+
+def _compile(quest_file: Path, seed: int) -> tuple[str, CustomQuest]:
+    from ..quests.dsl import QuestCompileError, build_custom_quest
+
+    try:
+        source = quest_file.read_text(encoding="utf-8")
+        return source, build_custom_quest(source, seed=seed)
+    except (OSError, QuestCompileError) as exc:
+        typer.echo(f"{quest_file}: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
 
 
 def _find_matching_clear_replay(replays_dir: Path, digest: str) -> Path | None:
@@ -45,15 +60,7 @@ def cmd_quest_build(
     json_out: bool = typer.Option(False, "--json", help="print the compiled CustomQuest JSON"),
 ) -> None:
     """Compile and validate a .quest recipe and print its digest and entry budget."""
-    from ..quests.dsl import QuestCompileError, build_custom_quest
-
-    try:
-        source = quest_file.read_text(encoding="utf-8")
-        quest = build_custom_quest(source, seed=seed)
-    except (OSError, QuestCompileError) as exc:
-        typer.echo(f"quest build failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
-
+    _source, quest = _compile(quest_file, seed)
     digest = quest.digest()
     if json_out:
         typer.echo(msgspec.json.format(msgspec.json.encode(quest)).decode())
@@ -64,6 +71,19 @@ def cmd_quest_build(
     typer.echo(f"weapon:  {quest.start_weapon_id.name.lower()}")
     typer.echo(f"terrain: {quest.terrain_slots}")
     typer.echo(f"entries: {len(quest.entries)} / 256 ({total_copies} total copies)")
+
+
+@quest_app.command("play")
+def cmd_quest_play(
+    quest_file: Path = typer.Argument(..., exists=True, dir_okay=False, help="path to a .quest recipe file"),
+    seed: int = typer.Option(0, "--seed", help="uint32 construction seed"),
+    base_dir: Path = _BASE_DIR,
+) -> None:
+    """Play a .quest recipe straight after boot; every attempt saves a replay to publish with."""
+    from ..game import GameConfig, run_game
+
+    _source, quest = _compile(quest_file, seed)
+    run_game(GameConfig(base_dir=base_dir, custom_quest=quest))
 
 
 @quest_app.command("publish")
@@ -85,23 +105,16 @@ def cmd_quest_publish(
 
     from ..leaderboard.client import leaderboard_url, post_json
     from ..leaderboard.identity import Identity
-    from ..quests.dsl import QuestCompileError, build_custom_quest
     from ..replay.codec import ReplayCodecError, encode_replay_payload, load_replay_file, zstd_pack
     from ..replay.ranked import outcome_reasons, unranked_reasons
 
-    try:
-        source = quest_file.read_text(encoding="utf-8")
-        quest = build_custom_quest(source, seed=seed)
-    except (OSError, QuestCompileError) as exc:
-        typer.echo(f"quest compile failed: {exc}", err=True)
-        raise typer.Exit(code=1) from exc
-
+    source, quest = _compile(quest_file, seed)
     digest = quest.digest()
     chosen_replay = replay_file or _find_matching_clear_replay(base_dir / "replays", digest)
     if chosen_replay is None:
         typer.echo(
             f"no completed ranked replay found for '{quest.title}' (id {digest[:12]}).\n"
-            f"beat it first with: uv run crimson --custom-quest {quest_file}",
+            f"beat it first with: crimson quest play {quest_file}",
             err=True,
         )
         raise typer.Exit(code=1)

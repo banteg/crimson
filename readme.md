@@ -71,6 +71,7 @@ crimson replay verify <file>              re-simulate a replay and check its rec
 crimson replay render <file>              render a replay to 60 fps video with ffmpeg
 crimson extract <src> <dst>               extract PAQ archives, with JAZ textures as PNG
 crimson quests <level>                    print a quest's spawn script
+crimson quest play <file>                 play a custom quest recipe; quest build/publish check and upload it
 ```
 
 `--seed N` starts a deterministic run, and `--preserve-bugs` keeps the original's known bugs.

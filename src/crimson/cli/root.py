@@ -223,11 +223,6 @@ def cmd_game(
         "--replay-checkpoints",
         help="write per-tick checkpoint sidecars next to saved replays (parity debugging)",
     ),
-    custom_quest: Path | None = typer.Option(
-        None,
-        "--custom-quest",
-        help="play a quest recipe (.quest) straight after boot; its runs save replays and never rank",
-    ),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -244,14 +239,6 @@ def cmd_game(
         return
     from ..game import GameConfig, run_game
 
-    quest = None
-    if custom_quest is not None:
-        from ..quests.dsl import QuestCompileError, build_custom_quest
-
-        try:
-            quest = build_custom_quest(custom_quest.read_text(encoding="utf-8"))
-        except (OSError, QuestCompileError) as exc:
-            raise typer.BadParameter(f"{custom_quest}: {exc}", param_hint="--custom-quest") from exc
     config = GameConfig(
         base_dir=base_dir,
         assets_dir=assets_dir,
@@ -265,7 +252,6 @@ def cmd_game(
         rtx=bool(rtx),
         preserve_bugs=bool(preserve_bugs),
         replay_checkpoints=bool(replay_checkpoints),
-        custom_quest=quest,
     )
     run_game(config)
 
