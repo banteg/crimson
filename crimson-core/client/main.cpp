@@ -35,8 +35,13 @@ std::string game_directory = ".";
 SDL_Window *window;
 SDL_GLContext context;
 float wheel;
-// Every gamepad SDL reports is open; the one used last plays.
-std::vector<SDL_Gamepad *> gamepads;
+// Every gamepad SDL reports is open; the one used last plays: a pad takes over
+// with a fresh press, not while its inputs are merely held (`held`, last frame's).
+struct Pad {
+  SDL_Gamepad *gamepad;
+  Uint64 held;
+};
+std::vector<Pad> gamepads;
 SDL_Gamepad *gamepad;
 bool held[8];
 int hold_frames[8];
@@ -172,29 +177,29 @@ void capture_frame() {
 // frames) where an
 // action is "move x y" (back-buffer pixels), "press button" or "release button"
 // (0 left, 1 right), or "key code" / "unkey code" (DirectInput scancodes, hex).
-// A virtual gamepad stands in for a real one: "padattach", "paddetach",
-// "padbutton name 0|1" and "padaxis name value" (SDL's names: "a", "dpup",
-// "start", "leftx", "righttrigger"; axes -32768 to 32767).
-SDL_JoystickID scripted_pad;
-SDL_Joystick *scripted_joystick;
-void script_pad(const char *verb, const char *name, int value) {
-  if (!strcmp(verb, "padattach") && !scripted_pad) {
+// Virtual gamepads stand in for real ones: "padattach n", "paddetach n",
+// "padbutton name 0|1 n" and "padaxis name value n" for pad n, 0 when left out
+// (SDL's names: "a", "dpup", "start", "leftx", "righttrigger"; axes -32768 to 32767).
+SDL_Joystick *scripted_pads[4];
+void script_pad(const char *verb, const char *name, int value, int index) {
+  SDL_Joystick *&joystick = scripted_pads[index & 3];
+  if (!strcmp(verb, "padattach") && !joystick) {
     SDL_VirtualJoystickDesc desc;
     SDL_INIT_INTERFACE(&desc);
     desc.type = SDL_JOYSTICK_TYPE_GAMEPAD;
     desc.naxes = SDL_GAMEPAD_AXIS_COUNT;
     desc.nbuttons = SDL_GAMEPAD_BUTTON_COUNT;
     desc.name = "Scripted gamepad";
-    scripted_pad = SDL_AttachVirtualJoystick(&desc);
-    scripted_joystick = SDL_OpenJoystick(scripted_pad);
-  } else if (!strcmp(verb, "paddetach") && scripted_pad) {
-    SDL_CloseJoystick(scripted_joystick);
-    SDL_DetachVirtualJoystick(scripted_pad);
-    scripted_pad = 0;
-  } else if (!strcmp(verb, "padbutton") && scripted_pad) {
-    SDL_SetJoystickVirtualButton(scripted_joystick, SDL_GetGamepadButtonFromString(name), value != 0);
-  } else if (!strcmp(verb, "padaxis") && scripted_pad) {
-    SDL_SetJoystickVirtualAxis(scripted_joystick, SDL_GetGamepadAxisFromString(name), (Sint16)value);
+    joystick = SDL_OpenJoystick(SDL_AttachVirtualJoystick(&desc));
+  } else if (!strcmp(verb, "paddetach") && joystick) {
+    SDL_JoystickID id = SDL_GetJoystickID(joystick);
+    SDL_CloseJoystick(joystick);
+    SDL_DetachVirtualJoystick(id);
+    joystick = nullptr;
+  } else if (!strcmp(verb, "padbutton") && joystick) {
+    SDL_SetJoystickVirtualButton(joystick, SDL_GetGamepadButtonFromString(name), value != 0);
+  } else if (!strcmp(verb, "padaxis") && joystick) {
+    SDL_SetJoystickVirtualAxis(joystick, SDL_GetGamepadAxisFromString(name), (Sint16)value);
   }
 }
 struct Scripted {
@@ -227,9 +232,12 @@ void run_script(int frame) {
     sscanf(s.action.c_str(), "%15s %f %f", verb, &a, &b);
     HostInput *in = input();
     if (!strncmp(verb, "pad", 3)) {
-      int value = 0;
-      sscanf(s.action.c_str(), "%*s %31s %d", name, &value);
-      script_pad(verb, name, value);
+      int value = 0, index = 0;
+      if (!strcmp(verb, "padattach") || !strcmp(verb, "paddetach"))
+        sscanf(s.action.c_str(), "%*s %d", &index);
+      else
+        sscanf(s.action.c_str(), "%*s %31s %d %d", name, &value, &index);
+      script_pad(verb, name, value, index);
     } else if (!strcmp(verb, "move")) {
       scripted_x = a;
       scripted_y = b;
@@ -244,15 +252,18 @@ void run_script(int frame) {
   }
 }
 
-// A button held, or a stick or trigger past half travel.
-bool pad_in_use(SDL_Gamepad *pad) {
+// The buttons held, and the sticks and triggers past half travel, either way, as bits.
+static_assert(SDL_GAMEPAD_BUTTON_COUNT + 2 * SDL_GAMEPAD_AXIS_COUNT <= 64, "a pad's inputs fit its bits");
+Uint64 pad_held(SDL_Gamepad *pad) {
+  Uint64 held = 0;
   for (int button = 0; button < SDL_GAMEPAD_BUTTON_COUNT; ++button)
-    if (SDL_GetGamepadButton(pad, (SDL_GamepadButton)button))
-      return true;
-  for (int axis = 0; axis < SDL_GAMEPAD_AXIS_COUNT; ++axis)
-    if (abs(SDL_GetGamepadAxis(pad, (SDL_GamepadAxis)axis)) > 16384)
-      return true;
-  return false;
+    held |= (Uint64)SDL_GetGamepadButton(pad, (SDL_GamepadButton)button) << button;
+  for (int axis = 0; axis < SDL_GAMEPAD_AXIS_COUNT; ++axis) {
+    int value = SDL_GetGamepadAxis(pad, (SDL_GamepadAxis)axis);
+    held |= (Uint64)(value > 16384) << (SDL_GAMEPAD_BUTTON_COUNT + 2 * axis);
+    held |= (Uint64)(value < -16384) << (SDL_GAMEPAD_BUTTON_COUNT + 2 * axis + 1);
+  }
+  return held;
 }
 
 // The gamepad, as the Logitech Dual Action layout the module's joystick reports
@@ -263,11 +274,12 @@ void pad(HostInput *in) {
   memset(in->pad_axes, 0, sizeof in->pad_axes);
   memset(in->pad_buttons, 0, sizeof in->pad_buttons);
   in->pad_hat = ~0u;
-  for (SDL_Gamepad *other : gamepads)
-    if (other != gamepad && pad_in_use(other)) {
-      gamepad = other;
-      break;
-    }
+  for (Pad &pad : gamepads) {
+    Uint64 held = pad_held(pad.gamepad);
+    if (held & ~pad.held)
+      gamepad = pad.gamepad;
+    pad.held = held;
+  }
   in->pad_connected = gamepad != nullptr;
   if (!gamepad)
     return;
@@ -859,18 +871,18 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
   }
   case SDL_EVENT_GAMEPAD_ADDED:
     if (SDL_Gamepad *added = SDL_OpenGamepad(event->gdevice.which)) {
-      gamepads.push_back(added);
+      gamepads.push_back({added, 0});
       if (!gamepad)
         gamepad = added;
     }
     break;
   case SDL_EVENT_GAMEPAD_REMOVED:
     for (size_t i = 0; i < gamepads.size(); ++i)
-      if (SDL_GetGamepadID(gamepads[i]) == event->gdevice.which) {
-        SDL_CloseGamepad(gamepads[i]);
+      if (SDL_GetGamepadID(gamepads[i].gamepad) == event->gdevice.which) {
+        SDL_CloseGamepad(gamepads[i].gamepad);
         // Another pad still connected takes over.
-        if (gamepads[i] == gamepad)
-          gamepad = gamepads.size() > 1 ? gamepads[i ? 0 : 1] : nullptr;
+        if (gamepads[i].gamepad == gamepad)
+          gamepad = gamepads.size() > 1 ? gamepads[i ? 0 : 1].gamepad : nullptr;
         gamepads.erase(gamepads.begin() + i);
         break;
       }

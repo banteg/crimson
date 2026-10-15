@@ -1,9 +1,20 @@
 The perk screen picks the choice under the mouse, so Enter on a focused choice picked nothing: the focused choice is
-selected too, so a keyboard or a pad walks the choices and takes one, as in the Python port
-(src/crimson/modes/components/perk_menu_controller.py).
+selected too, ahead of a hovered one, so a keyboard or a pad walks the choices and takes one wherever the mouse rests,
+as in the Python port (src/crimson/modes/components/perk_menu_controller.py).
 --- a/decomp/1.9/crimsonland/game/perk_selection_screen_update.cpp
 +++ b/decomp/1.9/crimsonland/game/perk_selection_screen_update.cpp
-@@ -183,1 +183,2 @@
+@@ -177,9 +177,12 @@
+     static perk_selection_item_t choice_items[10];
++    bool focus_selected = false;
+     for (int i = 0; i < choice_count; ++i) {
+         choice_items[i].label = perk_meta_table[perk_choice_ids[i]].name;
+         ui_menu_item_update(
+             (float *)&choice_position,
+             (ui_menu_item_t *)&choice_items[i]);
 -        if (choice_items[i].hovered) {
-+        if (choice_items[i].hovered
-+            || ui_focus_candidates[ui_focus_index] == (int)&choice_items[i]) {
++        bool focused = ui_focus_candidates[ui_focus_index] == (int)&choice_items[i];
++        if (focused || (choice_items[i].hovered && !focus_selected)) {
++            focus_selected |= focused;
+             any_hovered = true;
+             perk_selection_index = i;
+         }

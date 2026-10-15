@@ -21,7 +21,8 @@
 // With --pad a gamepad alone plays (game/pad.cpp): the d-pad and A walk the
 // menus to the run, the left stick moves away from the nearest creature, the
 // right stick aims at it and R2 fires, Triangle asks for the perk menu and the
-// d-pad and A pick, Start pauses and resumes, and the pad disconnects for a
+// d-pad and A pick while the mouse rests on another choice, Start pauses and
+// resumes, and the pad disconnects for a
 // while mid-run and comes back. A fresh profile takes the pad profile on first
 // use, so the run records the Dual Action Pad schemes.
 //
@@ -69,7 +70,7 @@ const PAD_CURSOR = [1000, 740];
 // The pad as the host lays it out (game/host_input.h): buttons by index, the
 // sticks from -1000 to 1000, and the d-pad as the hat, in hundredths of a degree.
 const [PAD_SOUTH, PAD_EAST, PAD_NORTH, PAD_R2, PAD_START] = [1, 2, 3, 7, 9];
-const HAT_DOWN = 18000;
+const [HAT_UP, HAT_DOWN] = [0, 18000];
 
 // A frame of play: held keys and buttons, the cursor as DirectInput motion, and
 // tapped keys held for the frame and delivered as presses, then released. The
@@ -101,19 +102,19 @@ function frame(dt, { cursor, buttons = 0, keys = [], taps = [], pad = {} }) {
 }
 
 // Waits on a screen until it settles, false if it closes first.
-function settle(screen) {
+function settle(screen, cursor = PAD_CURSOR) {
   for (let settled = 0, frames = 0; settled < 60; ++frames) {
     if (frames > 3000) throw Error(`screen ${screen} never settled`);
-    frame(16, { cursor: PAD_CURSOR });
+    frame(16, { cursor });
     if (settled && game.game_state() !== screen) return false;
     settled = game.game_state() === screen ? settled + 1 : 0;
   }
   return true;
 }
 // Taps the pad: a press for a few frames, then a release, or until the screen changes.
-function tap(pad) {
+function tap(pad, cursor = PAD_CURSOR) {
   const screen = game.game_state();
-  for (let i = 0; i < 6 && game.game_state() === screen; ++i) frame(16, { cursor: PAD_CURSOR, pad: i < 3 ? pad : {} });
+  for (let i = 0; i < 6 && game.game_state() === screen; ++i) frame(16, { cursor, pad: i < 3 ? pad : {} });
 }
 // A after `downs` steps down the screen from its first widget.
 function choose(screen, downs) {
@@ -204,12 +205,18 @@ while (true) {
   const screen = game.game_state();
   if (screen === PERK_SELECTION) {
     if (padded) {
-      // The menu starts on the first choice; A picks, and again as the menu closes.
-      if (!settle(PERK_SELECTION)) continue;
-      for (let i = 0; i < choice % 5; ++i) tap({ hat: HAT_DOWN });
-      ++choice;
-      tap({ press: [PAD_SOUTH] });
-      tap({ press: [PAD_SOUTH] });
+      // The mouse rests on the fifth choice, which takes the focus until the
+      // pad leads; the d-pad steps up to another and A picks it, and again as
+      // the menu closes. A choice the mouse hovers is no pick.
+      const parked = [PERK_CHOICE[0], PERK_CHOICE[1] + 19 * 4];
+      if (!settle(PERK_SELECTION, parked)) continue;
+      for (let i = 0; i < 1 + (choice++ % 4); ++i) tap({ hat: HAT_UP }, parked);
+      tap({ press: [PAD_SOUTH] }, parked);
+      tap({ press: [PAD_SOUTH] }, parked);
+      for (let frames = 0; game.game_state() === PERK_SELECTION; ++frames) {
+        if (frames > 120) throw Error("A on the focused perk left the perk menu open under the mouse");
+        frame(16, { cursor: parked });
+      }
     } else {
       const at = [PERK_CHOICE[0], PERK_CHOICE[1] + 19 * (choice++ % 5)];
       click(PERK_SELECTION, at);
