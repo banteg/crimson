@@ -60,6 +60,8 @@ static struct {
 static bool custom_quest_restore_menu, custom_quest_saved_ranked;
 // Observation only: distinguish a new live attempt from a menu resume.
 static unsigned play_generation;
+// Analytics modes past game_mode_id_t; client/web/analytics.json names each by value.
+enum { PLAY_MODE_CUSTOM = 5, PLAY_MODE_PRACTICE, PLAY_MODE_HARDCORE };
 
 static bool practice_take();
 static const char *practice_reason();
@@ -604,14 +606,14 @@ __attribute__((export_name("game_play_mode"))) int game_play_mode() {
       (live.watching && (!live.practicing || practice.phase != PRACTICE_PLAYING)))
     return 0;
   if (live.practicing)
-    return 6;
+    return PLAY_MODE_PRACTICE;
   // Between fixed ticks config_blob holds the player's menu settings, not
   // necessarily the active run's. The verifier's config describes that run.
   int mode = game_live ? (int)cfg.mode : (int)config_blob.game_mode;
   if (mode == GAME_MODE_QUEST) {
     bool custom = game_live ? cfg.major == 0 && cfg.minor == 0 : portable_custom_quest != nullptr;
     bool hardcore = game_live ? cfg.hardcore != 0 : config_blob.hardcore != 0;
-    return custom ? 5 : hardcore ? 7 : 3;
+    return custom ? PLAY_MODE_CUSTOM : hardcore ? PLAY_MODE_HARDCORE : GAME_MODE_QUEST;
   }
   return mode;
 }

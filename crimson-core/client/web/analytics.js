@@ -1,8 +1,9 @@
-// Embedded by client/build.py. Daily tokens and anonymous totals travel in
-// separate requests; neither carries a game key, account, URL or recording.
+// Embedded by client/build.py after PLAY_ANALYTICS (analytics.json), which the
+// service shares. Daily tokens and anonymous totals travel in separate
+// requests; neither carries a game key, account, URL or recording.
 function createPlayAnalytics() {
-  const TOKEN = "crimson.play-analytics", DISABLED = "crimson.play-analytics-disabled";
-  const MODES = [null, "survival", "rush", "quests", "typo", "custom", "practice", "hardcore", "tutorial"];
+  // MODES is indexed by game_play_mode (host/session.inc).
+  const { token: TOKEN, disabled: DISABLED, modes: MODES, max_runs: MAX_RUNS, max_seconds: MAX_SECONDS } = PLAY_ANALYTICS;
   const date = () => new Date(Date.now()).toISOString().slice(0, 10);
   let day = date(), pending = { ready: 0, sessions: 0, engaged: 0 }, modes = new Map();
   let previous = 0, previousAt = performance.now(), lastFlush = previousAt, lastRun = 0;
@@ -22,7 +23,8 @@ function createPlayAnalytics() {
     } catch { return false; }
   }
   const send = async (path, body) => fetch(path, {
-    method: "POST", credentials: "omit", referrerPolicy: "no-referrer", mode: "same-origin", keepalive: true,
+    // An empty referrer drops the header; a no-referrer policy would also send Origin: null.
+    method: "POST", credentials: "omit", referrer: "", mode: "same-origin", keepalive: true,
     headers: { "content-type": "application/json" }, body: JSON.stringify(body),
     signal: AbortSignal.timeout(10000),
   });
@@ -34,13 +36,16 @@ function createPlayAnalytics() {
   function flush() {
     lastFlush = performance.now();
     if (!enabled()) { clear(); return; }
-    const rows = [...modes].map(([mode, value]) => ({ mode, runs: value.runs, seconds: Math.floor(value.ms / 1000) }));
+    // The service refuses a report over its caps; any excess waits for the next one.
+    const rows = [...modes].map(([mode, value]) => ({
+      mode, runs: Math.min(value.runs, MAX_RUNS), seconds: Math.min(Math.floor(value.ms / 1000), MAX_SECONDS),
+    }));
     if (!Object.values(pending).some(Boolean) && !rows.some((row) => row.runs || row.seconds)) return;
     const payload = { day, ...pending, modes: rows.filter((row) => row.runs || row.seconds) };
     pending = { ready: 0, sessions: 0, engaged: 0 };
     for (const row of rows) {
       const value = modes.get(row.mode);
-      value.runs = 0;
+      value.runs -= row.runs;
       value.ms -= row.seconds * 1000;
     }
     // Best effort: retrying totals could count them twice. Only uniques retry.

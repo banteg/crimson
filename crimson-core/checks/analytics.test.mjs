@@ -7,7 +7,8 @@ import test from "node:test";
 import vm from "node:vm";
 
 const source = fs.readFileSync(new URL("../client/web/analytics.js", import.meta.url), "utf8");
-const TOKEN = "crimson.play-analytics", DISABLED = "crimson.play-analytics-disabled";
+const shared = JSON.parse(fs.readFileSync(new URL("../client/web/analytics.json", import.meta.url), "utf8"));
+const { token: TOKEN, disabled: DISABLED } = shared;
 function storage() {
   const values = new Map();
   let lock = Promise.resolve();
@@ -30,7 +31,7 @@ function browser({ store = storage(), wall = Date.UTC(2026, 9, 15, 12), dnt, gpc
   const context = vm.createContext({
     Date: class extends Date { constructor(...args) { super(...(args.length ? args : [wall])); } static now() { return wall; } },
     performance: { now: () => clock }, crypto: webcrypto, Uint8Array, AbortSignal,
-    window, document, localStorage: store, location: { hostname },
+    PLAY_ANALYTICS: shared, window, document, localStorage: store, location: { hostname },
     navigator: { doNotTrack: dnt, globalPrivacyControl: gpc, locks: { request: (_name, callback) => store.locked(callback) } },
     fetch: async (path, init) => {
       const value = { path, init, body: JSON.parse(init.body) };
@@ -78,7 +79,8 @@ test("reloads and concurrent tabs reuse one random token for the day; presence a
   assert.equal(unique(reload)[0].body.token, token);
   for (const request of [...a.requests, ...b.requests, ...reload.requests]) {
     assert.equal(request.init.credentials, "omit");
-    assert.equal(request.init.referrerPolicy, "no-referrer");
+    assert.equal(request.init.referrer, "");
+    assert.equal(request.init.referrerPolicy, undefined, "no-referrer would send Origin: null");
     if (request.path.endsWith("/unique")) assert.deepEqual(Object.keys(request.body).sort(), ["day", "token"]);
     else assert.deepEqual(Object.keys(request.body).sort(), ["day", "engaged", "modes", "ready", "sessions"]);
   }
@@ -129,6 +131,16 @@ test("counts active wall time, several attempts and the five-minute milestone on
   assert.equal(runs(b), 2);
   assert.equal(seconds(b), 360);
   assert.equal(unique(b).length, 1);
+});
+
+test("totals over the service's caps carry their excess into the next report", async () => {
+  const b = browser();
+  for (let run = 1; run <= shared.max_runs + 10; ++run) b.advance(0, 6, run);
+  b.flush();
+  b.flush();
+  await b.settle();
+  assert.ok(totals(b).every((row) => row.modes.every((mode) => mode.runs <= shared.max_runs)));
+  assert.equal(runs(b), shared.max_runs + 10);
 });
 
 test("hidden and unfocused tabs stop time; a long stall cannot become minutes of play", () => {

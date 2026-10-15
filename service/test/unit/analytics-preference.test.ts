@@ -13,9 +13,9 @@ describe("gameplay analytics preference", () => {
     });
     return store;
   }
-  it("opt-out persists and removes the daily token without touching game saves", () => {
+  it("opt-out persists and removes an earlier day's token without touching game saves", () => {
     const store = setup();
-    store.set("crimson.play-analytics", "daily token");
+    store.set("crimson.play-analytics", JSON.stringify({ day: "2026-10-14", token: "0".repeat(32) }));
     store.set("game-save", "untouched");
     expect(setGameplayPreference(false)).toBe(true);
     expect(gameplayPreference()).toEqual({ enabled: false, forced: false, available: true });
@@ -24,6 +24,14 @@ describe("gameplay analytics preference", () => {
     expect(setGameplayPreference(true)).toBe(true);
     expect(gameplayPreference().enabled).toBe(true);
     expect(store.has("crimson.play-analytics-disabled")).toBe(false);
+  });
+  it("opt-out keeps today's token, so opting back in today counts the browser once", () => {
+    const store = setup();
+    const today = JSON.stringify({ day: new Date().toISOString().slice(0, 10), token: "0".repeat(32) });
+    store.set("crimson.play-analytics", today);
+    setGameplayPreference(false);
+    setGameplayPreference(true);
+    expect(store.get("crimson.play-analytics")).toBe(today);
   });
   it.each([{ doNotTrack: "1" }, { globalPrivacyControl: true }])("respects browser privacy signals: %s", (privacy) => {
     setup(privacy);

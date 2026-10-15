@@ -1,0 +1,7 @@
+{
+  "token": "crimson.play-analytics",
+  "disabled": "crimson.play-analytics-disabled",
+  "modes": [null, "survival", "rush", "quests", "typo", "custom", "practice", "hardcore", "tutorial"],
+  "max_runs": 60,
+  "max_seconds": 120
+}

@@ -3,9 +3,10 @@
 import type { Env } from "./http";
 import { refuse } from "./http";
 import type { PlayAnalyticsView, PlayTotals } from "./api-types";
+import PLAY_ANALYTICS from "../../crimson-core/client/web/analytics.json";
 
 const DAY = 86400000;
-export const PLAY_MODES = ["survival", "rush", "quests", "typo", "custom", "practice", "hardcore", "tutorial"] as const;
+const PLAY_MODES = PLAY_ANALYTICS.modes.filter((mode) => mode !== null);
 const date = (now: number) => new Date(now).toISOString().slice(0, 10);
 const object = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
 const fields = (value: Record<string, unknown>, names: string[]) => Object.keys(value).every((name) => names.includes(name));
@@ -58,8 +59,8 @@ export async function postAnalytics(request: Request, env: Env, unique: boolean,
     const modes = new Set<string>();
     for (const row of value.modes) {
       if (!object(row) || !fields(row, ["mode", "runs", "seconds"]) ||
-          typeof row.mode !== "string" || !(PLAY_MODES as readonly string[]).includes(row.mode) || modes.has(row.mode) ||
-          !integer(row.runs, 60) || !integer(row.seconds, 120)) return refuse(400, "invalid mode totals");
+          typeof row.mode !== "string" || !PLAY_MODES.includes(row.mode) || modes.has(row.mode) ||
+          !integer(row.runs, PLAY_ANALYTICS.max_runs) || !integer(row.seconds, PLAY_ANALYTICS.max_seconds)) return refuse(400, "invalid mode totals");
       modes.add(row.mode);
     }
     await env.DB.batch([

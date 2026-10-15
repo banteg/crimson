@@ -879,11 +879,15 @@ async function playAnalytics(): Promise<Screen> {
   if (!response.ok) return { title: "Gameplay analytics", quest: null, panels: [() => <p>The admin only.</p>] };
   const { days } = await response.json() as PlayAnalyticsView;
   const daily = days.filter((row) => row.mode === "all");
-  const modes = [...new Set(days.filter((row) => row.mode !== "all").map((row) => row.mode))].map((mode) => ({
-    mode,
-    runs: days.filter((row) => row.mode === mode).reduce((sum, row) => sum + row.runs, 0),
-    seconds: days.filter((row) => row.mode === mode).reduce((sum, row) => sum + row.active_seconds, 0),
-  }));
+  const byMode = new Map<string, { mode: string; runs: number; seconds: number }>();
+  for (const row of days) {
+    if (row.mode === "all") continue;
+    let total = byMode.get(row.mode);
+    if (!total) byMode.set(row.mode, (total = { mode: row.mode, runs: 0, seconds: 0 }));
+    total.runs += row.runs;
+    total.seconds += row.active_seconds;
+  }
+  const modes = [...byMode.values()];
   return { title: "Gameplay analytics", quest: null, panels: [() => <>
     <h2>Gameplay analytics</h2>
     <p>Browser gameplay only, for the last 30 UTC days. Replay watching and embedded players are excluded; practice takeover counts as play.</p>
@@ -917,7 +921,7 @@ function GameplayAnalyticsPreference() {
       }} /> Send anonymous gameplay counts</label>
     <Show when={preference().forced}><p>Your browser's Do Not Track or Global Privacy Control preference disables gameplay counts.</p></Show>
     <Show when={!preference().available || failed()}><p>Browser storage is unavailable, so this preference could not be saved.</p></Show>
-    <p>This choice applies to gameplay counters in this browser. It does not change Cloudflare Web Analytics. Turning it off removes the browser's daily token and stops future gameplay reports; existing aggregate counts remain.</p>
+    <p>This choice applies to gameplay counters in this browser. It does not change Cloudflare Web Analytics. Turning it off stops future gameplay reports and removes an earlier day's token; today's stays only so turning it back on today does not count this browser again. Existing aggregate counts remain.</p>
   </>;
 }
 

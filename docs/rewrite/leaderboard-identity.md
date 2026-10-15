@@ -196,12 +196,13 @@ samples visible, focused wall time about once a second, caps a sampling gap at t
 each minute, on pause/background and on exit. Totals are best effort and never retried; unique presence retries
 with its same token once a minute while playing. Anonymous totals carry no token or session identifier.
 
-`crimson.play-analytics-disabled` is the persistent opt-out preference, exposed on `/privacy`. Opt-out, Do Not
-Track, Global Privacy Control, unavailable storage, embedding and unrelated hostnames suppress gameplay
-reporting. This preference is separate from Cloudflare Web Analytics. Native clients send no gameplay analytics.
+`crimson.play-analytics-disabled` is the persistent opt-out preference, exposed on `/privacy`. Opting out keeps
+only today's token, so opting back in the same day does not count the browser twice. Opt-out, Do Not Track,
+Global Privacy Control, unavailable storage, embedding and unrelated hostnames suppress gameplay reporting.
+This preference is separate from Cloudflare Web Analytics. Native clients send no gameplay analytics.
 `GET /api/analytics` and `/analytics` expose only aggregates to the signed-in admin, never daily tokens. Daily
 unique browser counts cannot be summed into weekly/monthly uniques; devices, storage resets and shared browsers
 limit their interpretation as people. Reports are client supplied and are not proof of human play.
 
 Deployment requires migration `0007_play_analytics.sql` before the Worker/client update and enables the hourly
-cleanup trigger. This PR does not apply production migrations or deploy.
+cleanup trigger.
