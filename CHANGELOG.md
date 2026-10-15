@@ -2,6 +2,17 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.17.3
+
+### For players
+
+- Share a moment from a public replay in the browser with **Share from here**. The link starts at the current tick and can pause at a stop tick you choose; **Full run** opens the whole replay instead.
+- Replay moment stops clear when you seek past them or the run ends early, so playback can continue. The browser's top-edge controls stay out of the way while watching.
+
+### Under the hood
+
+- crimson.land uses Cloudflare Web Analytics for visits, page views and loading performance, without analytics cookies, browser storage or fingerprinting. The privacy page describes the analytics and their retention.
+
 ## 0.17.2
 
 ### For players
