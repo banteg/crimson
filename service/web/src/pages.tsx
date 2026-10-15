@@ -1067,8 +1067,8 @@ const PRIVACY: Screen = {
         <p>
           Cloudflare hosts the site and stores the data (Workers, D1 for the database, R2 for replay files). Cloudflare handles the service's
           request logs, including IP addresses, and keeps them for up to seven days under{" "}
-          <a href="https://www.cloudflare.com/privacypolicy/">its privacy policy</a>. We do not store IP addresses ourselves, and we do not
-          use analytics or ads. Profile pages load linked avatars straight from GitHub, Discord or X.
+          <a href="https://www.cloudflare.com/privacypolicy/">its privacy policy</a>. We do not store IP addresses ourselves or use ads.
+          Profile pages load linked avatars straight from GitHub, Discord or X.
         </p>
         <h3>How long, and deleting it</h3>
         <p>
@@ -1076,6 +1076,12 @@ const PRIVACY: Screen = {
           <em>Delete account</em> button removes your runs and their replay files, names, links, keys and sessions at once, and{" "}
           <em>Unlink</em> removes a linked account. Signing in again from the game starts a new account. For anything else,{" "}
           <a href="https://github.com/banteg/crimson/issues">open an issue</a>.
+        </p>
+        <h3>Site analytics</h3>
+        <p>
+          We use <a href="https://developers.cloudflare.com/web-analytics/about/">Cloudflare Web Analytics</a> to measure visits, page
+          views and page loading performance. It does not use analytics cookies, browser storage or fingerprinting to identify visitors.
+          Analytics are separate from your game key and leaderboard account, and are kept by Cloudflare for up to six months.
         </p>
       </>
     ),
