@@ -2,6 +2,16 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.17.4
+
+### For players
+
+- Browser gameplay counts can be turned off on the privacy page and respect Do Not Track and Global Privacy Control. They use a random daily browser token separate from game keys and leaderboard accounts.
+
+### Under the hood
+
+- Private gameplay analytics distinguish actual play from replay watching, and show daily unique browsers, sessions, runs and active time by mode. Short-lived daily tokens deduplicate browsers; gameplay totals carry no token.
+
 ## 0.17.3
 
 ### For players
