@@ -387,7 +387,7 @@ struct MsgpackReader {
 // the end of a watch shows it.
 struct LoadedReplay {
   std::vector<uint8_t> recording, result;
-  int rules = 0;
+  int rules = 0, ticks = 0;
   std::string game_version, reason, outcome, quest_title, quest_author;
   int64_t elapsed_ms = 0, quest_final_ms = -1, kills = 0, experience = 0;
   int64_t shots_fired = 0, shots_hit = 0, most_used_weapon_id = 0;
@@ -607,7 +607,9 @@ static void replay_read_result(MsgpackReader &r, LoadedReplay &out) {
 }
 
 static void replay_read_ticks(MsgpackReader &r, LoadedReplay &out) {
-  for (uint32_t n = r.array(); r.ok && n && out.reason.empty(); --n) {
+  uint32_t n = r.array();
+  out.ticks = (int)n;
+  for (; r.ok && n && out.reason.empty(); --n) {
     if (r.array() != 2 || r.array() != 1 || r.array() != 5)
       return void(out.reason = "This run needs the Python port");
     // Inputs are float32 values, stored as float64 (docs/formats/replay.md).
@@ -713,4 +715,5 @@ __attribute__((export_name("game_replay_recording"))) const uint8_t *game_replay
 __attribute__((export_name("game_replay_recording_size"))) int game_replay_recording_size() {
   return (int)replay_loaded.recording.size();
 }
+__attribute__((export_name("game_replay_ticks"))) int game_replay_ticks() { return replay_loaded.ticks; }
 }

@@ -63,3 +63,120 @@ for (const [label, downloaded, unavailable] of [["stale cache", old, false], ["H
     assert.equal(b.files.has("/game/crimson.paq"), false);
   });
 }
+
+const watchFunctions =
+  shell.slice(shell.indexOf("  const query ="), shell.indexOf("  // Inside another page")) +
+  "\n" +
+  shell.slice(shell.indexOf("  shareFull.onclick ="), shell.indexOf("  fullscreen.onclick =")) +
+  "\n" +
+  shell.slice(shell.indexOf("  const REPLAY_LIMIT ="), shell.indexOf("  var Module ="));
+
+function watchBrowser(search, { status = 200, bytes = new Uint8Array([1, 2, 3]), watchWhy = "", runId = "run_1", tick = 240, ticks = 1000 } = {}) {
+  const notices = [];
+  const calls = [];
+  const shareStop = { value: "", addEventListener() {} };
+  const shareFull = { href: "#", hidden: true, onclick: null };
+  const shareCopy = { onclick: null };
+  const replaced = [];
+  const copied = [];
+  const context = vm.createContext({
+    location: { search, href: `https://example.invalid/play/${search}` },
+    URL,
+    URLSearchParams,
+    Uint8Array,
+    Date,
+    setTimeout,
+    clearTimeout,
+    setInterval() {},
+    history: { replaceState: (_s, _t, url) => replaced.push(url) },
+    navigator: { clipboard: { writeText: async (url) => copied.push(url) } },
+    canvas: { focus() {} },
+    document: { getElementById: (id) => (id === "share-copy" ? shareCopy : { hidden: true }) },
+    say() {},
+    tell: (text, href) => notices.push([text, href ?? null]),
+    shareStop,
+    shareFull,
+    FS: { mkdirTree() {}, writeFile() {} },
+    Module: {
+      ccall: (name, _ret, _types, args) => {
+        calls.push([name, [...args]]);
+        if (name === "client_watch") return watchWhy;
+        if (name === "client_watch_run") return runId;
+        if (name === "client_watch_tick") return tick;
+        if (name === "client_watch_ticks") return ticks;
+        if (name === "client_watch_moment") {
+          const [start, stop] = args;
+          if (start < 0 || stop < 0 || start > ticks || stop > ticks || (stop && stop <= (start || 1)))
+            return "This moment is past the end of the run.";
+          return "";
+        }
+        return "";
+      },
+    },
+    fetch: async (url) => {
+      if (String(url).startsWith("/api/runs/"))
+        return { ok: true, json: async () => ({ name: "Runner", title: "Survival", board: "survival", score: 100, rank: 1, accepted_at: 0 }) };
+      return { ok: status === 200, status, arrayBuffer: async () => bytes.buffer };
+    },
+  });
+  vm.runInContext(watchFunctions + "\nglobalThis.watchLink = watchLink; globalThis.linked = linked;", context);
+  return { run: () => context.watchLink(context.linked), shareCopy, shareStop, shareFull, notices, calls, replaced, copied };
+}
+
+test("watchLink opens a moment link, shares from current tick, and returns to full run", async () => {
+  const day = new Date(0);
+  const b = watchBrowser("?watch=run_1&tick=240&stop=360");
+  await b.run();
+  assert.deepEqual(b.notices, []);
+  assert.deepEqual(b.calls, [
+    ["client_watch", ["replays/online/run_1.crd", "Runner", 1, day.getDate(), day.getMonth() + 1, day.getFullYear()]],
+    ["client_watch_moment", [240, 360]],
+  ]);
+  assert.equal(b.shareStop.value, "360");
+  assert.equal(b.shareFull.hidden, false);
+  assert.equal(b.shareFull.href, "?watch=run_1");
+
+  b.shareStop.value = "480";
+  await b.shareCopy.onclick();
+  assert.equal(b.copied.at(-1), "https://example.invalid/play/?watch=run_1&tick=240&stop=480");
+  assert.equal(b.replaced.at(-1), "?watch=run_1&tick=240&stop=480");
+  assert.deepEqual(b.notices.at(-1), ["Copied link to this moment", "https://example.invalid/play/?watch=run_1&tick=240&stop=480"]);
+
+  b.shareStop.value = "240";
+  await b.shareCopy.onclick();
+  assert.deepEqual(b.notices.at(-1), ["Stop tick must be between 241 and 1000.", null]);
+
+  b.shareFull.onclick({ preventDefault() {} });
+  assert.deepEqual(b.calls.at(-1), ["client_watch_moment", [1, 0]]);
+  assert.equal(b.shareStop.value, "");
+  assert.equal(b.shareFull.hidden, true);
+  assert.equal(b.replaced.at(-1), "?watch=run_1");
+});
+
+for (const [label, search, expected] of [
+  ["malformed run id", "?watch=../bad", "This replay link is malformed."],
+  ["malformed tick", "?watch=run_1&tick=abc", "This link's moment is malformed."],
+  ["zero tick", "?watch=run_1&tick=0", "This link's moment is malformed."],
+  ["negative stop", "?watch=run_1&stop=-5", "This link's moment is malformed."],
+  ["stop at or before start", "?watch=run_1&tick=300&stop=300", "This link's moment is malformed."],
+  ["stop at tick 1 without start", "?watch=run_1&stop=1", "This link's moment is malformed."],
+  ["tick past end of run", "?watch=run_1&tick=1001", "This moment is past the end of the run."],
+  ["stop past end of run", "?watch=run_1&tick=500&stop=1001", "This moment is past the end of the run."],
+]) {
+  test(`watchLink rejects ${label}`, async () => {
+    const b = watchBrowser(search, { ticks: 1000 });
+    await b.run();
+    assert.deepEqual(b.notices, [[expected, null]]);
+  });
+}
+
+for (const [status, expected] of [
+  [404, "This run is no longer on the leaderboard."],
+  [500, "Could not download this run."],
+]) {
+  test(`watchLink reports HTTP ${status} when run is unavailable`, async () => {
+    const b = watchBrowser("?watch=run_1&tick=100", { status });
+    await b.run();
+    assert.deepEqual(b.notices, [[expected, null]]);
+  });
+}

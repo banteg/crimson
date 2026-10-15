@@ -73,9 +73,11 @@ static struct {
   bool linked;         // a host asked for `link` (game_watch): it plays once the screen settles
   LoadedReplay link;
   WatchCard link_card;
+  std::string link_id;
   bool armed;          // Watch was pressed: the next run started plays `replay`
   LoadedReplay replay; // its own copy: the host can read another meanwhile
   WatchCard run;       // and its card
+  std::string run_id;  // its id on the leaderboard, or ""
   // The player's time played, both counts, which a replay adds nothing to.
   unsigned play_time;
   int time_played;
@@ -143,9 +145,10 @@ static WatchCard watch_card(const LoadedReplay &replay, const char *name, int ra
 
 // The replay's run is the menu's: its mode, quest and difficulty, one player.
 // Watch pressed again before the run starts keeps the player's menu settings.
-static void watch_arm(const LoadedReplay &replay, const WatchCard &card) {
+static void watch_arm(const LoadedReplay &replay, const WatchCard &card, const std::string &id = {}) {
   watch.replay = replay;
   watch.run = card;
+  watch.run_id = id;
   PortableConfig recorded;
   memcpy(&recorded, replay.recording.data(), sizeof recorded);
   if (!watch.armed && !custom_quest_restore_menu)
@@ -161,8 +164,8 @@ static void watch_arm(const LoadedReplay &replay, const WatchCard &card) {
   watch.armed = true;
 }
 // The replay's run starts as the high score screen's Play a game starts one.
-static void watch_start(const LoadedReplay &replay, const WatchCard &card) {
-  watch_arm(replay, card);
+static void watch_start(const LoadedReplay &replay, const WatchCard &card, const std::string &id = {}) {
+  watch_arm(replay, card, id);
   run_active = 0;
   ui_sign_crimson.focus_disabled = 0;
   ui_transition_direction = 0;
@@ -248,8 +251,9 @@ static void watch_begin() {
 // The ticks playback runs this frame, short of a tick it stops at.
 static int watch_due(int due) {
   if (watch.stop_at > watch.tick && watch.tick + due >= watch.stop_at) {
+    due = watch.stop_at - watch.tick;
+    watch.stop_at = 0;
     watch.paused = true;
-    return watch.stop_at - watch.tick;
   }
   return due;
 }
@@ -478,8 +482,10 @@ static void watch_seek(int target) {
   watch.card = -1;
   viewer.card = 0;
   watch.phase = watch.tick >= watch.ticks ? WATCH_ENDED : WATCH_PLAYING;
-  if (watch.stop_at && watch.tick == watch.stop_at)
+  if (watch.stop_at && watch.tick == watch.stop_at) {
+    watch.stop_at = 0;
     watch.paused = true;
+  }
 }
 
 // A frame's share of the preparing pass; at the run's end, playback starts.
@@ -545,7 +551,7 @@ static void watch_follow_link() {
       ui_elements_max_timeline() > 0 && ui_elements_timeline > 0) {
     if (watch.linked) {
       watch.linked = false;
-      watch_start(watch.link, watch.link_card);
+      watch_start(watch.link, watch.link_card, watch.link_id);
     } else {
       custom_quest_linked = false;
       if (!custom_quest_restore_menu) {
@@ -833,7 +839,7 @@ void highscore_watch(float *card, highscore_record_t *record) {
   }
   // The screen's card is the table's row.
   if (pressed)
-    watch_start(target, {*record, (int)(record - highscore_table) + 1});
+    watch_start(target, {*record, (int)(record - highscore_table) + 1}, shown_run);
 }
 
 // The board run whose replay the host fetches into replays/online/<run>.crd.
@@ -862,12 +868,24 @@ __attribute__((export_name("game_replay_downloaded"))) void game_replay_download
 // the board's rank and the day the board took the run.
 static char watch_name[32];
 __attribute__((export_name("game_watch_name"))) char *game_watch_name() { return watch_name; }
+static char watch_run_id[65];
+__attribute__((export_name("game_watch_run"))) const char *game_watch_run() {
+  snprintf(watch_run_id, sizeof watch_run_id, "%s", live.watching && !live.practicing ? watch.run_id.c_str() : "");
+  return watch_run_id;
+}
 __attribute__((export_name("game_watch"))) int game_watch(int rank, int day, int month, int year) {
   if (game_live || !replay_loaded.reason.empty() || replay_loaded.recording.empty() || config_blob.screen_width != 1024 ||
       config_blob.screen_height != 768)
     return 0;
   watch.link = replay_loaded;
   watch.link_card = watch_card(replay_loaded, watch_name, rank, day, month, year);
+  std::string path = replay_path;
+  const char *online = "replays/online/", *ext = ".crd";
+  watch.link_id = path.compare(0, strlen(online), online) == 0 && path.size() > strlen(online) + strlen(ext) &&
+                          path.compare(path.size() - strlen(ext), strlen(ext), ext) == 0
+                      ? path.substr(strlen(online), path.size() - strlen(online) - strlen(ext))
+                      : std::string{};
+  watch.seek = watch.stop_at = 0;
   watch.linked = true;
   return 1;
 }

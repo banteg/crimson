@@ -136,10 +136,21 @@ A link to a run (`crimson.land/play/?watch=<run>`) names the run on the page's
 cover and offers Watch; the game skips its intro, as a click would, and cuts
 from the menu straight to the replay. The page gives the game the runner's
 name (`game_watch_name`), and the board's rank and the day it took the run
-(`game_watch`), for the score card. A host can also ask for a tick to go to
-(`game_watch_seek`) and one to pause at (`game_watch_stop_at`); the desktop
-client takes them from `CRIMSON_WATCH`, `CRIMSON_WATCH_CARD`,
-`CRIMSON_WATCH_SEEK` and `CRIMSON_WATCH_STOP` for unattended captures.
+(`game_watch`), for the score card.
+
+A link to a moment (`?watch=<run>&tick=<start>&stop=<end>`) addresses the run in
+replay ticks (`1..ticks`), since Reflex Boost slows ticks and game-time seconds
+cannot be converted by multiplying by 60: `tick=N` shows the world after `N`
+recorded ticks have played (`game_watch_tick() == N`), and `stop=M` pauses once
+playback has played `M` ticks (`game_watch_tick() == M`), clearing `stop` so the
+recipient can resume or scrub the rest of the run. While watching a public run
+in the browser, **Share from here** copies a link for the current tick (with an
+optional `stop` tick), and **Full run** returns to tick 1 with `stop` cleared.
+Out-of-range or malformed parameters and unavailable runs show a notice. The
+host API exposes `game_watch_seek`, `game_watch_stop_at`, `game_watch_run` and
+`game_replay_ticks`; the desktop client also takes `CRIMSON_WATCH`,
+`CRIMSON_WATCH_CARD`, `CRIMSON_WATCH_SEEK` and `CRIMSON_WATCH_STOP` for
+unattended captures.
 
 ## Practice takeover
 

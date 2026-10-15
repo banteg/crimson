@@ -68,7 +68,10 @@ fs.mkdirSync(watched, { recursive: true });
 fs.copyFileSync(path.join(fixtures, "quest-1.1-completed.crd"), path.join(watched, "linked.crd"));
 while (run.clock < 1500) frame();
 memory().write("watched/linked.crd\0", game.game_replay_path(), "latin1");
-if (!game.game_replay_open() || !game.game_watch()) throw Error("a link at startup does not take");
+if (!game.game_replay_open() || game.game_replay_ticks() !== 1441 || !game.game_watch())
+  throw Error("a link at startup does not take");
+game.game_watch_seek(300);
+game.game_watch_stop_at(305);
 for (let frames = 0; game.game_watch_status() < 0 || !game.game_watch_ticks(); ++frames) {
   if (frames > 2000) throw Error("a link at startup never plays");
   frame();
@@ -76,6 +79,12 @@ for (let frames = 0; game.game_watch_status() < 0 || !game.game_watch_ticks(); +
     throw Error("a link's preparing pass is not silent");
 }
 if (run.clock > 5000) throw Error(`a link at startup waited ${run.clock} ms for the intro`);
+if (game.game_watch_tick() !== 300) throw Error(`a link's seek to 300 landed on ${game.game_watch_tick()}`);
+for (let i = 0; i < 20; ++i) frame();
+if (game.game_watch_tick() !== 305) throw Error(`a link's stop at 305 stopped on ${game.game_watch_tick()}`);
+frame(16, [SPACE]);
+for (let i = 0; i < 5; ++i) frame();
+if (game.game_watch_tick() <= 305) throw Error("resuming after a stop tick did not play on");
 frame(16, [ESCAPE]);
 for (let frames = 0; game.game_state() !== HIGHSCORES; ++frames) {
   if (frames > 600) throw Error("a linked replay does not return to the high scores");
@@ -91,12 +100,25 @@ for (const name of fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).so
   if (!game.game_replay_open()) continue; // one the Python port plays (game_replay_read.mjs)
   const recording = Buffer.from(memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size()));
   if (!game.game_watch() || (!played && !game.game_watch())) throw Error(`${name}: Watch does not start`);
+  if (name === "survival-238852.crd") {
+    game.game_watch_seek(14320);
+    game.game_watch_stop_at(14350);
+  }
   for (let frames = 0; game.game_watch_status() < 0; ++frames) {
     if (frames > 600) throw Error(`${name}: the replay never started`);
     frame();
   }
   // The host reads the next replay while this one plays.
   game.game_replay_open();
+  if (name === "survival-238852.crd") {
+    while (!game.game_watch_ticks()) frame();
+    if (game.game_watch_tick() !== 14320)
+      throw Error(`Reflex Boost link seek landed on ${game.game_watch_tick()}`);
+    for (let i = 0; i < 60; ++i) frame();
+    if (game.game_watch_tick() !== 14350)
+      throw Error(`Reflex Boost link stop landed on ${game.game_watch_tick()}`);
+    frame(16, [SPACE]);
+  }
   for (let i = 0; i < 120; ++i) frame(i % 2 ? 33 : 16);
   frame(16, [SPACE]);
   const paused = Buffer.from(state(game));

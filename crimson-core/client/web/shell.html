@@ -33,8 +33,18 @@
   #home { left: 6px; }
   #fullscreen .exit, :fullscreen #fullscreen .enter { display: none; }
   :fullscreen #fullscreen .exit { display: block; }
+  #share { position: fixed; top: 6px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 4px; background: rgb(11 10 7 / 0.72); color: var(--label); opacity: 0; pointer-events: none;
+    transition: opacity 0.3s; }
+  #share.shown, #share:focus-within { opacity: 1; pointer-events: auto; }
+  #share button, #share a { border: 0; padding: 2px 6px; border-radius: 3px; background: rgb(255 255 255 / 0.08);
+    color: var(--text); font: inherit; text-decoration: none; cursor: pointer; }
+  #share button:hover, #share a:hover { color: #fff; background: rgb(255 255 255 / 0.16); }
+  #share input { width: 72px; padding: 1px 5px; border: 1px solid rgb(255 255 255 / 0.2); border-radius: 3px;
+    background: #0b0a07; color: var(--text); font: inherit; }
   #notice { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); padding: 4px 12px; border-radius: 4px;
     background: rgb(11 10 7 / 0.8); color: rgb(250 160 80); }
+  #share:not([hidden]) ~ #notice { top: 42px; }
   #notice a { color: var(--row-on); }
   [hidden] { display: none !important; }
 </style>
@@ -65,6 +75,11 @@
   <svg class="enter" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7V2h5M13 2h5v5M18 13v5h-5M7 18H2v-5"/></svg>
   <svg class="exit" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v5H2M18 7h-5V2M13 18v-5h5M2 13h5v5"/></svg>
 </button>
+<div id="share" hidden>
+  <button id="share-copy" type="button">Share from here</button>
+  <label>stop <input id="share-stop" type="text" inputmode="numeric" placeholder="end tick"></label>
+  <a id="share-full" href="#" hidden>Full run</a>
+</div>
 <div id="notice" hidden></div>
 <script>
   // The game reads and writes its directory, /game, kept in IndexedDB. Files it
@@ -89,8 +104,15 @@
   // player card): the cover names the run and offers Watch, and its replay plays
   // once the game is up, which skips the intro (host/watch.inc), then returns to
   // the high scores.
-  const linked = new URLSearchParams(location.search).get("watch");
-  const linkedQuest = new URLSearchParams(location.search).get("quest");
+  const query = new URLSearchParams(location.search);
+  const linked = query.get("watch");
+  const linkedQuest = query.get("quest");
+  const parseTick = (value) => {
+    if (value === null) return null;
+    const tick = /^[1-9]\d{0,8}$/.test(value) ? Number(value) : NaN;
+    return tick <= 0x7fffffff ? tick : NaN;
+  };
+  const linkTick = parseTick(query.get("tick")), linkStop = parseTick(query.get("stop"));
   // Inside another page (that player card), the site opens in a new tab and the
   // game plays on.
   const framed = window.self !== window.top;
@@ -136,12 +158,18 @@
   // game where the browser allows it (the Keyboard Lock API); holding Escape
   // still leaves.
   const fullscreen = document.getElementById("fullscreen"), home = document.getElementById("home");
+  const share = document.getElementById("share"), shareStop = document.getElementById("share-stop"),
+    shareFull = document.getElementById("share-full");
   let hide;
   const showFullscreen = (ms) => {
     fullscreen.classList.add("shown");
     home.classList.add("shown");
+    share.classList.add("shown");
     clearTimeout(hide);
-    hide = setTimeout(() => cover.hidden && (fullscreen.classList.remove("shown"), home.classList.remove("shown")), ms);
+    hide = setTimeout(
+      () => cover.hidden && (fullscreen.classList.remove("shown"), home.classList.remove("shown"), share.classList.remove("shown")),
+      ms,
+    );
   };
   // Leaving mid-game quits it first, as closing the game does, and goes once a
   // run's replay and the exit's saves reach IndexedDB; else the quit screen says
@@ -153,7 +181,41 @@
     leaving = true;
     Module.ccall("client_close", null, [], []);
   };
-  addEventListener("pointermove", (event) => event.clientY < 80 && (event.clientX > innerWidth - 80 || event.clientX < 80) && showFullscreen(1500));
+  addEventListener("pointermove", (event) => event.clientY < 80 && showFullscreen(1500));
+  for (const type of ["keydown", "keyup", "keypress"])
+    shareStop.addEventListener(type, (event) => event.stopPropagation(), true);
+  shareFull.onclick = (event) => {
+    event.preventDefault();
+    const run = Module.ccall("client_watch_run", "string", [], []);
+    if (!run) return;
+    Module.ccall("client_watch_moment", "string", ["number", "number"], [1, 0]);
+    shareStop.value = "";
+    shareFull.hidden = true;
+    history.replaceState(null, "", `?watch=${encodeURIComponent(run)}`);
+    canvas.focus();
+  };
+  document.getElementById("share-copy").onclick = async () => {
+    const run = Module.ccall("client_watch_run", "string", [], []);
+    const tick = Module.ccall("client_watch_tick", "number", [], []);
+    const ticks = Module.ccall("client_watch_ticks", "number", [], []);
+    if (!run || !tick || !ticks) return;
+    const rawStop = shareStop.value.trim();
+    const stop = rawStop ? parseTick(rawStop) : null;
+    if (stop !== null && (Number.isNaN(stop) || stop <= tick || stop > ticks))
+      return tell(`Stop tick must be between ${tick + 1} and ${ticks}.`);
+    Module.ccall("client_watch_moment", "string", ["number", "number"], [0, stop ?? 0]);
+    const url = new URL(location.href);
+    url.search = "";
+    url.searchParams.set("watch", run);
+    url.searchParams.set("tick", String(tick));
+    if (stop !== null) url.searchParams.set("stop", String(stop));
+    history.replaceState(null, "", url.search);
+    shareFull.href = `?watch=${encodeURIComponent(run)}`;
+    shareFull.hidden = false;
+    const copied = await navigator.clipboard?.writeText?.(url.href).then(() => true, () => false);
+    tell(copied ? "Copied link to this moment" : "Link to this moment", url.href);
+    canvas.focus();
+  };
   fullscreen.onclick = async () => {
     if (document.fullscreenElement) return document.exitFullscreen();
     await document.documentElement.requestFullscreen();
@@ -557,7 +619,9 @@
     start();
   }
   async function watchLink(run) {
-    if (!/^[A-Za-z0-9_-]{1,64}$/.test(run)) return;
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(run)) return tell("This replay link is malformed.");
+    if (Number.isNaN(linkTick) || Number.isNaN(linkStop) || (linkStop !== null && linkStop <= (linkTick ?? 1)))
+      return tell("This link's moment is malformed.");
     let response, bytes;
     try {
       response = await fetch(`/runs/${run}.crd`);
@@ -580,8 +644,15 @@
         day ? day.getMonth() + 1 : 0,
         day ? day.getFullYear() : 2000,
       ]);
-      if (why === "wait") setTimeout(start, 250);
-      else if (why) tell(why);
+      if (why === "wait") return setTimeout(start, 250);
+      if (why) return tell(why);
+      if (linkTick !== null || linkStop !== null) {
+        const bad = Module.ccall("client_watch_moment", "string", ["number", "number"], [linkTick ?? 0, linkStop ?? 0]);
+        if (bad) return tell(bad);
+        if (linkStop !== null) shareStop.value = String(linkStop);
+        shareFull.href = `?watch=${encodeURIComponent(run)}`;
+        shareFull.hidden = false;
+      }
     };
     start();
   }
@@ -607,6 +678,16 @@
       canvas.focus();
       if (linked) watchLink(linked);
       else if (linkedQuest) questLink(linkedQuest);
+      let wasWatching = false;
+      setInterval(() => {
+        const run = Module.ccall("client_watch_run", "string", [], []);
+        const ticks = run ? Module.ccall("client_watch_ticks", "number", [], []) : 0;
+        const active = cover.hidden && ticks > 0;
+        share.hidden = !active;
+        if (active && !wasWatching) showFullscreen(3000);
+        wasWatching = active;
+        if (ticks) shareStop.placeholder = `${ticks}`;
+      }, 200);
     },
     printErr: (text) => console.warn(text),
     // The game quit (client/main.cpp) after writing its settings and scores.

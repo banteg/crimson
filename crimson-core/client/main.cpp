@@ -530,6 +530,26 @@ extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch(const char *path, const
     return (const char *)client_memory() + w2c_game_game_replay_reason(&game);
   return w2c_game_game_watch(&game, rank, day, month, year) ? "" : "This run cannot play now.";
 }
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch_moment(int tick, int stop) {
+  int ticks = (int)w2c_game_game_watch_ticks(&game);
+  if (!ticks)
+    ticks = (int)w2c_game_game_replay_ticks(&game);
+  if (tick < 0 || stop < 0 || tick > ticks || stop > ticks || (stop && stop <= (tick ? tick : 1)))
+    return "This moment is past the end of the run.";
+  if (tick)
+    w2c_game_game_watch_seek(&game, tick);
+  w2c_game_game_watch_stop_at(&game, stop);
+  return "";
+}
+extern "C" EMSCRIPTEN_KEEPALIVE const char *client_watch_run() {
+  return started ? (const char *)client_memory() + w2c_game_game_watch_run(&game) : "";
+}
+extern "C" EMSCRIPTEN_KEEPALIVE int client_watch_tick() {
+  return started ? (int)w2c_game_game_watch_tick(&game) : 0;
+}
+extern "C" EMSCRIPTEN_KEEPALIVE int client_watch_ticks() {
+  return started ? (int)w2c_game_game_watch_ticks(&game) : 0;
+}
 extern "C" EMSCRIPTEN_KEEPALIVE const char *client_play_quest(const char *path, const char *title, const char *author) {
   if (!started)
     return "wait";

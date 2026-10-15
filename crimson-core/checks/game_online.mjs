@@ -122,6 +122,7 @@ fs.copyFileSync(fixture, path.join(directory, "replays/online/r1.crd"));
 game.game_replay_downloaded(0);
 click(WATCH);
 waitFor("the replay", () => game.game_watch_status() === 0);
+if (text(game.game_watch_run()) !== "r1") throw Error(`watching named ${text(game.game_watch_run())}`);
 for (let frames = 0; game.game_watch_status() === 0; ++frames) {
   if (frames > 2000) throw Error("the replay never ended");
   frame({ taps: frames % 10 ? [] : [PAGE_DOWN] });
@@ -129,6 +130,7 @@ for (let frames = 0; game.game_watch_status() === 0; ++frames) {
 if (game.game_watch_status() !== 1) throw Error("the board's run did not play as recorded");
 frame({ taps: [ESCAPE] });
 waitFor("the return to the scores", () => game.game_state() === HIGHSCORES && game.game_watch_status() === -1);
+if (text(game.game_watch_run()) !== "") throw Error("game_watch_run stayed set after leaving Watch");
 
 // A run gone from the leaderboard: no Watch.
 click(ROWS[1]);
