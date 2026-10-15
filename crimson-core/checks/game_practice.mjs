@@ -82,6 +82,7 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
     equal(anchor, state(game), `${name}:${target} prefix`);
     // Enter and the bar's click take over with the button held: play starts at
     // once, but that click fires only once let go.
+    const generationBeforeTake = game.game_play_run();
     const latched = target === 119 || target === 120;
     if (target === 119) {
       run.input().setUint8(INPUT.buttons, 128);
@@ -95,6 +96,8 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
       frame();
     } else assert.ok(game.game_practice_take(), `${name}:${target} takeover`);
     assert.equal(game.game_practice_state(), 1, "takeover plays at once");
+    assert.equal(game.game_play_mode(), 6, "practice is live play, separately from ranked modes");
+    assert.equal(game.game_play_run(), generationBeforeTake + 1, "takeover is a new attempt");
     assert.equal(game.game_practice_ticks(), 0, "takeover starts from the anchor");
     equal(anchor, state(game), "takeover frame shows the anchor");
     function alternate() {
@@ -169,8 +172,10 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
     }
     const sequence = alternate(),
       future = Buffer.from(state(game));
+    const pauseGeneration = game.game_play_run();
     game.game_activate(0);
     assert.equal(game.game_practice_state(), 2, "focus loss pauses");
+    assert.equal(game.game_play_mode(), 0, "paused practice reports no play");
     game.game_activate(1);
     for (let i = 0; i < 8; ++i) frame();
     equal(future, state(game), "paused branch stays still");
@@ -178,6 +183,7 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
     key(1, true);
     frame();
     assert.equal(game.game_practice_state(), 1, "Escape resumes");
+    assert.equal(game.game_play_run(), pauseGeneration, "resuming does not start another attempt");
     key(1, false);
     frame();
     key(1, true);
@@ -188,6 +194,7 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
     game.game_practice_action(2);
     frame();
     assert.equal(game.game_practice_state(), 1, "retry plays at once");
+    assert.equal(game.game_play_run(), pauseGeneration + 1, "retry is another attempt");
     assert.equal(game.game_practice_ticks(), 0);
     equal(anchor, state(game), "retry restores the exact anchor");
     // Reapply the same live input and compare every new state with a fresh prefix.
@@ -199,6 +206,7 @@ for (const name of ["survival-238852.crd", "rush-kills103.crd", "quest-1.1-compl
     game.game_practice_action(3);
     frame();
     assert.equal(game.game_practice_state(), 0);
+    assert.equal(game.game_play_mode(), 0, "returning to the original replay stops live play");
     assert.equal(game.game_watch_tick(), target);
     equal(anchor, state(game), "original returns to the anchor");
     // Escape pauses a fresh takeover; Watch the original returns, still watching.

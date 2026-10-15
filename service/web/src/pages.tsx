@@ -9,6 +9,7 @@ import type {
   JoinView,
   LoginView,
   ModerationAction,
+  PlayAnalyticsView,
   ProfileView,
   QuestMenuView,
   Role,
@@ -19,6 +20,7 @@ import { get, moderate, post } from "./api";
 import { formatLongDuration, formatScore, quantity } from "./format";
 import { GameButton } from "./button";
 import { playerLabel } from "./names";
+import { gameplayPreference, setGameplayPreference } from "./analytics-preference";
 import perkNames from "./perks.json";
 import { PilotName, PlayerName, PROVIDER_LABELS } from "./players";
 import { runPanels, SIGNAL_LABELS } from "./run";
@@ -872,6 +874,53 @@ async function moderation(nav: Navigator): Promise<Screen> {
   };
 }
 
+async function playAnalytics(): Promise<Screen> {
+  const response = await fetch("/api/analytics");
+  if (!response.ok) return { title: "Gameplay analytics", quest: null, panels: [() => <p>The admin only.</p>] };
+  const { days } = await response.json() as PlayAnalyticsView;
+  const daily = days.filter((row) => row.mode === "all");
+  const modes = [...new Set(days.filter((row) => row.mode !== "all").map((row) => row.mode))].map((mode) => ({
+    mode,
+    runs: days.filter((row) => row.mode === mode).reduce((sum, row) => sum + row.runs, 0),
+    seconds: days.filter((row) => row.mode === mode).reduce((sum, row) => sum + row.active_seconds, 0),
+  }));
+  return { title: "Gameplay analytics", quest: null, panels: [() => <>
+    <h2>Gameplay analytics</h2>
+    <p>Browser gameplay only, for the last 30 UTC days. Replay watching and embedded players are excluded; practice takeover counts as play.</p>
+    <p class="muted">Unique browsers are counted separately each day, not across days. Clearing storage or using another browser can count again; a shared browser counts once. These unverified client reports are approximate.</p>
+    <Show when={daily.length} fallback={<p>No gameplay counts yet.</p>}>
+      <div class="board-table"><table><thead><tr>
+        <th>UTC day</th><th class="n">Unique browsers</th><th class="n">Loaded</th><th class="n">Play sessions</th><th class="n">5+ minutes</th>
+      </tr></thead><tbody><For each={daily}>{(row) => <tr>
+        <td>{row.day}</td><td class="n">{row.unique_browsers}</td><td class="n">{row.ready}</td><td class="n">{row.sessions}</td><td class="n">{row.engaged}</td>
+      </tr>}</For></tbody></table></div>
+    </Show>
+    <p class="muted">Loaded means the game reached its first frame. A session starts with live gameplay and reaches 5+ minutes after five accumulated active minutes in that page. Counts can be missing when storage, the network or privacy preferences prevent reporting.</p>
+  </>, () => <>
+    <h3>Play by mode</h3>
+    <table><thead><tr><th>Mode</th><th class="n">Runs</th><th class="n">Active minutes</th></tr></thead>
+      <tbody><For each={modes}>{(row) => <tr><td>{row.mode}</td><td class="n">{row.runs}</td><td class="n">{(row.seconds / 60).toFixed(1)}</td></tr>}</For></tbody>
+    </table>
+    <p class="muted">Visible, focused, unpaused wall time, sampled about once a second. Long stalls are capped. Anonymous totals are separate from unique-count tokens and are not retried.</p>
+  </>] };
+}
+
+function GameplayAnalyticsPreference() {
+  const [preference, setPreference] = createSignal(gameplayPreference());
+  const [failed, setFailed] = createSignal(false);
+  return <>
+    <label><input type="checkbox" checked={preference().enabled} disabled={preference().forced || !preference().available}
+      onChange={(event) => {
+        const saved = setGameplayPreference(event.currentTarget.checked);
+        setFailed(!saved);
+        setPreference(gameplayPreference());
+      }} /> Send anonymous gameplay counts</label>
+    <Show when={preference().forced}><p>Your browser's Do Not Track or Global Privacy Control preference disables gameplay counts.</p></Show>
+    <Show when={!preference().available || failed()}><p>Browser storage is unavailable, so this preference could not be saved.</p></Show>
+    <p>This choice applies to gameplay counters in this browser. It does not change Cloudflare Web Analytics. Turning it off removes the browser's daily token and stops future gameplay reports; existing aggregate counts remain.</p>
+  </>;
+}
+
 const SIGN_IN = () => (
   <p>
     Open your profile from the game: tick <em>Ranked</em> on Play Game and press <em>Profile</em>.
@@ -1080,9 +1129,21 @@ const PRIVACY: Screen = {
         <h3>Site analytics</h3>
         <p>
           We use <a href="https://developers.cloudflare.com/web-analytics/about/">Cloudflare Web Analytics</a> to measure visits, page
-          views and page loading performance. It does not use analytics cookies, browser storage or fingerprinting to identify visitors.
+          views and page loading performance. Cloudflare's beacon does not use analytics cookies, browser storage or fingerprinting to identify visitors.
           Analytics are separate from your game key and leaderboard account, and are kept by Cloudflare for up to six months.
         </p>
+        <h3>Gameplay counts</h3>
+        <p>
+          The browser game also counts loading, play sessions, sessions reaching five active minutes, runs and active time by mode.
+          It sends these as anonymous daily totals, without your name, account, game key, replay, URL or IP address. The service does not store IP addresses for these counters.
+        </p>
+        <p>
+          To count a browser once per UTC day of actual play, it keeps a random daily token in first-party browser storage. The token changes on
+          the next playing day and is sent separately from gameplay totals. We keep only the day and token for deduplication, with no activity history.
+          An hourly cleanup removes tokens for days older than the current day and the two previous days; daily totals remain. Cloudflare D1 backups can retain deleted data for up to 30 days.
+          Clearing browser storage or using another browser can count you again. Daily counts cannot identify returning players across days.
+        </p>
+        <GameplayAnalyticsPreference />
       </>
     ),
   ],
@@ -1128,6 +1189,7 @@ export async function resolve(url: URL, nav: Navigator): Promise<Screen> {
   else if (path === "/custom") screen = await customQuests();
   else if ((match = /^\/custom\/([0-9a-f]{12})$/.exec(path))) screen = await customQuestPage(match[1]!);
   else if (path === "/mod") screen = await moderation(nav);
+  else if (path === "/analytics") screen = await playAnalytics();
   else if ((match = /^\/players\/(\d+)$/.exec(path))) screen = await profile(Number(match[1]), nav);
   else if ((match = /^\/join\/([0-9a-f]{64})$/.exec(path))) screen = await join(match[1]!, nav);
   else if ((match = /^\/login\/([0-9a-f]{64})$/.exec(path))) screen = await login(match[1]!, nav);

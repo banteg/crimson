@@ -1,4 +1,5 @@
 import { confirmMerge, deleteAccount, linkIdentity, pendingJoin, unlink } from "./accounts";
+import { analyticsView, postAnalytics, pruneAnalytics } from "./analytics";
 import { loginLink, postChallenge, postLogin, postLoginLink, SESSION_COOKIE, secure, sessionAccount, sessionToken, tokenHash } from "./auth";
 import { CARD_HEIGHT, CARD_WIDTH, runCard } from "./card";
 import { type Env, json, refuse } from "./http";
@@ -49,6 +50,9 @@ function redirect(location: string, headers: HeadersInit = {}): Response {
 }
 
 export default {
+  async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
+    await pruneAnalytics(env);
+  },
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.protocol === "http:" && url.hostname !== "localhost") {
@@ -67,6 +71,10 @@ export default {
 async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   const route = `${request.method} ${url.pathname}`;
   let match: RegExpExecArray | null;
+
+  // Ingestion runs before any cookie, key or account lookup.
+  if (route === "POST /api/analytics" || route === "POST /api/analytics/unique")
+    return postAnalytics(request, env, url.pathname.endsWith("/unique"));
 
   // The game's API.
   switch (route) {
@@ -110,6 +118,10 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   }
   const viewer = await sessionAccount(request, env);
   const role = await roleOf(env, viewer);
+  if (route === "GET /api/analytics") {
+    if (role !== "admin") return refuse(403, "the admin only");
+    return json(await analyticsView(env), 200, { "cache-control": "no-store" });
+  }
   if ((match = /^GET \/api\/players\/(\d+)$/.exec(route))) {
     const profile = await profileView(env, Number(match[1]), viewer, isModerator(role));
     return profile ? json(profile) : refuse(404, "no such player");
@@ -345,7 +357,7 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
       player: { url: `${url.origin}/play/?watch=${run.id}`, width: VIEW_W, height: VIEW_H },
     };
   }
-  return titled(({ "/about": "About", "/privacy": "Privacy", "/terms": "Terms" } as Record<string, string>)[path] ?? null);
+  return titled(({ "/about": "About", "/privacy": "Privacy", "/terms": "Terms", "/analytics": "Gameplay analytics" } as Record<string, string>)[path] ?? null);
 }
 
 // The site's one page, titled for the route so shared links preview what they point at.

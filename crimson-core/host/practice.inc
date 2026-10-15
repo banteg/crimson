@@ -69,6 +69,7 @@ static bool practice_take() {
   ranked_run = false;
   live.practicing = true;
   practice_start();
+  ++play_generation;
   return true;
 }
 // Re-render the original moment through the proven seek path, then restore the
@@ -185,6 +186,7 @@ static void practice_render() {
   if (action == 2) {
     practice_restore();
     practice_start();
+    ++play_generation;
   }
   bool drew = false;
   if (practice.phase == PRACTICE_PLAYING)

@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <vector>
 extern game_status_t game_status_blob;
+extern unsigned char grim_timing_frozen;
 extern "C" {
 void game_state_set_recovered(game_state_id_t state);
 void gameplay_update_and_render_recovered();
@@ -57,6 +58,8 @@ static struct {
   bool practicing; // detached Watch state driven by live input (practice.inc)
 } live;
 static bool custom_quest_restore_menu, custom_quest_saved_ranked;
+// Observation only: distinguish a new live attempt from a menu resume.
+static unsigned play_generation;
 
 static bool practice_take();
 static const char *practice_reason();
@@ -531,6 +534,8 @@ void game_state_set(game_state_id_t state) {
            state != GAME_STATE_PAUSE_MENU && state != GAME_STATE_OPTIONS_MENU && state != GAME_STATE_CONTROLS_MENU)
     live_end("incomplete");
   bool entering_gameplay = state == GAME_STATE_GAMEPLAY && !run_active;
+  if (!watches && (entering_gameplay || (state == GAME_STATE_TYPO_GAMEPLAY && !run_active)))
+    ++play_generation;
   bool starts = entering_gameplay && live_eligible();
   // The run a replay starts counts in none of the player's statistics.
   game_status_t status = game_status_blob;
@@ -587,4 +592,27 @@ void game_save_status() {
 }
 __attribute__((export_name("game_replay"))) const unsigned char *game_replay() { return live.replay.data(); }
 __attribute__((export_name("game_replay_size"))) int game_replay_size() { return (int)live.replay.size(); }
+
+// Watch/preparing, menus, run-down and paused practice are not live gameplay.
+__attribute__((export_name("game_play_run"))) unsigned game_play_run() { return play_generation; }
+__attribute__((export_name("game_play_mode"))) int game_play_mode() {
+  if (grim_timing_frozen)
+    return 0;
+  if (game_state_id != GAME_STATE_GAMEPLAY && game_state_id != GAME_STATE_TYPO_GAMEPLAY)
+    return 0;
+  if (!run_active || (game_live && running_down) ||
+      (live.watching && (!live.practicing || practice.phase != PRACTICE_PLAYING)))
+    return 0;
+  if (live.practicing)
+    return 6;
+  // Between fixed ticks config_blob holds the player's menu settings, not
+  // necessarily the active run's. The verifier's config describes that run.
+  int mode = game_live ? (int)cfg.mode : (int)config_blob.game_mode;
+  if (mode == GAME_MODE_QUEST) {
+    bool custom = game_live ? cfg.major == 0 && cfg.minor == 0 : portable_custom_quest != nullptr;
+    bool hardcore = game_live ? cfg.hardcore != 0 : config_blob.hardcore != 0;
+    return custom ? 5 : hardcore ? 7 : 3;
+  }
+  return mode;
+}
 }

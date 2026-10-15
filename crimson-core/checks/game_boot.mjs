@@ -48,6 +48,7 @@ for (let frame = 1; frame <= 3000; frame++) {
   // Ten frames away from the window: the run records no tick.
   if (frame === 2500) {
     game.game_activate(0);
+    assert.equal(game.game_play_mode(), 0, "focus loss reports no live gameplay");
     away = game.game_replay_size();
   }
   if (frame === 2510) {
@@ -56,6 +57,12 @@ for (let frame = 1; frame <= 3000; frame++) {
   }
   const draws = run.calls.draw ?? 0;
   run.frame(16);
+  if (game.game_play_mode()) {
+    assert.equal(game.game_play_mode(), 1, "Survival reports its live mode");
+    assert.equal(game.game_play_run(), 1, "the first run keeps its generation across frames");
+  } else if (game.game_state() !== GAMEPLAY) {
+    assert.equal(game.game_play_mode(), 0, "menus report no live gameplay");
+  }
   // A 60 Hz frame of the mix: 735 stereo frames at 44.1 kHz.
   const mix = new Int16Array(game.memory.buffer, game.game_audio(735), 735 * 2);
   if (mix.some((v) => v !== 0)) ++audible;

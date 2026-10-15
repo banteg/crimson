@@ -478,6 +478,9 @@
     };
   }
 
+  /* PLAY_ANALYTICS */
+  const playAnalytics = createPlayAnalytics();
+
   // The leaderboard (host/ranked.inc): the game queues each finished ranked run
   // in /game/leaderboard/outbox/ and asks for an upload, or for the player's
   // profile. As the Python port (src/crimson/leaderboard/client.py): a run the
@@ -667,6 +670,8 @@
   }
 
   var Module = {
+    analyticsReady: () => playAnalytics.ready(),
+    playActivity: (mode, run) => playAnalytics.activity(mode, run),
     // HOST_LEADERBOARD_PROFILE, _UPLOAD, _SCORES and _REPLAY (game/host_abi.h).
     leaderboard: (request) => [profile, upload, scores, replay][request - 1](),
     canvas,
@@ -699,6 +704,8 @@
     printErr: (text) => console.warn(text),
     // The game quit (client/main.cpp) after writing its settings and scores.
     quit: async () => {
+      playAnalytics.activity(0, 0);
+      playAnalytics.flush();
       cover.hidden = false;
       share.hidden = true;
       fullscreen.hidden = true;

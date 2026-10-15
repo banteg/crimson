@@ -9,6 +9,8 @@
   "assets": { "directory": "./dist", "binding": "ASSETS", "run_worker_first": true },
   "compatibility_date": "2026-08-22",
   "send_metrics": false,
+  "triggers": { "crons": ["17 * * * *"] },
+  "ratelimits": [{ "name": "PLAY_ANALYTICS_LIMITER", "namespace_id": "160315", "simple": { "limit": 1000, "period": 60 } }],
   "routes": [{ "pattern": "crimson.land", "custom_domain": true }],
   // wrangler dev otherwise presents requests as the route's host; links and OAuth callbacks follow the request's
   // origin, so local runs must see http://localhost:8787.

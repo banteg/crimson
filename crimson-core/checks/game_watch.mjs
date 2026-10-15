@@ -40,6 +40,7 @@ function frame(dt = 16, taps = []) {
     input.setInt32(INPUT.event_count, n + 1, true);
   }
   run.frame(dt);
+  if (game.game_play_mode() !== 0) throw Error("replay watching reported live gameplay");
   mixed = new Int16Array(game.memory.buffer, game.game_audio(735), 735 * 2);
 }
 const memory = () => Buffer.from(game.memory.buffer);

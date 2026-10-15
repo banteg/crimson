@@ -171,3 +171,37 @@ first request, as it would a timeline.
 ## Open
 
 - Showing a linked handle in the game needs the service to say whether the key's account is linked.
+
+## Browser gameplay counts
+
+Gameplay analytics are separate from leaderboard identity. Only the top-level browser game sends them, to
+`POST /api/analytics` (anonymous totals) and `POST /api/analytics/unique` (daily presence). Ingestion runs before
+cookie/session/account lookup; the client omits credentials and referrers. It sends no names, keys, accounts,
+replays, quest IDs, URLs, browser details or IPs. Invocation logging remains disabled.
+Requests are capped at 2 KiB with fixed fields and bounded numeric totals. A shared Cloudflare rate-limit
+binding allows 1,000 ingestion requests per minute per Cloudflare location, using a constant application key
+rather than an IP, token or browser fingerprint. Over-budget analytics are dropped or retried as described below.
+
+A browser profile keeps only its latest `{day, token}` in `crimson.play-analytics` in localStorage. Actual
+live gameplay creates a cryptographically random 128-bit token for the UTC day, independently of previous days.
+A Web Lock serializes creation across tabs. D1's `(day, token)` primary key and insert trigger count retries
+and concurrent submissions once. No timestamp, mode or activity is stored with the token. The current UTC day
+and previous two days are accepted; an hourly cron removes older tokens even if traffic stops. D1 Time Travel
+backups can retain deleted rows for up to 30 days. Daily aggregate counts remain indefinitely.
+
+Gameplay totals contain loading, sessions starting live play, sessions reaching five accumulated active minutes,
+and runs/active seconds by mode. The game exposes a local run generation and live mode, excluding Watch,
+preparing, menus, run-down and paused practice. Practice takeover and retry count as attempts. The browser
+samples visible, focused wall time about once a second, caps a sampling gap at two seconds, and flushes totals
+each minute, on pause/background and on exit. Totals are best effort and never retried; unique presence retries
+with its same token once a minute while playing. Anonymous totals carry no token or session identifier.
+
+`crimson.play-analytics-disabled` is the persistent opt-out preference, exposed on `/privacy`. Opt-out, Do Not
+Track, Global Privacy Control, unavailable storage, embedding and unrelated hostnames suppress gameplay
+reporting. This preference is separate from Cloudflare Web Analytics. Native clients send no gameplay analytics.
+`GET /api/analytics` and `/analytics` expose only aggregates to the signed-in admin, never daily tokens. Daily
+unique browser counts cannot be summed into weekly/monthly uniques; devices, storage resets and shared browsers
+limit their interpretation as people. Reports are client supplied and are not proof of human play.
+
+Deployment requires migration `0007_play_analytics.sql` before the Worker/client update and enables the hourly
+cleanup trigger. This PR does not apply production migrations or deploy.

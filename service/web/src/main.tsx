@@ -133,6 +133,9 @@ function App() {
           <Show when={me().role}>
             <GameButton label="Mod" href="/mod" on={path() === "/mod"} />
           </Show>
+          <Show when={me().role === "admin"}>
+            <GameButton label="Analytics" href="/analytics" on={path() === "/analytics"} />
+          </Show>
         </nav>
         <a class="sign" href="/">
           <img src="/ui/sign.png" width="512" height="128" alt="Crimsonland" />

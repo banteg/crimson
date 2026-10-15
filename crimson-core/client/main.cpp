@@ -884,6 +884,25 @@ SDL_AppResult SDL_AppIterate(void *) {
     captured_frame = -1;
   }
 #ifdef __EMSCRIPTEN__
+  // At most once a second, and on gameplay transitions. The browser measures
+  // visible wall time; the game exposes only a mode and local run generation.
+  static bool analytics_ready;
+  static int activity_mode;
+  static unsigned activity_run;
+  static Uint64 activity_at;
+  if (!analytics_ready) {
+    MAIN_THREAD_EM_ASM({ Module.analyticsReady(); });
+    analytics_ready = true;
+  }
+  int mode = SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS ? w2c_game_game_play_mode(&game) : 0;
+  unsigned generation = w2c_game_game_play_run(&game);
+  Uint64 now = SDL_GetTicks();
+  if (mode != activity_mode || generation != activity_run || now - activity_at >= 1000) {
+    MAIN_THREAD_EM_ASM({ Module.playActivity($0, $1); }, mode, generation);
+    activity_mode = mode;
+    activity_run = generation;
+    activity_at = now;
+  }
   // The page offers a link to a moment while a board run plays, prepared: it
   // hears the run's ticks, or 0 once none plays.
   static int sharing;

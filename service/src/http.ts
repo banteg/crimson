@@ -9,6 +9,8 @@ export interface Env {
   GAME_FILES: R2Bucket;
   // The site (web/, built into dist/).
   ASSETS: Fetcher;
+  // Shared ingestion budget, keyed by the application rather than a visitor.
+  PLAY_ANALYTICS_LIMITER: RateLimit;
   // OAuth apps for account linking; a provider shows only with both its ID and secret.
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;

@@ -35,6 +35,7 @@ def write_asset_version(out):
         f"constexpr const char *PREVIOUS_CRIMSON_PAQ_SHA256[] = {{{previous}}};\n",
     )
     shell = (HERE / "web/shell.html").read_text().replace("/* ASSET_VERSION */ null", json.dumps(version))
+    shell = shell.replace("/* PLAY_ANALYTICS */", (HERE / "web/analytics.js").read_text())
     (out / "shell.html").write_text(shell)
 
 

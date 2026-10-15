@@ -249,3 +249,18 @@ export interface FlagsView {
   // Runs whose signals are not measured yet.
   unmeasured: number;
 }
+
+// Aggregate gameplay statistics. Browser/day tokens never leave the ingestion table.
+export interface PlayTotals {
+  day: string;
+  mode: string;
+  unique_browsers: number;
+  ready: number;
+  sessions: number;
+  engaged: number;
+  runs: number;
+  active_seconds: number;
+}
+export interface PlayAnalyticsView {
+  days: PlayTotals[];
+}
