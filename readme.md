@@ -29,8 +29,9 @@ Its [player guide](pypi.md) covers controls, options and commands.
 
 The [feature matrix](https://crimson.banteg.xyz/rewrite/feature-matrix/) compares the three. The original Crimsonland Classic assets are distributed with permission from the original developer, and every client downloads them on first launch.
 
-## What you can do with it
+## Beyond the original
 
+- **Sharper art.** The original shipped its textures as JAZ files, JPEG color with a separate alpha channel. The game files every client downloads carry the uncompressed source art from the original developer instead, free of JPEG artifacts, wherever it matches what shipped.
 - **Deterministic runs.** The simulation steps at a fixed 60 Hz from a seed and the recorded inputs, so a run plays out the same way every time, on every client.
 - **Replays.** Every run is recorded. Watch any of them from the high score screen or a link, seek anywhere, and with the Python port, verify one tick by tick or render it to 60 fps video.
 - **A verified leaderboard.** [crimson.land](https://crimson.land) ranks Survival and every quest, normal and hardcore. A score is a whole run, and the server replays it on the recovered original code before it counts. There is no sign-up: each client makes a [key](https://crimson.banteg.xyz/rewrite/leaderboard-identity/) on first launch. Bots and tool-assisted runs are welcome on [their own board](https://crimson.banteg.xyz/rewrite/bots/).

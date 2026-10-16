@@ -28,7 +28,7 @@ The port plays like the 2003 game, and adds what a modern release needs:
 - **Modern controllers.** PlayStation, Xbox and Switch Pro controllers are recognized on connect and switch a player to twin-stick controls, with reload on the shoulder like the 2014 remake. Every menu, list and slider works from the controller, with the focus always visible, and each co-op player can use their own controller.
 - **Original bugs fixed, and kept on request.** [The original's gameplay bugs](https://crimson.banteg.xyz/rewrite/original-bugs/) are fixed by default, each traced to the decompiled code: Greater Regeneration did nothing, Bandage multiplied health instead of healing, some bonuses never dropped while you held certain weapons, and several co-op perks only worked for player 1. `--preserve-bugs` restores every one of them, exactly as the original behaves. The original's text stays as written, typos like "Fire Caugh" and "Plague Sphreader Gun" included.
 - **Replays.** Every run is recorded and can be played back, verified tick by tick, or rendered to 60 fps video.
-- **Sharper art.** Textures come from the original uncompressed source art wherever it matches what shipped.
+- **Sharper art.** The original shipped its textures as JPEG-compressed JAZ files. The game uses the uncompressed source art from the original developer instead, free of JPEG artifacts, wherever it matches what shipped.
 
 ## Controls
 
