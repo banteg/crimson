@@ -1,3 +1,5 @@
+#include "cl_build.h"
+
 #include <direct.h>
 #include <windows.h>
 #include <string.h>

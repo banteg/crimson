@@ -57,580 +57,6 @@
       "unmatched_bytes": 1548
     },
     {
-      "address": 268813336,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/native/abi/grim.dll/abi_assertions.cpp: config_blob_is_0x480_bytes",
-      "image": "grim.dll",
-      "name": "grim_config_blob",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1152,
-      "type": "crimson_cfg_t",
-      "unmatched_bytes": 1152
-    },
-    {
-      "address": 268801928,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "analysis/ghidra/maps/data_map.json: D3DADAPTER_IDENTIFIER8; tools/native/abi/grim.dll/abi_assertions.cpp: adapter_identifier_is_0x42c",
-      "image": "grim.dll",
-      "name": "grim_adapter_identifier",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1068,
-      "type": "D3DADAPTER_IDENTIFIER8",
-      "unmatched_bytes": 1068
-    },
-    {
-      "address": 4747920,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_sign_crimson",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4748712,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_01_main_menu_aux",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4749504,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_03_main_menu_play_game",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4750296,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_04_main_menu_options",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4751088,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_05_main_menu_statistics",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4751880,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_02_main_menu_primary",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4752672,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_footer_variant_a",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4753464,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_footer_variant_b",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4754256,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_31",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4755048,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_32_layout_c",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4755840,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_10",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4756632,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_11",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4757424,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_12_layout_a",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4758216,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_08",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4759008,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_09",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4759800,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_33",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4760592,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_15",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4761384,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_16",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4762176,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_17",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4762968,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_19",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4763760,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_20",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4764552,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_21",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4765344,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_22",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4766136,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_23",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4766928,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_24",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4767720,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_25",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4770096,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_29",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4770888,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_30",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4771680,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_13",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4772472,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_14",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4773264,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_18_layout_b",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4774056,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_34",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4774848,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_35",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4775640,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_36",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4776432,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_37",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4777224,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_38",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4778016,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_39",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4778808,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_28",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
-      "address": 4779600,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
-      "image": "crimsonland.exe",
-      "name": "ui_element_slot_40",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 792,
-      "type": "ui_element_t",
-      "unmatched_bytes": 792
-    },
-    {
       "address": 5096160,
       "blocker": "initialized-definition",
       "extent_evidence": "Pinned DirectX 8.1 d3dxtrigsse.obj: complete 768-byte .data1 section extent",
@@ -876,20 +302,6 @@
       "name": "mod_api_core_format_buffer",
       "owners": [
         "unknown"
-      ],
-      "reason": null,
-      "size": 512,
-      "type": "char[512]",
-      "unmatched_bytes": 512
-    },
-    {
-      "address": 268802440,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "analysis/ghidra/maps/data_map.json: char[512] Description field inside D3DADAPTER_IDENTIFIER8",
-      "image": "grim.dll",
-      "name": "grim_adapter_description",
-      "owners": [
-        "game"
       ],
       "reason": null,
       "size": 512,
@@ -6900,6 +6312,20 @@
       "reason": null,
       "size": 8,
       "type": "char *[2]",
+      "unmatched_bytes": 8
+    },
+    {
+      "address": 4711488,
+      "blocker": "uncompiled-zero-definition",
+      "extent_evidence": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
+      "image": "crimsonland.exe",
+      "name": "unused_console_prefix_vec2",
+      "owners": [
+        "unknown"
+      ],
+      "reason": null,
+      "size": 8,
+      "type": "vec2f_t",
       "unmatched_bytes": 8
     },
     {
@@ -19434,34 +18860,6 @@
       "unmatched_bytes": 1
     },
     {
-      "address": 4747922,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "analysis/ghidra/maps/data_map.json: unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "image": "crimsonland.exe",
-      "name": "ui_sign_crimson_update_disabled",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1,
-      "type": "unsigned char",
-      "unmatched_bytes": 1
-    },
-    {
-      "address": 4780388,
-      "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "analysis/ghidra/maps/data_map.json: char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
-      "image": "crimsonland.exe",
-      "name": "ui_menu_layout_init_latch",
-      "owners": [
-        "game"
-      ],
-      "reason": null,
-      "size": 1,
-      "type": "char",
-      "unmatched_bytes": 1
-    },
-    {
       "address": 4788912,
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: recovered unsigned-char declarations; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
@@ -23466,6 +22864,384 @@
       "unmatched_bytes": 0
     },
     {
+      "address": 4747920,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_sign_crimson",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4747922,
+      "blocker": "matched",
+      "extent_evidence": "analysis/ghidra/maps/data_map.json: unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
+      "image": "crimsonland.exe",
+      "name": "ui_sign_crimson_update_disabled",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1,
+      "type": "unsigned char",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4748712,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_01_main_menu_aux",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4749504,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_03_main_menu_play_game",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4750296,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_04_main_menu_options",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4751088,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_05_main_menu_statistics",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4751880,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_02_main_menu_primary",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4752672,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_footer_variant_a",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4753464,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_footer_variant_b",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4754256,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_31",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4755048,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_32_layout_c",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4755840,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_10",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4756632,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_11",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4757424,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_12_layout_a",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4758216,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_08",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4759008,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_09",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4759800,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_33",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4760592,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_15",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4761384,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_16",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4762176,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_17",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4762968,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_19",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4763760,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_20",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4764552,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_21",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4765344,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_22",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4766136,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_23",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4766928,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_24",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4767720,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_25",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
       "address": 4768512,
       "blocker": "matched",
       "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
@@ -23491,6 +23267,202 @@
       "reason": null,
       "size": 792,
       "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4770096,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_29",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4770888,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_30",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4771680,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_13",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4772472,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_14",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4773264,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_18_layout_b",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4774056,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_34",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4774848,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_35",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4775640,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_36",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4776432,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_37",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4777224,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_38",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4778016,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_39",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4778808,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_28",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4779600,
+      "blocker": "matched",
+      "extent_evidence": "third_party/headers/crimsonland_types.h: ui_element_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: ui_element_is_0x318",
+      "image": "crimsonland.exe",
+      "name": "ui_element_slot_40",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 792,
+      "type": "ui_element_t",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 4780388,
+      "blocker": "matched",
+      "extent_evidence": "analysis/ghidra/maps/data_map.json: char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
+      "image": "crimsonland.exe",
+      "name": "ui_menu_layout_init_latch",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1,
+      "type": "char",
       "unmatched_bytes": 0
     },
     {
@@ -29641,6 +29613,34 @@
       "unmatched_bytes": 0
     },
     {
+      "address": 268801928,
+      "blocker": "matched",
+      "extent_evidence": "analysis/ghidra/maps/data_map.json: D3DADAPTER_IDENTIFIER8; tools/native/abi/grim.dll/abi_assertions.cpp: adapter_identifier_is_0x42c",
+      "image": "grim.dll",
+      "name": "grim_adapter_identifier",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1068,
+      "type": "D3DADAPTER_IDENTIFIER8",
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268802440,
+      "blocker": "matched",
+      "extent_evidence": "analysis/ghidra/maps/data_map.json: char[512] Description field inside D3DADAPTER_IDENTIFIER8",
+      "image": "grim.dll",
+      "name": "grim_adapter_description",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 512,
+      "type": "char[512]",
+      "unmatched_bytes": 0
+    },
+    {
       "address": 268803576,
       "blocker": "matched",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: D3DPRESENT_PARAMETERS; tools/native/abi/grim.dll/abi_assertions.cpp: present_parameters_is_0x34",
@@ -29946,6 +29946,20 @@
       "reason": null,
       "size": 512,
       "type": null,
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268813336,
+      "blocker": "matched",
+      "extent_evidence": "tools/native/abi/grim.dll/abi_assertions.cpp: config_blob_is_0x480_bytes",
+      "image": "grim.dll",
+      "name": "grim_config_blob",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 1152,
+      "type": "crimson_cfg_t",
       "unmatched_bytes": 0
     },
     {
@@ -30399,7 +30413,7 @@
   ],
   "ownership": {
     "game": {
-      "matched_bytes": 313789,
+      "matched_bytes": 346897,
       "total_bytes": 348445
     },
     "libraries": {
@@ -38020,7 +38034,20 @@
       "objects": [],
       "owner": "unknown",
       "section": ".data",
-      "size": 12,
+      "size": 4,
+      "source": null
+    },
+    {
+      "address": 4711488,
+      "image": "crimsonland.exe",
+      "matched": false,
+      "name": "unmatched",
+      "objects": [
+        "unused_console_prefix_vec2"
+      ],
+      "owner": "unknown",
+      "section": ".data",
+      "size": 8,
       "source": null
     },
     {
@@ -45296,21 +45323,21 @@
     {
       "address": 4747920,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_sign_crimson",
       "objects": [
         "ui_sign_crimson"
       ],
       "owner": "game",
       "section": ".data",
       "size": 2,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4747922,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_sign_crimson",
       "objects": [
         "ui_sign_crimson",
         "ui_sign_crimson_update_disabled"
@@ -45318,345 +45345,345 @@
       "owner": "game",
       "section": ".data",
       "size": 1,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4747923,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_sign_crimson",
       "objects": [
         "ui_sign_crimson"
       ],
       "owner": "game",
       "section": ".data",
       "size": 789,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4748712,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_01_main_menu_aux",
       "objects": [
         "ui_element_slot_01_main_menu_aux"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4749504,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_03_main_menu_play_game",
       "objects": [
         "ui_element_slot_03_main_menu_play_game"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4750296,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_04_main_menu_options",
       "objects": [
         "ui_element_slot_04_main_menu_options"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4751088,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_05_main_menu_statistics",
       "objects": [
         "ui_element_slot_05_main_menu_statistics"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4751880,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_02_main_menu_primary",
       "objects": [
         "ui_element_slot_02_main_menu_primary"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4752672,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_footer_variant_a",
       "objects": [
         "ui_element_slot_footer_variant_a"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4753464,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_footer_variant_b",
       "objects": [
         "ui_element_slot_footer_variant_b"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4754256,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_31",
       "objects": [
         "ui_element_slot_31"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4755048,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_32_layout_c",
       "objects": [
         "ui_element_slot_32_layout_c"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4755840,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_10",
       "objects": [
         "ui_element_slot_10"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4756632,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_11",
       "objects": [
         "ui_element_slot_11"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4757424,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_12_layout_a",
       "objects": [
         "ui_element_slot_12_layout_a"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4758216,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_08",
       "objects": [
         "ui_element_slot_08"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4759008,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_09",
       "objects": [
         "ui_element_slot_09"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4759800,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_33",
       "objects": [
         "ui_element_slot_33"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4760592,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_15",
       "objects": [
         "ui_element_slot_15"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4761384,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_16",
       "objects": [
         "ui_element_slot_16"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4762176,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_17",
       "objects": [
         "ui_element_slot_17"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4762968,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_19",
       "objects": [
         "ui_element_slot_19"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4763760,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_20",
       "objects": [
         "ui_element_slot_20"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4764552,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_21",
       "objects": [
         "ui_element_slot_21"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4765344,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_22",
       "objects": [
         "ui_element_slot_22"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4766136,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_23",
       "objects": [
         "ui_element_slot_23"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4766928,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_24",
       "objects": [
         "ui_element_slot_24"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4767720,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_25",
       "objects": [
         "ui_element_slot_25"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4768512,
@@ -45687,177 +45714,177 @@
     {
       "address": 4770096,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_29",
       "objects": [
         "ui_element_slot_29"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4770888,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_30",
       "objects": [
         "ui_element_slot_30"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4771680,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_13",
       "objects": [
         "ui_element_slot_13"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4772472,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_14",
       "objects": [
         "ui_element_slot_14"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4773264,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_18_layout_b",
       "objects": [
         "ui_element_slot_18_layout_b"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4774056,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_34",
       "objects": [
         "ui_element_slot_34"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4774848,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_35",
       "objects": [
         "ui_element_slot_35"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4775640,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_36",
       "objects": [
         "ui_element_slot_36"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4776432,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_37",
       "objects": [
         "ui_element_slot_37"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4777224,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_38",
       "objects": [
         "ui_element_slot_38"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4778016,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_39",
       "objects": [
         "ui_element_slot_39"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4778808,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_28",
       "objects": [
         "ui_element_slot_28"
       ],
       "owner": "game",
       "section": ".data",
       "size": 792,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4779600,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_40",
       "objects": [
         "ui_element_slot_40"
       ],
       "owner": "game",
       "section": ".data",
       "size": 788,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4780388,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_40",
       "objects": [
         "ui_element_slot_40",
         "ui_menu_layout_init_latch"
@@ -45865,20 +45892,20 @@
       "owner": "game",
       "section": ".data",
       "size": 1,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4780389,
       "image": "crimsonland.exe",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "ui_element_slot_40",
       "objects": [
         "ui_element_slot_40"
       ],
       "owner": "game",
       "section": ".data",
       "size": 3,
-      "source": null
+      "source": "tools/match/data/crimsonland_ui.cpp"
     },
     {
       "address": 4780392,
@@ -63307,21 +63334,21 @@
     {
       "address": 268801928,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_adapter_identifier",
       "objects": [
         "grim_adapter_identifier"
       ],
       "owner": "game",
       "section": ".data",
       "size": 512,
-      "source": null
+      "source": "tools/match/data/grim_config.cpp"
     },
     {
       "address": 268802440,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_adapter_identifier",
       "objects": [
         "grim_adapter_description",
         "grim_adapter_identifier"
@@ -63329,20 +63356,20 @@
       "owner": "game",
       "section": ".data",
       "size": 512,
-      "source": null
+      "source": "tools/match/data/grim_config.cpp"
     },
     {
       "address": 268802952,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_adapter_identifier",
       "objects": [
         "grim_adapter_identifier"
       ],
       "owner": "game",
       "section": ".data",
       "size": 44,
-      "source": null
+      "source": "tools/match/data/grim_config.cpp"
     },
     {
       "address": 268802996,
@@ -64875,15 +64902,15 @@
     {
       "address": 268813336,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_config_blob",
       "objects": [
         "grim_config_blob"
       ],
       "owner": "game",
       "section": ".data",
       "size": 1152,
-      "source": null
+      "source": "tools/match/data/grim_config.cpp"
     },
     {
       "address": 268814488,
@@ -66623,10 +66650,10 @@
     }
   ],
   "totals": {
-    "matched_bytes": 327968,
+    "matched_bytes": 361076,
     "total_bytes": 517738,
-    "unmatched_bytes": 189770,
-    "unnamed_bytes": 99898
+    "unmatched_bytes": 156662,
+    "unnamed_bytes": 99890
   },
   "unbounded_objects": [
     {

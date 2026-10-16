@@ -1,3 +1,5 @@
+tools/match/scratches/unused_console_prefix_vec2_global_init_thunk/build/msvc6.5/cc0f9d45f4aa76c5/unused_console_prefix_vec2_global_init_thunk.obj
+tools/match/scratches/unused_console_prefix_vec2_global_init/build/msvc6.5/f7afd1fec3032a44/unused_console_prefix_vec2_global_init.obj
 tools/match/scratches/console_input_clear/build/msvc6.5/dc055f01f3252de7/console_input_clear.obj
 tools/match/scratches/console_input_buffer/build/msvc6.5/7c5a789d7ae5a888/console_input_buffer.obj
 tools/match/scratches/console_input_poll/build/msvc6.5/6931029c629127ae/console_input_poll.obj
@@ -521,8 +523,8 @@ tools/match/scratches/typo_target_find_by_name/build/msvc6.5/7d80c4a3082a6246/ty
 tools/match/scratches/typo_target_name_draw_labels/build/msvc6.5/aa1a999e1e6bcd71/typo_target_name_draw_labels.obj
 tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj
 tools/match/scratches/input_any_key_pressed/build/msvc6.5/51e7131f14e96e38/input_any_key_pressed.obj
-tools/match/scratches/input_primary_just_pressed/build/msvc6.5/8abb1e6b46939902/input_primary_just_pressed.obj
-tools/match/scratches/input_primary_is_down/build/msvc6.5/3a3c5a3b634cf499/input_primary_is_down.obj
+tools/match/scratches/input_primary_just_pressed/build/msvc6.5/0ec70e7c4954da4a/input_primary_just_pressed.obj
+tools/match/scratches/input_primary_is_down/build/msvc6.5/2685e34afddf3095/input_primary_is_down.obj
 tools/match/scratches/ui_callback_noop/build/msvc6.5/242db545ef76896b/ui_callback_noop.obj
 tools/match/scratches/ui_get_element_index/build/msvc6.5/e9fda5e73e603dc9/ui_get_element_index.obj
 tools/match/scratches/ui_elements_reset_state/build/msvc6.5/07d86f63ef39f80d/ui_elements_reset_state.obj

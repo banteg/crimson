@@ -272,6 +272,17 @@
       ]
     },
     {
+      "address": 4199008,
+      "name": "native_function_00401260",
+      "blocks": [
+        {
+          "address": 4199008,
+          "end": 4199029,
+          "sha256": "1f660faa0f13d63ba5b2597900591c3881d4442d88cd5842abb7089d2df0c83a"
+        }
+      ]
+    },
+    {
       "address": 4199040,
       "name": "native_function_00401280",
       "blocks": [
@@ -47051,6 +47062,8 @@
     }
   ],
   "verified_starts": [
+    4198992,
+    4199008,
     4199040,
     4199072,
     4200688,
@@ -47310,5 +47323,5 @@
       "note": "Initial application object cluster retained through the last menu/UI body. The following vector/template helper interval has uncertain ownership and stays unclassified; later exact D3DX/CRT bodies are classified individually. The boundary is not inferred from ordered donor names."
     }
   ],
-  "maps_sha256": "f0ac4b1adbeb3c0e8099e92940e613dea4b0ffc97d23e060eeb049e937a5ace2"
+  "maps_sha256": "d5a77e33fd09f5c7d8a5d9858e788f58b6445335dd49bf95802f57fcf0689e4a"
 }

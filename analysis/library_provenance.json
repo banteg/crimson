@@ -673,6 +673,10 @@
             {
               "start": "0x00460CB8",
               "end": "0x0046E920"
+            },
+            {
+              "start": "0x0046E968",
+              "end": "0x0046E96E"
             }
           ]
         },
@@ -693,6 +697,12 @@
                 "ov_pcm_total",
                 "ov_read"
               ]
+            }
+          ],
+          "ranges": [
+            {
+              "start": "0x0046E920",
+              "end": "0x0046E944"
             }
           ]
         }
@@ -715,6 +725,10 @@
             {
               "start": "0x1000AAA6",
               "end": "0x1004B5B0"
+            },
+            {
+              "start": "0x1004B9EF",
+              "end": "0x1004BA63"
             }
           ],
           "fingerprints": [
@@ -754,6 +768,10 @@
             {
               "start": "0x1000A8D0",
               "end": "0x1000AAA6"
+            },
+            {
+              "start": "0x1004B5B0",
+              "end": "0x1004B7D8"
             }
           ],
           "imports": [

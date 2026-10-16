@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cl_build.h"
 #include "grim_texture.h"
 
 extern "C" HRESULT WINAPI HlinkNavigateString(

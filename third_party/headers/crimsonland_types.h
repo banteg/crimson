@@ -2,6 +2,8 @@
 #ifndef CRIMSONLAND_TYPES_H
 #define CRIMSONLAND_TYPES_H
 
+#include "cl_build.h"
+
 typedef struct IDirectSoundBuffer *LPDIRECTSOUNDBUFFER;
 
 // VC6 CRT data layouts recovered from the executable's bundled runtime.

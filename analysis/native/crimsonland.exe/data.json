@@ -1,5 +1,5 @@
 {
-  "audit_digest": "7f095a2f480c5c33e5452b91b3ccf4f723096534288e391e100a73819eca2c16",
+  "audit_digest": "b205880c310ce69bc3376230c9d644ad356d6e10a77c5009bd0d7e906c1c7194",
   "entries": [
     {
       "address": 4211888,
@@ -8277,6 +8277,27 @@
       "size": 348,
       "size_source": "libcmt.lib constpow.obj: __pow10neg at offset 0x160 through the 0x2bc-byte .data section end",
       "type": "unsigned char[348]"
+    },
+    {
+      "address": 4711488,
+      "aliases": [],
+      "alignment": 4,
+      "alignment_source": "tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding align4 assertions",
+      "comment": "Unused C++ vec2 startup object immediately before console_input_buf; only its initializer references it.",
+      "definition_group": "zero-abi-00008",
+      "definition_state": "fully-specified",
+      "initializer_fill": "00",
+      "initializer_hex": null,
+      "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
+      "initializer_target": null,
+      "linker_reference_count": 0,
+      "name": "unused_console_prefix_vec2",
+      "section": ".data",
+      "section_offset": 54336,
+      "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
+      "size": 8,
+      "size_source": "analysis/ghidra/maps/data_map.json: listed fixed-size types; tools/native/abi/crimsonland.exe/abi_assertions.cpp: corresponding sizeof assertions",
+      "type": "vec2f_t"
     },
     {
       "address": 4711496,
@@ -37780,9 +37801,9 @@
       "kind": "json-program-v1",
       "program": "crimsonland.exe"
     },
-    "data_map_sha256": "a37c82f45029438e162cd14a557078dd5ae9e80871e1d11038c5b047af335566",
+    "data_map_sha256": "acda0d18632b5f7831e4b84643acce602f6c31e3d4c4d49071e7ec41f4b07e5f",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "cfe84833247b246a1c269bf1239899b267c095b3e105175d71a99ed3d5d9a4b0",
+    "definitions_sha256": "81779ff5b7f61bc00dd9399b77d0a3d520265c2328a7914a1517ada70c7f0b2e",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
@@ -37794,14 +37815,14 @@
     "alias_names": 255,
     "alias_rows": 252,
     "code_label_entries": 54,
-    "definition_group_entries": 1679,
+    "definition_group_entries": 1680,
     "definition_groups": 175,
-    "entry_count": 1788,
-    "explicit_alignment_entries": 1788,
-    "explicit_initializer_entries": 1788,
-    "explicit_size_entries": 1788,
+    "entry_count": 1789,
+    "explicit_alignment_entries": 1789,
+    "explicit_initializer_entries": 1789,
+    "explicit_size_entries": 1789,
     "fixed_array_types": 370,
-    "fully_specified_entries": 1788,
+    "fully_specified_entries": 1789,
     "game_data_reference_count": 0,
     "incomplete_array_types": 0,
     "multidimensional_array_types": 5,
@@ -37809,14 +37830,14 @@
     "priority_entries": 0,
     "referenced_entries": 0,
     "section_counts": {
-      ".data": 1730,
+      ".data": 1731,
       ".data1": 6,
       ".rdata": 51,
       ".text": 1
     },
-    "source_entry_count": 1842,
-    "typed_entries": 1788,
-    "unique_addresses": 1781,
+    "source_entry_count": 1843,
+    "typed_entries": 1789,
+    "unique_addresses": 1782,
     "untyped_entries": 0
   }
 }

@@ -1,5 +1,21 @@
 [
   {
+    "address": "0x00401250",
+    "canonical_address": "0x00401000",
+    "end": "0x00401255",
+    "evidence": "exact",
+    "name": "unused_console_prefix_vec2_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00401260",
+    "canonical_address": "0x00401010",
+    "end": "0x00401275",
+    "evidence": "exact",
+    "name": "unused_console_prefix_vec2_global_init",
+    "size": 21
+  },
+  {
     "address": "0x00401280",
     "canonical_address": "0x00401030",
     "end": "0x00401292",

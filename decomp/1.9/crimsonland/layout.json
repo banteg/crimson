@@ -9,10 +9,28 @@
       "layout_evidence": "inferred-translation-unit",
       "evidence": "Console subsystem; the console object's initializer sits at the top of the range.",
       "range": [
-        "0x401030",
+        "0x401000",
         "0x4028d9"
       ],
       "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/console/unused_console_prefix_vec2_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_console_prefix_vec2_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/unused_console_prefix_vec2_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_console_prefix_vec2_global_init"
+          ]
+        },
         {
           "path": "decomp/1.9/crimsonland/console/console_input_clear.cpp",
           "physical_ownership": {

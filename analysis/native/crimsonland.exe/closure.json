@@ -1,5 +1,5 @@
 {
-  "audit_digest": "7f095a2f480c5c33e5452b91b3ccf4f723096534288e391e100a73819eca2c16",
+  "audit_digest": "b205880c310ce69bc3376230c9d644ad356d6e10a77c5009bd0d7e906c1c7194",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -30736,7 +30736,7 @@
   "default_libraries": [
     {
       "name": "LIBC",
-      "object_count": 568,
+      "object_count": 570,
       "objects": [
         "tools/match/scratches/angle_approach/build/msvc6.5/73089f6dbbfd9fc2/angle_approach.obj",
         "tools/match/scratches/audio_asset_id_table_init/build/msvc6.5/547caa8fa4486ece/audio_asset_id_table_init.obj",
@@ -30992,8 +30992,8 @@
         "tools/match/scratches/input_configure_for_label/build/msvc6.5/963eab12fa8242a7/input_configure_for_label.obj",
         "tools/match/scratches/input_detect_active_analog_axis/build/msvc6.5/de6220281a3f221c/input_detect_active_analog_axis.obj",
         "tools/match/scratches/input_key_name/build/msvc6.5/6dde48a38efb147b/input_key_name.obj",
-        "tools/match/scratches/input_primary_is_down/build/msvc6.5/3a3c5a3b634cf499/input_primary_is_down.obj",
-        "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/8abb1e6b46939902/input_primary_just_pressed.obj",
+        "tools/match/scratches/input_primary_is_down/build/msvc6.5/2685e34afddf3095/input_primary_is_down.obj",
+        "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/0ec70e7c4954da4a/input_primary_just_pressed.obj",
         "tools/match/scratches/input_scheme_label/build/msvc6.5/2f1929fdcb7cffca/input_scheme_label.obj",
         "tools/match/scratches/invoke_callback_n/build/msvc6.5/825fa887e5eb88b4/invoke_callback_n.obj",
         "tools/match/scratches/load_textures_step/build/msvc6.5/26d84d2bdabb7a96/load_textures_step.obj",
@@ -31266,6 +31266,8 @@
         "tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/b655ea495ddacc86/unlocked_weapons_database.obj",
         "tools/match/scratches/unused_aim64_prefix_color_global_init/build/msvc6.5/ff4bcefd8f30f7de/unused_aim64_prefix_color_global_init.obj",
         "tools/match/scratches/unused_aim64_prefix_color_global_init_thunk/build/msvc6.5/e029003e979b0f4b/unused_aim64_prefix_color_global_init_thunk.obj",
+        "tools/match/scratches/unused_console_prefix_vec2_global_init/build/msvc6.5/f7afd1fec3032a44/unused_console_prefix_vec2_global_init.obj",
+        "tools/match/scratches/unused_console_prefix_vec2_global_init_thunk/build/msvc6.5/cc0f9d45f4aa76c5/unused_console_prefix_vec2_global_init_thunk.obj",
         "tools/match/scratches/unused_effect_uv16_prefix_vec2_global_init/build/msvc6.5/e8f4428db9713d52/unused_effect_uv16_prefix_vec2_global_init.obj",
         "tools/match/scratches/unused_effect_uv16_prefix_vec2_global_init_thunk/build/msvc6.5/37e042810968607b/unused_effect_uv16_prefix_vec2_global_init_thunk.obj",
         "tools/match/scratches/unused_effect_uv8_prefix_state_global_init/build/msvc6.5/6d37b1ed7325dedb/unused_effect_uv8_prefix_state_global_init.obj",
@@ -31310,7 +31312,7 @@
     },
     {
       "name": "OLDNAMES",
-      "object_count": 568,
+      "object_count": 570,
       "objects": [
         "tools/match/scratches/angle_approach/build/msvc6.5/73089f6dbbfd9fc2/angle_approach.obj",
         "tools/match/scratches/audio_asset_id_table_init/build/msvc6.5/547caa8fa4486ece/audio_asset_id_table_init.obj",
@@ -31566,8 +31568,8 @@
         "tools/match/scratches/input_configure_for_label/build/msvc6.5/963eab12fa8242a7/input_configure_for_label.obj",
         "tools/match/scratches/input_detect_active_analog_axis/build/msvc6.5/de6220281a3f221c/input_detect_active_analog_axis.obj",
         "tools/match/scratches/input_key_name/build/msvc6.5/6dde48a38efb147b/input_key_name.obj",
-        "tools/match/scratches/input_primary_is_down/build/msvc6.5/3a3c5a3b634cf499/input_primary_is_down.obj",
-        "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/8abb1e6b46939902/input_primary_just_pressed.obj",
+        "tools/match/scratches/input_primary_is_down/build/msvc6.5/2685e34afddf3095/input_primary_is_down.obj",
+        "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/0ec70e7c4954da4a/input_primary_just_pressed.obj",
         "tools/match/scratches/input_scheme_label/build/msvc6.5/2f1929fdcb7cffca/input_scheme_label.obj",
         "tools/match/scratches/invoke_callback_n/build/msvc6.5/825fa887e5eb88b4/invoke_callback_n.obj",
         "tools/match/scratches/load_textures_step/build/msvc6.5/26d84d2bdabb7a96/load_textures_step.obj",
@@ -31840,6 +31842,8 @@
         "tools/match/scratches/unlocked_weapons_database_update/build/msvc6.5/b655ea495ddacc86/unlocked_weapons_database.obj",
         "tools/match/scratches/unused_aim64_prefix_color_global_init/build/msvc6.5/ff4bcefd8f30f7de/unused_aim64_prefix_color_global_init.obj",
         "tools/match/scratches/unused_aim64_prefix_color_global_init_thunk/build/msvc6.5/e029003e979b0f4b/unused_aim64_prefix_color_global_init_thunk.obj",
+        "tools/match/scratches/unused_console_prefix_vec2_global_init/build/msvc6.5/f7afd1fec3032a44/unused_console_prefix_vec2_global_init.obj",
+        "tools/match/scratches/unused_console_prefix_vec2_global_init_thunk/build/msvc6.5/cc0f9d45f4aa76c5/unused_console_prefix_vec2_global_init_thunk.obj",
         "tools/match/scratches/unused_effect_uv16_prefix_vec2_global_init/build/msvc6.5/e8f4428db9713d52/unused_effect_uv16_prefix_vec2_global_init.obj",
         "tools/match/scratches/unused_effect_uv16_prefix_vec2_global_init_thunk/build/msvc6.5/37e042810968607b/unused_effect_uv16_prefix_vec2_global_init_thunk.obj",
         "tools/match/scratches/unused_effect_uv8_prefix_state_global_init/build/msvc6.5/6d37b1ed7325dedb/unused_effect_uv8_prefix_state_global_init.obj",
@@ -99311,7 +99315,7 @@
           "function": "input_primary_is_down",
           "kind": "section",
           "logical_section_size": 80,
-          "object": "tools/match/scratches/input_primary_is_down/build/msvc6.5/3a3c5a3b634cf499/input_primary_is_down.obj",
+          "object": "tools/match/scratches/input_primary_is_down/build/msvc6.5/2685e34afddf3095/input_primary_is_down.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -99329,7 +99333,7 @@
           "function": "input_primary_just_pressed",
           "kind": "section",
           "logical_section_size": 192,
-          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/8abb1e6b46939902/input_primary_just_pressed.obj",
+          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/0ec70e7c4954da4a/input_primary_just_pressed.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -113767,6 +113771,66 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
+          "data_address": 4711488,
+          "data_binding_kind": "definition",
+          "data_name": "unused_console_prefix_vec2",
+          "data_storage_address": 4711488,
+          "data_storage_name": "unused_console_prefix_vec2",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 8,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 8,
+          "weak": false
+        }
+      ],
+      "name": "_unused_console_prefix_vec2"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_unused_console_prefix_vec2_global_init",
+          "comdat_selection": 1,
+          "function": "unused_console_prefix_vec2_global_init",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/unused_console_prefix_vec2_global_init/build/msvc6.5/f7afd1fec3032a44/unused_console_prefix_vec2_global_init.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_unused_console_prefix_vec2_global_init"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_unused_console_prefix_vec2_global_init_thunk",
+          "comdat_selection": 1,
+          "function": "unused_console_prefix_vec2_global_init_thunk",
+          "kind": "section",
+          "logical_section_size": 16,
+          "object": "tools/match/scratches/unused_console_prefix_vec2_global_init_thunk/build/msvc6.5/cc0f9d45f4aa76c5/unused_console_prefix_vec2_global_init_thunk.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_unused_console_prefix_vec2_global_init_thunk"
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
           "data_address": 4891856,
           "data_binding_kind": "definition",
           "data_name": "unused_effect_uv16_prefix_vec2",
@@ -116602,14 +116666,14 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/input_primary_is_down/build/msvc6.5/3a3c5a3b634cf499/input_primary_is_down.obj"
+      "object": "tools/match/scratches/input_primary_is_down/build/msvc6.5/2685e34afddf3095/input_primary_is_down.obj"
     },
     {
       "directives": [
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/8abb1e6b46939902/input_primary_just_pressed.obj"
+      "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/0ec70e7c4954da4a/input_primary_just_pressed.obj"
     },
     {
       "directives": [
@@ -118690,6 +118754,20 @@
         "-defaultlib:OLDNAMES"
       ],
       "object": "tools/match/scratches/unused_aim64_prefix_color_global_init_thunk/build/msvc6.5/e029003e979b0f4b/unused_aim64_prefix_color_global_init_thunk.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/unused_console_prefix_vec2_global_init/build/msvc6.5/f7afd1fec3032a44/unused_console_prefix_vec2_global_init.obj"
+    },
+    {
+      "directives": [
+        "-defaultlib:LIBC",
+        "-defaultlib:OLDNAMES"
+      ],
+      "object": "tools/match/scratches/unused_console_prefix_vec2_global_init_thunk/build/msvc6.5/cc0f9d45f4aa76c5/unused_console_prefix_vec2_global_init_thunk.obj"
     },
     {
       "directives": [
@@ -120990,7 +121068,7 @@
       "referenced_by": [
         {
           "function": "input_primary_just_pressed",
-          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/8abb1e6b46939902/input_primary_just_pressed.obj",
+          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/0ec70e7c4954da4a/input_primary_just_pressed.obj",
           "weak": false
         }
       ]
@@ -121782,12 +121860,12 @@
         },
         {
           "function": "input_primary_is_down",
-          "object": "tools/match/scratches/input_primary_is_down/build/msvc6.5/3a3c5a3b634cf499/input_primary_is_down.obj",
+          "object": "tools/match/scratches/input_primary_is_down/build/msvc6.5/2685e34afddf3095/input_primary_is_down.obj",
           "weak": false
         },
         {
           "function": "input_primary_just_pressed",
-          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/8abb1e6b46939902/input_primary_just_pressed.obj",
+          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/0ec70e7c4954da4a/input_primary_just_pressed.obj",
           "weak": false
         },
         {
@@ -122560,7 +122638,7 @@
       "referenced_by": [
         {
           "function": "input_primary_just_pressed",
-          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/8abb1e6b46939902/input_primary_just_pressed.obj",
+          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/0ec70e7c4954da4a/input_primary_just_pressed.obj",
           "weak": false
         }
       ]
@@ -143290,7 +143368,7 @@
           "function": "input_primary_is_down",
           "kind": "section",
           "logical_section_size": 80,
-          "object": "tools/match/scratches/input_primary_is_down/build/msvc6.5/3a3c5a3b634cf499/input_primary_is_down.obj",
+          "object": "tools/match/scratches/input_primary_is_down/build/msvc6.5/2685e34afddf3095/input_primary_is_down.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -143320,7 +143398,7 @@
           "function": "input_primary_just_pressed",
           "kind": "section",
           "logical_section_size": 192,
-          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/8abb1e6b46939902/input_primary_just_pressed.obj",
+          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/0ec70e7c4954da4a/input_primary_just_pressed.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -151936,12 +152014,12 @@
         },
         {
           "function": "input_primary_is_down",
-          "object": "tools/match/scratches/input_primary_is_down/build/msvc6.5/3a3c5a3b634cf499/input_primary_is_down.obj",
+          "object": "tools/match/scratches/input_primary_is_down/build/msvc6.5/2685e34afddf3095/input_primary_is_down.obj",
           "weak": false
         },
         {
           "function": "input_primary_just_pressed",
-          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/8abb1e6b46939902/input_primary_just_pressed.obj",
+          "object": "tools/match/scratches/input_primary_just_pressed/build/msvc6.5/0ec70e7c4954da4a/input_primary_just_pressed.obj",
           "weak": false
         },
         {
@@ -170905,6 +170983,62 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
+          "data_address": 4711488,
+          "data_binding_kind": "definition",
+          "data_name": "unused_console_prefix_vec2",
+          "data_storage_address": 4711488,
+          "data_storage_name": "unused_console_prefix_vec2",
+          "function": null,
+          "kind": "section",
+          "logical_section_size": 8,
+          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
+          "section": ".data",
+          "size": 8,
+          "weak": false
+        }
+      ],
+      "name": "_unused_console_prefix_vec2",
+      "referenced_by": [
+        {
+          "function": "unused_console_prefix_vec2_global_init",
+          "object": "tools/match/scratches/unused_console_prefix_vec2_global_init/build/msvc6.5/f7afd1fec3032a44/unused_console_prefix_vec2_global_init.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "_unused_console_prefix_vec2_global_init",
+          "comdat_selection": 1,
+          "function": "unused_console_prefix_vec2_global_init",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/unused_console_prefix_vec2_global_init/build/msvc6.5/f7afd1fec3032a44/unused_console_prefix_vec2_global_init.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "_unused_console_prefix_vec2_global_init",
+      "referenced_by": [
+        {
+          "function": "unused_console_prefix_vec2_global_init_thunk",
+          "object": "tools/match/scratches/unused_console_prefix_vec2_global_init_thunk/build/msvc6.5/cc0f9d45f4aa76c5/unused_console_prefix_vec2_global_init_thunk.obj",
+          "weak": false
+        }
+      ]
+    },
+    {
+      "definitions": [
+        {
+          "alignment": 4,
+          "comdat": false,
+          "comdat_associative_section": null,
+          "comdat_key": null,
+          "comdat_selection": null,
           "data_address": 4891856,
           "data_binding_kind": "definition",
           "data_name": "unused_effect_uv16_prefix_vec2",
@@ -172332,7 +172466,7 @@
       {
         "path": "analysis/ida/raw/crimsonland.exe/functions.json",
         "repository_relative": true,
-        "sha256": "0a17560ed1d4d4c45c663640aa1362f46f4155dfdb40a44ac052a1c6baac9ff2"
+        "sha256": "8df68aaa97d4c90ce2009ed7229c20ab18720c711f11779d5d01a13e6cb3a549"
       },
       {
         "path": "analysis/ida/raw/crimsonland.exe/metadata.json",
@@ -172351,7 +172485,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "a37c82f45029438e162cd14a557078dd5ae9e80871e1d11038c5b047af335566"
+        "sha256": "acda0d18632b5f7831e4b84643acce602f6c31e3d4c4d49071e7ec41f4b07e5f"
       },
       {
         "path": "analysis/ghidra/maps/name_map.json",
@@ -172360,7 +172494,7 @@
           "program": "crimsonland.exe"
         },
         "repository_relative": true,
-        "sha256": "2ddcfa974a526e8ed68e0a47118f4869e316838899cc2eda0d478ef1dc6bbd4d"
+        "sha256": "bdd9446258a7278da07cf23d85d033d48cf6ce1dd65ba396a956588d46f77cd4"
       },
       {
         "path": "analysis/matching_scope.json",
@@ -172372,16 +172506,16 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 2964,
+    "defined_symbols": 2967,
     "function_closure": true,
-    "function_count": 671,
+    "function_count": 673,
     "game_function_debt": {},
     "game_owned_closure": true,
     "hard_duplicate_by_section": {},
     "hard_duplicate_symbols": 0,
-    "object_count": 570,
+    "object_count": 572,
     "reference_exports_closed": true,
-    "resolved_symbols": 1263,
+    "resolved_symbols": 1265,
     "unresolved_by_category": {
       "excluded_function": 71,
       "import": 25,
@@ -174358,6 +174492,11 @@
         {
           "function": "unused_aim64_prefix_color_global_init",
           "object": "tools/match/scratches/unused_aim64_prefix_color_global_init/build/msvc6.5/ff4bcefd8f30f7de/unused_aim64_prefix_color_global_init.obj",
+          "weak": false
+        },
+        {
+          "function": "unused_console_prefix_vec2_global_init",
+          "object": "tools/match/scratches/unused_console_prefix_vec2_global_init/build/msvc6.5/f7afd1fec3032a44/unused_console_prefix_vec2_global_init.obj",
           "weak": false
         },
         {

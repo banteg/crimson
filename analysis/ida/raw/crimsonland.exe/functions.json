@@ -1,5 +1,27 @@
 [
   {
+    "address": "0x00401000",
+    "calls": [],
+    "end": "0x00401005",
+    "external": false,
+    "library": false,
+    "name": "unused_console_prefix_vec2_global_init_thunk",
+    "signature": "void()",
+    "size": 5,
+    "thunk": true
+  },
+  {
+    "address": "0x00401010",
+    "calls": [],
+    "end": "0x00401025",
+    "external": false,
+    "library": false,
+    "name": "unused_console_prefix_vec2_global_init",
+    "signature": "void()",
+    "size": 21,
+    "thunk": false
+  },
+  {
     "address": "0x00401030",
     "calls": [],
     "end": "0x00401042",

@@ -1718,6 +1718,7 @@
       "initializer_fill": "00",
       "initializer_source": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe: .data reference bytes at each member VA",
       "members": [
+        ["0x0047e440", "unused_console_prefix_vec2"],
         ["0x00484fc8", "camera_offset"],
         ["0x00486ff0", "survival_first_kill_pos_1"],
         ["0x00486ff8", "survival_first_kill_pos_2"],

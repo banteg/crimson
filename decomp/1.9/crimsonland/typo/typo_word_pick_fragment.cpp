@@ -1,3 +1,5 @@
+#include "cl_build.h"
+
 extern "C" int crt_rand(void);
 
 extern "C" char *typo_word_pick_fragment(

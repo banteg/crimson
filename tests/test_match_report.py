@@ -91,7 +91,7 @@ def test_game_category_keeps_platform_code_but_excludes_known_libraries() -> Non
         _function(platform.address, 100),
         _function(library.address, 200, image="grim.dll"),
         _function(0x00452EF0, 300),
-        _function(0x1004B5B0, 400, image="grim.dll"),
+        _function(0x1004BA63, 400, image="grim.dll"),
     ])
     categories = {c["id"]: c["measures"] for c in result["categories"]}
     assert categories["game"]["total_code"] == "100"

@@ -1,7 +1,10 @@
+#include "cl_build.h"
+
 #include <windows.h>
 #if CL_BUILD == 10908
 #include <stdio.h>
 #include <stdlib.h>
+
 #endif
 
 extern HINSTANCE grim_module_handle;

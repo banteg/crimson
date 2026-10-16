@@ -1131,6 +1131,11 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x00476440",
+      "name": "unused_console_prefix_vec2",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x00476448",
       "name": "console_input_buf",
       "program": "1.9.1/crimsonland.exe"
