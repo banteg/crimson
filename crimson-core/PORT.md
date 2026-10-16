@@ -261,13 +261,17 @@ answer the standard codes from the joystick state they already poll
   `gamepad_profile.py` decides; the configuration saves at once, and the
   player's input reads the new bindings straight away.
 - **Menus**: outside gameplay the pad drives the original's keyboard focus. The
-  d-pad or left stick steps the focus down and up the screen, by where each
-  widget draws, since the original registers its menu elements bottom up; A is
-  Enter, B Escape, L1 and R1 page up and down, an open list takes the
-  d-pad, and a focused name field takes A as a typed Enter. The original's
-  analog cursor, which a bound stick pushes around the menus, stays off while
-  a pad is connected, and the quest list's rows take the focus, which the
-  original left to the mouse and the number keys
+  d-pad or left stick steps the focus to the nearest widget that way, by where
+  each widget draws, since the original registers its menu elements bottom up;
+  left and right with nothing that way press the arrows, which page the quest
+  list and the high scores, and a focused slider takes them. A is Enter, B
+  Escape, L1 and R1 page up and down, an open list takes the d-pad, and a
+  focused name field takes A as a typed Enter. The right stick steers the
+  cursor, which stays where it leaves it until the mouse moves, and A clicks
+  there until the focus steps again, so the pad reaches what the focus does
+  not. The original's analog cursor, which a bound stick pushes around the
+  menus, stays off while a pad is connected, and the quest list's rows take
+  the focus, which the original left to the mouse and the number keys
   ([`game/changes/pad-menus.patch`](game/changes/pad-menus.patch)). While a pad leads, the focus stays lit and hovering leaves it alone,
   and each new screen starts on its first widget, as in the Python port. The
   perk menu takes the focused choice, ahead of one under the mouse; the

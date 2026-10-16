@@ -154,16 +154,20 @@ GAME_EXPORT(game_set_windowed) void game_set_windowed(int windowed) {
 
 // The game keeps its own cursor, moved by DirectInput motion scaled by the mouse
 // sensitivity (game_frame_update). A host with an absolute pointer asks for the
-// motion that brings it there.
+// motion that brings it there, none while the pad's right stick holds it.
 extern "C" float ui_mouse_x, ui_mouse_y;
+extern "C" bool pad_holds_cursor(int axis, float window);
 GAME_EXPORT(game_motion_x) float game_motion_x(float x) {
   float scale = config_blob.mouse_sensitivity * 2.0f;
-  return scale > 0 ? (x - ui_mouse_x) / scale : 0;
+  return !pad_holds_cursor(0, x) && scale > 0 ? (x - ui_mouse_x) / scale : 0;
 }
 GAME_EXPORT(game_motion_y) float game_motion_y(float y) {
   float scale = config_blob.mouse_sensitivity * 2.0f;
-  return scale > 0 ? (y - ui_mouse_y) / scale : 0;
+  return !pad_holds_cursor(1, y) && scale > 0 ? (y - ui_mouse_y) / scale : 0;
 }
+// Where the game's cursor is, for the checks that steer it by pad.
+GAME_EXPORT(game_cursor_x) float game_cursor_x() { return ui_mouse_x; }
+GAME_EXPORT(game_cursor_y) float game_cursor_y() { return ui_mouse_y; }
 
 // WM_MOUSEMOVE: the window cursor, used while Grim reads the system cursor.
 GAME_EXPORT(game_mouse_move) void game_mouse_move(float x, float y) {

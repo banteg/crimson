@@ -7,8 +7,9 @@
 //   holds, through the same joystick state (Grim's key and axis queries,
 //   changes/pad-codes.patch); a crimson.cfg the Python port saved keeps working;
 // - a stock player who picks up a pad gets the Python port's twin-stick profile;
-// - outside gameplay the pad steps the original's keyboard focus down and up
-//   the screen and presses the keys its screens read; Start pauses and resumes;
+// - outside gameplay the pad steps the original's keyboard focus about the
+//   screen and presses the keys its screens read, and its right stick steers
+//   the cursor, which A clicks with; Start pauses and resumes;
 // - the controls screen captures pad buttons and sticks as standard codes.
 #include <math.h>
 #include "crimsonland_gameplay.h"
@@ -268,13 +269,23 @@ struct {
   // A pad navigated since the mouse last moved: the focus stays lit, and
   // hovering leaves it where the pad put it.
   bool active;
-  // The pad must let go before it navigates: after gameplay (the left stick
-  // moved the player) and after the controls screen took a press as a binding.
-  bool stick_held, buttons_held;
-  // The focused widget takes the pad's up/down as arrow keys (hold), its A as
-  // Down, which opens a closed list, or its A as a typed Enter, which a text
-  // field takes. Widgets set these each frame for the next.
-  bool hold_up, hold_down, enter_opens, enter_types;
+  // The right stick moved the cursor since the pad last stepped the focus: A
+  // clicks where it points, which reaches what the focus does not.
+  bool pointing;
+  // The cursor stays where the right stick left it until the window's own
+  // cursor moves (pad_holds_cursor), rather than the host's motion bringing it
+  // back there.
+  bool holds_cursor;
+  // A holds the mouse button it pressed while pointing.
+  bool clicking;
+  // The pad must let go before it navigates: after gameplay (the sticks moved
+  // and aimed the player) and after the controls screen took a press as a
+  // binding.
+  bool stick_held, aim_held, buttons_held;
+  // The focused widget takes the pad's up/down or left/right as arrow keys
+  // (hold), its A as Down, which opens a closed list, or its A as a typed
+  // Enter, which a text field takes. Widgets set these each frame for the next.
+  bool hold_up, hold_down, hold_sideways, enter_opens, enter_types;
   // A screen just shown, until its widgets register: then the focus goes to
   // the first of them.
   bool shown;
@@ -283,6 +294,7 @@ struct {
   float repeat;
   bool buttons[PAD_CODE_END - FACE_DOWN]; // last frame's
   float mouse_x, mouse_y;
+  float window[2]; // the window cursor the host last brought the game's to
 } nav;
 
 void press(int key) { grim_keyboard_state[key] = 0x80; }
@@ -325,22 +337,45 @@ int screen_order(int order[32]) {
   }
   return ui_focus_count;
 }
-// The focus one step down or up the screen, wrapping as Tab does.
-void step(int delta) {
-  int order[32], count = screen_order(order), at = 0;
+enum Direction { NONE, NORTH, SOUTH, WEST, EAST };
+// The focus one step that way: to the nearest widget there from where the
+// focused one draws, sideways distance weighing half, so the next row's widget
+// is reached however far across it sits. Left and right look within 56 degrees
+// of straight and report nothing there, which leaves the arrow keys to page
+// the quest list and the high scores; up and down wrap as Tab does.
+bool step(Direction direction) {
+  static const float dx[] = {0, 0, 0, -1, 1}, dy[] = {0, -1, 1, 0, 0};
+  int order[32], count = screen_order(order);
   if (!count)
-    return;
-  while (at < count && order[at] != ui_focus_index)
-    ++at;
-  at = at == count ? (delta > 0 ? 0 : count - 1) : (at + delta + count) % count;
-  ui_focus_index = order[at];
+    return false;
+  bool sideways = direction == WEST || direction == EAST;
+  const Place *from = nullptr;
+  for (int at = 0; at < place_count && ui_focus_index < ui_focus_count; ++at)
+    if (places[at].id == ui_focus_candidates[ui_focus_index])
+      from = &places[at];
+  int nearest = -1;
+  float best = INFINITY;
+  for (int slot = 0; from && slot < ui_focus_count; ++slot)
+    for (int at = 0; at < place_count; ++at) {
+      if (places[at].id != ui_focus_candidates[slot])
+        continue;
+      float x = places[at].x - from->x, y = places[at].y - from->y;
+      float along = x * dx[direction] + y * dy[direction], across = fabsf(x * dy[direction] - y * dx[direction]);
+      if (along > 4.0f && (!sideways || across <= along * 1.5f) && along + across * 0.5f < best) {
+        best = along + across * 0.5f;
+        nearest = slot;
+      }
+    }
+  if (nearest < 0 && sideways)
+    return false;
+  ui_focus_index = nearest >= 0 ? nearest : order[direction == SOUTH ? 0 : count - 1];
+  return true;
 }
 int first_widget() {
   int order[32];
   return screen_order(order) ? order[0] : 0;
 }
 
-enum Direction { NONE, NORTH, SOUTH, WEST, EAST };
 // The d-pad, or the left stick past half travel, as one direction.
 Direction direction(bool stick) {
   float x = grim_pad_code_axis(LEFT_STICK_X), y = grim_pad_code_axis(LEFT_STICK_Y);
@@ -380,9 +415,9 @@ Direction stepped(Direction held) {
 // Escape everywhere (it pauses a run); in gameplay the rest of the pad plays.
 void navigate() {
   bool gameplay = game_state_id == GAME_STATE_GAMEPLAY || game_state_id == GAME_STATE_TYPO_GAMEPLAY;
-  bool hold_up = nav.hold_up, hold_down = nav.hold_down, enter_opens = nav.enter_opens,
-       enter_types = nav.enter_types;
-  nav.hold_up = nav.hold_down = nav.enter_opens = nav.enter_types = false;
+  bool hold_up = nav.hold_up, hold_down = nav.hold_down, hold_sideways = nav.hold_sideways,
+       enter_opens = nav.enter_opens, enter_types = nav.enter_types, clicking = nav.clicking;
+  nav.hold_up = nav.hold_down = nav.hold_sideways = nav.enter_opens = nav.enter_types = nav.clicking = false;
   if (ui_mouse_x != nav.mouse_x || ui_mouse_y != nav.mouse_y)
     nav.active = false;
   nav.mouse_x = ui_mouse_x;
@@ -390,7 +425,7 @@ void navigate() {
   if (!connected())
     return;
   if (gameplay)
-    nav.stick_held = true;
+    nav.stick_held = nav.aim_held = true;
   Direction held = direction(!gameplay);
   bool pressed[PAD_CODE_END - FACE_DOWN], any = held != NONE;
   for (int code = FACE_DOWN; code < PAD_CODE_END; ++code) {
@@ -414,23 +449,43 @@ void navigate() {
     press(ESCAPE);
   if (gameplay)
     return;
-  switch (stepped(held)) {
+  // The right stick steers the cursor past the original analog cursor's dead
+  // zone, quadratically: fine near the centre, and across the screen in about a
+  // second at full tilt and the default sensitivity, where the original's
+  // analog cursor took five.
+  float x = grim_pad_code_axis(RIGHT_STICK_X), y = grim_pad_code_axis(RIGHT_STICK_Y), tilt = hypotf(x, y);
+  nav.aim_held &= tilt > 0.2f;
+  if (tilt > 0.2f && !nav.aim_held) {
+    float scale = config_blob.mouse_sensitivity * 2160.0f * fminf(tilt, 1.0f) * grim_frame_dt;
+    ui_mouse_x += x * scale;
+    ui_mouse_y += y * scale;
+    nav.pointing = nav.holds_cursor = true;
+    nav.active = false;
+  }
+  Direction moved = stepped(held);
+  if (moved)
+    nav.pointing = false;
+  switch (moved) {
   case NORTH:
-    hold_up ? press(UP) : step(-1);
+    hold_up ? press(UP) : (void)step(NORTH);
     break;
   case SOUTH:
-    hold_down ? press(DOWN) : step(1);
+    hold_down ? press(DOWN) : (void)step(SOUTH);
     break;
   case WEST:
-    press(LEFT);
+    if (hold_sideways || !step(WEST))
+      press(LEFT);
     break;
   case EAST:
-    press(RIGHT);
+    if (hold_sideways || !step(EAST))
+      press(RIGHT);
     break;
   case NONE:
     break;
   }
-  if (pressed[FACE_DOWN - FACE_DOWN]) {
+  bool accept = pressed[FACE_DOWN - FACE_DOWN];
+  nav.clicking = nav.buttons[FACE_DOWN - FACE_DOWN] && (clicking || (accept && nav.pointing));
+  if (accept && !nav.clicking) {
     press(enter_opens ? DOWN : ENTER);
     if (enter_types)
       game_key_char(13);
@@ -481,6 +536,7 @@ void pad_frame() {
     ui_focus_index = 0;
     place_count = 0;
     nav.shown = true;
+    nav.pointing = false;
     marker = ui_focus_frame_marker_ms;
   } else if (nav.shown && ui_focus_frame_marker_ms != marker) {
     nav.shown = false;
@@ -508,8 +564,14 @@ void ui_focus_set(int id, char reset_timer) {
 PLACED(bool, ui_button_update, void)
 PLACED(bool, ui_checkbox_update, void)
 PLACED(bool, ui_menu_item_update, void)
-PLACED(void, ui_segmented_slider_update, void)
 #undef PLACED
+// A focused slider takes left and right (ui_segmented_slider_update).
+void ui_segmented_slider_update_recovered(float *xy, void *state);
+void ui_segmented_slider_update(float *xy, void *state) {
+  place(state, xy[0], xy[1]);
+  ui_segmented_slider_update_recovered(xy, state);
+  nav.hold_sideways |= focused(state);
+}
 // A focused text field takes A as a typed Enter, which submits it (ui_text_input_update).
 bool ui_text_input_update_recovered(float *xy, void *state);
 bool ui_text_input_update(float *xy, void *state) {
@@ -531,6 +593,19 @@ bool ui_focus_row(int row, float x, float y) {
   return focused;
 }
 bool game_pad_connected() { return connected(); }
+
+// The motion the host asks for to bring the game's cursor to the window's
+// (game_motion_x): none while the right stick's cursor holds, which it does
+// until the window's cursor moves.
+bool pad_holds_cursor(int axis, float window) {
+  if (window != nav.window[axis])
+    nav.holds_cursor = nav.pointing = false;
+  nav.window[axis] = window;
+  return nav.holds_cursor;
+}
+// The mouse button A holds while the pad points (game/dinput.cpp).
+bool pad_clicking() { return nav.clicking; }
+
 void ui_element_render_recovered(ui_element_t *element);
 void ui_element_render(ui_element_t *element) {
   place(element, element->hover_min_x, (element->hover_min_y + element->hover_max_y) * 0.5f);

@@ -1,7 +1,7 @@
-Menus a pad can play (game/pad.cpp). While a pad is connected its sticks step the focus, so the original's analog
-cursor, which a bound stick pushes around the menus, stays off; the Python port has none. The quest list's rows take the
-focus, and Enter starts the focused quest, as in the Python port (src/crimson/screens/quest_views/quests_menu.py): the
-original started one only from the mouse or the number keys.
+Menus a pad can play (game/pad.cpp). While a pad is connected its left stick steps the focus and its right stick steers
+the cursor itself, so the original's analog cursor, which a bound stick pushes around the menus, stays off. The quest
+list's rows take the focus, and Enter starts the focused quest, as in the Python port
+(src/crimson/screens/quest_views/quests_menu.py): the original started one only from the mouse or the number keys.
 --- a/decomp/1.9/crimsonland/game/game_frame_update.cpp
 +++ b/decomp/1.9/crimsonland/game/game_frame_update.cpp
 @@ -26,1 +26,2 @@

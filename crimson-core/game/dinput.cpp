@@ -9,6 +9,7 @@ static HostInput input;
 extern "C" __attribute__((export_name("game_input"))) HostInput *game_input() { return &input; }
 
 extern "C" const GUID GUID_SysKeyboard, GUID_SysMouse;
+extern "C" bool pad_clicking(void);
 
 namespace {
 
@@ -35,8 +36,12 @@ struct Device : UnimplementedIDirectInputDevice8A {
     state[1] = input.mouse_dy;
     state[2] = input.mouse_dz;
     input.mouse_dx = input.mouse_dy = input.mouse_dz = 0;
-    if (size > 12)
+    if (size > 12) {
       memcpy(state + 3, input.mouse_buttons, size - 12 < 8 ? size - 12 : 8);
+      // The pad's A clicks where its right stick points (game/pad.cpp).
+      if (pad_clicking())
+        *(unsigned char *)(state + 3) = 0x80;
+    }
     return DI_OK;
   }
   STDMETHOD(GetDeviceData)(THIS_ DWORD object_size, LPDIDEVICEOBJECTDATA events, LPDWORD count, DWORD) override {

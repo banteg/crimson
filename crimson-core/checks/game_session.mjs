@@ -19,7 +19,8 @@
 // With --quest the run is quest 1.1 instead, and must be completed.
 //
 // With --pad a gamepad alone plays (game/pad.cpp), a quest too with --quest:
-// the d-pad, the left stick and A walk the menus to the run, past a stick
+// the right stick and A click into the main menu, the d-pad, the left stick
+// and A walk the rest of the menus to the run, past a stick
 // resting short of a step; the left stick moves away from the nearest
 // creature, the right stick aims at it and R2 fires; Triangle asks for the perk
 // menu, and the d-pad and A pick while the mouse rests on another choice; Start
@@ -73,7 +74,7 @@ const PAD_CURSOR = [1000, 740];
 // The pad as the host lays it out (game/host_input.h): buttons by index, the
 // sticks from -1000 to 1000, and the d-pad as the hat, in hundredths of a degree.
 const [PAD_SOUTH, PAD_EAST, PAD_NORTH, PAD_R2, PAD_START] = [1, 2, 3, 7, 9];
-const [HAT_UP, HAT_DOWN] = [0, 18000];
+const [HAT_UP, HAT_DOWN, HAT_LEFT] = [0, 18000, 27000];
 
 // A frame of play: held keys and buttons, the cursor as DirectInput motion, and
 // tapped keys held for the frame and delivered as presses, then released. The
@@ -125,6 +126,17 @@ function choose(screen, downs, step = { hat: HAT_DOWN }) {
   for (let i = 0; i < downs; ++i) tap(step);
   tap({ press: [PAD_SOUTH] });
 }
+// The right stick steers the game's cursor to a spot while the window's rests,
+// which it holds against the host's motion.
+function steer(screen, [x, y]) {
+  settle(screen);
+  for (let frames = 0, d; (d = Math.hypot(x - game.game_cursor_x(), y - game.game_cursor_y())) > 4; ++frames) {
+    if (frames > 600) throw Error(`the right stick never brought the cursor to ${x},${y}`);
+    const tilt = Math.min(1, 0.3 + d / 300) * 1000;
+    frame(16, { cursor: PAD_CURSOR, pad: { right: [((x - game.game_cursor_x()) / d) * tilt, ((y - game.game_cursor_y()) / d) * tilt] } });
+  }
+  if (game.game_motion_x(PAD_CURSOR[0]) || game.game_motion_y(PAD_CURSOR[1])) throw Error("the host's motion took the right stick's cursor back");
+}
 // An end screen by the pad: R2, the fire key, skips a quest's reveal of its
 // time; below Ok, the name field takes A as a typed Enter, which saves the
 // score; then Main Menu, the last of `buttons`.
@@ -167,16 +179,25 @@ if (padded) {
   // steps the focus instead, and one resting short of a step moves nothing.
   settle(MAIN_MENU, PAD_CURSOR, { left: [0, 350] });
   if (game.game_motion_x(PAD_CURSOR[0]) || game.game_motion_y(PAD_CURSOR[1])) throw Error("a resting stick moved the menu cursor");
-  // The main menu starts on Play Game.
-  choose(MAIN_MENU, 0);
+  // The right stick steers the cursor onto Play Game and A clicks it.
+  steer(MAIN_MENU, [240, 338]);
+  tap({ press: [PAD_SOUTH] });
+  // Moving the mouse takes the cursor back, an axis a frame (the host asks
+  // for each axis's motion apart) and to the pixel (motion is whole counts).
+  const moved = [PAD_CURSOR[0], PAD_CURSOR[1] - 1];
+  for (let i = 0; i < 2; ++i) frame(16, { cursor: moved });
+  if (Math.hypot(game.game_cursor_x() - moved[0], game.game_cursor_y() - moved[1]) > 1) throw Error("the mouse did not take the cursor back from the pad");
 } else click(MAIN_MENU, [240, 338]);
 const unlocksBefore = savedUnlocks();
 // A fresh profile's Play Game panel lists Tutorial, Quests, Rush and Survival;
 // ticking Ranked, under the player-count list, leaves Quests and Survival.
 if (padded) {
-  // The panel starts on its player count, above Tutorial, Quests, Rush and
-  // Survival, which the left stick steps to; the quest list starts on 1.1.
-  choose(PLAY_GAME_MENU, quest ? 2 : 4, { left: [0, 800] });
+  // The panel starts on its player count, up and right of Tutorial, Quests,
+  // Rush and Survival: the d-pad steps left to Tutorial and the left stick
+  // down from there. The quest list starts on 1.1.
+  settle(PLAY_GAME_MENU);
+  tap({ hat: HAT_LEFT });
+  choose(PLAY_GAME_MENU, quest ? 1 : 3, { left: [0, 800] });
   if (quest) choose(QUEST_SELECT, 0);
 } else {
   if (ranked) click(PLAY_GAME_MENU, [285, 489]);
