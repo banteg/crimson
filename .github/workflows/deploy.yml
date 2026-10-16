@@ -222,6 +222,7 @@ jobs:
       - name: Notify deploy
         run: uv run scripts/deploy_notify.py
         env:
+          PREPARE_RESULT: ${{ needs.prepare.result }}
           DEPLOY_RESULT: ${{ needs.deploy.result }}
           REVERIFIED: ${{ needs.deploy.outputs.reverify }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
