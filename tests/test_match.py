@@ -1413,6 +1413,38 @@ def test_match_function_audits_compiler_string_by_content(literal: bytes) -> Non
     assert result.masked_operand_audit.ok_count == 1
 
 
+def test_match_function_audits_compiler_string_terminator_by_content() -> None:
+    # An inlined strcpy can load a literal's terminating NUL by itself.
+    literal = b"\\ddraw.dll\x00"
+    mapped = bytearray(0x10000)
+    mapped[0x2000 : 0x2000 + len(literal)] = literal
+    candidate = ObjectFunction(
+        name="_foo",
+        data=bytes.fromhex("8a0d00000000c3"),
+        relocation_offsets=frozenset({2}),
+        relocation_references=(
+            ObjectRelocationReference(
+                offset=2,
+                symbol_name="??_C@_0L@BNMJ@?2ddraw?4dll?$AA@",
+                key=None,
+                explained=False,
+                addend=len(literal) - 1,
+                symbol_data=literal,
+            ),
+        ),
+    )
+    target = bytes.fromhex("8a0d") + (0x402000 + len(literal) - 1).to_bytes(4, "little") + b"\xc3"
+    result = match_function(
+        target,
+        candidate,
+        image=LoadedImage(mapped=bytes(mapped), image_base=0x400000, size_of_image=len(mapped)),
+        target_va=0x401000,
+        reference_catalog=ReferenceCatalog({}),
+    )
+    assert result.exact
+    assert result.masked_operand_audit.ok_count == 1
+
+
 def test_match_function_audits_compiler_float_by_content() -> None:
     mapped = bytearray(0x10000)
     mapped[0x2000:0x2004] = bytes.fromhex("000000b4")

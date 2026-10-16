@@ -1,7 +1,15 @@
 {
   "schema": 1,
   "sha256": "00f2c3c6ead7fb34b105fb8b5d16e5da036a6b5567bcf02245fb5ccbfcc78da8",
-  "functions": [],
+  "functions": [
+    {
+      "name": "grim_jpeg_destroy_decompress",
+      "address": "0x10009e50",
+      "end": "0x10009e55",
+      "body_sha256": "ba103cd1c081d176f3f512cd6fb708a902442a361abad6eb0364b55a193bc85c",
+      "note": "9044 compiles the jpeg_destroy call as a tail jump; the 5-byte body is too small for order pairing."
+    }
+  ],
   "data": [
     {
       "name": "?$S1@?1??grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z@4EA",
@@ -506,6 +514,14 @@
       "bytes": "e8e1bdffff",
       "offset": 0,
       "note": "Instruction-exact under 1.9.8: grim_pixel_format_scalar_deleting_destroy."
+    },
+    {
+      "name": "grim_decode_jaz_texture_eh_handler",
+      "address": "0x10059fb8",
+      "reference": "0x10004ca5",
+      "bytes": "68b89f0510",
+      "offset": 0,
+      "note": "Pushed C++ EH handler of grim_decode_jaz_texture; its FuncInfo is grim_decode_jaz_texture_eh_info."
     }
   ]
 }

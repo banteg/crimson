@@ -2660,6 +2660,15 @@ def disassemble_normalized_function(
             keys = (string_key,)
             explained = True
         elif (
+            reference.symbol_name.startswith("??_C@")
+            and referenced_data[:1] == b"\0"
+            and (string_key := _printable_string_key(symbol_data))
+            and data_offset == symbol_data.index(b"\0")
+        ):
+            # An inlined copy can read a literal's terminator directly.
+            keys = (f"{string_key}:end",)
+            explained = True
+        elif (
             reference.symbol_name.startswith("__real@")
             and byte_count is not None
             and len(referenced_data) >= byte_count
@@ -2717,6 +2726,17 @@ def disassemble_normalized_function(
                     string_end = value + available.index(b"\0") + 1
                     if not any(start < string_end and value < end for start, end in image.content_exclusions):
                         keys.append(string_key)
+                elif byte_count == 1 and available[:1] == b"\0" and offset:
+                    # A byte load of the terminator of the printable string that ends here.
+                    start = offset
+                    while start > max(0, offset - _MAX_AUDITED_STRING_BYTES) and image.mapped[start - 1] not in b"\0":
+                        start -= 1
+                    literal = image.mapped[start : offset + 1]
+                    if (string_key := _printable_string_key(literal)) and not any(
+                        excluded_start < value + 1 and image.image_base + start < excluded_end
+                        for excluded_start, excluded_end in image.content_exclusions
+                    ):
+                        keys.append(f"{string_key}:end")
             if byte_count is not None:
                 raw = _image_read_only_data(image, value, byte_count)
                 if len(raw) == byte_count:

@@ -1283,6 +1283,14 @@
     "size": 202
   },
   {
+    "address": "0x10009E50",
+    "end": "0x10009E55",
+    "size": 5,
+    "canonical_address": "0x10009B20",
+    "name": "grim_jpeg_destroy_decompress",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x10009E60",
     "canonical_address": "0x10009B30",
     "end": "0x10009ED0",

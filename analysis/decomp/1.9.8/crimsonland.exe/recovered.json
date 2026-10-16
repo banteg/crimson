@@ -1876,6 +1876,38 @@
       "bytes": "68509e4c00",
       "offset": 0,
       "note": "Instruction-exact under 1.9.8: unlocked_perks_database_update."
+    },
+    {
+      "name": "quest_failed_main_menu_button",
+      "address": "0x4801f8",
+      "reference": "0x411156",
+      "bytes": "891df8014800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_failed_screen_update."
+    },
+    {
+      "name": "quest_failed_play_again_button",
+      "address": "0x480380",
+      "reference": "0x411086",
+      "bytes": "891d80034800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_failed_screen_update."
+    },
+    {
+      "name": "quest_failed_play_another_button",
+      "address": "0x480398",
+      "reference": "0x4110ee",
+      "bytes": "891d98034800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_failed_screen_update."
+    },
+    {
+      "name": "quest_failed_screen_flags",
+      "address": "0x4802dc",
+      "reference": "0x411035",
+      "bytes": "a0dc024800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_failed_screen_update."
     }
   ]
 }

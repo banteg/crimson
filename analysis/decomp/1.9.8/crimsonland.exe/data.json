@@ -1646,8 +1646,28 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004801f8",
+      "name": "quest_failed_main_menu_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004802dc",
+      "name": "quest_failed_screen_flags",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00480308",
       "name": "quest_failed_highscore_rank_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00480380",
+      "name": "quest_failed_play_again_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00480398",
+      "name": "quest_failed_play_another_button",
       "program": "1.9.8/crimsonland.exe"
     },
     {

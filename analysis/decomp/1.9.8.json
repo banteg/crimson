@@ -12810,9 +12810,20 @@
           "start": 268475776
         },
         {
-          "end": 268476000,
+          "end": 268475984,
           "kind": "unresolved",
           "start": 268475978
+        },
+        {
+          "end": 268475989,
+          "kind": "retained_code",
+          "owner": "grim.dll/10009e50",
+          "start": 268475984
+        },
+        {
+          "end": 268476000,
+          "kind": "unresolved",
+          "start": 268475989
         },
         {
           "end": 268476112,
@@ -20142,8 +20153,8 @@
       "totals": {
         "embedded_data": 0,
         "padding": 0,
-        "retained_code": 287869,
-        "unresolved": 77628
+        "retained_code": 287874,
+        "unresolved": 77623
       }
     }
   ],
@@ -25689,10 +25700,10 @@
       "canonical_address": 4261856,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "quest_failed_screen_update",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 280,
         "candidate_object_sha256": "2bec62d589a6d9420c268ffeab71140f2b9a214e7335e529ea01cdc23baafd5b",
         "candidate_padding_bytes": 2,
@@ -25705,11 +25716,11 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 104,
+          "ok": 146,
           "positional": true,
-          "unresolved": 42
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 280,
         "target_size": 1214,
         "unexplained_target_ranges": []
@@ -28454,10 +28465,10 @@
       "canonical_address": 4313056,
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "dx_get_version_fallback_from_files",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 847,
         "candidate_object_sha256": "d998450cb5593e026811989750fca27dc22413412f07eeb45ed3be8740fdaf02",
         "candidate_padding_bytes": 8,
@@ -28470,11 +28481,11 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 83,
+          "ok": 90,
           "positional": true,
-          "unresolved": 7
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 847,
         "target_size": 2536,
         "unexplained_target_ranges": []
@@ -52548,10 +52559,10 @@
       "canonical_address": 268454768,
       "image": "grim.dll",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "grim_decode_jaz_texture",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 264,
         "candidate_object_sha256": "daca733fef5a9937df5e5e3c53bf4d32e813bf4a75ba949299eb9b0b0faa6eda",
         "candidate_padding_bytes": 0,
@@ -52563,12 +52574,12 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 3,
-          "ok": 19,
+          "mismatched": 0,
+          "ok": 23,
           "positional": true,
-          "unresolved": 1
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 264,
         "target_size": 816,
         "unexplained_target_ranges": []
@@ -56111,6 +56122,41 @@
       "ratio": 1.0,
       "size": 202,
       "source": "third_party/sources/ijg-libjpeg-6a/jdapimin.c"
+    },
+    {
+      "address": 268475984,
+      "candidate": "source",
+      "canonical_address": 268475168,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_jpeg_destroy_decompress",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "f1824e794c43adfdef78075fe349dda1e7a219a5e1978f6bdea3456e640f1c7e",
+        "candidate_padding_bytes": 11,
+        "compared_target_ranges": [
+          [
+            268475984,
+            268475989
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 1,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 5,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 5,
+      "source": "tools/match/shared/grim_jpeg_source_callbacks.cpp"
     },
     {
       "address": 268476000,
@@ -76048,9 +76094,9 @@
     }
   ],
   "identities": {
-    "inventory": "831e761e642751827cd7a6a21cea66002aff02f0f293fdcf5a92b8219952c4e0",
+    "inventory": "9dc2f256d6e3ab96483f6059e59b66280866a670410bb9e98dce1df5116bf0a1",
     "inventory_policy": "curated-functions-v2; canonical-ownership-v1; data-extents-v1; executable-gaps-unresolved-v1",
-    "scoring": "3044d3f6e323e776de414513b490303764dff08ebc7786de07c7c969a22c74e7",
+    "scoring": "750bbf3109ef3947a46cf3b177bcda5fb5cf30689ad3f698b906fc8bdc508d07",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1",
     "target": {
       "game_bins/crimsonland/1.9.8/crimsonland.exe": "0a6217c2638886699935213dcf5b75c528347f244f5d845066598d34a7b2052e",
@@ -76096,16 +76142,16 @@
     "analysis/decomp/1.9.1/grim.dll/functions.json": "5c925aa5f070014fa7a7bd5735460c1cd091969a0455ca04abac5e1dba37571b",
     "analysis/decomp/1.9.1/grim.dll/imports.json": "a4929b2195b0aae572e9a11ba6473f48bc15213aff13465c7aae5833759002e1",
     "analysis/decomp/1.9.1/grim.dll/metadata.json": "2283281db97d8c9d22c4240bb9f1b5eed552e6ca4d7303f729a5464af296b6ac",
-    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "a1cc193b2568740fe854a7632b65f42e5124690e4a50d2a1e3412b6c10205e96",
+    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "fbebe830f31bba45d064a267a104c968820f4d32d9b9515638a0f9720958375e",
     "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "493bd25c86e42e32f67e6b498f70fe180082126f9c294597b2bab0735fc6a617",
     "analysis/decomp/1.9.8/crimsonland.exe/imports.json": "0c31f6358f0514e1c8815d7921c8ad3779199591dd36954c4cce4a7bd3024c18",
     "analysis/decomp/1.9.8/crimsonland.exe/metadata.json": "9b248110b10661b30a5d703fc60149baf131572ed64ec85dc77fb71e6b448e4d",
-    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "fed28b2d61e40227adffe7cdf858a5305b9f8a52056387b30ee03071e189011f",
-    "analysis/decomp/1.9.8/grim.dll/data.json": "532d05ec7bfb46393df779a222c225fa1d0cee8f4f3aa046946e40a336c8b751",
-    "analysis/decomp/1.9.8/grim.dll/functions.json": "7bfb0ac125d2dfca4db39d9e66e737149a72e390dd3d9eda237eebf84a45b87c",
+    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "12303d673d862a65ac27810aa17534d084ebd1e60e2e99bf0079918752452964",
+    "analysis/decomp/1.9.8/grim.dll/data.json": "5709dc04b9d17cfc3c95e7883807c91435ff68b5a762172645492b9660121e75",
+    "analysis/decomp/1.9.8/grim.dll/functions.json": "7c6f95abda19f727a6bb6a7ca71db9e5e8b595d831010bf54ccd0238ea957c67",
     "analysis/decomp/1.9.8/grim.dll/imports.json": "f2e55491c2a9be4e9dcb81246e54f4366f646cf04fc5fd08f6f316e01dd14e7a",
     "analysis/decomp/1.9.8/grim.dll/metadata.json": "cd4d0ec5f6c4a1fe1fa85dd7bba6a4ca50c50c2842cb4864083825ae6e5be0be",
-    "analysis/decomp/1.9.8/grim.dll/recovered.json": "d2c773fe75f160125affa506dd2d8a05e97c2b15aaf4807035e40048f5facdbb",
+    "analysis/decomp/1.9.8/grim.dll/recovered.json": "b7cfb18faab2d3b37c9db0ce5a82c346771db139f1584ce4d102b2906c7d9c65",
     "analysis/decomp/1.9.9/crimsonland.exe/data.json": "1734f00622707ffcab525ff230872395dc1d64d2adaada31fea3560ced3261dc",
     "analysis/decomp/1.9.9/crimsonland.exe/functions.json": "f6c52c69b5032b3acca63c64d1f4b06a77164aabbdaf9316f5a03775395757bd",
     "analysis/decomp/1.9.9/crimsonland.exe/imports.json": "21ad37eab0a55ac550d464fb4c730012a980a1b6246d5104e08d0b00d38e06d2",
@@ -76136,7 +76182,7 @@
     "crimson-re/src/crimson_re/cli/match.py": "c1487bccbfa471a22686448ed3101f993e113db7d069556f31645789f42812f6",
     "crimson-re/src/crimson_re/library_match.py": "7527e3b7e813b099665ffca627948da6c93c4a1921b5d3f3900d69d21ef6180b",
     "crimson-re/src/crimson_re/library_provenance.py": "a7ddd37146178caeca17f6239f2e33a6dbcd8e41be1d65ed9078090fbbc94683",
-    "crimson-re/src/crimson_re/match.py": "a45146c40c976a73046f3625bf80b34c8979f6fd3fe241baeeabb446aa3ebf1b",
+    "crimson-re/src/crimson_re/match.py": "144428b5fb21332130198e9deeff6d4ff8f8ced9de5341697f8a566681663910",
     "crimson-re/src/crimson_re/match_address_diagnostics.py": "9ced244f19063007ad5ee5c3e8965623a68e6daa65ad466f3f429389a4365949",
     "crimson-re/src/crimson_re/match_builds.py": "a8549a4582df19d8fdfa5fad16aeca91965729e8a51a71b04c5f353fa15bd8e4",
     "crimson-re/src/crimson_re/match_c2.py": "607d3d420f70d712c07554c80ee7ce899812d0e2ad6f22a16f23d5cceb5cc390",
@@ -78367,7 +78413,7 @@
     "tools/match/scratches/grim_d3dx_save_texture_to_file_a/scratch.conf": "77d56fdba9efbef7da4fd707143e23c5dd8fee5d83795c59113d94a7319dbc38",
     "tools/match/scratches/grim_d3dx_score_format/scratch.conf": "0afa797b0344a2120978c76145e024923eb44f722433854be129919c6086af4b",
     "tools/match/scratches/grim_d3dx_sse_vec2_transform/scratch.conf": "06108a1d5fc2b742f4bbaa81598d80a4ec6959996e140864317e4cffaac9aafe",
-    "tools/match/scratches/grim_decode_jaz_texture/scratch.conf": "e31675b5edc4acf38e8fbeb68676bc598ac08a22454e37248cc34d9643b76aab",
+    "tools/match/scratches/grim_decode_jaz_texture/scratch.conf": "7e39a8e5c233e486f4cbb396a73922fe57638646da7103849b9f59e966bb3922",
     "tools/match/scratches/grim_default_device_callback/scratch.conf": "b82546f5179069228899acc6d1a9256ef73171c6a577fe4287f6270a4d8fd532",
     "tools/match/scratches/grim_destroy_texture/scratch.conf": "6d675679f8415f14207c5bb933e78d5dfdbe0a3b91805a0561e27701b33c6a53",
     "tools/match/scratches/grim_dll_main/scratch.conf": "48810696329c596a0c21353b83a63d6447cba7588dd43bad2b7240f13bfe30fd",

@@ -66,6 +66,11 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x10059fb8",
+      "name": "grim_decode_jaz_texture_eh_handler",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x1005b2f0",
       "name": "grim_interface_vtable",
       "program": "1.9.8/grim.dll"
