@@ -1112,6 +1112,9 @@ Rewrite behavior:
   player. As in the original, it is one key that every player's update
   reads.
 - With `--preserve-bugs`: keep the native single-player gate.
+- Replays: the fix did not raise `REPLAY_RULES`, so a co-op replay recorded
+  before it with `preserve_bugs` off that pressed Reload can drift
+  ([replay format](../formats/replay.md)).
 
 Evidence: `decomp/1.9/crimsonland/gameplay/player_update_heading.cpp` (the
 manual reload condition), `src/crimson/gameplay.py` (`_player_tick_reload`)

@@ -79,6 +79,11 @@ differently: a replay plays back only under the rules it was recorded under. Rea
 `rules`, as rules 1, v30 and v31, which had no `pilot`, as declaring none, and v30 to v32, which had no
 `run.custom_quest`, as playing stock quests; writers always write v33.
 
+One change played earlier replays differently without raising `rules`:
+[original bug 40](../rewrite/original-bugs.md#40-the-reload-key-does-nothing-in-co-op), the reload key in co-op with
+`preserve_bugs` off. A co-op replay recorded before it that pressed Reload can drift; one-player and `preserve_bugs`
+replays play as before.
+
 `Recorder` is a map of `client` (`crimson` for the Python port, `crimson-core` for the web and native clients),
 `version` (that client's own content identity, in `game_version`'s form) and `platform` (the Python port's
 `<os>-<cpu>`, such as `macos-arm64`; `web` or `native` from the other clients; `unknown` for the fixtures recorded

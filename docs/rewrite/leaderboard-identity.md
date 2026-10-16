@@ -65,8 +65,10 @@ opens a login link only when it leads to the service's own host.
 
 ## Duplicates and stolen runs
 
-- A run's identity is the SHA-256 of its uncompressed replay payload, so recompressing a file does not make it a
-  new run. The service accepts a run once; a second upload of the same run is rejected, whoever sends it.
+- A run's identity is the SHA-256 of its input stream (seed, settings and every tick's input) in the layout the
+  service first verified, so recompressing a file or changing anything outside its play does not make it a new run,
+  and ids stay put when the verifier's stream changes (`runIdentity` in `service/src/transport.ts`). The service
+  accepts a run once; a second upload of the same run is rejected, whoever sends it.
 - Replays become public only after the service accepts them. A copied replay can only beat its owner if it leaves
   their machine before they upload it.
 - Ties keep the earlier accepted upload ahead.
