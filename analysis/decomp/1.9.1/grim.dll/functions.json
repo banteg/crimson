@@ -365,7 +365,7 @@
     "address": "0x10003EB0",
     "canonical_address": "0x10003C00",
     "end": "0x10004101",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "grim_run_loop",
     "size": 593
   },
@@ -437,7 +437,7 @@
     "address": "0x10004C20",
     "canonical_address": "0x10004970",
     "end": "0x10004CF5",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_timing_update",
     "size": 213
   },
@@ -542,7 +542,7 @@
     "address": "0x10005CD0",
     "canonical_address": "0x10005A40",
     "end": "0x10005D5C",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "grim_lookup_blob_load",
     "size": 140
   },
@@ -1570,10 +1570,10 @@
   {
     "address": "0x1000D920",
     "canonical_address": "0x1000AA92",
-    "end": "0x1000D930",
+    "end": "0x1000D927",
     "evidence": "ordered",
     "name": "_initterm",
-    "size": 16
+    "size": 7
   },
   {
     "address": "0x1000DA10",
@@ -5920,10 +5920,10 @@
   {
     "address": "0x1002BC10",
     "canonical_address": "0x100221D0",
-    "end": "0x1002BD20",
+    "end": "0x1002BD16",
     "evidence": "ordered",
     "name": "d3dx_sse_init_fast_table",
-    "size": 272,
+    "size": 262,
     "aliases": [
       "?sse_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
     ]
@@ -6760,10 +6760,10 @@
   {
     "address": "0x10030B30",
     "canonical_address": "0x10026A50",
-    "end": "0x10030BC0",
+    "end": "0x10030BB2",
     "evidence": "referenced",
     "name": "d3dx_sse_quaternion_multiply",
-    "size": 144,
+    "size": 130,
     "aliases": [
       "?sse_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
     ]
@@ -6777,6 +6777,18 @@
     "size": 156,
     "aliases": [
       "?sse_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "address": "0x10030C60",
+    "canonical_address": "0x10026B8E",
+    "end": "0x10030CC9",
+    "evidence": "ordered",
+    "name": "d3dx_sse_quaternion_inverse_impl",
+    "size": 105,
+    "aliases": [
+      "?sse_D3DXQuaternionInverse$$1@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z",
+      "?sse2_D3DXQuaternionInverse$$1@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ]
   },
   {
@@ -8446,10 +8458,10 @@
   {
     "address": "0x1003F6E0",
     "canonical_address": "0x100354E0",
-    "end": "0x1003F7E0",
+    "end": "0x1003F7DC",
     "evidence": "referenced",
     "name": "x3d_sincos",
-    "size": 256,
+    "size": 252,
     "aliases": [
       "_a_cos",
       "_a_sincos"
@@ -8458,10 +8470,10 @@
   {
     "address": "0x1003F7E0",
     "canonical_address": "0x10035600",
-    "end": "0x1003FB98",
+    "end": "0x1003F8DE",
     "evidence": "referenced",
     "name": "x3d_sin",
-    "size": 952,
+    "size": 254,
     "aliases": [
       "_a_sin"
     ]
@@ -8714,7 +8726,7 @@
     "address": "0x10046090",
     "canonical_address": "0x1003AC00",
     "end": "0x10046135",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "grim_jpeg_format_message",
     "size": 165
   },

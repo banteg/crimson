@@ -1604,6 +1604,278 @@
       "bytes": "c60548e5470001",
       "offset": 0,
       "note": "Instruction-exact under 1.9.8: ui_update_notice_update."
+    },
+    {
+      "name": "mod_info_block",
+      "address": "0x47f990",
+      "reference": "0x40ee85",
+      "bytes": "bf90f94700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: mod_load_info."
+    },
+    {
+      "name": "mod_info_static_guard",
+      "address": "0x47f6e0",
+      "reference": "0x40ee6d",
+      "bytes": "8a0de0f64700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: mod_load_info."
+    },
+    {
+      "name": "tutorial_prompt_dialog_init_flags",
+      "address": "0x47d460",
+      "reference": "0x407668",
+      "bytes": "a060d44700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_prompt_dialog."
+    },
+    {
+      "name": "options_menu_init_flags",
+      "address": "0x4d4be8",
+      "reference": "0x446c09",
+      "bytes": "a0e84b4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: options_menu_update."
+    },
+    {
+      "name": "options_ui_info_checkbox",
+      "address": "0x4d4a28",
+      "reference": "0x446c1f",
+      "bytes": "881d284a4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: options_menu_update."
+    },
+    {
+      "name": "perk_slot_1_desc_wrapped_alternate",
+      "address": "0x4c0904",
+      "reference": "0x44701a",
+      "bytes": "8b1504094c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: options_menu_update."
+    },
+    {
+      "name": "perk_slot_1_desc_wrapped_primary",
+      "address": "0x4c0900",
+      "reference": "0x447028",
+      "bytes": "8b1500094c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: options_menu_update."
+    },
+    {
+      "name": "perk_slot_1_name_wrapped_alternate",
+      "address": "0x4c08fc",
+      "reference": "0x447014",
+      "bytes": "8b0dfc084c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: options_menu_update."
+    },
+    {
+      "name": "perk_slot_1_name_wrapped_primary",
+      "address": "0x4c08f8",
+      "reference": "0x447022",
+      "bytes": "8b0df8084c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: options_menu_update."
+    },
+    {
+      "name": "quest_fail_retry_count",
+      "address": "0x484e74",
+      "reference": "0x410f72",
+      "bytes": "a1744e4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_failed_screen_update."
+    },
+    {
+      "name": "quest_failed_highscore_rank_index",
+      "address": "0x480308",
+      "reference": "0x410f28",
+      "bytes": "a308034800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_failed_screen_update."
+    },
+    {
+      "name": "tutorial_empty_string",
+      "address": "0x47062c",
+      "reference": "0x4087b3",
+      "bytes": "b82c064700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_timeline_update."
+    },
+    {
+      "name": "tutorial_hint_alpha",
+      "address": "0x47e5c4",
+      "reference": "0x408a9d",
+      "bytes": "a1c4e54700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_timeline_update."
+    },
+    {
+      "name": "tutorial_hint_bonus_amount",
+      "address": "0x46f2d4",
+      "reference": "0x408a31",
+      "bytes": "a3d4f24600",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_timeline_update."
+    },
+    {
+      "name": "tutorial_hint_bonus_id",
+      "address": "0x46f2d0",
+      "reference": "0x408a1e",
+      "bytes": "8915d0f24600",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_timeline_update."
+    },
+    {
+      "name": "tutorial_hint_bonus_ptr",
+      "address": "0x47e5bc",
+      "reference": "0x4089e4",
+      "bytes": "8b0dbce54700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_timeline_update."
+    },
+    {
+      "name": "tutorial_hint_carrier_killed",
+      "address": "0x47e5c0",
+      "reference": "0x4089d2",
+      "bytes": "a0c0e54700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_timeline_update."
+    },
+    {
+      "name": "tutorial_hint_index",
+      "address": "0x46f2d8",
+      "reference": "0x408a75",
+      "bytes": "a1d8f24600",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_timeline_update."
+    },
+    {
+      "name": "tutorial_repeat_spawn_count",
+      "address": "0x47e5b8",
+      "reference": "0x408b2f",
+      "bytes": "893db8e54700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_timeline_update."
+    },
+    {
+      "name": "tutorial_stage_index",
+      "address": "0x484cb8",
+      "reference": "0x4087ad",
+      "bytes": "8b15b84c4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_timeline_update."
+    },
+    {
+      "name": "ui_text_reaper_texture",
+      "address": "0x48d4d8",
+      "reference": "0x410ecd",
+      "bytes": "a1d8d44800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_failed_screen_update."
+    },
+    {
+      "name": "game_completed_main_menu_button",
+      "address": "0x47df88",
+      "reference": "0x4058d4",
+      "bytes": "891d88df4700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_update_victory_screen."
+    },
+    {
+      "name": "game_completed_rush_button",
+      "address": "0x47dfa0",
+      "reference": "0x405806",
+      "bytes": "891da0df4700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_update_victory_screen."
+    },
+    {
+      "name": "game_completed_screen_flags",
+      "address": "0x47e041",
+      "reference": "0x405730",
+      "bytes": "a041e04700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_update_victory_screen."
+    },
+    {
+      "name": "game_completed_survival_button",
+      "address": "0x47d2f8",
+      "reference": "0x4057a0",
+      "bytes": "891df8d24700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_update_victory_screen."
+    },
+    {
+      "name": "game_completed_typo_button",
+      "address": "0x47e044",
+      "reference": "0x40586c",
+      "bytes": "891d44e04700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_update_victory_screen."
+    },
+    {
+      "name": "options_controls_button",
+      "address": "0x4d4bd0",
+      "reference": "0x446fab",
+      "bytes": "891dd04b4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: options_menu_update."
+    },
+    {
+      "name": "options_graphics_detail_slider",
+      "address": "0x4d47e8",
+      "reference": "0x446e02",
+      "bytes": "891de8474d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: options_menu_update."
+    },
+    {
+      "name": "options_mouse_sensitivity_slider",
+      "address": "0x4d48d0",
+      "reference": "0x446eb5",
+      "bytes": "891dd0484d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: options_menu_update."
+    },
+    {
+      "name": "options_music_volume_slider",
+      "address": "0x4d4840",
+      "reference": "0x446d70",
+      "bytes": "891d40484d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: options_menu_update."
+    },
+    {
+      "name": "options_sfx_volume_slider",
+      "address": "0x4d4a3c",
+      "reference": "0x446cd4",
+      "bytes": "891d3c4a4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: options_menu_update."
+    },
+    {
+      "name": "unlocked_perks_back_button",
+      "address": "0x4c9e38",
+      "reference": "0x440432",
+      "bytes": "891d389e4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: unlocked_perks_database_update."
+    },
+    {
+      "name": "unlocked_perks_database_init_flags",
+      "address": "0x4c9f08",
+      "reference": "0x440300",
+      "bytes": "a0089f4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: unlocked_perks_database_update."
+    },
+    {
+      "name": "unlocked_perks_scrollbar",
+      "address": "0x4c9e50",
+      "reference": "0x440337",
+      "bytes": "68509e4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: unlocked_perks_database_update."
     }
   ]
 }

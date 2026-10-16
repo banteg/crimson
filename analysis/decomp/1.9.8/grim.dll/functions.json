@@ -178,10 +178,10 @@
   {
     "address": "0x10001160",
     "canonical_address": "0x10001170",
-    "end": "0x100016F0",
+    "end": "0x100016D2",
     "evidence": "ordered",
     "name": "grim_advanced_config_dialog_proc",
-    "size": 1424
+    "size": 1394
   },
   {
     "address": "0x100016F0",
@@ -195,7 +195,7 @@
     "address": "0x10001700",
     "canonical_address": "0x10001710",
     "end": "0x100019C0",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "grim_config_defaults_init",
     "size": 704
   },
@@ -267,7 +267,7 @@
     "address": "0x10002A30",
     "canonical_address": "0x10002B40",
     "end": "0x10002BF7",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_restore_textures",
     "size": 455
   },
@@ -275,7 +275,7 @@
     "address": "0x10002C00",
     "canonical_address": "0x10002CF0",
     "end": "0x10002E53",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_try_reset_device",
     "size": 595
   },
@@ -354,7 +354,7 @@
     "address": "0x10003D50",
     "canonical_address": "0x10003C00",
     "end": "0x10003FAC",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "grim_run_loop",
     "size": 604
   },
@@ -531,7 +531,7 @@
     "address": "0x10005B20",
     "canonical_address": "0x10005A40",
     "end": "0x10005BAC",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "grim_lookup_blob_load",
     "size": 140
   },
@@ -602,10 +602,10 @@
   {
     "address": "0x10005E10",
     "canonical_address": "0x10005D40",
-    "end": "0x10005FD0",
+    "end": "0x10005FBE",
     "evidence": "ordered",
     "name": "grim_apply_config",
-    "size": 448
+    "size": 430
   },
   {
     "address": "0x10005FD0",
@@ -715,7 +715,7 @@
     "address": "0x10007140",
     "canonical_address": "0x10006EA0",
     "end": "0x10007190",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_joystick_up_active",
     "size": 80
   },
@@ -723,7 +723,7 @@
     "address": "0x10007190",
     "canonical_address": "0x10006EF0",
     "end": "0x100071DC",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_joystick_down_active",
     "size": 76
   },
@@ -731,7 +731,7 @@
     "address": "0x100071E0",
     "canonical_address": "0x10006F40",
     "end": "0x10007230",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_joystick_left_active",
     "size": 80
   },
@@ -739,7 +739,7 @@
     "address": "0x10007230",
     "canonical_address": "0x10006F90",
     "end": "0x1000727C",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_joystick_right_active",
     "size": 76
   },
@@ -1599,10 +1599,10 @@
   {
     "address": "0x1000DCE0",
     "canonical_address": "0x1000AA92",
-    "end": "0x1000DCF0",
+    "end": "0x1000DCE7",
     "evidence": "ordered",
     "name": "_initterm",
-    "size": 16
+    "size": 7
   },
   {
     "address": "0x1000DDD0",
@@ -5933,10 +5933,10 @@
   {
     "address": "0x1002BFD0",
     "canonical_address": "0x100221D0",
-    "end": "0x1002C0E0",
+    "end": "0x1002C0D6",
     "evidence": "ordered",
     "name": "d3dx_sse_init_fast_table",
-    "size": 272,
+    "size": 262,
     "aliases": [
       "?sse_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
     ]
@@ -6773,10 +6773,10 @@
   {
     "address": "0x10030EF0",
     "canonical_address": "0x10026A50",
-    "end": "0x10030F80",
+    "end": "0x10030F72",
     "evidence": "referenced",
     "name": "d3dx_sse_quaternion_multiply",
-    "size": 144,
+    "size": 130,
     "aliases": [
       "?sse_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
     ]
@@ -6790,6 +6790,18 @@
     "size": 156,
     "aliases": [
       "?sse_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "address": "0x10031020",
+    "canonical_address": "0x10026B8E",
+    "end": "0x10031089",
+    "evidence": "ordered",
+    "name": "d3dx_sse_quaternion_inverse_impl",
+    "size": 105,
+    "aliases": [
+      "?sse_D3DXQuaternionInverse$$1@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z",
+      "?sse2_D3DXQuaternionInverse$$1@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
     ]
   },
   {
@@ -8467,10 +8479,10 @@
   {
     "address": "0x1003FAA0",
     "canonical_address": "0x100354E0",
-    "end": "0x1003FBA0",
+    "end": "0x1003FB9C",
     "evidence": "referenced",
     "name": "x3d_sincos",
-    "size": 256,
+    "size": 252,
     "aliases": [
       "_a_cos",
       "_a_sincos"
@@ -8479,10 +8491,10 @@
   {
     "address": "0x1003FBA0",
     "canonical_address": "0x10035600",
-    "end": "0x1003FF58",
+    "end": "0x1003FC9E",
     "evidence": "referenced",
     "name": "x3d_sin",
-    "size": 952,
+    "size": 254,
     "aliases": [
       "_a_sin"
     ]
@@ -8746,7 +8758,7 @@
     "address": "0x10046460",
     "canonical_address": "0x1003AC00",
     "end": "0x10046505",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "grim_jpeg_format_message",
     "size": 165
   },

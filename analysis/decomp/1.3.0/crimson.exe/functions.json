@@ -67,7 +67,7 @@
     "address": "0x004010D0",
     "canonical_address": "0x0040DFA0",
     "end": "0x004010E5",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "mod_api_init",
     "size": 21
   },
@@ -107,7 +107,7 @@
     "address": "0x004011E0",
     "canonical_address": "0x004120B0",
     "end": "0x004012CB",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "gameplay_run_state_init",
     "size": 235
   },
@@ -155,7 +155,7 @@
     "address": "0x00401350",
     "canonical_address": "0x004123D0",
     "end": "0x00401369",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "bonus_meta_table_init",
     "size": 25
   },
@@ -194,7 +194,7 @@
     "address": "0x004013D0",
     "canonical_address": "0x00412450",
     "end": "0x004013E4",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "bonus_meta_table_destroy",
     "size": 20
   },
@@ -274,7 +274,7 @@
     "address": "0x004014B0",
     "canonical_address": "0x0041E4A0",
     "end": "0x00401511",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "sprite_effect_pool_global_init",
     "size": 97
   },
@@ -290,7 +290,7 @@
     "address": "0x00401530",
     "canonical_address": "0x0041E520",
     "end": "0x004015C8",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "particle_pool_global_init",
     "size": 152
   },
@@ -2659,7 +2659,7 @@
     "address": "0x00421067",
     "canonical_address": "0x0046A415",
     "end": "0x004210CB",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "crt_fp_to_string",
     "size": 100
   },
@@ -3203,7 +3203,7 @@
     "address": "0x004242F6",
     "canonical_address": "0x0046D1EF",
     "end": "0x0042448F",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "crt_setmbcp",
     "size": 409
   },

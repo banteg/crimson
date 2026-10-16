@@ -59,7 +59,7 @@
     "address": "0x00401090",
     "canonical_address": "0x00412190",
     "end": "0x004010A9",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "quest_meta_init",
     "size": 25
   },
@@ -98,7 +98,7 @@
     "address": "0x00401100",
     "canonical_address": "0x00412450",
     "end": "0x00401114",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "bonus_meta_table_destroy",
     "size": 20
   },
@@ -189,7 +189,7 @@
     "address": "0x00401290",
     "canonical_address": "0x0041DF80",
     "end": "0x004012B1",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "unused_fx_queue_random_prefix_color_global_init",
     "size": 33
   },
@@ -205,7 +205,7 @@
     "address": "0x004012D0",
     "canonical_address": "0x0041DFC0",
     "end": "0x004012EE",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "unused_fx_rotated_creature_type_id_prefix_color_global_init",
     "size": 30
   },
@@ -285,7 +285,7 @@
     "address": "0x00401380",
     "canonical_address": "0x0041E760",
     "end": "0x004013A3",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "projectile_pool_global_init",
     "size": 35
   },
@@ -2031,7 +2031,7 @@
     "address": "0x00415337",
     "canonical_address": "0x0046A415",
     "end": "0x0041539B",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "crt_fp_to_string",
     "size": 100
   },
@@ -2507,7 +2507,7 @@
     "address": "0x0041848A",
     "canonical_address": "0x0046D1EF",
     "end": "0x00418623",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "crt_setmbcp",
     "size": 409
   },

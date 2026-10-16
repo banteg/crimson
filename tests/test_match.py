@@ -1583,7 +1583,9 @@ def test_extract_object_function_marks_static_rdata_references_read_only() -> No
     assert function.relocation_references[0].symbol_data == bytes.fromhex("5a825a82")
 
 
-def test_match_function_audits_complete_vc6_delete_unwind_graph() -> None:
+# 1.9.8's linker places the one-entry unwind map before its FuncInfo.
+@pytest.mark.parametrize("unwind_offset", [32, -8])
+def test_match_function_audits_complete_vc6_delete_unwind_graph(unwind_offset: int) -> None:
     image_base = 0x400000
     handler_address = 0x400100
     func_info_address = 0x400200
@@ -1597,9 +1599,10 @@ def test_match_function_audits_complete_vc6_delete_unwind_graph() -> None:
     handler += b"\xe9" + struct.pack("<i", frame_handler_address - (handler_address + 10))
     mapped[0x100:0x10A] = handler
     func_info = struct.pack("<II", 0x19930520, 1)
-    func_info += struct.pack("<I", func_info_address + 32) + b"\x00" * 20
-    func_info += struct.pack("<iI", -1, cleanup_address)
-    mapped[0x200:0x228] = func_info
+    func_info += struct.pack("<I", func_info_address + unwind_offset) + b"\x00" * 20
+    mapped[0x200:0x220] = func_info
+    unwind = 0x200 + unwind_offset
+    mapped[unwind : unwind + 8] = struct.pack("<iI", -1, cleanup_address)
     cleanup = bytes.fromhex("8b450c50e8")
     cleanup += struct.pack("<i", delete_address - (cleanup_address + 9)) + bytes.fromhex("59c3")
     mapped[0x300:0x30B] = cleanup

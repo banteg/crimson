@@ -142,7 +142,7 @@
     "address": "0x100019E0",
     "canonical_address": "0x10003C00",
     "end": "0x10001CB2",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "grim_run_loop",
     "size": 722
   },
@@ -182,7 +182,7 @@
     "address": "0x10002200",
     "canonical_address": "0x10004520",
     "end": "0x1000245D",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_apply_render_state",
     "size": 605
   },

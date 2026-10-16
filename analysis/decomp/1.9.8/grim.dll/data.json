@@ -56,6 +56,11 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x10020a2a",
+      "name": "grim_vertex_space_converter_destroy_thunk",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x1005748f",
       "name": "sscanf",
       "program": "1.9.8/grim.dll"
@@ -741,6 +746,11 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x10060bd4",
+      "name": "zlib_inflate_border",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x10060c50",
       "name": "zlib_cplens",
       "program": "1.9.8/grim.dll"
@@ -768,6 +778,11 @@
     {
       "address": "0x10060e48",
       "name": "msvc_array_unwind_scope_table",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10060f78",
+      "name": "grim_decode_jaz_texture_eh_info",
       "program": "1.9.8/grim.dll"
     },
     {
@@ -1151,6 +1166,11 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x10069018",
+      "name": "d3dx_zlib_fixed_literal_bits",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x1006901c",
       "name": "d3dx_zlib_fixed_distance_bits",
       "program": "1.9.8/grim.dll"
@@ -1168,6 +1188,11 @@
     {
       "address": "0x1006a120",
       "name": "d3dx_zlib_inflate_mask",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006bf50",
+      "name": "zlib_fixed_literal_bits",
       "program": "1.9.8/grim.dll"
     },
     {
@@ -1531,6 +1556,11 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x1006fa98",
+      "name": "grim_advanced_texture_formats",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x1006faf8",
       "name": "grim_subrect_ptr_table",
       "program": "1.9.8/grim.dll"
@@ -1731,6 +1761,11 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x10070e88",
+      "name": "grim_config_option_54_value",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x10070e90",
       "name": "grim_texture_slots",
       "program": "1.9.8/grim.dll"
@@ -1743,6 +1778,11 @@
     {
       "address": "0x10071294",
       "name": "grim_device_reset_retry_count",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10071298",
+      "name": "grim_advanced_texture_format_count",
       "program": "1.9.8/grim.dll"
     },
     {

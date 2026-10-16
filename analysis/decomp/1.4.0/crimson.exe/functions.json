@@ -82,10 +82,10 @@
   {
     "address": "0x004019F0",
     "canonical_address": "0x00401250",
-    "end": "0x00401AE0",
+    "end": "0x00401AC6",
     "evidence": "ordered",
     "name": "console_cmd_exec",
-    "size": 240
+    "size": 214
   },
   {
     "address": "0x00401C70",
@@ -139,7 +139,7 @@
     "address": "0x00401EE0",
     "canonical_address": "0x00401560",
     "end": "0x004020A5",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "console_init",
     "size": 453,
     "aliases": [
@@ -199,7 +199,7 @@
     "address": "0x00402AB0",
     "canonical_address": "0x00402350",
     "end": "0x00402BA5",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "console_register_cvar",
     "size": 245,
     "aliases": [
@@ -435,7 +435,7 @@
     "address": "0x00403400",
     "canonical_address": "0x00412230",
     "end": "0x00403415",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "bonus_pool_global_init",
     "size": 21
   },
@@ -467,7 +467,7 @@
     "address": "0x00403460",
     "canonical_address": "0x004122A0",
     "end": "0x004034F7",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "game_status_global_init",
     "size": 151
   },
@@ -499,7 +499,7 @@
     "address": "0x004036A0",
     "canonical_address": "0x004123D0",
     "end": "0x004036B9",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "bonus_meta_table_init",
     "size": 25
   },
@@ -527,7 +527,7 @@
     "address": "0x00403720",
     "canonical_address": "0x00412450",
     "end": "0x00403734",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "bonus_meta_table_destroy",
     "size": 20
   },
@@ -1899,7 +1899,7 @@
     "address": "0x0042337B",
     "canonical_address": "0x00463C74",
     "end": "0x004233F0",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "crt_isctype",
     "size": 117
   },
@@ -2771,7 +2771,7 @@
     "address": "0x00427367",
     "canonical_address": "0x0046A415",
     "end": "0x004273CB",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "crt_fp_to_string",
     "size": 100
   },
@@ -3008,7 +3008,7 @@
     "address": "0x00428D4A",
     "canonical_address": "0x0046AC37",
     "end": "0x00428DC4",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "crt_free_osfhnd",
     "size": 122,
     "aliases": [
@@ -3019,7 +3019,7 @@
     "address": "0x00428DC4",
     "canonical_address": "0x0046ACB6",
     "end": "0x00428E01",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "crt_get_osfhandle",
     "size": 61
   },
@@ -3043,7 +3043,7 @@
     "address": "0x0042920E",
     "canonical_address": "0x0046B08C",
     "end": "0x00429234",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "crt_isatty",
     "size": 38,
     "aliases": [
@@ -3350,7 +3350,7 @@
     "address": "0x0042AA37",
     "canonical_address": "0x0046D1EF",
     "end": "0x0042ABD0",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "crt_setmbcp",
     "size": 409
   },

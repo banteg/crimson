@@ -237,7 +237,7 @@
     "address": "0x00401DA0",
     "canonical_address": "0x00401DD0",
     "end": "0x0040231F",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "console_render",
     "size": 1407,
     "aliases": [
@@ -481,7 +481,7 @@
     "address": "0x004047C0",
     "canonical_address": "0x004047C0",
     "end": "0x0040516B",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "demo_trial_overlay_render",
     "size": 2475
   },
@@ -1722,7 +1722,7 @@
     "address": "0x00413680",
     "canonical_address": "0x00413430",
     "end": "0x00413785",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "player_start_reload",
     "size": 261
   },
@@ -1738,7 +1738,7 @@
     "address": "0x00413900",
     "canonical_address": "0x004136B0",
     "end": "0x004177D3",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "player_update",
     "size": 16083
   },
@@ -2829,7 +2829,7 @@
     "address": "0x00425FE0",
     "canonical_address": "0x00425E50",
     "end": "0x00426376",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "player_take_damage",
     "size": 918
   },
@@ -4873,10 +4873,10 @@
   {
     "address": "0x004450C0",
     "canonical_address": "0x00444F70",
-    "end": "0x004452A0",
+    "end": "0x004451EE",
     "evidence": "referenced",
     "name": "typo_word_pick_fragment",
-    "size": 480
+    "size": 302
   },
   {
     "address": "0x004452A0",
@@ -5089,10 +5089,10 @@
   {
     "address": "0x00447660",
     "canonical_address": "0x00447580",
-    "end": "0x004476B0",
+    "end": "0x00447699",
     "evidence": "referenced",
     "name": "config_apply_detail_preset",
-    "size": 80
+    "size": 57
   },
   {
     "address": "0x004476B0",
@@ -5450,7 +5450,7 @@
     "address": "0x004519D0",
     "canonical_address": "0x00451910",
     "end": "0x00451A66",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "weapon_table_defaults_global_init",
     "size": 150
   },
@@ -8348,7 +8348,7 @@
     "address": "0x00463128",
     "canonical_address": "0x004636C8",
     "end": "0x00463147",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "seh_prolog",
     "size": 31,
     "aliases": [

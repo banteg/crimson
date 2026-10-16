@@ -238,7 +238,7 @@
     "address": "0x10001E80",
     "canonical_address": "0x10001E90",
     "end": "0x100020A3",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_config_dialog_populate_display_modes",
     "size": 547
   },

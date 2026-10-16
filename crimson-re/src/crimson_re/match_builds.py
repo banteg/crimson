@@ -334,8 +334,14 @@ def _flow_extent(image: matchlib.LoadedImage, start: int, limit: int) -> tuple[i
         elif following in lookup_tables and image.function_bytes(following, following + 1)[0] < cases:
             while following < limit and image.function_bytes(following, following + 1)[0] < cases:
                 following += 1
-        elif image.function_bytes(following, following + 1)[0] in matchlib.PADDING_BYTES:
-            following += 1
+        elif (
+            (filler := matchlib.disassemble_normalized_function(
+                image.function_bytes(following, min(following + 16, limit)), base_address=following,
+            ))
+            and filler[0].text in matchlib.PADDING_LINE_TEXT
+        ):
+            # Alignment fillers such as `lea ecx, [ecx]` also precede a switch table.
+            following += filler[0].size
         else:
             break
     return code_end, following
@@ -800,7 +806,11 @@ class _Mapper:
                     continue
                 target = next(iter(targets))
                 # A vote outranks a placement by layout order alone.
-                if address in self.mapped and (self.evidence[address] != "ordered" or self.mapped[address] == target):
+                if address in self.mapped and self.evidence[address] != "ordered":
+                    continue
+                if self.mapped.get(address) == target:
+                    if evidence == "referenced" or self.function_votes.get(address, {target}) == {target}:
+                        self.evidence[address] = evidence
                     continue
                 if self.hits.get(address) and target not in self.hits[address]:
                     continue

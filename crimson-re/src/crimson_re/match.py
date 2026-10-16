@@ -1485,25 +1485,23 @@ def _coff_vc6_single_delete_unwind_key(obj: CoffObject, symbol: CoffSymbol) -> s
 
     func_info_section = obj.sections[func_info_symbol.section_number - 1]
     base = func_info_symbol.value
-    func_info = func_info_section.data[base : base + 40]
-    if len(func_info) != 40:
+    # FuncInfo: magic, one state, unwind map, and no try blocks or IP map.
+    func_info = func_info_section.data[base : base + 28]
+    if len(func_info) != 28 or struct.unpack_from("<II", func_info) != (0x19930520, 1):
         return None
-    if struct.unpack_from("<II", func_info) != (0x19930520, 1):
-        return None
-    if func_info[8:12] != b"\x00" * 4 or func_info[36:40] != b"\x00" * 4:
-        return None
-    if func_info[12:32] != b"\x00" * 20 or struct.unpack_from("<i", func_info, 32)[0] != -1:
+    if func_info[8:12] != b"\x00" * 4 or func_info[12:28] != b"\x00" * 16:
         return None
 
+    # The compiler may emit the one-entry unwind map before or after FuncInfo.
     unwind_map_symbol = _coff_relocation_symbol(obj, func_info_section, base + 8)
-    cleanup_symbol = _coff_relocation_symbol(obj, func_info_section, base + 36)
-    if (
-        unwind_map_symbol is None
-        or unwind_map_symbol.section_number != func_info_symbol.section_number
-        or unwind_map_symbol.value != base + 32
-        or cleanup_symbol is None
-        or cleanup_symbol.section_number <= 0
-    ):
+    if unwind_map_symbol is None or unwind_map_symbol.section_number <= 0:
+        return None
+    unwind_section = obj.sections[unwind_map_symbol.section_number - 1]
+    unwind = unwind_section.data[unwind_map_symbol.value : unwind_map_symbol.value + 8]
+    if len(unwind) != 8 or struct.unpack_from("<i", unwind)[0] != -1 or unwind[4:] != b"\x00" * 4:
+        return None
+    cleanup_symbol = _coff_relocation_symbol(obj, unwind_section, unwind_map_symbol.value + 4)
+    if cleanup_symbol is None or cleanup_symbol.section_number <= 0:
         return None
 
     cleanup_section = obj.sections[cleanup_symbol.section_number - 1]
@@ -2453,15 +2451,16 @@ def _image_vc6_single_delete_unwind_key(
     ):
         return None
 
-    func_info = _image_bytes(image, func_info_address, 40)
+    func_info = _image_bytes(image, func_info_address, 28)
     if func_info is None or struct.unpack_from("<II", func_info) != (0x19930520, 1):
         return None
-    if func_info[12:32] != b"\x00" * 20 or struct.unpack_from("<i", func_info, 32)[0] != -1:
+    if func_info[12:28] != b"\x00" * 16:
         return None
-    if struct.unpack_from("<I", func_info, 8)[0] != func_info_address + 32:
+    unwind = _image_bytes(image, struct.unpack_from("<I", func_info, 8)[0], 8)
+    if unwind is None or struct.unpack_from("<i", unwind)[0] != -1:
         return None
 
-    cleanup_address = struct.unpack_from("<I", func_info, 36)[0]
+    cleanup_address = struct.unpack_from("<I", unwind, 4)[0]
     cleanup = _image_bytes(image, cleanup_address, 11)
     if cleanup is None or cleanup[:2] != bytes.fromhex("8b45") or cleanup[3:5] != bytes.fromhex("50e8"):
         return None

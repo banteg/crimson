@@ -245,7 +245,7 @@
     "address": "0x00401E20",
     "canonical_address": "0x00401DD0",
     "end": "0x004023A0",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "console_render",
     "size": 1408,
     "aliases": [
@@ -464,10 +464,10 @@
   {
     "address": "0x00403720",
     "canonical_address": "0x004036D0",
-    "end": "0x004045F0",
+    "end": "0x004042BA",
     "evidence": "referenced",
     "name": "input_key_name",
-    "size": 3792
+    "size": 2970
   },
   {
     "address": "0x004045F0",
@@ -481,7 +481,7 @@
     "address": "0x00404810",
     "canonical_address": "0x004047C0",
     "end": "0x004051BB",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "demo_trial_overlay_render",
     "size": 2475
   },
@@ -4881,10 +4881,10 @@
   {
     "address": "0x00445250",
     "canonical_address": "0x00444F70",
-    "end": "0x00445430",
+    "end": "0x0044537E",
     "evidence": "referenced",
     "name": "typo_word_pick_fragment",
-    "size": 480
+    "size": 302
   },
   {
     "address": "0x00445430",

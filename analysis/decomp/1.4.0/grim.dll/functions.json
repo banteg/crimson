@@ -114,10 +114,10 @@
   {
     "address": "0x100010E0",
     "canonical_address": "0x10001170",
-    "end": "0x10001700",
+    "end": "0x100016CA",
     "evidence": "ordered",
     "name": "grim_advanced_config_dialog_proc",
-    "size": 1568
+    "size": 1514
   },
   {
     "address": "0x10001700",
@@ -206,7 +206,7 @@
     "address": "0x100027C0",
     "canonical_address": "0x10004520",
     "end": "0x10002A31",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_apply_render_state",
     "size": 625
   },
@@ -303,7 +303,7 @@
     "address": "0x100030B0",
     "canonical_address": "0x100052F0",
     "end": "0x10003598",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_state_init",
     "size": 1256
   },
@@ -311,7 +311,7 @@
     "address": "0x100035A0",
     "canonical_address": "0x10005A40",
     "end": "0x1000362C",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "grim_lookup_blob_load",
     "size": 140
   },
@@ -358,10 +358,10 @@
   {
     "address": "0x10003820",
     "canonical_address": "0x10005D40",
-    "end": "0x100039E0",
+    "end": "0x100039C6",
     "evidence": "ordered",
     "name": "grim_apply_config",
-    "size": 448
+    "size": 422
   },
   {
     "address": "0x100039E0",

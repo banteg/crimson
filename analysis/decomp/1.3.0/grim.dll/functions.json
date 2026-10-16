@@ -158,7 +158,7 @@
     "address": "0x10001C10",
     "canonical_address": "0x10003C00",
     "end": "0x10001E91",
-    "evidence": "ordered",
+    "evidence": "referenced",
     "name": "grim_run_loop",
     "size": 641
   },
@@ -198,7 +198,7 @@
     "address": "0x100023E0",
     "canonical_address": "0x10004520",
     "end": "0x1000263D",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_apply_render_state",
     "size": 605
   },
@@ -295,7 +295,7 @@
     "address": "0x10003030",
     "canonical_address": "0x10005A40",
     "end": "0x100030BC",
-    "evidence": "ordered",
+    "evidence": "called",
     "name": "grim_lookup_blob_load",
     "size": 140
   },

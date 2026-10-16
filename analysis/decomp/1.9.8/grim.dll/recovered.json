@@ -442,6 +442,70 @@
       "bytes": "e8bc100000",
       "offset": 0,
       "note": "Instruction-exact under 1.9.8: grim_draw_text_mono_fmt, grim_draw_text_small_fmt."
+    },
+    {
+      "name": "d3dx_zlib_fixed_literal_bits",
+      "address": "0x10069018",
+      "reference": "0x10041395",
+      "bytes": "8b0d18900610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_inflate_trees_fixed."
+    },
+    {
+      "name": "grim_decode_jaz_texture_eh_info",
+      "address": "0x10060f78",
+      "reference": "0x10004d10",
+      "bytes": "68780f0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_decode_jaz_texture."
+    },
+    {
+      "name": "zlib_fixed_literal_bits",
+      "address": "0x1006bf50",
+      "reference": "0x10056924",
+      "bytes": "8b0d50bf0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_zlib_inflate_trees_fixed."
+    },
+    {
+      "name": "zlib_inflate_border",
+      "address": "0x10060bd4",
+      "reference": "0x10055065",
+      "bytes": "8b148dd40b0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_zlib_inflate_blocks."
+    },
+    {
+      "name": "grim_advanced_texture_format_count",
+      "address": "0x10071298",
+      "reference": "0x100013a5",
+      "bytes": "891d98120710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_advanced_config_dialog_proc."
+    },
+    {
+      "name": "grim_advanced_texture_formats",
+      "address": "0x1006fa98",
+      "reference": "0x1000126e",
+      "bytes": "8b0c8598fa0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_advanced_config_dialog_proc."
+    },
+    {
+      "name": "grim_config_option_54_value",
+      "address": "0x10070e88",
+      "reference": "0x100012a9",
+      "bytes": "c605880e071000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_advanced_config_dialog_proc."
+    },
+    {
+      "name": "grim_vertex_space_converter_destroy_thunk",
+      "address": "0x10020a2a",
+      "reference": "0x10024c44",
+      "bytes": "e8e1bdffff",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_pixel_format_scalar_deleting_destroy."
     }
   ]
 }
