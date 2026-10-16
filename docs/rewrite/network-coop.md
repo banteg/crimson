@@ -109,13 +109,14 @@ networking work on proving:
    - **Two WebRTC DataChannels on one `RTCPeerConnection`**:
 
      - `coop-ticks` (`ordered: false, maxRetransmits: 0`): 60 Hz unreliable
-       packets carrying up to 8 unacknowledged ticks of local `PortableInput`
-       plus ping/echo timing and confirmed state hashes.
+       packets carrying up to 8 unacknowledged ticks of local `PortableInput` +
+       per-tick 4-bit perk command nibbles (`OPEN` / `PICK`), ping/echo timing,
+       and confirmed state hashes.
 
-     - `coop-control` (`ordered: true`, reliable): control barriers
-       (`MSG_START_RUN`, `MSG_INPUT_REPAIR`, `MSG_PERK_DECISION`, `MSG_PAUSE`,
-       `MSG_DESYNC`) and automatic gap repair whenever unacknowledged input age
-       exceeds the 8-tick unreliable window.
+     - `coop-control` (`ordered: true`, reliable): control messages
+       (`MSG_START_RUN`, `MSG_INPUT_REPAIR`, `MSG_PAUSE`, `MSG_DESYNC`) and
+       automatic gap repair whenever unacknowledged input age exceeds the 8-tick
+       unreliable window.
 
    - **NAT traversal**: The Worker issues short-lived **Cloudflare Calls TURN**
      credentials (`turn:turn.cloudflare.com:3478?transport=udp` and
@@ -409,7 +410,7 @@ explicitly classified:
 
 | Criterion | Adaptive-Delay Lockstep (`M1` Prototype) | Hybrid Delay + Rollback (`M2` Target) | Authoritative Host (State Streaming) |
 | --- | --- | --- | --- |
-| **Bandwidth (per peer)** | ~6–12 KB/s | **~12 KB/s** (196 B × 60 Hz payload, before SCTP/DTLS overhead) | 150–600 KB/s (creatures, projectiles, effects, decals) |
+| **Bandwidth (per peer)** | ~6–12 KB/s | **~12 KB/s** (200 B × 60 Hz payload, before SCTP/DTLS overhead) | 150–600 KB/s (creatures, projectiles, effects, decals) |
 | **Feel at 30 ms RTT (LAN / Metro)** | Good (2 ticks / 33 ms delay) | **Excellent** (2 ticks delay, 0–1 tick rollback on jitter) | Asymmetric (Host 0 ms, Guest 30+ ms) |
 | **Feel at 80–120 ms RTT (Continental)** | Fair (4–5 ticks / 67–83 ms aim/fire lag) | **Very Good** (2 ticks / 33 ms local delay + 2–4 ticks rollback) | Guest sees delayed blood/corpses or rubber-banding |
 | **Feel at 150 ms RTT + ±30 ms Jitter** | Stalls/hitches on late packets | **Smooth** (absorbs up to 8–12 ticks / 133–200 ms without stalling) | High bandwidth stalls congestion window |
@@ -516,7 +517,8 @@ Therefore, **cross-peer desync hashes and `M0b` state comparisons** run over
    zeroed (`crimson-core/checks/game_compare.mjs:10-17`).
 
 2. Authoritative `KeyframeHost` fields: `rng`, `tick`, `menu_requested`,
-   `perk_menu_open`, `running_down`, `run_down_ms`, `overflow_active`, `overflow_extent`, and normalized `overflow_free` index
+   `perk_menu_open`, `perk_picker`, `running_down`, `run_down_ms`,
+   `overflow_active`, `overflow_extent`, and normalized `overflow_free` index
    (`overflow_free ? int(overflow_free - game_effect_overflow.entries) : -1`).
    (`music_latch` mirrors `music_playlist_randomized_latch`, which item 1
    already hashes.)
@@ -629,77 +631,91 @@ are 100% decoupled from rollback**:
 
 ## 5. Research question 4: Shared perk menus, pause, death, and restart
 
-### 5.1 Perk menu UI interception & out-of-band decision barrier
+### 5.1 Shared perk menu: whoever opens the menu picks, partner sees `viewer_card`
 
-In the recovered game, the perk screen (`decomp/1.9/crimsonland/game/perk_selection_screen_update.cpp`)
-and UI timeline (`decomp/1.9/crimsonland/ui_render/ui_elements_update_and_render.cpp:41-55`)
-have local side effects that `crimson-core/game/changes/live-run.patch` only
-partially intercepts:
+In 2-player co-op, XP (`player_state_table[0].experience`), level,
+`perk_pending_count`, and `perk_choice_ids[0..6]` are shared across the team.
+Rather than opening `GAME_STATE_PERK_SELECTION` on both browsers (which would
+yank the partner's cursor mid-aim and require out-of-band UI synchronization and
+guest input suppression in `perk_selection_screen_update.cpp`), **whoever opens
+the perk menu gets `GAME_STATE_PERK_SELECTION` and picks, while the partner
+stays on the arena screen and sees the replay viewer's top-right pick card
+(`viewer_card` in `crimson-core/host/viewer.inc:263-295`)**:
 
-- Clicking a perk choice (`perk_selection_screen_update.cpp:225`) calls
-  `game_live_pick(perk_selection_index)` and immediately sets
-  `ui_transition_direction = 0; game_state_pending = GAME_STATE_GAMEPLAY;`.
+1. **Requesting the menu (`cmd = OPEN` at the tip of `input_produced_tick`)**:
 
-- Clicking **Cancel** (`:209-218`) sets `ui_transition_direction = 0; game_state_pending = GAME_STATE_GAMEPLAY;`
-  directly **without** calling any `session.inc` hook.
+   - Whenever `live_perk_command_valid()` is true (`config_blob.game_mode != GAME_MODE_RUSH && any_alive && perk_pending_count > 0`)
+     and no menu is currently open, **either player** $p \in \{0, 1\}$ can press
+     their Pick Perk key (`key_pick_perk` / `Space` / `KP_Plus`) or click the
+     level-up prompt.
 
-- `ui_elements_update_and_render.cpp:41-55` decrements `ui_elements_timeline`
-  when `ui_transition_direction == 0` and calls `game_state_set(game_state_pending)`
-  once `ui_elements_timeline < 0`.
+   - Player $p$ records `cmd = OPEN` (`8`) on their next newly produced input
+     tick `t_open = ++input_produced_tick` and **pauses their local
+     `input_produced_tick` at `t_open`** (`waiting_for_menu_at = t_open`).
 
-- Outside ticks, `SessionGrim` (`crimson-core/host/game.inc:12-40`) reads real
-  local mouse/keyboard/pad input on both Host and Guest.
+   - Because `input_produced_tick` stops at `t_open`, the player who opened the
+     menu **never pre-produces inputs for `t_open + 1`** before picking.
 
-#### Required co-op perk screen rules
+2. **Deterministic `perk_picker` selection & command filtering**:
 
-1. **Menu-open rollback barrier (`T_open`)**:
+   - Each tick $t$ carries `(in[0][t], cmd[0][t])` and `(in[1][t], cmd[1][t])`,
+     where `cmd` is a 4-bit nibble (`0` = none, `1..7` = `PICK(0..6)`, `8` =
+     `OPEN`). Before calling `portable_step_many`, both peers derive the tick's
+     `PortableCommand` identically:
 
-   - When a tick $T_{\text{open}}$ sets `perk_menu_open = true`
-     (`game_state_pending == GAME_STATE_PERK_SELECTION` in `portable_step_many`),
-     `next_sim_tick` stops advancing at $T_{\text{open}} + 1$ (**speculative
-     barrier**).
+     - **When `perk_menu_open == false`**: If `live_perk_command_valid()` is
+       true and `cmd[0][t] == OPEN`, run `PortableCommand{2, 0}` and set
+       `KeyframeHost::perk_picker = 0` (Player 0 wins a same-tick tie). Else if
+       `live_perk_command_valid()` is true and `cmd[1][t] == OPEN`, run
+       `PortableCommand{2, 0}` and set `perk_picker = 1`. Any other `cmd` value
+       is dropped (`count = 0`).
 
-   - Neither peer transitions `game_state_id` to `GAME_STATE_PERK_SELECTION`
-     until `confirmed_through == T_open` (proving the menu-open tick was not
-     invalidated by a rollback).
+     - **When `perk_menu_open == true` (tick $T_{\text{open}} + 1$)**: Read
+       **only** `cmd[perk_picker][t]` and ignore `cmd[1 - perk_picker][t]`. If
+       `cmd[perk_picker][t]` is `PICK(c)` with $0 \le c < \text{offered\_count}$,
+       run `PortableCommand{1, c}`; otherwise run with `count = 0` (Cancel).
+       Reset `perk_picker = -1`.
 
-   - Once `confirmed_through == T_open`, both peers increment `menu_epoch`,
-     compute `offered_count` (`5`, `6`, or `7` via `PERK_ID_PERK_EXPERT` /
-     `PERK_ID_PERK_MASTER`, `crimson-core/host/host.cpp:611-613`) and
-     `offered_hash` (`perk_choice_ids[0..offered_count - 1]`), and call
-     `game_state_set_recovered(GAME_STATE_PERK_SELECTION)`.
+   - When a tick $T_{\text{open}}$ sets `perk_menu_open = true`, `next_sim_tick`
+     stops at $T_{\text{open}} + 1$ until `confirmed_through == T_open`
+     (**menu-open rollback barrier**, ensuring a speculative open cannot trigger
+     the UI if rolled back).
 
-2. **Full UI interception in `perk_selection_screen_update.cpp`**:
+3. **At confirmed `T_open` (`confirmed_through == T_open`)**:
 
-   - **On Guest**: Suppress choice activation and Cancel activation in
-     `perk_selection_screen_update.cpp` (mouse, keyboard Enter/Space/Escape, and
-     gamepad A/B) so the Guest cannot locally close the menu or queue a pick.
+   - **On the picker's browser (`local_player == perk_picker`)**:
+     Calls `game_state_set_recovered(GAME_STATE_PERK_SELECTION)` and opens the
+     stock `Pick a Perk` screen (`perk_selection_screen_update.cpp`) unmodified.
+     When the picker clicks a perk choice (`game_live_pick(choice)` in
+     `crimson-core/game/changes/live-run.patch`) or clicks **Cancel**
+     (`perk_selection_screen_update.cpp:213`, which transitions back to
+     `GAME_STATE_GAMEPLAY` with `live.queued_count == 0`), the picker returns to
+     `GAME_STATE_GAMEPLAY` (`coop_banked_s = 0`) and unpauses
+     `++input_produced_tick` at $T_{\text{open}} + 1$ with `cmd = PICK(choice)`
+     (or `cmd = NONE` for Cancel).
 
-   - **On Host**: Intercept both choice activation (`choice = 0..offered_count - 1`)
-     and Cancel / Escape (`choice = -1`) via `coop_propose_perk_decision(choice)`.
-     Do **not** set `ui_transition_direction = 0` or `game_state_pending = GAME_STATE_GAMEPLAY`
-     until the decision handshake completes.
+   - **On the partner's browser (`local_player != perk_picker`)**:
+     Keeps `GAME_STATE_PERK_SELECTION` shut (`live.requested = GAME_STATE_PENDING_IDLE_SENTINEL`,
+     matching `crimson-core/host/watch.inc:344`). If the partner had paused their
+     own `input_produced_tick` at $t_{\text{req}} > T_{\text{open}}$ because
+     they pressed Open a tick later while $T_{\text{open}}$ was in flight,
+     seeing `perk_picker != local_player` at $T_{\text{open}}$ unpauses their
+     `input_produced_tick` (and their `OPEN` nibble on $T_{\text{open}} + 1$ is
+     ignored by the command filter above). While waiting at the $T_{\text{open}}$
+     input frontier, the partner draws the frozen arena (`HOST_FRAME_SHOW`) with
+     **`viewer_card` (`crimson-core/host/viewer.inc:263-295`)** slid in at the
+     top-right (`VIEWER_CARD_Y = 88`) showing `"Level N — Player X picking…"`
+     and the 5–7 offered perks from `perk_choice_ids[]`.
 
-3. **Two-way decision confirmation & resume**:
+4. **Resuming at `T_open + 1`**:
 
-   - Host sends `MSG_PERK_DECISION { run_epoch, menu_epoch, menu_tick: T_open, offered_hash, choice }`
-     on `coop-control`.
+   - As soon as `perk_picker` produces tick $T_{\text{open}} + 1$ and both peers
+     step $T_{\text{open}} + 1$, gameplay resumes immediately for both players.
 
-   - Guest validates `menu_epoch`, `menu_tick == T_open`, `offered_hash`, and
-     `choice == -1 || (0 <= choice && choice < offered_count)`, records the
-     command for tick $T_{\text{open}} + 1$ (`commands[0] = {1, choice}, count = 1`
-     if `choice >= 0`, else `count = 0`), and replies with
-     `MSG_PERK_ACK { run_epoch, menu_epoch }`.
-
-   - Once Host receives `MSG_PERK_ACK` (and on Guest upon sending `MSG_PERK_ACK`),
-     each peer calls `game_state_set_recovered(GAME_STATE_GAMEPLAY)` (which sets
-     `ui_elements_timeline = 0` and `ui_transition_direction = 1` per
-     `decomp/1.9/crimsonland/ui_elements/game_state_set.cpp:328-329`), resets
-     `coop_banked_s = 0`, and steps tick $T_{\text{open}} + 1$. Inputs produced
-     before the menu opened (up to $T_{\text{open}} + 1 + D$) are already
-     published and stay immutable; they play out after resume like any other
-     delayed input.
-
+   - On the partner's screen, if a perk was picked, `viewer_card` highlights the
+     chosen perk (`lit = i == chosen`) for `WATCH_PICK_SECONDS = 3.0f` during
+     live play before sliding out; if cancelled (`count = 0`), `viewer_card`
+     slides out immediately.
 ### 5.2 Run-down barrier, pause barrier, and restart
 
 - **Run-down & terminal screen barrier**:
@@ -838,24 +854,25 @@ keep arriving.
    A peer that simply stops producing input (pause, perk menu barrier) advertises
    no gap, so barriers of any length never trip the progress timeout.
 
-#### Channel 1: `coop-ticks` (`ordered: false, maxRetransmits: 0`, little-endian, 196 bytes at $W = 8$)
+#### Channel 1: `coop-ticks` (`ordered: false, maxRetransmits: 0`, little-endian, 200 bytes at $W = 8$)
 
 | Offset | Type | Field | Description |
 | --- | --- | --- | --- |
 | `0` | `uint8` | `magic_ver` | `0xC3` (Crimson Co-op v3) |
 | `1` | `uint8` | `window_count` | Number of contiguous ticks in `inputs` ($1..8$) |
-| `2` | `uint8` | `open_req_mask` | Bit $i$ set if sender requested `CMD_PERK_OPEN` (`{2, 0}`) on tick `head_tick - W + 1 + i` (immutable per tick) |
-| `3` | `uint8` | `flags` | Bit `0`: `has_hash` (`hash_tick` valid); Bit `1`: `is_focused` |
+| `2` | `uint8` | `flags` | Bit `0`: `has_hash` (`hash_tick` valid); Bit `1`: `is_focused` |
+| `3` | `uint8` | `reserved0` | `0` (4-byte alignment) |
 | `4` | `uint32` | `run_epoch` | Monotonic run counter (`1..N`); packets with `run_epoch != current` are dropped |
 | `8` | `uint32` | `ping_seq` | Monotonic sender packet sequence number |
 | `12` | `uint32` | `echo_ping_seq` | Highest `ping_seq` received from remote peer (`0` if none) |
 | `16` | `uint16` | `echo_hold_ms` | Milliseconds elapsed between receiving `echo_ping_seq` and sending this packet |
-| `18` | `uint16` | `reserved` | `0` (4-byte alignment) |
+| `18` | `uint16` | `reserved1` | `0` (4-byte alignment) |
 | `20` | `uint32` | `head_tick` | Highest tick index in `inputs` |
 | `24` | `uint32` | `ack_tick` | `remote_contiguous_tick` (`0xFFFFFFFF` sentinel when no tick $\ge 0$ received yet) |
 | `28` | `uint32` | `hash_tick` | Confirmed tick $T_h \le \text{confirmed\_through}$ for `state_hash` (valid iff `flags & 1`) |
 | `32` | `uint32` | `state_hash` | `slot[hash_tick & 15].canonical_hash_after` |
-| `36` | `20B × W` | `inputs[W]` | $W$ `PortableInput` structs (`[head_tick - W + 1 .. head_tick]`) |
+| `36` | `uint32` | `cmd_packed` | 8×4-bit command nibbles (`0` = none, `1..7` = `PICK(0..6)`, `8` = `OPEN`) for `inputs[0..W-1]` |
+| `40` | `20B × W` | `inputs[W]` | $W$ `PortableInput` structs (`[head_tick - W + 1 .. head_tick]`) |
 
 *RTT calculation*: Upon receiving a packet echoing `echo_ping_seq == s`,
 $\text{RTT} = \max(0, t_{\text{recv}} - t_{\text{sent}}[s] - \text{echo\_hold\_ms})$.
@@ -871,16 +888,13 @@ from a future tick $> t$.
 Per [RFC 8831 Section 6.3](https://www.rfc-editor.org/rfc/rfc8831.html#section-6.3),
 delivery ordering across two separate WebRTC DataChannels (`coop-ticks` and
 `coop-control`) is not guaranteed. Therefore, every message on both channels
-carries `run_epoch` (`uint32`), the perk barrier carries its `menu_tick`, and
-tick `0` inputs for `run_epoch` are gated until both `MSG_START_RUN` and
-`MSG_START_ACK` for `run_epoch` have completed.
+carries `run_epoch` (`uint32`), and tick `0` inputs for `run_epoch` are gated
+until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
 
 - `MSG_HELLO`: `{ type: "hello", protocol_ver: 3, build_id: string, role: 0 | 1 }`
 - `MSG_START_RUN`: `{ type: "start", run_epoch: number, player_count: 2, delay_ticks: number, config_b64: string, quest_b64?: string }`
 - `MSG_START_ACK`: `{ type: "start_ack", run_epoch: number }`
-- `MSG_INPUT_REPAIR`: `{ type: "repair", run_epoch: number, start_tick: number, open_req_bits: number, inputs_b64: string }`
-- `MSG_PERK_DECISION`: `{ type: "perk_pick", run_epoch: number, menu_epoch: number, menu_tick: number, offered_hash: number, choice: number }`
-- `MSG_PERK_ACK`: `{ type: "perk_ack", run_epoch: number, menu_epoch: number }`
+- `MSG_INPUT_REPAIR`: `{ type: "repair", run_epoch: number, start_tick: number, cmds_b64: string, inputs_b64: string }`
 - `MSG_PAUSE`: `{ type: "pause", run_epoch: number, pause_seq: number, paused: boolean }`
 - `MSG_DESYNC`: `{ type: "desync", run_epoch: number, tick: number, local_hash: number, remote_hash: number, snapshot_b64?: string }` (exchanges compressed `coop_canonical_snapshot()` at `tick` so both peers log the exact first differing `schema.json` / host / overflow field).
 
@@ -967,9 +981,9 @@ tick `0` inputs for `run_epoch` are gated until both `MSG_START_RUN` and
 
 2. **Deliverable**: Playable `?coop=<room_id>` two-browser session using
    `coop-ticks` + `coop-control` over WebRTC + Cloudflare Calls TURN (and WS
-   fallback), with reliable `MSG_INPUT_REPAIR`, host-authoritative perk menu
-   interception, input-frontier pause, and measured RTT / candidate-type /
-   desync telemetry.
+   fallback), with reliable `MSG_INPUT_REPAIR`, in-band whoever-opens-picks perk
+   flow + partner `viewer_card` notice, input-frontier pause, and measured RTT /
+   candidate-type / desync telemetry.
 
 ### Milestone `M2`: Bounded rollback in the browser prototype
 
@@ -989,9 +1003,10 @@ tick `0` inputs for `run_epoch` are gated until both `MSG_START_RUN` and
 - **Simultaneous bonus & Telekinetic**: Both players overlapping one bonus;
   each player hovering a bonus with `Telekinetic` (`telekinetic_bonus_hover_timer_ms[0..1]`).
 
-- **Boundary collisions**: Perk menu open/pick/cancel on the same tick as player
-  death, level-up, or quest completion; `MSG_PERK_DECISION` arriving on
-  `coop-control` before the delayed `open_req_mask` on `coop-ticks`.
+- **Boundary collisions**: Both players pressing Pick Perk on the same tick
+  (P0 tie-break) or 1 tick apart (`T_open` and `T_open + 1`, verifying partner
+  unpauses `input_produced_tick` and ignores the late `OPEN`); perk open/pick/cancel
+  on the same tick as player death, level-up, or quest completion.
 
 - **Pause races**: `MSG_PAUSE` arriving when the receiver has already
   speculated 8 ticks past the sender's input frontier; simultaneous pause/resume
