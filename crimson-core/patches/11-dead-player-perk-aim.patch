@@ -1,14 +1,79 @@
-Original bug 11: Doctor, Pyrokinetic and Evil Eyes keep working from a dead player's aim. The fix skips them.
+Original bug 11: Doctor, Pyrokinetic and Evil Eyes read player 1's aim only, and keep working from a dead player's aim.
+The fix runs them from each living player's aim, and Evil Eyes holds every living player's target.
+--- a/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
+@@ -92,6 +92,7 @@
+ extern int perk_id_radioactive;
+ extern int perk_id_mr_melee;
+ extern int perk_id_toxic_avenger;
++extern int perk_id_evil_eyes;
+ extern int sfx_shock_fire;
+ extern int sfx_plasmaminigun_fire;
+ extern creature_type_table_t creature_type_table;
+@@ -143,6 +144,15 @@
+ 
+     ++creature_update_tick;
+     creature_active_count = 0;
++    int evil_eyes_targets[2] = {player_state_table[0].evil_eyes_target_creature, -1};
++    if (!portable_preserve_bugs) {
++        for (int i = 0; i < 2; ++i) {
++            evil_eyes_targets[i] = i < config_player_count && !(player_state_table[i].health <= 0.0f)
++                    && perk_count_get(perk_id_evil_eyes) != 0
++                ? player_state_table[i].evil_eyes_target_creature
++                : -1;
++        }
++    }
+     for (creature_index = 0; creature_index < 384; ++creature_index) {
+         if (creatures[creature_index].active) {
+             ++creature_active_count;
+@@ -276,8 +286,8 @@
+                         creatures[creature_index].force_target = 0;
+                         move_scale = 1.0f;
+ 
+-                        if (creature_index
+-                            == player_state_table[0].evil_eyes_target_creature) {
++                        if (creature_index == evil_eyes_targets[0]
++                            || creature_index == evil_eyes_targets[1]) {
+                             goto next_creature;
+                         }
+ 
 --- a/decomp/1.9/crimsonland/game/perks_update_effects.cpp
 +++ b/decomp/1.9/crimsonland/game/perks_update_effects.cpp
-@@ -108,7 +108,9 @@
+@@ -110,12 +110,16 @@
      }
  
      perk_doctor_target_creature_id = -1;
 -    if (player_state_table[0].perk_counts[perk_id_doctor] > 0
-+    if (!portable_preserve_bugs && player_state_table[0].health <= 0.0f) {
-+        player_state_table[0].evil_eyes_target_creature = -1;
++    for (int aim_index = 0; aim_index < (portable_preserve_bugs ? 1 : config_player_count); ++aim_index) {
++    player_state_t *aim_player = &player_state_table[aim_index];
++    if (!portable_preserve_bugs && aim_player->health <= 0.0f) {
++        aim_player->evil_eyes_target_creature = -1;
 +    } else if (player_state_table[0].perk_counts[perk_id_doctor] > 0
          || player_state_table[0].perk_counts[perk_id_pyrokinetic] > 0
          || player_state_table[0].perk_counts[perk_id_evil_eyes] > 0) {
-         player_state_table[0].evil_eyes_target_creature = -1;
+-        player_state_table[0].evil_eyes_target_creature = -1;
++        aim_player->evil_eyes_target_creature = -1;
+         int creature_id = creature_find_in_radius(
+-            &player_state_table[0].aim,
++            &aim_player->aim,
+             12.0f,
+             0);
+         if (creature_id != -1) {
+@@ -157,14 +161,15 @@
+             }
+ 
+             if (perk_count_get(perk_id_evil_eyes) != 0) {
+-                player_state_table[0].evil_eyes_target_creature = creature_id;
++                aim_player->evil_eyes_target_creature = creature_id;
+             }
+         }
+     }
+ 
+     if (perk_count_get(perk_id_evil_eyes) == 0) {
+-        player_state_table[0].evil_eyes_target_creature = -1;
++        aim_player->evil_eyes_target_creature = -1;
+     }
++    }
+ 
+     if (perk_jinxed_proc_timer_s >= 0.0f) {
+         perk_jinxed_proc_timer_s -= frame_dt;

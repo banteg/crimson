@@ -1,8 +1,25 @@
 Original bug 1: bonus drop suppression compares any bonus amount with the weapon id.
-The fix cancels only Weapon drops of a weapon the player carries, primary or alternate.
+The fix cancels only Weapon drops of a weapon a player carries, primary or alternate.
 --- a/decomp/1.9/crimsonland/crimsonland/bonus_try_spawn_on_kill.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/bonus_try_spawn_on_kill.cpp
-@@ -80,8 +80,11 @@
+@@ -5,6 +5,16 @@
+ #define CRIMSONLAND_USE_ORIGINAL_CONFIG_OWNER
+ #include "crimsonland_config_owner.h"
+ 
++static bool weapon_carried_by_any_player(int weapon_id)
++{
++    for (int i = 0; i < config_blob.player_count; ++i) {
++        if (weapon_id == player_state_table[i].weapon_id || weapon_id == player_state_table[i].alt_weapon_id) {
++            return true;
++        }
++    }
++    return false;
++}
++
+ extern "C" void bonus_try_spawn_on_kill(const vec2f_t *pos)
+ {
+     bonus_entry_t *entry;
+@@ -84,8 +94,10 @@
          bool reject = false;
          if (duplicate_count >= 2) {
              reject = true;
@@ -11,8 +28,7 @@ The fix cancels only Weapon drops of a weapon the player carries, primary or alt
 +        } else if (portable_preserve_bugs
 +                       ? entry->time.amount == player_state_table[0].weapon_id
 +                       : entry->bonus_id == BONUS_ID_WEAPON
-+                             && (entry->time.amount == player_state_table[0].weapon_id
-+                                 || entry->time.amount == player_state_table[0].alt_weapon_id)) {
++                             && weapon_carried_by_any_player(entry->time.amount)) {
              reject = true;
          }
          if (reject) {

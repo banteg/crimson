@@ -1,0 +1,12 @@
+Original bug 23: Plaguebearer flags only player 1 for contact infection. The fix flags every player.
+--- a/decomp/1.9/crimsonland/game/perk_apply.cpp
++++ b/decomp/1.9/crimsonland/game/perk_apply.cpp
+@@ -157,5 +157,8 @@
+ 
+     if (perk_id == perk_id_plaguebearer) {
+         player_plaguebearer_active[0] = 1;
++        for (i = 1; !portable_preserve_bugs && i < config_player_count; ++i) {
++            player_state_table[i].plaguebearer_active = 1;
++        }
+     }
+ }

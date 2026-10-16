@@ -1,0 +1,46 @@
+Original bug 19: a co-op creature's auto-target check compares its distance to the other player with the current
+auto-target's distance to player 1, and writes the slot before turning off a dead target. The fix, in co-op,
+measures both from the finally targeted player, after the redirection. Under both policies, a reevaluation whose
+other player is dead compares the targeted player's distance, as Python does, where native reads an uninitialized
+stack local.
+--- a/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp
+@@ -230,6 +230,10 @@
+                                     creatures[creature_index].target_player =
+                                         1 - target_player_slot;
+                                 }
++                            } else {
++                                // Native compares stack residue here; Python, and so both policies, the
++                                // targeted player's own distance.
++                                alternate_distance = distance;
+                             }
+                         } else {
+                             alternate_distance = vec2_distance(
+@@ -240,7 +244,8 @@
+                         target_player_slot =
+                             creatures[creature_index].target_player;
+                         target_player_index = (int)target_player_slot;
+-                        if (alternate_distance < vec2_distance(
++                        if ((portable_preserve_bugs || config_player_count != 2)
++                            && alternate_distance < vec2_distance(
+                                 &player_state_table[0].position,
+                                 &creature_pool[
+                                     player_state_table[target_player_index].auto_target
+@@ -252,6 +257,17 @@
+                     if (player_state_table[target_player_index].health <= 0.0f) {
+                         creatures[creature_index].target_player =
+                             1 - target_player_slot;
++                    }
++
++                    if (!portable_preserve_bugs && config_player_count == 2
++                        && creature_update_tick % 70 != 0) {
++                        player_state_t *targeted =
++                            &player_state_table[creatures[creature_index].target_player];
++                        if (vec2_distance(&targeted->position, position) < vec2_distance(
++                                &targeted->position,
++                                &creature_pool[targeted->auto_target].position)) {
++                            targeted->auto_target = creature_index;
++                        }
+                     }
+ 
+                     death_timer = &creatures[creature_index].death_timer;

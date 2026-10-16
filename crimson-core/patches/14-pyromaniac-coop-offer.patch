@@ -1,0 +1,31 @@
+Original bug 14: Pyromaniac is offered only while player 1 holds the Flamethrower. The fix, in co-op, offers it
+while any living player holds it.
+--- a/decomp/1.9/crimsonland/game/perks_generate_choices.c
++++ b/decomp/1.9/crimsonland/game/perks_generate_choices.c
+@@ -38,6 +38,17 @@
+     memset(perk_choice_ids, 0, sizeof(perk_choice_ids));
+     choice_index = 0;
+ 
++    int pyromaniac_allowed = player_state_table[0].weapon_id == WEAPON_ID_FLAMETHROWER;
++    if (!portable_preserve_bugs && config_blob.player_count > 1) {
++        pyromaniac_allowed = 0;
++        for (i = 0; i < config_blob.player_count; ++i) {
++            if (!(player_state_table[i].health <= 0.0f)
++                && player_state_table[i].weapon_id == WEAPON_ID_FLAMETHROWER) {
++                pyromaniac_allowed = 1;
++            }
++        }
++    }
++
+     do {
+         if (choice_index == 0
+             && quest_stage_major == quest_monster_vision_meta->tier
+@@ -54,7 +65,7 @@
+         perk_choice_ids[choice_index] = perk_id;
+ 
+         if (perk_id == perk_id_pyromaniac
+-            && player_state_table[0].weapon_id != WEAPON_ID_FLAMETHROWER) {
++            && !pyromaniac_allowed) {
+             goto retry;
+         }
+ 

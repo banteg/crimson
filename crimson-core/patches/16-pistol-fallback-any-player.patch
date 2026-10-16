@@ -1,0 +1,16 @@
+Original bug 16: the Pistol fallback drop roll checks only player 1's weapon. The fix allows it when any player holds the Pistol.
+--- a/decomp/1.9/crimsonland/crimsonland/bonus_try_spawn_on_kill.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/bonus_try_spawn_on_kill.cpp
+@@ -62,7 +62,11 @@
+         int roll = crt_rand();
+         int i;
+ 
+-        if (roll % 9 != 1 && (player_state_table[0].weapon_id != 1 || crt_rand() % 5 != 1)) {
++        bool has_pistol = player_state_table[0].weapon_id == 1;
++        for (i = 1; !portable_preserve_bugs && i < config_blob.player_count; ++i) {
++            has_pistol = has_pistol || player_state_table[i].weapon_id == 1;
++        }
++        if (roll % 9 != 1 && (!has_pistol || crt_rand() % 5 != 1)) {
+             if (perk_count_get(perk_id_bonus_magnet) == 0) {
+                 return;
+             }

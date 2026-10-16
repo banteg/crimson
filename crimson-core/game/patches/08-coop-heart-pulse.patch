@@ -1,0 +1,12 @@
+Original bug 8: in co-op, player 2's heart pulses fast whenever player 1 is low on health. The fix pulses it from player 2's own health.
+--- a/decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp
++++ b/decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp
+@@ -160,7 +160,7 @@
+                 float player_two_speed =
+                     player_state_table[1].health < 30.0f
+                         ? 5.0f
+-                        : pulse_speed;
++                        : portable_preserve_bugs ? pulse_speed : 2.0f;
+                 render_value = (float)sin(
+                     game_time_s * player_two_speed + 1.57079637f);
+                 pulse =

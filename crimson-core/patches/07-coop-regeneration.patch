@@ -1,0 +1,26 @@
+Original bug 7: Regeneration heals only player 1, once per player in co-op. The fix heals each living player once.
+--- a/decomp/1.9/crimsonland/game/perks_update_effects.cpp
++++ b/decomp/1.9/crimsonland/game/perks_update_effects.cpp
+@@ -43,15 +43,17 @@
+             for (int player_index = 0;
+                  player_index < config_player_count;
+                  ++player_index) {
+-                if (player_state_table[0].health < 100.0f
+-                    && player_state_table[0].health > 0.0f) {
+-                    player_state_table[0].health +=
++                player_state_t *regen_player =
++                    &player_state_table[portable_preserve_bugs ? 0 : player_index];
++                if (regen_player->health < 100.0f
++                    && regen_player->health > 0.0f) {
++                    regen_player->health +=
+                         portable_preserve_bugs
+                                 || perk_count_get(perk_id_greater_regeneration) == 0
+                             ? frame_dt
+                             : frame_dt * 2.0f;
+-                    if (player_state_table[0].health > 100.0f) {
+-                        player_state_table[0].health = 100.0f;
++                    if (regen_player->health > 100.0f) {
++                        regen_player->health = 100.0f;
+                     }
+                 }
+             }

@@ -1,0 +1,44 @@
+Original bug 13: Fire Bullets converts a player's shot while either player's timer runs. The fix converts it only on
+its shooter's timer: current_player_index, which the player updates set and a Nuke sets to its picker.
+--- a/decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp
+@@ -30,12 +30,16 @@
+         }
+ #else
+         while (
+-            (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3)
++            (portable_preserve_bugs
++                 ? owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3
++                 : owner_id < 0)
+             && (
+                 ++highscore_record_shots_fired,
+                 type_id != PROJECTILE_TYPE_FIRE_BULLETS
+-                    && (player_state_table[0].fire_bullets_timer > 0.0f
+-                        || player_state_table[1].fire_bullets_timer > 0.0f)
++                    && (portable_preserve_bugs
++                            ? player_state_table[0].fire_bullets_timer > 0.0f
++                                  || player_state_table[1].fire_bullets_timer > 0.0f
++                            : player_state_table[current_player_index].fire_bullets_timer > 0.0f)
+             )
+         ) {
+             type_id = PROJECTILE_TYPE_FIRE_BULLETS;
+--- a/decomp/1.9/crimsonland/game/bonus_apply.cpp
++++ b/decomp/1.9/crimsonland/game/bonus_apply.cpp
+@@ -228,6 +228,9 @@
+         }
+         bonus_double_xp_timer += 6.0f * multiplier;
+     } else if (bonus_id == BONUS_ID_NUKE) {
++        // The shots are the picker's: projectile_spawn reads current_player_index as their shooter.
++        int saved_player_index = current_player_index;
++        current_player_index = player_index;
+         int bullet_count = (crt_rand() & 3) + 4;
+         for (int bullet_iter = 0; bullet_iter < bullet_count; ++bullet_iter) {
+             int projectile_index = projectile_spawn(
+@@ -253,6 +256,7 @@
+             (float)(crt_rand() % 628) * 0.01f,
+             PROJECTILE_TYPE_GAUSS_GUN,
+             -100);
++        current_player_index = saved_player_index;
+         effect_spawn_explosion_burst(bonus_pos, 1.0f);
+         camera_shake_pulses = 20;
+         camera_shake_timer = 0.2f;

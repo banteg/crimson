@@ -1,0 +1,32 @@
+Original bug 12: the Jinxed accident always hurts player 1. The fix hurts a living player, drawing one more
+`crt_rand() % living` to pick one only when more than one lives; with nobody alive it still hurts player 1.
+--- a/decomp/1.9/crimsonland/game/perks_update_effects.cpp
++++ b/decomp/1.9/crimsonland/game/perks_update_effects.cpp
+@@ -187,9 +187,24 @@
+ #endif
+ 
+     if (crt_rand() % 10 == 3) {
+-        player_state_table[0].health -= 5.0f;
+-        fx_queue_add_random(&player_state_table[0].position);
+-        fx_queue_add_random(&player_state_table[0].position);
++        player_state_t *victim = &player_state_table[0];
++        if (!portable_preserve_bugs) {
++            int alive[2];
++            int alive_count = 0;
++            for (int i = 0; i < config_player_count; ++i) {
++                if (player_state_table[i].health > 0.0f) {
++                    alive[alive_count++] = i;
++                }
++            }
++            if (alive_count == 1) {
++                victim = &player_state_table[alive[0]];
++            } else if (alive_count > 1) {
++                victim = &player_state_table[alive[crt_rand() % alive_count]];
++            }
++        }
++        victim->health -= 5.0f;
++        fx_queue_add_random(&victim->position);
++        fx_queue_add_random(&victim->position);
+     }
+ 
+     perk_jinxed_proc_timer_s =
