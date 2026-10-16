@@ -396,3 +396,9 @@ under `msvc6.5 /O2 /GB`; this does not establish a source-level ceiling.
 The [bounded address-allocation record](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/evidence/address-allocation-controls-2026-09-09/README.md)
 compares the current source across five independently fingerprinted VC6 builds.
 None improves this candidate; canonical source and configuration are unchanged.
+
+## 1.9.8 (2026-10-16)
+
+Guard on the openers and the wave loop: 1.9.8 fills each record through a record pointer and `set_spawn`, copying `wave` through the setter for the first wave record. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases.
+
+Search: twelve clean variants (setter or direct metadata, a metadata or count local) and eighteen combinations of opener form, first-record copy and second-record pointer.

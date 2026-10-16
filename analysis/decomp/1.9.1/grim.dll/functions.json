@@ -356,10 +356,10 @@
   {
     "address": "0x10003540",
     "canonical_address": "0x100033B0",
-    "end": "0x10003EB0",
+    "end": "0x10003CE9",
     "evidence": "ordered",
     "name": "grim_window_proc",
-    "size": 2416
+    "size": 1961
   },
   {
     "address": "0x10003EB0",
@@ -653,10 +653,10 @@
   {
     "address": "0x10006A10",
     "canonical_address": "0x10006580",
-    "end": "0x100070C0",
+    "end": "0x1000700E",
     "evidence": "ordered",
     "name": "grim_set_config_var",
-    "size": 1712
+    "size": 1534
   },
   {
     "address": "0x100070C0",

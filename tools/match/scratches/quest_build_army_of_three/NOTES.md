@@ -92,3 +92,7 @@ ahead of the following position construction restores that source order; VC6
 then interleaves the constructor load into exactly the native schedule. The
 result matches all 608 bytes and all 116 instructions without a barrier,
 dummy dependency, or register forcing.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds after replacing every `set_spawn` call with direct metadata stores. A 128-combination sweep over the last four records (helper or direct, named or inline position) preceded the uniform form.

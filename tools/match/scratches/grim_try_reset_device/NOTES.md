@@ -20,3 +20,11 @@ The recovered `HRESULT` function matches all 205 native instructions and all
 48 references under MSVC 6.5 `/O2 /GB`. A natural local `canceled` flag is
 optimized into the native cold failure edge; no forced labels or registers are
 needed.
+
+## Shared reset loop (1.9.8)
+
+The retry loop is `do { if (Reset() == D3D_OK) break; ... } while (1);`, with
+the reset call at the loop head. 8966 rotates it into 1.9.93's guarded bottom
+test and 9044 keeps 1.9.8's single head call, so one source is exact in both.
+`for (;;)` and `while (Reset() != D3D_OK)` are exact only for 1.9.93, and
+`while (1)` only for 1.9.8.

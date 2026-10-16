@@ -2,6 +2,9 @@
 
 #include "grim2d_cpp.h"
 #include "grim_texture.h"
+#if CL_BUILD == 10908
+#include "reflexive_arcade.h"
+#endif
 
 #ifndef WM_MOUSEWHEEL
 #define WM_MOUSEWHEEL 0x020a
@@ -52,6 +55,17 @@ void grim_apply_render_state(void);
 LRESULT CALLBACK grim_window_proc(
     HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
+#if CL_BUILD == 10908
+    // 1.9.8 offers every message to an open Reflexive Arcade menu session,
+    // which may claim WM_SETCURSOR.
+    if (grim_window_proc_dc_flag) {
+        bool handled =
+            RA_HandleWindowsMessage(hwnd, message, wparam, lparam);
+        if (message == WM_SETCURSOR && handled) {
+            return 0;
+        }
+    }
+#endif
     if (grim_dc_mode_active) {
         grim_noop("WM_MESSAGE (dc)", message);
     } else {

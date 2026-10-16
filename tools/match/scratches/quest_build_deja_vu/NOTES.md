@@ -47,3 +47,7 @@ and references 4/0/0. Hoisting the semantic `trigger_step_ms` declaration out
 of the `for` initializer and placing it before the trigger cursor recovers the
 last stack-store/LEA ordering swap. Retained source SHA-256:
 `1f8b55703adb9ef197648f1a36d298506c893c6dab08ac1097047bbc7b80a0e0`.
+
+## 1.9.8 residual (2026-10-16)
+
+98.44%, 64/64 instructions: one swap in the ring loop, where native stores the next radius into the conversion slot after spilling `offset.y` and the candidate stores it before. Tried without effect: a ring index deriving the radius, a `do` loop, operand orders of the products, named offsets and positions, metadata before the position, a record pointer, vector `operator*`/`operator*=`/`operator+`, a direction vector, `for` forms of the outer loop, copy-initialised and `const` offsets, and the preceding builders in one translation unit.

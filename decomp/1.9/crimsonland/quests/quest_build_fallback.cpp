@@ -13,16 +13,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_fallback(quest_spawn_entry_t *entries, int *count)
@@ -34,12 +24,16 @@ extern "C" void quest_build_fallback(quest_spawn_entry_t *entries, int *count)
 
     spawns[entry_count].pos = quest_vec2_t(
         -50.0f, (float)terrain_texture_height * 0.5f);
-    spawns[entry_count].set_spawn(0x40, 500, 10);
+    spawns[entry_count].template_id = 0x40;
+    spawns[entry_count].trigger_time_ms = 500;
+    spawns[entry_count].count = 10;
     ++entry_count;
 
     spawns[entry_count].pos = quest_vec2_t(
         -50.0f, (float)terrain_texture_height * 0.5f);
-    spawns[entry_count].set_spawn(0x40, 5000, 20);
+    spawns[entry_count].template_id = 0x40;
+    spawns[entry_count].trigger_time_ms = 5000;
+    spawns[entry_count].count = 20;
     ++entry_count;
 
     *count = entry_count;

@@ -54,35 +54,17 @@ extern "C" void camera_update(void)
         next_camera_y =
             (float)(screen_height / 2)
             - player_state_table[current_player_index].position.y;
-        goto apply_shake;
-    }
-
-    if (player_state_table[0].health <= 0.0f) {
-        if (player_state_table[1].health > 0.0f) {
-            camera_offset_x =
-                (float)(screen_width / 2) - player_state_table[1].position.x;
-            next_camera_y =
-                (float)(screen_height / 2) - player_state_table[1].position.y;
-            goto apply_shake;
-        }
-    } else if (player_state_table[1].health > 0.0f) {
-        goto focus_both_players;
-    }
-
-    if (player_state_table[0].health > 0.0f) {
+    } else if (player_state_table[0].health <= 0.0f && player_state_table[1].health > 0.0f) {
+        camera_offset_x =
+            (float)(screen_width / 2) - player_state_table[1].position.x;
+        next_camera_y =
+            (float)(screen_height / 2) - player_state_table[1].position.y;
+    } else if (player_state_table[1].health <= 0.0f && player_state_table[0].health > 0.0f) {
         camera_offset_x =
             (float)(screen_width / 2) - player_state_table[0].position.x;
         next_camera_y =
             (float)(screen_height / 2) - player_state_table[0].position.y;
-        goto apply_shake;
-    }
-
-    if (player_state_table[1].health <= 0.0f) {
-        goto preserve_camera_y;
-    }
-
-focus_both_players:
-    if (player_state_table[0].health > 0.0f) {
+    } else if (player_state_table[1].health > 0.0f && player_state_table[0].health > 0.0f) {
         camera_offset_x =
             (float)(screen_width / 2)
             - (player_state_table[0].position.x
@@ -93,13 +75,10 @@ focus_both_players:
             - (player_state_table[0].position.y
                - (player_state_table[0].position.y - player_state_table[1].position.y)
                    * 0.5f);
-        goto apply_shake;
+    } else {
+        next_camera_y = camera_offset_y;
     }
 
-preserve_camera_y:
-    next_camera_y = camera_offset_y;
-
-apply_shake:
     camera_offset_y = (float)next_camera_y;
     camera_offset_x += camera_shake_offset_x;
     camera_offset_y += camera_shake_offset_y;

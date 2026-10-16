@@ -52,3 +52,7 @@ The candidate improves from 428/466 fuzzy-weighted bytes (91.85%) and a
 two-instruction prefix to exact 466/466 bytes, 135/135 instructions, and a
 135-instruction prefix. References remain 7/0/0. The exact source SHA-256 is
 `daf96e86d1dda7d7464cb2370fa5ec3a23628ce7c2ab55cd3a60a673b0432aa5`.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds after replacing `set_spawn` with direct metadata stores.

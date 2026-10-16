@@ -89,7 +89,12 @@ extern "C" void survival_spawn_creature(const vec2f_t *pos)
 
     if (creature->type_id == 0) {
         creature->move_speed *= 0.6f;
+#if CL_BUILD == 10908
+        // 1.9.8 compares against a double literal.
+        if (creature->move_speed < 1.3) {
+#else
         if (creature->move_speed < 1.3f) {
+#endif
             creature->move_speed = 1.3f;
         }
         creature->health *= 1.5f;
@@ -150,39 +155,45 @@ extern "C" void survival_spawn_creature(const vec2f_t *pos)
     if (creature->reward_value == 0.0f) {
         creature->reward_value =
             (float)(crt_rand() % 10 + 10)
+#if CL_BUILD == 10908
+            // 1.9.8 adds the contact damage term before the speed term.
+            + creature->contact_damage * 0.8f
+            + creature->move_speed * 5.0f
+#else
             + creature->move_speed * 5.0f
             + creature->contact_damage * 0.8f
+#endif
             + creature->health * 0.4f;
     }
 
     if (crt_rand() % 180 < 2) {
+        creature->health = 65.0f;
         *(survival_color_t *)&creature->color =
             survival_color_t(0.9f, 0.4f, 0.4f, 1.0f);
-        creature->health = 65.0f;
         creature->reward_value = 320.0f;
     } else if (crt_rand() % 240 < 2) {
+        creature->health = 85.0f;
         *(survival_color_t *)&creature->color =
             survival_color_t(0.4f, 0.9f, 0.4f, 1.0f);
-        creature->health = 85.0f;
         creature->reward_value = 420.0f;
     } else if (crt_rand() % 360 < 2) {
+        creature->health = 125.0f;
         *(survival_color_t *)&creature->color =
             survival_color_t(0.4f, 0.4f, 0.9f, 1.0f);
-        creature->health = 125.0f;
         creature->reward_value = 520.0f;
     }
 
     if (crt_rand() % 1320 < 4) {
         creature->health += 230.0f;
+        creature->size = 80.0f;
         *(survival_color_t *)&creature->color =
             survival_color_t(0.84f, 0.24f, 0.89f, 1.0f);
-        creature->size = 80.0f;
         creature->reward_value = 600.0f;
     } else if (crt_rand() % 1620 < 4) {
         creature->health += 2230.0f;
+        creature->size = 85.0f;
         *(survival_color_t *)&creature->color =
             survival_color_t(0.94f, 0.84f, 0.29f, 1.0f);
-        creature->size = 85.0f;
         creature->reward_value = 900.0f;
     }
 

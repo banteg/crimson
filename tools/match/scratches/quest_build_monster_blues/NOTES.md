@@ -70,3 +70,7 @@ the exact prefix from 22 to 54 instructions. Declaring `index` before
 `trigger_time_ms` removes the final initialization swap, producing an exact
 95/95-instruction match with references `4/0/0`. Retained source SHA-256:
 `9e40722e1228605b71d90d568c027277903f74beb9d8d9980c51d7dd71a99c15`.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds after replacing `set_spawn` with direct metadata stores (1.9.8 body is 94 instructions, 1.9.93 is 95).

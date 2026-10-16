@@ -44,9 +44,24 @@ extern "C" void quest_build_knee_deep_in_the_dead(
     quest_vec2_t normal_position;
     normal_position.x = -50.0f;
     ++spawns;
+#if CL_BUILD == 10908
+    // 1.9.8 fills each wave record through a record pointer, which frees the
+    // metadata stores to schedule ahead of the float conversions.
+    quest_entry_original_t *spawn;
+#endif
     int trigger_time_ms = 500;
     while (trigger_time_ms < 0x178f4) {
         if (wave % 8 == 0) {
+#if CL_BUILD == 10908
+            spawn = &spawns[entry_count - 1];
+            spawn->pos = quest_vec2_t(
+                -50.0f,
+                (float)terrain_texture_height * 0.5f);
+            spawn->set_spawn(
+                SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,
+                trigger_time_ms - 2,
+                1);
+#else
             spawns[entry_count - 1].pos = quest_vec2_t(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f);
@@ -54,20 +69,40 @@ extern "C" void quest_build_knee_deep_in_the_dead(
                 SPAWN_ID_ZOMBIE_CONST_GREEN_BRUTE_43,
                 trigger_time_ms - 2,
                 1);
+#endif
             ++entry_count;
         }
 
         int spawn_count = wave > 0x20 ? 2 : 1;
         normal_position.y =
             (float)terrain_texture_height * 0.5f;
+#if CL_BUILD == 10908
+        spawn = &spawns[entry_count - 1];
+        spawn->pos = normal_position;
+        spawn->set_spawn(
+            SPAWN_ID_ZOMBIE_RANDOM_41,
+            trigger_time_ms,
+            spawn_count);
+#else
         spawns[entry_count - 1].pos = normal_position;
         spawns[entry_count - 1].set_spawn(
             SPAWN_ID_ZOMBIE_RANDOM_41,
             trigger_time_ms,
             spawn_count);
+#endif
         ++entry_count;
 
         if (trigger_time_ms > 0x30d4) {
+#if CL_BUILD == 10908
+            spawn = &spawns[entry_count - 1];
+            spawn->pos = quest_vec2_t(
+                -50.0f,
+                (float)terrain_texture_height * 0.5f + 158.0f);
+            spawn->set_spawn(
+                SPAWN_ID_ZOMBIE_RANDOM_41,
+                trigger_time_ms + 500,
+                1);
+#else
             spawns[entry_count - 1].pos = quest_vec2_t(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f + 158.0f);
@@ -75,10 +110,21 @@ extern "C" void quest_build_knee_deep_in_the_dead(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms + 500,
                 1);
+#endif
             ++entry_count;
         }
 
         if (trigger_time_ms > 0x5fb4) {
+#if CL_BUILD == 10908
+            spawn = &spawns[entry_count - 1];
+            spawn->pos = quest_vec2_t(
+                -50.0f,
+                (float)terrain_texture_height * 0.5f - 158.0f);
+            spawn->set_spawn(
+                SPAWN_ID_ZOMBIE_RANDOM_41,
+                trigger_time_ms + 1000,
+                1);
+#else
             spawns[entry_count - 1].pos = quest_vec2_t(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f - 158.0f);
@@ -86,10 +132,21 @@ extern "C" void quest_build_knee_deep_in_the_dead(
                 SPAWN_ID_ZOMBIE_RANDOM_41,
                 trigger_time_ms + 1000,
                 1);
+#endif
             ++entry_count;
         }
 
         if (trigger_time_ms > 0x8e94) {
+#if CL_BUILD == 10908
+            spawn = &spawns[entry_count - 1];
+            spawn->pos = quest_vec2_t(
+                -50.0f,
+                (float)terrain_texture_height * 0.5f - 258.0f);
+            spawn->set_spawn(
+                SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
+                trigger_time_ms + 0x514,
+                1);
+#else
             spawns[entry_count - 1].pos = quest_vec2_t(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f - 258.0f);
@@ -97,10 +154,21 @@ extern "C" void quest_build_knee_deep_in_the_dead(
                 SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
                 trigger_time_ms + 0x514,
                 1);
+#endif
             ++entry_count;
         }
 
         if (trigger_time_ms > 0xbd74) {
+#if CL_BUILD == 10908
+            spawn = &spawns[entry_count - 1];
+            spawn->pos = quest_vec2_t(
+                -50.0f,
+                (float)terrain_texture_height * 0.5f + 258.0f);
+            spawn->set_spawn(
+                SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
+                trigger_time_ms + 300,
+                1);
+#else
             spawns[entry_count - 1].pos = quest_vec2_t(
                 -50.0f,
                 (float)terrain_texture_height * 0.5f + 258.0f);
@@ -108,6 +176,7 @@ extern "C" void quest_build_knee_deep_in_the_dead(
                 SPAWN_ID_ZOMBIE_SMALL_WHITE_42,
                 trigger_time_ms + 300,
                 1);
+#endif
             ++entry_count;
         }
 

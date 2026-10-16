@@ -52,3 +52,9 @@ indexed entry expressions and a post-entry increment raises the candidate from
 83.87% to 100%. The retained source matches 31/31 instructions with references
 `2/0/0`. Source SHA-256:
 `267fa4a552a9777a2b94d4ac6fbac332a5582f9bd2e023b6d52680ddbfde345d`.
+
+## 1.9.8 (2026-10-16)
+
+Guard: 1.9.8 fills the wave record through `spawn = &builder.spawns[builder.count]`. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases.
+
+A sixteen-combination matrix of pointer versus index per statement splits cleanly by build. Also tried without success: 144 statement orders, the original terrain owner, `pos.set()`, float and int centre locals, a plain index, the builder over `quest_spawn_entry_t`, post-increment forms and a `next()` member.

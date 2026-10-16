@@ -28,6 +28,11 @@ extern unsigned int grim_config_selected_height;
 extern unsigned int grim_config_mode_width;
 extern unsigned int grim_config_mode_height;
 extern unsigned int grim_config_mode_bpp;
+#if CL_BUILD == 10908
+extern unsigned char grim_caps_can_render_windowed;
+extern bool grim_windowed_mode_enabled;
+extern int grim_config_resolution_index;
+#endif
 
 bool grim_config_blob_load(void);
 int grim_config_dialog_populate_display_modes(void);
@@ -180,6 +185,60 @@ BOOL CALLBACK grim_config_dialog_proc(
             }
             return FALSE;
 
+#if CL_BUILD == 10908
+        case 0x3e8: {
+            // 1.9.8 decodes the selection from its fixed three-mode groups:
+            // windowed (only when supported), 16-bit, then 32-bit.
+            grim_config_dialog_option_3ef_checked = SendMessageA(
+                GetDlgItem(hwnd, 0x3ef), BM_GETCHECK, 0, 0) != 0;
+            int selection = SendMessageA(
+                GetDlgItem(hwnd, 0x3f9), CB_GETCURSEL, 0, 0);
+            if (!grim_caps_can_render_windowed) {
+                selection += 3;
+            }
+
+            if (selection < 3) {
+                grim_windowed_mode_enabled = true;
+                grim_config_dialog_windowed_selected = true;
+            } else {
+                grim_windowed_mode_enabled = false;
+                grim_config_dialog_windowed_selected = false;
+            }
+
+            int mode = selection % 3;
+            if (mode == 0) {
+                grim_config_mode_width = 640;
+                grim_config_mode_height = 480;
+                grim_config_resolution_index = 0;
+            } else if (mode == 1) {
+                grim_config_mode_width = 800;
+                grim_config_mode_height = 600;
+                grim_config_resolution_index = 1;
+            } else if (mode == 2) {
+                grim_config_mode_width = 1024;
+                grim_config_mode_height = 768;
+                grim_config_resolution_index = 2;
+            } else {
+                grim_config_mode_width = 800;
+                grim_config_mode_height = 600;
+                grim_config_resolution_index = 1;
+            }
+
+            if (selection >= 3 && selection < 6) {
+                grim_config_dialog_bpp16_selected = true;
+                grim_config_mode_bpp = 16;
+            } else {
+                grim_config_dialog_bpp16_selected = false;
+                grim_config_mode_bpp = 32;
+            }
+
+            grim_config_dialog_canceled = false;
+            grim_selected_adapter_index = SendMessageA(
+                GetDlgItem(hwnd, 0x3f1), CB_GETCURSEL, 0, 0);
+            EndDialog(hwnd, command);
+            break;
+        }
+#else
         case 0x3e8: {
             grim_config_dialog_option_3ef_checked = SendMessageA(
                 GetDlgItem(hwnd, 0x3ef), BM_GETCHECK, 0, 0) != 0;
@@ -226,6 +285,8 @@ BOOL CALLBACK grim_config_dialog_proc(
             EndDialog(hwnd, command);
             break;
         }
+
+#endif
 
         case 0x3e9:
             grim_config_dialog_canceled = true;

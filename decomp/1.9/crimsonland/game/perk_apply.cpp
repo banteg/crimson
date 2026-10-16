@@ -39,7 +39,12 @@ extern "C" void perk_apply(int perk_id)
         for (i = 0; i < 384; i++) {
             if ((i & 1) != 0
                 && creature_pool[i].active != 0
+#if CL_BUILD == 10908
+                // 1.9.8 spells the test !(health > 500), which passes a NaN health.
+                && !(creature_pool[i].health > 500.0f)
+#else
                 && creature_pool[i].health <= 500.0f
+#endif
                 && (creature_pool[i].flags & CREATURE_FLAG_SPAWNER) == 0) {
                 creature_pool[i].active = 0;
                 effect_spawn_burst(
@@ -89,12 +94,17 @@ extern "C" void perk_apply(int perk_id)
     if (perk_id == perk_id_infernal_contract) {
         player_state_table[0].level += 3;
         perk_pending_count += 3;
+#if CL_BUILD == 10908
+        // 1.9.8 sets player one's health without checking it, and leaves player two alone.
+        player_state_table[0].health = 0.1f;
+#else
         if (player_state_table[0].health > 0.0f) {
             player_state_table[0].health = 0.1f;
         }
         if (player_state_table[1].health > 0.0f) {
             player_state_table[1].health = 0.1f;
         }
+#endif
     }
 
     if (perk_id == perk_id_grim_deal) {

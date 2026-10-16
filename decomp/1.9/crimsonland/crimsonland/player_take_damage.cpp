@@ -23,9 +23,12 @@ extern "C" void player_take_damage(int player_index, float damage)
         return;
     }
 
+#if CL_BUILD != 10908
+    // 1.9.8 predates Tough Reloader.
     if (perk_count_get(perk_id_tough_reloader) != 0 && player_state_table[player_index].reload_active != 0) {
         damage = damage * 0.5f;
     }
+#endif
 
     survival_reward_damage_seen = 1;
     float damage_scale = 1.0f;
@@ -78,11 +81,20 @@ extern "C" void player_take_damage(int player_index, float damage)
                 if (creature_pool[creature_index].active) {
                     abs_delta = abs_bits(
                         creature_pool[creature_index].position.x - player_pos->x);
+#if CL_BUILD == 10908
+                    // 1.9.8 spells the test !(abs_delta > 512), which passes a NaN delta.
+                    if (!(abs_delta > 512.0f)) {
+#else
                     if (abs_delta <= 512.0f) {
+#endif
                         abs_delta = abs_bits(
                             creature_pool[creature_index].position.y - player_state_table[player_index].position.y
                         );
+#if CL_BUILD == 10908
+                        if (!(abs_delta > 512.0f)) {
+#else
                         if (abs_delta <= 512.0f) {
+#endif
                             float blast = 512.0f - vec2_distance(
                                 &creature_pool[creature_index].position,
                                 player_pos

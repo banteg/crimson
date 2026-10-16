@@ -26,3 +26,19 @@ normalized instructions, full prefix, and masked references `10/0/0`.
   other three recovered submitters.
 
 No inline assembly, dummy references, or layout-only branches are used.
+
+## 1.9.8 code-generation guard
+
+1.9.8 recompiled this object with C2 9044. Its rotation keeps the same source,
+but the x87 operand sort keys come from inline-copy ids, and the named
+`unsigned long *vertex` local that 1.9.93 (8966) needs shifts them the wrong
+way under 9044. Writing the color through a cast of `grim_vertex_write_ptr`
+is exact under 9044 and 97.22% under 8966; the named local is the reverse.
+
+Shared spellings searched without success: the color store through the named
+local, a direct cast, `*(unsigned long *)&grim_vertex_write_ptr[4]`, a
+`packed` color local with or without the vertex local, the vertex local
+declared before the loop, `i` declared before the loop, a `point` local passed
+to either helper, split or reordered rotation temporaries, and direct
+`point[n] += offset[n]` translation. The guard keeps only the color store
+different.

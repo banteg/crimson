@@ -13,16 +13,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_minor_alien_breach(
@@ -58,10 +48,9 @@ extern "C" void quest_build_minor_alien_breach(
             spawns[entry_count].pos = quest_vec2_t(
                 (float)(terrain_texture_width + 64),
                 (float)(terrain_texture_height / 2 - 256));
-            spawns[entry_count].set_spawn(
-                SPAWN_ID_ALIEN_SMALL_GRAY_26,
-                trigger_time_ms,
-                1);
+            spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 1;
             ++entry_count;
         }
 
@@ -69,10 +58,9 @@ extern "C" void quest_build_minor_alien_breach(
             spawns[entry_count].pos = quest_vec2_t(
                 (float)(terrain_texture_width / 2),
                 (float)(terrain_texture_height + 64));
-            spawns[entry_count].set_spawn(
-                SPAWN_ID_ALIEN_BIG_GRAY_29,
-                39600,
-                1);
+            spawns[entry_count].template_id = SPAWN_ID_ALIEN_BIG_GRAY_29;
+            spawns[entry_count].trigger_time_ms = 39600;
+            spawns[entry_count].count = 1;
             ++entry_count;
         }
 
@@ -80,10 +68,9 @@ extern "C" void quest_build_minor_alien_breach(
             spawns[entry_count].pos = quest_vec2_t(
                 -64.0f,
                 (float)(terrain_texture_height / 2 + 256));
-            spawns[entry_count].set_spawn(
-                SPAWN_ID_ALIEN_SMALL_GRAY_26,
-                trigger_time_ms,
-                1);
+            spawns[entry_count].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 1;
             ++entry_count;
         }
 

@@ -1378,10 +1378,16 @@ typedef enum game_state_id_t {
     GAME_STATE_MODS_MENU = 0x14,
     GAME_STATE_FINAL_QUEST_END_NOTE = 0x15,
     GAME_STATE_PLUGIN_RUNTIME = 0x16,
+#if CL_BUILD == 10908
+    GAME_STATE_CREDITS_SECRET = 0x17,
+#else
     GAME_STATE_UNUSED_0X17 = 0x17,
+#endif
     GAME_STATE_DEMO_UPSELL_GAMEPLAY = 0x18,
     GAME_STATE_PENDING_IDLE_SENTINEL = 0x19,
+#if CL_BUILD != 10908
     GAME_STATE_CREDITS_SECRET = 0x1A,
+#endif
 } game_state_id_t;
 
 typedef struct crimson_cfg_t {

@@ -47,11 +47,13 @@ int grim_config_dialog_populate_display_modes(void)
             CB_ADDSTRING,
             0,
             (LPARAM)"800x600 (windowed)");
+#if CL_BUILD != 10908
         SendMessageA(
             GetDlgItem(grim_config_dialog_hwnd, 0x3f9),
             CB_ADDSTRING,
             0,
             (LPARAM)"960x600 (wide window)");
+#endif
         SendMessageA(
             GetDlgItem(grim_config_dialog_hwnd, 0x3f9),
             CB_ADDSTRING,
@@ -69,11 +71,13 @@ int grim_config_dialog_populate_display_modes(void)
         CB_ADDSTRING,
         0,
         (LPARAM)"800x600x16");
+#if CL_BUILD != 10908
     SendMessageA(
         GetDlgItem(grim_config_dialog_hwnd, 0x3f9),
         CB_ADDSTRING,
         0,
         (LPARAM)"960x600x16 (wide)");
+#endif
     SendMessageA(
         GetDlgItem(grim_config_dialog_hwnd, 0x3f9),
         CB_ADDSTRING,
@@ -91,11 +95,13 @@ int grim_config_dialog_populate_display_modes(void)
             CB_ADDSTRING,
             0,
             (LPARAM)"800x600x32");
+#if CL_BUILD != 10908
         SendMessageA(
             GetDlgItem(grim_config_dialog_hwnd, 0x3f9),
             CB_ADDSTRING,
             0,
             (LPARAM)"960x600x32 (wide)");
+#endif
         SendMessageA(
             GetDlgItem(grim_config_dialog_hwnd, 0x3f9),
             CB_ADDSTRING,
@@ -105,6 +111,20 @@ int grim_config_dialog_populate_display_modes(void)
 
     int selection;
     unsigned int width = grim_config_values[0x29].words[0];
+#if CL_BUILD == 10908
+    // 1.9.8 lists three modes per group and has no wide modes.
+    const int group_size = 3;
+    if (width == 640) {
+        selection = 0;
+    } else if (width == 800) {
+        selection = 1;
+    } else if (width == 1024) {
+        selection = 2;
+    } else {
+        selection = 1;
+    }
+#else
+    const int group_size = 4;
     if (width == 640) {
         selection = 0;
     } else if (width == 800) {
@@ -118,17 +138,18 @@ int grim_config_dialog_populate_display_modes(void)
     } else {
         selection = 1;
     }
+#endif
 
     if (*(unsigned char *)grim_config_values[8].words != 1 ||
         !grim_caps_can_render_windowed) {
         unsigned int bpp = grim_config_values[0x2b].words[0];
         if (bpp == 16) {
-            selection += 4;
+            selection += group_size;
         } else if (bpp == 32) {
-            selection += 8;
+            selection += group_size * 2;
         }
         if (!grim_caps_can_render_windowed) {
-            selection -= 4;
+            selection -= group_size;
         }
     }
 

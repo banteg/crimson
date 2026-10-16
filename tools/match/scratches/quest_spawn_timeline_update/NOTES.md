@@ -641,3 +641,9 @@ The remaining requirements include credible source for the late-dead copy,
 native zero lifetimes/register choices, addressing, and argument scheduling.
 Canonical 113/115 instructions, prefix 51, 13 clean references, and non-exact
 status are unchanged.
+
+## 1.9.8 (2026-10-16)
+
+Guard on the inner loop header: 1.9.8 resets `spawn_index` in the `for` header, which keeps the native `entry_index`/count registers under C2 9044 (the 9044 finding above); 8966 needs the reset carried from the loop tail. Comparison operand order, increment spellings, a `while` scan and tail-reset placement do not fix the swap.
+
+The remaining unresolved 1.9.8 references were the unmapped stall timer; `analysis/decomp/1.9.8/crimsonland.exe/recovered.json` now pins `quest_spawn_stall_timer_ms` at `0x4c090c` from the instruction at `0x4338d1`, and the refreshed build map resolves all 13 references.

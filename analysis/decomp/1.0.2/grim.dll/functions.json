@@ -133,10 +133,10 @@
   {
     "address": "0x10001680",
     "canonical_address": "0x100030B0",
-    "end": "0x100019E0",
+    "end": "0x10001961",
     "evidence": "ordered",
     "name": "grim_restore_device_after_activation",
-    "size": 864
+    "size": 737
   },
   {
     "address": "0x100019E0",
@@ -319,14 +319,6 @@
     "evidence": "exact",
     "name": "grim_apply_settings",
     "size": 8
-  },
-  {
-    "address": "0x10003330",
-    "canonical_address": "0x10006030",
-    "end": "0x100036B0",
-    "evidence": "ordered",
-    "name": "grim_set_texture_stage_ops",
-    "size": 896
   },
   {
     "address": "0x100036B0",

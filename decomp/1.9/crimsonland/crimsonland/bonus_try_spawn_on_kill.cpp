@@ -39,7 +39,11 @@ extern "C" void bonus_try_spawn_on_kill(const vec2f_t *pos)
         }
         if (duplicate_count >= 2
             || entry->time.amount == 1
-            || perk_count_get(perk_id_my_favourite_weapon) != 0) {
+#if CL_BUILD != 10908
+            // 1.9.8 has no My Favourite Weapon rejection.
+            || perk_count_get(perk_id_my_favourite_weapon) != 0
+#endif
+            ) {
             entry->bonus_id = BONUS_ID_NONE;
             return;
         }

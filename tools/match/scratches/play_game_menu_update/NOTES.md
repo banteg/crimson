@@ -423,3 +423,19 @@ Earlier isolated ownership and SDK controls did not establish a compiler limit:
 the opening expression and later call temporary must be tested together. The
 recovery changes no compiler flags, target extent, reference aliases, aggregate
 layout size, or shared header.
+
+## 1.9.8 (C2 9044) code-generation guard (2026-10-16)
+
+All three play-count sums are now spelled `mode_play_rush +
+quest_play_counts[11] + mode_play_survival`; that order is exact for both
+builds (1.9.8 loads the operands in that order everywhere).
+
+1.9.8 places the compact (`else`) layout inline and the roomy layout out of
+line. 9044 does that only when the layout test is written directly in the
+`if`; with the canonical `bool roomy_layout` local it keeps the roomy block
+inline, and 8966 needs the local for the 1.9.93 order. Shared spellings tried:
+the direct condition, the negated compact condition with and without a local
+(`!compact_layout`, `!(... >= 0x28 && ... <= 1)`), swapping the branches
+around `!roomy_layout`, an `int` local, a local set by an `if`, a local built
+in two steps, and `config_player_count == 1`. None is exact for both builds,
+so the guard selects the direct condition for `CL_BUILD == 10908`.

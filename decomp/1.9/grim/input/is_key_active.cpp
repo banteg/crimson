@@ -60,6 +60,8 @@ unsigned char IGrim2D_cpp::grim_is_key_active(int key)
             return grim_joystick_right_active();
         }
 
+#if CL_BUILD != 10908
+        // 1.9.8 predates the joystick axis key codes.
         if (key == 0x13f) {
             goto axis_x_active;
         }
@@ -90,6 +92,7 @@ axis_y_active:
 axis_x_active:
         return fabs((float)grim_joystick_state.lX * 0.001f) > 0.5;
 check_provider:
+#endif
 
         provider = grim_input_provider;
         if (provider == 0) {

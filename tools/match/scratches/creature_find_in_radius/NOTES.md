@@ -29,3 +29,11 @@ int32_t start_index)`. Retyping the native induction cursor from `char *` to
 `creature_t *` also exposes `active`, `pos_x`, `pos_y`, `size`, and
 `lifecycle_stage` directly in HLIL instead of byte offsets. These annotations
 do not change the exact 47/47-instruction match.
+
+## 1.9.8 (C2 9044)
+
+Exact under both compilers once the distance helper names its rounded result
+(`distance = (float)sqrt(...); return distance;`). Returning the cast
+directly leaves 9044 holding the dead square root on the x87 stack. The same
+helper spelling is shared by player_find_in_radius,
+creatures_apply_radius_damage and the 1.9.8 context copy in projectile_update.

@@ -30,3 +30,13 @@ normalized instructions, full prefix, and masked references `68/0/0`.
 The inverse-square-root helper and grouped vertex fields are semantic source
 reconstructions supported by the native x87 and copy sequences. No inline
 assembly, dummy references, or layout-only branches are used.
+
+## 1.9.8 layout guard
+
+1.9.8 (C2 9044) has a `0x20` frame: the quad centre lives outside the corner
+array. 1.9.93 reserves five points (`0x28`) with the centre at `points[4]`.
+The guard keeps 1.9.93's array and names its fifth point `center`; 1.9.8
+declares `points[4][2]` plus `center[2]`, which 9044 scalar-replaces. Shared
+spellings that failed: separate centre scalars (1.9.93 drops to a `0x20`
+frame, 86%), a separate centre array or `GrimPoint` (1.9.93 85.6%), and the
+five-point array with scalar centres (both miss).

@@ -16,6 +16,18 @@ extern "C" void quest_build_8_legged_terror(
     int wave_template_id = SPAWN_ID_SPIDER_SP1_RANDOM_3D;
     float far_edge = 1049.0f;
 
+#if CL_BUILD == 10908
+    // 1.9.8 fills the opening record through its pointer before advancing the
+    // cursor, and writes the last wave record's trigger first.
+    quest_spawn_entry_t *opening = builder.cursor;
+    opening->pos_x = (float)(terrain_texture_width - 256);
+    opening->pos_y = (float)(terrain_texture_width / 2);
+    opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;
+    opening->trigger_time_ms = 1000;
+    opening->count = 1;
+    ++builder.cursor;
+    ++builder.count;
+#else
     builder.cursor->pos_x = (float)(terrain_texture_width - 256);
     builder.cursor->pos_y = (float)(terrain_texture_width / 2);
     quest_spawn_entry_t *opening = builder.cursor++;
@@ -23,6 +35,7 @@ extern "C" void quest_build_8_legged_terror(
     opening->template_id = SPAWN_ID_SPIDER_BOSS_3A;
     opening->trigger_time_ms = 1000;
     opening->count = 1;
+#endif
     for (int trigger_time_ms = 6000;
          trigger_time_ms < 36800;
          trigger_time_ms += 2200) {
@@ -51,10 +64,17 @@ extern "C" void quest_build_8_legged_terror(
         ++builder.cursor;
 
         ++builder.count;
+#if CL_BUILD == 10908
+        builder.cursor->trigger_time_ms = trigger_time_ms;
+        builder.cursor->pos_x = far_edge;
+        builder.cursor->pos_y = far_edge;
+        builder.cursor->template_id = wave_template_id;
+#else
         builder.cursor->pos_x = far_edge;
         builder.cursor->pos_y = far_edge;
         builder.cursor->template_id = wave_template_id;
         builder.cursor->trigger_time_ms = trigger_time_ms;
+#endif
         builder.cursor->count = 1;
         ++builder.cursor;
     }

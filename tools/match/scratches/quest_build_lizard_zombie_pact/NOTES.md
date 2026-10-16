@@ -81,3 +81,9 @@ Experiment ledger SHA-256:
 The exact-neighbor TU probe was byte-neutral. Raw storage and alternate loop
 forms regressed or were neutral, bounding those hypotheses without retaining
 artificial dependencies or forced-register constructs.
+
+## 1.9.8 (2026-10-16)
+
+Guard on the loop body: 1.9.8 splits the wave into `wave / 5` and `wave % 5` once at the top of the loop (the native divides before the first record), fills every record through a record pointer with the count after the metadata, and advances `wave` before the trigger. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases.
+
+Search: four placements of the division, pointer versus `y_offset` order, an indexed second den record, declaration orders, loop increment orders and a boolean phase.

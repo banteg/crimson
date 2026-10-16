@@ -51,6 +51,26 @@ extern "C" void quest_build_spiders_inc(
 {
     quest_spawn_builder_t builder((quest_entry_original_t *)entries);
 
+#if CL_BUILD == 10908
+    // 1.9.8 fills each record through a record pointer and its setter, which
+    // frees the stores to schedule ahead of the float conversions.
+    quest_entry_original_t *spawn = &builder.spawns[builder.count];
+    spawn->pos.y = (float)(terrain_texture_width + 64);
+    spawn->pos.x = (float)(terrain_texture_width / 2);
+    spawn->set_spawn(SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38, 500, 1);
+    ++builder.count;
+
+    spawn = &builder.spawns[builder.count];
+    spawn->pos.y = (float)(terrain_texture_width + 64);
+    spawn->pos.x = (float)(terrain_texture_width / 2 + 64);
+    spawn->set_spawn(SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38, 500, 1);
+    ++builder.count;
+
+    spawn = &builder.spawns[builder.count];
+    spawn->pos.y = -64.0f;
+    spawn->pos.x = (float)(terrain_texture_width / 2);
+    spawn->set_spawn(SPAWN_ID_SPIDER_SMALL_BLUE_40, 500, 4);
+#else
     builder.spawns[builder.count].pos.y =
         (float)(terrain_texture_width + 64);
     builder.spawns[builder.count].pos.x =
@@ -74,15 +94,35 @@ extern "C" void quest_build_spiders_inc(
     builder.spawns[builder.count].pos.y = -64.0f;
     builder.spawns[builder.count].pos.x =
         (float)(terrain_texture_width / 2);
-    builder.spawns[builder.count].metadata.template_id = SPAWN_ID_SPIDER_SMALL_BLUE_40;
+    builder.spawns[builder.count].metadata.template_id =
+        SPAWN_ID_SPIDER_SMALL_BLUE_40;
     builder.spawns[builder.count].metadata.trigger_time_ms = 500;
     builder.spawns[builder.count].metadata.count = 4;
+#endif
     ++builder.count;
 
     for (int trigger_time_ms = 17000, step_count = 0;
          trigger_time_ms < 107000;
          ++step_count, trigger_time_ms += 6000) {
-        quest_spawn_metadata_t wave(SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38, trigger_time_ms, step_count / 2 + 3);
+        quest_spawn_metadata_t wave(
+            SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38,
+            trigger_time_ms,
+            step_count / 2 + 3);
+#if CL_BUILD == 10908
+        spawn = &builder.spawns[builder.count];
+        spawn->pos.y = (float)(terrain_texture_width + 64);
+        spawn->pos.x = (float)(terrain_texture_width / 2);
+        spawn->set_spawn(wave.template_id, wave.trigger_time_ms, wave.count);
+        ++builder.count;
+
+        spawn = &builder.spawns[builder.count];
+        spawn->pos.y = -64.0f;
+        spawn->pos.x = (float)(terrain_texture_width / 2);
+        spawn->set_spawn(
+            SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38,
+            trigger_time_ms,
+            step_count / 2 + 3);
+#else
         quest_entry_original_t *wave_spawn =
             &builder.spawns[builder.count];
 
@@ -99,6 +139,7 @@ extern "C" void quest_build_spiders_inc(
             SPAWN_ID_SPIDER_SP1_STOP_AND_GO_38,
             trigger_time_ms,
             step_count / 2 + 3);
+#endif
         ++builder.count;
     }
 

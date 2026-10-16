@@ -335,3 +335,9 @@ The retained form changes only the owning expression and removes the four
 obsolete pointer assignments. The ring, corner, line, and tail entries retain
 all positions, headings, templates, triggers, and counts. No compiler settings,
 layout-only object, or artificial dependency was introduced.
+
+## 1.9.8 (2026-10-16)
+
+Shared: the first ring publishes through `spawns[entry_count]` like the second instead of walking a pointer. Guards: 1.9.8 stores template, trigger and heading directly in the rings (heading after trigger), and fills the four closing records through a record pointer.
+
+Search: the setter's store order, the trigger before the setter, per-iteration ring pointers (they drop the native reloads, 249 to 254 instructions), 24 orders of the closing records, five trigger placements and sixteen closing-pointer combinations.

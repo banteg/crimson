@@ -44,6 +44,10 @@ extern "C" void game_startup_init_prelude(void)
     game_core_init();
 
     GetLocalTime(&local_system_time);
+#if CL_BUILD == 10908
+    // 1.9.8 clears the flag before the date test and leaves it set after a load.
+    seasonal_balloon_load_active = 0;
+#endif
     WORD month = local_system_time.wMonth;
     if ((month == 9 && local_system_time.wDay == 12)
         || (month == 11 && local_system_time.wDay == 8)
@@ -51,7 +55,9 @@ extern "C" void game_startup_init_prelude(void)
         seasonal_balloon_load_active = 1;
         texture_get_or_load("balloon", "balloon.tga");
     }
+#if CL_BUILD != 10908
     seasonal_balloon_load_active = 0;
+#endif
     console_printf(&console_log_queue, "Unloaded resource paq\n");
 
     grim_interface_ptr->grim_set_config_var(0x10, s_empty_string);

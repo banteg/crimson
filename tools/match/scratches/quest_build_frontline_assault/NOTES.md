@@ -117,3 +117,9 @@ exactly: **100%**, 84/84 normalized instructions, full prefix, and `1/0/0`
 references, up from 96.43% and a 29-instruction prefix. The retained source
 SHA-256 is
 `e1b858e95ce5049f6564cd194b686a2c9432c9c61f0e551ac6a89f2e010858e2`.
+
+## 1.9.8 (2026-10-16)
+
+Code-generation guards in three places: the opening record takes its x from a `half_width` local after storing y, it counts the record before advancing the cursor with count written ahead of trigger, and the first burst record is filled through a local pointer.
+
+Shared-spelling search (none exact under both): 64 combinations of position order, increment order, burst local placement and second-record increment order; a trigger local at the top or after the first record; a restructured template branch; the original terrain owner; builder declaration order; float locals for x; `>> 1`; burst locals in four orders, y first, template first, split trigger, without either local, and `else if`. Each of the three 1.9.8 changes alone breaks 8966 (twelve-combination matrix).

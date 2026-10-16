@@ -2,6 +2,10 @@
 #include <windows.h>
 #include <string.h>
 
+#if CL_BUILD == 10908
+#include "reflexive_arcade.h"
+#endif
+
 class MyApp {
 public:
     bool active;
@@ -64,7 +68,22 @@ bool MyApp::init(void)
     memset(grim_working_dir, 0, sizeof(grim_working_dir));
     _getcwd(grim_working_dir, sizeof(grim_working_dir));
 
+#if CL_BUILD == 10908
+    // 1.9.8 starts the Reflexive Arcade client and lets it decide whether
+    // the "other games" button is shown.
+    if (RA_Initialize(9, "Crimsonland", 10, 19.99f, 0) != 0) {
+        MessageBoxA(
+            0,
+            "There was an error initializing\nReflexive Arcade.",
+            "Fatal error",
+            MB_ICONEXCLAMATION);
+        return false;
+    }
+    rect.state.enabled =
+        RA_GetValueAsInt("show_other_games_button", 1) != 0;
+#else
     rect.state.enabled = false;
+#endif
     grim_client_rect = rect;
     return true;
 }

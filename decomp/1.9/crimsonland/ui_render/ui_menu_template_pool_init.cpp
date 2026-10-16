@@ -11,9 +11,14 @@ public:
     float v;
 };
 
+#if CL_BUILD != 10908
+// 1.9.8 links the shared no-op constructor from another object (0x0041c730,
+// after the HUD code). C2 9044 drops calls to an empty body it has already
+// compiled in the same unit, so the 1.9.8 unit only declares it.
 void ui_template_slot_cpp_t::construct(void)
 {
 }
+#endif
 
 class effect_vertex_cpp_t {
 public:

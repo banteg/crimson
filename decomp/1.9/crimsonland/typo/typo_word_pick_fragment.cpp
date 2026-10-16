@@ -3,12 +3,23 @@ extern "C" int crt_rand(void);
 extern "C" char *typo_word_pick_fragment(
     unsigned char include_extended_pool)
 {
+#if CL_BUILD == 10908
+    // 1.9.8 has 42 fragments: no "sleep" through "boom".
+    int index;
+    if (include_extended_pool) {
+        index = crt_rand() % 42;
+    } else {
+        index = crt_rand() % 41;
+    }
+#else
     int word_count = 52;
     if (!include_extended_pool) {
         word_count = 51;
     }
+    int index = crt_rand() % word_count;
+#endif
 
-    switch (crt_rand() % word_count) {
+    switch (index) {
     case 0: return "lamb";
     case 1: return "gun";
     case 2: return "head";
@@ -49,6 +60,9 @@ extern "C" char *typo_word_pick_fragment(
     case 37: return "zeta";
     case 38: return "unique";
     case 40: return "earl";
+#if CL_BUILD == 10908
+    case 41: return "the";
+#else
     case 41: return "sleep";
     case 42: return "onyx";
     case 43: return "mill";
@@ -60,6 +74,7 @@ extern "C" char *typo_word_pick_fragment(
     case 49: return "break";
     case 50: return "boom";
     case 51: return "the";
+#endif
     default: return "nerd";
     }
 }

@@ -87,3 +87,9 @@ Finally, `center-metadata-publication-mutations.json` (SHA-256
 confirmed that direct center metadata fields recover the remaining 12 weighted
 bytes. The exact source SHA-256 is
 `c22882d9af4314ebcfaa82e072ebd17aa8222176bbd398dc0b5cb666e115d8e0`.
+
+## 1.9.8 (2026-10-16)
+
+Shared: direct metadata stores, and the second edge wave resets its trigger before its locals. Guard: 1.9.8 fills the fourth corner record and the three ring loops through a record pointer. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases.
+
+Search: a 1,024-combination per-record pointer matrix over the ten record sites (best 98.85%, then the trigger-first reset made it exact) and 24 orders of the edge-wave locals. A loop-local pointer without the corner pointer stays at 98.85%.

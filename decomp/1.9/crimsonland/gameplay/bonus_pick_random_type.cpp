@@ -1,5 +1,13 @@
 #include "crimsonland_gameplay.h"
 
+#if CL_BUILD == 10908
+extern "C" {
+extern int sfx_flamer_fire_01;
+extern int sfx_rocket_fire;
+extern int sfx_rocketmini_fire;
+}
+#endif
+
 extern "C" bonus_id_t bonus_pick_random_type(void)
 {
     int retries = 0;
@@ -81,6 +89,24 @@ selected:
         ) {
             continue;
         }
+#if CL_BUILD == 10908
+        // 1.9.8 rerolls Fire Bullets while any player holds a flame or rocket weapon.
+        {
+            bool fire_weapon_held = false;
+            if (bonus_id == BONUS_ID_FIRE_BULLETS) {
+                for (int i = 0; i < config_blob.player_count; i++) {
+                    int shot_sfx = weapon_table[player_state_table[i].weapon_id].shot_sfx_base_id;
+                    if (shot_sfx == sfx_flamer_fire_01 || shot_sfx == sfx_rocket_fire
+                        || shot_sfx == sfx_rocketmini_fire) {
+                        fire_weapon_held = true;
+                    }
+                }
+            }
+            if (fire_weapon_held) {
+                continue;
+            }
+        }
+#endif
         if (perk_count_get(perk_id_my_favourite_weapon) != 0 && bonus_id == BONUS_ID_WEAPON) {
             continue;
         }

@@ -80,3 +80,7 @@ atomic source model. The retained source SHA-256 is
 `be8329a98fa0344d7b10f1e8866134ffcecf8650d935fc11b19f5c94156e7926`.
 The experiment ledger records 83 unique variants, one exact winner, no
 tradeoffs, and no repeated variants.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds: the opening record stores its metadata directly and the loop locals are declared after it (seven placements tried).

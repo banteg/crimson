@@ -18,9 +18,12 @@ void weapon_assign_player(int player_index, int weapon_id)
         player_state_table[player_index].clip_size += (float)extra_ammo;
     }
 
+#if CL_BUILD != 10908
+    // 1.9.8 does not add My Favourite Weapon's clip bonus here.
     if (perk_count_get(perk_id_my_favourite_weapon) != 0) {
         player_state_table[player_index].clip_size += 2.0f;
     }
+#endif
 
     {
         const vec2f_t *player_pos =

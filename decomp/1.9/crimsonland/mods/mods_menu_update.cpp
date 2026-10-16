@@ -142,10 +142,10 @@ extern "C" void mods_menu_update(void)
         if (handle != -1 && finddata.name != 0) {
             do {
                 if (mods_menu_entry_count == 31) {
-                    mods_menu_item_labels[31] =
-                        mods_menu_display_names[31];
                     strcpy(mods_menu_filenames[31], "+ more");
                     strcpy(mods_menu_display_names[31], "+ more");
+                    mods_menu_item_labels[31] =
+                        mods_menu_display_names[31];
                 } else {
                     strcpy(
                         mods_menu_filenames[mods_menu_entry_count],

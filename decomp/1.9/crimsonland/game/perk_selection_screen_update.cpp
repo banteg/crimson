@@ -120,13 +120,13 @@ extern "C" void perk_selection_screen_update(void)
     gameplay_render_world();
     ui_elements_update_and_render();
 
-    perk_selection_vec2_t panel_position =
-        *(perk_selection_vec2_t *)&ui_element_slot_27.pos
-        + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].position;
-
     float line_height = 19.0f;
     bool any_hovered = false;
     int choice_count = 5;
+
+    perk_selection_vec2_t panel_position =
+        *(perk_selection_vec2_t *)&ui_element_slot_27.pos
+        + *(perk_selection_vec2_t *)&ui_element_slot_27.vertices[0].position;
 
     panel_position = panel_position + perk_selection_vec2_t(180.0f, 40.0f);
     perk_selection_vec2_t choice_position = panel_position;

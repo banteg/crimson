@@ -395,6 +395,14 @@ extern "C" void perks_init_database(void)
         52,
         "Stationary Reloader",
         "It's incredibly hard to reload your piece while moving around, you've noticed. In fact, realizing that, when you don't move a (leg) muscle you can reload the gun THREE TIMES FASTER!");
+#if CL_BUILD == 10908
+    // 1.9.8 predates Man Bomb, Fire Caugh, Living Fortress and Tough Reloader.
+    SET_PERK(
+        perk_id_lifeline_50_50,
+        53,
+        "Lifeline 50-50",
+        "The computer removes half of the wrong monsters for you. You don't gain any experience.");
+#else
     SET_PERK(
         perk_id_man_bomb,
         53,
@@ -420,8 +428,14 @@ extern "C" void perks_init_database(void)
         57,
         "Lifeline 50-50",
         "The computer removes half of the wrong monsters for you. You don't gain any experience.");
+#endif
 
+#if CL_BUILD == 10908
+    perk_id_max = 53;
+    perk_id_count = 54;
+#else
     perk_id_max = 57;
     perk_id_count = 58;
+#endif
     perks_rebuild_available();
 }

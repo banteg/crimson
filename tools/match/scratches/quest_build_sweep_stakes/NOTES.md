@@ -50,3 +50,7 @@ house style as the exact target-practice builder. Unlike the older direct-store
 probe, this combines direct publication with the later append-count recovery;
 that interaction moves the metadata stores to their native position and closes
 the remaining 20-byte fuzzy gap exactly.
+
+## 1.9.8 residual (2026-10-16)
+
+98.70%, 77/77 instructions: the same ring-loop swap as `quest_build_deja_vu` (the next radius is stored before the `offset.y` spill). The same variants were tried; vector `operator*` moves the store past the spill but then schedules the following add early.

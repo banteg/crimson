@@ -54,6 +54,24 @@ extern "C" void quest_build_the_lizquidation(
         quest_entry_original_t *spawn = &builder.spawns[builder.count];
         spawn->pos.x = (float)(terrain_texture_width + 64);
         spawn->pos.y = (float)(terrain_texture_width / 2);
+#if CL_BUILD == 10908
+        // 1.9.8 copies the wave metadata through the setter and publishes
+        // every record through the record pointer, which frees the stores to
+        // schedule ahead of the float conversions.
+        spawn->set_spawn(
+            metadata.template_id,
+            metadata.trigger_time_ms,
+            metadata.count);
+        ++builder.count;
+
+        spawn = &builder.spawns[builder.count];
+        spawn->pos.x = -64.0f;
+        spawn->pos.y = (float)(terrain_texture_width / 2);
+        spawn->set_spawn(
+            SPAWN_ID_LIZARD_RANDOM_2E,
+            wave * 8000 + 1500,
+            wave + 6);
+#else
         spawn->metadata = metadata;
         ++builder.count;
 
@@ -64,15 +82,23 @@ extern "C" void quest_build_the_lizquidation(
             SPAWN_ID_LIZARD_RANDOM_2E,
             wave * 8000 + 1500,
             wave + 6);
+#endif
         ++builder.count;
 
         if (wave == 4) {
+#if CL_BUILD == 10908
+            spawn = &builder.spawns[builder.count];
+            spawn->pos.x = (float)(terrain_texture_width + 128);
+            spawn->pos.y = (float)(terrain_texture_width / 2);
+            spawn->set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
+#else
             builder.spawns[builder.count].pos.x =
                 (float)(terrain_texture_width + 128);
             builder.spawns[builder.count].pos.y =
                 (float)(terrain_texture_width / 2);
             builder.spawns[builder.count].set_spawn(
                 SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
+#endif
             ++builder.count;
         }
     }

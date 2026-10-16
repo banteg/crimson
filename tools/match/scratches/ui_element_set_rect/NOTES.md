@@ -198,3 +198,17 @@ The retained exact winner has source SHA-256
 It adds the three native copy instructions and removes the entire 44.72-byte
 fuzzy gap by correcting the slot 3 V value, not by introducing artificial
 dependencies.
+
+## 1.9.8 (C2 9044) code-generation guard (2026-10-16)
+
+1.9.8 compiles the offset-loop add as `fld vertex.x; fadd offset.x` only from
+the plain `x += other.x;` operator body; 1.9.93 (8966) needs the
+`result_x` temporary for the same operand order. Shared spellings tried
+without success (each exact for at most one build): `y = y + other.y`,
+`y = other.y + y`, temporaries for both axes in either order, `x = x +
+other.x`, commuted operands, a by-value operand, an `operator+` with
+`position = position + offset`, explicit per-axis adds in the loop, a
+vertex-pointer walk, a hoisted `delta` pointer/reference/value (exact for
+1.9.93 with the plain body but reverses x under 9044), and a typed
+`ui_vec2_t *` / `const ui_vec2_t &` parameter. The guard keeps the plain body
+for `CL_BUILD == 10908` and the temporary otherwise; both builds are exact.

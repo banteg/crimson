@@ -16,3 +16,9 @@ Clearing the frame deltas before the 20-byte state is the natural source order
 that reproduces VC6's interleaved zero stores. The result matches all 90
 instructions and all 42 masked references without volatile state or fake
 dependencies.
+
+## One `do`/`while` drain loop (1.9.8)
+
+The drain is one `do`/`while` loop that clears and reads the state at its top.
+VC6 (8966) rotates it into the duplicated read 1.9.93 shows, while 9044 keeps
+the single read 1.9.8 shows, so the same source is exact in both builds.

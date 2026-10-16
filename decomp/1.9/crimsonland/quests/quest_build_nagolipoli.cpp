@@ -60,21 +60,28 @@ extern "C" void quest_build_nagolipoli(
 {
     quest_entry_original_t *spawns = (quest_entry_original_t *)entries;
     int entry_count = 0;
-    quest_entry_original_t *spawn = spawns;
 
     while (entry_count < 8) {
         float angle = (float)entry_count * 0.785398185f;
-        spawn->pos.set(
+        spawns[entry_count].pos.set(
             (float)cos(angle) * 128.0f,
             (float)sin(angle) * 128.0f);
-        spawn->pos.add(512.0f);
-        spawn->set_heading_and_template(
+        spawns[entry_count].pos.add(512.0f);
+#if CL_BUILD == 10908
+        // 1.9.8 stores the heading after the trigger and fills the closing
+        // records through a record pointer, which frees their stores to
+        // schedule ahead of the float work.
+        spawns[entry_count].template_id = SPAWN_ID_SPIDER_SMALL_BLUE_40;
+        spawns[entry_count].trigger_time_ms = 2000;
+        spawns[entry_count].heading = angle;
+#else
+        spawns[entry_count].set_heading_and_template(
             angle,
             SPAWN_ID_SPIDER_SMALL_BLUE_40);
-        spawn->trigger_time_ms = 2000;
-        spawn->count = 1;
+        spawns[entry_count].trigger_time_ms = 2000;
+#endif
+        spawns[entry_count].count = 1;
         ++entry_count;
-        ++spawn;
     }
 
     int ring_index = 0;
@@ -84,10 +91,16 @@ extern "C" void quest_build_nagolipoli(
             (float)cos(angle) * 178.0f,
             (float)sin(angle) * 178.0f);
         spawns[entry_count].pos.add(512.0f);
+#if CL_BUILD == 10908
+        spawns[entry_count].template_id = SPAWN_ID_SPIDER_SMALL_BLUE_40;
+        spawns[entry_count].trigger_time_ms = 8000;
+        spawns[entry_count].heading = angle;
+#else
         spawns[entry_count].set_heading_and_template(
             angle,
             SPAWN_ID_SPIDER_SMALL_BLUE_40);
         spawns[entry_count].trigger_time_ms = 8000;
+#endif
         spawns[entry_count].count = 1;
         ++entry_count;
         ++ring_index;
@@ -182,6 +195,44 @@ extern "C" void quest_build_nagolipoli(
         trigger_time_ms += 100;
     }
 
+#if CL_BUILD == 10908
+    quest_entry_original_t *spawn = &spawns[entry_count];
+    spawn->set_position_and_template(
+        quest_vec2_t(512.0f, 256.0f),
+        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);
+    trigger_time_ms = (wave * 5 + 175) * 160;
+    spawn->heading = 3.14159274f;
+    spawn->trigger_time_ms = trigger_time_ms;
+    spawn->count = 1;
+    ++entry_count;
+
+    spawn = &spawns[entry_count];
+    spawn->set_position_and_template(
+        quest_vec2_t(512.0f, 768.0f),
+        SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);
+    spawn->heading = 3.14159274f;
+    spawn->trigger_time_ms = trigger_time_ms;
+    spawn->count = 1;
+    ++entry_count;
+
+    spawn = &spawns[entry_count];
+    spawn->set_position_and_template(
+        quest_vec2_t(512.0f, 1088.0f),
+        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
+    trigger_time_ms = wave * 800 + 0x6f54;
+    spawn->heading = 3.926991f;
+    spawn->trigger_time_ms = trigger_time_ms;
+    spawn->count = 8;
+    ++entry_count;
+
+    spawn = &spawns[entry_count];
+    spawn->set_position_and_template(
+        quest_vec2_t(512.0f, -64.0f),
+        SPAWN_ID_AI1_LIZARD_BLUE_TINT_1C);
+    spawn->heading = 3.926991f;
+    spawn->trigger_time_ms = trigger_time_ms;
+    spawn->count = 8;
+#else
     spawns[entry_count].set_position_and_template(
         quest_vec2_t(512.0f, 256.0f),
         SPAWN_ID_DEN_SPIDER_PLASMA_SHOOTERS_0B);
@@ -214,6 +265,7 @@ extern "C" void quest_build_nagolipoli(
     spawns[entry_count].heading = 3.926991f;
     spawns[entry_count].trigger_time_ms = trigger_time_ms;
     spawns[entry_count].count = 8;
+#endif
     ++entry_count;
 
     *count = entry_count;

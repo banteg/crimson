@@ -155,3 +155,13 @@ the 2,102-byte body. The candidate's two trailing alignment bytes are reported
 separately as padding. All former stack-coloring residuals above are resolved;
 the old negative controls bounded individual forms and missed the interaction
 between the two milestone phases.
+
+## 1.9.8 (C2 9044)
+
+Exact under 1.9.8. Storing `current_player_index` before the cooldown
+subtraction is a shared spelling exact under both compilers. Both left-edge
+cases store `left.x = -40` before the roll in 1.9.8 and after it in 1.9.93;
+neither compiler moves the constant store across the `crt_rand` call, and
+declaring the height first, folding the roll into `left.y`, or taking the
+modulo into the roll keep each compiler's order. The store position is
+therefore a `CL_BUILD == 10908` guard.

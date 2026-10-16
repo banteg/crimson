@@ -38,7 +38,6 @@ extern float time_scale_factor;
 extern float game_time_s;
 extern game_state_id_t game_state_pending;
 extern char typo_input_buffer[];
-extern char s_typo_command_reload[];
 extern char console_prompt_format[];
 extern char console_caret_string[];
 
@@ -109,7 +108,7 @@ extern "C" void typo_gameplay_update_and_render(void)
             *(vec2f_t *)&target_world =
                 creature_pool[creature_id].position;
             ++typo_match_count;
-        } else if (strcmp(s_typo_command_reload, typo_input_buffer) == 0) {
+        } else if (strcmp("reload", typo_input_buffer) == 0) {
             reload_requested = true;
         }
 

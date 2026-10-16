@@ -192,16 +192,16 @@ extern "C" void quest_select_menu_update(void)
     position.x += 16.0f;
     float icon_y = position.y + 3.0f;
     for (stage = 1; stage < 6; stage++) {
-        if (ui_mouse_x <= position.x
-            || ui_mouse_y <= position.y
-            || position.x + 32.0f <= ui_mouse_x
-            || position.y + 32.0f <= ui_mouse_y
-            || ui_mouse_blocked) {
-            grim_interface_ptr->grim_set_color_ptr((float *)&title_color);
-        } else {
+        if (ui_mouse_x > position.x
+            && ui_mouse_y > position.y
+            && position.x + 32.0f > ui_mouse_x
+            && position.y + 32.0f > ui_mouse_y
+            && !ui_mouse_blocked) {
             grim_interface_ptr->grim_set_color_ptr(
                 (float *)&hovered_stage_color);
             hovered_stage = stage;
+        } else {
+            grim_interface_ptr->grim_set_color_ptr((float *)&title_color);
         }
 
         float icon_scale = 1.0f;
@@ -262,29 +262,26 @@ extern "C" void quest_select_menu_update(void)
     int next_row;
     float hover_left = position.x - 10.0f;
     do {
-        if (ui_mouse_x <= hover_left
-            || position.y - 2.0f >= ui_mouse_y
-            || position.x + 210.0f <= ui_mouse_x
-            || position.y + 18.0f <= ui_mouse_y
-            || ui_mouse_blocked) {
-            grim_interface_ptr->grim_set_color_ptr(
-                (float *)&row_idle_color);
-        } else {
+        if (ui_mouse_x > hover_left
+            && position.y - 2.0f < ui_mouse_y
+            && position.x + 210.0f > ui_mouse_x
+            && position.y + 18.0f > ui_mouse_y
+            && !ui_mouse_blocked) {
             quest_select_stage_minor_index = row;
             row_hovered = true;
             grim_interface_ptr->grim_set_color_ptr(
                 (float *)&row_hover_color);
+        } else {
+            grim_interface_ptr->grim_set_color_ptr(
+                (float *)&row_idle_color);
         }
 
-        int stage_major = quest_select_stage_major;
         if (config_hardcore) {
-            int quest_index = row + stage_major * 10 - 10;
-            if (quest_unlock_index_hardcore >= quest_index) {
+            if (quest_unlock_index_hardcore >= row + quest_select_stage_major * 10 - 10) {
                 goto unlocked_row;
             }
         } else {
-            int quest_index = row + stage_major * 10 - 10;
-            if (quest_unlock_index >= quest_index) {
+            if (quest_unlock_index >= row + quest_select_stage_major * 10 - 10) {
                 goto unlocked_row;
             }
         }

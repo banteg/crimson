@@ -28,3 +28,7 @@ record identity while retaining the raw negative displacements caused by VC6's
 pre-increment. A pair overlay was rejected because Binary Ninja rendered the
 last count as an impossible `0xaaaaaaaaaaaaaaa` array index; the canonical
 entry cursor is the honest presentation.
+
+## 1.9.8 (2026-10-16)
+
+Guard on both loops: 1.9.8 fills each record through a cursor record pointer. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases.

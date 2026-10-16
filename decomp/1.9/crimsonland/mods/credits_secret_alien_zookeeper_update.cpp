@@ -283,8 +283,15 @@ extern "C" void credits_secret_alien_zookeeper_update(void)
     reset_button.label = "Reset";
     if (ui_button_update((button_origin + credits_secret_vec2_t(38.0f, 256.0f)).v,
             (ui_button_t *)&reset_button)) {
+        // 1.9.8 leaves the reroll out-parameters uninitialized; the native
+        // build has no zeroing stores here.
+#if CL_BUILD == 10908
+        int match_index;
+        unsigned char match_direction;
+#else
         int match_index = 0;
         unsigned char match_direction = 0;
+#endif
         do {
             for (int reroll_row = 0; reroll_row < 6; reroll_row++) {
                 for (int reroll_column = 0; reroll_column < 6; reroll_column++) {

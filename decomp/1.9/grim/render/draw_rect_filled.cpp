@@ -6,7 +6,7 @@ extern IDirect3DDevice8 *grim_d3d_device;
 void IGrim2D_cpp::grim_draw_rect_filled(
     float *xy, float width, float height, float *rgba)
 {
-    if (rgba[3] > 0.0f) {
+    if (!(rgba[3] <= 0.0f)) {
         grim_d3d_device->SetTexture(0, 0);
         grim_d3d_device->SetTextureStageState(
             0, D3DTSS_COLOROP, D3DTOP_SELECTARG2);

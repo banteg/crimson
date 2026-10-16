@@ -70,24 +70,24 @@ extern "C" void quest_build_lizard_kings(
     spawns[entry_count].pos = next_position_2;
     spawns[entry_count].template_id = chain_template_id;
     spawns[entry_count].trigger_time_ms = trigger_time_ms;
-    int angle_index = 0;
     spawns[entry_count].count = one;
     ++entry_count;
 
-    for (; angle_index < 28; ++angle_index) {
+    for (int angle_index = 0; angle_index < 28; ++angle_index) {
         float angle = (float)angle_index * 0.34906587f;
-        spawns[entry_count + angle_index].pos.x =
+        spawns[entry_count].pos.x =
             (float)cos(angle) * 256.0f + 512.0f;
-        spawns[entry_count + angle_index].pos.y =
+        spawns[entry_count].pos.y =
             (float)sin(angle) * 256.0f + 512.0f;
-        spawns[entry_count + angle_index].template_id =
+        spawns[entry_count].template_id =
             SPAWN_ID_LIZARD_RANDOM_31;
-        spawns[entry_count + angle_index].trigger_time_ms = trigger_time_ms;
-        spawns[entry_count + angle_index].count = 1;
-        spawns[entry_count + angle_index].heading =
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = 1;
+        spawns[entry_count].heading =
             (float)angle_index * -0.34906587f;
         trigger_time_ms += 900;
+        ++entry_count;
     }
 
-    *count = 31;
+    *count = entry_count;
 }

@@ -24,3 +24,7 @@ it preserved the stride but did not normalize those stores and produced a
 misleading huge array index for the final count. The annotation was reverted;
 the canonical entry pointer plus raw negative induction offsets is the more
 truthful decompilation.
+
+## 1.9.8 (2026-10-16)
+
+Guard: 1.9.8 fills each record through a cursor record pointer. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases.

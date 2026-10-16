@@ -46,3 +46,7 @@ improves from 131/150 fuzzy-weighted bytes (87.50%) and a 12-instruction prefix
 to exact 150/150 bytes and a 32-instruction prefix. References remain 7/0/0.
 The exact source SHA-256 is
 `9c2e6491b1fd56e89ce3bb6e7885e5ff0f097af3be1ca113e38dd9c71ee1669e`.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds after replacing `set_spawn` with direct metadata stores. The helper call keeps the stores behind the float conversion under C2 9044.

@@ -3,24 +3,24 @@
 int perk_select_random(void)
 {
     int perk_id;
-    int can_offer;
-    int attempt = 1;
+    int attempt = 0;
 
-    do {
-        perk_id = crt_rand();
-        perk_id = perk_id % perk_id_max + 1;
+    while (++attempt <= 1000) {
+        perk_id = crt_rand() % perk_id_max + 1;
         if (perk_meta_table[perk_id].available == 0) {
-            attempt = attempt + 1;
-        } else {
-            can_offer = perk_can_offer(perk_id);
-            if ((char)can_offer == 0) {
-                attempt = attempt + 1;
-            } else {
-                return perk_id;
-            }
+            continue;
         }
-    } while (attempt <= 1000);
+        if ((char)perk_can_offer(perk_id) == 0) {
+            continue;
+        }
+        return perk_id;
+    }
 
+#if CL_BUILD == 10908
+    // 1.9.8's message lacks the "to".
+    console_printf(&console_log_queue, "Perk Randomizer failed generate a random perk!\n");
+#else
     console_printf(&console_log_queue, "Perk Randomizer failed to generate a random perk!\n");
+#endif
     return perk_id_instant_winner;
 }

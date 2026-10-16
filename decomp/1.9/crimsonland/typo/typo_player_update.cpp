@@ -1,4 +1,7 @@
 #include "crimsonland_gameplay.h"
+#include "grim2d_cpp.h"
+
+extern IGrim2D_cpp *grim_interface_ptr;
 
 extern "C" double atan2(double y, double x);
 extern "C" double cos(double angle);

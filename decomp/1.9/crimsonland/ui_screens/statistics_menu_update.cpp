@@ -217,6 +217,10 @@ extern "C" void statistics_menu_update(void)
     xy.y += 34.0f;
     ui_button_update((float*)&xy, (ui_button_t*)&credits_button);
     xy.y += 34.0f;
+#if CL_BUILD == 10908
+    // 1.9.8 still shows the update-check button in the menu column.
+    ui_button_update((float*)&xy, (ui_button_t*)&update_button);
+#endif
     xy.y += 34.0f;
     xy.x += 124.0f;
     xy.y += 16.0f;
@@ -233,13 +237,10 @@ extern "C" void statistics_menu_update(void)
         }
         if (quest_stage_minor < 1) {
             quest_stage_minor = 1;
-            highscore_load_table_thunk();
-        } else {
-            if (quest_stage_minor > 10) {
-                quest_stage_minor = 10;
-            }
-            highscore_load_table_thunk();
+        } else if (quest_stage_minor > 10) {
+            quest_stage_minor = 10;
         }
+        highscore_load_table_thunk();
     }
 
     if (weapons_button.activated) {

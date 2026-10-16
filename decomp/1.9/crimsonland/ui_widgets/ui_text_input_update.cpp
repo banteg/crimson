@@ -102,7 +102,7 @@ extern "C" bool ui_text_input_update(
     while (true) {
         visible_width = grim_interface_ptr->grim_measure_text_width(
             (char *)&id->text[start]);
-        if ((float)visible_width <= max_text_width) {
+        if (!((float)visible_width > max_text_width)) {
             break;
         }
         ++start;

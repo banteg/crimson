@@ -42,7 +42,12 @@ extern "C" unsigned char music_stream_fill(music_entry_t *entry)
     } while (remaining > 0 && read_bytes != 0);
 
     entry->buffers[0]->Unlock(dst1, dst1_bytes, 0, 0);
+#if CL_BUILD == 10908
+    // Codegen only: 9044 loads the cursor first only for this spelling (see NOTES.md).
+    entry->stream_cursor = (int)(entry->stream_cursor + dst1_bytes) % (int)entry->pcm_bytes;
+#else
     dst1_bytes += entry->stream_cursor;
     entry->stream_cursor = (int)dst1_bytes % (int)entry->pcm_bytes;
+#endif
     return 0;
 }

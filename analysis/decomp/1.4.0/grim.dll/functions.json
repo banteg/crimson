@@ -137,30 +137,22 @@
   },
   {
     "address": "0x10001A70",
-    "canonical_address": "0x10001A30",
+    "canonical_address": "0x10002FC0",
     "end": "0x10001B3B",
     "evidence": "ordered",
-    "name": "grim_config_blob_load",
-    "size": 203
+    "name": "grim_app_init",
+    "size": 203,
+    "aliases": [
+      "?init@MyApp@@QAE_NXZ"
+    ]
   },
   {
     "address": "0x10001B40",
-    "canonical_address": "0x10001E90",
+    "canonical_address": "0x100030B0",
     "end": "0x10001E3B",
     "evidence": "ordered",
-    "name": "grim_config_dialog_populate_display_modes",
+    "name": "grim_restore_device_after_activation",
     "size": 763
-  },
-  {
-    "address": "0x10001E50",
-    "canonical_address": "0x10002F80",
-    "end": "0x10001EB0",
-    "evidence": "ordered",
-    "name": "grim_app_tick",
-    "size": 96,
-    "aliases": [
-      "?tick@MyApp@@QAE_NXZ"
-    ]
   },
   {
     "address": "0x10001EB0",

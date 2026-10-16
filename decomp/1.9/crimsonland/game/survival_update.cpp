@@ -214,8 +214,8 @@ extern "C" void survival_update(void)
     }
 
 update_wave_spawns:
-    survival_spawn_cooldown -= frame_dt_ms * config_player_count;
     current_player_index = 0;
+    survival_spawn_cooldown -= frame_dt_ms * config_player_count;
     while (survival_spawn_cooldown < 0) {
         int interval = 500 - run_elapsed_ms / 1800;
         while (interval < 0) {
@@ -240,9 +240,15 @@ update_wave_spawns:
             }
             case 2: {
                 vec2f_t left;
+#if CL_BUILD == 10908
+                // 1.9.8 stores the left edge before the roll.
+                left.x = -40.0f;
+#endif
                 int height = terrain_texture_height;
                 int roll = crt_rand();
+#if CL_BUILD != 10908
                 left.x = -40.0f;
+#endif
                 left.y = (float)(roll % height);
                 survival_spawn_creature(&left);
                 break;
@@ -287,9 +293,15 @@ update_wave_spawns:
         }
         case 2: {
             vec2f_t left;
+#if CL_BUILD == 10908
+            // 1.9.8 stores the left edge before the roll.
+            left.x = -40.0f;
+#endif
             int height = terrain_texture_height;
             int roll = crt_rand();
+#if CL_BUILD != 10908
             left.x = -40.0f;
+#endif
             left.y = (float)(roll % height);
             survival_spawn_creature(&left);
             break;

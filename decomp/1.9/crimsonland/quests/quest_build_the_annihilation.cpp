@@ -33,13 +33,12 @@ extern "C" void quest_build_the_annihilation(
     spawns[entry_count].pos.x = 128.0f;
     spawns[entry_count].pos.y =
         (float)(terrain_texture_width / 2);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;
+    spawns[entry_count].trigger_time_ms = trigger_time_ms;
+    spawns[entry_count].count = 2;
+    ++entry_count;
     int index = 0;
     int y_offset = 0;
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_ALIEN_DEADLY_FAST_2B,
-        trigger_time_ms,
-        2);
-    ++entry_count;
 
     do {
         quest_entry_original_t *spawn = &spawns[entry_count];

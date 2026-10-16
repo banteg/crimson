@@ -185,9 +185,15 @@ extern "C" void play_game_menu_update(void)
             "times played:");
     }
 
+    // Code-generation guard: C2 9044 (1.9.8) lays the roomy block out of line
+    // only for the direct condition; see the scratch NOTES.md.
+#if CL_BUILD == 10908
+    if (quest_unlock_index < 0x28 || config_player_count > 1) {
+#else
     bool roomy_layout =
         quest_unlock_index < 0x28 || config_player_count > 1;
     if (roomy_layout) {
+#endif
         position.y += 32.0f;
         if (mode_play_rush + quest_play_counts[11] + mode_play_survival <= 0) {
             if (config_player_count == 1) {
@@ -227,7 +233,7 @@ extern "C" void play_game_menu_update(void)
         }
         position.y += 32.0f;
 
-        if (quest_play_counts[11] + mode_play_survival + mode_play_rush > 0) {
+        if (mode_play_rush + quest_play_counts[11] + mode_play_survival > 0) {
             if (config_player_count == 1) {
                 ui_button_update(
                     (float *)&position, (ui_button_t *)&tutorial_button);
@@ -236,7 +242,7 @@ extern "C" void play_game_menu_update(void)
         }
     } else {
         position.y += 26.0f;
-        if (quest_play_counts[11] + mode_play_survival + mode_play_rush <= 0) {
+        if (mode_play_rush + quest_play_counts[11] + mode_play_survival <= 0) {
             if (config_player_count == 1) {
                 ui_button_update(
                     (float *)&position, (ui_button_t *)&tutorial_button);
@@ -289,7 +295,7 @@ extern "C" void play_game_menu_update(void)
         }
         position.y += 28.0f;
 
-        if (quest_play_counts[11] + mode_play_survival + mode_play_rush > 0) {
+        if (mode_play_rush + quest_play_counts[11] + mode_play_survival > 0) {
             ui_button_update(
                 (float *)&position, (ui_button_t *)&tutorial_button);
             position.y += 28.0f;

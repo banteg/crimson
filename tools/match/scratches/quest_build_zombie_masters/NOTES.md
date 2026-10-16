@@ -25,3 +25,9 @@ and flattening that value member drops 18 instructions.
 
 The default VC6 profile matches all 31 instructions, the full 31-instruction
 prefix, both references, and the 128-byte function exactly.
+
+## 1.9.8 (2026-10-16)
+
+Code-generation guard on the second record's metadata and the third record's position: 1.9.8 writes them directly, 8966 through `set_spawn` and `set_position`.
+
+Shared-spelling search (none exact under both): all 256 combinations of `set_position`/`set_spawn` versus direct stores per record, 81 combinations of direct, two-field-plus-count and three-field setters, count before the setter, field order, a player-count local and the setter before the position.

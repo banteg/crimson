@@ -522,6 +522,206 @@
       "bytes": "68b89f0510",
       "offset": 0,
       "note": "Pushed C++ EH handler of grim_decode_jaz_texture; its FuncInfo is grim_decode_jaz_texture_eh_info."
+    },
+    {
+      "name": "grim_on_device_lost",
+      "address": "0x10070e30",
+      "reference": "0x10003616",
+      "bytes": "ff15300e0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_set_config_var, grim_window_proc."
+    },
+    {
+      "name": "strdup",
+      "address": "0x10014864",
+      "reference": "0x10006b5e",
+      "bytes": "e801dd0000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_set_config_var."
+    },
+    {
+      "name": "grim_key_char_queue",
+      "address": "0x10070e4c",
+      "reference": "0x1000399b",
+      "bytes": "891c854c0e0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_get_key_char, grim_window_proc."
+    },
+    {
+      "name": "grim_mouse_state",
+      "address": "0x100715b8",
+      "reference": "0x1000a9b4",
+      "bytes": "68b8150710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_mouse_poll."
+    },
+    {
+      "name": "grim_mouse_wheel",
+      "address": "0x100715d4",
+      "reference": "0x1000aa7f",
+      "bytes": "d905d4150710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_mouse_poll."
+    },
+    {
+      "name": "grim_client_rect",
+      "address": "0x10070c50",
+      "reference": "0x1000305e",
+      "bytes": "890d500c0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_app_init."
+    },
+    {
+      "name": "grim_window_proc_dc_flag",
+      "address": "0x1006fa80",
+      "reference": "0x10003500",
+      "bytes": "a080fa0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_window_proc."
+    },
+    {
+      "name": "grim_window_proc_paint_flag",
+      "address": "0x1006fa81",
+      "reference": "0x100035cd",
+      "bytes": "a281fa0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_window_proc."
+    },
+    {
+      "name": "grim_config_dialog_canceled",
+      "address": "0x10070e44",
+      "reference": "0x10002336",
+      "bytes": "c605440e071000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_apply_config, grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_config_dialog_bpp16_selected",
+      "address": "0x1006f134",
+      "reference": "0x10002303",
+      "bytes": "c60534f1061001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_apply_config, grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_config_dialog_windowed_selected",
+      "address": "0x1006f100",
+      "reference": "0x10002275",
+      "bytes": "c60500f1061001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_apply_config, grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_caps_can_render_windowed",
+      "address": "0x1006309c",
+      "reference": "0x10001e72",
+      "bytes": "a29c300610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_dialog_populate_display_modes, grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_config_mode_width",
+      "address": "0x100708a0",
+      "reference": "0x1000229a",
+      "bytes": "c705a008071080020000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_config_mode_height",
+      "address": "0x100708b0",
+      "reference": "0x100022a4",
+      "bytes": "c705b0080710e0010000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_config_mode_bpp",
+      "address": "0x100708c0",
+      "reference": "0x1000230a",
+      "bytes": "c705c008071010000000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_config_dialog_hwnd",
+      "address": "0x1006f12c",
+      "reference": "0x10001e4b",
+      "bytes": "8b152cf10610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_dialog_populate_display_modes, grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_config_dialog_system_time",
+      "address": "0x1006fe8c",
+      "reference": "0x100023ba",
+      "bytes": "688cfe0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_config_dialog_has_supported_adapter",
+      "address": "0x1006fd80",
+      "reference": "0x100023d2",
+      "bytes": "c60580fd061000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_adapter_identifier",
+      "address": "0x1006d608",
+      "reference": "0x100023ea",
+      "bytes": "6808d60610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_adapter_description",
+      "address": "0x1006d808",
+      "reference": "0x100023fa",
+      "bytes": "6808d80610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_dialog_proc."
+    },
+    {
+      "name": "grim_parental_lock_disabled_text",
+      "address": "0x100630a4",
+      "reference": "0x10001b48",
+      "bytes": "a1a4300610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_parental_lock_dialog_proc."
+    },
+    {
+      "name": "grim_parental_lock_enabled_text",
+      "address": "0x100630a0",
+      "reference": "0x10001b9d",
+      "bytes": "8b15a0300610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_parental_lock_dialog_proc."
+    },
+    {
+      "name": "grim_parental_password_buffer",
+      "address": "0x1006fb80",
+      "reference": "0x10001c06",
+      "bytes": "6880fb0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_parental_lock_dialog_proc."
+    },
+    {
+      "name": "grim_parental_password_confirm_buffer",
+      "address": "0x1006fc80",
+      "reference": "0x10001c21",
+      "bytes": "6880fc0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_parental_lock_dialog_proc."
+    },
+    {
+      "name": "grim_caps_x8r8g8b8_supported",
+      "address": "0x1006309d",
+      "reference": "0x10001eba",
+      "bytes": "88159d300610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_dialog_populate_display_modes."
     }
   ]
 }

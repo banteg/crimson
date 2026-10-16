@@ -111,3 +111,7 @@ publication regresses to 96.38%. Combining those two natural source choices
 matches the native prologue schedule and the complete function exactly:
 **100.00%**, **138/138 instructions**, **626/626 bytes**, and references
 `15/0/0`.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds with uniform direct field stores: no `set_spawn`, no count pointer and no position pointer.

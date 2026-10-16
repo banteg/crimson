@@ -26,3 +26,7 @@ register forcing.
 
 The candidate is exact: all 112 instructions and 382 bytes match, including
 the complete 112-instruction prefix and all ten static references.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds: direct metadata stores, and each loop derives its trigger from the loop index (`index * step + base`) instead of carrying an accumulator. Six orders of the accumulator increments and three loop forms were tried first.

@@ -30,42 +30,106 @@ extern "C" void quest_build_the_killing(
         crt_rand();
         int layout = wave % 5;
         if (layout == 0) {
+#if CL_BUILD == 10908
+            // 1.9.8 fills each record through a record pointer, which frees
+            // the metadata stores to schedule ahead of the float conversions.
+            quest_spawn_entry_t *spawn = builder.cursor;
+            spawn->pos_x = (float)(terrain_texture_width + 64);
+            spawn->pos_y = (float)(terrain_texture_width / 2);
+            spawn->template_id = spawn_template_id;
+            spawn->trigger_time_ms = trigger_time_ms;
+            spawn->count = 12;
+#else
             builder.cursor->pos_x = (float)(terrain_texture_width + 64);
             builder.cursor->pos_y = (float)(terrain_texture_width / 2);
             builder.cursor->template_id = spawn_template_id;
             builder.cursor->trigger_time_ms = trigger_time_ms;
             builder.cursor->count = 12;
+#endif
             ++builder.count;
             ++builder.cursor;
             trigger_time_ms += 5000;
         } else if (layout == 1) {
+#if CL_BUILD == 10908
+            quest_spawn_entry_t *spawn = builder.cursor;
+            spawn->pos_x = -64.0f;
+            spawn->pos_y = (float)(terrain_texture_width / 2);
+            spawn->template_id = spawn_template_id;
+            spawn->trigger_time_ms = trigger_time_ms;
+            spawn->count = 12;
+#else
             builder.cursor->pos_x = -64.0f;
             builder.cursor->pos_y = (float)(terrain_texture_width / 2);
             builder.cursor->template_id = spawn_template_id;
             builder.cursor->trigger_time_ms = trigger_time_ms;
             builder.cursor->count = 12;
+#endif
             ++builder.count;
             ++builder.cursor;
             trigger_time_ms += 5000;
         } else if (layout == 2) {
+#if CL_BUILD == 10908
+            quest_spawn_entry_t *spawn = builder.cursor;
+            spawn->pos_y = (float)(terrain_texture_width + 64);
+            spawn->pos_x = (float)(terrain_texture_width / 2);
+            spawn->template_id = spawn_template_id;
+            spawn->trigger_time_ms = trigger_time_ms;
+            spawn->count = 12;
+#else
             builder.cursor->pos_y = (float)(terrain_texture_width + 64);
             builder.cursor->pos_x = (float)(terrain_texture_width / 2);
             builder.cursor->template_id = spawn_template_id;
             builder.cursor->trigger_time_ms = trigger_time_ms;
             builder.cursor->count = 12;
+#endif
             ++builder.count;
             ++builder.cursor;
             trigger_time_ms += 5000;
         } else if (layout == 3) {
+#if CL_BUILD == 10908
+            quest_spawn_entry_t *spawn = builder.cursor;
+            spawn->pos_y = -64.0f;
+            spawn->pos_x = (float)(terrain_texture_width / 2);
+            spawn->template_id = spawn_template_id;
+            spawn->trigger_time_ms = trigger_time_ms;
+            spawn->count = 12;
+#else
             builder.cursor->pos_y = -64.0f;
             builder.cursor->pos_x = (float)(terrain_texture_width / 2);
             builder.cursor->template_id = spawn_template_id;
             builder.cursor->trigger_time_ms = trigger_time_ms;
             builder.cursor->count = 12;
+#endif
             ++builder.count;
             ++builder.cursor;
             trigger_time_ms += 5000;
         } else if (layout == 4) {
+#if CL_BUILD == 10908
+            quest_spawn_entry_t *spawn = builder.cursor;
+            spawn->pos_y = (float)(crt_rand() % 768 + 128);
+            spawn->pos_x = (float)(crt_rand() % 768 + 128);
+            spawn->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+            spawn->trigger_time_ms = trigger_time_ms;
+            spawn->count = 3;
+            ++builder.count;
+            ++builder.cursor;
+
+            spawn = builder.cursor;
+            spawn->pos_y = (float)(crt_rand() % 768 + 128);
+            spawn->pos_x = (float)(crt_rand() % 768 + 128);
+            spawn->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+            spawn->trigger_time_ms = trigger_time_ms + 1000;
+            spawn->count = 3;
+            ++builder.count;
+            ++builder.cursor;
+
+            spawn = builder.cursor;
+            spawn->pos_y = (float)(crt_rand() % 768 + 128);
+            spawn->pos_x = (float)(crt_rand() % 768 + 128);
+            spawn->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+            spawn->trigger_time_ms = trigger_time_ms + 2000;
+            spawn->count = 3;
+#else
             builder.cursor->pos_y = (float)(crt_rand() % 768 + 128);
             builder.cursor->pos_x = (float)(crt_rand() % 768 + 128);
             builder.cursor->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
@@ -87,6 +151,7 @@ extern "C" void quest_build_the_killing(
             builder.cursor->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
             builder.cursor->trigger_time_ms = trigger_time_ms + 2000;
             builder.cursor->count = 3;
+#endif
             ++builder.count;
             ++builder.cursor;
             trigger_time_ms += 5000;

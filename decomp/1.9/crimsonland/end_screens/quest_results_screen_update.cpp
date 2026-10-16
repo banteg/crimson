@@ -390,14 +390,14 @@ extern "C" void quest_results_screen_update(void)
             ui_screen_phase = 2;
             goto done;
         }
-        name_input.max_chars = 0x14;
-        name_input.text = quest_results_name_input_buffer;
-        ui_screen_phase = 1;
         strcpy(
             quest_results_name_input_buffer,
             highscore_active_record.player_name);
+        name_input.max_chars = 0x14;
+        name_input.text = quest_results_name_input_buffer;
         name_input.cursor =
             strlen(highscore_active_record.player_name);
+        ui_screen_phase = 1;
         goto done;
     }
 

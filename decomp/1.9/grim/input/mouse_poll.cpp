@@ -41,15 +41,15 @@ bool grim_mouse_poll(void)
     if (grim_mouse_device != 0) {
         int iterations = 0;
         grim_mouse_dx = grim_mouse_dy = grim_mouse_wheel_delta = 0.0f;
-        memset(&grim_mouse_state, 0, sizeof(grim_mouse_state));
+        long result;
+        do {
+            memset(&grim_mouse_state, 0, sizeof(grim_mouse_state));
+            result = grim_mouse_device->vtable->GetDeviceState(
+                grim_mouse_device, sizeof(grim_mouse_state), &grim_mouse_state);
+            if (result < 0) {
+                goto reacquire;
+            }
 
-        long result = grim_mouse_device->vtable->GetDeviceState(
-            grim_mouse_device, sizeof(grim_mouse_state), &grim_mouse_state);
-        if (result < 0) {
-            goto reacquire;
-        }
-
-        while (true) {
             grim_mouse_dx += (float)grim_mouse_state.lX;
             grim_mouse_dy += (float)grim_mouse_state.lY;
             grim_mouse_wheel_delta += (float)grim_mouse_state.lZ;
@@ -57,19 +57,9 @@ bool grim_mouse_poll(void)
             if (iterations++ >= 100) {
                 break;
             }
-            if (grim_mouse_state.lX == 0 &&
-                grim_mouse_state.lY == 0 &&
-                grim_mouse_state.lZ == 0) {
-                break;
-            }
-
-            memset(&grim_mouse_state, 0, sizeof(grim_mouse_state));
-            result = grim_mouse_device->vtable->GetDeviceState(
-                grim_mouse_device, sizeof(grim_mouse_state), &grim_mouse_state);
-            if (result < 0) {
-                goto reacquire;
-            }
-        }
+        } while (grim_mouse_state.lX != 0 ||
+                 grim_mouse_state.lY != 0 ||
+                 grim_mouse_state.lZ != 0);
 
         if (iterations > 2) {
             grim_noop("stall", iterations);

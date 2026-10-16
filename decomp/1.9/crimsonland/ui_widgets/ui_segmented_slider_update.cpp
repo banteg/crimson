@@ -49,9 +49,16 @@ extern "C" void ui_segmented_slider_update(
     bool focused = ui_focus_update((int)state);
     bool hovered = false;
     float slider_width = (float)(state->max * 8);
+    // Code-generation guard: C2 9044 (1.9.8) packs the native frame only with
+    // the hover position in function scope; see the scratch NOTES.md.
+#if CL_BUILD == 10908
+    ui_slider_vec2_t position(xy->x - 3.0f, xy->y - 1.0f);
+#endif
     ui_slider_point_t draw_position = *xy;
     {
+#if CL_BUILD != 10908
         ui_slider_vec2_t position(xy->x - 3.0f, xy->y - 1.0f);
+#endif
 
         if (ui_mouse_inside_rect(
                 (float *)&position, 18, (int)(slider_width + 6.0f))) {

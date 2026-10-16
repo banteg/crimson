@@ -34,8 +34,14 @@ void IGrim2D_cpp::grim_submit_vertices_transform_color(
         for (int i = 0; i < count; ++i) {
             grim_rotate_point(grim_vertex_write_ptr, matrix);
             grim_translate_point(grim_vertex_write_ptr, offset);
+#if CL_BUILD == 10908
+            // Code-generation guard: 9044 orders the rotation products
+            // natively only without the named vertex local; see NOTES.md.
+            ((unsigned long *)grim_vertex_write_ptr)[4] = *color;
+#else
             unsigned long *vertex = (unsigned long *)grim_vertex_write_ptr;
             vertex[4] = *color;
+#endif
             grim_vertex_write_ptr += 7;
         }
         *(unsigned short *)&grim_vertex_count += (short)count;

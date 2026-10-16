@@ -11,7 +11,12 @@ int fx_spawn_sprite(
             goto allocated;
         }
     }
+#if CL_BUILD == 10908
+    // 1.9.8 recycles only the upper 256 slots.
+    index = crt_rand() % 0x100 + 0x80;
+#else
     index = crt_rand() % 0x180;
+#endif
 
 allocated:
     sprite_effect_pool[index].active = 1;

@@ -53,7 +53,12 @@ extern console_cvar_entry_t *cv_con_mono_font;
 extern char console_caret_string[];
 extern char console_prompt_format[];
 extern char console_prompt_string[];
+#if CL_BUILD == 10908
+// 1.9.8 reaches its banner through a string pointer.
+extern char *console_version_string;
+#else
 extern char console_version_string[];
+#endif
 
 char *console_input_buffer(void);
 }

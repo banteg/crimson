@@ -13,16 +13,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_alien_squads(
@@ -37,8 +27,9 @@ extern "C" void quest_build_alien_squads(
     spawns[entry_count].count = 1;
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(-256.0f, 768.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_FORMATION_RING_ALIEN_8_12, 2500, 1);
+    spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+    spawns[entry_count].trigger_time_ms = 2500;
+    spawns[entry_count].count = 1;
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(768.0f, -256.0f);
     spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
@@ -46,8 +37,9 @@ extern "C" void quest_build_alien_squads(
     spawns[entry_count].count = 1;
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(768.0f, 1280.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_FORMATION_RING_ALIEN_8_12, 8500, 1);
+    spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+    spawns[entry_count].trigger_time_ms = 8500;
+    spawns[entry_count].count = 1;
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(1280.0f, 1280.0f);
     spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
@@ -55,8 +47,9 @@ extern "C" void quest_build_alien_squads(
     spawns[entry_count].count = 1;
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(1280.0f, 768.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_FORMATION_RING_ALIEN_8_12, 18500, 1);
+    spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+    spawns[entry_count].trigger_time_ms = 18500;
+    spawns[entry_count].count = 1;
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(-256.0f, 256.0f);
     spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
@@ -64,8 +57,9 @@ extern "C" void quest_build_alien_squads(
     spawns[entry_count].count = 1;
     ++entry_count;
     spawns[entry_count].pos = quest_vec2_t(-256.0f, 768.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_FORMATION_RING_ALIEN_8_12, 30000, 1);
+    spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_8_12;
+    spawns[entry_count].trigger_time_ms = 30000;
+    spawns[entry_count].count = 1;
     ++entry_count;
 
     int first_wave_entry = entry_count;
@@ -74,14 +68,18 @@ extern "C" void quest_build_alien_squads(
     while (trigger_time_ms < 83000) {
         wave_spawns[entry_count - first_wave_entry].pos.x = -64.0f;
         wave_spawns[entry_count - first_wave_entry].pos.y = -64.0f;
-        wave_spawns[entry_count - first_wave_entry].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
-        wave_spawns[entry_count - first_wave_entry].trigger_time_ms = trigger_time_ms - 400;
+        wave_spawns[entry_count - first_wave_entry].template_id =
+            SPAWN_ID_ALIEN_SMALL_GRAY_26;
+        wave_spawns[entry_count - first_wave_entry].trigger_time_ms =
+            trigger_time_ms - 400;
         wave_spawns[entry_count++ - first_wave_entry].count = 1;
 
         wave_spawns[entry_count - first_wave_entry].pos.x = 1088.0f;
         wave_spawns[entry_count - first_wave_entry].pos.y = 1088.0f;
-        wave_spawns[entry_count - first_wave_entry].template_id = SPAWN_ID_ALIEN_SMALL_GRAY_26;
-        wave_spawns[entry_count - first_wave_entry].trigger_time_ms = trigger_time_ms;
+        wave_spawns[entry_count - first_wave_entry].template_id =
+            SPAWN_ID_ALIEN_SMALL_GRAY_26;
+        wave_spawns[entry_count - first_wave_entry].trigger_time_ms =
+            trigger_time_ms;
         wave_spawns[entry_count++ - first_wave_entry].count = 1;
 
         trigger_time_ms += 1800;

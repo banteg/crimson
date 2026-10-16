@@ -161,7 +161,6 @@ extern char menu_label_back[];
 char *game_mode_label(void);
 int crt_sprintf(char *dst, const char *format, ...);
 void highscore_load_table_thunk(void);
-unsigned char game_is_full_version(void);
 bool input_primary_just_pressed(void);
 bool ui_checkbox_update(float *xy, ui_checkbox_t *checkbox);
 void ui_scrollbar_update(float *xy, float *state);

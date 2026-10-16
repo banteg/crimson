@@ -307,8 +307,13 @@ def _flow_extent(image: matchlib.LoadedImage, start: int, limit: int) -> tuple[i
                 operand.mem for operand in instruction.operands
                 if operand.type == x86.X86_OP_MEM and operand.mem.base == 0 and operand.mem.index != 0
             ]
-            # VC6 sparse switches index a byte lookup table, then the jump table.
-            lookup_tables.update(memory.disp & 0xFFFFFFFF for memory in indexed if memory.scale == 1)
+            # VC6 sparse switches index a byte lookup table, then the jump table;
+            # the byte index may sit in either the base or the index register.
+            lookup_tables.update(
+                operand.mem.disp & 0xFFFFFFFF for operand in instruction.operands
+                if operand.type == x86.X86_OP_MEM and operand.mem.scale == 1
+                and (operand.mem.base == 0) != (operand.mem.index == 0)
+            )
             if mnemonic in {"ret", "int3", "hlt"}:
                 break
             if not mnemonic.startswith(("j", "loop")):
@@ -332,7 +337,11 @@ def _flow_extent(image: matchlib.LoadedImage, start: int, limit: int) -> tuple[i
         if jump_tables.get(following):
             following += 4 * jump_tables[following]
         elif following in lookup_tables and image.function_bytes(following, following + 1)[0] < cases:
-            while following < limit and image.function_bytes(following, following + 1)[0] < cases:
+            # A byte table runs until the next switch table or its first out-of-range byte.
+            while (
+                following < limit and following not in jump_tables
+                and image.function_bytes(following, following + 1)[0] < cases
+            ):
                 following += 1
         elif (
             (filler := matchlib.disassemble_normalized_function(

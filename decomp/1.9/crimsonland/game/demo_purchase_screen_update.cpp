@@ -65,7 +65,6 @@ extern int music_track_shortie_monk_id;
 extern int music_track_crimsonquest_id;
 extern int music_track_crimson_theme_id;
 
-unsigned char game_is_full_version(void);
 bool input_primary_just_pressed(void);
 bool config_load_presets(bool skip_grim_settings);
 bool ui_button_update(float *xy, ui_button_t *button);

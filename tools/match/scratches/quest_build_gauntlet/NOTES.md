@@ -138,3 +138,7 @@ remain byte-identical at 98.3516%; `/GB`, `/G5`, `/G7`, `/Ox`, `/Ob1`, `/Ob2`,
 `/Og`, and `/Ot` tie, while the processor-pack, `/G6`, `/Os`, and VC7 profiles
 regress. The retained source therefore stops before artificial dependencies or
 register forcing.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds after replacing `set_spawn` with direct metadata stores.

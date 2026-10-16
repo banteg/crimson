@@ -48,7 +48,13 @@ spawn_entries:
     spawn_index = 0;
     while (true) {
         quest_timeline_vec2_t offset = zero_offset;
+#if CL_BUILD == 10908
+        // C2 9044 keeps the native entry_index/count registers only with the
+        // reset in the loop header; 8966 needs it carried from the loop tail.
+        for (spawn_index = 0; spawn_index < quest_spawn_table[entry_index].count; spawn_index++) {
+#else
         for (; spawn_index < quest_spawn_table[entry_index].count; spawn_index++) {
+#endif
             if (quest_spawn_table[entry_index].position.x < 0.0f
                 || (float)terrain_texture_width < quest_spawn_table[entry_index].position.x) {
                 offset.y = (float)(spawn_index * 40);
@@ -62,7 +68,8 @@ spawn_entries:
                 }
             }
 
-            quest_timeline_vec2_t pos = offset + quest_spawn_table[entry_index].position;
+            quest_timeline_vec2_t pos =
+                offset + quest_spawn_table[entry_index].position;
             creature_spawn_template(
                 quest_spawn_table[entry_index].template_id,
                 &pos,

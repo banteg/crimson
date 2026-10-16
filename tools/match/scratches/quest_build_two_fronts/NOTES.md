@@ -21,3 +21,7 @@ schedule without an artificial dependency.
 
 The default VC6 profile matches all 112 instructions, the full 112-instruction
 prefix, all three references, and the 383-byte function exactly.
+
+## 1.9.8 (2026-10-16)
+
+Shared: direct metadata stores. Guard on three record groups: 1.9.8 fills each record through a cursor record pointer and counts it after its metadata. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases. Counting in place and the original split count placement both give 96.86%.

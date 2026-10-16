@@ -71,3 +71,7 @@ therefore retains the descriptive `wave_count` local and removes only
 `trigger_time_ms`. It matches 114/114 normalized instructions with source
 SHA-256
 `e6ea2cad91467a3dcea4b3c821375361b17f6816362fe3447da21a5cccda4d07`.
+
+## 1.9.8 (2026-10-16)
+
+Shared: direct metadata stores. Guard: 1.9.8 fills each record through a cursor record pointer and counts it after its metadata (counting in place gives 98.25%). Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases.

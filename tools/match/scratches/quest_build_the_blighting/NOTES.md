@@ -59,3 +59,7 @@ The preceding BN recovery accounts for the complete control-flow, call (where
 present), constant, record-store, and output-count policy. The candidate has
 the same instruction count as native, all masked references resolved, and all
 bytes equal. Classification: `RECOVERY=semantic-complete`.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds after replacing `set_spawn` with direct metadata stores.

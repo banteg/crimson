@@ -229,7 +229,12 @@ extern int quest_fail_retry_count;
 extern int run_elapsed_ms;
 extern player_weapon_popup_timer_t player_weapon_popup_timer;
 extern int survival_spawn_stage;
+#if CL_BUILD == 10908
+// 1.9.8 clears this slot as a float, after the run timers.
+extern float gameplay_run_reserved_zero;
+#else
 extern int gameplay_run_reserved_zero;
+#endif
 extern unsigned char main_menu_full_version_layout_latch;
 extern unsigned char run_active;
 extern float screen_fade_alpha;
@@ -285,7 +290,13 @@ bonus_entry_t *bonus_spawn_at_pos(const vec2f_t *pos);
 bonus_id_t bonus_pick_random_type(void);
 int weapon_pick_random_available(void);
 int crt_sprintf(char *dst, const char *fmt, ...);
+#if CL_BUILD == 10908 && defined(__cplusplus)
+// 1.9.8 asks Grim2D (vtable slot 0x08) whether the copy is registered at each
+// call site; 1.9.93 calls the out-of-line game_is_full_version stub instead.
+#define game_is_full_version() (grim_interface_ptr->grim_legacy_slot_08())
+#else
 unsigned char game_is_full_version(void);
+#endif
 void quest_database_init(void);
 void ui_menu_assets_init(void);
 void bonus_metadata_init(void);

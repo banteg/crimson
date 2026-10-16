@@ -18,6 +18,7 @@ struct FxRandomVec2 {
     float x;
     float y;
 
+    FxRandomVec2() {}
     FxRandomVec2(float x_value, float y_value) : x(x_value), y(y_value) {}
 
     FxRandomVec2 *vec2_sub(
@@ -44,8 +45,15 @@ extern "C" void fx_queue_add_random(vec2f_t *pos)
 
     float width = (float)(crt_rand() % 24 - 12) + 30.0f;
     float rotation = (float)(crt_rand() % 628) * 0.01f;
+#if CL_BUILD == 10908
+    // Codegen only: 9044 gives the half extent its own slot (see NOTES.md).
+    FxRandomVec2 half(width * 0.5f, width * 0.5f);
+    FxRandomVec2 top_left;
+    ((FxRandomVec2 *)pos)->vec2_sub(&top_left, &half);
+#else
     FxRandomVec2 top_left(width * 0.5f, width * 0.5f);
     ((FxRandomVec2 *)pos)->vec2_sub(&top_left, &top_left);
+#endif
     fx_queue_add(
         crt_rand() % 5 + 3,
         (vec2f_t *)&top_left,

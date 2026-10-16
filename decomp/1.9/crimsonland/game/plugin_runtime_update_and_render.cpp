@@ -50,15 +50,11 @@ extern "C" void plugin_runtime_update_and_render(void)
     }
 
     ui_elements_update_and_render();
-    if (ui_transition_direction == 0
-        && game_state_id == GAME_STATE_PLUGIN_RUNTIME) {
-        ui_cursor_render();
-        return;
-    }
-
-    plugin = (mod_interface_cpp_t *)plugin_interface_ptr;
-    if (plugin != 0 && plugin_runtime_active_latch != 0
-        && plugin->parms.fields.drawMouseCursor != 0) {
+    if ((ui_transition_direction == 0
+            && game_state_id == GAME_STATE_PLUGIN_RUNTIME)
+        || ((plugin = (mod_interface_cpp_t *)plugin_interface_ptr) != 0
+            && plugin_runtime_active_latch != 0
+            && plugin->parms.fields.drawMouseCursor != 0)) {
         ui_cursor_render();
     }
 }

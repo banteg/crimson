@@ -45,3 +45,7 @@ The candidate is exact: 173/173 instructions and 14/0/0 audited references.
 The cursor/count builder now owns a canonical `quest_spawn_entry_t *` rather
 than a private layout duplicate. Using the flat position fields preserves the
 exact 173-instruction body and all 14 references.
+
+## 1.9.8 (2026-10-16)
+
+Guard on the five record sites: 1.9.8 fills each record through a cursor record pointer, which also removes two instructions (171 against 173). Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases. Function-scope and per-branch declarations and early or late counting are equivalent.

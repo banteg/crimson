@@ -13,16 +13,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_the_fortress(
@@ -34,12 +24,11 @@ extern "C" void quest_build_the_fortress(
     spawns[entry_count].pos = quest_vec2_t(
         -50.0f,
         (float)terrain_texture_height * 0.5f);
-    int y_seed = 0x200;
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_SPIDER_SMALL_BLUE_40,
-        100,
-        6);
+    spawns[entry_count].template_id = SPAWN_ID_SPIDER_SMALL_BLUE_40;
+    spawns[entry_count].trigger_time_ms = 100;
+    spawns[entry_count].count = 6;
     ++entry_count;
+    int y_seed = 0x200;
 
     int trigger_time_ms = 1100;
     while (trigger_time_ms < 0x14B4) {
@@ -71,11 +60,20 @@ extern "C" void quest_build_the_fortress(
                 grid_entry->pos = quest_vec2_t(
                     (float)x_seed * 0.166666672f + 256.0f,
                     512.0f - (float)(row * 0x180) * 0.166666672f);
+#if CL_BUILD == 10908
+                // 1.9.8 fills the grid record through its entry pointer and
+                // counts it after the metadata.
+                grid_entry->template_id = SPAWN_ID_DEN_SPIDER_BASIC_0A;
+                grid_entry->trigger_time_ms = trigger_time_ms;
+                grid_entry->count = 1;
+                ++entry_count;
+#else
                 ++entry_count;
                 int *grid_template = grid_trigger - 1;
                 *grid_template = SPAWN_ID_DEN_SPIDER_BASIC_0A;
                 grid_trigger[0] = trigger_time_ms;
                 grid_trigger[1] = 1;
+#endif
                 trigger_time_ms += 600;
                 grid_trigger += 6;
             }

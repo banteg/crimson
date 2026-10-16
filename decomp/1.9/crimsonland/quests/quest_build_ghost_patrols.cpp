@@ -11,16 +11,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_ghost_patrols(
@@ -32,10 +22,9 @@ extern "C" void quest_build_ghost_patrols(
 
     spawns[entry_count].pos.x = (float)(terrain_texture_width + 128);
     spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_ALIEN_DEADLY_FAST_2B,
-        1500,
-        2);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;
+    spawns[entry_count].trigger_time_ms = 1500;
+    spawns[entry_count].count = 2;
     ++entry_count;
 
     int trigger_time_ms = 2500;
@@ -48,10 +37,9 @@ extern "C" void quest_build_ghost_patrols(
             spawns[entry_count].pos.x = 1152.0f;
         }
         spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
-        spawns[entry_count].set_spawn(
-            SPAWN_ID_FORMATION_RING_ALIEN_5_19,
-            trigger_time_ms,
-            one);
+        spawns[entry_count].template_id = SPAWN_ID_FORMATION_RING_ALIEN_5_19;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = one;
 
         ++entry_count;
         ++wave;

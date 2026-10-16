@@ -6,8 +6,10 @@ static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
     float dx = lhs->x - rhs->x;
     float dy = lhs->y - rhs->y;
     float distance_sq = dx * dx;
+    float distance;
     distance_sq += dy * dy;
-    return (float)sqrt(distance_sq);
+    distance = (float)sqrt(distance_sq);
+    return distance;
 }
 
 extern "C" int player_find_in_radius(
@@ -20,7 +22,13 @@ extern "C" int player_find_in_radius(
 
     while (player_index < config_blob.player_count) {
         if (player_index != skip_index
+#if CL_BUILD == 10908
+            // 1.9.8 spells the test !(health <= 0), which passes a NaN health; 8966
+            // compiles both spellings alike, and health > 0 keeps the canonical behaviour.
+            && !(player_state_table[player_index].health <= 0.0f)
+#else
             && player_state_table[player_index].health > 0.0f
+#endif
             && vec2_distance(
                     &player_state_table[player_index].position,
                     pos)

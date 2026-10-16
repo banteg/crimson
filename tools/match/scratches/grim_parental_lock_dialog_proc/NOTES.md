@@ -12,3 +12,11 @@ Those native behaviors are preserved directly. The natural MSVC 6.5
 `/O2 /GB` reconstruction matches all 318 native instructions and all 66
 references. This function remains `platform-replaced` for port ownership, but
 its exact object is included in the recovered Grim platform provider.
+
+## 1.9.8
+
+Every `EndDialog` in the command handler passes `LOWORD(wparam)`; 9044 keeps
+the command value in a register (and its parameter home) while 8966 folds the
+case constants, so the spelling is exact in both builds. 1.9.8 clears a lock
+without a password without saving the blob and words the empty-password
+prompt differently; both are guarded as behaviour differences.

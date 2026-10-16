@@ -30,7 +30,6 @@ void perks_generate_choices(void)
 {
     int choice_index;
     int i;
-    int *choice_cursor;
     int ammunition_within;
     int jinxed;
     int attempts;
@@ -95,16 +94,14 @@ void perks_generate_choices(void)
         }
 
         i = 0;
-        choice_cursor = perk_choice_ids;
         while (1) {
             if (i >= choice_index) {
                 break;
             }
-            if (*choice_cursor == perk_choice_ids[choice_index]) {
+            if (perk_choice_ids[i] == perk_choice_ids[choice_index]) {
                 goto retry;
             }
             ++i;
-            ++choice_cursor;
         }
 
         perk_id = perk_choice_ids[choice_index];

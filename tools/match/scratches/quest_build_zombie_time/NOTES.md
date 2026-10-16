@@ -40,3 +40,7 @@ Spelling the second entry's metadata directly removes the final scheduling
 cluster, producing an exact 50/50-instruction match with references `3/0/0`.
 Retained source SHA-256:
 `41d81263a878ab47c4bc9003ec9b866bfd985be9828ae658c81905b32099a8ef`.
+
+## 1.9.8 (2026-10-16)
+
+Guard: 1.9.8 fills both wave records through a record pointer. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases. Pointer forms on only the first or only the second record break both builds.

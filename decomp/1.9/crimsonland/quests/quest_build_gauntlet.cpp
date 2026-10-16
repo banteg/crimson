@@ -18,16 +18,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_gauntlet(
@@ -72,38 +62,34 @@ extern "C" void quest_build_gauntlet(
                 (float)(terrain_texture_width + 64);
             spawns[entry_count].pos.y =
                 (float)(terrain_texture_width / 2);
-            spawns[entry_count].set_spawn(
-                SPAWN_ID_ZOMBIE_RANDOM_41,
-                trigger_time_ms,
-                wave_index + 2);
+            spawns[entry_count].template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = wave_index + 2;
             ++entry_count;
 
             spawns[entry_count].pos.x = -64.0f;
             spawns[entry_count].pos.y =
                 (float)(terrain_texture_width / 2);
-            spawns[entry_count].set_spawn(
-                SPAWN_ID_ZOMBIE_RANDOM_41,
-                trigger_time_ms,
-                wave_index + 2);
+            spawns[entry_count].template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = wave_index + 2;
             ++entry_count;
 
             spawns[entry_count].pos.x =
                 (float)(terrain_texture_width / 2);
             spawns[entry_count].pos.y =
                 (float)(terrain_texture_width + 64);
-            spawns[entry_count].set_spawn(
-                SPAWN_ID_ZOMBIE_RANDOM_41,
-                trigger_time_ms,
-                wave_index + 2);
+            spawns[entry_count].template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = wave_index + 2;
             ++entry_count;
 
             spawns[entry_count].pos.x =
                 (float)(terrain_texture_width / 2);
             spawns[entry_count].pos.y = -64.0f;
-            spawns[entry_count].set_spawn(
-                SPAWN_ID_ZOMBIE_RANDOM_41,
-                trigger_time_ms,
-                wave_index + 2);
+            spawns[entry_count].template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = wave_index + 2;
             ++entry_count;
 
             ++wave_index;

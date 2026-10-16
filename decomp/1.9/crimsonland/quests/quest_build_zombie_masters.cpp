@@ -24,10 +24,21 @@ extern "C" void quest_build_zombie_masters(
     entries[0].count = config_blob.player_count;
 
     set_position(&entries[1], 512.0f, 256.0f);
+#if CL_BUILD == 10908
+    // C2 9044 loads 768.0f before the second record as native only without
+    // these two helper boundaries; 8966 needs them.
+    entries[1].template_id = SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00;
+    entries[1].trigger_time_ms = 6000;
+    entries[1].count = 1;
+
+    entries[2].pos_x = 768.0f;
+    entries[2].pos_y = 256.0f;
+#else
     set_spawn(&entries[1], SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00, 6000);
     entries[1].count = 1;
 
     set_position(&entries[2], 768.0f, 256.0f);
+#endif
     set_spawn(&entries[2], SPAWN_ID_ZOMBIE_BOSS_SPAWNER_00, 14000);
     entries[2].count = config_blob.player_count;
 

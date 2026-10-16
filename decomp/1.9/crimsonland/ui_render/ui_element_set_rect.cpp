@@ -9,8 +9,14 @@ struct ui_vec2_t {
 
     ui_vec2_t &operator+=(const ui_vec2_t &other)
     {
+        // Code-generation guard: C2 9044 (1.9.8) and 8966 order the x87
+        // operands of this add differently; see the scratch NOTES.md.
+#if CL_BUILD == 10908
+        x += other.x;
+#else
         float result_x = x + other.x;
         x = result_x;
+#endif
         y += other.y;
         return *this;
     }

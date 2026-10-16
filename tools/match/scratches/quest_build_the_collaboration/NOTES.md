@@ -70,3 +70,7 @@ bottom entry reaches 97.67%, and direct metadata on the final zombie removes
 the last schedule cluster. The result is exact at 86/86 instructions with
 references `8/0/0`. Retained source SHA-256:
 `36315f1f1b29c7703bad2c63e0eea082fc8551db8510ebea830b18fe412e471c`.
+
+## 1.9.8 (2026-10-16)
+
+Shared: direct metadata stores. Guard: 1.9.8 fills each wave record through a record pointer. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases. In a sixteen-combination per-record matrix only the all-pointer form is exact under 1.9.8, and only the all-index form under 8966.

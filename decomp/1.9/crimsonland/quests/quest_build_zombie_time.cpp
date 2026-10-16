@@ -28,6 +28,26 @@ extern "C" void quest_build_zombie_time(quest_spawn_entry_t *entries, int *count
 {
     quest_spawn_builder_t builder((quest_entry_original_t *)entries);
     for (int trigger_time = 1500; trigger_time < 97500; trigger_time += 8000) {
+#if CL_BUILD == 10908
+        // 1.9.8 publishes each record through a record pointer, which frees
+        // the metadata stores to schedule ahead of the float conversions.
+        quest_entry_original_t *spawn = &builder.spawns[builder.count];
+        spawn->pos_x =
+            (float)(terrain_texture_width + 64);
+        spawn->pos_y =
+            (float)(terrain_texture_width / 2);
+        spawn->set_spawn(
+            SPAWN_ID_ZOMBIE_RANDOM_41, trigger_time, 8);
+        ++builder.count;
+
+        spawn = &builder.spawns[builder.count];
+        spawn->pos_x = -64.0f;
+        spawn->pos_y =
+            (float)(terrain_texture_width / 2);
+        spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
+        spawn->trigger_time_ms = trigger_time;
+        spawn->count = 8;
+#else
         builder.spawns[builder.count].pos_x =
             (float)(terrain_texture_width + 64);
         builder.spawns[builder.count].pos_y =
@@ -42,6 +62,7 @@ extern "C" void quest_build_zombie_time(quest_spawn_entry_t *entries, int *count
         builder.spawns[builder.count].template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
         builder.spawns[builder.count].trigger_time_ms = trigger_time;
         builder.spawns[builder.count].count = 8;
+#endif
         ++builder.count;
     }
 

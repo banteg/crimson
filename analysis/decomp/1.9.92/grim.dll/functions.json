@@ -245,10 +245,10 @@
   {
     "address": "0x100020B0",
     "canonical_address": "0x10002120",
-    "end": "0x10002610",
+    "end": "0x100025D6",
     "evidence": "referenced",
     "name": "grim_config_dialog_proc",
-    "size": 1376
+    "size": 1318
   },
   {
     "address": "0x10002610",

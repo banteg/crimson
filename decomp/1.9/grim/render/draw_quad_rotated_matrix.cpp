@@ -55,6 +55,12 @@ inline void grim_transform_quad_point(float *point)
 void IGrim2D_cpp::grim_draw_quad_rotated_matrix(
     float x, float y, float w, float h)
 {
+#if CL_BUILD == 10908
+    // 1.9.8 stores the rotation centre after the four corners.
+    enum { corner = 0, center = 4 };
+#else
+    enum { center = 0, corner = 1 };
+#endif
     float points[5][2];
 
     if (grim_render_disabled || !grim_device_ready) {
@@ -66,62 +72,62 @@ void IGrim2D_cpp::grim_draw_quad_rotated_matrix(
     }
 
     if (grim_rotation_radians == 0.0f) {
-        points[1][0] = x;
-        points[1][1] = y;
-        points[2][0] = x + w;
-        points[2][1] = y;
-        points[3][0] = points[2][0];
-        points[3][1] = y + h;
-        points[4][0] = x;
-        points[4][1] = points[3][1];
+        points[corner][0] = x;
+        points[corner][1] = y;
+        points[corner + 1][0] = x + w;
+        points[corner + 1][1] = y;
+        points[corner + 2][0] = points[corner + 1][0];
+        points[corner + 2][1] = y + h;
+        points[corner + 3][0] = x;
+        points[corner + 3][1] = points[corner + 2][1];
     } else {
-        points[0][0] = x + w * 0.5f;
-        points[0][1] = y + h * 0.5f;
+        points[center][0] = x + w * 0.5f;
+        points[center][1] = y + h * 0.5f;
 
-        points[1][0] = w * -0.5f;
-        points[1][1] = h * -0.5f;
-        grim_transform_quad_point(points[1]);
-        points[1][0] += points[0][0];
-        points[1][1] += points[0][1];
+        points[corner][0] = w * -0.5f;
+        points[corner][1] = h * -0.5f;
+        grim_transform_quad_point(points[corner]);
+        points[corner][0] += points[center][0];
+        points[corner][1] += points[center][1];
 
-        points[2][0] = w * 0.5f;
-        points[2][1] = h * -0.5f;
-        grim_transform_quad_point(points[2]);
-        points[2][0] += points[0][0];
-        points[2][1] += points[0][1];
+        points[corner + 1][0] = w * 0.5f;
+        points[corner + 1][1] = h * -0.5f;
+        grim_transform_quad_point(points[corner + 1]);
+        points[corner + 1][0] += points[center][0];
+        points[corner + 1][1] += points[center][1];
 
-        points[3][0] = w * 0.5f;
-        points[3][1] = h * 0.5f;
-        grim_transform_quad_point(points[3]);
-        points[3][0] += points[0][0];
-        points[3][1] += points[0][1];
+        points[corner + 2][0] = w * 0.5f;
+        points[corner + 2][1] = h * 0.5f;
+        grim_transform_quad_point(points[corner + 2]);
+        points[corner + 2][0] += points[center][0];
+        points[corner + 2][1] += points[center][1];
 
-        points[4][0] = w * -0.5f;
-        points[4][1] = h * 0.5f;
-        grim_transform_quad_point(points[4]);
-        points[4][0] += points[0][0];
-        points[4][1] += points[0][1];
+        points[corner + 3][0] = w * -0.5f;
+        points[corner + 3][1] = h * 0.5f;
+        grim_transform_quad_point(points[corner + 3]);
+        points[corner + 3][0] += points[center][0];
+        points[corner + 3][1] += points[center][1];
     }
 
-    grim_vertex_write_ptr->position = *(GrimPoint *)&points[1][0];
+    grim_vertex_write_ptr->position = *(GrimPoint *)&points[corner][0];
     grim_vertex_write_ptr->depth = grim_vertex_z;
     grim_vertex_write_ptr->color = grim_color_slot0;
     grim_vertex_write_ptr->uv = grim_uv_u0[0];
     ++grim_vertex_write_ptr;
 
-    grim_vertex_write_ptr->position = *(GrimPoint *)&points[2][0];
+    grim_vertex_write_ptr->position = *(GrimPoint *)&points[corner + 1][0];
     grim_vertex_write_ptr->depth = grim_vertex_z;
     grim_vertex_write_ptr->color = grim_color_slot1;
     grim_vertex_write_ptr->uv = grim_uv_u0[1];
     ++grim_vertex_write_ptr;
 
-    grim_vertex_write_ptr->position = *(GrimPoint *)&points[3][0];
+    grim_vertex_write_ptr->position = *(GrimPoint *)&points[corner + 2][0];
     grim_vertex_write_ptr->depth = grim_vertex_z;
     grim_vertex_write_ptr->color = grim_color_slot2;
     grim_vertex_write_ptr->uv = grim_uv_u0[2];
     ++grim_vertex_write_ptr;
 
-    grim_vertex_write_ptr->position = *(GrimPoint *)&points[4][0];
+    grim_vertex_write_ptr->position = *(GrimPoint *)&points[corner + 3][0];
     grim_vertex_write_ptr->depth = grim_vertex_z;
     grim_vertex_write_ptr->color = grim_color_slot3;
     grim_vertex_write_ptr->uv = grim_uv_u0[3];

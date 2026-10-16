@@ -80,13 +80,14 @@ extern "C" void credits_screen_update(void) {
     static credits_button_t back_button;
     static credits_button_t secret_button;
 
+    secret_button.label = "Secret";
+
     credits_vec2_t panel_position =
         *(credits_vec2_t *)&ui_element_slot_09.pos_x +
         *(credits_vec2_t *)&ui_element_slot_09.vertices[0].x;
     panel_position = panel_position + credits_vec2_t(300.0f, 40.0f);
     credits_vec2_t position = panel_position;
 
-    secret_button.label = "Secret";
     position.x =
         panel_position.x + ui_element_slot_09.render_offset_x + 48.0f - 110.0f;
     position.y += 10.0f;
@@ -260,16 +261,22 @@ check_actions:
     if (back_button.activated) {
         ui_transition_direction = 0;
         game_state_pending = GAME_STATE_STATISTICS_MENU;
+#if CL_BUILD != 10908
         ui_callback_noop();
+#endif
     }
     if (secret_button.activated) {
         ui_transition_direction = 0;
         game_state_pending = GAME_STATE_CREDITS_SECRET;
+#if CL_BUILD != 10908
         ui_callback_noop();
+#endif
     }
     if (grim_interface_ptr->grim_was_key_pressed(1)) {
         ui_transition_direction = 0;
         game_state_pending = GAME_STATE_STATISTICS_MENU;
+#if CL_BUILD != 10908
         ui_callback_noop();
+#endif
     }
 }

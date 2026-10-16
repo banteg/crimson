@@ -153,3 +153,7 @@ wave range its own base fixes the opening as well: all 108 instructions and all
 independently reproduce the result; the named range keeps the original array
 available and makes the indexing relationship explicit. This supersedes the
 previous compiler-residual classification.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds after spelling all eight opening records with direct metadata stores; the `set_spawn` helper is gone. A 256-combination sweep of direct versus helper metadata per record found this the only uniform form exact under both.

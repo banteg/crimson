@@ -21,3 +21,12 @@ requires eight extra stack bytes.
 The Python `FxQueue.add_random` port already has the same violence gate, RNG
 consumption order, color/size ranges, top-left conversion, and id selection, so
 no runtime change was required.
+
+## 1.9.8 (C2 9044)
+
+1.9.8 keeps the half extent in its own 8-byte slot (0x18-byte frame) instead
+of reusing `top_left`. A separate `half` vector (named local or a temporary
+passed to `vec2_sub`) is exact under 9044 and costs 8966 the 0x10 frame
+(93.15%); the in-place canonical spelling packs both slots under 9044 too
+(93.33%). No shared spelling was found, so the half/top-left pair is a
+codegen-only `CL_BUILD == 10908` guard.

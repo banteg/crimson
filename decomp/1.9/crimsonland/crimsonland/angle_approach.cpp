@@ -9,15 +9,11 @@ static __inline float abs_bits(float value)
 
 extern "C" float angle_approach(float *angle, float target, float rate)
 {
-    float current = *angle;
-    while (current < 0.0f) {
-        current = *angle + 6.2831855f;
-        *angle = current;
+    while (*angle < 0.0f) {
+        *angle += 6.2831855f;
     }
-    current = *angle;
-    while (current > 6.2831855f) {
-        current = *angle - 6.2831855f;
-        *angle = current;
+    while (*angle > 6.2831855f) {
+        *angle -= 6.2831855f;
     }
 
     float direct = abs_bits(target - *angle);

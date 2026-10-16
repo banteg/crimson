@@ -56,6 +56,11 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x10014864",
+      "name": "strdup",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x10020a2a",
       "name": "grim_vertex_space_converter_destroy_thunk",
       "program": "1.9.8/grim.dll"
@@ -826,6 +831,26 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x1006309c",
+      "name": "grim_caps_can_render_windowed",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006309d",
+      "name": "grim_caps_x8r8g8b8_supported",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100630a0",
+      "name": "grim_parental_lock_enabled_text",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100630a4",
+      "name": "grim_parental_lock_disabled_text",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x100630a8",
       "name": "grim_font2_texture_handle",
       "program": "1.9.8/grim.dll"
@@ -1251,6 +1276,16 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x1006d608",
+      "name": "grim_adapter_identifier",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006d808",
+      "name": "grim_adapter_description",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x1006da34",
       "name": "?$S1@?1??grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z@4EA",
       "program": "1.9.8/grim.dll"
@@ -1431,6 +1466,11 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x1006f100",
+      "name": "grim_config_dialog_windowed_selected",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x1006f104",
       "name": "grim_vertex_z",
       "program": "1.9.8/grim.dll"
@@ -1481,8 +1521,18 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x1006f12c",
+      "name": "grim_config_dialog_hwnd",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x1006f130",
       "name": "grim_d3d_device_type",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f134",
+      "name": "grim_config_dialog_bpp16_selected",
       "program": "1.9.8/grim.dll"
     },
     {
@@ -1536,6 +1586,16 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x1006fa80",
+      "name": "grim_window_proc_dc_flag",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006fa81",
+      "name": "grim_window_proc_paint_flag",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x1006fa84",
       "name": "grim_color_slot0",
       "program": "1.9.8/grim.dll"
@@ -1571,8 +1631,28 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x1006fb80",
+      "name": "grim_parental_password_buffer",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006fc80",
+      "name": "grim_parental_password_confirm_buffer",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006fd80",
+      "name": "grim_config_dialog_has_supported_adapter",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x1006fe88",
       "name": "grim_backbuffer_width",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006fe8c",
+      "name": "grim_config_dialog_system_time",
       "program": "1.9.8/grim.dll"
     },
     {
@@ -1656,6 +1736,21 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x100708a0",
+      "name": "grim_config_mode_width",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100708b0",
+      "name": "grim_config_mode_height",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100708c0",
+      "name": "grim_config_mode_bpp",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x10070940",
       "name": "grim_config_backbuffer_count",
       "program": "1.9.8/grim.dll"
@@ -1711,6 +1806,16 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x10070c50",
+      "name": "grim_client_rect",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e30",
+      "name": "grim_on_device_lost",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x10070e38",
       "name": "grim_ms_to_seconds_scale",
       "program": "1.9.8/grim.dll"
@@ -1726,8 +1831,18 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x10070e44",
+      "name": "grim_config_dialog_canceled",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x10070e45",
       "name": "grim_render_disabled",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e4c",
+      "name": "grim_key_char_queue",
       "program": "1.9.8/grim.dll"
     },
     {
@@ -1891,6 +2006,11 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x100715b8",
+      "name": "grim_mouse_state",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x100715c4",
       "name": "grim_mouse_buttons",
       "program": "1.9.8/grim.dll"
@@ -1903,6 +2023,11 @@
     {
       "address": "0x100715d0",
       "name": "grim_mouse_y",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100715d4",
+      "name": "grim_mouse_wheel",
       "program": "1.9.8/grim.dll"
     },
     {

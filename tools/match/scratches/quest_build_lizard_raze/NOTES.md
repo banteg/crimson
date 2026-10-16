@@ -58,3 +58,9 @@ The retained changes are ordinary indexing, typed position boundaries, direct
 record fields, and semantic reordering of independent stores. No volatile
 state, dummy dependencies, forced registers, or compiler-profile exceptions
 are used.
+
+## 1.9.8 (2026-10-16)
+
+Guard on the wave loop body and the last spawner record: 1.9.8 fills every record through a record pointer and counts it after its metadata. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases.
+
+Search: eight combinations of early or late counting in the loop and tail and of the trigger update placement; changing only one region gives 92.21% (1.9.93) and 96.10% (1.9.8).

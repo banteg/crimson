@@ -31,6 +31,8 @@ unsigned char perk_can_offer(int perk_index)
             return 1;
         }
 
+#if CL_BUILD != 10908
+        // 1.9.8 has no shareware check here.
         if (
             !(unsigned char)game_is_full_version() && perk_index != perk_id_living_fortress
             && perk_index != perk_id_man_bomb && perk_index != perk_id_fire_caugh
@@ -38,6 +40,7 @@ unsigned char perk_can_offer(int perk_index)
         ) {
             return 0;
         }
+#endif
     }
 
     return 0;

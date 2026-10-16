@@ -41,6 +41,19 @@ extern "C" void quest_build_spider_wave_syndrome(
     for (int trigger_time_ms = 1500;
          trigger_time_ms < 100500;
          trigger_time_ms += 5500) {
+#if CL_BUILD == 10908
+        // 1.9.8 publishes the wave through a record pointer, which frees the
+        // metadata stores to schedule ahead of the y conversion.
+        quest_entry_original_t *spawn = &builder.spawns[builder.count];
+        spawn->pos.x = -64.0f;
+        spawn->pos.y =
+            (float)(terrain_texture_width / 2);
+        spawn->set_spawn(
+            SPAWN_ID_SPIDER_SMALL_BLUE_40,
+            trigger_time_ms);
+        spawn->count =
+            config_blob.player_count * 2 + 6;
+#else
         builder.spawns[builder.count].pos.x = -64.0f;
         builder.spawns[builder.count].pos.y =
             (float)(terrain_texture_width / 2);
@@ -49,6 +62,7 @@ extern "C" void quest_build_spider_wave_syndrome(
             trigger_time_ms);
         builder.spawns[builder.count].count =
             config_blob.player_count * 2 + 6;
+#endif
         ++builder.count;
     }
     *count = builder.count;

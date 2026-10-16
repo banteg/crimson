@@ -16,3 +16,17 @@ behind, so the corrected function return is `void`.
 
 No inline assembly, volatile state, dummy references, or dead expressions are
 used.
+
+## 1.9.8 (C2 9044) code-generation guard (2026-10-16)
+
+1.9.8 stores `draw_position` at `esp+0x14` and the hover `position` at
+`esp+0x1c`; the canonical source (hover position inside the nested block)
+makes 9044 swap the two 8-byte slots. 9044 is exact whenever `position` is in
+function scope (declared before or after `draw_position`), while 8966 is exact
+only with `position` scoped to the block. Shared spellings tried: position
+declared first or second in function scope, declared first and assigned with
+`set` inside the block, `draw_position` declared without initializer and
+assigned before/after the position inside the block, `draw_position` moved
+before `ui_focus_update`, after `hovered`, after `slider_width`, after the
+block, and before the loops. None is exact for both builds, so a guard moves
+only the `position` declaration for `CL_BUILD == 10908`.

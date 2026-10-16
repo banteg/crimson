@@ -83,7 +83,13 @@ extern "C" void effects_render(void)
     for (index = 0; index < 512; ++index) {
         effect_entry_t *entry = &effect_pool[index];
         int flags = entry->flags;
+#if CL_BUILD == 10908
+        // 1.9.8 spells the test !(age < 0); 8966 compiles both spellings alike, but only
+        // age >= 0 keeps the canonical NaN behaviour under an IEEE compiler.
+        if (flags != 0 && !(entry->age < 0.0f) && (flags & 0x40) != 0) {
+#else
         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) != 0) {
+#endif
             effect_render_entry(entry, color);
         }
     }
@@ -95,7 +101,11 @@ extern "C" void effects_render(void)
     for (index = 0; index < 512; ++index) {
         effect_entry_t *entry = &effect_pool[index];
         int flags = entry->flags;
+#if CL_BUILD == 10908
+        if (flags != 0 && !(entry->age < 0.0f) && (flags & 0x40) == 0) {
+#else
         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) == 0) {
+#endif
             effect_render_entry(entry, color);
         }
     }

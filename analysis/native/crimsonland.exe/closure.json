@@ -1,5 +1,5 @@
 {
-  "audit_digest": "b0fc1b9860cf4d97e0767322394209a2e1ddf673479ea13709500a4237e39972",
+  "audit_digest": "66972b8a71a374c0888a3de1a3b4bc1ab3280c31483564abd5ccde44fc9d45b7",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -38682,6 +38682,29 @@
         }
       ],
       "name": "??_C@_06BCGJ@?$CIMods?$CJ?$AA@"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "??_C@_06BMJE@reload?$AA@",
+          "comdat_selection": 2,
+          "function": null,
+          "functions": [
+            "typo_gameplay_update_and_render",
+            "typo_target_world_destroy"
+          ],
+          "kind": "section",
+          "logical_section_size": 7,
+          "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj",
+          "section": ".data",
+          "size": null,
+          "translation_unit": "typo-gameplay-update-and-render-lifecycle",
+          "weak": false
+        }
+      ],
+      "name": "??_C@_06BMJE@reload?$AA@"
     },
     {
       "definitions": [
@@ -106671,30 +106694,6 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
-          "data_address": 4689464,
-          "data_binding_kind": "definition",
-          "data_name": "s_typo_command_reload",
-          "data_storage_address": 4689464,
-          "data_storage_name": "s_typo_command_reload",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 7,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 7,
-          "weak": false
-        }
-      ],
-      "name": "_s_typo_command_reload"
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 1,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
           "data_address": 4683608,
           "data_binding_kind": "definition",
           "data_name": "s_unhandled_creature_type",
@@ -157783,42 +157782,6 @@
           "comdat_associative_section": null,
           "comdat_key": null,
           "comdat_selection": null,
-          "data_address": 4689464,
-          "data_binding_kind": "definition",
-          "data_name": "s_typo_command_reload",
-          "data_storage_address": 4689464,
-          "data_storage_name": "s_typo_command_reload",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 7,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 7,
-          "weak": false
-        }
-      ],
-      "name": "_s_typo_command_reload",
-      "referenced_by": [
-        {
-          "function": null,
-          "functions": [
-            "typo_gameplay_update_and_render",
-            "typo_target_world_destroy"
-          ],
-          "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj",
-          "translation_unit": "typo-gameplay-update-and-render-lifecycle",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
-          "alignment": 1,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
           "data_address": 4683608,
           "data_binding_kind": "definition",
           "data_name": "s_unhandled_creature_type",
@@ -172509,7 +172472,7 @@
     "hard_duplicate_symbols": 0,
     "object_count": 569,
     "reference_exports_closed": true,
-    "resolved_symbols": 1264,
+    "resolved_symbols": 1263,
     "unresolved_by_category": {
       "excluded_function": 71,
       "import": 25,

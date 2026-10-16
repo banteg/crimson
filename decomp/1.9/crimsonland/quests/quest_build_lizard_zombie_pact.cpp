@@ -47,6 +47,49 @@ extern "C" void quest_build_lizard_zombie_pact(
     int trigger_time_ms = 1500;
 
     do {
+#if CL_BUILD == 10908
+        // 1.9.8 splits the wave once at the top of the loop and fills each
+        // record through a record pointer, counting it after the metadata.
+        int group = wave / 5;
+        int phase = wave % 5;
+        quest_entry_original_t *spawn = &builder.spawns[builder.count];
+        spawn->pos.x = (float)(terrain_texture_width + 64);
+        spawn->pos.y = (float)(terrain_texture_width / 2);
+        spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
+        spawn->trigger_time_ms = trigger_time_ms;
+        spawn->count = 6;
+        ++builder.count;
+
+        spawn = &builder.spawns[builder.count];
+        spawn->pos.x = -64.0f;
+        spawn->pos.y = (float)(terrain_texture_width / 2);
+        spawn->template_id = SPAWN_ID_ZOMBIE_RANDOM_41;
+        spawn->trigger_time_ms = trigger_time_ms;
+        spawn->count = 6;
+        ++builder.count;
+
+        if (phase == 0) {
+            spawn = &builder.spawns[builder.count];
+            int y_offset = group * 180;
+            spawn->pos.x = 356.0f;
+            spawn->pos.y = (float)(y_offset + 256);
+            spawn->template_id = SPAWN_ID_DEN_LIZARD_WEAK_0C;
+            spawn->trigger_time_ms = trigger_time_ms;
+            spawn->count = group + 1;
+            ++builder.count;
+
+            spawn = &builder.spawns[builder.count];
+            spawn->pos.x = 356.0f;
+            spawn->pos.y = (float)(y_offset + 384);
+            spawn->template_id = SPAWN_ID_DEN_LIZARD_WEAK_0C;
+            spawn->trigger_time_ms = trigger_time_ms;
+            spawn->count = group + 2;
+            ++builder.count;
+        }
+
+        ++wave;
+        trigger_time_ms += 7000;
+#else
         builder.spawns[builder.count].pos.x =
             (float)(terrain_texture_width + 64);
         builder.spawns[builder.count].pos.y =
@@ -94,6 +137,7 @@ extern "C" void quest_build_lizard_zombie_pact(
 
         trigger_time_ms += 7000;
         ++wave;
+#endif
     } while (trigger_time_ms < 113500);
 
     *count = builder.count;

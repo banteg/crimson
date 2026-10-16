@@ -8,7 +8,7 @@ extern unsigned int grim_backbuffer_height;
 void IGrim2D_cpp::grim_draw_fullscreen_color(
     float r, float g, float b, float a)
 {
-    if (a > 0.0f) {
+    if (!(a <= 0.0f)) {
         grim_d3d_device->SetTexture(0, 0);
         grim_d3d_device->SetTextureStageState(
             0, D3DTSS_COLOROP, D3DTOP_SELECTARG2);

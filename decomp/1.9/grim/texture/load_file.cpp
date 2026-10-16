@@ -83,8 +83,8 @@ bool GrimTexture::grim_texture_load_file(char *path)
                     &source_info,
                     0,
                     &this->texture) < 0) {
-                result = false;
                 this->texture = 0;
+                result = false;
             } else {
                 result = true;
             }

@@ -223,3 +223,9 @@ This establishes a source-level recovery under the existing compiler profile,
 not proof of the original class names or abstraction boundaries. The earlier
 claim that matching required artificial dependencies or register constraints
 was too strong: this candidate uses neither.
+
+## 1.9.8 (2026-10-16)
+
+Guard: 1.9.8 fills every record through the record pointer and copies the first record's metadata through `set_spawn(metadata.template_id, ...)`. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases.
+
+Search: direct, setter and aggregate-assignment metadata with early or late counting (six forms), the metadata local in eight combinations, and field copies; copying the metadata fields for both records breaks both builds.

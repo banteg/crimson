@@ -91,3 +91,7 @@ The Binary Ninja recovery accounts for the complete control-flow, constants,
 record stores, spawn ordering, and output-count policy. The compiled candidate
 matches every normalized instruction and reference. No recovery or residual
 classification override remains.
+
+## 1.9.8 (2026-10-16)
+
+Guard on the six wave records: 1.9.8 fills each through a record pointer. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases. In a 64-combination per-record matrix only the all-pointer form is exact under 1.9.8; direct metadata regresses both builds.

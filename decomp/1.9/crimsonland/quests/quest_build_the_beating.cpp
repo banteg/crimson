@@ -16,16 +16,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_the_beating(
@@ -35,19 +25,17 @@ extern "C" void quest_build_the_beating(
     int entry_count = 0;
 
     spawns[entry_count].pos = quest_vec2_t(256.0f, 256.0f);
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_ALIEN_BONUS_CARRIER_27,
-        500,
-        1);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_BONUS_CARRIER_27;
+    spawns[entry_count].trigger_time_ms = 500;
+    spawns[entry_count].count = 1;
     ++entry_count;
 
     spawns[entry_count].pos = quest_vec2_t(
         (float)(terrain_texture_width + 32),
         (float)(terrain_texture_height / 2));
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_ALIEN_BIG_GRAY_29,
-        8000,
-        3);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_BIG_GRAY_29;
+    spawns[entry_count].trigger_time_ms = 8000;
+    spawns[entry_count].count = 3;
     ++entry_count;
 
     int trigger_time_ms = 10000;
@@ -68,10 +56,9 @@ extern "C" void quest_build_the_beating(
     spawns[entry_count].pos = quest_vec2_t(
         -32.0f,
         (float)(terrain_texture_height / 2));
-    spawns[entry_count].set_spawn(
-        SPAWN_ID_ALIEN_BIG_GRAY_29,
-        18000,
-        3);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_BIG_GRAY_29;
+    spawns[entry_count].trigger_time_ms = 18000;
+    spawns[entry_count].count = 3;
     ++entry_count;
 
     trigger_time_ms = 20000;

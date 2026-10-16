@@ -112,3 +112,7 @@ index. VC6 derives the native pointer advance after `fild`, retains the ring
 index for the late negative-angle heading, and emits the target's metadata and
 loop-update schedule exactly. The score rises from 89.39% to 100%, the exact
 prefix from 38 to 66 instructions, and references remain `6/0/0`.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds: the ring loop publishes through `spawns[entry_count]` with `++entry_count` instead of `spawns[entry_count + angle_index]`.

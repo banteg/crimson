@@ -39,3 +39,7 @@ repeated indexed entry expressions and post-entry publication raises the
 candidate from 90.54% to 100%. The retained source matches 74/74 instructions
 with references `7/0/0`. Source SHA-256:
 `f75bc10430eacc4fef2b1e881693b6bfad80247400c3d0b3abf8804895e7f034`.
+
+## 1.9.8 (2026-10-16)
+
+Guard: 1.9.8 fills each record through a record pointer. Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases. In an eight-combination matrix only all-pointer is exact under 1.9.8 and only all-index under 8966.

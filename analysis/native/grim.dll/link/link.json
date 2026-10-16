@@ -117,7 +117,7 @@
       }
     }
   ],
-  "audit_digest": "df7a8750fb0356a68d664295aab29228db34e0128b8674f942b5ee27f5b181fe",
+  "audit_digest": "c664fa3d02969e59242c500ed7ef4b96c9678b8ce2c83eb7e1bae1b46208504b",
   "entry": {
     "symbol": "DllMain"
   },
@@ -370,7 +370,7 @@
           "note": "The legacy parental-lock callback is an exact 318-instruction match, including its password and dialog-state behavior.",
           "path": "tools/match/scratches/grim_parental_lock_dialog_proc/NOTES.md",
           "repository_relative": true,
-          "sha256": "efbbdda3189a7156957aa07c656b7ed61309da014b137c25e443f5a0cb573756"
+          "sha256": "14efd2d836ca05e054c4f129f449f72844777743bbd5a65d6880c4fce8e3d69f"
         },
         {
           "note": "The legacy advanced-config callback is an exact 459-instruction match, including texture-format probing and control persistence.",
@@ -1348,7 +1348,7 @@
           "note": "The native closure classifier identifies these as MSVC toolchain externals.",
           "path": "analysis/native/grim.dll/closure.json",
           "repository_relative": true,
-          "sha256": "9016044454f8617887fe8c9d95252b41dc0e0770ae1df31f0cc83d6f0665f88a"
+          "sha256": "9d44d93c90e8de045b0e5451bf4630fe8df751fd0278f6b820dd1e5ba1432ae9"
         },
         {
           "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols.",

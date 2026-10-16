@@ -20,16 +20,6 @@ struct quest_entry_original_t {
     int trigger_time_ms;
     int count;
 
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
-
 };
 
 extern "C" void quest_build_the_end_of_all(
@@ -47,37 +37,55 @@ extern "C" void quest_build_the_end_of_all(
     ++entry_count;
 
     spawns[entry_count].pos.set(896.0f, 128.0f);
-    spawns[entry_count].set_spawn(
-        corner_template_id,
-        6000,
-        one);
+    spawns[entry_count].template_id = corner_template_id;
+    spawns[entry_count].trigger_time_ms = 6000;
+    spawns[entry_count].count = one;
     ++entry_count;
 
     spawns[entry_count].pos.set(128.0f, 896.0f);
-    spawns[entry_count].set_spawn(
-        corner_template_id,
-        9000,
-        one);
+    spawns[entry_count].template_id = corner_template_id;
+    spawns[entry_count].trigger_time_ms = 9000;
+    spawns[entry_count].count = one;
     ++entry_count;
 
+#if CL_BUILD == 10908
+    // 1.9.8 fills this record and the ring records through a record pointer,
+    // which frees the stores to schedule ahead of the float math.
+    quest_entry_original_t *spawn = &spawns[entry_count];
+    spawn->pos.set(896.0f, 896.0f);
+    spawn->template_id = corner_template_id;
+    int ring_index;
+    spawn->trigger_time_ms = 12000;
+    spawn->count = one;
+#else
     spawns[entry_count].pos.set(896.0f, 896.0f);
     spawns[entry_count].template_id = corner_template_id;
     int ring_index;
     spawns[entry_count].trigger_time_ms = 12000;
     spawns[entry_count].count = one;
+#endif
     ring_index = 0;
     ++entry_count;
 
     int trigger_time_ms = 13000;
     do {
         float angle = (float)ring_index * 1.04719758f;
+#if CL_BUILD == 10908
+        spawn = &spawns[entry_count];
+        spawn->pos.set(
+            (float)cos(angle) * 80.0f + 512.0f,
+            (float)sin(angle) * 80.0f + 512.0f);
+        spawn->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+        spawn->trigger_time_ms = trigger_time_ms;
+        spawn->count = one;
+#else
         spawns[entry_count].pos.set(
             (float)cos(angle) * 80.0f + 512.0f,
             (float)sin(angle) * 80.0f + 512.0f);
-        spawns[entry_count].set_spawn(
-            SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms,
-            one);
+        spawns[entry_count].template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = one;
+#endif
         ++entry_count;
         ++ring_index;
         trigger_time_ms += 300;
@@ -91,10 +99,10 @@ extern "C" void quest_build_the_end_of_all(
     spawns[entry_count].count = one;
     ++entry_count;
 
+    trigger_time_ms = 18000;
     int edge_y = 256;
     int edge_index = 0;
     int spawn_count = 2;
-    trigger_time_ms = 18000;
     do {
         if ((edge_index & 1) != 0) {
             spawns[entry_count].pos.x = 1152.0f;
@@ -117,13 +125,22 @@ extern "C" void quest_build_the_end_of_all(
     do {
         float angle =
             (float)ring_index * 1.04719758f + 0.52359879f;
+#if CL_BUILD == 10908
+        spawn = &spawns[entry_count];
+        spawn->pos.set(
+            (float)cos(angle) * 80.0f + 512.0f,
+            (float)sin(angle) * 80.0f + 512.0f);
+        spawn->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+        spawn->trigger_time_ms = trigger_time_ms;
+        spawn->count = one;
+#else
         spawns[entry_count].pos.set(
             (float)cos(angle) * 80.0f + 512.0f,
             (float)sin(angle) * 80.0f + 512.0f);
-        spawns[entry_count].set_spawn(
-            SPAWN_ID_DEN_ALIEN_BASIC_07,
-            trigger_time_ms,
-            one);
+        spawns[entry_count].template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+        spawns[entry_count].trigger_time_ms = trigger_time_ms;
+        spawns[entry_count].count = one;
+#endif
         ++entry_count;
         ++ring_index;
         trigger_time_ms += 300;
@@ -135,13 +152,22 @@ extern "C" void quest_build_the_end_of_all(
         do {
             float angle =
                 ((float)ring_index + 1.0f) * 0.52359879f;
+#if CL_BUILD == 10908
+            spawn = &spawns[entry_count];
+            spawn->pos.set(
+                (float)cos(angle) * 180.0f + 512.0f,
+                (float)sin(angle) * 180.0f + 512.0f);
+            spawn->template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+            spawn->trigger_time_ms = trigger_time_ms;
+            spawn->count = one;
+#else
             spawns[entry_count].pos.set(
                 (float)cos(angle) * 180.0f + 512.0f,
                 (float)sin(angle) * 180.0f + 512.0f);
-            spawns[entry_count].set_spawn(
-                SPAWN_ID_DEN_ALIEN_BASIC_07,
-                trigger_time_ms,
-                one);
+            spawns[entry_count].template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = one;
+#endif
             ++entry_count;
             ++ring_index;
             trigger_time_ms += 500;

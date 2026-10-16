@@ -58,7 +58,10 @@ BOOL CALLBACK grim_parental_lock_dialog_proc(
                     0);
             } else if (!grim_config_blob.player_name_buf[0]) {
                 grim_config_blob.violence_disabled = 0;
+#if CL_BUILD != 10908
+                // 1.9.8 clears a password-less lock without saving it.
                 grim_config_blob_save();
+#endif
             } else {
                 DialogBoxParamA(
                     grim_module_handle,
@@ -84,11 +87,11 @@ BOOL CALLBACK grim_parental_lock_dialog_proc(
             return FALSE;
 
         case IDCANCEL:
-            EndDialog(hwnd, IDCANCEL);
+            EndDialog(hwnd, LOWORD(wparam));
             return FALSE;
 
         case 0x403:
-            EndDialog(hwnd, 0x403);
+            EndDialog(hwnd, LOWORD(wparam));
             return FALSE;
 
         case 0x408: {
@@ -118,7 +121,7 @@ BOOL CALLBACK grim_parental_lock_dialog_proc(
             grim_config_blob.violence_disabled = 0;
             grim_config_blob.player_name_buf[0] = 0;
             grim_config_blob_save();
-            EndDialog(hwnd, 0x408);
+            EndDialog(hwnd, LOWORD(wparam));
             return FALSE;
         }
 
@@ -145,7 +148,11 @@ BOOL CALLBACK grim_parental_lock_dialog_proc(
             if (grim_parental_password_buffer[0] == 0) {
                 MessageBoxA(
                     hwnd,
+#if CL_BUILD == 10908
+                    "Please give an unempty password.\n",
+#else
                     "Please give a password.\n",
+#endif
                     "About password",
                     MB_ICONEXCLAMATION);
                 return FALSE;
@@ -158,7 +165,7 @@ BOOL CALLBACK grim_parental_lock_dialog_proc(
             grim_config_blob.player_name_buf[8] = 0;
             grim_config_blob.violence_disabled = 1;
             grim_config_blob_save();
-            EndDialog(hwnd, 0x409);
+            EndDialog(hwnd, LOWORD(wparam));
             return FALSE;
         }
         break;

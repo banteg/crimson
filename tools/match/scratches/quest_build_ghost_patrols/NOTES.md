@@ -77,3 +77,7 @@ from 86.67% to 92.22%. Replacing the loop's shared record pointer with separate
 native induction schedule and produces a 100% match: 90/90 instructions and
 references `5/0/0`. Retained source SHA-256:
 `75d1df00a1ce362ab80271f3830c1f11671f1e3e628dff4987aedeb5b79839b4`.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds after replacing `set_spawn` with direct metadata stores.

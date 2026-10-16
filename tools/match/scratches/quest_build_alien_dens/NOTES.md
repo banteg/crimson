@@ -82,3 +82,7 @@ from 232.4/249 weighted bytes (93.33%) and an eight-instruction prefix to exact
 249/249 bytes and a 60-instruction prefix. The player-count reference remains
 resolved at 1/0/0. The exact source SHA-256 is
 `67cc8d4c718211909b08d1e040ff164c995f80c43c45e2b5d31f42a9cd5c5252`.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds with one uniform shape: `spawns[entry_count].pos = quest_vec2_t(...)` and direct metadata for every record. A 1,296-combination sweep (position through the index, a position pointer or a record pointer, times direct or helper metadata, per record) found 108 forms exact under 1.9.8 and this one exact under both.

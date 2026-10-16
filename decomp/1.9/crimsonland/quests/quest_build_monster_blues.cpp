@@ -13,16 +13,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_monster_blues(
@@ -34,7 +24,9 @@ extern "C" void quest_build_monster_blues(
     spawns[entry_count].pos = quest_vec2_t(
         -50.0f,
         (float)terrain_texture_height * 0.5f);
-    spawns[entry_count].set_spawn(SPAWN_ID_LIZARD_RANDOM_04, 500, 10);
+    spawns[entry_count].template_id = SPAWN_ID_LIZARD_RANDOM_04;
+    spawns[entry_count].trigger_time_ms = 500;
+    spawns[entry_count].count = 10;
     ++entry_count;
 
     spawns[entry_count].pos = quest_vec2_t(

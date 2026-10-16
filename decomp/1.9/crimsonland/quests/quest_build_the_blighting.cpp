@@ -11,16 +11,6 @@ struct quest_entry_original_t {
     int template_id;
     int trigger_time_ms;
     int count;
-
-    void set_spawn(
-        int spawn_template_id,
-        int spawn_trigger_time_ms,
-        int spawn_count)
-    {
-        template_id = spawn_template_id;
-        trigger_time_ms = spawn_trigger_time_ms;
-        count = spawn_count;
-    }
 };
 
 extern "C" void quest_build_the_blighting(
@@ -32,12 +22,16 @@ extern "C" void quest_build_the_blighting(
 
     spawns[entry_count].pos.x = (float)(terrain_texture_width + 128);
     spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
-    spawns[entry_count].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;
+    spawns[entry_count].trigger_time_ms = 1500;
+    spawns[entry_count].count = 2;
     ++entry_count;
 
     spawns[entry_count].pos.x = -128.0f;
     spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
-    spawns[entry_count].set_spawn(SPAWN_ID_ALIEN_DEADLY_FAST_2B, 1500, 2);
+    spawns[entry_count].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;
+    spawns[entry_count].trigger_time_ms = 1500;
+    spawns[entry_count].count = 2;
     ++entry_count;
 
     spawns[entry_count].pos.y = 128.0f;
@@ -50,12 +44,16 @@ extern "C" void quest_build_the_blighting(
 
     spawns[entry_count].pos.y = 128.0f;
     spawns[entry_count].pos.x = 128.0f;
-    spawns[entry_count].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, one);
+    spawns[entry_count].template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+    spawns[entry_count].trigger_time_ms = 2000;
+    spawns[entry_count].count = one;
     ++entry_count;
 
     spawns[entry_count].pos.y = 896.0f;
     spawns[entry_count].pos.x = 128.0f;
-    spawns[entry_count].set_spawn(SPAWN_ID_DEN_ALIEN_BASIC_07, 2000, one);
+    spawns[entry_count].template_id = SPAWN_ID_DEN_ALIEN_BASIC_07;
+    spawns[entry_count].trigger_time_ms = 2000;
+    spawns[entry_count].count = one;
     ++entry_count;
 
     spawns[entry_count].pos.y = 896.0f;
@@ -73,20 +71,18 @@ extern "C" void quest_build_the_blighting(
         if (wave == 2 || wave == 4) {
             spawns[entry_count].pos.x = -128.0f;
             spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
-            spawns[entry_count].set_spawn(
-                SPAWN_ID_ALIEN_DEADLY_FAST_2B,
-                trigger_time_ms,
-                4);
+            spawns[entry_count].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 4;
             ++entry_count;
         }
 
         if (wave == 3 || wave == 5) {
             spawns[entry_count].pos.x = 1152.0f;
             spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
-            spawns[entry_count].set_spawn(
-                SPAWN_ID_ALIEN_DEADLY_FAST_2B,
-                trigger_time_ms,
-                4);
+            spawns[entry_count].template_id = SPAWN_ID_ALIEN_DEADLY_FAST_2B;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 4;
             ++entry_count;
         }
 
@@ -100,37 +96,33 @@ extern "C" void quest_build_the_blighting(
         if (layout == 0) {
             spawns[entry_count].pos.x = (float)(terrain_texture_width + 64);
             spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
-            spawns[entry_count].set_spawn(
-                spawn_template_id,
-                trigger_time_ms,
-                12);
+            spawns[entry_count].template_id = spawn_template_id;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 12;
             ++entry_count;
             trigger_time_ms += 15000;
         } else if (layout == 1) {
             spawns[entry_count].pos.x = -64.0f;
             spawns[entry_count].pos.y = (float)(terrain_texture_width / 2);
-            spawns[entry_count].set_spawn(
-                spawn_template_id,
-                trigger_time_ms,
-                12);
+            spawns[entry_count].template_id = spawn_template_id;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 12;
             ++entry_count;
             trigger_time_ms += 15000;
         } else if (layout == 2) {
             spawns[entry_count].pos.y = (float)(terrain_texture_width + 64);
             spawns[entry_count].pos.x = (float)(terrain_texture_width / 2);
-            spawns[entry_count].set_spawn(
-                spawn_template_id,
-                trigger_time_ms,
-                12);
+            spawns[entry_count].template_id = spawn_template_id;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 12;
             ++entry_count;
             trigger_time_ms += 15000;
         } else if (layout == 3) {
             spawns[entry_count].pos.y = -64.0f;
             spawns[entry_count].pos.x = (float)(terrain_texture_width / 2);
-            spawns[entry_count].set_spawn(
-                spawn_template_id,
-                trigger_time_ms,
-                12);
+            spawns[entry_count].template_id = spawn_template_id;
+            spawns[entry_count].trigger_time_ms = trigger_time_ms;
+            spawns[entry_count].count = 12;
             ++entry_count;
             trigger_time_ms += 15000;
         }

@@ -34,42 +34,42 @@ HRESULT grim_try_reset_device(void)
     int j;
     int k;
     bool canceled = false;
-    if (grim_d3d_device->Reset(
-            &grim_present_parameters) != D3D_OK) {
-        do {
-            ++grim_device_reset_retry_count;
-            Sleep(500);
+    do {
+        if (grim_d3d_device->Reset(
+                &grim_present_parameters) == D3D_OK) {
+            break;
+        }
 
-            if (grim_device_reset_retry_count >= 4) {
-                grim_error_text = "D3D: Unable to restore device.";
-                if (MessageBoxA(
-                        grim_main_window_hwnd,
-                        grim_error_text,
-                        "Grim",
-                        MB_RETRYCANCEL) == IDCANCEL) {
-                    canceled = true;
-                    break;
-                }
+        ++grim_device_reset_retry_count;
+        Sleep(500);
 
-                for (j = 0; j <= grim_texture_slot_max_index; ++j) {
-                    if (grim_texture_slots[j] != 0 &&
-                        grim_texture_slots[j]->owns_texture) {
-                        if (grim_texture_slots[j]->backup != 0 &&
-                            grim_texture_slots[j]->backup->Release() <= 0) {
-                            grim_texture_slots[j]->backup = 0;
-                        }
-                        if (grim_texture_slots[j]->texture != 0 &&
-                            grim_texture_slots[j]->texture->Release() <= 0) {
-                            grim_texture_slots[j]->texture = 0;
-                        }
-                        grim_config_values[0x57] = true;
+        if (grim_device_reset_retry_count >= 4) {
+            grim_error_text = "D3D: Unable to restore device.";
+            if (MessageBoxA(
+                    grim_main_window_hwnd,
+                    grim_error_text,
+                    "Grim",
+                    MB_RETRYCANCEL) == IDCANCEL) {
+                canceled = true;
+                break;
+            }
+
+            for (j = 0; j <= grim_texture_slot_max_index; ++j) {
+                if (grim_texture_slots[j] != 0 &&
+                    grim_texture_slots[j]->owns_texture) {
+                    if (grim_texture_slots[j]->backup != 0 &&
+                        grim_texture_slots[j]->backup->Release() <= 0) {
+                        grim_texture_slots[j]->backup = 0;
                     }
+                    if (grim_texture_slots[j]->texture != 0 &&
+                        grim_texture_slots[j]->texture->Release() <= 0) {
+                        grim_texture_slots[j]->texture = 0;
+                    }
+                    grim_config_values[0x57] = true;
                 }
             }
-        } while (grim_d3d_device->Reset(
-                     &grim_present_parameters) !=
-                 D3D_OK);
-    }
+        }
+    } while (1);
 
     if (!canceled) {
         grim_apply_render_state();

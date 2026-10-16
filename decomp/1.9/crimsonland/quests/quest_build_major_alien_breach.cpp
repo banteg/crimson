@@ -41,10 +41,20 @@ struct quest_spawn_builder_t {
         int spawn_count)
     {
         ++count;
+#if CL_BUILD == 10908
+        // C2 9044 orders the second record's template store as native only
+        // through the entry setter; 8966 needs the direct stores.
+        cursor->set(
+            position,
+            spawn_template_id,
+            spawn_trigger_time_ms,
+            spawn_count);
+#else
         cursor->pos = position;
         cursor->template_id = spawn_template_id;
         cursor->trigger_time_ms = spawn_trigger_time_ms;
         cursor->count = spawn_count;
+#endif
         ++cursor;
     }
 };

@@ -76,3 +76,9 @@ orders of the three independent loop updates. Advancing `outer_index` before
 `outer_seed` selected the native slots and produced the exact 339-byte object.
 The declaration, inner-lifetime, and split-declaration sweeps record the bounded
 neutral and regressing alternatives.
+
+## 1.9.8 (2026-10-16)
+
+Shared: the outer batch loop counts `outer_index` from 0 to 3 and derives the seed and trigger base from it. Guard: 1.9.8 fills the inner record through a record pointer (92.31% under 8966). Under both C2 builds, filling a record through a local record pointer lets the integer metadata stores schedule ahead of the float conversions, while repeated index or cursor expressions keep them in source order. The 1.9.8 native has the free schedule and 1.9.93 the strict one, so the guard records a spelling difference between the two releases.
+
+About twenty earlier variants (declaration and increment orders, loop forms, the guard spelling) left the 1.9.8 prologue at 99.05% until the derived outer loop.

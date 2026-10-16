@@ -34,3 +34,12 @@ masked references `29/0/0`, using Microsoft Visual C++ 6.5 with
 The exact match also resolves a decompiler ambiguity in the focus scan: the
 global focus index increments inside the eligibility predicate, not once per
 raw table slot.
+
+## 1.9.8 translation-unit context (2026-10-16)
+
+1.9.8 keeps the rotation angle in `st(0)` across the call to
+`ui_get_element_index` (native `0x00446034`), which C2 9044 does only when it
+has already compiled that callee in the same unit (it is `0x004455d0`, three
+functions earlier). The source therefore defines `ui_get_element_index` ahead
+of `ui_element_update` under `CL_BUILD == 10908`, as `projectile_update` does
+for its callees. 8966 ignores this, so 1.9.93 keeps one function per file.

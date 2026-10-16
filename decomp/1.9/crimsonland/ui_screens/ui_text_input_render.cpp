@@ -278,13 +278,13 @@ extern "C" void ui_text_input_render(
         grim_interface_ptr->grim_end_batch();
         grim_interface_ptr->grim_set_config_var(0x15, 2u);
 
-        if (ui_mouse_x <= position.x
-            || position.x + 64.0f <= ui_mouse_x
-            || ui_mouse_y <= position.y
-            || position.y + 32.0f <= ui_mouse_y) {
-            ui_stats_hover_weapon -= frame_dt + frame_dt;
-        } else {
+        if (ui_mouse_x > position.x
+            && position.x + 64.0f > ui_mouse_x
+            && ui_mouse_y > position.y
+            && position.y + 32.0f > ui_mouse_y) {
             ui_stats_hover_weapon += frame_dt + frame_dt;
+        } else {
+            ui_stats_hover_weapon -= frame_dt + frame_dt;
         }
 
         grim_interface_ptr->grim_set_color(

@@ -76,11 +76,6 @@ struct database_button_t {
 
 #endif
 
-struct weapon_ammo_view_t {
-    int ammo_class;
-    unsigned char payload[120];
-};
-
 static __inline void draw_title_separator(
     database_vec2_t position,
     const int &width)
@@ -101,7 +96,7 @@ extern unsigned char ui_mouse_blocked;
 extern int unlocked_weapons_nav_focus_index;
 extern int config_screen_width;
 extern int ui_weapon_icons_texture;
-extern weapon_ammo_view_t weapon_ammo_class[];
+extern weapon_storage_entry_t weapon_ammo_class[];
 
 void ui_scrollbar_update(float *xy, float *state);
 bool ui_button_update(float *xy, ui_button_t *button);

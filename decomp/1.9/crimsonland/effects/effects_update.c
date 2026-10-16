@@ -28,7 +28,13 @@ void effects_update(void)
                     );
                 }
                 effect_free(entry);
+#if CL_BUILD == 10908
+            // 1.9.8 spells the test !(age < 0); 8966 compiles both spellings alike, but only
+            // age >= 0 keeps the canonical NaN behaviour under an IEEE compiler.
+            } else if (!(entry->age < 0.0f)) {
+#else
             } else if (entry->age >= 0.0f) {
+#endif
                 float dt = frame_dt;
                 effect_vec2_t movement = {
                     dt * entry->velocity.x,

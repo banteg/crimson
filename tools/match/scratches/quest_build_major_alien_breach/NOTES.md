@@ -70,3 +70,9 @@ Both `wave * 15` and `15 * wave` match all **167/167 bytes** and **48/48
 instructions**; the explicit acceleration-counter form reproduces the former
 swap. `wave-counter-model-mutations.json` records the comparison. No recovery
 or residual override remains.
+
+## 1.9.8 (2026-10-16)
+
+Code-generation guard in `quest_spawn_builder_t::add`: 1.9.8 fills the record through the existing `set()` member; 8966 needs the direct stores. With `set()` the second record's template store moves exactly as 9044 native and the mirror-image way under 8966.
+
+Shared-spelling search (none exact under both): `set()` with `++count`/`++cursor` in three orders, post-increment cursor, position by value in `set()` and in `add()`, template/trigger field order, position plus three-field setter, loop decay spelled as a running offset, the trigger update rewritten, and the clamp spelled `<= 999`.

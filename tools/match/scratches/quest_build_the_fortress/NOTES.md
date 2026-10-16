@@ -83,3 +83,7 @@ This source shape resolves both residual increment placements and the final
 template/trigger scheduling swap without dependencies or layout changes.
 Retained source SHA-256:
 `0719dece3767726effe140acd07a8810c69d96a0bcadab6063aae63979d3f219`.
+
+## 1.9.8 (2026-10-16)
+
+Shared: the opening record stores its metadata directly and `y_seed` is declared after it. Guard: 1.9.8 fills the grid record's metadata through `grid_entry` and counts it afterwards; 8966 keeps the trigger-cursor stores. Metadata before position, mixed entry and trigger-cursor stores, and early or late counting were tried.

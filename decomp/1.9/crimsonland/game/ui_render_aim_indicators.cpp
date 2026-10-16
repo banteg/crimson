@@ -66,114 +66,120 @@ extern "C" void ui_render_aim_indicators(void)
     for (current_player_index = 0;
          current_player_index < config_player_count;
          ++current_player_index) {
-        if (player_state_table[current_player_index].health > 0.0f) {
-            float dx =
-                player_state_table[current_player_index].aim_x
-                - player_state_table[current_player_index].pos_x;
-            float dy =
-                player_state_table[current_player_index].aim_y
-                - player_state_table[current_player_index].pos_y;
-            float radius =
-                (float)sqrt(dx * dx + dy * dy)
-                * player_state_table[current_player_index].spread_heat
-                * 0.5f;
-            if (radius < 6.0f) {
-                radius = 6.0f;
-            }
-
-            grim_interface_ptr->grim_set_uv(0.5f, 0.5f, 0.5f, 0.5f);
-            grim_interface_ptr->grim_set_color(0.0f, 0.0f, 0.1f, 0.3f);
-            aim_screen =
-                camera_offset
-                + *(aim_vec2_t *)&player_state_table[current_player_index]
-                       .aim_x;
-            grim_interface_ptr->grim_draw_circle_filled(
-                aim_screen.x, aim_screen.y, radius);
-
-            grim_interface_ptr->grim_bind_texture(bullet_trail_texture, 0);
-            grim_interface_ptr->grim_set_uv(0.5f, 0.0f, 0.5f, 1.0f);
-            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.55f);
-            grim_interface_ptr->grim_draw_circle_outline(
-                aim_screen.x, aim_screen.y, radius);
-
-            grim_interface_ptr->grim_set_color(1.0f, 0.7f, 0.1f, 0.8f);
-            aim_screen =
-                camera_offset
-                + *(aim_vec2_t *)&player_state_table[current_player_index]
-                       .aim_x;
-            ui_draw_clock_gauge_at(
-                (float *)&aim_screen,
-                48.0f,
-                player_state_table[current_player_index].reload_timer
-                    / player_state_table[current_player_index]
-                          .reload_timer_max);
-            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
+        if (player_state_table[current_player_index].health <= 0.0f) {
+            continue;
         }
+
+        float dx =
+            player_state_table[current_player_index].aim_x
+            - player_state_table[current_player_index].pos_x;
+        float dy =
+            player_state_table[current_player_index].aim_y
+            - player_state_table[current_player_index].pos_y;
+        float radius =
+            (float)sqrt(dx * dx + dy * dy)
+            * player_state_table[current_player_index].spread_heat
+            * 0.5f;
+        if (radius < 6.0f) {
+            radius = 6.0f;
+        }
+
+        grim_interface_ptr->grim_set_uv(0.5f, 0.5f, 0.5f, 0.5f);
+        grim_interface_ptr->grim_set_color(0.0f, 0.0f, 0.1f, 0.3f);
+        aim_screen =
+            camera_offset
+            + *(aim_vec2_t *)&player_state_table[current_player_index]
+                   .aim_x;
+        grim_interface_ptr->grim_draw_circle_filled(
+            aim_screen.x, aim_screen.y, radius);
+
+        grim_interface_ptr->grim_bind_texture(bullet_trail_texture, 0);
+        grim_interface_ptr->grim_set_uv(0.5f, 0.0f, 0.5f, 1.0f);
+        grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.55f);
+        grim_interface_ptr->grim_draw_circle_outline(
+            aim_screen.x, aim_screen.y, radius);
+
+        grim_interface_ptr->grim_set_color(1.0f, 0.7f, 0.1f, 0.8f);
+        aim_screen =
+            camera_offset
+            + *(aim_vec2_t *)&player_state_table[current_player_index]
+                   .aim_x;
+        ui_draw_clock_gauge_at(
+            (float *)&aim_screen,
+            48.0f,
+            player_state_table[current_player_index].reload_timer
+                / player_state_table[current_player_index]
+                      .reload_timer_max);
+        grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.7f);
     }
 
     for (current_player_index = 0;
          current_player_index < config_player_count;
          ++current_player_index) {
-        if (player_state_table[current_player_index].health > 0.0f
-            && config_direction_arrow_flags[current_player_index]) {
-            grim_interface_ptr->grim_set_rotation(
-                player_state_table[current_player_index].heading);
-            grim_interface_ptr->grim_bind_texture(
-                world_arrow_marker_texture, 0);
-            grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
+        if (player_state_table[current_player_index].health <= 0.0f
+            || !config_direction_arrow_flags[current_player_index]) {
+            continue;
+        }
 
-            if (config_player_count == 2) {
-                if (current_player_index == 0) {
-                    grim_interface_ptr->grim_set_color(
-                        0.8f, 0.9f, 1.0f, 0.6f);
-                } else {
-                    grim_interface_ptr->grim_set_color(
-                        1.0f, 0.9f, 0.8f, 0.6f);
-                }
+        grim_interface_ptr->grim_set_rotation(
+            player_state_table[current_player_index].heading);
+        grim_interface_ptr->grim_bind_texture(
+            world_arrow_marker_texture, 0);
+        grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
+
+        if (config_player_count == 2) {
+            if (current_player_index == 0) {
+                grim_interface_ptr->grim_set_color(
+                    0.8f, 0.9f, 1.0f, 0.6f);
             } else {
                 grim_interface_ptr->grim_set_color(
-                    1.0f, 1.0f, 1.0f, 0.3f);
+                    1.0f, 0.9f, 0.8f, 0.6f);
             }
-
-            grim_interface_ptr->grim_begin_batch();
-            if (config_movement_schemes[current_player_index] == 4) {
-                aim_vec2_t inset(16.0f, 16.0f);
-                aim_screen =
-                    camera_offset
-                    + *(aim_vec2_t *)&player_state_table
-                          [current_player_index]
-                              .move_target_x
-                    - inset;
-            } else {
-                float angle =
-                    player_state_table[current_player_index].heading
-                    - 1.57079637f;
-                aim_vec2_t direction(
-                    (float)cos(angle), (float)sin(angle));
-                aim_screen =
-                    (camera_offset
-                     + *(aim_vec2_t *)&player_state_table
-                           [current_player_index]
-                               .pos_x)
-                    + direction * 60.0f
-                    - aim_vec2_t(16.0f, 16.0f);
-            }
-            grim_interface_ptr->grim_draw_quad(
-                aim_screen.x, aim_screen.y, 32.0f, 32.0f);
-            grim_interface_ptr->grim_end_batch();
+        } else {
+            grim_interface_ptr->grim_set_color(
+                1.0f, 1.0f, 1.0f, 0.3f);
         }
+
+        grim_interface_ptr->grim_begin_batch();
+        if (config_movement_schemes[current_player_index] == 4) {
+            aim_vec2_t inset(16.0f, 16.0f);
+            aim_screen =
+                camera_offset
+                + *(aim_vec2_t *)&player_state_table
+                      [current_player_index]
+                          .move_target_x
+                - inset;
+        } else {
+            float angle =
+                player_state_table[current_player_index].heading
+                - 1.57079637f;
+            aim_vec2_t direction(
+                (float)cos(angle), (float)sin(angle));
+            aim_screen =
+                (camera_offset
+                 + *(aim_vec2_t *)&player_state_table
+                       [current_player_index]
+                           .pos_x)
+                + direction * 60.0f
+                - aim_vec2_t(16.0f, 16.0f);
+        }
+        grim_interface_ptr->grim_draw_quad(
+            aim_screen.x, aim_screen.y, 32.0f, 32.0f);
+        grim_interface_ptr->grim_end_batch();
     }
 
     for (current_player_index = 0;
          current_player_index < config_player_count;
          ++current_player_index) {
-        if (player_state_table[current_player_index].health > 0.0f) {
-            aim_vec2_t enhancement_position =
-                camera_offset
-                + *(aim_vec2_t *)&player_state_table[current_player_index]
-                       .aim_x;
-            ui_render_aim_enhancement((float *)&enhancement_position);
+        if (player_state_table[current_player_index].health <= 0.0f) {
+            continue;
         }
+
+        aim_vec2_t enhancement_position =
+            camera_offset
+            + *(aim_vec2_t *)&player_state_table[current_player_index]
+                   .aim_x;
+        ui_render_aim_enhancement((float *)&enhancement_position);
     }
 
     current_player_index = 0;

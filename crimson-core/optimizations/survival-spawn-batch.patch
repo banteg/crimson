@@ -53,8 +53,8 @@
 +++ b/decomp/1.9/crimsonland/game/survival_update.cpp
 @@ -216,6 +216,9 @@
  update_wave_spawns:
-     survival_spawn_cooldown -= frame_dt_ms * config_player_count;
      current_player_index = 0;
+     survival_spawn_cooldown -= frame_dt_ms * config_player_count;
 +    // This batch only fills slots: the first free slot never moves backwards.
 +    // Keep the cursor local so deaths, resets and replay seeks need no invalidation.
 +    int next_slot = 0;
@@ -80,8 +80,8 @@
              }
              case 2: {
 @@ -244,7 +247,7 @@
-                 int roll = crt_rand();
                  left.x = -40.0f;
+ #endif
                  left.y = (float)(roll % height);
 -                survival_spawn_creature(&left);
 +                next_slot = survival_spawn_creature_from(&left, next_slot);
@@ -116,8 +116,8 @@
          }
          case 2: {
 @@ -291,7 +294,7 @@
-             int roll = crt_rand();
              left.x = -40.0f;
+ #endif
              left.y = (float)(roll % height);
 -            survival_spawn_creature(&left);
 +            next_slot = survival_spawn_creature_from(&left, next_slot);

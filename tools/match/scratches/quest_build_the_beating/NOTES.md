@@ -267,3 +267,7 @@ The source remains `617.722891566265/649` weighted bytes
 references. The current evidence closes the natural expression, destination,
 cursor, and coordinate-lifetime routes without using register hints or
 artificial dependencies; `RESIDUAL=compiler` remains appropriate.
+
+## 1.9.8 (2026-10-16)
+
+Exact under both builds after replacing `set_spawn` with direct metadata stores.

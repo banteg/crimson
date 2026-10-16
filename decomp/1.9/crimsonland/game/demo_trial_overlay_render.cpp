@@ -70,6 +70,10 @@ extern int demo_trial_elapsed_ms;
 extern unsigned char demo_trial_overlay_active;
 extern unsigned char shareware_offer_seen_latch;
 extern unsigned char quit_requested;
+#if CL_BUILD == 10908
+extern unsigned char full_version_recheck_pending_slot_1;
+extern unsigned char full_version_recheck_pending_slot_3;
+#endif
 extern unsigned char ui_transition_direction;
 extern game_state_id_t game_state_pending;
 extern int music_track_intro_id;
@@ -83,6 +87,18 @@ bool ui_button_update(float *xy, ui_button_t *button);
 void music_fade_out_all(int sfx_id);
 void music_play_exclusive(int sfx_id);
 }
+
+#if CL_BUILD == 10908
+// 1.9.8 still sells the full version from this overlay.
+#define DEMO_TRIAL_FULL_VERSION_OFFER \
+    "For only $19.99 USD, you will immediately gain unrestricted access to all 3"
+#define DEMO_TRIAL_PROCESS_TAIL "and takes just minutes.  No additional download is required."
+#define DEMO_TRIAL_QUEST_OFFER DEMO_TRIAL_FULL_VERSION_OFFER
+#else
+#define DEMO_TRIAL_QUEST_OFFER "The full version features unrestricted access to all 3"
+#define DEMO_TRIAL_FULL_VERSION_OFFER "Buy the full version to gain unrestricted access to all 3"
+#define DEMO_TRIAL_PROCESS_TAIL "and takes just minutes. "
+#endif
 
 extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
     demo_trial_overlay_active = 1;
@@ -109,7 +125,12 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
         position.x += 26.0f;
         position.y += 80.0f;
 
+#if CL_BUILD == 10908
+        // 1.9.8 allows a 60-minute trial and has no time-limit helper.
+        int remaining_ms = 3600000 - (int)play_time_ms;
+#else
         int remaining_ms = demo_trial_time_limit_ms() - (int)play_time_ms;
+#endif
         if (demo_trial_elapsed_ms > 0) {
             remaining_ms = 300000 - demo_trial_elapsed_ms;
         }
@@ -139,11 +160,20 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
             crt_sprintf(time_text, "%d:%s.%d", minutes, seconds_text, centiseconds);
         }
 
+#if CL_BUILD == 10908
+        if (!game_is_full_version() && config_game_mode != GAME_MODE_TUTORIAL &&
+            ((demo_trial_elapsed_ms > 0 && config_game_mode == GAME_MODE_QUEST &&
+              !((float)(demo_trial_elapsed_ms / 1000) * 0.016666668f > 5.0f)) ||
+             (demo_trial_elapsed_ms <= 0 &&
+              !((float)((int)play_time_ms / 1000) * 0.016666668f > 60.0f) &&
+              config_game_mode == GAME_MODE_QUEST)) &&
+#else
         if (!game_is_full_version() && config_game_mode != GAME_MODE_TUTORIAL &&
             (int)(play_time_ms = play_time_get()) <= 2400000 &&
             ((demo_trial_elapsed_ms > 0 && config_game_mode == GAME_MODE_QUEST &&
               (float)(demo_trial_elapsed_ms / 1000) * 0.016666668f <= 5.0f) ||
              (demo_trial_elapsed_ms <= 0 && config_game_mode == GAME_MODE_QUEST)) &&
+#endif
             game_state_id == GAME_STATE_GAMEPLAY &&
             (quest_stage_major > 1 || quest_stage_minor > 10)) {
             position.y -= 6.0f;
@@ -176,14 +206,39 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
             float quest_tail_x = position.x;
             position.y += 22.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
-                quest_tail_x, position.y,
-                "The full version features unrestricted access to all 3");
+                quest_tail_x, position.y, DEMO_TRIAL_QUEST_OFFER);
             position.y += 18.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
                 quest_tail_x, position.y,
                 "game modes and be able to post your scores on the Internet. Why not buy");
             position.y += 18.0f;
+#if CL_BUILD == 10908
+            grim_interface_ptr->grim_draw_text_small_fmt(
+                position.x, position.y, "it now? You'll have a great time!");
+#endif
         } else if (minutes <= 0 && seconds <= 0) {
+#if CL_BUILD == 10908
+            grim_interface_ptr->grim_draw_text_small_fmt(
+                position.x, position.y,
+                "If you would like to have unlimited play time and access to all features,");
+            position.y += 18.0f;
+            grim_interface_ptr->grim_draw_text_small_fmt(
+                position.x, position.y,
+                "please upgrade to the full version of Crimsonland.  The process is very easy");
+            position.y += 18.0f;
+            grim_interface_ptr->grim_draw_text_small_fmt(
+                position.x, position.y, DEMO_TRIAL_PROCESS_TAIL);
+            position.y += 24.0f;
+            grim_interface_ptr->grim_draw_text_small_fmt(
+                position.x, position.y, DEMO_TRIAL_FULL_VERSION_OFFER);
+            position.y += 18.0f;
+            grim_interface_ptr->grim_draw_text_small_fmt(
+                position.x, position.y,
+                "game modes and be able to post your scores on the Internet. Why not buy");
+            position.y += 18.0f;
+            grim_interface_ptr->grim_draw_text_small_fmt(
+                position.x, position.y, "it now? You'll have a great time!");
+#else
             grim_interface_ptr->grim_draw_text_small_fmt(
                 position.x, position.y,
                 "Trial time is up. If you would like to have unlimited play time and access to");
@@ -204,6 +259,7 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
                 position.x, position.y,
                 "game modes and be able to post your scores on the Internet. Why not buy");
             position.y += 18.0f;
+#endif
         } else {
             position.y -= 7.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
@@ -223,20 +279,25 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
                 "please upgrade to the full version of Crimsonland.  The process is very easy");
             position.y += 16.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(position.x, position.y,
-                                                         "and takes just minutes. ");
+                                                         DEMO_TRIAL_PROCESS_TAIL);
             position.y += 22.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
-                position.x, position.y,
-                "Buy the full version to gain unrestricted access to all 3");
+                position.x, position.y, DEMO_TRIAL_FULL_VERSION_OFFER);
             position.y += 16.0f;
             grim_interface_ptr->grim_draw_text_small_fmt(
                 position.x, position.y,
                 "game modes and be able to post your scores on the Internet. Why not buy");
             position.y += 16.0f;
+#if CL_BUILD == 10908
+            grim_interface_ptr->grim_draw_text_small_fmt(
+                position.x, position.y, "it now? You'll have a great time!");
+#endif
         }
 
+#if CL_BUILD != 10908
         grim_interface_ptr->grim_draw_text_small_fmt(position.x, position.y,
                                                      "it now? You'll have a great time!");
+#endif
     }
 
     static demo_trial_button_t maybe_later_button;
@@ -252,6 +313,20 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
         demo_trial_vec2_t button_position =
             *(demo_trial_vec2_t *)xy + demo_trial_vec2_t(22.0f, 212.0f);
 
+#if CL_BUILD == 10908
+        // 1.9.8 hands both purchase paths to game_frame_update.
+        if (ui_button_update(
+                (button_position + demo_trial_vec2_t(6.0f, 6.0f)).v,
+                (ui_button_t *)&purchase_button)) {
+            full_version_recheck_pending_slot_1 = 1;
+        }
+
+        if (ui_button_update(
+                (button_position + demo_trial_vec2_t(166.0f, 6.0f)).v,
+                (ui_button_t *)&already_paid_button)) {
+            full_version_recheck_pending_slot_3 = 1;
+        }
+#else
         if (ui_button_update(
                 (button_position + demo_trial_vec2_t(6.0f, 6.0f)).v,
                 (ui_button_t *)&purchase_button)) {
@@ -259,6 +334,7 @@ extern "C" void demo_trial_overlay_render(float *xy, float alpha) {
             quit_requested = 1;
             ShellExecuteA(0, "open", "http://buy.crimsonland.com", 0, 0, SW_SHOWNORMAL);
         }
+#endif
 
         if (ui_button_update(
                 (button_position + demo_trial_vec2_t(326.0f, 6.0f)).v,

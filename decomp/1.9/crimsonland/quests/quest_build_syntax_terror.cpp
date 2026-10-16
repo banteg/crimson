@@ -39,11 +39,9 @@ extern "C" void quest_build_syntax_terror(
         config_blob.player_count += 4;
     }
 
-    int outer_index = 0;
-    int trigger_base = 1500;
-    int outer_seed = 0x14c9;
-
-    do {
+    for (int outer_index = 0; outer_index < 4; ++outer_index) {
+        int outer_seed = outer_index * 0x35 + 0x14c9;
+        int trigger_base = outer_index * 30000 + 1500;
         int inner_index = 0;
         if (config_blob.player_count + 9 > 0) {
             int outer_x_term = outer_seed * outer_index;
@@ -53,6 +51,24 @@ extern "C" void quest_build_syntax_terror(
             int trigger_time_ms = trigger_base;
 
             do {
+#if CL_BUILD == 10908
+                // 1.9.8 fills the record through a record pointer, which frees
+                // the metadata stores to schedule ahead of the coordinate
+                // math.
+                quest_entry_original_t *spawn = &spawns[entry_count];
+                spawn->pos.set(
+                    (float)(
+                        (((inner_index * inner_index * 0x4c + 0xec) *
+                          inner_index + outer_x_term) %
+                         0x380) + 0x40),
+                    (float)(
+                        ((inner_seed * inner_index + outer_y_term) %
+                         0x380) + 0x40));
+                spawn->set_spawn(
+                    SPAWN_ID_DEN_ALIEN_BASIC_07,
+                    trigger_time_ms,
+                    1);
+#else
                 spawns[entry_count].pos.set(
                     (float)(
                         (((inner_index * inner_index * 0x4c + 0xec) *
@@ -65,6 +81,7 @@ extern "C" void quest_build_syntax_terror(
                     SPAWN_ID_DEN_ALIEN_BASIC_07,
                     trigger_time_ms,
                     1);
+#endif
                 ++entry_count;
                 ++inner_index;
 
@@ -73,10 +90,7 @@ extern "C" void quest_build_syntax_terror(
             } while (inner_index < config_blob.player_count + 9);
         }
 
-        ++outer_index;
-        outer_seed += 0x35;
-        trigger_base += 30000;
-    } while (outer_seed < 0x159d);
+    }
 
     if (config_hardcore != 0) {
         config_blob.player_count -= 4;

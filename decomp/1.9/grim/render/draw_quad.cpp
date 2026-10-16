@@ -55,7 +55,15 @@ inline float grim_inverse_sqrt(float number)
 
 void IGrim2D_cpp::grim_draw_quad(float x, float y, float w, float h)
 {
+#if CL_BUILD == 10908
+    // 1.9.8 keeps the quad centre out of the corner array, so its frame is
+    // four points (0x20) where 1.9.93 reserves five (0x28).
+    float points[4][2];
+    float center[2];
+#else
     float points[5][2];
+    float *center = points[4];
+#endif
 
     if (grim_render_disabled || !grim_device_ready) {
         return;
@@ -75,26 +83,26 @@ void IGrim2D_cpp::grim_draw_quad(float x, float y, float w, float h)
         points[3][0] = x;
         points[3][1] = points[2][1];
     } else {
-        points[4][0] = x + w * 0.5f;
-        points[4][1] = y + h * 0.5f;
+        center[0] = x + w * 0.5f;
+        center[1] = y + h * 0.5f;
         float length_sq = w * w + h * h;
         float half_diagonal = length_sq * grim_inverse_sqrt(length_sq) * 0.5f;
         float dx = grim_rotation_cos * half_diagonal;
         half_diagonal *= grim_rotation_sin;
 
-        points[0][0] = points[4][0] - dx;
-        points[0][1] = points[4][1] - half_diagonal;
-        points[1][0] = points[4][0];
+        points[0][0] = center[0] - dx;
+        points[0][1] = center[1] - half_diagonal;
+        points[1][0] = center[0];
         points[1][0] += half_diagonal;
         float neg_dx = -dx;
-        points[1][1] = neg_dx + points[4][1];
-        points[2][0] = points[4][0];
+        points[1][1] = neg_dx + center[1];
+        points[2][0] = center[0];
         points[2][0] += dx;
-        points[2][1] = points[4][1];
+        points[2][1] = center[1];
         points[2][1] += half_diagonal;
         half_diagonal = -half_diagonal;
-        points[3][0] = half_diagonal + points[4][0];
-        points[3][1] = points[4][1];
+        points[3][0] = half_diagonal + center[0];
+        points[3][1] = center[1];
         points[3][1] += dx;
     }
 

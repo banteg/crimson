@@ -62,6 +62,27 @@ static __inline void ui_element_set_rotation(
     element->rot_m11 = cosine;
 }
 
+#if CL_BUILD == 10908
+/*
+ * Translation-unit context for 1.9.8. Its C2 (9044) reuses what it learned
+ * compiling earlier functions of the same unit: ui_get_element_index leaves
+ * the x87 stack alone, so the rotation angle stays in st(0) across the call.
+ * 1.9.93 (8966) ignores this, so the canonical object keeps one function per
+ * file (see ui_get_element_index.c).
+ */
+extern "C" int ui_get_element_index(ui_element_t *element)
+{
+    int index;
+    for (index = 0; index < 41; index++) {
+        if (element == ui_element_table[index]) {
+            return index;
+        }
+    }
+
+    return -1;
+}
+#endif
+
 extern "C" void ui_element_update(ui_element_t *element)
 {
     if (element->focus_disabled || !element->active) {

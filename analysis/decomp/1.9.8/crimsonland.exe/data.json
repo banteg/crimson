@@ -1,6 +1,16 @@
 {
   "entries": [
     {
+      "address": "0x004105c0",
+      "name": "time_format_mm_ss",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0044dc40",
+      "name": "ui_menu_main_click_buy_full_version",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0046d410",
       "name": "??_7mod_api_cpp_t@@6B@",
       "program": "1.9.8/crimsonland.exe"
@@ -296,6 +306,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0046f140",
+      "name": "screen_width_f",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0046f144",
       "name": "screen_height_f",
       "program": "1.9.8/crimsonland.exe"
@@ -313,6 +328,21 @@
     {
       "address": "0x0046f24c",
       "name": "console_cvar_default_true",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0046f2a8",
+      "name": "console_caret_string",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0046f2ac",
+      "name": "console_prompt_format",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0046f2b0",
+      "name": "console_prompt_string",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -366,8 +396,33 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x00470e44",
+      "name": "menu_label_back",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00470eb0",
+      "name": "mods_menu_refresh_pending",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00470eb4",
+      "name": "mods_menu_previous_selected_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00470eb8",
+      "name": "credits_secret_selected_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004712dc",
       "name": "perk_hot_tempered_trigger_interval_s",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004719c4",
+      "name": "console_version_string",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -408,6 +463,16 @@
     {
       "address": "0x00475b64",
       "name": "sfx_sample_rate",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004764a8",
+      "name": "ui_segmented_slider_tex_on",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004764ac",
+      "name": "ui_segmented_slider_tex_off",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1216,6 +1281,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047c84c",
+      "name": "game_time_s",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047c850",
       "name": "quit_requested",
       "program": "1.9.8/crimsonland.exe"
@@ -1306,6 +1376,31 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047d310",
+      "name": "demo_trial_purchase_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047d328",
+      "name": "ui_button_already_paid",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047d344",
+      "name": "demo_trial_overlay_init_flags",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047d3a8",
+      "name": "perk_selection_cancel_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047d3c0",
+      "name": "perk_selection_choice_items",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047d460",
       "name": "tutorial_prompt_dialog_init_flags",
       "program": "1.9.8/crimsonland.exe"
@@ -1331,8 +1426,23 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047dfb8",
+      "name": "perk_selection_choice_color_idle_r",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047dfc8",
+      "name": "aim_screen_x",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047dfe8",
       "name": "format_ordinal_buffer",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047e030",
+      "name": "perk_selection_choice_color_hover_r",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1346,6 +1456,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047e05c",
+      "name": "ui_aim_indicators_init_flags",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047e060",
       "name": "config_blob",
       "program": "1.9.8/crimsonland.exe"
@@ -1353,6 +1468,11 @@
     {
       "address": "0x0047e061",
       "name": "config_music_disabled",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047e064",
+      "name": "config_direction_arrow_flags",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1456,8 +1576,28 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047e4e0",
+      "name": "perk_selection_screen_flags",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047e4e4",
       "name": "primary_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047e4fc",
+      "name": "perk_choice_ids",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047e518",
+      "name": "ui_button_maybe_later",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047e530",
+      "name": "perk_selection_select_button",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1483,6 +1623,16 @@
     {
       "address": "0x0047e558",
       "name": "game_time_ms",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047e55c",
+      "name": "demo_trial_elapsed_ms",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047e560",
+      "name": "demo_trial_overlay_active",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1561,6 +1711,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047e5ac",
+      "name": "perk_selection_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047e5b4",
       "name": "perk_lean_mean_exp_tick_timer_s",
       "program": "1.9.8/crimsonland.exe"
@@ -1586,6 +1741,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047e690",
+      "name": "credits_screen_init_flags",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047e698",
       "name": "credits_line_table",
       "program": "1.9.8/crimsonland.exe"
@@ -1593,6 +1753,26 @@
     {
       "address": "0x0047e69c",
       "name": "credits_line_table_flags",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047ee98",
+      "name": "credits_scroll_line_end_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047ee9c",
+      "name": "credits_scroll_line_start_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047eea0",
+      "name": "credits_secret_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047eeb8",
+      "name": "credits_back_button",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1606,8 +1786,33 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047eed8",
+      "name": "credits_scroll_time_s",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047eedc",
+      "name": "credits_secret_unlock_flag",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047eee0",
+      "name": "mods_menu_filenames",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047f6e0",
       "name": "mod_info_static_guard",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047f6e4",
+      "name": "credits_secret_reset_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047f700",
+      "name": "credits_secret_board",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1621,8 +1826,48 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047f7fc",
+      "name": "mods_menu_main_menu_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047f818",
+      "name": "mods_menu_item_labels",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047f898",
+      "name": "mods_menu_launch_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047f8c8",
+      "name": "mods_menu_init_flags",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047f8cc",
+      "name": "credits_secret_back_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047f8e4",
+      "name": "mods_menu_scrollbar",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047f91c",
+      "name": "credits_secret_flags",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047f990",
       "name": "mod_info_block",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047f9d8",
+      "name": "mods_menu_display_names",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1646,8 +1891,48 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004801e4",
+      "name": "mods_menu_entry_count",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004801e8",
+      "name": "mods_menu_selected_info",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004801ec",
+      "name": "credits_secret_timer_ms",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004801f0",
+      "name": "credits_secret_anim_time_ms",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004801f4",
+      "name": "credits_secret_score",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004801f8",
       "name": "quest_failed_main_menu_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00480228",
+      "name": "quest_results_name_submit_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00480270",
+      "name": "quest_results_screen_flags",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004802c4",
+      "name": "quest_results_play_next_button",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1656,8 +1941,33 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004802e0",
+      "name": "quest_results_name_input_buffer",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00480304",
+      "name": "quest_results_health_bonus_ms",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00480308",
       "name": "quest_failed_highscore_rank_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0048030c",
+      "name": "quest_results_play_again_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00480324",
+      "name": "quest_results_highscore_rank_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00480368",
+      "name": "quest_results_highscores_button",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1668,6 +1978,66 @@
     {
       "address": "0x00480398",
       "name": "quest_failed_play_another_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004803b0",
+      "name": "quest_results_main_menu_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004803c8",
+      "name": "quest_results_name_input_state",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004803e0",
+      "name": "quest_results_unlock_weapon_id",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004803e4",
+      "name": "quest_results_unlock_perk_id",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004803e8",
+      "name": "quest_results_anim_timer",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004803ec",
+      "name": "quest_results_final_time_ms",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004803f0",
+      "name": "quest_results_reveal_base_time_ms",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004803f4",
+      "name": "quest_results_reveal_health_bonus_ms",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004803f8",
+      "name": "quest_results_reveal_perk_bonus_s",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004803fc",
+      "name": "quest_results_step",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00480400",
+      "name": "quest_results_reveal_total_time_ms",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00480404",
+      "name": "quest_results_reveal_step_timer_ms",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1911,8 +2281,18 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x00484c8a",
+      "name": "main_menu_full_version_layout_latch",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00484c8c",
       "name": "perk_pending_count",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484c90",
+      "name": "perk_choices_dirty",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1938,6 +2318,11 @@
     {
       "address": "0x00484ca4",
       "name": "survival_spawn_cooldown",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484cac",
+      "name": "creature_active_count",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -1968,6 +2353,21 @@
     {
       "address": "0x00484cc4",
       "name": "survival_reward_fire_seen",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484cc5",
+      "name": "survival_reward_damage_seen",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484cc8",
+      "name": "survival_first_kill_pos",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484ce0",
+      "name": "survival_first_kill_count",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2023,6 +2423,11 @@
     {
       "address": "0x00484d04",
       "name": "bonus_double_xp_timer",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484d08",
+      "name": "gameplay_run_reserved_zero",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2123,6 +2528,16 @@
     {
       "address": "0x00484d6c",
       "name": "weapon_usage_time",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484e6c",
+      "name": "time_played_ms",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484e70",
+      "name": "survival_spawn_stage",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2251,6 +2666,16 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x00484f18",
+      "name": "ui_element_hover_focus_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484f1c",
+      "name": "ui_element_hover_focus_ptr",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00484f20",
       "name": "run_active",
       "program": "1.9.8/crimsonland.exe"
@@ -2278,6 +2703,26 @@
     {
       "address": "0x00484f2d",
       "name": "highscore_return_latch",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484f30",
+      "name": "highscore_return_quest_stage_major",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484f34",
+      "name": "highscore_return_quest_stage_minor",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484f38",
+      "name": "highscore_return_game_mode_id",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00484f3c",
+      "name": "highscore_return_hardcore_flag",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2651,8 +3096,23 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0048d4b8",
+      "name": "world_arrow_marker_texture",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0048d4bc",
       "name": "bodyset_texture",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0048d4c4",
+      "name": "ui_weapon_icons_texture",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0048d4c8",
+      "name": "bullet_trail_texture",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2663,6 +3123,11 @@
     {
       "address": "0x0048d4d8",
       "name": "ui_text_reaper_texture",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0048d4e4",
+      "name": "ui_text_well_done_texture",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2816,6 +3281,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0048e108",
+      "name": "?color@?4??fx_queue_add_random@@9@4UFxRandomColor@@A",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0048e118",
       "name": "fx_rotated_pos_x",
       "program": "1.9.8/crimsonland.exe"
@@ -2846,6 +3316,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0048e5a9",
+      "name": "player_plaguebearer_active",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0048e5b4",
       "name": "player_pos_x",
       "program": "1.9.8/crimsonland.exe"
@@ -2853,6 +3328,16 @@
     {
       "address": "0x0048e5b8",
       "name": "player_pos_y",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0048e5c4",
+      "name": "player_health",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0048e640",
+      "name": "player_experience",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2873,6 +3358,11 @@
     {
       "address": "0x0048e90c",
       "name": "player2_pos_y",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0048e918",
+      "name": "player2_health",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -2931,6 +3421,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0048ef88",
+      "name": "?$S1@?4??fx_queue_add_random@@9@4EA",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0048ef90",
       "name": "fx_queue",
       "program": "1.9.8/crimsonland.exe"
@@ -2983,6 +3478,11 @@
     {
       "address": "0x00492f90",
       "name": "unused_particle_pool_suffix_color",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x00492fa0",
+      "name": "local_system_time",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -3098,6 +3598,21 @@
     {
       "address": "0x004a79b0",
       "name": "effect_uv16",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004a83b0",
+      "name": "seasonal_balloon_load_active",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004a83b1",
+      "name": "startup_terrain_generation_active",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004a83bc",
+      "name": "runtime_empty_string_copy",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -3311,6 +3826,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004bfe14",
+      "name": "perk_id_instant_winner",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004bfe18",
       "name": "perk_id_fastshot",
       "program": "1.9.8/crimsonland.exe"
@@ -3318,6 +3838,11 @@
     {
       "address": "0x004bfe1c",
       "name": "perk_id_long_distance_runner",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe20",
+      "name": "perk_id_reflex_boosted",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -3341,8 +3866,28 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004bfe38",
+      "name": "perk_id_grim_deal",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004bfe3c",
       "name": "perk_id_alternate_weapon",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe40",
+      "name": "perk_id_plaguebearer",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe44",
+      "name": "perk_id_radioactive",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe48",
+      "name": "perk_id_ammo_maniac",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -3356,8 +3901,48 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004bfe54",
+      "name": "perk_id_count",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004bfe58",
       "name": "perk_id_anxious_loader",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe5c",
+      "name": "perk_id_final_revenge",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe60",
+      "name": "perk_id_unstoppable",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe64",
+      "name": "perk_id_infernal_contract",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe68",
+      "name": "perk_id_perk_expert",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe6c",
+      "name": "perk_id_perk_master",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe70",
+      "name": "perk_id_bonus_magnet",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe74",
+      "name": "perk_id_mr_melee",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -3366,8 +3951,38 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004bfe7c",
+      "name": "perk_id_greater_regeneration",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe80",
+      "name": "perk_id_veins_of_poison",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe84",
+      "name": "perk_id_toxic_avenger",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe88",
+      "name": "perk_id_thick_skinned",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe8c",
+      "name": "perk_id_breathing_room",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004bfe90",
       "name": "perk_id_ammunition_within",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfe94",
+      "name": "player_overlay_auto_target_line_perk_id",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -3378,6 +3993,26 @@
     {
       "address": "0x004bfe9c",
       "name": "perk_id_pyromaniac",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfea0",
+      "name": "perk_id_highlander",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfea4",
+      "name": "perk_id_dodger",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfea8",
+      "name": "perk_id_ninja",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfeac",
+      "name": "perk_id_lifeline_50_50",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -3401,6 +4036,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004bfec0",
+      "name": "perk_id_telekinetic",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004bfec4",
       "name": "perk_id_hot_tempered",
       "program": "1.9.8/crimsonland.exe"
@@ -3408,6 +4048,16 @@
     {
       "address": "0x004bfec8",
       "name": "perk_id_uranium_filled_bullets",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfecc",
+      "name": "perk_id_random_weapon",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfed0",
+      "name": "perk_id_fatal_lottery",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -3426,8 +4076,23 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004bfee0",
+      "name": "perk_id_my_favourite_weapon",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfee4",
+      "name": "perk_id_bandage",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004bfee8",
       "name": "perk_id_angry_reloader",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004bfef0",
+      "name": "perk_id_max",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -3458,6 +4123,11 @@
     {
       "address": "0x004c0908",
       "name": "quest_meta_cursor",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004c090c",
+      "name": "quest_spawn_stall_timer_ms",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -4011,8 +4681,23 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004c9ba0",
+      "name": "unlocked_weapons_back_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004c9bb8",
+      "name": "statistics_perks_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004c9bd0",
       "name": "?$S1@?1??ui_menu_item_update@@9@4EA",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004c9bd4",
+      "name": "statistics_high_scores_button",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -4041,13 +4726,38 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004c9f09",
+      "name": "unlocked_weapons_database_init_flags",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004c9f0c",
+      "name": "unlocked_weapons_scrollbar",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004c9f5c",
       "name": "highscore_card_divider_color_r",
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004c9f70",
+      "name": "statistics_back_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004c9fa8",
       "name": "?idle_color@?1??ui_menu_item_update@@9@4Uui_menu_color_t@@A",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004c9fb8",
+      "name": "statistics_mods_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce008",
+      "name": "highscore_card_text_buffer",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -4061,8 +4771,33 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004ce120",
+      "name": "statistics_credits_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004ce138",
       "name": "?update_button@?1??ui_update_notice_update@@9@4Uui_notice_button_t@@A",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce184",
+      "name": "statistics_menu_init_flags",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce19c",
+      "name": "statistics_weapons_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce1b8",
+      "name": "statistics_typo_button",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce420",
+      "name": "statistics_update_button",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -4086,6 +4821,21 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004ce448",
+      "name": "online_sync_status",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce44c",
+      "name": "update_notice_url",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce450",
+      "name": "update_notice_pending",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004ce452",
       "name": "ui_scrollbar_drag_active",
       "program": "1.9.8/crimsonland.exe"
@@ -4096,8 +4846,28 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004ce458",
+      "name": "unlocked_weapons_nav_focus_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004ce45c",
       "name": "unlocked_perks_nav_focus_index",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce460",
+      "name": "ui_stats_hover_weapon",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce464",
+      "name": "ui_stats_hover_time",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce468",
+      "name": "ui_stats_hover_hit_ratio",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -4126,13 +4896,48 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004d47f8",
+      "name": "play_game_menu_button_rush",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004d4828",
+      "name": "play_game_menu_button_tutorial",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004d4840",
       "name": "options_music_volume_slider",
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004d4850",
+      "name": "play_game_menu_button_quests",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004d4868",
+      "name": "play_game_menu_button_typo",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004d48ac",
+      "name": "play_game_menu_hardcore_checkbox",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004d48d0",
       "name": "options_mouse_sensitivity_slider",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004d4910",
+      "name": "play_game_menu_button_survival",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004d4978",
+      "name": "play_game_menu_init_flags",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -4156,8 +4961,23 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004d4bfc",
+      "name": "play_game_player_count_list",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004d4c68",
+      "name": "full_version_recheck_pending_slot_1",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004d4c69",
       "name": "full_version_recheck_pending",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004d4c6a",
+      "name": "full_version_recheck_pending_slot_3",
       "program": "1.9.8/crimsonland.exe"
     },
     {

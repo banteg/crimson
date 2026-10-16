@@ -24,3 +24,11 @@ from `effect_pool_vertices_global_init` at `0x0042de1c` and from
 Each implementation is the same natural `mov eax, ecx; ret` no-op, allowing
 VC6 link-time folding without inventing aliases. The configured pool
 initializer remains exact.
+
+## 1.9.8 object layout (2026-10-16)
+
+1.9.8 calls the shared no-op slot constructor out of line
+(`ui_template_slot_ctor_noop` at `0x0041c730`, linked from the object after
+the HUD code). With the empty `ui_template_slot_cpp_t::construct` body in this
+unit, C2 9044 deletes the six construct loops, so the definition is compiled
+only when `CL_BUILD != 10908` (the canonical native link still needs it).

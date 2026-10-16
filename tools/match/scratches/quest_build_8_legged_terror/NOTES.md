@@ -60,3 +60,9 @@ residual. The candidate improves from 203.60/213 weighted bytes (95.59%) and a
 14-instruction prefix to exact 213/213 bytes and a 68-instruction prefix.
 References remain 4/0/0. The exact source SHA-256 is
 `75be5146e1b57a9b2e74f2c8e098f966051480899f2278fe65c55180198619e3`.
+
+## 1.9.8 (2026-10-16)
+
+Code-generation guards: 1.9.8 fills the opening record through its pointer before advancing the cursor, and writes the last wave record's trigger first.
+
+Search: 42 placements of the cursor and count increments around a pointer-filled opening, pointer-before-position variants, sixteen per-record pointer combinations in the loop, and all 120 field orders of the last record against both openings. Only trigger-first is exact under 1.9.8 and only the original order under 8966.

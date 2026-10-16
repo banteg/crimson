@@ -13,7 +13,9 @@ int gameplay_run_state_init(void)
 
     bonus_energizer_timer = 0.0f;
     survival_spawn_stage = 0;
+#if CL_BUILD != 10908
     gameplay_run_reserved_zero = 0;
+#endif
     quest_fail_retry_count = 0;
     demo_mode_active = 0;
     main_menu_full_version_layout_latch = 0;
@@ -21,6 +23,10 @@ int gameplay_run_state_init(void)
     creature_active_count = 0;
     time_played_ms = 0;
     quest_transition_timer_ms = -1;
+#if CL_BUILD == 10908
+    // 1.9.8 clears the slot as a float after the transition timer.
+    gameplay_run_reserved_zero = 0;
+#endif
     quest_stage_major = 1;
     quest_stage_minor = 1;
     return 1;
