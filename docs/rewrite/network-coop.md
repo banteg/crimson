@@ -15,10 +15,16 @@ Crimsonland together in the same arena.
 
 ## 1. Executive summary & architectural decision
 
-Two-player online co-op is feasible directly on the `crimson-core` WASM game
-module (`crimson-core/PORT.md`) without rewriting gameplay or streaming world
-state. Both browsers run the same `game.wasm` binary at fixed 60 Hz simulation
-ticks (`portable_step_many`) and exchange per-player `PortableInput` tuples.
+Two-player online co-op is feasible on the `crimson-core` WASM game module
+(`crimson-core/PORT.md`) without rewriting gameplay or streaming world state.
+Both browsers run the same `game.wasm` binary at fixed 60 Hz simulation ticks
+(`portable_step_many`) and exchange per-player `PortableInput` tuples.
+
+Because [issue #632](https://github.com/banteg/crimson/issues/632) is a research
+and prototype track, cross-browser determinism, rollback frame budgets, terrain
+commit overhead, and WAN feel are treated as **explicit hypotheses gated by
+automated milestones (`M0a`, `M0b`, `M1`, `M2`)** before committing to ranked or
+4-player scope.
 
 ### Historical lesson (`status.md`)
 
@@ -26,33 +32,45 @@ An earlier lockstep, rollback, and relay stack was removed (`bc45c5b6a`)
 **because it never restored full state** ([status](status.md#intentional-differences)).
 In `crimson-core`, `crimson-core/host/keyframes.inc` (`game_run_spans` +
 `KeyframeHost` + `game_effect_overflow`) and `crimson-core/checks/game_seek.mjs` /
-`crimson-core/checks/game_practice.mjs` now prove full-state restore and terrain
-determinism for single-player runs. Therefore, **Milestone 0 (`checks/game_coop.mjs`)**
-gates all networking work on a strict invariant: **restoring a 2-player rollback
-slot and resimulating with corrected inputs must match a straight run bit-for-bit
-across all 36,343 snapshot fields and the terrain render-target digest, even
-when the two instances use different local presentation and audio settings.**
+`crimson-core/checks/game_practice.mjs` establish single-player seek and branch
+restore, but **existing `portable_snapshot()` (`crimson-core/schema.json`) does
+not cover all state that affects future 2-player ticks** (see Section 4.1).
+Therefore, **Milestones `M0a` and `M0b` (`checks/game_coop.mjs`)** gate all
+networking work on proving:
+
+1. **2-player deterministic stepping (`M0a`)**: All 2-player undefined behavior
+   (such as uninitialized `alternate_distance` in `creature_update_all.cpp`),
+   input/camera seams, and presentation-coupled RNG draws are fixed and
+   verified.
+
+2. **Full rollback-state & side-effect equivalence (`M0b`)**: Restoring a
+   2-player rollback slot and resimulating with corrected inputs in `game.wasm`
+   matches a straight `game.wasm` run bit-for-bit across the **extended
+   canonical rollback snapshot** (base `portable_snapshot` + `KeyframeHost` +
+   `telekinetic_bonus_hover_timer_ms` + normalized `game_effect_overflow` pool)
+   and the committed bake log / terrain digest, even when the two instances run
+   at different frame rates and presentation settings.
 
 ### Core architectural choices
 
-1. **Simulation model — Adaptive-Delay Lockstep (M1) $\to$ Bounded Rollback Hybrid (M2) over 60 Hz `portable_step_many`**:
+1. **Simulation model — Adaptive-Delay Lockstep (`M1`) $\to$ Bounded Rollback Hybrid (`M2`) over 60 Hz `portable_step_many`**:
+
+   - **Decoupled input production and simulation frontiers**: A 60 Hz input
+     clock samples local hardware input into immutable tick-indexed records at
+     `input_produced_tick = sim_tick + D`, independent of whether simulation
+     execution is temporarily stalled waiting on the network.
 
    - **Base input delay**: **2 ticks (33.3 ms)** at $\text{RTT} \le 60\text{ ms}$
-     (adaptive 1–8 ticks in M1 lockstep). Mouse aim (`aim_scheme == 0`) converts
-     the local screen cursor to world coordinates at input-sampling time and
-     records the world point into `PortableInput`, which absorbs 1–2 ticks of
-     delay cleanly while eliminating most rollbacks on stable links.
+     (adaptive 1–8 ticks in `M1` lockstep, changed only at negotiated epoch
+     boundaries). Mouse aim (`aim_scheme == 0`) converts the local screen cursor
+     to world coordinates at input-sampling time and records the world point into
+     `PortableInput`.
 
-   - **Rollback window (M2)**: Up to **8 ticks (133.3 ms)** (hard cap **12 ticks
-     / 200 ms**) using an uncompressed in-memory ring buffer (`RollbackSlot[16]`).
-     Beyond 12 ticks of unconfirmed remote input, simulation stalls gracefully
-     (lockstep wait) rather than diverging.
-
-   - **Why M1 Lockstep then M2 Rollback?** Adaptive-delay lockstep is the
-     simplest M1 baseline to validate transport, desync hashes, and latency
-     telemetry in two browsers, while M2 rollback layers onto the exact same
-     input log and confirmation machinery to keep input delay at 2 ticks under
-     70–150 ms RTT and Wi-Fi jitter.
+   - **Rollback window (`M2`)**: Up to **8 speculative ticks (133.3 ms)** (hard
+     cap **12 ticks / 200 ms**, enforced **before every individual tick step**)
+     using an uncompressed 16-slot ring buffer (`RollbackSlot[16]`). Beyond 12
+     ticks of unconfirmed remote input, simulation execution pauses (lockstep
+     wait) while the network/input pump continues.
 
    - **Why not an authoritative host streaming state?** A single tick touches up
      to 384 creatures, 96 projectiles, 64 secondary projectiles, 128 particles,
@@ -62,49 +80,47 @@ when the two instances use different local presentation and audio settings.**
 
 2. **State & terrain rollback boundary — Uncompressed RAM ring + "Bake on Confirm" terrain**:
 
-   - `keyframe_state()` in `crimson-core/host/keyframes.inc` already identifies
-     the simulation memory (`game_run_spans` = 70 spans totaling **229,233 bytes**,
-     `KeyframeHost` = **~1.9 KiB**, plus the active `game_effect_overflow` prefix).
-
-   - **Optimization over `watch.inc`**: Omit `zstd_pack` (~1 ms/tick) and
-     `string_arena` (~20 KiB, written only during `portable_init` and asserted
-     invariant across ticks via `string_used`) inside the 16-slot rollback ring
-     buffer. A raw `memcpy` snapshot/restore of ~231 KiB in WASM linear memory
-     takes **~0.02–0.04 ms** `[ESTIMATE]`.
+   - Each `RollbackSlot` holds `game_run_spans` (`70` spans = **229,233 B**),
+     `KeyframeHost` (**~1.9 KiB**), `sfx_cooldown_table` (**512 B**), and
+     preallocated capacity for `game_effect_overflow.entries` (up to `2,048 × 188 B`
+     = **385,024 B**, copying only the active `extent` prefix per tick). Across
+     16 slots, resident memory is **3.7 MiB base** (when `overflow_extent == 0`)
+     and **9.8 MiB worst-case** (preallocated once at session start, with zero
+     per-tick `zstd` compression and omitting `string_arena`, which is asserted
+     invariant after `portable_init`).
 
    - **Terrain render target (`terrain_render_target`, 1024×1024 RGBA8) — "Bake on Confirm"**:
-     Instead of copying a 4 MiB GPU texture every frame or replaying 30 seconds
-     of `PackedLog` bakes, **suppress `fx_queue_render` drawing during speculative
-     ticks** and log each tick's `fx_queue` and `fx_queue_rotated` entries into a
-     16-slot circular buffer (`CoopBakeSlot[16]`). Whenever `confirmed_tick`
-     advances, replay newly confirmed slots through `game_effects_render_decals()`
-     inside `live_enter_run()`. Each tick bakes into `terrain_render_target`
-     **exactly once, in confirmed order**, with zero extra GPU render targets and
-     zero 4 MiB texture blits.
+     During simulation ticks (`game_ticking == 1`), `fx_queue_render` consumes
+     and clears the live decal and corpse queues into an immutable per-tick
+     `CoopBakeSlot[tick % 16]` record without drawing to `terrain_render_target`.
+     Once rollback corrections for a frame finish and `confirmed_through`
+     advances, newly confirmed bake slots are rendered once in order into
+     `terrain_render_target` while preserving live simulation queues and Grim
+     state.
 
 3. **Signalling, transport & deployment — Cloudflare Worker + `CoopRoom` Durable Object + WebRTC DataChannels + Cloudflare TURN**:
 
-   - **One `CoopRoom` Durable Object** handles room creation, `?coop=<room>` join
-     handshakes, and WebRTC SDP/ICE signalling.
+   - **One `CoopRoom` Durable Object** handles room creation, host/guest
+     capability tokens, `?coop=<room>` join handshakes, and WebRTC SDP/ICE
+     signalling.
 
    - **Two WebRTC DataChannels on one `RTCPeerConnection`**:
+
      - `coop-ticks` (`ordered: false, maxRetransmits: 0`): 60 Hz unreliable
-       packets carrying a redundant 8-tick sliding window of local `PortableInput`
-       (~184 bytes/packet $\approx 11\text{ KB/s}$).
-     - `coop-control` (`ordered: true`, reliable): low-frequency control messages
-       (`MSG_START_RUN`, `MSG_PERK_DECISION`, `MSG_PAUSE`, `MSG_DESYNC`).
+       packets carrying up to 8 unacknowledged ticks of local `PortableInput`
+       plus ping/echo timing and confirmed state hashes.
 
-   - **NAT traversal**: The Worker issues short-lived TURN credentials via
-     **Cloudflare Calls TURN**, keeping true UDP transport even when direct P2P
-     fails, with `CoopRoom` WebSocket binary forwarding as a local-dev / TCP
-     fallback.
+     - `coop-control` (`ordered: true`, reliable): control barriers
+       (`MSG_START_RUN`, `MSG_INPUT_REPAIR`, `MSG_PERK_DECISION`, `MSG_PAUSE`,
+       `MSG_DESYNC`) and automatic gap repair whenever unacknowledged input age
+       exceeds the 8-tick unreliable window.
 
-4. **Deliberate patches to original 1.9.93 behavior**:
-
-   - Original 2003 local co-op had single-keyboard limits, player-0-only gates,
-     and a presentation-coupled music RNG draw. Sections 2.2–2.3 separate
-     **mandatory desync/crash fixes for M0/M1** from **deferred gameplay-symmetry
-     patches**.
+   - **NAT traversal**: The Worker issues short-lived **Cloudflare Calls TURN**
+     credentials (`turn:turn.cloudflare.com:3478?transport=udp` and
+     `turn:turn.cloudflare.com:443?transport=udp` preferred for true UDP without
+     TCP head-of-line blocking; `turns:turn.cloudflare.com:443?transport=tcp` and
+     `CoopRoom` WebSocket relay retained as reachability fallbacks with
+     explicitly qualified latency).
 
 ---
 
@@ -113,10 +129,12 @@ when the two instances use different local presentation and audio settings.**
 ### 2.1 Cross-instance determinism in `wasm32`
 
 Can two-player simulation reproduce bit-exact state across browser/native
-instances with synchronized per-player inputs? **Yes, once the presentation-coupled
-music latch (Section 2.2.2) and 2-player input/perk seams (Section 2.2.1) are patched.**
+instances with synchronized per-player inputs? **Hypothesis: Yes, once the
+undefined auto-target read (Section 2.2.1), presentation-coupled music latch
+(Section 2.2.3), between-tick world-render mutations (Section 2.2.5), and
+2-player input/perk seams are patched.**
 
-What `crimson-core` already guarantees across Chrome V8, Firefox SpiderMonkey,
+What `crimson-core` already provides across Chrome V8, Firefox SpiderMonkey,
 Safari JSC, Wasmtime, and native `wasm2c`:
 
 - **Identical 32-bit memory layout**: `game_data()` (`crimson-core/game.py`)
@@ -134,17 +152,42 @@ Safari JSC, Wasmtime, and native `wasm2c`:
   hoists multi-draw `crt_rand()` call arguments right-to-left.
 
 - **Presentation isolation**: `SessionGrim` (`crimson-core/host/game.inc`) routes
-  all input/time queries during `game_ticking = 1` to `HeadlessGrim`
+  input/time queries during `game_ticking = 1` to `HeadlessGrim`
   (`crimson-core/host/grim.inc`). `crt_rand_stream()` (`crimson-core/host/host.cpp`)
   routes between-tick menu/frame RNG draws to a separate `presentation` stream.
 
-- **2-player schema readiness**: `crimson-core/schema.json` already exports
-  `players` with `"count": 2` (`202` fields per player, `36,343` `u32` words
-  total in `portable_snapshot()`).
+### 2.2 Mandatory determinism, UB & crash fixes for 2-player sessions (`M0a`)
 
-### 2.2 Mandatory determinism & crash fixes for 2-player sessions (M0/M1)
+#### 1. Uninitialized `alternate_distance` in 2-player creature targeting (`creature_update_all.cpp`) — C++ UB & determinism bug
 
-#### 1. Perk command alive gate checks player 0 only (`crimson-core/host/host.cpp`, `crimson-core/host/session.inc`) — run-ending bug
+- **Problem**: In `decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp:112-127`,
+  `float alternate_distance;` is declared as an uninitialized stack variable:
+
+  - On non-70th ticks (`creature_update_tick % 70 != 0`), when
+    `config_player_count == 2` (`:198`), `alternate_distance` is assigned **only**
+    inside `if (player_state_table[1 - target_player_index].health > 0.0f)`
+    (`:199-208`).
+
+  - At `:218-223`, `if (alternate_distance < vec2_distance(...))` reads
+    `alternate_distance` unconditionally.
+
+  - **Concrete failure**: If Player 1 is dead (`health <= 0.0f`) and the first
+    active creature targets Player 0 on a non-70th tick, C++ evaluates an
+    uninitialized stack local (`alternate_distance`), or on later creatures
+    reuses stale stack residue from a previous creature iteration.
+
+- **Fix (mandatory in `M0a`, porting [original bug 19](original-bugs.md#19-co-op-auto-target-replacement-reuses-mismatched-player-distances))**:
+  Patch `creature_update_all.cpp` so 2-player target reevaluation and
+  `auto_target` replacement always initialize candidate distances from the
+  evaluated player's position and compare both the candidate creature and current
+  `auto_target` against the final targeted player's own position (matching
+  `src/crimson/creatures/runtime.py:446-470`). Also ensure
+  `config_blob.player_count = 2` is set **before** `gameplay_reset_state()` in
+  `portable_init` so `creature_pool[i].target_player = i % config_blob.player_count`
+  (`decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp:301-305`)
+  initializes round-robin targets at run start.
+
+#### 2. Perk command alive gate checks player 0 only (`crimson-core/host/host.cpp`, `crimson-core/host/session.inc`) — run-ending bug
 
 - **Problem**: `portable_step_many` (`crimson-core/host/host.cpp:601`) refuses
   perk commands when `player_state_table[0].health <= 0`, and
@@ -152,167 +195,180 @@ Safari JSC, Wasmtime, and native `wasm2c`:
   `player_state_table[0].health > 0`. Meanwhile, the recovered engine
   (`decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp:235-237`) and
   Python (`src/crimson/sim/sessions.py:181`) allow opening and picking perks as
-  long as **any** player is alive:
-
-  ```cpp
-  player_state_table[0].health > 0.0f
-      || (config_blob.player_count == 2 && player_state_table[1].health > 0.0f)
-  ```
-
-  If Player 0 dies in 2P co-op and surviving Player 1 opens or picks a perk,
-  `crimson-core/host/host.cpp:601` calls `refuse()`, setting `ready = false` and
-  aborting the session.
+  long as **any** player is alive. If Player 0 dies in 2P co-op and surviving
+  Player 1 opens or picks a perk, `crimson-core/host/host.cpp:601` calls
+  `refuse()`, setting `ready = false` and aborting the session.
 
 - **Fix**: Check `any_alive` across `0..config_blob.player_count - 1` in both
   `crimson-core/host/host.cpp:601` and `crimson-core/host/session.inc:346`.
 
-#### 2. First-hit music latch & presentation-coupled RNG desync (`music_play_exclusive.cpp`, `music_fade_out_all.cpp`) — desync hazard
+#### 3. First-hit music latch & playback-gated RNG draw (`music_play_exclusive.cpp`, `music_fade_out_all.cpp`) — desync hazard
 
-- **Problem**: When the first projectile hits a creature outside Rush
-  (`decomp/1.9/crimsonland/crimsonland/projectile_update.cpp`), it calls
-  `music_play_exclusive(music_track_game_playlist)` followed by
-  `music_fade_out_all(music_track_game_playlist)`:
+- **Problem**: Projectile hits outside Rush call
+  `music_play_exclusive(music_track_game_playlist)`
+  (`decomp/1.9/crimsonland/crimsonland/projectile_update.cpp:610-612, 848-850`):
 
-  1. In `decomp/1.9/crimsonland/audio/music_play_exclusive.cpp`, if
-     `music_playlist_randomized_latch == 0` **and** `music_playlist_entry_count != 0`,
-     it draws `crt_rand() % music_playlist_entry_count` and sets
+  1. `decomp/1.9/crimsonland/audio/music_play_exclusive.cpp:8-10` returns early
+     before touching RNG if `!music_ready || config_blob.music_disabled || config_blob.sound_disabled`.
+
+  2. At `:14-21`, if `sfx_id == music_track_game_playlist`, it returns early if
+     `music_playlist_randomized_latch || music_playlist_entry_count == 0`;
+     otherwise it draws `crt_rand() % music_playlist_entry_count` and sets
      `music_playlist_randomized_latch = 1`.
 
-  2. Next, `decomp/1.9/crimsonland/audio/music_fade_out_all.cpp` checks every
-     track `i`: if `music_fade_out_flags[i] == 0` (the track is currently playing),
-     it sets `music_fade_out_flags[i] = 1` **and clears
-     `music_playlist_randomized_latch = 0`** (`music_fade_out_all.cpp:25`).
+  3. At `:27-30`, `music_play_exclusive` loops over all 128 tracks: if any track
+     `i != sfx_id` satisfies `music_track_is_playing(i)` (`music_fade_out_flags[i] == 0`
+     and `music_track_volume[i] > 0`), it calls `music_fade_out_all(i)`.
 
-  3. Because `music_fade_out_flags` and `music_track_volume` match `^music_` in
-     `SESSION_KEEPS` (`crimson-core/game.py:322`), they are **outside
-     `game_run_spans`**. Worse, `WatchUnheard` (`crimson-core/host/watch.inc:365`)
-     saves and restores `music_fade_out_flags` and `music_track_volume` across a
-     resimulation pass.
+  4. `decomp/1.9/crimsonland/audio/music_fade_out_all.cpp:12` **unconditionally
+     clears `music_playlist_randomized_latch = 0`** after its audio-enabled gate!
 
-  4. **How this desyncs rollback**: If a speculative tick $T$ triggers the first
-     hit and rolls track $A$ (`music_fade_out_flags[A] = 0`), and a rollback
-     before $T$ causes the corrected first hit to roll track $B \ne A$,
-     `music_fade_out_flags[A]` is still `0` from the rolled-back timeline.
-     `music_fade_out_all(B)` sees track $A$ playing and **resets
-     `music_playlist_randomized_latch = 0`**, causing the *next* projectile hit
-     to draw `crt_rand()` a second time on the rolled-back peer while the peer
-     that did not roll back draws nothing.
-
-  5. Additionally, if one peer has `music_playlist_entry_count == 0`, it skips
-     the `crt_rand()` draw completely.
+  5. Because `music_fade_out_flags` and `music_track_volume` match `^music_` in
+     `SESSION_KEEPS` (`crimson-core/game.py:322`), they lie outside
+     `game_run_spans`. If a speculative tick starts track $A$, and a rollback
+     resimulates the first hit picking track $B \ne A$ while `music_fade_out_flags[A] == 0`
+     and `music_track_volume[A] > 0`, `music_play_exclusive(B)` calls
+     `music_fade_out_all(A)`, clearing `music_playlist_randomized_latch = 0` so
+     the *next* projectile hit draws `crt_rand()` a second time! Likewise, any
+     other call to `music_fade_out_all` or a peer with `music_disabled` /
+     `sound_disabled` / `music_playlist_entry_count == 0` diverges on the RNG
+     stream.
 
 - **Fix (deliberate patch to original behavior for session determinism)**:
-  Match Python (`src/crimson/sim/world_state.py:87-94`) by making the gameplay
-  RNG draw in `music_play_exclusive(music_track_game_playlist)` depend **only**
-  on simulation state (`music_playlist_randomized_latch`):
+  Give the session a strictly simulation-owned `bool game_tune_started` latch
+  (stored in `KeyframeHost` and reset only in `portable_init`, matching
+  `src/crimson/sim/world_state.py:87-94`):
 
-  - At `portable_init`, set `music_playlist_randomized_latch = 0` and ensure
-    `music_playlist_entry_count >= 1` during ticks.
+  - Inside `game_session && game_ticking`, intercept
+    `music_play_exclusive(music_track_game_playlist)`: if `!game_tune_started`,
+    always draw `int roll = crt_rand();` once, set `game_tune_started = true`,
+    and record `chosen_tune = music_playlist_entry_count > 0 ? music_playlist[roll % music_playlist_entry_count] : -1`
+    in `KeyframeHost` without calling `music_fade_out_all` or reading
+    `music_disabled` / `sound_disabled`.
 
-  - During `game_session && game_ticking`, when
-    `music_play_exclusive(music_track_game_playlist)` runs and
-    `!music_playlist_randomized_latch`, always draw `crt_rand()` once and set
-    `music_playlist_randomized_latch = 1`; **never allow `music_fade_out_all`
-    during a tick to clear `music_playlist_randomized_latch`**.
+  - Apply actual DirectSound track playback and fades only on confirmed ticks
+    outside the RNG path.
 
-  - Record the chosen tune ID in `KeyframeHost` and apply DirectSound music
-    changes on confirmed ticks (as `watch_tune()` does in
-    `crimson-core/host/watch.inc:420`).
+#### 4. Complete 2-player input, camera & replay seams (`host.cpp`, `grim.inc`, `game.inc`, `session.inc`, `replay.inc`)
 
-#### 3. Distinct per-player virtual input codes (`crimson-core/host/api.h`, `crimson-core/host/host.cpp`, `crimson-core/host/grim.inc`)
+- **Per-player virtual input codes & schemes**:
 
-- **Problem**: `current_player_index` is mutated not only in `player_update()`,
-  but also in `bonus_update.cpp:45-63`, `perks_update_effects.cpp:66`,
-  `survival_update.cpp:218`, `gameplay_render_world.cpp:92`, and
-  `ui_render_hud.cpp:232`.
+  - Keep `PortableInput in[2]` at `portable_input()` and add
+    `portable_set_player_count(uint32_t count)` (or encode `player_count` in the
+    co-op start handshake). Audit and update every `sizeof in` caller in
+    `crimson-core/host/`.
 
-- **Solution**:
+  - In `portable_init` (`crimson-core/host/host.cpp:436-451, 487-497`), set
+    `config_blob.player_count = player_count` **before** `gameplay_reset_state()`
+    and initialize virtual controls for both players:
 
-  - Expose `PortableInput in[2]` at `portable_input()` (so `portable_input()`
-    still points to `in[0]` for 1P backward compatibility, and `in[1]` sits at
-    `portable_input() + sizeof(PortableInput)`). Add
-    `void portable_set_player_count(uint32_t count)` (default `1`).
-
-  - Assign **distinct virtual key and axis codes** to `player_state_table[0].input`
-    and `player_state_table[1].input` in `portable_init`:
     - **Player 0**: `fire_key = 100`, `axis_move_x = 0`, `axis_move_y = 1`,
       `move_key_forward..aim_key_right = 0x100..0x105`.
+
     - **Player 1**: `fire_key = 200`, `axis_move_x = 2`, `axis_move_y = 3`,
       `move_key_forward..aim_key_right = 0x110..0x115`.
 
-  - For queries inside `player_update()` that do not read `player->input.*`
-    (`config_key_reload = 101`, `0x22` G-key, `portable_aim_x/y()`,
-    `portable_move_x/y()`, `portable_aim_turn_left/right()`, and
-    `input_primary_just_pressed()`), index `in[current_player_index & 1]`.
+  - In `portable_step_many` (`crimson-core/host/host.cpp:564-582`), validate
+    `in[p]` and install `config_blob.movement_schemes[p]` and
+    `config_blob.aim_schemes[p]` for all $p \in [0, \text{player\_count})$.
 
-  - **Supported schemes in co-op prototype**: Restrict co-op runs to
-    `aim_scheme` $\in \{0 \text{ (mouse world point)}, 4 \text{ (dual-action pad)}\}$
-    and `move_mode` $\in \{1 \text{ (relative)}, 2 \text{ (static)}, 3 \text{ (dual-action pad)}\}$,
-    where `crimson-core/seams/mouse-aim.patch` and `crimson-core/seams/pad-aim.patch`
-    write `portable_aim_x/y()` directly into `player->aim` without reading
-    `ui_mouse_x` or `player_aim_screen_x`.
+  - For queries called inside `player_update()` (`config_key_reload = 101`,
+    `0x22` G-key, `portable_aim_x/y()`, `portable_move_x/y()`,
+    `portable_aim_turn_left/right()`, and `input_primary_just_pressed()` in both
+    `crimson-core/host/host.cpp:161` and `crimson-core/host/game.inc:129-130`),
+    assert that the call occurs while `0 <= current_player_index && current_player_index < config_blob.player_count`
+    and read `in[current_player_index]`.
 
-#### 4. Local state inside `game_run_spans` & speculative side effects (`crimson-core/host/session.inc`)
+  - **Supported schemes in prototype**: Restrict co-op runs to `aim_scheme`
+    $\in \{0 \text{ (mouse world point)}, 4 \text{ (dual-action pad)}\}$ and
+    `move_mode` $\in \{1 \text{ (relative)}, 2 \text{ (static)}, 3 \text{ (dual-action pad)}\}$.
 
-- **Problem A (local fields inside `game_run_spans`)**:
-  `config_blob` (offset `507544`), `game_status_blob`, and
-  `ui_mouse_x`/`player_aim_screen_x` (offset `535868`) lie inside `game_run_spans`.
-  Between ticks, `live_step` (`crimson-core/host/session.inc:112-150`) installs
-  `live.outside` (the local player's display/audio/key settings and local mouse
-  cursor) into `config_blob` and `ui_mouse_x/y`, and swaps `live.run` in only
-  during `live_enter_run()`. Capturing, restoring, or hashing spans outside
-  `live_enter_run()` would include local display settings and cursor positions,
-  causing false desync hashes and clobbering the local cursor on restore.
+- **Tick-0 camera conversion (`crimson-core/host/session.inc:271-282`)**:
 
-- **Problem B (irreversible side effects on speculative ticks)**:
-  `live_carry()` (`crimson-core/host/session.inc:142-147`) adds status deltas to
-  `live.outside.status` every tick; `live_append()` appends every tick to
-  `live.replay`; `gameplay_update_and_render.cpp:201-204` starts the game-over
-  music; and `game_state_set` writes `live.requested`.
+  - `live_input()` currently computes tick-0 `camera_x/y` from
+    `player_state_table[0].position` alone. In 2-player mode, tick-0 camera
+    conversion must use the 2-player midpoint
+    `(player_state_table[0].position + player_state_table[1].position) * 0.5f`
+    clamped to `[-1024 + W, -1] × [-1024 + H, -1]`, matching
+    `decomp/1.9/crimsonland/game/camera_update.cpp:84-95`.
 
-- **Rule**:
+- **Isolation from 1P `replay.inc` and `watch.inc`**:
 
-  1. **Capture, restore, and hash `RollbackSlot` strictly inside the
-     `live_enter_run()` scope** (with `ui_mouse_x/y` zeroed during span hashing
-     and saved/restored around `rollback_restore()`).
+  - `crimson-core/host/replay.inc:162, 190-207` and `crimson-core/host/watch.inc:332-351`
+    hardcode `player_count = 1` and parse `live.replay` with a single 20-byte
+    `PortableInput` per tick. Calling `live_end()` -> `replay_payload()` on a
+    2-player buffer would misparse Player 1's `move_x` float bits as
+    `command_count`.
 
-  2. **Execute `live_carry()`, replay logging, and terminal/menu state
-     transitions (`live.requested`, `live_end`) on confirmed ticks only.**
+  - **Rule**: Co-op sessions never call 1P `replay_payload()`, `replay_save()`,
+    or `ranked_finish()`. Co-op records a dedicated versioned 2P `.rsi` input
+    stream (header + `in[0]`, `in[1]`, `count`, `commands` per confirmed tick)
+    for `checks/game_coop.mjs` and desync diagnostics.
 
-  3. **Run co-op on a detached save** (like `watch.inc` and `ranked_run`) so
-     unranked co-op sessions never overwrite local single-player `game.cfg` or
-     `crimson.cfg`.
+#### 5. Between-tick `gameplay_render_world()` side effects & local state in `game_run_spans`
 
-### 2.3 Optional & Phase-2 gameplay symmetry patches (`preserve_bugs = 0`)
+- **Problem A (`gameplay_render_world` mutates simulation state)**:
+  `decomp/1.9/crimsonland/game/gameplay_render_world.cpp` is not pure rendering:
 
-Because both browsers in online co-op run the **same `game.wasm` binary**,
-original 2-player gameplay asymmetries in the 2003 executable are deterministic
-on both peers and **do not cause desyncs**. We stage them as follows:
+  - `:34-52` revokes guarded weapons (`weapon_assign_player(0..1, 1)`).
 
-1. **Manual reload in 2-player (`decomp/1.9/crimsonland/gameplay/player_update_heading.cpp:1004` — M1 optional patch)**:
+  - `:92-108` mutates `current_player_index`.
 
-   - In 2003 local co-op, `config_key_reload` was a single shared binding in
-     `crimson.cfg`, so `player_update_heading.cpp:1004` gated manual reload on
-     `config_player_count == 1`. In network co-op each player has an independent
-     reload bit in `in[p].flags`; removing `&& config_player_count == 1` when
-     `!portable_preserve_bugs` lets both players manually reload.
+  - `decomp/1.9/crimsonland/ui_render/creature_render_type.cpp:226-230, 303-307`
+    deactivates dead creatures (`death_timer < -10.0f`) and clears
+    `creature_spawn_slot_table[creature->link_index].owner = 0` (unless gated out
+    when `ui_transition_alpha <= 0.0f` in `creature_render_all.cpp:20-26`).
 
-2. **Co-op bug fixes from [original bugs](original-bugs.md) (Phase 2 / Python gate parity)**:
+  - `decomp/1.9/crimsonland/crimsonland/bonus_render.cpp:95-123, 264-280`
+    increments `telekinetic_bonus_hover_timer_ms[0..1]` by `frame_dt_ms` whenever
+    `game_state_id == GAME_STATE_GAMEPLAY` and calls `bonus_apply()` when
+    `*hover_timer > 650`! It also advances `bonus_render_anim_phase += frame_dt * 1.3f`
+    at `:144`.
 
-   - Extend existing `crimson-core/patches/01-weapon-drop-suppression.patch` and
-     `crimson-core/patches/11-dead-player-perk-aim.patch` from P0-only to
-     `0..config_player_count - 1`.
+  **Crucial rules**:
 
-   - Port patches `06` (weapon drop proximity), `07` (Regeneration per alive
-     player), `08` (HUD heart pulse), `09` (damage alive guard), `12` (Jinxed
-     random victim), `13` (owner-aware Fire Bullets), `14` (Pyromaniac any
-     player), `16` (pistol fallback any player), `19` (auto-target distance),
-     and `23` (Plaguebearer all players).
+  1. **During tick simulation and rollback resimulation (`game_ticking == 1`)**:
+     `gameplay_render_world()` **must** run on every tick (with
+     `ui_transition_alpha = 1.0f` forced during `game_ticking == 1` so local
+     `ui_elements_timeline` never skips `creature_render_all()`). `headless-effects.patch`
+     already skips only `effects_render`'s vertex math when `grim_render_disabled == 1`.
 
-   - *(Note: `Alternate Weapon`, `Fatal Lottery`, `Random Weapon`, `Grim Deal`,
-     `Final Revenge`, and `Highlander` already have `PerkFlags.MULTIPLAYER_ALLOWED == 0`
-     in `src/crimson/perks/availability.py:82` / `perk_can_offer.c:18` and are
-     never offered when `player_count == 2`.)*
+  2. **Between ticks (`game_ticking == 0`)**: Guard all simulation writes inside
+     `gameplay_render_world` (`weapon_assign_player`, `creature->active = 0`,
+     `telekinetic_bonus_hover_timer_ms` updates, and `fx_queue_render`) with
+     `if (game_ticking)` so menu redraws and network-wait overlays are strictly
+     observational. During in-game co-op pause/wait overlays, re-show the saved
+     backbuffer (`host_frame_hold(HOST_FRAME_SHOW)`, as `practice.inc:206` does)
+     rather than re-invoking `gameplay_render_world()`.
+
+- **Problem B (local settings inside `game_run_spans`)**:
+  Even inside `live_enter_run()` (`crimson-core/host/session.inc:111-120`),
+  `live.run.config` copies local presentation choices (`direction_arrow_flags`,
+  `shadows_enabled`, `flame_glow_enabled`, `smoke_enabled`, `ui_info_texts`),
+  and `game_run_ready()` (`crimson-core/host/game.inc:76-89`) restores local
+  `music_volume` and `sfx_volume`. Furthermore, `bonus_render_anim_phase`
+  advances during menu frames.
+
+  - **Rule**: Raw `game_run_spans` bytes are suitable for **local rollback
+    restore on the same machine** (preserving `ui_mouse_x/y` and `live.outside`),
+    but **cross-peer desync hashes must never hash raw `game_run_spans`**. Cross-peer
+    hashes use the canonical field serializer defined in Section 4.1.
+
+### 2.3 Deliberately retained 2P behaviors vs. Phase-2 symmetry patches
+
+To keep the prototype scope tight, the following recovered 2P behaviors are
+explicitly classified:
+
+| Behavior in Recovered 1.9.93 Code | Prototype (`M0`–`M2`) Disposition |
+| --- | --- |
+| Uninitialized `alternate_distance` in `creature_update_all.cpp:126, 198-223` | **Fixed in `M0a`** (mandatory C++ UB / determinism fix). |
+| Player-0-only perk command gate (`host.cpp:601`, `session.inc:346`) | **Fixed in `M0a`** (`any_alive` across both players). |
+| Manual reload gated on `config_player_count == 1` (`player_update_heading.cpp:1004`) | **Patched in `M0a`** (remove `config_player_count == 1` gate when `!portable_preserve_bugs` so both players can manually reload). |
+| Shared XP (`player_state_table[0].experience`), level, and perk counts | **Retained by design** (core Crimsonland co-op mechanic). |
+| Single-player-only perks (`Grim Deal`, `Alternate Weapon`, `Fatal Lottery`, `Random Weapon`, `Final Revenge`, `Highlander`) blocked via `PerkFlags.MULTIPLAYER_ALLOWED` (`perk_can_offer.c:18`) | **Retained by design**. |
+| Same-tick dual bonus pickup when both players overlap an unpicked bonus (`bonus_update.cpp:44-64`) | **Retained in prototype** (deterministic on both peers; documented in `src/crimson/bonuses/pool.py:446`). |
+| 1P-only Shrinkifier / Blade Gun Easter-egg handouts (`survival_update.cpp:60-89`) | **Retained by design** (`config_player_count == 1` check is intentional). |
+| Remaining co-op symmetry bugs in [original bugs](original-bugs.md) (`01, 06, 07, 08, 09, 11, 12, 13, 14, 16, 23`) | **Deferred to Phase 2** (deterministic in `game.wasm`; needed only for Python 2P gate parity). |
 
 ---
 
@@ -324,216 +380,333 @@ on both peers and **do not cause desyncs**. We stage them as follows:
 | --- | --- | --- |
 | Tick frequency | **60 Hz** ($\Delta t = 16.6667\text{ ms}$) | `crimson-core/host/host.cpp:626` |
 | 2P input size per tick | **40 B** (`2 × sizeof(PortableInput)`) + **4 B** `count` + $8k\text{ B}$ commands | `crimson-core/host/api.h:53-54` |
-| Uncompressed simulation state (`keyframe_state` minus `string_arena`) | **231,685 B (~226.3 KiB)** base + $188 \times \text{overflow\_extent}\text{ B}$ | `70` `game_run_spans` (`229,233 B`) + `KeyframeHost` (`1,940 B`) + `sfx_cooldown_table` (`512 B`) |
-| Compressed keyframe size (`zstd` level 1) | **~55 KiB** | Measured ([replay viewer](replay-viewer.md#what-it-can-afford)) |
-| Snapshot capture/restore time (raw `memcpy`, no `zstd`) | **~0.02–0.04 ms** `[ESTIMATE]` | 231 KiB `memcpy` in WASM linear memory |
-| `game.wasm` step cost (9-min Survival avg, `grim_render_disabled = 1`) | **~0.028 ms / tick** (~36,000 ticks/s) | Measured ([replay viewer](replay-viewer.md#what-it-can-afford)) |
-| `core.wasm` step cost (35-min Survival avg, 210,268 ticks) | **~0.126 ms / tick** (26,497 ms total) | Measured (`crimson-core/results/survival-spawn-profile.json`) |
-| Late-game 2P Survival p99 step cost (20–35 min) | **Measured in M0 (`checks/game_coop.mjs`)** | 2P doubles `survival_spawn_cooldown` decrement (`frame_dt_ms * config_player_count`); worst-case frame is $R_{\max}$ resimulated ticks + up to 6 new ticks (`fminf(grim_frame_dt, 0.1f)`) |
+| Uncompressed base slot (`game_run_spans` + `KeyframeHost` + `sfx_cooldown_table`) | **231,685 B (~226.3 KiB)** | `70` spans (`229,233 B`) + `KeyframeHost` (`1,940 B`) + `sfx_cooldown_table` (`512 B`) |
+| Uncompressed worst-case slot (with max 2,048 `effect_overflow` entries) | **616,709 B (~602.3 KiB)** | Base `231,685 B` + `2,048 × 188 B` (`385,024 B`, `crimson-core/game/include/effect_overflow.h`) |
+| 16-slot ring resident memory | **3.7 MiB base / 9.8 MiB worst-case** (preallocated) | Includes 16 state slots + 16 bake slots |
+| Snapshot capture/restore time (raw `memcpy`, no `zstd`) | **~0.02–0.04 ms base / ~0.08 ms full overflow** `[ESTIMATE]` | Measured in `M0b` (`checks/game_coop.mjs`) |
+| `game.wasm` step cost (9-min 1P Survival avg, `grim_render_disabled = 1`) | **~0.028 ms / tick** (~36,000 ticks/s) | Measured ([replay viewer](replay-viewer.md#what-it-can-afford)) |
+| `core.wasm` step cost (35-min 1P Survival avg, 210,268 ticks) | **~0.126 ms / tick** (26,497 ms total) | Measured (`crimson-core/results/survival-spawn-profile.json`) |
+| Late-game 2P Survival p50/p99 step & rollback cost (20–35 min) | **Hypothesis: <0.6 ms/tick; gated by `M0b` benchmark** | 2P doubles `survival_spawn_cooldown` decrement (`survival_update.cpp:217`); `M0b` measures p50/p99 over 12-tick rollbacks with full effect overflow |
 
 ### 3.2 Architecture comparison
 
-| Criterion | Adaptive-Delay Lockstep (M1 Baseline) | Hybrid Delay + Rollback (M2 Target) | Authoritative Host (State Streaming) |
+| Criterion | Adaptive-Delay Lockstep (`M1` Prototype) | Hybrid Delay + Rollback (`M2` Target) | Authoritative Host (State Streaming) |
 | --- | --- | --- | --- |
-| **Bandwidth (per peer)** | ~6–11 KB/s | **~11 KB/s** (8-tick redundant input window) | 150–600 KB/s (creatures, projectiles, effects, decals) |
-| **Feel at 30 ms RTT (LAN / Metro)** | Good (2 ticks / 33 ms delay) | **Excellent** (1–2 ticks delay, 0–1 tick rollback on jitter) | Asymmetric (Host 0 ms, Guest 30+ ms) |
+| **Bandwidth (per peer)** | ~6–11 KB/s | **~11 KB/s** (8-tick sliding window + repair) | 150–600 KB/s (creatures, projectiles, effects, decals) |
+| **Feel at 30 ms RTT (LAN / Metro)** | Good (2 ticks / 33 ms delay) | **Excellent** (2 ticks delay, 0–1 tick rollback on jitter) | Asymmetric (Host 0 ms, Guest 30+ ms) |
 | **Feel at 80–120 ms RTT (Continental)** | Fair (4–5 ticks / 67–83 ms aim/fire lag) | **Very Good** (2 ticks / 33 ms local delay + 2–4 ticks rollback) | Guest sees delayed blood/corpses or rubber-banding |
 | **Feel at 150 ms RTT + ±30 ms Jitter** | Stalls/hitches on late packets | **Smooth** (absorbs up to 8–12 ticks / 133–200 ms without stalling) | High bandwidth stalls congestion window |
-| **Implementation complexity** | **Low** (ideal for M1 prototype & latency/desync baseline) | **Medium** (adds 16-slot ring restore + unheard resimulation on top of M1) | **High** (custom entity snapshots, interpolation, no verifier reuse) |
+| **Implementation complexity** | **Low** (validates transport, pacing, barriers & hashes in `M1`) | **Medium** (adds 16-slot ring restore + unheard resimulation on top of `M1`) | **High** (custom entity snapshots, interpolation, no verifier reuse) |
 
-### 3.3 Protocol mechanics (shared by M1 Lockstep & M2 Rollback)
+### 3.3 Decoupled frontier definitions & tick pacing
 
-- **Tick scheduling with input delay $D$**:
+A fixed 60 Hz simulation step does not by itself synchronize two independent
+browser `requestAnimationFrame` loops (e.g., a 60 Hz display paired with a
+144 Hz display, or a tab recovering from a 100 ms stall). We define **six
+monotonically non-decreasing tick frontiers**:
 
-  - At tick $T$, the local client samples its hardware input via `live_input()`
-    for its own player slot only and assigns it to **tick $T + D$** (seeding
-    ticks $0 \dots D-1$ at run start with neutral rest input).
+| Frontier | Definition |
+| --- | --- |
+| `input_produced_tick` | Highest tick $t$ for which this peer has sampled and frozen its own immutable `PortableInput` (`local_inputs[t]`). Seeded at run start for $t \in [0, D-1]$ with neutral rest input. |
+| `remote_contiguous_tick` | Highest tick $t$ for which all remote inputs $0 \dots t$ have been received. |
+| `peer_ack_tick` | Highest contiguous tick the remote peer has acknowledged receiving from us. |
+| `confirmed_through` | Highest **executed** simulation tick $t \le \min(\text{input\_produced\_tick}, \text{remote\_contiguous\_tick})$ whose entire input and control-barrier history is final. |
+| `next_sim_tick` | Next simulation tick to execute (`next_sim_tick == 0` at init; after executing tick $t$, `next_sim_tick = t + 1`). |
+| `Menu / Pause Barrier` | Optional tick $T_{\text{barrier}}$ beyond which `next_sim_tick` may not advance until the barrier decision is resolved. |
 
-  - In **M1 (Adaptive-Delay Lockstep)**:
-    $D = \text{clamp}(\lceil \text{RTT} / (2 \times 16.667) \rceil + 1, 1, 8)$.
-    Tick $T$ steps only when both `in[0][T]` and `in[1][T]` have arrived.
+#### Pacing & accumulator rules (`coop_frame`)
 
-  - In **M2 (Bounded Rollback)**: Fix $D = 2$ ticks (`33.3 ms`). If
-    `in[remote][T]` has not arrived when tick $T$ is due and
-    $T - T_{\text{confirmed}} \le R_{\max}$ ($R_{\max} = 8$, or $4$ in late
-    Survival past 15 minutes):
-    - Predict `in[remote][T]` from `in[remote][T_last_received]`, keeping
-      movement/aim/held flags and **clearing edge flags**
-      `FIRE_PRESSED_FLAG (1<<1)` and `RELOAD_PRESSED_FLAG (1<<2)`.
-    - Save `RollbackSlot[T % 16]` before stepping tick $T$.
-    - When a packet arrives with true `in[remote][t]` for $t \le T$: advance
-      `confirmed_tick`. If any $t$ differed from the predicted input used when
-      $t$ was stepped, restore `RollbackSlot[t_first_diff % 16]`, resimulate
-      $t_{\text{first\_diff}} \dots T$ with `grim_render_disabled = 1` and
-      `WatchUnheard`, and bake newly confirmed terrain slots.
-    - Cap total ticks stepped per host frame (resimulated + new) to
-      `MAX_TICKS_PER_FRAME = 14` so a late-game CPU spike cannot cause a spiral
-      of death.
+1. **Clock-drift micro-adjustment**:
+   From incoming packets, estimate remote lead
+   $\Delta T = (\text{remote\_head\_tick} - D) - \text{next\_sim\_tick} + \frac{\text{RTT}}{2 \times 16.667\text{ ms}}$.
+   Scale `grim_frame_dt` clamping (`fminf(grim_frame_dt, 0.1f)`) by
+   `clamp(1.0f + 0.01f * delta_T, 0.98f, 1.02f)` when accumulating `coop_banked_s`.
+
+2. **Immutable input production**:
+   While `input_produced_tick < next_sim_tick + D` **and**
+   `input_produced_tick - peer_ack_tick < MAX_UNACKED_INPUTS (120)`, sample local
+   hardware once via `live_input()` and write `local_inputs[++input_produced_tick]`.
+   **Once written, `local_inputs[t]` is immutable** and is never overwritten if
+   simulation stalls. During a lockstep stall (`next_sim_tick` blocked), the
+   network pump continues retransmitting unacknowledged `local_inputs` at 60 Hz
+   without advancing `input_produced_tick` past `next_sim_tick + D`.
+
+3. **Unconsumed accumulator preservation**:
+   Unlike `session.inc:449-450` (which subtracts `live.due / 60.0f` before ticks
+   run), `coop_banked_s` subtracts `1.0f / 60.0f` **only as each new tick
+   actually executes**, clamping `coop_banked_s` to at most `4.0f / 60.0f`
+   whenever `next_sim_tick` is blocked by a network stall or menu barrier so
+   resuming never triggers a burst of catch-up ticks.
+
+4. **Changing input delay $D$ (`M1` adaptive lockstep)**:
+   $D$ is never mutated mid-stream by one peer: if measured RTT + jitter stays
+   outside the current $D$ band for 3 seconds, Host sends
+   `MSG_SET_DELAY { effective_tick, new_delay }` on `coop-control`. If
+   `new_delay > old_delay`, both peers duplicate their last produced input across
+   the newly inserted delay slots at `effective_tick`; if `new_delay < old_delay`,
+   both peers pause new input production for `old_delay - new_delay` ticks until
+   `next_sim_tick` catches up.
 
 ---
 
 ## 4. Research question 3: Keyframe machinery & state boundaries for frequent rollback
 
-### 4.1 Fast rollback ring buffer (`RollbackSlot[16]`)
+### 4.1 Canonical rollback state vs. raw `RollbackSlot[16]`
 
 ```text
-+-----------------------------------------------------------------------+
-| RollbackRing (16 preallocated slots in WASM linear memory, ~3.7 MiB)  |
-|   slot[t % 16]:                                                       |
-|     - tick: int32                                                     |
-|     - spans[229233]: raw memcpy of game_run_spans[0..69]              |
-|     - host: KeyframeHost + sfx_cooldown_table[128]                    |
-|     - overflow: vector<effect_entry_t> (active extent prefix)         |
-+-----------------------------------------------------------------------+
++--------------------------------------------------------------------------+
+| RollbackRing (16 preallocated slots in WASM linear memory, <= 9.8 MiB)   |
+|   slot[t & 15]:                                                          |
+|     - run_epoch: uint32, tick: int32 (state S[t] BEFORE executing t)     |
+|     - spans[229233]: raw memcpy of game_run_spans[0..69]                 |
+|     - host: KeyframeHost + sfx_cooldown_table[128]                       |
+|     - overflow_entries[2048]: preallocated; copies [0..overflow_extent)  |
+|     - canonical_hash_after: uint32 (hash after executing tick t)         |
++--------------------------------------------------------------------------+
 ```
 
-1. **No `zstd_pack` and no `string_arena` copy**:
+#### Per-tick retention invariant
 
-   - `string_used` is asserted unchanged (`assert(string_used == init_string_used)`)
-     on every tick.
+- Slot `slot[n & 15]` stores state $S[n]$ **immediately before** executing tick
+  $n$.
 
-   - Preallocating 16 uncompressed slots uses `3.7 MiB` of WASM memory and avoids
-     ~1.2 ms of `zstd` pack/unpack per tick.
+- **Strict per-tick lead gate**: Before stepping any new speculative tick $n$ in
+  `M2`, assert:
+  $$n - (\text{confirmed\_through} + 1) < R_{\max} \le 12 < 16$$
+  Checking this **inside the per-tick loop** (rather than once per host frame)
+  guarantees that `slot[(confirmed_through + 1) & 15]` is never overwritten even
+  when a slow frame schedules multiple ticks. Every slot is tagged with
+  `(run_epoch, tick)` and asserted on restore.
 
-2. **Capture/restore inside `live_enter_run()`**:
+- When switching $R_{\max}$ from `8` to `4` in late-game Survival
+  (`run_elapsed_ms > 900000`), new speculative ticks simply wait until
+  `next_sim_tick - (confirmed_through + 1) < 4`; existing speculative history is
+  never discarded early.
 
-   - Capture and restore run while `live.run` is installed in `config_blob` and
-     `game_status_blob`, preserving local `ui_mouse_x/y` across restores.
+#### Canonical cross-peer snapshot & hash (`coop_canonical_hash`)
 
-### 4.2 Terrain boundary: "Bake on Confirm" (zero extra render targets)
+`portable_snapshot()` (`crimson-core/schema.json`) covers the base pools but
+omits `KeyframeHost`, `telekinetic_bonus_hover_timer_ms[0..1]`, and
+`game_effect_overflow`. Conversely, raw `game_run_spans` includes local
+`config_blob` display flags (`session.inc:115-119`), local audio volumes
+(`game.inc:88-89`), `ui_mouse_x/y`, and `bonus_render_anim_phase`.
 
-In `crimson-core/host/keyframes.inc:275-284`, `fx_queue_render()` is called once
-per tick inside `gameplay_render_world()`. In live 1P play, undrawn ticks
-(`grim_render_disabled == 1`) skip baking into `terrain_render_target` unless
-`terrain.baking == true`. For 2P network co-op:
+Therefore, **cross-peer desync hashes and `M0b` state comparisons** run over
+`coop_canonical_snapshot()`:
 
-1. **During `portable_step_many` (both speculative and confirmed ticks)**:
+1. `portable_snapshot()` (`36,343` `u32` words) with `PRESENTATION` indices
+   (`player_weapon_popup_timer`, weapon sound IDs) and `players[*].input.*`
+   zeroed (`crimson-core/checks/game_compare.mjs:10-17`).
 
-   - `fx_queue_render()` copies the tick's `fx_queue[0..fx_queue_count)`,
+2. Authoritative `KeyframeHost` fields: `rng`, `tick`, `perk_menu_open`,
+   `running_down`, `run_down_ms`, `game_tune_started`, `overflow_active`,
+   `overflow_extent`, and normalized `overflow_free` index
+   (`overflow_free ? int(overflow_free - game_effect_overflow.entries) : -1`).
+
+3. `telekinetic_bonus_hover_timer_ms[0..1]` (`2 × int32`).
+
+4. Active `game_effect_overflow.entries[0..overflow_extent)` with each entry's
+   `next_free` pointer normalized to its pool index (`int(p - game_effect_overflow.entries)`
+   or `-1`/`-2` for null/`effect_discard_entry`) and quad vertex scratch omitted.
+
+Right after tick $t$ executes, its 32-bit FNV-1a / CRC32C `canonical_hash_after`
+is stored in `slot[t & 15]`. If tick $t$ is later resimulated,
+`slot[t & 15].canonical_hash_after` is overwritten with the corrected hash. A
+peer only transmits `state_hash = slot[T_h & 15].canonical_hash_after` on the
+wire once $T_h \le \text{confirmed\_through}$.
+
+### 4.2 Terrain boundary: safe "Bake on Confirm" contract
+
+In `decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp` and
+`crimson-core/game/effect_overflow.cpp:70-91`, `fx_queue_render()` draws queued
+decals and corpses into `terrain_render_target` and then clears `fx_queue_count = 0`,
+`game_effect_overflow.decal_count = 0`, and `fx_queue_rotated = 0` (unless
+`terrain_texture_failed != 0`, which `portable_init` forces to `0` at
+`crimson-core/host/host.cpp:454`).
+
+To ensure delayed terrain baking never corrupts live simulation queues or misses
+resimulated bakes:
+
+1. **Capture only during simulation ticks (`game_ticking == 1`)**:
+   Inside `fx_queue_render()`, when `coop_active`:
+
+   - If `!game_ticking`, return immediately without touching queues or drawing.
+
+   - Record `fx_queue[0..fx_queue_count)`,
      `game_effect_overflow.decals[0..decal_count)`, and
-     `fx_rotated_*[0..fx_queue_rotated)` into `coop_bakes[tick % 16]` and clears
-     the counts (`fx_queue_count = 0; game_effect_overflow.decal_count = 0; fx_queue_rotated = 0;`),
-     **without** drawing to `terrain_render_target`.
+     `fx_rotated_*[0..fx_queue_rotated)` into `coop_bakes[tick & 15]` (tagged
+     with `run_epoch` and `tick`).
 
-2. **When `confirmed_tick` advances from $T_0$ to $T_1$**:
+   - Clear `fx_queue_count = 0`, `game_effect_overflow.decal_count = 0`, and
+     `fx_queue_rotated = 0` exactly as the executed bake path does, without
+     issuing GPU draw calls during speculative execution.
 
-   - Inside `live_enter_run()` with `grim_render_disabled = 0`, replay
-     `coop_bakes[t % 16]` for each newly confirmed tick $t \in (T_0, T_1]$
-     through `game_effects_render_decals()`.
+2. **Strict correction-before-commit ordering on each frame**:
 
-3. **Why this beats rolling terrain textures**:
+   - **Step 1**: Ingest all received packets and update `remote_contiguous_tick`.
 
-   - In M1 lockstep, every tick is confirmed before it steps, so
-     `coop_bakes[t % 16]` bakes immediately (0 frames of delay).
+   - **Step 2**: Find the earliest tick $t_{\text{diff}} \le \text{next\_sim\_tick} - 1$
+     where newly received remote input or control barriers differ from what was
+     used when $t_{\text{diff}}$ last executed.
 
-   - In M2 rollback, each tick's blood splatters and corpse stamps bake into
-     `terrain_render_target` **once and only once** when confirmed (1–4 ticks
-     after simulation), requiring **zero `glBlitFramebuffer` texture copies**,
-     **zero extra 4 MiB GPU textures**, and **zero `PackedLog` memory growth**.
+   - **Step 3**: If $t_{\text{diff}}$ exists, restore `RollbackSlot[t_diff & 15]`
+     and resimulate $t_{\text{diff}} \dots \text{next\_sim\_tick} - 1$, which
+     overwrites `coop_bakes[t & 15]` and `canonical_hash_after` for every
+     resimulated tick.
 
-### 4.3 Audio & effect overflow boundaries
+   - **Step 4**: Advance `confirmed_through` to
+     $\min(\text{next\_sim\_tick} - 1, \text{remote\_contiguous\_tick})$.
 
-- **Audio (`crimson-core/game/dsound.cpp`, `crimson-core/game/audio_timing.cpp`, `WatchUnheard`)**:
+   - **Step 5**: For each newly confirmed tick $t \in (\text{baked\_through}, \text{confirmed\_through}]$,
+     assert `coop_bakes[t & 15].tick == t`, save any live queue state, copy
+     `coop_bakes[t & 15]` into the renderer staging arrays inside
+     `live_enter_run()` with `grim_render_disabled = 0`, call
+     `game_effects_render_decals()`, and restore live state. Assert in debug/test
+     builds that committing bakes leaves `coop_canonical_hash()` unchanged.
 
-  - Save and restore `sfx_cooldown_table[128]` (`512 B`) in `RollbackSlot` so
-    resimulated ticks see the exact cooldown state as of the rollback target.
+### 4.3 Audio isolation during rollback
 
-  - Track `highest_heard_tick`: during a rollback resimulation, any tick
-    $t \le \text{highest\_heard\_tick}$ runs under `WatchUnheard unheard(true)`
-    (`sound_unheard = true`), suppressing duplicate `sfx_entry_start_playback`
-    calls while advancing `sfx_cooldown_table` via `game_audio_tick(audio_dt)`.
-    Any newly reached tick $t > \text{highest\_heard\_tick}$ runs with
-    `sound_unheard = false` so all new ticks in a multi-tick frame play their
-    sounds normally.
+- `WatchUnheard` (`crimson-core/host/watch.inc:365-382`) causes
+  `sfx_entry_start_playback` (`crimson-core/host/game.inc:139-143`) to return
+  buffer `0` without starting playback, but callers (`sfx_play.cpp:40-43`,
+  `sfx_play_panned.cpp:54-57`) still call `buffers[0]->SetPan(...)` and
+  `sfx_entry_set_volume(...)` on live buffer `0`!
 
-- **Effect overflow (`crimson-core/game/effect_overflow.cpp`)**:
+- **Fix**: When `sound_unheard == true`, route `sfx_play` and `sfx_play_panned`
+  to a no-op after updating `sfx_cooldown_table[sfx_id]` (which is saved/restored
+  in `RollbackSlot`).
 
-  - `KeyframeHost` already captures `overflow_free`, `overflow_active`, and
-    `overflow_extent`, plus `game_effect_overflow.entries[0..extent)`.
+- In `crimson-core/game/audio_timing.cpp:25-32`, `game_audio_cooldowns(float dt)`
+  currently skips aging cooldowns only when `game_state_id == GAME_STATE_GAMEPLAY`.
+  Extend that guard to skip aging `sfx_cooldown_table` whenever `coop_active` is
+  in `GAME_STATE_PERK_SELECTION` or a pause/network barrier so `sfx_cooldown_table`
+  is driven exclusively by `game_audio_tick(audio_dt)` inside simulation ticks.
+
+- **Accepted prototype compromise**: Using `highest_heard_tick` suppresses
+  duplicate sounds on resimulated ticks $t \le \text{highest\_heard\_tick}$, at
+  the cost that a newly discovered remote shot on a rolled-back tick is silent
+  for that first packet window, and an already-mixed speculative one-shot sound
+  cannot be un-played from the speaker. Terminal music (`shortie_monk` /
+  `crimsonquest`) is gated by the terminal rollback barrier (Section 5.2) so it
+  never triggers speculatively.
 
 ---
 
 ## 5. Research question 4: Shared perk menus, pause, death, and restart
 
-### 5.1 Shared perk menu flow & out-of-band decision lockstep
+### 5.1 Perk menu UI interception & out-of-band decision barrier
 
-In 2-player co-op, XP (`player_state_table[0].experience`), level,
-`perk_pending_count`, and `perk_choice_ids[0..6]` are shared.
+In the recovered game, the perk screen (`decomp/1.9/crimsonland/game/perk_selection_screen_update.cpp`)
+and UI timeline (`decomp/1.9/crimsonland/ui_render/ui_elements_update_and_render.cpp:41-55`)
+have local side effects that `crimson-core/game/changes/live-run.patch` only
+partially intercepts:
 
-- **Opening the perk menu (`PortableCommand{2, 0}`)**:
+- Clicking a perk choice (`perk_selection_screen_update.cpp:225`) calls
+  `game_live_pick(perk_selection_index)` and immediately sets
+  `ui_transition_direction = 0; game_state_pending = GAME_STATE_GAMEPLAY;`.
 
-  - To prevent invalid or duplicate commands from triggering `refuse()` in
-    `portable_step_many`, apply the command filter from `live_tick`
-    (`crimson-core/host/session.inc:371-376`) deterministically on both peers
-    before calling `portable_step_many`:
-    - At most **1 command per tick**.
-    - If both players request `CMD_PERK_OPEN` (`{2, 0}`) on the same tick,
-      deduplicate to a single `{2, 0}`.
-    - Drop any perk command if `!live_perk_command_valid()` (e.g.,
-      `perk_pending_count <= 0`, Rush mode, or both players dead).
+- Clicking **Cancel** (`:209-218`) sets `ui_transition_direction = 0; game_state_pending = GAME_STATE_GAMEPLAY;`
+  directly **without** calling any `session.inc` hook.
 
-  - If a late `CMD_PERK_OPEN` arrives from the remote peer for a tick
-    $T_{\text{open}}$ that the local peer already stepped past speculatively,
-    the local peer rolls back to $T_{\text{open}}$, steps $T_{\text{open}}$ with
-    `{2, 0}`, sees `live.requested == GAME_STATE_PERK_SELECTION`, **stops
-    simulating further ticks**, and enters `GAME_STATE_PERK_SELECTION` at tick
-    $T_{\text{open}}$.
+- `ui_elements_update_and_render.cpp:41-55` decrements `ui_elements_timeline`
+  when `ui_transition_direction == 0` and calls `game_state_set(game_state_pending)`
+  once `ui_elements_timeline < 0`.
 
-- **Picking or cancelling in `GAME_STATE_PERK_SELECTION` (out-of-band decision)**:
+- Outside ticks, `SessionGrim` (`crimson-core/host/game.inc:12-40`) reads real
+  local mouse/keyboard/pad input on both Host and Guest.
 
-  - Because input delay $D$ means both peers have already queued and sent regular
-    inputs for ticks $T_{\text{open}}+1 \dots T_{\text{open}}+D$ before the menu
-    opened at $T_{\text{open}}$, **a perk pick cannot ride inside the pre-sent
-    input window for $T_{\text{open}}+1$**.
+#### Required co-op perk screen rules
 
-  - Instead, while `GAME_STATE_PERK_SELECTION` is open at `menu_tick = T_open`:
-    1. Both peers halt tick progression at $T_{\text{open}}$ (while the network
-       pump continues running in `SDL_AppIterate` / `shell.html`).
-    2. **Prototype rule**: Only **Player 0 (Host)** clicks a perk choice (or
-       presses Cancel/Escape); Player 1 sees the open perk menu and closes it as
-       soon as Host's decision arrives.
-    3. When Host picks `choice` ($0..6$) or cancels (`choice = -1`), Host sends
-       `MSG_PERK_DECISION { menu_tick: T_open, choice }` over the reliable
-       `coop-control` channel.
-    4. Once both peers have `MSG_PERK_DECISION` for `T_open`, they attach:
-       - If `choice >= 0`: `commands[0] = {1, choice}`, `command_count = 1` on
-         tick $T_{\text{open}} + 1$.
-       - If `choice == -1` (Cancel): **`command_count = 0`** on tick
-         $T_{\text{open}} + 1$ *(never `{0, 0}`, which
-         `crimson-core/host/host.cpp:591` refuses as `"unknown command"`).*
-    5. Both peers transition back to `GAME_STATE_GAMEPLAY` (`live.banked = 0`,
-       `ui_transition_direction = 0`) and step tick $T_{\text{open}} + 1$.
+1. **Menu-open rollback barrier (`T_open`)**:
 
-### 5.2 Pause, death, and restart
+   - When a tick $T_{\text{open}}$ sets `perk_menu_open = true`
+     (`game_state_pending == GAME_STATE_PERK_SELECTION` in `portable_step_many`),
+     `next_sim_tick` stops advancing at $T_{\text{open}} + 1$ (**speculative
+     barrier**).
 
-- **Pause (`Escape` / `Start`)**:
+   - Neither peer transitions `game_state_id` to `GAME_STATE_PERK_SELECTION`
+     until `confirmed_through == T_open` (proving the menu-open tick was not
+     invalidated by a rollback).
 
-  - Pressing `Escape` sends `MSG_PAUSE { pause: true, at_tick: confirmed_tick + D + 2 }`
-    on the reliable `coop-control` channel.
+   - Once `confirmed_through == T_open`, both peers increment `menu_epoch`,
+     compute `offered_count` (`5`, `6`, or `7` via `PERK_ID_PERK_EXPERT` /
+     `PERK_ID_PERK_MASTER`, `crimson-core/host/host.cpp:611-613`) and
+     `offered_hash` (`perk_choice_ids[0..offered_count - 1]`), and call
+     `game_state_set_recovered(GAME_STATE_PERK_SELECTION)`.
 
-  - Both peers stop banking ticks upon reaching `at_tick` and display a pause
-    overlay (without entering Options/Controls submenus during co-op). Either
-    player pressing `Escape` / `Resume` sends `MSG_PAUSE { pause: false }` to
-    resume immediately.
+2. **Full UI interception in `perk_selection_screen_update.cpp`**:
 
-- **Single-player death vs. team wipe**:
+   - **On Guest**: Suppress choice activation and Cancel activation in
+     `perk_selection_screen_update.cpp` (mouse, keyboard Enter/Space/Escape, and
+     gamepad A/B) so the Guest cannot locally close the menu or queue a pick.
 
-  - Handled natively by `gameplay_update_and_render.cpp:189-193` and
-    `camera_update.cpp:60-78`: when one player dies, the camera follows the
-    survivor; when both players have `health <= 0 && death_timer < 0`, the run
-    ends after the 500 ms run-down and transitions to the end screen.
+   - **On Host**: Intercept both choice activation (`choice = 0..offered_count - 1`)
+     and Cancel / Escape (`choice = -1`) via `coop_propose_perk_decision(choice)`.
+     Do **not** set `ui_transition_direction = 0` or `game_state_pending = GAME_STATE_GAMEPLAY`
+     until the decision handshake completes.
 
-- **Restart / rematch**:
+3. **Two-way decision confirmation & resume**:
 
-  - On the end screen, the Host clicking **Play Again** generates a fresh `seed`,
-    sends `MSG_START_RUN { seed, config }` on `coop-control`, and both peers
-    start the new run.
+   - Host sends `MSG_PERK_DECISION { run_epoch, menu_epoch, menu_tick: T_open, offered_hash, choice }`
+     on `coop-control`.
+
+   - Guest validates `menu_epoch`, `menu_tick == T_open`, `offered_hash`, and
+     `choice == -1 || (0 <= choice && choice < offered_count)`, records the
+     command for tick $T_{\text{open}} + 1$ (`commands[0] = {1, choice}, count = 1`
+     if `choice >= 0`, else `count = 0`), and replies with
+     `MSG_PERK_ACK { run_epoch, menu_epoch }`.
+
+   - Once Host receives `MSG_PERK_ACK` (and on Guest upon sending `MSG_PERK_ACK`),
+     each peer calls `game_state_set_recovered(GAME_STATE_GAMEPLAY)` (which sets
+     `ui_elements_timeline = 0` and `ui_transition_direction = 1` per
+     `decomp/1.9/crimsonland/ui_elements/game_state_set.cpp:328-329`), resets
+     `coop_banked_s = 0`, rebases `input_produced_tick = T_open` (discarding any
+     stale pre-menu inputs for $T_{\text{open}} + 1 \dots T_{\text{open}} + D$
+     and seeding fresh delay slots), and steps tick $T_{\text{open}} + 1$.
+
+### 5.2 Run-down barrier, pause barrier, and restart
+
+- **Run-down & terminal screen barrier**:
+
+  - In `gameplay_update_and_render.cpp:189-205`, team wipe sets `run_active = 0`,
+    `game_state_pending = GAME_STATE_GAME_OVER` (or `GAME_STATE_QUEST_FAILED`),
+    and calls `music_play_exclusive(music_track_shortie_monk_id)`. Then
+    `portable_step_many` counts `run_down_ms` down from `500` to `< 0` and
+    refuses the next tick (`crimson-core/host/host.cpp:557, 650-653`).
+
+  - **Co-op rule**: Suppress `shortie_monk` / `crimsonquest` playback inside
+    speculative ticks. When `next_sim_tick` reaches `run_down_ms < 0`, stop
+    speculating and wait until `confirmed_through` reaches the terminal tick
+    before playing the end-screen music and calling `game_state_set_recovered(game_state_pending)`.
+
+- **Sequenced pause barrier**:
+
+  - Disable local immediate Escape handling in `live_poll`
+    (`crimson-core/host/session.inc:247-251`) and `game_live_pause` (`:489-494`)
+    during co-op.
+
+  - Pressing `Escape` sends `MSG_PAUSE_REQ { run_epoch, pause_seq, paused: true, requested_at: next_sim_tick + D }`
+    to the Host (or from Host to Guest with authoritative `pause_tick = max(host_next_sim_tick, req.requested_at)`).
+
+  - If either peer has already speculated past `pause_tick`, it rolls back to
+    `pause_tick` when `MSG_PAUSE_STATE { run_epoch, pause_seq, paused: true, pause_tick }`
+    arrives. At `pause_tick`, both peers freeze simulation advancement and draw a
+    lightweight pause banner over `host_frame_hold(HOST_FRAME_SHOW)` without
+    leaving `GAME_STATE_GAMEPLAY`. Resuming increments `pause_seq` and unfreezes
+    `pause_tick`.
+
+- **Restart / rematch (`run_epoch` increment)**:
+
+  - Clicking **Play Again** on the end screen increments `run_epoch` (so any
+    in-flight packets from the previous `run_epoch` are ignored), distributes the
+    new `seed` and `PortableConfig` in `MSG_START_RUN`, and waits for
+    `MSG_START_ACK` before stepping tick `0`.
 
 ---
 
 ## 6. Research question 5: Invitation links, lobby, signalling & transport
 
-### 6.1 End-to-end invite flow
+### 6.1 End-to-end invite flow & Durable Object security
 
 ```mermaid
 sequenceDiagram
@@ -541,177 +714,252 @@ sequenceDiagram
     participant Worker as crimson.land Worker + CoopRoom DO
     actor Guest as Player 2 (Friend Browser)
 
-    Host->>Worker: Click "Co-op" -> POST /api/coop/rooms
-    Worker-->>Host: {room_id, url: "https://crimson.land/play/?coop=<id>", turn_credentials}
-    Host->>Host: Copy link + open WSS /api/coop/rooms/<id>/ws
-    Host->>Guest: Sends link https://crimson.land/play/?coop=<id>
-    Guest->>Worker: Opens link -> GET /play/?coop=<id> & WSS /api/coop/rooms/<id>/ws
-    Worker-->>Host: peer_joined {assets_ready}
-    Host->>Guest: WebRTC Offer + ICE (STUN + Cloudflare TURN)
-    Guest->>Host: WebRTC Answer + ICE (STUN + Cloudflare TURN)
-    Host<<->>Guest: DataChannels open: coop-ticks (unreliable) + coop-control (reliable)
-    Host->>Guest: MSG_START_RUN {seed, PortableConfig, player_count=2}
+    Host->>Worker: POST /api/coop/rooms (Origin check + rate limit)
+    Worker-->>Host: {room_id, host_secret, invite_url, ice_servers}
+    Host->>Worker: WSS /api/coop/rooms/<id>/ws?role=host&token=<host_secret>
+    Host->>Guest: Shares https://crimson.land/play/?coop=<id>
+    Guest->>Worker: WSS /api/coop/rooms/<id>/ws?role=guest
+    Worker-->>Host: peer_joined {guest_connected: true}
+    Host->>Guest: WebRTC Offer + ICE (buffered until remoteDescription set)
+    Guest->>Host: WebRTC Answer + ICE
+    Host<<->>Guest: DataChannels open: coop-ticks + coop-control
+    Host<<->>Guest: MSG_HELLO {protocol_ver, build_id, role}
+    Host->>Guest: MSG_START_RUN {run_epoch, seed, PortableConfig, delay_ticks}
+    Guest->>Host: MSG_START_ACK {run_epoch}
     Note over Host,Guest: Both browsers start 2-player gameplay at tick 0
 ```
 
-1. **Create room**: Host clicks **Co-op** on `/play/`, calling
-   `POST /api/coop/rooms` on the Cloudflare Worker and receiving
-   `{ room_id, url: "https://crimson.land/play/?coop=<room_id>", turn_credentials }`.
+#### `CoopRoom` Durable Object & Worker requirements (`service/`)
 
-2. **Join via link**: Friend opens `https://crimson.land/play/?coop=<room_id>`,
-   loads cached IndexedDB assets (or fetches PAQs), and connects to
-   `wss://crimson.land/api/coop/rooms/<room_id>/ws`.
+- **Bindings & migrations (`service/wrangler.jsonc`)**: Add `CoopRoom` Durable
+  Object binding (`COOP_ROOMS`) and migration class, plus environment variables
+  for Cloudflare Calls TURN key ID and secret token.
 
-3. **WebRTC + Cloudflare TURN connection**:
-   - The two browsers exchange SDP Offer/Answer and ICE candidates through the
-     `CoopRoom` Durable Object WebSocket, configured with
-     `stun:stun.cloudflare.com:3478` + short-lived **Cloudflare Calls TURN**
-     credentials (`turns:turn.cloudflare.com:443`).
+- **Capability separation & seat enforcement**:
 
-   - Using Cloudflare TURN when direct P2P fails preserves **unreliable UDP/SCTP
-     `RTCDataChannel` semantics** (`coop-ticks`, `ordered: false, maxRetransmits: 0`)
-     without TCP head-of-line blocking.
+  - `POST /api/coop/rooms` returns a secret `host_token` (kept in Host memory /
+    `sessionStorage`, never in the shared URL) and a public `room_id`.
 
-   - For local/CI testing without TURN, the `CoopRoom` WebSocket also supports
-     binary frame forwarding as a dev fallback after a 5-second ICE timeout.
+  - Only the socket authenticated with `host_token` is assigned `role = 0`
+    (Host); the first guest socket without `host_token` is assigned `role = 1`
+    (Guest); a third connection receives HTTP `409 Room full`.
 
-4. **Run start**: Once `coop-ticks` and `coop-control` DataChannels open and
-   both peers report `assets_ready`, Host sends `MSG_START_RUN` (260-byte
-   `PortableConfig` + `uint32 player_count = 2` + optional 6,184-byte
-   `PortableQuest`) on `coop-control`, and both peers enter `GAME_STATE_GAMEPLAY`.
+  - Enforce `Origin` header validation, message size caps ($\le 16\text{ KiB}$),
+    rate limits, and a 60-second idle room expiry alarm.
 
-### 6.2 Wire protocol
+- **Cloudflare Calls TURN credentials & transport truthfulness**:
 
-#### Channel 1: `coop-ticks` (`ordered: false, maxRetransmits: 0`, 60 Hz, 184 bytes)
+  - The Worker requests short-lived TURN credentials (TTL $\ge 3600\text{ s}$,
+    refreshed via `coop-control` / DO WebSocket + WebRTC `restartIce()` before
+    expiry) for **both** Host and Guest.
+
+  - **Transport qualification**:
+    `turn:turn.cloudflare.com:3478?transport=udp` and
+    `turn:turn.cloudflare.com:443?transport=udp` preserve true UDP transport
+    without TCP head-of-line blocking.
+    `turns:turn.cloudflare.com:443?transport=tcp` and the `CoopRoom` WebSocket
+    relay run over TCP/TLS and therefore **do** experience TCP head-of-line
+    blocking under packet loss; they are fallback reachability paths, and the
+    client logs the selected `RTCIceCandidatePair` (`host` / `srflx` /
+    `relay-udp` / `relay-tcp` / `ws-relay`) in its latency telemetry.
+
+  - Any fallback from WebRTC to `ws-relay` is coordinated via an explicit
+    `MSG_SWITCH_TRANSPORT { transport_epoch }` message through the Durable Object
+    so both peers always read/write the same active transport.
+
+### 6.2 Wire protocol & gap-repair guarantee
+
+#### Preventing >8-tick burst-loss deadlocks
+
+An unreliable packet carrying only the newest 8 ticks (`inputs[head_tick - 7 .. head_tick]`)
+will permanently deadlock `remote_contiguous_tick` if a burst of packet loss or a
+temporary stall drops 9 consecutive packets while later packets (`head_tick > lost_tick + 8`)
+keep arriving.
+
+**Mandatory recovery rule**:
+
+1. Each peer retains its produced `local_inputs[t]` in a 256-tick circular buffer
+   (4 seconds of history, **never** overwritten until `peer_ack_tick >= t`).
+
+2. Whenever the sender sees `input_produced_tick - peer_ack_tick > 8`, or
+   receives a packet whose `ack_tick` has not advanced for 3 frames while
+   `ack_tick < input_produced_tick`, the sender immediately transmits
+   `MSG_INPUT_REPAIR { run_epoch, start_tick: peer_ack_tick + 1, count, inputs[] }`
+   over the reliable `coop-control` channel.
+
+3. If `remote_contiguous_tick` fails to advance for **5 seconds** despite packet
+   liveness (**progress timeout**), or no packets arrive for **15 seconds**
+   (**liveness timeout**), the session aborts cleanly.
+
+#### Channel 1: `coop-ticks` (`ordered: false, maxRetransmits: 0`, little-endian, 192 bytes at $W = 8$)
 
 | Offset | Type | Field | Description |
 | --- | --- | --- | --- |
-| `0` | `uint8` | `magic` | `0xC2` |
-| `1` | `uint8` | `window_count` | Number of ticks in sliding window ($1..8$, typically $8$) |
-| `2` | `uint16` | `client_send_ms` | Low 16 bits of sender `performance.now()` for RTT estimation |
-| `4` | `uint32` | `head_tick` | Highest tick index in this packet ($T + D$) |
-| `8` | `uint32` | `ack_tick` | Highest contiguous tick received from remote peer |
-| `12` | `uint32` | `hash_tick` | Confirmed tick $T_h$ (multiple of 30) for `state_hash`, or `0` |
-| `16` | `uint32` | `state_hash` | CRC32C / FNV-1a of canonical `portable_snapshot()` at `hash_tick` |
-| `20` | `20B × W` | `inputs[W]` | Up to 8 `PortableInput` structs (`[head_tick - W + 1 .. head_tick]`) |
-| `20+20W` | `uint8` | `open_req_mask` | Bit $i$ set if player requested `CMD_PERK_OPEN` (`{2, 0}`) on tick `head_tick - W + 1 + i` |
+| `0` | `uint8` | `magic_ver` | `0xC3` (Crimson Co-op v3) |
+| `1` | `uint8` | `window_count` | Number of contiguous ticks in `inputs` ($1..8$) |
+| `2` | `uint8` | `open_req_mask` | Bit $i$ set if sender requested `CMD_PERK_OPEN` (`{2, 0}`) on tick `head_tick - W + 1 + i` (immutable per tick) |
+| `3` | `uint8` | `flags` | Bit `0`: `has_hash` (`hash_tick` valid); Bit `1`: `is_focused` |
+| `4` | `uint32` | `run_epoch` | Monotonic run counter (`1..N`); packets with `run_epoch != current` are dropped |
+| `8` | `uint32` | `ping_seq` | Monotonic sender packet sequence number |
+| `12` | `uint32` | `echo_ping_seq` | Highest `ping_seq` received from remote peer (`0` if none) |
+| `16` | `uint16` | `echo_hold_ms` | Milliseconds elapsed between receiving `echo_ping_seq` and sending this packet |
+| `18` | `uint16` | `reserved` | `0` (4-byte alignment) |
+| `20` | `uint32` | `head_tick` | Highest tick index in `inputs` |
+| `24` | `uint32` | `ack_tick` | `remote_contiguous_tick` (`0xFFFFFFFF` sentinel when no tick $\ge 0$ received yet) |
+| `28` | `uint32` | `hash_tick` | Confirmed tick $T_h \le \text{confirmed\_through}$ for `state_hash` (valid iff `flags & 1`) |
+| `32` | `uint32` | `state_hash` | `slot[hash_tick & 15].canonical_hash_after` |
+| `36` | `20B × W` | `inputs[W]` | $W$ `PortableInput` structs (`[head_tick - W + 1 .. head_tick]`) |
 
-#### Channel 2: `coop-control` (`ordered: true`, reliable JSON or tagged binary)
+*RTT calculation*: Upon receiving a packet echoing `echo_ping_seq == s`,
+$\text{RTT} = \max(0, t_{\text{recv}} - t_{\text{sent}}[s] - \text{echo\_hold\_ms})$.
+This requires no shared clock origin and never suffers 16-bit wraparound.
 
-- `MSG_START_RUN`: `{ type: "start", config_b64, quest_b64?, delay_ticks }`
-- `MSG_PERK_DECISION`: `{ type: "perk_pick", menu_tick, choice }` (`choice`: `0..6` or `-1` for Cancel)
-- `MSG_PAUSE`: `{ type: "pause", paused: boolean, at_tick: number }`
-- `MSG_DESYNC`: `{ type: "desync", tick: number, local_hash: number, remote_hash: number }`
+*Remote input prediction rule*: When predicting missing remote input for tick
+$t > \text{remote\_contiguous\_tick}$, always copy from the highest received
+tick $t_{\text{src}} \le t$ (specifically `remote_contiguous_tick`), **never**
+from a future tick $> t$.
 
----
+#### Channel 2: `coop-control` (`ordered: true`, reliable)
 
-## 7. Research question 6: Disconnects, focus loss & desync detection
-
-1. **Window blur (`SDL_EVENT_WINDOW_FOCUS_LOST`)**:
-
-   - In `crimson-core/game/frame.cpp:125-137`, `game_activate(0)` currently sets
-     `grim_timing_frozen = true`, which stops `game_frame()` completely.
-
-   - **Co-op rule**: While `coop_active` is true, `game_activate(0)` must **not**
-     set `grim_timing_frozen = true`. `crimson-core/client/main.cpp:839-844`
-     still clears `in->keys` and `in->mouse_buttons` on focus loss, so an
-     unfocused browser keeps ticking and sending neutral inputs (`move = 0, fire = 0`)
-     at 60 Hz without freezing the partner's game.
-
-   - Additionally, the network pump (`coop_pump()`) runs inside `SDL_AppIterate`
-     **outside** `game_live_frame()`, so packets are processed in
-     `GAME_STATE_PERK_SELECTION`, pause, and end screens as well as
-     `GAME_STATE_GAMEPLAY`.
-
-2. **Background tab (`document.hidden`) & disconnects**:
-
-   - If a peer's tab is backgrounded (`requestAnimationFrame` throttled) or their
-     connection drops, the active peer automatically stops advancing once
-     `tick - confirmed_tick` reaches the 12-tick cap and shows a banner:
-     *"Waiting for partner… (Ns)"*.
-
-   - For the **M1/M2 prototype**, if no packets arrive for **15 seconds**, the
-     session ends cleanly (`live_end("incomplete")`) with a notice
-     *"Partner disconnected"*. (Mid-run state snapshot resync and solo takeover
-     are deferred to Phase 2.)
-
-3. **Canonical desync detection**:
-
-   - Every 30 confirmed ticks (0.5 s), inside the `live_enter_run()` scope right
-     after `portable_step_many` on tick $T_h$, each peer computes a 32-bit FNV-1a
-     hash over `portable_snapshot()` (skipping presentation-only indices in
-     `crimson-core/checks/game_compare.mjs` `PRESENTATION` and
-     `players[*].input.*`).
-
-   - If `local_hash != remote_hash` for the same `hash_tick`, both peers halt
-     immediately, dump their `portable_snapshot()` and raw 2P `.rsi` input log,
-     and report the exact first differing field name from
-     `crimson-core/schema.json`.
+- `MSG_HELLO`: `{ type: "hello", protocol_ver: 3, build_id: string, role: 0 | 1 }`
+- `MSG_START_RUN`: `{ type: "start", run_epoch: number, player_count: 2, delay_ticks: number, config_b64: string, quest_b64?: string }`
+- `MSG_START_ACK`: `{ type: "start_ack", run_epoch: number }`
+- `MSG_INPUT_REPAIR`: `{ type: "repair", run_epoch: number, start_tick: number, open_req_bits: number, inputs_b64: string }`
+- `MSG_PERK_DECISION`: `{ type: "perk_pick", run_epoch: number, menu_epoch: number, menu_tick: number, offered_hash: number, choice: number }`
+- `MSG_PERK_ACK`: `{ type: "perk_ack", run_epoch: number, menu_epoch: number }`
+- `MSG_PAUSE_REQ` / `MSG_PAUSE_STATE`: `{ type: "pause", run_epoch: number, pause_seq: number, paused: boolean, pause_tick: number }`
+- `MSG_DESYNC`: `{ type: "desync", run_epoch: number, tick: number, local_hash: number, remote_hash: number, snapshot_b64?: string }` (exchanges compressed `coop_canonical_snapshot()` at `tick` so both peers log the exact first differing `schema.json` / host / overflow field).
 
 ---
 
-## 8. Phased deliverable plan
+## 7. Research question 6: Focus loss, suspension & desync diagnostics
 
-### Milestone 0 (M0): Two-instance deterministic co-op & rollback gate (`checks/game_coop.mjs`)
+1. **Window blur (`SDL_EVENT_WINDOW_FOCUS_LOST`) & gamepad gating**:
 
-Build the 2-player simulation seam and verify full-state rollback in Node before
-adding WebRTC:
+   - In `crimson-core/game/frame.cpp:125-137`, `game_activate(0)` must **not** set
+     `grim_timing_frozen = true` while `coop_active` is true.
 
-1. **Files**: `crimson-core/host/api.h`, `crimson-core/host/host.cpp`,
-   `crimson-core/host/grim.inc`, `crimson-core/host/session.inc`,
-   `crimson-core/host/keyframes.inc`, `checks/game_coop.mjs`.
+   - In `crimson-core/client/main.cpp:836-845, 948`, focus loss clears
+     `in->keys` and `in->mouse_buttons`, but `pad(input())` (`:273-304`)
+     currently re-polls physical SDL gamepad axes and triggers every frame
+     without checking `SDL_WINDOW_INPUT_FOCUS`.
+
+   - **Co-op rule**: Track `bool window_focused`. While `!window_focused`,
+     `pad(input())` is skipped (leaving pad axes/buttons zeroed) **and**
+     `coop_sample_local_input()` emits an explicit neutral `PortableInput`
+     (`move_x = 0, move_y = 0, aim = prev_aim, flags = scheme_bits_only`),
+     clearing `live.fire_pressed`, `live.reload_pressed`, and
+     `live.open_requested`.
+
+2. **Background tab (`document.hidden`) vs. unfocused visible window**:
+
+   - An unfocused but visible window continues running `requestAnimationFrame` at
+     60 Hz and sending neutral inputs.
+
+   - A hidden background tab (`document.hidden === true`) has
+     `requestAnimationFrame` throttled by the browser; once `next_sim_tick - confirmed_through`
+     hits $R_{\max}$, the partner automatically enters the lockstep wait banner
+     until the tab returns or the 15-second liveness timeout ends the session.
+
+---
+
+## 8. Phased deliverable plan & acceptance matrix
+
+### Milestone `M0a`: 2-player deterministic stepping & seam fixes
+
+1. **Files**: `decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp` (via
+   `crimson-core/patches/`), `crimson-core/host/api.h`, `crimson-core/host/host.cpp`,
+   `crimson-core/host/grim.inc`, `crimson-core/host/game.inc`,
+   `crimson-core/host/session.inc`.
 
 2. **Changes**:
-   - Add `portable_set_player_count(2)` and `PortableInput in[2]` with distinct
-     P1 virtual codes (`0x110..0x115`, fire `200`, axes `2/3`).
+   - Fix uninitialized `alternate_distance` UB in `creature_update_all.cpp:126, 198-223`.
+   - Fix player-0-only perk command alive gate (`any_alive`), simulation-owned
+     `game_tune_started` latch, distinct P1 virtual codes (`0x110..0x115`, fire
+     `200`, axes `2/3`), 2P tick-0 midpoint camera conversion, and 2P manual
+     reload.
 
-   - Fix `crimson-core/host/host.cpp:601` / `crimson-core/host/session.inc:346`
-     perk alive gate (`any_alive`) and `music_play_exclusive` RNG latch
-     determinism.
+   - Guard between-tick `gameplay_render_world()` simulation writes with
+     `if (game_ticking)`.
 
-   - Implement `RollbackSlot[16]` (uncompressed spans + `KeyframeHost` +
-     `sfx_cooldown_table`) and "Bake on Confirm" terrain (`coop_bakes[16]`).
+3. **Gate**: Native `core` and `game.wasm` agree bit-for-bit on straight 2-player
+   Survival, Rush, and Quest runs (when effect overflow is inactive).
 
-3. **Verification gate**:
-   - Boots **two** `game.wasm` instances (`bootGame` from
-     `crimson-core/checks/game_host.mjs`) with **different local presentation
-     settings** (Instance A: smoke/glow/shadows ON, audio ON, 60 fps; Instance B:
-     smoke/glow/shadows OFF, audio muted, uneven 20–120 fps frame dt).
+### Milestone `M0b`: Rollback ring, side-effect isolation & `checks/game_coop.mjs` gate
 
-   - Feeds synthetic 2P inputs (Survival, Rush, Quest 1.1, including P0 death +
-     P1 perk pick, and a late-game 20-minute Survival wave) over a simulated pipe
-     with 80 ms RTT, $\pm 30\text{ ms}$ jitter, and 2% packet loss.
+1. **Files**: `crimson-core/host/keyframes.inc`, `host/coop.inc`,
+   `checks/game_coop.mjs`.
 
-   - **Acceptance**: At every confirmed tick and at run end, both instances'
-     `portable_snapshot()` (all 36,343 fields minus `PRESENTATION`) and terrain
-     SHA-256 digests (`crimson-core/checks/game_seek.mjs` hook) must match each
-     other **and** match a single straight non-rolled-back `core.wasm` run. Logs
-     p50/p99 tick and rollback times.
+2. **Changes**:
+   - Implement 16-slot `RollbackRing`, `coop_canonical_snapshot()`, per-tick lead
+     gate, "Bake on Confirm" (`coop_bakes[16]`), unheard audio buffer-0 protection,
+     and menu/terminal rollback barriers.
 
-### Milestone 1 (M1): Minimal two-browser prototype with adaptive-delay lockstep
+3. **Verification gate (`node crimson-core/checks/game_coop.mjs`)**:
+   - Compares two rollback-enabled `game.wasm` instances (running with asymmetric
+     local presentation settings, audio mute/volume, and 60 Hz vs 144 Hz frame
+     stepping over a simulated 80 ms RTT / $\pm 30\text{ ms}$ jitter / 2% loss
+     pipe) against a **single straight `game.wasm` oracle**.
 
-Deliver the playable *"send a link and play together"* browser prototype with
-measured latency and desync telemetry:
+   - **Fault-injection check**: Explicitly verifies that corrupting a field in
+     `portable_snapshot`, `KeyframeHost`, `telekinetic_bonus_hover_timer_ms`, or
+     `game_effect_overflow` trips `coop_canonical_hash()`.
 
-1. **Files**: `service/src/coop.ts` (`CoopRoom` DO + TURN credentials),
-   `service/src/index.ts`, `service/wrangler.jsonc`,
-   `crimson-core/client/main.cpp`, `crimson-core/client/web/shell.html`,
-   `host/coop.inc`.
+### Milestone `M1`: Two-browser adaptive-delay lockstep prototype
 
-2. **Behavior**:
-   - `?coop=<room_id>` invite link, WebRTC `coop-ticks` + `coop-control`
-     DataChannels (plus WS fallback), adaptive input delay $D \in [1, 8]$ ticks,
-     Host-picks perk menu sync, mutual pause, focus-loss keep-alive, and
-     every-30-tick `portable_snapshot()` hash verification.
+1. **Files**: `service/src/coop.ts`, `service/src/index.ts`,
+   `service/wrangler.jsonc`, `crimson-core/client/main.cpp`,
+   `crimson-core/client/web/shell.html`, `host/coop.inc`.
 
-   - Test with two separate browser profiles or machines across localhost, LAN,
-     and WAN.
+2. **Deliverable**: Playable `?coop=<room_id>` two-browser session using
+   `coop-ticks` + `coop-control` over WebRTC + Cloudflare Calls TURN (and WS
+   fallback), with reliable `MSG_INPUT_REPAIR`, host-authoritative perk menu
+   interception, sequenced pause barrier, and measured RTT / candidate-type /
+   desync telemetry.
 
-### Milestone 2 (M2): Enable in-memory rollback in the browser prototype
+### Milestone `M2`: Bounded rollback in the browser prototype
 
-1. Switch `host/coop.inc` from pure lockstep wait to fixed $D = 2$ ticks + up to
-   8-tick speculative execution using the M0-proven `RollbackSlot[16]`,
-   `WatchUnheard` resimulation, and "Bake on Confirm" terrain.
+1. Enable fixed $D = 2$ + bounded rollback ($R_{\max} = 8$, or `4` past 15 min
+   Survival) on top of the `M1` transport and `M0b` rollback ring.
 
-2. Compare frame-time jitter, input responsiveness, and rollback depth
-   histograms against M1 lockstep for the feasibility report.
+2. Record frame-time distributions, rollback depth histograms, and late-game CPU
+   costs across direct P2P, TURN UDP, TURN TCP, and WS relay for the final
+   #632 feasibility report.
+
+### Mandatory acceptance matrix (`checks/game_coop.mjs` & `M1`/`M2`)
+
+- **P0 dead / P1 alive (and vice versa)**: First active creature targets the
+  survivor on non-70th ticks (`alternate_distance` initialized); survivor levels
+  up, opens the perk menu, and applies a shared perk (`Bandage`, `Death Clock`).
+
+- **Simultaneous bonus & Telekinetic**: Both players overlapping one bonus;
+  each player hovering a bonus with `Telekinetic` (`telekinetic_bonus_hover_timer_ms[0..1]`).
+
+- **Boundary collisions**: Perk menu open/pick/cancel on the same tick as player
+  death, level-up, or quest completion; `MSG_PERK_DECISION` arriving on
+  `coop-control` before the delayed `open_req_mask` on `coop-ticks`.
+
+- **Pause races**: `MSG_PAUSE_STATE` arriving when the receiver has already
+  speculated 8 ticks past `pause_tick`; simultaneous pause/resume requests.
+
+- **Burst loss > 8 ticks**: Drop 12 consecutive `coop-ticks` packets while later
+  packets arrive; verify `MSG_INPUT_REPAIR` recovers `remote_contiguous_tick`
+  without deadlock.
+
+- **Frame-rate & stall torture**: 60 Hz peer paired with 144 Hz peer; 300 ms
+  frame hitch scheduling 6 due ticks when speculative lead is already 11; window
+  reduction from $R_{\max} = 8$ to `4`.
+
+- **Maximum effect overflow & world-render cleanup**: Freeze shatter + Bloody
+  Mess filling all 511 base effects and overflowing into `game_effect_overflow`;
+  corpse slot reclamation (`death_timer < -10.0f`) and spawner owner clearing
+  across rollback; guarded weapon revocation (`gameplay_render_world.cpp:34-52`).
+
+- **Audio & presentation divergence**: Peer A with music/SFX enabled and full
+  detail vs. Peer B with `music_disabled = 1`, `sound_disabled = 1`,
+  `music_playlist_entry_count = 0`, and low detail; active music fade across a
+  rolled-back first hit.
+
+- **Rematch & transport**: Rematch (`run_epoch + 1`) while stale packets from
+  `run_epoch` are in flight; forced runs over direct P2P, TURN UDP, TURN TLS/TCP,
+  and coordinated `ws-relay` switch.
