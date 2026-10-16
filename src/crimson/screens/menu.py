@@ -26,7 +26,6 @@ from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.geom import Vec2
 from grim.music import play_music, stop_music
-from grim.raylib_api import rl
 
 from ..game.types import GameState
 from .assets import require_runtime_resources
@@ -78,7 +77,7 @@ class MenuView(MenuScreen):
             menu_entry_update(entry, item_size=item_size, mouse=mouse, dt_ms=dt_ms, focus=focus, live=live)
         if not live:
             return
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         for entry in self._menu_entries:
             if menu_entry_activated(entry, timeline_ms=self.state.ui.timeline_ms, focus=focus, click=click):
                 self._activate_menu_entry(entry)

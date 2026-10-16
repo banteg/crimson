@@ -390,8 +390,8 @@ class ReplayViewer:
     def _pointer(self, dt: float) -> None:
         """The cursor and the scrub bar: a drag seeks as it goes, and a click on the world pauses or plays on."""
         mouse = Vec2.from_xy(canvas.mouse_position())
-        down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        self._clicked = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        down = canvas.mouse_down()
+        self._clicked = canvas.mouse_pressed()
         if mouse != self._last_mouse or down:
             self._idle = 0.0
         else:

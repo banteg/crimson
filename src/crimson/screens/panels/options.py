@@ -79,12 +79,12 @@ class OptionsMenuView(PanelMenuView):
             label_pos.offset(dy=135.0),
             focus=focus,
             mouse=mouse,
-            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+            click=canvas.mouse_pressed(),
         ):
             config.gameplay.show_info_texts = self._info_checkbox.checked
             self._dirty = True
 
-        down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        down = canvas.mouse_down()
         sfx_value = self._slider_sfx.value
         ui_segmented_slider_update(focus, self._slider_sfx, slider_pos.offset(dy=47.0), mouse=mouse, down=down)
         if self._slider_sfx.value != sfx_value:
@@ -111,7 +111,7 @@ class OptionsMenuView(PanelMenuView):
         # `options_menu_update`: controls button is aligned with the panel content base.
         controls_pos = base_pos.offset(dy=155.0)
         dt_ms = min(float(dt), 0.1) * 1000.0
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         if button_update(
             resources,
             self._controls_button,

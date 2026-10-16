@@ -585,15 +585,27 @@ def pad_nav_pressed(code: PadCode) -> bool:
     )
 
 
-def pad_nav_stick() -> tuple[float, float]:
-    """The left stick of whichever connected pad pushes it furthest, per axis (menu navigation)."""
+def pad_nav_down(code: PadCode) -> bool:
+    """A standard button held on any connected pad (menu navigation)."""
+
+    button = _PAD_BUTTON_CODES[int(code)]
+    return any(
+        rl.is_gamepad_available(gamepad) and rl.is_gamepad_button_down(gamepad, button)
+        for gamepad in range(GAMEPAD_SLOT_COUNT)
+    )
+
+
+def pad_nav_stick(
+    x_code: PadCode = PadCode.LEFT_STICK_X, y_code: PadCode = PadCode.LEFT_STICK_Y,
+) -> tuple[float, float]:
+    """A stick (the left by default) of whichever connected pad pushes it furthest, per axis (menu navigation)."""
 
     x = y = 0.0
     for gamepad in range(GAMEPAD_SLOT_COUNT):
         if not rl.is_gamepad_available(gamepad):
             continue
-        pad_x = float(rl.get_gamepad_axis_movement(gamepad, _PAD_AXIS_CODES[PadCode.LEFT_STICK_X]))
-        pad_y = float(rl.get_gamepad_axis_movement(gamepad, _PAD_AXIS_CODES[PadCode.LEFT_STICK_Y]))
+        pad_x = float(rl.get_gamepad_axis_movement(gamepad, _PAD_AXIS_CODES[x_code]))
+        pad_y = float(rl.get_gamepad_axis_movement(gamepad, _PAD_AXIS_CODES[y_code]))
         if abs(pad_x) > abs(x):
             x = pad_x
         if abs(pad_y) > abs(y):

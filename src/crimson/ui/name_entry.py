@@ -5,6 +5,7 @@ from pathlib import Path
 
 import msgspec
 
+from grim import canvas
 from grim.assets import RuntimeResources
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
@@ -75,7 +76,7 @@ class HighScoreNameEntry(msgspec.Struct):
             if not gameplay_controls_held(config):
                 self.waiting_for_release = False
             return None
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         self.text, self.caret = update_name_entry_text(
             self.text, self.caret, max_len=NAME_MAX_EDIT, rng=rng, play_sfx=play_sfx,
         )

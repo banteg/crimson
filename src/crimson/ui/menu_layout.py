@@ -115,14 +115,15 @@ def menu_entry_update(
     slides in, and its hover ramps up 6 per ms and down 2 per ms; a focused item's hover is pinned to the focus timer.
     The update runs on while the timeline runs out (`live` off), when the screen's widgets stop registering for focus.
     """
-    entry.hovered = menu_item_bounds(entry.pos, item_size, entry.scale, entry.rise).contains(mouse)
+    bounds = menu_item_bounds(entry.pos, item_size, entry.scale, entry.rise)
+    entry.hovered = bounds.contains(mouse)
     if entry.hovered:
         entry.hover_amount += dt_ms * 6
     else:
         entry.hover_amount -= dt_ms * 2
     entry.hover_amount = max(0, min(1000, entry.hover_amount))
     if live:
-        entry.focused = focus.update(entry)
+        entry.focused = focus.update(entry, Vec2(bounds.x, bounds.y + bounds.h * 0.5))
     if entry.focused and focus.timer_ms > 0:
         entry.hover_amount = focus.timer_ms
 

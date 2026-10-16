@@ -161,7 +161,7 @@ class TutorialMode(BaseGameplayMode):
             )
 
         mouse = self._ui_mouse_pos()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         self._update_prompt_buttons(dt_ms=dt_ui_ms, mouse=mouse, click=click)
 
     def draw(self) -> None:

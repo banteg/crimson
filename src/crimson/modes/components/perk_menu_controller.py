@@ -135,7 +135,7 @@ class PerkMenuController:
             self._selected_index = 0
         focus = self.focus
 
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
 
         master_owned = PerkId.PERK_MASTER in ctx.perks
         expert_owned = PerkId.PERK_EXPERT in ctx.perks
@@ -158,7 +158,7 @@ class PerkMenuController:
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(ctx.resources, item.label, pos=item_pos)
-            if ui_menu_item_update(item, focus=focus, hit=rect, mouse=ctx.mouse, click=click) and picked is None:
+            if ui_menu_item_update(item, focus=focus, pos=item_pos, hit=rect, mouse=ctx.mouse, click=click) and picked is None:
                 picked = idx
             if item.hovered or item.focused:
                 self._selected_index = idx

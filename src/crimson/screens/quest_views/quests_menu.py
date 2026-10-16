@@ -127,7 +127,7 @@ class QuestsMenuView(MenuScreen):
 
         # Stage icons: hover is tracked, but stage selection requires a click.
         hovered_stage = self._hovered_stage(layout)
-        if hovered_stage is not None and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+        if hovered_stage is not None and canvas.mouse_pressed():
             self._stage = hovered_stage
             return
 
@@ -135,10 +135,12 @@ class QuestsMenuView(MenuScreen):
         self._update_hardcore_checkbox(layout)
 
         mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         picked_row: int | None = None
         for row, item in enumerate(self._row_items):
-            if ui_menu_item_update(item, focus=focus, hit=self._row_rect(layout, row), mouse=mouse, click=click):
+            if ui_menu_item_update(
+                item, focus=focus, pos=self._row_pos(layout, row), hit=self._row_rect(layout, row), mouse=mouse, click=click,
+            ):
                 picked_row = row
 
         back_pos = Vec2(layout.list_pos.x, self._rows_y0(layout)) + Vec2(
@@ -226,7 +228,7 @@ class QuestsMenuView(MenuScreen):
             layout.list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET),
             focus=self.state.focus,
             mouse=Vec2.from_xy(canvas.mouse_position()),
-            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+            click=canvas.mouse_pressed(),
         ):
             config.gameplay.hardcore = checkbox.checked
             self._dirty = True
@@ -258,13 +260,16 @@ class QuestsMenuView(MenuScreen):
             y0 += QUEST_HARDCORE_LIST_Y_SHIFT
         return y0
 
+    def _row_pos(self, layout: _QuestMenuLayout, row: int) -> Vec2:
+        """Where the row's quest number draws."""
+        return Vec2(layout.list_pos.x, self._rows_y0(layout) + float(row) * QUEST_LIST_ROW_STEP)
+
     def _row_rect(self, layout: _QuestMenuLayout, row: int) -> Rect:
-        list_x = layout.list_pos.x
-        y = self._rows_y0(layout) + float(row) * QUEST_LIST_ROW_STEP
-        left = list_x - QUEST_LIST_HOVER_LEFT_PAD
-        top = y - QUEST_LIST_HOVER_TOP_PAD
-        right = list_x + QUEST_LIST_HOVER_RIGHT_PAD
-        bottom = y + QUEST_LIST_HOVER_BOTTOM_PAD
+        pos = self._row_pos(layout, row)
+        left = pos.x - QUEST_LIST_HOVER_LEFT_PAD
+        top = pos.y - QUEST_LIST_HOVER_TOP_PAD
+        right = pos.x + QUEST_LIST_HOVER_RIGHT_PAD
+        bottom = pos.y + QUEST_LIST_HOVER_BOTTOM_PAD
         return Rect.from_top_left(Vec2(left, top), right - left, bottom - top)
 
     def _hovered_row(self, layout: _QuestMenuLayout) -> int | None:

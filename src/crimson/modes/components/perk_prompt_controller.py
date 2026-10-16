@@ -103,7 +103,7 @@ class PerkPromptState:
     ) -> bool:
         """`gameplay_update_and_render`: the pick-perk key, Space, keypad + or a click on the sign opens the menu."""
         mouse_was_down = self.mouse_down
-        self.mouse_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        self.mouse_down = canvas.mouse_down()
         if paused or mouse_was_down or pending_count <= 0 or not alive or menu_active:
             return False
         if (

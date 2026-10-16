@@ -256,7 +256,7 @@ class HighScoresView(MenuScreen):
         # right panel's checkbox and lists. A press while a list is open belongs to the lists only.
         dropdown_was_open = any(widget.open for widget in self._lists())
         mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) and not dropdown_was_open
+        click = canvas.mouse_pressed() and not dropdown_was_open
         self._update_quest_arrows(left_panel_top_left=left_panel_top_left, resources=resources, click=click)
         self._update_score_scroll(left_panel_top_left, mouse=mouse, click=click)
 
@@ -331,7 +331,7 @@ class HighScoresView(MenuScreen):
             list_pos,
             mouse=Vec2.from_xy(mouse),
             click=click,
-            down=rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT),
+            down=canvas.mouse_down(),
             wheel=rl.get_mouse_wheel_move(),
         )
         if rl.is_key_pressed(rl.KeyboardKey.KEY_HOME):
@@ -424,7 +424,7 @@ class HighScoresView(MenuScreen):
         small_width_shift_x = hs_right_options_x_shift(float(self.state.config.display.width))
         shifted_right_top_left = right_top_left + Vec2(small_width_shift_x, 0.0)
         mouse = Vec2.from_xy(canvas.mouse_position())
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         # `input_primary_just_pressed() || grim_was_key_pressed(Enter)`.
         pressed = click or focus.enter
 

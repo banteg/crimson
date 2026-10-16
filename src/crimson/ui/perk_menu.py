@@ -157,10 +157,11 @@ class UiMenuItem(msgspec.Struct):
 
 
 def ui_menu_item_update(
-    item: UiMenuItem, *, focus: UiFocus, hit: Rect, mouse: rl.Vector2 | Vec2, click: bool,
+    item: UiMenuItem, *, focus: UiFocus, pos: Vec2, hit: Rect, mouse: rl.Vector2 | Vec2, click: bool,
 ) -> bool:
-    """`ui_menu_item_update`'s input half over the row's hit rect: a click, or Enter while focused."""
-    focused = focus.update(item)
+    """`ui_menu_item_update`'s input half for the row drawn at `pos`, over its hit rect: a click, or Enter while
+    focused."""
+    focused = focus.update(item, pos)
     item.focused = focused
     item.hovered = hit.contains(mouse)
     if item.hovered:

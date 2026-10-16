@@ -347,9 +347,10 @@ class CreditsView(MenuScreen):
             self._click_line(index)
             return
 
-    def _update_text_focus(self) -> None:
+    def _update_text_focus(self, panel_top_left: Vec2) -> None:
         focus = self.state.focus
-        self._text_focus.focused = focus.update(self._text_focus)
+        reading_y = self._line_y(self._reading_row(), panel_top_left=panel_top_left)
+        self._text_focus.focused = focus.update(self._text_focus, Vec2(panel_top_left.x + _TEXT_ANCHOR_X, reading_y))
         if not (self._text_focus.focused and focus.enter):
             return
         index = self._scroll_line_start_index + self._reading_row()
@@ -386,7 +387,7 @@ class CreditsView(MenuScreen):
         panel_top_left = self._panel_rect().top_left
         resources = require_runtime_resources(self.state)
         mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
 
         self._update_line_clicks(
             panel_top_left=panel_top_left,
@@ -423,7 +424,7 @@ class CreditsView(MenuScreen):
             return
 
         # Native's line puzzle is mouse-only; the port's text focus stop comes after the buttons.
-        self._update_text_focus()
+        self._update_text_focus(panel_top_left)
 
     def draw(self) -> None:
         self._assert_open()

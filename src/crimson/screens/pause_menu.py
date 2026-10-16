@@ -22,7 +22,6 @@ from crimson.ui.menu_layout import (
 from grim import canvas
 from grim.assets import TextureId
 from grim.geom import Vec2
-from grim.raylib_api import rl
 
 from ..game.types import GameState
 from .assets import require_runtime_resources
@@ -76,7 +75,7 @@ class PauseMenuView(MenuScreen):
             # ESC behaves like selecting Back.
             self._begin_close_transition(Route.BACK)
             return
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         for entry in self._menu_entries:
             if menu_entry_activated(entry, timeline_ms=self.state.ui.timeline_ms, focus=focus, click=click):
                 self._begin_close_transition(self._action_for_entry(entry))

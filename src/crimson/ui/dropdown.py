@@ -58,7 +58,7 @@ def ui_list_widget_update(
     takes the row last hovered. The port reports that stray click as a header hit instead: the caller closes the
     list without taking a row. `preserve_bugs` keeps the native pick.
     """
-    focused = focus.update(widget)
+    focused = focus.update(widget, pos)
     widget.focused = focused
     if not widget.enabled:
         widget.open = False

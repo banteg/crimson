@@ -29,7 +29,7 @@ def ui_segmented_slider_update(
     while focused, down to 0. While the button is down on it, the value is the segment under the mouse, so the
     first segment is 0 (then `min`): nothing holds a drag once the mouse leaves the slider.
     """
-    focused = focus.update(slider)
+    focused = focus.update(slider, pos)
     slider.focused = focused
     # `ui_mouse_inside_rect`: strictly inside.
     hovered = (
@@ -38,6 +38,9 @@ def ui_segmented_slider_update(
     )
     if hovered:
         focus.set(slider)
+    if focused:
+        # A focused slider takes the pad's left/right.
+        focus.hold(sideways=True)
     if focused and slider.enabled:
         if focus.right:
             slider.value = min(slider.max, slider.value + 1)

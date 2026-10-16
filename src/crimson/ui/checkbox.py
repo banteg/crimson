@@ -34,7 +34,7 @@ def ui_checkbox_update(
 
     Returns whether it toggled.
     """
-    focused = focus.update(checkbox)
+    focused = focus.update(checkbox, pos)
     checkbox.focused = focused
     width = ui_checkbox_width(resources, checkbox)
     # `ui_mouse_inside_rect`: strictly inside a 16px tall rect.

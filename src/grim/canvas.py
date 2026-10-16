@@ -25,6 +25,18 @@ class _Letterbox(msgspec.Struct, frozen=True):
 _letterbox: _Letterbox | None = None
 
 
+class _Pointer(msgspec.Struct):
+    """A cursor the game steers itself (a pad's stick), which the game reads instead of the window's until let go,
+    and its left button."""
+
+    pos: rl.Vector2 | None = None
+    down: bool = False
+    pressed: bool = False
+
+
+_pointer = _Pointer()
+
+
 def width() -> int:
     return rl.get_screen_width() if _letterbox is None else _letterbox.width
 
@@ -42,6 +54,8 @@ def frame_rect() -> rl.Rectangle:
 
 
 def mouse_position() -> rl.Vector2:
+    if _pointer.pos is not None:
+        return _pointer.pos
     pos = rl.get_mouse_position()
     box = _letterbox
     if box is None:
@@ -55,6 +69,27 @@ def mouse_delta() -> rl.Vector2:
     if box is None:
         return delta
     return rl_vector2(delta.x / box.scale, delta.y / box.scale)
+
+
+def steer_mouse(pos: rl.Vector2 | None) -> None:
+    """Hold the game's cursor at `pos`, in canvas points, or with None hand it back to the window's."""
+    _pointer.pos = pos
+
+
+def press_mouse(down: bool) -> None:
+    """Hold the game's own left button down, once a frame; its press is the frame it goes down."""
+    _pointer.pressed = down and not _pointer.down
+    _pointer.down = down
+
+
+def mouse_pressed() -> bool:
+    """The left button pressed this frame, the window's or the game's own."""
+    return rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) or _pointer.pressed
+
+
+def mouse_down() -> bool:
+    """The left button held, the window's or the game's own."""
+    return rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT) or _pointer.down
 
 
 class Canvas:

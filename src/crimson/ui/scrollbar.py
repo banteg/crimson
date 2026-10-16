@@ -92,7 +92,7 @@ def ui_scrollbar_update(
     """
     pos = Vec2(float(int(pos.x)), float(int(pos.y)))
     bar.hovered_index = -1
-    focused = focus.update(bar)
+    focused = focus.update(bar, pos)
     bar.focused = focused
     bar.keyed = bar.keyed and focused
     height = float(bar.visible_rows * 16 + 4)

@@ -141,7 +141,7 @@ class BootView:
     def _skip_triggered(self) -> bool:
         if rl.get_key_pressed() != 0:
             return True
-        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+        if canvas.mouse_pressed():
             return True
         return bool(rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT))
 

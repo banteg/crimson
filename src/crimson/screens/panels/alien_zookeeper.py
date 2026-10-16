@@ -192,17 +192,18 @@ class AlienZooKeeperView(MenuScreen):
                 self._click_tile(index)
                 return
 
-    def _update_board_focus(self) -> None:
+    def _update_board_focus(self, layout: _AzkLayout) -> None:
         focus = self.state.focus
-        self._board_focus.focused = focus.update(self._board_focus)
+        self._board_focus.focused = focus.update(self._board_focus, Vec2(layout.board_x, layout.board_y))
         if not self._board_focus.focused:
             return
         row, col = divmod(self._cursor_index, _BOARD_SIDE)
         col = max(0, min(_BOARD_SIDE - 1, col + int(focus.right) - int(focus.left)))
         row = max(0, min(_BOARD_SIDE - 1, row + int(focus.down) - int(focus.up)))
         self._cursor_index = row * _BOARD_SIDE + col
-        # The pad's up/down walk the rows until the board's edge, then move the focus on.
-        focus.hold(up=row > 0, down=row < _BOARD_SIDE - 1)
+        # The pad's left/right walk the columns; its up/down walk the rows until the board's edge, then move the
+        # focus on.
+        focus.hold(up=row > 0, down=row < _BOARD_SIDE - 1, sideways=True)
         if focus.enter:
             self._click_tile(self._cursor_index)
 
@@ -272,11 +273,11 @@ class AlienZooKeeperView(MenuScreen):
 
         layout = self._layout()
         mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         if click:
             self._resolve_tile_click(layout=layout, mouse=mouse)
         # Focus order: the port's board stop, then Reset and Back.
-        self._update_board_focus()
+        self._update_board_focus(layout)
 
         resources = require_runtime_resources(self.state)
         dt_ms_f = dt_clamped * 1000.0

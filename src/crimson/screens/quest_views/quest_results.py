@@ -259,9 +259,7 @@ class QuestResultsView(MenuScreen):
                         sfx(SfxId.UI_CLINK_01)
                 case "blink":
                     self._anim_timer += 1
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE) or rl.is_mouse_button_pressed(
-                rl.MouseButton.MOUSE_BUTTON_LEFT,
-            ):
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE) or canvas.mouse_pressed():
                 self._enter_rank_phase(qualifies=qualifies)
             elif self._anim_timer > 10:
                 self._anim_timer = 0
@@ -301,7 +299,7 @@ class QuestResultsView(MenuScreen):
             return
 
         if self.phase == 2:
-            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+            click = canvas.mouse_pressed()
             if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
                 self._activate_play_next()
                 return

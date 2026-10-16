@@ -63,13 +63,13 @@ def test_a_disabled_slider_ignores_the_mouse() -> None:
 def test_hovering_focuses_it_and_the_arrows_step_it_down_to_zero() -> None:
     focus = UiFocus()
     other, slider = object(), UiSegmentedSlider(value=1, max=5, min=1)
-    focus.update(other)
+    focus.update(other, Vec2())
     ui_segmented_slider_update(focus, slider, POS, mouse=POS + Vec2(20.0, 8.0), down=False)
     assert slider.value == 1
     assert not slider.focused
 
     focus.restart = True
-    focus.update(other)
+    focus.update(other, Vec2())
     focus.left = True
     ui_segmented_slider_update(focus, slider, POS, mouse=Vec2(), down=False)
     assert slider.focused
@@ -77,7 +77,7 @@ def test_hovering_focuses_it_and_the_arrows_step_it_down_to_zero() -> None:
     assert slider.value == 0
 
     focus.restart = True
-    focus.update(other)
+    focus.update(other, Vec2())
     focus.left, focus.right = False, True
     for _ in range(6):
         ui_segmented_slider_update(focus, slider, POS, mouse=Vec2(), down=False)

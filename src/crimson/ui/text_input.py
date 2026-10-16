@@ -31,7 +31,7 @@ class UiTextInput(msgspec.Struct):
 
 def ui_text_input_focus(focus: UiFocus, field: UiTextInput, pos: Vec2, *, width: float, mouse: Vec2) -> None:
     """`ui_text_input_update`'s focus: the box registers, and hovering its 18px row focuses it."""
-    field.focused = focus.update(field)
+    field.focused = focus.update(field, pos)
     if pos.x < mouse.x < pos.x + width and pos.y < mouse.y < pos.y + 18.0:
         focus.set(field)
 

@@ -277,6 +277,10 @@ answer the standard codes from the joystick state they already poll
 - **Controls**: a rebind takes a pad button or stick as its standard code,
   d-pad included.
 
+The Python port's menus ([`src/crimson/ui/focus.py`](../src/crimson/ui/focus.py))
+step the focus and steer the cursor by the same rules, so both front ends
+behave alike by pad.
+
 A run records a pad as it records any input: each tick's input is the sticks'
 move and aim under the pad schemes, so its replay verifies unchanged and the
 ranked input is the same tuple. `checks/game_session.mjs --pad` plays the

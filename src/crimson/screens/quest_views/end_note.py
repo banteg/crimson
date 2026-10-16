@@ -6,7 +6,7 @@ from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
-from grim.raylib_api import rl, rl_color
+from grim.raylib_api import rl_color
 
 from ...game.types import GameState
 from ...game_modes import GameMode
@@ -63,7 +63,7 @@ class EndNoteView(MenuScreen):
 
         resources = require_runtime_resources(self.state)
         mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
 
         if button_update(
             resources,

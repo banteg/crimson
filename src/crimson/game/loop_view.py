@@ -137,8 +137,12 @@ class GameLoopView:
         self._apply_gamepad_profiles()
         self._tick_statistics_playtime(dt)
 
-        # The left stick moves the player while gameplay (its game over and perk menu included) is on top.
-        self.state.focus.begin_frame(int(self.state.frame_dt * 1000.0), stick=gameplay is None)
+        # The sticks move and aim the player while gameplay (its game over and perk menu included) is on top.
+        self.state.focus.begin_frame(
+            int(self.state.frame_dt * 1000.0),
+            stick=gameplay is None,
+            sensitivity=self.state.config.display.mouse_sensitivity,
+        )
         active = self.state.screens.active
         if active is not self._focus_screen:
             self._focus_screen = active

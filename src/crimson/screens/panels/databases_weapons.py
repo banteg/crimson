@@ -103,8 +103,8 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             bar,
             left_top_left + Vec2(212.0, 128.0),
             mouse=Vec2.from_xy(mouse),
-            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
-            down=rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT),
+            click=canvas.mouse_pressed(),
+            down=canvas.mouse_down(),
             wheel=rl.get_mouse_wheel_move(),
             cursor=True,
         )

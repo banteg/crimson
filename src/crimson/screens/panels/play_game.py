@@ -103,7 +103,7 @@ class PlayGameMenuView(PanelMenuView):
         resources = require_runtime_resources(self.state)
 
         mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         # An open player-count list disables the mode buttons.
         button_enabled = not self.player_count_list.open
 
@@ -384,7 +384,7 @@ class PlayGameMenuView(PanelMenuView):
         widget = self.player_count_list
         widget.selected_index = self.state.config.gameplay.player_count - 1
         focus = self.state.focus
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         selected = ui_list_widget_update(
             resources,
             widget,

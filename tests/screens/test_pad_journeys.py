@@ -10,38 +10,64 @@ from crimson.modes.quest_mode import QuestMode
 from crimson.quests.level import QuestLevel
 from crimson.screens import menu
 from crimson.screens.actions import Route, StartRun
+from crimson.screens.assets import require_runtime_resources
 from crimson.screens.menu import MenuView
 from crimson.screens.panels.options import OptionsMenuView
 from crimson.screens.panels.play_game import PlayGameMenuView
+from crimson.screens.quest_views import QuestsMenuView
 from crimson.screens.quest_views.quest_failed import QuestFailedView
 from crimson.ui.focus import UI_FOCUS_TIMER_MS
-from crimson.ui.menu_layout import MENU_LABEL_ROW_OPTIONS
+from crimson.ui.menu_layout import MENU_LABEL_ROW_OPTIONS, MENU_LABEL_ROW_PLAY_GAME, menu_item_bounds
+from grim import canvas
+from grim.geom import Vec2
 from grim.raylib_api import rl
+from grim.texture_ids import TextureId
 from tests.support.screens import finish_transition
 
 DPAD_UP = rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_UP
 DPAD_DOWN = rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN
 DPAD_RIGHT = rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT
+RIGHT_X = int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_X)
+RIGHT_Y = int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_Y)
 PAD_A = rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
 PAD_B = rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT
 
 
 @pytest.fixture
-def pad(headless_window, mocker) -> None:
-    """One pad in the second slot, sticks at rest; `press` supplies its button edges."""
+def pad(headless_window, mocker):
+    """One pad in the second slot, sticks at rest; `press` supplies its button edges, `steer` its right stick."""
     mocker.patch.object(rl, "is_gamepad_available", side_effect=lambda gamepad: int(gamepad) == 1)
     mocker.patch.object(rl, "get_gamepad_axis_movement", return_value=0.0)
     mocker.patch.object(rl, "is_gamepad_button_pressed", return_value=False)
+    mocker.patch.object(rl, "is_gamepad_button_down", return_value=False)
+    yield
+    canvas.steer_mouse(None)
+    canvas.press_mouse(False)
 
 
 def press(loop: GameLoopView, mocker, *buttons: int) -> None:
     """One loop frame with `buttons` pressed on the pad, and nothing else."""
     pressed = {int(button) for button in buttons}
-    mocker.patch.object(
-        rl, "is_gamepad_button_pressed", side_effect=lambda gamepad, button: int(gamepad) == 1 and int(button) in pressed,
-    )
+    for edge in ("is_gamepad_button_pressed", "is_gamepad_button_down"):
+        mocker.patch.object(rl, edge, side_effect=lambda gamepad, button: int(gamepad) == 1 and int(button) in pressed)
     loop.update(0.016)
-    mocker.patch.object(rl, "is_gamepad_button_pressed", return_value=False)
+    for edge in ("is_gamepad_button_pressed", "is_gamepad_button_down"):
+        mocker.patch.object(rl, edge, return_value=False)
+
+
+def steer(loop: GameLoopView, mocker, target: Vec2) -> None:
+    """Tilt the right stick toward `target` each frame, gentler near it, until the cursor is there."""
+    axes: dict[int, float] = {}
+    mocker.patch.object(rl, "get_gamepad_axis_movement", side_effect=lambda _pad, axis: axes.get(int(axis), 0.0))
+    for _ in range(300):
+        offset = target - Vec2.from_xy(canvas.mouse_position())
+        if offset.length() < 2.0:
+            mocker.patch.object(rl, "get_gamepad_axis_movement", return_value=0.0)
+            return
+        tilt = offset.normalized() * max(0.3, min(1.0, offset.length() / 40.0))
+        axes.update({RIGHT_X: tilt.x, RIGHT_Y: tilt.y})
+        loop.update(0.016)
+    raise AssertionError("the right stick never brought the cursor there")
 
 
 def dpad_to(loop: GameLoopView, mocker, focused: Callable[[], bool]) -> None:
@@ -177,3 +203,45 @@ def test_main_menu_after_a_failed_quest_starts_on_its_first_item(loop, mocker) -
     assert isinstance(main, menu.MenuView)
     # The quest-failed screen's third button must not carry over as the menu's third item.
     assert main._menu_entries[0].focused
+
+
+def test_dpad_right_pages_the_quest_list_with_nothing_that_way(loop, mocker) -> None:
+    loop.navigation.navigate(Route.QUESTS)
+    finish_transition(loop)
+    view = loop.state.screens.active
+    assert isinstance(view, QuestsMenuView)
+    dpad_to(loop, mocker, lambda: view._row_items[0].focused)
+    # No widget lies right of the quest rows, so right is the arrow key, which pages the stage.
+    press(loop, mocker, DPAD_RIGHT)
+    assert view._stage == 2
+    assert view._row_items[0].focused
+
+
+def test_right_stick_points_and_a_clicks_there(loop, mocker) -> None:
+    finish_transition(loop)
+    main = loop.state.screens.active
+    assert isinstance(main, MenuView)
+    play = next(entry for entry in main._menu_entries if entry.row == MENU_LABEL_ROW_PLAY_GAME)
+    options = next(entry for entry in main._menu_entries if entry.row == MENU_LABEL_ROW_OPTIONS)
+    item = require_runtime_resources(loop.state).texture(TextureId.UI_MENU_ITEM)
+    bounds = menu_item_bounds(options.pos, Vec2(float(item.width), float(item.height)), options.scale, options.rise)
+    press(loop, mocker, DPAD_DOWN)
+    press(loop, mocker, DPAD_UP)
+    assert play.focused
+
+    steer(loop, mocker, bounds.center)
+    # The cursor stays where the stick left it, over Options, while the focus stays on Play Game.
+    for _ in range(30):
+        loop.update(0.016)
+    assert options.hovered
+    assert play.focused
+    # A clicks where the cursor points instead of entering the focused item.
+    press(loop, mocker, PAD_A)
+    finish_transition(loop)
+    assert isinstance(loop.state.screens.active, OptionsMenuView)
+
+    # Moving the mouse hands the cursor back to the window's.
+    mocker.patch.object(rl, "get_mouse_delta", return_value=rl.Vector2(3.0, 0.0))
+    loop.update(0.016)
+    window = rl.get_mouse_position()
+    assert (canvas.mouse_position().x, canvas.mouse_position().y) == (window.x, window.y)

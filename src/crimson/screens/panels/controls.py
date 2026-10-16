@@ -246,7 +246,7 @@ class ControlsMenuView(PanelMenuView):
             left_top_left + CONTROLS_DIRECTION_ARROW_OFFSET,
             focus=self.state.focus,
             mouse=Vec2.from_xy(canvas.mouse_position()),
-            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+            click=canvas.mouse_pressed(),
         ):
             return False
         self._set_direction_arrow_enabled(checkbox.checked)
@@ -262,7 +262,7 @@ class ControlsMenuView(PanelMenuView):
             pos=left_top_left + CONTROLS_RESET_BUTTON_OFFSET,
             dt_ms=min(dt, 0.1) * 1000.0,
             mouse=canvas.mouse_position(),
-            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+            click=canvas.mouse_pressed(),
         ):
             return False
         self._reset_current_player()
@@ -351,11 +351,13 @@ class ControlsMenuView(PanelMenuView):
             font=font,
         )
         mouse = Vec2.from_xy(canvas.mouse_position())
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         started = False
         for row, item in zip(rows, self._rebind_items, strict=False):
             item.enabled = enabled
-            if ui_menu_item_update(item, focus=self.state.focus, hit=row.value_rect, mouse=mouse, click=click):
+            if ui_menu_item_update(
+                item, focus=self.state.focus, pos=row.value_pos, hit=row.value_rect, mouse=mouse, click=click,
+            ):
                 if not started:
                     self._start_rebind_capture(row=row.row, player_index=player_idx)
                 started = True
@@ -460,7 +462,7 @@ class ControlsMenuView(PanelMenuView):
             pos,
             focus=self.state.focus,
             mouse=mouse,
-            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+            click=canvas.mouse_pressed(),
             preserve_bugs=self.state.preserve_bugs,
         )
         if selected <= -2 or not pressed:
@@ -473,7 +475,7 @@ class ControlsMenuView(PanelMenuView):
         move_mode_ids, aim_item_ids = self._sync_lists()
         mouse = Vec2.from_xy(canvas.mouse_position())
         # `input_primary_just_pressed() || grim_was_key_pressed(Enter)`.
-        pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) or self.state.focus.enter
+        pressed = canvas.mouse_pressed() or self.state.focus.enter
 
         move_selected = self._activate_list(
             resources, self.move_method_list, left_top_left + CONTROLS_MOVE_METHOD_LIST_OFFSET, mouse=mouse, pressed=pressed,

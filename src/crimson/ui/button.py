@@ -56,7 +56,7 @@ def button_update(
     click: bool,
 ) -> bool:
     """`ui_button_update`'s input half: a click on the plate, or Enter while it holds the focus."""
-    focused = focus.update(state)
+    focused = focus.update(state, pos)
     state.focused = focused
     if not state.enabled:
         state.hovered = False

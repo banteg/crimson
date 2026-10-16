@@ -100,7 +100,7 @@ class QuestFailedView(MenuScreen):
             return
 
         mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         resources = require_runtime_resources(self.state)
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
         for button, activate in self._buttons():

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.ui.button import UiButtonState
+from crimson.ui.button import UiButtonState, button_update
 from crimson.ui.checkbox import UiCheckbox, ui_checkbox_update
 from crimson.ui.focus import UiFocus
+from crimson.ui.slider import UiSegmentedSlider, ui_segmented_slider_update
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -29,7 +30,8 @@ def keys(mocker) -> Keys:
 
 
 def register(focus: UiFocus, *widgets: object) -> list[bool]:
-    return [focus.update(widget) for widget in widgets]
+    """The widgets in a column, 20px apart."""
+    return [focus.update(widget, Vec2(0.0, 20.0 * row)) for row, widget in enumerate(widgets)]
 
 
 def test_tab_walks_the_candidates_and_wraps(keys: Keys) -> None:
@@ -187,3 +189,43 @@ def test_left_stick_steps_then_repeats(keys: Keys, mocker) -> None:
     register(focus, *widgets)
     assert index_after((0.0, 0.9), 16) == 3
     assert index_after((0.0, 0.9), 400) == 4
+
+
+def test_pad_steps_to_the_nearest_widget_that_way(keys: Keys, mocker, headless_resources) -> None:
+    pad = Pad(mocker)
+    focus = UiFocus()
+    play, back, far = UiButtonState("Play"), UiButtonState("Back"), UiButtonState("Far")
+    slider = UiSegmentedSlider(value=3, max=5)
+    away = Vec2(-1000.0, -1000.0)
+
+    def frame(*buttons: int) -> None:
+        pad.frame(focus, *buttons)
+        for button, pos in ((play, Vec2(100.0, 100.0)), (back, Vec2(100.0, 300.0)), (far, Vec2(160.0, 420.0))):
+            button_update(headless_resources, button, focus=focus, pos=pos, dt_ms=16, mouse=away.to_rl(), click=False)
+        ui_segmented_slider_update(focus, slider, Vec2(200.0, 104.0), mouse=away, down=False)
+
+    frame()
+    frame()
+    assert play.focused
+    # Right reaches the slider beside Play, registered last.
+    frame(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT)
+    assert slider.focused
+    # The focused slider takes left/right as the arrows.
+    frame(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_LEFT)
+    assert slider.focused
+    assert slider.value == 2
+    # Down from the slider goes to Back, the nearest widget below.
+    frame(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN)
+    assert back.focused
+    # The slider and Far sit right of Back but outside the 56 degree cone: right finds nothing there and is the
+    # arrow key.
+    frame(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT)
+    assert back.focused
+    assert focus.right
+    # Up and down wrap to the first and last widget as the screen shows them.
+    frame(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN)
+    assert far.focused
+    frame(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN)
+    assert play.focused
+    frame(rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_UP)
+    assert far.focused

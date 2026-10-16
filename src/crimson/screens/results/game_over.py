@@ -208,7 +208,7 @@ class GameOverUi(msgspec.Struct):
                 self.phase = 1
         else:
             # Buttons phase: let the caller handle navigation; we just report actions.
-            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+            click = canvas.mouse_pressed()
             screen_w = float(canvas.width())
             panel_layout = self._panel_layout(screen_w=screen_w)
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET, 40.0)

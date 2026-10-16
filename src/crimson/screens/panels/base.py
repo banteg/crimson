@@ -105,7 +105,7 @@ class PanelMenuView(MenuScreen):
             return
         focus = self.state.focus
         timeline_ms = self.state.ui.timeline_ms
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         if (focus.escape and menu_entry_enabled(entry, timeline_ms)) or menu_entry_activated(
             entry, timeline_ms=timeline_ms, focus=focus, click=click,
         ):

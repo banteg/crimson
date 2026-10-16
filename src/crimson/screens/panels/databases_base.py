@@ -48,7 +48,7 @@ class _DatabaseBaseView(MenuScreen):
         resources = require_runtime_resources(self.state)
 
         mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         self._update_content_interaction(left_top_left=left_top_left, mouse=mouse)
 
         # The database's list registers for focus before its Back button.

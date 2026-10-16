@@ -124,7 +124,7 @@ class StatisticsMenuView(MenuScreen):
         resources = require_runtime_resources(self.state)
 
         mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        click = canvas.mouse_pressed()
         dt_ms_f = min(float(dt), 0.1) * 1000.0
 
         def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
