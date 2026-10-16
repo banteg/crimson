@@ -914,11 +914,13 @@ sequenceDiagram
     actor Guest as Player 2 (Friend Browser)
 
     Host->>Worker: POST /api/coop/rooms (Origin check + rate limit)
-    Worker-->>Host: {room_id, host_secret, invite_url, ice_servers}
-    Host->>Worker: WSS /api/coop/rooms/<id>/ws?role=host&token=<host_secret>
+    Worker-->>Host: {room_id, host_token, invite_url, ice_servers}
+    Host->>Worker: WSS /api/coop/rooms/<id>/ws?role=host&token=<host_token>
     Host->>Guest: Shares https://crimson.land/play/?coop=<id>
+    Guest->>Worker: GET /api/coop/rooms/<id> (exists? seat free?)
     Guest->>Worker: WSS /api/coop/rooms/<id>/ws?role=guest
-    Worker-->>Host: peer_joined {guest_connected: true}
+    Worker-->>Guest: {type: "seat", role: "guest", guest_token}
+    Worker-->>Host: {type: "peer", present: true}
     Host->>Guest: WebRTC Offer + ICE (buffered until remoteDescription set)
     Guest->>Host: WebRTC Answer + ICE
     Host<<->>Guest: DataChannels open: coop-ticks + coop-control
@@ -928,45 +930,73 @@ sequenceDiagram
     Note over Host,Guest: Both browsers start 2-player gameplay at tick 0
 ```
 
-#### `CoopRoom` Durable Object & Worker requirements (`service/`)
+#### Room service (`service/src/coop.ts`, `service/src/turn.ts`)
 
-- **Bindings & migrations (`service/wrangler.jsonc`)**: Add `CoopRoom` Durable
-  Object binding (`COOP_ROOMS`) and migration class, plus environment variables
-  for Cloudflare Calls TURN key ID and secret token.
+A room is a `CoopRoom` Durable Object (binding `COOP_ROOMS`, SQLite class,
+WebSocket Hibernation) with two seats, `host` (player 0) and `guest`
+(player 1). It moves signalling and relay messages between them and knows
+nothing of the game. The routes need no account and read no cookie:
 
-- **Capability separation & seat enforcement**:
+- `POST /api/coop/rooms`, same-origin only and rate limited per visitor
+  address (`COOP_ROOM_LIMITER`; `429` with `retry-after` past it), answers
+  `201 {room_id, host_token, invite_url, ice_servers}`. The room id is ten
+  characters of lowercase Crockford base32; the invite is
+  `<origin>/play/?coop=<room_id>`. The room keeps only the host token's
+  SHA-256 and its creation time; the host keeps the token out of the shared
+  URL.
+- `GET /api/coop/rooms/<id>` answers `{exists, host, guest}`: whether the room
+  exists, whether the host is connected and whether the guest seat is taken.
+  Browsers cannot read why a WebSocket handshake failed, so the invited page
+  asks this first to show "no such room" or "room full".
+- `GET /api/coop/rooms/<id>/ws?role=host&token=<host_token>` or
+  `?role=guest[&token=<guest_token>]` opens a seat's socket. It needs
+  `Upgrade: websocket` (`426` otherwise) and the site's own `Origin` (`403`).
+  Refusals come before the handshake: `404` for no room, `403` for a wrong
+  host token, `409` for a guest seat already taken.
 
-  - `POST /api/coop/rooms` returns a secret `host_token` (kept in Host memory /
-    `sessionStorage`, never in the shared URL) and a public `room_id`.
+**Seats.** The host seat opens only with the host token. The first guest takes
+the guest seat and receives a `guest_token` that takes it back after a reload;
+from then on a guest without that token gets `409`. A reconnect with a seat's
+token replaces that seat's old socket, which closes with code `4001`.
 
-  - Only the socket authenticated with `host_token` is assigned `role = 0`
-    (Host); the first guest socket without `host_token` is assigned `role = 1`
-    (Guest); a third connection receives HTTP `409 Room full`.
+**Messages.** Every client message, text or binary, is relayed verbatim to the
+other seat; a message for an empty seat is dropped. The server's own messages
+are small JSON texts:
 
-  - Enforce `Origin` header validation, message size caps ($\le 16\text{ KiB}$),
-    rate limits, and a 60-second idle room expiry alarm.
+| Message | When |
+| --- | --- |
+| `{type: "seat", role, guest_token?}` | First message on a new socket; `guest_token` only when the guest seat was just taken. |
+| `{type: "peer", present}` | Right after `seat`, with the other seat's state; then to the other seat whenever a seat joins (`true`) or leaves (`false`). A repeated `present: true` means the partner reconnected and the peer connection must be renegotiated. |
+| `{type: "ice", ice_servers}` | Answer to a client's `{type: "ice"}`, which the server keeps from the partner. The guest asks once after joining; either side asks again before an ICE restart. |
 
-- **Cloudflare Calls TURN credentials & transport truthfulness**:
+Client message types therefore avoid `seat`, `peer` and `ice`. A message over
+16 KiB closes the socket with `1009`; more than 200 messages a second (a
+second's burst) closes it with `1008`.
 
-  - The Worker requests short-lived TURN credentials (TTL $\ge 3600\text{ s}$,
-    refreshed via `coop-control` / DO WebSocket + WebRTC `restartIce()` before
-    expiry) for **both** Host and Guest.
+**Lifetime.** A room is deleted a minute after its last socket leaves (or a
+minute after it was made, if nobody joins) and in any case 12 hours after it
+was made; open sockets then close with `4000`.
 
-  - **Transport qualification** ([Cloudflare TURN service address and ports](https://developers.cloudflare.com/realtime/turn/#service-address-and-ports)):
-    Configure `iceServers` explicitly with both UDP and TCP/TLS endpoints:
-    `turn:turn.cloudflare.com:3478?transport=udp` and
-    `turn:turn.cloudflare.com:443?transport=udp` preserve true UDP transport
-    without TCP head-of-line blocking, whereas
-    `turn:turn.cloudflare.com:80?transport=tcp`,
-    `turns:turn.cloudflare.com:443?transport=tcp`, and the `CoopRoom` WebSocket
-    relay run over TCP/TLS and therefore **do** experience TCP head-of-line
-    blocking under packet loss. They are retained as reachability fallbacks, and
-    the client records the selected `RTCIceCandidatePair` (`host` / `srflx` /
-    `relay-udp` / `relay-tcp` / `ws-relay`) in its latency telemetry.
+**TURN.** `ice_servers` comes from Cloudflare Realtime TURN
+(`generate-ice-servers` with a one-day TTL, longer than a room lives), with
+the port-53 URLs browsers block removed and the TURN URLs ordered UDP, then
+TCP, then TLS. Without both `TURN_KEY_ID` and `TURN_KEY_API_TOKEN` (set with
+`wrangler secret put`), or when the TURN service fails, it is STUN only
+(`stun:stun.cloudflare.com:3478`), which still connects players on open
+networks.
 
-  - Any fallback from WebRTC to `ws-relay` is coordinated via an explicit
-    `MSG_SWITCH_TRANSPORT { transport_epoch }` message through the Durable Object
-    so both peers always read/write the same active transport.
+**Transport qualification** ([Cloudflare TURN service address and ports](https://developers.cloudflare.com/realtime/turn/#service-address-and-ports)):
+UDP relays (`turn:` on 3478 and 443 with `transport=udp`) preserve true UDP
+transport without TCP head-of-line blocking, whereas the TCP and TLS relays
+(`turn:` with `transport=tcp`, `turns:`) and the `CoopRoom` WebSocket relay
+**do** experience TCP head-of-line blocking under packet loss. They are
+retained as reachability fallbacks, and the client records the selected
+`RTCIceCandidatePair` (`host` / `srflx` / `relay-udp` / `relay-tcp` /
+`ws-relay`) in its latency telemetry.
+
+Any fallback from WebRTC to `ws-relay` is coordinated via an explicit
+`MSG_SWITCH_TRANSPORT { transport_epoch }` message through the room so both
+peers always read/write the same active transport.
 
 ### 6.2 Wire protocol & gap-repair guarantee
 

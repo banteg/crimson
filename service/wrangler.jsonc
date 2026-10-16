@@ -10,7 +10,14 @@
   "compatibility_date": "2026-08-22",
   "send_metrics": false,
   "triggers": { "crons": ["17 * * * *"] },
-  "ratelimits": [{ "name": "PLAY_ANALYTICS_LIMITER", "namespace_id": "160315", "simple": { "limit": 1000, "period": 60 } }],
+  // Analytics share one budget; co-op rooms are made per visitor address.
+  "ratelimits": [
+    { "name": "PLAY_ANALYTICS_LIMITER", "namespace_id": "160315", "simple": { "limit": 1000, "period": 60 } },
+    { "name": "COOP_ROOM_LIMITER", "namespace_id": "160316", "simple": { "limit": 10, "period": 60 } }
+  ],
+  // Co-op rooms (src/coop.ts); the class migration applies on deploy.
+  "durable_objects": { "bindings": [{ "name": "COOP_ROOMS", "class_name": "CoopRoom" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["CoopRoom"] }],
   "routes": [{ "pattern": "crimson.land", "custom_domain": true }],
   // wrangler dev otherwise presents requests as the route's host; links and OAuth callbacks follow the request's
   // origin, so local runs must see http://localhost:8787.
@@ -26,7 +33,8 @@
     { "binding": "GAME_FILES", "bucket_name": "crimson" }
   ],
   // Client IDs are public; each provider's secret is set with `wrangler secret put <PROVIDER>_CLIENT_SECRET`
-  // (or in .dev.vars locally). A provider without both stays hidden.
+  // (or in .dev.vars locally). A provider without both stays hidden. Co-op TURN credentials need TURN_KEY_ID and
+  // TURN_KEY_API_TOKEN, both set the same way from the Realtime TURN key; without them, co-op peers get STUN only.
   "vars": {
     "GITHUB_CLIENT_ID": "Ov23lirNiNyg92mdYr2z",
     "DISCORD_CLIENT_ID": "1557080813470883900",

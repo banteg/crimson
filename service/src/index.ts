@@ -2,6 +2,7 @@ import { confirmMerge, deleteAccount, linkIdentity, pendingJoin, unlink } from "
 import { analyticsView, postAnalytics, pruneAnalytics } from "./analytics";
 import { loginLink, postChallenge, postLogin, postLoginLink, SESSION_COOKIE, secure, sessionAccount, sessionToken, tokenHash } from "./auth";
 import { CARD_HEIGHT, CARD_WIDTH, runCard } from "./card";
+import { coopRoute } from "./coop";
 import { type Env, json, refuse } from "./http";
 import { playerLabel } from "../web/src/names";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
@@ -61,12 +62,15 @@ export default {
       return Response.redirect(url.toString(), request.method === "GET" || request.method === "HEAD" ? 301 : 308);
     }
     const response = await handle(request, env, url);
-    if (url.protocol !== "https:") return response;
+    // A WebSocket handshake's 101 passes as it is: a Response cannot be rebuilt with that status.
+    if (url.protocol !== "https:" || response.webSocket) return response;
     const secured = new Response(response.body, response);
     secured.headers.set("Strict-Transport-Security", HSTS);
     return secured;
   },
 } satisfies ExportedHandler<Env>;
+
+export { CoopRoom } from "./coop";
 
 async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   const route = `${request.method} ${url.pathname}`;
@@ -75,6 +79,8 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   // Ingestion runs before any cookie, key or account lookup.
   if (route === "POST /api/analytics" || route === "POST /api/analytics/unique")
     return postAnalytics(request, env, url.pathname.endsWith("/unique"));
+  // Co-op rooms (docs/rewrite/network-coop.md §6.1) also need no account.
+  if (url.pathname.startsWith("/api/coop/")) return coopRoute(request, env, url);
 
   // The game's API.
   switch (route) {
