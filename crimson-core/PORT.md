@@ -307,9 +307,10 @@ persistence) is in the [roadmap](ROADMAP.md#client-checks).
   and compares every snapshot field ([`schema.json`](schema.json)) after every
   tick; where a run ends, both must refuse the next tick. The whole executable
   is linked. Fields only presentation reads stay out of the comparison
-  ([`game_compare.mjs`](checks/game_compare.mjs)): `player_weapon_popup_timer`,
+  (`presentation` in [`schema.json`](schema.json)): `player_weapon_popup_timer`,
   which the restored HUD counts down, and the weapons' sound ids, which hold
-  the original's loaded ids in a run inside it.
+  the original's loaded ids in a run inside it. The players' key codes, which
+  a live run swaps for the player's own between ticks, are compared here.
 - `game_check.py --live <game directory>` runs the same streams back to back
   inside the original booted with its assets, sounds and music, each run
   starting from the state the previous one left.
@@ -321,7 +322,9 @@ persistence) is in the [roadmap](ROADMAP.md#client-checks).
   its seed, and `--seed` plays it again. With `--ranked` it ticks Ranked
   first (`--quest` plays quest 1.1), and the run it queues must be the one it
   recorded, under the ranked rules, signed by the player's key, claiming the
-  result the verifier derives.
+  result the verifier derives. With `--silent` the original starts with sound
+  and music off, which leaves its music track ids all 0, and the run must still
+  agree through its end tune.
 - [`checks/game_boot.mjs`](checks/game_boot.mjs) boots the original from a fresh
   game directory under Node's WASI, clicks through the menus into Survival, and
   requires every texture to load, the menus' music to reach the mix, the run to

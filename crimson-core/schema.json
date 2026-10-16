@@ -114,6 +114,10 @@
       "weapon_usage_time[50]",
       "weapon_usage_time[51]",
       "weapon_usage_time[52]"
+    ],
+    "presentation": [
+      "player_weapon_popup_timer[0]",
+      "player_weapon_popup_timer[1]"
     ]
   },
   {
@@ -310,6 +314,21 @@
       "auto_target",
       "move_target_x",
       "move_target_y",
+      "input.move_key_forward",
+      "input.move_key_backward",
+      "input.turn_key_left",
+      "input.turn_key_right",
+      "input.fire_key",
+      "input.key_reserved_0",
+      "input.key_reserved_1",
+      "input.aim_key_left",
+      "input.aim_key_right",
+      "input.axis_aim_x",
+      "input.axis_aim_y",
+      "input.axis_move_x",
+      "input.axis_move_y"
+    ],
+    "presentation": [
       "input.move_key_forward",
       "input.move_key_backward",
       "input.turn_key_left",
@@ -534,6 +553,10 @@
       "projectile_speed",
       "damage_scale",
       "pellet_count"
+    ],
+    "presentation": [
+      "shot_sfx_base_id",
+      "reload_sfx_id"
     ]
   },
   {

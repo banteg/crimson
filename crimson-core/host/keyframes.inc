@@ -22,11 +22,13 @@ int platform_texture_host_id(int handle);
 extern int terrain_render_target;
 }
 
-// The session's own state a tick reads or writes (host.cpp).
+// The session's own state a tick reads or writes (host.cpp), and the effect
+// overflow's (game/effect_overflow.cpp).
 struct KeyframeHost {
   PortableConfig config;
   uint32_t rng, tick;
   bool ready, menu_requested, perk_menu_open, running_down;
+  int perk_picker;
   int run_down_ms;
   size_t string_used;
   unsigned char preserve_bugs;
@@ -39,7 +41,7 @@ struct KeyframeHost {
   int timeline;
   LiveSettings run;
   effect_entry_t *overflow_free;
-  int overflow_active, overflow_extent;
+  int overflow_active, overflow_extent, overflow_decals;
 };
 
 struct Keyframe {
@@ -49,13 +51,18 @@ struct Keyframe {
   std::vector<uint8_t> packed;
 };
 
-static std::vector<uint8_t> keyframe_state() {
-  size_t overflow_bytes = (size_t)game_effect_overflow.extent * sizeof(effect_entry_t);
-  size_t size = sizeof(KeyframeHost) + overflow_bytes + string_used;
+// The run's state as raw bytes, for a copy kept on this machine: the run spans,
+// the session's fields, and the effect overflow's entries in use and decals
+// queued. The run's strings stay out: only run start adds to them.
+static size_t run_state_size() {
+  size_t size = sizeof(KeyframeHost) + (size_t)game_effect_overflow.extent * sizeof(effect_entry_t) +
+                (size_t)game_effect_overflow.decal_count * sizeof(fx_queue_entry_t);
   for (int i = 0; i < game_run_span_count; ++i)
     size += game_run_spans[i].size;
-  std::vector<uint8_t> state(size);
-  uint8_t *out = state.data();
+  return size;
+}
+
+static uint8_t *run_state_write(uint8_t *out) {
   for (int i = 0; i < game_run_span_count; ++i)
     out = (uint8_t *)memcpy(out, game_run_spans[i].at, game_run_spans[i].size) + game_run_spans[i].size;
   KeyframeHost host = {cfg,
@@ -65,6 +72,7 @@ static std::vector<uint8_t> keyframe_state() {
                        menu_requested,
                        perk_menu_open,
                        running_down,
+                       perk_picker,
                        run_down_ms,
                        string_used,
                        portable_preserve_bugs,
@@ -74,20 +82,16 @@ static std::vector<uint8_t> keyframe_state() {
                        live.run,
                        game_effect_overflow.free,
                        game_effect_overflow.active,
-                       game_effect_overflow.extent};
+                       game_effect_overflow.extent,
+                       game_effect_overflow.decal_count};
   out = (uint8_t *)memcpy(out, &host, sizeof host) + sizeof host;
-  out = (uint8_t *)memcpy(out, game_effect_overflow.entries, overflow_bytes) + overflow_bytes;
-  memcpy(out, string_arena, string_used);
-  return state;
+  size_t entries = (size_t)host.overflow_extent * sizeof(effect_entry_t),
+         decals = (size_t)host.overflow_decals * sizeof(fx_queue_entry_t);
+  out = (uint8_t *)memcpy(out, game_effect_overflow.entries, entries) + entries;
+  return (uint8_t *)memcpy(out, game_effect_overflow.decals, decals) + decals;
 }
 
-static Keyframe keyframe_capture(int at_tick, size_t at, size_t batches) {
-  return {at_tick, at, batches, zstd_pack(keyframe_state(), 1)};
-}
-
-static void keyframe_restore(const Keyframe &key) {
-  std::vector<uint8_t> state = zstd_unpack(key.packed.data(), key.packed.size(), 64u << 20);
-  const uint8_t *in = state.data();
+static const uint8_t *run_state_read(const uint8_t *in) {
   for (int i = 0; i < game_run_span_count; ++i) {
     memcpy(game_run_spans[i].at, in, game_run_spans[i].size);
     in += game_run_spans[i].size;
@@ -102,6 +106,7 @@ static void keyframe_restore(const Keyframe &key) {
   menu_requested = host.menu_requested;
   perk_menu_open = host.perk_menu_open;
   running_down = host.running_down;
+  perk_picker = host.perk_picker;
   run_down_ms = host.run_down_ms;
   string_used = host.string_used;
   portable_preserve_bugs = host.preserve_bugs;
@@ -112,12 +117,26 @@ static void keyframe_restore(const Keyframe &key) {
   game_effect_overflow.free = host.overflow_free;
   game_effect_overflow.active = host.overflow_active;
   game_effect_overflow.extent = host.overflow_extent;
-  size_t overflow_bytes = (size_t)host.overflow_extent * sizeof(effect_entry_t);
-  memcpy(game_effect_overflow.entries, in, overflow_bytes);
-  in += overflow_bytes;
-  memcpy(string_arena, in, string_used);
+  game_effect_overflow.decal_count = host.overflow_decals;
+  size_t entries = (size_t)host.overflow_extent * sizeof(effect_entry_t),
+         decals = (size_t)host.overflow_decals * sizeof(fx_queue_entry_t);
+  memcpy(game_effect_overflow.entries, in, entries);
+  memcpy(game_effect_overflow.decals, in + entries, decals);
   portable_custom_quest =
       (cfg.mode == GAME_MODE_QUEST && cfg.major == 0 && cfg.minor == 0) ? &custom_quest_meta : nullptr;
+  return in + entries + decals;
+}
+
+// A keyframe packs the run's state with its strings.
+static Keyframe keyframe_capture(int at_tick, size_t at, size_t batches) {
+  std::vector<uint8_t> state(run_state_size() + string_used);
+  memcpy(run_state_write(state.data()), string_arena, string_used);
+  return {at_tick, at, batches, zstd_pack(state, 1)};
+}
+
+static void keyframe_restore(const Keyframe &key) {
+  std::vector<uint8_t> state = zstd_unpack(key.packed.data(), key.packed.size(), 64u << 20);
+  memcpy(string_arena, run_state_read(state.data()), string_used);
 }
 
 // A corpse fx_queue_render bakes (fx_queue_add_rotated's arrays, one entry).

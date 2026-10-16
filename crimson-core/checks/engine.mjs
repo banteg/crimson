@@ -2,11 +2,12 @@ import fs from "node:fs";
 
 export const CORE = new URL("..", import.meta.url);
 export const schema = JSON.parse(fs.readFileSync(new URL("schema.json", CORE)));
-export const names = schema.flatMap((g) =>
-  Array.from({ length: g.count }, (_, i) =>
-    g.fields.map((f) => `${g.name}${g.count > 1 ? `[${i}]` : ""}.${f}`),
-  ).flat(),
-);
+const named = (g, fields) =>
+  Array.from({ length: g.count }, (_, i) => fields.map((f) => `${g.name}${g.count > 1 ? `[${i}]` : ""}.${f}`)).flat();
+export const names = schema.flatMap((g) => named(g, g.fields));
+// The fields only presentation reads (schema.json's `presentation`): a run inside the original may hold its own
+// there, which the host's state hash leaves out as well (build.py).
+export const presentation = new Set(schema.flatMap((g) => named(g, g.presentation ?? [])));
 export const index = new Map(names.map((n, i) => [n, i]));
 
 // The snapshot's byte ranges holding the fields `compared` accepts, adjacent fields merged.

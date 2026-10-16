@@ -44,8 +44,8 @@ function frame(dt = 16, taps = []) {
   mixed = new Int16Array(game.memory.buffer, game.game_audio(735), 735 * 2);
 }
 const memory = () => Buffer.from(game.memory.buffer);
-// The fields a replay plays; between ticks the player holds their own key codes.
-const compared = names.map((name, i) => [name, i]).filter(([name]) => !PRESENTATION.has(name) && !/^players\[\d+\]\.input\./.test(name));
+// The fields a replay plays.
+const compared = names.map((name, i) => [name, i]).filter(([name]) => !PRESENTATION.has(name));
 const differences = (a, b) => compared.filter(([, i]) => a.readUInt32LE(i * 4) !== b.readUInt32LE(i * 4)).map(([name]) => name);
 
 // Every file of the game folder by digest, but the replays this check gives it,

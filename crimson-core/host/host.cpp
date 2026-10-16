@@ -115,30 +115,30 @@ extern "C" uint32_t *crt_rand_stream() {
 extern "C" int crt_rand() { return crt_rand_step(crt_rand_stream()); }
 #ifdef CRIMSON_GAME
 extern "C" void music_play_exclusive_recovered(int sfx_id);
-static void game_music_play(int sfx_id, int track);
+static void game_music_play(int sfx_id, int draw);
 #endif
 // A tick's music call (the first hit's in-game tune, the end tunes), split in
 // two. The simulation half is the original's playlist latch and the tune's random
 // draw, whatever the audio: a hit draws the tune once, until another tune clears
-// the latch (Python's game_tune_started). The game module's playback half starts
-// the track by the player's own audio settings and leaves the latch alone.
+// the latch (Python's game_tune_started). The game module's playback half plays
+// the track, or the in-game tune the draw picks (-1 for none), by the player's
+// own audio settings and leaves the latch alone.
 extern "C" void music_play_exclusive(int sfx_id) {
 #ifdef CRIMSON_GAME
   if (!game_ticking)
     return music_play_exclusive_recovered(sfx_id);
 #endif
-  int track = sfx_id;
+  int draw = -1;
   if (sfx_id == music_track_game_playlist) {
     if (music_playlist_randomized_latch)
       return;
-    int draw = crt_rand();
+    draw = crt_rand();
     music_playlist_randomized_latch = 1;
-    track = music_playlist_entry_count ? music_playlist[draw % music_playlist_entry_count] : -1;
   } else {
     music_playlist_randomized_latch = 0;
   }
 #ifdef CRIMSON_GAME
-  game_music_play(sfx_id, track);
+  game_music_play(sfx_id, draw);
 #endif
 }
 #ifdef CRIMSON_GAME
@@ -575,7 +575,8 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   memset(music_fade_out_flags, 1, sizeof(music_fade_out_flags));
   music_ready = 1;
   // audio_init_music's load order: distinct ids keep the game-over and quest
-  // music from posing as the random game-tune request (extra_0).
+  // music from posing as the random game-tune request (extra_0). A run inside
+  // the original ticks with these too (GameMusic, host/game.inc).
   int track = 0;
   music_track_intro_id = track++;
   music_track_shortie_monk_id = track++;
@@ -606,6 +607,22 @@ static int refuse(const char *reason) {
   refusal = reason;
   return 0;
 }
+// Replay input flags (src/crimson/replay/types.py): buttons and held keys, then
+// the movement scheme (bits 8-11) and aim scheme (bits 12-15), each with a
+// presence bit.
+constexpr uint32_t INPUT_BUTTONS = 1 | 2 | 4 | 1u << 16 | 1u << 17 | 1u << 18 | 1u << 19;
+constexpr uint32_t INPUT_MOVE_KEYS_PRESENT = 8, INPUT_MOVE_KEYS = 16 | 32 | 64 | 128;
+constexpr uint32_t INPUT_MOVE_PRESENT = 0x100, INPUT_AIM_PRESENT = 0x1000;
+// Whether an input is one Python's decoder accepts: each player's in a tick, and each record a co-op peer sends.
+static bool portable_input_valid(const PortableInput &input) {
+  uint32_t move_mode = input.flags >> 9 & 7, aim_scheme = input.flags >> 13 & 7;
+  return isfinite(input.move_x) && isfinite(input.move_y) && isfinite(input.aim_x) && isfinite(input.aim_y) &&
+         (input.flags & ~(INPUT_BUTTONS | INPUT_MOVE_KEYS_PRESENT | INPUT_MOVE_KEYS | INPUT_MOVE_PRESENT | 7u << 9 |
+                          INPUT_AIM_PRESENT | 7u << 13)) == 0 &&
+         ((input.flags & INPUT_MOVE_KEYS_PRESENT) || !(input.flags & INPUT_MOVE_KEYS)) &&
+         ((input.flags & INPUT_MOVE_PRESENT) || move_mode == 0) && move_mode <= 5 &&
+         ((input.flags & INPUT_AIM_PRESENT) || aim_scheme == 0) && aim_scheme != 6;
+}
 // The menu request is consumed at the recovered mid-tick prompt. Picks run
 // in order in the between-tick prelude, as they do in the current replay API.
 extern "C" int portable_step_many(uint32_t count) {
@@ -618,28 +635,16 @@ extern "C" int portable_step_many(uint32_t count) {
                               : "";
   if (*refusal)
     return 0;
-  // Replay input flags (src/crimson/replay/types.py): buttons and held keys,
-  // then the movement scheme (bits 8-11) and aim scheme (bits 12-15), each with
-  // a presence bit. Validation and defaults follow Python's decoder.
-  constexpr uint32_t buttons = 1 | 2 | 4 | 1u << 16 | 1u << 17 | 1u << 18 | 1u << 19;
-  constexpr uint32_t move_keys_present = 8, move_keys = 16 | 32 | 64 | 128;
-  constexpr uint32_t move_present = 0x100, aim_present = 0x1000;
   for (uint32_t p = 0; p < cfg.players; ++p) {
     const PortableInput &input = in[p];
-    uint32_t move_mode = input.flags >> 9 & 7, aim_scheme = input.flags >> 13 & 7;
-    if (!isfinite(input.move_x) || !isfinite(input.move_y) || !isfinite(input.aim_x) ||
-        !isfinite(input.aim_y) ||
-        (input.flags & ~(buttons | move_keys_present | move_keys | move_present |
-                         7u << 9 | aim_present | 7u << 13)) != 0 ||
-        (!(input.flags & move_keys_present) && (input.flags & move_keys)) ||
-        (!(input.flags & move_present) && move_mode != 0) || move_mode > 5 ||
-        (!(input.flags & aim_present) && aim_scheme != 0) || aim_scheme == 6)
+    if (!portable_input_valid(input))
       return refuse("malformed input");
     // Like Python, the schemes come with each tick's input. Recordings without
     // them ran static movement when they held movement keys, else the pad.
-    config_blob.movement_schemes[p] =
-        input.flags & move_present ? (int)move_mode
-                                   : input.flags & move_keys_present ? 2 : 3;
+    uint32_t move_mode = input.flags >> 9 & 7, aim_scheme = input.flags >> 13 & 7;
+    config_blob.movement_schemes[p] = input.flags & INPUT_MOVE_PRESENT        ? (int)move_mode
+                                      : input.flags & INPUT_MOVE_KEYS_PRESENT ? 2
+                                                                              : 3;
     // The 3-bit field stores the -1 scheme as all ones.
     config_blob.aim_schemes[p] = aim_scheme == 7 ? -1 : (int)aim_scheme;
   }

@@ -5,10 +5,10 @@
 // (portable_step_many). The perk screen and the pause menu run between ticks
 // and reach the run only as commands.
 //
-// The settings, progress and key codes a tick reads are the verifier's
-// (portable_init sets them up); between ticks the original shows and keeps the
-// player's. What a tick changes carries over: the counters it advances add to
-// the player's progress, and the settings it changes replace the player's.
+// The settings, progress, key codes and music tracks a tick reads are the
+// verifier's (portable_init sets them up); between ticks the original shows and
+// keeps the player's. What a tick changes carries over: the counters it advances
+// add to the player's progress, and the settings it changes replace the player's.
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
@@ -36,6 +36,7 @@ struct LiveSettings {
   float bodies_fade;      // which keeps or removes corpses
   float friendly_fire;    // whether players' shots hit each other
   player_input_t keys[2]; // the codes each player's input reads
+  GameMusic music;        // the tracks music calls name
 };
 
 static struct {
@@ -57,6 +58,8 @@ static struct {
   bool watching; // the run plays a replay (watch.inc)
   bool practicing; // detached Watch state driven by live input (practice.inc)
 } live;
+// The player whose pick a co-op run's open perk menu takes, or -1.
+static int perk_picker = -1;
 static bool custom_quest_restore_menu, custom_quest_saved_ranked;
 // Observation only: distinguish a new live attempt from a menu resume.
 static unsigned play_generation;
@@ -92,7 +95,8 @@ static LiveSettings live_settings() {
           {quest_unlock_index, quest_unlock_index_hardcore},
           cv_bodiesFade->value,
           cv_friendlyFire->value,
-          {player_state_table[0].input, player_state_table[1].input}};
+          {player_state_table[0].input, player_state_table[1].input},
+          game_music()};
 }
 static void live_install(const LiveSettings &settings) {
   config_blob = settings.config;
@@ -103,6 +107,7 @@ static void live_install(const LiveSettings &settings) {
   cv_friendlyFire->value = settings.friendly_fire;
   for (int i = 0; i < 2; ++i)
     player_state_table[i].input = settings.keys[i];
+  game_music_install(settings.music);
 }
 // The run's settings in place of the player's, kept in live.outside. The run
 // draws with the player's display choices (direction arrows, detail, the perk

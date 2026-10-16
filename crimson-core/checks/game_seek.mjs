@@ -54,7 +54,7 @@ const frame = () => {
   game.game_audio(735);
 };
 const memory = () => Buffer.from(game.memory.buffer);
-const compared = names.map((name, i) => [name, i]).filter(([name]) => !PRESENTATION.has(name) && !/^players\[\d+\]\.input\./.test(name));
+const compared = names.map((name, i) => [name, i]).filter(([name]) => !PRESENTATION.has(name));
 
 while (run.clock < 15000) frame();
 fs.mkdirSync(path.join(directory, "watched"), { recursive: true });

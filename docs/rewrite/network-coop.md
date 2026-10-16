@@ -266,6 +266,14 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     rollback that undoes and replays the first hit does not restart the tune.
     Terminal tracks wait for the terminal barrier (Section 5.2).
 
+  - **Track ids (landed, every session)**: an original started with sound or
+    music off loads no music, so all its track ids are `0` and the end tunes
+    would pose as the in-game tune's request. Ticks run with the verifier's
+    distinct ids (`GameMusic` in `LiveSettings`, `crimson-core/host/game.inc`);
+    the playback half and the quest's in-tick volume write map them to the
+    original's loaded tracks (`game_shell_track`).
+    `crimson-core/checks/game_session.mjs --silent` plays a run with both off.
+
 #### 4. Complete 2-player input, camera & replay seams (`host.cpp`, `grim.inc`, `game.inc`, `session.inc`, `replay.inc`)
 
 - **Per-player virtual input codes & schemes**:
@@ -374,7 +382,8 @@ Safari JSC, Wasmtime, and native `wasm2c`:
   1. **During tick simulation and rollback resimulation (`game_ticking == 1`)**:
      `gameplay_render_world()` **must** run on every tick (with
      `ui_transition_alpha = 1.0f` forced during `game_ticking == 1` so local
-     `ui_elements_timeline` never skips `creature_render_all()`). `headless-effects.patch`
+     `ui_elements_timeline` never skips `creature_render_all()`; landed in
+     `crimson-core/game/changes/world-draw.patch`). `headless-effects.patch`
      already skips only `effects_render`'s vertex math when `grim_render_disabled == 1`.
 
   2. **Between ticks (`game_ticking == 0`)**: Guard all simulation writes inside
@@ -538,9 +547,10 @@ local `config_blob` display flags (`session.inc:115-119`), local audio volumes
 Therefore, **cross-peer desync hashes and `M0b` state comparisons** run over
 `coop_canonical_snapshot()`:
 
-1. `portable_snapshot()` (`36,343` `u32` words) with `PRESENTATION` indices
-   (`player_weapon_popup_timer`, weapon sound IDs) and `players[*].input.*`
-   zeroed (`crimson-core/checks/game_compare.mjs:10-17`).
+1. `portable_snapshot()` (`36,343` `u32` words) with the presentation fields
+   (`player_weapon_popup_timer`, weapon sound IDs, `players[*].input.*`) zeroed:
+   the `presentation` lists in `crimson-core/schema.json`, which `build.py` emits
+   for C (`presentation.inc`) and `checks/engine.mjs` reads.
 
 2. Authoritative `KeyframeHost` fields: `rng`, `tick`, `menu_requested`,
    `perk_menu_open`, `perk_picker`, `running_down`, `run_down_ms`,
@@ -549,7 +559,9 @@ Therefore, **cross-peer desync hashes and `M0b` state comparisons** run over
    (`music_latch` mirrors `music_playlist_randomized_latch`, which item 1
    already hashes.)
 
-3. `telekinetic_bonus_hover_timer_ms[0..1]` (`2 × int32`).
+3. `telekinetic_bonus_hover_timer_ms[0..1]` (`2 × int32`). Its data definition
+   holds element `0` alone; `crimson-core/game.py` (`PLAYER_ARRAYS`) widens its run
+   span, so run start resets both and keyframes keep both.
 
 4. Active `game_effect_overflow.entries[0..overflow_extent)` with each entry's
    `next_free` pointer normalized to its pool index (`int(p - game_effect_overflow.entries)`

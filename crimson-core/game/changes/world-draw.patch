@@ -1,6 +1,8 @@
 Between a live run's ticks the world only draws (host/session.inc): the perk menu, the pause menu and a paused
 replay redraw it, and what its drawing would change in the run (a guarded weapon taken away, a corpse's slot freed,
 the terrain baked, Telekinetic's hover timer and pickup) is left to the run's next tick, as the verifier does it.
+Inside a tick the screen is shown in full, as every verifier tick sees it, so the screen's timeline (a fade, a menu's
+transition) never decides what a tick frees or picks up: creature_render_all and bonus_render skip both when hidden.
 --- a/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 +++ b/decomp/1.9/crimsonland/game/gameplay_render_world.cpp
 @@ -31,7 +31,7 @@
@@ -21,6 +23,10 @@ the terrain baked, Telekinetic's hover timer and pickup) is left to the run's ne
          if (player_state_table[player_index].weapon_id == 0x19
              && survival_reward_weapon_guard_id != 0x19) {
              weapon_assign_player(player_index, 1);
+@@ -83,2 +83,2 @@
+-    if (ui_transition_alpha > 1.0f) {
++    if (ui_transition_alpha > 1.0f || game_ticking) {
+         ui_transition_alpha = 1.0f;
 @@ -86,7 +86,9 @@
          ui_transition_alpha = 0.0f;
      }

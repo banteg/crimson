@@ -29,10 +29,14 @@
 // profile takes the pad profile on first use, so the run records the Dual
 // Action Pad schemes.
 //
+// With --silent the original starts with sound and music off, so it loads no
+// music and its track ids are all 0: the run's ticks still tell the end tunes
+// from the in-game tune's request, as the verifier does (host/game.inc).
+//
 // A replay a link asks for as the run starts (host/watch.inc game_watch) gives
 // way to it: the run plays, and its end screen stays.
 //
-//   node crimson-core/checks/game_session.mjs [--seed n] [--ranked] [--quest] [--pad] <game directory> [core.wasm] [game.wasm]
+//   node crimson-core/checks/game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] <game directory> [core.wasm] [game.wasm]
 import { execFileSync } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -46,15 +50,25 @@ let args = process.argv.slice(2);
 const seedAt = args.indexOf("--seed");
 const seedOverride = seedAt < 0 ? undefined : Number(args[seedAt + 1]);
 if (seedAt >= 0) args = args.toSpliced(seedAt, 2);
-const ranked = args.includes("--ranked"), quest = args.includes("--quest"), padded = args.includes("--pad");
-args = args.filter((arg) => !["--ranked", "--quest", "--pad"].includes(arg));
+const ranked = args.includes("--ranked"), quest = args.includes("--quest"), padded = args.includes("--pad"),
+  silent = args.includes("--silent");
+args = args.filter((arg) => !["--ranked", "--quest", "--pad", "--silent"].includes(arg));
 const [
   directory,
   coreWasm = new URL("build/wasm/core.wasm", CORE).pathname,
   gameWasm = new URL("build/game/game.wasm", CORE).pathname,
 ] = args;
-if (!directory) throw Error("usage: game_session.mjs [--seed n] [--ranked] [--quest] [--pad] <game directory> [core.wasm] [game.wasm]");
+if (!directory) throw Error("usage: game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] <game directory> [core.wasm] [game.wasm]");
 
+if (silent) {
+  // A first start writes the default configuration (crimson.cfg, crimson_cfg_t),
+  // which the run's own start reads with sound and music off; its other files go.
+  bootGame(gameWasm, directory);
+  for (const name of ["game.cfg", "registry.cfg", "console.log"]) fs.rmSync(path.join(directory, name), { force: true });
+  const config = fs.readFileSync(path.join(directory, "crimson.cfg"));
+  config[0] = config[1] = 1; // sound_disabled, music_disabled
+  fs.writeFileSync(path.join(directory, "crimson.cfg"), config);
+}
 const run = bootGame(gameWasm, directory, seedOverride, { leaderboard: ranked });
 const { game } = run;
 const clientVersion = "0.14.2+build.000000000000000000000000";
@@ -217,10 +231,7 @@ fs.copyFileSync(path.join(fixtures, "quest-1.1-completed.crd"), path.join(direct
 Buffer.from(game.memory.buffer).write("watched/linked.crd\0", game.game_replay_path(), "latin1");
 if (!game.game_replay_open() || !game.game_watch()) throw Error("a link as the run starts does not take");
 
-// Between ticks the players hold their own key codes; a tick reads the
-// verifier's (host/session.inc).
-const SWAPPED = /^players\[\d+\]\.input\./;
-const COMPARED = fieldRanges((name) => !PRESENTATION.has(name) && !SWAPPED.test(name));
+const COMPARED = fieldRanges((name) => !PRESENTATION.has(name));
 const replay = () => Buffer.from(game.memory.buffer, game.game_replay(), game.game_replay_size());
 const core = loadCore(coreWasm);
 const CREATURES = names.filter((n) => /^creatures\[\d+\]\.active$/.test(n)).length;
@@ -380,7 +391,7 @@ if (ranked) checkRanked();
 // Main Menu is the last of Play Again, High scores and Main Menu, or with
 // Play Next above them on a quest's.
 if (padded) leaveByPad(quest ? QUEST_RESULTS : GAME_OVER, quest ? 4 : 3);
-console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses, ...(padded ? { pad: true } : {}) }));
+console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses, ...(padded ? { pad: true } : {}), ...(silent ? { silent: true } : {}) }));
 
 // The quests the player's save unlocks (game.cfg, src/crimson/persistence/save_status.py).
 function savedUnlocks() {
