@@ -716,6 +716,7 @@ stays on the arena screen and sees the replay viewer's top-right pick card
      chosen perk (`lit = i == chosen`) for `WATCH_PICK_SECONDS = 3.0f` during
      live play before sliding out; if cancelled (`count = 0`), `viewer_card`
      slides out immediately.
+
 ### 5.2 Run-down barrier, pause barrier, and restart
 
 - **Run-down & terminal screen barrier**:
@@ -736,6 +737,18 @@ stays on the arena screen and sees the replay viewer's top-right pick card
   - Disable local immediate Escape handling in `live_poll`
     (`crimson-core/host/session.inc:247-251`) and `game_live_pause` (`:489-494`)
     during co-op.
+
+  - **F1 in-place pause is disallowed.** The original's F1 toggles
+    `game_paused_flag` inside `gameplay_update_and_render`
+    (`decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp:301-303`), which
+    freezes the world without leaving `GAME_STATE_GAMEPLAY`: it zeroes
+    `frame_dt` and skips creature, projectile, player, perk-effect and bonus
+    timer updates plus perk opening (`:115-237`). It is simulation state in
+    `game_run_spans`, so one peer toggling it would desync the run. Inside ticks
+    `HeadlessGrim::grim_was_key_pressed` already reports no keys
+    (`crimson-core/host/grim.inc:65`), so F1 never reaches it; co-op asserts
+    `game_paused_flag == 0` before every tick so no between-tick path can set
+    it. `MSG_PAUSE` is the only co-op pause.
 
   - Pause is not simulation state: the run stays in `GAME_STATE_GAMEPLAY` and no
     input or command changes. Pressing `Escape` sends
