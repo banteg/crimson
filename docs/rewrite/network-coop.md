@@ -308,6 +308,19 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     left, exactly as a 1P recorder does. Co-op accepts every human scheme the
     ranked rules accept.
 
+  - **Per-player cursor for mouse-relative aim**: `portable_step_many` writes
+    `ui_mouse_x/y` once per tick from player 0's input, choosing cursor or
+    world form by `aim_schemes[0]` (`crimson-core/host/host.cpp:636-639`), and
+    `player_update` copies `ui_mouse_x/y` into
+    `player_aim_screen_x[current_player_index * 2]` for every player
+    (`decomp/1.9/crimsonland/gameplay/player_update_heading.cpp:255, 262`).
+    `seams/mouse-aim.patch` and `seams/pad-aim.patch` bypass that copy for aim
+    schemes `0` and `4`, but mouse-relative aim (`aim_scheme == 3`, `:1048-1070`)
+    reads it directly, so player 1 would aim with player 0's cursor. Locally the
+    original's two players share one mouse; online each has their own. `M0a`
+    sets the copy from `in[current_player_index]` (cursor form under scheme
+    `3`, world plus camera otherwise) when `PORTABLE_RECORDED`.
+
 - **Tick-0 camera conversion (`crimson-core/host/session.inc:271-282`)**:
 
   - `live_input()` currently computes tick-0 `camera_x/y` from
@@ -385,7 +398,7 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     but **cross-peer desync hashes must never hash raw `game_run_spans`**. Cross-peer
     hashes use the canonical field serializer defined in Section 4.1.
 
-### 2.3 Deliberately retained 2P behaviors vs. Phase-2 symmetry patches
+### 2.3 Retained 2P behaviors & co-op fixes
 
 To keep the prototype scope tight, the following recovered 2P behaviors are
 explicitly classified:
@@ -394,12 +407,12 @@ explicitly classified:
 | --- | --- |
 | Uninitialized `alternate_distance` in `creature_update_all.cpp:126, 198-223` | **Fixed in `M0a`** (mandatory C++ UB / determinism fix). |
 | Player-0-only perk command gate (`host.cpp:601`, `session.inc:346`) | **Fixed in `M0a`** (`any_alive` across both players). |
-| Manual reload gated on `config_player_count == 1` (`player_update_heading.cpp:1004`) | **Patched in `M0a`** (remove `config_player_count == 1` gate when `!portable_preserve_bugs` so both players can manually reload). |
+| Manual reload gated on `config_player_count == 1` (`player_update_heading.cpp:1004`) | **Fixed in `M0a` in both ports** as a new [original bug](original-bugs.md) entry: with `preserve_bugs` off, crimson-core (`crimson-core/patches/`) and `src/crimson/gameplay.py` (`single_player_mode` gate in manual reload) drop the one-player gate, and [co-op mechanics](../mechanics/systems/co-op.md) stops saying Reload does nothing in co-op. |
 | Shared XP (`player_state_table[0].experience`), level, and perk counts | **Retained by design** (core Crimsonland co-op mechanic). |
 | Single-player-only perks (`Grim Deal`, `Alternate Weapon`, `Fatal Lottery`, `Random Weapon`, `Final Revenge`, `Highlander`) blocked via `PerkFlags.MULTIPLAYER_ALLOWED` (`perk_can_offer.c:18`) | **Retained by design**. |
 | Same-tick dual bonus pickup when both players overlap an unpicked bonus (`bonus_update.cpp:44-64`) | **Retained in prototype** (deterministic on both peers; documented in `src/crimson/bonuses/pool.py:446`). |
 | 1P-only Shrinkifier / Blade Gun Easter-egg handouts (`survival_update.cpp:60-89`) | **Retained by design** (`config_player_count == 1` check is intentional). |
-| Remaining co-op symmetry bugs in [original bugs](original-bugs.md) (`01, 06, 07, 08, 09, 11, 12, 13, 14, 16, 23`) | **Deferred to Phase 2** (deterministic in `game.wasm`; needed only for Python 2P gate parity). |
+| Co-op symmetry bugs in [original bugs](original-bugs.md) (`06, 07, 08, 09, 12, 13, 14, 15, 16, 23`; `01`, `11` and `19` are covered above or already in `crimson-core/patches/`) | **Fixed in `M0a`**: every client fixes the documented bugs, and Python's `crimson replay verify` already applies these with `preserve_bugs` off. Several change 2P RNG draws (Jinxed's victim, Pyromaniac offers, the Pistol fallback) or health, weapons and projectiles, so a 2P replay verifies in Python only once crimson-core carries the same patches. |
 
 ---
 
@@ -870,13 +883,23 @@ any other.
 
 - **One replay, two signatures**: `MSG_START_RUN` carries the replay header
   (`game_version`, `rules`, the Host's `recorder`, `pilot`, `run`), so both
-  peers write byte-identical `.crd` files. At the confirmed terminal tick each
-  peer signs the replay as a [leaderboard upload](leaderboard-identity.md#uploads)
+  peers write byte-identical `.crd` files. Each peer shows the end screen's
+  name entry ("State your name, trooper!", prefilled with the saved name) for
+  its own player, as a 1P ranked run does before `ranked_release()`
+  (`crimson-core/host/ranked.inc:85-99`). When the player confirms, the peer
+  signs the replay as a [leaderboard upload](leaderboard-identity.md#uploads)
   does and sends `MSG_RUN_SIGNED { run_epoch, name, public_key, signature }`.
   Each peer queues the replay with both signatures in its outbox, so either can
   upload later, offline play included; the service accepts the run once and
   answers the second upload with `409`. A co-op run ranks only with both
   players' valid signatures, and its entry credits both names.
+
+- **Next run waits for both names**: the Host starts the next run (Section 5.2)
+  only once both `MSG_RUN_SIGNED` for the current `run_epoch` have arrived, or
+  the partner has left. A click before that shows "Waiting for partner" on the
+  clicker's screen and fires when the second signature lands, so neither
+  player is pulled out of the name entry or the quest results reveal. Leaving
+  before signing leaves the run unranked.
 
 ---
 
@@ -1067,14 +1090,19 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
    - Fix uninitialized `alternate_distance` UB in `creature_update_all.cpp:126, 198-223`.
    - Fix player-0-only perk command alive gate (`any_alive`), simulation-owned
      music latch with split simulation/playback halves, distinct P1 virtual codes (`0x110..0x115`, fire
-     `200`, axes `2/3`), 2P tick-0 midpoint camera conversion, and 2P manual
-     reload.
+     `200`, axes `2/3`), 2P tick-0 midpoint camera conversion, per-player
+     mouse-relative cursor, and 2P manual reload (both ports).
+
+   - Port the co-op symmetry fixes (Section 2.3) into `crimson-core/patches/`,
+     except where a recorded-input seam already reads `in[current_player_index]`
+     (bug 15's POV aim arrives in each player's flag word, `seams/pov-aim.patch`).
 
    - Guard between-tick `gameplay_render_world()` simulation writes with
      `if (game_ticking)`.
 
-3. **Gate**: Native `core` and `game.wasm` agree bit-for-bit on straight 2-player
-   Survival, Rush, and Quest runs (when effect overflow is inactive).
+3. **Gate**: Native `core`, `game.wasm` and the Python port agree bit-for-bit on
+   straight 2-player Survival, Rush, and Quest runs under both bug policies
+   (`checks/gate.py`; when effect overflow is inactive).
 
 ### Milestone `M0b`: Rollback ring, side-effect isolation & `checks/game_coop.mjs` gate
 
@@ -1126,7 +1154,29 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
 2. **Changes**: `player_count`-wide replay record, verify and watch in
    crimson-core; the ranked profile with `player_count = 2` and the co-op
    boards in `ranked.py` and the service; uploads carrying both players'
-   signatures; run pages and watch replays for 2-player runs.
+   signatures; run pages and watch replays for 2-player runs. Rules that keep
+   `replay.inc`, `service/src/verify.ts` and Python's `build_run_result`
+   byte-identical:
+
+   - **Perk commands**: `replay.inc` writes `player_index: perk_picker` on
+     `perk_menu_open` and `perk_pick` (today it hardcodes `0`,
+     `crimson-core/host/replay.inc:213`).
+   - **2P quest time**: the health bonus truncates player 0's health before
+     `* 50.0f` and player 1's after it,
+     `(int)((int)p0.health * 50.0f) + (int)(p1.health * 50.0f)`
+     (`quest_results_screen_update.cpp:190-195`, `src/crimson/quests/results.py`).
+     The results screen rewrites `player_state_table[0].health` in place, so
+     `replay_result()` runs before it, as `live_end()` already does.
+   - **`players[1]` in `RunResult`**: native keeps XP on player 0 and weapon
+     usage in one global table, so player 1's `experience` is `0`, its
+     `health` is `player_state_table[1].health`, and its most used weapon comes
+     from the shared table, falling back to its own weapon only when every
+     count is zero (`most_used_weapon_id_for_player`,
+     `src/crimson/weapon_runtime/assign.py`).
+   - **Ranked aim checks**: the service's `TickMonitor`
+     (`service/src/verify.ts:129-155`) tracks the 2P camera (the midpoint of
+     the living players, `camera_update.cpp:60-97`) and checks both
+     `input(tick, 0)` and `input(tick, 1)` with a move target per player.
 
 3. **Gate**: a co-op `.crd` recorded by two browsers verifies in the service,
    in `crimson replay verify`, and in the Python port, and ranks on its co-op
