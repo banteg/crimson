@@ -3940,6 +3940,198 @@
       "offset": 0,
       "build_only": true,
       "note": "atexit destructor demo_purchase_screen_update registers for the Already paid button; 1.9.93 has no such button."
+    },
+    {
+      "name": "ui_cursor_anim_timer",
+      "address": "0x48dfc8",
+      "reference": "0x419bd7",
+      "bytes": "d805c8df4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_cursor_render."
+    },
+    {
+      "name": "ui_cursor_pulse_phase",
+      "address": "0x48dfcc",
+      "reference": "0x419bf8",
+      "bytes": "d805ccdf4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_cursor_render."
+    },
+    {
+      "name": "highscore_batch_sync_mode",
+      "address": "0x4ce451",
+      "reference": "0x42d04e",
+      "bytes": "a051e44c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_sync_worker."
+    },
+    {
+      "name": "highscore_month_label_default",
+      "address": "0x4766c4",
+      "reference": "0x4479b1",
+      "bytes": "68c4664700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_kill_progress_ratio",
+      "address": "0x48dfd8",
+      "reference": "0x41b803",
+      "bytes": "d91dd8df4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_render_hud."
+    },
+    {
+      "name": "quest_progress_bar_color_r",
+      "address": "0x484e80",
+      "reference": "0x41b769",
+      "bytes": "c705804e4800cdcc4c3e",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_render_hud."
+    },
+    {
+      "name": "quest_progress_reserved_zero",
+      "address": "0x48dfdc",
+      "reference": "0x41b7b3",
+      "bytes": "c705dcdf480000000000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_render_hud."
+    },
+    {
+      "name": "quest_select_back_button",
+      "address": "0x4d498c",
+      "reference": "0x447b0b",
+      "bytes": "89358c494d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_hardcore_checkbox",
+      "address": "0x4d4948",
+      "reference": "0x4477ce",
+      "bytes": "c60548494d0000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_hovered_stage_color",
+      "address": "0x4d4928",
+      "reference": "0x4473c1",
+      "bytes": "c70528494d000000803f",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_menu_init_flags",
+      "address": "0x4d48f0",
+      "reference": "0x4471be",
+      "bytes": "a0f0484d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_row_hover_color",
+      "address": "0x4d4938",
+      "reference": "0x44724e",
+      "bytes": "c70538494d008d8c8c3e",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_row_idle_color",
+      "address": "0x4d4880",
+      "reference": "0x447205",
+      "bytes": "c70580484d008d8c8c3e",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_screen_flags",
+      "address": "0x4d4c18",
+      "reference": "0x4477a3",
+      "bytes": "a0184c4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_selected_stage_color",
+      "address": "0x4d4bec",
+      "reference": "0x447376",
+      "bytes": "c705ec4b4d000000803f",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_stage_major",
+      "address": "0x476c48",
+      "reference": "0x4476ba",
+      "bytes": "a1486c4700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_stage_minor_index",
+      "address": "0x4d4c1c",
+      "reference": "0x447933",
+      "bytes": "89351c4c4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_title_color",
+      "address": "0x4d4968",
+      "reference": "0x44732b",
+      "bytes": "c70568494d003333333f",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_unused_blue_color",
+      "address": "0x4d4ad0",
+      "reference": "0x447297",
+      "bytes": "c705d04a4d0000000000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_unused_blue_dim_color",
+      "address": "0x4d497c",
+      "reference": "0x4472e0",
+      "bytes": "c7057c494d0000000000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "quest_select_unused_orange_color",
+      "address": "0x4d48e0",
+      "reference": "0x44740c",
+      "bytes": "c705e0484d00c7c6463f",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_select_menu_update."
+    },
+    {
+      "name": "s_unhandled_creature_type",
+      "address": "0x475594",
+      "reference": "0x430785",
+      "bytes": "6894554700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: creature_spawn_template."
+    },
+    {
+      "name": "survival_xp_smoothed",
+      "address": "0x48dfe0",
+      "reference": "0x41bf86",
+      "bytes": "890de0df4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_render_hud."
+    },
+    {
+      "name": "ui_hud_init_flags",
+      "address": "0x48d208",
+      "reference": "0x41b753",
+      "bytes": "a008d24800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_render_hud."
     }
   ],
   "absent": [

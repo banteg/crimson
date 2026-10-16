@@ -51,7 +51,7 @@ static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
 {
     float dx = lhs->x - rhs->x;
     float dy = lhs->y - rhs->y;
-    float distance_sq = dx * dx;
+    float distance_sq = (dx * dx);
     distance_sq += dy * dy;
     float distance = (float)sqrt(distance_sq);
     return distance;
@@ -482,10 +482,10 @@ extern "C" void creature_update_all(void)
 #if CL_BUILD == 10908
                                 // 1.9.8 multiplies the heading term left to right.
                                 creatures[creature_index].vel_x =
-                                    (float)cos(movement_heading) * creatures[creature_index].move_speed
+                                    ((float)cos(movement_heading) * creatures[creature_index].move_speed)
                                     * frame_dt * move_scale * 30.0f;
                                 creatures[creature_index].vel_y =
-                                    (float)sin(movement_heading) * creatures[creature_index].move_speed
+                                    ((float)sin(movement_heading) * creatures[creature_index].move_speed)
                                     * frame_dt * move_scale * 30.0f;
 #else
                                 creatures[creature_index].vel_x =
@@ -529,10 +529,10 @@ extern "C" void creature_update_all(void)
 #if CL_BUILD == 10908
                             // 1.9.8 multiplies the heading term left to right.
                             creatures[creature_index].vel_x =
-                                (float)cos(movement_heading) * creatures[creature_index].move_speed
+                                ((float)cos(movement_heading) * creatures[creature_index].move_speed)
                                 * frame_dt * move_scale * 30.0f;
                             creatures[creature_index].vel_y =
-                                (float)sin(movement_heading) * creatures[creature_index].move_speed
+                                ((float)sin(movement_heading) * creatures[creature_index].move_speed)
                                 * frame_dt * move_scale * 30.0f;
 #else
                             creatures[creature_index].vel_x =

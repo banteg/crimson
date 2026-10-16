@@ -163,3 +163,17 @@ snow from 24 December, an hour-or-five-minute shareware bar with a
 non-tutorial play counter, and recheck calls through Grim slot 0x04(0..2).
 The residual is stack-slot assignment (0x40 frame against native 0x34) and
 one x87 operand order in the analog cursor update.
+
+A C2 9044 `pack_stack_slots` trace (2026-10-16) explains the frame. Native's
+0x34 frame is a 16-byte slot at 0x0 shared by the fades, snow alpha, ratio,
+the balloon qword temporary and `banner_color`; 4-byte slots at 0x10 (balloon
+`i`, `banner_x`) and 0x14 (int-to-float temporaries, the cursor pair); an
+8-byte slot at 0x1c shared by `banner_xy`, `bar_position` and the balloon
+qword temporaries; and `bar_color` at 0x24. In ours `banner_xy` joins the
+0x0 slot (it interferes with nothing there), which pushes `banner_color` and
+the balloon temporary into new slots (0x40). Native needs `banner_xy` to
+conflict with one of the 0x0 objects, and `cursor_delta` to sort before it
+(weight 6 or more against our 4). No source shape for that was found;
+operand-order and named/unnamed cursor scale spellings leave the x87 pop
+unchanged.
+

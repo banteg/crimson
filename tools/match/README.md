@@ -748,7 +748,7 @@ include roots while the configured translation unit remains unchanged:
 
 ```sh
 uv run crimson match mutate tools/match/scratches/config_init_defaults \
-  --spec tools/match/scratches/config_init_defaults/saved-name-loop-lifetime-mutations.json \
+  --spec /tmp/config-defaults-mutations.json \
   --source tools/match/include/crimson_config_defaults_impl.h --record
 ```
 

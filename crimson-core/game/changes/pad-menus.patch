@@ -17,11 +17,10 @@ list's rows take the focus, and Enter starts the focused quest, as in the Python
 @@ -10,1 +10,2 @@
  extern IGrim2D_cpp *grim_interface_ptr;
 +extern "C" bool ui_focus_row(int row, float x, float y);
-@@ -261,16 +262,24 @@
+@@ -261,15 +262,23 @@
      int row = 0;
      int next_row;
 +    int focused_row = -1;
-     float hover_left = position.x - 10.0f;
      do {
 +        bool row_focused =
 +            (config_hardcore ? quest_unlock_index_hardcore : quest_unlock_index)
@@ -30,7 +29,7 @@ list's rows take the focus, and Enter starts the focused quest, as in the Python
 +        if (row_focused) {
 +            focused_row = row;
 +        }
-         if (ui_mouse_x > hover_left
+         if (ui_mouse_x > position.x - 10.0f
              && position.y - 2.0f < ui_mouse_y
              && position.x + 210.0f > ui_mouse_x
              && position.y + 18.0f > ui_mouse_y
@@ -43,7 +42,7 @@ list's rows take the focus, and Enter starts the focused quest, as in the Python
              grim_interface_ptr->grim_set_color_ptr(
 -                (float *)&row_idle_color);
 +                (float *)(row_focused ? &row_hover_color : &row_idle_color));
-@@ -433,2 +442,5 @@
+@@ -431,2 +440,5 @@
 +    if (focused_row >= 0 && grim_interface_ptr->grim_was_key_pressed(0x1c)) {
 +        quest_select_stage_minor_index = focused_row;
 +    }

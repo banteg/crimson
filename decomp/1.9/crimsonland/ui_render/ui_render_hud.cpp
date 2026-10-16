@@ -757,6 +757,13 @@ extern "C" void ui_render_hud(float transition_alpha)
     }
 
     grim_interface_ptr->grim_set_config_var(0x15, 1u);
+#if CL_BUILD == 10908
+    // Code-generation-only: 1.9.8 (C2 9044) shares bonus_y's frame slot with
+    // the panel temporaries, so its address-taken lifetime ends with this
+    // block. 1.9.93 keeps it function-wide; both compilers bound an
+    // address-taken local by its scope (see the scratch NOTES.md).
+    {
+#endif
     float bonus_y = (float)hud_y;
     int slot_index = 0;
     do {
@@ -766,6 +773,9 @@ extern "C" void ui_render_hud(float transition_alpha)
     } while (slot_index < 16);
 
     hud_y = (int)bonus_y + 1;
+#if CL_BUILD == 10908
+    }
+#endif
     current_player_index = 0;
     if (config_player_count > 0) {
         do {

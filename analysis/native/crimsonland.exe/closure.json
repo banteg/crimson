@@ -1,5 +1,5 @@
 {
-  "audit_digest": "b205880c310ce69bc3376230c9d644ad356d6e10a77c5009bd0d7e906c1c7194",
+  "audit_digest": "03970358a7ee0fe01600ba6dd5b21565296430f9446feb52d78124feb4bb8c00",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -63936,30 +63936,6 @@
     {
       "definitions": [
         {
-          "alignment": 1,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4657940,
-          "data_binding_kind": "definition",
-          "data_name": "default_player_name",
-          "data_storage_address": 4657940,
-          "data_storage_name": "default_player_name",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 7,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 7,
-          "weak": false
-        }
-      ],
-      "name": "?default_player_name@@3PADA"
-    },
-    {
-      "definitions": [
-        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -121327,37 +121303,6 @@
     {
       "definitions": [
         {
-          "alignment": 1,
-          "comdat": false,
-          "comdat_associative_section": null,
-          "comdat_key": null,
-          "comdat_selection": null,
-          "data_address": 4657940,
-          "data_binding_kind": "definition",
-          "data_name": "default_player_name",
-          "data_storage_address": 4657940,
-          "data_storage_name": "default_player_name",
-          "function": null,
-          "kind": "section",
-          "logical_section_size": 7,
-          "object": "tools/native/data_definitions/build/crimsonland.exe/definitions.obj",
-          "section": ".data",
-          "size": 7,
-          "weak": false
-        }
-      ],
-      "name": "?default_player_name@@3PADA",
-      "referenced_by": [
-        {
-          "function": "highscore_sync_worker",
-          "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/2e03169e4a2d42c9/highscore_sync_worker.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -134876,6 +134821,11 @@
         {
           "function": "highscore_load_table",
           "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
+          "weak": false
+        },
+        {
+          "function": "highscore_sync_worker",
+          "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/2e03169e4a2d42c9/highscore_sync_worker.obj",
           "weak": false
         },
         {
@@ -172506,7 +172456,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 2967,
+    "defined_symbols": 2966,
     "function_closure": true,
     "function_count": 673,
     "game_function_debt": {},
@@ -172515,7 +172465,7 @@
     "hard_duplicate_symbols": 0,
     "object_count": 572,
     "reference_exports_closed": true,
-    "resolved_symbols": 1265,
+    "resolved_symbols": 1264,
     "unresolved_by_category": {
       "excluded_function": 71,
       "import": 25,

@@ -4,25 +4,25 @@ window, at 1024x768, the resolution the verifier simulates, so the client's runs
 them.
 --- a/tools/match/include/crimson_config_defaults_impl.h
 +++ b/tools/match/include/crimson_config_defaults_impl.h
-@@ -59,7 +59,7 @@
-     CRIMSON_CONFIG_DEFAULTS_BLOB.config_for = 0;
+@@ -58,7 +58,7 @@
+         config_for = 0;
  
-     CRIMSON_CONFIG_DEFAULTS_BLOB.display_bpp = 32;
--    CRIMSON_CONFIG_DEFAULTS_BLOB.windowed = 0;
-+    CRIMSON_CONFIG_DEFAULTS_BLOB.windowed = 1;
-     CRIMSON_CONFIG_DEFAULTS_BLOB.game_mode = GAME_MODE_SURVIVAL;
-     CRIMSON_CONFIG_DEFAULTS_BLOB.shadows_enabled = 1;
-     CRIMSON_CONFIG_DEFAULTS_BLOB.sharp_ground_enabled = 0;
-@@ -76,8 +76,8 @@
-     CRIMSON_CONFIG_DEFAULTS_BLOB.aim_pov_right = 9000;
-     CRIMSON_CONFIG_DEFAULTS_BLOB.aim_pov_left = 27000;
-     *(int *)&CRIMSON_CONFIG_DEFAULTS_BLOB.reserved1_1a4[0] = 100;
--    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 800;
--    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 600;
-+    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_width = 1024;
-+    CRIMSON_CONFIG_DEFAULTS_BLOB.screen_height = 768;
-     CRIMSON_CONFIG_DEFAULTS_BLOB.sfx_volume = 1.0f;
-     CRIMSON_CONFIG_DEFAULTS_BLOB.music_volume = 1.0f;
+         display_bpp = 32;
+-        windowed = 0;
++        windowed = 1;
+         game_mode = GAME_MODE_SURVIVAL;
+         shadows_enabled = 1;
+         sharp_ground_enabled = 0;
+@@ -75,8 +75,8 @@
+         aim_pov_right = 9000;
+         aim_pov_left = 27000;
+         *(int *)&reserved1_1a4[0] = 100;
+-        screen_width = 800;
+-        screen_height = 600;
++        screen_width = 1024;
++        screen_height = 768;
+         sfx_volume = 1.0f;
+         music_volume = 1.0f;
  
 --- a/decomp/1.9/crimsonland/crimsonland/config_ensure_file.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/config_ensure_file.cpp

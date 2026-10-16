@@ -362,3 +362,15 @@ variants compile. The complete interaction advances 95.890411% to normalized
 exactness and `body_byte_exact=true`: 803/803 instructions, prefix 803,
 284/0/0 references, and 3,436/3,436 matched body bytes. No compiler, reference
 alias, ABI, or matching-scope change is involved.
+
+## Controls X as `position.x -= 10.0f` (2026-10-16)
+
+1.9.8 (C2 9044) folds the `const float &controls_x = hover_left` borrow and
+copy-propagates `hover_left` into the Back button's X, dropping native's
+integer store to `position.x`. Writing the row hit-test with
+`position.x - 10.0f` in place (no `hover_left` local) and restoring the
+controls row with `position.x -= 10.0f` lets both compilers CSE the hoisted
+`position.x - 10.0f` into the integer copy native stores. Both builds are
+instruction-exact (1.9.93 body-byte exact; 1.9.8 792/792). Rejected 1.9.8
+probes: direct `position.x = hover_left` (either order), a `*(const float *)&`
+read and a vector constructor assignment (all 790/792, or a temporary copy).

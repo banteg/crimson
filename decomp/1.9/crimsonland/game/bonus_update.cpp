@@ -29,20 +29,20 @@ extern "C" void bonus_update(void)
     for (int bonus_index = 0; bonus_index < 16; ++bonus_index) {
         bonus_entry_t *bonus = &bonus_pool[bonus_index];
         if (bonus->bonus_id != BONUS_ID_NONE) {
-            unsigned char picked = bonus->picked;
-            float &time_left = bonus->time.time_left;
-            time_left = picked != 0
-                ? time_left - frame_dt * 3.0f
-                : time_left - frame_dt;
+            if (bonus->picked != 0) {
+                bonus->time.time_left -= frame_dt * 3.0f;
+            } else {
+                bonus->time.time_left -= frame_dt;
+            }
 
-            if (picked == 0 && config_game_mode == GAME_MODE_TUTORIAL) {
+            if (bonus->picked == 0 && config_game_mode == GAME_MODE_TUTORIAL) {
                 bonus->time.time_left = 5.0f;
             }
             if (bonus->time.time_left < 0.0f) {
                 bonus->bonus_id = BONUS_ID_NONE;
             }
 
-            if (picked == 0) {
+            if (bonus->picked == 0) {
                 current_player_index = 0;
                 if (config_player_count > 0) {
                     int player_index;

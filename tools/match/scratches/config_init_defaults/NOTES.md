@@ -1,139 +1,23 @@
 # `config_init_defaults`
 
-Native target: `crimsonland.exe` at `0x004028f0` (734 bytes).
+Native target: `crimsonland.exe` at `0x004028f0` (734 bytes); 1.9.8 at
+`0x00402830` (704 bytes).
 
 Live Binary Ninja evidence recovers the persistent configuration defaults,
 eight saved-name slots, display and audio defaults, both players' complete
-keyboard/joystick bindings, and the two direction-arrow flags.
-
-The two contiguous 0x40-byte binding spans are now represented as
-`player_input_config_t input_config[2]`. This names all 13 active bindings and
-the three unbound tail slots per player without changing their persisted
-layout.
-
-The four movement selectors at `0x1c` and four aim selectors at `0x44` are
-likewise recovered as per-player arrays. This agrees with the native indexed
-controls-menu accesses and the fixed `crimson.cfg` parser, replacing the old
-single-player fields plus byte-gap presentation.
+keyboard/joystick bindings, and the two direction-arrow flags. The bindings are
+`player_input_config_t input_config[2]` (13 active bindings and three unbound
+tail slots per player); the movement and aim selectors are per-player arrays.
 
 The function is `void`. Its only discovered consumer is the static-initializer
-thunk recorded at `0x0047100c`, and the apparent `0x17e` return is just EAX
-residue from the repeated unbound-key assignments.
+thunk at `0x0047100c`; the apparent `0x17e` return is EAX residue from the
+repeated unbound-key assignments.
 
-VC6 `/O2 /GB /Oy-` initially produced 86.62% with 140 native and 144 candidate
-normalized instructions and 80/0/0 reference agreement. This function-local
-frame-pointer override improved the former `/O2 /GB` result by 65.19
-fuzzy-weighted bytes (77.74% to 86.62%) and resolved both apparent reference
-mismatches. A full backend and optimizer matrix confirmed that ordinary
-`/O2 /GB` remained at 77.74%, `/G6` fell to 72.08%, and the 6.5pp and MSVC 7
-backends were materially worse.
-
-The residual is register allocation around the saved-name loop: native keeps
-the slot index in `EBX`, the scaled order-array offset in `EBP`, and one name
-cursor on the stack. The natural reconstruction assigns those lifetimes
-differently, which also changes the scheduling of later constant stores. The
-evidence-backed frame-pointer profile is retained instead of introducing
-source-shaped register coercion.
-
-Live Wave 4 reinspection confirmed the two formerly mismatched stores are
-the correctly laid-out `config_blob.windowed` (`0x48050c`) and
-`config_blob.game_mode` (`0x480360`) fields. Replacing them with the overlapping
-Binary Ninja symbol aliases leaves the instruction score unchanged and worsens
-reference agreement to 63/0/4, proving that the struct-field form is the honest
-candidate. Recovery is therefore semantic-complete; `/Oy-` now aligns those
-stores cleanly at 80/0/0. The scratch consequently carries only a `compiler`
-residual, with no independent source-reference debt and no alias masking.
-
-A bounded loop-shape sweep found one further source-backed improvement. Using
-the direct indexed `saved_names[i]` spelling already proven exact in
-`config_sync_from_grim` raises this function and its byte-identical Grim copy
-from 636/734 (86.62%) to 641/734 (87.32%), narrows the gap from 98 to 93 bytes,
-and preserves references `80/0/0`. Pointer-headed order loops, explicit typed
-offsets, early index initialization, and alternate memset ordering were neutral
-or worse and are not retained. The remaining mismatch is the native one-local
-frame versus the compiler's two-local allocation, with no register hints,
-volatile state, raw offsets, or other coercion in the canonical source.
-
-A follow-up cross-profile probe on the byte-identical Grim copy tested the
-remaining `/Oy` allocation directly. Moving the name clear to the exact
-sibling's order is insufficient by itself. Moving it together with both early
-one-valued stores across the saved-name loop yields the native 140-instruction
-count and a 10-instruction prefix, but only 82.14% and references `65/0/2`;
-the stores remain on the wrong side of the loop and the two induction registers
-are swapped. Under `/Oy-` that source falls to 73.94% and `63/0/2`.
-
-Natural register, loop-scope, post-test, flattened-index, explicit-cursor,
-typed-offset, local-reference, and standard VC6 backend variants do not repair
-the tradeoff. The stronger 87.32% shared body therefore remains canonical.
-
-A later interaction between the two recovered saved-name arrays supersedes
-that checkpoint. The 9-byte name clear now follows the order used by exact
-sibling `config_sync_from_grim`; an `int *` traverses
-`saved_name_order`; and a typed `char (*)[27]` cursor advances through
-`saved_names` in the `strcpy` expression. With the stock
-`/O2 /GB /W3 /GR-` profile, both this function and its byte-identical Grim copy
-reach **89.36%**, 142 candidate versus 140 native instructions, and references
-`80/0/0`.
-
-This recovers 14.96 fuzzy-weighted bytes over the former `/Oy-` result, removes
-two candidate instructions and the function-local frame-pointer override, and
-narrows the gap from 93.04 to 78.09 bytes without introducing raw offsets or
-reference debt. The remaining compiler-only residual is the native one-slot
-frame versus VC6's two-slot allocation: native keeps the saved-name cursor on
-the stack and the slot/order inductions in `EBX`/`EBP`, while the candidate
-keeps both typed cursors in registers and spills the slot plus the
-postincrement temporary.
-
-A recovered field-cursor interaction now supersedes the typed-cursor
-checkpoint. Expressing `ui_info_texts` as the one-byte initialization it is
-prevents VC6 from sharing its integer-one value with the later four-byte
-reserved-field store, leaving `EBX` available for the saved-name slot index.
-The order traversal then follows the native byte cursor from
-`offsetof(crimson_cfg_t, saved_name_order)` up to
-`offsetof(crimson_cfg_t, saved_names)` in `sizeof(int)` steps. Those bounds are
-derived from the recovered fields rather than hard-coded offsets, and the
-matcher fakematch validator accepts the shared implementation.
-
-Stock `/O2 /GB /W3 /GR-` now reaches **99.29%**, the exact native
-**140/140** instruction count, and references `83/0/0`. The fuzzy gap falls
-from 78.09 to 5.24 bytes, a gain of 72.84 fuzzy-weighted bytes, and the
-byte-identical Grim copy produces the same object shape. The only residual is
-one scheduler inversion between two independent setup instructions: native
-publishes the saved-name cursor to its stack slot before loading the `0x88`
-order offset into `EBP`, while available VC6 backends emit those two moves in
-the opposite order.
-
-VC6.0, 6.5, and 6.6 with `/GB`, `/G5`, `/Ob1`, explicit `/Ot`, `/Oa`, and
-`/Ow` all reproduce the same one-swap result. `/G6`, `/Os`, `/Op`, `/Oy-`,
-the processor-pack compiler, and MSVC 7 regress. The remaining delta is
-therefore bounded as compiler scheduling rather than missing behavior.
-
-## Included-source lifetime sweep
-
-`saved-name-loop-lifetime-mutations.json` uses the mutation harness's included
-source overlay to evaluate all nine planned loop-scope, declaration-order,
-loop-form, and typed cursor variants directly against the shared
-`crimson_config_defaults_impl.h`. Five variants are byte-identical to the
-**99.29%**, 140/140, `83/0/0` baseline; the remaining four regress. No variant
-moves the native cursor-publication/order-offset swap in the required
-direction, so the canonical shared implementation remains unchanged. The
-complete run is recorded in `experiments.jsonl` with spec SHA-256
-`ccc9a6f77bc46718bbdb468315a53d0975843a586e442529b1f14e1edecf4144`.
-
-
-## Exact saved-name cursor schedule
-
-Re-running the cursor-lifetime matrix after the retained one-byte
-`ui_info_texts` correction exposes the interaction that the earlier cursor
-sweeps predated. Initializing a byte cursor to `saved_names[0]` between the
-slot-index zeroing and the `saved_name_order` offset assignment makes VC6
-publish the cursor stack slot before loading `0x88` into `EBP`. Advancing that
-cursor by the recovered 27-byte row size preserves the native loop body.
-
-The shared `/O2 /GB /W3 /GR-` implementation now matches all **734/734 bytes**,
-all **140/140 instructions**, and references **83/0/0** in both images. The
-typed `char (*)[27]` spelling is also exact; placing either cursor after the
-order-offset initialization reproduces the former one-swap result. The
-three-way comparison is recorded in
-`saved-name-cursor-scheduling-mutations.json`. No recovery or residual
-override remains.
+The body is shared with Grim's byte-identical `grim_config_defaults_init` as
+the inline member `crimson_cfg_cpp_t::set_defaults()`
+(`tools/match/include/crimson_config_defaults_impl.h`), called on `config_blob`.
+1.9.93 is exact (734/734 bytes, 140/140, references 83/0/0) with stock
+`/O2 /GB /W3 /GR-` and a plain indexed saved-name loop. Why `this` matters, the
+1.9.8 register-allocation residual (86.61%, 127/127) and the `ui_info_texts`
+guard are in `../grim_config_defaults_init/NOTES.md`. Earlier cursor-shaped
+reconstructions and their sweeps are in git history.

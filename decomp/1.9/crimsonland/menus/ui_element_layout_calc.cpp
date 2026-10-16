@@ -53,8 +53,8 @@ extern "C" void ui_element_layout_calc(ui_element_t *element)
 
     *(ui_layout_vec2_t *)&element->hover_max = position + vertex_2;
     unsigned char direction_flag = element->direction_flag;
-    hover_max.x -= width * 0.05f;
-    hover_max.y -= height * 0.1f;
+    element->hover_max.x -= width * 0.05f;
+    element->hover_max.y -= height * 0.1f;
 
     if (direction_flag) {
         for (int i = 0; i < element->vertex_count; i += 2) {

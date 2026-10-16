@@ -424,3 +424,19 @@ combination is exact, and both position reversions lose exactness.
 
 The preceding 92.214912% source is pinned as `before.cpp`. The 96.271930% and
 96.929825% investigation candidates were partial steps, not exact credit.
+
+## 1.9.8 frame: bonus_y scope (2026-10-16)
+
+1.9.8 native packs `bonus_y` into the 8-byte slot shared by the progress
+position, popup fade, render value, clock and name X temporaries, giving the
+0x34 frame. A 9044 packer trace shows the address-taken `bonus_y` conflicting
+with every stack object in the function: for an address-taken local both 8966
+and 9044 bound the conflict set by the lexical scope (a scope opened at the
+XP panel conflicts only with that panel's objects under either compiler), not
+by its first definition. 1.9.93 needs the function-wide lifetime (its own slot)
+and 1.9.8 the block lifetime, so no shared spelling exists. Searched: function
+scope (1.9.93 exact, 1.9.8 0x38), block around the bonus loop (1.9.8 exact,
+1.9.93 prefix 1), the block extended to the function end or opened before the
+XP panel (both builds wrong), plus the earlier split-fade local. The source
+therefore opens the block only under `CL_BUILD == 10908`, commented as a
+code-generation-only guard. Both builds are instruction-exact.

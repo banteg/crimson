@@ -329,3 +329,13 @@ its complete instruction, reference, and encoded-body comparisons.
 and `/crimsonland/scoring_v2_6.php`, and the do/while read loop. Residual: native
 copies `default_player_name` into the received record with a dest-minus-source
 cursor; every spelling tried keeps scaled indexing.
+
+## 1.9.8 received-record reset (2026-10-16)
+
+The received record is now reset through `highscore_record_cpp_t::reset_light()`
+(`crimsonland_highscore_record.h`), the inline member `highscore_write_record`
+already uses. Reached through `this`, C2 9044 lowers the default-name copy with
+native's dest-minus-source cursor; the free-standing `memset`/`strcpy` spelling
+folded the frame address into scaled indexing. 1.9.8 is instruction-exact
+(528/528, refs 126/2/0, the two unresolved being 1.9.8 data pins); 1.9.93 stays
+exact. No guard.

@@ -371,8 +371,8 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         int alien_chain_cursor;
         creature->type_id = CREATURE_TYPE_ALIEN;
         alien_chain_cursor = terrain_texture_height / 2;
-        creature->ai_mode = CREATURE_AI_CHASE_PLAYER;
         creature_spawn_vec2_t chain_position(-10.0f, (float)alien_chain_cursor);
+        creature->ai_mode = CREATURE_AI_CHASE_PLAYER;
         *(creature_spawn_vec2_t *)&creature->position = chain_position;
 
         creature->health = 200.0f;

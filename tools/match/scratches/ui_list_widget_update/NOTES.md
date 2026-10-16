@@ -126,3 +126,12 @@ copy-then-publish and copy-then-add forms fell to 80.94% and 80.69%,
 respectively; they were restored. The retained vector-offset form is exact:
 **100.00%**, **403/403 instructions**, prefix **403**, and references
 `50/0/0`.
+
+## 1.9.8 row offset (2026-10-16, open)
+
+1.9.8 native keeps the strength-reduced `row_index * 16` IV only in memory (the
+dead `xy` argument slot, loaded into ECX each iteration); the shared source
+colours it in EBX with a store-copy for the `fild`, as 1.9.93 native does.
+No improvement under 9044 (all neutral except the worse named offset): a named row offset, `(row_index + 1) * 16`, a per-iteration
+`row_y`, hoisted declarations, operand order, and the earlier ui_focus_*
+bodies of the 1.9.8 unit ahead of the function.

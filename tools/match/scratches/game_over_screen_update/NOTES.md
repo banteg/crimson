@@ -62,8 +62,20 @@ the experiment ledger SHA-256 is
 
 ## 1.9.8 (msvc6.5pp)
 
-76.7% under `--build 1.9.8`. Copying the record name before setting the editor
-limits is canonical-neutral and matches the 1.9.8 store order. Residual: 9044
-keeps the name-buffer address in EBP and the banner copy on the stack, where
-native keeps the banner in ESI/EDI. Reusing `panel_xy` as the banner copy gives
-native's 0x10 frame but not the registers, and loses 8.5% canonically.
+96.88% under `--build 1.9.8`, 449/449 instructions with every frame offset and
+register native; canonical stays exact (471/471, `215/0/0`). Three shared
+spellings, all byte-neutral for 1.9.93:
+
+- `name_input.text = name_buffer` after the `strcpy` into the record name, as
+  1.9.8 stores it. With the store first, C2 9044 counts four memory stores of
+  the buffer address and keeps it in EBP (constant score above 2).
+- The phase 0 button position and both entry positions are their own
+  block-scoped vectors instead of reusing `panel_xy`. Under 9044 an
+  address-taken object stays live to its scope end, so the reused `panel_xy`
+  overlapped the banner copy; now the panel, banner and position objects share
+  native's one slot and the frame is 0x10.
+- `game_over_vec2_t::set` lost its last caller and is gone.
+
+Residual: in the main-menu branch native schedules the three zero stores before
+the merged `add esp, 0x10`; 9044 emits the pop first. All six store orders
+compile to the same schedule.

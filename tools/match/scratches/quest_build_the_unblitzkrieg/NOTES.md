@@ -243,17 +243,25 @@ exact. The eight recorded controls isolate those steps. All eight ten-entry
 perimeters, alternating templates, signed coordinate division, trigger cadence,
 central entry, and final count of 81 are preserved.
 
-## 1.9.8 residual (2026-10-16)
+## 1.9.8 (C2 9044), exact with a code-generation guard (2026-10-16)
 
-62.99%, 291 against 290 instructions: C2 9044 keeps the constant 1 in EBX for the whole function, while native uses immediates in the first loop and loads 1 into EBP from the centre record on, leaving EBX for `entry_count` and EBP for `entries`. Indexing the first loop like the others is exact under 8966 but does not change 1.9.8; record pointers, a shared three-field setter, `set_template` in every loop, `% 2` and moving the count increment did not split the constant.
+Exact in both builds.
 
-## 1.9.8 (C2 9044), open
-
-62.99%. 9044 shares one constant-1 register (EBX) between the count stores and
-the byte parity tests (`and al, bl`) for the whole function; native keeps
-immediates in the first two sweeps, holds `entries` in EBP there, and loads 1
-into EBP only after the second sweep. Byte-width parity tests
-(`(unsigned char)entry_count & 1`, `(unsigned char)toggle & 1`) reach 91.72%
-(290/290 instructions, only the `add edi, 0x270`/`add edx, 7` order left) but
-break 1.9.93. A `set_count` helper, `% 2`, `!= 0`, an `unsigned char` toggle,
-and count, cursor and declaration reorderings do not split the constant.
+- Shared: the loop increments follow native's store order: `++spawn` before
+  `trigger_time_ms += 1800` in the first loop, and `trigger_time_ms += ...`
+  before `offset += 0x270` in the others. 8966 is unchanged; 9044 ties those
+  adds on priority and breaks the tie by IL order.
+- Guarded (`QUEST_PARITY`, code generation only): 1.9.8 tests parity at byte
+  width, `(unsigned char)value & 1`. With dword tests 9044 promotes every
+  `& 1` into one function-wide constant-1 range, held in EBX across all eight
+  loops; byte-width tests keep native's immediates, `entry_count` in EBX,
+  `entries` in EBP, and 1 in EBP from the centre record on. 8966 needs the
+  dword form (`and al, bl`).
+- Shared-spelling search (all fail in one build): `(char)` and
+  `(unsigned char)` casts of the value, of the result or of both operands,
+  `(bool)(x & 1)`, `(x & 1) != 0`, `1 & x`, `x & (unsigned char)1`,
+  an `unsigned char` toggle, a `set_count` helper, record pointers, a shared
+  three-field setter, `set_template` in every loop, first-loop indexing, and
+  count, cursor and declaration reorderings. Every byte-width form matches 1.9.8
+  and breaks 1.9.93, every dword form does the reverse, and `x % 2` breaks
+  both.

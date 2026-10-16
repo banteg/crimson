@@ -44,3 +44,13 @@ component stores together; direct scalar assignments changed the arithmetic
 lifetime. `minimum-component-publication-mutations.json` records those
 boundaries and the equivalent integer-bit form. No recovery or residual
 override remains.
+
+## 1.9.8 (C2 9044), exact (2026-10-16)
+
+Exact in both builds. The `hover_max` copy stores through `element` while the
+two `hover_max -= ...` updates went through the `hover_max` reference; 9044
+could not separate the bases, so the y-component store preceded the x update
+and its source load (`mov edx, [esp+4]`) out-prioritised the `fxch`. Writing the
+updates as `element->hover_max.x/.y` gives one base with disjoint offsets,
+drops the false edge, and the `fxch`/`fmul` issue first as in native. 8966 is
+unchanged.

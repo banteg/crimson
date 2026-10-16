@@ -188,7 +188,7 @@ extern "C" void typo_player_update(
                     vec2f_t effect_velocity;
                     vec2f_t effect_position;
                     effect_velocity.x = heading_cos * 15.0f;
-                    effect_velocity.y = heading_sin * 15.0f;
+                    effect_velocity.y = (heading_sin * 15.0f);
                     vec2f_t *player_position =
                         &player_state_table[current_player_index].position;
                     typo_fire_vec_add(
