@@ -46,7 +46,8 @@ address-keyed source evidence, a native-oracle test, or the core gate. See [evid
   leaderboard under the [ranked rules](ranked-rules.md).
 - Custom network play (LAN, lockstep, rollback, relay) was removed on 2026-09-05 because it never
   restored full state. A future design must start from the deterministic session and prove full state
-  restore and corrected-input resimulation before adding transport or lobby UI.
+  restore and corrected-input resimulation before adding transport or lobby UI; see the
+  [network co-op specification](network-coop.md).
 
 Outstanding native timing, precision, input-scheme and visual differences should
 be recorded with a reproducer and evidence. A completed implementation plan or a

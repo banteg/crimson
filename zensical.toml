@@ -59,6 +59,7 @@ nav = [
       { "Float parity policy" = "rewrite/float-parity-policy.md" },
       { "Float expression precision map" = "rewrite/float-expression-precision-map.md" },
       { "Local multiplayer" = "rewrite/local-multiplayer.md" },
+      { "Network co-op" = "rewrite/network-coop.md" },
     ]},
     { "Modules" = [
       { "Rendering pipeline" = "rewrite/rendering-pipeline.md" },
