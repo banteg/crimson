@@ -34,25 +34,25 @@ char *highscore_build_path(void)
     if (config_game_mode == GAME_MODE_RUSH) {
         sprintf(
             highscore_path_buf,
-            "%s\\scores5\\rush.hi",
+            "%s\\" HIGHSCORE_DIR "\\rush.hi",
             highscore_cwd_buf);
     } else if (config_game_mode == GAME_MODE_SURVIVAL) {
         sprintf(
             highscore_path_buf,
-            "%s\\scores5\\survival.hi",
+            "%s\\" HIGHSCORE_DIR "\\survival.hi",
             highscore_cwd_buf);
     } else if (config_game_mode == GAME_MODE_QUEST) {
         if (config_hardcore != 0) {
             sprintf(
                 highscore_path_buf,
-                "%s\\scores5\\quest%d_%d.hi",
+                "%s\\" HIGHSCORE_DIR "\\quest%d_%d.hi",
                 highscore_cwd_buf,
                 quest_stage_major,
                 quest_stage_minor);
         } else {
             sprintf(
                 highscore_path_buf,
-                "%s\\scores5\\questhc%d_%d.hi",
+                "%s\\" HIGHSCORE_DIR "\\questhc%d_%d.hi",
                 highscore_cwd_buf,
                 quest_stage_major,
                 quest_stage_minor);
@@ -60,7 +60,7 @@ char *highscore_build_path(void)
     } else {
         sprintf(
             highscore_path_buf,
-            "scores5\\unknown.hi",
+            HIGHSCORE_DIR "\\unknown.hi",
             config_saved_name_0[config_selected_saved_name_slot]);
     }
 

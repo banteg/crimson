@@ -136,16 +136,6 @@
       "program": "1.0.2/crimson.exe"
     },
     {
-      "address": "0x0041e118",
-      "name": "_FloatFormat",
-      "program": "1.0.2/crimson.exe"
-    },
-    {
-      "address": "0x0041e118",
-      "name": "crt_float_format_descriptor",
-      "program": "1.0.2/crimson.exe"
-    },
-    {
       "address": "0x0041e3b0",
       "name": "___old_small_block_heap",
       "program": "1.0.2/crimson.exe"

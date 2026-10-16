@@ -708,6 +708,902 @@
       "bytes": "d904b5400f4c00",
       "offset": 0,
       "note": "sfx_play reads the per-sample cooldown and rearms it with 0.05 or 0.44, as in 1.9.93; sfx_play_panned does the same at 0x43c94f."
+    },
+    {
+      "name": "game_mode_label_buffer",
+      "address": "0x4831e0",
+      "reference": "0x412efd",
+      "bytes": "b8e0314800",
+      "offset": 0,
+      "note": "game_mode_label returns this buffer; bonus_reset_availability's access 8 bytes in voted it 4 bytes low."
+    },
+    {
+      "name": "?$S1@?1??ui_menu_item_update@@9@4EA",
+      "address": "0x4c9bd0",
+      "reference": "0x43dca1",
+      "bytes": "a0d09b4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_menu_item_update."
+    },
+    {
+      "name": "?$S1@?1??ui_update_notice_update@@9@4EA",
+      "address": "0x4c9bec",
+      "reference": "0x44197e",
+      "bytes": "a0ec9b4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_update_notice_update."
+    },
+    {
+      "name": "?hover_color@?1??ui_menu_item_update@@9@4Uui_menu_color_t@@A",
+      "address": "0x4ce090",
+      "reference": "0x43dd02",
+      "bytes": "c70590e04c008d8c8c3e",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_menu_item_update."
+    },
+    {
+      "name": "?idle_color@?1??ui_menu_item_update@@9@4Uui_menu_color_t@@A",
+      "address": "0x4c9fa8",
+      "reference": "0x43dcb7",
+      "bytes": "c705a89f4c008d8c8c3e",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_menu_item_update."
+    },
+    {
+      "name": "?update_button@?1??ui_update_notice_update@@9@4Uui_notice_button_t@@A",
+      "address": "0x4ce138",
+      "reference": "0x4419bf",
+      "bytes": "891d38e14c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_update_notice_update."
+    },
+    {
+      "name": "GUID_NULL",
+      "address": "0x46d7f8",
+      "reference": "0x43b9c4",
+      "bytes": "8b0df8d74600",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: sfx_entry_create_buffers."
+    },
+    {
+      "name": "aim64_texture",
+      "address": "0x493b70",
+      "reference": "0x42a834",
+      "bytes": "a3703b4900",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step."
+    },
+    {
+      "name": "audio_suspend_flag",
+      "address": "0x4a845c",
+      "reference": "0x429dfc",
+      "bytes": "c6055c844a0000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: audio_resume_all, audio_suspend_all, music_update_fades."
+    },
+    {
+      "name": "bodyset_texture",
+      "address": "0x48d4bc",
+      "reference": "0x4270e1",
+      "bytes": "8b15bcd44800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: fx_queue_render."
+    },
+    {
+      "name": "bonus_label_format_buffer",
+      "address": "0x493c78",
+      "reference": "0x428d4a",
+      "bytes": "68783c4900",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: bonus_label_for_entry."
+    },
+    {
+      "name": "config_key_pick_perk",
+      "address": "0x47e4d8",
+      "reference": "0x403531",
+      "bytes": "8b0dd8e44700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: perk_prompt_update_and_render."
+    },
+    {
+      "name": "config_saved_name_0",
+      "address": "0x47e108",
+      "reference": "0x43ad75",
+      "bytes": "8d8cc008e14700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_build_path."
+    },
+    {
+      "name": "config_screen_height",
+      "address": "0x47e220",
+      "reference": "0x402cb3",
+      "bytes": "a120e24700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: terrain_render, tutorial_prompt_dialog, ui_render_loading."
+    },
+    {
+      "name": "config_screen_width",
+      "address": "0x47e21c",
+      "reference": "0x402c8c",
+      "bytes": "a11ce24700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: perk_prompt_update_and_render, terrain_render, tutorial_prompt_dialog and others."
+    },
+    {
+      "name": "config_selected_saved_name_slot",
+      "address": "0x47e0e0",
+      "reference": "0x43ad6d",
+      "bytes": "a1e0e04700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_build_path."
+    },
+    {
+      "name": "config_texture_scale",
+      "address": "0x47e0d0",
+      "reference": "0x417739",
+      "bytes": "d835d0e04700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: fx_queue_render, init_audio_and_terrain, terrain_generate and others."
+    },
+    {
+      "name": "config_ui_info_texts",
+      "address": "0x47e4a9",
+      "reference": "0x4034ed",
+      "bytes": "8a0da9e44700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: perk_prompt_update_and_render."
+    },
+    {
+      "name": "console_cvar_default_true",
+      "address": "0x46f24c",
+      "reference": "0x40e824",
+      "bytes": "684cf24600",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: mod_api_core_get_var."
+    },
+    {
+      "name": "console_open_anim_t",
+      "address": "0x46f14c",
+      "reference": "0x40197b",
+      "bytes": "d82d4cf14600",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: console_update."
+    },
+    {
+      "name": "creature_kill_count",
+      "address": "0x484d54",
+      "reference": "0x41e519",
+      "bytes": "8b15544d4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: creature_handle_death."
+    },
+    {
+      "name": "creature_spawned_count",
+      "address": "0x484c94",
+      "reference": "0x427907",
+      "bytes": "a1944c4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: creature_alloc_slot."
+    },
+    {
+      "name": "default_player_name",
+      "address": "0x46f2f0",
+      "reference": "0x4128ee",
+      "bytes": "81edf0f24600",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_init_sentinels."
+    },
+    {
+      "name": "effect_discard_entry",
+      "address": "0x4a8538",
+      "reference": "0x42da11",
+      "bytes": "b838854a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: effect_spawn."
+    },
+    {
+      "name": "effect_id_table",
+      "address": "0x4735e8",
+      "reference": "0x42d984",
+      "bytes": "8b0cc5e8354700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: effect_select_texture, effect_spawn."
+    },
+    {
+      "name": "effect_spawn_detail_skip_counter",
+      "address": "0x4bfe00",
+      "reference": "0x42d9fd",
+      "bytes": "a100fe4b00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: effect_spawn."
+    },
+    {
+      "name": "effect_uv16",
+      "address": "0x4a79b0",
+      "reference": "0x42da75",
+      "bytes": "8b0cd5b0794a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: effect_spawn, effect_uv_tables_init."
+    },
+    {
+      "name": "effect_uv2",
+      "address": "0x48ef68",
+      "reference": "0x42dda2",
+      "bytes": "8b0cd568ef4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: effect_spawn, effect_uv_tables_init."
+    },
+    {
+      "name": "effect_uv4",
+      "address": "0x48eee8",
+      "reference": "0x427159",
+      "bytes": "d904c5e8ee4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: effect_spawn, effect_uv_tables_init, fx_queue_render."
+    },
+    {
+      "name": "effect_uv8",
+      "address": "0x48ece8",
+      "reference": "0x42db83",
+      "bytes": "8b0cd5e8ec4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: effect_spawn, effect_uv_tables_init."
+    },
+    {
+      "name": "effect_uv_step_16",
+      "address": "0x4735e4",
+      "reference": "0x42daaf",
+      "bytes": "d905e4354700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: effect_spawn."
+    },
+    {
+      "name": "effect_uv_step_2",
+      "address": "0x4735d8",
+      "reference": "0x42dddc",
+      "bytes": "d905d8354700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: effect_spawn."
+    },
+    {
+      "name": "effect_uv_step_4",
+      "address": "0x4735dc",
+      "reference": "0x42dccb",
+      "bytes": "d905dc354700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: effect_spawn."
+    },
+    {
+      "name": "effect_uv_step_8",
+      "address": "0x4735e0",
+      "reference": "0x42dbbd",
+      "bytes": "d905e0354700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: effect_spawn."
+    },
+    {
+      "name": "effect_uv_strip16",
+      "address": "0x48ec58",
+      "reference": "0x41f6ed",
+      "bytes": "c704c55cec480000000000",
+      "offset": 4,
+      "note": "Instruction-exact under 1.9.8: effect_uv_tables_init."
+    },
+    {
+      "name": "frame_dt_copy",
+      "address": "0x47c848",
+      "reference": "0x401960",
+      "bytes": "d90548c84700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: audio_update, console_update."
+    },
+    {
+      "name": "fx_rotated_color_r",
+      "address": "0x499010",
+      "reference": "0x426fe8",
+      "bytes": "8d8110904900",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: fx_queue_add_rotated, fx_queue_render."
+    },
+    {
+      "name": "fx_rotated_creature_type_id",
+      "address": "0x498f08",
+      "reference": "0x42704a",
+      "bytes": "890c95088f4900",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: fx_queue_add_rotated, fx_queue_render."
+    },
+    {
+      "name": "fx_rotated_pos_x",
+      "address": "0x48e118",
+      "reference": "0x42705c",
+      "bytes": "890cd518e14800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: fx_queue_add_rotated, fx_queue_render."
+    },
+    {
+      "name": "fx_rotated_rotation",
+      "address": "0x493b78",
+      "reference": "0x42703f",
+      "bytes": "d91c95783b4900",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: fx_queue_add_rotated, fx_queue_render."
+    },
+    {
+      "name": "fx_rotated_scale",
+      "address": "0x48e398",
+      "reference": "0x427052",
+      "bytes": "d91c9598e34800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: fx_queue_add_rotated, fx_queue_render."
+    },
+    {
+      "name": "game_state_prev",
+      "address": "0x484f4c",
+      "reference": "0x419257",
+      "bytes": "a14c4f4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: creature_render_all."
+    },
+    {
+      "name": "grim_dll_module_handle",
+      "address": "0x48dfe8",
+      "reference": "0x41d5ce",
+      "bytes": "a3e8df4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_load_interface."
+    },
+    {
+      "name": "grim_dll_name",
+      "address": "0x48dff0",
+      "reference": "0x41d5e2",
+      "bytes": "bef0df4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_load_interface."
+    },
+    {
+      "name": "highscore_cwd_buf",
+      "address": "0x4c0a18",
+      "reference": "0x43acce",
+      "bytes": "68180a4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_build_path."
+    },
+    {
+      "name": "highscore_cwd_buf_tail_nul",
+      "address": "0x4c0c17",
+      "reference": "0x43acdb",
+      "bytes": "c605170c4c0000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_build_path."
+    },
+    {
+      "name": "highscore_cwd_cached",
+      "address": "0x4c0c1c",
+      "reference": "0x43acc0",
+      "bytes": "a01c0c4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_build_path."
+    },
+    {
+      "name": "highscore_named_path_buf",
+      "address": "0x4c0918",
+      "reference": "0x43adf6",
+      "bytes": "6818094c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_build_path."
+    },
+    {
+      "name": "highscore_path_buf",
+      "address": "0x4c0998",
+      "reference": "0x43ad38",
+      "bytes": "6898094c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_build_path."
+    },
+    {
+      "name": "highscore_score_xp",
+      "address": "0x484d44",
+      "reference": "0x4062b1",
+      "bytes": "c705444d480000000000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_rank_index, quest_mode_update."
+    },
+    {
+      "name": "highscore_table_count",
+      "address": "0x4c0c18",
+      "reference": "0x43ac45",
+      "bytes": "8b0d180c4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_rank_index."
+    },
+    {
+      "name": "hud_show_health_panel",
+      "address": "0x484e90",
+      "reference": "0x41c678",
+      "bytes": "a2904e4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: hud_update_and_render."
+    },
+    {
+      "name": "hud_show_quest_panel",
+      "address": "0x484e93",
+      "reference": "0x41c687",
+      "bytes": "a2934e4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: hud_update_and_render."
+    },
+    {
+      "name": "hud_show_timer_panel",
+      "address": "0x484e94",
+      "reference": "0x41c6bf",
+      "bytes": "a2944e4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: hud_update_and_render."
+    },
+    {
+      "name": "hud_show_weapon_panel",
+      "address": "0x484e91",
+      "reference": "0x41c67d",
+      "bytes": "a2914e4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: hud_update_and_render."
+    },
+    {
+      "name": "hud_show_xp_panel",
+      "address": "0x484e92",
+      "reference": "0x41c682",
+      "bytes": "a2924e4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: hud_update_and_render."
+    },
+    {
+      "name": "input_key_name_buf",
+      "address": "0x4d7220",
+      "reference": "0x407921",
+      "bytes": "888820724d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: input_key_name."
+    },
+    {
+      "name": "mod_api_core_format_buffer",
+      "address": "0x4d7020",
+      "reference": "0x40e7da",
+      "bytes": "6820704d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: mod_api_core_printf."
+    },
+    {
+      "name": "particles_texture",
+      "address": "0x48d4cc",
+      "reference": "0x4192a4",
+      "bytes": "8b15ccd44800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: creature_render_all, fx_queue_render, ui_render_aim_enhancement."
+    },
+    {
+      "name": "perk_id_fastloader",
+      "address": "0x4bfe24",
+      "reference": "0x413a31",
+      "bytes": "8b1524fe4b00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: player_start_reload."
+    },
+    {
+      "name": "perk_id_monster_vision",
+      "address": "0x4bfeb0",
+      "reference": "0x418765",
+      "bytes": "8b0db0fe4b00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: creature_render_all, creature_render_type."
+    },
+    {
+      "name": "perk_pending_count",
+      "address": "0x484c8c",
+      "reference": "0x4034a0",
+      "bytes": "a18c4c4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: perk_prompt_update_and_render, tutorial_prompt_dialog."
+    },
+    {
+      "name": "perk_prompt_origin_y",
+      "address": "0x48cf08",
+      "reference": "0x40354d",
+      "bytes": "d90508cf4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: perk_prompt_update_and_render."
+    },
+    {
+      "name": "primary_button",
+      "address": "0x47e4e4",
+      "reference": "0x40770d",
+      "bytes": "891de4e44700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_prompt_dialog."
+    },
+    {
+      "name": "quest_spawn_last_time_ms",
+      "address": "0x484d10",
+      "reference": "0x439f63",
+      "bytes": "892d104d4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_start_selected."
+    },
+    {
+      "name": "quest_spawn_total_creatures",
+      "address": "0x484cb4",
+      "reference": "0x439f5d",
+      "bytes": "893db44c4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_start_selected."
+    },
+    {
+      "name": "quest_stage_banner_timer_ms",
+      "address": "0x484f24",
+      "reference": "0x40613d",
+      "bytes": "a1244f4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_mode_update, quest_start_selected."
+    },
+    {
+      "name": "quest_transition_timer_ms",
+      "address": "0x484d68",
+      "reference": "0x406175",
+      "bytes": "a1684d4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: quest_mode_update."
+    },
+    {
+      "name": "quest_unlock_index",
+      "address": "0x484d14",
+      "reference": "0x406260",
+      "bytes": "8b0d144d4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_load_status, game_save_status, quest_mode_update."
+    },
+    {
+      "name": "quest_unlock_index_hardcore",
+      "address": "0x484d18",
+      "reference": "0x4049c9",
+      "bytes": "a1184d4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_load_status, game_save_status, gameplay_render_world and others."
+    },
+    {
+      "name": "render_scratch_f0",
+      "address": "0x493ab0",
+      "reference": "0x427174",
+      "bytes": "8915b03a4900",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: fx_queue_render."
+    },
+    {
+      "name": "render_scratch_f2",
+      "address": "0x493ab8",
+      "reference": "0x427195",
+      "bytes": "a3b83a4900",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: fx_queue_render."
+    },
+    {
+      "name": "repeat_button",
+      "address": "0x47df70",
+      "reference": "0x4076a7",
+      "bytes": "891d70df4700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_prompt_dialog."
+    },
+    {
+      "name": "sfx_init_disabled",
+      "address": "0x4a83c2",
+      "reference": "0x42a21c",
+      "bytes": "a0c2834a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: init_audio_and_terrain."
+    },
+    {
+      "name": "sfx_voice_table",
+      "address": "0x4c1140",
+      "reference": "0x43c703",
+      "bytes": "bf40114c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: sfx_system_init."
+    },
+    {
+      "name": "startup_async_load_ready",
+      "address": "0x4a8464",
+      "reference": "0x42aa6a",
+      "bytes": "a264844a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: startup_audio_load_thread."
+    },
+    {
+      "name": "startup_bootstrap_pending",
+      "address": "0x4a845e",
+      "reference": "0x42a839",
+      "bytes": "c6055e844a0001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step."
+    },
+    {
+      "name": "startup_intro_enabled",
+      "address": "0x4a845d",
+      "reference": "0x42aa65",
+      "bytes": "a25d844a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: startup_audio_load_thread."
+    },
+    {
+      "name": "startup_texture_load_stage",
+      "address": "0x4a8460",
+      "reference": "0x42a3c0",
+      "bytes": "a160844a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step."
+    },
+    {
+      "name": "startup_texture_load_stage_count",
+      "address": "0x471a20",
+      "reference": "0x42a850",
+      "bytes": "c705201a47000b000000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step."
+    },
+    {
+      "name": "survival_reward_weapon_guard_id",
+      "address": "0x484c98",
+      "reference": "0x404a18",
+      "bytes": "833d984c480019",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_render_world."
+    },
+    {
+      "name": "survival_spawn_cooldown",
+      "address": "0x484ca4",
+      "reference": "0x40630d",
+      "bytes": "8b0da44c4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: rush_mode_update."
+    },
+    {
+      "name": "terrain_texture_failed",
+      "address": "0x484ea8",
+      "reference": "0x417750",
+      "bytes": "a0a84e4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: fx_queue_add_rotated, fx_queue_render, init_audio_and_terrain and others."
+    },
+    {
+      "name": "terrain_texture_handles",
+      "address": "0x48d228",
+      "reference": "0x41777a",
+      "bytes": "8b0c8528d24800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step, terrain_generate."
+    },
+    {
+      "name": "terrain_texture_height",
+      "address": "0x48d218",
+      "reference": "0x40645c",
+      "bytes": "db0518d24800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: init_audio_and_terrain, quest_build_cross_fire, quest_build_land_hostile and others."
+    },
+    {
+      "name": "terrain_texture_layer_1",
+      "address": "0x48d22c",
+      "reference": "0x42a623",
+      "bytes": "a32cd24800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step."
+    },
+    {
+      "name": "terrain_texture_layer_2",
+      "address": "0x48d230",
+      "reference": "0x42a632",
+      "bytes": "a330d24800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step."
+    },
+    {
+      "name": "terrain_texture_layer_3",
+      "address": "0x48d234",
+      "reference": "0x42a641",
+      "bytes": "a334d24800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step."
+    },
+    {
+      "name": "terrain_texture_layer_4",
+      "address": "0x48d238",
+      "reference": "0x42a650",
+      "bytes": "a338d24800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step."
+    },
+    {
+      "name": "terrain_texture_layer_5",
+      "address": "0x48d23c",
+      "reference": "0x42a65f",
+      "bytes": "a33cd24800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step."
+    },
+    {
+      "name": "terrain_texture_layer_6",
+      "address": "0x48d240",
+      "reference": "0x42a66e",
+      "bytes": "a340d24800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step."
+    },
+    {
+      "name": "terrain_texture_layer_7",
+      "address": "0x48d244",
+      "reference": "0x42a67b",
+      "bytes": "a344d24800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: load_textures_step."
+    },
+    {
+      "name": "terrain_texture_width",
+      "address": "0x48d214",
+      "reference": "0x40642c",
+      "bytes": "db0514d24800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: fx_queue_render, init_audio_and_terrain, quest_build_land_hostile and others."
+    },
+    {
+      "name": "tutorial_stage_timer",
+      "address": "0x484cbc",
+      "reference": "0x407819",
+      "bytes": "c705bc4c4800d0070000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_prompt_dialog."
+    },
+    {
+      "name": "tutorial_stage_transition_timer",
+      "address": "0x484cc0",
+      "reference": "0x4077e0",
+      "bytes": "8935c04c4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: tutorial_prompt_dialog."
+    },
+    {
+      "name": "typo_word_highscore_cache",
+      "address": "0x4ce480",
+      "reference": "0x4446e4",
+      "bytes": "c744241080e44c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: typo_word_pick_highscore_name."
+    },
+    {
+      "name": "typo_word_highscore_cache_count",
+      "address": "0x4d47dc",
+      "reference": "0x4447ab",
+      "bytes": "891ddc474d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: typo_word_pick_highscore_name."
+    },
+    {
+      "name": "typo_word_highscore_cache_ready",
+      "address": "0x4d47d8",
+      "reference": "0x4446c0",
+      "bytes": "a0d8474d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: typo_word_pick_highscore_name."
+    },
+    {
+      "name": "ui_aim_enhancement_anim_timer",
+      "address": "0x48dfd0",
+      "reference": "0x419ec6",
+      "bytes": "d805d0df4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_render_aim_enhancement."
+    },
+    {
+      "name": "ui_aim_enhancement_pulse_phase",
+      "address": "0x48dfd4",
+      "reference": "0x419ee6",
+      "bytes": "d805d4df4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_render_aim_enhancement."
+    },
+    {
+      "name": "ui_aim_texture",
+      "address": "0x48d47c",
+      "reference": "0x41a028",
+      "bytes": "a17cd44800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_render_aim_enhancement."
+    },
+    {
+      "name": "ui_button_tex_medium",
+      "address": "0x4764b4",
+      "reference": "0x43df60",
+      "bytes": "392db4644700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_button_update."
+    },
+    {
+      "name": "ui_button_tex_small",
+      "address": "0x4764b0",
+      "reference": "0x43df34",
+      "bytes": "a1b0644700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_button_update."
+    },
+    {
+      "name": "ui_clock_pointer_texture",
+      "address": "0x48d4ac",
+      "reference": "0x4052fb",
+      "bytes": "a1acd44800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_draw_clock_gauge."
+    },
+    {
+      "name": "ui_clock_table_texture",
+      "address": "0x48d4a8",
+      "reference": "0x405231",
+      "bytes": "a1a8d44800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_draw_clock_gauge."
+    },
+    {
+      "name": "ui_elements_timeline",
+      "address": "0x484f28",
+      "reference": "0x4049bc",
+      "bytes": "db05284f4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_render_world, hud_update_and_render, ui_elements_update_and_render."
+    },
+    {
+      "name": "ui_mouse_y",
+      "address": "0x484ed0",
+      "reference": "0x403372",
+      "bytes": "d81dd04e4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: mod_api_inp_get_analog, ui_mouse_inside_rect, ui_mouse_inside_rect_with_padding and others."
+    },
+    {
+      "name": "ui_screen_phase",
+      "address": "0x484f14",
+      "reference": "0x405412",
+      "bytes": "a1144f4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_update_victory_screen."
+    },
+    {
+      "name": "ui_scrollbar_drag_active",
+      "address": "0x4ce452",
+      "reference": "0x43d9bf",
+      "bytes": "c60552e44c0001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_scrollbar_update."
+    },
+    {
+      "name": "ui_scrollbar_drag_offset",
+      "address": "0x4ce454",
+      "reference": "0x43da04",
+      "bytes": "d91d54e44c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_scrollbar_update."
+    },
+    {
+      "name": "unlocked_perks_nav_focus_index",
+      "address": "0x4ce45c",
+      "reference": "0x440206",
+      "bytes": "a15ce44c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: unlocked_perks_database_update."
+    },
+    {
+      "name": "update_notice_open_requested",
+      "address": "0x47e548",
+      "reference": "0x441a25",
+      "bytes": "c60548e5470001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_update_notice_update."
     }
   ]
 }

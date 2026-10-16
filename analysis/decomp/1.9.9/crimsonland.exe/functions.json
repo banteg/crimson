@@ -236,10 +236,10 @@
   {
     "address": "0x00401DA0",
     "canonical_address": "0x00401DD0",
-    "end": "0x00402320",
+    "end": "0x0040231F",
     "evidence": "ordered",
     "name": "console_render",
-    "size": 1408,
+    "size": 1407,
     "aliases": [
       "?render@console_queue_t@@QAEXXZ"
     ]
@@ -448,10 +448,10 @@
   {
     "address": "0x00403500",
     "canonical_address": "0x00403500",
-    "end": "0x00403550",
+    "end": "0x00403549",
     "evidence": "referenced",
     "name": "game_core_init",
-    "size": 80
+    "size": 73
   },
   {
     "address": "0x00403550",
@@ -480,10 +480,10 @@
   {
     "address": "0x004047C0",
     "canonical_address": "0x004047C0",
-    "end": "0x00405170",
+    "end": "0x0040516B",
     "evidence": "ordered",
     "name": "demo_trial_overlay_render",
-    "size": 2480
+    "size": 2475
   },
   {
     "address": "0x00405170",
@@ -648,10 +648,10 @@
   {
     "address": "0x00406B80",
     "canonical_address": "0x00406B40",
-    "end": "0x00407110",
+    "end": "0x00407106",
     "evidence": "referenced",
     "name": "perks_update_effects",
-    "size": 1424
+    "size": 1414
   },
   {
     "address": "0x00407110",
@@ -776,10 +776,10 @@
   {
     "address": "0x0040AAE0",
     "canonical_address": "0x0040AAB0",
-    "end": "0x0040B730",
+    "end": "0x0040B725",
     "evidence": "ordered",
     "name": "gameplay_update_and_render",
-    "size": 3152
+    "size": 3141
   },
   {
     "address": "0x0040B730",
@@ -800,10 +800,10 @@
   {
     "address": "0x0040B8A0",
     "canonical_address": "0x0040B740",
-    "end": "0x0040C440",
+    "end": "0x0040C438",
     "evidence": "ordered",
     "name": "demo_purchase_screen_update",
-    "size": 2976
+    "size": 2968
   },
   {
     "address": "0x0040C440",
@@ -824,10 +824,10 @@
   {
     "address": "0x0040C470",
     "canonical_address": "0x0040C1C0",
-    "end": "0x0040D250",
+    "end": "0x0040D245",
     "evidence": "ordered",
     "name": "game_frame_update",
-    "size": 3552
+    "size": 3541
   },
   {
     "address": "0x0040D250",
@@ -1312,10 +1312,10 @@
   {
     "address": "0x00410240",
     "canonical_address": "0x0040FFC0",
-    "end": "0x00410A10",
+    "end": "0x00410A0F",
     "evidence": "ordered",
     "name": "game_over_screen_update",
-    "size": 2000
+    "size": 1999
   },
   {
     "address": "0x00410A10",
@@ -1392,10 +1392,10 @@
   {
     "address": "0x00410FA0",
     "canonical_address": "0x00410D20",
-    "end": "0x004122A0",
+    "end": "0x00412299",
     "evidence": "ordered",
     "name": "quest_results_screen_update",
-    "size": 4864
+    "size": 4857
   },
   {
     "address": "0x004122A0",
@@ -1496,10 +1496,10 @@
   {
     "address": "0x00412400",
     "canonical_address": "0x00412180",
-    "end": "0x00412410",
+    "end": "0x0041240A",
     "evidence": "ordered",
     "name": "quest_meta_global_construct_and_register",
-    "size": 16
+    "size": 10
   },
   {
     "address": "0x00412410",
@@ -1534,10 +1534,10 @@
   {
     "address": "0x00412470",
     "canonical_address": "0x004121F0",
-    "end": "0x00412480",
+    "end": "0x0041247C",
     "evidence": "ordered",
     "name": "quest_meta_register_atexit",
-    "size": 16
+    "size": 12
   },
   {
     "address": "0x00412480",
@@ -1614,10 +1614,10 @@
   {
     "address": "0x00412640",
     "canonical_address": "0x004123C0",
-    "end": "0x00412650",
+    "end": "0x0041264A",
     "evidence": "ordered",
     "name": "bonus_meta_global_construct_and_register",
-    "size": 16
+    "size": 10
   },
   {
     "address": "0x00412650",
@@ -1721,10 +1721,10 @@
   {
     "address": "0x00413680",
     "canonical_address": "0x00413430",
-    "end": "0x00413790",
+    "end": "0x00413785",
     "evidence": "ordered",
     "name": "player_start_reload",
-    "size": 272
+    "size": 261
   },
   {
     "address": "0x00413790",
@@ -1737,10 +1737,10 @@
   {
     "address": "0x00413900",
     "canonical_address": "0x004136B0",
-    "end": "0x004177E0",
+    "end": "0x004177D3",
     "evidence": "ordered",
     "name": "player_update",
-    "size": 16096
+    "size": 16083
   },
   {
     "address": "0x004177E0",
@@ -1976,10 +1976,10 @@
   {
     "address": "0x0041B070",
     "canonical_address": "0x0041AED0",
-    "end": "0x0041CC10",
+    "end": "0x0041CC08",
     "evidence": "referenced",
     "name": "ui_render_hud",
-    "size": 7072
+    "size": 7064
   },
   {
     "address": "0x0041CC10",
@@ -2016,10 +2016,10 @@
   {
     "address": "0x0041D170",
     "canonical_address": "0x0041CFE0",
-    "end": "0x0041DCE0",
+    "end": "0x0041DCD8",
     "evidence": "referenced",
     "name": "dx_get_version_fallback_from_files",
-    "size": 2928
+    "size": 2920
   },
   {
     "address": "0x0041DCE0",
@@ -2131,19 +2131,11 @@
   },
   {
     "address": "0x0041E0F0",
-    "canonical_address": "0x0041DF50",
-    "end": "0x0041E100",
-    "evidence": "ordered",
-    "name": "demo_trial_time_limit_ms",
-    "size": 16
-  },
-  {
-    "address": "0x0041E100",
     "canonical_address": "0x0041DF60",
-    "end": "0x0041E110",
-    "evidence": "ordered",
+    "end": "0x0041E0F5",
+    "evidence": "called",
     "name": "play_time_get",
-    "size": 16
+    "size": 5
   },
   {
     "address": "0x0041E110",
@@ -2692,10 +2684,10 @@
   {
     "address": "0x0041FA70",
     "canonical_address": "0x0041F8D0",
-    "end": "0x0041FD40",
+    "end": "0x0041FD34",
     "evidence": "referenced",
     "name": "bonus_try_spawn_on_kill",
-    "size": 720
+    "size": 708
   },
   {
     "address": "0x0041FD40",
@@ -2708,10 +2700,10 @@
   {
     "address": "0x0041FDF0",
     "canonical_address": "0x0041FC60",
-    "end": "0x0041FE10",
+    "end": "0x0041FE02",
     "evidence": "referenced",
     "name": "weapon_name_get",
-    "size": 32
+    "size": 18
   },
   {
     "address": "0x0041FE10",
@@ -2764,10 +2756,10 @@
   {
     "address": "0x004205D0",
     "canonical_address": "0x00420440",
-    "end": "0x00420760",
+    "end": "0x00420752",
     "evidence": "referenced",
     "name": "projectile_spawn",
-    "size": 400
+    "size": 386
   },
   {
     "address": "0x00420760",
@@ -2812,10 +2804,10 @@
   {
     "address": "0x00420D20",
     "canonical_address": "0x00420B90",
-    "end": "0x00422A3E",
+    "end": "0x00422DF7",
     "evidence": "referenced",
     "name": "projectile_update",
-    "size": 7454
+    "size": 8407
   },
   {
     "address": "0x00422E00",
@@ -2836,18 +2828,18 @@
   {
     "address": "0x00425FE0",
     "canonical_address": "0x00425E50",
-    "end": "0x00426380",
+    "end": "0x00426376",
     "evidence": "ordered",
     "name": "player_take_damage",
-    "size": 928
+    "size": 918
   },
   {
     "address": "0x00426380",
     "canonical_address": "0x00426220",
-    "end": "0x00426913",
+    "end": "0x0042782F",
     "evidence": "referenced",
     "name": "creature_update_all",
-    "size": 1427
+    "size": 5295
   },
   {
     "address": "0x00427830",
@@ -2919,10 +2911,10 @@
   {
     "address": "0x004284C0",
     "canonical_address": "0x00428390",
-    "end": "0x004296B0",
+    "end": "0x004296A4",
     "evidence": "referenced",
     "name": "player_render",
-    "size": 4592
+    "size": 4580
   },
   {
     "address": "0x004296B0",
@@ -2935,10 +2927,10 @@
   {
     "address": "0x00429720",
     "canonical_address": "0x004295F0",
-    "end": "0x0042A720",
+    "end": "0x0042A71B",
     "evidence": "referenced",
     "name": "bonus_render",
-    "size": 4096
+    "size": 4091
   },
   {
     "address": "0x0042A720",
@@ -3071,10 +3063,10 @@
   {
     "address": "0x0042B3C0",
     "canonical_address": "0x0042B290",
-    "end": "0x0042C480",
+    "end": "0x0042C473",
     "evidence": "ordered",
     "name": "game_startup_init",
-    "size": 4288
+    "size": 4275
   },
   {
     "address": "0x0042C480",
@@ -3095,10 +3087,10 @@
   {
     "address": "0x0042C570",
     "canonical_address": "0x0042C450",
-    "end": "0x0042D200",
+    "end": "0x0042D1F1",
     "evidence": "ordered",
     "name": "crimsonland_main",
-    "size": 3216
+    "size": 3201
   },
   {
     "address": "0x0042D200",
@@ -3111,10 +3103,10 @@
   {
     "address": "0x0042D9C0",
     "canonical_address": "0x0042D8A0",
-    "end": "0x0042DF30",
+    "end": "0x0042DF21",
     "evidence": "referenced",
     "name": "statistics_update_check_worker",
-    "size": 1392
+    "size": 1377
   },
   {
     "address": "0x0042DF30",
@@ -3358,10 +3350,10 @@
   {
     "address": "0x0042FC70",
     "canonical_address": "0x0042FB10",
-    "end": "0x0042FD30",
+    "end": "0x0042FD21",
     "evidence": "referenced",
     "name": "perk_can_offer",
-    "size": 192
+    "size": 177
   },
   {
     "address": "0x0042FD30",
@@ -3374,10 +3366,10 @@
   {
     "address": "0x0042FD90",
     "canonical_address": "0x0042FC30",
-    "end": "0x0042FE40",
+    "end": "0x0042FE36",
     "evidence": "referenced",
     "name": "perks_rebuild_available",
-    "size": 176
+    "size": 166
   },
   {
     "address": "0x0042FE40",
@@ -3398,10 +3390,10 @@
   {
     "address": "0x0042FEE0",
     "canonical_address": "0x0042FD90",
-    "end": "0x00430B40",
+    "end": "0x00430B39",
     "evidence": "referenced",
     "name": "perks_init_database",
-    "size": 3168
+    "size": 3161
   },
   {
     "address": "0x00430B40",
@@ -4561,10 +4553,10 @@
   {
     "address": "0x0043F680",
     "canonical_address": "0x0043F550",
-    "end": "0x004401E0",
+    "end": "0x004401D5",
     "evidence": "referenced",
     "name": "statistics_menu_update",
-    "size": 2912
+    "size": 2901
   },
   {
     "address": "0x004401E0",
@@ -4633,10 +4625,10 @@
   {
     "address": "0x00440260",
     "canonical_address": "0x00440110",
-    "end": "0x00440A90",
+    "end": "0x00440A85",
     "evidence": "referenced",
     "name": "unlocked_weapons_database_update",
-    "size": 2096
+    "size": 2085
   },
   {
     "address": "0x00440A90",
@@ -4721,10 +4713,10 @@
   {
     "address": "0x004414F0",
     "canonical_address": "0x004413A0",
-    "end": "0x004422A0",
+    "end": "0x0044229D",
     "evidence": "referenced",
     "name": "ui_text_input_render",
-    "size": 3504
+    "size": 3501
   },
   {
     "address": "0x004422A0",
@@ -4873,10 +4865,10 @@
   {
     "address": "0x00444AD0",
     "canonical_address": "0x00444980",
-    "end": "0x004450C0",
+    "end": "0x004450BB",
     "evidence": "referenced",
     "name": "typo_player_update",
-    "size": 1520
+    "size": 1515
   },
   {
     "address": "0x004450C0",
@@ -4953,10 +4945,10 @@
   {
     "address": "0x00446120",
     "canonical_address": "0x00446030",
-    "end": "0x004461D0",
+    "end": "0x004461CF",
     "evidence": "referenced",
     "name": "input_primary_just_pressed",
-    "size": 176
+    "size": 175
   },
   {
     "address": "0x004461D0",
@@ -5345,10 +5337,10 @@
   {
     "address": "0x0044EE60",
     "canonical_address": "0x0044ED80",
-    "end": "0x0044FB10",
+    "end": "0x0044FB0A",
     "evidence": "referenced",
     "name": "play_game_menu_update",
-    "size": 3248
+    "size": 3242
   },
   {
     "address": "0x0044FB10",
@@ -5425,10 +5417,10 @@
   {
     "address": "0x0044FD50",
     "canonical_address": "0x0044FC70",
-    "end": "0x0044FD60",
+    "end": "0x0044FD58",
     "evidence": "referenced",
     "name": "ui_menu_main_click_buy_full_version",
-    "size": 16
+    "size": 8
   },
   {
     "address": "0x0044FD60",
@@ -5457,10 +5449,10 @@
   {
     "address": "0x004519D0",
     "canonical_address": "0x00451910",
-    "end": "0x00451A70",
+    "end": "0x00451A66",
     "evidence": "ordered",
     "name": "weapon_table_defaults_global_init",
-    "size": 160
+    "size": 150
   },
   {
     "address": "0x00451A70",
@@ -5473,26 +5465,26 @@
   {
     "address": "0x00452D50",
     "canonical_address": "0x00452CD0",
-    "end": "0x00452DC0",
+    "end": "0x00452DBA",
     "evidence": "referenced",
     "name": "weapon_pick_random_available",
-    "size": 112
+    "size": 106
   },
   {
     "address": "0x00452DC0",
     "canonical_address": "0x00452D40",
-    "end": "0x00452EA0",
+    "end": "0x00452E98",
     "evidence": "referenced",
     "name": "weapon_assign_player",
-    "size": 224
+    "size": 216
   },
   {
     "address": "0x00452EA0",
     "canonical_address": "0x00452E40",
-    "end": "0x00452F40",
+    "end": "0x00452F3D",
     "evidence": "referenced",
     "name": "weapon_refresh_available",
-    "size": 160
+    "size": 157
   },
   {
     "address": "0x00452F90",
@@ -8237,6 +8229,14 @@
     ]
   },
   {
+    "address": "0x00462910",
+    "canonical_address": "0x00462EB0",
+    "end": "0x0046293D",
+    "evidence": "ordered",
+    "name": "crt_run_initializers",
+    "size": 45
+  },
+  {
     "address": "0x0046293D",
     "canonical_address": "0x00462EDD",
     "end": "0x0046294E",
@@ -8357,13 +8357,13 @@
   },
   {
     "address": "0x00463147",
-    "canonical_address": "0x00463B10",
+    "canonical_address": "0x004636F9",
     "end": "0x00463197",
     "evidence": "ordered",
-    "name": "crt_cfltcvt",
+    "name": "crt_ms_p5_test_fdiv",
     "size": 80,
     "aliases": [
-      "__cfltcvt"
+      "__ms_p5_test_fdiv"
     ]
   },
   {
@@ -8391,12 +8391,23 @@
   {
     "address": "0x00463280",
     "canonical_address": "0x00463820",
-    "end": "0x004635E6",
+    "end": "0x00463570",
     "evidence": "referenced",
     "name": "crt_fassign",
-    "size": 870,
+    "size": 752,
     "aliases": [
       "__fassign"
+    ]
+  },
+  {
+    "address": "0x00463570",
+    "canonical_address": "0x00463B10",
+    "end": "0x004635E6",
+    "evidence": "referenced",
+    "name": "crt_cfltcvt",
+    "size": 118,
+    "aliases": [
+      "__cfltcvt"
     ]
   },
   {
@@ -8558,10 +8569,10 @@
   {
     "address": "0x00464C20",
     "canonical_address": "0x00464C70",
-    "end": "0x00465080",
+    "end": "0x00464CF0",
     "evidence": "referenced",
     "name": "crt_strlen",
-    "size": 1120,
+    "size": 208,
     "aliases": [
       "_strlen"
     ]
@@ -8659,10 +8670,10 @@
   {
     "address": "0x0046556F",
     "canonical_address": "0x004655BF",
-    "end": "0x00465602",
+    "end": "0x00465600",
     "evidence": "referenced",
     "name": "crt_commit",
-    "size": 147
+    "size": 145
   },
   {
     "address": "0x00465602",

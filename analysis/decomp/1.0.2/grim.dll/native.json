@@ -27,6 +27,17 @@
       ]
     },
     {
+      "address": 268439568,
+      "name": "native_function_10001010",
+      "blocks": [
+        {
+          "address": 268439568,
+          "end": 268439569,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
       "address": 268439584,
       "name": "native_function_10001020",
       "blocks": [
@@ -35,6 +46,17 @@
           "end": 268439589,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 268439600,
+          "end": 268439601,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
+      "address": 268439600,
+      "name": "native_function_10001030",
+      "blocks": [
         {
           "address": 268439600,
           "end": 268439601,
@@ -59,6 +81,17 @@
       ]
     },
     {
+      "address": 268439632,
+      "name": "native_function_10001050",
+      "blocks": [
+        {
+          "address": 268439632,
+          "end": 268439633,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
       "address": 268439648,
       "name": "native_function_10001060",
       "blocks": [
@@ -67,6 +100,17 @@
           "end": 268439653,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 268439664,
+          "end": 268439665,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
+      "address": 268439664,
+      "name": "native_function_10001070",
+      "blocks": [
         {
           "address": 268439664,
           "end": 268439665,
@@ -91,6 +135,17 @@
       ]
     },
     {
+      "address": 268439696,
+      "name": "native_function_10001090",
+      "blocks": [
+        {
+          "address": 268439696,
+          "end": 268439697,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
       "address": 268439712,
       "name": "native_function_100010a0",
       "blocks": [
@@ -99,6 +154,17 @@
           "end": 268439717,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 268439728,
+          "end": 268439729,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
+      "address": 268439728,
+      "name": "native_function_100010b0",
+      "blocks": [
         {
           "address": 268439728,
           "end": 268439729,
@@ -74480,6 +74546,19 @@
     }
   ],
   "verified_starts": [
+    268439552,
+    268439568,
+    268439584,
+    268439600,
+    268439616,
+    268439632,
+    268439648,
+    268439664,
+    268439680,
+    268439696,
+    268439712,
+    268439728,
+    268439744,
     268443712,
     268444096,
     268444768,
@@ -74492,7 +74571,7 @@
     268447664,
     268448544,
     268449536,
-    268450000,
+    268450016,
     268450032,
     268450128,
     268450304,
@@ -75205,5 +75284,5 @@
       "note": "Initial application/engine object cluster ends at the following D3DX dispatch initializer or CRT entry; native call-flow and adjacent mapped SDK/runtime bodies reviewed. Unique native functions in the cluster are retained, independent of donor identities."
     }
   ],
-  "maps_sha256": "bc7f500cb8cb10c135e7751f8b33128a775b97922d236add35d3d425e9972344"
+  "maps_sha256": "affe5f58ae094ff79ae94803259458c171492caba80ba2c392200dcc3ecb7728"
 }

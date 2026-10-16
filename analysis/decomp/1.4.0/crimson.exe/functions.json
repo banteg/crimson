@@ -1,11 +1,27 @@
 [
   {
+    "address": "0x00401280",
+    "canonical_address": "0x00401030",
+    "end": "0x00401292",
+    "evidence": "exact",
+    "name": "console_input_clear",
+    "size": 18
+  },
+  {
+    "address": "0x004012A0",
+    "canonical_address": "0x00401050",
+    "end": "0x004012A6",
+    "evidence": "exact",
+    "name": "console_input_buffer",
+    "size": 6
+  },
+  {
     "address": "0x004018C0",
     "canonical_address": "0x00401120",
-    "end": "0x004018F0",
+    "end": "0x004018E4",
     "evidence": "referenced",
     "name": "console_cmd_arg_get",
-    "size": 48
+    "size": 36
   },
   {
     "address": "0x004018F0",
@@ -114,18 +130,18 @@
   {
     "address": "0x00401E70",
     "canonical_address": "0x00401510",
-    "end": "0x00401EC0",
+    "end": "0x00401EBD",
     "evidence": "ordered",
     "name": "console_cmd_set",
-    "size": 80
+    "size": 77
   },
   {
     "address": "0x00401EE0",
     "canonical_address": "0x00401560",
-    "end": "0x004020B0",
+    "end": "0x004020A5",
     "evidence": "ordered",
     "name": "console_init",
-    "size": 464,
+    "size": 453,
     "aliases": [
       "??0console_queue_t@@QAE@XZ"
     ]
@@ -155,10 +171,10 @@
   {
     "address": "0x00402240",
     "canonical_address": "0x00401870",
-    "end": "0x00402290",
+    "end": "0x00402286",
     "evidence": "referenced",
     "name": "console_printf",
-    "size": 80
+    "size": 70
   },
   {
     "address": "0x004022A0",
@@ -171,10 +187,10 @@
   {
     "address": "0x00402390",
     "canonical_address": "0x00401DD0",
-    "end": "0x00402AB0",
+    "end": "0x00402AA2",
     "evidence": "ordered",
     "name": "console_render",
-    "size": 1824,
+    "size": 1810,
     "aliases": [
       "?render@console_queue_t@@QAEXXZ"
     ]
@@ -182,10 +198,10 @@
   {
     "address": "0x00402AB0",
     "canonical_address": "0x00402350",
-    "end": "0x00402BB0",
+    "end": "0x00402BA5",
     "evidence": "ordered",
     "name": "console_register_cvar",
-    "size": 256,
+    "size": 245,
     "aliases": [
       "?console_register_cvar@console_queue_t@@QAEPAUconsole_cvar_entry_t@@PAD0@Z"
     ]
@@ -244,10 +260,10 @@
   {
     "address": "0x00402EF0",
     "canonical_address": "0x00402860",
-    "end": "0x00402F60",
+    "end": "0x00402F5A",
     "evidence": "ordered",
     "name": "console_flush_log",
-    "size": 112,
+    "size": 106,
     "aliases": [
       "?flush_log@console_queue_t@@QAEEPAD@Z"
     ]
@@ -266,34 +282,34 @@
   {
     "address": "0x00402FB0",
     "canonical_address": "0x00402BD0",
-    "end": "0x00402FE0",
+    "end": "0x00402FD9",
     "evidence": "ordered",
     "name": "game_build_path",
-    "size": 48
+    "size": 41
   },
   {
     "address": "0x00402FE0",
     "canonical_address": "0x00402ED0",
-    "end": "0x004030F0",
+    "end": "0x004030E6",
     "evidence": "ordered",
     "name": "demo_setup_variant_0",
-    "size": 272
+    "size": 262
   },
   {
     "address": "0x004030F0",
     "canonical_address": "0x00403250",
-    "end": "0x00403220",
+    "end": "0x00403212",
     "evidence": "ordered",
     "name": "demo_setup_variant_3",
-    "size": 304
+    "size": 290
   },
   {
     "address": "0x00403220",
     "canonical_address": "0x00403370",
-    "end": "0x00403230",
+    "end": "0x0040322D",
     "evidence": "ordered",
     "name": "demo_purchase_interstitial_begin",
-    "size": 16
+    "size": 13
   },
   {
     "address": "0x00403230",
@@ -306,10 +322,10 @@
   {
     "address": "0x00403240",
     "canonical_address": "0x0040CFE0",
-    "end": "0x00403270",
+    "end": "0x00403269",
     "evidence": "referenced",
     "name": "credits_line_table_global_init",
-    "size": 48
+    "size": 41
   },
   {
     "address": "0x00403270",
@@ -322,10 +338,10 @@
   {
     "address": "0x00403280",
     "canonical_address": "0x0040DF80",
-    "end": "0x004032B0",
+    "end": "0x004032A9",
     "evidence": "referenced",
     "name": "crimson_crt_empty_initializer_slot_05",
-    "size": 48
+    "size": 41
   },
   {
     "address": "0x004032B0",
@@ -338,26 +354,26 @@
   {
     "address": "0x004032C0",
     "canonical_address": "0x0040DFA0",
-    "end": "0x004032F0",
+    "end": "0x004032E9",
     "evidence": "referenced",
     "name": "mod_api_init",
-    "size": 48
+    "size": 41
   },
   {
     "address": "0x00403300",
     "canonical_address": "0x0040E350",
-    "end": "0x00403330",
+    "end": "0x00403329",
     "evidence": "ordered",
     "name": "mod_api_gfx_set_subset",
-    "size": 48
+    "size": 41
   },
   {
     "address": "0x00403340",
-    "canonical_address": "0x0040E400",
-    "end": "0x00403360",
+    "canonical_address": "0x0040E3E0",
+    "end": "0x00403355",
     "evidence": "ordered",
-    "name": "mod_api_gfx_end",
-    "size": 32
+    "name": "mod_api_gfx_begin",
+    "size": 21
   },
   {
     "address": "0x00403360",
@@ -386,10 +402,10 @@
   {
     "address": "0x00403390",
     "canonical_address": "0x004120B0",
-    "end": "0x004033C0",
+    "end": "0x004033B9",
     "evidence": "referenced",
     "name": "gameplay_run_state_init",
-    "size": 48
+    "size": 41
   },
   {
     "address": "0x004033C0",
@@ -402,10 +418,10 @@
   {
     "address": "0x004033D0",
     "canonical_address": "0x00412170",
-    "end": "0x004033F0",
+    "end": "0x004033E5",
     "evidence": "referenced",
     "name": "crimson_crt_empty_initializer_slot_09",
-    "size": 32
+    "size": 21
   },
   {
     "address": "0x004033F0",
@@ -418,10 +434,10 @@
   {
     "address": "0x00403400",
     "canonical_address": "0x00412230",
-    "end": "0x00403420",
+    "end": "0x00403415",
     "evidence": "ordered",
     "name": "bonus_pool_global_init",
-    "size": 32
+    "size": 21
   },
   {
     "address": "0x00403420",
@@ -434,10 +450,10 @@
   {
     "address": "0x00403430",
     "canonical_address": "0x00412260",
-    "end": "0x00403450",
+    "end": "0x00403445",
     "evidence": "referenced",
     "name": "creature_spawn_slot_table_global_init",
-    "size": 32
+    "size": 21
   },
   {
     "address": "0x00403450",
@@ -450,42 +466,42 @@
   {
     "address": "0x00403460",
     "canonical_address": "0x004122A0",
-    "end": "0x00403500",
+    "end": "0x004034F7",
     "evidence": "ordered",
     "name": "game_status_global_init",
-    "size": 160
+    "size": 151
   },
   {
-    "address": "0x00403500",
+    "address": "0x00403640",
     "canonical_address": "0x00412350",
-    "end": "0x00403505",
+    "end": "0x00403645",
     "evidence": "exact",
     "name": "highscore_init_sentinels_thunk",
     "size": 5
   },
   {
-    "address": "0x00403510",
+    "address": "0x00403650",
     "canonical_address": "0x00412360",
-    "end": "0x00403620",
+    "end": "0x0040368D",
     "evidence": "referenced",
     "name": "highscore_init_sentinels",
-    "size": 272
+    "size": 61
   },
   {
     "address": "0x00403690",
     "canonical_address": "0x004123C0",
-    "end": "0x004036A0",
+    "end": "0x0040369A",
     "evidence": "ordered",
     "name": "bonus_meta_global_construct_and_register",
-    "size": 16
+    "size": 10
   },
   {
     "address": "0x004036A0",
     "canonical_address": "0x004123D0",
-    "end": "0x004036C0",
+    "end": "0x004036B9",
     "evidence": "ordered",
     "name": "bonus_meta_table_init",
-    "size": 32
+    "size": 25
   },
   {
     "address": "0x004036E0",
@@ -510,10 +526,10 @@
   {
     "address": "0x00403720",
     "canonical_address": "0x00412450",
-    "end": "0x00403740",
+    "end": "0x00403734",
     "evidence": "ordered",
     "name": "bonus_meta_table_destroy",
-    "size": 32
+    "size": 20
   },
   {
     "address": "0x00403740",
@@ -526,10 +542,10 @@
   {
     "address": "0x00403750",
     "canonical_address": "0x00417690",
-    "end": "0x00403760",
+    "end": "0x0040375B",
     "evidence": "referenced",
     "name": "ui_menu_template_pool_init",
-    "size": 16
+    "size": 11
   },
   {
     "address": "0x00403760",
@@ -541,11 +557,11 @@
   },
   {
     "address": "0x00403770",
-    "canonical_address": "0x0041A010",
-    "end": "0x00403790",
-    "evidence": "referenced",
-    "name": "reserved_color_global_init",
-    "size": 32
+    "canonical_address": "0x0041E150",
+    "end": "0x00403785",
+    "evidence": "exact",
+    "name": "unused_effect_uv16_prefix_vec2_global_init",
+    "size": 21
   },
   {
     "address": "0x00403790",
@@ -558,26 +574,26 @@
   {
     "address": "0x004037A0",
     "canonical_address": "0x0041E180",
-    "end": "0x004037B0",
+    "end": "0x004037AB",
     "evidence": "referenced",
     "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
-    "size": 16
+    "size": 11
   },
   {
     "address": "0x004037B0",
-    "canonical_address": "0x0041E450",
+    "canonical_address": "0x0041E1A0",
     "end": "0x004037B5",
     "evidence": "exact",
-    "name": "secondary_projectile_pool_global_init_thunk",
+    "name": "fx_queue_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x004037C0",
-    "canonical_address": "0x0041E460",
-    "end": "0x004037F0",
-    "evidence": "ordered",
-    "name": "secondary_projectile_pool_global_init",
-    "size": 48
+    "canonical_address": "0x0041E1B0",
+    "end": "0x004037E2",
+    "evidence": "referenced",
+    "name": "fx_queue_global_init",
+    "size": 34
   },
   {
     "address": "0x004037F0",
@@ -622,10 +638,10 @@
   {
     "address": "0x00403930",
     "canonical_address": "0x0041E5D0",
-    "end": "0x00403960",
+    "end": "0x0040395A",
     "evidence": "referenced",
     "name": "player_state_table_global_init",
-    "size": 48
+    "size": 42
   },
   {
     "address": "0x00403960",
@@ -669,11 +685,11 @@
   },
   {
     "address": "0x004039B0",
-    "canonical_address": "0x0041E760",
-    "end": "0x004039C0",
-    "evidence": "referenced",
-    "name": "projectile_pool_global_init",
-    "size": 16
+    "canonical_address": "0x0041E7B0",
+    "end": "0x004039B1",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_41",
+    "size": 1
   },
   {
     "address": "0x004039C0",
@@ -702,10 +718,10 @@
   {
     "address": "0x004039F0",
     "canonical_address": "0x0041E7F0",
-    "end": "0x00403A20",
+    "end": "0x00403A13",
     "evidence": "referenced",
     "name": "crimson_crt_empty_initializer_slot_43",
-    "size": 48
+    "size": 35
   },
   {
     "address": "0x00403A20",
@@ -718,10 +734,10 @@
   {
     "address": "0x00403A30",
     "canonical_address": "0x0041E810",
-    "end": "0x00403A81",
+    "end": "0x00403A93",
     "evidence": "referenced",
     "name": "crimson_crt_empty_initializer_slot_44",
-    "size": 81
+    "size": 99
   },
   {
     "address": "0x00403AA0",
@@ -742,90 +758,90 @@
   {
     "address": "0x00403AD0",
     "canonical_address": "0x0041E8D0",
-    "end": "0x00403AF0",
+    "end": "0x00403AED",
     "evidence": "ordered",
     "name": "input_aim_pov_left_active",
-    "size": 32
+    "size": 29
   },
   {
     "address": "0x00403B00",
     "canonical_address": "0x0041E8F0",
-    "end": "0x00403B30",
+    "end": "0x00403B25",
     "evidence": "ordered",
     "name": "input_aim_pov_right_active",
-    "size": 48
+    "size": 37
   },
   {
     "address": "0x00403D10",
     "canonical_address": "0x0041E910",
-    "end": "0x004040F0",
+    "end": "0x004040E7",
     "evidence": "ordered",
     "name": "creature_handle_death",
-    "size": 992
+    "size": 983
   },
   {
     "address": "0x00404510",
     "canonical_address": "0x0041EC60",
-    "end": "0x00404BB0",
+    "end": "0x00404BAF",
     "evidence": "ordered",
     "name": "config_sync_from_grim",
-    "size": 1696
+    "size": 1695
   },
   {
     "address": "0x004056D0",
     "canonical_address": "0x0041F130",
-    "end": "0x00405760",
+    "end": "0x00405751",
     "evidence": "ordered",
     "name": "config_ensure_file",
-    "size": 144
+    "size": 129
   },
   {
     "address": "0x00405760",
     "canonical_address": "0x0041F430",
-    "end": "0x00405890",
+    "end": "0x0040588B",
     "evidence": "ordered",
     "name": "angle_approach",
-    "size": 304
+    "size": 299
   },
   {
     "address": "0x00405D10",
     "canonical_address": "0x0041F580",
-    "end": "0x00405D40",
+    "end": "0x00405D35",
     "evidence": "ordered",
     "name": "bonus_alloc_slot",
-    "size": 48
+    "size": 37
   },
   {
     "address": "0x004062C0",
     "canonical_address": "0x0041F5B0",
-    "end": "0x00406480",
+    "end": "0x00406477",
     "evidence": "ordered",
     "name": "bonus_spawn_at",
-    "size": 448
+    "size": 439
   },
   {
     "address": "0x00406480",
     "canonical_address": "0x0041F790",
-    "end": "0x004065B0",
+    "end": "0x004065AF",
     "evidence": "ordered",
     "name": "bonus_spawn_at_pos",
-    "size": 304
+    "size": 303
   },
   {
     "address": "0x004065B0",
     "canonical_address": "0x0041F8D0",
-    "end": "0x004067E0",
+    "end": "0x004067DB",
     "evidence": "ordered",
     "name": "bonus_try_spawn_on_kill",
-    "size": 560
+    "size": 555
   },
   {
     "address": "0x00406AA0",
     "canonical_address": "0x0041FBB0",
-    "end": "0x00406B60",
+    "end": "0x00406B5D",
     "evidence": "ordered",
     "name": "fx_spawn_sprite",
-    "size": 192
+    "size": 189
   },
   {
     "address": "0x00406BB0",
@@ -838,18 +854,18 @@
   {
     "address": "0x00406FF0",
     "canonical_address": "0x0041FED0",
-    "end": "0x00407180",
+    "end": "0x00407178",
     "evidence": "ordered",
     "name": "effect_uv_tables_init",
-    "size": 400
+    "size": 392
   },
   {
     "address": "0x00408CF0",
     "canonical_address": "0x00420040",
-    "end": "0x00408DC0",
+    "end": "0x00408DB8",
     "evidence": "ordered",
     "name": "creature_find_nearest",
-    "size": 208
+    "size": 200
   },
   {
     "address": "0x00409010",
@@ -870,98 +886,106 @@
   {
     "address": "0x00409340",
     "canonical_address": "0x00420360",
-    "end": "0x00409430",
+    "end": "0x0040942D",
     "evidence": "ordered",
     "name": "fx_spawn_secondary_projectile",
-    "size": 240
+    "size": 237
   },
   {
     "address": "0x00409430",
     "canonical_address": "0x004205D0",
-    "end": "0x00409460",
+    "end": "0x00409455",
     "evidence": "ordered",
     "name": "projectile_reset_pools",
-    "size": 48
+    "size": 37
   },
   {
     "address": "0x00409460",
     "canonical_address": "0x004206A0",
-    "end": "0x004094E0",
+    "end": "0x004094D2",
     "evidence": "ordered",
     "name": "creature_find_in_radius",
-    "size": 128
+    "size": 114
+  },
+  {
+    "address": "0x004094E0",
+    "canonical_address": "0x00420B90",
+    "end": "0x0040B56C",
+    "evidence": "ordered",
+    "name": "projectile_update",
+    "size": 8332
   },
   {
     "address": "0x0040B570",
-    "canonical_address": "0x00420B90",
-    "end": "0x0040D800",
+    "canonical_address": "0x00422C70",
+    "end": "0x0040D7F1",
     "evidence": "ordered",
-    "name": "projectile_update",
-    "size": 8848
+    "name": "projectile_render",
+    "size": 8833
   },
   {
     "address": "0x0040D800",
     "canonical_address": "0x00425D80",
-    "end": "0x0040D8C0",
+    "end": "0x0040D8BE",
     "evidence": "ordered",
     "name": "plaguebearer_spread_infection",
-    "size": 192
+    "size": 190
   },
   {
     "address": "0x0040D8C0",
     "canonical_address": "0x00427920",
-    "end": "0x0040E060",
+    "end": "0x0040E05C",
     "evidence": "ordered",
     "name": "fx_queue_render",
-    "size": 1952
+    "size": 1948
   },
   {
     "address": "0x0040E6B0",
     "canonical_address": "0x004281E0",
-    "end": "0x0040E6F0",
+    "end": "0x0040E6E2",
     "evidence": "ordered",
     "name": "creature_reset_all",
-    "size": 64
+    "size": 50
   },
   {
     "address": "0x0040E6F0",
     "canonical_address": "0x00428210",
-    "end": "0x0040E730",
+    "end": "0x0040E72B",
     "evidence": "ordered",
     "name": "creatures_none_active",
-    "size": 64
+    "size": 59
   },
   {
     "address": "0x0040E730",
     "canonical_address": "0x00428240",
-    "end": "0x0040E830",
+    "end": "0x0040E824",
     "evidence": "ordered",
     "name": "creature_spawn",
-    "size": 256
+    "size": 244
   },
   {
     "address": "0x0040E830",
     "canonical_address": "0x004295F0",
-    "end": "0x0040F340",
+    "end": "0x0040F333",
     "evidence": "ordered",
     "name": "bonus_render",
-    "size": 2832
+    "size": 2819
   },
   {
     "address": "0x0040F5E0",
     "canonical_address": "0x0042A630",
-    "end": "0x0040F610",
+    "end": "0x0040F60E",
     "evidence": "ordered",
     "name": "audio_suspend_all",
-    "size": 48
+    "size": 46
   },
   {
     "address": "0x0040F630",
-    "canonical_address": "0x0042A9C0",
-    "end": "0x0040F650",
+    "canonical_address": "0x0042A860",
+    "end": "0x0040F64C",
     "evidence": "ordered",
-    "name": "reg_write_dword",
-    "size": 32
+    "name": "console_cmd_tell_time_survived",
+    "size": 28
   },
   {
     "address": "0x0040F650",
@@ -974,10 +998,10 @@
   {
     "address": "0x0040FB70",
     "canonical_address": "0x0042B090",
-    "end": "0x0040FD10",
+    "end": "0x0040FD0A",
     "evidence": "ordered",
     "name": "game_startup_init_prelude",
-    "size": 416
+    "size": 410
   },
   {
     "address": "0x004103B0",
@@ -990,58 +1014,50 @@
   {
     "address": "0x00412570",
     "canonical_address": "0x0042DF10",
-    "end": "0x004126E0",
+    "end": "0x004126DE",
     "evidence": "ordered",
     "name": "effect_defaults_reset",
-    "size": 368
+    "size": 366
   },
   {
     "address": "0x00416560",
     "canonical_address": "0x0042E820",
-    "end": "0x004167B0",
+    "end": "0x004167A6",
     "evidence": "ordered",
     "name": "effects_render",
-    "size": 592
+    "size": 582
   },
   {
     "address": "0x004167B0",
     "canonical_address": "0x0042F080",
-    "end": "0x004169C0",
+    "end": "0x004169BF",
     "evidence": "ordered",
     "name": "effect_spawn_shrinkifier_hit",
-    "size": 528
+    "size": 527
   },
   {
     "address": "0x004169C0",
     "canonical_address": "0x0042FBD0",
-    "end": "0x00416A00",
+    "end": "0x004169FD",
     "evidence": "ordered",
     "name": "perk_select_random",
-    "size": 64
+    "size": 61
   },
   {
-    "address": "0x00416F98",
+    "address": "0x00416A00",
     "canonical_address": "0x0042FD90",
-    "end": "0x00417B4D",
+    "end": "0x00417CB8",
     "evidence": "ordered",
     "name": "perks_init_database",
-    "size": 2997
+    "size": 4792
   },
   {
-    "address": "0x00417B4D",
-    "canonical_address": "0x00434250",
-    "end": "0x00417CC0",
+    "address": "0x00417CC0",
+    "canonical_address": "0x00434480",
+    "end": "0x00418190",
     "evidence": "ordered",
-    "name": "quest_spawn_timeline_update",
-    "size": 371
-  },
-  {
-    "address": "0x0041CEB1",
-    "canonical_address": "0x004343C0",
-    "end": "0x0041CED0",
-    "evidence": "ordered",
-    "name": "quest_database_advance_slot",
-    "size": 31
+    "name": "quest_build_nagolipoli",
+    "size": 1232
   },
   {
     "address": "0x0041EFA0",
@@ -1062,18 +1078,18 @@
   {
     "address": "0x0041FBA0",
     "canonical_address": "0x0043AF30",
-    "end": "0x0041FC00",
+    "end": "0x0041FBFA",
     "evidence": "ordered",
     "name": "highscore_find_name_entry",
-    "size": 96
+    "size": 90
   },
   {
     "address": "0x0041FC00",
     "canonical_address": "0x0043B810",
-    "end": "0x0041FC40",
+    "end": "0x0041FC3F",
     "evidence": "ordered",
     "name": "sfx_entry_reset_runtime_state",
-    "size": 64,
+    "size": 63,
     "aliases": [
       "?reset_runtime_state@sfx_entry_cpp_t@@QAEPAU1@XZ"
     ]
@@ -1089,34 +1105,34 @@
   {
     "address": "0x0041FC80",
     "canonical_address": "0x0043B980",
-    "end": "0x0041FCF0",
+    "end": "0x0041FCE1",
     "evidence": "ordered",
     "name": "resource_pack_set",
-    "size": 112
+    "size": 97
   },
   {
     "address": "0x0041FCF0",
     "canonical_address": "0x0043BF60",
-    "end": "0x0041FD30",
+    "end": "0x0041FD2C",
     "evidence": "ordered",
     "name": "sfx_entry_stop",
-    "size": 64
+    "size": 60
   },
   {
     "address": "0x0041FD30",
     "canonical_address": "0x0043CAA0",
-    "end": "0x00420130",
+    "end": "0x00420127",
     "evidence": "ordered",
     "name": "audio_init_sfx",
-    "size": 1024
+    "size": 1015
   },
   {
     "address": "0x00420130",
     "canonical_address": "0x0043CF90",
-    "end": "0x004201D0",
+    "end": "0x004201CE",
     "evidence": "ordered",
     "name": "sfx_system_init",
-    "size": 160
+    "size": 158
   },
   {
     "address": "0x004201D0",
@@ -1129,66 +1145,50 @@
   {
     "address": "0x00420200",
     "canonical_address": "0x0043D460",
-    "end": "0x004202C0",
+    "end": "0x004202BA",
     "evidence": "ordered",
     "name": "music_play_exclusive",
-    "size": 192
+    "size": 186
   },
   {
     "address": "0x004202C0",
-    "canonical_address": "0x0043D830",
-    "end": "0x0042038F",
+    "canonical_address": "0x0043E5E0",
+    "end": "0x00420497",
     "evidence": "ordered",
-    "name": "ui_focus_update",
-    "size": 207
-  },
-  {
-    "address": "0x0042038F",
-    "canonical_address": "0x0043D940",
-    "end": "0x00420415",
-    "evidence": "ordered",
-    "name": "ui_focus_draw",
-    "size": 134
-  },
-  {
-    "address": "0x00420415",
-    "canonical_address": "0x00445310",
-    "end": "0x004204A0",
-    "evidence": "ordered",
-    "name": "typo_target_name_is_unique",
-    "size": 139
+    "name": "ui_menu_item_update",
+    "size": 471
   },
   {
     "address": "0x004204A0",
-    "canonical_address": "0x00445590",
-    "end": "0x004204F0",
+    "canonical_address": "0x00441220",
+    "end": "0x004204E6",
     "evidence": "ordered",
-    "name": "typo_target_find_by_name",
-    "size": 80
+    "name": "highscore_card_draw_vertical_divider",
+    "size": 70
   },
   {
     "address": "0x004204F0",
     "canonical_address": "0x00446030",
-    "end": "0x004205C0",
+    "end": "0x004205B6",
     "evidence": "ordered",
     "name": "input_primary_just_pressed",
-    "size": 208
+    "size": 198
   },
   {
     "address": "0x004205C0",
     "canonical_address": "0x00446150",
-    "end": "0x004205E0",
+    "end": "0x004205DF",
     "evidence": "ordered",
     "name": "ui_get_element_index",
-    "size": 32
+    "size": 31
   },
   {
     "address": "0x004205E0",
     "canonical_address": "0x00447420",
-    "end": "0x00420610",
+    "end": "0x0042060E",
     "evidence": "ordered",
     "name": "ui_menu_click_back_contextual",
-    "size": 48
+    "size": 46
   },
   {
     "address": "0x00420610",
@@ -1201,64 +1201,64 @@
   {
     "address": "0x00420640",
     "canonical_address": "0x004474E0",
-    "end": "0x004206D0",
+    "end": "0x004206CC",
     "evidence": "ordered",
     "name": "ui_menu_pause_click_main_menu",
-    "size": 144
+    "size": 140
   },
   {
     "address": "0x004206D0",
     "canonical_address": "0x00447C90",
-    "end": "0x00420710",
+    "end": "0x0042070A",
     "evidence": "ordered",
     "name": "input_configure_for_label",
-    "size": 64
+    "size": 58
   },
   {
     "address": "0x00420710",
     "canonical_address": "0x00447D40",
-    "end": "0x004216A0",
+    "end": "0x0042169A",
     "evidence": "ordered",
     "name": "quest_select_menu_update",
-    "size": 3984
+    "size": 3978
   },
   {
     "address": "0x004216A0",
     "canonical_address": "0x0044FC70",
-    "end": "0x004216D0",
+    "end": "0x004216C2",
     "evidence": "ordered",
     "name": "ui_menu_main_click_buy_full_version",
-    "size": 48
+    "size": 34
   },
   {
     "address": "0x004216D0",
     "canonical_address": "0x004534EA",
-    "end": "0x004216F0",
+    "end": "0x004216E3",
     "evidence": "ordered",
     "name": "d3dx_init_vec3_project",
-    "size": 32,
+    "size": 19,
     "aliases": [
       "?init_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
     ]
   },
   {
     "address": "0x00421700",
-    "canonical_address": "0x00453D2D",
-    "end": "0x00421910",
+    "canonical_address": "0x00453A6A",
+    "end": "0x00421909",
     "evidence": "ordered",
-    "name": "d3dx_c_matrix_multiply_transpose",
-    "size": 528,
+    "name": "d3dx_c_matrix_multiply",
+    "size": 521,
     "aliases": [
-      "?c_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+      "?c_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
     ]
   },
   {
     "address": "0x00421910",
     "canonical_address": "0x00454303",
-    "end": "0x00421940",
+    "end": "0x0042193E",
     "evidence": "ordered",
     "name": "d3dx_init_matrix_scaling",
-    "size": 48,
+    "size": 46,
     "aliases": [
       "?init_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
     ]
@@ -1266,10 +1266,10 @@
   {
     "address": "0x00421940",
     "canonical_address": "0x004545DC",
-    "end": "0x00421970",
+    "end": "0x00421965",
     "evidence": "ordered",
     "name": "d3dx_init_matrix_rotation_axis",
-    "size": 48,
+    "size": 37,
     "aliases": [
       "?init_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
     ]
@@ -1277,10 +1277,10 @@
   {
     "address": "0x00421970",
     "canonical_address": "0x00454821",
-    "end": "0x00421990",
+    "end": "0x00421981",
     "evidence": "ordered",
     "name": "d3dx_init_matrix_transformation",
-    "size": 32,
+    "size": 17,
     "aliases": [
       "?init_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
     ]
@@ -1373,10 +1373,10 @@
   {
     "address": "0x00421C22",
     "canonical_address": "0x00460E8E",
-    "end": "0x00421C80",
+    "end": "0x00421C78",
     "evidence": "ordered",
     "name": "crt_fclose_lk",
-    "size": 94,
+    "size": 86,
     "aliases": [
       "__fclose_lk"
     ]
@@ -1421,10 +1421,10 @@
   },
   {
     "address": "0x00421DD6",
-    "canonical_address": "0x00452D40",
+    "canonical_address": "0x0046107B",
     "end": "0x00421DE4",
-    "evidence": "called",
-    "name": "weapon_assign_player",
+    "evidence": "exact",
+    "name": "??2@YAPAXI@Z",
     "size": 14
   },
   {
@@ -1465,10 +1465,10 @@
   {
     "address": "0x0042205D",
     "canonical_address": "0x0046135D",
-    "end": "0x00422100",
+    "end": "0x004220F9",
     "evidence": "referenced",
     "name": "crt_strtok",
-    "size": 163
+    "size": 156
   },
   {
     "address": "0x00422100",
@@ -1733,13 +1733,13 @@
   },
   {
     "address": "0x00422AD2",
-    "canonical_address": "0x00462DA2",
+    "canonical_address": "0x004688BE",
     "end": "0x00422AEC",
-    "evidence": "referenced",
-    "name": "crt_getc",
+    "evidence": "exact",
+    "name": "crt_scan_inc",
     "size": 26,
     "aliases": [
-      "fgetc"
+      "__inc"
     ]
   },
   {
@@ -1905,10 +1905,10 @@
   },
   {
     "address": "0x00423690",
-    "canonical_address": "0x00463DF7",
+    "canonical_address": "0x00463DA5",
     "end": "0x004236BD",
     "evidence": "ordered",
-    "name": "crt_unlock_file",
+    "name": "crt_lock_file",
     "size": 45
   },
   {
@@ -1947,14 +1947,6 @@
     "size": 26
   },
   {
-    "address": "0x00423792",
-    "canonical_address": "0x00463E49",
-    "end": "0x004237F3",
-    "evidence": "ordered",
-    "name": "crt_close",
-    "size": 97
-  },
-  {
     "address": "0x004237F3",
     "canonical_address": "0x004629D9",
     "end": "0x00423805",
@@ -1990,10 +1982,10 @@
   {
     "address": "0x004238A5",
     "canonical_address": "0x004625C1",
-    "end": "0x00423910",
+    "end": "0x0042390E",
     "evidence": "referenced",
     "name": "crt_free_base",
-    "size": 107
+    "size": 105
   },
   {
     "address": "0x00423910",
@@ -2007,12 +1999,12 @@
     ]
   },
   {
-    "address": "0x00423978",
-    "canonical_address": "0x00463EA6",
+    "address": "0x00423944",
+    "canonical_address": "0x00463E49",
     "end": "0x004239F7",
-    "evidence": "ordered",
-    "name": "crt_close_nolock",
-    "size": 127
+    "evidence": "called",
+    "name": "crt_close",
+    "size": 179
   },
   {
     "address": "0x004239F7",
@@ -2060,10 +2052,10 @@
   {
     "address": "0x00423F05",
     "canonical_address": "0x00464380",
-    "end": "0x00424646",
+    "end": "0x00424626",
     "evidence": "referenced",
     "name": "crt_output",
-    "size": 1857
+    "size": 1825
   },
   {
     "address": "0x00424646",
@@ -2294,18 +2286,18 @@
   {
     "address": "0x00424E71",
     "canonical_address": "0x00465652",
-    "end": "0x00425020",
+    "end": "0x0042501E",
     "evidence": "referenced",
     "name": "crt_write",
-    "size": 431
+    "size": 429
   },
   {
     "address": "0x00425020",
     "canonical_address": "0x004658F0",
-    "end": "0x00425180",
+    "end": "0x0042517F",
     "evidence": "referenced",
     "name": "crt_bufcpy",
-    "size": 352
+    "size": 351
   },
   {
     "address": "0x00425360",
@@ -2808,10 +2800,10 @@
   {
     "address": "0x004274F0",
     "canonical_address": "0x0046A590",
-    "end": "0x00427650",
+    "end": "0x0042764F",
     "evidence": "referenced",
     "name": "crt_memmove",
-    "size": 352
+    "size": 351
   },
   {
     "address": "0x00427830",
@@ -2983,6 +2975,14 @@
     "size": 27
   },
   {
+    "address": "0x00428BD7",
+    "canonical_address": "0x00465D20",
+    "end": "0x00428C3E",
+    "evidence": "called",
+    "name": "crt_dosmaperr",
+    "size": 103
+  },
+  {
     "address": "0x00428C3E",
     "canonical_address": "0x0046AA17",
     "end": "0x00428CD3",
@@ -3053,10 +3053,10 @@
   {
     "address": "0x00429234",
     "canonical_address": "0x0046B10E",
-    "end": "0x004292A0",
+    "end": "0x0042929C",
     "evidence": "ordered",
     "name": "crt_wctomb_lk",
-    "size": 108,
+    "size": 104,
     "aliases": [
       "__wctomb_lk"
     ]
@@ -3319,10 +3319,10 @@
   {
     "address": "0x0042A524",
     "canonical_address": "0x0046B265",
-    "end": "0x0042A9F5",
+    "end": "0x0042A9C5",
     "evidence": "referenced",
     "name": "crt_fp_parse",
-    "size": 1233
+    "size": 1185
   },
   {
     "address": "0x0042A9F5",
@@ -3417,10 +3417,10 @@
   {
     "address": "0x0042AE2E",
     "canonical_address": "0x0046CDE6",
-    "end": "0x0042B040",
+    "end": "0x0042B036",
     "evidence": "referenced",
     "name": "crt_strtoxl",
-    "size": 530
+    "size": 520
   },
   {
     "address": "0x0042B040",
@@ -3633,10 +3633,10 @@
   {
     "address": "0x0042C268",
     "canonical_address": "0x0046E0D7",
-    "end": "0x0042C2E0",
+    "end": "0x0042C2DE",
     "evidence": "ordered",
     "name": "crt_getenv_lk",
-    "size": 120,
+    "size": 118,
     "aliases": [
       "__getenv_lk"
     ]

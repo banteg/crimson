@@ -966,11 +966,6 @@
       "program": "1.3.0/grim.dll"
     },
     {
-      "address": "0x1004cb88",
-      "name": "grim_fps",
-      "program": "1.3.0/grim.dll"
-    },
-    {
       "address": "0x1004cb98",
       "name": "grim_window_icon_handle",
       "program": "1.3.0/grim.dll"
@@ -1068,6 +1063,11 @@
     {
       "address": "0x1004d5b0",
       "name": "grim_d3d_device_type",
+      "program": "1.3.0/grim.dll"
+    },
+    {
+      "address": "0x1004d5b8",
+      "name": "grim_fps",
       "program": "1.3.0/grim.dll"
     },
     {

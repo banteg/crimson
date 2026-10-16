@@ -1,5 +1,181 @@
 [
   {
+    "address": "0x10001000",
+    "canonical_address": "0x10001000",
+    "end": "0x10001005",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_01_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001010",
+    "canonical_address": "0x10001010",
+    "end": "0x10001011",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_01",
+    "size": 1
+  },
+  {
+    "address": "0x10001020",
+    "canonical_address": "0x10001020",
+    "end": "0x10001025",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_02_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001030",
+    "canonical_address": "0x10001030",
+    "end": "0x10001031",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_02",
+    "size": 1
+  },
+  {
+    "address": "0x10001040",
+    "canonical_address": "0x10001040",
+    "end": "0x10001045",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_03_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001050",
+    "canonical_address": "0x10001050",
+    "end": "0x10001051",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_03",
+    "size": 1
+  },
+  {
+    "address": "0x10001060",
+    "canonical_address": "0x10001060",
+    "end": "0x10001065",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_04_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001070",
+    "canonical_address": "0x10001070",
+    "end": "0x10001071",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_04",
+    "size": 1
+  },
+  {
+    "address": "0x10001080",
+    "canonical_address": "0x10001080",
+    "end": "0x10001085",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_05_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001090",
+    "canonical_address": "0x10001090",
+    "end": "0x10001091",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_05",
+    "size": 1
+  },
+  {
+    "address": "0x100010A0",
+    "canonical_address": "0x100010A0",
+    "end": "0x100010A5",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_06_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x100010B0",
+    "canonical_address": "0x100010B0",
+    "end": "0x100010B1",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_06",
+    "size": 1
+  },
+  {
+    "address": "0x100010C0",
+    "canonical_address": "0x100010C0",
+    "end": "0x100010C5",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_07_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x100010D0",
+    "canonical_address": "0x100010D0",
+    "end": "0x100010D1",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_07",
+    "size": 1
+  },
+  {
+    "address": "0x100010E0",
+    "canonical_address": "0x100010E0",
+    "end": "0x100010E5",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_08_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x100010F0",
+    "canonical_address": "0x100010F0",
+    "end": "0x100010F1",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_08",
+    "size": 1
+  },
+  {
+    "address": "0x10001100",
+    "canonical_address": "0x10001100",
+    "end": "0x10001105",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_09_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001110",
+    "canonical_address": "0x10001110",
+    "end": "0x10001111",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_09",
+    "size": 1
+  },
+  {
+    "address": "0x10001120",
+    "canonical_address": "0x10001120",
+    "end": "0x10001125",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_10_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001130",
+    "canonical_address": "0x10001130",
+    "end": "0x10001131",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_10",
+    "size": 1
+  },
+  {
+    "address": "0x10001140",
+    "canonical_address": "0x10001140",
+    "end": "0x1000114D",
+    "evidence": "exact",
+    "name": "grim_missing_frame_callback",
+    "size": 13
+  },
+  {
+    "address": "0x10001150",
+    "canonical_address": "0x10001150",
+    "end": "0x10001153",
+    "evidence": "exact",
+    "name": "grim_default_device_callback",
+    "size": 3
+  },
+  {
     "address": "0x10001160",
     "canonical_address": "0x10001170",
     "end": "0x100016D2",
@@ -26,18 +202,18 @@
   {
     "address": "0x100019E0",
     "canonical_address": "0x100019F0",
-    "end": "0x10001A20",
+    "end": "0x10001A18",
     "evidence": "ordered",
     "name": "grim_config_blob_save",
-    "size": 64
+    "size": 56
   },
   {
     "address": "0x10001A20",
     "canonical_address": "0x10001A30",
-    "end": "0x10001AB0",
+    "end": "0x10001AAF",
     "evidence": "ordered",
     "name": "grim_config_blob_load",
-    "size": 144
+    "size": 143
   },
   {
     "address": "0x10001AB0",
@@ -50,26 +226,26 @@
   {
     "address": "0x10001E60",
     "canonical_address": "0x10001E90",
-    "end": "0x10002080",
+    "end": "0x10002074",
     "evidence": "ordered",
     "name": "grim_config_dialog_populate_display_modes",
-    "size": 544
+    "size": 532
   },
   {
     "address": "0x10002080",
     "canonical_address": "0x10002120",
-    "end": "0x10002570",
+    "end": "0x1000256F",
     "evidence": "ordered",
     "name": "grim_config_dialog_proc",
-    "size": 1264
+    "size": 1263
   },
   {
     "address": "0x100025B0",
     "canonical_address": "0x10002680",
-    "end": "0x100027C0",
+    "end": "0x100027B2",
     "evidence": "ordered",
     "name": "grim_window_create",
-    "size": 528
+    "size": 514
   },
   {
     "address": "0x100027C0",
@@ -137,14 +313,36 @@
     ]
   },
   {
-    "address": "0x10003180",
+    "address": "0x10002FD0",
     "canonical_address": "0x10002FC0",
-    "end": "0x10003240",
-    "evidence": "ordered",
+    "end": "0x100030D2",
+    "evidence": "called",
     "name": "grim_app_init",
-    "size": 192,
+    "size": 258,
     "aliases": [
       "?init@MyApp@@QAE_NXZ"
+    ]
+  },
+  {
+    "address": "0x100030E0",
+    "canonical_address": "0x10003080",
+    "end": "0x100030EA",
+    "evidence": "called",
+    "name": "grim_app_shutdown",
+    "size": 10,
+    "aliases": [
+      "?shutdown@MyApp@@QAEXXZ"
+    ]
+  },
+  {
+    "address": "0x100030F0",
+    "canonical_address": "0x10003090",
+    "end": "0x1000317B",
+    "evidence": "called",
+    "name": "grim_app_pump",
+    "size": 139,
+    "aliases": [
+      "?pump@MyApp@@QAEXXZ"
     ]
   },
   {
@@ -166,18 +364,18 @@
   {
     "address": "0x10003EB0",
     "canonical_address": "0x10003C00",
-    "end": "0x10004110",
+    "end": "0x10004101",
     "evidence": "ordered",
     "name": "grim_run_loop",
-    "size": 608
+    "size": 593
   },
   {
     "address": "0x10004110",
     "canonical_address": "0x10003E60",
-    "end": "0x10004530",
+    "end": "0x10004525",
     "evidence": "ordered",
     "name": "grim_d3d_init",
-    "size": 1056
+    "size": 1045
   },
   {
     "address": "0x10004530",
@@ -238,10 +436,10 @@
   {
     "address": "0x10004C20",
     "canonical_address": "0x10004970",
-    "end": "0x10004D00",
+    "end": "0x10004CF5",
     "evidence": "ordered",
     "name": "grim_timing_update",
-    "size": 224
+    "size": 213
   },
   {
     "address": "0x10004D00",
@@ -292,10 +490,10 @@
   {
     "address": "0x10005170",
     "canonical_address": "0x10004EC0",
-    "end": "0x100053A0",
+    "end": "0x1000539A",
     "evidence": "referenced",
     "name": "grim_texture_load_file",
-    "size": 560,
+    "size": 554,
     "aliases": [
       "?grim_texture_load_file@GrimTexture@@QAE_NPAD@Z"
     ]
@@ -335,18 +533,18 @@
   {
     "address": "0x10005580",
     "canonical_address": "0x100052F0",
-    "end": "0x10005CD0",
+    "end": "0x10005CCF",
     "evidence": "referenced",
     "name": "grim_state_init",
-    "size": 1872
+    "size": 1871
   },
   {
     "address": "0x10005CD0",
     "canonical_address": "0x10005A40",
-    "end": "0x10005D60",
+    "end": "0x10005D5C",
     "evidence": "ordered",
     "name": "grim_lookup_blob_load",
-    "size": 144
+    "size": 140
   },
   {
     "address": "0x10005D60",
@@ -375,10 +573,10 @@
   {
     "address": "0x10005EC0",
     "canonical_address": "0x10005C40",
-    "end": "0x10005F00",
+    "end": "0x10005EF2",
     "evidence": "ordered",
     "name": "grim_get_key_char",
-    "size": 64
+    "size": 50
   },
   {
     "address": "0x10005F00",
@@ -415,18 +613,18 @@
   {
     "address": "0x10005FC0",
     "canonical_address": "0x10005D40",
-    "end": "0x10006190",
+    "end": "0x10006177",
     "evidence": "ordered",
     "name": "grim_apply_config",
-    "size": 464
+    "size": 439
   },
   {
     "address": "0x10006190",
     "canonical_address": "0x10005EB0",
-    "end": "0x100062D0",
+    "end": "0x100062CD",
     "evidence": "ordered",
     "name": "grim_init_system",
-    "size": 320
+    "size": 317
   },
   {
     "address": "0x100062D0",
@@ -527,42 +725,42 @@
   {
     "address": "0x10007330",
     "canonical_address": "0x10006EA0",
-    "end": "0x10007380",
+    "end": "0x1000737E",
     "evidence": "ordered",
     "name": "grim_joystick_up_active",
-    "size": 80
+    "size": 78
   },
   {
     "address": "0x10007380",
     "canonical_address": "0x10006EF0",
-    "end": "0x100073D0",
+    "end": "0x100073CA",
     "evidence": "ordered",
     "name": "grim_joystick_down_active",
-    "size": 80
+    "size": 74
   },
   {
     "address": "0x100073D0",
     "canonical_address": "0x10006F40",
-    "end": "0x10007420",
+    "end": "0x1000741E",
     "evidence": "ordered",
     "name": "grim_joystick_left_active",
-    "size": 80
+    "size": 78
   },
   {
     "address": "0x10007420",
     "canonical_address": "0x10006F90",
-    "end": "0x10007470",
+    "end": "0x1000746A",
     "evidence": "ordered",
     "name": "grim_joystick_right_active",
-    "size": 80
+    "size": 74
   },
   {
     "address": "0x10007470",
     "canonical_address": "0x100071B0",
-    "end": "0x10007560",
+    "end": "0x10007557",
     "evidence": "ordered",
     "name": "grim_get_config_float",
-    "size": 240
+    "size": 231
   },
   {
     "address": "0x10007620",
@@ -599,10 +797,10 @@
   {
     "address": "0x10007740",
     "canonical_address": "0x10007440",
-    "end": "0x100077C0",
+    "end": "0x100077BF",
     "evidence": "ordered",
     "name": "grim_was_mouse_button_pressed",
-    "size": 128
+    "size": 127
   },
   {
     "address": "0x100077C0",
@@ -751,18 +949,18 @@
   {
     "address": "0x10007B40",
     "canonical_address": "0x100078E0",
-    "end": "0x10007C10",
+    "end": "0x10007C0D",
     "evidence": "ordered",
     "name": "grim_draw_rect_filled",
-    "size": 208
+    "size": 205
   },
   {
     "address": "0x10007C10",
     "canonical_address": "0x100079B0",
-    "end": "0x10007D20",
+    "end": "0x10007D13",
     "evidence": "ordered",
     "name": "grim_draw_fullscreen_color",
-    "size": 272
+    "size": 259
   },
   {
     "address": "0x10007D20",
@@ -815,10 +1013,10 @@
   {
     "address": "0x100082C0",
     "canonical_address": "0x100080B0",
-    "end": "0x10008350",
+    "end": "0x10008346",
     "evidence": "ordered",
     "name": "grim_draw_line",
-    "size": 144
+    "size": 134
   },
   {
     "address": "0x10008350",
@@ -834,10 +1032,10 @@
   {
     "address": "0x10008360",
     "canonical_address": "0x10008150",
-    "end": "0x100083D0",
+    "end": "0x100083C3",
     "evidence": "ordered",
     "name": "grim_draw_line_quad",
-    "size": 112
+    "size": 99
   },
   {
     "address": "0x100083D0",
@@ -890,18 +1088,18 @@
   {
     "address": "0x10008640",
     "canonical_address": "0x10008430",
-    "end": "0x100086F0",
+    "end": "0x100086E8",
     "evidence": "ordered",
     "name": "grim_submit_vertices_offset_color",
-    "size": 176
+    "size": 168
   },
   {
     "address": "0x100086F0",
     "canonical_address": "0x100084E0",
-    "end": "0x100087D0",
+    "end": "0x100087CA",
     "evidence": "ordered",
     "name": "grim_submit_vertices_transform_color",
-    "size": 224
+    "size": 218
   },
   {
     "address": "0x100087D0",
@@ -914,18 +1112,18 @@
   {
     "address": "0x10008890",
     "canonical_address": "0x10008680",
-    "end": "0x10008930",
+    "end": "0x10008929",
     "evidence": "ordered",
     "name": "grim_submit_vertices_offset",
-    "size": 160
+    "size": 153
   },
   {
     "address": "0x10008930",
     "canonical_address": "0x10008720",
-    "end": "0x10008960",
+    "end": "0x10008952",
     "evidence": "ordered",
     "name": "grim_draw_quad_xy",
-    "size": 48
+    "size": 34
   },
   {
     "address": "0x10008960",
@@ -938,42 +1136,42 @@
   {
     "address": "0x10008C80",
     "canonical_address": "0x10008E30",
-    "end": "0x10008D00",
+    "end": "0x10008CF4",
     "evidence": "ordered",
     "name": "grim_submit_vertex_raw",
-    "size": 128
+    "size": 116
   },
   {
     "address": "0x10008D00",
     "canonical_address": "0x10008EB0",
-    "end": "0x10008D60",
+    "end": "0x10008D5B",
     "evidence": "ordered",
     "name": "grim_submit_quad_raw",
-    "size": 96
+    "size": 91
   },
   {
     "address": "0x10008D60",
     "canonical_address": "0x10008F10",
-    "end": "0x10008ED0",
+    "end": "0x10008EC4",
     "evidence": "ordered",
     "name": "grim_draw_rect_outline",
-    "size": 368
+    "size": 356
   },
   {
     "address": "0x10008ED0",
     "canonical_address": "0x10009080",
-    "end": "0x10009100",
+    "end": "0x100090FA",
     "evidence": "ordered",
     "name": "grim_draw_quad_points",
-    "size": 560
+    "size": 554
   },
   {
     "address": "0x10009100",
     "canonical_address": "0x100092B0",
-    "end": "0x10009510",
+    "end": "0x1000950A",
     "evidence": "ordered",
     "name": "grim_draw_text_mono",
-    "size": 1040
+    "size": 1034
   },
   {
     "address": "0x10009510",
@@ -986,26 +1184,26 @@
   {
     "address": "0x10009580",
     "canonical_address": "0x10009730",
-    "end": "0x10009790",
+    "end": "0x10009783",
     "evidence": "ordered",
     "name": "grim_draw_text_small",
-    "size": 528
+    "size": 515
   },
   {
     "address": "0x10009790",
     "canonical_address": "0x10009940",
-    "end": "0x100097D0",
+    "end": "0x100097C3",
     "evidence": "ordered",
     "name": "grim_draw_text_mono_fmt",
-    "size": 64
+    "size": 51
   },
   {
     "address": "0x100097D0",
     "canonical_address": "0x10009980",
-    "end": "0x10009810",
+    "end": "0x10009803",
     "evidence": "ordered",
     "name": "grim_draw_text_small_fmt",
-    "size": 64
+    "size": 51
   },
   {
     "address": "0x10009810",
@@ -1018,10 +1216,10 @@
   {
     "address": "0x10009870",
     "canonical_address": "0x10009A20",
-    "end": "0x10009980",
+    "end": "0x1000997A",
     "evidence": "referenced",
     "name": "DllMain",
-    "size": 272
+    "size": 266
   },
   {
     "address": "0x10009980",
@@ -1281,12 +1479,12 @@
     "size": 14
   },
   {
-    "address": "0x1000B099",
+    "address": "0x1000B0F6",
     "canonical_address": "0x1000A8E2",
-    "end": "0x1000B0A0",
-    "evidence": "ordered",
+    "end": "0x1000B12C",
+    "evidence": "referenced",
     "name": "__CxxFrameHandler",
-    "size": 7
+    "size": 54
   },
   {
     "address": "0x1000B12C",
@@ -1299,10 +1497,10 @@
   {
     "address": "0x1000B458",
     "canonical_address": "0x1000A8E8",
-    "end": "0x1000B4D4",
+    "end": "0x1000B4D3",
     "evidence": "referenced",
     "name": "_setjmp3",
-    "size": 124
+    "size": 123
   },
   {
     "address": "0x1000B4D4",
@@ -1403,6 +1601,14 @@
     "evidence": "referenced",
     "name": "?terminate@@YAXXZ",
     "size": 72
+  },
+  {
+    "address": "0x1000E691",
+    "canonical_address": "0x1004B7C0",
+    "end": "0x1000E6A2",
+    "evidence": "called",
+    "name": "exit",
+    "size": 17
   },
   {
     "address": "0x100102AE",
@@ -4478,11 +4684,19 @@
     ]
   },
   {
-    "address": "0x100256B2",
+    "address": "0x10025696",
     "canonical_address": "0x1001BC68",
-    "end": "0x100256B7",
-    "evidence": "ordered",
+    "end": "0x100256B2",
+    "evidence": "exact",
     "name": "grim_pixel_format_scalar_deleting_destroy_yuv_base",
+    "size": 28
+  },
+  {
+    "address": "0x100256B2",
+    "canonical_address": "0x1001BCA0",
+    "end": "0x100256B7",
+    "evidence": "exact",
+    "name": "grim_pixel_format_destroy_yuv_thunk",
     "size": 5
   },
   {
@@ -8499,10 +8713,10 @@
   {
     "address": "0x10046090",
     "canonical_address": "0x1003AC00",
-    "end": "0x10046140",
+    "end": "0x10046135",
     "evidence": "ordered",
     "name": "grim_jpeg_format_message",
-    "size": 176
+    "size": 165
   },
   {
     "address": "0x10046140",
@@ -8684,10 +8898,10 @@
   {
     "address": "0x10048560",
     "canonical_address": "0x1003D0D0",
-    "end": "0x100486A0",
+    "end": "0x10048693",
     "evidence": "referenced",
     "name": "grim_jpeg_init_memory_mgr",
-    "size": 320,
+    "size": 307,
     "aliases": [
       "jinit_memory_mgr"
     ]
@@ -9015,10 +9229,10 @@
   {
     "address": "0x10049B80",
     "canonical_address": "0x1003E6F0",
-    "end": "0x10049D50",
+    "end": "0x10049D41",
     "evidence": "referenced",
     "name": "grim_jpeg_start_pass_main",
-    "size": 464
+    "size": 449
   },
   {
     "address": "0x10049D50",
@@ -9796,18 +10010,18 @@
   {
     "address": "0x10052EA0",
     "canonical_address": "0x10047A00",
-    "end": "0x10052EC0",
+    "end": "0x10052EB3",
     "evidence": "referenced",
     "name": "zlib_zcalloc",
-    "size": 32
+    "size": 19
   },
   {
     "address": "0x10052EC0",
     "canonical_address": "0x10047A20",
-    "end": "0x10052ED0",
+    "end": "0x10052ECC",
     "evidence": "referenced",
     "name": "zlib_zcfree",
-    "size": 16
+    "size": 12
   },
   {
     "address": "0x10052ED0",
@@ -9924,10 +10138,10 @@
   {
     "address": "0x100548A0",
     "canonical_address": "0x10049400",
-    "end": "0x10055560",
+    "end": "0x1005555F",
     "evidence": "referenced",
     "name": "zlib_inflate_blocks",
-    "size": 3264
+    "size": 3263
   },
   {
     "address": "0x100555A0",
@@ -10083,10 +10297,10 @@
   {
     "address": "0x10056D79",
     "canonical_address": "0x1004B758",
-    "end": "0x10056DB0",
+    "end": "0x10056DA1",
     "evidence": "referenced",
     "name": "isspace",
-    "size": 55
+    "size": 40
   },
   {
     "address": "0x10056DB0",
@@ -10099,10 +10313,10 @@
   {
     "address": "0x10056FCD",
     "canonical_address": "0x1004B764",
-    "end": "0x100570A0",
+    "end": "0x1005709C",
     "evidence": "referenced",
     "name": "floor",
-    "size": 211
+    "size": 207
   },
   {
     "address": "0x100570A0",
@@ -10125,14 +10339,6 @@
     "aliases": [
       "jpeg_mem_init"
     ]
-  },
-  {
-    "address": "0x10059BE0",
-    "canonical_address": "0x1004B7C0",
-    "end": "0x10059BE8",
-    "evidence": "ordered",
-    "name": "exit",
-    "size": 8
   },
   {
     "address": "0x10059DEF",

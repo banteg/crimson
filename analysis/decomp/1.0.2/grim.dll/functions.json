@@ -1,27 +1,131 @@
 [
   {
+    "address": "0x10001000",
+    "canonical_address": "0x10001000",
+    "end": "0x10001005",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_01_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001010",
+    "canonical_address": "0x10001010",
+    "end": "0x10001011",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_01",
+    "size": 1
+  },
+  {
+    "address": "0x10001020",
+    "canonical_address": "0x10001020",
+    "end": "0x10001025",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_02_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001030",
+    "canonical_address": "0x10001030",
+    "end": "0x10001031",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_02",
+    "size": 1
+  },
+  {
+    "address": "0x10001040",
+    "canonical_address": "0x10001040",
+    "end": "0x10001045",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_03_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001050",
+    "canonical_address": "0x10001050",
+    "end": "0x10001051",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_03",
+    "size": 1
+  },
+  {
+    "address": "0x10001060",
+    "canonical_address": "0x10001060",
+    "end": "0x10001065",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_04_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001070",
+    "canonical_address": "0x10001070",
+    "end": "0x10001071",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_04",
+    "size": 1
+  },
+  {
+    "address": "0x10001080",
+    "canonical_address": "0x10001080",
+    "end": "0x10001085",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_05_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001090",
+    "canonical_address": "0x10001090",
+    "end": "0x10001091",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_05",
+    "size": 1
+  },
+  {
+    "address": "0x100010A0",
+    "canonical_address": "0x100010A0",
+    "end": "0x100010A5",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_06_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x100010B0",
+    "canonical_address": "0x100010B0",
+    "end": "0x100010B1",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_06",
+    "size": 1
+  },
+  {
+    "address": "0x100010C0",
+    "canonical_address": "0x10001140",
+    "end": "0x100010CD",
+    "evidence": "exact",
+    "name": "grim_missing_frame_callback",
+    "size": 13
+  },
+  {
     "address": "0x100012C0",
     "canonical_address": "0x10002680",
-    "end": "0x10001480",
+    "end": "0x1000147A",
     "evidence": "called",
     "name": "grim_window_create",
-    "size": 448
+    "size": 442
   },
   {
     "address": "0x10001480",
     "canonical_address": "0x10002880",
-    "end": "0x100014B0",
+    "end": "0x100014AC",
     "evidence": "called",
     "name": "grim_window_destroy",
-    "size": 48
+    "size": 44
   },
   {
     "address": "0x100015B0",
     "canonical_address": "0x10002FC0",
-    "end": "0x10001680",
+    "end": "0x10001672",
     "evidence": "ordered",
     "name": "grim_app_init",
-    "size": 208,
+    "size": 194,
     "aliases": [
       "?init@MyApp@@QAE_NXZ"
     ]
@@ -37,10 +141,10 @@
   {
     "address": "0x100019E0",
     "canonical_address": "0x10003C00",
-    "end": "0x10001B5C",
-    "evidence": "referenced",
+    "end": "0x10001CB2",
+    "evidence": "ordered",
     "name": "grim_run_loop",
-    "size": 380
+    "size": 722
   },
   {
     "address": "0x10001CC0",
@@ -61,10 +165,10 @@
   {
     "address": "0x10002110",
     "canonical_address": "0x10004350",
-    "end": "0x100021C0",
+    "end": "0x100021B8",
     "evidence": "called",
     "name": "grim_create_geometry_buffers",
-    "size": 176
+    "size": 168
   },
   {
     "address": "0x100021C0",
@@ -77,10 +181,10 @@
   {
     "address": "0x10002200",
     "canonical_address": "0x10004520",
-    "end": "0x10002460",
+    "end": "0x1000245D",
     "evidence": "ordered",
     "name": "grim_apply_render_state",
-    "size": 608
+    "size": 605
   },
   {
     "address": "0x10002460",
@@ -101,10 +205,10 @@
   {
     "address": "0x10002590",
     "canonical_address": "0x10004970",
-    "end": "0x10002660",
+    "end": "0x10002655",
     "evidence": "ordered",
     "name": "grim_timing_update",
-    "size": 208
+    "size": 197
   },
   {
     "address": "0x100027C0",
@@ -120,10 +224,10 @@
   {
     "address": "0x10002820",
     "canonical_address": "0x10004AB0",
-    "end": "0x10002850",
+    "end": "0x1000284E",
     "evidence": "referenced",
     "name": "grim_texture_release",
-    "size": 48,
+    "size": 46,
     "aliases": [
       "??1GrimTexture@@QAE@XZ"
     ]
@@ -131,10 +235,10 @@
   {
     "address": "0x10002910",
     "canonical_address": "0x10005110",
-    "end": "0x10002960",
+    "end": "0x1000295F",
     "evidence": "referenced",
     "name": "grim_texture_name_equals",
-    "size": 80
+    "size": 79
   },
   {
     "address": "0x10002960",
@@ -155,18 +259,18 @@
   {
     "address": "0x100029D0",
     "canonical_address": "0x100051E0",
-    "end": "0x10002AC0",
+    "end": "0x10002AB1",
     "evidence": "referenced",
     "name": "grim_load_texture_internal",
-    "size": 240
+    "size": 225
   },
   {
     "address": "0x10002DE0",
     "canonical_address": "0x10005A40",
-    "end": "0x10002E70",
+    "end": "0x10002E6C",
     "evidence": "ordered",
     "name": "grim_lookup_blob_load",
-    "size": 144
+    "size": 140
   },
   {
     "address": "0x10002E70",
@@ -195,18 +299,18 @@
   {
     "address": "0x10002FC0",
     "canonical_address": "0x10005EB0",
-    "end": "0x100030B0",
+    "end": "0x100030A7",
     "evidence": "ordered",
     "name": "grim_init_system",
-    "size": 240
+    "size": 231
   },
   {
     "address": "0x100032F0",
     "canonical_address": "0x10005FF0",
-    "end": "0x10003320",
+    "end": "0x10003311",
     "evidence": "ordered",
     "name": "grim_shutdown",
-    "size": 48
+    "size": 33
   },
   {
     "address": "0x10003320",
@@ -227,10 +331,10 @@
   {
     "address": "0x100036B0",
     "canonical_address": "0x10006C30",
-    "end": "0x10003700",
+    "end": "0x100036F4",
     "evidence": "ordered",
     "name": "grim_get_config_var",
-    "size": 80
+    "size": 68
   },
   {
     "address": "0x10003700",
@@ -243,39 +347,39 @@
   {
     "address": "0x10003710",
     "canonical_address": "0x10006CB0",
-    "end": "0x100037A0",
+    "end": "0x10003799",
     "evidence": "ordered",
     "name": "grim_clear_color",
-    "size": 144
+    "size": 137
   },
   {
     "address": "0x100037A0",
     "canonical_address": "0x10006D50",
-    "end": "0x10003890",
+    "end": "0x10003887",
     "evidence": "ordered",
     "name": "grim_set_render_target",
-    "size": 240
+    "size": 231
   },
   {
     "address": "0x10003890",
     "canonical_address": "0x10006E40",
-    "end": "0x100038A0",
+    "end": "0x10003897",
     "evidence": "ordered",
     "name": "grim_get_time_ms",
-    "size": 16
+    "size": 7
   },
   {
     "address": "0x100038A0",
     "canonical_address": "0x10006E60",
-    "end": "0x100038D0",
+    "end": "0x100038CC",
     "evidence": "ordered",
     "name": "grim_get_frame_dt",
-    "size": 48
+    "size": 44
   },
   {
-    "address": "0x100038D0",
+    "address": "0x100038E0",
     "canonical_address": "0x10006E90",
-    "end": "0x100038D7",
+    "end": "0x100038E7",
     "evidence": "exact",
     "name": "grim_get_fps",
     "size": 7
@@ -291,10 +395,10 @@
   {
     "address": "0x10003900",
     "canonical_address": "0x10007330",
-    "end": "0x10003950",
+    "end": "0x1000394B",
     "evidence": "ordered",
     "name": "grim_flush_input",
-    "size": 80
+    "size": 75
   },
   {
     "address": "0x10003950",
@@ -307,10 +411,10 @@
   {
     "address": "0x10003980",
     "canonical_address": "0x10007440",
-    "end": "0x10003A00",
+    "end": "0x100039FF",
     "evidence": "ordered",
     "name": "grim_was_mouse_button_pressed",
-    "size": 128
+    "size": 127
   },
   {
     "address": "0x10003A00",
@@ -395,34 +499,34 @@
   {
     "address": "0x10003C10",
     "canonical_address": "0x10007830",
-    "end": "0x10003C50",
+    "end": "0x10003C47",
     "evidence": "ordered",
     "name": "grim_bind_texture",
-    "size": 64
+    "size": 55
   },
   {
     "address": "0x10003C50",
     "canonical_address": "0x10007870",
-    "end": "0x10003CD0",
+    "end": "0x10003CC9",
     "evidence": "ordered",
     "name": "grim_draw_fullscreen_quad",
-    "size": 128
+    "size": 121
   },
   {
     "address": "0x10003CD0",
     "canonical_address": "0x10007B20",
-    "end": "0x10003D40",
+    "end": "0x10003D3C",
     "evidence": "ordered",
     "name": "grim_end_batch",
-    "size": 112
+    "size": 108
   },
   {
     "address": "0x10003D70",
     "canonical_address": "0x100080B0",
-    "end": "0x10003DF0",
+    "end": "0x10003DEA",
     "evidence": "ordered",
     "name": "grim_draw_line",
-    "size": 128
+    "size": 122
   },
   {
     "address": "0x10003DF0",
@@ -451,34 +555,34 @@
   {
     "address": "0x10003F00",
     "canonical_address": "0x10008680",
-    "end": "0x10003F90",
+    "end": "0x10003F88",
     "evidence": "ordered",
     "name": "grim_submit_vertices_offset",
-    "size": 144
+    "size": 136
   },
   {
     "address": "0x10003F90",
     "canonical_address": "0x10008750",
-    "end": "0x10004380",
+    "end": "0x1000437F",
     "evidence": "ordered",
     "name": "grim_draw_quad_rotated_matrix",
-    "size": 1008
+    "size": 1007
   },
   {
     "address": "0x10004380",
     "canonical_address": "0x10008B10",
-    "end": "0x100046B0",
+    "end": "0x100046AB",
     "evidence": "ordered",
     "name": "grim_draw_quad",
-    "size": 816
+    "size": 811
   },
   {
     "address": "0x100046B0",
     "canonical_address": "0x10008F10",
-    "end": "0x10004810",
+    "end": "0x10004807",
     "evidence": "ordered",
     "name": "grim_draw_rect_outline",
-    "size": 352
+    "size": 343
   },
   {
     "address": "0x10004830",
@@ -523,10 +627,10 @@
   {
     "address": "0x10004AB0",
     "canonical_address": "0x1000A5A0",
-    "end": "0x10004B80",
+    "end": "0x10004B72",
     "evidence": "ordered",
     "name": "grim_mouse_init",
-    "size": 208
+    "size": 194
   },
   {
     "address": "0x10004B80",
@@ -7043,10 +7147,10 @@
   },
   {
     "address": "0x100327F0",
-    "canonical_address": "0x1003AFA0",
+    "canonical_address": "0x1003AB60",
     "end": "0x10032807",
     "evidence": "ordered",
-    "name": "grim_jpeg_finish_input_pass",
+    "name": "grim_jpeg_error_exit",
     "size": 23
   },
   {
@@ -7059,10 +7163,10 @@
   },
   {
     "address": "0x10032808",
-    "canonical_address": "0x1003B520",
+    "canonical_address": "0x1003AB80",
     "end": "0x10032840",
     "evidence": "ordered",
-    "name": "grim_jpeg_reset_input_controller",
+    "name": "grim_jpeg_output_message",
     "size": 56
   },
   {
@@ -7083,22 +7187,19 @@
   },
   {
     "address": "0x10032859",
-    "canonical_address": "0x1003D090",
+    "canonical_address": "0x1003ABC0",
     "end": "0x1003288D",
     "evidence": "ordered",
-    "name": "grim_jpeg_reset_marker_reader",
+    "name": "grim_jpeg_emit_message",
     "size": 52
   },
   {
     "address": "0x1003289B",
-    "canonical_address": "0x1003D420",
+    "canonical_address": "0x1003D000",
     "end": "0x10032920",
     "evidence": "ordered",
-    "name": "grim_jpeg_alloc_sarray",
-    "size": 133,
-    "aliases": [
-      "alloc_sarray"
-    ]
+    "name": "grim_jpeg_read_restart_marker",
+    "size": 133
   },
   {
     "address": "0x10032920",
@@ -7125,10 +7226,10 @@
   {
     "address": "0x10032AC4",
     "canonical_address": "0x1003D930",
-    "end": "0x10032B40",
+    "end": "0x10032B3F",
     "evidence": "ordered",
     "name": "grim_jpeg_do_sarray_io",
-    "size": 124,
+    "size": 123,
     "aliases": [
       "do_sarray_io"
     ]
@@ -7260,10 +7361,10 @@
   {
     "address": "0x1003302F",
     "canonical_address": "0x1004A980",
-    "end": "0x10033044",
+    "end": "0x10033042",
     "evidence": "ordered",
     "name": "zlib_inflate_codes_free",
-    "size": 21
+    "size": 19
   },
   {
     "address": "0x10033044",
@@ -7385,10 +7486,10 @@
   {
     "address": "0x100334CB",
     "canonical_address": "0x1004B758",
-    "end": "0x10033500",
+    "end": "0x100334F3",
     "evidence": "referenced",
     "name": "isspace",
-    "size": 53
+    "size": 40
   },
   {
     "address": "0x10033500",
@@ -7401,10 +7502,10 @@
   {
     "address": "0x1003371D",
     "canonical_address": "0x1004B764",
-    "end": "0x100337F0",
+    "end": "0x100337EC",
     "evidence": "referenced",
     "name": "floor",
-    "size": 211
+    "size": 207
   },
   {
     "address": "0x100337F0",
@@ -7445,12 +7546,12 @@
     ]
   },
   {
-    "address": "0x10033AC2",
+    "address": "0x100339EC",
     "canonical_address": "0x1004B7C0",
-    "end": "0x10033ACB",
-    "evidence": "ordered",
+    "end": "0x100339FD",
+    "evidence": "called",
     "name": "exit",
-    "size": 9
+    "size": 17
   },
   {
     "address": "0x10033AEE",
@@ -7485,17 +7586,6 @@
     "size": 153
   },
   {
-    "address": "0x1003433F",
-    "canonical_address": "0x1003D360",
-    "end": "0x100343DA",
-    "evidence": "called",
-    "name": "grim_jpeg_alloc_large",
-    "size": 155,
-    "aliases": [
-      "alloc_large"
-    ]
-  },
-  {
     "address": "0x10034D18",
     "canonical_address": "0x1004B7D2",
     "end": "0x10034D60",
@@ -7510,17 +7600,6 @@
     "evidence": "referenced",
     "name": "_except_handler3",
     "size": 216
-  },
-  {
-    "address": "0x1003D784",
-    "canonical_address": "0x1003D210",
-    "end": "0x1003D790",
-    "evidence": "called",
-    "name": "grim_jpeg_alloc_small",
-    "size": 12,
-    "aliases": [
-      "alloc_small"
-    ]
   },
   {
     "address": "0x1003D90E",

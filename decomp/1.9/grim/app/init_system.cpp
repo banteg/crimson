@@ -1,11 +1,9 @@
+#include <direct.h>
 #include <string.h>
 #include <windows.h>
 
 #include "grim2d_cpp.h"
 #include "grim_texture.h"
-
-extern "C" __declspec(dllimport) char *__cdecl _getcwd(
-    char *buffer, int max_length);
 
 extern char grim_working_dir[260];
 extern bool grim_mouse_enabled;

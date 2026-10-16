@@ -1,0 +1,447 @@
+{
+  "schema": 1,
+  "sha256": "00f2c3c6ead7fb34b105fb8b5d16e5da036a6b5567bcf02245fb5ccbfcc78da8",
+  "functions": [],
+  "data": [
+    {
+      "name": "?$S1@?1??grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z@4EA",
+      "address": "0x1006da34",
+      "reference": "0x100082a3",
+      "bytes": "8a0d34da0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_draw_line."
+    },
+    {
+      "name": "?half_vector@?1??grim_draw_line@IGrim2D_cpp@@UAEXPAM0M@Z@4UGrimLineVector@@A",
+      "address": "0x1006e310",
+      "reference": "0x100082d0",
+      "bytes": "6810e30610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_draw_line."
+    },
+    {
+      "name": "CxxLongjmpUnwind",
+      "address": "0x1000b4ec",
+      "reference": "0x10004d1c",
+      "bytes": "68ecb40010",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_decode_jaz_texture."
+    },
+    {
+      "name": "fclose",
+      "address": "0x1000ac60",
+      "reference": "0x100019ec",
+      "bytes": "e86f920000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_blob_load, grim_config_blob_save, grim_lookup_blob_load."
+    },
+    {
+      "name": "fopen",
+      "address": "0x1000ae47",
+      "reference": "0x100019cb",
+      "bytes": "e877940000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_blob_load, grim_config_blob_save, grim_lookup_blob_load."
+    },
+    {
+      "name": "fread",
+      "address": "0x1000ae5a",
+      "reference": "0x10001a7d",
+      "bytes": "e8d8930000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_blob_load, grim_lookup_blob_load."
+    },
+    {
+      "name": "fseek",
+      "address": "0x1000b0f4",
+      "reference": "0x10001a3f",
+      "bytes": "e8b0960000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_blob_load, grim_lookup_blob_load."
+    },
+    {
+      "name": "ftell",
+      "address": "0x1000af71",
+      "reference": "0x10001a45",
+      "bytes": "e827950000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_blob_load, grim_lookup_blob_load."
+    },
+    {
+      "name": "fwrite",
+      "address": "0x1000acdd",
+      "reference": "0x100019e6",
+      "bytes": "e8f2920000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_blob_save."
+    },
+    {
+      "name": "getcwd",
+      "address": "0x1000b1ff",
+      "reference": "0x10005fec",
+      "bytes": "e80e520000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_init_system."
+    },
+    {
+      "name": "getenv",
+      "address": "0x10014194",
+      "reference": "0x100489ee",
+      "bytes": "e8a1b7fcff",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_jaz_jpeg_init_memory_mgr."
+    },
+    {
+      "name": "grim_active_d3d8",
+      "address": "0x10070b1c",
+      "reference": "0x100043a8",
+      "bytes": "a31c0b0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_d3d_init."
+    },
+    {
+      "name": "grim_active_d3d_device",
+      "address": "0x10070b2c",
+      "reference": "0x100043ae",
+      "bytes": "890d2c0b0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_d3d_init."
+    },
+    {
+      "name": "grim_app",
+      "address": "0x1006fa58",
+      "reference": "0x10003d8f",
+      "bytes": "b958fa0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_run_loop."
+    },
+    {
+      "name": "grim_config_backbuffer_count",
+      "address": "0x10070940",
+      "reference": "0x100040e0",
+      "bytes": "8b1540090710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_d3d_init."
+    },
+    {
+      "name": "grim_config_blob",
+      "address": "0x1006fea0",
+      "reference": "0x100019e1",
+      "bytes": "68a0fe0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_config_blob_load, grim_config_blob_save."
+    },
+    {
+      "name": "grim_device_caps",
+      "address": "0x1006e318",
+      "reference": "0x1000401f",
+      "bytes": "6818e30610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_d3d_init."
+    },
+    {
+      "name": "grim_device_reset_retry_count",
+      "address": "0x10071294",
+      "reference": "0x10003346",
+      "bytes": "891d94120710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_restore_device_after_activation."
+    },
+    {
+      "name": "grim_device_restore_callback_pending",
+      "address": "0x1007129d",
+      "reference": "0x10003f22",
+      "bytes": "381d9d120710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_run_loop."
+    },
+    {
+      "name": "grim_enable_auto_depth_stencil",
+      "address": "0x10070960",
+      "reference": "0x10004154",
+      "bytes": "a060090710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_d3d_init."
+    },
+    {
+      "name": "grim_font2_char_map",
+      "address": "0x1006e3f0",
+      "reference": "0x100098ca",
+      "bytes": "8a9af0e30610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_draw_text_small, grim_measure_text_width."
+    },
+    {
+      "name": "grim_font2_glyph_widths",
+      "address": "0x1006f958",
+      "reference": "0x10006101",
+      "bytes": "bf58f90610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_draw_text_small, grim_init_system, grim_measure_text_width."
+    },
+    {
+      "name": "grim_font2_texture_handle",
+      "address": "0x100630a8",
+      "reference": "0x10009934",
+      "bytes": "a1a8300610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_draw_text_small."
+    },
+    {
+      "name": "grim_font2_uv_u",
+      "address": "0x1006f148",
+      "reference": "0x10009802",
+      "bytes": "8b04d548f10610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_draw_text_mono, grim_draw_text_small."
+    },
+    {
+      "name": "grim_font_scale",
+      "address": "0x10070790",
+      "reference": "0x100094e0",
+      "bytes": "a190070710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_draw_text_mono."
+    },
+    {
+      "name": "grim_font_texture_bound",
+      "address": "0x10070780",
+      "reference": "0x100094c0",
+      "bytes": "a080070710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_draw_text_mono."
+    },
+    {
+      "name": "grim_frame_callback",
+      "address": "0x1006d5fc",
+      "reference": "0x10003f36",
+      "bytes": "ff15fcd50610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_run_loop."
+    },
+    {
+      "name": "grim_index_write_ptr",
+      "address": "0x1006f13c",
+      "reference": "0x1000451f",
+      "bytes": "683cf10610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_create_geometry_buffers."
+    },
+    {
+      "name": "grim_input_provider",
+      "address": "0x10070e3c",
+      "reference": "0x10003f40",
+      "bytes": "8b0d3c0e0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_run_loop."
+    },
+    {
+      "name": "grim_joystick_center_x",
+      "address": "0x10070bd0",
+      "reference": "0x100071e3",
+      "bytes": "8b0dd00b0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_joystick_left_active, grim_joystick_right_active."
+    },
+    {
+      "name": "grim_joystick_center_y",
+      "address": "0x10070be0",
+      "reference": "0x10007143",
+      "bytes": "8b0de00b0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_joystick_down_active, grim_joystick_up_active."
+    },
+    {
+      "name": "grim_joystick_deadzone",
+      "address": "0x10070bc0",
+      "reference": "0x10007149",
+      "bytes": "a1c00b0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_joystick_down_active, grim_joystick_left_active, grim_joystick_right_active and others."
+    },
+    {
+      "name": "grim_joystick_state_ptr",
+      "address": "0x1007099c",
+      "reference": "0x10003e6c",
+      "bytes": "c7059c090710b8120710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_run_loop."
+    },
+    {
+      "name": "grim_key_repeat_delay",
+      "address": "0x10063084",
+      "reference": "0x10007594",
+      "bytes": "d90584300610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_was_key_pressed."
+    },
+    {
+      "name": "grim_key_repeat_first_press",
+      "address": "0x1006ddc8",
+      "reference": "0x1000758e",
+      "bytes": "8a81c8dd0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_was_key_pressed."
+    },
+    {
+      "name": "grim_key_repeat_timers",
+      "address": "0x1006dee0",
+      "reference": "0x10003e39",
+      "bytes": "b9e0de0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_run_loop, grim_was_key_pressed."
+    },
+    {
+      "name": "grim_keyboard_enabled",
+      "address": "0x100706c0",
+      "reference": "0x10003e2c",
+      "bytes": "381dc0060710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_init_system, grim_run_loop."
+    },
+    {
+      "name": "grim_lookup_blob_loaded",
+      "address": "0x1006fa94",
+      "reference": "0x10005b39",
+      "bytes": "a294fa0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_lookup_blob_load."
+    },
+    {
+      "name": "grim_main_window_hwnd_ref",
+      "address": "0x10070b3c",
+      "reference": "0x100060cd",
+      "bytes": "c7053c0b0710800e0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_init_system."
+    },
+    {
+      "name": "grim_missing_frame_error_text",
+      "address": "0x1006312c",
+      "reference": "0x10001140",
+      "bytes": "c705840307102c310610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_missing_frame_callback."
+    },
+    {
+      "name": "grim_module_handle",
+      "address": "0x1006f94c",
+      "reference": "0x10004296",
+      "bytes": "8b154cf90610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_d3d_init."
+    },
+    {
+      "name": "grim_mouse_button_latch",
+      "address": "0x10070374",
+      "reference": "0x1000762a",
+      "bytes": "8a8174030710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_was_mouse_button_pressed."
+    },
+    {
+      "name": "grim_mouse_enabled",
+      "address": "0x100706d0",
+      "reference": "0x10006000",
+      "bytes": "803dd006071001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_init_system."
+    },
+    {
+      "name": "grim_on_device_restore",
+      "address": "0x1006d5f0",
+      "reference": "0x10003f2a",
+      "bytes": "ff15f0d50610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_run_loop."
+    },
+    {
+      "name": "grim_present_parameters",
+      "address": "0x1006dc7c",
+      "reference": "0x100032ad",
+      "bytes": "687cdc0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_d3d_init, grim_restore_device_after_activation, grim_save_screenshot."
+    },
+    {
+      "name": "grim_printf_buffer",
+      "address": "0x1006ecf8",
+      "reference": "0x10009afa",
+      "bytes": "68f8ec0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_draw_text_mono_fmt."
+    },
+    {
+      "name": "grim_printf_buffer_alt",
+      "address": "0x1006eef8",
+      "reference": "0x10009b3a",
+      "bytes": "68f8ee0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_draw_text_small_fmt."
+    },
+    {
+      "name": "grim_texture_backup_pending",
+      "address": "0x1007129c",
+      "reference": "0x100027e3",
+      "bytes": "a09c120710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_backup_textures, grim_restore_textures."
+    },
+    {
+      "name": "grim_use_ref_device",
+      "address": "0x10070950",
+      "reference": "0x10003fb0",
+      "bytes": "a050090710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_d3d_init."
+    },
+    {
+      "name": "grim_vertex_capacity",
+      "address": "0x1006d5ec",
+      "reference": "0x100044ae",
+      "bytes": "c705ecd5061000010000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_create_geometry_buffers, grim_draw_quad_points, grim_submit_quad_raw and others."
+    },
+    {
+      "name": "grim_working_dir",
+      "address": "0x1006dcc0",
+      "reference": "0x10005fdb",
+      "bytes": "bfc0dc0610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_init_system."
+    },
+    {
+      "name": "png_IDAT",
+      "address": "0x1005e280",
+      "reference": "0x1002f7fa",
+      "bytes": "b880e20510",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_png_read_finish_row."
+    },
+    {
+      "name": "sscanf",
+      "address": "0x1005748f",
+      "reference": "0x10048a0f",
+      "bytes": "e87bea0000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_jaz_jpeg_init_memory_mgr."
+    },
+    {
+      "name": "strchr",
+      "address": "0x1000b350",
+      "reference": "0x10004055",
+      "bytes": "e8f6720000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_d3d_init."
+    },
+    {
+      "name": "vsprintf",
+      "address": "0x1000abc0",
+      "reference": "0x10009aff",
+      "bytes": "e8bc100000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_draw_text_mono_fmt, grim_draw_text_small_fmt."
+    }
+  ]
+}

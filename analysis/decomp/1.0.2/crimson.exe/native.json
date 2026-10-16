@@ -43,6 +43,17 @@
       ]
     },
     {
+      "address": 4198464,
+      "name": "native_function_00401040",
+      "blocks": [
+        {
+          "address": 4198464,
+          "end": 4198465,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
       "address": 4198480,
       "name": "native_function_00401050",
       "blocks": [
@@ -314,6 +325,17 @@
       ]
     },
     {
+      "address": 4199168,
+      "name": "native_function_00401300",
+      "blocks": [
+        {
+          "address": 4199168,
+          "end": 4199169,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
       "address": 4199184,
       "name": "native_function_00401310",
       "blocks": [
@@ -330,6 +352,17 @@
       ]
     },
     {
+      "address": 4199200,
+      "name": "native_function_00401320",
+      "blocks": [
+        {
+          "address": 4199200,
+          "end": 4199201,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
       "address": 4199216,
       "name": "native_function_00401330",
       "blocks": [
@@ -338,6 +371,17 @@
           "end": 4199221,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4199232,
+          "end": 4199233,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
+      "address": 4199232,
+      "name": "native_function_00401340",
+      "blocks": [
         {
           "address": 4199232,
           "end": 4199233,
@@ -30653,6 +30697,11 @@
     }
   ],
   "verified_starts": [
+    4198400,
+    4198448,
+    4198464,
+    4198480,
+    4198528,
     4198592,
     4198640,
     4198688,
@@ -30661,15 +30710,17 @@
     4199040,
     4199104,
     4199152,
+    4199168,
     4199184,
+    4199200,
     4199216,
+    4199232,
     4199248,
     4199264,
     4199280,
     4199344,
     4199456,
     4199472,
-    4200912,
     4262176,
     4262200,
     4262212,
@@ -30755,6 +30806,7 @@
     4279271,
     4279293,
     4279439,
+    4279576,
     4279779,
     4279852,
     4279938,
@@ -30848,5 +30900,5 @@
       "note": "Initial application/engine object cluster ends at the following D3DX dispatch initializer or CRT entry; native call-flow and adjacent mapped SDK/runtime bodies reviewed. Unique native functions in the cluster are retained, independent of donor identities."
     }
   ],
-  "maps_sha256": "a88efb57ed74c703a42c4506885eca4935b310baa1c8b61ea74efea9ea2e3be2"
+  "maps_sha256": "beb4bb9ed730248d422bec76edff17369e4e22d927cb25e3c1c3b1bbcc803475"
 }

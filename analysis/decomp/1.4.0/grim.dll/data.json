@@ -976,11 +976,6 @@
       "program": "1.4.0/grim.dll"
     },
     {
-      "address": "0x1004ecc8",
-      "name": "grim_fps",
-      "program": "1.4.0/grim.dll"
-    },
-    {
       "address": "0x1004eccc",
       "name": "grim_vertex_capacity",
       "program": "1.4.0/grim.dll"
@@ -1113,6 +1108,11 @@
     {
       "address": "0x1004fbe0",
       "name": "grim_d3d_device_type",
+      "program": "1.4.0/grim.dll"
+    },
+    {
+      "address": "0x1004fbe8",
+      "name": "grim_fps",
       "program": "1.4.0/grim.dll"
     },
     {

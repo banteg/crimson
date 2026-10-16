@@ -200,8 +200,7 @@ The older layout omits the Man Bomb, Living Fortress and Fire Cough timers;
 its Fire Bullets timer is at `0x310`, compared with `0x31c`. The constructor
 matches with these three fields and assignments omitted. The corresponding
 three perk-update blocks and later dedicated Fire Bullets branch are excluded
-from the older `player_update` source. That entire function is still partial;
-its full extent is recovered, but it has not earned exact-match credit.
+from the older `player_update` source, which now matches its native body.
 
 Reproduce the two central matches with:
 

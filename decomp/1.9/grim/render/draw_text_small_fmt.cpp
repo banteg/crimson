@@ -1,9 +1,7 @@
 #include <stdarg.h>
+#include <stdio.h>
 
 #include "grim2d_cpp.h"
-
-extern "C" __declspec(dllimport) int __cdecl
-vsprintf(char *buffer, const char *fmt, va_list args);
 
 extern char grim_printf_buffer_alt[];
 

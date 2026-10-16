@@ -39,7 +39,7 @@ tools/match/scratches/grim_find_texture_by_name/build/msvc6.5/98b777599c222171/f
 tools/match/scratches/grim_find_free_texture_slot/build/msvc6.5/11faa78b59752132/find_free_slot.obj
 tools/match/scratches/grim_load_texture_internal/build/msvc6.5/121bfe3ff08b569e/load_internal.obj
 tools/match/scratches/grim_state_init/build/msvc6.5/0ac5f5ed38e60709/state_init.obj
-tools/match/scratches/grim_lookup_blob_load/build/msvc6.5/0e514d3ca1742e63/lookup_blob_load.obj
+tools/match/scratches/grim_lookup_blob_load/build/msvc6.5/8b40e925448b2892/lookup_blob_load.obj
 tools/match/scratches/grim_lookup_blob_find/build/msvc6.5/8610a8d054d97ea1/lookup_blob_find.obj
 tools/match/scratches/grim_lookup_blob_size_for_path/build/msvc6.5/c5b7b59596408825/lookup_blob_size_for_path.obj
 tools/match/scratches/grim_set_key_char_buffer/build/msvc6.5/b858197e2c65c69d/set_key_char_buffer.obj
@@ -47,7 +47,7 @@ tools/match/scratches/grim_get_key_char/build/msvc6.5/46b0c9ee68dd6c58/get_key_c
 tools/match/scratches/grim_release/build/msvc6.5/b4ef077e79af1aaa/release.obj
 tools/match/scratches/grim_set_paused/build/msvc6.5/0a0cff258cd65b0c/set_paused.obj
 tools/match/scratches/grim_get_version/build/msvc6.5/8bbbaf2457cb0b89/get_version.obj
-tools/match/scratches/grim_init_system/build/msvc6.5/1752ba13f6b3dd9a/init_system.obj
+tools/match/scratches/grim_init_system/build/msvc6.5/4ec4b3f10bea65d9/init_system.obj
 tools/match/scratches/grim_shutdown/build/msvc6.5/6a209c5dd5ac1d88/shutdown.obj
 tools/match/scratches/grim_apply_settings/build/msvc6.5/00c96d49a8f03e9e/apply_settings.obj
 tools/match/scratches/grim_set_texture_stage_ops/build/msvc6.5/9e92a36c25b215b5/set_texture_stage_ops.obj
@@ -123,8 +123,8 @@ tools/match/scratches/grim_draw_rect_outline/build/msvc6.5/b76b1817123adf45/draw
 tools/match/scratches/grim_draw_text_mono/build/msvc6.5/37c519841b757e35/mono_text.obj
 tools/match/scratches/grim_measure_text_width/build/msvc6.5/fd0ad54c234353ac/measure_text_width.obj
 tools/match/scratches/grim_draw_text_small/build/msvc6.5/fbb7eca3dadffeed/draw_text_small.obj
-tools/match/scratches/grim_draw_text_mono_fmt/build/msvc6.5/617f7e7915ac4fb5/draw_text_mono_fmt.obj
-tools/match/scratches/grim_draw_text_small_fmt/build/msvc6.5/1c684788fcc9ce89/draw_text_small_fmt.obj
+tools/match/scratches/grim_draw_text_mono_fmt/build/msvc6.5/ce56b2b7909787b5/draw_text_mono_fmt.obj
+tools/match/scratches/grim_draw_text_small_fmt/build/msvc6.5/0ab5446d48286fc9/draw_text_small_fmt.obj
 tools/match/scratches/grim_get_interface/build/msvc6.5/591846f50fbd8fc4/get_interface.obj
 tools/match/scratches/grim_dll_main/build/msvc6.5/ed83b16bba93ad73/dll_main.obj
 tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/3ce851826e4bfacc/jaz_decode.obj

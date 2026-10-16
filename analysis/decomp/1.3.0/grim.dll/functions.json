@@ -1,27 +1,147 @@
 [
   {
+    "address": "0x10001000",
+    "canonical_address": "0x10001000",
+    "end": "0x10001005",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_01_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001010",
+    "canonical_address": "0x10001010",
+    "end": "0x10001011",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_01",
+    "size": 1
+  },
+  {
+    "address": "0x10001020",
+    "canonical_address": "0x10001020",
+    "end": "0x10001025",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_02_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001030",
+    "canonical_address": "0x10001030",
+    "end": "0x10001031",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_02",
+    "size": 1
+  },
+  {
+    "address": "0x10001040",
+    "canonical_address": "0x10001040",
+    "end": "0x10001045",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_03_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001050",
+    "canonical_address": "0x10001050",
+    "end": "0x10001051",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_03",
+    "size": 1
+  },
+  {
+    "address": "0x10001060",
+    "canonical_address": "0x10001060",
+    "end": "0x10001065",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_04_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001070",
+    "canonical_address": "0x10001070",
+    "end": "0x10001071",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_04",
+    "size": 1
+  },
+  {
+    "address": "0x10001080",
+    "canonical_address": "0x10001080",
+    "end": "0x10001085",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_05_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001090",
+    "canonical_address": "0x10001090",
+    "end": "0x10001091",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_05",
+    "size": 1
+  },
+  {
+    "address": "0x100010A0",
+    "canonical_address": "0x100010A0",
+    "end": "0x100010A5",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_06_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x100010B0",
+    "canonical_address": "0x100010B0",
+    "end": "0x100010B1",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_06",
+    "size": 1
+  },
+  {
+    "address": "0x100010C0",
+    "canonical_address": "0x10001140",
+    "end": "0x100010CD",
+    "evidence": "exact",
+    "name": "grim_missing_frame_callback",
+    "size": 13
+  },
+  {
+    "address": "0x100010D0",
+    "canonical_address": "0x10001150",
+    "end": "0x100010D3",
+    "evidence": "exact",
+    "name": "grim_default_device_callback",
+    "size": 3
+  },
+  {
+    "address": "0x100010E0",
+    "canonical_address": "0x10001AD0",
+    "end": "0x100014D2",
+    "evidence": "ordered",
+    "name": "grim_parental_lock_dialog_proc",
+    "size": 1010
+  },
+  {
     "address": "0x100014E0",
     "canonical_address": "0x10002680",
-    "end": "0x100016A0",
+    "end": "0x1000169A",
     "evidence": "called",
     "name": "grim_window_create",
-    "size": 448
+    "size": 442
   },
   {
     "address": "0x100016A0",
     "canonical_address": "0x10002880",
-    "end": "0x100016D0",
+    "end": "0x100016CC",
     "evidence": "called",
     "name": "grim_window_destroy",
-    "size": 48
+    "size": 44
   },
   {
     "address": "0x100017F0",
     "canonical_address": "0x10002FC0",
-    "end": "0x100018C0",
+    "end": "0x100018BB",
     "evidence": "ordered",
     "name": "grim_app_init",
-    "size": 208,
+    "size": 203,
     "aliases": [
       "?init@MyApp@@QAE_NXZ"
     ]
@@ -29,26 +149,26 @@
   {
     "address": "0x100018C0",
     "canonical_address": "0x100030B0",
-    "end": "0x10001AE7",
+    "end": "0x10001C10",
     "evidence": "ordered",
     "name": "grim_restore_device_after_activation",
-    "size": 551
+    "size": 848
   },
   {
     "address": "0x10001C10",
     "canonical_address": "0x10003C00",
-    "end": "0x10001EA0",
-    "evidence": "referenced",
+    "end": "0x10001E91",
+    "evidence": "ordered",
     "name": "grim_run_loop",
-    "size": 656
+    "size": 641
   },
   {
     "address": "0x10001EA0",
     "canonical_address": "0x10003E60",
-    "end": "0x10002220",
+    "end": "0x1000221A",
     "evidence": "ordered",
     "name": "grim_d3d_init",
-    "size": 896
+    "size": 890
   },
   {
     "address": "0x10002220",
@@ -61,10 +181,10 @@
   {
     "address": "0x100022F0",
     "canonical_address": "0x10004350",
-    "end": "0x100023A0",
+    "end": "0x10002398",
     "evidence": "called",
     "name": "grim_create_geometry_buffers",
-    "size": 176
+    "size": 168
   },
   {
     "address": "0x100023A0",
@@ -77,10 +197,10 @@
   {
     "address": "0x100023E0",
     "canonical_address": "0x10004520",
-    "end": "0x10002640",
+    "end": "0x1000263D",
     "evidence": "ordered",
     "name": "grim_apply_render_state",
-    "size": 608
+    "size": 605
   },
   {
     "address": "0x10002640",
@@ -101,10 +221,10 @@
   {
     "address": "0x10002770",
     "canonical_address": "0x10004970",
-    "end": "0x10002840",
+    "end": "0x10002835",
     "evidence": "ordered",
     "name": "grim_timing_update",
-    "size": 208
+    "size": 197
   },
   {
     "address": "0x100029A0",
@@ -120,10 +240,10 @@
   {
     "address": "0x10002A00",
     "canonical_address": "0x10004AB0",
-    "end": "0x10002A30",
+    "end": "0x10002A2E",
     "evidence": "referenced",
     "name": "grim_texture_release",
-    "size": 48,
+    "size": 46,
     "aliases": [
       "??1GrimTexture@@QAE@XZ"
     ]
@@ -131,10 +251,10 @@
   {
     "address": "0x10002A30",
     "canonical_address": "0x10004EC0",
-    "end": "0x10002AF0",
+    "end": "0x10002AE5",
     "evidence": "referenced",
     "name": "grim_texture_load_file",
-    "size": 192,
+    "size": 181,
     "aliases": [
       "?grim_texture_load_file@GrimTexture@@QAE_NPAD@Z"
     ]
@@ -142,10 +262,10 @@
   {
     "address": "0x10002AF0",
     "canonical_address": "0x10005110",
-    "end": "0x10002B40",
+    "end": "0x10002B3F",
     "evidence": "referenced",
     "name": "grim_texture_name_equals",
-    "size": 80
+    "size": 79
   },
   {
     "address": "0x10002B40",
@@ -174,10 +294,10 @@
   {
     "address": "0x10003030",
     "canonical_address": "0x10005A40",
-    "end": "0x100030C0",
+    "end": "0x100030BC",
     "evidence": "ordered",
     "name": "grim_lookup_blob_load",
-    "size": 144
+    "size": 140
   },
   {
     "address": "0x100030C0",
@@ -206,10 +326,10 @@
   {
     "address": "0x10003210",
     "canonical_address": "0x10005CA0",
-    "end": "0x10003220",
+    "end": "0x10003217",
     "evidence": "ordered",
     "name": "grim_get_version",
-    "size": 16
+    "size": 7
   },
   {
     "address": "0x10003220",
@@ -222,18 +342,18 @@
   {
     "address": "0x100032B0",
     "canonical_address": "0x10005D40",
-    "end": "0x10003470",
+    "end": "0x10003458",
     "evidence": "ordered",
     "name": "grim_apply_config",
-    "size": 448
+    "size": 424
   },
   {
     "address": "0x100036E0",
     "canonical_address": "0x10005FF0",
-    "end": "0x10003710",
+    "end": "0x10003706",
     "evidence": "ordered",
     "name": "grim_shutdown",
-    "size": 48
+    "size": 38
   },
   {
     "address": "0x10003710",
@@ -254,10 +374,10 @@
   {
     "address": "0x10003AC0",
     "canonical_address": "0x10006C30",
-    "end": "0x10003B10",
+    "end": "0x10003B04",
     "evidence": "ordered",
     "name": "grim_get_config_var",
-    "size": 80
+    "size": 68
   },
   {
     "address": "0x10003B10",
@@ -270,39 +390,39 @@
   {
     "address": "0x10003B20",
     "canonical_address": "0x10006CB0",
-    "end": "0x10003BB0",
+    "end": "0x10003BA9",
     "evidence": "ordered",
     "name": "grim_clear_color",
-    "size": 144
+    "size": 137
   },
   {
     "address": "0x10003BB0",
     "canonical_address": "0x10006D50",
-    "end": "0x10003CA0",
+    "end": "0x10003C97",
     "evidence": "ordered",
     "name": "grim_set_render_target",
-    "size": 240
+    "size": 231
   },
   {
     "address": "0x10003CA0",
     "canonical_address": "0x10006E40",
-    "end": "0x10003CB0",
+    "end": "0x10003CA7",
     "evidence": "ordered",
     "name": "grim_get_time_ms",
-    "size": 16
+    "size": 7
   },
   {
     "address": "0x10003CB0",
     "canonical_address": "0x10006E60",
-    "end": "0x10003CE0",
+    "end": "0x10003CDC",
     "evidence": "ordered",
     "name": "grim_get_frame_dt",
-    "size": 48
+    "size": 44
   },
   {
-    "address": "0x10003CE0",
+    "address": "0x10003CF0",
     "canonical_address": "0x10006E90",
-    "end": "0x10003CE7",
+    "end": "0x10003CF7",
     "evidence": "exact",
     "name": "grim_get_fps",
     "size": 7
@@ -318,10 +438,10 @@
   {
     "address": "0x10003D10",
     "canonical_address": "0x10007330",
-    "end": "0x10003D60",
+    "end": "0x10003D5B",
     "evidence": "ordered",
     "name": "grim_flush_input",
-    "size": 80
+    "size": 75
   },
   {
     "address": "0x10003D60",
@@ -334,10 +454,10 @@
   {
     "address": "0x10003D90",
     "canonical_address": "0x10007440",
-    "end": "0x10003E10",
+    "end": "0x10003E0F",
     "evidence": "ordered",
     "name": "grim_was_mouse_button_pressed",
-    "size": 128
+    "size": 127
   },
   {
     "address": "0x10003E10",
@@ -462,34 +582,34 @@
   {
     "address": "0x10004070",
     "canonical_address": "0x10007830",
-    "end": "0x100040B0",
+    "end": "0x100040A7",
     "evidence": "ordered",
     "name": "grim_bind_texture",
-    "size": 64
+    "size": 55
   },
   {
     "address": "0x100040B0",
     "canonical_address": "0x10007870",
-    "end": "0x10004130",
+    "end": "0x10004129",
     "evidence": "ordered",
     "name": "grim_draw_fullscreen_quad",
-    "size": 128
+    "size": 121
   },
   {
     "address": "0x10004130",
     "canonical_address": "0x10007B20",
-    "end": "0x100041A0",
+    "end": "0x1000419C",
     "evidence": "ordered",
     "name": "grim_end_batch",
-    "size": 112
+    "size": 108
   },
   {
     "address": "0x100041D0",
     "canonical_address": "0x100080B0",
-    "end": "0x10004250",
+    "end": "0x1000424A",
     "evidence": "ordered",
     "name": "grim_draw_line",
-    "size": 128
+    "size": 122
   },
   {
     "address": "0x10004250",
@@ -518,34 +638,34 @@
   {
     "address": "0x10004360",
     "canonical_address": "0x10008680",
-    "end": "0x100043F0",
+    "end": "0x100043E8",
     "evidence": "ordered",
     "name": "grim_submit_vertices_offset",
-    "size": 144
+    "size": 136
   },
   {
     "address": "0x100043F0",
     "canonical_address": "0x10008750",
-    "end": "0x10004780",
+    "end": "0x10004774",
     "evidence": "ordered",
     "name": "grim_draw_quad_rotated_matrix",
-    "size": 912
+    "size": 900
   },
   {
     "address": "0x10004780",
     "canonical_address": "0x10008B10",
-    "end": "0x10004A40",
+    "end": "0x10004A3C",
     "evidence": "ordered",
     "name": "grim_draw_quad",
-    "size": 704
+    "size": 700
   },
   {
     "address": "0x10004A40",
     "canonical_address": "0x10008F10",
-    "end": "0x10004BA0",
+    "end": "0x10004B9D",
     "evidence": "ordered",
     "name": "grim_draw_rect_outline",
-    "size": 352
+    "size": 349
   },
   {
     "address": "0x10004BC0",
@@ -638,10 +758,10 @@
   {
     "address": "0x100050A0",
     "canonical_address": "0x1000A5A0",
-    "end": "0x10005170",
+    "end": "0x10005162",
     "evidence": "ordered",
     "name": "grim_mouse_init",
-    "size": 208
+    "size": 194
   },
   {
     "address": "0x10005170",
@@ -684,20 +804,20 @@
     "size": 14
   },
   {
-    "address": "0x1000529F",
-    "canonical_address": "0x1000A8E2",
-    "end": "0x100052A6",
-    "evidence": "ordered",
-    "name": "__CxxFrameHandler",
-    "size": 7
-  },
-  {
     "address": "0x100052A6",
     "canonical_address": "0x1000A8EE",
     "end": "0x100052AD",
     "evidence": "ordered",
     "name": "__CxxLongjmpUnwind",
     "size": 7
+  },
+  {
+    "address": "0x100052FC",
+    "canonical_address": "0x1000A8E2",
+    "end": "0x10005332",
+    "evidence": "referenced",
+    "name": "__CxxFrameHandler",
+    "size": 54
   },
   {
     "address": "0x10005A58",
@@ -7373,10 +7493,10 @@
   {
     "address": "0x1003CC70",
     "canonical_address": "0x1003E530",
-    "end": "0x1003CC78",
+    "end": "0x1003CC76",
     "evidence": "ordered",
     "name": "grim_jpeg_mem_available",
-    "size": 8,
+    "size": 6,
     "aliases": [
       "jpeg_mem_available"
     ]
@@ -7428,10 +7548,10 @@
   {
     "address": "0x1003CDF8",
     "canonical_address": "0x1000A8F4",
-    "end": "0x1003CE74",
+    "end": "0x1003CE70",
     "evidence": "referenced",
     "name": "longjmp",
-    "size": 124
+    "size": 120
   },
   {
     "address": "0x1003CE74",
@@ -7452,10 +7572,10 @@
   {
     "address": "0x1003CF17",
     "canonical_address": "0x1004B758",
-    "end": "0x1003CF40",
+    "end": "0x1003CF3F",
     "evidence": "referenced",
     "name": "isspace",
-    "size": 41
+    "size": 40
   },
   {
     "address": "0x1003CF40",
@@ -7468,10 +7588,10 @@
   {
     "address": "0x1003D15D",
     "canonical_address": "0x1004B764",
-    "end": "0x1003D230",
+    "end": "0x1003D22C",
     "evidence": "referenced",
     "name": "floor",
-    "size": 211
+    "size": 207
   },
   {
     "address": "0x1003D230",

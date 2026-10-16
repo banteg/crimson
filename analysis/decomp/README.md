@@ -163,7 +163,8 @@ keeps its own toolchain.
 
 Its denominator is the function inventory of its [build map](#other-builds):
 every canonical function placed in 1.9.8, with the exact extent of an identical
-body or, for a changed one, the extent up to the next known function. Code the
+body or, for a changed one, the end of its reachable code when only its switch
+tables and padding follow, else the extent up to the next known function. Code the
 map does not place stays unresolved in the executable reconciliation, as
 uncurated gaps do for 1.9.93. Each function takes its categories from its
 canonical counterpart. Data is not measured for 1.9.8: omitted data measures mean
@@ -175,6 +176,12 @@ progress.
 
 A reference counts only when 1.9.8's own maps name its target, so an exact
 instruction body whose globals the map does not name yet stays at `audit`.
+Such bodies are evidence too: their unresolved operands pin the globals in
+`recovered.json`, each bound to one native instruction.
+
+Grim used the static C runtime until 1.9.9. When an image does not import
+`MSVCRT.DLL`, its scratches compile with `/MT` instead of `/MD`, and a pinned
+runtime function takes the name the canonical image imports it by.
 
 The shared C++ interface now describes 1.9.8's actual Grim vtable. That build
 has two legacy methods at offsets `0x04` and `0x08`, whose semantics remain
@@ -192,6 +199,12 @@ verified terminal padding excluded. Different alignment padding does not hide
 a shared body or extend its comparison into the next function. Grim maps are
 generated before EXE maps that consume their interface correspondence.
 
+Function starts come from decoded call and push operands, pointers in data,
+code section starts, and aligned addresses after a return, padding, or the end
+of a function's reachable code and switch tables. Layout order fills the gaps
+between mapped functions, with the code section edges as outer anchors. A call
+or reference vote overrides a placement made by layout order alone.
+
 The 1.9.8 weapon and player layouts are now selected by `CL_BUILD=10908`:
 120-byte weapon rows without the later pellet-count member, 0x354-byte player
 records without the three later perk timers, and a 64-entry projectile pool.
@@ -199,8 +212,8 @@ The Fire Bullets add-on recursively spawns a fire projectile before the
 original shot; the canonical build's replacement branch is excluded. The
 complete projectile spawner and weapon initializer match their native encoded
 bodies, as do the weapon accessor/default constructor and several pool/player
-initializers. The large older player/update/render functions remain partial.
-See [the comparison](../../docs/re/static/fire-bullets-1.9.8-vs-1.9.93.md).
+initializers. The older player and projectile updaters and the projectile
+renderer match too. See [the comparison](../../docs/re/static/fire-bullets-1.9.8-vs-1.9.93.md).
 
 Reviewed native identities and full extents live beside a build's generated
 maps in `recovered.json`. `build-map` verifies their image/body hashes and the

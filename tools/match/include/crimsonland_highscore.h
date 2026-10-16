@@ -3,8 +3,16 @@
 
 typedef struct IDirectSoundBuffer *LPDIRECTSOUNDBUFFER;
 
+#include "cl_build.h"
 #include "crimsonland_console.h"
 #include "crimsonland_types.h"
+
+// 1.9.9 moved the score tables to a new directory.
+#if CL_BUILD < 10909
+#define HIGHSCORE_DIR "scores4"
+#else
+#define HIGHSCORE_DIR "scores5"
+#endif
 
 extern highscore_record_t highscore_active_record;
 extern highscore_record_t highscore_table[100];

@@ -93,12 +93,16 @@ class BuildImage:
             return (config,)
         names = _reference_catalog(self)
         compilers = self.profiles if config.compiler in self.game_profiles else (config.compiler,)
+        cflags = f"{config.cflags} /DCL_BUILD={self.cl_build}"
+        if _links_static_crt(self.map_dir / "imports.json"):
+            # Without MSVCRT.DLL the image calls its CRT directly, as /MT code does.
+            cflags = re.sub(r"(?<!\S)/MD(?!\S)", "/MT", cflags)
         return tuple(
             replace(
                 config,
                 image=self.name,
                 compiler=compiler,
-                cflags=f"{config.cflags} /DCL_BUILD={self.cl_build}",
+                cflags=cflags,
                 # END_VA is a canonical address; this build's map carries its own extent.
                 end_va=None,
                 # An alias to a global this build's maps do not name leaves the reference unresolved.
@@ -115,6 +119,11 @@ class BuildImage:
         if not self.path.is_file():
             return "missing"
         return "ok" if hashlib.sha256(self.path.read_bytes()).hexdigest() == self.sha256 else "changed"
+
+
+@cache
+def _links_static_crt(imports_path: Path) -> bool:
+    return all(module["module"] != "MSVCRT" for module in json.loads(imports_path.read_text(encoding="utf-8")))
 
 
 @cache
@@ -259,6 +268,79 @@ def _code_ranges(path: Path) -> list[tuple[int, int]]:
         ]
 
 
+@cache
+def _flow_disassembler() -> Any:
+    import capstone
+
+    disassembler = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
+    disassembler.detail = True
+    return disassembler
+
+
+def _flow_extent(image: matchlib.LoadedImage, start: int, limit: int) -> tuple[int, int]:
+    """Where a function's reachable code ends, and where its trailing switch tables and padding end.
+
+    Follow direct branches and switch dispatch inside ``[start, limit)``. Code
+    reached only through exception tables is invisible here, so callers trust
+    the tail only when it ends on a function boundary.
+    """
+    import capstone
+
+    x86 = capstone.x86
+    disassembler = _flow_disassembler()
+    seen: set[int] = set()
+    work = [start]
+    code_end = start
+    jump_tables: dict[int, int] = {}
+    lookup_tables: set[int] = set()
+    while work:
+        address = work.pop()
+        while start <= address < limit and address not in seen:
+            instruction = next(disassembler.disasm(image.function_bytes(address, min(address + 16, limit)), address, 1), None)
+            if instruction is None:
+                break
+            seen.add(address)
+            address += instruction.size
+            code_end = max(code_end, address)
+            mnemonic = instruction.mnemonic
+            indexed = [
+                operand.mem for operand in instruction.operands
+                if operand.type == x86.X86_OP_MEM and operand.mem.base == 0 and operand.mem.index != 0
+            ]
+            # VC6 sparse switches index a byte lookup table, then the jump table.
+            lookup_tables.update(memory.disp & 0xFFFFFFFF for memory in indexed if memory.scale == 1)
+            if mnemonic in {"ret", "int3", "hlt"}:
+                break
+            if not mnemonic.startswith(("j", "loop")):
+                continue
+            operand = instruction.operands[0]
+            if operand.type == x86.X86_OP_IMM:
+                work.append(operand.imm)
+            elif indexed and indexed[0].scale == 4 and start <= (table := indexed[0].disp & 0xFFFFFFFF) < limit:
+                count = 0
+                while table + 4 * count + 4 <= limit and start <= (
+                    destination := struct.unpack("<I", image.function_bytes(table + 4 * count, table + 4 * count + 4))[0]
+                ) < limit:
+                    work.append(destination)
+                    count += 1
+                jump_tables[table] = count
+            if mnemonic == "jmp":
+                break
+    following = code_end
+    cases = max(jump_tables.values(), default=0)
+    while following < limit:
+        if jump_tables.get(following):
+            following += 4 * jump_tables[following]
+        elif following in lookup_tables and image.function_bytes(following, following + 1)[0] < cases:
+            while following < limit and image.function_bytes(following, following + 1)[0] < cases:
+                following += 1
+        elif image.function_bytes(following, following + 1)[0] in matchlib.PADDING_BYTES:
+            following += 1
+        else:
+            break
+    return code_end, following
+
+
 def _imports(path: Path) -> list[dict[str, Any]]:
     """Import table in the layout of ``analysis/ida/raw/<image>/imports.json``."""
     import pefile
@@ -321,9 +403,15 @@ def apply_recovered_map(
         rows[function.name] = row
     entries = {row["name"]: row for row in payload["data"]["entries"]}
     names = _reference_catalog(canonical)
+    # A runtime function linked statically keeps the name the canonical image imports it by.
+    imported = {
+        matchlib._symbol_lookup_name(entry["name"])
+        for module in json.loads(canonical.target.functions_path.with_name("imports.json").read_text(encoding="utf-8"))
+        for entry in module["entries"]
+    }
     for recovered in recovery.get("data", ()):
         name = recovered["name"]
-        if not names.knows_name(name):
+        if not names.knows_name(name) and name not in imported:
             raise ValueError(f"unknown recovered data identity: {name}")
         address = matchlib.parse_int(recovered["address"])
         reference = matchlib.parse_int(recovered["reference"])
@@ -331,7 +419,11 @@ def apply_recovered_map(
         value = address + recovered.get("offset", 0)
         if not encoded or native.function_bytes(reference, reference + len(encoded)) != encoded:
             raise ValueError(f"recovered data reference bytes mismatch: {name}")
-        if struct.pack("<I", value) not in encoded:
+        direct = (
+            len(encoded) == 5 and encoded[0] in (0xE8, 0xE9)
+            and (reference + 5 + struct.unpack_from("<i", encoded, 1)[0]) & 0xFFFFFFFF == value
+        )
+        if not direct and struct.pack("<I", value) not in encoded:
             raise ValueError(f"recovered data reference value mismatch: {name}")
         entries[name] = {"address": f"0x{address:08x}", "name": name, "program": image.target.image_name}
     ordered = sorted(rows.values(), key=lambda row: matchlib.parse_int(row["address"]))
@@ -490,10 +582,13 @@ class _Mapper:
             for module in json.loads(target.functions_path.with_name("imports.json").read_text(encoding="utf-8"))
             for entry in module["entries"]
         }
+        self.source_code = _code_ranges(target.image_path)
+        self.code_ranges = _code_ranges(image.path)
         self.code = [
             (start, self.target.mapped[start - self.target.image_base : end - self.target.image_base])
-            for start, end in _code_ranges(image.path)
+            for start, end in self.code_ranges
         ]
+        self.flows: dict[tuple[int, int], tuple[int, int]] = {}
         self.entry_points = self._entry_points()
         self.mapped: dict[int, int] = {}
         self.evidence: dict[int, str] = {}
@@ -513,21 +608,35 @@ class _Mapper:
     def _entry_points(self) -> list[int]:
         """Target addresses that start a function.
 
-        Evidence: a direct call or pushed address; an aligned pointer in data;
-        or an aligned address after padding that follows a return or jump.
+        Evidence: a decoded direct call or pushed address; an aligned pointer
+        in data; a code section start; an aligned address after padding that
+        follows a return or jump; or the aligned address where a function's
+        reachable code, switch tables and padding end.
         """
+        import capstone
         import pefile
 
         found: set[int] = set()
+        disassembler = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
         for start, section in self.code:
-            for opcode, relative in ((0xE8, True), (0x68, False)):
-                offset = section.find(opcode)
-                while 0 <= offset <= len(section) - 5:
-                    value = int.from_bytes(section[offset + 1 : offset + 5], "little")
-                    address = (start + offset + 5 + value) & 0xFFFFFFFF if relative else value
-                    if self.in_code(address):
-                        found.add(address)
-                    offset = section.find(opcode, offset + 1)
+            found.add(start)
+            # Decode linearly: a call or push opcode byte inside another
+            # instruction's immediate or displacement names no function.
+            offset = 0
+            while offset < len(section):
+                decoded = False
+                for address, size, _, _ in disassembler.disasm_lite(section[offset:], start + offset):
+                    decoded = True
+                    offset = address + size - start
+                    if size != 5 or section[address - start] not in (0xE8, 0x68):
+                        continue
+                    value = int.from_bytes(section[address - start + 1 : address - start + 5], "little")
+                    if section[address - start] == 0xE8:
+                        value = (address + 5 + value) & 0xFFFFFFFF
+                    if self.in_code(value):
+                        found.add(value)
+                if not decoded:
+                    offset += 1
             for offset in range(-start % FUNCTION_ALIGNMENT, len(section), FUNCTION_ALIGNMENT):
                 end = offset
                 while end > 0 and section[end - 1] in matchlib.PADDING_BYTES:
@@ -550,7 +659,29 @@ class _Mapper:
                     if value % FUNCTION_ALIGNMENT == 0 and self.in_code(value):
                         found.add(value)
             found.add(self.target.image_base + int(pe.OPTIONAL_HEADER.AddressOfEntryPoint))
-        return sorted(found)
+        # A function whose code ends on the alignment boundary leaves no padding
+        # to mark the next start; nor does one followed by its switch tables.
+        starts = sorted(found)
+        pending = list(starts)
+        while pending:
+            start = pending.pop()
+            limit = self.extent(start, starts)
+            following = self.flow_extent(start, limit)[1]
+            if start < following < limit and following % FUNCTION_ALIGNMENT == 0:
+                bisect.insort(starts, following)
+                pending.append(following)
+        return starts
+
+    def flow_extent(self, start: int, limit: int) -> tuple[int, int]:
+        if (start, limit) not in self.flows:
+            self.flows[start, limit] = _flow_extent(self.target, start, limit)
+        return self.flows[start, limit]
+
+    def changed_end(self, target: int) -> int:
+        """End of a changed body: its reachable code when only its switch tables and padding follow."""
+        end = self.extent(target)
+        code_end, following = self.flow_extent(target, end)
+        return code_end if following == end else end
 
     def body_at(self, address: int, size: int) -> _Body:
         return _body(self.target, address, size)
@@ -665,15 +796,23 @@ class _Mapper:
         exact = []
         for votes, evidence in ((self.function_votes, "referenced"), (self.call_votes, "called")):
             for address, targets in votes.items():
-                if address in self.mapped or len(targets) != 1:
+                if len(targets) != 1:
                     continue
                 target = next(iter(targets))
+                # A vote outranks a placement by layout order alone.
+                if address in self.mapped and (self.evidence[address] != "ordered" or self.mapped[address] == target):
+                    continue
                 if self.hits.get(address) and target not in self.hits[address]:
                     continue
                 if evidence == "called" and self.function_votes.get(address, {target}) != {target}:
                     continue
-                if self.accept(address, target, evidence):
-                    exact.append(address)
+                for other in [other for other, placed in self.mapped.items() if placed == target]:
+                    if self.evidence[other] != "ordered":
+                        break
+                    del self.mapped[other], self.evidence[other]
+                else:
+                    if self.accept(address, target, evidence):
+                        exact.append(address)
         return exact
 
     def pair_calls(self) -> None:
@@ -683,11 +822,11 @@ class _Mapper:
                 continue
             self.paired_calls.add(address)
             source_calls = self.calls(self.bodies[address], self.by_address)
-            target_calls = self.calls(self.body_at(target, self.extent(target) - target), None)
+            target_calls = self.calls(self.body_at(target, self.changed_end(target) - target), None)
             if len(source_calls) != len(target_calls):
                 continue
             if any(
-                callee in self.mapped and self.mapped[callee] != target_callee
+                self.evidence.get(callee, "ordered") != "ordered" and self.mapped[callee] != target_callee
                 for callee, target_callee in zip(source_calls, target_calls, strict=True)
             ):
                 continue
@@ -705,9 +844,9 @@ class _Mapper:
             and (reference.value in starts if starts is not None else self.in_code(reference.value))
         ]
 
-    def extent(self, target: int) -> int:
+    def extent(self, target: int, boundaries: list[int] | None = None) -> int:
         """End of a target body whose size is unknown: the next known function or its section end."""
-        boundaries = self.boundaries()
+        boundaries = self.boundaries() if boundaries is None else boundaries
         following = bisect.bisect_right(boundaries, target)
         return min(
             boundaries[following] if following < len(boundaries) else 1 << 32,
@@ -741,7 +880,13 @@ class _Mapper:
         exact = []
         taken = set(self.mapped.values())
         boundaries = self.boundaries()
-        for (low, low_target), (high, high_target) in pairwise(_increasing(sorted(self.mapped.items()))):
+        # Code section edges anchor the functions before the first and after the last mapped one.
+        edges = [
+            pair
+            for (start, end), (target_start, target_end) in zip(self.source_code, self.code_ranges, strict=True)
+            for pair in ((start - 1, target_start - 1), (end, target_end))
+        ] if len(self.source_code) == len(self.code_ranges) else []
+        for (low, low_target), (high, high_target) in pairwise(_increasing(sorted([*self.mapped.items(), *edges]))):
             missing = [
                 address
                 for address in self.starts[bisect.bisect_right(self.starts, low) : bisect.bisect_left(self.starts, high)]
@@ -770,7 +915,7 @@ class _Mapper:
                 continue
             pairs = _align(
                 [self.bodies[address].size for address in missing],
-                [self.body_at(address, self.extent(address) - address).size for address in candidates],
+                [self.body_at(address, self.changed_end(address) - address).size for address in candidates],
             )
             for source_index, target_index in pairs:
                 if self.accept(missing[source_index], candidates[target_index], "ordered"):
@@ -785,7 +930,7 @@ class _Mapper:
             function = self.by_address[address]
             evidence = self.evidence[address]
             # A changed body runs at most to the next known function.
-            end = target + self.bodies[address].size if evidence in {"exact", "interface"} else self.extent(target)
+            end = target + self.bodies[address].size if evidence in {"exact", "interface"} else self.changed_end(target)
             rows[target] = {
                 "address": f"0x{target:08X}",
                 "canonical_address": f"0x{address:08X}",
@@ -858,7 +1003,11 @@ def _increasing(chain: list[tuple[int, int]]) -> list[tuple[int, int]]:
 
 
 def _align(source_sizes: list[int], target_sizes: list[int]) -> list[tuple[int, int]]:
-    """Order-preserving index pairs of similar size: the most pairs, then the closest sizes."""
+    """Order-preserving index pairs of similar size.
+
+    Prefer the most pairs, then the closest sizes, then pairs at the same
+    position among the unpaired functions on each side.
+    """
 
     def error(source: int, target: int) -> float | None:
         if not source or not target:
@@ -866,21 +1015,23 @@ def _align(source_sizes: list[int], target_sizes: list[int]) -> list[tuple[int, 
         ratio = target / source
         return abs(math.log(ratio)) if 1 / MAX_SIZE_RATIO <= ratio <= MAX_SIZE_RATIO else None
 
+    def paired(row: int, column: int, cost: float) -> tuple[int, float, int]:
+        pairs, total, displacement = best[row + 1][column + 1]
+        return pairs + 1, total - cost, displacement - abs(row - column)
+
     rows, columns = len(source_sizes), len(target_sizes)
-    best = [[(0, 0.0)] * (columns + 1) for _ in range(rows + 1)]
+    best = [[(0, 0.0, 0)] * (columns + 1) for _ in range(rows + 1)]
     for row in range(rows - 1, -1, -1):
         for column in range(columns - 1, -1, -1):
             options = [best[row + 1][column], best[row][column + 1]]
             if (cost := error(source_sizes[row], target_sizes[column])) is not None:
-                pairs, total = best[row + 1][column + 1]
-                options.append((pairs + 1, total - cost))
+                options.append(paired(row, column, cost))
             best[row][column] = max(options)
     result = []
     row = column = 0
     while row < rows and column < columns:
         cost = error(source_sizes[row], target_sizes[column])
-        pairs, total = best[row + 1][column + 1]
-        if cost is not None and best[row][column] == (pairs + 1, total - cost):
+        if cost is not None and best[row][column] == paired(row, column, cost):
             result.append((row, column))
             row, column = row + 1, column + 1
         elif best[row][column] == best[row + 1][column]:

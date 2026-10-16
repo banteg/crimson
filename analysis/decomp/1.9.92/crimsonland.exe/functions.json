@@ -480,10 +480,10 @@
   {
     "address": "0x00404810",
     "canonical_address": "0x004047C0",
-    "end": "0x004051C0",
+    "end": "0x004051BB",
     "evidence": "ordered",
     "name": "demo_trial_overlay_render",
-    "size": 2480
+    "size": 2475
   },
   {
     "address": "0x004051C0",
@@ -776,10 +776,10 @@
   {
     "address": "0x0040AB40",
     "canonical_address": "0x0040AAB0",
-    "end": "0x0040B790",
+    "end": "0x0040B785",
     "evidence": "ordered",
     "name": "gameplay_update_and_render",
-    "size": 3152
+    "size": 3141
   },
   {
     "address": "0x0040B790",
@@ -800,10 +800,10 @@
   {
     "address": "0x0040B900",
     "canonical_address": "0x0040B740",
-    "end": "0x0040C4A0",
+    "end": "0x0040C498",
     "evidence": "ordered",
     "name": "demo_purchase_screen_update",
-    "size": 2976
+    "size": 2968
   },
   {
     "address": "0x0040C4A0",
@@ -824,10 +824,10 @@
   {
     "address": "0x0040C4D0",
     "canonical_address": "0x0040C1C0",
-    "end": "0x0040D2B0",
+    "end": "0x0040D2A5",
     "evidence": "ordered",
     "name": "game_frame_update",
-    "size": 3552
+    "size": 3541
   },
   {
     "address": "0x0040D2B0",
@@ -1312,10 +1312,10 @@
   {
     "address": "0x004102A0",
     "canonical_address": "0x0040FFC0",
-    "end": "0x00410A70",
+    "end": "0x00410A6F",
     "evidence": "ordered",
     "name": "game_over_screen_update",
-    "size": 2000
+    "size": 1999
   },
   {
     "address": "0x00410A70",
@@ -1392,10 +1392,10 @@
   {
     "address": "0x00411000",
     "canonical_address": "0x00410D20",
-    "end": "0x00412300",
+    "end": "0x004122F9",
     "evidence": "ordered",
     "name": "quest_results_screen_update",
-    "size": 4864
+    "size": 4857
   },
   {
     "address": "0x00412300",
@@ -1496,10 +1496,10 @@
   {
     "address": "0x00412460",
     "canonical_address": "0x00412180",
-    "end": "0x00412470",
+    "end": "0x0041246A",
     "evidence": "ordered",
     "name": "quest_meta_global_construct_and_register",
-    "size": 16
+    "size": 10
   },
   {
     "address": "0x00412470",
@@ -1614,10 +1614,10 @@
   {
     "address": "0x004126A0",
     "canonical_address": "0x004123C0",
-    "end": "0x004126B0",
+    "end": "0x004126AA",
     "evidence": "ordered",
     "name": "bonus_meta_global_construct_and_register",
-    "size": 16
+    "size": 10
   },
   {
     "address": "0x004126B0",
@@ -2036,10 +2036,10 @@
   {
     "address": "0x0041D2C0",
     "canonical_address": "0x0041CFE0",
-    "end": "0x0041DC86",
+    "end": "0x0041DE28",
     "evidence": "referenced",
     "name": "dx_get_version_fallback_from_files",
-    "size": 2502
+    "size": 2920
   },
   {
     "address": "0x0041DE30",
@@ -2151,19 +2151,11 @@
   },
   {
     "address": "0x0041E240",
-    "canonical_address": "0x0041DF50",
-    "end": "0x0041E250",
-    "evidence": "ordered",
-    "name": "demo_trial_time_limit_ms",
-    "size": 16
-  },
-  {
-    "address": "0x0041E250",
     "canonical_address": "0x0041DF60",
-    "end": "0x0041E260",
-    "evidence": "ordered",
+    "end": "0x0041E245",
+    "evidence": "called",
     "name": "play_time_get",
-    "size": 16
+    "size": 5
   },
   {
     "address": "0x0041E260",
@@ -2864,10 +2856,10 @@
   {
     "address": "0x00426510",
     "canonical_address": "0x00426220",
-    "end": "0x004279C0",
+    "end": "0x004279BF",
     "evidence": "referenced",
     "name": "creature_update_all",
-    "size": 5296
+    "size": 5295
   },
   {
     "address": "0x004279C0",
@@ -3091,10 +3083,10 @@
   {
     "address": "0x0042B550",
     "canonical_address": "0x0042B290",
-    "end": "0x0042C610",
+    "end": "0x0042C603",
     "evidence": "ordered",
     "name": "game_startup_init",
-    "size": 4288
+    "size": 4275
   },
   {
     "address": "0x0042C610",
@@ -3115,10 +3107,10 @@
   {
     "address": "0x0042C700",
     "canonical_address": "0x0042C450",
-    "end": "0x0042D390",
+    "end": "0x0042D381",
     "evidence": "referenced",
     "name": "crimsonland_main",
-    "size": 3216
+    "size": 3201
   },
   {
     "address": "0x0042D390",
@@ -3131,10 +3123,10 @@
   {
     "address": "0x0042DB50",
     "canonical_address": "0x0042D8A0",
-    "end": "0x0042E0B0",
+    "end": "0x0042E0AF",
     "evidence": "referenced",
     "name": "statistics_update_check_worker",
-    "size": 1376
+    "size": 1375
   },
   {
     "address": "0x0042E0B0",
@@ -3430,10 +3422,10 @@
   {
     "address": "0x00430DA0",
     "canonical_address": "0x00430AF0",
-    "end": "0x00433333",
+    "end": "0x004344B3",
     "evidence": "referenced",
     "name": "creature_spawn_template",
-    "size": 9619
+    "size": 14099
   },
   {
     "address": "0x004344D0",
@@ -4569,10 +4561,10 @@
   {
     "address": "0x0043F810",
     "canonical_address": "0x0043F550",
-    "end": "0x00440370",
+    "end": "0x00440365",
     "evidence": "referenced",
     "name": "statistics_menu_update",
-    "size": 2912
+    "size": 2901
   },
   {
     "address": "0x00440370",
@@ -5353,10 +5345,10 @@
   {
     "address": "0x0044F000",
     "canonical_address": "0x0044ED80",
-    "end": "0x0044FCB0",
+    "end": "0x0044FCAA",
     "evidence": "referenced",
     "name": "play_game_menu_update",
-    "size": 3248
+    "size": 3242
   },
   {
     "address": "0x0044FCB0",
@@ -5433,10 +5425,10 @@
   {
     "address": "0x0044FEF0",
     "canonical_address": "0x0044FC70",
-    "end": "0x0044FF00",
+    "end": "0x0044FEF8",
     "evidence": "referenced",
     "name": "ui_menu_main_click_buy_full_version",
-    "size": 16
+    "size": 8
   },
   {
     "address": "0x0044FF00",
@@ -6603,10 +6595,10 @@
   {
     "address": "0x004561C2",
     "canonical_address": "0x00464380",
-    "end": "0x00456960",
+    "end": "0x00456940",
     "evidence": "referenced",
     "name": "crt_output",
-    "size": 1950
+    "size": 1918
   },
   {
     "address": "0x00456960",
@@ -6939,10 +6931,10 @@
   {
     "address": "0x00457730",
     "canonical_address": "0x004658F0",
-    "end": "0x00457890",
+    "end": "0x0045788F",
     "evidence": "referenced",
     "name": "crt_bufcpy",
-    "size": 352
+    "size": 351
   },
   {
     "address": "0x00457A70",
@@ -7559,10 +7551,10 @@
   {
     "address": "0x0045A370",
     "canonical_address": "0x0046A590",
-    "end": "0x0045A4D0",
+    "end": "0x0045A4CF",
     "evidence": "referenced",
     "name": "crt_memmove",
-    "size": 352
+    "size": 351
   },
   {
     "address": "0x0045A6AE",

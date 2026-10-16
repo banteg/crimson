@@ -1,5 +1,165 @@
 [
   {
+    "address": "0x10001000",
+    "canonical_address": "0x10001000",
+    "end": "0x10001005",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_01_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001010",
+    "canonical_address": "0x10001010",
+    "end": "0x10001011",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_01",
+    "size": 1
+  },
+  {
+    "address": "0x10001020",
+    "canonical_address": "0x10001020",
+    "end": "0x10001025",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_02_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001030",
+    "canonical_address": "0x10001030",
+    "end": "0x10001031",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_02",
+    "size": 1
+  },
+  {
+    "address": "0x10001040",
+    "canonical_address": "0x10001040",
+    "end": "0x10001045",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_03_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001050",
+    "canonical_address": "0x10001050",
+    "end": "0x10001051",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_03",
+    "size": 1
+  },
+  {
+    "address": "0x10001060",
+    "canonical_address": "0x10001060",
+    "end": "0x10001065",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_04_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001070",
+    "canonical_address": "0x10001070",
+    "end": "0x10001071",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_04",
+    "size": 1
+  },
+  {
+    "address": "0x10001080",
+    "canonical_address": "0x10001080",
+    "end": "0x10001085",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_05_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001090",
+    "canonical_address": "0x10001090",
+    "end": "0x10001091",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_05",
+    "size": 1
+  },
+  {
+    "address": "0x100010A0",
+    "canonical_address": "0x100010A0",
+    "end": "0x100010A5",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_06_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x100010B0",
+    "canonical_address": "0x100010B0",
+    "end": "0x100010B1",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_06",
+    "size": 1
+  },
+  {
+    "address": "0x100010C0",
+    "canonical_address": "0x100010C0",
+    "end": "0x100010C5",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_07_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x100010D0",
+    "canonical_address": "0x100010D0",
+    "end": "0x100010D1",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_07",
+    "size": 1
+  },
+  {
+    "address": "0x100010E0",
+    "canonical_address": "0x100010E0",
+    "end": "0x100010E5",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_08_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x100010F0",
+    "canonical_address": "0x100010F0",
+    "end": "0x100010F1",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_08",
+    "size": 1
+  },
+  {
+    "address": "0x10001100",
+    "canonical_address": "0x10001100",
+    "end": "0x10001105",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_09_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001110",
+    "canonical_address": "0x10001110",
+    "end": "0x10001111",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_09",
+    "size": 1
+  },
+  {
+    "address": "0x10001120",
+    "canonical_address": "0x10001120",
+    "end": "0x10001125",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_10_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x10001130",
+    "canonical_address": "0x10001130",
+    "end": "0x10001131",
+    "evidence": "exact",
+    "name": "grim_crt_empty_initializer_slot_10",
+    "size": 1
+  },
+  {
     "address": "0x10001140",
     "canonical_address": "0x10001140",
     "end": "0x1000114D",
@@ -77,10 +237,10 @@
   {
     "address": "0x10001E80",
     "canonical_address": "0x10001E90",
-    "end": "0x100020B0",
+    "end": "0x100020A3",
     "evidence": "ordered",
     "name": "grim_config_dialog_populate_display_modes",
-    "size": 560
+    "size": 547
   },
   {
     "address": "0x100020B0",

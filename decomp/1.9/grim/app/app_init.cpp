@@ -1,8 +1,6 @@
+#include <direct.h>
 #include <windows.h>
 #include <string.h>
-
-extern "C" __declspec(dllimport) char *__cdecl _getcwd(
-    char *buffer, int max_length);
 
 class MyApp {
 public:

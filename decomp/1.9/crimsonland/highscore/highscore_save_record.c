@@ -30,7 +30,7 @@ void highscore_save_record(highscore_record_t *record)
         index--;
     }
 
-    CreateDirectoryA("scores5", 0);
+    CreateDirectoryA(HIGHSCORE_DIR, 0);
     if (!highscore_save_skip_record_init) {
         highscore_record_init();
     }

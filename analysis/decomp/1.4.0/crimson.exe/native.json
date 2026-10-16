@@ -3422,6 +3422,17 @@
       ]
     },
     {
+      "address": 4208496,
+      "name": "native_function_00403770",
+      "blocks": [
+        {
+          "address": 4208496,
+          "end": 4208517,
+          "sha256": "71a3b823e4ed9a3b755dc3abe0982a215c36ec96a60399a2b619b819301202f3"
+        }
+      ]
+    },
+    {
       "address": 4208528,
       "name": "native_function_00403790",
       "blocks": [
@@ -3646,6 +3657,17 @@
           "end": 4209061,
           "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
         },
+        {
+          "address": 4209072,
+          "end": 4209073,
+          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
+        }
+      ]
+    },
+    {
+      "address": 4209072,
+      "name": "native_function_004039b0",
+      "blocks": [
         {
           "address": 4209072,
           "end": 4209073,
@@ -47029,6 +47051,8 @@
     }
   ],
   "verified_starts": [
+    4199040,
+    4199072,
     4200688,
     4200704,
     4200720,
@@ -47061,11 +47085,12 @@
     4207600,
     4207648,
     4207696,
-    4207872,
+    4208192,
     4208352,
     4208400,
     4208448,
     4208480,
+    4208496,
     4208528,
     4208560,
     4208624,
@@ -47078,6 +47103,7 @@
     4209024,
     4209040,
     4209056,
+    4209072,
     4209088,
     4209104,
     4209120,
@@ -47092,6 +47118,7 @@
     4332417,
     4332688,
     4332995,
+    4333014,
     4333028,
     4333120,
     4333154,
@@ -47119,6 +47146,7 @@
     4335786,
     4335821,
     4335830,
+    4336338,
     4336687,
     4336760,
     4336778,
@@ -47282,5 +47310,5 @@
       "note": "Initial application object cluster retained through the last menu/UI body. The following vector/template helper interval has uncertain ownership and stays unclassified; later exact D3DX/CRT bodies are classified individually. The boundary is not inferred from ordered donor names."
     }
   ],
-  "maps_sha256": "387368dadbab4ace8d2585c2e4310d6d8aef7de95cfc49668550d6abf4ee8883"
+  "maps_sha256": "efdf8f7851fa033f2c77f39e720c71821caaa696d09dad7a42a659b1aa4db188"
 }

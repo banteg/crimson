@@ -101,6 +101,22 @@ def test_layout_alignment_skips_added_and_dropped_functions() -> None:
     assert match_builds._align([100, 64, 300], [104, 500, 290]) == [(0, 0), (2, 2)]
     # One out-of-order anchor leaves the longest increasing run.
     assert match_builds._increasing([(1, 10), (2, 50), (3, 20), (4, 30)]) == [(1, 10), (3, 20), (4, 30)]
+    # Equal sizes pair at the same position among the unpaired functions.
+    assert match_builds._align([39, 8], [8, 8]) == [(1, 1)]
+
+
+def test_flow_extent_ends_at_reachable_code_and_skips_its_switch_table() -> None:
+    code = bytes.fromhex(
+        "83f801"  # cmp eax, 1
+        "7707"  # ja 0x100c
+        "ff248510100000"  # jmp [eax*4+0x1010]
+        "c3"  # 0x100c: ret
+        "cccccc"
+        "0c1000000c100000"  # 0x1010: both cases reach the ret
+        "33c0c3",  # 0x1018: the next function
+    )
+    image = matchlib.LoadedImage(code, 0x1000, len(code))
+    assert match_builds._flow_extent(image, 0x1000, 0x1000 + len(code)) == (0x100D, 0x1018)
 
 
 def test_body_search_ignores_verified_padding_without_reading_the_next_function() -> None:

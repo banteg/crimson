@@ -798,7 +798,7 @@
           "start": 4207701
         },
         {
-          "end": 4207877,
+          "end": 4208145,
           "kind": "retained_code",
           "owner": "crimson.exe/00403500",
           "start": 4207872
@@ -806,8 +806,8 @@
         {
           "end": 4208160,
           "kind": "unresolved",
-          "owner": "crimson.exe/00403505",
-          "start": 4207877
+          "owner": "crimson.exe/00403611",
+          "start": 4208145
         },
         {
           "end": 4208177,
@@ -822,7 +822,7 @@
           "start": 4208177
         },
         {
-          "end": 4208269,
+          "end": 4208197,
           "kind": "retained_code",
           "owner": "crimson.exe/00403640",
           "start": 4208192
@@ -830,8 +830,8 @@
         {
           "end": 4208272,
           "kind": "unresolved",
-          "owner": "crimson.exe/0040368d",
-          "start": 4208269
+          "owner": "crimson.exe/00403645",
+          "start": 4208197
         },
         {
           "end": 4208282,
@@ -924,10 +924,22 @@
           "start": 4208480
         },
         {
-          "end": 4208528,
+          "end": 4208496,
           "kind": "unresolved",
           "owner": "crimson.exe/00403765",
           "start": 4208485
+        },
+        {
+          "end": 4208517,
+          "kind": "retained_code",
+          "owner": "crimson.exe/00403770",
+          "start": 4208496
+        },
+        {
+          "end": 4208528,
+          "kind": "unresolved",
+          "owner": "crimson.exe/00403785",
+          "start": 4208517
         },
         {
           "end": 4208533,
@@ -1068,10 +1080,22 @@
           "start": 4209056
         },
         {
-          "end": 4209088,
+          "end": 4209072,
           "kind": "unresolved",
           "owner": "crimson.exe/004039a5",
           "start": 4209061
+        },
+        {
+          "end": 4209073,
+          "kind": "retained_code",
+          "owner": "crimson.exe/004039b0",
+          "start": 4209072
+        },
+        {
+          "end": 4209088,
+          "kind": "unresolved",
+          "owner": "crimson.exe/004039b1",
+          "start": 4209073
         },
         {
           "end": 4209093,
@@ -5122,8 +5146,8 @@
       "totals": {
         "embedded_data": 0,
         "padding": 0,
-        "retained_code": 172308,
-        "unresolved": 4721
+        "retained_code": 172526,
+        "unresolved": 4503
       }
     },
     {
@@ -5132,10 +5156,22 @@
       "name": ".text",
       "ranges": [
         {
-          "end": 268439569,
+          "end": 268439557,
           "kind": "retained_code",
           "owner": "grim.dll/10001000",
           "start": 268439552
+        },
+        {
+          "end": 268439568,
+          "kind": "unresolved",
+          "owner": "grim.dll/10001005",
+          "start": 268439557
+        },
+        {
+          "end": 268439569,
+          "kind": "retained_code",
+          "owner": "grim.dll/10001010",
+          "start": 268439568
         },
         {
           "end": 268439584,
@@ -5144,10 +5180,22 @@
           "start": 268439569
         },
         {
-          "end": 268439601,
+          "end": 268439589,
           "kind": "retained_code",
           "owner": "grim.dll/10001020",
           "start": 268439584
+        },
+        {
+          "end": 268439600,
+          "kind": "unresolved",
+          "owner": "grim.dll/10001025",
+          "start": 268439589
+        },
+        {
+          "end": 268439601,
+          "kind": "retained_code",
+          "owner": "grim.dll/10001030",
+          "start": 268439600
         },
         {
           "end": 268439616,
@@ -5156,10 +5204,22 @@
           "start": 268439601
         },
         {
-          "end": 268439633,
+          "end": 268439621,
           "kind": "retained_code",
           "owner": "grim.dll/10001040",
           "start": 268439616
+        },
+        {
+          "end": 268439632,
+          "kind": "unresolved",
+          "owner": "grim.dll/10001045",
+          "start": 268439621
+        },
+        {
+          "end": 268439633,
+          "kind": "retained_code",
+          "owner": "grim.dll/10001050",
+          "start": 268439632
         },
         {
           "end": 268439648,
@@ -5168,10 +5228,22 @@
           "start": 268439633
         },
         {
-          "end": 268439665,
+          "end": 268439653,
           "kind": "retained_code",
           "owner": "grim.dll/10001060",
           "start": 268439648
+        },
+        {
+          "end": 268439664,
+          "kind": "unresolved",
+          "owner": "grim.dll/10001065",
+          "start": 268439653
+        },
+        {
+          "end": 268439665,
+          "kind": "retained_code",
+          "owner": "grim.dll/10001070",
+          "start": 268439664
         },
         {
           "end": 268439680,
@@ -5180,10 +5252,22 @@
           "start": 268439665
         },
         {
-          "end": 268439697,
+          "end": 268439685,
           "kind": "retained_code",
           "owner": "grim.dll/10001080",
           "start": 268439680
+        },
+        {
+          "end": 268439696,
+          "kind": "unresolved",
+          "owner": "grim.dll/10001085",
+          "start": 268439685
+        },
+        {
+          "end": 268439697,
+          "kind": "retained_code",
+          "owner": "grim.dll/10001090",
+          "start": 268439696
         },
         {
           "end": 268439712,
@@ -5192,10 +5276,22 @@
           "start": 268439697
         },
         {
-          "end": 268439729,
+          "end": 268439717,
           "kind": "retained_code",
           "owner": "grim.dll/100010a0",
           "start": 268439712
+        },
+        {
+          "end": 268439728,
+          "kind": "unresolved",
+          "owner": "grim.dll/100010a5",
+          "start": 268439717
+        },
+        {
+          "end": 268439729,
+          "kind": "retained_code",
+          "owner": "grim.dll/100010b0",
+          "start": 268439728
         },
         {
           "end": 268439744,
@@ -15624,8 +15720,8 @@
       "totals": {
         "embedded_data": 0,
         "padding": 0,
-        "retained_code": 248824,
-        "unresolved": 13809
+        "retained_code": 248758,
+        "unresolved": 13875
       }
     }
   ],
@@ -15922,18 +16018,41 @@
     },
     {
       "address": 4199040,
-      "candidate": null,
+      "candidate": "source",
+      "canonical_address": 4198448,
       "end": 4199058,
       "image": "crimson.exe",
       "linked": false,
-      "matched": false,
-      "name": "native_function_00401280",
+      "matched": true,
+      "name": "console_input_clear",
       "native_kind": "function",
       "ownership": "game",
-      "proof": null,
-      "ratio": 0.0,
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 5,
+        "candidate_object_sha256": "68bb289d280736a27d044b18cabd97a7eb1eb6a294aa2a21018bfe886a118ba2",
+        "candidate_padding_bytes": 14,
+        "compared_target_ranges": [
+          [
+            4199040,
+            4199058
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 3,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 5,
+        "target_size": 18,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
       "size": 18,
-      "source": null
+      "source": "decomp/1.9/crimsonland/console/console_input_clear.cpp"
     },
     {
       "address": 4199058,
@@ -15952,18 +16071,41 @@
     },
     {
       "address": 4199072,
-      "candidate": null,
+      "candidate": "source",
+      "canonical_address": 4198480,
       "end": 4199078,
       "image": "crimson.exe",
       "linked": false,
-      "matched": false,
-      "name": "native_function_004012a0",
+      "matched": true,
+      "name": "console_input_buffer",
       "native_kind": "function",
       "ownership": "game",
-      "proof": null,
-      "ratio": 0.0,
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 2,
+        "candidate_object_sha256": "f9c85ecdbd88f4b759bfa572e27c13e88ecc8b5bc85d07f461b31e86e1c1718f",
+        "candidate_padding_bytes": 10,
+        "compared_target_ranges": [
+          [
+            4199072,
+            4199078
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 1,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 2,
+        "target_size": 6,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
       "size": 6,
-      "source": null
+      "source": "decomp/1.9/crimsonland/console/console_input_buffer.cpp"
     },
     {
       "address": 4199078,
@@ -17060,12 +17202,12 @@
       "end": 4203057,
       "image": "crimson.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "console_push_line",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 68,
         "candidate_object_sha256": "fcb7c19d6c589e95eed2f5496fd6d53199a23cbaf22d1f6b0bce9d0f303ca454",
         "candidate_padding_bytes": 15,
@@ -17078,11 +17220,11 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 4,
+          "ok": 5,
           "positional": true,
-          "unresolved": 1
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 68,
         "target_size": 193,
         "unexplained_target_ranges": []
@@ -17297,9 +17439,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 1,
-          "ok": 8,
+          "ok": 9,
           "positional": false,
-          "unresolved": 17
+          "unresolved": 16
         },
         "state": "wip",
         "target_instructions": 570,
@@ -17350,9 +17492,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 7,
+          "ok": 9,
           "positional": false,
-          "unresolved": 2
+          "unresolved": 0
         },
         "state": "wip",
         "target_instructions": 101,
@@ -17544,12 +17686,12 @@
       "end": 4206035,
       "image": "crimson.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "console_register_command",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 38,
         "candidate_object_sha256": "a592af543a5e0fdd7d95ac24ca6610ddde2d15d611be2fbff2a0f2b354a4a069",
         "candidate_padding_bytes": 13,
@@ -17562,11 +17704,11 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 1,
+          "ok": 2,
           "positional": true,
-          "unresolved": 1
+          "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 38,
         "target_size": 99,
         "unexplained_target_ranges": []
@@ -17879,10 +18021,10 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 1,
+          "mismatched": 0,
           "ok": 0,
           "positional": false,
-          "unresolved": 0
+          "unresolved": 1
         },
         "state": "wip",
         "target_instructions": 89,
@@ -18606,55 +18748,32 @@
     },
     {
       "address": 4207872,
-      "candidate": "source",
-      "canonical_address": 4268880,
-      "end": 4207877,
+      "candidate": null,
+      "end": 4208145,
       "image": "crimson.exe",
       "linked": false,
-      "matched": true,
-      "name": "highscore_init_sentinels_thunk",
+      "matched": false,
+      "name": "native_function_00403500",
       "native_kind": "function",
       "ownership": "game",
-      "proof": {
-        "body_byte_exact": true,
-        "candidate_instructions": 1,
-        "candidate_object_sha256": "cad7442f84450f2bf1a753fb7198d9c5fd7164b3c2cca6bec537404277f5a1ce",
-        "candidate_padding_bytes": 11,
-        "compared_target_ranges": [
-          [
-            4207872,
-            4207877
-          ]
-        ],
-        "excluded_target_ranges": [],
-        "references": {
-          "mismatched": 0,
-          "ok": 1,
-          "positional": true,
-          "unresolved": 0
-        },
-        "state": "match",
-        "target_instructions": 1,
-        "target_size": 5,
-        "unexplained_target_ranges": []
-      },
-      "ratio": 1.0,
-      "size": 5,
-      "source": "decomp/1.9/crimsonland/gameplay/highscore_init_sentinels_thunk.cpp"
+      "proof": null,
+      "ratio": 0.0,
+      "size": 273,
+      "source": null
     },
     {
-      "address": 4207877,
+      "address": 4208145,
       "candidate": null,
       "end": 4208160,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "unresolved_executable_00403505",
+      "name": "unresolved_executable_00403611",
       "native_kind": "unresolved",
       "ownership": "game",
       "proof": null,
       "ratio": 0.0,
-      "size": 283,
+      "size": 15,
       "source": null
     },
     {
@@ -18689,32 +18808,55 @@
     },
     {
       "address": 4208192,
-      "candidate": null,
-      "end": 4208269,
+      "candidate": "source",
+      "canonical_address": 4268880,
+      "end": 4208197,
       "image": "crimson.exe",
       "linked": false,
-      "matched": false,
-      "name": "native_function_00403640",
+      "matched": true,
+      "name": "highscore_init_sentinels_thunk",
       "native_kind": "function",
       "ownership": "game",
-      "proof": null,
-      "ratio": 0.0,
-      "size": 77,
-      "source": null
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "cad7442f84450f2bf1a753fb7198d9c5fd7164b3c2cca6bec537404277f5a1ce",
+        "candidate_padding_bytes": 11,
+        "compared_target_ranges": [
+          [
+            4208192,
+            4208197
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 1,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 5,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 5,
+      "source": "decomp/1.9/crimsonland/gameplay/highscore_init_sentinels_thunk.cpp"
     },
     {
-      "address": 4208269,
+      "address": 4208197,
       "candidate": null,
       "end": 4208272,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "unresolved_executable_0040368d",
+      "name": "unresolved_executable_00403645",
       "native_kind": "unresolved",
       "ownership": "game",
       "proof": null,
       "ratio": 0.0,
-      "size": 3,
+      "size": 75,
       "source": null
     },
     {
@@ -19072,12 +19214,12 @@
       "end": 4208485,
       "image": "crimson.exe",
       "linked": false,
-      "matched": true,
+      "matched": false,
       "name": "reserved_color_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
-        "body_byte_exact": true,
+        "body_byte_exact": false,
         "candidate_instructions": 1,
         "candidate_object_sha256": "159d37367e982d2701fb137e2934baa78491c3c49d3d103e3b7c70fbb3adfc2b",
         "candidate_padding_bytes": 11,
@@ -19090,11 +19232,11 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 1,
+          "ok": 0,
           "positional": true,
-          "unresolved": 0
+          "unresolved": 1
         },
-        "state": "match",
+        "state": "audit",
         "target_instructions": 1,
         "target_size": 5,
         "unexplained_target_ranges": []
@@ -19106,7 +19248,7 @@
     {
       "address": 4208485,
       "candidate": null,
-      "end": 4208528,
+      "end": 4208496,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
@@ -19115,7 +19257,60 @@
       "ownership": "game",
       "proof": null,
       "ratio": 0.0,
-      "size": 43,
+      "size": 11,
+      "source": null
+    },
+    {
+      "address": 4208496,
+      "candidate": "source",
+      "canonical_address": 4317520,
+      "end": 4208517,
+      "image": "crimson.exe",
+      "linked": false,
+      "matched": true,
+      "name": "unused_effect_uv16_prefix_vec2_global_init",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 3,
+        "candidate_object_sha256": "929506d20764bffe3d04f0202238de59ff6b6faa714f05fb854c278d7e4b55ec",
+        "candidate_padding_bytes": 11,
+        "compared_target_ranges": [
+          [
+            4208496,
+            4208517
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 2,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 3,
+        "target_size": 21,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 21,
+      "source": "decomp/1.9/crimsonland/crimsonland/unused_effect_uv16_prefix_vec2_global_init.cpp"
+    },
+    {
+      "address": 4208517,
+      "candidate": null,
+      "end": 4208528,
+      "image": "crimson.exe",
+      "linked": false,
+      "matched": false,
+      "name": "unresolved_executable_00403785",
+      "native_kind": "unresolved",
+      "ownership": "game",
+      "proof": null,
+      "ratio": 0.0,
+      "size": 11,
       "source": null
     },
     {
@@ -19174,18 +19369,18 @@
     {
       "address": 4208560,
       "candidate": "source",
-      "canonical_address": 4318288,
+      "canonical_address": 4317600,
       "end": 4208565,
       "image": "crimson.exe",
       "linked": false,
       "matched": true,
-      "name": "secondary_projectile_pool_global_init_thunk",
+      "name": "fx_queue_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 1,
-        "candidate_object_sha256": "0f97a26a4638e19d4deaba3bd41e51bbd921ed1bfae760e40ba2f503445de23a",
+        "candidate_object_sha256": "10caf843d88e93a5d94b20879826872542dc20f623cce3664c1476fd9d920a62",
         "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
@@ -19207,7 +19402,7 @@
       },
       "ratio": 1.0,
       "size": 5,
-      "source": "decomp/1.9/crimsonland/crimsonland/secondary_projectile_pool_global_init_thunk.cpp"
+      "source": "decomp/1.9/crimsonland/crimsonland/fx_queue_global_init_thunk.cpp"
     },
     {
       "address": 4208565,
@@ -19708,12 +19903,12 @@
       "end": 4209061,
       "image": "crimson.exe",
       "linked": false,
-      "matched": true,
+      "matched": false,
       "name": "projectile_pool_global_init_thunk",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
-        "body_byte_exact": true,
+        "body_byte_exact": false,
         "candidate_instructions": 1,
         "candidate_object_sha256": "d1b23e25fd09b98f4919c8a01de8058c18d07ca2d04c210295cd0f0aa8878fa1",
         "candidate_padding_bytes": 11,
@@ -19726,11 +19921,11 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 1,
+          "ok": 0,
           "positional": true,
-          "unresolved": 0
+          "unresolved": 1
         },
-        "state": "match",
+        "state": "audit",
         "target_instructions": 1,
         "target_size": 5,
         "unexplained_target_ranges": []
@@ -19742,7 +19937,7 @@
     {
       "address": 4209061,
       "candidate": null,
-      "end": 4209088,
+      "end": 4209072,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
@@ -19751,7 +19946,60 @@
       "ownership": "game",
       "proof": null,
       "ratio": 0.0,
-      "size": 27,
+      "size": 11,
+      "source": null
+    },
+    {
+      "address": 4209072,
+      "candidate": "source",
+      "canonical_address": 4319152,
+      "end": 4209073,
+      "image": "crimson.exe",
+      "linked": false,
+      "matched": true,
+      "name": "crimson_crt_empty_initializer_slot_41",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "00f1e920cfbda3dcacdb92e1ab8b25cd7bb66fee3e18b582436eca7dc8f6298f",
+        "candidate_padding_bytes": 15,
+        "compared_target_ranges": [
+          [
+            4209072,
+            4209073
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 0,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 1,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 1,
+      "source": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_41.cpp"
+    },
+    {
+      "address": 4209073,
+      "candidate": null,
+      "end": 4209088,
+      "image": "crimson.exe",
+      "linked": false,
+      "matched": false,
+      "name": "unresolved_executable_004039b1",
+      "native_kind": "unresolved",
+      "ownership": "game",
+      "proof": null,
+      "ratio": 0.0,
+      "size": 15,
       "source": null
     },
     {
@@ -22656,18 +22904,41 @@
     },
     {
       "address": 4232416,
-      "candidate": null,
+      "candidate": "source",
+      "canonical_address": 4328336,
       "end": 4240748,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "native_function_004094e0",
+      "name": "projectile_update",
       "native_kind": "function",
       "ownership": "game",
-      "proof": null,
-      "ratio": 0.0,
+      "proof": {
+        "body_byte_exact": false,
+        "candidate_instructions": 2203,
+        "candidate_object_sha256": "e319277fd61c526583f8148101141a05d6a3057d5241ae6291aa6ebd445d7fed",
+        "candidate_padding_bytes": 7,
+        "compared_target_ranges": [
+          [
+            4232416,
+            4240748
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 15,
+          "ok": 123,
+          "positional": false,
+          "unresolved": 85
+        },
+        "state": "wip",
+        "target_instructions": 2132,
+        "target_size": 8332,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 0.31418685121107265,
       "size": 8332,
-      "source": null
+      "source": "decomp/1.9/crimsonland/crimsonland/projectile_update.cpp"
     },
     {
       "address": 4240748,
@@ -22687,19 +22958,19 @@
     {
       "address": 4240752,
       "candidate": "source",
-      "canonical_address": 4328336,
+      "canonical_address": 4336752,
       "end": 4249585,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "projectile_update",
+      "name": "projectile_render",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
         "body_byte_exact": false,
-        "candidate_instructions": 2203,
-        "candidate_object_sha256": "e319277fd61c526583f8148101141a05d6a3057d5241ae6291aa6ebd445d7fed",
-        "candidate_padding_bytes": 7,
+        "candidate_instructions": 3021,
+        "candidate_object_sha256": "d5cd68b987c3b44ef95dcdba785f26555ea85ba16a0b298210dba3cd18a18330",
+        "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
             4240752,
@@ -22708,19 +22979,19 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 21,
-          "ok": 7,
+          "mismatched": 26,
+          "ok": 61,
           "positional": false,
-          "unresolved": 9
+          "unresolved": 158
         },
         "state": "wip",
         "target_instructions": 2100,
         "target_size": 8833,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.049267952591215435,
+      "ratio": 0.2948642843194689,
       "size": 8833,
-      "source": "decomp/1.9/crimsonland/crimsonland/projectile_update.cpp"
+      "source": "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp"
     },
     {
       "address": 4249585,
@@ -23201,18 +23472,18 @@
     {
       "address": 4257328,
       "candidate": "source",
-      "canonical_address": 4368832,
+      "canonical_address": 4368480,
       "end": 4257356,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "reg_write_dword",
+      "name": "console_cmd_tell_time_survived",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
         "body_byte_exact": false,
-        "candidate_instructions": 14,
-        "candidate_object_sha256": "6c3fc78914dc047f7547b128d2dddd5cb3943255f0dd9319c11cf329d598f188",
+        "candidate_instructions": 9,
+        "candidate_object_sha256": "3c7e3c96535ab4ccef02ae217b56c2362436fad1ccfcf96ca46fe4869385eb93",
         "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
@@ -23232,9 +23503,9 @@
         "target_size": 28,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.08333333333333333,
+      "ratio": 0.10526315789473684,
       "size": 28,
-      "source": "decomp/1.9/crimsonland/crimsonland/reg_write_dword.c"
+      "source": "decomp/1.9/crimsonland/crimsonland/console_cmd_tell_time_survived.c"
     },
     {
       "address": 4257356,
@@ -23714,18 +23985,41 @@
     },
     {
       "address": 4286976,
-      "candidate": null,
+      "candidate": "source",
+      "canonical_address": 4390288,
       "end": 4291768,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "native_function_00416a00",
+      "name": "perks_init_database",
       "native_kind": "function",
       "ownership": "game",
-      "proof": null,
-      "ratio": 0.0,
+      "proof": {
+        "body_byte_exact": false,
+        "candidate_instructions": 588,
+        "candidate_object_sha256": "f19f5ebdfbee246c0648c7852c2043a29adc8150e5e929afc147c5e7a5d86bdb",
+        "candidate_padding_bytes": 5,
+        "compared_target_ranges": [
+          [
+            4286976,
+            4291768
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 14,
+          "ok": 0,
+          "positional": false,
+          "unresolved": 15
+        },
+        "state": "wip",
+        "target_instructions": 1157,
+        "target_size": 4792,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 0.03667621776504298,
       "size": 4792,
-      "source": null
+      "source": "decomp/1.9/crimsonland/perks/perks_init_database.cpp"
     },
     {
       "address": 4291768,
@@ -23744,18 +24038,41 @@
     },
     {
       "address": 4291776,
-      "candidate": null,
+      "candidate": "source",
+      "canonical_address": 4408448,
       "end": 4293008,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "native_function_00417cc0",
+      "name": "quest_build_nagolipoli",
       "native_kind": "function",
       "ownership": "game",
-      "proof": null,
-      "ratio": 0.0,
+      "proof": {
+        "body_byte_exact": false,
+        "candidate_instructions": 258,
+        "candidate_object_sha256": "585ff39781051bed617a003d245f41ace99e750f9b5e5521d32246adb55c6df5",
+        "candidate_padding_bytes": 9,
+        "compared_target_ranges": [
+          [
+            4291776,
+            4293008
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 0,
+          "positional": false,
+          "unresolved": 0
+        },
+        "state": "wip",
+        "target_instructions": 441,
+        "target_size": 1232,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 0.008583690987124463,
       "size": 1232,
-      "source": null
+      "source": "decomp/1.9/crimsonland/quests/quest_build_nagolipoli.cpp"
     },
     {
       "address": 4293008,
@@ -24171,12 +24488,12 @@
       "end": 4324478,
       "image": "crimson.exe",
       "linked": false,
-      "matched": true,
+      "matched": false,
       "name": "resource_pack_read_cstring",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
-        "body_byte_exact": true,
+        "body_byte_exact": false,
         "candidate_instructions": 24,
         "candidate_object_sha256": "170cedbec6e97b03bbc5b5df0aa3e61cb95908d22d4a5af96eca7756798b9a9d",
         "candidate_padding_bytes": 2,
@@ -24189,11 +24506,11 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 3,
+          "ok": 2,
           "positional": true,
-          "unresolved": 0
+          "unresolved": 1
         },
-        "state": "match",
+        "state": "audit",
         "target_instructions": 24,
         "target_size": 62,
         "unexplained_target_ranges": []
@@ -24523,19 +24840,19 @@
     {
       "address": 4326080,
       "candidate": "source",
-      "canonical_address": 4446256,
+      "canonical_address": 4449760,
       "end": 4326551,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "ui_focus_update",
+      "name": "ui_menu_item_update",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
         "body_byte_exact": false,
-        "candidate_instructions": 78,
-        "candidate_object_sha256": "488c258a7aefde42a726b4db68245e6d42013bf1ec8c0be2c62a78ab60947f2d",
-        "candidate_padding_bytes": 4,
+        "candidate_instructions": 153,
+        "candidate_object_sha256": "d1f9c107bae1da69ed7476f94b4f695260c96eb6bac5ed8836be33f48f76a1dc",
+        "candidate_padding_bytes": 12,
         "compared_target_ranges": [
           [
             4326080,
@@ -24544,19 +24861,19 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 0,
+          "mismatched": 4,
           "ok": 0,
           "positional": false,
-          "unresolved": 1
+          "unresolved": 7
         },
         "state": "wip",
         "target_instructions": 124,
         "target_size": 471,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.0297029702970297,
+      "ratio": 0.1299638989169675,
       "size": 471,
-      "source": "decomp/1.9/crimsonland/ui_widgets/ui_focus_update.cpp"
+      "source": "decomp/1.9/crimsonland/ui_widgets/ui_menu_item_update.cpp"
     },
     {
       "address": 4326551,
@@ -24576,19 +24893,19 @@
     {
       "address": 4326560,
       "candidate": "source",
-      "canonical_address": 4478352,
+      "canonical_address": 4461088,
       "end": 4326630,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "typo_target_find_by_name",
+      "name": "highscore_card_draw_vertical_divider",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
         "body_byte_exact": false,
-        "candidate_instructions": 42,
-        "candidate_object_sha256": "fe7da3b790368b698e62f0f41d51779cb07ad279c6e1d05c0fb014489827c29d",
-        "candidate_padding_bytes": 14,
+        "candidate_instructions": 20,
+        "candidate_object_sha256": "26770b70ce4d621c50dc954a140b732e82a3fadc5fd7876f97130d5d4f596ebb",
+        "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
             4326560,
@@ -24600,16 +24917,16 @@
           "mismatched": 0,
           "ok": 0,
           "positional": false,
-          "unresolved": 0
+          "unresolved": 1
         },
         "state": "wip",
         "target_instructions": 20,
         "target_size": 70,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.03225806451612903,
+      "ratio": 0.1,
       "size": 70,
-      "source": "decomp/1.9/crimsonland/typo/typo_target_find_by_name.cpp"
+      "source": "decomp/1.9/crimsonland/ui_screens/highscore_card_draw_vertical_divider.cpp"
     },
     {
       "address": 4326630,
@@ -25099,12 +25416,12 @@
     {
       "address": 4331264,
       "candidate": null,
-      "canonical_address": 4537645,
+      "canonical_address": 4536938,
       "end": 4331785,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "d3dx_c_matrix_multiply_transpose",
+      "name": "d3dx_c_matrix_multiply",
       "native_kind": "function",
       "ownership": "unknown",
       "proof": null,
@@ -25490,41 +25807,19 @@
     },
     {
       "address": 4333014,
-      "candidate": "source",
-      "canonical_address": 4533568,
+      "candidate": null,
+      "canonical_address": 4591739,
       "end": 4333028,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "weapon_assign_player",
+      "name": "??2@YAPAXI@Z",
       "native_kind": "function",
-      "ownership": "unknown",
-      "proof": {
-        "body_byte_exact": false,
-        "candidate_instructions": 61,
-        "candidate_object_sha256": "fdc417efbc62b893ab61a0b8763248b0fbd99dcd2c4318488ae0a809dcfc467c",
-        "candidate_padding_bytes": 2,
-        "compared_target_ranges": [
-          [
-            4333014,
-            4333028
-          ]
-        ],
-        "excluded_target_ranges": [],
-        "references": {
-          "mismatched": 0,
-          "ok": 0,
-          "positional": false,
-          "unresolved": 1
-        },
-        "state": "wip",
-        "target_instructions": 6,
-        "target_size": 14,
-        "unexplained_target_ranges": []
-      },
-      "ratio": 0.05970149253731343,
+      "ownership": "libs.msvc6-crt",
+      "proof": null,
+      "ratio": 0.0,
       "size": 14,
-      "source": "decomp/1.9/crimsonland/weapons/weapon_assign_player.c"
+      "source": null
     },
     {
       "address": 4333028,
@@ -26129,14 +26424,14 @@
     {
       "address": 4336338,
       "candidate": null,
-      "canonical_address": 4599202,
+      "canonical_address": 4622526,
       "end": 4336364,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "crt_getc",
+      "name": "crt_scan_inc",
       "native_kind": "function",
-      "ownership": "unknown",
+      "ownership": "libs.msvc6-crt",
       "proof": null,
       "ratio": 0.0,
       "size": 26,
@@ -26520,12 +26815,12 @@
     {
       "address": 4339344,
       "candidate": null,
-      "canonical_address": 4603383,
+      "canonical_address": 4603301,
       "end": 4339389,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "crt_unlock_file",
+      "name": "crt_lock_file",
       "native_kind": "function",
       "ownership": "unknown",
       "proof": null,
@@ -26600,12 +26895,11 @@
     {
       "address": 4339602,
       "candidate": null,
-      "canonical_address": 4603465,
       "end": 4339699,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "crt_close",
+      "name": "native_function_00423792",
       "native_kind": "function",
       "ownership": "unknown",
       "proof": null,
@@ -26711,11 +27005,12 @@
     {
       "address": 4340036,
       "candidate": null,
+      "canonical_address": 4603465,
       "end": 4340215,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "native_function_00423944",
+      "name": "crt_close",
       "native_kind": "function",
       "ownership": "unknown",
       "proof": null,
@@ -29705,11 +30000,12 @@
     {
       "address": 4361175,
       "candidate": null,
+      "canonical_address": 4611360,
       "end": 4361278,
       "image": "crimson.exe",
       "linked": false,
       "matched": false,
-      "name": "native_function_00428bd7",
+      "name": "crt_dosmaperr",
       "native_kind": "function",
       "ownership": "unknown",
       "proof": null,
@@ -31556,18 +31852,94 @@
     },
     {
       "address": 268439552,
+      "candidate": "source",
+      "canonical_address": 268439552,
+      "end": 268439557,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_01_thunk",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "00e8f8f38f797ad52b84b5ce6d93dcb36da0798ff2dfbca2998a304a4c2de8cf",
+        "candidate_padding_bytes": 11,
+        "compared_target_ranges": [
+          [
+            268439552,
+            268439557
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 1,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 5,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 5,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_01_thunk.cpp"
+    },
+    {
+      "address": 268439557,
       "candidate": null,
-      "end": 268439569,
+      "end": 268439568,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
-      "name": "native_function_10001000",
-      "native_kind": "function",
+      "name": "unresolved_executable_10001005",
+      "native_kind": "unresolved",
       "ownership": "game",
       "proof": null,
       "ratio": 0.0,
-      "size": 17,
+      "size": 11,
       "source": null
+    },
+    {
+      "address": 268439568,
+      "candidate": "source",
+      "canonical_address": 268439568,
+      "end": 268439569,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_01",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "be4bdac7100a9ede5875c1cee73c8dcbc10156e926294a1fd5729fe05af124c0",
+        "candidate_padding_bytes": 15,
+        "compared_target_ranges": [
+          [
+            268439568,
+            268439569
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 0,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 1,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 1,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_01.cpp"
     },
     {
       "address": 268439569,
@@ -31586,18 +31958,94 @@
     },
     {
       "address": 268439584,
+      "candidate": "source",
+      "canonical_address": 268439584,
+      "end": 268439589,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_02_thunk",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "f32998d66885a1d3fbe71e8822fd574edb1ab73ce4030d9f9cc9d310ad01f092",
+        "candidate_padding_bytes": 11,
+        "compared_target_ranges": [
+          [
+            268439584,
+            268439589
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 1,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 5,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 5,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_02_thunk.cpp"
+    },
+    {
+      "address": 268439589,
       "candidate": null,
-      "end": 268439601,
+      "end": 268439600,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
-      "name": "native_function_10001020",
-      "native_kind": "function",
+      "name": "unresolved_executable_10001025",
+      "native_kind": "unresolved",
       "ownership": "game",
       "proof": null,
       "ratio": 0.0,
-      "size": 17,
+      "size": 11,
       "source": null
+    },
+    {
+      "address": 268439600,
+      "candidate": "source",
+      "canonical_address": 268439600,
+      "end": 268439601,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_02",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "fee07e5aa297f2f497f67473c2479697a864b16fde7cd6791a4750aafb177263",
+        "candidate_padding_bytes": 15,
+        "compared_target_ranges": [
+          [
+            268439600,
+            268439601
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 0,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 1,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 1,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_02.cpp"
     },
     {
       "address": 268439601,
@@ -31616,18 +32064,94 @@
     },
     {
       "address": 268439616,
+      "candidate": "source",
+      "canonical_address": 268439616,
+      "end": 268439621,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_03_thunk",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "6bdb43f6224a36d4e454f436cd2ef906bb7896b38fc0b28fd87ee65fb0ea7874",
+        "candidate_padding_bytes": 11,
+        "compared_target_ranges": [
+          [
+            268439616,
+            268439621
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 1,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 5,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 5,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_03_thunk.cpp"
+    },
+    {
+      "address": 268439621,
       "candidate": null,
-      "end": 268439633,
+      "end": 268439632,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
-      "name": "native_function_10001040",
-      "native_kind": "function",
+      "name": "unresolved_executable_10001045",
+      "native_kind": "unresolved",
       "ownership": "game",
       "proof": null,
       "ratio": 0.0,
-      "size": 17,
+      "size": 11,
       "source": null
+    },
+    {
+      "address": 268439632,
+      "candidate": "source",
+      "canonical_address": 268439632,
+      "end": 268439633,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_03",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "d871e180c8ec0d5886801d224ece1acb60280447c303d41a6c006076da5034b9",
+        "candidate_padding_bytes": 15,
+        "compared_target_ranges": [
+          [
+            268439632,
+            268439633
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 0,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 1,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 1,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_03.cpp"
     },
     {
       "address": 268439633,
@@ -31646,18 +32170,94 @@
     },
     {
       "address": 268439648,
+      "candidate": "source",
+      "canonical_address": 268439648,
+      "end": 268439653,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_04_thunk",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "491ea069c5556bc37b57d10d2c3cd0ac32fdaafdd0e34c43fc2824fb31b81726",
+        "candidate_padding_bytes": 11,
+        "compared_target_ranges": [
+          [
+            268439648,
+            268439653
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 1,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 5,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 5,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_04_thunk.cpp"
+    },
+    {
+      "address": 268439653,
       "candidate": null,
-      "end": 268439665,
+      "end": 268439664,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
-      "name": "native_function_10001060",
-      "native_kind": "function",
+      "name": "unresolved_executable_10001065",
+      "native_kind": "unresolved",
       "ownership": "game",
       "proof": null,
       "ratio": 0.0,
-      "size": 17,
+      "size": 11,
       "source": null
+    },
+    {
+      "address": 268439664,
+      "candidate": "source",
+      "canonical_address": 268439664,
+      "end": 268439665,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_04",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "3578f22c66c75bedf94ba4bbf3bd8e3b067855133c0dd897fdde1f1503bfa912",
+        "candidate_padding_bytes": 15,
+        "compared_target_ranges": [
+          [
+            268439664,
+            268439665
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 0,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 1,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 1,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_04.cpp"
     },
     {
       "address": 268439665,
@@ -31676,18 +32276,94 @@
     },
     {
       "address": 268439680,
+      "candidate": "source",
+      "canonical_address": 268439680,
+      "end": 268439685,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_05_thunk",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "7cea0507c6fe08ef6c802c59e6108de52e013e22cf497b1bddc08f8ee4b8f4cf",
+        "candidate_padding_bytes": 11,
+        "compared_target_ranges": [
+          [
+            268439680,
+            268439685
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 1,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 5,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 5,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_05_thunk.cpp"
+    },
+    {
+      "address": 268439685,
       "candidate": null,
-      "end": 268439697,
+      "end": 268439696,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
-      "name": "native_function_10001080",
-      "native_kind": "function",
+      "name": "unresolved_executable_10001085",
+      "native_kind": "unresolved",
       "ownership": "game",
       "proof": null,
       "ratio": 0.0,
-      "size": 17,
+      "size": 11,
       "source": null
+    },
+    {
+      "address": 268439696,
+      "candidate": "source",
+      "canonical_address": 268439696,
+      "end": 268439697,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_05",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "2ca1d944f6ba58729295012a5db5b9b40b2b8ca178b57700a876f200327bc9d4",
+        "candidate_padding_bytes": 15,
+        "compared_target_ranges": [
+          [
+            268439696,
+            268439697
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 0,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 1,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 1,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_05.cpp"
     },
     {
       "address": 268439697,
@@ -31706,18 +32382,94 @@
     },
     {
       "address": 268439712,
+      "candidate": "source",
+      "canonical_address": 268439712,
+      "end": 268439717,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_06_thunk",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "22f174a055469f4b49004e5eb10eb619318b690437c85699eecfb9ff3a2018ad",
+        "candidate_padding_bytes": 11,
+        "compared_target_ranges": [
+          [
+            268439712,
+            268439717
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 1,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 5,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 5,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_06_thunk.cpp"
+    },
+    {
+      "address": 268439717,
       "candidate": null,
-      "end": 268439729,
+      "end": 268439728,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
-      "name": "native_function_100010a0",
-      "native_kind": "function",
+      "name": "unresolved_executable_100010a5",
+      "native_kind": "unresolved",
       "ownership": "game",
       "proof": null,
       "ratio": 0.0,
-      "size": 17,
+      "size": 11,
       "source": null
+    },
+    {
+      "address": 268439728,
+      "candidate": "source",
+      "canonical_address": 268439728,
+      "end": 268439729,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": true,
+      "name": "grim_crt_empty_initializer_slot_06",
+      "native_kind": "function",
+      "ownership": "game",
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 1,
+        "candidate_object_sha256": "24e33bc84a53825704c4557470fa7a190c2855cb6fd363ab81d2c9e4efefc25a",
+        "candidate_padding_bytes": 15,
+        "compared_target_ranges": [
+          [
+            268439728,
+            268439729
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 0,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 1,
+        "target_size": 1,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
+      "size": 1,
+      "source": "decomp/1.9/grim/runtime/empty_initializer_slot_06.cpp"
     },
     {
       "address": 268439729,
@@ -31736,18 +32488,41 @@
     },
     {
       "address": 268439744,
-      "candidate": null,
+      "candidate": "source",
+      "canonical_address": 268439872,
       "end": 268439757,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
-      "name": "native_function_100010c0",
+      "name": "grim_missing_frame_callback",
       "native_kind": "function",
       "ownership": "game",
-      "proof": null,
-      "ratio": 0.0,
+      "proof": {
+        "body_byte_exact": false,
+        "candidate_instructions": 3,
+        "candidate_object_sha256": "8e33f2e310081bd23a764c05823e5b703d688d335ddeb5bbf1d762b163c6e18c",
+        "candidate_padding_bytes": 3,
+        "compared_target_ranges": [
+          [
+            268439744,
+            268439757
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 0,
+          "positional": true,
+          "unresolved": 1
+        },
+        "state": "audit",
+        "target_instructions": 3,
+        "target_size": 13,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
       "size": 13,
-      "source": null
+      "source": "decomp/1.9/grim/app/missing_frame_callback.cpp"
     },
     {
       "address": 268439757,
@@ -31766,18 +32541,41 @@
     },
     {
       "address": 268439760,
-      "candidate": null,
+      "candidate": "source",
+      "canonical_address": 268439888,
       "end": 268439763,
       "image": "grim.dll",
       "linked": false,
-      "matched": false,
-      "name": "native_function_100010d0",
+      "matched": true,
+      "name": "grim_default_device_callback",
       "native_kind": "function",
       "ownership": "game",
-      "proof": null,
-      "ratio": 0.0,
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 2,
+        "candidate_object_sha256": "95a5217727c08a70d4d13dd3ba4be886742812598a20ccd46264936a6f5563df",
+        "candidate_padding_bytes": 13,
+        "compared_target_ranges": [
+          [
+            268439760,
+            268439763
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 0,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 2,
+        "target_size": 3,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
       "size": 3,
-      "source": null
+      "source": "decomp/1.9/grim/app/default_device_callback.cpp"
     },
     {
       "address": 268439763,
@@ -31796,18 +32594,41 @@
     },
     {
       "address": 268439776,
-      "candidate": null,
+      "candidate": "source",
+      "canonical_address": 268439920,
       "end": 268439854,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
-      "name": "native_function_100010e0",
+      "name": "grim_advanced_config_dialog_proc",
       "native_kind": "function",
       "ownership": "game",
-      "proof": null,
-      "ratio": 0.0,
+      "proof": {
+        "body_byte_exact": false,
+        "candidate_instructions": 459,
+        "candidate_object_sha256": "8419f77abf69eeaae19cb6bb4573a509bf50e59dbfc097dc9eb8a3c9117f0ac8",
+        "candidate_padding_bytes": 2,
+        "compared_target_ranges": [
+          [
+            268439776,
+            268439854
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 0,
+          "positional": false,
+          "unresolved": 0
+        },
+        "state": "wip",
+        "target_instructions": 19,
+        "target_size": 78,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 0.029288702928870293,
       "size": 78,
-      "source": null
+      "source": "decomp/1.9/grim/config/advanced_dialog.cpp"
     },
     {
       "address": 268439854,
@@ -32023,19 +32844,19 @@
     {
       "address": 268442224,
       "candidate": "source",
-      "canonical_address": 268447680,
+      "canonical_address": 268442160,
       "end": 268442427,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
-      "name": "grim_app_init",
+      "name": "grim_config_blob_load",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
         "body_byte_exact": false,
-        "candidate_instructions": 54,
-        "candidate_object_sha256": "531a72cdb674ce31d093ec223ef73adc9f39270e36d35cf966c6f294825b66e3",
-        "candidate_padding_bytes": 7,
+        "candidate_instructions": 50,
+        "candidate_object_sha256": "ab2c2c30878f290e3e68f4becb0b9536c65a7fa31469fc8c233fe6bfa339e872",
+        "candidate_padding_bytes": 1,
         "compared_target_ranges": [
           [
             268442224,
@@ -32054,9 +32875,9 @@
         "target_size": 203,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.08275862068965517,
+      "ratio": 0.0851063829787234,
       "size": 203,
-      "source": "decomp/1.9/grim/app/app_init.cpp"
+      "source": "decomp/1.9/grim/config/blob_load.cpp"
     },
     {
       "address": 268442427,
@@ -32076,19 +32897,19 @@
     {
       "address": 268442432,
       "candidate": "source",
-      "canonical_address": 268447920,
+      "canonical_address": 268443280,
       "end": 268442566,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
-      "name": "grim_restore_device_after_activation",
+      "name": "grim_config_dialog_populate_display_modes",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
         "body_byte_exact": false,
-        "candidate_instructions": 254,
-        "candidate_object_sha256": "8a62406319e106222349e9a23c2b04098577456fabd32dd618e12b8bff519cd6",
-        "candidate_padding_bytes": 6,
+        "candidate_instructions": 207,
+        "candidate_object_sha256": "bb6b0b56aaca9ada7878f0959aa90a6447f5b5737608c6601c615a98d21a0f14",
+        "candidate_padding_bytes": 9,
         "compared_target_ranges": [
           [
             268442432,
@@ -32097,19 +32918,19 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 2,
+          "mismatched": 1,
           "ok": 0,
           "positional": false,
-          "unresolved": 0
+          "unresolved": 3
         },
         "state": "wip",
         "target_instructions": 35,
         "target_size": 134,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.04844290657439446,
+      "ratio": 0.10743801652892562,
       "size": 134,
-      "source": "decomp/1.9/grim/device/restore_after_activation.cpp"
+      "source": "decomp/1.9/grim/config/populate_display_modes.cpp"
     },
     {
       "address": 268442566,
@@ -32283,8 +33104,8 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 323,
-        "candidate_object_sha256": "9b4d38d8683a76d49b54f4a4cb8dfe76837ecd241de803e3ca00a592b7cb1804",
-        "candidate_padding_bytes": 10,
+        "candidate_object_sha256": "4cc34b81f295c52a4c8c2ec1585c06d429736222e4cbb4dcbaa1e16152247964",
+        "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
             268444016,
@@ -32694,8 +33515,8 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 1,
-          "ok": 0,
+          "mismatched": 0,
+          "ok": 1,
           "positional": false,
           "unresolved": 13
         },
@@ -32842,9 +33663,9 @@
       "ownership": "game",
       "proof": {
         "body_byte_exact": false,
-        "candidate_instructions": 235,
-        "candidate_object_sha256": "e5934573bfa1447c9b4a5b8b3c98b2d7b3c81e58809c722ef41f4f93d6690113",
-        "candidate_padding_bytes": 1,
+        "candidate_instructions": 221,
+        "candidate_object_sha256": "b11e091c43be7f25381586303d25dfe4b0676db98e814e9e8f55aebfbbbcbb4d",
+        "candidate_padding_bytes": 6,
         "compared_target_ranges": [
           [
             268447200,
@@ -32863,7 +33684,7 @@
         "target_size": 255,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.25,
+      "ratio": 0.24242424242424243,
       "size": 255,
       "source": "decomp/1.9/grim/texture/load_file.cpp"
     },
@@ -33048,12 +33869,12 @@
       "end": 268447913,
       "image": "grim.dll",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "grim_load_texture_internal",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 80,
         "candidate_object_sha256": "fd03ff58f470d62d5928595a039c8ec0d3ae557676964b8ccac903690e606f61",
         "candidate_padding_bytes": 7,
@@ -33065,12 +33886,12 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 1,
-          "ok": 13,
+          "mismatched": 0,
+          "ok": 14,
           "positional": true,
           "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 80,
         "target_size": 265,
         "unexplained_target_ranges": []
@@ -33108,8 +33929,8 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 425,
-        "candidate_object_sha256": "e75c6d0191abcecd63dbaf30721f99c6d29e54a84d613cdb90c9e30e45cad7a6",
-        "candidate_padding_bytes": 0,
+        "candidate_object_sha256": "81a8f0c10d515de3b716c383e4c952fd83c473bb084ed4762258fbd4e4cecbf1",
+        "candidate_padding_bytes": 1,
         "compared_target_ranges": [
           [
             268447920,
@@ -33121,14 +33942,14 @@
           "mismatched": 46,
           "ok": 24,
           "positional": false,
-          "unresolved": 14
+          "unresolved": 15
         },
         "state": "wip",
         "target_instructions": 271,
         "target_size": 1256,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.4281609195402299,
+      "ratio": 0.43103448275862066,
       "size": 1256,
       "source": "decomp/1.9/grim/state/state_init.cpp"
     },
@@ -33160,9 +33981,9 @@
       "ownership": "game",
       "proof": {
         "body_byte_exact": false,
-        "candidate_instructions": 51,
-        "candidate_object_sha256": "f6b6ee7fec18e8b37516da021e647dfdb0c45d7749cbb2a45c948e0be84d4b22",
-        "candidate_padding_bytes": 14,
+        "candidate_instructions": 48,
+        "candidate_object_sha256": "34a52c21861160ead6eab79a5ef853d68408db487d6ed61f0c4721c550a322d7",
+        "candidate_padding_bytes": 4,
         "compared_target_ranges": [
           [
             268449184,
@@ -33173,15 +33994,15 @@
         "references": {
           "mismatched": 0,
           "ok": 9,
-          "positional": false,
-          "unresolved": 1
+          "positional": true,
+          "unresolved": 7
         },
-        "state": "wip",
+        "state": "audit",
         "target_instructions": 48,
         "target_size": 140,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.8080808080808081,
+      "ratio": 1.0,
       "size": 140,
       "source": "decomp/1.9/grim/codec/lookup_blob_load.cpp"
     },
@@ -33562,8 +34383,8 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 93,
-        "candidate_object_sha256": "023f0bbfc1fcc40f5f441b34ffb13c83fe62b04a4c2d1bc1a50112bbc5192475",
-        "candidate_padding_bytes": 2,
+        "candidate_object_sha256": "780e4aaab94932ec92304b1528bb5ebddc376efe7707bb645b4293b1556ada5e",
+        "candidate_padding_bytes": 3,
         "compared_target_ranges": [
           [
             268450272,
@@ -34365,41 +35186,18 @@
     },
     {
       "address": 268453984,
-      "candidate": "source",
-      "canonical_address": 268463760,
+      "candidate": null,
       "end": 268453991,
       "image": "grim.dll",
       "linked": false,
-      "matched": true,
-      "name": "grim_get_fps",
+      "matched": false,
+      "name": "native_function_10004860",
       "native_kind": "function",
       "ownership": "game",
-      "proof": {
-        "body_byte_exact": true,
-        "candidate_instructions": 2,
-        "candidate_object_sha256": "c9f73448c56b6bf826c0f884f4acefad514c0a1afd06641db57893a33d35bf08",
-        "candidate_padding_bytes": 9,
-        "compared_target_ranges": [
-          [
-            268453984,
-            268453991
-          ]
-        ],
-        "excluded_target_ranges": [],
-        "references": {
-          "mismatched": 0,
-          "ok": 1,
-          "positional": true,
-          "unresolved": 0
-        },
-        "state": "match",
-        "target_instructions": 2,
-        "target_size": 7,
-        "unexplained_target_ranges": []
-      },
-      "ratio": 1.0,
+      "proof": null,
+      "ratio": 0.0,
       "size": 7,
-      "source": "decomp/1.9/grim/timing/get_fps.cpp"
+      "source": null
     },
     {
       "address": 268453991,
@@ -34418,18 +35216,41 @@
     },
     {
       "address": 268454000,
-      "candidate": null,
+      "candidate": "source",
+      "canonical_address": 268463760,
       "end": 268454007,
       "image": "grim.dll",
       "linked": false,
-      "matched": false,
-      "name": "native_function_10004870",
+      "matched": true,
+      "name": "grim_get_fps",
       "native_kind": "function",
       "ownership": "game",
-      "proof": null,
-      "ratio": 0.0,
+      "proof": {
+        "body_byte_exact": true,
+        "candidate_instructions": 2,
+        "candidate_object_sha256": "c9f73448c56b6bf826c0f884f4acefad514c0a1afd06641db57893a33d35bf08",
+        "candidate_padding_bytes": 9,
+        "compared_target_ranges": [
+          [
+            268454000,
+            268454007
+          ]
+        ],
+        "excluded_target_ranges": [],
+        "references": {
+          "mismatched": 0,
+          "ok": 1,
+          "positional": true,
+          "unresolved": 0
+        },
+        "state": "match",
+        "target_instructions": 2,
+        "target_size": 7,
+        "unexplained_target_ranges": []
+      },
+      "ratio": 1.0,
       "size": 7,
-      "source": null
+      "source": "decomp/1.9/grim/timing/get_fps.cpp"
     },
     {
       "address": 268454007,
@@ -35218,12 +36039,12 @@
       "end": 268454817,
       "image": "grim.dll",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "grim_create_texture",
       "native_kind": "function",
       "ownership": "game",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 81,
         "candidate_object_sha256": "1bf92050216ec98df3473a685ac84f4e7e0e7858b9e89be63d96448ff75ed511",
         "candidate_padding_bytes": 15,
@@ -35235,12 +36056,12 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 1,
-          "ok": 12,
+          "mismatched": 0,
+          "ok": 13,
           "positional": true,
           "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 81,
         "target_size": 257,
         "unexplained_target_ranges": []
@@ -36217,8 +37038,8 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 16,
-        "candidate_object_sha256": "628b29d0324c73c40d1530bf2745caeda54e53b1184e081e672de1607baf92f0",
-        "candidate_padding_bytes": 12,
+        "candidate_object_sha256": "4b79193cc7e1ec8473d5b8c3dff23c39c228f7654b19bf92dc897c131538246b",
+        "candidate_padding_bytes": 13,
         "compared_target_ranges": [
           [
             268457968,
@@ -36230,14 +37051,14 @@
           "mismatched": 0,
           "ok": 0,
           "positional": false,
-          "unresolved": 0
+          "unresolved": 1
         },
         "state": "wip",
         "target_instructions": 20,
         "target_size": 75,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.2777777777777778,
+      "ratio": 0.3333333333333333,
       "size": 75,
       "source": "decomp/1.9/grim/render/draw_text_mono_fmt.cpp"
     },
@@ -37200,12 +38021,11 @@
     {
       "address": 268460143,
       "candidate": null,
-      "canonical_address": 268478690,
       "end": 268460150,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
-      "name": "__CxxFrameHandler",
+      "name": "native_function_1000606f",
       "native_kind": "function",
       "ownership": "unknown",
       "proof": null,
@@ -46737,14 +47557,14 @@
       "end": 268549396,
       "image": "grim.dll",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "grim_pixel_format_destroy_yuv",
       "native_kind": "function",
       "ownership": "libs.d3dx8",
       "proof": {
-        "body_byte_exact": false,
+        "body_byte_exact": true,
         "candidate_instructions": 23,
-        "candidate_object_sha256": "83821104e4ba430963612ba42b849bf9ce1a707178c9c5aebc91dc610dc4066e",
+        "candidate_object_sha256": "2776747c54db121c11a67bc72b989e55b0da0bd6185a5e6d7d1b61b85628d8d0",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -46754,12 +47574,12 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 1,
-          "ok": 5,
+          "mismatched": 0,
+          "ok": 6,
           "positional": true,
           "unresolved": 0
         },
-        "state": "audit",
+        "state": "match",
         "target_instructions": 23,
         "target_size": 73,
         "unexplained_target_ranges": []
@@ -59836,9 +60656,25 @@
     },
     {
       "address": 268691376,
+      "candidate": null,
+      "canonical_address": 268675456,
+      "end": 268691382,
+      "image": "grim.dll",
+      "linked": false,
+      "matched": false,
+      "name": "HlinkNavigateString",
+      "native_kind": "function",
+      "ownership": "libs.d3dx8",
+      "proof": null,
+      "ratio": 0.0,
+      "size": 6,
+      "source": null
+    },
+    {
+      "address": 268691382,
       "candidate": "source",
       "canonical_address": 268690736,
-      "end": 268691382,
+      "end": 268691388,
       "image": "grim.dll",
       "linked": false,
       "matched": false,
@@ -59848,12 +60684,12 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 2,
-        "candidate_object_sha256": "6f9287467e7e1a724f0262f0f41bee37483c8c63d65350858a6eb46cce66ebca",
+        "candidate_object_sha256": "c78530c7f99718deacd918a936b55459d57d77ee4631c62bf44e9564a0f0afbc",
         "candidate_padding_bytes": 11,
         "compared_target_ranges": [
           [
-            268691376,
-            268691382
+            268691382,
+            268691388
           ]
         ],
         "excluded_target_ranges": [],
@@ -59871,21 +60707,6 @@
       "ratio": 0.0,
       "size": 6,
       "source": "third_party/sources/ijg-libjpeg-6a/jmemnobs.c"
-    },
-    {
-      "address": 268691382,
-      "candidate": null,
-      "end": 268691388,
-      "image": "grim.dll",
-      "linked": false,
-      "matched": false,
-      "name": "native_function_1003e7b6",
-      "native_kind": "function",
-      "ownership": "unknown",
-      "proof": null,
-      "ratio": 0.0,
-      "size": 6,
-      "source": null
     },
     {
       "address": 268691388,
@@ -63799,9 +64620,9 @@
     }
   ],
   "identities": {
-    "inventory": "6647ca0f24300359805a29d29834d4ef8519516c6b77a0d222578fa9e07fbd66",
+    "inventory": "ce2024856016694c375acc4ae003f3772391ef04bf0a77d6c7d20af548a8a149",
     "inventory_policy": "native-functions-and-full-executable-remainder-v1",
-    "scoring": "e1caf8019b0db9c6cb9caadf59264a07d45cb2f88f0a9036b98a209e95136d23",
+    "scoring": "30591fc637a40e2f74c668160790370924fbfca0f0b1abd580309c13f60251d9",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1",
     "target": {
       "game_bins/crimsonland/1.4.0/crimson.exe": "0e4d5f62b34c7c62d5b7bb1f6a774d54e91c68a0c898d53cabead1f5f151eb8b",
@@ -63809,67 +64630,68 @@
     }
   },
   "inputs": {
-    "analysis/decomp/1.0.2/crimson.exe/data.json": "2501fca7af27cb40c2ea9e107e79bab2575dae8c8742483cb62372ccd4748a9e",
-    "analysis/decomp/1.0.2/crimson.exe/functions.json": "a88efb57ed74c703a42c4506885eca4935b310baa1c8b61ea74efea9ea2e3be2",
+    "analysis/decomp/1.0.2/crimson.exe/data.json": "bac1fdd06be9f3b02a288c299d774a3ead485a8224d891263de3b6b17f6da1df",
+    "analysis/decomp/1.0.2/crimson.exe/functions.json": "beb4bb9ed730248d422bec76edff17369e4e22d927cb25e3c1c3b1bbcc803475",
     "analysis/decomp/1.0.2/crimson.exe/imports.json": "ffee4e9a1e0bb945ca32ba89b4d462ac23de8e14ce077eed3ae2a9a2ec9d56d0",
     "analysis/decomp/1.0.2/crimson.exe/metadata.json": "7533c0f08082ae1ae6e25bea7b8bc0ecfabb818291b2bc48554cc19aa1e9ac93",
-    "analysis/decomp/1.0.2/crimson.exe/native.json": "9806392b5f9be03ffc76b2684b2684989beaf8bd709640556421aee9b4eb596c",
-    "analysis/decomp/1.0.2/grim.dll/data.json": "f9da3e15b88c740dddd839ee90896aef43d0b58f5cc0ac2f847db1aa36693f11",
-    "analysis/decomp/1.0.2/grim.dll/functions.json": "bc7f500cb8cb10c135e7751f8b33128a775b97922d236add35d3d425e9972344",
+    "analysis/decomp/1.0.2/crimson.exe/native.json": "6ac6b921d3a539eb4ea1a97d471da7e6c55b97fb74f8776db19d5d5d130d93c7",
+    "analysis/decomp/1.0.2/grim.dll/data.json": "c5ed49c7a3df54c4381b1f1ec60a1aa0a826f297dee512585cb1793fc634e737",
+    "analysis/decomp/1.0.2/grim.dll/functions.json": "affe5f58ae094ff79ae94803259458c171492caba80ba2c392200dcc3ecb7728",
     "analysis/decomp/1.0.2/grim.dll/imports.json": "6dd9b270911db4b877f7fa7dbab8e3b1fadff95918d246ed236a85c63f8882de",
     "analysis/decomp/1.0.2/grim.dll/metadata.json": "0d335f40f486180dcd790a21762602006ac8cf255f1adf68f62e862756667509",
-    "analysis/decomp/1.0.2/grim.dll/native.json": "13c5ce8655e190548e3c1a9d198ab124a79e7293681c4daf632408e8afcb5fbd",
+    "analysis/decomp/1.0.2/grim.dll/native.json": "f942a6f4a5730d500f2c5715ce7def4a9fb20a645be15d5435cb38f62970f4a8",
     "analysis/decomp/1.3.0/crimson.exe/data.json": "55e299d8635a1b296c983f42abfb2c1004cb65327f576bba73de22ddff782b53",
-    "analysis/decomp/1.3.0/crimson.exe/functions.json": "b4e9d0ca785315515b4e5a9df0995cfe2125306c89f9107623cba10612b0f387",
+    "analysis/decomp/1.3.0/crimson.exe/functions.json": "6916725dfcd7da47b518f7fdc427690c8e1013d159dea0bd06fb69ad16c300e3",
     "analysis/decomp/1.3.0/crimson.exe/imports.json": "2d0079653411e71d05858bcb15f02f92c20d87de316e5d8e3f5256316fb073f4",
     "analysis/decomp/1.3.0/crimson.exe/metadata.json": "8bdac138675a203e877fae41389cd6202aeed766e1cb8855ebac852c4d4bb76c",
-    "analysis/decomp/1.3.0/crimson.exe/native.json": "66471ab701cf94654aed3309b616128059a47021719b4d56d6669e9ef9135ea5",
-    "analysis/decomp/1.3.0/grim.dll/data.json": "0dc2d710fc34d6f370dfceffeb4bc9affc51e8678cf42c67884ed62b9af41e80",
-    "analysis/decomp/1.3.0/grim.dll/functions.json": "aae4347324e4df80cbeaee0fd39a7f86d0d4ff019e79f30b638f71a0fac4c287",
+    "analysis/decomp/1.3.0/crimson.exe/native.json": "5ab1bb5fc829c27f951fe7b30fd6f90ccfbf503695c322a451798261ea6b2144",
+    "analysis/decomp/1.3.0/grim.dll/data.json": "4a60ac45724f17aac7477df687d10033ca6a4b3aced3e8084a1439ec99db9b87",
+    "analysis/decomp/1.3.0/grim.dll/functions.json": "dc356f1c5f88b084a103ec794f202fded8318ac0ad53e8ffc6bd69d7a096f323",
     "analysis/decomp/1.3.0/grim.dll/imports.json": "e01a91fe3e77e81eb00531d904fa4957f6dac47a61acb55365575f4f653174aa",
     "analysis/decomp/1.3.0/grim.dll/metadata.json": "4daf06c17f58eab74d645d4443fcee8a8e0ac44084f19cb0965cd5cdd0f14f2b",
-    "analysis/decomp/1.3.0/grim.dll/native.json": "a52bc5019de730e28da72f3072048d62ee3aaae980a52c99f169737d932decd1",
+    "analysis/decomp/1.3.0/grim.dll/native.json": "4f0b886c4dfd6d71192ee49ae32f0e509369ecc9c8ce98772cf989e919767f93",
     "analysis/decomp/1.4.0/crimson.exe/data.json": "d7f45501d498dfec151173bf1c869f9ac1acfcd0f851c01c959b0edc96fa9b86",
-    "analysis/decomp/1.4.0/crimson.exe/functions.json": "387368dadbab4ace8d2585c2e4310d6d8aef7de95cfc49668550d6abf4ee8883",
+    "analysis/decomp/1.4.0/crimson.exe/functions.json": "efdf8f7851fa033f2c77f39e720c71821caaa696d09dad7a42a659b1aa4db188",
     "analysis/decomp/1.4.0/crimson.exe/imports.json": "cf97e036d13efbadbba6bdaa98892db3aebb3804f6973abab586eff9cd6ba16b",
     "analysis/decomp/1.4.0/crimson.exe/metadata.json": "bb315687577e7fb4ebb2dd9968beab103da706f154dadf239b754fa32c15aea7",
-    "analysis/decomp/1.4.0/crimson.exe/native.json": "4a31cd3129deea2ab0fb5858fb6cfcb2677e0b6e9cbdc68f51b0841392204556",
-    "analysis/decomp/1.4.0/grim.dll/data.json": "c1178fa4713c7ed64ea81dfff10c7ecc88893da8e41838736414f86ab0dc4084",
-    "analysis/decomp/1.4.0/grim.dll/functions.json": "c523dfc9d02166e3ee5c886a3d276e6d130fd0c7a5804139b06102b5b29595ca",
+    "analysis/decomp/1.4.0/crimson.exe/native.json": "9552ad61ae002af2d467e7767ffa75e48ffc1537eb0f2c8cc1132bf15656e614",
+    "analysis/decomp/1.4.0/grim.dll/data.json": "9a12fb2d181b57104f99ebe4ec008b553b6440c5f7cfb839d7bcb577f4a59ade",
+    "analysis/decomp/1.4.0/grim.dll/functions.json": "c1d3e144fa8a85cfd92a9ad3be4532e180c1aefcca9b6f7eefc55a10dc4a9e07",
     "analysis/decomp/1.4.0/grim.dll/imports.json": "1f84ff23dcb1865641b0dc1f784746da32ca8a04ed6c3649e23c3e14e06b31bf",
     "analysis/decomp/1.4.0/grim.dll/metadata.json": "b21a4c784bb8ce7b6e48bec961367974814725e5486b6b08103c06034df3413e",
-    "analysis/decomp/1.4.0/grim.dll/native.json": "76f4d5b4fa3f37adc53fcfde58ff67f01f99f63b48213da81a9029953e09daaf",
+    "analysis/decomp/1.4.0/grim.dll/native.json": "ad77e7f9473c4bbeb4aa7ce84bb5c4358b39326105174312d4c6324f38a31507",
     "analysis/decomp/1.9.1/crimsonland.exe/data.json": "e6b7a44b518fc91f82ab419f3da31982c8d35984949842dfd51d6ca7981cb0b4",
-    "analysis/decomp/1.9.1/crimsonland.exe/functions.json": "c49a158dc35d8df1435802ea4f5e292d05e569ea8eafc4c86723cff6ca5bdd4d",
+    "analysis/decomp/1.9.1/crimsonland.exe/functions.json": "192c64378a748e01b74bebb0f697ea0555059ad47168ad596a50ce8f2cee89fb",
     "analysis/decomp/1.9.1/crimsonland.exe/imports.json": "ec041c4d038353033ff8e5f5d54d76b3692de71369cea8eb1c2da28fc09e99c0",
     "analysis/decomp/1.9.1/crimsonland.exe/metadata.json": "6ab9a8c79de88a490626e43a8f8281015f1c586af4e90b7e1f8ee443bbd5dd77",
     "analysis/decomp/1.9.1/grim.dll/data.json": "31bcbaacdbbe6c24adb667fef8e5949fd03a9a0e555a09625c213cd39d14030d",
-    "analysis/decomp/1.9.1/grim.dll/functions.json": "e66e923be09e78b5fcf73217a082d4d6bb6f198f43887448996a0940f8a08412",
+    "analysis/decomp/1.9.1/grim.dll/functions.json": "58ef016db0582e356c686eb1a60fd7b7500d3572da8a6cf0e2756f7625b0e8b3",
     "analysis/decomp/1.9.1/grim.dll/imports.json": "a4929b2195b0aae572e9a11ba6473f48bc15213aff13465c7aae5833759002e1",
     "analysis/decomp/1.9.1/grim.dll/metadata.json": "2283281db97d8c9d22c4240bb9f1b5eed552e6ca4d7303f729a5464af296b6ac",
-    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "e28e417234d2d01db3928379bf6ac61db394457b63b19c6df221fa49a813478c",
-    "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "675203f0771aa65a14c2b17b8c38378f2a51b2803dfbac10e5a9545eb10890b1",
+    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "eea5a9bd1c77b72cf05c1f9f1ddb40b365f55ad43a818a81826862f7036422b9",
+    "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "251503fab82db22dc4ead5196d353c698ed3e21a19ad9fe71c7531784faea1fa",
     "analysis/decomp/1.9.8/crimsonland.exe/imports.json": "0c31f6358f0514e1c8815d7921c8ad3779199591dd36954c4cce4a7bd3024c18",
     "analysis/decomp/1.9.8/crimsonland.exe/metadata.json": "9b248110b10661b30a5d703fc60149baf131572ed64ec85dc77fb71e6b448e4d",
-    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "547cb638c7a959f29bc134bc20f835d04dd855aa1b38d6980926f5cd28900913",
-    "analysis/decomp/1.9.8/grim.dll/data.json": "6b9d95c6e1826fe8c470bfc3d2e97e5b9541db2613f36b912b0b8fae08f5ba3b",
-    "analysis/decomp/1.9.8/grim.dll/functions.json": "3f5cf721ea4279c4d80280411d3ad9426f60036979e0eedc159e1af9e1a6714f",
+    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "5e6e8b0c43a9e2096b279e76917b8ca610e0607f705283d2f4787a2912e2bded",
+    "analysis/decomp/1.9.8/grim.dll/data.json": "6e44b037b706a1061fc3e7ad2a6e0e2044a0e8824b7c81f0702c731e83bc8811",
+    "analysis/decomp/1.9.8/grim.dll/functions.json": "6ae7f6c44aafa1cffd778231e593cfa442b7bf18ece4ffda1792a9d0de3a4434",
     "analysis/decomp/1.9.8/grim.dll/imports.json": "f2e55491c2a9be4e9dcb81246e54f4366f646cf04fc5fd08f6f316e01dd14e7a",
     "analysis/decomp/1.9.8/grim.dll/metadata.json": "cd4d0ec5f6c4a1fe1fa85dd7bba6a4ca50c50c2842cb4864083825ae6e5be0be",
+    "analysis/decomp/1.9.8/grim.dll/recovered.json": "fc841ae3c7bc743fd774a9389a8e9eedd76e4eeb4787f766262d0c55e4b263f4",
     "analysis/decomp/1.9.9/crimsonland.exe/data.json": "1734f00622707ffcab525ff230872395dc1d64d2adaada31fea3560ced3261dc",
-    "analysis/decomp/1.9.9/crimsonland.exe/functions.json": "4e8f7ce840a906a175fbadd78843a286eab67658964b4d617e7b7df8fc4a37b0",
+    "analysis/decomp/1.9.9/crimsonland.exe/functions.json": "9ebcafe1d3d4434646f13f05c4454ab999c6f9cadbef75349ff0de84516b303e",
     "analysis/decomp/1.9.9/crimsonland.exe/imports.json": "21ad37eab0a55ac550d464fb4c730012a980a1b6246d5104e08d0b00d38e06d2",
     "analysis/decomp/1.9.9/crimsonland.exe/metadata.json": "64a72e9a5818cecda58a2bd1b5f8f7b8bfeacb2e681e85e6af71cc5704009f81",
     "analysis/decomp/1.9.9/grim.dll/data.json": "4781d65a6559322867d3e88ce7f2766d5af15c190f79face8445aa2a63ad78a5",
-    "analysis/decomp/1.9.9/grim.dll/functions.json": "75b5699c9384f02dca54a1ff7f3b3c8e394389e5441b7683088c24698d013867",
+    "analysis/decomp/1.9.9/grim.dll/functions.json": "3036eaec7b496a51e365112f05bafb2e20766d4962c81ca8b80f663ceafe6b0c",
     "analysis/decomp/1.9.9/grim.dll/imports.json": "d30ce43e86b31fe759a175f89999dd2e885fa9e4bf7e06f39fe5cb4f8625e16f",
     "analysis/decomp/1.9.9/grim.dll/metadata.json": "670a93281b2673dd490db4cc96e5f2c81cecbf46a1e0a2cf385d4f59dc586f2a",
     "analysis/decomp/1.9.92/crimsonland.exe/data.json": "7423db3b17cbe35a579543f94de7a80a900d7903dcf54505d45c55acfac5e03b",
-    "analysis/decomp/1.9.92/crimsonland.exe/functions.json": "3e38d200bc6b68fbe2cbaf18d8fcfb00620c6bbf7bc31028c211cf6e9c5493be",
+    "analysis/decomp/1.9.92/crimsonland.exe/functions.json": "21302b826c5729d46a6e01a778b7406c891501b3b43f225ea90d9962fd1002a4",
     "analysis/decomp/1.9.92/crimsonland.exe/imports.json": "9eda85da82abddb300bc9f89b71f862c5c5d16b085d523e0803b02751966b422",
     "analysis/decomp/1.9.92/crimsonland.exe/metadata.json": "a652a46f1787e26d4b074a2f709b54bd62719cab7c21d3dabd4e0f988b33e117",
     "analysis/decomp/1.9.92/grim.dll/data.json": "03666786c4efc0856f7af9dcd4daf473e49d67eb7818b3d7f51b683696ae4305",
-    "analysis/decomp/1.9.92/grim.dll/functions.json": "75b5699c9384f02dca54a1ff7f3b3c8e394389e5441b7683088c24698d013867",
+    "analysis/decomp/1.9.92/grim.dll/functions.json": "3036eaec7b496a51e365112f05bafb2e20766d4962c81ca8b80f663ceafe6b0c",
     "analysis/decomp/1.9.92/grim.dll/imports.json": "d30ce43e86b31fe759a175f89999dd2e885fa9e4bf7e06f39fe5cb4f8625e16f",
     "analysis/decomp/1.9.92/grim.dll/metadata.json": "5c964df3167d9986e6bd8774eec757021e633a6d4ee908de70f9a65bbd176978",
     "analysis/ghidra/maps/data_map.json": "c487a744ddd0d8cf6134ac51a203af9dc80184625a39249f3752b3a26d46008e",
@@ -63888,7 +64710,7 @@
     "crimson-re/src/crimson_re/library_provenance.py": "a7ddd37146178caeca17f6239f2e33a6dbcd8e41be1d65ed9078090fbbc94683",
     "crimson-re/src/crimson_re/match.py": "8b5a4269c447d2eb32dcc8f7a370aeb60f3dffe365caec427712d5169be03451",
     "crimson-re/src/crimson_re/match_address_diagnostics.py": "9ced244f19063007ad5ee5c3e8965623a68e6daa65ad466f3f429389a4365949",
-    "crimson-re/src/crimson_re/match_builds.py": "a89d7c55d3dcff8848f6ff44c950f6038d2810db7568741e1b7820fcb86042cc",
+    "crimson-re/src/crimson_re/match_builds.py": "b77ea019101e66d0c918e20af967248e3741399caacef770343fb923f4110c0e",
     "crimson-re/src/crimson_re/match_c2.py": "607d3d420f70d712c07554c80ee7ce899812d0e2ad6f22a16f23d5cceb5cc390",
     "crimson-re/src/crimson_re/match_c2_replay.py": "caf50bb239c95c9f7bdeedebb2957f6ed31afabb88c816320487ddfc0baef96e",
     "crimson-re/src/crimson_re/match_data_inventory.py": "323356f82d9e3684b7047834adafd305b25582e50ffb034c98d4970502671fe6",
@@ -64208,7 +65030,7 @@
     "decomp/1.9/crimsonland/gameplay/quest_meta_entry_release.cpp": "48b3f5c7aaa441fed4ffd3c884265b4a8ed0df32af586a293b9cb1e73778be46",
     "decomp/1.9/crimsonland/gameplay/vec2_length.cpp": "65564c09c36961b88c5d586c8d1630099d6ab3b97fdfcd7efcc1473c3a37e9df",
     "decomp/1.9/crimsonland/gameplay/vec2_sub.cpp": "a119885ac75c1dff6913eba77b3c8e7fb6f7bc5876f4847c73caa57af40e725b",
-    "decomp/1.9/crimsonland/highscore/highscore_build_path.c": "460a9a352eec037fac86a264b36c3840f0edda13200c409e5a02634dacb3cda0",
+    "decomp/1.9/crimsonland/highscore/highscore_build_path.c": "01f5338c1b57af8750f535a700486a04684c35e51635490e5042c16933c872ff",
     "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_asc_nonzero_first.c": "a804eee109e105624fe3ff00b7c666c08f02a415013b764dab7f533a2c569bfa",
     "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_desc.c": "0aee84605c1beccb7d6d6043283a104dc58128db13949522cf2edce7e0b41c88",
     "decomp/1.9/crimsonland/highscore/highscore_compare_survival_score_desc.c": "8d058367716e35ef08e307df6a3f39f84d494980357dff40f643b09b7fd44304",
@@ -64222,7 +65044,7 @@
     "decomp/1.9/crimsonland/highscore/highscore_record_init.c": "8a5dbed0e3b1e8a43de1a11c339566fc94f2125a2d81f3dc654c2028a262678f",
     "decomp/1.9/crimsonland/highscore/highscore_record_pack_for_submit.c": "a462e997d82ab9fb189370a65c320f8a50e77b86ccd76b16faf19736f43d420d",
     "decomp/1.9/crimsonland/highscore/highscore_save_active.c": "19634a46581f83c6c85f30eb6a61e8356fb901dce5c96f7a8d643b331b2beb2c",
-    "decomp/1.9/crimsonland/highscore/highscore_save_record.c": "8b57adb6e25cd16abac0c1674056f2ce0b9476bbd581629f79d0122dea823b0f",
+    "decomp/1.9/crimsonland/highscore/highscore_save_record.c": "a4d1e30c09fd915d468b7b98bd06ec08d810903c51e80ba62fcdeac51218f020",
     "decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.c": "d0dc8c02745a6131d0f888dcdcf7aa727555019f67eb4068ce8fc49249306949",
     "decomp/1.9/crimsonland/highscore/highscore_update_record.c": "73d9fde22f5d08c794be7db461de07c9d00476c3f007a4d9a473f4b96b965302",
     "decomp/1.9/crimsonland/highscore/highscore_write_record.c": "54797beeef4291eaaa0d3d0d34936c883fcbeda559cd7b45157c372f5e4c8498",
@@ -64488,14 +65310,14 @@
     "decomp/1.9/grim/api/dll_main.cpp": "f1e859b11c27637429145771eeaa3de93eb65e0d852235d6137544073f6d91dc",
     "decomp/1.9/grim/api/get_interface.cpp": "e26f421e03450fb918a9394b1cd2660837e87bd5e8492ae3107821ce10715cfd",
     "decomp/1.9/grim/app/app_cleanup.cpp": "c7172c8efdac25a1f8b810694efe368e247f8bcc01ae40657f938b0a10ebb675",
-    "decomp/1.9/grim/app/app_init.cpp": "4268f45733cf5e42dde9ea9ae34aaf55b84e3945bfcd696b2510b569f6abc9af",
+    "decomp/1.9/grim/app/app_init.cpp": "4718d07333036b777c7907947ad3df62a83fa5a028465fe838bb8e3d9a3685c8",
     "decomp/1.9/grim/app/app_on_tick.cpp": "0ae6c0249a86f3104df151ce9d06052b04fe0bf07169b1576bfa1605353ca70b",
     "decomp/1.9/grim/app/app_pump.cpp": "df056537941b966874ba466b2ebfdb10f3d941faf9d8b9a20488aa9872d91a08",
     "decomp/1.9/grim/app/app_shutdown.cpp": "912b883727a6ec5e5575cfb529f73d1021ffd848dd29300cc55470e76af563e6",
     "decomp/1.9/grim/app/app_tick.cpp": "72dd426b5c7f601c7efd7307320e8bfd446feb34663750d643e700083cb7bb36",
     "decomp/1.9/grim/app/default_device_callback.cpp": "a76195e462cd201b2bd828c26f597fff24464e77128f34ee49179601056e08e1",
     "decomp/1.9/grim/app/get_version.cpp": "60cea3ff2f63d267045eeca109095df0388a4ac82b7ea5b4ee1cffd9c3632cf2",
-    "decomp/1.9/grim/app/init_system.cpp": "150afee9fa00587bfb4c704dd456af726e11a9d684ba52d52135e1157fc7a8fb",
+    "decomp/1.9/grim/app/init_system.cpp": "1ab8992a9cdb56939d81d4d585ee5c890146693c1aa189bc040193d844f50f51",
     "decomp/1.9/grim/app/missing_frame_callback.cpp": "dcd455c70baa4c4ff1cb87e0e917ed85463771ecca5d7391401efbbb314899bf",
     "decomp/1.9/grim/app/noop.cpp": "b9ca078e15f084cb81c2fc18a6c522777957db1a635df14efd5c625580865e2b",
     "decomp/1.9/grim/app/release.cpp": "e37cda0f8901f5bbced1225ddcfb73a1f9748d55d0ea850ff5f2e10945cfa5d3",
@@ -64506,14 +65328,14 @@
     "decomp/1.9/grim/codec/jaz_decode.cpp": "5d91b8ed2ed0432aaa64a81db4b89d14b80f9d28a76ee83774a58f53b7bd3fcc",
     "decomp/1.9/grim/codec/jaz_jpeg_error_exit.cpp": "aec88706e526b5b61de1cfc2f317fe03ce14f52f41fc50f5b9ca68890216aca2",
     "decomp/1.9/grim/codec/lookup_blob_find.cpp": "3e7b88768af62d3be6e63aac897629af3a94a9150af43f931ae5e073515f5a9d",
-    "decomp/1.9/grim/codec/lookup_blob_load.cpp": "44f42f149fdded1e2c03a1ca44928b1ef335e67d068a644ab68f8fdd9d63fb9b",
+    "decomp/1.9/grim/codec/lookup_blob_load.cpp": "4f086e56c1305f903a69d1b032102e066f0775cfc6842d5d1c77da05db06f021",
     "decomp/1.9/grim/codec/lookup_blob_size_for_path.cpp": "e4bb86934322827e1867ad9c559282b81ef618b45213f690f885530ef1b14fa3",
     "decomp/1.9/grim/codec/path_has_extension.cpp": "553aa627fc4768f567a3633c4a8bcce7afb0bfea2ca9d273630e1dad2f1db7a1",
     "decomp/1.9/grim/config/advanced_dialog.cpp": "7df391d433fbce324e2fad618fe8c6fe95b7257143b51cb64b27b6355a6789f2",
     "decomp/1.9/grim/config/apply.cpp": "589eee514109ba6860718997ab3af674444e53fbe3c2c6ba8bcaa266df2a86e3",
     "decomp/1.9/grim/config/apply_settings.cpp": "a2c494263132a3595b0a0bc6cc3047f31c3b5031326518acbee6ea8d94f4909d",
-    "decomp/1.9/grim/config/blob_load.cpp": "ddb391be02bb13a7df4f7de0d90961b7ed7cb97d42c85bd8a694142c63f7d77a",
-    "decomp/1.9/grim/config/blob_save.cpp": "704cdcc886b00ccab7495381921d0a30326ac13fbd7db87479e4adc88d1c856c",
+    "decomp/1.9/grim/config/blob_load.cpp": "4222bfc10616366e7f30ed164cc01fda8177fea2eda7b44ad1dfda44cc5bb826",
+    "decomp/1.9/grim/config/blob_save.cpp": "26f52e74e6c68cdf8d13c165ade697872a73d8b1adbdc5d616fa70da28ca0ed8",
     "decomp/1.9/grim/config/defaults_init.cpp": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
     "decomp/1.9/grim/config/defaults_init_thunk.cpp": "0e68a98e072448fc28f96a70a71c0c55536b75695f99b8fd26725ff1c2d109d2",
     "decomp/1.9/grim/config/dialog.cpp": "01a7eb8a45ccdddc69a4742c5f37c50a0a37f9bf49e7d767fb22d54d1cdddf13",
@@ -64585,9 +65407,9 @@
     "decomp/1.9/grim/render/draw_quad_xy.cpp": "d2e187ce9ee1a139f66a54c9b61c21c58ba4092960c3bc29d8ff94b46c8ed35b",
     "decomp/1.9/grim/render/draw_rect_filled.cpp": "81e808619ef735fbb39d0b4a160228411d9c8e90116c3ca380a94fef5d066d92",
     "decomp/1.9/grim/render/draw_rect_outline.cpp": "6df340efc986b6dbd479b0af541cab2f42e0eb120b91c22f80e22851e970b1a2",
-    "decomp/1.9/grim/render/draw_text_mono_fmt.cpp": "8c78e0a0693ee083d9d731980cdc468ce7a2a926ee9afa628870b6372e74a47c",
+    "decomp/1.9/grim/render/draw_text_mono_fmt.cpp": "2f5d23f4aec08bda046ea04b770504cd290f78451becc63b7ce33349e7bc46f0",
     "decomp/1.9/grim/render/draw_text_small.cpp": "2f739b62c88481cef81ff3fdbb892da698ef4c0f88a9b9a739bb70fcc1c1385f",
-    "decomp/1.9/grim/render/draw_text_small_fmt.cpp": "91b7d0f885f6da4b614f8198be0694b83c7cfed9070b63b9874aaf67edd25f84",
+    "decomp/1.9/grim/render/draw_text_small_fmt.cpp": "54a28a88a71cf404f2e96d2f3c9fc3bb9ec57bca8737454e812b79e958f2920a",
     "decomp/1.9/grim/render/end_batch.cpp": "184fefc23c0978ed1186d6fd5bcb522600057dfea270e491e0a6cb3848e36ed5",
     "decomp/1.9/grim/render/flush_batch.cpp": "de576f5600324bdbf81058ba41620d223cf991cdc447a3524cd3dad7e488b252",
     "decomp/1.9/grim/render/line.cpp": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
@@ -64803,7 +65625,7 @@
     "tools/match/include/crimsonland_game_status_owner.h": "3725b055a1ae50e9fd7f8302f88ab2a658c4c413ee6dc1d720a6912ab5d8f7fb",
     "tools/match/include/crimsonland_gameplay.h": "f5f2e97eb83a3d6dc57fb765351277d066d70a065a61dc925af75bc6a050e51f",
     "tools/match/include/crimsonland_gfxs_owner.h": "15d325cc99dc44b0212ce76df148f2c6bf0daf0c292ec61702d3fc1ffa0183b6",
-    "tools/match/include/crimsonland_highscore.h": "2a19a26963837549007231f399058b495976d35289fbe9337b539faa5193340a",
+    "tools/match/include/crimsonland_highscore.h": "9548210ceffc1a78eb3b84b2d67ea6e25a649eb0a3736c53fadc47ff445aa86b",
     "tools/match/include/crimsonland_metadata.h": "5f601d7f5d4036491fb18e022cddf34a342da89ead4d09c1f9a8522370a0610e",
     "tools/match/include/crimsonland_mod_api.h": "0d3a4d9d5219bd36c09c9a659c7ba490e6f7dc2fc832b363119b2a3f9bf436d2",
     "tools/match/include/crimsonland_resource.h": "6bc8869d03896ee140b36728e9805dbedb2eb17d64f0c48decba321c2db493fb",
@@ -66047,7 +66869,7 @@
     "tools/match/scratches/grim_adler32/scratch.conf": "cbf8f6802f24954965098f971281c8b3319324a63d50adbc3bfda80e9c1e4981",
     "tools/match/scratches/grim_advanced_config_dialog_proc/scratch.conf": "8031f5268ee4c12b724097ca59e447d5b6e6e8b68b3e8cd868f4e7a2a1eb8e46",
     "tools/match/scratches/grim_app_cleanup/scratch.conf": "b9ec657a3ec217be1081dd6d98b0c49011d0f56762b236ac98feda0c3ec39976",
-    "tools/match/scratches/grim_app_init/scratch.conf": "187fb5248b8d8ca7095e4043accb092667436a17ab2e34c1129fe95114721fc9",
+    "tools/match/scratches/grim_app_init/scratch.conf": "78126da4c42958e850a772b4bc956dbbd59e8a3da0a4040295d6ac00204fa19a",
     "tools/match/scratches/grim_app_pump/scratch.conf": "8d70358ca8d191d16b452b7f78e3cd842cf61377fbef23155d0f104bb15cb3f1",
     "tools/match/scratches/grim_app_shutdown/scratch.conf": "0c639fdbc5150bca02b83d430cdb31c38e35481563580bab5038e8932caff3eb",
     "tools/match/scratches/grim_app_tick/scratch.conf": "348912dec2b0ed7f72275ceb653d85619ef7d279dd675becf84a27035037fbf7",
@@ -66058,8 +66880,8 @@
     "tools/match/scratches/grim_begin_batch/scratch.conf": "d2603d094ebfacef71694c822da8a4c175205d6270dc1ea926959d756b32c307",
     "tools/match/scratches/grim_bind_texture/scratch.conf": "6ec66ba68d3f5360ee95a35f6a8a0911896378d936314b775a98b02c3a5c9939",
     "tools/match/scratches/grim_clear_color/scratch.conf": "bb1f9d4305a7d2e3f3b141614e397c9fd4c17e0bdef09b3f378c2770e83ded19",
-    "tools/match/scratches/grim_config_blob_load/scratch.conf": "d44668e4c6c87760b7a7b1d26bad51ea4917ccefe96b976c17d414d5ceade668",
-    "tools/match/scratches/grim_config_blob_save/scratch.conf": "95f6e6c5115d6d6fe2283c446c3f3181ef61e3927707d68c9a1e10762164f4e4",
+    "tools/match/scratches/grim_config_blob_load/scratch.conf": "9f1e085e1d67b4103f3109dacbdd705a88de353534eddc5ffd8f9d532bdd4082",
+    "tools/match/scratches/grim_config_blob_save/scratch.conf": "04b963d1b34b2eeb76e2432a6eed94975433cfa506e2c686cc988c85ba4cdc31",
     "tools/match/scratches/grim_config_defaults_init/probe_saved_name_schedule.cpp": "1dc663dada3bdff5e785a384892e37daa0635e700c16e378671b374864758697",
     "tools/match/scratches/grim_config_defaults_init/probe_tu_context.cpp": "76376d38a5bce5d3b600ecb568c11e9e7181ef70afd8d25e6b4cb8e757d56654",
     "tools/match/scratches/grim_config_defaults_init/scratch.conf": "c30b9baa7a1064f51892f3c92286f76be18b9256aeefb0c244b23160b1f6c0a2",
@@ -66134,9 +66956,9 @@
     "tools/match/scratches/grim_draw_rect_filled/scratch.conf": "92cc2e1fa9dcfd39b5c222248f05d7a6ccf9eaa7b44850a38f279385b265ec87",
     "tools/match/scratches/grim_draw_rect_outline/scratch.conf": "fa1fe7f0f8d45f8055001e62919b06a275a879fe090c0dc4f38f58a787f53dbf",
     "tools/match/scratches/grim_draw_text_mono/scratch.conf": "79cbba91583a97f00fe8ad54b28f012bf99ae693ca17eedd49b8d67a025aff71",
-    "tools/match/scratches/grim_draw_text_mono_fmt/scratch.conf": "731584fdfada1bc9a086c387da0533e7b9b5252f5ced6b3a4d679285f4006b4e",
+    "tools/match/scratches/grim_draw_text_mono_fmt/scratch.conf": "7b34da1e4c468192581c9ed64dd2ee1596d756c9f3be058e540f8d9b8e1dea79",
     "tools/match/scratches/grim_draw_text_small/scratch.conf": "bc9a00a74eef42e4bee71831248c194309305c1c35946f9d7935cf78301d6e89",
-    "tools/match/scratches/grim_draw_text_small_fmt/scratch.conf": "c8c4446f3ea4f054b1cb3a1ddd1798657b7364fa72296ce62c5c908e96e6fd85",
+    "tools/match/scratches/grim_draw_text_small_fmt/scratch.conf": "4d6f86aaaab4b1760df5a4372ac04970be7763ecdc918f963db4d094d5af7940",
     "tools/match/scratches/grim_dxt1_decode_color_block/scratch.conf": "8412157dcc6253cc6029afb276d49788c07bdbe3baa2073d95feeb7992014e96",
     "tools/match/scratches/grim_dxt1_encode_block/scratch.conf": "6933e585b5595e23c3b10aab0c42c218bbd583a611b559d9c2fa1b9db06092d8",
     "tools/match/scratches/grim_dxt1_encode_color_block/scratch.conf": "3f63610945c6bcace1c425b7c8877341b3a24816f80aca93a95b4df8965a1682",
@@ -66225,7 +67047,7 @@
     "tools/match/scratches/grim_inflate_trees_bits/scratch.conf": "9c98783959534e244c5d9efbe59596d1f60673af47fd339f25e584a516b253cb",
     "tools/match/scratches/grim_inflate_trees_dynamic/scratch.conf": "b5ff066b0233c23d3e44df0c75323a1ddc6749219e1462e3e23bcd2b624d06bd",
     "tools/match/scratches/grim_inflate_trees_fixed/scratch.conf": "b2a39d5068060e74753c68491de9fcc9ec79d95d15715d6bf400d0d572d4a066",
-    "tools/match/scratches/grim_init_system/scratch.conf": "4dbf048d326d2d32c704d37cdfbc7506de07f5fcb423ff70935644d759376874",
+    "tools/match/scratches/grim_init_system/scratch.conf": "558e6395a6c40d858bc314f0cc915b54ec059ddd7f8260f4fac5e048bb0cf253",
     "tools/match/scratches/grim_is_joystick_button_down/scratch.conf": "d6cfd58529fad1e98491bb0aa827ce65c6eb626dea8b0f905b6cb62ca15c9d0d",
     "tools/match/scratches/grim_is_key_active/scratch.conf": "ae97e540281cad00ba8162f29cc8784d817bfa149b1381ff7b2b9bd32bab6e5d",
     "tools/match/scratches/grim_is_key_down/scratch.conf": "4cb054158a83b873ef8d46ebf99cecee8ea27c0724ab6a485a82fe24269b6acc",
@@ -66539,7 +67361,7 @@
     "tools/match/scratches/grim_load_texture/scratch.conf": "0ad7b9ee295890897e4f491a2273f836450730a4b69cf1fdcf8ef7d4006ab228",
     "tools/match/scratches/grim_load_texture_internal/scratch.conf": "a063858656d00d0ceb0c093cee61dfe415850e0293bcee8352a732dd52acd0b0",
     "tools/match/scratches/grim_lookup_blob_find/scratch.conf": "31705f3b34835ed744929178c6bfd5c9898c82b4980e6b89462788338defdabd",
-    "tools/match/scratches/grim_lookup_blob_load/scratch.conf": "d0359214520008a317be7ee989cf645411e3f84dc1d075b542632e29e7b57d57",
+    "tools/match/scratches/grim_lookup_blob_load/scratch.conf": "8804b938771d8825b6d4e733cdc7ecb00fac2badb37f859f2dc7a0d6565c6e49",
     "tools/match/scratches/grim_lookup_blob_size_for_path/scratch.conf": "a01faaaf79400d629b31c09036fd3084963070dffe3ea57f41b071b3e06cb902",
     "tools/match/scratches/grim_measure_text_width/scratch.conf": "2095367b91f96aa8e8e649f47add112072893b7e14c6627d5e41e7c910183d42",
     "tools/match/scratches/grim_missing_frame_callback/scratch.conf": "00d2bceb6d53e7756e15055d615acac93dcdbd1eaeae7e9786922463412ab996",
