@@ -53,8 +53,9 @@ from crimson.weapons import WeaponId
 
 CORE = Path(__file__).resolve().parents[1]
 ROOT = CORE.parent
-# `PortableConfig` in host/api.h: 12 uint32 settings, then the weapon usage counts.
-CONFIG_BYTES = 260
+# `PortableConfig` in host/api.h: 13 uint32 settings, the player count last, then the weapon usage counts.
+CONFIG_BYTES = 264
+SETTINGS = 13
 
 # Native `game_state_pending` values that end a run (third_party/headers/crimsonland_types.h).
 GAME_OVER, QUEST_RESULTS, QUEST_FAILED = 0x07, 0x08, 0x0C
@@ -66,12 +67,8 @@ TERMINAL_OUTCOMES = {
 WEAPON_USAGE_SLOTS = 53
 
 
-def _player(session):
-    return session.world.players[0]
-
-
 # Per-tick comparison: (label, core snapshot field, Python getter, f32?). Floats compare as F32 bits.
-FIELDS: tuple[tuple[str, str, Callable, bool], ...] = (
+GLOBAL_FIELDS: tuple[tuple[str, str, Callable, bool], ...] = (
     ("rng", "globals.rng", lambda s: s.world.state.rng.state, False),
     ("kills", "globals.creature_kill_count", lambda s: s.world.creatures.kill_count, False),
     ("pending_perks", "globals.perk_pending_count", lambda s: s.world.state.perk_selection.pending_count, False),
@@ -82,17 +79,39 @@ FIELDS: tuple[tuple[str, str, Callable, bool], ...] = (
     ("weapon_power_up", "globals.bonus_weapon_power_up_timer", lambda s: s.world.state.bonuses.weapon_power_up, True),
     ("energizer", "globals.bonus_energizer_timer", lambda s: s.world.state.bonuses.energizer, True),
     ("double_xp", "globals.bonus_double_xp_timer", lambda s: s.world.state.bonuses.double_experience, True),
-    ("player.pos_x", "players[0].pos_x", lambda s: _player(s).pos.x, True),
-    ("player.pos_y", "players[0].pos_y", lambda s: _player(s).pos.y, True),
-    ("player.health", "players[0].health", lambda s: _player(s).health, True),
-    ("player.death_timer", "players[0].death_timer", lambda s: _player(s).death_timer, True),
-    ("player.heading", "players[0].heading", lambda s: _player(s).heading, True),
-    ("player.aim_heading", "players[0].aim_heading", lambda s: _player(s).aim_heading, True),
-    ("player.experience", "players[0].experience", lambda s: _player(s).experience, False),
-    ("player.level", "players[0].level", lambda s: _player(s).level, False),
-    ("player.ammo", "players[0].ammo", lambda s: _player(s).weapon.ammo, True),
-    ("player.weapon_id", "players[0].weapon_id", lambda s: int(_player(s).weapon.weapon_id), False),
 )
+# Each player's, as (label, snapshot field, getter of the player, f32?).
+PLAYER_FIELDS: tuple[tuple[str, str, Callable, bool], ...] = (
+    ("pos_x", "pos_x", lambda p: p.pos.x, True),
+    ("pos_y", "pos_y", lambda p: p.pos.y, True),
+    ("health", "health", lambda p: p.health, True),
+    ("death_timer", "death_timer", lambda p: p.death_timer, True),
+    ("heading", "heading", lambda p: p.heading, True),
+    ("aim_heading", "aim_heading", lambda p: p.aim_heading, True),
+    ("experience", "experience", lambda p: p.experience, False),
+    ("level", "level", lambda p: p.level, False),
+    ("ammo", "ammo", lambda p: p.weapon.ammo, True),
+    ("weapon_id", "weapon_id", lambda p: int(p.weapon.weapon_id), False),
+)
+
+
+def fields(players: int) -> tuple[tuple[str, str, Callable, bool], ...]:
+    """The per-tick comparison for a run of `players`: the globals, then each player's fields."""
+
+    def player_getter(index: int, getter: Callable) -> Callable:
+        return lambda s: getter(s.world.players[index])
+
+    own = tuple(
+        (
+            f"player{'' if players == 1 else index + 1}.{label}",
+            f"players[{index}].{name}",
+            player_getter(index, getter),
+            floating,
+        )
+        for index in range(players)
+        for label, name, getter, floating in PLAYER_FIELDS
+    )
+    return GLOBAL_FIELDS + own
 # Result-only fields read from the core's last compared snapshot.
 RESULT_FIELDS = (
     "globals.game_state_pending",
@@ -135,6 +154,7 @@ class Stream:
         self.recorded = recorded
         self.checkpoints = checkpoints
         self.config = struct.unpack_from(f"<{CONFIG_BYTES // 4}I", payload, 0)
+        self.players = self.config[SETTINGS - 1]
         # A quest at stage 0.0 plays the custom quest whose table follows the config.
         self.custom = (
             custom_quest(payload[CONFIG_BYTES : CONFIG_BYTES + QUEST_BYTES])
@@ -144,8 +164,10 @@ class Stream:
         self.ticks: list[ReplayTick] = []
         offset = CONFIG_BYTES + (QUEST_BYTES if self.custom is not None else 0)
         while offset < len(payload):
-            mx, my, ax, ay, flags, count = struct.unpack_from("<4fII", payload, offset)
-            offset += 24
+            inputs = [struct.unpack_from("<4fI", payload, offset + 20 * index) for index in range(self.players)]
+            offset += 20 * self.players
+            (count,) = struct.unpack_from("<I", payload, offset)
+            offset += 4
             commands = []
             for _ in range(count):
                 kind, argument = struct.unpack_from("<ii", payload, offset)
@@ -155,7 +177,7 @@ class Stream:
                     if kind == 1
                     else PerkMenuOpenCommand(player_index=0),
                 )
-            self.ticks.append(ReplayTick(inputs=[(mx, my, ax, ay, flags)], commands=commands))
+            self.ticks.append(ReplayTick(inputs=inputs, commands=commands))
 
     def replay(self) -> Replay:
         if self.recorded is not None:
@@ -172,8 +194,8 @@ class Stream:
         )
 
     def run_spec(self) -> RunSpec:
-        seed, mode, major, minor, unlock, unlock_full, detail, violence, friendly, hardcore, retry, preserve_bugs = (
-            self.config[:12]
+        seed, mode, major, minor, unlock, unlock_full, detail, violence, friendly, hardcore, retry, preserve_bugs, players = (
+            self.config[:SETTINGS]
         )
         mode = GameMode(mode)
         return RunSpec(
@@ -181,6 +203,7 @@ class Stream:
             seed=seed,
             quest_level=QuestLevel(major, minor) if mode == GameMode.QUESTS and self.custom is None else None,
             custom_quest=self.custom,
+            player_count=players,
             hardcore=bool(hardcore),
             preserve_bugs=bool(preserve_bugs),
             quest_fail_retry_count=retry,
@@ -190,7 +213,7 @@ class Stream:
             status=RunStatus(
                 quest_unlock_index=unlock,
                 quest_unlock_index_hardcore=unlock_full,
-                weapon_usage_counts=tuple(self.config[12 : 12 + WEAPON_USAGE_SLOTS]),
+                weapon_usage_counts=tuple(self.config[SETTINGS : SETTINGS + WEAPON_USAGE_SLOTS]),
             ),
         )
 
@@ -232,14 +255,14 @@ def run_core(native: Path, stream: Stream, columns: list[int]) -> tuple[list[tup
     return rows, proc.returncode, proc.stderr.decode()
 
 
-def core_result(row: dict[str, int], mode: GameMode) -> RunResult:
+def core_result(row: dict[str, int], mode: GameMode, players: int) -> RunResult:
     """The core does not export a RunResult yet; derive it from its state with Python's definitions."""
 
     state = row["globals.game_state_pending"]
     outcome = TERMINAL_OUTCOMES.get(state, RunOutcome.INCOMPLETE)
     elapsed = row["globals.quest_spawn_timeline"] if mode == GameMode.QUESTS else row["globals.run_elapsed_ms"]
     elapsed = struct.unpack("<i", struct.pack("<I", elapsed))[0]
-    health = _from_bits(row["players[0].health"], True)
+    health = tuple(_from_bits(row[f"players[{index}].health"], True) for index in range(players))
     pending = row["globals.perk_pending_count"]
     fired = struct.unpack("<i", struct.pack("<I", row["globals.highscore_record_shots_fired"]))[0]
     hit = struct.unpack("<i", struct.pack("<I", row["globals.highscore_record_shots_hit"]))[0]
@@ -258,28 +281,32 @@ def core_result(row: dict[str, int], mode: GameMode) -> RunResult:
         quest_final_ms=(
             compute_quest_final_time(
                 base_time_ms=elapsed,
-                player_health_values=(health,),
+                player_health_values=health,
                 pending_perk_count=pending,
             ).final_time_ms
             if outcome == RunOutcome.QUEST_COMPLETED
             else None
         ),
-        players=(
+        players=tuple(
             PlayerRunResult(
-                experience=row["players[0].experience"],
-                health=health,
+                experience=row[f"players[{index}].experience"],
+                health=health[index],
                 most_used_weapon_id=most_used_weapon_id_for_player(
                     usage,
-                    fallback_weapon_id=WeaponId(row["players[0].weapon_id"]),
+                    fallback_weapon_id=WeaponId(row[f"players[{index}].weapon_id"]),
                 ),
-            ),
+            )
+            for index in range(players)
         ),
     )
 
 
 def compare(stream: Stream, native: Path) -> dict:
     index = _schema_index()
-    names = [core for _, core, _, _ in FIELDS] + [name for name in RESULT_FIELDS if name not in {f[1] for f in FIELDS}]
+    compared = fields(stream.players)
+    names = [core for _, core, _, _ in compared] + [
+        name for name in RESULT_FIELDS if name not in {f[1] for f in compared}
+    ]
     core_rows, exit_code, stderr = run_core(native, stream, [index[name] for name in names])
 
     replay = stream.replay()
@@ -326,7 +353,7 @@ def compare(stream: Stream, native: Path) -> dict:
             }
         if first_divergence is None:
             differences = {}
-            for label, core_name, getter, floating in FIELDS:
+            for label, core_name, getter, floating in compared:
                 python_bits = _bits(getter(session), floating)
                 if python_bits != row[core_name]:
                     differences[label] = {
@@ -339,7 +366,7 @@ def compare(stream: Stream, native: Path) -> dict:
     compared_tick = python_ticks
     row = dict(zip(names, core_rows[compared_tick], strict=True))
     expected = build_run_result(session, outcome=session.end_outcome())
-    actual = core_result(row, spec.game_mode_id)
+    actual = core_result(row, spec.game_mode_id, stream.players)
     mismatches = run_result_mismatches(expected, actual)
     checkpoint_diff = compare_checkpoints(stream.checkpoints, checkpoints) if stream.checkpoints else None
     claimed = stream.recorded.result if stream.recorded is not None else None

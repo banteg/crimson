@@ -12,7 +12,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-static PortableInput in;
+// Each player's input for the tick, player one first.
+static PortableInput in[2];
+// The codes the host's Grim (grim.inc) maps to each player's input: the fire
+// key, the first of the two move axes, and the first of the six move and aim keys.
+static constexpr struct {
+  int fire, axis, keys;
+} PLAYER_KEYS[2] = {{100, 0, 0x100}, {200, 2, 0x110}};
 static PortableConfig cfg;
 static PortableQuest quest;
 static quest_meta_t custom_quest_meta;
@@ -40,9 +46,17 @@ static bool running_down;
 static int run_down_ms;
 static uint32_t output[262144];
 static int used;
+// The input of the player the tick is updating: player_update runs once per
+// player with current_player_index naming it, and its queries read that player's.
+static const PortableInput &player_in() {
+  if (current_player_index < 0 || current_player_index >= (int)cfg.players)
+    abort();
+  return in[current_player_index];
+}
 #include "grim.inc"
 extern "C" {
 extern IGrim2D_cpp *grim_interface_ptr;
+extern int current_player_index;
 extern int frame_dt_ms, survival_spawn_cooldown, quest_spawn_timeline,
     perk_pending_count;
 extern int perk_choice_ids[7];
@@ -82,8 +96,8 @@ void perk_apply(int);
 #include "game.inc"
 #endif
 static cvar_float_t friendly, transparency, verbose, pad_distance, bodies_fade;
-// Device output does not consume gameplay RNG. Music selection keeps the
-// recovered implementation.
+// Device output does not consume gameplay RNG; a tick's music call draws its
+// tune (music_play_exclusive).
 extern "C" uint32_t *crt_rand_stream() {
 #ifdef CRIMSON_GAME
   // In a session, gameplay RNG belongs to run start and ticks; presentation must
@@ -99,6 +113,34 @@ extern "C" uint32_t *crt_rand_stream() {
   return &rng;
 }
 extern "C" int crt_rand() { return crt_rand_step(crt_rand_stream()); }
+#ifdef CRIMSON_GAME
+extern "C" void music_play_exclusive_recovered(int sfx_id);
+static void game_music_play(int sfx_id, int track);
+#endif
+// A tick's music call (the first hit's in-game tune, the end tunes), split in
+// two. The simulation half is the original's playlist latch and the tune's random
+// draw, whatever the audio: a hit draws the tune once, until another tune clears
+// the latch (Python's game_tune_started). The game module's playback half starts
+// the track by the player's own audio settings and leaves the latch alone.
+extern "C" void music_play_exclusive(int sfx_id) {
+#ifdef CRIMSON_GAME
+  if (!game_ticking)
+    return music_play_exclusive_recovered(sfx_id);
+#endif
+  int track = sfx_id;
+  if (sfx_id == music_track_game_playlist) {
+    if (music_playlist_randomized_latch)
+      return;
+    int draw = crt_rand();
+    music_playlist_randomized_latch = 1;
+    track = music_playlist_entry_count ? music_playlist[draw % music_playlist_entry_count] : -1;
+  } else {
+    music_playlist_randomized_latch = 0;
+  }
+#ifdef CRIMSON_GAME
+  game_music_play(sfx_id, track);
+#endif
+}
 #ifdef CRIMSON_GAME
 // Strings made while the engine boots (cvar names among them) outlive runs;
 // a run's own strings live in the arena that run start empties.
@@ -158,7 +200,7 @@ extern "C" void sfx_play(int, float) {}
 extern "C" int sfx_play_panned(int, const vec2f_t *, float) { return 0; }
 extern "C" int sfx_entry_start_playback(music_entry_t *) { return 1; }
 extern "C" void sfx_entry_set_volume(music_entry_t *, float) {}
-extern "C" bool input_primary_just_pressed() { return (in.flags & 2) != 0; }
+extern "C" bool input_primary_just_pressed() { return (player_in().flags & 2) != 0; }
 #endif
 extern "C" vec2f_t *__stdcall D3DXVec2Normalize(vec2f_t *out,
                                                 const vec2f_t *src) {
@@ -263,13 +305,27 @@ static bool custom_quest_valid_for(const PortableQuest &q) {
   return total <= 8192;
 }
 static bool custom_quest_valid() { return custom_quest_valid_for(quest); }
-extern "C" uintptr_t portable_input() { return (uintptr_t)&in; }
-extern "C" float portable_aim_x() { return in.aim_x; }
-extern "C" float portable_aim_y() { return in.aim_y; }
-extern "C" float portable_move_x() { return in.move_x; }
-extern "C" float portable_move_y() { return in.move_y; }
-extern "C" bool portable_aim_turn_left() { return in.flags & 1u << 18; }
-extern "C" bool portable_aim_turn_right() { return in.flags & 1u << 19; }
+extern "C" uintptr_t portable_input() { return (uintptr_t)in; }
+extern "C" float portable_aim_x() { return player_in().aim_x; }
+extern "C" float portable_aim_y() { return player_in().aim_y; }
+extern "C" float portable_move_x() { return player_in().move_x; }
+extern "C" float portable_move_y() { return player_in().move_y; }
+extern "C" bool portable_aim_turn_left() { return player_in().flags & 1u << 18; }
+extern "C" bool portable_aim_turn_right() { return player_in().flags & 1u << 19; }
+// Each player's cursor for the tick (player_update's player_aim_screen_x): the
+// recorded cursor under mouse-relative aim, else the world aim through the camera
+// the tick starts with. The original's players share one mouse; recorded, each
+// has its own.
+static float aim_screen[2][2];
+extern "C" float portable_aim_screen_x() { return aim_screen[&player_in() - in][0]; }
+extern "C" float portable_aim_screen_y() { return aim_screen[&player_in() - in][1]; }
+// Whether any player lives: perk commands need one (Python's all_players_dead).
+static bool any_player_alive() {
+  for (uint32_t i = 0; i < cfg.players; ++i)
+    if (player_state_table[i].health > 0)
+      return true;
+  return false;
+}
 // What the ranked aim bound and input signals read after a tick
 // (src/crimson/replay/ranked.py, service/src/verify.ts): player one's position and health.
 extern "C" float portable_player_x() { return player_state_table[0].position.x; }
@@ -382,7 +438,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   trace_init("begin");
   ready = false;
   if (cfg.detail > 5 || cfg.unlock > 50 || cfg.unlock_full > 50 ||
-      cfg.retry > 2147483647u || cfg.preserve_bugs > 1)
+      cfg.retry > 2147483647u || cfg.preserve_bugs > 1 || cfg.players < 1 || cfg.players > 2)
     return 0;
   portable_preserve_bugs = (unsigned char)cfg.preserve_bugs;
   for (auto n : cfg.weapon_usage)
@@ -415,7 +471,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   // slot 0 matches the chain id, so the fix starts with no chain.
   shock_chain_projectile_id = portable_preserve_bugs ? 0 : -1;
   perk_lean_mean_exp_tick_timer_s = 0;
-  in = {0, 0, 512, 512, 0};
+  in[0] = in[1] = {0, 0, 512, 512, 0};
 #ifdef CRIMSON_GAME
   game_init_run();
 #else
@@ -433,7 +489,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   extern cvar_float_t *cv_padAimDistMul;
   cv_padAimDistMul = &pad_distance;
 #endif
-  config_blob.player_count = 1;
+  config_blob.player_count = (int)cfg.players;
   config_blob.game_mode = (game_mode_id_t)mode;
   config_blob.texture_scale = 1;
   config_blob.screen_width = 1024;
@@ -446,9 +502,11 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   config_blob.sfx_volume = 1;
   config_blob.key_reload = 101;
   config_blob.key_pick_perk = 102;
-  config_blob.input_config[0].fire_key = 100;
-  config_blob.input_config[0].axis_move_x = 0;
-  config_blob.input_config[0].axis_move_y = 1;
+  for (int p = 0; p < (int)cfg.players; ++p) {
+    config_blob.input_config[p].fire_key = PLAYER_KEYS[p].fire;
+    config_blob.input_config[p].axis_move_x = PLAYER_KEYS[p].axis;
+    config_blob.input_config[p].axis_move_y = PLAYER_KEYS[p].axis + 1;
+  }
   terrain_texture_width = 1024;
   terrain_texture_height = 1024;
   terrain_texture_failed = 0;
@@ -484,17 +542,19 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   run_active = 1;
   trace_init("gameplay reset");
   gameplay_reset_state();
-  player_input_t &keys = player_state_table[0].input;
-  keys.fire_key = 100;
-  keys.axis_move_x = 0;
-  keys.axis_move_y = 1;
-  // Codes the host's grim_is_key_active maps to the recorded key flags.
-  keys.move_key_forward = 0x100;
-  keys.move_key_backward = 0x101;
-  keys.turn_key_left = 0x102;
-  keys.turn_key_right = 0x103;
-  keys.aim_key_left = 0x104;
-  keys.aim_key_right = 0x105;
+  // Codes the host's grim_is_key_active maps to each player's recorded key flags.
+  for (int p = 0; p < (int)cfg.players; ++p) {
+    player_input_t &keys = player_state_table[p].input;
+    keys.fire_key = PLAYER_KEYS[p].fire;
+    keys.axis_move_x = PLAYER_KEYS[p].axis;
+    keys.axis_move_y = PLAYER_KEYS[p].axis + 1;
+    keys.move_key_forward = PLAYER_KEYS[p].keys;
+    keys.move_key_backward = PLAYER_KEYS[p].keys + 1;
+    keys.turn_key_left = PLAYER_KEYS[p].keys + 2;
+    keys.turn_key_right = PLAYER_KEYS[p].keys + 3;
+    keys.aim_key_left = PLAYER_KEYS[p].keys + 4;
+    keys.aim_key_right = PLAYER_KEYS[p].keys + 5;
+  }
   quest_stage_major = major;
   quest_stage_minor = minor;
   // Stage 0.0 matches no level's rules, as Python's custom run has no stock level.
@@ -509,8 +569,8 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   trace_init("quest start");
   if (mode == GAME_MODE_QUEST)
     quest_start_selected(major, minor);
-  // A successful, silent audio backend keeps the native music-selection RNG
-  // gate open.
+  // A successful, silent audio backend, which the game module's music playback
+  // reads.
   extern music_fade_out_flags_t music_fade_out_flags;
   memset(music_fade_out_flags, 1, sizeof(music_fade_out_flags));
   music_ready = 1;
@@ -564,22 +624,25 @@ extern "C" int portable_step_many(uint32_t count) {
   constexpr uint32_t buttons = 1 | 2 | 4 | 1u << 16 | 1u << 17 | 1u << 18 | 1u << 19;
   constexpr uint32_t move_keys_present = 8, move_keys = 16 | 32 | 64 | 128;
   constexpr uint32_t move_present = 0x100, aim_present = 0x1000;
-  uint32_t move_mode = in.flags >> 9 & 7, aim_scheme = in.flags >> 13 & 7;
-  if (!isfinite(in.move_x) || !isfinite(in.move_y) || !isfinite(in.aim_x) ||
-      !isfinite(in.aim_y) ||
-      (in.flags & ~(buttons | move_keys_present | move_keys | move_present |
-                    7u << 9 | aim_present | 7u << 13)) != 0 ||
-      (!(in.flags & move_keys_present) && (in.flags & move_keys)) ||
-      (!(in.flags & move_present) && move_mode != 0) || move_mode > 5 ||
-      (!(in.flags & aim_present) && aim_scheme != 0) || aim_scheme == 6)
-    return refuse("malformed input");
-  // Like Python, the schemes come with each tick's input. Recordings without
-  // them ran static movement when they held movement keys, else the pad.
-  config_blob.movement_schemes[0] =
-      in.flags & move_present ? (int)move_mode
-                              : in.flags & move_keys_present ? 2 : 3;
-  // The 3-bit field stores the -1 scheme as all ones.
-  config_blob.aim_schemes[0] = aim_scheme == 7 ? -1 : (int)aim_scheme;
+  for (uint32_t p = 0; p < cfg.players; ++p) {
+    const PortableInput &input = in[p];
+    uint32_t move_mode = input.flags >> 9 & 7, aim_scheme = input.flags >> 13 & 7;
+    if (!isfinite(input.move_x) || !isfinite(input.move_y) || !isfinite(input.aim_x) ||
+        !isfinite(input.aim_y) ||
+        (input.flags & ~(buttons | move_keys_present | move_keys | move_present |
+                         7u << 9 | aim_present | 7u << 13)) != 0 ||
+        (!(input.flags & move_keys_present) && (input.flags & move_keys)) ||
+        (!(input.flags & move_present) && move_mode != 0) || move_mode > 5 ||
+        (!(input.flags & aim_present) && aim_scheme != 0) || aim_scheme == 6)
+      return refuse("malformed input");
+    // Like Python, the schemes come with each tick's input. Recordings without
+    // them ran static movement when they held movement keys, else the pad.
+    config_blob.movement_schemes[p] =
+        input.flags & move_present ? (int)move_mode
+                                   : input.flags & move_keys_present ? 2 : 3;
+    // The 3-bit field stores the -1 scheme as all ones.
+    config_blob.aim_schemes[p] = aim_scheme == 7 ? -1 : (int)aim_scheme;
+  }
   menu_requested = false;
 #ifndef CRIMSON_GAME
   bakes.decals = bakes.corpses = 0;
@@ -598,7 +661,7 @@ extern "C" int portable_step_many(uint32_t count) {
     if (perk_pending_count <= 0)
       return refuse(pick ? "perk_pick without a pending perk"
                          : "perk_menu_open without a pending perk");
-    if (player_state_table[0].health <= 0)
+    if (!any_player_alive())
       return refuse(pick ? "perk_pick while every player is dead"
                          : "perk_menu_open while every player is dead");
     if (!pick) {
@@ -634,9 +697,14 @@ extern "C" int portable_step_many(uint32_t count) {
 #endif
   frame_dt_ms = (int)(frame_dt * 1000.0f);
   // Mouse-relative aim records the cursor itself; other schemes record world aim.
-  bool cursor = config_blob.aim_schemes[0] == 3;
-  ui_mouse_x = cursor ? in.aim_x : in.aim_x + camera_offset_x;
-  ui_mouse_y = cursor ? in.aim_y : in.aim_y + camera_offset_y;
+  for (uint32_t p = 0; p < cfg.players; ++p) {
+    bool cursor = config_blob.aim_schemes[p] == 3;
+    aim_screen[p][0] = cursor ? in[p].aim_x : in[p].aim_x + camera_offset_x;
+    aim_screen[p][1] = cursor ? in[p].aim_y : in[p].aim_y + camera_offset_y;
+  }
+  // The shared cursor, as the original's single mouse leaves it, is player one's.
+  ui_mouse_x = aim_screen[0][0];
+  ui_mouse_y = aim_screen[0][1];
   gameplay_update_and_render();
 #ifdef CRIMSON_GAME
   game_audio_tick(audio_dt);
@@ -725,6 +793,7 @@ extern "C" int portable_builder_probe(uint32_t seed, uint32_t index,
   cfg = {};
   cfg.detail = 5;
   cfg.hardcore = hardcore;
+  cfg.players = 1;
   if (!portable_init(seed, GAME_MODE_QUEST, index / 10 + 1, index % 10 + 1))
     return 0;
   ready = false;
@@ -758,7 +827,7 @@ extern "C" int portable_snapshot() {
 #ifndef __wasm__
 #include <vector>
 struct BufferedTick {
-  PortableInput input;
+  PortableInput input[2];
   uint32_t count;
   PortableCommand commands[16];
 };
@@ -828,11 +897,13 @@ int main(int argc, char **argv) {
     return 3;
   int n = portable_snapshot();
   emit(n);
+  // Each tick: one input per player, then its commands.
+  const size_t inputs = cfg.players * sizeof(PortableInput);
   while (true) {
-    size_t bytes = fread(&in, 1, sizeof(in), stdin);
+    size_t bytes = fread(in, 1, inputs, stdin);
     if (!bytes)
       break;
-    if (bytes != sizeof(in))
+    if (bytes != inputs)
       return 4;
     uint32_t count;
     if (fread(&count, 4, 1, stdin) != 1 || count > 16 ||
@@ -846,7 +917,7 @@ int main(int argc, char **argv) {
     }
     if (reset_check) {
       BufferedTick t;
-      t.input = in;
+      memcpy(t.input, in, sizeof in);
       t.count = count;
       memcpy(t.commands, commands, count * sizeof(PortableCommand));
       saved.push_back(t);
@@ -858,13 +929,14 @@ int main(int argc, char **argv) {
     std::vector<uint32_t> final(output, output + n);
     PortableConfig a = cfg;
     cfg.detail = 0;
+    cfg.players = 1;
     cfg.unlock = 0;
     cfg.unlock_full = 0;
     memset(cfg.weapon_usage, 0, sizeof(cfg.weapon_usage));
     if (!portable_init(0x12345678, GAME_MODE_RUSH, 1, 1))
       return 7;
     for (int i = 0; i < 200; ++i) {
-      in = {1, 0, 512, 512, 0x1700}; // mouse aim
+      in[0] = {1, 0, 512, 512, 0x1700}; // mouse aim
       if (!portable_step(0, 0))
         return 7;
     }
@@ -872,7 +944,7 @@ int main(int argc, char **argv) {
     if (!portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor))
       return 7;
     for (const auto &t : saved) {
-      in = t.input;
+      memcpy(in, t.input, sizeof in);
       memcpy(commands, t.commands, t.count * sizeof(PortableCommand));
       if (!portable_step_many(t.count))
         return 7;

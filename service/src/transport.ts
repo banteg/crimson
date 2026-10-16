@@ -1,9 +1,10 @@
-// The crimson-core input stream for a replay, a port of crimson-core/checks/replay.py: a 65-word config, then per
-// tick the player's four f32 axes, the flag word, the command count and each command as (kind, argument).
+// The crimson-core input stream for a replay, a port of crimson-core/checks/replay.py: a 66-word config, then per
+// tick the player's four f32 axes, the flag word, the command count and each command as (kind, argument). The
+// service verifies one-player runs, so every tick has one input.
 
 import { type CustomQuest, GameMode, type Replay } from "./replay";
 
-export const CONFIG_BYTES = 65 * 4;
+export const CONFIG_BYTES = 66 * 4;
 export const QUEST_HEAD_BYTES = 10 * 4;
 export const QUEST_SPAWN_BYTES = 24;
 export const QUEST_BYTES = QUEST_HEAD_BYTES + 256 * QUEST_SPAWN_BYTES;
@@ -76,6 +77,7 @@ export function encodeTransport(replay: Replay): Uint8Array {
     Number(run.hardcore),
     run.quest_fail_retry_count,
     Number(run.preserve_bugs),
+    run.player_count,
     ...run.status.weapon_usage_counts,
   ];
   config.forEach((word, i) => view.setUint32(i * 4, word >>> 0, true));

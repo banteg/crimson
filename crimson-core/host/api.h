@@ -7,9 +7,10 @@ struct PortableInput {
   float move_x, move_y, aim_x, aim_y;
   uint32_t flags;
 };
+// `players` is the run's player count (1 or 2); each tick then reads that many inputs.
 struct PortableConfig {
   uint32_t seed, mode, major, minor, unlock, unlock_full, detail, violence,
-      friendly_fire, hardcore, retry, preserve_bugs;
+      friendly_fire, hardcore, retry, preserve_bugs, players;
   uint32_t weapon_usage[53];
 };
 // Player one after a tick, for a run's timeline (service/src/timeline.ts). `damage` is the health creatures have
@@ -45,7 +46,7 @@ struct PortableQuest {
   uint32_t disable_bonuses, disable_perks[2], disable_weapons[2];
   PortableSpawn entries[256];
 };
-static_assert(sizeof(PortableConfig) == 260);
+static_assert(sizeof(PortableConfig) == 264);
 static_assert(sizeof(PortableSpawn) == 24);
 static_assert(sizeof(PortableQuest) == 6184);
 static_assert(sizeof(PortableProbe) == 108);
@@ -57,6 +58,7 @@ extern "C" {
 uintptr_t portable_config();
 // Where the caller writes a custom quest before portable_init(seed, quest mode, 0, 0).
 uintptr_t portable_quest();
+// One input per player, player one first: `PortableInput[2]`.
 uintptr_t portable_input();
 uintptr_t portable_output();
 uintptr_t portable_commands();
@@ -67,9 +69,14 @@ uintptr_t portable_refusal();
 int portable_init(uint32_t seed, int mode, int quest_major, int quest_minor);
 int portable_step(int command, int argument);
 int portable_snapshot();
-// The tick's aim: a world point under mouse aim, the stick's reach under pad aim.
+// The updating player's input (current_player_index) for the tick.
+// Its aim: a world point under mouse aim, the stick's reach under pad aim.
 float portable_aim_x();
 float portable_aim_y();
+// The updating player's cursor: mouse-relative aim's recorded cursor, else the world aim
+// through the camera the tick started with.
+float portable_aim_screen_x();
+float portable_aim_screen_y();
 // Point-click movement records its move target; the POV hat its turn keys.
 float portable_move_x();
 float portable_move_y();

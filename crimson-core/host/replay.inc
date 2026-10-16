@@ -535,7 +535,8 @@ static void replay_read_run(MsgpackReader &r, PortableConfig &config, LoadedRepl
           r.ok = false;
       }
     } else if (key == "player_count") {
-      if (r.integer() != 1) out.reason = "This run needs the Python port";
+      config.players = (uint32_t)r.integer();
+      if (config.players != 1) out.reason = "This run needs the Python port";
     } else if (key == "hardcore") config.hardcore = r.boolean();
     else if (key == "preserve_bugs") config.preserve_bugs = r.boolean();
     else if (key == "quest_fail_retry_count") config.retry = (uint32_t)r.integer();

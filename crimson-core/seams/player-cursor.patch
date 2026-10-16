@@ -1,0 +1,15 @@
+Each player aims with their own cursor: the original's players share one mouse, so player_update copies it for
+every player; recorded, each player's input carries its own (host.cpp's portable_aim_screen_x), which mouse-relative
+aim reads.
+--- a/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
++++ b/decomp/1.9/crimsonland/gameplay/player_update_heading.cpp
+@@ -259,7 +259,8 @@
+     int player_index = current_player_index;
+     player_update_vec2_t *aim_screen =
+         (player_update_vec2_t *)&player_aim_screen_x[player_index * 2];
+-    *aim_screen = *(player_update_vec2_t *)&ui_mouse_x;
++    *aim_screen = PORTABLE_RECORDED ? player_update_vec2_t(portable_aim_screen_x(), portable_aim_screen_y())
++                                    : *(player_update_vec2_t *)&ui_mouse_x;
+ 
+     player_state_t *player = &player_state_table[player_index];
+ #endif

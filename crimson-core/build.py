@@ -42,8 +42,11 @@ EXPORTS = (
     "portable_bakes",
 )
 # The recovered functions the verifier's host wraps (host/host.cpp), as the game module's are (game/sources.json):
-# fx_queue_render, whose bakes it hands out.
-CORE_WRAPPED = {"decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp"}
+# fx_queue_render, whose bakes it hands out, and music_play_exclusive, of which it keeps the simulation half.
+CORE_WRAPPED = {
+    "decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp",
+    "decomp/1.9/crimsonland/audio/music_play_exclusive.cpp",
+}
 # An extern declaration of one name, optionally an array: the alignment a name really has goes before its `;`.
 EXTERN = re.compile(r"(\bextern\b[^;{}()]*?\b(\w+)\s*(?:\[[^\]]*\])?)\s*;")
 # Player one, for the service's ranked aim bound, the nearest creature, for its input signals, and each

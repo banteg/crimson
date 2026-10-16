@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { CORE, decode, fieldRanges, firstDifference, init, loadCore, names, record, state, step } from "./engine.mjs";
+import { CORE, decode, fieldRanges, firstDifference, init, loadCore, names, players, record, state, step } from "./engine.mjs";
 import { bootGame } from "./game_host.mjs";
 
 // Fields only presentation reads: the HUD's popup timer, which the verifier's
@@ -79,14 +79,14 @@ export function loadLiveGame(wasm, directory) {
 }
 
 // A tick nothing can refuse except a run that is over (host.cpp's run-down).
-const NEUTRAL = record([0, 0, 0, 0, 0]);
+const neutral = (run) => record(Array.from({ length: players(run.config) }, () => [0, 0, 0, 0, 0]));
 
 // Whether the verifier still accepts a neutral tick after these records.
 function acceptsAfter(coreWasm, run, count) {
   const core = loadCore(coreWasm);
   init(core, run.config);
   for (let tick = 0; tick < count; tick++) step(core, run.records[tick]);
-  return step(core, NEUTRAL);
+  return step(core, neutral(run));
 }
 
 export function compareStream(input, core, game, coreWasm) {
@@ -109,7 +109,7 @@ export function compareStream(input, core, game, coreWasm) {
     if (i >= 0) return { tick, field: names[i], core: expected.readUInt32LE(i * 4), game: actual.readUInt32LE(i * 4) };
   }
   // One neutral tick past the stream: both accept it mid-run, both refuse it after the run.
-  const after = [step(core, NEUTRAL), step(game, NEUTRAL)];
+  const after = [step(core, neutral(run)), step(game, neutral(run))];
   if (after[0] !== after[1]) return { tick: run.records.length, field: "accepted after the stream", core: after[0], game: after[1] };
   return { ticks: run.records.length, end: after[0] ? "stream" : "run over" };
 }

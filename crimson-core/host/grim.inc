@@ -71,28 +71,34 @@ public:
   bool grim_was_mouse_button_pressed(int button) override { return false; }
   float grim_get_mouse_wheel_delta(void) override { return 0; }
   void grim_set_mouse_pos(float x, float y) override {}
-  float grim_get_mouse_x(void) override { return in.aim_x; }
-  float grim_get_mouse_y(void) override { return in.aim_y; }
+  float grim_get_mouse_x(void) override { return player_in().aim_x; }
+  float grim_get_mouse_y(void) override { return player_in().aim_y; }
   float grim_get_mouse_dx(void) override { return 0; }
   float grim_get_mouse_dy(void) override { return 0; }
   float grim_get_mouse_dx_indexed(int index) override { return 0; }
   float grim_get_mouse_dy_indexed(int index) override { return 0; }
   unsigned char grim_is_key_active(int key) override {
-    return key == 100   ? (in.flags & 1) != 0
-           : key == 101 ? (in.flags & (65536 | 4)) != 0
+    // Each player's fire key and move and aim keys (host.cpp's PLAYER_KEYS) and
+    // their recorded bits.
+    static constexpr uint32_t key_bits[6] = {16, 32, 64, 128, 1u << 18, 1u << 19};
+    for (int p = 0; p < 2; ++p) {
+      if (key == PLAYER_KEYS[p].fire)
+        return (in[p].flags & 1) != 0;
+      if (key >= PLAYER_KEYS[p].keys && key < PLAYER_KEYS[p].keys + 6)
+        return (in[p].flags & key_bits[key - PLAYER_KEYS[p].keys]) != 0;
+    }
+    // The original's reload and G keys are shared: the updating player's input holds them.
+    return key == 101   ? (player_in().flags & (65536 | 4)) != 0
            : key == 102 ? menu_requested
-           : key == 34  ? (in.flags & 131072) != 0
-           // The player's move and aim keys (host.cpp) and their recorded bits.
-           : key == 0x100 ? (in.flags & 16) != 0
-           : key == 0x101 ? (in.flags & 32) != 0
-           : key == 0x102 ? (in.flags & 64) != 0
-           : key == 0x103 ? (in.flags & 128) != 0
-           : key == 0x104 ? (in.flags & 1u << 18) != 0
-           : key == 0x105 ? (in.flags & 1u << 19) != 0
-                          : 0;
+           : key == 34  ? (player_in().flags & 131072) != 0
+                        : 0;
   }
+  // Each player's move axes (PLAYER_KEYS).
   float grim_get_config_float(int id) override {
-    return id == 0 ? in.move_x : id == 1 ? in.move_y : 0.0f;
+    for (int p = 0; p < 2; ++p)
+      if (id == PLAYER_KEYS[p].axis || id == PLAYER_KEYS[p].axis + 1)
+        return id == PLAYER_KEYS[p].axis ? in[p].move_x : in[p].move_y;
+    return 0.0f;
   }
   float grim_get_slot_float(int index) override { return 0; }
   int grim_get_slot_int(int index) override { return 0; }

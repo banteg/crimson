@@ -66,26 +66,32 @@ export function field(e, name, floating = false) {
     : view.getUint32(e.portable_output() + offset * 4, true);
 }
 
+// A tick: each player's input (`input`, or a list of them, player one first), its command count and its commands.
 export function record(input, commands = []) {
-  const b = Buffer.alloc(24 + commands.length * 8);
-  input.slice(0, 4).forEach((v, i) => b.writeFloatLE(v, i * 4));
-  b.writeUInt32LE(input[4], 16);
-  b.writeUInt32LE(commands.length, 20);
+  const inputs = Array.isArray(input[0]) ? input : [input];
+  const at = inputs.length * INPUT_BYTES;
+  const b = Buffer.alloc(at + 4 + commands.length * 8);
+  inputs.forEach((values, p) => {
+    values.slice(0, 4).forEach((v, i) => b.writeFloatLE(v, p * INPUT_BYTES + i * 4));
+    b.writeUInt32LE(values[4], p * INPUT_BYTES + 16);
+  });
+  b.writeUInt32LE(commands.length, at);
   commands.forEach(([type, arg], i) => {
-    b.writeInt32LE(type, 24 + i * 8);
-    b.writeInt32LE(arg, 28 + i * 8);
+    b.writeInt32LE(type, at + 4 + i * 8);
+    b.writeInt32LE(arg, at + 8 + i * 8);
   });
   return b;
 }
 
 export function decode(input) {
   if (input.length < CONFIG_BYTES || input.length < headBytes(input)) throw Error("Truncated config");
+  const inputs = players(input) * INPUT_BYTES;
   const records = [];
   for (let offset = headBytes(input); offset < input.length; ) {
-    if (input.length - offset < 24) throw Error("Truncated tick");
-    const count = input.readUInt32LE(offset + 20);
+    if (input.length - offset < inputs + 4) throw Error("Truncated tick");
+    const count = input.readUInt32LE(offset + inputs);
     if (count > 16) throw Error("Too many commands");
-    const length = 24 + count * 8;
+    const length = inputs + 4 + count * 8;
     if (input.length - offset < length) throw Error("Truncated commands");
     records.push(input.subarray(offset, offset + length));
     offset += length;
@@ -93,15 +99,13 @@ export function decode(input) {
   return { config: input.subarray(0, headBytes(input)), records };
 }
 
+// A tick for the run `e` holds, with as many inputs as its config has players.
 export function step(e, record) {
-  const count = record.readUInt32LE(20);
-  new Uint8Array(e.memory.buffer, e.portable_input(), 20).set(
-    record.subarray(0, 20),
-  );
+  const inputs = new DataView(e.memory.buffer).getUint32(e.portable_config() + PLAYERS_OFFSET, true) * INPUT_BYTES;
+  const count = record.readUInt32LE(inputs);
+  new Uint8Array(e.memory.buffer, e.portable_input(), inputs).set(record.subarray(0, inputs));
   if (count <= 16)
-    new Uint8Array(e.memory.buffer, e.portable_commands(), count * 8).set(
-      record.subarray(24),
-    );
+    new Uint8Array(e.memory.buffer, e.portable_commands(), count * 8).set(record.subarray(inputs + 4));
   return e.portable_step_many(count);
 }
 
@@ -111,8 +115,13 @@ export function refusal(e) {
   return Buffer.from(bytes.subarray(0, bytes.indexOf(0))).toString();
 }
 
-// `PortableConfig` in host/api.h: 12 uint32 settings, then 53 weapon usage counts.
-export const CONFIG_BYTES = 260;
+// `PortableConfig` in host/api.h: 13 uint32 settings, the player count last, then 53 weapon usage counts.
+export const CONFIG_BYTES = 264;
+const PLAYERS_OFFSET = 48;
+// `PortableInput`: four axes and the flag word.
+export const INPUT_BYTES = 20;
+// A stream's player count.
+export const players = (head) => head.readUInt32LE(PLAYERS_OFFSET);
 // `PortableQuest`: the weapon, three terrain slots, entry count, restriction bitmasks, then 256 24-byte entries.
 export const QUEST_BYTES = 6184;
 
@@ -137,6 +146,7 @@ export function config(mode, major = 1, minor = 1, options = {}) {
     options.hardcore ?? 0,
     options.retry ?? 0,
     options.preserveBugs ?? 1,
+    options.players ?? 1,
     ...Array.from({ length: 53 }, (_, i) => (options.usage ? i * 3 : 0)),
   ].forEach((v, i) => b.writeUInt32LE(v, i * 4));
   return b;

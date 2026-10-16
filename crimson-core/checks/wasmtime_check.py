@@ -16,7 +16,11 @@ import wasmtime
 CORE = Path(__file__).resolve().parents[1]
 
 
-CONFIG_BYTES = 260
+# `PortableConfig`: 13 settings, the player count last, then the weapon usage counts.
+CONFIG_BYTES = 264
+PLAYERS_OFFSET = 48
+# `PortableInput`, one per player each tick.
+INPUT_BYTES = 20
 # `PortableQuest`, which follows the config of a quest at stage 0.0.
 QUEST_BYTES = 6184
 
@@ -36,16 +40,21 @@ def head_bytes(data):
     return CONFIG_BYTES + (QUEST_BYTES if (mode, major, minor) == (3, 0, 0) else 0)
 
 
+def input_bytes(config):
+    return struct.unpack_from("<I", config, PLAYERS_OFFSET)[0] * INPUT_BYTES
+
+
 def decode(data):
     if len(data) < CONFIG_BYTES or len(data) < head_bytes(data):
         raise ValueError("Truncated config")
     records = []
     offset = head_bytes(data)
+    inputs = input_bytes(data)
     while offset < len(data):
-        if len(data) - offset < 24:
+        if len(data) - offset < inputs + 4:
             raise ValueError("Truncated tick")
-        count = struct.unpack_from("<I", data, offset + 20)[0]
-        size = 24 + count * 8
+        count = struct.unpack_from("<I", data, offset + inputs)[0]
+        size = inputs + 4 + count * 8
         if count > 16 or len(data) - offset < size:
             raise ValueError("Invalid commands")
         records.append(data[offset : offset + size])
@@ -71,16 +80,20 @@ def main():
     pointers = {name: exports["portable_" + name](store) for name in ("config", "input", "commands", "output")}
     snapshot_fields = sum(g["count"] * len(g["fields"]) for g in json.loads((CORE / "schema.json").read_text()))
 
+    inputs = INPUT_BYTES
+
     def init(config):
+        nonlocal inputs
+        inputs = input_bytes(config)
         memory.write(store, config[:CONFIG_BYTES], pointers["config"])
         memory.write(store, config[CONFIG_BYTES:], exports["portable_quest"](store))
         if not exports["portable_init"](store, *struct.unpack_from("<4I", config)):
             raise ValueError("Rejected config")
 
     def step(record):
-        memory.write(store, record[:20], pointers["input"])
-        count = struct.unpack_from("<I", record, 20)[0]
-        memory.write(store, record[24:], pointers["commands"])
+        memory.write(store, record[:inputs], pointers["input"])
+        count = struct.unpack_from("<I", record, inputs)[0]
+        memory.write(store, record[inputs + 4 :], pointers["commands"])
         if not exports["portable_step_many"](store, count):
             raise ValueError("Rejected tick")
 

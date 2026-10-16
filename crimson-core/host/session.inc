@@ -200,6 +200,7 @@ static void live_begin() {
   cfg.hardcore = config_blob.hardcore;
   cfg.retry = quest_fail_retry_count;
   cfg.preserve_bugs = 0; // the port's policy: the documented fixes (docs/rewrite/original-bugs.md)
+  cfg.players = 1;
   memcpy(cfg.weapon_usage, game_status_blob.weapon_usage_counts, sizeof cfg.weapon_usage);
   ranked_run = ranked_attempt();
   if (ranked_run)
@@ -270,13 +271,17 @@ static PortableInput live_input() {
        left = live_down_or_arrow(keys.turn_key_left, 0xcb), right = live_down_or_arrow(keys.turn_key_right, 0xcd);
   // The cursor reads through the camera the last tick left (camera_update). Tick 0 has
   // none, only the reset camera, so it reads through the one the ranked view check
-  // starts from (service/src/verify.ts): on player one, clamped to the arena.
+  // starts from (service/src/verify.ts): on the players (two players' midpoint, as
+  // camera_update centres them), clamped to the arena.
   float camera_x = camera_offset_x, camera_y = camera_offset_y;
   if (tick == 0) {
     const crimson_cfg_t &view = live.run.config;
-    camera_x = fmaxf(fminf((float)(view.screen_width / 2) - player.position.x, -1.0f),
+    const auto &one = player.position, &two = player_state_table[1].position;
+    float centre_x = cfg.players == 2 ? one.x - (one.x - two.x) * 0.5f : one.x,
+          centre_y = cfg.players == 2 ? one.y - (one.y - two.y) * 0.5f : one.y;
+    camera_x = fmaxf(fminf((float)(view.screen_width / 2) - centre_x, -1.0f),
                      (float)(view.screen_width - terrain_texture_width));
-    camera_y = fmaxf(fminf((float)(view.screen_height / 2) - player.position.y, -1.0f),
+    camera_y = fmaxf(fminf((float)(view.screen_height / 2) - centre_y, -1.0f),
                      (float)(view.screen_height - terrain_texture_height));
   }
   float world_x = ui_mouse_x - camera_x, world_y = ui_mouse_y - camera_y;
@@ -341,9 +346,9 @@ static PortableInput live_input() {
 }
 
 // Whether the verifier takes a perk command now (portable_step_many): not in
-// Rush, not once dead, and only with a perk to pick.
+// Rush, not once every player is dead, and only with a perk to pick.
 static bool live_perk_command_valid() {
-  return config_blob.game_mode != GAME_MODE_RUSH && player_state_table[0].health > 0 && perk_pending_count > 0;
+  return config_blob.game_mode != GAME_MODE_RUSH && any_player_alive() && perk_pending_count > 0;
 }
 static void live_queue(PortableCommand command) {
   if (live.queued_count < 16)
@@ -365,7 +370,7 @@ static void live_timeline() {
 // for the next tick, and one the verifier would refuse is dropped, as the
 // original ignores it.
 static bool live_tick() {
-  in = live_input();
+  in[0] = live_input();
   if (live.open_requested)
     live_queue({2, 0});
   uint32_t count = 0;
@@ -375,7 +380,7 @@ static bool live_tick() {
     memmove(live.queued, live.queued + 1, --live.queued_count * sizeof(PortableCommand));
   }
   if (!live.practicing) {
-    live_append(&in, sizeof in);
+    live_append(&in[0], sizeof in[0]);
     live_append(&count, sizeof count);
     live_append(commands, count * sizeof(PortableCommand));
   }
@@ -387,7 +392,7 @@ static bool live_tick() {
       return false;
     }
     // The run is over: its screen follows, as the timeline would have shown it.
-    live.replay.resize(live.replay.size() - sizeof in - sizeof count - count * sizeof(PortableCommand));
+    live.replay.resize(live.replay.size() - sizeof in[0] - sizeof count - count * sizeof(PortableCommand));
     live_end(game_state_pending == GAME_STATE_QUEST_RESULTS ? "quest_completed" : "death");
     ui_elements_timeline = 0;
     game_state_set_recovered(game_state_pending);
@@ -450,8 +455,10 @@ int game_live_frame() {
   live.banked -= live.due / 60.0f;
   return live.due;
 }
-// Drawn between ticks too (the perk menu, a paused replay), the world takes a
-// guarded weapon away by the quests unlocked: the run's, as its ticks see them.
+// Drawn between ticks too (the perk menu, a paused replay), the world only draws,
+// with the run's settings, as its ticks see them; what drawing it changes in the
+// run waits for the next tick (game/changes/world-draw.patch).
+bool game_live_between_ticks() { return game_live && !game_ticking; }
 void gameplay_render_world_recovered();
 void gameplay_render_world() {
   if (!game_live || game_ticking)

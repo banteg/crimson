@@ -29,14 +29,14 @@ def custom_quest(blob: bytes) -> CustomQuest:
 
 def encode(replay, limit):
     run = replay.run
-    if run.player_count != 1 or int(run.game_mode_id) not in (1, 2, 3):
-        raise ValueError("The core supports one player in Rush, Survival or Quests")
+    if run.player_count not in (1, 2) or int(run.game_mode_id) not in (1, 2, 3):
+        raise ValueError("The core supports one or two players in Rush, Survival or Quests")
     level = run.quest_level
     custom = run.custom_quest
     # A custom quest starts at stage 0.0, its table after the config.
     stage = (0, 0) if custom is not None else (level.major, level.minor) if level else (1, 1)
     config = struct.pack(
-        "<65I",
+        "<66I",
         run.seed,
         int(run.game_mode_id),
         *stage,
@@ -48,17 +48,18 @@ def encode(replay, limit):
         run.hardcore,
         run.quest_fail_retry_count,
         run.preserve_bugs,
+        run.player_count,
         *run.status.weapon_usage_counts,
     )
     if custom is not None:
         config += portable_quest(custom)
     records = []
     for tick in replay.ticks[:limit]:
-        if len(tick.inputs) != 1 or len(tick.commands) > 16:
+        if len(tick.inputs) != run.player_count or len(tick.commands) > 16:
             raise ValueError("Unsupported player or command count")
         commands = []
         for command in tick.commands:
-            if command.player_index != 0:
+            if not 0 <= command.player_index < run.player_count:
                 raise ValueError("Unsupported command player")
             match command:
                 case PerkPickCommand(choice_index=choice):
@@ -67,9 +68,9 @@ def encode(replay, limit):
                     commands.append((2, 0))
                 case _:
                     raise ValueError(f"Unsupported command: {command}")
-        mx, my, ax, ay, flags = tick.inputs[0]
         records.append(
-            struct.pack("<4fII", mx, my, ax, ay, flags, len(commands))
+            b"".join(struct.pack("<4fI", *values) for values in tick.inputs)
+            + struct.pack("<I", len(commands))
             + b"".join(struct.pack("<ii", *command) for command in commands),
         )
     return config + b"".join(records)

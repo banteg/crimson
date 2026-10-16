@@ -127,7 +127,7 @@ extern "C" {
 bool input_primary_just_pressed_recovered();
 int play_time_get_recovered();
 bool input_primary_just_pressed() {
-  return game_ticking ? (in.flags & 2) != 0 : input_primary_just_pressed_recovered();
+  return game_ticking ? (player_in().flags & 2) != 0 : input_primary_just_pressed_recovered();
 }
 int play_time_get() { return game_ticking ? 0 : play_time_get_recovered(); }
 // Headless, the verifier's silent audio has no buffers to play. Ticks nobody

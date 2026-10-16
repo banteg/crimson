@@ -15,6 +15,8 @@ extern unsigned char game_ticking;
 void game_audio_cooldowns(float dt);
 // A run the client plays (host/session.inc).
 bool game_live_run();
+// Between a live run's ticks the world only draws (game/changes/world-draw.patch).
+bool game_live_between_ticks();
 bool game_live_pause();
 void game_live_pick(int choice);
 // Presentation metadata shared by live custom quests and their replays (host/watch.inc).

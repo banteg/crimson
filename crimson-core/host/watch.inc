@@ -330,9 +330,9 @@ static bool watch_tick() {
   if (watch.phase == WATCH_PREPARING ? watch.at >= recording.size() : watch.tick >= watch.ticks)
     return false;
   uint32_t count;
-  memcpy(&in, &recording[watch.at], sizeof in);
-  memcpy(&count, &recording[watch.at + sizeof in], sizeof count);
-  memcpy(commands, &recording[watch.at + sizeof in + sizeof count], count * sizeof(PortableCommand));
+  memcpy(&in[0], &recording[watch.at], sizeof in[0]);
+  memcpy(&count, &recording[watch.at + sizeof in[0]], sizeof count);
+  memcpy(commands, &recording[watch.at + sizeof in[0] + sizeof count], count * sizeof(PortableCommand));
   // The menu's choices, as portable_step_many counts them, before the pick can
   // add one (Perk Expert, Perk Master); of a tick's picks, the card shows the last.
   const int *counts = player_state_table[0].perk_counts;
@@ -348,7 +348,7 @@ static bool watch_tick() {
     watch_judge(stopped);
     return false;
   }
-  watch.at += sizeof in + sizeof count + count * sizeof(PortableCommand);
+  watch.at += sizeof in[0] + sizeof count + count * sizeof(PortableCommand);
   ++watch.tick;
   if (watch.phase == WATCH_PREPARING)
     watch_mark(chosen, choices);
@@ -389,30 +389,25 @@ static int watch_playing() {
       return track;
   return -1;
 }
-extern "C" {
-void music_play_exclusive_recovered(int sfx_id);
-// The run's music calls (the first hit's in-game tune, the game over tune), as
-// the original makes them; the preparing pass notes the tune each one picks,
-// whatever plays: the in-game tune is the playlist's entry the call's random
-// draw chose, drawn again from where the stream stood.
-void music_play_exclusive(int sfx_id) {
-  uint32_t stream = rng;
-  unsigned char latched = music_playlist_randomized_latch;
-  music_play_exclusive_recovered(sfx_id);
-  if (!live.watching || watch.phase != WATCH_PREPARING)
+// The playback half of a tick's music call (host.cpp's music_play_exclusive):
+// `track`, the tune the simulation half chose (the in-game tune's random pick, or
+// -1 with no playlist), plays as the original plays it, by the player's audio
+// settings, and the run's latch stays as the simulation half left it. An in-game
+// tune already playing keeps playing. The preparing pass notes each tune, whatever
+// plays.
+static void game_music_play(int sfx_id, int track) {
+  if (track < 0)
     return;
-  int track = sfx_id;
-  if (sfx_id == music_track_game_playlist) {
-    if (latched || !music_playlist_randomized_latch)
-      return;
-    uint32_t after = rng;
-    rng = stream;
-    track = music_playlist[crt_rand() % music_playlist_entry_count];
-    rng = after;
-  }
-  if (watch.tunes.empty() || watch.tunes.back().track != track)
+  if (live.watching && watch.phase == WATCH_PREPARING && (watch.tunes.empty() || watch.tunes.back().track != track))
     watch.tunes.push_back({watch.tick + 1, track});
-}
+  int playing = watch_playing();
+  if (sfx_id == music_track_game_playlist && playing >= 0 &&
+      std::find(music_playlist, music_playlist + music_playlist_entry_count, playing) !=
+          music_playlist + music_playlist_entry_count)
+    return;
+  unsigned char latch = music_playlist_randomized_latch;
+  music_play_exclusive_recovered(track);
+  music_playlist_randomized_latch = latch;
 }
 // After a seek, the tune the run has there: the one it last started, or before
 // the first, an in-game tune already playing (a scrub back keeps it) and none
