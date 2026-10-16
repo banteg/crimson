@@ -650,11 +650,22 @@ stays on the arena screen and sees the replay viewer's top-right pick card
      level-up prompt.
 
    - Player $p$ records `cmd = OPEN` (`8`) on their next newly produced input
-     tick `t_open = ++input_produced_tick` and **pauses their local
-     `input_produced_tick` at `t_open`** (`waiting_for_menu_at = t_open`).
+     tick `t_req = ++input_produced_tick` and **pauses their local
+     `input_produced_tick` at `t_req`** (`waiting_for_menu_at = t_req`).
 
-   - Because `input_produced_tick` stops at `t_open`, the player who opened the
-     menu **never pre-produces inputs for `t_open + 1`** before picking.
+   - Because `input_produced_tick` stops at `t_req`, a player whose request
+     opens the menu **never pre-produces inputs for `t_req + 1`** before picking,
+     and the simulation cannot pass `t_req` on either peer.
+
+   - **Resolving the request (one rule for every case)**: the press is only a
+     request; tick `t_req` decides it. Once `confirmed_through == t_req`, the
+     requester reads the state after `t_req`: if `perk_menu_open` and
+     `perk_picker == local_player`, its request opened the menu (Step 3);
+     otherwise the `OPEN` was dropped (the partner opened on an earlier tick or
+     won a same-tick tie, perks ran out, or everyone died) and the requester
+     clears `waiting_for_menu_at` and resumes producing input from `t_req + 1`.
+     A request made while the partner's menu is open simply resolves after
+     that pick: if perks remain, it opens the next menu.
 
 2. **Deterministic `perk_picker` selection & command filtering**:
 
@@ -676,10 +687,12 @@ stays on the arena screen and sees the replay viewer's top-right pick card
        run `PortableCommand{1, c}`; otherwise run with `count = 0` (Cancel).
        Reset `perk_picker = -1`.
 
-   - When a tick $T_{\text{open}}$ sets `perk_menu_open = true`, `next_sim_tick`
-     stops at $T_{\text{open}} + 1$ until `confirmed_through == T_open`
-     (**menu-open rollback barrier**, ensuring a speculative open cannot trigger
-     the UI if rolled back).
+   - **Menu-open barrier**: when a tick $T_{\text{open}}$ sets
+     `perk_menu_open = true`, no peer ever executes $T_{\text{open}} + 1$ on
+     predicted input. It waits for the picker's real input for
+     $T_{\text{open}} + 1$ (which carries the `PICK` or Cancel), in `M2` as well
+     as `M1`. The UI opens only once `confirmed_through == T_open`, so a
+     speculative open that a rollback removes never shows a menu.
 
 3. **At confirmed `T_open` (`confirmed_through == T_open`)**:
 
@@ -696,26 +709,29 @@ stays on the arena screen and sees the replay viewer's top-right pick card
 
    - **On the partner's browser (`local_player != perk_picker`)**:
      Keeps `GAME_STATE_PERK_SELECTION` shut (`live.requested = GAME_STATE_PENDING_IDLE_SENTINEL`,
-     matching `crimson-core/host/watch.inc:344`). If the partner had paused their
-     own `input_produced_tick` at $t_{\text{req}} > T_{\text{open}}$ because
-     they pressed Open a tick later while $T_{\text{open}}$ was in flight,
-     seeing `perk_picker != local_player` at $T_{\text{open}}$ unpauses their
-     `input_produced_tick` (and their `OPEN` nibble on $T_{\text{open}} + 1$ is
-     ignored by the command filter above). While waiting at the $T_{\text{open}}$
-     input frontier, the partner draws the frozen arena (`HOST_FRAME_SHOW`) with
-     **`viewer_card` (`crimson-core/host/viewer.inc:263-295`)** slid in at the
-     top-right (`VIEWER_CARD_Y = 88`) showing `"Level N — Player X picking…"`
-     and the 5–7 offered perks from `perk_choice_ids[]`.
+     matching `crimson-core/host/watch.inc:344`). A pending request of the
+     partner's own resolves by the rule in Step 1 once its `t_req` confirms.
+     While waiting at the $T_{\text{open}}$ input frontier, the partner draws the
+     frozen arena (`HOST_FRAME_SHOW`) with the pick card at the top-right
+     (`VIEWER_CARD_Y = 88`).
+
+   - **Live pick card**: `viewer_card` (`crimson-core/host/viewer.inc:263-295`)
+     reads a replay's `watch.picks[watch.card]` and always lights
+     `pick.chosen`. Co-op gives it a live source: the confirmed menu's level,
+     `perk_choice_ids[0..offered_count - 1]`, `perk_picker`, and `chosen = -1`
+     while picking. With `chosen < 0` it draws a `"Level N — Player X
+     picking…"` header and lights no offer; the `WATCH_PICK_SECONDS` countdown
+     starts only once a perk is chosen.
 
 4. **Resuming at `T_open + 1`**:
 
    - As soon as `perk_picker` produces tick $T_{\text{open}} + 1$ and both peers
      step $T_{\text{open}} + 1$, gameplay resumes immediately for both players.
 
-   - On the partner's screen, if a perk was picked, `viewer_card` highlights the
-     chosen perk (`lit = i == chosen`) for `WATCH_PICK_SECONDS = 3.0f` during
-     live play before sliding out; if cancelled (`count = 0`), `viewer_card`
-     slides out immediately.
+   - On the partner's screen, if a perk was picked, the card sets `chosen` from
+     tick $T_{\text{open}} + 1$'s `PICK(c)`, lights it (`lit = i == chosen`), and
+     slides out after `WATCH_PICK_SECONDS = 3.0f` of live play; if cancelled
+     (`count = 0`), it slides out immediately.
 
 ### 5.2 Run-down barrier, pause barrier, and restart
 
@@ -892,9 +908,11 @@ $\text{RTT} = \max(0, t_{\text{recv}} - t_{\text{sent}}[s] - \text{echo\_hold\_m
 This requires no shared clock origin and never suffers 16-bit wraparound.
 
 *Remote input prediction rule*: When predicting missing remote input for tick
-$t > \text{remote\_contiguous\_tick}$, always copy from the highest received
-tick $t_{\text{src}} \le t$ (specifically `remote_contiguous_tick`), **never**
-from a future tick $> t$.
+$t > \text{remote\_contiguous\_tick}$, always copy the `PortableInput` from the
+highest received tick $t_{\text{src}} \le t$ (specifically
+`remote_contiguous_tick`), **never** from a future tick $> t$. A predicted tick
+always carries `cmd = 0`: copying an `OPEN` or `PICK` nibble would repeat a perk
+command the remote never sent.
 
 #### Channel 2: `coop-control` (`ordered: true`, reliable)
 
@@ -1017,9 +1035,12 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
   each player hovering a bonus with `Telekinetic` (`telekinetic_bonus_hover_timer_ms[0..1]`).
 
 - **Boundary collisions**: Both players pressing Pick Perk on the same tick
-  (P0 tie-break) or 1 tick apart (`T_open` and `T_open + 1`, verifying partner
-  unpauses `input_produced_tick` and ignores the late `OPEN`); perk open/pick/cancel
-  on the same tick as player death, level-up, or quest completion.
+  (P0 tie-break; P1 resumes once its `t_req` confirms) or several ticks apart
+  with one or two perks pending (the late request is dropped, or opens the next
+  menu after the first pick); an `OPEN` dropped because the last player died;
+  perk open/pick/cancel on the same tick as player death, level-up, or quest
+  completion; picker and partner canonical hashes compared across a pick, since
+  only the picker runs the perk screen's UI transition.
 
 - **Pause races**: `MSG_PAUSE` arriving when the receiver has already
   speculated 8 ticks past the sender's input frontier; simultaneous pause/resume
