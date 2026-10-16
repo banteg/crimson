@@ -407,7 +407,7 @@ explicitly classified:
 | --- | --- |
 | Uninitialized `alternate_distance` in `creature_update_all.cpp:126, 198-223` | **Fixed in `M0a`** (mandatory C++ UB / determinism fix). |
 | Player-0-only perk command gate (`host.cpp:601`, `session.inc:346`) | **Fixed in `M0a`** (`any_alive` across both players). |
-| Manual reload gated on `config_player_count == 1` (`player_update_heading.cpp:1004`) | **Fixed in `M0a` in both ports** as a new [original bug](original-bugs.md) entry: with `preserve_bugs` off, crimson-core (`crimson-core/patches/`) and `src/crimson/gameplay.py` (`single_player_mode` gate in manual reload) drop the one-player gate, and [co-op mechanics](../mechanics/systems/co-op.md) stops saying Reload does nothing in co-op. |
+| Manual reload gated on `config_player_count == 1` (`player_update_heading.cpp:1004`) | **Fixed in `M0a` in both ports** as a new [original bug](original-bugs.md) entry: with `preserve_bugs` off, crimson-core (`crimson-core/patches/`) and `src/crimson/gameplay.py` (`reload_key_enabled` gate in manual reload) drop the one-player gate, and [co-op mechanics](../mechanics/systems/co-op.md) stops saying Reload does nothing in co-op. |
 | Shared XP (`player_state_table[0].experience`), level, and perk counts | **Retained by design** (core Crimsonland co-op mechanic). |
 | Single-player-only perks (`Grim Deal`, `Alternate Weapon`, `Fatal Lottery`, `Random Weapon`, `Final Revenge`, `Highlander`) blocked via `PerkFlags.MULTIPLAYER_ALLOWED` (`perk_can_offer.c:18`) | **Retained by design**. |
 | Same-tick dual bonus pickup when both players overlap an unpicked bonus (`bonus_update.cpp:44-64`) | **Retained in prototype** (deterministic on both peers; documented in `src/crimson/bonuses/pool.py:446`). |
@@ -1103,6 +1103,13 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
 3. **Gate**: Native `core`, `game.wasm` and the Python port agree bit-for-bit on
    straight 2-player Survival, Rush, and Quest runs under both bug policies
    (`checks/gate.py`; when effect overflow is inactive).
+
+4. **Status**: landed. The run's player count is a 13th `PortableConfig`
+   setting (`players`, after `preserve_bugs`), and each tick of a stream carries
+   one `PortableInput` per player. The bot corpus's `coop-*` scenarios
+   (`checks/matrix.mjs`) are the 2-player streams the gate and `game_check.py`
+   replay. The new original bug is
+   [40](original-bugs.md#40-the-reload-key-does-nothing-in-co-op).
 
 ### Milestone `M0b`: Rollback ring, side-effect isolation & `checks/game_coop.mjs` gate
 

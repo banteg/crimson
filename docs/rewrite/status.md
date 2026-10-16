@@ -22,7 +22,7 @@ supported scope, not a claim that every native branch has been verified.
 | `tests/replay/test_live_run_start.py` | Live mode startup and recorder/playback agree on complete session state, including non-default settings. |
 | `tests/modes/test_live_replay_invariant.py` | Live tick batching, controller input, and perk commands replay to identical complete session state. |
 | `tests/render/test_ground_dump_fixtures.py` | Captured terrain images agree within the test's documented tolerances; requires assets and a display. |
-| `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies, for one player in Rush, Survival and Quests with every control scheme. Typ-o, Tutorial and co-op are outside the verifier's scope. |
+| `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies, for one or two players in Rush, Survival and Quests with every control scheme. Typ-o, Tutorial and three or four players are outside the verifier's scope; the service verifies one-player runs. |
 | `tests/native_oracle/` | Ported functions agree bit for bit with the original code run under the [native execution oracle](../verification/differential-testing/native-oracle.md) on the tested cases. |
 
 `just check` runs the repository gates. Skipped display-dependent tests do not

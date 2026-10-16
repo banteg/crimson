@@ -84,9 +84,11 @@ function encodeControls(scheme, { x, y, heading, aimHeading, mx, my, wx, wy, mov
 // Perk ids (`PerkId` in src/crimson/perks) that ranked-rules fixes touch.
 const PERK = {
   pyrokinetic: 6,
+  plaguebearer: 10,
   evilEyes: 11,
   doctor: 29,
   regeneration: 38,
+  pyromaniac: 39,
   highlander: 41,
   jinxed: 42,
   greaterRegeneration: 45,
@@ -105,14 +107,19 @@ const CREATURES = Array.from({ length: 384 }, (_, c) =>
 );
 
 // `hunt` steers a bot towards fixed behaviour: `prefer` lists perks to pick when offered, most wanted first; `gKey` holds G at times.
+// `scheme` is each player's controls, or one for all of them.
 function play(cfg, bot, limit, scheme, hunt = {}) {
   init(e, cfg);
+  const players = cfg.readUInt32LE(48);
+  const schemes = Array.isArray(scheme) ? scheme : Array(players).fill(scheme);
   const records = [],
     coverage = {
       weapons: new Set(),
       perks: new Set(),
       bonuses: new Set(),
       menu: 0,
+      // Menus opened while a player lay dead, by the survivor.
+      survivor_menu: 0,
       reload: 0,
       max_commands: 0,
       peak_creatures: 0,
@@ -138,26 +145,10 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
     const snapshot = state(e);
     const f = (name) => field(e, name, true),
       u = (name) => field(e, name);
-    const x = f("players[0].pos_x"),
-      y = f("players[0].pos_y"),
-      health = f("players[0].health");
-    let nearest = Infinity,
-      target,
-      active = 0;
-    for (const c of CREATURES) {
-      if (!snapshot.readUInt32LE(c.active) || snapshot.readFloatLE(c.health) <= 0)
-        continue;
-      active++;
-      const cx = snapshot.readFloatLE(c.pos_x),
-        cy = snapshot.readFloatLE(c.pos_y),
-        d = Math.hypot(cx - x, cy - y);
-      if (d < nearest) {
-        nearest = d;
-        target = [cx, cy];
-      }
-    }
+    let active = 0;
+    for (const c of CREATURES)
+      if (snapshot.readUInt32LE(c.active) && snapshot.readFloatLE(c.health) > 0) active++;
     coverage.peak_creatures = Math.max(active, coverage.peak_creatures);
-    coverage.weapons.add(u("players[0].weapon_id"));
     coverage.stall ||= u("globals.quest_spawn_stall_timer_ms") > 0;
     const transition = u("globals.quest_transition_timer_ms");
     coverage.transitions ||= transition > 0 && transition < 0x80000000;
@@ -170,51 +161,83 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
     ]) {
       if (f(`globals.bonus_${name}_timer`) > 0) coverage.bonuses.add(name);
     }
-    let mx = 0,
-      my = 0;
-    if (bot) {
-      if (target && nearest < 210) {
-        mx = x - target[0];
-        my = y - target[1];
-      } else {
-        mx = -(y - 512);
-        my = x - 512;
-        if (Math.hypot(mx, my) < 100) mx = 1;
+    // Each player steers by its own surroundings; the second player circles the other way.
+    const views = Array.from({ length: players }, (_, p) => {
+      const x = f(`players[${p}].pos_x`),
+        y = f(`players[${p}].pos_y`);
+      coverage.weapons.add(u(`players[${p}].weapon_id`));
+      let nearest = Infinity,
+        target;
+      for (const c of CREATURES) {
+        if (!snapshot.readUInt32LE(c.active) || snapshot.readFloatLE(c.health) <= 0)
+          continue;
+        const cx = snapshot.readFloatLE(c.pos_x),
+          cy = snapshot.readFloatLE(c.pos_y),
+          d = Math.hypot(cx - x, cy - y);
+        if (d < nearest) {
+          nearest = d;
+          target = [cx, cy];
+        }
       }
-      if (x < 140) mx = Math.abs(mx) + 180;
-      if (x > 884) mx = -Math.abs(mx) - 180;
-      if (y < 140) my = Math.abs(my) + 180;
-      if (y > 884) my = -Math.abs(my) - 180;
-      if ((bot === 2 || bot === 4) && nearest > 120) {
-        let distance = 300,
-          pickup;
-        for (let b = 0; b < 16; b++) {
-          if (!u(`bonuses[${b}].bonus_id`) || u(`bonuses[${b}].picked`) !== 0)
-            continue;
-          const bx = f(`bonuses[${b}].time.pos_x`),
-            by = f(`bonuses[${b}].time.pos_y`),
-            d = Math.hypot(bx - x, by - y);
-          if (d < distance) {
-            distance = d;
-            pickup = [bx, by];
+      let mx = 0,
+        my = 0;
+      if (bot) {
+        if (target && nearest < 210) {
+          mx = x - target[0];
+          my = y - target[1];
+        } else {
+          mx = -(y - 512) * (p ? -1 : 1);
+          my = (x - 512) * (p ? -1 : 1);
+          if (Math.hypot(mx, my) < 100) mx = 1;
+        }
+        if (x < 140) mx = Math.abs(mx) + 180;
+        if (x > 884) mx = -Math.abs(mx) - 180;
+        if (y < 140) my = Math.abs(my) + 180;
+        if (y > 884) my = -Math.abs(my) - 180;
+        if ((bot === 2 || bot === 4) && nearest > 120) {
+          let distance = 300,
+            pickup;
+          for (let b = 0; b < 16; b++) {
+            if (!u(`bonuses[${b}].bonus_id`) || u(`bonuses[${b}].picked`) !== 0)
+              continue;
+            const bx = f(`bonuses[${b}].time.pos_x`),
+              by = f(`bonuses[${b}].time.pos_y`),
+              d = Math.hypot(bx - x, by - y);
+            if (d < distance) {
+              distance = d;
+              pickup = [bx, by];
+            }
+          }
+          if (pickup) {
+            mx = pickup[0] - x;
+            my = pickup[1] - y;
           }
         }
-        if (pickup) {
-          mx = pickup[0] - x;
-          my = pickup[1] - y;
-        }
+        const n = Math.hypot(mx, my);
+        mx = (bot === 2 || bot === 4 ? mx : -mx) / n;
+        my = (bot === 2 || bot === 4 ? my : -my) / n;
       }
-      const n = Math.hypot(mx, my);
-      mx = (bot === 2 || bot === 4 ? mx : -mx) / n;
-      my = (bot === 2 || bot === 4 ? my : -my) / n;
-    }
+      const [wx, wy] = target ?? [x, y - 60];
+      return {
+        x,
+        y,
+        health: f(`players[${p}].health`),
+        heading: f(`players[${p}].heading`),
+        aimHeading: f(`players[${p}].aim_heading`),
+        mx,
+        my,
+        wx,
+        wy,
+        target,
+      };
+    });
     let commands = [];
     // The perk screen pauses the run: a pick follows the tick that opened the menu, and a tick without one cancels it.
     const menuOpen = pickNext;
     pickNext = false;
     if (
       bot &&
-      health > 0 &&
+      views.some((v) => v.health > 0) &&
       mode !== 2 &&
       u("globals.perk_pending_count") >= (bot === 4 ? 2 : 1)
     ) {
@@ -238,40 +261,31 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
         commands = [[2, 0]];
         pickNext = true;
         coverage.menu++;
+        coverage.survivor_menu += Number(views.some((v) => v.health <= 0));
       }
     }
     coverage.max_commands = Math.max(coverage.max_commands, commands.length);
     // Coverage names the perks the step applied, read from the counts it raised.
     const perkCounts = () => Array.from({ length: PERK_COUNTS }, (_, i) => u(`players[0].perk_counts[${i}]`));
     const countsBefore = commands.length && perkCounts();
-    const reload = bot && tick % 137 === 0;
-    coverage.reload += Number(reload);
-    const [wx, wy] = target ?? [x, y - 60];
-    const view = {
-      x,
-      y,
-      heading: f("players[0].heading"),
-      aimHeading: f("players[0].aim_heading"),
-      mx,
-      my,
-      wx,
-      wy,
-    };
-    const [moveX, moveY, aimX, aimY, flags] = encodeControls(scheme, { ...view, moving: Boolean(bot) });
-    const r = record(
-      [
+    const inputs = views.map((view, p) => {
+      // The players reload at different times.
+      const reload = bot && (tick + p * 61) % 137 === 0;
+      coverage.reload += Number(reload);
+      const [moveX, moveY, aimX, aimY, flags] = encodeControls(schemes[p], { ...view, moving: Boolean(bot) });
+      return [
         moveX,
         moveY,
         aimX,
         aimY,
         flags |
-          (bot && target ? 1 : 0) |
+          (bot && view.target ? 1 : 0) |
           (reload ? 65536 : 0) |
           (hunt.gKey && tick % 211 < 30 ? G_KEY : 0),
-      ],
-      commands,
-    );
-    if (!step(e, r)) throw Error(`Bot rejected tick ${tick} in mode ${mode}`);
+      ];
+    });
+    const r = record(inputs, commands);
+    if (!step(e, r)) throw Error(`Bot rejected tick ${tick} in mode ${mode}: ${refusal(e)}`);
     records.push(r);
     final = summary();
     if (countsBefore)
@@ -280,7 +294,7 @@ function play(cfg, bot, limit, scheme, hunt = {}) {
       });
     if (terminal.has(final.pending)) {
       // The run-down: the game simulates until its UI timeline runs out, then refuses input.
-      const idle = record(encodeControls(scheme, { ...view, moving: false }));
+      const idle = record(views.map((view, p) => encodeControls(schemes[p], { ...view, moving: false })));
       while (step(e, idle)) {
         records.push(idle);
         if (++coverage.run_down > 40) throw Error("Run-down did not end");
@@ -348,6 +362,12 @@ rejects(
   record([0, 0, 512, 512, schemeFlags(MOUSE)], [[1, 0]]),
   "perk command in Rush",
 );
+rejects(
+  "malformed second player's input",
+  config(1, 1, 1, { players: 2 }),
+  record([[0, 0, 512, 512, schemeFlags(MOUSE)], [0, NaN, 512, 512, schemeFlags(PAD)]]),
+  "malformed input",
+);
 rejects("unknown command", normal, record([0, 0, 512, 512, schemeFlags(MOUSE)], [[99, 0]]), "unknown command");
 rejects(
   "command count overflow",
@@ -372,6 +392,19 @@ function displacement(magnitude) {
 }
 if (JSON.stringify(displacement(1)) !== JSON.stringify(displacement(100)))
   throw Error("Large vector speeds up movement");
+
+// A run of no players or more than two never starts.
+for (const players of [0, 3]) {
+  const head = config(1, 1, 1, { players });
+  let refused = false;
+  try {
+    init(e, head);
+  } catch {
+    refused = true;
+  }
+  const n = spawnSync(native, [], { input: head, timeout: 60000 });
+  if (!refused || n.status !== 3) throw Error(`A ${players}-player run started: wasm=${!refused} native=${n.status}`);
+}
 
 // A malformed custom quest never starts: WASM refuses its init and the native host exits 3.
 {
@@ -451,6 +484,29 @@ scenarios.push(
     PAD,
   ],
 );
+// Two players, each with their own controls: the second's keys, axes and cursor are its own. The hunter prefers the
+// perks whose co-op fixes the ranked rules carry.
+scenarios.push(
+  ["coop-survival", [1, 1, 1, { seed: 41, players: 2 }], 2, 30000, [PAD, MOUSE]],
+  ["coop-rush", [2, 1, 1, { seed: 42, players: 2 }], 2, 30000, [MOUSE, { move: MOVE.relative, aim: AIM.keyboard }]],
+  ["coop-quest-2.4", [3, 2, 4, { seed: 43, players: 2 }], true, 30000, [{ move: MOVE.static, aim: AIM.joystick }, { move: MOVE.pointClick, aim: AIM.mouseRelative }]],
+  [
+    "coop-survival-hunt",
+    [1, 1, 1, { seed: 44, players: 2 }],
+    2,
+    30000,
+    [MOUSE, PAD],
+    { prefer: [PERK.jinxed, PERK.regeneration, PERK.plaguebearer, PERK.pyromaniac, PERK.greaterRegeneration] },
+  ],
+  [
+    "coop-survival-plague",
+    [1, 1, 1, { seed: 53, players: 2 }],
+    2,
+    30000,
+    [MOUSE, PAD],
+    { prefer: [PERK.plaguebearer, PERK.pyromaniac, PERK.jinxed, PERK.regeneration] },
+  ],
+);
 scenarios.push([
   "quest-settings",
   [3, 1, 1, { seed: 2345, detail: 0, violence: 1, hardcore: 1, retry: 3, friendly: 1, usage: true }],
@@ -477,7 +533,7 @@ function rankedPlaysAlike(run, cfg) {
 }
 
 const report = {
-  guards: "16 native/WASM rejection probes; an unstartable custom quest; large-vector speed cap",
+  guards: "17 native/WASM rejection probes; unstartable player counts and custom quest; large-vector speed cap",
   cases: [],
 };
 // Each scenario plays under the original's bugs, and again under the documented
@@ -531,6 +587,8 @@ for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] o
     "perk_menu_open without a pending perk",
   );
 }
+if (!report.cases.some((c) => c.coverage.survivor_menu > 0))
+  throw Error("No perk menu opened by a surviving player");
 if (!report.cases.some((c) => c.coverage.max_commands > 1))
   throw Error("No ordered command batch covered");
 if (!report.cases.some((c) => c.final.pending === 8))

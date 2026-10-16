@@ -25,12 +25,15 @@ everything it adds lives here.
 
 ## Scope
 
-- One player at a fixed 60 Hz in Rush, Survival, all 50 Quests and custom
-  quests ([`CustomQuest`](../src/crimson/quests/custom.py)).
+- One or two players at a fixed 60 Hz in Rush, Survival, all 50 Quests and
+  custom quests ([`CustomQuest`](../src/crimson/quests/custom.py)); two
+  players are the groundwork for [network co-op](../docs/rewrite/network-coop.md).
+  The game module's live play, replays and the service stay one-player.
 - Every movement scheme (relative, static, dual action pad, point-click and
   computer) and aim scheme (mouse, keyboard, joystick, mouse-relative, pad and
   computer), read from each tick's flags as Python does; see
-  [the input seam](#transport-and-input-seam). Typ-o, the tutorial and more players fail explicitly.
+  [the input seam](#transport-and-input-seam), each player's from their own
+  input. Typ-o, the tutorial and more players fail explicitly.
 - The run's bug policy comes with its configuration; see [Rules](#rules).
 
 ## Low-level bot API
@@ -42,6 +45,10 @@ for bot harnesses: `portable_config`, `portable_init`, `portable_input`,
 the [input seam](#transport-and-input-seam) defines command timing. An instance
 holds one run, so concurrent simulations require separate module instances.
 Breaking API or layout changes must include migration notes for callers.
+
+Migration: `PortableConfig` has a 13th setting, `players`, after `preserve_bugs`
+(264 bytes; write 1 for a one-player run, which a zero refuses), and
+`portable_input` points at one `PortableInput` per player, player one first.
 
 Write the configuration before initializing, then write the input and up to 16
 commands before each step. To play a custom quest, also write its table at
@@ -144,7 +151,7 @@ uv run python crimson-core/checks/gate.py --out crimson-core/results/gate.json
 The gate feeds each bot stream and each supported recorded fixture to Python
 and the native core, both under the bug policy the stream's configuration
 carries; recorded fixtures replay under the rules they were recorded with. Per tick it compares the RNG state, kills, shots, pending
-perks, bonus timers and the player's position, health, death timer, headings,
+perks, bonus timers and each player's position, health, death timer, headings,
 experience, level, ammo and weapon, floats as F32 bits, keeping the first
 divergence. It compares the terminal tick and outcome, and the complete
 `RunResult` after the last tick both stepped. Both sides simulate the run-down
@@ -218,23 +225,34 @@ else {fix}`, so the RNG call order matches Python under both policies, and
 `decomp/` stays untouched. The patches are diffs against `decomp/`, which the
 build applies by exact text, ignoring line numbers; a hunk that no longer
 matches exactly once stops the build. Bug 32 (the Shock Chain slot's starting
-value) is set by the host at run start.
+value) is set by the host at run start, and bug 15 (player 2's joystick hat) is
+the input seam: each player's turn flags arrive with their own input.
 
 | Patch | Fix |
 | --- | --- |
-| 01 | Weapon drops are suppressed only for a carried weapon, not any matching amount |
+| 01 | Weapon drops are suppressed only for a weapon a player carries, not any matching amount |
 | 02 | Greater Regeneration doubles the Regeneration heal |
 | 03 | Bandage adds its roll to living players instead of multiplying |
 | 05 | The reload preload looks ahead by the Stationary Reloader step |
+| 06 | A Weapon drop turns into Points near any player |
+| 07 | Regeneration heals each living player once |
+| 09 | A hit's was-alive guard reads the hit player's health |
 | 10 | Jinxed can pick the last creature slot |
-| 11 | Doctor, Pyrokinetic and Evil Eyes stop with a dead player |
+| 11 | Doctor, Pyrokinetic and Evil Eyes work from each living player's aim |
+| 12 | The Jinxed accident hurts a random living player |
+| 13 | Fire Bullets converts only its shooter's shots |
+| 14 | Pyromaniac is offered while any living player holds the Flamethrower |
+| 16 | The Pistol fallback drop roll checks every player's weapon |
 | 17 | Mini-Rocket Swarmers spread evenly over 120 degrees around the aim |
 | 18 | Exactly 0 health is lethal |
+| 19 | Co-op auto-targets compare distances from the targeted player; a dead partner's reevaluation is defined under both policies |
 | 20 | A nearest-creature search that finds nothing returns -1 |
+| 23 | Plaguebearer infects by touch from every player |
 | 24 | Holding G grants no Fire Bullets |
 | 27 | Enemy projectiles do not hurt through Death Clock |
 | 33 | A bonus carrier drops its bonus once |
 | 38 | The saved Hardcore box and the failed-quest retry easing apply to quests only, not to Survival's milestone waves or the Tutorial |
+| 40 | The reload key reloads in co-op |
 
 Fixes that only change what is drawn are patches in
 [`game/patches/`](game/patches), which only the game module applies, so the
@@ -242,6 +260,7 @@ verifier stays byte-identical:
 
 | Patch | Fix |
 | --- | --- |
+| 08 | Player 2's heart pulses by their own health |
 | 25 | A re-picked bonus's HUD indicator slides straight back in |
 | 28 | Bullets and pellets show their heads |
 | 34 | Each Fire Bullets shot glows, and nothing else does |
@@ -259,16 +278,18 @@ core's input stream as a test file; the service builds the same stream in
 memory ([`service/src/transport.ts`](../service/src/transport.ts)). It carries
 no claimed score:
 
-- 260-byte config: 65 little-endian uint32 values (12 settings ending with
-  `preserve_bugs`, then 53 weapon usage counts), laid out in
-  [`host/api.h`](host/api.h).
+- 264-byte config: 66 little-endian uint32 values (13 settings ending with
+  `preserve_bugs` and the player count, 1 or 2, then 53 weapon usage counts),
+  laid out in [`host/api.h`](host/api.h).
 - A quest at stage 0.0 plays a custom quest, whose 6,164-byte `PortableQuest`
   follows the config: its starting weapon, three terrain slots and entry count,
   then 256 entries of three float32 (position, heading) and three int32
   (template, trigger time, count). It is the one-player table for the run's
   hardcore setting with base counts; the start applies the hardcore rule.
-- Each tick: four float32 axes, uint32 flags, a uint32 command count, then that
-  many `(int32 type, int32 argument)` pairs.
+- Each tick: each player's four float32 axes and uint32 flags, player one
+  first, a uint32 command count, then that many `(int32 type, int32 argument)`
+  pairs. Perk commands are the team's: the replay's `player_index` does not
+  reach the simulation.
 - Commands: `1` picks an offered slot, `2` requests the perk menu (argument 0).
 
 The core checks finite input, supported flags, command count, perk entitlement,
@@ -292,7 +313,11 @@ reach, added to the moved position in the native pad block in place of its
 stick and cvar read. Mouse-relative aim is the cursor's screen position, and
 point-click movement takes the recorded move target in the move axes (x = -1
 for none) in place of the reload key and cursor. Held movement keys and the
-aim turn keys arrive as flag bits through `grim_is_key_active`; the joystick
+aim turn keys arrive as flag bits through `grim_is_key_active`, each player's
+under their own codes (player two's fire key, move axes and keys are 200, 2-3
+and 0x110-0x115), and the shared reload and G keys read the updating player's
+input. Each player's mouse-relative cursor is their own, where the original's
+players share one mouse; the joystick
 scheme's POV hat reads the same turn bits.
 
 ## How the build works

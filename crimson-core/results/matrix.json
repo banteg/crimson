@@ -1,5 +1,5 @@
 {
-  "guards": "16 native/WASM rejection probes; an unstartable custom quest; large-vector speed cap",
+  "guards": "17 native/WASM rejection probes; unstartable player counts and custom quest; large-vector speed cap",
   "cases": [
     {
       "name": "rush-idle",
@@ -7,7 +7,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "9e67e22db44eb36090d56a56dbf203b5669b79e7dc14fc7ba42eb3dc82f34ad4",
       "final_sha256": "9d6d6fd233b3ecb37e0c95664fbcb26e10d11f21686b78219c585b3a0d9fee58",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -26,6 +26,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 0,
         "max_commands": 0,
         "peak_creatures": 100,
@@ -40,7 +41,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "b4919d7d7ba3cd582d1ca068b07c96f1d913c9129bc7a01fae017d64c88a7300",
       "final_sha256": "183dd90c173aeb34c09a17366709d08894dfbcdc2d4f81e6f631ddffda9eddff",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -59,6 +60,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 0,
         "max_commands": 0,
         "peak_creatures": 100,
@@ -73,7 +75,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "7c314347816af9f4f6924f6b4ee3dd33b555f00fa2aace2fbb572f0fee6849d8",
       "final_sha256": "d72bb157d012308ab3f841c52852a4e0333e6fc8ee73e489c62a57154ea35251",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -92,6 +94,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 0,
         "peak_creatures": 84,
@@ -106,7 +109,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "9381e26f2b14ee9dcc9ba883d6758b8cd056fb30c8b375fd3f1bbe8a215579cf",
       "final_sha256": "f1cd558a89271768ff5c1b4f5cc8a137be6c694ad9a2326347d715be0d2fac5b",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -125,6 +128,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 0,
         "peak_creatures": 84,
@@ -139,7 +143,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "818a6c95f46b34386f24c2651a486a3353c0faea6005371db16137aa7da14a16",
       "final_sha256": "62984272395ce907e13d315ce127bb3e8284280ffab2931e368396d8b5ab5972",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -158,6 +162,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 0,
         "peak_creatures": 108,
@@ -172,7 +177,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "3d94f914b3fd1d8d63dbd060c375fd0a7fb72f91511374ac08d9031fd5482d3f",
       "final_sha256": "7013bc5507a72dbbcdb986d00a8b3a5ab53798f571b50ba76ff067f7fb1f97ff",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -191,6 +196,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 0,
         "peak_creatures": 108,
@@ -205,7 +211,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "eaca428f7025e37a1b7e907a1cd8874e53c4e885a334eb64a3cb96e041274376",
       "final_sha256": "b9c1357d7f5c7f7247293c08f6e11cecbeef2ed18a218d0cf402ddfcae8caf85",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -223,6 +229,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 0,
         "max_commands": 0,
         "peak_creatures": 61,
@@ -237,7 +244,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "d6d6b22c9d7701e16d0fd095ec6fa434e8132a6c6c722c577b444a5c13913562",
       "final_sha256": "85f076b8bf676a93628a683a5825ee79c895ea8b1726b76904cc4fea480bba36",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -255,6 +262,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 19,
         "max_commands": 0,
         "peak_creatures": 55,
@@ -269,7 +277,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "08cdc44b3ee5e584be7da1fa28189eb4c01b45e50d987aaf474b37c2ee7d1c6e",
       "final_sha256": "8d46cd01b7420fd79d4544d35d6e73d1528f38dd9969845eac1333bd8121b940",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -297,6 +305,7 @@
         ],
         "bonuses": [],
         "menu": 8,
+        "survivor_menu": 0,
         "reload": 155,
         "max_commands": 1,
         "peak_creatures": 75,
@@ -311,7 +320,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "21a091e9727ca3c25e173e825b58e3d4be67f6a2111fed4eb69aa117dbee98d5",
       "final_sha256": "993c4a250141a9ca893133f5ef2c117b00e10ff3457a81231fa1821f45ce1d1f",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -330,6 +339,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 32,
         "max_commands": 0,
         "peak_creatures": 97,
@@ -344,7 +354,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "349bf878ce1bef2f7846c5f75c8f9ee9cd0d548934f323b0a666af32d8da0208",
       "final_sha256": "7b69f3e9894a7ef9ba58e7f45a9c612996a95ad97b83f7c94cb1ee9902dd7135",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -371,6 +381,7 @@
           "freeze"
         ],
         "menu": 4,
+        "survivor_menu": 0,
         "reload": 78,
         "max_commands": 1,
         "peak_creatures": 104,
@@ -385,7 +396,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "4e50f20df9fa437de864e903175578f655f24908fda90789d8af2e6aacef2450",
       "final_sha256": "da47577b53252e015b889f6b9a59b4a4632f0612297df5fa419d2ca4c0af384f",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -412,6 +423,7 @@
           "freeze"
         ],
         "menu": 4,
+        "survivor_menu": 0,
         "reload": 78,
         "max_commands": 1,
         "peak_creatures": 104,
@@ -426,7 +438,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "695bcaae9afa695be437d621d810a0989a35202cb566e723292c8f36e7c0d6a1",
       "final_sha256": "63a08287227ce008610151ce0ec546849dd9592320812839f39819903719f931",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -456,6 +468,7 @@
           "weapon_power_up"
         ],
         "menu": 6,
+        "survivor_menu": 0,
         "reload": 106,
         "max_commands": 2,
         "peak_creatures": 81,
@@ -470,7 +483,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "4ea19062703e6d851555dad453d206e824d0c594b000d3e2c8a6f7baedd92354",
       "final_sha256": "1e8e93e8ef18355dccb6028ee96883cc7eb142bf06680eb7574d730c53eb471a",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -494,6 +507,7 @@
           "freeze"
         ],
         "menu": 2,
+        "survivor_menu": 0,
         "reload": 61,
         "max_commands": 2,
         "peak_creatures": 93,
@@ -508,7 +522,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "deb6724142ce685e528195ee724e56d6c2fd4f6405c96a388731123b86792ff6",
       "final_sha256": "ccc147e4df983c17e0417c908dd0a7992ea39d2e31e42e20cf6918b866f3927a",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -539,6 +553,7 @@
           "weapon_power_up"
         ],
         "menu": 7,
+        "survivor_menu": 0,
         "reload": 96,
         "max_commands": 1,
         "peak_creatures": 80,
@@ -553,7 +568,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "83bdabc1f82eef461c1bf9d4cb040d2fa59886905132906c3eaa8e7380962c49",
       "final_sha256": "4a926103505e8d82009d85e7007dc243f543c325e9fbcb62ba8162097a07f3e9",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -579,6 +594,7 @@
           "double_xp"
         ],
         "menu": 4,
+        "survivor_menu": 0,
         "reload": 76,
         "max_commands": 1,
         "peak_creatures": 67,
@@ -593,7 +609,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "a8b9016f3b45e4c0b9efd1423f30c5f0cab0e827a78afdaefd6ba98df03ae2da",
       "final_sha256": "ed81596486c1754739e276ed23f3c1bb37de869c0f568fbf6a499bc9100e1877",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -622,6 +638,7 @@
           "weapon_power_up"
         ],
         "menu": 5,
+        "survivor_menu": 0,
         "reload": 96,
         "max_commands": 1,
         "peak_creatures": 92,
@@ -636,7 +653,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "83bdabc1f82eef461c1bf9d4cb040d2fa59886905132906c3eaa8e7380962c49",
       "final_sha256": "4a926103505e8d82009d85e7007dc243f543c325e9fbcb62ba8162097a07f3e9",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -662,6 +679,7 @@
           "double_xp"
         ],
         "menu": 4,
+        "survivor_menu": 0,
         "reload": 76,
         "max_commands": 1,
         "peak_creatures": 67,
@@ -676,7 +694,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "4d9f8785e28b28a0a82687436c798faefbf3575f143ae2218c654e231231e564",
       "final_sha256": "4facda8ac163be292c0fe5627c57f698b53cda4ce909a568aa34da44df92ce3c",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -714,6 +732,7 @@
           "weapon_power_up"
         ],
         "menu": 11,
+        "survivor_menu": 0,
         "reload": 170,
         "max_commands": 1,
         "peak_creatures": 60,
@@ -728,7 +747,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "c682ae1b3a418c1bb0550d4514ba1575d063efe039995ce4c6e51a534eea0aa5",
       "final_sha256": "2dc136300bca237364b58db1c51807992a28fd721335419d518eac4898b66c3e",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -758,6 +777,7 @@
           "weapon_power_up"
         ],
         "menu": 5,
+        "survivor_menu": 0,
         "reload": 92,
         "max_commands": 1,
         "peak_creatures": 96,
@@ -772,7 +792,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "ed83b009ce576b9f3f7efb0d31b5881bfd702f8b12c3ff865c1a85cd8f2ca3b8",
       "final_sha256": "abb1b57d675360faac5341f33f1a2fcb3a16cd60a762add57dbc172018a5359e",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -804,6 +824,7 @@
           "reflex_boost"
         ],
         "menu": 7,
+        "survivor_menu": 0,
         "reload": 128,
         "max_commands": 1,
         "peak_creatures": 99,
@@ -818,7 +839,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "15719f25aa6db568084f5c121a5785400e99fcffb8c828d7622bac04ce0c5d43",
       "final_sha256": "3d72bb14b47ce0ba674768b8bbb2f315240e265bc1d23319a1775f67759e19bb",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -841,6 +862,7 @@
           "double_xp"
         ],
         "menu": 1,
+        "survivor_menu": 0,
         "reload": 28,
         "max_commands": 1,
         "peak_creatures": 62,
@@ -855,7 +877,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "3d227fe3bec37d35423ef6fcf4610638508525392ddb76728569e1e802d22cba",
       "final_sha256": "5362410be5cf802b644ee340a8c86286b14f150170be2ded351166f1912c7d01",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -890,6 +912,7 @@
           "reflex_boost"
         ],
         "menu": 9,
+        "survivor_menu": 0,
         "reload": 148,
         "max_commands": 1,
         "peak_creatures": 80,
@@ -904,7 +927,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "83bdabc1f82eef461c1bf9d4cb040d2fa59886905132906c3eaa8e7380962c49",
       "final_sha256": "4a926103505e8d82009d85e7007dc243f543c325e9fbcb62ba8162097a07f3e9",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -930,6 +953,7 @@
           "double_xp"
         ],
         "menu": 4,
+        "survivor_menu": 0,
         "reload": 76,
         "max_commands": 1,
         "peak_creatures": 67,
@@ -944,7 +968,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "31330a7fcc23fd733e7a2e60373a1415a660d79f8e6911cf38f20c7513d351af",
       "final_sha256": "3f90f52cec44bf819ae65c925e2dbef67fda6dc8a9fa41fd42ade18941b4829a",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -963,6 +987,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 23,
         "max_commands": 0,
         "peak_creatures": 85,
@@ -977,7 +1002,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "e06d3ab193ad2df2479fdc4e1644ccb3e86259ce46941ffa107adc45a929c63f",
       "final_sha256": "56d52552ef3663848dabfada0ca986084f1046e08269e5239a32dc528fa76e05",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -998,6 +1023,7 @@
           "reflex_boost"
         ],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 28,
         "max_commands": 0,
         "peak_creatures": 95,
@@ -1012,7 +1038,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "56cd2df45e72be57c94250ec3edb8c7636b31669adc5cc4c61aa7737999373a8",
       "final_sha256": "8fcef07c75193e24a66a001d3092e994bf727c5cc925bd9220b58f7bb0530439",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1031,6 +1057,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 0,
         "max_commands": 0,
         "peak_creatures": 81,
@@ -1045,7 +1072,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "4e6748373084dc90b2d4309df4e5d1de3983e526f7591c46737e56f85fa91ab9",
       "final_sha256": "3b88c0b5788863d6531c06d4c361327b91befebb5fc296885740b230159fb9e1",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1064,6 +1091,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 0,
         "max_commands": 0,
         "peak_creatures": 87,
@@ -1078,7 +1106,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "9231bc03164a3edd7a949820a33c7999e9e02174fa8381cc565b69311ff4feda",
       "final_sha256": "22e41646805082fc46a0c4ebbc81f1f8028dc545efe67c9654efe08d077dbbec",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1097,6 +1125,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 8,
         "max_commands": 0,
         "peak_creatures": 112,
@@ -1111,7 +1140,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "c6deedf19a5532f06b56378caeef605cc289252f8bd4318263962068f0b3f193",
       "final_sha256": "e5a3f1c2fddf5f7dac4afa744202d6d0fc0a2edb5d60d4b1bfccb685ec080837",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1130,6 +1159,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 8,
         "max_commands": 0,
         "peak_creatures": 110,
@@ -1144,7 +1174,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "a5ab93598a95f9ea9752c1314669555bee3db54942287d4a353bb20ca3cef3e9",
       "final_sha256": "b3727a38b2647a78876e58b77b088f23bf96fbf2f5f490142d56fb89ebf5a726",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1165,6 +1195,7 @@
         ],
         "bonuses": [],
         "menu": 2,
+        "survivor_menu": 0,
         "reload": 8,
         "max_commands": 1,
         "peak_creatures": 21,
@@ -1179,7 +1210,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "7d2ddc29fd63dc33493f132f2ae65e53dae6f80622affaceaec5fd6aa8cd6fe7",
       "final_sha256": "5262f0827a520b989c56d8c8bb3ebf62ee9c1578820036d0a1e12bad59827b2a",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1197,6 +1228,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 12,
         "max_commands": 0,
         "peak_creatures": 7,
@@ -1211,7 +1243,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "3e45482b7d8252132bc4430cdd0029d6b7a7ac32f9d75142996d70fdc4849ca2",
       "final_sha256": "d93bc7080950a1fcd60e655a394cf68765a48dd5c56dff10a1cd6db9389baf7a",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1229,6 +1261,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 5,
@@ -1243,7 +1276,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "663751da385df6f0d179a5ff54d844c60539eb3d4a519d691fe1bec36947c84e",
       "final_sha256": "8a1bcb1e4f11b6e73114d23c2acb6d9f9273b6d45015cb25b1acbd036298d34d",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1261,6 +1294,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 5,
@@ -1275,7 +1309,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "5732fa16e89b559c9f95679328903e3410c94245449abd5c8986bfde9ac08ff2",
       "final_sha256": "b87f991815e743e4d6a99a251373bccb099cb3ebb9118f015ff2050a182b79e9",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1296,6 +1330,7 @@
         ],
         "bonuses": [],
         "menu": 2,
+        "survivor_menu": 0,
         "reload": 22,
         "max_commands": 1,
         "peak_creatures": 1,
@@ -1310,7 +1345,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "165d0b93a3ca5ccf4fc331549d56b66fc666da321ee9a741a0cbcb89a0696fba",
       "final_sha256": "3e0d82664f408eb90f0140dca0c86ea8ca452c5ce90f30a7e70bdaa18747d3de",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1331,6 +1366,7 @@
         ],
         "bonuses": [],
         "menu": 2,
+        "survivor_menu": 0,
         "reload": 22,
         "max_commands": 1,
         "peak_creatures": 1,
@@ -1345,7 +1381,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "d8dcc2425531784ca8d7a328f17cdeb5d7d43000b9379d9271cf5cac184546a6",
       "final_sha256": "246b42ac7bf4104d8a74d9f2230e0e691077cb5f3c5205bbabaa6778c5e49a5c",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1363,6 +1399,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 10,
         "max_commands": 0,
         "peak_creatures": 21,
@@ -1377,7 +1414,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "05c19c5207bfd0a529ddb319fc4b052e1f05cfe04b924769d639c2b7987871dc",
       "final_sha256": "ce293b521482a7e7b51ea87a095817547194a0ec2eb901b7457375555a866bdc",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1395,6 +1432,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 10,
         "max_commands": 0,
         "peak_creatures": 21,
@@ -1409,7 +1447,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "e204af62571d431bf949d3084918672d097bf54ffb33f5747df8d16fa00abbcb",
       "final_sha256": "1089f654534d89683d6a87b67469109e55df23cfe5c864bea05160ec0d62e44d",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1437,6 +1475,7 @@
           "weapon_power_up"
         ],
         "menu": 5,
+        "survivor_menu": 0,
         "reload": 48,
         "max_commands": 1,
         "peak_creatures": 13,
@@ -1451,7 +1490,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "26b7e41e6bdf47ed757cdcdfd19060a5094ab55ad3e2d7a01ac3aa59908554f5",
       "final_sha256": "80a593e274164f01abc5c7f2df35d6e42b705d7a1367528547f9f21d565a58e9",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1478,6 +1517,7 @@
         ],
         "bonuses": [],
         "menu": 7,
+        "survivor_menu": 0,
         "reload": 79,
         "max_commands": 1,
         "peak_creatures": 18,
@@ -1492,7 +1532,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "26754ef1932ef92ecabd57eaade31cb3d00234325c4e290bceabeaa1bb6ef6a5",
       "final_sha256": "b4e7c6262abe0d51a7c0cdebe9abe30684e61706e930db078014163603ff1bc0",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1510,6 +1550,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 8,
         "max_commands": 0,
         "peak_creatures": 20,
@@ -1524,7 +1565,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "8fde7f80081eb882428132e5d942bd38142a84023788224d692acd4e5da83f33",
       "final_sha256": "528571d000259a0e0bf6f510344014c41e70ffdcc3053cf4d27766adebc1ac0b",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1542,6 +1583,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 8,
         "max_commands": 0,
         "peak_creatures": 20,
@@ -1556,7 +1598,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "2acdaf9b4460f0d32d2e61f522cccdc5d7597c2f70136bd5b858bff267efa086",
       "final_sha256": "84a79aeecdc4e46eec42369db51db2e319de290f52f16404c830d0b95f043ae0",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1574,6 +1616,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 8,
         "max_commands": 0,
         "peak_creatures": 19,
@@ -1588,7 +1631,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "006e699af78413a068f5841fd968d3115cca7bdb5c7f7fe28f562cfafdc87981",
       "final_sha256": "badaa1ace61c6574440b9170d8d0f7c12168a1ddb91cd5be752e6b2139a45377",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1606,6 +1649,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 8,
         "max_commands": 0,
         "peak_creatures": 19,
@@ -1620,7 +1664,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "4335442d686024252b08155a9a0372a06a75c78da1f6da26806b87e41d493913",
       "final_sha256": "b461b8e3e89274d242d00e7943db465b33d1e9c551046ad67a75b910ca971fea",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1641,6 +1685,7 @@
         ],
         "bonuses": [],
         "menu": 1,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 1,
         "peak_creatures": 36,
@@ -1655,7 +1700,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "aaf45151e3af4f59d58927f006513e05d1625fcac1b5bcfe340d0070f39c7d2f",
       "final_sha256": "eb1dd122e7131b22a1524b4bb060b135fd702aaf97254626339bc8d19e1d887a",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1676,6 +1721,7 @@
         ],
         "bonuses": [],
         "menu": 1,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 1,
         "peak_creatures": 36,
@@ -1690,7 +1736,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "0bd8c4ffd55e3524ed9eefe02c7604b73292664228fa8f3f031ba128ae71e44f",
       "final_sha256": "2216e654f302c0b2434b36cf38add13649a49109ad739f5ad99fcb3219f3d314",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1709,6 +1755,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 11,
         "max_commands": 0,
         "peak_creatures": 14,
@@ -1723,7 +1770,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "9fd95f91ea813c9fc7e9e211553db3e5f54908397b60cec4a760dd6acac5259b",
       "final_sha256": "31772573addb102ab7509998d013fa19ec7b0e931b51214e6b87339129b4117c",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1741,6 +1788,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 3,
         "max_commands": 0,
         "peak_creatures": 1,
@@ -1755,7 +1803,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "151069e710bfe86ad7727a5fb80f9e30fc5ece83f898fd577088fedd9feb1ed7",
       "final_sha256": "dfdca3c96a52ce87574f4dcf2470d72887fdeaa89dd8d99706f85166a9ca6d61",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1773,6 +1821,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 3,
         "max_commands": 0,
         "peak_creatures": 1,
@@ -1787,7 +1836,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "fc8534a3f47cabd7cf746ee92c2fc94b1af4d88e1eeee150ae922560030da13e",
       "final_sha256": "e42e06113657a477bedba8411bbf5fb59b664345e40be74a8be62bc0e8684a50",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1807,6 +1856,7 @@
         ],
         "bonuses": [],
         "menu": 1,
+        "survivor_menu": 0,
         "reload": 25,
         "max_commands": 1,
         "peak_creatures": 41,
@@ -1821,7 +1871,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "6f03504fbc607508a4183f6f64e78b450aa572ab9d5fbdc92d257d5522c9a104",
       "final_sha256": "b7f5d894192f312d0682f6e656500cfc915e12eb1f0128330d07fc3c8df44cac",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1843,6 +1893,7 @@
         ],
         "bonuses": [],
         "menu": 2,
+        "survivor_menu": 0,
         "reload": 15,
         "max_commands": 1,
         "peak_creatures": 45,
@@ -1857,7 +1908,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "4f9f16f66291f19f8acbed77fb8388b66da1317d187aa14da2d09072ccfb5ccd",
       "final_sha256": "ebcff4a108c145f0befdabb119a2a363cda6fb6b50fc31471e5379eb66f5fafd",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1875,6 +1926,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 8,
         "max_commands": 0,
         "peak_creatures": 23,
@@ -1889,7 +1941,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "3b9e3ffeff723e5a47abcd3fd88c81ee99b4a7bc1c337b85922ef2ee33d90706",
       "final_sha256": "4a530e00e99bca7a8cdd2d67098dd16a5947522dd372d7c90f647c97100bfee4",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1907,6 +1959,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 12,
         "max_commands": 0,
         "peak_creatures": 19,
@@ -1921,7 +1974,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "52ac35470494402ecd30e108efe720ee8296beb1afee88af8ac95fc87c7dcc0e",
       "final_sha256": "ebdf66ab87fdf35893c74821778b7a2036caecfa70c84248e7c136794af505c2",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1939,6 +1992,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 12,
         "max_commands": 0,
         "peak_creatures": 19,
@@ -1953,7 +2007,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "185ffea2c85b3b70743e4d00bcc28a5dfaaa5d0831570f81e6bebfb2617b345e",
       "final_sha256": "a134b48b2f067e0867ae29326583139712a13118d4e94f3345edcd5d898058cb",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -1971,6 +2025,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 4,
         "max_commands": 0,
         "peak_creatures": 7,
@@ -1985,7 +2040,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "a4f49e361a074b76803bda44f76154402dcb49b6941e1224d0cecdee674b1ed5",
       "final_sha256": "e8676998bf8f40e757b735e7111eba88fbd196052ec4bedf9df8aa831c2bffdb",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2006,6 +2061,7 @@
         ],
         "bonuses": [],
         "menu": 1,
+        "survivor_menu": 0,
         "reload": 11,
         "max_commands": 1,
         "peak_creatures": 77,
@@ -2020,7 +2076,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "d61d1f3383c33665e2ce56f80a1e3f8ebb0a2e8f02b6718a475a19bc6fb7f0aa",
       "final_sha256": "2638f0b485a43e85852905f9133b6fd8b39bf4631a834c0f1b8717e749fc8627",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2044,6 +2100,7 @@
         ],
         "bonuses": [],
         "menu": 5,
+        "survivor_menu": 0,
         "reload": 5,
         "max_commands": 1,
         "peak_creatures": 15,
@@ -2058,7 +2115,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "abd3e5eb0d8a612781f7149929f69f5709ed0bb5cdd13d9cacc48f72691e116f",
       "final_sha256": "9774521296df4c21fd144d97b2bdf0202da0b6b09079914781f6c130fa47211b",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2076,6 +2133,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 0,
         "peak_creatures": 58,
@@ -2090,7 +2148,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "a463556e1c65357646f48c798626e0738f8c0d33fcc84af8dc36ce737a415d63",
       "final_sha256": "992a5437e8c724c092ef0f337a4b41d701b9f187e81f129231e161149fe35a8b",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2108,6 +2166,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 0,
         "peak_creatures": 58,
@@ -2122,7 +2181,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "9843d2679de21d41c14dc979bccfa8186701dd7212a47946e24523bd75f5ea52",
       "final_sha256": "4273bdd1c20ef7326c07cd2d2c598ef0c10235bb01bd8188a0455483afbf26d7",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2142,6 +2201,7 @@
         ],
         "bonuses": [],
         "menu": 1,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 1,
         "peak_creatures": 18,
@@ -2156,7 +2216,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "0a0caa1d5983c6018b7939dc303f01047eef6fa48e6415c13157bd41301d285a",
       "final_sha256": "12fd4715240bf5fae273745c2138e342f9bf26056c9220e1c95afd17ad93eca5",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2179,6 +2239,7 @@
           "double_xp"
         ],
         "menu": 1,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 1,
         "peak_creatures": 9,
@@ -2193,7 +2254,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "6ae4a5557be923bbb37a30a65fe42c6f2a230125c2aef09fe76ffccdd6de1c02",
       "final_sha256": "31ed82cf263d17b7a59da0f5e0a8b4bcce0a1be0cbb706662b3175b1327b938f",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2211,6 +2272,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 33,
@@ -2225,7 +2287,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "fe50d60e0cd52d71b483bbef887ae43801cf1e8ec44e36e2f0134bb5490590d2",
       "final_sha256": "7fd7bff4fcb98eea2da86809d7b8cf613355de4b1e30f48cb366ded63fcbaef9",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2244,6 +2306,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 18,
@@ -2258,7 +2321,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "8190fb981b8e1ef07e51536a0997bcd0c1134b525775e1ab35f141b656d424f0",
       "final_sha256": "7237a40587f0ae6354d252d8b88fec79912c151241ff670710526973a1298452",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2276,6 +2339,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 10,
         "max_commands": 0,
         "peak_creatures": 36,
@@ -2290,7 +2354,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "7ddea1df346e358f9158006c0a8e3bcc6103e8ef4ebb5d21b64b60c810ea1922",
       "final_sha256": "b84b5f4121ba1a72b043a04e6d88df1174c5bd28de7d8f930b77ba7c9204755d",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2308,6 +2372,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 10,
         "max_commands": 0,
         "peak_creatures": 36,
@@ -2322,7 +2387,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "340b504f850b4e5a727624a3c8b5f42b1cfa6a5349433294dad6e6bfb656ae93",
       "final_sha256": "0ded87960eea63700e9b4d02083489be9086e5a0eec7208baab3666a9c1a1fe6",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2340,6 +2405,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 8,
         "max_commands": 0,
         "peak_creatures": 73,
@@ -2354,7 +2420,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "fa3947cc1af24e49e92431586b448970c0738c9184e55ac36a2b12ccb712892c",
       "final_sha256": "fe2b22d84c6980a86bf549a3349fe519a98f2b4c3ed2f115898d93ae7387aab3",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2381,6 +2447,7 @@
         ],
         "bonuses": [],
         "menu": 5,
+        "survivor_menu": 0,
         "reload": 11,
         "max_commands": 1,
         "peak_creatures": 28,
@@ -2395,7 +2462,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "236bc035dd240e375e2706693ae9461aad589fd6428ec4a4f6f618836b9813a8",
       "final_sha256": "8f68d06b08b9009bb734f89b72a6a6de1ea33b748c002cee736fe81d530829cd",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2413,6 +2480,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 24,
@@ -2427,7 +2495,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "23c62d4ba2651b9d3337a0eb2ad111bfe6c99d5a9b010ecb2bb3d8ada3189e89",
       "final_sha256": "1208e35bf4b1c801dbacd2a76c0f541efa709baba1613865b3d7c7eaf98df7d9",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2445,6 +2513,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 24,
@@ -2459,7 +2528,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "da821bf598c8aefc362d24b6674bd871f3ab8e4ff7c4aa790c585c4ac494a709",
       "final_sha256": "cca0d3f01f47f4cec4265ded4092341bace83b8c7c5b92692b0ab8869d9865a8",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2485,6 +2554,7 @@
         ],
         "bonuses": [],
         "menu": 7,
+        "survivor_menu": 0,
         "reload": 36,
         "max_commands": 1,
         "peak_creatures": 34,
@@ -2499,7 +2569,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "4f5912d46f31295e696d236b3ae33bf619e2ebb320051fce9f0aaf61bd876126",
       "final_sha256": "fce1d15522ae199d6860a8a9bf39f175e80d3d3a3e7c5c4cfb9050657115bc93",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2517,6 +2587,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 0,
         "peak_creatures": 27,
@@ -2531,7 +2602,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "ae452bd406fe80c9bcbf5335af1b82afc52cc9b194d2bc3fd5e8c565ccaf3d08",
       "final_sha256": "9d1bd7377f5d503aa1743391486b9bc162f5dc74ecadbc5cad71942f5ea2600d",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2549,6 +2620,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 0,
         "peak_creatures": 27,
@@ -2563,7 +2635,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "4b5a628b87fab8531ea4e0eca92cde079b8ac426a5c09360f2d1f6e98964706f",
       "final_sha256": "73e54a3bcee1c2b6aed02306006c5a295f193a22a78303df26528b1179653c66",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2589,6 +2661,7 @@
         ],
         "bonuses": [],
         "menu": 6,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 1,
         "peak_creatures": 39,
@@ -2603,7 +2676,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "9be9572ea11020f1558d60a7f34da038148637fbad3c83e0b2e6e507d01b1cc5",
       "final_sha256": "98f698ad6838c2089f44458197b0aeaae8c495581f5b3b99ab8560dabdb7470a",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2621,6 +2694,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 5,
         "max_commands": 0,
         "peak_creatures": 13,
@@ -2635,7 +2709,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "5c5dd8c2f3d75dc4bd69af024f2ffcefee641a7c636a8a6a86ada1ae2ba1dae8",
       "final_sha256": "0906349c1198a96432a6285cdad781541f5280cbedb43c0c0ddc9922ad98fe50",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2657,6 +2731,7 @@
         ],
         "bonuses": [],
         "menu": 2,
+        "survivor_menu": 0,
         "reload": 14,
         "max_commands": 1,
         "peak_creatures": 24,
@@ -2671,7 +2746,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "c1fbbb9ded328ad2c9d74c915ee1c26ac83c584c235c18b356eba15b9f82c7b2",
       "final_sha256": "9dd934cf227594b5641c2c21a4d00a5db04f98efdc2456c01595fab4b713f57e",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2689,6 +2764,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 0,
         "peak_creatures": 31,
@@ -2703,7 +2779,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "195b14776715849f3fb1119ad1fa8a300dde76a344c940037bb47f66e50b3fe1",
       "final_sha256": "7c6b1af14f44ee05a7e55e06f099d4bb711cc95f2d6349d4910456f15a2811bf",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2721,6 +2797,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 0,
         "peak_creatures": 31,
@@ -2735,7 +2812,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "05b313feccc7da833e7d64cf28a22cb2e130d546f1053b7972799cc026b1063e",
       "final_sha256": "4b97f8cfcb2649a9f5d70ab0c4bebde665d895982fa73a59f4ebe29b82a61723",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2753,6 +2830,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 0,
         "peak_creatures": 50,
@@ -2767,7 +2845,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "5387db4147eb969e9f8ec177d1a0d573cb9edf7198fc99293808e8df49cc72e4",
       "final_sha256": "786156a35328702eb84d8d193cd864f506003c7fb76d7a56afafed21d9bdc24e",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2788,6 +2866,7 @@
         ],
         "bonuses": [],
         "menu": 1,
+        "survivor_menu": 0,
         "reload": 10,
         "max_commands": 1,
         "peak_creatures": 34,
@@ -2802,7 +2881,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "d00d9e570cc9536358cfa498582e74b1ba7922964446199e3fa05ea5d9a2876b",
       "final_sha256": "ef9854d9eccdb8f138eef8c23ad1e11ba20512776984fcb9ff444450f67a715a",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2820,6 +2899,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 0,
         "peak_creatures": 18,
@@ -2834,7 +2914,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "29991ac66f2ba3f23cd207327307948a4e458325b45185be1173c8cec6f91326",
       "final_sha256": "59809ac585bc07890ebeb197933028f35c362e466a13ab007ff4f65dd7793c9a",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2852,6 +2932,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 0,
         "peak_creatures": 18,
@@ -2866,7 +2947,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "d78f541a44f6838e63cc90ace70a41d72530f21fefee47b12c6f6c1bed02a85c",
       "final_sha256": "40a8f879246cdc8e718a416ddff4c3d82518e55b6d4a79315074d6287ae65324",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2885,6 +2966,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 5,
         "max_commands": 0,
         "peak_creatures": 15,
@@ -2899,7 +2981,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "22033f22bfcf062c83b06f540711d637a22727d88116c275726b5cfef95198ad",
       "final_sha256": "655445db387ab845fc14a106ed82b30261873eeeade3a91df3efc9f92a6f266d",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2920,6 +3002,7 @@
         ],
         "bonuses": [],
         "menu": 1,
+        "survivor_menu": 0,
         "reload": 4,
         "max_commands": 1,
         "peak_creatures": 30,
@@ -2934,7 +3017,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "8e531dd2491f8ce0182179dd4dc76a5b3dd37c8a67699769762aea8b66f4a19e",
       "final_sha256": "fbf1b9239670a4425892b1756e786720240e8f11a4b83970bad702c52dde0963",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2953,6 +3036,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 43,
@@ -2967,7 +3051,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "c95f44da66841041c2d32305cb8a596656f6ee69e8bf321beb6c5c5b4f379da9",
       "final_sha256": "e69398f66141b5825d429cbaa9339514785472ad5fc72a1503480b871254c683",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -2985,6 +3069,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 4,
         "max_commands": 0,
         "peak_creatures": 40,
@@ -2999,7 +3084,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "74729af0dcec137e5b3d8645dd844cdcc7a9e1a76db103782a2aaa2abef3d226",
       "final_sha256": "43ffae4de07f4bc847166b0cf208c5638787c699459308fbd9162198b1e0cbc4",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3017,6 +3102,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 4,
         "max_commands": 0,
         "peak_creatures": 40,
@@ -3031,7 +3117,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "0d8d23265af0af95e475b731f818ead431ef1a387917b54f09fa59c020cd364f",
       "final_sha256": "8010589c3a457eaec3ab6f99d4a8eeafddbf46a668af5d1f092533f575a5e617",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3050,6 +3136,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 14,
         "max_commands": 0,
         "peak_creatures": 45,
@@ -3064,7 +3151,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "89e18289f0bce4e3a298b366feaacdc7d623845c79c7df27af03f8a4abf964b3",
       "final_sha256": "bd045e7ba00a6efa3564ba235940f037748ed94a14c6d22c69647ffb15c27731",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3083,6 +3170,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 14,
         "max_commands": 0,
         "peak_creatures": 44,
@@ -3097,7 +3185,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "7344a39381cb02d231b2c31ce57e6dd4849d520c646ed75caabbff75176a06bf",
       "final_sha256": "2de89bfa3d319a87518059b77facdbd5cbcfb28cb13c4f687311d006e0a76144",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3116,6 +3204,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 0,
         "peak_creatures": 67,
@@ -3130,7 +3219,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "cb97dabfd2364acd1603083df4a759faebf7c894b05f77567a7140e71febd111",
       "final_sha256": "380cd5617ad6e1ac230bbeb31a0c7d4f5eafab0658abad9e3e11bde4812b59b1",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3149,6 +3238,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 0,
         "peak_creatures": 67,
@@ -3163,7 +3253,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "8f065ba078b9d9a8df9c11bbf56f28833bced157ac7751b2dae2d454eb79bc17",
       "final_sha256": "ce3d4d25bd1aea2d0680201c75b2639aa51613bd9b03f72718dd0d612e7fbc90",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3182,6 +3272,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 0,
         "peak_creatures": 43,
@@ -3196,7 +3287,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "761f3ca4d740d6687620747a2312d12294e6164b5e3d4321a1c2bb8704e7acec",
       "final_sha256": "14cef73fd2b90a5b136b7bf845aba988336dbc3889a48b4a781548db7d9d6fd5",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3215,6 +3306,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 0,
         "peak_creatures": 43,
@@ -3229,7 +3321,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "9318580f77a0db94138ee3e7dbadc00dd2b9525fc18f4f0fff66fecb3055e8e5",
       "final_sha256": "97083f7b6adceb362c574a2ffe922aa9da8295e315dc2ae3bd1910e7701afa83",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3248,6 +3340,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 5,
         "max_commands": 0,
         "peak_creatures": 28,
@@ -3262,7 +3355,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "e0b26a975db449ae82628a577333e6edb308c8537142bc36b30bec160a5c17db",
       "final_sha256": "e230e1a3f52470dd056742350b959fc6f8e0e641ae021022cccd32c85af0c5b7",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3281,6 +3374,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 5,
         "max_commands": 0,
         "peak_creatures": 28,
@@ -3295,7 +3389,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "8f2e686ac07a8df9a736632d2a7657defde13785461afe944d551c61c9eb39b2",
       "final_sha256": "d678f80dc974f0b6fbab0b6771102222553d6c757aa7bb019c92f031090b0e69",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3313,6 +3407,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 0,
         "peak_creatures": 82,
@@ -3327,7 +3422,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "2758ca794458f6c06c6ee74e05e6f04f52428925109f209880bde26c3a10a0f2",
       "final_sha256": "6116dcea438f087df1f2e6a507d36063065c5d22e0810c444a632d5776ec2d3f",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3345,6 +3440,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 10,
@@ -3359,7 +3455,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "bfecf835a015984cf66009b0d30bad64365793c4c8d884989d56f912d4f27081",
       "final_sha256": "4d0959c42235ba6874555e1b2d6a3ca7e6308a0f39f6934f236ccc4c4bc972d9",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3378,6 +3474,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 0,
         "peak_creatures": 12,
@@ -3392,7 +3489,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "92bd3f56d2319ae644e7c4c52172de484eddb612653f444b74c370a51670799f",
       "final_sha256": "36d0d6a09253754faf5a63e76b0e5d6ac0bebdc27dd6d1f73e2bbf92148bda77",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3411,6 +3508,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 9,
         "max_commands": 0,
         "peak_creatures": 12,
@@ -3425,7 +3523,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "db15e7ae339b776b24b65fb6e0c7ca08211d63ce3f55d9b2c1b10e61295822b4",
       "final_sha256": "96f519c5ffff919a6d5356a843f1bcaa80fefb6a7b9035568497d6fccfee6f13",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3443,6 +3541,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 5,
         "max_commands": 0,
         "peak_creatures": 54,
@@ -3457,7 +3556,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "74ed407f8bc7f042de7eb9598154fb51c465ed516d39cabb4d73827f5eb8c273",
       "final_sha256": "dab9eb204c68ff7d5a81382b3ac2d6dcec3f8ea295628558900319945de53ccc",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3475,6 +3574,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 19,
@@ -3489,7 +3589,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "4e12e0659796b1fce2f10ea020ea27dae55b46a5a711e4e1cd19ad80566d3321",
       "final_sha256": "cb2c0fffd0ebf297380c3d18cd542cb2c9e8bd3c6474af9fde1ddee3175fc532",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3507,6 +3607,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 19,
@@ -3521,7 +3622,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "254aa11895771678cd58de9819f94bfa76eeb1cd8795209a7f31518e2e03b7e8",
       "final_sha256": "a6684c288ddb2896da76c6f760a76cfcb5b6048ebe737618fd6240c2cb74cfa1",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3540,6 +3641,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 18,
@@ -3554,7 +3656,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "cdfc71fe8bf80e80c6847da0a724d363015fa91da58408e514c353cb334794c8",
       "final_sha256": "278683105a910cc71a2ee88bf644a7981634fc00a2dd165ad7d7fdb2b6ba2d08",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3573,6 +3675,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 18,
@@ -3587,7 +3690,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "12bf1f8271500d4fe4f311b577c71887cb077ce191435e6eb62ebbf051ab12b1",
       "final_sha256": "66bbb34ac381f3d3bebb34e7911d382a786edc8e647489754543f8c61b05ffac",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3608,6 +3711,7 @@
         ],
         "bonuses": [],
         "menu": 1,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 1,
         "peak_creatures": 8,
@@ -3622,7 +3726,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "dab3e6c18e2f90a8b7d44b502de18aef2537b6d341c7ebb20d5cd36d4f524f32",
       "final_sha256": "6071f12a588648b3faaf5b1ef149750e535b3939f72f545c14421be23a989ed2",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3640,6 +3744,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 0,
         "peak_creatures": 16,
@@ -3654,7 +3759,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "2c84bc33af60682c4a8d4b4c3bbd3bb929531cdab73a888046e2c31b50e3bd47",
       "final_sha256": "b91c196cf423ed7107f1bd781c869a21d9df95a6ce8c72985e9e1e9a5a4464ab",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3672,6 +3777,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 36,
@@ -3686,7 +3792,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "434366dc35ccc1cb69164ec2695ffc08a7203f5b585bf9125dfca58c69ba2803",
       "final_sha256": "ec319c4b9fa56306ec1a50a10d059075323687d84ecdff7d9cf79b1650aa340f",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3704,6 +3810,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 6,
         "max_commands": 0,
         "peak_creatures": 36,
@@ -3718,7 +3825,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "a3dc864a032381ec8732f42b2c8eb9c65c133d4610ce0978b5a28e7df710e53f",
       "final_sha256": "25aa9d7c6a90ddb1f15d68a246efbdb7ce247f1d12c23e94ea0bfcc319f3b22f",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3736,6 +3843,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 12,
         "max_commands": 0,
         "peak_creatures": 5,
@@ -3746,36 +3854,498 @@
     },
     {
       "name": "custom-formation-parade",
-      "ticks": 1422,
+      "ticks": 1389,
       "fields_per_snapshot": 36343,
-      "sha256": "da56a16b20336fc47f7569ace94100eb4a0bd6a872253adfed5315acb590b67c",
-      "final_sha256": "9ab08df5f0afe861d0c6678a13a0674b4577287d96d52358af2809bc0c51e03f",
-      "wasm_memory_mib": 2.5,
+      "sha256": "c6cfd2bb7ae6e6ee7e5172790773ec1dc3f25fb032f61fdaf0a6c467e700d7bd",
+      "final_sha256": "873c6771eff5f237a7f65727c4df3c5021174f72d3b6049e650f30875d57e04a",
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
         "pending": 12,
-        "xp": 2680,
-        "health": -20,
-        "elapsed_ms": 22752,
-        "timeline_ms": 22256,
-        "rng": 3592621899
+        "xp": 1560,
+        "health": 0,
+        "elapsed_ms": 22224,
+        "timeline_ms": 21728,
+        "rng": 2842304041
+      },
+      "coverage": {
+        "weapons": [
+          2,
+          22
+        ],
+        "perks": [],
+        "bonuses": [],
+        "menu": 0,
+        "survivor_menu": 0,
+        "reload": 10,
+        "max_commands": 0,
+        "peak_creatures": 54,
+        "stall": true,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "custom-formation-parade-ranked",
+      "ticks": 1387,
+      "fields_per_snapshot": 36343,
+      "sha256": "4c39f4365ec1b5bc9eefdc91dfb3542dd87c3af2ea6389f9878830e1ae1bc1fc",
+      "final_sha256": "aa905f26193322a6b7499881c8eab2f9369a5f718b23df9310618c17fa89eca3",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 12,
+        "xp": 1560,
+        "health": 0,
+        "elapsed_ms": 22192,
+        "timeline_ms": 21696,
+        "rng": 2632873975
+      },
+      "coverage": {
+        "weapons": [
+          2,
+          22
+        ],
+        "perks": [],
+        "bonuses": [],
+        "menu": 0,
+        "survivor_menu": 0,
+        "reload": 10,
+        "max_commands": 0,
+        "peak_creatures": 54,
+        "stall": true,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "coop-survival",
+      "ticks": 5028,
+      "fields_per_snapshot": 36343,
+      "sha256": "758397874180ca835ad58a946ff334580dfae650b1e5262a0f8a6ef2dc7c3e4f",
+      "final_sha256": "c258be57f844f43e13c8836a89d0da59f5634b20f74b83bd72dd584d4e8ffd67",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 16245,
+        "health": 0,
+        "elapsed_ms": 65256,
+        "timeline_ms": 65256,
+        "rng": 627854809
       },
       "coverage": {
         "weapons": [
           1,
           2,
-          11
+          12,
+          30
         ],
         "perks": [
-          9
+          1,
+          47,
+          51,
+          55
+        ],
+        "bonuses": [
+          "double_xp",
+          "freeze",
+          "reflex_boost"
+        ],
+        "menu": 4,
+        "survivor_menu": 0,
+        "reload": 73,
+        "max_commands": 1,
+        "peak_creatures": 105,
+        "stall": false,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "coop-survival-ranked",
+      "ticks": 9463,
+      "fields_per_snapshot": 36343,
+      "sha256": "3015bfbe0a0461069aad88867bb6cc6ede2145e465c5f287d76f43383ad29789",
+      "final_sha256": "630bcc90ea4864095b0d458db5e5d9de39105c32a3e87176fed747337282d8d3",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 37189,
+        "health": -26.573331832885742,
+        "elapsed_ms": 150670,
+        "timeline_ms": 150670,
+        "rng": 3024741975
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          6,
+          17,
+          18
+        ],
+        "perks": [
+          13,
+          14,
+          20,
+          24,
+          31,
+          33,
+          34,
+          36,
+          44,
+          52
+        ],
+        "bonuses": [
+          "double_xp",
+          "weapon_power_up"
+        ],
+        "menu": 10,
+        "survivor_menu": 0,
+        "reload": 138,
+        "max_commands": 1,
+        "peak_creatures": 133,
+        "stall": false,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "coop-rush",
+      "ticks": 2111,
+      "fields_per_snapshot": 36343,
+      "sha256": "07780d7643910604c7fac2b9e2abcccb31178a83dad5673818641a118267ed52",
+      "final_sha256": "f1ddf94670d663342a67f65cab675ce9e74c9d0c78a09ac64c18d582107752e6",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 50084,
+        "health": 0,
+        "elapsed_ms": 33776,
+        "timeline_ms": 0,
+        "rng": 1648292719
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          2
+        ],
+        "perks": [],
+        "bonuses": [],
+        "menu": 0,
+        "survivor_menu": 0,
+        "reload": 31,
+        "max_commands": 0,
+        "peak_creatures": 211,
+        "stall": false,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "coop-rush-ranked",
+      "ticks": 1262,
+      "fields_per_snapshot": 36343,
+      "sha256": "1257a328aecf011e18f6e39003e8eb1287dc4b4d7081665761e1df0226691026",
+      "final_sha256": "e18fa693cc1b6f5ceae1cae6ad2e8d9cf3b79f076f0b62e678d9911da6053423",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 10066,
+        "health": 0,
+        "elapsed_ms": 20192,
+        "timeline_ms": 0,
+        "rng": 2479029373
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          2
+        ],
+        "perks": [],
+        "bonuses": [],
+        "menu": 0,
+        "survivor_menu": 0,
+        "reload": 18,
+        "max_commands": 0,
+        "peak_creatures": 250,
+        "stall": false,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "coop-quest-2.4",
+      "ticks": 4908,
+      "fields_per_snapshot": 36343,
+      "sha256": "10e5fcd04b5eec5526c2e2f709920ba827ace5f7d566ab32ec13636e67ddf3a9",
+      "final_sha256": "862841fd4306ab14fa068e90422723c52b38a9f6cce0337aaf7c87877ff31ced",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 12,
+        "xp": 15196,
+        "health": -1,
+        "elapsed_ms": 78528,
+        "timeline_ms": 78032,
+        "rng": 1432259413
+      },
+      "coverage": {
+        "weapons": [
+          1
+        ],
+        "perks": [
+          3,
+          4,
+          17,
+          35
         ],
         "bonuses": [],
-        "menu": 1,
-        "reload": 11,
+        "menu": 4,
+        "survivor_menu": 2,
+        "reload": 72,
         "max_commands": 1,
-        "peak_creatures": 53,
+        "peak_creatures": 59,
         "stall": true,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "coop-quest-2.4-ranked",
+      "ticks": 3037,
+      "fields_per_snapshot": 36343,
+      "sha256": "f2725aa721c660e49fc17569fd30739788e4d47399190acca42765ee17da77b5",
+      "final_sha256": "0932fe2c890a4a7035907995983e644778b29da79d67da40af467875693322ed",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 12,
+        "xp": 4995,
+        "health": -3.2700138092041016,
+        "elapsed_ms": 48592,
+        "timeline_ms": 48096,
+        "rng": 4222461164
+      },
+      "coverage": {
+        "weapons": [
+          1
+        ],
+        "perks": [
+          21,
+          24,
+          33,
+          52,
+          53
+        ],
+        "bonuses": [],
+        "menu": 5,
+        "survivor_menu": 4,
+        "reload": 44,
+        "max_commands": 1,
+        "peak_creatures": 32,
+        "stall": true,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "coop-survival-hunt",
+      "ticks": 19684,
+      "fields_per_snapshot": 36343,
+      "sha256": "bcd0011bbb8b328f83634238910d0428f79a45e8f8fe963f50729791a6174ec9",
+      "final_sha256": "a7ee2f58c9b85062ecf7558ba872ed6db0cc56193391c9171eb6b5395224b722",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 88700,
+        "health": -2.262141227722168,
+        "elapsed_ms": 309869,
+        "timeline_ms": 309869,
+        "rng": 4251446494
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          3,
+          8,
+          19
+        ],
+        "perks": [
+          2,
+          11,
+          14,
+          20,
+          22,
+          38,
+          42,
+          46,
+          48,
+          50,
+          54
+        ],
+        "bonuses": [
+          "double_xp",
+          "freeze",
+          "reflex_boost"
+        ],
+        "menu": 11,
+        "survivor_menu": 0,
+        "reload": 287,
+        "max_commands": 1,
+        "peak_creatures": 151,
+        "stall": false,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "coop-survival-hunt-ranked",
+      "ticks": 6734,
+      "fields_per_snapshot": 36343,
+      "sha256": "fa4ab4738abea48cd71872eb25dae9e70aabdfcb13128e94bc39c28868030ece",
+      "final_sha256": "3c3693c6b1f968abaf3891f83b6d0ca6d8b583f64a0818a88c250be6aa259d9b",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 20221,
+        "health": -1.0781702995300293,
+        "elapsed_ms": 98560,
+        "timeline_ms": 98560,
+        "rng": 1356325478
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          3,
+          5,
+          7,
+          20,
+          30
+        ],
+        "perks": [
+          17,
+          38,
+          42,
+          44,
+          49
+        ],
+        "bonuses": [
+          "double_xp",
+          "freeze",
+          "reflex_boost",
+          "weapon_power_up"
+        ],
+        "menu": 5,
+        "survivor_menu": 1,
+        "reload": 98,
+        "max_commands": 1,
+        "peak_creatures": 139,
+        "stall": false,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "coop-survival-plague",
+      "ticks": 3414,
+      "fields_per_snapshot": 36343,
+      "sha256": "c2b3221e0921bda9184ea13c41a1d9bf8d86efacb271f6d78d1433b86be2398d",
+      "final_sha256": "c88c83c79ef7a8283d43b1ee3e1be240be9865a627eebaae333408539c44a159",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 8912,
+        "health": 0,
+        "elapsed_ms": 51874,
+        "timeline_ms": 51874,
+        "rng": 470845797
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          2,
+          5,
+          20
+        ],
+        "perks": [
+          10,
+          28,
+          47
+        ],
+        "bonuses": [
+          "freeze",
+          "reflex_boost",
+          "weapon_power_up"
+        ],
+        "menu": 3,
+        "survivor_menu": 0,
+        "reload": 50,
+        "max_commands": 1,
+        "peak_creatures": 72,
+        "stall": false,
+        "transitions": false,
+        "run_down": 31
+      }
+    },
+    {
+      "name": "coop-survival-plague-ranked",
+      "ticks": 6863,
+      "fields_per_snapshot": 36343,
+      "sha256": "3d27eb9c34c867ee56396bbf883988dd25c69da3fe4496b028131cbdd9e30033",
+      "final_sha256": "29bc3e00059bc036d0e821244fa9e95cd767eb699d723ad8d188b9c0c3922e7d",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 7,
+        "xp": 20119,
+        "health": -4.900000095367432,
+        "elapsed_ms": 104733,
+        "timeline_ms": 104733,
+        "rng": 789653057
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          8,
+          29
+        ],
+        "perks": [
+          10,
+          24,
+          39,
+          42,
+          48,
+          50
+        ],
+        "bonuses": [
+          "freeze",
+          "reflex_boost"
+        ],
+        "menu": 6,
+        "survivor_menu": 0,
+        "reload": 100,
+        "max_commands": 1,
+        "peak_creatures": 112,
+        "stall": false,
         "transitions": false,
         "run_down": 31
       }
@@ -3786,7 +4356,7 @@
       "fields_per_snapshot": 36343,
       "sha256": "98571a15ca38b12afd804e17674f24b5039abd2a3191ea178aa5cba4f06bbac2",
       "final_sha256": "b481f1db0a7a7442174614dc81a707b8a9e703ef07237e23fec04c4c27b75e1f",
-      "wasm_memory_mib": 2.5,
+      "wasm_memory_mib": 2.5625,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
@@ -3805,6 +4375,7 @@
         "perks": [],
         "bonuses": [],
         "menu": 0,
+        "survivor_menu": 0,
         "reload": 7,
         "max_commands": 0,
         "peak_creatures": 30,

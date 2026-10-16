@@ -1,12 +1,12 @@
 {
   "wasmtime_version": "49.0.0",
-  "module_sha256": "558844faabea3a81f06abc9153e30e618b9fc64260f6253ffc2245b030f6ed6d",
+  "module_sha256": "dc241c578f6aa3072f27cf2c6a317b9236b9f70d1fbc5fe843d42bf858d62513",
   "cases": 6,
   "ticks": 16488,
   "fields_per_snapshot": 36343,
   "comparison": "every snapshot hash matches native/Node",
   "reset": "all Wasmtime A/B/A passed",
-  "linear_memory_mib": 2.5,
+  "linear_memory_mib": 2.5625,
   "results": [
     {
       "name": "rush-evade",
