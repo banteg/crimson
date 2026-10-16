@@ -810,20 +810,32 @@ stays on the arena screen and sees the replay viewer's top-right pick card
     disconnect (Section 6.2 timeouts) ends the run the same way at the last
     confirmed tick.
 
-- **Rematch (`run_epoch` increment)**: either player can click **Play Again**
-  on the end screen.
+- **Next run (`run_epoch` increment)**: both peers show the original's end
+  screen buttons, and either player can click the ones that start a run:
+
+  | End screen | Button | Co-op choice |
+  | --- | --- | --- |
+  | Game over (`game_over_screen_update.cpp:278`) | Play Again | `again`: same mode |
+  | Quest completed (`quest_results_screen_update.cpp:560-570`) | Play Next | `next`: the next quest at the same difficulty, on the overlay save that has just unlocked it (Section 5.3) |
+  | Quest completed | Play Again | `again`: same quest |
+  | Quest failed (`quest_failed_screen_update.cpp:179-185`) | Play Again | `again`: same quest |
+  | Quest failed | Play Another | `setup`: both peers return to the Host's run setup |
+
+  On the last quest the original shows **Show End Note** in place of Play
+  Next; it opens locally and starts nothing. **Main Menu** is Leave.
+  **High scores** opens the co-op board locally.
 
   - The Host owns the seed, so a Guest's click sends
-    `MSG_REMATCH { run_epoch }`. On its own click, or on the first
-    `MSG_REMATCH` for the current `run_epoch`, the Host increments `run_epoch`
-    (so in-flight packets from the previous run are ignored), draws a fresh
-    seed, and sends `MSG_START_RUN` for the same mode and quest. Both clicking
-    at once yields one rematch: a `MSG_REMATCH` for an earlier `run_epoch` is
-    ignored.
+    `MSG_NEXT_RUN { run_epoch, choice }`. On its own click, or on the first
+    `MSG_NEXT_RUN` for the current `run_epoch`, the Host increments
+    `run_epoch` (so in-flight packets from the previous run are ignored),
+    draws a fresh seed, and sends `MSG_START_RUN` for the chosen mode and
+    quest (or opens run setup for `setup`). The first click the Host sees wins:
+    two clicks at once, even on different buttons, start one run, and a
+    `MSG_NEXT_RUN` for an earlier `run_epoch` is ignored.
 
   - Both peers leave the end screen when `MSG_START_RUN` arrives and wait for
-    `MSG_START_ACK` before stepping tick `0`. Choosing another mode or quest
-    goes back to the Host's run setup (Section 5.3).
+    `MSG_START_ACK` before stepping tick `0`.
 
 ### 5.3 Run setup, replays & ranked co-op
 
@@ -1005,7 +1017,7 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
 - `MSG_INPUT_REPAIR`: `{ type: "repair", run_epoch: number, start_tick: number, cmds_b64: string, inputs_b64: string }`
 - `MSG_PAUSE`: `{ type: "pause", run_epoch: number, pause_seq: number, paused: boolean }`
 - `MSG_LEAVE`: `{ type: "leave", run_epoch: number, last_tick: number }`
-- `MSG_REMATCH`: `{ type: "rematch", run_epoch: number }` (Guest to Host)
+- `MSG_NEXT_RUN`: `{ type: "next_run", run_epoch: number, choice: "again" | "next" | "setup" }` (Guest to Host)
 - `MSG_RUN_SIGNED`: `{ type: "run_signed", run_epoch: number, name: string, public_key: string, signature: string }`
 - `MSG_DESYNC`: `{ type: "desync", run_epoch: number, tick: number, local_hash: number, remote_hash: number, snapshot_b64?: string }` (exchanges compressed `coop_canonical_snapshot()` at `tick` so both peers log the exact first differing `schema.json` / host / overflow field).
 
@@ -1161,7 +1173,8 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
   rolled-back first hit.
 
 - **Leave, rematch & transport**: Leave mid-run and while paused (both replays
-  end on `last_tick`); both players clicking Play Again at once (one rematch);
+  end on `last_tick`); both players clicking Play Again and Play Next at once (one run starts);
+  Play Next from each quest's results, and Show End Note on the last;
   rematch (`run_epoch + 1`) while stale packets from `run_epoch` are in flight;
   byte-identical replays and both signatures after a team wipe on peers with
   different `recorder` platforms; forced runs over direct P2P, TURN UDP, TURN
