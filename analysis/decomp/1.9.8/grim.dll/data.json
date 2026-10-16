@@ -1,6 +1,11 @@
 {
   "entries": [
     {
+      "address": "0x10003130",
+      "name": "?on_tick@MyApp@@QAEXXZ",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x1000abc0",
       "name": "vsprintf",
       "program": "1.9.8/grim.dll"
@@ -63,6 +68,36 @@
     {
       "address": "0x10020a2a",
       "name": "grim_vertex_space_converter_destroy_thunk",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10045cf0",
+      "name": "RA_Initialize",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10045de0",
+      "name": "RA_ShutDown",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10045e80",
+      "name": "RA_IsTheMenuSessionComplete",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10045eb0",
+      "name": "RA_DrawNextFrameIntoBuffer",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10046140",
+      "name": "RA_HandleWindowsMessage",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100461c0",
+      "name": "RA_GetValueAsInt",
       "program": "1.9.8/grim.dll"
     },
     {
@@ -1883,6 +1918,11 @@
     {
       "address": "0x10070e88",
       "name": "grim_config_option_54_value",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e8c",
+      "name": "grim_config_resolution_index",
       "program": "1.9.8/grim.dll"
     },
     {

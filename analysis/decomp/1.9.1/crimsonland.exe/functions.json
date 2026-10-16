@@ -974,6 +974,14 @@
     "size": 18
   },
   {
+    "address": "0x0040E0E0",
+    "canonical_address": "0x0040E100",
+    "end": "0x0040E172",
+    "evidence": "ordered",
+    "name": "mod_api_core_get_extension",
+    "size": 146
+  },
+  {
     "address": "0x0040E180",
     "canonical_address": "0x0040E1F0",
     "end": "0x0040E1A2",
@@ -1172,6 +1180,14 @@
     "evidence": "exact",
     "name": "mod_api_inp_get_key_name",
     "size": 16
+  },
+  {
+    "address": "0x0040E610",
+    "canonical_address": "0x0040E690",
+    "end": "0x0040E6A6",
+    "evidence": "ordered",
+    "name": "mod_api_cl_enter_menu",
+    "size": 150
   },
   {
     "address": "0x0040E6B0",
@@ -3692,6 +3708,14 @@
     "size": 262
   },
   {
+    "address": "0x004358F0",
+    "canonical_address": "0x0043AA60",
+    "end": "0x00435A2F",
+    "evidence": "ordered",
+    "name": "highscore_submit_full_version_guard",
+    "size": 319
+  },
+  {
     "address": "0x00435A30",
     "canonical_address": "0x0043AA90",
     "end": "0x00435AA1",
@@ -5149,6 +5173,14 @@
     "evidence": "exact",
     "name": "ui_element_layout_calc",
     "size": 288
+  },
+  {
+    "address": "0x00449370",
+    "canonical_address": "0x0044FC70",
+    "end": "0x00449378",
+    "evidence": "ordered",
+    "name": "ui_menu_main_click_buy_full_version",
+    "size": 8
   },
   {
     "address": "0x00449380",
@@ -7299,6 +7331,25 @@
     "size": 254
   },
   {
+    "address": "0x0045A5A0",
+    "canonical_address": "0x00460CB8",
+    "end": "0x0045A6B1",
+    "evidence": "ordered",
+    "name": "crt_fpmath",
+    "size": 273,
+    "aliases": [
+      "__fpmath"
+    ]
+  },
+  {
+    "address": "0x0045A6C0",
+    "canonical_address": "0x00460CCF",
+    "end": "0x0045A870",
+    "evidence": "ordered",
+    "name": "nullsub_103",
+    "size": 432
+  },
+  {
     "address": "0x0045A870",
     "canonical_address": "0x00460CD0",
     "end": "0x0045A8A8",
@@ -9070,6 +9121,17 @@
     "size": 9,
     "aliases": [
       "$L17381"
+    ]
+  },
+  {
+    "address": "0x004600FE",
+    "canonical_address": "0x004668CE",
+    "end": "0x00460107",
+    "evidence": "exact",
+    "name": "crt_calloc_old_sbh_unlock_cleanup",
+    "size": 9,
+    "aliases": [
+      "$L17385"
     ]
   },
   {

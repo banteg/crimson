@@ -292,6 +292,14 @@
     "size": 265
   },
   {
+    "address": "0x10002CC0",
+    "canonical_address": "0x100052F0",
+    "end": "0x1000302C",
+    "evidence": "ordered",
+    "name": "grim_state_init",
+    "size": 876
+  },
+  {
     "address": "0x10003030",
     "canonical_address": "0x10005A40",
     "end": "0x100030BC",
@@ -346,6 +354,14 @@
     "evidence": "ordered",
     "name": "grim_apply_config",
     "size": 424
+  },
+  {
+    "address": "0x10003470",
+    "canonical_address": "0x10005EB0",
+    "end": "0x100036DF",
+    "evidence": "ordered",
+    "name": "grim_init_system",
+    "size": 623
   },
   {
     "address": "0x100036E0",

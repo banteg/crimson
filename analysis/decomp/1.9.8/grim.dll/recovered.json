@@ -722,6 +722,77 @@
       "bytes": "88159d300610",
       "offset": 0,
       "note": "Instruction-exact under 1.9.8: grim_config_dialog_populate_display_modes."
+    },
+    {
+      "name": "RA_Initialize",
+      "address": "0x10045cf0",
+      "reference": "0x10003011",
+      "bytes": "e8da2c0400",
+      "offset": 0,
+      "build_only": true,
+      "note": "Reflexive Arcade client linked into 1.9.8 Grim; the library's own error text names RA_Initialize."
+    },
+    {
+      "name": "RA_ShutDown",
+      "address": "0x10045de0",
+      "reference": "0x10003095",
+      "bytes": "e9462d0400",
+      "offset": 0,
+      "build_only": true,
+      "note": "Reflexive Arcade client linked into 1.9.8 Grim; the library's own error text names RA_Initialize."
+    },
+    {
+      "name": "RA_IsTheMenuSessionComplete",
+      "address": "0x10045e80",
+      "reference": "0x100030da",
+      "bytes": "e8a12d0400",
+      "offset": 0,
+      "build_only": true,
+      "note": "Reflexive Arcade client linked into 1.9.8 Grim; the library's own error text names RA_Initialize."
+    },
+    {
+      "name": "RA_DrawNextFrameIntoBuffer",
+      "address": "0x10045eb0",
+      "reference": "0x100030d2",
+      "bytes": "e8d92d0400",
+      "offset": 0,
+      "build_only": true,
+      "note": "Reflexive Arcade client linked into 1.9.8 Grim; the library's own error text names RA_Initialize."
+    },
+    {
+      "name": "RA_HandleWindowsMessage",
+      "address": "0x10046140",
+      "reference": "0x10003523",
+      "bytes": "e8182c0400",
+      "offset": 0,
+      "build_only": true,
+      "note": "Reflexive Arcade client linked into 1.9.8 Grim; the library's own error text names RA_Initialize."
+    },
+    {
+      "name": "RA_GetValueAsInt",
+      "address": "0x100461c0",
+      "reference": "0x10003041",
+      "bytes": "e87a310400",
+      "offset": 0,
+      "build_only": true,
+      "note": "Reflexive Arcade client linked into 1.9.8 Grim; the library's own error text names RA_Initialize."
+    },
+    {
+      "name": "grim_config_resolution_index",
+      "address": "0x10070e8c",
+      "reference": "0x10005f0f",
+      "bytes": "a18c0e0710",
+      "offset": 0,
+      "build_only": true,
+      "note": "1.9.8's fixed 640/800/1024 resolution choice, read by grim_apply_config and the config dialog."
+    },
+    {
+      "name": "?on_tick@MyApp@@QAEXXZ",
+      "address": "0x10003130",
+      "reference": "0x10003124",
+      "bytes": "e907000000",
+      "offset": 0,
+      "note": "grim_app_pump tail-jumps to MyApp::on_tick, a real body here; 1.9.93 folds it into grim_noop."
     }
   ]
 }

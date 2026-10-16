@@ -4497,6 +4497,14 @@
     "size": 28
   },
   {
+    "address": "0x10024A0E",
+    "canonical_address": "0x1001AEC8",
+    "end": "0x10024A13",
+    "evidence": "ordered",
+    "name": "grim_pixel_format_scalar_deleting_destroy_dxt_base",
+    "size": 5
+  },
+  {
     "address": "0x10024A13",
     "canonical_address": "0x1001AEE4",
     "end": "0x10024A2F",

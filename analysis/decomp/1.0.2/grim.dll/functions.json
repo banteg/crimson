@@ -104,6 +104,14 @@
     "size": 13
   },
   {
+    "address": "0x100010D0",
+    "canonical_address": "0x10001E90",
+    "end": "0x100012C0",
+    "evidence": "ordered",
+    "name": "grim_config_dialog_populate_display_modes",
+    "size": 496
+  },
+  {
     "address": "0x100012C0",
     "canonical_address": "0x10002680",
     "end": "0x1000147A",
@@ -263,6 +271,14 @@
     "evidence": "referenced",
     "name": "grim_load_texture_internal",
     "size": 225
+  },
+  {
+    "address": "0x10002AC0",
+    "canonical_address": "0x100052F0",
+    "end": "0x10002DD9",
+    "evidence": "ordered",
+    "name": "grim_state_init",
+    "size": 793
   },
   {
     "address": "0x10002DE0",

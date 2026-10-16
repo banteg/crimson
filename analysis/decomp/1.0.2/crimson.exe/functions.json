@@ -533,6 +533,22 @@
     "size": 105
   },
   {
+    "address": "0x00402CA0",
+    "canonical_address": "0x0043C960",
+    "end": "0x004037AF",
+    "evidence": "ordered",
+    "name": "music_queue_track",
+    "size": 2831
+  },
+  {
+    "address": "0x004037B0",
+    "canonical_address": "0x0043C980",
+    "end": "0x00404AB7",
+    "evidence": "ordered",
+    "name": "music_release_track",
+    "size": 4871
+  },
+  {
     "address": "0x00404AC0",
     "canonical_address": "0x0043C9C0",
     "end": "0x00404B63",
@@ -589,12 +605,36 @@
     "size": 637
   },
   {
+    "address": "0x004062A0",
+    "canonical_address": "0x0043E810",
+    "end": "0x004062BB",
+    "evidence": "ordered",
+    "name": "ui_menu_hover_color_destroy",
+    "size": 27
+  },
+  {
+    "address": "0x004062C0",
+    "canonical_address": "0x0043E820",
+    "end": "0x004062D3",
+    "evidence": "ordered",
+    "name": "ui_menu_idle_color_destroy",
+    "size": 19
+  },
+  {
     "address": "0x004062E0",
     "canonical_address": "0x0043E830",
     "end": "0x00406795",
     "evidence": "ordered",
     "name": "ui_button_update",
     "size": 1205
+  },
+  {
+    "address": "0x004067A0",
+    "canonical_address": "0x0043ECF0",
+    "end": "0x004068E5",
+    "evidence": "ordered",
+    "name": "ui_text_input_update",
+    "size": 325
   },
   {
     "address": "0x004068F0",
@@ -1990,6 +2030,17 @@
     "size": 22,
     "aliases": [
       "__ld12tod"
+    ]
+  },
+  {
+    "address": "0x00415175",
+    "canonical_address": "0x0046A32E",
+    "end": "0x004151A2",
+    "evidence": "ordered",
+    "name": "crt_ld12tof",
+    "size": 45,
+    "aliases": [
+      "__ld12tof"
     ]
   },
   {

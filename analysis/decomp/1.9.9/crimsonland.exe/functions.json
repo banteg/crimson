@@ -7626,6 +7626,25 @@
     "size": 283
   },
   {
+    "address": "0x00460AA0",
+    "canonical_address": "0x00460CB8",
+    "end": "0x00460BCE",
+    "evidence": "ordered",
+    "name": "crt_fpmath",
+    "size": 302,
+    "aliases": [
+      "__fpmath"
+    ]
+  },
+  {
+    "address": "0x00460BE0",
+    "canonical_address": "0x00460CCF",
+    "end": "0x00460D90",
+    "evidence": "ordered",
+    "name": "nullsub_103",
+    "size": 432
+  },
+  {
     "address": "0x00460D90",
     "canonical_address": "0x00460CD0",
     "end": "0x00460DC8",
@@ -8368,14 +8387,11 @@
   },
   {
     "address": "0x00463197",
-    "canonical_address": "0x00463737",
+    "canonical_address": "0x00463B61",
     "end": "0x004631C0",
     "evidence": "ordered",
-    "name": "crt_ms_p5_mp_test_fdiv",
-    "size": 41,
-    "aliases": [
-      "__ms_p5_mp_test_fdiv"
-    ]
+    "name": "crt_str_shift_right",
+    "size": 41
   },
   {
     "address": "0x004631C0",

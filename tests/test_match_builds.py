@@ -103,6 +103,9 @@ def test_layout_alignment_skips_added_and_dropped_functions() -> None:
     assert match_builds._increasing([(1, 10), (2, 50), (3, 20), (4, 30)]) == [(1, 10), (3, 20), (4, 30)]
     # Equal sizes pair at the same position among the unpaired functions.
     assert match_builds._align([39, 8], [8, 8]) == [(1, 1)]
+    # Leftover runs of equal length pair in order whatever their sizes (tail-jump wrappers).
+    assert match_builds._fill_equal_runs([], 3, 3) == [(0, 0), (1, 1), (2, 2)]
+    assert match_builds._fill_equal_runs([(0, 0), (3, 2)], 5, 4) == [(0, 0), (3, 2), (4, 3)]
 
 
 def test_flow_extent_ends_at_reachable_code_and_skips_its_switch_table() -> None:
@@ -125,6 +128,7 @@ def test_body_search_ignores_verified_padding_without_reading_the_next_function(
     # Another build pads less and immediately starts an unrelated function.
     target = code + b"\x90" * 8 + bytes.fromhex("31 c0 c3") + b"\xcc" * 5
     mapper = match_builds._Mapper.__new__(match_builds._Mapper)
+    mapper.pinned = {}
     mapper.source = matchlib.LoadedImage(original, 0x1000, len(original))
     mapper.target = matchlib.LoadedImage(target, 0x2000, len(target))
     function = matchlib.FunctionSymbol("example", 0x1000, 0x1020, 32)
@@ -210,6 +214,7 @@ def test_freeware_scratches_use_the_original_image_and_donor_maps(build: str) ->
 
 def test_order_candidates_inside_verified_bodies_cannot_split_functions() -> None:
     mapper = match_builds._Mapper.__new__(match_builds._Mapper)
+    mapper.pinned = {}
     mapper.entry_points = [0x1000, 0x1030, 0x1040, 0x1050, 0x1060]
     mapper.mapped = {0x2000: 0x1000, 0x2100: 0x1040}
     mapper.evidence = {0x2000: "exact", 0x2100: "interface"}

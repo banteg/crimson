@@ -1284,11 +1284,11 @@
   },
   {
     "address": "0x10009E50",
-    "end": "0x10009E55",
-    "size": 5,
     "canonical_address": "0x10009B20",
+    "end": "0x10009E55",
+    "evidence": "recovered",
     "name": "grim_jpeg_destroy_decompress",
-    "evidence": "recovered"
+    "size": 5
   },
   {
     "address": "0x10009E60",
@@ -9273,10 +9273,7 @@
     "end": "0x10049DD1",
     "evidence": "exact",
     "name": "grim_noop",
-    "size": 1,
-    "aliases": [
-      "?on_tick@MyApp@@QAEXXZ"
-    ]
+    "size": 1
   },
   {
     "address": "0x10049DE0",

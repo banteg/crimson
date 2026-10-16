@@ -423,6 +423,14 @@
     "size": 1
   },
   {
+    "address": "0x00401770",
+    "canonical_address": "0x0041E840",
+    "end": "0x0040177A",
+    "evidence": "ordered",
+    "name": "fx_queue_add",
+    "size": 10
+  },
+  {
     "address": "0x00401780",
     "canonical_address": "0x0041E8D0",
     "end": "0x0040179D",
@@ -874,6 +882,22 @@
     "size": 114
   },
   {
+    "address": "0x00406260",
+    "canonical_address": "0x0043C960",
+    "end": "0x00408046",
+    "evidence": "ordered",
+    "name": "music_queue_track",
+    "size": 7654
+  },
+  {
+    "address": "0x00408050",
+    "canonical_address": "0x0043C980",
+    "end": "0x00409BBB",
+    "evidence": "ordered",
+    "name": "music_release_track",
+    "size": 7019
+  },
+  {
     "address": "0x00409BC0",
     "canonical_address": "0x0043C9C0",
     "end": "0x00409C7E",
@@ -936,6 +960,14 @@
     "evidence": "ordered",
     "name": "ui_button_update",
     "size": 1301
+  },
+  {
+    "address": "0x0040BA70",
+    "canonical_address": "0x0043ECF0",
+    "end": "0x0040BC09",
+    "evidence": "ordered",
+    "name": "ui_text_input_update",
+    "size": 409
   },
   {
     "address": "0x0040BC10",
@@ -1331,6 +1363,39 @@
     "evidence": "exact",
     "name": "crt_array_unwind",
     "size": 94
+  },
+  {
+    "address": "0x0041BDDF",
+    "canonical_address": "0x00460D98",
+    "end": "0x0041BDE9",
+    "evidence": "ordered",
+    "name": "crt_onexit_init",
+    "size": 10,
+    "aliases": [
+      "___onexitinit"
+    ]
+  },
+  {
+    "address": "0x0041BDE9",
+    "canonical_address": "0x00460DD2",
+    "end": "0x0041BE07",
+    "evidence": "ordered",
+    "name": "crt_atol",
+    "size": 30,
+    "aliases": [
+      "_atol"
+    ]
+  },
+  {
+    "address": "0x0041BE07",
+    "canonical_address": "0x00460E5D",
+    "end": "0x0041BE15",
+    "evidence": "ordered",
+    "name": "crt_fclose",
+    "size": 14,
+    "aliases": [
+      "fclose"
+    ]
   },
   {
     "address": "0x0041BE15",

@@ -177,6 +177,14 @@
     "size": 70
   },
   {
+    "address": "0x00402290",
+    "canonical_address": "0x004018B0",
+    "end": "0x0040229A",
+    "evidence": "ordered",
+    "name": "console_set_open",
+    "size": 10
+  },
+  {
     "address": "0x004022A0",
     "canonical_address": "0x004018D0",
     "end": "0x00402303",
@@ -504,6 +512,17 @@
     "size": 25
   },
   {
+    "address": "0x004036C0",
+    "canonical_address": "0x004123F0",
+    "end": "0x004036D1",
+    "evidence": "ordered",
+    "name": "bonus_meta_entry_init",
+    "size": 17,
+    "aliases": [
+      "??0bonus_meta_cpp_t@@QAE@XZ"
+    ]
+  },
+  {
     "address": "0x004036E0",
     "canonical_address": "0x00412410",
     "end": "0x00403704",
@@ -756,6 +775,14 @@
     "size": 1
   },
   {
+    "address": "0x00403AC0",
+    "canonical_address": "0x0041E840",
+    "end": "0x00403ACA",
+    "evidence": "ordered",
+    "name": "fx_queue_add",
+    "size": 10
+  },
+  {
     "address": "0x00403AD0",
     "canonical_address": "0x0041E8D0",
     "end": "0x00403AED",
@@ -842,6 +869,14 @@
     "evidence": "ordered",
     "name": "fx_spawn_sprite",
     "size": 189
+  },
+  {
+    "address": "0x00406B60",
+    "canonical_address": "0x0041FC60",
+    "end": "0x00406BA5",
+    "evidence": "ordered",
+    "name": "weapon_name_get",
+    "size": 69
   },
   {
     "address": "0x00406BB0",
@@ -940,6 +975,14 @@
     "size": 1948
   },
   {
+    "address": "0x0040E060",
+    "canonical_address": "0x00428140",
+    "end": "0x0040E6A1",
+    "evidence": "ordered",
+    "name": "creature_alloc_slot",
+    "size": 1601
+  },
+  {
     "address": "0x0040E6B0",
     "canonical_address": "0x004281E0",
     "end": "0x0040E6E2",
@@ -970,6 +1013,14 @@
     "evidence": "ordered",
     "name": "bonus_render",
     "size": 2819
+  },
+  {
+    "address": "0x0040F340",
+    "canonical_address": "0x0042A5F0",
+    "end": "0x0040F5D1",
+    "evidence": "ordered",
+    "name": "audio_resume_all",
+    "size": 657
   },
   {
     "address": "0x0040F5E0",
@@ -1371,6 +1422,17 @@
     ]
   },
   {
+    "address": "0x00421C17",
+    "canonical_address": "0x00460E5D",
+    "end": "0x00421C22",
+    "evidence": "ordered",
+    "name": "crt_fclose",
+    "size": 11,
+    "aliases": [
+      "fclose"
+    ]
+  },
+  {
     "address": "0x00421C22",
     "canonical_address": "0x00460E8E",
     "end": "0x00421C78",
@@ -1540,6 +1602,17 @@
     "aliases": [
       "?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z",
       "?FrameUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z"
+    ]
+  },
+  {
+    "address": "0x0042240A",
+    "canonical_address": "0x00461AF7",
+    "end": "0x00422414",
+    "evidence": "ordered",
+    "name": "crt_fread",
+    "size": 10,
+    "aliases": [
+      "fread"
     ]
   },
   {
@@ -2040,6 +2113,14 @@
     "evidence": "exact",
     "name": "crt_openfile",
     "size": 368
+  },
+  {
+    "address": "0x00423D78",
+    "canonical_address": "0x004641A0",
+    "end": "0x00423DF0",
+    "evidence": "ordered",
+    "name": "crt_getstream",
+    "size": 120
   },
   {
     "address": "0x00423DF0",
@@ -2804,6 +2885,17 @@
     "evidence": "referenced",
     "name": "crt_memmove",
     "size": 351
+  },
+  {
+    "address": "0x00427650",
+    "canonical_address": "0x0046A8C5",
+    "end": "0x00427830",
+    "evidence": "ordered",
+    "name": "crt_fptrap",
+    "size": 480,
+    "aliases": [
+      "__fptrap"
+    ]
   },
   {
     "address": "0x00427830",

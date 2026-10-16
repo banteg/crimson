@@ -379,10 +379,16 @@ def _imports(path: Path) -> list[dict[str, Any]]:
 
 def map_build_image(image: BuildImage, canonical: BuildImage) -> dict[str, Any]:
     """Derive ``image``'s function and data maps from its configured source image."""
-    payload = _Mapper(image, canonical).run()
-    recovery = image.map_dir / "recovered.json"
-    if recovery.is_file():
-        apply_recovered_map(image, canonical, payload, json.loads(recovery.read_text(encoding="utf-8")))
+    recovery_path = image.map_dir / "recovered.json"
+    recovery = json.loads(recovery_path.read_text(encoding="utf-8")) if recovery_path.is_file() else None
+    # Reviewed extents seed the mapper: they anchor layout order and protect their interiors.
+    pinned = {
+        row["name"]: (matchlib.parse_int(row["address"]), matchlib.parse_int(row["end"]))
+        for row in (recovery or {}).get("functions", ())
+    }
+    payload = _Mapper(image, canonical, pinned).run()
+    if recovery is not None:
+        apply_recovered_map(image, canonical, payload, recovery)
     return payload
 
 
@@ -426,7 +432,9 @@ def apply_recovered_map(
     }
     for recovered in recovery.get("data", ()):
         name = recovered["name"]
-        if not names.knows_name(name) and name not in imported:
+        # A build-only identity (code or data the canonical build no longer has)
+        # is admitted explicitly, never by a typo slipping past the catalog.
+        if not recovered.get("build_only") and not names.knows_name(name) and name not in imported:
             raise ValueError(f"unknown recovered data identity: {name}")
         address = matchlib.parse_int(recovered["address"])
         reference = matchlib.parse_int(recovered["reference"])
@@ -441,6 +449,13 @@ def apply_recovered_map(
         if not direct and struct.pack("<I", value) not in encoded:
             raise ValueError(f"recovered data reference value mismatch: {name}")
         entries[name] = {"address": f"0x{address:08x}", "name": name, "program": image.target.image_name}
+        # The pin also ends any canonical alias of that name: a body folded in the
+        # canonical build can be a separate function here.
+        for row in rows.values():
+            if name in row.get("aliases", ()):
+                row["aliases"] = [alias for alias in row["aliases"] if alias != name]
+                if not row["aliases"]:
+                    del row["aliases"]
     ordered = sorted(rows.values(), key=lambda row: matchlib.parse_int(row["address"]))
     if any(matchlib.parse_int(left["end"]) > matchlib.parse_int(right["address"]) for left, right in pairwise(ordered)):
         raise ValueError("recovered function extents overlap mapped functions")
@@ -557,7 +572,9 @@ class _Mapper:
     in the same layout order.
     """
 
-    def __init__(self, image: BuildImage, canonical: BuildImage) -> None:
+    def __init__(
+        self, image: BuildImage, canonical: BuildImage, pinned: dict[str, tuple[int, int]] | None = None,
+    ) -> None:
         self.image = image
         self.canonical = canonical
         target = canonical.target
@@ -571,6 +588,8 @@ class _Mapper:
         self.target = matchlib.load_image(image.path)
         self.functions = sorted(manifest.functions, key=lambda function: function.address)
         self.by_address = {function.address: function for function in self.functions}
+        by_name = {function.name: function.address for function in self.functions}
+        self.pinned = {by_name[name]: extent for name, extent in (pinned or {}).items()}
         self.starts = [function.address for function in self.functions]
         self.bodies = {
             function.address: _body(self.source, function.address, function.size) for function in self.functions
@@ -730,7 +749,12 @@ class _Mapper:
 
     def run(self) -> dict[str, Any]:
         self.search()
-        pending = [address for address, positions in self.hits.items() if len(positions) == 1]
+        for address, (start, _) in self.pinned.items():
+            self.mapped[address] = start
+            self.evidence[address] = "recovered"
+        pending = [
+            address for address, positions in self.hits.items() if len(positions) == 1 and address not in self.mapped
+        ]
         for address in pending:
             self.accept(address, self.hits[address][0], "exact")
         # Every new placement narrows the gaps and adds call sites; stop once none comes.
@@ -876,9 +900,9 @@ class _Mapper:
         # Byte-pattern entry candidates can land inside a verified body. Such a
         # candidate cannot delimit that body or become a second function by order.
         verified = sorted(
-            (target, target + self.bodies[address].size)
+            (target, self.pinned[address][1] if address in self.pinned else target + self.bodies[address].size)
             for address, target in self.mapped.items()
-            if self.evidence[address] in {"exact", "interface"}
+            if self.evidence[address] in {"exact", "interface", "recovered"}
         )
         result = []
         index = protected_end = 0
@@ -932,9 +956,13 @@ class _Mapper:
             candidates = [address for address in candidates if address not in taken]
             if not missing or not candidates:
                 continue
-            pairs = _align(
-                [self.bodies[address].size for address in missing],
-                [self.body_at(address, self.changed_end(address) - address).size for address in candidates],
+            pairs = _fill_equal_runs(
+                _align(
+                    [self.bodies[address].size for address in missing],
+                    [self.body_at(address, self.changed_end(address) - address).size for address in candidates],
+                ),
+                len(missing),
+                len(candidates),
             )
             for source_index, target_index in pairs:
                 if self.accept(missing[source_index], candidates[target_index], "ordered"):
@@ -1057,6 +1085,21 @@ def _align(source_sizes: list[int], target_sizes: list[int]) -> list[tuple[int, 
             row += 1
         else:
             column += 1
+    return result
+
+
+def _fill_equal_runs(pairs: list[tuple[int, int]], rows: int, columns: int) -> list[tuple[int, int]]:
+    """Pair, in order, unpaired runs of equal length between consecutive pairs.
+
+    Such a run is a one-to-one correspondence whatever the sizes: a later
+    compiler can turn a short wrapper into a tail jump a fraction its size.
+    """
+    result = []
+    for (row, column), (next_row, next_column) in pairwise([(-1, -1), *pairs, (rows, columns)]):
+        if next_row - row == next_column - column:
+            result.extend(zip(range(row + 1, next_row), range(column + 1, next_column), strict=True))
+        if next_row < rows:
+            result.append((next_row, next_column))
     return result
 
 

@@ -7178,6 +7178,17 @@
     ]
   },
   {
+    "address": "0x004587FE",
+    "canonical_address": "0x004668CE",
+    "end": "0x00458807",
+    "evidence": "exact",
+    "name": "crt_calloc_old_sbh_unlock_cleanup",
+    "size": 9,
+    "aliases": [
+      "$L17385"
+    ]
+  },
+  {
     "address": "0x00458819",
     "canonical_address": "0x004668E9",
     "end": "0x00458957",
@@ -7555,6 +7566,17 @@
     "evidence": "referenced",
     "name": "crt_memmove",
     "size": 351
+  },
+  {
+    "address": "0x0045A4D0",
+    "canonical_address": "0x0046A8C5",
+    "end": "0x0045A6AE",
+    "evidence": "ordered",
+    "name": "crt_fptrap",
+    "size": 478,
+    "aliases": [
+      "__fptrap"
+    ]
   },
   {
     "address": "0x0045A6AE",

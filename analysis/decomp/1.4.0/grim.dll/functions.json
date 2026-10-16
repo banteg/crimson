@@ -219,6 +219,14 @@
     "size": 232
   },
   {
+    "address": "0x10002B70",
+    "canonical_address": "0x10004920",
+    "end": "0x10002C05",
+    "evidence": "ordered",
+    "name": "grim_timing_init",
+    "size": 149
+  },
+  {
     "address": "0x10002C10",
     "canonical_address": "0x10004970",
     "end": "0x10002D46",
