@@ -1,7 +1,7 @@
 Original bug 14: Pyromaniac is offered only while player 1 holds the Flamethrower. The fix, in co-op, offers it
 while any living player holds it.
---- a/decomp/1.9/crimsonland/game/perks_generate_choices.c
-+++ b/decomp/1.9/crimsonland/game/perks_generate_choices.c
+--- a/decomp/1.9/crimsonland/game/perks_generate_choices.cpp
++++ b/decomp/1.9/crimsonland/game/perks_generate_choices.cpp
 @@ -38,6 +38,17 @@
      memset(perk_choice_ids, 0, sizeof(perk_choice_ids));
      choice_index = 0;
