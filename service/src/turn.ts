@@ -20,19 +20,26 @@ const transportRank = (url: string) => (url.startsWith("turns:") ? 2 : url.inclu
 // STUN only without both TURN values, or when the TURN service fails: two players on open networks still connect.
 export async function iceServers(env: Env): Promise<IceServer[]> {
   if (!env.TURN_KEY_ID || !env.TURN_KEY_API_TOKEN) return [STUN];
-  const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${env.TURN_KEY_ID}/credentials/generate-ice-servers`, {
-    method: "POST",
-    headers: { authorization: `Bearer ${env.TURN_KEY_API_TOKEN}`, "content-type": "application/json" },
-    body: JSON.stringify({ ttl: TTL_S }),
-  });
-  if (!response.ok) {
-    console.error(`TURN credentials: ${response.status}`);
+  let servers: unknown;
+  try {
+    const response = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${env.TURN_KEY_ID}/credentials/generate-ice-servers`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${env.TURN_KEY_API_TOKEN}`, "content-type": "application/json" },
+      body: JSON.stringify({ ttl: TTL_S }),
+    });
+    if (!response.ok) throw new Error(`status ${response.status}`);
+    servers = ((await response.json()) as { iceServers?: unknown }).iceServers;
+    if (!Array.isArray(servers)) throw new Error("no iceServers list");
+  } catch (error) {
+    console.error(`TURN credentials: ${error}`);
     return [STUN];
   }
-  const { iceServers } = (await response.json()) as { iceServers: IceServer[] };
-  return iceServers.map((server) => ({
-    ...server,
-    // Browsers block port 53, and a URL on it only times out.
-    urls: server.urls.filter((url) => !/:53(\?|$)/.test(url)).sort((a, b) => transportRank(a) - transportRank(b)),
-  }));
+  return (servers as IceServer[])
+    .map((server) => ({
+      ...server,
+      // Browsers block port 53, and a URL on it only times out.
+      urls: server.urls.filter((url) => !/:53(\?|$)/.test(url)).sort((a, b) => transportRank(a) - transportRank(b)),
+    }))
+    // A server left without URLs is one RTCPeerConnection refuses.
+    .filter((server) => server.urls.length);
 }

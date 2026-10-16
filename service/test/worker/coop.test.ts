@@ -10,7 +10,16 @@ const STUN_ONLY = [{ urls: ["stun:stun.cloudflare.com:3478"] }];
 const allow = { ...env, COOP_ROOM_LIMITER: { limit: async () => ({ success: true }) } };
 const call = (path: string, init: RequestInit = {}, bindings: Cloudflare.Env = allow) => worker.fetch(new Request(ORIGIN + path, init), bindings);
 const stub = (id: string) => env.COOP_ROOMS.get(env.COOP_ROOMS.idFromName(id));
-afterEach(() => vi.restoreAllMocks());
+const ICE = JSON.stringify({ type: "ice" });
+const PEER_LEFT = JSON.stringify({ type: "peer", present: false });
+const TURN = { urls: ["turn:turn.cloudflare.com:3478?transport=udp"], username: "user", credential: "secret" };
+// Rooms read their TURN key from the test's own bindings; the Worker routes here get theirs per call.
+const configureTurn = () => Object.assign(env, { TURN_KEY_ID: "key-id", TURN_KEY_API_TOKEN: "api-token" });
+afterEach(() => {
+  vi.restoreAllMocks();
+  delete env.TURN_KEY_ID;
+  delete env.TURN_KEY_API_TOKEN;
+});
 
 interface Created {
   room_id: string;
@@ -58,6 +67,13 @@ class Peer {
   pending(): number {
     return this.queue.length;
   }
+}
+
+// Everything a socket receives before `last`.
+async function until(peer: Peer, last: string): Promise<(string | ArrayBuffer)[]> {
+  const received: (string | ArrayBuffer)[] = [];
+  for (let message; (message = await peer.next()) !== last; ) received.push(message);
+  return received;
 }
 
 async function join(id: string, query: string): Promise<Peer> {
@@ -167,24 +183,114 @@ describe("co-op rooms", () => {
     expect(host.pending()).toBe(0);
   });
 
-  it("closes a socket that sends more than 16 KiB at once or floods, without relaying it", async () => {
+  it("closes a socket that sends more than 16 KiB at once, and relays nothing it sends after", async () => {
     const { host, guest } = await pair();
     host.ws.send(new Uint8Array(16 * 1024 + 1));
+    host.ws.send("after the binary");
     expect((await host.closed).code).toBe(1009);
-    expect(await guest.json()).toEqual({ type: "peer", present: false });
+    expect(await guest.next()).toBe(PEER_LEFT);
 
-    const flood = await pair();
-    for (let i = 0; i < 400; i++) flood.guest.ws.send(String(i));
-    expect((await flood.guest.closed).code).toBe(1008);
+    // The limit counts UTF-8 bytes: 8193 characters of two bytes each.
+    const text = await pair();
+    text.host.ws.send("é".repeat(8 * 1024 + 1));
+    text.host.ws.send("after the text");
+    expect((await text.host.closed).code).toBe(1009);
+    expect(await text.guest.next()).toBe(PEER_LEFT);
+  });
+
+  it("closes a flooding socket after relaying only its budget", async () => {
+    const { host, guest } = await pair();
+    const start = Date.now();
+    for (let i = 0; i < 400; i++) guest.ws.send(String(i));
+    expect((await guest.closed).code).toBe(1008);
+    const relayed = await until(host, PEER_LEFT);
+    expect(relayed).toEqual(relayed.map((_, i) => String(i)));
+    expect(relayed.length).toBeGreaterThanOrEqual(200);
+    expect(relayed.length).toBeLessThanOrEqual(200 + ((Date.now() - start) * 200) / 1000);
+  });
+
+  it("keeps a seat's message budget across its reconnects, and limits those", async () => {
+    const { room, host, guest, guestToken } = await pair();
+    const start = Date.now();
+    for (let i = 0; i < 190; i++) guest.ws.send(String(i));
+    for (let i = 0; i < 190; i++) expect(await host.next()).toBe(String(i));
+    const again = await join(room.room_id, `role=guest&token=${guestToken}`);
+    expect(await host.json()).toEqual({ type: "peer", present: true });
+    for (let i = 190; i < 590; i++) again.ws.send(String(i));
+    expect((await again.closed).code).toBe(1008);
+    const relayed = await until(host, PEER_LEFT);
+    expect(relayed).toEqual(relayed.map((_, i) => String(190 + i)));
+    expect(190 + relayed.length).toBeLessThanOrEqual(200 + ((Date.now() - start) * 200) / 1000);
+
+    // The guest has used 2 of its 10 sockets a minute; the host's are its own.
+    for (let i = 0; i < 8; i++) await join(room.room_id, `role=guest&token=${guestToken}`);
+    expect((await handshake(room.room_id, `role=guest&token=${guestToken}`)).status).toBe(429);
+    await join(room.room_id, `role=host&token=${room.host_token}`);
+  });
+
+  it("closes a socket that sends a message passing for the room's own", async () => {
+    for (const forged of [{ type: "peer", present: true }, { type: "seat", role: "host" }]) {
+      const { host, guest } = await pair();
+      guest.ws.send(JSON.stringify(forged));
+      expect(await guest.closed).toEqual({ code: 1008, reason: `${forged.type} messages are the room's` });
+      expect(await host.next()).toBe(PEER_LEFT);
+    }
+  });
+
+  it("tells the partner once when a socket both fails and closes", async () => {
+    const { room, host } = await pair();
+    await runInDurableObject(stub(room.room_id), async (instance, state) => {
+      const [ws] = state.getWebSockets("guest");
+      await instance.webSocketError(ws!);
+      await instance.webSocketClose(ws!);
+    });
+    expect(await host.next()).toBe(PEER_LEFT);
+    host.ws.send(ICE);
+    expect(await host.json()).toEqual({ type: "ice", ice_servers: STUN_ONLY });
   });
 
   it("answers an ICE request itself and keeps it from the partner", async () => {
     const { host, guest } = await pair();
-    guest.ws.send(JSON.stringify({ type: "ice" }));
+    guest.ws.send(ICE);
     expect(await guest.json()).toEqual({ type: "ice", ice_servers: STUN_ONLY });
     host.ws.send("after");
     expect(await guest.next()).toBe("after");
     expect(host.pending()).toBe(0);
+  });
+
+  it("mints TURN credentials for a room at most every ten seconds, however its seats ask", async () => {
+    configureTurn();
+    const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(async () => Response.json({ iceServers: [TURN] }));
+    const { room, host, guest, guestToken } = await pair();
+    const answer = { type: "ice", ice_servers: [TURN] };
+    // Requests while the first mint is under way share it.
+    for (let i = 0; i < 20; i++) guest.ws.send(ICE);
+    host.ws.send(ICE);
+    for (let i = 0; i < 20; i++) expect(await guest.json()).toEqual(answer);
+    expect(await host.json()).toEqual(answer);
+    // A reconnect does not start the wait over.
+    const again = await join(room.room_id, `role=guest&token=${guestToken}`);
+    expect(await again.json()).toEqual({ type: "seat", role: "guest" });
+    expect(await again.json()).toEqual({ type: "peer", present: true });
+    again.ws.send(ICE);
+    expect(await again.json()).toEqual(answer);
+    expect(fetch).toHaveBeenCalledTimes(1);
+
+    const later = Date.now() + 10 * 1000;
+    vi.spyOn(Date, "now").mockReturnValue(later);
+    again.ws.send(ICE);
+    expect(await again.json()).toEqual(answer);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("answers an ICE request with STUN when the TURN service cannot be reached", async () => {
+    configureTurn();
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new TypeError("network connection lost"));
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { guest } = await pair();
+    guest.ws.send(ICE);
+    expect(await guest.json()).toEqual({ type: "ice", ice_servers: STUN_ONLY });
+    expect(error).toHaveBeenCalledWith("TURN credentials: TypeError: network connection lost");
   });
 
   it("mints TURN credentials with UDP relays first and without port 53, and falls back to STUN", async () => {
@@ -199,7 +305,11 @@ describe("co-op rooms", () => {
       username: "user",
       credential: "secret",
     };
-    const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ iceServers: [STUN_ONLY[0], turn] }, { status: 201 }));
+    // A server left with only port 53 is dropped whole.
+    const blocked = { urls: ["turn:turn.cloudflare.com:53?transport=udp"], username: "user", credential: "secret" };
+    const fetch = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(Response.json({ iceServers: [STUN_ONLY[0], turn, blocked] }, { status: 201 }));
     const configured = { ...allow, TURN_KEY_ID: "key-id", TURN_KEY_API_TOKEN: "api-token" };
     expect((await create(configured)).ice_servers).toEqual([
       STUN_ONLY[0],
@@ -218,9 +328,17 @@ describe("co-op rooms", () => {
     expect(url).toBe("https://rtc.live.cloudflare.com/v1/turn/keys/key-id/credentials/generate-ice-servers");
     expect(init).toMatchObject({ method: "POST", headers: { authorization: "Bearer api-token" }, body: JSON.stringify({ ttl: 86400 }) });
 
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    // Every failure still makes the room, with STUN only.
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
     fetch.mockResolvedValue(new Response("unavailable", { status: 503 }));
     expect((await create(configured)).ice_servers).toEqual(STUN_ONLY);
+    fetch.mockRejectedValue(new TypeError("network connection lost"));
+    expect((await create(configured)).ice_servers).toEqual(STUN_ONLY);
+    fetch.mockResolvedValue(new Response("<html>", { status: 200 }));
+    expect((await create(configured)).ice_servers).toEqual(STUN_ONLY);
+    fetch.mockResolvedValue(Response.json({ iceServers: { urls: [] } }));
+    expect((await create(configured)).ice_servers).toEqual(STUN_ONLY);
+    expect(error).toHaveBeenCalledTimes(4);
   });
 
   it("deletes a room a minute after its last socket leaves, and any room after half a day", async () => {

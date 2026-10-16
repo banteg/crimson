@@ -119,8 +119,9 @@ networking work on proving:
        automatic gap repair whenever unacknowledged input age exceeds the 8-tick
        unreliable window.
 
-   - **NAT traversal**: The Worker issues short-lived **Cloudflare Calls TURN**
-     credentials (`turn:turn.cloudflare.com:3478?transport=udp` and
+   - **NAT traversal**: The Worker issues **Cloudflare Realtime TURN**
+     credentials with a one-day TTL, refreshed over the room socket with
+     `{type: "ice"}` (`turn:turn.cloudflare.com:3478?transport=udp` and
      `turn:turn.cloudflare.com:443?transport=udp` preferred for true UDP without
      TCP head-of-line blocking; `turns:turn.cloudflare.com:443?transport=tcp` and
      `CoopRoom` WebSocket relay retained as reachability fallbacks with
@@ -952,7 +953,8 @@ nothing of the game. The routes need no account and read no cookie:
   `?role=guest[&token=<guest_token>]` opens a seat's socket. It needs
   `Upgrade: websocket` (`426` otherwise) and the site's own `Origin` (`403`).
   Refusals come before the handshake: `404` for no room, `403` for a wrong
-  host token, `409` for a guest seat already taken.
+  host token, `409` for a guest seat already taken, `429` past a seat's ten
+  sockets a minute.
 
 **Seats.** The host seat opens only with the host token. The first guest takes
 the guest seat and receives a `guest_token` that takes it back after a reload;
@@ -967,11 +969,14 @@ are small JSON texts:
 | --- | --- |
 | `{type: "seat", role, guest_token?}` | First message on a new socket; `guest_token` only when the guest seat was just taken. |
 | `{type: "peer", present}` | Right after `seat`, with the other seat's state; then to the other seat whenever a seat joins (`true`) or leaves (`false`). A repeated `present: true` means the partner reconnected and the peer connection must be renegotiated. |
-| `{type: "ice", ice_servers}` | Answer to a client's `{type: "ice"}`, which the server keeps from the partner. The guest asks once after joining; either side asks again before an ICE restart. |
+| `{type: "ice", ice_servers}` | Answer to a client's `{type: "ice"}`, which the server keeps from the partner. The guest asks once after joining; either side asks again before an ICE restart. Within ten seconds of the room's last TURN mint, both seats get that mint's servers. |
 
-Client message types therefore avoid `seat`, `peer` and `ice`. A message over
-16 KiB closes the socket with `1009`; more than 200 messages a second (a
-second's burst) closes it with `1008`.
+Client message types therefore avoid `seat`, `peer` and `ice`: a client text
+message typed `seat` or `peer` would pass for the server's own, so it closes
+the socket with `1008` instead of being relayed. A message over 16 KiB closes
+the socket with `1009`; more than 200 messages a second (a second's burst)
+closes it with `1008`. That budget belongs to the seat, so a reconnect
+inherits it. Nothing a closed socket still sends is relayed.
 
 **Lifetime.** A room is deleted a minute after its last socket leaves (or a
 minute after it was made, if nobody joins) and in any case 12 hours after it
@@ -979,8 +984,8 @@ was made; open sockets then close with `4000`.
 
 **TURN.** `ice_servers` comes from Cloudflare Realtime TURN
 (`generate-ice-servers` with a one-day TTL, longer than a room lives), with
-the port-53 URLs browsers block removed and the TURN URLs ordered UDP, then
-TCP, then TLS. Without both `TURN_KEY_ID` and `TURN_KEY_API_TOKEN` (set with
+the port-53 URLs browsers block removed (and any server left without a URL)
+and the TURN URLs ordered UDP, then TCP, then TLS. Without both `TURN_KEY_ID` and `TURN_KEY_API_TOKEN` (set with
 `wrangler secret put`), or when the TURN service fails, it is STUN only
 (`stun:stun.cloudflare.com:3478`), which still connects players on open
 networks.
@@ -1168,7 +1173,7 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
    `crimson-core/client/web/shell.html`, `host/coop.inc`.
 
 2. **Deliverable**: Playable `?coop=<room_id>` two-browser session using
-   `coop-ticks` + `coop-control` over WebRTC + Cloudflare Calls TURN (and WS
+   `coop-ticks` + `coop-control` over WebRTC + Cloudflare Realtime TURN (and WS
    fallback), with reliable `MSG_INPUT_REPAIR`, in-band whoever-opens-picks perk
    flow + partner `viewer_card` notice, input-frontier pause, and measured RTT /
    candidate-type / desync telemetry.

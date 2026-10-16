@@ -14,10 +14,12 @@ type Role = "host" | "guest";
 const IDLE_MS = 60 * 1000;
 const LIFETIME_MS = 12 * 60 * 60 * 1000;
 const MAX_MESSAGE_BYTES = 16 * 1024;
-// Each socket's message budget: a second's worth refills every second. A frame-paced tick stream at 144 Hz plus
+// Each seat's message budget: a second's worth refills every second. A frame-paced tick stream at 144 Hz plus
 // control fits; a flood does not.
 const MESSAGES_PER_SECOND = 200;
-// A client asking for ICE servers more often than this gets the ones it was last given, sparing the TURN service.
+// Each seat's sockets: a reload or a network change reconnects, a loop does not.
+const CONNECTS_PER_MINUTE = 10;
+// ICE requests within this long of the room's last TURN mint get the servers it gave, sparing the TURN service.
 const ICE_REFRESH_MS = 10 * 1000;
 // Close codes for the server's own reasons; 1008 and 1009 are the standard ones for floods and oversized messages.
 const CLOSE_ROOM_GONE = 4000;
@@ -43,15 +45,38 @@ export interface RoomStatus {
   guest: boolean; // the guest seat is taken: another guest is refused
 }
 
-interface Budget {
-  tokens: number;
-  at: number;
-  ice?: { servers: IceServer[]; at: number };
+// A token bucket: `burst` at most, refilled at `rate` a second.
+class Budget {
+  private tokens: number;
+  private at = Date.now();
+
+  constructor(
+    private readonly rate: number,
+    private readonly burst: number,
+  ) {
+    this.tokens = burst;
+  }
+
+  take(): boolean {
+    const now = Date.now();
+    this.tokens = Math.min(this.burst, this.tokens + ((now - this.at) * this.rate) / 1000);
+    this.at = now;
+    if (this.tokens < 1) return false;
+    this.tokens -= 1;
+    return true;
+  }
 }
 
+const seatBudgets = (rate: number, burst: number): Record<Role, Budget> => ({ host: new Budget(rate, burst), guest: new Budget(rate, burst) });
+
 export class CoopRoom extends DurableObject<Env> {
-  // In memory only: hibernation resets a socket's budget, which only ever lets an idle socket through.
-  private budgets = new Map<WebSocket, Budget>();
+  // Kept per seat, so a reconnect inherits what the socket it replaces had spent. In memory only: the room
+  // hibernates only after seconds of silence, so a reset only ever forgives a quiet seat.
+  private messages = seatBudgets(MESSAGES_PER_SECOND, MESSAGES_PER_SECOND);
+  private connects = seatBudgets(CONNECTS_PER_MINUTE / 60, CONNECTS_PER_MINUTE);
+  // The room's last TURN mint, from when it was asked for: requests while it is under way share it, and
+  // reconnects cannot reset it.
+  private ice?: { servers: Promise<IceServer[]>; at: number };
 
   private async room(): Promise<Room | null> {
     const room = await this.ctx.storage.get<Room>("room");
@@ -88,6 +113,7 @@ export class CoopRoom extends DurableObject<Env> {
     const hash = token === null ? null : await tokenHash(token);
     if (role === "host" && hash !== room.host) return refuse(403, "wrong host token");
     if (role === "guest" && room.guest !== undefined && hash !== room.guest) return refuse(409, "room full");
+    if (!this.connects[role].take()) return refuse(429, "too many connections");
 
     // The first guest takes the seat and gets the token that takes it back after a reload.
     let guestToken: string | undefined;
@@ -109,20 +135,29 @@ export class CoopRoom extends DurableObject<Env> {
   }
 
   async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+    // A socket the room closed (oversized, flooding or replaced) is no longer heard.
+    if (ws.readyState !== WebSocket.OPEN) return;
     if ((typeof message === "string" ? utf8Length(message) : message.byteLength) > MAX_MESSAGE_BYTES)
       return ws.close(1009, "message over 16 KiB");
-    const now = Date.now();
-    const budget = this.budgets.get(ws) ?? { tokens: MESSAGES_PER_SECOND, at: now };
-    budget.tokens = Math.min(MESSAGES_PER_SECOND, budget.tokens + ((now - budget.at) * MESSAGES_PER_SECOND) / 1000) - 1;
-    budget.at = now;
-    this.budgets.set(ws, budget);
-    if (budget.tokens < 0) return ws.close(1008, "too many messages");
-    if (typeof message === "string" && iceRequest(message)) {
-      if (!budget.ice || now - budget.ice.at >= ICE_REFRESH_MS) budget.ice = { servers: await iceServers(this.env), at: now };
-      return ws.send(JSON.stringify({ type: "ice", ice_servers: budget.ice.servers }));
+    const role = this.ctx.getTags(ws)[0] as Role;
+    if (!this.messages[role].take()) return ws.close(1008, "too many messages");
+    const type = typeof message === "string" ? messageType(message) : undefined;
+    if (type === "ice") {
+      const servers = await this.roomIceServers();
+      // The socket may have gone while the TURN service answered.
+      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "ice", ice_servers: servers }));
+      return;
     }
+    // Only the room says who sits where: relayed, these would pass for its own.
+    if (type === "seat" || type === "peer") return ws.close(1008, `${type} messages are the room's`);
     // Relayed as sent; a message for a seat nobody holds is dropped.
-    this.socket(otherRole(this.ctx.getTags(ws)[0] as Role), ws)?.send(message);
+    this.socket(otherRole(role), ws)?.send(message);
+  }
+
+  private roomIceServers(): Promise<IceServer[]> {
+    const now = Date.now();
+    if (!this.ice || now - this.ice.at >= ICE_REFRESH_MS) this.ice = { servers: iceServers(this.env), at: now };
+    return this.ice.servers;
   }
 
   async webSocketClose(ws: WebSocket): Promise<void> {
@@ -134,7 +169,9 @@ export class CoopRoom extends DurableObject<Env> {
   }
 
   private async left(ws: WebSocket): Promise<void> {
-    this.budgets.delete(ws);
+    // webSocketError and webSocketClose can both report a socket; it leaves once.
+    if (ws.deserializeAttachment()) return;
+    ws.serializeAttachment({ left: true });
     const role = this.ctx.getTags(ws)[0] as Role;
     // A socket replaced by its seat's reconnect leaves nobody missing.
     if (!this.socket(role, ws)) this.socket(otherRole(role))?.send(JSON.stringify({ type: "peer", present: false }));
@@ -153,12 +190,12 @@ export class CoopRoom extends DurableObject<Env> {
   }
 }
 
-// {type: "ice"} is the one client message the room answers itself; every other one is for the peer.
-function iceRequest(message: string): boolean {
+// The type of a JSON text message: "ice" is the one the room answers itself, and "seat" and "peer" are the room's own.
+function messageType(message: string): unknown {
   try {
-    return (JSON.parse(message) as { type?: unknown } | null)?.type === "ice";
+    return (JSON.parse(message) as { type?: unknown } | null)?.type;
   } catch {
-    return false;
+    return undefined;
   }
 }
 
