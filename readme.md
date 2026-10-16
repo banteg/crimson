@@ -35,7 +35,7 @@ The [feature matrix](https://crimson.banteg.xyz/rewrite/feature-matrix/) compare
 - **Deterministic runs.** The simulation steps at a fixed 60 Hz from a seed and the recorded inputs, so a run plays out the same way every time, on every client.
 - **Replays.** Every run is recorded. Watch any of them from the high score screen or a link, seek anywhere, and with the Python port, verify one tick by tick or render it to 60 fps video.
 - **A verified leaderboard.** [crimson.land](https://crimson.land) ranks Survival and every quest, normal and hardcore. A score is a whole run, and the server replays it on the recovered original code before it counts. There is no sign-up: each client makes a [key](https://crimson.banteg.xyz/rewrite/leaderboard-identity/) on first launch. Bots and tool-assisted runs are welcome on [their own board](https://crimson.banteg.xyz/rewrite/bots/).
-- **Custom quests.** Write a quest in a [small recipe language](https://crimson.banteg.xyz/formats/quest-dsl/), play it with `crimson quest play`, and publish it to get its own page and leaderboard on [crimson.land/custom](https://crimson.land/custom). An LLM can write one from [a single-file spec](https://crimson.land/custom/llm.txt).
+- **Custom quests.** Crimsonland now comes with a Crimsonlang. Write a quest in [it](https://crimson.banteg.xyz/formats/quest-dsl/), play it with `crimson quest play`, and publish it to get its own page and leaderboard on [crimson.land/custom](https://crimson.land/custom). An LLM can write one from [a single-file spec](https://crimson.land/custom/llm.txt).
 
 ## Inside
 
