@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { type Head, Reader } from "../../src/msgpack";
 import { outcomeReasons, rankedBoard, unrankedReasons } from "../../src/ranked";
 import { decodeReplay, inflateReplay, ReplayError } from "../../src/replay";
-import { encodePortableQuest, encodeTransport, TransportError } from "../../src/transport";
+import { encodePortableQuest, encodeTransport, runIdentity, TransportError } from "../../src/transport";
 import questDsl from "../../src/quest-dsl.json";
 import vectors from "../vectors.json";
 
@@ -25,7 +25,12 @@ describe("the recorded fixtures decode as the Python codec decodes them", () => 
       expect(unrankedReasons(replay.run)).toEqual(fixture.unranked_reasons);
       expect(outcomeReasons(replay.run, replay.result)).toEqual(fixture.outcome_reasons);
       if (fixture.transport_sha256 === null) expect(() => encodeTransport(replay)).toThrow(TransportError);
-      else expect(sha256(encodeTransport(replay))).toBe(fixture.transport_sha256);
+      else {
+        const transport = encodeTransport(replay);
+        expect(sha256(transport)).toBe(fixture.transport_sha256);
+        // The id the service gave this run before the stream gained the player count.
+        expect(sha256(runIdentity(transport))).toBe(fixture.run_id);
+      }
     });
   }
 });
@@ -46,7 +51,9 @@ it("a custom quest decodes, ranks under the canonical profile, and matches Pytho
   expect(unrankedReasons(replay.run)).toEqual([]);
   expect(outcomeReasons(replay.run, replay.result)).toEqual([]);
   expect(sha256(encodePortableQuest(replay.run.custom_quest!))).toBe(vectors.custom_quest_run.digest);
-  expect(sha256(encodeTransport(replay))).toBe(vectors.custom_quest_run.transport_sha256);
+  const transport = encodeTransport(replay);
+  expect(sha256(transport)).toBe(vectors.custom_quest_run.transport_sha256);
+  expect(sha256(runIdentity(transport))).toBe(vectors.custom_quest_run.run_id);
 });
 
 it("quest-dsl.json stays in sync with Python's weapon, bonus, perk and template tables", () => {

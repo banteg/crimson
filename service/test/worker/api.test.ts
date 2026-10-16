@@ -53,7 +53,7 @@ describe("runs", () => {
 
     expect(response.status).toBe(201);
     const run = (await response.json()) as { id: string; board: string; score: number };
-    expect(run).toMatchObject({ board: "survival", score: 749 });
+    expect(run).toMatchObject({ id: vectors.ranked_run_id, board: "survival", score: 749 });
     const account = await env.DB.prepare("SELECT accounts.name, keys.fingerprint FROM accounts JOIN keys ON keys.account_id = accounts.id").first();
     expect(account).toMatchObject({ name: "banteg" });
     expect(await env.REPLAYS.head(`runs/${run.id}.crd`)).not.toBeNull();

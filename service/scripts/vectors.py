@@ -48,6 +48,12 @@ def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _run_id(transport: bytes) -> str:
+    """The service's id for a run (runIdentity in service/src/transport.ts): its stream without the player count."""
+    assert transport[48:52] == (1).to_bytes(4, "little")
+    return _sha(transport[:48] + transport[52:])
+
+
 def fixture_vectors() -> list[dict]:
     encode = _core_transport()
     vectors = []
@@ -55,7 +61,7 @@ def fixture_vectors() -> list[dict]:
         payload = inflate_replay_payload(path.read_bytes())
         replay = decode_replay_payload(payload)
         try:
-            transport = _sha(encode(replay, len(replay.ticks)))
+            transport = encode(replay, len(replay.ticks))
         except ValueError:
             transport = None
         vectors.append({
@@ -64,7 +70,8 @@ def fixture_vectors() -> list[dict]:
             "game_mode_id": int(replay.run.game_mode_id),
             "seed": replay.run.seed,
             "ticks": len(replay.ticks),
-            "transport_sha256": transport,
+            "transport_sha256": None if transport is None else _sha(transport),
+            "run_id": None if transport is None else _run_id(transport),
             "board": ranked_board(replay.run),
             "unranked_reasons": unranked_reasons(replay.run),
             "outcome_reasons": outcome_reasons(replay.run, replay.result),
@@ -209,10 +216,10 @@ def corrupted_vectors() -> tuple[str, list[dict]]:
 ILLEGAL_PICK = "tick 0: perk_pick without an open perk menu"
 
 
-def ranked_run() -> tuple[str, str, str, str]:
+def ranked_run() -> tuple[str, str, str, str, str]:
     """A ranked Survival run that verifies: static movement, firing at a point circling the arena centre until the
     player dies, recorded through the run-down; the same run claiming more than it earned; declaring a pilot; and
-    picking a perk no menu offered."""
+    picking a perk no menu offered. Last, the run's id on the service."""
     flags = 1 | (1 << 8) | (2 << 9) | (1 << 12)  # fire, static movement, mouse aim
 
     def tick(i: int) -> ReplayTick:
@@ -257,7 +264,8 @@ def ranked_run() -> tuple[str, str, str, str]:
         refusal = str(error)
     assert refusal == ILLEGAL_PICK, refusal
     runs = (replay(ticks, result), replay(ticks, inflated), piloted, illegal)
-    return tuple(base64.b64encode(dump_replay(r)).decode("ascii") for r in runs)
+    files = tuple(base64.b64encode(dump_replay(r)).decode("ascii") for r in runs)
+    return (*files, _run_id(_core_transport()(recorded, None)))
 
 
 def terrain_vectors() -> list[dict]:
@@ -373,17 +381,18 @@ def custom_quest_payload() -> dict[str, object]:
         "source": source,
         "digest": quest.digest(),
         "score": int(result.quest_final_ms or 0),
-        "transport_sha256": _sha(_core_transport()(recorded, None)),
+        "transport_sha256": _sha(transport := _core_transport()(recorded, None)),
+        "run_id": _run_id(transport),
     }
 
 def main() -> None:
     from quests import quest_dsl_tables
 
     base, corrupted = corrupted_vectors()
-    ranked, inflated, piloted, illegal = ranked_run()
+    ranked, inflated, piloted, illegal, ranked_id = ranked_run()
     vectors = {
         "fixtures": fixture_vectors(), "valid_payload": base, "corrupted": corrupted, "custom_quest_run": custom_quest_payload(), "ranked_run": ranked,
-        "ranked_run_inflated": inflated, "piloted_run": piloted, "illegal_command_run": illegal,
+        "ranked_run_id": ranked_id, "ranked_run_inflated": inflated, "piloted_run": piloted, "illegal_command_run": illegal,
         "unranked_run": base64.b64encode((FIXTURES / "rush-kills103.crd").read_bytes()).decode("ascii"),
         "terrain": terrain_vectors(),
         "run_terrain": run_terrain_vectors(),

@@ -5,6 +5,8 @@
 import { type CustomQuest, GameMode, type Replay } from "./replay";
 
 export const CONFIG_BYTES = 66 * 4;
+// The config word holding the player count, which the stream gained after runs were first accepted.
+const PLAYERS_WORD = 12;
 export const QUEST_HEAD_BYTES = 10 * 4;
 export const QUEST_SPAWN_BYTES = 24;
 export const QUEST_BYTES = QUEST_HEAD_BYTES + 256 * QUEST_SPAWN_BYTES;
@@ -99,5 +101,16 @@ export function encodeTransport(replay: Replay): Uint8Array {
       at += COMMAND_BYTES;
     }
   }
+  return bytes;
+}
+
+// The bytes a run's id hashes: its stream as the service first encoded it, without the player count. Ids name stored
+// replays, links and the duplicate check, so they stay put when the stream's layout changes. The service takes
+// one-player runs only, so the dropped word is always 1.
+export function runIdentity(transport: Uint8Array): Uint8Array {
+  const at = PLAYERS_WORD * 4;
+  const bytes = new Uint8Array(transport.length - 4);
+  bytes.set(transport.subarray(0, at));
+  bytes.set(transport.subarray(at + 4), at);
   return bytes;
 }

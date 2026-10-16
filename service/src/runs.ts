@@ -7,7 +7,7 @@ import type { Signals, Timeline } from "./api-types";
 import { type CustomQuest, decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError } from "./replay";
 import { GroundBake, groundArt, groundKey } from "./ground";
 import { encodeJpeg } from "./jpeg";
-import { encodePortableQuest, encodeTransport } from "./transport";
+import { encodePortableQuest, encodeTransport, runIdentity } from "./transport";
 import questDsl from "./quest-dsl.json";
 import { runGround, SIZE } from "../web/src/terrain/rules";
 import { type Verdict, verifyRun } from "./verify";
@@ -252,7 +252,7 @@ export async function postRun(request: Request, env: Env, options: { requireCust
   if (reasons.length) return refuse(422, `not a ranked run: ${reasons.join(", ")}`);
 
   const transport = encodeTransport(replay);
-  const runId = hex(await sha256(transport));
+  const runId = hex(await sha256(runIdentity(transport)));
   const custom = replay.run.custom_quest;
   const digest = custom ? await customQuestDigest(custom) : null;
   const quest = digest ? digest.slice(0, 12) : questOf(replay);
