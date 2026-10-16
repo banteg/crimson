@@ -128,6 +128,8 @@ SUITES = {
             "crimson-core/client/",
             "src/crimson/assets_version.json",
             "crimson-core/checks/assets.*",
+            "crimson-core/checks/analytics.test.mjs",
+            "crimson-core/checks/coop.test.mjs",
             "crimson-core/checks/audio.py",
             "crimson-core/checks/audio_timing.cpp",
             "crimson-core/checks/client_audio.cpp",

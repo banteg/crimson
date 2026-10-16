@@ -1005,6 +1005,36 @@ Any fallback from WebRTC to `ws-relay` is coordinated via an explicit
 `MSG_SWITCH_TRANSPORT { transport_epoch }` message through the room so both
 peers always read/write the same active transport.
 
+#### Client transport (`crimson-core/client/web/coop.js`)
+
+`createCoop()` is the page's side of the room, tested against a fake room
+and fake peer connections in `crimson-core/checks/coop.test.mjs`. It moves
+opaque bytes on channel 0 (ticks) and channel 1 (control) and knows nothing
+of the game. `host()` creates a room and `join(id)` takes a seat; either
+keeps its seat token in the tab's `sessionStorage` under the room id, so a
+reloaded page that joins its own room again takes its seat back (as host or
+guest). A guest without a stored token first asks the room's status and
+stops with "no such room" or "room full". Every time the room reports the
+partner present, the pages start a new *link*: the host names it, creates
+the peer connection with negotiated DataChannels `coop-ticks` (id 0,
+unordered, no retransmits) and `coop-control` (id 1, ordered) and sends the
+offer; the guest answers. Offers, answers and candidates are partner text
+messages carrying the link id, and messages of another link are stale.
+Candidates wait until their remote description is set. Both channels open
+means connected, and the selected candidate pair's local type (`host`,
+`srflx`, `prflx`, `relay-udp`, `relay-tcp`, `relay-tls`) is kept for
+telemetry. When the peer connection fails, or has not connected ten seconds
+into the link, the page that gives up sends
+`{type: "switch", link, transport_epoch}` (raising the epoch) and the other
+page answers with the same epoch; both then send binary room frames
+`[u8 channel][payload]` (telemetry `ws-relay`), relaying ticks at most 120
+times a second to stay inside the room's message budget. A lost room socket
+reconnects with backoff and the stored token, asking the room's status before
+each attempt; codes `4000`, `4001`, `1008` and `1009` end the session
+instead. Ticks drop when their channel (or the relay socket) is backed up;
+control messages never drop. Bytes that arrive before the game sets its
+handler wait in a bounded queue.
+
 ### 6.2 Wire protocol & gap-repair guarantee
 
 #### Preventing >8-tick burst-loss deadlocks

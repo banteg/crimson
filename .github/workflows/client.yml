@@ -34,7 +34,7 @@ jobs:
         if: inputs.desktop && matrix.name == 'linux'
         run: |
           python3 crimson-core/checks/assets.py
-          node --test crimson-core/checks/assets.test.mjs crimson-core/checks/analytics.test.mjs
+          node --test crimson-core/checks/assets.test.mjs crimson-core/checks/analytics.test.mjs crimson-core/checks/coop.test.mjs
 
       - name: Check audio timing
         if: inputs.desktop && matrix.name == 'linux'
