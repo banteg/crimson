@@ -82,6 +82,40 @@ crimson replay verify <file>
 crimson replay render <file>    # needs ffmpeg
 ```
 
+## Leaderboard
+
+Tick Ranked in the Play Game menu to play Survival or a quest for [crimson.land](https://crimson.land). The server
+replays every run before its score counts, and the game uploads finished runs by itself, so playing offline is fine.
+There is no sign-up: the game makes a key on its first launch, and the `identity` commands manage it:
+
+```bash
+crimson identity show             # your key and the fingerprint the boards show
+crimson identity export <file>    # copy your key, to play as you on another machine
+crimson identity import <file>    # sign as an exported key (--replace overwrites this one)
+crimson identity profile          # open your profile on crimson.land, signed in
+```
+
+## Custom quests
+
+Write a quest in the [quest language](https://crimson.banteg.xyz/formats/quest-dsl/), play it, and publish it with a
+completed ranked run to give it a page and leaderboard on [crimson.land/custom](https://crimson.land/custom):
+
+```bash
+crimson quest build <file>      # check a recipe and print its digest and entry budget
+crimson quest play <file>       # play it; every attempt saves a replay
+crimson quest publish <file>    # upload it with your newest clear
+```
+
+[crimson.land/custom/llm.txt](https://crimson.land/custom/llm.txt) is the whole language in one file, for writing
+quests with an LLM.
+
+## Tools
+
+```bash
+crimson quests <level>          # print a stock quest's spawn script
+crimson extract <game> <dst>    # extract the game's PAQ archives, with JAZ textures as PNG
+```
+
 ## More
 
 - [Changelog](https://github.com/banteg/crimson/blob/master/CHANGELOG.md)

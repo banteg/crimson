@@ -8,103 +8,60 @@
 
 [Crimsonland](https://en.wikipedia.org/wiki/Crimsonland) (2003), as its 1.9.93 GOG "Crimsonland Classic" release (2011), rebuilt twice:
 
-- **A playable reimplementation** in Python and raylib that matches the original's timings, random rolls, float32 rounding, UI layout and quirks, checked tick by tick against the original code.
-- **A matching decompilation**: C/C++ source that Visual C++ 6 compiles back into the original `crimsonland.exe` and `grim.dll`, instruction for instruction. Compiled to WebAssembly, the same source plays the original game [in your browser](https://crimson.land/play/).
+- **A matching decompilation**: C/C++ source that Visual C++ 6 compiles back into the original `crimsonland.exe` and `grim.dll`, instruction for instruction. Compiled to WebAssembly, it plays the original game in your browser.
+- **A reimplementation** in Python and raylib that matches the original's timings, random rolls, float32 rounding and quirks tick by tick, and adds what a modern release needs.
 
 [Play in your browser](https://crimson.land/play/) · [Leaderboard](https://crimson.land) · [The full story](https://banteg.xyz/posts/crimsonland/) · [Docs](https://crimson.banteg.xyz/) · [Changelog](CHANGELOG.md) · [Telegram group](https://t.me/+pG-Ow90lt28zMWFi)
 
 ## Play
 
-**In your browser**: [crimson.land/play](https://crimson.land/play/) runs the original game, compiled from the recovered source, with nothing to install. Saves stay in the browser, and it plays with a keyboard and mouse or a gamepad. Tick Ranked in its Play Game menu to play for the leaderboard.
+**[crimson.land/play](https://crimson.land/play/)** is the original game, built from the recovered source. There is nothing to install: it downloads the game files on first visit, keeps your saves in the browser, and plays with a keyboard and mouse or a gamepad. The original's [documented bugs](https://crimson.banteg.xyz/rewrite/original-bugs/) are fixed, and the Ranked box in the Play Game menu enters runs on the leaderboard.
 
-**Installed**, with ranked play: install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
+**The Python port** plays the same game with more room around it: any resolution with borderless fullscreen, local co-op for up to four players on their own controllers, the original bugs back on request with `--preserve-bugs`, and a `crimson` CLI for replays and quests. Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
 ```bash
 uvx crimsonland@latest
-
-# or run from source
-gh repo clone banteg/crimson && cd crimson
-uv run crimson
 ```
 
-The original Crimsonland Classic assets are distributed with permission from the original developer, and the game downloads them into its runtime directory on first launch. Saves, config, high scores and replays live in your per-user data directory; set `CRIMSON_RUNTIME_DIR` or pass `--base-dir` to keep them elsewhere.
+Its [player guide](pypi.md) covers controls, options and commands.
 
-`--width`/`--height` set the game resolution (1024x768 is native, 1024x1024 shows the whole arena) and `--fullscreen`/`--windowed` the window mode; both are saved. Fullscreen scales the game to fit the screen, and Alt+Enter toggles it. On Linux the game runs natively on Wayland but still links `libX11`.
+**A native desktop client** runs the browser build over SDL3 on macOS and Linux ([build notes](crimson-core/PORT.md#running-the-native-client)).
 
-**Desktop**: the browser build also runs natively over SDL3 ([`crimson-core/client`](crimson-core/client), built from source per the [port notes](crimson-core/PORT.md#running-the-native-client)). It downloads the game files on first launch and shares the installed game's data folder.
+The [feature matrix](https://crimson.banteg.xyz/rewrite/feature-matrix/) compares the three. The original Crimsonland Classic assets are distributed with permission from the original developer, and every client downloads them on first launch.
 
-### Controllers
+## What you can do with it
 
-Connect a PlayStation, Switch Pro or Xbox controller and press any button on it: a player still on the default controls switches to twin-stick controls. Controls you customized stay as you set them.
+- **Deterministic runs.** The simulation steps at a fixed 60 Hz from a seed and the recorded inputs, so a run plays out the same way every time, on every client.
+- **Replays.** Every run is recorded. Watch any of them from the high score screen or a link, seek anywhere, and with the Python port, verify one tick by tick or render it to 60 fps video.
+- **A verified leaderboard.** [crimson.land](https://crimson.land) ranks Survival and every quest, normal and hardcore. A score is a whole run, and the server replays it on the recovered original code before it counts. There is no sign-up: each client makes a [key](https://crimson.banteg.xyz/rewrite/leaderboard-identity/) on first launch. Bots and tool-assisted runs are welcome on [their own board](https://crimson.banteg.xyz/rewrite/bots/).
+- **Custom quests.** Write a quest in a [small recipe language](https://crimson.banteg.xyz/formats/quest-dsl/), play it with `crimson quest play`, and publish it to get its own page and leaderboard on [crimson.land/custom](https://crimson.land/custom). An LLM can write one from [a single-file spec](https://crimson.land/custom/llm.txt).
 
-| Control | Action |
+## Inside
+
+| Directory | What it holds |
 | --- | --- |
-| Left stick | move |
-| Right stick | aim |
-| R2 / RT | fire |
-| L1 / LB | reload |
-| Triangle / Y | pick a perk |
-| Start | pause |
-| D-pad, Cross / A, Circle / B | menus and the perk list |
+| [`decomp/`](decomp/README.md) | the recovered C/C++ source, for every build we study |
+| [`src/`](src) | the Python port: game logic in `crimson/`, the engine layer in `grim/` |
+| [`crimson-core/`](crimson-core/README.md) | the recovered source built to WebAssembly: the leaderboard's replay verifier, and the whole game behind the browser and native clients |
+| [`service/`](service) | crimson.land: the leaderboard, replay verification and the site |
+| [`crimson-re/`](crimson-re) | the matching, native link and debugging tools |
+| [`docs/`](docs/index.md) | game mechanics, file formats and the reverse engineering, published at [crimson.banteg.xyz](https://crimson.banteg.xyz/) |
 
-Buttons are named by position, so on a Switch Pro controller "Cross / A" is the bottom face button. In local co-op, player 2 uses the second controller, and so on. Options → Controls edits everything; its Reset button restores the controller layout, or mouse and keyboard when no controller is connected. `crimson view gamepad` shows what the game reads from each controller.
-
-### Online leaderboard
-
-Tick Ranked in the Play Game menu to play Survival or a quest for [crimson.land](https://crimson.land). The server replays every run before its score counts, and the game uploads finished runs by itself, so playing offline is fine. The high score screen's Update scores shows the boards in game. There is no sign-up: the game makes a key on its first launch, and the `identity` commands manage it:
-
-```
-crimson identity show                     print your key and the fingerprint the boards show
-crimson identity export <file>            copy your key to a file, to play as you on another machine
-crimson identity import <file>            sign as an exported key (--replace overwrites this one)
-crimson identity profile                  open your profile on crimson.land, signed in
-```
-
-### Replays and tools
-
-Every run is recorded. The `crimson` CLI (alias `crimsonland`) plays them back and checks them:
-
-```
-crimson replay list                       list your replays
-crimson replay play <file>                play back a replay
-crimson replay verify <file>              re-simulate a replay and check its recorded result
-crimson replay render <file>              render a replay to 60 fps video with ffmpeg
-crimson extract <src> <dst>               extract PAQ archives, with JAZ textures as PNG
-crimson quests <level>                    print a quest's spawn script
-crimson quest play <file>                 play a custom quest recipe; quest build/publish check and upload it
-```
-
-`--seed N` starts a deterministic run, and `--preserve-bugs` keeps the original's known bugs.
-
-## Better than the original
-
-The port plays like the 2003 game, and adds what a modern release needs:
-
-- **Runs anywhere.** Windows, macOS and Linux (Wayland included) instead of Direct3D 8 on Windows, at any resolution, with borderless fullscreen that keeps the aspect ratio.
-- **Modern controllers.** PlayStation, Xbox and Switch Pro controllers are recognized on connect and switch a player to twin-stick controls, with reload on the shoulder like the 2014 remake. Every menu, list and slider works from the controller, with the focus always visible, and each co-op player can use their own controller.
-- **Original bugs fixed, and kept on request.** [The original's gameplay bugs](https://crimson.banteg.xyz/rewrite/original-bugs/) are fixed by default, each traced to the decompiled code: Greater Regeneration did nothing, Bandage multiplied health instead of healing, some bonuses never dropped while you held certain weapons, and several co-op perks only worked for player 1. `--preserve-bugs` restores every one of them, exactly as the original behaves. The original's text stays as written, typos like "Fire Caugh" and "Plague Sphreader Gun" included.
-- **Replays.** Every run is recorded and can be played back, verified tick by tick, or rendered to 60 fps video.
-- **Sharper art.** Textures come from the original uncompressed source art wherever it matches what shipped.
-
-## Status
-
-The rewrite is the full game: Survival, Rush, Quests (5 tiers), Tutorial, Typ-o-Shooter and local co-op, with every weapon, creature, perk and bonus, the music, sound and secrets. The simulation is deterministic, so every recorded run can be verified headlessly.
-
-The [Crimson core](crimson-core/README.md) compiles the recovered C/C++ to WebAssembly twice. Its import-free verifier replays every leaderboard run and agrees with the Python port under both bug policies. Its game module is the whole original, which plays [in the browser](https://crimson.land/play/) and natively over SDL3, held to the verifier on every gate stream ([port notes](crimson-core/PORT.md)).
+The two rebuilds keep each other honest. The Python port settles open questions against the original code running under an emulator, and CI requires the recovered source to play every recorded run exactly as the port does, under both the original rules and the fixed ones.
 
 ## Decompilation
 
-The [matching decompilation](decomp/README.md) of 1.9.93 is complete: all 858 game and engine functions (360,094 bytes of code) come from recovered source, with every reference checked. Bundled third-party libraries (D3DX8, the MSVC runtime, the image and audio codecs) keep their upstream provenance and are not counted.
+The [matching decompilation](decomp/README.md) of 1.9.93 is complete: every game and engine function comes from recovered source, with every reference checked. Bundled third-party libraries (D3DX8, the MSVC runtime, the image and audio codecs) keep their upstream provenance and are not counted.
 
-The same source tree is set up to build other releases, each with its own compiler profile and `CL_BUILD` define. [decomp.dev](https://decomp.dev/banteg/crimson) tracks these builds, each from its own evidence:
+The same source tree builds other releases, each with its own compiler profile and `CL_BUILD` define, and [decomp.dev](https://decomp.dev/banteg/crimson) tracks each from its own evidence:
 
-| Build | Released | Edition | Progress |
-| --- | --- | --- | --- |
-| 1.9.93 | 2011 | GOG Crimsonland Classic, the canonical build | [complete](https://decomp.dev/banteg/crimson?category=game) |
-| 1.9.8 | 2003 | shareware | [measured](https://decomp.dev/banteg/crimson/1.9.8?category=game) from the 1.9 sources |
-| 1.4.0, 1.3.0, 1.0.2 | 2002 | freeware | [1.4.0](https://decomp.dev/banteg/crimson/1.4.0?category=game), [1.3.0](https://decomp.dev/banteg/crimson/1.3.0?category=game), [1.0.2](https://decomp.dev/banteg/crimson/1.0.2?category=game) |
+| Build | Released | Edition |
+| --- | --- | --- |
+| 1.9.93 | 2011 | GOG Crimsonland Classic, the canonical build |
+| 1.9.8 | 2003 | shareware, measured from the 1.9 sources |
+| 1.4.0, 1.3.0, 1.0.2 | 2002 | freeware |
 
-Builds 1.9.1, 1.9.9 and 1.9.92 are pinned and mapped in [builds.json](decomp/builds.json) but not reported yet.
+[builds.json](decomp/builds.json) pins and maps more builds than are reported.
 
 ## Developing
 
