@@ -56,6 +56,10 @@ repository secrets if credentials should be available only to production jobs.
    every active production run unless its [replay inputs](#replay-reuse) are
    unchanged. It checks master and required checks again immediately before
    upload. Check **force_reverify** to reverify regardless.
+5. When a production run ends, the release Telegram chat hears whether the
+   deploy went live and whether every run was reverified, with links to the
+   commit and the run. It uses the release notification's `TELEGRAM_BOT_TOKEN`
+   and `TELEGRAM_CHAT_ID` secrets. Dry runs stay quiet.
 
 Normal push CI keeps its path filters, so service-only, client-only, site and
 documentation commits may omit a deployment artifact. With no runtime run ID

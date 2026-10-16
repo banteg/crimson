@@ -47,7 +47,7 @@ def _format_chunk(header: str, lines: Sequence[str]) -> str:
     return "\n\n".join([header, "\n".join(lines)])
 
 
-def _render_telegram_message(markdown: str) -> RenderedTelegramMessage:
+def render_telegram_message(markdown: str) -> RenderedTelegramMessage:
     html = mistune.html(markdown)
     rendered = sulguk.transform_html(html)
     return RenderedTelegramMessage(text=rendered.text, entities=tuple(rendered.entities))
@@ -95,7 +95,7 @@ def build_release_messages(
     tag: str,
     body: str,
     release_url: str,
-    render_message: Callable[[str], RenderedTelegramMessage] = _render_telegram_message,
+    render_message: Callable[[str], RenderedTelegramMessage] = render_telegram_message,
     max_text_len: int = TELEGRAM_TEXT_LIMIT,
 ) -> list[RenderedTelegramMessage]:
     lines = _build_release_lines(tag=tag, body=body, release_url=release_url)
@@ -146,7 +146,7 @@ def send_telegram_messages(
     messages: Sequence[RenderedTelegramMessage],
 ) -> None:
     total = len(messages)
-    print(f"prepared {total} Telegram release message(s)")
+    print(f"prepared {total} Telegram message(s)")
     for index, message in enumerate(messages, start=1):
         payload = {
             "chat_id": chat_id,
