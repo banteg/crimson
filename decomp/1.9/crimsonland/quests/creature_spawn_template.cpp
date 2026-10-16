@@ -174,7 +174,7 @@ static inline void clamp_tint_component(float &field)
 #if CL_BUILD == 10908
 /*
  * Translation-unit context for 1.9.8: creature_spawn_slot_alloc precedes creature_spawn_template
- * in the original unit (see creature_spawn_slot_alloc.c). 9044 then knows the call leaves EDX
+ * in the original unit (see creature_spawn_slot_alloc.cpp). 9044 then knows the call leaves EDX
  * alone and keeps the constant 16 in it across the spawn-slot calls; 8966 ignores this.
  */
 extern "C" int creature_spawn_slot_alloc(void)

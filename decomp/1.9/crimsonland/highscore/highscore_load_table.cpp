@@ -37,7 +37,7 @@ static __inline void highscore_record_reset_light(highscore_record_t *record)
 /*
  * Translation-unit context for 1.9.8. Its C2 (9044) reuses what it learned
  * compiling earlier functions of the same unit: highscore_find_name_entry
- * precedes this function there (see highscore_find_name_entry.c).
+ * precedes this function there (see highscore_find_name_entry.cpp).
  * 1.9.93's C2 (8966) ignores this, so the canonical object keeps one function
  * per file.
  */

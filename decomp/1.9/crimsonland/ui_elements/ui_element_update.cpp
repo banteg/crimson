@@ -68,7 +68,7 @@ static __inline void ui_element_set_rotation(
  * compiling earlier functions of the same unit: ui_get_element_index leaves
  * the x87 stack alone, so the rotation angle stays in st(0) across the call.
  * 1.9.93 (8966) ignores this, so the canonical object keeps one function per
- * file (see ui_get_element_index.c).
+ * file (see ui_get_element_index.cpp).
  */
 extern "C" int ui_get_element_index(ui_element_t *element)
 {

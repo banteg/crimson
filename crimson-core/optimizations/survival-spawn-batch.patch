@@ -1,9 +1,9 @@
---- a/decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.c
-+++ b/decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.c
+--- a/decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.cpp
++++ b/decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.cpp
 @@ -1,9 +1,11 @@
  #include "crimsonland_gameplay.h"
  
--int creature_alloc_slot(void)
+-extern "C" int creature_alloc_slot(void)
 +// Batch callers guarantee that every slot below first is occupied and none is freed.
 +// Passing zero retains the original allocator for all other callers.
 +int creature_alloc_slot_from(int first)

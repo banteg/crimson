@@ -832,7 +832,7 @@ Rewrite behavior:
 - Default: the carrier drops its bonus once.
 - `--preserve-bugs`: every handled death drops it, as native.
 
-Evidence: `decomp/1.9/crimsonland/crimsonland/creature_handle_death.c` (the
+Evidence: `decomp/1.9/crimsonland/crimsonland/creature_handle_death.cpp` (the
 bonus spawn at the top) and `creature_spawn_template` (the only template that
 sets the flag).
 
@@ -1029,7 +1029,7 @@ hardcore and retry reads after the spawn switch), `game/game_frame_update.cpp`
 (the hardcore clears), `end_screens/quest_failed_screen_update.cpp` and
 `end_screens/quest_results_screen_update.cpp` (the retry count),
 `game/survival_update.cpp`, `game/tutorial_timeline_update.cpp` and
-`highscore/highscore_record_init.c`.
+`highscore/highscore_record_init.cpp`.
 
 ## 39) Blood splatters and corpse shatters exhaust the 511-slot effect pool
 

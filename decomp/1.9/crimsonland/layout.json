@@ -493,7 +493,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/game/ui_mouse_inside_rect_with_padding.c",
+          "path": "decomp/1.9/crimsonland/game/ui_mouse_inside_rect_with_padding.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -502,7 +502,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/game/ui_mouse_inside_rect.c",
+          "path": "decomp/1.9/crimsonland/game/ui_mouse_inside_rect.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -538,7 +538,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/game/perks_generate_choices.c",
+          "path": "decomp/1.9/crimsonland/game/perks_generate_choices.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -602,7 +602,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/game/format_ordinal.c",
+          "path": "decomp/1.9/crimsonland/game/format_ordinal.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1309,7 +1309,7 @@
       ],
       "sources": [
         {
-          "path": "decomp/1.9/crimsonland/end_screens/time_format_mm_ss.c",
+          "path": "decomp/1.9/crimsonland/end_screens/time_format_mm_ss.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1400,7 +1400,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/gameplay/gameplay_run_state_init.c",
+          "path": "decomp/1.9/crimsonland/gameplay/gameplay_run_state_init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1521,7 +1521,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/gameplay/highscore_init_sentinels.c",
+          "path": "decomp/1.9/crimsonland/gameplay/highscore_init_sentinels.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1579,7 +1579,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/gameplay/bonus_reset_availability.c",
+          "path": "decomp/1.9/crimsonland/gameplay/bonus_reset_availability.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1597,7 +1597,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/gameplay/play_time_load.c",
+          "path": "decomp/1.9/crimsonland/gameplay/play_time_load.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1606,7 +1606,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/gameplay/game_save_status.c",
+          "path": "decomp/1.9/crimsonland/gameplay/game_save_status.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1633,7 +1633,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/gameplay/player_start_reload.c",
+          "path": "decomp/1.9/crimsonland/gameplay/player_start_reload.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -2093,7 +2093,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/platform/game_is_full_version.c",
+          "path": "decomp/1.9/crimsonland/platform/game_is_full_version.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -2102,7 +2102,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/platform/demo_trial_time_limit_ms.c",
+          "path": "decomp/1.9/crimsonland/platform/demo_trial_time_limit_ms.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -2653,7 +2653,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/creature_handle_death.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_handle_death.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -2716,7 +2716,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/bonus_alloc_slot.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/bonus_alloc_slot.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -2752,7 +2752,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/fx_spawn_sprite.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_spawn_sprite.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -2770,7 +2770,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/player_reset_all.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/player_reset_all.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -2851,7 +2851,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/creature_find_in_radius.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_find_in_radius.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -2941,7 +2941,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/fx_queue_add_rotated.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_queue_add_rotated.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -2959,7 +2959,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -2968,7 +2968,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/creature_reset_all.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_reset_all.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -2986,7 +2986,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/creature_spawn.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_spawn.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3076,7 +3076,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/console_cmd_tell_time_survived.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/console_cmd_tell_time_survived.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3112,7 +3112,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/reg_read_dword_default.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/reg_read_dword_default.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3121,7 +3121,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/crimsonland/reg_write_dword.c",
+          "path": "decomp/1.9/crimsonland/crimsonland/reg_write_dword.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3285,7 +3285,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/effects/effect_init_entry.c",
+          "path": "decomp/1.9/crimsonland/effects/effect_init_entry.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3294,7 +3294,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/effects/effect_defaults_reset.c",
+          "path": "decomp/1.9/crimsonland/effects/effect_defaults_reset.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3303,7 +3303,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/effects/effect_free.c",
+          "path": "decomp/1.9/crimsonland/effects/effect_free.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3330,7 +3330,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/effects/effects_update.c",
+          "path": "decomp/1.9/crimsonland/effects/effects_update.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3393,7 +3393,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/effects/effect_spawn_ion_hit_core.c",
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_ion_hit_core.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3402,7 +3402,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/effects/effect_spawn_plasma_hit_core.c",
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_plasma_hit_core.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3411,7 +3411,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/effects/effect_spawn_splitter_hit_burst.c",
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_splitter_hit_burst.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3471,7 +3471,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/perks/perk_can_offer.c",
+          "path": "decomp/1.9/crimsonland/perks/perk_can_offer.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3480,7 +3480,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/perks/perk_select_random.c",
+          "path": "decomp/1.9/crimsonland/perks/perk_select_random.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3489,7 +3489,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/perks/perks_rebuild_available.c",
+          "path": "decomp/1.9/crimsonland/perks/perks_rebuild_available.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3498,7 +3498,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/perks/perk_count_get.c",
+          "path": "decomp/1.9/crimsonland/perks/perk_count_get.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3545,7 +3545,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/quests/creature_spawn_slot_alloc.c",
+          "path": "decomp/1.9/crimsonland/quests/creature_spawn_slot_alloc.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3563,7 +3563,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/quests/quest_spawn_table_empty.c",
+          "path": "decomp/1.9/crimsonland/quests/quest_spawn_table_empty.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -3581,7 +3581,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/quests/quest_database_advance_slot.c",
+          "path": "decomp/1.9/crimsonland/quests/quest_database_advance_slot.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4078,7 +4078,7 @@
       ],
       "sources": [
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_iso_week.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_iso_week.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4087,7 +4087,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4096,7 +4096,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_record_pack_for_submit.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_record_pack_for_submit.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4105,7 +4105,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_read_record.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_read_record.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4114,7 +4114,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_record_equals.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_record_equals.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4141,7 +4141,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_survival_score_desc.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_survival_score_desc.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4150,7 +4150,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_desc.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_desc.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4159,7 +4159,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_asc_nonzero_first.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_elapsed_asc_nonzero_first.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4168,7 +4168,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_find_name_entry.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_find_name_entry.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4186,7 +4186,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_save_record.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_save_record.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4195,7 +4195,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_save_active.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_save_active.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4204,7 +4204,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_rank_index.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_rank_index.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4213,7 +4213,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_build_path.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_build_path.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4222,7 +4222,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_record_init.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_record_init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4314,7 +4314,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/resource/resource_pack_read_cstring.c",
+          "path": "decomp/1.9/crimsonland/resource/resource_pack_read_cstring.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4779,7 +4779,7 @@
       ],
       "sources": [
         {
-          "path": "decomp/1.9/crimsonland/ui_widgets/ui_focus_set.c",
+          "path": "decomp/1.9/crimsonland/ui_widgets/ui_focus_set.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -4961,7 +4961,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/ui_screens/highscore_format_date_label.c",
+          "path": "decomp/1.9/crimsonland/ui_screens/highscore_format_date_label.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -5034,7 +5034,7 @@
       ],
       "sources": [
         {
-          "path": "decomp/1.9/crimsonland/typo/creature_spawn_tinted.c",
+          "path": "decomp/1.9/crimsonland/typo/creature_spawn_tinted.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -5164,7 +5164,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/ui_elements/ui_get_element_index.c",
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_get_element_index.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -5173,7 +5173,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/ui_elements/ui_elements_reset_state.c",
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_elements_reset_state.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -5182,7 +5182,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/ui_elements/ui_elements_max_timeline.c",
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_elements_max_timeline.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -5310,7 +5310,7 @@
       ],
       "sources": [
         {
-          "path": "decomp/1.9/crimsonland/menus/config_apply_detail_preset.c",
+          "path": "decomp/1.9/crimsonland/menus/config_apply_detail_preset.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -5572,7 +5572,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/weapons/weapon_assign_player.c",
+          "path": "decomp/1.9/crimsonland/weapons/weapon_assign_player.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },

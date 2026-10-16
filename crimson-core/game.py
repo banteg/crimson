@@ -5,7 +5,7 @@ import json
 import re
 from pathlib import Path
 
-from adapter import DIFFS, NOT_CPP_LINKAGE, prototypes, sub, wrap
+from adapter import DIFFS, prototypes, sub, wrap
 
 HERE = Path(__file__).resolve().parent
 GAME = HERE / "game"
@@ -155,17 +155,6 @@ def msvc_argument_order(src, txt):
 def adapt_game(src, txt, wrapped=False):
     """The game module's passes, after the verifier's (adapter.adapt)."""
 
-    if src.suffix == ".c":
-        # The adapter gives C linkage to the common return types; the rest of a
-        # C file's top-level functions need it too.
-        txt = sub(
-            src,
-            rf'(?m)^(?!static |typedef |return |extern "C")(extern )?((?:(?:unsigned|signed|const|struct) )*\w+ ?\**) ?'
-            rf"{NOT_CPP_LINKAGE}(\w+)\(",
-            r'extern "C" \2 \3(',
-            txt,
-            None,
-        )
     txt = msvc_argument_order(src, txt)
     # Files open through the platform layer, which takes Windows paths.
     txt = sub(src, r"\bfopen\(", "platform_fopen(", txt, None)

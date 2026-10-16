@@ -1,0 +1,97 @@
+#include <stdio.h>
+#include <windows.h>
+
+#include "crimsonland_gameplay.h"
+
+extern "C" game_status_t game_status_blob;
+
+extern "C" int reg_write_dword(HKEY key, char *name, unsigned int value);
+extern "C" char *game_build_path(char *filename);
+extern "C" FILE *crt_fopen(char *path, char *mode);
+extern "C" unsigned int crt_fwrite(
+    void *ptr, unsigned int size, unsigned int count, FILE *fp);
+extern "C" int crt_fclose(FILE *fp);
+extern "C" void game_load_status(void);
+extern "C" void play_time_load(void);
+
+extern "C" void game_save_status(void)
+{
+    HKEY key;
+    int checksum;
+    FILE *fp;
+    unsigned int sequence;
+    int index;
+    int key_step;
+    char *status_bytes;
+    char value;
+    int signed_value;
+    int term;
+    char encoded;
+
+    if (RegCreateKeyExA(
+            HKEY_LOCAL_MACHINE,
+            registry_key_status_root_path,
+            0,
+            0,
+            0,
+            KEY_ALL_ACCESS,
+            0,
+            &key,
+            0)
+        == ERROR_SUCCESS) {
+        sequence = play_time_ms;
+        reg_write_dword(key, "sequence", sequence);
+        reg_write_dword(key, "dataPathId", (sequence * 13 + 3) >> 1);
+        reg_write_dword(key, "transferFailed", 0);
+        RegCloseKey(key);
+    }
+
+    fp = crt_fopen(game_build_path("game.cfg"), "wb");
+    if (fp != 0) {
+
+        game_status_blob.quest_unlock_index = (unsigned short)quest_unlock_index;
+        game_status_blob.quest_unlock_index_hardcore =
+            (unsigned short)quest_unlock_index_hardcore;
+
+        checksum = 0;
+        index = 0;
+        key_step = 0;
+        status_bytes = (char *)&game_status_blob;
+        do {
+            value = status_bytes[index];
+            signed_value = value;
+            term = signed_value * 7;
+            term += index;
+            term *= signed_value;
+            term += key_step;
+            checksum += term + 13;
+
+            key_step += 111;
+            encoded = (char)index;
+            encoded *= 7;
+            encoded += 15;
+            encoded *= (char)index;
+            encoded += 3;
+            encoded *= (char)index;
+            encoded += value;
+            encoded += 111;
+            status_bytes[index] = encoded;
+            ++index;
+        } while ((unsigned int)key_step < 0x10b18);
+
+        crt_fwrite(&game_status_blob, sizeof(game_status_blob), 1, fp);
+        crt_fwrite(&checksum, sizeof(checksum), 1, fp);
+        crt_fclose(fp);
+
+        if (cv_verbose->value != 0.0f) {
+            console_printf(&console_log_queue, "GAME_SaveStatus OK.\n");
+        }
+        game_load_status();
+        play_time_load();
+        play_time_load();
+        return;
+    }
+
+    console_printf(&console_log_queue, "GAME_SaveStatus FAILED!\n");
+    play_time_load();
+}

@@ -116,7 +116,7 @@ vec2f_t* __stdcall D3DXVec2Normalize(vec2f_t* dst, const vec2f_t* src);
  * Translation-unit context for 1.9.8. Its C2 (9044) reuses what it learned compiling earlier
  * functions of the same unit: a call to one of them keeps the registers and globals that the
  * callee leaves alone. vec2_add and creature_find_in_radius precede projectile_update in the
- * original unit (see vec2_add.cpp and creature_find_in_radius.c). Without them, the miss block
+ * original unit (see vec2_add.cpp and creature_find_in_radius.cpp). Without them, the miss block
  * reloads shock_chain_projectile_id, and its compare loads projectile_index first. 1.9.93's C2
  * (8966) ignores this, so the canonical object keeps one function per file.
  */

@@ -29,7 +29,7 @@ def batches():
             (out / path.name).write_text(adapter.prototypes(path, text, adapter.PROTOTYPES))
         sources = []
         for rel in (
-            "decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.c",
+            "decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.cpp",
             "decomp/1.9/crimsonland/game/survival_spawn_creature.cpp",
             "decomp/1.9/crimsonland/game/survival_update.cpp",
         ):

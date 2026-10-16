@@ -129,7 +129,7 @@ normal unlocks.
   - `gameplay/player_update_heading.cpp` (`player_update`, `0x004136b0`):
     fire flag write
   - `crimsonland/player_take_damage.cpp` (`0x00425e50`): damage flag write
-  - `crimsonland/creature_handle_death.c` (`0x0041e910`): recent-death tracking
+  - `crimsonland/creature_handle_death.cpp` (`0x0041e910`): recent-death tracking
   - `gameplay/gameplay_reset_state.cpp` (`0x00412dc0`): run reset
 - `docs/re/static/reference/weapon-id-map.md`
 - `docs/re/static/secrets/weapon-candidates.md`

@@ -98,7 +98,7 @@ def original_record_io(tmp_path_factory: pytest.TempPathFactory) -> Path:
             f"-I{root / 'tools/match/include'}",
             f"-I{root / 'third_party/headers'}",
             str(Path(__file__).with_name("highscore_record_harness.c")),
-            str(root / "decomp/1.9/crimsonland/highscore/highscore_read_record.c"),
+            str(root / "decomp/1.9/crimsonland/highscore/highscore_read_record.cpp"),
             str(root / "decomp/1.9/crimsonland/highscore/highscore_write_record.cpp"),
             "-o",
             str(exe),

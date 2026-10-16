@@ -74,7 +74,7 @@ void hud_update_and_render(void);
 #if CL_BUILD == 10908
 /*
  * Translation-unit context for 1.9.8: creature_spawn_tinted opens the original typo unit (see
- * creature_spawn_tinted.c). Knowing it leaves the caller's color alone, 9044 hoists the
+ * creature_spawn_tinted.cpp). Knowing it leaves the caller's color alone, 9044 hoists the
  * spawn loop's constant color.a and left_pos.x stores; 8966 ignores earlier unit functions.
  */
 typedef union creature_spawn_tinted_locals_t {

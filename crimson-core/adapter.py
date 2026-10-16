@@ -20,13 +20,9 @@ HERE = Path(__file__).resolve().parent
 # where `patches/NN-*.patch` fixes original bug NN of docs/rewrite/original-bugs.md behind `portable_preserve_bugs`.
 DIFFS = (HERE / "abi", HERE / "seams", HERE / "optimizations", HERE / "patches")
 _HUNK = re.compile(r"@@ -\d+(?:,(\d+))? \+\d+(?:,(\d+))? @@")
-# C files give their functions C linkage, except where the header their callers use declares C++ (the resource reader):
-# a lookahead for the definitions' names.
-NOT_CPP_LINKAGE = r"(?!resource_pack_read_cstring\()"
 # Signatures the recovered files disagree on, as their definitions have them; every declaration takes its definition's.
 PROTOTYPES = {
     "void console_input_poll(void);": "int console_input_poll(void);",
-    "void player_reset_all(void);": 'extern "C" void player_reset_all(void);',
 }
 
 
@@ -301,14 +297,6 @@ def dialect(src, txt):
     """What a modern compiler needs from VC6 sources, wherever it applies."""
 
     txt = prototypes(src, txt, PROTOTYPES)
-    if src.suffix == ".c":
-        txt = sub(
-            src,
-            rf"(?m)^(extern )?(void|int|float|unsigned char|bool|bonus_id_t) {NOT_CPP_LINKAGE}(\w+)\(",
-            r'extern "C" \2 \3(',
-            txt,
-            None,
-        )
     # VC6 binds mutable references to value temporaries; the operators and helpers taking them never mutate through
     # them. List widgets are the exception: helpers take one to update it.
     txt = sub(src, r"(?<!const )\b(?!ui_list_widget_t\b)([A-Za-z_]\w*_t) &(\w+)\)", r"const \1 &\2)", txt, None)

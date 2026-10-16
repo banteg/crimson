@@ -255,7 +255,7 @@
     {
       "address": 4994908,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_cwd_buf[512]",
+      "extent_evidence": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.cpp: highscore_cwd_buf[512]",
       "image": "crimsonland.exe",
       "name": "highscore_cwd_buf",
       "owners": [
@@ -1249,7 +1249,7 @@
     {
       "address": 4994652,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
+      "extent_evidence": "decomp/1.9/crimsonland/highscore/highscore_build_path.cpp: highscore_named_path_buf[128] and highscore_path_buf[128]",
       "image": "crimsonland.exe",
       "name": "highscore_named_path_buf",
       "owners": [
@@ -1263,7 +1263,7 @@
     {
       "address": 4994780,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
+      "extent_evidence": "decomp/1.9/crimsonland/highscore/highscore_build_path.cpp: highscore_named_path_buf[128] and highscore_path_buf[128]",
       "image": "crimsonland.exe",
       "name": "highscore_path_buf",
       "owners": [
@@ -2033,7 +2033,7 @@
     {
       "address": 4720616,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "decomp/1.9/crimsonland/game/perks_generate_choices.c and perk_selection_screen_update/scratch.cpp: perk_choice_ids[7]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/game/perks_generate_choices.cpp and perk_selection_screen_update/scratch.cpp: perk_choice_ids[7]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
       "name": "perk_choice_ids",
       "owners": [
@@ -20122,7 +20122,7 @@
     {
       "address": 4712520,
       "blocker": "matched",
-      "extent_evidence": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_cwd_buf[512]",
+      "extent_evidence": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.cpp: highscore_cwd_buf[512]",
       "image": "crimsonland.exe",
       "name": "console_exec_line_buf",
       "owners": [

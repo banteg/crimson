@@ -11,7 +11,7 @@ This page documents the core Survival-mode responsibilities of the classic game
 **Source of truth:** the recovered source in
 `decomp/1.9/crimsonland/game/survival_update.cpp`,
 `decomp/1.9/crimsonland/game/survival_spawn_creature.cpp` and
-`decomp/1.9/crimsonland/crimsonland/creature_handle_death.c`. Code under `src/` is
+`decomp/1.9/crimsonland/crimsonland/creature_handle_death.cpp`. Code under `src/` is
 our reimplementation and can drift; treat it as a porting aid, not an authority.
 
 Key functions:

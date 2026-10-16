@@ -50,5 +50,5 @@ non-space character. A failed score write leaves name entry available for retry.
 
 Implementation: `src/crimson/persistence/highscores.py`; the web and native clients set the replay
 number in `crimson-core/host/session.inc` (`live_end`). The native behavior is in the
-recovered sources under `decomp/1.9/crimsonland/highscore/` (`highscore_save_record.c`,
+recovered sources under `decomp/1.9/crimsonland/highscore/` (`highscore_save_record.cpp`,
 `highscore_load_table.cpp`, and the `highscore_compare_*` comparators).

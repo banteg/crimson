@@ -1,5 +1,5 @@
 {
-  "audit_digest": "03970358a7ee0fe01600ba6dd5b21565296430f9446feb52d78124feb4bb8c00",
+  "audit_digest": "2621e82237b623a8c591f528beae390971628a47ba4eef74b3e930533af2100a",
   "entries": [
     {
       "address": 4211888,
@@ -8338,7 +8338,7 @@
       "section_offset": 55368,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 512,
-      "size_source": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_cwd_buf[512]",
+      "size_source": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.cpp: highscore_cwd_buf[512]",
       "type": "char[512]"
     },
     {
@@ -11121,7 +11121,7 @@
       "section_offset": 63464,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 28,
-      "size_source": "decomp/1.9/crimsonland/game/perks_generate_choices.c and perk_selection_screen_update/scratch.cpp: perk_choice_ids[7]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/game/perks_generate_choices.cpp and perk_selection_screen_update/scratch.cpp: perk_choice_ids[7]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "type": "int[7]"
     },
     {
@@ -29702,7 +29702,7 @@
       "section_offset": 337500,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 128,
-      "size_source": "decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
+      "size_source": "decomp/1.9/crimsonland/highscore/highscore_build_path.cpp: highscore_named_path_buf[128] and highscore_path_buf[128]",
       "type": "char[128]"
     },
     {
@@ -29723,7 +29723,7 @@
       "section_offset": 337628,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 128,
-      "size_source": "decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
+      "size_source": "decomp/1.9/crimsonland/highscore/highscore_build_path.cpp: highscore_named_path_buf[128] and highscore_path_buf[128]",
       "type": "char[128]"
     },
     {
@@ -29744,7 +29744,7 @@
       "section_offset": 337756,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 512,
-      "size_source": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_cwd_buf[512]",
+      "size_source": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.cpp: highscore_cwd_buf[512]",
       "type": "char[512]"
     },
     {
@@ -37803,7 +37803,7 @@
     },
     "data_map_sha256": "acda0d18632b5f7831e4b84643acce602f6c31e3d4c4d49071e7ec41f4b07e5f",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "81779ff5b7f61bc00dd9399b77d0a3d520265c2328a7914a1517ada70c7f0b2e",
+    "definitions_sha256": "61e6907fa5b8e5b473e06e5217411ef459048c6fbf3ee5a8041fc8e472072b63",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
