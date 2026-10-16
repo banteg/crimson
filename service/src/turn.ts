@@ -34,12 +34,13 @@ export async function iceServers(env: Env): Promise<IceServer[]> {
     console.error(`TURN credentials: ${error}`);
     return [STUN];
   }
-  return (servers as IceServer[])
-    .map((server) => ({
-      ...server,
+  return (servers as Partial<IceServer>[]).flatMap((server) => {
+    // WebRTC also allows a single URL string.
+    const urls = (typeof server?.urls === "string" ? [server.urls] : Array.isArray(server?.urls) ? server.urls : [])
       // Browsers block port 53, and a URL on it only times out.
-      urls: server.urls.filter((url) => !/:53(\?|$)/.test(url)).sort((a, b) => transportRank(a) - transportRank(b)),
-    }))
+      .filter((url) => typeof url === "string" && !/:53(\?|$)/.test(url))
+      .sort((a, b) => transportRank(a) - transportRank(b));
     // A server left without URLs is one RTCPeerConnection refuses.
-    .filter((server) => server.urls.length);
+    return urls.length ? [{ ...server, urls }] : [];
+  });
 }

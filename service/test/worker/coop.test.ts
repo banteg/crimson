@@ -339,6 +339,9 @@ describe("co-op rooms", () => {
     fetch.mockResolvedValue(Response.json({ iceServers: { urls: [] } }));
     expect((await create(configured)).ice_servers).toEqual(STUN_ONLY);
     expect(error).toHaveBeenCalledTimes(4);
+    // A single URL string is a valid entry; entries without usable URLs are dropped.
+    fetch.mockResolvedValue(Response.json({ iceServers: [null, {}, { urls: "stun:stun.cloudflare.com:3478" }, { urls: [7] }] }));
+    expect((await create(configured)).ice_servers).toEqual(STUN_ONLY);
   });
 
   it("deletes a room a minute after its last socket leaves, and any room after half a day", async () => {

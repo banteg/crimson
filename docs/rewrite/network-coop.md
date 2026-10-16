@@ -976,7 +976,9 @@ message typed `seat` or `peer` would pass for the server's own, so it closes
 the socket with `1008` instead of being relayed. A message over 16 KiB closes
 the socket with `1009`; more than 200 messages a second (a second's burst)
 closes it with `1008`. That budget belongs to the seat, so a reconnect
-inherits it. Nothing a closed socket still sends is relayed.
+inherits it. Nothing a closed socket still sends is relayed. Clients read the
+server's messages only from text frames, with a strict `JSON.parse`; binary
+frames are always the partner's.
 
 **Lifetime.** A room is deleted a minute after its last socket leaves (or a
 minute after it was made, if nobody joins) and in any case 12 hours after it

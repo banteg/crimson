@@ -71,7 +71,8 @@ const seatBudgets = (rate: number, burst: number): Record<Role, Budget> => ({ ho
 
 export class CoopRoom extends DurableObject<Env> {
   // Kept per seat, so a reconnect inherits what the socket it replaces had spent. In memory only: the room
-  // hibernates only after seconds of silence, so a reset only ever forgives a quiet seat.
+  // hibernates only after seconds of silence, which refills the message budget anyway; a wake also refills the
+  // connection budget early, which only lets a seat quiet for that long reconnect a little sooner.
   private messages = seatBudgets(MESSAGES_PER_SECOND, MESSAGES_PER_SECOND);
   private connects = seatBudgets(CONNECTS_PER_MINUTE / 60, CONNECTS_PER_MINUTE);
   // The room's last TURN mint, from when it was asked for: requests while it is under way share it, and
