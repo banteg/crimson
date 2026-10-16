@@ -1086,3 +1086,33 @@ microstep loop and `health > 0.0f` gate),
 `decomp/1.9/crimsonland/game/bonus_apply.cpp` (the `BONUS_ID_FREEZE` corpse
 loop ahead of `effect_spawn(1, ...)`), and
 [`crimson-core/checks/effect_overflow.py`](../../crimson-core/checks/effect_overflow.py).
+
+## 40) The reload key does nothing in co-op
+
+Native behavior:
+
+- In `player_update` (`0x004136b0`), the reload key starts a reload only when
+  `config_player_count == 1`, next to the Alternate Weapon and point-and-click
+  movement exclusions that give the key another job.
+- With two or more players the key does nothing: a gun reloads only when its
+  clip runs dry.
+
+Why it's likely a bug:
+
+- In co-op the key has no other job: the gate is not one of the exclusions
+  where the key swaps guns or moves the player.
+- The Controls screen still binds Reload for every player count, and every
+  other per-player weapon rule (clip, reload time, reload perks) works the
+  same with two players.
+
+Rewrite behavior:
+
+- Default: the reload key reloads in co-op too, under the same Alternate
+  Weapon, point-and-click and empty-reload-timer conditions as in single
+  player. As in the original, it is one key that every player's update
+  reads.
+- With `--preserve-bugs`: keep the native single-player gate.
+
+Evidence: `decomp/1.9/crimsonland/gameplay/player_update_heading.cpp` (the
+manual reload condition), `src/crimson/gameplay.py` (`_player_tick_reload`)
+and [`crimson-core/patches/40-coop-manual-reload.patch`](../../crimson-core/patches/40-coop-manual-reload.patch).

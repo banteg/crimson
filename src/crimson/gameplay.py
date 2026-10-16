@@ -889,7 +889,8 @@ def _player_tick_reload(
         player.weapon.reload_timer = 0.0
 
     has_alt_weapon_perk = PerkId.ALTERNATE_WEAPON in state.perks
-    single_player_mode = len(players) == 1
+    # Original bug 40: native takes the reload key only with one player.
+    reload_key_enabled = len(players) == 1 or not state.preserve_bugs
     # Native gates on `grim_is_key_active` (key held), so holding reload chains
     # reloads back-to-back as each one completes.
     manual_reload_allowed = (
@@ -897,7 +898,7 @@ def _player_tick_reload(
         and (not has_alt_weapon_perk)
         and move_mode != MovementControlType.MOUSE_POINT_CLICK
         and float(player.weapon.reload_timer) == 0.0
-        and bool(single_player_mode)
+        and reload_key_enabled
     )
     if manual_reload_allowed:
         _player_start_reload(player, state)

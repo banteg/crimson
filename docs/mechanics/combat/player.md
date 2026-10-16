@@ -148,10 +148,11 @@ Each gun's base reload time is in [Weapons](weapons.md#weapon-reference).
 [Anxious Loader](../perks.md#18-anxious-loader) speed it up.
 
 The reload key starts a reload whenever none is running, even on a full
-clip. Holding it reloads over and over. It only works in single-player, and
-not with Alternate Weapon (the key swaps guns, every 0.2 s while held) or
-point-and-click movement (the key moves you). There you reload only when
-the clip runs dry.
+clip. Holding it reloads over and over. It doesn't work with Alternate
+Weapon (the key swaps guns, every 0.2 s while held) or point-and-click
+movement (the key moves you), and in the original not in co-op either
+(the rewrite fixes that, [bug 40](../systems/classic-quirks.md#co-op)).
+There you reload only when the clip runs dry.
 
 Picking up a weapon gives you a full clip, ready to fire at once, and
 cancels any reload.

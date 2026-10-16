@@ -49,6 +49,7 @@ meant the player in question.
 | [16](../../rewrite/original-bugs.md#16-pistol-no-magnet-fallback-gate-checks-player-1-only-in-co-op) | Pistol drop bonus | The extra 1-in-5 drop roll for Pistol holders checks only player 1's gun. | Fixed | — |
 | [19](../../rewrite/original-bugs.md#19-co-op-auto-target-replacement-reuses-mismatched-player-distances) | Computer targets | [Computer-controlled](secrets.md#hidden-control-schemes) players can stick to a worse target. | Fixed | — |
 | [23](../../rewrite/original-bugs.md#23-plaguebearer-contact-immunity-activates-player-1-only-in-co-op) | Plaguebearer | Only player 1 infects creatures by touch. | Fixed | [Perks](../perks.md#10-plaguebearer) |
+| [40](../../rewrite/original-bugs.md#40-the-reload-key-does-nothing-in-co-op) | Reload key | The reload key does nothing with two players: guns reload only when the clip runs dry. | Fixed | [Co-op](co-op.md#what-each-player-has) |
 
 ## Sights, sounds and menus
 

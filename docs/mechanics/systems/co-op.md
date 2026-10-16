@@ -55,8 +55,10 @@ details.
 If two players reach a bonus at the same moment, both collect it: a Nuke
 goes off twice.
 
-The Reload key doesn't reload in co-op. Your gun reloads only when the
-clip runs dry.
+In the original the Reload key doesn't reload in co-op: your gun reloads
+only when the clip runs dry. The rewrite reloads on the key in co-op too
+([bug 40](classic-quirks.md#co-op)). It is one key for the team, so it
+reloads every player who can.
 
 Six perks are never offered with two players: Grim Deal, Alternate Weapon,
 Fatal Lottery, Random Weapon, Final Revenge and Highlander (see
@@ -119,5 +121,6 @@ Flames, rockets, explosions and Shock Chain never hurt a partner.
 The original reads player 1's state in places where it should read each
 player's own. Regeneration heals only player 1; Doctor, Pyrokinetic and
 Evil Eyes follow player 1's crosshair; either player's Fire Bullets
-converts both players' shots. The rewrite fixes all of these by default.
+converts both players' shots. The rewrite fixes all of these by default,
+along with the Reload key's single-player gate.
 [Classic quirks](classic-quirks.md#co-op) lists them all.
