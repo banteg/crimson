@@ -246,3 +246,14 @@ central entry, and final count of 81 are preserved.
 ## 1.9.8 residual (2026-10-16)
 
 62.99%, 291 against 290 instructions: C2 9044 keeps the constant 1 in EBX for the whole function, while native uses immediates in the first loop and loads 1 into EBP from the centre record on, leaving EBX for `entry_count` and EBP for `entries`. Indexing the first loop like the others is exact under 8966 but does not change 1.9.8; record pointers, a shared three-field setter, `set_template` in every loop, `% 2` and moving the count increment did not split the constant.
+
+## 1.9.8 (C2 9044), open
+
+62.99%. 9044 shares one constant-1 register (EBX) between the count stores and
+the byte parity tests (`and al, bl`) for the whole function; native keeps
+immediates in the first two sweeps, holds `entries` in EBP there, and loads 1
+into EBP only after the second sweep. Byte-width parity tests
+(`(unsigned char)entry_count & 1`, `(unsigned char)toggle & 1`) reach 91.72%
+(290/290 instructions, only the `add edi, 0x270`/`add edx, 7` order left) but
+break 1.9.93. A `set_count` helper, `% 2`, `!= 0`, an `unsigned char` toggle,
+and count, cursor and declaration reorderings do not split the constant.

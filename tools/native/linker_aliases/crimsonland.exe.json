@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "kind": "crimson-native-linker-aliases",
+  "image": "crimsonland.exe",
+  "aliases": [
+    {
+      "alias": "_highscore_record_is_valid",
+      "target": "_game_is_full_version",
+      "target_address": "0x0041df40",
+      "reference_function": "highscore_submit_full_version_guard",
+      "reference_callsites": [
+        "0x0043aa65"
+      ],
+      "evidence": "The native submit guard calls the constant-true game_is_full_version body directly; 1.9.93 folds the score plausibility check into it, while 1.9.8 keeps the check at 0x0043a0d0."
+    }
+  ]
+}

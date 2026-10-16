@@ -46,3 +46,9 @@ spec SHA-256 is
 `76a16f9d972be8d6ce684316670cb98df682916a901b120ce589c63d204121fb`;
 the experiment ledger SHA-256 is
 `b242487c880967678eb3c8e6e1e76aa90aba06bc0aa7bd376d685012adc284c9`.
+
+## 1.9.8 (msvc6.5pp)
+
+233/233 instructions under `--build 1.9.8` with a shared spelling:
+`item_count` is defined right after the copy loop. Canonical bytes are
+unchanged; 9044 then folds `item_count - 1` back to the loop count, as native.

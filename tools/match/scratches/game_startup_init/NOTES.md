@@ -55,3 +55,19 @@ while reproducing the native x87/vtable-load schedule. Together they raise the
 former 98.93%, `333/0/0` candidate to an exact, reference-clean match without
 volatile state, dead expressions, dummy references, inline assembly, forced
 layout, or layout-only control flow.
+
+## 1.9.8 (msvc6.5pp)
+
+Exact at 1109/1109 under `--build 1.9.8`; canonical stays exact.
+
+- 1.9.8 asks Grim slot 0x08 for the full-version check (local macro, as in
+  `crimsonland_gameplay.h`) and opens one batch for the three loading-screen
+  quads (behaviour guards).
+- Code-generation-only guard: 1.9.8 tests `startup_logo_sequence_active &&
+  startup_async_load_ready` around the post-load frame and nests the
+  fade-complete test inside it, with no cached logo local. Shared-spelling
+  search: the canonical goto form with and without the logo local (identical
+  under both compilers), and the nested form with and without the local. The
+  nested no-local form is exact for 1.9.8 and loses 7.6% canonically; the
+  canonical form leaves 9044 testing the logo flag again at the render label
+  (five extra instructions). No spelling satisfies both.

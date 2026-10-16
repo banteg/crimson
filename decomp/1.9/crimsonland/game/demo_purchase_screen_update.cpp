@@ -64,6 +64,13 @@ extern int music_track_intro_id;
 extern int music_track_shortie_monk_id;
 extern int music_track_crimsonquest_id;
 extern int music_track_crimson_theme_id;
+#if CL_BUILD == 10908
+extern unsigned int play_time_ms;
+extern int demo_trial_elapsed_ms;
+
+void ui_render_loading(void);
+unsigned char audio_suspend_all(void);
+#endif
 
 bool input_primary_just_pressed(void);
 bool config_load_presets(bool skip_grim_settings);
@@ -137,8 +144,8 @@ extern "C" void demo_purchase_screen_update(void)
         && (input_primary_just_pressed()
             || grim_interface_ptr->grim_was_key_pressed(1)
             || grim_interface_ptr->grim_was_key_pressed(0x39))) {
-        demo_purchase_screen_active = 1;
         demo_time_limit_ms = 16000;
+        demo_purchase_screen_active = 1;
     }
 
     static demo_purchase_button_t maybe_later_button;
@@ -146,6 +153,11 @@ extern "C" void demo_purchase_screen_update(void)
 
     static demo_purchase_button_t purchase_button;
     purchase_button.label = "Purchase";
+
+#if CL_BUILD == 10908
+    static demo_purchase_button_t already_paid_button;
+    already_paid_button.label = "Already paid";
+#endif
 
     float alpha;
     float position_y;
@@ -227,6 +239,20 @@ extern "C" void demo_purchase_screen_update(void)
             position_y,
             "Upgrade to the full version of Crimsonland Today!");
         position_y += 28.0f;
+#if CL_BUILD == 10908
+        // The 1.9.8 shareware build quotes its price.
+        grim_interface_ptr->grim_draw_text_small(
+            text_x, position_y, "For only $19.99 you'll get:");
+
+        demo_purchase_vec2_t position;
+        position.x = text_x;
+        position.y = position_y + 15.0f;
+        grim_interface_ptr->grim_draw_rect_outline(
+            (float *)&position,
+            (float)grim_interface_ptr->grim_measure_text_width(
+                "For only $19.99 you'll get:"),
+            1.0f);
+#else
         grim_interface_ptr->grim_draw_text_small(
             text_x, position_y, "Full version features:");
 
@@ -238,6 +264,7 @@ extern "C" void demo_purchase_screen_update(void)
             (float)grim_interface_ptr->grim_measure_text_width(
                 "Full version features:"),
             1.0f);
+#endif
 
         position_y += 22.0f;
         float feature_x = (float)(text_x_int + 8);
@@ -279,8 +306,53 @@ extern "C" void demo_purchase_screen_update(void)
             position_y,
             "Purchasing the game is very easy and secure.");
         position_y += 17.0f;
+#if CL_BUILD == 10908
+        // 1.9.8 sells the game through the in-game Reflexive Arcade client.
+        grim_interface_ptr->grim_draw_text_small(
+            text_x,
+            position_y,
+            "It requires no additional downloads -- you don't");
+#endif
         position_y += 17.0f;
+#if CL_BUILD == 10908
+        grim_interface_ptr->grim_draw_text_small(
+            text_x, position_y, "even have to leave the game!");
+#endif
         position_y += 22.0f;
+
+#if CL_BUILD == 10908
+        position.x =
+            (float)(config_blob.screen_width / 2 + 128);
+        position.y =
+            (float)(config_blob.screen_height / 2 + 102)
+            + layout_shift * 0.3f;
+        if (ui_button_update(
+                (float *)&position,
+                (ui_button_t *)&purchase_button)) {
+            ui_render_loading();
+            ui_render_loading();
+            audio_suspend_all();
+            grim_interface_ptr->grim_legacy_slot_04(0);
+            return;
+        }
+
+        float already_paid_x =
+            (float)(config_blob.screen_width / 2 + 128);
+        float already_paid_y =
+            (float)(config_blob.screen_height / 2 + 102)
+            + layout_shift * 0.3f + 45.0f;
+        position.x = already_paid_x;
+        position.y = already_paid_y;
+        if (ui_button_update(
+                (float *)&position,
+                (ui_button_t *)&already_paid_button)) {
+            ui_render_loading();
+            ui_render_loading();
+            audio_suspend_all();
+            grim_interface_ptr->grim_legacy_slot_04(2);
+            return;
+        }
+#else
 
         position.x =
             (float)(config_blob.screen_width / 2 + 128);
@@ -301,6 +373,7 @@ extern "C" void demo_purchase_screen_update(void)
                 SW_SHOWNORMAL);
             return;
         }
+#endif
 
         float maybe_later_x =
             (float)(config_blob.screen_width / 2 + 128);
@@ -316,6 +389,13 @@ extern "C" void demo_purchase_screen_update(void)
             if (offer_seen != 0) {
                 quit_requested = 1;
             }
+#if CL_BUILD == 10908
+            // Declining after twenty minutes of shareware play starts the
+            // timed trial.
+            if ((float)((int)play_time_ms / 1000) * 0.016666668f > 20.0f) {
+                demo_trial_elapsed_ms = 1;
+            }
+#endif
             ui_transition_direction = 0;
             game_state_pending = GAME_STATE_MAIN_MENU;
             demo_mode_active = 1;
@@ -335,11 +415,10 @@ extern "C" void demo_purchase_screen_update(void)
         }
 
     } else {
-        int message_index = demo_upsell_message_index;
         if (quest_spawn_timeline == 0) {
-            message_index = (message_index + 1) % 5;
-            demo_upsell_message_index = message_index;
+            demo_upsell_message_index = (demo_upsell_message_index + 1) % 5;
         }
+        int message_index = demo_upsell_message_index;
 
         if (message_index == 0) {
             message = "Want more Levels?";

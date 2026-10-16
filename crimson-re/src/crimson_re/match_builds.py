@@ -106,7 +106,15 @@ class BuildImage:
                 # END_VA is a canonical address; this build's map carries its own extent.
                 end_va=None,
                 # An alias to a global this build's maps do not name leaves the reference unresolved.
-                reference_aliases=tuple(alias for alias in config.reference_aliases if names.knows_name(alias[1])),
+                reference_aliases=tuple(
+                    alias
+                    for alias in (
+                        *config.reference_aliases,
+                        *(alias for build, aliases in config.build_reference_aliases if build == self.cl_build
+                          for alias in aliases),
+                    )
+                    if names.knows_name(alias[1])
+                ),
             )
             for compiler in compilers
         )
@@ -411,6 +419,12 @@ def apply_recovered_map(
     )
     functions = {function.name: function for function in manifest.functions}
     rows = {row["name"]: row for row in payload["functions"]}
+    # A reviewed absence: the build has no body for this canonical function
+    # (inlined, or reached another way), so no heuristic placement may stand.
+    for absent in recovery.get("absent", ()):
+        if absent["name"] not in functions:
+            raise ValueError(f"unknown absent function: {absent['name']}")
+        rows.pop(absent["name"], None)
     for recovered in recovery.get("functions", ()):
         function = functions[recovered["name"]]
         start, end = (matchlib.parse_int(recovered[key]) for key in ("address", "end"))

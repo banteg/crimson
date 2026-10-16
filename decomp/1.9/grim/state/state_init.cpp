@@ -88,8 +88,6 @@ void grim_state_init(void)
     grim_config_values[0x13] = (unsigned int)5;
     grim_config_values[0x14] = (unsigned int)6;
 
-    grim_vertex_z = GrimDepth(0.5f, 1.0f);
-
     grim_joystick_deadzone = 100.0f;
     grim_joystick_center_x = 0.0f;
     grim_joystick_center_y = 0.0f;
@@ -107,6 +105,8 @@ void grim_state_init(void)
     grim_color_slot3 = 0xffffffff;
     grim_color_slot2 = 0xffffffff;
     grim_color_slot1 = 0xffffffff;
+    grim_vertex_z = GrimDepth(0.5f, 1.0f);
+
     grim_uv_u0[0] = GrimUV(0.0f, 0.0f);
     grim_uv_u0[1] = GrimUV(1.0f, 0.0f);
     grim_uv_u0[2] = GrimUV(1.0f, 1.0f);

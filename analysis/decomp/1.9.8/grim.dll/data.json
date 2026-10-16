@@ -1481,6 +1481,11 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x1006e4f8",
+      "name": "grim_subrect_table",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x1006ecf8",
       "name": "grim_printf_buffer",
       "program": "1.9.8/grim.dll"
@@ -1731,6 +1736,16 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x10070390",
+      "name": "grim_subrect_table_2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070590",
+      "name": "grim_subrect_table_1",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x10070610",
       "name": "grim_config_values",
       "program": "1.9.8/grim.dll"
@@ -1846,8 +1861,18 @@
       "program": "1.9.8/grim.dll"
     },
     {
+      "address": "0x10070e10",
+      "name": "grim_subrect_table_0",
+      "program": "1.9.8/grim.dll"
+    },
+    {
       "address": "0x10070e30",
       "name": "grim_on_device_lost",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e34",
+      "name": "grim_reserved_d3ac",
       "program": "1.9.8/grim.dll"
     },
     {

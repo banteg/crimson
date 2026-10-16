@@ -306,3 +306,13 @@ three addresses to ECX, EDX, and EAX, matching native. The trace preserves the
 entire compiled object except its timestamp. This observation is specific to
 the statistics worker; highscore exactness is independently established by
 its complete instruction, reference, and encoded-body comparisons.
+
+## 1.9.8 (msvc6.5pp)
+
+97.9% under `--build 1.9.8`, 387/387 instructions. Behaviour guards: the
+Reflexive Arcade host `crimsonland.reflexive.com`, path
+`/crimsonland/ra_version.php`, a do/while read loop with `received` zeroed at
+entry, a newer-version test against 1.9.8, and the local version from
+`console_version_string`. Residual: native orders the internet, bytes-read,
+connection and request stack homes differently; all 23 declaration orders and
+handle initialisation forms were tried.

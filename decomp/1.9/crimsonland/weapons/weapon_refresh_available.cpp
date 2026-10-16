@@ -1,6 +1,12 @@
 #include "crimsonland_gameplay.h"
 
-void weapon_refresh_available(void)
+#if CL_BUILD == 10908
+#include "grim2d_cpp.h"
+
+extern IGrim2D_cpp *grim_interface_ptr;
+#endif
+
+extern "C" void weapon_refresh_available(void)
 {
     int i;
 

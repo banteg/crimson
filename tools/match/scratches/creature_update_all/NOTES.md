@@ -938,3 +938,25 @@ mechanism evidence only, not source recovery. Field-reference and bound-pointer
 reference controls reproduce canonical function bytes and relocation descriptors.
 The remaining source constraint is the value's lifetime across regions plus
 native early storage, not the pointer declaration alone. No match credit added.
+
+## 1.9.8 (C2 9044)
+
+99.93%, all references resolved. Shared spellings: `!(x > 0.0f)` for the
+freeze-timer and hold-radius tests gives 9044's `and eax, 0x4100` lowering and
+is byte-identical in 1.9.93.
+
+Behaviour guards: 1.9.8 multiplies the movement heading term left to right
+(`cos * move_speed * frame_dt * move_scale * 30`), and its Radioactive tick
+neither skips dying creatures nor spares lizards.
+
+Code-generation guard: the tethered follow distance goes through
+`vec2_distance` in 1.9.8, which accumulates `dx * dx` first; the `x*x + y*y`
+length (canonical) squares y first in both compilers. Searched shared forms:
+accumulating, reversed-sum and unnamed bodies of `creature_vec2_length`, a
+named delta, explicit `dx`/`dy` locals, and `vec2_distance` on
+`target_position`; each one breaks one of the builds.
+
+Residual: one `idiv ebp` (`creature_update_tick % 70`) is scheduled two x87
+instructions later than native in the first player-distance block. Local
+declaration orders, `vec2_distance` body spellings and operand orders around
+that site do not move it.

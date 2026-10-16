@@ -38,3 +38,17 @@ MSVC 6.5 matches all 713 instructions and all 291 references exactly.
 The perk-prompt hit test now represents its relative mouse position as a
 `vec2f_t` local. Named component assignments and bounds checks replace the raw
 two-float array while preserving that complete exact match.
+
+## 1.9.8 (C2 9044)
+
+Exact in both builds. Shared spellings: the run-state globals go through the
+original `gameplay_run_state` aggregate (`CRIMSONLAND_USE_ORIGINAL_GAME_OWNER`),
+which keeps the weapon-time update an in-place `add [mem], reg` in 1.9.8; the
+pulse update is an `if`/`else` of two compound assignments, which hoists the
+pulse load above the hover test; and the trial check is `!(x > 5.0f)`, the
+`and eax, 0x4100` lowering. All three are byte-identical in 1.9.93.
+
+Behaviour guards: 1.9.8 has no `play_time_get` 40-minute check and instead
+ends the trial after 60 minutes of `play_time_ms` (as in
+`demo_trial_overlay_render`), and it raises the level to 1.8 in double
+precision (`(double)level`, the 1.8f constant widened).

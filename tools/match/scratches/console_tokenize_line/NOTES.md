@@ -13,3 +13,9 @@ preserve the queue in `ECX`, and the callee returns with `ret 4`, confirming the
 An explicit infinite token loop with a null-token break reproduces the native
 call-at-loop-head schedule. The resulting source matches all 55 instructions,
 full prefix, with all ten string/global/call references aligned.
+
+The argument store is the plain indexed `console_cmd_name[argc] = token`. C2
+8966 (1.9.93) strength-reduces it to the native pointer walk, while 9044
+(1.9.8) keeps the native `[esi*4+console_cmd_name]` store and saves EDI only
+around the inline `strlen`. A hand-advanced argument pointer matched 1.9.93
+but cost 1.9.8 a second loop register. Both builds are exact.

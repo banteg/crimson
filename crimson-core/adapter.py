@@ -176,12 +176,13 @@ def x87(src, txt):
             txt,
             4,
         )
+        # 4 sites, plus 4 in the 1.9.8-only movement branches that never compile here.
         txt = sub(
             src,
             r"\(float\)(cos|sin)\((\w+)\)\s*\*\s*([\w.\[\]]+)",
             r"portable_mul32(\1(\2), \3)",
             txt,
-            4,
+            8,
         )
     if src.stem == "projectile_update":
         for fn in ("cos", "sin"):
@@ -217,7 +218,8 @@ def x87(src, txt):
         # 0x0042704b, Jinxed 0x004070a6); converting to float first rounds it too, which past 2^24 drifts.
         adds, muls = {
             "creature_handle_death": (2, 0),
-            "creature_update_all": (2, 0),
+            # Plus the 1.9.8-only Radioactive branch, which never compiles here.
+            "creature_update_all": (3, 0),
             "perks_update_effects": (1, 0),
         }.get(
             src.stem,
@@ -290,7 +292,8 @@ def x87(src, txt):
             3,
         )
     if src.stem == "gameplay_update_and_render":
-        txt = replace(src, txt, "pow(", "portable_crt_pow_pc24(")
+        # The level threshold, and its 1.9.8-only double-precision branch that never compiles here.
+        txt = replace(src, txt, "pow(", "portable_crt_pow_pc24(", 2)
     return txt
 
 

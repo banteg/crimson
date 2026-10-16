@@ -24,7 +24,7 @@ public:
 #if CL_BUILD == 10908
     // Two real legacy methods at 0x04/0x08 in the 1.9.8 DLL's vtable.
     // Their semantics are still under study.
-    virtual void grim_legacy_slot_04(void) = 0;
+    virtual void grim_legacy_slot_04(int arg) = 0;
     virtual bool grim_legacy_slot_08(void) = 0;
 #endif
     virtual void grim_set_paused(int paused) = 0;

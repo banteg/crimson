@@ -157,3 +157,14 @@ their original behavior.
 guard reaches 100% (691/691 instructions, 198/0/0 references, 2642 bytes); local
 flag variants and duplicated branch-local rendering do not. This supersedes the
 previous compiler-residual classification.
+
+## 1.9.8 (msvc6.5pp)
+
+770/770 instructions under `--build 1.9.8`; canonical stays exact. Behaviour
+guards: the price line, two extra in-game purchase lines, Purchase and Already
+paid buttons that call Grim slot 0x04(0/2), and Maybe later starting the timed
+trial after twenty minutes. Two shared spellings fixed 1.9.8 without changing
+canonical bytes: the trial-limit store before the active flag, and the upsell
+index advanced in place before it is read. Reference problems are 1.9.8 data
+map gaps; the map labels the purchase and already-paid destructor thunks one
+slot off.

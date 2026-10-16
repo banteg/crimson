@@ -56,43 +56,39 @@ void player_reset_all(void)
                 .position -= offset;
         }
 
-        {
-            int reset_index = current_player_index;
+        player_state_table[current_player_index].size = 48.0f;
+        player_state_table[current_player_index].speed_multiplier = 2.0f;
+        player_state_table[current_player_index].level = 1;
+        player_state_table[current_player_index].heading = 0.0f;
+        player_state_table[current_player_index].experience = 0;
+        player_state_table[current_player_index].reset_reserved_b0 = 0;
+        player_state_table[current_player_index].spread_heat = 0.0f;
+        player_state_table[current_player_index].move_speed = 0.0f;
+        player_state_table[current_player_index].ammo = 10.0f;
+        player_state_table[current_player_index].clip_size = 10.0f;
+        player_state_table[current_player_index].reload_timer_max = 1.0f;
+        player_state_table[current_player_index].reload_timer = 0.0f;
+        player_state_table[current_player_index].alt_weapon_id = 1;
+        player_state_table[current_player_index].alt_clip_size = (float)weapon_table[1].clip_size;
+        player_state_table[current_player_index].alt_reload_active = 0;
+        player_state_table[current_player_index].alt_ammo = player_state_table[current_player_index].alt_clip_size;
 
-            player_state_table[reset_index].size = 48.0f;
-            player_state_table[reset_index].speed_multiplier = 2.0f;
-            player_state_table[reset_index].level = 1;
-            player_state_table[reset_index].heading = 0.0f;
-            player_state_table[reset_index].experience = 0;
-            player_state_table[reset_index].reset_reserved_b0 = 0;
-            player_state_table[reset_index].spread_heat = 0.0f;
-            player_state_table[reset_index].move_speed = 0.0f;
-            player_state_table[reset_index].ammo = 10.0f;
-            player_state_table[reset_index].clip_size = 10.0f;
-            player_state_table[reset_index].reload_timer_max = 1.0f;
-            player_state_table[reset_index].reload_timer = 0.0f;
-            player_state_table[reset_index].alt_weapon_id = 1;
-            player_state_table[reset_index].alt_clip_size = (float)weapon_table[1].clip_size;
-            player_state_table[reset_index].alt_reload_active = 0;
-            player_state_table[reset_index].alt_ammo = player_state_table[reset_index].alt_clip_size;
+        player_state_table[current_player_index].alt_reload_timer = 0.0f;
+        player_state_table[current_player_index].alt_shot_cooldown = 0.0f;
+        player_state_table[current_player_index].alt_reload_timer_max = weapon_table[1].reload_time;
+        player_state_table[current_player_index].shot_cooldown = 0.8f;
+        player_state_table[current_player_index].weapon_id = 1;
+        player_state_table[current_player_index].reset_reserved_zero = 0;
+        player_state_table[current_player_index].death_timer = 16.0f;
 
-            player_state_table[reset_index].alt_reload_timer = 0.0f;
-            player_state_table[reset_index].alt_shot_cooldown = 0.0f;
-            player_state_table[reset_index].alt_reload_timer_max = weapon_table[1].reload_time;
-            player_state_table[reset_index].shot_cooldown = 0.8f;
-            player_state_table[reset_index].weapon_id = 1;
-            player_state_table[reset_index].reset_reserved_zero = 0;
-            player_state_table[reset_index].death_timer = 16.0f;
-
-            if (!demo_mode_active) {
-                reset_vec2_t mouse_pos(320.0f, 140.0f);
-                *(reset_vec2_t *)&ui_mouse_x = mouse_pos;
-            }
-            for (int perk_index = 0;
-                 perk_index < sizeof(player_state_table[0].perk_counts) / sizeof(int);
-                 ++perk_index) {
-                player_state_table[reset_index].perk_counts[perk_index] = 0;
-            }
+        if (!demo_mode_active) {
+            reset_vec2_t mouse_pos(320.0f, 140.0f);
+            *(reset_vec2_t *)&ui_mouse_x = mouse_pos;
+        }
+        for (int perk_index = 0;
+             perk_index < sizeof(player_state_table[0].perk_counts) / sizeof(int);
+             ++perk_index) {
+            player_state_table[current_player_index].perk_counts[perk_index] = 0;
         }
 
         {

@@ -184,11 +184,11 @@ extern "C" void game_over_screen_update(void)
             ui_screen_phase = 1;
         } else {
             ui_screen_phase = 0;
-            name_input.max_chars = 0x14;
-            name_input.text = name_buffer;
             strcpy(
                 name_buffer,
                 highscore_active_record.player_name);
+            name_input.max_chars = 0x14;
+            name_input.text = name_buffer;
             name_input.cursor = strlen(highscore_active_record.player_name);
         }
     }

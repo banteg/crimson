@@ -22,15 +22,13 @@ void console_queue_t::console_tokenize_line(char *line)
 
     console_cmd_name[0] = token;
     int argc = 1;
-    char **argument = &console_cmd_name[1];
     while (true) {
         token = crt_strtok(0, " \n");
         if (token == 0) {
             break;
         }
-        *argument = token;
+        console_cmd_name[argc] = token;
         ++argc;
-        ++argument;
     }
     console_cmd_argc = argc;
 }

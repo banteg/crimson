@@ -509,3 +509,13 @@ Alignment rises from `94.7735192%` to `94.9477352%`, gaining `7.982578`
 fuzzy-weighted bytes. Instructions remain `1148/1148`, prefix nine, references
 `331/0/0`, and both whole-function exactness flags remain false. Source SHA-256
 is `df048c95f7ba8cd30ab5b8ac3a4a9ad1ab46b658eea1ff7b6a6e3b1ae24fef2b`.
+
+## 1.9.8 (C2 9044), open
+
+81.69%. Native's frame is 4 bytes smaller and the dead and alive body sizes
+reach `grim_draw_quad` as a register integer copy (`mov esi, size; mov eax,
+esi; push esi; push eax`) where the shared source spills the reused
+`sprite_size`/`dead_sprite_size` local. Passing the size directly (85.3% with
+all three body draws) breaks 1.9.93; per-purpose size, half-size and
+effect-offset locals and block scopes leave 1.9.8 unchanged. It likely needs a
+guarded body.

@@ -106,6 +106,20 @@
       "end": "0x42f457",
       "body_sha256": "e35990e5d67519eee103eb66862c6ded7eb669dbf21b713fc40ba50a0c12712d",
       "note": "Clears the perk availability bytes, enables the table and the unlocked quest perks; 1.9.93 additionally forces four perks on. Gameplay reset calls it."
+    },
+    {
+      "name": "demo_purchase_purchase_button_destroy",
+      "address": "0x40c2e0",
+      "end": "0x40c2e1",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e",
+      "note": "demo_purchase_screen_update registers this destructor (instruction-exact there); 1.9.8 adds an already-paid button whose destructor at 0x40c2d0 precedes it."
+    },
+    {
+      "name": "demo_purchase_maybe_later_button_destroy",
+      "address": "0x40c2f0",
+      "end": "0x40c2f1",
+      "body_sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e",
+      "note": "demo_purchase_screen_update registers this destructor (instruction-exact there); 1.9.8 adds an already-paid button whose destructor at 0x40c2d0 precedes it."
     }
   ],
   "data": [
@@ -3014,14 +3028,6 @@
       "note": "Instruction-exact under 1.9.8: statistics_menu_update."
     },
     {
-      "name": "time_format_mm_ss",
-      "address": "0x4105c0",
-      "reference": "0x4118e1",
-      "bytes": "e8daecffff",
-      "offset": 0,
-      "note": "Instruction-exact under 1.9.8: quest_results_screen_update."
-    },
-    {
       "name": "ui_button_already_paid",
       "address": "0x47d328",
       "reference": "0x40409d",
@@ -3052,14 +3058,6 @@
       "bytes": "89351c4f4800",
       "offset": 0,
       "note": "Instruction-exact under 1.9.8: ui_element_update."
-    },
-    {
-      "name": "ui_menu_main_click_buy_full_version",
-      "address": "0x44dc40",
-      "reference": "0x44dfa0",
-      "bytes": "c7051c5f480040dc4400",
-      "offset": 0,
-      "note": "Instruction-exact under 1.9.8: ui_menu_layout_init."
     },
     {
       "name": "ui_segmented_slider_tex_off",
@@ -3220,6 +3218,734 @@
       "bytes": "a0099f4c00",
       "offset": 0,
       "note": "Instruction-exact under 1.9.8: unlocked_weapons_database_update."
+    },
+    {
+      "name": "player_reset_reserved_zero",
+      "address": "0x4a8408",
+      "reference": "0x41f51e",
+      "bytes": "892d08844a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: player_reset_all."
+    },
+    {
+      "name": "creature_update_tick",
+      "address": "0x4a8430",
+      "reference": "0x425953",
+      "bytes": "a130844a00",
+      "offset": 0,
+      "note": "Tick counter load at the start of creature_update_all."
+    },
+    {
+      "name": "plaguebearer_infection_count",
+      "address": "0x484ca8",
+      "reference": "0x425d29",
+      "bytes": "a1a84c4800",
+      "offset": 0,
+      "note": "Infection counter increment in creature_update_all; the same global gates plaguebearer_spread_infection at 60 and 50."
+    },
+    {
+      "name": "game_paused_flag",
+      "address": "0x47e5c8",
+      "reference": "0x40aa8f",
+      "bytes": "381dc8e54700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_update_and_render."
+    },
+    {
+      "name": "perk_prompt_hover_active",
+      "address": "0x48d1e0",
+      "reference": "0x40af44",
+      "bytes": "a0e0d14800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_update_and_render."
+    },
+    {
+      "name": "perk_prompt_pulse",
+      "address": "0x48d1e4",
+      "reference": "0x40af49",
+      "bytes": "8b15e4d14800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_update_and_render."
+    },
+    {
+      "name": "mouse_button_down",
+      "address": "0x47e5c9",
+      "reference": "0x40af91",
+      "bytes": "381dc9e54700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_update_and_render."
+    },
+    {
+      "name": "perk_prompt_origin_x",
+      "address": "0x48cf04",
+      "reference": "0x40aff5",
+      "bytes": "d82504cf4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_update_and_render."
+    },
+    {
+      "name": "perk_prompt_bounds_min_x",
+      "address": "0x48cf28",
+      "reference": "0x40b05f",
+      "bytes": "d81d28cf4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_update_and_render."
+    },
+    {
+      "name": "perk_prompt_bounds_min_y",
+      "address": "0x48cf2c",
+      "reference": "0x40b072",
+      "bytes": "d81d2ccf4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_update_and_render."
+    },
+    {
+      "name": "perk_prompt_bounds_max_x",
+      "address": "0x48cf60",
+      "reference": "0x40b085",
+      "bytes": "d81d60cf4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_update_and_render."
+    },
+    {
+      "name": "perk_prompt_bounds_max_y",
+      "address": "0x48cf64",
+      "reference": "0x40b096",
+      "bytes": "d81d64cf4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_update_and_render."
+    },
+    {
+      "name": "demo_trial_overlay_alpha_ms",
+      "address": "0x47e5a8",
+      "reference": "0x40b2e2",
+      "bytes": "8b35a8e54700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: gameplay_update_and_render."
+    },
+    {
+      "name": "config_show_online_scores",
+      "address": "0x47e4cd",
+      "reference": "0x43a855",
+      "bytes": "a0cde44700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_load_table."
+    },
+    {
+      "name": "config_highscore_date_mode",
+      "address": "0x47e062",
+      "reference": "0x43a86e",
+      "bytes": "a062e04700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_load_table."
+    },
+    {
+      "name": "config_highscore_duplicate_mode",
+      "address": "0x47e063",
+      "reference": "0x43a939",
+      "bytes": "803d63e0470001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: highscore_load_table."
+    },
+    {
+      "name": "highscore_record_is_valid",
+      "address": "0x43a0d0",
+      "reference": "0x43a215",
+      "bytes": "e8b6feffff",
+      "offset": 0,
+      "note": "Score plausibility check called by highscore_submit_full_version_guard; 1.9.93 folds it into the constant-true game_is_full_version stub."
+    },
+    {
+      "name": "?$S1@?1??ui_profile_menu_update@@9@4EA",
+      "address": "0x4c9f88",
+      "reference": "0x443930",
+      "bytes": "a0889f4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_profile_menu_update."
+    },
+    {
+      "name": "?name_input@?1??ui_profile_menu_update@@9@4Uprofile_text_input_t@@A",
+      "address": "0x4ce188",
+      "reference": "0x44395b",
+      "bytes": "c70588e14c00d09d4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_profile_menu_update."
+    },
+    {
+      "name": "add_button",
+      "address": "0x4c9f44",
+      "reference": "0x4439f9",
+      "bytes": "891d449f4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_profile_menu_update."
+    },
+    {
+      "name": "bonus_render_anim_phase",
+      "address": "0x4a8434",
+      "reference": "0x428e1b",
+      "bytes": "d80534844a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: bonus_render."
+    },
+    {
+      "name": "config_p1_move_forward",
+      "address": "0x47e228",
+      "reference": "0x448799",
+      "bytes": "8b349d28e24700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_aim_method_list",
+      "address": "0x4d48f4",
+      "reference": "0x4480bf",
+      "bytes": "c605f4484d0001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_back_button",
+      "address": "0x4d4810",
+      "reference": "0x448031",
+      "bytes": "892d10484d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_direction_arrow_checkbox",
+      "address": "0x4d4a34",
+      "reference": "0x448487",
+      "bytes": "c605344a4d0000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_menu_init_flags",
+      "address": "0x4d4a30",
+      "reference": "0x447f80",
+      "bytes": "a0304a4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_menu_selection_refresh_latch",
+      "address": "0x476c50",
+      "reference": "0x448146",
+      "bytes": "a0506c4700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_move_method_list",
+      "address": "0x4d4890",
+      "reference": "0x44810c",
+      "bytes": "c60590484d0001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_player_profile_list",
+      "address": "0x4d48b4",
+      "reference": "0x448070",
+      "bytes": "c605b4484d0001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_rebind_axis_peak_abs_13f",
+      "address": "0x4d4c28",
+      "reference": "0x44bdb3",
+      "bytes": "bf284c4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_rebind_axis_peak_abs_140",
+      "address": "0x4d4c2c",
+      "reference": "0x44be5c",
+      "bytes": "d9052c4c4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_rebind_axis_peak_abs_141",
+      "address": "0x4d4c30",
+      "reference": "0x44bea5",
+      "bytes": "d905304c4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_rebind_axis_peak_abs_153",
+      "address": "0x4d4c34",
+      "reference": "0x44beee",
+      "bytes": "d905344c4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_rebind_axis_peak_abs_154",
+      "address": "0x4d4c38",
+      "reference": "0x44bf37",
+      "bytes": "d905384c4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_rebind_axis_peak_abs_155",
+      "address": "0x4d4c3c",
+      "reference": "0x44bf80",
+      "bytes": "d9053c4c4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_rebind_capture_armed",
+      "address": "0x4d4c24",
+      "reference": "0x44bd4e",
+      "bytes": "8a15244c4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_rebind_items",
+      "address": "0x4d4ae0",
+      "reference": "0x448780",
+      "bytes": "8b82e04a4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_rebind_player_index",
+      "address": "0x4d4c20",
+      "reference": "0x44814f",
+      "bytes": "a1204c4d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_rebind_slot_index",
+      "address": "0x476c54",
+      "reference": "0x44afea",
+      "bytes": "a1546c4700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "controls_redefine_button",
+      "address": "0x4d4950",
+      "reference": "0x447fc7",
+      "bytes": "892d50494d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: controls_menu_update."
+    },
+    {
+      "name": "data_487260",
+      "address": "0x484f40",
+      "reference": "0x445d54",
+      "bytes": "893d404f4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_state_set."
+    },
+    {
+      "name": "delete_button",
+      "address": "0x4c9db8",
+      "reference": "0x443a61",
+      "bytes": "891db89d4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_profile_menu_update."
+    },
+    {
+      "name": "demo_purchase_maybe_later_button",
+      "address": "0x47dfd0",
+      "reference": "0x40b821",
+      "bytes": "891dd0df4700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: demo_purchase_screen_update."
+    },
+    {
+      "name": "demo_purchase_purchase_button",
+      "address": "0x47d390",
+      "reference": "0x40b887",
+      "bytes": "891d90d34700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: demo_purchase_screen_update."
+    },
+    {
+      "name": "demo_purchase_screen_init_flags",
+      "address": "0x47e040",
+      "reference": "0x40b7e5",
+      "bytes": "a040e04700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: demo_purchase_screen_update."
+    },
+    {
+      "name": "demo_upsell_message_index",
+      "address": "0x47e5cc",
+      "reference": "0x40c24d",
+      "bytes": "8b0dcce54700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: demo_purchase_screen_update."
+    },
+    {
+      "name": "developer_hint_alien_zookeeper",
+      "address": "0x4719e4",
+      "reference": "0x42c044",
+      "bytes": "a1e4194700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "developer_hint_haxxor",
+      "address": "0x4719f8",
+      "reference": "0x42c076",
+      "bytes": "a1f8194700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "developer_hint_magic_paint",
+      "address": "0x4719ec",
+      "reference": "0x42c065",
+      "bytes": "8b15ec194700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "developer_hint_muzzy",
+      "address": "0x4719f0",
+      "reference": "0x42c086",
+      "bytes": "8b0df0194700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "developer_hint_reijo",
+      "address": "0x4719d8",
+      "reference": "0x42c012",
+      "bytes": "a1d8194700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "developer_hint_secret_path",
+      "address": "0x4719e8",
+      "reference": "0x42c054",
+      "bytes": "8b0de8194700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "developer_hint_secret_weapons",
+      "address": "0x4719dc",
+      "reference": "0x42c022",
+      "bytes": "8b0ddc194700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "developer_hint_warning",
+      "address": "0x4719e0",
+      "reference": "0x42c033",
+      "bytes": "8b15e0194700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "grim_config_invoked",
+      "address": "0x4a841d",
+      "reference": "0x42c1b2",
+      "bytes": "c6051d844a0001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "input_primary_latch",
+      "address": "0x476c40",
+      "reference": "0x4454c0",
+      "bytes": "a0406c4700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: input_primary_just_pressed."
+    },
+    {
+      "name": "key_char_buffer",
+      "address": "0x4a81b0",
+      "reference": "0x42c6aa",
+      "bytes": "bfb0814a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "key_char_buffer_size",
+      "address": "0x4719f4",
+      "reference": "0x42c6a0",
+      "bytes": "8b15f4194700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "key_char_count",
+      "address": "0x4a83b4",
+      "reference": "0x42c6b1",
+      "bytes": "8935b4834a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "music_disabled_runtime",
+      "address": "0x4a83b2",
+      "reference": "0x42c433",
+      "bytes": "880db2834a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "name_list",
+      "address": "0x4ce150",
+      "reference": "0x443be7",
+      "bytes": "c60550e14c0001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_profile_menu_update."
+    },
+    {
+      "name": "profile_name_add_mode",
+      "address": "0x4ce478",
+      "reference": "0x443a81",
+      "bytes": "a078e44c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_profile_menu_update."
+    },
+    {
+      "name": "profile_name_filter_dirty",
+      "address": "0x4ce47a",
+      "reference": "0x443caf",
+      "bytes": "c6057ae44c0001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_profile_menu_update."
+    },
+    {
+      "name": "profile_name_input_buffer",
+      "address": "0x4c9dd0",
+      "reference": "0x44395b",
+      "bytes": "c70588e14c00d09d4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_profile_menu_update."
+    },
+    {
+      "name": "profile_name_item_ptrs",
+      "address": "0x4c9e14",
+      "reference": "0x443998",
+      "bytes": "8904bd149e4c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_profile_menu_update."
+    },
+    {
+      "name": "profile_name_list_open",
+      "address": "0x4ce474",
+      "reference": "0x443b62",
+      "bytes": "391d74e44c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_profile_menu_update."
+    },
+    {
+      "name": "profile_name_selection_dirty",
+      "address": "0x4ce479",
+      "reference": "0x443ca8",
+      "bytes": "c60579e44c0001",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: ui_profile_menu_update."
+    },
+    {
+      "name": "shareware_offer_seen_latch",
+      "address": "0x47e561",
+      "reference": "0x40c035",
+      "bytes": "8a0d61e54700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: demo_purchase_screen_update."
+    },
+    {
+      "name": "sprite_effect_uv_u",
+      "address": "0x48ef20",
+      "reference": "0x429ceb",
+      "bytes": "d90520ef4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: bonus_render."
+    },
+    {
+      "name": "sprite_effect_uv_v",
+      "address": "0x48ef24",
+      "reference": "0x429ccc",
+      "bytes": "d90524ef4800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: bonus_render."
+    },
+    {
+      "name": "startup_first_frame_latch",
+      "address": "0x471a24",
+      "reference": "0x42aab0",
+      "bytes": "a0241a4700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_startup_init."
+    },
+    {
+      "name": "startup_integrity_cookie",
+      "address": "0x471a28",
+      "reference": "0x42bd8e",
+      "bytes": "c705281a47007b000000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: crimsonland_main."
+    },
+    {
+      "name": "startup_loading_fade_complete",
+      "address": "0x4a8475",
+      "reference": "0x42ab5d",
+      "bytes": "a075844a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_startup_init."
+    },
+    {
+      "name": "startup_logo_sequence_active",
+      "address": "0x4a8474",
+      "reference": "0x42aac0",
+      "bytes": "a074844a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_startup_init."
+    },
+    {
+      "name": "startup_post_load_settle_ticks",
+      "address": "0x4a8470",
+      "reference": "0x42ab6a",
+      "bytes": "a170844a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_startup_init."
+    },
+    {
+      "name": "startup_skip_requested",
+      "address": "0x4a846c",
+      "reference": "0x42aed6",
+      "bytes": "a06c844a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_startup_init."
+    },
+    {
+      "name": "startup_splash_timer",
+      "address": "0x4a8468",
+      "reference": "0x42ab11",
+      "bytes": "d90568844a00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_startup_init."
+    },
+    {
+      "name": "telekinetic_bonus_hover_timer_ms",
+      "address": "0x4a8438",
+      "reference": "0x4295b5",
+      "bytes": "c704ad38844a0000000000",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: bonus_render."
+    },
+    {
+      "name": "time_format_mm_ss_buffer",
+      "address": "0x480328",
+      "reference": "0x4105d8",
+      "bytes": "6828034800",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: time_format_mm_ss."
+    },
+    {
+      "name": "typo_input_buffer",
+      "address": "0x4ce700",
+      "reference": "0x444cdd",
+      "bytes": "881d00e74c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: typo_gameplay_update_and_render."
+    },
+    {
+      "name": "typo_input_length",
+      "address": "0x4d47e0",
+      "reference": "0x444cd7",
+      "bytes": "891de0474d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: typo_gameplay_update_and_render."
+    },
+    {
+      "name": "typo_match_count",
+      "address": "0x4d47d4",
+      "reference": "0x444d7f",
+      "bytes": "a1d4474d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: typo_gameplay_update_and_render."
+    },
+    {
+      "name": "typo_mode_reset_flag",
+      "address": "0x476ad4",
+      "reference": "0x444ccf",
+      "bytes": "381dd46a4700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: game_state_set, typo_gameplay_update_and_render."
+    },
+    {
+      "name": "typo_runtime_init_flag",
+      "address": "0x4ce780",
+      "reference": "0x444c83",
+      "bytes": "a080e74c00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: typo_gameplay_update_and_render."
+    },
+    {
+      "name": "typo_spawn_counter",
+      "address": "0x4d47e4",
+      "reference": "0x445075",
+      "bytes": "8b15e4474d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: typo_gameplay_update_and_render."
+    },
+    {
+      "name": "typo_submit_count",
+      "address": "0x4d47d0",
+      "reference": "0x444d35",
+      "bytes": "8b3dd0474d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: typo_gameplay_update_and_render."
+    },
+    {
+      "name": "typo_target_world_x",
+      "address": "0x4d47c8",
+      "reference": "0x444caf",
+      "bytes": "d91dc8474d00",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: typo_gameplay_update_and_render."
+    },
+    {
+      "name": "ui_pulse_timer_ms",
+      "address": "0x47e5d0",
+      "reference": "0x40b9c6",
+      "bytes": "a1d0e54700",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: demo_purchase_screen_update."
+    },
+    {
+      "name": "demo_purchase_already_paid_button",
+      "address": "0x47d2e0",
+      "reference": "0x40b8ed",
+      "bytes": "891de0d24700",
+      "offset": 0,
+      "build_only": true,
+      "note": "1.9.8's third purchase-screen button (Already paid), a function-local static of demo_purchase_screen_update."
+    },
+    {
+      "name": "demo_purchase_already_paid_button_destroy",
+      "address": "0x40c2d0",
+      "reference": "0x40b8bc",
+      "bytes": "68d0c24000",
+      "offset": 0,
+      "build_only": true,
+      "note": "atexit destructor demo_purchase_screen_update registers for the Already paid button; 1.9.93 has no such button."
+    }
+  ],
+  "absent": [
+    {
+      "name": "game_is_full_version",
+      "note": "1.9.8 asks Grim2D vtable slot 0x08 at each call site; 0x43a0d0, where order placed it, is highscore_record_is_valid."
     }
   ]
 }

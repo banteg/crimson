@@ -368,3 +368,14 @@ contains the authenticated older DLL but no engine source. Its older state
 initializer uses the same V-field cursor family and coalesces its conversion
 spills, which is consistent with the observed VC6 behavior but does not by
 itself identify the later source lifetime.
+
+## Shared 1.9.8 spelling (2026-10-16)
+
+`grim_vertex_z = GrimDepth(0.5f, 1.0f)` now sits just before the
+`grim_uv_u0` defaults instead of right after the configuration slots. Both
+spellings are byte-identical on 1.9.93 under 8966. Under 9044 only the later
+placement gives 1.9.8's order for the 16-byte slot copies, the depth and UV
+stores and the `grim_uv_u0[3]`/window-title registers, so 1.9.8 is exact
+(406/406) with no guard. Placing the depth store before the configuration
+slots, after the error text, or as two field stores, or reordering the last
+five slot assignments, does not match on 1.9.8.

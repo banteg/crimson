@@ -1,29 +1,45 @@
-#include <stdio.h>
-#include <string.h>
 #include <windows.h>
 
-#include "crimsonland_highscore.h"
+#include "crimsonland_highscore_record.h"
 
-extern char default_player_name[];
-extern SYSTEMTIME local_system_time;
+extern "C" SYSTEMTIME local_system_time;
 
-int crt_rand(void);
+#if CL_BUILD == 10908
+/*
+ * Translation-unit context for 1.9.8. Its C2 (9044) reuses what it learned
+ * compiling earlier functions of the same unit: highscore_iso_week precedes
+ * this function there (see highscore_iso_week.c) and reads no memory, so the
+ * reset's random tag store, overwritten by the record copy, is dropped.
+ * 1.9.93's C2 (8966) ignores this, so the canonical object keeps one function
+ * per file.
+ */
+extern "C" int highscore_iso_week(int year, int month, int day)
+{
+    int a = (14 - month) / 12;
+    int y = year + 4800 - a;
+    int m = month + 12 * a - 3;
+    int julian_day =
+        day + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 +
+        y / 400 - 32045;
+    int d4 =
+        (julian_day + 31741 - julian_day % 7) % 146097 % 36524 % 1461;
+    int leap = d4 / 1460;
+    int d1 = ((d4 - leap) % 365) + leap;
+
+    return d1 / 7 + 1;
+}
+#endif
 
 void highscore_write_record(highscore_record_t *record, FILE *fp)
 {
     int checksum = 0;
-    highscore_record_t encoded;
+    highscore_record_cpp_t encoded;
     unsigned int i;
     char *cursor;
 
     GetLocalTime(&local_system_time);
 
-    memset(&encoded, 0, sizeof(encoded));
-    strcpy(encoded.player_name, default_player_name);
-    encoded.flags = 0;
-    encoded.sentinel_pipe = '|';
-    encoded.sentinel_ff = 0xff;
-    encoded.random_tag = crt_rand() & 0x0fee050f;
+    encoded.reset_light();
 
     if (record->day == 0) {
         record->day = (unsigned char)local_system_time.wDay;

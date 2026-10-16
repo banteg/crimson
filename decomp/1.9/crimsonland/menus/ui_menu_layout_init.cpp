@@ -228,6 +228,33 @@ static __forceinline void transform_layers(
     }
 }
 
+#if CL_BUILD == 10908
+/* Code-generation-only: 9044 encodes the 22..25 vertex loops with native's
+ * SIB base/index order only when they come from an inline helper; the helper
+ * shifts 8966's ids and flips the narrow main menu SIB bytes instead.
+ * See tools/match/scratches/ui_menu_layout_init/NOTES.md. */
+static __forceinline void scale_layers(
+    ui_layout_element_t **element_ref, float scale, float shift_y)
+{
+    for (int i = 0; i < 4; ++i) {
+        ui_element_vertex_t *slot
+            = (*element_ref)->vertices + i;
+        slot->x *= scale;
+        slot->y *= scale;
+        slot = (*element_ref)->enabled_overlay_vertices + i;
+        slot->x *= scale;
+        slot->y *= scale;
+        slot = (*element_ref)->overlay_vertices + i;
+        slot->x *= scale;
+        slot->y *= scale;
+
+        (*element_ref)->vertices[i].y -= shift_y;
+        (*element_ref)->enabled_overlay_vertices[i].y -= shift_y;
+        (*element_ref)->overlay_vertices[i].y -= shift_y;
+    }
+}
+#endif
+
 static __forceinline void transform_narrow_main_menu(void)
 {
     const float menu_scale = 0.8f;
@@ -607,6 +634,15 @@ extern "C" void ui_menu_layout_init(void)
         }
     }
 
+#if CL_BUILD == 10908
+    for (i = 22; i <= 25; ++i) {
+        if (config_screen_width <= 640) {
+            scale_layers(&ui_element_table[i], 0.8f, (float)((i - 23) * 11));
+        } else if (config_screen_width <= 800) {
+            scale_layers(&ui_element_table[i], 0.9f, (float)((i - 23) * 5));
+        }
+    }
+#else
     for (i = 22; i <= 25; ++i) {
         if (config_screen_width <= 640) {
             for (int vertex_index = 0; vertex_index < 4; ++vertex_index) {
@@ -644,6 +680,7 @@ extern "C" void ui_menu_layout_init(void)
             }
         }
     }
+#endif
 
     if (config_screen_width <= 640) {
         transform_layers(&ui_menu_layout_c, 0.8f, 0.0f, 11.0f);

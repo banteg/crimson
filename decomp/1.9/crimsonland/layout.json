@@ -5563,7 +5563,7 @@
           ]
         },
         {
-          "path": "decomp/1.9/crimsonland/weapons/weapon_refresh_available.c",
+          "path": "decomp/1.9/crimsonland/weapons/weapon_refresh_available.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },

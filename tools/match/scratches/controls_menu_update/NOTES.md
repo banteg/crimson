@@ -886,3 +886,18 @@ residuals was too broad: five were tooling overreads.
 The shared-table, invalid-guard, changed-case, and padding controls are matcher
 tests, not source experiments. Full classification and TU evidence are in
 [reference-tu-audit-2026-09-08](https://github.com/banteg/crimson/blob/8407308af2dcb1c1c15352f39f76b0cbfea900f3/tools/match/REFERENCE-TU-AUDIT-2026-09-08.md).
+
+## 1.9.8 (msvc6.5pp)
+
+Exact at 4194/4194 under `--build 1.9.8`; canonical stays exact.
+
+- Layout guards: 1.9.8 defines `vec2_add_out` inline in this unit (the image
+  has no out-of-line copy) with the x sum taken first, and names the reload key
+  through the out-of-line `input_key_name`; the other three key names stay
+  inlined. Plain `__inline` key names inline only two copies under 9044.
+- Behaviour guard: key rows do not accept an analog axis
+  (`input_detect_active_analog_axis` is absent).
+- Code-generation-only guard: the axis-peak scan is an indexed loop over seven
+  peaks. Searched shared spellings: indexed `for`, pointer plus index `for`,
+  `while (axis_index < 7)` and a typed pointer compare. Every index form loses
+  0.9% canonically and the pointer forms leave 9044 with a pointer cursor.

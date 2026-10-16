@@ -158,3 +158,23 @@ Because both images include the same recovered body, the retained
 `/O2 /GB /W3 /GR-` source now matches this target at **734/734 bytes**,
 **140/140 instructions**, and references **83/0/0**. The compiler residual
 override has been removed.
+
+## 1.9.8 status (2026-10-16)
+
+Still open under 9044 (85.48%), for this scratch and for the exe's
+`config_init_defaults`, which has the same native shape. 1.9.8 writes
+`ui_info_texts` from the `ebx = 1` register, and its saved-names loop keeps
+`i`, an order pointer, a strcpy delta and a stack countdown from 8. The
+delta starts as `mov esi, blob; sub esi, "default"`, and `add esi, 0xa8`
+comes later.
+
+Best spelling found: 94.07%, 126/127 instructions. It writes
+`ui_info_texts = 1` directly (1.9.93 needs the `memset`) and uses a
+`do { ... } while (--n)` countdown with an order pointer. The only remaining
+difference is the delta: every spelling folds `blob + 0xa8` into one
+relocation. Spellings that still fold: an indexed name, a byte or typed
+cursor, `(char *)&blob + offset`, an `int` name-offset induction variable,
+a two-step cursor init, a `crimson_cfg_t *` local, a flat `[0][i * 27]`
+index and a raw byte index into the blob. Without the countdown (`i < 8`,
+`for`, or the canonical offset test in any statement order), 9044 emits a
+compare loop instead. No guard has been added.

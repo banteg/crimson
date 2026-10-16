@@ -98,9 +98,7 @@ DEFAULT_TRANSLATION_UNIT_CONFIGS = {
         / "grim.dll.json"
     ),
 }
-DEFAULT_LINKER_ALIAS_CONFIGS = {
-    "grim.dll": DEFAULT_LINKER_ALIAS_ROOT / "grim.dll.json",
-}
+DEFAULT_LINKER_ALIAS_CONFIGS = {path.stem: path for path in sorted(DEFAULT_LINKER_ALIAS_ROOT.glob("*.json"))}
 DEFAULT_PROVIDER_CONFIGS = {
     "crimsonland.exe": DEFAULT_PROVIDER_ROOT / "crimsonland.exe.json",
     "grim.dll": DEFAULT_PROVIDER_ROOT / "grim.dll.json",

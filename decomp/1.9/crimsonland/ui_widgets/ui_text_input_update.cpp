@@ -70,7 +70,8 @@ extern "C" bool ui_text_input_update(
         ui_focus_draw((float *)&position);
     }
 
-    id->text[id->cursor + 1] = 0;
+    int *cursor = &id->cursor;
+    id->text[*cursor + 1] = 0;
     int key = console_input_poll();
     if (key == 13) {
         grim_interface_ptr->grim_was_key_pressed(28);
@@ -80,7 +81,7 @@ extern "C" bool ui_text_input_update(
     } else {
         grim_interface_ptr->grim_set_key_char_buffer(
             id->text,
-            &id->cursor,
+            cursor,
             id->max_chars);
         if (key) {
             sfx_play(sfx_ui_typeclick_01 + crt_rand() % 2, 1.0f);

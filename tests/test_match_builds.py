@@ -88,6 +88,14 @@ def test_other_builds_compile_game_code_with_their_own_compiler_and_cl_build() -
     }
 
 
+def test_build_reference_aliases_apply_only_to_their_build() -> None:
+    config = matchlib.load_scratch_config(matchlib.DEFAULT_MATCH_ROOT / "scratches/demo_purchase_screen_update")
+    alias = ("$E4", "demo_purchase_already_paid_button_destroy")
+    assert alias in dict(config.build_reference_aliases)[10908]
+    assert alias not in config.reference_aliases
+    assert alias in REGISTRY.image("1.9.8", config.image).scratch_config(config).reference_aliases
+
+
 def test_prebuilt_libraries_keep_their_toolchain_in_other_builds() -> None:
     config = matchlib.load_scratch_config(matchlib.DEFAULT_MATCH_ROOT / "scratches/grim_adler32")
     assert config.compiler not in REGISTRY.image("1.9.93", config.image).game_profiles

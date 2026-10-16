@@ -134,3 +134,15 @@ unchanged. Its sole variant raises the entry point from 98.4375% to **100%**,
 extends the prefix from 684 to all 832 instructions, and improves references
 from `393/0/2` to **`395/0/0`**. Candidate and native now match for all 3,214
 bytes, so the scratch is classified exact.
+
+## 1.9.8 (msvc6.5pp)
+
+Exact at 830/830 under `--build 1.9.8`; canonical stays exact.
+
+- Behaviour guards: no initial `srand`; the executable refuses to start unless
+  the command line contains `crimsonland.exe`; no redistribution-build hint.
+- Code-generation-only guard: 1.9.8 stores `registry_key_status_root_path[20..30]`
+  after the developer-hint block instead of before the DEV-dll fallback. Moving
+  the stores there in shared source loses 5.3% canonically (8966 emits them in
+  source order); the canonical position leaves them before the fallback test
+  under 9044. No shared position exists.

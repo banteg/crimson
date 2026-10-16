@@ -793,6 +793,46 @@
       "bytes": "e907000000",
       "offset": 0,
       "note": "grim_app_pump tail-jumps to MyApp::on_tick, a real body here; 1.9.93 folds it into grim_noop."
+    },
+    {
+      "name": "grim_reserved_d3ac",
+      "address": "0x10070e34",
+      "reference": "0x10005845",
+      "bytes": "881d340e0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_state_init."
+    },
+    {
+      "name": "grim_subrect_table_0",
+      "address": "0x10070e10",
+      "reference": "0x100059cf",
+      "bytes": "c70500fb0610100e0710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_state_init."
+    },
+    {
+      "name": "grim_subrect_table_1",
+      "address": "0x10070590",
+      "reference": "0x100059d9",
+      "bytes": "c70508fb061090050710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_state_init."
+    },
+    {
+      "name": "grim_subrect_table_2",
+      "address": "0x10070390",
+      "reference": "0x100059e3",
+      "bytes": "c70518fb061090030710",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_state_init."
+    },
+    {
+      "name": "grim_subrect_table",
+      "address": "0x1006e4f8",
+      "reference": "0x100059ed",
+      "bytes": "c70538fb0610f8e40610",
+      "offset": 0,
+      "note": "Instruction-exact under 1.9.8: grim_state_init."
     }
   ]
 }

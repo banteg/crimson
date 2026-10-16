@@ -53,7 +53,7 @@ Spiders Inc. (11 Plasma Minigun), and Major Alien Breach (18 Rocket Minigun).
 
 ## Availability (`weapon_refresh_available`)
 
-`decomp/1.9/crimsonland/weapons/weapon_refresh_available.c` is the only code
+`decomp/1.9/crimsonland/weapons/weapon_refresh_available.cpp` is the only code
 that sets `weapon_table[].unlocked`:
 
 - clears all 64 flags, then marks Pistol (1) available;

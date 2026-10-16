@@ -164,7 +164,7 @@
   "decomp/1.9/crimsonland/ui_render/terrain_generate_random.cpp",
   "decomp/1.9/crimsonland/weapons/weapon_assign_player.c",
   "decomp/1.9/crimsonland/weapons/weapon_pick_random_available.cpp",
-  "decomp/1.9/crimsonland/weapons/weapon_refresh_available.c",
+  "decomp/1.9/crimsonland/weapons/weapon_refresh_available.cpp",
   "decomp/1.9/crimsonland/weapons/weapon_table_defaults_global_init.cpp",
   "decomp/1.9/crimsonland/weapons/weapon_table_init.cpp"
 ]

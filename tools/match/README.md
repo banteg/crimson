@@ -401,7 +401,10 @@ evidence.
 names are reused across translation units. Each comma-separated
 `object-symbol:image-symbol` pair scopes that candidate symbol to one uniquely
 named native address; normal masked-reference auditing still compares the
-resolved address.
+resolved address. `REFERENCE_ALIASES_<cl_build>` (for example
+`REFERENCE_ALIASES_10908`) adds pairs only when the scratch compiles as that
+build, for compiler-local symbols that only its code has, such as a static the
+canonical build dropped.
 
 `AUTO_INLINE_OFF` is a comma-separated list of line-leading function names.
 For source scratches, the compiler staging step wraps each named definition in

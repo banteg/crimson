@@ -170,3 +170,13 @@ loop using `reset_index` is exact; a forward loop using the global index,
 pointer/end traversal, and both descending-loop forms regress. The native
 compiler remains unchanged, and no register hints, masks, or scope exclusions
 are introduced.
+
+## One index for the whole reset (1.9.8)
+
+Every player store indexes `player_state_table[current_player_index]`; the
+former cached `reset_index` local is gone. 1.9.93 is byte-identical. Under
+1.9.8 (C2 9044) the cached index let C2 forward the x87 `alt_clip_size` value
+into `alt_ammo` (`fst; fst`) and hoist the `10.0f` clip/ammo stores. With the
+global index, the stores keep source order and `alt_ammo` is the native integer
+copy of the stored `alt_clip_size`. The 1.9.8 map also pins
+`player_reset_reserved_zero` (0x4a8408) to the store at 0x41f51e.

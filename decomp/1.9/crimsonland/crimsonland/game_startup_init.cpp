@@ -39,9 +39,17 @@ void crt_beginthread(
     void *arg);
 bool input_primary_just_pressed(void);
 void demo_mode_start(void);
+#if CL_BUILD != 10908
 unsigned char game_is_full_version(void);
+#endif
 unsigned char game_frame_update(void);
 }
+
+#if CL_BUILD == 10908
+// 1.9.8 asks Grim2D (vtable slot 0x08) whether the copy is registered, as
+// crimsonland_gameplay.h spells it; this unit cannot include that header.
+#define game_is_full_version() (grim_interface_ptr->grim_legacy_slot_08())
+#endif
 
 static __forceinline void startup_render_fps(void)
 {
@@ -93,6 +101,15 @@ extern "C" unsigned char game_startup_init(void)
         startup_first_frame_latch = 0;
     }
 
+#if CL_BUILD == 10908
+    // 1.9.8 tests the logo flag where the loading timer decays and nests the
+    // post-load frame inside that test (code generation only; see NOTES.md).
+    if (!startup_logo_sequence_active) {
+        load_textures_step();
+    }
+
+    if (!startup_first_frame_latch && startup_bootstrap_pending) {
+#else
     char logo_sequence_active = startup_logo_sequence_active;
     if (!logo_sequence_active) {
         load_textures_step();
@@ -104,6 +121,7 @@ extern "C" unsigned char game_startup_init(void)
             goto render_loading_screen;
         }
     } else {
+#endif
         texture_get_or_load(
             "splashReflexive", "load\\splashReflexive.jpg");
         texture_get_or_load(
@@ -111,14 +129,24 @@ extern "C" unsigned char game_startup_init(void)
         game_startup_init_prelude();
         crt_beginthread(startup_audio_load_thread, 0, 0);
         startup_bootstrap_pending = 0;
+#if CL_BUILD == 10908
+        startup_logo_sequence_active = 1;
+#else
         logo_sequence_active = 1;
         startup_logo_sequence_active = logo_sequence_active;
+#endif
         if (startup_splash_timer > 0.5f) {
             startup_splash_timer = 0.5f;
         }
     }
 
+#if CL_BUILD == 10908
+    if (startup_logo_sequence_active && startup_async_load_ready) {
+        if (startup_loading_fade_complete) {
+#else
     if (startup_async_load_ready && startup_loading_fade_complete) {
+        {
+#endif
         if (startup_post_load_settle_ticks < 5) {
             ++startup_post_load_settle_ticks;
             Sleep(5);
@@ -324,10 +352,13 @@ extern "C" unsigned char game_startup_init(void)
 
         startup_render_fps();
         return 1;
+        }
+#if CL_BUILD != 10908
     }
 
 render_loading_screen:
     if (logo_sequence_active && startup_async_load_ready) {
+#endif
         startup_splash_timer -= frame_dt;
         if (startup_splash_timer < 0.0f) {
             startup_splash_timer = 0.0f;
@@ -355,11 +386,17 @@ render_loading_screen:
     grim_interface_ptr->grim_set_color(
         1.0f, 1.0f, 1.0f, loading_alpha);
     grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
+#if CL_BUILD == 10908
+    // 1.9.8 opens one batch for the three loading-screen quads.
+    grim_interface_ptr->grim_begin_batch();
+#endif
     grim_interface_ptr->grim_set_rotation(0.0f);
 
     grim_interface_ptr->grim_bind_texture(
         grim_interface_ptr->grim_get_texture_handle("logo_esrb"), 0);
+#if CL_BUILD != 10908
     grim_interface_ptr->grim_begin_batch();
+#endif
     grim_interface_ptr->grim_draw_quad(
         screen_width_f - 256.0f - 1.0f,
         screen_height_f - 128.0f - 1.0f,
@@ -369,7 +406,9 @@ render_loading_screen:
 
     grim_interface_ptr->grim_bind_texture(
         grim_interface_ptr->grim_get_texture_handle("loading"), 0);
+#if CL_BUILD != 10908
     grim_interface_ptr->grim_begin_batch();
+#endif
     grim_interface_ptr->grim_draw_quad(
         screen_width_f * 0.5f + 128.0f,
         screen_height_f * 0.5f + 16.0f,
@@ -377,7 +416,9 @@ render_loading_screen:
         32.0f);
     grim_interface_ptr->grim_end_batch();
 
+#if CL_BUILD != 10908
     grim_interface_ptr->grim_begin_batch();
+#endif
     grim_interface_ptr->grim_bind_texture(
         grim_interface_ptr->grim_get_texture_handle("cl_logo"), 0);
     grim_interface_ptr->grim_draw_quad(

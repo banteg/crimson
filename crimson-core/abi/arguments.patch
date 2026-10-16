@@ -1,44 +1,55 @@
-Calls and definitions that disagree on arguments, which wasm32 calls cannot tolerate: a C caller passes the
-full-version check a record it never takes, the loading screen a stage; the alternate texture loader takes only
-the name its callers pass, which it uses as the path too; Grim's no-op is called with a format and arguments.
+Calls and definitions that disagree on arguments, which wasm32 calls cannot tolerate: callers pass the
+full-version check a stage it never takes, and the loading screen a stage; the alternate texture loader takes only
+the name its callers pass, which it uses as the path too; Grim's no-op is called with a format and arguments. The
+score plausibility check has no body of its own: 1.9.93 folds it into the constant-true full-version stub.
 --- a/decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.c
 +++ b/decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.c
-@@ -4,7 +4,7 @@
+@@ -2,7 +2,9 @@
  
++unsigned char game_is_full_version(void);
++
  unsigned char highscore_submit_full_version_guard(highscore_record_t *record)
  {
--    if (!game_is_full_version(record)) {
+-    if (!highscore_record_is_valid(record)) {
 +    if (!game_is_full_version()) {
          console_printf(
              &console_log_queue,
              "Potentially illegal score detected.\n");
 --- a/decomp/1.9/crimsonland/game/game_frame_update.cpp
 +++ b/decomp/1.9/crimsonland/game/game_frame_update.cpp
-@@ -560,21 +560,21 @@
-         ui_render_loading();
-         ui_render_loading();
-         audio_suspend_all();
+@@ -764,29 +764,29 @@
+ #if CL_BUILD == 10908
+         grim_interface_ptr->grim_legacy_slot_04(0);
+ #else
 -        game_is_full_version(1);
 +        game_is_full_version();
+ #endif
      }
      if (full_version_recheck_pending) {
          full_version_recheck_pending = 0;
          ui_render_loading();
          ui_render_loading();
          audio_suspend_all();
+ #if CL_BUILD == 10908
+         grim_interface_ptr->grim_legacy_slot_04(1);
+ #else
 -        game_is_full_version(2);
 +        game_is_full_version();
+ #endif
      }
      if (full_version_recheck_pending_slot_3) {
          full_version_recheck_pending_slot_3 = 0;
          ui_render_loading();
          ui_render_loading();
          audio_suspend_all();
+ #if CL_BUILD == 10908
+         grim_interface_ptr->grim_legacy_slot_04(2);
+ #else
 -        game_is_full_version(3);
 +        game_is_full_version();
+ #endif
      }
  
-     if (online_sync_status == 0 && update_notice_pending
 --- a/decomp/1.9/crimsonland/crimsonland/texture_get_or_load_alt.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/texture_get_or_load_alt.cpp
 @@ -3,7 +3,7 @@

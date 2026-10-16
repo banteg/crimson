@@ -65,8 +65,71 @@ void music_play_exclusive(int sfx_id);
 void hud_update_and_render(void);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER
+#include "crimsonland_game_state_owner.h"
+
 #define CRIMSONLAND_USE_ORIGINAL_TEXTURES_OWNER
 #include "crimsonland_textures_owner.h"
+
+#if CL_BUILD == 10908
+/*
+ * Translation-unit context for 1.9.8: creature_spawn_tinted opens the original typo unit (see
+ * creature_spawn_tinted.c). Knowing it leaves the caller's color alone, 9044 hoists the
+ * spawn loop's constant color.a and left_pos.x stores; 8966 ignores earlier unit functions.
+ */
+typedef union creature_spawn_tinted_locals_t {
+    int zero_words[2];
+    vec2f_t zero_velocity;
+} creature_spawn_tinted_locals_t;
+
+extern "C" int creature_spawn_tinted(
+    const vec2f_t *pos,
+    const effect_color_t *color,
+    int type_id)
+{
+    int slot_id = creature_alloc_slot();
+    creature_spawn_tinted_locals_t velocity_storage = {{0, 0}};
+
+    creature_pool[slot_id].position = *pos;
+    creature_pool[slot_id].active = 1;
+    creature_pool[slot_id].state_flag = 1;
+    creature_pool[slot_id].vel_x = velocity_storage.zero_velocity.x;
+    creature_pool[slot_id].ai_mode = 2;
+    creature_pool[slot_id].plague_infected = 0;
+    creature_pool[slot_id].dot_tick_timer = 0.0f;
+    creature_pool[slot_id].type_id = type_id;
+    creature_pool[slot_id].force_target = 0;
+    creature_pool[slot_id].death_timer = 16.0f;
+    creature_pool[slot_id].health = 1.0f;
+    creature_pool[slot_id].vel_y = velocity_storage.zero_velocity.y;
+    {
+        int heading_roll = crt_rand();
+        creature_pool[slot_id].move_speed = 1.7f;
+        creature_pool[slot_id].reward_value = 1.0f;
+        creature_pool[slot_id].attack_cooldown = 0.0f;
+        creature_pool[slot_id].heading = (float)(heading_roll % 314) * 0.01f;
+    }
+    creature_pool[slot_id].color = *color;
+    {
+        int size_roll = crt_rand();
+        int size_offset = size_roll % 20;
+        float size;
+        creature_pool[slot_id].contact_damage = 100.0f;
+        creature_pool[slot_id].max_health = creature_pool[slot_id].health;
+        size = (float)size_offset + 47.0f;
+        creature_pool[slot_id].size = size;
+
+        if (type_id == 3 || type_id == 4) {
+            float move_speed = creature_pool[slot_id].move_speed * 1.2f;
+            creature_pool[slot_id].flags |= 0x80;
+            creature_pool[slot_id].move_speed = move_speed;
+            creature_pool[slot_id].size = size * 0.8f;
+        }
+    }
+
+    return slot_id;
+}
+#endif
 
 static __inline void clamp01(float *value)
 {
@@ -204,7 +267,7 @@ extern "C" void typo_gameplay_update_and_render(void)
         bonus_weapon_power_up_timer = 0.0f;
         bonus_reflex_boost_timer = 0.0f;
         time_scale_active = 0;
-        run_elapsed_ms += frame_dt_ms;
+        highscore_active_record.run_elapsed_ms += frame_dt_ms;
         unsigned int *weapon_time =
             &weapon_usage_time[player_state_table[0].weapon_id];
         *weapon_time += frame_dt_ms;

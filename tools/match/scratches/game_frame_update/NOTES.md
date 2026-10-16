@@ -152,3 +152,14 @@ compile byte-identically at 99.45%; a pointer-backed accessor moves an earlier
 region, loses 285.45 fuzzy-weighted bytes and three resolved references, and
 does not recover the native X-store-before-Y-load order. The accessor boundary
 was recorded as a negative at that split-global stage.
+
+## 1.9.8 (msvc6.5pp)
+
+83.1% under `--build 1.9.8` (from 48.1%), 1345/1347 instructions; canonical
+stays exact. Behaviour guards: full-version checks through Grim slot 0x08, no
+`play_time_get` refresh, one fixed analog axis pair (0x141, 0x155) for the menu
+cursor, birthday balloons on the dates that preload `balloon.tga`, holiday
+snow from 24 December, an hour-or-five-minute shareware bar with a
+non-tutorial play counter, and recheck calls through Grim slot 0x04(0..2).
+The residual is stack-slot assignment (0x40 frame against native 0x34) and
+one x87 operand order in the analog cursor update.

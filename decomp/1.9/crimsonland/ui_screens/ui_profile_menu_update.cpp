@@ -123,6 +123,7 @@ extern "C" bool ui_profile_menu_update(float *xy, char enabled)
     for (list_count = 0; list_count < config_blob.saved_name_count; list_count++) {
         profile_name_item_ptrs[list_count] = config_blob.saved_names[list_count];
     }
+    int item_count = list_count + 1;
     char *add_item = strdup_malloc("<add new named list>");
     profile_name_item_ptrs[list_count] = add_item;
 
@@ -174,7 +175,6 @@ extern "C" bool ui_profile_menu_update(float *xy, char enabled)
     }
 
     static profile_list_widget_t name_list;
-    int item_count = list_count + 1;
     name_list.items = profile_name_item_ptrs;
     name_list.item_count = item_count;
     name_list.enabled = enabled;

@@ -81,3 +81,22 @@ interactions. Moving only `best = index` before the existing compound gate is
 exact: 1198/1198 bytes, 354/354 instructions, and `59/0/0` references.
 Reordering the declarations alone was byte-neutral. The retained move is
 behavior-preserving because skipped records never consume `best`.
+
+## 1.9.8 (C2 9044): the record reset through `this`
+
+The scratch record is a `highscore_record_cpp_t` reset by its inline member
+`reset_light()` (`crimsonland_highscore_record.h`), so the file compiles as
+C++ (`/TP`), as the game did. Through `this`, 9044 copies the default name
+with native's pointer-difference loop (`mov eax, offset name; sub edx, eax`);
+the free inline helper, an explicit copy loop, a local record pointer, `void *`
+or `const` formals, `__fastcall` and cast destinations all fold the frame
+address into an indexed copy. 1.9.93 compiles every one of them identically.
+A `highscore_record_t` constructor would also explain the dynamic initializer
+`highscore_init_sentinels`, but would touch every C++ user of the record.
+
+1.9.8 keeps `config_game_mode` in ESI across the duplicate-name lookup: the
+loop reads the global directly (no `mode` copy, no re-read after the lookup),
+and `highscore_find_name_entry`, which precedes this function in the unit, is
+compiled first as guarded translation-unit context. 1.9.93 is byte-identical
+with the direct reads. The table loop keeps the free helper; its records are
+not `highscore_record_cpp_t` objects.

@@ -172,3 +172,10 @@ combined with the direct counters it matches the complete native function.
 No compiler flags, types, branch-layout directives, or artificial dependencies
 were changed. All five recorded variants compile and the retained combination
 has no reference debt.
+
+## 1.9.8 (msvc6.5pp)
+
+407/407 instructions under `--build 1.9.8` with the shared spelling: the
+`run_active`/`gameplay_transition_latch` stores follow the mode chain once.
+VC6 tail-duplicates them into every arm as before (canonical bytes unchanged),
+and 9044 no longer hoists them or folds the counters into `inc [mem]`.

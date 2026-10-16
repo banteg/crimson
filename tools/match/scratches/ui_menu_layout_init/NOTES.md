@@ -511,3 +511,21 @@ base/index fields in scale-one address expressions in the transform loops.
 These encode identical effective addresses, and the existing matcher
 normalizes them. The full instruction and reference match is exact; raw
 encoded-body identity is not claimed.
+
+## 1.9.8 SIB order in the 22..25 vertex loops (2026-10-16)
+
+Under C2 9044 the only residual was 36 encoded bytes: scale-one SIB base and
+index swapped (`[ecx+edx+60]` vs native `[edx+ecx+60]`) in the inlined
+`transform_layers` pass for elements 1..7 and both 22..25 vertex loops.
+Shared spellings tried, none moving the 22..25 sites under 9044:
+`&table[i]->vertices[v]`, `v + table[i]->vertices`, element locals (inner or
+outer loop, both regress instructions), `table[i]` through the `table` alias,
+function- or block-scope `vertex_index`/`slot` (these only toggle the 1..7
+site by id parity), named shift locals. Routing the 22..25 loops through an
+inline `scale_layers(&ui_element_table[i], scale, shift_y)` helper is
+byte-exact under 9044 at all three sites, but the extra inline records flip
+8966's narrow main menu SIB bytes (0x7ea..0x8e5) in every placement tried
+(before/after `transform_layers`, after `transform_narrow_main_menu`, before
+the function, reference formal); by-value and index formals regress. The
+helper and its call are therefore a commented code-generation-only
+`CL_BUILD == 10908` guard.

@@ -38,3 +38,14 @@ on exhaustion, and release owner pointers through the native death path.
 The exact helper's Alternate Weapon query calls `perk_count_get`, so it reads
 player slot 0 even while moving another indexed player. Preserve mode now uses
 that slot-zero perk source in both ports; corrected mode remains per-player.
+
+## Named distance in the backed-off probe (1.9.8)
+
+The second probe (after backing off both axes) names its distance,
+`float distance = (float)sqrt(...)`, before the radius compare. 1.9.93 is
+byte-identical. Under 1.9.8 (C2 9044) the inline compare made C2 consume the
+stored `pos.y` in place and spill `probe.x` to the stack; with the named
+distance it keeps the x87 copies (`fsub st(2)`) and the native 0-byte frame,
+with the radius in the dead `player_index` argument slot. The `vec2f_t probe`
+stays: scalar `probe_x`/`probe_y` locals give the 1.9.8 frame too but break
+1.9.93.

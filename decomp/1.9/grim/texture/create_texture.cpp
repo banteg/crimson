@@ -8,6 +8,11 @@ bool IGrim2D_cpp::grim_create_texture(char *name, int width, int height)
         return false;
     }
 
+#if CL_BUILD == 10908
+    // Code-generation guard: 1.9.8 scopes the texture to a block, which
+    // lets it share the dead height argument slot; see NOTES.md.
+    {
+#endif
     IDirect3DTexture8 *d3d_texture;
     if (grim_d3d_device->CreateTexture(
             width,
@@ -23,6 +28,9 @@ bool IGrim2D_cpp::grim_create_texture(char *name, int width, int height)
 
     grim_texture_slots[handle] = new GrimTexture(name);
     grim_texture_slots[handle]->texture = d3d_texture;
+#if CL_BUILD == 10908
+    }
+#endif
     grim_texture_slots[handle]->owns_texture = 1;
     grim_texture_slots[handle]->width = width;
     grim_texture_slots[handle]->height = height;

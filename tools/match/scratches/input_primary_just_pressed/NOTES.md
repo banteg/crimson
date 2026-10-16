@@ -37,3 +37,9 @@ Those semantics are now documented rather than silently treated as identical.
 
 No inline assembly, volatile state, fake extern, dummy reference, forced
 address, or layout-only control flow is used.
+
+## 1.9.8 (msvc6.5pp)
+
+57/57 instructions under `--build 1.9.8`: 1.9.8 polls the primary input even
+while the console is open (behaviour guard). The 1.9.8 data map does not name
+`input_primary_latch` (0x00476c40).

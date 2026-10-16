@@ -1,5 +1,5 @@
 {
-  "audit_digest": "66972b8a71a374c0888a3de1a3b4bc1ab3280c31483564abd5ccde44fc9d45b7",
+  "audit_digest": "5fac7b794b9a4d6f2940e897d94e3893edd10546760f5ba5a061b21137c92e88",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -1562,7 +1562,7 @@
           "function": "highscore_load_table",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -30970,7 +30970,7 @@
         "tools/match/scratches/highscore_init_sentinels/build/msvc6.5/e5d8081e9efbb77e/highscore_init_sentinels.obj",
         "tools/match/scratches/highscore_init_sentinels_thunk/build/msvc6.5/9a8d80e33190baf7/highscore_init_sentinels_thunk.obj",
         "tools/match/scratches/highscore_iso_week/build/msvc6.5/43c68b5a3308afce/highscore_iso_week.obj",
-        "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+        "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
         "tools/match/scratches/highscore_load_table_thunk/build/msvc6.5/d1822b2b7e00ef31/highscore_load_table_thunk.obj",
         "tools/match/scratches/highscore_rank_index/build/msvc6.5/701c3c5e6c904aee/highscore_rank_index.obj",
         "tools/match/scratches/highscore_read_record/build/msvc6.5/6b1b0a62baa7db6f/highscore_read_record.obj",
@@ -30982,8 +30982,8 @@
         "tools/match/scratches/highscore_screen_update/build/msvc6.5/b61c893cc3c2ef7e/highscore_screen.obj",
         "tools/match/scratches/highscore_submit_full_version_guard/build/msvc6.5/2719fb0a054bee72/highscore_submit_full_version_guard.obj",
         "tools/match/scratches/highscore_sync_worker/build/msvc6.5/2e03169e4a2d42c9/highscore_sync_worker.obj",
-        "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
-        "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj",
+        "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+        "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
         "tools/match/scratches/hud_update_and_render/build/msvc6.5/b84e05a7576ecc70/hud_update_and_render.obj",
         "tools/match/scratches/init_audio_and_terrain/build/msvc6.5/d9a91fc24972304c/init_audio_and_terrain.obj",
         "tools/match/scratches/input_aim_pov_left_active/build/msvc6.5/56e532b5c0c053a5/input_aim_pov_left_active.obj",
@@ -31301,7 +31301,7 @@
         "tools/match/scratches/weapon_assign_player/build/msvc6.5/fca9971be19f66bf/weapon_assign_player.obj",
         "tools/match/scratches/weapon_name_get/build/msvc6.5/33cb5a0f3211a82c/weapon_name_get.obj",
         "tools/match/scratches/weapon_pick_random_available/build/msvc6.5/a943fc0fd2a2a4ba/weapon_pick_random_available.obj",
-        "tools/match/scratches/weapon_refresh_available/build/msvc6.5/1ffe57e06b405c70/weapon_refresh_available.obj",
+        "tools/match/scratches/weapon_refresh_available/build/msvc6.5/813a2770feef75c8/weapon_refresh_available.obj",
         "tools/match/scratches/weapon_table_defaults_global_init/build/msvc6.5/e273ae126be7b2fe/weapon_table_defaults_global_init.obj",
         "tools/match/scratches/weapon_table_defaults_global_init_thunk/build/msvc6.5/2f6f2a8259db92d5/weapon_table_defaults_global_init_thunk.obj",
         "tools/match/scratches/weapon_table_init/build/msvc6.5/5f63605d32db7890/weapon_table_init.obj",
@@ -31544,7 +31544,7 @@
         "tools/match/scratches/highscore_init_sentinels/build/msvc6.5/e5d8081e9efbb77e/highscore_init_sentinels.obj",
         "tools/match/scratches/highscore_init_sentinels_thunk/build/msvc6.5/9a8d80e33190baf7/highscore_init_sentinels_thunk.obj",
         "tools/match/scratches/highscore_iso_week/build/msvc6.5/43c68b5a3308afce/highscore_iso_week.obj",
-        "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+        "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
         "tools/match/scratches/highscore_load_table_thunk/build/msvc6.5/d1822b2b7e00ef31/highscore_load_table_thunk.obj",
         "tools/match/scratches/highscore_rank_index/build/msvc6.5/701c3c5e6c904aee/highscore_rank_index.obj",
         "tools/match/scratches/highscore_read_record/build/msvc6.5/6b1b0a62baa7db6f/highscore_read_record.obj",
@@ -31556,8 +31556,8 @@
         "tools/match/scratches/highscore_screen_update/build/msvc6.5/b61c893cc3c2ef7e/highscore_screen.obj",
         "tools/match/scratches/highscore_submit_full_version_guard/build/msvc6.5/2719fb0a054bee72/highscore_submit_full_version_guard.obj",
         "tools/match/scratches/highscore_sync_worker/build/msvc6.5/2e03169e4a2d42c9/highscore_sync_worker.obj",
-        "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
-        "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj",
+        "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+        "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
         "tools/match/scratches/hud_update_and_render/build/msvc6.5/b84e05a7576ecc70/hud_update_and_render.obj",
         "tools/match/scratches/init_audio_and_terrain/build/msvc6.5/d9a91fc24972304c/init_audio_and_terrain.obj",
         "tools/match/scratches/input_aim_pov_left_active/build/msvc6.5/56e532b5c0c053a5/input_aim_pov_left_active.obj",
@@ -31875,7 +31875,7 @@
         "tools/match/scratches/weapon_assign_player/build/msvc6.5/fca9971be19f66bf/weapon_assign_player.obj",
         "tools/match/scratches/weapon_name_get/build/msvc6.5/33cb5a0f3211a82c/weapon_name_get.obj",
         "tools/match/scratches/weapon_pick_random_available/build/msvc6.5/a943fc0fd2a2a4ba/weapon_pick_random_available.obj",
-        "tools/match/scratches/weapon_refresh_available/build/msvc6.5/1ffe57e06b405c70/weapon_refresh_available.obj",
+        "tools/match/scratches/weapon_refresh_available/build/msvc6.5/813a2770feef75c8/weapon_refresh_available.obj",
         "tools/match/scratches/weapon_table_defaults_global_init/build/msvc6.5/e273ae126be7b2fe/weapon_table_defaults_global_init.obj",
         "tools/match/scratches/weapon_table_defaults_global_init_thunk/build/msvc6.5/2f6f2a8259db92d5/weapon_table_defaults_global_init_thunk.obj",
         "tools/match/scratches/weapon_table_init/build/msvc6.5/5f63605d32db7890/weapon_table_init.obj",
@@ -31910,11 +31910,11 @@
         "tools/match/scratches/game_startup_init/build/msvc6.5/41641280c295d1d9/game_startup_init.obj",
         "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/e831882bf3608d32/game_startup_init_prelude.obj",
         "tools/match/scratches/grim_load_interface/build/msvc6.5/6985e71d07bafb9d/grim_load_interface.obj",
-        "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+        "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
         "tools/match/scratches/highscore_save_record/build/msvc6.5/c906096293bbcc6d/highscore_save_record.obj",
         "tools/match/scratches/highscore_screen_update/build/msvc6.5/b61c893cc3c2ef7e/highscore_screen.obj",
         "tools/match/scratches/highscore_sync_worker/build/msvc6.5/2e03169e4a2d42c9/highscore_sync_worker.obj",
-        "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj",
+        "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
         "tools/match/scratches/init_audio_and_terrain/build/msvc6.5/d9a91fc24972304c/init_audio_and_terrain.obj",
         "tools/match/scratches/input_key_name/build/msvc6.5/6dde48a38efb147b/input_key_name.obj",
         "tools/match/scratches/load_textures_step/build/msvc6.5/26d84d2bdabb7a96/load_textures_step.obj",
@@ -33854,7 +33854,7 @@
           "function": "highscore_load_table",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -35001,7 +35001,7 @@
           "function": "highscore_update_record",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -98398,7 +98398,7 @@
           "function": "highscore_load_table",
           "kind": "section",
           "logical_section_size": 1200,
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -98963,7 +98963,7 @@
           "function": "highscore_update_record",
           "kind": "section",
           "logical_section_size": 256,
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -98981,7 +98981,7 @@
           "function": "highscore_write_record",
           "kind": "section",
           "logical_section_size": 320,
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -114579,7 +114579,7 @@
           "function": "weapon_refresh_available",
           "kind": "section",
           "logical_section_size": 176,
-          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/1ffe57e06b405c70/weapon_refresh_available.obj",
+          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/813a2770feef75c8/weapon_refresh_available.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -116436,7 +116436,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj"
+      "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj"
     },
     {
       "directives": [
@@ -116526,7 +116526,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj"
+      "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj"
     },
     {
       "directives": [
@@ -116535,7 +116535,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj"
+      "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj"
     },
     {
       "directives": [
@@ -118959,7 +118959,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/1ffe57e06b405c70/weapon_refresh_available.obj"
+      "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/813a2770feef75c8/weapon_refresh_available.obj"
     },
     {
       "directives": [
@@ -118995,7 +118995,15 @@
   "exports": [],
   "image": "crimsonland.exe",
   "kind": "crimson-native-symbol-closure",
-  "linker_aliases": [],
+  "linker_aliases": [
+    {
+      "alias": "_highscore_record_is_valid",
+      "objects": [
+        "tools/native/linker_aliases/build/crimsonland.exe/aliases.obj"
+      ],
+      "target": "_game_is_full_version"
+    }
+  ],
   "reference_imports": [
     {
       "address": 4648960,
@@ -120230,6 +120238,11 @@
         {
           "function": "highscore_build_path",
           "object": "tools/match/scratches/highscore_build_path/build/msvc6.5/7f9e4a40eedb5cd8/highscore_build_path.obj",
+          "weak": false
+        },
+        {
+          "function": "highscore_load_table",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -122474,6 +122487,11 @@
       "name": "?highscore_table@@3PAUhighscore_record_t@@A",
       "referenced_by": [
         {
+          "function": "highscore_load_table",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "weak": false
+        },
+        {
           "function": "highscore_sync_worker",
           "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/2e03169e4a2d42c9/highscore_sync_worker.obj",
           "weak": false
@@ -122504,6 +122522,11 @@
       ],
       "name": "?highscore_table_count@@3HA",
       "referenced_by": [
+        {
+          "function": "highscore_load_table",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "weak": false
+        },
         {
           "function": "highscore_sync_worker",
           "object": "tools/match/scratches/highscore_sync_worker/build/msvc6.5/2e03169e4a2d42c9/highscore_sync_worker.obj",
@@ -125416,11 +125439,6 @@
           "function": "gameplay_run_state_init",
           "object": "tools/match/scratches/gameplay_run_state_init/build/msvc6.5/2aa0ea31fc38d304/gameplay_run_state_init.obj",
           "weak": false
-        },
-        {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/gameplay_update_and_render.obj",
-          "weak": false
         }
       ]
     },
@@ -126554,11 +126572,6 @@
           "weak": false
         },
         {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/gameplay_update_and_render.obj",
-          "weak": false
-        },
-        {
           "function": null,
           "functions": [
             "player_heading_approach_target",
@@ -126608,16 +126621,6 @@
         {
           "function": "sfx_play_panned",
           "object": "tools/match/scratches/sfx_play_panned/build/msvc6.5/1586f3208e7bbb1a/sfx_play_panned.obj",
-          "weak": false
-        },
-        {
-          "function": null,
-          "functions": [
-            "typo_gameplay_update_and_render",
-            "typo_target_world_destroy"
-          ],
-          "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj",
-          "translation_unit": "typo-gameplay-update-and-render-lifecycle",
           "weak": false
         }
       ]
@@ -126874,11 +126877,6 @@
           "weak": false
         },
         {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/gameplay_update_and_render.obj",
-          "weak": false
-        },
-        {
           "function": "player_start_reload",
           "object": "tools/match/scratches/player_start_reload/build/msvc6.5/8e7bf56bd21d6985/player_start_reload.obj",
           "weak": false
@@ -126891,16 +126889,6 @@
           ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/e35810b641f492f7/player_update_heading.obj",
           "translation_unit": "player-update-heading",
-          "weak": false
-        },
-        {
-          "function": null,
-          "functions": [
-            "typo_gameplay_update_and_render",
-            "typo_target_world_destroy"
-          ],
-          "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj",
-          "translation_unit": "typo-gameplay-update-and-render-lifecycle",
           "weak": false
         }
       ]
@@ -128147,11 +128135,6 @@
           "weak": false
         },
         {
-          "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
-          "weak": false
-        },
-        {
           "function": "highscore_rank_index",
           "object": "tools/match/scratches/highscore_rank_index/build/msvc6.5/701c3c5e6c904aee/highscore_rank_index.obj",
           "weak": false
@@ -128215,7 +128198,7 @@
         },
         {
           "function": "weapon_refresh_available",
-          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/1ffe57e06b405c70/weapon_refresh_available.obj",
+          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/813a2770feef75c8/weapon_refresh_available.obj",
           "weak": false
         }
       ]
@@ -128273,7 +128256,7 @@
         },
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -128344,7 +128327,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -128375,7 +128358,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -128926,7 +128909,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -128988,7 +128971,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -134814,17 +134797,17 @@
         },
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "weak": false
         },
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
           "weak": false
         }
       ]
@@ -134890,11 +134873,6 @@
           "weak": false
         },
         {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/gameplay_update_and_render.obj",
-          "weak": false
-        },
-        {
           "function": "hud_update_and_render",
           "object": "tools/match/scratches/hud_update_and_render/build/msvc6.5/b84e05a7576ecc70/hud_update_and_render.obj",
           "weak": false
@@ -134947,16 +134925,6 @@
         {
           "function": "survival_update",
           "object": "tools/match/scratches/survival_update/build/msvc6.5/9b810376d18a7f85/survival_update.obj",
-          "weak": false
-        },
-        {
-          "function": null,
-          "functions": [
-            "typo_gameplay_update_and_render",
-            "typo_target_world_destroy"
-          ],
-          "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj",
-          "translation_unit": "typo-gameplay-update-and-render-lifecycle",
           "weak": false
         },
         {
@@ -139148,6 +139116,7 @@
         },
         {
           "function": "highscore_submit_full_version_guard",
+          "linker_alias": "_highscore_record_is_valid",
           "object": "tools/match/scratches/highscore_submit_full_version_guard/build/msvc6.5/2719fb0a054bee72/highscore_submit_full_version_guard.obj",
           "weak": false
         },
@@ -139208,8 +139177,23 @@
         },
         {
           "function": "weapon_refresh_available",
-          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/1ffe57e06b405c70/weapon_refresh_available.obj",
+          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/813a2770feef75c8/weapon_refresh_available.obj",
           "weak": false
+        },
+        {
+          "function": null,
+          "linker_alias_object": true,
+          "object": "tools/native/linker_aliases/build/crimsonland.exe/aliases.obj",
+          "weak": false
+        },
+        {
+          "function": null,
+          "linker_alias_object": true,
+          "object": "tools/native/linker_aliases/build/crimsonland.exe/aliases.obj",
+          "weak": true,
+          "weak_alias": "_highscore_record_is_valid",
+          "weak_fallback": "_game_is_full_version",
+          "weak_search": 3
         }
       ]
     },
@@ -140962,11 +140946,6 @@
           "weak": false
         },
         {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/gameplay_update_and_render.obj",
-          "weak": false
-        },
-        {
           "function": "highscore_record_init",
           "object": "tools/match/scratches/highscore_record_init/build/msvc6.5/c8aa97809da40bc0/highscore_record_init.obj",
           "weak": false
@@ -141006,16 +140985,6 @@
         {
           "function": "quest_start_selected",
           "object": "tools/match/scratches/quest_start_selected/build/msvc6.5/0ae067766e4302cb/quest_start_selected.obj",
-          "weak": false
-        },
-        {
-          "function": null,
-          "functions": [
-            "typo_gameplay_update_and_render",
-            "typo_target_world_destroy"
-          ],
-          "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj",
-          "translation_unit": "typo-gameplay-update-and-render-lifecycle",
           "weak": false
         },
         {
@@ -141143,7 +141112,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -141295,7 +141264,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -141320,7 +141289,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -141345,7 +141314,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -141401,7 +141370,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -141476,12 +141445,12 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         },
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
           "weak": false
         }
       ]
@@ -141496,7 +141465,7 @@
           "function": "highscore_load_table",
           "kind": "section",
           "logical_section_size": 1200,
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -141821,12 +141790,12 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "weak": false
         }
       ]
@@ -141851,7 +141820,7 @@
       "referenced_by": [
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "weak": false
         }
       ]
@@ -142689,11 +142658,6 @@
           "weak": false
         },
         {
-          "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
-          "weak": false
-        },
-        {
           "function": "highscore_rank_index",
           "object": "tools/match/scratches/highscore_rank_index/build/msvc6.5/701c3c5e6c904aee/highscore_rank_index.obj",
           "weak": false
@@ -142748,11 +142712,6 @@
       "name": "_highscore_table_count",
       "referenced_by": [
         {
-          "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
-          "weak": false
-        },
-        {
           "function": "highscore_rank_index",
           "object": "tools/match/scratches/highscore_rank_index/build/msvc6.5/701c3c5e6c904aee/highscore_rank_index.obj",
           "weak": false
@@ -142769,7 +142728,7 @@
           "function": "highscore_update_record",
           "kind": "section",
           "logical_section_size": 256,
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -142794,7 +142753,7 @@
           "function": "highscore_write_record",
           "kind": "section",
           "logical_section_size": 320,
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -142809,7 +142768,7 @@
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "weak": false
         }
       ]
@@ -143755,12 +143714,12 @@
         },
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         },
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
           "weak": false
         }
       ]
@@ -146894,11 +146853,6 @@
       "name": "_perk_choices_dirty",
       "referenced_by": [
         {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/gameplay_update_and_render.obj",
-          "weak": false
-        },
-        {
           "function": null,
           "functions": [
             "perk_selection_screen_update",
@@ -149963,11 +149917,6 @@
       ],
       "name": "_perk_pending_count",
       "referenced_by": [
-        {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/gameplay_update_and_render.obj",
-          "weak": false
-        },
         {
           "function": "perk_apply",
           "object": "tools/match/scratches/perk_apply/build/msvc6.5/4eec152306ec73b4/perk_apply.obj",
@@ -154825,7 +154774,7 @@
         },
         {
           "function": "weapon_refresh_available",
-          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/1ffe57e06b405c70/weapon_refresh_available.obj",
+          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/813a2770feef75c8/weapon_refresh_available.obj",
           "weak": false
         }
       ]
@@ -156730,7 +156679,7 @@
         },
         {
           "function": "weapon_refresh_available",
-          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/1ffe57e06b405c70/weapon_refresh_available.obj",
+          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/813a2770feef75c8/weapon_refresh_available.obj",
           "weak": false
         }
       ]
@@ -156818,7 +156767,7 @@
         },
         {
           "function": "weapon_refresh_available",
-          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/1ffe57e06b405c70/weapon_refresh_available.obj",
+          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/813a2770feef75c8/weapon_refresh_available.obj",
           "weak": false
         }
       ]
@@ -162527,8 +162476,23 @@
           "weak": false
         },
         {
+          "function": "gameplay_update_and_render",
+          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/gameplay_update_and_render.obj",
+          "weak": false
+        },
+        {
           "function": "survival_update",
           "object": "tools/match/scratches/survival_update/build/msvc6.5/9b810376d18a7f85/survival_update.obj",
+          "weak": false
+        },
+        {
+          "function": null,
+          "functions": [
+            "typo_gameplay_update_and_render",
+            "typo_target_world_destroy"
+          ],
+          "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj",
+          "translation_unit": "typo-gameplay-update-and-render-lifecycle",
           "weak": false
         }
       ]
@@ -162565,16 +162529,6 @@
         {
           "function": "survival_update",
           "object": "tools/match/scratches/survival_update/build/msvc6.5/9b810376d18a7f85/survival_update.obj",
-          "weak": false
-        },
-        {
-          "function": null,
-          "functions": [
-            "typo_gameplay_update_and_render",
-            "typo_target_world_destroy"
-          ],
-          "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj",
-          "translation_unit": "typo-gameplay-update-and-render-lifecycle",
           "weak": false
         }
       ]
@@ -163823,11 +163777,6 @@
           "weak": false
         },
         {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/gameplay_update_and_render.obj",
-          "weak": false
-        },
-        {
           "function": null,
           "functions": [
             "player_heading_approach_target",
@@ -163835,16 +163784,6 @@
           ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/e35810b641f492f7/player_update_heading.obj",
           "translation_unit": "player-update-heading",
-          "weak": false
-        },
-        {
-          "function": null,
-          "functions": [
-            "typo_gameplay_update_and_render",
-            "typo_target_world_destroy"
-          ],
-          "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj",
-          "translation_unit": "typo-gameplay-update-and-render-lifecycle",
           "weak": false
         }
       ]
@@ -163874,11 +163813,6 @@
       "name": "_time_scale_factor",
       "referenced_by": [
         {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/gameplay_update_and_render.obj",
-          "weak": false
-        },
-        {
           "function": null,
           "functions": [
             "player_heading_approach_target",
@@ -163886,16 +163820,6 @@
           ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/e35810b641f492f7/player_update_heading.obj",
           "translation_unit": "player-update-heading",
-          "weak": false
-        },
-        {
-          "function": null,
-          "functions": [
-            "typo_gameplay_update_and_render",
-            "typo_target_world_destroy"
-          ],
-          "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj",
-          "translation_unit": "typo-gameplay-update-and-render-lifecycle",
           "weak": false
         }
       ]
@@ -172074,7 +171998,7 @@
           "function": "weapon_refresh_available",
           "kind": "section",
           "logical_section_size": 176,
-          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/1ffe57e06b405c70/weapon_refresh_available.obj",
+          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/813a2770feef75c8/weapon_refresh_available.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -172201,7 +172125,7 @@
         },
         {
           "function": "weapon_refresh_available",
-          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/1ffe57e06b405c70/weapon_refresh_available.obj",
+          "object": "tools/match/scratches/weapon_refresh_available/build/msvc6.5/813a2770feef75c8/weapon_refresh_available.obj",
           "weak": false
         }
       ]
@@ -172322,23 +172246,8 @@
       "name": "_weapon_usage_time",
       "referenced_by": [
         {
-          "function": "gameplay_update_and_render",
-          "object": "tools/match/scratches/gameplay_update_and_render/build/msvc6.5/8c8d6cb154d8fe1f/gameplay_update_and_render.obj",
-          "weak": false
-        },
-        {
           "function": "highscore_record_init",
           "object": "tools/match/scratches/highscore_record_init/build/msvc6.5/c8aa97809da40bc0/highscore_record_init.obj",
-          "weak": false
-        },
-        {
-          "function": null,
-          "functions": [
-            "typo_gameplay_update_and_render",
-            "typo_target_world_destroy"
-          ],
-          "object": "tools/match/scratches/typo_gameplay_update_and_render/build/msvc6.5/c36e96ae11340ff8/typo_gameplay_update_and_render.obj",
-          "translation_unit": "typo-gameplay-update-and-render-lifecycle",
           "weak": false
         }
       ]
@@ -172470,7 +172379,7 @@
     "game_owned_closure": true,
     "hard_duplicate_by_section": {},
     "hard_duplicate_symbols": 0,
-    "object_count": 569,
+    "object_count": 570,
     "reference_exports_closed": true,
     "resolved_symbols": 1263,
     "unresolved_by_category": {
@@ -175038,7 +174947,7 @@
         },
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
           "weak": false
         }
       ]
@@ -176846,7 +176755,7 @@
         },
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -176861,12 +176770,12 @@
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "weak": false
         },
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
           "weak": false
         },
         {
@@ -177303,7 +177212,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -177313,7 +177222,7 @@
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "weak": false
         },
         {
@@ -177348,7 +177257,7 @@
       "referenced_by": [
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "weak": false
         }
       ]
@@ -177388,7 +177297,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -177398,7 +177307,7 @@
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "weak": false
         },
         {
@@ -177468,7 +177377,7 @@
       "referenced_by": [
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/7427ddb38479871d/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
           "weak": false
         },
         {
@@ -177513,7 +177422,7 @@
       "referenced_by": [
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/df8e43180de48931/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
           "weak": false
         }
       ]
@@ -177653,7 +177562,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/e210938bff2e7f80/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
           "weak": false
         }
       ]

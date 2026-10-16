@@ -161,14 +161,34 @@ inline creature_spawn_vec2_t operator*(const creature_spawn_vec2_t &value, float
         (field) = (float)(random_roll % (mod_value) + (base));                                     \
     } while (0)
 
-#define CLAMP_TINT_COMPONENT(field)                                                                \
-    do {                                                                                           \
-        if ((field) < 0.0f) {                                                                      \
-            (field) = 0.0f;                                                                        \
-        } else if ((field) > 1.0f) {                                                               \
-            (field) = 1.0f;                                                                        \
-        }                                                                                          \
-    } while (0)
+static inline void clamp_tint_component(float &field)
+{
+    if (field < 0.0f) {
+        field = 0.0f;
+    } else if (field > 1.0f) {
+        field = 1.0f;
+    }
+}
+#define CLAMP_TINT_COMPONENT(field) clamp_tint_component(field)
+
+#if CL_BUILD == 10908
+/*
+ * Translation-unit context for 1.9.8: creature_spawn_slot_alloc precedes creature_spawn_template
+ * in the original unit (see creature_spawn_slot_alloc.c). 9044 then knows the call leaves EDX
+ * alone and keeps the constant 16 in it across the spawn-slot calls; 8966 ignores this.
+ */
+extern "C" int creature_spawn_slot_alloc(void)
+{
+    int index;
+    for (index = 0; index < 32; index++) {
+        if (creature_spawn_slot_table[index].owner == 0) {
+            return index;
+        }
+    }
+
+    return 31;
+}
+#endif
 
 extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *pos, float heading)
 {
@@ -807,9 +827,8 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         creature->flags = CREATURE_FLAG_BONUS_ON_DEATH;
         creature->reward_value = 125.0f;
         *(creature_tint_t *)&creature->color = creature_tint_t(1.0f, 0.8f, 0.1f, 1.0f);
-        creature_bonus_args_t *bonus_args = &creature->bonus_args;
-        bonus_args->bonus_id = 3;
-        bonus_args->amount_override = 5;
+        creature->bonus_args.bonus_id = 3;
+        creature->bonus_args.amount_override = 5;
         creature->size = 45.0f;
         creature->contact_damage = 10.0f;
     } else if (template_id == SPAWN_ID_ALIEN_HIDDEN_1_21) {

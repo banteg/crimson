@@ -423,7 +423,7 @@
       {
         "path": "tools/match/include/grim2d_cpp.h",
         "repository_relative": true,
-        "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+        "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
       },
       {
         "path": "tools/match/include/grim_d3d8.h",
@@ -444,7 +444,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "c664fa3d02969e59242c500ed7ef4b96c9678b8ce2c83eb7e1bae1b46208504b",
+  "audit_digest": "1092bbb7e35838a2da41091e2de1de19ba2aace74847c2f97ecb5560cbc454d7",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4670,7 +4670,7 @@
           "canonical_source_sha256": "d712434d9292492a8c48b65d027a98c8d3fffeecb3ed71c251a5cf5d454eaa37",
           "effective_end": 268439557,
           "end": 268439557,
-          "experiment_epoch": "961537ddb0a7171a4c66c3a4369b2ba81b768d80f2e6723368993a2b3438a815",
+          "experiment_epoch": "2e8ccfd2c1b72bcb55fd62c8ac90f0ab8bd4a142346c71e52600974984d273bf",
           "function": "grim_crt_empty_initializer_slot_01_thunk",
           "match": {
             "body_byte_exact": true,
@@ -4773,7 +4773,7 @@
           "canonical_source_sha256": "f63d4a8f9bcc6ac9d4831b66912a5b27e769fdb953424d975230ed317bbc7295",
           "effective_end": 268439569,
           "end": 268439569,
-          "experiment_epoch": "f6eb9c82137f4cbe621ff3134d1750c3c4ed3b39a56ae1e3f0b926f9e399a6a4",
+          "experiment_epoch": "7094d34b9db0125dbf43f751cdc83488fa74e72ec9bfa5b0fd9b2db3dd79979f",
           "function": "grim_crt_empty_initializer_slot_01",
           "match": {
             "body_byte_exact": true,
@@ -4876,7 +4876,7 @@
           "canonical_source_sha256": "a5b53e4235f50642583f7583a3a8ada16278cc6cd6e135b3478bbca7fa8030fa",
           "effective_end": 268439589,
           "end": 268439589,
-          "experiment_epoch": "83561272205903225e83d2cf63b4ed52aab2603a80d6935905bc78ad9a292846",
+          "experiment_epoch": "1b6f73728c3e44fcce7ac787e64ad3d367c08ed67b1e8ad76e7e60a6859c96ad",
           "function": "grim_crt_empty_initializer_slot_02_thunk",
           "match": {
             "body_byte_exact": true,
@@ -4979,7 +4979,7 @@
           "canonical_source_sha256": "2c41e75513c6901c6d53577c957c64e3aa4a72172a1b47273ffcc5528390fc95",
           "effective_end": 268439601,
           "end": 268439601,
-          "experiment_epoch": "100bbe1d62c738739a4ac73e9ff406c411e75742dbb038e61f48cd67a9864705",
+          "experiment_epoch": "478bd2fcab6a3fc1032e7bf96bbd7417e4e45c3a0026842dfffed14525957cc5",
           "function": "grim_crt_empty_initializer_slot_02",
           "match": {
             "body_byte_exact": true,
@@ -5082,7 +5082,7 @@
           "canonical_source_sha256": "78d9744077a83d2658d362e469ba71f1b192f02d342c3bf72dddc54232773838",
           "effective_end": 268439621,
           "end": 268439621,
-          "experiment_epoch": "b9261255510ad37394781540ee338d6798a5e21f3eb0c240273623c3dd2b470e",
+          "experiment_epoch": "74ca4d52aa18753562a6b9d6b8123cfa3f0ade4280fee6967f639e04b0ccc633",
           "function": "grim_crt_empty_initializer_slot_03_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5185,7 +5185,7 @@
           "canonical_source_sha256": "46cf07a86e1aabe51b0fb1f6226839ddfb942f15fc83d6d6ceaa6a7fb0df7acd",
           "effective_end": 268439633,
           "end": 268439633,
-          "experiment_epoch": "2d06c4dafdf07f55e28783950470666cfd8fd9a8d332a9e984b27ce229c0aed5",
+          "experiment_epoch": "5e4ac7ff463c4ffccdd08592d8de4c9289850ac55078373b8ac7d0fe4a25a7cd",
           "function": "grim_crt_empty_initializer_slot_03",
           "match": {
             "body_byte_exact": true,
@@ -5288,7 +5288,7 @@
           "canonical_source_sha256": "0bef67d2e9c9778a02975fb1c3a62e42c3006719eab1e060aec8c30bc9ddb166",
           "effective_end": 268439653,
           "end": 268439653,
-          "experiment_epoch": "c62018239ae34f1b866a90f6427afaacd2b9f10fa5f2ff1c2921c20f035f88c1",
+          "experiment_epoch": "6f3543b2f102330ce7eae93e2bb2036028c49fe058ada95ba06342c25fcf3210",
           "function": "grim_crt_empty_initializer_slot_04_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5391,7 +5391,7 @@
           "canonical_source_sha256": "e6faff595d5a3173079a54593257fdefa9acccd16ef99342ddce2c82f52afd42",
           "effective_end": 268439665,
           "end": 268439665,
-          "experiment_epoch": "653b6d5584d5336c5db4bc8a3bcb6eec0a3a1a5b9a1ad8a317e61ca20acd412f",
+          "experiment_epoch": "764e3d76a9845bbe73d357ca4569d5d7ae0185a178ff89ced9768ab62e5073c4",
           "function": "grim_crt_empty_initializer_slot_04",
           "match": {
             "body_byte_exact": true,
@@ -5494,7 +5494,7 @@
           "canonical_source_sha256": "f82d0e83c4b12d3d384dc0afdaf02345f11215d48fd476716f8598bf7b4e778a",
           "effective_end": 268439685,
           "end": 268439685,
-          "experiment_epoch": "4d331482bc95b002a5488cd76319e4180873e2dfc0fcafc123d392a2c2995076",
+          "experiment_epoch": "b7caf95f2adee8eaa1374103864ca2c8806b45f4bde155464fa4b3e4a321531d",
           "function": "grim_crt_empty_initializer_slot_05_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5597,7 +5597,7 @@
           "canonical_source_sha256": "3d4e85a26e547cbffc00616f9470a24d75d804e202e3170c3d154e60ea3f2cb4",
           "effective_end": 268439697,
           "end": 268439697,
-          "experiment_epoch": "2ba6effd80f396597cc2bd9ce2933948d8484bef66dc23f23aae37ec38023a7d",
+          "experiment_epoch": "3a5951c3c9dd2cfd80e39806c4ff59062f2262152f21707a10f56abf7c3bb5e2",
           "function": "grim_crt_empty_initializer_slot_05",
           "match": {
             "body_byte_exact": true,
@@ -5700,7 +5700,7 @@
           "canonical_source_sha256": "c255be3716297bbc5e75eb21f0f5f856cc5826bd11b4a08266142e9b7b2ffaa8",
           "effective_end": 268439717,
           "end": 268439717,
-          "experiment_epoch": "b2c14c0f6ec60817da95ec25bdca75c1ca2a367ac1bc85d9ca4100cfa4650bb2",
+          "experiment_epoch": "b6d0c2d3daf5f27650212bbf9c20637d0323de2682f0047f9a9f952a7b111975",
           "function": "grim_crt_empty_initializer_slot_06_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5803,7 +5803,7 @@
           "canonical_source_sha256": "e5597aface5fb6b4b75c1128bf4bcd5fedfb6f310b3d39ff2f3024a8d4b61caf",
           "effective_end": 268439729,
           "end": 268439729,
-          "experiment_epoch": "7825c56ebd507d2cdcf570e1e6e730384f146b4a8f5b8b91c70d54237e11ca72",
+          "experiment_epoch": "f9cf92e342758cfbea246c7f2fcb9b12f4d58d2524d2ff0ae4f1b3446fa1bc86",
           "function": "grim_crt_empty_initializer_slot_06",
           "match": {
             "body_byte_exact": true,
@@ -5906,7 +5906,7 @@
           "canonical_source_sha256": "0a97162a243b08fac14bfdf2e8083e701f27c027bb9c074e537abe819e281229",
           "effective_end": 268439749,
           "end": 268439749,
-          "experiment_epoch": "cdc06651caf4853b0c10cb4813d81b6f8904f9f32bd4ddd48799445655ecb9c2",
+          "experiment_epoch": "afdf063d9d7d07443dc2517d3cc876badfd17f6efbf170093e540cc89daa23e8",
           "function": "grim_crt_empty_initializer_slot_07_thunk",
           "match": {
             "body_byte_exact": true,
@@ -6009,7 +6009,7 @@
           "canonical_source_sha256": "1db9d4c39521443dc35f9afe0c119a95ade31bc6a02cfb637eda11358bc63326",
           "effective_end": 268439761,
           "end": 268439761,
-          "experiment_epoch": "dec8e703b8a2ec01a4c00ead3f5411ee530f75fa8d6a56df6b539d1838ee7ba8",
+          "experiment_epoch": "b78d416cf281aad520cf3b01d4adc88425197504e627eaa8a6f212229f4d0fe2",
           "function": "grim_crt_empty_initializer_slot_07",
           "match": {
             "body_byte_exact": true,
@@ -6112,7 +6112,7 @@
           "canonical_source_sha256": "79f91dac3d17befeb54f894715563eea90b075046bfd7d631069dc1251461f32",
           "effective_end": 268439781,
           "end": 268439781,
-          "experiment_epoch": "8c896563c6f1341848687240b0fc0f414082b20cea90bbf4225fc5fedcc353da",
+          "experiment_epoch": "1dacffe7376253da7e31484666f46b7b9c6792a01f8b2db340b3071d9d174dca",
           "function": "grim_crt_empty_initializer_slot_08_thunk",
           "match": {
             "body_byte_exact": true,
@@ -6215,7 +6215,7 @@
           "canonical_source_sha256": "9e8df137f4fb3f482d601ea350d85a5cc130c21a0a54ccfaa79776d57fcc2a1e",
           "effective_end": 268439793,
           "end": 268439793,
-          "experiment_epoch": "52802cb16ac343b7f616c1c2a5727b75be1cee40dae0ed1d7fb8f7603cc0d6c7",
+          "experiment_epoch": "6e15268113e3e8e9a46c9d2ff9b28be409ec02d7c8890c2679caf97fe21a5dc3",
           "function": "grim_crt_empty_initializer_slot_08",
           "match": {
             "body_byte_exact": true,
@@ -6318,7 +6318,7 @@
           "canonical_source_sha256": "88a2f17418ab64ffbf462b142cf78a558ee94a50627920eeabdec03b3dd81a47",
           "effective_end": 268439813,
           "end": 268439813,
-          "experiment_epoch": "29d2bf976393915e342224946c9486e933247cb55798aa458dcf677317fc0fe9",
+          "experiment_epoch": "a066d728a4b6917597dda9c5c49bd708849b9877dc269d5aca07910d2499ab34",
           "function": "grim_crt_empty_initializer_slot_09_thunk",
           "match": {
             "body_byte_exact": true,
@@ -6421,7 +6421,7 @@
           "canonical_source_sha256": "554986ac69cdb124d5ebe0ce2f69ae598871591398c5fe72a2898bf9907db6c1",
           "effective_end": 268439825,
           "end": 268439825,
-          "experiment_epoch": "6255520337a55244aa46608eeb5c16e3b83341497d7be69f0a270f1042f71d39",
+          "experiment_epoch": "35ec4cce6cfd5930f91b8a0fb4ed93db17f125b5bf87dba602432ce425349877",
           "function": "grim_crt_empty_initializer_slot_09",
           "match": {
             "body_byte_exact": true,
@@ -6524,7 +6524,7 @@
           "canonical_source_sha256": "f14849e832bdabb138b53b574700d53896de6843177474c1132eafa2faeecfd1",
           "effective_end": 268439845,
           "end": 268439845,
-          "experiment_epoch": "a21ca7c0fc7909f7c5ffbe95724710a54b975d1a942742b9742bc471ef55ef32",
+          "experiment_epoch": "5422a346af5182d1be56f0da7afca00021f1531172079b75c492b0d6f10aad77",
           "function": "grim_crt_empty_initializer_slot_10_thunk",
           "match": {
             "body_byte_exact": true,
@@ -6627,7 +6627,7 @@
           "canonical_source_sha256": "dc091c0c560e6ea661c2c112c812e37df746177f578bf6b8e3560221fa2c2145",
           "effective_end": 268439857,
           "end": 268439857,
-          "experiment_epoch": "63f4dd090599ae263f22ce1d2a16685d437dd8a3e7216a7bc6b68c0a0713c6ff",
+          "experiment_epoch": "bf870974e0853d0b7d66cdf422cd62bc62af90af818ffc81b3f295136b131265",
           "function": "grim_crt_empty_initializer_slot_10",
           "match": {
             "body_byte_exact": true,
@@ -6730,7 +6730,7 @@
           "canonical_source_sha256": "dcd455c70baa4c4ff1cb87e0e917ed85463771ecca5d7391401efbbb314899bf",
           "effective_end": 268439885,
           "end": 268439885,
-          "experiment_epoch": "944db0979da2a1acade8bb4c0cfe3601a3bfc5c3d5b8c7459a74e2f751c03279",
+          "experiment_epoch": "975f9762974d861e5b8f88cc92a8b0226e0384d81851ad5e808e3b08caa1e393",
           "function": "grim_missing_frame_callback",
           "match": {
             "body_byte_exact": true,
@@ -6833,7 +6833,7 @@
           "canonical_source_sha256": "a76195e462cd201b2bd828c26f597fff24464e77128f34ee49179601056e08e1",
           "effective_end": 268439891,
           "end": 268439891,
-          "experiment_epoch": "e6424dc65fbc3f6efc089b44258be4bae8caffc4ff336dfc549363cff6151a5f",
+          "experiment_epoch": "6272f22fe0a1be018042c7a3806a3b09301dc9f700bb863a7bd4db75e7e5cb74",
           "function": "grim_default_device_callback",
           "match": {
             "body_byte_exact": true,
@@ -6936,7 +6936,7 @@
           "canonical_source_sha256": "b9ca078e15f084cb81c2fc18a6c522777957db1a635df14efd5c625580865e2b",
           "effective_end": 268439905,
           "end": 268439905,
-          "experiment_epoch": "e0569e5a95955d77b22e95904f3ae4d00fe2f11ef1fee8f011044e20e3e0b269",
+          "experiment_epoch": "a13cd92cf95e0935888571a13ca9e73ccb2a24f9ebe1922614d0903f674d5edb",
           "function": "grim_noop",
           "match": {
             "body_byte_exact": true,
@@ -7039,7 +7039,7 @@
           "canonical_source_sha256": "0e68a98e072448fc28f96a70a71c0c55536b75695f99b8fd26725ff1c2d109d2",
           "effective_end": 268441349,
           "end": 268441349,
-          "experiment_epoch": "00eac48e523b9fd0e867e45c45c6f7797d5aec74abd60ee83ead1b27ee21f41f",
+          "experiment_epoch": "dcd73573791ccd7a8cdae6bfede6fb62a97380f8e4d9df0830cd4531e3d959df",
           "function": "grim_config_defaults_init_thunk",
           "match": {
             "body_byte_exact": true,
@@ -7172,7 +7172,7 @@
           "canonical_source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
           "effective_end": 268442094,
           "end": 268442094,
-          "experiment_epoch": "3866f7de0abb64c983f63f11d3f228686d957bdc78326fe9ab2377e4d57301c1",
+          "experiment_epoch": "42400630f52d157407f677f56d31d06547d4c37ce32cadbf5df32229c3f047eb",
           "function": "grim_config_defaults_init",
           "match": {
             "body_byte_exact": true,
@@ -7631,7 +7631,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -7660,7 +7660,7 @@
           "canonical_source_sha256": "b69f81f0afe689353fd8df59394e3c861a750886b0e601c037eb80e446525fbe",
           "effective_end": 268453872,
           "end": 268453872,
-          "experiment_epoch": "11aa19dda48bf8985f8b0956eb2496c4a731a0c63a32da6b1fd7617c98e38d8c",
+          "experiment_epoch": "e00122af4b220c6e236275deb720a344011128a3e4f89f31e7b4b15861bdaebf",
           "function": "grim_apply_render_state",
           "match": {
             "body_byte_exact": true,
@@ -8133,7 +8133,7 @@
           "canonical_source_sha256": "72f7f6191100514be03cfc4fd37584baa315797f3c7d39069b062cdb8d6294d5",
           "effective_end": 268453923,
           "end": 268453923,
-          "experiment_epoch": "c8c9457a85f06055d2e4f06a98cbf3551cbac9bb25e28c91408609a03f7e15f7",
+          "experiment_epoch": "b93460a013ee834f051af3de6517d2c7675700a7ae558a20c829a7d76f2add72",
           "function": "grim_is_texture_format_supported",
           "match": {
             "body_byte_exact": true,
@@ -8611,7 +8611,7 @@
           "canonical_source_sha256": "6b6c6ee6868b0e923b5c7b7845e10f4e0e1b4ea083b8b5deb9177dd3d9e2ed59",
           "effective_end": 268454168,
           "end": 268454168,
-          "experiment_epoch": "996e321e24d5e6876ec21739721ce633230f2dd1c898129c73810f8faaa79dd7",
+          "experiment_epoch": "5c46faf2895df9e8d3b003276dcdc6813dae615cb435245551a334de9cf5291e",
           "function": "grim_select_texture_format",
           "match": {
             "body_byte_exact": true,
@@ -9069,7 +9069,7 @@
           "canonical_source_sha256": "ac717cd61cd91bd5e296cc3873451d29ae5ca36101ffc2c0a25261cf748259b1",
           "effective_end": 268454250,
           "end": 268454250,
-          "experiment_epoch": "c5f823f92eae85ca7d3a3c492a401ec71a0af8472276da132eaa80c383e7b343",
+          "experiment_epoch": "d71d1302361be5083c60cd7bdf55f22252f06ee1a28dda4202cf1106d33daf48",
           "function": "grim_timing_init",
           "match": {
             "body_byte_exact": true,
@@ -9527,7 +9527,7 @@
           "canonical_source_sha256": "2ffc340c1a6dd210f202e57fda48dc790e0578596d0431905876c554bd71d6a3",
           "effective_end": 268454472,
           "end": 268454472,
-          "experiment_epoch": "1d5cfbc1eeb48cb3d60197898352060dce8192473531983d2e326a35f45a9984",
+          "experiment_epoch": "61eecd21917a60c3670314bbc5b2031586b1c2a22caa38bf4c5f40efa33e6cb3",
           "function": "grim_timing_update",
           "match": {
             "body_byte_exact": true,
@@ -10005,7 +10005,7 @@
           "canonical_source_sha256": "71c9ffbafc42ae0673708f5a022e2d5aaf28c8f9f3a2e49fd73f196f3708e142",
           "effective_end": 268454563,
           "end": 268454563,
-          "experiment_epoch": "12de523a90a2668cd925862f39b7258fb6a7a58f428d97463f44062fa28b1247",
+          "experiment_epoch": "d9e8f21a6a52a1b94db31364ad327194d9219e99dcdc9672d9270cbe2209a922",
           "function": "grim_texture_init",
           "match": {
             "body_byte_exact": true,
@@ -10483,7 +10483,7 @@
           "canonical_source_sha256": "0e4b25e1c7de43398c4a447edd855a831dd607cc220d3f9528dbcd16267c9e97",
           "effective_end": 268454642,
           "end": 268454642,
-          "experiment_epoch": "deb9d90f8efa43e63a5c3cded0736ad7ae82bd16ac8e48dc45dead0c38bb80e2",
+          "experiment_epoch": "39a38fb137a1d59a1fdb21eb552be1401fc502392cbc1c92818b14dda794f55c",
           "function": "grim_texture_release",
           "match": {
             "body_byte_exact": true,
@@ -10591,7 +10591,7 @@
           "canonical_source_sha256": "553aa627fc4768f567a3633c4a8bcce7afb0bfea2ca9d273630e1dad2f1db7a1",
           "effective_end": 268454755,
           "end": 268454755,
-          "experiment_epoch": "cb4684f3e53a8e76d8615fb2d743635fccc2ac575a5e0a60c60f475ce9dd58df",
+          "experiment_epoch": "41c49e6a0b4749ca45831c50afdb343df97df0c9cc2143133bafb39bdb5ec4bf",
           "function": "grim_path_has_extension",
           "match": {
             "body_byte_exact": true,
@@ -10703,7 +10703,7 @@
           "canonical_source_sha256": "7406bc83ed98e3bf68a07f4a63f66cacb0d8e0c79328041ee0b50eef51c82e56",
           "effective_end": 268455553,
           "end": 268455553,
-          "experiment_epoch": "17d5ae70c6560a28def64e5b0368463d04e1987e3028d5143a1f4028ad7ab262",
+          "experiment_epoch": "eb9d1dfa0e9683ec21fb58b7133ddef6870cabc46544fbb396a69cc437a0e0e5",
           "function": "grim_decode_jaz_texture",
           "match": {
             "body_byte_exact": true,
@@ -10843,7 +10843,7 @@
           "canonical_source_sha256": "aec88706e526b5b61de1cfc2f317fe03ce14f52f41fc50f5b9ca68890216aca2",
           "effective_end": 268455609,
           "end": 268455609,
-          "experiment_epoch": "7d7d844d6fd37993fb523f39dcd304ed08e4814dc846b9bc406c3e837ddde7d8",
+          "experiment_epoch": "a22bce8966d2b1e4fe4891629a157170be2f193d1b7e94651ff97f3dbbac0b7b",
           "function": "grim_jaz_jpeg_error_exit",
           "match": {
             "body_byte_exact": true,
@@ -11335,7 +11335,7 @@
           "canonical_source_sha256": "47dce99cc9cd12b4be1c40a0115a0d8a0905946b14903877e9fb0520f26becd7",
           "effective_end": 268456207,
           "end": 268456207,
-          "experiment_epoch": "34e80f0a2e8067651dc0b0b62f7592a4e9b94b157e19975b251504ac18e95b57",
+          "experiment_epoch": "e23941953fd89f7aa4c932fdeb8a7a44d0ef07350f9efc980b84502d8480719c",
           "function": "grim_texture_load_file",
           "match": {
             "body_byte_exact": true,
@@ -11813,7 +11813,7 @@
           "canonical_source_sha256": "e30a93cea369bd4655b928ebf956a9b00ad72d8625818ac27d953f6e95aa8adf",
           "effective_end": 268456301,
           "end": 268456301,
-          "experiment_epoch": "65f92c6d6bd19dd739a1029402ee78bafe8d8ddf816ce0ac06d97f86ea788f20",
+          "experiment_epoch": "732f8ed820da2fc7edb6918a7a3ff5285d68a28c1a3aa79d419a4870b1ef05b2",
           "function": "grim_texture_name_equals",
           "match": {
             "body_byte_exact": true,
@@ -12291,7 +12291,7 @@
           "canonical_source_sha256": "26cded2803cb4d046258ac8d6dcbde6c0c91969397bcc6b3ca6bf2f6af865491",
           "effective_end": 268456372,
           "end": 268456372,
-          "experiment_epoch": "f8e61546d6faccab5e4a658e9331dce61c9e42e3587cd3d0c8270709ee6ff0b7",
+          "experiment_epoch": "958269132bd7d36435240e0a1d1d736aa5545aa7ba7a25ca5f14b621cfb3e08e",
           "function": "grim_find_texture_by_name",
           "match": {
             "body_byte_exact": true,
@@ -12769,7 +12769,7 @@
           "canonical_source_sha256": "bb7d377772904f6225b01b11e76b98e7a6c3face3add2708f465b0673b1bec4b",
           "effective_end": 268456412,
           "end": 268456412,
-          "experiment_epoch": "efb17f0062dbde301ee89de4b4f8e3dce2699c146b7c409f8b2a4b5d924774b4",
+          "experiment_epoch": "1546cb63c5c182ec421a104db881ab85e24aa1a57d36cfc9e2746133794e20d1",
           "function": "grim_find_free_texture_slot",
           "match": {
             "body_byte_exact": true,
@@ -13249,7 +13249,7 @@
           "canonical_source_sha256": "aca05d88ab2656f6ee004aaef6c19a058feca50f5bbcffe16d761fcd8d9b6edd",
           "effective_end": 268456681,
           "end": 268456681,
-          "experiment_epoch": "f30aefee6db1f0acd5013d1b06f2c11e02e1a0680c7d3d756775d3d3d4fdd366",
+          "experiment_epoch": "c65ce66a5e46713861a232ddcabdad01d7eea50e0f7333944aa0cb8b1baad3a6",
           "function": "grim_load_texture_internal",
           "match": {
             "body_byte_exact": true,
@@ -13320,7 +13320,7 @@
         {
           "path": "decomp/1.9/grim/state/state_init.cpp",
           "repository_relative": true,
-          "sha256": "1f31873cd056a867f300d43e9d64e6c75f6e55048bfa9e36b2dc3b7b721c2746"
+          "sha256": "7767901defd8170d85b369c355dc3fdf2aff2c4abdc2dd2f0982a663ea54effb"
         },
         {
           "path": "tools/match/scratches/grim_state_init/scratch.conf",
@@ -13350,7 +13350,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_uv.h",
@@ -13371,10 +13371,10 @@
           "canonical_config_sha256": "a982649c4519c7fdad4852a88e33076ad5a6e3d37d1a6fe778b9027ced601dd8",
           "canonical_scratch": "tools/match/scratches/grim_state_init",
           "canonical_source": "decomp/1.9/grim/state/state_init.cpp",
-          "canonical_source_sha256": "1f31873cd056a867f300d43e9d64e6c75f6e55048bfa9e36b2dc3b7b721c2746",
+          "canonical_source_sha256": "7767901defd8170d85b369c355dc3fdf2aff2c4abdc2dd2f0982a663ea54effb",
           "effective_end": 268458560,
           "end": 268458560,
-          "experiment_epoch": "68944844a9a25dd21a6701c6951d738caee4fabe403687c6b4ac3f2f33f4e781",
+          "experiment_epoch": "6fa96415995e394ee698c15889be753458ddac84e26f680ddf658534db2cd1c6",
           "function": "grim_state_init",
           "match": {
             "body_byte_exact": true,
@@ -13415,7 +13415,7 @@
       "object_sha256": "e75c6d0191abcecd63dbaf30721f99c6d29e54a84d613cdb90c9e30e45cad7a6",
       "scratch": "tools/match/scratches/grim_state_init",
       "source": "decomp/1.9/grim/state/state_init.cpp",
-      "source_sha256": "1f31873cd056a867f300d43e9d64e6c75f6e55048bfa9e36b2dc3b7b721c2746",
+      "source_sha256": "7767901defd8170d85b369c355dc3fdf2aff2c4abdc2dd2f0982a663ea54effb",
       "target_size": 1872,
       "translation_unit": {
         "kind": "isolated",
@@ -13484,7 +13484,7 @@
           "canonical_source_sha256": "4f086e56c1305f903a69d1b032102e066f0775cfc6842d5d1c77da05db06f021",
           "effective_end": 268458706,
           "end": 268458706,
-          "experiment_epoch": "de83502b7b9cb47f313ea875e01bfa65477cf50181b652ccbeb0d6cc40e581ec",
+          "experiment_epoch": "a55935d586f4c12fd9201552d636802885986e1cc276d2998e5d626c4590da09",
           "function": "grim_lookup_blob_load",
           "match": {
             "body_byte_exact": true,
@@ -13592,7 +13592,7 @@
           "canonical_source_sha256": "3e7b88768af62d3be6e63aac897629af3a94a9150af43f931ae5e073515f5a9d",
           "effective_end": 268458866,
           "end": 268458866,
-          "experiment_epoch": "3811c11a71baa8649a2e7a87684e4d22d8d2c7b8bbb82d1fe2241622f6b3736e",
+          "experiment_epoch": "154c27598f5d81e9df97fa2a0efe33145c83ea3afef0189131e8c25531df4f16",
           "function": "grim_lookup_blob_find",
           "match": {
             "body_byte_exact": true,
@@ -13700,7 +13700,7 @@
           "canonical_source_sha256": "e4bb86934322827e1867ad9c559282b81ef618b45213f690f885530ef1b14fa3",
           "effective_end": 268459026,
           "end": 268459026,
-          "experiment_epoch": "c5f7990be7ef9a4f0e49749144454fb65a68dda57692ec51dc0b9d44aecf8b38",
+          "experiment_epoch": "d9f2e617049b15b0d9024615ffe29c697e98814c697155747a5dca1408d676ac",
           "function": "grim_lookup_blob_size_for_path",
           "match": {
             "body_byte_exact": true,
@@ -13794,7 +13794,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -13813,7 +13813,7 @@
           "canonical_source_sha256": "4db4dd64419086e9017eca019a8fc8ba1afbd678e15d1a4500e5cd86ed17e070",
           "effective_end": 268459072,
           "end": 268459072,
-          "experiment_epoch": "94d36b7d942348129b6e54b4940635a67bd784ed89a0adc28a4433174bd0d199",
+          "experiment_epoch": "877ba09797c2afe3de700b8e1cc6d8e821548d8a127d71bbd897108da39ac702",
           "function": "grim_set_key_char_buffer",
           "match": {
             "body_byte_exact": true,
@@ -13907,7 +13907,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -13926,7 +13926,7 @@
           "canonical_source_sha256": "ff929de814cb78a9f7495144c0541db3308eb1a9807f4aeb7b09e65d3a3736b0",
           "effective_end": 268459124,
           "end": 268459124,
-          "experiment_epoch": "63afd28121cd0f48d1a68032391fb458d01b8425d7e3ab2d32b4d8e82075c987",
+          "experiment_epoch": "e2a8c29b523bdda9e494801255b4360add726e10e0a43ce279e55a0e97ce9300",
           "function": "grim_get_key_char",
           "match": {
             "body_byte_exact": true,
@@ -14020,7 +14020,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -14039,7 +14039,7 @@
           "canonical_source_sha256": "e37cda0f8901f5bbced1225ddcfb73a1f9748d55d0ea850ff5f2e10945cfa5d3",
           "effective_end": 268459144,
           "end": 268459144,
-          "experiment_epoch": "7eb9387c170775400cc15a55d00594a7b5ea149b3ab97c01c8613d49b5afbc4b",
+          "experiment_epoch": "3f093aaaad807d03105b05025db1685fff84e4cc9efbdc9fbf43d4a07c258619",
           "function": "grim_release",
           "match": {
             "body_byte_exact": true,
@@ -14133,7 +14133,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -14152,7 +14152,7 @@
           "canonical_source_sha256": "5848ae2a26f2dd7dffc8df189ad5ff309fe0a6eebb49d8b2bc63dab58c636c85",
           "effective_end": 268459164,
           "end": 268459164,
-          "experiment_epoch": "5ce0a61f0a6ff8042229cd69f7be2f7364a7fc40ac1cef8d933fc6f8f0a7c157",
+          "experiment_epoch": "6302babea136c3614a82fde932b36f4486ebad418967dc1ebec1568db77ae7f8",
           "function": "grim_set_paused",
           "match": {
             "body_byte_exact": true,
@@ -14246,7 +14246,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -14265,7 +14265,7 @@
           "canonical_source_sha256": "60cea3ff2f63d267045eeca109095df0388a4ac82b7ea5b4ee1cffd9c3632cf2",
           "effective_end": 268459175,
           "end": 268459175,
-          "experiment_epoch": "8ce5ffb031d9789d0569abfd9ccaeeafe01f9038060b20772eb71a499dc264cb",
+          "experiment_epoch": "552cc371d0811e637b126609ee4e4f5e03d28efcfd2aae0870b58e19df89047b",
           "function": "grim_get_version",
           "match": {
             "body_byte_exact": true,
@@ -14731,7 +14731,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -14760,7 +14760,7 @@
           "canonical_source_sha256": "1ab8992a9cdb56939d81d4d585ee5c890146693c1aa189bc040193d844f50f51",
           "effective_end": 268460014,
           "end": 268460014,
-          "experiment_epoch": "869aff1a593b57554314a76908bb912c9f8511cc47aa271ef0d37203355fa8c3",
+          "experiment_epoch": "e87b3c6d3e212ddffdf88b95f7761e33c78ec61db1ee5239da6c903678163761",
           "function": "grim_init_system",
           "match": {
             "body_byte_exact": true,
@@ -14854,7 +14854,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -14873,7 +14873,7 @@
           "canonical_source_sha256": "238c1f1d2e0075264a6c559e14715eec0e188e8a3e5dd0ae5683ed088fd389c6",
           "effective_end": 268460054,
           "end": 268460054,
-          "experiment_epoch": "d456abe07b6d6915e81180a378b8e6ff8ee2f89de5b4962f00ffd6469cb8f5fa",
+          "experiment_epoch": "ab2e884353f33857bcc40708096aaf09cd9367e7a582787899925c77f6f329e8",
           "function": "grim_shutdown",
           "match": {
             "body_byte_exact": true,
@@ -14967,7 +14967,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -14986,7 +14986,7 @@
           "canonical_source_sha256": "a2c494263132a3595b0a0bc6cc3047f31c3b5031326518acbee6ea8d94f4909d",
           "effective_end": 268460072,
           "end": 268460072,
-          "experiment_epoch": "63acc87277c64209c02cff6bb3abb40cdf42e7e0a70d3bc738df592e4caa9ba4",
+          "experiment_epoch": "5c59cc0179d5204556a348dce5abe19c3109096a3f4a7a38a50ce60eba07d1c1",
           "function": "grim_apply_settings",
           "match": {
             "body_byte_exact": true,
@@ -15459,7 +15459,7 @@
           "canonical_source_sha256": "25bfd80dfb58ce62123ea564a2783fa4f9562a823d14b4f80a85b61b01535dae",
           "effective_end": 268461404,
           "end": 268461404,
-          "experiment_epoch": "af6a2c3b3b10df7a973a66f9d382c42ab8ade18e6d45d8e5ea224b9c1a926594",
+          "experiment_epoch": "0e5512221a12d79b7ab0aa3623d95c15d56b3827a408586e13d87ec04166fd20",
           "function": "grim_set_texture_stage_ops",
           "match": {
             "body_byte_exact": true,
@@ -15920,7 +15920,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -15944,7 +15944,7 @@
           "canonical_source_sha256": "be004020132c0feefe11de9364da2b8742f281c060aa31e4c75d7932bd4798b7",
           "effective_end": 268462974,
           "end": 268462974,
-          "experiment_epoch": "384f7e7c4c2070e3f3acf31e5514bdec242d420159ac8c2619e1e533512b16c0",
+          "experiment_epoch": "aa85b4790d61b9a6627d0250085d508827d4768e31a17f9e6ad6c142e5c6fff6",
           "function": "grim_set_config_var",
           "match": {
             "body_byte_exact": true,
@@ -16038,7 +16038,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -16057,7 +16057,7 @@
           "canonical_source_sha256": "6c65cddbe3a072092e1ef1f877b7d347bd8b9c649396c4f54b27deb51ef87dc4",
           "effective_end": 268463254,
           "end": 268463254,
-          "experiment_epoch": "64397fc646dd49503499f80ea6dda63b9c8624d92edd60d9811caa178c272ab2",
+          "experiment_epoch": "1d98684f77fafba87a47b0938f4b6ff2672f23c0bdf445b8eecdaff2c7ad4c33",
           "function": "grim_get_config_var",
           "match": {
             "body_byte_exact": true,
@@ -16151,7 +16151,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -16170,7 +16170,7 @@
           "canonical_source_sha256": "922f27ea64463a1b49a390e8a4721cf4ae6f9ffe42a2f63eff8abb795c63d1c9",
           "effective_end": 268463270,
           "end": 268463270,
-          "experiment_epoch": "6af1de67318b097b6d11c539b8a30eeb105351d5b27d8cf3bb652edeaa467f9e",
+          "experiment_epoch": "bf699d0cb2b46e5a9fd7a7d344e2dfdb91bc2ba91e7d722363139927a12a1efa",
           "function": "grim_get_error_text",
           "match": {
             "body_byte_exact": true,
@@ -16629,7 +16629,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -16658,7 +16658,7 @@
           "canonical_source_sha256": "9d6f9c955f06b4f555233954d29c7465d982009d373f342b6941e9cf9bc585d1",
           "effective_end": 268463430,
           "end": 268463430,
-          "experiment_epoch": "b9cfbc7e26a6523feef78b2b9411badbc6d4dea937ef5b41b399062ff4965afa",
+          "experiment_epoch": "5f7d2ea18f1e7beab51d4dfa8ed8410882f1d51f31d73b4b59c6905e698dd82b",
           "function": "grim_clear_color",
           "match": {
             "body_byte_exact": true,
@@ -17117,7 +17117,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -17146,7 +17146,7 @@
           "canonical_source_sha256": "f48bdea96d9bcbb594df59e855fe399647165abae09427c1c2f0ecef6c3af657",
           "effective_end": 268463680,
           "end": 268463680,
-          "experiment_epoch": "96d18d711b93a6ce86b41cba7a45c4e12ae828fd007da202ce5a7f2450555778",
+          "experiment_epoch": "3b1d834b993ad748a408154dc7995d4a8a9542fc9b9bf11f63bf7fbe273edd00",
           "function": "grim_set_render_target",
           "match": {
             "body_byte_exact": true,
@@ -17240,7 +17240,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -17259,7 +17259,7 @@
           "canonical_source_sha256": "94024c19034f78f61abe0416ec9676b8db1d233ba81f5c658538c20ae214d6a5",
           "effective_end": 268463686,
           "end": 268463686,
-          "experiment_epoch": "820b864441e6244d77d0d34e49a6b5272e54d567fe1519e64f5b6915a85bfc93",
+          "experiment_epoch": "f381fa483f1e22594f624a0cd3fc374e12631b1005ea2d96a27bafc7c45718e6",
           "function": "grim_get_time_ms",
           "match": {
             "body_byte_exact": true,
@@ -17353,7 +17353,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -17372,7 +17372,7 @@
           "canonical_source_sha256": "1ae3cfb029d2d38192c9dc18cf48f488b49d337ef602c1793d1695eba35a6921",
           "effective_end": 268463708,
           "end": 268463708,
-          "experiment_epoch": "e812c5e695d9a0e9d0f2cae0d4c06f4498b61b2f9a1096cd6e2ab3f79b6f59da",
+          "experiment_epoch": "2a39f095bad61a090858bd1087f5d61e954eab50e58361effa7e8f8da77ac975",
           "function": "grim_set_time_ms",
           "match": {
             "body_byte_exact": true,
@@ -17466,7 +17466,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -17485,7 +17485,7 @@
           "canonical_source_sha256": "1df5a7cb657d73e8c06eee37b8dc8de5e982b5ce35434cf4672517daf84e7372",
           "effective_end": 268463745,
           "end": 268463745,
-          "experiment_epoch": "683de5f4977f7db03f6f6e1c4906d6e04e836c2a60e3f2ca622ef4856db6da56",
+          "experiment_epoch": "77786575bcf6f86dcbbee9209fe366d217c40e17729a93511f041a8b688002e7",
           "function": "grim_get_frame_dt",
           "match": {
             "body_byte_exact": true,
@@ -17579,7 +17579,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -17598,7 +17598,7 @@
           "canonical_source_sha256": "07100535c5929bcae0f0fa1606fd6dabfe2e65a5e41effbd3fdc69a6cccc0f60",
           "effective_end": 268463767,
           "end": 268463767,
-          "experiment_epoch": "6e943cad4b43dfcd26a02913f7c49c2c75da595fb8c36dab63e18211ea70e778",
+          "experiment_epoch": "366ae630111276512935555286a13cde2c04f55fc698add799993e409d239459",
           "function": "grim_get_fps",
           "match": {
             "body_byte_exact": true,
@@ -17692,7 +17692,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -17711,7 +17711,7 @@
           "canonical_source_sha256": "178c7d8f4a6470a21ba9f7c0238c3711122622b564555b81b5097e6ec068f95a",
           "effective_end": 268463854,
           "end": 268463854,
-          "experiment_epoch": "5c9476cc86f60951b7f22fc9ab561f8abb7f9f2cf5b39267bd4a149ad7579abc",
+          "experiment_epoch": "0043d0f990aa5bbafba060d46635125bb827c58d2817c15f37964f2c01e01467",
           "function": "grim_joystick_up_active",
           "match": {
             "body_byte_exact": true,
@@ -17805,7 +17805,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -17824,7 +17824,7 @@
           "canonical_source_sha256": "731fb0c5df3b77463ebfed7abbf6a2d4e2972935c52d06b1022071438f24e2dd",
           "effective_end": 268463930,
           "end": 268463930,
-          "experiment_epoch": "2ca9195ff60214f7b707084ce73debe39aba166939b78a19256d0bfa7442d54d",
+          "experiment_epoch": "132b40d906ba04236844c9a3820caa2b4992af61582581c95340b1a8b44fe717",
           "function": "grim_joystick_down_active",
           "match": {
             "body_byte_exact": true,
@@ -17918,7 +17918,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -17937,7 +17937,7 @@
           "canonical_source_sha256": "cbe85d78a92e0116928f690487dc74c11b9a832386a0d6762081be6d696dcbfa",
           "effective_end": 268464014,
           "end": 268464014,
-          "experiment_epoch": "d8f256d67d891b2a0de334bc595648f6b146f46e2ff1de124929bff96812eecb",
+          "experiment_epoch": "d1184dbcc89895050fa54b539035619cc914c2e5309e3420e1ebecce13840025",
           "function": "grim_joystick_left_active",
           "match": {
             "body_byte_exact": true,
@@ -18031,7 +18031,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -18050,7 +18050,7 @@
           "canonical_source_sha256": "f9d8fb36aea0f232a158ebfd646901f66d08ecac8d5a7d111c4781bca23b9e05",
           "effective_end": 268464090,
           "end": 268464090,
-          "experiment_epoch": "4973100f546a96bb444c6ac8867a1e444e35a83abdf0f063da176889ec1c5edd",
+          "experiment_epoch": "9a2c862f17f2a31ca85111d9ce19a92e8afc42727a10c08705b843a3f9d7083a",
           "function": "grim_joystick_right_active",
           "match": {
             "body_byte_exact": true,
@@ -18149,7 +18149,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -18173,7 +18173,7 @@
           "canonical_source_sha256": "279a67f8e0a5ec8ee2981a4ae862576993c8ee947a0026ffe28c6de25f41a28d",
           "effective_end": 268464552,
           "end": 268464552,
-          "experiment_epoch": "59b89665f21a0b4aea87ccb3f6bd6719ff4753e06e962c45b064e2ca4dac3abc",
+          "experiment_epoch": "f64a146ec6e0bea4c4ad316c69b05508dff3b944686dc078ea9f49649bb5a788",
           "function": "grim_is_key_active",
           "match": {
             "body_byte_exact": true,
@@ -18267,7 +18267,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -18291,7 +18291,7 @@
           "canonical_source_sha256": "d51b8ebd19391ee83de3b901d4ef49b037d39b3a571de5326b3bb4b9400c270b",
           "effective_end": 268464824,
           "end": 268464824,
-          "experiment_epoch": "a937ab2f3d2c2c1a2aa8f5e792c9c9ef2efda43df5eadf0dd2c286a4a5bd09d9",
+          "experiment_epoch": "337b033573b309b06f09142d3ceec4a987dd93144a5bd355e93ebb4e888f95d1",
           "function": "grim_get_config_float",
           "match": {
             "body_byte_exact": true,
@@ -18385,7 +18385,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_slot_state.h",
@@ -18409,7 +18409,7 @@
           "canonical_source_sha256": "af9253cc8d3fea496a58aaa55732dbb6739662bcbe4fb9e99e186878754fd28b",
           "effective_end": 268464846,
           "end": 268464846,
-          "experiment_epoch": "8e7092fbd1f85a2acdc52218670ef41b015f983248271ed82121ded216922aad",
+          "experiment_epoch": "2a11f6506bbf8bec7fd4aca26afc2b9706202fa4038025e45f7ebd5c19c02370",
           "function": "grim_get_slot_float",
           "match": {
             "body_byte_exact": true,
@@ -18438,7 +18438,7 @@
           "canonical_source_sha256": "af9253cc8d3fea496a58aaa55732dbb6739662bcbe4fb9e99e186878754fd28b",
           "effective_end": 268464862,
           "end": 268464862,
-          "experiment_epoch": "2d4467d02cb186dc79fc24eca616d719fa1900cf186e49b864f4041b4a4d94e9",
+          "experiment_epoch": "963fdb077a9961aa2e86ec9ef52f9a9f9384db040b38a9da0da5ef3d2bff1273",
           "function": "grim_get_slot_int",
           "match": {
             "body_byte_exact": true,
@@ -18467,7 +18467,7 @@
           "canonical_source_sha256": "af9253cc8d3fea496a58aaa55732dbb6739662bcbe4fb9e99e186878754fd28b",
           "effective_end": 268464882,
           "end": 268464882,
-          "experiment_epoch": "90e17c6a8c02cd44463adf5f4a3802cd3a3dd83b55e19ef04b54b5f73d3a3c8b",
+          "experiment_epoch": "bb27df7d6494ce9e33e5bc18794adec9bb2415edafcfacc5c857dcfa2f6aa215",
           "function": "grim_set_slot_float",
           "match": {
             "body_byte_exact": true,
@@ -18496,7 +18496,7 @@
           "canonical_source_sha256": "af9253cc8d3fea496a58aaa55732dbb6739662bcbe4fb9e99e186878754fd28b",
           "effective_end": 268464914,
           "end": 268464914,
-          "experiment_epoch": "f758d6068dcc7d908956aad50703507dbed2725037a7134e4d63112c3a95d15c",
+          "experiment_epoch": "8cbc97ce77488577437d8db13c33f1404decae25b22bcc84df89519b79952475",
           "function": "grim_set_slot_int",
           "match": {
             "body_byte_exact": true,
@@ -18592,7 +18592,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -18611,7 +18611,7 @@
           "canonical_source_sha256": "f43f6b3c7a95cfeacf0c91b559342c3841e2e02089ccc59a34227364941448b2",
           "effective_end": 268464944,
           "end": 268464944,
-          "experiment_epoch": "b5894dbaa2b21e00e136246a14f95ada47df3b4d16327f0fb7d69193cea5b690",
+          "experiment_epoch": "f13f4a6f2873b0b82ca11867db5134bf34870d3794cfb6c5ead1dad6a8786f7d",
           "function": "grim_is_key_down",
           "match": {
             "body_byte_exact": true,
@@ -18710,7 +18710,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -18729,7 +18729,7 @@
           "canonical_source_sha256": "cb2752e865827d2ac5c95109d6e1e6d58de3b3cc5bf07879e33ea14c28ab1c4a",
           "effective_end": 268465035,
           "end": 268465035,
-          "experiment_epoch": "415efb3306ce23d761abd5216a8665d5ed6ee01f830f8a4a17b420654f732b50",
+          "experiment_epoch": "72d7b9e51b217478a14c206306ef0548cab936dc3e17c49da04c22674fde2777",
           "function": "grim_flush_input",
           "match": {
             "body_byte_exact": true,
@@ -18823,7 +18823,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -18842,7 +18842,7 @@
           "canonical_source_sha256": "c0854d0d44e3d75c88e29a5c49cb52fe27aa058c6dfb75d3c2babb1aaef0a486",
           "effective_end": 268465159,
           "end": 268465159,
-          "experiment_epoch": "f4c235c124135d20de7031146ce42a65f38f16dbfcb774a4ec6714fbb0c05c68",
+          "experiment_epoch": "bbdd5d4b00d90a749a3f33634ec1282af8920809634d9020157804a0265a5360",
           "function": "grim_was_key_pressed",
           "match": {
             "body_byte_exact": true,
@@ -18936,7 +18936,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -18955,7 +18955,7 @@
           "canonical_source_sha256": "e28a5ff8b17b7e6959ad3b6c23309de449aa3ffdc623b4ff289cbba9a46f42ac",
           "effective_end": 268465206,
           "end": 268465206,
-          "experiment_epoch": "ab3b85ab0e4b54ba60f258656594183797d5b51d780bcf14f82faae8d820e354",
+          "experiment_epoch": "628c8a36affc84f22f826f5620efea15cff983ae088d76cedc78c461c6ef06dc",
           "function": "grim_is_mouse_button_down",
           "match": {
             "body_byte_exact": true,
@@ -19049,7 +19049,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -19068,7 +19068,7 @@
           "canonical_source_sha256": "0951bbe1ac33410298bf494cae489c45777a886a899c0d93dff5580cffc49315",
           "effective_end": 268465347,
           "end": 268465347,
-          "experiment_epoch": "5e4608f8f0b037cb115613f1a232dd25fdf9b4eec33c6713a31617baf09e701d",
+          "experiment_epoch": "73e17a27b97c53d77f1deffba9f9cc7e1d7303139a563bf8c2cf45685ad838c0",
           "function": "grim_was_mouse_button_pressed",
           "match": {
             "body_byte_exact": true,
@@ -19162,7 +19162,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -19181,7 +19181,7 @@
           "canonical_source_sha256": "6d6c6b83bc6bedf7c908aa8a35a90b4b8daade22fdc15b97e172ee3d9cf25a0a",
           "effective_end": 268465367,
           "end": 268465367,
-          "experiment_epoch": "d12660f72938fc301dda49217a731bdac769c7537e715730f38228bc11c52f75",
+          "experiment_epoch": "0bd2cd8c05334f1c7315fa6f425eb1120a6f74b56532a83bf95653b806677cf8",
           "function": "grim_get_mouse_dx",
           "match": {
             "body_byte_exact": true,
@@ -19275,7 +19275,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -19294,7 +19294,7 @@
           "canonical_source_sha256": "86cb83cdd7ff846d264f635b4bbcc6b0d40c5ef5084f07e29cf4accb9b593f97",
           "effective_end": 268465383,
           "end": 268465383,
-          "experiment_epoch": "0c932123b1570af4b8d3d4bc9ea9d41c71f77726327b4332bb35f76986ee3978",
+          "experiment_epoch": "7c4b4250cfb6307c72fe88b59ee6e023fd900dd9bf4d0253f226d02d754f6685",
           "function": "grim_get_mouse_dy",
           "match": {
             "body_byte_exact": true,
@@ -19388,7 +19388,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -19407,7 +19407,7 @@
           "canonical_source_sha256": "7308d05d772275153073f7f22c85ac05ac1dde7de96e7ef1625d4c1a6bf03240",
           "effective_end": 268465400,
           "end": 268465400,
-          "experiment_epoch": "8dcefd7c52f004e5aedae041239654069b09b42bcacedd41ee5e9f8fad82d91d",
+          "experiment_epoch": "b10bcfb4df251381ce4e4e1508f21443195e30c8470fd5e5bf5f98bd16a43666",
           "function": "grim_get_mouse_dx_indexed",
           "match": {
             "body_byte_exact": true,
@@ -19501,7 +19501,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -19520,7 +19520,7 @@
           "canonical_source_sha256": "1facd1136362c3f4d953b169248bec9559da0e024cd3b8bc53bb0bce30de1d70",
           "effective_end": 268465416,
           "end": 268465416,
-          "experiment_epoch": "9645e64ac7da15cdf958ecba7eb9032aaec400b7af794732b41847c05df2e418",
+          "experiment_epoch": "02fe524eda2b3d0db4d5a26ef3050a122c4bbe2fe52e95d3eef5fdec1de12ed7",
           "function": "grim_get_mouse_dy_indexed",
           "match": {
             "body_byte_exact": true,
@@ -19614,7 +19614,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -19633,7 +19633,7 @@
           "canonical_source_sha256": "f7bee3d7c065cd84ae6217cfc035598e1c1d56cc460cdca3aec7c987663efd1f",
           "effective_end": 268465431,
           "end": 268465431,
-          "experiment_epoch": "4efa9625747c3b8b598630049523a19686e5b540352148aee795166533886033",
+          "experiment_epoch": "23703a75d432c2179b114a3f0a54b00426054d8509d92f03a469597176324d7e",
           "function": "grim_get_mouse_x",
           "match": {
             "body_byte_exact": true,
@@ -19727,7 +19727,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -19746,7 +19746,7 @@
           "canonical_source_sha256": "908f1d65d7c8e521de3f954c0794fdab8c62e4bc48a01508e0213fd459375978",
           "effective_end": 268465447,
           "end": 268465447,
-          "experiment_epoch": "2a65d2554fa4a55134b49fd415574c362b882c7670f908e95024acdfdd1c1d63",
+          "experiment_epoch": "7ef8b709d01ab587e3ad91c99adfaae940dc7a366f5bccab32ede7e9fb461067",
           "function": "grim_get_mouse_y",
           "match": {
             "body_byte_exact": true,
@@ -19840,7 +19840,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -19859,7 +19859,7 @@
           "canonical_source_sha256": "389c0b7204d8f793bfc0526bc17aae68905645c5eaca1a62729db9953daddecf",
           "effective_end": 268465493,
           "end": 268465493,
-          "experiment_epoch": "20fb39f5c1d7d49090518360772bfaa8aae5b4637ca85898b5780dd03d3dae57",
+          "experiment_epoch": "c8d90e1aaf29c3a0629c46696a2935894f82db7526319c9d09e9626707443450",
           "function": "grim_set_mouse_pos",
           "match": {
             "body_byte_exact": true,
@@ -19953,7 +19953,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -19972,7 +19972,7 @@
           "canonical_source_sha256": "d1904584692f22e173ec935259e8449c918ecc4996a467862a8d7b426730c63a",
           "effective_end": 268465527,
           "end": 268465527,
-          "experiment_epoch": "e114b15b97b643fe7b26a3c7c5d2ee15086ad37890f76275e8308c1b5ccf14fc",
+          "experiment_epoch": "968075da9820c22c1f85c10588c7c146f881c6e5c9286ba70ba082733ae9129f",
           "function": "grim_get_mouse_wheel_delta",
           "match": {
             "body_byte_exact": true,
@@ -20066,7 +20066,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -20090,7 +20090,7 @@
           "canonical_source_sha256": "91f9939b328a5627aa405dd3e057dcdd139a3d30da919e535494d82ae4647ffd",
           "effective_end": 268465542,
           "end": 268465542,
-          "experiment_epoch": "b9fee41462a25f33c9699a0a31fde807cefa408cb21b7e5abb34d62114f420b6",
+          "experiment_epoch": "9ba4481b7eb7d7f0a8eeccd63df6f57297acbd02e831e68014021f1bf925fd9d",
           "function": "grim_get_joystick_x",
           "match": {
             "body_byte_exact": true,
@@ -20184,7 +20184,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -20208,7 +20208,7 @@
           "canonical_source_sha256": "4aafd795e1ad867f4e3288217747a958bc181f12df576540cf752aa9b3b2b8a5",
           "effective_end": 268465558,
           "end": 268465558,
-          "experiment_epoch": "0c2c3f05815e715b8394a3cbdec9a69824a6dbb72ae262836ce9b6f14edb6de9",
+          "experiment_epoch": "41bbc627a6422ac684cec5386a48538f93d7b14a7f41320eb4dc60a8f0279206",
           "function": "grim_get_joystick_y",
           "match": {
             "body_byte_exact": true,
@@ -20302,7 +20302,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -20326,7 +20326,7 @@
           "canonical_source_sha256": "10ab13000942205dc530ae9fc59ec950b2576bfb7b06be40be31c7a224684161",
           "effective_end": 268465574,
           "end": 268465574,
-          "experiment_epoch": "d3e9fa9b96f09cbaaa43b687093a64711f22c1a2da4a6bd468a5ef260c60eb31",
+          "experiment_epoch": "573b47e6e6cd91d3506d9568810011dd382e87b81e012f8c95476b8e37595a23",
           "function": "grim_get_joystick_z",
           "match": {
             "body_byte_exact": true,
@@ -20420,7 +20420,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -20444,7 +20444,7 @@
           "canonical_source_sha256": "54fe97609cbc2e48b54301c40758c7a3ce2a5cb2f6544292626aa69a1c0ca320",
           "effective_end": 268465598,
           "end": 268465598,
-          "experiment_epoch": "b761857f963937707bcb4bc5626dfda59608cb0f1558051fc5b0f43c5e6fa794",
+          "experiment_epoch": "36911b41b0e3846a3913742fc4d7f892c6a7522e6a232458a0651e5c3be75d03",
           "function": "grim_get_joystick_pov",
           "match": {
             "body_byte_exact": true,
@@ -20538,7 +20538,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -20557,7 +20557,7 @@
           "canonical_source_sha256": "f5a6395c3a0d13368a3ead0654072e6be83c44079d56326021b0622949f53fcc",
           "effective_end": 268465616,
           "end": 268465616,
-          "experiment_epoch": "ec67f2298bd1ce85623e5a54a910a7a5c9e048fa4a95d59a2180b139a70462aa",
+          "experiment_epoch": "073f459cfdc8006c8cacdf99a47b1be0df0bbfcd983ccdb32bebfa9162956dae",
           "function": "grim_is_joystick_button_down",
           "match": {
             "body_byte_exact": true,
@@ -20628,7 +20628,7 @@
         {
           "path": "decomp/1.9/grim/texture/create_texture.cpp",
           "repository_relative": true,
-          "sha256": "59e06f63f2642cdaa788b9ec8feeafc081698d5521538f140d08e0403b35372d"
+          "sha256": "96a17b09829e62250bb2e6b7b86288dfd8e35386ffe40554dfc7def9de861466"
         },
         {
           "path": "tools/match/scratches/grim_create_texture/scratch.conf",
@@ -21018,7 +21018,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -21044,10 +21044,10 @@
           "canonical_config_sha256": "be2103c9ed2fac02753d71aabc8217b5ebe1f54bda6522fce5468de2c4013b7f",
           "canonical_scratch": "tools/match/scratches/grim_create_texture",
           "canonical_source": "decomp/1.9/grim/texture/create_texture.cpp",
-          "canonical_source_sha256": "59e06f63f2642cdaa788b9ec8feeafc081698d5521538f140d08e0403b35372d",
+          "canonical_source_sha256": "96a17b09829e62250bb2e6b7b86288dfd8e35386ffe40554dfc7def9de861466",
           "effective_end": 268465873,
           "end": 268465873,
-          "experiment_epoch": "cfb94cb5ef1912a3d134227c54ebcfcb0856f43317f484ff494bb47682c7c8b5",
+          "experiment_epoch": "f2b241249ade13f1e92cb81690b478a6d13969267206b86960004a776f364eae",
           "function": "grim_create_texture",
           "match": {
             "body_byte_exact": true,
@@ -21088,7 +21088,7 @@
       "object_sha256": "1bf92050216ec98df3473a685ac84f4e7e0e7858b9e89be63d96448ff75ed511",
       "scratch": "tools/match/scratches/grim_create_texture",
       "source": "decomp/1.9/grim/texture/create_texture.cpp",
-      "source_sha256": "59e06f63f2642cdaa788b9ec8feeafc081698d5521538f140d08e0403b35372d",
+      "source_sha256": "96a17b09829e62250bb2e6b7b86288dfd8e35386ffe40554dfc7def9de861466",
       "target_size": 257,
       "translation_unit": {
         "kind": "isolated",
@@ -21506,7 +21506,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -21535,7 +21535,7 @@
           "canonical_source_sha256": "d30b21fc8d5f1ff5b82b4db1b9b6b1fff9548cf7167eea50962add6074a016bf",
           "effective_end": 268465909,
           "end": 268465909,
-          "experiment_epoch": "b469495c1d299dccecd550d99dfd3347a823ecc8250235d4f66f5de7791c558a",
+          "experiment_epoch": "f57cccd3bf335051d3f6a0b5d2ae234e1473083a97c104a3244b2a12299f2708",
           "function": "grim_load_texture",
           "match": {
             "body_byte_exact": true,
@@ -21994,7 +21994,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -22023,7 +22023,7 @@
           "canonical_source_sha256": "6a390dfd2e2ee10cbd949dfe0fa9fa27c5b1a0e2016b8e7d22be27c566e41a01",
           "effective_end": 268465984,
           "end": 268465984,
-          "experiment_epoch": "998fe5f6afacc0dbf28eba6f16233d3dfb10d627ae8d1605bac7fb5b2c1724aa",
+          "experiment_epoch": "cff53d686ce56a0e382b308f7fc3c886a4822eb8c63407318db14aaad9b1fbd4",
           "function": "grim_destroy_texture",
           "match": {
             "body_byte_exact": true,
@@ -22482,7 +22482,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -22511,7 +22511,7 @@
           "canonical_source_sha256": "6991a73f98c49c52a037471f5c402ce577821902dc3d338eb6d9d70dd905f31d",
           "effective_end": 268466000,
           "end": 268466000,
-          "experiment_epoch": "bbd3b1b3957947eb0710775dad575343fd5bce15ce8004ebbeb78698c6adf067",
+          "experiment_epoch": "01fad352e707afa7e5460379b97ded9fce6ecfd37b4630adafe586648bcd45dc",
           "function": "grim_get_texture_handle",
           "match": {
             "body_byte_exact": true,
@@ -22970,7 +22970,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -22999,7 +22999,7 @@
           "canonical_source_sha256": "b7932c7169c22892ac2ce396f152a4ead3eaa92c4ea81945ddff97f84729ec78",
           "effective_end": 268466221,
           "end": 268466221,
-          "experiment_epoch": "a53eedf7340e4333516243efe34abc56b001522f8d06309bd2bfa82e07e28f2a",
+          "experiment_epoch": "8b81a907a69380d679f2d30d5e477ef6809c1372a606db7efd90ab67774b9242",
           "function": "grim_recreate_texture",
           "match": {
             "body_byte_exact": true,
@@ -23458,7 +23458,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -23487,7 +23487,7 @@
           "canonical_source_sha256": "96e1d3c07b1876c0774b62b08ff66c9955928034f6180b000e3e6fa19e67f6bf",
           "effective_end": 268466282,
           "end": 268466282,
-          "experiment_epoch": "4b196e5f96343c0520bc36df7b91423659c8a2d93581c69aaacc54b51a0c8eb1",
+          "experiment_epoch": "62e188b87c3eb9483765097787aaf6a39da453d0ac187b4864b9e18d3a226cbf",
           "function": "grim_bind_texture",
           "match": {
             "body_byte_exact": true,
@@ -23581,7 +23581,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -23600,7 +23600,7 @@
           "canonical_source_sha256": "c56cdbd0e93e1438bad5141bd40d37b1b03f4085269f08bcdbbc9fc4c83ec454",
           "effective_end": 268466397,
           "end": 268466397,
-          "experiment_epoch": "72f7d5d2a021b20d8bbedb50ef75b42f4cd5276457e54484df4ca215ac43cd7e",
+          "experiment_epoch": "f4e01e03f395ad32bb9d74dfcd545560649603116493c2f87a8661bd2fe70315",
           "function": "grim_draw_fullscreen_quad",
           "match": {
             "body_byte_exact": true,
@@ -24059,7 +24059,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -24083,7 +24083,7 @@
           "canonical_source_sha256": "e8123cb1d9553dbef1a80dc04db5fe5ad2ae50b499d1814c2c0f73f8d66500ec",
           "effective_end": 268466605,
           "end": 268466605,
-          "experiment_epoch": "d30a73d1b2d954c45d74c18cf355d51f26492e050bd3d9d6840c62a569f05c52",
+          "experiment_epoch": "8a4e2abf7f03f8b4890559cd7feb10923b5170952805e8179ff52d6ba6c1dc31",
           "function": "grim_draw_rect_filled",
           "match": {
             "body_byte_exact": true,
@@ -24542,7 +24542,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -24566,7 +24566,7 @@
           "canonical_source_sha256": "6f1bf0d57507d3fd890c05e8a45ba85c91493a2f039b9bed0ec40328a6cf0632",
           "effective_end": 268466867,
           "end": 268466867,
-          "experiment_epoch": "f4837ec61c8edb98576a2a197187ced934865ba8d3ec96284bfdf5728bc2b6c2",
+          "experiment_epoch": "4ab93dc409305b01d85757a669af895fa37cbd03a51d929d9b7ea4aa6d85d298",
           "function": "grim_draw_fullscreen_color",
           "match": {
             "body_byte_exact": true,
@@ -25025,7 +25025,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -25049,7 +25049,7 @@
           "canonical_source_sha256": "6fb93ddbb3e6e76347552009d90e3db9193131214fbf846d65e6c691b7ee1a77",
           "effective_end": 268466974,
           "end": 268466974,
-          "experiment_epoch": "8e990a5ebfc4ac81d5757db04dafdbf7c18e530dd91683ad5b7b7bd953b1bf2a",
+          "experiment_epoch": "7003d0c029f9b1a9d8d6477c01f72f96561ab7cc86989fbf71591313a5f83a60",
           "function": "grim_begin_batch",
           "match": {
             "body_byte_exact": true,
@@ -25508,7 +25508,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -25532,7 +25532,7 @@
           "canonical_source_sha256": "184fefc23c0978ed1186d6fd5bcb522600057dfea270e491e0a6cb3848e36ed5",
           "effective_end": 268467080,
           "end": 268467080,
-          "experiment_epoch": "0cdd9ca5ee24ace868c9b804a96cc1e2fc0f66dcbc8531a097c00ac86f3a24ce",
+          "experiment_epoch": "b79e6981d7d94bdb810650498c9c8260f7c173d33685650ec2878a9214d58740",
           "function": "grim_end_batch",
           "match": {
             "body_byte_exact": true,
@@ -25991,7 +25991,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -26015,7 +26015,7 @@
           "canonical_source_sha256": "ed194d953d858ac8aa975e521e4624a6f4a5d8f03b4974c8b80c6223fb4a85a2",
           "effective_end": 268467520,
           "end": 268467520,
-          "experiment_epoch": "a08e1219ae9ec878b87b67fcf6e0b9b7dccfcf9d447cbb6cd78ba9729ff07d22",
+          "experiment_epoch": "8f25d0bcc101d1bc431119ca038a72a8209f9f5fb9ba1983f94185f002923329",
           "function": "grim_draw_circle_filled",
           "match": {
             "body_byte_exact": true,
@@ -26474,7 +26474,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -26498,7 +26498,7 @@
           "canonical_source_sha256": "62b3140259885dab2a0e7ec5b63ef0ea5d0ddd14b72054519cebeb68067f9365",
           "effective_end": 268467982,
           "end": 268467982,
-          "experiment_epoch": "38dfbd88de8a29bb968779700e3cab9c479d1ccc49b0b920d1532a3d77a24935",
+          "experiment_epoch": "e945b95dcd6bb669fe4c26428e0eefd38e59248c8eaebe9a3eebb0eef6586226",
           "function": "grim_draw_circle_outline",
           "match": {
             "body_byte_exact": true,
@@ -26601,7 +26601,7 @@
           "canonical_source_sha256": "e79caf77b786ee9b70f7c7726d1a5aa01eb15dc71dbb47e4a984c21457b63131",
           "effective_end": 268467989,
           "end": 268467989,
-          "experiment_epoch": "7c7e154e43f31df063302e81f22263af64c7c46ac4304d8c4094ef4567432301",
+          "experiment_epoch": "aad73aaca9d373bc0726c859660f151cf617049d8224c6aa57e9480a979e229e",
           "function": "grim_crt_empty_initializer_slot_12_thunk",
           "match": {
             "body_byte_exact": true,
@@ -26704,7 +26704,7 @@
           "canonical_source_sha256": "68a4be1625b94b6c4a5823e3ebcdf64d41386c7eb5c408a7b26fd00f881fa38c",
           "effective_end": 268468001,
           "end": 268468001,
-          "experiment_epoch": "c0aeff9f75da18019096950dc005f54ae046cdf26f1b52dab3a724b8ae0998a7",
+          "experiment_epoch": "d4ce84a73b6d52554e27c01f5d73e8123ba2eeba1e77d8ac3312176504e5877c",
           "function": "grim_crt_empty_initializer_slot_12",
           "match": {
             "body_byte_exact": true,
@@ -26803,7 +26803,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -26822,7 +26822,7 @@
           "canonical_source_sha256": "0bb1a78e95706c7d290d2d123e4ae206e6883595f48baca1d4c599584866c2cd",
           "effective_end": 268468101,
           "end": 268468101,
-          "experiment_epoch": "8596c00038f886949dcb32ef9c65a0b9bf197fd4f2cc7defcdb546ef63ec3b86",
+          "experiment_epoch": "58214d8adaec7a44dcd37fa15cb197b6717eb94132b7498d0a89a825a2a0869a",
           "function": "grim_set_rotation",
           "match": {
             "body_byte_exact": true,
@@ -26916,7 +26916,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -26935,7 +26935,7 @@
           "canonical_source_sha256": "0fb01e6cb3a3f2282957c33d0174debc35b4f51c2134901debca8078ea465dce",
           "effective_end": 268468278,
           "end": 268468278,
-          "experiment_epoch": "d3722c2454f7e444adb1dd4bd1dc8d7f6156ac9e3fc29d91b2f21770960edd18",
+          "experiment_epoch": "f0ddceaf8adfb7dbb18897d14b51d8ccd7a118eac5a61cbec592609de8c7deaa",
           "function": "grim_set_color",
           "match": {
             "body_byte_exact": true,
@@ -27029,7 +27029,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -27048,7 +27048,7 @@
           "canonical_source_sha256": "68cb6535d34b227ed4734b7915004145df93d241c0d7b871d6f8aa18e82258d3",
           "effective_end": 268468392,
           "end": 268468392,
-          "experiment_epoch": "f01f01da7950ba54b203c5c886d218ee7ed106bda1017c1b5957d5a7192681df",
+          "experiment_epoch": "4e44cf21c5a8a0a3fb7d763c2b4157086be0ff898abe0f37d74c350153a24295",
           "function": "grim_set_color_ptr",
           "match": {
             "body_byte_exact": true,
@@ -27142,7 +27142,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -27161,7 +27161,7 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468534,
           "end": 268468534,
-          "experiment_epoch": "ffe66cd09c825b7c6ec2168532c253b2967a8efc4c04581b806e176103fdac39",
+          "experiment_epoch": "8f8ccd43538a804da48b14f3f640b3d742c4017461dc60c7f557e90b18d0ea26",
           "function": "grim_draw_line",
           "match": {
             "body_byte_exact": true,
@@ -27190,7 +27190,7 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468545,
           "end": 268468545,
-          "experiment_epoch": "5c03ef3ec041575e5a151d1bb1c083ea11da2efd6d35bb91fbbf6ad8b6032b76",
+          "experiment_epoch": "12acaf678d50e70fc7cab3a3d9e90b18351c9f88f86d5c1eef8d3ae6fd61079f",
           "function": "grim_line_vector_dtor",
           "match": {
             "body_byte_exact": true,
@@ -27219,7 +27219,7 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468659,
           "end": 268468659,
-          "experiment_epoch": "d7d5e461bc723c5dbf073c84b733c445145895b3d712ab828041c491d47a364e",
+          "experiment_epoch": "fcea631c4208d0cc8259732a9dfd59db1c842c55161953b897319e5d9b2fea72",
           "function": "grim_draw_line_quad",
           "match": {
             "body_byte_exact": true,
@@ -27315,7 +27315,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -27334,7 +27334,7 @@
           "canonical_source_sha256": "a87550532ec5d94dfad44f12c19e5d1c6882c565a72ee27524ae8797d2957db5",
           "effective_end": 268468781,
           "end": 268468781,
-          "experiment_epoch": "b6a94036fd9de2ce2ab92dea4bc7f188a9b2cae15aaa195fb3bcd1cdde41b93e",
+          "experiment_epoch": "ff34cec5c2ae9a68438d4b5771105a69d59466f98db74d2cb7c4e1995b312282",
           "function": "grim_set_color_slot",
           "match": {
             "body_byte_exact": true,
@@ -27428,7 +27428,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -27447,7 +27447,7 @@
           "canonical_source_sha256": "c47a7208cfcd734a632f28a0c5d4398767b57b56ca6b5fa4d373790d659e56df",
           "effective_end": 268468923,
           "end": 268468923,
-          "experiment_epoch": "b6ae77489bad169f0b95f36eccb22b5855e62ec6de805d5bb8dc2386e0c96475",
+          "experiment_epoch": "0019adf95591673307bbbbc44b321dcc06152e808a751f3be14f83773c3b73f9",
           "function": "grim_set_atlas_frame",
           "match": {
             "body_byte_exact": true,
@@ -27541,7 +27541,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -27560,7 +27560,7 @@
           "canonical_source_sha256": "6b3ca09170d02d625ac14dd90a9080236a122e21b0b05621952f734b5120df5e",
           "effective_end": 268469071,
           "end": 268469071,
-          "experiment_epoch": "83c61dcb898b6da8f56cfeefc06c5d579e4d51ca7166529bbb0f8b7491ca7a73",
+          "experiment_epoch": "4d05f6b3b4585b5021f20728cef4cd85c910fcc9cdec0ab6ea4084525fa2b8ad",
           "function": "grim_set_sub_rect",
           "match": {
             "body_byte_exact": true,
@@ -27654,7 +27654,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -27673,7 +27673,7 @@
           "canonical_source_sha256": "b6a83fc01e55de3aae97b406d85edbcdefc1077d6d19258c4239769de9573e60",
           "effective_end": 268469146,
           "end": 268469146,
-          "experiment_epoch": "b752d7abc874d37da6c2180f39dda3a04353963e68f05b5b390284d7e944bea2",
+          "experiment_epoch": "e4d02f879d0b874796382c6ee93b19e790d6ab1618dbd5e56a8e3241130d332e",
           "function": "grim_set_uv",
           "match": {
             "body_byte_exact": true,
@@ -27767,7 +27767,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -27786,7 +27786,7 @@
           "canonical_source_sha256": "a2949ab76656c2624aafd31ec6b944ce372759c1609463b37534857a7cab1830",
           "effective_end": 268469181,
           "end": 268469181,
-          "experiment_epoch": "bdd2d8851c7ac716a09ffe794b7729c941ca6059e1d348a7cedd664f9c0fcbad",
+          "experiment_epoch": "d5aeff340c61d30206159bf6a459c6ebe89ca9b9a3514a394bb35a3664356f87",
           "function": "grim_set_uv_point",
           "match": {
             "body_byte_exact": true,
@@ -28245,7 +28245,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -28269,7 +28269,7 @@
           "canonical_source_sha256": "de576f5600324bdbf81058ba41620d223cf991cdc447a3524cd3dad7e488b252",
           "effective_end": 268469291,
           "end": 268469291,
-          "experiment_epoch": "88cde97aa7a6402713bf739de6086bd228a0cb9c1c6aa904ad15b23f330c31a2",
+          "experiment_epoch": "3445be6eaf9d4778f3093484c72a891ad0cb471386229942e1afd2ff94e8cdc5",
           "function": "grim_flush_batch",
           "match": {
             "body_byte_exact": true,
@@ -28368,7 +28368,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -28387,7 +28387,7 @@
           "canonical_source_sha256": "8729c6797e3ba031aee4b9176e74d5c023b136ab048ae1be1b7c8ca0d203c81d",
           "effective_end": 268469464,
           "end": 268469464,
-          "experiment_epoch": "b00a43cd88244576a5380b866a2c5ad75f4aa8689433afe940fbb9730ab93748",
+          "experiment_epoch": "6b72b91987f40441e0e6bcea1889cc06b4c81ba02a6e5ceb77decb8be276456f",
           "function": "grim_submit_vertices_offset_color",
           "match": {
             "body_byte_exact": true,
@@ -28486,7 +28486,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -28505,7 +28505,7 @@
           "canonical_source_sha256": "180e4577be0a74706cf481b0f5eaf39bd880b6ba04e5cd1572bfbb3084bcd64f",
           "effective_end": 268469690,
           "end": 268469690,
-          "experiment_epoch": "bcf3a19418e1a88ee730e4e5d9a3a0fbcaa95da5f65f4622b1a2c939f325f040",
+          "experiment_epoch": "0cf0dcbf504e8bfc54a9b86e022511300bf32137746a88cb8c65d5f082fbab09",
           "function": "grim_submit_vertices_transform_color",
           "match": {
             "body_byte_exact": true,
@@ -28574,7 +28574,7 @@
         {
           "path": "decomp/1.9/grim/render/submit_vertices_transform.cpp",
           "repository_relative": true,
-          "sha256": "aa233d8197313f8fca32fd9be690d9b67e3ef7fb67fb8f4a62e31cd5c54b7f85"
+          "sha256": "3d0febb4d1420725d451df9ad68857e608c55214004b4c342b58516707decd86"
         },
         {
           "path": "tools/match/scratches/grim_submit_vertices_transform/scratch.conf",
@@ -28604,7 +28604,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -28620,10 +28620,10 @@
           "canonical_config_sha256": "fa27d89a3d7e55f13b55e89d31b729a2c508159db5844166321aede87a6fafd9",
           "canonical_scratch": "tools/match/scratches/grim_submit_vertices_transform",
           "canonical_source": "decomp/1.9/grim/render/submit_vertices_transform.cpp",
-          "canonical_source_sha256": "aa233d8197313f8fca32fd9be690d9b67e3ef7fb67fb8f4a62e31cd5c54b7f85",
+          "canonical_source_sha256": "3d0febb4d1420725d451df9ad68857e608c55214004b4c342b58516707decd86",
           "effective_end": 268469888,
           "end": 268469888,
-          "experiment_epoch": "db5efdb10e09df32458cfa75c57fae92620a8dd3b8ebb9b9d45466c7d85696ac",
+          "experiment_epoch": "cf5f46821c091e6b7827d6731a0c7876267fbe8298a5901a22429f756cd39fc4",
           "function": "grim_submit_vertices_transform",
           "match": {
             "body_byte_exact": true,
@@ -28664,7 +28664,7 @@
       "object_sha256": "f8a583d7e42a414c8b453448ecc1751794a2b7963e52b40fd9d8112801968b5f",
       "scratch": "tools/match/scratches/grim_submit_vertices_transform",
       "source": "decomp/1.9/grim/render/submit_vertices_transform.cpp",
-      "source_sha256": "aa233d8197313f8fca32fd9be690d9b67e3ef7fb67fb8f4a62e31cd5c54b7f85",
+      "source_sha256": "3d0febb4d1420725d451df9ad68857e608c55214004b4c342b58516707decd86",
       "target_size": 192,
       "translation_unit": {
         "kind": "isolated",
@@ -28722,7 +28722,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -28741,7 +28741,7 @@
           "canonical_source_sha256": "c58644a1f4e363b76be4eae8dd190772ff5cd7362b894d6bd1672d3b750d80fa",
           "effective_end": 268470041,
           "end": 268470041,
-          "experiment_epoch": "552e69742449c7a0b5a54b840d0bd32f02d5de6c9debefac533c3fb7cbc2d0b0",
+          "experiment_epoch": "cb2a505d175e9a823e7baa755cfc3bb1003fa3c7d6ea1e30ead16e75e88df7d6",
           "function": "grim_submit_vertices_offset",
           "match": {
             "body_byte_exact": true,
@@ -28835,7 +28835,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -28854,7 +28854,7 @@
           "canonical_source_sha256": "d2e187ce9ee1a139f66a54c9b61c21c58ba4092960c3bc29d8ff94b46c8ed35b",
           "effective_end": 268470082,
           "end": 268470082,
-          "experiment_epoch": "feff9a9ae496d17c1655fd0302dfb003981b0464374fe1ebb3f1c397e20eb5ae",
+          "experiment_epoch": "14b525c6d51781ddca38ece1a0dc6edcf5b9ba09f0e9bd545591fc1f259de7ca",
           "function": "grim_draw_quad_xy",
           "match": {
             "body_byte_exact": true,
@@ -28948,7 +28948,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -28967,7 +28967,7 @@
           "canonical_source_sha256": "e138b421cf52d0ead91e68686bd2604585ef2517e91ab6900939d229aed392ad",
           "effective_end": 268471049,
           "end": 268471049,
-          "experiment_epoch": "4d0a675d5f2ce03a000970dde5fa7e2d50f15c77c1c12b50ebec5bbe7ad6c922",
+          "experiment_epoch": "b330d8cabf7dbbec3d4b5c3a0ffc511cd1934693e33818e3ed64fec09fec7ac1",
           "function": "grim_draw_quad_rotated_matrix",
           "match": {
             "body_byte_exact": true,
@@ -29061,7 +29061,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -29080,7 +29080,7 @@
           "canonical_source_sha256": "7f08c577be2a873b156287049eb05bff9448073b18886a598a395fe77380506f",
           "effective_end": 268471856,
           "end": 268471856,
-          "experiment_epoch": "6afc1d1d36e409b83fc1689e747b7862218944679d19af2837da780b39b6c4a4",
+          "experiment_epoch": "5b22f029b395b77f862545a0a8a635d95d6996a64a03dfc6d2031e9cba2c7b85",
           "function": "grim_draw_quad",
           "match": {
             "body_byte_exact": true,
@@ -29179,7 +29179,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -29198,7 +29198,7 @@
           "canonical_source_sha256": "8ca2ffdd830911c3676a5cd349a3ed4974498be18a6cda4d5a9c5a40545f7b40",
           "effective_end": 268471972,
           "end": 268471972,
-          "experiment_epoch": "940ffc999f300f4ed340e8e172aee6f72200cd308b5dbcea2a7342f1c8dd2772",
+          "experiment_epoch": "d328ff92e41fa0c070b277b90b1274192c621d485f351e1833bf1bd23552591d",
           "function": "grim_submit_vertex_raw",
           "match": {
             "body_byte_exact": true,
@@ -29297,7 +29297,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -29316,7 +29316,7 @@
           "canonical_source_sha256": "8dd998c04044a904e0cf34b4cc5a9b20dbb80d9327a3288a48ac544c0b8ffc87",
           "effective_end": 268472075,
           "end": 268472075,
-          "experiment_epoch": "5cde0e7c9ce9f550e6eb08f4a8cc105f37a2f4e1493bc854c389b2f25469d0a8",
+          "experiment_epoch": "8b71fab8282881f9473be69afef30cf4a8dbf7ae6e9b54b7fb70d8194c3db9b0",
           "function": "grim_submit_quad_raw",
           "match": {
             "body_byte_exact": true,
@@ -29775,7 +29775,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -29799,7 +29799,7 @@
           "canonical_source_sha256": "6df340efc986b6dbd479b0af541cab2f42e0eb120b91c22f80e22851e970b1a2",
           "effective_end": 268472436,
           "end": 268472436,
-          "experiment_epoch": "a3f15d9c002db85f43d8611230581c299c0bc595e9fe03e5c32e0ac320452345",
+          "experiment_epoch": "9c347f398cc0b4e4fd9e8519fc3f9d0cbc01bf0f0eb43e21f5e5283c6e89919b",
           "function": "grim_draw_rect_outline",
           "match": {
             "body_byte_exact": true,
@@ -30258,7 +30258,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -30282,7 +30282,7 @@
           "canonical_source_sha256": "1dfcf7f402bbfa84831ec600c0789e55ea99a35429f40859de6f766e219e720a",
           "effective_end": 268473002,
           "end": 268473002,
-          "experiment_epoch": "91b3fce471d34a826aa26dc257afc86704fbdad39eeeae032e4ba89043134168",
+          "experiment_epoch": "621f89fd17172baab0ae1986cc2ff6e346385d9118948cc95823e31392166f17",
           "function": "grim_draw_quad_points",
           "match": {
             "body_byte_exact": true,
@@ -30311,7 +30311,7 @@
           "canonical_source_sha256": "1dfcf7f402bbfa84831ec600c0789e55ea99a35429f40859de6f766e219e720a",
           "effective_end": 268474042,
           "end": 268474042,
-          "experiment_epoch": "e79be841e394c069363b5bbd6e3cbeb95eeb2e3b2c03d93c84ac0b914c66abcb",
+          "experiment_epoch": "c07587b407c5a8d2df064602f6e651fa13ceb663e0d800e55462f85f12c98994",
           "function": "grim_draw_text_mono",
           "match": {
             "body_byte_exact": true,
@@ -30412,7 +30412,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -30431,7 +30431,7 @@
           "canonical_source_sha256": "928c9213f2b1685d33a138320069adc912cc048fab79196480db0cecdfe9078d",
           "effective_end": 268474146,
           "end": 268474146,
-          "experiment_epoch": "35483a8366f592b661d6253e7ef6bbc73e19663d1f0c7ba5fb6ffd3cf4b37a65",
+          "experiment_epoch": "4217e6493fd415cd77d6f3bc8e1796f7092476ae554701ac1079a5b7ce29e21f",
           "function": "grim_measure_text_width",
           "match": {
             "body_byte_exact": true,
@@ -30530,7 +30530,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         },
         {
           "path": "tools/match/include/grim_uv.h",
@@ -30554,7 +30554,7 @@
           "canonical_source_sha256": "2f739b62c88481cef81ff3fdbb892da698ef4c0f88a9b9a739bb70fcc1c1385f",
           "effective_end": 268474675,
           "end": 268474675,
-          "experiment_epoch": "d034840c68f419eee024dc2da05fec83a029ab3df563405421011f6cc31130e6",
+          "experiment_epoch": "9a0b4de084d8c43ad612741479bb663e98636c6848f59efed1a7c56b899b7da4",
           "function": "grim_draw_text_small",
           "match": {
             "body_byte_exact": true,
@@ -30660,7 +30660,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -30679,7 +30679,7 @@
           "canonical_source_sha256": "2f5d23f4aec08bda046ea04b770504cd290f78451becc63b7ce33349e7bc46f0",
           "effective_end": 268474740,
           "end": 268474740,
-          "experiment_epoch": "c2082e152de6903909c7053e8f668805d0eddb861a88bce38cff08319ffb8481",
+          "experiment_epoch": "8a72d2f4c949768970f9f60cba68dfa8c0b638b03b52ee84eac55106444dc315",
           "function": "grim_draw_text_mono_fmt",
           "match": {
             "body_byte_exact": true,
@@ -30785,7 +30785,7 @@
         {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
+          "sha256": "e38a9273039f7ba89afee933d8802d2fbe0d399e3cd61ec1ad85ca25169c8ea8"
         }
       ],
       "compiler": "msvc6.5",
@@ -30804,7 +30804,7 @@
           "canonical_source_sha256": "54a28a88a71cf404f2e96d2f3c9fc3bb9ec57bca8737454e812b79e958f2920a",
           "effective_end": 268474804,
           "end": 268474804,
-          "experiment_epoch": "14185a448bf745230c12513c09a02426fb973f02ca1425ae5910ab43ccbb26f0",
+          "experiment_epoch": "f567f6ad0f503a5a516ee3e0ae6e8435e5a5eb7651cbdff80278a28f01ddaefa",
           "function": "grim_draw_text_small_fmt",
           "match": {
             "body_byte_exact": true,
@@ -31277,7 +31277,7 @@
           "canonical_source_sha256": "e26f421e03450fb918a9394b1cd2660837e87bd5e8492ae3107821ce10715cfd",
           "effective_end": 268474911,
           "end": 268474911,
-          "experiment_epoch": "39f934638ad60a9bf60cd798fbdde85f76bf29650474de8ab70388728411fc67",
+          "experiment_epoch": "d06049cf2dea4378728459f74989b9162319fd58dffeb889b329ed6e907bde0b",
           "function": "GRIM__GetInterface",
           "match": {
             "body_byte_exact": true,
@@ -31735,7 +31735,7 @@
           "canonical_source_sha256": "000b4d58a2f35502028a5ed686a2f064b9ad08901e6966b29c3b6e21bc9ae298",
           "effective_end": 268474950,
           "end": 268474950,
-          "experiment_epoch": "f207426b847c78004736eb2c72be4bba55b58c804bfe98b32c41192083f3afe8",
+          "experiment_epoch": "b6d1cd48ad4090be65fc9f7893e7cf55e98bcded34ef7ea3b8a61f19ae9ebd92",
           "function": "DllMain",
           "match": {
             "body_byte_exact": true,
@@ -31842,7 +31842,7 @@
           "canonical_source_sha256": "5d91b8ed2ed0432aaa64a81db4b89d14b80f9d28a76ee83774a58f53b7bd3fcc",
           "effective_end": 268478483,
           "end": 268478483,
-          "experiment_epoch": "99e1740976f97c483fba38e93765fa9041c01e4bac8c117177c91c15565ad2d5",
+          "experiment_epoch": "32f0cd46b2ce7c8e7267679ee6281a460658da598993be84dd2b7a209b8909e3",
           "function": "grim_jaz_decode_scope_init",
           "match": {
             "body_byte_exact": true,
@@ -31871,7 +31871,7 @@
           "canonical_source_sha256": "5d91b8ed2ed0432aaa64a81db4b89d14b80f9d28a76ee83774a58f53b7bd3fcc",
           "effective_end": 268478517,
           "end": 268478517,
-          "experiment_epoch": "5663b12f3ee999008a74a9c0f959aa7be572ec21697f0922e37d7c44b66f620b",
+          "experiment_epoch": "944eba04005da299b496c77b0830924e4a0045da6d607a02f22d56f158c1a90e",
           "function": "grim_zlib_status_is_error",
           "match": {
             "body_byte_exact": true,
@@ -31900,7 +31900,7 @@
           "canonical_source_sha256": "5d91b8ed2ed0432aaa64a81db4b89d14b80f9d28a76ee83774a58f53b7bd3fcc",
           "effective_end": 268478588,
           "end": 268478588,
-          "experiment_epoch": "19f6dbd7ed7cec0ddb4381773be86a6790bc85f661640f736b266ac9c8889f8b",
+          "experiment_epoch": "834051982c441f37091eae402b7f2aaef308c3cd7f6d3cdc7cf2d1d1b7457728",
           "function": "grim_zlib_decompress_alloc",
           "match": {
             "body_byte_exact": true,
@@ -31929,7 +31929,7 @@
           "canonical_source_sha256": "5d91b8ed2ed0432aaa64a81db4b89d14b80f9d28a76ee83774a58f53b7bd3fcc",
           "effective_end": 268478658,
           "end": 268478658,
-          "experiment_epoch": "6cd31105a69c13b6571b3da73c1a7bc33b9b0e4ecbc6101905974c5322b5639c",
+          "experiment_epoch": "072deff8c9ceb39b065db7a0fc3b8e7eef13e8df12d75b16db6ca42f15b92646",
           "function": "grim_jaz_decompress_payload",
           "match": {
             "body_byte_exact": true,
@@ -31986,7 +31986,7 @@
       {
         "path": "crimson-re/src/crimson_re/match.py",
         "repository_relative": true,
-        "sha256": "1e84a58b0b42414b151bc8ca2439cc5ce5ea7d9a66f6c59b7b234a31cf7a8eed"
+        "sha256": "7301a89b79560bd5302e4d222a517fcd01425c8ee2bc411f4d1013edbbeaa5d0"
       },
       {
         "path": "crimson-re/src/crimson_re/match_process.py",
@@ -32001,7 +32001,7 @@
       {
         "path": "crimson-re/src/crimson_re/native_link.py",
         "repository_relative": true,
-        "sha256": "15d1749f95e256d6638a70d9f4d90b04b7e21e1c7d37b47c8ef1f2365ab0c77f"
+        "sha256": "01a0377f1ac24ffc0d26b346f01bdf268dc63f5905a2b7abfd3144e28fa6bf8c"
       },
       {
         "path": "analysis/ida/raw/grim.dll/functions.json",

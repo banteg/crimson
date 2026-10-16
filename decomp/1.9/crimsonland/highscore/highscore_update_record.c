@@ -1,27 +1,15 @@
-#include <stdio.h>
-#include <string.h>
+#include "crimsonland_highscore_record.h"
 
-#include "crimsonland_highscore.h"
-
-extern char default_player_name[];
-
-int crt_rand(void);
-char *highscore_read_record(char *buffer, FILE *fp);
-void highscore_write_record(highscore_record_t *record, FILE *fp);
+extern "C" char *highscore_read_record(char *buffer, FILE *fp);
 
 unsigned char highscore_update_record(
     char *path,
     highscore_record_t *record)
 {
-    highscore_record_t stored;
+    highscore_record_cpp_t stored;
     FILE *fp;
 
-    memset(&stored, 0, sizeof(stored));
-    strcpy(stored.player_name, default_player_name);
-    stored.flags = 0;
-    stored.sentinel_pipe = '|';
-    stored.sentinel_ff = 0xff;
-    stored.random_tag = crt_rand() & 0x0fee050f;
+    stored.reset_light();
 
     fp = fopen(path, "r+b");
     if (fp == 0) {

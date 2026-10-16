@@ -10,7 +10,12 @@ extern "C" bool input_primary_just_pressed(void)
     int i;
     bool flag;
 
+#if CL_BUILD == 10908
+    // 1.9.8 polls the primary input even while the console is open.
+    {
+#else
     if (!console_open_flag) {
+#endif
         if (!input_primary_latch) {
             flag = 1;
             if (grim_interface_ptr->grim_is_mouse_button_down(0)) {

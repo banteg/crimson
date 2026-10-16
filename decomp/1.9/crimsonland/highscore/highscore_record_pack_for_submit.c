@@ -2,7 +2,7 @@
 
 #include "crimsonland_highscore.h"
 
-highscore_record_t *highscore_record_pack_for_submit(
+highscore_pack_result_t highscore_record_pack_for_submit(
     highscore_record_t *src,
     highscore_record_t *dst)
 {
@@ -18,5 +18,7 @@ highscore_record_t *highscore_record_pack_for_submit(
     dst->shots_hit = src->shots_hit;
     dst->random_tag = src->random_tag;
     *(unsigned int *)dst->reserved0 = 0;
+#if CL_BUILD != 10908
     return dst;
+#endif
 }

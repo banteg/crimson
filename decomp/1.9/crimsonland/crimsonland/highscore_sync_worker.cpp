@@ -21,7 +21,17 @@ extern char s_empty_string;
 #define CRIMSONLAND_USE_ORIGINAL_CONFIG_OWNER
 #include "crimsonland_config_owner.h"
 
+#if CL_BUILD == 10908
+#include "grim2d_cpp.h"
+
+extern IGrim2D_cpp *grim_interface_ptr;
+
+// 1.9.8 asks Grim2D (vtable slot 0x08) whether the copy is registered, as
+// crimsonland_gameplay.h spells it; this unit cannot include that header.
+#define game_is_full_version() (grim_interface_ptr->grim_legacy_slot_08())
+#else
 extern "C" unsigned char game_is_full_version(void);
+#endif
 extern "C" int crt_rand(void);
 extern "C" void highscore_load_table_thunk(void);
 extern "C" void crt_endthread(void);
@@ -47,7 +57,11 @@ extern "C" void highscore_sync_worker(void *)
     DWORD bytes_read = 0;
     BOOL request_ok;
     BOOL read_ok;
+#if CL_BUILD == 10908
+    DWORD received = 0;
+#else
     DWORD received;
+#endif
     const char *accept_types[] = {
         "image/gif",
         "image/x-xbitmap",
@@ -71,7 +85,12 @@ extern "C" void highscore_sync_worker(void *)
 
     memset(data, 0, 0x8000);
     data[0] = 0x42;
+#if CL_BUILD == 10908
+    // 1.9.8 speaks an older revision of the score packet.
+    data[1] = 0x34;
+#else
     data[1] = 0x48;
+#endif
     data[2] = (char)0xf3;
     data[3] = (char)0x85;
     if (config_selected_saved_name_slot == 0) {
@@ -146,6 +165,34 @@ extern "C" void highscore_sync_worker(void *)
     {
         char server_address[64];
         memset(server_address, 0, sizeof(server_address));
+#if CL_BUILD == 10908
+        // 1.9.8 posts scores to the Reflexive Arcade server.
+        server_address[0] = 'c';
+        server_address[1] = 'r';
+        server_address[2] = 'i';
+        server_address[3] = 'm';
+        server_address[4] = 's';
+        server_address[5] = 'o';
+        server_address[6] = 'n';
+        server_address[7] = 'l';
+        server_address[8] = 'a';
+        server_address[9] = 'n';
+        server_address[10] = 'd';
+        server_address[11] = '.';
+        server_address[12] = 'r';
+        server_address[13] = 'e';
+        server_address[14] = 'f';
+        server_address[15] = 'l';
+        server_address[16] = 'e';
+        server_address[17] = 'x';
+        server_address[18] = 'i';
+        server_address[19] = 'v';
+        server_address[20] = 'e';
+        server_address[21] = '.';
+        server_address[22] = 'c';
+        server_address[23] = 'o';
+        server_address[24] = 'm';
+#else
         server_address[0] = 's';
         server_address[1] = 'c';
         server_address[2] = 'o';
@@ -168,6 +215,7 @@ extern "C" void highscore_sync_worker(void *)
         server_address[19] = 'c';
         server_address[20] = 'o';
         server_address[21] = 'm';
+#endif
         connection = InternetConnectA(
             internet,
             server_address,
@@ -182,6 +230,37 @@ extern "C" void highscore_sync_worker(void *)
     {
         char request_path[64];
         memset(request_path, 0, sizeof(request_path));
+#if CL_BUILD == 10908
+        request_path[0] = '/';
+        request_path[1] = 'c';
+        request_path[2] = 'r';
+        request_path[3] = 'i';
+        request_path[4] = 'm';
+        request_path[5] = 's';
+        request_path[6] = 'o';
+        request_path[7] = 'n';
+        request_path[8] = 'l';
+        request_path[9] = 'a';
+        request_path[10] = 'n';
+        request_path[11] = 'd';
+        request_path[12] = '/';
+        request_path[13] = 's';
+        request_path[14] = 'c';
+        request_path[15] = 'o';
+        request_path[16] = 'r';
+        request_path[17] = 'i';
+        request_path[18] = 'n';
+        request_path[19] = 'g';
+        request_path[20] = '_';
+        request_path[21] = 'v';
+        request_path[22] = '2';
+        request_path[23] = '_';
+        request_path[24] = '6';
+        request_path[25] = '.';
+        request_path[26] = 'p';
+        request_path[27] = 'h';
+        request_path[28] = 'p';
+#else
         request_path[0] = '/';
         request_path[1] = 's';
         request_path[2] = 'c';
@@ -199,6 +278,7 @@ extern "C" void highscore_sync_worker(void *)
         request_path[14] = 'p';
         request_path[15] = 'h';
         request_path[16] = 'p';
+#endif
         if (connection) {
             request = HttpOpenRequestA(
                 connection,
@@ -229,6 +309,22 @@ extern "C" void highscore_sync_worker(void *)
                 }
 
                 memset(data, 0, 0x8000);
+#if CL_BUILD == 10908
+                do {
+                    read_ok = InternetReadFile(
+                        request, data + received, 0x400, &bytes_read);
+                    received += bytes_read;
+                    if (!read_ok) {
+                        goto receive_failed;
+                    }
+                    if ((int)(received + 0x400) > 0x8000) {
+                        goto receive_overflow;
+                    }
+                } while (bytes_read != 0);
+                goto parse_data;
+
+            receive_failed:
+#else
                 read_ok = InternetReadFile(request, data, 0x400, &bytes_read);
                 received = bytes_read;
                 for (;;) {
@@ -244,6 +340,7 @@ extern "C" void highscore_sync_worker(void *)
                     read_ok = InternetReadFile(request, data + received, 0x400, &bytes_read);
                     received += bytes_read;
                 }
+#endif
 
                 {
                     console_printf(&console_log_queue,

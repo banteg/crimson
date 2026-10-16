@@ -135,7 +135,7 @@ extern "C" void creature_update_all(void)
                 creatures[creature_index].hit_flash_timer -= frame_dt;
             }
 
-            if (bonus_freeze_timer <= 0.0f) {
+            if (!(bonus_freeze_timer > 0.0f)) {
                 health = &creatures[creature_index].health;
                 if (creatures[creature_index].health <= 0.0f
                     && creatures[creature_index].death_timer == 16.0f) {
@@ -330,9 +330,17 @@ extern "C" void creature_update_all(void)
                                 creatures[creature_index].target_y =
                                     creature_pool[linked_index].pos_y
                                     + creatures[creature_index].target_offset.y;
+#if CL_BUILD == 10908
+                                // Same distance; C2 9044 accumulates x*x first
+                                // only through the vec2_distance helper.
+                                float target_distance = vec2_distance(
+                                    &creatures[creature_index].target_position,
+                                    position);
+#else
                                 float target_distance = creature_vec2_length(
                                     *(creature_vec2_t *)&creatures[creature_index].target_x
                                     - *(creature_vec2_t *)position);
+#endif
                                 if (target_distance <= 64.0f) {
                                     move_scale = target_distance * 0.015625f;
                                 }
@@ -380,7 +388,7 @@ extern "C" void creature_update_all(void)
                                 & CREATURE_FLAG_STOP_AND_GO;
                             if (flags == 0
                                 || creatures[creature_index].link_index <= 0) {
-                                if (creatures[creature_index].orbit_radius.radius <= 0.0f
+                                if (!(creatures[creature_index].orbit_radius.radius > 0.0f)
                                     || flags != 0) {
                                     creatures[creature_index].ai_mode =
                                         CREATURE_AI_FLANK_PLAYER;
@@ -471,12 +479,22 @@ extern "C" void creature_update_all(void)
                                         * 0.33333334f));
                                 double movement_heading =
                                     creatures[creature_index].heading - 1.5707964f;
+#if CL_BUILD == 10908
+                                // 1.9.8 multiplies the heading term left to right.
+                                creatures[creature_index].vel_x =
+                                    (float)cos(movement_heading) * creatures[creature_index].move_speed
+                                    * frame_dt * move_scale * 30.0f;
+                                creatures[creature_index].vel_y =
+                                    (float)sin(movement_heading) * creatures[creature_index].move_speed
+                                    * frame_dt * move_scale * 30.0f;
+#else
                                 creatures[creature_index].vel_x =
                                     30.0f * creatures[creature_index].move_speed
                                     * (move_scale * (frame_dt * (float)cos(movement_heading)));
                                 creatures[creature_index].vel_y =
                                     30.0f * creatures[creature_index].move_speed
                                     * (move_scale * (frame_dt * (float)sin(movement_heading)));
+#endif
                                 vec2_add_inplace(
                                     creature_index,
                                     position,
@@ -508,12 +526,22 @@ extern "C" void creature_update_all(void)
                                     * 0.33333334f));
                             double movement_heading =
                                 creatures[creature_index].heading - 1.5707964f;
+#if CL_BUILD == 10908
+                            // 1.9.8 multiplies the heading term left to right.
+                            creatures[creature_index].vel_x =
+                                (float)cos(movement_heading) * creatures[creature_index].move_speed
+                                * frame_dt * move_scale * 30.0f;
+                            creatures[creature_index].vel_y =
+                                (float)sin(movement_heading) * creatures[creature_index].move_speed
+                                * frame_dt * move_scale * 30.0f;
+#else
                             creatures[creature_index].vel_x =
                                 30.0f * creatures[creature_index].move_speed
                                 * (move_scale * (frame_dt * (float)cos(movement_heading)));
                             creatures[creature_index].vel_y =
                                 30.0f * creatures[creature_index].move_speed
                                 * (move_scale * (frame_dt * (float)sin(movement_heading)));
+#endif
                             vec2_add_inplace(
                                 creature_index,
                                 position,
@@ -575,6 +603,22 @@ extern "C" void creature_update_all(void)
                             && perk_count_get(perk_id_radioactive) != 0) {
                             creatures[creature_index].dot_tick_timer -=
                                 frame_dt * 1.5f;
+#if CL_BUILD == 10908
+                            // 1.9.8 burns creatures that are already dying and
+                            // has no lizard exemption.
+                            if (creatures[creature_index].dot_tick_timer < 0.0f) {
+                                creatures[creature_index].dot_tick_timer = 0.5f;
+                                creatures[creature_index].state_flag = 1;
+                                *health -= (100.0f - interaction_distance) * 0.3f;
+                                if (*health < 0.0f) {
+                                    player_state_table[0].experience = (int)(
+                                        (float)player_state_table[0].experience
+                                        + creatures[creature_index].reward_value);
+                                    *death_timer -= frame_dt;
+                                }
+                                fx_queue_add_random(position);
+                            }
+#else
                             if (creatures[creature_index].dot_tick_timer < 0.0f
                                 && *health > 0.0f) {
                                 creatures[creature_index].dot_tick_timer = 0.5f;
@@ -593,6 +637,7 @@ extern "C" void creature_update_all(void)
                                 }
                                 fx_queue_add_random(position);
                             }
+#endif
                         }
 
                         if (interaction_distance > 64.0f) {

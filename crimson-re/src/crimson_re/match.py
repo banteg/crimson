@@ -4248,6 +4248,9 @@ SCRATCH_CONFIG_KEYS = frozenset(
 )
 
 
+BUILD_REFERENCE_ALIASES_RE = re.compile(r"REFERENCE_ALIASES_(\d+)")
+
+
 @dataclass(frozen=True, slots=True)
 class ScratchConfig:
     directory: Path
@@ -4260,6 +4263,7 @@ class ScratchConfig:
     symbol: str | None
     note: str
     reference_aliases: tuple[tuple[str, str], ...] = ()
+    build_reference_aliases: tuple[tuple[int, tuple[tuple[str, str], ...]], ...] = ()
     recovery: str | None = None
     residuals: tuple[str, ...] = ()
     archive: str | None = None
@@ -4646,7 +4650,7 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
             raise ValueError(
                 f"{directory}/scratch.conf has invalid assignment {token!r}",
             )
-        if key not in SCRATCH_CONFIG_KEYS:
+        if key not in SCRATCH_CONFIG_KEYS and not BUILD_REFERENCE_ALIASES_RE.fullmatch(key):
             allowed = ", ".join(sorted(SCRATCH_CONFIG_KEYS))
             raise ValueError(
                 f"{directory}/scratch.conf has unknown field {key!r}; use {allowed}",
@@ -4656,16 +4660,24 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
     if "FUNCTION" not in values:
         raise ValueError(f"{directory}/scratch.conf must set FUNCTION")
 
-    reference_aliases: list[tuple[str, str]] = []
-    for mapping in values.get("REFERENCE_ALIASES", "").split(","):
-        if not mapping:
-            continue
-        object_symbol, separator, target_symbol = mapping.partition(":")
-        if not separator or not object_symbol or not target_symbol:
-            raise ValueError(
-                f"{directory}/scratch.conf has invalid REFERENCE_ALIASES entry {mapping!r}",
-            )
-        reference_aliases.append((object_symbol, target_symbol))
+    def parse_aliases(key: str) -> tuple[tuple[str, str], ...]:
+        aliases: list[tuple[str, str]] = []
+        for mapping in values.get(key, "").split(","):
+            if not mapping:
+                continue
+            object_symbol, separator, target_symbol = mapping.partition(":")
+            if not separator or not object_symbol or not target_symbol:
+                raise ValueError(f"{directory}/scratch.conf has invalid {key} entry {mapping!r}")
+            aliases.append((object_symbol, target_symbol))
+        return tuple(aliases)
+
+    reference_aliases = parse_aliases("REFERENCE_ALIASES")
+    # Compiler-local names that only one build's code has, aliased to that build's identities.
+    build_reference_aliases = tuple(
+        (int(match[1]), parse_aliases(key))
+        for key in sorted(values)
+        if (match := BUILD_REFERENCE_ALIASES_RE.fullmatch(key))
+    )
 
     recovery = values.get("RECOVERY")
     if recovery is not None and recovery not in RECOVERY_VALUES:
@@ -4822,7 +4834,8 @@ def load_scratch_config(directory: Path) -> ScratchConfig:
         end_va=int(values["END"], 0) if "END" in values else None,
         symbol=values.get("SYMBOL"),
         note=values.get("NOTE", ""),
-        reference_aliases=tuple(reference_aliases),
+        reference_aliases=reference_aliases,
+        build_reference_aliases=build_reference_aliases,
         recovery=recovery,
         residuals=residuals,
         archive=archive,

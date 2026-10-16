@@ -30,7 +30,13 @@ unsigned char highscore_record_is_valid(highscore_record_t *record);
 int highscore_iso_week(int year, int month, int day);
 char *highscore_format_date_label(int day, int month_index, int year);
 unsigned char highscore_submit_full_version_guard(highscore_record_t *record);
-highscore_record_t *highscore_record_pack_for_submit(
+#if CL_BUILD == 10908
+/* 1.9.8's packer returns nothing: eax ends holding src->random_tag. */
+typedef void highscore_pack_result_t;
+#else
+typedef highscore_record_t *highscore_pack_result_t;
+#endif
+highscore_pack_result_t highscore_record_pack_for_submit(
     highscore_record_t *src,
     highscore_record_t *dst);
 char highscore_record_equals(

@@ -806,18 +806,18 @@
     "size": 2969
   },
   {
-    "address": "0x0040C2D0",
+    "address": "0x0040C2E0",
     "canonical_address": "0x0040C1A0",
-    "end": "0x0040C2D1",
-    "evidence": "exact",
+    "end": "0x0040C2E1",
+    "evidence": "recovered",
     "name": "demo_purchase_purchase_button_destroy",
     "size": 1
   },
   {
-    "address": "0x0040C2E0",
+    "address": "0x0040C2F0",
     "canonical_address": "0x0040C1B0",
-    "end": "0x0040C2E1",
-    "evidence": "exact",
+    "end": "0x0040C2F1",
+    "evidence": "recovered",
     "name": "demo_purchase_maybe_later_button_destroy",
     "size": 1
   },
@@ -3866,17 +3866,6 @@
     "evidence": "exact",
     "name": "highscore_iso_week",
     "size": 262
-  },
-  {
-    "address": "0x0043A0D0",
-    "canonical_address": "0x0041DF40",
-    "end": "0x0043A209",
-    "evidence": "referenced",
-    "name": "game_is_full_version",
-    "size": 313,
-    "aliases": [
-      "highscore_record_is_valid"
-    ]
   },
   {
     "address": "0x0043A210",

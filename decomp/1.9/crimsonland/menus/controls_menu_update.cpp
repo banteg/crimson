@@ -22,7 +22,22 @@ struct controls_vec2_t {
         return controls_vec2_t(x + other.x, other.y + y);
     }
 
+#if CL_BUILD == 10908
+    // 1.9.8 defines the helper in this unit, so every call is inlined and
+    // no out-of-line copy exists in the image.
+    float *vec2_add_out(float *dst, float *rhs)
+    {
+        controls_vec2_t *dst_vec = (controls_vec2_t *)dst;
+        const controls_vec2_t *rhs_vec = (const controls_vec2_t *)rhs;
+        float x = rhs_vec->x + this->x;
+        float y = rhs_vec->y + this->y;
+        dst_vec->x = x;
+        dst_vec->y = y;
+        return dst;
+    }
+#else
     float *vec2_add_out(float *dst, float *rhs);
+#endif
 };
 
 struct controls_color_t {
@@ -83,6 +98,9 @@ int crt_atexit(void (*function)(void));
 void crt_free(void *ptr);
 char *strdup_malloc(char *text);
 
+#if CL_BUILD == 10908
+char *input_key_name(int key_code);
+#endif
 char *input_configure_for_label(int config_id);
 char *input_scheme_label(int scheme);
 unsigned char input_any_key_pressed(void);
@@ -504,8 +522,14 @@ extern "C" void controls_menu_update(void)
         if (controls_rebind_items[14].label) {
             crt_free(controls_rebind_items[14].label);
         }
+#if CL_BUILD == 10908
+        // 1.9.8 names the reload key through the out-of-line helper.
+        controls_rebind_items[14].label =
+            strdup_malloc(input_key_name(config_key_reload));
+#else
         controls_rebind_items[14].label =
             strdup_malloc(controls_key_name(config_key_reload));
+#endif
     }
 
     if (controls_rebind_slot_index != -1) {
@@ -639,6 +663,9 @@ extern "C" void controls_menu_update(void)
                         }
                         ++key;
                     } while (key < 0x17f);
+#if CL_BUILD != 10908
+                    // 1.9.8 binds keys only; an analog axis cannot be
+                    // assigned to a key row.
                     int axis = input_detect_active_analog_axis();
                     if (axis) {
                         config_p1_move_forward[
@@ -647,6 +674,7 @@ extern "C" void controls_menu_update(void)
                         controls_rebind_slot_index = -1;
                         controls_rebind_capture_armed = 0;
                     }
+#endif
                 } else {
                     do {
                         if (grim_interface_ptr->grim_is_key_active(key)) {
@@ -661,6 +689,7 @@ extern "C" void controls_menu_update(void)
                         }
                         ++key;
                     } while (key < 0x17f);
+#if CL_BUILD != 10908
                     int axis = input_detect_active_analog_axis();
                     if (axis) {
                         if (controls_rebind_slot_index == 13) {
@@ -669,6 +698,7 @@ extern "C" void controls_menu_update(void)
                             config_key_reload = axis;
                         }
                     }
+#endif
                 }
             }
         } else {
@@ -691,11 +721,19 @@ extern "C" void controls_menu_update(void)
                 update_axis_peak(controls_rebind_axis_peak_abs_153, 0x153);
                 update_axis_peak(controls_rebind_axis_peak_abs_154, 0x154);
                 update_axis_peak(controls_rebind_axis_peak_abs_155, 0x155);
+#if CL_BUILD == 10908
+                // Code generation only (see NOTES.md): 1.9.8 walks the
+                // peaks by index; 1.9.93 keeps the pointer cursor.
+                float *peaks = &controls_rebind_axis_peak_abs_13f;
+                for (int axis_index = 0; axis_index < 7; ++axis_index) {
+                    if (peaks[axis_index] > 0.5f) {
+#else
                 int axis_index = 0;
                 float *peaks = &controls_rebind_axis_peak_abs_13f;
                 while (
                     (int)peaks < (int)(&controls_rebind_axis_peak_abs_13f + 7)) {
                     if (*peaks > 0.5f) {
+#endif
                         int binding =
                             controls_rebind_player_index * 16
                             + controls_rebind_slot_index;
@@ -725,8 +763,10 @@ extern "C" void controls_menu_update(void)
                         controls_rebind_capture_armed = 0;
                         break;
                     }
+#if CL_BUILD != 10908
                     ++peaks;
                     ++axis_index;
+#endif
                 }
             }
         }

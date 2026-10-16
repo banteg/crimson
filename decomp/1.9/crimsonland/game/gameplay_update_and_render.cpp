@@ -56,25 +56,41 @@ void demo_trial_overlay_render(float *xy, float alpha);
 void ui_render_keybind_help(float *xy, float alpha);
 }
 
+#define CRIMSONLAND_USE_ORIGINAL_GAME_OWNER
+#include "crimsonland_game_state_owner.h"
+
 static __inline bool demo_trial_limit_reached(void)
 {
+#if CL_BUILD != 10908
     play_time_ms = play_time_get();
     if ((int)play_time_ms > 2400000) {
         return true;
     }
+#endif
 
     if (demo_trial_elapsed_ms > 0) {
         if (config_blob.game_mode != GAME_MODE_QUEST) {
             return true;
         }
-        if ((float)(demo_trial_elapsed_ms / 1000) * 0.016666668f
-            <= 5.0f) {
+        if (!((float)(demo_trial_elapsed_ms / 1000) * 0.016666668f
+              > 5.0f)) {
             goto check_quest_progress;
         }
         return true;
-    } else if (config_blob.game_mode != GAME_MODE_QUEST) {
+    }
+#if CL_BUILD == 10908
+    // 1.9.8 allows a 60-minute trial and has no time-limit helper.
+    if ((float)((int)play_time_ms / 1000) * 0.016666668f > 60.0f) {
+        return true;
+    }
+    if (config_blob.game_mode != GAME_MODE_QUEST) {
         return false;
     }
+#else
+    else if (config_blob.game_mode != GAME_MODE_QUEST) {
+        return false;
+    }
+#endif
 
 check_quest_progress:
     return game_state_id == GAME_STATE_GAMEPLAY
@@ -205,9 +221,16 @@ extern "C" void gameplay_update_and_render(void)
     }
 
     if (config_blob.game_mode != GAME_MODE_RUSH) {
+#if CL_BUILD == 10908
+        // 1.9.8 raises the level in double precision.
+        int level_threshold = 1000
+            - (int)((float)pow((double)player_state_table[0].level, 1.8f)
+                    * -1000.0f);
+#else
         int level_threshold = 1000
             - (int)((float)pow((float)player_state_table[0].level, 1.8f)
                     * -1000.0f);
+#endif
         if (player_state_table[0].experience > level_threshold) {
             ++perk_pending_count;
             if (++config_blob.level_up_count > 50) {
@@ -220,10 +243,11 @@ extern "C" void gameplay_update_and_render(void)
     }
 
     if (!console_open_flag && !game_paused_flag) {
-        int pulse_delta = perk_prompt_hover_active
-            ? frame_dt_ms * 3
-            : -frame_dt_ms;
-        perk_prompt_pulse += pulse_delta * 2;
+        if (perk_prompt_hover_active) {
+            perk_prompt_pulse += frame_dt_ms * 3 * 2;
+        } else {
+            perk_prompt_pulse += -frame_dt_ms * 2;
+        }
         clamp_milliseconds(&perk_prompt_pulse);
     }
 

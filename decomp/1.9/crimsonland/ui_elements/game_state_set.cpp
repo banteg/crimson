@@ -186,25 +186,17 @@ extern "C" void game_state_set(game_state_id_t state_id)
                 ++game_status_blob.quest_play_counts[
                     quest_stage_major * 10 + quest_stage_minor];
                 quest_start_selected(quest_stage_major, quest_stage_minor);
-                run_active = 1;
-                gameplay_transition_latch = 1;
             } else if (config_game_mode == GAME_MODE_RUSH) {
                 ++game_status_blob.mode_play_rush;
-                run_active = 1;
-                gameplay_transition_latch = 1;
             } else if (config_game_mode == GAME_MODE_SURVIVAL) {
                 ++game_status_blob.mode_play_survival;
-                run_active = 1;
-                gameplay_transition_latch = 1;
             } else if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
                 ++game_status_blob.mode_play_typo;
-                run_active = 1;
-                gameplay_transition_latch = 1;
             } else {
                 ++game_status_blob.mode_play_other;
-                run_active = 1;
-                gameplay_transition_latch = 1;
             }
+            run_active = 1;
+            gameplay_transition_latch = 1;
         }
     } else if (state_id == GAME_STATE_TYPO_GAMEPLAY) {
         config_blob.player_count = 1;

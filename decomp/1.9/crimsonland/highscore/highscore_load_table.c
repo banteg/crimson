@@ -1,11 +1,9 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <windows.h>
 
-#include "crimsonland_highscore.h"
+#include "crimsonland_highscore_record.h"
 
-extern char default_player_name[];
+extern "C" {
 extern SYSTEMTIME local_system_time;
 extern unsigned char config_show_online_scores;
 extern unsigned char config_highscore_date_mode;
@@ -13,7 +11,6 @@ extern unsigned char config_highscore_duplicate_mode;
 extern unsigned char config_hardcore;
 extern int config_selected_saved_name_slot;
 
-int crt_rand(void);
 char *highscore_build_path(void);
 char *highscore_read_record(char *buffer, FILE *fp);
 highscore_record_t *highscore_find_name_entry(
@@ -24,6 +21,7 @@ int highscore_compare_elapsed_desc(const void *left, const void *right);
 int highscore_compare_elapsed_asc_nonzero_first(
     const void *left,
     const void *right);
+}
 
 static __inline void highscore_record_reset_light(highscore_record_t *record)
 {
@@ -35,16 +33,37 @@ static __inline void highscore_record_reset_light(highscore_record_t *record)
     record->random_tag = crt_rand() & 0x0fee050f;
 }
 
+#if CL_BUILD == 10908
+/*
+ * Translation-unit context for 1.9.8. Its C2 (9044) reuses what it learned
+ * compiling earlier functions of the same unit: highscore_find_name_entry
+ * precedes this function there (see highscore_find_name_entry.c).
+ * 1.9.93's C2 (8966) ignores this, so the canonical object keeps one function
+ * per file.
+ */
+highscore_record_t *highscore_find_name_entry(const char *player_name, int count)
+{
+    int index;
+
+    for (index = 0; index < count; ++index) {
+        if (strcmp(player_name, highscore_table[index].player_name) == 0) {
+            return &highscore_table[index];
+        }
+    }
+    return 0;
+}
+#endif
+
 void highscore_load_table(void)
 {
-    highscore_record_t stored;
+    highscore_record_cpp_t stored;
     char *path;
     FILE *fp;
     int count;
     int current_date_week;
     int index;
 
-    highscore_record_reset_light(&stored);
+    stored.reset_light();
 
     path = highscore_build_path();
     highscore_table_count = 0;
@@ -65,17 +84,15 @@ void highscore_load_table(void)
 
     while (!feof(fp)) {
         highscore_record_t *replace;
-        game_mode_id_t mode;
 
         if (highscore_read_record((char *)&stored, fp) == 0) {
             continue;
         }
 
-        mode = config_game_mode;
-        if ((int)stored.game_mode_id != (int)mode) {
+        if ((int)stored.game_mode_id != (int)config_game_mode) {
             continue;
         }
-        if (mode == GAME_MODE_QUEST) {
+        if (config_game_mode == GAME_MODE_QUEST) {
             if (config_hardcore != 0) {
                 if (stored.hardcore_marker != 0x75) {
                     continue;
@@ -115,12 +132,11 @@ void highscore_load_table(void)
                 *replace = stored;
                 continue;
             }
-            mode = config_game_mode;
         }
 
         if (count == 99) {
             replace = &highscore_table[0];
-            if (mode == GAME_MODE_RUSH) {
+            if (config_game_mode == GAME_MODE_RUSH) {
                 for (index = 1; index < 100; index++) {
                     if ((int)highscore_table[index].run_elapsed_ms <
                         (int)replace->run_elapsed_ms) {
@@ -130,7 +146,7 @@ void highscore_load_table(void)
                 *replace = stored;
                 continue;
             }
-            if (mode == GAME_MODE_QUEST) {
+            if (config_game_mode == GAME_MODE_QUEST) {
                 for (index = 1; index < 100; index++) {
                     if ((int)highscore_table[index].run_elapsed_ms >
                         (int)replace->run_elapsed_ms) {

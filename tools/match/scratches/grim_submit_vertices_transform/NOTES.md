@@ -25,3 +25,22 @@ normalized instructions, full prefix, and masked references `9/0/0`.
   high-coverage native path rather than an unused wrapper.
 
 No inline assembly, dummy references, or layout-only branches are used.
+
+## 1.9.8 code-generation guard
+
+1.9.8 loads the second rotation product as `fld [matrix+8]; fmul [point]`
+and the x translation as `fld [point]; fadd [offset]`, the reverse of
+1.9.93. Unlike the color submitter, 8966 and 9044 compile every tried
+spelling of this function to the same code, so no shared spelling can give
+both images: the x87 operand order follows the inline-copy ids alone. With
+`grim_rotate_point(matrix, point)` and a translate helper that adds the
+offsets directly, both compilers are exact on 1.9.8.
+
+Shared spellings searched without success: translate written directly,
+with only an x or y local, with both locals first, as `a = a + b` either
+way round, or with swapped helper parameters; rotation with a y temporary,
+a renamed or predeclared x, operands swapped in the source, point or matrix
+aliased through a local, or reordered stores; `i` declared before the loop
+or outside the guard; a named vertex local, a byte-count local or a
+`count16` pointer; and one helper doing both rotation and translation, in
+all six parameter orders. Any extra used local moves other operand pairs.

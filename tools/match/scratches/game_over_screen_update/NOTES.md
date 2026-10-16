@@ -59,3 +59,11 @@ spec SHA-256 is
 `76a16f9d972be8d6ce684316670cb98df682916a901b120ce589c63d204121fb`;
 the experiment ledger SHA-256 is
 `d37bc5a138ecd2be020b420faac0f6ef24934d70a46bcdc1451d9493a53cb392`.
+
+## 1.9.8 (msvc6.5pp)
+
+76.7% under `--build 1.9.8`. Copying the record name before setting the editor
+limits is canonical-neutral and matches the 1.9.8 store order. Residual: 9044
+keeps the name-buffer address in EBP and the banner copy on the stack, where
+native keeps the banner in ESI/EDI. Reusing `panel_xy` as the banner copy gives
+native's 0x10 frame but not the registers, and loses 8.5% canonically.

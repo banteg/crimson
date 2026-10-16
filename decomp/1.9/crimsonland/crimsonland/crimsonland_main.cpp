@@ -43,6 +43,9 @@ extern char *developer_hint_haxxor;
 unsigned int crt_time(void *timer);
 void crt_srand(unsigned int seed);
 char *crt_getcwd(char *buffer, int size);
+#if CL_BUILD == 10908
+char *crt_strstr(const char *haystack, const char *needle);
+#endif
 
 HRESULT dx_get_version(
     int *version,
@@ -93,7 +96,9 @@ extern "C" int WINAPI crimsonland_main(
     (void)command_line;
     (void)show_command;
 
+#if CL_BUILD != 10908
     crt_srand(crt_time(0));
+#endif
 
     directx_version = 0;
     HRESULT directx_status = dx_get_version(
@@ -140,7 +145,21 @@ extern "C" int WINAPI crimsonland_main(
     }
 
     crt_getcwd(game_base_path, 0x103);
+#if CL_BUILD == 10908
+    // 1.9.8 refuses to start unless launched as crimsonland.exe.
+    char *command_line_text = GetCommandLineA();
+    if (crt_strstr(command_line_text, "crimsonland.exe") == 0) {
+        MessageBoxA(
+            0,
+            "Crimsonland files maybe corrupted.\n"
+            "Please get a new copy from www.crimsonland.com.",
+            "Error.",
+            MB_ICONERROR);
+        return 0;
+    }
+#else
     GetCommandLineA();
+#endif
     startup_integrity_cookie = 0x7b;
 
     IUnknown *direct3d = Direct3DCreate8(0xdc);
@@ -214,6 +233,7 @@ extern "C" int WINAPI crimsonland_main(
     registry_key_status_root_path[17] = 'u';
     registry_key_status_root_path[18] = 'g';
     registry_key_status_root_path[19] = 'i';
+#if CL_BUILD != 10908
     registry_key_status_root_path[20] = 'n';
     registry_key_status_root_path[21] = 's';
     registry_key_status_root_path[22] = '\\';
@@ -225,6 +245,7 @@ extern "C" int WINAPI crimsonland_main(
     registry_key_status_root_path[28] = 'l';
     registry_key_status_root_path[29] = 't';
     registry_key_status_root_path[30] = '\\';
+#endif
 
     if (grim_interface_ptr == 0) {
         console_printf(
@@ -237,9 +258,11 @@ extern "C" int WINAPI crimsonland_main(
         console_printf(&console_log_queue, developer_hint_reijo);
         console_printf(
             &console_log_queue, developer_hint_secret_weapons);
+#if CL_BUILD != 10908
         console_printf(
             &console_log_queue,
             developer_hint_redistribution_build);
+#endif
         console_printf(&console_log_queue, developer_hint_warning);
         console_printf(
             &console_log_queue, developer_hint_alien_zookeeper);
@@ -250,6 +273,21 @@ extern "C" int WINAPI crimsonland_main(
         console_printf(&console_log_queue, developer_hint_haxxor);
         console_printf(&console_log_queue, developer_hint_muzzy);
     }
+#if CL_BUILD == 10908
+    // 1.9.8 finishes the registry path after the developer hints
+    // (code generation only; see NOTES.md).
+    registry_key_status_root_path[20] = 'n';
+    registry_key_status_root_path[21] = 's';
+    registry_key_status_root_path[22] = '\\';
+    registry_key_status_root_path[23] = 'D';
+    registry_key_status_root_path[24] = 'e';
+    registry_key_status_root_path[25] = 'f';
+    registry_key_status_root_path[26] = 'a';
+    registry_key_status_root_path[27] = 'u';
+    registry_key_status_root_path[28] = 'l';
+    registry_key_status_root_path[29] = 't';
+    registry_key_status_root_path[30] = '\\';
+#endif
     if (grim_interface_ptr == 0) {
         MessageBoxA(
             0,

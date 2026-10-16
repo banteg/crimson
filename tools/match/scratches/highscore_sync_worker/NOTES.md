@@ -321,3 +321,11 @@ three addresses to ECX, EDX, and EAX, matching native. The trace preserves the
 entire compiled object except its timestamp. This observation is specific to
 the statistics worker; highscore exactness is independently established by
 its complete instruction, reference, and encoded-body comparisons.
+
+## 1.9.8 (msvc6.5pp)
+
+91.4% under `--build 1.9.8`, 525/528 instructions. Behaviour guards: Grim slot
+0x08 for full-version checks, packet byte 1 = 0x34, the Reflexive Arcade host
+and `/crimsonland/scoring_v2_6.php`, and the do/while read loop. Residual: native
+copies `default_player_name` into the received record with a dest-minus-source
+cursor; every spelling tried keeps scaled indexing.

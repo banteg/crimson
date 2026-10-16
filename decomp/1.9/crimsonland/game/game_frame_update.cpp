@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 #include <windows.h>
 
 #include "crimsonland_audio.h"
@@ -64,7 +65,22 @@ extern char *update_notice_url;
 extern int perk_id_reflex_boosted;
 extern int music_track_intro_id;
 
+#if CL_BUILD == 10908
+extern unsigned char seasonal_balloon_load_active;
+extern unsigned char seasonal_balloons_dismissed;
+extern int seasonal_balloon_texture;
+extern float seasonal_balloon_y[32];
+extern signed char seasonal_balloon_color[32];
+extern float seasonal_banner_pulse;
+extern unsigned char holiday_greeting_dismissed;
+extern unsigned char holiday_snow_needs_init;
+extern float holiday_snow_y[640];
+extern int shareware_play_ms;
+#endif
+
+#if CL_BUILD != 10908
 unsigned char game_is_full_version(...);
+#endif
 int play_time_get(void);
 int demo_trial_time_limit_ms(void);
 void terrain_generate(quest_meta_t *quest);
@@ -91,6 +107,12 @@ FILE *crt_fopen(char *path, char *mode);
 int crt_fclose(FILE *fp);
 int crt_rand(void);
 }
+
+#if CL_BUILD == 10908
+// 1.9.8 asks Grim2D (vtable slot 0x08) whether the copy is registered, as
+// crimsonland_gameplay.h spells it; this unit cannot include that header.
+#define game_is_full_version() (grim_interface_ptr->grim_legacy_slot_08())
+#endif
 
 struct frame_cursor_state_t {
     float mouse_x;
@@ -157,7 +179,9 @@ extern "C" unsigned char game_frame_update(void)
         if ((int)play_time_ms < 0) {
             play_time_ms = 1200000;
         }
+#if CL_BUILD != 10908
         play_time_ms = play_time_get();
+#endif
         config_blob.hardcore = 0;
     }
 
@@ -246,7 +270,9 @@ extern "C" unsigned char game_frame_update(void)
     }
 
     if (!demo_mode_active && !demo_trial_overlay_active) {
+#if CL_BUILD != 10908
         play_time_ms = play_time_get();
+#endif
         game_state_id_t current_state = game_state_id;
         if (!console_log_queue.open && run_active
             && current_state == GAME_STATE_GAMEPLAY) {
@@ -296,6 +322,17 @@ extern "C" unsigned char game_frame_update(void)
         ui_analog_cursor_active = 0;
     }
 
+#if CL_BUILD == 10908
+    // 1.9.8 steers the menu cursor from one fixed analog axis pair.
+    frame_vec2_t cursor_delta(
+        grim_interface_ptr->grim_get_config_float(0x141),
+        grim_interface_ptr->grim_get_config_float(0x155));
+    if ((float)sqrt(
+            cursor_delta.x * cursor_delta.x
+            + cursor_delta.y * cursor_delta.y) > 0.2f) {
+        ui_analog_cursor_active = 1;
+    }
+#else
     frame_vec2_t analog_input;
     frame_vec2_t cursor_delta(0.0f, 0.0f);
     analog_input.x = grim_interface_ptr->grim_get_config_float(
@@ -323,6 +360,7 @@ extern "C" unsigned char game_frame_update(void)
             + cursor_delta.y * cursor_delta.y) > 0.2f) {
         ui_analog_cursor_active = 1;
     }
+#endif
 
     if (game_state_id == GAME_STATE_GAMEPLAY) {
         ui_analog_cursor_active = 0;
@@ -454,11 +492,174 @@ extern "C" unsigned char game_frame_update(void)
             "Orbes Volantes Exstare");
     }
 
+#if CL_BUILD == 10908
+    // 1.9.8 floats birthday balloons on the dates that preload balloon.tga
+    // and snows on the menus from Christmas Eve to New Year.
+    if (!run_active && !seasonal_balloons_dismissed
+        && seasonal_balloon_load_active) {
+        int i;
+        if (seasonal_balloon_texture == -1) {
+            for (i = 0; i < 32; i++) {
+                seasonal_balloon_y[i] = (float)(
+                    crt_rand() % config_blob.screen_height
+                    + config_blob.screen_height);
+                seasonal_balloon_color[i] = crt_rand() % 4;
+            }
+            seasonal_balloon_texture =
+                grim_interface_ptr->grim_get_texture_handle("balloon");
+        }
+        grim_interface_ptr->grim_bind_texture(seasonal_balloon_texture, 0);
+        grim_interface_ptr->grim_set_uv(0.0f, 0.0f, 1.0f, 1.0f);
+        grim_interface_ptr->grim_begin_batch();
+        for (i = 0; i < 16; i++) {
+            switch (seasonal_balloon_color[i]) {
+            case 0:
+                grim_interface_ptr->grim_set_color(1.0f, 0.2f, 0.2f, 0.7f);
+                break;
+            case 1:
+                grim_interface_ptr->grim_set_color(0.2f, 1.0f, 0.2f, 0.5f);
+                break;
+            case 2:
+                grim_interface_ptr->grim_set_color(0.2f, 0.2f, 1.0f, 0.8f);
+                break;
+            case 3:
+                grim_interface_ptr->grim_set_color(0.7f, 0.2f, 1.0f, 0.6f);
+                break;
+            default:
+                grim_interface_ptr->grim_set_color(1.0f, 0.2f, 0.2f, 0.7f);
+                break;
+            }
+            grim_interface_ptr->grim_set_rotation(
+                (float)sin((float)(unsigned int)game_time_ms * 0.003f
+                    + (float)i) * 0.4f
+                - 0.7853982f);
+            seasonal_balloon_y[i] -= frame_dt * 60.0f;
+            if (seasonal_balloon_y[i] < -128.0f) {
+                seasonal_balloon_y[i] +=
+                    (float)(config_blob.screen_height + 128);
+            }
+            float scale = (float)((i % 4 + 1) / 5) * 0.4f + 0.6f;
+            grim_interface_ptr->grim_draw_quad_rotated_matrix(
+                (float)cos((float)(unsigned int)game_time_ms * 0.002f
+                    + (float)i) * 64.0f
+                    + config_blob.screen_width * i / 16,
+                seasonal_balloon_y[i],
+                64.0f * scale,
+                128.0f * scale);
+        }
+        grim_interface_ptr->grim_end_batch();
+
+        seasonal_banner_pulse = (float)sin(
+            (float)(unsigned int)game_time_ms * 0.00031415926f);
+        seasonal_banner_pulse *= seasonal_banner_pulse;
+        float banner_x = (float)(config_blob.screen_width
+            - grim_interface_ptr->grim_measure_text_width(
+                "What a Nice Day For a Birth Day!")
+            - 9) * seasonal_banner_pulse;
+        frame_color_t banner_color(0.0f, 0.0f, 0.0f, 0.5f);
+        frame_vec2_t banner_xy(banner_x, 4.0f);
+        grim_interface_ptr->grim_draw_rect_filled(
+            (float *)&banner_xy,
+            (float)(grim_interface_ptr->grim_measure_text_width(
+                "What a Nice Day For a Birth Day!") + 8),
+            16.0f,
+            (float *)&banner_color);
+        grim_interface_ptr->grim_set_color(0.1f, 0.4f, 0.7f, 0.9f);
+        banner_xy.set(banner_x, 4.0f);
+        grim_interface_ptr->grim_draw_rect_outline(
+            (float *)&banner_xy,
+            (float)(grim_interface_ptr->grim_measure_text_width(
+                "What a Nice Day For a Birth Day!") + 8),
+            16.0f);
+        grim_interface_ptr->grim_set_color(0.2f, 0.6f, 1.0f, 1.0f);
+        grim_interface_ptr->grim_draw_text_small(
+            banner_x + 6.0f, 5.0f, "What a Nice Day For a Birth Day!");
+        if (ui_mouse_y < 32.0f
+            && grim_interface_ptr->grim_is_mouse_button_down(0)) {
+            seasonal_balloons_dismissed = 1;
+        }
+    }
+
+    if (!run_active && !holiday_greeting_dismissed
+        && local_system_time.wMonth == 12 && local_system_time.wDay >= 24) {
+        int i;
+        grim_interface_ptr->grim_set_config_var(0x18, 1.0f);
+        grim_interface_ptr->grim_set_color(1.0f, 0.2f, 0.2f, 1.0f);
+        grim_interface_ptr->grim_draw_text_mono(
+            (float)(config_blob.screen_width / 2
+                - strlen("Happy holidays!") * 16 / 2),
+            16.0f,
+            "Happy holidays!");
+        grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, 0.8f);
+        if (ui_mouse_y < 128.0f) {
+            grim_interface_ptr->grim_draw_text_small(
+                ui_mouse_x + 42.0f, ui_mouse_y, "They're snow flakes!");
+            if (grim_interface_ptr->grim_is_mouse_button_down(0)) {
+                holiday_greeting_dismissed = 1;
+            }
+        }
+
+        if (holiday_snow_needs_init) {
+            holiday_snow_needs_init = 0;
+            for (i = 0; i < 640; i++) {
+                holiday_snow_y[i] = (float)(crt_rand() % 128);
+            }
+        }
+        for (i = 0; i < 640; i++) {
+            holiday_snow_y[i] += frame_dt * 8.0f;
+            if (holiday_snow_y[i] > 128.0f) {
+                holiday_snow_y[i] = -32.0f;
+            }
+        }
+
+        int flake_count = config_blob.screen_width / 6;
+        if (flake_count >= 640) {
+            flake_count = 639;
+        }
+        grim_interface_ptr->grim_set_config_var(0x18, 0.8f);
+        for (i = 0; i < flake_count; i++) {
+            float flake_y = holiday_snow_y[i];
+            while (flake_y > 128.0f) {
+                flake_y -= 128.0f;
+            }
+            float alpha = 1.0f;
+            if (flake_y > 90.0f) {
+                alpha = 1.0f - (flake_y - 90.0f) * 0.02631579f;
+                if (alpha > 1.0f) {
+                    alpha = 1.0f;
+                } else if (alpha < 0.0f) {
+                    alpha = 0.0f;
+                }
+            }
+            grim_interface_ptr->grim_set_color(1.0f, 1.0f, 1.0f, alpha);
+            grim_interface_ptr->grim_draw_text_mono(
+                (float)sin((holiday_snow_y[i] / 128.0f) * 3.1415927f * 2.0f)
+                    * 14.0f
+                    + i * 6,
+                flake_y,
+                ".");
+        }
+    }
+#endif
+
     if (!game_is_full_version() && !demo_mode_active) {
+#if CL_BUILD == 10908
+        // 1.9.8 shows an hour of shareware play, or the five-minute trial.
+        if (config_blob.game_mode != GAME_MODE_TUTORIAL) {
+            shareware_play_ms += frame_dt_ms;
+        }
+        float ratio = (float)(int)play_time_ms * 0.001f;
+        ratio *= 1.0f / 3600.0f;
+        if (demo_trial_elapsed_ms > 0) {
+            ratio = (float)demo_trial_elapsed_ms * 0.001f;
+            ratio *= 1.0f / 300.0f;
+        }
+#else
         int time_limit_ms = demo_trial_time_limit_ms();
         float ratio = (float)(int)play_time_ms;
         float time_limit = (float)time_limit_ms;
         ratio /= time_limit;
+#endif
         if (ratio > 1.0f) {
             ratio = 1.0f;
         }
@@ -560,21 +761,33 @@ extern "C" unsigned char game_frame_update(void)
         ui_render_loading();
         ui_render_loading();
         audio_suspend_all();
+#if CL_BUILD == 10908
+        grim_interface_ptr->grim_legacy_slot_04(0);
+#else
         game_is_full_version(1);
+#endif
     }
     if (full_version_recheck_pending) {
         full_version_recheck_pending = 0;
         ui_render_loading();
         ui_render_loading();
         audio_suspend_all();
+#if CL_BUILD == 10908
+        grim_interface_ptr->grim_legacy_slot_04(1);
+#else
         game_is_full_version(2);
+#endif
     }
     if (full_version_recheck_pending_slot_3) {
         full_version_recheck_pending_slot_3 = 0;
         ui_render_loading();
         ui_render_loading();
         audio_suspend_all();
+#if CL_BUILD == 10908
+        grim_interface_ptr->grim_legacy_slot_04(2);
+#else
         game_is_full_version(3);
+#endif
     }
 
     if (online_sync_status == 0 && update_notice_pending

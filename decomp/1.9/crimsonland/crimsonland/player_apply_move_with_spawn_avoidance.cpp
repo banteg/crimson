@@ -32,7 +32,8 @@ extern "C" int player_apply_move_with_spawn_avoidance(
             pos->y = pos->y - delta->y;
             probe.x = owner->pos_x - pos->x;
             probe.y = owner->pos_y - pos->y;
-            if ((float)sqrt(probe.x * probe.x + probe.y * probe.y) <= collision_radius) {
+            float distance = (float)sqrt(probe.x * probe.x + probe.y * probe.y);
+            if (distance <= collision_radius) {
                 pos->x = pos->x + delta->x;
                 pos->y = delta->y + pos->y;
             } else {
