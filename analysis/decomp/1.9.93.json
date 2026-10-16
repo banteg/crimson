@@ -44791,7 +44791,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 95,
-        "candidate_object_sha256": "feceee7d095af557fc034964891d095ff60582594fefd62905c2c5ccd80523a3",
+        "candidate_object_sha256": "c925ce59a694023be7c310ab7a9c12fafdd30f12ac71c6de39a0762add14f0ec",
         "candidate_padding_bytes": 1,
         "compared_target_ranges": [
           [
@@ -44813,7 +44813,7 @@
       },
       "ratio": 1.0,
       "size": 255,
-      "source": "decomp/1.9/crimsonland/highscore/highscore_update_record.c"
+      "source": "decomp/1.9/crimsonland/highscore/highscore_update_record.cpp"
     },
     {
       "address": 4435312,
@@ -44825,7 +44825,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 103,
-        "candidate_object_sha256": "55d2e0ccebe9dcd6db9dba2a597444fc775a048ce2bf3f4129552dcf94ef05ee",
+        "candidate_object_sha256": "6e72cf738a9aaf2672b53b529aa25cf94f1334a2f752f8f3cc073a2b5901c6da",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -44847,7 +44847,7 @@
       },
       "ratio": 1.0,
       "size": 318,
-      "source": "decomp/1.9/crimsonland/highscore/highscore_write_record.c"
+      "source": "decomp/1.9/crimsonland/highscore/highscore_write_record.cpp"
     },
     {
       "address": 4435632,
@@ -44995,7 +44995,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 354,
-        "candidate_object_sha256": "ecb19d0022ef515624bd05572c751566b545c8f50b5898b57d00ee5f78a01494",
+        "candidate_object_sha256": "d90df7d9e56a0b2a90edf53dbfe4c11c919c5cc2592c5b1d1f4199b935ed0be1",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -45017,7 +45017,7 @@
       },
       "ratio": 1.0,
       "size": 1198,
-      "source": "decomp/1.9/crimsonland/highscore/highscore_load_table.c"
+      "source": "decomp/1.9/crimsonland/highscore/highscore_load_table.cpp"
     },
     {
       "address": 4437072,
@@ -111395,7 +111395,7 @@
     "decomp/1.9/crimsonland/highscore/highscore_compare_survival_score_desc.c": "8d058367716e35ef08e307df6a3f39f84d494980357dff40f643b09b7fd44304",
     "decomp/1.9/crimsonland/highscore/highscore_find_name_entry.c": "fbeb7e87b4d1a8c148c00ffc7dcb7ddc9bccf4245166a57e1f9ee0d8c4ee7b18",
     "decomp/1.9/crimsonland/highscore/highscore_iso_week.c": "b4c43c16c3c54928c498cd472bcea640ba24aa6f6850a8cad6b76dd8c94f8b11",
-    "decomp/1.9/crimsonland/highscore/highscore_load_table.c": "3d74a9e0382b631dd37bdf7ebf3b8c5cab5e59732b949609884c9f368aababa8",
+    "decomp/1.9/crimsonland/highscore/highscore_load_table.cpp": "3d74a9e0382b631dd37bdf7ebf3b8c5cab5e59732b949609884c9f368aababa8",
     "decomp/1.9/crimsonland/highscore/highscore_load_table_thunk.cpp": "870ccf8e12a481e092f16642a6f94aece71dc15547aff499de8189bece66f0ef",
     "decomp/1.9/crimsonland/highscore/highscore_rank_index.c": "0b84b308a48e096dd304a8209880cd3af8a41edc02cecb8f4b7d93694622d398",
     "decomp/1.9/crimsonland/highscore/highscore_read_record.c": "38368b0751755401a98dc644288ff9e9d461b80e3364560eacbce50b7e024c35",
@@ -111405,9 +111405,9 @@
     "decomp/1.9/crimsonland/highscore/highscore_save_active.c": "19634a46581f83c6c85f30eb6a61e8356fb901dce5c96f7a8d643b331b2beb2c",
     "decomp/1.9/crimsonland/highscore/highscore_save_record.c": "a4d1e30c09fd915d468b7b98bd06ec08d810903c51e80ba62fcdeac51218f020",
     "decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.c": "2dfafa746751c728086ff07a90b06ea3aed434433f87be7521fc2bbc0af4604e",
-    "decomp/1.9/crimsonland/highscore/highscore_update_record.c": "bf2d928e02eaa59d300df59f0171d40a39178b900e82fa3b8f4eec85d0326d8f",
-    "decomp/1.9/crimsonland/highscore/highscore_write_record.c": "ddf019993e8dfe7d945a99d957de1676f0cdf6aa37e9934c10d4953534da688f",
-    "decomp/1.9/crimsonland/layout.json": "7910eb75de0d87b941e68faff80ab6649cb904ed5f4bdcf08a53d3abee8c4845",
+    "decomp/1.9/crimsonland/highscore/highscore_update_record.cpp": "bf2d928e02eaa59d300df59f0171d40a39178b900e82fa3b8f4eec85d0326d8f",
+    "decomp/1.9/crimsonland/highscore/highscore_write_record.cpp": "ddf019993e8dfe7d945a99d957de1676f0cdf6aa37e9934c10d4953534da688f",
+    "decomp/1.9/crimsonland/layout.json": "908aaa34152dae8a44ccc566fa71f80a726fd480bab6328a8258cc0c6d9802cf",
     "decomp/1.9/crimsonland/menus/config_apply_detail_preset.c": "249d131a54a88de2079c1805788a7506fd2f713e355a6425d9914a6e03ab330f",
     "decomp/1.9/crimsonland/menus/controls_aim_method_list_destroy.cpp": "7b20aa70f2d3064cc7630a7dae777e41109127bfeaa52e20e5068dfeef22c7a0",
     "decomp/1.9/crimsonland/menus/controls_back_button_destroy.cpp": "99d949add7529cd8d32018c82052b4ac81853e0f51b3aae0e5dc180df501e4d3",
@@ -113951,7 +113951,7 @@
     "tools/match/scratches/highscore_init_sentinels/scratch.conf": "5b1b2dbde2c8b47219c5179cf42f79ab18c6abda959c85781f92832fb57de1b9",
     "tools/match/scratches/highscore_init_sentinels_thunk/scratch.conf": "987f508877e8f7562e021be49f87b036a306300e5cc59e4802aac41c88e18da1",
     "tools/match/scratches/highscore_iso_week/scratch.conf": "701052f730acd916fc126fed335e0fd09fd80f5309887fa4b1d7a145c0d25840",
-    "tools/match/scratches/highscore_load_table/scratch.conf": "ea8404ef14f99aa246e782c39a5a7d34fbfdfe9cdd8166f6b0a4ea254c0062b5",
+    "tools/match/scratches/highscore_load_table/scratch.conf": "30b03fbb2b93ca178fa5b2babe3c542f0c452d816dc5bc5014f390fa9044c895",
     "tools/match/scratches/highscore_load_table_thunk/scratch.conf": "6fd59ca9a31eb57c63719414c3fe98cec7ce17959c16323eb7683f77449ff075",
     "tools/match/scratches/highscore_online_scores_checkbox_destroy/scratch.conf": "fe5d163e98b906a116ade7996655ba1c4f65411b18f9abee1e303833d489382c",
     "tools/match/scratches/highscore_play_button_destroy/scratch.conf": "97eb05855136775696ab56876ce88fec322b0a5e9644443e0c2a0925e9faed26",
@@ -113968,8 +113968,8 @@
     "tools/match/scratches/highscore_submit_full_version_guard/scratch.conf": "d8f1f440ff4c5f9959aebebaea142cb9c0e721d51c66210c3ca695ba643522ea",
     "tools/match/scratches/highscore_sync_worker/scratch.conf": "3bfe8b9455b16b023d6dec83eae7868bbe4ed151257d621a3636beba57e39eae",
     "tools/match/scratches/highscore_update_button_destroy/scratch.conf": "22a880db0dd41860d62e6aad11ecb86f61631e4e3ad6a712ca8267fc24343064",
-    "tools/match/scratches/highscore_update_record/scratch.conf": "236734586e5b7b9655d7fac20f38166777e723da1b51efa2a5a2c0308a9b6219",
-    "tools/match/scratches/highscore_write_record/scratch.conf": "c396870ff87b212c880f8fd34893221fcf2ec939b90e785567d4b0373f432ee0",
+    "tools/match/scratches/highscore_update_record/scratch.conf": "7bd57583610a6996afe8e6666e5adf31ea1516a3f9b94d5076234875fe806ed6",
+    "tools/match/scratches/highscore_write_record/scratch.conf": "1543c0be6c9df4eb1e183b83655449fd152abdf85e15106244fc22359def8791",
     "tools/match/scratches/hud_update_and_render/scratch.conf": "a42d93977f5f8a1742d10636341b9e15695cbd00017f57e8a6cc4f6cf7f37e1d",
     "tools/match/scratches/init_audio_and_terrain/scratch.conf": "8b4ed65d0a77865d8a97e40517f3bfd3de7d83cfcb91a1b1b2b9618d42ec640a",
     "tools/match/scratches/input_aim_pov_left_active/scratch.conf": "a0b42660b828c8a09837b98185e98d2d7316a26036723cdd25ca10b2a795448a",

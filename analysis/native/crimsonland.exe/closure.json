@@ -1,5 +1,5 @@
 {
-  "audit_digest": "5fac7b794b9a4d6f2940e897d94e3893edd10546760f5ba5a061b21137c92e88",
+  "audit_digest": "7f095a2f480c5c33e5452b91b3ccf4f723096534288e391e100a73819eca2c16",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -1562,7 +1562,7 @@
           "function": "highscore_load_table",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -30970,7 +30970,7 @@
         "tools/match/scratches/highscore_init_sentinels/build/msvc6.5/e5d8081e9efbb77e/highscore_init_sentinels.obj",
         "tools/match/scratches/highscore_init_sentinels_thunk/build/msvc6.5/9a8d80e33190baf7/highscore_init_sentinels_thunk.obj",
         "tools/match/scratches/highscore_iso_week/build/msvc6.5/43c68b5a3308afce/highscore_iso_week.obj",
-        "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+        "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
         "tools/match/scratches/highscore_load_table_thunk/build/msvc6.5/d1822b2b7e00ef31/highscore_load_table_thunk.obj",
         "tools/match/scratches/highscore_rank_index/build/msvc6.5/701c3c5e6c904aee/highscore_rank_index.obj",
         "tools/match/scratches/highscore_read_record/build/msvc6.5/6b1b0a62baa7db6f/highscore_read_record.obj",
@@ -30982,8 +30982,8 @@
         "tools/match/scratches/highscore_screen_update/build/msvc6.5/b61c893cc3c2ef7e/highscore_screen.obj",
         "tools/match/scratches/highscore_submit_full_version_guard/build/msvc6.5/2719fb0a054bee72/highscore_submit_full_version_guard.obj",
         "tools/match/scratches/highscore_sync_worker/build/msvc6.5/2e03169e4a2d42c9/highscore_sync_worker.obj",
-        "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
-        "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+        "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
+        "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
         "tools/match/scratches/hud_update_and_render/build/msvc6.5/b84e05a7576ecc70/hud_update_and_render.obj",
         "tools/match/scratches/init_audio_and_terrain/build/msvc6.5/d9a91fc24972304c/init_audio_and_terrain.obj",
         "tools/match/scratches/input_aim_pov_left_active/build/msvc6.5/56e532b5c0c053a5/input_aim_pov_left_active.obj",
@@ -31544,7 +31544,7 @@
         "tools/match/scratches/highscore_init_sentinels/build/msvc6.5/e5d8081e9efbb77e/highscore_init_sentinels.obj",
         "tools/match/scratches/highscore_init_sentinels_thunk/build/msvc6.5/9a8d80e33190baf7/highscore_init_sentinels_thunk.obj",
         "tools/match/scratches/highscore_iso_week/build/msvc6.5/43c68b5a3308afce/highscore_iso_week.obj",
-        "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+        "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
         "tools/match/scratches/highscore_load_table_thunk/build/msvc6.5/d1822b2b7e00ef31/highscore_load_table_thunk.obj",
         "tools/match/scratches/highscore_rank_index/build/msvc6.5/701c3c5e6c904aee/highscore_rank_index.obj",
         "tools/match/scratches/highscore_read_record/build/msvc6.5/6b1b0a62baa7db6f/highscore_read_record.obj",
@@ -31556,8 +31556,8 @@
         "tools/match/scratches/highscore_screen_update/build/msvc6.5/b61c893cc3c2ef7e/highscore_screen.obj",
         "tools/match/scratches/highscore_submit_full_version_guard/build/msvc6.5/2719fb0a054bee72/highscore_submit_full_version_guard.obj",
         "tools/match/scratches/highscore_sync_worker/build/msvc6.5/2e03169e4a2d42c9/highscore_sync_worker.obj",
-        "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
-        "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+        "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
+        "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
         "tools/match/scratches/hud_update_and_render/build/msvc6.5/b84e05a7576ecc70/hud_update_and_render.obj",
         "tools/match/scratches/init_audio_and_terrain/build/msvc6.5/d9a91fc24972304c/init_audio_and_terrain.obj",
         "tools/match/scratches/input_aim_pov_left_active/build/msvc6.5/56e532b5c0c053a5/input_aim_pov_left_active.obj",
@@ -31910,11 +31910,11 @@
         "tools/match/scratches/game_startup_init/build/msvc6.5/41641280c295d1d9/game_startup_init.obj",
         "tools/match/scratches/game_startup_init_prelude/build/msvc6.5/e831882bf3608d32/game_startup_init_prelude.obj",
         "tools/match/scratches/grim_load_interface/build/msvc6.5/6985e71d07bafb9d/grim_load_interface.obj",
-        "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+        "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
         "tools/match/scratches/highscore_save_record/build/msvc6.5/c906096293bbcc6d/highscore_save_record.obj",
         "tools/match/scratches/highscore_screen_update/build/msvc6.5/b61c893cc3c2ef7e/highscore_screen.obj",
         "tools/match/scratches/highscore_sync_worker/build/msvc6.5/2e03169e4a2d42c9/highscore_sync_worker.obj",
-        "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+        "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
         "tools/match/scratches/init_audio_and_terrain/build/msvc6.5/d9a91fc24972304c/init_audio_and_terrain.obj",
         "tools/match/scratches/input_key_name/build/msvc6.5/6dde48a38efb147b/input_key_name.obj",
         "tools/match/scratches/load_textures_step/build/msvc6.5/26d84d2bdabb7a96/load_textures_step.obj",
@@ -33854,7 +33854,7 @@
           "function": "highscore_load_table",
           "kind": "section",
           "logical_section_size": 3,
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -35001,7 +35001,7 @@
           "function": "highscore_update_record",
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "section": ".data",
           "size": null,
           "weak": false
@@ -98398,7 +98398,7 @@
           "function": "highscore_load_table",
           "kind": "section",
           "logical_section_size": 1200,
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -98963,7 +98963,7 @@
           "function": "highscore_update_record",
           "kind": "section",
           "logical_section_size": 256,
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -98981,7 +98981,7 @@
           "function": "highscore_write_record",
           "kind": "section",
           "logical_section_size": 320,
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -116436,7 +116436,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj"
+      "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj"
     },
     {
       "directives": [
@@ -116526,7 +116526,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj"
+      "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj"
     },
     {
       "directives": [
@@ -116535,7 +116535,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj"
+      "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj"
     },
     {
       "directives": [
@@ -120242,7 +120242,7 @@
         },
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -122488,7 +122488,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -122524,7 +122524,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -128256,7 +128256,7 @@
         },
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -128327,7 +128327,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -128358,7 +128358,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -128909,7 +128909,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -128971,7 +128971,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -134797,17 +134797,17 @@
         },
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "weak": false
         },
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
           "weak": false
         }
       ]
@@ -141112,7 +141112,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -141264,7 +141264,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -141289,7 +141289,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -141314,7 +141314,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -141370,7 +141370,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         }
       ]
@@ -141445,12 +141445,12 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         },
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
           "weak": false
         }
       ]
@@ -141465,7 +141465,7 @@
           "function": "highscore_load_table",
           "kind": "section",
           "logical_section_size": 1200,
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -141790,12 +141790,12 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "weak": false
         }
       ]
@@ -141820,7 +141820,7 @@
       "referenced_by": [
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "weak": false
         }
       ]
@@ -142728,7 +142728,7 @@
           "function": "highscore_update_record",
           "kind": "section",
           "logical_section_size": 256,
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -142753,7 +142753,7 @@
           "function": "highscore_write_record",
           "kind": "section",
           "logical_section_size": 320,
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -142768,7 +142768,7 @@
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "weak": false
         }
       ]
@@ -143714,12 +143714,12 @@
         },
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         },
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
           "weak": false
         }
       ]
@@ -174947,7 +174947,7 @@
         },
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
           "weak": false
         }
       ]
@@ -176755,7 +176755,7 @@
         },
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -176770,12 +176770,12 @@
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "weak": false
         },
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
           "weak": false
         },
         {
@@ -177212,7 +177212,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -177222,7 +177222,7 @@
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "weak": false
         },
         {
@@ -177257,7 +177257,7 @@
       "referenced_by": [
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "weak": false
         }
       ]
@@ -177297,7 +177297,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         },
         {
@@ -177307,7 +177307,7 @@
         },
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "weak": false
         },
         {
@@ -177377,7 +177377,7 @@
       "referenced_by": [
         {
           "function": "highscore_update_record",
-          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+          "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
           "weak": false
         },
         {
@@ -177422,7 +177422,7 @@
       "referenced_by": [
         {
           "function": "highscore_write_record",
-          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+          "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
           "weak": false
         }
       ]
@@ -177562,7 +177562,7 @@
       "referenced_by": [
         {
           "function": "highscore_load_table",
-          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+          "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
           "weak": false
         }
       ]

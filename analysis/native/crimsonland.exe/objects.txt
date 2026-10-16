@@ -421,13 +421,13 @@ tools/match/scratches/highscore_submit_full_version_guard/build/msvc6.5/2719fb0a
 tools/match/scratches/highscore_record_pack_for_submit/build/msvc6.5/9cf06837c81991ed/highscore_record_pack_for_submit.obj
 tools/match/scratches/highscore_read_record/build/msvc6.5/6b1b0a62baa7db6f/highscore_read_record.obj
 tools/match/scratches/highscore_record_equals/build/msvc6.5/cbb7b7ff37780f2b/highscore_record_equals.obj
-tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj
-tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj
+tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj
+tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj
 tools/match/scratches/highscore_compare_survival_score_desc/build/msvc6.5/03f998d8fb1f9a5d/highscore_compare_survival_score_desc.obj
 tools/match/scratches/highscore_compare_elapsed_desc/build/msvc6.5/2d421e257ea0d80d/highscore_compare_elapsed_desc.obj
 tools/match/scratches/highscore_compare_elapsed_asc_nonzero_first/build/msvc6.5/a11762c827ece439/highscore_compare_elapsed_asc_nonzero_first.obj
 tools/match/scratches/highscore_find_name_entry/build/msvc6.5/99b1d8eb8f03dcc7/highscore_find_name_entry.obj
-tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj
+tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj
 tools/match/scratches/highscore_save_record/build/msvc6.5/c906096293bbcc6d/highscore_save_record.obj
 tools/match/scratches/highscore_save_active/build/msvc6.5/d621642ac6712655/highscore_save_active.obj
 tools/match/scratches/highscore_rank_index/build/msvc6.5/701c3c5e6c904aee/highscore_rank_index.obj

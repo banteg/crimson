@@ -444,7 +444,7 @@
     "source_sha256": "4d50fb679e67443596bff9fad9f6b9a87823595160bf28f462b716cae740d360",
     "status": "passed"
   },
-  "audit_digest": "5fac7b794b9a4d6f2940e897d94e3893edd10546760f5ba5a061b21137c92e88",
+  "audit_digest": "7f095a2f480c5c33e5452b91b3ccf4f723096534288e391e100a73819eca2c16",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -19322,7 +19322,7 @@
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "bd061932f7e2dc8f2bc31e1443a18fb4636971748cc4ba97fd36013c96ed8a06",
+  "object_list_sha256": "4002d452dccf08c5569b75fbc721a5bee0259b383fbe35c840ba0b34df19f9b4",
   "object_order": "ascending-minimum-reference-address-then-generated-data-then-linker-aliases",
   "objects": [
     {
@@ -98308,8 +98308,7 @@
         "/O2",
         "/GB",
         "/W3",
-        "/GR-",
-        "/TP"
+        "/GR-"
       ],
       "compile_argv": [
         "/nologo",
@@ -98318,19 +98317,18 @@
         "/GB",
         "/W3",
         "/GR-",
-        "/TP",
-        "highscore_update_record.c"
+        "highscore_update_record.cpp"
       ],
       "compile_inputs": [
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_update_record.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_update_record.cpp",
           "repository_relative": true,
           "sha256": "bf2d928e02eaa59d300df59f0171d40a39178b900e82fa3b8f4eec85d0326d8f"
         },
         {
           "path": "tools/match/scratches/highscore_update_record/scratch.conf",
           "repository_relative": true,
-          "sha256": "236734586e5b7b9655d7fac20f38166777e723da1b51efa2a5a2c0308a9b6219"
+          "sha256": "7bd57583610a6996afe8e6666e5adf31ea1516a3f9b94d5076234875fe806ed6"
         },
         {
           "path": "tools/match/cl.sh",
@@ -98380,7 +98378,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/highscore_update_record/scratch.conf",
-      "config_sha256": "236734586e5b7b9655d7fac20f38166777e723da1b51efa2a5a2c0308a9b6219",
+      "config_sha256": "7bd57583610a6996afe8e6666e5adf31ea1516a3f9b94d5076234875fe806ed6",
       "effective_end": 4435311,
       "end": 4435311,
       "function": "highscore_update_record",
@@ -98388,13 +98386,13 @@
         {
           "address": 4435056,
           "canonical_config": "tools/match/scratches/highscore_update_record/scratch.conf",
-          "canonical_config_sha256": "236734586e5b7b9655d7fac20f38166777e723da1b51efa2a5a2c0308a9b6219",
+          "canonical_config_sha256": "7bd57583610a6996afe8e6666e5adf31ea1516a3f9b94d5076234875fe806ed6",
           "canonical_scratch": "tools/match/scratches/highscore_update_record",
-          "canonical_source": "decomp/1.9/crimsonland/highscore/highscore_update_record.c",
+          "canonical_source": "decomp/1.9/crimsonland/highscore/highscore_update_record.cpp",
           "canonical_source_sha256": "bf2d928e02eaa59d300df59f0171d40a39178b900e82fa3b8f4eec85d0326d8f",
           "effective_end": 4435311,
           "end": 4435311,
-          "experiment_epoch": "1ace8cab42d7ffaf32e1733f4a8e2aea6bc12e3577f48f4826192f0ecf914759",
+          "experiment_epoch": "02cc41238c194288ccf69ae12a11ec86e70be5683ed55a79cb8613f9e5e4ac59",
           "function": "highscore_update_record",
           "match": {
             "body_byte_exact": true,
@@ -98430,11 +98428,11 @@
         "state": "match",
         "target_instructions": 95
       },
-      "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/be90e0231ebc6a74/highscore_update_record.obj",
+      "object": "tools/match/scratches/highscore_update_record/build/msvc6.5/bfe6bac253df6ab0/highscore_update_record.obj",
       "object_function_symbol": "_highscore_update_record",
-      "object_sha256": "feceee7d095af557fc034964891d095ff60582594fefd62905c2c5ccd80523a3",
+      "object_sha256": "c925ce59a694023be7c310ab7a9c12fafdd30f12ac71c6de39a0762add14f0ec",
       "scratch": "tools/match/scratches/highscore_update_record",
-      "source": "decomp/1.9/crimsonland/highscore/highscore_update_record.c",
+      "source": "decomp/1.9/crimsonland/highscore/highscore_update_record.cpp",
       "source_sha256": "bf2d928e02eaa59d300df59f0171d40a39178b900e82fa3b8f4eec85d0326d8f",
       "target_size": 255,
       "translation_unit": {
@@ -98448,8 +98446,7 @@
         "/O2",
         "/GB",
         "/W3",
-        "/GR-",
-        "/TP"
+        "/GR-"
       ],
       "compile_argv": [
         "/nologo",
@@ -98458,19 +98455,18 @@
         "/GB",
         "/W3",
         "/GR-",
-        "/TP",
-        "highscore_write_record.c"
+        "highscore_write_record.cpp"
       ],
       "compile_inputs": [
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_write_record.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_write_record.cpp",
           "repository_relative": true,
           "sha256": "ddf019993e8dfe7d945a99d957de1676f0cdf6aa37e9934c10d4953534da688f"
         },
         {
           "path": "tools/match/scratches/highscore_write_record/scratch.conf",
           "repository_relative": true,
-          "sha256": "c396870ff87b212c880f8fd34893221fcf2ec939b90e785567d4b0373f432ee0"
+          "sha256": "1543c0be6c9df4eb1e183b83655449fd152abdf85e15106244fc22359def8791"
         },
         {
           "path": "tools/match/cl.sh",
@@ -98865,7 +98861,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/highscore_write_record/scratch.conf",
-      "config_sha256": "c396870ff87b212c880f8fd34893221fcf2ec939b90e785567d4b0373f432ee0",
+      "config_sha256": "1543c0be6c9df4eb1e183b83655449fd152abdf85e15106244fc22359def8791",
       "effective_end": 4435630,
       "end": 4435630,
       "function": "highscore_write_record",
@@ -98873,13 +98869,13 @@
         {
           "address": 4435312,
           "canonical_config": "tools/match/scratches/highscore_write_record/scratch.conf",
-          "canonical_config_sha256": "c396870ff87b212c880f8fd34893221fcf2ec939b90e785567d4b0373f432ee0",
+          "canonical_config_sha256": "1543c0be6c9df4eb1e183b83655449fd152abdf85e15106244fc22359def8791",
           "canonical_scratch": "tools/match/scratches/highscore_write_record",
-          "canonical_source": "decomp/1.9/crimsonland/highscore/highscore_write_record.c",
+          "canonical_source": "decomp/1.9/crimsonland/highscore/highscore_write_record.cpp",
           "canonical_source_sha256": "ddf019993e8dfe7d945a99d957de1676f0cdf6aa37e9934c10d4953534da688f",
           "effective_end": 4435630,
           "end": 4435630,
-          "experiment_epoch": "d20ac1f469078a03ff8b614b576ae962d83ad3881c99d0e9416dcb64b25b5e49",
+          "experiment_epoch": "b4a64a27ad9bbd59b6a935c2d21f567bbcc03527f34da2ff68bbb0df8f1e208f",
           "function": "highscore_write_record",
           "match": {
             "body_byte_exact": true,
@@ -98915,11 +98911,11 @@
         "state": "match",
         "target_instructions": 103
       },
-      "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/faddeb7457e07161/highscore_write_record.obj",
+      "object": "tools/match/scratches/highscore_write_record/build/msvc6.5/2c1f77f6ff3f3ffa/highscore_write_record.obj",
       "object_function_symbol": "_highscore_write_record",
-      "object_sha256": "55d2e0ccebe9dcd6db9dba2a597444fc775a048ce2bf3f4129552dcf94ef05ee",
+      "object_sha256": "6e72cf738a9aaf2672b53b529aa25cf94f1334a2f752f8f3cc073a2b5901c6da",
       "scratch": "tools/match/scratches/highscore_write_record",
-      "source": "decomp/1.9/crimsonland/highscore/highscore_write_record.c",
+      "source": "decomp/1.9/crimsonland/highscore/highscore_write_record.cpp",
       "source_sha256": "ddf019993e8dfe7d945a99d957de1676f0cdf6aa37e9934c10d4953534da688f",
       "target_size": 318,
       "translation_unit": {
@@ -99410,8 +99406,7 @@
         "/O2",
         "/GB",
         "/W3",
-        "/GR-",
-        "/TP"
+        "/GR-"
       ],
       "compile_argv": [
         "/nologo",
@@ -99420,19 +99415,18 @@
         "/GB",
         "/W3",
         "/GR-",
-        "/TP",
-        "highscore_load_table.c"
+        "highscore_load_table.cpp"
       ],
       "compile_inputs": [
         {
-          "path": "decomp/1.9/crimsonland/highscore/highscore_load_table.c",
+          "path": "decomp/1.9/crimsonland/highscore/highscore_load_table.cpp",
           "repository_relative": true,
           "sha256": "3d74a9e0382b631dd37bdf7ebf3b8c5cab5e59732b949609884c9f368aababa8"
         },
         {
           "path": "tools/match/scratches/highscore_load_table/scratch.conf",
           "repository_relative": true,
-          "sha256": "ea8404ef14f99aa246e782c39a5a7d34fbfdfe9cdd8166f6b0a4ea254c0062b5"
+          "sha256": "30b03fbb2b93ca178fa5b2babe3c542f0c452d816dc5bc5014f390fa9044c895"
         },
         {
           "path": "tools/match/cl.sh",
@@ -99827,7 +99821,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/highscore_load_table/scratch.conf",
-      "config_sha256": "ea8404ef14f99aa246e782c39a5a7d34fbfdfe9cdd8166f6b0a4ea254c0062b5",
+      "config_sha256": "30b03fbb2b93ca178fa5b2babe3c542f0c452d816dc5bc5014f390fa9044c895",
       "effective_end": 4437070,
       "end": 4437070,
       "function": "highscore_load_table",
@@ -99835,13 +99829,13 @@
         {
           "address": 4435872,
           "canonical_config": "tools/match/scratches/highscore_load_table/scratch.conf",
-          "canonical_config_sha256": "ea8404ef14f99aa246e782c39a5a7d34fbfdfe9cdd8166f6b0a4ea254c0062b5",
+          "canonical_config_sha256": "30b03fbb2b93ca178fa5b2babe3c542f0c452d816dc5bc5014f390fa9044c895",
           "canonical_scratch": "tools/match/scratches/highscore_load_table",
-          "canonical_source": "decomp/1.9/crimsonland/highscore/highscore_load_table.c",
+          "canonical_source": "decomp/1.9/crimsonland/highscore/highscore_load_table.cpp",
           "canonical_source_sha256": "3d74a9e0382b631dd37bdf7ebf3b8c5cab5e59732b949609884c9f368aababa8",
           "effective_end": 4437070,
           "end": 4437070,
-          "experiment_epoch": "14280af1535e2491063ff709272f9d0bedb33434618889deed28e7d5a4d7529f",
+          "experiment_epoch": "5fc712e0ee00560ab793a236b42a78770bf73e4d1c4d767416dc1dc43aa0ece9",
           "function": "highscore_load_table",
           "match": {
             "body_byte_exact": true,
@@ -99877,11 +99871,11 @@
         "state": "match",
         "target_instructions": 354
       },
-      "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/89a8f3e8431037e6/highscore_load_table.obj",
+      "object": "tools/match/scratches/highscore_load_table/build/msvc6.5/5e293bb789efc1ac/highscore_load_table.obj",
       "object_function_symbol": "_highscore_load_table",
-      "object_sha256": "ecb19d0022ef515624bd05572c751566b545c8f50b5898b57d00ee5f78a01494",
+      "object_sha256": "d90df7d9e56a0b2a90edf53dbfe4c11c919c5cc2592c5b1d1f4199b935ed0be1",
       "scratch": "tools/match/scratches/highscore_load_table",
-      "source": "decomp/1.9/crimsonland/highscore/highscore_load_table.c",
+      "source": "decomp/1.9/crimsonland/highscore/highscore_load_table.cpp",
       "source_sha256": "3d74a9e0382b631dd37bdf7ebf3b8c5cab5e59732b949609884c9f368aababa8",
       "target_size": 1198,
       "translation_unit": {
