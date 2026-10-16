@@ -1,11 +1,12 @@
 // Skips reverification and ground uploads when the code that verifies and bakes replays is unchanged since the live
 // deployment. The identity covers what actually runs, not a path filter: the bundled entry points with every
-// transitive module, the WASM bytes they load, the ground art, the runner scripts, dependencies and Wrangler config.
+// transitive module, the WASM bytes they load, the ground art, the runner scripts and the locked dependencies they run
+// on. The Worker's config and migrations stay out: reverify runs in Node and only reads production's runs.
 //
 //   node scripts/deploy-replays.mjs plan     compare against the live deployment's record, set the `reverify` output
 //   node scripts/deploy-replays.mjs record   after a successful deploy, record this commit's identity
 import { createHash } from "node:crypto";
-import { appendFileSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
+import { appendFileSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { r2Bucket } from "./r2.mjs";
@@ -49,8 +50,7 @@ export async function replayInputs(service = SERVICE) {
     wasm: Object.entries(wasm).sort(),
     art: Object.values(art).flat().sort().map((name) => [name, file(join("dist/ui", name))]),
     scripts: ["deploy-replays", "reverify", "reverify-pool", "reverify-worker", "grounds"].map((name) => file(`scripts/${name}.mjs`)),
-    dependencies: ["package.json", "package-lock.json", "wrangler.jsonc"].map(file),
-    migrations: readdirSync(join(service, "migrations")).sort().map((name) => [name, file(join("migrations", name))]),
+    dependencies: file("package-lock.json"),
   }));
 }
 
