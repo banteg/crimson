@@ -409,7 +409,7 @@ explicitly classified:
 
 | Criterion | Adaptive-Delay Lockstep (`M1` Prototype) | Hybrid Delay + Rollback (`M2` Target) | Authoritative Host (State Streaming) |
 | --- | --- | --- | --- |
-| **Bandwidth (per peer)** | ~6–11 KB/s | **~11 KB/s** (8-tick sliding window + repair) | 150–600 KB/s (creatures, projectiles, effects, decals) |
+| **Bandwidth (per peer)** | ~6–12 KB/s | **~12 KB/s** (196 B × 60 Hz payload, before SCTP/DTLS overhead) | 150–600 KB/s (creatures, projectiles, effects, decals) |
 | **Feel at 30 ms RTT (LAN / Metro)** | Good (2 ticks / 33 ms delay) | **Excellent** (2 ticks delay, 0–1 tick rollback on jitter) | Asymmetric (Host 0 ms, Guest 30+ ms) |
 | **Feel at 80–120 ms RTT (Continental)** | Fair (4–5 ticks / 67–83 ms aim/fire lag) | **Very Good** (2 ticks / 33 ms local delay + 2–4 ticks rollback) | Guest sees delayed blood/corpses or rubber-banding |
 | **Feel at 150 ms RTT + ±30 ms Jitter** | Stalls/hitches on late packets | **Smooth** (absorbs up to 8–12 ticks / 133–200 ms without stalling) | High bandwidth stalls congestion window |
@@ -838,7 +838,7 @@ keep arriving.
    A peer that simply stops producing input (pause, perk menu barrier) advertises
    no gap, so barriers of any length never trip the progress timeout.
 
-#### Channel 1: `coop-ticks` (`ordered: false, maxRetransmits: 0`, little-endian, 192 bytes at $W = 8$)
+#### Channel 1: `coop-ticks` (`ordered: false, maxRetransmits: 0`, little-endian, 196 bytes at $W = 8$)
 
 | Offset | Type | Field | Description |
 | --- | --- | --- | --- |
