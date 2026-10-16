@@ -52,7 +52,7 @@ Original bug 39: blood splatters and corpse shatters can exhaust the 511-slot ef
  }
 --- a/decomp/1.9/crimsonland/effects/effects_update.c
 +++ b/decomp/1.9/crimsonland/effects/effects_update.c
-@@ -1,31 +1,37 @@
+@@ -1,30 +1,36 @@
  #include "crimsonland_gameplay.h"
 +#include "effect_overflow.h"
  
@@ -99,7 +99,6 @@ Original bug 39: blood splatters and corpse shatters can exhaust the 511-slot ef
 +                    }
                  }
                  effect_free(entry);
-             } else if (entry->age >= 0.0f) {
 --- a/decomp/1.9/crimsonland/effects/effects_render.cpp
 +++ b/decomp/1.9/crimsonland/effects/effects_render.cpp
 @@ -1,6 +1,7 @@
@@ -110,7 +109,7 @@ Original bug 39: blood splatters and corpse shatters can exhaust the 511-slot ef
  #include "grim2d_cpp.h"
  
  extern IGrim2D_cpp *grim_interface_ptr;
-@@ -81,10 +82,10 @@
+@@ -81,8 +82,8 @@
  
      // The effects only draw. Where nothing draws, the batches' render states
      // stay, which carry into the frames that do, and the effects go.
@@ -121,14 +120,10 @@ Original bug 39: blood splatters and corpse shatters can exhaust the 511-slot ef
 -        effect_entry_t *entry = &effect_pool[index];
 +        effect_entry_t *entry = game_effects_entry(index);
          int flags = entry->flags;
-         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) != 0) {
-             effect_render_entry(entry, color);
-@@ -96,7 +97,7 @@
+@@ -96,5 +97,5 @@
      grim_interface_ptr->grim_begin_batch();
  
      for (index = 0; index < count; ++index) {
 -        effect_entry_t *entry = &effect_pool[index];
 +        effect_entry_t *entry = game_effects_entry(index);
          int flags = entry->flags;
-         if (flags != 0 && entry->age >= 0.0f && (flags & 0x40) == 0) {
-             effect_render_entry(entry, color);

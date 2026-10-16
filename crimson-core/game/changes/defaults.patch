@@ -26,11 +26,16 @@ them.
  
 --- a/decomp/1.9/crimsonland/crimsonland/config_ensure_file.cpp
 +++ b/decomp/1.9/crimsonland/crimsonland/config_ensure_file.cpp
-@@ -16,7 +16,6 @@
+@@ -16,12 +16,6 @@
          return;
      }
  
+-#if CL_BUILD == 10908
+-    // 1.9.8 writes its first config with violence enabled.
+-    config_violence_disabled = 0;
+-#else
 -    config_violence_disabled = 1;
+-#endif
      fp = crt_fopen(game_build_path("crimson.cfg"), "wb");
      if (fp != 0) {
          crt_fwrite(&config_blob, 0x480, 1, fp);

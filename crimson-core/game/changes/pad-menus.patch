@@ -17,7 +17,7 @@ original started one only from the mouse or the number keys.
 @@ -10,1 +10,2 @@
  extern IGrim2D_cpp *grim_interface_ptr;
 +extern "C" bool ui_focus_row(int row, float x, float y);
-@@ -261,12 +262,20 @@
+@@ -261,16 +262,24 @@
      int row = 0;
      int next_row;
 +    int focused_row = -1;
@@ -30,15 +30,19 @@ original started one only from the mouse or the number keys.
 +        if (row_focused) {
 +            focused_row = row;
 +        }
-         if (ui_mouse_x <= hover_left
-             || position.y - 2.0f >= ui_mouse_y
-             || position.x + 210.0f <= ui_mouse_x
-             || position.y + 18.0f <= ui_mouse_y
-             || ui_mouse_blocked) {
+         if (ui_mouse_x > hover_left
+             && position.y - 2.0f < ui_mouse_y
+             && position.x + 210.0f > ui_mouse_x
+             && position.y + 18.0f > ui_mouse_y
+             && !ui_mouse_blocked) {
+             quest_select_stage_minor_index = row;
+             row_hovered = true;
+             grim_interface_ptr->grim_set_color_ptr(
+                 (float *)&row_hover_color);
+         } else {
              grim_interface_ptr->grim_set_color_ptr(
 -                (float *)&row_idle_color);
 +                (float *)(row_focused ? &row_hover_color : &row_idle_color));
-         } else {
 @@ -433,2 +442,5 @@
 +    if (focused_row >= 0 && grim_interface_ptr->grim_was_key_pressed(0x1c)) {
 +        quest_select_stage_minor_index = focused_row;
