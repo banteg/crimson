@@ -23,8 +23,9 @@ Both browsers run the same `game.wasm` binary at fixed 60 Hz simulation ticks
 Because [issue #632](https://github.com/banteg/crimson/issues/632) is a research
 and prototype track, cross-browser determinism, rollback frame budgets, terrain
 commit overhead, and WAN feel are treated as **explicit hypotheses gated by
-automated milestones (`M0a`, `M0b`, `M1`, `M2`)** before committing to ranked or
-4-player scope.
+automated milestones (`M0a`, `M0b`, `M1`, `M2`)** before committing to 4-player
+scope. Two-player online co-op records standard replays and ranks under the
+site's [ranked rules](ranked-rules.md) on its own boards (Section 5.3, `M3`).
 
 ### Historical lesson (`status.md`)
 
@@ -295,9 +296,17 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     assert that the call occurs while `0 <= current_player_index && current_player_index < config_blob.player_count`
     and read `in[current_player_index]`.
 
-  - **Supported schemes in prototype**: Restrict co-op runs to `aim_scheme`
-    $\in \{0 \text{ (mouse world point)}, 4 \text{ (dual-action pad)}\}$ and
-    `move_mode` $\in \{1 \text{ (relative)}, 2 \text{ (static)}, 3 \text{ (dual-action pad)}\}$.
+  - **Controls travel with every input**: peers exchange the replay's
+    normalized per-tick input (`PortableInput`: move axes, the aim point the
+    [replay format](../formats/replay.md#tick) defines per scheme, and the flag
+    word), never raw device events. The flag word already carries each player's
+    movement mode and aim scheme (`MOVE_MODE_PRESENT_FLAG`,
+    `AIM_SCHEME_PRESENT_FLAG`, `src/crimson/replay/types.py`), so the Host
+    learns the Guest's controls from its inputs with no setup handshake. Key
+    bindings, pad profiles, dead zones and cursor-to-world conversion stay on
+    the sampling peer, which converts against the camera its own simulation
+    left, exactly as a 1P recorder does. Co-op accepts every human scheme the
+    ranked rules accept.
 
 - **Tick-0 camera conversion (`crimson-core/host/session.inc:271-282`)**:
 
@@ -316,12 +325,16 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     2-player buffer would misparse Player 1's `move_x` float bits as
     `command_count`.
 
-  - **Rule**: Normal `.crd` replay saving (`replay_payload()`, `replay_save()`,
-    and `ranked_finish()` in `live_end()` / `game_live_quit()`) is **disabled**
-    in co-op sessions so `live_end()` never feeds 2-player ticks into the 1P
-    serializer. Instead, co-op writes a dedicated versioned 2P `.rsi` input
-    stream (header + `in[0]`, `in[1]`, `count`, `commands` per confirmed tick)
-    for `checks/game_coop.mjs` and desync diagnostics.
+  - **Rule**: co-op records a standard `.crd` replay with `player_count = 2`;
+    the [replay format](../formats/replay.md) already allows 1..4 players, one
+    input array per player per tick, and `player_index` on perk commands. Each
+    confirmed tick writes `[in[0], in[1]]` and its derived commands:
+    `perk_menu_open { player_index: perk_picker }` on $T_{\text{open}}$ and
+    `perk_pick { player_index: perk_picker, choice_index }` on
+    $T_{\text{open}} + 1$ (Section 5.1). `replay.inc` and `watch.inc` are
+    generalized to `player_count` inputs per tick (`M3`); until then co-op keeps
+    `live_end()` from feeding 2-player ticks into the 1P serializer.
+    `checks/game_coop.mjs` and desync diagnostics read the same `.crd`.
 
 #### 5. Between-tick `gameplay_render_world()` side effects & local state in `game_run_spans`
 
@@ -733,7 +746,7 @@ stays on the arena screen and sees the replay viewer's top-right pick card
      slides out after `WATCH_PICK_SECONDS = 3.0f` of live play; if cancelled
      (`count = 0`), it slides out immediately.
 
-### 5.2 Run-down barrier, pause barrier, and restart
+### 5.2 Run-down barrier, pause, leaving, and rematch
 
 - **Run-down & terminal screen barrier**:
 
@@ -782,12 +795,73 @@ stays on the arena screen and sees the replay viewer's top-right pick card
   - `paused: false` resumes input production from the next contiguous tick,
     with `coop_banked_s` clamped as for any stall.
 
-- **Restart / rematch (`run_epoch` increment)**:
+- **Leaving a run**:
 
-  - Clicking **Play Again** on the end screen increments `run_epoch` (so any
-    in-flight packets from the previous `run_epoch` are ignored), distributes the
-    new `seed` and `PortableConfig` in `MSG_START_RUN`, and waits for
-    `MSG_START_ACK` before stepping tick `0`.
+  - The pause banner and the end screen offer **Leave**. Leaving sends
+    `MSG_LEAVE { run_epoch, last_tick: input_produced_tick }`, stops producing
+    input, and keeps the connection until `peer_ack_tick >= last_tick`, so the
+    partner holds every input the leaver published.
+
+  - Both peers simulate through `last_tick` and stop there, so both replays end
+    on the same tick. The partner sees the end panel with "Player N left" and
+    returns to the menu; the session ends for both.
+
+  - A left run is a quit: its replay is saved locally and it does not rank. A
+    disconnect (Section 6.2 timeouts) ends the run the same way at the last
+    confirmed tick.
+
+- **Rematch (`run_epoch` increment)**: either player can click **Play Again**
+  on the end screen.
+
+  - The Host owns the seed and the save, so a Guest's click sends
+    `MSG_REMATCH { run_epoch }`. On its own click, or on the first
+    `MSG_REMATCH` for the current `run_epoch`, the Host increments `run_epoch`
+    (so in-flight packets from the previous run are ignored), draws a fresh
+    seed, and sends `MSG_START_RUN` for the same mode and quest. Both clicking
+    at once yields one rematch: a `MSG_REMATCH` for an earlier `run_epoch` is
+    ignored.
+
+  - Both peers leave the end screen when `MSG_START_RUN` arrives and wait for
+    `MSG_START_ACK` before stepping tick `0`. Choosing another mode or quest
+    goes back to the Host's run setup (Section 5.3).
+
+### 5.3 Run setup, replays & ranked co-op
+
+Online co-op follows the site's [ranked rules](ranked-rules.md): every run is a
+ranked attempt, recorded as a standard replay and verified by the service like
+any other.
+
+- **Run setup (Host)**: the Host picks Survival, or a quest its save has
+  unlocked and its difficulty. The run plays the ranked profile with
+  `player_count = 2` instead of `1`: a fresh seed the Host draws, the detached
+  canonical save for that mode or quest, detail 5, violence on, friendly fire
+  off, documented fixes on, no retries. Like a 1P ranked run, it changes
+  neither player's progress. Rush, Typ-o and the Tutorial stay out of co-op.
+
+- **Boards**: co-op ranks on its own boards, `survival-coop`, `quests-coop` and
+  `quests-hardcore-coop`, scored as their 1P counterparts. Two-player scores
+  are not comparable with one-player ones: XP is shared and 2P doubles the
+  Survival spawn countdown (`survival_update.cpp:217`).
+
+- **Controls & aim**: every tick of both players uses human controls. Each
+  player's mouse aim point lies inside the 1024x768 view around the camera the
+  previous tick left; in 2P that camera follows the players' midpoint
+  (`camera_update.cpp:84-95`), the view both players see. Pad aim keeps the
+  138-unit reach. If either player's client declares a pilot, the run goes to
+  the bot boards ([bots and moderation](bots.md)).
+
+- **Finished runs**: a Survival team wipe or a completed quest ranks; a quit,
+  a leave, a disconnect or a failed quest does not.
+
+- **One replay, two signatures**: `MSG_START_RUN` carries the replay header
+  (`game_version`, `rules`, the Host's `recorder`, `pilot`, `run`), so both
+  peers write byte-identical `.crd` files. At the confirmed terminal tick each
+  peer signs the replay as a [leaderboard upload](leaderboard-identity.md#uploads)
+  does and sends `MSG_RUN_SIGNED { run_epoch, name, public_key, signature }`.
+  Each peer queues the replay with both signatures in its outbox, so either can
+  upload later, offline play included; the service accepts the run once and
+  answers the second upload with `409`. A co-op run ranks only with both
+  players' valid signatures, and its entry credits both names.
 
 ---
 
@@ -923,10 +997,13 @@ carries `run_epoch` (`uint32`), and tick `0` inputs for `run_epoch` are gated
 until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
 
 - `MSG_HELLO`: `{ type: "hello", protocol_ver: 3, build_id: string, role: 0 | 1 }`
-- `MSG_START_RUN`: `{ type: "start", run_epoch: number, player_count: 2, delay_ticks: number, config_b64: string, quest_b64?: string }`
+- `MSG_START_RUN`: `{ type: "start", run_epoch: number, player_count: 2, delay_ticks: number, config_b64: string, quest_b64?: string, replay_header_b64: string }`
 - `MSG_START_ACK`: `{ type: "start_ack", run_epoch: number }`
 - `MSG_INPUT_REPAIR`: `{ type: "repair", run_epoch: number, start_tick: number, cmds_b64: string, inputs_b64: string }`
 - `MSG_PAUSE`: `{ type: "pause", run_epoch: number, pause_seq: number, paused: boolean }`
+- `MSG_LEAVE`: `{ type: "leave", run_epoch: number, last_tick: number }`
+- `MSG_REMATCH`: `{ type: "rematch", run_epoch: number }` (Guest to Host)
+- `MSG_RUN_SIGNED`: `{ type: "run_signed", run_epoch: number, name: string, public_key: string, signature: string }`
 - `MSG_DESYNC`: `{ type: "desync", run_epoch: number, tick: number, local_hash: number, remote_hash: number, snapshot_b64?: string }` (exchanges compressed `coop_canonical_snapshot()` at `tick` so both peers log the exact first differing `schema.json` / host / overflow field).
 
 ---
@@ -1025,6 +1102,21 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
    costs across direct P2P, TURN UDP, TURN TCP, and WS relay for the final
    #632 feasibility report.
 
+### Milestone `M3`: Co-op replays & boards
+
+1. **Files**: `crimson-core/host/replay.inc`, `crimson-core/host/watch.inc`,
+   `src/crimson/replay/ranked.py`, `service/` (upload, boards, run page),
+   `docs/rewrite/ranked-rules.md`.
+
+2. **Changes**: `player_count`-wide replay record, verify and watch in
+   crimson-core; the ranked profile with `player_count = 2` and the co-op
+   boards in `ranked.py` and the service; uploads carrying both players'
+   signatures; run pages and watch replays for 2-player runs.
+
+3. **Gate**: a co-op `.crd` recorded by two browsers verifies in the service,
+   in `crimson replay verify`, and in the Python port, and ranks on its co-op
+   board crediting both players.
+
 ### Mandatory acceptance matrix (`checks/game_coop.mjs` & `M1`/`M2`)
 
 - **P0 dead / P1 alive (and vice versa)**: First active creature targets the
@@ -1065,6 +1157,9 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
   `music_playlist_entry_count = 0`, and low detail; active music fade across a
   rolled-back first hit.
 
-- **Rematch & transport**: Rematch (`run_epoch + 1`) while stale packets from
-  `run_epoch` are in flight; forced runs over direct P2P, TURN UDP, TURN TLS/TCP,
-  and coordinated `ws-relay` switch.
+- **Leave, rematch & transport**: Leave mid-run and while paused (both replays
+  end on `last_tick`); both players clicking Play Again at once (one rematch);
+  rematch (`run_epoch + 1`) while stale packets from `run_epoch` are in flight;
+  byte-identical replays and both signatures after a team wipe on peers with
+  different `recorder` platforms; forced runs over direct P2P, TURN UDP, TURN
+  TLS/TCP, and coordinated `ws-relay` switch.
