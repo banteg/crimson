@@ -62,6 +62,12 @@ jobs:
             # A virtual display with software GL runs the render and terrain tests that need a raylib window.
             command: xvfb-run -a uv run --no-sync pytest --run-terrain
             sync_args: --group dev
+          - task: core-patches
+            suite: "core-patches"
+            use_uv: true
+            do_sync: true
+            command: uv run --no-sync pytest -q tests/test_core_patches.py
+            sync_args: --group dev
           - task: native-oracle
             suite: "native-oracle"
             use_uv: true

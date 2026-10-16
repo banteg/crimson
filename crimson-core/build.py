@@ -11,7 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from adapter import DIFFS, PROTOTYPES, adapt, apply_diffs, load_diffs, prototypes, wrap
+from adapter import DIFFS, PROTOTYPES, adapt, apply_diffs, check_diffs, load_diffs, prototypes, wrap
 from data import data_source
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -117,6 +117,8 @@ def main():
         )
 
     hunks = load_diffs(GAME_DIFFS if a.target == "game" else DIFFS)
+    # Every stale hunk at once, before anything compiles.
+    check_diffs(a.root, hunks)
     adapted = {}  # repository-relative path: (decomp text, adapted text)
     for f in sorted((a.root / "tools/match/include").glob("*.h")):
         rel, raw = str(f.relative_to(a.root)), f.read_text()

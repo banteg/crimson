@@ -31,7 +31,7 @@ PROTOTYPES = {
 
 
 def load_diffs(folders):
-    """(patch name, old text, new text) hunks by source path, in folder then name order."""
+    """(patch:line of the hunk header, old text, new text) hunks by source path, in folder then name order."""
 
     hunks = {}
     for patch in (path for folder in folders for path in sorted(folder.glob("*.patch"))):
@@ -47,6 +47,7 @@ def load_diffs(folders):
             match = _HUNK.match(line)
             if not match:
                 continue
+            header = i
             old_count, new_count = (int(n) if n is not None else 1 for n in match.groups())
             old, new = [], []
             while len(old) < old_count or len(new) < new_count:
@@ -58,16 +59,43 @@ def load_diffs(folders):
                     new.append(body)
             if rel is None:
                 raise SystemExit(f"{patch.name}: hunk before a +++ header")
-            hunks.setdefault(rel, []).append((patch.name, "".join(old), "".join(new)))
+            label = f"{patch.relative_to(HERE)}:{header}"
+            hunks.setdefault(rel, []).append((label, "".join(old), "".join(new)))
     return hunks
 
 
-def apply_diffs(rel, txt, hunks):
+def _apply(rel, txt, hunks):
+    """The text with every hunk that matches once applied in order, and a line for each one that doesn't."""
+
+    stale = []
     for name, old, new in hunks.get(rel, ()):
-        if txt.count(old) != 1:
-            raise SystemExit(f"{name}: hunk for {rel} matches {txt.count(old)} times; audit the patch")
-        txt = txt.replace(old, new)
+        if (found := txt.count(old)) == 1:
+            txt = txt.replace(old, new)
+        else:
+            stale.append(f"{name}: hunk for {rel} matches {found} times")
+    return txt, stale
+
+
+def _audit(stale):
+    return SystemExit("Audit the patches; these hunks no longer match exactly once:\n  " + "\n  ".join(stale))
+
+
+def apply_diffs(rel, txt, hunks):
+    txt, stale = _apply(rel, txt, hunks)
+    if stale:
+        raise _audit(stale)
     return txt
+
+
+def stale_hunks(root, hunks):
+    """Every hunk whose old text doesn't occur once in its source under `root`, after the hunks before it."""
+
+    return [line for rel in hunks for line in _apply(rel, (root / rel).read_text(), hunks)[1]]
+
+
+def check_diffs(root, hunks):
+    if stale := stale_hunks(root, hunks):
+        raise _audit(stale)
 
 
 def replace(src, txt, old, new, count=1):

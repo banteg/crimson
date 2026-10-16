@@ -154,6 +154,20 @@ SUITES = {
         ),
         ("service/scripts/assets.py",),
     ),
+    # Every diff hunk against the sources it edits, checked without compilers before any build runs.
+    "core-patches": Suite(
+        (
+            "decomp/",
+            "tools/match/include/",
+            "third_party/headers/",
+            "crimson-core/adapter.py",
+            "crimson-core/game.py",
+            "crimson-core/*/*.patch",
+            "crimson-core/game/*/*.patch",
+            ".github/workflows/ci.yml",
+        ),
+        ("tests/test_core_patches.py",),
+    ),
     "decomp": Suite((*RE_TOOLS.paths, ".github/workflows/decomp.yml"), RE_TOOLS.python),
     "re-audits": Suite((*RE_TOOLS.paths, ".github/workflows/ci.yml"), RE_TOOLS.python),
     # Unicorn runs the original executable; the support module reads Grim's interface layout.
