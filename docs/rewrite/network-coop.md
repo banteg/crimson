@@ -81,13 +81,15 @@ networking work on proving:
 2. **State & terrain rollback boundary — Uncompressed RAM ring + "Bake on Confirm" terrain**:
 
    - Each `RollbackSlot` holds `game_run_spans` (`70` spans = **229,233 B**),
-     `KeyframeHost` (**~1.9 KiB**), `sfx_cooldown_table` (**512 B**), and
-     preallocated capacity for `game_effect_overflow.entries` (up to `2,048 × 188 B`
-     = **385,024 B**, copying only the active `extent` prefix per tick). Across
-     16 slots, resident memory is **3.7 MiB base** (when `overflow_extent == 0`)
-     and **9.8 MiB worst-case** (preallocated once at session start, with zero
-     per-tick `zstd` compression and omitting `string_arena`, which is asserted
-     invariant after `portable_init`).
+     `KeyframeHost` (**~1.9 KiB**), and preallocated capacity for
+     `game_effect_overflow.entries` (up to `2,048 × 188 B` = **385,024 B**,
+     copying only the active `extent` prefix per tick). Audio state
+     (`sfx_cooldown_table`, DirectSound buffers, music fades) is completely
+     decoupled from rollback. Across 16 slots, resident memory is **3.7 MiB
+     base** (when `overflow_extent == 0`) and **9.8 MiB worst-case**
+     (preallocated once at session start, with zero per-tick `zstd` compression
+     and omitting `string_arena`, which is asserted invariant after
+     `portable_init`).
 
    - **Terrain render target (`terrain_render_target`, 1024×1024 RGBA8) — "Bake on Confirm"**:
      During simulation ticks (`game_ticking == 1`), `fx_queue_render` consumes
@@ -386,8 +388,8 @@ explicitly classified:
 | --- | --- | --- |
 | Tick frequency | **60 Hz** ($\Delta t = 16.6667\text{ ms}$) | `crimson-core/host/host.cpp:626` |
 | 2P input size per tick | **40 B** (`2 × sizeof(PortableInput)`) + **4 B** `count` + $8k\text{ B}$ commands | `crimson-core/host/api.h:53-54` |
-| Uncompressed base slot (`game_run_spans` + `KeyframeHost` + `sfx_cooldown_table`) | **231,685 B (~226.3 KiB)** | `70` spans (`229,233 B`) + `KeyframeHost` (`1,940 B`) + `sfx_cooldown_table` (`512 B`) |
-| Uncompressed worst-case slot (with max 2,048 `effect_overflow` entries) | **616,709 B (~602.3 KiB)** | Base `231,685 B` + `2,048 × 188 B` (`385,024 B`, `crimson-core/game/include/effect_overflow.h`) |
+| Uncompressed base slot (`game_run_spans` + `KeyframeHost`) | **231,173 B (~225.8 KiB)** | `70` spans (`229,233 B`) + `KeyframeHost` (`1,940 B`); audio state excluded |
+| Uncompressed worst-case slot (with max 2,048 `effect_overflow` entries) | **616,197 B (~601.8 KiB)** | Base `231,173 B` + `2,048 × 188 B` (`385,024 B`, `crimson-core/game/include/effect_overflow.h`) |
 | 16-slot ring resident memory | **3.7 MiB base / 9.8 MiB worst-case** (preallocated) | Includes 16 state slots + 16 bake slots |
 | Snapshot capture/restore time (raw `memcpy`, no `zstd`) | **~0.02–0.04 ms base / ~0.08 ms full overflow** `[ESTIMATE]` | Measured in `M0b` (`checks/game_coop.mjs`) |
 | `game.wasm` step cost (9-min 1P Survival avg, `grim_render_disabled = 1`) | **~0.028 ms / tick** (~36,000 ticks/s) | Measured ([replay viewer](replay-viewer.md#what-it-can-afford)) |
@@ -468,11 +470,10 @@ monotonically non-decreasing tick frontiers**:
 |   slot[t & 15]:                                                          |
 |     - run_epoch: uint32, tick: int32 (state S[t] BEFORE executing t)     |
 |     - spans[229233]: raw memcpy of game_run_spans[0..69]                 |
-|     - host: KeyframeHost + sfx_cooldown_table[128]                       |
+|     - host: KeyframeHost (1,940 B; no audio state)                       |
 |     - overflow_entries[2048]: preallocated; copies [0..overflow_extent)  |
 |     - canonical_hash_after: uint32 (hash after executing tick t)         |
 +--------------------------------------------------------------------------+
-```
 
 #### Per-tick retention invariant
 
@@ -496,13 +497,12 @@ monotonically non-decreasing tick frontiers**:
 
 `portable_snapshot()` (`crimson-core/schema.json`) covers the base pools but
 omits `KeyframeHost` (`run_down_ms`, `perk_menu_open`, etc.),
-`sfx_cooldown_table[128]`, `telekinetic_bonus_hover_timer_ms[0..1]`, and
-`game_effect_overflow` (for example, mutating `run_down_ms` from `500` to `-1`
-or mutating `overflow_active` leaves all `36,343` words of `portable_snapshot()`
-identical while changing the next step from accepted to refused). Conversely,
-raw `game_run_spans` includes local `config_blob` display flags
-(`session.inc:115-119`), local audio volumes (`game.inc:88-89`), `ui_mouse_x/y`,
-and `bonus_render_anim_phase`.
+`telekinetic_bonus_hover_timer_ms[0..1]`, and `game_effect_overflow` (for
+example, mutating `run_down_ms` from `500` to `-1` or mutating `overflow_active`
+leaves all `36,343` words of `portable_snapshot()` identical while changing the
+next step from accepted to refused). Conversely, raw `game_run_spans` includes
+local `config_blob` display flags (`session.inc:115-119`), local audio volumes
+(`game.inc:88-89`), `ui_mouse_x/y`, and `bonus_render_anim_phase`.
 
 Therefore, **cross-peer desync hashes and `M0b` state comparisons** run over
 `coop_canonical_snapshot()`:
@@ -516,8 +516,7 @@ Therefore, **cross-peer desync hashes and `M0b` state comparisons** run over
    `overflow_active`, `overflow_extent`, and normalized `overflow_free` index
    (`overflow_free ? int(overflow_free - game_effect_overflow.entries) : -1`).
 
-3. `telekinetic_bonus_hover_timer_ms[0..1]` (`2 × int32`) and
-   `sfx_cooldown_table[0..127]` (`128 × float32`).
+3. `telekinetic_bonus_hover_timer_ms[0..1]` (`2 × int32`).
 
 4. Active `game_effect_overflow.entries[0..overflow_extent)` with each entry's
    `next_free` pointer normalized to its pool index (`int(p - game_effect_overflow.entries)`
@@ -577,32 +576,42 @@ resimulated bakes:
      `game_effects_render_decals()`, and restore live state. Assert in debug/test
      builds that committing bakes leaves `coop_canonical_hash()` unchanged.
 
-### 4.3 Audio isolation during rollback
+### 4.3 Decoupled audio boundary: deterministic triggers, presentation-owned playback
 
-- `WatchUnheard` (`crimson-core/host/watch.inc:365-382`) causes
-  `sfx_entry_start_playback` (`crimson-core/host/game.inc:139-143`) to return
-  buffer `0` without starting playback, but callers (`sfx_play.cpp:40-43`,
-  `sfx_play_panned.cpp:54-57`) still call `buffers[0]->SetPan(...)` and
-  `sfx_entry_set_volume(...)` on live buffer `0`!
+As `core.wasm` (`crimson-core/host/host.cpp:156-160`) already demonstrates by
+compiling `sfx_play` and `sfx_play_panned` as no-ops, **all gameplay RNG draws
+for sound effects occur in the caller before `sfx_play` / `sfx_play_panned` is
+entered** (weapon shot variant in `player_update_heading.cpp:1325`, creature
+death sound in `creature_apply_damage.cpp`, bleed drip in
+`player_update_heading.cpp:300`), and the first-hit tune draw is isolated by the
+1-bit `game_tune_started` latch (Section 2.2.3).
 
-- **Fix**: When `sound_unheard == true`, route `sfx_play` and `sfx_play_panned`
-  to a no-op after updating `sfx_cooldown_table[sfx_id]` (which is saved/restored
-  in `RollbackSlot`).
+Inside `decomp/1.9/crimsonland/audio/sfx_play.cpp` and `sfx_play_panned.cpp`,
+nothing ever touches `crt_rand()` or simulation state (`sfx_entry_start_playback`
+uses C `rand()` for voice stealing). Therefore, **audio playback and cooldowns
+are 100% decoupled from rollback**:
 
-- In `crimson-core/game/audio_timing.cpp:25-32`, `game_audio_cooldowns(float dt)`
-  currently skips aging cooldowns only when `game_state_id == GAME_STATE_GAMEPLAY`.
-  Extend that guard to skip aging `sfx_cooldown_table` whenever `coop_active` is
-  in `GAME_STATE_PERK_SELECTION` or a pause/network barrier so `sfx_cooldown_table`
-  is driven exclusively by `game_audio_tick(audio_dt)` inside simulation ticks.
+1. **Zero audio state in `RollbackSlot` or `coop_canonical_snapshot()`**:
+   `sfx_cooldown_table[128]`, `sfx_sample_rate`, DirectSound buffers
+   (`crimson-core/game/dsound.cpp`), and music fade/volume tables are
+   presentation-owned and are **never** snapshotted, restored, or hashed across
+   peers. This also keeps the simulation boundary trivial to hand off to an
+   audio worklet or worker thread.
 
-- **Accepted prototype compromise**: Using `highest_heard_tick` suppresses
-  duplicate sounds on resimulated ticks $t \le \text{highest\_heard\_tick}$, at
-  the cost that a newly discovered remote shot on a rolled-back tick is silent
-  for that first packet window, and an already-mixed speculative one-shot sound
-  cannot be un-played from the speaker. Terminal music (`shortie_monk` /
-  `crimsonquest`) is gated by the terminal rollback barrier (Section 5.2) so it
-  never triggers speculatively.
+2. **One-way trigger emission during ticks**:
+   During `game_ticking == 1`, `sfx_play` and `sfx_play_panned` do not mutate
+   DirectSound buffers during resimulated ticks (`tick <= highest_heard_tick`
+   returns `-1` immediately before touching `sfx_cooldown_table` or DirectSound,
+   or appends `(tick, sfx_id, pan, reflex_pitch, volume)` triggers to a
+   presentation queue flushed after the frame's rollback/resimulation settles).
+   `sfx_cooldown_table` is aged once per rendered host frame by wall-clock frame
+   time on the presentation side.
 
+3. **Start-once music & terminal music gate**:
+   In-game music starts once on the first projectile hit and is never rewound or
+   switched on rollback (Section 2.2.3). Terminal music (`shortie_monk` /
+   `crimsonquest`) is gated by the terminal rollback barrier (Section 5.2) so it
+   plays only once team wipe is confirmed.
 ---
 
 ## 5. Research question 4: Shared perk menus, pause, death, and restart
@@ -919,9 +928,8 @@ carries `run_epoch` (`uint32`) and tick-indexed barriers (`menu_tick`,
 
 2. **Changes**:
    - Implement 16-slot `RollbackRing`, `coop_canonical_snapshot()`, per-tick lead
-     gate, "Bake on Confirm" (`coop_bakes[16]`), unheard audio buffer-0 protection,
-     and menu/terminal rollback barriers.
-
+     gate, "Bake on Confirm" (`coop_bakes[16]`), decoupled one-way audio trigger
+     gate, and menu/terminal rollback barriers.
 3. **Verification gate (`node crimson-core/checks/game_coop.mjs`)**:
    - Compares two rollback-enabled `game.wasm` instances (running with asymmetric
      local presentation settings, audio mute/volume, and 60 Hz vs 144 Hz frame
