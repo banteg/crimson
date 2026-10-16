@@ -27,11 +27,11 @@ Its [player guide](pypi.md) covers controls, options and commands.
 
 **A native desktop client** runs the browser build over SDL3 on macOS and Linux ([build notes](crimson-core/PORT.md#running-the-native-client)).
 
-The [feature matrix](https://crimson.banteg.xyz/rewrite/feature-matrix/) compares the three. The original Crimsonland Classic assets are distributed with permission from the original developer, and every client downloads them on first launch.
+The [feature matrix](https://crimson.banteg.xyz/rewrite/feature-matrix/) compares the three. The original Crimsonland Classic assets are distributed with permission from 10tons, and every client downloads them on first launch.
 
 ## Beyond the original
 
-- **Sharper art.** The original shipped its textures as JAZ files, JPEG color with a separate alpha channel. The game files every client downloads carry the uncompressed source art from the original developer instead, free of JPEG artifacts, wherever it matches what shipped.
+- **Sharper art.** The original shipped its textures as JAZ files, JPEG color with a separate alpha channel. The game files every client downloads carry the uncompressed source art from 10tons instead, free of JPEG artifacts, wherever it matches what shipped.
 - **Deterministic runs.** The simulation steps at a fixed 60 Hz from a seed and the recorded inputs, so a run plays out the same way every time, on every client.
 - **Replays.** Every run is recorded. Watch any of them from the high score screen or a link, seek anywhere, and with the Python port, verify one tick by tick or render it to 60 fps video.
 - **A verified leaderboard.** [crimson.land](https://crimson.land) ranks Survival and every quest, normal and hardcore. A score is a whole run, and the server replays it on the recovered original code before it counts. There is no sign-up: each client makes a [key](https://crimson.banteg.xyz/rewrite/leaderboard-identity/) on first launch. Bots and tool-assisted runs are welcome on [their own board](https://crimson.banteg.xyz/rewrite/bots/).
@@ -70,4 +70,4 @@ The same source tree builds other releases, each with its own compiler profile a
 
 ## Legal
 
-This project is an independent reverse engineering and reimplementation effort for preservation, research, and compatibility. Original Crimsonland Classic assets are distributed with permission from the original developer; the game code and reimplementation remain independent.
+This project is an independent reverse engineering and reimplementation effort for preservation, research, and compatibility. Original Crimsonland Classic assets are distributed with permission from 10tons; the game code and reimplementation remain independent.
