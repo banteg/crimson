@@ -206,9 +206,12 @@ Safari JSC, Wasmtime, and native `wasm2c`:
 
 #### 3. First-hit music latch & playback-gated RNG draw (`music_play_exclusive.cpp`, `music_fade_out_all.cpp`) — desync hazard
 
-- **Problem**: Projectile hits outside Rush call
-  `music_play_exclusive(music_track_game_playlist)`
-  (`decomp/1.9/crimsonland/crimsonland/projectile_update.cpp:610-612, 848-850`):
+- **Problem**: Projectile hits outside Rush read `music_playlist_randomized_latch`
+  directly (`decomp/1.9/crimsonland/crimsonland/projectile_update.cpp:610-612, 848-850`):
+  while it is `0`, the hit calls `music_play_exclusive(music_track_game_playlist)`
+  **instead of** playing the hit sound, which skips the hit sound's
+  `crt_rand() % 6` draw. The latch therefore gates an RNG draw on every hit, not
+  only the playlist pick:
 
   1. `decomp/1.9/crimsonland/audio/music_play_exclusive.cpp:8-10` returns early
      before touching RNG if `!music_ready || config_blob.music_disabled || config_blob.sound_disabled`.
@@ -236,24 +239,30 @@ Safari JSC, Wasmtime, and native `wasm2c`:
      `sound_disabled` / `music_playlist_entry_count == 0` diverges on the RNG
      stream.
 
-- **Fix (deliberate patch to original behavior — start-once music untouched by rollback)**:
-  Give the session a strictly simulation-owned `bool game_tune_started` latch
-  (stored in `KeyframeHost` and reset only in `portable_init`, matching
-  `src/crimson/sim/world_state.py:87-94`), and **leave music playback untouched
-  across rollbacks once started**:
+- **Fix (deliberate patch to original behavior — split music calls into a
+  simulation half and a playback half)**:
+  Keep `music_playlist_randomized_latch` as the latch. It is already simulation
+  state: `KeyframeHost::music_latch` (`crimson-core/host/keyframes.inc:71`) and a
+  `schema.json` field, so rollback restores it and the canonical hash covers it.
+  The verifier already keeps the gate open (`portable_init` sets `music_ready = 1`,
+  all fade flags, and a 6-entry playlist, `crimson-core/host/host.cpp:512-524`),
+  matching `src/crimson/sim/world_state.py:87-94`. In a co-op session, inside
+  `game_ticking`, `music_play_exclusive` becomes:
 
-  - Inside `game_session && game_ticking`, intercept
-    `music_play_exclusive(music_track_game_playlist)`: if `!game_tune_started`,
-    always draw `crt_rand()` once and set `game_tune_started = true` regardless
-    of `music_ready`, `music_disabled`, `sound_disabled`, or
-    `music_playlist_entry_count`. Never allow `music_fade_out_all` to clear
-    `game_tune_started`.
+  - **Simulation half (identical on every peer, reads no audio state)**: for
+    `music_track_game_playlist`, if the latch is clear, draw `crt_rand()` once
+    and set the latch, regardless of `music_ready`, `music_disabled`,
+    `sound_disabled`, or `music_playlist_entry_count`; for any other track
+    (`shortie_monk`, `crimsonquest`), clear the latch as the original's `else`
+    branch does. `music_fade_out_all` never touches the latch inside ticks.
 
-  - **Start-once presentation rule**: The first time the in-game tune triggers
-    during a run, start playback locally if music is enabled (`music_playlist_entry_count > 0`)
-    and **do nothing further with music during rollbacks or resimulations** (no
-    `chosen_tune` tracking, no `WatchUnheard` music volume/fade save-restore,
-    and no track switching on rollback).
+  - **Playback half (local, gated by the peer's own audio settings)**: start the
+    in-game tune the first time the simulation half sets the latch, and do
+    nothing further during rollbacks or resimulations. Whether a tune is already
+    playing is read from the music tables in `SESSION_KEEPS` (`watch_playing()`
+    in `crimson-core/host/watch.inc`), which rollback never restores, so a
+    rollback that undoes and replays the first hit does not restart the tune.
+    Terminal tracks wait for the terminal barrier (Section 5.2).
 
 #### 4. Complete 2-player input, camera & replay seams (`host.cpp`, `grim.inc`, `game.inc`, `session.inc`, `replay.inc`)
 
@@ -420,7 +429,7 @@ monotonically non-decreasing tick frontiers**:
 | `peer_ack_tick` | Highest contiguous tick the remote peer has acknowledged receiving from us. |
 | `confirmed_through` | Highest **executed** simulation tick $t \le \min(\text{input\_produced\_tick}, \text{remote\_contiguous\_tick})$ whose entire input and control-barrier history is final. |
 | `next_sim_tick` | Next simulation tick to execute (`next_sim_tick == 0` at init; after executing tick $t$, `next_sim_tick = t + 1`). |
-| `Menu / Pause Barrier` | Optional tick $T_{\text{barrier}}$ beyond which `next_sim_tick` may not advance until the barrier decision is resolved. |
+| `Menu Barrier` | Optional tick $T_{\text{barrier}}$ beyond which `next_sim_tick` may not advance until the barrier decision is resolved. |
 
 #### Pacing & accumulator rules (`coop_frame`)
 
@@ -447,16 +456,10 @@ monotonically non-decreasing tick frontiers**:
    whenever `next_sim_tick` is blocked by a network stall or menu barrier so
    resuming never triggers a burst of catch-up ticks.
 
-4. **Per-run constant input delay $D$ (and gap-free transition rule)**:
+4. **Per-run constant input delay $D$**:
    In the `M1`/`M2` prototype, **hold $D$ constant for the duration of each run**
    (negotiated from measured handshake RTT in `MSG_START_RUN`: fixed $D = 2$ in
-   `M2` rollback, or fixed $D \in [1, 8]$ per run in `M1` lockstep). Because
-   inputs are assigned strictly via `++input_produced_tick` while
-   `input_produced_tick < next_sim_tick + D`, even if a future revision adjusts
-   target lead $D$ mid-run, increasing $D$ simply allows the monotonic cursor
-   `input_produced_tick` to sample one additional contiguous tick, and
-   decreasing $D$ simply pauses new sampling until `next_sim_tick + D` catches
-   up—never leaving a gap (`102 -> 104`) or overwriting an already-published tick.
+   `M2` rollback, or fixed $D \in [1, 8]$ per run in `M1` lockstep).
 
 ---
 
@@ -474,6 +477,7 @@ monotonically non-decreasing tick frontiers**:
 |     - overflow_entries[2048]: preallocated; copies [0..overflow_extent)  |
 |     - canonical_hash_after: uint32 (hash after executing tick t)         |
 +--------------------------------------------------------------------------+
+```
 
 #### Per-tick retention invariant
 
@@ -512,15 +516,17 @@ Therefore, **cross-peer desync hashes and `M0b` state comparisons** run over
    zeroed (`crimson-core/checks/game_compare.mjs:10-17`).
 
 2. Authoritative `KeyframeHost` fields: `rng`, `tick`, `menu_requested`,
-   `perk_menu_open`, `running_down`, `run_down_ms`, `game_tune_started`,
-   `overflow_active`, `overflow_extent`, and normalized `overflow_free` index
+   `perk_menu_open`, `running_down`, `run_down_ms`, `overflow_active`, `overflow_extent`, and normalized `overflow_free` index
    (`overflow_free ? int(overflow_free - game_effect_overflow.entries) : -1`).
+   (`music_latch` mirrors `music_playlist_randomized_latch`, which item 1
+   already hashes.)
 
 3. `telekinetic_bonus_hover_timer_ms[0..1]` (`2 × int32`).
 
 4. Active `game_effect_overflow.entries[0..overflow_extent)` with each entry's
    `next_free` pointer normalized to its pool index (`int(p - game_effect_overflow.entries)`
    or `-1`/`-2` for null/`effect_discard_entry`) and quad vertex scratch omitted.
+
 Right after tick $t$ executes, its 32-bit FNV-1a / CRC32C `canonical_hash_after`
 is stored in `slot[t & 15]`. If tick $t$ is later resimulated,
 `slot[t & 15].canonical_hash_after` is overwritten with the corrected hash. A
@@ -583,8 +589,8 @@ compiling `sfx_play` and `sfx_play_panned` as no-ops, **all gameplay RNG draws
 for sound effects occur in the caller before `sfx_play` / `sfx_play_panned` is
 entered** (weapon shot variant in `player_update_heading.cpp:1325`, creature
 death sound in `creature_apply_damage.cpp`, bleed drip in
-`player_update_heading.cpp:300`), and the first-hit tune draw is isolated by the
-1-bit `game_tune_started` latch (Section 2.2.3).
+`player_update_heading.cpp:300`), and the first-hit tune draw belongs to the
+simulation half of `music_play_exclusive` (Section 2.2.3).
 
 Inside `decomp/1.9/crimsonland/audio/sfx_play.cpp` and `sfx_play_panned.cpp`,
 nothing ever touches `crt_rand()` or simulation state (`sfx_entry_start_playback`
@@ -595,23 +601,30 @@ are 100% decoupled from rollback**:
    `sfx_cooldown_table[128]`, `sfx_sample_rate`, DirectSound buffers
    (`crimson-core/game/dsound.cpp`), and music fade/volume tables are
    presentation-owned and are **never** snapshotted, restored, or hashed across
-   peers. This also keeps the simulation boundary trivial to hand off to an
+   peers. Nothing needs excluding: `SESSION_KEEPS` (`crimson-core/game.py:321`)
+   already keeps `^sfx_` and the `^music_` track tables out of `game_run_spans`.
+   This also keeps the simulation boundary trivial to hand off to an
    audio worklet or worker thread.
 
-2. **One-way trigger emission during ticks**:
-   During `game_ticking == 1`, `sfx_play` and `sfx_play_panned` do not mutate
-   DirectSound buffers during resimulated ticks (`tick <= highest_heard_tick`
-   returns `-1` immediately before touching `sfx_cooldown_table` or DirectSound,
-   or appends `(tick, sfx_id, pan, reflex_pitch, volume)` triggers to a
-   presentation queue flushed after the frame's rollback/resimulation settles).
-   `sfx_cooldown_table` is aged once per rendered host frame by wall-clock frame
-   time on the presentation side.
+2. **Each tick is heard once**:
+   `highest_heard_tick` is a presentation-side counter (never rolled back): the
+   highest tick whose sounds have played. During `game_ticking == 1`, if
+   `tick <= highest_heard_tick` (a resimulated tick), `sfx_play` and
+   `sfx_play_panned` return `-1` on entry, before touching
+   `sfx_cooldown_table` or DirectSound; no caller reads the return value.
+   Otherwise they play immediately and `highest_heard_tick = tick`. A sound that
+   first appears on a resimulated tick is lost, and a speculative sound that a
+   rollback removes has already played; both are accepted. Gating in `sfx_play`
+   itself (not in `sfx_entry_start_playback`) also keeps callers off live buffer
+   `0`. `sfx_cooldown_table` is aged once per rendered host frame by wall-clock
+   frame time on the presentation side.
 
 3. **Start-once music & terminal music gate**:
-   In-game music starts once on the first projectile hit and is never rewound or
-   switched on rollback (Section 2.2.3). Terminal music (`shortie_monk` /
-   `crimsonquest`) is gated by the terminal rollback barrier (Section 5.2) so it
-   plays only once team wipe is confirmed.
+   The playback half of `music_play_exclusive` starts the in-game tune once and
+   never rewinds or switches it on rollback (Section 2.2.3). Terminal music
+   (`shortie_monk` / `crimsonquest`) is gated by the terminal rollback barrier
+   (Section 5.2) so it plays only once team wipe is confirmed.
+
 ---
 
 ## 5. Research question 4: Shared perk menus, pause, death, and restart
@@ -682,9 +695,10 @@ partially intercepts:
      each peer calls `game_state_set_recovered(GAME_STATE_GAMEPLAY)` (which sets
      `ui_elements_timeline = 0` and `ui_transition_direction = 1` per
      `decomp/1.9/crimsonland/ui_elements/game_state_set.cpp:328-329`), resets
-     `coop_banked_s = 0`, rebases `input_produced_tick = T_open` (discarding any
-     stale pre-menu inputs for $T_{\text{open}} + 1 \dots T_{\text{open}} + D$
-     and seeding fresh delay slots), and steps tick $T_{\text{open}} + 1$.
+     `coop_banked_s = 0`, and steps tick $T_{\text{open}} + 1$. Inputs produced
+     before the menu opened (up to $T_{\text{open}} + 1 + D$) are already
+     published and stay immutable; they play out after resume like any other
+     delayed input.
 
 ### 5.2 Run-down barrier, pause barrier, and restart
 
@@ -701,26 +715,27 @@ partially intercepts:
     speculating and wait until `confirmed_through` reaches the terminal tick
     before playing the end-screen music and calling `game_state_set_recovered(game_state_pending)`.
 
-- **Two-phase acknowledged pause barrier**:
+- **Input-frontier pause (no pause tick)**:
 
   - Disable local immediate Escape handling in `live_poll`
     (`crimson-core/host/session.inc:247-251`) and `game_live_pause` (`:489-494`)
     during co-op.
 
-  - Pressing `Escape` sends `MSG_PAUSE_PROPOSE { run_epoch, pause_seq, proposer_sim_tick: next_sim_tick, proposer_input_tick: input_produced_tick }`
-    on `coop-control`.
+  - Pause is not simulation state: the run stays in `GAME_STATE_GAMEPLAY` and no
+    input or command changes. Pressing `Escape` sends
+    `MSG_PAUSE { run_epoch, pause_seq, paused }` on `coop-control`, with
+    `pause_seq` one past the highest either peer has seen. Each peer follows the
+    message with the highest `pause_seq` (ties broken by Host).
 
-  - The Host (or receiving peer) computes an agreed `pause_tick = max(proposer_input_tick, local_input_produced_tick) + 1`
-    and sends `MSG_PAUSE_COMMIT { run_epoch, pause_seq, pause_tick }`.
+  - While paused, a peer stops producing local input and draws the pause banner
+    over `host_frame_hold(HOST_FRAME_SHOW)`. Already-published inputs stay
+    immutable, so both peers keep simulating up to the shared input frontier and
+    then stall on the existing lead gate (lockstep wait in `M1`, $R_{\max}$ in
+    `M2`). Speculative ticks past the frontier remain valid speculation and are
+    confirmed or corrected after resume; nothing rolls back.
 
-  - In `M1` lockstep, neither peer can have executed `pause_tick` yet because
-    neither peer has published input for `pause_tick`. In `M2` rollback, if a
-    peer has already speculated past `pause_tick` while `MSG_PAUSE_COMMIT` was
-    in transit, it immediately **rolls back to `pause_tick`**. Both peers halt
-    `next_sim_tick` at `pause_tick`, exchange `MSG_PAUSE_ACK { run_epoch, pause_seq, pause_tick }`,
-    and draw the pause banner over `host_frame_hold(HOST_FRAME_SHOW)` without
-    leaving `GAME_STATE_GAMEPLAY`. Resuming uses `MSG_RESUME_COMMIT` /
-    `MSG_RESUME_ACK` for `pause_seq + 1`.
+  - `paused: false` resumes input production from the next contiguous tick,
+    with `coop_banked_s` clamped as for any stall.
 
 - **Restart / rematch (`run_epoch` increment)**:
 
@@ -816,9 +831,12 @@ keep arriving.
    `MSG_INPUT_REPAIR { run_epoch, start_tick: peer_ack_tick + 1, count, inputs[] }`
    over the reliable `coop-control` channel.
 
-3. If `remote_contiguous_tick` fails to advance for **5 seconds** despite packet
-   liveness (**progress timeout**), or no packets arrive for **15 seconds**
-   (**liveness timeout**), the session aborts cleanly.
+3. If the remote advertises `head_tick > remote_contiguous_tick` and
+   `remote_contiguous_tick` still fails to advance for **5 seconds** despite
+   packet liveness (**progress timeout**: an unrepaired gap), or no packets
+   arrive for **15 seconds** (**liveness timeout**), the session aborts cleanly.
+   A peer that simply stops producing input (pause, perk menu barrier) advertises
+   no gap, so barriers of any length never trip the progress timeout.
 
 #### Channel 1: `coop-ticks` (`ordered: false, maxRetransmits: 0`, little-endian, 192 bytes at $W = 8$)
 
@@ -853,9 +871,9 @@ from a future tick $> t$.
 Per [RFC 8831 Section 6.3](https://www.rfc-editor.org/rfc/rfc8831.html#section-6.3),
 delivery ordering across two separate WebRTC DataChannels (`coop-ticks` and
 `coop-control`) is not guaranteed. Therefore, every message on both channels
-carries `run_epoch` (`uint32`) and tick-indexed barriers (`menu_tick`,
-`pause_tick`), and tick `0` inputs for `run_epoch` are gated until both
-`MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
+carries `run_epoch` (`uint32`), the perk barrier carries its `menu_tick`, and
+tick `0` inputs for `run_epoch` are gated until both `MSG_START_RUN` and
+`MSG_START_ACK` for `run_epoch` have completed.
 
 - `MSG_HELLO`: `{ type: "hello", protocol_ver: 3, build_id: string, role: 0 | 1 }`
 - `MSG_START_RUN`: `{ type: "start", run_epoch: number, player_count: 2, delay_ticks: number, config_b64: string, quest_b64?: string }`
@@ -863,7 +881,7 @@ carries `run_epoch` (`uint32`) and tick-indexed barriers (`menu_tick`,
 - `MSG_INPUT_REPAIR`: `{ type: "repair", run_epoch: number, start_tick: number, open_req_bits: number, inputs_b64: string }`
 - `MSG_PERK_DECISION`: `{ type: "perk_pick", run_epoch: number, menu_epoch: number, menu_tick: number, offered_hash: number, choice: number }`
 - `MSG_PERK_ACK`: `{ type: "perk_ack", run_epoch: number, menu_epoch: number }`
-- `MSG_PAUSE_REQ` / `MSG_PAUSE_STATE`: `{ type: "pause", run_epoch: number, pause_seq: number, paused: boolean, pause_tick: number }`
+- `MSG_PAUSE`: `{ type: "pause", run_epoch: number, pause_seq: number, paused: boolean }`
 - `MSG_DESYNC`: `{ type: "desync", run_epoch: number, tick: number, local_hash: number, remote_hash: number, snapshot_b64?: string }` (exchanges compressed `coop_canonical_snapshot()` at `tick` so both peers log the exact first differing `schema.json` / host / overflow field).
 
 ---
@@ -911,7 +929,7 @@ carries `run_epoch` (`uint32`) and tick-indexed barriers (`menu_tick`,
 2. **Changes**:
    - Fix uninitialized `alternate_distance` UB in `creature_update_all.cpp:126, 198-223`.
    - Fix player-0-only perk command alive gate (`any_alive`), simulation-owned
-     `game_tune_started` latch, distinct P1 virtual codes (`0x110..0x115`, fire
+     music latch with split simulation/playback halves, distinct P1 virtual codes (`0x110..0x115`, fire
      `200`, axes `2/3`), 2P tick-0 midpoint camera conversion, and 2P manual
      reload.
 
@@ -930,6 +948,7 @@ carries `run_epoch` (`uint32`) and tick-indexed barriers (`menu_tick`,
    - Implement 16-slot `RollbackRing`, `coop_canonical_snapshot()`, per-tick lead
      gate, "Bake on Confirm" (`coop_bakes[16]`), decoupled one-way audio trigger
      gate, and menu/terminal rollback barriers.
+
 3. **Verification gate (`node crimson-core/checks/game_coop.mjs`)**:
    - Compares two rollback-enabled `game.wasm` instances (running with asymmetric
      local presentation settings, audio mute/volume, and 60 Hz vs 144 Hz frame
@@ -949,7 +968,7 @@ carries `run_epoch` (`uint32`) and tick-indexed barriers (`menu_tick`,
 2. **Deliverable**: Playable `?coop=<room_id>` two-browser session using
    `coop-ticks` + `coop-control` over WebRTC + Cloudflare Calls TURN (and WS
    fallback), with reliable `MSG_INPUT_REPAIR`, host-authoritative perk menu
-   interception, sequenced pause barrier, and measured RTT / candidate-type /
+   interception, input-frontier pause, and measured RTT / candidate-type /
    desync telemetry.
 
 ### Milestone `M2`: Bounded rollback in the browser prototype
@@ -974,8 +993,10 @@ carries `run_epoch` (`uint32`) and tick-indexed barriers (`menu_tick`,
   death, level-up, or quest completion; `MSG_PERK_DECISION` arriving on
   `coop-control` before the delayed `open_req_mask` on `coop-ticks`.
 
-- **Pause races**: `MSG_PAUSE_STATE` arriving when the receiver has already
-  speculated 8 ticks past `pause_tick`; simultaneous pause/resume requests.
+- **Pause races**: `MSG_PAUSE` arriving when the receiver has already
+  speculated 8 ticks past the sender's input frontier; simultaneous pause/resume
+  requests (same `pause_seq`); a pause held longer than the 5-second progress
+  timeout.
 
 - **Burst loss > 8 ticks**: Drop 12 consecutive `coop-ticks` packets while later
   packets arrive; verify `MSG_INPUT_REPAIR` recovers `remote_contiguous_tick`
