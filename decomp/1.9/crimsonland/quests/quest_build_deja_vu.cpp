@@ -33,7 +33,7 @@ extern "C" void quest_build_deja_vu(
         for (int radius = 84; radius < 252; radius += 42) {
             quest_vec2_t offset(
                 (float)radius * angle_cos,
-                (float)radius * angle_sin);
+                (float)(radius * angle_sin));
             spawns[entry_count].pos = quest_vec2_t(
                 offset.x + 512.0f,
                 offset.y + 512.0f);

@@ -1,3 +1,4 @@
+#include "cl_build.h"
 #include "grim_texture.h"
 
 extern "C" int grim_find_texture_by_name(char *name)

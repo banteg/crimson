@@ -1,3 +1,5 @@
+#include "cl_build.h"
+
 #if CL_BUILD == 10908
 #include "reflexive_arcade.h"
 #endif

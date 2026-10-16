@@ -1,0 +1,29 @@
+#include "crimsonland_highscore.h"
+
+extern "C" int highscore_rank_index(void)
+{
+    int i;
+
+    if (config_game_mode == GAME_MODE_RUSH) {
+        for (i = 0; i < highscore_table_count; i++) {
+            if (run_elapsed_ms >
+                (int)highscore_table[i].run_elapsed_ms) {
+                return i;
+            }
+        }
+    } else if (config_game_mode == GAME_MODE_QUEST) {
+        for (i = 0; i < highscore_table_count; i++) {
+            if (run_elapsed_ms <
+                (int)highscore_table[i].run_elapsed_ms) {
+                return i;
+            }
+        }
+    } else {
+        for (i = 0; i < highscore_table_count; i++) {
+            if (highscore_score_xp > (int)highscore_table[i].score_xp) {
+                return i;
+            }
+        }
+    }
+    return highscore_table_count;
+}

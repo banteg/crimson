@@ -53,44 +53,6 @@
       ]
     },
     {
-      "address": 4198496,
-      "name": "native_function_00401060",
-      "blocks": [
-        {
-          "address": 4198496,
-          "end": 4198501,
-          "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
-        }
-      ]
-    },
-    {
-      "address": 4198512,
-      "name": "native_function_00401070",
-      "blocks": [
-        {
-          "address": 4198512,
-          "end": 4198513,
-          "sha256": "ae3f4619b0413d70d3004b9131c3752153074e45725be13b9a148978895e359e"
-        }
-      ]
-    },
-    {
-      "address": 4198528,
-      "name": "native_function_00401080",
-      "blocks": [
-        {
-          "address": 4198528,
-          "end": 4198533,
-          "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
-        },
-        {
-          "address": 4198544,
-          "end": 4198585,
-          "sha256": "ea85627afd04a189ff97059079642051127f33f11a043a0e9ea9adf91aa771f9"
-        }
-      ]
-    },
-    {
       "address": 4198592,
       "name": "native_function_004010c0",
       "blocks": [
@@ -103,6 +65,22 @@
           "address": 4198608,
           "end": 4198629,
           "sha256": "7f386218e9d5e0e90524969b5a7e4eed6b56b56364f4db5b698159be14137aa2"
+        }
+      ]
+    },
+    {
+      "address": 4198640,
+      "name": "native_function_004010f0",
+      "blocks": [
+        {
+          "address": 4198640,
+          "end": 4198645,
+          "sha256": "ec7d2aa54ab353ae3e298f2752ca2bce4eae1ebdb8c1ddeefde03cd044576859"
+        },
+        {
+          "address": 4198656,
+          "end": 4198677,
+          "sha256": "342efc2f9e13f7dd58b61e7e277f9547c2e8a2cbd9402ce9f26c3702d7a32c3d"
         }
       ]
     },
@@ -40911,10 +40889,8 @@
   ],
   "verified_starts": [
     4198448,
-    4198496,
-    4198512,
-    4198528,
     4198592,
+    4198640,
     4198688,
     4198864,
     4199120,
@@ -41148,5 +41124,5 @@
       "note": "Initial application object cluster retained through the last menu/UI body. The following vector/template helper interval has uncertain ownership and stays unclassified; later exact D3DX/CRT bodies are classified individually. The boundary is not inferred from ordered donor names."
     }
   ],
-  "maps_sha256": "e6f1429b666cf146caf371210a5c7f9f825b0410b62501405aae904557be71e6"
+  "maps_sha256": "82755b2061f1928e4c50e3600a479a371c8f06072fdca3688cf182fc6119a0f0"
 }

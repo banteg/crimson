@@ -125,3 +125,15 @@ reference variants do not reproduce the winning scalar lifetime. A prior
 diagnostic sweep of reference-input inline helpers across all five draw sites
 identified the earlier glow region. No helper, register constraint, artificial
 use, ABI change, or shared-header change is retained.
+
+## 1.9.8 (C2 9044), exact (2026-10-16)
+
+Exact in both builds. The function has no branches, so 9044 cuts it into
+81-node scheduling windows, and the second and final draw-quad argument
+sequences depend on where the cuts fall. Native needs one more codeless round
+before the second quad and one fewer before the final quad than the old
+source: `ui_cursor_pulse_phase += (frame_dt * 1.1f);` adds a parenthesis
+round, and passing the glow x expression directly (no `glow_x` local) removes
+a forward-propagation round. 8966 is unchanged. The two timer globals are
+recovered data in `analysis/decomp/1.9.8/crimsonland.exe/recovered.json`
+(references `0x419bd7`, `0x419bf8`).

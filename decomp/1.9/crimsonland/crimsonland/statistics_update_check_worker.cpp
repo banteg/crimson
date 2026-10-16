@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <wininet.h>
 
+#include "cl_build.h"
 #include "crimsonland_console.h"
 
 extern int online_sync_status;

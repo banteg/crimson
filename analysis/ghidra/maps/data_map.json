@@ -17554,6 +17554,13 @@
       "name": "zlib_inflate_mask",
       "program": "grim.dll",
       "type": "unsigned int[17]"
+    },
+    {
+      "address": "0x0047e440",
+      "comment": "Unused C++ vec2 startup object immediately before console_input_buf; only its initializer references it.",
+      "name": "unused_console_prefix_vec2",
+      "program": "crimsonland.exe",
+      "type": "vec2f_t"
     }
   ],
   "notes": "Data and annotation label map. Entry kind defaults to data; code_label marks instruction annotations excluded from native data closure. Keep names unique per program."

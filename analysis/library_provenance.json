@@ -459,8 +459,8 @@
         "decomp/1.9/crimsonland/dxversion/win32_file_get_version_words.cpp",
         "decomp/1.9/crimsonland/dxversion/dx_version_pack_4x16.cpp",
         "decomp/1.9/crimsonland/dxversion/dx_version_compare_4x16.cpp",
-        "decomp/1.9/crimsonland/crimsonland/reg_read_dword_default.c",
-        "decomp/1.9/crimsonland/crimsonland/reg_write_dword.c"
+        "decomp/1.9/crimsonland/crimsonland/reg_read_dword_default.cpp",
+        "decomp/1.9/crimsonland/crimsonland/reg_write_dword.cpp"
       ],
       "validation": "Every archive member must remain an exact all-scope instruction and reference match.",
       "normalization": [
@@ -673,6 +673,10 @@
             {
               "start": "0x00460CB8",
               "end": "0x0046E920"
+            },
+            {
+              "start": "0x0046E968",
+              "end": "0x0046E96E"
             }
           ]
         },
@@ -693,6 +697,12 @@
                 "ov_pcm_total",
                 "ov_read"
               ]
+            }
+          ],
+          "ranges": [
+            {
+              "start": "0x0046E920",
+              "end": "0x0046E944"
             }
           ]
         }
@@ -715,6 +725,10 @@
             {
               "start": "0x1000AAA6",
               "end": "0x1004B5B0"
+            },
+            {
+              "start": "0x1004B9EF",
+              "end": "0x1004BA63"
             }
           ],
           "fingerprints": [
@@ -754,6 +768,10 @@
             {
               "start": "0x1000A8D0",
               "end": "0x1000AAA6"
+            },
+            {
+              "start": "0x1004B5B0",
+              "end": "0x1004B7D8"
             }
           ],
           "imports": [

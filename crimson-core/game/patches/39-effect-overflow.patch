@@ -23,40 +23,40 @@ Original bug 39: blood splatters and corpse shatters can exhaust the 511-slot ef
  
      *(effect_template_t *)&entry->velocity = effect_template;
      entry->position = *pos;
---- a/decomp/1.9/crimsonland/effects/effect_free.c
-+++ b/decomp/1.9/crimsonland/effects/effect_free.c
+--- a/decomp/1.9/crimsonland/effects/effect_free.cpp
++++ b/decomp/1.9/crimsonland/effects/effect_free.cpp
 @@ -1,7 +1,10 @@
  #include "crimsonland_gameplay.h"
 +#include "effect_overflow.h"
  
- void effect_free(effect_entry_t *entry)
+ extern "C" void effect_free(effect_entry_t *entry)
  {
 +    if (game_effects_free(entry))
 +        return;
      entry->next_free = effect_free_list_head;
      entry->flags = 0;
      effect_free_list_head = entry;
---- a/decomp/1.9/crimsonland/effects/effect_defaults_reset.c
-+++ b/decomp/1.9/crimsonland/effects/effect_defaults_reset.c
+--- a/decomp/1.9/crimsonland/effects/effect_defaults_reset.cpp
++++ b/decomp/1.9/crimsonland/effects/effect_defaults_reset.cpp
 @@ -1,4 +1,5 @@
  #include "crimsonland_gameplay.h"
 +#include "effect_overflow.h"
  
- extern effect_vec2_t effect_template_position;
- extern int effect_defaults_reserved_zero;
+ extern "C" effect_vec2_t effect_template_position;
+ extern "C" int effect_defaults_reserved_zero;
 @@ -43,4 +44,5 @@
      effect_init_entry(&effect_pool_pos_x[510]);
      effect_free_list_head = &effect_pool_pos_x[0];
      effect_pool_reserved_zero = 0;
 +    game_effects_reset();
  }
---- a/decomp/1.9/crimsonland/effects/effects_update.c
-+++ b/decomp/1.9/crimsonland/effects/effects_update.c
+--- a/decomp/1.9/crimsonland/effects/effects_update.cpp
++++ b/decomp/1.9/crimsonland/effects/effects_update.cpp
 @@ -1,30 +1,36 @@
  #include "crimsonland_gameplay.h"
 +#include "effect_overflow.h"
  
- void effects_update(void)
+ extern "C" void effects_update(void)
  {
      int index;
 +    int count = game_effects_extent();

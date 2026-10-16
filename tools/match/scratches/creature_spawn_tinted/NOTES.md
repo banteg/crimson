@@ -45,3 +45,25 @@ addressing anonymous parallel `int[2]` and `float[2]` arrays. A plain
 initialized `vec2f_t` lets VC6 fold away the frame and seven instructions, so
 the storage view is retained honestly. The named form remains exact at 92/92
 instructions and 34/0/0 references.
+
+## 1.9.8 (C2 9044), open (2026-10-16)
+
+94.57%, two regions. 9044 sees the field stores as independent (all at one
+height before the `crt_rand` call), so their order is IL order, while 8966
+chains every store in source order.
+
+- Velocity stores: 1.9.8 stores `vel_x` next to `vel_y` after `health`.
+  Moving the `vel_x` assignment there reaches 95.65% under 9044 but breaks
+  1.9.93 (8966 keeps source store order). What is left is `mov ecx, ebx`
+  (the `vel_y` copy): it is ready at the `mov al, 1` cycle and outranks the
+  `pos_y` store, where native issues the store first. All 121 single moves and
+  800 random multi-moves of the setup assignments, early float locals for the
+  velocity, `vel_y = vel_x`, swapped order and a `velocity` aggregate copy do
+  not change that.
+- Size block: the single-use `move_speed` local is forward-substituted by 9044
+  past the flags read-modify-write (it separates the fields; 8966 does not),
+  and the substitution's round takes the cycle native uses for the flags
+  store. Dropping the local (`move_speed *= 1.2f` or a direct product) fixes
+  1.9.8 and breaks 1.9.93; `float move_speed = ...; move_speed *= 1.2f;` and
+  parenthesised products fix neither.
+

@@ -27,10 +27,10 @@ def main():
         sources = []
         for name in (
             "effect_spawn.cpp",
-            "effect_free.c",
-            "effect_init_entry.c",
-            "effect_defaults_reset.c",
-            "effects_update.c",
+            "effect_free.cpp",
+            "effect_init_entry.cpp",
+            "effect_defaults_reset.cpp",
+            "effects_update.cpp",
         ):
             path = ROOT / "decomp/1.9/crimsonland/effects" / name
             text = adapter.apply_diffs(str(path.relative_to(ROOT)), path.read_text(), hunks)

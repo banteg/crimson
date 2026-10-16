@@ -1079,3 +1079,11 @@ All 2,928 native execution cases now also agree in ordered writes, closing the
 explicit debt from the September 11 package. Changed stride and missing-row
 controls fail. Runtime port behavior was already corrected in that package;
 this change adds exact source and reproducible proof.
+
+## 1.9.8 template 0x13 prologue (2026-10-16)
+
+Assigning `ai_mode` after constructing `chain_position` (a local, so no
+behaviour change) gives native's 1.9.8 store schedule: the constant 2 is
+materialized after the `terrain_texture_height / 2` load and both stores sink
+below the `fild`. A permutation sweep of the four prologue statements found
+this the only order exact for both builds.

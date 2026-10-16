@@ -1,114 +1,106 @@
 [
   {
-    "address": "0x00401000",
-    "canonical_address": "0x004010F0",
-    "end": "0x00401029",
+    "address": "0x00401030",
+    "canonical_address": "0x00401000",
+    "end": "0x00401035",
+    "evidence": "exact",
+    "name": "unused_console_prefix_vec2_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00401040",
+    "canonical_address": "0x00401010",
+    "end": "0x00401055",
+    "evidence": "referenced",
+    "name": "unused_console_prefix_vec2_global_init",
+    "size": 21
+  },
+  {
+    "address": "0x00401060",
+    "canonical_address": "0x00401050",
+    "end": "0x00401065",
     "evidence": "ordered",
-    "name": "invoke_callback_n",
+    "name": "console_input_buffer",
+    "size": 5
+  },
+  {
+    "address": "0x00401080",
+    "canonical_address": "0x00401150",
+    "end": "0x00401085",
+    "evidence": "ordered",
+    "name": "console_cmd_argc_get",
+    "size": 5
+  },
+  {
+    "address": "0x00401090",
+    "canonical_address": "0x00401870",
+    "end": "0x004010B9",
+    "evidence": "ordered",
+    "name": "console_printf",
     "size": 41
   },
   {
-    "address": "0x00401030",
+    "address": "0x004010C0",
     "canonical_address": "0x004028E0",
-    "end": "0x00401035",
+    "end": "0x004010C5",
     "evidence": "exact",
     "name": "config_init_defaults_thunk",
     "size": 5
   },
   {
-    "address": "0x00401040",
+    "address": "0x004010D0",
     "canonical_address": "0x004028F0",
-    "end": "0x00401055",
+    "end": "0x004010E5",
     "evidence": "referenced",
     "name": "config_init_defaults",
     "size": 21
   },
   {
-    "address": "0x00401060",
+    "address": "0x004010F0",
     "canonical_address": "0x0040CFD0",
-    "end": "0x00401065",
+    "end": "0x004010F5",
     "evidence": "exact",
     "name": "credits_line_table_global_init_thunk",
     "size": 5
   },
   {
-    "address": "0x00401070",
-    "canonical_address": "0x0040DF50",
-    "end": "0x00401071",
-    "evidence": "exact",
-    "name": "credits_secret_button_destroy",
-    "size": 1
+    "address": "0x00401100",
+    "canonical_address": "0x0040CFE0",
+    "end": "0x00401115",
+    "evidence": "referenced",
+    "name": "credits_line_table_global_init",
+    "size": 21
   },
   {
-    "address": "0x00401080",
+    "address": "0x00401120",
     "canonical_address": "0x0040DF70",
-    "end": "0x00401085",
+    "end": "0x00401125",
     "evidence": "exact",
     "name": "crimson_crt_empty_initializer_slot_05_thunk",
     "size": 5
   },
   {
-    "address": "0x00401090",
+    "address": "0x00401130",
     "canonical_address": "0x0040DF80",
-    "end": "0x004010B9",
+    "end": "0x004011C7",
     "evidence": "referenced",
     "name": "crimson_crt_empty_initializer_slot_05",
-    "size": 41
+    "size": 151
   },
   {
-    "address": "0x004010C0",
-    "canonical_address": "0x0040DF90",
-    "end": "0x004010C5",
-    "evidence": "exact",
-    "name": "mod_api_init_thunk",
-    "size": 5
-  },
-  {
-    "address": "0x004010D0",
-    "canonical_address": "0x0040DFA0",
-    "end": "0x004010E5",
-    "evidence": "referenced",
-    "name": "mod_api_init",
-    "size": 21
-  },
-  {
-    "address": "0x00401100",
-    "canonical_address": "0x0040E220",
-    "end": "0x00401115",
-    "evidence": "ordered",
-    "name": "mod_api_gfx_get_string_width",
-    "size": 21
-  },
-  {
-    "address": "0x00401120",
+    "address": "0x004011D0",
     "canonical_address": "0x00412080",
-    "end": "0x00401125",
+    "end": "0x004011D5",
     "evidence": "exact",
     "name": "crimson_crt_empty_initializer_slot_07_thunk",
     "size": 5
   },
   {
-    "address": "0x00401130",
-    "canonical_address": "0x00412090",
-    "end": "0x004011C7",
-    "evidence": "referenced",
-    "name": "crimson_crt_empty_initializer_slot_07",
-    "size": 151
-  },
-  {
-    "address": "0x004011D0",
-    "canonical_address": "0x004120A0",
-    "end": "0x004011D5",
-    "evidence": "exact",
-    "name": "gameplay_run_state_init_thunk",
-    "size": 5
-  },
-  {
     "address": "0x004011E0",
-    "canonical_address": "0x004120B0",
+    "canonical_address": "0x00412090",
     "end": "0x004012CB",
     "evidence": "referenced",
-    "name": "gameplay_run_state_init",
+    "name": "crimson_crt_empty_initializer_slot_07",
     "size": 235
   },
   {

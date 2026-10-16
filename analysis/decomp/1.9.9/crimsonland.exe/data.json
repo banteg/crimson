@@ -746,6 +746,11 @@
       "program": "1.9.9/crimsonland.exe"
     },
     {
+      "address": "0x0047e400",
+      "name": "unused_console_prefix_vec2",
+      "program": "1.9.9/crimsonland.exe"
+    },
+    {
       "address": "0x0047e408",
       "name": "console_input_buf",
       "program": "1.9.9/crimsonland.exe"

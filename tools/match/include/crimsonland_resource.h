@@ -17,6 +17,9 @@ unsigned short buffer_reader_read_u16(void);
 unsigned int buffer_reader_read_u32(void);
 void buffer_reader_skip(int count);
 unsigned char buffer_reader_find_tag(char *tag, int tag_len);
+#ifdef __cplusplus
+extern "C"
+#endif
 unsigned char resource_pack_read_cstring(FILE *fp);
 unsigned char resource_pack_set(char *path);
 unsigned char resource_open_read(char *path, unsigned int *size_out);

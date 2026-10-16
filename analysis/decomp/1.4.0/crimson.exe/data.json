@@ -366,6 +366,11 @@
       "program": "1.4.0/crimson.exe"
     },
     {
+      "address": "0x00435b08",
+      "name": "unused_console_prefix_vec2",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
       "address": "0x00435b10",
       "name": "console_input_buf",
       "program": "1.4.0/crimson.exe"

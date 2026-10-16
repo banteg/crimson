@@ -33,7 +33,7 @@
       {
         "path": "third_party/headers/crimsonland_types.h",
         "repository_relative": true,
-        "sha256": "e79b90b73335749173940a0bb44d0bfa55bcbeafd1d97348db26ae99db52755d"
+        "sha256": "54618e40a96fed744a26f8778ea9fff06625e27e8bdd3a003ecf402392943bc3"
       },
       {
         "path": "third_party/headers/d3d8.h",
@@ -444,7 +444,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "1092bbb7e35838a2da41091e2de1de19ba2aace74847c2f97ecb5560cbc454d7",
+  "audit_digest": "8c44834179f9c693f419249d4e4beb89a3ea8f1654c92f6b19b9a90a0b436670",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4612,7 +4612,7 @@
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "f945ac60ddb379294898496bd42100dcd1e2c6e00c030ea24d3c10e807494717",
+  "object_list_sha256": "2ddea0e28d912776d6e4c8e4ab6bf6fab0e8ea427ddf855f5a8c5caf415db208",
   "object_order": "ascending-minimum-reference-address-then-generated-data-then-linker-aliases",
   "objects": [
     {
@@ -7108,7 +7108,7 @@
         {
           "path": "decomp/1.9/grim/config/defaults_init.cpp",
           "repository_relative": true,
-          "sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca"
+          "sha256": "6193f2ea0677301fc84bf74f8ca2d6dabd4857416c2b646dc47a9610770c47f5"
         },
         {
           "path": "tools/match/scratches/grim_config_defaults_init/scratch.conf",
@@ -7128,12 +7128,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "e79b90b73335749173940a0bb44d0bfa55bcbeafd1d97348db26ae99db52755d"
-        },
-        {
-          "path": "tools/match/compilers/msvc6.5/Include/stddef.h",
-          "repository_relative": true,
-          "sha256": "85b7ea3023209d72394dff4d9f82899986a42db7be7574bd0f898f2271d23474"
+          "sha256": "54618e40a96fed744a26f8778ea9fff06625e27e8bdd3a003ecf402392943bc3"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Include/string.h",
@@ -7141,9 +7136,14 @@
           "sha256": "b55d01ac097650cb59c478443d0ad71cf065a33db38fd42651ac505b3095022f"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/crimson_config_defaults_impl.h",
           "repository_relative": true,
-          "sha256": "d498934b784c704bed53d5e439f747e9de0d258773ca165ad133d7a85df8645d"
+          "sha256": "8c830d60ca7bf0bd2624af6cf11993ded183ca9f5cf6132b25f9ba39f211ecb7"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -7169,10 +7169,10 @@
           "canonical_config_sha256": "c30b9baa7a1064f51892f3c92286f76be18b9256aeefb0c244b23160b1f6c0a2",
           "canonical_scratch": "tools/match/scratches/grim_config_defaults_init",
           "canonical_source": "decomp/1.9/grim/config/defaults_init.cpp",
-          "canonical_source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
+          "canonical_source_sha256": "6193f2ea0677301fc84bf74f8ca2d6dabd4857416c2b646dc47a9610770c47f5",
           "effective_end": 268442094,
           "end": 268442094,
-          "experiment_epoch": "42400630f52d157407f677f56d31d06547d4c37ce32cadbf5df32229c3f047eb",
+          "experiment_epoch": "7559e11e45664445f417cf7a958aa3f3144553145e170b3142a98d281ce4b543",
           "function": "grim_config_defaults_init",
           "match": {
             "body_byte_exact": true,
@@ -7213,7 +7213,7 @@
       "object_sha256": "e7902f56f3c260d029185a71b48253078bb571c32c21e2aa4b90ea7d625f0c56",
       "scratch": "tools/match/scratches/grim_config_defaults_init",
       "source": "decomp/1.9/grim/config/defaults_init.cpp",
-      "source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
+      "source_sha256": "6193f2ea0677301fc84bf74f8ca2d6dabd4857416c2b646dc47a9610770c47f5",
       "target_size": 734,
       "translation_unit": {
         "kind": "isolated",
@@ -10779,7 +10779,7 @@
         {
           "path": "tools/match/scratches/grim_jaz_jpeg_error_exit/scratch.conf",
           "repository_relative": true,
-          "sha256": "39960a59d0e95c69b63970bd1b0e899d1a6e7da3a66738b07f1be6d87784a375"
+          "sha256": "b79d5c03e969a4dccfdb9d47291a483cf927c21a91ff6ad74322479cb98dbfe1"
         },
         {
           "path": "tools/match/cl.sh",
@@ -10829,7 +10829,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/grim_jaz_jpeg_error_exit/scratch.conf",
-      "config_sha256": "39960a59d0e95c69b63970bd1b0e899d1a6e7da3a66738b07f1be6d87784a375",
+      "config_sha256": "b79d5c03e969a4dccfdb9d47291a483cf927c21a91ff6ad74322479cb98dbfe1",
       "effective_end": 268455609,
       "end": 268455609,
       "function": "grim_jaz_jpeg_error_exit",
@@ -10837,13 +10837,13 @@
         {
           "address": 268455568,
           "canonical_config": "tools/match/scratches/grim_jaz_jpeg_error_exit/scratch.conf",
-          "canonical_config_sha256": "39960a59d0e95c69b63970bd1b0e899d1a6e7da3a66738b07f1be6d87784a375",
+          "canonical_config_sha256": "b79d5c03e969a4dccfdb9d47291a483cf927c21a91ff6ad74322479cb98dbfe1",
           "canonical_scratch": "tools/match/scratches/grim_jaz_jpeg_error_exit",
           "canonical_source": "decomp/1.9/grim/codec/jaz_jpeg_error_exit.cpp",
           "canonical_source_sha256": "aec88706e526b5b61de1cfc2f317fe03ce14f52f41fc50f5b9ca68890216aca2",
           "effective_end": 268455609,
           "end": 268455609,
-          "experiment_epoch": "a22bce8966d2b1e4fe4891629a157170be2f193d1b7e94651ff97f3dbbac0b7b",
+          "experiment_epoch": "1f87f37047d0e71fb2d0dfe51ac006bc8f752bfc9f59b1237aa8c65ae7690ee1",
           "function": "grim_jaz_jpeg_error_exit",
           "match": {
             "body_byte_exact": true,
@@ -10879,7 +10879,7 @@
         "state": "match",
         "target_instructions": 14
       },
-      "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/fc74191c140de68f/jaz_jpeg_error_exit.obj",
+      "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/50b8f75670d6362e/jaz_jpeg_error_exit.obj",
       "object_function_symbol": "_grim_jaz_jpeg_error_exit",
       "object_sha256": "8d24cc539e456aa261dfec168466f6c6361684ae074d0e754f48ef40577b0cc5",
       "scratch": "tools/match/scratches/grim_jaz_jpeg_error_exit",
@@ -11882,7 +11882,7 @@
         {
           "path": "decomp/1.9/grim/texture/find_by_name.cpp",
           "repository_relative": true,
-          "sha256": "26cded2803cb4d046258ac8d6dcbde6c0c91969397bcc6b3ca6bf2f6af865491"
+          "sha256": "128a66b2562186a711011099429051b0d976cb11b32410715087a12a041aa4ee"
         },
         {
           "path": "tools/match/scratches/grim_find_texture_by_name/scratch.conf",
@@ -12265,6 +12265,11 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim_d3d8.h",
           "repository_relative": true,
           "sha256": "6732d55da92dfb16b3b251faed82393a6f000ea48cbf51efa6a8150a8997842a"
@@ -12288,10 +12293,10 @@
           "canonical_config_sha256": "e890c7efb63c86e873acc0dd53c8a7fd1a625894e037882b8449f2d97e979fda",
           "canonical_scratch": "tools/match/scratches/grim_find_texture_by_name",
           "canonical_source": "decomp/1.9/grim/texture/find_by_name.cpp",
-          "canonical_source_sha256": "26cded2803cb4d046258ac8d6dcbde6c0c91969397bcc6b3ca6bf2f6af865491",
+          "canonical_source_sha256": "128a66b2562186a711011099429051b0d976cb11b32410715087a12a041aa4ee",
           "effective_end": 268456372,
           "end": 268456372,
-          "experiment_epoch": "958269132bd7d36435240e0a1d1d736aa5545aa7ba7a25ca5f14b621cfb3e08e",
+          "experiment_epoch": "4593656e509ae8e796839c41f7c160dfb491c7cfa8ea8a0d0ffb5e700a6c5934",
           "function": "grim_find_texture_by_name",
           "match": {
             "body_byte_exact": true,
@@ -12332,7 +12337,7 @@
       "object_sha256": "685283d756c246e7e8e3a6f6352a99c4704274da7f732bb3421af99a7d30756e",
       "scratch": "tools/match/scratches/grim_find_texture_by_name",
       "source": "decomp/1.9/grim/texture/find_by_name.cpp",
-      "source_sha256": "26cded2803cb4d046258ac8d6dcbde6c0c91969397bcc6b3ca6bf2f6af865491",
+      "source_sha256": "128a66b2562186a711011099429051b0d976cb11b32410715087a12a041aa4ee",
       "target_size": 68,
       "translation_unit": {
         "kind": "isolated",
@@ -31346,7 +31351,7 @@
         {
           "path": "decomp/1.9/grim/api/dll_main.cpp",
           "repository_relative": true,
-          "sha256": "000b4d58a2f35502028a5ed686a2f064b9ad08901e6966b29c3b6e21bc9ae298"
+          "sha256": "6a641bacd294183044dcec348fd1b2c74edccf5ef5504fb92b2fca9a1603ad81"
         },
         {
           "path": "tools/match/scratches/grim_dll_main/scratch.conf",
@@ -31717,6 +31722,11 @@
           "path": "tools/match/compilers/msvc6.5/Include/wtypes.h",
           "repository_relative": true,
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
+        },
+        {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
         }
       ],
       "compiler": "msvc6.5",
@@ -31732,10 +31742,10 @@
           "canonical_config_sha256": "48810696329c596a0c21353b83a63d6447cba7588dd43bad2b7240f13bfe30fd",
           "canonical_scratch": "tools/match/scratches/grim_dll_main",
           "canonical_source": "decomp/1.9/grim/api/dll_main.cpp",
-          "canonical_source_sha256": "000b4d58a2f35502028a5ed686a2f064b9ad08901e6966b29c3b6e21bc9ae298",
+          "canonical_source_sha256": "6a641bacd294183044dcec348fd1b2c74edccf5ef5504fb92b2fca9a1603ad81",
           "effective_end": 268474950,
           "end": 268474950,
-          "experiment_epoch": "b6d1cd48ad4090be65fc9f7893e7cf55e98bcded34ef7ea3b8a61f19ae9ebd92",
+          "experiment_epoch": "e5879199d64e2c5c490143ccdf1936a9a3dec234475eb1211e0ab6bcd7e880fb",
           "function": "DllMain",
           "match": {
             "body_byte_exact": true,
@@ -31776,7 +31786,7 @@
       "object_sha256": "22417838bc9ec8ad944c644cf5d1bb77a3f713fbfabc2c6e6e212f114e01c646",
       "scratch": "tools/match/scratches/grim_dll_main",
       "source": "decomp/1.9/grim/api/dll_main.cpp",
-      "source_sha256": "000b4d58a2f35502028a5ed686a2f064b9ad08901e6966b29c3b6e21bc9ae298",
+      "source_sha256": "6a641bacd294183044dcec348fd1b2c74edccf5ef5504fb92b2fca9a1603ad81",
       "target_size": 38,
       "translation_unit": {
         "kind": "isolated",

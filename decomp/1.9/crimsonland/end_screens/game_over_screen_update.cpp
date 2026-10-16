@@ -14,12 +14,6 @@ struct game_over_vec2_t {
     game_over_vec2_t(float x_value, float y_value)
         : x(x_value), y(y_value) {}
 
-    void set(float x_value, float y_value)
-    {
-        x = x_value;
-        y = y_value;
-    }
-
     game_over_vec2_t operator+(const game_over_vec2_t &other) const
     {
         return game_over_vec2_t(x + other.x, other.y + y);
@@ -205,11 +199,12 @@ extern "C" void game_over_screen_update(void)
         render_tint_color_a = 0.7f;
         name_submit_button.label = "Ok";
 
-        panel_xy.x = xy.x + 170.0f;
-        panel_xy.y = xy.y - 8.0f;
-        ui_button_update(
-            (float *)&panel_xy,
-            (ui_button_t *)&name_submit_button);
+        {
+            game_over_vec2_t button_xy(xy.x + 170.0f, xy.y - 8.0f);
+            ui_button_update(
+                (float *)&button_xy,
+                (ui_button_t *)&name_submit_button);
+        }
 
         name_input.width_px = 0xa6;
         if (ui_text_input_update(
@@ -220,10 +215,10 @@ extern "C" void game_over_screen_update(void)
                 ui_screen_phase = 1;
                 sfx_play(sfx_ui_typeenter, 1.0f);
                 memset(&highscore_active_record, 0, 0x1c);
-                name_input.text = name_buffer;
                 strcpy(
                     highscore_active_record.player_name,
                     name_buffer);
+                name_input.text = name_buffer;
                 player_name_length = name_input.cursor;
                 highscore_active_record.player_name[name_input.cursor] = 0;
                 highscore_save_active();
@@ -237,9 +232,9 @@ extern "C" void game_over_screen_update(void)
         xy.y += 60.0f;
         grim_interface_ptr->grim_set_color_ptr(&render_tint_color_r);
         if (game_over_highscore_rank_index < 100) {
-            panel_xy.set(xy.x + 16.0f, xy.y + 16.0f);
+            game_over_vec2_t entry_xy(xy.x + 16.0f, xy.y + 16.0f);
             ui_text_input_render(
-                panel_xy,
+                entry_xy,
                 &highscore_active_record,
                 1.0f,
                 game_over_highscore_rank_index + 1);
@@ -266,12 +261,14 @@ extern "C" void game_over_screen_update(void)
         xy.y += 64.0f;
     }
 
-    panel_xy.set(xy.x, xy.y + 16.0f);
-    ui_text_input_render(
-        panel_xy,
-        &highscore_active_record,
-        1.0f,
-        game_over_highscore_rank_index + 1);
+    {
+        game_over_vec2_t entry_xy(xy.x, xy.y + 16.0f);
+        ui_text_input_render(
+            entry_xy,
+            &highscore_active_record,
+            1.0f,
+            game_over_highscore_rank_index + 1);
+    }
 
     xy.y += 146.0f;
     static game_over_button_t play_again_button;

@@ -1,6 +1,20 @@
 [
   {
     "program": "crimsonland.exe",
+    "address": "0x00401000",
+    "name": "unused_console_prefix_vec2_global_init_thunk",
+    "signature": "void unused_console_prefix_vec2_global_init_thunk(void)",
+    "comment": "CRT initializer thunk for the unused vec2 immediately before console_input_buf (first .CRT$XCU slot)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401010",
+    "name": "unused_console_prefix_vec2_global_init",
+    "signature": "void unused_console_prefix_vec2_global_init(void)",
+    "comment": "zero-initializes the unused vec2 immediately before console_input_buf"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00401030",
     "name": "console_input_clear",
     "signature": "void console_input_clear(void)",

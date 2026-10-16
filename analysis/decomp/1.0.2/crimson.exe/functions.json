@@ -1,50 +1,50 @@
 [
   {
     "address": "0x00401000",
-    "canonical_address": "0x004028E0",
+    "canonical_address": "0x00401000",
     "end": "0x00401005",
+    "evidence": "exact",
+    "name": "unused_console_prefix_vec2_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00401010",
+    "canonical_address": "0x00401010",
+    "end": "0x00401025",
+    "evidence": "referenced",
+    "name": "unused_console_prefix_vec2_global_init",
+    "size": 21
+  },
+  {
+    "address": "0x00401030",
+    "canonical_address": "0x004028E0",
+    "end": "0x00401035",
     "evidence": "exact",
     "name": "config_init_defaults_thunk",
     "size": 5
   },
   {
-    "address": "0x00401010",
-    "canonical_address": "0x004028F0",
-    "end": "0x00401025",
-    "evidence": "referenced",
-    "name": "config_init_defaults",
-    "size": 21
-  },
-  {
-    "address": "0x00401030",
-    "canonical_address": "0x0040DF70",
-    "end": "0x00401035",
-    "evidence": "exact",
-    "name": "crimson_crt_empty_initializer_slot_05_thunk",
-    "size": 5
-  },
-  {
     "address": "0x00401040",
-    "canonical_address": "0x0040DF80",
+    "canonical_address": "0x00405130",
     "end": "0x00401041",
     "evidence": "exact",
-    "name": "crimson_crt_empty_initializer_slot_05",
+    "name": "demo_trial_already_paid_button_destroy",
     "size": 1
   },
   {
     "address": "0x00401050",
-    "canonical_address": "0x0040DF90",
+    "canonical_address": "0x0040CFD0",
     "end": "0x00401055",
     "evidence": "exact",
-    "name": "mod_api_init_thunk",
+    "name": "credits_line_table_global_init_thunk",
     "size": 5
   },
   {
     "address": "0x00401060",
-    "canonical_address": "0x0040DFA0",
+    "canonical_address": "0x0040CFE0",
     "end": "0x0040107D",
     "evidence": "referenced",
-    "name": "mod_api_init",
+    "name": "credits_line_table_global_init",
     "size": 29
   },
   {

@@ -174,7 +174,7 @@ static inline void clamp_tint_component(float &field)
 #if CL_BUILD == 10908
 /*
  * Translation-unit context for 1.9.8: creature_spawn_slot_alloc precedes creature_spawn_template
- * in the original unit (see creature_spawn_slot_alloc.c). 9044 then knows the call leaves EDX
+ * in the original unit (see creature_spawn_slot_alloc.cpp). 9044 then knows the call leaves EDX
  * alone and keeps the constant 16 in it across the spawn-slot calls; 8966 ignores this.
  */
 extern "C" int creature_spawn_slot_alloc(void)
@@ -371,8 +371,8 @@ extern "C" creature_t *creature_spawn_template(int template_id, const vec2f_t *p
         int alien_chain_cursor;
         creature->type_id = CREATURE_TYPE_ALIEN;
         alien_chain_cursor = terrain_texture_height / 2;
-        creature->ai_mode = CREATURE_AI_CHASE_PLAYER;
         creature_spawn_vec2_t chain_position(-10.0f, (float)alien_chain_cursor);
+        creature->ai_mode = CREATURE_AI_CHASE_PLAYER;
         *(creature_spawn_vec2_t *)&creature->position = chain_position;
 
         creature->health = 200.0f;

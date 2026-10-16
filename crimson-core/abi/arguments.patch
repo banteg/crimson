@@ -2,13 +2,13 @@ Calls and definitions that disagree on arguments, which wasm32 calls cannot tole
 full-version check a stage it never takes, and the loading screen a stage; the alternate texture loader takes only
 the name its callers pass, which it uses as the path too; Grim's no-op is called with a format and arguments. The
 score plausibility check has no body of its own: 1.9.93 folds it into the constant-true full-version stub.
---- a/decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.c
-+++ b/decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.c
+--- a/decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.cpp
++++ b/decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.cpp
 @@ -2,7 +2,9 @@
  
-+unsigned char game_is_full_version(void);
++extern "C" unsigned char game_is_full_version(void);
 +
- unsigned char highscore_submit_full_version_guard(highscore_record_t *record)
+ extern "C" unsigned char highscore_submit_full_version_guard(highscore_record_t *record)
  {
 -    if (!highscore_record_is_valid(record)) {
 +    if (!game_is_full_version()) {

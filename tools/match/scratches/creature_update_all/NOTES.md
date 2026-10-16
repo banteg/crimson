@@ -939,9 +939,9 @@ reference controls reproduce canonical function bytes and relocation descriptors
 The remaining source constraint is the value's lifetime across regions plus
 native early storage, not the pointer declaration alone. No match credit added.
 
-## 1.9.8 (C2 9044)
+## 1.9.8 (C2 9044), exact (2026-10-16)
 
-99.93%, all references resolved. Shared spellings: `!(x > 0.0f)` for the
+Exact, all references resolved. Shared spellings: `!(x > 0.0f)` for the
 freeze-timer and hold-radius tests gives 9044's `and eax, 0x4100` lowering and
 is byte-identical in 1.9.93.
 
@@ -956,7 +956,10 @@ accumulating, reversed-sum and unnamed bodies of `creature_vec2_length`, a
 named delta, explicit `dx`/`dy` locals, and `vec2_distance` on
 `target_position`; each one breaks one of the builds.
 
-Residual: one `idiv ebp` (`creature_update_tick % 70`) is scheduled two x87
-instructions later than native in the first player-distance block. Local
-declaration orders, `vec2_distance` body spellings and operand orders around
-that site do not move it.
+The former residual (the `creature_update_tick % 70` `idiv` two x87
+instructions late) is fixed by `float distance_sq = (dx * dx);` in
+`vec2_distance`: the parenthesis round delays the `dy` duplicate, so the
+`idiv` takes the free issue cycle as in native. The extra rounds shift
+expression owner ids, which reordered the 1.9.8 movement products; those
+(already behaviour-guarded) now parenthesise `(cos * move_speed)` so the
+factor order no longer depends on ids. 8966 is unchanged.

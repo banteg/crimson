@@ -316,3 +316,17 @@ entry, a newer-version test against 1.9.8, and the local version from
 `console_version_string`. Residual: native orders the internet, bytes-read,
 connection and request stack homes differently; all 23 declaration orders and
 handle initialisation forms were tried.
+
+## 1.9.8 handle slots (2026-10-16, open)
+
+1.9.8 is instruction-identical; only `internet`, `connection`, `request` and
+`bytes_read` are permuted. A 9044 packer trace (pack_stack_slots 0x1074764F,
+reference walk at call site RVA 0xDE4C -> 0x13312) shows all four at weight 3,
+so the >0x80 frame's density sort ties them and the unstable quicksort keeps
+the list order: bytes_read, request, connection, internet (the order each first
+reaches weight 3, request's cleanup load coming first). Replaying the sort over
+every weight/order combination, native's layout needs the list order
+bytes_read, connection, internet, request with all weights 3, i.e. `request`
+reaching its third reference after `internet`'s cleanup load. Declaration
+order (all 24), initializer removal, `== 0` tests, an inline close helper and a
+handle-array cleanup did not move it.

@@ -51,6 +51,15 @@ probe, this combines direct publication with the later append-count recovery;
 that interaction moves the metadata stores to their native position and closes
 the remaining 20-byte fuzzy gap exactly.
 
-## 1.9.8 residual (2026-10-16)
+## 1.9.8 (C2 9044), exact (2026-10-16)
 
-98.70%, 77/77 instructions: the same ring-loop swap as `quest_build_deja_vu` (the next radius is stored before the `offset.y` spill). The same variants were tried; vector `operator*` moves the store past the spill but then schedules the following add early.
+Exact in both builds. The ring loop's swap (the next radius stored to the
+conversion slot before the `offset.y` spill) is a 9044 issue-cycle question:
+the spill `fstp` is ready four cycles after its `fmul`, so the low-priority
+radius store took the free cycle first. Native has a FROUND in that gap. The
+shared spelling `(float)(radius * angle_sin)` for the y product puts a
+parenthesis round between the `fmul` and the spill; it emits no code, takes the
+cycle, and the store falls after the spill. 8966 is unchanged. Parenthesising
+both products, or neither, does not match (the x product's round delays the
+store past the following `fadd`). Found with a 9044 scheduler trace (window
+heights, priorities and issue cycles).

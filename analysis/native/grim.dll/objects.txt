@@ -32,7 +32,7 @@ tools/match/scratches/grim_texture_init/build/msvc6.5/bfed7e0e98a4a487/init.obj
 tools/match/scratches/grim_texture_release/build/msvc6.5/1cc3e4bf62842300/release.obj
 tools/match/scratches/grim_path_has_extension/build/msvc6.5/706c41d7eb147879/path_has_extension.obj
 tools/match/scratches/grim_decode_jaz_texture/build/msvc6.5/612e88b646b0d965/decode_jaz_texture.obj
-tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/fc74191c140de68f/jaz_jpeg_error_exit.obj
+tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/50b8f75670d6362e/jaz_jpeg_error_exit.obj
 tools/match/scratches/grim_texture_load_file/build/msvc6.5/b901a4195e4a7314/load_file.obj
 tools/match/scratches/grim_texture_name_equals/build/msvc6.5/a3b6933ed09e3041/name_equals.obj
 tools/match/scratches/grim_find_texture_by_name/build/msvc6.5/98b777599c222171/find_by_name.obj

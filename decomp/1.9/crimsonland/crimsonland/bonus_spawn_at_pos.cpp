@@ -5,7 +5,7 @@
 #if CL_BUILD == 10908
 /*
  * Translation-unit context for 1.9.8: bonus_alloc_slot precedes this function in the original
- * unit (see bonus_alloc_slot.c), and C2 9044 keeps `pos` in edx across the call because the
+ * unit (see bonus_alloc_slot.cpp), and C2 9044 keeps `pos` in edx across the call because the
  * callee leaves it alone. 1.9.93's C2 (8966) ignores this.
  */
 extern "C" bonus_entry_t *bonus_alloc_slot(void)

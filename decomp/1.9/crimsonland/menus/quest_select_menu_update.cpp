@@ -260,9 +260,8 @@ extern "C" void quest_select_menu_update(void)
 
     int row = 0;
     int next_row;
-    float hover_left = position.x - 10.0f;
     do {
-        if (ui_mouse_x > hover_left
+        if (ui_mouse_x > position.x - 10.0f
             && position.y - 2.0f < ui_mouse_y
             && position.x + 210.0f > ui_mouse_x
             && position.y + 18.0f > ui_mouse_y
@@ -352,9 +351,8 @@ row_done:
             "(completed/games)");
     }
 
-    const float &controls_x = hover_left;
     position.y += 12.0f;
-    position.x = controls_x;
+    position.x -= 10.0f;
     if (grim_interface_ptr->grim_was_key_pressed(203)) {
         --quest_select_stage_major;
         if (quest_select_stage_major < 1) {

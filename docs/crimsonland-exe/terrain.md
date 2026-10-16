@@ -15,7 +15,7 @@ draw. Recovered sources:
 - `decomp/1.9/crimsonland/ui_render/terrain_generate.cpp`
 - `decomp/1.9/crimsonland/ui_render/terrain_generate_random.cpp`
 - `decomp/1.9/crimsonland/crimsonland/fx_queue_add.cpp`,
-  `decomp/1.9/crimsonland/crimsonland/fx_queue_add_rotated.c`,
+  `decomp/1.9/crimsonland/crimsonland/fx_queue_add_rotated.cpp`,
   `decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp`
 - `decomp/1.9/crimsonland/ui_render/terrain_render.cpp`
 - `decomp/1.9/crimsonland/game/camera_update.cpp`

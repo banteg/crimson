@@ -1,5 +1,5 @@
 {
-  "audit_digest": "1092bbb7e35838a2da41091e2de1de19ba2aace74847c2f97ecb5560cbc454d7",
+  "audit_digest": "8c44834179f9c693f419249d4e4beb89a3ea8f1654c92f6b19b9a90a0b436670",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -681,7 +681,7 @@
         "tools/match/scratches/grim_draw_text_small_fmt/build/msvc6.5/0ab5446d48286fc9/draw_text_small_fmt.obj",
         "tools/match/scratches/grim_init_system/build/msvc6.5/4ec4b3f10bea65d9/init_system.obj",
         "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/3ce851826e4bfacc/jaz_decode.obj",
-        "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/fc74191c140de68f/jaz_jpeg_error_exit.obj",
+        "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/50b8f75670d6362e/jaz_jpeg_error_exit.obj",
         "tools/match/scratches/grim_lookup_blob_load/build/msvc6.5/8b40e925448b2892/lookup_blob_load.obj",
         "tools/match/scratches/grim_set_config_var/build/msvc6.5/7abbb0c3bd0463b0/set_var.obj",
         "tools/match/scratches/grim_state_init/build/msvc6.5/0ac5f5ed38e60709/state_init.obj",
@@ -773,7 +773,7 @@
         "tools/match/scratches/grim_is_mouse_button_down/build/msvc6.5/0e60838ce02a70ec/is_mouse_button_down.obj",
         "tools/match/scratches/grim_is_texture_format_supported/build/msvc6.5/d40394e25dac3936/is_texture_format_supported.obj",
         "tools/match/scratches/grim_jaz_decompress_payload/build/msvc6.5/3ce851826e4bfacc/jaz_decode.obj",
-        "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/fc74191c140de68f/jaz_jpeg_error_exit.obj",
+        "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/50b8f75670d6362e/jaz_jpeg_error_exit.obj",
         "tools/match/scratches/grim_joystick_down_active/build/msvc6.5/2dcd6c7964cbac28/joystick_down_active.obj",
         "tools/match/scratches/grim_joystick_left_active/build/msvc6.5/24f0ca45bc4671f8/joystick_left_active.obj",
         "tools/match/scratches/grim_joystick_right_active/build/msvc6.5/72f58a9786493b0e/joystick_right_active.obj",
@@ -7799,7 +7799,7 @@
           "function": "grim_jaz_jpeg_error_exit",
           "kind": "section",
           "logical_section_size": 48,
-          "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/fc74191c140de68f/jaz_jpeg_error_exit.obj",
+          "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/50b8f75670d6362e/jaz_jpeg_error_exit.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -8502,7 +8502,7 @@
         "-defaultlib:MSVCRT",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/fc74191c140de68f/jaz_jpeg_error_exit.obj"
+      "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/50b8f75670d6362e/jaz_jpeg_error_exit.obj"
     },
     {
       "directives": [
@@ -17796,7 +17796,7 @@
           "function": "grim_jaz_jpeg_error_exit",
           "kind": "section",
           "logical_section_size": 48,
-          "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/fc74191c140de68f/jaz_jpeg_error_exit.obj",
+          "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/50b8f75670d6362e/jaz_jpeg_error_exit.obj",
           "section": ".text",
           "size": null,
           "weak": false
@@ -19153,7 +19153,7 @@
       "referenced_by": [
         {
           "function": "grim_jaz_jpeg_error_exit",
-          "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/fc74191c140de68f/jaz_jpeg_error_exit.obj",
+          "object": "tools/match/scratches/grim_jaz_jpeg_error_exit/build/msvc6.5/50b8f75670d6362e/jaz_jpeg_error_exit.obj",
           "weak": false
         }
       ]

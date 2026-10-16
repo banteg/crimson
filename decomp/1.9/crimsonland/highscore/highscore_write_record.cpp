@@ -8,7 +8,7 @@ extern "C" SYSTEMTIME local_system_time;
 /*
  * Translation-unit context for 1.9.8. Its C2 (9044) reuses what it learned
  * compiling earlier functions of the same unit: highscore_iso_week precedes
- * this function there (see highscore_iso_week.c) and reads no memory, so the
+ * this function there (see highscore_iso_week.cpp) and reads no memory, so the
  * reset's random tag store, overwritten by the record copy, is dropped.
  * 1.9.93's C2 (8966) ignores this, so the canonical object keeps one function
  * per file.

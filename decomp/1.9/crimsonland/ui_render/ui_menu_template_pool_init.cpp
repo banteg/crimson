@@ -1,3 +1,5 @@
+#include "cl_build.h"
+
 class ui_template_slot_cpp_t {
 public:
     void construct(void);

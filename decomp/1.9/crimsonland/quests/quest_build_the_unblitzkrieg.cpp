@@ -1,5 +1,14 @@
 #include "crimsonland_gameplay.h"
 
+#if CL_BUILD == 10908
+// Code generation only: with dword parity tests C2 9044 shares one constant-1
+// register between them and the count stores for the whole function, where
+// 1.9.8 keeps immediates. No shared spelling was found (see the scratch NOTES).
+#define QUEST_PARITY(value) ((unsigned char)(value) & 1)
+#else
+#define QUEST_PARITY(value) ((value) & 1)
+#endif
+
 struct quest_vec2_t {
     float x;
     float y;
@@ -32,7 +41,7 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawn->pos.x = 824.0f;
         spawn->pos.y = (float)(offset / 10 + 200);
-        int template_id = (entry_count & 1)
+        int template_id = QUEST_PARITY(entry_count)
             ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
             : SPAWN_ID_DEN_ALIEN_BASIC_07;
         ++entry_count;
@@ -40,8 +49,8 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawn->trigger_time_ms = trigger_time_ms;
         spawn->count = 1;
         offset += 0x270;
-        trigger_time_ms += 1800;
         ++spawn;
+        trigger_time_ms += 1800;
     }
 
     offset = 0;
@@ -49,13 +58,13 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawns[entry_count].pos.x = (float)(0x338 - offset / 10);
         spawns[entry_count].pos.y = 824.0f;
-        spawns[entry_count].template_id = (toggle & 1)
+        spawns[entry_count].template_id = QUEST_PARITY(toggle)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count++].count = 1;
-        offset += 0x270;
         trigger_time_ms += 1500;
+        offset += 0x270;
         ++toggle;
     }
 
@@ -73,13 +82,13 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawns[entry_count].pos.x = 200.0f;
         spawns[entry_count].pos.y = (float)(0x338 - offset / 10);
         spawns[entry_count].set_template(
-            (toggle & 1)
+            QUEST_PARITY(toggle)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07);
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count++].count = 1;
-        offset += 0x270;
         trigger_time_ms += 1200;
+        offset += 0x270;
         ++toggle;
     }
 
@@ -88,13 +97,13 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawns[entry_count].pos.x = (float)(offset / 10 + 200);
         spawns[entry_count].pos.y = 200.0f;
-        spawns[entry_count].template_id = (toggle & 1)
+        spawns[entry_count].template_id = QUEST_PARITY(toggle)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count++].count = 1;
-        offset += 0x270;
         trigger_time_ms += 800;
+        offset += 0x270;
         ++toggle;
     }
 
@@ -104,13 +113,13 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawns[entry_count].pos.x = 824.0f;
         spawns[entry_count].pos.y = (float)(offset / 10 + 200);
         spawns[entry_count].set_template(
-            (toggle & 1)
+            QUEST_PARITY(toggle)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07);
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count++].count = 1;
-        offset += 0x270;
         trigger_time_ms += 800;
+        offset += 0x270;
         ++toggle;
     }
 
@@ -119,13 +128,13 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawns[entry_count].pos.x = (float)(0x338 - offset / 10);
         spawns[entry_count].pos.y = 824.0f;
-        spawns[entry_count].template_id = (toggle & 1)
+        spawns[entry_count].template_id = QUEST_PARITY(toggle)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count++].count = 1;
-        offset += 0x270;
         trigger_time_ms += 700;
+        offset += 0x270;
         ++toggle;
     }
 
@@ -135,13 +144,13 @@ extern "C" void quest_build_the_unblitzkrieg(
         spawns[entry_count].pos.x = 200.0f;
         spawns[entry_count].pos.y = (float)(0x338 - offset / 10);
         spawns[entry_count].set_template(
-            (toggle & 1)
+            QUEST_PARITY(toggle)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07);
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count++].count = 1;
-        offset += 0x270;
         trigger_time_ms += 700;
+        offset += 0x270;
         ++toggle;
     }
 
@@ -150,13 +159,13 @@ extern "C" void quest_build_the_unblitzkrieg(
     while (offset < 0x1860) {
         spawns[entry_count].pos.x = (float)(offset / 10 + 200);
         spawns[entry_count].pos.y = 200.0f;
-        spawns[entry_count].template_id = (toggle & 1)
+        spawns[entry_count].template_id = QUEST_PARITY(toggle)
                 ? SPAWN_ID_DEN_LIZARD_WEAK_SLOWER_0D
                 : SPAWN_ID_DEN_ALIEN_BASIC_07;
         spawns[entry_count].trigger_time_ms = trigger_time_ms;
         spawns[entry_count++].count = 1;
-        offset += 0x270;
         trigger_time_ms += 800;
+        offset += 0x270;
         ++toggle;
     }
 

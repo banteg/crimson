@@ -19,7 +19,7 @@ void effect_select_texture(int effect_id);
 extern "C" void ui_cursor_render(void)
 {
     ui_cursor_anim_timer += frame_dt;
-    ui_cursor_pulse_phase += frame_dt * 1.1f;
+    ui_cursor_pulse_phase += (frame_dt * 1.1f);
 
     grim_interface_ptr->grim_set_config_var(0x13, 5u);
     grim_interface_ptr->grim_set_config_var(0x14, 2u);
@@ -41,10 +41,9 @@ extern "C" void ui_cursor_render(void)
         ui_mouse_x - 10.0f, ui_mouse_y - 18.0f, 64.0f, 64.0f);
     grim_interface_ptr->grim_draw_quad(
         ui_mouse_x - 18.0f, ui_mouse_y - 10.0f, 64.0f, 64.0f);
-    const float glow_x = ui_mouse_x - 64.0f + 16.0f;
     const float glow_y = ui_mouse_y - 64.0f + 16.0f;
     grim_interface_ptr->grim_draw_quad(
-        glow_x, glow_y, 128.0f, 128.0f);
+        ui_mouse_x - 64.0f + 16.0f, glow_y, 128.0f, 128.0f);
     grim_interface_ptr->grim_end_batch();
 
     grim_interface_ptr->grim_set_config_var(0x13, 5u);

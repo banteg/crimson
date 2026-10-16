@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <wininet.h>
 
-#include "crimsonland_highscore.h"
+#include "crimsonland_highscore_record.h"
 
 extern unsigned char config_highscore_date_mode;
 extern unsigned char config_show_online_scores;
@@ -13,7 +13,6 @@ extern unsigned char config_hardcore;
 extern int quest_stage_major;
 extern int quest_stage_minor;
 extern int config_player_count;
-extern char default_player_name[];
 extern int online_sync_status;
 extern unsigned char highscore_batch_sync_mode;
 extern char s_empty_string;
@@ -32,7 +31,6 @@ extern IGrim2D_cpp *grim_interface_ptr;
 #else
 extern "C" unsigned char game_is_full_version(void);
 #endif
-extern "C" int crt_rand(void);
 extern "C" void highscore_load_table_thunk(void);
 extern "C" void crt_endthread(void);
 
@@ -115,13 +113,8 @@ extern "C" void highscore_sync_worker(void *)
         config_saved_name_0[config_selected_saved_name_slot]);
 
     DWORD payload_length = strlen(data + 10) + 11;
-    highscore_record_t received_record;
-    memset(&received_record, 0, sizeof(received_record));
-    strcpy(received_record.player_name, default_player_name);
-    received_record.flags = 0;
-    received_record.sentinel_pipe = 0x7c;
-    received_record.sentinel_ff = 0xff;
-    received_record.random_tag = crt_rand() & 0x0fee050f;
+    highscore_record_cpp_t received_record;
+    received_record.reset_light();
 
     score_count = 0;
     if (game_is_full_version()) {

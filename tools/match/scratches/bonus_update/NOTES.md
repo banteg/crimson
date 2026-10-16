@@ -41,3 +41,13 @@ singleton `perk_count_get` at `0x00429e07` before passing the iterated player to
 `bonus_apply` at `0x00429f0e`. Because `perk_count_get` reads player slot zero,
 both ports now retain slot-zero Telekinetic ownership in bug-compatible mode;
 corrected mode keeps intuitive ownership by the player aiming at the pickup.
+
+## 1.9.8 (C2 9044), exact (2026-10-16)
+
+Exact in both builds. With `picked` in a local, 9044 records the tutorial
+guard's `picked == 0` as a fact and threads the tutorial store's jump past both
+the decided `time_left < 0` compare and the second `picked` test. Reading
+`bonus->picked` at each test (no local; the countdown as an `if`/`else` of
+`-=` so the field store does not kill the byte) leaves the guard's fact on a
+memory expression; 9044 then threads only the float compare, as native does.
+8966 output is unchanged.

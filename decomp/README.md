@@ -72,13 +72,24 @@ Builds in one family share one source. A build differs only by:
 - real source changes, guarded by `CL_BUILD`.
 
 `CL_BUILD` is `major*10000 + minor*100 + patch` (1.9.8 is 10908, 1.9.93 is
-10993). A source that tests it includes `cl_build.h`, which defaults it to the
-canonical build; the matcher defines it for every other build. Guards are
+10993). A source that tests it includes `cl_build.h` before its first guard,
+directly or through a project header, which defaults it to the canonical build;
+the matcher defines it for every other build. `tests/test_cl_build_guards.py`
+checks every guard, since an undefined `CL_BUILD` reads as 0. Guards are
 reconstruction scaffolding, not a claim about the original source; generated
 per-build trees resolve them away. Rules:
 
-- Guard only behavioural changes. A body that differs only in code generation
-  under another compiler is a spelling constraint, not a source change.
+- Guard behavioural and layout changes: strings, removed features, struct
+  layouts.
+- A body that differs only in code generation under another compiler is a
+  spelling constraint first: look for one spelling that both compilers lower to
+  their native code. Guard it only when that search fails, around the fewest
+  statements, with a comment in the source and the spellings tried in the
+  scratch's `NOTES.md`.
+- C2 9044 (1.9.8) reuses what it learned compiling earlier functions of the
+  same translation unit, which a one-function scratch cannot supply. A guarded
+  copy of the preceding callee's body restores that context; it is marked as
+  translation-unit context and changes no behaviour.
 - Guard whole statements or whole functions; guard a struct field once instead
   of every user.
 - A guard counts only when every build it claims compiles exactly.

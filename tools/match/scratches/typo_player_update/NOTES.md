@@ -218,3 +218,11 @@ reconstruction.
 ui-storage-followup-controls-mutations.json records 5 complete, compiling controls.
 These results bound the tested source forms and inputs; they do not establish that
 matching is impossible.
+
+## 1.9.8 (C2 9044), exact (2026-10-16)
+
+Exact in both builds. In the second shotgun effect block, native spills the
+`heading_sin * 15` velocity after the integer index arithmetic. The shared
+spelling `effect_velocity.y = (heading_sin * 15.0f);` adds a parenthesis round
+between the `fmul` and its `fstp`; it takes an issue cycle, and the spill
+lands where native has it. 8966 is unchanged.

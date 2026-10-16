@@ -1,0 +1,38 @@
+#include <math.h>
+#include "crimsonland_gameplay.h"
+
+static __inline float vec2_distance(const vec2f_t *lhs, const vec2f_t *rhs)
+{
+    float dx = lhs->x - rhs->x;
+    float dy = lhs->y - rhs->y;
+    float distance_sq = dx * dx;
+    float distance;
+    distance_sq += dy * dy;
+    distance = (float)sqrt(distance_sq);
+    return distance;
+}
+
+extern "C" int creature_find_in_radius(
+    const vec2f_t *pos,
+    float radius,
+    int start_index)
+{
+    int index = start_index;
+
+    while (index < 0x180) {
+        if (creature_pool[index].active
+            && vec2_distance(
+                   &creature_pool[index].position,
+                   pos)
+                    - radius
+                < creature_pool[index].size * 0.14285715f + 3.0f
+            && creature_pool[index].death_timer > 5.0f) {
+            goto found;
+        }
+        ++index;
+    }
+    return -1;
+
+found:
+    return index;
+}
