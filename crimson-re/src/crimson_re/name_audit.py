@@ -2,7 +2,7 @@
 
 Two kinds of stale identity are flagged:
 
-- analyzer placeholders (`FUN_00401000`, `DAT_00405000`, `nullsub_3`) at an address the
+- analyzer placeholders (`FUN_00405000`, `DAT_00405000`, `nullsub_3`) at an address the
   name or data map already names;
 - superseded names, which each map row records in `formerly` when it is renamed.
 
