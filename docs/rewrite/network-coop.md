@@ -813,7 +813,7 @@ stays on the arena screen and sees the replay viewer's top-right pick card
 - **Rematch (`run_epoch` increment)**: either player can click **Play Again**
   on the end screen.
 
-  - The Host owns the seed and the save, so a Guest's click sends
+  - The Host owns the seed, so a Guest's click sends
     `MSG_REMATCH { run_epoch }`. On its own click, or on the first
     `MSG_REMATCH` for the current `run_epoch`, the Host increments `run_epoch`
     (so in-flight packets from the previous run are ignored), draws a fresh
@@ -831,11 +831,14 @@ Online co-op follows the site's [ranked rules](ranked-rules.md): every run is a
 ranked attempt, recorded as a standard replay and verified by the service like
 any other.
 
-- **Run setup (Host)**: the Host picks Survival, or a quest its save has
-  unlocked and its difficulty. The run plays the ranked profile with
-  `player_count = 2` instead of `1`: a fresh seed the Host draws, the detached
-  canonical save for that mode or quest, detail 5, violence on, friendly fire
-  off, documented fixes on, no retries. Like a 1P ranked run, it changes
+- **Run setup (Host)**: the Host picks Survival or **any** quest, normal or
+  hardcore, whatever either player's save has unlocked. The run plays the
+  ranked profile with `player_count = 2` instead of `1`: a fresh seed the Host
+  draws and the overlay save the ranked rules give that run's place in the game
+  (every quest completed for Survival; for a quest, the save that has just
+  unlocked it, so it plays with the weapons and perks the campaign has handed
+  out by then), detail 5, violence on, friendly fire off, documented fixes on,
+  no retries. Neither player's own save takes part, and the run changes
   neither player's progress. Rush, Typ-o and the Tutorial stay out of co-op.
 
 - **Boards**: co-op ranks on its own boards, `survival-coop`, `quests-coop` and
