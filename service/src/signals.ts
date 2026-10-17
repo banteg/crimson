@@ -3,8 +3,9 @@
 
 import { tickControls } from "./replay";
 
+// In co-op each player is measured on their own and the run shows the higher of each signal.
 export interface Signals {
-  // The ticks measured: those where player one is alive.
+  // The ticks measured: those where a player is alive, summed over the players.
   ticks: number;
   // Share of aimed ticks whose aim point lies on a living creature's centre.
   aim_on_creature: number;
@@ -31,6 +32,15 @@ export type SignalName = keyof typeof SIGNAL_FLAGS;
 
 export function flagged(signals: Signals): SignalName[] {
   return (Object.keys(SIGNAL_FLAGS) as SignalName[]).filter((name) => signals[name] > SIGNAL_FLAGS[name]);
+}
+
+// A run's signals from each player's.
+export function mergeSignals([first, ...rest]: Signals[]): Signals {
+  return rest.reduce((merged, player) => {
+    const next = { ...merged, ticks: merged.ticks + player.ticks };
+    for (const name of Object.keys(SIGNAL_FLAGS) as SignalName[]) next[name] = Math.max(merged[name], player[name]);
+    return next;
+  }, first!);
 }
 
 const MOVE_STATIC = 2;
@@ -67,8 +77,8 @@ export class SignalMeter {
   private lastAim: Point | null = null;
   private lastHeading: number | null = null;
 
-  // One tick's input before the tick runs: where player one stands, the ranked view's camera, and the distance from
-  // a world point to the nearest living creature.
+  // One tick's input of the player this meter measures, before the tick runs: where that player stands, the ranked
+  // view's camera, and the distance from a world point to the nearest living creature.
   record(
     [moveX, moveY, aimX, aimY, flags]: [number, number, number, number, number],
     player: Point & { alive: boolean },

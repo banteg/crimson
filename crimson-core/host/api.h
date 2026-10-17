@@ -82,10 +82,11 @@ float portable_move_x();
 float portable_move_y();
 bool portable_aim_turn_left();
 bool portable_aim_turn_right();
-// Player one's position and health, for the ranked aim bound and input signals.
-float portable_player_x();
-float portable_player_y();
-float portable_player_health();
+// A player's position and health (0 is player one, 1 player two in co-op), for the ranked aim bound, the co-op
+// camera and input signals.
+float portable_player_x(uint32_t player);
+float portable_player_y(uint32_t player);
+float portable_player_health(uint32_t player);
 // The distance from a world point to the nearest living creature's centre, infinity with none, for the service's
 // input signals (docs/rewrite/bots.md).
 float portable_nearest_creature(float x, float y);

@@ -341,7 +341,8 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     conversion must use the 2-player midpoint
     `(player_state_table[0].position + player_state_table[1].position) * 0.5f`
     clamped to `[-1024 + W, -1] × [-1024 + H, -1]`, matching
-    `decomp/1.9/crimsonland/game/camera_update.cpp:84-95`.
+    `decomp/1.9/crimsonland/game/camera_update.cpp:67-77` (the midpoint) and
+    `:86-101` (the clamp).
 
 - **Isolation from 1P `replay.inc` and `watch.inc`**:
 
@@ -930,9 +931,10 @@ any other.
   or hardcore: while a session is on, the menus show every quest unlocked, and
   the player's own unlocks stay in the save. The Guest's menus start nothing;
   its clicks wait for the Host's. The run plays the
-  ranked profile with `player_count = 2` instead of `1`: a fresh seed the Host
-  draws and the overlay save the ranked rules give that run's place in the game
-  (every quest completed for Survival; for a quest, the save that has just
+  ranked profile with `player_count = 2` instead of `1`: a fresh seed the room
+  issues to the pair (Section 6.1) and the overlay save the ranked rules give
+  that run's place in the game (every quest completed for Survival; for a
+  quest, the save that has just
   unlocked it, so it plays with the weapons and perks the campaign has handed
   out by then), detail 5, violence on, friendly fire off, documented fixes on,
   no retries. Neither player's own save takes part, and the run changes
@@ -941,31 +943,50 @@ any other.
   players' tables), but `crimson.cfg` keeps the player's own on every save (a
   quit, a window mode change, a pad profile), as it does over a replay's or a
   custom quest's. Rush, Typ-o, the Tutorial and custom quests stay out of
-  co-op.
+  co-op: a custom quest ranks one player only (`custom_quest_players`).
 
 - **Boards**: co-op ranks on its own boards, `survival-coop`, `quests-coop` and
-  `quests-hardcore-coop`, scored as their 1P counterparts. Two-player scores
+  `quests-hardcore-coop` (`ranked_board` in `src/crimson/replay/ranked.py`),
+  scored as their 1P counterparts. Two-player scores
   are not comparable with one-player ones: XP is shared and 2P doubles the
   Survival spawn countdown (`survival_update.cpp:217`).
 
 - **Controls & aim**: every tick of both players uses human controls. Each
-  player's mouse aim point lies inside the 1024x768 view around the camera the
-  previous tick left; in 2P that camera follows the players' midpoint
-  (`camera_update.cpp:84-95`), the view both players see. Pad aim keeps the
-  138-unit reach. If either player's client declares a pilot, the run goes to
-  the bot boards ([bots and moderation](bots.md)).
+  player's mouse aim point, and each new point-click target, lies inside the
+  1024x768 view around the camera the previous tick left; in 2P that camera
+  follows the living players' midpoint (`camera_update.cpp:57-80`,
+  `camera_update_for_players` in `src/crimson/camera.py`) clamped to the arena
+  (`:86-101`), the view both players see, and stays where it was while nobody
+  lives (`:78-79`). Pad aim keeps the 138-unit reach. If either player's client
+  declares a pilot, the run goes to the bot boards
+  ([bots and moderation](bots.md)).
 
 - **Finished runs**: a Survival team wipe or a completed quest ranks; a quit,
   a leave, a disconnect or a failed quest does not.
 
+- **Room attestation**: before a run, each seat proves its identity key to the
+  room, and the Host asks the room for the run's seed, which the room issues
+  only once both seats have proven keys and records with those keys
+  (Section 6.1). The replay records the seats' keys (`seat_keys`), but anyone
+  holding it can rewrite its header: without the room's record, one partner
+  could put a throwaway key in the other's seat, sign both seats and take the
+  run alone. The service ranks a co-op run only when the room issued its seed
+  to the keys its replay records, in seat order
+  ([leaderboard identity](leaderboard-identity.md#co-op-runs)).
+  `crimson replay verify` cannot see the room's records and checks only the
+  run rules.
+
 - **One replay, two signatures**: `MSG_START_RUN` carries the replay header
-  (`game_version`, `rules`, the Host's `recorder`, `pilot`, `run`), so both
-  peers write byte-identical `.crd` files. Each peer shows the end screen's
-  name entry ("State your name, trooper!", prefilled with the saved name) for
+  (`game_version`, `rules`, the Host's `recorder`, `pilot`, `seat_keys` =
+  [Host key, Guest key] as proven to the room, `run` with the room's seed), so
+  both peers write byte-identical `.crd` files; the Guest checks the seed and
+  keys against the room's. Each peer shows the end screen's name entry
+  ("State your name, trooper!", prefilled with the saved name) for
   its own player, as a 1P ranked run does before `ranked_release()`
   (`crimson-core/host/ranked.inc:85-99`). When the player confirms, the peer
   signs the replay as a [leaderboard upload](leaderboard-identity.md#uploads)
-  does and sends `MSG_RUN_SIGNED { run_epoch, name, public_key, signature }`.
+  does, with the key its seat records, and sends
+  `MSG_RUN_SIGNED { run_epoch, name, public_key, signature }`.
   Each peer queues the replay with both signatures in its outbox, so either can
   upload later, offline play included; the service accepts the run once and
   answers the second upload with `409`. A co-op run ranks only with both
@@ -1024,12 +1045,19 @@ sequenceDiagram
     Host->>Guest: Shares https://crimson.land/play/?coop=<id>
     Guest->>Worker: GET /api/coop/rooms/<id> (exists? seat free?)
     Guest->>Worker: WSS /api/coop/rooms/<id>/ws?role=guest
-    Worker-->>Guest: {type: "seat", role: "guest", guest_token}
+    Worker-->>Guest: {type: "seat", role: "guest", challenge, guest_token}
     Worker-->>Host: {type: "peer", present: true}
+    Host->>Worker: {type: "key", public_key, signature}
+    Guest->>Worker: {type: "key", public_key, signature}
+    Worker-->>Host: {type: "key", role, public_key} (each seat's, to both)
+    Worker-->>Guest: {type: "key", role, public_key} (each seat's, to both)
     Host->>Guest: WebRTC Offer + ICE (buffered until remoteDescription set)
     Guest->>Host: WebRTC Answer + ICE
     Host<<->>Guest: DataChannels open: coop-ticks + coop-control
     Host<<->>Guest: MSG_HELLO {protocol_ver, build_id, role}
+    Host->>Worker: {type: "seed"}
+    Worker-->>Host: {type: "seed", seed}
+    Worker-->>Guest: {type: "seed", seed}
     Host->>Guest: MSG_START_RUN {run_epoch, seed, PortableConfig, delay_ticks}
     Guest->>Host: MSG_START_ACK {run_epoch}
     Note over Host,Guest: Both browsers start 2-player gameplay at tick 0
@@ -1040,7 +1068,9 @@ sequenceDiagram
 A room is a `CoopRoom` Durable Object (binding `COOP_ROOMS`, SQLite class,
 WebSocket Hibernation) with two seats, `host` (player 0) and `guest`
 (player 1). It moves signalling and relay messages between them and knows
-nothing of the game. The routes need no account and read no cookie:
+nothing of the game, but for the seats' keys and the seeds it issues to them,
+which rank the pair's runs (Section 5.3). The routes need no account and read
+no cookie:
 
 - `POST /api/coop/rooms`, same-origin only and rate limited per visitor
   address (`COOP_ROOM_LIMITER`; `429` with `retry-after` past it), answers
@@ -1071,18 +1101,39 @@ are small JSON texts:
 
 | Message | When |
 | --- | --- |
-| `{type: "seat", role, guest_token?}` | First message on a new socket; `guest_token` only when the guest seat was just taken. |
+| `{type: "seat", role, challenge, guest_token?}` | First message on a new socket: `challenge` (64 hex characters) is the socket's own, for its key proof; `guest_token` only when the guest seat was just taken. |
 | `{type: "peer", present}` | Right after `seat`, with the other seat's state; then to the other seat whenever a seat joins (`true`) or leaves (`false`). A repeated `present: true` means the partner reconnected and the peer connection must be renegotiated. |
 | `{type: "ice", ice_servers}` | Answer to a client's `{type: "ice"}`, which the server keeps from the partner. The guest asks once after joining; either side asks again before an ICE restart. Within ten seconds of the room's last TURN mint, both seats get that mint's servers. |
+| `{type: "key", role, public_key}` | To both seats when a seat proves its key (below). |
+| `{type: "seed", seed}` | To both seats when the room issues the Host a run's seed (below). |
 
-Client message types therefore avoid `seat`, `peer` and `ice`: a client text
-message typed `seat` or `peer` would pass for the server's own, so it closes
-the socket with `1008` instead of being relayed. A message over 16 KiB closes
-the socket with `1009`; more than 200 messages a second (a second's burst)
-closes it with `1008`. That budget belongs to the seat, so a reconnect
-inherits it. Nothing a closed socket still sends is relayed. Clients read the
-server's messages only from text frames, with a strict `JSON.parse`; binary
-frames are always the partner's.
+**Key proof.** Each socket proves its seat's identity key once: the game signs
+`crimson-coop-seat-v1\n`, then the room id, then the socket's `challenge`
+(both as ASCII) with its identity key, which never leaves the game, and the
+client sends `{type: "key", public_key, signature}` (hex, as in
+[leaderboard uploads](leaderboard-identity.md#protocol)). The first proof
+records the seat's key. A reconnect proves again on its new challenge, and
+must prove the same key. A proof that does not verify, a second
+proof on one socket, or a reconnect proving another key closes the socket
+with `1008`.
+
+**Seeds.** Once both seats have proven keys, the Host asks `{type: "seed"}`
+for each run. The room draws a fresh random seed with bit 31 clear (`rand`
+never reads that bit), records it in D1
+(`coop_runs`: seed, room id, the host's and the guest's keys, issue time;
+each seed once, drawn again on a collision) and sends it to both seats. A
+seed request from the guest, before both seats have proven keys, or past ten
+a minute closes the socket with `1008`.
+
+Client message types therefore avoid `seat`, `peer`, `ice`, `key` and
+`seed`: the room answers `ice`, `key` and `seed` requests itself and never
+relays them, and a client text message typed `seat` or `peer` would pass for
+the server's own, so it closes the socket with `1008` instead of being
+relayed. A message over 16 KiB closes the socket with `1009`; more than 200
+messages a second (a second's burst) closes it with `1008`. That budget
+belongs to the seat, so a reconnect inherits it. Nothing a closed socket
+still sends is relayed. Clients read the server's messages only from text
+frames, with a strict `JSON.parse`; binary frames are always the partner's.
 
 **Lifetime.** A room is deleted a minute after its last socket leaves (or a
 minute after it was made, if nobody joins) and in any case 12 hours after it
@@ -1528,12 +1579,14 @@ and messages, repairs and the records they carried, and the round trip.
    - **`players[1]` in `RunResult`**: native keeps XP on player 0 and weapon
      usage in one global table, so player 1's `experience` is `0`, its
      `health` is `player_state_table[1].health`, and its most used weapon comes
-     from the shared table, falling back to its own weapon only when every
-     count is zero (`most_used_weapon_id_for_player`,
-     `src/crimson/weapon_runtime/assign.py`).
+     from the shared table: the Pistol (`1`) unless another weapon has more
+     equipped time, so also when every count is zero. Its own weapon stands in
+     only when the best slot names no weapon
+     (`most_used_weapon_id_for_player`, `src/crimson/weapon_runtime/assign.py`).
    - **Ranked aim checks**: the service's `TickMonitor`
-     (`service/src/verify.ts:129-155`) tracks the 2P camera (the midpoint of
-     the living players, `camera_update.cpp:60-97`) and checks both
+     (`service/src/verify.ts:129-155`) tracks the 2P camera as Python's
+     `RankedTickMonitor` does (the midpoint of the living players,
+     `camera_update.cpp:57-80`, kept while nobody lives, `:78-79`) and checks both
      `input(tick, 0)` and `input(tick, 1)` with a move target per player.
 
 3. **Gate**: a co-op `.crd` recorded by two browsers verifies in the service,

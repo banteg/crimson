@@ -15,6 +15,7 @@ import struct
 from pathlib import Path
 
 import msgspec
+from nacl.signing import SigningKey
 
 from crimson.game_modes import GameMode
 from crimson.game_version import REPLAY_FORMAT_VERSION, REPLAY_RULES, current_replay_game_version
@@ -31,6 +32,7 @@ from crimson.replay.ranked import RankedTickMonitor, outcome_reasons, ranked_boa
 from crimson.replay.types import Pilot, Replay, ReplayTick, current_recorder
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import PlayerRunResult, RunOutcome, RunResult
+from crimson.sim.run_spec import RunSpec
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = ROOT / "tests" / "fixtures" / "replays"
@@ -44,13 +46,20 @@ def _core_transport():
     return module.encode
 
 
+# The seats' signing keys in the co-op vectors, from fixed seeds so the service's tests can sign as each seat.
+SEAT_SEEDS = tuple(hashlib.sha256(f"crimson-vectors-seat-{seat}".encode()).digest() for seat in range(2))
+SEAT_KEYS = tuple(bytes(SigningKey(seed).verify_key) for seed in SEAT_SEEDS)
+
+
 def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
 def _run_id(transport: bytes) -> str:
-    """The service's id for a run (runIdentity in service/src/transport.ts): its stream without the player count."""
-    assert transport[48:52] == (1).to_bytes(4, "little")
+    """The service's id for a run (runIdentity in service/src/transport.ts): a one-player stream without its player
+    count, a co-op one whole."""
+    if transport[48:52] != (1).to_bytes(4, "little"):
+        return _sha(transport)
     return _sha(transport[:48] + transport[52:])
 
 
@@ -96,6 +105,7 @@ def _base_replay() -> Replay:
         rules=REPLAY_RULES,
         recorder=current_recorder(),
         pilot=None,
+        seat_keys=SEAT_KEYS[:1],
         run=ranked_run_spec(GameMode.SURVIVAL, seed=0x1234ABCD),
         result=result,
         ticks=ticks,
@@ -124,6 +134,8 @@ class _Writer:
         if isinstance(value, str):
             data = value.encode()
             return self._header(len(data), 0xA0, 31, (0xD9, 0xDA, 0xDB)) + data
+        if isinstance(value, bytes):
+            return self._header(len(value), None, -1, (0xC4, 0xC5, 0xC6)) + value
         if isinstance(value, list):
             return self._header(len(value), 0x90, 15, (None, 0xDC, 0xDD)) + b"".join(self.encode(v) for v in value)
         if isinstance(value, dict):
@@ -150,7 +162,7 @@ class _Writer:
         short, medium, long = markers
         if self.wide_headers:
             return bytes([long]) + struct.pack(">I", length)
-        if length <= fix_max:
+        if fix is not None and length <= fix_max:
             return bytes([fix | length])
         if short is not None and length <= 0xFF:
             return bytes([short, length])
@@ -199,6 +211,11 @@ def corrupted_vectors() -> tuple[str, list[dict]]:
         "no ticks": edit(lambda w: w.__setitem__("ticks", [])),
         "no recorder": edit(lambda w: w.pop("recorder")),
         "empty recorder platform": edit(lambda w: w["recorder"].__setitem__("platform", "")),
+        "a seat key per two players": edit(lambda w: w["seat_keys"].append(SEAT_KEYS[1])),
+        "short seat key": edit(lambda w: w["seat_keys"].__setitem__(0, SEAT_KEYS[0][:-1])),
+        "seat key as a string": edit(lambda w: w["seat_keys"].__setitem__(0, SEAT_KEYS[0].hex())),
+        "seat keys as a map": edit(lambda w: w.__setitem__("seat_keys", {"0": SEAT_KEYS[0]})),
+        "no seat keys": edit(lambda w: w.pop("seat_keys")),
     }
     vectors = []
     for name, payload in corrupted.items():
@@ -216,24 +233,26 @@ def corrupted_vectors() -> tuple[str, list[dict]]:
 ILLEGAL_PICK = "tick 0: perk_pick without an open perk menu"
 
 
-def ranked_run() -> tuple[str, str, str, str, str]:
-    """A ranked Survival run that verifies: static movement, firing at a point circling the arena centre until the
-    player dies, recorded through the run-down; the same run claiming more than it earned; declaring a pilot; and
-    picking a perk no menu offered. Last, the run's id on the service."""
-    flags = 1 | (1 << 8) | (2 << 9) | (1 << 12)  # fire, static movement, mouse aim
+# Fire, static movement, mouse aim.
+FIRING = 1 | (1 << 8) | (2 << 9) | (1 << 12)
 
-    def tick(i: int) -> ReplayTick:
-        angle = i * 0.02
-        return ReplayTick(inputs=[(0.0, 0.0, f32(512.0 + 150.0 * math.cos(angle)), f32(512.0 + 150.0 * math.sin(angle)), flags)])
+
+def _circling(i: int, phase: float = 0.0) -> tuple[float, float, float, float, int]:
+    """Firing, standing, at a point circling the arena centre."""
+    angle = i * 0.02 + phase
+    return (0.0, 0.0, f32(512.0 + 150.0 * math.cos(angle)), f32(512.0 + 150.0 * math.sin(angle)), FIRING)
+
+
+def _played(run: RunSpec, tick, limit: int, seat_keys: tuple[bytes, ...] | None = None) -> Replay:
+    """The run played with `tick`'s inputs until it ends, recorded through the run-down, with the result it reaches."""
 
     def replay(ticks: list[ReplayTick], result: RunResult) -> Replay:
         return Replay(
-            REPLAY_FORMAT_VERSION, current_replay_game_version(), REPLAY_RULES, current_recorder(), None,
-            ranked_run_spec(GameMode.SURVIVAL, seed=0xC0FFEE), result, ticks,
+            REPLAY_FORMAT_VERSION, current_replay_game_version(), REPLAY_RULES, current_recorder(), None, seat_keys, run, result, ticks,
         )
 
-    provisional = RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, (PlayerRunResult(0, 0.0, 1),))
-    long = replay([tick(i) for i in range(60 * 60 * 10)], provisional)
+    provisional = RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, tuple(PlayerRunResult(0, 0.0, 1) for _ in range(run.player_count)))
+    long = replay([tick(i) for i in range(limit)], provisional)
     driver = PlaybackDriver(long, version_mismatch_action=None)
     # The driver refuses the tick that ends the run-down when more follow: that tick is the recording's last.
     end = 0
@@ -244,7 +263,19 @@ def ranked_run() -> tuple[str, str, str, str, str]:
         pass
     ticks = long.ticks[: end + 1]
     result = PlaybackDriver(replay(ticks, provisional), version_mismatch_action=None).run()
-    recorded = replay(ticks, result)
+    return replay(ticks, result)
+
+
+def ranked_run() -> tuple[str, str, str, str, str]:
+    """A ranked Survival run that verifies: static movement, firing at a point circling the arena centre until the
+    player dies, recorded through the run-down; the same run claiming more than it earned; declaring a pilot; and
+    picking a perk no menu offered. Last, the run's id on the service."""
+    recorded = _played(ranked_run_spec(GameMode.SURVIVAL, seed=0xC0FFEE), lambda i: ReplayTick(inputs=[_circling(i)]), 60 * 60 * 10)
+    ticks, result = recorded.ticks, recorded.result
+
+    def replay(ticks: list[ReplayTick], result: RunResult) -> Replay:
+        return msgspec.structs.replace(recorded, ticks=ticks, result=result)
+
     monitor = RankedTickMonitor(replay=recorded)
     assert PlaybackDriver(recorded, version_mismatch_action=None).run(observer=monitor) == result
     assert not monitor.reasons and not unranked_reasons(recorded.run) and not outcome_reasons(recorded.run, result)
@@ -266,6 +297,39 @@ def ranked_run() -> tuple[str, str, str, str, str]:
     runs = (replay(ticks, result), replay(ticks, inflated), piloted, illegal)
     files = tuple(base64.b64encode(dump_replay(r)).decode("ascii") for r in runs)
     return (*files, _run_id(_core_transport()(recorded, None)))
+
+
+def coop_runs() -> dict[str, object]:
+    """Two players' runs on the ranked profile, each firing at its own point circling the arena centre: a co-op Survival
+    run that ranks, played until both die, with its id and core stream digest; and a co-op custom quest both clear by
+    firing at its one alien, which plays and verifies but does not rank (custom_quest_players), for the two-player
+    quest time. Both record SEAT_KEYS, whose seeds sign them; the quest clear also comes without them."""
+    from crimson.quests.dsl import build_custom_quest
+
+    def both(i: int) -> ReplayTick:
+        return ReplayTick(inputs=[_circling(i), _circling(i, math.pi)])
+
+    survival = _played(ranked_run_spec(GameMode.SURVIVAL, seed=0xC0FFEE, player_count=2), both, 60 * 60 * 20, SEAT_KEYS)
+    monitor = RankedTickMonitor(replay=survival)
+    assert PlaybackDriver(survival, version_mismatch_action=None).run(observer=monitor) == survival.result
+    assert not monitor.reasons and not unranked_reasons(survival.run) and not outcome_reasons(survival.run, survival.result)
+    assert ranked_board(survival.run) == "survival-coop" and len(survival.result.players) == 2
+    print(f"co-op run: {len(survival.ticks)} ticks, {survival.result.players[0].experience} xp, {survival.result.kills} kills")
+
+    quest = build_custom_quest('quest "Pair Clear" version 1\nweapon shotgun\nat 500ms:\n    spawn alien.small_gray at (512, 420)\n')
+    at_alien = ReplayTick(inputs=[(0.0, 0.0, 512.0, 420.0, FIRING)] * 2)
+    cleared = _played(ranked_run_spec(GameMode.QUESTS, seed=0x1234ABCD, custom_quest=quest, player_count=2), lambda _: at_alien, 600, SEAT_KEYS)
+    assert cleared.result.outcome == RunOutcome.QUEST_COMPLETED and unranked_reasons(cleared.run) == ["custom_quest_players"]
+    transport = _core_transport()(survival, None)
+    return {
+        "file": base64.b64encode(dump_replay(survival)).decode("ascii"),
+        "transport_sha256": _sha(transport),
+        "run_id": _run_id(transport),
+        "quest_file": base64.b64encode(dump_replay(cleared)).decode("ascii"),
+        "unkeyed_quest_file": base64.b64encode(dump_replay(msgspec.structs.replace(cleared, seat_keys=None))).decode("ascii"),
+        "seat_seeds": [seed.hex() for seed in SEAT_SEEDS],
+        "seat_keys": [key.hex() for key in SEAT_KEYS],
+    }
 
 
 def terrain_vectors() -> list[dict]:
@@ -320,9 +384,10 @@ def run_terrain_vectors() -> list[dict]:
         vectors.append({"seed": seed, "board": "survival", "quest": "", "slots": list(setup.terrain_slots), "layers": stamps(setup)})
         if len(outcomes) == 4:
             break
-    # Quest 5.3's save (unlock 42) and its hardcore one (50) draw differently before the quest's terrain.
-    for seed, (major, minor), hardcore in ((7, (2, 7), False), (8, (5, 3), False), (8, (5, 3), True)):
-        spec = ranked_run_spec(GameMode.QUESTS, seed=seed, quest_level=QuestLevel(major, minor), hardcore=hardcore)
+    # Quest 5.3's save (unlock 42) and its hardcore one (50) draw differently before the quest's terrain; a co-op pair
+    # draws as one player does.
+    for seed, (major, minor), hardcore, players in ((7, (2, 7), False, 1), (8, (5, 3), False, 1), (8, (5, 3), True, 1), (8, (5, 3), True, 2)):
+        spec = ranked_run_spec(GameMode.QUESTS, seed=seed, quest_level=QuestLevel(major, minor), hardcore=hardcore, player_count=players)
         setup = initialize_run(spec).terrain
         board = ranked_board(spec)
         vectors.append({"seed": seed, "board": board, "quest": f"{major}.{minor}", "slots": list(setup.terrain_slots), "layers": stamps(setup)})
@@ -354,6 +419,7 @@ def custom_quest_payload() -> dict[str, object]:
             current_replay_game_version(),
             REPLAY_RULES,
             current_recorder(),
+            None,
             None,
             run,
             result,
@@ -394,6 +460,7 @@ def main() -> None:
         "fixtures": fixture_vectors(), "valid_payload": base, "corrupted": corrupted, "custom_quest_run": custom_quest_payload(), "ranked_run": ranked,
         "ranked_run_id": ranked_id, "ranked_run_inflated": inflated, "piloted_run": piloted, "illegal_command_run": illegal,
         "unranked_run": base64.b64encode((FIXTURES / "rush-kills103.crd").read_bytes()).decode("ascii"),
+        "coop_run": coop_runs(),
         "terrain": terrain_vectors(),
         "run_terrain": run_terrain_vectors(),
         "quest_dsl": quest_dsl_tables(),

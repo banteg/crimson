@@ -495,7 +495,12 @@ static bool live_tick() {
     return false;
   }
   // Escape asked for the pause menu (game_frame_update): the timeline runs down
-  // while the run plays on, then the menu opens and the run waits.
+  // while the run plays on, then the menu opens and the run waits. A run that is
+  // ending takes no pause, as in the original, where a death clears run_active,
+  // which Escape needs, and a completed quest asks for its results every frame,
+  // over the pause. The pause menu would leave by setting the pending screen
+  // between ticks, over the run's own.
+  live.pausing = live.pausing && !running_down;
   live_timeline();
   if (live.pausing && ui_elements_timeline < 0) {
     ui_elements_timeline = 0;

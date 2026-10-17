@@ -1,10 +1,10 @@
 // POST /api/runs: a signed ranked run (docs/rewrite/leaderboard-identity.md, "Protocol").
 
-import { concat, fromHex, hex, latin1, RUN_DOMAIN, sha256, verifyEd25519 } from "./crypto";
+import { concat, COOP_RUN_DOMAIN, fromHex, hex, latin1, RUN_DOMAIN, sha256, verifyEd25519 } from "./crypto";
 import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
 import type { Signals, Timeline } from "./api-types";
-import { type CustomQuest, decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError } from "./replay";
+import { type CustomQuest, decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError, SEED_BITS } from "./replay";
 import { GroundBake, groundArt, groundKey } from "./ground";
 import { encodeJpeg } from "./jpeg";
 import { encodePortableQuest, encodeTransport, runIdentity } from "./transport";
@@ -14,32 +14,88 @@ import { type Verdict, verifyRun } from "./verify";
 
 const MAX_BODY_BYTES = 16 * 1024 * 1024;
 const NAME_MAX_CHARS = 31;
+// The replay format's most players.
+const MAX_SIGNERS = 4;
 
-interface Upload {
-  replay: string;
+// A player's signature over the run: the one-player envelope's top-level name, key and signature, or one entry of a
+// co-op envelope's `signers`, whose signature binds its seat too.
+interface Signer {
+  seat: number;
   name: string;
   public_key: string;
   signature: string;
+}
+
+interface Upload {
+  replay: string;
+  signers: Signer[];
+  // The envelope signs with `signers` and COOP_RUN_DOMAIN rather than one player's RUN_DOMAIN.
+  coop: boolean;
   source: string | null;
   seed: number;
 }
 
+const isString = (field: unknown) => typeof field === "string";
+
+function parseSigner(body: unknown): Signer | null {
+  if (typeof body !== "object" || body === null) return null;
+  const { seat, name, public_key, signature } = body as Record<string, unknown>;
+  if (typeof seat !== "number" || !Number.isInteger(seat) || ![name, public_key, signature].every(isString)) return null;
+  return { seat, name: name as string, public_key: public_key as string, signature: signature as string };
+}
+
 function parseUpload(body: unknown): Upload | null {
   if (typeof body !== "object" || body === null) return null;
-  const { replay, name, public_key, signature, source, seed } = body as Record<string, unknown>;
-  if ([replay, name, public_key, signature].some((field) => typeof field !== "string")) return null;
+  const { replay, name, public_key, signature, signers, source, seed } = body as Record<string, unknown>;
+  if (!isString(replay)) return null;
   if (source !== undefined && source !== null && (typeof source !== "string" || source.length === 0 || source.length > 65536))
     return null;
   if (seed !== undefined && (typeof seed !== "number" || !Number.isInteger(seed) || seed < 0 || seed > 0xffffffff))
     return null;
+  const coop = signers !== undefined;
+  const parsed = coop
+    ? Array.isArray(signers) && signers.length <= MAX_SIGNERS ? signers.map(parseSigner) : [null]
+    : [[name, public_key, signature].every(isString) ? { seat: 0, name: name as string, public_key: public_key as string, signature: signature as string } : null];
+  if (!parsed.length || parsed.some((signer) => signer === null)) return null;
   return {
     replay: replay as string,
-    name: name as string,
-    public_key: public_key as string,
-    signature: signature as string,
+    signers: parsed as Signer[],
+    coop,
     source: typeof source === "string" ? source : null,
     seed: typeof seed === "number" ? seed : 0,
   };
+}
+
+// Why a run's signers do not stand for its players (docs/rewrite/leaderboard-identity.md, "Co-op runs"), or null:
+// one signer a player, each seat once, a key of their own each, and each seat signed by the key the replay records
+// for it. A co-op replay must record its seats' keys: the payload digest every signature covers then binds each key
+// to its seat, so neither partner can sign the other's seat with a key of their own.
+function signersReason(signers: Signer[], players: number, seatKeys: Uint8Array[] | null): string | null {
+  if (players > 1 && seatKeys === null) return "a co-op run must record its players' keys (replay format 34)";
+  if (signers.length !== players)
+    return players > 1 ? `a ${players}-player run needs every player's signature, one for each seat` : "a one-player run has one signer";
+  const seats = new Set(signers.map((signer) => signer.seat));
+  if (seats.size !== players || [...seats].some((seat) => seat < 0 || seat >= players)) return `signers must take seats 0..${players - 1} once each`;
+  if (new Set(signers.map((signer) => signer.public_key)).size !== players) return "each player signs with a key of their own";
+  const stranger = seatKeys && signers.find((signer) => signer.public_key !== hex(seatKeys[signer.seat]!));
+  if (stranger) return `seat ${stranger.seat} must be signed by the key the replay records for it`;
+  return null;
+}
+
+// Why a co-op run's room does not stand for its pair, or null: its seed must be one a room issued (src/coop.ts), and
+// to the keys its replay records, in seat order. Either partner holds the replay and could rewrite those keys to sign
+// both seats alone; the room recorded the keys each seat proved before the run began. Rooms issue seeds in the bits
+// rand reads, and a seed outside them would play the run of the seed inside.
+async function roomReason(env: Env, replay: Replay): Promise<string | null> {
+  if (replay.run.player_count < 2) return null;
+  if ((replay.run.seed & SEED_BITS) !== replay.run.seed) return "a co-op run's seed must have bit 31 clear";
+  const issued = await env.DB.prepare("SELECT seat0_key, seat1_key FROM coop_runs WHERE seed = ?")
+    .bind(replay.run.seed)
+    .first<{ seat0_key: string; seat1_key: string }>();
+  if (!issued) return "a co-op run must start from a seed its room issued";
+  if (replay.seat_keys!.map(hex).join() !== [issued.seat0_key, issued.seat1_key].join())
+    return "the room issued this run's seed to other players' keys";
+  return null;
 }
 
 function base64(text: string): Uint8Array | null {
@@ -220,13 +276,12 @@ export function validateRecipeSource(source: string, quest: CustomQuest): boolea
 export async function postRun(request: Request, env: Env, options: { requireCustomQuest?: boolean } = {}): Promise<Response> {
   if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) return refuse(413, "upload too large");
   const upload = parseUpload(await request.json().catch(() => null));
-  if (upload === null) return refuse(400, "expected replay, name, public_key and signature");
-  const publicKey = fromHex(upload.public_key, 32);
-  const signature = fromHex(upload.signature, 64);
+  if (upload === null) return refuse(400, "expected replay, and name, public_key and signature or signers");
   const file = base64(upload.replay);
-  const name = latin1(upload.name);
-  if (!publicKey || !signature || !file) return refuse(400, "malformed key, signature or replay");
-  if (name === null || upload.name.length > NAME_MAX_CHARS || [...name].some((code) => code < 0x20))
+  const keys = upload.signers.map((signer) => ({ publicKey: fromHex(signer.public_key, 32), signature: fromHex(signer.signature, 64) }));
+  if (!file || keys.some(({ publicKey, signature }) => !publicKey || !signature)) return refuse(400, "malformed key, signature or replay");
+  const names = upload.signers.map((signer) => latin1(signer.name));
+  if (upload.signers.some((signer, i) => names[i] === null || signer.name.length > NAME_MAX_CHARS || [...names[i]!].some((code) => code < 0x20)))
     return refuse(422, `name must be at most ${NAME_MAX_CHARS} characters in 0x20..0xFF`);
 
   let replay: Replay;
@@ -243,11 +298,21 @@ export async function postRun(request: Request, env: Env, options: { requireCust
     return refuse(422, "recipe source does not match the replay's custom quest");
   if (replay.rules !== REPLAY_RULES)
     return refuse(422, `replay was recorded under rules ${replay.rules}; this service verifies rules ${REPLAY_RULES}`);
-  if (!(await verifyEd25519(publicKey, signature, concat(RUN_DOMAIN, payloadSha, name))))
-    return refuse(401, "signature does not match");
+  const signersRefusal = signersReason(upload.signers, replay.run.player_count, replay.seat_keys);
+  if (signersRefusal) return refuse(422, signersRefusal);
+  for (const [i, signer] of upload.signers.entries()) {
+    const message = upload.coop ? concat(COOP_RUN_DOMAIN, payloadSha, Uint8Array.of(signer.seat), names[i]!) : concat(RUN_DOMAIN, payloadSha, names[i]!);
+    if (!(await verifyEd25519(keys[i]!.publicKey!, keys[i]!.signature!, message))) return refuse(401, "signature does not match");
+  }
+  const roomRefusal = await roomReason(env, replay);
+  if (roomRefusal) return refuse(422, roomRefusal);
+  // Signers in seat order: player one, whose account the run lists under, first.
+  const seated = upload.signers.map((signer, i) => ({ ...signer, key: keys[i]!.publicKey! })).sort((a, b) => a.seat - b.seat);
+  const owner = seated[0]!;
 
-  const key = await env.DB.prepare("SELECT banned FROM keys WHERE public_key = ?").bind(upload.public_key).first<{ banned: number }>();
-  if (key?.banned) return refuse(403, "this key is banned");
+  const marks = seated.map(() => "?").join(", ");
+  const banned = await env.DB.prepare(`SELECT 1 FROM keys WHERE public_key IN (${marks}) AND banned`).bind(...seated.map((signer) => signer.public_key)).first();
+  if (banned) return refuse(403, "this key is banned");
   const reasons = [...unrankedReasons(replay.run), ...outcomeReasons(replay.run, replay.result)];
   if (reasons.length) return refuse(422, `not a ranked run: ${reasons.join(", ")}`);
 
@@ -267,7 +332,7 @@ export async function postRun(request: Request, env: Env, options: { requireCust
   if (existing) {
     if (options.requireCustomQuest && custom && digest && upload.source !== null) {
       const now = Date.now();
-      const accountId = await accountForKey(env, upload.public_key, publicKey, now);
+      const accountId = await accountForKey(env, owner.public_key, owner.key, now);
       if (existing.account_id !== accountId || (existingQuest && existingQuest.account_id !== accountId))
         return refuse(403, "only the quest's creator can attach its recipe");
       if (existingQuest && existingQuest.source !== null && existingQuest.source !== upload.source)
@@ -294,7 +359,9 @@ export async function postRun(request: Request, env: Env, options: { requireCust
 
   const score = rankedScore(replay.run, replay.result);
   const now = Date.now();
-  const accountId = await accountForKey(env, upload.public_key, publicKey, now);
+  const accounts: number[] = [];
+  for (const signer of seated) accounts.push(await accountForKey(env, signer.public_key, signer.key, now));
+  const accountId = accounts[0]!;
   if (upload.source !== null && existingQuest) {
     if (existingQuest.account_id !== accountId) return refuse(403, "only the quest's creator can attach its recipe");
     if (existingQuest.source !== null && existingQuest.source !== upload.source) return refuse(409, "this quest already has a recipe");
@@ -308,15 +375,24 @@ export async function postRun(request: Request, env: Env, options: { requireCust
          client_version, platform, pilot, ticks, result, signals, accepted_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(
-      runId, hex(payloadSha), accountId, upload.public_key, upload.name, board, quest, score, replay.game_version,
+      runId, hex(payloadSha), accountId, owner.public_key, owner.name, board, quest, score, replay.game_version,
       replay.recorder.client, replay.recorder.version, replay.recorder.platform, replay.pilot ? JSON.stringify(replay.pilot) : "",
       replay.ticks.length, JSON.stringify(replay.result), JSON.stringify(verdict.signals), now,
     ),
-    env.DB.prepare("UPDATE accounts SET name = ? WHERE id = ?").bind(upload.name, accountId),
-    env.DB.prepare(
-      `INSERT INTO names (account_id, name, first_at, last_at) VALUES (?, ?, ?, ?)
-       ON CONFLICT (account_id, name) DO UPDATE SET last_at = excluded.last_at`,
-    ).bind(accountId, upload.name, now, now),
+    // A co-op run's seats; a one-player run has only its own columns.
+    ...(seated.length > 1
+      ? seated.map((signer, seat) =>
+          env.DB.prepare("INSERT INTO run_players (run_id, seat, account_id, public_key, name) VALUES (?, ?, ?, ?, ?)")
+            .bind(runId, seat, accounts[seat], signer.public_key, signer.name),
+        )
+      : []),
+    ...seated.flatMap((signer, seat) => [
+      env.DB.prepare("UPDATE accounts SET name = ? WHERE id = ?").bind(signer.name, accounts[seat]),
+      env.DB.prepare(
+        `INSERT INTO names (account_id, name, first_at, last_at) VALUES (?, ?, ?, ?)
+         ON CONFLICT (account_id, name) DO UPDATE SET last_at = excluded.last_at`,
+      ).bind(accounts[seat], signer.name, now, now),
+    ]),
   ];
   if (custom && digest) {
     statements.push(
@@ -347,8 +423,8 @@ let baking: Promise<unknown> = Promise.resolve();
 export function verifyWithGround(env: Env, origin: string, replay: Replay, transport: Uint8Array): Promise<{ verdict: Verdict; ground: Uint8Array | null }> {
   const run = baking.then(async () => {
     const terrain = runGround(replay.run.seed, {
-      board: rankedBoard(replay.run)!,
       quest: questOf(replay),
+      hardcore: replay.run.hardcore,
       customSlots: replay.run.custom_quest?.terrain_slots,
     });
     const bake = new GroundBake(terrain, await groundArt(env, origin), SIZE);

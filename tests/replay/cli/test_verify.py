@@ -10,9 +10,10 @@ from typer.testing import CliRunner
 from crimson.cli.app import app
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, encode_replay_payload
+from crimson.replay.ranked import ranked_run_spec
 from crimson.sim.commands import PerkPickCommand
 
-from ._helpers import build_replay, inject_tick_commands, write_replay
+from ._helpers import build_idle_replay, build_replay, idle_run_ticks, inject_tick_commands, seat_keys, write_replay
 
 
 def _tamper_result(replay: Replay) -> Replay:
@@ -56,6 +57,22 @@ def test_replay_verify_json_output_payload_ok(tmp_path: Path) -> None:
     assert payload["result"] == json.loads(msgspec.json.encode(replay.result))
     assert payload["recorded"] == payload["result"]
     assert payload["mismatched_fields"] == []
+
+
+def test_replay_verify_ranks_a_co_op_pair_on_its_board(tmp_path: Path) -> None:
+    run = ranked_run_spec(GameMode.SURVIVAL, seed=0xBEEF, player_count=2)
+    # The keys a pair's upload is signed with; verification ignores them.
+    replay = build_idle_replay(run, ticks=idle_run_ticks(run), seat_keys=seat_keys(2))
+    replay_path = write_replay(tmp_path, replay=replay, name="survival-coop.crd")
+
+    result = CliRunner().invoke(app, ["replay", "verify", str(replay_path), "--format", "json"])
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["status"] == "ok"
+    assert payload["result"]["outcome"] == "death"
+    assert len(payload["result"]["players"]) == 2
+    assert (payload["ranked"], payload["unranked_reasons"], payload["board"]) == (True, [], "survival-coop")
 
 
 def test_replay_verify_reports_result_mismatch(tmp_path: Path) -> None:

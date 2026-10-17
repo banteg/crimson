@@ -53,11 +53,12 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `33` |
+| `format_version` | int | `34` |
 | `game_version` | str | The build that recorded the run, which boards are versioned by (see below) |
 | `rules` | int | The simulation rules the run plays under (since v31) |
 | `recorder` | `Recorder` | The program that recorded the run (since v30) |
 | `pilot` | `Pilot` or nil | The program that played the run, when one did and says so (since v32) |
+| `seat_keys` | array of bin or nil | Each seat's leaderboard public key, when the run names who plays which seat (since v34) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
 | `ticks` | array of `Tick` | At least one tick |
@@ -76,8 +77,9 @@ service still re-simulates ranked runs.
 
 `rules` is a number each build carries (`REPLAY_RULES`), raised whenever a change makes earlier replays play
 differently: a replay plays back only under the rules it was recorded under. Readers accept v30, which had no
-`rules`, as rules 1, v30 and v31, which had no `pilot`, as declaring none, and v30 to v32, which had no
-`run.custom_quest`, as playing stock quests; writers always write v33.
+`rules`, as rules 1, v30 and v31, which had no `pilot`, as declaring none, v30 to v32, which had no
+`run.custom_quest`, as playing stock quests, and v30 to v33, which had no `seat_keys`, as naming no seat's key;
+writers always write v34.
 
 One change played earlier replays differently without raising `rules`:
 [original bug 40](../rewrite/original-bugs.md#40-the-reload-key-does-nothing-in-co-op), the reload key in co-op with
@@ -100,6 +102,15 @@ it, such as `gpt-5` or `TAS`) and `url` (an `https://` page about it, such as th
 two empty when not given: at most 64 and 200 printable ASCII characters. Verification ignores it; a run that
 declares one ranks on the bot boards ([bots and moderation](../rewrite/bots.md)). The Python port writes it when
 `CRIMSON_PILOT_NAME` is set, with `CRIMSON_PILOT_MODEL` and `CRIMSON_PILOT_URL`.
+
+`seat_keys` binds a co-op run's signatures to its seats: entry `i` is the 32-byte Ed25519 public key
+([leaderboard identity](../rewrite/leaderboard-identity.md#uploads)) of the player in seat `i`, as msgpack bin.
+When present it has exactly `player_count` entries, all distinct. The payload's SHA-256, which every upload signature
+covers, covers the keys too, so the leaderboard accepts a two-player run only when it is signed by exactly the keys
+its seats record, one signature each: a partner who holds the replay cannot sign both seats with keys of their own.
+The seats' keys must be known when the run starts, so co-op peers agree on them in the replay header
+([network co-op](../rewrite/network-coop.md#53-run-setup-replays-ranked-co-op)). Verification ignores them, as
+it does `recorder` and `pilot`.
 
 ### RunSpec
 

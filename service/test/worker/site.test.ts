@@ -110,6 +110,19 @@ describe("site", () => {
     expect((await call("/api/quests/9.9")).status).toBe(404);
   });
 
+  it("a co-op pair's boards sit under /coop, beside one player's", async () => {
+    expect(await (await call("/survival/coop")).text()).toContain("<title>Survival · co-op · crimson.land</title>");
+    expect(await (await call("/quests/hardcore/coop/2.3")).text()).toContain(`<title>2.3 ${questTitles["2.3"]} · hardcore · co-op · crimson.land</title>`);
+    expect(await api<BoardView>("/api/survival/coop")).toMatchObject({ board: "survival-coop", rows: [] });
+    expect(await api<QuestMenuView>("/api/quests/coop/3")).toMatchObject({ board: "quests-coop", stage: 3 });
+    expect((await api<BoardView>("/api/quests/hardcore/coop/2.3")).board).toBe("quests-hardcore-coop");
+    const scores = (body: unknown) => call("/api/scores", { method: "POST", body: JSON.stringify(body) });
+    expect((await scores({ board: "quests-hardcore-coop", quest: "2.3" })).status).toBe(200);
+    // A custom quest ranks one player only.
+    expect((await scores({ board: "quests-coop", quest: "0123456789ab" })).status).toBe(400);
+    expect((await scores({ board: "survival-coop", quest: "1.1" })).status).toBe(400);
+  });
+
   it("board totals count every ranked run in the category, not only the best runs the board shows", async () => {
     expect((await api<BoardView>("/api/survival")).totals).toEqual({ runs: 0, kills: 0, elapsed_ms: 0 });
     await env.DB.batch([

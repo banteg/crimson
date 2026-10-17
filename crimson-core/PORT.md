@@ -152,7 +152,7 @@ opens it, and its choice reaches the run as a command with the next tick.
 Escape runs the pause timeline down by the ticks' time, then the pause menu
 opens and the run waits, also through its options and controls screens. The
 end of the run shows the original's end screen after the verifier's 500 ms
-run-down; leaving any other way, quitting included, ends it unfinished and
+run-down, which takes no pause, as in the original; leaving any other way, quitting included, ends it unfinished and
 keeps its recording. The original's frame draws a gameplay random number every
 frame: in a run each tick draws it (`portable_step_many`), and between ticks the
 frame and the menus draw from a stream of their own. The console stays closed,

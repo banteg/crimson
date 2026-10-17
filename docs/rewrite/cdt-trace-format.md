@@ -25,7 +25,7 @@ and the [recovered core gate](https://github.com/banteg/crimson/tree/master/crim
 | --- | ---: | --- |
 | CDT container | 2 | `crimson-re/src/crimson_re/dbg/schema.py` |
 | CDT payload schema | 21 | `crimson-re/src/crimson_re/dbg/schema.py` |
-| CRD replay | 33 | `src/crimson/game_version.py` |
+| CRD replay | 34 | `src/crimson/game_version.py` |
 
 `scripts/check_docs.py` keeps this table in step with the sources. Traces are
 throwaway debugging data: a trace reader requires exactly the CDT versions and
