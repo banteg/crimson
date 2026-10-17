@@ -698,6 +698,14 @@ describe("co-op runs", () => {
     expect((await uploadPair(file, [alice, "alice"], [bob, "bob"])).status).toBe(409);
   });
 
+  it("both partners' pages upload the same run at once: the service takes it once", async () => {
+    const [alice, bob] = await pair();
+    const statuses = await Promise.all([0, 1].map(() => uploadPair(file, [alice, "alice"], [bob, "bob"]).then((response) => response.status)));
+
+    expect(statuses.sort()).toEqual([201, 409]);
+    expect((await get<BoardView>("/api/survival/coop")).rows.map((row) => names(row))).toEqual([[["alice", "alice"], ["bob", "bob"]]]);
+  });
+
   it("a co-op run needs each recorded seat key's signature for its own seat", async () => {
     const [alice, bob] = await pair();
     const [a, b] = [await alice.signer(file, 0, "alice"), await bob.signer(file, 1, "bob")];

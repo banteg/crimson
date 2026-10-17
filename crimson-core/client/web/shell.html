@@ -572,9 +572,41 @@
   const partner = () => (coop.role === "host" ? 2 : 1);
   const coopPinned = () => !!coop && (coopEnded !== null || coopNote !== null || !coopHello || coop.state !== "connected");
   const coopStatus = () => Module.ccall("client_coop_status", "number", [], []) >>> 0;
+  // The room attests the pair for ranked runs (host/coop_ranked.inc): the game proves this page's key to each room
+  // socket, and hears each seat's key the room recorded and each seed it issued, in the order the room said them,
+  // once it is up (the client answers -1 or "wait" before).
+  let coopGame = Promise.resolve();
+  const coopTell = (call) =>
+    (coopGame = coopGame.then(() => new Promise((resolve) => {
+      const attempt = () => {
+        let answer;
+        try {
+          answer = call();
+        } catch {
+          answer = -1;
+        }
+        if (answer === -1 || answer === "wait") setTimeout(attempt, 250);
+        else resolve(answer);
+      };
+      attempt();
+    })));
+  // A key proves itself only once it is saved: the room keeps a seat's first key, and a reload must prove that one
+  // (a first key the game made a moment ago would otherwise go with the page).
+  const coopProve = (room, challenge) =>
+    coopTell(() => Module.ccall("client_coop_prove", "string", ["string", "string"], [room, challenge])).then(async (proof) => {
+      if (!proof || !(await persist())) return null;
+      const [public_key, signature] = proof.split(" ");
+      return { public_key, signature };
+    });
   // Hosts a room (`room` true) or joins one.
   function startCoop(room) {
-    const current = coop = createCoop({ log: (...args) => console.info("co-op:", ...args) });
+    const current = coop = createCoop({ log: (...args) => console.info("co-op:", ...args), prove: coopProve });
+    current.onkey = (role, key) => {
+      if (current === coop) coopTell(() => Module.ccall("client_coop_key", "number", ["number", "string"], [role === "host" ? 0 : 1, key]));
+    };
+    current.onseed = (seed) => {
+      if (current === coop) coopTell(() => Module.ccall("client_coop_seed", "number", ["number"], [seed]));
+    };
     coopMet = coopSession = false;
     coopEnded = coopNote = null;
     frameSource();
@@ -950,8 +982,9 @@
     playActivity: (mode, run) => playAnalytics.activity(mode, run),
     // HOST_LEADERBOARD_PROFILE, _UPLOAD, _SCORES and _REPLAY (game/host_abi.h).
     leaderboard: (request) => [profile, upload, scores, replay][request - 1](),
-    // The co-op session's messages, after each frame (client/main.cpp).
+    // The co-op session's messages, after each frame (client/main.cpp), and the Host's request for a run's seed.
     coopSend: (channel, bytes) => coopLink?.send(channel, bytes),
+    coopSeed: () => coopLink?.seed(),
     canvas,
     arguments: ["/game"],
     preRun: [() => {

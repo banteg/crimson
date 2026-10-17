@@ -53,6 +53,10 @@ void identity_sign(const Identity &identity, const void *message, size_t size, u
   crypto_ed25519_sign(signature, identity.secret, (const uint8_t *)message, size);
 }
 
+bool identity_verify(const uint8_t public_key[32], const uint8_t signature[64], const void *message, size_t size) {
+  return crypto_ed25519_check(signature, public_key, (const uint8_t *)message, size) == 0;
+}
+
 std::string hex(const uint8_t *data, size_t size) {
   static const char digits[] = "0123456789abcdef";
   std::string out;

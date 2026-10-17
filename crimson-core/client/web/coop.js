@@ -3,12 +3,16 @@
 // (service/src/coop.ts), signal a WebRTC connection with two DataChannels through
 // it, and relay over the room's socket when WebRTC cannot connect. It moves opaque bytes on channel 0
 // (ticks, best effort) and channel 1 (control: delivered once and in order whatever
-// the transport does); the game owns the protocol.
+// the transport does); the game owns the protocol. The room also attests the pair
+// for ranked runs: `prove(room, challenge)` answers each room socket's challenge
+// with this page's key proof ({public_key, signature}, or a promise of it; null
+// for none), and the page hears each seat's key the room recorded (onkey) and
+// each seed it issued (onseed), which the host asks for (seed()).
 function createCoop({
   fetch = globalThis.fetch, WebSocket = globalThis.WebSocket, RTCPeerConnection = globalThis.RTCPeerConnection,
   location = globalThis.location, sessionStorage,
   setTimeout = globalThis.setTimeout, clearTimeout = globalThis.clearTimeout,
-  now = () => performance.now(), log = () => {},
+  now = () => performance.now(), log = () => {}, prove = () => null,
 } = {}) {
   const CONNECT_TIMEOUT_MS = 10000;
   // A disconnected peer connection often comes back by itself; if not, the host restarts ICE, and if that does not
@@ -230,8 +234,8 @@ function createCoop({
     return frame;
   }
 
-  // Text frames are JSON: the room's own seat, peer and ice messages, or the partner's signalling. Binary frames
-  // are always the partner's relayed bytes.
+  // Text frames are JSON: the room's own seat, peer, ice, key and seed messages, or the partner's signalling. Binary
+  // frames are always the partner's relayed bytes.
   function receive(data) {
     if (typeof data !== "string") {
       const bytes = new Uint8Array(data);
@@ -245,6 +249,8 @@ function createCoop({
       case "seat": return seat(message);
       case "peer": return peer(message.present);
       case "ice": return ice(message.ice_servers);
+      case "key": return api.onkey?.(message.role, message.public_key);
+      case "seed": return api.onseed?.(message.seed);
       case "hello": return hello(message.page);
       case "bye": return bye(message.page);
       case "offer": return offer(message);
@@ -262,6 +268,13 @@ function createCoop({
     }
     if (!iceServers) signal({ type: "ice" });
     keepalive();
+    // Each socket proves this seat's key on its own challenge, once; a proof that comes after its socket went is
+    // dropped, as the next socket proves again.
+    const current = socket;
+    new Promise((resolve) => resolve(prove(roomId, message.challenge))).then(
+      (proof) => proof && socket === current && seated && signal({ type: "key", ...proof }),
+      (error) => log("no key proof", String(error)),
+    );
   }
   function keepalive() {
     pinger = setTimeout(() => {
@@ -644,8 +657,16 @@ function createCoop({
     setState("closed");
   }
 
+  // The host asks the room for a run's seed, which comes to both pages (onseed): false when it cannot ask now. The
+  // room answers none past ten a minute or before both seats proved their keys, and the run plays unranked.
+  function seed() {
+    if (role !== "host" || !seated || ended()) return false;
+    signal({ type: "seed" });
+    return true;
+  }
+
   const api = {
-    host, join, send, close,
+    host, join, send, close, seed,
     stats: () => ({ ...stats, sent: [...stats.sent], received: [...stats.received], state, inbox: inbox.length, unacked: unacked.length }),
     get state() { return state; },
     get reason() { return reason; },
@@ -655,6 +676,9 @@ function createCoop({
     onstate: null,
     onpeer: null,
     delay: null,
+    // The room's word on the pair: a seat's key it recorded (role, hex), a seed it issued.
+    onkey: null,
+    onseed: null,
     // Messages that arrive before the game listens wait for it.
     get onmessage() { return handler; },
     set onmessage(next) {

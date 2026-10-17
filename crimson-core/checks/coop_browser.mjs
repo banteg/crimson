@@ -25,17 +25,25 @@
 // runs; both panels say why. The host leaves its stopped run first: its page
 // begins a session whose hello waits, its panel saying it waits for player 2 to
 // leave the stopped run, while the guest's page, its run still stopped, begins
-// none. Once the guest leaves too, the session connects. In its run the host pauses and leaves from the banner: both runs
-// end, the host's panel says it left and the guest's that player 1 left, neither
-// address names the room any more, and once the host opens a new room, what the
-// old session still sends goes nowhere.
+// none. Once the guest leaves too, the session connects. A ranked run follows:
+// both players stand still until both die, and each types a name at its end
+// screen. Each page uploads the same signed run to the service, which takes one
+// (201) and already has the other (409), and the co-op Survival board lists the
+// pair under both names. The host's Enter plays again: in that run the host
+// pauses and leaves from the banner: both runs end, the host's panel says it
+// left and the guest's that player 1 left, neither address names the room any
+// more, and once the host opens a new room, what the old session still sends
+// goes nowhere.
 //
 // Then over the room's relay: a guest page without WebRTC joins a new room,
 // both play a run through the room, and the guest's page closes, which the
 // host's game hears at once. The host's game quits (Alt+Q): its panel goes with
-// the room, offering no new room for a game that no longer runs. Screenshots of
+// the room, offering no new room for a game that no longer runs. Every page
+// proves its player's key to its room (a reloaded page the same key), and every
+// run plays a seed its room issued to the pair. Screenshots of
 // the pages (the cover, the invite, the menus connected, the runs, the
-// background, the desync, the pause, the end, the quit) go to the shots folder.
+// background, the desync, the team's death, the pause, the end, the quit) go to
+// the shots folder.
 // Each session the host's page (on localhost, where the game reports analytics)
 // played ends with its summary in the service's co-op totals (local D1, its
 // migrations applied first): the WebRTC sessions as direct, with the rollbacks
@@ -75,8 +83,8 @@ fs.mkdirSync(shots, { recursive: true });
 // The game files' version in the bucket the page loads them from (service/src/index.ts GAME_VERSION).
 const GAME_VERSION = /const GAME_VERSION = "([^"]+)"/.exec(fs.readFileSync(path.join(SERVICE, "src/index.ts"), "utf8"))[1];
 // game_state_id_t; game_coop_status's flags and reasons (host/coop_wire.inc).
-const MAIN_MENU = 0, PLAY_GAME_MENU = 1, GAMEPLAY = 9;
-const STATUS = { connected: 1, started: 2, paused: 4, desynced: 128, failed: 256, closed: 0x1000, stopped: 0x2000 };
+const MAIN_MENU = 0, PLAY_GAME_MENU = 1, GAME_OVER = 7, GAMEPLAY = 9;
+const STATUS = { connected: 1, started: 2, paused: 4, desynced: 128, failed: 256, signed: 0x800, closed: 0x1000, stopped: 0x2000 };
 const PARTNER_GONE = 10, DIVERGED = 11;
 const reasonOf = (status) => (status >> 16) & 255;
 // The 1024x768 frame's Play Game on the main menu, and Survival on the Play Game panel, whose fresh profile lists
@@ -119,6 +127,7 @@ execFileSync("npx", ["vite", "build"], { cwd: SERVICE, stdio: "ignore" });
 const port = await free();
 const state = fs.mkdtempSync(path.join(os.tmpdir(), "coop-browser-"));
 const wrangler = (...args) => ["wrangler", ...args, "--persist-to", state];
+// The rooms record the seeds they issue for ranked runs (coop_runs).
 execFileSync("npx", wrangler("d1", "migrations", "apply", "crimson-land", "--local"), { cwd: SERVICE, stdio: "ignore", env: { ...process.env, CI: "1" } });
 // The service's co-op totals (service/migrations/0009_coop_analytics.sql) by transport and metric.
 const coopTotals = () =>
@@ -198,8 +207,12 @@ const logs = [], peers = [];
 const KEYS = {
   Escape: ["Escape", 27],
   AltLeft: ["Alt", 18],
+  Enter: ["Enter", 13],
+  Backspace: ["Backspace", 8],
   ...Object.fromEntries([..."WASDQ"].map((ch) => [`Key${ch}`, [ch.toLowerCase(), ch.charCodeAt(0)]])),
 };
+// The names the players type at the end screen.
+const NAMES = ["Ranger", "Scout"];
 // A page of its own browser context: a window with one tab, the page focused (as Playwright emulates it) so
 // every page plays with input.
 async function open(name, origin, { webrtc = true } = {}) {
@@ -213,14 +226,18 @@ async function open(name, origin, { webrtc = true } = {}) {
     const done = new Promise((resolve) => (loaded = resolve));
     return send(method, params).then(() => done);
   };
+  // The page's answers to its uploads (POST /api/runs).
+  const uploads = [];
   listeners.set(sessionId, (method, params) => {
     if (method === "Page.loadEventFired") loaded();
+    else if (method === "Network.responseReceived" && new URL(params.response.url).pathname === "/api/runs") uploads.push(params.response.status);
     else if (method === "Runtime.consoleAPICalled")
       logs.push(`${name}: ${params.args.map((arg) => arg.value ?? arg.description ?? "").join(" ")}`);
     else if (method === "Runtime.exceptionThrown") logs.push(`${name} error: ${params.exceptionDetails.exception?.description ?? params.exceptionDetails.text}`);
   });
   await send("Runtime.enable");
   await send("Page.enable");
+  await send("Network.enable");
   await send("Emulation.setDeviceMetricsOverride", { width: 1024, height: 768, deviceScaleFactor: 1, mobile: false });
   await send("Emulation.setFocusEmulationEnabled", { enabled: true });
   if (!webrtc) await send("Page.addScriptToEvaluateOnNewDocument", { source: "delete window.RTCPeerConnection;" });
@@ -240,8 +257,16 @@ async function open(name, origin, { webrtc = true } = {}) {
     const [text, keyCode] = KEYS[code];
     return send("Input.dispatchKeyEvent", { type, code, key: text, windowsVirtualKeyCode: keyCode, ...(type === "keyDown" && text.length === 1 && { text }) });
   };
+  // A letter typed: its key down with its character, and up.
+  const letter = async (ch) => {
+    const code = `Key${ch.toUpperCase()}`, keyCode = ch.toUpperCase().charCodeAt(0);
+    await send("Input.dispatchKeyEvent", { type: "keyDown", code, key: ch, text: ch, windowsVirtualKeyCode: keyCode });
+    await sleep(50);
+    await send("Input.dispatchKeyEvent", { type: "keyUp", code, key: ch, windowsVirtualKeyCode: keyCode });
+    await sleep(50);
+  };
   const peer = {
-    name, origin, targetId, browserContextId, send, evaluate,
+    name, origin, targetId, browserContextId, send, evaluate, uploads,
     goto: (url) => navigate("Page.navigate", { url }),
     reload: () => navigate("Page.reload"),
     status: async () => (await call("client_coop_status")) >>> 0,
@@ -283,6 +308,18 @@ async function open(name, origin, { webrtc = true } = {}) {
     up: () => mouse("mouseReleased"),
     keyDown: (code) => key("keyDown", code),
     keyUp: (code) => key("keyUp", code),
+    // The page's next animation frame, which runs a pass of the game first.
+    frame: () => evaluate(() => new Promise((resolve) => requestAnimationFrame(() => resolve()))),
+    async type(text) {
+      for (const ch of text) await letter(ch);
+    },
+    outbox: () => evaluate(() => {
+      try {
+        return FS.readdir("/game/leaderboard/outbox").filter((name) => name.endsWith(".json")).length;
+      } catch {
+        return 0;
+      }
+    }),
     async shot(what) {
       const { data } = await send("Page.captureScreenshot", { format: "png" });
       fs.writeFileSync(path.join(shots, `${name}-${what}.png`), Buffer.from(data, "base64"));
@@ -300,10 +337,12 @@ async function press(peer, screen, [x, y]) {
   await sleep(120);
   await peer.up();
 }
-// A key tap the game sees: held past a frame.
+// A key tap the game sees: held through one of the page's frames. The original reads a key as it is down when a
+// frame polls (its buttons' Enter too; the name entry takes Enter as a character), so a press and release within one
+// slow frame (after a screenshot, on a busy machine) is none, and one held for half a second of frames repeats.
 async function tap(peer, code) {
   await peer.keyDown(code);
-  await sleep(150);
+  await peer.frame();
   await peer.keyUp(code);
 }
 const connected = async (peer) => (await peer.status()) & STATUS.connected;
@@ -317,12 +356,13 @@ const linked = (peer, how) =>
 const webrtc = (peer) =>
   until(`${peer.name}'s WebRTC candidate pair`, async () => /^(host|srflx|prflx|relay)/.test((await peer.transport()) ?? ""), 5000);
 const both = (what, test, ms) => until(what, async () => (await test(host)) && (await test(guest)), ms);
+// A run on both pages.
+const started = (what) => both(what, async (peer) => (await peer.status()) & STATUS.started && (await peer.screen()) === GAMEPLAY);
 // The host's menus start Survival once the startup sequence is over; the guest's screen follows.
 async function survival(host, guest) {
   await press(host, MAIN_MENU, PLAY_GAME);
   await press(host, PLAY_GAME_MENU, SURVIVAL);
-  const started = async (peer) => (await peer.status()) & STATUS.started && (await peer.screen()) === GAMEPLAY;
-  await until("the run on both", async () => (await started(host)) && (await started(guest)));
+  await started("the run on both");
 }
 // Both move and fire for a few hundred confirmed ticks: each by WASD and the mouse, its own way round. Every step
 // both runs go on without a desync or an error and agree, and each seat's records move its player at times.
@@ -543,9 +583,33 @@ try {
   await both("the session after the desync", connected, 30000);
   for (const peer of [host, guest]) await linked(peer, /, (direct|relayed)$/);
 
-  // The host pauses with Escape and leaves from the banner: both runs end, both panels say why, and neither
-  // address names the room any more.
+  // A ranked run to the team's death: neither player moves or fires, and the creatures come. At its end screen
+  // each player clears the name field, types a name and saves it with Enter; each page then holds both signatures
+  // and uploads the same run, which the service takes once: one page hears 201 and the other 409, and both
+  // outboxes empty. The co-op Survival board lists the pair under both names.
   await survival(host, guest);
+  await both("the team's death", async (peer) => (await peer.screen()) === GAME_OVER, 300000);
+  await Promise.all([host.shot("death"), guest.shot("death")]);
+  await sleep(2000);
+  for (const [i, peer] of [host, guest].entries()) {
+    for (let n = 0; n < 32; ++n) await tap(peer, "Backspace");
+    await peer.type(NAMES[i]);
+    await tap(peer, "Enter");
+  }
+  await both("both signatures", async (peer) => (await peer.status()) & STATUS.signed, 10000);
+  await both("both uploads", async (peer) => peer.uploads.length > 0 && (await peer.outbox()) === 0, 60000);
+  assert.deepEqual([...host.uploads, ...guest.uploads].sort(), [201, 409], "the service takes the run once");
+  const board = await (await fetch(`http://localhost:${port}/api/survival/coop`)).json();
+  assert.equal(board.rows.length, 1, "the pair's run on the co-op board");
+  assert.deepEqual(board.rows[0].team.map((seat) => seat.name), NAMES, "the pair's names");
+  console.log("ranked co-op run:", board.rows[0].score, "points for", NAMES.join(" and "));
+  await Promise.all([host.shot("ranked"), guest.shot("ranked")]);
+
+  // The host's Enter presses Play Again (its button focused under the cursor), and both screens come to the next
+  // run. The host pauses there with Escape and leaves from the banner: both runs end, both panels say why, and
+  // neither address names the room any more.
+  await tap(host, "Enter");
+  await started("the next run on both");
   await tap(host, "Escape");
   await until("the pause", async () => (await host.status()) & STATUS.paused && (await guest.status()) & STATUS.paused);
   await host.shot("paused");
@@ -600,6 +664,12 @@ try {
     [true, null, null],
   );
   await host.shot("quit");
+  // The rooms attested each pair: both pages proved their keys, and every run played a seed its room issued to them,
+  // each pair's keys its own (the relayed pages are new browsers, with keys of their own).
+  const query = wrangler("d1", "execute", "crimson-land", "--local", "--json", "--command", "SELECT seat0_key, seat1_key FROM coop_runs");
+  const issued = JSON.parse(execFileSync("npx", query, { cwd: SERVICE, encoding: "utf8" }))[0].results;
+  assert.equal(issued.length, 4, "a seed a run");
+  assert.equal(new Set(issued.map(({ seat0_key, seat1_key }) => `${seat0_key} ${seat1_key}`)).size, 2, "each pair's keys");
   // The relayed session's summary too.
   await until("the relayed session's telemetry", () => coopTotals()["ws-relay sessions"] >= 1, 30000);
 
@@ -618,6 +688,7 @@ try {
   for (const peer of peers) {
     try {
       console.error(`${peer.name}: screen ${await peer.screen()}, status ${(await peer.status()).toString(16)}, "${await peer.line()}"`);
+      console.error(`${peer.name}: uploads ${JSON.stringify(peer.uploads)}, transport ${JSON.stringify(await peer.evaluate(() => coop?.stats()))}`);
       await peer.shot("failed");
     } catch (diagnostic) {
       console.error(`${peer.name}: no diagnostics (${diagnostic.message})`);

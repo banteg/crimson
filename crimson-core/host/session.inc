@@ -534,6 +534,7 @@ static void live_poll_prompt() {
 #include "practice.inc"
 #include "coop.inc"
 #include "coop_wire.inc"
+#include "coop_ranked.inc"
 #include "coop_live.inc"
 
 extern "C" {
@@ -596,6 +597,9 @@ void game_live_quit() {
   else if (game_live)
     live_end("incomplete");
   ranked_release();
+  // A co-op run's end screen signs the run with the name it has, as it would past the name entry.
+  if (coop_live.naming)
+    game_coop_end_ready();
 }
 bool game_live_pause() {
   // Watch and practice handle Escape before the recovered frame; a co-op run

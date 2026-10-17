@@ -150,12 +150,19 @@ static void replay_write_custom_quest(Msgpack &m) {
 
 // Each seat's Ed25519 public key in a replay's `seat_keys` (types.py SEAT_KEY_BYTES).
 static constexpr uint32_t REPLAY_SEAT_KEY_BYTES = 32;
+using ReplaySeatKey = std::array<uint8_t, REPLAY_SEAT_KEY_BYTES>;
+
+// Who recorded a run and who sits where: this machine's recorder by default; a
+// co-op run's is the Host's, with each seat's key when the room attested them
+// (host/coop_wire.inc), so both machines write the same replay.
+struct ReplayHeader {
+  std::string version = replay_client_version, platform = replay_platform;
+  std::vector<ReplaySeatKey> seat_keys; // one a seat when the run names who plays which, else none
+};
 
 // The replay (src/crimson/replay/types.py Replay): the run's configuration,
-// its result and every tick the recording holds. `seat_keys` holds one key per
-// seat when the run names who plays which, else none.
-static std::vector<uint8_t> replay_payload(const char *outcome,
-                                           const std::vector<std::array<uint8_t, REPLAY_SEAT_KEY_BYTES>> &seat_keys = {}) {
+// its result and every tick the recording holds.
+static std::vector<uint8_t> replay_payload(const char *outcome, const ReplayHeader &header = {}) {
   Msgpack m;
   m.map(9);
   m.str("format_version"), m.integer(CRIMSON_REPLAY_FORMAT);
@@ -163,16 +170,16 @@ static std::vector<uint8_t> replay_payload(const char *outcome,
   m.str("rules"), m.integer(CRIMSON_REPLAY_RULES);
   m.str("recorder"), m.map(3);
   m.str("client"), m.str("crimson-core");
-  m.str("version"), m.str(replay_client_version);
-  m.str("platform"), m.str(replay_platform);
+  m.str("version"), m.str(header.version.c_str());
+  m.str("platform"), m.str(header.platform.c_str());
   // A player plays these runs: no pilot.
   m.str("pilot"), m.nil();
   m.str("seat_keys");
-  if (seat_keys.empty())
+  if (header.seat_keys.empty())
     m.nil();
   else {
-    m.array((uint32_t)seat_keys.size());
-    for (const auto &key : seat_keys)
+    m.array((uint32_t)header.seat_keys.size());
+    for (const ReplaySeatKey &key : header.seat_keys)
       m.bin(key.data(), REPLAY_SEAT_KEY_BYTES);
   }
   m.str("run"), m.map(15);

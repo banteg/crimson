@@ -47,6 +47,8 @@ interface Room {
 
 // Each seat's public key, in hex, once it has proven it: kept apart from the room, whose writes it would race.
 const seatKey = (role: Role) => `key:${role}`;
+// The last seed the room issued, which each new socket hears.
+const LATEST_SEED = "seed";
 
 // What the room keeps on each socket: the challenge its seat signs, the key it proved and whether it has left.
 interface Attachment {
@@ -156,6 +158,15 @@ export class CoopRoom extends DurableObject<Env> {
     const peer = this.socket(otherRole(role));
     server.send(JSON.stringify({ type: "peer", present: peer !== undefined }));
     peer?.send(JSON.stringify({ type: "peer", present: true }));
+    // The keys the seats proved before this socket came (its page reloaded, or took its seat after the other's
+    // proof), which the room issues seeds to, and the last seed it issued, which a socket away at the time missed.
+    const stored = await this.ctx.storage.get<string | number>([seatKey("host"), seatKey("guest"), LATEST_SEED]);
+    for (const seat of ["host", "guest"] as const) {
+      const key = stored.get(seatKey(seat));
+      if (key !== undefined) server.send(JSON.stringify({ type: "key", role: seat, public_key: key }));
+    }
+    const seed = stored.get(LATEST_SEED);
+    if (seed !== undefined) server.send(JSON.stringify({ type: "seed", seed }));
     await this.ctx.storage.setAlarm(room.created + LIFETIME_MS);
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -184,7 +195,8 @@ export class CoopRoom extends DurableObject<Env> {
   }
 
   // A seat's key, proven by signing its socket's challenge with it. The first proof records the seat's key; a reconnect
-  // proves again, and keeps the seat only with that same key.
+  // proves again, and only that same key proves it: another leaves the socket unproven and the seat's key as it was,
+  // so the pair's runs play unranked.
   private async proveKey(ws: WebSocket, role: Role, message: string): Promise<void> {
     const attachment = ws.deserializeAttachment() as Attachment;
     if (attachment.key) return ws.close(1008, "a socket proves its key once");
@@ -198,28 +210,30 @@ export class CoopRoom extends DurableObject<Env> {
     if (!proven) return ws.close(1008, "key proof does not verify");
     const key = public_key as string;
     const recorded = await this.ctx.storage.get<string>(seatKey(role));
-    if (recorded !== undefined && recorded !== key) return ws.close(1008, "this seat proved another key");
+    if (recorded !== undefined && recorded !== key) return;
     if (recorded === undefined) await this.ctx.storage.put(seatKey(role), key);
     ws.serializeAttachment({ ...attachment, key } satisfies Attachment);
     for (const seat of this.open()) seat.send(JSON.stringify({ type: "key", role, public_key: key }));
   }
 
   // A run's seed for the pair whose keys the seats proved, recorded with those keys for the run's upload, in the bits
-  // rand reads, so no two seeds the room issues play one run.
+  // rand reads, so no two seeds the room issues play one run. A request past the budget or before both seats' keys
+  // gets none, and the host's run plays its own seed, unranked.
   private async issueSeed(ws: WebSocket, role: Role): Promise<void> {
     if (role !== "host") return ws.close(1008, "only the host asks for a seed");
-    if (!this.seeds.take()) return ws.close(1008, "too many seeds");
+    if (!this.seeds.take()) return;
     const room = await this.room();
     if (!room) return ws.close(CLOSE_ROOM_GONE, "room closed");
     const keys = await this.ctx.storage.get<string>([seatKey("host"), seatKey("guest")]);
     const [host, guest] = [keys.get(seatKey("host")), keys.get(seatKey("guest"))];
-    if (host === undefined || guest === undefined) return ws.close(1008, "both seats prove their keys before a seed");
+    if (host === undefined || guest === undefined) return;
     const insert = this.env.DB.prepare(
       "INSERT INTO coop_runs (seed, room_id, seat0_key, seat1_key, issued_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (seed) DO NOTHING",
     );
     let seed: number;
     do seed = crypto.getRandomValues(new Uint32Array(1))[0]! & SEED_BITS;
     while (!(await insert.bind(seed, room.id, host, guest, Date.now()).run()).meta.changes);
+    await this.ctx.storage.put(LATEST_SEED, seed);
     for (const seat of this.open()) seat.send(JSON.stringify({ type: "seed", seed }));
   }
 

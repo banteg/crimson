@@ -1054,28 +1054,55 @@ any other.
 - **One replay, two signatures**: `MSG_START_RUN` carries the replay header
   (`game_version`, `rules`, the Host's `recorder`, `pilot`, `seat_keys` =
   [Host key, Guest key] as proven to the room, `run` with the room's seed), so
-  both peers write byte-identical `.crd` files; the Guest checks the seed and
-  keys against the room's. Each peer shows the end screen's name entry
+  both peers write byte-identical `.crd` files. Each peer shows the end screen's name entry
   ("State your name, trooper!", prefilled with the saved name) for
   its own player, as a 1P ranked run does before `ranked_release()`
-  (`crimson-core/host/ranked.inc:85-99`). When the player confirms, the peer
-  signs the replay as a [leaderboard upload](leaderboard-identity.md#uploads)
-  does, with the key its seat records, and sends
-  `MSG_RUN_SIGNED { run_epoch, name, public_key, signature }`.
-  Each peer queues the replay with both signatures in its outbox, so either can
-  upload later, offline play included; the service accepts the run once and
-  answers the second upload with `409`. A co-op run ranks only with both
-  players' valid signatures, and its entry credits both names.
+  (`crimson-core/host/ranked.inc`). When the player confirms (or quits there),
+  the peer signs the replay for its seat as a
+  [co-op upload](leaderboard-identity.md#co-op-runs) does, with the key its seat
+  records, once the room told it the run's seed and both seats' keys as the
+  header records them, and sends `MSG_RUN_SIGNED { seat, name, public_key,
+  signature }` (Section 6.2), checking the partner's against the key its seat
+  records. A peer that has not heard the room's word by then (its room socket
+  was away as the room spoke, or the header is not the room's) sends its name
+  unsigned, and the run ranks on neither.
+  Once a peer holds both signatures it queues the replay with them in its
+  outbox (`leaderboard/outbox/<payload sha256>.json`, the `signers` envelope),
+  the same file on both, so either can upload later, offline play included;
+  the service accepts the run once and answers the second upload with `409`.
+  Only a finished run (a Survival team wipe, a completed quest) of an attested
+  pair on a page that offers ranked play is queued. A co-op run ranks only with
+  both players' valid signatures, and its entry credits both names; the high
+  scores' online boards for two players are the co-op boards, their runs named
+  "A & B".
+
+- **The game's side of the room** (`crimson-core/host/coop_ranked.inc`): the
+  page asks the game to prove its key on each room socket's challenge
+  (`game_coop_prove`) and passes on each seat's key and each seed the room
+  sends (`game_coop_room_key`, `game_coop_room_seed`). The Host's run starts
+  on a room seed when the room recorded both seats' keys, the Host's its own:
+  the game asks the page for one (`game_coop_room_ask`) and waits up to 5 s,
+  then plays its own seed unranked. Only a seed new to the game that comes
+  while its request is out counts: the room's latest, said again to a socket
+  that opens, played a run already. A request whose run can no longer start
+  (the choice dropped, the partner gone) is forgotten, and so is one of a last
+  session. Its `START_RUN` header then records the seats' keys, and the
+  Guest's screen comes to the run as soon as the protocol allows: the room's
+  word never holds a run up or ends a session, it only decides at the end
+  screen whether each peer signs. A page that offers no ranked play (inside
+  another site's page) or has no key proves none, and the pair's runs play
+  their own seeds, unranked.
 
 - **Next run waits for both names**: the Host starts the next run (Section 5.2)
   only once both `MSG_RUN_SIGNED` for the current `run_epoch` have arrived, or
   the partner has left. A click before that shows "Waiting for Player N" on the
   clicker's screen and fires when the second signature lands, so neither
   player is pulled out of the name entry or the quest results reveal. Leaving
-  before signing leaves the run unranked. Until `M3` signs, `MSG_RUN_SIGNED`
-  carries nothing: each peer sends it once its end screen shows its buttons,
-  past the name entry (or with none), and the Host waits for the Guest's and
-  its own screen's. A session that ends while a player names a score leaves
+  before signing leaves the run unranked. Each peer sends `MSG_RUN_SIGNED`
+  once its end screen shows its buttons, past the name entry (or with none),
+  with its name, and its signature when it has one; an unranked run's carries
+  only the name. The Host waits for the Guest's and its own screen's. A
+  session that ends while a player names a score leaves
   the end screen once the name is in, the name going to the two players'
   table. Every session ends that way, whether it closed or another began (the
   transport opening again before a frame, a partner's new hello): its run
@@ -1179,8 +1206,8 @@ are small JSON texts:
 | `{type: "seat", role, challenge, guest_token?}` | First message on a new socket: `challenge` (64 hex characters) is the socket's own, for its key proof; `guest_token` only when the guest seat was just taken. |
 | `{type: "peer", present}` | Right after `seat`, with the other seat's state; then to the other seat whenever a seat joins (`true`) or leaves (`false`). It reports the partner's socket, not its page: a repeated `present: true` may be the same page back after a network blip. |
 | `{type: "ice", ice_servers}` | Answer to a client's `{type: "ice"}`, which the server keeps from the partner. The guest asks once after joining; either side asks again before an ICE restart. Within ten seconds of the room's last TURN mint, both seats get that mint's servers. |
-| `{type: "key", role, public_key}` | To both seats when a seat proves its key (below). |
-| `{type: "seed", seed}` | To both seats when the room issues the Host a run's seed (below). |
+| `{type: "key", role, public_key}` | To both seats when a seat proves its key (below), and to a socket as it opens for each seat whose key the room holds (a reload, or a seat taken after the other's proof). |
+| `{type: "seed", seed}` | To both seats when the room issues the Host a run's seed (below), and to a socket as it opens, after the keys, the last seed the room issued (one a socket away at the time missed). |
 
 **Key proof.** Each socket proves its seat's identity key once: the game signs
 `crimson-coop-seat-v1\n`, then the room id, then the socket's `challenge`
@@ -1188,17 +1215,18 @@ are small JSON texts:
 client sends `{type: "key", public_key, signature}` (hex, as in
 [leaderboard uploads](leaderboard-identity.md#protocol)). The first proof
 records the seat's key. A reconnect proves again on its new challenge, and
-must prove the same key. A proof that does not verify, a second
-proof on one socket, or a reconnect proving another key closes the socket
-with `1008`.
+must prove the same key: another proves nothing, the seat keeping its key and
+the socket unproven, so the pair's runs play unranked. A proof that does not
+verify or a second proof on one socket closes the socket with `1008`.
 
 **Seeds.** Once both seats have proven keys, the Host asks `{type: "seed"}`
 for each run. The room draws a fresh random seed with bit 31 clear (`rand`
 never reads that bit), records it in D1
 (`coop_runs`: seed, room id, the host's and the guest's keys, issue time;
-each seed once, drawn again on a collision) and sends it to both seats. A
-seed request from the guest, before both seats have proven keys, or past ten
-a minute closes the socket with `1008`.
+each seed once, drawn again on a collision), keeps it as the room's last and
+sends it to both seats. A seed request from the guest closes the socket with
+`1008`; one before both seats have proven keys or past ten a minute gets no
+seed, and the host's run plays its own, unranked.
 
 Client message types therefore avoid `seat`, `peer`, `ice`, `key` and
 `seed`: the room answers `ice`, `key` and `seed` requests itself and never
@@ -1258,6 +1286,13 @@ attempt, for as long as the page lives; a page that never got its seat gives
 up after a few attempts. The room's own closes (`4000`, `4001`, a reserved
 message type, an oversized message) end the session; a flood close
 reconnects. An idle socket pings the room now and then.
+
+**The room's attestation.** On each socket's `seat`, the page's
+`prove(room, challenge)` (the game's proof, or a promise of it; none from a
+page that proves no key) goes to the room as `{type: "key", public_key,
+signature}`, unless that socket went meanwhile. The page hears the room's
+`key` and `seed` messages (`onkey(role, public_key)`, `onseed(seed)`), and the
+host's `seed()` asks for a run's seed.
 
 **Partner and links.** Room presence is only signalling: after every
 `present: true` each page sends `{type: "hello", page}` with a nonce of its
@@ -1331,7 +1366,16 @@ exports, which the page calls with `Module.ccall`:
   `client_coop_receive(channel, size)` (`game_coop_receive`);
 - `client_coop_status()` returns `game_coop_status`, and `client_coop_why()`
   why the session or its run stopped as the game tells its player
-  (`game_coop_why`, null for none).
+  (`game_coop_why`, null for none);
+- `client_coop_prove(room, challenge)` returns the game's proof for a room
+  socket's challenge (`game_coop_prove`: `"<public key> <signature>"` in hex,
+  empty for none), `client_coop_key(seat, key)` and `client_coop_seed(seed)`
+  pass on the room's `key` and `seed` messages (`game_coop_room_key`,
+  `game_coop_room_seed`); before the game has started they answer `"wait"` or
+  `-1`, and the page calls them again, in the room's order, once it has. The
+  page sends a proof only once the game's files are saved, its key with them:
+  the room keeps a seat's first key, and a page reloaded a moment after its game
+  made a key would otherwise come back with another.
 
 For `checks/coop_browser.mjs` there are also the screen the game shows
 (`client_game_state`), the run's confirmed tick, the record a confirmed tick ran with for a seat (`game_coop_used`), the state's hash
@@ -1340,7 +1384,9 @@ it left (`game_coop_hash_at`) and `game_coop_corrupt`.
 After every frame the client drains `game_coop_tx` on both channels, copies
 each message out of the module and hands it to `Module.coopSend(channel,
 bytes)`, which the page sends with `coop.send` of the room the session
-connected over (once another room replaced it, nowhere). The game paces its ticks
+connected over (once another room replaced it, nowhere); when the Host's game
+asks for a run's seed (`game_coop_room_ask`), `Module.coopSeed()` asks that
+room. The game paces its ticks
 packets (Section 6.2) well under the room budget, so on the relay they stay
 clear of the reserve kept for control. No pointer into the module's memory
 outlives a call. A native build compiles the same exports, which nothing
@@ -1496,14 +1542,14 @@ later epoch than the receiver's. Every other message of another epoch is ignored
 | Type | Message | Payload | Rule |
 | --- | --- | --- | --- |
 | `1` | `HELLO` | `u16 protocol (1), u8 len, build[len], u8 answer, u32 session` | On connect (`answer` 0), and in answer to one with `answer` 0 (`answer` 1), so a hello that arrived before the partner connected comes again; a different protocol or build (`replay_client_version`) is an error. Its epoch is the sender's newest. A hello with `answer` 0 naming another session than the one this peer heard means the partner began anew (its game connected again after a timeout of its own while this peer's session went on): this peer's session ends as a lost partner's does, its run at the last confirmed tick, and a new one begins with the partner's |
-| `2` | `START_RUN` | `u8 delay, u8 rmax, PortableConfig, u8 choice, u16 header_len, header` | Host only, once the last run is over on both peers (the Host compared the Guest's hashes up to its last tick) or none started. The Guest runs `portable_init` with the config and starts its seat; one that left ignores it |
+| `2` | `START_RUN` | `u8 delay, u8 rmax, PortableConfig, u8 choice, u16 header_len, header` | Host only, once the last run is over on both peers (the Host compared the Guest's hashes up to its last tick) or none started. The Guest runs `portable_init` with the config and starts its seat; one that left ignores it. `header` is the run's replay header: `u8 key_count` (`0`, or one a seat), `key_count × 32` bytes of seat keys, then the Host's recorder, `u8 len, version[len], u8 len, platform[len]`. Keys for some seats only, one key in both seats, or a recorder version other than the Guest's own build (HELLO named the same; the platform may differ) are a bad message. Whether the room issued those keys and seed waits for the end screen, where each peer signs only a run the room told it of (Section 5.3) |
 | `3` | `START_ACK` | | The Guest started. Until then the Host's run neither produces nor runs, and it gives up after 10 s |
 | `4` | `START_CANCEL` | | Host to Guest, when it gives up: a Guest that started the run stops it |
 | `5` | `INPUT_REPAIR` | `u32 start_tick, u16 count, count × (PortableInput, u8 request)` | Gap repair |
 | `6` | `PAUSE` | `u32 pause_seq, u8 paused` | `pause_seq` is one past the highest seen. The highest wins, the Host's on a tie, and neither peer produces while paused |
 | `7` | `LEAVE` | `u32 last_tick` | Section 5.2 |
 | `8` | `NEXT_RUN` | `u8 choice` (`0` again, `1` next, `2` setup) | Guest to Host; the first one per epoch is kept for the next run. Host to Guest only `setup`: the Host opened run setup from its end screen |
-| `9` | `RUN_SIGNED` | none until `M3` (then `name, public_key, signature`) | Once per epoch each way, from the end screen past its name entry; the Host starts the next run only once both peers' are in (Section 5.3) |
+| `9` | `RUN_SIGNED` | `u8 seat, u8 len, name[len], u8 signed`, then if `signed`: `public_key[32], signature[64]` | Once per epoch each way, from the end screen past its name entry; the Host starts the next run only once both peers' are in (Section 5.3). `seat` is the sender's, the name at most 31 bytes in `0x20..0xFF`; the signature is the sender's for its seat over the run's replay ([co-op runs](leaderboard-identity.md#protocol)), present when the replay records the seats' keys and the sender holds the run finished. A signature that is not the seat's key's over that name is an `ERROR` (`3`) |
 | `10` | `DESYNC` | `u32 tick, u32 local_hash, u32 remote_hash` | Sent once; both peers stop |
 | `11` | `ERROR` | `u8 code` | A protocol error; both peers stop |
 | `12` | `CLOSE` | | Once each, after `LEAVE` both ways: the sender holds the receiver's records and hashes through the run's end (Section 5.2). A peer closes once it sent its own and the partner's arrived |

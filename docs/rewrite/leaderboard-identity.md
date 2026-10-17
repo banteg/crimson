@@ -84,7 +84,9 @@ A run two players play together ([online co-op](network-coop.md)) is both player
   digest every signature covers names who sits where. Either partner holds the replay and could rewrite those keys,
   putting a throwaway key in the other's seat to sign both seats and take the run alone, so the room attests the pair:
   each seat proves its key to the co-op room ([network co-op](network-coop.md) §6.1), which issues a run's seed only
-  once both seats have, and records the seed with their keys.
+  once both seats have, and records the seed with their keys. The room stands for who played, not for a fresh seed:
+  a pair may play a seed its room issued them more than once, the same accepted risk as a one-player run's
+  client-drawn seed ([uploads](#uploads)).
 - The room's seeds leave bit 31 clear and the service refuses a co-op run whose seed sets it: the game's `rand` never
   reads that bit, so `s` and `s ^ 0x80000000` would play one run under two seeds.
 - The service takes the run only when its replay records the seats' keys and a room issued its seed to those keys in
@@ -93,6 +95,11 @@ A run two players play together ([online co-op](network-coop.md)) is both player
   fewer signatures, or in the one-player envelope, is refused with its reason, so the game holds it until both players
   have signed. A one-player run may use the envelope too, with its one signer in seat 0, and when its replay records a
   key, that key signs; it needs no room.
+- In the game, each player signs the run for its seat once its end screen took the name, and sends the partner the
+  signature over the co-op session (`RUN_SIGNED`, [network co-op](network-coop.md) §6.2). A machine that holds both
+  queues the run in its outbox as this envelope, signers in seat order, under the payload's digest: both machines queue
+  the same file, and whichever uploads second gets `409`, also when both arrive at once (a new key's account too is
+  made once).
 - Each key's account is credited with its seat, and each takes its seat's name as its latest. The run lists under
   player one's account, and the co-op board keeps each pair's best run, whichever seats they took: two players
   rank as a team, apart from either one's runs with someone else.

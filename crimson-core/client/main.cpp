@@ -564,8 +564,37 @@ CLIENT_EXPORT int client_coop_corrupt(int kind) { return w2c_game_game_coop_corr
 CLIENT_EXPORT const u8 *client_coop_telemetry() {
   return started ? client_memory() + w2c_game_game_coop_telemetry(&game) : nullptr;
 }
+// The room's word on the pair (host/coop_ranked.inc), which the page passes on
+// as the room says it, "wait" or -1 before the game has started. A room socket's
+// challenge to this page's seat: the player's proof for it, "<public key>
+// <signature>" in hex, empty when the game proves no key.
+CLIENT_EXPORT const char *client_coop_prove(const char *room, const char *challenge) {
+  if (!started)
+    return "wait";
+  char *text = (char *)client_memory() + w2c_game_game_coop_room_text(&game);
+  if (snprintf(text, COOP_ROOM_TEXT, "%s%s", room, challenge) >= COOP_ROOM_TEXT)
+    return "";
+  return (const char *)client_memory() + w2c_game_game_coop_prove(&game, (u32)strlen(room));
+}
+// The key the room recorded for a seat (0 its host, 1 its guest), as hex: 1 when the game took it.
+CLIENT_EXPORT int client_coop_key(int seat, const char *key) {
+  if (!started)
+    return -1;
+  char *text = (char *)client_memory() + w2c_game_game_coop_room_text(&game);
+  if (snprintf(text, COOP_ROOM_TEXT, "%s", key) >= COOP_ROOM_TEXT)
+    return 0;
+  return (int)w2c_game_game_coop_room_key(&game, seat);
+}
+// A seed the room issued to the pair.
+CLIENT_EXPORT int client_coop_seed(u32 seed) {
+  if (!started)
+    return -1;
+  w2c_game_game_coop_room_seed(&game, seed);
+  return 1;
+}
 // What the session has to send, each message copied out of the module for the
-// page (no game call moves its memory in between).
+// page (no game call moves its memory in between), and the Host's request for a
+// run's seed, which the page asks the room for.
 void coop_send() {
 #ifdef __EMSCRIPTEN__
   for (int channel = 0; channel < 2; ++channel)
@@ -573,6 +602,8 @@ void coop_send() {
       const u8 *message = client_memory() + w2c_game_game_coop_tx_buffer(&game);
       MAIN_THREAD_EM_ASM({ Module.coopSend($0, HEAPU8.slice($1, $1 + $2)); }, channel, message, size);
     }
+  if (w2c_game_game_coop_room_ask(&game))
+    MAIN_THREAD_EM_ASM({ Module.coopSeed(); });
 #endif
 }
 

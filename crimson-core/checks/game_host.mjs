@@ -24,7 +24,8 @@ export const INPUT = {
   pad_connected: 396,
 };
 
-// `leaderboard` enables the leaderboard, and `requests` collects its host
+// `leaderboard` enables the leaderboard (true, or "framed" as inside another
+// site's page, which offers no ranked play), and `requests` collects its host
 // requests (HOST_LEADERBOARD_*) for the check to answer between frames.
 export function bootGame(wasm, directory, seed, { leaderboard = false, requests, onHost, clocks = false } = {}) {
   const module = new WebAssembly.Module(fs.readFileSync(wasm));
@@ -67,7 +68,7 @@ export function bootGame(wasm, directory, seed, { leaderboard = false, requests,
   wasi.initialize(instance);
   // As the browser host does: its replays name the browser, and ranked runs go to leaderboard/outbox/.
   game.game_platform(1);
-  if (leaderboard) game.game_leaderboard_enable(1);
+  if (leaderboard) game.game_leaderboard_enable(leaderboard === "framed" ? 0 : 1);
   if (!game.game_start()) throw Error("startup failed");
   return {
     game,

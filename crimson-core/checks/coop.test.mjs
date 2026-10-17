@@ -2,6 +2,7 @@
 // real one's routes, room ids, seats, messages and limits (service/src/coop.ts), and
 // fake peer connections that link each other through what the pages signal.
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
@@ -14,6 +15,26 @@ const ROOM_ID = new RegExp(/^\/(.+)\/$/.exec(constant("ROOM_ID"))[1]);
 const ROOM_ALPHABET = JSON.parse(constant("ROOM_ALPHABET"));
 const MAX_MESSAGE_BYTES = product(constant("MAX_MESSAGE_BYTES"));
 const MESSAGES_PER_SECOND = product(constant("MESSAGES_PER_SECOND"));
+const SEED_BITS = 0x7fffffff;
+const SEEDS_PER_MINUTE = product(constant("SEEDS_PER_MINUTE"));
+// A seat's key proof (service/src/crypto.ts COOP_SEAT_DOMAIN), and whether a key signed it.
+const SEAT_DOMAIN = "crimson-coop-seat-v1\n";
+const ED25519_SPKI = Buffer.from("302a300506032b6570032100", "hex");
+function proven(roomId, challenge, { public_key, signature }) {
+  try {
+    const key = crypto.createPublicKey({ key: Buffer.concat([ED25519_SPKI, Buffer.from(public_key, "hex")]), format: "der", type: "spki" });
+    return public_key.length === 64 && crypto.verify(null, Buffer.from(SEAT_DOMAIN + roomId + challenge), key, Buffer.from(signature, "hex"));
+  } catch {
+    return false;
+  }
+}
+// A player's key, as the game keeps it, and its proof for a room socket's challenge.
+function identity() {
+  const { publicKey, privateKey } = crypto.generateKeyPairSync("ed25519");
+  const public_key = publicKey.export({ format: "der", type: "spki" }).subarray(ED25519_SPKI.length).toString("hex");
+  const prove = (roomId, challenge) => ({ public_key, signature: crypto.sign(null, Buffer.from(SEAT_DOMAIN + roomId + challenge), privateKey).toString("hex") });
+  return { public_key, prove };
+}
 const ORIGIN = "https://crimson.land";
 const HOST_ICE = [{ urls: ["stun:stun.example:3478"] }];
 const GUEST_ICE = [{ urls: ["turn:turn.example:3478?transport=udp"], username: "u", credential: "c" }];
@@ -52,8 +73,8 @@ function clock() {
   };
 }
 
-// The room service: POST and GET room routes, seat sockets, relay, peer, ice and ping messages, and the room's
-// message budget and size limit.
+// The room service: POST and GET room routes, seat sockets, relay, peer, ice and ping messages, each seat's key
+// proof and the host's seeds, and the room's message budget and size limit.
 function service(time) {
   const rooms = new Map();
   const world = { rooms, fetches: [], sockets: [], texts: [], frames: [], log: [], pings: [], closes: [], down: false, observe: () => {}, intercept: () => true };
@@ -66,7 +87,7 @@ function service(time) {
     if (path === "/api/coop/rooms" && init.method === "POST") {
       const id = nextId();
       const budget = () => ({ tokens: MESSAGES_PER_SECOND, at: time.now() });
-      rooms.set(id, { id, hostToken: `host-token-${id}`, guestToken: null, seats: { host: null, guest: null }, budgets: { host: budget(), guest: budget() } });
+      rooms.set(id, { id, hostToken: `host-token-${id}`, guestToken: null, seats: { host: null, guest: null }, budgets: { host: budget(), guest: budget() }, keys: {}, seeds: [], seedBudget: { tokens: SEEDS_PER_MINUTE, at: time.now() } });
       return reply(201, { room_id: id, host_token: `host-token-${id}`, invite_url: `${ORIGIN}/play/?coop=${id}`, ice_servers: HOST_ICE });
     }
     const match = /^\/api\/coop\/rooms\/([^/]+)$/.exec(path);
@@ -115,10 +136,43 @@ function service(time) {
     Object.assign(ws, { readyState: 1, role, room });
     room.seats[role] = ws;
     if (old) serverClose(old, 4001, "replaced by a new connection");
-    push(ws, JSON.stringify({ type: "seat", role, ...(guestToken && { guest_token: guestToken }) }));
+    ws.challenge = crypto.randomBytes(32).toString("hex");
+    push(ws, JSON.stringify({ type: "seat", role, challenge: ws.challenge, ...(guestToken && { guest_token: guestToken }) }));
     const partner = room.seats[other(role)];
     push(ws, JSON.stringify({ type: "peer", present: !!partner }));
     if (partner) push(partner, JSON.stringify({ type: "peer", present: true }));
+    // The keys the seats proved before this socket came, and the last seed the room issued.
+    for (const seat of ["host", "guest"])
+      if (room.keys[seat]) push(ws, JSON.stringify({ type: "key", role: seat, public_key: room.keys[seat] }));
+    if (room.seeds.length) push(ws, JSON.stringify({ type: "seed", seed: room.seeds.at(-1).seed }));
+  }
+  const toSeats = (room, message) => {
+    for (const seat of Object.values(room.seats)) if (seat) push(seat, JSON.stringify(message));
+  };
+  // A seat's key, once a socket signs its own challenge with it; the same key on every socket of the seat, another
+  // proving none.
+  function proveKey(ws, message) {
+    const room = ws.room;
+    if (ws.proved) return serverClose(ws, 1008, "a socket proves its key once");
+    if (!proven(room.id, ws.challenge, message)) return serverClose(ws, 1008, "key proof does not verify");
+    if (room.keys[ws.role] && room.keys[ws.role] !== message.public_key) return;
+    ws.proved = true;
+    room.keys[ws.role] = message.public_key;
+    toSeats(room, { type: "key", role: ws.role, public_key: message.public_key });
+  }
+  // The host's seeds, ten a minute, once both seats proved their keys: a request past them gets none.
+  function issueSeed(ws) {
+    const room = ws.room;
+    if (ws.role !== "host") return serverClose(ws, 1008, "only the host asks for a seed");
+    const budget = room.seedBudget;
+    budget.tokens = Math.min(SEEDS_PER_MINUTE, budget.tokens + ((time.now() - budget.at) * SEEDS_PER_MINUTE) / 60000);
+    budget.at = time.now();
+    if (budget.tokens < 1) return;
+    budget.tokens -= 1;
+    if (!room.keys.host || !room.keys.guest) return;
+    const seed = crypto.randomBytes(4).readUInt32LE() & SEED_BITS;
+    room.seeds.push({ seed, keys: [room.keys.host, room.keys.guest] });
+    toSeats(room, { type: "seed", seed });
   }
   // The seat's budget: a second's worth, refilled every second, kept across its sockets.
   function take(ws) {
@@ -142,6 +196,8 @@ function service(time) {
       world.texts.push({ from: ws.role, ...message });
       world.log.push({ from: ws.role, type: message.type });
       if (message.type === "ice") return push(ws, JSON.stringify({ type: "ice", ice_servers: GUEST_ICE }));
+      if (message.type === "key") return proveKey(ws, message);
+      if (message.type === "seed") return issueSeed(ws);
       if (message.type === "seat" || message.type === "peer") return serverClose(ws, 1008, `${message.type} messages are the room's`);
       if (partner) push(partner, data);
     } else {
@@ -337,8 +393,8 @@ function sessionStore() {
 
 function setup(options = {}) {
   const time = clock(), world = service(time), net = network(options);
-  function page(owner, { store = sessionStore(), blockedStorage = false, RTCPeerConnection = net.RTC(owner), listen = true, fetch = world.fetch } = {}) {
-    const events = { states: [], peers: [], messages: [], logs: [] };
+  function page(owner, { store = sessionStore(), blockedStorage = false, RTCPeerConnection = net.RTC(owner), listen = true, fetch = world.fetch, prove } = {}) {
+    const events = { states: [], peers: [], messages: [], logs: [], keys: [], seeds: [] };
     // The page's realm, its globals seen through `globalThis`. A sandboxed frame or blocked site data: touching
     // storage throws.
     const realm = vm.createContext({});
@@ -356,8 +412,11 @@ function setup(options = {}) {
       location: { protocol: "https:", host: "crimson.land" },
       setTimeout: (fn, ms) => time.setTimeout(fn, ms, events), clearTimeout: time.clearTimeout, now: time.now,
       log: (...args) => events.logs.push(args.join(" ")),
+      ...(prove && { prove }),
     });
     coop.onstate = (state, reason) => events.states.push(reason ? `${state}: ${reason}` : state);
+    coop.onkey = (role, key) => events.keys.push([role, key]);
+    coop.onseed = (seed) => events.seeds.push(seed);
     // A partner page that replaced the one this page knew, or said goodbye, is the game's news apart from presence.
     coop.onpeer = (present, gone) => events.peers.push(gone ? (present ? "replaced" : "gone") : present);
     const listener = (channel, bytes) => events.messages.push([channel, [...bytes]]);
@@ -1199,4 +1258,104 @@ it("a message longer than the room relays is dropped on either transport before 
     await settle();
     assert.deepEqual(guest.events.messages.map(([channel, data]) => [channel, data.length]), [[0, largest], [1, largest - CONTROL_HEADER]], outcome);
   }
+});
+
+it("each page proves its seat's key on its socket's challenge; both hear both keys, and the host's seeds", async () => {
+  const env = setup();
+  const [hostKey, guestKey] = [identity(), identity()];
+  const proofs = [];
+  const prover = (key) => (roomId, challenge) => (proofs.push([roomId, challenge]), key.prove(roomId, challenge));
+  const { host, guest } = await meet(env, {
+    hostPage: env.page("host", { prove: prover(hostKey) }),
+    guestPage: env.page("guest", { prove: prover(guestKey) }),
+  });
+  const room = env.world.rooms.get(host.coop.room);
+  assert.deepEqual(proofs, ["host", "guest"].map((role) => [room.id, env.world.seat(room.id, role).challenge]));
+  assert.deepEqual(room.keys, { host: hostKey.public_key, guest: guestKey.public_key });
+  // The guest came after the host's proof: the room tells it the host's key as it opens, then its own.
+  const keys = [["host", hostKey.public_key], ["guest", guestKey.public_key]];
+  assert.deepEqual(plain(host.events.keys), keys);
+  assert.deepEqual(plain(guest.events.keys), keys);
+  // Only the host asks for seeds, which both hear; the room answers the requests and relays none of them.
+  assert.equal(guest.coop.seed(), false);
+  assert.ok(host.coop.seed());
+  assert.ok(host.coop.seed());
+  await settle();
+  const seeds = room.seeds.map(({ seed }) => seed);
+  assert.equal(seeds.length, 2);
+  assert.ok(seeds.every((seed) => seed >= 0 && seed <= SEED_BITS));
+  assert.deepEqual(plain(host.events.seeds), seeds);
+  assert.deepEqual(plain(guest.events.seeds), seeds);
+  assert.deepEqual(env.world.closes, []);
+  assert.deepEqual(plain(host.events.messages.concat(guest.events.messages)), []);
+  // Past the room's ten a minute a request gets no seed, and the session goes on.
+  for (let i = 0; i < SEEDS_PER_MINUTE; ++i) assert.ok(host.coop.seed());
+  await settle();
+  assert.equal(room.seeds.length, SEEDS_PER_MINUTE);
+  assert.deepEqual(plain(guest.events.seeds), room.seeds.map(({ seed }) => seed));
+  assert.deepEqual(env.world.closes, []);
+  await exchange(host, guest);
+});
+
+it("a reloaded page proves its seat again on its new challenge and hears the keys and the last seed the room holds", async () => {
+  const env = setup();
+  const [hostKey, guestKey] = [identity(), identity()];
+  const { host, guest } = await meet(env, {
+    hostPage: env.page("host", { prove: hostKey.prove }),
+    guestPage: env.page("guest", { prove: guestKey.prove }),
+  });
+  assert.ok(host.coop.seed());
+  await settle();
+  const [{ seed }] = env.world.rooms.get(host.coop.room).seeds;
+  const first = env.world.seat(host.coop.room, "guest").challenge;
+  guest.vanish();
+  await settle();
+  const reloaded = env.page("guest", { store: guest.store, prove: guestKey.prove });
+  await reloaded.coop.join(host.coop.room);
+  await settle();
+  assert.notEqual(env.world.seat(host.coop.room, "guest").challenge, first);
+  const [hostSeat, guestSeat] = [["host", hostKey.public_key], ["guest", guestKey.public_key]];
+  assert.deepEqual(plain(reloaded.events.keys), [hostSeat, guestSeat, guestSeat]);
+  assert.deepEqual(plain(reloaded.events.seeds), [seed]);
+  assert.deepEqual(plain(host.events.keys), [hostSeat, guestSeat, guestSeat]);
+  assert.deepEqual(env.world.closes.filter(({ code }) => code === 1008), []);
+  assert.equal(reloaded.coop.state, "connected");
+  // Another key in the seat proves nothing: the seat keeps its key, and the page plays on, unranked.
+  reloaded.vanish();
+  await settle();
+  const stranger = env.page("guest", { store: guest.store, prove: identity().prove });
+  await stranger.coop.join(host.coop.room);
+  await settle();
+  assert.equal(stranger.coop.state, "connected");
+  assert.deepEqual(env.world.rooms.get(host.coop.room).keys, { host: hostKey.public_key, guest: guestKey.public_key });
+  assert.deepEqual(plain(host.events.keys), [hostSeat, guestSeat, guestSeat]);
+  assert.deepEqual(env.world.closes.filter(({ code }) => code === 1008), []);
+});
+
+it("a proof that comes after its socket went is dropped; a page without a key proves none", async () => {
+  const env = setup();
+  const guestKey = identity();
+  const waiting = [];
+  const later = (roomId, challenge) => new Promise((resolve) => waiting.push(() => resolve(guestKey.prove(roomId, challenge))));
+  const { host, guest } = await meet(env, { guestPage: env.page("guest", { prove: later }) });
+  const room = env.world.rooms.get(host.coop.room);
+  assert.equal(waiting.length, 1);
+  env.world.drop(room.id, "guest");
+  await settle();
+  await env.time.advance(1000);
+  assert.equal(guest.coop.state, "connected");
+  assert.equal(waiting.length, 2);
+  waiting[0]();
+  await settle();
+  assert.deepEqual(env.world.texts.filter(({ type }) => type === "key"), []);
+  waiting[1]();
+  await settle();
+  assert.deepEqual(plain(env.world.texts.filter(({ type }) => type === "key").map(({ from }) => from)), ["guest"]);
+  assert.deepEqual(room.keys, { guest: guestKey.public_key });
+  assert.deepEqual(plain(host.events.keys), [["guest", guestKey.public_key]]);
+  // The host proved none (its game offers no ranked play): its seed request gets none, and the session goes on.
+  assert.deepEqual(env.world.closes, [{ role: "guest", code: 1006, reason: "" }]);
+  assert.ok(host.coop.seed());
+  await settle();
+  assert.deepEqual([room.seeds, plain(host.events.seeds), env.world.closes.length, host.coop.state], [[], [], 1, "connected"]);
 });

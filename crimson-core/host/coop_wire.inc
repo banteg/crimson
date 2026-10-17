@@ -127,6 +127,24 @@ static struct CoopWire {
   std::vector<uint8_t> rx, tx;
 } wire;
 
+// The run's replay header (host/replay.inc), which START_RUN carries so both
+// machines write the same replay: the Host's for the run it starts or started,
+// the Guest's from the Host's START_RUN.
+static ReplayHeader coop_header;
+// Each seat's word on the run as RUN_SIGNED carries it, for the run that
+// started last: its end screen's name and, for a run whose replay records the
+// seats' keys, the player's signature for its seat (host/coop_ranked.inc).
+struct CoopSigner {
+  bool in; // given
+  std::string name;
+  bool signs;
+  ReplaySeatKey key;
+  std::array<uint8_t, 64> signature;
+};
+static CoopSigner coop_signers[2];
+// A signature that came, or the run it signs: both seats' go to the outbox.
+static void coop_rank_queue();
+
 struct CoopWriter {
   std::vector<uint8_t> out;
   CoopWriter &bytes(const void *data, size_t size) {
@@ -155,6 +173,38 @@ struct CoopReader {
   bool done() const { return !bad && at == end; }
 };
 static CoopWriter coop_message(CoopType type, uint32_t epoch) { return std::move(CoopWriter().put(type).put(epoch)); }
+// The replay header as START_RUN carries it: its size (u16), then the seats'
+// keys (u8 count, none or one a seat, 32 bytes each) and the recorder's version
+// and platform (u8 length, then the text, each).
+static void coop_header_out(CoopWriter &message, const ReplayHeader &header) {
+  CoopWriter body;
+  body.put((uint8_t)header.seat_keys.size());
+  for (const ReplaySeatKey &key : header.seat_keys)
+    body.bytes(key.data(), key.size());
+  for (const std::string *text : {&header.version, &header.platform})
+    body.put((uint8_t)text->size()).bytes(text->data(), text->size());
+  message.put((uint16_t)body.out.size()).bytes(body.out.data(), body.out.size());
+}
+// A header for a run of `players`: false when no Host sends it (keys for some
+// seats, a key twice, another build's recorder, as HELLO named this one's, or a
+// platform the replay format refuses).
+static bool coop_header_in(CoopReader &in, ReplayHeader &header, uint32_t players) {
+  uint16_t size = in.get<uint16_t>();
+  const uint8_t *at = in.take(size);
+  CoopReader body = {at, at ? at + size : at};
+  header.seat_keys.resize(body.get<uint8_t>());
+  for (ReplaySeatKey &key : header.seat_keys)
+    if (const uint8_t *bytes = body.take(key.size()))
+      memcpy(key.data(), bytes, key.size());
+  for (std::string *text : {&header.version, &header.platform}) {
+    uint8_t length = body.get<uint8_t>();
+    const uint8_t *chars = body.take(length);
+    text->assign(chars ? (const char *)chars : "", chars ? length : 0);
+  }
+  bool distinct = header.seat_keys.size() < 2 || header.seat_keys[0] != header.seat_keys[1];
+  return at && body.done() && (header.seat_keys.empty() || header.seat_keys.size() == players) && distinct &&
+         header.version == replay_client_version && replay_printable(header.platform, 64);
+}
 static void coop_send(CoopWriter &message) { wire.outbox.push_back(std::move(message.out)); }
 // HELLO, naming this build (replay_client_version), this side's session and
 // the newest epoch it knows: `answer` 1 when it answers the partner's.
@@ -269,6 +319,7 @@ static bool coop_begin(int delay, int rmax, uint32_t epoch, double now) {
   wire.epoch = epoch;
   wire.reason = COOP_FINE;
   wire.started = wire.starting = wire.paused = wire.signed_sent = wire.partner_signed = false;
+  coop_signers[0] = coop_signers[1] = {};
   wire.pause_seq = 0;
   wire.pause_by = -1;
   wire.next_run = wire.head_sent = wire.peer_head = wire.remote_seen = wire.hash_ack = wire.hash_heard = -1;
@@ -295,7 +346,7 @@ static bool coop_can_start() {
 }
 // Inside the original, a START_RUN waits for the Guest's screen to come to the
 // run (host/coop_live.inc).
-static void coop_offer(const PortableConfig &config, int delay, int rmax, uint32_t epoch);
+static void coop_offer(const PortableConfig &config, const ReplayHeader &header, int delay, int rmax, uint32_t epoch);
 static bool coop_withdraw(uint32_t epoch);
 
 // Highest sequence wins, the Host's on a tie; while paused neither side produces.
@@ -597,9 +648,9 @@ static void coop_control_in(CoopReader &in, double now) {
     uint8_t delay = in.get<uint8_t>(), rmax = in.get<uint8_t>();
     PortableConfig config = in.get<PortableConfig>();
     uint8_t choice = in.get<uint8_t>();
-    // The run's replay header (M3): none yet.
-    in.take(in.get<uint16_t>());
-    if (!in.done() || host || !wire.hello)
+    ReplayHeader header;
+    bool read = coop_header_in(in, header, config.players);
+    if (!read || !in.done() || host || !wire.hello)
       return coop_fail(COOP_BAD_MESSAGE);
     // A Guest that left told the Host before this arrived.
     if (epoch <= wire.epoch || wire.left) {
@@ -609,8 +660,9 @@ static void coop_control_in(CoopReader &in, double now) {
     if (delay < 1 || delay > COOP_DELAY || rmax > COOP_LEAD || choice > 2)
       return coop_fail(COOP_BAD_MESSAGE);
     if (game_original)
-      return coop_offer(config, delay, rmax, epoch);
+      return coop_offer(config, header, delay, rmax, epoch);
     cfg = config;
+    coop_header = header;
     if (!coop_accept(delay, rmax, epoch, now))
       coop_fail(COOP_BAD_MESSAGE);
     return;
@@ -699,17 +751,31 @@ static void coop_control_in(CoopReader &in, double now) {
       wire.next_run = choice;
     return;
   }
-  case COOP_RUN_SIGNED:
-    // The partner's end screen is past its name entry; the replay's signature
-    // with the name comes in M3.
-    if (!in.done() || (current && wire.partner_signed))
+  case COOP_RUN_SIGNED: {
+    // The partner's end screen is past its name entry: its seat, its name (at
+    // most 31 characters in 0x20..0xFF, as the entry takes), and whether its
+    // key and signature for its seat follow.
+    uint8_t seat = in.get<uint8_t>(), size = in.get<uint8_t>();
+    const uint8_t *name = in.take(size);
+    uint8_t signs = in.get<uint8_t>();
+    const uint8_t *key = signs == 1 ? in.take(sizeof(ReplaySeatKey)) : nullptr;
+    const uint8_t *signature = signs == 1 ? in.take(64) : nullptr;
+    if (!in.done() || seat != 1 - wire.seat || size > 31 || signs > 1 || (current && wire.partner_signed) ||
+        std::any_of(name, name + size, [](uint8_t c) { return c < 0x20; }))
       return coop_fail(COOP_BAD_MESSAGE);
     if (!current) {
       ++coop.stats.wire.stale;
       return;
     }
     wire.partner_signed = true;
-    return;
+    CoopSigner &signer = coop_signers[seat];
+    signer = {true, std::string((const char *)name, size), signs == 1};
+    if (signer.signs) {
+      memcpy(signer.key.data(), key, signer.key.size());
+      memcpy(signer.signature.data(), signature, signer.signature.size());
+    }
+    return coop_rank_queue();
+  }
   case COOP_DESYNC: {
     int tick = in.get<int32_t>();
     uint32_t local = in.get<uint32_t>(), remote = in.get<uint32_t>();
@@ -777,8 +843,8 @@ __attribute__((export_name("game_coop_disconnect"))) int game_coop_disconnect(in
 // COOP_ASK_START, the Host's run of the config at portable_config with delay
 // `a`, window `b` and choice `c`, once the last run is over on both sides and
 // this machine compared the Guest's hashes up to its end (which finds any
-// divergence alone); COOP_ASK_SIGNED, once a run, its end screen past its name
-// entry.
+// divergence alone), its replay header coop_header; COOP_ASK_SIGNED, once a
+// run, its end screen past its name entry, with this seat's coop_signers.
 __attribute__((export_name("game_coop_request"))) int game_coop_request(int kind, int a, int b, int c, double now) {
   if (!wire.session || wire.closed)
     return 0;
@@ -815,7 +881,8 @@ __attribute__((export_name("game_coop_request"))) int game_coop_request(int kind
     wire.starting = true;
     wire.start_at = now;
     CoopWriter message = coop_message(COOP_START_RUN, wire.epoch).put((uint8_t)a).put((uint8_t)b);
-    message.put(cfg).put((uint8_t)c).put((uint16_t)0);
+    message.put(cfg).put((uint8_t)c);
+    coop_header_out(message, coop_header);
     coop_send(message);
     return 1;
   }
@@ -823,7 +890,11 @@ __attribute__((export_name("game_coop_request"))) int game_coop_request(int kind
     if (!coop_running() || !coop_over() || wire.signed_sent)
       return 0;
     wire.signed_sent = true;
-    CoopWriter message = coop_message(COOP_RUN_SIGNED, wire.epoch);
+    const CoopSigner &own = coop_signers[wire.seat];
+    CoopWriter message = coop_message(COOP_RUN_SIGNED, wire.epoch).put((uint8_t)wire.seat);
+    message.put((uint8_t)own.name.size()).bytes(own.name.data(), own.name.size()).put((uint8_t)own.signs);
+    if (own.signs)
+      message.bytes(own.key.data(), own.key.size()).bytes(own.signature.data(), own.signature.size());
     coop_send(message);
     return 1;
   }
