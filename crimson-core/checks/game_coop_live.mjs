@@ -15,8 +15,9 @@
 // session opens two seconds in: the run plays on, on the player's own save (a
 // Survival run the Host starts waits for it until the Host gives up, and its
 // window's focus lost pauses it as alone), and completing it unlocks the next
-// quest in the save at once. Its end screen's Play Next starts nothing, as the
-// Host picks the session's runs. The Guest's game closes there, its save keeping
+// quest in the save at once. Its end screen keeps its name entry (another
+// Survival run the Host starts there waits for it until the Host gives up), and
+// its Play Next starts nothing, as the Host picks the session's runs. The Guest's game closes there, its save keeping
 // the unlock, and starts again.
 //
 // Survival. The Host's menus start it and the Guest's screen follows into the
@@ -27,8 +28,9 @@
 // and its d-pad and A pick. The Guest pauses with Start and the Host resumes
 // from the pause banner's button; the Host pauses with Escape and the Guest
 // resumes with Start; the Guest's window loses the focus for a while, where it
-// plays on. Then both stand still until the creatures kill them: both show the
-// game over screen. The Guest's pad saves its score and clicks Play Again, which
+// plays on, its pad's sticks and presses reaching nothing. Then both stand
+// still until the creatures kill them: both show the game over screen. The
+// Guest's pad saves its score and clicks Play Again, which
 // waits a second for the Host's name, until its Enter saves the Host's score:
 // then the Host's screen follows into the next run. At its first level both
 // players ask for the perk menu on the same tick, and the Host's request wins.
@@ -37,9 +39,18 @@
 // both runs end on the same tick after the pick, both machines go back to the
 // main menu, and the Host learns the Guest left.
 //
-// A desync. A run whose state the Guest's machine changes between ticks stops
-// on both at the same tick with the desync banner; the Host's Enter and the
-// Guest's A press its Leave.
+// A timeout alone. The Guest's packets stop reaching the Host mid-run: the
+// Host's machine times out and goes to the menu while the Guest's waits in the
+// run, until the Host's session connects again and the Guest's begins anew on
+// its hello. The Host's menus start the next run.
+//
+// At its first level the Guest's window goes to the background, where its pad
+// asks for no perk menu; in front again it asks for one, and in the background
+// again its pad picks nothing on its perk screen until it comes back.
+//
+// A desync. That run, whose state the Guest's machine changes between ticks,
+// stops on both at the same tick with the desync banner, both sessions closed
+// for the desync; the Host's Enter and the Guest's A press its Leave.
 //
 // A lost connection, the machines in each other's seats: the Guest's machine
 // starts the run by its mouse. The transport closes on both sides a few
@@ -85,12 +96,24 @@ const MAIN_MENU = 0, PLAY_GAME_MENU = 1, PERK_SELECTION = 6, GAME_OVER = 7, QUES
 const QUEST_SELECT = 11, QUEST_FAILED = 12, HIGHSCORES = 14;
 const KEYS = [0x01, 0x02, 0x0a, 0x0f, 0x10, 0x12, 0x1c, 0x1f, 0x20, 0x21];
 const [ESCAPE, ONE, NINE, TAB, Q, E, ENTER, S, D, F] = KEYS;
-const STATUS = { connected: 1, started: 2, paused: 4, leaving: 32, desynced: 128, starting: 512, signed: 2048 };
+const STATUS = {
+  connected: 1,
+  started: 2,
+  paused: 4,
+  waiting: 8,
+  leaving: 32,
+  desynced: 128,
+  starting: 512,
+  signed: 2048,
+  closed: 4096,
+};
 // Why a session ended (CoopReason).
-const UNANSWERED = 6, LEFT = 7, PARTNER_LEFT = 8, DISCONNECTED = 9, PARTNER_GONE = 10;
+const SILENT = 5, UNANSWERED = 6, LEFT = 7, PARTNER_LEFT = 8, DISCONNECTED = 9, PARTNER_GONE = 10, DIVERGED = 11;
 // The pad (game/host_input.h): A, Triangle, R2 and Start, the d-pad's up, right and down; the sticks from -1000 to
 // 1000.
 const PAD_SOUTH = 1, PAD_NORTH = 3, PAD_R2 = 7, PAD_START = 9, HAT_UP = 0, HAT_RIGHT = 9000, HAT_DOWN = 18000;
+// The record of a window in the background (coop_live.inc coop_sample): no move, no buttons, its schemes only.
+const NEUTRAL_FLAGS = 0x1108, SCHEME_BITS = (7 << 9) | (7 << 13);
 // Each machine's frame times; the network's seed, loss and the Host's burst; the Guest's stutter.
 const FRAMES = [[16, 17, 17], [7, 7, 7, 6, 7]];
 const SEED = 7, LOSS = 0.02, BURST = { at: 1200, left: 12 }, HITCH = { at: 900, ms: 300 };
@@ -216,6 +239,10 @@ class Machines extends Link {
     this.peers = peers;
     this.loss = LOSS;
     this.input = () => ({});
+  }
+  // What `cut` names (a peer) never arrives.
+  send(peer, channel, bytes) {
+    if (this.cut !== peer) super.send(peer, channel, bytes);
   }
   receive(peer, channel, bytes) {
     const { g, run } = peer;
@@ -513,6 +540,12 @@ play(fight, () => screen(guest) !== GAMEPLAY, "the run alone's end");
 settle(guest, QUEST_RESULTS);
 assert.equal(saved(guest).status.quest_unlock_index, 1, "the run alone's unlock");
 settle(guest, QUEST_RESULTS, idle, 5000);
+// Its name entry comes first: a Survival run the Host's menus start there waits for it until the Host gives up.
+click(host, MAIN_MENU, PLAY_GAME);
+click(host, PLAY_GAME_MENU, SURVIVAL);
+const naming = () => assert.equal(screen(guest), QUEST_RESULTS, "the run alone's name entry");
+play(idle, () => (naming(), status(host) & STATUS.starting), "the Host's start at the name entry");
+play(idle, () => (naming(), unanswered()), "the cancel at the name entry");
 const named = scores(guest);
 tap(guest, DOWN, A);
 play(idle, () => scores(guest) > named, "the Guest's saved score");
@@ -545,13 +578,17 @@ survival();
 // The Host's perk key asks for the first perk menu every half second until its perk screen picks; then the
 // Guest's Triangle for the next. The Guest pauses at tick 300 and the Host resumes a second later from the
 // banner's Resume, its first button; the Host pauses at tick 700 and the Guest resumes with Start. The Guest's
-// window is in the background from tick 400 to 600, where its player stands; its frames stutter at tick 900, and
-// the Host loses a burst of packets at tick 1200.
+// window is in the background from tick 400 to 600, where its pad still pushes both sticks and presses R2, Start,
+// Triangle and A in turn: none of it reaches the run, which neither pauses nor asks for a perk menu, and the Guest's
+// records there are neutral. Its frames stutter at tick 900, and the Host loses a burst of packets at tick 1200.
 const pauses = [
   { by: guest, at: 300, resumer: host, button: true },
   { by: host, at: 700, resumer: guest },
 ];
 let pausing = 0, since = 0, clicking = 0, away = false;
+// The Guest's records produced in the background: after `from`, through `to`.
+const behind = { from: -1, to: -1 };
+const AWAY_PRESSES = [PAD_START, PAD_NORTH, PAD_SOUTH];
 script = (peer) => {
   const pause = pauses[pausing], taps = [];
   if (pause && !since && peer === pause.by && confirmed(host) >= pause.at) {
@@ -571,9 +608,16 @@ script = (peer) => {
     const unfocused = confirmed(host) > 400 && confirmed(host) < 600;
     if (unfocused !== away) {
       away = unfocused;
+      behind[away ? "from" : "to"] = guest.g.game_coop_produced();
       guest.g.game_activate(away ? 0 : 1);
     }
-    if (away) return { input: {} };
+    if (away) {
+      for (const p of peers) assert.equal(status(p) & STATUS.paused, 0, `machine ${p.seat} paused, in the back`);
+      assert.equal(status(guest) & STATUS.waiting, 0, "a perk request from the background");
+      assert.notEqual(screen(guest), PERK_SELECTION, "a perk screen in the background");
+      const press = guest.frames % 8 < 2 ? [PAD_R2, AWAY_PRESSES[(guest.frames >> 3) % 3]] : [PAD_R2];
+      return { input: { pad: { left: [1000, 0], right: [0, 1000], press } } };
+    }
   }
   const asks = picks[peer.role] === 0 && (peer === host || picks[0]) && !(status(peer) & STATUS.paused);
   if (asks && target(peer).pending > 0 && peer.frames % 30 === 0) taps.push(Q);
@@ -600,6 +644,14 @@ play(player, () => peers.every((p) => screen(p) === GAME_OVER), "the team's deat
 still = false;
 const first = ended("death");
 midpointAim();
+// The Guest's records in the background: no move, no buttons, no request.
+assert.ok(behind.to - behind.from > 60, `${JSON.stringify(behind)}`);
+for (let t = behind.from + 1; t <= behind.to; ++t) {
+  const record = guest.ticks.get(t).used[1];
+  const flags = record.readUInt32LE(16) & ~SCHEME_BITS;
+  const still = record.readFloatLE(0) === 0 && record.readFloatLE(4) === 0 && record[INPUT_BYTES] === 0;
+  assert.ok(still && flags === NEUTRAL_FLAGS, `tick ${t}'s background record: ${record.toString("hex")}`);
+}
 // Each perk command is its picker's: the Host's menu and pick, then the Guest's. The Host's keys moved as it bound
 // them (E forward, S left: neither moves by default); the Guest's machine missed packets, the burst among them,
 // and the stutter came and went.
@@ -648,14 +700,63 @@ for (const peer of peers) assert.equal(stat(peer, DOUBLE_OPENS), 1, "a tie");
 const second = ended("incomplete");
 assert.equal(second.commands, "PerkMenuOpenCommand:0 PerkPickCommand:0");
 
-// A desync: the Guest's player gains health between ticks, the next confirmed tick's hashes differ, and both
-// machines stop there. The Host's Enter and the Guest's A press the banner's Leave, its one button.
+// A timeout alone: 200 ticks into a run, the Guest's packets and messages stop reaching the Host while the Host's
+// still reach the Guest. The Host's machine times out, ends the run where it confirmed it and goes to the menu,
+// while the Guest's waits in the run; the Host's transport connects its session again at once (as the page does).
+// On its hello the Guest's machine ends its run where it confirmed it and goes to the menu too, and the Host's menus
+// start the next run, which both play.
 survival();
 play(player, () => peers.every((p) => confirmed(p) >= 200), "the third run's 200 ticks");
+machines.cut = guest;
+play(idle, () => screen(host) === MAIN_MENU && !(status(host) & STATUS.connected), "the Host's timeout");
+assert.equal(reason(host), SILENT);
+assert.ok(status(host) & STATUS.closed, "the Host's session closed");
+assert.ok(screen(guest) === GAMEPLAY && status(guest) & STATUS.connected, "the Guest's session goes on");
+assert.equal(host.g.game_coop_connect(0, host.run.clock), 1);
+machines.cut = null;
+play(idle, () => peers.every((p) => screen(p) === MAIN_MENU && status(p) & STATUS.connected), "the new session");
+assert.deepEqual(peers.map(reason), [0, 0]);
+agreed();
+for (const peer of peers) verified(peer, confirmed(peer) + 1, "incomplete");
+click(host, MAIN_MENU, PLAY_GAME);
+click(host, PLAY_GAME_MENU, SURVIVAL);
+play(idle, started, "the run after the timeout");
+
+// At the run's first level the Guest's window goes to the background, where its Triangle asks for no perk menu.
+// Back in front it asks for one; in the background again its d-pad and A pick nothing on its perk screen, and back
+// in front they pick.
+function inBackground(ms, presses, check) {
+  guest.g.game_activate(0);
+  const until = time() + ms;
+  let frames = 0;
+  const pressing = (p) => (p === guest && frames++ % 8 < 2 ? { pad: presses[(frames >> 3) % presses.length] } : {});
+  play(pressing, () => (check(), time() >= until), "the background");
+  guest.g.game_activate(1);
+}
+play(player, () => level(guest), "the fourth run's first level");
+inBackground(1000, [{ press: [PAD_NORTH] }], () => {
+  assert.equal(status(guest) & STATUS.waiting, 0, "a perk request from the background");
+  for (const peer of peers) assert.equal(screen(peer), GAMEPLAY, `machine ${peer.seat}'s screen`);
+});
+assert.equal(guest.g.game_coop_request(ASK_OPEN, 0, 0, 0, guest.run.clock), 1);
+settle(guest, PERK_SELECTION, idle, 1000);
+inBackground(1500, [{ hat: HAT_DOWN }, { press: [PAD_SOUTH] }], () =>
+  assert.equal(screen(guest), PERK_SELECTION, "a pick from the background"),
+);
+play(player, () => screen(guest) === GAMEPLAY, "the Guest's pick");
+
+// A desync: the Guest's player gains health between ticks, the next confirmed tick's hashes differ, and both
+// machines stop there, their sessions closed for it. The Host's Enter and the Guest's A press the banner's Leave,
+// its one button.
+play(player, () => peers.every((p) => confirmed(p) >= 200), "the fourth run's 200 ticks");
 assert.equal(guest.g.game_coop_corrupt(0), 1);
 play(player, () => peers.every((p) => status(p) & STATUS.desynced), "the desync");
 const desync = peers.map((p) => new Int32Array(p.g.memory.buffer, p.g.game_coop_desync(), 1)[0]);
 assert.equal(desync[0], desync[1], "both find the desync at the same tick");
+for (const peer of peers) {
+  assert.equal(status(peer) & (STATUS.connected | STATUS.closed), STATUS.closed, `machine ${peer.seat}'s session`);
+  assert.equal(reason(peer), DIVERGED, `machine ${peer.seat}'s reason`);
+}
 tap(host, key(ENTER));
 tap(guest, A);
 play(idle, () => peers.every((p) => screen(p) === MAIN_MENU), "the menus after the desync");
@@ -664,7 +765,7 @@ play(idle, () => peers.every((p) => screen(p) === MAIN_MENU), "the menus after t
 // ticks in, the Host's machine's page closes, so the Guest's machine's transport says the partner left the room and
 // the Host's that it closed. Each machine ends the run where it confirmed it, saves it and goes to the menu.
 survival([1, 0]);
-play(player, () => peers.every((p) => confirmed(p) >= 200), "the fourth run's 200 ticks");
+play(player, () => peers.every((p) => confirmed(p) >= 200), "the fifth run's 200 ticks");
 assert.equal(guest.g.game_coop_disconnect(PARTNER_GONE), 1);
 assert.equal(host.g.game_coop_disconnect(DISCONNECTED), 1);
 play(idle, () => peers.every((p) => screen(p) === MAIN_MENU), "the menus after the lost connection");

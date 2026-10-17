@@ -979,8 +979,9 @@ any other.
   Host waiting for an invite, say). That run plays out on the player's own
   save, its unlocks included, and its window's focus pauses it as alone; the
   menus' every-quest view comes after it, and a run the Host starts waits for
-  it (and the Host gives up after 10 s, as for any start). Its end screen's
-  buttons are run setup, as the menus'.
+  it (and the Host gives up after 10 s, as for any start), and for its end
+  screen's name entry after it. Its end screen's buttons are run setup, as the
+  menus'.
 
 ---
 
@@ -1095,6 +1096,9 @@ on two channels. Channel 0 (`coop-ticks`, `ordered: false, maxRetransmits: 0`)
 is best effort. Channel 1 (`coop-control`) arrives once and in order, across
 transport switches too. Everything is little-endian. Each run is an epoch: the
 Host's run start increments it, and what belongs to another epoch is ignored.
+Epochs only grow, across sessions too: a peer keeps its epoch when a new
+session begins, and the first hello of a session raises it to the partner's,
+so the Host's next run is new to both whichever side began anew.
 
 #### Frontiers on the wire
 
@@ -1176,7 +1180,7 @@ later epoch than the receiver's. Every other message of another epoch is ignored
 
 | Type | Message | Payload | Rule |
 | --- | --- | --- | --- |
-| `1` | `HELLO` | `u16 protocol (1), u8 len, build[len], u8 answer` | On connect (`answer` 0), and in answer to one with `answer` 0 (`answer` 1), so a hello that arrived before the partner connected comes again; a different protocol or build (`replay_client_version`) is an error |
+| `1` | `HELLO` | `u16 protocol (1), u8 len, build[len], u8 answer, u32 session` | On connect (`answer` 0), and in answer to one with `answer` 0 (`answer` 1), so a hello that arrived before the partner connected comes again; a different protocol or build (`replay_client_version`) is an error. Its epoch is the sender's newest. A hello with `answer` 0 naming another session than the one this peer heard means the partner began anew (its game connected again after a timeout of its own while this peer's session went on): this peer's session ends as a lost partner's does, its run at the last confirmed tick, and a new one begins with the partner's |
 | `2` | `START_RUN` | `u8 delay, u8 rmax, PortableConfig, u8 choice, u16 header_len, header` | Host only, once the last run is over on both peers (the Host compared the Guest's hashes up to its last tick) or none started. The Guest runs `portable_init` with the config and starts its seat; one that left ignores it |
 | `3` | `START_ACK` | | The Guest started. Until then the Host's run neither produces nor runs, and it gives up after 10 s |
 | `4` | `START_CANCEL` | | Host to Guest, when it gives up: a Guest that started the run stops it |
@@ -1212,11 +1216,27 @@ Guest's next-run choice or the Host's run start. For incoming bytes the host
 calls `game_coop_rx(size)` first, copies the bytes to the pointer it returns,
 then calls `game_coop_receive(channel, size, now)`. After the frame it drains
 `game_coop_tx(channel, now)` from `game_coop_tx_buffer()`. `game_coop_status()`
-returns flags: connected, started, starting, paused, waiting (a perk request
-waits for its tick's confirmation), picker, leaving, ended, desynced, failed,
-and whether the partner found it. It also carries why the session or its last
-run stopped (bits 16-23, cleared when a run starts) and the Guest's next-run
-choice held by the Host (bits 24-27). `game_coop_stats()`
+returns, for the shell that watches the session:
+
+| Bits | Meaning |
+| --- | --- |
+| `0x1` connected | Both peers said hello with the same build, and the session goes on |
+| `0x2` started | The epoch's run started on both peers |
+| `0x4` paused | |
+| `0x8` waiting | This peer's perk request waits for its tick's confirmation |
+| `0x10` picker | This peer picks the open menu's perk on its next tick |
+| `0x20` leaving | Either peer left the run |
+| `0x40` ended | The run reached its last tick, confirmed |
+| `0x80` desynced | The run's hashes differed |
+| `0x100` failed | A protocol error |
+| `0x200` starting | The Host waits for the Guest to start the run |
+| `0x400` remote | The partner found the desync or the error |
+| `0x800` signed | The partner's end screen is past its name entry |
+| `0x1000` closed | The session ended: connected stays clear until the next `game_coop_connect` (or a partner's new session) |
+| `16-23` | Why the session or its last run stopped (`CoopReason`, cleared when a run starts): `0` fine, `1` version, `2` bad record, `3` bad message, `4` stalled, `5` silent, `6` unanswered (no `START_ACK`), `7` left, `8` partner left, `9` disconnected, `10` partner gone, `11` diverged (a desync, found or told). A closed session's is never `0` |
+| `24-27` | The Guest's next-run choice the Host holds, plus one |
+
+`game_coop_stats()`
 adds the session's counters: packets sent, received and lost, stale packets
 and messages, repairs and the records they carried, and the round trip.
 
@@ -1239,7 +1259,10 @@ and messages, repairs and the records they carried, and the round trip.
      `coop_sample_local_input()` emits an explicit neutral `PortableInput`
      (`move_x = 0, move_y = 0, aim = prev_aim, flags = scheme_bits_only`),
      clearing `live.fire_pressed`, `live.reload_pressed`, and
-     `live.open_requested`.
+     `live.open_requested`. The game module does not rely on the host for it:
+     while the window is away, its DirectInput devices (`game/dinput.cpp`)
+     read at rest whatever the host delivers, so no press reaches a session
+     that plays on (no pause, perk request or pick).
 
 2. **Background tab (`document.hidden`) vs. unfocused visible window**:
 
@@ -1361,9 +1384,15 @@ and messages, repairs and the records they carried, and the round trip.
      reason), a partner gone silent (the liveness timeout, to the frame), one
      whose records stop past a gap (the progress timeout), and a transport
      that closes (`game_coop_disconnect`);
+   - a Host that times out alone (the Guest's packets stop reaching it) and
+     connects again while the Guest's session went on: the Guest's begins anew
+     on its hello, its run ending at its last confirmed tick, both peers
+     measure the round trip across the sessions, and the next run plays; then
+     a Host whose page reloaded (a module that never played a run) takes the
+     Guest's epochs, and the run after plays too;
    - an invalid record (an error on both), a malformed message while the Host
-     starts a run (it stops waiting), a forced state change (a desync on both),
-     and different builds.
+     starts a run (it stops waiting), a forced state change (a desync on both,
+     both sessions closed for it), and different builds.
 
    A direct check confirms a guess drops the presses of the record it copies.
    Coverage between the peers requires repairs, mispredictions, and opens and
@@ -1404,14 +1433,19 @@ and messages, repairs and the records they carried, and the round trip.
    profile, and saved progress. The sessions start Survival from the Host's
    menus, open and pick perks from both seats (once on the same tick), pause
    from each seat and resume from the other, play on with one window in the
-   background, start the next run from the Guest's end screen once the Host's
-   name is in, pick a perk in a paused run and leave by pad from the pause
-   banner, desync and leave by keys and pad, lose the connection with the
+   background, where its pad's sticks and presses reach nothing (no pause, perk
+   request or pick, its records neutral), start the next run from the Guest's
+   end screen once the Host's name is in, pick a perk in a paused run and leave
+   by pad from the pause banner, time out on one machine alone and begin anew
+   on its next hello (the other machine's run ending where it confirmed it),
+   desync (both sessions closed for it) and leave by keys and pad, lose the
+   connection with the
    machines in each other's seats, and play quests from the Host's quest list
    through the Host's Play Next, past the Guest's high scores' Play a game, and
    Play Another to a leave from the failed quest's Main Menu that a click right
    after does not undo. Before them, a session opens while one machine plays a
-   quest alone, which plays out on its own save. Every tick both machines
+   quest alone, which plays out on its own save, its end screen keeping its
+   name entry before a run the Host starts. Every tick both machines
    confirm must have the same state hash
    and bake and terrain digests on both and from the engine replaying the
    machines' records alone (not the music digest, which names the tracks each

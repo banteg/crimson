@@ -56,6 +56,7 @@ extern "C" void game_live_quit(void);
 extern "C" void game_live_focus_lost(void);
 extern "C" bool game_coop_pump(void);
 extern "C" bool game_coop_focus(int active);
+extern "C" void dinput_away(bool away);
 extern "C" void pad_frame(void);
 
 static bool quit_posted;
@@ -125,7 +126,8 @@ GAME_EXPORT(game_state) int game_state() { return game_state_id; }
 
 // WM_ACTIVATEAPP: losing the window freezes Grim's clock, so the loop stops
 // running the game until it returns, and tells the game (it suspends audio).
-// A co-op session plays on instead: its partner waits on this machine.
+// A co-op session plays on instead: its partner waits on this machine, and the
+// input devices read at rest (game/dinput.cpp).
 // The device keeps its textures, so there is nothing to back up or restore.
 // Grim stores the callbacks as void functions, but every one the game or Grim
 // registers returns a flag, and wasm calls through a pointer by its exact type.
@@ -136,6 +138,7 @@ static void game_resume() {
   grim_timing_frozen = false;
 }
 GAME_EXPORT(game_activate) void game_activate(int active) {
+  dinput_away(!active);
   if (game_coop_focus(active) && !grim_timing_frozen)
     return;
   if (active) {

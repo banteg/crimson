@@ -7,6 +7,13 @@
 
 static HostInput input;
 extern "C" __attribute__((export_name("game_input"))) HostInput *game_input() { return &input; }
+// The window is away (game_activate): as DirectInput's foreground devices, every
+// device reads at rest and the presses go, whatever the host still delivers. A
+// co-op session plays on there (host/coop_live.inc), and nothing of this
+// machine's player reaches it: no pause, perk request or pick, only the
+// neutral record.
+static bool away;
+extern "C" void dinput_away(bool value) { away = value; }
 
 extern "C" const GUID GUID_SysKeyboard, GUID_SysMouse;
 extern "C" bool pad_clicking(void);
@@ -26,6 +33,10 @@ struct Device : UnimplementedIDirectInputDevice8A {
   STDMETHOD(Poll)(THIS) override { return DI_OK; }
   STDMETHOD(GetDeviceState)(THIS_ DWORD size, LPVOID data) override {
     memset(data, 0, size);
+    if (away) {
+      input.mouse_dx = input.mouse_dy = input.mouse_dz = 0;
+      return DI_OK;
+    }
     if (keyboard) {
       memcpy(data, input.keys, size < 256 ? size : 256);
       return DI_OK;
@@ -46,6 +57,8 @@ struct Device : UnimplementedIDirectInputDevice8A {
   }
   STDMETHOD(GetDeviceData)(THIS_ DWORD object_size, LPDIDEVICEOBJECTDATA events, LPDWORD count, DWORD) override {
     DWORD delivered = 0;
+    if (keyboard && away)
+      input.key_event_count = 0;
     if (keyboard)
       for (; delivered < *count && (int)delivered < input.key_event_count; ++delivered) {
         auto *event = (DIDEVICEOBJECTDATA *)((unsigned char *)events + delivered * object_size);
@@ -90,11 +103,15 @@ struct Joystick : UnimplementedIDirectInputDevice8A {
   }
   STDMETHOD(GetDeviceState)(THIS_ DWORD size, LPVOID data) override {
     DIJOYSTATE2 state = {};
+    memset(state.rgdwPOV, 0xff, sizeof state.rgdwPOV);
+    if (away) {
+      memcpy(data, &state, size < sizeof state ? size : sizeof state);
+      return DI_OK;
+    }
     state.lX = input.pad_axes[0];
     state.lY = input.pad_axes[1];
     state.lZ = input.pad_axes[2];
     state.lRz = input.pad_axes[3];
-    memset(state.rgdwPOV, 0xff, sizeof state.rgdwPOV);
     state.rgdwPOV[0] = input.pad_hat;
     memcpy(state.rgbButtons, input.pad_buttons, sizeof input.pad_buttons);
     memcpy(data, &state, size < sizeof state ? size : sizeof state);

@@ -454,6 +454,9 @@ static bool live_tick() {
     live.replay.resize(live.replay.size() - sizeof in[0] - sizeof count - count * sizeof(PortableCommand));
     live_end(game_state_pending == GAME_STATE_QUEST_RESULTS ? "quest_completed" : "death");
     ui_elements_timeline = 0;
+    // Its end screen's name entry comes before any run a co-op session brings
+    // (host/coop_live.inc), as game_state_set would have it.
+    coop_live.naming = true;
     game_state_set_recovered(game_state_pending);
     game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
     return false;

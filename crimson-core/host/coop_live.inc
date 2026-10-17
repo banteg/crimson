@@ -78,6 +78,8 @@ static const char *coop_why() {
   case COOP_PARTNER_GONE:
     snprintf(line, sizeof line, "Player %d left", partner);
     return line;
+  case COOP_DIVERGED:
+    return "The two games ran differently";
   default:
     return nullptr;
   }
@@ -689,8 +691,9 @@ void game_coop_end_ready() {
     game_coop_request(COOP_ASK_SIGNED, 0, 0, 0, host_time_ms());
 }
 // The window's focus (game/frame.cpp): with a session on, the game plays on in
-// the background, this machine's records neutral, and the presses so far drop;
-// a run of the player's alone pauses as alone. True while it plays on.
+// the background, this machine's records neutral, the presses so far dropped
+// and the input devices at rest (game/dinput.cpp); a run of the player's alone
+// pauses as alone. True while it plays on.
 bool game_coop_focus(int active) {
   coop_live.unfocused = !active;
   if (!active)
