@@ -164,7 +164,23 @@ static void coop_hello(uint8_t answer) {
   coop_send(hello);
 }
 
-static bool coop_running() { return wire.started && coop.active; }
+// The session's run is the engine's: started on both sides, or the Host's
+// waiting for START_ACK, only while the engine runs it. A run that stops in the
+// engine (any run's start, a cancel) stops in the session too, so the next can
+// start; a start the Host still waits on is cancelled, as when it gives up.
+static void coop_stop() {
+  coop.active = wire.started = false;
+  if (!wire.starting)
+    return;
+  wire.starting = false;
+  CoopWriter message = coop_message(COOP_START_CANCEL, wire.epoch);
+  coop_send(message);
+}
+static bool coop_running() {
+  if (wire.started && !coop.active)
+    abort();
+  return wire.started;
+}
 static void coop_cancel_request() {
   coop.asked = coop.picking = false;
   coop.request = -1;
@@ -205,6 +221,7 @@ static void coop_drop(CoopReason reason) {
   wire.closed = true;
   coop_wind_down();
 }
+static void coop_forget();
 // A session begins on this side as seat `seat`, nothing of the last one's
 // kept but what only grows, across sessions too: the epoch, so nothing a last
 // session sent belongs to a run of this one, and this side's ticks packets'
@@ -233,8 +250,9 @@ static void coop_session(int seat, double now) {
   wire.sent_at = -1e300;
   wire.credit = 1;
   coop.stats.wire = {};
-  // A START_RUN of the last session no longer stands (host/coop_live.inc).
-  coop_live.offered = false;
+  // Nothing either side chose or offered in the last session stands in this
+  // one (host/coop_live.inc).
+  coop_forget();
 }
 
 // A run from the config at portable_config, this machine playing its seat:

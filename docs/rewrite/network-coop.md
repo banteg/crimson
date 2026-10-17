@@ -995,6 +995,17 @@ any other.
   gives up after 10 s, as for any start), and for its end screen's name entry
   after it. Its end screen's buttons are run setup, as the menus'.
 
+- **No replays in a session**: while a session is on, nothing plays in the
+  one world the game has but its runs. The high scores' Watch shows as the
+  original's disabled buttons do ("Not during co-op"), and so does practice's
+  Take over; a link to a replay or a custom quest waits for the session's end,
+  through its runs, and the menus say so. A replay that played as the session
+  opened gives way to its first run. The engine's run and the session's are one:
+  any other run's start stops both (`coop_stop`), so the session's run is never
+  started without the engine's. A new session takes no choice of the last: a
+  Play Again waiting for the partner's name, the Guest's choice, the run
+  `START_RUN` offered, or a fade to the last session's run.
+
 ---
 
 ## 6. Research question 5: Invitation links, lobby, signalling & transport
@@ -1454,21 +1465,26 @@ and messages, repairs and the records they carried, and the round trip.
    by pad from the pause banner, time out on one machine alone and begin anew
    on its next hello (the other machine's run ending where it confirmed it),
    desync (both sessions closed for it) and leave by keys and pad, open the
-   transport again at the end screens and mid-run (each run ending where it was
-   confirmed, with its replay), leave from the Guest's Main Menu as its screen
+   transport again at the end screens (the Host's Play Again of the last
+   session starting nothing), as the Host's screen fades to a run (which starts
+   none) and mid-run (each run ending where it was confirmed, with its replay),
+   leave from the Guest's Main Menu as its screen
    fades to the Host's next run, close the transport before the Guest names
    its score, lose the connection with the machines in each other's seats (the
    window in the background stopping once the session ended), and play quests
    from the Host's quest list through the Host's Play Next, past the Guest's
-   high scores' Play a game, Play Another with a second quest key during the
+   high scores' Play a game, Play Another (where a link to a replay waits for
+   the session's end, through its runs) with a second quest key during the
    fade, a Play Again pressed twice, and a leave from the failed quest's Main
-   Menu that a click right after does not undo; last, both quit a run, with
-   configuration saves in it. Before them, a session opens while one machine
+   Menu that a click right after does not undo; last, both quit a run that a
+   session opening over that replay starts (practice taking none of it over),
+   with configuration saves in it. Before them, a session opens while one machine
    is in the tutorial, plays a local two-player quest and plays a quest alone,
    each playing out on its own save (the window in the background stopping
    them), the last's end screen keeping its name entry before a run the Host
-   starts; a custom quest's end screen starts no co-op run and gives way to the
-   Host's with the two players' settings. Every tick both machines
+   starts; a custom quest's link waits for the session's end, and its end screen
+   starts no co-op run and gives way to the Host's with the two players'
+   settings. Every tick both machines
    confirm must have the same state hash
    and bake and terrain digests on both and from the engine replaying the
    machines' records alone (not the music digest, which names the tracks each

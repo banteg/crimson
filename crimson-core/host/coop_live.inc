@@ -167,6 +167,7 @@ static void coop_enter_run(const PortableConfig &config) {
   }
   coop_live.next = config;
   coop_live.entering = true;
+  coop_live.entered = wire.nonce;
   coop_live.latched = false;
   coop_live.note = nullptr;
   run_active = 0;
@@ -241,6 +242,9 @@ static void coop_to_menu() {
 // client's runs do. False when it cannot start.
 static bool coop_start_run() {
   coop_live.entering = false;
+  // A fade the last session began starts nothing in this one (coop_forget).
+  if (coop_live.entered != wire.nonce)
+    return false;
   cfg = coop_live.next;
   double now = host_time_ms();
   bool started;
@@ -306,6 +310,12 @@ static void coop_offer(const PortableConfig &config, int delay, int rmax, uint32
   coop_live.rmax = rmax;
   coop_live.epoch = epoch;
   coop_live.offered = true;
+}
+// A new session (coop_session) takes no choice of the last: the Host's run, the
+// Guest's choice of the next, the run START_RUN offered, and a fade to the
+// last one's run (coop_start_run).
+static void coop_forget() {
+  coop_live.latched = coop_live.offered = coop_ui.asked_next = false;
 }
 // START_CANCEL for the run offered: true when it was.
 static bool coop_withdraw(uint32_t epoch) {

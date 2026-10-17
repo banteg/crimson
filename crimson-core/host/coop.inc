@@ -214,7 +214,8 @@ static const int COOP_PRESENTATION[] = {
 #include "presentation.inc"
 };
 
-static void coop_stop() { coop.active = false; }
+// The run stops, and the session's with it (host/coop_wire.inc).
+static void coop_stop();
 
 static CoopScreen coop_screen() { return {game_state_pending, ui_elements_timeline, ui_transition_direction}; }
 static void coop_screen_install(const CoopScreen &screen) {

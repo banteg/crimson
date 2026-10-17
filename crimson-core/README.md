@@ -223,19 +223,23 @@ pad, and saved progress; the original's own randomness is seeded by the
 frames' clock, so every run comes out the same. First a session opens while one
 machine is in the tutorial, plays a local two-player quest and plays a quest
 alone: each plays out on its own save, stopping in the background, and the last
-keeps its name entry; a custom quest's end screen starts no co-op run and gives
-way to the Host's. The Host's menus start Survival; both players open and pick
+keeps its name entry; a custom quest's link waits for the session's end, and its
+end screen starts no co-op run and gives way to the Host's. The Host's menus start Survival; both players open and pick
 perks, pause and resume each other, and one plays on in the background, where
 its pad reaches nothing; the Guest's end screen starts the next run once the
 Host's name is in, where both ask for a perk menu on the same tick, and a pad
 leave from the pause banner right after a pick ends it. Then a timeout on one
 machine alone and a new session on its hello, a desync, the transport opening
-again at the end screens and mid-run, a leave as the screen fades to the next
+again at the end screens (a Play Again of the last session starting nothing in
+the new one), as the screen fades to a run (which then starts none) and
+mid-run, a leave as the screen fades to the next
 run, a transport that closes before a name entry, a lost connection with the
 seats swapped (the window in the background stopping after it), quests from the
-Host's quest list through Play Next, the high scores' Play a game, Play Another,
-two quest keys and Play Again twice to a leave from the failed quest's screen,
-and a run both machines quit. Every tick both machines confirm must have the
+Host's quest list through Play Next, the high scores' Play a game, Play Another
+(where a link to a replay waits for the session's end, through its runs), two
+quest keys and Play Again twice to a leave from the failed quest's screen, and
+a run both machines quit, which a session opening over that replay starts (no
+practice taking it over meanwhile). Every tick both machines confirm must have the
 same state hash and bake and terrain digests on both and from the engine
 replaying their records alone, both must save byte-identical replays that
 `crimson replay verify` accepts, every name must go to the two players' tables,

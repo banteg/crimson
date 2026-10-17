@@ -23,7 +23,8 @@
 // way, recorded. Its end screen keeps its name entry (another Survival run the
 // Host starts there waits for it until the Host gives up), and its Play Next
 // starts nothing, as the Host picks the session's runs. Then it follows a
-// custom quest's link and dies in it: with a session on, in the Host's seat,
+// custom quest's link, which waits until the session closes, and dies in it:
+// with a session on, in the Host's seat,
 // its Play Again starts nothing, as co-op plays no custom quest; in the Guest's
 // seat its screen follows the Host's Survival run, and its score goes to the
 // two players' table. The Guest's game closes there, its save keeping the
@@ -62,10 +63,11 @@
 // for the desync; the Host's Enter and the Guest's A press its Leave.
 //
 // Sessions that end around runs. The transport opens again on both sides before
-// either's next frame, once at the end screens of a run both stood through and
-// once mid-run: the end screens are the ended session's, whose names go to the
-// two players' table before the menu, and the run in progress ends where each
-// machine confirmed it, its replay saved. As the Guest's screen fades from an end
+// either's next frame, once at the end screens of a run both stood through
+// (the Host's Play Again waiting for the Guest's name) and once mid-run: the end
+// screens are the ended session's, whose names go to the two players' table
+// before the menu, the Host's Play Again starts nothing in the new session, and
+// the run in progress ends where each machine confirmed it, its replay saved. As the Guest's screen fades from an end
 // screen to the Host's next run, its Main Menu leaves. The transport closes
 // before the Guest names its score, which goes to the two players' table all the
 // same.
@@ -81,15 +83,19 @@
 // players clear; both save their names. The Guest's high scores Play a game
 // starts nothing; the Host's Play Next starts the next quest, which takes the
 // Guest's screen from the high scores. Both stand still until it fails; the
-// Host's Play Another takes both to the quest list, and its number key starts
-// the first quest again, another key as the screen fades starting nothing more.
-// Both stand still until it fails, and the Host's Enter twice plays it again
-// once. Then the Host's keys press Main Menu, and the Guest's Play Again right
-// after starts nothing: the session ends there.
+// Host's Play Another takes both to the quest list, where a link to a replay
+// comes to the Host's machine: it waits for the session's end, through its
+// runs. The Host's number key starts the first quest again, another key as the
+// screen fades starting nothing more. Both stand still until it fails, and the
+// Host's Enter twice plays it again once. Then the Host's keys press Main Menu,
+// and the Guest's Play Again right after starts nothing: the session ends
+// there, and the link's replay plays.
 //
-// A last run, in which the Host's window mode changes (which saves the
-// configuration), and which the Guest's Alt+Q quits (which saves it too) and
-// the Host's window closes.
+// A last run, which a session opening while the Host's machine watches the
+// replay starts from the Guest's, the seats swapped (practice taking over none
+// of the replay meanwhile), in which the Host's window mode changes (which
+// saves the configuration), and which the Guest's Alt+Q quits (which saves it
+// too) and the Host's window closes.
 //
 // Every tick either machine confirmed has the same state hash, bake digest and
 // terrain digest on both, and the engine with both seats local
@@ -170,6 +176,8 @@ const DOUBLE_OPENS = 14, LOST = 28;
 const stat = (peer, i) => new Int32Array(peer.g.memory.buffer, peer.g.game_coop_stats(), 32)[i];
 const ASK_OPEN = 1;
 
+// A link's replay of one player's run, in the Guest's game directory.
+const ROOT = new URL("..", CORE).pathname, LINKED = "watched/linked.crd";
 const python = (code, ...args) =>
   execFileSync("uv", ["run", "--no-sync", "python", "-c", code, ...args], { encoding: "utf8" }).trim();
 
@@ -664,7 +672,8 @@ tap(guest, DOWN, DOWN, DOWN, A);
 settle(guest, MAIN_MENU);
 
 // A custom quest alone. The Guest's machine follows a custom quest's link, one wave of 40 creatures (template 0) at
-// the arena's right with the pistol in hand, and stands still until it fails. A session opens on its end screen with
+// the arena's right with the pistol in hand: the link waits while the session the run alone opened goes on, and
+// starts once the transport closes. It stands still until the quest fails. A session opens on its end screen with
 // the machine in the Host's seat: its Enter on Play Again starts nothing, as co-op plays no custom quest. Then a
 // session in the usual seats: the Host's menus start Survival, which the Guest's screen follows from the custom
 // quest's end, on the two players' settings: both stand still until they die, and the Guest's name goes to the two
@@ -675,6 +684,10 @@ custom.setUint32(16, 1, true);
 [560, 512, 0].forEach((value, i) => custom.setFloat32(40 + 4 * i, value, true));
 custom.setInt32(40 + 20, 40, true);
 assert.equal(guest.g.game_custom_quest_play(), 1);
+assert.ok(status(guest) & STATUS.connected, "the run alone's session");
+hold(1000, () => screen(guest) === MAIN_MENU, "a custom quest's link in a session");
+for (const peer of peers) assert.equal(peer.g.game_coop_disconnect(DISCONNECTED), 1);
+machines.flights = [];
 still = true;
 play(player, () => screen(guest) === QUEST_FAILED, "the custom quest's failure");
 connect([1, 0]);
@@ -902,25 +915,41 @@ function reconnect() {
   machines.flights = [];
   connect();
 }
-// A session's Survival run, which both stand through until they die: the transport opens again before either
-// machine's next frame. Their end screens are the ended session's, whose names go to the two players' table, then
-// the menu, while the new session goes on.
+// A session's Survival run, which both stand through until they die. The Host's Enter saves its name and its Enter
+// again presses Play Again, which waits for the Guest's name; then the transport opens again before either machine's
+// next frame. Their end screens are the ended session's, whose names go to the two players' table, then the menu,
+// while the new session goes on: the Host's Play Again was the last session's, and no run starts in the new one.
 connect();
 still = true;
 click(host, MAIN_MENU, PLAY_GAME);
 click(host, PLAY_GAME_MENU, SURVIVAL);
 play(idle, started, "the run before the reconnect at its end");
 play(player, () => peers.every((p) => screen(p) === GAME_OVER), "the team's death");
+settle(host, GAME_OVER);
+const unnamed = scores(host);
+tap(host, key(ENTER));
+play(idle, () => scores(host) !== unnamed, "the Host's name before the reconnect");
+settle(host, GAME_OVER, idle, 1000);
+tap(host, key(ENTER));
+hold(500, () => screen(host) === GAME_OVER && !(status(host) & STATUS.starting), "the Host's Play Again");
 reconnect();
+const none = () => !(status(host) & (STATUS.starting | STATUS.started));
+play(idle, () => (assert.ok(none(), "the last session's Play Again"), screen(host) === MAIN_MENU), "the Host's menu");
 settle(guest, GAME_OVER);
 tap(guest, DOWN, A);
-play(idle, () => screen(guest) === MAIN_MENU, "the Guest's name and the menu");
-tap(host, key(ENTER));
-play(idle, () => screen(host) === MAIN_MENU, "the Host's name and the menu");
+play(idle, () => (assert.ok(none(), "the last session's Play Again"), screen(guest) === MAIN_MENU), "the Guest's menu");
+hold(2000, () => none() && peers.every((p) => screen(p) === MAIN_MENU), "the last session's Play Again");
 for (const peer of peers) {
   assert.ok(tables(peer).includes("survival_2.hi") && !tables(peer).includes("survival.hi"), `${tables(peer)}`);
   assert.equal(status(peer) & STATUS.connected, STATUS.connected, `machine ${peer.seat}'s new session`);
 }
+// The transport opens again as the Host's screen fades to the run its click chose: the fade, the last session's,
+// ends on the menu, and no run starts in the new session.
+click(host, MAIN_MENU, PLAY_GAME);
+click(host, PLAY_GAME_MENU, SURVIVAL);
+reconnect();
+hold(2000, () => none() && screen(guest) === MAIN_MENU, "the last session's fade");
+settle(host, MAIN_MENU);
 // The transport opens again 200 ticks into the next run: each machine ends it where it confirmed it, saves it and
 // goes to the menu, the new session going on.
 still = false;
@@ -1012,7 +1041,8 @@ hold(1000, () => screen(guest) === HIGHSCORES && screen(host) === QUEST_RESULTS,
 tap(host, key(ENTER));
 play(idle, started, "the second quest's start");
 // Both stand still until it fails; the Host's Tab and Enter press Play Another, the second button, and both
-// screens go to the quest list, where the Host's key starts the first quest again, its key for the second as the
+// screens go to the quest list. A link to a replay of one player's run comes to the Host's: it waits for the
+// session's end, through its runs. The Host's key starts the first quest again, its key for the second as the
 // screen fades to it starting nothing more.
 still = true;
 play(player, () => peers.every((p) => screen(p) === QUEST_FAILED), "the second quest's failure");
@@ -1021,6 +1051,12 @@ settle(host, QUEST_FAILED);
 tap(host, key(TAB), key(ENTER));
 play(idle, () => peers.every((p) => screen(p) === QUEST_SELECT), "the quest lists");
 settle(host, QUEST_SELECT);
+fs.mkdirSync(path.join(host.directory, "watched"));
+fs.copyFileSync(path.join(ROOT, "tests/fixtures/replays/quest-1.1-completed.crd"), path.join(host.directory, LINKED));
+Buffer.from(host.g.memory.buffer).write(`${LINKED}\0`, host.g.game_replay_path(), "latin1");
+assert.equal(host.g.game_replay_open(), 1);
+assert.equal(host.g.game_watch(1, 17, 10, 2026), 1);
+hold(1000, () => screen(host) === QUEST_SELECT && host.g.game_watch_status() === -1, "a link in a session");
 tap(host, key(ONE), key(TWO));
 play(player, () => peers.every((p) => screen(p) === QUEST_FAILED), "the first quest's failure");
 const again = ended("death");
@@ -1036,15 +1072,21 @@ still = false;
 const retry = ended("death");
 hold(2000, () => peers.every((p) => screen(p) === QUEST_FAILED), "the end screens after the retry");
 // The Host's Tab, Tab and Enter press Main Menu, the third button, and the Guest's Play Again right after: the
-// Host leaves at its click, which wins.
+// Host leaves at its click, which wins. With the session over, the link's replay plays on the Host's machine.
 settle(host, QUEST_FAILED);
 tap(host, key(TAB), key(TAB), key(ENTER));
 tap(guest, A);
-left(host);
+const watching = () => host.g.game_watch_status() === 0 && host.g.game_watch_ticks() > 0;
+const over = () => screen(guest) === MAIN_MENU && peers.every((p) => !(status(p) & STATUS.connected));
+play(idle, () => over() && watching() && host.g.game_watch_tick() > 60, "the leave and the link after it");
+assert.deepEqual(peers.map(reason), [LEFT, PARTNER_LEFT], "who left");
 
 // A last run, which both machines quit: the Host's window mode changes and changes back, each change saving the
 // configuration at once; the Guest's Alt+Q quits, which saves it; then the Host's window closes. Each saved its
-// configuration at the menu before it the same way, with its name's length from its name entries.
+// configuration before it the same way, with its name's length from its name entries: the Guest at the menu, the
+// Host watching the replay, which keeps the player's settings. A session opens while the replay plays, the machines
+// in each other's seats: the replay takes over for no practice, and the Guest's machine starts the run, which takes
+// the Host's machine's screen from the replay.
 const windowMode = (peer) => {
   const windowed = peer.g.game_windowed();
   peer.g.game_set_windowed(1 - windowed);
@@ -1054,7 +1096,13 @@ for (const peer of peers) {
   windowMode(peer);
   peer.saved = python(SAVED, peer.directory);
 }
-survival();
+assert.equal(JSON.parse(host.saved).config.gameplay.player_count, 1, "the player count the replay saved");
+connect([1, 0]);
+assert.ok(watching(), "the replay as the session opens");
+assert.equal(host.g.game_practice_take(), 0, "practice in a session");
+click(guest, MAIN_MENU, PLAY_GAME);
+click(guest, PLAY_GAME_MENU, SURVIVAL);
+play(idle, started, "the run from the replay");
 play(player, () => peers.every((p) => confirmed(p) >= 120), "the last run's 120 ticks");
 windowMode(host);
 play((p) => (p === guest ? { keys: [ALT, Q] } : {}), () => guest.gone, "the Guest's Alt+Q");

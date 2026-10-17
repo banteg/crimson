@@ -98,9 +98,11 @@ static struct {
   bool offered;
   int delay, rmax;
   uint32_t epoch;
-  // The run the screen's fade to gameplay starts (game_state_set), and before
-  // that the Host's latched or the Guest's offered one.
+  // The run the screen's fade to gameplay starts (game_state_set), in the
+  // session it began in, and before that the Host's latched or the Guest's
+  // offered one.
   bool entering;
+  uint32_t entered;
   PortableConfig next;
   PortableConfig last; // the last co-op run's, for the next
   // While a session is on: the menus' unlocks are every quest's, the player's
@@ -128,6 +130,10 @@ static void practice_stop();
 static void practice_end();
 static int practice_frame();
 static void practice_render();
+// A co-op session is on (host/coop_live.inc): no replay starts, and no practice
+// takes one over; a line for the player on the menus.
+static bool coop_on();
+static void coop_note(const char *note);
 // A co-op tick's terrain bake and music wait for its confirmation (host/coop.inc):
 // a track, the in-game tune, a fade, a volume.
 enum CoopTuneKind { COOP_PLAY, COOP_GAME_TUNE, COOP_FADE, COOP_VOLUME };
@@ -625,8 +631,9 @@ void game_state_set(game_state_id_t state) {
   bool watches = watch.armed && state == GAME_STATE_GAMEPLAY && !run_active && live_eligible();
   if (watch.armed && !watches)
     watch_disarm();
-  // The player's own run comes before a replay a link asked for.
-  if ((state == GAME_STATE_GAMEPLAY || state == GAME_STATE_TYPO_GAMEPLAY) && !watches)
+  // The player's own run comes before a replay a link asked for; one that waits
+  // for a co-op session's end (watch_follow_link) waits through its runs.
+  if ((state == GAME_STATE_GAMEPLAY || state == GAME_STATE_TYPO_GAMEPLAY) && !watches && !coop)
     watch.linked = false;
   // A replay stops for any screen; leaving a run for anything but its own
   // screens (the perk menu, and the pause menu with its options) ends it

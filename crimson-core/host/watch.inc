@@ -543,13 +543,14 @@ static bool watch_on_menu() {
   }
 }
 // A link skips the intro, as a click does (game_startup_init), and starts as
-// the menu comes in after it, cutting straight to the replay.
+// the menu comes in after it, cutting straight to the replay; one that comes
+// while a co-op session is on waits for the session's end.
 static bool custom_quest_linked;
 static void watch_follow_link() {
   if (!watch.linked && !custom_quest_linked)
     return;
   startup_skip_requested = 1;
-  if (!game_live && !run_active && !watch.armed && watch_on_menu() && ui_transition_direction &&
+  if (!game_live && !run_active && !watch.armed && !coop_on() && watch_on_menu() && ui_transition_direction &&
       ui_elements_max_timeline() > 0 && ui_elements_timeline > 0) {
     if (watch.linked) {
       watch.linked = false;
@@ -827,16 +828,22 @@ void highscore_watch(float *card, highscore_record_t *record) {
   }
   if (!named)
     return;
+  // While a co-op session is on, Watch shows as the original's disabled
+  // buttons do, and says why.
+  bool coop = coop_on();
+  button.enabled = !coop;
+  button.alpha = coop ? 0.5f : 1.0f;
   float at[2] = {card[0], card[1] + 150.0f};
   bool pressed = playable && ui_button_update(at, &button);
   if (playable)
     at[0] += 92.0f;
   grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
-  if (!note.empty()) {
+  const char *line = playable && coop ? "Not during co-op" : note.c_str();
+  if (*line) {
     if (playable)
-      viewer_text(at[0], at[1] + 4.0f, note.c_str(), 0.75f, 0.75f, 0.78f, 1.0f);
+      viewer_text(at[0], at[1] + 4.0f, line, 0.75f, 0.75f, 0.78f, 1.0f);
     else
-      viewer_text(at[0], at[1] + 4.0f, note.c_str(), 1.0f, 0.5f, 0.5f, 1.0f);
+      viewer_text(at[0], at[1] + 4.0f, line, 1.0f, 0.5f, 0.5f, 1.0f);
   }
   // The screen's card is the table's row.
   if (pressed)
@@ -861,7 +868,8 @@ __attribute__((export_name("game_replay_downloaded"))) void game_replay_download
 
 // Plays the replay game_replay_open read, as Watch plays one (a link to a run,
 // checks/game_watch.mjs), once a menu comes in (watch_follow_link): until then
-// the startup sequence, which it cuts short, sets up its own screens. A run the player starts
+// the startup sequence, which it cuts short, sets up its own screens, and a
+// co-op session plays out (the menus say so). A run the player starts
 // meanwhile drops it. 0 when it cannot, with a run playing or a replay this
 // module cannot play.
 //
@@ -890,6 +898,8 @@ __attribute__((export_name("game_watch"))) int game_watch(int rank, int day, int
   watch_link_run[0] = 0;
   watch.seek = watch.stop_at = 0;
   watch.linked = true;
+  if (coop_on())
+    coop_note("The replay plays once co-op ends");
   return 1;
 }
 // Where playback is and the run's length, in ticks (0 until the replay is
@@ -924,6 +934,9 @@ __attribute__((export_name("game_custom_quest_play"))) int game_custom_quest_pla
   if (game_live || !custom_quest_valid() || config_blob.screen_width != 1024 || config_blob.screen_height != 768)
     return 0;
   custom_quest_linked = true;
+  // Its run waits for a co-op session's end, as a link to a replay does.
+  if (coop_on())
+    coop_note("The quest starts once co-op ends");
   return 1;
 }
 }
