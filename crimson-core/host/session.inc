@@ -59,6 +59,26 @@ static struct {
   bool watching; // the run plays a replay (watch.inc)
   bool practicing; // detached Watch state driven by live input (practice.inc)
 } live;
+// The menu settings that name a run: its mode, difficulty, players and quest. A
+// replay, a custom quest's link and a co-op run put theirs in place of the
+// player's for their screens; crimson.cfg keeps the player's
+// (config_sync_from_grim).
+struct MenuSettings {
+  decltype(config_blob.game_mode) mode;
+  decltype(config_blob.hardcore) hardcore;
+  decltype(config_blob.player_count) player_count;
+  int major, minor;
+};
+static MenuSettings menu_shown() {
+  return {config_blob.game_mode, config_blob.hardcore, config_blob.player_count, quest_stage_major, quest_stage_minor};
+}
+static void menu_install(const MenuSettings &menu) {
+  config_blob.game_mode = menu.mode;
+  config_blob.hardcore = menu.hardcore;
+  config_blob.player_count = menu.player_count;
+  quest_stage_major = menu.major;
+  quest_stage_minor = menu.minor;
+}
 // A co-op session inside the original (host/coop_live.inc).
 static struct {
   bool playing;   // a co-op run plays (game_live)
@@ -67,7 +87,8 @@ static struct {
   float banked;   // seconds of play not yet ticked
   bool shown;     // a tick of the run drew, and the host holds its frame
   bool choosing;  // this machine's perk screen is open for its pick
-  bool ended;     // the screen shows a co-op run's end
+  bool ended;     // the screen shows a co-op run's end, until the next run starts
+  uint32_t session; // the session the last co-op run played in (CoopWire's nonce)
   bool naming;    // an end screen's name entry shows: no run comes to it
   // The Host's next run, from its click or the Guest's choice, until the Guest
   // can start one (`choice`: 0 again, 1 next, 2 from the run setup).
@@ -88,12 +109,7 @@ static struct {
   LiveUnlocks own;
   // The player's menu settings, while the co-op run's are in their place.
   bool menu_saved;
-  struct {
-    decltype(config_blob.game_mode) mode;
-    decltype(config_blob.hardcore) hardcore;
-    decltype(config_blob.player_count) player_count;
-    int major, minor;
-  } menu;
+  MenuSettings menu;
   const char *note; // a line for the player, shown a while from note_at
   unsigned note_at;
   unsigned ticked_at; // when the run last ran a tick
@@ -553,17 +569,15 @@ void gameplay_update_and_render() {
 // command with its next tick.
 bool game_live_run() { return game_live; }
 // The game quits (game/frame.cpp): an unfinished run still keeps its recording.
+// The configuration the quit saved has the player's own menu settings
+// (config_sync_from_grim).
 void game_live_quit() {
-  // A replay's menu settings give way to the player's, which the game saves.
   if (live.watching)
     watch_stop();
   else if (coop_live.playing)
     coop_quit();
   else if (game_live)
     live_end("incomplete");
-  // The game saves the player's own settings (crimsonland_main_exit).
-  coop_menu_restore();
-  custom_quest_restore();
   ranked_release();
 }
 bool game_live_pause() {
@@ -690,6 +704,20 @@ void game_save_status() {
   game_save_status_recovered();
   quest_unlock_index = shown.normal;
   quest_unlock_index_hardcore = shown.hardcore;
+}
+// crimson.cfg keeps the player's own menu settings, whatever a co-op run, a
+// replay or a custom quest's link shows in their place, on every save: the
+// quit's, a window mode's, a pad profile's.
+bool config_sync_from_grim_recovered();
+bool config_sync_from_grim() {
+  MenuSettings shown = menu_shown();
+  if (coop_live.menu_saved)
+    menu_install(coop_live.menu);
+  else if (watch.armed || live.watching || custom_quest_restore_menu)
+    menu_install(watch.menu);
+  bool synced = config_sync_from_grim_recovered();
+  menu_install(shown);
+  return synced;
 }
 __attribute__((export_name("game_replay"))) const unsigned char *game_replay() { return live.replay.data(); }
 __attribute__((export_name("game_replay_size"))) int game_replay_size() { return (int)live.replay.size(); }

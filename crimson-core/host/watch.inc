@@ -82,12 +82,7 @@ static struct {
   unsigned play_time;
   int time_played;
   // The player's menu settings, while the replay's are in their place.
-  struct {
-    decltype(config_blob.game_mode) mode;
-    decltype(config_blob.hardcore) hardcore;
-    decltype(config_blob.player_count) player_count;
-    int major, minor;
-  } menu;
+  MenuSettings menu;
   WatchPhase phase;
   size_t at;       // the next tick's place in the recording
   int tick, ticks; // ticks played, and the run's: the recording's, or up to a refused tick
@@ -152,8 +147,7 @@ static void watch_arm(const LoadedReplay &replay, const WatchCard &card, const s
   PortableConfig recorded;
   memcpy(&recorded, replay.recording.data(), sizeof recorded);
   if (!watch.armed && !custom_quest_restore_menu)
-    watch.menu = {config_blob.game_mode, config_blob.hardcore, config_blob.player_count, quest_stage_major,
-                  quest_stage_minor};
+    watch.menu = menu_shown();
   config_blob.game_mode = (decltype(config_blob.game_mode))recorded.mode;
   config_blob.hardcore = (decltype(config_blob.hardcore))recorded.hardcore;
   config_blob.player_count = 1;
@@ -176,11 +170,7 @@ static void watch_start(const LoadedReplay &replay, const WatchCard &card, const
   screen_fade_ramp_flag = 1;
 }
 static void watch_disarm() {
-  config_blob.game_mode = watch.menu.mode;
-  config_blob.hardcore = watch.menu.hardcore;
-  config_blob.player_count = watch.menu.player_count;
-  quest_stage_major = watch.menu.major;
-  quest_stage_minor = watch.menu.minor;
+  menu_install(watch.menu);
   watch.armed = false;
 }
 static void custom_quest_restore() {
@@ -567,8 +557,7 @@ static void watch_follow_link() {
     } else {
       custom_quest_linked = false;
       if (!custom_quest_restore_menu) {
-        watch.menu = {config_blob.game_mode, config_blob.hardcore, config_blob.player_count, quest_stage_major,
-                      quest_stage_minor};
+        watch.menu = menu_shown();
         custom_quest_saved_ranked = ranked_checked;
         custom_quest_restore_menu = true;
       }

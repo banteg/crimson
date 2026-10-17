@@ -902,7 +902,9 @@ stays on the arena screen and sees the replay viewer's top-right pick card
   modes) is run setup: the Host's picks the next run, the Guest's starts
   nothing. A screen that is fading out to the one a click chose takes no run
   until it shows, so a click that leaves the end screen wins over a run that
-  arrives after it.
+  arrives after it. The end screen stays the last run's until the next starts:
+  its Main Menu still leaves while the screen fades to that run, and a second
+  click there starts nothing more.
 
   - The Host owns the seed, so a Guest's click sends
     `MSG_NEXT_RUN { run_epoch, choice }`. On its own click, or on the first
@@ -934,7 +936,12 @@ any other.
   unlocked it, so it plays with the weapons and perks the campaign has handed
   out by then), detail 5, violence on, friendly fire off, documented fixes on,
   no retries. Neither player's own save takes part, and the run changes
-  neither player's progress. Rush, Typ-o and the Tutorial stay out of co-op.
+  neither player's progress. The run's mode, difficulty and player count stand
+  in for the player's own on its screens (its high scores go to the two
+  players' tables), but `crimson.cfg` keeps the player's own on every save (a
+  quit, a window mode change, a pad profile), as it does over a replay's or a
+  custom quest's. Rush, Typ-o, the Tutorial and custom quests stay out of
+  co-op.
 
 - **Boards**: co-op ranks on its own boards, `survival-coop`, `quests-coop` and
   `quests-hardcore-coop`, scored as their 1P counterparts. Two-player scores
@@ -973,15 +980,20 @@ any other.
   carries nothing: each peer sends it once its end screen shows its buttons,
   past the name entry (or with none), and the Host waits for the Guest's and
   its own screen's. A session that ends while a player names a score leaves
-  the end screen once the name is in.
+  the end screen once the name is in, the name going to the two players'
+  table. Every session ends that way, whether it closed or another began (the
+  transport opening again before a frame, a partner's new hello): its run
+  ends at its last confirmed tick with its replay saved, and its end screens
+  belong to no later session.
 
 - **A run alone**: a session can open while a player's own run plays (the
-  Host waiting for an invite, say). That run plays out on the player's own
-  save, its unlocks included, and its window's focus pauses it as alone; the
-  menus' every-quest view comes after it, and a run the Host starts waits for
-  it (and the Host gives up after 10 s, as for any start), and for its end
-  screen's name entry after it. Its end screen's buttons are run setup, as the
-  menus'.
+  Host waiting for an invite, say): any mode, the Tutorial and Typ-o, two
+  local players or a resolution the client does not record, and practice (a
+  replay gives way). That run plays out on the player's own save, its unlocks
+  included, and its window's focus pauses it as alone; the menus' every-quest
+  view comes after it, and a run the Host starts waits for it (and the Host
+  gives up after 10 s, as for any start), and for its end screen's name entry
+  after it. Its end screen's buttons are run setup, as the menus'.
 
 ---
 
@@ -1247,7 +1259,10 @@ and messages, repairs and the records they carried, and the round trip.
 1. **Window blur (`SDL_EVENT_WINDOW_FOCUS_LOST`) & gamepad gating**:
 
    - In `crimson-core/game/frame.cpp:125-137`, `game_activate(0)` must **not** set
-     `grim_timing_frozen = true` while `coop_active` is true.
+     `grim_timing_frozen = true` while `coop_active` is true. The game then
+     plays on only while the session needs it: once it ends (its run ended)
+     or a run of the player's own plays, a window in the background stops as
+     the original's does.
 
    - In `crimson-core/client/main.cpp:836-845, 948`, focus loss clears
      `in->keys` and `in->mouse_buttons`, but `pad(input())` (`:273-304`)
@@ -1438,14 +1453,22 @@ and messages, repairs and the records they carried, and the round trip.
    end screen once the Host's name is in, pick a perk in a paused run and leave
    by pad from the pause banner, time out on one machine alone and begin anew
    on its next hello (the other machine's run ending where it confirmed it),
-   desync (both sessions closed for it) and leave by keys and pad, lose the
-   connection with the
-   machines in each other's seats, and play quests from the Host's quest list
-   through the Host's Play Next, past the Guest's high scores' Play a game, and
-   Play Another to a leave from the failed quest's Main Menu that a click right
-   after does not undo. Before them, a session opens while one machine plays a
-   quest alone, which plays out on its own save, its end screen keeping its
-   name entry before a run the Host starts. Every tick both machines
+   desync (both sessions closed for it) and leave by keys and pad, open the
+   transport again at the end screens and mid-run (each run ending where it was
+   confirmed, with its replay), leave from the Guest's Main Menu as its screen
+   fades to the Host's next run, close the transport before the Guest names
+   its score, lose the connection with the machines in each other's seats (the
+   window in the background stopping once the session ended), and play quests
+   from the Host's quest list through the Host's Play Next, past the Guest's
+   high scores' Play a game, Play Another with a second quest key during the
+   fade, a Play Again pressed twice, and a leave from the failed quest's Main
+   Menu that a click right after does not undo; last, both quit a run, with
+   configuration saves in it. Before them, a session opens while one machine
+   is in the tutorial, plays a local two-player quest and plays a quest alone,
+   each playing out on its own save (the window in the background stopping
+   them), the last's end screen keeping its name entry before a run the Host
+   starts; a custom quest's end screen starts no co-op run and gives way to the
+   Host's with the two players' settings. Every tick both machines
    confirm must have the same state hash
    and bake and terrain digests on both and from the engine replaying the
    machines' records alone (not the music digest, which names the tracks each

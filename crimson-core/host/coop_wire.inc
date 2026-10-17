@@ -334,7 +334,7 @@ static void coop_update(double now) {
     CoopWriter message = coop_message(COOP_START_CANCEL, wire.epoch);
     coop_send(message);
   }
-  if (coop.active && coop.desync.tick >= 0 && !wire.desync_sent) {
+  if (coop_running() && coop.desync.tick >= 0 && !wire.desync_sent) {
     wire.desync_sent = wire.closed = true;
     wire.reason = COOP_DIVERGED;
     CoopWriter message =
@@ -718,14 +718,15 @@ static void coop_control_in(CoopReader &in, double now) {
 
 extern "C" {
 // A session as seat `seat` (0 the Host, 1 the Guest) over a connected
-// transport, ending any co-op run: it says hello, and answers the partner's.
-// What arrived before it is gone; the partner's hello comes again as the
-// answer to this one. A partner whose session went on meanwhile (this side
-// timed out alone) begins a new one on this hello.
+// transport: it says hello, and answers the partner's. Any co-op run ends at
+// its last confirmed tick, as a session that closes ends it. What arrived
+// before it is gone; the partner's hello comes again as the answer to this one.
+// A partner whose session went on meanwhile (this side timed out alone) begins
+// a new one on this hello.
 __attribute__((export_name("game_coop_connect"))) int game_coop_connect(int seat, double now) {
   if (seat < 0 || seat > 1)
     return 0;
-  coop_stop();
+  coop_wind_down();
   coop_session(seat, now);
   coop_hello(0);
   return 1;
@@ -841,7 +842,7 @@ __attribute__((export_name("game_coop_status"))) uint32_t game_coop_status() {
       (wire.starting ? COOP_STARTING : 0) | (wire.paused ? COOP_PAUSED : 0) |
       (coop.active && (coop.asked || coop.request >= 0) ? COOP_WAITING : 0) |
       (coop.active && coop.picking ? COOP_PICKER : 0) | (wire.left || wire.partner_left ? COOP_LEAVING : 0) |
-      (coop_over() ? COOP_ENDED : 0) | (coop.active && coop.desync.tick >= 0 ? COOP_DESYNCED : 0) |
+      (coop_over() ? COOP_ENDED : 0) | (coop_running() && coop.desync.tick >= 0 ? COOP_DESYNCED : 0) |
       (wire.failed ? COOP_FAILED : 0) | (wire.remote ? COOP_REMOTE : 0) | (wire.partner_signed ? COOP_SIGNED : 0) |
       (wire.closed ? COOP_CLOSED : 0);
   return status | (uint32_t)wire.reason << 16 | (uint32_t)(wire.next_run + 1) << 24;

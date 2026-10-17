@@ -219,21 +219,28 @@ their messages carried over the rollback check's seeded pipe
 ([`checks/coop_link.mjs`](checks/coop_link.mjs)) with a stutter and a lost
 burst, at 60 Hz against 144 Hz. The two differ in all a player sets: sound and
 music, in-game tunes, detail and gore, key bindings, mouse and keys against a
-pad, and saved progress. First a session opens while one machine plays a quest
-alone, which plays out on its own save and keeps its name entry. The Host's
-menus start Survival; both players open and pick perks, pause and resume each
-other, and one plays on in the background, where its pad reaches nothing; the
-Guest's end screen starts the next run once the Host's name is in, where both
-ask for a perk menu on the same tick, and a pad leave from the pause banner
-right after a pick ends it. Then a timeout on one machine alone and a new
-session on its hello, a desync, a lost connection
-with the seats swapped, and quests from the Host's quest list through Play
-Next, the high scores' Play a game and Play Another to a leave from the failed
-quest's screen. Every tick both machines confirm must
-have the same state hash and bake and terrain digests on both and from the
-engine replaying their records alone, both must save byte-identical replays
-that `crimson replay verify` accepts, the Host's menus must lose the session's
-unlocks when it ends, and neither player's settings or save may change.
+pad, and saved progress; the original's own randomness is seeded by the
+frames' clock, so every run comes out the same. First a session opens while one
+machine is in the tutorial, plays a local two-player quest and plays a quest
+alone: each plays out on its own save, stopping in the background, and the last
+keeps its name entry; a custom quest's end screen starts no co-op run and gives
+way to the Host's. The Host's menus start Survival; both players open and pick
+perks, pause and resume each other, and one plays on in the background, where
+its pad reaches nothing; the Guest's end screen starts the next run once the
+Host's name is in, where both ask for a perk menu on the same tick, and a pad
+leave from the pause banner right after a pick ends it. Then a timeout on one
+machine alone and a new session on its hello, a desync, the transport opening
+again at the end screens and mid-run, a leave as the screen fades to the next
+run, a transport that closes before a name entry, a lost connection with the
+seats swapped (the window in the background stopping after it), quests from the
+Host's quest list through Play Next, the high scores' Play a game, Play Another,
+two quest keys and Play Again twice to a leave from the failed quest's screen,
+and a run both machines quit. Every tick both machines confirm must have the
+same state hash and bake and terrain digests on both and from the engine
+replaying their records alone, both must save byte-identical replays that
+`crimson replay verify` accepts, every name must go to the two players' tables,
+the Host's menus must lose the session's unlocks when it ends, and neither
+player's settings or save may change, whatever saves them.
 
 ### Original executable
 

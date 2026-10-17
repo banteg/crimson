@@ -2,7 +2,9 @@
 // Node's WASI, with presentation calls counted and dropped. The clock moves by
 // each frame's time and a millisecond each time it is read, since Grim's timing
 // waits for it to move. A given seed answers the module's entropy requests, which
-// seed its runs (host/session.inc).
+// seed its runs (host/session.inc); `clocks` sets the system clocks by that clock
+// too (from 2026-01-01), which seed the original's own randomness, so a run the
+// original plays comes out the same each time.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -24,7 +26,7 @@ export const INPUT = {
 
 // `leaderboard` enables the leaderboard, and `requests` collects its host
 // requests (HOST_LEADERBOARD_*) for the check to answer between frames.
-export function bootGame(wasm, directory, seed, { leaderboard = false, requests, onHost } = {}) {
+export function bootGame(wasm, directory, seed, { leaderboard = false, requests, onHost, clocks = false } = {}) {
   const module = new WebAssembly.Module(fs.readFileSync(wasm));
   const wasi = new WASI({ version: "preview1", preopens: { ".": directory }, returnOnExit: true });
   const calls = {};
@@ -52,6 +54,12 @@ export function bootGame(wasm, directory, seed, { leaderboard = false, requests,
     wasi.wasiImport.random_get = (at, length) => {
       const bytes = new Uint8Array(game.memory.buffer, at, length);
       for (let i = 0; i < length; i++) bytes[i] = seed >>> (8 * (i % 4));
+      return 0;
+    };
+  if (clocks)
+    wasi.wasiImport.clock_time_get = (id, precision, at) => {
+      const ms = BigInt(Math.round(clock)) + (id === 0 ? BigInt(Date.UTC(2026, 0, 1)) : 0n);
+      new DataView(game.memory.buffer).setBigUint64(at, ms * 1000000n, true);
       return 0;
     };
   const instance = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi.wasiImport, host });

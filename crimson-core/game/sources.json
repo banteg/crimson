@@ -16,6 +16,7 @@
     "audio/music_play_exclusive.cpp",
     "audio/sfx_play.cpp",
     "audio/sfx_play_panned.cpp",
+    "crimsonland/config_sync_from_grim.cpp",
     "crimsonland/fx_queue_render.cpp",
     "crimsonland/highscore_sync_worker.cpp",
     "game/format_ordinal.cpp",
