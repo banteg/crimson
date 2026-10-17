@@ -1,5 +1,6 @@
 // Shared request plumbing: the bindings, JSON answers and accounts.
 
+import type { CoopRoom } from "./coop";
 import { fingerprint } from "./crypto";
 
 export interface Env {
@@ -11,6 +12,12 @@ export interface Env {
   ASSETS: Fetcher;
   // Shared ingestion budget, keyed by the application rather than a visitor.
   PLAY_ANALYTICS_LIMITER: RateLimit;
+  // Co-op rooms (coop.ts), and the budget for making them, keyed by the visitor's address.
+  COOP_ROOMS: DurableObjectNamespace<CoopRoom>;
+  COOP_ROOM_LIMITER: RateLimit;
+  // Cloudflare Realtime TURN for co-op peer connections (turn.ts); without both, peers get STUN only.
+  TURN_KEY_ID?: string;
+  TURN_KEY_API_TOKEN?: string;
   // OAuth apps for account linking; a provider shows only with both its ID and secret.
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;

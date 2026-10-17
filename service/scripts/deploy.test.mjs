@@ -315,13 +315,15 @@ function replayFixture() {
   return { directory, service, write };
 }
 
-test("replay identity ignores metadata, page styles and client code, and checkout paths", async () => {
+test("replay identity ignores metadata, page styles, client code, Worker config, migrations and checkout paths", async () => {
   const a = replayFixture(), b = replayFixture();
   try {
     const before = await replayInputs(a.service);
     assert.equal(await replayInputs(b.service), before);
-    for (const file of ["src/index.ts", "dist/index.html", "dist/style.css", "dist/play/index.js", "dist/ui/menu.png"])
+    for (const file of ["src/index.ts", "dist/index.html", "dist/style.css", "dist/play/index.js", "dist/ui/menu.png", "migrations/0002.sql"])
       a.write(file, "presentation changed");
+    a.write("package.json", '{"type":"module","scripts":{"dev":"wrangler dev"}}');
+    a.write("wrangler.jsonc", '{"compatibility_date":"2026-09-01"}');
     assert.equal(await replayInputs(a.service), before);
   } finally { rmSync(a.directory, { recursive: true, force: true }); rmSync(b.directory, { recursive: true, force: true }); }
 });
@@ -341,8 +343,6 @@ test("replay identity changes with WASM, rules, new transitive modules, ground r
       ["scripts/grounds.mjs", "new upload policy"],
       ["scripts/reverify-worker.mjs", "new verification setup"],
       ["package-lock.json", '{"lockfileVersion":3,"version":"changed"}'],
-      ["wrangler.jsonc", '{"compatibility_date":"2026-09-01"}'],
-      ["migrations/0002.sql", 'ALTER TABLE runs ADD hidden INTEGER;'],
     ]) {
       if (file === "src/aim.ts") fixture.write("src/bound.ts", 'export const bound = 2;');
       fixture.write(file, contents);
