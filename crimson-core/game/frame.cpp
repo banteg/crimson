@@ -56,10 +56,13 @@ extern "C" void game_live_quit(void);
 extern "C" void game_live_focus_lost(void);
 extern "C" bool game_coop_pump(void);
 extern "C" bool game_coop_focus(int active);
+extern "C" void dinput_away(bool away);
 extern "C" void pad_frame(void);
 
 static bool quit_posted;
+static bool away; // the window lost the focus
 static void game_resume();
+static void game_suspend();
 
 #define GAME_EXPORT(name) extern "C" __attribute__((export_name(#name)))
 
@@ -70,9 +73,13 @@ GAME_EXPORT(game_frame) int game_frame() {
     return 0;
   }
   // A co-op session runs in every pass, whatever the screen, and in the
-  // background too (host/coop_live.inc): one that began there resumes the game.
-  if (game_coop_pump() && grim_timing_frozen)
+  // background too (host/coop_live.inc): one that began there resumes the game,
+  // and the game in the background stops once the session needs it no more.
+  bool plays = game_coop_pump();
+  if (plays && grim_timing_frozen)
     game_resume();
+  else if (!plays && away && !grim_timing_frozen)
+    game_suspend();
   if (!grim_dc_mode_active)
     grim_timing_update();
   if (!grim_paused_flag && !grim_dc_mode_active && grim_device_ready && !grim_timing_frozen) {
@@ -125,7 +132,8 @@ GAME_EXPORT(game_state) int game_state() { return game_state_id; }
 
 // WM_ACTIVATEAPP: losing the window freezes Grim's clock, so the loop stops
 // running the game until it returns, and tells the game (it suspends audio).
-// A co-op session plays on instead: its partner waits on this machine.
+// A co-op session plays on instead: its partner waits on this machine, and the
+// input devices read at rest (game/dinput.cpp).
 // The device keeps its textures, so there is nothing to back up or restore.
 // Grim stores the callbacks as void functions, but every one the game or Grim
 // registers returns a flag, and wasm calls through a pointer by its exact type.
@@ -135,18 +143,22 @@ static void game_resume() {
     ((bool (*)(void))grim_on_device_restore)();
   grim_timing_frozen = false;
 }
+static void game_suspend() {
+  game_live_focus_lost();
+  if (grim_d3d_device)
+    ((bool (*)(void))grim_on_device_lost)();
+  grim_timing_frozen = true;
+  grim_device_ready = false;
+}
 GAME_EXPORT(game_activate) void game_activate(int active) {
+  away = !active;
+  dinput_away(away);
   if (game_coop_focus(active) && !grim_timing_frozen)
     return;
-  if (active) {
+  if (active)
     game_resume();
-  } else {
-    game_live_focus_lost();
-    if (grim_d3d_device)
-      ((bool (*)(void))grim_on_device_lost)();
-    grim_timing_frozen = true;
-    grim_device_ready = false;
-  }
+  else
+    game_suspend();
 }
 
 // WM_CLOSE.

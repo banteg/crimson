@@ -7,9 +7,10 @@
 //   holds, through the same joystick state (Grim's key and axis queries,
 //   changes/pad-codes.patch); a crimson.cfg the Python port saved keeps working;
 // - a stock player who picks up a pad gets the Python port's twin-stick profile;
-// - outside gameplay the pad steps the original's keyboard focus about the
-//   screen and presses the keys its screens read, and its right stick steers
-//   the cursor, which A clicks with; Start pauses and resumes;
+// - outside gameplay, and over a co-op run's banner (host/coop_live.inc), the
+//   pad steps the original's keyboard focus about the screen and presses the
+//   keys its screens read, and its right stick steers the cursor, which A
+//   clicks with; Start pauses and resumes;
 // - the controls screen captures pad buttons and sticks as standard codes.
 #include <math.h>
 #include "crimsonland_gameplay.h"
@@ -27,6 +28,7 @@ void config_init_defaults(void);
 bool config_sync_from_grim(void);
 void ui_menu_pause_click_resume(void);
 void game_key_char(int character);
+bool game_coop_banner(void);
 unsigned char ui_focus_update(int id);
 void ui_focus_draw(float *xy);
 extern int ui_screen_phase;
@@ -412,9 +414,11 @@ Direction stepped(Direction held) {
 
 // Once a frame, after Grim polls its devices: the pad's presses as the keys the
 // original's screens read, and its directions as steps of the focus. Start is
-// Escape everywhere (it pauses a run); in gameplay the rest of the pad plays.
+// Escape everywhere (it pauses a run); in gameplay the rest of the pad plays,
+// but over a co-op banner's buttons.
 void navigate() {
-  bool gameplay = game_state_id == GAME_STATE_GAMEPLAY || game_state_id == GAME_STATE_TYPO_GAMEPLAY;
+  bool gameplay =
+      (game_state_id == GAME_STATE_GAMEPLAY || game_state_id == GAME_STATE_TYPO_GAMEPLAY) && !game_coop_banner();
   bool hold_up = nav.hold_up, hold_down = nav.hold_down, hold_sideways = nav.hold_sideways,
        enter_opens = nav.enter_opens, enter_types = nav.enter_types, clicking = nav.clicking;
   nav.hold_up = nav.hold_down = nav.hold_sideways = nav.enter_opens = nav.enter_types = nav.clicking = false;
@@ -528,11 +532,14 @@ extern "C" {
 void pad_frame() {
   // A newly shown screen starts on its first widget, not on the focus index
   // the last one left (UiFocus.screen_changed).
-  // The end screens show their name entry and then their buttons as phases of one state.
+  // The end screens show their name entry and then their buttons as phases of
+  // one state; a co-op banner shows its buttons over gameplay.
   static int state = -1, phase, marker;
-  if (game_state_id != state || ui_screen_phase != phase) {
+  static bool banner;
+  if (game_state_id != state || ui_screen_phase != phase || game_coop_banner() != banner) {
     state = game_state_id;
     phase = ui_screen_phase;
+    banner = game_coop_banner();
     ui_focus_index = 0;
     place_count = 0;
     nav.shown = true;

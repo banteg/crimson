@@ -81,6 +81,7 @@ def _replay(
         rules=REPLAY_RULES,
         recorder=Recorder(client="crimson", version="1.2.3", platform="macos-arm64"),
         pilot=None,
+        seat_keys=None,
         run=run,
         result=_result(player_count=run.player_count) if result is None else result,
         ticks=[ReplayTick(inputs=[(0.0, 0.0, 512.0, 512.0, 0)] * run.player_count)] if ticks is None else ticks,
@@ -160,9 +161,10 @@ def test_replay_payload_layout() -> None:
         _replay(ticks=[ReplayTick(inputs=[(0.0, 0.0, 1.0, 2.0, 0)], commands=[PerkPickCommand(player_index=0, choice_index=2)])]),
     )
 
-    assert list(wire) == ["format_version", "game_version", "rules", "recorder", "pilot", "run", "result", "ticks"]
+    assert list(wire) == ["format_version", "game_version", "rules", "recorder", "pilot", "seat_keys", "run", "result", "ticks"]
     assert wire["recorder"] == {"client": "crimson", "version": "1.2.3", "platform": "macos-arm64"}
     assert wire["pilot"] is None
+    assert wire["seat_keys"] is None
     assert list(wire["run"]) == list(RunSpec.__struct_fields__)
     assert list(wire["result"]) == list(RunResult.__struct_fields__)
     assert wire["result"]["outcome"] == "death"
@@ -216,9 +218,9 @@ def test_load_rejects_payload_over_size_limit(monkeypatch: pytest.MonkeyPatch) -
 def _noncanonical_payloads() -> dict[str, bytes]:
     payload = _payload()
 
-    # Top-level fixmap header 0x88 → 0x89 plus a repeated key.
-    assert payload[0] == 0x88
-    duplicate = b"\x89" + payload[1:] + msgspec.msgpack.encode("game_version") + msgspec.msgpack.encode("9.9.9")
+    # Top-level fixmap header 0x89 → 0x8a plus a repeated key.
+    assert payload[0] == 0x89
+    duplicate = b"\x8a" + payload[1:] + msgspec.msgpack.encode("game_version") + msgspec.msgpack.encode("9.9.9")
 
     seed_key = msgspec.msgpack.encode("seed")
     non_minimal_int = payload.replace(seed_key + b"\x01", seed_key + b"\xcc\x01", 1)
@@ -246,20 +248,24 @@ def test_decode_rejects_noncanonical_payloads(case: str) -> None:
     ],
 )
 def test_decode_names_the_format_of_another_version(wire: dict, version: int) -> None:
-    with pytest.raises(ReplayCodecError, match=rf"format version: {version} \(this build reads versions 30, 31, 32, {REPLAY_FORMAT_VERSION}\)"):
+    with pytest.raises(ReplayCodecError, match=rf"format version: {version} \(this build reads versions 30, 31, 32, 33, {REPLAY_FORMAT_VERSION}\)"):
         decode_replay_payload(msgspec.msgpack.encode(wire))
 
 
-@pytest.mark.parametrize(("version", "left_out"), [(30, {"rules", "pilot"}), (31, {"pilot"}), (32, set())])
+@pytest.mark.parametrize(
+    ("version", "left_out"),
+    [(30, {"rules", "pilot", "seat_keys"}), (31, {"pilot", "seat_keys"}), (32, {"seat_keys"}), (33, {"seat_keys"})],
+)
 def test_earlier_formats_read_with_what_they_left_out_and_are_written_as_the_current_format(version: int, left_out: set) -> None:
     wire = {key: value for key, value in _wire().items() if key not in left_out}
     wire["format_version"] = version
-    # Runs had no custom quest before v33.
-    wire["run"] = {key: value for key, value in wire["run"].items() if key != "custom_quest"}
+    if version < 33:
+        # Runs had no custom quest before v33.
+        wire["run"] = {key: value for key, value in wire["run"].items() if key != "custom_quest"}
 
     replay = decode_replay_payload(msgspec.msgpack.encode(wire))
 
-    assert (replay.format_version, replay.rules, replay.pilot) == (version, 1, None)
+    assert (replay.format_version, replay.rules, replay.pilot, replay.seat_keys) == (version, 1, None, None)
     assert encode_replay_payload(replay) == _payload()
 
 
@@ -267,6 +273,50 @@ def test_a_declared_pilot_round_trips() -> None:
     replay = msgspec.structs.replace(_replay(), pilot=Pilot(name="Astra", model="gpt-5", url="https://example.com/astra"))
 
     assert decode_replay_payload(encode_replay_payload(replay)) == replay
+
+
+def _coop_replay(seat_keys: tuple[bytes, ...] | None) -> Replay:
+    return msgspec.structs.replace(
+        _replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=2)),
+        seat_keys=seat_keys,
+    )
+
+
+def test_seat_keys_round_trip_as_binary() -> None:
+    keys = (b"\x01" * 32, b"\x02" * 32)
+    replay = _coop_replay(keys)
+
+    assert _wire(replay)["seat_keys"] == [b"\x01" * 32, b"\x02" * 32]
+    assert load_replay(dump_replay(replay)) == replay
+    assert load_replay(dump_replay(_coop_replay(None))).seat_keys is None
+
+
+def test_the_recorder_records_the_seat_keys_it_is_given() -> None:
+    keys = (b"\x01" * 32, b"\x02" * 32)
+    recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=2), seat_keys=keys)
+    recorder.record(pack_tick([player_input(), player_input()]))
+
+    assert load_replay(dump_replay(recorder.finish(_result(player_count=2)))).seat_keys == keys
+
+
+@pytest.mark.parametrize(
+    ("seat_keys", "message"),
+    [
+        ((b"\x01" * 32,), r"seat_keys has 1 entries, expected 2"),
+        ((b"\x01" * 32, b"\x02" * 32, b"\x03" * 32), r"seat_keys has 3 entries, expected 2"),
+        ((b"\x01" * 32, b"\x02" * 31), r"seat_keys\[1\] must be 32 bytes"),
+        ((b"\x01" * 33, b"\x02" * 32), r"seat_keys\[0\] must be 32 bytes"),
+        ((b"\x01" * 32, b"\x01" * 32), r"seat_keys must be distinct"),
+    ],
+)
+def test_invalid_seat_keys_are_refused(seat_keys: tuple[bytes, ...], message: str) -> None:
+    replay = _coop_replay(seat_keys)
+    with pytest.raises(ReplayCodecError, match=message):
+        encode_replay_payload(replay)
+    wire = _wire(_coop_replay(None))
+    wire["seat_keys"] = list(seat_keys)
+    with pytest.raises(ReplayCodecError, match=message):
+        decode_replay_payload(msgspec.msgpack.encode(wire))
 
 
 # Semantic validation -----------------------------------------------------------

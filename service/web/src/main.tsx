@@ -1,7 +1,7 @@
 import { type Accessor, createSignal, For, type Setter, Show, untrack } from "solid-js";
 import { render } from "solid-js/web";
-import type { Role } from "../../src/api-types";
-import { questPage } from "../../src/paths";
+import { BOARDS, type Role } from "../../src/api-types";
+import { questPage, survivalPage } from "../../src/paths";
 import { get } from "./api";
 import { GameButton } from "./button";
 import { DOCS, type Navigator, type Panel, resolve, type Screen } from "./pages";
@@ -40,11 +40,18 @@ function slideOut(panels: Shown[]): number {
   return panels.length ? SLIDE_MS + (panels.length - 1) * STAGGER_MS : 0;
 }
 
+// Whether a page shows one of a co-op pair's boards, Survival or quests.
+function coopPage(path: string): boolean {
+  const board = survivalPage(path) ?? questPage(path)?.board;
+  return board !== undefined && board !== null && BOARDS[board].players > 1;
+}
+
 // Play leaves the site's app for the game's own page.
 const MENU: { label: string; href: string; native?: boolean; on: (path: string) => boolean }[] = [
   { label: "Play", href: "/play/", native: true, on: () => false },
   { label: "Survival", href: "/survival", on: (path) => path === "/survival" },
-  { label: "Quests", href: "/quests", on: (path) => questPage(path) !== null },
+  { label: "Quests", href: "/quests", on: (path) => questPage(path) !== null && !coopPage(path) },
+  { label: "Co-op", href: "/survival/coop", on: coopPage },
   { label: "Custom", href: "/custom", on: (path) => path === "/custom" || path.startsWith("/custom/") },
   { label: "About", href: "/about", on: (path) => path === "/about" },
 ];

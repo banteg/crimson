@@ -1,28 +1,29 @@
 import { type Accessor, createSignal, For, type JSX, Show } from "solid-js";
-import type {
-  Board,
-  BoardView,
-  CustomQuest,
-  CustomQuestDetailView,
-  CustomQuestsListView,
-  FlagsView,
-  JoinView,
-  LoginView,
-  ModerationAction,
-  PlayAnalyticsView,
-  ProfileView,
-  QuestMenuView,
-  Role,
-  RunDetailView,
+import {
+  type Board,
+  BOARDS,
+  type BoardView,
+  type CustomQuest,
+  type CustomQuestDetailView,
+  type CustomQuestsListView,
+  type FlagsView,
+  type JoinView,
+  type LoginView,
+  type ModerationAction,
+  type PlayAnalyticsView,
+  type ProfileView,
+  type QuestMenuView,
+  type Role,
+  type RunDetailView,
 } from "../../src/api-types";
-import { boardPath, questPage, type QuestPage, questsPath } from "../../src/paths";
+import { boardFor, boardPath, questPage, type QuestPage, questsPath, type SurvivalBoard, survivalPage } from "../../src/paths";
 import { get, moderate, post } from "./api";
 import { formatLongDuration, formatScore, quantity } from "./format";
 import { GameButton } from "./button";
-import { playerLabel } from "./names";
+import { playerLabel, runLabel } from "./names";
 import { gameplayPreference, setGameplayPreference } from "./analytics-preference";
 import perkNames from "./perks.json";
-import { PilotName, PlayerName, PROVIDER_LABELS } from "./players";
+import { PilotName, PlayerName, PROVIDER_LABELS, RunPlayers } from "./players";
 import { runPanels, SIGNAL_LABELS } from "./run";
 import { questTokens } from "./quest-source";
 import weaponData from "./weapons.json";
@@ -67,7 +68,14 @@ async function me(): Promise<{ account: number | null; role: Role }> {
 }
 
 
-const BOARD_NAMES: Record<Board, string> = { survival: "Survival", quests: "Quests", "quests-hardcore": "Quests, hardcore" };
+const BOARD_NAMES: Record<Board, string> = {
+  survival: "Survival",
+  quests: "Quests",
+  "quests-hardcore": "Quests, hardcore",
+  "survival-coop": "Survival, co-op",
+  "quests-coop": "Quests, co-op",
+  "quests-hardcore-coop": "Quests, hardcore, co-op",
+};
 const WEAPONS: Record<string, { name: string; icon_index: number }> = weaponData;
 const PERKS: Record<string, string> = perkNames;
 const BONUS_NAMES: Record<number, string> = {
@@ -160,7 +168,7 @@ function BoardTable(props: { view: BoardView; compact?: boolean }) {
                 <tr>
                   <td class="n">{row.rank}</td>
                   <td>
-                    <PlayerName player={row.player} tag={false} />
+                    <RunPlayers player={row.player} team={row.team} tag={false} />
                     <Show when={props.compact && row.pilot}>
                       {(pilot) => (
                         <span class="muted">
@@ -217,10 +225,12 @@ const BotInvite = () => (
   </p>
 );
 
-// The game's quest screen: its layout and colors (quest_select_menu_update), red rows on hardcore.
+// The game's quest screen: its layout and colors (quest_select_menu_update), red rows on hardcore. The hardcore box
+// keeps to one player's or the co-op boards.
 function QuestMenu(props: { view: QuestMenuView; current?: string }) {
-  const hardcore = () => props.view.board === "quests-hardcore";
-  const toggle = () => questsPath(hardcore() ? "quests" : "quests-hardcore", props.current ?? props.view.stage);
+  const hardcore = () => BOARDS[props.view.board].hardcore;
+  const toggle = () =>
+    questsPath(boardFor(true, !hardcore(), BOARDS[props.view.board].players > 1) as QuestMenuView["board"], props.current ?? props.view.stage);
   return (
     <div class="quest-menu" classList={{ "hardcore-on": hardcore() }}>
       <span class="label">Quest:</span>
@@ -285,7 +295,7 @@ async function runPage(id: string, nav: Navigator): Promise<Screen> {
   const detail = await get<RunDetailView>(`/api/runs/${id}`);
   if (!detail) return notFound();
   const quest = detail.custom_slots ? `slots:${detail.custom_slots.join(",")}` : detail.quest.includes(".") ? detail.quest : null;
-  return { title: `${playerLabel(detail.player)} · ${detail.title}`, quest, panels: runPanels(detail, nav.reload) };
+  return { title: `${runLabel(detail)} · ${detail.title}`, quest, panels: runPanels(detail, nav.reload) };
 }
 
 function notFound(): Screen {
@@ -361,7 +371,7 @@ function BoardTotals(props: { view: BoardView }) {
     <Show when={totals().runs}>
       <p class="board-totals muted">
         {quantity(totals().runs, "run")} · {quantity(totals().kills, "kill")} · {formatLongDuration(totals().elapsed_ms)}{" "}
-        {props.view.board === "survival" ? "survived" : "played"}
+        {BOARDS[props.view.board].quests ? "played" : "survived"}
       </p>
     </Show>
   );
@@ -388,9 +398,19 @@ function boardPanels(humans: BoardView, bots: BoardView): Panel[] {
   ];
 }
 
-async function survival(): Promise<Screen> {
-  const [humans, bots] = await Promise.all([get<BoardView>("/api/survival"), get<BoardView>("/api/survival?category=bot")]);
-  return { title: "Survival", quest: null, panels: boardPanels(humans!, bots!) };
+// Co-op pairs rank on boards of their own; each co-op page leads to the other.
+const coopLinks = (here: "survival" | "quests") => () => (
+  <p class="muted">
+    Two players online, ranked as a pair.{" "}
+    {here === "survival" ? <a href="/quests/coop">Co-op quests</a> : <a href="/survival/coop">Co-op Survival</a>}
+  </p>
+);
+
+async function survival(board: SurvivalBoard): Promise<Screen> {
+  const path = boardPath(board, "");
+  const [humans, bots] = await Promise.all([get<BoardView>(`/api${path}`), get<BoardView>(`/api${path}?category=bot`)]);
+  const panels = boardPanels(humans!, bots!);
+  return { title: humans!.title, quest: null, panels: BOARDS[board].players > 1 ? [coopLinks("survival"), ...panels] : panels };
 }
 
 // A stage's quest menu, and with a quest, its boards.
@@ -401,9 +421,11 @@ async function quests(page: QuestPage): Promise<Screen> {
     page.quest && get<BoardView>(api(page.quest)),
     page.quest && get<BoardView>(`${api(page.quest)}?category=bot`),
   ]);
-  const panel = keep("quest-menu", { menu: menu!, quest: page.quest ?? undefined }, (data) => <QuestMenu view={data().menu} current={data().quest} />);
-  if (!humans || !bots) return { title: `Quests ${STAGES[page.stage - 1]}`, quest: `${page.stage}.1`, panels: [panel] };
-  return { title: humans.title, quest: page.quest, panels: [panel, ...boardPanels(humans, bots)] };
+  const menuPanel = keep("quest-menu", { menu: menu!, quest: page.quest ?? undefined }, (data) => <QuestMenu view={data().menu} current={data().quest} />);
+  const coop = BOARDS[page.board].players > 1;
+  const panel = coop ? [coopLinks("quests"), menuPanel] : [menuPanel];
+  if (!humans || !bots) return { title: `Quests ${STAGES[page.stage - 1]}${coop ? " · co-op" : ""}`, quest: `${page.stage}.1`, panels: panel };
+  return { title: humans.title, quest: page.quest, panels: [...panel, ...boardPanels(humans, bots)] };
 }
 
 function spawnColor(spawnId: number): string {
@@ -652,8 +674,8 @@ function AccountControls(props: { profile: ProfileView; nav: Navigator }) {
       </p>
       <h3>Delete account</h3>
       <p class="muted">
-        Removes your runs and their replay files, names, links, keys and sessions. The game keeps its key, so playing ranked again starts a
-        new account.
+        Removes your runs and their replay files, names, links, keys and sessions. A co-op run stays your partner's, showing you as a
+        deleted player. The game keeps its key, so playing ranked again starts a new account.
       </p>
       <p>
         <GameButton
@@ -739,6 +761,16 @@ async function profile(id: number, nav: Navigator): Promise<Screen> {
                           <a href={boardPath(run.board, run.quest)}>
                             {BOARD_NAMES[run.board]} {run.quest}
                           </a>
+                          <Show when={run.team?.filter((seat) => seat.player?.id !== view.player.id)}>
+                            {(partners) => (
+                              <Show when={partners().length}>
+                                <span class="muted">
+                                  {" with "}
+                                  <RunPlayers player={view.player} team={partners()} tag={false} />
+                                </span>
+                              </Show>
+                            )}
+                          </Show>
                           <Show when={run.category === "bot"}>
                             <span class="tag">bot</span>
                           </Show>
@@ -825,7 +857,7 @@ async function moderation(nav: Navigator): Promise<Screen> {
                     {(run) => (
                       <tr>
                         <td>
-                          <PlayerName player={run.player} />
+                          <RunPlayers player={run.player} team={run.team} />
                         </td>
                         <td>
                           {BOARD_NAMES[run.board]} {run.quest}
@@ -1128,7 +1160,9 @@ const PRIVACY: Screen = {
         <h3>How long, and deleting it</h3>
         <p>
           Everything above stays until you delete your account; expired sessions, links and challenges are removed. Your profile's{" "}
-          <em>Delete account</em> button removes your runs and their replay files, names, links, keys and sessions at once, and{" "}
+          <em>Delete account</em> button removes your runs and their replay files, names, links, keys and sessions at once. A co-op run
+          stays your partner's and shows you as a deleted player: until its last such run is gone, your account remains as a bare record
+          with no name, key or link, only a number that keeps your partner's teams apart and any moderation decision on it.{" "}
           <em>Unlink</em> removes a linked account. Signing in again from the game starts a new account. For anything else,{" "}
           <a href="https://github.com/banteg/crimson/issues">open an issue</a>.
         </p>
@@ -1188,9 +1222,10 @@ export async function resolve(url: URL, nav: Navigator): Promise<Screen> {
   const path = url.pathname.replace(/\/+$/, "") || "/";
   let match: RegExpExecArray | null;
   let page: QuestPage | null;
+  let board: SurvivalBoard | null;
   let screen: Screen;
   if (path === "/") screen = await home();
-  else if (path === "/survival") screen = await survival();
+  else if ((board = survivalPage(path))) screen = await survival(board);
   else if ((page = questPage(path))) screen = await quests(page);
   else if (path === "/custom") screen = await customQuests();
   else if ((match = /^\/custom\/([0-9a-f]{12})$/.exec(path))) screen = await customQuestPage(match[1]!);

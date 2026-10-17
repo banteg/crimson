@@ -341,7 +341,8 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     conversion must use the 2-player midpoint
     `(player_state_table[0].position + player_state_table[1].position) * 0.5f`
     clamped to `[-1024 + W, -1] × [-1024 + H, -1]`, matching
-    `decomp/1.9/crimsonland/game/camera_update.cpp:84-95`.
+    `decomp/1.9/crimsonland/game/camera_update.cpp:67-77` (the midpoint) and
+    `:86-101` (the clamp).
 
 - **Isolation from 1P `replay.inc` and `watch.inc`**:
 
@@ -853,6 +854,16 @@ stays on the arena screen and sees the replay viewer's top-right pick card
   - `paused: false` resumes input production from the next contiguous tick,
     with `coop_banked_s` clamped as for any stall.
 
+  - The picker's choice is the one record a pause does not hold back: the run
+    waits on it, so it is produced as the perk screen takes the click, paused
+    or not (it holds no buttons and no movement, as the perk screen plays
+    nothing), and a leave that follows ends the run after the pick.
+
+  - The pause banner's Resume and Leave, and a stopped run's Leave, take the
+    mouse, the keys (Tab and Enter; Escape resumes, or leaves a stopped run)
+    and a pad (the d-pad steps the focus, A presses, the right stick moves the
+    cursor; Start resumes), as the original's menus do.
+
 - **Leaving a run**:
 
   - The pause banner and the end screen offer **Leave**. Leaving sends
@@ -886,8 +897,15 @@ stays on the arena screen and sees the replay viewer's top-right pick card
   | Quest failed | Play Another | `setup`: both peers return to the Host's run setup |
 
   On the last quest the original shows **Show End Note** in place of Play
-  Next; it opens locally and starts nothing. **Main Menu** is Leave.
-  **High scores** opens the co-op board locally.
+  Next; it opens locally and starts nothing. **Main Menu** is Leave, sent as
+  the click lands. **High scores** opens the co-op board locally. Every other
+  button that starts a run (the high scores' Play a game, the end note's
+  modes) is run setup: the Host's picks the next run, the Guest's starts
+  nothing. A screen that is fading out to the one a click chose takes no run
+  until it shows, so a click that leaves the end screen wins over a run that
+  arrives after it. The end screen stays the last run's until the next starts:
+  its Main Menu still leaves while the screen fades to that run, and a second
+  click there starts nothing more.
 
   - The Host owns the seed, so a Guest's click sends
     `MSG_NEXT_RUN { run_epoch, choice }`. On its own click, or on the first
@@ -896,7 +914,9 @@ stays on the arena screen and sees the replay viewer's top-right pick card
     draws a fresh seed, and sends `MSG_START_RUN` for the chosen mode and
     quest (or opens run setup for `setup`). The first click the Host sees wins:
     two clicks at once, even on different buttons, start one run, and a
-    `MSG_NEXT_RUN` for an earlier `run_epoch` is ignored.
+    `MSG_NEXT_RUN` for an earlier `run_epoch` is ignored. The Host's own
+    `setup` goes to the Guest as `MSG_NEXT_RUN { setup }`, whose end screen
+    opens its quest list too.
 
   - Both peers leave the end screen when `MSG_START_RUN` arrives and wait for
     `MSG_START_ACK` before stepping tick `0`.
@@ -911,37 +931,62 @@ any other.
   or hardcore: while a session is on, the menus show every quest unlocked, and
   the player's own unlocks stay in the save. The Guest's menus start nothing;
   its clicks wait for the Host's. The run plays the
-  ranked profile with `player_count = 2` instead of `1`: a fresh seed the Host
-  draws and the overlay save the ranked rules give that run's place in the game
-  (every quest completed for Survival; for a quest, the save that has just
+  ranked profile with `player_count = 2` instead of `1`: a fresh seed the room
+  issues to the pair (Section 6.1) and the overlay save the ranked rules give
+  that run's place in the game (every quest completed for Survival; for a
+  quest, the save that has just
   unlocked it, so it plays with the weapons and perks the campaign has handed
   out by then), detail 5, violence on, friendly fire off, documented fixes on,
   no retries. Neither player's own save takes part, and the run changes
-  neither player's progress. Rush, Typ-o and the Tutorial stay out of co-op.
+  neither player's progress. The run's mode, difficulty and player count stand
+  in for the player's own on its screens (its high scores go to the two
+  players' tables), but `crimson.cfg` keeps the player's own on every save (a
+  quit, a window mode change, a pad profile), as it does over a replay's or a
+  custom quest's. Rush, Typ-o, the Tutorial and custom quests stay out of
+  co-op: a custom quest ranks one player only (`custom_quest_players`).
 
 - **Boards**: co-op ranks on its own boards, `survival-coop`, `quests-coop` and
-  `quests-hardcore-coop`, scored as their 1P counterparts. Two-player scores
+  `quests-hardcore-coop` (`ranked_board` in `src/crimson/replay/ranked.py`),
+  scored as their 1P counterparts. Two-player scores
   are not comparable with one-player ones: XP is shared and 2P doubles the
   Survival spawn countdown (`survival_update.cpp:217`).
 
 - **Controls & aim**: every tick of both players uses human controls. Each
-  player's mouse aim point lies inside the 1024x768 view around the camera the
-  previous tick left; in 2P that camera follows the players' midpoint
-  (`camera_update.cpp:84-95`), the view both players see. Pad aim keeps the
-  138-unit reach. If either player's client declares a pilot, the run goes to
-  the bot boards ([bots and moderation](bots.md)).
+  player's mouse aim point, and each new point-click target, lies inside the
+  1024x768 view around the camera the previous tick left; in 2P that camera
+  follows the living players' midpoint (`camera_update.cpp:57-80`,
+  `camera_update_for_players` in `src/crimson/camera.py`) clamped to the arena
+  (`:86-101`), the view both players see, and stays where it was while nobody
+  lives (`:78-79`). Pad aim keeps the 138-unit reach. If either player's client
+  declares a pilot, the run goes to the bot boards
+  ([bots and moderation](bots.md)).
 
 - **Finished runs**: a Survival team wipe or a completed quest ranks; a quit,
   a leave, a disconnect or a failed quest does not.
 
+- **Room attestation**: before a run, each seat proves its identity key to the
+  room, and the Host asks the room for the run's seed, which the room issues
+  only once both seats have proven keys and records with those keys
+  (Section 6.1). The replay records the seats' keys (`seat_keys`), but anyone
+  holding it can rewrite its header: without the room's record, one partner
+  could put a throwaway key in the other's seat, sign both seats and take the
+  run alone. The service ranks a co-op run only when the room issued its seed
+  to the keys its replay records, in seat order
+  ([leaderboard identity](leaderboard-identity.md#co-op-runs)).
+  `crimson replay verify` cannot see the room's records and checks only the
+  run rules.
+
 - **One replay, two signatures**: `MSG_START_RUN` carries the replay header
-  (`game_version`, `rules`, the Host's `recorder`, `pilot`, `run`), so both
-  peers write byte-identical `.crd` files. Each peer shows the end screen's
-  name entry ("State your name, trooper!", prefilled with the saved name) for
+  (`game_version`, `rules`, the Host's `recorder`, `pilot`, `seat_keys` =
+  [Host key, Guest key] as proven to the room, `run` with the room's seed), so
+  both peers write byte-identical `.crd` files; the Guest checks the seed and
+  keys against the room's. Each peer shows the end screen's name entry
+  ("State your name, trooper!", prefilled with the saved name) for
   its own player, as a 1P ranked run does before `ranked_release()`
   (`crimson-core/host/ranked.inc:85-99`). When the player confirms, the peer
   signs the replay as a [leaderboard upload](leaderboard-identity.md#uploads)
-  does and sends `MSG_RUN_SIGNED { run_epoch, name, public_key, signature }`.
+  does, with the key its seat records, and sends
+  `MSG_RUN_SIGNED { run_epoch, name, public_key, signature }`.
   Each peer queues the replay with both signatures in its outbox, so either can
   upload later, offline play included; the service accepts the run once and
   answers the second upload with `409`. A co-op run ranks only with both
@@ -949,10 +994,38 @@ any other.
 
 - **Next run waits for both names**: the Host starts the next run (Section 5.2)
   only once both `MSG_RUN_SIGNED` for the current `run_epoch` have arrived, or
-  the partner has left. A click before that shows "Waiting for partner" on the
+  the partner has left. A click before that shows "Waiting for Player N" on the
   clicker's screen and fires when the second signature lands, so neither
   player is pulled out of the name entry or the quest results reveal. Leaving
-  before signing leaves the run unranked.
+  before signing leaves the run unranked. Until `M3` signs, `MSG_RUN_SIGNED`
+  carries nothing: each peer sends it once its end screen shows its buttons,
+  past the name entry (or with none), and the Host waits for the Guest's and
+  its own screen's. A session that ends while a player names a score leaves
+  the end screen once the name is in, the name going to the two players'
+  table. Every session ends that way, whether it closed or another began (the
+  transport opening again before a frame, a partner's new hello): its run
+  ends at its last confirmed tick with its replay saved, and its end screens
+  belong to no later session.
+
+- **A run alone**: a session can open while a player's own run plays (the
+  Host waiting for an invite, say): any mode, the Tutorial and Typ-o, two
+  local players or a resolution the client does not record, and practice (a
+  replay gives way). That run plays out on the player's own save, its unlocks
+  included, and its window's focus pauses it as alone; the menus' every-quest
+  view comes after it, and a run the Host starts waits for it (and the Host
+  gives up after 10 s, as for any start), and for its end screen's name entry
+  after it. Its end screen's buttons are run setup, as the menus'.
+
+- **No replays in a session**: while a session is on, nothing plays in the
+  one world the game has but its runs. The high scores' Watch shows as the
+  original's disabled buttons do ("Not during co-op"), and so does practice's
+  Take over; a link to a replay or a custom quest waits for the session's end,
+  through its runs, and the menus say so. A replay that played as the session
+  opened gives way to its first run. The engine's run and the session's are one:
+  any other run's start stops both (`coop_stop`), so the session's run is never
+  started without the engine's. A new session takes no choice of the last: a
+  Play Again waiting for the partner's name, the Guest's choice, the run
+  `START_RUN` offered, or a fade to the last session's run.
 
 ---
 
@@ -972,12 +1045,19 @@ sequenceDiagram
     Host->>Guest: Shares https://crimson.land/play/?coop=<id>
     Guest->>Worker: GET /api/coop/rooms/<id> (exists? seat free?)
     Guest->>Worker: WSS /api/coop/rooms/<id>/ws?role=guest
-    Worker-->>Guest: {type: "seat", role: "guest", guest_token}
+    Worker-->>Guest: {type: "seat", role: "guest", challenge, guest_token}
     Worker-->>Host: {type: "peer", present: true}
+    Host->>Worker: {type: "key", public_key, signature}
+    Guest->>Worker: {type: "key", public_key, signature}
+    Worker-->>Host: {type: "key", role, public_key} (each seat's, to both)
+    Worker-->>Guest: {type: "key", role, public_key} (each seat's, to both)
     Host->>Guest: WebRTC Offer + ICE (buffered until remoteDescription set)
     Guest->>Host: WebRTC Answer + ICE
     Host<<->>Guest: DataChannels open: coop-ticks + coop-control
     Host<<->>Guest: MSG_HELLO {protocol_ver, build_id, role}
+    Host->>Worker: {type: "seed"}
+    Worker-->>Host: {type: "seed", seed}
+    Worker-->>Guest: {type: "seed", seed}
     Host->>Guest: MSG_START_RUN {run_epoch, seed, PortableConfig, delay_ticks}
     Guest->>Host: MSG_START_ACK {run_epoch}
     Note over Host,Guest: Both browsers start 2-player gameplay at tick 0
@@ -988,7 +1068,9 @@ sequenceDiagram
 A room is a `CoopRoom` Durable Object (binding `COOP_ROOMS`, SQLite class,
 WebSocket Hibernation) with two seats, `host` (player 0) and `guest`
 (player 1). It moves signalling and relay messages between them and knows
-nothing of the game. The routes need no account and read no cookie:
+nothing of the game, but for the seats' keys and the seeds it issues to them,
+which rank the pair's runs (Section 5.3). The routes need no account and read
+no cookie:
 
 - `POST /api/coop/rooms`, same-origin only and rate limited per visitor
   address (`COOP_ROOM_LIMITER`; `429` with `retry-after` past it), answers
@@ -1019,18 +1101,39 @@ are small JSON texts:
 
 | Message | When |
 | --- | --- |
-| `{type: "seat", role, guest_token?}` | First message on a new socket; `guest_token` only when the guest seat was just taken. |
+| `{type: "seat", role, challenge, guest_token?}` | First message on a new socket: `challenge` (64 hex characters) is the socket's own, for its key proof; `guest_token` only when the guest seat was just taken. |
 | `{type: "peer", present}` | Right after `seat`, with the other seat's state; then to the other seat whenever a seat joins (`true`) or leaves (`false`). It reports the partner's socket, not its page: a repeated `present: true` may be the same page back after a network blip. |
 | `{type: "ice", ice_servers}` | Answer to a client's `{type: "ice"}`, which the server keeps from the partner. The guest asks once after joining; either side asks again before an ICE restart. Within ten seconds of the room's last TURN mint, both seats get that mint's servers. |
+| `{type: "key", role, public_key}` | To both seats when a seat proves its key (below). |
+| `{type: "seed", seed}` | To both seats when the room issues the Host a run's seed (below). |
 
-Client message types therefore avoid `seat`, `peer` and `ice`: a client text
-message typed `seat` or `peer` would pass for the server's own, so it closes
-the socket with `1008` instead of being relayed. A message over 16 KiB closes
-the socket with `1009`; more than 200 messages a second (a second's burst)
-closes it with `1008`. That budget belongs to the seat, so a reconnect
-inherits it. Nothing a closed socket still sends is relayed. Clients read the
-server's messages only from text frames, with a strict `JSON.parse`; binary
-frames are always the partner's. The text `ping` is a keepalive: the runtime
+**Key proof.** Each socket proves its seat's identity key once: the game signs
+`crimson-coop-seat-v1\n`, then the room id, then the socket's `challenge`
+(both as ASCII) with its identity key, which never leaves the game, and the
+client sends `{type: "key", public_key, signature}` (hex, as in
+[leaderboard uploads](leaderboard-identity.md#protocol)). The first proof
+records the seat's key. A reconnect proves again on its new challenge, and
+must prove the same key. A proof that does not verify, a second
+proof on one socket, or a reconnect proving another key closes the socket
+with `1008`.
+
+**Seeds.** Once both seats have proven keys, the Host asks `{type: "seed"}`
+for each run. The room draws a fresh random seed with bit 31 clear (`rand`
+never reads that bit), records it in D1
+(`coop_runs`: seed, room id, the host's and the guest's keys, issue time;
+each seed once, drawn again on a collision) and sends it to both seats. A
+seed request from the guest, before both seats have proven keys, or past ten
+a minute closes the socket with `1008`.
+
+Client message types therefore avoid `seat`, `peer`, `ice`, `key` and
+`seed`: the room answers `ice`, `key` and `seed` requests itself and never
+relays them, and a client text message typed `seat` or `peer` would pass for
+the server's own, so it closes the socket with `1008` instead of being
+relayed. A message over 16 KiB closes the socket with `1009`; more than 200
+messages a second (a second's burst) closes it with `1008`. That budget
+belongs to the seat, so a reconnect inherits it. Nothing a closed socket
+still sends is relayed. Clients read the server's messages only from text
+frames, with a strict `JSON.parse`; binary frames are always the partner's. The text `ping` is a keepalive: the runtime
 answers `pong` itself, without waking the room or spending the seat's
 budget.
 
@@ -1195,6 +1298,9 @@ on two channels. Channel 0 (`coop-ticks`, `ordered: false, maxRetransmits: 0`)
 is best effort. Channel 1 (`coop-control`) arrives once and in order, across
 transport switches too. Everything is little-endian. Each run is an epoch: the
 Host's run start increments it, and what belongs to another epoch is ignored.
+Epochs only grow, across sessions too: a peer keeps its epoch when a new
+session begins, and the first hello of a session raises it to the partner's,
+so the Host's next run is new to both whichever side began anew.
 
 #### Frontiers on the wire
 
@@ -1276,15 +1382,15 @@ later epoch than the receiver's. Every other message of another epoch is ignored
 
 | Type | Message | Payload | Rule |
 | --- | --- | --- | --- |
-| `1` | `HELLO` | `u16 protocol (1), u8 len, build[len], u8 answer` | On connect (`answer` 0), and in answer to one with `answer` 0 (`answer` 1), so a hello that arrived before the partner connected comes again; a different protocol or build (`replay_client_version`) is an error |
+| `1` | `HELLO` | `u16 protocol (1), u8 len, build[len], u8 answer, u32 session` | On connect (`answer` 0), and in answer to one with `answer` 0 (`answer` 1), so a hello that arrived before the partner connected comes again; a different protocol or build (`replay_client_version`) is an error. Its epoch is the sender's newest. A hello with `answer` 0 naming another session than the one this peer heard means the partner began anew (its game connected again after a timeout of its own while this peer's session went on): this peer's session ends as a lost partner's does, its run at the last confirmed tick, and a new one begins with the partner's |
 | `2` | `START_RUN` | `u8 delay, u8 rmax, PortableConfig, u8 choice, u16 header_len, header` | Host only, once the last run is over on both peers (the Host compared the Guest's hashes up to its last tick) or none started. The Guest runs `portable_init` with the config and starts its seat; one that left ignores it |
 | `3` | `START_ACK` | | The Guest started. Until then the Host's run neither produces nor runs, and it gives up after 10 s |
 | `4` | `START_CANCEL` | | Host to Guest, when it gives up: a Guest that started the run stops it |
 | `5` | `INPUT_REPAIR` | `u32 start_tick, u16 count, count × (PortableInput, u8 request)` | Gap repair |
 | `6` | `PAUSE` | `u32 pause_seq, u8 paused` | `pause_seq` is one past the highest seen. The highest wins, the Host's on a tie, and neither peer produces while paused |
 | `7` | `LEAVE` | `u32 last_tick` | Section 5.2 |
-| `8` | `NEXT_RUN` | `u8 choice` (`0` again, `1` next, `2` setup) | Guest to Host; the first one per epoch is kept for the next run |
-| `9` | `RUN_SIGNED` | | Milestone M3 |
+| `8` | `NEXT_RUN` | `u8 choice` (`0` again, `1` next, `2` setup) | Guest to Host; the first one per epoch is kept for the next run. Host to Guest only `setup`: the Host opened run setup from its end screen |
+| `9` | `RUN_SIGNED` | none until `M3` (then `name, public_key, signature`) | Once per epoch each way, from the end screen past its name entry; the Host starts the next run only once both peers' are in (Section 5.3) |
 | `10` | `DESYNC` | `u32 tick, u32 local_hash, u32 remote_hash` | Sent once; both peers stop |
 | `11` | `ERROR` | `u8 code` | A protocol error; both peers stop |
 | `12` | `CLOSE` | | Once each, after `LEAVE` both ways: the sender holds the receiver's records and hashes through the run's end (Section 5.2). A peer closes once it sent its own and the partner's arrived |
@@ -1312,11 +1418,27 @@ Guest's next-run choice or the Host's run start. For incoming bytes the host
 calls `game_coop_rx(size)` first, copies the bytes to the pointer it returns,
 then calls `game_coop_receive(channel, size, now)`. After the frame it drains
 `game_coop_tx(channel, now)` from `game_coop_tx_buffer()`. `game_coop_status()`
-returns flags: connected, started, starting, paused, waiting (a perk request
-waits for its tick's confirmation), picker, leaving, ended, desynced, failed,
-and whether the partner found it. It also carries why the session or its last
-run stopped (bits 16-23, cleared when a run starts) and the Guest's next-run
-choice held by the Host (bits 24-27). `game_coop_stats()`
+returns, for the shell that watches the session:
+
+| Bits | Meaning |
+| --- | --- |
+| `0x1` connected | Both peers said hello with the same build, and the session goes on |
+| `0x2` started | The epoch's run started on both peers |
+| `0x4` paused | |
+| `0x8` waiting | This peer's perk request waits for its tick's confirmation |
+| `0x10` picker | This peer picks the open menu's perk on its next tick |
+| `0x20` leaving | Either peer left the run |
+| `0x40` ended | The run reached its last tick, confirmed |
+| `0x80` desynced | The run's hashes differed |
+| `0x100` failed | A protocol error |
+| `0x200` starting | The Host waits for the Guest to start the run |
+| `0x400` remote | The partner found the desync or the error |
+| `0x800` signed | The partner's end screen is past its name entry |
+| `0x1000` closed | The session ended: connected stays clear until the next `game_coop_connect` (or a partner's new session) |
+| `16-23` | Why the session or its last run stopped (`CoopReason`, cleared when a run starts): `0` fine, `1` version, `2` bad record, `3` bad message, `4` stalled, `5` silent, `6` unanswered (no `START_ACK`), `7` left, `8` partner left, `9` disconnected, `10` partner gone, `11` diverged (a desync, found or told). A closed session's is never `0` |
+| `24-27` | The Guest's next-run choice the Host holds, plus one |
+
+`game_coop_stats()`
 adds the session's counters: packets sent, received and lost, stale packets
 and messages, repairs and the records they carried, and the round trip.
 
@@ -1327,7 +1449,10 @@ and messages, repairs and the records they carried, and the round trip.
 1. **Window blur (`SDL_EVENT_WINDOW_FOCUS_LOST`) & gamepad gating**:
 
    - In `crimson-core/game/frame.cpp:125-137`, `game_activate(0)` must **not** set
-     `grim_timing_frozen = true` while `coop_active` is true.
+     `grim_timing_frozen = true` while `coop_active` is true. The game then
+     plays on only while the session needs it: once it ends (its run ended)
+     or a run of the player's own plays, a window in the background stops as
+     the original's does.
 
    - In `crimson-core/client/main.cpp:836-845, 948`, focus loss clears
      `in->keys` and `in->mouse_buttons`, but `pad(input())` (`:273-304`)
@@ -1339,7 +1464,10 @@ and messages, repairs and the records they carried, and the round trip.
      `coop_sample_local_input()` emits an explicit neutral `PortableInput`
      (`move_x = 0, move_y = 0, aim = prev_aim, flags = scheme_bits_only`),
      clearing `live.fire_pressed`, `live.reload_pressed`, and
-     `live.open_requested`.
+     `live.open_requested`. The game module does not rely on the host for it:
+     while the window is away, its DirectInput devices (`game/dinput.cpp`)
+     read at rest whatever the host delivers, so no press reaches a session
+     that plays on (no pause, perk request or pick).
 
 2. **Background tab (`document.hidden`) vs. unfocused visible window**:
 
@@ -1461,9 +1589,15 @@ and messages, repairs and the records they carried, and the round trip.
      reason), a partner gone silent (the liveness timeout, to the frame), one
      whose records stop past a gap (the progress timeout), and a transport
      that closes (`game_coop_disconnect`);
+   - a Host that times out alone (the Guest's packets stop reaching it) and
+     connects again while the Guest's session went on: the Guest's begins anew
+     on its hello, its run ending at its last confirmed tick, both peers
+     measure the round trip across the sessions, and the next run plays; then
+     a Host whose page reloaded (a module that never played a run) takes the
+     Guest's epochs, and the run after plays too;
    - an invalid record (an error on both), a malformed message while the Host
-     starts a run (it stops waiting), a forced state change (a desync on both),
-     and different builds.
+     starts a run (it stops waiting), a forced state change (a desync on both,
+     both sessions closed for it), and different builds.
 
    A direct check confirms a guess drops the presses of the record it copies.
    Coverage between the peers requires repairs, mispredictions, and opens and
@@ -1513,16 +1647,40 @@ and messages, repairs and the records they carried, and the round trip.
    profile, and saved progress. The sessions start Survival from the Host's
    menus, open and pick perks from both seats (once on the same tick), pause
    from each seat and resume from the other, play on with one window in the
-   background, start the next run from the Guest's end screen, leave from the
-   pause banner, desync, lose the connection, and play quests from the Host's
-   quest list through the Guest's Play Next to a leave from the failed quest's
-   Main Menu. Every tick both machines confirm must have the same state hash and
-   bake and terrain digests on both and from the engine replaying the machines'
-   records alone (not the music digest, which names the tracks each machine
-   loaded); both must save byte-identical replays that `crimson replay verify`
-   accepts as 2-player runs, each perk command its picker's; the Host's menus
-   must lose the session's unlocks when it ends; and neither player's settings
-   or save may change.
+   background, where its pad's sticks and presses reach nothing (no pause, perk
+   request or pick, its records neutral), start the next run from the Guest's
+   end screen once the Host's name is in, pick a perk in a paused run and leave
+   by pad from the pause banner, time out on one machine alone and begin anew
+   on its next hello (the other machine's run ending where it confirmed it),
+   desync (both sessions closed for it) and leave by keys and pad, open the
+   transport again at the end screens (the Host's Play Again of the last
+   session starting nothing), as the Host's screen fades to a run (which starts
+   none) and mid-run (each run ending where it was confirmed, with its replay),
+   leave from the Guest's Main Menu as its screen
+   fades to the Host's next run, close the transport before the Guest names
+   its score, lose the connection with the machines in each other's seats (the
+   window in the background stopping once the session ended), and play quests
+   from the Host's quest list through the Host's Play Next, past the Guest's
+   high scores' Play a game, Play Another (where a link to a replay waits for
+   the session's end, through its runs) with a second quest key during the
+   fade, a Play Again pressed twice, and a leave from the failed quest's Main
+   Menu that a click right after does not undo; last, both quit a run that a
+   session opening over that replay starts (practice taking none of it over),
+   with configuration saves in it. Before them, a session opens while one machine
+   is in the tutorial, plays a local two-player quest and plays a quest alone,
+   each playing out on its own save (the window in the background stopping
+   them), the last's end screen keeping its name entry before a run the Host
+   starts; a custom quest's link waits for the session's end, and its end screen
+   starts no co-op run and gives way to the Host's with the two players'
+   settings. Every tick both machines
+   confirm must have the same state hash
+   and bake and terrain digests on both and from the engine replaying the
+   machines' records alone (not the music digest, which names the tracks each
+   machine loaded); both must save byte-identical replays that `crimson replay
+   verify` accepts as 2-player runs, each perk command its picker's; each mouse
+   aim tick 0 reads must go through the two players' midpoint, in either seat;
+   the Host's menus must lose the session's unlocks when it ends; and neither
+   player's settings or save may change.
 
 ### Milestone `M2`: Bounded rollback in the browser prototype
 
@@ -1558,12 +1716,14 @@ and messages, repairs and the records they carried, and the round trip.
    - **`players[1]` in `RunResult`**: native keeps XP on player 0 and weapon
      usage in one global table, so player 1's `experience` is `0`, its
      `health` is `player_state_table[1].health`, and its most used weapon comes
-     from the shared table, falling back to its own weapon only when every
-     count is zero (`most_used_weapon_id_for_player`,
-     `src/crimson/weapon_runtime/assign.py`).
+     from the shared table: the Pistol (`1`) unless another weapon has more
+     equipped time, so also when every count is zero. Its own weapon stands in
+     only when the best slot names no weapon
+     (`most_used_weapon_id_for_player`, `src/crimson/weapon_runtime/assign.py`).
    - **Ranked aim checks**: the service's `TickMonitor`
-     (`service/src/verify.ts:129-155`) tracks the 2P camera (the midpoint of
-     the living players, `camera_update.cpp:60-97`) and checks both
+     (`service/src/verify.ts:129-155`) tracks the 2P camera as Python's
+     `RankedTickMonitor` does (the midpoint of the living players,
+     `camera_update.cpp:57-80`, kept while nobody lives, `:78-79`) and checks both
      `input(tick, 0)` and `input(tick, 1)` with a move target per player.
 
 3. **Gate**: a co-op `.crd` recorded by two browsers verifies in the service,

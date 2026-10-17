@@ -49,9 +49,10 @@ def game_sources(root):
 def game_wrapped(root):
     # The recovered functions the host wraps, by the file that defines each: a
     # simulation tick must run some as the verifier does, a run the client plays
-    # drives others, a tick saves nothing, a sound entry the device never created
-    # stays silent, a run's wrapped strings live in its arena and a live run names
-    # the player's keys.
+    # drives others, a tick saves nothing, the configuration keeps the player's
+    # own menu settings, a sound entry the device never created stays silent, a
+    # run's wrapped strings live in its arena and a live run names the player's
+    # keys.
     spec = json.loads((GAME / "sources.json").read_text())
     wrapped = [f"decomp/1.9/crimsonland/{name}" for name in spec["exe_wrapped"]]
     if missing := [rel for rel in wrapped if not (root / rel).exists()]:

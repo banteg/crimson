@@ -130,7 +130,7 @@ class OnlineScore(msgspec.Struct, frozen=True):
     run: str = ""
 
 
-# A verified board: its name and, for quests, the "major.minor" level.
+# A verified board: its name (`ranked_board`'s, one player's or a co-op pair's) and, for quests, the "major.minor" level.
 type Board = tuple[str, str]
 
 

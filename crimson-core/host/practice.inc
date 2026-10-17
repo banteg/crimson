@@ -24,6 +24,8 @@ static void practice_stop() {
 static const char *practice_reason() {
   if (!live.watching || live.practicing)
     return "";
+  if (coop_on())
+    return "Not during co-op";
   if (watch.phase == WATCH_PREPARING)
     return "Preparing";
   if (watch.seek || viewer.dragging)

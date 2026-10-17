@@ -1,4 +1,4 @@
-import type { LinkView, PlayerView } from "../../src/api-types";
+import type { LinkView, PlayerView, SeatView } from "../../src/api-types";
 
 // Linked accounts in this order: the avatar comes from the first that has one, and so does the name when the
 // handles disagree.
@@ -38,6 +38,19 @@ export interface PlayerParts {
 // A player's name, or their key fingerprint without one.
 export function playerLabel(player: PlayerView): string {
   return player.name ?? player.fingerprint;
+}
+
+// What a co-op run shows for a player who deleted their account.
+export const DELETED_PLAYER = "deleted player";
+
+// A co-op run's players, "A & B".
+export function teamLabel(team: SeatView[]): string {
+  return team.map((seat) => (seat.player ? playerLabel(seat.player) : DELETED_PLAYER)).join(" & ");
+}
+
+// Who played a run: its player, or a co-op run's players.
+export function runLabel(run: { player: PlayerView; team: SeatView[] | null }): string {
+  return run.team ? teamLabel(run.team) : playerLabel(run.player);
 }
 
 // How boards and profiles show a player.

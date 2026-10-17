@@ -1,14 +1,15 @@
 // A run's page: its stats, experience against the board's top run and the player's best, kill rate or damage, weapons,
 // perks and timed bonuses, and where it was played, all from the timeline verification recorded (src/timeline.ts).
 import { type Accessor, createMemo, createResource, createSignal, For, type JSX, Show } from "solid-js";
-import { type Category, type RunDetailView, type SignalName, type Timeline } from "../../src/api-types";
+import { BOARDS, type Category, type RunDetailView, type SignalName, type Timeline } from "../../src/api-types";
 import { boardPath } from "../../src/paths";
+import { lifeBonusMs } from "../../src/quest-time";
 import { get, moderate } from "./api";
 import { GameButton } from "./button";
 import { formatScore } from "./format";
 import perkNames from "./perks.json";
-import { playerLabel } from "./names";
-import { PilotName, PlayerName } from "./players";
+import { runLabel } from "./names";
+import { PilotName, PlayerName, RunPlayers } from "./players";
 import { paintGround } from "./terrain/draw";
 import { type Ground, runGround } from "./terrain/rules";
 import weaponData from "./weapons.json";
@@ -44,7 +45,7 @@ function prepare(timeline: Timeline, detail: RunDetailView): RunTimeline {
     samples: timeline.samples.map(([t, xp, level, health, kills, damage]) => ({ t, xp, level, health, kills, damage })),
     weapons: timeline.weapons.map(({ t, id }) => ({ t, name: WEAPONS[id]?.name ?? `weapon ${id}` })),
     perks: timeline.perks.map(({ t, id }) => ({ t, name: PERKS[id] ?? `perk ${id}` })),
-    terrain: runGround(timeline.seed, { board: detail.board, quest: detail.quest, customSlots: detail.custom_slots ?? undefined }),
+    terrain: runGround(timeline.seed, { quest: detail.quest, hardcore: BOARDS[detail.board].hardcore, customSlots: detail.custom_slots ?? undefined }),
   };
 }
 
@@ -470,7 +471,7 @@ function Stats(props: { run: RunTimeline; detail: RunDetailView }) {
   const result = props.detail.result;
   const end = run.samples.at(-1)!;
   const tiles: [string, string][] = [
-    [props.detail.board === "survival" ? "survived" : "quest time", clock(result.elapsed_ms / 1000)],
+    [BOARDS[props.detail.board].quests ? "quest time" : "survived", clock(result.elapsed_ms / 1000)],
     ["experience", grouped(result.experience)],
     ["level", String(end.level)],
     ["kills", grouped(result.kills)],
@@ -493,10 +494,11 @@ function Stats(props: { run: RunTimeline; detail: RunDetailView }) {
   );
 }
 
-// Use the stored result, not rounded chart samples: player 0's whole HP earns 50 ms, each pending perk 1 s.
+// Use the stored result, not rounded chart samples: player one's whole HP earns 50 ms (a partner's, 50 ms each, to
+// the millisecond), each pending perk 1 s.
 function QuestScore(props: { detail: RunDetailView }) {
   const result = props.detail.result;
-  const lifeBonus = Math.trunc(result.health) * 50;
+  const lifeBonus = lifeBonusMs(result.healths);
   const perkBonus = result.pending_perks * 1000;
   const adjustment = (bonus: number) => `${bonus > 0 ? "−" : bonus < 0 ? "+" : ""}${formatScore("quests", Math.abs(bonus))}`;
   return (
@@ -581,9 +583,18 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
           </Show>
         </h2>
         <p class="run-player">
-          <PlayerName player={detail.player} heading />
-          <Show when={detail.name !== detail.player.name}>
-            <span class="muted"> · played as {detail.name}</span>
+          <Show
+            when={detail.team}
+            fallback={
+              <>
+                <PlayerName player={detail.player} heading />
+                <Show when={detail.name !== detail.player.name}>
+                  <span class="muted"> · played as {detail.name}</span>
+                </Show>
+              </>
+            }
+          >
+            {(team) => <RunPlayers player={detail.player} team={team()} heading />}
           </Show>
         </p>
         <Show when={detail.pilot}>
@@ -630,7 +641,7 @@ export function runPanels(detail: RunDetailView, reload: () => void): (() => JSX
   ];
   const [rate, setRate] = createSignal<"kills" | "damage">("kills");
   const [held, setHeld] = createSignal(false);
-  const name = playerLabel(detail.player);
+  const name = runLabel(detail);
   return [
     header,
     ...moderation,

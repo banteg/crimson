@@ -249,6 +249,7 @@ jobs:
           fresh() { rm -rf "$RUNNER_TEMP/run" && cp -R "$RUNNER_TEMP/game" "$RUNNER_TEMP/run" && echo "$RUNNER_TEMP/run"; }
           node crimson-core/checks/game_boot.mjs "$(fresh)"
           node crimson-core/checks/game_session.mjs --seed 4069574050 "$(fresh)"
+          node crimson-core/checks/game_session.mjs --quest --seed 1 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --seed 4069574050 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --quest --seed 1 "$(fresh)"
           node crimson-core/checks/game_session.mjs --ranked --seed 4069574050 "$(fresh)"
