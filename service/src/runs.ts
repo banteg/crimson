@@ -406,7 +406,13 @@ export async function postRun(request: Request, env: Env, options: { requireCust
       ).bind(quest, digest, accountId, runId, custom.title, custom.author, upload.source ?? null, upload.seed ?? 0, JSON.stringify(custom), now),
     );
   }
-  await env.DB.batch(statements);
+  try {
+    await env.DB.batch(statements);
+  } catch (error) {
+    // Another upload of the run got there while this one verified: a co-op pair's pages each upload it at its end.
+    if (await env.DB.prepare("SELECT 1 FROM runs WHERE id = ?").bind(runId).first()) return refuse(409, "this run was already accepted");
+    throw error;
+  }
   return json(custom ? { id: runId, board, quest, score, digest, url: `/custom/${quest}` } : { id: runId, board, quest, score }, 201);
 }
 

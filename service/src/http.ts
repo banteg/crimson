@@ -36,13 +36,17 @@ export function refuse(status: number, reason: string): Response {
   return json({ reason }, status);
 }
 
-// The account a key belongs to; a key the service has not seen starts its own.
+// The account a key belongs to; a key the service has not seen starts its own. The new account and its key go in one
+// batch, which D1 runs alone: requests with the same new key at once (a co-op pair's pages each upload their run)
+// make one account between them.
 export async function accountForKey(env: Env, publicKeyHex: string, publicKey: Uint8Array, now: number): Promise<number> {
   const known = await env.DB.prepare("SELECT account_id FROM keys WHERE public_key = ?").bind(publicKeyHex).first<{ account_id: number }>();
   if (known) return known.account_id;
-  const account = await env.DB.prepare("INSERT INTO accounts (created_at) VALUES (?) RETURNING id").bind(now).first<{ id: number }>();
-  await env.DB.prepare("INSERT INTO keys (public_key, account_id, fingerprint, added_at) VALUES (?, ?, ?, ?)")
-    .bind(publicKeyHex, account!.id, await fingerprint(publicKey), now)
-    .run();
-  return account!.id;
+  const [, , account] = await env.DB.batch<{ account_id: number }>([
+    env.DB.prepare("INSERT INTO accounts (created_at) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM keys WHERE public_key = ?)").bind(now, publicKeyHex),
+    env.DB.prepare("INSERT INTO keys (public_key, account_id, fingerprint, added_at) SELECT ?, last_insert_rowid(), ?, ? WHERE changes() > 0")
+      .bind(publicKeyHex, await fingerprint(publicKey), now),
+    env.DB.prepare("SELECT account_id FROM keys WHERE public_key = ?").bind(publicKeyHex),
+  ]);
+  return account!.results[0]!.account_id;
 }
