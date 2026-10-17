@@ -612,7 +612,9 @@ The hash is xxHash32 over those words (`game_coop_hash`, which also works
 outside co-op): FNV-1a a word at a time carries a change only towards the high
 bits, so two sign flips cancel. Right after tick $t$ executes, its hash is kept in a
 256-tick ring (`game_coop_hash_at(t)`), overwritten if $t$ runs again; a peer
-only sends a tick's hash once it is confirmed.
+only sends a tick's hash once it is confirmed, and keeps it apart from then
+until the partner acknowledged it and this peer compared the partner's, however
+far that falls behind.
 
 ### 4.2 Terrain boundary: safe "Bake on Confirm" contract
 
@@ -862,10 +864,11 @@ stays on the arena screen and sees the replay viewer's top-right pick card
   - Both peers run through `end_tick`, the lower of the two `last_tick`s, every
     record of which both hold or repair. A peer whose predictions ran past it
     goes back to the state after it. Both replays end on the same tick, in the
-    same state. Each peer then keeps sending ticks packets for a second (or four
-    round trips) after the partner acknowledged its records and hashes through
-    the end and it holds the partner's, and closes. The partner sees the end panel with "Player N left" and returns to
-    the menu; the session ends for both.
+    same state. A peer holding the partner's records and hashes through the end
+    (or either peer had no run) sends `CLOSE` on channel 1, and keeps sending
+    ticks packets until the partner's `CLOSE` arrives; then it closes. The
+    partner sees the end panel with "Player N left" and returns to the menu; the
+    session ends for both.
 
   - A left run is a quit: its replay is saved locally and it does not rank. A
     disconnect (Section 6.2 timeouts) ends the run the same way at the last
@@ -1112,12 +1115,12 @@ perk request waiting for confirmation, or a desync or error.
   smoothed by 1/8. The gaps in the partner's `ping_seq` count its losses, and
   their spacing gives its packet interval. Packets of another epoch still feed
   both.
-- **Hashes**: each packet reports up to 4 of this peer's confirmed ticks the
-  partner can confirm too (no later than its last `ack_tick`) and has not
-  acknowledged in `hash_ack`, in turn from the oldest, so a lost packet's come
-  round again until they are acknowledged. The receiver keeps the last 256 it was
-  sent. It compares each one when it confirms that tick, or at once if it already
-  has. On a mismatch it sends `DESYNC` once and stops.
+- **Hashes**: each packet reports the hashes of up to 4 consecutive confirmed
+  ticks the partner can confirm too (no later than its last `ack_tick`) and has
+  not acknowledged in `hash_ack`, from the oldest that never left or stayed
+  unacknowledged a round trip plus two of the partner's packet intervals after
+  it last left. The receiver compares each one when it confirms that tick, or at
+  once if it already has. On a mismatch it sends `DESYNC` once and stops.
 - **Validation**: every record must pass `portable_input_valid` (the rule
   `portable_step_many` applies), with a request of at most `8`. Its tick must lie
   within `remote + 120`. A record differing from one already held for its tick
@@ -1137,9 +1140,9 @@ Each repair starts at `peer_ack + 1`, and a record goes at most once a round tri
 
 #### Channel 1: messages
 
-Each message is `u8 type, u32 epoch, payload`. `HELLO`, `LEAVE` and `ERROR`
-belong to the session and skip the epoch check. `START_RUN` must name a later
-epoch than the receiver's. Every other message of another epoch is ignored.
+Each message is `u8 type, u32 epoch, payload`. `HELLO`, `LEAVE`, `ERROR` and
+`CLOSE` belong to the session and skip the epoch check. `START_RUN` must name a
+later epoch than the receiver's. Every other message of another epoch is ignored.
 
 | Type | Message | Payload | Rule |
 | --- | --- | --- | --- |
@@ -1154,6 +1157,7 @@ epoch than the receiver's. Every other message of another epoch is ignored.
 | `9` | `RUN_SIGNED` | | Milestone M3 |
 | `10` | `DESYNC` | `u32 tick, u32 local_hash, u32 remote_hash` | Sent once; both peers stop |
 | `11` | `ERROR` | `u8 code` | A protocol error; both peers stop |
+| `12` | `CLOSE` | | Once each, after `LEAVE` both ways: the sender holds the receiver's records and hashes through the run's end (Section 5.2). A peer closes once it sent its own and the partner's arrived |
 
 Ticks packets of the new epoch are taken only once the run started on the
 receiving peer: on the Guest from `START_RUN`, on the Host from `START_ACK`. Each
@@ -1304,15 +1308,20 @@ and messages, repairs and the records they carried, and the round trip.
    the other at 144 Hz with a 300 ms stutter. The Host starts each run. Each
    peer produces its seat's records: an open only when its state allows it, and
    the pick once it is the picker. Each stream plays in lockstep and with a
-   window of 8, at delays 2 and 4. On both peers every confirmed tick must have
-   the oracle's digests and raw state and the partner's hash compared, both
-   must end on the same tick in the same state, and neither may send more than
-   60 ticks packets a second. The session's cases follow:
+   window of 8, at delays 2 and 4, and with a window of 8 at delay 8. On both
+   peers every confirmed tick must have the oracle's digests and raw state and
+   the partner's hash compared, the partner must hear each tick's hash within a
+   second of its confirmation, both must end on the same tick in the same
+   state, and neither may send more than 60 ticks packets a second. The session's cases follow:
    - pause and resume races (a tie goes to the Host), and a pause longer than
      the progress timeout;
    - leaving mid-run, while paused, from the picker's open perk menu, and while
      a request waits for confirmation, both closing within two seconds, the
-     leaver for leaving and its partner for the partner's leave;
+     leaver for leaving and its partner for the partner's leave, and again
+     when the partner's last hashes come late and the leaver's ticks packets
+     that would acknowledge them are lost for 1.2 s;
+   - a Guest whose ticks packets carry no hashes for longer than the 256-tick
+     ring, after which every tick's hash is still compared on both;
    - a rematch while every packet and message of the previous run arrives
      again, which the Host can start neither mid-run nor before the Guest
      confirmed the last run's end and compared its hashes;

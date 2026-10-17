@@ -18,6 +18,7 @@
 // and checks/game_coop.mjs drives the same engine against a plain run and through
 // forced rollbacks. Between two peers, the session (host/coop_wire.inc) carries
 // the records and holds the run back while it pauses, waits for a start or ends.
+#include <deque>
 
 extern "C" {
 extern unsigned char game_paused_flag;
@@ -104,7 +105,6 @@ struct CoopTick {
   uint32_t terrain, music;
   uint32_t state; // the raw state's digest after it, when kept (game_coop_states)
   bool held;      // its bake waits in bakes[] for its confirmation
-  bool checked;   // the peer's hash for it was compared
 };
 // The state before a tick, which a rollback puts back.
 struct CoopSlot {
@@ -125,6 +125,14 @@ struct CoopTune {
   CoopTuneKind kind;
   int track;
   float volume;
+};
+// A confirmed tick's hash between two peers, kept until the partner holds it and
+// this machine compared the partner's (host/coop_wire.inc): whether it was
+// compared, and when a ticks packet last carried it.
+struct CoopHash {
+  uint32_t hash;
+  bool checked;
+  double sent_at;
 };
 // A hash the peer reported for a tick, and the first that differed from this
 // machine's.
@@ -180,6 +188,9 @@ static struct {
   bool asked, picking;
   int request;
   CoopReported reported[COOP_RING];
+  // The kept hashes (two peers), of ticks `hashes_from` on, up to `confirmed`.
+  std::deque<CoopHash> hashes;
+  int hashes_from;
   CoopDesync desync;
   bool running; // a co-op tick runs
   bool quiet;   // the tick running ran before
@@ -733,36 +744,47 @@ static void coop_tick(int t, bool quiet, bool draw) {
   coop.next = t + 1;
 }
 
+// This machine's kept hash of a confirmed tick from `hashes_from` on.
+static CoopHash &coop_hash(int t) { return coop.hashes[t - coop.hashes_from]; }
 // The peer's hash for a tick both confirmed: another than this machine's stops
 // the run.
 static void coop_check(int t, uint32_t hash) {
-  CoopTick &entry = coop.ticks[t & (COOP_RING - 1)];
+  CoopHash &entry = coop_hash(t);
   coop.stats.checked += !entry.checked;
   entry.checked = true;
-  uint32_t local = entry.hash;
-  if (local == hash || coop.desync.tick >= 0)
+  if (entry.hash == hash || coop.desync.tick >= 0)
     return;
-  coop.desync = {t, local, hash};
+  coop.desync = {t, entry.hash, hash};
   coop.hold |= COOP_HOLD_STOP;
 }
 // A hash the peer reported for one of its confirmed ticks: checked now when this
-// machine confirmed the tick too, else once it does.
+// machine confirmed the tick too, else once it does; one already let go was
+// compared.
 static void coop_reported(int t, uint32_t hash) {
   if (t > coop.confirmed)
     coop.reported[t & (COOP_RING - 1)] = {t, hash};
-  else if (coop.ticks[t & (COOP_RING - 1)].tick == t)
+  else if (t >= coop.hashes_from)
     coop_check(t, hash);
 }
 // The peer's hash for tick `t` arrived: compared, or kept for its confirmation.
 static bool coop_heard(int t) {
-  const CoopTick &entry = coop.ticks[t & (COOP_RING - 1)];
-  return coop.reported[t & (COOP_RING - 1)].tick == t || (entry.tick == t && entry.checked);
+  return t < coop.hashes_from || coop.reported[t & (COOP_RING - 1)].tick == t ||
+         (t <= coop.confirmed && coop_hash(t).checked);
+}
+// The kept hashes up to tick `t` go: the partner holds them and this machine
+// compared the partner's.
+static void coop_release(int t) {
+  for (; coop.hashes_from <= t; ++coop.hashes_from)
+    coop.hashes.pop_front();
 }
 // A tick is confirmed once it ran on both seats' real records, as every tick
-// before it did.
+// before it did. Between two peers its hash is kept from then on.
 static void coop_confirm() {
   while (coop.confirmed + 1 < coop.next && coop_final(coop.confirmed + 1)) {
     int t = ++coop.confirmed;
+    if (coop.local < 0)
+      continue;
+    coop.hashes.push_back({coop.ticks[t & (COOP_RING - 1)].hash, false, -INFINITY});
     const CoopReported &reported = coop.reported[t & (COOP_RING - 1)];
     if (reported.tick == t)
       coop_check(t, reported.hash);
@@ -881,6 +903,8 @@ __attribute__((export_name("game_coop_start"))) int game_coop_start(int local, i
     entry.tick = -1;
   for (CoopReported &reported : coop.reported)
     reported.tick = -1;
+  coop.hashes.clear();
+  coop.hashes_from = 0;
   coop.desync = {-1, 0, 0};
   coop.tunes.clear();
   CoopWireStats wire = coop.stats.wire;

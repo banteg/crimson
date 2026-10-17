@@ -27,17 +27,19 @@
 //    loss, a burst of lost packets, a stutter and different frame rates: the
 //    Host starts the run, each peer produces its seat's records (opens when its
 //    state allows them, its picks when it is the picker) and both play the
-//    whole stream in lockstep and with a window of 8, at delays 2 and 4. On
-//    both, each tick once confirmed has the digests and raw state of (1) and
-//    the partner's hash compared; both end on the same tick in the same state,
-//    neither sending more than 60 ticks packets a second. Then the session's
-//    cases: pause races, leaving mid-run, while paused, from an open perk menu
-//    and while a request waits (each closing promptly, for the reason it left),
-//    a rematch the Host cannot start before the Guest confirmed the last run's
-//    end, through a storm of the last run's packets, a hello before the partner
-//    connected, a start the Guest answers too late, a partner gone silent, one
-//    whose records stop coming, a transport that closes, an invalid record, an
-//    error while starting, a desync and different builds.
+//    whole stream in lockstep and with a window of 8, at delays 2 and 4, and
+//    with a window of 8 at delay 8. On both, each tick once confirmed has the
+//    digests and raw state of (1) and the partner's hash compared; both end on
+//    the same tick in the same state, neither sending more than 60 ticks
+//    packets a second. Then the session's cases: pause races, leaving mid-run,
+//    while paused, from an open perk menu, while a request waits and while the
+//    leaver's last acknowledgements are lost (each closing promptly, for the
+//    reason it left), hashes held back past the engine's ring, a rematch the
+//    Host cannot start before the Guest confirmed the last run's end, through a
+//    storm of the last run's packets, a hello before the partner connected, a
+//    start the Guest answers too late, a partner gone silent, one whose records
+//    stop coming, a transport that closes, an invalid record, an error while
+//    starting, a desync and different builds.
 // Corrupting each family of fields the hash covers changes it; every byte of the
 // run's state is in the hash or in the engine's list of what is left out and why
 // (game_coop_audit); the receive path tells stale records from invalid ones; a
@@ -569,20 +571,33 @@ const REASON = {
 };
 const reason = (status) => (status >>> 16) & 255;
 // Session timeouts (host/coop_wire.inc), and how long a leave may take to close both peers: the run to its end,
-// then a second of packets.
+// and the last records and hashes each way.
 const PROGRESS_MS = 5000,
   LIVENESS_MS = 15000,
   START_MS = 10000,
   CLOSE_MS = 2000;
 const ASK = { open: 1, pause: 2, leave: 3, nextRun: 4, start: 5 };
 const TICK_MS = 1000 / 60;
-// The pipe's runs: lockstep and M2's window, each at two delays; every other one swaps which peer draws fast,
-// stutters and loses the burst.
+// The ticks whose results the engine keeps (host/coop.inc COOP_RING), and the most by which a peer's partner may
+// trail its confirmed ticks hearing their hashes over the plain pipe: a second.
+const RING = 256,
+  UNHEARD = 60;
+// A ticks packet's hash_ack (host/coop_wire.inc), -1 none.
+const hashAck = (bytes) => new DataView(bytes.buffer, bytes.byteOffset).getInt32(32, true);
+// A ticks packet without its hashes.
+const bare = (bytes) => {
+  const kept = bytes.slice(0, bytes.length - 4 * bytes[3]);
+  kept[3] = 0;
+  return kept;
+};
+// The pipe's runs: lockstep and M2's window, each at two delays, and the longest delay with that window; every
+// other one swaps which peer draws fast, stutters and loses the burst.
 const PIPE_MODES = [
   { delay: 2, rmax: 0 },
   { delay: 2, rmax: 8 },
   { delay: 4, rmax: 0 },
   { delay: 4, rmax: 8 },
+  { delay: 8, rmax: 8 },
 ];
 const PIPE_COVERAGE = ["repairs", "mispredictions", "opens_one", "opens_two", "picker_waits_one", "picker_waits_two"];
 const pipeCoverage = Object.fromEntries(PIPE_COVERAGE.map((n) => [n, 0]));
@@ -625,6 +640,7 @@ class Pipe {
     this.ordered = [0, 0];
     this.tap = null;
     this.drop = null; // (peer, channel, bytes) => true to lose what it sends
+    this.alter = null; // (peer, channel, bytes) => what arrives instead
     this.hooks = {};
     this.leaver = null;
     this.stream = stream;
@@ -632,13 +648,19 @@ class Pipe {
     this.upcoming = null;
     this.runs = 0;
     this.checking = true;
+    this.unheard = [0, 0]; // the most each peer's confirmed ticks ran ahead of its partner's hash_ack
   }
   status(p) {
     return p.g.game_coop_status();
   }
   send(p, channel, bytes) {
     this.tap?.(p, channel, bytes);
+    if (channel === 0 && this.peers.every((q) => this.status(q) & STATUS.started)) {
+      const q = this.peers[1 - p.seat];
+      this.unheard[q.seat] = Math.max(this.unheard[q.seat], q.g.game_coop_confirmed() - hashAck(bytes));
+    }
     if (this.drop?.(p, channel, bytes)) return;
+    if (this.alter) bytes = this.alter(p, channel, bytes);
     let at = this.now + 10 + 60 * this.random();
     if (channel === 0) {
       const burst = this.burst;
@@ -882,6 +904,7 @@ class Pipe {
       rtt_ms: [wa.rtt_ms, wb.rtt_ms],
       lost: [wa.lost, wb.lost],
       stale: [wa.stale, wb.stale],
+      unheard: this.unheard,
       ms: Math.round(performance.now() - at),
     };
   }
@@ -897,6 +920,8 @@ function pipe(stream, truth, mode, swap) {
   sim.start();
   sim.finish();
   sim.ended(stream.ticks - 1);
+  const most = Math.max(...sim.unheard);
+  assert.ok(most <= UNHEARD, `${stream.label} at ${JSON.stringify(mode)}: a hash went ${most} ticks unheard`);
   return sim.report("stream", at);
 }
 
@@ -941,8 +966,9 @@ function pipeCases(stream, truth, short, shortTruth) {
       sim = new Pipe(stream, truth, mode, { seed });
     sim.connect();
     sim.start();
-    act(sim);
+    const check = act(sim);
     sim.close(late);
+    check?.();
     const end = endTick(sim);
     assert.ok(end < stream.ticks - 1, `${name}: the run ended where it would anyway`);
     sim.ended(end);
@@ -978,6 +1004,45 @@ function pipeCases(stream, truth, short, shortTruth) {
   };
   leaving("leave picking", 5, leaveOn(STATUS.picker, (sim, p) => p));
   leaving("leave requested", 6, leaveOn(STATUS.waiting, (sim, p) => sim.peers[1 - p.seat]));
+  // The Host leaves and the Guest's hashes stop for a while, so the Guest holds the Host's through the run's end
+  // before the Host holds the Guest's; then the Host's ticks packets, which would acknowledge them, are lost for longer
+  // than a peer used to wait before it closed: the Guest closes for the Host's leave all the same.
+  const LOST_MS = 1200;
+  leaving(
+    "leave unacknowledged",
+    17,
+    (sim) => {
+      const [h, g] = sim.peers;
+      let left = Infinity,
+        lost = 0;
+      const within = (from, ms) => sim.now >= from && sim.now < from + ms;
+      sim.alter = (p, channel, bytes) => (p === g && channel === 0 && within(left, STALL_MS) ? bare(bytes) : bytes);
+      sim.drop = (p, channel) => p === h && channel === 0 && within(left + STALL_MS, LOST_MS) && ++lost > 0;
+      sim.after(third, "the leave", () => {
+        sim.leave(h);
+        left = sim.now;
+      });
+      return () => assert.ok(lost > 0, "no acknowledgement lost");
+    },
+    STALL_MS,
+  );
+  // The Guest's ticks packets carry no hashes for longer than the engine keeps a tick's results: both peers keep
+  // every hash the other lacks or has not had compared, and every tick's is compared by the end.
+  {
+    const start = at(),
+      sim = new Pipe(stream, truth, mode, { seed: 18 });
+    const g = sim.peers[1];
+    sim.connect();
+    sim.start();
+    let from = Infinity;
+    sim.after(third, "the hashes held back", () => (from = sim.now));
+    const held = () => sim.now >= from && sim.now < from + (RING * 3 * TICK_MS) / 2;
+    sim.alter = (p, channel, bytes) => (p === g && channel === 0 && held() ? bare(bytes) : bytes);
+    sim.finish();
+    sim.ended(stream.ticks - 1);
+    assert.ok(sim.unheard[1] > RING, `the Guest's hashes went at most ${sim.unheard[1]} ticks unheard`);
+    lines.push(sim.report("hashes held back", start));
+  }
   // A rematch: the short stream, paused once, plays to its end; the Host cannot start another run mid-run, nor once
   // its own run ended until the Guest confirmed the end (the Guest running no tick a while once it produced its last
   // record). The Guest asks for the same run again and the Host starts it, while every packet and message of the
@@ -1271,13 +1336,14 @@ for (const file of live ? LIVE_STREAMS : streams) {
       plain_ms: Math.round(truth.plainMs),
       solo_ms: Math.round(truth.soloMs),
       rollback_ms: forced.map((f) => Math.round(f.ms)),
-      pipe: piped.map(({ rollbacks, max_depth, max_lead, repairs, rtt_ms, lost, ms }) => ({
+      pipe: piped.map(({ rollbacks, max_depth, max_lead, repairs, rtt_ms, lost, unheard, ms }) => ({
         rollbacks,
         max_depth,
         max_lead,
         repairs,
         rtt_ms,
         lost,
+        unheard,
         ms,
       })),
       // The engine's cost a tick over the plain run's: its capture, the hash and the raw state's digest.

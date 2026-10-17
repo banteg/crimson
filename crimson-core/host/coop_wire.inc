@@ -25,6 +25,7 @@ enum CoopType : uint8_t {
   COOP_RUN_SIGNED,
   COOP_DESYNC,
   COOP_ERROR,
+  COOP_CLOSE,
 };
 // What game_coop_request asks for.
 enum CoopAsk { COOP_ASK_OPEN = 1, COOP_ASK_PAUSE, COOP_ASK_LEAVE, COOP_ASK_NEXT_RUN, COOP_ASK_START };
@@ -84,10 +85,10 @@ static struct CoopWire {
   int pause_by;
   bool paused;
   // LEAVE as each side sent it: its last tick produced, COOP_NONE without a run.
-  // Once both left and the run is over, the session closes at close_at.
-  bool left, partner_left;
+  // Once both left, each side sends CLOSE when it holds what it needs of the
+  // partner's, and the session closes once both did.
+  bool left, partner_left, close_sent, partner_closed;
   uint32_t left_tick, partner_tick;
-  double close_at;
   int next_run; // the Guest's choice for the run after this one (the Host's), -1 none
   bool desync_sent;
   // Ticks packets: this side's sequence and when each left; the partner's
@@ -103,9 +104,9 @@ static struct CoopWire {
   int peer_head;               // the newest record the partner said it produced
   int remote_seen;             // the remote frontier, last time it moved
   double progress_at;
-  // Hashes: the next tick a packet reports; the newest tick up to which the
-  // partner holds every one of this machine's, and this machine the partner's.
-  int hash_next, hash_ack, hash_heard;
+  // Hashes: the newest tick up to which the partner holds every one of this
+  // machine's, and this machine the partner's.
+  int hash_ack, hash_heard;
   std::deque<std::vector<uint8_t>> outbox;
   std::vector<uint8_t> rx, tx;
 } wire;
@@ -159,8 +160,6 @@ static void coop_unstart() {
   wire.starting = false;
   coop_stop();
 }
-// Both peers hold each other's hashes up to the run's last tick.
-static bool coop_compared() { return wire.hash_heard >= coop.next - 1 && wire.hash_ack >= coop.next - 1; }
 
 // A protocol error here: the partner is told, and everything stops.
 static void coop_fail(CoopReason reason) {
@@ -199,7 +198,6 @@ static bool coop_begin(int delay, int rmax, uint32_t epoch, double now) {
   wire.pause_seq = 0;
   wire.pause_by = -1;
   wire.next_run = wire.head_sent = wire.peer_head = wire.remote_seen = wire.hash_ack = wire.hash_heard = -1;
-  wire.hash_next = 0;
   wire.progress_at = now;
   return true;
 }
@@ -236,7 +234,7 @@ static void coop_agree() {
 }
 
 // What the passing time does: the timeouts, a desync found, and the close
-// after a leave once the partner holds every record the run used.
+// after a leave.
 static void coop_update(double now) {
   if (wire.closed)
     return;
@@ -266,28 +264,37 @@ static void coop_update(double now) {
         coop_message(COOP_DESYNC, wire.epoch).put(coop.desync.tick).put(coop.desync.local).put(coop.desync.remote);
     return coop_send(message);
   }
-  // The partner learns this side holds its records and hashes from this side's
-  // packets: they go on a while after (a second, or four round trips).
-  if (wire.left && wire.partner_left && wire.close_at < 0 &&
-      (!coop_running() || (coop_over() && coop.peer_ack >= coop.next - 1 && coop_compared())))
-    wire.close_at = now + std::max(1000.0, 4 * wire.rtt);
-  if (wire.close_at >= 0 && now >= wire.close_at)
+  // Once both left, CLOSE says this side holds the partner's records and hashes
+  // through the run's end (none come when either side had no run), on channel 1
+  // so the partner closes on it however the ticks packets fare; until the
+  // partner's comes, this side's ticks packets go on for it.
+  if (wire.left && wire.partner_left && !wire.close_sent &&
+      (!coop_running() || wire.partner_tick == COOP_NONE || (coop_over() && wire.hash_heard >= coop.next - 1))) {
+    wire.close_sent = true;
+    CoopWriter message = coop_message(COOP_CLOSE, wire.epoch);
+    coop_send(message);
+  }
+  if (wire.close_sent && wire.partner_closed)
     wire.closed = true;
 }
 
+// How long a record or hash that left waits for its acknowledgement before it
+// goes again: a round trip and two of the partner's packet intervals.
+static double coop_wait() { return (wire.rtt >= 0 ? wire.rtt : COOP_RTT_GUESS_MS) + 2 * wire.interval; }
+
 // The hashes a packet reports, from `first`: of the confirmed ticks the partner
-// can confirm too (it holds this machine's records), those it has not
-// acknowledged, COOP_HASHES a packet in turn from the oldest, so each comes
-// round again until it is acknowledged.
-static int coop_hashes(int &first) {
+// can confirm too (it holds this machine's records) and has not acknowledged,
+// COOP_HASHES from the oldest that never left or waited for its acknowledgement
+// too long.
+static int coop_hashes(int &first, double now) {
   int top = std::min(coop.confirmed, coop.peer_ack);
-  if (top <= wire.hash_ack)
-    return 0;
-  if (wire.hash_next <= wire.hash_ack || wire.hash_next > top)
-    wire.hash_next = wire.hash_ack + 1;
-  first = wire.hash_next;
-  int count = std::min(COOP_HASHES, top - first + 1);
-  wire.hash_next += count;
+  double wait = coop_wait();
+  first = wire.hash_ack + 1;
+  while (first <= top && now - coop_hash(first).sent_at < wait)
+    ++first;
+  int count = std::clamp(top - first + 1, 0, COOP_HASHES);
+  for (int t = first; t < first + count; ++t)
+    coop_hash(t).sent_at = now;
   return count;
 }
 
@@ -304,7 +311,7 @@ static int coop_ticks_out(double now) {
   wire.credit -= 1;
   wire.sent_at = now;
   int count = run ? std::clamp(coop.produced - coop.peer_ack, 0, COOP_WINDOW) : 0;
-  int first = 0, hashes = run ? coop_hashes(first) : 0;
+  int first = 0, hashes = run ? coop_hashes(first, now) : 0;
   wire.ping_at[++wire.ping & (COOP_RING - 1)] = now;
   uint16_t hold = wire.peer_ping ? (uint16_t)std::min(65535.0, now - wire.peer_ping_at) : 0;
   uint32_t packed = 0;
@@ -325,7 +332,7 @@ static int coop_ticks_out(double now) {
   }
   memcpy(packet.out.data() + at, &packed, 4);
   for (int t = first; t < first + hashes; ++t)
-    packet.put(coop.ticks[t & (COOP_RING - 1)].hash);
+    packet.put(coop_hash(t).hash);
   if (run)
     wire.head_sent = coop.produced;
   wire.tx = std::move(packet.out);
@@ -340,7 +347,7 @@ static int coop_ticks_out(double now) {
 static void coop_repair(double now) {
   if (!coop_running())
     return;
-  double wait = (wire.rtt >= 0 ? wire.rtt : COOP_RTT_GUESS_MS) + 2 * wire.interval;
+  double wait = coop_wait();
   int first = coop.peer_ack + 1, last = first;
   while (last <= coop.produced - COOP_WINDOW && now - wire.record_at[last & (COOP_RING - 1)] >= wait)
     ++last;
@@ -431,6 +438,7 @@ static void coop_ticks_in(CoopReader &in, double now) {
     ++wire.hash_heard;
   if (hash_ack != COOP_NONE)
     wire.hash_ack = std::max(wire.hash_ack, (int)hash_ack);
+  coop_release(std::min(wire.hash_ack, wire.hash_heard));
 }
 
 static void coop_control_in(CoopReader &in, double now) {
@@ -575,6 +583,12 @@ static void coop_control_in(CoopReader &in, double now) {
     wire.remote = wire.desync_sent = wire.closed = true;
     return;
   }
+  case COOP_CLOSE:
+    // It follows the partner's LEAVE on channel 1, and comes once.
+    if (!in.done() || !wire.partner_left || wire.partner_closed)
+      return coop_fail(COOP_BAD_MESSAGE);
+    wire.partner_closed = true;
+    return;
   case COOP_ERROR: {
     uint8_t code = in.get<uint8_t>();
     if (!in.done())
@@ -602,7 +616,7 @@ __attribute__((export_name("game_coop_connect"))) int game_coop_connect(int seat
   wire.seat = seat;
   wire.pause_by = wire.next_run = wire.head_sent = wire.peer_head = wire.remote_seen = wire.hash_ack =
       wire.hash_heard = -1;
-  wire.close_at = wire.rtt = -1;
+  wire.rtt = -1;
   wire.interval = COOP_TICK_MS;
   wire.heard_at = wire.credit_at = wire.progress_at = now;
   wire.sent_at = -1e300;
