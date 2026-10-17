@@ -453,18 +453,21 @@ function createCoop({
     // Telemetry: which candidate pair carries the session.
     current.pc.getStats().then((report) => {
       if (link !== current || current.relay) return;
-      stats.transport = candidateType(report);
+      stats.transport = candidatePair(report);
       log("transport", stats.transport);
     }, () => {});
   }
-  function candidateType(report) {
+  // The selected pair's two ends by candidate type, "<local>/<remote>", the local one relay-<protocol> when it is
+  // this page's TURN allocation and says over what (the partner's never does); "webrtc" while no pair is known.
+  function candidatePair(report) {
     const all = [...report.values()];
     const pairId = all.find((each) => each.type === "transport" && each.selectedCandidatePairId)?.selectedCandidatePairId;
     // Firefox has no selected pair on its transport stats; it marks the pair instead, or only nominates it.
     const pair = pairId ? report.get(pairId) : all.find((each) => each.type === "candidate-pair" && (each.selected || (each.nominated && each.state === "succeeded")));
-    const local = pair && report.get(pair.localCandidateId);
-    if (!local) return "webrtc";
-    return local.candidateType !== "relay" ? local.candidateType : local.relayProtocol ? `relay-${local.relayProtocol}` : "relay";
+    const local = pair && report.get(pair.localCandidateId), remote = pair && report.get(pair.remoteCandidateId);
+    if (!local || !remote) return "webrtc";
+    const near = local.candidateType === "relay" && local.relayProtocol ? `relay-${local.relayProtocol}` : local.candidateType;
+    return `${near}/${remote.candidateType}`;
   }
   function failed(current, why) {
     if (link !== current || current.relay) return;

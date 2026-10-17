@@ -1258,8 +1258,7 @@ transport without TCP head-of-line blocking, whereas the TCP and TLS relays
 (`turn:` with `transport=tcp`, `turns:`) and the `CoopRoom` WebSocket relay
 **do** experience TCP head-of-line blocking under packet loss. They are
 retained as reachability fallbacks, and the client records the selected
-`RTCIceCandidatePair` (`host` / `srflx` / `relay-udp` / `relay-tcp` /
-`ws-relay`) in its latency telemetry.
+`RTCIceCandidatePair`'s two ends (or `ws-relay`) in its latency telemetry.
 
 Any fallback from WebRTC to `ws-relay` is coordinated via an explicit
 `MSG_SWITCH_TRANSPORT { transport_epoch }` message through the room so both
@@ -1313,9 +1312,11 @@ candidates are partner text messages carrying the link id, and messages of
 another link are stale. Each page sends its candidates after its
 description and holds the partner's until the remote description is set. A
 connected WebRTC link keeps playing while either room socket is away. Both
-channels open means connected, and the selected candidate pair's local type
-(`host`, `srflx`, `prflx`, `relay-udp`, `relay-tcp`, `relay-tls`) is kept
-for telemetry.
+channels open means connected, and the selected candidate pair's two ends
+are kept for telemetry as `<local>/<remote>` candidate types (`host`, `srflx`,
+`prflx`, `relay`), the local one `relay-udp`, `relay-tcp` or `relay-tls` when it
+is this page's own TURN allocation and names its protocol; the partner's relay
+never says which (`webrtc` until the pair is read).
 
 **Fallback.** A link that does not connect in time, fails, closes a channel,
 or stays disconnected past a short ICE restart by the host (on the same
@@ -1607,9 +1608,12 @@ and messages, repairs and the records they carried, and the round trip.
 When a session whose hello came ends (the game closes it, the page ends it, or
 the page goes), the page reports one summary to the site's
 [gameplay analytics](leaderboard-identity.md#browser-gameplay-counts), with the
-same opt-outs: the transport it last ran over (direct for a WebRTC host,
-server-reflexive or peer-reflexive candidate pair, TURN over UDP, TURN over TCP
-or TLS, the room's relay, or unknown before the pair was read), its round trip's
+same opt-outs: the transport it last ran over, from both ends of the selected
+candidate pair: `direct` when neither end is a relay, `turn-udp` or `turn-tcp`
+(TCP or TLS) when this page's own TURN relay carries it and says over what,
+`turn` when a relay carries it over a leg this page cannot see (only the
+partner relays, or this page's relay names no protocol), `ws-relay` for the
+room's relay, or `unknown` before the pair was read; its round trip's
 bucket (under 25, 50, 100 and 200 ms, and longer), its minutes in runs, whether
 a desync ended it, and `game_coop_telemetry()`: its frames whose due ticks all
 waited, its rollbacks by depth and its frames by the time their ticks took,

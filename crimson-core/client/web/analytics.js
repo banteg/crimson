@@ -2,6 +2,19 @@
 // service shares. Daily tokens, anonymous totals and co-op session summaries
 // travel in separate requests; none carries a game key, account, room, URL or
 // recording.
+// The kind of transport a co-op session ran over, from coop.js's name for it: the room's relay (ws-relay), or the
+// WebRTC pair's two candidate types, "<local>/<remote>", the local one relay-<protocol> when this page's own TURN
+// allocation names its protocol. Through TURN when either end is a relay: turn-udp or turn-tcp by this page's own
+// relay's protocol, turn when this page cannot tell (only the partner relays, over a leg this page never sees, or
+// its relay names no protocol); direct when neither is; unknown before the pair was read ("webrtc").
+function coopTransport(transport) {
+  if (transport === "ws-relay") return transport;
+  const [local, remote] = transport?.split("/") ?? [];
+  if (!remote) return "unknown";
+  if (local === "relay-udp") return "turn-udp";
+  if (local === "relay-tcp" || local === "relay-tls") return "turn-tcp";
+  return local.startsWith("relay") || remote === "relay" ? "turn" : "direct";
+}
 function createPlayAnalytics() {
   // MODES is indexed by game_play_mode (host/session.inc).
   const { token: TOKEN, disabled: DISABLED, modes: MODES, max_runs: MAX_RUNS, max_seconds: MAX_SECONDS, coop: COOP } = PLAY_ANALYTICS;
@@ -96,20 +109,15 @@ function createPlayAnalytics() {
     previous = mode;
     if (stopped || pending.sessions || pending.engaged || now - lastFlush >= 60000) flush();
   }
-  // A co-op session's summary as it ends (shell.html), best effort like the totals: the transport it last ran
-  // over, by coop.js's name for it (a WebRTC candidate type, relay-<protocol> through TURN, or ws-relay), its round
-  // trip's bucket, its minutes in runs, whether it desynced, and the game's counters (host/coop.inc
+  // A co-op session's summary as it ends (shell.html), best effort like the totals: the kind of transport it last
+  // ran over (coopTransport), its round trip's bucket, its minutes in runs, whether it desynced, and the game's counters (host/coop.inc
   // CoopSessionStats): frames whose due ticks all waited, rollbacks by depth and frames by the time their ticks took.
   function coop({ transport, rtt, ticks, desync, stalled, depths, frames }) {
     if (!enabled()) return;
-    const { transports: TRANSPORTS, rtt_ms: RTT_MS, max_seconds: MAX_COOP_SECONDS, max_count: MAX_COUNT } = COOP;
-    const kind = ["host", "srflx", "prflx"].includes(transport) ? "direct"
-      : transport === "relay-udp" ? "turn-udp"
-      : ["relay-tcp", "relay-tls"].includes(transport) ? "turn-tcp"
-      : TRANSPORTS.includes(transport) ? transport : "unknown";
+    const { rtt_ms: RTT_MS, max_seconds: MAX_COOP_SECONDS, max_count: MAX_COUNT } = COOP;
     const count = (n) => Math.min(n, MAX_COUNT);
     void send("/api/analytics/coop", {
-      day: date(), transport: kind, rtt: RTT_MS.filter((ms) => rtt >= ms).length,
+      day: date(), transport: coopTransport(transport), rtt: RTT_MS.filter((ms) => rtt >= ms).length,
       seconds: Math.min(Math.round(ticks / 60), MAX_COOP_SECONDS), desync: desync ? 1 : 0, stalled: count(stalled),
       depths: depths.map(count), frames: frames.map(count),
     }).catch(() => {});

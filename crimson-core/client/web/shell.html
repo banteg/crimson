@@ -695,8 +695,8 @@
     const waitingLine = coopMet
       ? `Player ${partner()} left: ${role === "host" ? "send them this link to come back" : "waiting for them to come back"}`
       : `Waiting for player ${partner()}${role === "host" ? ": send them this link" : "…"}`;
-    const transport = coop.stats().transport;
-    const over = !transport ? "" : transport === "ws-relay" ? ", through the room" : transport.startsWith("relay") ? ", relayed" : ", direct";
+    const transport = coopTransport(coop.stats().transport);
+    const over = transport === "ws-relay" ? ", through the room" : transport.startsWith("turn") ? ", relayed" : transport === "direct" ? ", direct" : "";
     // Connected once both games said hello; until then, after a desync, why the last session ended while this
     // player's run is stopped, then that the partner's still is.
     const connectedLine = coopHello

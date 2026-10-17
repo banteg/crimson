@@ -985,7 +985,7 @@ function CoopAnalytics(props: { rows: PlayAnalyticsView["coop"] }) {
         return <tr><td>{transport}</td><For each={frames}>{(n) => <td class="n">{percent(n, sum(frames))}</td>}</For></tr>;
       }}</For></tbody></table></div>
     </Show>
-    <p class="muted">Each page reports its own session as it ends, so a session between two players counts twice. Transport is the one a session last ran over: direct WebRTC, through TURN over UDP or TCP, or the room's relay. Round trips count sessions; stalled frames are frames whose due ticks all waited for the partner, the window or a perk pick.</p>
+    <p class="muted">Each page reports its own session as it ends, so a session between two players counts twice. Transport is the one a session last ran over, from both ends of its WebRTC pair: direct when neither relays, turn-udp or turn-tcp when the page's own TURN relay carries it, turn when only the partner's relay does (or a relay names no protocol), ws-relay through the room, unknown before the pair was read. Round trips count sessions; stalled frames are frames whose due ticks all waited for the partner, the window or a perk pick.</p>
   </>;
 }
 
@@ -1222,8 +1222,9 @@ const PRIVACY: Screen = {
         <p>
           The browser game also counts loading, play sessions, sessions reaching five active minutes, runs and active time by mode.
           It sends these as anonymous daily totals, without your name, account, game key, replay, URL or IP address. The service does not store IP addresses for these counters.
-          When a co-op session ends, it also sends how the connection went: whether it was direct, relayed through TURN or through
-          the room, the round trip's range, minutes played, whether the two games ran differently, and how often the game had to
+          When a co-op session ends, it also sends how the connection went: whether it was direct, relayed through TURN (over UDP or
+          TCP from your browser, or a relay whose protocol your browser cannot see, such as your partner's), through the room, or not
+          yet known, the round trip's range, minutes played, whether the two games ran differently, and how often the game had to
           correct or wait. That summary names no room or partner, and only daily totals of it are kept.
         </p>
         <p>

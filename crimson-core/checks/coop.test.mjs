@@ -237,7 +237,7 @@ function service(time) {
 // "fail" (both fail), "fail-host" (only the host's fails), or "hang" (never connects). A test can move live
 // connections to another state (set), stop their data (kill) or abort their channels (abort); an ICE restart
 // reconnects while net.recovers.
-function network({ outcome = "connect", remoteDelay = 0, candidateType = "srflx", relayProtocol, stats = "chrome", earlyCandidates = false, legacy = false } = {}) {
+function network({ outcome = "connect", remoteDelay = 0, candidateType = "srflx", relayProtocol, remoteType = "srflx", stats = "chrome", earlyCandidates = false, legacy = false } = {}) {
   const net = { pcs: [], early: 0, added: 0, restarts: 0, outcome, recovers: true };
   class FakeChannel {
     constructor(pc, label, options) {
@@ -341,16 +341,18 @@ function network({ outcome = "connect", remoteDelay = 0, candidateType = "srflx"
       if (stats === "firefox") {
         return new Map([
           ["T", { type: "transport" }],
-          ["A", { type: "candidate-pair", localCandidateId: "LA", nominated: false, state: "succeeded" }],
-          ["B", { type: "candidate-pair", localCandidateId: "LB", nominated: true, state: "succeeded" }],
+          ["A", { type: "candidate-pair", localCandidateId: "LA", remoteCandidateId: "R", nominated: false, state: "succeeded" }],
+          ["B", { type: "candidate-pair", localCandidateId: "LB", remoteCandidateId: "R", nominated: true, state: "succeeded" }],
           ["LA", { type: "local-candidate", candidateType: "host" }],
           ["LB", { type: "local-candidate", candidateType, relayProtocol }],
+          ["R", { type: "remote-candidate", candidateType: remoteType }],
         ]);
       }
       return new Map([
         ["T", { type: "transport", selectedCandidatePairId: "P" }],
-        ["P", { type: "candidate-pair", localCandidateId: "L" }],
+        ["P", { type: "candidate-pair", localCandidateId: "L", remoteCandidateId: "R" }],
         ["L", { type: "local-candidate", candidateType, relayProtocol }],
+        ["R", { type: "remote-candidate", candidateType: remoteType }],
       ]);
     }
     close() {
@@ -487,7 +489,7 @@ it("host and guest meet in a room, connect over WebRTC and exchange bytes on bot
   assert.deepEqual(guest.events.peers, [true]);
   await exchange(host, guest);
   assert.deepEqual(env.world.frames, [], "nothing went through the relay");
-  assert.equal(host.coop.stats().transport, "srflx");
+  assert.equal(host.coop.stats().transport, "srflx/srflx");
   assert.deepEqual(plain(host.coop.stats().sent), [1, 1]);
   assert.deepEqual(plain(guest.coop.stats().received), [1, 1]);
 
@@ -541,7 +543,7 @@ it("candidates gathered before their description was sent follow it", async () =
   env.world.observe = (role, message) => { if (message.link) order.push(`${other(role)} ${message.type}`); };
   const { host, guest } = await meet(env);
   assert.equal(host.coop.state, "connected");
-  assert.equal(host.coop.stats().transport, "srflx");
+  assert.equal(host.coop.stats().transport, "srflx/srflx");
   assert.ok(order.indexOf("host offer") < order.indexOf("host candidate"));
   assert.ok(order.indexOf("guest answer") < order.indexOf("guest candidate"));
   await exchange(host, guest);
@@ -692,7 +694,7 @@ it("a room socket blip keeps a working WebRTC link: no renegotiation, no switch"
   assert.equal(host.coop.stats().switches + guest.coop.stats().switches, 0);
   assert.equal(env.net.pcs.length, 2);
   assert.ok(env.net.pcs.every((pc) => !pc.closed));
-  assert.equal(host.coop.stats().transport, "srflx");
+  assert.equal(host.coop.stats().transport, "srflx/srflx");
   await exchange(host, guest);
 });
 
@@ -716,7 +718,7 @@ it("signalling for another link is stale and ignored", async () => {
   env.world.inject(host.coop.room, "host", { type: "switch", link: "old", transport_epoch: 5 });
   await settle();
   assert.equal(env.net.added, added);
-  assert.equal(host.coop.stats().transport, "srflx");
+  assert.equal(host.coop.stats().transport, "srflx/srflx");
   await exchange(host, guest);
 });
 
@@ -775,7 +777,7 @@ it("a disconnected peer connection restarts ICE on the same link and recovers wi
   assert.equal(env.world.texts.filter((text) => text.type === "answer").length, 2);
   await env.time.advance(30000);
   assert.equal(env.world.texts.filter((text) => text.type === "switch").length, 0);
-  assert.equal(host.coop.stats().transport, "srflx");
+  assert.equal(host.coop.stats().transport, "srflx/srflx");
   assert.equal(guest.coop.stats().links, 1);
   await exchange(host, guest);
 });
@@ -787,7 +789,7 @@ it("a peer connection that stays disconnected falls back within seconds, not whe
     env.net.recovers = false;
     env.net.set("disconnected");
     await env.time.advance(4999);
-    assert.equal(host.coop.stats().transport, "srflx", legacy ? "older Firefox" : "current browsers");
+    assert.equal(host.coop.stats().transport, "srflx/srflx", legacy ? "older Firefox" : "current browsers");
     await env.time.advance(1);
     assert.equal(host.coop.stats().transport, "ws-relay");
     assert.equal(guest.coop.stats().transport, "ws-relay");
@@ -927,7 +929,7 @@ it("a switch nobody replied to goes again when the partner retakes its seat", as
   env.net.set("failed", ["guest"]);
   await env.time.advance(3000);
   assert.equal(guest.coop.stats().transport, "ws-relay");
-  assert.equal(host.coop.stats().transport, "srflx");
+  assert.equal(host.coop.stats().transport, "srflx/srflx");
   assert.ok(host.coop.send(1, bytes(8)), "lost on the host's dead connection");
   env.world.intercept = () => true;
   env.world.drop(host.coop.room, "host");
@@ -953,7 +955,7 @@ it("a link that closes while the partner is away waits for it instead of switchi
   env.world.down = false;
   await env.time.advance(1000);
   assert.equal(host.coop.state, "connected");
-  assert.equal(host.coop.stats().transport, "srflx", "a new link over WebRTC");
+  assert.equal(host.coop.stats().transport, "srflx/srflx", "a new link over WebRTC");
   await exchange(host, guest);
 });
 
@@ -1096,11 +1098,16 @@ it("a backed-up ticks channel drops ticks, never control messages", async () => 
   assert.equal(host.coop.stats().dropped, 1);
 });
 
-it("the selected candidate pair names the transport, in Chrome and Firefox", async () => {
+it("the selected candidate pair's two ends name the transport, in Chrome and Firefox", async () => {
   const chrome = setup({ candidateType: "relay", relayProtocol: "tcp" });
-  assert.equal((await meet(chrome)).host.coop.stats().transport, "relay-tcp");
+  assert.equal((await meet(chrome)).host.coop.stats().transport, "relay-tcp/srflx");
   const firefox = setup({ stats: "firefox", candidateType: "relay", relayProtocol: "udp" });
-  assert.equal((await meet(firefox)).host.coop.stats().transport, "relay-udp");
+  assert.equal((await meet(firefox)).host.coop.stats().transport, "relay-udp/srflx");
+  // The partner's relay, and a relay of this page's that names no protocol.
+  const partner = setup({ remoteType: "relay" });
+  assert.equal((await meet(partner)).host.coop.stats().transport, "srflx/relay");
+  const unnamed = setup({ candidateType: "relay" });
+  assert.equal((await meet(unnamed)).host.coop.stats().transport, "relay/srflx");
 });
 
 it("messages before the game listens wait in order for its handler", async () => {

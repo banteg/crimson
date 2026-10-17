@@ -252,7 +252,8 @@ each minute, on pause/background and on exit. Totals are best effort and never r
 with its same token once a minute while playing. Anonymous totals carry no token or session identifier.
 
 A co-op session that reached its partner's game sends one summary as it ends to `POST /api/analytics/coop`
-([network co-op, Telemetry](network-coop.md#telemetry)): the kind of transport it last ran over, its round trip's
+([network co-op, Telemetry](network-coop.md#telemetry)): the kind of transport it last ran over (direct, TURN over
+UDP or TCP from this browser, TURN the browser cannot tell the protocol of, the room's relay, or unknown), its round trip's
 bucket, its minutes in runs, whether it desynced, and histograms of its rollback depths and frame work with its stalled
 frames. It names no room, seat, partner or token; the service adds it to daily totals by transport and keeps nothing
 per session.
