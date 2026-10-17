@@ -449,6 +449,7 @@ static void live_poll_prompt() {
 #include "watch.inc"
 #include "practice.inc"
 #include "coop.inc"
+#include "coop_wire.inc"
 
 extern "C" {
 // game_frame (game/frame.cpp), after polling input: the ticks this pass runs,

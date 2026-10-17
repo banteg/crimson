@@ -185,8 +185,18 @@ engine's list of what it leaves out. One co-op scenario fills the effect pool
 under the ranked rules, freeing overflow entries at their own times. With
 `--live <game directory>` a few streams also play inside the original (from a
 copy of the directory), whose canonical words must match the plain run's every
-tick, and its terrain and music the plain pass's after every frame. The check
-prints each stream's rollbacks and costs; [network co-op](../docs/rewrite/network-coop.md)
+tick, and its terrain and music the plain pass's after every frame.
+
+Then two modules play each stream as Host and Guest, one seat each, through the
+wire protocol ([`host/coop_wire.inc`](host/coop_wire.inc)). They run over a
+seeded simulated pipe with latency, jitter, loss and a burst of lost packets,
+at 60 Hz against 144 Hz with a stutter. Each stream plays in lockstep and with
+a rollback window, at two delays. Both peers must confirm every tick with the
+plain pass's digests and raw state, and end on the same tick in the same state.
+The session's own cases follow: pause races, leaving (mid-run, paused, from a
+perk menu, with a request waiting), a rematch through a storm of the last run's
+packets, an invalid record, a desync and different builds. The check prints
+each stream's rollbacks, repairs, round trips and costs; [network co-op](../docs/rewrite/network-coop.md)
 holds the design it checks.
 
 ### Original executable

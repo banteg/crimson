@@ -292,22 +292,25 @@ static void terrain_bake(const fx_queue_entry_t *queue, size_t queued, const Rot
 
 // What the run's queues hold between ticks for the next tick's bake (a Nuke
 // taken after the world drew queues its kills' blood), put back after bakes
-// drawn between ticks.
+// drawn between ticks: the whole queues, past their counts too (run state, as
+// the last tick left them, whenever a peer drew its bakes). fx_queue_add
+// writes one entry past the most it keeps, fx_queue_add_rotated keeps 0x40.
 struct TerrainQueued {
-  std::vector<fx_queue_entry_t> queue{fx_queue, fx_queue + fx_queue_count},
-      decals{game_effect_overflow.decals, game_effect_overflow.decals + game_effect_overflow.decal_count};
+  int queued = fx_queue_count, decal_count = game_effect_overflow.decal_count, corpses = fx_queue_rotated;
+  std::vector<fx_queue_entry_t> queue{fx_queue, fx_queue + GAME_FX_QUEUE_MAX_COUNT + 1},
+      decals{std::begin(game_effect_overflow.decals), std::end(game_effect_overflow.decals)};
   std::vector<RotatedDecal> rotated;
   TerrainQueued() {
-    for (int i = 0; i < fx_queue_rotated; ++i)
+    for (int i = 0; i < 0x40; ++i)
       rotated.push_back(fx_rotated(i));
   }
   ~TerrainQueued() {
-    fx_queue_count = (int)queue.size();
+    fx_queue_count = queued;
     std::copy(queue.begin(), queue.end(), fx_queue);
-    game_effect_overflow.decal_count = (int)decals.size();
+    game_effect_overflow.decal_count = decal_count;
     std::copy(decals.begin(), decals.end(), game_effect_overflow.decals);
-    fx_queue_rotated = (int)rotated.size();
-    for (int i = 0; i < fx_queue_rotated; ++i)
+    fx_queue_rotated = corpses;
+    for (int i = 0; i < 0x40; ++i)
       fx_rotated_set(i, rotated[i]);
   }
 };

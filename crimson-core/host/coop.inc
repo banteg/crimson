@@ -16,7 +16,8 @@
 //
 // Solo (game_coop_start with local -1), the caller produces both seats' records,
 // and checks/game_coop.mjs drives the same engine against a plain run and through
-// forced rollbacks.
+// forced rollbacks. Between two peers, the session (host/coop_wire.inc) carries
+// the records and holds the run back while it pauses, waits for a start or ends.
 
 extern "C" {
 extern unsigned char game_paused_flag;
@@ -64,13 +65,19 @@ struct CoopInput {
 enum { COOP_OPEN = 8 };
 // Ticks of records and per-tick results kept; states and held bakes kept; the
 // most ticks a run may run past its last confirmed one; the most ticks a seat's
-// records may run ahead of the run.
-static constexpr int COOP_RING = 256, COOP_SLOTS = 16, COOP_LEAD = 12, COOP_DELAY = 8;
+// records may run ahead of the run; the most records a peer produces past the
+// last its partner acknowledged.
+static constexpr int COOP_RING = 256, COOP_SLOTS = 16, COOP_LEAD = 12, COOP_DELAY = 8, COOP_UNACKED = 120;
 // A rollback reaches back at most to the first unconfirmed tick, and a held bake
 // waits only until its tick is confirmed: both stay within the lead.
 static_assert(COOP_LEAD < COOP_SLOTS, "a slot or held bake comes round again before its tick is confirmed");
 static_assert(COOP_LEAD + COOP_DELAY < COOP_RING, "records ahead of the run overwrite unconfirmed ones");
 static const PortableInput COOP_NEUTRAL = {0, 0, 512, 512, 0};
+// What holds a run back (the session, host/coop_wire.inc): the Host's run waits
+// for the Guest's acknowledgement; a pause or a leave stops production; a desync
+// or a protocol error stops everything.
+enum : uint32_t { COOP_HOLD_START = 1, COOP_HOLD_PAUSE = 2, COOP_HOLD_LEAVE = 4, COOP_HOLD_STOP = 8 };
+static constexpr int COOP_NO_END = INT_MAX;
 
 // The screen state a run reads and writes in its ticks, apart from this machine's.
 struct CoopScreen {
@@ -118,6 +125,23 @@ struct CoopTune {
   int track;
   float volume;
 };
+// A hash the peer reported for a tick, and the first that differed from this
+// machine's.
+struct CoopReported {
+  int tick;
+  uint32_t hash;
+};
+struct CoopDesync {
+  int tick;
+  uint32_t local, remote;
+};
+// The session's counters over every run (host/coop_wire.inc): ticks packets
+// sent, received, and lost on the way (by their sequence numbers); packets and
+// messages of another run ignored; repairs sent and the records they carried;
+// the round trip (ms).
+struct CoopWireStats {
+  int32_t sent, received, lost, stale, repairs, repaired, rtt_ms;
+};
 // Counters for the gate and the session's telemetry. checks/game_coop.mjs reads
 // them by position.
 struct CoopStats {
@@ -132,6 +156,9 @@ struct CoopStats {
   // while the queues held the next tick's; final bakes on ticks not drawn.
   int32_t overflow_rollbacks, overflow_free_rollbacks, overflow_decal_holds, queued_commits, unseen_bakes;
   int32_t slot_bytes;
+  // The furthest past the last confirmed tick the run got.
+  int32_t max_lead;
+  CoopWireStats wire;
 };
 
 static struct {
@@ -140,9 +167,18 @@ static struct {
   int delay, rmax;
   uint32_t epoch;
   // The frontiers: the last tick produced, acknowledged by the peer, confirmed,
-  // baked into the terrain and played; the next tick to run; the last tick ever
-  // run (heard).
-  int produced, peer_ack, confirmed, baked, played, next, heard;
+  // baked into the terrain and played; the partner's records held without a gap
+  // (two peers); the next tick to run; the last tick ever run (heard).
+  int produced, peer_ack, confirmed, baked, played, remote, next, heard;
+  uint32_t hold; // COOP_HOLD_*
+  int end;       // the last tick to run, once the peers agreed to end (COOP_NO_END)
+  // This machine's perk request (two peers): an open asked for the next tick it
+  // produces; the tick it went on, until that tick is confirmed (-1 none); the
+  // picker's choice due on the next tick it produces.
+  bool asked, picking;
+  int request;
+  CoopReported reported[COOP_RING];
+  CoopDesync desync;
   bool running; // a co-op tick runs
   bool quiet;   // the tick running ran before
   bool drawing; // the tick running draws
@@ -562,13 +598,18 @@ static CoopInput coop_record(int seat, int t, bool &guessed) {
   return {COOP_NEUTRAL, 0};
 }
 
+// Whether the state allows a perk command, as portable_step_many checks it.
+static bool coop_perk_valid() {
+  return cfg.mode != GAME_MODE_RUSH && any_player_alive() && perk_pending_count > 0;
+}
+
 // The tick's perk command from the seats' requests, on the state it starts
 // from, as portable_step_many takes commands: with the menu closed, an open
 // request (player one's first) opens it and makes its player the picker; with
 // it open, only the picker's request counts, a choice offered (the choices are
 // fresh: the tick that opened the menu made them) or none, which cancels.
 static uint32_t coop_command(const CoopInput *seats) {
-  bool valid = cfg.mode != GAME_MODE_RUSH && any_player_alive() && perk_pending_count > 0;
+  bool valid = coop_perk_valid();
   bool open[2] = {seats[0].cmd == COOP_OPEN, seats[1].cmd == COOP_OPEN};
   if (perk_menu_open) {
     coop.stats.dropped_opens += open[0] + open[1];
@@ -690,11 +731,37 @@ static void coop_tick(int t, bool quiet, bool draw) {
   coop.next = t + 1;
 }
 
+// The peer's hash for a tick both confirmed: another than this machine's stops
+// the run.
+static void coop_check(int t, uint32_t hash) {
+  uint32_t local = coop.ticks[t & (COOP_RING - 1)].hash;
+  if (local == hash || coop.desync.tick >= 0)
+    return;
+  coop.desync = {t, local, hash};
+  coop.hold |= COOP_HOLD_STOP;
+}
+// A hash the peer reported for one of its confirmed ticks: checked now when this
+// machine confirmed the tick too, else once it does.
+static void coop_reported(int t, uint32_t hash) {
+  if (t > coop.confirmed)
+    coop.reported[t & (COOP_RING - 1)] = {t, hash};
+  else if (coop.ticks[t & (COOP_RING - 1)].tick == t)
+    coop_check(t, hash);
+}
 // A tick is confirmed once it ran on both seats' real records, as every tick
 // before it did.
 static void coop_confirm() {
-  while (coop.confirmed + 1 < coop.next && coop_final(coop.confirmed + 1))
-    ++coop.confirmed;
+  while (coop.confirmed + 1 < coop.next && coop_final(coop.confirmed + 1)) {
+    int t = ++coop.confirmed;
+    const CoopReported &reported = coop.reported[t & (COOP_RING - 1)];
+    if (reported.tick == t)
+      coop_check(t, reported.hash);
+  }
+}
+// The run reached its last tick and confirmed it: the run's end, or the one the
+// peers agreed on.
+static bool coop_over() {
+  return coop.active && coop.confirmed == coop.next - 1 && (run_down_ms < 0 || coop.next - 1 >= coop.end);
 }
 
 // What confirmed ticks presented, in tick order, before any later tick runs:
@@ -742,6 +809,43 @@ static bool coop_valid(const CoopInput &record) {
   return portable_input_valid(record.input) && record.cmd <= COOP_OPEN;
 }
 
+// A seat's record for a tick from elsewhere (the partner's, or the caller's in
+// solo): 1 when taken; 0 when it changes nothing, for a tick already confirmed
+// or a record already held (the ticks packets send each again); -1 for one no
+// peer sends, a protocol error: an invalid record, a tick out of reach (a peer
+// produces at most COOP_UNACKED past what this machine acknowledged, its
+// remote), another record for a tick already known, or this machine's own seat.
+// Solo, a record can also stand in for the real one until it comes (`real` 0),
+// or be taken back as not yet arrived (-1), so the engine guesses it; a
+// rollback corrects either.
+static int coop_take(int seat, int t, const CoopInput &record, int real) {
+  bool solo = coop.local < 0;
+  int reach = solo ? coop.confirmed + COOP_RING : coop.remote + COOP_UNACKED;
+  if (!coop.active || seat < 0 || seat > 1 || t < 0 || t > reach || !coop_valid(record) ||
+      (!solo && (seat == coop.local || real != 1)))
+    return -1;
+  CoopRecord &r = coop.records[seat][t & (COOP_RING - 1)];
+  if (!solo && r.tick == t && r.real)
+    return coop_same(r.record, record) ? 0 : -1;
+  if (t <= coop.confirmed)
+    return 0;
+  r = {record, real < 0 ? -1 : t, real > 0};
+  while (!solo && coop_real(seat, coop.remote + 1))
+    ++coop.remote;
+  return 1;
+}
+
+// This machine's perk request (Pick Perk, its key, the prompt's click): it goes
+// on the next tick produced when the latest state run allows the command, the
+// menu is closed and no request of its own waits.
+static bool coop_ask() {
+  if (!coop.active || coop.local < 0 || coop.hold || coop.asked || coop.request >= 0 || coop.picking ||
+      perk_menu_open || !coop_perk_valid())
+    return false;
+  coop.asked = true;
+  return true;
+}
+
 extern "C" {
 // A co-op run of the 2-player run portable_init set up: this machine plays seat
 // `local` (-1 both), `delay` ticks ahead of the run (1 to COOP_DELAY), which may
@@ -765,13 +869,22 @@ __attribute__((export_name("game_coop_start"))) int game_coop_start(int local, i
       r.tick = -1;
   for (CoopTick &entry : coop.ticks)
     entry.tick = -1;
+  for (CoopReported &reported : coop.reported)
+    reported.tick = -1;
+  coop.desync = {-1, 0, 0};
   coop.tunes.clear();
+  CoopWireStats wire = coop.stats.wire;
   coop.stats = {};
+  coop.stats.wire = wire;
   coop.local = local;
   coop.delay = delay;
   coop.rmax = rmax;
   coop.epoch = epoch;
-  coop.produced = coop.peer_ack = delay - 1;
+  coop.produced = coop.peer_ack = coop.remote = delay - 1;
+  coop.hold = 0;
+  coop.end = COOP_NO_END;
+  coop.asked = coop.picking = false;
+  coop.request = -1;
   coop.confirmed = coop.baked = coop.played = coop.heard = -1;
   coop.next = 0;
   coop.terrain = coop.music = 0;
@@ -800,61 +913,58 @@ __attribute__((export_name("game_coop_input"))) uintptr_t game_coop_input() {
   return game_coop_input_for(std::max(coop.local, 0));
 }
 // The next tick's records of the seats this machine plays, which never change
-// after: the tick, or -1 while the run is `delay` ticks ahead or the peer is far
-// behind acknowledging them.
-__attribute__((export_name("game_coop_produce"))) int game_coop_produce(int) {
-  if (!coop.active || coop.produced >= coop.next + coop.delay || coop.produced - coop.peer_ack >= 120)
+// after: the tick, or -1 while the run is `delay` ticks ahead, the peer is far
+// behind acknowledging them, the session holds production or this machine's
+// perk request waits for its tick's confirmation. A peer's record asks for
+// the menu when game_coop_request did; the picker's, on the tick after its
+// request opened the menu, takes the choice its input names (0 cancels).
+__attribute__((export_name("game_coop_produce"))) int game_coop_produce(double) {
+  if (!coop.active || coop.hold || coop.request >= 0 || coop.produced >= coop.next + coop.delay ||
+      coop.produced - coop.peer_ack >= COOP_UNACKED)
     return -1;
   int t = coop.produced + 1;
   for (int seat = 0; seat < 2; ++seat) {
     if (coop.local >= 0 && seat != coop.local)
       continue;
-    if (!coop_valid(coop.scratch[seat]))
+    CoopInput record = coop.scratch[seat];
+    if (coop.local >= 0 && !coop.picking)
+      record.cmd = coop.asked ? COOP_OPEN : 0;
+    if (!coop_valid(record) || (coop.picking && record.cmd == COOP_OPEN))
       abort();
-    coop.records[seat][t & (COOP_RING - 1)] = {coop.scratch[seat], t, true};
+    coop.records[seat][t & (COOP_RING - 1)] = {record, t, true};
   }
+  if (coop.asked)
+    coop.request = t;
+  coop.asked = coop.picking = false;
   coop.produced = t;
   if (coop.local < 0)
     coop.peer_ack = t;
   return t;
 }
-// The partner's record for a tick, from game_coop_input_for(seat), `real` 1:
-// 1 when taken; 0 when it changes nothing, for a tick already confirmed or a
-// record already held (the unreliable window sends each again); -1 for one no
-// peer sends, a protocol error: an invalid record, a tick out of reach, another
-// record for a tick already known, or this machine's own seat. Solo (local -1),
-// a record can also stand in for the real one until it comes (0), or be taken
-// back as not yet arrived (-1), so the engine guesses it; a rollback corrects
-// either.
+// Test hook: a seat's record for a tick from game_coop_input_for(seat), as the
+// wire takes the partner's (coop_take).
 __attribute__((export_name("game_coop_deliver"))) int game_coop_deliver(int seat, int t, int real) {
-  bool solo = coop.local < 0;
-  if (!coop.active || seat < 0 || seat > 1 || t < 0 || t > coop.confirmed + COOP_RING ||
-      !coop_valid(coop.scratch[seat]) || (!solo && (seat == coop.local || real != 1)))
-    return -1;
-  CoopRecord &r = coop.records[seat][t & (COOP_RING - 1)];
-  if (!solo && r.tick == t && r.real)
-    return coop_same(r.record, coop.scratch[seat]) ? 0 : -1;
-  if (t <= coop.confirmed)
-    return 0;
-  r = {coop.scratch[seat], real < 0 ? -1 : t, real > 0};
-  return 1;
+  return seat < 0 || seat > 1 ? -1 : coop_take(seat, t, coop.scratch[seat], real);
 }
 // The frame's ticks: a rollback when a record turned out other than the one a
 // tick ran on, then ticks while their records allow, at most `budget` new ones
 // (ticks run again are free), each tick's confirmation presenting what it
 // waited for before the next runs. Only the newest tick draws. Ticks run only
-// while this machine shows the run.
-__attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budget, int) {
-  if (!coop.active || game_state_id != GAME_STATE_GAMEPLAY ||
+// while this machine shows the run, and not past an end the peers agreed on.
+__attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budget, double) {
+  if (!coop.active || (coop.hold & (COOP_HOLD_START | COOP_HOLD_STOP)) || game_state_id != GAME_STATE_GAMEPLAY ||
       game_state_pending != GAME_STATE_PENDING_IDLE_SENTINEL)
     return 0;
+  // Predictions ran past the agreed end: back to the state after it.
+  if (coop.next - 1 > coop.end)
+    coop_restore(coop.end + 1);
   coop_correct();
   coop_confirm();
   coop_commit();
   // The newest tick the records, the lead and the budget let run, final ticks
   // confirming on the way: it alone draws. A menu or the run's end stopping
   // sooner leaves the frame undrawn.
-  int last = std::min(coop.produced, coop.heard + budget);
+  int last = std::min({coop.produced, coop.heard + budget, coop.end});
   for (int t = coop.next, confirmed = coop.confirmed; t <= last; ++t) {
     int lead = t - (confirmed + 1);
     if (lead >= COOP_LEAD || (!coop_final(t) && lead >= coop.rmax)) {
@@ -870,7 +980,7 @@ __attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budg
     bool quiet = t <= coop.heard;
     if (!quiet && fresh >= budget)
       break;
-    if (run_down_ms < 0)
+    if (run_down_ms < 0 || t > coop.end || (coop.hold & COOP_HOLD_STOP))
       break;
     if (t > coop.produced || lead >= COOP_LEAD || (!coop_final(t) && lead >= coop.rmax)) {
       ++coop.stats.stalls;
@@ -886,6 +996,14 @@ __attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budg
     fresh += !quiet;
     coop_confirm();
     coop_commit();
+    coop.stats.max_lead = std::max(coop.stats.max_lead, coop.next - (coop.confirmed + 1));
+  }
+  // This machine's perk request, once its tick is confirmed (the state after it
+  // is the one run, production having stopped there): its seat picks when its
+  // request opened the menu, else production resumes.
+  if (coop.request >= 0 && coop.confirmed >= coop.request) {
+    coop.picking = perk_menu_open && perk_picker == coop.local;
+    coop.request = -1;
   }
   return fresh;
 }
@@ -893,6 +1011,9 @@ __attribute__((export_name("game_coop_stats"))) uintptr_t game_coop_stats() { re
 __attribute__((export_name("game_coop_confirmed"))) int game_coop_confirmed() { return coop.confirmed; }
 __attribute__((export_name("game_coop_next"))) int game_coop_next() { return coop.next; }
 __attribute__((export_name("game_coop_produced"))) int game_coop_produced() { return coop.produced; }
+__attribute__((export_name("game_coop_remote"))) int game_coop_remote() { return coop.remote; }
+// The first tick whose hashes differed: {tick (-1 none), this machine's, the peer's}.
+__attribute__((export_name("game_coop_desync"))) uintptr_t game_coop_desync() { return (uintptr_t)&coop.desync; }
 // The run's canonical words at portable_output (coop_words), co-op or not.
 __attribute__((export_name("game_coop_canonical"))) int game_coop_canonical() {
   if (!coop.active)
@@ -912,6 +1033,10 @@ static const CoopTick *coop_tick_at(int t) {
 }
 __attribute__((export_name("game_coop_hash_at"))) uint32_t game_coop_hash_at(int t) {
   return coop_tick_at(t) ? coop_tick_at(t)->hash : 0;
+}
+// Test hook: the record tick `t` last ran with for `seat` (CoopInput), 0 for a tick not run.
+__attribute__((export_name("game_coop_used"))) uintptr_t game_coop_used(int t, int seat) {
+  return coop_tick_at(t) ? (uintptr_t)&coop_tick_at(t)->used[seat & 1] : 0;
 }
 __attribute__((export_name("game_coop_bake_at"))) uint32_t game_coop_bake_at(int t) {
   return coop_tick_at(t) ? coop_tick_at(t)->bake : 0;

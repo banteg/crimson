@@ -854,13 +854,18 @@ stays on the arena screen and sees the replay viewer's top-right pick card
 - **Leaving a run**:
 
   - The pause banner and the end screen offer **Leave**. Leaving sends
-    `MSG_LEAVE { run_epoch, last_tick: input_produced_tick }`, stops producing
-    input, and keeps the connection until `peer_ack_tick >= last_tick`, so the
-    partner holds every input the leaver published.
+    `MSG_LEAVE { last_tick: input_produced_tick }` and stops producing input.
+    The partner stops producing too and answers once with its own
+    `MSG_LEAVE`. A pending perk request, or the picker's open perk screen,
+    closes as a cancel.
 
-  - Both peers simulate through `last_tick` and stop there, so both replays end
-    on the same tick. The partner sees the end panel with "Player N left" and
-    returns to the menu; the session ends for both.
+  - Both peers run through `end_tick`, the lower of the two `last_tick`s, every
+    record of which both hold or repair. A peer whose predictions ran past it
+    goes back to the state after it. Both replays end on the same tick, in the
+    same state. Each peer then keeps sending ticks packets for a second (or four
+    round trips) after the partner acknowledged its records through the end, and
+    closes. The partner sees the end panel with "Player N left" and returns to
+    the menu; the session ends for both.
 
   - A left run is a quit: its replay is saved locally and it does not rank. A
     disconnect (Section 6.2 timeouts) ends the run the same way at the last
@@ -1049,79 +1054,130 @@ peers always read/write the same active transport.
 
 ### 6.2 Wire protocol & gap-repair guarantee
 
-#### Preventing >8-tick burst-loss deadlocks
+The protocol lives in the game module
+([`host/coop_wire.inc`](../../crimson-core/host/coop_wire.inc)) over the
+engine ([`host/coop.inc`](../../crimson-core/host/coop.inc)); the transport
+([`client/web/coop.js`](../../crimson-core/client/web/coop.js)) moves its bytes
+on two channels. Channel 0 (`coop-ticks`, `ordered: false, maxRetransmits: 0`)
+is best effort. Channel 1 (`coop-control`) arrives once and in order, across
+transport switches too. Everything is little-endian. Each run is an epoch: the
+Host's run start increments it, and what belongs to another epoch is ignored.
 
-An unreliable packet carrying only the newest 8 ticks (`inputs[head_tick - 7 .. head_tick]`)
-will permanently deadlock `remote_contiguous_tick` if a burst of packet loss or a
-temporary stall drops 9 consecutive packets while later packets (`head_tick > lost_tick + 8`)
-keep arriving.
+#### Frontiers on the wire
 
-**Mandatory recovery rule**:
+- `remote`: the partner's records held without a gap. Records past it, out of
+  order, are kept and used as they are.
+- `peer_ack`: the highest `ack_tick` the partner sent, so the highest of this
+  peer's records it holds without a gap.
+- A tick waiting for a partner record that has not arrived runs on a guess: the
+  partner's nearest earlier real record, with its axes, aim and held keys, its
+  presses (flag bits 1 and 2) cleared, and no perk request. A record arriving
+  later, out of order, plays no part in the guess.
+- `confirmed`: the highest tick run on both peers' real records, as every tick
+  before it was.
 
-1. Each peer retains its produced `local_inputs[t]` in a 256-tick circular buffer
-   (4 seconds of history, **never** overwritten until `peer_ack_tick >= t`).
+A peer produces a record while `produced < next + delay`,
+`produced - peer_ack < 120`, and nothing holds it: a pause, a leave, its own
+perk request waiting for confirmation, or a desync or error.
 
-2. Whenever the sender sees `input_produced_tick - peer_ack_tick > 8`, or
-   receives a packet whose `ack_tick` has not advanced for 3 frames while
-   `ack_tick < input_produced_tick`, the sender immediately transmits
-   `MSG_INPUT_REPAIR { run_epoch, start_tick: peer_ack_tick + 1, count, inputs[] }`
-   over the reliable `coop-control` channel.
-
-3. If the remote advertises `head_tick > remote_contiguous_tick` and
-   `remote_contiguous_tick` still fails to advance for **5 seconds** despite
-   packet liveness (**progress timeout**: an unrepaired gap), or no packets
-   arrive for **15 seconds** (**liveness timeout**), the session aborts cleanly.
-   A peer that simply stops producing input (pause, perk menu barrier) advertises
-   no gap, so barriers of any length never trip the progress timeout.
-
-#### Channel 1: `coop-ticks` (`ordered: false, maxRetransmits: 0`, little-endian, 200 bytes at $W = 8$)
+#### Channel 0: the ticks packet (200 bytes at $W = 8$)
 
 | Offset | Type | Field | Description |
 | --- | --- | --- | --- |
-| `0` | `uint8` | `magic_ver` | `0xC3` (Crimson Co-op v3) |
-| `1` | `uint8` | `window_count` | Number of contiguous ticks in `inputs` ($1..8$) |
-| `2` | `uint8` | `flags` | Bit `0`: `has_hash` (`hash_tick` valid); Bit `1`: `is_focused` |
-| `3` | `uint8` | `reserved0` | `0` (4-byte alignment) |
-| `4` | `uint32` | `run_epoch` | Monotonic run counter (`1..N`); packets with `run_epoch != current` are dropped |
-| `8` | `uint32` | `ping_seq` | Monotonic sender packet sequence number |
-| `12` | `uint32` | `echo_ping_seq` | Highest `ping_seq` received from remote peer (`0` if none) |
-| `16` | `uint16` | `echo_hold_ms` | Milliseconds elapsed between receiving `echo_ping_seq` and sending this packet |
-| `18` | `uint16` | `reserved1` | `0` (4-byte alignment) |
-| `20` | `uint32` | `head_tick` | Highest tick index in `inputs` |
-| `24` | `uint32` | `ack_tick` | `remote_contiguous_tick` (`0xFFFFFFFF` sentinel when no tick $\ge 0$ received yet) |
-| `28` | `uint32` | `hash_tick` | Confirmed tick $T_h \le \text{confirmed\_through}$ for `state_hash` (valid iff `flags & 1`) |
+| `0` | `uint8` | `magic_ver` | `0xC3` |
+| `1` | `uint8` | `window_count` | Records carried, `0..8`; `0` is a keepalive |
+| `2` | `uint8` | `flags` | Bit `0`: `has_hash`; bit `1`: focused |
+| `3` | `uint8` | | `0` |
+| `4` | `uint32` | `run_epoch` | The sender's epoch |
+| `8` | `uint32` | `ping_seq` | The sender's packet sequence, from `1` |
+| `12` | `uint32` | `echo_ping_seq` | The highest `ping_seq` the sender received (`0` none) |
+| `16` | `uint16` | `echo_hold_ms` | Milliseconds since it arrived |
+| `18` | `uint16` | | `0` |
+| `20` | `uint32` | `head_tick` | The sender's last record produced (`0xFFFFFFFF` outside a run) |
+| `24` | `uint32` | `ack_tick` | The sender's `remote` (`0xFFFFFFFF` outside a run) |
+| `28` | `uint32` | `hash_tick` | A confirmed tick, valid with `has_hash` |
 | `32` | `uint32` | `state_hash` | `game_coop_hash_at(hash_tick)` (Section 4.1) |
-| `36` | `uint32` | `cmd_packed` | 8×4-bit command nibbles (`0` = none, `1..7` = `PICK(0..6)`, `8` = `OPEN`) for `inputs[0..W-1]` |
-| `40` | `20B × W` | `inputs[W]` | $W$ `PortableInput` structs (`[head_tick - W + 1 .. head_tick]`) |
+| `36` | `uint32` | `cmd_packed` | Each record's perk request, 4 bits, oldest in the low nibble (`0` none, `1..7` `PICK(0..6)`, `8` `OPEN`) |
+| `40` | `PortableInput[W]` | `inputs` | Records `head_tick - W + 1 .. head_tick` |
 
-*RTT calculation*: Upon receiving a packet echoing `echo_ping_seq == s`,
-$\text{RTT} = \max(0, t_{\text{recv}} - t_{\text{sent}}[s] - \text{echo\_hold\_ms})$.
-This requires no shared clock origin and never suffers 16-bit wraparound.
+- **Window**: the newest `min(8, produced - peer_ack)` records, the ones the
+  partner has not acknowledged.
+- **Pacing**: at most one packet a frame and 60 a second. A packet with a new
+  record goes as soon as it is produced; a keepalive waits for a second
+  packet's credit. Outside a run, and once the run is over, keepalives still
+  carry pings and hashes.
+- **Round trip**: on a packet echoing `s`,
+  $\text{RTT} = \max(0, t_{\text{recv}} - t_{\text{sent}}[s] - \text{echo\_hold\_ms})$,
+  smoothed by 1/8. The gaps in the partner's `ping_seq` count its losses, and
+  their spacing gives its packet interval. Packets of another epoch still feed
+  both.
+- **Hashes**: `hash_tick` reports this peer's confirmed ticks the partner can
+  confirm too (no later than its last `ack_tick`). It starts at the newest and
+  goes back over the last 16 in turn, so a lost packet's hash comes round again.
+  The receiver keeps the last 256 it was sent. It compares each one when it
+  confirms that tick, or at once if it already has. On a mismatch it sends
+  `DESYNC` once and stops.
+- **Validation**: every record must pass `portable_input_valid` (the rule
+  `portable_step_many` applies), with a request of at most `8`. Its tick must lie
+  within `remote + 120`. A record differing from one already held for its tick
+  is an error too. So are a malformed packet, an `ack_tick` past the receiver's
+  produced records, and a `hash_tick` past its `remote`. Any of these sends
+  `ERROR` and stops both peers.
 
-*Remote input prediction rule*: When predicting missing remote input for tick
-$t > \text{remote\_contiguous\_tick}$, always copy the `PortableInput` from the
-highest received tick $t_{\text{src}} \le t$ (specifically
-`remote_contiguous_tick`), **never** from a future tick $> t$. A predicted tick
-always carries `cmd = 0`: copying an `OPEN` or `PICK` nibble would repeat a perk
-command the remote never sent.
+#### Gap repair
 
-#### Channel 2: `coop-control` (`ordered: true`, reliable)
+The window repeats each record on every packet until it is acknowledged. A
+burst of losses can still outlast the window: a peer far enough ahead (rollback,
+a longer delay) has more than 8 records unacknowledged. A record that has left
+the window, and stays unacknowledged a round trip plus two of the partner's
+packet intervals after it last left, goes again in `INPUT_REPAIR` on channel 1.
+Each repair starts at `peer_ack + 1`, and a record goes at most once a round trip.
 
-Per [RFC 8831 Section 6.3](https://www.rfc-editor.org/rfc/rfc8831.html#section-6.3),
-delivery ordering across two separate WebRTC DataChannels (`coop-ticks` and
-`coop-control`) is not guaranteed. Therefore, every message on both channels
-carries `run_epoch` (`uint32`), and tick `0` inputs for `run_epoch` are gated
-until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
+#### Channel 1: messages
 
-- `MSG_HELLO`: `{ type: "hello", protocol_ver: 3, build_id: string, role: 0 | 1 }`
-- `MSG_START_RUN`: `{ type: "start", run_epoch: number, player_count: 2, delay_ticks: number, config_b64: string, quest_b64?: string, replay_header_b64: string }`
-- `MSG_START_ACK`: `{ type: "start_ack", run_epoch: number }`
-- `MSG_INPUT_REPAIR`: `{ type: "repair", run_epoch: number, start_tick: number, cmds_b64: string, inputs_b64: string }`
-- `MSG_PAUSE`: `{ type: "pause", run_epoch: number, pause_seq: number, paused: boolean }`
-- `MSG_LEAVE`: `{ type: "leave", run_epoch: number, last_tick: number }`
-- `MSG_NEXT_RUN`: `{ type: "next_run", run_epoch: number, choice: "again" | "next" | "setup" }` (Guest to Host)
-- `MSG_RUN_SIGNED`: `{ type: "run_signed", run_epoch: number, name: string, public_key: string, signature: string }`
-- `MSG_DESYNC`: `{ type: "desync", run_epoch: number, tick: number, local_hash: number, remote_hash: number, snapshot_b64?: string }` (exchanges compressed `coop_canonical_snapshot()` at `tick` so both peers log the exact first differing `schema.json` / host / overflow field).
+Each message is `u8 type, u32 epoch, payload`. `HELLO`, `LEAVE` and `ERROR`
+belong to the session and skip the epoch check. `START_RUN` must name a later
+epoch than the receiver's. Every other message of another epoch is ignored.
+
+| Type | Message | Payload | Rule |
+| --- | --- | --- | --- |
+| `1` | `HELLO` | `u16 protocol (1), u8 len, build[len]` | On connect; a different protocol or build (`replay_client_version`) is an error |
+| `2` | `START_RUN` | `u8 delay, u8 rmax, PortableConfig, u8 choice, u16 header_len, header` | Host only, once the last run is over on both peers (the Guest reported a hash for its last tick) or none started. The Guest runs `portable_init` with the config and starts its seat |
+| `3` | `START_ACK` | | The Guest started. Until then the Host's run neither produces nor runs, and it gives up after 10 s |
+| `4` | `START_DECLINE` | | The Guest cannot start (it is leaving) |
+| `5` | `INPUT_REPAIR` | `u32 start_tick, u16 count, count × (PortableInput, u8 request)` | Gap repair |
+| `6` | `PAUSE` | `u32 pause_seq, u8 paused` | `pause_seq` is one past the highest seen. The highest wins, the Host's on a tie, and neither peer produces while paused |
+| `7` | `LEAVE` | `u32 last_tick` | Section 5.2 |
+| `8` | `NEXT_RUN` | `u8 choice` (`0` again, `1` next, `2` setup) | Guest to Host; the first one per epoch is kept for the next run |
+| `9` | `RUN_SIGNED` | | Milestone M3 |
+| `10` | `DESYNC` | `u32 tick, u32 local_hash, u32 remote_hash` | Sent once; both peers stop |
+| `11` | `ERROR` | `u8 code` | A protocol error; both peers stop |
+
+Ticks packets of the new epoch are taken only once the run started on the
+receiving peer: on the Guest from `START_RUN`, on the Host from `START_ACK`. Each
+peer seeds ticks `0 .. delay - 1` with neutral records.
+
+#### Timeouts
+
+- **Progress**: 5 s without `remote` advancing, counted only while the
+  partner's `head_tick` is past it, so a pause or a perk menu never trips it.
+- **Liveness**: 15 s without a packet or message.
+- Either ends the run at its last confirmed tick, as a lost connection does.
+
+#### Exports and status
+
+`game_coop_connect(seat, now)` begins a session and says hello.
+`game_coop_request(kind, …, now)` asks for a perk menu, a pause, a leave, the
+Guest's next-run choice or the Host's run start. For incoming bytes the host
+calls `game_coop_rx(size)` first, copies the bytes to the pointer it returns,
+then calls `game_coop_receive(channel, size, now)`. After the frame it drains
+`game_coop_tx(channel, now)` from `game_coop_tx_buffer()`. `game_coop_status()`
+returns flags: connected, started, starting, paused, waiting (a perk request
+waits for its tick's confirmation), picker, leaving, ended, desynced, failed,
+and whether the partner found it. It also carries the reason (bits 16-23) and
+the Guest's next-run choice held by the Host (bits 24-27). `game_coop_stats()`
+adds the session's counters: packets sent, received and lost, stale packets
+and messages, repairs and the records they carried, and the round trip.
 
 ---
 
@@ -1193,7 +1249,7 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
 ### Milestone `M0b`: Rollback ring, side-effect isolation & `checks/game_coop.mjs` gate
 
 1. **Files**: `crimson-core/host/keyframes.inc`, `host/coop.inc`,
-   `checks/game_coop.mjs`.
+   `host/coop_wire.inc`, `checks/game_coop.mjs`.
 
 2. **Changes**:
    - Implement 16-slot `RollbackRing`, `coop_canonical_snapshot()`, per-tick lead
@@ -1211,8 +1267,9 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
      the run's `LiveSettings` status, or `game_effect_overflow` trips
      `coop_canonical_hash()`.
 
-4. **Status**: the engine and its solo gate have landed; the two-peer protocol
-   and its pipe are next. `game_coop_start(-1, …)` runs the engine with both
+4. **Status**: the engine, the two-peer wire protocol (Section 6.2) and their
+   gate have landed, headless; the live session (M1) is next.
+   `game_coop_start(-1, …)` runs the engine with both
    players local, the same derivation, capture and digests as a peer.
    `checks/game_coop.mjs` (CI's `game-coop` job) plays every `coop-*` stream of
    the corpus through it against the plain run, word for word, then again
@@ -1232,6 +1289,31 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
    in-game tunes, compares every canonical word of every tick with the plain
    run's, and what it draws into the terrain and its music after every frame
    with the plain pass's. It prints each stream's rollbacks and costs.
+
+   The gate then plays every stream between two modules, Host and Guest, each
+   playing its own seat through the wire protocol. They run over a seeded
+   simulated pipe: 40 ± 30 ms each way, 2 % loss on channel 0 and one burst of
+   12 lost packets, reliable and ordered channel 1. One peer draws at 60 Hz and
+   the other at 144 Hz with a 300 ms stutter. The Host starts each run. Each
+   peer produces its seat's records: an open only when its state allows it, and
+   the pick once it is the picker. Each stream plays in lockstep and with a
+   window of 8, at delays 2 and 4. On both peers every confirmed tick must have
+   the oracle's digests and raw state, and both must end on the same tick in
+   the same state. The session's cases follow:
+   - pause and resume races (a tie goes to the Host), and a pause longer than
+     the progress timeout;
+   - leaving mid-run, while paused, from the picker's open perk menu, and while
+     a request waits for confirmation;
+   - a rematch while every packet and message of the previous run arrives again;
+   - an invalid record (an error on both), a forced state change (a desync on
+     both), and different builds.
+
+   A direct check confirms a guess drops the presses of the record it copies.
+   Coverage between the peers requires repairs, mispredictions, and opens and
+   picker waits for both seats. The pipe found that held bakes drawn between
+   ticks left their decals in the queues past the queued count. Commit now puts
+   the whole queues back, so a peer's raw state does not depend on when it
+   drew.
 
 ### Milestone `M1`: Two-browser adaptive-delay lockstep prototype
 
