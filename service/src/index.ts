@@ -20,6 +20,7 @@ import {
   players,
   profileView,
   questMenuView,
+  replaysView,
   runDescription,
   runDetailView,
   runSummary,
@@ -118,6 +119,7 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   if (quests)
     return json(quests.quest ? await boardView(env, quests.board, quests.quest, category!, 100) : await questMenuView(env, quests.board, quests.stage, category!));
   if (page === "/custom") return json(await customQuestsListView(env, category!));
+  if (page === "/replays") return json(await replaysView(env));
   if (page !== null && (match = /^\/custom\/([^/]+)$/.exec(page)) && CUSTOM_QUEST_ID.test(match[1]!)) {
     const quest = await customQuestDetailView(env, match[1]!, category!);
     return quest ? json(quest) : refuse(404, "no such quest");

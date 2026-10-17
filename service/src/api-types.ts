@@ -178,6 +178,11 @@ export interface Timeline {
   effects: Record<string, [start: number, end: number][]>;
 }
 
+// Every run the boards rank, for CI to replay through a changed verifier before it ships (scripts/reverify.mjs).
+export interface ReplaysView {
+  runs: string[];
+}
+
 // A run's page: the run, its rank when it is its player's best on the board, the board's top run and the player's
 // best when they are other runs, for comparison.
 export interface RunDetailView {
