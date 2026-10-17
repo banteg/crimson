@@ -85,6 +85,8 @@ A run two players play together ([online co-op](network-coop.md)) is both player
   putting a throwaway key in the other's seat to sign both seats and take the run alone, so the room attests the pair:
   each seat proves its key to the co-op room ([network co-op](network-coop.md) §6.1), which issues a run's seed only
   once both seats have, and records the seed with their keys.
+- The room's seeds leave bit 31 clear and the service refuses a co-op run whose seed sets it: the game's `rand` never
+  reads that bit, so `s` and `s ^ 0x80000000` would play one run under two seeds.
 - The service takes the run only when its replay records the seats' keys and a room issued its seed to those keys in
   seat order, with one signer for each of its players, every seat from 0 (player one, the room's host) once, signed by
   the key recorded for it, every signature verifying over its seat and name, and no key banned. A co-op run sent with

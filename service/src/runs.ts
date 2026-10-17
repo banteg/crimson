@@ -4,7 +4,7 @@ import { concat, COOP_RUN_DOMAIN, fromHex, hex, latin1, RUN_DOMAIN, sha256, veri
 import { accountForKey, type Env, json, refuse } from "./http";
 import { outcomeReasons, rankedBoard, rankedScore, unrankedReasons } from "./ranked";
 import type { Signals, Timeline } from "./api-types";
-import { type CustomQuest, decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError } from "./replay";
+import { type CustomQuest, decodeReplay, inflateReplay, type Replay, REPLAY_RULES, ReplayError, SEED_BITS } from "./replay";
 import { GroundBake, groundArt, groundKey } from "./ground";
 import { encodeJpeg } from "./jpeg";
 import { encodePortableQuest, encodeTransport, runIdentity } from "./transport";
@@ -84,9 +84,11 @@ function signersReason(signers: Signer[], players: number, seatKeys: Uint8Array[
 
 // Why a co-op run's room does not stand for its pair, or null: its seed must be one a room issued (src/coop.ts), and
 // to the keys its replay records, in seat order. Either partner holds the replay and could rewrite those keys to sign
-// both seats alone; the room recorded the keys each seat proved before the run began.
+// both seats alone; the room recorded the keys each seat proved before the run began. Rooms issue seeds in the bits
+// rand reads, and a seed outside them would play the run of the seed inside.
 async function roomReason(env: Env, replay: Replay): Promise<string | null> {
   if (replay.run.player_count < 2) return null;
+  if ((replay.run.seed & SEED_BITS) !== replay.run.seed) return "a co-op run's seed must have bit 31 clear";
   const issued = await env.DB.prepare("SELECT seat0_key, seat1_key FROM coop_runs WHERE seed = ?")
     .bind(replay.run.seed)
     .first<{ seat0_key: string; seat1_key: string }>();

@@ -7,6 +7,7 @@ import { DurableObject } from "cloudflare:workers";
 import { tokenHash } from "./auth";
 import { concat, COOP_SEAT_DOMAIN, fromHex, randomToken, verifyEd25519 } from "./crypto";
 import { type Env, json, refuse } from "./http";
+import { SEED_BITS } from "./replay";
 import { iceServers, type IceServer } from "./turn";
 
 type Role = "host" | "guest";
@@ -197,7 +198,8 @@ export class CoopRoom extends DurableObject<Env> {
     for (const seat of this.open()) seat.send(JSON.stringify({ type: "key", role, public_key: key }));
   }
 
-  // A run's seed for the pair whose keys the seats proved, recorded with those keys for the run's upload.
+  // A run's seed for the pair whose keys the seats proved, recorded with those keys for the run's upload, in the bits
+  // rand reads, so no two seeds the room issues play one run.
   private async issueSeed(ws: WebSocket, role: Role): Promise<void> {
     if (role !== "host") return ws.close(1008, "only the host asks for a seed");
     if (!this.seeds.take()) return ws.close(1008, "too many seeds");
@@ -210,7 +212,7 @@ export class CoopRoom extends DurableObject<Env> {
       "INSERT INTO coop_runs (seed, room_id, seat0_key, seat1_key, issued_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (seed) DO NOTHING",
     );
     let seed: number;
-    do seed = crypto.getRandomValues(new Uint32Array(1))[0]!;
+    do seed = crypto.getRandomValues(new Uint32Array(1))[0]! & SEED_BITS;
     while (!(await insert.bind(seed, room.id, host, guest, Date.now()).run()).meta.changes);
     for (const seat of this.open()) seat.send(JSON.stringify({ type: "seed", seed }));
   }

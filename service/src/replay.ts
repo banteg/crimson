@@ -26,6 +26,9 @@ const RUN_KEYS = [
 const V30_RULES = 1;
 // An Ed25519 public key's bytes (src/crimson/replay/types.py SEAT_KEY_BYTES).
 export const SEAT_KEY_BYTES = 32;
+// The bits of a run's seed the game reads: MSVC's rand never reads bit 31 of its state, so seeds s and s ^ 0x80000000
+// play the same run.
+export const SEED_BITS = 0x7fffffff;
 // The simulation rules this service verifies (src/crimson/replay/types.py REPLAY_RULES).
 export const REPLAY_RULES = 1;
 const MAX_FILE_BYTES = 65 * 1024 * 1024;

@@ -1064,7 +1064,8 @@ proof on one socket, or a reconnect proving another key closes the socket
 with `1008`.
 
 **Seeds.** Once both seats have proven keys, the Host asks `{type: "seed"}`
-for each run. The room draws a fresh random u32 seed, records it in D1
+for each run. The room draws a fresh random seed with bit 31 clear (`rand`
+never reads that bit), records it in D1
 (`coop_runs`: seed, room id, the host's and the guest's keys, issue time;
 each seed once, drawn again on a collision) and sends it to both seats. A
 seed request from the guest, before both seats have proven keys, or past ten

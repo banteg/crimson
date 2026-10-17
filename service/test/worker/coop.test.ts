@@ -355,6 +355,15 @@ describe("co-op rooms", () => {
     expect(host.pending() + again.pending()).toBe(0);
   });
 
+  it("issues seeds with bit 31 clear, which rand never reads", async () => {
+    const { host, guest } = await provenPair();
+    vi.spyOn(crypto, "getRandomValues").mockImplementationOnce((array) => (new Uint32Array(array.buffer).set([0xffffffff]), array));
+    host.ws.send(SEED);
+    const issuedSeed = { type: "seed", seed: 0x7fffffff };
+    expect([await host.json(), await guest.json()]).toEqual([issuedSeed, issuedSeed]);
+    expect((await issued()).map((row) => row.seed)).toEqual([0x7fffffff]);
+  });
+
   it("limits the host to ten seeds a minute", async () => {
     const { host } = await provenPair();
     for (let i = 0; i < 10; i++) {

@@ -26,14 +26,19 @@ function zstdRaw(payload: Uint8Array): Uint8Array {
   return concat(...parts);
 }
 
-// The replay `file` with the seat key `from` its header records rewritten to `to`, as anyone holding it could.
-function rekeyed(file: string, from: string, to: string): string {
+// The replay `file` with the bytes `from` in its payload rewritten to `to`, as anyone holding it could.
+function rewritten(file: string, from: Uint8Array, to: Uint8Array): string {
   const payload = inflateReplay(decode64(file));
-  const recorded = concat(Uint8Array.of(0xc4, 32), fromHex(from, 32)!);
-  const at = payload.findIndex((_, i) => recorded.every((byte, j) => payload[i + j] === byte));
-  payload.set(fromHex(to, 32)!, at + 2);
+  payload.set(to, payload.findIndex((_, i) => from.every((byte, j) => payload[i + j] === byte)));
   return encode64(zstdRaw(payload));
 }
+// A seat key and a 32-bit number as the payload holds them: msgpack bin 8 and uint 32.
+const seatKey = (key: string) => concat(Uint8Array.of(0xc4, 32), fromHex(key, 32)!);
+const uint32 = (value: number) => Uint8Array.of(0xce, value >>> 24, (value >>> 16) & 255, (value >>> 8) & 255, value & 255);
+// The replay `file` with the seat key `from` its header records rewritten to `to`.
+const rekeyed = (file: string, from: string, to: string) => rewritten(file, seatKey(from), seatKey(to));
+// The replay `file` with the 32-bit number `from` rewritten to `to`.
+const renumbered = (file: string, from: number, to: number) => rewritten(file, uint32(from), uint32(to));
 
 class Player {
   private constructor(private readonly key: CryptoKeyPair, readonly publicKey: string) {}
@@ -647,9 +652,9 @@ describe("co-op runs", () => {
   ];
   // The room's record of the seed it issued the vectors' pair, which their run starts from (src/coop.ts).
   const seed = decodeReplay(inflateReplay(decode64(file))).run.seed;
-  const attest = (keys = vectors.coop_run.seat_keys) =>
+  const attest = (keys = vectors.coop_run.seat_keys, issued = seed) =>
     env.DB.prepare("INSERT INTO coop_runs (seed, room_id, seat0_key, seat1_key, issued_at) VALUES (?, 'roomroom00', ?, ?, ?)")
-      .bind(seed, keys[0], keys[1], Date.now())
+      .bind(issued, keys[0], keys[1], Date.now())
       .run();
   beforeEach(() => attest());
   const remove = async (player: Player) => {
@@ -755,6 +760,20 @@ describe("co-op runs", () => {
 
     await attest();
     expect((await uploadPair(file, [alice, "alice"], [bob, "bob"])).status).toBe(201);
+  });
+
+  it("a co-op run whose seed sets bit 31, which rand never reads, does not rank even from a room's record", async () => {
+    const [alice, bob] = await pair();
+    // Flipping bit 31 of the seed flips only that bit of every rng state after it, so the run with the claimed final
+    // state flipped too plays and verifies as the run, under another run id.
+    const flip = (value: number) => (value ^ 0x80000000) >>> 0;
+    const { rng_state } = decodeReplay(inflateReplay(decode64(file))).result;
+    const flipped = renumbered(renumbered(file, seed, flip(seed)), rng_state, flip(rng_state));
+    expect(decodeReplay(inflateReplay(decode64(flipped))).run.seed).toBe(flip(seed));
+    await attest(vectors.coop_run.seat_keys, flip(seed));
+    const signers = [await alice.signer(flipped, 0, "alice"), await bob.signer(flipped, 1, "bob")];
+    expect(await refused({ replay: flipped, signers })).toEqual([422, "a co-op run's seed must have bit 31 clear"]);
+    expect(await env.DB.prepare("SELECT count(*) AS n FROM runs").first()).toEqual({ n: 0 });
   });
 
   it("the co-op board keeps each pair's best run, whichever seats they took", async () => {
