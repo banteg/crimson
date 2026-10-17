@@ -341,7 +341,8 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     conversion must use the 2-player midpoint
     `(player_state_table[0].position + player_state_table[1].position) * 0.5f`
     clamped to `[-1024 + W, -1] × [-1024 + H, -1]`, matching
-    `decomp/1.9/crimsonland/game/camera_update.cpp:84-95`.
+    `decomp/1.9/crimsonland/game/camera_update.cpp:67-77` (the midpoint) and
+    `:86-101` (the clamp).
 
 - **Isolation from 1P `replay.inc` and `watch.inc`**:
 
@@ -915,19 +916,24 @@ any other.
   unlocked it, so it plays with the weapons and perks the campaign has handed
   out by then), detail 5, violence on, friendly fire off, documented fixes on,
   no retries. Neither player's own save takes part, and the run changes
-  neither player's progress. Rush, Typ-o and the Tutorial stay out of co-op.
+  neither player's progress. Rush, Typ-o, the Tutorial and custom quests stay
+  out of co-op: a custom quest ranks one player only (`custom_quest_players`).
 
 - **Boards**: co-op ranks on its own boards, `survival-coop`, `quests-coop` and
-  `quests-hardcore-coop`, scored as their 1P counterparts. Two-player scores
+  `quests-hardcore-coop` (`ranked_board` in `src/crimson/replay/ranked.py`),
+  scored as their 1P counterparts. Two-player scores
   are not comparable with one-player ones: XP is shared and 2P doubles the
   Survival spawn countdown (`survival_update.cpp:217`).
 
 - **Controls & aim**: every tick of both players uses human controls. Each
-  player's mouse aim point lies inside the 1024x768 view around the camera the
-  previous tick left; in 2P that camera follows the players' midpoint
-  (`camera_update.cpp:84-95`), the view both players see. Pad aim keeps the
-  138-unit reach. If either player's client declares a pilot, the run goes to
-  the bot boards ([bots and moderation](bots.md)).
+  player's mouse aim point, and each new point-click target, lies inside the
+  1024x768 view around the camera the previous tick left; in 2P that camera
+  follows the living players' midpoint (`camera_update.cpp:57-80`,
+  `camera_update_for_players` in `src/crimson/camera.py`) clamped to the arena
+  (`:86-101`), the view both players see, and stays where it was while nobody
+  lives (`:78-79`). Pad aim keeps the 138-unit reach. If either player's client
+  declares a pilot, the run goes to the bot boards
+  ([bots and moderation](bots.md)).
 
 - **Finished runs**: a Survival team wipe or a completed quest ranks; a quit,
   a leave, a disconnect or a failed quest does not.
@@ -953,7 +959,8 @@ any other.
   its own player, as a 1P ranked run does before `ranked_release()`
   (`crimson-core/host/ranked.inc:85-99`). When the player confirms, the peer
   signs the replay as a [leaderboard upload](leaderboard-identity.md#uploads)
-  does and sends `MSG_RUN_SIGNED { run_epoch, name, public_key, signature }`.
+  does, with the key its seat records, and sends
+  `MSG_RUN_SIGNED { run_epoch, name, public_key, signature }`.
   Each peer queues the replay with both signatures in its outbox, so either can
   upload later, offline play included; the service accepts the run once and
   answers the second upload with `409`. A co-op run ranks only with both
@@ -1431,12 +1438,14 @@ and messages, repairs and the records they carried, and the round trip.
    - **`players[1]` in `RunResult`**: native keeps XP on player 0 and weapon
      usage in one global table, so player 1's `experience` is `0`, its
      `health` is `player_state_table[1].health`, and its most used weapon comes
-     from the shared table, falling back to its own weapon only when every
-     count is zero (`most_used_weapon_id_for_player`,
-     `src/crimson/weapon_runtime/assign.py`).
+     from the shared table: the Pistol (`1`) unless another weapon has more
+     equipped time, so also when every count is zero. Its own weapon stands in
+     only when the best slot names no weapon
+     (`most_used_weapon_id_for_player`, `src/crimson/weapon_runtime/assign.py`).
    - **Ranked aim checks**: the service's `TickMonitor`
-     (`service/src/verify.ts:129-155`) tracks the 2P camera (the midpoint of
-     the living players, `camera_update.cpp:60-97`) and checks both
+     (`service/src/verify.ts:129-155`) tracks the 2P camera as Python's
+     `RankedTickMonitor` does (the midpoint of the living players,
+     `camera_update.cpp:57-80`, kept while nobody lives, `:78-79`) and checks both
      `input(tick, 0)` and `input(tick, 1)` with a move target per player.
 
 3. **Gate**: a co-op `.crd` recorded by two browsers verifies in the service,

@@ -28,7 +28,7 @@ from ..typo.names import (
     is_typo_highscore_name,
 )
 from ..typo.state import TypoCarry
-from .types import Pilot, Recorder, Replay, ReplayTick, input_flags_validation_error
+from .types import SEAT_KEY_BYTES, Pilot, Recorder, Replay, ReplayTick, input_flags_validation_error
 
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
 # Level 9 writes a long survival replay in ~16 ms and its checkpoint sidecar in ~95 ms; 19 took 0.4 s and
@@ -92,6 +92,18 @@ class _ReplayV32(msgspec.Struct, forbid_unknown_fields=True):
     ticks: list[ReplayTick]
 
 
+class _ReplayV33(msgspec.Struct, forbid_unknown_fields=True):
+    """Format 33, which had no `seat_keys`: its runs name no seat's key."""
+
+    format_version: int
+    game_version: str
+    rules: int
+    recorder: Recorder
+    pilot: Pilot | None
+    run: RunSpec
+    result: RunResult
+    ticks: list[ReplayTick]
+
 
 class _CustomQuestV33Legacy(msgspec.Struct, frozen=True, kw_only=True, forbid_unknown_fields=True):
     title: str
@@ -140,6 +152,7 @@ _V30_RULES = 1
 _ENCODER = msgspec.msgpack.Encoder()
 _DECODERS: dict[int, msgspec.msgpack.Decoder] = {
     REPLAY_FORMAT_VERSION: msgspec.msgpack.Decoder(type=Replay),
+    33: msgspec.msgpack.Decoder(type=_ReplayV33),
     32: msgspec.msgpack.Decoder(type=_ReplayV32),
     31: msgspec.msgpack.Decoder(type=_ReplayV31),
     30: msgspec.msgpack.Decoder(type=_ReplayV30),
@@ -168,7 +181,7 @@ def _upgrade_v33_custom_quest(cq: _CustomQuestV33Legacy, *, player_count: int) -
     )
 
 
-def _upgrade(decoded: Replay | _ReplayV33Legacy | _ReplayV32 | _ReplayV31 | _ReplayV30) -> Replay:
+def _upgrade(decoded: Replay | _ReplayV33 | _ReplayV33Legacy | _ReplayV32 | _ReplayV31 | _ReplayV30) -> Replay:
     """A replay read from an earlier format, with what that format left out."""
 
     if isinstance(decoded, Replay):
@@ -183,6 +196,7 @@ def _upgrade(decoded: Replay | _ReplayV33Legacy | _ReplayV32 | _ReplayV31 | _Rep
             rules=decoded.rules,
             recorder=decoded.recorder,
             pilot=decoded.pilot,
+            seat_keys=None,
             run=RunSpec(**run_fields),
             result=decoded.result,
             ticks=decoded.ticks,
@@ -190,11 +204,11 @@ def _upgrade(decoded: Replay | _ReplayV33Legacy | _ReplayV32 | _ReplayV31 | _Rep
     fields: dict[str, Any] = {**msgspec.structs.asdict(decoded), "run": RunSpec(**msgspec.structs.asdict(decoded.run))}
     match decoded:
         case _ReplayV30():
-            return Replay(**fields, rules=_V30_RULES, pilot=None)
+            return Replay(**fields, rules=_V30_RULES, pilot=None, seat_keys=None)
         case _ReplayV31():
-            return Replay(**fields, pilot=None)
-        case _ReplayV32():
-            return Replay(**fields)
+            return Replay(**fields, pilot=None, seat_keys=None)
+        case _ReplayV32() | _ReplayV33():
+            return Replay(**fields, seat_keys=None)
 _FORMAT_PROBE = msgspec.msgpack.Decoder(type=_FormatVersion)
 
 
@@ -408,6 +422,16 @@ def _validate_pilot(pilot: Pilot) -> None:
     )
 
 
+def _validate_seat_keys(seat_keys: tuple[bytes, ...], *, player_count: int) -> None:
+    _require(
+        len(seat_keys) == player_count,
+        f"seat_keys has {len(seat_keys)} entries, expected {player_count}",
+    )
+    for index, key in enumerate(seat_keys):
+        _require(len(key) == SEAT_KEY_BYTES, f"seat_keys[{index}] must be {SEAT_KEY_BYTES} bytes")
+    _require(len(set(seat_keys)) == len(seat_keys), "seat_keys must be distinct")
+
+
 def validate_replay(replay: Replay) -> None:
     _require(replay.format_version in _DECODERS, _unsupported_format(replay.format_version))
     _require(replay.rules >= 1, "rules must be at least 1")
@@ -415,6 +439,8 @@ def validate_replay(replay: Replay) -> None:
     _validate_recorder(replay.recorder)
     if replay.pilot is not None:
         _validate_pilot(replay.pilot)
+    if replay.seat_keys is not None:
+        _validate_seat_keys(replay.seat_keys, player_count=replay.run.player_count)
     _validate_run(replay.run)
     _validate_result(replay.result, replay.run)
     _require(bool(replay.ticks), "replay must contain at least one tick")

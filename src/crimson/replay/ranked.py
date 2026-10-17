@@ -1,10 +1,10 @@
 """The ranked rules: which verified runs rank, and on which board.
 
 docs/rewrite/ranked-rules.md is the contract. A ranked run starts from the canonical profile
-(`ranked_run_spec`): one player, full detail with violence on, friendly fire off, the documented
-fixes, the quests the run's own progression has unlocked, no weapon history and no quest retries. Every tick uses human
-controls, and every aim point is one a cursor clamped to a 1024x768 view could reach. Only
-finished runs rank: a Survival death or a completed quest.
+(`ranked_run_spec`): one player or a co-op pair (custom quests take one), full detail with violence on, friendly fire
+off, the documented fixes, the quests the run's own progression has unlocked, no weapon history and no quest retries.
+Every tick uses human controls for every player, and every aim point is one a cursor clamped to a 1024x768 view could
+reach. Only finished runs rank: a Survival death or a completed quest.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ..aim_schemes import AimScheme
+from ..camera import camera_update_for_players
 from ..game_modes import GameMode
 from ..local_input import PAD_AIM_DIST_MUL_DEFAULT
 from ..movement_controls import MovementControlType
@@ -23,6 +24,7 @@ from ..quests.custom import CustomQuest
 from ..quests.level import QUEST_COUNT, QuestLevel
 from ..render.world.viewport import clamp_camera
 from ..sim.hooks import TickResult
+from ..sim.input import PlayerInput
 from ..sim.run_result import RunOutcome, RunResult
 from ..sim.run_spec import RunSpec, RunStatus
 from ..sim.world_state import WorldState
@@ -54,6 +56,8 @@ HUMAN_AIM = frozenset({
     AimScheme.DUAL_ACTION_PAD,
 })
 RANKED_MODES = frozenset({GameMode.SURVIVAL, GameMode.QUESTS})
+# One player, or a co-op pair on the co-op boards.
+RANKED_PLAYER_COUNTS = frozenset({1, 2})
 _FINISHED = {GameMode.SURVIVAL: RunOutcome.DEATH, GameMode.QUESTS: RunOutcome.QUEST_COMPLETED}
 
 
@@ -83,6 +87,7 @@ def ranked_run_spec(
     quest_level: QuestLevel | None = None,
     custom_quest: CustomQuest | None = None,
     hardcore: bool = False,
+    player_count: int = 1,
 ) -> RunSpec:
     """The run a ranked attempt plays; hardcore only changes stock quests, so Survival and custom quests have one board."""
 
@@ -92,7 +97,7 @@ def ranked_run_spec(
         seed=seed,
         quest_level=quest_level,
         custom_quest=custom_quest,
-        player_count=1,
+        player_count=player_count,
         hardcore=hardcore,
         preserve_bugs=False,
         quest_fail_retry_count=0,
@@ -107,14 +112,25 @@ def human_controls(movement: MovementControlType, aim: AimScheme) -> bool:
     return movement in HUMAN_MOVEMENT and aim in HUMAN_AIM
 
 
+def board_for(game_mode: GameMode, *, hardcore: bool, player_count: int) -> str | None:
+    """The leaderboard a ranked run of this mode, difficulty and team goes to; a co-op pair has boards of its own."""
+
+    if player_count not in RANKED_PLAYER_COUNTS:
+        return None
+    match game_mode:
+        case GameMode.SURVIVAL:
+            board = "survival"
+        case GameMode.QUESTS:
+            board = "quests-hardcore" if hardcore else "quests"
+        case _:
+            return None
+    return board if player_count == 1 else f"{board}-coop"
+
+
 def ranked_board(run: RunSpec) -> str | None:
     """The leaderboard a ranked run of `run` goes to."""
 
-    if run.game_mode_id == GameMode.SURVIVAL:
-        return "survival"
-    if run.game_mode_id == GameMode.QUESTS:
-        return "quests-hardcore" if run.hardcore else "quests"
-    return None
+    return board_for(GameMode(run.game_mode_id), hardcore=run.hardcore, player_count=run.player_count)
 
 
 def unranked_reasons(run: RunSpec) -> list[str]:
@@ -123,8 +139,11 @@ def unranked_reasons(run: RunSpec) -> list[str]:
     reasons = []
     if run.game_mode_id not in RANKED_MODES:
         reasons.append("mode")
-    if run.player_count != 1:
+    if run.player_count not in RANKED_PLAYER_COUNTS:
         reasons.append("players")
+    elif run.custom_quest is not None and run.player_count != 1:
+        # A custom quest's board, and the clear that publishes it, are one player's.
+        reasons.append("custom_quest_players")
     if run.preserve_bugs:
         reasons.append("original_rules")
     if run.detail_preset != RANKED_DETAIL_PRESET:
@@ -154,16 +173,18 @@ def outcome_reasons(run: RunSpec, result: RunResult) -> list[str]:
 
 
 class RankedTickMonitor(PlaybackWalkObserver):
-    """Checks each tick's controls and aim against the ranked view while a replay plays back.
+    """Checks each tick's controls and aim, for every player, against the ranked view while a replay plays back.
 
-    The camera is centred on player one and clamped to the arena for the 1024x768 view, with slack for screen
-    shake and a multi-tick frame of movement. A smaller live view always lies inside that rectangle.
+    The camera follows the game's: the player, or the living players' midpoint in co-op, held where it was while
+    nobody lives. It is clamped to the arena for the 1024x768 view, with slack for screen shake and a multi-tick
+    frame of movement. A smaller live view always lies inside that rectangle.
     """
 
     replay: Replay
     reasons: set[str] = msgspec.field(default_factory=set)
     camera: Vec2 | None = None
-    move_target: Vec2 | None = None
+    # Each player's point-click target, by player index.
+    move_targets: dict[int, Vec2 | None] = msgspec.field(default_factory=dict)
 
     def before_tick(self, tick_index: int, world: WorldState, dt_tick: float) -> None:
         _ = dt_tick
@@ -171,7 +192,10 @@ class RankedTickMonitor(PlaybackWalkObserver):
             self._update_camera(world)
         camera = self.camera
         assert camera is not None
-        player = unpack_player_input(self.replay.ticks[tick_index].inputs[0])
+        for player_index, packed in enumerate(self.replay.ticks[tick_index].inputs):
+            self._check_player(player_index, unpack_player_input(packed), camera)
+
+    def _check_player(self, player_index: int, player: PlayerInput, camera: Vec2) -> None:
         if not human_controls(player.move_mode, player.aim_scheme):
             self.reasons.add("controls")
         if player.aim_scheme == AimScheme.MOUSE and not _in_view(player.aim + camera):
@@ -181,16 +205,19 @@ class RankedTickMonitor(PlaybackWalkObserver):
         if player.move_mode == MovementControlType.MOUSE_POINT_CLICK:
             target = None if player.move.x == -1.0 else player.move
             # A target is set by a click; it may drift out of view while the player walks to it.
-            if target is not None and target != self.move_target and not _in_view(target + camera):
+            if target is not None and target != self.move_targets.get(player_index) and not _in_view(target + camera):
                 self.reasons.add("aim_out_of_view")
-            self.move_target = target
+            self.move_targets[player_index] = target
 
     def after_tick(self, tick_result: TickResult, world: WorldState) -> None:
         _ = tick_result
         self._update_camera(world)
 
     def _update_camera(self, world: WorldState) -> None:
-        self.camera = clamp_camera(camera=RANKED_VIEW * 0.5 - world.players[0].pos, screen_size=RANKED_VIEW)
+        focus = camera_update_for_players(world.players, Vec2()).focus
+        # With nobody alive the game keeps the camera where it was.
+        if focus is not None:
+            self.camera = clamp_camera(camera=RANKED_VIEW * 0.5 - focus, screen_size=RANKED_VIEW)
 
 
 def _in_view(screen: Vec2) -> bool:
@@ -200,8 +227,10 @@ def _in_view(screen: Vec2) -> bool:
 __all__ = [
     "RANKED_MODES",
     "RANKED_PAD_AIM_DIST_MUL",
+    "RANKED_PLAYER_COUNTS",
     "RANKED_VIEW",
     "RankedTickMonitor",
+    "board_for",
     "human_controls",
     "outcome_reasons",
     "ranked_board",

@@ -137,6 +137,9 @@ class Pilot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     url: str = ""
 
 
+SEAT_KEY_BYTES = 32
+
+
 class Replay(msgspec.Struct, forbid_unknown_fields=True):
     format_version: int
     # The build that recorded the run, which the ranked rules version boards by.
@@ -146,6 +149,9 @@ class Replay(msgspec.Struct, forbid_unknown_fields=True):
     recorder: Recorder
     # The program that played the run, when one did and says so (since v32).
     pilot: Pilot | None
+    # Each seat's Ed25519 public key, one per player, when the run names who plays which seat (since v34). The
+    # leaderboard accepts a signature only from the key its seat records.
+    seat_keys: tuple[bytes, ...] | None
     run: RunSpec
     result: RunResult
     ticks: list[ReplayTick]

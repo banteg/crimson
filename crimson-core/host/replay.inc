@@ -3,6 +3,7 @@
 // its own (src/crimson/replay/library.py) and named by its high score record
 // (docs/formats/replay.md). A ranked run uploads the same replay.
 #include "../game/leaderboard.h"
+#include <array>
 #include <cmath>
 #include <dirent.h>
 #include <string>
@@ -48,6 +49,12 @@ struct Msgpack {
   }
   void array(uint32_t n) { header(n, 0x90, 16, 0xdc, 0xdd); }
   void map(uint32_t n) { header(n, 0x80, 16, 0xde, 0xdf); }
+  void bin(const uint8_t *data, uint32_t n) {
+    if (n < 0x100) byte(0xc4), be(n, 1);
+    else if (n < 0x10000) byte(0xc5), be(n, 2);
+    else byte(0xc6), be(n, 4);
+    out.insert(out.end(), data, data + n);
+  }
   void str(const char *s) {
     uint32_t n = (uint32_t)strlen(s);
     if (n < 32) byte((uint8_t)(0xa0 | n));
@@ -136,11 +143,16 @@ static void replay_write_custom_quest(Msgpack &m) {
       m.integer(i);
 }
 
+// Each seat's Ed25519 public key in a replay's `seat_keys` (types.py SEAT_KEY_BYTES).
+static constexpr uint32_t REPLAY_SEAT_KEY_BYTES = 32;
+
 // The replay (src/crimson/replay/types.py Replay): the run's configuration,
-// its result and every tick the recording holds.
-static std::vector<uint8_t> replay_payload(const char *outcome) {
+// its result and every tick the recording holds. `seat_keys` holds one key per
+// seat when the run names who plays which, else none.
+static std::vector<uint8_t> replay_payload(const char *outcome,
+                                           const std::vector<std::array<uint8_t, REPLAY_SEAT_KEY_BYTES>> &seat_keys = {}) {
   Msgpack m;
-  m.map(8);
+  m.map(9);
   m.str("format_version"), m.integer(CRIMSON_REPLAY_FORMAT);
   m.str("game_version"), m.str(CRIMSON_GAME_VERSION);
   m.str("rules"), m.integer(CRIMSON_REPLAY_RULES);
@@ -150,6 +162,14 @@ static std::vector<uint8_t> replay_payload(const char *outcome) {
   m.str("platform"), m.str(replay_platform);
   // A player plays these runs: no pilot.
   m.str("pilot"), m.nil();
+  m.str("seat_keys");
+  if (seat_keys.empty())
+    m.nil();
+  else {
+    m.array((uint32_t)seat_keys.size());
+    for (const auto &key : seat_keys)
+      m.bin(key.data(), REPLAY_SEAT_KEY_BYTES);
+  }
   m.str("run"), m.map(15);
   m.str("game_mode_id"), m.integer(cfg.mode);
   m.str("seed"), m.integer(cfg.seed);
@@ -349,9 +369,17 @@ struct MsgpackReader {
   }
   uint32_t array() { return container(0x90, 0xdc, 0xdd); }
   uint32_t map() { return container(0x80, 0xde, 0xdf); }
+  std::string bin() {
+    uint8_t b = next();
+    uint32_t n = b == 0xc4 ? (uint32_t)be(1) : b == 0xc5 ? (uint32_t)be(2) : b == 0xc6 ? (uint32_t)be(4) : (ok = false, 0);
+    return bytes(n);
+  }
   std::string str() {
     uint8_t b = next();
     uint32_t n = (b & 0xe0) == 0xa0 ? b & 0x1f : b == 0xd9 ? (uint32_t)be(1) : b == 0xda ? (uint32_t)be(2) : b == 0xdb ? (uint32_t)be(4) : (ok = false, 0);
+    return bytes(n);
+  }
+  std::string bytes(uint32_t n) {
     if (!ok || (size_t)(end - at) < n)
       return ok = false, std::string();
     std::string text((const char *)at, n);
@@ -658,14 +686,22 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
   MsgpackReader r{payload.data(), payload.data() + payload.size()};
   PortableConfig config = {};
   int format = 0;
-  bool run = false;
+  bool run = false, has_seat_keys = false, named_seats = false;
+  std::vector<std::string> seat_keys;
   out.recording.resize(sizeof config);
   for (uint32_t n = payload.empty() ? (r.ok = false, 0) : r.map(); r.ok && n && out.reason.empty(); --n) {
     std::string key = r.str();
     if (key == "format_version") format = (int)r.integer();
     else if (key == "game_version") out.game_version = r.str();
     else if (key == "rules") out.rules = (int)r.integer();
-    else if (key == "run") replay_read_run(r, config, out), run = true;
+    else if (key == "seat_keys") {
+      has_seat_keys = true;
+      if (!r.nil()) {
+        named_seats = true;
+        for (uint32_t keys = r.array(); r.ok && keys; --keys)
+          seat_keys.push_back(r.bin());
+      }
+    } else if (key == "run") replay_read_run(r, config, out), run = true;
     else if (key == "result") replay_read_result(r, out);
     else if (key == "ticks") replay_read_ticks(r, out);
     else r.skip();
@@ -673,10 +709,17 @@ static bool replay_read(const std::vector<uint8_t> &file, LoadedReplay &out) {
   // Format 30 had no rules; its replays play under rules 1 (docs/formats/replay.md).
   if (format == 30)
     out.rules = 1;
+  // Format 34 names each seat's distinct key, or none; earlier formats have no `seat_keys`.
+  bool seats = has_seat_keys == (format >= 34) && (!named_seats || seat_keys.size() == config.players);
+  for (size_t i = 0; i < seat_keys.size(); ++i) {
+    seats = seats && seat_keys[i].size() == REPLAY_SEAT_KEY_BYTES;
+    for (size_t j = 0; j < i; ++j)
+      seats = seats && seat_keys[i] != seat_keys[j];
+  }
   // A whole replay: its run, its result, a tick, and nothing after its map.
   size_t head = sizeof config + (config.mode == GAME_MODE_QUEST && !config.major && !config.minor ? sizeof(PortableQuest) : 0);
   bool whole = r.at == r.end && run && !out.result.empty() && out.recording.size() > head &&
-               !out.game_version.empty();
+               !out.game_version.empty() && seats;
   // Formats 30 to this build's read alike: each adds a field (docs/formats/replay.md).
   if (out.reason.empty() && (!r.ok || !whole || format < 30 || format > CRIMSON_REPLAY_FORMAT || !replay_config_valid(config)))
     out.reason = "This version cannot read its replay";

@@ -13,6 +13,7 @@ from ...persistence.highscores import (
     scores_path_for_mode,
     select_highscore_table,
 )
+from ...replay.ranked import board_for
 from ...weapons import WeaponId
 
 # `highscore_sync_worker` marks received records: flag bit 0 draws them green, and quest records carry the
@@ -22,15 +23,15 @@ HARDCORE_MARKER = 0x75
 
 
 def online_board(state: GameState, request: ScoreQuery) -> Board | None:
-    """The verified board for the scores on screen: one-player Survival and quests; other modes have none."""
-    if state.config.gameplay.player_count != 1:
+    """The verified board for the scores on screen: Survival and quests, for one player or a co-op pair; other modes
+    and teams have none."""
+    gameplay = state.config.gameplay
+    board = board_for(request.game_mode_id, hardcore=gameplay.hardcore, player_count=gameplay.player_count)
+    if board is None:
         return None
-    match request.game_mode_id:
-        case GameMode.SURVIVAL:
-            return "survival", ""
-        case GameMode.QUESTS if request.quest_level is not None:
-            return "quests-hardcore" if state.config.gameplay.hardcore else "quests", request.quest_level.text
-    return None
+    if request.game_mode_id != GameMode.QUESTS:
+        return board, ""
+    return None if request.quest_level is None else (board, request.quest_level.text)
 
 
 def _online_record(score: OnlineScore, request: ScoreQuery, *, hardcore: bool) -> HighScoreRecord:
