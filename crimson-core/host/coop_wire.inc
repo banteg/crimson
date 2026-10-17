@@ -251,6 +251,7 @@ static void coop_session(int seat, double now) {
   wire.sent_at = -1e300;
   wire.credit = 1;
   coop.stats.wire = {};
+  coop.stats.session = {};
   // Nothing either side chose or offered in the last session stands in this
   // one (host/coop_live.inc).
   coop_forget();

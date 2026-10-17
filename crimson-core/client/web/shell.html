@@ -547,6 +547,21 @@
   // (a desync). The game sends over the room the session connected over, and nowhere once another replaced it.
   let coop = null, coopLink = null, coopMet = false, coopSession = false, coopHello = false, coopEnded = null,
     coopNote = null;
+  // A session whose hello came reports its summary to the page's analytics as it ends (analytics.js coop): the
+  // transport it last ran over, kept here while it runs, and the game's telemetry (client_coop_telemetry: the round
+  // trip, then host/coop.inc CoopSessionStats).
+  let coopRan = null;
+  const COOP_DEPTHS = PLAY_ANALYTICS.coop.depths, COOP_FRAMES = PLAY_ANALYTICS.coop.frame_ms.length + 1;
+  function coopReport(reason) {
+    if (coopRan === null) return;
+    const at = Module.ccall("client_coop_telemetry", "number", [], []);
+    const [rtt, ticks, , stalled, ...counts] = new Int32Array(Module.HEAPU8.slice(at, at + 4 * (4 + COOP_DEPTHS + COOP_FRAMES)).buffer);
+    playAnalytics.coop({
+      transport: coopRan, rtt, ticks, desync: reason === COOP_DIVERGED, stalled,
+      depths: counts.slice(0, COOP_DEPTHS), frames: counts.slice(COOP_DEPTHS),
+    });
+    coopRan = null;
+  }
   // This page's address names the room it plays in, so a reload goes back to it.
   const coopAddress = (room) => {
     const url = new URL(location.href);
@@ -609,6 +624,7 @@
     coopSession = coopHello = false;
     console.info("co-op: session ended", reason);
     Module.ccall("client_coop_disconnect", "number", ["number"], [reason]);
+    coopReport(reason);
   }
   // A session whose hello came says so a moment. One the game closed either begins again or ends co-op, closing
   // the room once its last messages reached the partner, or after a moment; the address then names no room.
@@ -616,12 +632,14 @@
   function coopWatch() {
     if (!coopSession) return coopConnect();
     const status = coopStatus(), reason = (status >> 16) & 255;
+    if (status & COOP_CONNECTED) coopRan = coopLink.stats().transport ?? coopRan ?? "unknown";
     if (status & COOP_CONNECTED && !coopHello) {
       coopHello = true;
       coopNote = null;
       coopShow(4000);
     }
     if (!(status & COOP_CLOSED)) return;
+    coopReport(reason);
     coopSession = coopHello = false;
     console.info("co-op: session ended", reason);
     if (reason === COOP_DIVERGED) coopNote = "The two games ran differently";

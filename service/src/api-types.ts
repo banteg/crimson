@@ -298,6 +298,14 @@ export interface PlayTotals {
   runs: number;
   active_seconds: number;
 }
+// Co-op sessions' totals over the last 30 days by transport (migrations/0009_coop_analytics.sql).
+export interface CoopTotals {
+  transport: string;
+  metric: string;
+  bucket: number;
+  count: number;
+}
 export interface PlayAnalyticsView {
   days: PlayTotals[];
+  coop: CoopTotals[];
 }

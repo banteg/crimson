@@ -559,6 +559,11 @@ CLIENT_EXPORT const u8 *client_coop_used(int t, int seat) {
 }
 CLIENT_EXPORT u32 client_coop_hash_at(int t) { return w2c_game_game_coop_hash_at(&game, t); }
 CLIENT_EXPORT int client_coop_corrupt(int kind) { return w2c_game_game_coop_corrupt(&game, kind); }
+// The session's telemetry (game_coop_telemetry), which the page reports as the session ends; null before the game
+// started.
+CLIENT_EXPORT const u8 *client_coop_telemetry() {
+  return started ? client_memory() + w2c_game_game_coop_telemetry(&game) : nullptr;
+}
 // What the session has to send, each message copied out of the module for the
 // page (no game call moves its memory in between).
 void coop_send() {

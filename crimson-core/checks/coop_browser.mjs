@@ -16,7 +16,10 @@
 // started, no desync or error, and its confirmed ticks advancing, and every
 // confirmed tick both pages hold must have run with the same records and left
 // the same state on both, each seat's records moving its player at times. The
-// guest's tab then goes to the background for longer than the liveness timeout,
+// guest's page then sends late (coop.js's delay hook: its DataChannel sends held
+// 60 ± 25 ms), so the host's game runs on predictions of player 2's records and
+// rolls them back, while both keep playing and agreeing on every confirmed tick.
+// The guest's tab then goes to the background for longer than the liveness timeout,
 // which would end the session of a page that sent nothing there, and the run
 // goes on. A desync the guest's page makes closes both sessions and stops both
 // runs; both panels say why. The host leaves its stopped run first: its page
@@ -33,8 +36,16 @@
 // the room, offering no new room for a game that no longer runs. Screenshots of
 // the pages (the cover, the invite, the menus connected, the runs, the
 // background, the desync, the pause, the end, the quit) go to the shots folder.
+// Each session the host's page (on localhost, where the game reports analytics)
+// played ends with its summary in the service's co-op totals (local D1, its
+// migrations applied first): the WebRTC sessions as direct, with the rollbacks
+// the late sends brought and the desync, and the relayed one as ws-relay.
 //
-//   CRIMSON_CHROME=<chrome> node crimson-core/checks/coop_browser.mjs <asset dir> [shots dir]
+// Last, the late game's costs (coop_cost.mjs) in Chrome: `measure` runs on a
+// cross-origin isolated page of the service's origin, whose timer resolves
+// microseconds, the page and game.wasm answered by the check itself.
+//
+//   CRIMSON_CHROME=<chrome> node crimson-core/checks/coop_browser.mjs <asset dir> [shots dir] [game.wasm]
 //
 // <asset dir> holds crimson.paq, sfx.paq and music.paq (artifacts/assets).
 // CRIMSON_CHROME is a Chrome or Chromium binary with the new headless mode (not
@@ -51,9 +62,11 @@ import fs from "node:fs";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
+import { costSetup, measure } from "./coop_cost.mjs";
 
-const [given, shots = path.join(os.tmpdir(), "coop-browser-shots")] = process.argv.slice(2);
-if (!given || !process.env.CRIMSON_CHROME) throw Error("usage: CRIMSON_CHROME=<chrome> coop_browser.mjs <asset dir> [shots dir]");
+const [given, shots = path.join(os.tmpdir(), "coop-browser-shots"), gameWasm = new URL("../build/game/game.wasm", import.meta.url).pathname] =
+  process.argv.slice(2);
+if (!given || !process.env.CRIMSON_CHROME) throw Error("usage: CRIMSON_CHROME=<chrome> coop_browser.mjs <asset dir> [shots dir] [game.wasm]");
 const assets = path.resolve(given);
 const SERVICE = new URL("../../service/", import.meta.url).pathname;
 if (!fs.existsSync(path.join(SERVICE, "public/play/index.wasm"))) throw Error("stage the web client first: cd service && npm run play");
@@ -77,6 +90,13 @@ const TICKS = 300;
 // that sends nothing, as a hidden tab's game would without frames.
 const WIRE = fs.readFileSync(new URL("../host/coop_wire.inc", import.meta.url), "utf8");
 const BACKGROUND_MS = Number(/COOP_LIVENESS_MS = (\d+)/.exec(WIRE)[1]) + 2000;
+// The guest's late sends (coop.js delay).
+const LATE_SENDS = { ms: 60, jitter: 25 };
+// client_coop_telemetry's words: the round trip, ticks run and run again, frames whose due ticks all waited, then
+// rollbacks by depth and frames by the time their ticks took (host/coop.inc CoopSessionStats), as analytics.json
+// buckets them.
+const ANALYTICS = JSON.parse(fs.readFileSync(new URL("../client/web/analytics.json", import.meta.url), "utf8")).coop;
+const DEPTHS = [4, 4 + ANALYTICS.depths], TELEMETRY_WORDS = DEPTHS[1] + ANALYTICS.frame_ms.length + 1;
 
 const free = () =>
   new Promise((resolve) => {
@@ -99,6 +119,17 @@ execFileSync("npx", ["vite", "build"], { cwd: SERVICE, stdio: "ignore" });
 const port = await free();
 const state = fs.mkdtempSync(path.join(os.tmpdir(), "coop-browser-"));
 const wrangler = (...args) => ["wrangler", ...args, "--persist-to", state];
+execFileSync("npx", wrangler("d1", "migrations", "apply", "crimson-land", "--local"), { cwd: SERVICE, stdio: "ignore", env: { ...process.env, CI: "1" } });
+// The service's co-op totals (service/migrations/0009_coop_analytics.sql) by transport and metric.
+const coopTotals = () =>
+  JSON.parse(
+    execFileSync(
+      "npx",
+      wrangler("d1", "execute", "crimson-land", "--local", "--json", "--command",
+        "SELECT transport, metric, SUM(count) AS count FROM coop_totals GROUP BY transport, metric"),
+      { cwd: SERVICE, stdio: ["ignore", "pipe", "ignore"] },
+    ),
+  )[0].results.reduce((totals, { transport, metric, count }) => ({ ...totals, [`${transport} ${metric}`]: count }), {});
 for (const name of ["crimson.paq", "sfx.paq", "music.paq"])
   execFileSync("npx", wrangler("r2", "object", "put", `crimson/${GAME_VERSION}/${name}`, "--local", "--file", path.join(assets, name)), {
     cwd: SERVICE,
@@ -225,6 +256,11 @@ async function open(name, origin, { webrtc = true } = {}) {
         return at ? [...Module.HEAPU8.slice(at, at + 20)] : null;
       }, t, seat),
     hash: async (t) => (await call("client_coop_hash_at", t)) >>> 0,
+    telemetry: () =>
+      evaluate((words) => {
+        const at = Module.ccall("client_coop_telemetry", "number", [], []);
+        return [...new Int32Array(Module.HEAPU8.slice(at, at + 4 * words).buffer)];
+      }, TELEMETRY_WORDS),
     async visible(selector) {
       return evaluate((selector) => {
         const element = document.querySelector(selector);
@@ -288,6 +324,32 @@ async function survival(host, guest) {
   const started = async (peer) => (await peer.status()) & STATUS.started && (await peer.screen()) === GAMEPLAY;
   await until("the run on both", async () => (await started(host)) && (await started(guest)));
 }
+// Both move and fire for a few hundred confirmed ticks: each by WASD and the mouse, its own way round. Every step
+// both runs go on without a desync or an error and agree, and each seat's records move its player at times.
+async function fight() {
+  const keys = ["KeyW", "KeyD", "KeyS", "KeyA"];
+  const first = await Promise.all([host, guest].map((peer) => peer.confirmed()));
+  const moved = [false, false];
+  for (let step = 0; (await host.confirmed()) < first[0] + TICKS || (await guest.confirmed()) < first[1] + TICKS; ++step) {
+    if (step > 200) throw Error("the run stopped confirming ticks");
+    for (const [i, peer] of [host, guest].entries()) {
+      const key = keys[(step + 2 * i) % 4];
+      await peer.keyDown(key);
+      await peer.move(512 + 200 * Math.cos(step + i), 384 + 150 * Math.sin(step + i));
+      await peer.down();
+      setTimeout(() => peer.keyUp(key).then(() => peer.up()).catch(() => {}), 250);
+    }
+    await sleep(300);
+    for (const peer of [host, guest]) {
+      const status = await peer.status();
+      assert.ok(status & STATUS.started, `${peer.name}'s run stopped: ${status.toString(16)}`);
+      assert.equal(status & (STATUS.desynced | STATUS.failed), 0, `${peer.name}: ${status.toString(16)}`);
+    }
+    for (const [seat, moves] of (await agree(host, guest)).entries()) moved[seat] ||= moves;
+  }
+  assert.deepEqual(moved, [true, true], "each seat's records moved its player on both pages");
+  console.log("confirmed ticks:", first, "->", await Promise.all([host, guest].map((peer) => peer.confirmed())));
+}
 // The confirmed ticks the two pages both still hold must have run with the same records and left the same state
 // on both. Returns which seats' records moved their player.
 async function agree(host, guest) {
@@ -305,6 +367,53 @@ async function agree(host, guest) {
     }
   }
   return moved;
+}
+
+// A page of its own on `origin` whose document and game module the check serves (the DevTools protocol's Fetch
+// domain answers its requests), cross-origin isolated, runs coop_cost.mjs's measure.
+async function chromeCosts(origin) {
+  const { browserContextId } = await cdp("Target.createBrowserContext");
+  const { targetId } = await cdp("Target.createTarget", { url: "about:blank", browserContextId });
+  const { sessionId } = await cdp("Target.attachToTarget", { targetId, flatten: true });
+  const send = (method, params) => cdp(method, params, sessionId);
+  const isolated = [
+    { name: "cross-origin-opener-policy", value: "same-origin" },
+    { name: "cross-origin-embedder-policy", value: "require-corp" },
+  ];
+  const files = {
+    "/costs/": ["text/html", Buffer.from("<!doctype html><title>Co-op costs</title>")],
+    "/costs/game.wasm": ["application/wasm", fs.readFileSync(gameWasm)],
+  };
+  let loaded;
+  const load = new Promise((resolve) => (loaded = resolve));
+  listeners.set(sessionId, (method, params) => {
+    if (method === "Page.loadEventFired") loaded();
+    if (method !== "Fetch.requestPaused") return;
+    const [type, body] = files[new URL(params.request.url).pathname];
+    send("Fetch.fulfillRequest", {
+      requestId: params.requestId,
+      responseCode: 200,
+      responseHeaders: [{ name: "content-type", value: type }, ...isolated],
+      body: body.toString("base64"),
+    });
+  });
+  await send("Page.enable");
+  await send("Fetch.enable", { patterns: [{ urlPattern: `${origin}/costs/*` }] });
+  await send("Page.navigate", { url: `${origin}/costs/` });
+  await load;
+  await cdp("Target.activateTarget", { targetId });
+  const { result, exceptionDetails } = await send("Runtime.evaluate", {
+    expression: `(async () => {
+      if (!crossOriginIsolated) throw Error("not cross-origin isolated");
+      const bytes = await (await fetch("game.wasm")).arrayBuffer();
+      return (${measure})(bytes, ${JSON.stringify(costSetup())});
+    })()`,
+    awaitPromise: true,
+    returnByValue: true,
+  });
+  if (exceptionDetails) throw Error(`costs: ${exceptionDetails.exception?.description ?? exceptionDetails.text}`);
+  await cdp("Target.closeTarget", { targetId });
+  return result.value;
 }
 
 let host, guest;
@@ -362,31 +471,20 @@ try {
   await Promise.all([host.shot("lobby"), guest.shot("lobby")]);
   await survival(host, guest);
 
-  // Both move and fire: each by WASD and the mouse, its own way round.
-  const keys = ["KeyW", "KeyD", "KeyS", "KeyA"];
-  const first = await Promise.all([host, guest].map((peer) => peer.confirmed()));
-  const moved = [false, false];
-  for (let step = 0; (await host.confirmed()) < first[0] + TICKS || (await guest.confirmed()) < first[1] + TICKS; ++step) {
-    if (step > 200) throw Error("the run stopped confirming ticks");
-    for (const [i, peer] of [host, guest].entries()) {
-      const key = keys[(step + 2 * i) % 4];
-      await peer.keyDown(key);
-      await peer.move(512 + 200 * Math.cos(step + i), 384 + 150 * Math.sin(step + i));
-      await peer.down();
-      setTimeout(() => peer.keyUp(key).then(() => peer.up()).catch(() => {}), 250);
-    }
-    await sleep(300);
-    for (const peer of [host, guest]) {
-      const status = await peer.status();
-      assert.ok(status & STATUS.started, `${peer.name}'s run stopped: ${status.toString(16)}`);
-      assert.equal(status & (STATUS.desynced | STATUS.failed), 0, `${peer.name}: ${status.toString(16)}`);
-    }
-    for (const [seat, moves] of (await agree(host, guest)).entries()) moved[seat] ||= moves;
-  }
-  assert.deepEqual(moved, [true, true], "each seat's records moved its player on both pages");
-  const last = await Promise.all([host, guest].map((peer) => peer.confirmed()));
-  console.log("confirmed ticks:", first, "->", last);
+  await fight();
   await Promise.all([host.shot("run"), guest.shot("run")]);
+
+  // The guest's page sends late: the host's game runs player 2's ticks on predictions and rolls them back, and the
+  // run goes on, agreeing on both pages.
+  const early = await host.telemetry();
+  await guest.evaluate((delay) => (coop.delay = delay), LATE_SENDS);
+  await fight();
+  await guest.evaluate(() => (coop.delay = null));
+  const lagged = (await host.telemetry()).map((n, i) => n - early[i]);
+  const depths = lagged.slice(...DEPTHS);
+  console.log("the host's rollbacks by depth with the guest's sends late:", depths, "round trip", lagged[0] + early[0], "ms");
+  assert.ok(depths.some(Boolean), "the host's game rolled back");
+  await host.shot("late");
 
   // The guest's tab goes to the background (another tab of its window in front, its focus emulation off), past the
   // liveness timeout: its page's frames come from a worker's timer, its game keeps sending and the run goes on.
@@ -426,6 +524,12 @@ try {
   await both("both panels on the desync", async (peer) => (await peer.line()) === "The two games ran differently", 5000);
   for (const peer of [host, guest]) assert.ok((await peer.status()) & STATUS.stopped, `${peer.name}'s stopped run`);
   await Promise.all([host.shot("desync"), guest.shot("desync")]);
+  // The host's page reported the session the desync ended, with the rollbacks the late sends brought.
+  const direct = await until("the host's co-op telemetry", () => {
+    const totals = coopTotals();
+    return totals["direct desyncs"] >= 1 && totals["direct depth"] >= depths.reduce((a, b) => a + b) && totals;
+  }, 30000);
+  console.log("co-op totals:", direct);
   await tap(host, "Escape");
   await until("the host's menu after the desync", async () => (await host.screen()) === MAIN_MENU, 30000);
   await until("the host's panel", async () => (await host.line()) === "Waiting for player 2 to leave the stopped run", 5000);
@@ -496,6 +600,14 @@ try {
     [true, null, null],
   );
   await host.shot("quit");
+  // The relayed session's summary too.
+  await until("the relayed session's telemetry", () => coopTotals()["ws-relay sessions"] >= 1, 30000);
+
+  // The late game's costs in Chrome, on a cross-origin isolated page, the only one open.
+  await cdp("Target.closeTarget", { targetId: host.targetId });
+  peers.pop();
+  const costs = await chromeCosts(`http://localhost:${port}`);
+  console.log("late-game costs in Chrome:", JSON.stringify(costs));
   console.log(`co-op in the browser: ok (screenshots in ${shots})`);
 } catch (error) {
   // Failed, whatever the diagnostics below do.

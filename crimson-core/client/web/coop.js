@@ -528,9 +528,24 @@ function createCoop({
     if (ended() || partnerPage === null || !link?.connected) return;
     if (link.relay) return drain();
     for (let frame; link && !link.relay && (frame = controlFrame()); ) {
-      try { link.channels[1].send(frame); } catch (error) { return failed(link, error); }
+      try { transmit(link, 1, frame); } catch (error) { return failed(link, error); }
       controlSent();
     }
+  }
+  // Test hook (checks/coop_browser.mjs): with api.delay ({ms, jitter}), what this page sends on the DataChannels
+  // leaves ms ± jitter late, ticks packets in any order and control frames in theirs, so the partner's game runs on
+  // predictions and rolls them back.
+  let controlAt = 0;
+  function transmit(current, id, bytes) {
+    const channel = current.channels[id];
+    if (!api.delay) return channel.send(bytes);
+    const { ms, jitter } = api.delay;
+    let at = now() + ms + (2 * Math.random() - 1) * jitter;
+    if (id === 1) at = controlAt = Math.max(at, controlAt);
+    setTimeout(() => {
+      if (link !== current || channel.readyState !== "open") return;
+      try { channel.send(bytes); } catch (error) { failed(current, error); }
+    }, at - now());
   }
   function replay() {
     handed = 0;
@@ -613,7 +628,7 @@ function createCoop({
         return false;
       }
       // A channel closing under us is a failing connection, not the game's error.
-      try { channelOut.send(bytes); } catch (error) {
+      try { transmit(link, 0, bytes); } catch (error) {
         failed(link, error);
         return false;
       }
@@ -639,6 +654,7 @@ function createCoop({
     get inviteUrl() { return inviteUrl; },
     onstate: null,
     onpeer: null,
+    delay: null,
     // Messages that arrive before the game listens wait for it.
     get onmessage() { return handler; },
     set onmessage(next) {

@@ -22,6 +22,7 @@ import { formatLongDuration, formatScore, quantity } from "./format";
 import { GameButton } from "./button";
 import { playerLabel, runLabel } from "./names";
 import { gameplayPreference, setGameplayPreference } from "./analytics-preference";
+import PLAY_ANALYTICS from "../../../crimson-core/client/web/analytics.json";
 import perkNames from "./perks.json";
 import { PilotName, PlayerName, PROVIDER_LABELS, RunPlayers } from "./players";
 import { runPanels, SIGNAL_LABELS } from "./run";
@@ -911,7 +912,7 @@ async function moderation(nav: Navigator): Promise<Screen> {
 async function playAnalytics(): Promise<Screen> {
   const response = await fetch("/api/analytics");
   if (!response.ok) return { title: "Gameplay analytics", quest: null, panels: [() => <p>The admin only.</p>] };
-  const { days } = await response.json() as PlayAnalyticsView;
+  const { days, coop } = await response.json() as PlayAnalyticsView;
   const daily = days.filter((row) => row.mode === "all");
   const byMode = new Map<string, { mode: string; runs: number; seconds: number }>();
   for (const row of days) {
@@ -940,7 +941,52 @@ async function playAnalytics(): Promise<Screen> {
       <tbody><For each={modes}>{(row) => <tr><td>{row.mode}</td><td class="n">{row.runs}</td><td class="n">{(row.seconds / 60).toFixed(1)}</td></tr>}</For></tbody>
     </table>
     <p class="muted">Visible, focused, unpaused wall time, sampled about once a second. Long stalls are capped. Anonymous totals are separate from unique-count tokens and are not retried.</p>
-  </>] };
+  </>, () => <CoopAnalytics rows={coop} />] };
+}
+
+// Co-op sessions over the last 30 days by transport, as each page reports its own session when it ends. Bucket
+// labels follow analytics.json's bounds: under the first, each up to the next, and the last and longer.
+function CoopAnalytics(props: { rows: PlayAnalyticsView["coop"] }) {
+  const { transports, rtt_ms: rttMs, depths, frame_ms: frameMs } = PLAY_ANALYTICS.coop;
+  const ranges = (bounds: number[]) => [`<${bounds[0]}`, ...bounds.slice(1).map((to, i) => `${bounds[i]}–${to}`), `${bounds.at(-1)}+`];
+  const count = (transport: string, metric: string, bucket = 0) =>
+    props.rows.find((row) => row.transport === transport && row.metric === metric && row.bucket === bucket)?.count ?? 0;
+  const series = (transport: string, metric: string, length: number) => Array.from({ length }, (_, i) => count(transport, metric, i));
+  const sum = (values: number[]) => values.reduce((a, b) => a + b, 0);
+  const percent = (part: number, whole: number) => (whole ? `${((100 * part) / whole).toFixed(part && part < whole / 1000 ? 2 : 1)}%` : "–");
+  const used = transports.filter((transport) => count(transport, "sessions"));
+  return <>
+    <h3>Co-op sessions</h3>
+    <Show when={used.length} fallback={<p>No co-op sessions yet.</p>}>
+      <div class="board-table"><table><thead><tr>
+        <th>Transport</th><th class="n">Sessions</th><th class="n">Minutes</th><th class="n">Desyncs</th><th class="n">Stalled frames</th>
+        <For each={ranges(rttMs)}>{(label) => <th class="n">{label} ms</th>}</For>
+      </tr></thead><tbody><For each={used}>{(transport) => <tr>
+        <td>{transport}</td><td class="n">{count(transport, "sessions")}</td><td class="n">{(count(transport, "seconds") / 60).toFixed(1)}</td>
+        <td class="n">{count(transport, "desyncs")}</td>
+        <td class="n">{percent(count(transport, "stalled"), sum(series(transport, "frame", frameMs.length + 1)))}</td>
+        <For each={series(transport, "rtt", rttMs.length + 1)}>{(n) => <td class="n">{n}</td>}</For>
+      </tr>}</For></tbody></table></div>
+      <h3>Rollbacks by depth (ticks)</h3>
+      <div class="board-table"><table><thead><tr>
+        <th>Transport</th><th class="n">Per minute</th><For each={Array.from({ length: depths }, (_, i) => i + 1)}>{(depth) => <th class="n">{depth}</th>}</For>
+      </tr></thead><tbody><For each={used}>{(transport) => {
+        const rollbacks = series(transport, "depth", depths), seconds = count(transport, "seconds");
+        return <tr>
+          <td>{transport}</td><td class="n">{seconds ? (sum(rollbacks) / (seconds / 60)).toFixed(1) : "–"}</td>
+          <For each={rollbacks}>{(n) => <td class="n">{percent(n, sum(rollbacks))}</td>}</For>
+        </tr>;
+      }}</For></tbody></table></div>
+      <h3>Frames by the time their ticks took</h3>
+      <div class="board-table"><table><thead><tr>
+        <th>Transport</th><For each={ranges(frameMs)}>{(label) => <th class="n">{label} ms</th>}</For>
+      </tr></thead><tbody><For each={used}>{(transport) => {
+        const frames = series(transport, "frame", frameMs.length + 1);
+        return <tr><td>{transport}</td><For each={frames}>{(n) => <td class="n">{percent(n, sum(frames))}</td>}</For></tr>;
+      }}</For></tbody></table></div>
+    </Show>
+    <p class="muted">Each page reports its own session as it ends, so a session between two players counts twice. Transport is the one a session last ran over: direct WebRTC, through TURN over UDP or TCP, or the room's relay. Round trips count sessions; stalled frames are frames whose due ticks all waited for the partner, the window or a perk pick.</p>
+  </>;
 }
 
 function GameplayAnalyticsPreference() {
@@ -1176,6 +1222,9 @@ const PRIVACY: Screen = {
         <p>
           The browser game also counts loading, play sessions, sessions reaching five active minutes, runs and active time by mode.
           It sends these as anonymous daily totals, without your name, account, game key, replay, URL or IP address. The service does not store IP addresses for these counters.
+          When a co-op session ends, it also sends how the connection went: whether it was direct, relayed through TURN or through
+          the room, the round trip's range, minutes played, whether the two games ran differently, and how often the game had to
+          correct or wait. That summary names no room or partner, and only daily totals of it are kept.
         </p>
         <p>
           To count a browser once per UTC day of actual play, it keeps a random daily token in first-party browser storage. The token changes on

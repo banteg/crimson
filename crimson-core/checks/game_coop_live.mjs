@@ -1197,6 +1197,8 @@ for (const profile of PROFILES) {
     `${profile.name}: ${ticks} confirmed ticks and the pick`,
   );
   assert.ok(time() > hitch.to + SETTLE + 1000, `${profile.name}: the stall settled`);
+  // The play itself, before the run's end (a wipe loses packets on purpose).
+  const played = peers.map((p) => coopStats(p.g));
   script = () => ({});
   let result, counted;
   if (profile.end === "leave") {
@@ -1227,7 +1229,7 @@ for (const profile of PROFILES) {
   const drift = [stall, hitch].map(({ to }) => ({ after: apart(to, 500), settled: apart(to + SETTLE, 1000) }));
   for (const { after, settled } of drift)
     assert.ok(after.most >= 4 && settled.mean <= 1.5 && settled.most <= 3, `${profile.name}: ${JSON.stringify(drift)}`);
-  profiled.push({ profile: profile.name, ticks: result.ticks, drift, stats: counted.map(({ wire, ...s }) => s) });
+  profiled.push({ profile: profile.name, ticks: result.ticks, drift, played, stats: counted.map(({ wire, ...s }) => s) });
 }
 // Rollbacks under every profile but the nearest.
 for (const { profile, stats } of profiled.slice(1)) assert.ok(stats[0].rollbacks && stats[1].rollbacks, `${profile}`);
@@ -1357,10 +1359,13 @@ for (const peer of peers) {
   assert.deepEqual(saved(peer), JSON.parse(peer.saved), `machine ${peer.seat}'s save`);
 }
 // Under each profile: the ticks, how far apart the runs were after each stall and once settled, and each machine's
-// rollbacks by depth, the deepest guess, frames that stalled, the most ticks a frame ran again, and revised deaths.
-const m2 = profiled.map(({ profile, ticks, drift, stats }) => ({
+// rollbacks by depth, the deepest guess, frames that stalled, the most ticks a frame ran again, and revised deaths;
+// and for the play before the run's end, each machine's ticks run, ticks run again, frames, frames that stalled and
+// rollbacks by depth.
+const m2 = profiled.map(({ profile, ticks, drift, played, stats }) => ({
   profile,
   ticks,
+  played: played?.map((s) => [s.ticks, s.resimulated, s.frame_ms.reduce((a, b) => a + b), s.stalled_frames, s.depths]),
   drift: drift?.map(({ after, settled }) => [after.most, +settled.mean.toFixed(2)]),
   depths: stats.map((s) => s.depths),
   guessed: stats.map((s) => s.guessed_lead),

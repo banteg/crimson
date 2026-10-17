@@ -8,6 +8,8 @@ const day = () => new Date().toISOString().slice(0, 10);
 const token = "a".repeat(32);
 const unique = () => ({ day: day(), token });
 const totals = () => ({ day: day(), ready: 1, sessions: 1, engaged: 0, modes: [{ mode: "survival", runs: 2, seconds: 60 }] });
+const depths = () => [5, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+const coop = () => ({ day: day(), transport: "turn-udp", rtt: 2, seconds: 600, desync: 0, stalled: 4, depths: depths(), frames: [30000, 100, 0, 0, 0, 1] });
 function post(value: unknown, path = "/api/analytics/unique", headers: Record<string, string> = {}) {
   return worker.fetch(new Request(ORIGIN + path, {
     method: "POST", headers: { origin: ORIGIN, "content-type": "application/json", ...headers }, body: JSON.stringify(value),
@@ -36,6 +38,24 @@ describe("private gameplay counts", () => {
         { mode: "all", unique_browsers: 0, ready: 1, sessions: 1, runs: 0, active_seconds: 0 },
         { mode: "survival", unique_browsers: 0, ready: 0, sessions: 0, runs: 2, active_seconds: 60 },
       ] });
+  });
+
+  it("adds co-op session summaries to daily totals by transport, keeping no session of its own", async () => {
+    expect((await post(coop(), "/api/analytics/coop")).status).toBe(204);
+    expect((await post({ ...coop(), desync: 1, rtt: 4 }, "/api/analytics/coop")).status).toBe(204);
+    const rows = await env.DB.prepare("SELECT * FROM coop_totals ORDER BY metric, bucket").all();
+    const count = (metric: string, bucket = 0) => rows.results.find((row) => row.metric === metric && row.bucket === bucket)?.count;
+    expect(rows.results.every((row) => row.day === day() && row.transport === "turn-udp")).toBe(true);
+    expect([count("sessions"), count("seconds"), count("desyncs"), count("stalled")]).toEqual([2, 1200, 1, 8]);
+    expect([count("rtt", 2), count("rtt", 4), count("depth", 0), count("depth", 11), count("frame", 5)]).toEqual([1, 1, 10, 2, 2]);
+    // Buckets nothing reached take no row.
+    expect(count("depth", 2)).toBeUndefined();
+    expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM play_totals").first()).toEqual({ n: 0 });
+    for (const value of [{ ...coop(), transport: "carrier-pigeon" }, { ...coop(), room: "abc" }, { ...coop(), rtt: 5 },
+      { ...coop(), seconds: 43201 }, { ...coop(), desync: 2 }, { ...coop(), depths: depths().slice(1) },
+      { ...coop(), frames: [1, 2, 3, 4, 5, -1] }, { ...coop(), stalled: 0.5 }])
+      expect((await post(value, "/api/analytics/coop")).status).toBe(400);
+    expect(await env.DB.prepare("SELECT SUM(count) AS n FROM coop_totals WHERE metric = 'sessions'").first()).toEqual({ n: 2 });
   });
 
   it("refuses ingestion before database writes when the shared anonymous budget is exhausted", async () => {
@@ -81,10 +101,12 @@ describe("private gameplay counts", () => {
     expect((await get(cookie)).status).toBe(403);
     await env.DB.prepare("UPDATE accounts SET role = 'admin' WHERE id = 1").run();
     await post(unique());
+    await post(coop(), "/api/analytics/coop");
     const response = await get(cookie);
     expect([response.status, response.headers.get("cache-control")]).toEqual([200, "no-store"]);
     const body = await response.text();
     expect(JSON.parse(body)).toMatchObject({ days: [{ day: day(), unique_browsers: 1 }] });
+    expect(JSON.parse(body).coop).toContainEqual({ transport: "turn-udp", metric: "depth", bucket: 11, count: 1 });
     expect(body).not.toContain(token);
     expect(body).not.toContain("account");
   });

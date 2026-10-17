@@ -78,8 +78,9 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   let match: RegExpExecArray | null;
 
   // Ingestion runs before any cookie, key or account lookup.
-  if (route === "POST /api/analytics" || route === "POST /api/analytics/unique")
-    return postAnalytics(request, env, url.pathname.endsWith("/unique"));
+  if (route === "POST /api/analytics") return postAnalytics(request, env, "totals");
+  if (route === "POST /api/analytics/unique") return postAnalytics(request, env, "unique");
+  if (route === "POST /api/analytics/coop") return postAnalytics(request, env, "coop");
   // Co-op rooms (docs/rewrite/network-coop.md §6.1) also need no account.
   if (url.pathname.startsWith("/api/coop/")) return coopRoute(request, env, url);
 

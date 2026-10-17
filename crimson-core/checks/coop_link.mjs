@@ -54,6 +54,15 @@ const STATS = [
   "revised_wipes",
 ];
 const WIRE = ["sent", "received", "lost", "stale", "repairs", "repaired", "rtt_ms"];
+// Where the engine's counter `name` starts among game_coop_stats' words.
+export function coopStatIndex(name) {
+  let at = 0;
+  for (const s of STATS) {
+    if ((Array.isArray(s) ? s[0] : s) === name) return at;
+    at += Array.isArray(s) ? s[1] : 1;
+  }
+  throw Error(`no counter ${name}`);
+}
 // A module's counters by name (`depths` and `frame_ms` arrays), its session's as `wire`.
 export function coopStats(g) {
   const size = STATS.reduce((n, s) => n + (Array.isArray(s) ? s[1] : 1), WIRE.length);

@@ -1,12 +1,17 @@
 // Anonymous daily gameplay totals. Only the unique-count route accepts a random
-// daily token; the aggregate route cannot attach one to a mode or play time.
+// daily token; the aggregate route cannot attach one to a mode or play time,
+// nor the co-op route to a session's summary, which adds to daily totals by transport.
 import type { Env } from "./http";
 import { refuse } from "./http";
-import type { PlayAnalyticsView, PlayTotals } from "./api-types";
+import type { CoopTotals, PlayAnalyticsView, PlayTotals } from "./api-types";
 import PLAY_ANALYTICS from "../../crimson-core/client/web/analytics.json";
 
 const DAY = 86400000;
 const PLAY_MODES = PLAY_ANALYTICS.modes.filter((mode) => mode !== null);
+const COOP = PLAY_ANALYTICS.coop;
+const COOP_FIELDS = ["day", "transport", "rtt", "seconds", "desync", "stalled", "depths", "frames"];
+const counts = (value: unknown, length: number): value is number[] =>
+  Array.isArray(value) && value.length === length && value.every((n) => integer(n, COOP.max_count));
 const date = (now: number) => new Date(now).toISOString().slice(0, 10);
 const object = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
 const fields = (value: Record<string, unknown>, names: string[]) => Object.keys(value).every((name) => names.includes(name));
@@ -38,7 +43,7 @@ async function body(request: Request): Promise<unknown> {
   }
 }
 
-export async function postAnalytics(request: Request, env: Env, unique: boolean, now = Date.now()): Promise<Response> {
+export async function postAnalytics(request: Request, env: Env, kind: "totals" | "unique" | "coop", now = Date.now()): Promise<Response> {
   const url = new URL(request.url);
   if (request.headers.get("origin") !== url.origin || url.search) return refuse(403, "same-origin analytics only");
   if (request.headers.get("content-type")?.split(";")[0] !== "application/json") return refuse(415, "JSON required");
@@ -47,7 +52,22 @@ export async function postAnalytics(request: Request, env: Env, unique: boolean,
   const value = await body(request);
   if (!object(value) || typeof value.day !== "string" || ![date(now), date(now - DAY), date(now - 2 * DAY)].includes(value.day))
     return refuse(400, "invalid analytics period");
-  if (unique) {
+  if (kind === "coop") {
+    if (!fields(value, COOP_FIELDS) || typeof value.transport !== "string" || !COOP.transports.includes(value.transport) ||
+        !integer(value.rtt, COOP.rtt_ms.length) || !integer(value.seconds, COOP.max_seconds) || !integer(value.desync, 1) ||
+        !integer(value.stalled, COOP.max_count) || !counts(value.depths, COOP.depths) || !counts(value.frames, COOP.frame_ms.length + 1))
+      return refuse(400, "invalid co-op session");
+    const rows: [string, number, number][] = [
+      ["sessions", 0, 1], ["seconds", 0, value.seconds], ["desyncs", 0, value.desync], ["stalled", 0, value.stalled],
+      ["rtt", value.rtt, 1],
+      ...value.depths.map((n, i): [string, number, number] => ["depth", i, n]),
+      ...value.frames.map((n, i): [string, number, number] => ["frame", i, n]),
+    ];
+    await env.DB.batch(rows.filter(([, , n]) => n > 0).map(([metric, bucket, n]) =>
+      env.DB.prepare(`INSERT INTO coop_totals (day, transport, metric, bucket, count) VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT (day, transport, metric, bucket) DO UPDATE SET count = count + excluded.count`)
+        .bind(value.day, value.transport, metric, bucket, n)));
+  } else if (kind === "unique") {
     if (!fields(value, ["day", "token"]) || typeof value.token !== "string" || !/^[0-9a-f]{32}$/.test(value.token))
       return refuse(400, "invalid daily token");
     await env.DB.prepare("INSERT INTO play_uniques (day, token) VALUES (?, ?) ON CONFLICT DO NOTHING").bind(value.day, value.token).run();
@@ -85,5 +105,7 @@ export async function pruneAnalytics(env: Env, now = Date.now()): Promise<void> 
 export async function analyticsView(env: Env, now = Date.now()): Promise<PlayAnalyticsView> {
   const { results } = await env.DB.prepare(`SELECT day, mode, unique_browsers, ready, sessions, engaged, runs, active_seconds
     FROM play_totals WHERE day >= ? ORDER BY day DESC, mode`).bind(date(now - 29 * DAY)).all<PlayTotals>();
-  return { days: results };
+  const coop = await env.DB.prepare(`SELECT transport, metric, bucket, SUM(count) AS count FROM coop_totals WHERE day >= ?
+    GROUP BY transport, metric, bucket ORDER BY transport, metric, bucket`).bind(date(now - 29 * DAY)).all<CoopTotals>();
+  return { days: results, coop: coop.results };
 }

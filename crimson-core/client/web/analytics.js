@@ -1,9 +1,10 @@
 // Embedded by client/build.py after PLAY_ANALYTICS (analytics.json), which the
-// service shares. Daily tokens and anonymous totals travel in separate
-// requests; neither carries a game key, account, URL or recording.
+// service shares. Daily tokens, anonymous totals and co-op session summaries
+// travel in separate requests; none carries a game key, account, room, URL or
+// recording.
 function createPlayAnalytics() {
   // MODES is indexed by game_play_mode (host/session.inc).
-  const { token: TOKEN, disabled: DISABLED, modes: MODES, max_runs: MAX_RUNS, max_seconds: MAX_SECONDS } = PLAY_ANALYTICS;
+  const { token: TOKEN, disabled: DISABLED, modes: MODES, max_runs: MAX_RUNS, max_seconds: MAX_SECONDS, coop: COOP } = PLAY_ANALYTICS;
   const date = () => new Date(Date.now()).toISOString().slice(0, 10);
   let day = date(), pending = { ready: 0, sessions: 0, engaged: 0 }, modes = new Map();
   let previous = 0, previousAt = performance.now(), lastFlush = previousAt, lastRun = 0;
@@ -95,6 +96,24 @@ function createPlayAnalytics() {
     previous = mode;
     if (stopped || pending.sessions || pending.engaged || now - lastFlush >= 60000) flush();
   }
+  // A co-op session's summary as it ends (shell.html), best effort like the totals: the transport it last ran
+  // over, by coop.js's name for it (a WebRTC candidate type, relay-<protocol> through TURN, or ws-relay), its round
+  // trip's bucket, its minutes in runs, whether it desynced, and the game's counters (host/coop.inc
+  // CoopSessionStats): frames whose due ticks all waited, rollbacks by depth and frames by the time their ticks took.
+  function coop({ transport, rtt, ticks, desync, stalled, depths, frames }) {
+    if (!enabled()) return;
+    const { transports: TRANSPORTS, rtt_ms: RTT_MS, max_seconds: MAX_COOP_SECONDS, max_count: MAX_COUNT } = COOP;
+    const kind = ["host", "srflx", "prflx"].includes(transport) ? "direct"
+      : transport === "relay-udp" ? "turn-udp"
+      : ["relay-tcp", "relay-tls"].includes(transport) ? "turn-tcp"
+      : TRANSPORTS.includes(transport) ? transport : "unknown";
+    const count = (n) => Math.min(n, MAX_COUNT);
+    void send("/api/analytics/coop", {
+      day: date(), transport: kind, rtt: RTT_MS.filter((ms) => rtt >= ms).length,
+      seconds: Math.min(Math.round(ticks / 60), MAX_COOP_SECONDS), desync: desync ? 1 : 0, stalled: count(stalled),
+      depths: depths.map(count), frames: frames.map(count),
+    }).catch(() => {});
+  }
   function ready() {
     if (!enabled() || readySent) return;
     readySent = true;
@@ -104,5 +123,5 @@ function createPlayAnalytics() {
   document.addEventListener("visibilitychange", () => { if (document.hidden) { activity(0, 0); flush(); } });
   window.addEventListener("pagehide", () => { activity(0, 0); flush(); });
   window.addEventListener("storage", () => { if (!enabled()) clear(); });
-  return { ready, activity, flush };
+  return { ready, activity, flush, coop };
 }

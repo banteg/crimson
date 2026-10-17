@@ -244,6 +244,12 @@ samples visible, focused wall time about once a second, caps a sampling gap at t
 each minute, on pause/background and on exit. Totals are best effort and never retried; unique presence retries
 with its same token once a minute while playing. Anonymous totals carry no token or session identifier.
 
+A co-op session that reached its partner's game sends one summary as it ends to `POST /api/analytics/coop`
+([network co-op, Telemetry](network-coop.md#telemetry)): the kind of transport it last ran over, its round trip's
+bucket, its minutes in runs, whether it desynced, and histograms of its rollback depths and frame work with its stalled
+frames. It names no room, seat, partner or token; the service adds it to daily totals by transport and keeps nothing
+per session.
+
 `crimson.play-analytics-disabled` is the persistent opt-out preference, exposed on `/privacy`. Opting out keeps
 only today's token, so opting back in the same day does not count the browser twice. Opt-out, Do Not Track,
 Global Privacy Control, unavailable storage, embedding and unrelated hostnames suppress gameplay reporting.
@@ -253,4 +259,4 @@ unique browser counts cannot be summed into weekly/monthly uniques; devices, sto
 limit their interpretation as people. Reports are client supplied and are not proof of human play.
 
 Deployment requires migration `0007_play_analytics.sql` before the Worker/client update and enables the hourly
-cleanup trigger.
+cleanup trigger; co-op summaries need `0009_coop_analytics.sql`.

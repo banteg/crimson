@@ -262,7 +262,7 @@ player's settings or save may change, whatever saves them.
 ```sh
 cd service && npm ci && npm run play && cd ..
 CRIMSON_CHROME=<chrome binary> \
-  node crimson-core/checks/coop_browser.mjs artifacts/assets [screenshot folder]
+  node crimson-core/checks/coop_browser.mjs artifacts/assets [screenshot folder] [game.wasm]
 ```
 
 The whole path between two browsers, locally and outside CI: `npm run play`
@@ -278,7 +278,9 @@ starts a new session with the new page, again over WebRTC. The host's menus star
 keys and mouse: each page's session must have the run started, no desync or
 error and its confirmed ticks advancing, and every confirmed tick both pages
 hold must have run with the same records and left the same state hash on both,
-each seat's records moving its player. The guest's tab goes to the background
+each seat's records moving its player. Then the guest's page sends late (its
+DataChannel sends held 60 ± 25 ms), and the host's game rolls back while both
+keep agreeing. The guest's tab goes to the background
 past the liveness timeout, which would end the session of a page that sent
 nothing, and the run goes on; a desync the guest's page makes closes both
 sessions and both panels say so; the host leaves its stopped run first and its
@@ -287,8 +289,11 @@ meanwhile, then a new session begins; in its run the host leaves from the
 pause banner, both panels say so, and neither address keeps the room. Last, a
 guest page without WebRTC plays a run with the host over the room's relay, then
 closes, which the host's game hears at once, and the host's game quits, which
-takes the co-op panel with it. It saves screenshots of the pages along
-the way (by default under the system's temporary folder).
+takes the co-op panel with it. The sessions the host's page played (on
+localhost, where the game reports analytics) must reach the local service's
+co-op totals by transport, the desync and the late sends' rollbacks among
+them. Last, the late game's costs run in Chrome (below). It saves screenshots
+of the pages along the way (by default under the system's temporary folder).
 
 `CRIMSON_CHROME` is a Chrome or Chromium binary with the new headless mode
 (`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` on macOS); the
@@ -298,6 +303,22 @@ visible: the background step brings another tab of the guest's window to the
 front with the guest's focus emulation off, a real hidden tab whose animation
 frames stop and whose timers slow to once a second. Wrangler keeps its state
 under the user's folder, so the check runs outside the command sandbox too.
+
+### Co-op costs
+
+```sh
+node crimson-core/checks/coop_cost.mjs [game.wasm] [--from 20] [--to 35] [--session 60]
+```
+
+What co-op costs late in a long two-player Survival run, the numbers in
+[network co-op §3.1](../docs/rewrite/network-coop.md#31-measurements-on-crimson-core-apple-m1-pro-wasm):
+a bot plays both players with their health held full, a plain run and the run
+through the co-op engine, and the check prints per-call p50/p99 of the plain
+step, the co-op tick, the slot restore, the state hash and forced 8- and 12-tick
+rollbacks between `--from` and `--to` minutes of the run's time, the slot size
+and the engine's memory, then frame work, rollback depths and stalls over
+`--session` seconds at 60 and 144 Hz with player two's records 60 ± 20 ms late.
+`checks/coop_browser.mjs` runs the same `measure` in Chrome.
 
 ### Original executable
 
