@@ -69,4 +69,6 @@ jobs:
         with:
           name: replay-verdicts-${{ steps.replays.outputs.inputs }}
           path: service/.replay-verdicts
+          # The directory is hidden, which upload-artifact skips unless asked.
+          include-hidden-files: true
           if-no-files-found: error

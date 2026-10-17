@@ -55,8 +55,37 @@ export function settle(ids, verdicts) {
   };
 }
 
+// SQL's statements, without comments; a quoted string keeps its semicolons and dashes.
+function statements(sql) {
+  const found = [];
+  let statement = "";
+  for (let at = 0; at < sql.length; at++) {
+    if (sql[at] === "'") {
+      const end = sql.indexOf("'", at + 1);
+      assert.notEqual(end, -1, "Unterminated string in a migration");
+      statement += sql.slice(at, end + 1);
+      at = end;
+    } else if (sql.startsWith("--", at)) {
+      at = sql.indexOf("\n", at) === -1 ? sql.length : sql.indexOf("\n", at);
+    } else if (sql[at] === ";") {
+      found.push(statement);
+      statement = "";
+    } else statement += sql[at];
+  }
+  return [...found, statement];
+}
+
+// The runs the migrations' `UPDATE runs SET retired = ...` statements name; comments and other statements do not count.
+export function retiredBy(migrations) {
+  const retiring = statements(migrations).filter((statement) => /^\s*UPDATE\s+runs\s+SET\s+retired\s*=/i.test(statement));
+  return new Set(retiring.flatMap((statement) => statement.match(/\b[0-9a-f]{64}\b/g) ?? []));
+}
+
 // The failures no migration retires: a change that breaks runs retires them in that same change.
-export const unexpectedFailures = (results, migrations) => results.filter(({ id, ok }) => !ok && !migrations.includes(id));
+export function unexpectedFailures(results, migrations) {
+  const retired = retiredBy(migrations);
+  return results.filter(({ id, ok }) => !ok && !retired.has(id));
+}
 
 // Production's runs not yet retired.
 function activeRuns() {
@@ -79,8 +108,33 @@ function fromR2(ids) {
 
 async function fromSite(path) {
   const response = await fetch(`${ORIGIN}${path}`, { signal: AbortSignal.timeout(60000) });
-  if (!response.ok) throw Error(`GET ${ORIGIN}${path}: HTTP ${response.status}`);
+  if (!response.ok) throw Object.assign(Error(`GET ${ORIGIN}${path}: HTTP ${response.status}`), { status: response.status });
   return response;
+}
+
+async function publicReplay(id) {
+  try {
+    return new Uint8Array(await (await fromSite(`/runs/${id}.crd`)).arrayBuffer());
+  } catch (error) {
+    throw error.status === 404 ? Object.assign(error, { gone: id }) : error;
+  }
+}
+
+// The listed runs, and the replays of those `known` has no verdict for, fetched into `directory` by `get`. A run the
+// site stops serving after `list` named it (hidden, banned or deleted meanwhile) drops out once a fresh list no longer
+// names it either; one still listed is a real failure.
+export async function listedReplays(list, known, directory, get) {
+  let listed = await list();
+  for (;;) {
+    try {
+      return { listed, runs: await fetchReplays(settle(listed, known).unsettled, directory, get) };
+    } catch (error) {
+      if (!error.gone) throw error;
+      const fresh = await list();
+      if (fresh.includes(error.gone)) throw error;
+      listed = fresh;
+    }
+  }
 }
 
 // Removes the files in `directory` other than those of `ids`.
@@ -118,12 +172,13 @@ async function reverifyPublic(out) {
   const file = join(out, "verdicts.json");
   const grounds = join(out, "grounds");
   const previous = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : null;
-  const { runs: listed } = await (await fromSite("/api/replays")).json();
-  const { settled, unsettled } = settle(listed, previous?.inputs === inputs ? previous.runs : {});
+  const known = previous?.inputs === inputs ? previous.runs : {};
+  const list = async () => (await (await fromSite("/api/replays")).json()).runs;
+  const { listed, runs } = await listedReplays(list, known, PUBLIC, publicReplay);
+  const { settled } = settle(listed, known);
   // Only what the site still serves stays: a run hidden, banned, retired or deleted since leaves the caches.
   prune(PUBLIC, listed, ".crd");
   prune(grounds, settled.map(({ id }) => id), ".jpg");
-  const runs = await fetchReplays(unsettled, PUBLIC, async (id) => new Uint8Array(await (await fromSite(`/runs/${id}.crd`)).arrayBuffer()));
   const results = [...settled, ...(await verify(runs, grounds))];
   writeFileSync(file, `${JSON.stringify({ inputs, runs: Object.fromEntries(results.map(({ id, ok, reason }) => [id, { ok, reason }])) })}\n`);
   console.log(`${settled.length} verdicts kept for these replay inputs, ${runs.length} runs replayed.`);

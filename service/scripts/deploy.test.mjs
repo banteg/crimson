@@ -9,7 +9,7 @@ import { verifyRuns } from "./reverify-pool.mjs";
 import { putGrounds } from "./grounds.mjs";
 import { r2Bucket } from "./r2.mjs";
 import { findVerdicts, replayInputs, replayPlan } from "./deploy-replays.mjs";
-import { settle, unexpectedFailures } from "./reverify.mjs";
+import { listedReplays, settle, unexpectedFailures } from "./reverify.mjs";
 import { requireArtifacts, requireGreenChecks, requireTrustedRun, resolveRuntimeBuild, REQUIRED_CHECKS } from "./deploy-preflight.mjs";
 import { requireBuildIdentity, requireMigrations, packageManifest, verifyManifest, smoke, waitForRelease } from "./deploy-checks.mjs";
 
@@ -398,6 +398,23 @@ test("CI's verdicts settle the runs they cover; the rest verify, and only a migr
   const results = [{ id: "e".repeat(64), ok: true, reason: null }, failed];
   assert.deepEqual(unexpectedFailures(results, "CREATE TABLE runs (id TEXT);"), [failed]);
   assert.deepEqual(unexpectedFailures(results, `UPDATE runs SET retired = 'changed' WHERE id IN ('${failed.id}');`), []);
+  assert.deepEqual(unexpectedFailures(results, `UPDATE runs SET retired = 'changed;\nmore' WHERE id IN (\n  '${failed.id}'\n);`), []);
+  for (const mention of [`-- investigate ${failed.id}\nSELECT 1;`, `UPDATE runs SET hidden = 1 WHERE id = '${failed.id}';`])
+    assert.deepEqual(unexpectedFailures(results, mention), [failed], mention);
+});
+
+test("a replay hidden after the list named it drops out on a fresh list; one still listed fails", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "crimson-listed-"));
+  try {
+    const [a, b, c] = ["a", "b", "c"].map((letter) => letter.repeat(64));
+    const gone = (id) => Object.assign(Error(`${id} is gone`), { gone: id });
+    const lists = [[a, b, c], [a, c]];
+    const get = async (id) => { if (id === b) throw gone(id); return new Uint8Array([1]); };
+    const { listed, runs } = await listedReplays(async () => lists.shift(), { [c]: { ok: true, reason: null } }, directory, get);
+    assert.deepEqual(listed, [a, c]);
+    assert.deepEqual(runs.map(({ id }) => id), [a]);
+    await assert.rejects(listedReplays(async () => [a, b], {}, directory, get), /is gone/);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
 test("R2 calls go to the replay bucket with the token, retry rate limits and server errors, and fail on the rest", async () => {
