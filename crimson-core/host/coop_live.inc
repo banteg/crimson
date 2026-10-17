@@ -12,7 +12,10 @@
 // screen and with the window in the background too: the partner waits on this
 // machine's records. A pass of a run produces this machine's records and runs
 // the engine's ticks (host/coop.inc), the newest drawing, as watch and practice
-// play theirs; a pass that draws no tick shows the last drawn one again.
+// play theirs; a pass that draws no tick shows the last drawn one again. Over
+// it go the replay viewer's dim bands (host/viewer.inc): the pause and a stopped
+// run's banner, the partner's perk pick, and why the run waits; the menus show
+// a line on the session.
 //
 // The transport talks to the session through host/coop_wire.inc's exports, on
 // the clock host_time_ms reads: game_coop_connect when its channels open,
@@ -24,9 +27,54 @@
 // The session goes on: the transport is open and nothing closed it.
 static bool coop_on() { return wire.session && !wire.closed; }
 
+// What the session shows over a run and the menus.
+static struct {
+  bool was_on;     // the session was on, last pass
+  bool asked_next; // the Guest's next-run choice went to the Host, whose run has yet to come
+  bool fire_held;  // fire held as play resumes under a banner: let go first
+  ui_button_t resume, leave;
+  // The partner's perk menu on the card (viewer_card): its offers from the
+  // tick that opened it (pick.tick), and the choice once the next tick took it.
+  bool card, picking;
+  WatchPick pick;
+  int picker;
+  float left; // the card's seconds, once picked
+} coop_ui;
+
+static constexpr unsigned COOP_NOTE_MS = 5000;
 static void coop_note(const char *note) {
   coop_live.note = note;
   coop_live.note_at = host_time_ms();
+}
+// Why the session or its run stopped, for the player, or null (this machine
+// left, or nothing stopped).
+static const char *coop_why() {
+  static char line[64];
+  int partner = 2 - wire.seat;
+  if (coop.active && coop.desync.tick >= 0) {
+    snprintf(line, sizeof line, "Desync at tick %d", coop.desync.tick);
+    return line;
+  }
+  switch (wire.reason) {
+  case COOP_VERSION:
+    return "The other player has another version of the game";
+  case COOP_BAD_RECORD:
+  case COOP_BAD_MESSAGE:
+    return "Co-op error: a message no game sends";
+  case COOP_STALLED:
+  case COOP_SILENT:
+  case COOP_DISCONNECTED:
+    return "The connection was lost";
+  case COOP_UNANSWERED:
+    snprintf(line, sizeof line, "Player %d did not start the run", partner);
+    return line;
+  case COOP_PARTNER_LEFT:
+  case COOP_PARTNER_GONE:
+    snprintf(line, sizeof line, "Player %d left", partner);
+    return line;
+  default:
+    return nullptr;
+  }
 }
 
 // The menus' unlocks: every quest's while the session is on, else the player's.
@@ -175,6 +223,12 @@ static bool coop_start_run() {
   coop_live.banked = 0;
   coop_live.shown = coop_live.choosing = coop_live.escape = false;
   coop_live.ticked_at = host_time_ms();
+  const ui_button_t plate = {(char *)"", 0, 0, 1, 0, 0, 0, 1.0f, 0, 1};
+  coop_ui.resume = coop_ui.leave = plate;
+  coop_ui.resume.label = (char *)"Resume";
+  coop_ui.leave.label = (char *)"Leave";
+  coop_ui.card = coop_ui.fire_held = false;
+  viewer.card = 0;
   return true;
 }
 
@@ -233,42 +287,55 @@ static bool coop_screen_set(game_state_id_t state) {
   return starts;
 }
 
-// What the screen tells the player of the session, or null: in a run, why it
-// stopped or waits; in the menus, the Host's run waiting for the Guest, or what
-// became of a click.
-static const char *coop_line() {
-  static char line[64];
-  unsigned now = host_time_ms();
-  if (!coop_live.playing) {
-    if (coop_live.latched)
-      return "Waiting for partner";
-    return coop_live.note && now - coop_live.note_at < 3000 ? coop_live.note : nullptr;
-  }
-  uint32_t status = game_coop_status();
-  if (status & COOP_DESYNCED) {
-    snprintf(line, sizeof line, "Desync at tick %d - Esc leaves", coop.desync.tick);
-    return line;
-  }
-  if (status & COOP_FAILED) {
-    snprintf(line, sizeof line, "Co-op error %d - Esc leaves", (int)wire.reason);
-    return line;
-  }
-  if (!coop_on())
-    return "Connection lost";
-  if (status & COOP_LEAVING)
-    return "Leaving the run";
-  if (status & COOP_PAUSED)
-    return "Paused - Esc resumes";
-  // Half a second without a tick: lockstep waits for the partner's records.
-  if ((status & COOP_STARTING) || now - coop_live.ticked_at > 500)
-    return "Waiting for partner";
-  return nullptr;
+// A line for the player at the bottom left, in a dim box.
+static void coop_draw_line(const char *line) {
+  float at[2] = {8, viewer_h() - 46}, dim[4] = {0, 0, 0, 0.55f};
+  grim_interface_ptr->grim_draw_rect_filled(at, viewer_text_w(line) + 16, 24, dim);
+  grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
+  viewer_text(16, viewer_h() - 40, line, 1, 1, 1, 1);
 }
-static void coop_draw_line() {
-  if (const char *line = coop_line()) {
-    grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
-    viewer_text(16, viewer_h() - 40, line, 1, 1, 1, 1);
+// The menus' line on the session: what became of a click or why the session
+// ended, a while; the Host's run waiting for the Guest, the Guest's choice
+// waiting for the Host's run; else that it is on (none while the screen fades
+// to a run).
+static const char *coop_menu_line() {
+  if (coop_live.note && host_time_ms() - coop_live.note_at < COOP_NOTE_MS)
+    return coop_live.note;
+  if (!coop_on() || coop_live.entering)
+    return nullptr;
+  if (!wire.hello)
+    return "Co-op: connecting";
+  if (coop_live.latched)
+    return "Co-op: waiting for Player 2";
+  if (coop_ui.asked_next)
+    return "Co-op: waiting for the host";
+  if (coop_live.ended)
+    return "Co-op: connected";
+  return wire.seat == 0 ? "Co-op: connected - pick a run" : "Co-op: connected - the host picks the run";
+}
+
+// A banner across the middle of the run's frame, in the replay viewer's dim
+// look: a title, a line under it, and buttons the mouse, the keys (Tab, Enter)
+// and a pad reach as they reach the original's. The button activated, or -1.
+static int coop_banner(const char *title, const char *line, std::initializer_list<ui_button_t *> buttons) {
+  constexpr float HEIGHT = 104, BUTTON = 145, GAP = 16;
+  float w = viewer_w(), y = floorf((viewer_h() - HEIGHT) * 0.5f);
+  float band[2] = {0, y}, dim[4] = {0, 0, 0, 0.55f}, blue[4] = {0.27f, 0.51f, 0.86f, 0.9f};
+  grim_interface_ptr->grim_draw_rect_filled(band, w, HEIGHT, dim);
+  grim_interface_ptr->grim_draw_rect_filled(band, w, 2, blue);
+  grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
+  viewer_shadowed(floorf((w - viewer_text_w(title)) * 0.5f), y + 14, title, 1, 1, 1, 1);
+  viewer_text(floorf((w - viewer_text_w(line)) * 0.5f), y + 32, line, 0.75f, 0.78f, 0.82f, 0.9f);
+  float x = floorf((w - buttons.size() * (BUTTON + GAP) + GAP) * 0.5f);
+  int activated = -1, i = 0;
+  for (ui_button_t *button : buttons) {
+    float at[2] = {x + i * (BUTTON + GAP), y + 58};
+    if (ui_button_update(at, button))
+      activated = i;
+    ++i;
   }
+  ui_cursor_render();
+  return activated;
 }
 
 // The record of this machine's player for the next tick: its input, or with
@@ -297,25 +364,106 @@ static int coop_frame() {
   return 1;
 }
 
+// The partner's perk menu on the card, once the tick that opened it is
+// confirmed: "picking" until the next tick takes its choice, which lights for
+// WATCH_PICK_SECONDS of play (a cancel slides it away at once).
+static void coop_card(float dt) {
+  int open = coop.next - 1;
+  if (perk_menu_open && perk_picker != coop.local && coop.confirmed >= open &&
+      !(coop_ui.card && coop_ui.pick.tick == open)) {
+    int offered = coop_offered();
+    coop_ui.pick = {open, player_state_table[0].level, -1, offered, {}};
+    memcpy(coop_ui.pick.offered, perk_choice_ids, offered * sizeof(int));
+    coop_ui.picker = perk_picker;
+    coop_ui.card = coop_ui.picking = true;
+  }
+  if (!coop_ui.card)
+    return;
+  if (coop_ui.picking && coop.confirmed > coop_ui.pick.tick) {
+    const CoopTick &next = coop.ticks[(coop_ui.pick.tick + 1) & (COOP_RING - 1)];
+    coop_ui.picking = false;
+    coop_ui.pick.chosen = next.commands && next.command.type == 1 ? next.command.argument : -1;
+    coop_ui.left = coop_ui.pick.chosen >= 0 ? WATCH_PICK_SECONDS : 0;
+  }
+  if (!coop_ui.picking && !wire.paused)
+    coop_ui.left -= dt;
+  char header[48];
+  snprintf(header, sizeof header, coop_ui.picking ? "Level %d - Player %d picking..." : "Level %d - Player %d",
+           coop_ui.pick.level, coop_ui.picker + 1);
+  bool in = coop_ui.picking || coop_ui.left > 0;
+  coop_ui.card = viewer_card(coop_ui.pick, header, in, dt) || in;
+}
+
+// This machine's run ends where it stopped (a desync, an error) and the screen
+// goes to the menu.
+static void coop_abandon() {
+  coop_quit();
+  coop_to_menu();
+}
+
+// What the run's frame shows over the world: a stopped run's banner, whose Leave
+// (or Escape) goes to the menu; the pause's, with Resume (Escape) and Leave;
+// else the partner's perk pick, and why the run waits or ends. Play resumes
+// under a banner only once fire is let go.
+static void coop_overlay_draw(float dt) {
+  char line[64];
+  int partner = 2 - wire.seat;
+  bool banner = (coop.hold & COOP_HOLD_STOP) || (wire.paused && !(game_coop_status() & COOP_LEAVING));
+  if (banner) {
+    coop_ui.fire_held = true;
+    live.fire_pressed = live.reload_pressed = false;
+  }
+  if (coop.hold & COOP_HOLD_STOP) {
+    const char *why = coop_why();
+    bool desync = coop.desync.tick >= 0;
+    if (coop_banner(desync ? why : "Co-op error", desync ? "The two games ran differently from here" : why ? why : "",
+                    {&coop_ui.leave}) == 0)
+      coop_abandon();
+    return;
+  }
+  coop_card(dt);
+  if (banner) {
+    if (wire.pause_by == wire.seat)
+      snprintf(line, sizeof line, "Esc resumes the run");
+    else
+      snprintf(line, sizeof line, "Player %d paused the run - Esc resumes it", partner);
+    int activated = coop_banner("Paused", line, {&coop_ui.resume, &coop_ui.leave});
+    if (activated == 0)
+      game_coop_request(COOP_ASK_PAUSE, 0, 0, 0, host_time_ms());
+    else if (activated == 1)
+      game_coop_request(COOP_ASK_LEAVE, 0, 0, 0, host_time_ms());
+    return;
+  }
+  uint32_t status = game_coop_status();
+  if (!coop_on() || (status & COOP_LEAVING)) {
+    const char *why = coop_why();
+    coop_draw_line(why ? why : "Leaving the run");
+  } else if (!coop_ui.card && ((status & COOP_STARTING) || host_time_ms() - coop_live.ticked_at > 500)) {
+    // Half a second without a tick: lockstep waits for the partner's records.
+    snprintf(line, sizeof line, "Waiting for Player %d", partner);
+    coop_draw_line(line);
+  }
+}
+
 // gameplay_update_and_render for a co-op run: Escape and the perk requests go to
 // the session; this machine's records for the pass's ticks, then the ticks the
 // engine runs, the newest drawing; once the run reached its last tick, its end.
 // A tick that ran pays for its time, and a pass held back keeps at most a few
-// ticks' worth, so play resumes without a burst.
+// ticks' worth, so play resumes without a burst. The overlays go on top.
 static void coop_render() {
   double now = host_time_ms();
   // Escape pauses or resumes; a run stopped (a desync, an error) it leaves.
   if (coop_live.escape) {
     coop_live.escape = false;
-    if (coop.hold & COOP_HOLD_STOP) {
-      coop_quit();
-      return coop_to_menu();
-    }
+    if (coop.hold & COOP_HOLD_STOP)
+      return coop_abandon();
     game_coop_request(COOP_ASK_PAUSE, !wire.paused, 0, 0, now);
   }
   // Starting failed: the Host's partner never answered, or the Host cancelled.
   if (!coop.active) {
     game_live = game_session = coop_live.playing = false;
+    if (const char *why = coop_why())
+      coop_note(why);
     return coop_to_menu();
   }
   live_poll_prompt();
@@ -324,6 +472,10 @@ static void coop_render() {
   live.open_requested = false;
   if (!coop.picking)
     coop_live.choosing = false;
+  if (coop_ui.fire_held) {
+    coop_ui.fire_held = live.fire_down;
+    live.fire_down = live.fire_pressed = false;
+  }
   int due = live.due;
   for (int i = 0; i < due; ++i) {
     coop.scratch[coop.local].input = coop_sample();
@@ -366,7 +518,7 @@ static void coop_render() {
     coop.scratch[coop.local].cmd = 0;
     return game_state_set_recovered(GAME_STATE_PERK_SELECTION);
   }
-  coop_draw_line();
+  coop_overlay_draw(fminf(grim_frame_dt, 0.1f));
 }
 
 extern "C" {
@@ -385,6 +537,13 @@ bool game_coop_pump() {
   }
   bool on = coop_on();
   coop_overlay(on);
+  // A session that ended says why, a while.
+  if (coop_ui.was_on && !on)
+    if (const char *why = coop_why())
+      coop_note(why);
+  coop_ui.was_on = on;
+  if (!on || coop_live.playing || coop_live.entering)
+    coop_ui.asked_next = false;
   if (!on) {
     coop_live.latched = coop_live.offered = false;
     if (coop_live.ended)
@@ -437,8 +596,7 @@ bool game_coop_next_run(int choice) {
   if (!coop_on() || !coop_live.ended || (choice == 1 && coop_live.last.major == 5 && coop_live.last.minor == 10))
     return false;
   if (wire.seat == 1) {
-    game_coop_request(COOP_ASK_NEXT_RUN, choice, 0, 0, host_time_ms());
-    coop_note("Waiting for the host");
+    coop_ui.asked_next = game_coop_request(COOP_ASK_NEXT_RUN, choice, 0, 0, host_time_ms());
     return choice != 2;
   }
   if (choice == 2)
@@ -459,6 +617,8 @@ bool game_coop_focus(int active) {
 }
 // The menus' line (ui_elements_update_and_render).
 static void coop_menus_draw() {
-  if (wire.session && !coop_live.playing)
-    coop_draw_line();
+  if (!wire.session || coop_live.playing)
+    return;
+  if (const char *line = coop_menu_line())
+    coop_draw_line(line);
 }

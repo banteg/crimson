@@ -617,6 +617,13 @@ static bool coop_perk_valid() {
   return cfg.mode != GAME_MODE_RUSH && any_player_alive() && perk_pending_count > 0;
 }
 
+// The choices the open perk menu offers, as portable_step_many counts them.
+static int coop_offered() {
+  return player_state_table[0].perk_counts[PERK_ID_PERK_MASTER] > 0   ? 7
+         : player_state_table[0].perk_counts[PERK_ID_PERK_EXPERT] > 0 ? 6
+                                                                      : 5;
+}
+
 // The tick's perk command from the seats' requests, on the state it starts
 // from, as portable_step_many takes commands: with the menu closed, an open
 // request (player one's first) opens it and makes its player the picker; with
@@ -628,10 +635,7 @@ static uint32_t coop_command(const CoopInput *seats) {
   if (perk_menu_open) {
     coop.stats.dropped_opens += open[0] + open[1];
     int choice = seats[perk_picker].cmd - 1;
-    int offered = player_state_table[0].perk_counts[PERK_ID_PERK_MASTER] > 0   ? 7
-                  : player_state_table[0].perk_counts[PERK_ID_PERK_EXPERT] > 0 ? 6
-                                                                               : 5;
-    if (!valid || choice < 0 || choice >= offered || perk_choice_ids[choice] <= 0)
+    if (!valid || choice < 0 || choice >= coop_offered() || perk_choice_ids[choice] <= 0)
       return 0;
     coop.stats.extra_picks += choice >= 5;
     commands[0] = {1, choice};
@@ -724,6 +728,10 @@ static void coop_tick(int t, bool quiet, bool draw) {
   coop.draws += draw;
   coop.baking = -1;
   bool accepted = portable_step_many(entry.commands);
+  // Inside the original the run's screen fades in by its ticks' time, as the
+  // client's runs' does (live_timeline): its HUD shows through it.
+  if (game_live)
+    live_timeline();
   coop.running = coop.quiet = false;
   grim_render_disabled = disabled;
   // Every tick draws its world, which bakes.

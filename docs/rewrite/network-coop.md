@@ -866,9 +866,9 @@ stays on the arena screen and sees the replay viewer's top-right pick card
     goes back to the state after it. Both replays end on the same tick, in the
     same state. A peer holding the partner's records and hashes through the end
     (or either peer had no run) sends `CLOSE` on channel 1, and keeps sending
-    ticks packets until the partner's `CLOSE` arrives; then it closes. The
-    partner sees the end panel with "Player N left" and returns to the menu; the
-    session ends for both.
+    ticks packets until the partner's `CLOSE` arrives; then it closes. Both
+    return to the main menu, where the partner's co-op line says "Player N
+    left"; the session ends for both.
 
   - A left run is a quit: its replay is saved locally and it does not rank. A
     disconnect (Section 6.2 timeouts) ends the run the same way at the last
