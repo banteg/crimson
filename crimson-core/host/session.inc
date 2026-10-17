@@ -72,10 +72,12 @@ static void practice_stop();
 static void practice_end();
 static int practice_frame();
 static void practice_render();
-// A co-op tick's terrain bake and music wait for its confirmation (host/coop.inc).
-enum CoopTuneKind { COOP_PLAY, COOP_FADE, COOP_VOLUME };
-static bool coop_bake_held();
+// A co-op tick's terrain bake and music wait for its confirmation (host/coop.inc):
+// a track, the in-game tune, a fade, a volume.
+enum CoopTuneKind { COOP_PLAY, COOP_GAME_TUNE, COOP_FADE, COOP_VOLUME };
+static bool coop_bake();
 static bool coop_defer(CoopTuneKind kind, int track, float volume);
+static void game_music_start(int track, bool in_game);
 
 #include "replay.inc"
 #include "ranked.inc"

@@ -255,6 +255,7 @@ jobs:
           node crimson-core/checks/game_session.mjs --ranked --quest --seed 1 "$(fresh)"
           node crimson-core/checks/game_session.mjs --silent --seed 4069574050 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --quest --silent --seed 1 "$(fresh)"
+          node crimson-core/checks/game_session.mjs --pad --quest --tunes --seed 1 "$(fresh)"
           node crimson-core/checks/game_replay_read.mjs "$(fresh)"
           node crimson-core/checks/game_watch.mjs "$(fresh)"
           node crimson-core/checks/game_seek.mjs "$(fresh)"
@@ -320,10 +321,13 @@ jobs:
         with:
           name: runtime-corpus
           path: crimson-core/build
-      - name: Play every co-op stream through the co-op engine and its forced rollbacks
+      - name: Play every co-op stream through the co-op engine and its forced rollbacks, and some inside the original
         run: |
           uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name game-coop -- \
             node crimson-core/checks/game_coop.mjs
+          uv run --no-sync python crimson-core/checks/game_files.py "$RUNNER_TEMP/game"
+          uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name game-coop-live -- \
+            node crimson-core/checks/game_coop.mjs --live "$RUNNER_TEMP/game"
       - uses: actions/upload-artifact@v7
         if: always()
         with:

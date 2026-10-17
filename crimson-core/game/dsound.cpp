@@ -181,6 +181,12 @@ extern "C" HRESULT WINAPI DirectSoundCreate8(LPCGUID, LPDIRECTSOUND8 *device, LP
   return DS_OK;
 }
 
+// Whether a buffer plays (host/coop.inc's music digest).
+extern "C" bool game_sound_playing(IDirectSoundBuffer *buffer) {
+  DWORD status = 0;
+  return buffer && buffer->GetStatus(&status) == DS_OK && (status & DSBSTATUS_PLAYING);
+}
+
 // The next frames of the mix (at most MAX_FRAMES), as interleaved 16-bit stereo
 // at 44.1 kHz.
 // Frames of the mix that would be dropped unheard: the voices move on without

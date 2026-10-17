@@ -256,20 +256,25 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     branch does. `music_fade_out_all` never touches the latch inside ticks.
 
   - **Playback half (local, gated by the peer's own audio settings)**: start the
-    in-game tune the first time the simulation half sets the latch, and do
-    nothing further during rollbacks or resimulations. Whether a tune is already
-    playing is read from the music tables in `SESSION_KEEPS` (`watch_playing()`
-    in `crimson-core/host/watch.inc`), which rollback never restores, so a
-    rollback that undoes and replays the first hit does not restart the tune.
-    Terminal tracks wait for the terminal barrier (Section 5.2).
+    in-game tune the first time the simulation half sets the latch; an in-game
+    tune already playing keeps playing. Whether one is playing is read from the
+    music tables in `SESSION_KEEPS` (`watch_playing()` in
+    `crimson-core/host/watch.inc`), which rollback never restores. In a co-op
+    tick every playback waits for the tick's confirmation (Section 4.3), so a
+    rollback that undoes and replays the first hit starts nothing twice.
 
   - **Track ids (landed, every session)**: an original started with sound or
     music off loads no music, so all its track ids are `0` and the end tunes
     would pose as the in-game tune's request. Ticks run with the verifier's
     distinct ids (`GameMusic` in `LiveSettings`, `crimson-core/host/game.inc`);
     the playback half and the quest's in-tick volume write map them to the
-    original's loaded tracks (`game_shell_track`).
-    `crimson-core/checks/game_session.mjs --silent` plays a run with both off.
+    original's loaded tracks (`game_shell_track`), and play them with the
+    original's own ids in place (`GameShellMusic`): the original's
+    `music_play_exclusive` takes a track equal to the in-game tune's request for
+    the request and draws a tune, and with seven in-game tunes loaded the
+    original's `crimsonquest` is the verifier's request.
+    `crimson-core/checks/game_session.mjs --silent` plays a run with both off,
+    and `--tunes` a quest with seven tunes loaded.
 
 #### 4. Complete 2-player input, camera & replay seams (`host.cpp`, `grim.inc`, `game.inc`, `session.inc`, `replay.inc`)
 
@@ -509,7 +514,6 @@ slot[t & 15]: S[t], the state BEFORE executing tick t, tagged (run_epoch, tick)
   - keyframes' raw codec (host/keyframes.inc run_state_write): game_run_spans,
     KeyframeHost (with perk_picker and the overflow's queued decals), and
     game_effect_overflow.entries[0..extent) with its queued decals
-  - music_track_volume and music_fade_out_flags
 ```
 
 Slot capture runs inside the run's surroundings (`CoopRun`): the run's settings
@@ -517,9 +521,8 @@ Slot capture runs inside the run's surroundings (`CoopRun`): the run's settings
 `ui_elements_timeline` and `ui_transition_direction`, which only ticks change;
 the picker's perk screen and this machine's menus change the local copies. A
 restore asserts the slot's tag, keeps this machine's screen state, cursor, XP
-bar and settings (`run_restore`, which practice's retry shares), puts the music
-tables back, drops what ticks from `t` on presented and had not confirmed, and
-never draws gameplay RNG. `string_used` must equal its value at co-op start.
+bar, settings and music (`run_restore`, which practice's retry shares), drops
+the music ticks from `t` on queued, and never draws gameplay RNG. `string_used` must equal its value at co-op start.
 
 #### Per-tick retention invariant
 
@@ -579,7 +582,15 @@ run's surroundings:
 
 3. `telekinetic_bonus_hover_timer_ms[0..1]` (`2 × int32`). Its data definition
    holds element `0` alone; `crimson-core/game.py` (`PLAYER_ARRAYS`) widens its run
-   span, so run start resets both and keyframes keep both.
+   span, so run start resets both and keyframes keep both. Then the run's other
+   globals the snapshot leaves out that a tick reads: perk and weapon clocks
+   (Lean Mean Exp Machine's award, Man Bomb's, Fire Cough's and Hot Tempered's
+   intervals), update counters, the players' cursors, the screen and menu flags
+   a tick checks, Survival's first kill, the effect template spawns copy.
+   `game_coop_audit` holds this to every byte of `game_run_spans`: flipping a
+   byte must change the words unless `COOP_UNHASHED` (`host/coop.inc`) lists it
+   with its reason (padding, presentation, tables fixed at startup, globals no
+   tick reads), and a listed byte must not change them.
 
 4. The run's `LiveSettings`: the whole configuration less the player's own
    display and audio choices, which the run carries only for drawing and playing
@@ -592,8 +603,9 @@ run's surroundings:
    each entry's `next_free` pointer normalized to its index (`-1`/`-2` for
    null/`effect_discard_entry`) and quad vertex scratch omitted.
 
-The hash is FNV-1a over those words, a word at a time (`game_coop_hash`, which
-also works outside co-op). Right after tick $t$ executes, its hash is kept in a
+The hash is xxHash32 over those words (`game_coop_hash`, which also works
+outside co-op): FNV-1a a word at a time carries a change only towards the high
+bits, so two sign flips cancel. Right after tick $t$ executes, its hash is kept in a
 256-tick ring (`game_coop_hash_at(t)`), overwritten if $t$ runs again; a peer
 only sends a tick's hash once it is confirmed.
 
@@ -606,26 +618,35 @@ decals and corpses into `terrain_render_target` and then clears `fx_queue_count`
 `terrain_texture_failed`, which `portable_init` clears).
 
 1. **Final ticks bake in the tick**: a tick that runs on both players' real
-   records with `confirmed_through == t - 1` (every `M1` lockstep tick) bakes
-   inside the tick as a 1P run does, so a corpse never blinks out between its
-   creature leaving the pool and the terrain taking it.
+   records with every tick before it confirmed and baked (every `M1` lockstep
+   tick) bakes inside the tick as a 1P run does, so a corpse never blinks out
+   between its creature leaving the pool and the terrain taking it. Where the
+   module draws, it bakes with rendering on even when the tick does not draw (a
+   catch-up frame's earlier ticks, ticks run again after a correction), as a
+   replay's ticks do (`terrain.baking`).
 
-2. **Speculative ticks hold their bake**: every speculative tick, even one with
-   nothing to bake, records `fx_queue[0..fx_queue_count)`,
+2. **Held ticks hold their bake**: a tick run on a guess, or after a tick still
+   held, records `fx_queue[0..fx_queue_count)`,
    `game_effect_overflow.decals[0..decal_count)` and
    `fx_rotated_*[0..fx_queue_rotated)` into `bakes[tick & 15]` (tagged with
    `run_epoch` and `tick`), clears the queues as the bake would and draws
-   nothing. A speculative corpse shows on the terrain only once confirmed.
+   nothing. A held corpse shows on the terrain only once confirmed.
 
-3. **Commit**: once `confirmed_through` passes a speculative tick, its record
-   (tag asserted) is drawn in order through the bake body `terrain_rebuild` uses
-   (`terrain_bake`, inside `live_enter_run()` with `grim_render_disabled = 0`);
-   a headless module only advances `baked_through`. A rollback to $t$ simply
-   runs the ticks from $t$ again, which rewrite their records.
+3. **Commit in tick order**: whenever `confirmed_through` moves (before the
+   frame's ticks and after each one), the held bakes it passed are drawn, tag
+   asserted, through the bake body `terrain_rebuild` uses (`terrain_bake`,
+   rendering on where the module draws, inside `live_enter_run()`), before any
+   later tick runs: bakes reach the terrain strictly in tick order. A held bake
+   is drawn before its slot comes round again (the lead cap of 12 is under 16).
+   What the queues hold between ticks for the next tick's bake (a Nuke taken
+   after the world drew queues its kills' blood) stays as it was. A rollback to
+   $t$ simply runs the ticks from $t$ again, which rewrite their records.
 
-4. **Bake digest**: every executed tick keeps an FNV-1a digest of its bake's
-   decals and corpses (`game_coop_bake_at(t)`), leaving out the corpses' alpha,
-   which the player's `cv_terrainBodiesTransparency` scales.
+4. **Digests**: every executed tick keeps a digest of its bake's decals and
+   corpses (`game_coop_bake_at(t)`), leaving out the corpses' alpha, which the
+   player's `cv_terrainBodiesTransparency` scales, and once it reached the
+   terrain a digest of every bake before it and its own in the order they did
+   (`game_coop_terrain_at(t)`).
 
 ### 4.3 Decoupled audio boundary: deterministic triggers, presentation-owned playback
 
@@ -642,10 +663,10 @@ nothing ever touches `crt_rand()` or simulation state (`sfx_entry_start_playback
 uses C `rand()` for voice stealing). Therefore:
 
 1. **No sound state in `coop_canonical_snapshot()`**: `sfx_cooldown_table[128]`,
-   `sfx_sample_rate` and DirectSound buffers (`crimson-core/game/dsound.cpp`)
-   are presentation-owned, never snapshotted, restored or hashed. The music
-   volume and fade tables are not hashed either, but each slot keeps them, so a
-   rollback undoes any music presentation that slipped through.
+   `sfx_sample_rate`, the music volume and fade tables and DirectSound buffers
+   (`crimson-core/game/dsound.cpp`) are presentation-owned, never snapshotted,
+   restored or hashed: a rollback never undoes music this machine played, which
+   would leave the tables apart from the buffers playing.
 
 2. **Each tick is heard once**: `heard` is the high-water of executed ticks,
    never rolled back (reset per run). Before each tick the engine takes
@@ -659,14 +680,16 @@ uses C `rand()` for voice stealing). Therefore:
    accepted.
 
 3. **Music waits for confirmation**: in a co-op tick, `music_play_exclusive`
-   keeps its simulation half (the playlist latch and its draw) and the in-game
-   tune starts at most once (the playback half keeps a playing in-game tune).
-   The end tunes (`shortie_monk`, `crimsonquest`), the fade-outs
-   (`music_fade_out_all`, wrapped: in a tick it only clears the latch, as the
-   original does with music ready) and the quest's end-tune volume write
-   (`game_music_volume`) are queued with their tick, on the original's track
-   ids, and play in order once `confirmed_through` reaches it; a restore to $t$
-   drops queued items with tick $\ge t$.
+   keeps its simulation half (the playlist latch and its draw). Everything it
+   plays waits: the in-game tune, the end tunes (`shortie_monk`,
+   `crimsonquest`), the fade-outs (`music_fade_out_all`, wrapped: in a tick it
+   only clears the latch, as the original does with music ready) and the quest's
+   end-tune volume write (`game_music_volume`) are queued with their tick, on the
+   original's track ids, and play in order once `confirmed_through` reaches it,
+   with the original's ids in place (Section 2.2.3); the in-game tune starts at
+   most once (a playing in-game tune keeps playing). A restore to $t$ drops queued
+   items with tick $\ge t$. Each confirmed tick keeps a digest of every tune
+   played up to it (`game_coop_music_at(t)`).
 
 ---
 
@@ -1151,14 +1174,21 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
    and its pipe are next. `game_coop_start(-1, …)` runs the engine with both
    players local, the same derivation, capture and digests as a peer.
    `checks/game_coop.mjs` (CI's `game-coop` job) plays every `coop-*` stream of
-   the corpus through it against the plain run, snapshot for snapshot, then
-   again through forced rollbacks of up to 12 ticks (records stood in for,
-   guessed, or restored past, some into an open perk menu), comparing every
-   confirmed tick's hash and bake digest. It asserts the fault injections and
-   coverage: opens by both players, same-tick opens, dropped requests, a
-   survivor's menu, a rollback into an open menu and the effect overflow inside
-   a rollback (the `coop-survival-effects` scenario fills the effect pool under
-   the ranked rules). It prints each stream's rollbacks, depth and costs.
+   the corpus through it against the plain run, word for word, then again
+   through forced rollbacks at windows of 0 (lockstep), 1, 4, 8 and 12 ticks,
+   delays of 2, 4 and 8 and catch-up frames: records stood in for or guessed for
+   either player, the picker's choice late, restores into each open perk menu
+   and over the effect overflow's changes. Every confirmed tick's hash, bake,
+   terrain and music digests and raw state must match the plain pass's, and no
+   tick may run on a guess past the window. It asserts the fault injections, the
+   audit of every byte of the run's state (Section 4.1), the receive path's
+   answers, and coverage (both players opening, late and picking, same-tick and
+   dropped requests, a survivor's menu, the sixth choice, rollbacks over a freed
+   overflow entry, held overflow decals, bakes drawn while the next tick's queue
+   waits, final bakes on undrawn ticks). `--live <game directory>` plays three
+   streams inside the original, booted with seven in-game tunes, and compares
+   what it draws into the terrain and its music after every frame with the plain
+   pass's. It prints each stream's rollbacks and costs.
 
 ### Milestone `M1`: Two-browser adaptive-delay lockstep prototype
 

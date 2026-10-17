@@ -8,9 +8,11 @@
 //
 // A tick runs between its run's own settings (live.run) and its own screen state
 // (the menu a death asks for, the transition it turns down), which the picker's
-// perk screen and this machine's menus never reach. What a tick presents waits
-// for its confirmation, both inputs final: its terrain bake when the tick ran on
-// a prediction, and its music. Sound plays once: a tick played again is silent.
+// perk screen and this machine's menus never reach. What a tick presents reaches
+// this machine in tick order once it is final: its terrain bake in the tick when
+// every tick before it is confirmed and it runs on both seats' real records,
+// else once it is confirmed; its music once it is confirmed. Sound plays once: a
+// tick played again is silent.
 //
 // Solo (game_coop_start with local -1), the caller produces both seats' records,
 // and checks/game_coop.mjs drives the same engine against a plain run and through
@@ -19,6 +21,38 @@
 extern "C" {
 extern unsigned char game_paused_flag;
 extern int telekinetic_bonus_hover_timer_ms[2];
+extern unsigned char game_image_exe[];
+extern music_entry_t music_entry_table[128];
+bool game_sound_playing(LPDIRECTSOUNDBUFFER buffer);
+// The run's globals the snapshot leaves out that a tick reads (coop_words).
+extern float perk_fire_cough_trigger_interval_s, perk_hot_tempered_trigger_interval_s,
+    perk_man_bomb_trigger_interval_s, player_spread_damping_gate, player_spread_damping_scalar, player_aim_screen_x[4],
+    survival_first_kill_pos[6];
+extern int creature_update_tick, projectile_update_tick, demo_time_limit_ms, demo_trial_elapsed_ms,
+    player_alt_weapon_swap_cooldown_ms;
+extern bool mouse_button_down;
+// And those it leaves out on purpose (COOP_UNHASHED).
+extern char bonus_label_format_buffer[128], default_player_name[7], s_unhandled_creature_type[25];
+extern vec2f_t fx_rotated_pos_x[64];
+extern float fx_rotated_scale[64], fx_rotated_rotation[64];
+extern int fx_rotated_creature_type_id[64];
+extern effect_color_t fx_rotated_color_r[64];
+extern effect_id_entry_t effect_id_table[19];
+extern unsigned char bonus_hud_slot_table[512], demo_trial_overlay_active, gameplay_transition_latch, perk_prompt_hover_active,
+    player_overlay_suppressed_latch, plugin_runtime_active_latch, survival_reward_handout_aux_enabled;
+extern float bonus_render_anim_phase, game_time_s, frame_dt_copy, effect_uv_step_2, effect_uv_step_4, effect_uv_step_8,
+    effect_uv_step_16, gameplay_reset_unused_timer, render_scratch_f0, render_scratch_f2,
+    effect_template_position[2];
+extern int demo_trial_overlay_alpha_ms, pause_keybind_help_alpha_ms, perk_prompt_pulse, perk_prompt_timer,
+    player_overlay_auto_target_line_perk_id, creature_type_count, effect_defaults_reserved_zero,
+    effect_pool_reserved_zero, quest_spawn_last_time_ms, quest_spawn_total_creatures, tutorial_stage_index,
+    tutorial_stage_timer, tutorial_stage_transition_timer, frame_dt_ms, online_sync_status, terrain_render_target;
+extern char *perk_slot_1_name_wrapped_primary, *perk_slot_1_name_wrapped_alternate, *perk_slot_1_desc_wrapped_primary,
+    *perk_slot_1_desc_wrapped_alternate;
+extern quest_meta_t *quest_monster_vision_meta;
+extern game_state_id_t game_state_prev;
+extern unsigned char main_menu_full_version_layout_latch, screen_fade_ramp_flag, startup_skip_requested;
+extern ui_element_t ui_sign_crimson;
 }
 
 // A seat's record for a tick: its input, and a perk request (0 none, 1..7 the
@@ -28,9 +62,14 @@ struct CoopInput {
   uint8_t cmd;
 };
 enum { COOP_OPEN = 8 };
-// Ticks of records and per-tick results kept, states kept, and the most ticks a
-// run may run ahead of its last confirmed one.
-static constexpr int COOP_RING = 256, COOP_SLOTS = 16, COOP_LEAD = 12;
+// Ticks of records and per-tick results kept; states and held bakes kept; the
+// most ticks a run may run past its last confirmed one; the most ticks a seat's
+// records may run ahead of the run.
+static constexpr int COOP_RING = 256, COOP_SLOTS = 16, COOP_LEAD = 12, COOP_DELAY = 8;
+// A rollback reaches back at most to the first unconfirmed tick, and a held bake
+// waits only until its tick is confirmed: both stay within the lead.
+static_assert(COOP_LEAD < COOP_SLOTS, "a slot or held bake comes round again before its tick is confirmed");
+static_assert(COOP_LEAD + COOP_DELAY < COOP_RING, "records ahead of the run overwrite unconfirmed ones");
 static const PortableInput COOP_NEUTRAL = {0, 0, 512, 512, 0};
 
 // The screen state a run reads and writes in its ticks, apart from this machine's.
@@ -53,17 +92,20 @@ struct CoopTick {
   PortableCommand command;
   int picker;
   uint32_t hash, bake; // the state's hash after it; its bake's digest
-  bool speculative; // run on a guess: its bake waits in bakes[]
+  // Every bake and tune up to it in the order this machine presented them,
+  // once it presented its own.
+  uint32_t terrain, music;
+  uint32_t state; // the raw state's digest after it, when kept (game_coop_states)
+  bool held;      // its bake waits in bakes[] for its confirmation
 };
-// The state before a tick, and the music tables then, which a rollback puts back.
+// The state before a tick, which a rollback puts back.
 struct CoopSlot {
   uint32_t epoch;
   int tick;
   std::vector<uint8_t> state;
-  sfx_volume_table_t volume;
-  music_fade_out_flags_t fades;
+  bool overflow_free; // the effect overflow had freed entries to reuse
 };
-// A speculative tick's bake, drawn into the terrain once the tick is confirmed.
+// A held tick's bake, drawn into the terrain once the tick is confirmed.
 struct CoopBake {
   uint32_t epoch;
   int tick;
@@ -79,8 +121,16 @@ struct CoopTune {
 // Counters for the gate and the session's telemetry. checks/game_coop.mjs reads
 // them by position.
 struct CoopStats {
-  int32_t ticks, resimulated, rollbacks, max_depth, predictions, mispredictions, stalls;
-  int32_t opens[2], double_opens, dropped_opens, survivor_menus, overflow_rollbacks;
+  int32_t ticks, resimulated, rollbacks, max_depth, stalls;
+  // Ticks run on a record not yet real, corrections, and waits for the open
+  // menu's picker, by the seat; the furthest past the last confirmed tick a
+  // tick ran on a record not yet real.
+  int32_t guesses[2], mispredictions[2], picker_waits[2], guessed_lead;
+  int32_t opens[2], double_opens, dropped_opens, survivor_menus, extra_picks;
+  // Restores with the effect overflow in use, and with freed overflow entries
+  // in the states they undo; held bakes with overflow decals; held bakes drawn
+  // while the queues held the next tick's; final bakes on ticks not drawn.
+  int32_t overflow_rollbacks, overflow_free_rollbacks, overflow_decal_holds, queued_commits, unseen_bakes;
   int32_t slot_bytes;
 };
 
@@ -89,13 +139,18 @@ static struct {
   int local; // the seat this machine plays, -1 both
   int delay, rmax;
   uint32_t epoch;
-  // The frontiers: the last tick produced, acknowledged by the peer, confirmed
-  // and baked; the next tick to run; the last tick ever run (heard).
-  int produced, peer_ack, confirmed, baked, next, heard;
+  // The frontiers: the last tick produced, acknowledged by the peer, confirmed,
+  // baked into the terrain and played; the next tick to run; the last tick ever
+  // run (heard).
+  int produced, peer_ack, confirmed, baked, played, next, heard;
   bool running; // a co-op tick runs
   bool quiet;   // the tick running ran before
+  bool drawing; // the tick running draws
+  bool states;  // keep each tick's raw state digest (checks/game_coop.mjs)
+  int baking;   // the tick running, once it baked
   CoopScreen screen;
   size_t strings; // the arena as run start left it
+  uint32_t terrain, music; // the digests at `baked` and `played`
   CoopInput scratch[2];
   CoopRecord records[2][COOP_RING];
   CoopTick ticks[COOP_RING];
@@ -140,6 +195,44 @@ struct CoopRun {
   }
 };
 
+// xxHash32 (seed 0): every input bit reaches every bit of the digest, so
+// changes in two words do not cancel, as they can under FNV-1a's word steps,
+// which carry a change only towards the high bits (two sign flips). Four lanes
+// keep a tick's state quick to digest.
+static uint32_t coop_digest(const void *data, size_t size) {
+  constexpr uint32_t P1 = 2654435761u, P2 = 2246822519u, P3 = 3266489917u, P4 = 668265263u, P5 = 374761393u;
+  auto rotl = [](uint32_t x, int r) { return x << r | x >> (32 - r); };
+  auto word = [](const uint8_t *p) {
+    uint32_t w;
+    memcpy(&w, p, 4);
+    return w;
+  };
+  const uint8_t *p = (const uint8_t *)data, *end = p + size;
+  uint32_t h;
+  if (size >= 16) {
+    uint32_t v[4] = {P1 + P2, P2, 0, 0u - P1};
+    for (; end - p >= 16; p += 16)
+      for (int i = 0; i < 4; ++i)
+        v[i] = rotl(v[i] + word(p + 4 * i) * P2, 13) * P1;
+    h = rotl(v[0], 1) + rotl(v[1], 7) + rotl(v[2], 12) + rotl(v[3], 18);
+  } else {
+    h = P5;
+  }
+  h += (uint32_t)size;
+  for (; end - p >= 4; p += 4)
+    h = rotl(h + word(p) * P3, 17) * P4;
+  for (; p < end; ++p)
+    h = rotl(h + *p * P5, 11) * P1;
+  h = (h ^ h >> 15) * P2;
+  h = (h ^ h >> 13) * P3;
+  return h ^ h >> 16;
+}
+// A digest of what came before, then one more thing.
+static uint32_t coop_chain(uint32_t chain, uint32_t digest) {
+  uint32_t words[] = {chain, digest};
+  return coop_digest(words, sizeof words);
+}
+
 static void coop_put(uint32_t x) {
   if (used >= 262144)
     abort();
@@ -162,9 +255,10 @@ static int coop_overflow_index(const effect_entry_t *entry) {
 }
 
 // The run's state as both peers hold it, as words at portable_output: the
-// snapshot less what only presentation reads, the session's fields, the
-// Telekinetic hover timers, the run's settings less the player's own, and the
-// effect overflow's entries. Field by field: no padding or pointer reaches it.
+// snapshot less what only presentation reads, the session's fields, the run's
+// globals the snapshot leaves out, the run's settings less the player's own,
+// and the effect overflow's entries. Field by field: no padding or pointer
+// reaches it. game_coop_audit holds it to every byte of the run's state.
 static int coop_words() {
   int n = portable_snapshot();
   for (int i : COOP_PRESENTATION)
@@ -184,6 +278,23 @@ static int coop_words() {
   coop_put(coop_overflow_index(game_effect_overflow.free));
   coop_put(telekinetic_bonus_hover_timer_ms[0]);
   coop_put(telekinetic_bonus_hover_timer_ms[1]);
+  // The run's globals the snapshot leaves out that a tick reads
+  // (game_coop_audit): perk and weapon clocks, update counters, the players'
+  // cursors, the screen and menu flags the tick checks, where Survival's first
+  // kill fell, the effect template spawns copy, the late weapons' usage.
+  for (float f : {perk_lean_mean_exp_tick_timer_s, perk_fire_cough_trigger_interval_s,
+                  perk_hot_tempered_trigger_interval_s, perk_man_bomb_trigger_interval_s, player_heading_turn_delta,
+                  player_spread_damping_gate, player_spread_damping_scalar})
+    coop_put_float(f);
+  for (int i : {creature_update_tick, projectile_update_tick, current_player_index, player_alt_weapon_swap_cooldown_ms,
+                quest_fail_retry_count, quest_stage_major, quest_stage_minor, demo_time_limit_ms, demo_trial_elapsed_ms})
+    coop_put(i);
+  for (int flag : {(int)run_active, (int)console_open_flag, (int)demo_mode_active, (int)mouse_button_down})
+    coop_put(flag);
+  coop_put_words(player_aim_screen_x);
+  coop_put_words(survival_first_kill_pos);
+  coop_put_words(effect_template);
+  coop_put_words(weapon_usage_time);
   // The run draws with the player's display choices and plays at the player's
   // volumes (live_enter_run, game_run_ready): those differ by machine, and only
   // drawing and audio read them.
@@ -214,59 +325,162 @@ static int coop_words() {
   return used;
 }
 
-// FNV-1a a word at a time: a byte at a time costs a tick's hash four times as
-// long, and any one word changed still changes it.
-static constexpr uint32_t FNV_OFFSET = 2166136261u;
-static uint32_t coop_fnv(uint32_t hash, const uint32_t *words, size_t count) {
-  for (size_t i = 0; i < count; ++i)
-    hash = (hash ^ words[i]) * 16777619u;
-  return hash;
+// The run's bytes no canonical word holds (game_coop_audit holds the list to the
+// run's state, byte for byte): a global, a field of every element of a table,
+// or a span between two globals.
+struct CoopBytes {
+  const void *at;
+  uint32_t size, stride, count;
+};
+#define COOP_GLOBAL(name) {&name, sizeof name, 0, 1}
+#define COOP_FIELD(table, field) {&table[0].field, sizeof table[0].field, sizeof table[0], std::size(table)}
+#define COOP_SPAN(first, last) {&first, uint32_t((const uint8_t *)(&last + 1) - (const uint8_t *)&first), 0, 1}
+static const CoopBytes COOP_UNHASHED[] = {
+    // Padding, and a sink: spawns past the full effect and bonus pools write
+    // there, and nothing reads it back.
+    COOP_FIELD(player_state_table, _pad_entity_active), COOP_FIELD(player_state_table, _pad_entity_flags),
+    COOP_FIELD(player_state_table, _pad0), COOP_FIELD(player_state_table, _pad1), COOP_FIELD(player_state_table, _pad2),
+    COOP_FIELD(player_state_table, _pad3), COOP_FIELD(player_state_table, _pad_entity_link),
+    COOP_FIELD(player_state_table, _pad6), COOP_FIELD(player_state_table, _pad_reload_active),
+    COOP_FIELD(player_state_table, _pad_alt_reload_active), COOP_FIELD(creature_pool, _pad0),
+    COOP_FIELD(creature_pool, _pad1), COOP_FIELD(creature_pool, _pad2), COOP_FIELD(creature_pool, _pad_force_target),
+    COOP_FIELD(creature_pool, _pad_target_player), COOP_FIELD(projectile_pool, _pad0),
+    COOP_FIELD(secondary_projectile_pool, _pad0), COOP_FIELD(particle_pool, _pad0), COOP_FIELD(particle_pool, _pad1),
+    COOP_FIELD(sprite_effect_pool, _pad0), COOP_FIELD(bonus_pool, _pad0), COOP_FIELD(effect_pool, _pad0),
+    COOP_FIELD(weapon_table, _pad0), COOP_FIELD(weapon_table, _pad1), COOP_FIELD(weapon_table, _pad2),
+    COOP_FIELD(weapon_table, _pad3), COOP_FIELD(perk_meta_table, _pad_available), COOP_FIELD(bonus_meta_table, _pad0),
+    {&perk_choices_dirty + 1, 3, 0, 1}, COOP_GLOBAL(effect_discard_entry), COOP_GLOBAL(bonus_pool_sentinel),
+    // What only drawing, sound and the menus read: the effects' quad corners;
+    // the terrain's queued decals and corpses (the bake digest holds those); the
+    // HUD, the perk prompt and screen, the cursor, the screen's fades and
+    // transitions; the run's high score card and the high score table; the
+    // weapons' names and sounds; the player's display and audio choices (live_enter_run).
+    COOP_FIELD(effect_pool, vertices), COOP_GLOBAL(fx_queue), COOP_GLOBAL(fx_rotated_pos_x),
+    COOP_GLOBAL(fx_rotated_scale), COOP_GLOBAL(fx_rotated_rotation), COOP_GLOBAL(fx_rotated_creature_type_id),
+    COOP_GLOBAL(fx_rotated_color_r), COOP_GLOBAL(render_scratch_f0), COOP_GLOBAL(render_scratch_f2),
+    COOP_GLOBAL(bonus_hud_slot_table), COOP_GLOBAL(bonus_label_format_buffer), COOP_GLOBAL(bonus_render_anim_phase),
+    COOP_GLOBAL(player_weapon_popup_timer), COOP_GLOBAL(survival_xp_smoothed), COOP_GLOBAL(perk_prompt_hover_active),
+    COOP_GLOBAL(perk_prompt_pulse), COOP_GLOBAL(perk_prompt_timer), COOP_GLOBAL(perk_slot_1_name_wrapped_primary),
+    COOP_GLOBAL(perk_slot_1_name_wrapped_alternate), COOP_GLOBAL(perk_slot_1_desc_wrapped_primary),
+    COOP_GLOBAL(perk_slot_1_desc_wrapped_alternate), COOP_GLOBAL(player_overlay_suppressed_latch),
+    COOP_GLOBAL(ui_mouse_x), COOP_GLOBAL(ui_mouse_y), COOP_GLOBAL(game_time_s), COOP_GLOBAL(frame_dt_copy),
+    COOP_GLOBAL(screen_fade_alpha), COOP_GLOBAL(screen_fade_ramp_flag), COOP_GLOBAL(gameplay_transition_latch),
+    COOP_GLOBAL(ui_sign_crimson), COOP_GLOBAL(main_menu_full_version_layout_latch),
+    COOP_GLOBAL(pause_keybind_help_alpha_ms), COOP_GLOBAL(startup_skip_requested), COOP_GLOBAL(online_sync_status),
+    COOP_GLOBAL(demo_trial_overlay_active), COOP_GLOBAL(demo_trial_overlay_alpha_ms),
+    COOP_GLOBAL(terrain_render_target), COOP_GLOBAL(highscore_active_record.player_name),
+    COOP_SPAN(highscore_active_record.score_xp, highscore_active_record.most_used_weapon_id),
+    COOP_SPAN(highscore_active_record.random_tag, highscore_active_record.sentinel_ff), COOP_GLOBAL(highscore_table),
+    COOP_GLOBAL(default_player_name), COOP_FIELD(weapon_table, name), COOP_FIELD(weapon_table, shot_sfx_base_id),
+    COOP_FIELD(weapon_table, reload_sfx_id), COOP_GLOBAL(config_blob.direction_arrow_flags),
+    COOP_GLOBAL(config_blob.shadows_enabled), COOP_GLOBAL(config_blob.flame_glow_enabled),
+    COOP_GLOBAL(config_blob.smoke_enabled), COOP_GLOBAL(config_blob.ui_info_texts), COOP_GLOBAL(config_blob.sfx_volume),
+    COOP_GLOBAL(config_blob.music_volume),
+    // The screen before this one: a tick skips its Telekinetic pickup and corpse
+    // fading only after the mods menu or a plugin, which no co-op run follows,
+    // and each machine came to the run its own way. The mods' runtime, which no
+    // run starts.
+    COOP_GLOBAL(game_state_prev), COOP_GLOBAL(plugin_runtime_active_latch),
+    // Tables the game sets up at startup and no tick writes: the perk ids, the
+    // quest, perk, bonus, weapon and effect tables' fixed parts (the weapons'
+    // storage view, weapon_ammo_class, starts four bytes before the table), the
+    // effects' atlas steps, a message, and the Grim interface.
+    COOP_SPAN(perk_id_antiperk, perk_id_max), COOP_GLOBAL(quest_meta_table), COOP_GLOBAL(quest_meta_cursor),
+    COOP_GLOBAL(quest_monster_vision_meta), COOP_FIELD(perk_meta_table, name), COOP_FIELD(perk_meta_table, description),
+    COOP_FIELD(bonus_meta_table, label), COOP_FIELD(bonus_meta_table, description),
+    COOP_FIELD(bonus_meta_table, icon_id), COOP_GLOBAL(effect_id_table), COOP_GLOBAL(effect_uv_step_2),
+    COOP_GLOBAL(effect_uv_step_4), COOP_GLOBAL(effect_uv_step_8), COOP_GLOBAL(effect_uv_step_16),
+    COOP_GLOBAL(player_overlay_auto_target_line_perk_id), COOP_GLOBAL(s_unhandled_creature_type),
+    {(const uint8_t *)&weapon_table - 4, 4, 0, 1}, COOP_GLOBAL(grim_interface_ptr),
+    // What a run start or the host sets before a tick reads it, or nothing in a
+    // tick reads: the time step (portable_step_many), the screen every co-op
+    // tick runs on (GAMEPLAY), and globals run start writes for nothing or for
+    // the tutorial alone.
+    COOP_GLOBAL(frame_dt), COOP_GLOBAL(frame_dt_ms), COOP_GLOBAL(game_state_id), COOP_GLOBAL(creature_type_count),
+    COOP_GLOBAL(effect_defaults_reserved_zero), COOP_GLOBAL(effect_pool_reserved_zero),
+    COOP_GLOBAL(gameplay_reset_unused_timer), COOP_GLOBAL(gameplay_run_reserved_zero),
+    COOP_GLOBAL(player_reset_reserved_zero), COOP_GLOBAL(survival_reward_handout_aux_enabled),
+    COOP_GLOBAL(quest_spawn_last_time_ms), COOP_GLOBAL(quest_spawn_total_creatures),
+    COOP_GLOBAL(effect_template_position), COOP_GLOBAL(tutorial_stage_index), COOP_GLOBAL(tutorial_stage_timer),
+    COOP_GLOBAL(tutorial_stage_transition_timer),
+};
+// Pointers the words hold as the index of the entry they point at: a change
+// that stays within the entry names the same one.
+static const CoopBytes COOP_INDEXED[] = {COOP_GLOBAL(effect_free_list_head), COOP_FIELD(effect_pool, next_free)};
+// The entry of `list` that holds the byte at `p`, or null.
+template <size_t N> static const CoopBytes *coop_listed(const CoopBytes (&list)[N], const uint8_t *p) {
+  for (const CoopBytes &bytes : list) {
+    uint32_t offset = uint32_t(p - (const uint8_t *)bytes.at);
+    if (p >= (const uint8_t *)bytes.at && offset < (bytes.stride ? bytes.stride * bytes.count : bytes.size) &&
+        (!bytes.stride || offset % bytes.stride < bytes.size))
+      return &bytes;
+  }
+  return nullptr;
 }
 
 // A bake's digest: its decals and corpses, less the corpses' alpha, which the
 // player's terrain transparency setting scales (fx_queue_add_rotated).
-static uint32_t coop_bake_digest(const fx_queue_entry_t *queue, size_t queued, const RotatedDecal *rotated,
-                                 size_t corpses) {
-  uint32_t hash = coop_fnv(FNV_OFFSET, (const uint32_t *)queue, queued * sizeof *queue / 4);
-  for (size_t i = 0; i < corpses; ++i) {
-    const RotatedDecal &d = rotated[i];
-    float words[] = {d.pos.x, d.pos.y, d.scale, d.rotation, d.color.r, d.color.g, d.color.b};
-    hash = coop_fnv(hash, (const uint32_t *)words, 7);
-    hash = coop_fnv(hash, (const uint32_t *)&d.creature_type_id, 1);
+static uint32_t coop_bake_digest(const CoopBake &bake) {
+  std::vector<uint32_t> words(bake.queue.size() * sizeof bake.queue[0] / 4);
+  memcpy(words.data(), bake.queue.data(), words.size() * 4);
+  for (const RotatedDecal &d : bake.rotated) {
+    float floats[] = {d.pos.x, d.pos.y, d.scale, d.rotation, d.color.r, d.color.g, d.color.b};
+    uint32_t corpse[8];
+    memcpy(corpse, floats, sizeof floats);
+    corpse[7] = (uint32_t)d.creature_type_id;
+    words.insert(words.end(), corpse, corpse + 8);
   }
-  return hash;
+  return coop_digest(words.data(), words.size() * 4);
 }
 
-// The tick's bake (fx_queue_render): its digest, and on a speculative tick the
-// bake itself, held for the tick's confirmation and taken off the queues as the
-// bake would. True when held.
-static bool coop_bake_held() {
+// A tick's bake reached the terrain, after every one before it.
+static void coop_baked(CoopTick &entry) {
+  coop.terrain = entry.terrain = coop_chain(coop.terrain, entry.bake);
+  coop.baked = entry.tick;
+}
+
+// The tick's bake (fx_queue_render), its digest kept. A tick held (on a guess,
+// or after a tick still held) keeps it for its confirmation and takes it off the
+// queues as the bake would; any other bakes it into the terrain now, where the
+// module draws even when the tick does not, as a replay does
+// (terrain.baking). True in a co-op tick.
+static bool coop_bake() {
   if (!coop.running)
     return false;
-  CoopBake &bake = coop.bakes[tick & (COOP_SLOTS - 1)];
+  int t = (int)tick;
+  CoopBake &bake = coop.bakes[t & (COOP_SLOTS - 1)];
+  // A held bake reaches the terrain before its slot comes round again.
+  if (bake.epoch == coop.epoch && bake.tick > coop.baked && bake.tick != t)
+    abort();
+  bake.epoch = coop.epoch;
+  bake.tick = coop.baking = t;
   bake.queue.assign(fx_queue, fx_queue + fx_queue_count);
   bake.queue.insert(bake.queue.end(), game_effect_overflow.decals,
                     game_effect_overflow.decals + game_effect_overflow.decal_count);
   bake.rotated.resize(fx_queue_rotated);
   for (int i = 0; i < fx_queue_rotated; ++i)
-    bake.rotated[i] = {fx_rotated_pos_x[i], fx_rotated_scale[i], fx_rotated_rotation[i],
-                       fx_rotated_creature_type_id[i], fx_rotated_color_r[i]};
-  CoopTick &entry = coop.ticks[tick & (COOP_RING - 1)];
-  entry.bake = coop_bake_digest(bake.queue.data(), bake.queue.size(), bake.rotated.data(), bake.rotated.size());
-  if (!entry.speculative) {
-    bake.tick = -1;
-    return false;
+    bake.rotated[i] = fx_rotated(i);
+  CoopTick &entry = coop.ticks[t & (COOP_RING - 1)];
+  entry.bake = coop_bake_digest(bake);
+  if (entry.held) {
+    coop.stats.overflow_decal_holds += game_effect_overflow.decal_count > 0;
+    fx_queue_count = fx_queue_rotated = game_effect_overflow.decal_count = 0;
+    return true;
   }
-  bake.epoch = coop.epoch;
-  bake.tick = (int)tick;
-  fx_queue_count = fx_queue_rotated = game_effect_overflow.decal_count = 0;
+  coop_baked(entry);
+  coop.stats.unseen_bakes += !coop.drawing;
+  unsigned char disabled = grim_render_disabled;
+  if (game_original)
+    grim_render_disabled = 0;
+  game_effects_render_decals();
+  grim_render_disabled = disabled;
   return true;
 }
 
 // A co-op tick's music call keeps its simulation effect (host.cpp's
 // music_play_exclusive, and music_fade_out_all's latch below); what it plays,
-// fades or turns down waits for the tick's confirmation, in order. True when
-// it waits.
+// fades or turns down waits for the tick's confirmation, in order: this
+// machine's music is never undone. True when it waits.
 static bool coop_defer(CoopTuneKind kind, int track, float volume) {
   if (!coop.running)
     return false;
@@ -275,12 +489,16 @@ static bool coop_defer(CoopTuneKind kind, int track, float volume) {
 }
 extern "C" void music_fade_out_all_recovered(int sfx_id);
 static void coop_tune_play(const CoopTune &tune) {
-  if (!game_original)
+  uint32_t words[] = {(uint32_t)tune.kind, (uint32_t)tune.track, 0};
+  memcpy(&words[2], &tune.volume, 4);
+  coop.music = coop_chain(coop.music, coop_digest(words, sizeof words));
+  if (!game_original || tune.track < 0)
     return;
+  if (tune.kind == COOP_PLAY || tune.kind == COOP_GAME_TUNE)
+    return game_music_start(tune.track, tune.kind == COOP_GAME_TUNE);
+  GameShellMusic ids;
   unsigned char latch = music_playlist_randomized_latch;
-  if (tune.kind == COOP_PLAY)
-    music_play_exclusive_recovered(tune.track);
-  else if (tune.kind == COOP_FADE)
+  if (tune.kind == COOP_FADE)
     music_fade_out_all_recovered(tune.track);
   else
     music_track_volume[tune.track] = tune.volume;
@@ -356,6 +574,7 @@ static uint32_t coop_command(const CoopInput *seats) {
                                                                                : 5;
     if (!valid || choice < 0 || choice >= offered || perk_choice_ids[choice] <= 0)
       return 0;
+    coop.stats.extra_picks += choice >= 5;
     commands[0] = {1, choice};
     return 1;
   }
@@ -374,26 +593,29 @@ static uint32_t coop_command(const CoopInput *seats) {
 }
 
 static void coop_capture(int t) {
-  if (string_used != coop.strings)
+  // Overflow decals wait only within a tick: effects_update queues them, and
+  // the same tick's world draw bakes them (coop_bake).
+  if (string_used != coop.strings || game_effect_overflow.decal_count)
     abort();
   CoopSlot &slot = coop.slots[t & (COOP_SLOTS - 1)];
   slot.epoch = coop.epoch;
   slot.tick = t;
   slot.state.resize(run_state_size());
   run_state_write(slot.state.data());
-  memcpy(slot.volume, music_track_volume, sizeof slot.volume);
-  memcpy(slot.fades, music_fade_out_flags, sizeof slot.fades);
+  slot.overflow_free = game_effect_overflow.free != nullptr;
   coop.stats.slot_bytes = std::max(coop.stats.slot_bytes, (int32_t)slot.state.size());
 }
 
 // The run goes back to the state before tick `t`, which runs next. This
-// machine's screen, cursor and settings stay; nothing draws gameplay RNG; what
-// the ticks from `t` on presented and had not confirmed is dropped.
+// machine's screen, cursor, settings and music stay; nothing draws gameplay RNG;
+// the music ticks from `t` on queued is dropped.
 static void coop_restore(int t) {
   const CoopSlot &slot = coop.slots[t & (COOP_SLOTS - 1)];
   if (slot.epoch != coop.epoch || slot.tick != t || game_state_id != GAME_STATE_GAMEPLAY)
     abort();
-  bool overflow = game_effect_overflow.active > 0;
+  bool overflow = game_effect_overflow.active > 0, freed = game_effect_overflow.free != nullptr;
+  for (int s = t; s < coop.next; ++s)
+    freed |= coop.slots[s & (COOP_SLOTS - 1)].overflow_free;
   CoopScreen screen = coop_screen();
   LiveSettings outside;
   if (game_live)
@@ -403,11 +625,10 @@ static void coop_restore(int t) {
   coop_screen_install(screen);
   if (game_live)
     live_install(outside);
-  memcpy(music_track_volume, slot.volume, sizeof slot.volume);
-  memcpy(music_fade_out_flags, slot.fades, sizeof slot.fades);
   ++coop.stats.rollbacks;
   coop.stats.max_depth = std::max(coop.stats.max_depth, coop.next - t);
   coop.stats.overflow_rollbacks += overflow || game_effect_overflow.active > 0;
+  coop.stats.overflow_free_rollbacks += freed;
   auto dropped =
       std::find_if(coop.tunes.begin(), coop.tunes.end(), [&](const CoopTune &tune) { return tune.tick >= t; });
   coop.tunes.erase(dropped, coop.tunes.end());
@@ -421,13 +642,16 @@ static void coop_restore(int t) {
 static void coop_tick(int t, bool quiet, bool draw) {
   bool guessed[2];
   CoopInput used[2] = {coop_record(0, t, guessed[0]), coop_record(1, t, guessed[1])};
-  coop.stats.predictions += guessed[0] || guessed[1];
+  for (int seat = 0; seat < 2; ++seat)
+    coop.stats.guesses[seat] += guessed[seat];
+  if (guessed[0] || guessed[1])
+    coop.stats.guessed_lead = std::max(coop.stats.guessed_lead, t - coop.confirmed);
   CoopRun run;
   if (game_paused_flag)
     abort();
   coop_capture(t);
   CoopTick &entry = coop.ticks[t & (COOP_RING - 1)];
-  entry = {t, {used[0], used[1]}, 0, {}, -1, 0, FNV_OFFSET, guessed[0] || guessed[1] || coop.confirmed != t - 1};
+  entry = {t, {used[0], used[1]}, 0, {}, -1, 0, 0, 0, 0, 0, guessed[0] || guessed[1] || coop.baked != t - 1};
   in[0] = used[0].input;
   in[1] = used[1].input;
   entry.commands = coop_command(used);
@@ -437,14 +661,27 @@ static void coop_tick(int t, bool quiet, bool draw) {
   grim_render_disabled = disabled || !draw;
   coop.running = true;
   coop.quiet = quiet;
+  coop.drawing = draw;
+  coop.baking = -1;
   bool accepted = portable_step_many(entry.commands);
   coop.running = coop.quiet = false;
   grim_render_disabled = disabled;
-  if (!accepted)
+  // Every tick draws its world, which bakes.
+  if (!accepted || coop.baking != t)
     abort();
   if (!perk_menu_open)
     perk_picker = -1;
-  entry.hash = coop_fnv(FNV_OFFSET, output, coop_words());
+  entry.hash = coop_digest(output, coop_words() * 4);
+  if (coop.states) {
+    // Less what a restore keeps of this machine's (run_restore).
+    std::vector<uint8_t> state(run_state_size());
+    run_restore([&] {
+      ui_mouse_x = ui_mouse_y = 0;
+      survival_xp_smoothed = 0;
+      run_state_write(state.data());
+    });
+    entry.state = coop_digest(state.data(), state.size());
+  }
   coop.heard = std::max(coop.heard, t);
   coop.next = t + 1;
 }
@@ -456,28 +693,29 @@ static void coop_confirm() {
     ++coop.confirmed;
 }
 
-// What confirmed ticks presented: the held bakes into the terrain, where the
-// module draws, and the music, in order.
+// What confirmed ticks presented, in tick order, before any later tick runs:
+// the held bakes into the terrain, drawn where the module draws, and the music.
 static void coop_commit() {
-  std::vector<const CoopBake *> held;
-  for (int t = coop.baked + 1; t <= coop.confirmed; ++t) {
-    if (!coop.ticks[t & (COOP_RING - 1)].speculative)
-      continue;
-    const CoopBake &bake = coop.bakes[t & (COOP_SLOTS - 1)];
-    if (bake.epoch != coop.epoch || bake.tick != t)
-      abort();
-    held.push_back(&bake);
-  }
-  if (game_live && !held.empty())
-    terrain_bakes([&] {
-      for (const CoopBake *bake : held)
-        terrain_bake(bake->queue.data(), bake->queue.size(), bake->rotated.data(), bake->rotated.size());
+  if (coop.baked < coop.confirmed) {
+    coop.stats.queued_commits += fx_queue_count || fx_queue_rotated || game_effect_overflow.decal_count;
+    terrain_bakes(game_original, [] {
+      while (coop.baked < coop.confirmed) {
+        CoopTick &entry = coop.ticks[(coop.baked + 1) & (COOP_RING - 1)];
+        const CoopBake &bake = coop.bakes[(coop.baked + 1) & (COOP_SLOTS - 1)];
+        if (!entry.held || bake.epoch != coop.epoch || bake.tick != coop.baked + 1)
+          abort();
+        terrain_bake(bake.queue.data(), bake.queue.size(), bake.rotated.data(), bake.rotated.size());
+        coop_baked(entry);
+      }
     });
-  coop.baked = coop.confirmed;
-  auto played = coop.tunes.begin();
-  for (; played != coop.tunes.end() && played->tick <= coop.confirmed; ++played)
-    coop_tune_play(*played);
-  coop.tunes.erase(coop.tunes.begin(), played);
+  }
+  auto tune = coop.tunes.begin();
+  for (; coop.played < coop.confirmed; ++coop.played) {
+    for (; tune != coop.tunes.end() && tune->tick == coop.played + 1; ++tune)
+      coop_tune_play(*tune);
+    coop.ticks[(coop.played + 1) & (COOP_RING - 1)].music = coop.music;
+  }
+  coop.tunes.erase(coop.tunes.begin(), tune);
 }
 
 // A rollback to the first unconfirmed tick that ran on a record other than the
@@ -488,7 +726,7 @@ static void coop_correct() {
     for (int seat = 0; seat < 2; ++seat) {
       const CoopRecord &r = coop.records[seat][t & (COOP_RING - 1)];
       if (r.tick == t && !coop_same(r.record, entry.used[seat])) {
-        ++coop.stats.mispredictions;
+        ++coop.stats.mispredictions[seat];
         coop_restore(t);
         return;
       }
@@ -502,12 +740,13 @@ static bool coop_valid(const CoopInput &record) {
 
 extern "C" {
 // A co-op run of the 2-player run portable_init set up: this machine plays seat
-// `local` (-1 both), `delay` ticks ahead of the run, which may run `rmax` ticks
-// past its last confirmed one on predictions. Its first `delay` ticks' records
-// are neutral until game_coop_seed sets them. 1 when it starts.
+// `local` (-1 both), `delay` ticks ahead of the run (1 to COOP_DELAY), which may
+// run `rmax` ticks (up to COOP_LEAD) past its last confirmed one on
+// predictions. Its first `delay` ticks' records are neutral until
+// game_coop_seed sets them. 1 when it starts.
 __attribute__((export_name("game_coop_start"))) int game_coop_start(int local, int delay, int rmax, uint32_t epoch) {
-  if (!ready || tick != 0 || cfg.players != 2 || local < -1 || local > 1 || delay < 1 || delay > 8 || rmax < 0 ||
-      rmax > COOP_LEAD)
+  if (!ready || tick != 0 || cfg.players != 2 || local < -1 || local > 1 || delay < 1 || delay > COOP_DELAY ||
+      rmax < 0 || rmax > COOP_LEAD)
     return 0;
   if (coop.slots.empty()) {
     coop.slots.resize(COOP_SLOTS);
@@ -529,8 +768,9 @@ __attribute__((export_name("game_coop_start"))) int game_coop_start(int local, i
   coop.rmax = rmax;
   coop.epoch = epoch;
   coop.produced = coop.peer_ack = delay - 1;
-  coop.confirmed = coop.baked = coop.heard = -1;
+  coop.confirmed = coop.baked = coop.played = coop.heard = -1;
   coop.next = 0;
+  coop.terrain = coop.music = 0;
   for (int t = 0; t < delay; ++t)
     for (auto &seat : coop.records)
       seat[t] = {{COOP_NEUTRAL, 0}, t, true};
@@ -574,27 +814,39 @@ __attribute__((export_name("game_coop_produce"))) int game_coop_produce(int) {
     coop.peer_ack = t;
   return t;
 }
-// A seat's record for an unconfirmed tick from game_coop_input_for(seat), as
-// the partner's arrive: `real` 1. Solo, a record can also stand in for the real
-// one until it comes (0), or be taken back as not yet arrived (-1), so the
-// engine guesses it; a rollback corrects either. 0 for an invalid record.
+// The partner's record for a tick, from game_coop_input_for(seat), `real` 1:
+// 1 when taken; 0 when it changes nothing, for a tick already confirmed or a
+// record already held (the unreliable window sends each again); -1 for one no
+// peer sends, a protocol error: an invalid record, a tick out of reach, another
+// record for a tick already known, or this machine's own seat. Solo (local -1),
+// a record can also stand in for the real one until it comes (0), or be taken
+// back as not yet arrived (-1), so the engine guesses it; a rollback corrects
+// either.
 __attribute__((export_name("game_coop_deliver"))) int game_coop_deliver(int seat, int t, int real) {
-  if (!coop.active || seat < 0 || seat > 1 || t <= coop.confirmed || t > coop.confirmed + COOP_RING ||
-      !coop_valid(coop.scratch[seat]))
+  bool solo = coop.local < 0;
+  if (!coop.active || seat < 0 || seat > 1 || t < 0 || t > coop.confirmed + COOP_RING ||
+      !coop_valid(coop.scratch[seat]) || (!solo && (seat == coop.local || real != 1)))
+    return -1;
+  CoopRecord &r = coop.records[seat][t & (COOP_RING - 1)];
+  if (!solo && r.tick == t && r.real)
+    return coop_same(r.record, coop.scratch[seat]) ? 0 : -1;
+  if (t <= coop.confirmed)
     return 0;
-  coop.records[seat][t & (COOP_RING - 1)] = {coop.scratch[seat], real < 0 ? -1 : t, real > 0};
+  r = {coop.scratch[seat], real < 0 ? -1 : t, real > 0};
   return 1;
 }
 // The frame's ticks: a rollback when a record turned out other than the one a
 // tick ran on, then ticks while their records allow, at most `budget` new ones
-// (ticks run again are free), then confirmation and what it presents. Only the
-// newest tick draws. Ticks run only while this machine shows the run.
+// (ticks run again are free), each tick's confirmation presenting what it
+// waited for before the next runs. Only the newest tick draws. Ticks run only
+// while this machine shows the run.
 __attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budget, int) {
   if (!coop.active || game_state_id != GAME_STATE_GAMEPLAY ||
       game_state_pending != GAME_STATE_PENDING_IDLE_SENTINEL)
     return 0;
   coop_correct();
   coop_confirm();
+  coop_commit();
   // The newest tick the records, the lead and the budget let run, final ticks
   // confirming on the way: it alone draws. A menu or the run's end stopping
   // sooner leaves the frame undrawn.
@@ -616,17 +868,21 @@ __attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budg
       break;
     if (run_down_ms < 0)
       break;
-    if (t > coop.produced || lead >= COOP_LEAD || (!coop_final(t) && lead >= coop.rmax) ||
-        (perk_menu_open && !coop_real(perk_picker, t))) {
+    if (t > coop.produced || lead >= COOP_LEAD || (!coop_final(t) && lead >= coop.rmax)) {
       ++coop.stats.stalls;
+      break;
+    }
+    if (perk_menu_open && !coop_real(perk_picker, t)) {
+      ++coop.stats.stalls;
+      ++coop.stats.picker_waits[perk_picker];
       break;
     }
     coop_tick(t, quiet, t == last);
     ++(quiet ? coop.stats.resimulated : coop.stats.ticks);
     fresh += !quiet;
     coop_confirm();
+    coop_commit();
   }
-  coop_commit();
   return fresh;
 }
 __attribute__((export_name("game_coop_stats"))) uintptr_t game_coop_stats() { return (uintptr_t)&coop.stats; }
@@ -641,17 +897,87 @@ __attribute__((export_name("game_coop_canonical"))) int game_coop_canonical() {
   return coop_words();
 }
 __attribute__((export_name("game_coop_hash"))) uint32_t game_coop_hash() {
-  return coop_fnv(FNV_OFFSET, output, game_coop_canonical());
+  return coop_digest(output, game_coop_canonical() * 4);
 }
-// The hash after tick `t` and its bake's digest, from its last run; 0 for a
-// tick not run or out of the ring.
-__attribute__((export_name("game_coop_hash_at"))) uint32_t game_coop_hash_at(int t) {
+// What tick `t` left, from its last run, 0 for a tick not run or out of the
+// ring: the state's hash, its bake's digest, and once it presented them, the
+// terrain's and music's digests (every bake and tune up to it, in order).
+static const CoopTick *coop_tick_at(int t) {
   const CoopTick &entry = coop.ticks[t & (COOP_RING - 1)];
-  return t >= 0 && entry.tick == t ? entry.hash : 0;
+  return t >= 0 && entry.tick == t ? &entry : nullptr;
+}
+__attribute__((export_name("game_coop_hash_at"))) uint32_t game_coop_hash_at(int t) {
+  return coop_tick_at(t) ? coop_tick_at(t)->hash : 0;
 }
 __attribute__((export_name("game_coop_bake_at"))) uint32_t game_coop_bake_at(int t) {
-  const CoopTick &entry = coop.ticks[t & (COOP_RING - 1)];
-  return t >= 0 && entry.tick == t ? entry.bake : 0;
+  return coop_tick_at(t) ? coop_tick_at(t)->bake : 0;
+}
+__attribute__((export_name("game_coop_terrain_at"))) uint32_t game_coop_terrain_at(int t) {
+  return coop_tick_at(t) && t <= coop.baked ? coop_tick_at(t)->terrain : 0;
+}
+__attribute__((export_name("game_coop_music_at"))) uint32_t game_coop_music_at(int t) {
+  return coop_tick_at(t) && t <= coop.played ? coop_tick_at(t)->music : 0;
+}
+// Test hook: each tick keeps a digest of the run's state after it, the keyframe
+// codec's raw bytes (game_coop_state_at, like the other digests).
+__attribute__((export_name("game_coop_states"))) void game_coop_states(int keep) { coop.states = keep; }
+__attribute__((export_name("game_coop_state_at"))) uint32_t game_coop_state_at(int t) {
+  return coop_tick_at(t) ? coop_tick_at(t)->state : 0;
+}
+// Test hook: a digest of this machine's music, the tracks' volumes and fades
+// and which tracks' buffers play.
+__attribute__((export_name("game_coop_music"))) uint32_t game_coop_music() {
+  uint8_t music[sizeof music_track_volume + sizeof music_fade_out_flags + std::size(music_entry_table)];
+  memcpy(music, music_track_volume, sizeof music_track_volume);
+  memcpy(music + sizeof music_track_volume, music_fade_out_flags, sizeof music_fade_out_flags);
+  for (size_t i = 0; i < std::size(music_entry_table); ++i)
+    music[sizeof music_track_volume + sizeof music_fade_out_flags + i] =
+        game_sound_playing(music_entry_table[i].buffers[0]);
+  return coop_digest(music, sizeof music);
+}
+// Test hook: every byte of the run's state (game.py's run spans) either reaches
+// a canonical word, so that flipping it changes the words, or is one
+// COOP_UNHASHED names. Writes the bytes that break this, as [start, end)
+// offsets into the executable's image, at portable_output; their count.
+__attribute__((export_name("game_coop_audit"))) int game_coop_audit() {
+  int n = game_coop_canonical();
+  std::vector<uint32_t> words(output, output + n), wrong;
+  auto flipped = [&](auto bytes) {
+    for (uint8_t bit : {0x01, 0x80, 0xff}) {
+      bytes([&](uint8_t *p) { *p ^= bit; });
+      bool changed = game_coop_canonical() != n || memcmp(output, words.data(), n * 4);
+      bytes([&](uint8_t *p) { *p ^= bit; });
+      if (changed)
+        return true;
+    }
+    return false;
+  };
+  // A listed entry flipped whole leaves the words alone; one that does not has
+  // its bytes tried one by one.
+  std::vector<const CoopBytes *> mixed;
+  for (const CoopBytes &entry : COOP_UNHASHED)
+    if (flipped([&](auto flip) {
+          for (uint32_t i = 0; i < entry.count; ++i)
+            for (uint32_t b = 0; b < entry.size; ++b)
+              flip((uint8_t *)entry.at + i * entry.stride + b);
+        }))
+      mixed.push_back(&entry);
+  for (int i = 0; i < game_run_span_count; ++i)
+    for (uint32_t b = 0; b < game_run_spans[i].size; ++b) {
+      uint8_t *p = game_run_spans[i].at + b;
+      const CoopBytes *listed = coop_listed(COOP_UNHASHED, p);
+      if (coop_listed(COOP_INDEXED, p) || (listed && std::find(mixed.begin(), mixed.end(), listed) == mixed.end()))
+        continue;
+      if (flipped([&](auto flip) { flip(p); }) != (listed != nullptr))
+        continue;
+      uint32_t at = uint32_t(p - game_image_exe);
+      if (!wrong.empty() && wrong.back() == at)
+        wrong.back() = at + 1;
+      else
+        wrong.insert(wrong.end(), {at, at + 1});
+    }
+  std::copy(wrong.begin(), wrong.end(), output);
+  return (int)wrong.size() / 2;
 }
 // Test hook: a forced rollback to the state before tick `t`, one of the last
 // COOP_SLOTS run, confirmed or not. Confirmed ticks run again as they ran (their
@@ -660,13 +986,22 @@ __attribute__((export_name("game_coop_restore"))) int game_coop_restore(int t) {
   if (!coop.active || t < 0 || t >= coop.next || t < coop.next - COOP_SLOTS)
     return 0;
   coop_restore(t);
+  const CoopTick *before = coop_tick_at(t - 1);
   coop.confirmed = std::min(coop.confirmed, t - 1);
-  coop.baked = std::min(coop.baked, t - 1);
+  if (coop.baked >= t) {
+    coop.baked = t - 1;
+    coop.terrain = before ? before->terrain : 0;
+  }
+  if (coop.played >= t) {
+    coop.played = t - 1;
+    coop.music = before ? before->music : 0;
+  }
   return 1;
 }
-// Test hook: changes one word of a field family the hash covers: 0 a snapshot
-// field, 1 a session field, 2 a hover timer, 3 a run status counter, 4 an effect
-// overflow entry (none without one). 1 when changed.
+// Test hook: changes a field family the hash covers: 0 a snapshot field, 1 a
+// session field, 2 a hover timer, 3 a run status counter, 4 an effect overflow
+// entry (none without one), 5 two floats' signs, 6 the corpse fade, 7 friendly
+// fire. 1 when changed.
 __attribute__((export_name("game_coop_corrupt"))) int game_coop_corrupt(int kind) {
   if (kind == 0)
     player_state_table[1].health += 1;
@@ -678,6 +1013,13 @@ __attribute__((export_name("game_coop_corrupt"))) int game_coop_corrupt(int kind
     ++(game_live ? live.run.status : game_status_blob).weapon_usage_counts[1];
   else if (kind == 4 && game_effect_overflow.extent > 0)
     game_effect_overflow.entries[0].age += 1;
+  else if (kind == 5 && player_state_table[0].pos_x && player_state_table[1].pos_y) {
+    player_state_table[0].pos_x = -player_state_table[0].pos_x;
+    player_state_table[1].pos_y = -player_state_table[1].pos_y;
+  } else if (kind == 6)
+    cv_bodiesFade->value += 1;
+  else if (kind == 7)
+    cv_friendlyFire->value = !cv_friendlyFire->value;
   else
     return 0;
   return 1;

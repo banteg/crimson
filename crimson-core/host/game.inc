@@ -114,6 +114,16 @@ static int game_shell_track(int id) {
          : id == music_track_extra_1          ? shell.extra_1
                                               : id;
 }
+// The original's own track ids in place while it plays a track: the original's
+// music_play_exclusive takes a track equal to the in-game tune's request for the
+// request, and draws the tune, which inside a tick is the run's draw. Under a
+// tick's (the verifier's) ids a loaded track can be that request: with seven
+// in-game tunes loaded, the original's crimsonquest is the verifier's request.
+struct GameShellMusic {
+  GameMusic run = game_music();
+  GameShellMusic() { game_music_install(game_shell_audio.music); }
+  ~GameShellMusic() { game_music_install(run); }
+};
 static void game_reset_run_data() {
   if (game_original) {
     game_save_shell_audio();

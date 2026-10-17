@@ -65,25 +65,28 @@ static size_t run_state_size() {
 static uint8_t *run_state_write(uint8_t *out) {
   for (int i = 0; i < game_run_span_count; ++i)
     out = (uint8_t *)memcpy(out, game_run_spans[i].at, game_run_spans[i].size) + game_run_spans[i].size;
-  KeyframeHost host = {cfg,
-                       rng,
-                       tick,
-                       ready,
-                       menu_requested,
-                       perk_menu_open,
-                       running_down,
-                       perk_picker,
-                       run_down_ms,
-                       string_used,
-                       portable_preserve_bugs,
-                       music_playlist_randomized_latch,
-                       ui_transition_direction,
-                       ui_elements_timeline,
-                       live.run,
-                       game_effect_overflow.free,
-                       game_effect_overflow.active,
-                       game_effect_overflow.extent,
-                       game_effect_overflow.decal_count};
+  // Padding zeroed: copies of one state are the same bytes (checks/game_coop.mjs).
+  KeyframeHost host;
+  memset(&host, 0, sizeof host);
+  host.config = cfg;
+  host.rng = rng;
+  host.tick = tick;
+  host.ready = ready;
+  host.menu_requested = menu_requested;
+  host.perk_menu_open = perk_menu_open;
+  host.running_down = running_down;
+  host.perk_picker = perk_picker;
+  host.run_down_ms = run_down_ms;
+  host.string_used = string_used;
+  host.preserve_bugs = portable_preserve_bugs;
+  host.music_latch = music_playlist_randomized_latch;
+  host.transition_direction = ui_transition_direction;
+  host.timeline = ui_elements_timeline;
+  host.run = live.run;
+  host.overflow_free = game_effect_overflow.free;
+  host.overflow_active = game_effect_overflow.active;
+  host.overflow_extent = game_effect_overflow.extent;
+  host.overflow_decals = game_effect_overflow.decal_count;
   out = (uint8_t *)memcpy(out, &host, sizeof host) + sizeof host;
   size_t entries = (size_t)host.overflow_extent * sizeof(effect_entry_t),
          decals = (size_t)host.overflow_decals * sizeof(fx_queue_entry_t);
@@ -159,6 +162,18 @@ struct RotatedDecal {
   int creature_type_id;
   effect_color_t color;
 };
+static RotatedDecal fx_rotated(int i) {
+  return {fx_rotated_pos_x[i], fx_rotated_scale[i], fx_rotated_rotation[i], fx_rotated_creature_type_id[i],
+          fx_rotated_color_r[i]};
+}
+static void fx_rotated_set(int i, const RotatedDecal &d) {
+  fx_rotated_pos_x[i] = d.pos;
+  fx_rotated_scale[i] = d.scale;
+  fx_rotated_rotation[i] = d.rotation;
+  fx_rotated_creature_type_id[i] = d.creature_type_id;
+  fx_rotated_color_r[i] = d.color;
+}
+
 // One bake: the tick it came with, and where its decals and corpses start in the logs.
 struct DecalBatch {
   int tick;
@@ -227,8 +242,7 @@ static void terrain_log_batch(int at_tick) {
   for (int i = 0; i < game_effect_overflow.decal_count; ++i)
     terrain.queue.push(game_effect_overflow.decals[i]);
   for (int i = 0; i < fx_queue_rotated; ++i)
-    terrain.rotated.push({fx_rotated_pos_x[i], fx_rotated_scale[i], fx_rotated_rotation[i],
-                               fx_rotated_creature_type_id[i], fx_rotated_color_r[i]});
+    terrain.rotated.push(fx_rotated(i));
 }
 
 static void terrain_reset() {
@@ -271,37 +285,57 @@ static void terrain_bake(const fx_queue_entry_t *queue, size_t queued, const Rot
   game_effect_overflow.decal_count = (int)(queued - fx_queue_count);
   std::copy(queue + fx_queue_count, queue + queued, game_effect_overflow.decals);
   fx_queue_rotated = (int)corpses;
-  for (int i = 0; i < fx_queue_rotated; ++i) {
-    const RotatedDecal &d = rotated[i];
-    fx_rotated_pos_x[i] = d.pos;
-    fx_rotated_scale[i] = d.scale;
-    fx_rotated_rotation[i] = d.rotation;
-    fx_rotated_creature_type_id[i] = d.creature_type_id;
-    fx_rotated_color_r[i] = d.color;
-  }
+  for (int i = 0; i < fx_queue_rotated; ++i)
+    fx_rotated_set(i, rotated[i]);
   game_effects_render_decals();
 }
 
-// Logged bakes drawn into the terrain between ticks, at the run's settings (its
-// texture scale), as its ticks draw them.
-template <class Bakes> static void terrain_bakes(Bakes bakes) {
+// What the run's queues hold between ticks for the next tick's bake (a Nuke
+// taken after the world drew queues its kills' blood), put back after bakes
+// drawn between ticks.
+struct TerrainQueued {
+  std::vector<fx_queue_entry_t> queue{fx_queue, fx_queue + fx_queue_count},
+      decals{game_effect_overflow.decals, game_effect_overflow.decals + game_effect_overflow.decal_count};
+  std::vector<RotatedDecal> rotated;
+  TerrainQueued() {
+    for (int i = 0; i < fx_queue_rotated; ++i)
+      rotated.push_back(fx_rotated(i));
+  }
+  ~TerrainQueued() {
+    fx_queue_count = (int)queue.size();
+    std::copy(queue.begin(), queue.end(), fx_queue);
+    game_effect_overflow.decal_count = (int)decals.size();
+    std::copy(decals.begin(), decals.end(), game_effect_overflow.decals);
+    fx_queue_rotated = (int)rotated.size();
+    for (int i = 0; i < fx_queue_rotated; ++i)
+      fx_rotated_set(i, rotated[i]);
+  }
+};
+
+// Logged bakes drawn into the terrain between ticks, where the module draws
+// (`draw`), at the run's settings (its texture scale), as its ticks draw them.
+// The run's queues stay as they were.
+template <class Bakes> static void terrain_bakes(bool draw, Bakes bakes) {
+  TerrainQueued queued;
   unsigned char disabled = grim_render_disabled;
-  grim_render_disabled = 0;
-  live_enter_run();
+  if (draw)
+    grim_render_disabled = 0;
+  if (game_live)
+    live_enter_run();
   bakes();
-  live_install(live.outside);
+  if (game_live)
+    live_install(live.outside);
   grim_render_disabled = disabled;
 }
 
 // The terrain as it stood after the first `batches` bakes: the nearest copy at or
-// before them, then the bakes after it. It fills the run's queues: a keyframe
-// restore follows.
+// before them, then the bakes after it.
 static void terrain_rebuild(size_t batches) {
   auto shot = std::upper_bound(terrain.shots.begin(), terrain.shots.end(), batches,
                                [](size_t b, const TerrainShot &s) { return b < s.batches; }) -
               1;
   host_texture_copy(terrain_host_id(), shot->id);
-  terrain_bakes([&] {
+  terrain_bakes(true, [&] {
     std::vector<fx_queue_entry_t> queue;
     std::vector<RotatedDecal> rotated;
     for (size_t b = shot->batches; b < batches; ++b) {
@@ -319,8 +353,9 @@ static void terrain_rebuild(size_t batches) {
 extern "C" {
 // A tick's bake into the terrain (gameplay_render_world): a replay logs it, and
 // bakes it on the ticks it does not draw too, so the terrain holds every tick's.
+// A co-op tick's bakes in tick order (coop_bake).
 void fx_queue_render() {
-  if (coop_bake_held())
+  if (coop_bake())
     return;
   if (terrain.logging && (fx_queue_count || game_effect_overflow.decal_count || fx_queue_rotated))
     terrain_log_batch((int)tick);

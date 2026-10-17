@@ -74,3 +74,13 @@ export function bootGame(wasm, directory, seed, { leaderboard = false, requests,
     input: () => new DataView(game.memory.buffer, game.game_input()),
   };
 }
+
+// Seven in-game tunes for the original in `directory` to load (music\game_tunes.txt in the folder takes the
+// pack's place: the release's five, the first two again). The original's crimsonquest is then the verifier's
+// in-game tune request (host/game.inc GameShellMusic).
+export function sevenTunes(directory) {
+  const tunes = ["gt1_ingame", "gt2_harppen", "crimson_addon01", "crimson_addon02", "crimson_addon03"];
+  fs.mkdirSync(`${directory}/music`, { recursive: true });
+  const lines = [...tunes, ...tunes.slice(0, 2)].map((tune) => `snd_addGameTune ${tune}.ogg\n`);
+  fs.writeFileSync(`${directory}/music/game_tunes.txt`, lines.join(""));
+}
