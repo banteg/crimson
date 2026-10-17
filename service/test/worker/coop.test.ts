@@ -73,17 +73,6 @@ class Peer {
   }
 }
 
-// Floods `peer` with numbered messages from `from` until the room closes it: the budget refills while a slow runner
-// sends, so a fixed count may never overrun it.
-async function flood(peer: Peer, from: number): Promise<void> {
-  let open = true;
-  void peer.closed.then(() => (open = false));
-  for (let n = from; open && n < from + 20_000; ) {
-    for (let i = 0; i < 100 && peer.ws.readyState === WebSocket.OPEN; i++) peer.ws.send(String(n++));
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  }
-}
-
 // Everything a socket receives before `last`.
 async function until(peer: Peer, last: string): Promise<(string | ArrayBuffer)[]> {
   const received: (string | ArrayBuffer)[] = [];
@@ -249,33 +238,29 @@ describe("co-op rooms", () => {
 
   it("closes a flooding socket after relaying only its budget", async () => {
     const { host, guest } = await pair();
-    const start = Date.now();
-    await flood(guest, 0);
+    // A stopped clock refills nothing, however slowly the room takes the messages.
+    vi.spyOn(Date, "now").mockReturnValue(Date.now());
+    for (let i = 0; i < 400; i++) guest.ws.send(String(i));
     expect((await guest.closed).code).toBe(1008);
-    const relayed = await until(host, PEER_LEFT);
-    expect(relayed).toEqual(relayed.map((_, i) => String(i)));
-    expect(relayed.length).toBeGreaterThanOrEqual(200);
-    expect(relayed.length).toBeLessThanOrEqual(200 + ((Date.now() - start) * 200) / 1000);
-  }, 30_000);
+    expect(await until(host, PEER_LEFT)).toEqual(Array.from({ length: 200 }, (_, i) => String(i)));
+  });
 
   it("keeps a seat's message budget across its reconnects, and limits those", async () => {
     const { room, host, guest, guestToken } = await pair();
-    const start = Date.now();
+    vi.spyOn(Date, "now").mockReturnValue(Date.now());
     for (let i = 0; i < 190; i++) guest.ws.send(String(i));
     for (let i = 0; i < 190; i++) expect(await host.next()).toBe(String(i));
     const again = await join(room.room_id, `role=guest&token=${guestToken}`);
     expect(await host.json()).toEqual({ type: "peer", present: true });
-    await flood(again, 190);
+    for (let i = 190; i < 590; i++) again.ws.send(String(i));
     expect((await again.closed).code).toBe(1008);
-    const relayed = await until(host, PEER_LEFT);
-    expect(relayed).toEqual(relayed.map((_, i) => String(190 + i)));
-    expect(190 + relayed.length).toBeLessThanOrEqual(200 + ((Date.now() - start) * 200) / 1000);
+    expect(await until(host, PEER_LEFT)).toEqual(Array.from({ length: 10 }, (_, i) => String(190 + i)));
 
     // The guest has used 2 of its 10 sockets a minute; the host's are its own.
     for (let i = 0; i < 8; i++) await join(room.room_id, `role=guest&token=${guestToken}`);
     expect((await handshake(room.room_id, `role=guest&token=${guestToken}`)).status).toBe(429);
     await join(room.room_id, `role=host&token=${room.host_token}`);
-  }, 30_000);
+  });
 
   it("closes a socket that sends a message passing for the room's own", async () => {
     for (const forged of [{ type: "peer", present: true }, { type: "seat", role: "host" }]) {
