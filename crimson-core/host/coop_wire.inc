@@ -186,11 +186,13 @@ static void coop_drop(CoopReason reason) {
 }
 
 // A run from the config at portable_config, this machine playing its seat:
-// the Host's when it starts one, the Guest's on START_RUN.
+// the Host's when it starts one, the Guest's on START_RUN. Inside the original
+// it starts as the client's runs do (host/session.inc live_start).
 static bool coop_begin(int delay, int rmax, uint32_t epoch, double now) {
   bool custom = cfg.mode == GAME_MODE_QUEST && cfg.major == 0 && cfg.minor == 0;
-  if (custom || cfg.players != 2 || !portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor) ||
-      !game_coop_start(wire.seat, delay, rmax, epoch))
+  bool ready = !custom && cfg.players == 2 &&
+               (game_original ? live_start() : portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor));
+  if (!ready || !game_coop_start(wire.seat, delay, rmax, epoch))
     return false;
   wire.epoch = epoch;
   wire.reason = COOP_FINE;
@@ -201,6 +203,28 @@ static bool coop_begin(int delay, int rmax, uint32_t epoch, double now) {
   wire.progress_at = now;
   return true;
 }
+
+// The Guest takes the run START_RUN offered, from the config at portable_config:
+// false when it cannot start it.
+static bool coop_accept(int delay, int rmax, uint32_t epoch, double now) {
+  if (!coop_begin(delay, rmax, epoch, now))
+    return false;
+  wire.started = true;
+  CoopWriter message = coop_message(COOP_START_ACK, epoch);
+  coop_send(message);
+  return true;
+}
+// The Host can start a run: the partner said hello, neither left, and the last
+// run is over on both sides with this machine holding the Guest's hashes up to
+// its end (which finds any divergence alone).
+static bool coop_can_start() {
+  return wire.seat == 0 && wire.hello && !wire.starting && !wire.left &&
+         (!wire.started || (coop_over() && wire.hash_heard >= coop.next - 1));
+}
+// Inside the original, a START_RUN waits for the Guest's screen to come to the
+// run (host/coop_live.inc).
+static void coop_offer(const PortableConfig &config, int delay, int rmax, uint32_t epoch);
+static bool coop_withdraw(uint32_t epoch);
 
 // Highest sequence wins, the Host's on a tie; while paused neither side produces.
 static void coop_pause(uint32_t seq, int by, bool paused) {
@@ -316,8 +340,8 @@ static int coop_ticks_out(double now) {
   uint16_t hold = wire.peer_ping ? (uint16_t)std::min(65535.0, now - wire.peer_ping_at) : 0;
   uint32_t packed = 0;
   CoopWriter packet;
-  // Flags: focus (the live session's to clear).
-  packet.put(COOP_MAGIC).put((uint8_t)count).put((uint8_t)2).put((uint8_t)hashes);
+  // Flags: whether this machine's window has the focus (host/coop_live.inc).
+  packet.put(COOP_MAGIC).put((uint8_t)count).put((uint8_t)(coop_live.unfocused ? 0 : 2)).put((uint8_t)hashes);
   packet.put(wire.epoch).put(wire.ping).put(wire.peer_ping).put(hold).put((uint16_t)0);
   packet.put(run ? (uint32_t)coop.produced : COOP_NONE).put(run ? (uint32_t)coop.remote : COOP_NONE);
   packet.put((uint32_t)first).put(run && wire.hash_heard >= 0 ? (uint32_t)wire.hash_heard : COOP_NONE);
@@ -479,12 +503,14 @@ static void coop_control_in(CoopReader &in, double now) {
       ++coop.stats.wire.stale;
       return;
     }
-    cfg = config;
-    if (delay < 1 || delay > COOP_DELAY || rmax > COOP_LEAD || choice > 2 || !coop_begin(delay, rmax, epoch, now))
+    if (delay < 1 || delay > COOP_DELAY || rmax > COOP_LEAD || choice > 2)
       return coop_fail(COOP_BAD_MESSAGE);
-    wire.started = true;
-    CoopWriter message = coop_message(COOP_START_ACK, epoch);
-    return coop_send(message);
+    if (game_original)
+      return coop_offer(config, delay, rmax, epoch);
+    cfg = config;
+    if (!coop_accept(delay, rmax, epoch, now))
+      coop_fail(COOP_BAD_MESSAGE);
+    return;
   }
   case COOP_START_ACK:
     if (!in.done() || !host)
@@ -500,6 +526,10 @@ static void coop_control_in(CoopReader &in, double now) {
   case COOP_START_CANCEL:
     if (!in.done() || host)
       return coop_fail(COOP_BAD_MESSAGE);
+    if (coop_withdraw(epoch)) {
+      wire.reason = COOP_UNANSWERED;
+      return;
+    }
     if (!current) {
       ++coop.stats.wire.stale;
       return;
@@ -670,9 +700,8 @@ __attribute__((export_name("game_coop_request"))) int game_coop_request(int kind
     return 1;
   }
   case COOP_ASK_START: {
-    bool last_over = !wire.started || (coop_over() && wire.hash_heard >= coop.next - 1);
-    if (wire.seat != 0 || !wire.hello || wire.starting || wire.left || !last_over || a < 1 || a > COOP_DELAY || b < 0 ||
-        b > COOP_LEAD || c < 0 || c > 2 || !coop_begin(a, b, wire.epoch + 1, now))
+    if (!coop_can_start() || a < 1 || a > COOP_DELAY || b < 0 || b > COOP_LEAD || c < 0 || c > 2 ||
+        !coop_begin(a, b, wire.epoch + 1, now))
       return 0;
     coop.hold |= COOP_HOLD_START;
     wire.starting = true;

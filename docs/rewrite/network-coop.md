@@ -907,8 +907,10 @@ Online co-op follows the site's [ranked rules](ranked-rules.md): every run is a
 ranked attempt, recorded as a standard replay and verified by the service like
 any other.
 
-- **Run setup (Host)**: the Host picks Survival or **any** quest, normal or
-  hardcore, whatever either player's save has unlocked. The run plays the
+- **Run setup (Host)**: the Host picks Survival or **any** stock quest, normal
+  or hardcore: while a session is on, the menus show every quest unlocked, and
+  the player's own unlocks stay in the save. The Guest's menus start nothing;
+  its clicks wait for the Host's. The run plays the
   ranked profile with `player_count = 2` instead of `1`: a fresh seed the Host
   draws and the overlay save the ranked rules give that run's place in the game
   (every quest completed for Survival; for a quest, the save that has just

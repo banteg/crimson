@@ -195,6 +195,7 @@ static struct {
   bool running; // a co-op tick runs
   bool quiet;   // the tick running ran before
   bool drawing; // the tick running draws
+  int draws;    // ticks that drew
   bool states;  // keep each tick's raw state digest (checks/game_coop.mjs)
   int baking;   // the tick running, once it baked
   CoopScreen screen;
@@ -720,6 +721,7 @@ static void coop_tick(int t, bool quiet, bool draw) {
   coop.running = true;
   coop.quiet = quiet;
   coop.drawing = draw;
+  coop.draws += draw;
   coop.baking = -1;
   bool accepted = portable_step_many(entry.commands);
   coop.running = coop.quiet = false;
@@ -777,11 +779,24 @@ static void coop_release(int t) {
   for (; coop.hashes_from <= t; ++coop.hashes_from)
     coop.hashes.pop_front();
 }
+// A confirmed tick joins the recording of a run inside the original
+// (host/session.inc live.replay), as the verifier reads a 2-player run: both
+// players' inputs, then its command, whose player live.pickers names.
+static void coop_record(const CoopTick &entry) {
+  live_append(&entry.used[0].input, sizeof(PortableInput));
+  live_append(&entry.used[1].input, sizeof(PortableInput));
+  live_append(&entry.commands, sizeof entry.commands);
+  live_append(&entry.command, entry.commands * sizeof entry.command);
+  if (entry.commands)
+    live.pickers.push_back(entry.picker);
+}
 // A tick is confirmed once it ran on both seats' real records, as every tick
 // before it did. Between two peers its hash is kept from then on.
 static void coop_confirm() {
   while (coop.confirmed + 1 < coop.next && coop_final(coop.confirmed + 1)) {
     int t = ++coop.confirmed;
+    if (game_live)
+      coop_record(coop.ticks[t & (COOP_RING - 1)]);
     if (coop.local < 0)
       continue;
     coop.hashes.push_back({coop.ticks[t & (COOP_RING - 1)].hash, false, -INFINITY});

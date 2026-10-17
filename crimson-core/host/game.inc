@@ -190,9 +190,13 @@ char *game_version_label() {
     snprintf(label, sizeof label, "crimson.land %s", CRIMSON_GAME_VERSION);
   return label;
 }
+// A co-op session's line over the menus (host/coop_live.inc).
+static void coop_menus_draw();
 void ui_elements_update_and_render() {
-  if (!game_ticking)
-    ui_elements_update_and_render_recovered();
+  if (game_ticking)
+    return;
+  ui_elements_update_and_render_recovered();
+  coop_menus_draw();
 }
 }
 // The original's own startup (game/frame.cpp): no session, so the recovered RNG,
