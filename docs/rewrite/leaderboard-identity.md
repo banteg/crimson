@@ -81,13 +81,16 @@ A run two players play together ([online co-op](network-coop.md)) is both player
 ```
 
 - The replay records each seat's public key (`seat_keys`, [replay format](../formats/replay.md) 34), so the payload
-  digest every signature covers names who sits where. Either partner holds the replay, so without that one could sign
-  the other's seat with a throwaway key and take the run alone; with it, only the recorded key signs each seat.
-- The service takes the run only when its replay records the seats' keys, with one signer for each of its players,
-  every seat from 0 (player one, the room's host) once, signed by the key recorded for it, every signature verifying
-  over its seat and name, and no key banned. A co-op run sent with fewer signatures, or in the one-player envelope, is
-  refused with its reason, so the game holds it until both players have signed. A one-player run may use the
-  envelope too, with its one signer in seat 0, and when its replay records a key, that key signs.
+  digest every signature covers names who sits where. Either partner holds the replay and could rewrite those keys,
+  putting a throwaway key in the other's seat to sign both seats and take the run alone, so the room attests the pair:
+  each seat proves its key to the co-op room ([network co-op](network-coop.md) §6.1), which issues a run's seed only
+  once both seats have, and records the seed with their keys.
+- The service takes the run only when its replay records the seats' keys and a room issued its seed to those keys in
+  seat order, with one signer for each of its players, every seat from 0 (player one, the room's host) once, signed by
+  the key recorded for it, every signature verifying over its seat and name, and no key banned. A co-op run sent with
+  fewer signatures, or in the one-player envelope, is refused with its reason, so the game holds it until both players
+  have signed. A one-player run may use the envelope too, with its one signer in seat 0, and when its replay records a
+  key, that key signs; it needs no room.
 - Each key's account is credited with its seat, and each takes its seat's name as its latest. The run lists under
   player one's account, and the co-op board keeps each pair's best run, whichever seats they took: two players
   rank as a team, apart from either one's runs with someone else.

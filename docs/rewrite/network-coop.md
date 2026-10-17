@@ -909,9 +909,9 @@ any other.
 
 - **Run setup (Host)**: the Host picks Survival or **any** quest, normal or
   hardcore, whatever either player's save has unlocked. The run plays the
-  ranked profile with `player_count = 2` instead of `1`: a fresh seed the Host
-  draws and the overlay save the ranked rules give that run's place in the game
-  (every quest completed for Survival; for a quest, the save that has just
+  ranked profile with `player_count = 2` instead of `1`: a fresh seed the room
+  issues to the pair (Section 6.1) and the overlay save the ranked rules give
+  that run's place in the game (every quest completed for Survival; for a quest, the save that has just
   unlocked it, so it plays with the weapons and perks the campaign has handed
   out by then), detail 5, violence on, friendly fire off, documented fixes on,
   no retries. Neither player's own save takes part, and the run changes
@@ -932,10 +932,24 @@ any other.
 - **Finished runs**: a Survival team wipe or a completed quest ranks; a quit,
   a leave, a disconnect or a failed quest does not.
 
+- **Room attestation**: before a run, each seat proves its identity key to the
+  room, and the Host asks the room for the run's seed, which the room issues
+  only once both seats have proven keys and records with those keys
+  (Section 6.1). The replay records the seats' keys (`seat_keys`), but anyone
+  holding it can rewrite its header: without the room's record, one partner
+  could put a throwaway key in the other's seat, sign both seats and take the
+  run alone. The service ranks a co-op run only when the room issued its seed
+  to the keys its replay records, in seat order
+  ([leaderboard identity](leaderboard-identity.md#co-op-runs)).
+  `crimson replay verify` cannot see the room's records and checks only the
+  run rules.
+
 - **One replay, two signatures**: `MSG_START_RUN` carries the replay header
-  (`game_version`, `rules`, the Host's `recorder`, `pilot`, `run`), so both
-  peers write byte-identical `.crd` files. Each peer shows the end screen's
-  name entry ("State your name, trooper!", prefilled with the saved name) for
+  (`game_version`, `rules`, the Host's `recorder`, `pilot`, `seat_keys` =
+  [Host key, Guest key] as proven to the room, `run` with the room's seed), so
+  both peers write byte-identical `.crd` files; the Guest checks the seed and
+  keys against the room's. Each peer shows the end screen's name entry
+  ("State your name, trooper!", prefilled with the saved name) for
   its own player, as a 1P ranked run does before `ranked_release()`
   (`crimson-core/host/ranked.inc:85-99`). When the player confirms, the peer
   signs the replay as a [leaderboard upload](leaderboard-identity.md#uploads)
@@ -970,12 +984,19 @@ sequenceDiagram
     Host->>Guest: Shares https://crimson.land/play/?coop=<id>
     Guest->>Worker: GET /api/coop/rooms/<id> (exists? seat free?)
     Guest->>Worker: WSS /api/coop/rooms/<id>/ws?role=guest
-    Worker-->>Guest: {type: "seat", role: "guest", guest_token}
+    Worker-->>Guest: {type: "seat", role: "guest", challenge, guest_token}
     Worker-->>Host: {type: "peer", present: true}
+    Host->>Worker: {type: "key", public_key, signature}
+    Guest->>Worker: {type: "key", public_key, signature}
+    Worker-->>Host: {type: "key", role, public_key} (each seat's, to both)
+    Worker-->>Guest: {type: "key", role, public_key} (each seat's, to both)
     Host->>Guest: WebRTC Offer + ICE (buffered until remoteDescription set)
     Guest->>Host: WebRTC Answer + ICE
     Host<<->>Guest: DataChannels open: coop-ticks + coop-control
     Host<<->>Guest: MSG_HELLO {protocol_ver, build_id, role}
+    Host->>Worker: {type: "seed"}
+    Worker-->>Host: {type: "seed", seed}
+    Worker-->>Guest: {type: "seed", seed}
     Host->>Guest: MSG_START_RUN {run_epoch, seed, PortableConfig, delay_ticks}
     Guest->>Host: MSG_START_ACK {run_epoch}
     Note over Host,Guest: Both browsers start 2-player gameplay at tick 0
@@ -986,7 +1007,9 @@ sequenceDiagram
 A room is a `CoopRoom` Durable Object (binding `COOP_ROOMS`, SQLite class,
 WebSocket Hibernation) with two seats, `host` (player 0) and `guest`
 (player 1). It moves signalling and relay messages between them and knows
-nothing of the game. The routes need no account and read no cookie:
+nothing of the game, but for the seats' keys and the seeds it issues to them,
+which rank the pair's runs (Section 5.3). The routes need no account and read
+no cookie:
 
 - `POST /api/coop/rooms`, same-origin only and rate limited per visitor
   address (`COOP_ROOM_LIMITER`; `429` with `retry-after` past it), answers
@@ -1017,18 +1040,38 @@ are small JSON texts:
 
 | Message | When |
 | --- | --- |
-| `{type: "seat", role, guest_token?}` | First message on a new socket; `guest_token` only when the guest seat was just taken. |
+| `{type: "seat", role, challenge, guest_token?}` | First message on a new socket: `challenge` (64 hex characters) is the socket's own, for its key proof; `guest_token` only when the guest seat was just taken. |
 | `{type: "peer", present}` | Right after `seat`, with the other seat's state; then to the other seat whenever a seat joins (`true`) or leaves (`false`). A repeated `present: true` means the partner reconnected and the peer connection must be renegotiated. |
 | `{type: "ice", ice_servers}` | Answer to a client's `{type: "ice"}`, which the server keeps from the partner. The guest asks once after joining; either side asks again before an ICE restart. Within ten seconds of the room's last TURN mint, both seats get that mint's servers. |
+| `{type: "key", role, public_key}` | To both seats when a seat proves its key (below). |
+| `{type: "seed", seed}` | To both seats when the room issues the Host a run's seed (below). |
 
-Client message types therefore avoid `seat`, `peer` and `ice`: a client text
-message typed `seat` or `peer` would pass for the server's own, so it closes
-the socket with `1008` instead of being relayed. A message over 16 KiB closes
-the socket with `1009`; more than 200 messages a second (a second's burst)
-closes it with `1008`. That budget belongs to the seat, so a reconnect
-inherits it. Nothing a closed socket still sends is relayed. Clients read the
-server's messages only from text frames, with a strict `JSON.parse`; binary
-frames are always the partner's.
+**Key proof.** Each socket proves its seat's identity key once: the game signs
+`crimson-coop-seat-v1\n`, then the room id, then the socket's `challenge`
+(both as ASCII) with its identity key, which never leaves the game, and the
+client sends `{type: "key", public_key, signature}` (hex, as in
+[leaderboard uploads](leaderboard-identity.md#protocol)). The first proof
+records the seat's key. A reconnect proves again on its new challenge, and
+must prove the same key. A proof that does not verify, a second
+proof on one socket, or a reconnect proving another key closes the socket
+with `1008`.
+
+**Seeds.** Once both seats have proven keys, the Host asks `{type: "seed"}`
+for each run. The room draws a fresh random u32 seed, records it in D1
+(`coop_runs`: seed, room id, the host's and the guest's keys, issue time;
+each seed once, drawn again on a collision) and sends it to both seats. A
+seed request from the guest, before both seats have proven keys, or past ten
+a minute closes the socket with `1008`.
+
+Client message types therefore avoid `seat`, `peer`, `ice`, `key` and
+`seed`: the room answers `ice`, `key` and `seed` requests itself and never
+relays them, and a client text message typed `seat` or `peer` would pass for
+the server's own, so it closes the socket with `1008` instead of being
+relayed. A message over 16 KiB closes the socket with `1009`; more than 200
+messages a second (a second's burst) closes it with `1008`. That budget
+belongs to the seat, so a reconnect inherits it. Nothing a closed socket
+still sends is relayed. Clients read the server's messages only from text
+frames, with a strict `JSON.parse`; binary frames are always the partner's.
 
 **Lifetime.** A room is deleted a minute after its last socket leaves (or a
 minute after it was made, if nobody joins) and in any case 12 hours after it

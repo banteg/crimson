@@ -82,6 +82,20 @@ function signersReason(signers: Signer[], players: number, seatKeys: Uint8Array[
   return null;
 }
 
+// Why a co-op run's room does not stand for its pair, or null: its seed must be one a room issued (src/coop.ts), and
+// to the keys its replay records, in seat order. Either partner holds the replay and could rewrite those keys to sign
+// both seats alone; the room recorded the keys each seat proved before the run began.
+async function roomReason(env: Env, replay: Replay): Promise<string | null> {
+  if (replay.run.player_count < 2) return null;
+  const issued = await env.DB.prepare("SELECT seat0_key, seat1_key FROM coop_runs WHERE seed = ?")
+    .bind(replay.run.seed)
+    .first<{ seat0_key: string; seat1_key: string }>();
+  if (!issued) return "a co-op run must start from a seed its room issued";
+  if (replay.seat_keys!.map(hex).join() !== [issued.seat0_key, issued.seat1_key].join())
+    return "the room issued this run's seed to other players' keys";
+  return null;
+}
+
 function base64(text: string): Uint8Array | null {
   try {
     return Uint8Array.from(atob(text), (ch) => ch.charCodeAt(0));
@@ -288,6 +302,8 @@ export async function postRun(request: Request, env: Env, options: { requireCust
     const message = upload.coop ? concat(COOP_RUN_DOMAIN, payloadSha, Uint8Array.of(signer.seat), names[i]!) : concat(RUN_DOMAIN, payloadSha, names[i]!);
     if (!(await verifyEd25519(keys[i]!.publicKey!, keys[i]!.signature!, message))) return refuse(401, "signature does not match");
   }
+  const roomRefusal = await roomReason(env, replay);
+  if (roomRefusal) return refuse(422, roomRefusal);
   // Signers in seat order: player one, whose account the run lists under, first.
   const seated = upload.signers.map((signer, i) => ({ ...signer, key: keys[i]!.publicKey! })).sort((a, b) => a.seat - b.seat);
   const owner = seated[0]!;

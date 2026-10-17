@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import worker from "../../src/index";
 import { tokenHash } from "../../src/auth";
 import { ROOM_ID, type RoomStatus } from "../../src/coop";
+import { concat, COOP_SEAT_DOMAIN, hex } from "../../src/crypto";
 
 const ORIGIN = "https://crimson.land";
 const STUN_ONLY = [{ urls: ["stun:stun.cloudflare.com:3478"] }];
@@ -12,6 +13,9 @@ const call = (path: string, init: RequestInit = {}, bindings: Cloudflare.Env = a
 const stub = (id: string) => env.COOP_ROOMS.get(env.COOP_ROOMS.idFromName(id));
 const ICE = JSON.stringify({ type: "ice" });
 const PEER_LEFT = JSON.stringify({ type: "peer", present: false });
+const SEED = JSON.stringify({ type: "seed" });
+// A socket's first message: its seat, and the challenge it signs to prove its key.
+const seat = (role: string) => ({ type: "seat", role, challenge: expect.stringMatching(/^[0-9a-f]{64}$/) });
 const TURN = { urls: ["turn:turn.cloudflare.com:3478?transport=udp"], username: "user", credential: "secret" };
 // Rooms read their TURN key from the test's own bindings; the Worker routes here get theirs per call.
 const configureTurn = () => Object.assign(env, { TURN_KEY_ID: "key-id", TURN_KEY_API_TOKEN: "api-token" });
@@ -82,18 +86,52 @@ async function join(id: string, query: string): Promise<Peer> {
   return new Peer(response.webSocket!);
 }
 
-// The host and a guest in a fresh room, past their join messages.
+interface Seat {
+  challenge: string;
+  guest_token?: string;
+}
+
+// The host and a guest in a fresh room, past their join messages, with the challenges their seats sign.
 async function pair() {
   const room = await create();
   const host = await join(room.room_id, `role=host&token=${room.host_token}`);
-  expect(await host.json()).toEqual({ type: "seat", role: "host" });
+  const hostSeat = (await host.json()) as Seat;
+  expect(hostSeat).toEqual(seat("host"));
   expect(await host.json()).toEqual({ type: "peer", present: false });
   const guest = await join(room.room_id, "role=guest");
-  const seat = (await guest.json()) as { guest_token: string };
+  const guestSeat = (await guest.json()) as Seat;
   expect(await guest.json()).toEqual({ type: "peer", present: true });
   expect(await host.json()).toEqual({ type: "peer", present: true });
-  return { room, host, guest, guestToken: seat.guest_token };
+  return { room, host, guest, guestToken: guestSeat.guest_token!, challenges: { host: hostSeat.challenge, guest: guestSeat.challenge } };
 }
+
+// A player's identity key, as the game keeps it.
+async function identity() {
+  const key = (await crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"])) as CryptoKeyPair;
+  const publicKey = hex(new Uint8Array((await crypto.subtle.exportKey("raw", key.publicKey)) as ArrayBuffer));
+  // The seat's key proof: the key signs the room's id and the socket's challenge.
+  const proof = async (roomId: string, challenge: string) => {
+    const message = concat(COOP_SEAT_DOMAIN, new TextEncoder().encode(roomId + challenge));
+    const signature = hex(new Uint8Array(await crypto.subtle.sign({ name: "Ed25519" }, key.privateKey, message)));
+    return JSON.stringify({ type: "key", public_key: publicKey, signature });
+  };
+  return { publicKey, proof };
+}
+
+// A room whose seats have both proven their keys, past the room's answers.
+async function provenPair() {
+  const paired = await pair();
+  const [hostKey, guestKey] = [await identity(), await identity()];
+  paired.host.ws.send(await hostKey.proof(paired.room.room_id, paired.challenges.host));
+  const hostProven = { type: "key", role: "host", public_key: hostKey.publicKey };
+  expect([await paired.host.json(), await paired.guest.json()]).toEqual([hostProven, hostProven]);
+  paired.guest.ws.send(await guestKey.proof(paired.room.room_id, paired.challenges.guest));
+  const guestProven = { type: "key", role: "guest", public_key: guestKey.publicKey };
+  expect([await paired.host.json(), await paired.guest.json()]).toEqual([guestProven, guestProven]);
+  return { ...paired, hostKey, guestKey };
+}
+
+const issued = () => env.DB.prepare("SELECT seed, room_id, seat0_key, seat1_key FROM coop_runs ORDER BY issued_at").all().then((result) => result.results);
 
 describe("co-op rooms", () => {
   it("makes rooms for same-origin requests within the visitor's budget, keeping only the host token's hash", async () => {
@@ -110,7 +148,7 @@ describe("co-op rooms", () => {
     expect(room.invite_url).toBe(`${ORIGIN}/play/?coop=${room.room_id}`);
     expect(room.ice_servers).toEqual(STUN_ONLY);
     const stored = await runInDurableObject(stub(room.room_id), (_, state) => state.storage.list());
-    expect(Object.fromEntries(stored)).toEqual({ room: { host: await tokenHash(room.host_token), created: expect.any(Number) } });
+    expect(Object.fromEntries(stored)).toEqual({ room: { id: room.room_id, host: await tokenHash(room.host_token), created: expect.any(Number) } });
   });
 
   it("tells the invited page whether the room exists and whether its guest seat is taken", async () => {
@@ -146,14 +184,14 @@ describe("co-op rooms", () => {
     guest.ws.close(1000);
     expect(await host.json()).toEqual({ type: "peer", present: false });
     const back = await join(room.room_id, `role=guest&token=${guestToken}`);
-    expect(await back.json()).toEqual({ type: "seat", role: "guest" });
+    expect(await back.json()).toEqual(seat("guest"));
     expect(await back.json()).toEqual({ type: "peer", present: true });
     expect(await host.json()).toEqual({ type: "peer", present: true });
 
     // A reconnect while the old socket still looks open replaces it without the partner seeing anyone leave.
     const again = await join(room.room_id, `role=guest&token=${guestToken}`);
     expect(await back.closed).toEqual({ code: 4001, reason: "replaced by a new connection" });
-    expect(await again.json()).toEqual({ type: "seat", role: "guest" });
+    expect(await again.json()).toEqual(seat("guest"));
     expect(await host.json()).toEqual({ type: "peer", present: true });
     again.ws.send("still here");
     expect(await host.next()).toBe("still here");
@@ -163,7 +201,7 @@ describe("co-op rooms", () => {
     const { room, host, guest } = await pair();
     const again = await join(room.room_id, `role=host&token=${room.host_token}`);
     expect(await host.closed).toEqual({ code: 4001, reason: "replaced by a new connection" });
-    expect(await again.json()).toEqual({ type: "seat", role: "host" });
+    expect(await again.json()).toEqual(seat("host"));
     expect(await again.json()).toEqual({ type: "peer", present: true });
     expect(await guest.json()).toEqual({ type: "peer", present: true });
     guest.ws.send("to the new host");
@@ -237,6 +275,97 @@ describe("co-op rooms", () => {
     }
   });
 
+  it("records each seat's key once it signs its socket's challenge with it, and tells both seats", async () => {
+    const { room, host, guest, guestToken, challenges } = await provenPair();
+    expect(host.pending() + guest.pending()).toBe(0);
+    // Proofs are the room's to answer: the partner never sees the request itself.
+    host.ws.send("after");
+    expect(await guest.next()).toBe("after");
+
+    // A reconnect proves its seat's key again on its own challenge, and keeps the seat only with the same key.
+    const stored = await runInDurableObject(stub(room.room_id), (_, state) => state.storage.get(["key:host", "key:guest"]));
+    const back = await join(room.room_id, `role=guest&token=${guestToken}`);
+    const { challenge } = (await back.json()) as Seat;
+    expect(challenge).not.toBe(challenges.guest);
+    expect(await back.json()).toEqual({ type: "peer", present: true });
+    expect(await host.json()).toEqual({ type: "peer", present: true });
+    back.ws.send(await (await identity()).proof(room.room_id, challenge));
+    expect(await back.closed).toEqual({ code: 1008, reason: "this seat proved another key" });
+    expect(await host.next()).toBe(PEER_LEFT);
+    expect(await runInDurableObject(stub(room.room_id), (_, state) => state.storage.get(["key:host", "key:guest"]))).toEqual(stored);
+  });
+
+  it("refuses a key proof that does not verify, signs another room or repeats on its socket", async () => {
+    const key = await identity();
+    const other = await create();
+    const refusals: [string, (room: string, challenges: Record<string, string>) => Promise<string>, string][] = [
+      ["bad signature", async (room, challenges) => key.proof(room, challenges.guest!.replace(/^./, (ch) => (ch === "0" ? "1" : "0"))), "key proof does not verify"],
+      ["wrong room id", async (_, challenges) => key.proof(other.room_id, challenges.guest!), "key proof does not verify"],
+      ["host's challenge", async (room, challenges) => key.proof(room, challenges.host!), "key proof does not verify"],
+      ["malformed key", async () => JSON.stringify({ type: "key", public_key: "ab", signature: "00".repeat(64) }), "key proof does not verify"],
+    ];
+    for (const [, proof, reason] of refusals) {
+      const { room, host, guest, challenges } = await pair();
+      guest.ws.send(await proof(room.room_id, challenges));
+      expect(await guest.closed).toEqual({ code: 1008, reason });
+      expect(await host.next()).toBe(PEER_LEFT);
+      expect(await runInDurableObject(stub(room.room_id), (_, state) => state.storage.get("key:guest"))).toBeUndefined();
+    }
+
+    const { room, host, guest, challenges } = await pair();
+    guest.ws.send(await key.proof(room.room_id, challenges.guest));
+    await guest.json();
+    await host.json();
+    guest.ws.send(await key.proof(room.room_id, challenges.guest));
+    expect(await guest.closed).toEqual({ code: 1008, reason: "a socket proves its key once" });
+  });
+
+  it("issues the host a seed only once both seats proved keys, to both seats, recorded with their keys", async () => {
+    // Before both seats proved keys, and from the guest, a seed request closes the socket.
+    const early = await pair();
+    early.host.ws.send(await (await identity()).proof(early.room.room_id, early.challenges.host));
+    await early.host.json();
+    await early.guest.json();
+    early.host.ws.send(SEED);
+    expect(await early.host.closed).toEqual({ code: 1008, reason: "both seats prove their keys before a seed" });
+    const { room, host, guest, guestToken, hostKey, guestKey } = await provenPair();
+    guest.ws.send(SEED);
+    expect(await guest.closed).toEqual({ code: 1008, reason: "only the host asks for a seed" });
+    expect(await host.next()).toBe(PEER_LEFT);
+    expect(await issued()).toEqual([]);
+
+    // The guest's seat keeps its key across the reconnect, and both seats hear the seed.
+    const again = await join(room.room_id, `role=guest&token=${guestToken}`);
+    expect(await again.json()).toEqual(seat("guest"));
+    expect(await again.json()).toEqual({ type: "peer", present: true });
+    expect(await host.json()).toEqual({ type: "peer", present: true });
+    host.ws.send(SEED);
+    const { seed } = (await host.json()) as { seed: number };
+    expect(await again.json()).toEqual({ type: "seed", seed });
+    expect(seed >>> 0).toBe(seed);
+    expect(await issued()).toEqual([{ seed, room_id: room.room_id, seat0_key: hostKey.publicKey, seat1_key: guestKey.publicKey }]);
+
+    // A seed already issued is drawn again.
+    const draw = vi.spyOn(crypto, "getRandomValues").mockImplementationOnce((array) => (new Uint32Array(array.buffer).set([seed]), array));
+    host.ws.send(SEED);
+    const next = ((await host.json()) as { seed: number }).seed;
+    expect(await again.json()).toEqual({ type: "seed", seed: next });
+    expect([next === seed, draw.mock.calls.length]).toEqual([false, 2]);
+    expect((await issued()).map((row) => row.seed)).toEqual([seed, next]);
+    expect(host.pending() + again.pending()).toBe(0);
+  });
+
+  it("limits the host to ten seeds a minute", async () => {
+    const { host } = await provenPair();
+    for (let i = 0; i < 10; i++) {
+      host.ws.send(SEED);
+      expect(await host.json()).toMatchObject({ type: "seed" });
+    }
+    host.ws.send(SEED);
+    expect(await host.closed).toEqual({ code: 1008, reason: "too many seeds" });
+    expect(await issued()).toHaveLength(10);
+  });
+
   it("tells the partner once when a socket both fails and closes", async () => {
     const { room, host } = await pair();
     await runInDurableObject(stub(room.room_id), async (instance, state) => {
@@ -270,7 +399,7 @@ describe("co-op rooms", () => {
     expect(await host.json()).toEqual(answer);
     // A reconnect does not start the wait over.
     const again = await join(room.room_id, `role=guest&token=${guestToken}`);
-    expect(await again.json()).toEqual({ type: "seat", role: "guest" });
+    expect(await again.json()).toEqual(seat("guest"));
     expect(await again.json()).toEqual({ type: "peer", present: true });
     again.ws.send(ICE);
     expect(await again.json()).toEqual(answer);

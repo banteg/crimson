@@ -1,5 +1,5 @@
 import { env, SELF } from "cloudflare:test";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { concat, COOP_RUN_DOMAIN, fromHex, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256 } from "../../src/crypto";
 import { confirmMerge } from "../../src/accounts";
 import { tokenHash } from "../../src/auth";
@@ -10,6 +10,30 @@ import vectors from "../vectors.json";
 
 const ORIGIN = "https://crimson.land";
 const decode64 = (text: string) => Uint8Array.from(atob(text), (ch) => ch.charCodeAt(0));
+const encode64 = (bytes: Uint8Array) => btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(""));
+
+// A replay file holding `payload` in a zstd frame of raw blocks (RFC 8878): one declaring its content size, as
+// replays must, with no compression.
+function zstdRaw(payload: Uint8Array): Uint8Array {
+  const BLOCK = 128 * 1024;
+  const size = payload.length;
+  const parts: Uint8Array[] = [Uint8Array.of(0x28, 0xb5, 0x2f, 0xfd, 0xa0, size & 255, (size >> 8) & 255, (size >> 16) & 255, size >>> 24)];
+  for (let at = 0; at < size; at += BLOCK) {
+    const block = payload.subarray(at, at + BLOCK);
+    const header = (block.length << 3) | Number(at + BLOCK >= size);
+    parts.push(Uint8Array.of(header & 255, (header >> 8) & 255, header >> 16), block);
+  }
+  return concat(...parts);
+}
+
+// The replay `file` with the seat key `from` its header records rewritten to `to`, as anyone holding it could.
+function rekeyed(file: string, from: string, to: string): string {
+  const payload = inflateReplay(decode64(file));
+  const recorded = concat(Uint8Array.of(0xc4, 32), fromHex(from, 32)!);
+  const at = payload.findIndex((_, i) => recorded.every((byte, j) => payload[i + j] === byte));
+  payload.set(fromHex(to, 32)!, at + 2);
+  return encode64(zstdRaw(payload));
+}
 
 class Player {
   private constructor(private readonly key: CryptoKeyPair, readonly publicKey: string) {}
@@ -621,6 +645,13 @@ describe("co-op runs", () => {
       env.DB.prepare("INSERT INTO run_players (run_id, seat, account_id, public_key, name) VALUES (?, ?, ?, '', ?)").bind(runId, seat, account, name),
     ),
   ];
+  // The room's record of the seed it issued the vectors' pair, which their run starts from (src/coop.ts).
+  const seed = decodeReplay(inflateReplay(decode64(file))).run.seed;
+  const attest = (keys = vectors.coop_run.seat_keys) =>
+    env.DB.prepare("INSERT INTO coop_runs (seed, room_id, seat0_key, seat1_key, issued_at) VALUES (?, 'roomroom00', ?, ?, ?)")
+      .bind(seed, keys[0], keys[1], Date.now())
+      .run();
+  beforeEach(() => attest());
   const remove = async (player: Player) => {
     const session = asSession(await signIn(player));
     const { account } = (await (await session.get("/api/me")).json()) as { account: number };
@@ -692,6 +723,12 @@ describe("co-op runs", () => {
     // bob holds the replay too: he signs player one's seat with a fresh key and his own seat with his.
     const hijack = { replay: file, signers: [await throwaway.signer(file, 0, "alice"), await bob.signer(file, 1, "bob")] };
     expect(await refused(hijack)).toEqual([422, "seat 0 must be signed by the key the replay records for it"]);
+    // Rewriting the replay to record the throwaway key in seat 0 makes every signature verify, but the room issued the
+    // run's seed to alice's key, not to it.
+    const forged = rekeyed(file, alice.publicKey, throwaway.publicKey);
+    expect(decodeReplay(inflateReplay(decode64(forged))).seat_keys!.map(hex)).toEqual([throwaway.publicKey, bob.publicKey]);
+    const rewritten = { replay: forged, signers: [await throwaway.signer(forged, 0, "alice"), await bob.signer(forged, 1, "bob")] };
+    expect(await refused(rewritten)).toEqual([422, "the room issued this run's seed to other players' keys"]);
     expect(await env.DB.prepare("SELECT count(*) AS n FROM runs").first()).toEqual({ n: 0 });
 
     // The real pair's upload still lands.
@@ -699,6 +736,25 @@ describe("co-op runs", () => {
     expect(response.status).toBe(201);
     const detail = await get<RunDetailView>(`/api/runs/${vectors.coop_run.run_id}`);
     expect(detail.team!.map((seat) => seat.player!.id)).toEqual([await accountOf(alice), await accountOf(bob)]);
+  });
+
+  it("a co-op run ranks only from a seed its room issued to its players' keys, in their seats", async () => {
+    const [alice, bob] = await pair();
+    await env.DB.prepare("DELETE FROM coop_runs").run();
+    expect(await refused({ replay: file, signers: [await alice.signer(file, 0, "alice"), await bob.signer(file, 1, "bob")] })).toEqual([
+      422, "a co-op run must start from a seed its room issued",
+    ]);
+    // A seed issued to the pair the other way round, or to one of them with someone else, is not this run's.
+    for (const keys of [[bob.publicKey, alice.publicKey], [alice.publicKey, (await Player.create()).publicKey]]) {
+      await attest(keys);
+      expect((await uploadPair(file, [alice, "alice"], [bob, "bob"])).status).toBe(422);
+      await env.DB.prepare("DELETE FROM coop_runs").run();
+    }
+    // A one-player run needs no room.
+    expect((await (await Player.create()).upload(vectors.ranked_run, "solo")).status).toBe(201);
+
+    await attest();
+    expect((await uploadPair(file, [alice, "alice"], [bob, "bob"])).status).toBe(201);
   });
 
   it("the co-op board keeps each pair's best run, whichever seats they took", async () => {
