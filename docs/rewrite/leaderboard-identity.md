@@ -93,6 +93,10 @@ A run two players play together ([online co-op](network-coop.md)) is both player
   fewer signatures, or in the one-player envelope, is refused with its reason, so the game holds it until both players
   have signed. A one-player run may use the envelope too, with its one signer in seat 0, and when its replay records a
   key, that key signs; it needs no room.
+- In the game, each player signs the run for its seat once its end screen took the name, and sends the partner the
+  signature over the co-op session (`RUN_SIGNED`, [network co-op](network-coop.md) §6.2). A machine that holds both
+  queues the run in its outbox as this envelope, signers in seat order, under the payload's digest: both machines queue
+  the same file, and whichever uploads second gets `409`.
 - Each key's account is credited with its seat, and each takes its seat's name as its latest. The run lists under
   player one's account, and the co-op board keeps each pair's best run, whichever seats they took: two players
   rank as a team, apart from either one's runs with someone else.

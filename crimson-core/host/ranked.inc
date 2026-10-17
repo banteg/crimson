@@ -80,8 +80,27 @@ static std::string ranked_json_string(const char *text) {
   return out + "\"";
 }
 
+// An upload goes to the outbox under its payload's digest, and the host is
+// told. The native uploader runs on another thread: only a whole entry shows.
+// The web host also keeps a failed write out of its upload pass.
+static void ranked_queue(const uint8_t digest[32], const std::string &entry) {
+  mkdir("leaderboard", 0755);
+  mkdir("leaderboard/outbox", 0755);
+  std::string path = "leaderboard/outbox/" + hex(digest, 32) + ".json";
+  std::string temp = path + ".part";
+  if (FILE *fp = platform_fopen(temp.c_str(), "wb")) {
+    bool written = fwrite(entry.data(), 1, entry.size(), fp) == entry.size();
+    if (fclose(fp)) written = false;
+    if (!written || rename(temp.c_str(), path.c_str())) {
+      unlink(temp.c_str());
+      return;
+    }
+    host_leaderboard(HOST_LEADERBOARD_UPLOAD);
+  }
+}
+
 // The held run goes to the outbox under the name the end screen took, signed
-// over its digest and name (identity.py sign_run), and the host is told.
+// over its digest and name (identity.py sign_run).
 static void ranked_release() {
   if (ranked_held.empty())
     return;
@@ -97,24 +116,9 @@ static void ranked_release() {
   message.insert(message.end(), digest, digest + 32);
   message.insert(message.end(), name, name + strlen(name));
   identity_sign(identity, message.data(), message.size(), signature);
-  std::string entry = "{\"replay\": \"" + base64(zstd_pack(payload)) + "\", \"name\": " + ranked_json_string(name) +
-                      ", \"public_key\": \"" + hex(identity.public_key, 32) + "\", \"signature\": \"" +
-                      hex(signature, 64) + "\"}";
-  mkdir("leaderboard", 0755);
-  mkdir("leaderboard/outbox", 0755);
-  std::string path = "leaderboard/outbox/" + hex(digest, 32) + ".json";
-  // The native uploader runs on another thread: publish only a whole entry.
-  // The web host also keeps a failed write out of its upload pass.
-  std::string temp = path + ".part";
-  if (FILE *fp = platform_fopen(temp.c_str(), "wb")) {
-    bool written = fwrite(entry.data(), 1, entry.size(), fp) == entry.size();
-    if (fclose(fp)) written = false;
-    if (!written || rename(temp.c_str(), path.c_str())) {
-      unlink(temp.c_str());
-      return;
-    }
-    host_leaderboard(HOST_LEADERBOARD_UPLOAD);
-  }
+  ranked_queue(digest, "{\"replay\": \"" + base64(zstd_pack(payload)) + "\", \"name\": " + ranked_json_string(name) +
+                           ", \"public_key\": \"" + hex(identity.public_key, 32) + "\", \"signature\": \"" +
+                           hex(signature, 64) + "\"}");
 }
 
 // Runs waiting in the outbox, for the Profile tip.
@@ -150,12 +154,14 @@ void highscore_load_table_thunk(void);
 char *highscore_read_record(char *buffer, FILE *fp);
 void highscore_write_record(highscore_record_t *record, FILE *fp);
 }
-// A board: Survival's, or a quest's on either difficulty.
+// A board: Survival's, or a quest's on either difficulty, for one player or a
+// co-op pair.
 struct ScoresBoard {
   game_mode_id_t mode;
   int major, minor;
   unsigned char hardcore;
-  auto key() const { return std::tie(mode, major, minor, hardcore); }
+  int players;
+  auto key() const { return std::tie(mode, major, minor, hardcore, players); }
   bool operator<(const ScoresBoard &other) const { return key() < other.key(); }
 };
 // A board's run as the table reads it, and its id on the leaderboard ("" when
@@ -175,13 +181,16 @@ static bool scores_out, scores_out_quiet, scores_update_waiting;
 static char scores_request[64];
 static std::vector<char> scores_response;
 
-// One-player Survival and quests have a board; other tables have none.
+// Survival and quests have a board for one player and one for two, the co-op
+// pairs' (survival-coop, quests-coop, quests-hardcore-coop); other tables have
+// none.
 static bool scores_board(ScoresBoard &board) {
   bool quest = config_blob.game_mode == GAME_MODE_QUEST;
-  if (config_blob.player_count != 1 || (!quest && config_blob.game_mode != GAME_MODE_SURVIVAL))
+  int players = config_blob.player_count;
+  if (players < 1 || players > 2 || (!quest && config_blob.game_mode != GAME_MODE_SURVIVAL))
     return false;
   board = {config_blob.game_mode, quest ? quest_stage_major : 0, quest ? quest_stage_minor : 0,
-           (unsigned char)(quest && config_blob.hardcore)};
+           (unsigned char)(quest && config_blob.hardcore), players};
   return true;
 }
 // Asks for a board's runs; a quiet request shows no status and its failure
@@ -191,11 +200,12 @@ static void scores_send(const ScoresBoard &board, bool quiet) {
   scores_asked[board] = true;
   scores_out = true;
   scores_out_quiet = quiet;
+  const char *pair = board.players == 2 ? "-coop" : "";
   if (board.mode == GAME_MODE_QUEST)
-    snprintf(scores_request, sizeof scores_request, "{\"board\": \"%s\", \"quest\": \"%d.%d\"}",
-             board.hardcore ? "quests-hardcore" : "quests", board.major, board.minor);
+    snprintf(scores_request, sizeof scores_request, "{\"board\": \"%s%s\", \"quest\": \"%d.%d\"}",
+             board.hardcore ? "quests-hardcore" : "quests", pair, board.major, board.minor);
   else
-    snprintf(scores_request, sizeof scores_request, "{\"board\": \"survival\", \"quest\": \"\"}");
+    snprintf(scores_request, sizeof scores_request, "{\"board\": \"survival%s\", \"quest\": \"\"}", pair);
   host_leaderboard(HOST_LEADERBOARD_SCORES);
 }
 

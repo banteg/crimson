@@ -7,9 +7,12 @@
 // download is asked for again when the row is pinned again; two runs with the
 // same name and numbers keep their own ids. Update scores replaces the board's
 // runs whole. Nothing online is stored: the score table stays as it was, and
-// only the downloaded replay is new.
+// only the downloaded replay is new. Then the game starts again for two players:
+// the two players' table fetches the co-op pairs' Survival board, whose runs name
+// both players.
 //
 //   node crimson-core/checks/game_online.mjs <game directory> [game.wasm]
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { CORE } from "./engine.mjs";
@@ -20,8 +23,8 @@ const [directory, gameWasm = new URL("build/game/game.wasm", CORE).pathname] = p
 if (!directory) throw Error("usage: game_online.mjs <game directory> [game.wasm]");
 
 const requests = [];
-const run = bootGame(gameWasm, directory, 1, { leaderboard: true, requests });
-const { game } = run;
+let run = bootGame(gameWasm, directory, 1, { leaderboard: true, requests });
+let { game } = run;
 // game_state_id_t, HOST_LEADERBOARD_* (game/host_abi.h), DirectInput scancodes.
 const [STATISTICS_MENU, HIGHSCORES] = [4, 14];
 const [SCORES, REPLAY] = [3, 4];
@@ -175,4 +178,32 @@ waitFor("the return to the scores", () => game.game_state() === HIGHSCORES);
 if (!fs.readFileSync(table).equals(savedBoardRow())) throw Error("the score table changed");
 const replays = fs.readdirSync(path.join(directory, "replays"), { recursive: true }).filter((name) => name.endsWith(".crd"));
 if (replays.join() !== path.join("online", "r1.crd")) throw Error(`the replays are ${replays.join(", ")}`);
+
+// Two players: the game closes and starts again for two players, Show internet scores ticked.
+game.game_close();
+try {
+  run.frame(16);
+  throw Error("the game did not quit");
+} catch (error) {
+  if (!/the game quit/.test(error.message)) throw error;
+}
+game.game_exit();
+const change = "import sys; from pathlib import Path; from grim.config import load_crimson_cfg; " +
+  "c = load_crimson_cfg(Path(sys.argv[1]) / 'crimson.cfg'); c.gameplay.player_count = 2; " +
+  "c.profile.show_internet_scores = True; c.save()";
+execFileSync("uv", ["run", "--no-sync", "python", "-c", change, directory]);
+run = bootGame(gameWasm, directory, 1, { leaderboard: true, requests });
+game = run.game;
+while (run.clock < 15000) frame();
+click(STATISTICS);
+waitFor("the Statistics menu", () => game.game_state() === STATISTICS_MENU);
+click(HIGH_SCORES);
+waitFor("the two players' high scores", () => game.game_state() === HIGHSCORES && requests.length);
+const asked = text(game.game_scores_request());
+if (asked !== '{"board": "survival-coop", "quest": ""}') throw Error(`the two players' table asked for ${asked}`);
+answerScores([score("pair", "banteg & razenpok", 90000)]);
+for (let i = 0; i < 30; ++i) frame();
+click(ROWS[0]);
+for (let i = 0; i < 10; ++i) frame();
+if (requests.shift() !== REPLAY || text(game.game_replay_download()) !== "pair") throw Error("the pair's run is not on the table");
 console.log(JSON.stringify({ watched: 2 }));

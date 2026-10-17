@@ -6,8 +6,9 @@
 // machines' screens come to it the way the original starts a run, its fade to
 // gameplay, where game_state_set starts the run (coop_start_run). A run plays
 // the ranked profile for two players on neither player's save; its end saves
-// its replay as the client's runs do, and ranks nowhere yet. The next run waits
-// for both end screens to pass their name entries (RUN_SIGNED), and a run
+// its replay as the client's runs do, and ranks once the room attested it and
+// both players signed it (host/coop_ranked.inc). The next run waits for both
+// end screens to pass their name entries (RUN_SIGNED), and a run
 // comes to no screen while it changes, so a click that leaves the end screen
 // (Main Menu is Leave) wins over a run that arrives after it. A run of the
 // player's own, playing as the session opened (any mode, the tutorial too),
@@ -81,6 +82,8 @@ static const char *coop_why() {
     return line;
   case COOP_DIVERGED:
     return "The two games ran differently";
+  case COOP_UNATTESTED:
+    return "Co-op error: a run the room did not issue";
   default:
     return nullptr;
   }
@@ -182,7 +185,8 @@ static void coop_enter_run(const PortableConfig &config) {
 }
 
 // The Host's choice of run, which starts once the Guest can start one: a fresh
-// seed and the ranked profile for two players (ranked_spec).
+// seed, which the room's takes the place of (coop_seeded), and the ranked
+// profile for two players (ranked_spec).
 static void coop_latch(int mode, int major, int minor, int hardcore, int choice) {
   PortableConfig &config = coop_live.next;
   config = {};
@@ -252,8 +256,11 @@ static bool coop_start_run() {
   if (wire.seat == 0) {
     double rtt = wire.rtt >= 0 ? wire.rtt : COOP_RTT_GUESS_MS;
     int delay = std::clamp((int)ceil(rtt / 2 / COOP_TICK_MS) + 1, 1, COOP_DELAY);
+    coop_header = {};
+    coop_header.seat_keys = coop_room.next;
     started = game_coop_request(COOP_ASK_START, delay, 0, coop_live.choice, now);
   } else {
+    coop_header = coop_room.offered;
     // The offer stands unless the Host cancelled it or either side left; a
     // config this machine cannot start is a protocol error.
     bool offered = coop_live.offered && !wire.left && !wire.partner_left;
@@ -267,6 +274,7 @@ static bool coop_start_run() {
   live.replay.clear();
   live.pickers.clear();
   live_append(&cfg, sizeof cfg);
+  coop_held = {};
   live.aim_heading = player_state_table[wire.seat].aim_heading;
   coop_live.last = cfg;
   coop_live.session = wire.nonce;
@@ -285,11 +293,13 @@ static bool coop_start_run() {
 
 // The run is over at the state after its last confirmed tick (`outcome`:
 // "death", "quest_completed", or "incomplete" for a run left before its end):
-// its replay is saved and its high score record names it. It ranks nowhere yet.
-// The engine keeps the run for the session, which still exchanges its last
-// hashes, until the next starts.
+// its replay, the same on both machines, is saved and its high score record
+// names it, and one the board takes waits for both players' signatures
+// (host/coop_ranked.inc). The engine keeps the run for the session, which still
+// exchanges its last hashes, until the next starts.
 static void coop_end(const char *outcome) {
-  std::vector<uint8_t> payload = replay_payload(outcome);
+  std::vector<uint8_t> payload = replay_payload(outcome, coop_header);
+  coop_hold(payload, outcome);
   int number = replay_save(payload);
   memcpy(highscore_active_record.reserved0, &number, sizeof highscore_active_record.reserved0);
   game_live = game_session = false;
@@ -304,9 +314,10 @@ static void coop_quit() {
 }
 
 // A START_RUN inside the original: the Guest's screen comes to the run first
-// (game_coop_pump), which takes it there.
-static void coop_offer(const PortableConfig &config, int delay, int rmax, uint32_t epoch) {
+// (game_coop_pump), which takes it there once the room's word on it came.
+static void coop_offer(const PortableConfig &config, const ReplayHeader &header, int delay, int rmax, uint32_t epoch) {
   coop_live.next = config;
+  coop_room.offered = header;
   coop_live.delay = delay;
   coop_live.rmax = rmax;
   coop_live.epoch = epoch;
@@ -652,7 +663,8 @@ bool game_coop_pump() {
     if (wire.next_run == 2 && coop_live.ended)
       coop_setup();
     wire.next_run = -1;
-    if (coop_live.offered && !wire.left && !wire.partner_left && !coop_live.naming)
+    if (coop_live.offered && !wire.left && !wire.partner_left && !coop_live.naming &&
+        coop_room_check(coop_live.next, coop_room.offered) > 0)
       coop_enter_run(coop_live.next);
     return true;
   }
@@ -668,7 +680,7 @@ bool game_coop_pump() {
     wire.next_run = -1;
   }
   bool named = !coop_live.naming && (!wire.started || wire.partner_signed);
-  if (coop_live.latched && named && coop_can_start())
+  if (coop_live.latched && named && coop_can_start() && coop_seeded())
     coop_enter_run(coop_live.next);
   return true;
 }
@@ -727,13 +739,15 @@ bool game_coop_next_run(int choice) {
   return true;
 }
 // An end screen past its name entry (or with none), each pass it shows its
-// buttons: a co-op run's tells the partner, once (M3 signs its replay there).
+// buttons: a co-op run's signs the run with the name and tells the partner, once.
 void game_coop_end_ready() {
   if (!coop_live.naming)
     return;
   coop_live.naming = false;
-  if (coop_live.ended)
-    game_coop_request(COOP_ASK_SIGNED, 0, 0, 0, host_time_ms());
+  if (!coop_live.ended)
+    return;
+  coop_sign();
+  game_coop_request(COOP_ASK_SIGNED, 0, 0, 0, host_time_ms());
 }
 // The window's focus (game/frame.cpp): with a session on, the game plays on in
 // the background, this machine's records neutral, the presses so far dropped

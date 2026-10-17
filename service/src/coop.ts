@@ -156,6 +156,13 @@ export class CoopRoom extends DurableObject<Env> {
     const peer = this.socket(otherRole(role));
     server.send(JSON.stringify({ type: "peer", present: peer !== undefined }));
     peer?.send(JSON.stringify({ type: "peer", present: true }));
+    // The keys the seats proved before this socket came (its page reloaded, or took its seat after the other's
+    // proof), which the room issues seeds to.
+    const keys = await this.ctx.storage.get<string>([seatKey("host"), seatKey("guest")]);
+    for (const seat of ["host", "guest"] as const) {
+      const key = keys.get(seatKey(seat));
+      if (key !== undefined) server.send(JSON.stringify({ type: "key", role: seat, public_key: key }));
+    }
     await this.ctx.storage.setAlarm(room.created + LIFETIME_MS);
     return new Response(null, { status: 101, webSocket: client });
   }

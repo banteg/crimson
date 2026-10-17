@@ -30,7 +30,9 @@
 // Then over the room's relay: a guest page without WebRTC joins a new room,
 // both play a run through the room, and the guest's page closes, which the
 // host's game hears at once. The host's game quits (Alt+Q): its panel goes with
-// the room, offering no new room for a game that no longer runs. Screenshots of
+// the room, offering no new room for a game that no longer runs. Every page
+// proves its player's key to its room (a reloaded page the same key), and every
+// run plays a seed its room issued to the pair. Screenshots of
 // the pages (the cover, the invite, the menus connected, the runs, the
 // background, the desync, the pause, the end, the quit) go to the shots folder.
 //
@@ -99,6 +101,8 @@ execFileSync("npx", ["vite", "build"], { cwd: SERVICE, stdio: "ignore" });
 const port = await free();
 const state = fs.mkdtempSync(path.join(os.tmpdir(), "coop-browser-"));
 const wrangler = (...args) => ["wrangler", ...args, "--persist-to", state];
+// The rooms record the seeds they issue for ranked runs (coop_runs).
+execFileSync("npx", wrangler("d1", "migrations", "apply", "crimson-land", "--local"), { cwd: SERVICE, stdio: "ignore" });
 for (const name of ["crimson.paq", "sfx.paq", "music.paq"])
   execFileSync("npx", wrangler("r2", "object", "put", `crimson/${GAME_VERSION}/${name}`, "--local", "--file", path.join(assets, name)), {
     cwd: SERVICE,
@@ -496,6 +500,12 @@ try {
     [true, null, null],
   );
   await host.shot("quit");
+  // The rooms attested each pair: both pages proved their keys, and every run played a seed its room issued to them,
+  // each pair's keys its own (the relayed pages are new browsers, with keys of their own).
+  const query = wrangler("d1", "execute", "crimson-land", "--local", "--json", "--command", "SELECT seat0_key, seat1_key FROM coop_runs");
+  const issued = JSON.parse(execFileSync("npx", query, { cwd: SERVICE, encoding: "utf8" }))[0].results;
+  assert.equal(issued.length, 3, "a seed a run");
+  assert.equal(new Set(issued.map(({ seat0_key, seat1_key }) => `${seat0_key} ${seat1_key}`)).size, 2, "each pair's keys");
   console.log(`co-op in the browser: ok (screenshots in ${shots})`);
 } catch (error) {
   // Failed, whatever the diagnostics below do.

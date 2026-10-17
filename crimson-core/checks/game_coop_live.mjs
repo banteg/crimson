@@ -9,8 +9,13 @@
 // lowest detail, no gore, info texts or direction arrows, a pad on the pad
 // profile and a fresh save. Its frames stutter once; the Host's packets are lost
 // in a burst once. The system clocks follow the frames' clock, so the original's
-// own randomness, which they seed, comes out the same each time. Each session
-// opens on both machines as the transport opens one:
+// own randomness, which they seed, comes out the same each time. Both pages
+// offer ranked play, but for one start of the Guest's game, inside another
+// site's page as it were; once both pages take their seats in the room (Node's
+// stand-in for the service's, from the custom quest on), each proves its key on
+// its socket's challenge, which Node verifies, and the room issues the Host's
+// runs their seeds once both seats' keys stand. Each session opens on both
+// machines as the transport opens one:
 //
 // Runs alone. The Guest's machine is in the tutorial as a session opens: a
 // Survival run the Host starts waits for it until the Host gives up. Its game
@@ -27,8 +32,10 @@
 // with a session on, in the Host's seat,
 // its Play Again starts nothing, as co-op plays no custom quest; in the Guest's
 // seat its screen follows the Host's Survival run, and its score goes to the
-// two players' table. The Guest's game closes there, its save keeping the
-// unlocks, and starts again.
+// two players' table. That game started inside another site's page and proved
+// no key: the run played the Host's own seed, its replay names no seat's key,
+// and neither machine queues it. The Guest's game closes there, its save
+// keeping the unlocks, and starts again, on the site's page, and proves its key.
 //
 // Survival. The Host's menus start it and the Guest's screen follows into the
 // run. Both players move away from the nearest creature and shoot at it, the
@@ -100,6 +107,16 @@
 // saves the configuration), and which the Guest's Alt+Q quits (which saves it
 // too) and the Host's window closes.
 //
+// The first Survival run plays the room's seed, which reaches the Guest's page
+// after the Host's START_RUN: the Guest's screen comes to the run once it has.
+// Its replay records both seats' keys; once both players named it, each
+// machine queued the same upload, both signatures verifying as the service
+// verifies them, as for the first completed quest. A START_RUN whose header
+// names another key in the Guest's seat than the room recorded there is one the
+// Guest's game refuses, both sessions closing for it. Every run either machine
+// queued is one the service takes, and the Guest's machine holds each the
+// Host's does.
+//
 // Every tick either machine confirmed has the same state hash, bake digest and
 // terrain digest on both, and the engine with both seats local
 // (game_coop_start's solo mode, headless) gives the same for each tick from the
@@ -112,11 +129,12 @@
 //   node crimson-core/checks/game_coop_live.mjs <game directory> [game.wasm]
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import zlib from "node:zlib";
-import { Link } from "./coop_link.mjs";
+import { Link, prng } from "./coop_link.mjs";
 import { CONFIG_BYTES, CORE, field, init, INPUT_BYTES, names, state } from "./engine.mjs";
 import { loadGame } from "./game_compare.mjs";
 import { bootGame, INPUT, sevenTunes } from "./game_host.mjs";
@@ -143,6 +161,10 @@ const STATUS = {
 };
 // Why a session ended (CoopReason).
 const SILENT = 5, UNANSWERED = 6, LEFT = 7, PARTNER_LEFT = 8, DISCONNECTED = 9, PARTNER_GONE = 10, DIVERGED = 11;
+const UNATTESTED = 12;
+// Where START_RUN (CoopType 2) carries the Guest's seat key: after its type, epoch, delay, window, PortableConfig,
+// choice, header size and key count, past the Host's key.
+const GUEST_KEY = 1 + 4 + 2 + CONFIG_BYTES + 1 + 2 + 1 + 32;
 // The pad (game/host_input.h): A, Triangle, R2 and Start, the d-pad's up, right and down; the sticks from -1000 to
 // 1000.
 const PAD_SOUTH = 1, PAD_NORTH = 3, PAD_R2 = 7, PAD_START = 9, HAT_UP = 0, HAT_RIGHT = 9000, HAT_DOWN = 18000;
@@ -196,6 +218,7 @@ from crimson.gamepad_profile import apply_pad_profile
 from crimson.persistence.save_status import GameStatusData, save_status
 directory, seat = Path(sys.argv[1]), int(sys.argv[2])
 config = load_crimson_cfg(directory / "crimson.cfg")
+config.profile.set_player_name_input(("banteg", "Zo\u00eb")[seat])
 player = config.controls.players[0]
 if seat == 0:
     apply_detail_preset(config, 5)
@@ -251,9 +274,10 @@ const peers = [0, 1].map((seat) => {
   return Object.assign(peer, boot(peer, 0));
 });
 const [host, guest] = peers;
-// A machine's game starting, its first frame at `at`.
-function boot(peer, at) {
-  const run = bootGame(gameWasm, peer.directory, peer.seat + 1, { clocks: true });
+// A machine's game starting, its first frame at `at`, with the leaderboard on as the site's page has it, or
+// `leaderboard` "framed" as inside another site's page.
+function boot(peer, at, leaderboard = true) {
+  const run = bootGame(gameWasm, peer.directory, peer.seat + 1, { clocks: true, leaderboard });
   return { run, g: run.game, at: at + peer.seat * 3, last: at + peer.seat * 3 - 16, frames: 0, gone: false,
     held: new Set(), ticks: new Map(), top: -1, config: null, first: null, offered: -1 };
 }
@@ -289,14 +313,22 @@ class Machines extends Link {
     this.loss = LOSS;
     this.input = () => ({});
   }
-  // What `cut` names (a peer) never arrives.
+  // What `cut` names (a peer) never arrives; `forge` changes the Host's next START_RUN on its way.
   send(peer, channel, bytes) {
+    if (this.forge && peer === host && channel === 1 && bytes[0] === 2) {
+      bytes = this.forge(bytes);
+      this.forge = null;
+    }
     if (this.cut !== peer) super.send(peer, channel, bytes);
   }
-  // A START_RUN (CoopType 2) arriving notes when.
+  // A START_RUN (CoopType 2) arriving notes when, as does a seed from the room (channel "room").
   receive(peer, channel, bytes) {
     const { g, run } = peer;
     if (peer.gone) return;
+    if (channel === ROOM) {
+      peer.seeded = this.now;
+      return g.game_coop_room_seed(bytes);
+    }
     if (channel === 1 && bytes[0] === 2) peer.offered = this.now;
     const at = g.game_coop_rx(bytes.length);
     new Uint8Array(g.memory.buffer, at, bytes.length).set(bytes);
@@ -340,6 +372,7 @@ class Machines extends Link {
     for (const channel of [0, 1])
       for (let size; (size = g.game_coop_tx(channel, run.clock)) > 0; )
         this.send(peer, channel, new Uint8Array(g.memory.buffer, g.game_coop_tx_buffer(), size).slice());
+    if (g.game_coop_room_ask()) this.seed(peer);
     keep(peer);
     peer.last = peer.at;
     const pattern = FRAMES[peer.seat];
@@ -347,6 +380,16 @@ class Machines extends Link {
   }
   describe() {
     return peers.map((p) => ({ screen: screen(p), status: status(p).toString(16), confirmed: confirmed(p) }));
+  }
+  // The room's host asks for a run's seed: the room draws one in the bits rand reads, records it with the seats'
+  // keys and tells both pages, the guest's `room.delay` later.
+  seed(peer) {
+    assert.equal(peer.seat, 0, "a seed asked from the room's guest seat");
+    assert.ok(room.keys[0] && room.keys[1], "a seed asked before both seats proved their keys");
+    const seed = Math.floor(room.draw() * 2 ** 31);
+    room.seeds.push({ seed, keys: [room.keys[0], room.keys[1]] });
+    for (const p of peers)
+      this.flights.push({ at: this.now + (p === guest ? room.delay : 10), order: this.order++, to: p, channel: ROOM, bytes: seed });
   }
 }
 const machines = new Machines();
@@ -398,6 +441,84 @@ function connect(roles = [0, 1]) {
   }
   play(idle, () => peers.every((p) => status(p) & STATUS.connected), "the hello");
 }
+// The co-op room the machines' pages share (service/src/coop.ts), as it attests the pair for ranked runs: each
+// machine's page takes the room's seat of its network place (the Host's machine its host) and its game proves its
+// key on the socket's challenge, which the room checks as the service does; the room tells both pages each key it
+// recorded, and a page that comes later the keys before it, and issues the host seeds (Machines.seed). The service
+// later ranks an upload only on a seed the room issued to the keys its replay records.
+const ROOM = "room";
+const room = { id: "k3m9q2x7vt", keys: [], seeds: [], delay: 30, draw: prng(SEED + 1) };
+const SPKI = Buffer.from("302a300506032b6570032100", "hex");
+const verifies = (key, message, signature) =>
+  crypto.verify(null, message, crypto.createPublicKey({ key: Buffer.concat([SPKI, Buffer.from(key, "hex")]), format: "der", type: "spki" }), Buffer.from(signature, "hex"));
+const roomText = (peer, text) => Buffer.from(peer.g.memory.buffer).write(`${text}\0`, peer.g.game_coop_room_text(), "latin1");
+const told = (peer, seat) => (roomText(peer, room.keys[seat]), assert.equal(peer.g.game_coop_room_key(seat), 1));
+// A machine's page takes its seat: the keys the room holds, then its own proof, which the room tells both pages.
+// The key it proved, or null for none.
+function seated(peer) {
+  const challenge = crypto.randomBytes(32).toString("hex");
+  roomText(peer, room.id + challenge);
+  const at = peer.g.game_coop_prove(room.id.length);
+  const bytes = new Uint8Array(peer.g.memory.buffer, at);
+  const proof = Buffer.from(bytes.subarray(0, bytes.indexOf(0))).toString("latin1");
+  for (const seat of [0, 1]) if (room.keys[seat]) told(peer, seat);
+  if (!proof) return null;
+  const [key, signature] = proof.split(" ");
+  assert.ok(verifies(key, Buffer.from(`crimson-coop-seat-v1\n${room.id}${challenge}`), signature), "the key proof");
+  assert.ok([undefined, key].includes(room.keys[peer.seat]), "a seat's key changed");
+  room.keys[peer.seat] = key;
+  for (const p of peers) told(p, peer.seat);
+  return key;
+}
+// A machine's outbox (host/ranked.inc), entry by entry.
+const outbox = (peer) => {
+  const directory = path.join(peer.directory, "leaderboard", "outbox");
+  return fs.existsSync(directory) ? fs.readdirSync(directory).sort().map((name) => [name, fs.readFileSync(path.join(directory, name))]) : [];
+};
+// What a replay file's header records, as the Python port reads it.
+const HEADER = `
+import sys, json
+from pathlib import Path
+from crimson.replay.codec import load_replay
+r = load_replay(Path(sys.argv[1]).read_bytes())
+keys = [key.hex() for key in r.seat_keys] if r.seat_keys is not None else None
+print(json.dumps({"seat_keys": keys, "seed": r.run.seed, "players": r.run.player_count, "recorder": r.recorder.platform}))
+`;
+const header = (file) => JSON.parse(python(HEADER, file));
+// An outbox entry the service takes (service/src/runs.ts): named by its payload's SHA-256, the replay with both
+// seats' signers in order, each signing "crimson-coop-run-v1\n", the digest, its seat and its name in Latin-1 with the
+// key the replay records for its seat, which the room recorded, on a seed the room issued to those keys. Its replay
+// file and its signers' names.
+function uploadable([name, bytes]) {
+  const entry = JSON.parse(bytes.toString("utf8"));
+  assert.deepEqual(Object.keys(entry), ["replay", "signers"]);
+  const file = Buffer.from(entry.replay, "base64");
+  const digest = crypto.createHash("sha256").update(zlib.zstdDecompressSync(file)).digest();
+  assert.equal(name, `${digest.toString("hex")}.json`);
+  assert.deepEqual(entry.signers.map((signer) => Object.keys(signer)), [0, 1].map(() => ["seat", "name", "public_key", "signature"]));
+  assert.deepEqual(entry.signers.map((signer) => [signer.seat, signer.public_key]), [[0, room.keys[0]], [1, room.keys[1]]]);
+  for (const { seat, name: signed, public_key, signature } of entry.signers) {
+    const message = Buffer.concat([Buffer.from("crimson-coop-run-v1\n"), digest, Buffer.of(seat), Buffer.from(signed, "latin1")]);
+    assert.ok(verifies(public_key, message, signature), `seat ${seat}'s signature`);
+  }
+  const saved = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "crimson-upload-")), "run.crd");
+  fs.writeFileSync(saved, file);
+  const recorded = header(saved);
+  fs.rmSync(path.dirname(saved), { recursive: true });
+  assert.deepEqual(recorded.seat_keys, [room.keys[0], room.keys[1]]);
+  assert.equal(recorded.players, 2);
+  assert.ok(room.seeds.some(({ seed, keys }) => seed === recorded.seed && keys.join() === recorded.seat_keys.join()), "the room's seed");
+  return { file, names: entry.signers.map((signer) => signer.name) };
+}
+// The outbox entry for the run whose replay is `file`, on both machines alike.
+function queued(file) {
+  const [host_entries, guest_entries] = peers.map(outbox);
+  const entry = host_entries.find((each) => uploadable(each).file.equals(fs.readFileSync(file)));
+  assert.ok(entry, `no entry for ${file}`);
+  assert.ok(guest_entries.some(([name, bytes]) => name === entry[0] && bytes.equals(entry[1])), "the Guest's entry differs");
+  assert.deepEqual(uploadable(entry).names, ["banteg", "Zo\u00eb"]);
+}
+
 // The tables a machine's scores went to, and when each last took one; its newest replay.
 const tables = (peer) => {
   const kept = path.join(peer.directory, "scores5");
@@ -565,7 +686,7 @@ for (const peer of peers) peer.booted = 0;
 startup();
 // The Guest's game closes and starts again, its settings changed first (`change`, Python on `config`): what it
 // saved is its player's own from then on. The Host's transport says the partner left the room.
-function restart(change) {
+function restart(change, leaderboard) {
   guest.g.game_close();
   assert.throws(() => guest.run.frame(16), /the game quit/);
   guest.g.game_exit();
@@ -573,7 +694,7 @@ function restart(change) {
   guest.saved = python(SAVED, guest.directory);
   assert.equal(host.g.game_coop_disconnect(PARTNER_GONE), 1);
   machines.flights = machines.flights.filter((f) => f.to !== guest);
-  Object.assign(guest, boot(guest, time()), { role: 1, booted: time() });
+  Object.assign(guest, boot(guest, time(), leaderboard), { role: 1, booted: time() });
   startup();
 }
 // The Host's menus start Survival while the Guest's machine is busy with a run of its own: the Host gives up on
@@ -630,7 +751,8 @@ guest.g.game_activate(1);
 play(fight, () => screen(guest) !== GAMEPLAY, "the local run's end");
 settle(guest, QUEST_RESULTS);
 assert.equal(saved(guest).status.quest_unlock_index, 1, "the local run's unlock");
-restart("config.gameplay.player_count = 1");
+// It starts inside another site's page, as it were: it offers no ranked play.
+restart("config.gameplay.player_count = 1", "framed");
 
 // A run alone. The Guest's machine starts the second quest from its menus and plays it alone; two seconds in, a
 // session opens. The run plays on: the Host's Survival waits for it until the Host gives up on its start, and its
@@ -698,6 +820,10 @@ connect([1, 0]);
 settle(guest, QUEST_FAILED);
 tap(guest, key(ENTER));
 hold(1000, () => screen(guest) === QUEST_FAILED && !(status(guest) & STATUS.starting), "Play Again on a custom quest");
+// Both pages take their seats in the room, where the Guest's machine, inside another site's page, proves no key: the
+// pair is no ranked one, and its runs play their own seeds and queue nothing.
+assert.ok(seated(host), "the Host's key");
+assert.equal(seated(guest), null, "a key from inside another site's page");
 connect();
 click(host, MAIN_MENU, PLAY_GAME);
 click(host, PLAY_GAME_MENU, SURVIVAL);
@@ -709,9 +835,12 @@ const solo_tables = tables(guest);
 tap(guest, DOWN, A);
 play(idle, () => tables(guest).length > solo_tables.length, "the Guest's co-op score");
 assert.deepEqual(tables(guest), [...solo_tables, "survival_2.hi"].sort(), "the Guest's co-op table");
+assert.equal(header(newest(guest)).seat_keys, null, "seats' keys in an unattested run");
 restart();
+assert.ok(seated(guest), "the Guest's key, on the site's page");
 tap(host, key(ENTER));
 settle(host, MAIN_MENU);
+assert.deepEqual([room.seeds.length, ...peers.map((p) => outbox(p).length)], [0, 0, 0], "an unattested run ranked");
 assert.equal(JSON.parse(guest.saved).status.quest_unlock_index, 2, "the unlock the game saved as it closed");
 
 // A session, and in it a Survival run the machine in the Host's seat starts: it clicks Play Game, then Survival,
@@ -723,7 +852,13 @@ function survival(roles = [0, 1]) {
   click(starter, PLAY_GAME_MENU, SURVIVAL);
   play(idle, started, "the run's start");
 }
+// Both seats' keys stand: the Host's run plays the room's seed, which reaches the Guest's page after the Host's
+// START_RUN, and the Guest's screen comes to the run once it has.
+room.delay = 3000;
 survival();
+room.delay = 30;
+assert.equal(room.seeds.length, 1);
+assert.ok(guest.offered < guest.seeded, "the room's seed before the Host's start");
 
 // The Host's perk key asks for the first perk menu every half second until its perk screen picks; then the
 // Guest's Triangle for the next. The Guest pauses at tick 300 and the Host resumes a second later from the
@@ -793,6 +928,8 @@ still = true;
 play(player, () => peers.every((p) => screen(p) === GAME_OVER), "the team's death");
 still = false;
 const first = ended("death");
+const firstFile = newest(host);
+assert.deepEqual(header(firstFile), { seat_keys: [room.keys[0], room.keys[1]], seed: room.seeds[0].seed, players: 2, recorder: "web" });
 midpointAim();
 // The Guest's records in the background: no move, no buttons, no request.
 assert.ok(behind.to - behind.from > 60, `${JSON.stringify(behind)}`);
@@ -826,6 +963,9 @@ const waiting = () =>
 hold(1000, waiting, "the Host's name entry");
 tap(host, key(ENTER));
 play(idle, started, "the next run's start");
+// Each machine signed the run for its seat with its name and holds both signatures in the same entry.
+assert.equal(outbox(host).length, 1);
+queued(firstFile);
 assert.notEqual(scores(host), hostScores, "the Host's saved score");
 
 // Both players play to the next run's first level, where both ask for the perk menu on the same tick, each
@@ -1035,6 +1175,28 @@ settle(host, QUEST_SELECT);
 tap(host, key(NINE));
 settle(host, QUEST_SELECT, idle, 1000);
 
+// A forged header. A session opens while the Host's quest list shows, and its number key starts the first quest on
+// the room's seed, but its START_RUN reaches the Guest's machine with another key in the Guest's seat than the room
+// recorded: the Guest's game refuses the run, both sessions close for it, and the Host's machine goes to the menu.
+// Back at its own quest list, the session ends as the next opens.
+connect();
+settle(host, QUEST_SELECT);
+const issued = room.seeds.length;
+machines.forge = (bytes) => {
+  const forged = bytes.slice();
+  forged[GUEST_KEY] ^= 1;
+  return forged;
+};
+tap(host, key(ONE));
+play(idle, () => peers.every((p) => status(p) & STATUS.closed) && screen(host) === MAIN_MENU, "the refused run");
+assert.equal(machines.forge, null, "no START_RUN to forge");
+assert.equal(room.seeds.length, issued + 1, "the run's seed");
+assert.deepEqual(peers.map(reason), [UNATTESTED, UNATTESTED], "why the run was refused");
+assert.equal(screen(guest), MAIN_MENU);
+click(host, MAIN_MENU, PLAY_GAME);
+click(host, PLAY_GAME_MENU, OWN_QUESTS);
+settle(host, QUEST_SELECT);
+
 // Quests. A session opens while the Host's quest list shows, and its number key starts the first quest; both
 // players clear it. On the results (a few seconds reveal the final time first) the Guest's pad saves its name and
 // the Host's Enter its own. The Guest's pad opens the high scores, the third button, whose Play a game starts
@@ -1045,6 +1207,7 @@ tap(host, key(ONE));
 play(idle, started, "the first quest's start");
 play(player, () => peers.every((p) => screen(p) === QUEST_RESULTS), "the first quest's end");
 const quest = ended("quest_completed");
+const questFile = newest(host);
 settle(guest, QUEST_RESULTS, idle, 5000);
 tap(guest, DOWN, A);
 tap(host, key(ENTER));
@@ -1054,6 +1217,7 @@ click(guest, HIGHSCORES, PLAY_A_GAME);
 hold(1000, () => screen(guest) === HIGHSCORES && screen(host) === QUEST_RESULTS, "Play a game");
 tap(host, key(ENTER));
 play(idle, started, "the second quest's start");
+queued(questFile);
 // Both stand still until it fails; the Host's Tab and Enter press Play Another, the second button, and both
 // screens go to the quest list. A link to a replay of one player's run comes to the Host's: it waits for the
 // session's end, through its runs. The Host's key starts the first quest again, its key for the second as the
@@ -1127,4 +1291,11 @@ for (const peer of peers) {
   peer.g.game_exit();
   assert.deepEqual(saved(peer), JSON.parse(peer.saved), `machine ${peer.seat}'s save`);
 }
-console.log(JSON.stringify({ first, second, quest, failed, again, retry, stalled, desync: desync[0] }));
+// Every run either machine queued is one the service takes, and each the Host's machine queued the Guest's did too,
+// byte for byte: the Guest's has a run more, whose session ended before the Host heard its name.
+const entries = peers.map(outbox);
+for (const entry of entries.flat()) uploadable(entry);
+for (const [name, bytes] of entries[0])
+  assert.ok(entries[1].some(([other, them]) => other === name && them.equals(bytes)), `the Guest's ${name}`);
+const ranked = entries.map((each) => each.length);
+console.log(JSON.stringify({ first, second, quest, failed, again, retry, stalled, desync: desync[0], seeds: room.seeds.length, ranked }));

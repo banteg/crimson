@@ -20,6 +20,8 @@ struct Identity {
 };
 bool identity_load(Identity &identity);
 void identity_sign(const Identity &identity, const void *message, size_t size, uint8_t signature[64]);
+// Whether `signature` is the key's over the message: another player's (a co-op partner's run signature).
+bool identity_verify(const uint8_t public_key[32], const uint8_t signature[64], const void *message, size_t size);
 
 std::string hex(const uint8_t *data, size_t size);
 std::string base64(const std::vector<uint8_t> &data);
