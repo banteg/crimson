@@ -79,6 +79,12 @@ export class CoopRoom extends DurableObject<Env> {
   // reconnects cannot reset it.
   private ice?: { servers: Promise<IceServer[]>; at: number };
 
+  constructor(ctx: DurableObjectState, env: Env) {
+    super(ctx, env);
+    // Keepalives for idle sockets: the runtime answers them without waking the room or spending the seat's budget.
+    ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair("ping", "pong"));
+  }
+
   private async room(): Promise<Room | null> {
     const room = await this.ctx.storage.get<Room>("room");
     return room && Date.now() < room.created + LIFETIME_MS ? room : null;

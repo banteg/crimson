@@ -228,6 +228,17 @@ describe("co-op rooms", () => {
     await join(room.room_id, `role=host&token=${room.host_token}`);
   });
 
+  it("answers keepalive pings itself, past the message budget and without relaying them", async () => {
+    const { room, host, guest } = await pair();
+    for (let i = 0; i < 300; i++) guest.ws.send("ping");
+    for (let i = 0; i < 300; i++) expect(await guest.next()).toBe("pong");
+    guest.ws.send("after the pings");
+    expect(await host.next()).toBe("after the pings");
+    expect(host.pending()).toBe(0);
+    const answered = await runInDurableObject(stub(room.room_id), (_, state) => state.getWebSocketAutoResponseTimestamp(state.getWebSockets("guest")[0]!));
+    expect(answered).toBeInstanceOf(Date);
+  });
+
   it("closes a socket that sends a message passing for the room's own", async () => {
     for (const forged of [{ type: "peer", present: true }, { type: "seat", role: "host" }]) {
       const { host, guest } = await pair();

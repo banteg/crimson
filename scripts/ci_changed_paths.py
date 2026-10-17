@@ -130,6 +130,8 @@ SUITES = {
             "crimson-core/checks/assets.*",
             "crimson-core/checks/analytics.test.mjs",
             "crimson-core/checks/coop.test.mjs",
+            # coop.test.mjs runs the client against the room's protocol and limits, read from its source.
+            "service/src/coop.ts",
             "crimson-core/checks/audio.py",
             "crimson-core/checks/audio_timing.cpp",
             "crimson-core/checks/client_audio.cpp",

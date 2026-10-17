@@ -198,3 +198,8 @@ def test_client_and_pytest_suites_cover_audio_practice_and_build_backend() -> No
     ):
         assert relevant("client", [path]), path
     assert relevant("pytest", ["build_backend.py"])
+
+
+def test_client_suite_reruns_the_coop_transport_when_the_room_protocol_changes() -> None:
+    assert relevant("client", ["service/src/coop.ts"])
+    assert not relevant("client", ["service/src/runs.ts"])

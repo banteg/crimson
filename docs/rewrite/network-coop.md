@@ -968,7 +968,7 @@ are small JSON texts:
 | Message | When |
 | --- | --- |
 | `{type: "seat", role, guest_token?}` | First message on a new socket; `guest_token` only when the guest seat was just taken. |
-| `{type: "peer", present}` | Right after `seat`, with the other seat's state; then to the other seat whenever a seat joins (`true`) or leaves (`false`). A repeated `present: true` means the partner reconnected and the peer connection must be renegotiated. |
+| `{type: "peer", present}` | Right after `seat`, with the other seat's state; then to the other seat whenever a seat joins (`true`) or leaves (`false`). It reports the partner's socket, not its page: a repeated `present: true` may be the same page back after a network blip. |
 | `{type: "ice", ice_servers}` | Answer to a client's `{type: "ice"}`, which the server keeps from the partner. The guest asks once after joining; either side asks again before an ICE restart. Within ten seconds of the room's last TURN mint, both seats get that mint's servers. |
 
 Client message types therefore avoid `seat`, `peer` and `ice`: a client text
@@ -978,7 +978,9 @@ the socket with `1009`; more than 200 messages a second (a second's burst)
 closes it with `1008`. That budget belongs to the seat, so a reconnect
 inherits it. Nothing a closed socket still sends is relayed. Clients read the
 server's messages only from text frames, with a strict `JSON.parse`; binary
-frames are always the partner's.
+frames are always the partner's. The text `ping` is a keepalive: the runtime
+answers `pong` itself, without waking the room or spending the seat's
+budget.
 
 **Lifetime.** A room is deleted a minute after its last socket leaves (or a
 minute after it was made, if nobody joins) and in any case 12 hours after it
@@ -1008,32 +1010,72 @@ peers always read/write the same active transport.
 #### Client transport (`crimson-core/client/web/coop.js`)
 
 `createCoop()` is the page's side of the room, tested against a fake room
-and fake peer connections in `crimson-core/checks/coop.test.mjs`. It moves
-opaque bytes on channel 0 (ticks) and channel 1 (control) and knows nothing
-of the game. `host()` creates a room and `join(id)` takes a seat; either
-keeps its seat token in the tab's `sessionStorage` under the room id, so a
-reloaded page that joins its own room again takes its seat back (as host or
-guest). A guest without a stored token first asks the room's status and
-stops with "no such room" or "room full". Every time the room reports the
-partner present, the pages start a new *link*: the host names it, creates
-the peer connection with negotiated DataChannels `coop-ticks` (id 0,
-unordered, no retransmits) and `coop-control` (id 1, ordered) and sends the
-offer; the guest answers. Offers, answers and candidates are partner text
-messages carrying the link id, and messages of another link are stale.
-Candidates wait until their remote description is set. Both channels open
-means connected, and the selected candidate pair's local type (`host`,
-`srflx`, `prflx`, `relay-udp`, `relay-tcp`, `relay-tls`) is kept for
-telemetry. When the peer connection fails, or has not connected ten seconds
-into the link, the page that gives up sends
-`{type: "switch", link, transport_epoch}` (raising the epoch) and the other
-page answers with the same epoch; both then send binary room frames
-`[u8 channel][payload]` (telemetry `ws-relay`), relaying ticks at most 120
-times a second to stay inside the room's message budget. A lost room socket
-reconnects with backoff and the stored token, asking the room's status before
-each attempt; codes `4000`, `4001`, `1008` and `1009` end the session
-instead. Ticks drop when their channel (or the relay socket) is backed up;
-control messages never drop. Bytes that arrive before the game sets its
-handler wait in a bounded queue.
+(with the service's room ids, budget and size limit) and fake peer
+connections in `crimson-core/checks/coop.test.mjs`. It moves opaque bytes on
+channel 0 (ticks, best effort) and channel 1 (control) and knows nothing of
+the game. Its timings and budgets are constants at the top of `coop.js`; the
+room's limits are in `service/src/coop.ts`.
+
+**Seats.** `host()` creates a room and `join(id)` takes a seat, normalizing
+an id typed by hand the Crockford way (any case, spaces and hyphens, `I`/`L`
+for `1`, `O` for `0`). Either keeps its seat token in the tab's
+`sessionStorage` under the room id, so a reloaded page that joins its own
+room again takes its seat back; a page whose storage is blocked plays
+without that. A guest without a stored token first asks the room's status
+and stops with "no such room" or "room full". A lost room socket reconnects
+with backoff and the stored token, asking the room's status before each
+attempt, for as long as the page lives; a page that never got its seat gives
+up after a few attempts. The room's own closes (`4000`, `4001`, a reserved
+message type, an oversized message) end the session; a flood close
+reconnects. An idle socket pings the room now and then.
+
+**Partner and links.** Room presence is only signalling: after every
+`present: true` each page sends `{type: "hello", page}` with a nonce of its
+own, so the other page can tell the same page coming back from a new one
+(a reload, or a duplicated tab taking the seat). A new page ends the old
+one's link and control streams; the game hears `onpeer(true)` for a new or
+returning page and `onpeer(false)` when the partner's socket leaves. The
+host starts a *link* when it hears a hello and has no connected link: it
+names the link, creates the peer connection with negotiated DataChannels
+`coop-ticks` (id 0, unordered, no retransmits) and `coop-control` (id 1,
+ordered) and sends the offer; the guest answers. Offers, answers and
+candidates are partner text messages carrying the link id, and messages of
+another link are stale. Each page sends its candidates after its
+description and holds the partner's until the remote description is set. A
+connected WebRTC link keeps playing while either room socket is away. Both
+channels open means connected, and the selected candidate pair's local type
+(`host`, `srflx`, `prflx`, `relay-udp`, `relay-tcp`, `relay-tls`) is kept
+for telemetry.
+
+**Fallback.** A link that does not connect in time, fails, closes a channel,
+or stays disconnected past a short ICE restart by the host (on the same
+link id) moves to the relay, if the partner is there to hear it; otherwise
+it ends and the next hello starts another. The page that gives up sends
+`{type: "switch", link, transport_epoch}` (raising the epoch) before it
+relays anything; the other page adopts the higher epoch and replies with
+`reply: true`, and a switch without a reply goes again when the partner
+retakes its seat. The old peer connection keeps delivering until the reply
+comes or a moment passes. Relayed frames are binary room frames
+`[u8 channel][payload]` (telemetry `ws-relay`).
+
+**Room budget.** Every send on the room socket (signalling, keepalives,
+relayed control and ticks) takes from one client-side budget smaller than
+the room's. Ticks go only while a reserve is left and drop otherwise, or
+when the socket is backed up; signalling and control wait in order for the
+budget.
+
+**Control delivery.** Channel 1 is reliable end to end, over whichever
+transport is current. Each control frame is
+`[u32 from page][u32 to page][u32 seq][u32 ack][payload]`: the receiver
+delivers each sequence number once and in order, drops duplicates, and
+acknowledges cumulatively (on its own control frames, or in a short ack
+frame); the sender keeps every unacknowledged message and hands them all
+again to each new transport (a switch, a renegotiation, a relay socket
+reconnecting). `send(1, …)` accepts a message whenever the session is open
+and queues it until a transport exists; too many unacknowledged messages, or
+a message too large for the relay, are errors. Bytes that arrive before the
+game sets its handler wait in a bounded inbox that drops its oldest ticks
+first and ends the session rather than drop a control message.
 
 ### 6.2 Wire protocol & gap-repair guarantee
 
