@@ -1,6 +1,8 @@
 // Ed25519 through WebCrypto, and the byte helpers the protocol uses (docs/rewrite/leaderboard-identity.md).
 
 export const RUN_DOMAIN = new TextEncoder().encode("crimson-run-v1\n");
+// A co-op run's signature also binds the signer's seat (docs/rewrite/leaderboard-identity.md, "Co-op runs").
+export const COOP_RUN_DOMAIN = new TextEncoder().encode("crimson-coop-run-v1\n");
 export const LOGIN_DOMAIN = new TextEncoder().encode("crimson-login-v1\n");
 
 export function hex(bytes: Uint8Array): string {

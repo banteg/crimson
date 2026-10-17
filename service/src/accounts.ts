@@ -44,8 +44,8 @@ export async function linkIdentity(env: Env, accountId: number, sessionToken: st
   return { outcome: "linked" };
 }
 
-// Move the signed-in account's keys, runs, names and links into the confirmed account, in one transaction. The
-// request must come from the session and account that started it.
+// Move the signed-in account's keys, runs (its co-op seats too), names and links into the confirmed account, in one
+// transaction. The request must come from the session and account that started it.
 export async function confirmMerge(env: Env, accountId: number, sessionToken: string, token: string): Promise<number | null> {
   const request = await env.DB.prepare(
     `DELETE FROM merge_requests WHERE token_hash = ? AND session_hash = ? AND from_account = ? AND expires_at >= ?
@@ -60,6 +60,7 @@ export async function confirmMerge(env: Env, accountId: number, sessionToken: st
     env.DB.prepare("UPDATE keys SET account_id = ? WHERE account_id = ?").bind(into, from),
     env.DB.prepare("UPDATE custom_quests SET account_id = ? WHERE account_id = ?").bind(into, from),
     env.DB.prepare("UPDATE runs SET account_id = ? WHERE account_id = ?").bind(into, from),
+    env.DB.prepare("UPDATE run_players SET account_id = ? WHERE account_id = ?").bind(into, from),
     env.DB.prepare("UPDATE sessions SET account_id = ? WHERE account_id = ?").bind(into, from),
     env.DB.prepare("UPDATE login_links SET account_id = ? WHERE account_id = ?").bind(into, from),
     env.DB.prepare("UPDATE OR IGNORE links SET account_id = ? WHERE account_id = ?").bind(into, from),
@@ -71,9 +72,14 @@ export async function confirmMerge(env: Env, accountId: number, sessionToken: st
        ON CONFLICT (account_id, name) DO UPDATE SET first_at = min(first_at, excluded.first_at), last_at = max(last_at, excluded.last_at)`,
     ).bind(into, from),
     env.DB.prepare("DELETE FROM names WHERE account_id = ?").bind(from),
+    // The name of the account's latest run, from its own seat in a co-op one.
     env.DB.prepare(
-      "UPDATE accounts SET name = coalesce((SELECT name FROM runs WHERE account_id = ? ORDER BY accepted_at DESC LIMIT 1), name) WHERE id = ?",
-    ).bind(into, into),
+      `UPDATE accounts SET name = coalesce((
+         SELECT name FROM (
+           SELECT r.name, r.accepted_at FROM runs r WHERE r.account_id = ?1 AND NOT EXISTS (SELECT 1 FROM run_players p WHERE p.run_id = r.id)
+           UNION ALL SELECT p.name, r.accepted_at FROM run_players p JOIN runs r ON r.id = p.run_id WHERE p.account_id = ?1)
+         ORDER BY accepted_at DESC LIMIT 1), name) WHERE id = ?1`,
+    ).bind(into),
     // A moderator's bot mark and the stronger role go with the keys (docs/rewrite/bots.md): a merge neither moves a
     // bot's runs to the human boards nor loses a moderator or the admin.
     env.DB.prepare(
@@ -91,11 +97,17 @@ export async function unlink(env: Env, accountId: number, provider: ProviderName
 }
 
 // Delete an account and everything tied to it: runs with their replay and timeline files, names, links, keys and sessions.
-// The admin's account stays, since only the admin makes moderators; false when it is that one.
+// A co-op run stays while a partner's account does: the deleted player's seat loses its account, key and name, and
+// the run lists under the partner (migrations/0008_coop.sql). The admin's account stays, since only the admin makes
+// moderators; false when it is that one.
 export async function deleteAccount(env: Env, accountId: number): Promise<boolean> {
   const account = await env.DB.prepare("SELECT role FROM accounts WHERE id = ?").bind(accountId).first<{ role: string }>();
   if (account?.role === "admin") return false;
-  const { results } = await env.DB.prepare("SELECT id FROM runs WHERE account_id = ?").bind(accountId).all<{ id: string }>();
+  // A run listed under the account has no other account on it unless a partner's sits in a co-op seat.
+  const partner = (run: string) => `EXISTS (SELECT 1 FROM run_players p WHERE p.run_id = ${run}.id AND p.account_id != ?1)`;
+  const { results } = await env.DB.prepare(`SELECT id FROM runs WHERE account_id = ?1 AND NOT ${partner("runs")}`)
+    .bind(accountId)
+    .all<{ id: string }>();
   await env.DB.batch([
     env.DB.prepare(
       `UPDATE custom_quests SET
@@ -105,6 +117,16 @@ export async function deleteAccount(env: Env, accountId: number): Promise<boolea
          AND EXISTS (SELECT 1 FROM runs WHERE board = 'quests' AND quest = custom_quests.id AND account_id != ?)`,
     ).bind(accountId, accountId, accountId, accountId),
     env.DB.prepare("DELETE FROM custom_quests WHERE account_id = ? OR first_run_id IN (SELECT id FROM runs WHERE account_id = ?)").bind(accountId, accountId),
+    // Shared co-op runs listed under the account move to the partner, then its seats there are cleared; the runs left
+    // under it are its own.
+    env.DB.prepare(
+      `UPDATE runs SET public_key = '', name = '',
+         account_id = (SELECT p.account_id FROM run_players p WHERE p.run_id = runs.id AND p.account_id != ?1 ORDER BY p.seat LIMIT 1)
+       WHERE account_id = ?1 AND ${partner("runs")}`,
+    ).bind(accountId),
+    env.DB.prepare("UPDATE run_players SET account_id = NULL, public_key = '', name = '' WHERE account_id = ?1 AND run_id NOT IN (SELECT id FROM runs WHERE account_id = ?1)")
+      .bind(accountId),
+    env.DB.prepare("DELETE FROM run_players WHERE run_id IN (SELECT id FROM runs WHERE account_id = ?)").bind(accountId),
     ...["runs", "names", "links", "keys", "sessions", "login_links"].map((table) =>
       env.DB.prepare(`DELETE FROM ${table} WHERE account_id = ?`).bind(accountId),
     ),

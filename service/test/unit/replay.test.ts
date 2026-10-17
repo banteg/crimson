@@ -65,6 +65,14 @@ describe("a co-op run", () => {
     expect(sha256(runIdentity(transport))).toBe(vectors.coop_run.run_id);
     expect(vectors.coop_run.run_id).toBe(sha256(transport));
   });
+
+  it("ranks on the co-op board as Python's rules do; a co-op custom quest and a third player do not rank", () => {
+    expect([rankedBoard(replay.run), unrankedReasons(replay.run), outcomeReasons(replay.run, replay.result)]).toEqual(["survival-coop", [], []]);
+    const quest = decodeReplay(inflateReplay(base64(vectors.coop_run.quest_file))).run;
+    expect(unrankedReasons(quest)).toEqual(["custom_quest_players"]);
+    const trio = { ...replay.run, player_count: 3 };
+    expect([rankedBoard(trio), unrankedReasons(trio)]).toEqual([null, ["players"]]);
+  });
 });
 
 it("quest-dsl.json stays in sync with Python's weapon, bonus, perk and template tables", () => {

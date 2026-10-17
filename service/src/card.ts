@@ -1,15 +1,15 @@
 // A run's preview card, the image a shared link unfurls into: the run's ground as it ended (src/ground.ts), as the
-// run page's arena shows it, and the game's menu panel with the board, the player, the score and the run's
-// numbers in the game's small font. The raster layers are painted in src/raster.ts; resvg draws the rest over them.
+// run page's arena shows it, and the game's menu panel with the board, the player (a co-op run's two), the score and
+// the run's numbers in the game's small font. The raster layers are painted in src/raster.ts; resvg draws the rest over them.
 
 import { initWasm, Resvg } from "@resvg/resvg-wasm";
 import resvgModule from "@resvg/resvg-wasm/index_bg.wasm";
 import courierPrime from "../fonts/CourierPrime-Bold.ttf";
 import { formatScore } from "../web/src/format";
-import { playerLabel, playerParts } from "../web/src/names";
+import { DELETED_PLAYER, playerLabel, playerParts } from "../web/src/names";
 import { SIZE } from "../web/src/terrain/rules";
 import weaponData from "../web/src/weapons.json";
-import type { RunDetailView, Timeline } from "./api-types";
+import { BOARDS, type RunDetailView, type Timeline } from "./api-types";
 import type { Env } from "./http";
 import { decodePng, encodePng, type Pixels } from "./png";
 import { Canvas, paintImage, paintPanel, shrink } from "./raster";
@@ -32,7 +32,7 @@ export interface CardArt {
   ground: Pixels;
   // ui_wicons, as a data URL.
   weapons: string;
-  // The player's avatar as a data URL, when a linked account has one.
+  // The player's avatar as a data URL, when a linked account has one; a co-op run's card has none.
   avatar: string | null;
 }
 
@@ -127,7 +127,11 @@ function trail(detail: RunDetailView, timeline: Timeline): string {
 
 function cardSvg(detail: RunDetailView, timeline: Timeline, art: CardArt, background: string): string {
   const result = detail.result;
-  const quest = detail.board !== "survival";
+  const quest = BOARDS[detail.board].quests;
+  // A co-op run's players go on two lines, "A &" over "B".
+  const names = detail.team
+    ? detail.team.map((seat, i) => `${seat.player ? playerLabel(seat.player) : DELETED_PLAYER}${i + 1 < detail.team!.length ? " &" : ""}`)
+    : [playerLabel(detail.player)];
   const weapon = WEAPONS[result.most_used_weapon_id];
   const stats: [string, string][] = [
     quest ? ["quest time", formatScore(detail.board, result.elapsed_ms)] : ["survived", clock(result.elapsed_ms / 1000)],
@@ -148,7 +152,9 @@ function cardSvg(detail: RunDetailView, timeline: Timeline, art: CardArt, backgr
   ${text(RIGHT, TOP + 45, 2, "crimson.land", DIM, "end")}
   ${art.avatar ? `<image href="${art.avatar}" x="${LEFT}" y="${NAME_Y}" width="${AVATAR}" height="${AVATAR}" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/>` : ""}
   ${detail.rank ? number(RIGHT, NAME_Y + 46, 44, RIGHT - LEFT, `#${detail.rank}`, `rgb(${GOLD})`, "end") : ""}
-  ${text(art.avatar ? LEFT + AVATAR + 18 : LEFT, NAME_Y + 48, 3, playerLabel(detail.player))}
+  ${names.length > 1
+    ? names.map((name, i) => text(LEFT, NAME_Y + 28 + i * 40, 2, name)).join("")
+    : text(art.avatar ? LEFT + AVATAR + 18 : LEFT, NAME_Y + 48, 3, names[0]!)}
   ${text(LEFT, TOP + 219, 2, quest ? "final time" : "experience", DIM)}
   ${number(LEFT - 4, TOP + 307, SCORE_SIZE, RIGHT - LEFT, score, BLUE)}
   ${stats.map(([label, value], i) => {
@@ -202,6 +208,10 @@ async function fetchAvatar(link: string | null): Promise<string | null> {
 export async function runCard(env: Env, origin: string, id: string): Promise<Uint8Array | null> {
   const detail = await runDetailView(env, id, false);
   if (!detail?.timeline) return null;
-  const [art, avatar, ground] = await Promise.all([loadArt(env, origin), fetchAvatar(playerParts(detail.player).avatar), groundFor(env, origin, id)]);
+  const [art, avatar, ground] = await Promise.all([
+    loadArt(env, origin),
+    fetchAvatar(detail.team ? null : playerParts(detail.player).avatar),
+    groundFor(env, origin, id),
+  ]);
   return ground && renderCard(detail, detail.timeline, { ...art, avatar, ground: await decodeJpeg(ground) });
 }

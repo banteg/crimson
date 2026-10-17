@@ -3,7 +3,17 @@
 import type { SignalName, Signals } from "./signals";
 export type { SignalName, Signals };
 
-export type Board = "survival" | "quests" | "quests-hardcore";
+export type Board = "survival" | "quests" | "quests-hardcore" | "survival-coop" | "quests-coop" | "quests-hardcore-coop";
+// What each board ranks (docs/rewrite/ranked-rules.md): its mode, difficulty and team. A co-op pair ranks on boards
+// of its own.
+export const BOARDS: Record<Board, { quests: boolean; hardcore: boolean; players: 1 | 2 }> = {
+  survival: { quests: false, hardcore: false, players: 1 },
+  quests: { quests: true, hardcore: false, players: 1 },
+  "quests-hardcore": { quests: true, hardcore: true, players: 1 },
+  "survival-coop": { quests: false, hardcore: false, players: 2 },
+  "quests-coop": { quests: true, hardcore: false, players: 2 },
+  "quests-hardcore-coop": { quests: true, hardcore: true, players: 2 },
+};
 export type ProviderName = "github" | "discord" | "x";
 // docs/rewrite/bots.md: every board ranks human runs and bot runs apart.
 export type Category = "human" | "bot";
@@ -35,13 +45,24 @@ export interface PlayerView {
   bot: boolean;
 }
 
+// A co-op run's player in one seat: their account, and the name the run carries for them (their key's fingerprint
+// once a moderator hid the account's name). Both are null once the player deleted their account; the run stays their
+// partner's (docs/rewrite/leaderboard-identity.md, "Co-op runs").
+export interface SeatView {
+  player: PlayerView | null;
+  name: string | null;
+}
+
 export interface BoardRow {
   rank: number;
   run: string;
   score: number;
   elapsed_ms: number;
   most_used_weapon_id: number;
+  // The account the run lists under: player one's, or their partner's once player one deleted their account.
   player: PlayerView;
+  // A co-op run's players by seat, player one first; null for a one-player run.
+  team: SeatView[] | null;
   pilot: Pilot | null;
 }
 
@@ -62,10 +83,12 @@ export interface BoardTotals {
 }
 
 // A board row as the game's high score screen shows it: the run's id (its replay is /runs/<run>.crd), its own name
-// and the fields of a high score record.
+// and the fields of a high score record. A co-op run's name is its players' joined, "A & B", from `names`, by seat;
+// a deleted player's is "?".
 export interface GameScore {
   run: string;
   name: string;
+  names: string[];
   score: number;
   elapsed_ms: number;
   experience: number;
@@ -76,8 +99,9 @@ export interface GameScore {
   accepted_at: number;
 }
 
+// `players` counts the accounts with a run on each quest's board, or the pairs on a co-op one.
 export interface QuestMenuView {
-  board: "quests" | "quests-hardcore";
+  board: Exclude<Board, "survival" | "survival-coop">;
   category: Category;
   stage: number;
   quests: { quest: string; title: string; players: number }[];
@@ -125,6 +149,8 @@ export interface RunView {
   quest: string;
   category: Category;
   score: number;
+  // A co-op run's players.
+  team: SeatView[] | null;
   game_version: string;
   accepted_at: number;
   // Why the verifier no longer accepts the run, which has left the boards; null for a ranked run.
@@ -188,8 +214,10 @@ export interface RunDetailView {
   category: Category;
   pilot: Pilot | null;
   title: string;
+  // The name the run carries for player one, and their account (see BoardRow); a co-op run has both players in `team`.
   name: string;
   player: PlayerView;
+  team: SeatView[] | null;
   score: number;
   rank: number | null;
   accepted_at: number;
@@ -204,11 +232,14 @@ export interface RunDetailView {
     shots_fired: number;
     shots_hit: number;
     experience: number;
+    // Player one's health, and every player's, player one first.
     health: number;
+    healths: number[];
     pending_perks: number;
     most_used_weapon_id: number;
   };
   timeline: Timeline | null;
+  // The top run's name is its players' joined in co-op.
   top: { id: string; name: string; score: number } | null;
   best: { id: string; score: number } | null;
   // Only for moderators.
@@ -232,6 +263,7 @@ export interface FlaggedRun {
   score: number;
   accepted_at: number;
   player: PlayerView;
+  team: SeatView[] | null;
   signals: Signals;
   flagged: SignalName[];
 }

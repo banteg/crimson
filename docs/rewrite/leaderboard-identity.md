@@ -50,24 +50,54 @@ hex, except the replay, which is base64.
 
 | Endpoint | Body | Answer |
 | --- | --- | --- |
-| `runs` | `replay` (the `.crd` file), `name`, `public_key`, `signature` | 200 or 201 accepted, 409 already accepted, other 4xx refused with a `reason`, 5xx retried later |
+| `runs` | `replay` (the `.crd` file), `name`, `public_key`, `signature`; or for a [co-op run](#co-op-runs), `replay` and `signers` | 200 or 201 accepted, 409 already accepted, other 4xx refused with a `reason`, 5xx retried later |
 | `auth/challenge` | `public_key` | 200 with `challenge` (ASCII) |
 | `auth/login` | `public_key`, `challenge`, `signature` | 200 with `url`, a login link on the service's own host |
-| `scores` | `board`, `quest` (`"major.minor"`, empty for Survival) | 200 with `scores`: each account's best human run, up to 100, as the run's id (`run`), its name and a high score record's fields |
+| `scores` | `board`, `quest` (`"major.minor"`, empty for Survival) | 200 with `scores`: each account's (or co-op pair's) best human run, up to 100, as the run's id (`run`), its name, its players' `names` and a high score record's fields |
 
 The signatures cover byte strings that start with their purpose, so a run signature never passes as a login:
 
 - a run: `crimson-run-v1\n`, then the SHA-256 of the replay's uncompressed payload, then the name in Latin-1;
+- a co-op player's run: `crimson-coop-run-v1\n`, then the SHA-256 of the replay's uncompressed payload, then the
+  player's seat as one byte (0 for player one), then their name in Latin-1;
 - a login: `crimson-login-v1\n`, then the challenge.
 
 A refused run moves to `leaderboard/rejected/` with its reason, so it stops retrying but stays on disk. The game
 opens a login link only when it leads to the service's own host.
 
+## Co-op runs
+
+A run two players play together ([online co-op](network-coop.md)) is both players' and ranks on the co-op boards
+([ranked rules](ranked-rules.md)). Its upload carries every player's signature, each binding its seat:
+
+```json
+{
+  "replay": "<base64 .crd>",
+  "signers": [
+    {"seat": 0, "name": "banteg", "public_key": "<hex>", "signature": "<hex>"},
+    {"seat": 1, "name": "razenpok", "public_key": "<hex>", "signature": "<hex>"}
+  ]
+}
+```
+
+- The service takes the run only with one signer for each of its players, every seat from 0 (player one, the room's
+  host) once, a key of its own each, every signature verifying over its seat and name, and no key banned. A co-op
+  run sent with fewer signatures, or in the one-player envelope, is refused with its reason, so the game holds it
+  until both players have signed. A one-player run may use the envelope too, with its one signer in seat 0.
+- Each key's account is credited with its seat, and each takes its seat's name as its latest. The run lists under
+  player one's account, and the co-op board keeps each pair's best run, whichever seats they took: two players
+  rank as a team, apart from either one's runs with someone else.
+- A run is a bot run when either account is marked a bot, and leaves the boards when either is banned.
+- Deleting an account keeps the runs it shares with a partner, who earned them too: its seat loses its account, key
+  and name and shows as a deleted player, and the run lists under the partner. A run goes once nobody's account is
+  left on it. Joining accounts moves the joined account's seats along.
+
 ## Duplicates and stolen runs
 
 - A run's identity is the SHA-256 of its input stream (seed, settings and every tick's input) in the layout the
   service first verified, so recompressing a file or changing anything outside its play does not make it a new run,
-  and ids stay put when the verifier's stream changes (`runIdentity` in `service/src/transport.ts`). The service
+  and ids stay put when the verifier's stream changes (`runIdentity` in `service/src/transport.ts`); a co-op run's
+  stream holds both players' inputs and their count. The service
   accepts a run once; a second upload of the same run is rejected, whoever sends it.
 - Replays become public only after the service accepts them. A copied replay can only beat its owner if it leaves
   their machine before they upload it.
@@ -119,7 +149,8 @@ Signing in with a login another account has linked, matched by the provider's ac
 shows that account and asks before moving this key, its runs and its names into it, which is how a second computer
 joins. The question names both accounts and warns that the key moved in signs in to the joined account from then
 on, so a player signed in to someone else's account by mistake can tell. The move happens in one transaction once confirmed, from the session that asked. The profile unlinks a provider and deletes the account with its runs,
-replays, names, links, keys and sessions. `/privacy` and `/terms` say the same in plain words.
+replays, names, links, keys and sessions, keeping the [co-op runs](#co-op-runs) a partner shares without its name.
+`/privacy` and `/terms` say the same in plain words.
 
 ## In the game
 
@@ -136,7 +167,7 @@ replays, names, links, keys and sessions. `/privacy` and `/terms` say the same i
 - The high score screen's **Update scores** works as the original's did against `scores.crimsonland.com`
   ([online high scores](../crimsonland-exe/online-scores.md)): it sends the waiting runs, then receives the shown
   board, with the original's status lines under the buttons and Play a game disabled meanwhile. Only the verified
-  boards are received: one-player Survival and quests; in other modes it only sends. The received runs show in
+  boards are received: Survival and quests, for one player or a co-op pair; in other modes it only sends. The received runs show in
   green beside the local scores while **Show internet scores** is ticked, which a receive turns on; a local run the
   board holds turns green instead of showing twice. Unlike the original, received runs stay in memory for the
   session instead of joining the local high score files, and a board not yet received is fetched when the box is
@@ -150,7 +181,8 @@ its ground (`/runs/<run id>.ground.jpg`) and the replay refuse a hidden run and 
 is cached only briefly (`REPLAY_MAX_AGE_S` in `service/src/index.ts`), so hiding, bans and deletions take effect
 within that.
 
-While the service replays a run to verify it, crimson-core's `portable_probe` reads player one after every tick,
+While the service replays a run to verify it, crimson-core's `portable_probe` reads player one (in co-op too) after
+every tick,
 and the service keeps a timeline next to the replay (`runs/<id>.timeline.json` in R2, `service/src/timeline.ts`):
 
 - once a second, experience, level, health, kills and the damage creatures took (overkill excluded);
