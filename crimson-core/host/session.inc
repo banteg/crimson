@@ -558,13 +558,16 @@ int game_live_frame() {
 }
 // Drawn between ticks too (the perk menu, a paused replay), the world only draws,
 // with the run's settings, as its ticks see them; what drawing it changes in the
-// run waits for the next tick (game/changes/world-draw.patch).
+// run waits for the next tick (game/changes/world-draw.patch). Its animation
+// steps by the frame's time, as the original's frames draw it (bonus_render's
+// pulse): only a tick takes the run's time step.
 bool game_live_between_ticks() { return game_live && !game_ticking; }
 void gameplay_render_world_recovered();
 void gameplay_render_world() {
   if (!game_live || game_ticking)
     return gameplay_render_world_recovered();
   live_enter_run();
+  frame_dt = live.outside.frame_dt;
   gameplay_render_world_recovered();
   live_install(live.outside);
 }
