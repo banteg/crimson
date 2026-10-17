@@ -206,6 +206,29 @@ starting, a desync and different builds. The check prints
 each stream's rollbacks, repairs, round trips and costs; [network co-op](../docs/rewrite/network-coop.md)
 holds the design it checks.
 
+### Co-op sessions
+
+```sh
+node crimson-core/checks/game_coop_live.mjs <game directory>
+```
+
+Two originals boot from their own copies of a game directory and play co-op
+sessions through the live session ([`host/coop_live.inc`](host/coop_live.inc)),
+their messages carried over the rollback check's seeded pipe
+([`checks/coop_link.mjs`](checks/coop_link.mjs)) with a stutter and a lost
+burst, at 60 Hz against 144 Hz. The two differ in all a player sets: sound and
+music, in-game tunes, detail and gore, key bindings, mouse and keys against a
+pad, and saved progress. The Host's menus start Survival; both players open and
+pick perks, pause and resume each other, and one plays on in the background;
+the Guest's end screen starts the next run, where both ask for a perk menu on
+the same tick, and a leave from the pause banner ends it. Then a desync, a lost
+connection, and quests from the Host's quest list through the Guest's Play Next
+to a leave from the failed quest's screen. Every tick both machines confirm must
+have the same state hash and bake and terrain digests on both and from the
+engine replaying their records alone, both must save byte-identical replays
+that `crimson replay verify` accepts, the Host's menus must lose the session's
+unlocks when it ends, and neither player's settings or save may change.
+
 ### Original executable
 
 The oracles call the original code through Unicorn, using the ignored game

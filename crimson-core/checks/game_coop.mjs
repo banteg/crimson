@@ -61,6 +61,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
+import { Link, prng } from "./coop_link.mjs";
 import { CONFIG_BYTES, CORE, decode, field, init, INPUT_BYTES, names, record, state, step } from "./engine.mjs";
 import { loadGame } from "./game_compare.mjs";
 import { bootGame, sevenTunes } from "./game_host.mjs";
@@ -147,7 +148,6 @@ const ROLLBACK_COVERAGE = [
   "queued_commits",
   "unseen_bakes",
 ];
-const prng = (s) => () => ((s = (Math.imul(s ^ (s >>> 15), 0x2c1b3c6d) + 0x9e3779b9) | 0) >>> 0) / 2 ** 32;
 
 const plain = loadGame(wasm),
   solo = loadGame(wasm);
@@ -539,10 +539,10 @@ function prediction(run) {
   assert.ok(used().equals(unrequested(run.records[t])), "the record");
 }
 
-// (3): two peers, each a module playing its own seat, over a simulated pipe (the transport, client/web/coop.js):
-// channel 0 best effort, 40 ± 30 ms one way (reordering), 2 % loss and one burst of 12 packets in a row; channel 1
-// reliable and ordered over the same latency. One peer draws at 60 Hz, the other at 144 Hz with a 300 ms hitch,
-// each banking real time for its 60 ticks a second.
+// (3): two peers, each a module playing its own seat, over a simulated pipe (the transport, client/web/coop.js, as
+// coop_link.mjs plays it): channel 0 best effort, 40 ± 30 ms one way (reordering), 2 % loss and one burst of 12
+// packets in a row; channel 1 reliable and ordered over the same latency. One peer draws at 60 Hz, the other at
+// 144 Hz with a 300 ms hitch, each banking real time for its 60 ticks a second.
 // game_coop_status and game_coop_request (host/coop_wire.inc).
 const STATUS = {
   connected: 1,
@@ -604,15 +604,15 @@ const pipeCoverage = Object.fromEntries(PIPE_COVERAGE.map((n) => [n, 0]));
 // The Host's module and the Guest's.
 let host, guest;
 
-class Pipe {
+class Pipe extends Link {
   // `stream` is what requests() gives, `truth` its oracle(); `swap` makes the Host the fast peer.
   constructor(stream, truth, mode, { swap = false, faults = true, seed = 1 } = {}) {
+    super(stream.run.records.length * 7 + mode.delay * 131 + mode.rmax + seed);
     if (!host) {
       [host, guest] = [loadGame(wasm), loadGame(wasm)];
       for (const g of [host, guest]) g.game_coop_states(1);
     }
     this.mode = mode;
-    this.random = prng(stream.run.records.length * 7 + mode.delay * 131 + mode.rmax + seed);
     const duration = stream.ticks * TICK_MS;
     this.peers = [host, guest].map((g, seat) => ({
       g,
@@ -634,10 +634,6 @@ class Pipe {
     this.hitch = faults ? { peer: fast, from: duration * 0.6, to: duration * 0.6 + 300 } : null;
     this.burst = faults ? { from: 1 - fast.seat, at: duration / 3, left: 12 } : null;
     this.loss = faults ? 0.02 : 0;
-    this.now = 0;
-    this.flights = [];
-    this.order = 0;
-    this.ordered = [0, 0];
     this.tap = null;
     this.drop = null; // (peer, channel, bytes) => true to lose what it sends
     this.alter = null; // (peer, channel, bytes) => what arrives instead
@@ -660,16 +656,7 @@ class Pipe {
       this.unheard[q.seat] = Math.max(this.unheard[q.seat], q.g.game_coop_confirmed() - hashAck(bytes));
     }
     if (this.drop?.(p, channel, bytes)) return;
-    if (this.alter) bytes = this.alter(p, channel, bytes);
-    let at = this.now + 10 + 60 * this.random();
-    if (channel === 0) {
-      const burst = this.burst;
-      if (burst?.from === p.seat && this.now >= burst.at && burst.left > 0) return void burst.left--;
-      if (this.random() < this.loss) return;
-    } else {
-      at = this.ordered[p.seat] = Math.max(at, this.ordered[p.seat]);
-    }
-    this.flights.push({ at, order: this.order++, to: this.peers[1 - p.seat], channel, bytes });
+    super.send(p, channel, this.alter ? this.alter(p, channel, bytes) : bytes);
   }
   // A message arriving at `p` now.
   receive(p, channel, bytes) {
@@ -767,40 +754,15 @@ class Pipe {
     while ((size = g.game_coop_tx(1, this.now))) this.send(p, 1, sent(size));
     p.at += p.frameMs;
   }
-  // Frames and arrivals in time order until `done`; a stutter holds its peer's frames and arrivals.
-  until(done, what, limit = 600000) {
-    const deadline = this.now + limit;
-    while (!done()) {
-      const hitch = this.hitch;
-      let next = null;
-      for (const f of this.flights) if (!next || f.at < next.at || (f.at === next.at && f.order < next.order)) next = f;
-      const p = this.peers.filter((q) => !q.gone).reduce((a, b) => (b.at < a.at ? b : a));
-      const arrival = next && next.at < p.at ? next : null;
-      const at = arrival ? arrival.at : p.at;
-      if (at > deadline) {
-        const state = this.peers.map((q) => ({
-          status: this.status(q).toString(16),
-          produced: q.g.game_coop_produced(),
-          remote: q.g.game_coop_remote(),
-          next: q.g.game_coop_next(),
-          confirmed: q.g.game_coop_confirmed(),
-          checked: stats(q.g).checked,
-        }));
-        assert.fail(`${what}: not by ${Math.round(this.now)} ms ${JSON.stringify(state)}`);
-      }
-      this.now = at;
-      if (hitch?.peer === (arrival ? arrival.to : p) && at >= hitch.from && at < hitch.to) {
-        if (arrival) arrival.at = hitch.to;
-        else p.at = hitch.to;
-        continue;
-      }
-      if (arrival) {
-        this.flights.splice(this.flights.indexOf(arrival), 1);
-        this.receive(arrival.to, arrival.channel, arrival.bytes);
-      } else {
-        this.frame(p);
-      }
-    }
+  describe() {
+    return this.peers.map((q) => ({
+      status: this.status(q).toString(16),
+      produced: q.g.game_coop_produced(),
+      remote: q.g.game_coop_remote(),
+      next: q.g.game_coop_next(),
+      confirmed: q.g.game_coop_confirmed(),
+      checked: stats(q.g).checked,
+    }));
   }
   // At `ms` from now, in one instant (both players pressing at once, say).
   after(ms, what, act) {

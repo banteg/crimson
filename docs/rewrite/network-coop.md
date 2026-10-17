@@ -1281,7 +1281,7 @@ and messages, repairs and the records they carried, and the round trip.
      `coop_canonical_hash()`.
 
 4. **Status**: the engine, the two-peer wire protocol (Section 6.2) and their
-   gate have landed, headless; the live session (M1) is next.
+   gate have landed, headless; the live session is `M1`'s.
    `game_coop_start(-1, …)` runs the engine with both
    players local, the same derivation, capture and digests as a peer.
    `checks/game_coop.mjs` (CI's `game-coop` job) plays every `coop-*` stream of
@@ -1348,13 +1348,44 @@ and messages, repairs and the records they carried, and the round trip.
 
 1. **Files**: `service/src/coop.ts`, `service/src/index.ts`,
    `service/wrangler.jsonc`, `crimson-core/client/main.cpp`,
-   `crimson-core/client/web/shell.html`, `host/coop.inc`.
+   `crimson-core/client/web/shell.html`, `host/coop.inc`, `host/coop_live.inc`,
+   `checks/game_coop_live.mjs`.
 
 2. **Deliverable**: Playable `?coop=<room_id>` two-browser session using
    `coop-ticks` + `coop-control` over WebRTC + Cloudflare Realtime TURN (and WS
    fallback), with reliable `MSG_INPUT_REPAIR`, in-band whoever-opens-picks perk
    flow + partner `viewer_card` notice, input-frontier pause, and measured RTT /
    candidate-type / desync telemetry.
+
+3. **Status**: the game module's half has landed. `host/coop_live.inc` runs the
+   session inside the original over the `M0b` engine and wire protocol (Section
+   5): run setup from the menus and end screens, pause, leave, the partner's
+   pick card and the end screens. Its exports for the transport
+   (`game_coop_connect`, `game_coop_disconnect`, `game_coop_rx` and
+   `game_coop_receive`, `game_coop_tx` and `game_coop_tx_buffer`,
+   `game_coop_status`) are what `client/main.cpp`'s `client_coop_*` wrappers and
+   `client/web/coop.js` will call; the room service, the transport and the shell
+   are next.
+
+   Its gate, `checks/game_coop_live.mjs` (CI's `game-coop` job, on the
+   distributed game files), boots two originals from separate copies of a game
+   directory and plays them against each other over the `M0b` gate's seeded
+   pipe: loss, a burst of lost packets, a stutter, 60 Hz against 144 Hz. The
+   machines differ in all a player sets: sound and music, in-game tunes, detail,
+   gore and HUD options, key bindings, mouse and keys against a pad on the pad
+   profile, and saved progress. The sessions start Survival from the Host's
+   menus, open and pick perks from both seats (once on the same tick), pause
+   from each seat and resume from the other, play on with one window in the
+   background, start the next run from the Guest's end screen, leave from the
+   pause banner, desync, lose the connection, and play quests from the Host's
+   quest list through the Guest's Play Next to a leave from the failed quest's
+   Main Menu. Every tick both machines confirm must have the same state hash
+   and bake and terrain digests on both and from the engine replaying the
+   machines' records alone (not the music digest, which names the tracks each
+   machine loaded); both must save byte-identical replays that `crimson replay
+   verify` accepts as 2-player runs, each perk command its picker's; the Host's
+   menus must lose the session's unlocks when it ends; and neither player's
+   settings or save may change.
 
 ### Milestone `M2`: Bounded rollback in the browser prototype
 
