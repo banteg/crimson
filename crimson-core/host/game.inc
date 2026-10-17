@@ -58,36 +58,72 @@ void platform_headless_device();
 extern "C" void portable_reset_engine_data();
 extern "C" void portable_reset_simulation_data();
 extern "C" unsigned char grim_render_disabled;
-// Inside the original, a run keeps what it loaded (game.py's SESSION_KEEPS); the
-// verifier's setup still assigns its own music ids and volumes, which only
-// choose and voice the tracks. The run plays the tracks the original loaded, at
-// the player's volumes, saved before the reset.
-static struct {
+// The music tracks the run names, by audio_init_music's load order. A run
+// inside the original ticks with the verifier's (portable_init's), which tell
+// the end tunes from the in-game tune's request whatever the original loaded:
+// with sound or music off it loaded none, and its ids are all 0. Between ticks
+// the original's own are back (LiveSettings, host/session.inc).
+struct GameMusic {
   int intro, shortie_monk, crimson_theme, crimsonquest, game_playlist, extra_1, playlist_count;
   music_playlist_t playlist;
+};
+static GameMusic game_music() {
+  GameMusic music = {music_track_intro_id,        music_track_shortie_monk_id, music_track_crimson_theme_id,
+                     music_track_crimsonquest_id, music_track_game_playlist,   music_track_extra_1,
+                     music_playlist_entry_count,  {}};
+  memcpy(music.playlist, music_playlist, sizeof music.playlist);
+  return music;
+}
+static void game_music_install(const GameMusic &music) {
+  music_track_intro_id = music.intro;
+  music_track_shortie_monk_id = music.shortie_monk;
+  music_track_crimson_theme_id = music.crimson_theme;
+  music_track_crimsonquest_id = music.crimsonquest;
+  music_track_game_playlist = music.game_playlist;
+  music_track_extra_1 = music.extra_1;
+  music_playlist_entry_count = music.playlist_count;
+  memcpy(music_playlist, music.playlist, sizeof music_playlist);
+}
+// Inside the original, a run keeps what it loaded (game.py's SESSION_KEEPS),
+// and plays the tracks the original loaded, at the player's volumes, saved
+// before the reset.
+static struct {
+  GameMusic music;
   float music_volume, sfx_volume;
 } game_shell_audio;
 static void game_save_shell_audio() {
-  game_shell_audio = {music_track_intro_id, music_track_shortie_monk_id, music_track_crimson_theme_id,
-                      music_track_crimsonquest_id, music_track_game_playlist, music_track_extra_1,
-                      music_playlist_entry_count, {}, config_blob.music_volume, config_blob.sfx_volume};
-  memcpy(game_shell_audio.playlist, music_playlist, sizeof(music_playlist));
+  game_shell_audio = {game_music(), config_blob.music_volume, config_blob.sfx_volume};
 }
 static void game_run_ready() {
   if (!game_original)
     return;
-  auto &a = game_shell_audio;
-  music_track_intro_id = a.intro;
-  music_track_shortie_monk_id = a.shortie_monk;
-  music_track_crimson_theme_id = a.crimson_theme;
-  music_track_crimsonquest_id = a.crimsonquest;
-  music_track_game_playlist = a.game_playlist;
-  music_track_extra_1 = a.extra_1;
-  music_playlist_entry_count = a.playlist_count;
-  memcpy(music_playlist, a.playlist, sizeof(music_playlist));
-  config_blob.music_volume = a.music_volume;
-  config_blob.sfx_volume = a.sfx_volume;
+  config_blob.music_volume = game_shell_audio.music_volume;
+  config_blob.sfx_volume = game_shell_audio.sfx_volume;
 }
+// The original's track for one a tick names by the verifier's id: what a tick
+// plays, or changes the volume of, is the original's.
+static int game_shell_track(int id) {
+  if (!game_ticking || !game_original)
+    return id;
+  const GameMusic &shell = game_shell_audio.music;
+  return id == music_track_intro_id           ? shell.intro
+         : id == music_track_shortie_monk_id  ? shell.shortie_monk
+         : id == music_track_crimson_theme_id ? shell.crimson_theme
+         : id == music_track_crimsonquest_id  ? shell.crimsonquest
+         : id == music_track_game_playlist    ? shell.game_playlist
+         : id == music_track_extra_1          ? shell.extra_1
+                                              : id;
+}
+// The original's own track ids in place while it plays a track: the original's
+// music_play_exclusive takes a track equal to the in-game tune's request for the
+// request, and draws the tune, which inside a tick is the run's draw. Under a
+// tick's (the verifier's) ids a loaded track can be that request: with seven
+// in-game tunes loaded, the original's crimsonquest is the verifier's request.
+struct GameShellMusic {
+  GameMusic run = game_music();
+  GameShellMusic() { game_music_install(game_shell_audio.music); }
+  ~GameShellMusic() { game_music_install(run); }
+};
 static void game_reset_run_data() {
   if (game_original) {
     game_save_shell_audio();
@@ -96,7 +132,10 @@ static void game_reset_run_data() {
     portable_reset_data();
   }
 }
+static void coop_stop();
 static void game_init_run() {
+  // A run start ends a co-op run (host/coop.inc).
+  coop_stop();
   static bool booted;
   if (!booted && !game_original) {
     game_heap_strings = true;
@@ -151,9 +190,13 @@ char *game_version_label() {
     snprintf(label, sizeof label, "crimson.land %s", CRIMSON_GAME_VERSION);
   return label;
 }
+// A co-op session's line over the menus (host/coop_live.inc).
+static void coop_menus_draw();
 void ui_elements_update_and_render() {
-  if (!game_ticking)
-    ui_elements_update_and_render_recovered();
+  if (game_ticking)
+    return;
+  ui_elements_update_and_render_recovered();
+  coop_menus_draw();
 }
 }
 // The original's own startup (game/frame.cpp): no session, so the recovered RNG,

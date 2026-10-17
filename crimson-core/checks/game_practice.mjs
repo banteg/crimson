@@ -17,7 +17,7 @@ const requests = [];
 let run = bootGame(gameWasm, directory, 1, { leaderboard: true, requests });
 let { game } = run;
 const core = loadCore(coreWasm);
-const fields = names.map((n, i) => [n, i]).filter(([n]) => !PRESENTATION.has(n) && !/^players\[\d+\]\.input\./.test(n));
+const fields = names.map((n, i) => [n, i]).filter(([n]) => !PRESENTATION.has(n));
 function equal(a, b, label) {
   const off = fields.filter(([, i]) => a.readUInt32LE(i * 4) !== b.readUInt32LE(i * 4)).map(([n]) => n);
   assert.deepEqual(off, [], label);

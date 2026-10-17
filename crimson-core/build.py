@@ -139,8 +139,13 @@ def main():
     if a.target == "game":
         com_defaults(a.root, headers)
     schema = json.loads((HERE / "schema.json").read_text())
-    lines = []
+    # The snapshot's words, and the indices of those only presentation reads (schema.json's `presentation`), which a
+    # run inside the original may hold apart from the verifier's: a hash of its state leaves them out.
+    lines, presentation, words = [], [], 0
     for group in schema:
+        shown = [i for i, f in enumerate(group["fields"]) if f in group.get("presentation", [])]
+        presentation += [words + n * len(group["fields"]) + i for n in range(group["count"]) for i in shown]
+        words += group["count"] * len(group["fields"])
         lines.append(f'trace_init("snapshot {group["name"]}");')
         if group["source"]:
             lines.append(f"for(int i=0;i<{group['count']};++i) {{const auto &s={group['source']}[i];")
@@ -152,6 +157,7 @@ def main():
         else:
             lines.extend(f"put({f});" for f in group["fields"])
     (headers / "snapshot.inc").write_text("\n".join(lines) + "\n")
+    (headers / "presentation.inc").write_text(",".join(map(str, presentation)) + "\n")
     if wasm:
         sdk = wasi_sdk()
         c, cc = ([str(sdk / "bin" / tool), "--target=wasm32-wasip1"] for tool in ("clang", "clang++"))

@@ -258,22 +258,14 @@ static bool viewer_over_card(float x, float y) {
   return viewer.card > 0 && x >= box[0] && x < box[0] + box[2] && y >= box[1] && y < box[1] + box[3];
 }
 
-// The last pick's card, under the level-up prompt: the menu's offers, the
-// chosen one lit, and its description.
-static void viewer_card(float dt) {
-  if (watch.card >= 0 && !watch.paused)
-    watch.card_left -= dt;
-  bool in = watch.card >= 0 && watch.card_left > 0;
+// A perk pick's card, under the level-up prompt, sliding in while `in`: the
+// menu's offers under `header`, the chosen one lit (none while it is still
+// being picked). False once it slid away.
+static bool viewer_card(const WatchPick &pick, const char *header, bool in, float dt) {
   viewer.card = fminf(1.0f, fmaxf(0.0f, viewer.card + (in ? dt : -dt) * 5.0f));
-  if (viewer.card <= 0) {
-    if (!in)
-      watch.card = -1;
-    return;
-  }
-  const WatchPick &pick = watch.picks[watch.card];
-  const perk_meta_t &chosen = perk_meta_table[pick.offered[pick.chosen]];
-  char line[64];
-  float w = 0;
+  if (viewer.card <= 0)
+    return false;
+  float w = viewer_text_w(header);
   for (int i = 0; i < pick.count; ++i)
     w = fmaxf(w, viewer_text_w(perk_meta_table[pick.offered[i]].name));
   w += 28;
@@ -284,14 +276,26 @@ static void viewer_card(float dt) {
   float box[2] = {x, y}, back[4] = {0, 0, 0, 0.55f}, blue[4] = {0.27f, 0.51f, 0.86f, 0.9f};
   grim_interface_ptr->grim_draw_rect_filled(box, w, h, back);
   grim_interface_ptr->grim_draw_rect_filled(box, w, 2, blue);
-  snprintf(line, sizeof line, "Level %d", pick.level);
-  viewer_text(x + 12, y + 8, line, 0.5f, 0.75f, 1, 1);
+  viewer_text(x + 12, y + 8, header, 0.5f, 0.75f, 1, 1);
   for (int i = 0; i < pick.count; ++i) {
     bool lit = i == pick.chosen;
     viewer_text(x + 12, y + 26 + i * 15, perk_meta_table[pick.offered[i]].name, lit ? 1.0f : 0.62f, lit ? 1.0f : 0.64f,
                 lit ? 1.0f : 0.68f, lit ? 1.0f : 0.75f);
   }
   grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
+  return true;
+}
+// The last pick playback passed, for WATCH_PICK_SECONDS of play.
+static void viewer_watch_card(float dt) {
+  if (watch.card < 0)
+    return;
+  if (!watch.paused)
+    watch.card_left -= dt;
+  const WatchPick &pick = watch.picks[watch.card];
+  char header[16];
+  snprintf(header, sizeof header, "Level %d", pick.level);
+  if (!viewer_card(pick, header, watch.card_left > 0, dt) && watch.card_left <= 0)
+    watch.card = -1;
 }
 
 // The game over screen's panel, `offset` along from where the original puts it,
@@ -370,7 +374,7 @@ static void viewer_end(float dt) {
 static void viewer_draw(float dt) {
   if (watch.phase == WATCH_PREPARING)
     return viewer_preparing();
-  viewer_card(dt);
+  viewer_watch_card(dt);
   if (watch.phase == WATCH_ENDED)
     viewer_end(dt);
   else

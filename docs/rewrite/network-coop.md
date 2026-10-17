@@ -81,25 +81,22 @@ networking work on proving:
 
 2. **State & terrain rollback boundary — Uncompressed RAM ring + "Bake on Confirm" terrain**:
 
-   - Each `RollbackSlot` holds `game_run_spans` (`70` spans = **229,233 B**),
-     `KeyframeHost` (**~1.9 KiB**), and preallocated capacity for
-     `game_effect_overflow.entries` (up to `2,048 × 188 B` = **385,024 B**,
-     copying only the active `extent` prefix per tick). Audio state
-     (`sfx_cooldown_table`, DirectSound buffers, music fades) is completely
-     decoupled from rollback. Across 16 slots, resident memory is **3.7 MiB
-     base** (when `overflow_extent == 0`) and **9.8 MiB worst-case**
-     (preallocated once at session start, with zero per-tick `zstd` compression
-     and omitting `string_arena`, which is asserted invariant after
-     `portable_init`).
+   - Each `RollbackSlot` holds the run's raw state as keyframes hold it
+     (`game_run_spans`, `KeyframeHost`, and the active prefix of
+     `game_effect_overflow.entries`, up to `2,048 × 188 B` = **385,024 B**, with
+     its queued decals) plus the music volume and fade tables. Sound cooldowns
+     and DirectSound buffers stay out of rollback. The ring is allocated at the
+     first co-op start and kept, with no per-tick `zstd` compression and without
+     `string_arena`, which is asserted invariant after `portable_init`
+     (Section 4.1).
 
    - **Terrain render target (`terrain_render_target`, 1024×1024 RGBA8) — "Bake on Confirm"**:
-     During simulation ticks (`game_ticking == 1`), `fx_queue_render` consumes
-     and clears the live decal and corpse queues into an immutable per-tick
-     `CoopBakeSlot[tick % 16]` record without drawing to `terrain_render_target`.
-     Once rollback corrections for a frame finish and `confirmed_through`
-     advances, newly confirmed bake slots are rendered once in order into
-     `terrain_render_target` while preserving live simulation queues and Grim
-     state.
+     A tick that runs on both players' real inputs right after the last
+     confirmed one bakes into the terrain inside the tick, as a 1P run does. A
+     speculative tick moves its decal and corpse queues into a per-tick
+     `CoopBake[tick % 16]` record without drawing; once `confirmed_through`
+     reaches it, the record is drawn into `terrain_render_target` in order
+     (Section 4.2).
 
 3. **Signalling, transport & deployment — Cloudflare Worker + `CoopRoom` Durable Object + WebRTC DataChannels + Cloudflare TURN**:
 
@@ -257,15 +254,30 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     and set the latch, regardless of `music_ready`, `music_disabled`,
     `sound_disabled`, or `music_playlist_entry_count`; for any other track
     (`shortie_monk`, `crimsonquest`), clear the latch as the original's `else`
-    branch does. `music_fade_out_all` never touches the latch inside ticks.
+    branch does. Inside a co-op tick `music_fade_out_all` only clears the
+    latch, as the original's does with the verifier's music on and ready
+    (Section 4.3); its fade waits for the tick's confirmation.
 
   - **Playback half (local, gated by the peer's own audio settings)**: start the
-    in-game tune the first time the simulation half sets the latch, and do
-    nothing further during rollbacks or resimulations. Whether a tune is already
-    playing is read from the music tables in `SESSION_KEEPS` (`watch_playing()`
-    in `crimson-core/host/watch.inc`), which rollback never restores, so a
-    rollback that undoes and replays the first hit does not restart the tune.
-    Terminal tracks wait for the terminal barrier (Section 5.2).
+    in-game tune the first time the simulation half sets the latch; an in-game
+    tune already playing keeps playing. Whether one is playing is read from the
+    music tables in `SESSION_KEEPS` (`watch_playing()` in
+    `crimson-core/host/watch.inc`), which rollback never restores. In a co-op
+    tick every playback waits for the tick's confirmation (Section 4.3), so a
+    rollback that undoes and replays the first hit starts nothing twice.
+
+  - **Track ids (landed, every session)**: an original started with sound or
+    music off loads no music, so all its track ids are `0` and the end tunes
+    would pose as the in-game tune's request. Ticks run with the verifier's
+    distinct ids (`GameMusic` in `LiveSettings`, `crimson-core/host/game.inc`);
+    the playback half and the quest's in-tick volume write map them to the
+    original's loaded tracks (`game_shell_track`), and play them with the
+    original's own ids in place (`GameShellMusic`): the original's
+    `music_play_exclusive` takes a track equal to the in-game tune's request for
+    the request and draws a tune, and with seven in-game tunes loaded the
+    original's `crimsonquest` is the verifier's request.
+    `crimson-core/checks/game_session.mjs --silent` plays a run with both off,
+    and `--tunes` a quest with seven tunes loaded.
 
 #### 4. Complete 2-player input, camera & replay seams (`host.cpp`, `grim.inc`, `game.inc`, `session.inc`, `replay.inc`)
 
@@ -375,7 +387,8 @@ Safari JSC, Wasmtime, and native `wasm2c`:
   1. **During tick simulation and rollback resimulation (`game_ticking == 1`)**:
      `gameplay_render_world()` **must** run on every tick (with
      `ui_transition_alpha = 1.0f` forced during `game_ticking == 1` so local
-     `ui_elements_timeline` never skips `creature_render_all()`). `headless-effects.patch`
+     `ui_elements_timeline` never skips `creature_render_all()`; landed in
+     `crimson-core/game/changes/world-draw.patch`). `headless-effects.patch`
      already skips only `effects_render`'s vertex math when `grim_render_disabled == 1`.
 
   2. **Between ticks (`game_ticking == 0`)**: Guard all simulation writes inside
@@ -495,35 +508,53 @@ monotonically non-decreasing tick frontiers**:
 
 ### 4.1 Canonical rollback state vs. raw `RollbackSlot[16]`
 
+The engine is `crimson-core/host/coop.inc` (game module only; `core.wasm` stays
+import-free). Its ring of 16 slots is allocated at the first co-op start and kept
+for the module's life:
+
 ```text
-+--------------------------------------------------------------------------+
-| RollbackRing (16 preallocated slots in WASM linear memory, <= 9.8 MiB)   |
-|   slot[t & 15]:                                                          |
-|     - run_epoch: uint32, tick: int32 (state S[t] BEFORE executing t)     |
-|     - spans[229233]: raw memcpy of game_run_spans[0..69]                 |
-|     - host: KeyframeHost (1,940 B; no audio state)                       |
-|     - overflow_entries[2048]: preallocated; copies [0..overflow_extent)  |
-|     - canonical_hash_after: uint32 (hash after executing tick t)         |
-+--------------------------------------------------------------------------+
+slot[t & 15]: S[t], the state BEFORE executing tick t, tagged (run_epoch, tick)
+  - keyframes' raw codec (host/keyframes.inc run_state_write): game_run_spans,
+    KeyframeHost (with perk_picker and the overflow's queued decals), and
+    game_effect_overflow.entries[0..extent) with its queued decals
 ```
+
+Slot capture runs inside the run's surroundings (`CoopRun`): the run's settings
+(`live.run`) and the run's own copies of `game_state_pending`,
+`ui_elements_timeline` and `ui_transition_direction`, which only ticks change;
+the picker's perk screen and this machine's menus change the local copies. A
+restore asserts the slot's tag, keeps this machine's screen state, cursor, XP
+bar, settings and music (`run_restore`, which practice's retry shares), drops
+the music ticks from `t` on queued, and never draws gameplay RNG. `string_used` must equal its value at co-op start.
 
 #### Per-tick retention invariant
 
 - Slot `slot[n & 15]` stores state $S[n]$ **immediately before** executing tick
   $n$.
 
-- **Strict per-tick lead gate**: Before stepping any new speculative tick $n$ in
-  `M2`, assert:
-  $$n - (\text{confirmed\_through} + 1) < R_{\max} \le 12 < 16$$
-  Checking this **inside the per-tick loop** (rather than once per host frame)
-  guarantees that `slot[(confirmed_through + 1) & 15]` is never overwritten even
-  when a slow frame schedules multiple ticks. Every slot is tagged with
-  `(run_epoch, tick)` and asserted on restore.
+- **Per-tick gates** (`game_coop_advance`), checked before every tick $n$:
+  the local record for $n$ is published ($n \le$ `input_produced_tick`);
+  $n - (\text{confirmed\_through} + 1) < 12$ **and** (both records of $n$ are
+  real **or** $n - (\text{confirmed\_through} + 1) < R_{\max}$); with the perk
+  menu open, the picker's real record for $n$ is known; the run is not over
+  (`run_down_ms >= 0`); `game_paused_flag` is asserted clear. The cap of 12 keeps
+  `slot[(confirmed_through + 1) & 15]` alive however many ticks a frame runs.
 
 - When switching $R_{\max}$ from `8` to `4` in late-game Survival
   (`run_elapsed_ms > 900000`), new speculative ticks simply wait until
   `next_sim_tick - (confirmed_through + 1) < 4`; existing speculative history is
   never discarded early.
+
+- A late record is predicted from the seat's last real record before it: the
+  same axes, aim, held keys and schemes, with the press bits (`2`, `4`) cleared
+  and no perk request. A record that arrived out of order is used as it is.
+
+- **Correction**: before running ticks, the earliest unconfirmed executed tick
+  whose record is now known and differs from the one it ran on is restored and
+  run again. Ticks that run again are *quiet* ($t \le$ `heard`, the high-water of
+  executed ticks): they cost CPU but no pacing credit (`game_coop_advance`
+  returns new ticks only), play no sound and draw nothing; of a frame's ticks,
+  only the newest draws.
 
 #### Canonical cross-peer snapshot & hash (`coop_canonical_hash`)
 
@@ -531,128 +562,141 @@ monotonically non-decreasing tick frontiers**:
 omits `KeyframeHost` (`run_down_ms`, `perk_menu_open`, etc.),
 `telekinetic_bonus_hover_timer_ms[0..1]`, and `game_effect_overflow` (for
 example, mutating `run_down_ms` from `500` to `-1` or mutating `overflow_active`
-leaves all `36,343` words of `portable_snapshot()` identical while changing the
-next step from accepted to refused). Conversely, raw `game_run_spans` includes
-local `config_blob` display flags (`session.inc:115-119`), local audio volumes
-(`game.inc:88-89`), `ui_mouse_x/y`, and `bonus_render_anim_phase`.
+leaves every word of `portable_snapshot()` identical while changing the next
+step from accepted to refused). Conversely, raw `game_run_spans` includes local
+`config_blob` display flags, local audio volumes (`game_run_ready`),
+`ui_mouse_x/y`, and `bonus_render_anim_phase`.
 
-Therefore, **cross-peer desync hashes and `M0b` state comparisons** run over
-`coop_canonical_snapshot()`:
+Therefore, **cross-peer desync hashes and the `checks/game_coop.mjs` state
+comparisons** run over `coop_words()` (`game_coop_canonical`), taken inside the
+run's surroundings:
 
-1. `portable_snapshot()` (`36,343` `u32` words) with `PRESENTATION` indices
-   (`player_weapon_popup_timer`, weapon sound IDs) and `players[*].input.*`
-   zeroed (`crimson-core/checks/game_compare.mjs:10-17`).
+1. `portable_snapshot()` with the presentation fields
+   (`player_weapon_popup_timer`, weapon sound IDs, `players[*].input.*`) zeroed:
+   the `presentation` lists in `crimson-core/schema.json`, which `build.py` emits
+   for C (`presentation.inc`) and `checks/engine.mjs` reads. Its
+   `game_state_pending` is the run's own.
 
-2. Authoritative `KeyframeHost` fields: `rng`, `tick`, `menu_requested`,
+2. The session's fields, word by word: `rng`, `tick`, `menu_requested`,
    `perk_menu_open`, `perk_picker`, `running_down`, `run_down_ms`,
-   `overflow_active`, `overflow_extent`, and normalized `overflow_free` index
-   (`overflow_free ? int(overflow_free - game_effect_overflow.entries) : -1`).
-   (`music_latch` mirrors `music_playlist_randomized_latch`, which item 1
-   already hashes.)
+   `game_paused_flag`, `overflow_active`, `overflow_extent`, and the normalized
+   `overflow_free` index (`-1` null). (`music_latch` mirrors
+   `music_playlist_randomized_latch`, which item 1 already hashes.)
 
-3. `telekinetic_bonus_hover_timer_ms[0..1]` (`2 × int32`).
+3. `telekinetic_bonus_hover_timer_ms[0..1]` (`2 × int32`). Its data definition
+   holds element `0` alone; `crimson-core/game.py` (`PLAYER_ARRAYS`) widens its run
+   span, so run start resets both and keyframes keep both. Then the run's other
+   globals the snapshot leaves out that a tick reads: perk and weapon clocks
+   (Lean Mean Exp Machine's award, Man Bomb's, Fire Cough's and Hot Tempered's
+   intervals), update counters, the players' cursors, the screen and menu flags
+   a tick checks, Survival's first kill, the effect template spawns copy.
+   `game_coop_audit` holds this to every byte of `game_run_spans`: flipping a
+   byte must change the words unless `COOP_UNHASHED` (`host/coop.inc`) lists it
+   with its reason (padding, presentation, tables fixed at startup, globals no
+   tick reads), and a listed byte must not change them.
 
-4. Active `game_effect_overflow.entries[0..overflow_extent)` with each entry's
-   `next_free` pointer normalized to its pool index (`int(p - game_effect_overflow.entries)`
-   or `-1`/`-2` for null/`effect_discard_entry`) and quad vertex scratch omitted.
+4. The run's `LiveSettings`: the whole configuration less the player's own
+   display and audio choices, which the run carries only for drawing and playing
+   (`direction_arrow_flags`, `shadows_enabled`, `flame_glow_enabled`,
+   `smoke_enabled`, `ui_info_texts`, `sfx_volume`, `music_volume`: the one list
+   is in `coop_words`), then the status (weapon usage counts included), unlocks,
+   corpse fade, friendly fire, key codes and music track ids (the playlist up to
+   its count: the entries past it hold whatever tunes this machine's original
+   loaded, which no tick reads).
 
-Right after tick $t$ executes, its 32-bit FNV-1a / CRC32C `canonical_hash_after`
-is stored in `slot[t & 15]`. If tick $t$ is later resimulated,
-`slot[t & 15].canonical_hash_after` is overwritten with the corrected hash. A
-peer only transmits `state_hash = slot[T_h & 15].canonical_hash_after` on the
-wire once $T_h \le \text{confirmed\_through}$.
+5. Active `game_effect_overflow.entries[0..overflow_extent)`, field by field, with
+   each entry's `next_free` pointer normalized to its index (`-1`/`-2` for
+   null/`effect_discard_entry`) and quad vertex scratch omitted.
+
+The hash is xxHash32 over those words (`game_coop_hash`, which also works
+outside co-op): FNV-1a a word at a time carries a change only towards the high
+bits, so two sign flips cancel. Right after tick $t$ executes, its hash is kept in a
+256-tick ring (`game_coop_hash_at(t)`), overwritten if $t$ runs again; a peer
+only sends a tick's hash once it is confirmed, and keeps it apart from then
+until the partner acknowledged it and this peer compared the partner's, however
+far that falls behind.
 
 ### 4.2 Terrain boundary: safe "Bake on Confirm" contract
 
 In `decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp` and
-`crimson-core/game/effect_overflow.cpp:70-91`, `fx_queue_render()` draws queued
-decals and corpses into `terrain_render_target` and then clears `fx_queue_count = 0`,
-`game_effect_overflow.decal_count = 0`, and `fx_queue_rotated = 0` (unless
-`terrain_texture_failed != 0`, which `portable_init` forces to `0` at
-`crimson-core/host/host.cpp:454`).
+`crimson-core/game/effect_overflow.cpp`, `fx_queue_render()` draws queued
+decals and corpses into `terrain_render_target` and then clears `fx_queue_count`,
+`game_effect_overflow.decal_count` and `fx_queue_rotated` (unless
+`terrain_texture_failed`, which `portable_init` clears).
 
-To ensure delayed terrain baking never corrupts live simulation queues or misses
-resimulated bakes:
+1. **Final ticks bake in the tick**: a tick that runs on both players' real
+   records with every tick before it confirmed and baked (every `M1` lockstep
+   tick) bakes inside the tick as a 1P run does, so a corpse never blinks out
+   between its creature leaving the pool and the terrain taking it. Where the
+   module draws, it bakes with rendering on even when the tick does not draw (a
+   catch-up frame's earlier ticks, ticks run again after a correction), as a
+   replay's ticks do (`terrain.baking`).
 
-1. **Capture only during simulation ticks (`game_ticking == 1`)**:
-   Inside `fx_queue_render()`, when `coop_active`:
+2. **Held ticks hold their bake**: a tick run on a guess, or after a tick still
+   held, records `fx_queue[0..fx_queue_count)`,
+   `game_effect_overflow.decals[0..decal_count)` and
+   `fx_rotated_*[0..fx_queue_rotated)` into `bakes[tick & 15]` (tagged with
+   `run_epoch` and `tick`), clears the queues as the bake would and draws
+   nothing. A held corpse shows on the terrain only once confirmed.
 
-   - If `!game_ticking`, return immediately without touching queues or drawing.
+3. **Commit in tick order**: whenever `confirmed_through` moves (before the
+   frame's ticks and after each one), the held bakes it passed are drawn, tag
+   asserted, through the bake body `terrain_rebuild` uses (`terrain_bake`,
+   rendering on where the module draws, inside `live_enter_run()`), before any
+   later tick runs: bakes reach the terrain strictly in tick order. A held bake
+   is drawn before its slot comes round again (the lead cap of 12 is under 16).
+   What the queues hold between ticks for the next tick's bake (a Nuke taken
+   after the world drew queues its kills' blood) stays as it was. A rollback to
+   $t$ simply runs the ticks from $t$ again, which rewrite their records.
 
-   - Record `fx_queue[0..fx_queue_count)`,
-     `game_effect_overflow.decals[0..decal_count)`, and
-     `fx_rotated_*[0..fx_queue_rotated)` into `coop_bakes[tick & 15]` (tagged
-     with `run_epoch` and `tick`).
-
-   - Clear `fx_queue_count = 0`, `game_effect_overflow.decal_count = 0`, and
-     `fx_queue_rotated = 0` exactly as the executed bake path does, without
-     issuing GPU draw calls during speculative execution.
-
-2. **Strict correction-before-commit ordering on each frame**:
-
-   - **Step 1**: Ingest all received packets and update `remote_contiguous_tick`.
-
-   - **Step 2**: Find the earliest tick $t_{\text{diff}} \le \text{next\_sim\_tick} - 1$
-     where newly received remote input or control barriers differ from what was
-     used when $t_{\text{diff}}$ last executed.
-
-   - **Step 3**: If $t_{\text{diff}}$ exists, restore `RollbackSlot[t_diff & 15]`
-     and resimulate $t_{\text{diff}} \dots \text{next\_sim\_tick} - 1$, which
-     overwrites `coop_bakes[t & 15]` and `canonical_hash_after` for every
-     resimulated tick.
-
-   - **Step 4**: Advance `confirmed_through` to
-     $\min(\text{next\_sim\_tick} - 1, \text{remote\_contiguous\_tick})$.
-
-   - **Step 5**: For each newly confirmed tick $t \in (\text{baked\_through}, \text{confirmed\_through}]$,
-     assert `coop_bakes[t & 15].tick == t`, save any live queue state, copy
-     `coop_bakes[t & 15]` into the renderer staging arrays inside
-     `live_enter_run()` with `grim_render_disabled = 0`, call
-     `game_effects_render_decals()`, and restore live state. Assert in debug/test
-     builds that committing bakes leaves `coop_canonical_hash()` unchanged.
+4. **Digests**: every executed tick keeps a digest of its bake's decals and
+   corpses (`game_coop_bake_at(t)`), leaving out the corpses' alpha, which the
+   player's `cv_terrainBodiesTransparency` scales, and once it reached the
+   terrain a digest of every bake before it and its own in the order they did
+   (`game_coop_terrain_at(t)`).
 
 ### 4.3 Decoupled audio boundary: deterministic triggers, presentation-owned playback
 
-As `core.wasm` (`crimson-core/host/host.cpp:156-160`) already demonstrates by
-compiling `sfx_play` and `sfx_play_panned` as no-ops, **all gameplay RNG draws
-for sound effects occur in the caller before `sfx_play` / `sfx_play_panned` is
-entered** (weapon shot variant in `player_update_heading.cpp:1325`, creature
-death sound in `creature_apply_damage.cpp`, bleed drip in
-`player_update_heading.cpp:300`), and the first-hit tune draw belongs to the
-simulation half of `music_play_exclusive` (Section 2.2.3).
+As `core.wasm` already demonstrates by compiling `sfx_play` and
+`sfx_play_panned` as no-ops, **all gameplay RNG draws for sound effects occur in
+the caller before `sfx_play` / `sfx_play_panned` is entered** (weapon shot variant
+in `player_update_heading.cpp`, creature death sound in
+`creature_apply_damage.cpp`, bleed drip in `player_update_heading.cpp`), and the
+first-hit tune draw belongs to the simulation half of `music_play_exclusive`
+(Section 2.2.3).
 
 Inside `decomp/1.9/crimsonland/audio/sfx_play.cpp` and `sfx_play_panned.cpp`,
 nothing ever touches `crt_rand()` or simulation state (`sfx_entry_start_playback`
-uses C `rand()` for voice stealing). Therefore, **audio playback and cooldowns
-are 100% decoupled from rollback**:
+uses C `rand()` for voice stealing). Therefore:
 
-1. **Zero audio state in `RollbackSlot` or `coop_canonical_snapshot()`**:
-   `sfx_cooldown_table[128]`, `sfx_sample_rate`, DirectSound buffers
-   (`crimson-core/game/dsound.cpp`), and music fade/volume tables are
-   presentation-owned and are **never** snapshotted, restored, or hashed across
-   peers. Nothing needs excluding: `SESSION_KEEPS` (`crimson-core/game.py:321`)
-   already keeps `^sfx_` and the `^music_` track tables out of `game_run_spans`.
-   This also keeps the simulation boundary trivial to hand off to an
-   audio worklet or worker thread.
+1. **No sound state in `coop_canonical_snapshot()`**: `sfx_cooldown_table[128]`,
+   `sfx_sample_rate`, the music volume and fade tables and DirectSound buffers
+   (`crimson-core/game/dsound.cpp`) are presentation-owned, never snapshotted,
+   restored or hashed: a rollback never undoes music this machine played, which
+   would leave the tables apart from the buffers playing.
 
-2. **Each tick is heard once**:
-   `highest_heard_tick` is a presentation-side counter (never rolled back): the
-   highest tick whose sounds have played. During `game_ticking == 1`, if
-   `tick <= highest_heard_tick` (a resimulated tick), `sfx_play` and
-   `sfx_play_panned` return `-1` on entry, before touching
-   `sfx_cooldown_table` or DirectSound; no caller reads the return value.
-   Otherwise they play immediately and `highest_heard_tick = tick`. A sound that
-   first appears on a resimulated tick is lost, and a speculative sound that a
-   rollback removes has already played; both are accepted. Gating in `sfx_play`
-   itself (not in `sfx_entry_start_playback`) also keeps callers off live buffer
-   `0`. `sfx_cooldown_table` is aged once per rendered host frame by wall-clock
-   frame time on the presentation side.
+2. **Each tick is heard once**: `heard` is the high-water of executed ticks,
+   never rolled back (reset per run). Before each tick the engine takes
+   `quiet = t <= heard`; after it, `heard = max(heard, t)`. In a quiet tick the
+   game module's wrappers of `sfx_play` and `sfx_play_panned` return `-1` on
+   entry, before touching `sfx_cooldown_table` or DirectSound (no caller reads
+   the return value), and `game_audio_tick` skips cooldown aging: cooldowns age
+   by tick time inside each new tick (`game/audio_timing.cpp`), not again when
+   it runs again. A sound that first appears on a resimulated tick is lost, and
+   a speculative sound that a rollback removes has already played; both are
+   accepted.
 
-3. **Start-once music & terminal music gate**:
-   The playback half of `music_play_exclusive` starts the in-game tune once and
-   never rewinds or switches it on rollback (Section 2.2.3). Terminal music
-   (`shortie_monk` / `crimsonquest`) is gated by the terminal rollback barrier
-   (Section 5.2) so it plays only once team wipe is confirmed.
+3. **Music waits for confirmation**: in a co-op tick, `music_play_exclusive`
+   keeps its simulation half (the playlist latch and its draw). Everything it
+   plays waits: the in-game tune, the end tunes (`shortie_monk`,
+   `crimsonquest`), the fade-outs (`music_fade_out_all`, wrapped: in a tick it
+   only clears the latch, as the original does with music ready) and the quest's
+   end-tune volume write (`game_music_volume`) are queued with their tick, on the
+   original's track ids, and play in order once `confirmed_through` reaches it,
+   with the original's ids in place (Section 2.2.3); the in-game tune starts at
+   most once (a playing in-game tune keeps playing). A restore to $t$ drops queued
+   items with tick $\ge t$. Each confirmed tick keeps a digest of every tune
+   played up to it (`game_coop_music_at(t)`).
 
 ---
 
@@ -812,13 +856,19 @@ stays on the arena screen and sees the replay viewer's top-right pick card
 - **Leaving a run**:
 
   - The pause banner and the end screen offer **Leave**. Leaving sends
-    `MSG_LEAVE { run_epoch, last_tick: input_produced_tick }`, stops producing
-    input, and keeps the connection until `peer_ack_tick >= last_tick`, so the
-    partner holds every input the leaver published.
+    `MSG_LEAVE { last_tick: input_produced_tick }` and stops producing input.
+    The partner stops producing too and answers once with its own
+    `MSG_LEAVE`. A pending perk request, or the picker's open perk screen,
+    closes as a cancel.
 
-  - Both peers simulate through `last_tick` and stop there, so both replays end
-    on the same tick. The partner sees the end panel with "Player N left" and
-    returns to the menu; the session ends for both.
+  - Both peers run through `end_tick`, the lower of the two `last_tick`s, every
+    record of which both hold or repair. A peer whose predictions ran past it
+    goes back to the state after it. Both replays end on the same tick, in the
+    same state. A peer holding the partner's records and hashes through the end
+    (or either peer had no run) sends `CLOSE` on channel 1, and keeps sending
+    ticks packets until the partner's `CLOSE` arrives; then it closes. Both
+    return to the main menu, where the partner's co-op line says "Player N
+    left"; the session ends for both.
 
   - A left run is a quit: its replay is saved locally and it does not rank. A
     disconnect (Section 6.2 timeouts) ends the run the same way at the last
@@ -857,8 +907,10 @@ Online co-op follows the site's [ranked rules](ranked-rules.md): every run is a
 ranked attempt, recorded as a standard replay and verified by the service like
 any other.
 
-- **Run setup (Host)**: the Host picks Survival or **any** quest, normal or
-  hardcore, whatever either player's save has unlocked. The run plays the
+- **Run setup (Host)**: the Host picks Survival or **any** stock quest, normal
+  or hardcore: while a session is on, the menus show every quest unlocked, and
+  the player's own unlocks stay in the save. The Guest's menus start nothing;
+  its clicks wait for the Host's. The run plays the
   ranked profile with `player_count = 2` instead of `1`: a fresh seed the Host
   draws and the overlay save the ranked rules give that run's place in the game
   (every quest completed for Survival; for a quest, the save that has just
@@ -1079,79 +1131,138 @@ first and ends the session rather than drop a control message.
 
 ### 6.2 Wire protocol & gap-repair guarantee
 
-#### Preventing >8-tick burst-loss deadlocks
+The protocol lives in the game module
+([`host/coop_wire.inc`](../../crimson-core/host/coop_wire.inc)) over the
+engine ([`host/coop.inc`](../../crimson-core/host/coop.inc)); the transport
+([`client/web/coop.js`](../../crimson-core/client/web/coop.js)) moves its bytes
+on two channels. Channel 0 (`coop-ticks`, `ordered: false, maxRetransmits: 0`)
+is best effort. Channel 1 (`coop-control`) arrives once and in order, across
+transport switches too. Everything is little-endian. Each run is an epoch: the
+Host's run start increments it, and what belongs to another epoch is ignored.
 
-An unreliable packet carrying only the newest 8 ticks (`inputs[head_tick - 7 .. head_tick]`)
-will permanently deadlock `remote_contiguous_tick` if a burst of packet loss or a
-temporary stall drops 9 consecutive packets while later packets (`head_tick > lost_tick + 8`)
-keep arriving.
+#### Frontiers on the wire
 
-**Mandatory recovery rule**:
+- `remote`: the partner's records held without a gap. Records past it, out of
+  order, are kept and used as they are.
+- `peer_ack`: the highest `ack_tick` the partner sent, so the highest of this
+  peer's records it holds without a gap.
+- A tick waiting for a partner record that has not arrived runs on a guess: the
+  partner's nearest earlier real record, with its axes, aim and held keys, its
+  presses (flag bits 1 and 2) cleared, and no perk request. A record arriving
+  later, out of order, plays no part in the guess.
+- `confirmed`: the highest tick run on both peers' real records, as every tick
+  before it was.
 
-1. Each peer retains its produced `local_inputs[t]` in a 256-tick circular buffer
-   (4 seconds of history, **never** overwritten until `peer_ack_tick >= t`).
+A peer produces a record while `produced < next + delay`,
+`produced - peer_ack < 120`, and nothing holds it: a pause, a leave, its own
+perk request waiting for confirmation, or a desync or error.
 
-2. Whenever the sender sees `input_produced_tick - peer_ack_tick > 8`, or
-   receives a packet whose `ack_tick` has not advanced for 3 frames while
-   `ack_tick < input_produced_tick`, the sender immediately transmits
-   `MSG_INPUT_REPAIR { run_epoch, start_tick: peer_ack_tick + 1, count, inputs[] }`
-   over the reliable `coop-control` channel.
-
-3. If the remote advertises `head_tick > remote_contiguous_tick` and
-   `remote_contiguous_tick` still fails to advance for **5 seconds** despite
-   packet liveness (**progress timeout**: an unrepaired gap), or no packets
-   arrive for **15 seconds** (**liveness timeout**), the session aborts cleanly.
-   A peer that simply stops producing input (pause, perk menu barrier) advertises
-   no gap, so barriers of any length never trip the progress timeout.
-
-#### Channel 1: `coop-ticks` (`ordered: false, maxRetransmits: 0`, little-endian, 200 bytes at $W = 8$)
+#### Channel 0: the ticks packet (at most 216 bytes)
 
 | Offset | Type | Field | Description |
 | --- | --- | --- | --- |
-| `0` | `uint8` | `magic_ver` | `0xC3` (Crimson Co-op v3) |
-| `1` | `uint8` | `window_count` | Number of contiguous ticks in `inputs` ($1..8$) |
-| `2` | `uint8` | `flags` | Bit `0`: `has_hash` (`hash_tick` valid); Bit `1`: `is_focused` |
-| `3` | `uint8` | `reserved0` | `0` (4-byte alignment) |
-| `4` | `uint32` | `run_epoch` | Monotonic run counter (`1..N`); packets with `run_epoch != current` are dropped |
-| `8` | `uint32` | `ping_seq` | Monotonic sender packet sequence number |
-| `12` | `uint32` | `echo_ping_seq` | Highest `ping_seq` received from remote peer (`0` if none) |
-| `16` | `uint16` | `echo_hold_ms` | Milliseconds elapsed between receiving `echo_ping_seq` and sending this packet |
-| `18` | `uint16` | `reserved1` | `0` (4-byte alignment) |
-| `20` | `uint32` | `head_tick` | Highest tick index in `inputs` |
-| `24` | `uint32` | `ack_tick` | `remote_contiguous_tick` (`0xFFFFFFFF` sentinel when no tick $\ge 0$ received yet) |
-| `28` | `uint32` | `hash_tick` | Confirmed tick $T_h \le \text{confirmed\_through}$ for `state_hash` (valid iff `flags & 1`) |
-| `32` | `uint32` | `state_hash` | `slot[hash_tick & 15].canonical_hash_after` |
-| `36` | `uint32` | `cmd_packed` | 8×4-bit command nibbles (`0` = none, `1..7` = `PICK(0..6)`, `8` = `OPEN`) for `inputs[0..W-1]` |
-| `40` | `20B × W` | `inputs[W]` | $W$ `PortableInput` structs (`[head_tick - W + 1 .. head_tick]`) |
+| `0` | `uint8` | `magic_ver` | `0xC3` |
+| `1` | `uint8` | `window_count` | Records carried, `0..8`; `0` is a keepalive |
+| `2` | `uint8` | `flags` | Bit `1`: focused |
+| `3` | `uint8` | `hash_count` | Hashes carried, `0..4` |
+| `4` | `uint32` | `run_epoch` | The sender's epoch |
+| `8` | `uint32` | `ping_seq` | The sender's packet sequence, from `1` |
+| `12` | `uint32` | `echo_ping_seq` | The highest `ping_seq` the sender received (`0` none) |
+| `16` | `uint16` | `echo_hold_ms` | Milliseconds since it arrived |
+| `18` | `uint16` | | `0` |
+| `20` | `uint32` | `head_tick` | The sender's last record produced (`0xFFFFFFFF` outside a run) |
+| `24` | `uint32` | `ack_tick` | The sender's `remote` (`0xFFFFFFFF` outside a run) |
+| `28` | `uint32` | `hash_first` | The first tick whose hash it carries |
+| `32` | `uint32` | `hash_ack` | The newest tick up to which the sender holds every one of the receiver's hashes (`0xFFFFFFFF` none) |
+| `36` | `uint32` | `cmd_packed` | Each record's perk request, 4 bits, oldest in the low nibble (`0` none, `1..7` `PICK(0..6)`, `8` `OPEN`) |
+| `40` | `PortableInput[W]` | `inputs` | Records `head_tick - W + 1 .. head_tick` |
+| `40 + 20W` | `uint32[hash_count]` | `hashes` | `game_coop_hash_at(t)` (Section 4.1) for `t = hash_first ..` |
 
-*RTT calculation*: Upon receiving a packet echoing `echo_ping_seq == s`,
-$\text{RTT} = \max(0, t_{\text{recv}} - t_{\text{sent}}[s] - \text{echo\_hold\_ms})$.
-This requires no shared clock origin and never suffers 16-bit wraparound.
+- **Window**: the newest `min(8, produced - peer_ack)` records, the ones the
+  partner has not acknowledged.
+- **Pacing**: at most one packet a frame and 60 a second. A packet with a new
+  record goes as soon as it is produced; a keepalive waits for a second
+  packet's credit. Outside a run, and once the run is over, keepalives still
+  carry pings and hashes.
+- **Round trip**: on a packet echoing `s`,
+  $\text{RTT} = \max(0, t_{\text{recv}} - t_{\text{sent}}[s] - \text{echo\_hold\_ms})$,
+  smoothed by 1/8. The gaps in the partner's `ping_seq` count its losses, and
+  their spacing gives its packet interval. Packets of another epoch still feed
+  both.
+- **Hashes**: each packet reports the hashes of up to 4 consecutive confirmed
+  ticks the partner can confirm too (no later than its last `ack_tick`) and has
+  not acknowledged in `hash_ack`, from the oldest that never left or stayed
+  unacknowledged a round trip plus two of the partner's packet intervals after
+  it last left. The receiver compares each one when it confirms that tick, or at
+  once if it already has. On a mismatch it sends `DESYNC` once and stops.
+- **Validation**: every record must pass `portable_input_valid` (the rule
+  `portable_step_many` applies), with a request of at most `8`. Its tick must lie
+  within `remote + 120`. A record differing from one already held for its tick
+  is an error too. So are a malformed packet, an `ack_tick` past the receiver's
+  produced records, a hash of a tick past its `remote`, and a `hash_ack` past
+  its `confirmed`. Any of these sends
+  `ERROR` and stops both peers.
 
-*Remote input prediction rule*: When predicting missing remote input for tick
-$t > \text{remote\_contiguous\_tick}$, always copy the `PortableInput` from the
-highest received tick $t_{\text{src}} \le t$ (specifically
-`remote_contiguous_tick`), **never** from a future tick $> t$. A predicted tick
-always carries `cmd = 0`: copying an `OPEN` or `PICK` nibble would repeat a perk
-command the remote never sent.
+#### Gap repair
 
-#### Channel 2: `coop-control` (`ordered: true`, reliable)
+The window repeats each record on every packet until it is acknowledged. A
+burst of losses can still outlast the window: a peer far enough ahead (rollback,
+a longer delay) has more than 8 records unacknowledged. A record that has left
+the window, and stays unacknowledged a round trip plus two of the partner's
+packet intervals after it last left, goes again in `INPUT_REPAIR` on channel 1.
+Each repair starts at `peer_ack + 1`, and a record goes at most once a round trip.
 
-Per [RFC 8831 Section 6.3](https://www.rfc-editor.org/rfc/rfc8831.html#section-6.3),
-delivery ordering across two separate WebRTC DataChannels (`coop-ticks` and
-`coop-control`) is not guaranteed. Therefore, every message on both channels
-carries `run_epoch` (`uint32`), and tick `0` inputs for `run_epoch` are gated
-until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
+#### Channel 1: messages
 
-- `MSG_HELLO`: `{ type: "hello", protocol_ver: 3, build_id: string, role: 0 | 1 }`
-- `MSG_START_RUN`: `{ type: "start", run_epoch: number, player_count: 2, delay_ticks: number, config_b64: string, quest_b64?: string, replay_header_b64: string }`
-- `MSG_START_ACK`: `{ type: "start_ack", run_epoch: number }`
-- `MSG_INPUT_REPAIR`: `{ type: "repair", run_epoch: number, start_tick: number, cmds_b64: string, inputs_b64: string }`
-- `MSG_PAUSE`: `{ type: "pause", run_epoch: number, pause_seq: number, paused: boolean }`
-- `MSG_LEAVE`: `{ type: "leave", run_epoch: number, last_tick: number }`
-- `MSG_NEXT_RUN`: `{ type: "next_run", run_epoch: number, choice: "again" | "next" | "setup" }` (Guest to Host)
-- `MSG_RUN_SIGNED`: `{ type: "run_signed", run_epoch: number, name: string, public_key: string, signature: string }`
-- `MSG_DESYNC`: `{ type: "desync", run_epoch: number, tick: number, local_hash: number, remote_hash: number, snapshot_b64?: string }` (exchanges compressed `coop_canonical_snapshot()` at `tick` so both peers log the exact first differing `schema.json` / host / overflow field).
+Each message is `u8 type, u32 epoch, payload`. `HELLO`, `LEAVE`, `ERROR` and
+`CLOSE` belong to the session and skip the epoch check. `START_RUN` must name a
+later epoch than the receiver's. Every other message of another epoch is ignored.
+
+| Type | Message | Payload | Rule |
+| --- | --- | --- | --- |
+| `1` | `HELLO` | `u16 protocol (1), u8 len, build[len], u8 answer` | On connect (`answer` 0), and in answer to one with `answer` 0 (`answer` 1), so a hello that arrived before the partner connected comes again; a different protocol or build (`replay_client_version`) is an error |
+| `2` | `START_RUN` | `u8 delay, u8 rmax, PortableConfig, u8 choice, u16 header_len, header` | Host only, once the last run is over on both peers (the Host compared the Guest's hashes up to its last tick) or none started. The Guest runs `portable_init` with the config and starts its seat; one that left ignores it |
+| `3` | `START_ACK` | | The Guest started. Until then the Host's run neither produces nor runs, and it gives up after 10 s |
+| `4` | `START_CANCEL` | | Host to Guest, when it gives up: a Guest that started the run stops it |
+| `5` | `INPUT_REPAIR` | `u32 start_tick, u16 count, count × (PortableInput, u8 request)` | Gap repair |
+| `6` | `PAUSE` | `u32 pause_seq, u8 paused` | `pause_seq` is one past the highest seen. The highest wins, the Host's on a tie, and neither peer produces while paused |
+| `7` | `LEAVE` | `u32 last_tick` | Section 5.2 |
+| `8` | `NEXT_RUN` | `u8 choice` (`0` again, `1` next, `2` setup) | Guest to Host; the first one per epoch is kept for the next run |
+| `9` | `RUN_SIGNED` | | Milestone M3 |
+| `10` | `DESYNC` | `u32 tick, u32 local_hash, u32 remote_hash` | Sent once; both peers stop |
+| `11` | `ERROR` | `u8 code` | A protocol error; both peers stop |
+| `12` | `CLOSE` | | Once each, after `LEAVE` both ways: the sender holds the receiver's records and hashes through the run's end (Section 5.2). A peer closes once it sent its own and the partner's arrived |
+
+Ticks packets of the new epoch are taken only once the run started on the
+receiving peer: on the Guest from `START_RUN`, on the Host from `START_ACK`. Each
+peer seeds ticks `0 .. delay - 1` with neutral records.
+
+#### Timeouts
+
+- **Progress**: 5 s without `remote` advancing, counted only while the
+  partner's `head_tick` is past it, so a pause or a perk menu never trips it.
+- **Liveness**: 15 s without a packet or message.
+- Either ends the run at its last confirmed tick, as a lost connection does.
+- **Start**: 10 s without `START_ACK`: the Host's run goes and it sends
+  `START_CANCEL`, which follows `START_RUN` on channel 1.
+
+#### Exports and status
+
+`game_coop_connect(seat, now)` begins a session and says hello.
+`game_coop_disconnect(reason)` ends it when the transport closed or the partner
+left the room, the run at its last confirmed tick.
+`game_coop_request(kind, …, now)` asks for a perk menu, a pause, a leave, the
+Guest's next-run choice or the Host's run start. For incoming bytes the host
+calls `game_coop_rx(size)` first, copies the bytes to the pointer it returns,
+then calls `game_coop_receive(channel, size, now)`. After the frame it drains
+`game_coop_tx(channel, now)` from `game_coop_tx_buffer()`. `game_coop_status()`
+returns flags: connected, started, starting, paused, waiting (a perk request
+waits for its tick's confirmation), picker, leaving, ended, desynced, failed,
+and whether the partner found it. It also carries why the session or its last
+run stopped (bits 16-23, cleared when a run starts) and the Guest's next-run
+choice held by the Host (bits 24-27). `game_coop_stats()`
+adds the session's counters: packets sent, received and lost, stale packets
+and messages, repairs and the records they carried, and the round trip.
 
 ---
 
@@ -1223,7 +1334,7 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
 ### Milestone `M0b`: Rollback ring, side-effect isolation & `checks/game_coop.mjs` gate
 
 1. **Files**: `crimson-core/host/keyframes.inc`, `host/coop.inc`,
-   `checks/game_coop.mjs`.
+   `host/coop_wire.inc`, `checks/game_coop.mjs`.
 
 2. **Changes**:
    - Implement 16-slot `RollbackRing`, `coop_canonical_snapshot()`, per-tick lead
@@ -1237,20 +1348,116 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
      pipe) against a **single straight `game.wasm` oracle**.
 
    - **Fault-injection check**: Explicitly verifies that corrupting a field in
-     `portable_snapshot`, `KeyframeHost`, `telekinetic_bonus_hover_timer_ms`, or
-     `game_effect_overflow` trips `coop_canonical_hash()`.
+     `portable_snapshot`, `KeyframeHost`, `telekinetic_bonus_hover_timer_ms`,
+     the run's `LiveSettings` status, or `game_effect_overflow` trips
+     `coop_canonical_hash()`.
+
+4. **Status**: the engine, the two-peer wire protocol (Section 6.2) and their
+   gate have landed, headless; the live session is `M1`'s.
+   `game_coop_start(-1, …)` runs the engine with both
+   players local, the same derivation, capture and digests as a peer.
+   `checks/game_coop.mjs` (CI's `game-coop` job) plays every `coop-*` stream of
+   the corpus through it against the plain run, word for word, then again
+   through forced rollbacks at windows of 0 (lockstep), 1, 4, 8 and 12 ticks,
+   delays of 2, 4 and 8 and catch-up frames: records stood in for or guessed for
+   either player, the picker's choice late, restores into each open perk menu
+   and over the effect overflow's changes. Every confirmed tick's hash, bake,
+   terrain and music digests and raw state must match the plain pass's, and no
+   tick may run on a guess past the window. It asserts the fault injections, the
+   audit of every byte of the run's state (Section 4.1), the receive path's
+   answers, and coverage (both players opening, late and picking, same-tick and
+   dropped requests, a survivor's menu, the sixth and seventh choices and a pick
+   one past those offered, rollbacks over a freed overflow entry, held overflow
+   decals, bakes drawn while the next tick's queue waits, final bakes on undrawn
+   ticks). `--live <game directory>` plays three
+   streams inside the original, booted from a copy of the directory with seven
+   in-game tunes, compares every canonical word of every tick with the plain
+   run's, and what it draws into the terrain and its music after every frame
+   with the plain pass's. It prints each stream's rollbacks and costs.
+
+   The gate then plays every stream between two modules, Host and Guest, each
+   playing its own seat through the wire protocol. They run over a seeded
+   simulated pipe: 40 ± 30 ms each way, 2 % loss on channel 0 and one burst of
+   12 lost packets, reliable and ordered channel 1. One peer draws at 60 Hz and
+   the other at 144 Hz with a 300 ms stutter. The Host starts each run. Each
+   peer produces its seat's records: an open only when its state allows it, and
+   the pick once it is the picker. Each stream plays in lockstep and with a
+   window of 8, at delays 2 and 4, and with a window of 8 at delay 8. On both
+   peers every confirmed tick must have the oracle's digests and raw state and
+   the partner's hash compared, the partner must hear each tick's hash within a
+   second of its confirmation, both must end on the same tick in the same
+   state, and neither may send more than 60 ticks packets a second. The session's cases follow:
+   - pause and resume races (a tie goes to the Host), and a pause longer than
+     the progress timeout;
+   - leaving mid-run, while paused, from the picker's open perk menu, and while
+     a request waits for confirmation, both closing within two seconds, the
+     leaver for leaving and its partner for the partner's leave, and again
+     when the partner's last hashes come late and the leaver's ticks packets
+     that would acknowledge them are lost for 1.2 s;
+   - a Guest whose ticks packets carry no hashes for longer than the 256-tick
+     ring, after which every tick's hash is still compared on both;
+   - a rematch while every packet and message of the previous run arrives
+     again, which the Host can start neither mid-run nor before the Guest
+     confirmed the last run's end and compared its hashes;
+   - a hello that reaches the Guest before it connects;
+   - a start the Guest answers after the start timeout (the Host gives up on
+     time, the Guest stops the run, and the next run starts with no old
+     reason), a partner gone silent (the liveness timeout, to the frame), one
+     whose records stop past a gap (the progress timeout), and a transport
+     that closes (`game_coop_disconnect`);
+   - an invalid record (an error on both), a malformed message while the Host
+     starts a run (it stops waiting), a forced state change (a desync on both),
+     and different builds.
+
+   A direct check confirms a guess drops the presses of the record it copies.
+   Coverage between the peers requires repairs, mispredictions, and opens and
+   picker waits for both seats. The pipe found that held bakes drawn between
+   ticks left their decals in the queues past the queued count. Commit now puts
+   the whole queues back, so a peer's raw state does not depend on when it
+   drew.
 
 ### Milestone `M1`: Two-browser adaptive-delay lockstep prototype
 
 1. **Files**: `service/src/coop.ts`, `service/src/index.ts`,
    `service/wrangler.jsonc`, `crimson-core/client/main.cpp`,
-   `crimson-core/client/web/shell.html`, `host/coop.inc`.
+   `crimson-core/client/web/shell.html`, `host/coop.inc`, `host/coop_live.inc`,
+   `checks/game_coop_live.mjs`.
 
 2. **Deliverable**: Playable `?coop=<room_id>` two-browser session using
    `coop-ticks` + `coop-control` over WebRTC + Cloudflare Realtime TURN (and WS
    fallback), with reliable `MSG_INPUT_REPAIR`, in-band whoever-opens-picks perk
    flow + partner `viewer_card` notice, input-frontier pause, and measured RTT /
    candidate-type / desync telemetry.
+
+3. **Status**: the game module's half has landed. `host/coop_live.inc` runs the
+   session inside the original over the `M0b` engine and wire protocol (Section
+   5): run setup from the menus and end screens, pause, leave, the partner's
+   pick card and the end screens. Its exports for the transport
+   (`game_coop_connect`, `game_coop_disconnect`, `game_coop_rx` and
+   `game_coop_receive`, `game_coop_tx` and `game_coop_tx_buffer`,
+   `game_coop_status`) are what `client/main.cpp`'s `client_coop_*` wrappers and
+   `client/web/coop.js` will call; the room service, the transport and the shell
+   are next.
+
+   Its gate, `checks/game_coop_live.mjs` (CI's `game-coop` job, on the
+   distributed game files), boots two originals from separate copies of a game
+   directory and plays them against each other over the `M0b` gate's seeded
+   pipe: loss, a burst of lost packets, a stutter, 60 Hz against 144 Hz. The
+   machines differ in all a player sets: sound and music, in-game tunes, detail,
+   gore and HUD options, key bindings, mouse and keys against a pad on the pad
+   profile, and saved progress. The sessions start Survival from the Host's
+   menus, open and pick perks from both seats (once on the same tick), pause
+   from each seat and resume from the other, play on with one window in the
+   background, start the next run from the Guest's end screen, leave from the
+   pause banner, desync, lose the connection, and play quests from the Host's
+   quest list through the Guest's Play Next to a leave from the failed quest's
+   Main Menu. Every tick both machines confirm must have the same state hash
+   and bake and terrain digests on both and from the engine replaying the
+   machines' records alone (not the music digest, which names the tracks each
+   machine loaded); both must save byte-identical replays that `crimson replay
+   verify` accepts as 2-player runs, each perk command its picker's; the Host's
+   menus must lose the session's unlocks when it ends; and neither player's
+   settings or save may change.
 
 ### Milestone `M2`: Bounded rollback in the browser prototype
 

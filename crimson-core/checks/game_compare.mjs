@@ -4,17 +4,20 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { CORE, decode, fieldRanges, firstDifference, init, loadCore, names, players, record, state, step } from "./engine.mjs";
+import { CORE, decode, fieldRanges, firstDifference, init, loadCore, names, players, presentation, record, state, step } from "./engine.mjs";
 import { bootGame } from "./game_host.mjs";
 
-// Fields only presentation reads: the HUD's popup timer, which the verifier's
-// stubbed HUD never counts down, and the weapons' sound ids, which only choose
-// the sample sfx_play_panned plays and are the original's loaded ids in a run
-// inside the original (the verifier loads no sounds).
-export const PRESENTATION = new Set(
-  names.filter((n) => /^globals\.player_weapon_popup_timer\[|^weapons\[\d+\]\.(shot_sfx_base_id|reload_sfx_id)$/.test(n)),
-);
-const COMPARED = fieldRanges((name) => !PRESENTATION.has(name));
+// Fields only presentation reads (schema.json's `presentation`): the HUD's
+// popup timer, which the verifier's stubbed HUD never counts down, the weapons'
+// sound ids, which only choose the sample sfx_play_panned plays and are the
+// original's loaded ids in a run inside the original (the verifier loads no
+// sounds), and the players' key codes, the verifier's in a tick but the
+// player's own between a live run's ticks (host/session.inc).
+export const PRESENTATION = presentation;
+// Stepped straight through portable_*, the game module keeps the run's key
+// codes between ticks too, so they are compared.
+const KEYS = /^players\[\d+\]\.input\./;
+const COMPARED = fieldRanges((name) => !PRESENTATION.has(name) || KEYS.test(name));
 
 
 export function loadGame(wasm) {

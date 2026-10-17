@@ -168,6 +168,67 @@ Survival run whose dead player gets back up from a MediKit), and lists the
 unsupported Typ-o fixture. CI fails on any disagreement. A new divergence is reduced to its first differing state and
 decided against the original through Unicorn or its disassembly.
 
+### Co-op rollback
+
+```sh
+node crimson-core/checks/game_coop.mjs
+```
+
+The game module's co-op engine ([`host/coop.inc`](host/coop.inc)) plays every
+co-op bot stream with both players local, splitting its perk commands into the
+players' requests, and must match the plain run word for word. It then plays
+each again through forced rollbacks of up to 12 ticks, at lockstep and at
+several rollback windows, delays and frame budgets, and every confirmed tick
+must keep the state hash, terrain bake, terrain and music digests and raw state
+of the plain pass. Every byte of the run's state must be in the hash or in the
+engine's list of what it leaves out. One co-op scenario fills the effect pool
+under the ranked rules, freeing overflow entries at their own times. With
+`--live <game directory>` a few streams also play inside the original (from a
+copy of the directory), whose canonical words must match the plain run's every
+tick, and its terrain and music the plain pass's after every frame.
+
+Then two modules play each stream as Host and Guest, one seat each, through the
+wire protocol ([`host/coop_wire.inc`](host/coop_wire.inc)). They run over a
+seeded simulated pipe with latency, jitter, loss and a burst of lost packets,
+at 60 Hz against 144 Hz with a stutter. Each stream plays in lockstep and with
+a rollback window, at two delays, and with that window at the longest delay.
+Both peers must confirm every tick with the plain pass's digests and raw state,
+compare every tick's hash with the partner's, hear each other's within a second
+of their ticks' confirmation, send at most 60 ticks packets a second, and end
+on the same tick in the same state. The session's own cases follow: pause
+races, leaving (mid-run, paused, from a perk menu, with a request waiting, with
+the leaver's last acknowledgements lost; each closing within two seconds for
+the reason it left), hashes held back past the engine's 256-tick ring, a
+rematch the Host cannot start early, through a storm of the last run's packets,
+a hello before the partner connected, a start answered too late, the liveness
+and progress timeouts, a closed transport, an invalid record, an error while
+starting, a desync and different builds. The check prints
+each stream's rollbacks, repairs, round trips and costs; [network co-op](../docs/rewrite/network-coop.md)
+holds the design it checks.
+
+### Co-op sessions
+
+```sh
+node crimson-core/checks/game_coop_live.mjs <game directory>
+```
+
+Two originals boot from their own copies of a game directory and play co-op
+sessions through the live session ([`host/coop_live.inc`](host/coop_live.inc)),
+their messages carried over the rollback check's seeded pipe
+([`checks/coop_link.mjs`](checks/coop_link.mjs)) with a stutter and a lost
+burst, at 60 Hz against 144 Hz. The two differ in all a player sets: sound and
+music, in-game tunes, detail and gore, key bindings, mouse and keys against a
+pad, and saved progress. The Host's menus start Survival; both players open and
+pick perks, pause and resume each other, and one plays on in the background;
+the Guest's end screen starts the next run, where both ask for a perk menu on
+the same tick, and a leave from the pause banner ends it. Then a desync, a lost
+connection, and quests from the Host's quest list through the Guest's Play Next
+to a leave from the failed quest's screen. Every tick both machines confirm must
+have the same state hash and bake and terrain digests on both and from the
+engine replaying their records alone, both must save byte-identical replays
+that `crimson replay verify` accepts, the Host's menus must lose the session's
+unlocks when it ends, and neither player's settings or save may change.
+
 ### Original executable
 
 The oracles call the original code through Unicorn, using the ignored game

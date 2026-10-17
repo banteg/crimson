@@ -54,9 +54,12 @@ extern "C" int crimsonland_main_exit(void);
 extern "C" int game_live_frame(void);
 extern "C" void game_live_quit(void);
 extern "C" void game_live_focus_lost(void);
+extern "C" bool game_coop_pump(void);
+extern "C" bool game_coop_focus(int active);
 extern "C" void pad_frame(void);
 
 static bool quit_posted;
+static void game_resume();
 
 #define GAME_EXPORT(name) extern "C" __attribute__((export_name(#name)))
 
@@ -66,6 +69,10 @@ GAME_EXPORT(game_frame) int game_frame() {
     game_live_quit();
     return 0;
   }
+  // A co-op session runs in every pass, whatever the screen, and in the
+  // background too (host/coop_live.inc): one that began there resumes the game.
+  if (game_coop_pump() && grim_timing_frozen)
+    game_resume();
   if (!grim_dc_mode_active)
     grim_timing_update();
   if (!grim_paused_flag && !grim_dc_mode_active && grim_device_ready && !grim_timing_frozen) {
@@ -118,15 +125,21 @@ GAME_EXPORT(game_state) int game_state() { return game_state_id; }
 
 // WM_ACTIVATEAPP: losing the window freezes Grim's clock, so the loop stops
 // running the game until it returns, and tells the game (it suspends audio).
+// A co-op session plays on instead: its partner waits on this machine.
 // The device keeps its textures, so there is nothing to back up or restore.
 // Grim stores the callbacks as void functions, but every one the game or Grim
 // registers returns a flag, and wasm calls through a pointer by its exact type.
 extern void (*grim_on_device_lost)(void);
+static void game_resume() {
+  if (grim_d3d_device)
+    ((bool (*)(void))grim_on_device_restore)();
+  grim_timing_frozen = false;
+}
 GAME_EXPORT(game_activate) void game_activate(int active) {
+  if (game_coop_focus(active) && !grim_timing_frozen)
+    return;
   if (active) {
-    if (grim_d3d_device)
-      ((bool (*)(void))grim_on_device_restore)();
-    grim_timing_frozen = false;
+    game_resume();
   } else {
     game_live_focus_lost();
     if (grim_d3d_device)

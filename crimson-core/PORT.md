@@ -307,9 +307,10 @@ persistence) is in the [roadmap](ROADMAP.md#client-checks).
   and compares every snapshot field ([`schema.json`](schema.json)) after every
   tick; where a run ends, both must refuse the next tick. The whole executable
   is linked. Fields only presentation reads stay out of the comparison
-  ([`game_compare.mjs`](checks/game_compare.mjs)): `player_weapon_popup_timer`,
+  (`presentation` in [`schema.json`](schema.json)): `player_weapon_popup_timer`,
   which the restored HUD counts down, and the weapons' sound ids, which hold
-  the original's loaded ids in a run inside it.
+  the original's loaded ids in a run inside it. The players' key codes, which
+  a live run swaps for the player's own between ticks, are compared here.
 - `game_check.py --live <game directory>` runs the same streams back to back
   inside the original booted with its assets, sounds and music, each run
   starting from the state the previous one left.
@@ -321,7 +322,28 @@ persistence) is in the [roadmap](ROADMAP.md#client-checks).
   its seed, and `--seed` plays it again. With `--ranked` it ticks Ranked
   first (`--quest` plays quest 1.1), and the run it queues must be the one it
   recorded, under the ranked rules, signed by the player's key, claiming the
-  result the verifier derives.
+  result the verifier derives. With `--silent` the original starts with sound
+  and music off, which leaves its music track ids all 0, and the run must still
+  agree through its end tune; with `--tunes` it loads seven in-game tunes, which
+  makes its `crimsonquest` the verifier's in-game tune request.
+- [`checks/game_coop.mjs`](checks/game_coop.mjs) plays every co-op stream of the
+  corpus through the co-op engine ([`host/coop.inc`](host/coop.inc)), headless,
+  with both players local: each stream's perk commands become the players'
+  requests (alternating openers, same-tick opens, requests that must drop, a
+  sixth choice), and the run must match the plain run word for word. Played
+  again with forced rollbacks at several windows, delays and frame budgets
+  (either player's records arriving up to 12 ticks late, stood in for or
+  guessed, the picker's choice late, restores on their own, some into an open
+  perk menu or over the effect overflow), every confirmed tick must have the
+  same state hash, terrain bake, terrain and music presented so far, and raw
+  state. Corrupting each family of fields the hash covers must change it, every
+  byte of the run's state must be hashed or listed as left out with its reason,
+  and the corpus must cover what the engine has to get right (both players
+  opening, late and picking, a survivor's menu, freed overflow entries and
+  overflow decals inside rollbacks, bakes drawn while the next tick's queue
+  waits). With `--live <game directory>` it plays a few streams inside the
+  original, with seven in-game tunes loaded, and compares what the original
+  draws into the terrain and its music after every frame.
 - [`checks/game_boot.mjs`](checks/game_boot.mjs) boots the original from a fresh
   game directory under Node's WASI, clicks through the menus into Survival, and
   requires every texture to load, the menus' music to reach the mix, the run to

@@ -19,6 +19,10 @@ bool game_live_run();
 bool game_live_between_ticks();
 bool game_live_pause();
 void game_live_pick(int choice);
+// The buttons that start a run, while a co-op session is on (host/coop_live.inc):
+// true when it takes the click.
+bool game_coop_setup_run(int mode, int major, int minor);
+bool game_coop_next_run(int choice);
 // Presentation metadata shared by live custom quests and their replays (host/watch.inc).
 char *game_custom_quest_author();
 // The Ranked row (host/ranked.inc). Its table reader returns a FILE, which some
@@ -31,6 +35,9 @@ int highscore_watch_row(int hovered, int rows, int *selected);
 void highscore_watch(float *card, struct highscore_record_t *record);
 // The build's name (host/game.inc).
 char *game_version_label();
+// A track's volume a tick sets, on the original's track for the one it names
+// (host/coop.inc).
+void game_music_volume(int id, float volume);
 }
 // The repack's stored entry for a path (game/repack.cpp).
 char *grim_lookup_blob_entry(char *path);

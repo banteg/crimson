@@ -390,21 +390,34 @@ static int watch_playing() {
   return -1;
 }
 // The playback half of a tick's music call (host.cpp's music_play_exclusive):
-// `track`, the tune the simulation half chose (the in-game tune's random pick, or
-// -1 with no playlist), plays as the original plays it, by the player's audio
-// settings, and the run's latch stays as the simulation half left it. An in-game
-// tune already playing keeps playing. The preparing pass notes each tune, whatever
-// plays.
-static void game_music_play(int sfx_id, int track) {
-  if (track < 0)
+// the original's track for the one the call names, or for the in-game tune's
+// request the original's playlist tune the simulation half's `draw` picks (none
+// with no playlist), plays as the original plays it, by the player's audio
+// settings, and the run's latch stays as the simulation half left it. The
+// preparing pass notes each tune, whatever plays. A co-op tick's music waits for
+// its confirmation (host/coop.inc).
+static void game_music_play(int sfx_id, int draw) {
+  const GameMusic &shell = game_shell_audio.music;
+  int track = draw < 0                ? game_shell_track(sfx_id)
+              : shell.playlist_count ? shell.playlist[draw % shell.playlist_count]
+                                     : -1;
+  if (coop_defer(draw < 0 ? COOP_PLAY : COOP_GAME_TUNE, track, 0) || !game_original || track < 0)
     return;
   if (live.watching && watch.phase == WATCH_PREPARING && (watch.tunes.empty() || watch.tunes.back().track != track))
     watch.tunes.push_back({watch.tick + 1, track});
-  int playing = watch_playing();
-  if (sfx_id == music_track_game_playlist && playing >= 0 &&
-      std::find(music_playlist, music_playlist + music_playlist_entry_count, playing) !=
-          music_playlist + music_playlist_entry_count)
+  game_music_start(track, draw >= 0);
+}
+// A track starts, by the original's ids; an in-game tune already playing keeps
+// playing in place of another. A headless run has no tracks to play.
+static void game_music_start(int track, bool in_game) {
+  if (!game_original || track < 0)
     return;
+  const GameMusic &shell = game_shell_audio.music;
+  int playing = watch_playing();
+  if (in_game && playing >= 0 &&
+      std::find(shell.playlist, shell.playlist + shell.playlist_count, playing) != shell.playlist + shell.playlist_count)
+    return;
+  GameShellMusic ids;
   unsigned char latch = music_playlist_randomized_latch;
   music_play_exclusive_recovered(track);
   music_playlist_randomized_latch = latch;

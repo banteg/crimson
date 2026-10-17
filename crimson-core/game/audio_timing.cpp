@@ -4,6 +4,7 @@
 #include "crimsonland_gameplay.h"
 
 extern "C" bool game_live_run();
+extern "C" bool game_coop_quiet();
 
 namespace {
 bool ticked;
@@ -17,8 +18,10 @@ void advance(float dt) {
 }
 } // namespace
 
+// A co-op tick a rollback runs again aged them the first time (host/coop.inc).
 extern "C" void game_audio_tick(float dt) {
-  advance(dt);
+  if (!game_coop_quiet())
+    advance(dt);
   ticked = true;
 }
 

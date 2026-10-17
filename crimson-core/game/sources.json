@@ -12,7 +12,10 @@
     "platform/grim_load_interface.cpp"
   ],
   "exe_wrapped": [
+    "audio/music_fade_out_all.cpp",
     "audio/music_play_exclusive.cpp",
+    "audio/sfx_play.cpp",
+    "audio/sfx_play_panned.cpp",
     "crimsonland/fx_queue_render.cpp",
     "crimsonland/highscore_sync_worker.cpp",
     "game/format_ordinal.cpp",

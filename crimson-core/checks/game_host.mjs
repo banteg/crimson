@@ -4,6 +4,8 @@
 // waits for it to move. A given seed answers the module's entropy requests, which
 // seed its runs (host/session.inc).
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { WASI } from "node:wasi";
 
 // HostInput's layout (game/host_input.h).
@@ -73,4 +75,19 @@ export function bootGame(wasm, directory, seed, { leaderboard = false, requests,
     // The module's DirectInput state, taken afresh: memory can grow.
     input: () => new DataView(game.memory.buffer, game.game_input()),
   };
+}
+
+// Seven in-game tunes for the original to load, in a copy of the game in `directory` (music\game_tunes.txt in the
+// folder takes the pack's place: the release's five, the first two again), which goes when the check exits; the
+// copy's path. The original's crimsonquest is then the verifier's in-game tune request (host/game.inc
+// GameShellMusic).
+export function sevenTunes(directory) {
+  const copy = fs.mkdtempSync(path.join(os.tmpdir(), "crimson-tunes-"));
+  process.on("exit", () => fs.rmSync(copy, { recursive: true, force: true }));
+  fs.cpSync(directory, copy, { recursive: true });
+  const tunes = ["gt1_ingame", "gt2_harppen", "crimson_addon01", "crimson_addon02", "crimson_addon03"];
+  fs.mkdirSync(`${copy}/music`, { recursive: true });
+  const lines = [...tunes, ...tunes.slice(0, 2)].map((tune) => `snd_addGameTune ${tune}.ogg\n`);
+  fs.writeFileSync(`${copy}/music/game_tunes.txt`, lines.join(""));
+  return copy;
 }

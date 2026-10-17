@@ -6,7 +6,6 @@ enum PracticePhase {
   PRACTICE_PAUSED,
   PRACTICE_ENDED
 };
-extern "C" int survival_xp_smoothed;
 static struct {
   PracticePhase phase;
   Keyframe anchor;
@@ -75,17 +74,16 @@ static bool practice_take() {
 // Re-render the original moment through the proven seek path, then restore the
 // exact anchor state. Practice has never appended bakes to the original log.
 static void practice_restore() {
-  float mouse_x = ui_mouse_x, mouse_y = ui_mouse_y;
-  watch.tick = watch.ticks;
-  watch_seek(practice.anchor.tick);
-  keyframe_restore(practice.anchor);
+  run_restore([] {
+    watch.tick = watch.ticks;
+    watch_seek(practice.anchor.tick);
+    keyframe_restore(practice.anchor);
+  });
   watch.tick = practice.anchor.tick;
   watch.at = practice.anchor.at;
   watch.paused = true;
   watch.seek = watch.stop_at = 0;
   game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
-  ui_mouse_x = mouse_x;
-  ui_mouse_y = mouse_y;
   survival_xp_smoothed = practice.xp;
   host_frame_hold(HOST_FRAME_ANCHOR_RESTORE);
 }

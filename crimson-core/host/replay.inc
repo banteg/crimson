@@ -62,7 +62,6 @@ struct Msgpack {
 // derives it (service/src/verify.ts deriveResult); `outcome` is how it ended.
 static void replay_result(Msgpack &m, const char *outcome) {
   int elapsed = cfg.mode == GAME_MODE_QUEST ? quest_spawn_timeline : run_elapsed_ms;
-  float health = player_state_table[0].health;
   int fired = highscore_record_shots_fired > 0 ? highscore_record_shots_fired : 0;
   int hit = highscore_record_shots_hit < fired ? highscore_record_shots_hit : fired;
   int best = 1;
@@ -79,15 +78,21 @@ static void replay_result(Msgpack &m, const char *outcome) {
   m.str("pending_perks"), m.integer((uint32_t)perk_pending_count);
   m.str("quest_final_ms");
   if (!strcmp(outcome, "quest_completed")) {
-    // compute_quest_final_time for one player (src/crimson/quests/results.py).
-    int final = elapsed - (int)health * 50 - perk_pending_count * 1000;
+    // compute_quest_final_time (src/crimson/quests/results.py): player one's
+    // health truncated, then times 50; the second player's times 50, truncated.
+    int final = elapsed - (int)player_state_table[0].health * 50 - perk_pending_count * 1000;
+    for (uint32_t p = 1; p < cfg.players; ++p)
+      final -= (int)(player_state_table[p].health * 50.0f);
     m.integer(final == 0 ? 1 : final);
   } else
     m.nil();
-  m.str("players"), m.array(1), m.map(3);
-  m.str("experience"), m.integer((uint32_t)player_state_table[0].experience);
-  m.str("health"), m.real(health);
-  m.str("most_used_weapon_id"), m.integer(best);
+  m.str("players"), m.array(cfg.players);
+  for (uint32_t p = 0; p < cfg.players; ++p) {
+    m.map(3);
+    m.str("experience"), m.integer((uint32_t)player_state_table[p].experience);
+    m.str("health"), m.real(player_state_table[p].health);
+    m.str("most_used_weapon_id"), m.integer(best);
+  }
 }
 
 static void replay_write_custom_quest(Msgpack &m) {
@@ -159,7 +164,7 @@ static std::vector<uint8_t> replay_payload(const char *outcome) {
     m.map(2), m.str("major"), m.integer(cfg.major), m.str("minor"), m.integer(cfg.minor);
   else
     m.nil();
-  m.str("player_count"), m.integer(1);
+  m.str("player_count"), m.integer(cfg.players);
   m.str("hardcore"), m.boolean(cfg.hardcore);
   m.str("preserve_bugs"), m.boolean(cfg.preserve_bugs);
   m.str("quest_fail_retry_count"), m.integer(cfg.retry);
@@ -186,31 +191,36 @@ static std::vector<uint8_t> replay_payload(const char *outcome) {
     m.nil();
   m.str("result");
   replay_result(m, outcome);
-  // The recording after its configuration: each tick's input, then its commands.
+  // The recording after its configuration: each tick's inputs, one a player,
+  // then its commands, each for the player live.pickers names in a co-op run.
   const unsigned char *at = live.replay.data() + sizeof(PortableConfig) + (custom ? sizeof(PortableQuest) : 0),
                       *end = live.replay.data() + live.replay.size();
-  std::vector<std::pair<PortableInput, std::vector<PortableCommand>>> ticks;
+  std::vector<std::pair<std::vector<PortableInput>, std::vector<PortableCommand>>> ticks;
   while (at < end) {
-    PortableInput input;
+    std::vector<PortableInput> inputs(cfg.players);
     uint32_t count;
-    memcpy(&input, at, sizeof input), at += sizeof input;
+    memcpy(inputs.data(), at, cfg.players * sizeof(PortableInput)), at += cfg.players * sizeof(PortableInput);
     memcpy(&count, at, sizeof count), at += sizeof count;
     std::vector<PortableCommand> commands(count);
     memcpy(commands.data(), at, count * sizeof(PortableCommand)), at += count * sizeof(PortableCommand);
-    ticks.emplace_back(input, std::move(commands));
+    ticks.emplace_back(std::move(inputs), std::move(commands));
   }
   m.str("ticks"), m.array((uint32_t)ticks.size());
-  for (const auto &[input, commands] : ticks) {
+  size_t picker = 0;
+  for (const auto &[inputs, commands] : ticks) {
     m.array(2);
-    m.array(1), m.array(5);
-    m.real(input.move_x), m.real(input.move_y), m.real(input.aim_x), m.real(input.aim_y);
-    m.integer(input.flags);
+    m.array(cfg.players);
+    for (const PortableInput &input : inputs) {
+      m.array(5);
+      m.real(input.move_x), m.real(input.move_y), m.real(input.aim_x), m.real(input.aim_y);
+      m.integer(input.flags);
+    }
     m.array((uint32_t)commands.size());
     for (const PortableCommand &command : commands) {
       // Kind 1 picks a perk, kind 2 opens the menu (crimson-core/checks/replay.py).
       m.map(command.type == 1 ? 3 : 2);
       m.str("type"), m.str(command.type == 1 ? "perk_pick" : "perk_menu_open");
-      m.str("player_index"), m.integer(0);
+      m.str("player_index"), m.integer(cfg.players == 1 ? 0 : live.pickers[picker++]);
       if (command.type == 1)
         m.str("choice_index"), m.integer(command.argument);
     }

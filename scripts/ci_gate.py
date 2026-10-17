@@ -35,6 +35,7 @@ def require(suite: str, needs: dict) -> None:
             "python-report": python,
             "game-smoke": game,
             "game-parity": game,
+            "game-coop": game,
             "oracles": oracles,
         }
         if flag("core") or release:

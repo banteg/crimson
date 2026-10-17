@@ -315,6 +315,12 @@ SESSION_KEEPS = re.compile(
 )
 
 
+# Per-player arrays whose data definition holds player one's element alone. Player two's is run state too, which
+# run start resets (Python starts every run afresh) and keyframes keep: here it joins the run spans with player one's,
+# where a field of the session's own would need its reset and copy written out by hand.
+PLAYER_ARRAYS = {"telekinetic_bonus_hover_timer_ms"}  # bonus_render's Telekinetic hover
+
+
 def game_data(root, out, engine, simulation):
     # wasm32 keeps the original pointer width, so each image's data keeps its
     # original layout: aggregates read through a first symbol, overreads and
@@ -322,7 +328,10 @@ def game_data(root, out, engine, simulation):
     # executable's named engine globals) resets once; the rest at every run.
     # A run inside the running original resets only the simulation's globals,
     # so the presentation the original loaded and laid out survives it.
-    exe = image_entries(root, "crimsonland.exe")
+    exe = [
+        {**e, "size": e["size"] * 2} if e["name"] in PLAYER_ARRAYS else e
+        for e in image_entries(root, "crimsonland.exe")
+    ]
     names = {e["name"] for e in exe}
     # The compiler emits Grim's interface vtable; its other symbol tables, and the
     # names both images define, belong to the statically linked D3DX.

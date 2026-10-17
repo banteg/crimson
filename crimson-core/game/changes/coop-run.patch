@@ -1,0 +1,84 @@
+A co-op session (host/coop_live.inc) takes the clicks that start a run while it is on: the Host's picks the co-op
+run, the Guest's waits for the Host's, and an end screen's tells the Host which run comes next. The menus start only
+Survival and the stock quests in co-op.
+--- a/decomp/1.9/crimsonland/menus/play_game_menu_update.cpp
++++ b/decomp/1.9/crimsonland/menus/play_game_menu_update.cpp
+@@ -396,5 +396,5 @@
+     }
+ 
+-    if (typo_button.activated) {
++    if (typo_button.activated && !game_coop_setup_run(GAME_MODE_TYPO_SHOOTER, 0, 0)) {
+         run_active = 0;
+         ui_sign_crimson.focus_disabled = 0;
+@@ -411,5 +411,5 @@
+         game_state_pending = GAME_STATE_QUEST_SELECT;
+     }
+-    if (rush_button.activated) {
++    if (rush_button.activated && !game_coop_setup_run(GAME_MODE_RUSH, 0, 0)) {
+         ui_sign_crimson.focus_disabled = 0;
+         ui_transition_direction = 0;
+@@ -421,5 +421,5 @@
+         music_fade_out_all(music_track_game_playlist);
+     }
+-    if (survival_button.activated) {
++    if (survival_button.activated && !game_coop_setup_run(GAME_MODE_SURVIVAL, 0, 0)) {
+         ui_sign_crimson.focus_disabled = 0;
+         ui_transition_direction = 0;
+@@ -431,5 +431,5 @@
+         music_fade_out_all(music_track_game_playlist);
+     }
+-    if (tutorial_button.activated) {
++    if (tutorial_button.activated && !game_coop_setup_run(GAME_MODE_TUTORIAL, 0, 0)) {
+         ui_sign_crimson.focus_disabled = 0;
+         ui_transition_direction = 0;
+--- a/decomp/1.9/crimsonland/menus/quest_select_menu_update.cpp
++++ b/decomp/1.9/crimsonland/menus/quest_select_menu_update.cpp
+@@ -448,4 +448,7 @@
+ 
+ selection_unlocked:
++        if (game_coop_setup_run(GAME_MODE_QUEST, quest_select_stage_major, quest_select_stage_minor_index + 1)) {
++            return;
++        }
+         ui_sign_crimson.focus_disabled = 0;
+         ui_transition_direction = 0;
+--- a/decomp/1.9/crimsonland/end_screens/game_over_screen_update.cpp
++++ b/decomp/1.9/crimsonland/end_screens/game_over_screen_update.cpp
+@@ -289,5 +289,5 @@
+     xy.y += 32.0f;
+ 
+-    if (play_again_button.activated) {
++    if (play_again_button.activated && !game_coop_next_run(0)) {
+         ui_transition_direction = 0;
+         game_state_pending = GAME_STATE_GAMEPLAY;
+--- a/decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp
++++ b/decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp
+@@ -592,5 +592,5 @@
+         xy.y += 32.0f;
+ 
+-        if (play_next_button.activated) {
++        if (play_next_button.activated && !game_coop_next_run(1)) {
+             if (quest_stage_major == 5 && quest_stage_minor == 10) {
+                 run_active = 0;
+@@ -608,5 +608,5 @@
+             }
+         }
+-        if (play_again_button.activated) {
++        if (play_again_button.activated && !game_coop_next_run(0)) {
+             ui_transition_direction = 0;
+             game_state_pending = GAME_STATE_GAMEPLAY;
+--- a/decomp/1.9/crimsonland/end_screens/quest_failed_screen_update.cpp
++++ b/decomp/1.9/crimsonland/end_screens/quest_failed_screen_update.cpp
+@@ -192,5 +192,5 @@
+         xy.y += 32.0f;
+ 
+-        if (play_again_button.activated) {
++        if (play_again_button.activated && !game_coop_next_run(0)) {
+             ++quest_fail_retry_count;
+             ui_transition_direction = 0;
+@@ -201,5 +201,5 @@
+             run_active = 0;
+         }
+-        if (play_another_button.activated) {
++        if (play_another_button.activated && !game_coop_next_run(2)) {
+             quest_fail_retry_count = 0;
+             ui_transition_direction = 0;

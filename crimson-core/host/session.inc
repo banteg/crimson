@@ -5,10 +5,10 @@
 // (portable_step_many). The perk screen and the pause menu run between ticks
 // and reach the run only as commands.
 //
-// The settings, progress and key codes a tick reads are the verifier's
-// (portable_init sets them up); between ticks the original shows and keeps the
-// player's. What a tick changes carries over: the counters it advances add to
-// the player's progress, and the settings it changes replace the player's.
+// The settings, progress, key codes and music tracks a tick reads are the
+// verifier's (portable_init sets them up); between ticks the original shows and
+// keeps the player's. What a tick changes carries over: the counters it advances
+// add to the player's progress, and the settings it changes replace the player's.
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
@@ -36,6 +36,7 @@ struct LiveSettings {
   float bodies_fade;      // which keeps or removes corpses
   float friendly_fire;    // whether players' shots hit each other
   player_input_t keys[2]; // the codes each player's input reads
+  GameMusic music;        // the tracks music calls name
 };
 
 static struct {
@@ -54,9 +55,50 @@ static struct {
   int queued_count;
   game_state_id_t requested; // a state a tick asked for
   std::vector<unsigned char> replay;
+  std::vector<int> pickers; // a co-op run's: the player each recorded command is for
   bool watching; // the run plays a replay (watch.inc)
   bool practicing; // detached Watch state driven by live input (practice.inc)
 } live;
+// A co-op session inside the original (host/coop_live.inc).
+static struct {
+  bool playing;   // a co-op run plays (game_live)
+  bool unfocused; // the window lost the focus: this machine's records are neutral
+  bool escape;    // Escape this pass of play
+  float banked;   // seconds of play not yet ticked
+  bool shown;     // a tick of the run drew, and the host holds its frame
+  bool choosing;  // this machine's perk screen is open for its pick
+  bool ended;     // the screen shows a co-op run's end
+  // The Host's next run, from its click or the Guest's choice, until the Guest
+  // can start one (`choice`: 0 again, 1 next, 2 from the run setup).
+  bool latched;
+  int choice;
+  // The Guest's run the Host started (START_RUN), until its screen comes to it.
+  bool offered;
+  int delay, rmax;
+  uint32_t epoch;
+  // The run the screen's fade to gameplay starts (game_state_set), and before
+  // that the Host's latched or the Guest's offered one.
+  bool entering;
+  PortableConfig next;
+  PortableConfig last; // the last co-op run's, for the next
+  // While a session is on: the menus' unlocks are every quest's, the player's
+  // own kept here.
+  bool overlay;
+  LiveUnlocks own;
+  // The player's menu settings, while the co-op run's are in their place.
+  bool menu_saved;
+  struct {
+    decltype(config_blob.game_mode) mode;
+    decltype(config_blob.hardcore) hardcore;
+    decltype(config_blob.player_count) player_count;
+    int major, minor;
+  } menu;
+  const char *note; // a line for the player, shown a while from note_at
+  unsigned note_at;
+  unsigned ticked_at; // when the run last ran a tick
+} coop_live;
+// The player whose pick a co-op run's open perk menu takes, or -1.
+static int perk_picker = -1;
 static bool custom_quest_restore_menu, custom_quest_saved_ranked;
 // Observation only: distinguish a new live attempt from a menu resume.
 static unsigned play_generation;
@@ -69,6 +111,12 @@ static void practice_stop();
 static void practice_end();
 static int practice_frame();
 static void practice_render();
+// A co-op tick's terrain bake and music wait for its confirmation (host/coop.inc):
+// a track, the in-game tune, a fade, a volume.
+enum CoopTuneKind { COOP_PLAY, COOP_GAME_TUNE, COOP_FADE, COOP_VOLUME };
+static bool coop_bake();
+static bool coop_defer(CoopTuneKind kind, int track, float volume);
+static void game_music_start(int track, bool in_game);
 
 #include "replay.inc"
 #include "ranked.inc"
@@ -92,7 +140,8 @@ static LiveSettings live_settings() {
           {quest_unlock_index, quest_unlock_index_hardcore},
           cv_bodiesFade->value,
           cv_friendlyFire->value,
-          {player_state_table[0].input, player_state_table[1].input}};
+          {player_state_table[0].input, player_state_table[1].input},
+          game_music()};
 }
 static void live_install(const LiveSettings &settings) {
   config_blob = settings.config;
@@ -103,6 +152,7 @@ static void live_install(const LiveSettings &settings) {
   cv_friendlyFire->value = settings.friendly_fire;
   for (int i = 0; i < 2; ++i)
     player_state_table[i].input = settings.keys[i];
+  game_music_install(settings.music);
 }
 // The run's settings in place of the player's, kept in live.outside. The run
 // draws with the player's display choices (direction arrows, detail, the perk
@@ -245,10 +295,15 @@ static void live_poll() {
   const player_input_config_t &keys = config_blob.input_config[0];
   bool fire = live_down(keys.fire_key), reload = live_down(config_blob.key_reload),
        pick = live_down(config_blob.key_pick_perk);
-  // Escape asks for the pause menu (game_frame_update), also on a pass with no tick.
+  // Escape asks for the pause menu (game_frame_update), also on a pass with no
+  // tick; a co-op run asks the session (host/coop_live.inc).
   if (!live.practicing && session_grim.IGrim2D_cpp::grim_was_key_pressed(1)) {
-    ui_transition_direction = 0;
-    live.pausing = true;
+    if (coop_live.playing) {
+      coop_live.escape = true;
+    } else {
+      ui_transition_direction = 0;
+      live.pausing = true;
+    }
   }
   live.fire_pressed |= fire && !live.fire_down;
   live.reload_pressed |= reload && !live.reload_down;
@@ -261,10 +316,12 @@ static void live_poll() {
   live.pick_down = pick;
 }
 
-// The tick's input as the player's scheme reads it (src/crimson/local_input.py).
-static PortableInput live_input() {
+// The tick's input of the player in `seat` (the second in co-op on the
+// partner's machine) as the scheme reads it (src/crimson/local_input.py): this
+// machine's own bindings and schemes, its configuration's first player's.
+static PortableInput live_input(int seat = 0) {
   const player_input_config_t &keys = config_blob.input_config[0];
-  const player_state_t &player = player_state_table[0];
+  const player_state_t &player = player_state_table[seat];
   int move_mode = config_blob.movement_schemes[0], aim_scheme = config_blob.aim_schemes[0];
   bool forward = live_down_or_arrow(keys.move_key_forward, 0xc8),
        backward = live_down_or_arrow(keys.move_key_backward, 0xd0),
@@ -319,8 +376,9 @@ static PortableInput live_input() {
   } else if (aim_scheme == 4) { // dual-action pad: the stick's reach
     float x = live_axis(keys.axis_aim_x), y = live_axis(keys.axis_aim_y), length = sqrtf(x * x + y * y);
     if (length > 0.2f) {
-      // A ranked run's pad reach is the registered default (ranked.py).
-      float reach = fminf(length, 1.0f) * (ranked_run ? 96.0f : cv_padAimDistMul->value) + 42.0f;
+      // A ranked run's pad reach is the registered default (ranked.py), and
+      // a co-op run plays the ranked profile.
+      float reach = fminf(length, 1.0f) * (ranked_run || coop_live.playing ? 96.0f : cv_padAimDistMul->value) + 42.0f;
       input.aim_x = x / length * reach;
       input.aim_y = y / length * reach;
     } else { // original bug 31: a resting stick keeps the aim's direction, 60 units out
@@ -437,6 +495,9 @@ static void live_poll_prompt() {
 #include "keyframes.inc"
 #include "watch.inc"
 #include "practice.inc"
+#include "coop.inc"
+#include "coop_wire.inc"
+#include "coop_live.inc"
 
 extern "C" {
 // game_frame (game/frame.cpp), after polling input: the ticks this pass runs,
@@ -445,6 +506,8 @@ int game_live_frame() {
   watch_follow_link();
   if (!game_live || game_state_id != GAME_STATE_GAMEPLAY)
     return -1;
+  if (coop_live.playing)
+    return coop_frame();
   if (live.practicing)
     return practice_frame();
   if (live.watching)
@@ -472,6 +535,8 @@ void gameplay_update_and_render() {
     gameplay_update_and_render_recovered();
     return;
   }
+  if (coop_live.playing)
+    return coop_render();
   if (live.practicing)
     return practice_render();
   if (live.watching)
@@ -488,14 +553,20 @@ void game_live_quit() {
   // A replay's menu settings give way to the player's, which the game saves.
   if (live.watching)
     watch_stop();
+  else if (coop_live.playing)
+    coop_quit();
   else if (game_live)
     live_end("incomplete");
+  // The game saves the player's own settings (crimsonland_main_exit).
+  coop_menu_restore();
   custom_quest_restore();
   ranked_release();
 }
 bool game_live_pause() {
-  if (live.watching)
-    return true; // Watch and practice handle Escape before the recovered frame.
+  // Watch and practice handle Escape before the recovered frame; a co-op run
+  // asks its session (live_poll).
+  if (live.watching || coop_live.playing)
+    return true;
   live.pausing |= game_live;
   return game_live;
 }
@@ -504,7 +575,10 @@ char *input_key_name(int code) { return input_key_name_recovered(game_live_key(c
 // One choice per opening: clicks while the menu closes pick nothing, which keeps
 // them from spending a perk the pick itself earns on choices never shown.
 void game_live_pick(int choice) {
-  if (!live.picked)
+  // A co-op picker's choice goes with its next record (host/coop.inc).
+  if (coop_live.playing && !live.picked)
+    coop.scratch[coop.local].cmd = (uint8_t)(choice + 1);
+  else if (!live.picked)
     live_queue({1, choice});
   live.picked = true;
 }
@@ -527,6 +601,8 @@ void game_state_set(game_state_id_t state) {
   }
   // Leaving the end screen names the ranked run it held (ranked.inc).
   ranked_release();
+  // A co-op session's screens (host/coop_live.inc).
+  bool coop = coop_screen_set(state);
   // A replay plays from the run its Watch starts; any other screen drops it.
   bool watches = watch.armed && state == GAME_STATE_GAMEPLAY && !run_active && live_eligible();
   if (watch.armed && !watches)
@@ -541,12 +617,13 @@ void game_state_set(game_state_id_t state) {
     watch_stop();
   else if (game_live && state != GAME_STATE_GAMEPLAY && state != GAME_STATE_PERK_SELECTION &&
            state != GAME_STATE_PAUSE_MENU && state != GAME_STATE_OPTIONS_MENU && state != GAME_STATE_CONTROLS_MENU)
-    live_end("incomplete");
+    coop_live.playing ? coop_quit() : live_end("incomplete");
   bool entering_gameplay = state == GAME_STATE_GAMEPLAY && !run_active;
   if (!watches && (entering_gameplay || (state == GAME_STATE_TYPO_GAMEPLAY && !run_active)))
     ++play_generation;
-  bool starts = entering_gameplay && live_eligible();
-  // The run a replay starts counts in none of the player's statistics.
+  bool starts = entering_gameplay && !coop && live_eligible();
+  // The run a replay or a co-op session starts counts in none of the player's
+  // statistics.
   game_status_t status = game_status_blob;
   {
     // A replay's run starts unheard (a quest's start readies its weapon), as
@@ -576,11 +653,13 @@ void game_state_set(game_state_id_t state) {
       custom_quest_restore();
     }
     game_state_set_recovered(state);
-    if (watches) {
+    if (watches || coop)
       game_status_blob = status;
+    if (watches)
       watch_begin();
-    }
   }
+  if (coop && !coop_start_run())
+    return coop_to_menu();
   if (!watches && starts)
     live_begin();
   if (starts)
@@ -593,11 +672,20 @@ void game_state_set(game_state_id_t state) {
   }
 }
 // A tick's save would write the verifier's settings; the player's own reach the
-// save after it (live_step), with the next one outside a tick.
+// save after it (live_step), with the next one outside a tick. A co-op
+// session's menus show every quest unlocked: the save keeps the player's own.
 void game_save_status_recovered();
 void game_save_status() {
-  if (!game_ticking)
-    game_save_status_recovered();
+  if (game_ticking)
+    return;
+  LiveUnlocks shown = {quest_unlock_index, quest_unlock_index_hardcore};
+  if (coop_live.overlay) {
+    quest_unlock_index = coop_live.own.normal;
+    quest_unlock_index_hardcore = coop_live.own.hardcore;
+  }
+  game_save_status_recovered();
+  quest_unlock_index = shown.normal;
+  quest_unlock_index_hardcore = shown.hardcore;
 }
 __attribute__((export_name("game_replay"))) const unsigned char *game_replay() { return live.replay.data(); }
 __attribute__((export_name("game_replay_size"))) int game_replay_size() { return (int)live.replay.size(); }
