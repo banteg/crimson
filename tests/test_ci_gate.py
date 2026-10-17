@@ -35,6 +35,7 @@ def core_needs(python: bool, game: bool, oracles: bool) -> dict:
         "python-report": python,
         "game-smoke": game,
         "game-parity": game,
+        "game-coop": game,
         "oracles": oracles,
     }.items():
         needs[job] = {"result": "success" if relevant else "skipped"}
@@ -62,6 +63,7 @@ def test_core_gate_accepts_exactly_the_required_jobs(python: bool, game: bool, o
         "python-report",
         "game-smoke",
         "game-parity",
+        "game-coop",
         "oracles",
     ],
 )
