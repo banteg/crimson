@@ -289,8 +289,8 @@ describe("co-op rooms", () => {
     host.ws.send("after");
     expect(await guest.next()).toBe("after");
 
-    // A reconnect hears the keys the seats proved, then proves its seat's key again on its own challenge, and keeps
-    // the seat only with the same key.
+    // A reconnect hears the keys the seats proved, then proves its seat's key again on its own challenge: another key
+    // proves nothing, the seat keeping its key and the socket its place.
     const stored = await runInDurableObject(stub(room.room_id), (_, state) => state.storage.get(["key:host", "key:guest"]));
     const back = await join(room.room_id, `role=guest&token=${guestToken}`);
     const { challenge } = (await back.json()) as Seat;
@@ -302,9 +302,14 @@ describe("co-op rooms", () => {
     ]);
     expect(await host.json()).toEqual({ type: "peer", present: true });
     back.ws.send(await (await identity()).proof(room.room_id, challenge));
-    expect(await back.closed).toEqual({ code: 1008, reason: "this seat proved another key" });
-    expect(await host.next()).toBe(PEER_LEFT);
+    back.ws.send("relayed");
+    expect(await host.next()).toBe("relayed");
     expect(await runInDurableObject(stub(room.room_id), (_, state) => state.storage.get(["key:host", "key:guest"]))).toEqual(stored);
+    // Unproven, the socket may prove the seat's own key yet.
+    back.ws.send(await guestKey.proof(room.room_id, challenge));
+    const proven = { type: "key", role: "guest", public_key: guestKey.publicKey };
+    expect([await back.json(), await host.json()]).toEqual([proven, proven]);
+    expect(host.pending() + back.pending()).toBe(0);
   });
 
   it("tells a socket as it opens the keys the seats proved before it came", async () => {
@@ -350,13 +355,15 @@ describe("co-op rooms", () => {
   });
 
   it("issues the host a seed only once both seats proved keys, to both seats, recorded with their keys", async () => {
-    // Before both seats proved keys, and from the guest, a seed request closes the socket.
+    // Before both seats proved keys a seed request gets none; from the guest it closes the socket.
     const early = await pair();
     early.host.ws.send(await (await identity()).proof(early.room.room_id, early.challenges.host));
     await early.host.json();
     await early.guest.json();
     early.host.ws.send(SEED);
-    expect(await early.host.closed).toEqual({ code: 1008, reason: "both seats prove their keys before a seed" });
+    early.host.ws.send("after");
+    expect(await early.guest.next()).toBe("after");
+    expect(early.host.pending()).toBe(0);
     const { room, host, guest, guestToken, hostKey, guestKey } = await provenPair();
     guest.ws.send(SEED);
     expect(await guest.closed).toEqual({ code: 1008, reason: "only the host asks for a seed" });
@@ -386,6 +393,16 @@ describe("co-op rooms", () => {
     expect([next === seed, draw.mock.calls.length]).toEqual([false, 2]);
     expect((await issued()).map((row) => row.seed)).toEqual([seed, next]);
     expect(host.pending() + again.pending()).toBe(0);
+
+    // A socket that opens hears the keys, then the last seed the room issued, which it may have missed.
+    const back = await join(room.room_id, `role=guest&token=${guestToken}`);
+    expect(await back.json()).toEqual(seat("guest"));
+    expect(await back.json()).toEqual({ type: "peer", present: true });
+    expect([await back.json(), await back.json(), await back.json()]).toEqual([
+      { type: "key", role: "host", public_key: hostKey.publicKey },
+      { type: "key", role: "guest", public_key: guestKey.publicKey },
+      { type: "seed", seed: next },
+    ]);
   });
 
   it("issues seeds with bit 31 clear, which rand never reads", async () => {
@@ -398,13 +415,17 @@ describe("co-op rooms", () => {
   });
 
   it("limits the host to ten seeds a minute", async () => {
-    const { host } = await provenPair();
+    const { host, guest } = await provenPair();
     for (let i = 0; i < 10; i++) {
       host.ws.send(SEED);
       expect(await host.json()).toMatchObject({ type: "seed" });
+      expect(await guest.json()).toMatchObject({ type: "seed" });
     }
+    // Past them a request gets none, and the socket stays.
     host.ws.send(SEED);
-    expect(await host.closed).toEqual({ code: 1008, reason: "too many seeds" });
+    host.ws.send("after");
+    expect(await guest.next()).toBe("after");
+    expect(host.pending()).toBe(0);
     expect(await issued()).toHaveLength(10);
   });
 

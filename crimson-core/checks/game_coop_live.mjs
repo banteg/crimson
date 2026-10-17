@@ -107,15 +107,19 @@
 // saves the configuration), and which the Guest's Alt+Q quits (which saves it
 // too) and the Host's window closes.
 //
-// The first Survival run plays the room's seed, which reaches the Guest's page
-// after the Host's START_RUN: the Guest's screen comes to the run once it has.
-// Its replay records both seats' keys; once both players named it, each
-// machine queued the same upload, both signatures verifying as the service
-// verifies them, as for the first completed quest. A START_RUN whose header
-// names another key in the Guest's seat than the room recorded there is one the
-// Guest's game refuses, both sessions closing for it. Every run either machine
-// queued is one the service takes, and the Guest's machine holds each the
-// Host's does.
+// The first Survival run plays the room's seed, which reaches the Guest's page,
+// with both seats' keys, only after the Host's START_RUN: the Guest's screen
+// comes to the run at once. Its replay records both seats' keys; once both
+// players named it, each machine queued the same upload, both signatures
+// verifying as the service verifies them, as for the first completed quest. A
+// run whose seed never reaches the Guest's page plays all the same, and neither
+// machine queues it. The room answers none of the Host's requests for the seed
+// of the run the transport opens again in, and says its last seed again to the
+// Host's page, which takes its seat anew meanwhile: the run plays the Host's own
+// seed, unranked. A START_RUN whose header names the Host's key in both seats,
+// or another build's recorder, is one the Guest's game refuses, both sessions
+// closing for it. Every run either machine queued is one the service takes, and
+// the Guest's machine holds each the Host's does.
 //
 // Every tick either machine confirmed has the same state hash, bake digest and
 // terrain digest on both, and the engine with both seats local
@@ -160,11 +164,11 @@ const STATUS = {
   stopped: 8192,
 };
 // Why a session ended (CoopReason).
-const SILENT = 5, UNANSWERED = 6, LEFT = 7, PARTNER_LEFT = 8, DISCONNECTED = 9, PARTNER_GONE = 10, DIVERGED = 11;
-const UNATTESTED = 12;
-// Where START_RUN (CoopType 2) carries the Guest's seat key: after its type, epoch, delay, window, PortableConfig,
-// choice, header size and key count, past the Host's key.
-const GUEST_KEY = 1 + 4 + 2 + CONFIG_BYTES + 1 + 2 + 1 + 32;
+const BAD_MESSAGE = 3, SILENT = 5, UNANSWERED = 6, LEFT = 7, PARTNER_LEFT = 8, DISCONNECTED = 9, PARTNER_GONE = 10;
+const DIVERGED = 11;
+// Where START_RUN (CoopType 2) carries the seats' keys: after its type, epoch, delay, window, PortableConfig, choice,
+// header size and key count; the recorder's version follows them, past its length.
+const SEAT_KEYS = 1 + 4 + 2 + CONFIG_BYTES + 1 + 2 + 1, RECORDER = SEAT_KEYS + 2 * 32 + 1;
 // The pad (game/host_input.h): A, Triangle, R2 and Start, the d-pad's up, right and down; the sticks from -1000 to
 // 1000.
 const PAD_SOUTH = 1, PAD_NORTH = 3, PAD_R2 = 7, PAD_START = 9, HAT_UP = 0, HAT_RIGHT = 9000, HAT_DOWN = 18000;
@@ -321,14 +325,11 @@ class Machines extends Link {
     }
     if (this.cut !== peer) super.send(peer, channel, bytes);
   }
-  // A START_RUN (CoopType 2) arriving notes when, as does a seed from the room (channel "room").
+  // A START_RUN (CoopType 2) arriving notes when, as does the room's word (channel "room"): a seed or a key.
   receive(peer, channel, bytes) {
     const { g, run } = peer;
     if (peer.gone) return;
-    if (channel === ROOM) {
-      peer.seeded = this.now;
-      return g.game_coop_room_seed(bytes);
-    }
+    if (channel === ROOM) return heard(peer, bytes);
     if (channel === 1 && bytes[0] === 2) peer.offered = this.now;
     const at = g.game_coop_rx(bytes.length);
     new Uint8Array(g.memory.buffer, at, bytes.length).set(bytes);
@@ -382,14 +383,20 @@ class Machines extends Link {
     return peers.map((p) => ({ screen: screen(p), status: status(p).toString(16), confirmed: confirmed(p) }));
   }
   // The room's host asks for a run's seed: the room draws one in the bits rand reads, records it with the seats'
-  // keys and tells both pages, the guest's `room.delay` later.
+  // keys and tells both pages, the guest's `room.delay` later; a muted room answers none.
   seed(peer) {
     assert.equal(peer.seat, 0, "a seed asked from the room's guest seat");
     assert.ok(room.keys[0] && room.keys[1], "a seed asked before both seats proved their keys");
+    peer.asked = this.now;
+    if (room.mute) return;
     const seed = Math.floor(room.draw() * 2 ** 31);
     room.seeds.push({ seed, keys: [room.keys[0], room.keys[1]] });
-    for (const p of peers)
-      this.flights.push({ at: this.now + (p === guest ? room.delay : 10), order: this.order++, to: p, channel: ROOM, bytes: seed });
+    for (const p of peers) this.later(p, p === guest ? room.delay : 10, { seed });
+  }
+  // The room's word reaches a page `ms` from now; the Guest's waits while the room holds it.
+  later(peer, ms, word) {
+    if (peer === guest && room.held) room.held.push(word);
+    else this.flights.push({ at: this.now + ms, order: this.order++, to: peer, channel: ROOM, bytes: word });
   }
 }
 const machines = new Machines();
@@ -444,30 +451,50 @@ function connect(roles = [0, 1]) {
 // The co-op room the machines' pages share (service/src/coop.ts), as it attests the pair for ranked runs: each
 // machine's page takes the room's seat of its network place (the Host's machine its host) and its game proves its
 // key on the socket's challenge, which the room checks as the service does; the room tells both pages each key it
-// recorded, and a page that comes later the keys before it, and issues the host seeds (Machines.seed). The service
-// later ranks an upload only on a seed the room issued to the keys its replay records.
+// recorded, and a page that comes later the keys before it and the last seed it issued, and issues the host seeds
+// (Machines.seed). The service later ranks an upload only on a seed the room issued to the keys its replay records.
+// What the room tells the Guest's page waits while `held` is a list (its socket away, or slower than the partner's
+// START_RUN), until released or dropped.
 const ROOM = "room";
-const room = { id: "k3m9q2x7vt", keys: [], seeds: [], delay: 30, draw: prng(SEED + 1) };
+const room = { id: "k3m9q2x7vt", keys: [], seeds: [], delay: 30, draw: prng(SEED + 1), held: null, mute: false };
 const SPKI = Buffer.from("302a300506032b6570032100", "hex");
 const verifies = (key, message, signature) =>
   crypto.verify(null, message, crypto.createPublicKey({ key: Buffer.concat([SPKI, Buffer.from(key, "hex")]), format: "der", type: "spki" }), Buffer.from(signature, "hex"));
 const roomText = (peer, text) => Buffer.from(peer.g.memory.buffer).write(`${text}\0`, peer.g.game_coop_room_text(), "latin1");
-const told = (peer, seat) => (roomText(peer, room.keys[seat]), assert.equal(peer.g.game_coop_room_key(seat), 1));
-// A machine's page takes its seat: the keys the room holds, then its own proof, which the room tells both pages.
-// The key it proved, or null for none.
+// The room's word as a page passes it to its game: a seat's key it recorded ({key: seat}) or a seed it issued.
+function heard(peer, word) {
+  if ("seed" in word) {
+    peer.seeded = time();
+    return peer.g.game_coop_room_seed(word.seed);
+  }
+  peer.keyed = time();
+  roomText(peer, room.keys[word.key]);
+  assert.equal(peer.g.game_coop_room_key(word.key), 1);
+}
+// The room tells a page at once, unless it holds the Guest's.
+const tell = (peer, word) => (peer === guest && room.held ? room.held.push(word) : heard(peer, word));
+// What the room held for the Guest's page reaches it, in order.
+function release() {
+  const held = room.held;
+  room.held = null;
+  for (const word of held) machines.later(guest, 10, word);
+}
+// A machine's page takes its seat: the keys the room holds and its last seed, then its own proof, which the room
+// tells both pages. The key it proved, or null for none.
 function seated(peer) {
   const challenge = crypto.randomBytes(32).toString("hex");
   roomText(peer, room.id + challenge);
   const at = peer.g.game_coop_prove(room.id.length);
   const bytes = new Uint8Array(peer.g.memory.buffer, at);
   const proof = Buffer.from(bytes.subarray(0, bytes.indexOf(0))).toString("latin1");
-  for (const seat of [0, 1]) if (room.keys[seat]) told(peer, seat);
+  for (const seat of [0, 1]) if (room.keys[seat]) tell(peer, { key: seat });
+  if (room.seeds.length) tell(peer, { seed: room.seeds.at(-1).seed });
   if (!proof) return null;
   const [key, signature] = proof.split(" ");
   assert.ok(verifies(key, Buffer.from(`crimson-coop-seat-v1\n${room.id}${challenge}`), signature), "the key proof");
   assert.ok([undefined, key].includes(room.keys[peer.seat]), "a seat's key changed");
   room.keys[peer.seat] = key;
-  for (const p of peers) told(p, peer.seat);
+  for (const p of peers) tell(p, { key: peer.seat });
   return key;
 }
 // A machine's outbox (host/ranked.inc), entry by entry.
@@ -836,6 +863,8 @@ tap(guest, DOWN, A);
 play(idle, () => tables(guest).length > solo_tables.length, "the Guest's co-op score");
 assert.deepEqual(tables(guest), [...solo_tables, "survival_2.hi"].sort(), "the Guest's co-op table");
 assert.equal(header(newest(guest)).seat_keys, null, "seats' keys in an unattested run");
+// The room's word to the Guest's page waits from here until the next run has started on both machines.
+room.held = [];
 restart();
 assert.ok(seated(guest), "the Guest's key, on the site's page");
 tap(host, key(ENTER));
@@ -852,13 +881,13 @@ function survival(roles = [0, 1]) {
   click(starter, PLAY_GAME_MENU, SURVIVAL);
   play(idle, started, "the run's start");
 }
-// Both seats' keys stand: the Host's run plays the room's seed, which reaches the Guest's page after the Host's
-// START_RUN, and the Guest's screen comes to the run once it has.
-room.delay = 3000;
+// Both seats' keys stand: the Host's run plays the room's seed and records the keys. The Guest's page hears the
+// room's keys and that seed only after the Host's START_RUN: its screen comes to the run at once, and the run
+// ranks all the same, as they come before the end screens' names.
 survival();
-room.delay = 30;
 assert.equal(room.seeds.length, 1);
-assert.ok(guest.offered < guest.seeded, "the room's seed before the Host's start");
+assert.deepEqual(room.held, [{ key: 0 }, { key: 1 }, { seed: room.seeds[0].seed }], "the room's word the Guest waits for");
+release();
 
 // The Host's perk key asks for the first perk menu every half second until its perk screen picks; then the
 // Guest's Triangle for the next. The Guest pauses at tick 300 and the Host resumes a second later from the
@@ -929,6 +958,7 @@ play(player, () => peers.every((p) => screen(p) === GAME_OVER), "the team's deat
 still = false;
 const first = ended("death");
 const firstFile = newest(host);
+assert.ok(guest.offered < guest.keyed && guest.offered < guest.seeded, "the room's word after the Host's start");
 assert.deepEqual(header(firstFile), { seat_keys: [room.keys[0], room.keys[1]], seed: room.seeds[0].seed, players: 2, recorder: "web" });
 midpointAim();
 // The Guest's records in the background: no move, no buttons, no request.
@@ -1105,19 +1135,34 @@ reconnect();
 hold(2000, () => none() && screen(guest) === MAIN_MENU, "the last session's fade");
 settle(host, MAIN_MENU);
 // The transport opens again 200 ticks into the next run: each machine ends it where it confirmed it, saves it and
-// goes to the menu, the new session going on.
+// goes to the menu, the new session going on. The room answers none of the Host's seed requests for that run (past
+// its ten a minute, say), and while the Host's machine waits, its page takes its seat again and hears the room's
+// last seed, one it already knows: its run waits out the room and plays its own seed, unranked.
 still = false;
+const issuedBefore = room.seeds.length, askedBefore = host.asked;
+room.mute = true;
 click(host, MAIN_MENU, PLAY_GAME);
 click(host, PLAY_GAME_MENU, SURVIVAL);
+play(idle, () => host.asked !== askedBefore, "the Host's seed request");
+seated(host);
 play(idle, started, "the run before the reconnect");
+room.mute = false;
+assert.ok(time() - host.asked >= 5000, "the Host's wait for the room");
 play(player, () => peers.every((p) => confirmed(p) >= 200), "200 ticks before the reconnect");
+assert.equal(room.seeds.length, issuedBefore);
+assert.ok(room.seeds.every(({ seed }) => seed !== host.config.readUInt32LE(0)), "a run on a seed the room issued before");
 reconnect();
 play(idle, () => peers.every((p) => screen(p) === MAIN_MENU && status(p) & STATUS.connected), "the reconnect's menus");
 agreed();
 for (const peer of peers) verified(peer, confirmed(peer) + 1, "incomplete");
+assert.equal(header(newest(host)).seat_keys, null, "seats' keys in a run on the Host's own seed");
 // The next run's end: both save their names, the Guest's pad steps to Main Menu, the third button, and the Host's
-// Enter presses Play Again; as the Guest's screen fades to the run, its A presses Main Menu: the Guest leaves.
+// Enter presses Play Again; as the Guest's screen fades to the run, its A presses Main Menu: the Guest leaves. The
+// room's seed for that run never reaches the Guest's page (its socket away as the room issued it): the run plays
+// all the same, its replay recording the seats' keys, and neither machine queues it.
 still = true;
+room.held = [];
+const unqueued = peers.map((p) => outbox(p).length);
 click(host, MAIN_MENU, PLAY_GAME);
 click(host, PLAY_GAME_MENU, SURVIVAL);
 play(idle, started, "the run before the fade");
@@ -1126,12 +1171,16 @@ settle(guest, GAME_OVER);
 tap(guest, DOWN, A);
 tap(host, key(ENTER));
 settle(guest, GAME_OVER, idle, 1000);
+play(idle, () => peers.every((p) => status(p) & STATUS.signed), "both names");
+assert.deepEqual(header(newest(guest)).seat_keys, [room.keys[0], room.keys[1]], "the seats' keys in the Guest's replay");
+assert.deepEqual(peers.map((p) => outbox(p).length), unqueued, "a run the Guest's page heard no seed for, queued");
 tap(guest, DOWN, DOWN);
 const offered = guest.offered;
 tap(host, key(ENTER));
 play(idle, () => guest.offered > offered, "the Host's start");
 tap(guest, A);
 left(guest);
+room.held = null;
 // And the next run's end: the transport closes before the Guest saves its name, which goes to the two players'
 // table all the same, then the menu.
 connect();
@@ -1175,27 +1224,33 @@ settle(host, QUEST_SELECT);
 tap(host, key(NINE));
 settle(host, QUEST_SELECT, idle, 1000);
 
-// A forged header. A session opens while the Host's quest list shows, and its number key starts the first quest on
-// the room's seed, but its START_RUN reaches the Guest's machine with another key in the Guest's seat than the room
-// recorded: the Guest's game refuses the run, both sessions close for it, and the Host's machine goes to the menu.
-// Back at its own quest list, the session ends as the next opens.
-connect();
-settle(host, QUEST_SELECT);
-const issued = room.seeds.length;
-machines.forge = (bytes) => {
-  const forged = bytes.slice();
-  forged[GUEST_KEY] ^= 1;
-  return forged;
-};
-tap(host, key(ONE));
-play(idle, () => peers.every((p) => status(p) & STATUS.closed) && screen(host) === MAIN_MENU, "the refused run");
-assert.equal(machines.forge, null, "no START_RUN to forge");
-assert.equal(room.seeds.length, issued + 1, "the run's seed");
-assert.deepEqual(peers.map(reason), [UNATTESTED, UNATTESTED], "why the run was refused");
-assert.equal(screen(guest), MAIN_MENU);
-click(host, MAIN_MENU, PLAY_GAME);
-click(host, PLAY_GAME_MENU, OWN_QUESTS);
-settle(host, QUEST_SELECT);
+// Forged headers. A session opens while the Host's quest list shows, and its number key starts the first quest on
+// the room's seed, but its START_RUN reaches the Guest's machine with the Host's key in the Guest's seat too, or
+// another build's recorder: the Guest's game refuses the run, both sessions close for it, and the Host's machine
+// goes to the menu. Back at its own quest list, the session ends as the next opens.
+const forgeries = [
+  (forged) => forged.copyWithin(SEAT_KEYS + 32, SEAT_KEYS, SEAT_KEYS + 32),
+  (forged) => (forged[RECORDER] ^= 1),
+];
+for (const forgery of forgeries) {
+  connect();
+  settle(host, QUEST_SELECT);
+  const issued = room.seeds.length;
+  machines.forge = (bytes) => {
+    const forged = Buffer.from(bytes);
+    forgery(forged);
+    return new Uint8Array(forged);
+  };
+  tap(host, key(ONE));
+  play(idle, () => peers.every((p) => status(p) & STATUS.closed) && screen(host) === MAIN_MENU, "the refused run");
+  assert.equal(machines.forge, null, "no START_RUN to forge");
+  assert.equal(room.seeds.length, issued + 1, "the run's seed");
+  assert.deepEqual(peers.map(reason), [BAD_MESSAGE, BAD_MESSAGE], "why the run was refused");
+  assert.equal(screen(guest), MAIN_MENU);
+  click(host, MAIN_MENU, PLAY_GAME);
+  click(host, PLAY_GAME_MENU, OWN_QUESTS);
+  settle(host, QUEST_SELECT);
+}
 
 // Quests. A session opens while the Host's quest list shows, and its number key starts the first quest; both
 // players clear it. On the results (a few seconds reveal the final time first) the Guest's pad saves its name and

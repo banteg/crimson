@@ -66,8 +66,7 @@ enum CoopReason : uint8_t {
   // (its page closed or reloaded).
   COOP_DISCONNECTED,
   COOP_PARTNER_GONE,
-  COOP_DIVERGED,   // the two games' states differ (DESYNC, sent or received)
-  COOP_UNATTESTED, // the Host's run records seats' keys the room did not record (host/coop_ranked.inc)
+  COOP_DIVERGED, // the two games' states differ (DESYNC, sent or received)
 };
 static constexpr uint8_t COOP_MAGIC = 0xC3;
 static constexpr uint16_t COOP_PROTOCOL = 1;
@@ -143,9 +142,6 @@ struct CoopSigner {
   std::array<uint8_t, 64> signature;
 };
 static CoopSigner coop_signers[2];
-// The room's word on a run the Host started (host/coop_ranked.inc): 1 attested
-// or unranked, 0 its seed has yet to come from the room, -1 not the room's.
-static int coop_room_check(const PortableConfig &config, const ReplayHeader &header);
 // A signature that came, or the run it signs: both seats' go to the outbox.
 static void coop_rank_queue();
 
@@ -190,7 +186,8 @@ static void coop_header_out(CoopWriter &message, const ReplayHeader &header) {
   message.put((uint16_t)body.out.size()).bytes(body.out.data(), body.out.size());
 }
 // A header for a run of `players`: false when no Host sends it (keys for some
-// seats, a key twice, a recorder the replay format refuses).
+// seats, a key twice, another build's recorder, as HELLO named this one's, or a
+// platform the replay format refuses).
 static bool coop_header_in(CoopReader &in, ReplayHeader &header, uint32_t players) {
   uint16_t size = in.get<uint16_t>();
   const uint8_t *at = in.take(size);
@@ -206,7 +203,7 @@ static bool coop_header_in(CoopReader &in, ReplayHeader &header, uint32_t player
   }
   bool distinct = header.seat_keys.size() < 2 || header.seat_keys[0] != header.seat_keys[1];
   return at && body.done() && (header.seat_keys.empty() || header.seat_keys.size() == players) && distinct &&
-         replay_printable(header.version, 64) && replay_printable(header.platform, 64);
+         header.version == replay_client_version && replay_printable(header.platform, 64);
 }
 static void coop_send(CoopWriter &message) { wire.outbox.push_back(std::move(message.out)); }
 // HELLO, naming this build (replay_client_version), this side's session and
@@ -651,9 +648,6 @@ static void coop_control_in(CoopReader &in, double now) {
     }
     if (delay < 1 || delay > COOP_DELAY || rmax > COOP_LEAD || choice > 2)
       return coop_fail(COOP_BAD_MESSAGE);
-    // Seats' keys the room did not record; the seed may still be on its way.
-    if (coop_room_check(config, header) < 0)
-      return coop_fail(COOP_UNATTESTED);
     if (game_original)
       return coop_offer(config, header, delay, rmax, epoch);
     cfg = config;

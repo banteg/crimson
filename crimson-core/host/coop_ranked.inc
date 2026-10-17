@@ -5,14 +5,16 @@
 // the room recorded (game_coop_room_key) and each seed the room issued
 // (game_coop_room_seed). The Host's run starts on a seed the room issued once
 // both seats' keys stand (game_coop_room_ask), and its replay records those
-// keys, which START_RUN carries to the Guest: its game plays the run only once
-// the room told it the same keys and seed. A run that ends as the board takes
+// keys, which START_RUN carries to the Guest. A run that ends as the board takes
 // it (a death, a completed quest) waits for each end screen's name: each
-// machine signs it for its seat and sends its partner the signature
+// machine signs it for its seat, once the room told it both seats' keys as the
+// replay records them and the run's seed, and sends its partner the signature
 // (RUN_SIGNED), and with both, each queues the same upload in
-// leaderboard/outbox/ (host/ranked.inc), which the service takes once. A page
-// that offers no ranked play (inside another site's page) or has no key proves
-// none, and its sessions play unranked.
+// leaderboard/outbox/ (host/ranked.inc), which the service takes once. The
+// room's word never holds a run up: a machine that has not heard it signs
+// nothing, and the run ranks nowhere. A page that offers no ranked play (inside
+// another site's page) or has no key proves none, and its sessions play
+// unranked.
 
 // The Host waits this long for the room's seed, then plays its own, unranked.
 static constexpr double COOP_SEED_MS = 5000;
@@ -25,7 +27,8 @@ static struct {
   ReplaySeatKey keys[2];
   std::deque<uint32_t> seeds; // the room's latest seeds, oldest first
   // The Host's seed request: due for the page (game_coop_room_ask), out since
-  // asked_at, and a seed the room issued since that no run took.
+  // asked_at, and a seed new to this page the room issued since that no run
+  // took.
   bool ask, asked, fresh;
   double asked_at;
   uint32_t seed;
@@ -34,20 +37,26 @@ static struct {
 } coop_room;
 
 // A finished run whose replay records the seats' keys, until both signed it:
-// its replay, its digest and this machine's seat in it.
+// its replay, its digest, this machine's seat in it, the keys and its seed.
 static struct {
   std::vector<uint8_t> payload;
   uint8_t digest[32];
   int seat;
   std::vector<ReplaySeatKey> keys;
+  uint32_t seed;
 } coop_held;
 
-// The room recorded both seats' keys, this machine's player's in `seat`, and this
+// The room recorded two seats' keys, this machine's player's in `seat`, and this
 // page offers ranked play.
 static bool coop_attested(int seat) {
   Identity identity;
-  return ranked_offered && coop_room.proven[0] && coop_room.proven[1] && identity_load(identity) &&
-         !memcmp(identity.public_key, coop_room.keys[seat].data(), REPLAY_SEAT_KEY_BYTES);
+  return ranked_offered && coop_room.proven[0] && coop_room.proven[1] && coop_room.keys[0] != coop_room.keys[1] &&
+         identity_load(identity) && !memcmp(identity.public_key, coop_room.keys[seat].data(), REPLAY_SEAT_KEY_BYTES);
+}
+// The Host's seed request is off: none due, none out, none taken.
+static void coop_unask() {
+  coop_room.ask = coop_room.asked = coop_room.fresh = false;
+  coop_room.asked_at = 0;
 }
 
 // The Host's run in coop_live.next can start (true): one both seats' keys stand
@@ -55,36 +64,34 @@ static bool coop_attested(int seat) {
 // room kept it waiting COOP_SEED_MS, it plays its own seed, unranked.
 static bool coop_seeded() {
   coop_room.next.clear();
-  if (!coop_attested(0))
-    return true;
-  if (coop_room.fresh) {
-    coop_room.fresh = coop_room.asked = false;
+  bool attested = coop_attested(0);
+  if (attested && coop_room.fresh) {
     coop_live.next.seed = coop_room.seed;
     coop_room.next = {coop_room.keys[0], coop_room.keys[1]};
-    return true;
+  } else if (attested) {
+    double now = host_time_ms();
+    if (!coop_room.asked) {
+      coop_room.ask = coop_room.asked = true;
+      coop_room.asked_at = now;
+      return false;
+    }
+    if (now - coop_room.asked_at < COOP_SEED_MS)
+      return false;
+    coop_note("Co-op: the room sent no seed - an unranked run");
   }
-  double now = host_time_ms();
-  if (!coop_room.asked) {
-    coop_room.ask = coop_room.asked = true;
-    coop_room.asked_at = now;
-    return false;
-  }
-  if (now - coop_room.asked_at < COOP_SEED_MS)
-    return false;
-  coop_room.asked = false;
-  coop_note("Co-op: the room sent no seed - an unranked run");
+  coop_unask();
   return true;
 }
 
-static int coop_room_check(const PortableConfig &config, const ReplayHeader &header) {
-  if (header.seat_keys.empty())
-    return 1;
-  if (header.seat_keys.size() != 2)
-    return -1;
+// The room told this machine the run's seed and both seats' keys as its replay
+// records them.
+static bool coop_room_attests() {
+  if (coop_held.keys.size() != 2)
+    return false;
   for (int seat = 0; seat < 2; ++seat)
-    if (!coop_room.proven[seat] || header.seat_keys[seat] != coop_room.keys[seat])
-      return -1;
-  return std::find(coop_room.seeds.begin(), coop_room.seeds.end(), config.seed) != coop_room.seeds.end();
+    if (!coop_room.proven[seat] || coop_held.keys[seat] != coop_room.keys[seat])
+      return false;
+  return std::find(coop_room.seeds.begin(), coop_room.seeds.end(), coop_held.seed) != coop_room.seeds.end();
 }
 
 // What a seat signs: "crimson-coop-run-v1\n", the payload's SHA-256, the seat
@@ -110,12 +117,14 @@ static void coop_hold(const std::vector<uint8_t> &payload, const char *outcome) 
   sha256(payload.data(), payload.size(), coop_held.digest);
   coop_held.seat = coop.local;
   coop_held.keys = coop_header.seat_keys;
+  coop_held.seed = cfg.seed;
   coop_rank_queue();
 }
 
 // This machine's player named the run at its end screen (or quit there): the
 // name goes to the partner with RUN_SIGNED, and with it the player's signature
-// for its seat when the run is held and its seat records the player's key.
+// for its seat when the run is held, its seat records the player's key and the
+// room attests the run; otherwise it ranks nowhere.
 static void coop_sign() {
   CoopSigner &own = coop_signers[coop.local];
   if (own.in)
@@ -123,6 +132,8 @@ static void coop_sign() {
   const char *name = highscore_active_record.player_name;
   own = {true, std::string(name, strnlen(name, 31))};
   Identity identity;
+  if (!coop_held.payload.empty() && !coop_room_attests())
+    coop_held = {};
   if (!coop_held.payload.empty() && identity_load(identity) &&
       !memcmp(identity.public_key, coop_held.keys[coop.local].data(), REPLAY_SEAT_KEY_BYTES)) {
     std::vector<uint8_t> message = coop_run_message(coop.local, own.name);
@@ -211,8 +222,12 @@ __attribute__((export_name("game_coop_room_key"))) int game_coop_room_key(int se
   coop_room.keys[seat] = key;
   return 1;
 }
-// A seed the room issued to the pair: the Host's run takes the one it asked for.
+// A seed the room issued to the pair: the Host's run takes one new to this page
+// that comes while its request is out. The room says its latest again to each
+// socket that opens; a run played it already.
 __attribute__((export_name("game_coop_room_seed"))) void game_coop_room_seed(uint32_t seed) {
+  if (std::find(coop_room.seeds.begin(), coop_room.seeds.end(), seed) != coop_room.seeds.end())
+    return;
   if (coop_room.seeds.size() == COOP_SEEDS)
     coop_room.seeds.pop_front();
   coop_room.seeds.push_back(seed);

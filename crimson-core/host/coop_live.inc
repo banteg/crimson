@@ -82,8 +82,6 @@ static const char *coop_why() {
     return line;
   case COOP_DIVERGED:
     return "The two games ran differently";
-  case COOP_UNATTESTED:
-    return "Co-op error: a run the room did not issue";
   default:
     return nullptr;
   }
@@ -314,7 +312,7 @@ static void coop_quit() {
 }
 
 // A START_RUN inside the original: the Guest's screen comes to the run first
-// (game_coop_pump), which takes it there once the room's word on it came.
+// (game_coop_pump), which takes it there.
 static void coop_offer(const PortableConfig &config, const ReplayHeader &header, int delay, int rmax, uint32_t epoch) {
   coop_live.next = config;
   coop_room.offered = header;
@@ -323,11 +321,12 @@ static void coop_offer(const PortableConfig &config, const ReplayHeader &header,
   coop_live.epoch = epoch;
   coop_live.offered = true;
 }
-// A new session (coop_session) takes no choice of the last: the Host's run, the
-// Guest's choice of the next, the run START_RUN offered, and a fade to the
-// last one's run (coop_start_run).
+// A new session (coop_session) takes no choice of the last: the Host's run and
+// its seed request, the Guest's choice of the next, the run START_RUN offered,
+// and a fade to the last one's run (coop_start_run).
 static void coop_forget() {
   coop_live.latched = coop_live.offered = coop_ui.asked_next = false;
+  coop_unask();
 }
 // START_CANCEL for the run offered: true when it was.
 static bool coop_withdraw(uint32_t epoch) {
@@ -663,8 +662,7 @@ bool game_coop_pump() {
     if (wire.next_run == 2 && coop_live.ended)
       coop_setup();
     wire.next_run = -1;
-    if (coop_live.offered && !wire.left && !wire.partner_left && !coop_live.naming &&
-        coop_room_check(coop_live.next, coop_room.offered) > 0)
+    if (coop_live.offered && !wire.left && !wire.partner_left && !coop_live.naming)
       coop_enter_run(coop_live.next);
     return true;
   }
@@ -679,8 +677,12 @@ bool game_coop_pump() {
     }
     wire.next_run = -1;
   }
+  // A run that cannot start yet asks the room for no seed: a later start asks
+  // afresh.
   bool named = !coop_live.naming && (!wire.started || wire.partner_signed);
-  if (coop_live.latched && named && coop_can_start() && coop_seeded())
+  if (!coop_live.latched || !named || !coop_can_start())
+    coop_unask();
+  else if (coop_seeded())
     coop_enter_run(coop_live.next);
   return true;
 }

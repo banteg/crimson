@@ -39,9 +39,6 @@ function createCoop({
   const CONTROL_HEADER = 16;
   const CONTROL_MAX_BYTES = ROOM_MAX_BYTES - 1 - CONTROL_HEADER;
   const CONTROL_LIMIT = 1024;
-  // The room closes the socket of a host asking more than ten seeds a minute; the page asks at most this many, so a
-  // run past them plays unranked rather than end the session.
-  const SEED_RATE = 8;
   const ACK_DELAY_MS = 50;
   const INBOX_LIMIT = 1024;
   // Negotiated with fixed ids, so both pages create them and neither waits for the other's.
@@ -58,7 +55,7 @@ function createCoop({
   // The current connection attempt with the partner page. The host names each one; messages of another are stale.
   let link = null;
   // The room socket's budget, and the signalling that waits for it.
-  let budget = ROOM_RATE, budgetAt = now(), drainTimer = null, seeds = SEED_RATE, seedsAt = now();
+  let budget = ROOM_RATE, budgetAt = now(), drainTimer = null;
   const waiting = [];
   // Channel 1: messages the partner has not acknowledged, how many of them the current transport has, and how far
   // the partner's stream has been delivered here.
@@ -645,14 +642,10 @@ function createCoop({
     setState("closed");
   }
 
-  // The host asks the room for a run's seed, which comes to both pages (onseed): false when it cannot ask now.
+  // The host asks the room for a run's seed, which comes to both pages (onseed): false when it cannot ask now. The
+  // room answers none past ten a minute or before both seats proved their keys, and the run plays unranked.
   function seed() {
     if (role !== "host" || !seated || ended()) return false;
-    const time = now();
-    seeds = Math.min(SEED_RATE, seeds + ((time - seedsAt) * SEED_RATE) / 60000);
-    seedsAt = time;
-    if (seeds < 1) return false;
-    seeds -= 1;
     signal({ type: "seed" });
     return true;
   }

@@ -141,32 +141,35 @@ function service(time) {
     const partner = room.seats[other(role)];
     push(ws, JSON.stringify({ type: "peer", present: !!partner }));
     if (partner) push(partner, JSON.stringify({ type: "peer", present: true }));
-    // The keys the seats proved before this socket came.
+    // The keys the seats proved before this socket came, and the last seed the room issued.
     for (const seat of ["host", "guest"])
       if (room.keys[seat]) push(ws, JSON.stringify({ type: "key", role: seat, public_key: room.keys[seat] }));
+    if (room.seeds.length) push(ws, JSON.stringify({ type: "seed", seed: room.seeds.at(-1).seed }));
   }
   const toSeats = (room, message) => {
     for (const seat of Object.values(room.seats)) if (seat) push(seat, JSON.stringify(message));
   };
-  // A seat's key, once a socket signs its own challenge with it; the same key on every socket of the seat.
+  // A seat's key, once a socket signs its own challenge with it; the same key on every socket of the seat, another
+  // proving none.
   function proveKey(ws, message) {
     const room = ws.room;
     if (ws.proved) return serverClose(ws, 1008, "a socket proves its key once");
     if (!proven(room.id, ws.challenge, message)) return serverClose(ws, 1008, "key proof does not verify");
-    if (room.keys[ws.role] && room.keys[ws.role] !== message.public_key) return serverClose(ws, 1008, "this seat proved another key");
+    if (room.keys[ws.role] && room.keys[ws.role] !== message.public_key) return;
     ws.proved = true;
     room.keys[ws.role] = message.public_key;
     toSeats(room, { type: "key", role: ws.role, public_key: message.public_key });
   }
+  // The host's seeds, ten a minute, once both seats proved their keys: a request past them gets none.
   function issueSeed(ws) {
     const room = ws.room;
     if (ws.role !== "host") return serverClose(ws, 1008, "only the host asks for a seed");
     const budget = room.seedBudget;
     budget.tokens = Math.min(SEEDS_PER_MINUTE, budget.tokens + ((time.now() - budget.at) * SEEDS_PER_MINUTE) / 60000);
     budget.at = time.now();
-    if (budget.tokens < 1) return serverClose(ws, 1008, "too many seeds");
+    if (budget.tokens < 1) return;
     budget.tokens -= 1;
-    if (!room.keys.host || !room.keys.guest) return serverClose(ws, 1008, "both seats prove their keys before a seed");
+    if (!room.keys.host || !room.keys.guest) return;
     const seed = crypto.randomBytes(4).readUInt32LE() & SEED_BITS;
     room.seeds.push({ seed, keys: [room.keys.host, room.keys.guest] });
     toSeats(room, { type: "seed", seed });
@@ -1285,27 +1288,25 @@ it("each page proves its seat's key on its socket's challenge; both hear both ke
   assert.deepEqual(plain(guest.events.seeds), seeds);
   assert.deepEqual(env.world.closes, []);
   assert.deepEqual(plain(host.events.messages.concat(guest.events.messages)), []);
-  // The page asks fewer seeds a minute than the room allows: past them it asks none, until the budget refills.
-  let asked = 2;
-  while (host.coop.seed()) ++asked;
+  // Past the room's ten a minute a request gets no seed, and the session goes on.
+  for (let i = 0; i < SEEDS_PER_MINUTE; ++i) assert.ok(host.coop.seed());
   await settle();
-  assert.ok(asked < SEEDS_PER_MINUTE, `${asked} seeds in a moment`);
-  assert.equal(room.seeds.length, asked);
-  await env.time.advance(60000 / asked + 1);
-  assert.ok(host.coop.seed());
-  assert.equal(host.coop.seed(), false);
-  await settle();
+  assert.equal(room.seeds.length, SEEDS_PER_MINUTE);
+  assert.deepEqual(plain(guest.events.seeds), room.seeds.map(({ seed }) => seed));
   assert.deepEqual(env.world.closes, []);
   await exchange(host, guest);
 });
 
-it("a reloaded page proves its seat again on its new challenge and hears the keys the room holds", async () => {
+it("a reloaded page proves its seat again on its new challenge and hears the keys and the last seed the room holds", async () => {
   const env = setup();
   const [hostKey, guestKey] = [identity(), identity()];
   const { host, guest } = await meet(env, {
     hostPage: env.page("host", { prove: hostKey.prove }),
     guestPage: env.page("guest", { prove: guestKey.prove }),
   });
+  assert.ok(host.coop.seed());
+  await settle();
+  const [{ seed }] = env.world.rooms.get(host.coop.room).seeds;
   const first = env.world.seat(host.coop.room, "guest").challenge;
   guest.vanish();
   await settle();
@@ -1315,17 +1316,20 @@ it("a reloaded page proves its seat again on its new challenge and hears the key
   assert.notEqual(env.world.seat(host.coop.room, "guest").challenge, first);
   const [hostSeat, guestSeat] = [["host", hostKey.public_key], ["guest", guestKey.public_key]];
   assert.deepEqual(plain(reloaded.events.keys), [hostSeat, guestSeat, guestSeat]);
+  assert.deepEqual(plain(reloaded.events.seeds), [seed]);
   assert.deepEqual(plain(host.events.keys), [hostSeat, guestSeat, guestSeat]);
   assert.deepEqual(env.world.closes.filter(({ code }) => code === 1008), []);
   assert.equal(reloaded.coop.state, "connected");
-  // Another key in the seat: the room refuses the page.
+  // Another key in the seat proves nothing: the seat keeps its key, and the page plays on, unranked.
   reloaded.vanish();
   await settle();
   const stranger = env.page("guest", { store: guest.store, prove: identity().prove });
   await stranger.coop.join(host.coop.room);
   await settle();
-  assert.equal(stranger.coop.state, "error");
-  assert.equal(stranger.coop.reason, "the room refused this page: this seat proved another key");
+  assert.equal(stranger.coop.state, "connected");
+  assert.deepEqual(env.world.rooms.get(host.coop.room).keys, { host: hostKey.public_key, guest: guestKey.public_key });
+  assert.deepEqual(plain(host.events.keys), [hostSeat, guestSeat, guestSeat]);
+  assert.deepEqual(env.world.closes.filter(({ code }) => code === 1008), []);
 });
 
 it("a proof that comes after its socket went is dropped; a page without a key proves none", async () => {
@@ -1349,9 +1353,9 @@ it("a proof that comes after its socket went is dropped; a page without a key pr
   assert.deepEqual(plain(env.world.texts.filter(({ type }) => type === "key").map(({ from }) => from)), ["guest"]);
   assert.deepEqual(room.keys, { guest: guestKey.public_key });
   assert.deepEqual(plain(host.events.keys), [["guest", guestKey.public_key]]);
-  // The host proved none (its game offers no ranked play): its seed request is one the room refuses.
+  // The host proved none (its game offers no ranked play): its seed request gets none, and the session goes on.
   assert.deepEqual(env.world.closes, [{ role: "guest", code: 1006, reason: "" }]);
   assert.ok(host.coop.seed());
   await settle();
-  assert.deepEqual(env.world.closes.at(-1), { role: "host", code: 1008, reason: "both seats prove their keys before a seed" });
+  assert.deepEqual([room.seeds, plain(host.events.seeds), env.world.closes.length, host.coop.state], [[], [], 1, "connected"]);
 });

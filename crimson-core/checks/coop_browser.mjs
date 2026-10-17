@@ -273,6 +273,8 @@ async function open(name, origin, { webrtc = true } = {}) {
     up: () => mouse("mouseReleased"),
     keyDown: (code) => key("keyDown", code),
     keyUp: (code) => key("keyUp", code),
+    // The page's next animation frame, which runs a pass of the game first.
+    frame: () => evaluate(() => new Promise((resolve) => requestAnimationFrame(() => resolve()))),
     async type(text) {
       for (const ch of text) await letter(ch);
     },
@@ -300,10 +302,12 @@ async function press(peer, screen, [x, y]) {
   await sleep(120);
   await peer.up();
 }
-// A key tap the game sees: held past a frame.
+// A key tap the game sees: held through one of the page's frames. The original reads a key as it is down when a
+// frame polls (its buttons' Enter too; the name entry takes Enter as a character), so a press and release within one
+// slow frame (after a screenshot, on a busy machine) is none, and one held for half a second of frames repeats.
 async function tap(peer, code) {
   await peer.keyDown(code);
-  await sleep(150);
+  await peer.frame();
   await peer.keyUp(code);
 }
 const connected = async (peer) => (await peer.status()) & STATUS.connected;
@@ -498,10 +502,9 @@ try {
   console.log("ranked co-op run:", board.rows[0].score, "points for", NAMES.join(" and "));
   await Promise.all([host.shot("ranked"), guest.shot("ranked")]);
 
-  // The host's Enter presses Play Again (its button focused under the cursor), once the screen settled after the
-  // screenshots, and both screens come to the next run. The host pauses there with Escape and leaves from the
-  // banner: both runs end, both panels say why, and neither address names the room any more.
-  await sleep(1000);
+  // The host's Enter presses Play Again (its button focused under the cursor), and both screens come to the next
+  // run. The host pauses there with Escape and leaves from the banner: both runs end, both panels say why, and
+  // neither address names the room any more.
   await tap(host, "Enter");
   await started("the next run on both");
   await tap(host, "Escape");

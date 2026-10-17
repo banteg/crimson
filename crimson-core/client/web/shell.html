@@ -537,8 +537,8 @@
   // page gives it.
   const COOP_CONNECTED = 1, COOP_CLOSED = 0x1000, COOP_STOPPED = 0x2000;
   const COOP_VERSION = 1, COOP_BAD_RECORD = 2, COOP_BAD_MESSAGE = 3, COOP_LEFT = 7, COOP_PARTNER_LEFT = 8;
-  const COOP_DISCONNECTED = 9, COOP_PARTNER_GONE = 10, COOP_DIVERGED = 11, COOP_UNATTESTED = 12;
-  const COOP_ENDS = new Set([COOP_VERSION, COOP_BAD_RECORD, COOP_BAD_MESSAGE, COOP_LEFT, COOP_PARTNER_LEFT, COOP_UNATTESTED]);
+  const COOP_DISCONNECTED = 9, COOP_PARTNER_GONE = 10, COOP_DIVERGED = 11;
+  const COOP_ENDS = new Set([COOP_VERSION, COOP_BAD_RECORD, COOP_BAD_MESSAGE, COOP_LEFT, COOP_PARTNER_LEFT]);
   const coopLine = document.getElementById("coop-line"), coopInvite = document.getElementById("coop-invite");
   const coopCopy = document.getElementById("coop-copy"), coopNew = document.getElementById("coop-new"),
     coopClose = document.getElementById("coop-close");
