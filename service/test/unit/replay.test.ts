@@ -56,6 +56,17 @@ it("a custom quest decodes, ranks under the canonical profile, and matches Pytho
   expect(sha256(runIdentity(transport))).toBe(vectors.custom_quest_run.run_id);
 });
 
+describe("a co-op run", () => {
+  const replay = decodeReplay(inflateReplay(base64(vectors.coop_run.file)));
+
+  it("streams both players' inputs as Python's core stream does, and keeps the player count in its id", () => {
+    const transport = encodeTransport(replay);
+    expect(sha256(transport)).toBe(vectors.coop_run.transport_sha256);
+    expect(sha256(runIdentity(transport))).toBe(vectors.coop_run.run_id);
+    expect(vectors.coop_run.run_id).toBe(sha256(transport));
+  });
+});
+
 it("quest-dsl.json stays in sync with Python's weapon, bonus, perk and template tables", () => {
   expect(questDsl).toEqual(vectors.quest_dsl);
 });
