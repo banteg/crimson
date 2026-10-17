@@ -395,12 +395,15 @@ static int watch_playing() {
 // with no playlist), plays as the original plays it, by the player's audio
 // settings, and the run's latch stays as the simulation half left it. An in-game
 // tune already playing keeps playing. The preparing pass notes each tune, whatever
-// plays. A headless run has no tracks to play.
+// plays. A co-op tick's end tunes wait for its confirmation (host/coop.inc). A
+// headless run has no tracks to play.
 static void game_music_play(int sfx_id, int draw) {
   const GameMusic &shell = game_shell_audio.music;
   int track = draw < 0                ? game_shell_track(sfx_id)
               : shell.playlist_count ? shell.playlist[draw % shell.playlist_count]
                                      : -1;
+  if (draw < 0 && coop_defer(COOP_PLAY, track, 0))
+    return;
   if (!game_original || track < 0)
     return;
   if (live.watching && watch.phase == WATCH_PREPARING && (watch.tunes.empty() || watch.tunes.back().track != track))

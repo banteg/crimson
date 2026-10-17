@@ -1,9 +1,9 @@
 A tick names the music by the verifier's track ids (host/game.inc): the quest's end tune, which starts silent and
-fades in, is the original's track. Its fades need no such map: a fade-out fades every tune playing but the one it
-names, then that one.
+fades in, is the original's track, and in a co-op tick its volume waits with the tune for the tick's confirmation
+(host/coop.inc). Its fades need no such map: a fade-out fades every tune playing but the one it names, then that one.
 --- a/decomp/1.9/crimsonland/game/quest_mode_update.cpp
 +++ b/decomp/1.9/crimsonland/game/quest_mode_update.cpp
 @@ -57,2 +57,2 @@
          music_play_exclusive(music_track_crimsonquest_id);
 -        music_track_volume[music_track_crimsonquest_id] = 0.0f;
-+        music_track_volume[game_shell_track(music_track_crimsonquest_id)] = 0.0f;
++        game_music_volume(music_track_crimsonquest_id, 0.0f);

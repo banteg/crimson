@@ -506,6 +506,9 @@ scenarios.push(
     [MOUSE, PAD],
     { prefer: [PERK.plaguebearer, PERK.pyromaniac, PERK.jinxed, PERK.regeneration] },
   ],
+  // Under the ranked rules this run fills the effect pool early (original bug 39's overflow), which co-op
+  // rollbacks must restore (checks/game_coop.mjs).
+  ["coop-survival-effects", [1, 1, 1, { seed: 44, players: 2 }], 2, 6000, [PAD, MOUSE]],
 );
 scenarios.push([
   "quest-settings",

@@ -297,6 +297,38 @@ jobs:
         with:
           name: runtime-game-parity-timings
           path: crimson-core/build/timings.jsonl
+  game-coop:
+    needs: [changes, build-game, corpus]
+    if: needs.changes.outputs.game == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --frozen --group dev
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - uses: actions/download-artifact@v8
+        with:
+          name: runtime-game
+          path: crimson-core/build/game
+      - uses: actions/download-artifact@v8
+        with:
+          name: runtime-corpus
+          path: crimson-core/build
+      - name: Play every co-op stream through the co-op engine and its forced rollbacks
+        run: |
+          uv run --no-sync python scripts/ci_benchmark.py --out crimson-core/build/timings.jsonl --name game-coop -- \
+            node crimson-core/checks/game_coop.mjs
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: runtime-game-coop-timings
+          path: crimson-core/build/timings.jsonl
 
   oracles:
     needs: [changes, build-native, build-wasm, corpus]
@@ -385,7 +417,7 @@ jobs:
 
   core-gate:
     name: core-gate
-    needs: [changes, build-native, build-wasm, build-game, corpus, python, python-report, game-smoke, game-parity, oracles]
+    needs: [changes, build-native, build-wasm, build-game, corpus, python, python-report, game-smoke, game-parity, game-coop, oracles]
     if: always()
     runs-on: ubuntu-latest
     steps:

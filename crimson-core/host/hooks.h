@@ -31,8 +31,9 @@ int highscore_watch_row(int hovered, int rows, int *selected);
 void highscore_watch(float *card, struct highscore_record_t *record);
 // The build's name (host/game.inc).
 char *game_version_label();
-// The original's music track for one a tick names (host/game.inc).
-int game_shell_track(int id);
+// A track's volume a tick sets, on the original's track for the one it names
+// (host/coop.inc).
+void game_music_volume(int id, float volume);
 }
 // The repack's stored entry for a path (game/repack.cpp).
 char *grim_lookup_blob_entry(char *path);

@@ -4351,6 +4351,97 @@
       }
     },
     {
+      "name": "coop-survival-effects",
+      "ticks": 6000,
+      "fields_per_snapshot": 36343,
+      "sha256": "8b69e8f0ec3ca896d0ab5868ff383ce6079b00c1e4d4b668ed94421fc02e0397",
+      "final_sha256": "d9cd6ed672f53b7d86a8a7cc2c89879202ca345be5b91df4e90dc15e597ec4a6",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 25,
+        "xp": 22750,
+        "health": 87.89741516113281,
+        "elapsed_ms": 79936,
+        "timeline_ms": 79936,
+        "rng": 1871304752
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          3,
+          4,
+          8,
+          23
+        ],
+        "perks": [
+          4,
+          32,
+          34,
+          47,
+          48
+        ],
+        "bonuses": [
+          "double_xp",
+          "freeze",
+          "reflex_boost",
+          "weapon_power_up"
+        ],
+        "menu": 5,
+        "survivor_menu": 0,
+        "reload": 88,
+        "max_commands": 1,
+        "peak_creatures": 91,
+        "stall": false,
+        "transitions": false,
+        "run_down": 0
+      }
+    },
+    {
+      "name": "coop-survival-effects-ranked",
+      "ticks": 6000,
+      "fields_per_snapshot": 36343,
+      "sha256": "ec858a693e3ece4ad0dad079af5dc4ec58462efc86bf7e32c52bbdb8ec8f2577",
+      "final_sha256": "343be64cd049a60add948c8a5f96a37cfdf587f7bf2d1ee69ccb0cb52b1ca9c2",
+      "wasm_memory_mib": 2.5625,
+      "reset": "native and WASM A/B/A passed",
+      "imports": 0,
+      "final": {
+        "pending": 25,
+        "xp": 23094,
+        "health": 66.66666412353516,
+        "elapsed_ms": 96000,
+        "timeline_ms": 96000,
+        "rng": 195959875
+      },
+      "coverage": {
+        "weapons": [
+          1,
+          3,
+          30
+        ],
+        "perks": [
+          1,
+          12,
+          33,
+          50,
+          56
+        ],
+        "bonuses": [
+          "double_xp"
+        ],
+        "menu": 5,
+        "survivor_menu": 0,
+        "reload": 88,
+        "max_commands": 1,
+        "peak_creatures": 110,
+        "stall": false,
+        "transitions": false,
+        "run_down": 0
+      }
+    },
+    {
       "name": "quest-settings",
       "ticks": 915,
       "fields_per_snapshot": 36343,

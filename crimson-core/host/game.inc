@@ -100,10 +100,9 @@ static void game_run_ready() {
   config_blob.music_volume = game_shell_audio.music_volume;
   config_blob.sfx_volume = game_shell_audio.sfx_volume;
 }
-extern "C" {
 // The original's track for one a tick names by the verifier's id: what a tick
 // plays, or changes the volume of, is the original's.
-int game_shell_track(int id) {
+static int game_shell_track(int id) {
   if (!game_ticking || !game_original)
     return id;
   const GameMusic &shell = game_shell_audio.music;
@@ -115,7 +114,6 @@ int game_shell_track(int id) {
          : id == music_track_extra_1          ? shell.extra_1
                                               : id;
 }
-}
 static void game_reset_run_data() {
   if (game_original) {
     game_save_shell_audio();
@@ -124,7 +122,10 @@ static void game_reset_run_data() {
     portable_reset_data();
   }
 }
+static void coop_stop();
 static void game_init_run() {
+  // A run start ends a co-op run (host/coop.inc).
+  coop_stop();
   static bool booted;
   if (!booted && !game_original) {
     game_heap_strings = true;

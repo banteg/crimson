@@ -72,6 +72,10 @@ static void practice_stop();
 static void practice_end();
 static int practice_frame();
 static void practice_render();
+// A co-op tick's terrain bake and music wait for its confirmation (host/coop.inc).
+enum CoopTuneKind { COOP_PLAY, COOP_FADE, COOP_VOLUME };
+static bool coop_bake_held();
+static bool coop_defer(CoopTuneKind kind, int track, float volume);
 
 #include "replay.inc"
 #include "ranked.inc"
@@ -442,6 +446,7 @@ static void live_poll_prompt() {
 #include "keyframes.inc"
 #include "watch.inc"
 #include "practice.inc"
+#include "coop.inc"
 
 extern "C" {
 // game_frame (game/frame.cpp), after polling input: the ticks this pass runs,

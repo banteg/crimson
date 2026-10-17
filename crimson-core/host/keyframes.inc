@@ -139,6 +139,19 @@ static void keyframe_restore(const Keyframe &key) {
   memcpy(string_arena, run_state_read(state.data()), string_used);
 }
 
+// A run restored where the player plays on (practice's retry, a co-op
+// rollback) keeps what only this machine shows: the cursor, and the HUD's XP
+// bar, which would jump back.
+extern "C" int survival_xp_smoothed;
+template <class Restore> static void run_restore(Restore restore) {
+  float mouse_x = ui_mouse_x, mouse_y = ui_mouse_y;
+  int xp = survival_xp_smoothed;
+  restore();
+  ui_mouse_x = mouse_x;
+  ui_mouse_y = mouse_y;
+  survival_xp_smoothed = xp;
+}
+
 // A corpse fx_queue_render bakes (fx_queue_add_rotated's arrays, one entry).
 struct RotatedDecal {
   vec2f_t pos;
@@ -250,6 +263,36 @@ static void terrain_shoot(int at_tick) {
   terrain.shot_ticks *= 2;
 }
 
+// One logged bake through the original's fx_queue_render: `queued` decals (the
+// fx queue's, then the effect overflow's) and `corpses` corpses.
+static void terrain_bake(const fx_queue_entry_t *queue, size_t queued, const RotatedDecal *rotated, size_t corpses) {
+  fx_queue_count = (int)std::min(queued, (size_t)GAME_FX_QUEUE_MAX_COUNT);
+  std::copy(queue, queue + fx_queue_count, fx_queue);
+  game_effect_overflow.decal_count = (int)(queued - fx_queue_count);
+  std::copy(queue + fx_queue_count, queue + queued, game_effect_overflow.decals);
+  fx_queue_rotated = (int)corpses;
+  for (int i = 0; i < fx_queue_rotated; ++i) {
+    const RotatedDecal &d = rotated[i];
+    fx_rotated_pos_x[i] = d.pos;
+    fx_rotated_scale[i] = d.scale;
+    fx_rotated_rotation[i] = d.rotation;
+    fx_rotated_creature_type_id[i] = d.creature_type_id;
+    fx_rotated_color_r[i] = d.color;
+  }
+  game_effects_render_decals();
+}
+
+// Logged bakes drawn into the terrain between ticks, at the run's settings (its
+// texture scale), as its ticks draw them.
+template <class Bakes> static void terrain_bakes(Bakes bakes) {
+  unsigned char disabled = grim_render_disabled;
+  grim_render_disabled = 0;
+  live_enter_run();
+  bakes();
+  live_install(live.outside);
+  grim_render_disabled = disabled;
+}
+
 // The terrain as it stood after the first `batches` bakes: the nearest copy at or
 // before them, then the bakes after it. It fills the run's queues: a keyframe
 // restore follows.
@@ -258,40 +301,27 @@ static void terrain_rebuild(size_t batches) {
                                [](size_t b, const TerrainShot &s) { return b < s.batches; }) -
               1;
   host_texture_copy(terrain_host_id(), shot->id);
-  unsigned char disabled = grim_render_disabled;
-  grim_render_disabled = 0;
-  // The bakes draw at the run's settings (its texture scale), as its ticks do.
-  live_enter_run();
-  for (size_t b = shot->batches; b < batches; ++b) {
-    size_t queue_start = terrain.batches[b].queue;
-    size_t queue_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].queue : terrain.queue.size();
-    size_t rotated_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].rotated : terrain.rotated.size();
-    size_t total = queue_end - queue_start;
-    fx_queue_count = (int)std::min(total, (size_t)GAME_FX_QUEUE_MAX_COUNT);
-    terrain.queue.read(queue_start, queue_start + fx_queue_count, fx_queue);
-    game_effect_overflow.decal_count = (int)(total - fx_queue_count);
-    terrain.queue.read(queue_start + fx_queue_count, queue_end, game_effect_overflow.decals);
-    fx_queue_rotated = (int)(rotated_end - terrain.batches[b].rotated);
-    std::vector<RotatedDecal> rotated(fx_queue_rotated);
-    terrain.rotated.read(terrain.batches[b].rotated, rotated_end, rotated.data());
-    for (int i = 0; i < fx_queue_rotated; ++i) {
-      const RotatedDecal &d = rotated[i];
-      fx_rotated_pos_x[i] = d.pos;
-      fx_rotated_scale[i] = d.scale;
-      fx_rotated_rotation[i] = d.rotation;
-      fx_rotated_creature_type_id[i] = d.creature_type_id;
-      fx_rotated_color_r[i] = d.color;
+  terrain_bakes([&] {
+    std::vector<fx_queue_entry_t> queue;
+    std::vector<RotatedDecal> rotated;
+    for (size_t b = shot->batches; b < batches; ++b) {
+      size_t queue_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].queue : terrain.queue.size();
+      size_t rotated_end = b + 1 < terrain.batches.size() ? terrain.batches[b + 1].rotated : terrain.rotated.size();
+      queue.resize(queue_end - terrain.batches[b].queue);
+      terrain.queue.read(terrain.batches[b].queue, queue_end, queue.data());
+      rotated.resize(rotated_end - terrain.batches[b].rotated);
+      terrain.rotated.read(terrain.batches[b].rotated, rotated_end, rotated.data());
+      terrain_bake(queue.data(), queue.size(), rotated.data(), rotated.size());
     }
-    game_effects_render_decals();
-  }
-  live_install(live.outside);
-  grim_render_disabled = disabled;
+  });
 }
 
 extern "C" {
 // A tick's bake into the terrain (gameplay_render_world): a replay logs it, and
 // bakes it on the ticks it does not draw too, so the terrain holds every tick's.
 void fx_queue_render() {
+  if (coop_bake_held())
+    return;
   if (terrain.logging && (fx_queue_count || game_effect_overflow.decal_count || fx_queue_rotated))
     terrain_log_batch((int)tick);
   if (!terrain.baking)

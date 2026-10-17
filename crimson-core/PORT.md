@@ -325,6 +325,17 @@ persistence) is in the [roadmap](ROADMAP.md#client-checks).
   result the verifier derives. With `--silent` the original starts with sound
   and music off, which leaves its music track ids all 0, and the run must still
   agree through its end tune.
+- [`checks/game_coop.mjs`](checks/game_coop.mjs) plays every co-op stream of the
+  corpus through the co-op engine ([`host/coop.inc`](host/coop.inc)), headless,
+  with both players local: each stream's perk commands become the players'
+  requests (alternating openers, same-tick opens, requests that must drop), and
+  the run must match the plain run snapshot for snapshot. Played again with
+  forced rollbacks (records arriving up to 12 ticks late, stood in for or
+  guessed, and restores on their own, some into an open perk menu), every
+  confirmed tick must have the same state hash and terrain bake. Corrupting each
+  family of fields the hash covers must change it, and the corpus must cover
+  opens by both players, same-tick and dropped requests, a survivor's menu and
+  the effect overflow inside a rollback.
 - [`checks/game_boot.mjs`](checks/game_boot.mjs) boots the original from a fresh
   game directory under Node's WASI, clicks through the menus into Survival, and
   requires every texture to load, the menus' music to reach the mix, the run to
