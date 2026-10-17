@@ -219,7 +219,7 @@ sessions through the live session ([`host/coop_live.inc`](host/coop_live.inc)),
 their messages carried over the rollback check's seeded pipe
 ([`checks/coop_link.mjs`](checks/coop_link.mjs)) with a stutter and a lost
 burst, at 60 Hz against 144 Hz, their runs rolling back (two ticks of input
-delay, up to eight predicted). The two differ in all a player sets: sound and
+delay, more on a long round trip, up to eight predicted). The two differ in all a player sets: sound and
 music, in-game tunes, detail and gore, key bindings, mouse and keys against a
 pad, and saved progress; each machine's clock keeps to the pipe's time and
 seeds the original's own randomness, so every run comes out the same. First a session opens while one
@@ -239,10 +239,12 @@ the new one), as the screen fades to a run (which then starts none) and
 mid-run, a leave as the screen fades to the next
 run, a transport that closes before a name entry, a lost connection with the
 seats swapped (the window in the background stopping after it), a Survival
-run under each of four network profiles (10 ms one way to 60 ± 20 ms with
-loss, one with bursts of lost packets) with a perk picked from either seat while
-the other predicts, pauses, a stall on either machine, the window narrowing, a
-leave and team wipes (then wipes until a correction revised one), quests from the
+run under each of five network profiles (10 ms one way to 60 ± 20 ms with
+loss, one with bursts of lost packets, and 120 ± 10 ms, where the game must keep
+60 ticks a second past the window's narrowing) with a perk picked from either
+seat while the other predicts, pauses, a stall on either machine, the window
+narrowing, a leave and team wipes (then wipes until a correction revised one),
+quests from the
 Host's quest list through Play Next, the high scores' Play a game, Play Another
 (where a link to a replay waits for the session's end, through its runs), two
 quest keys and Play Again twice to a leave from the failed quest's screen, and

@@ -87,11 +87,14 @@ networking work on proving:
      `input_produced_tick = sim_tick + D`, independent of whether simulation
      execution is temporarily stalled waiting on the network.
 
-   - **Base input delay**: **2 ticks (33.3 ms)** at $\text{RTT} \le 60\text{ ms}$
-     (adaptive 1–8 ticks in `M1` lockstep, changed only at negotiated epoch
-     boundaries). Mouse aim (`aim_scheme == 0`) converts the local screen cursor
-     to world coordinates at input-sampling time and records the world point into
-     `PortableInput`.
+   - **Base input delay**: **2 ticks (33.3 ms)**, and longer once the window
+     late in a long Survival run (4 ticks) would no longer cover a one-way trip
+     with it: the Host sets each run's delay from the round trip the session
+     measured, 2 up to about 83 ms one way, a tick more for each 16.7 ms past
+     that, at most 8 (Section 3.3, rule 4; adaptive 1–8 ticks in `M1`
+     lockstep, changed only at negotiated epoch boundaries). Mouse aim
+     (`aim_scheme == 0`) converts the local screen cursor to world coordinates
+     at input-sampling time and records the world point into `PortableInput`.
 
    - **Rollback window (`M2`)**: Up to **8 speculative ticks (133.3 ms)** (hard
      cap **12 ticks / 200 ms**, enforced **before every individual tick step**)
@@ -568,8 +571,15 @@ monotonically non-decreasing tick frontiers**:
 
 4. **Per-run constant input delay $D$**:
    In the `M1`/`M2` prototype, **hold $D$ constant for the duration of each run**
-   (negotiated from measured handshake RTT in `MSG_START_RUN`: fixed $D = 2$ in
-   `M2` rollback, or fixed $D \in [1, 8]$ per run in `M1` lockstep).
+   (negotiated from measured handshake RTT in `MSG_START_RUN`; fixed
+   $D \in [1, 8]$ per run in `M1` lockstep). In `M2` rollback
+   $D = \text{clamp}(\lceil \text{RTT} / (2 \times 16.667\text{ ms}) \rceil - 4 + 1, 2, 8)$
+   (`coop_run_delay`, `host/coop_live.inc`): a partner's record for tick $t$
+   leaves as its run reaches $t - D$ and must arrive before this run passes
+   $t$ by more than the window, so $D$ plus the narrowed window of 4 must cover
+   the one-way trip, with a tick to spare; were it short, both runs would wait
+   at their windows for each other's records and the whole game would slow
+   (at 120 ms one way, $D = 2$ held it to 55 ticks a second).
 
 ---
 
@@ -1892,15 +1902,17 @@ whose page reports.
 
 ### Milestone `M2`: Bounded rollback in the browser prototype
 
-1. Enable fixed $D = 2$ + bounded rollback ($R_{\max} = 8$, or `4` past 15 min
-   Survival) on top of the `M1` transport and `M0b` rollback ring.
+1. Enable $D = 2$ (longer on a long round trip, Section 3.3) + bounded
+   rollback ($R_{\max} = 8$, or `4` past 15 min Survival) on top of the `M1`
+   transport and `M0b` rollback ring.
 
 2. Record frame-time distributions, rollback depth histograms, and late-game CPU
    costs across direct P2P, TURN UDP, TURN TCP, and WS relay for the final
    #632 feasibility report.
 
-3. **Status**: the game side plays it. The Host starts every run with $D = 2$
-   and $R_{\max} = 8$ in `START_RUN`, and each peer narrows its own window to 4
+3. **Status**: the game side plays it. The Host starts every run with
+   $R_{\max} = 8$ in `START_RUN` and $D$ from the round trip (2 up to about
+   83 ms one way; Section 3.3, rule 4), and each peer narrows its own window to 4
    past 15 minutes of a Survival run (`coop_window`). Records stay $D$ ticks
    ahead of the run, topped up after the frame's ticks so the frame's ticks
    packet carries them, and the frame time a peer banks follows the clock-drift
@@ -1914,12 +1926,13 @@ whose page reports.
    trip go to the service as each session ends (Section 6.2, "Telemetry").
 
    `checks/game_coop_live.mjs` plays the `M1` sessions with these settings and
-   then four network profiles (10 ms one way; 30 ± 5 ms; 50 ± 15 ms with bursts
-   of lost packets; 60 ± 20 ms with 1% loss), a Survival run under each that
-   starts ahead on one machine and stalls 300 ms on the other: a perk picked
-   from either seat while the other predicts, pauses from either seat, the
-   window's narrowing (brought forward), a leave from the pause banner and team
-   wipes, then wipes until a correction revised one; the first quest plays under
+   then five network profiles (10 ms one way; 30 ± 5 ms; 50 ± 15 ms with bursts
+   of lost packets; 60 ± 20 ms with 1% loss; 120 ± 10 ms), a Survival run under
+   each that starts ahead on one machine and stalls 300 ms on the other: a perk
+   picked from either seat while the other predicts, pauses from either seat,
+   the window's narrowing (brought forward), a leave from the pause banner and
+   team wipes, then wipes until a correction revised one; at 120 ms the game
+   must keep 60 ticks a second past the narrowing; the first quest plays under
    the lossiest profile. It holds both machines' runs to each other and to the
    records as `M1` does, the Host's music to its run played again without
    predictions, every frame to the newest tick run, the perk and end screens to
@@ -1939,7 +1952,7 @@ whose page reports.
 
    Measured locally (Section 3.1): the late game's costs under node and in
    Chrome (`checks/coop_cost.mjs`), frame work at 60 and 144 Hz, and rollback
-   depths, ticks run again and stalled frames under the four profiles. The
+   depths, ticks run again and stalled frames under the five profiles. The
    comparison across direct paths, TURN over UDP and TCP and the room's relay
    is the telemetry's to make once deployed: `coop_totals` on `/analytics`
    holds each transport's sessions, round trips, rollback depths, frame work and

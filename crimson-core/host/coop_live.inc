@@ -239,10 +239,17 @@ static void coop_to_menu() {
   game_state_set_recovered(GAME_STATE_MAIN_MENU);
 }
 
-// A co-op run's input delay and window (§1): this machine's records go two
-// ticks ahead of its run, which runs up to eight ticks past the last confirmed
-// one on predictions (fewer late in a long Survival run, host/coop.inc).
+// A co-op run's input delay and window (§1, §3.3): the run runs up to eight
+// ticks past the last confirmed one on predictions (COOP_LATE_RMAX late in a
+// long Survival run, host/coop.inc), and each machine's records go at least two
+// ticks ahead of its run, more when the narrowed window alone would not cover a
+// one-way trip of the round trip measured: the partner's records would come
+// past it, and both runs would wait for them all the while.
 static constexpr int COOP_RUN_DELAY = 2, COOP_RUN_RMAX = 8;
+static int coop_run_delay() {
+  double rtt = wire.rtt >= 0 ? wire.rtt : COOP_RTT_GUESS_MS;
+  return std::clamp((int)ceil(rtt / 2 / COOP_TICK_MS) - COOP_LATE_RMAX + 1, COOP_RUN_DELAY, COOP_DELAY);
+}
 
 // game_state_set brings the screen to gameplay for the run coop_enter_run
 // named: the Host starts it (START_RUN) with the run's input delay and window;
@@ -259,7 +266,7 @@ static bool coop_start_run() {
   if (wire.seat == 0) {
     coop_header = {};
     coop_header.seat_keys = coop_room.next;
-    started = game_coop_request(COOP_ASK_START, COOP_RUN_DELAY, COOP_RUN_RMAX, coop_live.choice, now);
+    started = game_coop_request(COOP_ASK_START, coop_run_delay(), COOP_RUN_RMAX, coop_live.choice, now);
   } else {
     coop_header = coop_room.offered;
     // The offer stands unless the Host cancelled it or either side left; a

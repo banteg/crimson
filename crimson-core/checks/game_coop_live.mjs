@@ -2,21 +2,22 @@
 // docs/rewrite/network-coop.md, Phase B): two games boot, each from its own copy
 // of a game directory, and Node carries their sessions' messages between them
 // over the checks' lossy network (coop_link.mjs), as the transport does
-// (client/web/coop.js). Their runs roll back (M2): records two ticks ahead, up
-// to eight ticks run on predictions. The machines differ in all a player may
-// set: the Host plays at 60 frames a second with sound and music on, seven
-// in-game tunes, the highest detail, a mouse and keys it moved (ESDF, Q for the
-// perk menu) and some progress of its own; the Guest at 144 with sound and music
-// off, the lowest detail, no gore, info texts or direction arrows, a pad on the
-// pad profile and a fresh save. Its frames stutter once; the Host's packets are
-// lost in a burst once. Each machine's clock keeps to the network's time, and the
-// system clocks follow it, so the original's own randomness, which they seed,
-// comes out the same each time. Both pages offer ranked play, but for one start
-// of the Guest's game, inside another site's page as it were; once both pages
-// take their seats in the room (Node's stand-in for the service's, from the
-// custom quest on), each proves its key on its socket's challenge, which Node
-// verifies, and the room issues the Host's runs their seeds once both seats' keys
-// stand. Each session opens on both machines as the transport opens one:
+// (client/web/coop.js). Their runs roll back (M2): records two ticks ahead
+// (more on a long round trip), up to eight ticks run on predictions. The
+// machines differ in all a player may set: the Host plays at 60 frames a second
+// with sound and music on, seven in-game tunes, the highest detail, a mouse and
+// keys it moved (ESDF, Q for the perk menu) and some progress of its own; the
+// Guest at 144 with sound and music off, the lowest detail, no gore, info texts
+// or direction arrows, a pad on the pad profile and a fresh save. Its frames
+// stutter once; the Host's packets are lost in a burst once. Each machine's
+// clock keeps to the network's time, and the system clocks follow it, so the
+// original's own randomness, which they seed, comes out the same each time.
+// Both pages offer ranked play, but for one start of the Guest's game, inside
+// another site's page as it were; once both pages take their seats in the room
+// (Node's stand-in for the service's, from the custom quest on), each proves
+// its key on its socket's challenge, which Node verifies, and the room issues
+// the Host's runs their seeds once both seats' keys stand. Each session opens
+// on both machines as the transport opens one:
 //
 // Runs alone. The Guest's machine is in the tutorial as a session opens: a
 // Survival run the Host starts waits for it until the Host gives up. Its game
@@ -90,13 +91,14 @@
 // Host's menus are its own again: its quest list starts none of the quests the
 // session unlocked.
 //
-// Bounded rollback under the network's profiles: 10 ms one way; 30 ± 5 ms; 50
-// ± 15 ms with bursts of lost packets; 60 ± 20 ms with 1% lost. A Survival run
-// under each that begins ahead on one machine and stalls 300 ms on the other,
-// where a perk is picked from either seat while the other machine predicts, the
-// game pauses and resumes from either seat, the window narrows as 15 minutes
-// into a run, and the run ends in a team wipe or a leave from the pause banner;
-// then team wipes until one a correction revised.
+// Bounded rollback under the network's profiles: 10 ms one way; 30 ± 5 ms; 50 ±
+// 15 ms with bursts of lost packets; 60 ± 20 ms with 1% lost; 120 ± 10 ms. A
+// Survival run under each that begins ahead on one machine and stalls 300 ms on
+// the other, where a perk is picked from either seat while the other machine
+// predicts, the game pauses and resumes from either seat, the window narrows as
+// 15 minutes into a run (past which the game keeps 60 ticks a second at 120 ms,
+// its input delay longer), and the run ends in a team wipe or a leave from the
+// pause banner; then team wipes until one a correction revised.
 //
 // Quests. The Host starts the first quest from its quest list, which both
 // players clear under 60 ± 20 ms with loss; both save their names. The Guest's
@@ -1282,11 +1284,14 @@ for (const peer of peers) verified(peer, confirmed(peer) + 1, "incomplete");
 // first level one asks for the perk menu (the Host's perk key under 10 ms and 50 ± 15 ms, the Guest's Triangle under
 // the others) and picks on its perk screen while the other machine's run predicts the picker's records. At tick 900
 // the Guest's frames stall 300 ms. Under 30 ± 5 ms the Guest pauses with Start at tick 400 and the Host resumes with
-// Escape; under 60 ± 20 ms with loss the Host pauses and the Guest's Start resumes; under 50 ± 15 ms with bursts of
-// lost packets, which begin once the stall settled (a burst sets the runs apart as a stall does), the window narrows
-// 40 s into the run, as it does 15 minutes in. Once the pick is in and 1500 ticks are
-// confirmed (2700 where the window narrows), the Guest pauses under 30 ± 5 ms and the Host's mouse presses the
-// banner's Leave; under the others both players die (dying, below).
+// Escape; under 60 ± 20 ms with loss the Host pauses and the Guest's Start resumes. Under 50 ± 15 ms with bursts of
+// lost packets, which begin once the stall settled (a burst sets the runs apart as a stall does), and under
+// 120 ± 10 ms, where the Host's START_RUN puts the records further ahead (coop_live.inc coop_run_delay), the window
+// narrows 40 s into the run, as it does 15 minutes in. Once the pick is in and 1500 ticks are confirmed (2700 where
+// the window narrows, 3600 at 120 ms), the Guest pauses under 30 ± 5 ms and the Host's mouse presses the banner's
+// Leave; under the others both players die (dying, below). At 120 ms the game runs 60 ticks a second from a
+// second past the narrowing to the run's end, the narrowed window and the longer delay covering a one-way trip
+// together.
 //
 // Each run ends as the others: the same digests on both machines and from the records, the same replays, verified.
 // Both machines ran ticks on predictions and rolled them back, none further than the window allows; the drift
@@ -1298,6 +1303,7 @@ const PROFILES = [
   { name: "30 ± 5 ms", ms: 30, jitter: 5, picker: guest, pause: { by: guest, resumer: host }, end: "leave" },
   { name: "50 ± 15 ms, bursts", ms: 50, jitter: 15, bursts: { every: 4000, burst: 10 }, late: 40000, picker: host },
   { name: "60 ± 20 ms, 1% loss", ms: 60, jitter: 20, loss: 0.01, picker: guest, pause: { by: host, resumer: guest } },
+  { name: "120 ± 10 ms", ms: 120, jitter: 10, late: 40000, ticks: 3600, picker: guest, paced: true },
 ];
 const LOSSY = PROFILES[3];
 // The window, and how it narrows (host/coop.inc COOP_LATE_RMAX, COOP_LATE_MS); the most a rollback takes back
@@ -1373,8 +1379,11 @@ for (const profile of PROFILES) {
   picks.fill(0);
   const { picker } = profile;
   let pause = profile.pause && { ...profile.pause, at: 400, since: 0 }, hitch = null;
+  // The Host's confirmed tick by the network's time, frame by frame.
+  const paced = [];
   script = (peer) => {
     const taps = [];
+    if (peer === host) paced.push([time(), confirmed(host)]);
     if (!hitch && confirmed(host) >= HITCH.at) {
       hitch = machines.hitch = { peer: guest, from: time(), to: time() + HITCH.ms };
       if (machines.bursts) machines.bursts.at = hitch.to + SETTLE + 1000;
@@ -1390,13 +1399,20 @@ for (const profile of PROFILES) {
     if (asks && target(peer).pending > 0 && peer.frames % 30 === 0) taps.push(Q);
     return { taps };
   };
-  const ticks = profile.late ? 2700 : 1500;
+  const ticks = profile.ticks ?? (profile.late ? 2700 : 1500);
   play(
     player,
     () => peers.every((p) => confirmed(p) >= ticks && screen(p) === GAMEPLAY) && picks[picker.role] && !pause && hitch,
     `${profile.name}: ${ticks} confirmed ticks and the pick`,
   );
   assert.ok(time() > hitch.to + SETTLE + 1000, `${profile.name}: the stall settled`);
+  // Ticks a second from a second past the narrowing on.
+  let pace;
+  if (profile.paced) {
+    const [from, to] = [paced.find(([, t]) => t >= ((profile.late + 1000) * 60) / 1000), paced.at(-1)];
+    pace = +(((to[1] - from[1]) * 1000) / (to[0] - from[0])).toFixed(2);
+    assert.ok(pace >= 59, `${profile.name}: ${pace} ticks a second past the narrowing`);
+  }
   // The play itself, before the run's end (a wipe loses packets on purpose).
   const played = peers.map((p, i) => ({ ...coopStats(p.g), frames: p.frames - framed[i] }));
   script = () => ({});
@@ -1429,7 +1445,7 @@ for (const profile of PROFILES) {
   const drift = [stall, hitch].map(({ to }) => ({ after: apart(to, 500), settled: apart(to + SETTLE, 1000) }));
   for (const { after, settled } of drift)
     assert.ok(after.most >= 4 && settled.mean <= 1.5 && settled.most <= 3, `${profile.name}: ${JSON.stringify(drift)}`);
-  profiled.push({ profile: profile.name, ticks: result.ticks, drift, played, stats: counted.map(({ wire, ...s }) => s) });
+  profiled.push({ profile: profile.name, ticks: result.ticks, drift, pace, played, stats: counted.map(({ wire, ...s }) => s) });
 }
 // Rollbacks under every profile but the nearest.
 for (const { profile, stats } of profiled.slice(1)) assert.ok(stats[0].rollbacks && stats[1].rollbacks, `${profile}`);
@@ -1635,9 +1651,10 @@ const ranked = entries.map((each) => each.length);
 // rollbacks by depth, the deepest guess, frames that stalled, the most ticks a frame ran again, and revised deaths;
 // and for the play before the run's end, each machine's ticks run, ticks run again, frames, frames that stalled and
 // rollbacks by depth.
-const m2 = profiled.map(({ profile, ticks, drift, played, stats }) => ({
+const m2 = profiled.map(({ profile, ticks, drift, pace, played, stats }) => ({
   profile,
   ticks,
+  pace,
   played: played?.map((s) => [s.ticks, s.resimulated, s.frames, s.stalled_frames, s.depths]),
   drift: drift?.map(({ after, settled }) => [after.most, +settled.mean.toFixed(2)]),
   depths: stats.map((s) => s.depths),
