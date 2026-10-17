@@ -61,6 +61,7 @@ def idle_replay(tick_count: int, *, run: RunSpec | None = None) -> Replay:
         rules=REPLAY_RULES,
         recorder=current_recorder(),
         pilot=None,
+        seat_keys=None,
         run=RunSpec(game_mode_id=GameMode.DEMO, seed=0) if run is None else run,
         result=UNVERIFIED_RESULT,
         ticks=[ReplayTick(inputs=[(0.0, 0.0, 0.0, 0.0, 0)]) for _ in range(int(tick_count))],

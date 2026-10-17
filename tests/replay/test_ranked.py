@@ -102,6 +102,7 @@ def _replay(run: RunSpec, *ticks: list[PlayerInput]) -> Replay:
         rules=REPLAY_RULES,
         recorder=current_recorder(),
         pilot=None,
+        seat_keys=None,
         run=run,
         result=RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, ()),
         ticks=[ReplayTick(inputs=[pack_player_input(inp) for inp in inputs]) for inputs in ticks],

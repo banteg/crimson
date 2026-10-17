@@ -20,7 +20,7 @@ from crimson.replay.checkpoints import (
 )
 from crimson.replay.input_codec import pack_tick
 from crimson.replay.ticks import step_replay_tick
-from crimson.replay.types import ReplayTick
+from crimson.replay.types import SEAT_KEY_BYTES, ReplayTick
 from crimson.sim.commands import GameCommand, TypoCharCommand, TypoSubmitCommand
 from crimson.sim.run_init import initialize_run
 from crimson.sim.run_spec import RunSpec
@@ -48,8 +48,14 @@ def idle_tick(player_count: int) -> ReplayTick:
     return pack_tick([player_input(aim=Vec2(512.0, 512.0)) for _ in range(player_count)])
 
 
-def build_idle_replay(run: RunSpec, *, ticks: int) -> Replay:
-    recorder = ReplayRecorder(run)
+def seat_keys(player_count: int) -> tuple[bytes, ...]:
+    """A distinct stand-in public key for each seat."""
+
+    return tuple(bytes([seat + 1]) * SEAT_KEY_BYTES for seat in range(player_count))
+
+
+def build_idle_replay(run: RunSpec, *, ticks: int, seat_keys: tuple[bytes, ...] | None = None) -> Replay:
+    recorder = ReplayRecorder(run, seat_keys=seat_keys)
     for _ in range(int(ticks)):
         recorder.record(idle_tick(run.player_count))
     return finish_replay(recorder)

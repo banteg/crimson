@@ -931,13 +931,16 @@ any other.
   a leave, a disconnect or a failed quest does not.
 
 - **One replay, two signatures**: `MSG_START_RUN` carries the replay header
-  (`game_version`, `rules`, the Host's `recorder`, `pilot`, `run`), so both
-  peers write byte-identical `.crd` files. Each peer shows the end screen's
+  (`game_version`, `rules`, the Host's `recorder`, `pilot`, `seat_keys`, `run`),
+  so both peers write byte-identical `.crd` files. `seat_keys` records each
+  seat's leaderboard public key, so the service accepts only those two keys'
+  signatures and neither partner can sign both seats alone. Each peer shows the end screen's
   name entry ("State your name, trooper!", prefilled with the saved name) for
   its own player, as a 1P ranked run does before `ranked_release()`
   (`crimson-core/host/ranked.inc:85-99`). When the player confirms, the peer
   signs the replay as a [leaderboard upload](leaderboard-identity.md#uploads)
-  does and sends `MSG_RUN_SIGNED { run_epoch, name, public_key, signature }`.
+  does, with the key its seat records, and sends
+  `MSG_RUN_SIGNED { run_epoch, name, public_key, signature }`.
   Each peer queues the replay with both signatures in its outbox, so either can
   upload later, offline play included; the service accepts the run once and
   answers the second upload with `409`. A co-op run ranks only with both

@@ -31,7 +31,8 @@ players' scores do not compare with one player's, since XP is shared and two
 players double the Survival spawn countdown.
 
 A two-player run ranks only when its upload carries both players' signatures,
-from two different keys, one for each seat; the service enforces this at
+one from each key the replay records for its seats
+([`seat_keys`](../formats/replay.md#payload)); the service enforces this at
 upload. `crimson replay verify` checks only the run rules, so it can report a
 two-player replay as ranked that the service still refuses without the second
 signature. How the two players sign one replay is in the

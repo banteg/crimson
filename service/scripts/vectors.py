@@ -96,6 +96,7 @@ def _base_replay() -> Replay:
         rules=REPLAY_RULES,
         recorder=current_recorder(),
         pilot=None,
+        seat_keys=None,
         run=ranked_run_spec(GameMode.SURVIVAL, seed=0x1234ABCD),
         result=result,
         ticks=ticks,
@@ -228,7 +229,7 @@ def ranked_run() -> tuple[str, str, str, str, str]:
 
     def replay(ticks: list[ReplayTick], result: RunResult) -> Replay:
         return Replay(
-            REPLAY_FORMAT_VERSION, current_replay_game_version(), REPLAY_RULES, current_recorder(), None,
+            REPLAY_FORMAT_VERSION, current_replay_game_version(), REPLAY_RULES, current_recorder(), None, None,
             ranked_run_spec(GameMode.SURVIVAL, seed=0xC0FFEE), result, ticks,
         )
 
@@ -354,6 +355,7 @@ def custom_quest_payload() -> dict[str, object]:
             current_replay_game_version(),
             REPLAY_RULES,
             current_recorder(),
+            None,
             None,
             run,
             result,
