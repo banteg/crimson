@@ -253,6 +253,8 @@ jobs:
           node crimson-core/checks/game_session.mjs --pad --seed 4069574050 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --quest --seed 1 "$(fresh)"
           node crimson-core/checks/game_session.mjs --ranked --seed 4069574050 "$(fresh)"
+          # Breathing Room, picked off a 60 Hz frame, ages the creatures by the last tick's time step.
+          node crimson-core/checks/game_session.mjs --ranked --seed 23 "$(fresh)"
           node crimson-core/checks/game_session.mjs --ranked --quest --seed 1 "$(fresh)"
           node crimson-core/checks/game_session.mjs --silent --seed 4069574050 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --quest --silent --seed 1 "$(fresh)"

@@ -37,6 +37,10 @@ struct LiveSettings {
   float friendly_fire;    // whether players' shots hit each other
   player_input_t keys[2]; // the codes each player's input reads
   GameMusic music;        // the tracks music calls name
+  // The time step the last tick left, which a tick's perk pick reads before the
+  // tick sets its own (Breathing Room ages the creatures by it); the original's
+  // frames set theirs in between.
+  float frame_dt;
 };
 
 static struct {
@@ -164,7 +168,8 @@ static LiveSettings live_settings() {
           cv_bodiesFade->value,
           cv_friendlyFire->value,
           {player_state_table[0].input, player_state_table[1].input},
-          game_music()};
+          game_music(),
+          frame_dt};
 }
 static void live_install(const LiveSettings &settings) {
   config_blob = settings.config;
@@ -176,6 +181,7 @@ static void live_install(const LiveSettings &settings) {
   for (int i = 0; i < 2; ++i)
     player_state_table[i].input = settings.keys[i];
   game_music_install(settings.music);
+  frame_dt = settings.frame_dt;
 }
 // The run's settings in place of the player's, kept in live.outside. The run
 // draws with the player's display choices (direction arrows, detail, the perk
