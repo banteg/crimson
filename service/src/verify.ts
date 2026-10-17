@@ -191,9 +191,10 @@ export function deriveResult(snapshot: DataView, mode: number, players: number):
   const pending = u32("globals.perk_pending_count");
   const fired = Math.max(0, i32("globals.highscore_record_shots_fired"));
   const hit = Math.max(0, Math.min(i32("globals.highscore_record_shots_hit"), fired));
-  // src/crimson/weapon_runtime/assign.py most_used_weapon_id_for_player over the core's 53 slots. Python's table has
-  // 64 and the original scans them all, but only player one's weapon accrues time and no weapon past slot 52 is ever
-  // held, so the rest stay zero. The table is shared: every player's most used weapon is the same.
+  // src/crimson/weapon_runtime/assign.py most_used_weapon_id_for_player over the 53 slots the core's snapshot holds,
+  // as its replay_result does. Python and the original scan all 64, but only player one's weapon accrues time, and
+  // drops and stock quests hand out weapons up to 33, so the rest stay zero; only a custom quest starting with the
+  // Nuke Launcher (53) could tell them apart. The table is shared: every player's most used weapon is the same.
   let best = 1;
   for (let weapon = 2; weapon < WEAPON_USAGE_SLOTS; weapon++)
     if (i32(`globals.weapon_usage_time[${weapon}]`) > i32(`globals.weapon_usage_time[${best}]`)) best = weapon;
