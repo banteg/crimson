@@ -118,8 +118,10 @@
 // Host's page, which takes its seat anew meanwhile: the run plays the Host's own
 // seed, unranked. A START_RUN whose header names the Host's key in both seats,
 // or another build's recorder, is one the Guest's game refuses, both sessions
-// closing for it. Every run either machine queued is one the service takes, and
-// the Guest's machine holds each the Host's does.
+// closing for it; one whose header changes the Host's key it plays, its replay
+// recording that key, but the room never attested it: neither machine signs
+// the run, nor queues it. Every run either machine queued is one the service
+// takes, and the Guest's machine holds each the Host's does.
 //
 // Every tick either machine confirmed has the same state hash, bake digest and
 // terrain digest on both, and the engine with both seats local
@@ -169,6 +171,9 @@ const DIVERGED = 11;
 // Where START_RUN (CoopType 2) carries the seats' keys: after its type, epoch, delay, window, PortableConfig, choice,
 // header size and key count; the recorder's version follows them, past its length.
 const SEAT_KEYS = 1 + 4 + 2 + CONFIG_BYTES + 1 + 2 + 1, RECORDER = SEAT_KEYS + 2 * 32 + 1;
+// RUN_SIGNED (CoopType 9): its type, epoch, seat, the name's length and the name, then whether a signature follows.
+const RUN_SIGNED = 9;
+const signs = (word) => word[1 + 4 + 1 + 1 + word[6]];
 // The pad (game/host_input.h): A, Triangle, R2 and Start, the d-pad's up, right and down; the sticks from -1000 to
 // 1000.
 const PAD_SOUTH = 1, PAD_NORTH = 3, PAD_R2 = 7, PAD_START = 9, HAT_UP = 0, HAT_RIGHT = 9000, HAT_DOWN = 18000;
@@ -317,12 +322,14 @@ class Machines extends Link {
     this.loss = LOSS;
     this.input = () => ({});
   }
-  // What `cut` names (a peer) never arrives; `forge` changes the Host's next START_RUN on its way.
+  // What `cut` names (a peer) never arrives; `forge` changes the Host's next START_RUN on its way. Each peer's last
+  // RUN_SIGNED is its `word`.
   send(peer, channel, bytes) {
     if (this.forge && peer === host && channel === 1 && bytes[0] === 2) {
       bytes = this.forge(bytes);
       this.forge = null;
     }
+    if (channel === 1 && bytes[0] === RUN_SIGNED) peer.word = bytes;
     if (this.cut !== peer) super.send(peer, channel, bytes);
   }
   // A START_RUN (CoopType 2) arriving notes when, as does the room's word (channel "room"): a seed or a key.
@@ -1232,15 +1239,17 @@ const forgeries = [
   (forged) => forged.copyWithin(SEAT_KEYS + 32, SEAT_KEYS, SEAT_KEYS + 32),
   (forged) => (forged[RECORDER] ^= 1),
 ];
+const forging = (forgery) =>
+  (machines.forge = (bytes) => {
+    const forged = Buffer.from(bytes);
+    forgery(forged);
+    return new Uint8Array(forged);
+  });
 for (const forgery of forgeries) {
   connect();
   settle(host, QUEST_SELECT);
   const issued = room.seeds.length;
-  machines.forge = (bytes) => {
-    const forged = Buffer.from(bytes);
-    forgery(forged);
-    return new Uint8Array(forged);
-  };
+  forging(forgery);
   tap(host, key(ONE));
   play(idle, () => peers.every((p) => status(p) & STATUS.closed) && screen(host) === MAIN_MENU, "the refused run");
   assert.equal(machines.forge, null, "no START_RUN to forge");
@@ -1251,6 +1260,40 @@ for (const forgery of forgeries) {
   click(host, PLAY_GAME_MENU, OWN_QUESTS);
   settle(host, QUEST_SELECT);
 }
+// One whose header changes a byte of the Host's key is one the Guest's game plays, and both players clear the quest:
+// the Guest's replay records the changed key, the Host's the room's, and the two are the same byte for byte
+// otherwise. The room never told the Guest's page that key, so its pad's name goes unsigned; the Host's machine,
+// which the room told all, drops the run it held for the Guest's signature, so its Enter's name goes unsigned too, and
+// neither machine queues the run. The Host's Tab thrice and Enter press Main Menu, the fourth button, and it leaves,
+// back to its own quest list.
+connect();
+settle(host, QUEST_SELECT);
+const unranked = peers.map((p) => outbox(p).length);
+const changed = Buffer.from(room.keys[0], "hex");
+changed[0] ^= 1;
+forging((forged) => (forged[SEAT_KEYS] ^= 1));
+tap(host, key(ONE));
+play(idle, started, "the run on a changed key");
+play(player, () => peers.every((p) => screen(p) === QUEST_RESULTS), "the end of the run on a changed key");
+agreed();
+assert.deepEqual(header(newest(guest)).seat_keys, [changed.toString("hex"), room.keys[1]], "the Guest's replay's keys");
+assert.deepEqual(header(newest(host)).seat_keys, [room.keys[0], room.keys[1]], "the Host's replay's keys");
+const [hosts, guests] = peers.map((p) => zlib.zstdDecompressSync(fs.readFileSync(newest(p))));
+changed.copy(hosts, hosts.indexOf(Buffer.from(room.keys[0], "hex")));
+assert.ok(hosts.equals(guests), "the replays but for the changed key");
+settle(guest, QUEST_RESULTS, idle, 5000);
+tap(guest, DOWN, A);
+play(idle, () => status(host) & STATUS.signed, "the Guest's name on a changed key");
+tap(host, key(ENTER));
+play(idle, () => status(guest) & STATUS.signed, "the Host's name on a changed key");
+assert.deepEqual(peers.map((p) => signs(p.word)), [0, 0], "a signature for a run on a changed key");
+assert.deepEqual(peers.map((p) => outbox(p).length), unranked, "a run on a changed key, queued");
+settle(host, QUEST_RESULTS);
+tap(host, key(TAB), key(TAB), key(TAB), key(ENTER));
+left(host);
+click(host, MAIN_MENU, PLAY_GAME);
+click(host, PLAY_GAME_MENU, OWN_QUESTS);
+settle(host, QUEST_SELECT);
 
 // Quests. A session opens while the Host's quest list shows, and its number key starts the first quest; both
 // players clear it. On the results (a few seconds reveal the final time first) the Guest's pad saves its name and
