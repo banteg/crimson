@@ -22,14 +22,19 @@ export function requireGreenChecks(checks) {
   assert.equal(failed.length, 0, `Required checks are missing, unfinished or unsuccessful: ${failed.join(", ")}`);
 }
 
-export function requireTrustedRun(run, repository, sha) {
+// A finished, successful runtime workflow run that master pushed or dispatched in this repository, never a PR's.
+export function requireMasterRun(run, repository) {
   assert.equal(run.head_repository?.full_name, repository, "Build must belong to this repository");
   assert.equal(run.head_branch, "master", "Build must be from master");
-  assert.equal(run.head_sha, sha, "Build must match the deployment commit");
   assert.equal(run.path, ".github/workflows/core.yml", "Build must use the runtime workflow");
   assert.ok(["push", "workflow_dispatch"].includes(run.event), "PR builds cannot be deployed");
   assert.equal(run.status, "completed", "Build is unfinished");
   assert.equal(run.conclusion, "success", "Build was unsuccessful");
+}
+
+export function requireTrustedRun(run, repository, sha) {
+  requireMasterRun(run, repository);
+  assert.equal(run.head_sha, sha, "Build must match the deployment commit");
 }
 
 export function requireArtifacts(artifacts, sha) {
@@ -48,7 +53,7 @@ export function requireArtifacts(artifacts, sha) {
   return selected;
 }
 
-async function api(path, options = {}) {
+export async function api(path, options = {}) {
   const response = await fetch(`https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}/${path}`, {
     headers: { Authorization: `Bearer ${process.env.GH_TOKEN}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" },
     signal: AbortSignal.timeout(30000),
@@ -58,7 +63,7 @@ async function api(path, options = {}) {
   return response.status === 204 ? null : response.json();
 }
 
-async function pages(path, key, request = api) {
+export async function pages(path, key, request = api) {
   const rows = [];
   for (let page = 1; ; page++) {
     const data = await request(`${path}${path.includes("?") ? "&" : "?"}per_page=100&page=${page}`);

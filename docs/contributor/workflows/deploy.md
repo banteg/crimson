@@ -52,10 +52,13 @@ repository secrets if credentials should be available only to production jobs.
 3. Keep **dry_run** checked for a rehearsal. It packages and checks the whole
    release without Cloudflare credentials or production access.
 4. To publish, run again with **dry_run** unchecked. The production job checks
-   the package hashes, requires all migrations already applied, and reverifies
-   every active production run unless its [replay inputs](#replay-reuse) are
-   unchanged. It checks master and required checks again immediately before
-   upload. Check **force_reverify** to reverify regardless.
+   the package hashes, requires all migrations already applied, and checks
+   every active production run against this release's verifier: it reuses the
+   live deployment's checks when the [replay inputs](#replay-reuse) are
+   unchanged, takes [CI's verdicts](#ci-replay-verdicts) for the same inputs
+   otherwise, and reverifies everything when neither exists. It checks master
+   and required checks again immediately before upload. Check
+   **force_reverify** to reverify everything regardless.
 5. When a production run ends, the release Telegram chat hears whether the
    deploy went live and whether every run was reverified, with links to the
    commit and the run. It uses the release notification's `TELEGRAM_BOT_TOKEN`
@@ -118,29 +121,50 @@ D1 each time and downloads missing replays from R2 with at most 16 concurrent
 requests into a local cache. Only complete downloads are reused. Verification
 and ground baking run on one worker thread per CPU. Download and verification
 timings are logged.
-The local cache is not uploaded to Actions caches: active runs include hidden
+That cache is not uploaded to Actions caches: active runs include hidden
 and banned runs that the public replay route refuses, and fork PRs can read
-default-branch Actions caches. Reverification checks every active replay against
-this release's WASM and TypeScript verifier when replay inputs change. A matching
-WASM hash alone cannot bypass changes in the TypeScript verifier. A failed run
-blocks upload and reports possible retirement SQL; the workflow does not
-execute that SQL. Follow the [ranked rules](../../rewrite/ranked-rules.md#when-the-verifier-changes)
+default-branch Actions caches. A matching WASM hash alone cannot bypass changes
+in the TypeScript verifier. A failed run blocks upload and reports possible
+retirement SQL; the workflow does not execute that SQL. Follow the
+[ranked rules](../../rewrite/ranked-rules.md#when-the-verifier-changes)
 to decide whether to fix the verifier or retire affected runs.
+
+### CI replay verdicts
+
+The Crimson service CI job replays every ranked run (`GET /api/replays`, each
+downloaded from the public `/runs/<id>.crd`) through the commit's verifier with
+`npm run reverify -- --public`. It fails when a run no longer verifies, unless a
+migration in the same commit names that run to retire it, so a change that
+breaks runs shows up in its own pull request. Two Actions caches keep the
+public replays and the verdicts for the current replay inputs, so a run with
+unchanged inputs replays only runs accepted since. Both hold only what the site
+serves publicly, which is what makes them safe for fork PRs to read.
+
+Pushes to master and dispatches publish the verdicts and baked grounds as the
+`replay-verdicts-<replay inputs>` artifact. The deployment's prepare job looks
+for the newest unexpired one from a successful master run of this repository,
+whichever commit produced it, since the hash covers everything the verdicts
+depend on. The production job then takes those verdicts and grounds, and
+verifies from R2 only the active runs CI did not see: those accepted since, and
+hidden or banned ones. A verdict artifact for other inputs is refused. With no
+artifact, for example when it expired or the commit's CI skipped the service
+job, the deploy reverifies every run as before.
 
 ### Replay reuse
 
 `service/scripts/deploy-replays.mjs` hashes what verifies and bakes replays: the
 bundled entry points with every module they import, the WASM they load, the
-ground art listed in `service/src/ground-art.json`, the runner scripts,
-dependencies, Wrangler config and migrations. After a successful deploy it
+ground art listed in `service/src/ground-art.json`, the runner scripts and
+`package-lock.json`. Wrangler config and migrations stay out: reverification runs
+in Node and only reads production's runs. After a successful deploy it
 records the commit and hash at `crimson-land-replays/deploy/replay-inputs.json`.
 The next deploy skips reverification and ground uploads only when the hash
 matches and `/deployment.txt` still serves the recorded commit; anything else,
-including a failed or rolled-back deploy, runs the full work. New runs are
-verified and get their ground when submitted. Use **force_reverify** after
-importing or restoring replay data outside that path.
+including a failed or rolled-back deploy, takes CI's verdicts or runs the full
+work. New runs are verified and get their ground when submitted. Use
+**force_reverify** after importing or restoring replay data outside that path.
 
-Reverification covers the run list at its start. Uploads may continue while
+Reverification, and CI's verdicts, cover the run list at their start. Uploads may continue while
 the check runs; this does not create an atomic release transaction over D1,
 R2 and the Worker. Large or incompatible rule changes need a coordinated
 release window.

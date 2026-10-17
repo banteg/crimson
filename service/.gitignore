@@ -7,3 +7,5 @@ public/ui/
 public/play/
 dist/
 .reverify/
+.reverify-public/
+.replay-verdicts/
