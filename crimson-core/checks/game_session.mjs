@@ -3,8 +3,9 @@
 // Survival run, and the run plays as a session (host/session.inc). A scripted
 // player aims at the nearest creature and fires in bursts, opens the perk menu
 // with Space and picks from it (double-clicking, and asking again at once),
-// pauses with Escape and resumes, and taps the console key, which a run
-// ignores, at frame times that run several ticks a frame or none. After every
+// pauses with Escape and resumes, presses Escape again as the run ends, which
+// opens no pause menu over its end screen, and taps the console key, which a
+// run ignores, at frame times that run several ticks a frame or none. After every
 // frame of play the verifier replays the run's own recording to the same tick
 // and must agree on every snapshot field; when the run ends the verifier must
 // end it at the same tick, and the replay the game saved must be the one it
@@ -82,7 +83,7 @@ Buffer.from(game.memory.buffer).write(`${clientVersion}\0`, game.game_recorder_v
 
 // game_state_id_t
 const MAIN_MENU = 0, PLAY_GAME_MENU = 1, PAUSE_MENU = 5, PERK_SELECTION = 6, GAME_OVER = 7, QUEST_RESULTS = 8, GAMEPLAY = 9,
-  QUEST_SELECT = 11;
+  QUEST_SELECT = 11, QUEST_FAILED = 12;
 // DirectInput scancodes.
 const [ESCAPE, W, A, S, D, CONSOLE, SPACE] = [0x01, 0x11, 0x1e, 0x1f, 0x20, 0x29, 0x39];
 // Where a fresh 1024x768 profile lays out the perk menu's first choice (the
@@ -264,6 +265,8 @@ const stick = ([x, y]) => (x || y ? [(x * 1000) / Math.hypot(x, y), (y * 1000) /
 // Frame times from 4 ms (most frames run no tick) to 50 ms (three ticks).
 const times = [16, 7, 33, 16, 50, 4, 16, 12, 21];
 let started = false, seed, ticks = 0, frames = 0, idle = 0, choice = 0, pauses = 0, resumes = 0, picked = false;
+// The verifier's run has ended and runs down for 500 ms; Escape goes once in that time.
+let ending = false, escapedEnd = false;
 // With --pad the pad is away for a stretch of the run, then comes back.
 const UNPLUGGED = quest ? [600, 800] : [1500, 1700];
 let unplugged = false;
@@ -293,6 +296,7 @@ while (true) {
     continue;
   }
   if (screen === PAUSE_MENU) {
+    if (ending) throw Error(`the pause menu opened over the run's end at tick ${ticks}`);
     if (padded) {
       // Start resumes, and so does B.
       if (!settle(PAUSE_MENU)) continue;
@@ -312,6 +316,11 @@ while (true) {
     if (picked || (field(core, "globals.perk_pending_count") > 0 && frames % 30 === 0)) taps.push(SPACE);
     picked = false;
     if (frames % 997 === 500) taps.push(CONSOLE);
+    // Escape as the run ends: the original's end screen comes first.
+    if (ending && !escapedEnd) {
+      taps.push(ESCAPE);
+      escapedEnd = true;
+    }
     // Start resumes a paused run, so the pad pauses again only once resumed.
     if (ticks > 1200 * (pauses + 1) && pauses < 2 && (!padded || resumes === pauses)) {
       taps.push(ESCAPE);
@@ -355,6 +364,7 @@ while (true) {
   const expected = state(core), actual = state(game);
   const i = firstDifference(expected, actual, COMPARED);
   if (i >= 0) throw Error(`tick ${ticks}: ${names[i]} is ${actual.readUInt32LE(i * 4)}, the verifier says ${expected.readUInt32LE(i * 4)}`);
+  ending ||= [GAME_OVER, QUEST_RESULTS, QUEST_FAILED].includes(field(core, "globals.game_state_pending"));
   if (idle > 120) throw Error(`the run stopped ticking at tick ${ticks}`);
   if (frames > 60000) throw Error("the run never ended");
 }
