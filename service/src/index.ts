@@ -4,9 +4,9 @@ import { loginLink, postChallenge, postLogin, postLoginLink, SESSION_COOKIE, sec
 import { CARD_HEIGHT, CARD_WIDTH, runCard } from "./card";
 import { coopRoute } from "./coop";
 import { type Env, json, refuse } from "./http";
-import { playerLabel } from "../web/src/names";
+import { playerLabel, runLabel } from "../web/src/names";
 import { authorizeUrl, completeLink, PROVIDERS, provider } from "./oauth";
-import { CUSTOM_QUEST_ID, QUEST, type QuestBoard, questPage, questsPath } from "./paths";
+import { CUSTOM_QUEST_ID, QUEST, type QuestBoard, questPage, questsPath, survivalPage } from "./paths";
 import { groundFor, postRun, timelineFor } from "./runs";
 import {
   boardTitle,
@@ -20,13 +20,14 @@ import {
   players,
   profileView,
   questMenuView,
+  replaysView,
   runDescription,
   runDetailView,
   runSummary,
   visibleRun,
 } from "./views";
 import { VIEW_H, VIEW_W } from "./verify";
-import { CATEGORIES, type Category } from "./api-types";
+import { type Board, BOARDS, CATEGORIES, type Category } from "./api-types";
 import { flagsView, isModerator, markAccount, measureRuns, moderationLog, roleOf, setRole, setRunCategory } from "./moderation";
 
 // Links, OAuth callbacks and the session cookie follow the request's origin, so the site answers only over
@@ -98,10 +99,11 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
       const quest = String(body.quest ?? "");
       const category = categoryOf(body.category ?? "human");
       if (category === null) return refuse(400, "no such category");
-      if (body.board === "survival" && quest === "") return json({ scores: await gameScores(env, "survival", "", category, SCORES_LIMIT) });
-      if ((body.board === "quests" || body.board === "quests-hardcore") && (QUEST.test(quest) || (body.board === "quests" && CUSTOM_QUEST_ID.test(quest))))
-        return json({ scores: await gameScores(env, body.board, quest, category, SCORES_LIMIT) });
-      return refuse(400, "no such board");
+      const board = Object.hasOwn(BOARDS, String(body.board)) ? (body.board as Board) : null;
+      // A custom quest's board is one player's.
+      const known = board && (BOARDS[board].quests ? QUEST.test(quest) || (board === "quests" && CUSTOM_QUEST_ID.test(quest)) : quest === "");
+      if (!known) return refuse(400, "no such board");
+      return json({ scores: await gameScores(env, board, quest, category, SCORES_LIMIT) });
     }
   }
 
@@ -110,14 +112,16 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
   if (url.pathname.startsWith("/api/") && category === null) return refuse(400, "no such category");
   // Each page's data is at /api plus its path (paths.ts).
   const page = request.method === "GET" && url.pathname.startsWith("/api/") ? url.pathname.slice("/api".length) : null;
-  if (page === "/survival") {
+  const survival = page === null ? null : survivalPage(page);
+  if (survival) {
     const limit = Math.min(100, Number(url.searchParams.get("limit")) || 100);
-    return json(await boardView(env, "survival", "", category!, limit));
+    return json(await boardView(env, survival, "", category!, limit));
   }
   const quests = page === null ? null : questPage(page);
   if (quests)
     return json(quests.quest ? await boardView(env, quests.board, quests.quest, category!, 100) : await questMenuView(env, quests.board, quests.stage, category!));
   if (page === "/custom") return json(await customQuestsListView(env, category!));
+  if (page === "/replays") return json(await replaysView(env));
   if (page !== null && (match = /^\/custom\/([^/]+)$/.exec(page)) && CUSTOM_QUEST_ID.test(match[1]!)) {
     const quest = await customQuestDetailView(env, match[1]!, category!);
     return quest ? json(quest) : refuse(404, "no such quest");
@@ -334,9 +338,15 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
   const path = url.pathname;
   const titled = (title: string | null): Preview => ({ title, description: SITE_DESCRIPTION, image: null, player: null });
   let match: RegExpExecArray | null;
-  if (path === "/survival") return titled(boardTitle("survival", ""));
+  const survival = survivalPage(path);
+  if (survival) return titled(boardTitle(survival, ""));
   const quests = questPage(path);
-  if (quests) return titled(quests.quest ? boardTitle(quests.board, quests.quest) : `Quests ${["I", "II", "III", "IV", "V"][quests.stage - 1]}`);
+  if (quests)
+    return titled(
+      quests.quest
+        ? boardTitle(quests.board, quests.quest)
+        : `Quests ${["I", "II", "III", "IV", "V"][quests.stage - 1]}${BOARDS[quests.board].players > 1 ? " · co-op" : ""}`,
+    );
   if (path === "/custom") return titled("Custom Quests");
   if ((match = /^\/custom\/([0-9a-f]{12})$/.exec(path))) {
     const quest = await customQuestDetailView(env, match[1]!, "human");
@@ -357,7 +367,7 @@ async function routePreview(env: Env, url: URL): Promise<Preview> {
     const run = await runSummary(env, match[1]!);
     if (!run) return titled(null);
     return {
-      title: `${playerLabel(run.player)} · ${run.title}`,
+      title: `${runLabel(run)} · ${run.title}`,
       description: runDescription(run),
       image: { url: `${url.origin}/runs/${run.id}.png`, width: CARD_WIDTH, height: CARD_HEIGHT },
       player: { url: `${url.origin}/play/?watch=${run.id}`, width: VIEW_W, height: VIEW_H },

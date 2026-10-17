@@ -4,7 +4,7 @@ import type { AccountModeration, Category, FlaggedRun, FlagsView, ModerationActi
 import type { Env } from "./http";
 import { signalsFor } from "./runs";
 import { flagged, type Signals } from "./signals";
-import { players, runCategory } from "./views";
+import { accountRun, NOT_BANNED, players, runCategory, seats } from "./views";
 
 const FLAGS_LIMIT = 100;
 const LOG_LIMIT = 100;
@@ -20,7 +20,10 @@ export async function roleOf(env: Env, accountId: number | null): Promise<Role> 
 export const isModerator = (role: Role) => role === "mod" || role === "admin";
 
 export async function runModeration(env: Env, runId: string): Promise<RunModeration | null> {
-  const run = await env.DB.prepare("SELECT r.category, r.pilot, a.bot FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ?")
+  const run = await env.DB.prepare(
+    `SELECT r.category, r.pilot, a.bot OR EXISTS (SELECT 1 FROM run_players p JOIN accounts pa ON pa.id = p.account_id WHERE p.run_id = r.id AND pa.bot) AS bot
+     FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ?`,
+  )
     .bind(runId)
     .first<{ category: Category | null; pilot: string; bot: number }>();
   if (!run) return null;
@@ -34,7 +37,7 @@ export async function runModeration(env: Env, runId: string): Promise<RunModerat
 }
 
 export async function accountModeration(env: Env, accountId: number): Promise<AccountModeration> {
-  const { results } = await env.DB.prepare("SELECT accepted_at, result FROM runs WHERE account_id = ? ORDER BY accepted_at")
+  const { results } = await env.DB.prepare(`SELECT accepted_at, result FROM runs WHERE ${accountRun("runs")} ORDER BY accepted_at`)
     .bind(accountId)
     .all<{ accepted_at: number; result: string }>();
   // A run takes at least its game time to play, so one accepted sooner after the previous one overlapped it.
@@ -48,17 +51,19 @@ export async function accountModeration(env: Env, accountId: number): Promise<Ac
 export async function flagsView(env: Env): Promise<FlagsView> {
   const { results } = await env.DB.prepare(
     `SELECT r.id, r.account_id, r.board, r.quest, r.score, r.accepted_at, r.signals FROM runs r JOIN accounts a ON a.id = r.account_id
-     WHERE r.hidden = 0 AND a.banned = 0 AND r.signals IS NOT NULL AND ${runCategory("r")} = 'human' ORDER BY r.accepted_at DESC`,
-  ).all<Omit<FlaggedRun, "player" | "signals" | "flagged"> & { account_id: number; signals: string }>();
+     WHERE r.hidden = 0 AND ${NOT_BANNED} AND r.signals IS NOT NULL AND ${runCategory("r")} = 'human' ORDER BY r.accepted_at DESC`,
+  ).all<Omit<FlaggedRun, "player" | "team" | "signals" | "flagged"> & { account_id: number; signals: string }>();
   const runs = results
     .map((run) => ({ run, signals: JSON.parse(run.signals) as Signals }))
     .map(({ run, signals }) => ({ run, signals, flagged: flagged(signals) }))
     .filter((entry) => entry.flagged.length)
     .slice(0, FLAGS_LIMIT);
-  const who = await players(env, runs.map(({ run }) => run.account_id));
+  const [who, teams] = await Promise.all([players(env, runs.map(({ run }) => run.account_id)), seats(env, runs.map(({ run }) => run.id))]);
   const unmeasured = await env.DB.prepare("SELECT count(*) AS n FROM runs WHERE signals IS NULL").first<{ n: number }>();
   return {
-    runs: runs.map(({ run: { account_id, signals: _, ...run }, signals, flagged }) => ({ ...run, player: who.get(account_id)!, signals, flagged })),
+    runs: runs.map(({ run: { account_id, signals: _, ...run }, signals, flagged }) => ({
+      ...run, player: who.get(account_id)!, team: teams.get(run.id) ?? null, signals, flagged,
+    })),
     unmeasured: unmeasured!.n,
   };
 }

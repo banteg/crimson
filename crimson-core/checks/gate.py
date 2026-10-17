@@ -188,6 +188,7 @@ class Stream:
             rules=REPLAY_RULES,
             recorder=current_recorder(),
             pilot=None,
+            seat_keys=None,
             run=self.run_spec(),
             result=RunResult(RunOutcome.INCOMPLETE, 0, 0, 0, 0, 0, 0, None, ()),
             ticks=self.ticks,

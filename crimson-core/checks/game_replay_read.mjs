@@ -42,6 +42,30 @@ for (const name of fs.readdirSync(fixtures).filter((f) => f.endsWith(".crd")).so
   if (!recording.equals(fs.readFileSync(expected))) throw Error(`${name}: reads differently from checks/replay.py`);
   ++read;
 }
+// A fixture rewritten as `expression` (Python over its decoded `wire`) at replays/rewritten.crd.
+const fixture = "survival-135302.crd";
+const rewrite = (expression) => {
+  const script =
+    "import sys, msgspec, zstandard; data = open(sys.argv[1], 'rb').read(); " +
+    "wire = msgspec.msgpack.decode(zstandard.ZstdDecompressor().decompress(data)); " +
+    "pack = lambda value: zstandard.ZstdCompressor().compress(msgspec.msgpack.encode(value)); " +
+    "v34 = lambda seat_keys: pack({'format_version': 34, 'game_version': wire['game_version'], 'rules': 1, " +
+    "'recorder': wire['recorder'], 'pilot': None, 'seat_keys': seat_keys, " +
+    "**{key: wire[key] for key in ('run', 'result', 'ticks')}}); " +
+    `open(sys.argv[2], 'wb').write(${expression})`;
+  execFileSync("uv", ["run", "--no-sync", "python", "-c", script, path.join(fixtures, fixture), path.join(directory, "replays", "rewritten.crd")]);
+  memory().write("replays/rewritten.crd\0", game.game_replay_path(), "latin1");
+  return game.game_replay_open();
+};
+// Format 34 names each seat's key, or none: either reads as the fixture does.
+const fixtureRecording = path.join(scratch, "fixture.rsi");
+execFileSync("uv", ["run", "--no-sync", "python", path.join(CORE, "checks/replay.py"), path.join(fixtures, fixture), "--out", fixtureRecording], { stdio: "pipe" });
+const seated = { "no seat keys": "v34(None)", "a seat key": "v34([bytes(range(32))])" };
+for (const [name, expression] of Object.entries(seated)) {
+  if (!rewrite(expression)) throw Error(`a replay with ${name} reads as unplayable`);
+  const recording = memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size());
+  if (!recording.equals(fs.readFileSync(fixtureRecording))) throw Error(`a replay with ${name} reads differently from its fixture`);
+}
 // Broken replays read as unreadable, and never trap the module.
 const broken = {
   truncated: "data[: len(data) // 2]",
@@ -50,17 +74,14 @@ const broken = {
   "no run": "pack({'format_version': wire['format_version'], 'rules': 1})",
   "no quest 6.1": "pack({**wire, 'run': {**wire['run'], 'game_mode_id': 3, 'quest_level': {'major': 6, 'minor': 1}}})",
   "custom quest": "pack({**wire, 'run': {**wire['run'], 'game_mode_id': 3, 'quest_level': None, 'custom_quest': {'title': 'Crosswind'}}})",
+  "format 34 without seat keys": "pack({**wire, 'format_version': 34, 'rules': 1, 'pilot': None})",
+  "seat keys before format 34": "pack({**wire, 'seat_keys': None})",
+  "no seat's key": "v34([])",
+  "a key per two seats": "v34([bytes(32), bytes(range(32))])",
+  "a short seat key": "v34([bytes(31)])",
+  "a seat key as text": "v34(['k' * 32])",
 };
-for (const [name, expression] of Object.entries(broken)) {
-  const file = path.join(directory, "replays", "broken.crd");
-  const script =
-    "import sys, msgspec, zstandard; data = open(sys.argv[1], 'rb').read(); " +
-    "wire = msgspec.msgpack.decode(zstandard.ZstdDecompressor().decompress(data)); " +
-    "pack = lambda value: zstandard.ZstdCompressor().compress(msgspec.msgpack.encode(value)); " +
-    `open(sys.argv[2], 'wb').write(${expression})`;
-  execFileSync("uv", ["run", "--no-sync", "python", "-c", script, path.join(fixtures, "survival-135302.crd"), file]);
-  memory().write("replays/broken.crd\0", game.game_replay_path(), "latin1");
-  if (game.game_replay_open()) throw Error(`a replay with ${name} reads as playable`);
-}
+for (const [name, expression] of Object.entries(broken))
+  if (rewrite(expression)) throw Error(`a replay with ${name} reads as playable`);
 fs.rmSync(scratch, { recursive: true });
-console.log(JSON.stringify({ read, broken: Object.keys(broken).length }));
+console.log(JSON.stringify({ read, seated: Object.keys(seated).length, broken: Object.keys(broken).length }));

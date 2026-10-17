@@ -14,8 +14,8 @@ The Python game, the browser and desktop `crimson-core` client, and the leaderbo
 play, verify and rank custom quests. A recipe resolves into a `CustomQuest`
 definition, which a run starts the way the original starts a quest and which its
 replay carries ([replay format 33](replay.md#runspec)). Publishing a quest
-(`crimson quest publish`, `POST /api/custom`) requires a completed ranked replay of
-it and creates its page and leaderboard at `crimson.land/custom/<id>`. Recipes for
+(`crimson quest publish`, `POST /api/custom`) requires a completed one-player ranked
+replay of it and creates its page and leaderboard at `crimson.land/custom/<id>`. Recipes for
 all 50 stock quests are written in it too, but the stock builders remain the game's
 authoritative implementation.
 

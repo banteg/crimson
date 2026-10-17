@@ -49,7 +49,7 @@ CORE_WRAPPED = {
 }
 # An extern declaration of one name, optionally an array: the alignment a name really has goes before its `;`.
 EXTERN = re.compile(r"(\bextern\b[^;{}()]*?\b(\w+)\s*(?:\[[^\]]*\])?)\s*;")
-# Player one, for the service's ranked aim bound, the nearest creature, for its input signals, and each
+# Each player, for the service's ranked aim bound, the nearest creature, for its input signals, and each
 # tick's bakes, for a run's ground (host/api.h).
 PROBE_READS = {
     "portable_bakes",

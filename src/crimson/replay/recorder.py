@@ -7,8 +7,15 @@ from .types import Replay, ReplayTick, current_pilot, current_recorder
 
 
 class ReplayRecorder:
-    def __init__(self, run: RunSpec, *, game_version: str | None = None) -> None:
+    def __init__(
+        self,
+        run: RunSpec,
+        *,
+        game_version: str | None = None,
+        seat_keys: tuple[bytes, ...] | None = None,
+    ) -> None:
         self._run = run
+        self._seat_keys = seat_keys
         self._game_version = current_replay_game_version() if game_version is None else game_version
         self._recorder = current_recorder()
         self._pilot = current_pilot()
@@ -37,6 +44,7 @@ class ReplayRecorder:
             rules=REPLAY_RULES,
             recorder=self._recorder,
             pilot=self._pilot,
+            seat_keys=self._seat_keys,
             run=self._run,
             result=result,
             ticks=self._ticks,

@@ -2,9 +2,9 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { type Head, Reader } from "../../src/msgpack";
+import { type Head, PayloadError, Reader } from "../../src/msgpack";
 import { outcomeReasons, rankedBoard, unrankedReasons } from "../../src/ranked";
-import { decodeReplay, inflateReplay, ReplayError } from "../../src/replay";
+import { decodeReplay, inflateReplay, ReplayError, validateReplay } from "../../src/replay";
 import { encodePortableQuest, encodeTransport, runIdentity, TransportError } from "../../src/transport";
 import questDsl from "../../src/quest-dsl.json";
 import vectors from "../vectors.json";
@@ -22,6 +22,8 @@ describe("the recorded fixtures decode as the Python codec decodes them", () => 
       expect(sha256(payload)).toBe(fixture.payload_sha256);
       expect([replay.run.game_mode_id, replay.run.seed, replay.ticks.length]).toEqual([fixture.game_mode_id, fixture.seed, fixture.ticks]);
       expect(rankedBoard(replay.run)).toBe(fixture.board);
+      // Formats before 34 name no seat's key.
+      expect(replay.seat_keys).toBeNull();
       expect(unrankedReasons(replay.run)).toEqual(fixture.unranked_reasons);
       expect(outcomeReasons(replay.run, replay.result)).toEqual(fixture.outcome_reasons);
       if (fixture.transport_sha256 === null) expect(() => encodeTransport(replay)).toThrow(TransportError);
@@ -56,11 +58,47 @@ it("a custom quest decodes, ranks under the canonical profile, and matches Pytho
   expect(sha256(runIdentity(transport))).toBe(vectors.custom_quest_run.run_id);
 });
 
+describe("a co-op run", () => {
+  const replay = decodeReplay(inflateReplay(base64(vectors.coop_run.file)));
+  const hex = (key: Uint8Array) => Buffer.from(key).toString("hex");
+
+  it("records each seat's public key as Python wrote it", () => {
+    expect(replay.seat_keys!.map(hex)).toEqual(vectors.coop_run.seat_keys);
+    expect(decodeReplay(base64(vectors.valid_payload)).seat_keys!.map(hex)).toEqual(vectors.coop_run.seat_keys.slice(0, 1));
+    expect(decodeReplay(inflateReplay(base64(vectors.coop_run.unkeyed_quest_file))).seat_keys).toBeNull();
+  });
+
+  it("refuses the same key in two seats", () => {
+    expect(() => validateReplay({ ...replay, seat_keys: [replay.seat_keys![0]!, replay.seat_keys![0]!] })).toThrow("seat_keys must be distinct");
+  });
+
+  it("streams both players' inputs as Python's core stream does, and keeps the player count in its id", () => {
+    const transport = encodeTransport(replay);
+    expect(sha256(transport)).toBe(vectors.coop_run.transport_sha256);
+    expect(sha256(runIdentity(transport))).toBe(vectors.coop_run.run_id);
+    expect(vectors.coop_run.run_id).toBe(sha256(transport));
+  });
+
+  it("ranks on the co-op board as Python's rules do; a co-op custom quest and a third player do not rank", () => {
+    expect([rankedBoard(replay.run), unrankedReasons(replay.run), outcomeReasons(replay.run, replay.result)]).toEqual(["survival-coop", [], []]);
+    const quest = decodeReplay(inflateReplay(base64(vectors.coop_run.quest_file))).run;
+    expect(unrankedReasons(quest)).toEqual(["custom_quest_players"]);
+    const trio = { ...replay.run, player_count: 3 };
+    expect([rankedBoard(trio), unrankedReasons(trio)]).toEqual([null, ["players"]]);
+  });
+});
+
 it("quest-dsl.json stays in sync with Python's weapon, bonus, perk and template tables", () => {
   expect(questDsl).toEqual(vectors.quest_dsl);
 });
 
 // After egornomic's #615: the ticks decode as they stream, so their framing is refused as strictly as a whole tree's.
+it("byte strings take their shortest bin header", () => {
+  expect(new Reader(Uint8Array.of(0xc4, 2, 7, 9)).value()).toEqual(Uint8Array.of(7, 9));
+  expect(() => new Reader(Uint8Array.of(0xc5, 0, 2, 7, 9)).value()).toThrow(PayloadError);
+  expect(() => new Reader(Uint8Array.of(0xc4, 3, 7, 9)).value()).toThrow("truncated payload");
+});
+
 describe("the replay's tick array keeps canonical framing", () => {
   const payload = base64(vectors.valid_payload);
   const reader = new Reader(payload);

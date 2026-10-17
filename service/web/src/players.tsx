@@ -1,7 +1,7 @@
 import { siDiscord, siGithub, siX } from "simple-icons";
 import { For, Show } from "solid-js";
-import type { Pilot, PlayerView } from "../../src/api-types";
-import { PROVIDER_LABELS, playerParts } from "./names";
+import type { Pilot, PlayerView, SeatView } from "../../src/api-types";
+import { DELETED_PLAYER, PROVIDER_LABELS, playerParts } from "./names";
 
 export { PROVIDER_LABELS };
 
@@ -42,6 +42,26 @@ export function PlayerName(props: { player: PlayerView; heading?: boolean; tag?:
         </span>
       </Show>
     </>
+  );
+}
+
+// Who played a run: its player, or a co-op run's players by seat, "A & B".
+export function RunPlayers(props: { player: PlayerView; team: SeatView[] | null; heading?: boolean; tag?: boolean }) {
+  return (
+    <Show when={props.team} fallback={<PlayerName player={props.player} heading={props.heading} tag={props.tag} />}>
+      {(team) => (
+        <For each={team()}>
+          {(seat, i) => (
+            <>
+              <Show when={i()}>{" & "}</Show>
+              <Show when={seat.player} fallback={<span class="muted">{DELETED_PLAYER}</span>}>
+                {(player) => <PlayerName player={player()} heading={props.heading} tag={props.tag} />}
+              </Show>
+            </>
+          )}
+        </For>
+      )}
+    </Show>
   );
 }
 

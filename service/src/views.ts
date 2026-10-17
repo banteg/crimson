@@ -1,23 +1,26 @@
 // The read API's JSON (src/api-types.ts): the boards, the quest menu, profiles and the join confirmation.
 
-import type {
-  Board,
-  BoardTotals,
-  BoardView,
-  Category,
-  CustomQuest,
-  CustomQuestDetailView,
-  CustomQuestsListView,
-  GameScore,
-  JoinView,
-  LoginView,
-  Pilot,
-  PlayerView,
-  ProfileView,
-  ProviderName,
-  QuestMenuView,
-  RunDetailView,
-  RunView,
+import {
+  type Board,
+  BOARDS,
+  type BoardTotals,
+  type BoardView,
+  type Category,
+  type CustomQuest,
+  type CustomQuestDetailView,
+  type CustomQuestsListView,
+  type GameScore,
+  type JoinView,
+  type LoginView,
+  type Pilot,
+  type PlayerView,
+  type ProfileView,
+  type ProviderName,
+  type QuestMenuView,
+  type ReplaysView,
+  type RunDetailView,
+  type RunView,
+  type SeatView,
 } from "./api-types";
 import type { Env } from "./http";
 import { configuredProviders } from "./oauth";
@@ -29,19 +32,34 @@ import { timelineFor } from "./runs";
 import { encodePortableQuest } from "./transport";
 import questTitles from "./quests.json";
 import { formatScore } from "../web/src/format";
-import { playerLabel, shownName } from "../web/src/names";
+import { runLabel, shownName } from "../web/src/names";
 import weaponData from "../web/src/weapons.json";
 
 export const QUEST_TITLES: Record<string, string> = questTitles;
 const WEAPONS: Record<string, { name: string }> = weaponData;
 
-// SQL over accounts `a` and runs `r`: the account's key fingerprint, and the name a run shows, which is the
-// fingerprint once a moderator hid the account's name.
-const FINGERPRINT = "(SELECT fingerprint FROM keys WHERE account_id = a.id ORDER BY added_at LIMIT 1)";
+// SQL over accounts `account`: the account's key fingerprint.
+const fingerprint = (account: string) => `(SELECT fingerprint FROM keys WHERE account_id = ${account}.id ORDER BY added_at LIMIT 1)`;
+const FINGERPRINT = fingerprint("a");
+// SQL over accounts `a` and runs `r`: the name a run shows, which is the fingerprint once a moderator hid the
+// account's name.
 export const SHOWN_NAME = `CASE WHEN a.name_hidden THEN ${FINGERPRINT} ELSE r.name END`;
-// SQL over accounts `a` and the runs `run` of that account: the run's category (docs/rewrite/bots.md). A moderator's
-// choice for the run wins, else a declared pilot or the account's bot mark make it a bot run.
-export const runCategory = (run: string) => `coalesce(${run}.category, CASE WHEN ${run}.pilot != '' OR a.bot THEN 'bot' ELSE 'human' END)`;
+// SQL over runs `run`: whether one of a co-op run's seated accounts `pa` meets `condition` (migrations/0008_coop.sql).
+const anySeat = (run: string, condition: string) =>
+  `EXISTS (SELECT 1 FROM run_players p JOIN accounts pa ON pa.id = p.account_id WHERE p.run_id = ${run}.id AND ${condition})`;
+// SQL over accounts `a` and the runs `run` listed under that account: the run's category (docs/rewrite/bots.md). A
+// moderator's choice for the run wins, else a declared pilot or a bot mark on its account, or on either co-op
+// player's, make it a bot run.
+export const runCategory = (run: string) =>
+  `coalesce(${run}.category, CASE WHEN ${run}.pilot != '' OR a.bot OR ${anySeat(run, "pa.bot")} THEN 'bot' ELSE 'human' END)`;
+// SQL over runs `run`: whether the account bound as ?1 played it, alone or in either co-op seat.
+export const accountRun = (run: string) => `(${run}.account_id = ?1 OR ${run}.id IN (SELECT run_id FROM run_players WHERE account_id = ?1))`;
+// SQL over runs `run`: who a board keeps one best run for, the account for one player and for a co-op pair the
+// unordered pair of accounts. A player who deleted their account keeps it as a bare row in their seat
+// (migrations/0008_coop.sql), so their partner's runs with them and with someone else stay apart.
+const team = (run: string) =>
+  `(SELECT CASE WHEN count(*) THEN min(p.account_id) || ',' || max(p.account_id) ELSE ${run}.account_id END
+     FROM run_players p WHERE p.run_id = ${run}.id)`;
 
 export const parsePilot = (pilot: string): Pilot | null => (pilot ? (JSON.parse(pilot) as Pilot) : null);
 
@@ -56,23 +74,25 @@ function linkUrl(provider: ProviderName, handle: string, subject: string): strin
   }
 }
 
+// The accounts' public views; a deleted account has none. The ids go in as one JSON array, since a co-op board's
+// players outnumber the parameters D1 binds to a statement.
 export async function players(env: Env, ids: number[]): Promise<Map<number, PlayerView>> {
   const found = new Map<number, PlayerView>();
   if (!ids.length) return found;
-  const marks = ids.map(() => "?").join(",");
+  const list = JSON.stringify([...new Set(ids)]);
   const { results: accounts } = await env.DB.prepare(
     `SELECT a.id, a.name, a.name_hidden, a.bot,
        ${FINGERPRINT} AS fingerprint,
        (SELECT count(*) FROM accounts b WHERE b.id != a.id AND (lower(b.name) = lower(a.name) AND b.name != ''
           OR EXISTS (SELECT 1 FROM links l WHERE l.account_id = b.id AND lower(l.handle) = lower(a.name)))) AS clashes
-     FROM accounts a WHERE a.id IN (${marks})`,
+     FROM accounts a WHERE a.id IN (SELECT value FROM json_each(?)) AND a.deleted_at IS NULL`,
   )
-    .bind(...ids)
+    .bind(list)
     .all<{ id: number; name: string; name_hidden: number; bot: number; fingerprint: string; clashes: number }>();
   const { results: links } = await env.DB.prepare(
-    `SELECT account_id, provider, subject, handle, avatar_url FROM links WHERE account_id IN (${marks})`,
+    `SELECT account_id, provider, subject, handle, avatar_url FROM links WHERE account_id IN (SELECT value FROM json_each(?))`,
   )
-    .bind(...ids)
+    .bind(list)
     .all<{ account_id: number; provider: ProviderName; subject: string; handle: string; avatar_url: string | null }>();
   for (const account of accounts) {
     const own = links.filter((link) => link.account_id === account.id);
@@ -94,15 +114,39 @@ export async function players(env: Env, ids: number[]): Promise<Map<number, Play
 }
 
 export function boardTitle(board: Board, quest: string, customTitle?: string): string {
-  if (board === "survival") return "Survival";
+  const { quests, hardcore, players } = BOARDS[board];
+  const coop = players > 1 ? " · co-op" : "";
+  if (!quests) return `Survival${coop}`;
   if (customTitle) return customTitle;
   const stock = QUEST_TITLES[quest];
-  return stock ? `${quest} ${stock}${board === "quests-hardcore" ? " · hardcore" : ""}` : `Quest ${quest}`;
+  return stock ? `${quest} ${stock}${hardcore ? " · hardcore" : ""}${coop}` : `Quest ${quest}`;
+}
+
+// Each co-op run's seats, player one first; one-player runs have none. A deleted player's seat shows nobody.
+export async function seats(env: Env, runIds: string[]): Promise<Map<string, SeatView[]>> {
+  const found = new Map<string, SeatView[]>();
+  if (!runIds.length) return found;
+  const { results } = await env.DB.prepare(
+    `SELECT p.run_id, p.account_id, CASE WHEN pa.name_hidden THEN ${fingerprint("pa")} ELSE p.name END AS name
+     FROM run_players p JOIN accounts pa ON pa.id = p.account_id
+     WHERE p.run_id IN (SELECT value FROM json_each(?)) ORDER BY p.run_id, p.seat`,
+  )
+    .bind(JSON.stringify(runIds))
+    .all<{ run_id: string; account_id: number; name: string }>();
+  const who = await players(env, results.map((row) => row.account_id));
+  for (const row of results) {
+    const player = who.get(row.account_id);
+    const seat = player ? { player, name: row.name } : { player: null, name: null };
+    found.set(row.run_id, [...(found.get(row.run_id) ?? []), seat]);
+  }
+  return found;
 }
 
 interface BestRun {
   id: string;
   account_id: number;
+  // Whom the board keeps this best run for (`team`).
+  team: number | string;
   name: string;
   score: number;
   result: string;
@@ -110,18 +154,31 @@ interface BestRun {
   accepted_at: number;
 }
 
-// A run the boards rank: shown, a verified one (not retired: migrations/0005_retired.sql) and not a banned account's.
-const RANKED_RUN = "r.hidden = 0 AND r.retired IS NULL AND a.banned = 0";
+// SQL over runs `r` and their accounts `a`: not a banned account's run, nor one a banned co-op player (a deleted one
+// too) played. The boards, run pages and moderators' flags all keep to it.
+export const NOT_BANNED = `a.banned = 0 AND NOT ${anySeat("r", "pa.banned")}`;
+// A run the boards rank: shown, a verified one (not retired: migrations/0005_retired.sql) and not banned.
+const RANKED_RUN = `r.hidden = 0 AND r.retired IS NULL AND ${NOT_BANNED}`;
+// Every ranked run's id; each one's replay downloads from /runs/<id>.crd.
+export async function replaysView(env: Env): Promise<ReplaysView> {
+  const { results } = await env.DB.prepare(`SELECT r.id FROM runs r JOIN accounts a ON a.id = r.account_id WHERE ${RANKED_RUN} ORDER BY r.id`).all<{ id: string }>();
+  return { runs: results.map(({ id }) => id) };
+}
+
 // The ranked runs `r` of a board in a category, with their accounts `a`; binds the board, quest and category.
 const BOARD_RUNS = `FROM runs r JOIN accounts a ON a.id = r.account_id
   WHERE r.board = ? AND r.quest = ? AND ${RANKED_RUN} AND ${runCategory("r")} = ?`;
 
-// Each account's best run on a board in a category; equal scores keep the earlier accepted run ahead.
+// Each account's best run on a board in a category, or each pair's on a co-op board; equal scores keep the earlier
+// accepted run ahead.
 async function bestRuns(env: Env, board: Board, quest: string, category: Category, limit: number): Promise<BestRun[]> {
   const order = LOWER_IS_BETTER[board] ? "ASC" : "DESC";
+  const coop = BOARDS[board].players > 1;
   const { results } = await env.DB.prepare(
-    `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.score, r.result, r.pilot, r.accepted_at ${BOARD_RUNS}
-       AND r.id =(SELECT id FROM runs b WHERE b.account_id = r.account_id AND b.board = r.board AND b.quest = r.quest AND b.hidden = 0
+    `SELECT r.id, r.account_id, ${coop ? team("r") : "r.account_id"} AS team, ${SHOWN_NAME} AS name, r.score, r.result, r.pilot, r.accepted_at
+     ${BOARD_RUNS}
+       AND r.id =(SELECT id FROM runs b WHERE ${coop ? `${team("b")} = ${team("r")}` : "b.account_id = r.account_id"}
+                     AND b.board = r.board AND b.quest = r.quest AND b.hidden = 0
                      AND b.retired IS NULL AND ${runCategory("b")} = ?
                    ORDER BY b.score ${order}, b.accepted_at LIMIT 1)
      ORDER BY r.score ${order}, r.accepted_at LIMIT ?`,
@@ -143,7 +200,7 @@ async function boardTotals(env: Env, board: Board, quest: string, category: Cate
 
 export async function boardView(env: Env, board: Board, quest: string, category: Category, limit: number, customTitle?: string): Promise<BoardView> {
   const [results, totals] = await Promise.all([bestRuns(env, board, quest, category, limit), boardTotals(env, board, quest, category)]);
-  const who = await players(env, results.map((row) => row.account_id));
+  const [who, teams] = await Promise.all([players(env, results.map((row) => row.account_id)), seats(env, results.map((row) => row.id))]);
   return {
     board,
     quest,
@@ -159,13 +216,14 @@ export async function boardView(env: Env, board: Board, quest: string, category:
         elapsed_ms: result.elapsed_ms,
         most_used_weapon_id: result.players[0]!.most_used_weapon_id,
         player: who.get(row.account_id)!,
+        team: teams.get(row.id) ?? null,
         pilot: parsePilot(row.pilot),
       };
     }),
   };
 }
 
-// The board holds each account's best run; a run that is not its player's best has no rank.
+// The board holds each account's (or pair's) best run; a run that is not its player's best has no rank.
 const BOARD_SCAN = 1000;
 
 // A run's page without its timeline and moderation, which the page's preview tags and card can go without or fetch
@@ -179,7 +237,7 @@ export async function runDetailView(env: Env, id: string, moderator: boolean): P
 
 // A run anyone may see by its id: not hidden, and not a banned account's, as the boards filter; a retired run keeps
 // its page and replay.
-const VISIBLE_RUN = "r.hidden = 0 AND a.banned = 0";
+const VISIBLE_RUN = `r.hidden = 0 AND ${NOT_BANNED}`;
 
 export async function visibleRun(env: Env, id: string): Promise<boolean> {
   return !!(await env.DB.prepare(`SELECT 1 FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND ${VISIBLE_RUN}`).bind(id).first());
@@ -187,13 +245,13 @@ export async function visibleRun(env: Env, id: string): Promise<boolean> {
 
 export async function runSummary(env: Env, id: string): Promise<RunSummary | null> {
   const run = await env.DB.prepare(
-    `SELECT r.id, r.account_id, ${SHOWN_NAME} AS name, r.board, r.quest, ${runCategory("r")} AS category, r.pilot, r.score, r.accepted_at,
-       r.game_version, r.retired, r.client, r.client_version, r.platform, r.result FROM runs r JOIN accounts a ON a.id = r.account_id
-     WHERE r.id = ? AND ${VISIBLE_RUN}`,
+    `SELECT r.id, r.account_id, ${team("r")} AS team, ${SHOWN_NAME} AS name, r.board, r.quest, ${runCategory("r")} AS category, r.pilot,
+       r.score, r.accepted_at, r.game_version, r.retired, r.client, r.client_version, r.platform, r.result
+     FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND ${VISIBLE_RUN}`,
   )
     .bind(id)
     .first<{
-      id: string; account_id: number; name: string; board: Board; quest: string; category: Category; pilot: string; score: number;
+      id: string; account_id: number; team: number | string; name: string; board: Board; quest: string; category: Category; pilot: string; score: number;
       accepted_at: number; game_version: string; retired: string | null; client: string; client_version: string; platform: string;
       result: string;
     }>();
@@ -207,9 +265,12 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
   const customDef = customRow ? (JSON.parse(customRow.definition) as CustomQuest) : null;
   const rank = board.findIndex((row) => row.id === id);
   const top = board[0] && board[0].id !== id ? board[0] : null;
-  const best = board.find((row) => row.account_id === run.account_id);
+  const best = board.find((row) => row.team === run.team);
   const result = JSON.parse(run.result) as RunResult;
-  const who = await players(env, top ? [run.account_id, top.account_id] : [run.account_id]);
+  const [who, teams] = await Promise.all([
+    players(env, top ? [run.account_id, top.account_id] : [run.account_id]),
+    seats(env, top ? [id, top.id] : [id]),
+  ]);
   return {
     id,
     board: run.board,
@@ -220,6 +281,7 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
     title: boardTitle(run.board, run.quest, customRow?.title),
     name: run.name,
     player: who.get(run.account_id)!,
+    team: teams.get(id) ?? null,
     score: run.score,
     rank: rank === -1 ? null : rank + 1,
     accepted_at: run.accepted_at,
@@ -229,6 +291,7 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
     result: {
       outcome: result.outcome,
       health: result.players[0]!.health,
+      healths: result.players.map((player) => player.health),
       pending_perks: result.pending_perks,
       elapsed_ms: result.elapsed_ms,
       kills: result.kills,
@@ -237,7 +300,7 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
       experience: result.players[0]!.experience,
       most_used_weapon_id: result.players[0]!.most_used_weapon_id,
     },
-    top: top && { id: top.id, name: playerLabel(who.get(top.account_id)!), score: top.score },
+    top: top && { id: top.id, name: runLabel({ player: who.get(top.account_id)!, team: teams.get(top.id) ?? null }), score: top.score },
     best: best && best.id !== id ? { id: best.id, score: best.score } : null,
   };
 }
@@ -246,26 +309,30 @@ export async function runSummary(env: Env, id: string): Promise<RunSummary | nul
 export function runDescription(run: RunSummary): string {
   const result = run.result;
   const seconds = Math.floor(result.elapsed_ms / 1000);
-  const what =
-    run.board === "survival"
-      ? `survived ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")} for ${formatScore(run.board, run.score)}`
-      : `finished ${run.title}${run.board === "quests-hardcore" ? " on hardcore" : ""} in ${formatScore(run.board, run.score)}`;
+  const { quests, hardcore } = BOARDS[run.board];
+  const what = !quests
+    ? `survived ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")} for ${formatScore(run.board, run.score)}`
+    : `finished ${run.title}${hardcore ? " on hardcore" : ""} in ${formatScore(run.board, run.score)}`;
   const weapon = WEAPONS[result.most_used_weapon_id];
   const numbers = [
     `${result.kills.toLocaleString("en-US")} kills`,
     ...(result.shots_fired ? [`${Math.round((result.shots_hit / result.shots_fired) * 100)}% accuracy`] : []),
     ...(weapon ? [`mostly the ${weapon.name}`] : []),
   ];
-  return `${playerLabel(run.player)} ${what}${run.rank ? `, #${run.rank} on the board` : ""}. ${numbers.join(", ")}. Verified by replay.`;
+  return `${runLabel(run)} ${what}${run.rank ? `, #${run.rank} on the board` : ""}. ${numbers.join(", ")}. Verified by replay.`;
 }
 
 export async function gameScores(env: Env, board: Board, quest: string, category: Category, limit: number): Promise<GameScore[]> {
-  return (await bestRuns(env, board, quest, category, limit)).map((run) => {
+  const runs = await bestRuns(env, board, quest, category, limit);
+  const teams = await seats(env, runs.map((run) => run.id));
+  return runs.map((run) => {
     const result = JSON.parse(run.result) as RunResult;
     const player = result.players[0]!;
+    const names = teams.get(run.id)?.map((seat) => seat.name ?? "?") ?? [run.name];
     return {
       run: run.id,
-      name: run.name,
+      name: names.join(" & "),
+      names,
       score: run.score,
       elapsed_ms: result.elapsed_ms,
       experience: player.experience,
@@ -278,9 +345,9 @@ export async function gameScores(env: Env, board: Board, quest: string, category
   });
 }
 
-export async function questMenuView(env: Env, board: "quests" | "quests-hardcore", stage: number, category: Category): Promise<QuestMenuView> {
+export async function questMenuView(env: Env, board: QuestMenuView["board"], stage: number, category: Category): Promise<QuestMenuView> {
   const { results } = await env.DB.prepare(
-    `SELECT r.quest, count(DISTINCT r.account_id) AS players FROM runs r JOIN accounts a ON a.id = r.account_id
+    `SELECT r.quest, count(DISTINCT ${team("r")}) AS players FROM runs r JOIN accounts a ON a.id = r.account_id
      WHERE r.board = ? AND r.quest LIKE ? AND ${RANKED_RUN} AND ${runCategory("r")} = ? GROUP BY r.quest`,
   )
     .bind(board, `${stage}.%`, category)
@@ -401,15 +468,17 @@ export async function profileView(env: Env, accountId: number, viewer: number | 
     .all<{ name: string }>();
   const { results: runs } = await env.DB.prepare(
     `SELECT r.id, r.board, r.quest, ${runCategory("r")} AS category, r.score, r.game_version, r.accepted_at, r.retired FROM runs r
-     JOIN accounts a ON a.id = r.account_id WHERE r.account_id = ? AND r.hidden = 0 ORDER BY r.accepted_at DESC LIMIT 100`,
+     JOIN accounts a ON a.id = r.account_id WHERE ${accountRun("r")} AND r.hidden = 0
+     ORDER BY r.accepted_at DESC LIMIT 100`,
   )
     .bind(accountId)
-    .all<RunView>();
+    .all<Omit<RunView, "team">>();
+  const teams = await seats(env, runs.map((run) => run.id));
   const linked = new Set(player.links.map((link) => link.provider));
   return {
     player,
     names: names.map((row) => row.name),
-    runs,
+    runs: runs.map((run) => ({ ...run, team: teams.get(run.id) ?? null })),
     account:
       viewer === accountId
         ? { providers: configuredProviders(env).map((p) => ({ name: p.name, label: p.label, linked: linked.has(p.name) })) }
@@ -422,9 +491,9 @@ export async function joinView(env: Env, from: number, into: number, provider: s
   const count = async (sql: string, id: number) => (await env.DB.prepare(sql).bind(id).first<{ n: number }>())!.n;
   const [keys, runs, names, destinationRuns] = await Promise.all([
     count("SELECT count(*) AS n FROM keys WHERE account_id = ?", from),
-    count("SELECT count(*) AS n FROM runs WHERE account_id = ?", from),
+    count(`SELECT count(*) AS n FROM runs WHERE ${accountRun("runs")}`, from),
     count("SELECT count(*) AS n FROM names WHERE account_id = ?", from),
-    count("SELECT count(*) AS n FROM runs WHERE account_id = ?", into),
+    count(`SELECT count(*) AS n FROM runs WHERE ${accountRun("runs")}`, into),
   ]);
   const found = await players(env, [from, into]);
   return {
@@ -440,7 +509,7 @@ export async function loginView(env: Env, account: number, current: number | nul
   const other = current !== null && current !== account ? current : null;
   const [found, runs] = await Promise.all([
     players(env, other === null ? [account] : [account, other]),
-    env.DB.prepare("SELECT count(*) AS n FROM runs WHERE account_id = ?").bind(account).first<{ n: number }>(),
+    env.DB.prepare(`SELECT count(*) AS n FROM runs WHERE ${accountRun("runs")}`).bind(account).first<{ n: number }>(),
   ]);
   return { account: found.get(account)!, runs: runs!.n, current: other === null ? null : found.get(other)! };
 }

@@ -8,7 +8,8 @@ import { downloadReplays } from "./reverify-cache.mjs";
 import { verifyRuns } from "./reverify-pool.mjs";
 import { putGrounds } from "./grounds.mjs";
 import { r2Bucket } from "./r2.mjs";
-import { replayInputs, replayPlan } from "./deploy-replays.mjs";
+import { findVerdicts, replayInputs, replayPlan } from "./deploy-replays.mjs";
+import { listedReplays, settle, unexpectedFailures } from "./reverify.mjs";
 import { requireArtifacts, requireGreenChecks, requireTrustedRun, resolveRuntimeBuild, REQUIRED_CHECKS } from "./deploy-preflight.mjs";
 import { requireBuildIdentity, requireMigrations, packageManifest, verifyManifest, smoke, waitForRelease } from "./deploy-checks.mjs";
 
@@ -353,12 +354,67 @@ test("replay identity changes with WASM, rules, new transitive modules, ground r
   } finally { rmSync(fixture.directory, { recursive: true, force: true }); }
 });
 
-test("reuses only the record of the commit production serves, unless forced", () => {
-  const inputs = "1".repeat(64), record = { sha, inputs };
-  assert.deepEqual(replayPlan(inputs, record, sha), { inputs, reuse: sha, reverify: false });
-  for (const [current, stored, live] of [[inputs, null, sha], [inputs, record, null], [inputs, record, "b".repeat(40)], ["2".repeat(64), record, sha]])
-    assert.equal(replayPlan(current, stored, live).reverify, true);
-  assert.equal(replayPlan(inputs, record, sha, true).reverify, true);
+test("reuses only the record of the commit production serves, else CI's verdicts for the same inputs, unless forced", () => {
+  const inputs = "1".repeat(64), other = "2".repeat(64), record = { sha, inputs };
+  assert.deepEqual(replayPlan(inputs, record, sha), { inputs, reuse: sha, reverify: false, mode: "reuse" });
+  for (const [current, stored, live] of [[inputs, null, sha], [inputs, record, null], [inputs, record, "b".repeat(40)], [other, record, sha]]) {
+    assert.deepEqual([replayPlan(current, stored, live).mode, replayPlan(current, stored, live).reverify], ["full", true]);
+    assert.equal(replayPlan(current, stored, live, { verdicts: current }).mode, "delta");
+    assert.equal(replayPlan(current, stored, live, { verdicts: current === inputs ? other : inputs }).mode, "full");
+  }
+  assert.equal(replayPlan(inputs, record, sha, { verdicts: inputs }).mode, "reuse");
+  assert.deepEqual(replayPlan(inputs, record, sha, { force: true, verdicts: inputs }), { inputs, reuse: null, reverify: true, mode: "full" });
+});
+
+test("takes the newest unexpired verdicts a master run published for the inputs, from any commit, never a PR's", async () => {
+  const inputs = "1".repeat(64);
+  const runs = {
+    1: { ...run, id: 1, head_sha: "b".repeat(40) },
+    2: { ...run, id: 2, event: "pull_request", head_branch: "feature" },
+    3: { ...run, id: 3, head_repository: { full_name: "fork/crimson" } },
+    4: { ...run, id: 4, conclusion: "failure" },
+    5: { ...run, id: 5 },
+  };
+  const published = (ids, patch = {}) => async (path) => {
+    if (path.startsWith("actions/artifacts?")) {
+      assert.ok(path.startsWith(`actions/artifacts?name=replay-verdicts-${inputs}&`));
+      return { artifacts: ids.map((id) => ({ id: id * 10, expired: false, workflow_run: { id }, ...patch[id] })) };
+    }
+    return runs[path.slice("actions/runs/".length)];
+  };
+  assert.deepEqual(await findVerdicts(inputs, "banteg/crimson", published([1, 2, 3, 4])), { run_id: 1, artifact_id: 10 });
+  assert.deepEqual(await findVerdicts(inputs, "banteg/crimson", published([1, 5], { 5: { expired: true } })), { run_id: 1, artifact_id: 10 });
+  assert.deepEqual(await findVerdicts(inputs, "banteg/crimson", published([1, 5])), { run_id: 5, artifact_id: 50 });
+  assert.equal(await findVerdicts(inputs, "banteg/crimson", published([2, 3, 4])), null);
+});
+
+test("CI's verdicts settle the runs they cover; the rest verify, and only a migration excuses a failure", () => {
+  const verdicts = { kept: { ok: true, reason: null }, broken: { ok: false, reason: "no longer reaches its score" }, gone: { ok: true, reason: null } };
+  assert.deepEqual(settle(["kept", "broken", "new"], verdicts), {
+    settled: [{ id: "kept", ok: true, reason: null }, { id: "broken", ok: false, reason: "no longer reaches its score" }],
+    unsettled: ["new"],
+  });
+  const failed = { id: "f".repeat(64), ok: false, reason: "changed" };
+  const results = [{ id: "e".repeat(64), ok: true, reason: null }, failed];
+  assert.deepEqual(unexpectedFailures(results, "CREATE TABLE runs (id TEXT);"), [failed]);
+  assert.deepEqual(unexpectedFailures(results, `UPDATE runs SET retired = 'changed' WHERE id IN ('${failed.id}');`), []);
+  assert.deepEqual(unexpectedFailures(results, `UPDATE runs SET retired = 'changed;\nmore' WHERE id IN (\n  '${failed.id}'\n);`), []);
+  for (const mention of [`-- investigate ${failed.id}\nSELECT 1;`, `UPDATE runs SET hidden = 1 WHERE id = '${failed.id}';`])
+    assert.deepEqual(unexpectedFailures(results, mention), [failed], mention);
+});
+
+test("a replay hidden after the list named it drops out on a fresh list; one still listed fails", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "crimson-listed-"));
+  try {
+    const [a, b, c] = ["a", "b", "c"].map((letter) => letter.repeat(64));
+    const gone = (id) => Object.assign(Error(`${id} is gone`), { gone: id });
+    const lists = [[a, b, c], [a, c]];
+    const get = async (id) => { if (id === b) throw gone(id); return new Uint8Array([1]); };
+    const { listed, runs } = await listedReplays(async () => lists.shift(), { [c]: { ok: true, reason: null } }, directory, get);
+    assert.deepEqual(listed, [a, c]);
+    assert.deepEqual(runs.map(({ id }) => id), [a]);
+    await assert.rejects(listedReplays(async () => [a, b], {}, directory, get), /is gone/);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
 test("R2 calls go to the replay bucket with the token, retry rate limits and server errors, and fail on the rest", async () => {

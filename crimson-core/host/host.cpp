@@ -327,10 +327,10 @@ static bool any_player_alive() {
   return false;
 }
 // What the ranked aim bound and input signals read after a tick
-// (src/crimson/replay/ranked.py, service/src/verify.ts): player one's position and health.
-extern "C" float portable_player_x() { return player_state_table[0].position.x; }
-extern "C" float portable_player_y() { return player_state_table[0].position.y; }
-extern "C" float portable_player_health() { return player_state_table[0].health; }
+// (src/crimson/replay/ranked.py, service/src/verify.ts): a player's position and health, 0 for player one.
+extern "C" float portable_player_x(uint32_t player) { return player_state_table[player].position.x; }
+extern "C" float portable_player_y(uint32_t player) { return player_state_table[player].position.y; }
+extern "C" float portable_player_health(uint32_t player) { return player_state_table[player].health; }
 extern "C" float portable_nearest_creature(float x, float y) {
   float best = INFINITY;
   for (int i = 0; i < 385; ++i) {

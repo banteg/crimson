@@ -2,7 +2,6 @@
 // detail stamps of 128x128 textures, rotated, on a 1024x1024 ground. test/unit/terrain.test.ts checks them against
 // the Python generator.
 
-import type { Board } from "../../../src/api-types";
 import { rankedUnlocks } from "../../../src/unlocks";
 
 export const SIZE = 1024;
@@ -71,15 +70,15 @@ export function questSlots(major: number, minor: number): Slots {
 // gameplay_reset_state draws a score tag, one animation phase per creature slot (0x180) and the tag again before
 // terrain_generate_random (src/crimson/sim/bootstrap.py).
 const RESET_DRAWS = 1 + 0x180 + 1;
-// The terrain a ranked run on `board` (and `quest`, "major.minor", on a quest board) starts on, from its seed: the
-// reset's random terrain for its save's unlocks, or for a quest its score tag draw and then the quest's own terrain
-// over it (src/crimson/sim/run_init.py).
-export function runGround(seed: number, run: { board: Board; quest: string; customSlots?: Slots }): Ground {
+// The terrain a ranked run starts on, from its seed, for its `quest` ("major.minor", empty for Survival) and whether
+// it is a hardcore one: the reset's random terrain for its save's unlocks, or for a quest its score tag draw and then
+// the quest's own terrain over it (src/crimson/sim/run_init.py). The player count draws nothing before the terrain.
+export function runGround(seed: number, run: { quest: string; hardcore: boolean; customSlots?: Slots }): Ground {
   const [major, minor] = run.quest.includes(".") ? run.quest.split(".").map(Number) : [];
   const quest = major && minor ? { major, minor } : null;
   const rand = crtRand(seed);
   for (let i = 0; i < RESET_DRAWS; i++) rand();
-  const ground = generateRandom(rand, rankedUnlocks(quest, run.board === "quests-hardcore")[0]);
+  const ground = generateRandom(rand, rankedUnlocks(quest, run.hardcore)[0]);
   const slots = run.customSlots ?? (quest ? questSlots(quest.major, quest.minor) : null);
   if (slots === null) return ground;
   rand();

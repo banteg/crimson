@@ -1,6 +1,6 @@
 // The crimson-core input stream for a replay, a port of crimson-core/checks/replay.py: a 66-word config, then per
-// tick the player's four f32 axes, the flag word, the command count and each command as (kind, argument). The
-// service verifies one-player runs, so every tick has one input.
+// tick each player's four f32 axes and flag word (player one first), the command count and each command as (kind,
+// argument). A perk command carries no player: the core knows whose perk menu is open.
 
 import { type CustomQuest, GameMode, type Replay } from "./replay";
 
@@ -10,11 +10,14 @@ const PLAYERS_WORD = 12;
 export const QUEST_HEAD_BYTES = 10 * 4;
 export const QUEST_SPAWN_BYTES = 24;
 export const QUEST_BYTES = QUEST_HEAD_BYTES + 256 * QUEST_SPAWN_BYTES;
-export const TICK_BYTES = 24;
+export const INPUT_BYTES = 20;
 const COMMAND_BYTES = 8;
 export const MAX_TICK_COMMANDS = 16;
 
 export class TransportError extends Error {}
+
+// A tick's inputs and command count, before its commands.
+export const tickBytes = (players: number) => players * INPUT_BYTES + 4;
 
 export function encodePortableQuest(quest: CustomQuest): Uint8Array {
   const bytes = new Uint8Array(QUEST_BYTES);
@@ -58,13 +61,14 @@ export function encodePortableQuest(quest: CustomQuest): Uint8Array {
 
 export function encodeTransport(replay: Replay): Uint8Array {
   const run = replay.run;
-  if (run.player_count !== 1 || ![GameMode.SURVIVAL, GameMode.RUSH, GameMode.QUESTS].includes(run.game_mode_id as 1 | 2 | 3))
-    throw new TransportError("The core supports one player in Rush, Survival or Quests");
+  const players = run.player_count;
+  if ((players !== 1 && players !== 2) || ![GameMode.SURVIVAL, GameMode.RUSH, GameMode.QUESTS].includes(run.game_mode_id as 1 | 2 | 3))
+    throw new TransportError("The core supports one or two players in Rush, Survival or Quests");
   const custom = run.custom_quest;
   const headBytes = CONFIG_BYTES + (custom ? QUEST_BYTES : 0);
   const ticks = replay.ticks;
   const commandCount = [...ticks.commands.values()].reduce((sum, commands) => sum + commands.length, 0);
-  const bytes = new Uint8Array(headBytes + ticks.length * TICK_BYTES + commandCount * COMMAND_BYTES);
+  const bytes = new Uint8Array(headBytes + ticks.length * tickBytes(players) + commandCount * COMMAND_BYTES);
   const view = new DataView(bytes.buffer);
   const config = [
     run.seed,
@@ -88,13 +92,15 @@ export function encodeTransport(replay: Replay): Uint8Array {
   for (let tick = 0; tick < ticks.length; tick++) {
     const commands = ticks.commands.get(tick) ?? [];
     if (commands.length > MAX_TICK_COMMANDS) throw new TransportError("Unsupported player or command count");
-    const [mx, my, ax, ay, flags] = ticks.input(tick, 0);
-    [mx, my, ax, ay].forEach((axis, i) => view.setFloat32(at + i * 4, axis, true));
-    view.setUint32(at + 16, flags, true);
-    view.setUint32(at + 20, commands.length, true);
-    at += TICK_BYTES;
+    for (let player = 0; player < players; player++, at += INPUT_BYTES) {
+      const [mx, my, ax, ay, flags] = ticks.input(tick, player);
+      [mx, my, ax, ay].forEach((axis, i) => view.setFloat32(at + i * 4, axis, true));
+      view.setUint32(at + 16, flags, true);
+    }
+    view.setUint32(at, commands.length, true);
+    at += 4;
     for (const command of commands) {
-      if (command.player_index !== 0) throw new TransportError("Unsupported command player");
+      if (command.player_index >= players) throw new TransportError("Unsupported command player");
       if (command.type === "perk_pick") view.setInt32(at, 1, true), view.setInt32(at + 4, command.choice_index, true);
       else if (command.type === "perk_menu_open") view.setInt32(at, 2, true), view.setInt32(at + 4, 0, true);
       else throw new TransportError(`Unsupported command: ${command.type}`);
@@ -104,11 +110,13 @@ export function encodeTransport(replay: Replay): Uint8Array {
   return bytes;
 }
 
-// The bytes a run's id hashes: its stream as the service first encoded it, without the player count. Ids name stored
-// replays, links and the duplicate check, so they stay put when the stream's layout changes. The service takes
-// one-player runs only, so the dropped word is always 1.
+// The bytes a run's id hashes. Ids name stored replays, links and the duplicate check, so they stay put when the
+// stream's layout changes: a one-player run hashes its stream as the service first encoded it, without the player
+// count, which the stream gained later; a co-op run hashes its whole stream, the count included. (A ranked run's
+// weapon usage words are zero, so the shifted one-player bytes never spell a co-op stream.)
 export function runIdentity(transport: Uint8Array): Uint8Array {
   const at = PLAYERS_WORD * 4;
+  if (new DataView(transport.buffer, transport.byteOffset + at, 4).getUint32(0, true) !== 1) return transport;
   const bytes = new Uint8Array(transport.length - 4);
   bytes.set(transport.subarray(0, at));
   bytes.set(transport.subarray(at + 4), at);

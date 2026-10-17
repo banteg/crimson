@@ -2,11 +2,12 @@
 //
 // The payload must be canonical: one byte string per value. Rather than decode and re-encode, the reader refuses
 // every encoding the canonical writer (msgspec) never produces, so a payload it accepts is the only encoding of its
-// value: the shortest header for every integer, string, array and map, float64 for every float, and no bin or ext.
+// value: the shortest header for every integer, string, byte string (bin), array and map, float64 for every float, and
+// no ext.
 // Maps keep their key order, which the schema checks. A reader yields one token at a time, so a caller can decode a
 // long array into its own form rather than a value per element.
 
-export type Scalar = null | boolean | number | F64 | string;
+export type Scalar = null | boolean | number | F64 | string | Uint8Array;
 export type Value = Scalar | Value[] | MapValue;
 // float64 values stay apart from integers: an integer in a float field, or the reverse, is not canonical.
 export class F64 {
@@ -104,6 +105,12 @@ export class Reader {
         if (value < BigInt(Number.MIN_SAFE_INTEGER)) throw new PayloadError("integer out of range");
         return Number(value);
       }
+      case 0xc4:
+        return this.bin(this.u8());
+      case 0xc5:
+        return this.bin(this.length(this.view.getUint16(this.take(2), false), 0x100));
+      case 0xc6:
+        return this.bin(this.length(this.view.getUint32(this.take(4), false), 0x10000));
       case 0xd9:
         return this.str(this.length(this.u8(), 0x20));
       case 0xda:
@@ -161,6 +168,11 @@ export class Reader {
     } catch {
       throw new PayloadError("string is not UTF-8");
     }
+  }
+
+  private bin(length: number): Uint8Array {
+    const at = this.take(length);
+    return this.bytes.slice(at, at + length);
   }
 
   private array(length: number): Value[] {

@@ -48,6 +48,7 @@ def _find_matching_clear_replay(replays_dir: Path, digest: str) -> Path | None:
         custom = replay.run.custom_quest
         if custom is None or custom.digest() != digest:
             continue
+        # A clear is one player's: `unranked_reasons` refuses a co-op custom quest (`custom_quest_players`).
         if not unranked_reasons(replay.run) and not outcome_reasons(replay.run, replay.result):
             return path
     return None
