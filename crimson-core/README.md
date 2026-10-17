@@ -243,8 +243,8 @@ run under each of five network profiles (10 ms one way to 60 ± 20 ms with
 loss, one with bursts of lost packets, and 120 ± 10 ms, where the game must keep
 60 ticks a second past the window's narrowing) with a perk picked from either
 seat while the other predicts, pauses, a stall on either machine, the window
-narrowing, a leave and team wipes (then wipes until a correction revised one),
-quests from the
+narrowing, a leave and team wipes (one both players sign, which both machines
+queue alike; then wipes until a correction revised one), quests from the
 Host's quest list through Play Next, the high scores' Play a game, Play Another
 (where a link to a replay waits for the session's end, through its runs), two
 quest keys and Play Again twice to a leave from the failed quest's screen, and

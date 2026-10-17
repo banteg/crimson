@@ -91,14 +91,15 @@
 // Host's menus are its own again: its quest list starts none of the quests the
 // session unlocked.
 //
-// Bounded rollback under the network's profiles: 10 ms one way; 30 ± 5 ms; 50 ±
-// 15 ms with bursts of lost packets; 60 ± 20 ms with 1% lost; 120 ± 10 ms. A
+// Bounded rollback under the network's profiles: 10 ms one way; 30 ± 5 ms; 50
+// ± 15 ms with bursts of lost packets; 60 ± 20 ms with 1% lost; 120 ± 10 ms. A
 // Survival run under each that begins ahead on one machine and stalls 300 ms on
 // the other, where a perk is picked from either seat while the other machine
 // predicts, the game pauses and resumes from either seat, the window narrows as
 // 15 minutes into a run (past which the game keeps 60 ticks a second at 120 ms,
-// its input delay longer), and the run ends in a team wipe or a leave from the
-// pause banner; then team wipes until one a correction revised.
+// its input delay longer), and the run ends in a team wipe, whose names both
+// players sign under 60 ms with loss, or a leave from the pause banner; then
+// team wipes until one a correction revised.
 //
 // Quests. The Host starts the first quest from its quest list, which both
 // players clear under 60 ± 20 ms with loss; both save their names. The Guest's
@@ -1289,9 +1290,10 @@ for (const peer of peers) verified(peer, confirmed(peer) + 1, "incomplete");
 // 120 ± 10 ms, where the Host's START_RUN puts the records further ahead (coop_live.inc coop_run_delay), the window
 // narrows 40 s into the run, as it does 15 minutes in. Once the pick is in and 1500 ticks are confirmed (2700 where
 // the window narrows, 3600 at 120 ms), the Guest pauses under 30 ± 5 ms and the Host's mouse presses the banner's
-// Leave; under the others both players die (dying, below). At 120 ms the game runs 60 ticks a second from a
-// second past the narrowing to the run's end, the narrowed window and the longer delay covering a one-way trip
-// together.
+// Leave; under the others both players die (dying, below). Under 60 ± 20 ms with loss both players then name the
+// run, which ranks: both machines queue the same upload of the replay of the run's confirmed end. At 120 ms the game
+// runs 60 ticks a second from a second past the narrowing to the run's end, the narrowed window and the longer delay
+// covering a one-way trip together.
 //
 // Each run ends as the others: the same digests on both machines and from the records, the same replays, verified.
 // Both machines ran ticks on predictions and rolled them back, none further than the window allows; the drift
@@ -1302,7 +1304,7 @@ const PROFILES = [
   { name: "10 ms", ms: 10, jitter: 2, picker: host },
   { name: "30 ± 5 ms", ms: 30, jitter: 5, picker: guest, pause: { by: guest, resumer: host }, end: "leave" },
   { name: "50 ± 15 ms, bursts", ms: 50, jitter: 15, bursts: { every: 4000, burst: 10 }, late: 40000, picker: host },
-  { name: "60 ± 20 ms, 1% loss", ms: 60, jitter: 20, loss: 0.01, picker: guest, pause: { by: host, resumer: guest } },
+  { name: "60 ± 20 ms, 1% loss", ms: 60, jitter: 20, loss: 0.01, picker: guest, pause: { by: host, resumer: guest }, ranked: true },
   { name: "120 ± 10 ms", ms: 120, jitter: 10, late: 40000, ticks: 3600, picker: guest, paced: true },
 ];
 const LOSSY = PROFILES[3];
@@ -1340,14 +1342,29 @@ function dying(peer) {
   return { keys: [Math.abs(way[0]) > Math.abs(way[1]) ? (way[0] < 0 ? S : F) : way[1] < 0 ? E : D] };
 }
 // Both players die, then their names go in with the session closed, and both screens go to the menu; the run's
-// counters.
-function wipe(what) {
+// counters. A `ranked` run's names go in with the session open, both machines queuing the run, signed, and the
+// session's close takes both screens to the menu.
+function wipe(what, ranked = false) {
   for (const peer of peers) peer.dying = null;
   play(dying, () => peers.every((p) => screen(p) === GAME_OVER), `${what}: the team's death`);
   const result = ended("death");
   const counted = peers.map((p) => coopStats(p.g));
+  if (ranked) {
+    const file = newest(host);
+    assert.deepEqual(header(file).seat_keys, [room.keys[0], room.keys[1]], `${what}: the seats' keys`);
+    settle(guest, GAME_OVER);
+    tap(guest, DOWN, A);
+    settle(host, GAME_OVER);
+    tap(host, key(ENTER));
+    play(idle, () => peers.every((p) => status(p) & STATUS.signed), `${what}: both names`);
+    queued(file);
+  }
   for (const peer of peers) assert.equal(peer.g.game_coop_disconnect(DISCONNECTED), 1);
   machines.flights = [];
+  if (ranked) {
+    play(idle, () => peers.every((p) => screen(p) === MAIN_MENU), `${what}: the menus`);
+    return { result, counted };
+  }
   settle(guest, GAME_OVER);
   tap(guest, DOWN, A);
   play(idle, () => screen(guest) === MAIN_MENU, `${what}: the Guest's name and the menu`);
@@ -1428,7 +1445,7 @@ for (const profile of PROFILES) {
   } else {
     // The bursts above would take the place of the dying player's.
     machines.bursts = null;
-    ({ result, counted } = wipe(profile.name));
+    ({ result, counted } = wipe(profile.name, profile.ranked));
   }
   const by = picker.role;
   assert.equal(result.commands, `PerkMenuOpenCommand:${by} PerkPickCommand:${by}`, `${profile.name}: the pick`);
@@ -1450,7 +1467,12 @@ for (const profile of PROFILES) {
 // Rollbacks under every profile but the nearest.
 for (const { profile, stats } of profiled.slice(1)) assert.ok(stats[0].rollbacks && stats[1].rollbacks, `${profile}`);
 // A death and a team wipe a correction revised: until a run brought one, more Survival runs under 60 ± 20 ms with
-// loss end as those above, the players standing from the start, 20 at most.
+// loss end as those above, the players standing from the start, 20 at most. No late input brings one by itself: a
+// guess runs at most eight ticks past the last confirmed one, and in that time a creature in reach hits by its own
+// clock whichever way the player turns, so whether the guessed or the real way takes the last player out of reach
+// rests on a few pixels of the creatures' own chase; and a perk request, the one input that stops play, opens its
+// menu between two ticks that both run. The search is deterministic, the network seeded and the machines' clocks the
+// network's, so it plays the same runs each time.
 const sum = (name) => profiled.reduce((n, { stats }) => n + stats[0][name] + stats[1][name], 0);
 network(LOSSY);
 for (let n = 1; !sum("revised_wipes") && n <= 20; ++n) {

@@ -1931,9 +1931,14 @@ whose page reports.
    each that starts ahead on one machine and stalls 300 ms on the other: a perk
    picked from either seat while the other predicts, pauses from either seat,
    the window's narrowing (brought forward), a leave from the pause banner and
-   team wipes, then wipes until a correction revised one; at 120 ms the game
-   must keep 60 ticks a second past the narrowing; the first quest plays under
-   the lossiest profile. It holds both machines' runs to each other and to the
+   team wipes, one of them ranked (both names signed under 60 ms with loss, both
+   machines queuing the same upload of the replay's confirmed run), then wipes
+   until a correction revised one; at 120 ms the game must keep 60 ticks a
+   second past the narrowing; the first quest plays under the lossiest profile.
+   M3's ranked flow runs under rollback throughout: each replay it holds and
+   signs, and the end screen's score, come from the run's last confirmed tick
+   (`coop_over`, or `coop_settle` for a run left early), both machines' replays
+   and outbox entries byte for byte the same. It holds both machines' runs to each other and to the
    records as `M1` does, the Host's music to its run played again without
    predictions, every frame to the newest tick run, the perk and end screens to
    confirmed ticks, predictions to the window, and the two runs to each other
@@ -1942,7 +1947,8 @@ whose page reports.
    state, and a frame that stopped at a menu or the run's end kept showing a
    prediction a rollback had taken back. A third predates rollback: a perk pick
    read the frame's time step, not the last tick's (Breathing Room), so the two
-   machines' frame rates parted their runs.
+   machines' frame rates parted their runs; a 1P live run parted from the
+   verifier the same way, though no result changed (`fix(game)` before `M2`).
 
    `checks/coop_browser.mjs` plays the browser path with rollback: one page's
    DataChannel sends held 60 ± 25 ms (`coop.js`'s `delay` hook) make the other
