@@ -853,6 +853,16 @@ stays on the arena screen and sees the replay viewer's top-right pick card
   - `paused: false` resumes input production from the next contiguous tick,
     with `coop_banked_s` clamped as for any stall.
 
+  - The picker's choice is the one record a pause does not hold back: the run
+    waits on it, so it is produced as the perk screen takes the click, paused
+    or not (it holds no buttons and no movement, as the perk screen plays
+    nothing), and a leave that follows ends the run after the pick.
+
+  - The pause banner's Resume and Leave, and a stopped run's Leave, take the
+    mouse, the keys (Tab and Enter; Escape resumes, or leaves a stopped run)
+    and a pad (the d-pad steps the focus, A presses, the right stick moves the
+    cursor; Start resumes), as the original's menus do.
+
 - **Leaving a run**:
 
   - The pause banner and the end screen offer **Leave**. Leaving sends
@@ -886,8 +896,13 @@ stays on the arena screen and sees the replay viewer's top-right pick card
   | Quest failed | Play Another | `setup`: both peers return to the Host's run setup |
 
   On the last quest the original shows **Show End Note** in place of Play
-  Next; it opens locally and starts nothing. **Main Menu** is Leave.
-  **High scores** opens the co-op board locally.
+  Next; it opens locally and starts nothing. **Main Menu** is Leave, sent as
+  the click lands. **High scores** opens the co-op board locally. Every other
+  button that starts a run (the high scores' Play a game, the end note's
+  modes) is run setup: the Host's picks the next run, the Guest's starts
+  nothing. A screen that is fading out to the one a click chose takes no run
+  until it shows, so a click that leaves the end screen wins over a run that
+  arrives after it.
 
   - The Host owns the seed, so a Guest's click sends
     `MSG_NEXT_RUN { run_epoch, choice }`. On its own click, or on the first
@@ -896,7 +911,9 @@ stays on the arena screen and sees the replay viewer's top-right pick card
     draws a fresh seed, and sends `MSG_START_RUN` for the chosen mode and
     quest (or opens run setup for `setup`). The first click the Host sees wins:
     two clicks at once, even on different buttons, start one run, and a
-    `MSG_NEXT_RUN` for an earlier `run_epoch` is ignored.
+    `MSG_NEXT_RUN` for an earlier `run_epoch` is ignored. The Host's own
+    `setup` goes to the Guest as `MSG_NEXT_RUN { setup }`, whose end screen
+    opens its quest list too.
 
   - Both peers leave the end screen when `MSG_START_RUN` arrives and wait for
     `MSG_START_ACK` before stepping tick `0`.
@@ -949,10 +966,21 @@ any other.
 
 - **Next run waits for both names**: the Host starts the next run (Section 5.2)
   only once both `MSG_RUN_SIGNED` for the current `run_epoch` have arrived, or
-  the partner has left. A click before that shows "Waiting for partner" on the
+  the partner has left. A click before that shows "Waiting for Player N" on the
   clicker's screen and fires when the second signature lands, so neither
   player is pulled out of the name entry or the quest results reveal. Leaving
-  before signing leaves the run unranked.
+  before signing leaves the run unranked. Until `M3` signs, `MSG_RUN_SIGNED`
+  carries nothing: each peer sends it once its end screen shows its buttons,
+  past the name entry (or with none), and the Host waits for the Guest's and
+  its own screen's. A session that ends while a player names a score leaves
+  the end screen once the name is in.
+
+- **A run alone**: a session can open while a player's own run plays (the
+  Host waiting for an invite, say). That run plays out on the player's own
+  save, its unlocks included, and its window's focus pauses it as alone; the
+  menus' every-quest view comes after it, and a run the Host starts waits for
+  it (and the Host gives up after 10 s, as for any start). Its end screen's
+  buttons are run setup, as the menus'.
 
 ---
 
@@ -1155,8 +1183,8 @@ later epoch than the receiver's. Every other message of another epoch is ignored
 | `5` | `INPUT_REPAIR` | `u32 start_tick, u16 count, count × (PortableInput, u8 request)` | Gap repair |
 | `6` | `PAUSE` | `u32 pause_seq, u8 paused` | `pause_seq` is one past the highest seen. The highest wins, the Host's on a tie, and neither peer produces while paused |
 | `7` | `LEAVE` | `u32 last_tick` | Section 5.2 |
-| `8` | `NEXT_RUN` | `u8 choice` (`0` again, `1` next, `2` setup) | Guest to Host; the first one per epoch is kept for the next run |
-| `9` | `RUN_SIGNED` | | Milestone M3 |
+| `8` | `NEXT_RUN` | `u8 choice` (`0` again, `1` next, `2` setup) | Guest to Host; the first one per epoch is kept for the next run. Host to Guest only `setup`: the Host opened run setup from its end screen |
+| `9` | `RUN_SIGNED` | none until `M3` (then `name, public_key, signature`) | Once per epoch each way, from the end screen past its name entry; the Host starts the next run only once both peers' are in (Section 5.3) |
 | `10` | `DESYNC` | `u32 tick, u32 local_hash, u32 remote_hash` | Sent once; both peers stop |
 | `11` | `ERROR` | `u8 code` | A protocol error; both peers stop |
 | `12` | `CLOSE` | | Once each, after `LEAVE` both ways: the sender holds the receiver's records and hashes through the run's end (Section 5.2). A peer closes once it sent its own and the partner's arrived |
@@ -1376,16 +1404,22 @@ and messages, repairs and the records they carried, and the round trip.
    profile, and saved progress. The sessions start Survival from the Host's
    menus, open and pick perks from both seats (once on the same tick), pause
    from each seat and resume from the other, play on with one window in the
-   background, start the next run from the Guest's end screen, leave from the
-   pause banner, desync, lose the connection, and play quests from the Host's
-   quest list through the Guest's Play Next to a leave from the failed quest's
-   Main Menu. Every tick both machines confirm must have the same state hash
+   background, start the next run from the Guest's end screen once the Host's
+   name is in, pick a perk in a paused run and leave by pad from the pause
+   banner, desync and leave by keys and pad, lose the connection with the
+   machines in each other's seats, and play quests from the Host's quest list
+   through the Host's Play Next, past the Guest's high scores' Play a game, and
+   Play Another to a leave from the failed quest's Main Menu that a click right
+   after does not undo. Before them, a session opens while one machine plays a
+   quest alone, which plays out on its own save. Every tick both machines
+   confirm must have the same state hash
    and bake and terrain digests on both and from the engine replaying the
    machines' records alone (not the music digest, which names the tracks each
    machine loaded); both must save byte-identical replays that `crimson replay
-   verify` accepts as 2-player runs, each perk command its picker's; the Host's
-   menus must lose the session's unlocks when it ends; and neither player's
-   settings or save may change.
+   verify` accepts as 2-player runs, each perk command its picker's; each mouse
+   aim tick 0 reads must go through the two players' midpoint, in either seat;
+   the Host's menus must lose the session's unlocks when it ends; and neither
+   player's settings or save may change.
 
 ### Milestone `M2`: Bounded rollback in the browser prototype
 

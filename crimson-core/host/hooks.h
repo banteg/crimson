@@ -23,6 +23,8 @@ void game_live_pick(int choice);
 // true when it takes the click.
 bool game_coop_setup_run(int mode, int major, int minor);
 bool game_coop_next_run(int choice);
+// An end screen shows its buttons, past its name entry.
+void game_coop_end_ready();
 // Presentation metadata shared by live custom quests and their replays (host/watch.inc).
 char *game_custom_quest_author();
 // The Ranked row (host/ranked.inc). Its table reader returns a FILE, which some

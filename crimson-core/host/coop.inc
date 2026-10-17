@@ -974,9 +974,12 @@ __attribute__((export_name("game_coop_input"))) uintptr_t game_coop_input() {
 // behind acknowledging them, the session holds production or this machine's
 // perk request waits for its tick's confirmation. A peer's record asks for
 // the menu when game_coop_request did; the picker's, on the tick after its
-// request opened the menu, takes the choice its input names (0 cancels).
+// request opened the menu, takes the choice its input names (0 cancels). A
+// pause holds back the players' input but not the picker's choice, which the
+// run waits on: a leave that follows ends the run after it.
 __attribute__((export_name("game_coop_produce"))) int game_coop_produce(double) {
-  if (!coop.active || coop.hold || coop.request >= 0 || coop.produced >= coop.next + coop.delay ||
+  uint32_t hold = coop.picking ? coop.hold & ~COOP_HOLD_PAUSE : coop.hold;
+  if (!coop.active || hold || coop.request >= 0 || coop.produced >= coop.next + coop.delay ||
       coop.produced - coop.peer_ack >= COOP_UNACKED)
     return -1;
   int t = coop.produced + 1;

@@ -68,6 +68,7 @@ static struct {
   bool shown;     // a tick of the run drew, and the host holds its frame
   bool choosing;  // this machine's perk screen is open for its pick
   bool ended;     // the screen shows a co-op run's end
+  bool naming;    // an end screen's name entry shows: no run comes to it
   // The Host's next run, from its click or the Guest's choice, until the Guest
   // can start one (`choice`: 0 again, 1 next, 2 from the run setup).
   bool latched;
@@ -333,7 +334,7 @@ static PortableInput live_input(int seat = 0) {
   float camera_x = camera_offset_x, camera_y = camera_offset_y;
   if (tick == 0) {
     const crimson_cfg_t &view = live.run.config;
-    const auto &one = player.position, &two = player_state_table[1].position;
+    const auto &one = player_state_table[0].position, &two = player_state_table[1].position;
     float centre_x = cfg.players == 2 ? one.x - (one.x - two.x) * 0.5f : one.x,
           centre_y = cfg.players == 2 ? one.y - (one.y - two.y) * 0.5f : one.y;
     camera_x = fmaxf(fminf((float)(view.screen_width / 2) - centre_x, -1.0f),
@@ -575,9 +576,9 @@ char *input_key_name(int code) { return input_key_name_recovered(game_live_key(c
 // One choice per opening: clicks while the menu closes pick nothing, which keeps
 // them from spending a perk the pick itself earns on choices never shown.
 void game_live_pick(int choice) {
-  // A co-op picker's choice goes with its next record (host/coop.inc).
+  // A co-op picker's choice is its next record (host/coop_live.inc).
   if (coop_live.playing && !live.picked)
-    coop.scratch[coop.local].cmd = (uint8_t)(choice + 1);
+    coop_pick(choice);
   else if (!live.picked)
     live_queue({1, choice});
   live.picked = true;

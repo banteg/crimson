@@ -28,7 +28,7 @@ enum CoopType : uint8_t {
   COOP_CLOSE,
 };
 // What game_coop_request asks for.
-enum CoopAsk { COOP_ASK_OPEN = 1, COOP_ASK_PAUSE, COOP_ASK_LEAVE, COOP_ASK_NEXT_RUN, COOP_ASK_START };
+enum CoopAsk { COOP_ASK_OPEN = 1, COOP_ASK_PAUSE, COOP_ASK_LEAVE, COOP_ASK_NEXT_RUN, COOP_ASK_START, COOP_ASK_SIGNED };
 // game_coop_status: these flags, then why the session or its run stopped
 // (CoopReason, bits 16-23), then the Guest's choice for the next run the Host
 // holds (plus one, bits 24-27).
@@ -44,6 +44,7 @@ enum : uint32_t {
   COOP_FAILED = 256,   // a protocol error
   COOP_STARTING = 512, // the Host waits for the Guest to start the run
   COOP_REMOTE = 1024,  // the partner found the desync or the error
+  COOP_SIGNED = 2048,  // the partner's end screen is past its name entry (RUN_SIGNED)
 };
 // Also the codes ERROR sends.
 enum CoopReason : uint8_t {
@@ -89,7 +90,12 @@ static struct CoopWire {
   // partner's, and the session closes once both did.
   bool left, partner_left, close_sent, partner_closed;
   uint32_t left_tick, partner_tick;
-  int next_run; // the Guest's choice for the run after this one (the Host's), -1 none
+  // The Guest's choice for the run after this one on the Host, the Host's run
+  // setup (2) on the Guest; -1 none.
+  int next_run;
+  // RUN_SIGNED, once each per run: this side's end screen, and the partner's,
+  // is past its name entry.
+  bool signed_sent, partner_signed;
   bool desync_sent;
   // Ticks packets: this side's sequence and when each left; the partner's
   // highest and when it came; the highest of this side's an echo measured; the
@@ -196,7 +202,7 @@ static bool coop_begin(int delay, int rmax, uint32_t epoch, double now) {
     return false;
   wire.epoch = epoch;
   wire.reason = COOP_FINE;
-  wire.started = wire.starting = wire.paused = false;
+  wire.started = wire.starting = wire.paused = wire.signed_sent = wire.partner_signed = false;
   wire.pause_seq = 0;
   wire.pause_by = -1;
   wire.next_run = wire.head_sent = wire.peer_head = wire.remote_seen = wire.hash_ack = wire.hash_heard = -1;
@@ -583,8 +589,9 @@ static void coop_control_in(CoopReader &in, double now) {
     return coop_agree();
   }
   case COOP_NEXT_RUN: {
+    // The Guest's choice, or the Host's run setup (2) for the Guest's screen.
     uint8_t choice = in.get<uint8_t>();
-    if (!in.done() || !host || choice > 2)
+    if (!in.done() || choice > 2 || (!host && choice != 2))
       return coop_fail(COOP_BAD_MESSAGE);
     if (!current) {
       ++coop.stats.wire.stale;
@@ -596,7 +603,15 @@ static void coop_control_in(CoopReader &in, double now) {
     return;
   }
   case COOP_RUN_SIGNED:
-    // A co-op run's signatures (M3): none yet.
+    // The partner's end screen is past its name entry; the replay's signature
+    // with the name comes in M3.
+    if (!in.done() || (current && wire.partner_signed))
+      return coop_fail(COOP_BAD_MESSAGE);
+    if (!current) {
+      ++coop.stats.wire.stale;
+      return;
+    }
+    wire.partner_signed = true;
     return;
   case COOP_DESYNC: {
     int tick = in.get<int32_t>();
@@ -667,10 +682,12 @@ __attribute__((export_name("game_coop_disconnect"))) int game_coop_disconnect(in
 // What this machine asks of the session: 1 when it goes, 0 when it cannot now.
 // COOP_ASK_OPEN, a perk request (coop_ask); COOP_ASK_PAUSE, paused `a` (0 or
 // 1); COOP_ASK_LEAVE; COOP_ASK_NEXT_RUN, the Guest's choice `a` (0 again, 1
-// next, 2 setup); COOP_ASK_START, the Host's run of the config at
-// portable_config with delay `a`, window `b` and choice `c`, once the last run is
-// over on both sides and this machine compared the Guest's hashes up to its end
-// (which finds any divergence alone).
+// next, 2 setup), or the Host's run setup (2) the Guest's screen follows;
+// COOP_ASK_START, the Host's run of the config at portable_config with delay
+// `a`, window `b` and choice `c`, once the last run is over on both sides and
+// this machine compared the Guest's hashes up to its end (which finds any
+// divergence alone); COOP_ASK_SIGNED, once a run, its end screen past its name
+// entry.
 __attribute__((export_name("game_coop_request"))) int game_coop_request(int kind, int a, int b, int c, double now) {
   if (!wire.session || wire.closed)
     return 0;
@@ -693,7 +710,7 @@ __attribute__((export_name("game_coop_request"))) int game_coop_request(int kind
     coop_agree();
     return 1;
   case COOP_ASK_NEXT_RUN: {
-    if (wire.seat != 1 || !wire.hello || a < 0 || a > 2)
+    if (!wire.hello || a < 0 || a > 2 || (wire.seat == 0 && a != 2))
       return 0;
     CoopWriter message = coop_message(COOP_NEXT_RUN, wire.epoch).put((uint8_t)a);
     coop_send(message);
@@ -708,6 +725,14 @@ __attribute__((export_name("game_coop_request"))) int game_coop_request(int kind
     wire.start_at = now;
     CoopWriter message = coop_message(COOP_START_RUN, wire.epoch).put((uint8_t)a).put((uint8_t)b);
     message.put(cfg).put((uint8_t)c).put((uint16_t)0);
+    coop_send(message);
+    return 1;
+  }
+  case COOP_ASK_SIGNED: {
+    if (!coop_running() || !coop_over() || wire.signed_sent)
+      return 0;
+    wire.signed_sent = true;
+    CoopWriter message = coop_message(COOP_RUN_SIGNED, wire.epoch);
     coop_send(message);
     return 1;
   }
@@ -757,7 +782,7 @@ __attribute__((export_name("game_coop_status"))) uint32_t game_coop_status() {
       (coop.active && (coop.asked || coop.request >= 0) ? COOP_WAITING : 0) |
       (coop.active && coop.picking ? COOP_PICKER : 0) | (wire.left || wire.partner_left ? COOP_LEAVING : 0) |
       (coop_over() ? COOP_ENDED : 0) | (coop.active && coop.desync.tick >= 0 ? COOP_DESYNCED : 0) |
-      (wire.failed ? COOP_FAILED : 0) | (wire.remote ? COOP_REMOTE : 0);
+      (wire.failed ? COOP_FAILED : 0) | (wire.remote ? COOP_REMOTE : 0) | (wire.partner_signed ? COOP_SIGNED : 0);
   return status | (uint32_t)wire.reason << 16 | (uint32_t)(wire.next_run + 1) << 24;
 }
 }

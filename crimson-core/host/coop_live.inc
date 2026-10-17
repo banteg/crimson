@@ -6,7 +6,12 @@
 // machines' screens come to it the way the original starts a run, its fade to
 // gameplay, where game_state_set starts the run (coop_start_run). A run plays
 // the ranked profile for two players on neither player's save; its end saves
-// its replay as the client's runs do, and ranks nowhere yet.
+// its replay as the client's runs do, and ranks nowhere yet. The next run waits
+// for both end screens to pass their name entries (RUN_SIGNED), and a run
+// comes to no screen while it changes, so a click that leaves the end screen
+// (Main Menu is Leave) wins over a run that arrives after it. A run of this
+// machine's player alone, playing as the session opened, plays out on the
+// player's own save first.
 //
 // Every pass of the game runs the session (game_coop_pump), whatever the
 // screen and with the window in the background too: the partner waits on this
@@ -30,6 +35,7 @@ static bool coop_on() { return wire.session && !wire.closed; }
 // What the session shows over a run and the menus.
 static struct {
   bool was_on;     // the session was on, last pass
+  bool banner;     // a banner with buttons showed, last pass (game/pad.cpp steps its focus)
   bool asked_next; // the Guest's next-run choice went to the Host, whose run has yet to come
   bool fire_held;  // fire held as play resumes under a banner: let go first
   ui_button_t resume, leave;
@@ -76,6 +82,11 @@ static const char *coop_why() {
     return nullptr;
   }
 }
+
+// A run of this machine's player alone plays (not a replay): one that played as
+// the session opened. It plays on the player's own save, and keeps the window's
+// focus as alone; the session's unlocks and runs wait for its end.
+static bool coop_solo() { return game_live && !coop_live.playing && !live.watching; }
 
 // The menus' unlocks: every quest's while the session is on, else the player's.
 static void coop_overlay(bool on) {
@@ -155,12 +166,17 @@ static void coop_latch(int mode, int major, int minor, int hardcore, int choice)
   coop_live.choice = choice;
   coop_live.latched = true;
 }
+// The quest after `major`.`minor`.
+static void coop_next_quest(int &major, int &minor) {
+  if (++minor > 10)
+    ++major, minor = 1;
+}
 // The run after the last: the same again (0), or the next quest (1).
 static void coop_latch_next(int choice) {
   const PortableConfig &last = coop_live.last;
-  int major = (int)last.major, minor = (int)last.minor + (choice == 1);
-  if (minor > 10)
-    ++major, minor = 1;
+  int major = (int)last.major, minor = (int)last.minor;
+  if (choice == 1)
+    coop_next_quest(major, minor);
   coop_latch((int)last.mode, major, minor, (int)last.hardcore, choice);
 }
 // The Host's run setup after a failed quest: its quest list, as Play Another
@@ -179,7 +195,7 @@ static void coop_setup() {
 // stopped before its end.
 static void coop_to_menu() {
   coop_menu_restore();
-  coop_live.ended = coop_live.entering = false;
+  coop_live.ended = coop_live.entering = coop_live.naming = false;
   run_active = 0;
   game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
   music_fade_out_all(music_track_crimson_theme_id);
@@ -227,7 +243,7 @@ static bool coop_start_run() {
   coop_ui.resume = coop_ui.leave = plate;
   coop_ui.resume.label = (char *)"Resume";
   coop_ui.leave.label = (char *)"Leave";
-  coop_ui.card = coop_ui.fire_held = false;
+  coop_ui.card = coop_ui.fire_held = coop_ui.banner = false;
   viewer.card = 0;
   return true;
 }
@@ -242,7 +258,7 @@ static void coop_end(const char *outcome) {
   int number = replay_save(payload);
   memcpy(highscore_active_record.reserved0, &number, sizeof highscore_active_record.reserved0);
   game_live = game_session = false;
-  coop_live.playing = coop_live.choosing = false;
+  coop_live.playing = coop_live.choosing = coop_ui.banner = false;
   coop_live.ended = true;
 }
 // This machine leaves its run before the run's end (another screen, the game
@@ -272,11 +288,14 @@ static bool coop_withdraw(uint32_t epoch) {
 // game_state_set's screens while a session is on: a fade to gameplay coop_enter_run
 // began starts its run (true); the end screen's Main Menu leaves the session; the
 // menus show the player's settings; another screen drops the Host's choice, and
-// the run it was coming to (the Guest's comes again).
+// the run it was coming to (the Guest's comes again). An end screen shows its
+// name entry first.
 static bool coop_screen_set(game_state_id_t state) {
   bool starts = state == GAME_STATE_GAMEPLAY && !run_active && coop_live.entering;
   if (!starts)
     coop_live.latched = coop_live.entering = false;
+  coop_live.naming =
+      state == GAME_STATE_GAME_OVER || state == GAME_STATE_QUEST_RESULTS || state == GAME_STATE_QUEST_FAILED;
   if (coop_live.ended && state == GAME_STATE_MAIN_MENU && coop_on())
     game_coop_request(COOP_ASK_LEAVE, 0, 0, 0, host_time_ms());
   if (state == GAME_STATE_MAIN_MENU || state == GAME_STATE_PLAY_GAME_MENU || state == GAME_STATE_QUEST_SELECT)
@@ -295,9 +314,10 @@ static void coop_draw_line(const char *line) {
   viewer_text(16, viewer_h() - 40, line, 1, 1, 1, 1);
 }
 // The menus' line on the session: what became of a click or why the session
-// ended, a while; the Host's run waiting for the Guest, the Guest's choice
-// waiting for the Host's run; else that it is on (none while the screen fades
-// to a run).
+// ended, a while; a run of this machine's player alone first; the Host's run
+// waiting for the Guest (or for this player's name), the Guest's choice
+// waiting for the Host; else that it is on (none while the screen fades to a
+// run).
 static const char *coop_menu_line() {
   if (coop_live.note && host_time_ms() - coop_live.note_at < COOP_NOTE_MS)
     return coop_live.note;
@@ -305,10 +325,12 @@ static const char *coop_menu_line() {
     return nullptr;
   if (!wire.hello)
     return "Co-op: connecting";
+  if (coop_solo())
+    return "Co-op: connected - after this run";
   if (coop_live.latched)
-    return "Co-op: waiting for Player 2";
+    return coop_live.naming ? "Co-op: Player 2 is waiting for you" : "Co-op: waiting for Player 2";
   if (coop_ui.asked_next)
-    return "Co-op: waiting for the host";
+    return "Co-op: waiting for Player 1";
   if (coop_live.ended)
     return "Co-op: connected";
   return wire.seat == 0 ? "Co-op: connected - pick a run" : "Co-op: connected - the host picks the run";
@@ -316,9 +338,12 @@ static const char *coop_menu_line() {
 
 // A banner across the middle of the run's frame, in the replay viewer's dim
 // look: a title, a line under it, and buttons the mouse, the keys (Tab, Enter)
-// and a pad reach as they reach the original's. The button activated, or -1.
+// and a pad (game/pad.cpp: the d-pad, A, the right stick) reach as they reach
+// the original's, the focus on the first as it shows (a screen of its own to
+// the pad's focus). The button activated, or -1.
 static int coop_banner(const char *title, const char *line, std::initializer_list<ui_button_t *> buttons) {
   constexpr float HEIGHT = 104, BUTTON = 145, GAP = 16;
+  coop_ui.banner = true;
   float w = viewer_w(), y = floorf((viewer_h() - HEIGHT) * 0.5f);
   float band[2] = {0, y}, dim[4] = {0, 0, 0, 0.55f}, blue[4] = {0.27f, 0.51f, 0.86f, 0.9f};
   grim_interface_ptr->grim_draw_rect_filled(band, w, HEIGHT, dim);
@@ -339,10 +364,10 @@ static int coop_banner(const char *title, const char *line, std::initializer_lis
 }
 
 // The record of this machine's player for the next tick: its input, or with
-// the window in the background no buttons, no movement (or the point-click
-// target), its schemes and its last aim.
-static PortableInput coop_sample() {
-  if (!coop_live.unfocused)
+// the window in the background (`away`) no buttons, no movement (or the
+// point-click target), its schemes and its last aim.
+static PortableInput coop_sample(bool away) {
+  if (!away)
     return live_input(coop.local);
   int move_mode = config_blob.movement_schemes[0], aim_scheme = config_blob.aim_schemes[0];
   const PortableInput &last = coop.records[coop.local][coop.produced & (COOP_RING - 1)].record.input;
@@ -353,6 +378,17 @@ static PortableInput coop_sample() {
     input.move_y = live.move_target_y;
   }
   return input;
+}
+
+// The picker's choice from its perk screen (game_live_pick), as its record at
+// once, a paused run's too: the screen plays nothing, so the record holds what
+// the background's does. A leave that follows ends the run after it. Should
+// the partner lag far behind, it goes with the next record instead.
+static void coop_pick(int choice) {
+  if (!coop.picking)
+    return;
+  coop.scratch[coop.local] = {coop_sample(true), (uint8_t)(choice + 1)};
+  game_coop_produce(host_time_ms());
 }
 
 // game_live_frame for a co-op run: the presses, and the pass's play time. Every
@@ -412,6 +448,8 @@ static void coop_overlay_draw(float dt) {
   if (banner) {
     coop_ui.fire_held = true;
     live.fire_pressed = live.reload_pressed = false;
+  } else {
+    coop_ui.banner = false;
   }
   if (coop.hold & COOP_HOLD_STOP) {
     const char *why = coop_why();
@@ -423,10 +461,12 @@ static void coop_overlay_draw(float dt) {
   }
   coop_card(dt);
   if (banner) {
+    // A pad player's Start, as the original's pause menu takes it.
+    const char *key = config_blob.movement_schemes[0] == 3 ? "Start" : "Esc";
     if (wire.pause_by == wire.seat)
-      snprintf(line, sizeof line, "Esc resumes the run");
+      snprintf(line, sizeof line, "%s resumes the run", key);
     else
-      snprintf(line, sizeof line, "Player %d paused the run - Esc resumes it", partner);
+      snprintf(line, sizeof line, "Player %d paused the run - %s resumes it", partner, key);
     int activated = coop_banner("Paused", line, {&coop_ui.resume, &coop_ui.leave});
     if (activated == 0)
       game_coop_request(COOP_ASK_PAUSE, 0, 0, 0, host_time_ms());
@@ -478,7 +518,7 @@ static void coop_render() {
   }
   int due = live.due;
   for (int i = 0; i < due; ++i) {
-    coop.scratch[coop.local].input = coop_sample();
+    coop.scratch[coop.local].input = coop_sample(coop_live.unfocused);
     if (game_coop_produce(now) < 0)
       break;
     live.fire_pressed = live.reload_pressed = false;
@@ -508,6 +548,7 @@ static void coop_render() {
     if (!terminal)
       return coop_to_menu();
     ui_elements_timeline = 0;
+    coop_live.naming = true;
     return game_state_set_recovered(screen);
   }
   // This machine's player picks the perk the open menu offers: the original's
@@ -523,10 +564,14 @@ static void coop_render() {
 
 extern "C" {
 // A pass of the game (game/frame.cpp), whatever its screen: the menus' unlocks
-// follow the session; the Host starts the run it chose once the Guest can, and
-// takes the Guest's choice of the next; the Guest's screen comes to the run the
-// Host started; a session that ended takes its end screens back to the menu.
-// True while a session is on.
+// follow the session; the Host starts the run it chose once the Guest can and
+// both end screens passed their name entries, and takes the Guest's choice of
+// the next; the Guest's screen comes to the run the Host started, or to its run
+// setup; a session that ended takes its end screens back to the menu, once
+// this player's name is in. A screen that changes takes nothing until it
+// shows, and the end screens' Main Menu leaves at the click. True while the
+// game plays on for the session, in the background too (not under a run of the
+// player's alone).
 bool game_coop_pump() {
   // A perk screen whose pick the session no longer takes (a leave) closes as
   // its Cancel does.
@@ -535,18 +580,18 @@ bool game_coop_pump() {
     ui_transition_direction = 0;
     game_state_pending = GAME_STATE_GAMEPLAY;
   }
-  bool on = coop_on();
-  coop_overlay(on);
+  bool on = coop_on(), solo = coop_solo();
+  coop_overlay(on && !solo);
   // A session that ended says why, a while.
   if (coop_ui.was_on && !on)
     if (const char *why = coop_why())
       coop_note(why);
   coop_ui.was_on = on;
-  if (!on || coop_live.playing || coop_live.entering)
+  if (!on || !coop_live.ended)
     coop_ui.asked_next = false;
   if (!on) {
     coop_live.latched = coop_live.offered = false;
-    if (coop_live.ended)
+    if (coop_live.ended && !coop_live.naming)
       coop_to_menu();
     else if (!coop_live.playing && !coop_live.entering)
       coop_menu_restore();
@@ -554,8 +599,18 @@ bool game_coop_pump() {
   }
   if (coop_live.playing || coop_live.entering)
     return true;
+  // A click on the screen fades it out to the pending one.
+  bool changing = !ui_transition_direction && game_state_pending != GAME_STATE_PENDING_IDLE_SENTINEL;
+  if (changing && coop_live.ended && game_state_pending == GAME_STATE_MAIN_MENU)
+    game_coop_request(COOP_ASK_LEAVE, 0, 0, 0, host_time_ms());
+  if (changing || solo)
+    return !solo;
   if (wire.seat == 1) {
-    if (coop_live.offered && !wire.left && !wire.partner_left)
+    // The Host opened its run setup from the end screen.
+    if (wire.next_run == 2 && coop_live.ended)
+      coop_setup();
+    wire.next_run = -1;
+    if (coop_live.offered && !wire.left && !wire.partner_left && !coop_live.naming)
       coop_enter_run(coop_live.next);
     return true;
   }
@@ -570,13 +625,16 @@ bool game_coop_pump() {
     }
     wire.next_run = -1;
   }
-  if (coop_live.latched && coop_can_start())
+  bool named = !coop_live.naming && (!wire.started || wire.partner_signed);
+  if (coop_live.latched && named && coop_can_start())
     coop_enter_run(coop_live.next);
   return true;
 }
-// The original's buttons that start a run from the menus (game/changes/coop-run.patch):
-// true when the session takes the click. The Host's picks the run; the Guest's
-// waits for the Host's. Co-op plays Survival and the stock quests.
+// The original's buttons that start a run from the menus, the high scores and
+// the end note (game/changes/coop-run.patch): true when the session takes the
+// click. The Host's picks the run (on an end screen's, after a choice the Host
+// already took); the Guest's waits for the Host's. Co-op plays Survival and the
+// stock quests.
 bool game_coop_setup_run(int mode, int major, int minor) {
   if (!coop_on())
     return false;
@@ -584,36 +642,65 @@ bool game_coop_setup_run(int mode, int major, int minor) {
     coop_note("Co-op plays Survival and the quests");
   else if (wire.seat == 1)
     coop_note("The host picks the run");
-  else
+  else if (!(coop_live.ended && coop_live.latched))
     coop_latch(mode, major, minor, config_blob.hardcore, 2);
   return true;
 }
 // An end screen's button that starts the next run (`choice` 0 again, 1 next, 2
 // another from the run setup): true when the session takes the click. The
-// Guest tells the Host, which starts it; its Play Another opens its quest list
-// too. Play Next past the last quest shows the end note, which starts nothing.
+// Guest tells the Host, which starts it, the first choice it saw winning; Play
+// Another opens the quest list on both. Play Next past the last quest shows the
+// end note, which starts nothing. The end screen of a run of the player's alone
+// starts the session's run as the menus do; a co-op run's starts nothing once
+// the session ended (the next pass goes to the menu).
 bool game_coop_next_run(int choice) {
-  if (!coop_on() || !coop_live.ended || (choice == 1 && coop_live.last.major == 5 && coop_live.last.minor == 10))
+  if (!coop_on())
+    return coop_live.ended;
+  bool ours = coop_live.ended;
+  int major = ours ? (int)coop_live.last.major : quest_stage_major,
+      minor = ours ? (int)coop_live.last.minor : quest_stage_minor;
+  if (choice == 1 && major == 5 && minor == 10)
     return false;
+  if (!ours) {
+    if (choice == 1)
+      coop_next_quest(major, minor);
+    return choice != 2 && game_coop_setup_run(config_blob.game_mode, major, minor);
+  }
   if (wire.seat == 1) {
     coop_ui.asked_next = game_coop_request(COOP_ASK_NEXT_RUN, choice, 0, 0, host_time_ms());
     return choice != 2;
   }
-  if (choice == 2)
+  if (coop_live.latched)
+    return true;
+  if (choice == 2) {
+    game_coop_request(COOP_ASK_NEXT_RUN, 2, 0, 0, host_time_ms());
     return false;
+  }
   coop_latch_next(choice);
   return true;
 }
+// An end screen past its name entry (or with none), each pass it shows its
+// buttons: a co-op run's tells the partner, once (M3 signs its replay there).
+void game_coop_end_ready() {
+  if (!coop_live.naming)
+    return;
+  coop_live.naming = false;
+  if (coop_live.ended)
+    game_coop_request(COOP_ASK_SIGNED, 0, 0, 0, host_time_ms());
+}
 // The window's focus (game/frame.cpp): with a session on, the game plays on in
-// the background, this machine's records neutral, and the presses so far drop.
-// True while it plays on.
+// the background, this machine's records neutral, and the presses so far drop;
+// a run of the player's alone pauses as alone. True while it plays on.
 bool game_coop_focus(int active) {
   coop_live.unfocused = !active;
   if (!active)
     live.fire_down = live.reload_down = live.pick_down = live.fire_pressed = live.reload_pressed =
         live.open_requested = false;
-  return coop_on();
+  return coop_on() && !coop_solo();
 }
+// A co-op run's banner shows its buttons (game/pad.cpp): the pad steps their
+// focus as outside gameplay.
+bool game_coop_banner() { return coop_live.playing && coop_ui.banner; }
 }
 // The menus' line (ui_elements_update_and_render).
 static void coop_menus_draw() {

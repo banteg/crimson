@@ -218,12 +218,15 @@ their messages carried over the rollback check's seeded pipe
 ([`checks/coop_link.mjs`](checks/coop_link.mjs)) with a stutter and a lost
 burst, at 60 Hz against 144 Hz. The two differ in all a player sets: sound and
 music, in-game tunes, detail and gore, key bindings, mouse and keys against a
-pad, and saved progress. The Host's menus start Survival; both players open and
-pick perks, pause and resume each other, and one plays on in the background;
-the Guest's end screen starts the next run, where both ask for a perk menu on
-the same tick, and a leave from the pause banner ends it. Then a desync, a lost
-connection, and quests from the Host's quest list through the Guest's Play Next
-to a leave from the failed quest's screen. Every tick both machines confirm must
+pad, and saved progress. First a session opens while one machine plays a quest
+alone, which plays out on its own save. The Host's menus start Survival; both
+players open and pick perks, pause and resume each other, and one plays on in
+the background; the Guest's end screen starts the next run once the Host's name
+is in, where both ask for a perk menu on the same tick, and a pad leave from
+the pause banner right after a pick ends it. Then a desync, a lost connection
+with the seats swapped, and quests from the Host's quest list through Play
+Next, the high scores' Play a game and Play Another to a leave from the failed
+quest's screen. Every tick both machines confirm must
 have the same state hash and bake and terrain digests on both and from the
 engine replaying their records alone, both must save byte-identical replays
 that `crimson replay verify` accepts, the Host's menus must lose the session's
