@@ -1617,7 +1617,12 @@ room's relay, or `unknown` before the pair was read; its round trip's
 bucket (under 25, 50, 100 and 200 ms, and longer), its minutes in runs, whether
 a desync ended it, and `game_coop_telemetry()`: its frames whose due ticks all
 waited, its rollbacks by depth and its frames by the time their ticks took,
-over all its runs. The buckets are `client/web/analytics.json`'s. The service
+over all its runs. The buckets are `client/web/analytics.json`'s. A summary
+holds what its seconds in runs can: at most `max_seconds` (4 hours) of them, a
+rollback a tick, and `max_rate` (240) frames a second, stalled ones too; the
+service refuses one that claims more, as it bounds play totals by the minute a
+post covers, and the page scales counts past those bounds down in proportion
+before it sends. The service
 adds each summary to daily totals by transport (`coop_totals`) and keeps no
 room, seat, token or row per session; the admin's `/analytics` shows the last
 30 days. Each page reports its own session, so a session counts once per player

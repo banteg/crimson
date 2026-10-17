@@ -10,8 +10,9 @@ const DAY = 86400000;
 const PLAY_MODES = PLAY_ANALYTICS.modes.filter((mode) => mode !== null);
 const COOP = PLAY_ANALYTICS.coop;
 const COOP_FIELDS = ["day", "transport", "rtt", "seconds", "desync", "stalled", "depths", "frames"];
-const counts = (value: unknown, length: number): value is number[] =>
-  Array.isArray(value) && value.length === length && value.every((n) => integer(n, COOP.max_count));
+// A histogram of `length` buckets counting at most `max` in all.
+const counts = (value: unknown, length: number, max: number): value is number[] =>
+  Array.isArray(value) && value.length === length && value.every((n) => integer(n, max)) && value.reduce((a, b) => a + b, 0) <= max;
 const date = (now: number) => new Date(now).toISOString().slice(0, 10);
 const object = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
 const fields = (value: Record<string, unknown>, names: string[]) => Object.keys(value).every((name) => names.includes(name));
@@ -53,12 +54,15 @@ export async function postAnalytics(request: Request, env: Env, kind: "totals" |
   if (!object(value) || typeof value.day !== "string" || ![date(now), date(now - DAY), date(now - 2 * DAY)].includes(value.day))
     return refuse(400, "invalid analytics period");
   if (kind === "coop") {
+    // As play totals are bounded by the minute a post covers, a session's summary is bounded by the seconds in runs it
+    // claims: a rollback at most each tick, and frames, stalled ones too, at most max_rate a second.
+    const seconds = integer(value.seconds, COOP.max_seconds) ? value.seconds : -1, frames = seconds * COOP.max_rate;
     if (!fields(value, COOP_FIELDS) || typeof value.transport !== "string" || !COOP.transports.includes(value.transport) ||
-        !integer(value.rtt, COOP.rtt_ms.length) || !integer(value.seconds, COOP.max_seconds) || !integer(value.desync, 1) ||
-        !integer(value.stalled, COOP.max_count) || !counts(value.depths, COOP.depths) || !counts(value.frames, COOP.frame_ms.length + 1))
+        !integer(value.rtt, COOP.rtt_ms.length) || seconds < 0 || !integer(value.desync, 1) || !integer(value.stalled, frames) ||
+        !counts(value.depths, COOP.depths, seconds * 60) || !counts(value.frames, COOP.frame_ms.length + 1, frames))
       return refuse(400, "invalid co-op session");
     const rows: [string, number, number][] = [
-      ["sessions", 0, 1], ["seconds", 0, value.seconds], ["desyncs", 0, value.desync], ["stalled", 0, value.stalled],
+      ["sessions", 0, 1], ["seconds", 0, seconds], ["desyncs", 0, value.desync], ["stalled", 0, value.stalled],
       ["rtt", value.rtt, 1],
       ...value.depths.map((n, i): [string, number, number] => ["depth", i, n]),
       ...value.frames.map((n, i): [string, number, number] => ["frame", i, n]),

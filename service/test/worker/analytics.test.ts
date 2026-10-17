@@ -52,10 +52,20 @@ describe("private gameplay counts", () => {
     expect(count("depth", 2)).toBeUndefined();
     expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM play_totals").first()).toEqual({ n: 0 });
     for (const value of [{ ...coop(), transport: "carrier-pigeon" }, { ...coop(), room: "abc" }, { ...coop(), rtt: 5 },
-      { ...coop(), seconds: 43201 }, { ...coop(), desync: 2 }, { ...coop(), depths: depths().slice(1) },
+      { ...coop(), seconds: 14401 }, { ...coop(), desync: 2 }, { ...coop(), depths: depths().slice(1) },
       { ...coop(), frames: [1, 2, 3, 4, 5, -1] }, { ...coop(), stalled: 0.5 }])
       expect((await post(value, "/api/analytics/coop")).status).toBe(400);
     expect(await env.DB.prepare("SELECT SUM(count) AS n FROM coop_totals WHERE metric = 'sessions'").first()).toEqual({ n: 2 });
+  });
+
+  it("refuses a co-op summary whose counts its seconds in runs cannot hold", async () => {
+    // Ten seconds: at most 600 rollbacks (one a tick) and 2,400 frames, stalled ones too (240 a second).
+    const ten = { ...coop(), seconds: 10, stalled: 2400, depths: [300, 300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], frames: [2000, 400, 0, 0, 0, 0] };
+    expect((await post(ten, "/api/analytics/coop")).status).toBe(204);
+    for (const value of [{ ...ten, seconds: 9 }, { ...ten, stalled: 2401 }, { ...ten, depths: [301, 300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+      { ...ten, frames: [2000, 401, 0, 0, 0, 0] }, { ...ten, seconds: 0, stalled: 0, depths: Array(12).fill(0), frames: [1, 0, 0, 0, 0, 0] }])
+      expect((await post(value, "/api/analytics/coop")).status).toBe(400);
+    expect(await env.DB.prepare("SELECT SUM(count) AS n FROM coop_totals WHERE metric = 'sessions'").first()).toEqual({ n: 1 });
   });
 
   it("refuses ingestion before database writes when the shared anonymous budget is exhausted", async () => {
