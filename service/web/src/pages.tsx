@@ -959,12 +959,12 @@ function CoopAnalytics(props: { rows: PlayAnalyticsView["coop"] }) {
     <h3>Co-op sessions</h3>
     <Show when={used.length} fallback={<p>No co-op sessions yet.</p>}>
       <div class="board-table"><table><thead><tr>
-        <th>Transport</th><th class="n">Sessions</th><th class="n">Minutes</th><th class="n">Desyncs</th><th class="n">Stalled frames</th>
+        <th>Transport</th><th class="n">Sessions</th><th class="n">Minutes</th><th class="n">Desyncs</th><th class="n">Stalled frames a minute</th>
         <For each={ranges(rttMs)}>{(label) => <th class="n">{label} ms</th>}</For>
       </tr></thead><tbody><For each={used}>{(transport) => <tr>
         <td>{transport}</td><td class="n">{count(transport, "sessions")}</td><td class="n">{(count(transport, "seconds") / 60).toFixed(1)}</td>
         <td class="n">{count(transport, "desyncs")}</td>
-        <td class="n">{percent(count(transport, "stalled"), sum(series(transport, "frame", frameMs.length + 1)))}</td>
+        <td class="n">{count(transport, "seconds") ? (count(transport, "stalled") / (count(transport, "seconds") / 60)).toFixed(1) : "–"}</td>
         <For each={series(transport, "rtt", rttMs.length + 1)}>{(n) => <td class="n">{n}</td>}</For>
       </tr>}</For></tbody></table></div>
       <h3>Rollbacks by depth (ticks)</h3>
@@ -977,7 +977,7 @@ function CoopAnalytics(props: { rows: PlayAnalyticsView["coop"] }) {
           <For each={rollbacks}>{(n) => <td class="n">{percent(n, sum(rollbacks))}</td>}</For>
         </tr>;
       }}</For></tbody></table></div>
-      <h3>Frames by the time their ticks took</h3>
+      <h3>Frames that ran ticks, by the time that took</h3>
       <div class="board-table"><table><thead><tr>
         <th>Transport</th><For each={ranges(frameMs)}>{(label) => <th class="n">{label} ms</th>}</For>
       </tr></thead><tbody><For each={used}>{(transport) => {
@@ -985,7 +985,7 @@ function CoopAnalytics(props: { rows: PlayAnalyticsView["coop"] }) {
         return <tr><td>{transport}</td><For each={frames}>{(n) => <td class="n">{percent(n, sum(frames))}</td>}</For></tr>;
       }}</For></tbody></table></div>
     </Show>
-    <p class="muted">Each page reports its own session as it ends, so a session between two players counts twice. Transport is the one a session last ran over, from both ends of its WebRTC pair: direct when neither relays, turn-udp or turn-tcp when the page's own TURN relay carries it, turn when only the partner's relay does (or a relay names no protocol), ws-relay through the room, unknown before the pair was read. Round trips count sessions; stalled frames are frames whose due ticks all waited for the partner, the window or a perk pick.</p>
+    <p class="muted">Each page reports its own session as it ends, so a session between two players counts twice. Transport is the one a session last ran over, from both ends of its WebRTC pair: direct when neither relays, turn-udp or turn-tcp when the page's own TURN relay carries it, turn when only the partner's relay does (or a relay names no protocol), ws-relay through the room, unknown before the pair was read. Round trips count sessions; stalled frames are frames whose due ticks all waited for the partner, the window or a perk pick, outside a pause.</p>
   </>;
 }
 

@@ -40,6 +40,9 @@ HOST_IMPORT(fatal) [[noreturn]] void host_fatal(const char *message);
 // A message box the original shows the player (startup failures, warnings).
 HOST_IMPORT(message) void host_message(const char *text, const char *caption);
 HOST_IMPORT(time_ms) unsigned host_time_ms(void);
+// A steady clock in milliseconds finer than one, which times the game's own
+// work for its telemetry (host/coop.inc); nothing the game plays reads it.
+HOST_IMPORT(clock_ms) double host_clock_ms(void);
 // The leaderboard (host/ranked.inc): open the player's profile, signed in
 // (game_login_challenge), upload the runs waiting in leaderboard/outbox/,
 // fetch a board's scores for the high score screen (game_scores_request), or

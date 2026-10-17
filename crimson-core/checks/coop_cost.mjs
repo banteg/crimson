@@ -44,7 +44,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, from = 
   const SPARED = [15, 24, 35, 41, 47], CHOICES = 5, HEALTH = 10000;
   // host/api.h PortableInput: the pad's movement and aim (matrix.mjs PAD), firing.
   const INPUT_BYTES = 20, PAD = 0x100 | (3 << 9) | 0x1000 | (4 << 13), FIRE = 1;
-  // host/coop.inc game_coop_telemetry: the round trip, then CoopSessionStats.
+  // host/coop_wire.inc game_coop_telemetry: the round trip, why the session ended, then CoopSessionStats.
   const DEPTHS = 12, FRAME_BUCKETS = 6;
   // A headless host: no assets, the clock real.
   function instance() {
@@ -66,7 +66,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, from = 
       },
       fd_prestat_get: () => 8,
     };
-    const host = { ...refuse("host"), fatal: () => { throw Error("game module: fatal"); }, time_ms: () => performance.now() };
+    const host = { ...refuse("host"), fatal: () => { throw Error("game module: fatal"); }, time_ms: () => performance.now(), clock_ms: () => performance.now() };
     const exports = new WebAssembly.Instance(module, { wasi_snapshot_preview1: wasi, host }).exports;
     const g = Object.create(exports);
     memory = g.memory;
@@ -161,7 +161,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, from = 
 
   // (2) The run through the co-op engine.
   const g = instance();
-  const telemetry = () => Array.from(new Int32Array(g.memory.buffer, g.game_coop_telemetry(), 4 + DEPTHS + FRAME_BUCKETS));
+  const telemetry = () => Array.from(new Int32Array(g.memory.buffer, g.game_coop_telemetry(), 5 + DEPTHS + FRAME_BUCKETS));
   if (g.game_coop_start(-1, DELAY, RMAX, 1) !== 1) throw Error("co-op did not start");
   // Player one's perk request: the tick its open went on, until the pick that follows it is produced (-1 none), and
   // the tick by which the state shows the pick.
@@ -271,14 +271,14 @@ export async function measure(bytes, { config, fields, words, slotBytes, from = 
       g.game_coop_advance(1, 0);
     }
     const after = telemetry(), delta = after.map((n, i) => n - before[i]);
-    const [, ticks, resimulated] = delta;
+    const [, , ticks, resimulated] = delta;
     if (ticks < 0.9 * session * 60) throw Error(`the run stopped at ${hz} Hz`);
     const buckets = [1, 2, 4, 8, 16];
     sessions[hz] = {
       frames: work.length,
       work: summary(work),
       work_buckets: [...buckets.map((ms, i) => work.filter((w) => w >= (buckets[i - 1] ?? 0) && w < ms).length), work.filter((w) => w >= 16).length],
-      depths: delta.slice(4, 4 + DEPTHS),
+      depths: delta.slice(5, 5 + DEPTHS),
       stalled,
       resimulated_per_tick: Math.round((resimulated / ticks) * 1000) / 1000,
       ticks,

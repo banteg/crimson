@@ -100,11 +100,11 @@ const WIRE = fs.readFileSync(new URL("../host/coop_wire.inc", import.meta.url), 
 const BACKGROUND_MS = Number(/COOP_LIVENESS_MS = (\d+)/.exec(WIRE)[1]) + 2000;
 // The guest's late sends (coop.js delay).
 const LATE_SENDS = { ms: 60, jitter: 25 };
-// client_coop_telemetry's words: the round trip, ticks run and run again, frames whose due ticks all waited, then
-// rollbacks by depth and frames by the time their ticks took (host/coop.inc CoopSessionStats), as analytics.json
-// buckets them.
+// client_coop_telemetry's words: the round trip, why the session ended, ticks run and run again, frames whose due
+// ticks all waited, then rollbacks by depth and frames by the time their ticks took (host/coop.inc
+// CoopSessionStats), as analytics.json buckets them.
 const ANALYTICS = JSON.parse(fs.readFileSync(new URL("../client/web/analytics.json", import.meta.url), "utf8")).coop;
-const DEPTHS = [4, 4 + ANALYTICS.depths], TELEMETRY_WORDS = DEPTHS[1] + ANALYTICS.frame_ms.length + 1;
+const DEPTHS = [5, 5 + ANALYTICS.depths], TELEMETRY_WORDS = DEPTHS[1] + ANALYTICS.frame_ms.length + 1;
 
 const free = () =>
   new Promise((resolve) => {

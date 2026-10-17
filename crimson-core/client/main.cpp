@@ -348,6 +348,8 @@ u32 w2c_host_time_ms(struct w2c_host *) {
   static u32 reads;
   return unattended ? (u32)frames * 16 + reads++ : (u32)SDL_GetTicks();
 }
+// The clock the game times its own work by, to the nanosecond SDL reads.
+f64 w2c_host_clock_ms(struct w2c_host *) { return SDL_GetTicksNS() / 1e6; }
 static void show_frame(int width, int height) {
   renderer_present(width, height);
   SDL_GL_SwapWindow(window);
@@ -559,10 +561,14 @@ CLIENT_EXPORT const u8 *client_coop_used(int t, int seat) {
 }
 CLIENT_EXPORT u32 client_coop_hash_at(int t) { return w2c_game_game_coop_hash_at(&game, t); }
 CLIENT_EXPORT int client_coop_corrupt(int kind) { return w2c_game_game_coop_corrupt(&game, kind); }
-// The session's telemetry (game_coop_telemetry), which the page reports as the session ends; null before the game
-// started.
+// The session's telemetry as it stands (game_coop_telemetry); null before the game started.
 CLIENT_EXPORT const u8 *client_coop_telemetry() {
   return started ? client_memory() + w2c_game_game_coop_telemetry(&game) : nullptr;
+}
+// The next summary of an ended session the page reports (game_coop_report); null when none is due.
+CLIENT_EXPORT const u8 *client_coop_report() {
+  u32 at = started ? w2c_game_game_coop_report(&game) : 0;
+  return at ? client_memory() + at : nullptr;
 }
 // The room's word on the pair (host/coop_ranked.inc), which the page passes on
 // as the room says it, "wait" or -1 before the game has started. A room socket's

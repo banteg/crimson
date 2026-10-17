@@ -45,7 +45,7 @@ const STATS = [
   "checked",
   ["depths", 12],
   ["frame_ms", 6],
-  "worst_frame_ms",
+  "worst_frame_us",
   "stalled_frames",
   "frame_resimulated",
   "late_ticks",

@@ -60,6 +60,7 @@ export function loadGame(wasm) {
             throw Error(`game module: ${text(message)}`);
           },
           time_ms: () => (clock += 2),
+          clock_ms: () => performance.now(),
         }[i.name] ??
           (() => {
             throw Error(`headless game module called host ${i.name}`);

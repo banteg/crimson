@@ -273,6 +273,19 @@ static void coop_drop(CoopReason reason) {
   coop_wind_down();
 }
 static void coop_forget();
+// A session's summary for the page's telemetry (client/web/shell.html): its
+// round trip as last measured (ms), why it ended (CoopReason), then its
+// counters.
+struct CoopTelemetry {
+  int32_t rtt_ms, reason;
+  CoopSessionStats session;
+};
+static CoopTelemetry coop_telemetry() { return {coop.stats.wire.rtt_ms, wire.reason, coop.stats.session}; }
+// The summaries of sessions that reached the partner and ended, oldest first,
+// until the page takes each (game_coop_report); and whether this session's is
+// among them or taken.
+static std::deque<CoopTelemetry> coop_summaries;
+static bool coop_summed;
 // A session begins on this side as seat `seat`, nothing of the last one's
 // kept but what only grows, across sessions too: the epoch, so nothing a last
 // session sent belongs to a run of this one, and this side's ticks packets'
@@ -281,6 +294,11 @@ static void coop_forget();
 // here before it (a reloaded page counts from none again, but at another
 // time).
 static void coop_session(int seat, double now) {
+  // The last session's summary, which the page has not taken when the
+  // partner's new hello replaced it without a close, before its counters go.
+  if (wire.hello && !coop_summed)
+    coop_summaries.push_back(coop_telemetry());
+  coop_summed = false;
   static uint32_t sessions;
   uint64_t began;
   memcpy(&began, &now, sizeof began);
@@ -936,6 +954,27 @@ __attribute__((export_name("game_coop_tx"))) int game_coop_tx(int channel, doubl
 }
 __attribute__((export_name("game_coop_tx_buffer"))) uintptr_t game_coop_tx_buffer() {
   return (uintptr_t)wire.tx.data();
+}
+// The session's telemetry as it stands (CoopTelemetry).
+__attribute__((export_name("game_coop_telemetry"))) uintptr_t game_coop_telemetry() {
+  static CoopTelemetry telemetry;
+  telemetry = coop_telemetry();
+  return (uintptr_t)&telemetry;
+}
+// The next summary the page reports (CoopTelemetry), each session that reached
+// the partner once: one a new session replaced, then this one once it closed;
+// 0 when none is due.
+__attribute__((export_name("game_coop_report"))) uintptr_t game_coop_report() {
+  if (wire.hello && wire.closed && !coop_summed) {
+    coop_summaries.push_back(coop_telemetry());
+    coop_summed = true;
+  }
+  static CoopTelemetry report;
+  if (coop_summaries.empty())
+    return 0;
+  report = coop_summaries.front();
+  coop_summaries.pop_front();
+  return (uintptr_t)&report;
 }
 __attribute__((export_name("game_coop_status"))) uint32_t game_coop_status() {
   uint32_t status =

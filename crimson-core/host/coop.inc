@@ -185,10 +185,11 @@ struct CoopStats {
   int32_t checked; // ticks whose hash the peer's was compared with
   // Rollbacks by how many ticks they took back (1 to COOP_LEAD).
   int32_t depths[COOP_LEAD];
-  // Frames (game_coop_advance) by the time their ticks took (COOP_FRAME_BUCKETS),
-  // and the longest (ms); frames with ticks due that ran none, waiting for
-  // records, the window or the picker; the most ticks a frame ran again.
-  int32_t frame_ms[COOP_FRAME_BUCKETS], worst_frame_ms, stalled_frames, frame_resimulated;
+  // Frames (game_coop_advance) that ran ticks or ran them again, by the time
+  // that took (COOP_FRAME_BUCKETS), and the longest (µs); frames with ticks due
+  // that ran none, waiting for records, the window or the picker (not a pause);
+  // the most ticks a frame ran again.
+  int32_t frame_ms[COOP_FRAME_BUCKETS], worst_frame_us, stalled_frames, frame_resimulated;
   // Ticks run under the late window, and the furthest past the last confirmed
   // tick one of them ran on a record not yet real.
   int32_t late_ticks, late_lead;
@@ -1117,7 +1118,7 @@ __attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budg
   if (!coop.active || (coop.hold & (COOP_HOLD_START | COOP_HOLD_STOP)) || game_state_id != GAME_STATE_GAMEPLAY ||
       game_state_pending != GAME_STATE_PENDING_IDLE_SENTINEL)
     return 0;
-  unsigned start = host_time_ms();
+  double start = host_clock_ms();
   // Predictions ran past the agreed end: back to the state after it.
   if (coop.next - 1 > coop.end)
     coop_restore(coop.end + 1);
@@ -1177,29 +1178,22 @@ __attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budg
     coop.picking = perk_menu_open && perk_picker == coop.local;
     coop.request = -1;
   }
-  int ms = (int)(host_time_ms() - start), bucket = 0;
-  while (bucket < COOP_FRAME_BUCKETS - 1 && ms >= 1 << bucket)
-    ++bucket;
-  ++coop.stats.frame_ms[bucket];
-  ++coop.stats.session.frame_ms[bucket];
-  coop.stats.worst_frame_ms = std::max(coop.stats.worst_frame_ms, ms);
-  bool waited = stalled && budget > 0 && !fresh;
+  if (fresh || again) {
+    double ms = host_clock_ms() - start;
+    int bucket = 0;
+    while (bucket < COOP_FRAME_BUCKETS - 1 && ms >= 1 << bucket)
+      ++bucket;
+    ++coop.stats.frame_ms[bucket];
+    ++coop.stats.session.frame_ms[bucket];
+    coop.stats.worst_frame_us = std::max(coop.stats.worst_frame_us, (int32_t)(ms * 1000));
+  }
+  bool waited = stalled && budget > 0 && !fresh && !(coop.hold & COOP_HOLD_PAUSE);
   coop.stats.stalled_frames += waited;
   coop.stats.session.stalled_frames += waited;
   coop.stats.frame_resimulated = std::max(coop.stats.frame_resimulated, again);
   return fresh;
 }
 __attribute__((export_name("game_coop_stats"))) uintptr_t game_coop_stats() { return (uintptr_t)&coop.stats; }
-// The session's telemetry (client/web/shell.html): its round trip as last
-// measured (ms), then its counters (CoopSessionStats).
-__attribute__((export_name("game_coop_telemetry"))) uintptr_t game_coop_telemetry() {
-  static struct {
-    int32_t rtt_ms;
-    CoopSessionStats session;
-  } telemetry;
-  telemetry = {coop.stats.wire.rtt_ms, coop.stats.session};
-  return (uintptr_t)&telemetry;
-}
 // Test hook: the tick whose state the frame shows, -1 for none or one a rollback
 // took back.
 __attribute__((export_name("game_coop_drawn"))) int game_coop_drawn() { return coop.drawn; }

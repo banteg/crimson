@@ -46,6 +46,7 @@ export function bootGame(wasm, directory, seed, { leaderboard = false, requests,
           if (name === "fatal") throw Error(`game module: ${text(args[0])}`);
           if (name === "message") throw Error(`${text(args[1])}: ${text(args[0])}`);
           if (name === "time_ms") return clock++;
+          if (name === "clock_ms") return performance.now();
           if (name === "leaderboard") requests?.push(args[0]);
         },
     },

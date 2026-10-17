@@ -306,7 +306,8 @@ function boot(peer, at, leaderboard = true) {
     gone: false, held: new Set(), ticks: new Map(), top: -1, config: null, first: null, offered: -1 };
 }
 // What a machine's game drew and played (its host calls but the clock's): none while it stops in the background.
-const drawn = (peer) => Object.entries(peer.run.calls).reduce((n, [name, count]) => n + (name === "time_ms" ? 0 : count), 0);
+const drawn = (peer) =>
+  Object.entries(peer.run.calls).reduce((n, [name, count]) => n + (["time_ms", "clock_ms"].includes(name) ? 0 : count), 0);
 
 // The records each confirmed tick ran with and its digests, while the engine's ring holds them, and the run's
 // configuration as its first tick ran.
@@ -1368,6 +1369,7 @@ for (const profile of PROFILES) {
   machines.hitch = stall;
   play(idle, started, "the run's start");
   machines.leads = [];
+  const framed = peers.map((p) => p.frames);
   picks.fill(0);
   const { picker } = profile;
   let pause = profile.pause && { ...profile.pause, at: 400, since: 0 }, hitch = null;
@@ -1396,7 +1398,7 @@ for (const profile of PROFILES) {
   );
   assert.ok(time() > hitch.to + SETTLE + 1000, `${profile.name}: the stall settled`);
   // The play itself, before the run's end (a wipe loses packets on purpose).
-  const played = peers.map((p) => coopStats(p.g));
+  const played = peers.map((p, i) => ({ ...coopStats(p.g), frames: p.frames - framed[i] }));
   script = () => ({});
   let result, counted;
   if (profile.end === "leave") {
@@ -1636,7 +1638,7 @@ const ranked = entries.map((each) => each.length);
 const m2 = profiled.map(({ profile, ticks, drift, played, stats }) => ({
   profile,
   ticks,
-  played: played?.map((s) => [s.ticks, s.resimulated, s.frame_ms.reduce((a, b) => a + b), s.stalled_frames, s.depths]),
+  played: played?.map((s) => [s.ticks, s.resimulated, s.frames, s.stalled_frames, s.depths]),
   drift: drift?.map(({ after, settled }) => [after.most, +settled.mean.toFixed(2)]),
   depths: stats.map((s) => s.depths),
   guessed: stats.map((s) => s.guessed_lead),

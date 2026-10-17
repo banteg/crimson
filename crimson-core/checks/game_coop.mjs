@@ -1111,12 +1111,21 @@ function pipeCases(stream, truth, short, shortTruth) {
   // out alone, and its transport connects its session again at once (as the page does, client/web/coop.js). The
   // Guest's session, which went on, begins anew on the Host's hello: its run ends at its last confirmed tick, and the
   // Host's next run (the short stream) starts on both and plays out. Then the Host's page reloads, a module that
-  // never played a run, and both connect again: the epochs go on from the Guest's, so the next run plays too.
+  // never played a run, and both connect again: the epochs go on from the Guest's, so the next run plays too. Each
+  // page reports every session that reached its partner once (game_coop_report): the first with its ticks, the
+  // Guest's too though it never closed, then nothing until the next ends.
+  const reports = (p) => {
+    const taken = [];
+    for (let at; (at = p.g.game_coop_report()); ) taken.push(new Int32Array(p.g.memory.buffer, at, 3).slice());
+    return taken.map(([rtt, why, ticks]) => ({ rtt, why, ticks }));
+  };
   {
     const start = at(),
       sim = new Pipe(stream, truth, mode, { seed: 19 });
     const [h, g] = sim.peers;
     sim.connect();
+    // The modules' sessions of the cases before, which their pages would have taken.
+    for (const p of sim.peers) reports(p);
     sim.start();
     let cut = Infinity;
     sim.after(third, "the cut", () => (cut = sim.now));
@@ -1132,6 +1141,12 @@ function pipeCases(stream, truth, short, shortTruth) {
     const after = sim.status(g);
     assert.equal(after & (STATUS.started | STATUS.closed | STATUS.leaving), 0, `the Guest: ${after.toString(16)}`);
     assert.equal(reason(after), 0, "the Guest's reason");
+    const [hostFirst, guestFirst] = sim.peers.map(reports);
+    assert.equal(hostFirst.length, 1, "the Host's first session, reported");
+    assert.equal(hostFirst[0].why, REASON.silent, "why the Host's first session ended");
+    assert.equal(guestFirst.length, 1, "the Guest's first session, reported though it never closed");
+    for (const [first] of [hostFirst, guestFirst]) assert.ok(first.ticks >= stream.ticks / 4 && first.rtt > 0, JSON.stringify(first));
+    assert.deepEqual(sim.peers.map(reports), [[], []], "a session reported twice");
     const again = (what) => {
       sim.start(short, shortTruth);
       sim.until(() => sim.peers.every((p) => sim.status(p) & STATUS.started), what, START_MS);
@@ -1143,6 +1158,9 @@ function pipeCases(stream, truth, short, shortTruth) {
     const restarted = sim.report("timeout alone", start);
     assert.ok(restarted.rtt_ms.every((ms) => ms > 0), `round trips ${restarted.rtt_ms}`);
     lines.push(restarted);
+    // The second session closed as the Host left at its run's end: each page takes it once, with the run's ticks.
+    const closed = sim.peers.map((p) => reports(p).map(({ why, ticks }) => [why, ticks >= short.ticks]));
+    assert.deepEqual(closed, [[[REASON.left, true]], [[REASON.partnerLeft, true]]], "the second session, reported");
     // The transport drops what the old page sent (client/web/coop.js's page filter).
     sim.flights = sim.flights.filter((f) => f.to !== g);
     h.g = loadGame(wasm);
@@ -1150,6 +1168,8 @@ function pipeCases(stream, truth, short, shortTruth) {
     sim.connect();
     again("the run after the reload starts");
     lines.push(sim.report("reload", start));
+    // The reloaded page's session closed as its run ended too.
+    assert.deepEqual(sim.peers.map((p) => reports(p).length), [1, 1], "the sessions after the reload, reported");
   }
   // The Guest's ticks packets are lost for a second and its repairs never come: the Host closes on the progress
   // timeout, counted from the first packet past the gap, while the Guest's packets keep coming.
