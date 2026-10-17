@@ -104,6 +104,7 @@ struct CoopTick {
   uint32_t terrain, music;
   uint32_t state; // the raw state's digest after it, when kept (game_coop_states)
   bool held;      // its bake waits in bakes[] for its confirmation
+  bool checked;   // the peer's hash for it was compared
 };
 // The state before a tick, which a rollback puts back.
 struct CoopSlot {
@@ -158,6 +159,7 @@ struct CoopStats {
   int32_t slot_bytes;
   // The furthest past the last confirmed tick the run got.
   int32_t max_lead;
+  int32_t checked; // ticks whose hash the peer's was compared with
   CoopWireStats wire;
 };
 
@@ -734,7 +736,10 @@ static void coop_tick(int t, bool quiet, bool draw) {
 // The peer's hash for a tick both confirmed: another than this machine's stops
 // the run.
 static void coop_check(int t, uint32_t hash) {
-  uint32_t local = coop.ticks[t & (COOP_RING - 1)].hash;
+  CoopTick &entry = coop.ticks[t & (COOP_RING - 1)];
+  coop.stats.checked += !entry.checked;
+  entry.checked = true;
+  uint32_t local = entry.hash;
   if (local == hash || coop.desync.tick >= 0)
     return;
   coop.desync = {t, local, hash};
@@ -747,6 +752,11 @@ static void coop_reported(int t, uint32_t hash) {
     coop.reported[t & (COOP_RING - 1)] = {t, hash};
   else if (coop.ticks[t & (COOP_RING - 1)].tick == t)
     coop_check(t, hash);
+}
+// The peer's hash for tick `t` arrived: compared, or kept for its confirmation.
+static bool coop_heard(int t) {
+  const CoopTick &entry = coop.ticks[t & (COOP_RING - 1)];
+  return coop.reported[t & (COOP_RING - 1)].tick == t || (entry.tick == t && entry.checked);
 }
 // A tick is confirmed once it ran on both seats' real records, as every tick
 // before it did.

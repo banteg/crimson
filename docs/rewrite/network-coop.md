@@ -863,8 +863,8 @@ stays on the arena screen and sees the replay viewer's top-right pick card
     record of which both hold or repair. A peer whose predictions ran past it
     goes back to the state after it. Both replays end on the same tick, in the
     same state. Each peer then keeps sending ticks packets for a second (or four
-    round trips) after the partner acknowledged its records through the end, and
-    closes. The partner sees the end panel with "Player N left" and returns to
+    round trips) after the partner acknowledged its records and hashes through
+    the end and it holds the partner's, and closes. The partner sees the end panel with "Player N left" and returns to
     the menu; the session ends for both.
 
   - A left run is a quit: its replay is saved locally and it does not rank. A
@@ -1080,14 +1080,14 @@ A peer produces a record while `produced < next + delay`,
 `produced - peer_ack < 120`, and nothing holds it: a pause, a leave, its own
 perk request waiting for confirmation, or a desync or error.
 
-#### Channel 0: the ticks packet (200 bytes at $W = 8$)
+#### Channel 0: the ticks packet (at most 216 bytes)
 
 | Offset | Type | Field | Description |
 | --- | --- | --- | --- |
 | `0` | `uint8` | `magic_ver` | `0xC3` |
 | `1` | `uint8` | `window_count` | Records carried, `0..8`; `0` is a keepalive |
-| `2` | `uint8` | `flags` | Bit `0`: `has_hash`; bit `1`: focused |
-| `3` | `uint8` | | `0` |
+| `2` | `uint8` | `flags` | Bit `1`: focused |
+| `3` | `uint8` | `hash_count` | Hashes carried, `0..4` |
 | `4` | `uint32` | `run_epoch` | The sender's epoch |
 | `8` | `uint32` | `ping_seq` | The sender's packet sequence, from `1` |
 | `12` | `uint32` | `echo_ping_seq` | The highest `ping_seq` the sender received (`0` none) |
@@ -1095,10 +1095,11 @@ perk request waiting for confirmation, or a desync or error.
 | `18` | `uint16` | | `0` |
 | `20` | `uint32` | `head_tick` | The sender's last record produced (`0xFFFFFFFF` outside a run) |
 | `24` | `uint32` | `ack_tick` | The sender's `remote` (`0xFFFFFFFF` outside a run) |
-| `28` | `uint32` | `hash_tick` | A confirmed tick, valid with `has_hash` |
-| `32` | `uint32` | `state_hash` | `game_coop_hash_at(hash_tick)` (Section 4.1) |
+| `28` | `uint32` | `hash_first` | The first tick whose hash it carries |
+| `32` | `uint32` | `hash_ack` | The newest tick up to which the sender holds every one of the receiver's hashes (`0xFFFFFFFF` none) |
 | `36` | `uint32` | `cmd_packed` | Each record's perk request, 4 bits, oldest in the low nibble (`0` none, `1..7` `PICK(0..6)`, `8` `OPEN`) |
 | `40` | `PortableInput[W]` | `inputs` | Records `head_tick - W + 1 .. head_tick` |
+| `40 + 20W` | `uint32[hash_count]` | `hashes` | `game_coop_hash_at(t)` (Section 4.1) for `t = hash_first ..` |
 
 - **Window**: the newest `min(8, produced - peer_ack)` records, the ones the
   partner has not acknowledged.
@@ -1111,17 +1112,18 @@ perk request waiting for confirmation, or a desync or error.
   smoothed by 1/8. The gaps in the partner's `ping_seq` count its losses, and
   their spacing gives its packet interval. Packets of another epoch still feed
   both.
-- **Hashes**: `hash_tick` reports this peer's confirmed ticks the partner can
-  confirm too (no later than its last `ack_tick`). It starts at the newest and
-  goes back over the last 16 in turn, so a lost packet's hash comes round again.
-  The receiver keeps the last 256 it was sent. It compares each one when it
-  confirms that tick, or at once if it already has. On a mismatch it sends
-  `DESYNC` once and stops.
+- **Hashes**: each packet reports up to 4 of this peer's confirmed ticks the
+  partner can confirm too (no later than its last `ack_tick`) and has not
+  acknowledged in `hash_ack`, in turn from the oldest, so a lost packet's come
+  round again until they are acknowledged. The receiver keeps the last 256 it was
+  sent. It compares each one when it confirms that tick, or at once if it already
+  has. On a mismatch it sends `DESYNC` once and stops.
 - **Validation**: every record must pass `portable_input_valid` (the rule
   `portable_step_many` applies), with a request of at most `8`. Its tick must lie
   within `remote + 120`. A record differing from one already held for its tick
   is an error too. So are a malformed packet, an `ack_tick` past the receiver's
-  produced records, and a `hash_tick` past its `remote`. Any of these sends
+  produced records, a hash of a tick past its `remote`, and a `hash_ack` past
+  its `confirmed`. Any of these sends
   `ERROR` and stops both peers.
 
 #### Gap repair
@@ -1141,10 +1143,10 @@ epoch than the receiver's. Every other message of another epoch is ignored.
 
 | Type | Message | Payload | Rule |
 | --- | --- | --- | --- |
-| `1` | `HELLO` | `u16 protocol (1), u8 len, build[len]` | On connect; a different protocol or build (`replay_client_version`) is an error |
-| `2` | `START_RUN` | `u8 delay, u8 rmax, PortableConfig, u8 choice, u16 header_len, header` | Host only, once the last run is over on both peers (the Guest reported a hash for its last tick) or none started. The Guest runs `portable_init` with the config and starts its seat |
+| `1` | `HELLO` | `u16 protocol (1), u8 len, build[len], u8 answer` | On connect (`answer` 0), and in answer to one with `answer` 0 (`answer` 1), so a hello that arrived before the partner connected comes again; a different protocol or build (`replay_client_version`) is an error |
+| `2` | `START_RUN` | `u8 delay, u8 rmax, PortableConfig, u8 choice, u16 header_len, header` | Host only, once the last run is over on both peers (the Host compared the Guest's hashes up to its last tick) or none started. The Guest runs `portable_init` with the config and starts its seat; one that left ignores it |
 | `3` | `START_ACK` | | The Guest started. Until then the Host's run neither produces nor runs, and it gives up after 10 s |
-| `4` | `START_DECLINE` | | The Guest cannot start (it is leaving) |
+| `4` | `START_CANCEL` | | Host to Guest, when it gives up: a Guest that started the run stops it |
 | `5` | `INPUT_REPAIR` | `u32 start_tick, u16 count, count × (PortableInput, u8 request)` | Gap repair |
 | `6` | `PAUSE` | `u32 pause_seq, u8 paused` | `pause_seq` is one past the highest seen. The highest wins, the Host's on a tie, and neither peer produces while paused |
 | `7` | `LEAVE` | `u32 last_tick` | Section 5.2 |
@@ -1163,10 +1165,14 @@ peer seeds ticks `0 .. delay - 1` with neutral records.
   partner's `head_tick` is past it, so a pause or a perk menu never trips it.
 - **Liveness**: 15 s without a packet or message.
 - Either ends the run at its last confirmed tick, as a lost connection does.
+- **Start**: 10 s without `START_ACK`: the Host's run goes and it sends
+  `START_CANCEL`, which follows `START_RUN` on channel 1.
 
 #### Exports and status
 
 `game_coop_connect(seat, now)` begins a session and says hello.
+`game_coop_disconnect(reason)` ends it when the transport closed or the partner
+left the room, the run at its last confirmed tick.
 `game_coop_request(kind, …, now)` asks for a perk menu, a pause, a leave, the
 Guest's next-run choice or the Host's run start. For incoming bytes the host
 calls `game_coop_rx(size)` first, copies the bytes to the pointer it returns,
@@ -1174,8 +1180,9 @@ then calls `game_coop_receive(channel, size, now)`. After the frame it drains
 `game_coop_tx(channel, now)` from `game_coop_tx_buffer()`. `game_coop_status()`
 returns flags: connected, started, starting, paused, waiting (a perk request
 waits for its tick's confirmation), picker, leaving, ended, desynced, failed,
-and whether the partner found it. It also carries the reason (bits 16-23) and
-the Guest's next-run choice held by the Host (bits 24-27). `game_coop_stats()`
+and whether the partner found it. It also carries why the session or its last
+run stopped (bits 16-23, cleared when a run starts) and the Guest's next-run
+choice held by the Host (bits 24-27). `game_coop_stats()`
 adds the session's counters: packets sent, received and lost, stale packets
 and messages, repairs and the records they carried, and the round trip.
 
@@ -1298,15 +1305,26 @@ and messages, repairs and the records they carried, and the round trip.
    peer produces its seat's records: an open only when its state allows it, and
    the pick once it is the picker. Each stream plays in lockstep and with a
    window of 8, at delays 2 and 4. On both peers every confirmed tick must have
-   the oracle's digests and raw state, and both must end on the same tick in
-   the same state. The session's cases follow:
+   the oracle's digests and raw state and the partner's hash compared, both
+   must end on the same tick in the same state, and neither may send more than
+   60 ticks packets a second. The session's cases follow:
    - pause and resume races (a tie goes to the Host), and a pause longer than
      the progress timeout;
    - leaving mid-run, while paused, from the picker's open perk menu, and while
-     a request waits for confirmation;
-   - a rematch while every packet and message of the previous run arrives again;
-   - an invalid record (an error on both), a forced state change (a desync on
-     both), and different builds.
+     a request waits for confirmation, both closing within two seconds, the
+     leaver for leaving and its partner for the partner's leave;
+   - a rematch while every packet and message of the previous run arrives
+     again, which the Host can start neither mid-run nor before the Guest
+     confirmed the last run's end and compared its hashes;
+   - a hello that reaches the Guest before it connects;
+   - a start the Guest answers after the start timeout (the Host gives up on
+     time, the Guest stops the run, and the next run starts with no old
+     reason), a partner gone silent (the liveness timeout, to the frame), one
+     whose records stop past a gap (the progress timeout), and a transport
+     that closes (`game_coop_disconnect`);
+   - an invalid record (an error on both), a malformed message while the Host
+     starts a run (it stops waiting), a forced state change (a desync on both),
+     and different builds.
 
    A direct check confirms a guess drops the presses of the record it copies.
    Coverage between the peers requires repairs, mispredictions, and opens and
