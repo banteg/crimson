@@ -356,7 +356,8 @@ function setup(options = {}) {
       log: (...args) => events.logs.push(args.join(" ")),
     });
     coop.onstate = (state, reason) => events.states.push(reason ? `${state}: ${reason}` : state);
-    coop.onpeer = (present) => events.peers.push(present);
+    // A partner page that replaced the one this page knew is the game's news apart from presence.
+    coop.onpeer = (present, replaced) => events.peers.push(replaced ? "replaced" : present);
     const listener = (channel, bytes) => events.messages.push([channel, [...bytes]]);
     if (listen) coop.onmessage = listener;
     // A reload or a closed tab: the page vanishes without a word, its sockets and connections with it. A silent
@@ -569,7 +570,7 @@ it("a reloaded guest takes its seat back with the stored token and both pages re
   assert.match(env.world.sockets.at(-1).url, /role=guest&token=guest-token-/);
   assert.equal(reloaded.coop.state, "connected");
   assert.equal(host.coop.state, "connected");
-  assert.deepEqual(host.events.peers, [true, false, true]);
+  assert.deepEqual(host.events.peers, [true, false, "replaced"]);
   assert.equal(host.coop.stats().links, 2);
   await exchange(host, reloaded);
 });
@@ -590,7 +591,7 @@ it("a reloaded host takes its seat back from the same tab's storage", async () =
   assert.deepEqual(env.world.texts.filter((text) => text.type === "ice").map((text) => text.from), ["guest", "host"]);
   assert.equal(reloaded.coop.state, "connected");
   assert.equal(guest.coop.state, "connected");
-  assert.deepEqual(guest.events.peers, [true, false, true]);
+  assert.deepEqual(guest.events.peers, [true, false, "replaced"]);
   await exchange(reloaded, guest);
 });
 
@@ -601,7 +602,7 @@ it("a duplicated tab replaces the page in its seat: the host renegotiates with i
   const duplicate = env.page("guest", { store: guest.store });
   await duplicate.coop.join(host.coop.room);
   await settle();
-  assert.deepEqual(host.events.peers, [true, true]);
+  assert.deepEqual(host.events.peers, [true, "replaced"]);
   assert.equal(guest.coop.state, "error");
   assert.equal(guest.coop.reason, "the room was opened in another tab");
   assert.equal(duplicate.coop.state, "connected");
@@ -917,6 +918,53 @@ it("a partner page that vanishes without a word is waited for, then replaced", a
   assert.deepEqual(reloaded.events.messages, [[0, [1, 2, 3]], [1, [4]]], "the old page's message is not the new page's");
 });
 
+it("a new partner page starts both control streams over: its first message is delivered, not taken for a duplicate", async () => {
+  const env = setup();
+  const { host, guest } = await meet(env);
+  await exchange(host, guest);
+  await env.time.advance(100);
+  host.vanish();
+  await settle();
+  const reloaded = env.page("host", { store: host.store });
+  await reloaded.coop.join(host.coop.room);
+  await settle();
+  assert.deepEqual(guest.events.peers, [true, false, "replaced"]);
+  // Both pages number from 1 again: the guest delivers the new page's first message and the new page the guest's.
+  await exchange(reloaded, guest);
+  assert.equal(guest.coop.stats().duplicates, 0);
+  assert.equal(reloaded.coop.stats().duplicates, 0);
+});
+
+it("control frames from another page, or for another page, are dropped", async () => {
+  const env = setup({ outcome: "fail" });
+  const { host, guest } = await meet(env);
+  const nonce = (role) => env.world.texts.findLast((text) => text.from === role && text.type === "hello").page;
+  const hostPage = nonce("host"), guestPage = nonce("guest");
+  const stranger = [1, 2, 3].map((step) => (hostPage + step) >>> 0).find((page) => page !== guestPage);
+  // A relayed control frame from the host's seat: [u8 1][u32 from][u32 to][u32 seq][u32 ack][payload].
+  const frame = (from, to, seq, payload) => {
+    const out = new Uint8Array(1 + CONTROL_HEADER + payload.length);
+    const view = new DataView(out.buffer);
+    out[0] = 1;
+    view.setUint32(1, from);
+    view.setUint32(5, to);
+    view.setUint32(9, seq);
+    out.set(payload, 1 + CONTROL_HEADER);
+    return out;
+  };
+  const socket = env.world.seat(host.coop.room, "host");
+  socket.send(frame(stranger, guestPage, 1, [8]));
+  socket.send(frame(hostPage, stranger, 1, [9]));
+  await settle();
+  assert.deepEqual(guest.events.messages, []);
+  // Neither moved the guest's stream: the host's own first message is still the one delivered.
+  await exchange(host, guest);
+  // The same frame between the right pages does arrive.
+  socket.send(frame(hostPage, guestPage, 2, [7]));
+  await settle();
+  assert.deepEqual(guest.events.messages.at(-1), [1, [7]]);
+});
+
 it("room sends share one budget under the room's: ticks keep a reserve, control waits its turn", async () => {
   const env = setup({ outcome: "fail" });
   const { host, guest } = await meet(env);
@@ -930,6 +978,20 @@ it("room sends share one budget under the room's: ticks keep a reserve, control 
   const control = guest.events.messages.filter(([channel]) => channel === 1).map(([, [low, high]]) => low + (high << 8));
   assert.deepEqual(control, Array.from({ length: 300 }, (_, i) => i));
   await exchange(host, guest);
+});
+
+it("ticks stop short of the room budget's reserve, so control goes at once after a burst of them", async () => {
+  const env = setup({ outcome: "fail" });
+  const { host, guest } = await meet(env);
+  guest.events.messages.length = 0;
+  let ticks = 0;
+  while (host.coop.send(0, bytes(ticks & 255))) ++ticks;
+  assert.ok(ticks > 0);
+  assert.ok(host.coop.send(1, bytes(42)));
+  // The clock stands still, so the budget never refills: the control frame went on the reserve.
+  await settle();
+  assert.deepEqual(guest.events.messages.filter(([channel]) => channel === 1), [[1, [42]]]);
+  assert.equal(guest.events.messages.length, ticks + 1);
 });
 
 it("a message the relay cannot carry is refused before the room sees it", async () => {

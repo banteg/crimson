@@ -1085,8 +1085,9 @@ reconnects. An idle socket pings the room now and then.
 `present: true` each page sends `{type: "hello", page}` with a nonce of its
 own, so the other page can tell the same page coming back from a new one
 (a reload, or a duplicated tab taking the seat). A new page ends the old
-one's link and control streams; the game hears `onpeer(true)` for a new or
-returning page and `onpeer(false)` when the partner's socket leaves. The
+one's link and control streams; the page hears `onpeer(true)` for a returning
+page, `onpeer(true, true)` for one that replaced the page it knew (whose game
+is gone with it), and `onpeer(false)` when the partner's socket leaves. The
 host starts a *link* when it hears a hello and has no connected link: it
 names the link, creates the peer connection with negotiated DataChannels
 `coop-ticks` (id 0, unordered, no retransmits) and `coop-control` (id 1,
@@ -1128,6 +1129,61 @@ and queues it until a transport exists; too many unacknowledged messages, or
 a message too large for the relay, are errors. Bytes that arrive before the
 game sets its handler wait in a bounded inbox that drops its oldest ticks
 first and ends the session rather than drop a control message.
+
+#### Client bridge (`crimson-core/client/main.cpp`, `client/web/shell.html`)
+
+The client pumps bytes between the transport and the game's session
+(Section 6.2) and knows the protocol no better than `coop.js` does. Its
+exports, which the page calls with `Module.ccall`:
+
+- `client_coop_connect(seat)` begins a session (`game_coop_connect` on the
+  clock `host_time_ms` reads), `-1` before the game has started;
+- `client_coop_disconnect(reason)` ends it (`game_coop_disconnect`);
+- `client_coop_receive(channel, bytes, size)` hands over a message, which
+  `ccall` copies onto the page's stack: the client asks `game_coop_rx(size)`
+  for the game's buffer first (making room can move the module's memory), then
+  copies the bytes there and calls `game_coop_receive`;
+- `client_coop_status()` returns `game_coop_status`.
+
+After every frame the client drains `game_coop_tx` on both channels, copies
+each message out of the module and hands it to `Module.coopSend(channel,
+bytes)`, which the page sends with `coop.send`. The game paces its ticks
+packets (Section 6.2) well under the room budget, so on the relay they stay
+clear of the reserve kept for control. No pointer into the module's memory
+outlives a call. A native build compiles the same exports, which nothing
+calls: co-op is web-only.
+
+**Focus.** Losing the window (blur, minimize, or a hidden tab, which SDL
+reports as `SDL_EVENT_WINDOW_HIDDEN`) releases the keys, mouse buttons and the
+pad's buttons and sticks, stops polling the pad until the window is back, and
+calls `game_activate(0)`. A co-op session plays on there with neutral records
+(Section 7); a hidden tab gets no frames, so its partner waits for it until
+the liveness timeout. A tab shown again plays on once it also has the focus.
+
+**The page.** The cover's Play co-op starts the game and opens a room as its
+host (player 1); the panel at the top of the page says how co-op stands and,
+while the host waits, shows the invite link with Copy link. The page's address
+then names the room, so a reload goes back to the seat. Opening the invite
+(`/play/?coop=<room>`) offers Join, which starts the game and takes the guest
+seat (player 2). The panel shows opening, waiting for the other player (and
+that a player left the room), connecting, connected (direct, relayed through
+TURN, or through the room), reconnecting, and why co-op stopped: the room's
+answers (no such room, room full, the room closed or was opened in another
+tab) and the game's (another version of the game, a protocol error, a player
+left). Inside another site's frame the page does not play co-op and offers the
+site instead. Co-op keeps the page's lock on the game's storage: one tab per
+origin plays.
+
+Once the connection is up and no session runs, the page connects the game as
+its seat (0 for the room's host, 1 for its guest). It ends the session with
+`COOP_DISCONNECTED` when the transport gives up or the panel's Close is used,
+and with `COOP_PARTNER_GONE` when the partner's page is a new one; the next
+session begins when the pages connect again. A session the game ends is
+watched through `client_coop_status`: a player who left, another version or a
+protocol error end co-op, and the page closes the room once its last control
+messages reached the partner; after a lost connection the page connects a new
+session as soon as the transport allows. Events from the transport reach the
+game after the frame that caused them, never inside it.
 
 ### 6.2 Wire protocol & gap-repair guarantee
 
@@ -1420,8 +1476,9 @@ and messages, repairs and the records they carried, and the round trip.
 
 1. **Files**: `service/src/coop.ts`, `service/src/index.ts`,
    `service/wrangler.jsonc`, `crimson-core/client/main.cpp`,
-   `crimson-core/client/web/shell.html`, `host/coop.inc`, `host/coop_live.inc`,
-   `checks/game_coop_live.mjs`.
+   `crimson-core/client/web/coop.js`, `crimson-core/client/web/shell.html`,
+   `host/coop.inc`, `host/coop_live.inc`, `checks/game_coop_live.mjs`,
+   `checks/coop.test.mjs`, `checks/coop_browser.mjs`.
 
 2. **Deliverable**: Playable `?coop=<room_id>` two-browser session using
    `coop-ticks` + `coop-control` over WebRTC + Cloudflare Realtime TURN (and WS
@@ -1429,17 +1486,25 @@ and messages, repairs and the records they carried, and the round trip.
    flow + partner `viewer_card` notice, input-frontier pause, and measured RTT /
    candidate-type / desync telemetry.
 
-3. **Status**: the game module's half has landed. `host/coop_live.inc` runs the
-   session inside the original over the `M0b` engine and wire protocol (Section
-   5): run setup from the menus and end screens, pause, leave, the partner's
-   pick card and the end screens. Its exports for the transport
-   (`game_coop_connect`, `game_coop_disconnect`, `game_coop_rx` and
-   `game_coop_receive`, `game_coop_tx` and `game_coop_tx_buffer`,
-   `game_coop_status`) are what `client/main.cpp`'s `client_coop_*` wrappers and
-   `client/web/coop.js` will call; the room service, the transport and the shell
-   are next.
+3. **Status**: playable in the browser. `host/coop_live.inc` runs the session
+   inside the original over the `M0b` engine and wire protocol (Section 5): run
+   setup from the menus and end screens, pause, leave, the partner's pick card
+   and the end screens. The room service (`service/src/coop.ts`), the transport
+   (`client/web/coop.js`) and the client bridge with the page's lobby and invite
+   (Section 6.1) carry it between two browsers. What the deliverable still
+   lacks is telemetry the service collects: the transport and round trip are
+   kept per page (`coop.stats()`, `game_coop_stats`) but reported nowhere.
 
-   Its gate, `checks/game_coop_live.mjs` (CI's `game-coop` job, on the
+   The transport's tests, `checks/coop.test.mjs` (CI's client job), run two
+   pages against a fake room with the service's limits and fake peer
+   connections. `checks/coop_browser.mjs` plays the whole path locally (not in
+   CI): two headless Chromium pages on two origins against `wrangler dev`, a
+   room from the host's Play co-op, the guest's Join from the invite, a guest
+   reload that the host's game sees as `COOP_PARTNER_GONE`, a Survival run from
+   the host's menus that both play with input, and a leave from the pause
+   banner that both panels report.
+
+   The session's gate, `checks/game_coop_live.mjs` (CI's `game-coop` job, on the
    distributed game files), boots two originals from separate copies of a game
    directory and plays them against each other over the `M0b` gate's seeded
    pipe: loss, a burst of lost packets, a stutter, 60 Hz against 144 Hz. The
@@ -1451,13 +1516,13 @@ and messages, repairs and the records they carried, and the round trip.
    background, start the next run from the Guest's end screen, leave from the
    pause banner, desync, lose the connection, and play quests from the Host's
    quest list through the Guest's Play Next to a leave from the failed quest's
-   Main Menu. Every tick both machines confirm must have the same state hash
-   and bake and terrain digests on both and from the engine replaying the
-   machines' records alone (not the music digest, which names the tracks each
-   machine loaded); both must save byte-identical replays that `crimson replay
-   verify` accepts as 2-player runs, each perk command its picker's; the Host's
-   menus must lose the session's unlocks when it ends; and neither player's
-   settings or save may change.
+   Main Menu. Every tick both machines confirm must have the same state hash and
+   bake and terrain digests on both and from the engine replaying the machines'
+   records alone (not the music digest, which names the tracks each machine
+   loaded); both must save byte-identical replays that `crimson replay verify`
+   accepts as 2-player runs, each perk command its picker's; the Host's menus
+   must lose the session's unlocks when it ends; and neither player's settings
+   or save may change.
 
 ### Milestone `M2`: Bounded rollback in the browser prototype
 

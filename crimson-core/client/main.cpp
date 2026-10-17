@@ -45,6 +45,9 @@ std::vector<Pad> gamepads;
 SDL_Gamepad *gamepad;
 bool held[8];
 int hold_frames[8];
+// The window has the player: away (blurred, minimized, a hidden tab), no input reaches the game, the pad's
+// neither (a co-op session plays on there, on neutral records).
+bool focused = true;
 
 // SDL scancodes to the DirectInput scancodes the game binds.
 unsigned char dik(SDL_Scancode s) {
@@ -266,14 +269,19 @@ Uint64 pad_held(SDL_Gamepad *pad) {
   return held;
 }
 
+// No stick pushed, no button held, the hat centred.
+void pad_release(HostInput *in) {
+  memset(in->pad_axes, 0, sizeof in->pad_axes);
+  memset(in->pad_buttons, 0, sizeof in->pad_buttons);
+  in->pad_hat = ~0u;
+}
+
 // The gamepad, as the Logitech Dual Action layout the module's joystick reports
 // (game/dinput.cpp): buttons 1-4 are the west, south, east and north faces, then
 // the shoulders, the triggers, back, start and the stick clicks. SDL lays out
 // PlayStation, Xbox and Switch pads alike, the faces by position.
 void pad(HostInput *in) {
-  memset(in->pad_axes, 0, sizeof in->pad_axes);
-  memset(in->pad_buttons, 0, sizeof in->pad_buttons);
-  in->pad_hat = ~0u;
+  pad_release(in);
   for (Pad &pad : gamepads) {
     Uint64 held = pad_held(pad.gamepad);
     if (held & ~pad.held)
@@ -503,6 +511,52 @@ void network_update() {
 #endif
 
 bool started;
+
+// Co-op (docs/rewrite/network-coop.md §6): the page's transport
+// (client/web/coop.js) carries the session's bytes (host/coop_wire.inc) on two
+// channels, and the client pumps them between it and the game on the clock
+// host_time_ms reads. The page calls the client_coop_* exports; after each
+// frame the session's outgoing messages go to Module.coopSend. Only the browser
+// has a transport: a native build keeps the exports, which nothing calls.
+#ifdef __EMSCRIPTEN__
+#define CLIENT_EXPORT extern "C" EMSCRIPTEN_KEEPALIVE
+#else
+#define CLIENT_EXPORT extern "C"
+#endif
+double coop_now() { return w2c_host_time_ms(&host); }
+// The transport connected this page as `seat` (0 the room's host, 1 its guest): a session begins.
+// -1 before the game has started.
+CLIENT_EXPORT int client_coop_connect(int seat) {
+  return started ? (int)w2c_game_game_coop_connect(&game, seat, coop_now()) : -1;
+}
+// The transport closed, or the partner's page went (host/coop_wire.inc CoopReason).
+CLIENT_EXPORT int client_coop_disconnect(int reason) { return w2c_game_game_coop_disconnect(&game, reason); }
+// A message on `channel`, copied onto the page's stack by Module.ccall: the
+// game's buffer first, since making room can move the module's memory.
+CLIENT_EXPORT void client_coop_receive(int channel, const u8 *bytes, int size) {
+  u32 buffer = w2c_game_game_coop_rx(&game, size);
+  memcpy(client_memory() + buffer, bytes, size);
+  w2c_game_game_coop_receive(&game, channel, size, coop_now());
+}
+// game_coop_status's flags and reasons, for the page; for checks (checks/coop_browser.mjs) also the run's
+// confirmed tick (-1 none) and the screen the game shows (game_state_id_t, -1 before it started).
+CLIENT_EXPORT u32 client_coop_status() { return started ? w2c_game_game_coop_status(&game) : 0; }
+CLIENT_EXPORT int client_coop_confirmed() { return started ? (int)w2c_game_game_coop_confirmed(&game) : -1; }
+CLIENT_EXPORT int client_game_state() { return started ? (int)w2c_game_game_state(&game) : -1; }
+// What the session has to send, each message copied out of the module before
+// the page takes it.
+void coop_send() {
+#ifdef __EMSCRIPTEN__
+  static std::vector<u8> staging;
+  for (int channel = 0; channel < 2; ++channel)
+    for (int size; (size = (int)w2c_game_game_coop_tx(&game, channel, coop_now())) > 0;) {
+      const u8 *message = client_memory() + w2c_game_game_coop_tx_buffer(&game);
+      staging.assign(message, message + size);
+      MAIN_THREAD_EM_ASM({ Module.coopSend($0, HEAPU8.slice($1, $1 + $2)); }, channel, staging.data(), size);
+    }
+#endif
+}
+
 bool start_game() {
   wasm_rt_init();
   client_wasi_init();
@@ -833,20 +887,32 @@ SDL_AppResult SDL_AppEvent(void *, SDL_Event *event) {
   case SDL_EVENT_QUIT:
     w2c_game_game_close(&game);
     break;
+  // The browser's tab going to the background arrives as hidden, its window's blur as the focus.
   case SDL_EVENT_WINDOW_FOCUS_LOST:
-  case SDL_EVENT_WINDOW_MINIMIZED: {
-    // Releases happen elsewhere while the window is away: nothing stays held.
+  case SDL_EVENT_WINDOW_MINIMIZED:
+  case SDL_EVENT_WINDOW_HIDDEN: {
+    // Releases happen elsewhere while the window is away: nothing stays held,
+    // the pad's buttons and sticks neither. The game freezes, or a co-op
+    // session plays on (game/frame.cpp game_activate).
+    focused = false;
     HostInput *in = input();
     memset(in->keys, 0, sizeof in->keys);
     memset(in->mouse_buttons, 0, sizeof in->mouse_buttons);
     in->key_event_count = 0;
+    pad_release(in);
     memset(held, 0, sizeof held);
     memset(hold_frames, 0, sizeof hold_frames);
     w2c_game_game_activate(&game, 0);
     break;
   }
+  // A tab shown again may still lack the focus, which then comes on its own.
+  case SDL_EVENT_WINDOW_SHOWN:
+    if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_INPUT_FOCUS))
+      break;
+    [[fallthrough]];
   case SDL_EVENT_WINDOW_FOCUS_GAINED:
   case SDL_EVENT_WINDOW_RESTORED:
+    focused = true;
     w2c_game_game_activate(&game, 1);
     break;
   case SDL_EVENT_KEY_DOWN:
@@ -945,7 +1011,8 @@ SDL_AppResult SDL_AppIterate(void *) {
     wheel = 0;
     w2c_game_game_mouse_move(&game, gx, gy);
   }
-  pad(input());
+  if (focused)
+    pad(input());
   int before = presented;
   ++frames;
   watch_from_env();
@@ -953,6 +1020,7 @@ SDL_AppResult SDL_AppIterate(void *) {
   // particular, dropping a stall's unheard time must not eat a fresh attack.
   audio_update(&game);
   bool running = w2c_game_game_frame(&game);
+  coop_send();
   // Snapshot viewer state after the frame returns; never re-enter the module
   // from its presentation import. Used by packaged-client integration checks.
   if (captured_frame >= 0) {

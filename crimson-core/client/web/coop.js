@@ -1,7 +1,7 @@
-// The co-op transport (docs/rewrite/network-coop.md §6), to be embedded by
-// client/build.py like analytics.js. Two pages meet in a room (service/src/coop.ts),
-// signal a WebRTC connection with two DataChannels through it, and relay over the
-// room's socket when WebRTC cannot connect. It moves opaque bytes on channel 0
+// The co-op transport (docs/rewrite/network-coop.md §6), embedded in the page by
+// client/build.py (shell.html's PLAY_COOP). Two pages meet in a room
+// (service/src/coop.ts), signal a WebRTC connection with two DataChannels through
+// it, and relay over the room's socket when WebRTC cannot connect. It moves opaque bytes on channel 0
 // (ticks, best effort) and channel 1 (control: delivered once and in order whatever
 // the transport does); the game owns the protocol.
 function createCoop({
@@ -25,7 +25,8 @@ function createCoop({
   // Ticks queued past this many bytes are stale before they leave; the next packet repeats their window.
   const TICKS_BUFFERED_LIMIT = 16 * 1024;
   // The room closes a seat's socket past 200 messages a second (a second's burst) or a message over 16 KiB. Every
-  // send on the socket takes from a smaller budget of the same shape; ticks only while a reserve is left over.
+  // send on the socket takes from a smaller budget of the same shape; ticks only while a reserve is left over. The
+  // game paces its ticks packets (host/coop_wire.inc) well under that, so in play the ticks never reach the reserve.
   const ROOM_RATE = 160;
   const ROOM_RESERVE = 40;
   const ROOM_MAX_BYTES = 16 * 1024;
@@ -289,9 +290,10 @@ function createCoop({
       teardown();
     }
     partnerPage = next;
+    // A replaced page lost its game: the session with it cannot go on (the shell ends it).
     if (replaced || !reported) {
       reported = true;
-      api.onpeer?.(true);
+      api.onpeer?.(true, replaced);
     }
     if (role === "host" && !link?.connected) offerLink();
     else if (link?.relay) {

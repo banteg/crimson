@@ -229,6 +229,32 @@ engine replaying their records alone, both must save byte-identical replays
 that `crimson replay verify` accepts, the Host's menus must lose the session's
 unlocks when it ends, and neither player's settings or save may change.
 
+### Co-op in the browser
+
+```sh
+cd service && npm ci && npm run play && cd ..
+CRIMSON_PLAYWRIGHT=<folder>/node_modules/playwright-core \
+  node crimson-core/checks/coop_browser.mjs artifacts/assets [screenshot folder]
+```
+
+The whole path between two browsers, locally and outside CI: `npm run play`
+builds and stages the web client (Emscripten must run outside the command
+sandbox), and the check builds the site, serves it with `wrangler dev` on a
+free port with the game files from `artifacts/assets` in a local bucket, and
+drives two headless Chromium pages on `http://localhost:<port>` and
+`http://127.0.0.1:<port>`, which keep their storage and their lock on the game
+apart. The host's Play co-op opens a room and shows its invite, the guest's
+Join takes the seat, and both connect; the guest reloads and the host's game
+starts a new session with its new page; the host's menus start Survival and
+both play with keys and mouse while each page's session must have the run
+started, no desync or error, and its confirmed ticks advancing; then the
+host leaves from the pause banner and both panels say so. It saves screenshots
+of both pages along the way (by default under the system's temporary folder).
+It needs `playwright-core` installed in any folder (`npm install
+playwright-core`), with the Chromium build that version pins (`npx
+playwright-core install chromium-headless-shell`); wrangler keeps its state
+under the user's folder, so the check runs outside the sandbox too.
+
 ### Original executable
 
 The oracles call the original code through Unicorn, using the ignored game

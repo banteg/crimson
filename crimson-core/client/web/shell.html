@@ -33,18 +33,23 @@
   #home { left: 6px; }
   #fullscreen .exit, :fullscreen #fullscreen .enter { display: none; }
   :fullscreen #fullscreen .exit { display: block; }
-  #share { position: fixed; top: 6px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px;
-    padding: 4px 10px; border-radius: 4px; background: rgb(11 10 7 / 0.72); color: var(--label); opacity: 0; pointer-events: none;
-    transition: opacity 0.3s; }
-  #share.shown, #share:focus-within { opacity: 1; pointer-events: auto; }
-  #share button, #share a { border: 0; padding: 2px 6px; border-radius: 3px; background: rgb(255 255 255 / 0.08);
+  #share, #coop { position: fixed; top: 6px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px;
+    max-width: calc(100vw - 100px); box-sizing: border-box; padding: 4px 10px; border-radius: 4px; background: rgb(11 10 7 / 0.72);
+    color: var(--label); opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  #share.shown, #share:focus-within, #coop.shown, #coop:focus-within { opacity: 1; pointer-events: auto; }
+  :is(#share, #coop) :is(button, a) { flex: none; border: 0; padding: 2px 6px; border-radius: 3px; background: rgb(255 255 255 / 0.08);
     color: var(--text); font: inherit; text-decoration: none; cursor: pointer; }
-  #share button:hover, #share a:hover { color: #fff; background: rgb(255 255 255 / 0.16); }
-  #share input { width: 72px; padding: 1px 5px; border: 1px solid rgb(255 255 255 / 0.2); border-radius: 3px;
+  :is(#share, #coop) :is(button, a):hover { color: #fff; background: rgb(255 255 255 / 0.16); }
+  :is(#share, #coop) input { width: 72px; padding: 1px 5px; border: 1px solid rgb(255 255 255 / 0.2); border-radius: 3px;
     background: #0b0a07; color: var(--text); font: inherit; }
+  #coop { width: max-content; }
+  #coop input { width: 300px; min-width: 0; }
+  #coop-line { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #coop.trouble #coop-line { color: rgb(250 160 80); }
   #notice { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); padding: 4px 12px; border-radius: 4px;
     background: rgb(11 10 7 / 0.8); color: rgb(250 160 80); }
-  #share:not([hidden]) ~ #notice { top: 42px; }
+  #share:not([hidden]) ~ #coop, #share:not([hidden]) ~ #notice, #coop:not([hidden]) ~ #notice { top: 42px; }
+  #share:not([hidden]) ~ #coop:not([hidden]) ~ #notice { top: 78px; }
   #notice a { color: var(--row-on); }
   [hidden] { display: none !important; }
 </style>
@@ -59,7 +64,10 @@
     <button id="retry" type="button" class="button"><span>Retry</span></button>
     <label class="button wide"><span>Choose folder</span><input id="folder" type="file" webkitdirectory></label>
   </div>
-  <div id="ready" class="buttons" hidden><button id="play" type="button" class="button"><span>Play</span></button></div>
+  <div id="ready" class="buttons" hidden>
+    <button id="play" type="button" class="button"><span>Play</span></button>
+    <button id="play-coop" type="button" class="button wide" hidden><span>Play co-op</span></button>
+  </div>
   <div id="elsewhere" class="buttons" hidden><button id="here" type="button" class="button wide"><span>Play here</span></button></div>
   <div id="again" class="buttons" hidden>
     <button type="button" class="button wide" onclick="location.reload()"><span>Play again</span></button>
@@ -79,6 +87,13 @@
   <button id="share-copy" type="button">Share from here</button>
   <label>stop <input id="share-stop" type="text" inputmode="numeric" placeholder="end tick"></label>
   <a id="share-full" href="#" hidden>Full run</a>
+</div>
+<div id="coop" hidden>
+  <span id="coop-line"></span>
+  <input id="coop-invite" type="text" readonly hidden aria-label="Invite link">
+  <button id="coop-copy" type="button" hidden>Copy link</button>
+  <button id="coop-new" type="button" hidden>New room</button>
+  <button id="coop-close" type="button" hidden>Close</button>
 </div>
 <div id="notice" hidden></div>
 <script>
@@ -112,6 +127,8 @@
     return /^[1-9]\d{0,8}$/.test(value) ? Number(value) : NaN;
   };
   const linkTick = parseTick(query.get("tick")), linkStop = parseTick(query.get("stop"));
+  // An invitation to play co-op (crimson.land/play/?coop=<room>): Play joins the room.
+  const linkedCoop = query.get("coop");
   // Inside another page (that player card), the site opens in a new tab and the
   // game plays on.
   const framed = window.self !== window.top;
@@ -163,15 +180,16 @@
   // The ticks of the board run playing (Module.watching), and the stop its
   // playback was last given, which it drops on reaching.
   let watchTicks = 0, givenStop = null;
+  const coopPanel = document.getElementById("coop");
   const showFullscreen = (ms) => {
-    fullscreen.classList.add("shown");
-    home.classList.add("shown");
-    share.classList.add("shown");
+    for (const element of [fullscreen, home, share, coopPanel]) element.classList.add("shown");
     clearTimeout(hide);
-    hide = setTimeout(
-      () => cover.hidden && (fullscreen.classList.remove("shown"), home.classList.remove("shown"), share.classList.remove("shown")),
-      ms,
-    );
+    hide = setTimeout(() => {
+      if (!cover.hidden) return;
+      for (const element of [fullscreen, home, share]) element.classList.remove("shown");
+      // The co-op panel stays while it has something to say.
+      if (!coopPinned()) coopPanel.classList.remove("shown");
+    }, ms);
   };
   // Leaving mid-game quits it first, as closing the game does, and goes once a
   // run's replay and the exit's saves reach IndexedDB; else the quit screen says
@@ -183,13 +201,16 @@
     leaving = true;
     Module.ccall("client_close", null, [], []);
   };
-  // While a board run plays, the whole top edge brings the share bar.
+  // While a board run plays or co-op is on, the whole top edge brings its bar.
   addEventListener(
     "pointermove",
-    (event) => event.clientY < 80 && (!share.hidden || event.clientX > innerWidth - 80 || event.clientX < 80) && showFullscreen(1500),
+    (event) =>
+      event.clientY < 80 &&
+      (!share.hidden || !coopPanel.hidden || event.clientX > innerWidth - 80 || event.clientX < 80) &&
+      showFullscreen(1500),
   );
-  for (const type of ["keydown", "keyup", "keypress"])
-    shareStop.addEventListener(type, (event) => event.stopPropagation(), true);
+  for (const input of [shareStop, document.getElementById("coop-invite")])
+    for (const type of ["keydown", "keyup", "keypress"]) input.addEventListener(type, (event) => event.stopPropagation(), true);
   shareFull.onclick = (event) => {
     event.preventDefault();
     const run = Module.ccall("client_watch_run", "string", [], []);
@@ -444,14 +465,21 @@
     say(watching ?? "");
     progress.hidden = true;
     buttons.hidden = false;
-    const play = document.getElementById("play");
+    const play = document.getElementById("play"), playCoop = document.getElementById("play-coop");
     if (linked) play.firstChild.textContent = "Watch";
+    // Co-op needs the site's own storage and its room service: a frame offers the site instead.
+    if (linkedCoop && framed) outside.hidden = false;
+    else if (linkedCoop) play.firstChild.textContent = "Join";
+    playCoop.hidden = framed || !!(linked || linkedQuest || linkedCoop);
     play.focus();
-    play.onclick = () => {
+    const start = (coop) => {
       buttons.hidden = true;
       say("Starting…");
       removeRunDependency("game files");
+      if (coop) startCoop(coop);
     };
+    play.onclick = () => start(linkedCoop && !framed ? linkedCoop : null);
+    playCoop.onclick = () => start(true);
     // A pad's A or Start plays too (the standard mapping's buttons 0 and 9), on
     // its release, so the game never sees the press.
     let held = false;
@@ -491,6 +519,156 @@
 
   /* PLAY_ANALYTICS */
   const playAnalytics = createPlayAnalytics();
+
+  // Co-op (docs/rewrite/network-coop.md §6): the room and the connection
+  // between the two pages (coop.js), and the game's session over it, which
+  // the client pumps (client/main.cpp client_coop_*). The room's creator is the
+  // host and plays player 1, seat 0; the guest player 2, seat 1. A session
+  // begins whenever the connection is up and none runs. It ends when the
+  // connection gives up, when the partner's page is a new one (its game is
+  // gone), or when the game ends it. A player leaving, or two games that cannot
+  // play together, end co-op and close the room; after a lost connection or a
+  // reloaded page the next session begins once the pages connect again.
+  /* PLAY_COOP */
+  // game_coop_status (host/coop_wire.inc): the session goes on; why it stopped, bits 16-23 (CoopReason), the ones
+  // that end co-op said as the game says them; the reasons the page gives it.
+  const COOP_CONNECTED = 1, COOP_DISCONNECTED = 9, COOP_PARTNER_GONE = 10;
+  const COOP_ENDS = {
+    1: "The other player has another version of the game",
+    2: "Co-op error: a message no game sends",
+    3: "Co-op error: a message no game sends",
+    7: "You left co-op",
+    8: "Player {partner} left",
+  };
+  const coopLine = document.getElementById("coop-line"), coopInvite = document.getElementById("coop-invite");
+  const coopCopy = document.getElementById("coop-copy"), coopNew = document.getElementById("coop-new"),
+    coopClose = document.getElementById("coop-close");
+  // The room, whether the partner has been in it, whether a game session runs over it, and why co-op ended (shown
+  // until closed).
+  let coop = null, coopMet = false, coopSession = false, coopEnded = null;
+  // This page's address names the room it plays in, so a reload goes back to it.
+  const coopAddress = (room) => {
+    const url = new URL(location.href);
+    if (room) url.searchParams.set("coop", room);
+    else url.searchParams.delete("coop");
+    history.replaceState(null, "", url);
+  };
+  const partner = () => (coop.role === "host" ? 2 : 1);
+  const coopPinned = () => !!coop && (coopEnded !== null || coop.state !== "connected");
+  // Hosts a room (`room` true) or joins one.
+  function startCoop(room) {
+    const current = coop = createCoop({ log: (...args) => console.info("co-op:", ...args) });
+    coopMet = coopSession = false;
+    coopEnded = null;
+    // The game is never reentered from its own frame (Module.coopSend can end the connection): it hears of the
+    // connection's changes after the frame.
+    current.onstate = (state) => queueMicrotask(() => {
+      if (current !== coop) return;
+      if ((state === "error" || state === "closed") && coopSession) coopEnd(COOP_DISCONNECTED);
+      if (state === "connected") coopConnect();
+      coopShow(state === "connected" ? 4000 : 0);
+    });
+    current.onpeer = (present, replaced) => queueMicrotask(() => {
+      if (current !== coop) return;
+      coopMet ||= present;
+      if (replaced && coopSession) coopEnd(COOP_PARTNER_GONE);
+      coopShow(0);
+    });
+    if (room !== true) return current.join(room);
+    current.host().then((invite) => {
+      // A reload takes the host's seat back from this tab's storage.
+      if (invite && current === coop) coopAddress(current.room);
+      coopShow(0);
+    });
+  }
+  // The game's session as this page's seat, once the game is up.
+  function coopConnect() {
+    if (!coop || coopSession || coop.state !== "connected") return;
+    const seat = coop.role === "host" ? 0 : 1;
+    if (Module.ccall("client_coop_connect", "number", ["number"], [seat]) < 0) return setTimeout(coopConnect, 250);
+    coopSession = true;
+    coop.onmessage = (channel, bytes) =>
+      Module.ccall("client_coop_receive", null, ["number", "array", "number"], [channel, bytes, bytes.length]);
+  }
+  function coopEnd(reason) {
+    coopSession = false;
+    console.info("co-op: session ended", reason);
+    Module.ccall("client_coop_disconnect", "number", ["number"], [reason]);
+  }
+  // A session the game ended either begins again or ends co-op, closing the room once its last messages reached
+  // the partner, or after a moment.
+  function coopWatch() {
+    if (!coopSession) return;
+    const status = Module.ccall("client_coop_status", "number", [], []) >>> 0, reason = (status >> 16) & 255;
+    if (status & COOP_CONNECTED || !reason) return;
+    coopSession = false;
+    console.info("co-op: session ended", reason);
+    if (!COOP_ENDS[reason]) return coopConnect();
+    coopEnded = COOP_ENDS[reason].replace("{partner}", partner());
+    const room = coop, until = performance.now() + 3000;
+    const leave = () => (room.stats().unacked && performance.now() < until ? setTimeout(leave, 100) : room.close());
+    setTimeout(leave, 100);
+  }
+  setInterval(() => {
+    coopWatch();
+    coopShow(0);
+  }, 500);
+  // The panel says how co-op stands. It stays while co-op is not under way; otherwise `ms` shows it that long.
+  function coopShow(ms) {
+    coopPanel.hidden = !coop;
+    if (!coop) return;
+    const { state, reason, role } = coop, waiting = role === "host" && state === "waiting" && !coopEnded;
+    // A partner that left the room may come back to it.
+    const waitingLine = coopMet
+      ? `Player ${partner()} left: ${role === "host" ? "send them this link to come back" : "waiting for them to come back"}`
+      : `Waiting for player ${partner()}${role === "host" ? ": send them this link" : "…"}`;
+    const transport = coop.stats().transport;
+    const over = !transport ? "" : transport === "ws-relay" ? ", through the room" : transport.startsWith("relay") ? ", relayed" : ", direct";
+    coopLine.textContent =
+      coopEnded ??
+      {
+        opening: role === "host" ? "Opening a co-op room…" : "Joining the co-op room…",
+        waiting: waitingLine,
+        connecting: `Connecting to player ${partner()}…`,
+        reconnecting: "Reconnecting to the co-op room…",
+        connected: `Co-op with player ${partner()}${over}`,
+        error: `Co-op: ${reason}`,
+        closed: "Co-op ended",
+      }[state];
+    // The invite to the room, on this page's own site.
+    const invite = coop.room && `${location.origin}${location.pathname}?coop=${coop.room}`;
+    coopInvite.hidden = coopCopy.hidden = !(waiting && invite);
+    if (invite) coopInvite.value = invite;
+    const done = coopEnded !== null || state === "error" || state === "closed";
+    coopNew.hidden = !done || framed;
+    coopClose.hidden = !done && state === "connected";
+    coopClose.textContent = done ? "Close" : "Cancel";
+    coopPanel.classList.toggle("trouble", state === "error" || coopEnded !== null);
+    if (coopPinned()) coopPanel.classList.add("shown");
+    else if (ms) showFullscreen(ms);
+  }
+  coopCopy.onclick = async () => {
+    const copied = await navigator.clipboard?.writeText?.(coopInvite.value).then(() => true, () => false);
+    if (!copied) coopInvite.select();
+    tell(copied ? "Copied the invite link" : "Copy the invite link from the box");
+    canvas.focus();
+  };
+  // Closing ends any session first, as a lost connection would.
+  coopClose.onclick = () => {
+    if (coopSession) coopEnd(COOP_DISCONNECTED);
+    coop.close();
+    coop = null;
+    coopAddress(null);
+    coopShow(0);
+    canvas.focus();
+  };
+  coopNew.onclick = () => {
+    coop.close();
+    startCoop(true);
+    canvas.focus();
+  };
+  // A page that goes tells the partner's at once.
+  addEventListener("pagehide", () => coop?.close());
 
   // The leaderboard (host/ranked.inc): the game queues each finished ranked run
   // in /game/leaderboard/outbox/ and asks for an upload, or for the player's
@@ -616,6 +794,7 @@
     watching = `${q.title}${q.author ? ` by ${q.author}` : ""}`;
     if (!document.getElementById("ready").hidden) say(watching);
   });
+  if (linkedCoop) watching = framed ? "Co-op plays on crimson.land itself." : "A co-op room waits for you.";
   async function questLink(id) {
     if (!/^[0-9a-f]{12}$/.test(id)) return;
     let response, bytes;
@@ -685,6 +864,8 @@
     playActivity: (mode, run) => playAnalytics.activity(mode, run),
     // HOST_LEADERBOARD_PROFILE, _UPLOAD, _SCORES and _REPLAY (game/host_abi.h).
     leaderboard: (request) => [profile, upload, scores, replay][request - 1](),
+    // The co-op session's messages, after each frame (client/main.cpp).
+    coopSend: (channel, bytes) => coop?.send(channel, bytes),
     canvas,
     arguments: ["/game"],
     preRun: [() => {
@@ -715,6 +896,7 @@
     printErr: (text) => console.warn(text),
     // The game quit (client/main.cpp) after writing its settings and scores.
     quit: async () => {
+      coop?.close();
       playAnalytics.activity(0, 0);
       playAnalytics.flush();
       cover.hidden = false;

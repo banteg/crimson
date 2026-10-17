@@ -37,6 +37,7 @@ def write_asset_version(out):
     shell = (HERE / "web/shell.html").read_text().replace("/* ASSET_VERSION */ null", json.dumps(version))
     analytics = f"const PLAY_ANALYTICS = {(HERE / 'web/analytics.json').read_text().strip()};\n"
     shell = shell.replace("/* PLAY_ANALYTICS */", analytics + (HERE / "web/analytics.js").read_text())
+    shell = shell.replace("/* PLAY_COOP */", (HERE / "web/coop.js").read_text())
     (out / "shell.html").write_text(shell)
 
 
