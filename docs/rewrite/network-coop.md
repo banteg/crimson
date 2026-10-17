@@ -253,7 +253,9 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     and set the latch, regardless of `music_ready`, `music_disabled`,
     `sound_disabled`, or `music_playlist_entry_count`; for any other track
     (`shortie_monk`, `crimsonquest`), clear the latch as the original's `else`
-    branch does. `music_fade_out_all` never touches the latch inside ticks.
+    branch does. Inside a co-op tick `music_fade_out_all` only clears the
+    latch, as the original's does with the verifier's music on and ready
+    (Section 4.3); its fade waits for the tick's confirmation.
 
   - **Playback half (local, gated by the peer's own audio settings)**: start the
     in-game tune the first time the simulation half sets the latch; an in-game
@@ -597,7 +599,9 @@ run's surroundings:
    (`direction_arrow_flags`, `shadows_enabled`, `flame_glow_enabled`,
    `smoke_enabled`, `ui_info_texts`, `sfx_volume`, `music_volume`: the one list
    is in `coop_words`), then the status (weapon usage counts included), unlocks,
-   corpse fade, friendly fire, key codes and music track ids.
+   corpse fade, friendly fire, key codes and music track ids (the playlist up to
+   its count: the entries past it hold whatever tunes this machine's original
+   loaded, which no tick reads).
 
 5. Active `game_effect_overflow.entries[0..overflow_extent)`, field by field, with
    each entry's `next_free` pointer normalized to its index (`-1`/`-2` for
@@ -1183,12 +1187,14 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
    tick may run on a guess past the window. It asserts the fault injections, the
    audit of every byte of the run's state (Section 4.1), the receive path's
    answers, and coverage (both players opening, late and picking, same-tick and
-   dropped requests, a survivor's menu, the sixth choice, rollbacks over a freed
-   overflow entry, held overflow decals, bakes drawn while the next tick's queue
-   waits, final bakes on undrawn ticks). `--live <game directory>` plays three
-   streams inside the original, booted with seven in-game tunes, and compares
-   what it draws into the terrain and its music after every frame with the plain
-   pass's. It prints each stream's rollbacks and costs.
+   dropped requests, a survivor's menu, the sixth and seventh choices and a pick
+   one past those offered, rollbacks over a freed overflow entry, held overflow
+   decals, bakes drawn while the next tick's queue waits, final bakes on undrawn
+   ticks). `--live <game directory>` plays three
+   streams inside the original, booted from a copy of the directory with seven
+   in-game tunes, compares every canonical word of every tick with the plain
+   run's, and what it draws into the terrain and its music after every frame
+   with the plain pass's. It prints each stream's rollbacks and costs.
 
 ### Milestone `M1`: Two-browser adaptive-delay lockstep prototype
 

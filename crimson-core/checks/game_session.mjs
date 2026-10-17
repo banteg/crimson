@@ -34,8 +34,9 @@
 // from the in-game tune's request, as the verifier does (host/game.inc).
 //
 // With --tunes the original loads seven in-game tunes (game_host.mjs
-// sevenTunes), so its crimsonquest is the verifier's in-game tune request: the
-// quest's end tune plays, and draws no tune from the run's random numbers.
+// sevenTunes) and plays from a copy of the game directory, so its crimsonquest
+// is the verifier's in-game tune request: the quest's end tune plays, and draws
+// no tune from the run's random numbers.
 //
 // A replay a link asks for as the run starts (host/watch.inc game_watch) gives
 // way to it: the run plays, and its end screen stays.
@@ -58,12 +59,12 @@ const ranked = args.includes("--ranked"), quest = args.includes("--quest"), padd
   silent = args.includes("--silent"), tunes = args.includes("--tunes");
 args = args.filter((arg) => !["--ranked", "--quest", "--pad", "--silent", "--tunes"].includes(arg));
 const [
-  directory,
+  given,
   coreWasm = new URL("build/wasm/core.wasm", CORE).pathname,
   gameWasm = new URL("build/game/game.wasm", CORE).pathname,
 ] = args;
-if (!directory) throw Error("usage: game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] [--tunes] <game directory> [core.wasm] [game.wasm]");
-if (tunes) sevenTunes(directory);
+if (!given) throw Error("usage: game_session.mjs [--seed n] [--ranked] [--quest] [--pad] [--silent] [--tunes] <game directory> [core.wasm] [game.wasm]");
+const directory = tunes ? sevenTunes(given) : given;
 
 if (silent) {
   // A first start writes the default configuration (crimson.cfg, crimson_cfg_t),

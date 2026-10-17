@@ -3,7 +3,9 @@
 // become the players' requests: the opener alternates between the players, some
 // menus both open in the same tick, and some requests must drop (no perk to
 // pick, or the menu already open); a stream whose player one holds Perk Expert
-// or Master takes its last pick from the extra choices. Then:
+// or Master takes its last pick from the extra choices, one that offers Perk
+// Master to Perk Expert plays again taking it, and a stream without extra
+// choices asks at its last pick for one past the five offered. Then:
 // 1. the engine with both players local plays the stream as the plain run does,
 //    every canonical word of every tick (but the picker, which only co-op has),
 //    and gives each tick's state hash, bake digest, terrain and music digests and
@@ -24,14 +26,16 @@
 // run's state is in the hash or in the engine's list of what is left out and why
 // (game_coop_audit); the receive path tells stale records from invalid ones; and
 // the corpus covers what the engine must get right: both players opening, late
-// and picking, same-tick and dropped requests, a survivor's menu, the extra
-// choices, rollbacks into an open menu and over freed effect overflow entries,
-// held bakes with overflow decals, bakes drawn between ticks while the next
-// tick's queue waits, and final bakes on ticks not drawn.
+// and picking, same-tick and dropped requests, a survivor's menu, a sixth and a
+// seventh choice and one past those offered, rollbacks into an open menu and
+// over freed effect overflow entries, held bakes with overflow decals, bakes
+// drawn between ticks while the next tick's queue waits, and final bakes on
+// ticks not drawn.
 //
 // With --live, a few streams play (1) and (2) inside the original booted from a
-// game directory with seven in-game tunes loaded: what it draws into the terrain
-// and its music after every frame are what (1) presented by the tick confirmed.
+// copy of a game directory with seven in-game tunes loaded: every canonical word
+// of every tick is the plain run's, and what it draws into the terrain and its
+// music after every frame are what (1) presented by the tick confirmed.
 //
 //   node crimson-core/checks/game_coop.mjs [--live <game directory>] [game.wasm] [corpus directory]
 import assert from "node:assert/strict";
@@ -127,7 +131,11 @@ const prng = (s) => () => ((s = (Math.imul(s ^ (s >>> 15), 0x2c1b3c6d) + 0x9e377
 const plain = loadGame(wasm),
   solo = loadGame(wasm);
 solo.game_coop_states(1);
-const coverage = Object.fromEntries([...PLAIN_COVERAGE, ...ROLLBACK_COVERAGE, "menu_rollbacks"].map((n) => [n, 0]));
+// And the picks the streams take: a sixth and a seventh choice, and one past those offered.
+const PICK_COVERAGE = ["sixth_choices", "seventh_choices", "beyond_picks"];
+const coverage = Object.fromEntries(
+  [...PLAIN_COVERAGE, ...ROLLBACK_COVERAGE, "menu_rollbacks", ...PICK_COVERAGE].map((n) => [n, 0]),
+);
 let overflowSeen = null;
 
 // Perk ids (src/crimson/perks/ids.py): player one's Perk Expert and Perk Master offer a sixth and seventh choice.
@@ -140,18 +148,27 @@ const command = (r) => {
   assert.ok(count <= 1, "a co-op stream takes one command a tick");
   return count ? [r.readInt32LE(2 * INPUT_BYTES + 4), r.readInt32LE(2 * INPUT_BYTES + 8)] : [0];
 };
+// The stream with tick `t`'s pick taking `choice`, or with none (the menu closes).
+function repick(run, t, choice) {
+  const records = [...run.records];
+  const r = Buffer.from(choice < 0 ? records[t].subarray(0, 2 * INPUT_BYTES + 4) : records[t]);
+  if (choice < 0) r.writeUInt32LE(0, 2 * INPUT_BYTES);
+  else r.writeInt32LE(choice, 2 * INPUT_BYTES + 8);
+  records[t] = r;
+  return { ...run, records };
+}
 
-// The plain run of the stream: which ticks it takes, where each tick's open request would be valid, the last pick
-// that had extra choices to take instead, the overflow ticks (where the effect overflow's entries in use change),
-// which the rollbacks return to, and the ticks that leave the next tick's bake queued (a Nuke taken after the world
-// drew), after which the rollbacks confirm held ticks.
+// The plain run of the stream: which ticks it takes, where each tick's open request would be valid, its picks (how
+// many choices each offered, which, and the one taken), the overflow ticks (where the effect overflow's entries in
+// use change), which the rollbacks return to, and the ticks that leave the next tick's bake queued (a Nuke taken
+// after the world drew), after which the rollbacks confirm held ticks.
 function playPlain(run) {
   init(plain, run.config);
   const valid = [],
+    picks = [],
     overflow = [],
     queued = [];
   let ticks = 0,
-    extra = null,
     last = 0;
   for (const r of run.records) {
     state(plain);
@@ -160,9 +177,11 @@ function playPlain(run) {
     const alive = [0, 1].some((p) => field(plain, `players[${p}].health`, true) > 0);
     valid.push(run.config.readUInt32LE(4) !== 2 && alive && field(plain, "globals.perk_pending_count") > 0);
     const [type, choice] = command(r);
-    const n = offered(plain);
-    if (type === 1 && n > 5 && field(plain, `globals.perk_choice_ids[${n - 1}]`) > 0 && choice !== n - 1)
-      extra = { tick: ticks, choice: n - 1 };
+    if (type === 1) {
+      const n = offered(plain);
+      const ids = Array.from({ length: n }, (_, i) => field(plain, `globals.perk_choice_ids[${i}]`));
+      picks.push({ tick: ticks, n, choice, ids });
+    }
     if (!step(plain, r)) break;
     ticks++;
     const effects = plain.game_effects_active();
@@ -170,21 +189,36 @@ function playPlain(run) {
     if (effects !== last) overflow.push(ticks);
     last = effects;
   }
-  return { ticks, valid, extra, overflow, queued };
+  return { ticks, valid, picks, overflow, queued };
+}
+
+// The stream as recorded and, where player one holds Perk Expert and a pick before the last offers Perk Master,
+// taking it there when the run still plays to its end: its later picks offer seven choices.
+function variants(stream) {
+  const { ticks, picks } = playPlain(stream);
+  const at = picks.findIndex((p, i) => i < picks.length - 1 && p.n === 6 && p.ids.includes(PERK_MASTER));
+  if (at < 0) return [{ stream }];
+  const master = repick(stream, picks[at].tick, picks[at].ids.indexOf(PERK_MASTER));
+  return playPlain(master).ticks === ticks ? [{ stream }, { stream: master, name: "Perk Master" }] : [{ stream }];
 }
 
 // The players' requests for each tick, from the stream's commands and the plain run's states (a request no perk
-// could answer drops), and the stream with its last extra-choice pick taken.
+// could answer drops). The last pick that has extra choices takes the last of them; in a stream without, the last
+// pick asks for one past the five offered, which drops and closes the menu as no pick does, when the run still
+// plays to its end.
 function requests(stream) {
   let run = stream,
+    plainRun = playPlain(run),
+    beyond = null;
+  const extra = plainRun.picks.findLast((p) => p.n > 5);
+  const lastPick = plainRun.picks.at(-1);
+  if (extra && extra.ids[extra.n - 1] > 0 && extra.choice !== extra.n - 1) {
+    run = repick(run, extra.tick, extra.n - 1);
     plainRun = playPlain(run);
-  if (plainRun.extra) {
-    const records = [...run.records];
-    const r = Buffer.from(records[plainRun.extra.tick]);
-    r.writeInt32LE(plainRun.extra.choice, 2 * INPUT_BYTES + 8);
-    records[plainRun.extra.tick] = r;
-    run = { ...run, records };
-    plainRun = playPlain(run);
+  } else if (!extra && lastPick) {
+    const closed = repick(run, lastPick.tick, -1);
+    const closedRun = playPlain(closed);
+    if (closedRun.ticks === plainRun.ticks) [run, plainRun, beyond] = [closed, closedRun, lastPick];
   }
   const { ticks, valid, overflow, queued } = plainRun;
   const cmd = run.records.map(() => [0, 0]),
@@ -204,12 +238,14 @@ function requests(stream) {
       return;
     }
     if (type === 1) cmd[t][picker] = argument + 1;
+    if (t === beyond?.tick) cmd[t][picker] = beyond.n + 1;
     // The partner's request while the menu is open drops, every fourth menu.
     if (menuOpen && menus % 4 === 1) cmd[t][1 - picker] = OPEN;
     else if (!menuOpen && t < ticks && !valid[t] && t % 50 === 0) cmd[t][(t / 50) % 2] = OPEN;
     picker = -1;
   });
-  return { run, cmd, ticks, opens, overflow, queued };
+  const took = extra?.ids[extra.n - 1] > 0 ? extra.n : 0;
+  return { run, cmd, ticks, opens, overflow, queued, extra: took, beyond: !!beyond };
 }
 
 const write = (g, at, r, seat, cmd) => {
@@ -267,10 +303,7 @@ function oracle(g, run, cmd, ticks, look) {
     assert.equal(g.game_coop_advance(1, 0), 1, `tick ${t} did not run`);
     soloMs += performance.now() - at;
     assert.equal(g.game_coop_confirmed(), t);
-    // Inside the original the run's settings and progress are what the original had (no session swaps them in),
-    // so the snapshot is compared.
-    if (look) sameCanonical(canonical(plain).subarray(0, SNAPSHOT * 4), canonical(g).subarray(0, SNAPSHOT * 4), t);
-    else sameCanonical(canonical(plain), canonical(g), t);
+    sameCanonical(canonical(plain), canonical(g), t);
     expected.push(digests(g, t));
     if (look) shown.push(look());
   }
@@ -404,22 +437,25 @@ function corruptions(g) {
   }
 }
 
-// Every byte of the run's state is hashed or listed as left out (host/coop.inc COOP_UNHASHED), named here by the
-// executable's globals (build/game/data.cpp).
+// Every byte of the run's state is hashed or listed as left out (host/coop.inc COOP_UNHASHED). Bytes that are not
+// are named by the executable's globals (data.cpp, which the build leaves beside game.wasm), else by their offset
+// into its image (a game.wasm on its own, as CI's game jobs download it).
 function audit(g) {
-  const symbols = [
-    ...fs.readFileSync(path.join(path.dirname(wasm), "data.cpp"), "latin1").matchAll(/\.set (\w+), game_image_exe\+(\d+)/g),
-  ]
-    .map((m) => [Number(m[2]), m[1]])
-    .sort((a, b) => a[0] - b[0]);
+  const count = g.game_coop_audit();
+  if (!count) return;
+  const ranges = Array.from(new Uint32Array(g.memory.buffer, g.portable_output(), count * 2));
+  const data = path.join(path.dirname(wasm), "data.cpp");
+  const symbols = fs.existsSync(data)
+    ? [...fs.readFileSync(data, "latin1").matchAll(/\.set (\w+), game_image_exe\+(\d+)/g)]
+        .map((m) => [Number(m[2]), m[1]])
+        .sort((a, b) => a[0] - b[0])
+    : [];
   const named = (at) => {
-    const [start, name] = symbols.findLast(([s]) => s <= at);
+    const [start, name] = symbols.findLast(([s]) => s <= at) ?? [0, "game_image_exe"];
     return `${name}+${at - start}`;
   };
-  const count = g.game_coop_audit();
-  const ranges = new Uint32Array(g.memory.buffer, g.portable_output(), count * 2);
   const wrong = Array.from({ length: count }, (_, i) => `${named(ranges[2 * i])} (${ranges[2 * i + 1] - ranges[2 * i]} bytes)`);
-  assert.deepEqual(wrong, [], "run state bytes neither hashed nor listed as left out, or listed but hashed");
+  assert.fail(`run state bytes neither hashed nor listed as left out, or listed but hashed: ${wrong.join(", ")}`);
 }
 
 // The receive path (two peers, this machine seat 0): stale and repeated records change nothing, records no peer
@@ -470,48 +506,55 @@ function bootLive(directory) {
   return { game: run.game, look: () => [terrain, run.game.game_coop_music()] };
 }
 
-if (live) sevenTunes(live);
+const liveGame = live && sevenTunes(live);
 const report = [];
 for (const file of live ? LIVE_STREAMS : streams) {
-  const stream = requests(decode(fs.readFileSync(path.join(corpus, file))));
-  const { run, cmd, ticks } = stream;
-  const truth = oracle(solo, run, cmd, ticks);
-  for (const name of PLAIN_COVERAGE) coverage[name] += truth.stats[name];
-  if (live) {
-    const at = performance.now();
-    const first = bootLive(live);
-    const shown = oracle(first.game, run, cmd, ticks, first.look);
-    const forced = LIVE_MODES.map((mode) => {
-      const original = bootLive(live);
-      return rollbacks(original.game, stream, shown, mode, original.look);
-    });
-    for (const result of forced) for (const name of LIVE_COVERAGE) coverage[name] += result.stats[name];
-    console.log(JSON.stringify({ stream: file, ticks, live_ms: Math.round(performance.now() - at) }));
-    continue;
+  const recorded = decode(fs.readFileSync(path.join(corpus, file)));
+  for (const { stream: variant, name: variantName } of live ? [{ stream: recorded }] : variants(recorded)) {
+    const stream = requests(variant);
+    const { run, cmd, ticks } = stream;
+    const label = variantName ? `${file} (${variantName})` : file;
+    coverage.sixth_choices += stream.extra === 6;
+    coverage.seventh_choices += stream.extra === 7;
+    coverage.beyond_picks += stream.beyond;
+    const truth = oracle(solo, run, cmd, ticks);
+    for (const name of PLAIN_COVERAGE) coverage[name] += truth.stats[name];
+    if (live) {
+      const at = performance.now();
+      const first = bootLive(liveGame);
+      const shown = oracle(first.game, run, cmd, ticks, first.look);
+      const forced = LIVE_MODES.map((mode) => {
+        const original = bootLive(liveGame);
+        return rollbacks(original.game, stream, shown, mode, original.look);
+      });
+      for (const result of forced) for (const name of LIVE_COVERAGE) coverage[name] += result.stats[name];
+      console.log(JSON.stringify({ stream: label, ticks, live_ms: Math.round(performance.now() - at) }));
+      continue;
+    }
+    let at = performance.now();
+    for (let i = 0; i < 100; i++) solo.game_coop_hash();
+    const hashUs = (1000 * (performance.now() - at)) / 100;
+    const forced = MODES.map((mode) => rollbacks(solo, stream, truth, mode));
+    for (const result of forced) {
+      for (const name of ROLLBACK_COVERAGE) coverage[name] += result.stats[name];
+      coverage.menu_rollbacks += result.menuRestores;
+    }
+    const line = {
+      stream: label,
+      ticks,
+      rollbacks: forced.reduce((n, f) => n + f.stats.rollbacks, 0),
+      resimulated: forced.reduce((n, f) => n + f.stats.resimulated, 0),
+      plain_ms: Math.round(truth.plainMs),
+      solo_ms: Math.round(truth.soloMs),
+      rollback_ms: forced.map((f) => Math.round(f.ms)),
+      // The engine's cost a tick over the plain run's: its capture, the hash and the raw state's digest.
+      engine_us_per_tick: +((1000 * (truth.soloMs - truth.plainMs)) / ticks).toFixed(1),
+      hash_us: +hashUs.toFixed(1),
+      slot_kib: Math.round(forced[0].stats.slot_bytes / 1024),
+    };
+    report.push(line);
+    console.log(JSON.stringify(line));
   }
-  let at = performance.now();
-  for (let i = 0; i < 100; i++) solo.game_coop_hash();
-  const hashUs = (1000 * (performance.now() - at)) / 100;
-  const forced = MODES.map((mode) => rollbacks(solo, stream, truth, mode));
-  for (const result of forced) {
-    for (const name of ROLLBACK_COVERAGE) coverage[name] += result.stats[name];
-    coverage.menu_rollbacks += result.menuRestores;
-  }
-  const line = {
-    stream: file,
-    ticks,
-    rollbacks: forced.reduce((n, f) => n + f.stats.rollbacks, 0),
-    resimulated: forced.reduce((n, f) => n + f.stats.resimulated, 0),
-    plain_ms: Math.round(truth.plainMs),
-    solo_ms: Math.round(truth.soloMs),
-    rollback_ms: forced.map((f) => Math.round(f.ms)),
-    // The engine's cost a tick over the plain run's: its capture, the hash and the raw state's digest.
-    engine_us_per_tick: +((1000 * (truth.soloMs - truth.plainMs)) / ticks).toFixed(1),
-    hash_us: +hashUs.toFixed(1),
-    slot_kib: Math.round(forced[0].stats.slot_bytes / 1024),
-  };
-  report.push(line);
-  console.log(JSON.stringify(line));
 }
 if (live) {
   const shown = Object.fromEntries(LIVE_COVERAGE.map((name) => [name, coverage[name]]));

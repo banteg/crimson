@@ -183,8 +183,9 @@ must keep the state hash, terrain bake, terrain and music digests and raw state
 of the plain pass. Every byte of the run's state must be in the hash or in the
 engine's list of what it leaves out. One co-op scenario fills the effect pool
 under the ranked rules, freeing overflow entries at their own times. With
-`--live <game directory>` a few streams also play inside the original, whose
-terrain and music must match the plain pass's after every frame. The check
+`--live <game directory>` a few streams also play inside the original (from a
+copy of the directory), whose canonical words must match the plain run's every
+tick, and its terrain and music the plain pass's after every frame. The check
 prints each stream's rollbacks and costs; [network co-op](../docs/rewrite/network-coop.md)
 holds the design it checks.
 

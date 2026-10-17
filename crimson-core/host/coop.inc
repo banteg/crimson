@@ -309,7 +309,11 @@ static int coop_words() {
   coop_put_float(run.bodies_fade);
   coop_put_float(run.friendly_fire);
   coop_put_words(run.keys);
-  coop_put_words(run.music);
+  // The playlist past its count, which no tick reads, holds the tunes this
+  // machine's original loaded past the verifier's (portable_init).
+  GameMusic music = run.music;
+  std::fill(music.playlist + music.playlist_count, std::end(music.playlist), 0);
+  coop_put_words(music);
   for (int i = 0; i < game_effect_overflow.extent; ++i) {
     const effect_entry_t &e = game_effect_overflow.entries[i];
     for (float f : {e.pos_x, e.pos_y})
