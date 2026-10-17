@@ -531,28 +531,37 @@ CLIENT_EXPORT int client_coop_connect(int seat) {
 }
 // The transport closed, or the partner's page went (host/coop_wire.inc CoopReason).
 CLIENT_EXPORT int client_coop_disconnect(int reason) { return w2c_game_game_coop_disconnect(&game, reason); }
-// A message on `channel`, copied onto the page's stack by Module.ccall: the
-// game's buffer first, since making room can move the module's memory.
-CLIENT_EXPORT void client_coop_receive(int channel, const u8 *bytes, int size) {
+// A message of `size` bytes on `channel`: the page writes it where
+// client_coop_rx says, in the game's buffer (its address read after making
+// room, which can move the module's memory), then hands it over.
+CLIENT_EXPORT u8 *client_coop_rx(int size) {
   u32 buffer = w2c_game_game_coop_rx(&game, size);
-  memcpy(client_memory() + buffer, bytes, size);
+  return client_memory() + buffer;
+}
+CLIENT_EXPORT void client_coop_receive(int channel, int size) {
   w2c_game_game_coop_receive(&game, channel, size, coop_now());
 }
-// game_coop_status's flags and reasons, for the page; for checks (checks/coop_browser.mjs) also the run's
-// confirmed tick (-1 none) and the screen the game shows (game_state_id_t, -1 before it started).
+// game_coop_status's flags and reasons and the screen the game shows (game_state_id_t, -1 before it started),
+// for the page; for checks (checks/coop_browser.mjs) also the run's confirmed tick (-1 none), what a
+// confirmed tick ran with (the seat's PortableInput, null for a tick out of the ring) and left (its state's
+// hash), and a change to the state that the next hash shows (game_coop_corrupt).
 CLIENT_EXPORT u32 client_coop_status() { return started ? w2c_game_game_coop_status(&game) : 0; }
 CLIENT_EXPORT int client_coop_confirmed() { return started ? (int)w2c_game_game_coop_confirmed(&game) : -1; }
 CLIENT_EXPORT int client_game_state() { return started ? (int)w2c_game_game_state(&game) : -1; }
-// What the session has to send, each message copied out of the module before
-// the page takes it.
+CLIENT_EXPORT const u8 *client_coop_used(int t, int seat) {
+  u32 used = w2c_game_game_coop_used(&game, t, seat);
+  return used ? client_memory() + used : nullptr;
+}
+CLIENT_EXPORT u32 client_coop_hash_at(int t) { return w2c_game_game_coop_hash_at(&game, t); }
+CLIENT_EXPORT int client_coop_corrupt(int kind) { return w2c_game_game_coop_corrupt(&game, kind); }
+// What the session has to send, each message copied out of the module for the
+// page (no game call moves its memory in between).
 void coop_send() {
 #ifdef __EMSCRIPTEN__
-  static std::vector<u8> staging;
   for (int channel = 0; channel < 2; ++channel)
     for (int size; (size = (int)w2c_game_game_coop_tx(&game, channel, coop_now())) > 0;) {
       const u8 *message = client_memory() + w2c_game_game_coop_tx_buffer(&game);
-      staging.assign(message, message + size);
-      MAIN_THREAD_EM_ASM({ Module.coopSend($0, HEAPU8.slice($1, $1 + $2)); }, channel, staging.data(), size);
+      MAIN_THREAD_EM_ASM({ Module.coopSend($0, HEAPU8.slice($1, $1 + $2)); }, channel, message, size);
     }
 #endif
 }

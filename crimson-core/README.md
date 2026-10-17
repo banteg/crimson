@@ -250,7 +250,7 @@ player's settings or save may change, whatever saves them.
 
 ```sh
 cd service && npm ci && npm run play && cd ..
-CRIMSON_PLAYWRIGHT=<folder>/node_modules/playwright-core \
+CRIMSON_CHROME=<chrome binary> \
   node crimson-core/checks/coop_browser.mjs artifacts/assets [screenshot folder]
 ```
 
@@ -258,19 +258,32 @@ The whole path between two browsers, locally and outside CI: `npm run play`
 builds and stages the web client (Emscripten must run outside the command
 sandbox), and the check builds the site, serves it with `wrangler dev` on a
 free port with the game files from `artifacts/assets` in a local bucket, and
-drives two headless Chromium pages on `http://localhost:<port>` and
+drives headless Chrome pages on `http://localhost:<port>` and
 `http://127.0.0.1:<port>`, which keep their storage and their lock on the game
-apart. The host's Play co-op opens a room and shows its invite, the guest's
-Join takes the seat, and both connect; the guest reloads and the host's game
-starts a new session with its new page; the host's menus start Survival and
-both play with keys and mouse while each page's session must have the run
-started, no desync or error, and its confirmed ticks advancing; then the
-host leaves from the pause banner and both panels say so. It saves screenshots
-of both pages along the way (by default under the system's temporary folder).
-It needs `playwright-core` installed in any folder (`npm install
-playwright-core`), with the Chromium build that version pins (`npx
-playwright-core install chromium-headless-shell`); wrangler keeps its state
-under the user's folder, so the check runs outside the sandbox too.
+apart. The host's Play co-op opens a room and shows its invite (a refused copy
+leaves it selected), the guest's Join takes the seat, and both connect; the
+guest reloads, then the host, and each time the other page's game starts a new
+session with the new page. The host's menus start Survival and both play with
+keys and mouse: each page's session must have the run started, no desync or
+error and its confirmed ticks advancing, and every confirmed tick both pages
+hold must have run with the same records and left the same state hash on both,
+each seat's records moving its player. The guest's tab goes to the background
+past the progress timeout and the run goes on; a desync the guest's page makes
+closes both sessions, both panels say so, both players leave the stopped run
+and a new session begins; in its run the host leaves from the pause banner,
+both panels say so, and neither address keeps the room. Last, a guest page
+without WebRTC plays a run with the host over the room's relay, then closes,
+which the host's game hears at once. It saves screenshots of the pages along
+the way (by default under the system's temporary folder).
+
+`CRIMSON_CHROME` is a Chrome or Chromium binary with the new headless mode
+(`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` on macOS); the
+headless shell never hides a tab. The check speaks the DevTools protocol
+itself, since a driver such as Playwright keeps every page focused and so
+visible: the background step brings another tab of the guest's window to the
+front with the guest's focus emulation off, a real hidden tab whose animation
+frames stop and whose timers slow to once a second. Wrangler keeps its state
+under the user's folder, so the check runs outside the command sandbox too.
 
 ### Original executable
 

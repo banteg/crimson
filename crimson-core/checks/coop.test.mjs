@@ -86,7 +86,8 @@ function service(time) {
     ws.onmessage?.({ data });
   });
   function serverClose(ws, code, reason = "") {
-    if (ws.readyState === 3) return;
+    if (ws.gone) return;
+    ws.gone = true;
     ws.readyState = 3;
     world.closes.push({ role: ws.role, code, reason });
     setImmediate(() => { left(ws); ws.onclose?.({ code, reason }); });
@@ -129,7 +130,7 @@ function service(time) {
     return true;
   }
   function serverReceive(ws, data) {
-    if (ws.readyState !== 1) return;
+    if (ws.gone) return;
     // The room's auto-response: no wake, no budget.
     if (data === "ping") return world.pings.push(ws.role), push(ws, "pong");
     const size = typeof data === "string" ? new TextEncoder().encode(data).length : data.length;
@@ -155,7 +156,7 @@ function service(time) {
       world.sockets.push(this);
       setImmediate(() => accept(this));
     }
-    // A closed socket discards what it is given, as browsers do.
+    // A closing or closed socket discards what it is given, as browsers do; what it was given before still goes.
     send(data) {
       assert.notEqual(this.readyState, 0, "sent on a connecting socket");
       if (this.readyState !== 1) return;
@@ -164,7 +165,8 @@ function service(time) {
     }
     close(code, reason) {
       this.closedWith = code;
-      serverClose(this, code, reason);
+      this.readyState = 2;
+      setImmediate(() => serverClose(this, code, reason));
     }
   };
   world.seat = (id, role) => rooms.get(id).seats[role];
@@ -356,8 +358,8 @@ function setup(options = {}) {
       log: (...args) => events.logs.push(args.join(" ")),
     });
     coop.onstate = (state, reason) => events.states.push(reason ? `${state}: ${reason}` : state);
-    // A partner page that replaced the one this page knew is the game's news apart from presence.
-    coop.onpeer = (present, replaced) => events.peers.push(replaced ? "replaced" : present);
+    // A partner page that replaced the one this page knew, or said goodbye, is the game's news apart from presence.
+    coop.onpeer = (present, gone) => events.peers.push(gone ? (present ? "replaced" : "gone") : present);
     const listener = (channel, bytes) => events.messages.push([channel, [...bytes]]);
     if (listen) coop.onmessage = listener;
     // A reload or a closed tab: the page vanishes without a word, its sockets and connections with it. A silent
@@ -913,7 +915,7 @@ it("a partner page that vanishes without a word is waited for, then replaced", a
   await settle();
   assert.equal(host.coop.state, "connected");
   assert.equal(host.coop.stats().links, 2);
-  assert.ok(host.events.logs.some((line) => line.startsWith("control messages for the replaced page dropped")));
+  assert.ok(host.events.logs.some((line) => line.startsWith("control messages for the partner's old page dropped")));
   await exchange(host, reloaded);
   assert.deepEqual(reloaded.events.messages, [[0, [1, 2, 3]], [1, [4]]], "the old page's message is not the new page's");
 });
@@ -1134,10 +1136,67 @@ it("close() ends everything, tells the partner and keeps the seat token", async 
   assert.ok(env.net.pcs.filter((pc) => pc.owner === "guest").every((pc) => pc.closed));
   assert.equal(guest.coop.send(1, bytes(1)), false);
   assert.equal(host.coop.state, "waiting");
-  assert.deepEqual(host.events.peers, [true, false]);
+  // Its goodbye reaches the partner before its socket closes: the page and its game are gone.
+  assert.deepEqual(host.events.peers, [true, "gone"]);
   assert.equal(env.time.pending(guest.events), 0);
   assert.ok(JSON.parse(guest.store.getItem(`crimson.coop.${room}`)).token, "the seat stays this tab's to take back");
   await env.time.advance(60000);
   assert.equal(guest.coop.state, "closed");
   assert.equal(guest.sockets().length, 1);
+});
+
+it("a page that said goodbye and comes back is a new partner, not a replacement, and both streams start over", async () => {
+  const env = setup();
+  const { host, guest } = await meet(env);
+  assert.ok(host.coop.send(1, bytes(1)));
+  await settle();
+  // A goodbye names its page: one from another page than the partner's is stale.
+  env.world.inject(host.coop.room, "guest", { type: "bye", page: 1 });
+  await settle();
+  assert.deepEqual(host.events.peers, [true]);
+  guest.coop.close();
+  await settle();
+  assert.deepEqual(host.events.peers, [true, "gone"]);
+  assert.equal(pcOf(env, "host").closed, true, "the link with the page that went ends");
+  const reloaded = env.page("guest", { store: guest.store });
+  await reloaded.coop.join(host.coop.room);
+  await settle();
+  assert.deepEqual(host.events.peers, [true, "gone", true]);
+  assert.equal(reloaded.coop.state, "connected");
+  await exchange(host, reloaded);
+});
+
+it("a message longer than the room relays is dropped on either transport before the game sees it", async () => {
+  for (const outcome of ["connect", "fail"]) {
+    const env = setup({ outcome });
+    const { host, guest } = await meet(env);
+    const largest = MAX_MESSAGE_BYTES - 1;
+    const page = (from) => env.world.texts.find((text) => text.type === "hello" && text.from === from).page;
+    // A modified host page sends what its transport takes, WebRTC far more than the room relays; on the relay, the
+    // room's frame reaches the guest's socket as is. Control frames carry the pages' header and the first sequence
+    // number, which a dropped frame never takes.
+    const deliver = (channel, size) => {
+      const payload = new Uint8Array(size);
+      if (channel === 1) {
+        const header = new DataView(payload.buffer);
+        header.setUint32(0, page("host"));
+        header.setUint32(4, page("guest"));
+        header.setUint32(8, 1);
+      }
+      if (outcome === "connect") return pcOf(env, "host").channels[channel].send(payload);
+      const frame = new Uint8Array(size + 1);
+      frame[0] = channel;
+      frame.set(payload, 1);
+      env.world.seat(host.coop.room, "guest").onmessage({ data: frame.buffer });
+    };
+    deliver(0, largest + 1);
+    deliver(1, largest + 1);
+    await settle();
+    assert.deepEqual(guest.events.messages, [], outcome);
+    assert.equal(guest.events.logs.filter((line) => line.startsWith("oversized message dropped")).length, 2, outcome);
+    deliver(0, largest);
+    deliver(1, largest);
+    await settle();
+    assert.deepEqual(guest.events.messages.map(([channel, data]) => [channel, data.length]), [[0, largest], [1, largest - CONTROL_HEADER]], outcome);
+  }
 });

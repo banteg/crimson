@@ -525,17 +525,19 @@
   // the client pumps (client/main.cpp client_coop_*). The room's creator is the
   // host and plays player 1, seat 0; the guest player 2, seat 1. A session
   // begins whenever the connection is up and none runs. It ends when the
-  // connection gives up, when the partner's page is a new one (its game is
-  // gone), or when the game ends it. A player leaving, or two games that cannot
-  // play together, end co-op and close the room; after a lost connection or a
-  // reloaded page the next session begins once the pages connect again.
+  // connection gives up, when the partner's page went (its game with it), or
+  // when the game closes it. A player leaving, or two games that cannot play
+  // together, end co-op and close the room; after a lost connection, a reloaded
+  // page or a desync the next session begins once the pages connect again (after
+  // a desync, once this player left the stopped run).
   /* PLAY_COOP */
-  // game_coop_status (host/coop_wire.inc): the session goes on; why it stopped, bits 16-23 (CoopReason), the ones
-  // that end co-op said as the game says them; the reasons the page gives it.
-  const COOP_CONNECTED = 1, COOP_DISCONNECTED = 9, COOP_PARTNER_GONE = 10;
+  // game_coop_status (host/coop_wire.inc): the run goes on, the session closed; why, bits 16-23 (CoopReason), the
+  // ones that end co-op said as the game says them; the reasons the page gives it.
+  const COOP_CLOSED = 0x1000;
+  const COOP_DISCONNECTED = 9, COOP_PARTNER_GONE = 10, COOP_DIVERGED = 11;
   const COOP_ENDS = {
     1: "The other player has another version of the game",
-    2: "Co-op error: a message no game sends",
+    2: "Co-op error: an input no player could make",
     3: "Co-op error: a message no game sends",
     7: "You left co-op",
     8: "Player {partner} left",
@@ -543,9 +545,10 @@
   const coopLine = document.getElementById("coop-line"), coopInvite = document.getElementById("coop-invite");
   const coopCopy = document.getElementById("coop-copy"), coopNew = document.getElementById("coop-new"),
     coopClose = document.getElementById("coop-close");
-  // The room, whether the partner has been in it, whether a game session runs over it, and why co-op ended (shown
-  // until closed).
-  let coop = null, coopMet = false, coopSession = false, coopEnded = null;
+  // The room, whether the partner has been in it, whether a game session runs over it, why co-op ended (shown
+  // until closed) and why the last session did when the next waits (a desync). The game sends over the room the
+  // session connected over, and nowhere once another replaced it.
+  let coop = null, coopLink = null, coopMet = false, coopSession = false, coopEnded = null, coopNote = null;
   // This page's address names the room it plays in, so a reload goes back to it.
   const coopAddress = (room) => {
     const url = new URL(location.href);
@@ -554,12 +557,16 @@
     history.replaceState(null, "", url);
   };
   const partner = () => (coop.role === "host" ? 2 : 1);
-  const coopPinned = () => !!coop && (coopEnded !== null || coop.state !== "connected");
+  const coopPinned = () => !!coop && (coopEnded !== null || coopNote !== null || coop.state !== "connected");
+  const coopStatus = () => Module.ccall("client_coop_status", "number", [], []) >>> 0;
+  // The game's screen (game_state_id_t): a run a desync stopped stays there until its player leaves it.
+  const GAMEPLAY = 9;
   // Hosts a room (`room` true) or joins one.
   function startCoop(room) {
     const current = coop = createCoop({ log: (...args) => console.info("co-op:", ...args) });
     coopMet = coopSession = false;
-    coopEnded = null;
+    coopEnded = coopNote = null;
+    frameSource();
     // The game is never reentered from its own frame (Module.coopSend can end the connection): it hears of the
     // connection's changes after the frame.
     current.onstate = (state) => queueMicrotask(() => {
@@ -568,10 +575,10 @@
       if (state === "connected") coopConnect();
       coopShow(state === "connected" ? 4000 : 0);
     });
-    current.onpeer = (present, replaced) => queueMicrotask(() => {
+    current.onpeer = (present, gone) => queueMicrotask(() => {
       if (current !== coop) return;
       coopMet ||= present;
-      if (replaced && coopSession) coopEnd(COOP_PARTNER_GONE);
+      if (gone && coopSession) coopEnd(COOP_PARTNER_GONE);
       coopShow(0);
     });
     if (room !== true) return current.join(room);
@@ -581,30 +588,44 @@
       coopShow(0);
     });
   }
-  // The game's session as this page's seat, once the game is up.
+  // The game's session as this page's seat, once the game is up and while co-op goes on. A run a desync stopped
+  // stays on screen until its player leaves it; the next session waits for that.
   function coopConnect() {
-    if (!coop || coopSession || coop.state !== "connected") return;
+    if (!coop || coopSession || coopEnded !== null || coop.state !== "connected") return;
+    if (coopNote !== null && Module.ccall("client_game_state", "number", [], []) === GAMEPLAY) return;
     const seat = coop.role === "host" ? 0 : 1;
-    if (Module.ccall("client_coop_connect", "number", ["number"], [seat]) < 0) return setTimeout(coopConnect, 250);
+    if (Module.ccall("client_coop_connect", "number", ["number"], [seat]) < 0) return;
     coopSession = true;
-    coop.onmessage = (channel, bytes) =>
-      Module.ccall("client_coop_receive", null, ["number", "array", "number"], [channel, bytes, bytes.length]);
+    coopNote = null;
+    coopLink = coop;
+    // Each message goes straight into the game's buffer (the transport keeps them within the room's limit).
+    coop.onmessage = (channel, bytes) => {
+      const at = Module.ccall("client_coop_rx", "number", ["number"], [bytes.length]);
+      Module.HEAPU8.set(bytes, at);
+      Module.ccall("client_coop_receive", null, ["number", "number"], [channel, bytes.length]);
+    };
   }
+  // The page ends the session (its transport gave up, the partner's page went, Close), unless the game closed it
+  // already: then the game's reason stands, as coopWatch reads it.
   function coopEnd(reason) {
+    coopWatch();
+    if (!coopSession) return;
     coopSession = false;
     console.info("co-op: session ended", reason);
     Module.ccall("client_coop_disconnect", "number", ["number"], [reason]);
   }
-  // A session the game ended either begins again or ends co-op, closing the room once its last messages reached
-  // the partner, or after a moment.
+  // A session the game closed either begins again or ends co-op, closing the room once its last messages reached
+  // the partner, or after a moment; the address then names no room. Without a session, the next begins when it can.
   function coopWatch() {
-    if (!coopSession) return;
-    const status = Module.ccall("client_coop_status", "number", [], []) >>> 0, reason = (status >> 16) & 255;
-    if (status & COOP_CONNECTED || !reason) return;
+    if (!coopSession) return coopConnect();
+    const status = coopStatus(), reason = (status >> 16) & 255;
+    if (!(status & COOP_CLOSED)) return;
     coopSession = false;
     console.info("co-op: session ended", reason);
+    if (reason === COOP_DIVERGED) coopNote = "The two games ran differently";
     if (!COOP_ENDS[reason]) return coopConnect();
     coopEnded = COOP_ENDS[reason].replace("{partner}", partner());
+    coopAddress(null);
     const room = coop, until = performance.now() + 3000;
     const leave = () => (room.stats().unacked && performance.now() < until ? setTimeout(leave, 100) : room.close());
     setTimeout(leave, 100);
@@ -626,6 +647,7 @@
     const over = !transport ? "" : transport === "ws-relay" ? ", through the room" : transport.startsWith("relay") ? ", relayed" : ", direct";
     coopLine.textContent =
       coopEnded ??
+      coopNote ??
       {
         opening: role === "host" ? "Opening a co-op room…" : "Joining the co-op room…",
         waiting: waitingLine,
@@ -643,15 +665,17 @@
     coopNew.hidden = !done || framed;
     coopClose.hidden = !done && state === "connected";
     coopClose.textContent = done ? "Close" : "Cancel";
-    coopPanel.classList.toggle("trouble", state === "error" || coopEnded !== null);
+    coopPanel.classList.toggle("trouble", state === "error" || coopEnded !== null || coopNote !== null);
     if (coopPinned()) coopPanel.classList.add("shown");
     else if (ms) showFullscreen(ms);
   }
+  // A copy that fails leaves the link selected in its box for the player to copy.
   coopCopy.onclick = async () => {
     const copied = await navigator.clipboard?.writeText?.(coopInvite.value).then(() => true, () => false);
-    if (!copied) coopInvite.select();
     tell(copied ? "Copied the invite link" : "Copy the invite link from the box");
-    canvas.focus();
+    if (copied) return canvas.focus();
+    coopInvite.focus();
+    coopInvite.select();
   };
   // Closing ends any session first, as a lost connection would.
   coopClose.onclick = () => {
@@ -659,6 +683,7 @@
     coop.close();
     coop = null;
     coopAddress(null);
+    frameSource();
     coopShow(0);
     canvas.focus();
   };
@@ -669,6 +694,35 @@
   };
   // A page that goes tells the partner's at once.
   addEventListener("pagehide", () => coop?.close());
+  // A hidden tab gets no animation frames, which run the game's loop (SDL's on Emscripten), and its timers slow to
+  // one a second: while co-op is open, a hidden page's frames come from a worker's timer, which browsers leave
+  // alone, so the session plays on (on neutral records, as in a window in the background). Each frame runs once,
+  // whichever source comes first.
+  const animationFrame = requestAnimationFrame.bind(window), framesDue = new Set();
+  let frameWorker = null;
+  window.requestAnimationFrame = (callback) => {
+    const run = (time) => framesDue.delete(run) && callback(time);
+    framesDue.add(run);
+    return frameWorker ? 0 : animationFrame(run);
+  };
+  function frameSource() {
+    const background = document.hidden && coop !== null;
+    if (background === (frameWorker !== null)) return;
+    if (background) {
+      const url = URL.createObjectURL(new Blob(["setInterval(() => postMessage(0), 1000 / 60);"], { type: "text/javascript" }));
+      frameWorker = new Worker(url);
+      URL.revokeObjectURL(url);
+      frameWorker.onmessage = () => {
+        const time = performance.now();
+        for (const run of [...framesDue]) run(time);
+      };
+    } else {
+      frameWorker.terminate();
+      frameWorker = null;
+      for (const run of framesDue) animationFrame(run);
+    }
+  }
+  document.addEventListener("visibilitychange", frameSource);
 
   // The leaderboard (host/ranked.inc): the game queues each finished ranked run
   // in /game/leaderboard/outbox/ and asks for an upload, or for the player's
@@ -865,7 +919,7 @@
     // HOST_LEADERBOARD_PROFILE, _UPLOAD, _SCORES and _REPLAY (game/host_abi.h).
     leaderboard: (request) => [profile, upload, scores, replay][request - 1](),
     // The co-op session's messages, after each frame (client/main.cpp).
-    coopSend: (channel, bytes) => coop?.send(channel, bytes),
+    coopSend: (channel, bytes) => coopLink?.send(channel, bytes),
     canvas,
     arguments: ["/game"],
     preRun: [() => {

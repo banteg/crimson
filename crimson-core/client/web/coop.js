@@ -246,6 +246,7 @@ function createCoop({
       case "peer": return peer(message.present);
       case "ice": return ice(message.ice_servers);
       case "hello": return hello(message.page);
+      case "bye": return bye(message.page);
       case "offer": return offer(message);
       case "answer": return answer(message);
       case "candidate": return candidate(message);
@@ -269,7 +270,8 @@ function createCoop({
     }, PING_MS);
   }
   // Room presence is only signalling: a partner whose socket blips keeps its link. Every present partner hears
-  // this page's hello, which says whether the page behind the seat is still the same.
+  // this page's hello, which says whether the page behind the seat is still the same; a page that closes says
+  // goodbye. onpeer's second argument says the partner's page, and its game, is gone.
   function peer(present) {
     partner = present;
     if (present) signal({ type: "hello", page });
@@ -279,16 +281,17 @@ function createCoop({
     }
     refresh();
   }
+  // The streams and the link with a page that went end with it.
+  function forget() {
+    if (unacked.length) log("control messages for the partner's old page dropped", unacked.length);
+    unacked.length = handed = delivered = 0;
+    nextSeq = 1;
+    ackDue = false;
+    teardown();
+  }
   function hello(next) {
     const replaced = partnerPage !== null && next !== partnerPage;
-    if (replaced) {
-      // The streams and the link with the old page end with it.
-      if (unacked.length) log("control messages for the replaced page dropped", unacked.length);
-      unacked.length = handed = delivered = 0;
-      nextSeq = 1;
-      ackDue = false;
-      teardown();
-    }
+    if (replaced) forget();
     partnerPage = next;
     // A replaced page lost its game: the session with it cannot go on (the shell ends it).
     if (replaced || !reported) {
@@ -301,6 +304,14 @@ function createCoop({
       if (!link.answered) signal({ type: "switch", link: link.id, transport_epoch: link.epoch });
       replay();
     } else pump();
+    refresh();
+  }
+  function bye(from) {
+    if (from !== partnerPage) return;
+    forget();
+    partnerPage = null;
+    reported = false;
+    api.onpeer?.(false, true);
     refresh();
   }
   function ice(servers) {
@@ -525,7 +536,9 @@ function createCoop({
     handed = 0;
     pump();
   }
+  // Both transports carry at most what the room relays: a page that sends more over WebRTC is not a game's.
   function arrive(channel, bytes) {
+    if (bytes.length > ROOM_MAX_BYTES - 1) return log("oversized message dropped", channel, bytes.length);
     if (channel === 0) return deliver(0, bytes);
     if (bytes.length < CONTROL_HEADER) return log("short control frame");
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -608,8 +621,10 @@ function createCoop({
     stats.sent[0]++;
     return true;
   }
+  // The partner hears this page go, if the room can carry its goodbye.
   function close() {
     if (state === "closed") return;
+    if (partner && partnerPage !== null) signal({ type: "bye", page });
     shutdown();
     setState("closed");
   }

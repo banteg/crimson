@@ -1187,10 +1187,14 @@ reconnects. An idle socket pings the room now and then.
 **Partner and links.** Room presence is only signalling: after every
 `present: true` each page sends `{type: "hello", page}` with a nonce of its
 own, so the other page can tell the same page coming back from a new one
-(a reload, or a duplicated tab taking the seat). A new page ends the old
-one's link and control streams; the page hears `onpeer(true)` for a returning
-page, `onpeer(true, true)` for one that replaced the page it knew (whose game
-is gone with it), and `onpeer(false)` when the partner's socket leaves. The
+(a reload, or a duplicated tab taking the seat). A page that closes (`close()`,
+which the page calls as it goes) first sends the partner `{type: "bye", page}`
+through the room, when its socket is there to carry it. A new page, or a
+goodbye from the partner's page, ends that page's link and control streams;
+the page hears `onpeer(true)` for a returning page, `onpeer(true, true)` for
+one that replaced the page it knew and `onpeer(false, true)` for one that said
+goodbye (either page's game is gone with it), and `onpeer(false)` when the
+partner's socket leaves. The
 host starts a *link* when it hears a hello and has no connected link: it
 names the link, creates the peer connection with negotiated DataChannels
 `coop-ticks` (id 0, unordered, no retransmits) and `coop-control` (id 1,
@@ -1231,7 +1235,10 @@ reconnecting). `send(1, …)` accepts a message whenever the session is open
 and queues it until a transport exists; too many unacknowledged messages, or
 a message too large for the relay, are errors. Bytes that arrive before the
 game sets its handler wait in a bounded inbox that drops its oldest ticks
-first and ends the session rather than drop a control message.
+first and ends the session rather than drop a control message. A message
+longer than the room relays (16 KiB with its channel byte) is dropped on
+arrival, on either transport: WebRTC itself would carry far more, and a page
+that sends it is not a game's.
 
 #### Client bridge (`crimson-core/client/main.cpp`, `client/web/shell.html`)
 
@@ -1242,15 +1249,22 @@ exports, which the page calls with `Module.ccall`:
 - `client_coop_connect(seat)` begins a session (`game_coop_connect` on the
   clock `host_time_ms` reads), `-1` before the game has started;
 - `client_coop_disconnect(reason)` ends it (`game_coop_disconnect`);
-- `client_coop_receive(channel, bytes, size)` hands over a message, which
-  `ccall` copies onto the page's stack: the client asks `game_coop_rx(size)`
-  for the game's buffer first (making room can move the module's memory), then
-  copies the bytes there and calls `game_coop_receive`;
-- `client_coop_status()` returns `game_coop_status`.
+- `client_coop_rx(size)` returns where a message of `size` bytes goes, in
+  the page's view of memory: the game's buffer (`game_coop_rx`), its address
+  taken after making room, which can move the module's memory. The page writes
+  the bytes there (`Module.HEAPU8.set`), then calls
+  `client_coop_receive(channel, size)` (`game_coop_receive`);
+- `client_coop_status()` returns `game_coop_status`, and
+  `client_game_state()` the screen the game shows.
+
+For `checks/coop_browser.mjs` there are also the run's confirmed tick, the
+record a confirmed tick ran with for a seat (`game_coop_used`), the state's hash
+it left (`game_coop_hash_at`) and `game_coop_corrupt`.
 
 After every frame the client drains `game_coop_tx` on both channels, copies
 each message out of the module and hands it to `Module.coopSend(channel,
-bytes)`, which the page sends with `coop.send`. The game paces its ticks
+bytes)`, which the page sends with `coop.send` of the room the session
+connected over (once another room replaced it, nowhere). The game paces its ticks
 packets (Section 6.2) well under the room budget, so on the relay they stay
 clear of the reserve kept for control. No pointer into the module's memory
 outlives a call. A native build compiles the same exports, which nothing
@@ -1260,8 +1274,16 @@ calls: co-op is web-only.
 reports as `SDL_EVENT_WINDOW_HIDDEN`) releases the keys, mouse buttons and the
 pad's buttons and sticks, stops polling the pad until the window is back, and
 calls `game_activate(0)`. A co-op session plays on there with neutral records
-(Section 7); a hidden tab gets no frames, so its partner waits for it until
-the liveness timeout. A tab shown again plays on once it also has the focus.
+(Section 7). A hidden tab gets no animation frames, which drive the game's loop
+(SDL's main loop on Emscripten), and its timers slow to once a second: while a
+co-op room is open, the page's `requestAnimationFrame` hands a hidden page's
+frames to a worker's 60 Hz timer instead, which browsers do not throttle, and
+back to the browser's frames once the tab shows again (each frame runs once,
+whichever comes first). So a run goes on while one player's tab is in the
+background, its records neutral. A tab shown again plays on once it also has
+the focus. A browser that freezes a tab long in the background (after
+minutes, to save power) stops the worker too; the partner's timeouts then end
+the session.
 
 **The page.** The cover's Play co-op starts the game and opens a room as its
 host (player 1); the panel at the top of the page says how co-op stands and,
@@ -1272,20 +1294,30 @@ seat (player 2). The panel shows opening, waiting for the other player (and
 that a player left the room), connecting, connected (direct, relayed through
 TURN, or through the room), reconnecting, and why co-op stopped: the room's
 answers (no such room, room full, the room closed or was opened in another
-tab) and the game's (another version of the game, a protocol error, a player
-left). Inside another site's frame the page does not play co-op and offers the
+tab) and the game's (another version of the game, an input no player could
+make, a message no game sends, a player left, the two games ran differently).
+A Copy link the clipboard refuses leaves the link selected in its box. Inside another site's frame the page does not play co-op and offers the
 site instead. Co-op keeps the page's lock on the game's storage: one tab per
 origin plays.
 
 Once the connection is up and no session runs, the page connects the game as
 its seat (0 for the room's host, 1 for its guest). It ends the session with
 `COOP_DISCONNECTED` when the transport gives up or the panel's Close is used,
-and with `COOP_PARTNER_GONE` when the partner's page is a new one; the next
-session begins when the pages connect again. A session the game ends is
-watched through `client_coop_status`: a player who left, another version or a
-protocol error end co-op, and the page closes the room once its last control
-messages reached the partner; after a lost connection the page connects a new
-session as soon as the transport allows. Events from the transport reach the
+and with `COOP_PARTNER_GONE` when the partner's page went (a new page, or its
+goodbye), unless the game closed the session already, whose reason then
+stands; the next session begins when the pages connect again. The page
+watches the game's sessions through `client_coop_status`: every session that
+ends has the closed flag (`0x1000`). A player who left, another version, an
+input no player could make or a message no game sends end co-op: the page
+closes the room once its last control messages reached the partner, and its
+address no longer names the room, so a reload does not join it again. After a
+lost connection or a timeout the page connects a new session as soon as the
+transport allows. A desync (`COOP_DIVERGED`) keeps the room: both games stopped
+the run where their states differed, which the panel explains ("The two games
+ran differently"), and once this player left the stopped run (the game's
+screen is no longer the run) the page connects a new session, in which the
+Host can start another run. A desync is a bug in one of the games, not the
+players' doing, so the two keep their room rather than make a new one. Events from the transport reach the
 game after the frame that caused them, never inside it.
 
 ### 6.2 Wire protocol & gap-repair guarantee
@@ -1474,10 +1506,15 @@ and messages, repairs and the records they carried, and the round trip.
    - An unfocused but visible window continues running `requestAnimationFrame` at
      60 Hz and sending neutral inputs.
 
-   - A hidden background tab (`document.hidden === true`) has
-     `requestAnimationFrame` throttled by the browser; once `next_sim_tick - confirmed_through`
-     hits $R_{\max}$, the partner automatically enters the lockstep wait banner
-     until the tab returns or the 15-second liveness timeout ends the session.
+   - A hidden background tab (`document.hidden === true`) gets no
+     `requestAnimationFrame` at all and its timers slow to once a second, so
+     while a co-op room is open the page drives the game's loop from a worker's
+     timer instead (Section 6.1, Focus): the hidden player's game goes on
+     producing neutral records and the run goes on. Only a tab the browser
+     freezes (long in the background) stops; once `next_sim_tick -
+     confirmed_through` hits $R_{\max}$ the partner enters the lockstep wait
+     banner until the tab returns or the 15-second liveness timeout ends the
+     session.
 
 ---
 
@@ -1632,11 +1669,16 @@ and messages, repairs and the records they carried, and the round trip.
    The transport's tests, `checks/coop.test.mjs` (CI's client job), run two
    pages against a fake room with the service's limits and fake peer
    connections. `checks/coop_browser.mjs` plays the whole path locally (not in
-   CI): two headless Chromium pages on two origins against `wrangler dev`, a
-   room from the host's Play co-op, the guest's Join from the invite, a guest
-   reload that the host's game sees as `COOP_PARTNER_GONE`, a Survival run from
-   the host's menus that both play with input, and a leave from the pause
-   banner that both panels report.
+   CI): headless Chrome pages on two origins against `wrangler dev`, a room from
+   the host's Play co-op, the guest's Join from the invite, a guest reload and a
+   host reload that the other page's game sees as `COOP_PARTNER_GONE`, a
+   Survival run from the host's menus that both play with input (every
+   confirmed tick both pages hold run with the same records, each seat's moving
+   its player, and leaving the same state hash on both), the guest's tab in the
+   background past the progress timeout with the run going on, a desync that
+   both panels report and a new session after it, a leave from the pause banner
+   that both panels report, and a run over the room's relay with a page without
+   WebRTC, whose closing the host's game hears at once.
 
    The session's gate, `checks/game_coop_live.mjs` (CI's `game-coop` job, on the
    distributed game files), boots two originals from separate copies of a game
