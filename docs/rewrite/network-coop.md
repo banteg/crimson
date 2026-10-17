@@ -341,7 +341,8 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     conversion must use the 2-player midpoint
     `(player_state_table[0].position + player_state_table[1].position) * 0.5f`
     clamped to `[-1024 + W, -1] × [-1024 + H, -1]`, matching
-    `decomp/1.9/crimsonland/game/camera_update.cpp:84-95`.
+    `decomp/1.9/crimsonland/game/camera_update.cpp:67-77` (the midpoint) and
+    `:86-101` (the clamp).
 
 - **Isolation from 1P `replay.inc` and `watch.inc`**:
 
@@ -907,9 +908,8 @@ any other.
   unlocked it, so it plays with the weapons and perks the campaign has handed
   out by then), detail 5, violence on, friendly fire off, documented fixes on,
   no retries. Neither player's own save takes part, and the run changes
-  neither player's progress. Rush, Typ-o and the Tutorial stay out of co-op.
-  Custom quests rank one player only (`custom_quest_players`): a co-op run of
-  one plays but does not rank.
+  neither player's progress. Rush, Typ-o, the Tutorial and custom quests stay
+  out of co-op: a custom quest ranks one player only (`custom_quest_players`).
 
 - **Boards**: co-op ranks on its own boards, `survival-coop`, `quests-coop` and
   `quests-hardcore-coop` (`ranked_board` in `src/crimson/replay/ranked.py`),
@@ -920,11 +920,12 @@ any other.
 - **Controls & aim**: every tick of both players uses human controls. Each
   player's mouse aim point, and each new point-click target, lies inside the
   1024x768 view around the camera the previous tick left; in 2P that camera
-  follows the living players' midpoint (`camera_update.cpp:84-95`,
-  `camera_update_for_players` in `src/crimson/camera.py`), the view both
-  players see, and stays where it was while nobody lives. Pad aim keeps the
-  138-unit reach. If either player's client declares a pilot, the run goes to
-  the bot boards ([bots and moderation](bots.md)).
+  follows the living players' midpoint (`camera_update.cpp:57-80`,
+  `camera_update_for_players` in `src/crimson/camera.py`) clamped to the arena
+  (`:86-101`), the view both players see, and stays where it was while nobody
+  lives (`:78-79`). Pad aim keeps the 138-unit reach. If either player's client
+  declares a pilot, the run goes to the bot boards
+  ([bots and moderation](bots.md)).
 
 - **Finished runs**: a Survival team wipe or a completed quest ranks; a quit,
   a leave, a disconnect or a failed quest does not.
@@ -1291,7 +1292,7 @@ until both `MSG_START_RUN` and `MSG_START_ACK` for `run_epoch` have completed.
    - **Ranked aim checks**: the service's `TickMonitor`
      (`service/src/verify.ts:129-155`) tracks the 2P camera as Python's
      `RankedTickMonitor` does (the midpoint of the living players,
-     `camera_update.cpp:60-97`, kept while nobody lives) and checks both
+     `camera_update.cpp:57-80`, kept while nobody lives, `:78-79`) and checks both
      `input(tick, 0)` and `input(tick, 1)` with a move target per player.
 
 3. **Gate**: a co-op `.crd` recorded by two browsers verifies in the service,

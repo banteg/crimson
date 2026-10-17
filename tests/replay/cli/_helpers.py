@@ -19,8 +19,10 @@ from crimson.replay.checkpoints import (
     dump_checkpoints_file,
 )
 from crimson.replay.input_codec import pack_tick
-from crimson.replay.ranked import ranked_run_spec
+from crimson.replay.ticks import step_replay_tick
+from crimson.replay.types import ReplayTick
 from crimson.sim.commands import GameCommand, TypoCharCommand, TypoSubmitCommand
+from crimson.sim.run_init import initialize_run
 from crimson.sim.run_spec import RunSpec
 from grim.geom import Vec2
 from tests.support.factories import player_input
@@ -34,18 +36,33 @@ def build_replay(
     seed: int = 0xBEEF,
     player_count: int = 1,
     quest_level: str = "",
-    ranked: bool = False,
 ) -> Replay:
-    """Idle ticks for every player, aiming at the arena centre; `ranked` plays the ranked profile."""
     parsed_level = QuestLevel.parse(quest_level) if str(quest_level).strip() else None
-    if ranked:
-        run = ranked_run_spec(mode, seed=int(seed), quest_level=parsed_level, player_count=int(player_count))
-    else:
-        run = RunSpec(game_mode_id=mode, seed=int(seed), player_count=int(player_count), quest_level=parsed_level)
+    run = RunSpec(game_mode_id=mode, seed=int(seed), player_count=int(player_count), quest_level=parsed_level)
+    return build_idle_replay(run, ticks=ticks)
+
+
+def idle_tick(player_count: int) -> ReplayTick:
+    """Every player idle, aiming at the arena centre."""
+
+    return pack_tick([player_input(aim=Vec2(512.0, 512.0)) for _ in range(player_count)])
+
+
+def build_idle_replay(run: RunSpec, *, ticks: int) -> Replay:
     recorder = ReplayRecorder(run)
     for _ in range(int(ticks)):
-        recorder.record(pack_tick([player_input(aim=Vec2(512.0, 512.0)) for _ in range(int(player_count))]))
+        recorder.record(idle_tick(run.player_count))
     return finish_replay(recorder)
+
+
+def idle_run_ticks(run: RunSpec) -> int:
+    """How long an idle run lasts, up to the tick that ends it."""
+
+    session = initialize_run(run).session
+    ticks = 1
+    while step_replay_tick(session, idle_tick(run.player_count)).outcome is None:
+        ticks += 1
+    return ticks
 
 
 def build_typo_submit_replay(*, word: str = "reload", seed: int = 0xBEEF) -> Replay:

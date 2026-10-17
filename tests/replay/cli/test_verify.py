@@ -10,9 +10,10 @@ from typer.testing import CliRunner
 from crimson.cli.app import app
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, encode_replay_payload
+from crimson.replay.ranked import ranked_run_spec
 from crimson.sim.commands import PerkPickCommand
 
-from ._helpers import build_replay, inject_tick_commands, write_replay
+from ._helpers import build_idle_replay, build_replay, idle_run_ticks, inject_tick_commands, write_replay
 
 
 def _tamper_result(replay: Replay) -> Replay:
@@ -59,8 +60,8 @@ def test_replay_verify_json_output_payload_ok(tmp_path: Path) -> None:
 
 
 def test_replay_verify_ranks_a_co_op_pair_on_its_board(tmp_path: Path) -> None:
-    # The idle pair dies at tick 1701 and the HUD fades out by tick 1732.
-    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1733, player_count=2, ranked=True)
+    run = ranked_run_spec(GameMode.SURVIVAL, seed=0xBEEF, player_count=2)
+    replay = build_idle_replay(run, ticks=idle_run_ticks(run))
     replay_path = write_replay(tmp_path, replay=replay, name="survival-coop.crd")
 
     result = CliRunner().invoke(app, ["replay", "verify", str(replay_path), "--format", "json"])

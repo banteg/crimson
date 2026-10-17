@@ -10,8 +10,10 @@ A leaderboard run is a replay that verifies and satisfies these rules. The rules
 version is the replay's `game_version`: a build with a rules bug is withdrawn
 from the boards rather than frozen. The replay's `recorder` names the client and
 platform that recorded it, so a faulty client can be withdrawn the same way. `crimson replay verify` reports `ranked`,
-the `board` and every `unranked_reasons` entry; the leaderboard service applies
-the same checks (`src/crimson/replay/ranked.py`).
+the `board` and every `unranked_reasons` entry from the run rules
+(`src/crimson/replay/ranked.py`); the leaderboard service applies the same
+checks to each upload, along with its signatures
+([leaderboard identity](leaderboard-identity.md#uploads)).
 
 ## Boards and scores
 
@@ -26,8 +28,14 @@ the same checks (`src/crimson/replay/ranked.py`).
 
 A co-op pair ranks on its own boards, scored as the one-player ones: two
 players' scores do not compare with one player's, since XP is shared and two
-players double the Survival spawn countdown. Co-op ranks through
-[online co-op](network-coop.md), whose runs play these same rules.
+players double the Survival spawn countdown.
+
+A two-player run ranks only when its upload carries both players' signatures,
+from two different keys, one for each seat; the service enforces this at
+upload. `crimson replay verify` checks only the run rules, so it can report a
+two-player replay as ranked that the service still refuses without the second
+signature. How the two players sign one replay is in the
+[network co-op spec](network-coop.md#53-run-setup-replays-ranked-co-op).
 
 Hardcore applies only to quests, so Survival has one board for each team. (The original
 leaks a saved Hardcore setting into Survival's milestone waves,

@@ -161,10 +161,12 @@ def test_every_co_op_player_aims_inside_the_view_around_the_pair() -> None:
     assert _monitor_ticks(_COOP, [_IDLE, _input(aim_scheme=AimScheme.COMPUTER, aim=Vec2())]) == {"controls"}
 
 
-def _coop_edge_aim(*, dead_from_start: tuple[int, ...] = (), dead_after_first_tick: tuple[int, ...] = ()) -> set[str]:
-    """Player two stands at the arena's bottom edge while player one, in the centre, aims near it on the third tick."""
+def _coop_at_edge(
+    *ticks: list[PlayerInput], dead_from_start: tuple[int, ...] = (), dead_after_first_tick: tuple[int, ...] = (),
+) -> set[str]:
+    """Player two stands at the arena's bottom edge while player one starts in the centre."""
 
-    replay = _replay(_COOP, [_IDLE, _IDLE], [_IDLE, _IDLE], [_input(aim=Vec2(600.0, 1000.0)), _IDLE])
+    replay = _replay(_COOP, *ticks)
     driver = PlaybackDriver(replay, version_mismatch_action=None)
     monitor = RankedTickMonitor(replay=replay)
     players = driver.world.players
@@ -178,10 +180,30 @@ def _coop_edge_aim(*, dead_from_start: tuple[int, ...] = (), dead_after_first_ti
     return monitor.reasons
 
 
+# Player one aims near player two on the third tick: inside the pair's view, outside player one's own.
+_EDGE_AIM = ([_IDLE, _IDLE], [_IDLE, _IDLE], [_input(aim=Vec2(600.0, 1000.0)), _IDLE])
+
+
 def test_the_co_op_camera_follows_the_living_players() -> None:
-    assert _coop_edge_aim() == set()
+    assert _coop_at_edge(*_EDGE_AIM) == set()
     # A dead player leaves the camera to the living one, centred on player one again.
-    assert _coop_edge_aim(dead_from_start=(1,)) == {"aim_out_of_view"}
-    assert _coop_edge_aim(dead_after_first_tick=(1,)) == {"aim_out_of_view"}
+    assert _coop_at_edge(*_EDGE_AIM, dead_from_start=(1,)) == {"aim_out_of_view"}
+    assert _coop_at_edge(*_EDGE_AIM, dead_after_first_tick=(1,)) == {"aim_out_of_view"}
     # With nobody alive the camera stays where the pair left it.
-    assert _coop_edge_aim(dead_after_first_tick=(0, 1)) == set()
+    assert _coop_at_edge(*_EDGE_AIM, dead_after_first_tick=(0, 1)) == set()
+
+
+def test_each_co_op_player_holds_their_own_point_click_target() -> None:
+    point_click = MovementControlType.MOUSE_POINT_CLICK
+    # Both targets are clicked inside the pair's view, which shows world y 256..1024; only player one's
+    # lies outside player one's own view.
+    held = [
+        _input(point_click, aim=Vec2(512.0, 512.0), target=Vec2(600.0, 1020.0)),
+        _input(point_click, aim=Vec2(512.0, 512.0), target=Vec2(512.0, 900.0)),
+    ]
+    # Player two's death recentres the camera on player one, whose held target is then out of view: a target
+    # is checked when clicked, and player two's click in between is not player one's.
+    assert _coop_at_edge(held, held, held, dead_after_first_tick=(1,)) == set()
+    # Player one clicking it anew, once the camera has moved, is out of view.
+    no_target = _input(point_click, aim=Vec2(512.0, 512.0))
+    assert _coop_at_edge(held, held, [no_target, held[1]], held, dead_after_first_tick=(1,)) == {"aim_out_of_view"}
