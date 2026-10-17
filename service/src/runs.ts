@@ -67,13 +67,18 @@ function parseUpload(body: unknown): Upload | null {
 }
 
 // Why a run's signers do not stand for its players (docs/rewrite/leaderboard-identity.md, "Co-op runs"), or null:
-// one signer a player, each seat once, and a key of their own each.
-function signersReason(signers: Signer[], players: number): string | null {
+// one signer a player, each seat once, a key of their own each, and each seat signed by the key the replay records
+// for it. A co-op replay must record its seats' keys: the payload digest every signature covers then binds each key
+// to its seat, so neither partner can sign the other's seat with a key of their own.
+function signersReason(signers: Signer[], players: number, seatKeys: Uint8Array[] | null): string | null {
+  if (players > 1 && seatKeys === null) return "a co-op run must record its players' keys (replay format 34)";
   if (signers.length !== players)
     return players > 1 ? `a ${players}-player run needs every player's signature, one for each seat` : "a one-player run has one signer";
   const seats = new Set(signers.map((signer) => signer.seat));
   if (seats.size !== players || [...seats].some((seat) => seat < 0 || seat >= players)) return `signers must take seats 0..${players - 1} once each`;
   if (new Set(signers.map((signer) => signer.public_key)).size !== players) return "each player signs with a key of their own";
+  const stranger = seatKeys && signers.find((signer) => signer.public_key !== hex(seatKeys[signer.seat]!));
+  if (stranger) return `seat ${stranger.seat} must be signed by the key the replay records for it`;
   return null;
 }
 
@@ -277,7 +282,7 @@ export async function postRun(request: Request, env: Env, options: { requireCust
     return refuse(422, "recipe source does not match the replay's custom quest");
   if (replay.rules !== REPLAY_RULES)
     return refuse(422, `replay was recorded under rules ${replay.rules}; this service verifies rules ${REPLAY_RULES}`);
-  const signersRefusal = signersReason(upload.signers, replay.run.player_count);
+  const signersRefusal = signersReason(upload.signers, replay.run.player_count, replay.seat_keys);
   if (signersRefusal) return refuse(422, signersRefusal);
   for (const [i, signer] of upload.signers.entries()) {
     const message = upload.coop ? concat(COOP_RUN_DOMAIN, payloadSha, Uint8Array.of(signer.seat), names[i]!) : concat(RUN_DOMAIN, payloadSha, names[i]!);

@@ -54,10 +54,11 @@ export const runCategory = (run: string) =>
 // SQL over runs `run`: whether the account bound as ?1 played it, alone or in either co-op seat.
 export const accountRun = (run: string) => `(${run}.account_id = ?1 OR ${run}.id IN (SELECT run_id FROM run_players WHERE account_id = ?1))`;
 // SQL over runs `run`: who a board keeps one best run for, the account for one player and for a co-op pair the
-// unordered pair of accounts, with a deleted player's seat as nobody's.
+// unordered pair of accounts. A player who deleted their account keeps it as a bare row in their seat
+// (migrations/0008_coop.sql), so their partner's runs with them and with someone else stay apart.
 const team = (run: string) =>
-  `(SELECT CASE WHEN count(*) THEN coalesce(min(p.account_id), 0) || ',' || coalesce(max(p.account_id), 0) || ',' || count(p.account_id)
-     ELSE ${run}.account_id END FROM run_players p WHERE p.run_id = ${run}.id)`;
+  `(SELECT CASE WHEN count(*) THEN min(p.account_id) || ',' || max(p.account_id) ELSE ${run}.account_id END
+     FROM run_players p WHERE p.run_id = ${run}.id)`;
 
 export const parsePilot = (pilot: string): Pilot | null => (pilot ? (JSON.parse(pilot) as Pilot) : null);
 
@@ -72,23 +73,25 @@ function linkUrl(provider: ProviderName, handle: string, subject: string): strin
   }
 }
 
+// The accounts' public views; a deleted account has none. The ids go in as one JSON array, since a co-op board's
+// players outnumber the parameters D1 binds to a statement.
 export async function players(env: Env, ids: number[]): Promise<Map<number, PlayerView>> {
   const found = new Map<number, PlayerView>();
   if (!ids.length) return found;
-  const marks = ids.map(() => "?").join(",");
+  const list = JSON.stringify([...new Set(ids)]);
   const { results: accounts } = await env.DB.prepare(
     `SELECT a.id, a.name, a.name_hidden, a.bot,
        ${FINGERPRINT} AS fingerprint,
        (SELECT count(*) FROM accounts b WHERE b.id != a.id AND (lower(b.name) = lower(a.name) AND b.name != ''
           OR EXISTS (SELECT 1 FROM links l WHERE l.account_id = b.id AND lower(l.handle) = lower(a.name)))) AS clashes
-     FROM accounts a WHERE a.id IN (${marks})`,
+     FROM accounts a WHERE a.id IN (SELECT value FROM json_each(?)) AND a.deleted_at IS NULL`,
   )
-    .bind(...ids)
+    .bind(list)
     .all<{ id: number; name: string; name_hidden: number; bot: number; fingerprint: string; clashes: number }>();
   const { results: links } = await env.DB.prepare(
-    `SELECT account_id, provider, subject, handle, avatar_url FROM links WHERE account_id IN (${marks})`,
+    `SELECT account_id, provider, subject, handle, avatar_url FROM links WHERE account_id IN (SELECT value FROM json_each(?))`,
   )
-    .bind(...ids)
+    .bind(list)
     .all<{ account_id: number; provider: ProviderName; subject: string; handle: string; avatar_url: string | null }>();
   for (const account of accounts) {
     const own = links.filter((link) => link.account_id === account.id);
@@ -118,20 +121,21 @@ export function boardTitle(board: Board, quest: string, customTitle?: string): s
   return stock ? `${quest} ${stock}${hardcore ? " · hardcore" : ""}${coop}` : `Quest ${quest}`;
 }
 
-// Each co-op run's seats, player one first; one-player runs have none.
+// Each co-op run's seats, player one first; one-player runs have none. A deleted player's seat shows nobody.
 export async function seats(env: Env, runIds: string[]): Promise<Map<string, SeatView[]>> {
   const found = new Map<string, SeatView[]>();
   if (!runIds.length) return found;
   const { results } = await env.DB.prepare(
     `SELECT p.run_id, p.account_id, CASE WHEN pa.name_hidden THEN ${fingerprint("pa")} ELSE p.name END AS name
-     FROM run_players p LEFT JOIN accounts pa ON pa.id = p.account_id
+     FROM run_players p JOIN accounts pa ON pa.id = p.account_id
      WHERE p.run_id IN (SELECT value FROM json_each(?)) ORDER BY p.run_id, p.seat`,
   )
     .bind(JSON.stringify(runIds))
-    .all<{ run_id: string; account_id: number | null; name: string }>();
-  const who = await players(env, [...new Set(results.flatMap((row) => (row.account_id === null ? [] : [row.account_id])))]);
+    .all<{ run_id: string; account_id: number; name: string }>();
+  const who = await players(env, results.map((row) => row.account_id));
   for (const row of results) {
-    const seat = row.account_id === null ? { player: null, name: null } : { player: who.get(row.account_id)!, name: row.name };
+    const player = who.get(row.account_id);
+    const seat = player ? { player, name: row.name } : { player: null, name: null };
     found.set(row.run_id, [...(found.get(row.run_id) ?? []), seat]);
   }
   return found;
@@ -149,9 +153,10 @@ interface BestRun {
   accepted_at: number;
 }
 
-// A run the boards rank: shown, a verified one (not retired: migrations/0005_retired.sql) and not a banned account's,
-// nor one a banned co-op partner played.
-const NOT_BANNED = `a.banned = 0 AND NOT ${anySeat("r", "pa.banned")}`;
+// SQL over runs `r` and their accounts `a`: not a banned account's run, nor one a banned co-op player (a deleted one
+// too) played. The boards, run pages and moderators' flags all keep to it.
+export const NOT_BANNED = `a.banned = 0 AND NOT ${anySeat("r", "pa.banned")}`;
+// A run the boards rank: shown, a verified one (not retired: migrations/0005_retired.sql) and not banned.
 const RANKED_RUN = `r.hidden = 0 AND r.retired IS NULL AND ${NOT_BANNED}`;
 // The ranked runs `r` of a board in a category, with their accounts `a`; binds the board, quest and category.
 const BOARD_RUNS = `FROM runs r JOIN accounts a ON a.id = r.account_id

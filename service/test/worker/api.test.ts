@@ -1,6 +1,6 @@
 import { env, SELF } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { concat, COOP_RUN_DOMAIN, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256 } from "../../src/crypto";
+import { concat, COOP_RUN_DOMAIN, fromHex, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256 } from "../../src/crypto";
 import { confirmMerge } from "../../src/accounts";
 import { tokenHash } from "../../src/auth";
 import { decodeReplay, inflateReplay } from "../../src/replay";
@@ -17,6 +17,14 @@ class Player {
   static async create(): Promise<Player> {
     const key = (await crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"])) as CryptoKeyPair;
     return new Player(key, hex(new Uint8Array((await crypto.subtle.exportKey("raw", key.publicKey)) as ArrayBuffer)));
+  }
+
+  // The player whose key a co-op vector records for `seat` (service/scripts/vectors.py SEAT_SEEDS).
+  static async seated(seat: number): Promise<Player> {
+    // PKCS #8 for an Ed25519 key from its 32-byte seed (RFC 8410).
+    const pkcs8 = concat(Uint8Array.of(0x30, 0x2e, 0x02, 0x01, 0x00, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x04, 0x22, 0x04, 0x20), fromHex(vectors.coop_run.seat_seeds[seat]!, 32)!);
+    const privateKey = await crypto.subtle.importKey("pkcs8", pkcs8, { name: "Ed25519" }, false, ["sign"]);
+    return new Player({ privateKey } as CryptoKeyPair, vectors.coop_run.seat_keys[seat]!);
   }
 
   async sign(message: Uint8Array): Promise<string> {
@@ -595,9 +603,32 @@ describe("co-op runs", () => {
     (await env.DB.prepare("SELECT account_id FROM keys WHERE public_key = ?").bind(player.publicKey).first<{ account_id: number }>())!.account_id;
   const names = (row: { team: { name: string | null; player: { name: string | null } | null }[] | null }) =>
     row.team!.map((seat) => [seat.name, seat.player?.name ?? null]);
+  // The players whose keys the co-op vectors record, player one first.
+  const pair = async () => [await Player.seated(0), await Player.seated(1)] as const;
+  const refused = async (body: unknown) => {
+    const response = await post("/api/runs", body);
+    return [response.status, await reason(response)];
+  };
+  // A copy of the co-op run `id` under another id, score and seats, as if those players had played it.
+  const copyRun = (id: string, runId: string, score: number, seats: [number, string][]) => [
+    env.DB.prepare(
+      `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, client, client_version, platform,
+         pilot, ticks, result, signals, accepted_at)
+       SELECT ?, payload_sha256, ?, '', ?, board, quest, ?, game_version, client, client_version, platform, pilot, ticks, result, signals, accepted_at + 1
+       FROM runs WHERE id = ?`,
+    ).bind(runId, seats[0]![0], seats[0]![1], score, id),
+    ...seats.map(([account, name], seat) =>
+      env.DB.prepare("INSERT INTO run_players (run_id, seat, account_id, public_key, name) VALUES (?, ?, ?, '', ?)").bind(runId, seat, account, name),
+    ),
+  ];
+  const remove = async (player: Player) => {
+    const session = asSession(await signIn(player));
+    const { account } = (await (await session.get("/api/me")).json()) as { account: number };
+    expect((await session.post("/api/account/delete", { account })).status).toBe(200);
+  };
 
   it("a pair's run, signed by both, ranks on its own board under both names", async () => {
-    const [alice, bob] = [await Player.create(), await Player.create()];
+    const [alice, bob] = await pair();
     const response = await uploadPair(file, [alice, "alice"], [bob, "bob"]);
 
     expect(response.status).toBe(201);
@@ -623,15 +654,10 @@ describe("co-op runs", () => {
     expect((await SELF.fetch(`${ORIGIN}/runs/${run.id}.png`)).headers.get("content-type")).toBe("image/png");
 
     expect((await uploadPair(file, [alice, "alice"], [bob, "bob"])).status).toBe(409);
-    expect((await uploadPair(file, [bob, "bob"], [alice, "alice"])).status).toBe(409);
   });
 
-  it("a co-op run needs each player's signature for their own seat", async () => {
-    const [alice, bob, mallory] = [await Player.create(), await Player.create(), await Player.create()];
-    const refused = async (body: unknown) => {
-      const response = await post("/api/runs", body);
-      return [response.status, await reason(response)];
-    };
+  it("a co-op run needs each recorded seat key's signature for its own seat", async () => {
+    const [alice, bob] = await pair();
     const [a, b] = [await alice.signer(file, 0, "alice"), await bob.signer(file, 1, "bob")];
 
     expect(await refused({ replay: file, signers: [a] })).toEqual([422, "a 2-player run needs every player's signature, one for each seat"]);
@@ -639,38 +665,50 @@ describe("co-op runs", () => {
     expect([solo.status, await reason(solo)]).toEqual([422, "a 2-player run needs every player's signature, one for each seat"]);
     expect(await refused({ replay: file, signers: [a, { ...b, seat: 0 }] })).toEqual([422, "signers must take seats 0..1 once each"]);
     expect(await refused({ replay: file, signers: [a, await alice.signer(file, 1, "alice")] })).toEqual([422, "each player signs with a key of their own"]);
-    // Signatures bind their seats: swapping the seats, or signing another seat, does not verify.
-    expect((await refused({ replay: file, signers: [{ ...a, seat: 1 }, { ...b, seat: 0 }] }))[0]).toBe(401);
-    expect((await refused({ replay: file, signers: [a, await mallory.signer(file, 1, "bob", 0)] }))[0]).toBe(401);
-    // A one-player signature over the run does not stand for a seat.
+    // Each seat takes only the key the replay records for it, so the pair cannot swap seats.
+    expect(await refused({ replay: file, signers: [await bob.signer(file, 0, "bob"), await alice.signer(file, 1, "alice")] })).toEqual([
+      422, "seat 0 must be signed by the key the replay records for it",
+    ]);
+    // Signatures bind their seats: the right key signing another seat, or a one-player signature, does not verify.
+    expect((await refused({ replay: file, signers: [a, await bob.signer(file, 1, "bob", 0)] }))[0]).toBe(401);
     const payloadSha = await sha256(inflateReplay(decode64(file)));
     const plain = { ...b, signature: await bob.sign(concat(RUN_DOMAIN, payloadSha, new TextEncoder().encode("bob"))) };
     expect((await refused({ replay: file, signers: [a, plain] }))[0]).toBe(401);
+    // A co-op replay that records no keys cannot rank, whoever signs it.
+    const unkeyed = vectors.coop_run.unkeyed_quest_file;
+    expect(await refused({ replay: unkeyed, signers: [await alice.signer(unkeyed, 0, "alice"), await bob.signer(unkeyed, 1, "bob")] })).toEqual([
+      422, "a co-op run must record its players' keys (replay format 34)",
+    ]);
 
-    await uploadPair(vectors.ranked_run, [mallory, "mallory"]);
-    await env.DB.prepare("UPDATE keys SET banned = 1 WHERE public_key = ?").bind(mallory.publicKey).run();
-    expect(await refused({ replay: file, signers: [a, await mallory.signer(file, 1, "mallory")] })).toEqual([403, "this key is banned"]);
+    await bob.upload(vectors.ranked_run, "bob");
+    await env.DB.prepare("UPDATE keys SET banned = 1 WHERE public_key = ?").bind(bob.publicKey).run();
+    expect(await refused({ replay: file, signers: [a, b] })).toEqual([403, "this key is banned"]);
     expect(await env.DB.prepare("SELECT count(*) AS n FROM runs WHERE board = 'survival-coop'").first()).toEqual({ n: 0 });
   });
 
+  it("a partner cannot take the run alone by signing the other seat with a throwaway key", async () => {
+    const [alice, bob] = await pair();
+    const throwaway = await Player.create();
+    // bob holds the replay too: he signs player one's seat with a fresh key and his own seat with his.
+    const hijack = { replay: file, signers: [await throwaway.signer(file, 0, "alice"), await bob.signer(file, 1, "bob")] };
+    expect(await refused(hijack)).toEqual([422, "seat 0 must be signed by the key the replay records for it"]);
+    expect(await env.DB.prepare("SELECT count(*) AS n FROM runs").first()).toEqual({ n: 0 });
+
+    // The real pair's upload still lands.
+    const response = await uploadPair(file, [alice, "alice"], [bob, "bob"]);
+    expect(response.status).toBe(201);
+    const detail = await get<RunDetailView>(`/api/runs/${vectors.coop_run.run_id}`);
+    expect(detail.team!.map((seat) => seat.player!.id)).toEqual([await accountOf(alice), await accountOf(bob)]);
+  });
+
   it("the co-op board keeps each pair's best run, whichever seats they took", async () => {
-    const [alice, bob, carol] = [await Player.create(), await Player.create(), await Player.create()];
+    const [alice, bob] = await pair();
+    const carol = await Player.create();
     const { id } = (await (await uploadPair(file, [alice, "alice"], [bob, "bob"])).json()) as { id: string };
     await carol.upload(vectors.ranked_run, "carol");
     const [a, b, c] = [await accountOf(alice), await accountOf(bob), await accountOf(carol)];
     // The same pair seated the other way round, scoring more, and alice with carol, scoring less.
-    const copy = async (runId: string, score: number, seats: [number, string][]) => {
-      await env.DB.prepare(
-        `INSERT INTO runs (id, payload_sha256, account_id, public_key, name, board, quest, score, game_version, client, client_version, platform,
-           pilot, ticks, result, signals, accepted_at)
-         SELECT ?, payload_sha256, ?, '', ?, board, quest, ?, game_version, client, client_version, platform, pilot, ticks, result, signals, accepted_at + 1
-         FROM runs WHERE id = ?`,
-      ).bind(runId, seats[0]![0], seats[0]![1], score, id).run();
-      for (const [seat, [account, name]] of seats.entries())
-        await env.DB.prepare("INSERT INTO run_players (run_id, seat, account_id, public_key, name) VALUES (?, ?, ?, '', ?)").bind(runId, seat, account, name).run();
-    };
-    await copy("b".repeat(64), 5000, [[b, "bob"], [a, "alice"]]);
-    await copy("c".repeat(64), 10, [[a, "alice"], [c, "carol"]]);
+    await env.DB.batch([...copyRun(id, "b".repeat(64), 5000, [[b, "bob"], [a, "alice"]]), ...copyRun(id, "c".repeat(64), 10, [[a, "alice"], [c, "carol"]])]);
 
     const board = await get<BoardView>("/api/survival/coop");
     expect(board.rows.map((row) => [row.run, row.rank])).toEqual([["b".repeat(64), 1], ["c".repeat(64), 2]]);
@@ -687,17 +725,37 @@ describe("co-op runs", () => {
     expect((await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).status).toBe(404);
   });
 
-  it("a player who deletes their account leaves a shared run to their partner, their seat emptied", async () => {
-    const [alice, bob] = [await Player.create(), await Player.create()];
+  it("a board of many pairs lists them all", async () => {
+    const [alice, bob] = await pair();
     const { id } = (await (await uploadPair(file, [alice, "alice"], [bob, "bob"])).json()) as { id: string };
-    const bobAccount = await accountOf(bob);
-    const remove = async (player: Player) => {
-      const session = asSession(await signIn(player));
-      const { account } = (await (await session.get("/api/me")).json()) as { account: number };
-      expect((await session.post("/api/account/delete", { account })).status).toBe(200);
-    };
+    // 70 more pairs, 140 accounts: more than D1 binds in one statement.
+    const pairs = 70;
+    const now = Date.now();
+    await env.DB.batch(
+      Array.from({ length: pairs * 2 }, (_, i) =>
+        env.DB.prepare("INSERT INTO accounts (id, created_at, name) VALUES (?, ?, ?)").bind(1000 + i, now, `p${i}`),
+      ),
+    );
+    await env.DB.batch(
+      Array.from({ length: pairs }, (_, i) =>
+        copyRun(id, i.toString(16).padStart(64, "0"), 2000 + i, [[1000 + 2 * i, `p${2 * i}`], [1000 + 2 * i + 1, `p${2 * i + 1}`]]),
+      ).flat(),
+    );
 
-    // Player one leaves: the run lists under bob, player one's seat without a name.
+    const board = await get<BoardView>("/api/survival/coop");
+    expect(board.rows).toHaveLength(pairs + 1);
+    expect(board.rows[0]!.team!.map((seat) => seat.player!.name)).toEqual([`p${2 * (pairs - 1)}`, `p${2 * pairs - 1}`]);
+    const { scores } = (await (await post("/api/scores", { board: "survival-coop", quest: "" })).json()) as { scores: GameScore[] };
+    expect(scores).toHaveLength(pairs + 1);
+    expect(scores[0]!.names).toEqual([`p${2 * (pairs - 1)}`, `p${2 * pairs - 1}`]);
+  });
+
+  it("a player who deletes their account leaves a shared run to their partner, their seat a deleted player", async () => {
+    const [alice, bob] = await pair();
+    const { id } = (await (await uploadPair(file, [alice, "alice"], [bob, "bob"])).json()) as { id: string };
+    const [aliceAccount, bobAccount] = [await accountOf(alice), await accountOf(bob)];
+
+    // Player one leaves: the run lists under bob, player one's seat a deleted player.
     await remove(alice);
     const detail = await get<RunDetailView>(`/api/runs/${id}`);
     expect([detail.player.id, detail.team!.map((seat) => [seat.player?.id ?? null, seat.name])]).toEqual([bobAccount, [[null, null], [bobAccount, "bob"]]]);
@@ -705,18 +763,67 @@ describe("co-op runs", () => {
     expect((await get<ProfileView>(`/api/players/${bobAccount}`)).runs.map((run) => run.id)).toEqual([id]);
     const { scores } = (await (await post("/api/scores", { board: "survival-coop", quest: "" })).json()) as { scores: GameScore[] };
     expect(scores[0]!.name).toBe("? & bob");
-    expect(await env.DB.prepare("SELECT account_id, public_key, name FROM run_players WHERE seat = 0").first()).toEqual({ account_id: null, public_key: "", name: "" });
+    // The seat keeps a bare account, with no name, key, link or session, and no profile.
+    expect(await env.DB.prepare("SELECT account_id, public_key, name FROM run_players WHERE seat = 0").first()).toEqual({ account_id: aliceAccount, public_key: "", name: "" });
+    expect(await env.DB.prepare("SELECT name, deleted_at IS NOT NULL AS deleted FROM accounts WHERE id = ?").bind(aliceAccount).first()).toEqual({ name: "", deleted: 1 });
+    for (const table of ["keys", "names", "links", "sessions"])
+      expect(await env.DB.prepare(`SELECT count(*) AS n FROM ${table} WHERE account_id = ?`).bind(aliceAccount).first()).toEqual({ n: 0 });
+    expect((await SELF.fetch(`${ORIGIN}/api/players/${aliceAccount}`)).status).toBe(404);
     expect(await env.REPLAYS.head(`runs/${id}.crd`)).not.toBeNull();
 
-    // The last player on it takes it along.
+    // The last player on it takes it along, and the bare account goes with its last run.
     await remove(bob);
     expect((await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).status).toBe(404);
     expect(await env.DB.prepare("SELECT count(*) AS n FROM run_players").first()).toEqual({ n: 0 });
+    expect(await env.DB.prepare("SELECT count(*) AS n FROM accounts").first()).toEqual({ n: 0 });
     expect((await env.REPLAYS.list()).objects).toEqual([]);
   });
 
+  it("a deleted player's seat keeps their moderation and their team", async () => {
+    const [alice, bob] = await pair();
+    const carol = await Player.create();
+    const { id } = (await (await uploadPair(file, [alice, "alice"], [bob, "bob"])).json()) as { id: string };
+    await carol.upload(vectors.ranked_run, "carol");
+    const [a, b, c] = [await accountOf(alice), await accountOf(bob), await accountOf(carol)];
+    // bob also played with carol, scoring less.
+    await env.DB.batch(copyRun(id, "c".repeat(64), 10, [[b, "bob"], [c, "carol"]]));
+
+    // Both of bob's partners delete their accounts: he keeps two runs with two different deleted players.
+    await remove(alice);
+    await remove(carol);
+    const board = await get<BoardView>("/api/survival/coop");
+    expect(board.rows.map((row) => [row.run, row.team!.map((seat) => seat.player?.id ?? null)])).toEqual([
+      [id, [null, b]],
+      ["c".repeat(64), [b, null]],
+    ]);
+
+    // A ban or bot mark on a deleted player still applies to the runs they played.
+    await env.DB.prepare("UPDATE accounts SET bot = 1 WHERE id = ?").bind(c).run();
+    expect((await get<BoardView>("/api/survival/coop?category=bot")).rows.map((row) => row.run)).toEqual(["c".repeat(64)]);
+    await env.DB.prepare("UPDATE accounts SET banned = 1 WHERE id = ?").bind(a).run();
+    expect((await get<BoardView>("/api/survival/coop")).rows).toEqual([]);
+    expect((await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).status).toBe(404);
+  });
+
+  it("a banned player's flagged co-op run leaves the moderators' flags, whichever seat they took", async () => {
+    const [alice, bob] = await pair();
+    const { id } = (await (await uploadPair(file, [alice, "alice"], [bob, "bob"])).json()) as { id: string };
+    const moderator = await Player.create();
+    const session = asSession(await signIn(moderator));
+    const { account } = (await (await session.get("/api/me")).json()) as { account: number };
+    await env.DB.prepare("UPDATE accounts SET role = 'mod' WHERE id = ?").bind(account).run();
+    const signals = JSON.parse((await env.DB.prepare("SELECT signals FROM runs WHERE id = ?").bind(id).first<{ signals: string }>())!.signals);
+    await env.DB.prepare("UPDATE runs SET signals = ?").bind(JSON.stringify({ ...signals, aim_on_creature: 0.3 })).run();
+    const flagged = async () => ((await (await session.get("/api/mod/flags")).json()) as { runs: { id: string }[] }).runs.map((run) => run.id);
+
+    expect(await flagged()).toEqual([id]);
+    await env.DB.prepare("UPDATE accounts SET banned = 1 WHERE id = ?").bind(await accountOf(bob)).run();
+    expect(await flagged()).toEqual([]);
+  });
+
   it("joining accounts moves a co-op seat along", async () => {
-    const [alice, bob, alt] = [await Player.create(), await Player.create(), await Player.create()];
+    const [alice, bob] = await pair();
+    const alt = await Player.create();
     const { id } = (await (await uploadPair(file, [alice, "alice"], [bob, "bob"])).json()) as { id: string };
     await alt.upload(vectors.ranked_run, "bobby");
     const [from, into] = [await accountOf(bob), await accountOf(alt)];

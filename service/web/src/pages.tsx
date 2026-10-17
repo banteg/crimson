@@ -674,8 +674,8 @@ function AccountControls(props: { profile: ProfileView; nav: Navigator }) {
       </p>
       <h3>Delete account</h3>
       <p class="muted">
-        Removes your runs and their replay files, names, links, keys and sessions. A co-op run stays your partner's, without your name. The
-        game keeps its key, so playing ranked again starts a new account.
+        Removes your runs and their replay files, names, links, keys and sessions. A co-op run stays your partner's, showing you as a
+        deleted player. The game keeps its key, so playing ranked again starts a new account.
       </p>
       <p>
         <GameButton
@@ -1160,8 +1160,9 @@ const PRIVACY: Screen = {
         <h3>How long, and deleting it</h3>
         <p>
           Everything above stays until you delete your account; expired sessions, links and challenges are removed. Your profile's{" "}
-          <em>Delete account</em> button removes your runs and their replay files, names, links, keys and sessions at once (a co-op run
-          stays your partner's, without your name), and{" "}
+          <em>Delete account</em> button removes your runs and their replay files, names, links, keys and sessions at once. A co-op run
+          stays your partner's and shows you as a deleted player: until its last such run is gone, your account remains as a bare record
+          with no name, key or link, only a number that keeps your partner's teams apart and any moderation decision on it.{" "}
           <em>Unlink</em> removes a linked account. Signing in again from the game starts a new account. For anything else,{" "}
           <a href="https://github.com/banteg/crimson/issues">open an issue</a>.
         </p>

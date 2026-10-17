@@ -4,7 +4,7 @@ import type { AccountModeration, Category, FlaggedRun, FlagsView, ModerationActi
 import type { Env } from "./http";
 import { signalsFor } from "./runs";
 import { flagged, type Signals } from "./signals";
-import { accountRun, players, runCategory, seats } from "./views";
+import { accountRun, NOT_BANNED, players, runCategory, seats } from "./views";
 
 const FLAGS_LIMIT = 100;
 const LOG_LIMIT = 100;
@@ -51,7 +51,7 @@ export async function accountModeration(env: Env, accountId: number): Promise<Ac
 export async function flagsView(env: Env): Promise<FlagsView> {
   const { results } = await env.DB.prepare(
     `SELECT r.id, r.account_id, r.board, r.quest, r.score, r.accepted_at, r.signals FROM runs r JOIN accounts a ON a.id = r.account_id
-     WHERE r.hidden = 0 AND a.banned = 0 AND r.signals IS NOT NULL AND ${runCategory("r")} = 'human' ORDER BY r.accepted_at DESC`,
+     WHERE r.hidden = 0 AND ${NOT_BANNED} AND r.signals IS NOT NULL AND ${runCategory("r")} = 'human' ORDER BY r.accepted_at DESC`,
   ).all<Omit<FlaggedRun, "player" | "team" | "signals" | "flagged"> & { account_id: number; signals: string }>();
   const runs = results
     .map((run) => ({ run, signals: JSON.parse(run.signals) as Signals }))

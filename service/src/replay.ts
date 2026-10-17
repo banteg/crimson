@@ -6,15 +6,17 @@
 import { decompress } from "fzstd";
 import { F64, Head, MapValue, PayloadError, Reader, type Value } from "./msgpack";
 
-export const REPLAY_FORMAT_VERSION = 33;
+export const REPLAY_FORMAT_VERSION = 34;
 // Each readable format's keys, in order. Format 30 had no `rules`, so its replays play under rules 1; formats before
-// 32 had no `pilot`, so their runs declare none; format 33 adds `run.custom_quest` (RUN_KEYS).
-type ReplayKey = "format_version" | "game_version" | "rules" | "recorder" | "pilot" | "run" | "result" | "ticks";
+// 32 had no `pilot`, so their runs declare none; format 33 adds `run.custom_quest` (RUN_KEYS); formats before 34 had
+// no `seat_keys`, so their runs name no seat's key.
+type ReplayKey = "format_version" | "game_version" | "rules" | "recorder" | "pilot" | "seat_keys" | "run" | "result" | "ticks";
 const REPLAY_KEYS: Record<number, readonly ReplayKey[]> = {
   30: ["format_version", "game_version", "recorder", "run", "result", "ticks"],
   31: ["format_version", "game_version", "rules", "recorder", "run", "result", "ticks"],
   32: ["format_version", "game_version", "rules", "recorder", "pilot", "run", "result", "ticks"],
   33: ["format_version", "game_version", "rules", "recorder", "pilot", "run", "result", "ticks"],
+  34: ["format_version", "game_version", "rules", "recorder", "pilot", "seat_keys", "run", "result", "ticks"],
 };
 const RUN_KEYS = [
   "game_mode_id", "seed", "quest_level", "player_count", "hardcore", "preserve_bugs", "quest_fail_retry_count",
@@ -22,6 +24,8 @@ const RUN_KEYS = [
   "typo_highscore_names", "typo_carry",
 ] as const;
 const V30_RULES = 1;
+// An Ed25519 public key's bytes (src/crimson/replay/types.py SEAT_KEY_BYTES).
+export const SEAT_KEY_BYTES = 32;
 // The simulation rules this service verifies (src/crimson/replay/types.py REPLAY_RULES).
 export const REPLAY_RULES = 1;
 const MAX_FILE_BYTES = 65 * 1024 * 1024;
@@ -185,6 +189,9 @@ export interface Replay {
   rules: number;
   recorder: Recorder;
   pilot: Pilot | null;
+  // Each seat's Ed25519 public key, player one first, which the run's signatures must come from
+  // (docs/rewrite/leaderboard-identity.md, "Co-op runs"); null when the replay names none.
+  seat_keys: Uint8Array[] | null;
   run: RunSpec;
   result: RunResult;
   ticks: Ticks;
@@ -285,6 +292,7 @@ class Schema {
       rules: format_version === 30 ? V30_RULES : this.int(fields.rules!, "rules"),
       recorder: this.recorder(fields.recorder!),
       pilot: format_version < 32 || fields.pilot === null ? null : this.pilot(fields.pilot!),
+      seat_keys: format_version < 34 || fields.seat_keys === null ? null : this.seatKeys(fields.seat_keys!),
       run: run!,
       result: this.result(fields.result!),
       ticks: ticks!,
@@ -347,6 +355,13 @@ class Schema {
   private pilot(value: Value): Pilot {
     const f = this.fields(value, "pilot", ["name", "model", "url"]);
     return { name: this.str(f.name, "pilot.name"), model: this.str(f.model, "pilot.model"), url: this.str(f.url, "pilot.url") };
+  }
+
+  private seatKeys(value: Value): Uint8Array[] {
+    return this.array(value, "seat_keys").map((key, i) => {
+      require(key instanceof Uint8Array, `seat_keys[${i}] must be bytes`);
+      return key;
+    });
   }
 
   private spawnEntries(value: Value, field: string): SpawnEntry[] {
@@ -679,6 +694,12 @@ export function validateReplay(replay: Replay): void {
     );
   }
   const run = replay.run;
+  if (replay.seat_keys !== null) {
+    const keys = replay.seat_keys;
+    require(keys.length === run.player_count, `seat_keys has ${keys.length} entries, expected ${run.player_count}`);
+    keys.forEach((key, i) => require(key.length === SEAT_KEY_BYTES, `seat_keys[${i}] must be ${SEAT_KEY_BYTES} bytes`));
+    require(new Set(keys.map((key) => key.join())).size === keys.length, "seat_keys must be distinct");
+  }
   const mode = run.game_mode_id;
   require(REPLAY_MODES.has(mode), `run.game_mode_id ${mode} is not a replayable mode`);
   requireInt(run.seed, 0, U32_MAX, "run.seed");
