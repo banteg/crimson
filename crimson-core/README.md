@@ -178,9 +178,10 @@ The game module's co-op engine ([`host/coop.inc`](host/coop.inc)) plays every
 co-op bot stream with both players local, splitting its perk commands into the
 players' requests, and must match the plain run word for word. It then plays
 each again through forced rollbacks of up to 12 ticks, at lockstep and at
-several rollback windows, delays and frame budgets, and every confirmed tick
-must keep the state hash, terrain bake, terrain and music digests and raw state
-of the plain pass. Every byte of the run's state must be in the hash or in the
+several rollback windows (one narrowing as 15 minutes into a Survival run),
+delays and frame budgets, and every confirmed tick must keep the state hash,
+terrain bake, terrain and music digests and raw state of the plain pass, every
+frame showing the newest tick run. Every byte of the run's state must be in the hash or in the
 engine's list of what it leaves out. One co-op scenario fills the effect pool
 under the ranked rules, freeing overflow entries at their own times. With
 `--live <game directory>` a few streams also play inside the original (from a
@@ -217,10 +218,11 @@ Two originals boot from their own copies of a game directory and play co-op
 sessions through the live session ([`host/coop_live.inc`](host/coop_live.inc)),
 their messages carried over the rollback check's seeded pipe
 ([`checks/coop_link.mjs`](checks/coop_link.mjs)) with a stutter and a lost
-burst, at 60 Hz against 144 Hz. The two differ in all a player sets: sound and
+burst, at 60 Hz against 144 Hz, their runs rolling back (two ticks of input
+delay, up to eight predicted). The two differ in all a player sets: sound and
 music, in-game tunes, detail and gore, key bindings, mouse and keys against a
-pad, and saved progress; the original's own randomness is seeded by the
-frames' clock, so every run comes out the same. First a session opens while one
+pad, and saved progress; each machine's clock keeps to the pipe's time and
+seeds the original's own randomness, so every run comes out the same. First a session opens while one
 machine is in the tutorial, plays a local two-player quest and plays a quest
 alone: each plays out on its own save, stopping in the background, and the last
 keeps its name entry; a custom quest's link waits for the session's end, and its
@@ -236,15 +238,22 @@ again at the end screens (a Play Again of the last session starting nothing in
 the new one), as the screen fades to a run (which then starts none) and
 mid-run, a leave as the screen fades to the next
 run, a transport that closes before a name entry, a lost connection with the
-seats swapped (the window in the background stopping after it), quests from the
+seats swapped (the window in the background stopping after it), a Survival
+run under each of four network profiles (10 ms one way to 60 ± 20 ms with
+loss, one with bursts of lost packets) with a perk picked from either seat while
+the other predicts, pauses, a stall on either machine, the window narrowing, a
+leave and team wipes (then wipes until a correction revised one), quests from the
 Host's quest list through Play Next, the high scores' Play a game, Play Another
 (where a link to a replay waits for the session's end, through its runs), two
 quest keys and Play Again twice to a leave from the failed quest's screen, and
 a run both machines quit, which a session opening over that replay starts (no
 practice taking it over meanwhile). Every tick both machines confirm must have the
 same state hash and bake and terrain digests on both and from the engine
-replaying their records alone, both must save byte-identical replays that
-`crimson replay verify` accepts, every name must go to the two players' tables,
+replaying their records alone (and the Host's music that of its run played
+again without predictions), both must save byte-identical replays that
+`crimson replay verify` accepts, every frame must show the newest tick run and
+a perk or end screen only a confirmed one, two runs a stall set apart must come
+back together, every name must go to the two players' tables,
 the Host's menus must lose the session's unlocks when it ends, and neither
 player's settings or save may change, whatever saves them.
 

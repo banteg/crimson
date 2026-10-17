@@ -237,10 +237,15 @@ static void coop_to_menu() {
   game_state_set_recovered(GAME_STATE_MAIN_MENU);
 }
 
+// A co-op run's input delay and window (§1): this machine's records go two
+// ticks ahead of its run, which runs up to eight ticks past the last confirmed
+// one on predictions (fewer late in a long Survival run, host/coop.inc).
+static constexpr int COOP_RUN_DELAY = 2, COOP_RUN_RMAX = 8;
+
 // game_state_set brings the screen to gameplay for the run coop_enter_run
-// named: the Host starts it (START_RUN) with an input delay from the round
-// trip, lockstep; the Guest takes the Host's (START_ACK). The run records as the
-// client's runs do. False when it cannot start.
+// named: the Host starts it (START_RUN) with the run's input delay and window;
+// the Guest takes the Host's (START_ACK). The run records as the client's runs
+// do. False when it cannot start.
 static bool coop_start_run() {
   coop_live.entering = false;
   // A fade the last session began starts nothing in this one (coop_forget).
@@ -250,9 +255,7 @@ static bool coop_start_run() {
   double now = host_time_ms();
   bool started;
   if (wire.seat == 0) {
-    double rtt = wire.rtt >= 0 ? wire.rtt : COOP_RTT_GUESS_MS;
-    int delay = std::clamp((int)ceil(rtt / 2 / COOP_TICK_MS) + 1, 1, COOP_DELAY);
-    started = game_coop_request(COOP_ASK_START, delay, 0, coop_live.choice, now);
+    started = game_coop_request(COOP_ASK_START, COOP_RUN_DELAY, COOP_RUN_RMAX, coop_live.choice, now);
   } else {
     // The offer stands unless the Host cancelled it or either side left; a
     // config this machine cannot start is a protocol error.
@@ -297,9 +300,12 @@ static void coop_end(const char *outcome) {
   coop_live.ended = true;
 }
 // This machine leaves its run before the run's end (another screen, the game
-// quits): the partner is told, and the run ends where it was confirmed.
+// quits, a stopped run's Leave): the partner is told, and the run ends where it
+// was confirmed, the state its replay and score card read going back there from
+// any predictions past it.
 static void coop_quit() {
   game_coop_request(COOP_ASK_LEAVE, 0, 0, 0, host_time_ms());
+  coop_settle();
   coop_end("incomplete");
 }
 
@@ -432,11 +438,13 @@ static void coop_pick(int choice) {
   game_coop_produce(host_time_ms());
 }
 
-// game_live_frame for a co-op run: the presses, and the pass's play time. Every
-// pass draws.
+// game_live_frame for a co-op run: the presses, and the pass's play time, which
+// runs up to 2% fast or slow by how far the partner's run is ahead (§3.3): the
+// run ahead slows and the one behind catches up, so both predict about as deep.
+// Every pass draws.
 static int coop_frame() {
   live_poll();
-  coop_live.banked += fminf(grim_frame_dt, 0.1f);
+  coop_live.banked += fminf(grim_frame_dt, 0.1f) * std::clamp(1 + 0.01f * coop_ahead(), 0.98f, 1.02f);
   live.due = (int)(coop_live.banked * 60.0f + 1e-4f);
   return 1;
 }
@@ -520,17 +528,31 @@ static void coop_overlay_draw(float dt) {
     const char *why = coop_why();
     coop_draw_line(why ? why : "Leaving the run");
   } else if (!coop_ui.card && ((status & COOP_STARTING) || host_time_ms() - coop_live.ticked_at > 500)) {
-    // Half a second without a tick: lockstep waits for the partner's records.
+    // Half a second without a tick: the run waits for the partner's records.
     snprintf(line, sizeof line, "Waiting for Player %d", partner);
     coop_draw_line(line);
   }
 }
 
+// This machine's records up to the input delay ahead of its run, the pass's
+// input in each (its presses in the first).
+static void coop_produce(double now) {
+  for (;;) {
+    coop.scratch[coop.local].input = coop_sample(coop_live.unfocused);
+    if (game_coop_produce(now) < 0)
+      return;
+    live.fire_pressed = live.reload_pressed = false;
+  }
+}
+
 // gameplay_update_and_render for a co-op run: Escape and the perk requests go to
-// the session; this machine's records for the pass's ticks, then the ticks the
-// engine runs, the newest drawing; once the run reached its last tick, its end.
-// A tick that ran pays for its time, and a pass held back keeps at most a few
-// ticks' worth, so play resumes without a burst. The overlays go on top.
+// the session; this machine's records up to the input delay ahead (the first
+// cancels for a picker back from its perk screen without a choice), the ticks
+// the engine runs, the newest drawing, and the records those ticks made room
+// for, which the pass's ticks packet carries; once the run reached its last
+// tick, its end. A tick that ran pays for its time, and a pass held back keeps
+// at most a few ticks' worth, so play resumes without a burst. The overlays go
+// on top.
 static void coop_render() {
   double now = host_time_ms();
   // Escape pauses or resumes; a run stopped (a desync, an error) it leaves.
@@ -558,14 +580,12 @@ static void coop_render() {
     live.fire_down = live.fire_pressed = false;
   }
   int due = live.due;
-  for (int i = 0; i < due; ++i) {
-    coop.scratch[coop.local].input = coop_sample(coop_live.unfocused);
-    if (game_coop_produce(now) < 0)
-      break;
-    live.fire_pressed = live.reload_pressed = false;
-  }
+  coop_produce(now);
   int draws = coop.draws;
   int ran = game_coop_advance(due, now);
+  // A picker's next record is its choice, from the perk screen this pass opens.
+  if (!coop.picking)
+    coop_produce(now);
   if (ran)
     coop_live.ticked_at = host_time_ms();
   coop_live.banked -= ran / 60.0f;

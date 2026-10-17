@@ -11,7 +11,8 @@
 //    and gives each tick's state hash, bake digest, terrain and music digests and
 //    raw state;
 // 2. again, with forced rollbacks, at each window (lockstep, 1, 4, 8 and 12
-//    ticks), delay and frame budget (catch-up frames that run several ticks):
+//    ticks; a Survival stream's 8 narrowing to 4 halfway through, as past 15
+//    minutes), delay and frame budget (catch-up frames that run several ticks):
 //    every so often one player's record arrives up to 12 ticks late, the players
 //    taking turns, the ticks before it running on a stand-in (another record, the
 //    real one, or the engine's guess); the picker's choice of each perk menu comes
@@ -20,8 +21,9 @@
 //    played; the run goes back up to 12 ticks on its own, into each open perk
 //    menu, to each tick where the effect overflow's entries in use change, and
 //    every so often anywhere. Each tick, once confirmed, has the hash, bake,
-//    terrain and music digests and raw state of (1), and no tick ran on a record
-//    not yet real further past the last confirmed one than the window allows;
+//    terrain and music digests and raw state of (1), no tick ran on a record
+//    not yet real further past the last confirmed one than the window allows,
+//    and every frame shows the newest tick run;
 // 3. between two peers, each a module playing its own seat through the wire
 //    protocol (host/coop_wire.inc), over a simulated pipe with latency, jitter,
 //    loss, a burst of lost packets, a stutter and different frame rates: the
@@ -62,7 +64,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
-import { Link, prng } from "./coop_link.mjs";
+import { coopStats, Link, prng } from "./coop_link.mjs";
 import { CONFIG_BYTES, CORE, decode, field, init, INPUT_BYTES, names, record, state, step } from "./engine.mjs";
 import { loadGame } from "./game_compare.mjs";
 import { bootGame, sevenTunes } from "./game_host.mjs";
@@ -84,14 +86,18 @@ const ALTER = 29,
   LEAD = 12;
 // The windows, delays and frame budgets the rollbacks run at: the cap, lockstep, M2's windows (4 and 8) with
 // catch-up frames whose ticks run final behind held ones, and a window of one at a longer delay, whose catch-up
-// confirms held ticks with more of the run produced past them.
+// confirms held ticks with more of the run produced past them. With `late`, a Survival run's window of 8 narrows
+// halfway through it, as it does past 15 minutes (host/coop.inc COOP_LATE_MS).
 const MODES = [
   { delay: 2, rmax: 12, budget: 1 },
   { delay: 2, rmax: 0, budget: 1 },
   { delay: 2, rmax: 4, budget: 2 },
   { delay: 4, rmax: 1, budget: 6 },
-  { delay: 8, rmax: 8, budget: 4 },
+  { delay: 8, rmax: 8, budget: 4, late: true },
 ];
+const SURVIVAL = 1,
+  LATE_MS = 900000,
+  LATE_RMAX = 4;
 // Inside the original (--live), with seven in-game tunes loaded (game_host.mjs sevenTunes): streams with an
 // in-game tune, the quest's end tune and its volume, a game over's, Nukes whose blood waits for the next tick's
 // bake, and overflow decals; a window of 4 whose corrections follow played music, and catch-up frames.
@@ -101,39 +107,6 @@ const LIVE_MODES = [
   { delay: 4, rmax: 1, budget: 6 },
 ];
 const LIVE_COVERAGE = ["queued_commits", "unseen_bakes", "overflow_decal_holds"];
-// CoopStats, in order.
-const STATS = [
-  "ticks",
-  "resimulated",
-  "rollbacks",
-  "max_depth",
-  "stalls",
-  "guesses_one",
-  "guesses_two",
-  "mispredictions_one",
-  "mispredictions_two",
-  "picker_waits_one",
-  "picker_waits_two",
-  "guessed_lead",
-  "opens_one",
-  "opens_two",
-  "double_opens",
-  "dropped_opens",
-  "survivor_menus",
-  "extra_picks",
-  "overflow_rollbacks",
-  "overflow_free_rollbacks",
-  "overflow_decal_holds",
-  "queued_commits",
-  "unseen_bakes",
-  "slot_bytes",
-  "max_lead",
-  "checked",
-];
-const stats = (g) => {
-  const words = new Int32Array(g.memory.buffer, g.game_coop_stats(), STATS.length);
-  return Object.fromEntries(STATS.map((name, i) => [name, words[i]]));
-};
 // Counters the plain pass must reach somewhere in the corpus, and those the rollbacks must.
 const PLAIN_COVERAGE = ["opens_one", "opens_two", "double_opens", "dropped_opens", "survivor_menus", "extra_picks"];
 const ROLLBACK_COVERAGE = [
@@ -341,13 +314,15 @@ function oracle(g, run, cmd, ticks, look) {
     assert.equal(g.game_coop_produce(0), ticks);
   }
   assert.equal(g.game_coop_advance(1, 0), step(plain, neutral), "the engine and the plain run part at the end");
-  return { expected, shown, tunes, plainMs, soloMs, stats: stats(g) };
+  return { expected, shown, tunes, plainMs, soloMs, stats: coopStats(g) };
 }
 
 // (2): forced rollbacks, every confirmed tick against (1). Inside the original (`look`), what this machine
 // presented after each frame is what (1) presented by the same tick, and only unconfirmed ticks go back.
 function rollbacks(g, { run, cmd, ticks, opens, overflow, queued }, { expected, shown, tunes }, mode, look) {
   const solo = g;
+  const narrows = mode.late && run.config.readUInt32LE(4) === SURVIVAL;
+  solo.game_coop_late(narrows ? Math.floor((ticks * 1000) / 60 / 2) : LATE_MS);
   start(solo, run, cmd, mode);
   const random = prng(run.records.length + mode.delay * 31 + mode.rmax);
   const late = new Map(); // `${seat} ${tick}` -> the tick the engine reaches before that record arrives
@@ -364,6 +339,7 @@ function rollbacks(g, { run, cmd, ticks, opens, overflow, queued }, { expected, 
   const check = () => {
     const confirmed = solo.game_coop_confirmed();
     assert.ok(solo.game_coop_next() - (confirmed + 1) <= LEAD, "ran past the lead");
+    assert.equal(solo.game_coop_drawn(), solo.game_coop_next() - 1, "the frame shows a state taken back");
     for (let t = seen + 1; t <= confirmed; t++) {
       const actual = digests(solo, t);
       DIGESTS.forEach((name, i) => assert.equal(actual[i], expected[t][i], `tick ${t}: ${name}`));
@@ -445,8 +421,13 @@ function rollbacks(g, { run, cmd, ticks, opens, overflow, queued }, { expected, 
     }
   }
   assert.equal(solo.game_coop_next(), ticks);
-  const result = stats(solo);
+  const result = coopStats(solo);
   assert.ok(result.guessed_lead <= mode.rmax, `a tick ran on a guess ${result.guessed_lead} past the confirmed one`);
+  assert.equal(result.depths.reduce((a, b) => a + b), result.rollbacks, "rollbacks by depth");
+  if (narrows) {
+    assert.ok(result.late_ticks > 0, "no tick ran under the late window");
+    assert.ok(result.late_lead <= LATE_RMAX, `a tick ran on a guess ${result.late_lead} past the confirmed one, late`);
+  }
   return { ms: performance.now() - at, restores, menuRestores, stats: result };
 }
 
@@ -772,7 +753,7 @@ class Pipe extends Link {
       remote: q.g.game_coop_remote(),
       next: q.g.game_coop_next(),
       confirmed: q.g.game_coop_confirmed(),
-      checked: stats(q.g).checked,
+      checked: coopStats(q.g).checked,
     }));
   }
   // At `ms` from now, in one instant (both players pressing at once, say).
@@ -832,7 +813,7 @@ class Pipe extends Link {
   // Both ended on the same tick, every tick to it confirmed and checked, in the same state; `end` the last tick.
   ended(end) {
     const [a, b] = this.peers;
-    const compared = () => this.peers.every((p) => stats(p.g).checked === end + 1);
+    const compared = () => this.peers.every((p) => coopStats(p.g).checked === end + 1);
     this.until(compared, "every tick's hash compared", 2000);
     for (const p of this.peers) {
       const status = this.status(p);
@@ -840,20 +821,16 @@ class Pipe extends Link {
       assert.ok(clean, `seat ${p.seat}: status ${status.toString(16)}`);
       assert.equal(p.g.game_coop_next(), end + 1, `seat ${p.seat}: the last tick`);
       assert.equal(p.seen, end, `seat ${p.seat}: ticks checked`);
-      const result = stats(p.g);
+      const result = coopStats(p.g);
       const lead = result.guessed_lead;
       assert.ok(lead <= this.mode.rmax, `a tick ran on a guess ${lead} past the confirmed one`);
     }
     assert.ok(canonical(a.g).equals(canonical(b.g)), "the peers' states part at the end");
   }
   report(name, at) {
-    const [a, b] = this.peers.map((p) => stats(p.g));
+    const [a, b] = this.peers.map((p) => coopStats(p.g));
     const both = (n) => a[n] + b[n];
-    const wire = (s) => {
-      const words = new Int32Array(s.g.memory.buffer, s.g.game_coop_stats() + STATS.length * 4, WIRE.length);
-      return Object.fromEntries(WIRE.map((n, i) => [n, words[i]]));
-    };
-    const [wa, wb] = this.peers.map(wire);
+    const [wa, wb] = [a.wire, b.wire];
     // At most 60 ticks packets a second (one on connecting).
     for (const [p, w] of [
       [this.peers[0], wa],
@@ -885,9 +862,6 @@ class Pipe extends Link {
     };
   }
 }
-// CoopWireStats, after CoopStats (host/coop.inc).
-const WIRE = ["sent", "received", "lost", "stale", "repairs", "repaired", "rtt_ms"];
-
 // The whole stream between the peers.
 function pipe(stream, truth, mode, swap) {
   const at = performance.now();

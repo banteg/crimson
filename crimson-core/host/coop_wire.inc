@@ -374,6 +374,16 @@ static void coop_update(double now) {
     wire.closed = true;
 }
 
+// How many ticks the partner's run is ahead of this machine's (§3.3): the
+// newest record its ticks packets carried was produced the input delay ahead of
+// its run, half a round trip ago. None before its first packet of the run.
+static float coop_ahead() {
+  if (wire.peer_head < 0)
+    return 0;
+  double rtt = wire.rtt >= 0 ? wire.rtt : COOP_RTT_GUESS_MS;
+  return float(wire.peer_head - coop.delay - coop.next + rtt / 2 / COOP_TICK_MS);
+}
+
 // How long a record or hash that left waits for its acknowledgement before it
 // goes again: a round trip and two of the partner's packet intervals.
 static double coop_wait() { return (wire.rtt >= 0 ? wire.rtt : COOP_RTT_GUESS_MS) + 2 * wire.interval; }

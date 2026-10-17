@@ -69,6 +69,12 @@ enum { COOP_OPEN = 8 };
 // records may run ahead of the run; the most records a peer produces past the
 // last its partner acknowledged.
 static constexpr int COOP_RING = 256, COOP_SLOTS = 16, COOP_LEAD = 12, COOP_DELAY = 8, COOP_UNACKED = 120;
+// Late in a long Survival run, where ticks cost the most, the window a run may
+// predict narrows: past 15 minutes of the run, to 4 ticks.
+static constexpr int COOP_LATE_RMAX = 4, COOP_LATE_MS = 900000;
+// A frame's time running ticks, by the milliseconds each bucket holds up to:
+// under 1, 2, 4, 8, 16, and longer.
+static constexpr int COOP_FRAME_BUCKETS = 6;
 // A rollback reaches back at most to the first unconfirmed tick, and a held bake
 // waits only until its tick is confirmed: both stay within the lead.
 static_assert(COOP_LEAD < COOP_SLOTS, "a slot or held bake comes round again before its tick is confirmed");
@@ -105,6 +111,7 @@ struct CoopTick {
   uint32_t terrain, music;
   uint32_t state; // the raw state's digest after it, when kept (game_coop_states)
   bool held;      // its bake waits in bakes[] for its confirmation
+  uint8_t living; // which players live after it (bits 0 and 1)
 };
 // The state before a tick, which a rollback puts back.
 struct CoopSlot {
@@ -151,7 +158,7 @@ struct CoopDesync {
 struct CoopWireStats {
   int32_t sent, received, lost, stale, repairs, repaired, rtt_ms;
 };
-// Counters for the gate and the session's telemetry. checks/game_coop.mjs reads
+// Counters for the gate and the session's telemetry. checks/coop_link.mjs reads
 // them by position.
 struct CoopStats {
   int32_t ticks, resimulated, rollbacks, max_depth, stalls;
@@ -168,6 +175,19 @@ struct CoopStats {
   // The furthest past the last confirmed tick the run got.
   int32_t max_lead;
   int32_t checked; // ticks whose hash the peer's was compared with
+  // Rollbacks by how many ticks they took back (1 to COOP_LEAD).
+  int32_t depths[COOP_LEAD];
+  // Frames (game_coop_advance) by the time their ticks took (COOP_FRAME_BUCKETS),
+  // and the longest (ms); frames with ticks due that ran none, waiting for
+  // records, the window or the picker; the most ticks a frame ran again.
+  int32_t frame_ms[COOP_FRAME_BUCKETS], worst_frame_ms, stalled_frames, frame_resimulated;
+  // Ticks run under the late window, and the furthest past the last confirmed
+  // tick one of them ran on a record not yet real.
+  int32_t late_ticks, late_lead;
+  // Ticks run again that left the players living otherwise than their last run
+  // had: a death a correction took back or brought; and among them those that
+  // left nobody or somebody living otherwise, a team wipe.
+  int32_t revised_deaths, revised_wipes;
   CoopWireStats wire;
 };
 
@@ -196,6 +216,8 @@ static struct {
   bool quiet;   // the tick running ran before
   bool drawing; // the tick running draws
   int draws;    // ticks that drew
+  int drawn;    // the tick whose state the frame shows, -1 once a rollback took it back
+  int late_ms = COOP_LATE_MS; // the run time a Survival run's window narrows at
   bool states;  // keep each tick's raw state digest (checks/game_coop.mjs)
   int baking;   // the tick running, once it baked
   CoopScreen screen;
@@ -330,12 +352,13 @@ static int coop_words() {
   coop_put(telekinetic_bonus_hover_timer_ms[0]);
   coop_put(telekinetic_bonus_hover_timer_ms[1]);
   // The run's globals the snapshot leaves out that a tick reads
-  // (game_coop_audit): perk and weapon clocks, update counters, the players'
-  // cursors, the screen and menu flags the tick checks, where Survival's first
-  // kill fell, the effect template spawns copy, the late weapons' usage.
+  // (game_coop_audit): perk and weapon clocks, the last tick's time step (a
+  // pick reads it), update counters, the players' cursors, the screen and menu
+  // flags the tick checks, where Survival's first kill fell, the effect
+  // template spawns copy, the late weapons' usage.
   for (float f : {perk_lean_mean_exp_tick_timer_s, perk_fire_cough_trigger_interval_s,
                   perk_hot_tempered_trigger_interval_s, perk_man_bomb_trigger_interval_s, player_heading_turn_delta,
-                  player_spread_damping_gate, player_spread_damping_scalar})
+                  player_spread_damping_gate, player_spread_damping_scalar, frame_dt})
     coop_put_float(f);
   for (int i : {creature_update_tick, projectile_update_tick, current_player_index, player_alt_weapon_swap_cooldown_ms,
                 quest_fail_retry_count, quest_stage_major, quest_stage_minor, demo_time_limit_ms, demo_trial_elapsed_ms})
@@ -448,10 +471,10 @@ static const CoopBytes COOP_UNHASHED[] = {
     COOP_GLOBAL(player_overlay_auto_target_line_perk_id), COOP_GLOBAL(s_unhandled_creature_type),
     {(const uint8_t *)&weapon_table - 4, 4, 0, 1}, COOP_GLOBAL(grim_interface_ptr),
     // What a run start or the host sets before a tick reads it, or nothing in a
-    // tick reads: the time step (portable_step_many), the screen every co-op
-    // tick runs on (GAMEPLAY), and globals run start writes for nothing or for
-    // the tutorial alone.
-    COOP_GLOBAL(frame_dt), COOP_GLOBAL(frame_dt_ms), COOP_GLOBAL(game_state_id), COOP_GLOBAL(creature_type_count),
+    // tick reads: the time step in milliseconds (portable_step_many), the
+    // screen every co-op tick runs on (GAMEPLAY), and globals run start writes
+    // for nothing or for the tutorial alone.
+    COOP_GLOBAL(frame_dt_ms), COOP_GLOBAL(game_state_id), COOP_GLOBAL(creature_type_count),
     COOP_GLOBAL(effect_defaults_reserved_zero), COOP_GLOBAL(effect_pool_reserved_zero),
     COOP_GLOBAL(gameplay_reset_unused_timer), COOP_GLOBAL(gameplay_run_reserved_zero),
     COOP_GLOBAL(player_reset_reserved_zero), COOP_GLOBAL(survival_reward_handout_aux_enabled),
@@ -503,6 +526,13 @@ static bool coop_bake() {
   if (!coop.running)
     return false;
   int t = (int)tick;
+  // A tick drawn again (coop_redraw) whose bake reached the terrain the first
+  // time: the queues go as the bake takes them.
+  if (t <= coop.baked) {
+    fx_queue_count = fx_queue_rotated = game_effect_overflow.decal_count = 0;
+    coop.baking = t;
+    return true;
+  }
   CoopBake &bake = coop.bakes[t & (COOP_SLOTS - 1)];
   // A held bake reaches the terrain before its slot comes round again.
   if (bake.epoch == coop.epoch && bake.tick > coop.baked && bake.tick != t)
@@ -535,11 +565,13 @@ static bool coop_bake() {
 // A co-op tick's music call keeps its simulation effect (host.cpp's
 // music_play_exclusive, and music_fade_out_all's latch below); what it plays,
 // fades or turns down waits for the tick's confirmation, in order: this
-// machine's music is never undone. True when it waits.
+// machine's music is never undone, and a tick drawn again (coop_redraw) after
+// its music played plays none. True when it waits.
 static bool coop_defer(CoopTuneKind kind, int track, float volume) {
   if (!coop.running)
     return false;
-  coop.tunes.push_back({(int)tick, kind, track, volume});
+  if ((int)tick > coop.played)
+    coop.tunes.push_back({(int)tick, kind, track, volume});
   return true;
 }
 extern "C" void music_fade_out_all_recovered(int sfx_id);
@@ -618,6 +650,14 @@ static bool coop_perk_valid() {
   return cfg.mode != GAME_MODE_RUSH && any_player_alive() && perk_pending_count > 0;
 }
 
+// How far past the last confirmed tick the next tick may run on predictions:
+// the run's window, narrowed late in a long Survival run. It bounds only this
+// machine's speculation: each peer narrows its own.
+static int coop_window() {
+  bool late = cfg.mode == GAME_MODE_SURVIVAL && (int)run_elapsed_ms > coop.late_ms;
+  return late ? std::min(coop.rmax, COOP_LATE_RMAX) : coop.rmax;
+}
+
 // The choices the open perk menu offers, as portable_step_many counts them.
 static int coop_offered() {
   return player_state_table[0].perk_counts[PERK_ID_PERK_MASTER] > 0   ? 7
@@ -672,14 +712,12 @@ static void coop_capture(int t) {
 
 // The run goes back to the state before tick `t`, which runs next. This
 // machine's screen, cursor, settings and music stay; nothing draws gameplay RNG;
-// the music ticks from `t` on queued is dropped.
-static void coop_restore(int t) {
+// the music ticks from `t` on queued is dropped, and a frame showing a state it
+// took back shows none.
+static void coop_rewind(int t) {
   const CoopSlot &slot = coop.slots[t & (COOP_SLOTS - 1)];
   if (slot.epoch != coop.epoch || slot.tick != t || game_state_id != GAME_STATE_GAMEPLAY)
     abort();
-  bool overflow = game_effect_overflow.active > 0, freed = game_effect_overflow.free != nullptr;
-  for (int s = t; s < coop.next; ++s)
-    freed |= coop.slots[s & (COOP_SLOTS - 1)].overflow_free;
   CoopScreen screen = coop_screen();
   LiveSettings outside;
   if (game_live)
@@ -689,16 +727,33 @@ static void coop_restore(int t) {
   coop_screen_install(screen);
   if (game_live)
     live_install(outside);
-  ++coop.stats.rollbacks;
-  coop.stats.max_depth = std::max(coop.stats.max_depth, coop.next - t);
-  coop.stats.overflow_rollbacks += overflow || game_effect_overflow.active > 0;
-  coop.stats.overflow_free_rollbacks += freed;
   auto dropped =
       std::find_if(coop.tunes.begin(), coop.tunes.end(), [&](const CoopTune &tune) { return tune.tick >= t; });
   coop.tunes.erase(dropped, coop.tunes.end());
   for (int s = t; s < coop.next; ++s)
     coop.ticks[s & (COOP_RING - 1)].tick = -1;
+  if (coop.drawn >= t)
+    coop.drawn = -1;
   coop.next = t;
+}
+// A rollback to the state before tick `t`.
+static void coop_restore(int t) {
+  bool overflow = game_effect_overflow.active > 0, freed = game_effect_overflow.free != nullptr;
+  for (int s = t; s < coop.next; ++s)
+    freed |= coop.slots[s & (COOP_SLOTS - 1)].overflow_free;
+  ++coop.stats.rollbacks;
+  ++coop.stats.depths[coop.next - t - 1];
+  coop.stats.max_depth = std::max(coop.stats.max_depth, coop.next - t);
+  coop_rewind(t);
+  coop.stats.overflow_rollbacks += overflow || game_effect_overflow.active > 0;
+  coop.stats.overflow_free_rollbacks += freed;
+}
+
+// The run goes back to the state after its last confirmed tick, which its
+// recording ends on, from any it ran past it on predictions.
+static void coop_settle() {
+  if (coop.next - 1 > coop.confirmed)
+    coop_rewind(coop.confirmed + 1);
 }
 
 // One tick, from the state before it: `quiet` when it ran before, `draw` for
@@ -708,14 +763,24 @@ static void coop_tick(int t, bool quiet, bool draw) {
   CoopInput used[2] = {coop_record(0, t, guessed[0]), coop_record(1, t, guessed[1])};
   for (int seat = 0; seat < 2; ++seat)
     coop.stats.guesses[seat] += guessed[seat];
-  if (guessed[0] || guessed[1])
+  bool late = coop_window() < coop.rmax;
+  coop.stats.late_ticks += late;
+  if (guessed[0] || guessed[1]) {
     coop.stats.guessed_lead = std::max(coop.stats.guessed_lead, t - coop.confirmed);
+    if (late)
+      coop.stats.late_lead = std::max(coop.stats.late_lead, t - coop.confirmed);
+  }
   CoopRun run;
   if (game_paused_flag)
     abort();
   coop_capture(t);
+  // A tick that ran before left who lived after it there, and one drawn again
+  // (coop_redraw) its bake and music, which it presented the first time.
   CoopTick &entry = coop.ticks[t & (COOP_RING - 1)];
-  entry = {t, {used[0], used[1]}, 0, {}, -1, 0, 0, 0, 0, 0, guessed[0] || guessed[1] || coop.baked != t - 1};
+  const CoopTick before = entry;
+  bool baked = t <= coop.baked, played = t <= coop.played;
+  bool held = !baked && (guessed[0] || guessed[1] || coop.baked != t - 1);
+  entry = {t, {used[0], used[1]}, 0, {}, -1, 0, 0, 0, 0, 0, held, 0};
   in[0] = used[0].input;
   in[1] = used[1].input;
   entry.commands = coop_command(used);
@@ -740,6 +805,19 @@ static void coop_tick(int t, bool quiet, bool draw) {
     abort();
   if (!perk_menu_open)
     perk_picker = -1;
+  if (baked) {
+    entry.bake = before.bake;
+    entry.terrain = before.terrain;
+  }
+  if (played)
+    entry.music = before.music;
+  entry.living = (uint8_t)((player_state_table[0].health > 0) | (player_state_table[1].health > 0) << 1);
+  if (quiet) {
+    coop.stats.revised_deaths += entry.living != before.living;
+    coop.stats.revised_wipes += !entry.living != !before.living;
+  }
+  if (draw)
+    coop.drawn = t;
   entry.hash = coop_digest(output, coop_words() * 4);
   if (coop.states) {
     // Less what a restore keeps of this machine's (run_restore).
@@ -753,6 +831,17 @@ static void coop_tick(int t, bool quiet, bool draw) {
   }
   coop.heard = std::max(coop.heard, t);
   coop.next = t + 1;
+}
+
+// The frame's newest tick drew nothing: the run stopped sooner than the frame's
+// ticks were counted (its end, a perk menu waiting for its picker), or went back
+// past an end the peers agreed on. It runs again, quiet, and draws, so the frame
+// shows no state a rollback took back. What it presented stays as it was.
+static void coop_redraw() {
+  int t = coop.next - 1;
+  coop_rewind(t);
+  coop_tick(t, true, true);
+  ++coop.stats.resimulated;
 }
 
 // This machine's kept hash of a confirmed tick from `hashes_from` on.
@@ -943,7 +1032,7 @@ __attribute__((export_name("game_coop_start"))) int game_coop_start(int local, i
   coop.end = COOP_NO_END;
   coop.asked = coop.picking = false;
   coop.request = -1;
-  coop.confirmed = coop.baked = coop.played = coop.heard = -1;
+  coop.confirmed = coop.baked = coop.played = coop.heard = coop.drawn = -1;
   coop.next = 0;
   coop.terrain = coop.music = 0;
   for (int t = 0; t < delay; ++t)
@@ -1016,26 +1105,28 @@ __attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budg
   if (!coop.active || (coop.hold & (COOP_HOLD_START | COOP_HOLD_STOP)) || game_state_id != GAME_STATE_GAMEPLAY ||
       game_state_pending != GAME_STATE_PENDING_IDLE_SENTINEL)
     return 0;
+  unsigned start = host_time_ms();
   // Predictions ran past the agreed end: back to the state after it.
   if (coop.next - 1 > coop.end)
     coop_restore(coop.end + 1);
   coop_correct();
   coop_confirm();
   coop_commit();
-  // The newest tick the records, the lead and the budget let run, final ticks
-  // confirming on the way: it alone draws. A menu or the run's end stopping
-  // sooner leaves the frame undrawn.
+  // The newest tick the records, the window and the budget let run, final
+  // ticks confirming on the way: it alone draws. A menu or the run's end
+  // stopping sooner draws the tick it stopped at again (coop_redraw).
   int last = std::min({coop.produced, coop.heard + budget, coop.end});
   for (int t = coop.next, confirmed = coop.confirmed; t <= last; ++t) {
     int lead = t - (confirmed + 1);
-    if (lead >= COOP_LEAD || (!coop_final(t) && lead >= coop.rmax)) {
+    if (lead >= COOP_LEAD || (!coop_final(t) && lead >= coop_window())) {
       last = t - 1;
       break;
     }
     if (confirmed == t - 1 && coop_final(t))
       confirmed = t;
   }
-  int fresh = 0;
+  int fresh = 0, again = 0;
+  bool stalled = false;
   for (;;) {
     int t = coop.next, lead = t - (coop.confirmed + 1);
     bool quiet = t <= coop.heard;
@@ -1043,21 +1134,28 @@ __attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budg
       break;
     if (run_down_ms < 0 || t > coop.end || (coop.hold & COOP_HOLD_STOP))
       break;
-    if (t > coop.produced || lead >= COOP_LEAD || (!coop_final(t) && lead >= coop.rmax)) {
+    if (t > coop.produced || lead >= COOP_LEAD || (!coop_final(t) && lead >= coop_window())) {
       ++coop.stats.stalls;
+      stalled = true;
       break;
     }
     if (perk_menu_open && !coop_real(perk_picker, t)) {
       ++coop.stats.stalls;
       ++coop.stats.picker_waits[perk_picker];
+      stalled = true;
       break;
     }
     coop_tick(t, quiet, t == last);
     ++(quiet ? coop.stats.resimulated : coop.stats.ticks);
     fresh += !quiet;
+    again += quiet;
     coop_confirm();
     coop_commit();
     coop.stats.max_lead = std::max(coop.stats.max_lead, coop.next - (coop.confirmed + 1));
+  }
+  if (coop.next > 0 && coop.drawn != coop.next - 1) {
+    coop_redraw();
+    ++again;
   }
   // This machine's perk request, once its tick is confirmed (the state after it
   // is the one run, production having stopped there): its seat picks when its
@@ -1066,9 +1164,22 @@ __attribute__((export_name("game_coop_advance"))) int game_coop_advance(int budg
     coop.picking = perk_menu_open && perk_picker == coop.local;
     coop.request = -1;
   }
+  int ms = (int)(host_time_ms() - start), bucket = 0;
+  while (bucket < COOP_FRAME_BUCKETS - 1 && ms >= 1 << bucket)
+    ++bucket;
+  ++coop.stats.frame_ms[bucket];
+  coop.stats.worst_frame_ms = std::max(coop.stats.worst_frame_ms, ms);
+  coop.stats.stalled_frames += stalled && budget > 0 && !fresh;
+  coop.stats.frame_resimulated = std::max(coop.stats.frame_resimulated, again);
   return fresh;
 }
 __attribute__((export_name("game_coop_stats"))) uintptr_t game_coop_stats() { return (uintptr_t)&coop.stats; }
+// Test hook: the tick whose state the frame shows, -1 for none or one a rollback
+// took back.
+__attribute__((export_name("game_coop_drawn"))) int game_coop_drawn() { return coop.drawn; }
+// Test hook: a Survival run's window narrows once the run's time passes `ms`
+// (COOP_LATE_MS).
+__attribute__((export_name("game_coop_late"))) void game_coop_late(int ms) { coop.late_ms = ms; }
 __attribute__((export_name("game_coop_confirmed"))) int game_coop_confirmed() { return coop.confirmed; }
 __attribute__((export_name("game_coop_next"))) int game_coop_next() { return coop.next; }
 __attribute__((export_name("game_coop_produced"))) int game_coop_produced() { return coop.produced; }
@@ -1170,10 +1281,10 @@ __attribute__((export_name("game_coop_audit"))) int game_coop_audit() {
   return (int)wrong.size() / 2;
 }
 // Test hook: a forced rollback to the state before tick `t`, one of the last
-// COOP_SLOTS run, confirmed or not. Confirmed ticks run again as they ran (their
+// COOP_LEAD run, confirmed or not. Confirmed ticks run again as they ran (their
 // bakes and music would land twice in a module that draws).
 __attribute__((export_name("game_coop_restore"))) int game_coop_restore(int t) {
-  if (!coop.active || t < 0 || t >= coop.next || t < coop.next - COOP_SLOTS)
+  if (!coop.active || t < 0 || t >= coop.next || t < coop.next - COOP_LEAD)
     return 0;
   coop_restore(t);
   const CoopTick *before = coop_tick_at(t - 1);

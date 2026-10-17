@@ -480,6 +480,10 @@ monotonically non-decreasing tick frontiers**:
    $\Delta T = (\text{remote\_head\_tick} - D) - \text{next\_sim\_tick} + \frac{\text{RTT}}{2 \times 16.667\text{ ms}}$.
    Scale `grim_frame_dt` clamping (`fminf(grim_frame_dt, 0.1f)`) by
    `clamp(1.0f + 0.01f * delta_T, 0.98f, 1.02f)` when accumulating `coop_banked_s`.
+   The remote head is the newest `head_tick` the partner's ticks packets carried
+   (`coop_ahead`, `host/coop_wire.inc`). A peer stalled at its window still runs
+   on its banked reserve, so the one ahead slows only once that has drained:
+   two runs a stall left 8 ticks apart come back together within a few seconds.
 
 2. **Monotonic, gap-free input production (`++input_produced_tick`)**:
    While `input_produced_tick < next_sim_tick + D` **and**
@@ -555,7 +559,11 @@ the music ticks from `t` on queued, and never draws gameplay RNG. `string_used` 
   run again. Ticks that run again are *quiet* ($t \le$ `heard`, the high-water of
   executed ticks): they cost CPU but no pacing credit (`game_coop_advance`
   returns new ticks only), play no sound and draw nothing; of a frame's ticks,
-  only the newest draws.
+  only the newest draws. When the run stops sooner than the frame's ticks were
+  counted (its end, a perk menu waiting for its picker, an agreed end that took
+  predictions back), the tick it stopped at runs again, quiet, and draws, its
+  bake and music left as they were presented: a frame never keeps showing a
+  state a rollback took back.
 
 #### Canonical cross-peer snapshot & hash (`coop_canonical_hash`)
 
@@ -589,7 +597,10 @@ run's surroundings:
    span, so run start resets both and keyframes keep both. Then the run's other
    globals the snapshot leaves out that a tick reads: perk and weapon clocks
    (Lean Mean Exp Machine's award, Man Bomb's, Fire Cough's and Hot Tempered's
-   intervals), update counters, the players' cursors, the screen and menu flags
+   intervals), the last tick's time step (`frame_dt`: a perk pick reads it
+   before the tick sets its own, and inside the original the run keeps its own
+   in `LiveSettings`, apart from the frames'), update counters, the players'
+   cursors, the screen and menu flags
    a tick checks, Survival's first kill, the effect template spawns copy.
    `game_coop_audit` holds this to every byte of `game_run_spans`: flipping a
    byte must change the words unless `COOP_UNHASHED` (`host/coop.inc`) lists it
@@ -1743,6 +1754,37 @@ and messages, repairs and the records they carried, and the round trip.
 2. Record frame-time distributions, rollback depth histograms, and late-game CPU
    costs across direct P2P, TURN UDP, TURN TCP, and WS relay for the final
    #632 feasibility report.
+
+3. **Status**: the game side plays it. The Host starts every run with $D = 2$
+   and $R_{\max} = 8$ in `START_RUN`, and each peer narrows its own window to 4
+   past 15 minutes of a Survival run (`coop_window`). Records stay $D$ ticks
+   ahead of the run, topped up after the frame's ticks so the frame's ticks
+   packet carries them, and the frame time a peer banks follows the clock-drift
+   rule (Section 3.3). `game_coop_stats()` adds the rollbacks by depth (1 to
+   12), the frames by the time their ticks took (under 1, 2, 4, 8 and 16 ms, and
+   longer) and the longest, the frames whose due ticks all waited, the most
+   ticks a frame ran again, the ticks run under the narrowed window and their
+   deepest guess, and the ticks run again whose players' deaths or team wipe a
+   correction revised. Nothing reports them yet: the transport comparison is
+   still to come.
+
+   `checks/game_coop_live.mjs` plays the `M1` sessions with these settings and
+   then four network profiles (10 ms one way; 30 ± 5 ms; 50 ± 15 ms with bursts
+   of lost packets; 60 ± 20 ms with 1% loss), a Survival run under each that
+   starts ahead on one machine and stalls 300 ms on the other: a perk picked
+   from either seat while the other predicts, pauses from either seat, the
+   window's narrowing (brought forward), a leave from the pause banner and team
+   wipes, then wipes until a correction revised one; the first quest plays under
+   the lossiest profile. It holds both machines' runs to each other and to the
+   records as `M1` does, the Host's music to its run played again without
+   predictions, every frame to the newest tick run, the perk and end screens to
+   confirmed ticks, predictions to the window, and the two runs to each other
+   once a stall settled. Auditing the session for ticks it assumed confirmed
+   found two: a run left early saved its replay and score from the predicted
+   state, and a frame that stopped at a menu or the run's end kept showing a
+   prediction a rollback had taken back. A third predates rollback: a perk pick
+   read the frame's time step, not the last tick's (Breathing Room), so the two
+   machines' frame rates parted their runs.
 
 ### Milestone `M3`: Co-op replays & boards
 
