@@ -58,6 +58,21 @@ def test_replay_verify_json_output_payload_ok(tmp_path: Path) -> None:
     assert payload["mismatched_fields"] == []
 
 
+def test_replay_verify_ranks_a_co_op_pair_on_its_board(tmp_path: Path) -> None:
+    # The idle pair dies at tick 1701 and the HUD fades out by tick 1732.
+    replay = build_replay(mode=GameMode.SURVIVAL, ticks=1733, player_count=2, ranked=True)
+    replay_path = write_replay(tmp_path, replay=replay, name="survival-coop.crd")
+
+    result = CliRunner().invoke(app, ["replay", "verify", str(replay_path), "--format", "json"])
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    assert payload["status"] == "ok"
+    assert payload["result"]["outcome"] == "death"
+    assert len(payload["result"]["players"]) == 2
+    assert (payload["ranked"], payload["unranked_reasons"], payload["board"]) == (True, [], "survival-coop")
+
+
 def test_replay_verify_reports_result_mismatch(tmp_path: Path) -> None:
     replay = _tamper_result(build_replay(mode=GameMode.SURVIVAL, ticks=2))
     replay_path = write_replay(tmp_path, replay=replay, name="survival-tampered.crd")
