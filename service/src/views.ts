@@ -17,6 +17,7 @@ import {
   type ProfileView,
   type ProviderName,
   type QuestMenuView,
+  type ReplaysView,
   type RunDetailView,
   type RunView,
   type SeatView,
@@ -158,6 +159,12 @@ interface BestRun {
 export const NOT_BANNED = `a.banned = 0 AND NOT ${anySeat("r", "pa.banned")}`;
 // A run the boards rank: shown, a verified one (not retired: migrations/0005_retired.sql) and not banned.
 const RANKED_RUN = `r.hidden = 0 AND r.retired IS NULL AND ${NOT_BANNED}`;
+// Every ranked run's id; each one's replay downloads from /runs/<id>.crd.
+export async function replaysView(env: Env): Promise<ReplaysView> {
+  const { results } = await env.DB.prepare(`SELECT r.id FROM runs r JOIN accounts a ON a.id = r.account_id WHERE ${RANKED_RUN} ORDER BY r.id`).all<{ id: string }>();
+  return { runs: results.map(({ id }) => id) };
+}
+
 // The ranked runs `r` of a board in a category, with their accounts `a`; binds the board, quest and category.
 const BOARD_RUNS = `FROM runs r JOIN accounts a ON a.id = r.account_id
   WHERE r.board = ? AND r.quest = ? AND ${RANKED_RUN} AND ${runCategory("r")} = ?`;

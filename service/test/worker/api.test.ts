@@ -4,7 +4,7 @@ import { concat, COOP_RUN_DOMAIN, fromHex, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256
 import { confirmMerge } from "../../src/accounts";
 import { tokenHash } from "../../src/auth";
 import { decodeReplay, inflateReplay } from "../../src/replay";
-import type { BoardView, CustomQuestDetailView, CustomQuestsListView, GameScore, LoginView, ProfileView, RunDetailView } from "../../src/api-types";
+import type { BoardView, CustomQuestDetailView, CustomQuestsListView, GameScore, LoginView, ProfileView, ReplaysView, RunDetailView } from "../../src/api-types";
 import { validateRecipeSource } from "../../src/runs";
 import vectors from "../vectors.json";
 
@@ -250,7 +250,7 @@ describe("runs", () => {
     expect((await timeline()).status).toBe(404);
   });
 
-  it("a run's replay downloads as the file the game sent; a hidden or banned run's does not", async () => {
+  it("a run's replay downloads as the file the game sent and lists for CI; a hidden or banned run's does neither", async () => {
     const player = await Player.create();
     const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
     const replay = () => SELF.fetch(`${ORIGIN}/runs/${id}.crd`);
@@ -260,17 +260,22 @@ describe("runs", () => {
     expect(response.headers.get("cache-control")).toMatch(/^public, max-age=\d+, must-revalidate$/);
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(decode64(vectors.ranked_run));
 
+    const listed = async () => ((await (await SELF.fetch(`${ORIGIN}/api/replays`)).json()) as ReplaysView).runs;
+    expect(await listed()).toEqual([id]);
+
     await env.DB.prepare("UPDATE runs SET hidden = 1").run();
     expect((await replay()).status).toBe(404);
+    expect(await listed()).toEqual([]);
     await env.DB.prepare("UPDATE runs SET hidden = 0").run();
 
     await env.DB.prepare("UPDATE accounts SET banned = 1").run();
     expect((await replay()).status).toBe(404);
+    expect(await listed()).toEqual([]);
     expect((await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).status).toBe(404);
     expect((await SELF.fetch(`${ORIGIN}/api/runs/${id}/timeline`)).status).toBe(404);
   });
 
-  it("a retired run leaves the boards and the game's scores, and keeps its page, reason and replay", async () => {
+  it("a retired run leaves the boards, the game's scores and the replay list, and keeps its page, reason and replay", async () => {
     const player = await Player.create();
     const { id } = (await (await player.upload(vectors.ranked_run, "banteg")).json()) as { id: string };
     const reason = "A perk pick from a menu left open, which the rules no longer take";
@@ -283,6 +288,7 @@ describe("runs", () => {
     const detail = (await (await SELF.fetch(`${ORIGIN}/api/runs/${id}`)).json()) as RunDetailView;
     expect(detail).toMatchObject({ id, retired: reason, rank: null });
     expect((await SELF.fetch(`${ORIGIN}/runs/${id}.crd`)).status).toBe(200);
+    expect(((await (await SELF.fetch(`${ORIGIN}/api/replays`)).json()) as ReplaysView).runs).toEqual([]);
     const account = await env.DB.prepare("SELECT account_id FROM runs WHERE id = ?").bind(id).first<{ account_id: number }>();
     const profile = (await (await SELF.fetch(`${ORIGIN}/api/players/${account!.account_id}`)).json()) as ProfileView;
     expect(profile.runs).toMatchObject([{ id, retired: reason }]);
