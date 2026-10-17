@@ -5,8 +5,9 @@
 Config config_blob;
 float sfx_cooldown_table[128];
 int game_state_id;
-static bool live;
+static bool live, quiet;
 extern "C" bool game_live_run() { return live; }
+extern "C" bool game_coop_quiet() { return quiet; }
 extern "C" void game_audio_tick(float);
 extern "C" void game_audio_cooldowns(float);
 int main() {
@@ -46,5 +47,11 @@ int main() {
   assert(remainder < 0);
   game_audio_cooldowns(1);
   assert(sfx_cooldown_table[0] == remainder);
+  // A co-op tick a rollback runs again aged the cooldowns the first time.
+  sfx_cooldown_table[0] = 0.05f;
+  quiet = true;
+  game_audio_tick(1.0f / 60);
+  assert(sfx_cooldown_table[0] == 0.05f);
+  quiet = false;
   puts("audio cooldown clocks: passed");
 }

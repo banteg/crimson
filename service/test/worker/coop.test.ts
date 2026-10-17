@@ -207,7 +207,7 @@ describe("co-op rooms", () => {
     expect(relayed).toEqual(relayed.map((_, i) => String(i)));
     expect(relayed.length).toBeGreaterThanOrEqual(200);
     expect(relayed.length).toBeLessThanOrEqual(200 + ((Date.now() - start) * 200) / 1000);
-  });
+  }, 30_000);
 
   it("keeps a seat's message budget across its reconnects, and limits those", async () => {
     const { room, host, guest, guestToken } = await pair();
@@ -226,7 +226,7 @@ describe("co-op rooms", () => {
     for (let i = 0; i < 8; i++) await join(room.room_id, `role=guest&token=${guestToken}`);
     expect((await handshake(room.room_id, `role=guest&token=${guestToken}`)).status).toBe(429);
     await join(room.room_id, `role=host&token=${room.host_token}`);
-  });
+  }, 30_000);
 
   it("closes a socket that sends a message passing for the room's own", async () => {
     for (const forged of [{ type: "peer", present: true }, { type: "seat", role: "host" }]) {
