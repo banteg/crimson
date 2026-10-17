@@ -367,12 +367,13 @@ class Machines extends Link {
     if (channel === 1 && bytes[0] === RUN_SIGNED) peer.word = bytes;
     if (this.cut !== peer) super.send(peer, channel, bytes);
   }
-  // A START_RUN (CoopType 2) arriving notes when, as does the room's word (channel "room"): a seed or a key.
+  // A START_RUN (CoopType 2) arriving notes when and the run's input delay (after its type and epoch), as does the
+  // room's word (channel "room"): a seed or a key.
   receive(peer, channel, bytes) {
     const { g, run } = peer;
     if (peer.gone) return;
     if (channel === ROOM) return heard(peer, bytes);
-    if (channel === 1 && bytes[0] === 2) peer.offered = this.now;
+    if (channel === 1 && bytes[0] === 2) [peer.offered, peer.delay] = [this.now, bytes[1 + 4]];
     const at = g.game_coop_rx(bytes.length);
     new Uint8Array(g.memory.buffer, at, bytes.length).set(bytes);
     g.game_coop_receive(channel, bytes.length, run.clock);
@@ -1462,7 +1463,10 @@ for (const profile of PROFILES) {
   const drift = [stall, hitch].map(({ to }) => ({ after: apart(to, 500), settled: apart(to + SETTLE, 1000) }));
   for (const { after, settled } of drift)
     assert.ok(after.most >= 4 && settled.mean <= 1.5 && settled.most <= 3, `${profile.name}: ${JSON.stringify(drift)}`);
-  profiled.push({ profile: profile.name, ticks: result.ticks, drift, pace, played, stats: counted.map(({ wire, ...s }) => s) });
+  // The longer delay only where the narrowed window would not cover a one-way trip with two ticks.
+  assert.equal(guest.delay > 2, !!profile.paced, `${profile.name}: an input delay of ${guest.delay}`);
+  const stats = counted.map(({ wire, ...s }) => s);
+  profiled.push({ profile: profile.name, ticks: result.ticks, delay: guest.delay, drift, pace, played, stats });
 }
 // Rollbacks under every profile but the nearest.
 for (const { profile, stats } of profiled.slice(1)) assert.ok(stats[0].rollbacks && stats[1].rollbacks, `${profile}`);
@@ -1669,13 +1673,14 @@ for (const entry of entries.flat()) uploadable(entry);
 for (const [name, bytes] of entries[0])
   assert.ok(entries[1].some(([other, them]) => other === name && them.equals(bytes)), `the Guest's ${name}`);
 const ranked = entries.map((each) => each.length);
-// Under each profile: the ticks, how far apart the runs were after each stall and once settled, and each machine's
-// rollbacks by depth, the deepest guess, frames that stalled, the most ticks a frame ran again, and revised deaths;
-// and for the play before the run's end, each machine's ticks run, ticks run again, frames, frames that stalled and
-// rollbacks by depth.
-const m2 = profiled.map(({ profile, ticks, drift, pace, played, stats }) => ({
+// Under each profile: the ticks, the input delay, how far apart the runs were after each stall and once settled, and
+// each machine's rollbacks by depth, the deepest guess, frames that stalled, the most ticks a frame ran again, and
+// revised deaths; and for the play before the run's end, each machine's ticks run, ticks run again, frames, frames
+// that stalled and rollbacks by depth.
+const m2 = profiled.map(({ profile, ticks, delay, drift, pace, played, stats }) => ({
   profile,
   ticks,
+  delay,
   pace,
   played: played?.map((s) => [s.ticks, s.resimulated, s.frames, s.stalled_frames, s.depths]),
   drift: drift?.map(({ after, settled }) => [after.most, +settled.mean.toFixed(2)]),

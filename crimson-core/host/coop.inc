@@ -1300,6 +1300,15 @@ __attribute__((export_name("game_coop_audit"))) int game_coop_audit() {
   std::copy(wrong.begin(), wrong.end(), output);
   return (int)wrong.size() / 2;
 }
+// Test hook (checks/coop_cost.mjs): the state before the next tick captured
+// into its slot again, as that tick captures it first.
+__attribute__((export_name("game_coop_capture"))) int game_coop_capture() {
+  if (!coop.active)
+    return 0;
+  CoopRun run;
+  coop_capture(coop.next);
+  return 1;
+}
 // Test hook: a forced rollback to the state before tick `t`, one of the last
 // COOP_LEAD run, confirmed or not. Confirmed ticks run again as they ran (their
 // bakes and music would land twice in a module that draws).

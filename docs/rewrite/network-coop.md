@@ -30,17 +30,21 @@ site's [ranked rules](ranked-rules.md) on its own boards (Section 5.3, `M3`).
 ### Verdict (`M2`)
 
 The measurements (Section 3.1) bear the architecture out. Late in a long
-2-player Survival run a tick through the rollback engine costs about 0.14 ms
-(0.23 ms p99) in `game.wasm`, the same in Chrome as under node; the hard cap's
-12-tick rollback costs 1.8 ms (2.4 ms p99), a seventh of a 60 Hz frame, and at
-the depths a 60 ± 20 ms partner brings (1–3 ticks) a frame's ticks take under
-1 ms. State capture and restore are memcpys of about
-0.01 ms; the state hash is the engine's largest cost per tick. Input delay 2
-with window 8, narrowing to 4 late in Survival, absorbs the simulated networks
-without a desync, and the late-game frame never comes near its budget, so
-streaming state from an authoritative host is not needed. What the local
-numbers cannot show, real paths over TURN and the room's relay, the sessions'
-telemetry reports once deployed (Section 6.2, "Telemetry").
+2-player Survival run, under the rules a co-op session plays, a tick through the
+rollback engine costs about 0.14 ms (0.30 ms p99) in `game.wasm`, about the same
+in Chrome as under node; the hard cap's 12-tick rollback over ticks run on a
+stand-in record, their bakes held, costs 1.8 ms (2.3 ms p99 under node, up to
+2.7 ms in Chrome), a seventh to a sixth of a 60 Hz frame, and at the depths a 60
+± 20 ms partner brings (1–3 ticks) a frame's ticks take under 0.9 ms at p99.
+State capture and restore are memcpys of under 0.01 ms (0.02 ms p99) for a slot
+of up to 438 KiB, and the engine holds 7.6 MiB; the state hash is the engine's
+largest cost per tick. Input delay 2 (longer past about 83 ms one way) with
+window 8, narrowing to 4 late in Survival, absorbs the simulated networks
+without a desync and keeps 60 ticks a second at 120 ms one way, and the
+late-game frame never comes near its budget, so streaming state from an
+authoritative host is not needed. What the local numbers cannot show, real paths
+over TURN and the room's relay, the sessions' telemetry reports once deployed
+(Section 6.2, "Telemetry").
 
 Four players look feasible on these costs, with caveats. A tick's cost is
 dominated by the creature pool, which stays at 384, so four players should cost
@@ -466,49 +470,55 @@ explicitly classified:
 
 The late-game rows come from `checks/coop_cost.mjs`, under node and, through
 `checks/coop_browser.mjs`, in Chrome on a cross-origin isolated page (5 µs
-timer). A bot plays both players of a 2-player Survival run with their health
-held far past full, so the run reaches the late game: the creature pool is full
-from about ten minutes on, the spawn rate keeps rising with the run's time, and
-by 20 minutes the players hold nearly every perk (the bot takes every one but
-those that kill or spend health). Each row is per call between 20 and 35 minutes
-of the run's time, node first, then Chrome. The bot plays simply, kiting and
-picking up the bonuses near it, so a human's late game, with stronger weapons
-and more projectiles and effects, may cost more per tick.
+timer). A bot plays both players of the 2-player Survival run a co-op session
+starts (`coop_latch`: the ranked profile, the original's bugs fixed, which puts
+the effect overflow to use) with their health held far past full, so the run
+reaches the late game: the creature pool is full from about ten minutes on, the
+spawn rate keeps rising with the run's time, and by 20 minutes the players hold
+nearly every perk (the bot takes every one but those that kill or spend
+health). Each row is per call between 20 and 35 minutes of the run's time, node
+first, then Chrome, over three runs each (a range where they differ); maxima are
+wall-clock outliers, collection pauses among them, so the p99 is the budget's
+figure. The bot plays simply, kiting and picking up the bonuses near it, so a
+human's late game, with stronger weapons and more projectiles and effects, may
+cost more per tick.
 
 | Metric | Value | Source / Evidence |
 | --- | --- | --- |
 | Tick frequency | **60 Hz** ($\Delta t = 16.6667\text{ ms}$) | `crimson-core/host/host.cpp:626` |
 | 2P input size per tick | **40 B** (`2 × sizeof(PortableInput)`) + **4 B** `count` + $8k\text{ B}$ commands | `crimson-core/host/api.h:53-54` |
-| State slot | **~227 KiB** without the effect overflow in use; **~602 KiB** worst case | The largest slot captured (`CoopStats.slot_bytes`); the worst case adds `2,048 × 188 B` of overflow entries (`crimson-core/game/include/effect_overflow.h`) |
-| Co-op engine memory | **3.75 MiB** over the plain run (16 slots, records, per-tick results, held bakes); **~9.6 MiB** worst case | `game.wasm` memory of the run through the engine less the plain run's |
-| Slot restore (`run_state_read`) | **0.007 / 0.014 ms** p50/p99; Chrome **0.005 / 0.015 ms** | `game_coop_restore` alone |
-| Slot capture | **~0.01 ms** | The co-op tick less the plain step and the hash (p50) |
-| Canonical state hash | **0.033 / 0.046 ms** p50/p99; Chrome **0.035 / 0.045 ms** | `game_coop_hash` alone: most of what the engine adds to a tick |
-| Late-game 2P plain step | **0.096 / 0.205 ms** p50/p99; Chrome **0.100 / 0.200 ms** | `portable_step_many`, one tick |
-| Late-game 2P co-op tick | **0.137 / 0.227 ms** p50/p99; Chrome **0.140 / 0.195 ms** | `game_coop_advance` running one tick: the step, the slot capture and the hash |
-| Late-game 8-tick rollback | **1.22 / 1.63 ms** p50/p99; Chrome **1.23 / 1.70 ms** | A restore 8 ticks back and the frame that runs them again and the next tick |
-| Late-game 12-tick rollback (the hard cap) | **1.77 / 2.37 ms** p50/p99; Chrome **1.79 / 2.34 ms** | As above, 12 ticks back |
-| Late-game frame work, 60 Hz | **0.44 / 0.73 ms** p50/p99 (max 0.95); Chrome **0.45 / 0.72 ms** (max 1.0) | 60 s of frames with player two's records 60 ± 20 ms one way, window 4 (past 15 minutes): rollbacks of 1–3 ticks on most frames, 1.65 ticks run again per tick, no stalled frame |
-| Late-game frame work, 144 Hz | **0.15 / 0.50 ms** p50/p99; Chrome **0.15 / 0.49 ms** | As above at 144 Hz: rollbacks of 1–2 ticks, 1.15 ticks run again per tick, no stalled frame |
+| State slot | **438 KiB** (448,181 B), the largest captured, the effect overflow in use; **~602 KiB** worst case | The largest slot captured (`CoopStats.slot_bytes`); the worst case: 231,981 B with no overflow entry in use (the largest under the original's bugs, which leave the overflow unused) and `2,048 × 188 B` of entries (`crimson-core/game/include/effect_overflow.h`) |
+| Co-op engine memory | **7.6 MiB** (7,995,392 B) over the plain run (16 slots, records, per-tick results, held bakes); **~9.6 MiB** worst case | `game.wasm` memory of the run through the engine less the plain run's |
+| Slot capture (`run_state_write`) | **0.007–0.008 / 0.013–0.014 ms** p50/p99; Chrome **0.005–0.010 / 0.015–0.020 ms** | `game_coop_capture` alone: the state before the next tick into its slot, as the tick does first |
+| Slot restore (`run_state_read`) | **0.006–0.007 / 0.013–0.014 ms** p50/p99; Chrome **0.005–0.010 / 0.015 ms** | `game_coop_restore` one tick back, alone |
+| Canonical state hash | **0.033 / 0.044–0.048 ms** p50/p99; Chrome **0.035 / 0.045–0.055 ms** | `game_coop_hash` alone: most of what the engine adds to a tick |
+| Late-game 2P plain step | **0.096–0.097 / 0.200–0.203 ms** p50/p99; Chrome **0.100–0.105 / 0.195–0.230 ms** | `portable_step_many`, one tick |
+| Late-game 2P co-op tick | **0.138–0.139 / 0.299–0.302 ms** p50/p99; Chrome **0.140–0.150 / 0.300–0.350 ms** | `game_coop_advance` running one tick: the step, the slot capture, the hash and the bake's digest |
+| Late-game 8-tick rollback | **1.23–1.24 / 1.61 ms** p50/p99; Chrome **1.25–1.34 / 1.60–1.82 ms** | The frame in which player two's real record arrives for the first of 8 ticks run on a stand-in it contradicts, their bakes held: it takes them back, runs them again with the next tick, and draws their bakes |
+| Late-game 12-tick rollback (the hard cap) | **1.78–1.81 / 2.29–2.35 ms** p50/p99; Chrome **1.81–1.94 / 2.27–2.67 ms** | As above, 12 ticks |
+| Late-game frame work, 60 Hz | **0.45–0.46 / 0.75–0.79 ms** p50/p99 (max 1.16–1.22); Chrome **0.45–0.49 / 0.72–0.89 ms** (max 1.18–2.13) | 60 s of frames that ran ticks (every frame at 60 Hz) with player two's records 60 ± 20 ms one way, window 4 (past 15 minutes): rollbacks of 1–3 ticks on most frames, 1.64–1.66 ticks run again per tick, no stalled frame |
+| Late-game frame work, 144 Hz | **0.17 / 0.55–0.56 ms** p50/p99 (max 0.85–2.30); Chrome **0.17–0.19 / 0.53–0.60 ms** (max 0.91–1.88) | As above at 144 Hz, where 60% of frames ran ticks: rollbacks of 1–2 ticks (a few of 3), 1.14–1.18 ticks run again per tick, no stalled frame |
 | `game.wasm` step cost (9-min 1P Survival avg, `grim_render_disabled = 1`) | **~0.028 ms / tick** (~36,000 ticks/s) | Measured ([replay viewer](replay-viewer.md#what-it-can-afford)) |
 | `core.wasm` step cost (35-min 1P Survival avg, 210,268 ticks) | **~0.126 ms / tick** (26,497 ms total) | Measured (`crimson-core/results/survival-spawn-profile.json`) |
 
 Rollback under the network profiles comes from `checks/game_coop_live.mjs`,
-which prints each machine's counters (`m2`, `played`): two originals over its
-simulated pipe, the Host at 60 Hz and the Guest at 144 Hz, about 2,000 ticks of
-early Survival each, with input delay 2 and window 8 (narrowed to 4 under the
-burst profile). Each run has a 250 ms start offset, a 300 ms stall on the
-Guest's machine and a perk the other machine waits for, which account for most
-rollbacks under 10 and 30 ms and for most stalled frames everywhere (a frame is
-stalled when every tick it was due waited: for records, the window or the
-picker).
+which prints each machine's counters (`m2`, `played`, the same in every run of
+the check): two originals over its simulated pipe, the Host at 60 Hz and the
+Guest at 144 Hz, 2,000 to 3,600 ticks of early Survival each before the run's
+end, with window 8 (narrowed to 4 under the burst and 120 ms profiles) and the
+input delay the round trip gives (2, and 4 at 120 ms). Each run has a 250 ms
+start offset, a 300 ms stall on the Guest's machine and a perk the other machine
+waits for, which account for most rollbacks under 10 and 30 ms and for most
+stalled frames everywhere (a frame is stalled when every tick it was due waited:
+for records, the window or the picker; a pause is none).
 
 | Profile (one way) | Rollbacks per minute, Host / Guest | Mean depth (deepest) | Ticks run again per tick | Stalled frames |
 | --- | --- | --- | --- | --- |
-| 10 ms | 207 / 306 | 3.6 / 3.9 (8) | 0.21 / 0.33 | 0.4% / 4.3% |
-| 30 ± 5 ms | 221 / 288 | 2.7 / 3.7 (8) | 0.16 / 0.30 | 6.4% / 3.1% |
-| 50 ± 15 ms, bursts of 10 lost packets every 4 s | 1,246 / 1,587 | 2.6 / 2.9 (12) | 0.91 / 1.28 | 2.7% / 7.0% |
-| 60 ± 20 ms, 1% loss | 1,593 / 2,235 | 1.6 / 2.0 (8) | 0.70 / 1.22 | 6.9% / 3.3% |
+| 10 ms | 207 / 245 | 4.2 / 4.0 (8) | 0.24 / 0.27 | 0.3% / 3.7% |
+| 30 ± 5 ms | 357 / 239 | 2.9 / 3.8 (8) | 0.29 / 0.25 | 3.5% / 0.3% |
+| 50 ± 15 ms, bursts of 10 lost packets every 4 s from 20 s | 1,367 / 1,233 | 2.1 / 2.8 (12) | 0.80 / 0.97 | 1.8% / 5.9% |
+| 60 ± 20 ms, 1% loss | 1,810 / 1,949 | 1.8 / 1.9 (8) | 0.90 / 1.03 | 4.0% / 0.7% |
+| 120 ± 10 ms, input delay 4 | 2,700 / 2,462 | 3.0 / 2.7 (8) | 2.29 / 1.83 | 2.7% / 0.3% |
 
 These are a local pipe's numbers. What sessions see over real direct WebRTC
 paths, TURN over UDP and TCP and the room's relay comes from the sessions'
@@ -1957,8 +1967,13 @@ whose page reports.
    the desync among them.
 
    Measured locally (Section 3.1): the late game's costs under node and in
-   Chrome (`checks/coop_cost.mjs`), frame work at 60 and 144 Hz, and rollback
-   depths, ticks run again and stalled frames under the five profiles. The
+   Chrome (`checks/coop_cost.mjs`, three runs each), frame work at 60 and
+   144 Hz, and rollback depths, ticks run again and stalled frames under the
+   five profiles. The first figures came from a run under the original's bugs,
+   which leave the effect overflow unused (slots of 227 KiB, 3.75 MiB for the
+   engine), and from rollbacks over confirmed ticks, which hold no bake; the
+   costs now come from the run a co-op session starts and from rollbacks over
+   ticks run on a stand-in, their bakes held, and the capture is timed alone. The
    comparison across direct paths, TURN over UDP and TCP and the room's relay
    is the telemetry's to make once deployed: `coop_totals` on `/analytics`
    holds each transport's sessions, round trips, rollback depths, frame work and

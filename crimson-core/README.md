@@ -314,11 +314,13 @@ node crimson-core/checks/coop_cost.mjs [game.wasm] [--from 20] [--to 35] [--sess
 
 What co-op costs late in a long two-player Survival run, the numbers in
 [network co-op §3.1](../docs/rewrite/network-coop.md#31-measurements-on-crimson-core-apple-m1-pro-wasm):
-a bot plays both players with their health held full, a plain run and the run
+a bot plays both players of the run a co-op session starts (the ranked profile,
+the original's bugs fixed) with their health held full, a plain run and the run
 through the co-op engine, and the check prints per-call p50/p99 of the plain
-step, the co-op tick, the slot restore, the state hash and forced 8- and 12-tick
-rollbacks between `--from` and `--to` minutes of the run's time, the slot size
-and the engine's memory, then frame work, rollback depths and stalls over
+step, the co-op tick, the slot capture and restore, the state hash and 8- and
+12-tick rollbacks over ticks run on a stand-in record (their bakes held) between
+`--from` and `--to` minutes of the run's time, the slot size and the engine's
+memory, then the work of frames that ran ticks, rollback depths and stalls over
 `--session` seconds at 60 and 144 Hz with player two's records 60 ± 20 ms late.
 `checks/coop_browser.mjs` runs the same `measure` in Chrome.
 

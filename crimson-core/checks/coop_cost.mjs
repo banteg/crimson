@@ -3,18 +3,21 @@
 // otherwise picks up bonuses or circles, aims at the nearest creature and fires; player one opens the perk menu
 // whenever a perk is pending and takes the first choice that neither kills nor spends health), both players' health
 // set far past full before every frame, more than a crowd's hits take within one, so the run reaches the late game:
-// the creature pool fills about ten minutes in, and the spawn rate keeps rising with the run's time. The same bot
-// plays:
+// the creature pool fills about ten minutes in, and the spawn rate keeps rising with the run's time. The run is the
+// one a co-op session starts (host/coop_live.inc coop_latch, host/ranked.inc ranked_spec): two players, the ranked
+// profile, the original's bugs fixed. The same bot plays:
 // 1. a plain run (portable_step_many): each tick's cost from `from` to `to` minutes of the run's time;
 // 2. the run through the co-op engine (host/coop.inc) with both players local, records on time, input delay 2 and
-//    window 8 (4 past 15 minutes): each tick's cost there (the step, the state's capture into its slot, its hash),
-//    and from `from` minutes, every 30th frame a forced rollback of 8 or 12 ticks (alternately): the restore alone
-//    and the frame that runs the ticks again with the next one; the hash alone every 30th frame; the ring's slot
-//    size and the memory the engine holds over the plain run's;
+//    window 8 (4 past 15 minutes): from `from` minutes, each tick's cost there (the step, the state's capture into
+//    its slot, its hash); every 30th frame a rollback of 8 or 12 ticks (alternately), player two's record for the
+//    first of them a stand-in its real one contradicts, which arrives once they ran, all on predictions with their
+//    bakes held: the frame that takes them back, runs them again and the next; and the capture, the hash and a
+//    restore alone; the ring's slot size and the memory the engine holds over the plain run's;
 // 3. from `to` minutes on, `session` seconds of play at 60 Hz and again at 144 Hz with player two's records
 //    arriving over a network (`profile`: one way ms ± jitter, sent as the partner's run reaches the tick less the
-//    input delay), the engine predicting them: each frame's work (game_coop_advance), the rollbacks by depth
-//    (game_coop_telemetry), frames whose due ticks all waited, and ticks run again per tick run.
+//    input delay), the engine predicting them: the work of each frame that ran or ran again ticks
+//    (game_coop_advance), the rollbacks by depth (game_coop_telemetry), frames whose due ticks all waited, and ticks
+//    run again per tick run.
 // Timings are wall time (performance.now) around single calls, so in a browser they need a cross-origin isolated
 // page for microsecond resolution; checks/coop_browser.mjs runs `measure` in Chrome that way.
 //
@@ -28,17 +31,18 @@ import { CORE, config, index, names } from "./engine.mjs";
 export function costSetup() {
   const read = /^(players\[[01]\]\.(health|pos_x|pos_y)|creatures\[\d+\]\.(active|health|pos_x|pos_y)|bonuses\[\d+\]\.(bonus_id|picked|time\.pos_x|time\.pos_y)|globals\.(perk_pending_count|run_elapsed_ms|perk_choice_ids\[\d\])|players\[0\]\.perk_counts\[\d+\])$/;
   return {
-    config: [...config(1, 1, 1, { seed: 41, players: 2 })],
+    config: [...config(1, 1, 1, { seed: 41, players: 2, preserveBugs: 0 })],
     fields: Object.fromEntries(names.filter((name) => read.test(name)).map((name) => [name, index.get(name)])),
     words: names.length,
     slotBytes: coopStatIndex("slot_bytes"),
+    ran: ["ticks", "resimulated"].map(coopStatIndex),
   };
 }
 
 // Self-contained, so that a page can run it from its source.
-export async function measure(bytes, { config, fields, words, slotBytes, from = 20, to = 35, session = 60, profile = { ms: 60, jitter: 20 } }) {
+export async function measure(bytes, { config, fields, words, slotBytes, ran, from = 20, to = 35, session = 60, profile = { ms: 60, jitter: 20 } }) {
   const module = await WebAssembly.compile(bytes);
-  const TICK_MS = 1000 / 60, MINUTE = 60000, DELAY = 2, RMAX = 8, OPEN = 8, ROLLBACK_EVERY = 30;
+  const TICK_MS = 1000 / 60, MINUTE = 60000, DELAY = 2, RMAX = 8, OPEN = 8, EVERY = 30;
   // Perks the bot passes over (src/crimson/perks/ids.py): Fatal Lottery, Infernal Contract, Ammunition Within,
   // Highlander and Death Clock kill or spend health outright.
   const SPARED = [15, 24, 35, 41, 47], CHOICES = 5, HEALTH = 10000;
@@ -162,6 +166,8 @@ export async function measure(bytes, { config, fields, words, slotBytes, from = 
   // (2) The run through the co-op engine.
   const g = instance();
   const telemetry = () => Array.from(new Int32Array(g.memory.buffer, g.game_coop_telemetry(), 5 + DEPTHS + FRAME_BUCKETS));
+  // Ticks run and run again so far.
+  const worked = () => ran.reduce((n, at) => n + new Int32Array(g.memory.buffer, g.game_coop_stats(), at + 1)[at], 0);
   if (g.game_coop_start(-1, DELAY, RMAX, 1) !== 1) throw Error("co-op did not start");
   // Player one's perk request: the tick its open went on, until the pick that follows it is produced (-1 none), and
   // the tick by which the state shows the pick.
@@ -174,8 +180,12 @@ export async function measure(bytes, { config, fields, words, slotBytes, from = 
     new Uint8Array(g.memory.buffer)[at + INPUT_BYTES] = cmd;
   };
   for (let t = 0; t < DELAY; t++) for (const seat of [0, 1]) writeRecord(g.game_coop_seed(seat, t), bot(g).inputs[seat], 0);
+  // A rollback under way: player two's real record for `tick`, which a stand-in took the place of, and how many
+  // ticks run before it arrives. The stand-in's stick goes the other way.
+  let forced = null;
+  const reversed = ([mx, my, ...rest]) => [-mx, -my, ...rest];
   // The pick goes on the tick after the open, once the run has run the open and the menu shows its choices: the
-  // run waits for it.
+  // run waits for it. No perk request starts during a rollback.
   function produce({ inputs, pending, choice }, arrive) {
     while (g.game_coop_produced() < g.game_coop_next() + DELAY) {
       const t = g.game_coop_produced() + 1;
@@ -183,44 +193,62 @@ export async function measure(bytes, { config, fields, words, slotBytes, from = 
       if (opened >= 0) {
         if (g.game_coop_next() <= opened) return;
         [cmd, opened, picked] = [choice + 1, -1, t + 1];
-      } else if (pending && g.game_coop_next() > picked) [cmd, opened] = [OPEN, t];
+      } else if (pending && !forced && g.game_coop_next() > picked) [cmd, opened] = [OPEN, t];
       for (const seat of [0, 1]) writeRecord(g.game_coop_input_for(seat), inputs[seat], seat ? 0 : cmd);
       if (g.game_coop_produce(0) !== t) throw Error(`no record for ${t}`);
+      if (forced && forced.tick < 0) {
+        forced.tick = t;
+        forced.input = inputs[1];
+        writeRecord(g.game_coop_input_for(1), reversed(inputs[1]), 0);
+        if (g.game_coop_deliver(1, t, 0) !== 1) throw Error(`player two's stand-in for ${t}`);
+      }
       if (!arrive) continue;
       writeRecord(g.game_coop_input_for(1), inputs[1], 0);
       if (g.game_coop_deliver(1, t, -1) !== 1) throw Error(`player two's stand-in for ${t}`);
       arrivals.push({ t, at: arrive(t), input: inputs[1] });
     }
   }
-  const coopTicks = [], restores = [], rollbacks = { 8: [], 12: [] }, hashes = [];
+  const time = (call) => {
+    const start = performance.now();
+    call();
+    return performance.now() - start;
+  };
+  const coopTicks = [], captures = [], hashes = [], restores = [], rollbacks = { 8: [], 12: [] };
   let view = bot(g);
   for (; view.ms < to * MINUTE; frame++) {
+    const measured = late(view.ms);
+    if (measured && !forced && opened < 0 && frame % EVERY === 0) forced = { tick: -1, depth: deep++ % 2 ? 12 : 8 };
     produce(view);
     heal(g);
-    // No forced rollback while a perk request is under way.
-    const due = late(view.ms) && frame % ROLLBACK_EVERY === 0 && opened < 0;
-    if (due) {
-      const depth = (deep++ % 2 ? 12 : 8);
-      let start = performance.now();
-      if (g.game_coop_restore(g.game_coop_next() - depth) !== 1) throw Error("no rollback");
-      const restored = performance.now() - start;
-      restores.push(restored);
-      start = performance.now();
-      if (g.game_coop_advance(1, 0) !== 1) throw Error("the run stopped");
-      rollbacks[depth].push(restored + performance.now() - start);
-      start = performance.now();
-      g.game_coop_hash();
-      hashes.push(performance.now() - start);
+    if (forced?.tick >= 0 && g.game_coop_next() - forced.tick === forced.depth) {
+      // The real record arrives: the frame takes back the ticks run since, runs them again and the next.
+      writeRecord(g.game_coop_input_for(1), forced.input, 0);
+      if (g.game_coop_deliver(1, forced.tick, 1) !== 1) throw Error(`player two's record for ${forced.tick}`);
+      let fresh;
+      rollbacks[forced.depth].push(time(() => (fresh = g.game_coop_advance(1, 0))));
+      if (fresh !== 1 || g.game_coop_confirmed() !== g.game_coop_next() - 1) throw Error("the rollback confirmed nothing");
+      forced = null;
     } else {
-      const start = performance.now();
-      const fresh = g.game_coop_advance(1, 0);
-      const spent = performance.now() - start;
+      let fresh;
+      const spent = time(() => (fresh = g.game_coop_advance(1, 0)));
       // A frame waiting for the pick runs nothing.
-      if (fresh === 1 && late(view.ms)) coopTicks.push(spent);
+      if (fresh === 1 && measured) coopTicks.push(spent);
       else if (fresh !== 1 && opened < 0) throw Error("the run stopped");
+    }
+    // Between the rollbacks: the capture, the hash and a restore one tick back, which the next frame runs again.
+    if (measured && !forced && opened < 0 && frame % EVERY === EVERY / 2) {
+      captures.push(time(() => g.game_coop_capture()));
+      hashes.push(time(() => g.game_coop_hash()));
+      restores.push(time(() => g.game_coop_restore(g.game_coop_next() - 1)));
     }
     view = bot(g);
   }
+  // A rollback under way as the run's time ran out takes its real record.
+  if (forced?.tick >= 0) {
+    writeRecord(g.game_coop_input_for(1), forced.input, 0);
+    if (g.game_coop_deliver(1, forced.tick, 1) !== 1) throw Error(`player two's record for ${forced.tick}`);
+  }
+  forced = null;
   const slot = new Int32Array(g.memory.buffer, g.game_coop_stats(), slotBytes + 1)[slotBytes];
   // The perks the run's players hold: how often each was taken, by perk id (src/crimson/perks/ids.py).
   const held = (run) => {
@@ -237,10 +265,10 @@ export async function measure(bytes, { config, fields, words, slotBytes, from = 
   const sessions = {};
   for (const hz of [60, 144]) {
     const before = telemetry(), work = [], start = { next: g.game_coop_next(), confirmed: g.game_coop_confirmed() };
-    let clock = 0, banked = 0, stalled = 0;
+    let clock = 0, banked = 0, stalled = 0, frames = 0;
     // The partner's run reaches tick t at its time less the delay, and its record takes a one-way trip.
     const arrive = (t) => (t - start.next - DELAY) * TICK_MS + profile.ms + (2 * Math.random() - 1) * profile.jitter;
-    for (; clock < session * 1000; clock += 1000 / hz) {
+    for (; clock < session * 1000; clock += 1000 / hz, frames++) {
       for (const arrival of arrivals.filter((a) => a.at <= clock)) {
         writeRecord(g.game_coop_input_for(1), arrival.input, 0);
         if (g.game_coop_deliver(1, arrival.t, 1) !== 1) throw Error(`player two's record for ${arrival.t}`);
@@ -249,9 +277,10 @@ export async function measure(bytes, { config, fields, words, slotBytes, from = 
       produce(bot(g), arrive);
       heal(g);
       banked += 1000 / hz;
-      const budget = Math.floor(banked / TICK_MS), at = performance.now();
+      const budget = Math.floor(banked / TICK_MS), done = worked(), at = performance.now();
       const fresh = g.game_coop_advance(budget, 0);
-      work.push(performance.now() - at);
+      const spent = performance.now() - at;
+      if (worked() > done) work.push(spent);
       banked -= fresh * TICK_MS;
       if (fresh < budget) {
         stalled += fresh === 0;
@@ -275,7 +304,8 @@ export async function measure(bytes, { config, fields, words, slotBytes, from = 
     if (ticks < 0.9 * session * 60) throw Error(`the run stopped at ${hz} Hz`);
     const buckets = [1, 2, 4, 8, 16];
     sessions[hz] = {
-      frames: work.length,
+      frames,
+      worked: work.length,
       work: summary(work),
       work_buckets: [...buckets.map((ms, i) => work.filter((w) => w >= (buckets[i - 1] ?? 0) && w < ms).length), work.filter((w) => w >= 16).length],
       depths: delta.slice(5, 5 + DEPTHS),
@@ -288,6 +318,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, from = 
     minutes: [from, to],
     plain_tick: summary(plainTicks),
     coop_tick: summary(coopTicks),
+    capture: summary(captures),
     restore: summary(restores),
     hash: summary(hashes),
     rollback_8: summary(rollbacks[8]),
