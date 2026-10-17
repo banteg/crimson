@@ -531,24 +531,22 @@
   // page or a desync the next session begins once the pages connect again (after
   // a desync, once this player left the stopped run).
   /* PLAY_COOP */
-  // game_coop_status (host/coop_wire.inc): the run goes on, the session closed; why, bits 16-23 (CoopReason), the
-  // ones that end co-op said as the game says them; the reasons the page gives it.
-  const COOP_CLOSED = 0x1000;
+  // game_coop_status (host/coop_wire.inc): both games said hello, the session closed, a run a desync or an error
+  // stopped is still on this player's screen; why, bits 16-23 (CoopReason). The reasons that end co-op, said as the
+  // game says them (client_coop_why) but this player's own leave, for which the game has no words; the reasons the
+  // page gives it.
+  const COOP_CONNECTED = 1, COOP_CLOSED = 0x1000, COOP_STOPPED = 0x2000;
+  const COOP_VERSION = 1, COOP_BAD_RECORD = 2, COOP_BAD_MESSAGE = 3, COOP_LEFT = 7, COOP_PARTNER_LEFT = 8;
   const COOP_DISCONNECTED = 9, COOP_PARTNER_GONE = 10, COOP_DIVERGED = 11;
-  const COOP_ENDS = {
-    1: "The other player has another version of the game",
-    2: "Co-op error: an input no player could make",
-    3: "Co-op error: a message no game sends",
-    7: "You left co-op",
-    8: "Player {partner} left",
-  };
+  const COOP_ENDS = new Set([COOP_VERSION, COOP_BAD_RECORD, COOP_BAD_MESSAGE, COOP_LEFT, COOP_PARTNER_LEFT]);
   const coopLine = document.getElementById("coop-line"), coopInvite = document.getElementById("coop-invite");
   const coopCopy = document.getElementById("coop-copy"), coopNew = document.getElementById("coop-new"),
     coopClose = document.getElementById("coop-close");
-  // The room, whether the partner has been in it, whether a game session runs over it, why co-op ended (shown
-  // until closed) and why the last session did when the next waits (a desync). The game sends over the room the
-  // session connected over, and nowhere once another replaced it.
-  let coop = null, coopLink = null, coopMet = false, coopSession = false, coopEnded = null, coopNote = null;
+  // The room, whether the partner has been in it, whether a game session runs over it and whether its hello came
+  // (COOP_CONNECTED), why co-op ended (shown until closed) and why the last session did, until the next one's hello
+  // (a desync). The game sends over the room the session connected over, and nowhere once another replaced it.
+  let coop = null, coopLink = null, coopMet = false, coopSession = false, coopHello = false, coopEnded = null,
+    coopNote = null;
   // This page's address names the room it plays in, so a reload goes back to it.
   const coopAddress = (room) => {
     const url = new URL(location.href);
@@ -557,10 +555,8 @@
     history.replaceState(null, "", url);
   };
   const partner = () => (coop.role === "host" ? 2 : 1);
-  const coopPinned = () => !!coop && (coopEnded !== null || coopNote !== null || coop.state !== "connected");
+  const coopPinned = () => !!coop && (coopEnded !== null || coopNote !== null || !coopHello || coop.state !== "connected");
   const coopStatus = () => Module.ccall("client_coop_status", "number", [], []) >>> 0;
-  // The game's screen (game_state_id_t): a run a desync stopped stays there until its player leaves it.
-  const GAMEPLAY = 9;
   // Hosts a room (`room` true) or joins one.
   function startCoop(room) {
     const current = coop = createCoop({ log: (...args) => console.info("co-op:", ...args) });
@@ -573,7 +569,7 @@
       if (current !== coop) return;
       if ((state === "error" || state === "closed") && coopSession) coopEnd(COOP_DISCONNECTED);
       if (state === "connected") coopConnect();
-      coopShow(state === "connected" ? 4000 : 0);
+      coopShow(0);
     });
     current.onpeer = (present, gone) => queueMicrotask(() => {
       if (current !== coop) return;
@@ -588,15 +584,15 @@
       coopShow(0);
     });
   }
-  // The game's session as this page's seat, once the game is up and while co-op goes on. A run a desync stopped
-  // stays on screen until its player leaves it; the next session waits for that.
+  // The game's session as this page's seat, once the game is up and while co-op goes on. A run a desync or an
+  // error stopped stays on screen until its player leaves it, its perk screen too; the next session waits for that.
   function coopConnect() {
     if (!coop || coopSession || coopEnded !== null || coop.state !== "connected") return;
-    if (coopNote !== null && Module.ccall("client_game_state", "number", [], []) === GAMEPLAY) return;
+    if (coopStatus() & COOP_STOPPED) return;
     const seat = coop.role === "host" ? 0 : 1;
     if (Module.ccall("client_coop_connect", "number", ["number"], [seat]) < 0) return;
     coopSession = true;
-    coopNote = null;
+    coopHello = false;
     coopLink = coop;
     // Each message goes straight into the game's buffer (the transport keeps them within the room's limit).
     coop.onmessage = (channel, bytes) => {
@@ -610,21 +606,27 @@
   function coopEnd(reason) {
     coopWatch();
     if (!coopSession) return;
-    coopSession = false;
+    coopSession = coopHello = false;
     console.info("co-op: session ended", reason);
     Module.ccall("client_coop_disconnect", "number", ["number"], [reason]);
   }
-  // A session the game closed either begins again or ends co-op, closing the room once its last messages reached
-  // the partner, or after a moment; the address then names no room. Without a session, the next begins when it can.
+  // A session whose hello came says so a moment. One the game closed either begins again or ends co-op, closing
+  // the room once its last messages reached the partner, or after a moment; the address then names no room.
+  // Without a session, the next begins when it can.
   function coopWatch() {
     if (!coopSession) return coopConnect();
     const status = coopStatus(), reason = (status >> 16) & 255;
+    if (status & COOP_CONNECTED && !coopHello) {
+      coopHello = true;
+      coopNote = null;
+      coopShow(4000);
+    }
     if (!(status & COOP_CLOSED)) return;
-    coopSession = false;
+    coopSession = coopHello = false;
     console.info("co-op: session ended", reason);
     if (reason === COOP_DIVERGED) coopNote = "The two games ran differently";
-    if (!COOP_ENDS[reason]) return coopConnect();
-    coopEnded = COOP_ENDS[reason].replace("{partner}", partner());
+    if (!COOP_ENDS.has(reason)) return coopConnect();
+    coopEnded = reason === COOP_LEFT ? "You left co-op" : Module.ccall("client_coop_why", "string", [], []);
     coopAddress(null);
     const room = coop, until = performance.now() + 3000;
     const leave = () => (room.stats().unacked && performance.now() < until ? setTimeout(leave, 100) : room.close());
@@ -645,15 +647,23 @@
       : `Waiting for player ${partner()}${role === "host" ? ": send them this link" : "…"}`;
     const transport = coop.stats().transport;
     const over = !transport ? "" : transport === "ws-relay" ? ", through the room" : transport.startsWith("relay") ? ", relayed" : ", direct";
+    // Connected once both games said hello; until then, after a desync, why the last session ended while this
+    // player's run is stopped, then that the partner's still is.
+    const connectedLine = coopHello
+      ? `Co-op with player ${partner()}${over}`
+      : coopNote === null
+        ? `Connecting to player ${partner()}…`
+        : coopSession
+          ? `Waiting for player ${partner()} to leave the stopped run`
+          : coopNote;
     coopLine.textContent =
       coopEnded ??
-      coopNote ??
       {
         opening: role === "host" ? "Opening a co-op room…" : "Joining the co-op room…",
         waiting: waitingLine,
         connecting: `Connecting to player ${partner()}…`,
         reconnecting: "Reconnecting to the co-op room…",
-        connected: `Co-op with player ${partner()}${over}`,
+        connected: connectedLine,
         error: `Co-op: ${reason}`,
         closed: "Co-op ended",
       }[state];
@@ -677,14 +687,18 @@
     coopInvite.focus();
     coopInvite.select();
   };
-  // Closing ends any session first, as a lost connection would.
-  coopClose.onclick = () => {
-    if (coopSession) coopEnd(COOP_DISCONNECTED);
+  // This page leaves co-op: the room closes, the panel goes and the address names no room.
+  function coopQuit() {
     coop.close();
     coop = null;
     coopAddress(null);
     frameSource();
     coopShow(0);
+  }
+  // Closing ends any session first, as a lost connection would.
+  coopClose.onclick = () => {
+    if (coopSession) coopEnd(COOP_DISCONNECTED);
+    coopQuit();
     canvas.focus();
   };
   coopNew.onclick = () => {
@@ -950,7 +964,10 @@
     printErr: (text) => console.warn(text),
     // The game quit (client/main.cpp) after writing its settings and scores.
     quit: async () => {
-      coop?.close();
+      // Co-op goes with the game, which left its session as it quit: no room stays to play in, nor one for a new
+      // room's stopped game.
+      coopSession = false;
+      if (coop) coopQuit();
       playAnalytics.activity(0, 0);
       playAnalytics.flush();
       cover.hidden = false;

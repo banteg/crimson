@@ -1254,11 +1254,12 @@ exports, which the page calls with `Module.ccall`:
   taken after making room, which can move the module's memory. The page writes
   the bytes there (`Module.HEAPU8.set`), then calls
   `client_coop_receive(channel, size)` (`game_coop_receive`);
-- `client_coop_status()` returns `game_coop_status`, and
-  `client_game_state()` the screen the game shows.
+- `client_coop_status()` returns `game_coop_status`, and `client_coop_why()`
+  why the session or its run stopped as the game tells its player
+  (`game_coop_why`, null for none).
 
-For `checks/coop_browser.mjs` there are also the run's confirmed tick, the
-record a confirmed tick ran with for a seat (`game_coop_used`), the state's hash
+For `checks/coop_browser.mjs` there are also the screen the game shows
+(`client_game_state`), the run's confirmed tick, the record a confirmed tick ran with for a seat (`game_coop_used`), the state's hash
 it left (`game_coop_hash_at`) and `game_coop_corrupt`.
 
 After every frame the client drains `game_coop_tx` on both channels, copies
@@ -1294,8 +1295,11 @@ seat (player 2). The panel shows opening, waiting for the other player (and
 that a player left the room), connecting, connected (direct, relayed through
 TURN, or through the room), reconnecting, and why co-op stopped: the room's
 answers (no such room, room full, the room closed or was opened in another
-tab) and the game's (another version of the game, an input no player could
-make, a message no game sends, a player left, the two games ran differently).
+tab) and the game's, in the game's own words (another version of the game, an
+input no player could make, a message no game sends, a player left), and the
+two games ran differently. It says connected (and how) only once both games
+said hello (`0x1` connected): until then, connecting, or after a desync, that
+it waits for the other player to leave the stopped run.
 A Copy link the clipboard refuses leaves the link selected in its box. Inside another site's frame the page does not play co-op and offers the
 site instead. Co-op keeps the page's lock on the game's storage: one tab per
 origin plays.
@@ -1314,9 +1318,11 @@ address no longer names the room, so a reload does not join it again. After a
 lost connection or a timeout the page connects a new session as soon as the
 transport allows. A desync (`COOP_DIVERGED`) keeps the room: both games stopped
 the run where their states differed, which the panel explains ("The two games
-ran differently"), and once this player left the stopped run (the game's
-screen is no longer the run) the page connects a new session, in which the
-Host can start another run. A desync is a bug in one of the games, not the
+ran differently") until the next session's hello, and once this player left the
+stopped run (the status loses `0x2000` stopped, which a perk screen over the
+stopped run keeps too) the page connects a new session, in which the
+Host can start another run. When the game quits, co-op goes with it: the room
+closes, the panel goes and the address names no room. A desync is a bug in one of the games, not the
 players' doing, so the two keep their room rather than make a new one. Events from the transport reach the
 game after the frame that caused them, never inside it.
 
@@ -1467,6 +1473,7 @@ returns, for the shell that watches the session:
 | `0x400` remote | The partner found the desync or the error |
 | `0x800` signed | The partner's end screen is past its name entry |
 | `0x1000` closed | The session ended: connected stays clear until the next `game_coop_connect` (or a partner's new session) |
+| `0x2000` stopped | A run a desync or an error stopped is still on this peer's screen (its perk screen too), until its player leaves it |
 | `16-23` | Why the session or its last run stopped (`CoopReason`, cleared when a run starts): `0` fine, `1` version, `2` bad record, `3` bad message, `4` stalled, `5` silent, `6` unanswered (no `START_ACK`), `7` left, `8` partner left, `9` disconnected, `10` partner gone, `11` diverged (a desync, found or told). A closed session's is never `0` |
 | `24-27` | The Guest's next-run choice the Host holds, plus one |
 
@@ -1675,8 +1682,10 @@ and messages, repairs and the records they carried, and the round trip.
    Survival run from the host's menus that both play with input (every
    confirmed tick both pages hold run with the same records, each seat's moving
    its player, and leaving the same state hash on both), the guest's tab in the
-   background past the progress timeout with the run going on, a desync that
-   both panels report and a new session after it, a leave from the pause banner
+   background past the liveness timeout (which ends the session of a page that
+   sends nothing) with the run going on, a desync that both panels report, a
+   panel that waits for the partner to leave its stopped run, and a new session
+   after it, a leave from the pause banner
    that both panels report, and a run over the room's relay with a page without
    WebRTC, whose closing the host's game hears at once.
 
@@ -1694,7 +1703,9 @@ and messages, repairs and the records they carried, and the round trip.
    end screen once the Host's name is in, pick a perk in a paused run and leave
    by pad from the pause banner, time out on one machine alone and begin anew
    on its next hello (the other machine's run ending where it confirmed it),
-   desync (both sessions closed for it) and leave by keys and pad, open the
+   desync as the Guest's perk screen opens (both sessions closed for it, both
+   runs staying stopped through the pick until left) and leave by keys and
+   pad, open the
    transport again at the end screens (the Host's Play Again of the last
    session starting nothing), as the Host's screen fades to a run (which starts
    none) and mid-run (each run ending where it was confirmed, with its replay),

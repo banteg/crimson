@@ -574,6 +574,13 @@ const REASON = {
   diverged: 11,
 };
 const reason = (status) => (status >>> 16) & 255;
+// Why the session or its run stopped, as the game tells its player and the page's panel says (game_coop_why), or
+// null.
+const why = (g) => {
+  const at = g.game_coop_why();
+  const bytes = new Uint8Array(g.memory.buffer, at);
+  return at ? Buffer.from(bytes.subarray(0, bytes.indexOf(0))).toString("latin1") : null;
+};
 // Session timeouts (host/coop_wire.inc), and how long a leave may take to close both peers: the run to its end,
 // and the last records and hashes each way.
 const PROGRESS_MS = 5000,
@@ -1209,7 +1216,9 @@ function pipeCases(stream, truth, short, shortTruth) {
     sim.endsAlone(h);
     lines.push(sim.report("disconnect", start));
   }
-  // An invalid record: the receiver stops on a protocol error and tells the partner.
+  // An invalid record: the receiver stops on a protocol error and tells the partner. Both tell their players the
+  // same, and not what they tell of a malformed message.
+  let badRecord;
   {
     const start = at(),
       sim = new Pipe(stream, truth, mode, { seed: 8 });
@@ -1229,6 +1238,8 @@ function pipeCases(stream, truth, short, shortTruth) {
     assert.equal(g & STATUS.remote, 0, "the Guest found it");
     assert.ok(h & STATUS.remote, "the Host heard it");
     for (const s of [h, g]) assert.equal((s >>> 16) & 255, REASON.badRecord, "the error");
+    badRecord = why(sim.peers[0].g);
+    assert.equal(why(sim.peers[1].g), badRecord, "the error's words");
     lines.push(sim.report("invalid record", start));
   }
   // A malformed message reaches the Guest as the Host starts a run: the Host stops waiting for it.
@@ -1242,6 +1253,7 @@ function pipeCases(stream, truth, short, shortTruth) {
     const [h, g] = sim.peers.map((p) => sim.status(p));
     assert.equal(h & (STATUS.starting | STATUS.started | STATUS.remote), STATUS.remote, `the Host: ${h.toString(16)}`);
     for (const s of [h, g]) assert.equal(reason(s), REASON.badMessage, "the error");
+    for (const p of sim.peers) assert.notEqual(why(p.g), badRecord, "a malformed message's words");
     lines.push({ pipe: "error starting", ms: Math.round(at() - start) });
   }
   // A desync in lockstep: one peer's state changes under it, and both stop at a tick after the change.

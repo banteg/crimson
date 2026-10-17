@@ -55,12 +55,15 @@
 // its hello. The Host's menus start the next run.
 //
 // At its first level the Guest's window goes to the background, where its pad
-// asks for no perk menu; in front again it asks for one, and in the background
-// again its pad picks nothing on its perk screen until it comes back.
+// asks for no perk menu; in front again it asks for one.
 //
-// A desync. That run, whose state the Guest's machine changes between ticks,
-// stops on both at the same tick with the desync banner, both sessions closed
-// for the desync; the Host's Enter and the Guest's A press its Leave.
+// A desync. That run, whose state the Guest's machine changes just before the
+// tick that opens the Guest's perk screen, stops on both at the same tick, both
+// sessions closed for the desync, while that perk screen shows: both machines'
+// runs stay on screen, stopped (so the page starts no new session yet). In the
+// background the Guest's pad picks nothing there until it comes back; its pick
+// goes back to the run's desync banner, and the Host's Enter and the Guest's A
+// press its Leave, after which no stopped run remains.
 //
 // Sessions that end around runs. The transport opens again on both sides before
 // either's next frame, once at the end screens of a run both stood through
@@ -136,6 +139,7 @@ const STATUS = {
   starting: 512,
   signed: 2048,
   closed: 4096,
+  stopped: 8192,
 };
 // Why a session ended (CoopReason).
 const SILENT = 5, UNANSWERED = 6, LEFT = 7, PARTNER_LEFT = 8, DISCONNECTED = 9, PARTNER_GONE = 10, DIVERGED = 11;
@@ -885,28 +889,38 @@ inBackground(1000, [{ press: [PAD_NORTH] }], () => {
   assert.equal(status(guest) & STATUS.waiting, 0, "a perk request from the background");
   for (const peer of peers) assert.equal(screen(peer), GAMEPLAY, `machine ${peer.seat}'s screen`);
 });
-assert.equal(guest.g.game_coop_request(ASK_OPEN, 0, 0, 0, guest.run.clock), 1);
-settle(guest, PERK_SELECTION, idle, 1000);
-inBackground(1500, [{ hat: HAT_DOWN }, { press: [PAD_SOUTH] }], () =>
-  assert.equal(screen(guest), PERK_SELECTION, "a pick from the background"),
-);
-play(player, () => screen(guest) === GAMEPLAY, "the Guest's pick");
 
-// A desync: the Guest's player gains health between ticks (again while a rollback or a tick's clamp undoes it),
-// the next confirmed tick's hashes differ, and both machines stop there, their sessions closed for it. The Host's
-// Enter and the Guest's A press the banner's Leave, its one button.
-play(player, () => peers.every((p) => confirmed(p) >= 200), "the fourth run's 200 ticks");
-const corrupt = () => assert.equal(guest.g.game_coop_corrupt(0), 1);
-play(player, () => (corrupt(), peers.every((p) => status(p) & STATUS.desynced)), "the desync");
+// A desync: the Guest asks for the perk menu, and its machine's weapon usage count changes just before the tick
+// that takes the request runs (again while a rollback undoes it). That tick's hashes differ, and both machines stop
+// there, their sessions closed for it, as the Guest's perk screen opens: both runs stay on screen, stopped. In the
+// background the Guest's d-pad and A pick nothing there; back in front its pick goes back to the run, still stopped,
+// and the Host's Enter and the Guest's A press the banner's Leave, its one button: no stopped run is left.
+const asked = guest.g.game_coop_produced() + 1;
+assert.equal(guest.g.game_coop_request(ASK_OPEN, 0, 0, 0, guest.run.clock), 1);
+const corrupt = () => assert.equal(guest.g.game_coop_corrupt(3), 1);
+play(idle, () => {
+  if (screen(guest) === GAMEPLAY && guest.g.game_coop_next() === asked) corrupt();
+  return peers.every((p) => status(p) & STATUS.desynced);
+}, "the desync");
 const desync = peers.map((p) => new Int32Array(p.g.memory.buffer, p.g.game_coop_desync(), 1)[0]);
 assert.equal(desync[0], desync[1], "both find the desync at the same tick");
+assert.equal(desync[0], asked, "the desync at the request's tick");
+settle(guest, PERK_SELECTION, idle, 1000);
+const runsStopped = () => peers.map((p) => (status(p) & STATUS.stopped) !== 0);
 for (const peer of peers) {
   assert.equal(status(peer) & (STATUS.connected | STATUS.closed), STATUS.closed, `machine ${peer.seat}'s session`);
   assert.equal(reason(peer), DIVERGED, `machine ${peer.seat}'s reason`);
 }
+assert.deepEqual(runsStopped(), [true, true], "the stopped runs, the Guest's perk screen showing");
+inBackground(1500, [{ hat: HAT_DOWN }, { press: [PAD_SOUTH] }], () =>
+  assert.equal(screen(guest), PERK_SELECTION, "a pick from the background"),
+);
+play(player, () => screen(guest) === GAMEPLAY, "the Guest's pick");
+assert.deepEqual(runsStopped(), [true, true], "the stopped runs after the pick");
 tap(host, key(ENTER));
 tap(guest, A);
 play(idle, () => peers.every((p) => screen(p) === MAIN_MENU), "the menus after the desync");
+assert.deepEqual(runsStopped(), [false, false], "the stopped runs, left");
 
 // The transport closes and opens again on both sides before either machine's next frame; what the old one carried
 // is gone.

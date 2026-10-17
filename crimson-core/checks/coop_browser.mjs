@@ -7,27 +7,32 @@
 //
 // First over WebRTC. The host's Play co-op opens a room and shows the invite
 // link, whose Copy link leaves the link selected in its box when the clipboard
-// refuses. The guest opens it, and both connect. The guest reloads and joins
-// again, then the host does: each time the other page's game ends its session
-// with the page that went and begins one with the new page. The host's menus
+// refuses. The guest opens it, and both connect over a WebRTC candidate pair
+// (not the room's relay). The guest reloads and joins again, then the host
+// does: each time the other page's game ends its session with the page that
+// went and begins one with the new page, again over WebRTC. The host's menus
 // start a Survival run, which the guest's screen follows; both players move and
 // fire for a few hundred ticks, while each page's session must show the run
 // started, no desync or error, and its confirmed ticks advancing, and every
 // confirmed tick both pages hold must have run with the same records and left
 // the same state on both, each seat's records moving its player at times. The
-// guest's tab then goes to the background for longer than the progress timeout
-// and the run goes on. A desync the guest's page makes closes both sessions;
-// both panels say why, both players leave the stopped run, and the pages begin a
-// new session. In its run the host pauses and leaves from the banner: both runs
+// guest's tab then goes to the background for longer than the liveness timeout,
+// which would end the session of a page that sent nothing there, and the run
+// goes on. A desync the guest's page makes closes both sessions and stops both
+// runs; both panels say why. The host leaves its stopped run first: its page
+// begins a session whose hello waits, its panel saying it waits for player 2 to
+// leave the stopped run, while the guest's page, its run still stopped, begins
+// none. Once the guest leaves too, the session connects. In its run the host pauses and leaves from the banner: both runs
 // end, the host's panel says it left and the guest's that player 1 left, neither
 // address names the room any more, and once the host opens a new room, what the
 // old session still sends goes nowhere.
 //
 // Then over the room's relay: a guest page without WebRTC joins a new room,
 // both play a run through the room, and the guest's page closes, which the
-// host's game hears at once. Screenshots of the pages (the cover, the invite,
-// the menus connected, the runs, the background, the desync, the pause, the
-// end) go to the shots folder.
+// host's game hears at once. The host's game quits (Alt+Q): its panel goes with
+// the room, offering no new room for a game that no longer runs. Screenshots of
+// the pages (the cover, the invite, the menus connected, the runs, the
+// background, the desync, the pause, the end, the quit) go to the shots folder.
 //
 //   CRIMSON_CHROME=<chrome> node crimson-core/checks/coop_browser.mjs <asset dir> [shots dir]
 //
@@ -58,7 +63,7 @@ fs.mkdirSync(shots, { recursive: true });
 const GAME_VERSION = /const GAME_VERSION = "([^"]+)"/.exec(fs.readFileSync(path.join(SERVICE, "src/index.ts"), "utf8"))[1];
 // game_state_id_t; game_coop_status's flags and reasons (host/coop_wire.inc).
 const MAIN_MENU = 0, PLAY_GAME_MENU = 1, GAMEPLAY = 9;
-const STATUS = { connected: 1, started: 2, paused: 4, desynced: 128, failed: 256, closed: 0x1000 };
+const STATUS = { connected: 1, started: 2, paused: 4, desynced: 128, failed: 256, closed: 0x1000, stopped: 0x2000 };
 const PARTNER_GONE = 10, DIVERGED = 11;
 const reasonOf = (status) => (status >> 16) & 255;
 // The 1024x768 frame's Play Game on the main menu, and Survival on the Play Game panel, whose fresh profile lists
@@ -68,8 +73,10 @@ const PLAY_GAME = [240, 338], SURVIVAL = [232, 396], LEAVE = [592, 406];
 // A fresh profile's main menu shares its screen with the startup sequence, which ends after about 14 s.
 const STARTUP_MS = 15000;
 const TICKS = 300;
-// Past the session's progress timeout (COOP_PROGRESS_MS).
-const BACKGROUND_MS = 8000;
+// Past the session's liveness timeout (host/coop_wire.inc COOP_LIVENESS_MS), which ends the session of a partner
+// that sends nothing, as a hidden tab's game would without frames.
+const WIRE = fs.readFileSync(new URL("../host/coop_wire.inc", import.meta.url), "utf8");
+const BACKGROUND_MS = Number(/COOP_LIVENESS_MS = (\d+)/.exec(WIRE)[1]) + 2000;
 
 const free = () =>
   new Promise((resolve) => {
@@ -157,7 +164,11 @@ const cdp = (method, params = {}, sessionId) =>
 
 const logs = [], peers = [];
 // The DirectInput-bound keys the check presses.
-const KEYS = { Escape: ["Escape", 27], ...Object.fromEntries([..."WASD"].map((ch) => [`Key${ch}`, [ch.toLowerCase(), ch.charCodeAt(0)]])) };
+const KEYS = {
+  Escape: ["Escape", 27],
+  AltLeft: ["Alt", 18],
+  ...Object.fromEntries([..."WASDQ"].map((ch) => [`Key${ch}`, [ch.toLowerCase(), ch.charCodeAt(0)]])),
+};
 // A page of its own browser context: a window with one tab, the page focused (as Playwright emulates it) so
 // every page plays with input.
 async function open(name, origin, { webrtc = true } = {}) {
@@ -165,8 +176,15 @@ async function open(name, origin, { webrtc = true } = {}) {
   const { targetId } = await cdp("Target.createTarget", { url: "about:blank", browserContextId });
   const { sessionId } = await cdp("Target.attachToTarget", { targetId, flatten: true });
   const send = (method, params) => cdp(method, params, sessionId);
+  // A navigation is done once its page loaded: nothing asks the page it leaves.
+  let loaded = () => {};
+  const navigate = (method, params) => {
+    const done = new Promise((resolve) => (loaded = resolve));
+    return send(method, params).then(() => done);
+  };
   listeners.set(sessionId, (method, params) => {
-    if (method === "Runtime.consoleAPICalled")
+    if (method === "Page.loadEventFired") loaded();
+    else if (method === "Runtime.consoleAPICalled")
       logs.push(`${name}: ${params.args.map((arg) => arg.value ?? arg.description ?? "").join(" ")}`);
     else if (method === "Runtime.exceptionThrown") logs.push(`${name} error: ${params.exceptionDetails.exception?.description ?? params.exceptionDetails.text}`);
   });
@@ -193,8 +211,8 @@ async function open(name, origin, { webrtc = true } = {}) {
   };
   const peer = {
     name, origin, targetId, browserContextId, send, evaluate,
-    goto: (url) => send("Page.navigate", { url }),
-    reload: () => send("Page.reload"),
+    goto: (url) => navigate("Page.navigate", { url }),
+    reload: () => navigate("Page.reload"),
     status: async () => (await call("client_coop_status")) >>> 0,
     confirmed: () => call("client_coop_confirmed"),
     screen: () => call("client_game_state"),
@@ -253,6 +271,15 @@ async function tap(peer, code) {
   await peer.keyUp(code);
 }
 const connected = async (peer) => (await peer.status()) & STATUS.connected;
+// The panel says the session is connected once the game's is (both games said hello): over `how`.
+const linked = (peer, how) =>
+  until(`${peer.name}'s panel connected`, async () => {
+    const line = await peer.line();
+    return line.startsWith(`Co-op with player ${peer === host ? 2 : 1}`) && how.test(line);
+  }, 2000);
+// A WebRTC transport: its selected candidate pair's local candidate (coop.js candidateType), not the room's relay.
+const webrtc = (peer) =>
+  until(`${peer.name}'s WebRTC candidate pair`, async () => /^(host|srflx|prflx|relay)/.test((await peer.transport()) ?? ""), 5000);
 const both = (what, test, ms) => until(what, async () => (await test(host)) && (await test(guest)), ms);
 // The host's menus start Survival once the startup sequence is over; the guest's screen follows.
 async function survival(host, guest) {
@@ -316,7 +343,8 @@ try {
   await guest.shot("cover");
   await guest.click("#play");
   await both("both sessions", connected);
-  for (const peer of [host, guest]) assert.match(await peer.line(), new RegExp(`Co-op with player ${peer === host ? 2 : 1}`));
+  for (const peer of [host, guest]) await webrtc(peer);
+  for (const peer of [host, guest]) await linked(peer, /, (direct|relayed)$/);
   console.log("connected:", await host.line(), "/", await guest.line());
 
   // The guest reloads, then the host: each page joins again from its stored seat, and the other page's session
@@ -327,6 +355,7 @@ try {
     await peer.click("#play");
     await both(`the session with ${peer.name}'s new page`, connected);
     assert.ok(logs.includes(`${other.name}: co-op: session ended ${PARTNER_GONE}`), `${other.name}'s session ended with the old page`);
+    for (const each of [peer, other]) await webrtc(each);
   }
 
   await sleep(STARTUP_MS);
@@ -360,7 +389,7 @@ try {
   await Promise.all([host.shot("run"), guest.shot("run")]);
 
   // The guest's tab goes to the background (another tab of its window in front, its focus emulation off), past the
-  // progress timeout: its page's frames come from a worker's timer and the run goes on.
+  // liveness timeout: its page's frames come from a worker's timer, its game keeps sending and the run goes on.
   await guest.send("Emulation.setFocusEmulationEnabled", { enabled: false });
   const { targetId: front } = await cdp("Target.createTarget", { url: "about:blank", browserContextId: guest.browserContextId });
   await cdp("Target.activateTarget", { targetId: front });
@@ -382,7 +411,9 @@ try {
   await guest.shot("background");
 
   // A desync: the guest's page changes its state between ticks until a confirmed tick's hashes differ. Both
-  // sessions close for it and both panels say so; both players leave the stopped run, and a new session begins.
+  // sessions close for it, both runs stop and both panels say so. The host leaves its stopped run first: its page
+  // begins a session, whose hello waits for the guest's, and says so; the guest's stopped run keeps its page from
+  // beginning one. Once the guest leaves too, the session connects.
   await until("the desync", async () => {
     await guest.evaluate(() => Module.ccall("client_coop_corrupt", "number", ["number"], [0]));
     return (await host.status()) & STATUS.desynced && (await guest.status()) & STATUS.desynced;
@@ -393,11 +424,20 @@ try {
     assert.equal(reasonOf(status), DIVERGED, `${peer.name}'s reason`);
   }
   await both("both panels on the desync", async (peer) => (await peer.line()) === "The two games ran differently", 5000);
+  for (const peer of [host, guest]) assert.ok((await peer.status()) & STATUS.stopped, `${peer.name}'s stopped run`);
   await Promise.all([host.shot("desync"), guest.shot("desync")]);
-  for (const peer of [host, guest]) await tap(peer, "Escape");
-  await both("both menus after the desync", async (peer) => (await peer.screen()) === MAIN_MENU, 30000);
+  await tap(host, "Escape");
+  await until("the host's menu after the desync", async () => (await host.screen()) === MAIN_MENU, 30000);
+  await until("the host's panel", async () => (await host.line()) === "Waiting for player 2 to leave the stopped run", 5000);
+  await sleep(1500);
+  assert.equal((await host.status()) & (STATUS.connected | STATUS.closed | STATUS.stopped), 0, "the host's session, its hello waiting");
+  assert.equal((await guest.status()) & (STATUS.connected | STATUS.closed | STATUS.stopped), STATUS.closed | STATUS.stopped, "the guest's stopped run");
+  assert.equal(await guest.line(), "The two games ran differently");
+  await host.shot("desync-waiting");
+  await tap(guest, "Escape");
+  await until("the guest's menu after the desync", async () => (await guest.screen()) === MAIN_MENU, 30000);
   await both("the session after the desync", connected, 30000);
-  for (const peer of [host, guest]) assert.match(await peer.line(), new RegExp(`Co-op with player ${peer === host ? 2 : 1}`));
+  for (const peer of [host, guest]) await linked(peer, /, (direct|relayed)$/);
 
   // The host pauses with Escape and leaves from the banner: both runs end, both panels say why, and neither
   // address names the room any more.
@@ -433,7 +473,7 @@ try {
   await guest.click("#play");
   await both("both relayed sessions", connected);
   for (const peer of [host, guest]) assert.equal(await peer.transport(), "ws-relay", `${peer.name}'s transport`);
-  for (const peer of [host, guest]) assert.match(await peer.line(), /through the room/);
+  for (const peer of [host, guest]) await linked(peer, /, through the room$/);
   await sleep(STARTUP_MS);
   await survival(host, guest);
   const relayed = await host.confirmed();
@@ -445,6 +485,17 @@ try {
   await until("the host's session after the guest's page closed", async () => reasonOf(await host.status()) === PARTNER_GONE, 3000);
   assert.equal((await host.status()) & STATUS.connected, 0);
   await host.shot("partner-gone");
+  // The host's game quits from its menu: the panel goes with the room, and the address names none.
+  await until("the host's menu", async () => (await host.screen()) === MAIN_MENU, 30000);
+  await host.keyDown("AltLeft");
+  await tap(host, "KeyQ");
+  await host.keyUp("AltLeft");
+  await host.waitFor("#again", 30000);
+  assert.deepEqual(
+    await host.evaluate(() => [document.getElementById("coop").hidden, coop, new URL(location.href).searchParams.get("coop")]),
+    [true, null, null],
+  );
+  await host.shot("quit");
   console.log(`co-op in the browser: ok (screenshots in ${shots})`);
 } catch (error) {
   // Failed, whatever the diagnostics below do.

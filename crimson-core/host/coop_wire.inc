@@ -30,7 +30,7 @@ enum CoopType : uint8_t {
 // What game_coop_request asks for.
 enum CoopAsk { COOP_ASK_OPEN = 1, COOP_ASK_PAUSE, COOP_ASK_LEAVE, COOP_ASK_NEXT_RUN, COOP_ASK_START, COOP_ASK_SIGNED };
 // game_coop_status, for the shell that watches the session: these flags (bits
-// 0-12), then why the session or its run stopped (CoopReason, bits 16-23, kept
+// 0-13), then why the session or its run stopped (CoopReason, bits 16-23, kept
 // until the next run starts, so a session that ended still names why), then the
 // Guest's choice for the next run the Host holds (plus one, bits 24-27). A
 // session that ended has CLOSED set and CONNECTED clear for good; its reason is
@@ -49,6 +49,7 @@ enum : uint32_t {
   COOP_REMOTE = 1024,  // the partner found the desync or the error
   COOP_SIGNED = 2048,  // the partner's end screen is past its name entry (RUN_SIGNED)
   COOP_CLOSED = 4096,  // the session ended (a leave, a timeout, an error, a desync, the transport)
+  COOP_STOPPED = 8192, // a run a desync or an error stopped is still on this machine's screen, until its player leaves
 };
 // Also the codes ERROR sends.
 enum CoopReason : uint8_t {
@@ -862,7 +863,8 @@ __attribute__((export_name("game_coop_status"))) uint32_t game_coop_status() {
       (coop.active && coop.picking ? COOP_PICKER : 0) | (wire.left || wire.partner_left ? COOP_LEAVING : 0) |
       (coop_over() ? COOP_ENDED : 0) | (coop_running() && coop.desync.tick >= 0 ? COOP_DESYNCED : 0) |
       (wire.failed ? COOP_FAILED : 0) | (wire.remote ? COOP_REMOTE : 0) | (wire.partner_signed ? COOP_SIGNED : 0) |
-      (wire.closed ? COOP_CLOSED : 0);
+      (wire.closed ? COOP_CLOSED : 0) |
+      (coop.active && (coop.hold & COOP_HOLD_STOP) && coop_live.playing ? COOP_STOPPED : 0);
   return status | (uint32_t)wire.reason << 16 | (uint32_t)(wire.next_run + 1) << 24;
 }
 }

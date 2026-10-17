@@ -65,6 +65,7 @@ static const char *coop_why() {
   case COOP_VERSION:
     return "The other player has another version of the game";
   case COOP_BAD_RECORD:
+    return "Co-op error: an input no player could make";
   case COOP_BAD_MESSAGE:
     return "Co-op error: a message no game sends";
   case COOP_STALLED:
@@ -748,6 +749,9 @@ bool game_coop_focus(int active) {
 // A co-op run's banner shows its buttons (game/pad.cpp): the pad steps their
 // focus as outside gameplay.
 bool game_coop_banner() { return coop_live.playing && coop_ui.banner; }
+// Why the session or its run stopped, as the game tells its player (coop_why),
+// for the page's panel; null when this machine left or nothing stopped.
+__attribute__((export_name("game_coop_why"))) const char *game_coop_why() { return coop_why(); }
 }
 // The menus' line (ui_elements_update_and_render).
 static void coop_menus_draw() {

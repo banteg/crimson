@@ -541,11 +541,16 @@ CLIENT_EXPORT u8 *client_coop_rx(int size) {
 CLIENT_EXPORT void client_coop_receive(int channel, int size) {
   w2c_game_game_coop_receive(&game, channel, size, coop_now());
 }
-// game_coop_status's flags and reasons and the screen the game shows (game_state_id_t, -1 before it started),
-// for the page; for checks (checks/coop_browser.mjs) also the run's confirmed tick (-1 none), what a
-// confirmed tick ran with (the seat's PortableInput, null for a tick out of the ring) and left (its state's
-// hash), and a change to the state that the next hash shows (game_coop_corrupt).
+// game_coop_status's flags and reasons, and why the session or its run stopped as the game tells its player
+// (game_coop_why, null for none), for the page; for checks (checks/coop_browser.mjs) also the screen the game
+// shows (game_state_id_t, -1 before it started), the run's confirmed tick (-1 none), what a confirmed tick ran
+// with (the seat's PortableInput, null for a tick out of the ring) and left (its state's hash), and a change to
+// the state that the next hash shows (game_coop_corrupt).
 CLIENT_EXPORT u32 client_coop_status() { return started ? w2c_game_game_coop_status(&game) : 0; }
+CLIENT_EXPORT const char *client_coop_why() {
+  u32 why = started ? w2c_game_game_coop_why(&game) : 0;
+  return why ? (const char *)client_memory() + why : nullptr;
+}
 CLIENT_EXPORT int client_coop_confirmed() { return started ? (int)w2c_game_game_coop_confirmed(&game) : -1; }
 CLIENT_EXPORT int client_game_state() { return started ? (int)w2c_game_game_state(&game) : -1; }
 CLIENT_EXPORT const u8 *client_coop_used(int t, int seat) {

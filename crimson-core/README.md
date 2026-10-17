@@ -229,7 +229,9 @@ perks, pause and resume each other, and one plays on in the background, where
 its pad reaches nothing; the Guest's end screen starts the next run once the
 Host's name is in, where both ask for a perk menu on the same tick, and a pad
 leave from the pause banner right after a pick ends it. Then a timeout on one
-machine alone and a new session on its hello, a desync, the transport opening
+machine alone and a new session on its hello, a desync as one player's perk
+screen opens (both runs staying stopped, which the status says, until each
+player leaves), the transport opening
 again at the end screens (a Play Again of the last session starting nothing in
 the new one), as the screen fades to a run (which then starts none) and
 mid-run, a leave as the screen fades to the next
@@ -261,19 +263,22 @@ free port with the game files from `artifacts/assets` in a local bucket, and
 drives headless Chrome pages on `http://localhost:<port>` and
 `http://127.0.0.1:<port>`, which keep their storage and their lock on the game
 apart. The host's Play co-op opens a room and shows its invite (a refused copy
-leaves it selected), the guest's Join takes the seat, and both connect; the
-guest reloads, then the host, and each time the other page's game starts a new
-session with the new page. The host's menus start Survival and both play with
+leaves it selected), the guest's Join takes the seat, and both connect over
+WebRTC; the guest reloads, then the host, and each time the other page's game
+starts a new session with the new page, again over WebRTC. The host's menus start Survival and both play with
 keys and mouse: each page's session must have the run started, no desync or
 error and its confirmed ticks advancing, and every confirmed tick both pages
 hold must have run with the same records and left the same state hash on both,
 each seat's records moving its player. The guest's tab goes to the background
-past the progress timeout and the run goes on; a desync the guest's page makes
-closes both sessions, both panels say so, both players leave the stopped run
-and a new session begins; in its run the host leaves from the pause banner,
-both panels say so, and neither address keeps the room. Last, a guest page
-without WebRTC plays a run with the host over the room's relay, then closes,
-which the host's game hears at once. It saves screenshots of the pages along
+past the liveness timeout, which would end the session of a page that sent
+nothing, and the run goes on; a desync the guest's page makes closes both
+sessions and both panels say so; the host leaves its stopped run first and its
+panel waits for the guest to leave its own, whose page begins no session
+meanwhile, then a new session begins; in its run the host leaves from the
+pause banner, both panels say so, and neither address keeps the room. Last, a
+guest page without WebRTC plays a run with the host over the room's relay, then
+closes, which the host's game hears at once, and the host's game quits, which
+takes the co-op panel with it. It saves screenshots of the pages along
 the way (by default under the system's temporary folder).
 
 `CRIMSON_CHROME` is a Chrome or Chromium binary with the new headless mode
