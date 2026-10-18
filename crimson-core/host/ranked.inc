@@ -450,16 +450,15 @@ void ranked_menu(float *base, float *tips, bool list_open) {
   }
   int dt = frame_dt_ms;
   box_tip = box.hovered ? box_tip + dt * 6 : box_tip - dt * 2;
-  if (ranked_checked) {
-    profile.enabled = !list_open;
-    float profile_at[2] = {base[0] - 62.0f, base[1] + 204.0f};
-    if (ui_button_update(profile_at, &profile)) {
-      snprintf(note, sizeof note, "Opening the leaderboard site...");
-      host_leaderboard(HOST_LEADERBOARD_PROFILE);
-    }
-    profile_tip = profile.hovered ? profile_tip + dt * 6 : profile_tip - dt * 2;
-  } else
-    profile_tip -= dt * 2, note[0] = 0;
+  // Profile stands whether or not the box is ticked: a player who only plays
+  // co-op, which ranks without it, signs in to the site here too.
+  profile.enabled = !list_open;
+  float profile_at[2] = {base[0] - 62.0f, base[1] + 204.0f};
+  if (ui_button_update(profile_at, &profile)) {
+    snprintf(note, sizeof note, "Opening the leaderboard site...");
+    host_leaderboard(HOST_LEADERBOARD_PROFILE);
+  }
+  profile_tip = profile.hovered ? profile_tip + dt * 6 : profile_tip - dt * 2;
   box_tip = box_tip < 0 ? 0 : box_tip > 1000 ? 1000 : box_tip;
   profile_tip = profile_tip < 0 ? 0 : profile_tip > 1000 ? 1000 : profile_tip;
   // Each tip one line, centred under the modes' buttons (the port's own tips).

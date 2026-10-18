@@ -76,7 +76,8 @@ if (silent) {
   config[0] = config[1] = 1; // sound_disabled, music_disabled
   fs.writeFileSync(path.join(directory, "crimson.cfg"), config);
 }
-const run = bootGame(gameWasm, directory, seedOverride, { leaderboard: ranked });
+const requests = []; // the host's leaderboard requests (game/leaderboard_requests.h)
+const run = bootGame(gameWasm, directory, seedOverride, { leaderboard: ranked, requests });
 const { game } = run;
 const clientVersion = "0.14.2+build.000000000000000000000000";
 Buffer.from(game.memory.buffer).write(`${clientVersion}\0`, game.game_recorder_version(), "ascii");
@@ -221,7 +222,13 @@ if (padded) {
   choose(PLAY_GAME_MENU, quest ? 1 : 3, { left: [0, 800] });
   if (quest) choose(QUEST_SELECT, 0);
 } else {
-  if (ranked) click(PLAY_GAME_MENU, [285, 489]);
+  if (ranked) {
+    // Profile opens the site before Ranked is ticked too: a player who only
+    // plays co-op signs in there.
+    click(PLAY_GAME_MENU, [140, 488]);
+    if (requests.join() !== "1") throw Error(`Profile without Ranked asked the host for ${JSON.stringify(requests)}`);
+    click(PLAY_GAME_MENU, [285, 489]);
+  }
   if (quest) {
     // Quests, then 1.1 on the quest list.
     click(PLAY_GAME_MENU, [232, ranked ? 318 : 350]);

@@ -169,7 +169,8 @@ class PlayGameMenuView(PanelMenuView):
         self._update_tooltip_timer("ranked", checkbox.hovered, dt_ms)
 
     def _profile_shown(self) -> bool:
-        return self.state.ranked and self.state.leaderboard is not None
+        # Ranked or not: a player who only plays co-op, which ranks without the box, signs in here too.
+        return self.state.leaderboard is not None
 
     def _update_profile(
         self, pos: Vec2, *, resources: RuntimeResources, mouse: rl.Vector2, click: bool, dt_ms: int,

@@ -1007,7 +1007,7 @@ function GameplayAnalyticsPreference() {
 
 const SIGN_IN = () => (
   <p>
-    Open your profile from the game: tick <em>Ranked</em> on Play Game and press <em>Profile</em>.
+    Open your profile from the game: press <em>Profile</em> on Play Game.
   </p>
 );
 

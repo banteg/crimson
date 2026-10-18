@@ -112,16 +112,12 @@ def test_a_finished_ranked_run_queues_under_the_name_its_results_settle(loop, mo
     assert json.loads(queued.read_bytes())["name"] == "banteg"
 
 
-def test_profile_shows_while_ranked_and_opens_the_signed_link(loop, mocker, tmp_path) -> None:
+def test_profile_opens_the_signed_link_without_ranked(loop, mocker, tmp_path) -> None:
     answers = {"challenge": {"challenge": "c0ffee"}, "login": {"url": "https://crimson.test/login/once"}}
     _leaderboard(loop, tmp_path, transport=lambda url, _body: (200, answers[url.rsplit("/", 1)[1]]))
     opened = mocker.patch.object(play_game.webbrowser, "open")
     panel = _play_game(loop)
-    assert not panel._profile_shown()
-
-    _click_ranked(loop, panel, mocker)
-    assert panel._profile_shown()
-    assert panel._login is None, "ticking Ranked must not press Profile"
+    assert not panel.state.ranked
     button = panel._content_layout().base_pos + PlayGameMenuView._PROFILE_OFFSET
     mocker.patch.object(canvas, "mouse_position", return_value=(button + Vec2(20.0, 16.0)).to_rl())
     mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)

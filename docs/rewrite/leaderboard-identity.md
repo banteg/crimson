@@ -174,8 +174,9 @@ in its seat.
 
 ## In the game
 
-- The Play Game panel shows a **Profile** button at the left of its bottom row, opposite the Ranked box, only while
-  Ranked is ticked; it follows the box in focus order. It opens the signed login link.
+- The Play Game panel shows a **Profile** button at the left of its bottom row, opposite the Ranked box, ticked or
+  not, so a player who only plays co-op (which ranks without the box) signs in too; it follows the box in focus
+  order. It opens the signed login link.
 - Inside another site's page, such as a post's player card, the browser keeps the game's storage apart from
   crimson.land's, so the game there has a key of its own. It offers no Ranked box or Profile button, so that key
   never starts an account; it still receives the boards and plays their runs. The button's plate is 32 px
