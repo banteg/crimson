@@ -1,8 +1,8 @@
 {
   "wasmtime_version": "49.0.0",
-  "module_sha256": "dc241c578f6aa3072f27cf2c6a317b9236b9f70d1fbc5fe843d42bf858d62513",
-  "cases": 6,
-  "ticks": 16488,
+  "module_sha256": "ca710de28259ea0cc49ba99398eb52b332a1c3a8e681a04d4464a6f3644681c1",
+  "cases": 8,
+  "ticks": 28988,
   "fields_per_snapshot": 36343,
   "comparison": "every snapshot hash matches native/Node",
   "reset": "all Wasmtime A/B/A passed",
@@ -32,6 +32,16 @@
       "name": "quest-5.6-ranked",
       "ticks": 1207,
       "sha256": "92bd3f56d2319ae644e7c4c52172de484eddb612653f444b74c370a51670799f"
+    },
+    {
+      "name": "coop-survival-ranked",
+      "ticks": 9463,
+      "sha256": "3015bfbe0a0461069aad88867bb6cc6ede2145e465c5f287d76f43383ad29789"
+    },
+    {
+      "name": "coop-quest-2.4-ranked",
+      "ticks": 3037,
+      "sha256": "f2725aa721c660e49fc17569fd30739788e4d47399190acca42765ee17da77b5"
     },
     {
       "name": "quest-settings",

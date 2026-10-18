@@ -32,6 +32,8 @@ SMOKE = {
     "quest-point-click",
     "quest-5.6-ranked",
     "quest-settings",
+    "coop-survival-ranked",
+    "coop-quest-2.4-ranked",
 }
 
 
@@ -106,7 +108,7 @@ def main():
     results = []
     # Use the same instance across all runs; repeat each A after a different B.
     other, other_records = decode((args.build / "fixtures/rush-idle.rsi").read_bytes())
-    # One run per mode, policy and control family is enough to show the module runs the same here.
+    # One run per mode, policy, control family and player count is enough to show the module runs the same here.
     for case in (case for case in report["cases"] if case["name"] in SMOKE):
         config, records = decode((args.build / "fixtures" / (case["name"] + ".rsi")).read_bytes())
         init(config)

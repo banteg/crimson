@@ -20,10 +20,15 @@ Two-player online co-op runs on the `crimson-core` WASM game module
 Both browsers run the same `game.wasm` binary at fixed 60 Hz simulation ticks
 (`portable_step_many`) and exchange per-player `PortableInput` tuples.
 
-Cross-browser determinism, rollback frame budgets, terrain commit overhead and
-WAN feel each have an automated gate (`M0a`, `M0b`, `M1`, `M2`), and each
+Determinism across instances, rollback frame budgets, terrain commit overhead
+and WAN feel each have an automated gate (`M0a`, `M0b`, `M1`, `M2`), and each
 [milestone's status](#8-phased-deliverable-plan-acceptance-matrix) says what its
-gate holds; the [verdict](#verdict-m2) below weighs the measurements.
+gate holds; the [verdict](#verdict-m2) below weighs the measurements. The gates
+run the module on V8 (Node and Chrome) and as native code, and Wasmtime's
+Cranelift matches them snapshot for snapshot on the corpus's two-player streams
+too (`crimson-core/checks/wasmtime_check.py`); no gate runs Firefox's
+SpiderMonkey or Safari's JavaScriptCore, so a session with either browser is
+untested.
 Two-player online co-op plays in the browser with rollback, records standard
 replays and ranks under the site's [ranked rules](ranked-rules.md) on its own
 boards (Section 5.3, `M3`). Four players remain a research question of

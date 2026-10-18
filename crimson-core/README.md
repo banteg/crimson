@@ -372,7 +372,7 @@ uv run --with wasmtime==49.0.0 python crimson-core/checks/wasmtime_check.py \
 The [probe](results/wasmtime.json) loads the exact `core.wasm` used by Node and
 the [service](../service/src/verify.ts) in
 [wasmtime-py](https://bytecodealliance.github.io/wasmtime-py/), compares the hash of every snapshot of a smoke set (one run per mode, bug
-policy and control family) and checks A/B/A resets in one instance, without
+policy, control family and player count) and checks A/B/A resets in one instance, without
 adding a project dependency; the matrix already compares every run between
 native and Node. The results record the module's hash and its linear memory.
 
