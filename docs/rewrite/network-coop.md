@@ -15,17 +15,20 @@ Crimsonland together in the same arena.
 
 ## 1. Executive summary & architectural decision
 
-Two-player online co-op is feasible on the `crimson-core` WASM game module
+Two-player online co-op runs on the `crimson-core` WASM game module
 (`crimson-core/PORT.md`) without rewriting gameplay or streaming world state.
 Both browsers run the same `game.wasm` binary at fixed 60 Hz simulation ticks
 (`portable_step_many`) and exchange per-player `PortableInput` tuples.
 
-Because [issue #632](https://github.com/banteg/crimson/issues/632) is a research
-and prototype track, cross-browser determinism, rollback frame budgets, terrain
-commit overhead, and WAN feel are treated as **explicit hypotheses gated by
-automated milestones (`M0a`, `M0b`, `M1`, `M2`)** before committing to 4-player
-scope. Two-player online co-op records standard replays and ranks under the
-site's [ranked rules](ranked-rules.md) on its own boards (Section 5.3, `M3`).
+Cross-browser determinism, rollback frame budgets, terrain commit overhead and
+WAN feel each have an automated gate (`M0a`, `M0b`, `M1`, `M2`), and each
+[milestone's status](#8-phased-deliverable-plan-acceptance-matrix) says what its
+gate holds; the [verdict](#verdict-m2) below weighs the measurements.
+Two-player online co-op plays in the browser with rollback, records standard
+replays and ranks under the site's [ranked rules](ranked-rules.md) on its own
+boards (Section 5.3, `M3`). Four players remain a research question of
+[issue #632](https://github.com/banteg/crimson/issues/632): the verdict says
+what a 4-player step must measure before that scope is committed to.
 
 ### Verdict (`M2`)
 
@@ -64,10 +67,10 @@ cap. The original keeps two player tables (`player_state_table[2]`) and
 game's state, and each peer would carry three partners' records and hashes. A
 4-player step needs measuring before that scope is committed to.
 
-### Historical lesson (`status.md`)
+### Historical lesson
 
-An earlier lockstep, rollback, and relay stack was removed (`bc45c5b6a`)
-**because it never restored full state** ([status](status.md#intentional-differences)).
+An earlier lockstep, rollback, and relay stack in the Python and Zig ports was
+removed (`bc45c5b6a`) **because it never restored full state**.
 In `crimson-core`, `crimson-core/host/keyframes.inc` (`game_run_spans` +
 `KeyframeHost` + `game_effect_overflow`) and `crimson-core/checks/game_seek.mjs` /
 `crimson-core/checks/game_practice.mjs` establish single-player seek and branch
@@ -386,10 +389,10 @@ Safari JSC, Wasmtime, and native `wasm2c`:
 
 - **Isolation from 1P `replay.inc` and `watch.inc`**:
 
-  - `crimson-core/host/replay.inc:162, 190-207` and `crimson-core/host/watch.inc:332-351`
-    hardcode `player_count = 1` and parse `live.replay` with a single 20-byte
-    `PortableInput` per tick. Calling `live_end()` -> `replay_payload()` on a
-    2-player buffer would misparse Player 1's `move_x` float bits as
+  - The audit found `replay.inc`'s serializer and `watch.inc` hardcoding
+    `player_count = 1` and parsing `live.replay` with a single 20-byte
+    `PortableInput` per tick: `live_end()` -> `replay_payload()` on a 2-player
+    buffer would have misparsed Player 1's `move_x` float bits as
     `command_count`.
 
   - **Rule**: co-op records a standard `.crd` replay with `player_count = 2`;
@@ -398,9 +401,9 @@ Safari JSC, Wasmtime, and native `wasm2c`:
     confirmed tick writes `[in[0], in[1]]` and its derived commands:
     `perk_menu_open { player_index: perk_picker }` on $T_{\text{open}}$ and
     `perk_pick { player_index: perk_picker, choice_index }` on
-    $T_{\text{open}} + 1$ (Section 5.1). `replay.inc` and `watch.inc` are
-    generalized to `player_count` inputs per tick (`M3`); until then co-op keeps
-    `live_end()` from feeding 2-player ticks into the 1P serializer.
+    $T_{\text{open}} + 1$ (Section 5.1). `replay.inc` writes `player_count`
+    inputs per tick (`M3`); its reader, and so the watch path, takes one-player
+    replays only and refuses a co-op one (`M3`'s status).
     `checks/game_coop.mjs` and desync diagnostics read the same `.crd`.
 
 #### 5. Between-tick `gameplay_render_world()` side effects & local state in `game_run_spans`
@@ -2007,26 +2010,26 @@ whose page reports.
 
 ### Milestone `M3`: Co-op replays & boards
 
-1. **Files**: `crimson-core/host/replay.inc`, `crimson-core/host/watch.inc`,
-   `src/crimson/replay/ranked.py`, `service/` (upload, boards, run page),
-   `docs/rewrite/ranked-rules.md`.
+1. **Files**: `crimson-core/host/replay.inc`, `crimson-core/host/coop_ranked.inc`,
+   `crimson-core/host/ranked.inc`, `src/crimson/replay/ranked.py`,
+   `service/src/runs.ts`, `service/src/verify.ts`, `service/src/coop.ts`,
+   `docs/rewrite/ranked-rules.md`, `docs/formats/replay.md`.
 
-2. **Changes**: `player_count`-wide replay record, verify and watch in
-   crimson-core; the ranked profile with `player_count = 2` and the co-op
-   boards in `ranked.py` and the service; uploads carrying both players'
-   signatures; run pages and watch replays for 2-player runs. Rules that keep
+2. **Changes**: a `player_count`-wide replay record in crimson-core; the ranked
+   profile with `player_count = 2` and the co-op boards in `ranked.py` and the
+   service; uploads carrying both players' signatures. These rules keep
    `replay.inc`, `service/src/verify.ts` and Python's `build_run_result`
    byte-identical:
 
-   - **Perk commands**: `replay.inc` writes `player_index: perk_picker` on
-     `perk_menu_open` and `perk_pick` (today it hardcodes `0`,
-     `crimson-core/host/replay.inc:213`).
+   - **Perk commands**: `replay.inc` writes each `perk_menu_open` and
+     `perk_pick` with `player_index` set to the seat whose request it was (the
+     session's pickers), `0` in a one-player run.
    - **2P quest time**: the health bonus truncates player 0's health before
      `* 50.0f` and player 1's after it,
      `(int)((int)p0.health * 50.0f) + (int)(p1.health * 50.0f)`
      (`quest_results_screen_update.cpp:190-195`, `src/crimson/quests/results.py`).
      The results screen rewrites `player_state_table[0].health` in place, so
-     `replay_result()` runs before it, as `live_end()` already does.
+     `replay_result()` runs before it, as `live_end()` does.
    - **`players[1]` in `RunResult`**: native keeps XP on player 0 and weapon
      usage in one global table, so player 1's `experience` is `0`, its
      `health` is `player_state_table[1].health`, and its most used weapon comes
@@ -2035,14 +2038,54 @@ whose page reports.
      only when the best slot names no weapon
      (`most_used_weapon_id_for_player`, `src/crimson/weapon_runtime/assign.py`).
    - **Ranked aim checks**: the service's `TickMonitor`
-     (`service/src/verify.ts:129-155`) tracks the 2P camera as Python's
+     (`service/src/verify.ts`) tracks the 2P camera as Python's
      `RankedTickMonitor` does (the midpoint of the living players,
-     `camera_update.cpp:57-80`, kept while nobody lives, `:78-79`) and checks both
-     `input(tick, 0)` and `input(tick, 1)` with a move target per player.
+     `camera_update.cpp:57-80`, kept while nobody lives, `:78-79`) and checks
+     every player's input each tick, with a move target per player.
 
 3. **Gate**: a co-op `.crd` recorded by two browsers verifies in the service,
    in `crimson replay verify`, and in the Python port, and ranks on its co-op
    board crediting both players.
+
+4. **Status**: ranked co-op has landed, end to end; watching a co-op replay
+   has not. The service verifies a 2-player run on crimson-core as it does a
+   one-player run, every seat's controls and aim included, and ranks it on
+   `survival-coop`, `quests-coop` or `quests-hardcore-coop` under both
+   players' names. It takes a co-op upload only with a signature from each
+   seat's key that the replay records (`seat_keys`, replay format 34) and only
+   when the room issued the run's seed to those keys in that seat order
+   (`coop_runs`); a second upload of the same run gets `409`
+   ([leaderboard identity](leaderboard-identity.md#co-op-runs)). The game's
+   side (Section 5.3): each seat proves its key to the room, the Host's runs
+   start on the room's seed with the seats' keys in `START_RUN`'s header, each
+   peer signs its own seat at the end screen's name entry and checks its
+   partner's signature, and both outboxes queue the same entry with both
+   signatures. The high scores' online tables for two players are the co-op
+   boards. The run's page shows both names, its card and player one's timeline
+   (the timeline reads player one only).
+
+   `checks/game_coop_live.mjs` plays ranked runs between two originals over
+   the lossy pipe, under rollback and under the `M2` profiles (60 ± 20 ms with
+   1% loss among them): both machines must save byte-identical replays that
+   `crimson replay verify` accepts as 2-player runs with each perk command its
+   picker's, record the seats' proven keys and a seed the room issued them,
+   and queue the same outbox entry with both seats' valid signatures; a header
+   whose keys the room did not attest, or a page without ranked play, leaves
+   the run unsigned and unqueued. `checks/coop_browser.mjs` plays a ranked
+   Survival run between two browsers against `wrangler dev`: both pages upload
+   it, one hears `201` and the other `409`, and `/api/survival/coop` lists the
+   pair under both names. The service's worker tests verify the co-op vectors
+   and cover the refusals (a missing or misplaced seat signature, keys the room
+   did not issue the seed to, a replay without `seat_keys`).
+
+   Remaining: crimson-core plays one-player replays only. Its replay reader
+   refuses a 2-player `.crd` with "This run needs the Python port"
+   ([replay viewer](replay-viewer.md#watch)), so a co-op row's Watch in the
+   game's high scores, and the Watch on the site's co-op boards and run pages
+   (which opens the game at `/play/?watch=<run>`), show that note instead of
+   the run. The replay downloads from its run page and plays in the Python
+   port (`crimson replay play`). Watching co-op runs needs the reader and the
+   viewer widened to `player_count` inputs per tick, with the 2P camera.
 
 ### Mandatory acceptance matrix (`checks/game_coop.mjs` & `M1`/`M2`)
 

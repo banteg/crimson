@@ -22,7 +22,7 @@ supported scope, not a claim that every native branch has been verified.
 | `tests/replay/test_live_run_start.py` | Live mode startup and recorder/playback agree on complete session state, including non-default settings. |
 | `tests/modes/test_live_replay_invariant.py` | Live tick batching, controller input, and perk commands replay to identical complete session state. |
 | `tests/render/test_ground_dump_fixtures.py` | Captured terrain images agree within the test's documented tolerances; requires assets and a display. |
-| `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies, for one or two players in Rush, Survival and Quests with every control scheme. Typ-o, Tutorial and three or four players are outside the verifier's scope; the service verifies one-player runs. |
+| `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies, for one or two players in Rush, Survival and Quests with every control scheme. Typ-o, Tutorial and three or four players are outside the verifier's scope; the service verifies one- and two-player runs. |
 | `tests/native_oracle/` | Ported functions agree bit for bit with the original code run under the [native execution oracle](../verification/differential-testing/native-oracle.md) on the tested cases. |
 
 `just check` runs the repository gates. Skipped display-dependent tests do not
@@ -44,10 +44,9 @@ address-keyed source evidence, a native-oracle test, or the core gate. See [evid
   [online scores](../crimsonland-exe/online-scores.md) client for
   `scores.crimsonland.com` are out of scope. Ranked runs go to the crimson.land
   leaderboard under the [ranked rules](ranked-rules.md).
-- Custom network play (LAN, lockstep, rollback, relay) was removed on 2026-09-05 because it never
-  restored full state. A future design must start from the deterministic session and prove full state
-  restore and corrected-input resimulation before adding transport or lobby UI; see the
-  [network co-op specification](network-coop.md).
+- The Python port has no network play. Online co-op is crimson-core's: two players in the browser
+  ([crimson.land/play](https://crimson.land/play/), joined by an invite link) with rollback, their runs
+  ranked on the co-op boards; see the [network co-op specification](network-coop.md).
 
 Outstanding native timing, precision, input-scheme and visual differences should
 be recorded with a reproducer and evidence. A completed implementation plan or a
