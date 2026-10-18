@@ -1176,8 +1176,9 @@ any other.
 - **A run alone**: a session or a room can open while a player's own run
   plays (a reloaded page's game, say): any mode, the Tutorial and Typ-o, two
   local players or a resolution the client does not record, and practice (a
-  replay gives way). That run plays out on the player's own save, its unlocks
-  included, and its window's focus pauses it as alone; the menus' every-quest
+  replay gives way), or that the screen fades to as it opens. That run plays
+  out on the player's own save, its unlocks included (its setup hands out the
+  weapons and perks of the player's own unlocks), and its window's focus pauses it as alone; the menus' every-quest
   view comes after it, and a run the Host starts waits for it (and the Host
   gives up after 10 s, as for any start), and for its end screen's name entry
   after it. Its end screen's buttons are run setup, as the menus'.

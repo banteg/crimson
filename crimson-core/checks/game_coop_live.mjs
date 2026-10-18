@@ -168,7 +168,7 @@ import os from "node:os";
 import path from "node:path";
 import zlib from "node:zlib";
 import { coopStats, Link, prng } from "./coop_link.mjs";
-import { CONFIG_BYTES, CORE, decode, field, init, INPUT_BYTES, names, state, step } from "./engine.mjs";
+import { config, CONFIG_BYTES, CORE, decode, field, init, INPUT_BYTES, names, state, step } from "./engine.mjs";
 import { loadGame, PRESENTATION } from "./game_compare.mjs";
 import { bootGame, INPUT, sevenTunes } from "./game_host.mjs";
 
@@ -860,7 +860,9 @@ unansweredStart(idle, () =>
 restart("config.gameplay.player_count = 2");
 
 // A local two-player run alone, which plays as the original and records nothing: the Guest's machine starts the
-// first quest from its menus, its second player idle, and plays it alone; two seconds in, a session opens. The run
+// first quest from its menus, its second player idle, and its page takes a seat in a room as the screen fades to the
+// run: the run sets up on the player's own save, handing out the weapons and perks the engine hands out from it, not
+// the room's every quest. It plays it alone; two seconds in, a session opens. The run
 // plays on: the Host's Survival waits for it until the Host gives up on its start, its window losing the focus stops
 // it as alone, and completing it unlocks the next quest in the save, the session's every quest unlocked never in
 // its place. Its game closes on the results, and starts again for one player.
@@ -868,7 +870,13 @@ click(guest, MAIN_MENU, PLAY_GAME);
 click(guest, PLAY_GAME_MENU, FRESH_QUESTS);
 settle(guest, QUEST_SELECT);
 tap(guest, key(ONE));
+assert.equal(screen(guest), QUEST_SELECT, "the fade to the local run");
+assert.equal(guest.g.game_coop_in_room(1), 1);
 settle(guest, GAMEPLAY);
+// The weapons unlocked and the perks available, as a run's snapshot holds them.
+const handed = (g) => (state(g), names.filter((n) => /^(weapons\[\d+\]\.unlocked|perk_metadata\[\d+\]\.available)$/.test(n)).map((n) => field(g, n)));
+init(headless, config(3, 1, 1, { unlock: 0, unlockFull: 0, players: 2 }));
+assert.deepEqual(handed(guest.g), handed(headless), "the local run's weapons and perks");
 const recorded = () => guest.g.game_replay_size();
 assert.equal(recorded(), 0, "a local run recorded");
 const local = guest.g.game_play_run();

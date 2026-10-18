@@ -97,13 +97,18 @@ static const char *coop_why() {
 
 // This machine's player is busy with a run of its own, whatever its mode and
 // however it plays (as the client's runs, as the original's, practice; not a
-// replay, which gives way, and not co-op's): one that played as the session
-// opened. It plays on the player's own save and keeps the window's focus as
-// alone; the session's unlocks and runs wait for it, and for its end screen's
-// name entry (coop_live.naming).
+// replay, which gives way, and not co-op's): one that played as the session or
+// the room opened, or that the screen fades to then. It plays on the player's
+// own save and keeps the window's focus as alone; the session's unlocks and runs
+// wait for it, and for its end screen's name entry (coop_live.naming). Its
+// setup reads the menus' unlocks (the weapons and perks it hands out), so the
+// fade is busy too.
 static bool coop_busy() {
   if (coop_live.playing || (live.watching && !live.practicing))
     return false;
+  if (!coop_live.entering &&
+      (game_state_pending == GAME_STATE_GAMEPLAY || game_state_pending == GAME_STATE_TYPO_GAMEPLAY))
+    return true;
   switch (game_state_id) {
   case GAME_STATE_GAMEPLAY:
   case GAME_STATE_TYPO_GAMEPLAY:
