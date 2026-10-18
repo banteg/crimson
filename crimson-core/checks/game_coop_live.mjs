@@ -208,7 +208,7 @@ const PERK_CHOICE = [150, 216], PAD_CURSOR = [1000, 740];
 // The main menu's Play Game; the Play Game panel lays out Quests, Rush and Survival first, as the Host played
 // before, 28 pixels apart with every quest unlocked (the session's) and 32 with the Host's own three; a fresh save's
 // Quests; the high scores' Play a game.
-const PLAY_GAME = [240, 338], SURVIVAL = [232, 372], OWN_QUESTS = [232, 322], FRESH_QUESTS = [232, 350];
+const PLAY_GAME = [240, 338], RANKED = [285, 489], SURVIVAL = [232, 372], OWN_QUESTS = [232, 322], FRESH_QUESTS = [232, 350];
 const PLAY_A_GAME = [190, 500];
 // A fresh save's Play Game panel lays out the Tutorial first, above Quests.
 const TUTORIAL = [232, 318];
@@ -1109,6 +1109,8 @@ assert.deepEqual(peers.map(reason), [0, 0]);
 agreed();
 for (const peer of peers) verified(peer, confirmed(peer) + 1, "incomplete");
 click(host, MAIN_MENU, PLAY_GAME);
+// The Ranked box stands down in a session: a click where it sits ticks nothing, so the mode list keeps its place.
+click(host, PLAY_GAME_MENU, RANKED);
 click(host, PLAY_GAME_MENU, SURVIVAL);
 play(idle, started, "the run after the timeout");
 

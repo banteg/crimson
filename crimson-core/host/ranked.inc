@@ -431,7 +431,10 @@ void ranked_menu(float *base, float *tips, bool list_open) {
   static ui_button_t profile = {(char *)"Profile", 0, 0, 1, 0, 0, 0, 1.0f};
   static int box_tip, profile_tip; // the tips' fade, as the modes' hover_anim
   static char note[48];
-  if (!ranked_controls())
+  // A co-op session plays its runs under the ranked rules for two players
+  // whatever the box says, so the box stands down while one is on.
+  bool boxed = !coop_on();
+  if (!ranked_controls() || !boxed)
     ranked_checked = false;
   // Like the modes, it neither hovers nor toggles while the list is open.
   box.disabled = !ranked_controls() || list_open;
@@ -443,13 +446,13 @@ void ranked_menu(float *base, float *tips, bool list_open) {
   float at[2] = {base[0] + 80.0f + list_width + 48.0f -
                      ((float)grim_interface_ptr->grim_measure_text_width(box.label) + 22.0f),
                  base[1] + 212.0f};
-  if (ui_checkbox_update(at, &box)) {
+  if (boxed && ui_checkbox_update(at, &box)) {
     ranked_checked = box.checked;
     if (ranked_checked)
       config_blob.player_count = 1;
   }
   int dt = frame_dt_ms;
-  box_tip = box.hovered ? box_tip + dt * 6 : box_tip - dt * 2;
+  box_tip = boxed && box.hovered ? box_tip + dt * 6 : box_tip - dt * 2;
   // Profile stands whether or not the box is ticked: a player who only plays
   // co-op, which ranks without it, signs in to the site here too.
   profile.enabled = !list_open;
