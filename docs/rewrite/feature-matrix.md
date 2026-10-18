@@ -35,6 +35,7 @@ what a modern release needs. All three fix the
 | Survival, Rush, Quests | Yes | Yes | Yes |
 | Tutorial, Typ-o-Shooter | Yes | Yes | Yes |
 | Local co-op | 2–4 players | 2 players, as the original | 2 players, as the original |
+| Online co-op | No | 2 players from an invite link, with rollback | No |
 | Original bugs | Fixed by default, kept with `--preserve-bugs` | Fixed | Fixed |
 | Resolution | Any, with borderless fullscreen | 1024x768, scaled to the page; fullscreen button | 1024x768, scaled to the window; Alt+Enter fullscreen |
 | Keyboard and mouse | Yes | Yes | Yes |
@@ -57,7 +58,7 @@ what a modern release needs. All three fix the
 
 | | Python port | Web | Native |
 | --- | --- | --- | --- |
-| Ranked play | Survival and Quests | Survival and Quests | Survival and Quests |
+| Ranked play | Survival and Quests | Survival and Quests, alone or as an online co-op pair | Survival and Quests |
 | Uploads, offline queue | Yes | Yes | Yes |
 | Profile, signed in | Yes | Yes | Yes, in your browser |
 | Update scores on the high score screen | Yes | Yes | Yes |

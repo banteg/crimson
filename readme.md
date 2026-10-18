@@ -15,7 +15,7 @@
 
 ## Play
 
-**[crimson.land/play](https://crimson.land/play/)** is the original game, built from the recovered source. There is nothing to install: it downloads the game files on first visit, keeps your saves in the browser, and plays with a keyboard and mouse or a gamepad. The original's [documented bugs](https://crimson.banteg.xyz/rewrite/original-bugs/) are fixed, and the Ranked box in the Play Game menu enters runs on the leaderboard.
+**[crimson.land/play](https://crimson.land/play/)** is the original game, built from the recovered source. There is nothing to install: it downloads the game files on first visit, keeps your saves in the browser, and plays with a keyboard and mouse or a gamepad. The original's [documented bugs](https://crimson.banteg.xyz/rewrite/original-bugs/) are fixed, and the Ranked box in the Play Game menu enters runs on the leaderboard. **Play co-op** gives you an invite link: send it to a friend and play together from your own browsers.
 
 **The Python port** plays the same game with more room around it: any resolution with borderless fullscreen, local co-op for up to four players on their own controllers, the original bugs back on request with `--preserve-bugs`, and a `crimson` CLI for replays and quests. Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
@@ -33,8 +33,9 @@ The [feature matrix](https://crimson.banteg.xyz/rewrite/feature-matrix/) compare
 
 - **Sharper art.** The original shipped its textures as JAZ files, JPEG color with a separate alpha channel. The game files every client downloads carry the uncompressed source art from 10tons instead, free of JPEG artifacts, wherever it matches what shipped.
 - **Deterministic runs.** The simulation steps at a fixed 60 Hz from a seed and the recorded inputs, so a run plays out the same way every time, on every client.
+- **Online co-op.** The original's two-player mode, over the internet: one player opens a room, the other follows the invite link, and both play Survival or any quest from their own browsers. Rollback netcode keeps each player's aim responsive under lag, and a relay steps in when a direct connection can't be made. See the [network co-op specification](https://crimson.banteg.xyz/rewrite/network-coop/).
 - **Replays.** Every run is recorded. Watch any of them from the high score screen or a link, seek anywhere, and with the Python port, verify one tick by tick or render it to 60 fps video.
-- **A verified leaderboard.** [crimson.land](https://crimson.land) ranks Survival and every quest, normal and hardcore. A score is a whole run, and the server replays it on the recovered original code before it counts. There is no sign-up: each client makes a [key](https://crimson.banteg.xyz/rewrite/leaderboard-identity/) on first launch. Bots and tool-assisted runs are welcome on [their own board](https://crimson.banteg.xyz/rewrite/bots/).
+- **A verified leaderboard.** [crimson.land](https://crimson.land) ranks Survival and every quest, normal and hardcore, for one player and for online co-op pairs. A score is a whole run, and the server replays it on the recovered original code before it counts. There is no sign-up: each client makes a [key](https://crimson.banteg.xyz/rewrite/leaderboard-identity/) on first launch. Bots and tool-assisted runs are welcome on [their own board](https://crimson.banteg.xyz/rewrite/bots/).
 - **Custom quests.** Crimsonland now comes with a Crimsonlang. Write a quest in [it](https://crimson.banteg.xyz/formats/quest-dsl/), play it with `crimson quest play`, and publish it to get its own page and leaderboard on [crimson.land/custom](https://crimson.land/custom). An LLM can write one from [a single-file spec](https://crimson.land/custom/llm.txt).
 
 ## Inside
