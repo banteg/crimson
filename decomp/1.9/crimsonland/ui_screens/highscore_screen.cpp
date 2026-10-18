@@ -396,10 +396,10 @@ extern "C" void highscore_screen_update(void)
 
     position.x += 16.0f;
     static highscore_scrollbar_t score_scrollbar;
-    score_scrollbar.item_count = score_count;
     {
         highscore_vec2_t scrollbar_position(position.x - 8.0f, position.y);
         score_scrollbar.items = score_line_items;
+        score_scrollbar.item_count = score_count;
         score_scrollbar.visible_rows = 10;
         score_scrollbar.column_offsets[0] = 10;
         score_scrollbar.column_offsets[1] = 30;
@@ -580,8 +580,8 @@ play_game_done:
         };
         right_panel.y += 6.0f;
         static highscore_list_widget_t date_filter_list;
-        date_filter_list.item_count = 4;
         date_filter_list.items = date_items;
+        date_filter_list.item_count = 4;
 
         float label_x;
         if (game_is_full_version()) {
@@ -831,8 +831,8 @@ play_game_done:
                     || stage / 10 + 1 >= 5) {
                     highscore_batch_sync_mode = 0;
                 } else {
-                    quest_stage_major = stage / 10 + 1;
                     config_blob.game_mode = GAME_MODE_QUEST;
+                    quest_stage_major = stage / 10 + 1;
                     quest_stage_minor = stage % 10 + 1;
                 }
             }

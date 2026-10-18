@@ -40718,7 +40718,7 @@
       "proof": {
         "body_byte_exact": false,
         "candidate_instructions": 1925,
-        "candidate_object_sha256": "7afefb4bcc5d874206d7eb24d0c299b80c3a951f4c28a3fdf7ed4c4cb861ebc3",
+        "candidate_object_sha256": "90799fe85dc22f8c0ff0db5c781dc6fa58549a2661ad4d13c601d922e99da76e",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -40729,7 +40729,7 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 2,
-          "ok": 614,
+          "ok": 618,
           "positional": false,
           "unresolved": 0
         },
@@ -40738,7 +40738,7 @@
         "target_size": 7774,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.9202804466372371,
+      "ratio": 0.9223578291352895,
       "size": 7774,
       "source": "decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp"
     },
@@ -77287,7 +77287,7 @@
     "decomp/1.9/crimsonland/ui_screens/highscore_card_draw_horizontal_divider.cpp": "b5e9ea5af582c8696a4392a32b7e7ad6e29612e1ad6c71a6784d15da175665a4",
     "decomp/1.9/crimsonland/ui_screens/highscore_card_draw_vertical_divider.cpp": "c6c8c79ce83c37388a7c2410efe9a06da8d05b3bb88b0b0c050cf9b3c644ae17",
     "decomp/1.9/crimsonland/ui_screens/highscore_format_date_label.cpp": "7dbc4b04b3b123291bb60014c70ee8ecb92144e949db0c0cf452b5a32aed680b",
-    "decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp": "7b21cc00758ba9be1daab42daad7e49c533974210e06cfd856f4a8bb3e19246d",
+    "decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp": "276fb8cfd3d654314c3a86ac090bc40dbd2b7a83e8a709b40e26f9056464b89b",
     "decomp/1.9/crimsonland/ui_screens/statistics_menu_update.cpp": "e5d2248f09ce216e7b533c6cdfea4053987bd9f32f36d37f166e9ac3b79187bc",
     "decomp/1.9/crimsonland/ui_screens/ui_profile_menu_update.cpp": "c1a2ac9fc8f7e13119f18d9556c2bc1238a80ff6e3c5bdbafb351b42c61e270e",
     "decomp/1.9/crimsonland/ui_screens/ui_text_input_render.cpp": "417c2bb5aa33deb7db75ec9dd202aacae97da9324fe230bc8d9419f2a0cfc067",
