@@ -6,9 +6,10 @@
 // the spawn rate rising with the run's time. The run is the one a co-op session starts (host/coop_live.inc
 // coop_latch, host/ranked.inc ranked_spec): two players, the ranked profile, the original's bugs fixed. The same bot
 // plays:
-// 1. a plain run (portable_step_many): each tick's cost from `from` to `to` minutes of the run's time; the minute
-//    every slot of the creature pool first holds a creature, and at `from` minutes how many perks player one holds
-//    and how many the run has available (perk_meta_table);
+// 1. a plain run (portable_step_many): each tick's cost from `from` to `to` minutes of the run's time; the creature
+//    pool over those ticks (the share with every slot holding a creature, and the fewest creatures any held) and the
+//    minute every slot first held one; at `from` minutes how many perks player one holds and how many the run has
+//    available (perk_meta_table);
 // 2. the run through the co-op engine (host/coop.inc) with both players local, records on time, input delay 2 and
 //    window 8 (4 past 15 minutes): from `from` minutes, each tick's cost there (the step, the state's capture into
 //    its slot, its hash); every 30th frame a rollback of 8 or 12 ticks (alternately), player two's record for the
@@ -51,7 +52,9 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
   // Perks the bot passes over (src/crimson/perks/ids.py): Fatal Lottery, Infernal Contract, Ammunition Within,
   // Highlander and Death Clock kill or spend health outright.
   const SPARED = [15, 24, 35, 41, 47], CHOICES = 5, HEALTH = 10000;
-  const CREATURES = Object.keys(fields).filter((name) => /^creatures\[\d+\]\.active$/.test(name)).length;
+  // The creature pool's slots: the snapshot's last creature is the entry the allocator hands out when every slot is
+  // taken (creature_alloc_slot), which updates and collisions never process.
+  const CREATURES = Object.keys(fields).filter((name) => /^creatures\[\d+\]\.active$/.test(name)).length - 1;
   // host/api.h PortableInput: the pad's movement and aim (matrix.mjs PAD), firing.
   const INPUT_BYTES = 20, PAD = 0x100 | (3 << 9) | 0x1000 | (4 << 13), FIRE = 1;
   // host/coop_wire.inc game_coop_telemetry: the round trip, why the session ended, then CoopSessionStats.
@@ -140,7 +143,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
     const choice = Math.max(0, offered.findIndex((id) => !SPARED.includes(id)));
     let active = 0;
     for (let c = 0; c < CREATURES; c++) active += s.word(`creatures[${c}].active`) ? 1 : 0;
-    return { inputs, pending: s.word("globals.perk_pending_count") > 0, choice, ms: s.word("globals.run_elapsed_ms"), full: active === CREATURES };
+    return { inputs, pending: s.word("globals.perk_pending_count") > 0, choice, ms: s.word("globals.run_elapsed_ms"), active };
   }
   const writeInput = (g, at, input) => {
     const view = new DataView(g.memory.buffer);
@@ -166,7 +169,8 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
 
   // (1) The plain run.
   const plain = instance(), plainTicks = [];
-  let poolFull = null, perksAtFrom = null;
+  const pool = { first_full_minute: null, full_share: 0, min_active: CREATURES };
+  let perksAtFrom = null;
   for (let asked = false, view = bot(plain); view.ms < to * MINUTE; ) {
     const { inputs, pending, choice } = view;
     inputs.forEach((input, p) => writeInput(plain, plain.portable_input() + p * INPUT_BYTES, input));
@@ -179,13 +183,20 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
     if (!plain.portable_step_many(command ? 1 : 0)) throw Error("the plain run stopped");
     const spent = performance.now() - start;
     view = bot(plain);
-    if (late(view.ms)) plainTicks.push(spent);
-    if (view.full && poolFull === null) poolFull = minutes(view.ms);
+    const full = view.active === CREATURES;
+    if (late(view.ms)) {
+      plainTicks.push(spent);
+      pool.full_share += full;
+      pool.min_active = Math.min(pool.min_active, view.active);
+    }
+    if (full && pool.first_full_minute === null) pool.first_full_minute = minutes(view.ms);
     if (view.ms >= from * MINUTE && perksAtFrom === null) {
       const s = snapshot(plain), available = Object.keys(fields).filter((name) => name.startsWith("perk_metadata[") && s.word(name));
       perksAtFrom = { held: Object.keys(held(plain)).length, available: available.length };
     }
   }
+
+  pool.full_share = Math.round((pool.full_share / plainTicks.length) * 1000) / 1000;
 
   // (2) The run through the co-op engine.
   const g = instance();
@@ -343,7 +354,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
   }
   return {
     minutes: [from, to],
-    pool_full_minute: poolFull,
+    pool,
     plain_tick: summary(plainTicks),
     coop_tick: summary(coopTicks),
     capture: summary(captures),

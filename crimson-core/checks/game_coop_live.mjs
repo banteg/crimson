@@ -96,7 +96,7 @@
 // Survival run under each that begins ahead on one machine and stalls 300 ms on
 // the other, where a perk is picked from either seat while the other machine
 // predicts, the game pauses and resumes from either seat, the window narrows as
-// 15 minutes into a run (past which the game keeps 60 ticks a second at 120 ms,
+// 15 minutes into a run (past which the game keeps 59 ticks a second at 120 ms,
 // its input delay longer), and the run ends in a team wipe, whose names both
 // players sign under 60 ms with loss, or a leave from the pause banner; then
 // team wipes until one a correction revised.
@@ -1293,7 +1293,7 @@ for (const peer of peers) verified(peer, confirmed(peer) + 1, "incomplete");
 // the window narrows, 3600 at 120 ms), the Guest pauses under 30 ± 5 ms and the Host's mouse presses the banner's
 // Leave; under the others both players die (dying, below). Under 60 ± 20 ms with loss both players then name the
 // run, which ranks: both machines queue the same upload of the replay of the run's confirmed end. At 120 ms the game
-// runs 60 ticks a second from a second past the narrowing to the run's end, the narrowed window and the longer delay
+// runs 59 ticks a second from a second past the narrowing to the run's end, the narrowed window and the longer delay
 // covering a one-way trip together.
 //
 // Each run ends as the others: the same digests on both machines and from the records, the same replays, verified.

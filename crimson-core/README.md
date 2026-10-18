@@ -241,7 +241,7 @@ run, a transport that closes before a name entry, a lost connection with the
 seats swapped (the window in the background stopping after it), a Survival
 run under each of five network profiles (10 ms one way to 60 ± 20 ms with
 loss, one with bursts of lost packets, and 120 ± 10 ms, where the game must keep
-60 ticks a second past the window's narrowing) with a perk picked from either
+59 ticks a second past the window's narrowing) with a perk picked from either
 seat while the other predicts, pauses, a stall on either machine, the window
 narrowing, a leave and team wipes (one both players sign, which both machines
 queue alike; then wipes until a correction revised one), quests from the
@@ -322,8 +322,9 @@ through the co-op engine, and the check prints per-call p50/p99 of the plain
 step, the co-op tick, the slot capture and restore, the state hash and 8- and
 12-tick rollbacks over ticks run on a stand-in record (their bakes held) between
 `--from` and `--to` minutes of the run's time, the slot size and the engine's
-memory, the minute the creature pool first fills and the perks held at
-`--from`, then the work of frames that ran ticks, rollback depths and stalls over
+memory, the creature pool between `--from` and `--to` (the share of ticks with
+every slot in use, the fewest creatures any held) and the minute it first
+filled, the perks held at `--from`, then the work of frames that ran ticks, rollback depths and stalls over
 `--session` seconds at 60 and 144 Hz from `--to` on, with player two's records
 60 ± 20 ms late (the jitter seeded). The module runs headless: nothing draws,
 and no wire carries the records. `checks/coop_browser.mjs` runs the same

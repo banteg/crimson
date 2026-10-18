@@ -32,19 +32,20 @@ site's [ranked rules](ranked-rules.md) on its own boards (Section 5.3, `M3`).
 The measurements (Section 3.1) bear the architecture out. Late in a long
 2-player Survival run, under the rules a co-op session plays, the simulation
 alone (headless: nothing drawn, no wire) costs about 0.14 ms a tick through the
-rollback engine (0.22–0.33 ms p99) in `game.wasm`, about the same in Chrome as
-under node; the hard cap's 12-tick rollback over ticks run on a stand-in
-record, their bakes held, costs about 1.9 ms, 2.3–3.0 ms at p99 (14–18% of a
-60 Hz frame), and at the depths a 60 ± 20 ms partner brings (1–3
-ticks) a frame's simulation takes under 0.9 ms at p99. State capture and restore
-are memcpys of under 0.01 ms (under 0.02 ms p99) for a slot of up to 438 KiB,
-and the engine holds 7.6 MiB; the state hash is the engine's largest cost per
-tick. With drawing on, measured only early in a run (seconds 6 to 11) in
-headless Chrome at about 20 frames a second, the browser client's frames that
-ran ticks while its partner's sends came 60 ± 25 ms late took 1.1 ms
-(3.1–4.5 ms p99) whole, 4 to 5 ticks each. Input delay 2 (longer past
+rollback engine in `game.wasm` (about 0.23 ms p99 in each of three runs under
+node and two in Chrome); the hard cap's 12-tick rollback over ticks run on a
+stand-in record, their bakes held, costs about 1.8 ms, 2.30–2.37 ms at p99 in
+those five runs (about 14% of a 60 Hz frame), and at the depths a 60 ± 20 ms
+partner brings (1–3 ticks) a frame's simulation took 0.80–0.88 ms at p99. State
+capture and restore are memcpys of about 0.01 ms (0.013–0.015 ms p99) for a
+slot of up to 438 KiB, and the engine holds 7.6 MiB; the state hash is the
+engine's largest cost per tick. The runs' ranges are not bounds (Section 3.1).
+With drawing on, measured only early in a run (seconds 6 to 11) in headless
+Chrome at about 27 to 30 frames a second, the browser client's frames that ran
+ticks while its partner's sends came 60 ± 25 ms late took 0.8 to 0.9 ms
+(2.3–4.0 ms p99 in two runs) whole, about 3 ticks each. Input delay 2 (longer past
 about 83 ms one way) with window 8, narrowing to 4 late in Survival, absorbs the
-simulated networks without a desync and keeps 60 ticks a second at 120 ms one
+simulated networks without a desync and keeps 59 ticks a second at 120 ms one
 way, and the late game's simulation, rollbacks at the cap included, stays well
 inside a 60 Hz frame, so streaming state from an authoritative host is not
 needed on these costs. What a late-game frame's drawing adds is not measured,
@@ -53,9 +54,9 @@ relay, the sessions' telemetry reports once deployed (Section 6.2,
 "Telemetry").
 
 Four players look feasible on these costs, with caveats. A tick's cost is
-dominated by the creature pool, which stays at 385 slots, so four players should cost
-well under twice two players' tick; even at twice, a 12-tick rollback stays near
-6 ms p99 on this machine, within a 60 Hz frame. Rollback depth would follow the
+dominated by the creature pool, which stays at 384 slots, so four players should cost
+well under twice two players' tick; even at twice, a 12-tick rollback would come
+to about 4.7 ms p99 on this machine, within a 60 Hz frame. Rollback depth would follow the
 worst of three links rather than one, so deep rollbacks get more frequent, and
 a device several times slower than this one would have little room left at the
 cap. The original keeps two player tables (`player_state_table[2]`) and
@@ -482,16 +483,19 @@ the terrain draw nothing, and no wire carries the records. A bot plays both
 players of the 2-player Survival run a co-op session starts (`coop_latch`: the
 ranked profile, the original's bugs fixed, which puts the effect overflow to
 use) with their health held far past full, so the run reaches the late game:
-every slot of the creature pool is in use from 10.4 minutes on
-(`pool_full_minute`), the spawn rate keeps rising with the run's time, and at
-20 minutes player one holds 46 of the 56 perks the run has available
-(`perks.at_from`; the bot takes every one but those that kill or spend health).
-Each row is per call between 20 and 35 minutes of the run's time, node first,
-then Chrome, over three runs under node and two in Chrome (a range where they
-differ); maxima are wall-clock outliers, collection pauses among them, so the
-p99 is the budget's figure. The machine was otherwise busy (load averages of 5
-to 11 on its 10 cores while these ran), which the p99s and maxima carry more
-than the p50s. The bot plays simply, kiting and picking up the bonuses near it,
+all 384 slots of the creature pool first hold a creature at 10.4 minutes
+(`pool.first_full_minute`), and between 20 and 35 minutes they all do on 96.6%
+of ticks, never fewer than 368 (`pool.full_share`, `pool.min_active`), the
+spawn rate rising with the run's time; at 20 minutes player one holds 46 of the
+56 perks the run has available (`perks.at_from`; the bot takes every one but
+those that kill or spend health). Each row is per call between 20 and 35
+minutes of the run's time, node first, then Chrome. A range is the lowest and
+highest of three runs under node and two in Chrome (one figure where they
+agree), not a bound: more runs, or a busier machine, may land outside it.
+Maxima are wall-clock outliers, collection pauses among them, so the p99 is the
+budget's figure. The machine was otherwise busy (load averages of 4 to 10 on
+its 10 cores while these ran), which the p99s and maxima carry more than the
+p50s. The bot plays simply, kiting and picking up the bonuses near it,
 so a human's late game, with stronger weapons and more projectiles and effects,
 may cost more per tick.
 
@@ -501,16 +505,16 @@ may cost more per tick.
 | 2P input size per tick | **40 B** (`2 × sizeof(PortableInput)`) + **4 B** `count` + $8k\text{ B}$ commands | The `sizeof(PortableInput)` and `sizeof(PortableCommand)` asserts (`crimson-core/host/api.h`) |
 | State slot | **438 KiB** (448,181 B), the largest captured, the effect overflow in use; **about 680 KiB** worst case | The largest slot captured (`CoopStats.slot_bytes`, which `coop_cost.mjs` prints); the worst case: 231,981 B with no overflow entry in use (the largest slot `coop_cost.mjs --from 1 --to 2` prints, before the run's effects reach the overflow), `2,048 × 188 B` of entries and `2,048 × 40 B` of their queued decals (`GAME_EFFECT_OVERFLOW_CAPACITY`, `crimson-core/game/include/effect_overflow.h`; `run_state_size`) |
 | Co-op engine memory | **7.6 MiB** (7,995,392 B) over the plain run (16 slots, records, per-tick results, held bakes) | `game.wasm` memory of the run through the engine less the plain run's |
-| Slot capture (`run_state_write`) | **0.007–0.008 / 0.012–0.017 ms** p50/p99; Chrome **0.010 / 0.015 ms** | `game_coop_capture` alone: the state before the next tick into its slot, as the tick does first |
-| Slot restore (`run_state_read`) | **0.007 / 0.013 ms** p50/p99; Chrome **0.005 / 0.015 ms** | `game_coop_restore` one tick back, alone |
-| Canonical state hash | **0.033–0.034 / 0.052–0.076 ms** p50/p99; Chrome **0.035 / 0.045–0.050 ms** | `game_coop_hash` alone: most of what the engine adds to a tick |
-| Late-game 2P plain step | **0.099–0.102 / 0.262–0.313 ms** p50/p99; Chrome **0.100 / 0.265–0.270 ms** | `portable_step_many`, one tick |
-| Late-game 2P co-op tick | **0.142–0.147 / 0.237–0.327 ms** p50/p99; Chrome **0.145 / 0.225–0.230 ms** | `game_coop_advance` running one tick: the step, the slot capture, the hash and the bake's digest |
-| Late-game 8-tick rollback | **1.27–1.32 / 1.69–1.98 ms** p50/p99; Chrome **1.28–1.29 / 1.66–1.70 ms** | The frame in which player two's real record arrives for the first of 8 ticks run on a stand-in it contradicts, their bakes held: it takes them back, runs them again with the next tick, and commits their bakes to the terrain (which, headless, draws nothing) |
-| Late-game 12-tick rollback (the hard cap) | **1.83–1.91 / 2.38–2.96 ms** p50/p99; Chrome **1.86 / 2.32–2.35 ms** | As above, 12 ticks |
-| Late-game frame work, 60 Hz | **0.45–0.47 / 0.78–0.89 ms** p50/p99 (max 1.42–11.41); Chrome **0.47 / 0.77–0.78 ms** (max 1.17–1.19) | 60 s of frames that ran ticks (every frame at 60 Hz) from 35 minutes of the run's time on, with player two's records 60 ± 20 ms one way, window 4 (past 15 minutes): rollbacks of 1–3 ticks on most frames, 1.67 ticks run again per tick, no stalled frame |
-| Late-game frame work, 144 Hz | **0.17–0.18 / 0.58–0.61 ms** p50/p99 (max 1.15–6.19); Chrome **0.18 / 0.58 ms** (max 0.88–1.00) | As above at 144 Hz, the next 60 s, where 60% of frames ran ticks: rollbacks of 1–2 ticks (a few of 3), 1.14 ticks run again per tick, no stalled frame |
-| Early-game live frame, drawing on (Chrome) | **1.1 / 3.1–4.5 ms** p50/p99 (max 4.7–4.9) | `checks/coop_browser.mjs`, two runs: the host page's animation frames that ran ticks while the guest's sends were held 60 ± 25 ms (round trips of 64–75 ms), seconds 6 to 11 of a run (ticks 343 to 677: few creatures yet), timed whole (input, the game's frame with its ticks and the newest tick's drawing, the WebGL calls; 0.1 ms timer, the page not cross-origin isolated). Headless Chrome drew through SwiftShader at 19–21 frames a second on the busy machine, not 60, so each such frame ran 4.3–5.0 ticks, rollbacks' included; at 60 Hz a frame would run fewer |
+| Slot capture (`run_state_write`) | **0.007–0.008 / 0.013 ms** p50/p99; Chrome **0.010 / 0.015 ms** | `game_coop_capture` alone: the state before the next tick into its slot, as the tick does first |
+| Slot restore (`run_state_read`) | **0.006–0.007 / 0.013–0.014 ms** p50/p99; Chrome **0.005 / 0.015 ms** | `game_coop_restore` one tick back, alone |
+| Canonical state hash | **0.033 / 0.045–0.051 ms** p50/p99; Chrome **0.035 / 0.045–0.050 ms** | `game_coop_hash` alone: most of what the engine adds to a tick |
+| Late-game 2P plain step | **0.098–0.100 / 0.204–0.206 ms** p50/p99; Chrome **0.100 / 0.205–0.210 ms** | `portable_step_many`, one tick |
+| Late-game 2P co-op tick | **0.139–0.142 / 0.227–0.234 ms** p50/p99; Chrome **0.140–0.145 / 0.225–0.230 ms** | `game_coop_advance` running one tick: the step, the slot capture, the hash and the bake's digest |
+| Late-game 8-tick rollback | **1.25–1.27 / 1.59–1.69 ms** p50/p99; Chrome **1.27–1.29 / 1.60–1.66 ms** | The frame in which player two's real record arrives for the first of 8 ticks run on a stand-in it contradicts, their bakes held: it takes them back, runs them again with the next tick, and commits their bakes to the terrain (which, headless, draws nothing) |
+| Late-game 12-tick rollback (the hard cap) | **1.81–1.85 / 2.30–2.35 ms** p50/p99; Chrome **1.84–1.88 / 2.34–2.37 ms** | As above, 12 ticks |
+| Late-game frame work, 60 Hz | **0.45–0.46 / 0.80–0.86 ms** p50/p99 (max 1.17–3.65); Chrome **0.46–0.48 / 0.84–0.88 ms** (max 1.17–1.42) | 60 s of frames that ran ticks (every frame at 60 Hz) from 35 minutes of the run's time on, with player two's records 60 ± 20 ms one way, window 4 (past 15 minutes): rollbacks of 1–3 ticks on most frames, 1.67 ticks run again per tick, no stalled frame |
+| Late-game frame work, 144 Hz | **0.17–0.18 / 0.54–0.56 ms** p50/p99 (max 0.78–0.81); Chrome **0.18–0.19 / 0.54–0.57 ms** (max 0.78–0.86) | As above at 144 Hz, the next 60 s, where 60% of frames ran ticks: rollbacks of 1–2 ticks (a few of 3), 1.14 ticks run again per tick, no stalled frame |
+| Early-game live frame, drawing on (Chrome) | **0.8–0.9 / 2.3–4.0 ms** p50/p99 (max 2.8–4.9) | `checks/coop_browser.mjs`, two runs: the host page's animation frames that ran ticks while the guest's sends were held 60 ± 25 ms (round trips of 58–63 ms), seconds 6 to 11 of a run (ticks 363 to 686: few creatures yet), timed whole (input, the game's frame with its ticks and the newest tick's drawing, the WebGL calls; 0.1 ms timer, the page not cross-origin isolated). Headless Chrome drew through SwiftShader at 27–30 frames a second on the busy machine, not 60, so each such frame ran 2.6–2.9 ticks, rollbacks' included; at 60 Hz a frame would run fewer |
 | `game.wasm` step cost (9-min 1P Survival avg, `grim_render_disabled = 1`) | **~0.028 ms / tick** (~36,000 ticks/s) | Measured ([replay viewer](replay-viewer.md#what-it-can-afford)) |
 | `core.wasm` step cost (35-min 1P Survival avg, 210,268 ticks) | **~0.126 ms / tick** (26,497 ms total) | Measured (`crimson-core/results/survival-spawn-profile.json`) |
 
@@ -603,13 +607,16 @@ monotonically non-decreasing tick frontiers**:
    (negotiated from measured handshake RTT in `MSG_START_RUN`; fixed
    $D \in [1, 8]$ per run in `M1` lockstep). In `M2` rollback
    $D = \text{clamp}(\lceil \text{RTT} / (2 \times 16.667\text{ ms}) \rceil - 4 + 1, 2, 8)$
-   (`coop_run_delay`, `host/coop_live.inc`): a partner's record for tick $t$
-   leaves as its run reaches $t - D$ and must arrive before this run passes
-   $t$ by more than the window, so $D$ plus the narrowed window of 4 must cover
-   the one-way trip, with a tick to spare; were it short, both runs would wait
-   at their windows for each other's records and the whole game would slow
-   (with $D$ held at 2, `checks/game_coop_live.mjs`'s 120 ms profile falls
-   short of the 59 ticks a second it holds the game to past the narrowing).
+   (`coop_run_delay`, `host/coop_live.inc`). A partner's record for tick $t$
+   leaves as its run reaches $t - D$ and takes the one-way trip, $L$ ticks
+   ($\lceil \text{RTT} / (2 \times 16.667\text{ ms}) \rceil$), so it arrives as
+   the runs, in step, reach $t - D + L$: $L - D$ ticks past $t$, which this
+   run may have run on a prediction only within its window $W$. With a tick to
+   spare, $L - D \le W - 1$, so the narrowed window of 4 needs
+   $D \ge L - 3$, as the formula has it: $D = 2$ covers trips of up to 5
+   ticks (about 83 ms one way), and each tick longer adds one. Short of that,
+   records land past the window, and both runs would wait at their windows for
+   each other's records, the whole game slowing.
 
 ---
 
@@ -1963,7 +1970,7 @@ whose page reports.
    the window's narrowing (brought forward), a leave from the pause banner and
    team wipes, one of them ranked (both names signed under 60 ms with loss, both
    machines queuing the same upload of the replay's confirmed run), then wipes
-   until a correction revised one; at 120 ms the game must keep 60 ticks a
+   until a correction revised one; at 120 ms the game must keep 59 ticks a
    second past the narrowing; the first quest plays under the lossiest profile.
    M3's ranked flow runs under rollback throughout: each replay it holds and
    signs, and the end screen's score, come from the run's last confirmed tick
@@ -1991,12 +1998,9 @@ whose page reports.
    and in Chrome (`checks/coop_cost.mjs`, three runs and two), frame work at 60
    and 144 Hz, the browser client's early-game frames with drawing on
    (`checks/coop_browser.mjs`), and rollback depths, ticks run again and stalled
-   frames under the five profiles. The first figures came from a run under the original's bugs,
-   which leave the effect overflow unused (slots of 227 KiB, 3.75 MiB for the
-   engine), and from rollbacks over confirmed ticks, which hold no bake; the
-   costs now come from the run a co-op session starts and from rollbacks over
-   ticks run on a stand-in, their bakes held, and the capture is timed alone. The
-   comparison across direct paths, TURN over UDP and TCP and the room's relay
+   frames under the five profiles. The costs come from the run a co-op session
+   starts and from rollbacks over ticks run on a stand-in, their bakes held, and
+   the capture is timed alone. The comparison across direct paths, TURN over UDP and TCP and the room's relay
    is the telemetry's to make once deployed: `coop_totals` on `/analytics`
    holds each transport's sessions, round trips, rollback depths, frame work and
    stalls.
