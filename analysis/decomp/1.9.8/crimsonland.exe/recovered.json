@@ -4132,6 +4132,343 @@
       "bytes": "a008d24800",
       "offset": 0,
       "note": "Instruction-exact under 1.9.8: ui_render_hud."
+    },
+    {
+      "name": "game_over_highscore_rank_index",
+      "address": "0x4802a8",
+      "reference": "0x4107e5",
+      "bytes": "a3a8024800",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_over_screen_update."
+    },
+    {
+      "name": "game_over_highscores_button",
+      "address": "0x480258",
+      "reference": "0x410bcb",
+      "bytes": "891d58024800",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_over_screen_update."
+    },
+    {
+      "name": "game_over_main_menu_button",
+      "address": "0x480240",
+      "reference": "0x410c33",
+      "bytes": "891d40024800",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_over_screen_update."
+    },
+    {
+      "name": "game_over_name_input_buffer",
+      "address": "0x480274",
+      "reference": "0x410699",
+      "bytes": "c7059402480074024800",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_over_screen_update."
+    },
+    {
+      "name": "game_over_name_input_state",
+      "address": "0x480294",
+      "reference": "0x410699",
+      "bytes": "c7059402480074024800",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_over_screen_update."
+    },
+    {
+      "name": "game_over_name_submit_button",
+      "address": "0x4802ac",
+      "reference": "0x410654",
+      "bytes": "891dac024800",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_over_screen_update."
+    },
+    {
+      "name": "game_over_play_again_button",
+      "address": "0x480210",
+      "reference": "0x410b63",
+      "bytes": "891d10024800",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_over_screen_update."
+    },
+    {
+      "name": "game_over_screen_flags",
+      "address": "0x480300",
+      "reference": "0x410610",
+      "bytes": "a000034800",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_over_screen_update."
+    },
+    {
+      "name": "highscore_batch_sync_hardcore",
+      "address": "0x4cdffc",
+      "reference": "0x44324e",
+      "bytes": "880dfcdf4c00",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_batch_sync_stage_index",
+      "address": "0x4c9e10",
+      "reference": "0x4424e4",
+      "bytes": "c705109e4c00fcffffff",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_date_filter_list",
+      "address": "0x4cdfe0",
+      "reference": "0x4429cc",
+      "bytes": "c605e0df4c0001",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_game_mode_list",
+      "address": "0x4c9f8c",
+      "reference": "0x442d6f",
+      "bytes": "c6058c9f4c0001",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_game_mode_list_init_guard",
+      "address": "0x4ce1b4",
+      "reference": "0x442d29",
+      "bytes": "a0b4e14c00",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_hardcore_checkbox",
+      "address": "0x4ce000",
+      "reference": "0x4420f9",
+      "bytes": "c60500e04c0000",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_online_scores_checkbox",
+      "address": "0x4ce088",
+      "reference": "0x44290c",
+      "bytes": "c60588e04c0000",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_player_count_list",
+      "address": "0x4ce200",
+      "reference": "0x442c33",
+      "bytes": "c60500e24c0001",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_post_sync_update_check_latch",
+      "address": "0x4ce470",
+      "reference": "0x4430c1",
+      "bytes": "a070e44c00",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_screen_action_id",
+      "address": "0x4ce46c",
+      "reference": "0x441dfb",
+      "bytes": "c7056ce44c00fdffffff",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_screen_back_button",
+      "address": "0x4ce1e8",
+      "reference": "0x4426bf",
+      "bytes": "892de8e14c00",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_screen_init_flags",
+      "address": "0x4c9f6c",
+      "reference": "0x4420e6",
+      "bytes": "a06c9f4c00",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_screen_play_button",
+      "address": "0x4ce16c",
+      "reference": "0x44255c",
+      "bytes": "892d6ce14c00",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_screen_score_line_buffers",
+      "address": "0x4c9fd0",
+      "reference": "0x4422c3",
+      "bytes": "3de0df4c00",
+      "offset": 16400,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_screen_score_line_items",
+      "address": "0x4c9bf0",
+      "reference": "0x4421e2",
+      "bytes": "893cadf09b4c00",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_screen_score_scrollbar",
+      "address": "0x4c9d80",
+      "reference": "0x442322",
+      "bytes": "68809d4c00",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_screen_title_buffer",
+      "address": "0x4ce220",
+      "reference": "0x441b6b",
+      "bytes": "6820e24c00",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "highscore_screen_update_button",
+      "address": "0x4ce1d0",
+      "reference": "0x442400",
+      "bytes": "892dd0e14c00",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "player_overlay_torso_uv8",
+      "address": "0x48ed68",
+      "reference": "0x42812b",
+      "bytes": "d904fd68ed4800",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): player_render."
+    },
+    {
+      "name": "screenshot_file_index",
+      "address": "0x47e5d8",
+      "reference": "0x40c506",
+      "bytes": "a1d8e54700",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_frame_update."
+    },
+    {
+      "name": "screenshot_filename_buf",
+      "address": "0x47d350",
+      "reference": "0x40c529",
+      "bytes": "6850d34700",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_frame_update."
+    },
+    {
+      "name": "stats_menu_easter_egg_roll",
+      "address": "0x46f2e4",
+      "reference": "0x40cbd3",
+      "bytes": "a1e4f24600",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_frame_update."
+    },
+    {
+      "name": "ui_analog_cursor_active",
+      "address": "0x47e5dc",
+      "reference": "0x40c748",
+      "bytes": "891ddce54700",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): game_frame_update."
+    },
+    {
+      "name": "ui_profile_menu_enabled",
+      "address": "0x4764b8",
+      "reference": "0x442de9",
+      "bytes": "c605b864470001",
+      "offset": 0,
+      "note": "Reference-paired under 1.9.8 (instruction counts equal): highscore_screen_update."
+    },
+    {
+      "name": "seasonal_balloons_dismissed",
+      "address": "0x47e5e0",
+      "reference": "0x40cc9d",
+      "bytes": "381de0e54700",
+      "offset": 0,
+      "build_only": true,
+      "note": "1.9.8-only flag set when the player dismisses the seasonal balloons, read by game_frame_update; 1.9.93 has no seasonal overlays."
+    },
+    {
+      "name": "seasonal_balloon_texture",
+      "address": "0x46f2e8",
+      "reference": "0x40ccb5",
+      "bytes": "a1e8f24600",
+      "offset": 0,
+      "build_only": true,
+      "note": "1.9.8-only seasonal balloon texture handle, read by game_frame_update; 1.9.93 has no seasonal overlays."
+    },
+    {
+      "name": "seasonal_balloon_y",
+      "address": "0x47e5e8",
+      "reference": "0x40ccd9",
+      "bytes": "d91cb5e8e54700",
+      "offset": 0,
+      "build_only": true,
+      "note": "1.9.8-only per-balloon heights of the seasonal balloon overlay, read by game_frame_update; 1.9.93 has no seasonal overlays."
+    },
+    {
+      "name": "seasonal_balloon_color",
+      "address": "0x47e668",
+      "reference": "0x40ccf1",
+      "bytes": "888668e64700",
+      "offset": 0,
+      "build_only": true,
+      "note": "1.9.8-only per-balloon colour indices of the seasonal balloon overlay, read by game_frame_update; 1.9.93 has no seasonal overlays."
+    },
+    {
+      "name": "seasonal_banner_pulse",
+      "address": "0x47e5e4",
+      "reference": "0x40cf55",
+      "bytes": "d91de4e54700",
+      "offset": 0,
+      "build_only": true,
+      "note": "1.9.8-only seasonal banner pulse phase, read by game_frame_update; 1.9.93 has no seasonal overlays."
+    },
+    {
+      "name": "holiday_greeting_dismissed",
+      "address": "0x47e688",
+      "reference": "0x40d0d3",
+      "bytes": "381d88e64700",
+      "offset": 0,
+      "build_only": true,
+      "note": "1.9.8-only flag set when the player dismisses the holiday greeting, read by game_frame_update; 1.9.93 has no seasonal overlays."
+    },
+    {
+      "name": "holiday_snow_needs_init",
+      "address": "0x46f2ec",
+      "reference": "0x40d1fc",
+      "bytes": "381decf24600",
+      "offset": 0,
+      "build_only": true,
+      "note": "1.9.8-only first-frame latch of the holiday snow overlay, read by game_frame_update; 1.9.93 has no seasonal overlays."
+    },
+    {
+      "name": "holiday_snow_y",
+      "address": "0x47d570",
+      "reference": "0x40d20a",
+      "bytes": "be70d54700",
+      "offset": 0,
+      "build_only": true,
+      "note": "1.9.8-only flake heights of the holiday snow overlay, read by game_frame_update; 1.9.93 has no seasonal overlays."
+    },
+    {
+      "name": "shareware_play_ms",
+      "address": "0x47e5d4",
+      "reference": "0x40d3ed",
+      "bytes": "a1d4e54700",
+      "offset": 0,
+      "build_only": true,
+      "note": "1.9.8-only shareware play-time accumulator, read by game_frame_update; 1.9.93 has no seasonal overlays."
     }
   ],
   "absent": [

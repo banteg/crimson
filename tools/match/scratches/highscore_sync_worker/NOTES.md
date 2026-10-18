@@ -339,3 +339,22 @@ native's dest-minus-source cursor; the free-standing `memset`/`strcpy` spelling
 folded the frame address into scaled indexing. 1.9.8 is instruction-exact
 (528/528, refs 126/2/0, the two unresolved being 1.9.8 data pins); 1.9.93 stays
 exact. No guard.
+
+## 1.9.8 copy-loop SIB byte (2026-10-18, open)
+
+1.9.8 is 528/528 with references 128/0/0; the one byte left is the SIB of the
+default-name copy store at `+0x1d4`: native `mov [eax+edx], cl` (base = source
+cursor, index = delta), 9044 `mov [edx+eax], cl`. Every other dest-minus-source
+copy loop in the 1.9.8 executable (six `reset_light`/`strcpy` sites) puts the
+delta in the base, except two whose delta is in `ebp`, which cannot be a base
+without a displacement. So this site is the only free choice where native
+differs, and the order is decided before encoding.
+
+Byte-neutral on 1.9.8 (still `[edx+eax]`), all still exact on 1.9.93: the
+record declared at the top of the function, `payload_length` declared or
+computed in another order, a braced `reset_light()` call, a constructor that
+calls `reset_light()`, a constructor with the body inline, and the member body
+spelled with `this->player_name`, `&player_name[0]`, `&default_player_name[0]`,
+a local destination pointer or a local source pointer. Spelling the reset
+inline in the function (direct or through a record pointer) loses the cursor
+loop (525/528).

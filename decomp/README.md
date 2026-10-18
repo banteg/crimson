@@ -5,7 +5,7 @@ we study. It is organised by **build family**: a set of builds close enough to
 share function bodies. Tooling, scratch notes and experiments stay under
 `tools/match`; each scratch's `SOURCE` points into this tree.
 
-For 1.9.93 it is complete: every one of the 858 game and engine functions in
+For 1.9.93 it is complete: every game and engine function in
 `crimsonland.exe` and `grim.dll` compiles to the original machine code
 ([decomp.dev](https://decomp.dev/banteg/crimson)).
 

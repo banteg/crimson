@@ -8,8 +8,9 @@ and the [historical inventory](../historical/koti-mbnet-crimsonland/manifest.jso
 The GOG provenance and exact reference hashes remain documented in
 [provenance.md](../../docs/contributor/project-tracking/provenance.md).
 
-1.9.93's **Game & Engine** category is complete: 858/858 functions and
-360,094/360,094 code bytes are matched, every one also an encoded-body match.
+1.9.93's **Game & Engine** category is complete: every function and code byte
+is matched, every one also an encoded-body match
+([decomp.dev](https://decomp.dev/banteg/crimson)).
 Libraries, unclassified functions, data and linking are measured separately
 below.
 
