@@ -105,6 +105,9 @@ button.check img{width:16px;height:16px;vertical-align:-3px;margin-right:6px}but
 .readout{margin:0 0 6px;color:var(--label)}.readout b{color:#fff;font-weight:400}
 svg.chart{display:block;width:100%;height:auto;overflow:visible;font:bold 12px "Courier New",Courier,monospace}
 svg .axis{fill:var(--dim)}svg .axis.small{font-size:11px}svg .grid{stroke:#fff;stroke-opacity:.07}svg .cursor{stroke:#fff;stroke-opacity:.6}
+.coop-charts{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:10px 32px;margin-bottom:10px}
+.coop-chart{margin:0 0 6px}.coop-chart figcaption{margin-bottom:4px;color:var(--label)}.coop-chart figcaption b{color:#fff;font-weight:400}
+svg .label{fill:var(--label)}svg .value{fill:var(--text)}svg .value.small{font-size:11px}svg .ink{fill:#0b0a07}
 svg .rival{fill:none;stroke-width:1.5;stroke-dasharray:5 4;stroke-opacity:.85}
 .arena-row{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
 .arena{width:min(480px,100%);aspect-ratio:1;background-size:100% auto;background-position:top;background-color:rgb(63,56,25)}

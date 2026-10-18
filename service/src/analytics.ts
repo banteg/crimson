@@ -9,7 +9,9 @@ import PLAY_ANALYTICS from "../../crimson-core/client/web/analytics.json";
 const DAY = 86400000;
 const PLAY_MODES = PLAY_ANALYTICS.modes.filter((mode) => mode !== null);
 const COOP = PLAY_ANALYTICS.coop;
-const COOP_FIELDS = ["day", "transport", "rtt", "seconds", "desync", "stalled", "depths", "frames"];
+// A summary's stalled frames: on the network and on a perk pick apart, or together as `stalled` from pages before
+// the split, which keep posting while they stay open.
+const COOP_FIELDS = ["day", "transport", "rtt", "seconds", "desync", "stalled_network", "stalled_perk", "stalled", "depths", "frames"];
 // A histogram of `length` buckets counting at most `max` in all.
 const counts = (value: unknown, length: number, max: number): value is number[] =>
   Array.isArray(value) && value.length === length && value.every((n) => integer(n, max)) && value.reduce((a, b) => a + b, 0) <= max;
@@ -55,14 +57,21 @@ export async function postAnalytics(request: Request, env: Env, kind: "totals" |
     return refuse(400, "invalid analytics period");
   if (kind === "coop") {
     // As play totals are bounded by the minute a post covers, a session's summary is bounded by the seconds in runs it
-    // claims: a rollback at most each tick, and frames, stalled ones too, at most max_rate a second.
+    // claims: a rollback at most each tick, and frames, stalled ones together too, at most max_rate a second.
     const seconds = integer(value.seconds, COOP.max_seconds) ? value.seconds : -1, frames = seconds * COOP.max_rate;
+    const combined = "stalled" in value;
+    const stalled = combined ? [value.stalled] : [value.stalled_network, value.stalled_perk];
     if (!fields(value, COOP_FIELDS) || typeof value.transport !== "string" || !COOP.transports.includes(value.transport) ||
-        !integer(value.rtt, COOP.rtt_ms.length) || seconds < 0 || !integer(value.desync, 1) || !integer(value.stalled, frames) ||
+        !integer(value.rtt, COOP.rtt_ms.length) || seconds < 0 || !integer(value.desync, 1) ||
+        (combined && ("stalled_network" in value || "stalled_perk" in value)) || !counts(stalled, stalled.length, frames) ||
         !counts(value.depths, COOP.depths, seconds * 60) || !counts(value.frames, COOP.frame_ms.length + 1, frames))
       return refuse(400, "invalid co-op session");
+    // A summary that tells its stalls apart adds its seconds to theirs (split_seconds), so that the rates per minute
+    // leave out the seconds of combined ones, which keep their old metric.
+    const stalls: [string, number, number][] = combined ? [["stalled", 0, value.stalled as number]] :
+      [["stalled_network", 0, value.stalled_network as number], ["stalled_perk", 0, value.stalled_perk as number], ["split_seconds", 0, seconds]];
     const rows: [string, number, number][] = [
-      ["sessions", 0, 1], ["seconds", 0, seconds], ["desyncs", 0, value.desync], ["stalled", 0, value.stalled],
+      ["sessions", 0, 1], ["seconds", 0, seconds], ["desyncs", 0, value.desync], ...stalls,
       ["rtt", value.rtt, 1],
       ...value.depths.map((n, i): [string, number, number] => ["depth", i, n]),
       ...value.frames.map((n, i): [string, number, number] => ["frame", i, n]),

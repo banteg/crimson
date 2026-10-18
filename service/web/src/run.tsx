@@ -96,10 +96,10 @@ function at<T>(items: T[], t: number, time: (item: T) => number = (item) => (ite
 const W = 840;
 const LEFT = 170;
 const RIGHT = 10;
-const BLUE = "rgb(70,180,240)";
-const RED = "rgb(250,70,60)";
-const GREEN = "rgb(128,255,153)";
-const GOLD = "rgb(240,200,90)";
+export const BLUE = "rgb(70,180,240)";
+export const RED = "rgb(250,70,60)";
+export const GREEN = "rgb(128,255,153)";
+export const GOLD = "rgb(240,200,90)";
 // Each seat's line in the arena and its name in the charts: player one's white, player two's blue.
 const SEAT_COLORS = ["#fff", BLUE];
 const WINDOW_S = 15;
@@ -108,10 +108,10 @@ const LABEL_GAP = 24;
 const ICON_CELL = 32;
 
 const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
-const grouped = (n: number) => Math.round(n).toLocaleString("en-US");
+export const grouped = (n: number) => Math.round(n).toLocaleString("en-US");
 // A player's name in a chart's label column.
 const fit = (text: string, chars = 20) => (text.length > chars ? `${text.slice(0, chars - 1)}…` : text);
-const short = (n: number) => (n >= 1e6 ? `${+(n / 1e6).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(Math.round(n)));
+export const short = (n: number) => (n >= 1e6 ? `${+(n / 1e6).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(Math.round(n)));
 
 // A round gridline step at least `rough`: 1, 2 or 5 times a power of ten.
 function roundStep(rough: number): number {

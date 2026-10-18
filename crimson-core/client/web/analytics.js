@@ -111,10 +111,11 @@ function createPlayAnalytics() {
   }
   // A co-op session's summary as it ends (shell.html), best effort like the totals: the kind of transport it last
   // ran over (coopTransport), its round trip's bucket, its seconds in runs, whether it desynced, and the game's
-  // counters (host/coop.inc CoopSessionStats): frames whose due ticks all waited, rollbacks by depth and frames by
-  // the time their ticks took. As the service bounds a summary by the seconds it claims (at most max_seconds, a
-  // rollback a tick, max_rate frames a second), counts past those bounds go down in proportion.
-  function coop({ transport, rtt, ticks, desync, stalled, depths, frames }) {
+  // counters (host/coop.inc CoopSessionStats): frames whose due ticks all waited on the network and on a perk pick
+  // (`stalled`), rollbacks by depth and frames by the time their ticks took. As the service bounds a summary by the
+  // seconds it claims (at most max_seconds, a rollback a tick, max_rate frames a second, stalled ones together),
+  // counts past those bounds go down in proportion.
+  function coop({ transport, rtt, ticks, desync, stalled: [network, perk], depths, frames }) {
     if (!enabled()) return;
     const { rtt_ms: RTT_MS, max_seconds: MAX_COOP_SECONDS, max_rate: MAX_RATE } = COOP;
     const seconds = Math.min(Math.ceil(ticks / 60), MAX_COOP_SECONDS);
@@ -122,9 +123,10 @@ function createPlayAnalytics() {
       const sum = counts.reduce((a, b) => a + b, 0);
       return sum <= limit ? counts : counts.map((n) => Math.floor((n * limit) / sum));
     };
+    const [stalledNetwork, stalledPerk] = fit([network, perk], seconds * MAX_RATE);
     void send("/api/analytics/coop", {
       day: date(), transport: coopTransport(transport), rtt: RTT_MS.filter((ms) => rtt >= ms).length,
-      seconds, desync: desync ? 1 : 0, stalled: Math.min(stalled, seconds * MAX_RATE),
+      seconds, desync: desync ? 1 : 0, stalled_network: stalledNetwork, stalled_perk: stalledPerk,
       depths: fit(depths, seconds * 60), frames: fit(frames, seconds * MAX_RATE),
     }).catch(() => {});
   }

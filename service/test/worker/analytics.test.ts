@@ -9,7 +9,7 @@ const token = "a".repeat(32);
 const unique = () => ({ day: day(), token });
 const totals = () => ({ day: day(), ready: 1, sessions: 1, engaged: 0, modes: [{ mode: "survival", runs: 2, seconds: 60 }] });
 const depths = () => [5, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
-const coop = () => ({ day: day(), transport: "turn-udp", rtt: 2, seconds: 600, desync: 0, stalled: 4, depths: depths(), frames: [30000, 100, 0, 0, 0, 1] });
+const coop = () => ({ day: day(), transport: "turn-udp", rtt: 2, seconds: 600, desync: 0, stalled_network: 4, stalled_perk: 3, depths: depths(), frames: [30000, 100, 0, 0, 0, 1] });
 function post(value: unknown, path = "/api/analytics/unique", headers: Record<string, string> = {}) {
   return worker.fetch(new Request(ORIGIN + path, {
     method: "POST", headers: { origin: ORIGIN, "content-type": "application/json", ...headers }, body: JSON.stringify(value),
@@ -46,26 +46,45 @@ describe("private gameplay counts", () => {
     const rows = await env.DB.prepare("SELECT * FROM coop_totals ORDER BY metric, bucket").all();
     const count = (metric: string, bucket = 0) => rows.results.find((row) => row.metric === metric && row.bucket === bucket)?.count;
     expect(rows.results.every((row) => row.day === day() && row.transport === "turn-udp")).toBe(true);
-    expect([count("sessions"), count("seconds"), count("desyncs"), count("stalled")]).toEqual([2, 1200, 1, 8]);
+    expect([count("sessions"), count("seconds"), count("desyncs"), count("stalled_network"), count("stalled_perk"), count("split_seconds")])
+      .toEqual([2, 1200, 1, 8, 6, 1200]);
+    expect(count("stalled")).toBeUndefined();
     expect([count("rtt", 2), count("rtt", 4), count("depth", 0), count("depth", 11), count("frame", 5)]).toEqual([1, 1, 10, 2, 2]);
     // Buckets nothing reached take no row.
     expect(count("depth", 2)).toBeUndefined();
     expect(await env.DB.prepare("SELECT COUNT(*) AS n FROM play_totals").first()).toEqual({ n: 0 });
     for (const value of [{ ...coop(), transport: "carrier-pigeon" }, { ...coop(), room: "abc" }, { ...coop(), rtt: 5 },
       { ...coop(), seconds: 14401 }, { ...coop(), desync: 2 }, { ...coop(), depths: depths().slice(1) },
-      { ...coop(), frames: [1, 2, 3, 4, 5, -1] }, { ...coop(), stalled: 0.5 }])
+      { ...coop(), frames: [1, 2, 3, 4, 5, -1] }, { ...coop(), stalled_network: 0.5 }, { ...coop(), stalled_perk: -1 },
+      { ...coop(), stalled_perk: undefined }, { ...coop(), stalled: 7 }])
       expect((await post(value, "/api/analytics/coop")).status).toBe(400);
     expect(await env.DB.prepare("SELECT SUM(count) AS n FROM coop_totals WHERE metric = 'sessions'").first()).toEqual({ n: 2 });
   });
 
   it("refuses a co-op summary whose counts its seconds in runs cannot hold", async () => {
-    // Ten seconds: at most 600 rollbacks (one a tick) and 2,400 frames, stalled ones too (240 a second).
-    const ten = { ...coop(), seconds: 10, stalled: 2400, depths: [300, 300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], frames: [2000, 400, 0, 0, 0, 0] };
+    // Ten seconds: at most 600 rollbacks (one a tick) and 2,400 frames, stalled ones together too (240 a second).
+    const ten = { ...coop(), seconds: 10, stalled_network: 2000, stalled_perk: 400, depths: [300, 300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], frames: [2000, 400, 0, 0, 0, 0] };
     expect((await post(ten, "/api/analytics/coop")).status).toBe(204);
-    for (const value of [{ ...ten, seconds: 9 }, { ...ten, stalled: 2401 }, { ...ten, depths: [301, 300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-      { ...ten, frames: [2000, 401, 0, 0, 0, 0] }, { ...ten, seconds: 0, stalled: 0, depths: Array(12).fill(0), frames: [1, 0, 0, 0, 0, 0] }])
+    for (const value of [{ ...ten, seconds: 9 }, { ...ten, stalled_perk: 401 }, { ...ten, stalled_network: 2401, stalled_perk: 0 },
+      { ...ten, depths: [301, 300, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }, { ...ten, frames: [2000, 401, 0, 0, 0, 0] },
+      { ...ten, seconds: 0, stalled_network: 0, stalled_perk: 0, depths: Array(12).fill(0), frames: [1, 0, 0, 0, 0, 0] }])
       expect((await post(value, "/api/analytics/coop")).status).toBe(400);
     expect(await env.DB.prepare("SELECT SUM(count) AS n FROM coop_totals WHERE metric = 'sessions'").first()).toEqual({ n: 1 });
+  });
+
+  it("keeps taking an old page's combined stalled frames under their old metric, apart from the split ones", async () => {
+    const { stalled_network: _network, stalled_perk: _perk, ...old } = coop();
+    expect((await post({ ...old, stalled: 9 }, "/api/analytics/coop")).status).toBe(204);
+    expect((await post(coop(), "/api/analytics/coop")).status).toBe(204);
+    const count = async (metric: string) =>
+      (await env.DB.prepare("SELECT SUM(count) AS n FROM coop_totals WHERE metric = ?").bind(metric).first<{ n: number | null }>())?.n;
+    // Both sessions' seconds, but only the split one's under split_seconds, the rates' denominator.
+    expect([await count("sessions"), await count("seconds"), await count("split_seconds")]).toEqual([2, 1200, 600]);
+    expect([await count("stalled"), await count("stalled_network"), await count("stalled_perk")]).toEqual([9, 4, 3]);
+    // Bounded as before: no more than the seconds' frames.
+    for (const value of [{ ...old, stalled: 144001 }, { ...old, stalled: -1 }, { ...old, stalled: 1.5 }])
+      expect((await post(value, "/api/analytics/coop")).status).toBe(400);
+    expect(await count("sessions")).toBe(2);
   });
 
   it("refuses ingestion before database writes when the shared anonymous budget is exhausted", async () => {

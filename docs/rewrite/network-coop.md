@@ -540,9 +540,10 @@ run; stalled frames are a share of the machine's frames (a frame is stalled
 when every tick it was due waited: for records, the window or the picker; a
 pause is none). Each run also has a 250 ms start offset, a 300 ms stall on the
 Guest's machine and a perk the other machine waits for, so its counts are not
-the network's alone; the check does not tell them apart, but under 10 and 30
-ms, where a record is rarely late by itself, these are the likely source of
-most rollbacks and stalled frames.
+the network's alone: under 10 and 30 ms, where a record is rarely late by
+itself, these are the likely source of most rollbacks and stalled frames. The
+check prints the stalled frames apart, on the network and on the perk pick
+(`table.stalled_pct`, `[network, perk]`); the table's are both together.
 
 | Profile (one way) | Rollbacks per minute, Host / Guest | Mean depth (deepest) | Ticks run again per tick | Stalled frames |
 | --- | --- | --- | --- | --- |
@@ -1693,24 +1694,35 @@ partner relays, or this page's relay names no protocol), `ws-relay` for the
 room's relay, or `unknown` before the pair was read; its round trip's
 bucket (under 25, 50, 100 and 200 ms, and longer), its minutes in runs, whether
 a desync ended it, and the game's counters: its frames whose due ticks all
-waited (for records, the window or a perk pick; not in a pause), its rollbacks
-by depth and its frames that ran ticks or ran them again by the time that took,
-over all its runs. The game times that work by `host_clock_ms`, a clock finer
-than a millisecond (`SDL_GetTicksNS` in the clients), not the whole milliseconds
-of `host_time_ms`, which the original reads. Each summary comes from
+waited, not in a pause, apart by what the first waited on (`game_coop_advance`),
+its rollbacks by depth and its frames that ran ticks or ran them again by the
+time that took, over all its runs. A network stall waited for the partner's
+records or the window they leave the run to predict in; a perk wait waited on
+a perk pick: this machine's own request, whose production stops at the
+request's tick until that tick is confirmed, the open menu's picker's choice
+(the partner picking on its perk screen, or the choice on its way), or the
+partner's records past the tick its pick went on, which its game produces only
+once its perk screen has closed. The picker's own frames on its perk screen run
+no ticks and count as neither. The game times that work by `host_clock_ms`, a
+clock finer than a millisecond (`SDL_GetTicksNS` in the clients), not the whole
+milliseconds of `host_time_ms`, which the original reads. Each summary comes from
 `game_coop_report()`, once: the game queues a session's as it closes, or as a
 new hello replaces it before its counters go, and the page takes them in order
 (`game_coop_telemetry()` reads the running session's). The buckets are
 `client/web/analytics.json`'s. A summary
 holds what its seconds in runs can: at most `max_seconds` (4 hours) of them, a
-rollback a tick, and `max_rate` (240) frames a second, stalled ones too; the
-service refuses one that claims more, as it bounds play totals by the minute a
+rollback a tick, and `max_rate` (240) frames a second, stalled ones together
+too; the service refuses one that claims more, as it bounds play totals by the minute a
 post covers, and the page scales counts past those bounds down in proportion
 before it sends. The service
 adds each summary to daily totals by transport (`coop_totals`) and keeps no
 room, seat, token or row per session; the admin's `/analytics` shows the last
 30 days. Each page reports its own session, so a session counts once per player
-whose page reports.
+whose page reports. Pages from before the split sent their stalled frames
+together (`stalled`), which the service still takes under that metric while
+they stay open; the split ones go to `stalled_network` and `stalled_perk`, with
+their sessions' seconds in runs under `split_seconds`, which `/analytics` takes
+the rates a minute over, so the combined rows count in neither.
 
 ---
 

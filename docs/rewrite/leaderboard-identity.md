@@ -256,7 +256,7 @@ A co-op session that reached its partner's game sends one summary as it ends to 
 ([network co-op, Telemetry](network-coop.md#telemetry)): the kind of transport it last ran over (direct, TURN over
 UDP or TCP from this browser, TURN the browser cannot tell the protocol of, the room's relay, or unknown), its round trip's
 bucket, its minutes in runs, whether it desynced, and histograms of its rollback depths and frame work with its stalled
-frames. It names no room, seat, partner or token; the service adds it to daily totals by transport and keeps nothing
+frames, those that waited on the network apart from those that waited on a perk pick. It names no room, seat, partner or token; the service adds it to daily totals by transport and keeps nothing
 per session.
 
 `crimson.play-analytics-disabled` is the persistent opt-out preference, exposed on `/privacy`. Opting out keeps

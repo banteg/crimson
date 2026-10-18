@@ -558,9 +558,9 @@
   const COOP_DEPTHS = PLAY_ANALYTICS.coop.depths, COOP_FRAMES = PLAY_ANALYTICS.coop.frame_ms.length + 1;
   function coopReport() {
     for (let at; (at = Module.ccall("client_coop_report", "number", [], [])); ) {
-      const [rtt, reason, ticks, , stalled, ...counts] = new Int32Array(Module.HEAPU8.slice(at, at + 4 * (5 + COOP_DEPTHS + COOP_FRAMES)).buffer);
+      const [rtt, reason, ticks, , network, perk, ...counts] = new Int32Array(Module.HEAPU8.slice(at, at + 4 * (6 + COOP_DEPTHS + COOP_FRAMES)).buffer);
       playAnalytics.coop({
-        transport: coopRan ?? coopLink?.stats().transport, rtt, ticks, desync: reason === COOP_DIVERGED, stalled,
+        transport: coopRan ?? coopLink?.stats().transport, rtt, ticks, desync: reason === COOP_DIVERGED, stalled: [network, perk],
         depths: counts.slice(0, COOP_DEPTHS), frames: counts.slice(COOP_DEPTHS),
       });
     }

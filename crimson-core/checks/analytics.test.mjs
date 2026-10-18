@@ -204,7 +204,7 @@ test("network failures retry unique presence with its same token, without retryi
 test("a co-op session's summary names its transport's kind and buckets its round trip, without a token or room", async () => {
   const depths = Array.from({ length: shared.coop.depths }, (_, i) => (i < 3 ? 10 - i : 0));
   const frames = [3000, 40, 2, 0, 0, 1];
-  const session = { transport: "relay-udp/srflx", rtt: 63, ticks: 35950, desync: true, stalled: 7, depths, frames };
+  const session = { transport: "relay-udp/srflx", rtt: 63, ticks: 35950, desync: true, stalled: [5, 2], depths, frames };
   const b = browser();
   // Either end of the pair relaying is TURN; this page's own relay tells its protocol, the partner's cannot.
   const kinds = [["relay-udp/srflx", "turn-udp"], ["relay-udp/relay", "turn-udp"], ["relay-tls/host", "turn-tcp"],
@@ -214,14 +214,16 @@ test("a co-op session's summary names its transport's kind and buckets its round
   await b.settle();
   const sent = () => b.requests.filter((request) => request.path === "/api/analytics/coop").map((request) => request.body);
   assert.deepEqual(sent().map((body) => body.transport), kinds.map(([, kind]) => kind));
-  assert.deepEqual(sent()[0], { day: "2026-10-15", transport: "turn-udp", rtt: 2, seconds: 600, desync: 1, stalled: 7, depths, frames });
-  // Counts past what the seconds claimed allow go down in proportion, and a session past max_seconds reports that much.
-  b.coop({ ...session, ticks: 120, stalled: 1000, depths: depths.map((n) => 10 * n), frames: [400, 0, 0, 0, 0, 200] });
+  assert.deepEqual(sent()[0], { day: "2026-10-15", transport: "turn-udp", rtt: 2, seconds: 600, desync: 1, stalled_network: 5, stalled_perk: 2, depths, frames });
+  // Counts past what the seconds claimed allow go down in proportion (stalled frames together), and a session past
+  // max_seconds reports that much.
+  b.coop({ ...session, ticks: 120, stalled: [600, 400], depths: depths.map((n) => 10 * n), frames: [400, 0, 0, 0, 0, 200] });
   b.coop({ ...session, rtt: 0, ticks: 1e9, desync: false });
   await b.settle();
   const [short, long] = sent().slice(-2);
   const { max_rate: rate, max_seconds: most } = shared.coop;
-  assert.deepEqual([short.seconds, short.stalled, short.frames], [2, 2 * rate, [320, 0, 0, 0, 0, 160]]);
+  assert.deepEqual([short.seconds, short.stalled_network + short.stalled_perk, short.frames], [2, 2 * rate, [320, 0, 0, 0, 0, 160]]);
+  assert.deepEqual([short.stalled_network, short.stalled_perk], [(3 * 2 * rate) / 5, (2 * 2 * rate) / 5]);
   assert.deepEqual(short.depths.slice(0, 3), [44, 40, 35]);
   assert.deepEqual([long.rtt, long.seconds, long.desync, long.depths, long.frames], [0, most, 0, depths, frames]);
   assert.equal(b.store.values.has(TOKEN), false);

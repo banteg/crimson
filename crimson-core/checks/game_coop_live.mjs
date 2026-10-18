@@ -1461,9 +1461,18 @@ for (const profile of PROFILES) {
   let pause = profile.pause && { ...profile.pause, at: 400, since: 0 }, hitch = null;
   // The Host's confirmed tick by the network's time, frame by frame.
   const paced = [];
+  // The other machine's stalled frames while the picker's perk screen shows (host/coop.inc game_coop_advance), by
+  // what they waited on: the network or the pick.
+  const other = picker === host ? guest : host, waits = { network: 0, perk: 0 };
+  let last = null;
   script = (peer) => {
     const taps = [];
     if (peer === host) paced.push([time(), confirmed(host)]);
+    if (peer === other) {
+      const { stalled_network: network, stalled_perk: perk } = coopStats(other.g);
+      if (last?.picking) Object.assign(waits, { network: waits.network + network - last.network, perk: waits.perk + perk - last.perk });
+      last = { network, perk, picking: screen(picker) === PERK_SELECTION };
+    }
     if (!hitch && confirmed(host) >= HITCH.at) {
       hitch = machines.hitch = { peer: guest, from: time(), to: time() + HITCH.ms };
       if (machines.bursts) machines.bursts.at = hitch.to + SETTLE + 1000;
@@ -1512,6 +1521,10 @@ for (const profile of PROFILES) {
   }
   const by = picker.role;
   assert.equal(result.commands, `PerkMenuOpenCommand:${by} PerkPickCommand:${by}`, `${profile.name}: the pick`);
+  // The other machine waited on the pick while its perk screen showed, which its counters tell from the network's
+  // waits; the Host's machine waited on the network while the Guest's frames stalled.
+  assert.ok(waits.perk > 30 && waits.network === 0, `${profile.name}: stalled frames during the pick ${JSON.stringify(waits)}`);
+  assert.ok(played[0].stalled_network > 0, `${profile.name}: the Host's network stalls`);
   for (const [i, s] of counted.entries()) {
     const what = `${profile.name}: machine ${i}`;
     assert.equal(s.depths.reduce((a, b) => a + b), s.rollbacks, `${what}'s rollbacks by depth`);
@@ -1781,30 +1794,31 @@ for (const [name, bytes] of entries[0])
   assert.ok(entries[1].some(([other, them]) => other === name && them.equals(bytes)), `the Guest's ${name}`);
 const ranked = entries.map((each) => each.length);
 // Under each profile: the ticks, the input delay, how far apart the runs were after each stall and once settled, and
-// each machine's rollbacks by depth, the deepest guess, frames that stalled, the most ticks a frame ran again, and
-// revised deaths; and for the play before the run's end, each machine's ticks run, ticks run again, frames, frames
-// that stalled and rollbacks by depth, and from those the columns of the spec's profile table
-// (docs/rewrite/network-coop.md §3.1): each machine's rollbacks per minute of ticks run (3,600), their mean depth,
-// the deepest of either machine's, ticks run again per tick run, and the share of frames that stalled (%).
+// each machine's rollbacks by depth, the deepest guess, frames that stalled (on the network and on a perk pick), the
+// most ticks a frame ran again, and revised deaths; and for the play before the run's end, each machine's ticks run,
+// ticks run again, frames, frames that stalled and rollbacks by depth, and from those the columns of the spec's
+// profile table (docs/rewrite/network-coop.md §3.1): each machine's rollbacks per minute of ticks run (3,600), their
+// mean depth, the deepest of either machine's, ticks run again per tick run, and the shares of frames that stalled
+// on the network and on a perk pick (%).
 const rolled = (s) => s.depths.reduce((a, b) => a + b, 0);
 const m2 = profiled.map(({ profile, ticks, delay, drift, pace, played, stats }) => ({
   profile,
   ticks,
   delay,
   pace,
-  played: played?.map((s) => [s.ticks, s.resimulated, s.frames, s.stalled_frames, s.depths]),
+  played: played?.map((s) => [s.ticks, s.resimulated, s.frames, [s.stalled_network, s.stalled_perk], s.depths]),
   table: played && {
     per_minute: played.map((s) => Math.round((rolled(s) * 3600) / s.ticks)),
     mean_depth: played.map((s) => +(s.depths.reduce((n, count, i) => n + count * (i + 1), 0) / rolled(s)).toFixed(1)),
     deepest: Math.max(...played.map((s) => s.depths.findLastIndex(Boolean) + 1)),
     again_per_tick: played.map((s) => +(s.resimulated / s.ticks).toFixed(2)),
-    stalled_pct: played.map((s) => +((100 * s.stalled_frames) / s.frames).toFixed(1)),
+    stalled_pct: played.map((s) => [s.stalled_network, s.stalled_perk].map((n) => +((100 * n) / s.frames).toFixed(1))),
   },
   drift: drift?.map(({ after, settled }) => [after.most, +settled.mean.toFixed(2)]),
   depths: stats.map((s) => s.depths),
   guessed: stats.map((s) => s.guessed_lead),
   late: stats.map((s) => s.late_lead),
-  stalled: stats.map((s) => s.stalled_frames),
+  stalled: stats.map((s) => [s.stalled_network, s.stalled_perk]),
   resimulated: stats.map((s) => s.frame_resimulated),
   revised: stats.map((s) => [s.revised_deaths, s.revised_wipes]),
 }));

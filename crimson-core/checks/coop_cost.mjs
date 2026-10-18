@@ -57,8 +57,9 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
   const CREATURES = Object.keys(fields).filter((name) => /^creatures\[\d+\]\.active$/.test(name)).length - 1;
   // host/api.h PortableInput: the pad's movement and aim (matrix.mjs PAD), firing.
   const INPUT_BYTES = 20, PAD = 0x100 | (3 << 9) | 0x1000 | (4 << 13), FIRE = 1;
-  // host/coop_wire.inc game_coop_telemetry: the round trip, why the session ended, then CoopSessionStats.
-  const DEPTHS = 12, FRAME_BUCKETS = 6;
+  // host/coop_wire.inc game_coop_telemetry: the round trip, why the session ended, then CoopSessionStats (ticks run
+  // and run again, frames stalled on the network and on a perk pick, rollbacks by depth, frames by their work).
+  const HEAD = 6, DEPTHS = 12, FRAME_BUCKETS = 6;
   // A headless host: no assets, the clock real.
   function instance() {
     let memory;
@@ -200,7 +201,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
 
   // (2) The run through the co-op engine.
   const g = instance();
-  const telemetry = () => Array.from(new Int32Array(g.memory.buffer, g.game_coop_telemetry(), 5 + DEPTHS + FRAME_BUCKETS));
+  const telemetry = () => Array.from(new Int32Array(g.memory.buffer, g.game_coop_telemetry(), HEAD + DEPTHS + FRAME_BUCKETS));
   // Ticks run and run again so far.
   const worked = () => ran.reduce((n, at) => n + new Int32Array(g.memory.buffer, g.game_coop_stats(), at + 1)[at], 0);
   if (g.game_coop_start(-1, DELAY, RMAX, 1) !== 1) throw Error("co-op did not start");
@@ -346,7 +347,7 @@ export async function measure(bytes, { config, fields, words, slotBytes, ran, fr
       worked: work.length,
       work: summary(work),
       work_buckets: [...buckets.map((ms, i) => work.filter((w) => w >= (buckets[i - 1] ?? 0) && w < ms).length), work.filter((w) => w >= 16).length],
-      depths: delta.slice(5, 5 + DEPTHS),
+      depths: delta.slice(HEAD, HEAD + DEPTHS),
       stalled,
       resimulated_per_tick: Math.round((resimulated / ticks) * 1000) / 1000,
       ticks,
