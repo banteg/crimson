@@ -1207,39 +1207,54 @@ function pipeCases(stream, truth, short, shortTruth) {
     sim.dropped(h, REASON.stalled, past - h.frameMs, PROGRESS_MS, 2 * h.frameMs);
     lines.push(sim.report("stalled", start));
   }
-  // A pick, then the picker's records past its tick withheld for a second (its ticks packets cut back to the pick, its
-  // repairs lost) while it plays on: the other peer's frames that wait count as perk waits only while the picker's
-  // perk screen could still be closing (PICK_FADE_MS from confirming the pick's tick), and as network stalls after.
-  {
+  // A perk menu whose picker chooses for longer than its perk screen takes to close, then picks, its records past the
+  // pick withheld for a second (its ticks packets cut back to the pick, its repairs lost) while it plays on; under
+  // the window and in lockstep, where the window stops a tick before the menu does. The other peer's frames that
+  // wait are perk waits while the menu is open and while the picker's perk screen could still be closing
+  // (PICK_FADE_MS from confirming the pick's tick), and network stalls after.
+  for (const [rmax, seed] of [[8, 21], [0, 22]]) {
     const start = at(),
-      sim = new Pipe(stream, truth, mode, { seed: 21, faults: false });
-    const WITHHELD_MS = 1000;
-    let pick = null,
-      confirmedAt = null,
+      sim = new Pipe(stream, truth, { delay: 2, rmax }, { seed, faults: false });
+    const CHOOSING_MS = 700,
+      WITHHELD_MS = 1000;
+    let menu = null,
+      pick = null,
+      picked = null,
       last = null;
-    const waits = { fade: { network: 0, perk: 0 }, after: { network: 0, perk: 0 } };
-    const withheld = (p) => p === pick?.picker && sim.now < pick.at + WITHHELD_MS;
+    const waits = Object.fromEntries(["choosing", "fade", "after"].map((phase) => [phase, { network: 0, perk: 0 }]));
+    // The picker's choice waits CHOOSING_MS, then goes on the record after its open.
+    const feed = sim.feed.bind(sim);
+    sim.feed = (p) => {
+      if (p !== menu?.picker || pick) return feed(p);
+      if (sim.now < menu.at + CHOOSING_MS) return;
+      pick = { tick: menu.open + 1, at: sim.now };
+      feed(p);
+    };
+    const withheld = (p) => pick && p === menu.picker && sim.now < pick.at + WITHHELD_MS;
     sim.drop = (p, channel) => channel === 1 && withheld(p);
     sim.alter = (p, channel, bytes) => (channel === 0 && withheld(p) ? cutTo(bytes, pick.tick) : bytes);
     sim.hooks.advanced = (p) => {
-      // The picker's choice goes on the next record it produces.
-      if (!pick && sim.status(p) & STATUS.picker) pick = { picker: p, other: sim.peers[1 - p.seat], tick: p.g.game_coop_produced() + 1, at: sim.now };
-      if (!pick || p !== pick.other) return;
-      if (confirmedAt === null && p.g.game_coop_confirmed() >= pick.tick) confirmedAt = sim.now;
+      if (!menu && sim.status(p) & STATUS.picker)
+        menu = { picker: p, other: sim.peers[1 - p.seat], open: p.g.game_coop_produced(), at: sim.now };
+      if (!menu || p !== menu.other) return;
+      const confirmed = p.g.game_coop_confirmed();
+      if (pick && picked === null && confirmed >= pick.tick) picked = sim.now;
       const { stalled_network: network, stalled_perk: perk } = coopStats(p.g);
-      if (last && confirmedAt !== null && sim.now < pick.at + WITHHELD_MS) {
-        const when = waits[sim.now - confirmedAt < PICK_FADE_MS ? "fade" : "after"];
-        when.network += network - last.network;
-        when.perk += perk - last.perk;
+      const phase =
+        picked !== null ? (sim.now - picked < PICK_FADE_MS ? "fade" : "after") : confirmed >= menu.open ? "choosing" : null;
+      if (last && phase && !(pick && sim.now >= pick.at + WITHHELD_MS)) {
+        waits[phase].network += network - last.network;
+        waits[phase].perk += perk - last.perk;
       }
       last = { network, perk };
     };
     sim.connect();
     sim.start();
     sim.until(() => pick && sim.now >= pick.at + WITHHELD_MS, "the pick and the records withheld");
-    assert.equal(pick.other.g.game_coop_remote(), pick.tick, "the picker's records past its pick arrived");
-    const { fade, after } = waits;
-    assert.ok(fade.perk > 0 && fade.network === 0 && after.network > 0 && after.perk === 0, `waits ${JSON.stringify(waits)}`);
+    assert.equal(menu.other.g.game_coop_remote(), pick.tick, "the picker's records past its pick arrived");
+    const { choosing, fade, after } = waits;
+    const counted = choosing.perk > 30 && choosing.network === 0 && fade.perk > 0 && fade.network === 0;
+    assert.ok(counted && after.network > 0 && after.perk === 0, `window ${rmax}: waits ${JSON.stringify(waits)}`);
     sim.finish();
     sim.ended(stream.ticks - 1);
     lines.push({ ...sim.report("withheld after a pick", start), waits });
