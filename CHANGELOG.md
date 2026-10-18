@@ -2,6 +2,15 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.19.2
+
+### For players
+
+- In a co-op room, the menus show every quest, all five stages and Hardcore from the moment the room opens, not only once your partner connects. Until player 2 joins, picking a run says "Co-op: waiting for Player 2" instead of starting a run on your own save. Your save is never changed.
+- A co-op run's page shows both players: each one's health, weapons and own bonuses (Shield, Fire Bullets, Speed), both paths in the arena, and where each player died.
+- The site's menu is now Play, Leaderboards, Custom and About. Leaderboards opens the board you last looked at, and switches on each board move between Survival and Quests, and between solo and co-op.
+- A gamepad's B (Circle) button goes back on every screen.
+
 ## 0.19.1
 
 ### For players
