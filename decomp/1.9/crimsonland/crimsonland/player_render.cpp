@@ -213,6 +213,18 @@ extern "C" void player_render(void)
             - player_render_vec2_t(
                 player_state_table[current_player_index].size * 0.5f,
                 player_state_table[current_player_index].size * 0.5f);
+        // Code-generation guards (1.9.8): C2 9044 keeps the player size in a
+        // register only when the body draws read it directly and the dead
+        // shadow reuses sprite_size (native's 0x28 frame); 1.9.93's C2 needs
+        // the named locals. No shared spelling matches both.
+#if CL_BUILD == 10908
+        sprite_size = player_state_table[current_player_index].size * 1.03f;
+        grim_interface_ptr->grim_draw_quad(
+            render_scratch_f0.x + 1.0f,
+            render_scratch_f0.y + 1.0f,
+            sprite_size,
+            sprite_size);
+#else
         float dead_sprite_size =
             player_state_table[current_player_index].size * 1.03f;
         grim_interface_ptr->grim_draw_quad(
@@ -220,18 +232,27 @@ extern "C" void player_render(void)
             render_scratch_f0.y + 1.0f,
             dead_sprite_size,
             dead_sprite_size);
+#endif
         grim_interface_ptr->grim_end_batch();
 
         grim_interface_ptr->grim_set_config_var(0x13, 5u);
         grim_interface_ptr->grim_set_config_var(0x14, 6u);
         player_render_set_tint(transition_alpha);
         grim_interface_ptr->grim_begin_batch();
+#if CL_BUILD == 10908
+        grim_interface_ptr->grim_draw_quad(
+            render_scratch_f0.x,
+            render_scratch_f0.y,
+            player_state_table[current_player_index].size,
+            player_state_table[current_player_index].size);
+#else
         dead_sprite_size = player_state_table[current_player_index].size;
         grim_interface_ptr->grim_draw_quad(
             render_scratch_f0.x,
             render_scratch_f0.y,
             dead_sprite_size,
             dead_sprite_size);
+#endif
         grim_interface_ptr->grim_end_batch();
         return;
     }
@@ -307,7 +328,9 @@ extern "C" void player_render(void)
         player_state_table[current_player_index].heading);
     player_render_set_uv(effect_uv8, frame);
 
+#if CL_BUILD != 10908
     sprite_size = player_state_table[current_player_index].size;
+#endif
     render_scratch_f0 =
         camera_offset
         + *(player_render_vec2_t *)&player_state_table
@@ -316,14 +339,32 @@ extern "C" void player_render(void)
         - player_render_vec2_t(
             player_state_table[current_player_index].size * 0.5f,
             player_state_table[current_player_index].size * 0.5f);
+#if CL_BUILD == 10908
+    grim_interface_ptr->grim_draw_quad(
+        render_scratch_f0.x,
+        render_scratch_f0.y,
+        player_state_table[current_player_index].size,
+        player_state_table[current_player_index].size);
+#else
     grim_interface_ptr->grim_draw_quad(
         render_scratch_f0.x,
         render_scratch_f0.y,
         sprite_size,
         sprite_size);
+#endif
 
+    // Code-generation guard (1.9.8): reading grim_interface_ptr between the
+    // alpha copy and its use stops 9044 forwarding the copy into esi.
+#if CL_BUILD == 10908
+    float alpha = transition_alpha;
+    IGrim2D_cpp *grim = grim_interface_ptr;
+    player_render_tint_t tint(1.0f, 1.0f, 1.0f, 0.0f);
+    tint.a = *(player_render_alpha_t *)&alpha;
+    grim->grim_set_color(tint.r, tint.g, tint.b, tint.a.value);
+#else
     player_render_tint_t tint(1.0f, 1.0f, 1.0f, transition_alpha);
     grim_interface_ptr->grim_set_color(tint.r, tint.g, tint.b, tint.a.value);
+#endif
     if (config_player_count > 1) {
         if (current_player_index == 0) {
             tint.r = 0.3f;
@@ -341,7 +382,9 @@ extern "C" void player_render(void)
     grim_interface_ptr->grim_set_rotation(
         player_state_table[current_player_index].aim_heading);
 
+#if CL_BUILD != 10908
     sprite_size = player_state_table[current_player_index].size;
+#endif
     render_scratch_f0 =
         camera_offset
         + *(player_render_vec2_t *)&player_state_table
@@ -351,11 +394,19 @@ extern "C" void player_render(void)
             player_state_table[current_player_index].size * 0.5f,
             player_state_table[current_player_index].size * 0.5f)
         + render_delta;
+#if CL_BUILD == 10908
+    grim_interface_ptr->grim_draw_quad(
+        render_scratch_f0.x,
+        render_scratch_f0.y,
+        player_state_table[current_player_index].size,
+        player_state_table[current_player_index].size);
+#else
     grim_interface_ptr->grim_draw_quad(
         render_scratch_f0.x,
         render_scratch_f0.y,
         sprite_size,
         sprite_size);
+#endif
     grim_interface_ptr->grim_end_batch();
 
     if (player_state_table[current_player_index].shield_timer > 0.0f) {
@@ -487,8 +538,10 @@ extern "C" void player_render(void)
                 player_state_table[current_player_index].size;
             player_render_vec2_t muzzle_size(
                 sprite_size * 0.5f, sprite_size * 0.5f);
+#if CL_BUILD != 10908
             sprite_size =
                 player_state_table[current_player_index].size;
+#endif
             render_scratch_f0 =
                 camera_offset
                 + *(player_render_vec2_t *)&player_state_table
@@ -496,11 +549,19 @@ extern "C" void player_render(void)
                           .pos_x
                 - muzzle_size
                 + render_delta;
+#if CL_BUILD == 10908
+            grim_interface_ptr->grim_draw_quad(
+                render_scratch_f0.x,
+                render_scratch_f0.y,
+                player_state_table[current_player_index].size,
+                player_state_table[current_player_index].size);
+#else
             grim_interface_ptr->grim_draw_quad(
                 render_scratch_f0.x,
                 render_scratch_f0.y,
                 sprite_size,
                 sprite_size);
+#endif
         }
         grim_interface_ptr->grim_end_batch();
     }

@@ -33,3 +33,11 @@ The two boolean config slots now use the recovered
 `grim_config_value_t::operator bool()` directly, consistent with the other
 game-side Grim callers. This removes byte-pointer casts over the value object
 while preserving the exact 277-instruction result.
+
+## 1.9.8 match (2026-10-19)
+
+The legacy defaults are `((crimson_cfg_cpp_t *)&defaults)->set_defaults()`,
+the shared member in `crimson_config_defaults_impl.h`, on both builds: 1.9.93
+stays exact (277/277) and 1.9.8 is 243/243 with references 44/0/0. One encoded
+byte is left, the SIB of the default-name copy store (`+0x16a`), as in
+config_init_defaults.

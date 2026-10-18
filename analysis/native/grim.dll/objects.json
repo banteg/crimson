@@ -444,7 +444,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "8c44834179f9c693f419249d4e4beb89a3ea8f1654c92f6b19b9a90a0b436670",
+  "audit_digest": "14bb39d30a2047370e81cd0054d30329ebffdb6c2292c69df88d66dbd0b13e2a",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -7143,7 +7143,7 @@
         {
           "path": "tools/match/include/crimson_config_defaults_impl.h",
           "repository_relative": true,
-          "sha256": "8c830d60ca7bf0bd2624af6cf11993ded183ca9f5cf6132b25f9ba39f211ecb7"
+          "sha256": "9b047d752d3f53324eee5306107a2a1662595dc57c22f6b7a3766e9bdd62ca6e"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -7172,7 +7172,7 @@
           "canonical_source_sha256": "6193f2ea0677301fc84bf74f8ca2d6dabd4857416c2b646dc47a9610770c47f5",
           "effective_end": 268442094,
           "end": 268442094,
-          "experiment_epoch": "7559e11e45664445f417cf7a958aa3f3144553145e170b3142a98d281ce4b543",
+          "experiment_epoch": "0892a46e80e047a52d430e722b2b3227b084c853e881260ccb32f4f3f15d204b",
           "function": "grim_config_defaults_init",
           "match": {
             "body_byte_exact": true,

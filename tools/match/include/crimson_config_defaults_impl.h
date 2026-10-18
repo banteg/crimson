@@ -18,7 +18,13 @@ struct crimson_cfg_cpp_t : crimson_cfg_t {
         int i;
 
         hardcore = 0;
+        // Code-generation guard: 1.9.8 stores the flag directly; 1.9.93's
+        // grim and game copies keep the one-byte memset's register order.
+#if CL_BUILD == 10908
+        ui_info_texts = 1;
+#else
         memset(&ui_info_texts, 1, sizeof(ui_info_texts));
+#endif
         level_up_count = 0;
         mouse_sensitivity = 0.5f;
         ten_tons_logging_completed = 1;
@@ -40,6 +46,7 @@ struct crimson_cfg_cpp_t : crimson_cfg_t {
         strcpy(player_name, "10tons");
         saved_name_count = 1;
         selected_saved_name_slot = 0;
+        detail_preset = 5;
 
         sound_disabled = 0;
         music_disabled = 0;
@@ -47,7 +54,12 @@ struct crimson_cfg_cpp_t : crimson_cfg_t {
         sound_frequency_adjustment = 1;
         *(int *)&reserved1_1a4[4] = 0;
         *(int *)&reserved1_1a4[8] = 0;
+        aim_pov_right = 9000;
+        aim_pov_left = 27000;
+        *(int *)&reserved1_1a4[0] = 100;
         config_for = 0;
+        screen_width = 800;
+        screen_height = 600;
 
         display_bpp = 32;
         windowed = 0;
@@ -62,13 +74,7 @@ struct crimson_cfg_cpp_t : crimson_cfg_t {
         smoke_enabled = 1;
         player_count = 1;
         input_config[0].turn_key_right = 32;
-        detail_preset = 5;
 
-        aim_pov_right = 9000;
-        aim_pov_left = 27000;
-        *(int *)&reserved1_1a4[0] = 100;
-        screen_width = 800;
-        screen_height = 600;
         sfx_volume = 1.0f;
         music_volume = 1.0f;
 
@@ -105,7 +111,7 @@ struct crimson_cfg_cpp_t : crimson_cfg_t {
         input_config[1].reserved[1] = 382;
         input_config[1].reserved[2] = 382;
 
-        *(unsigned short *)direction_arrow_flags = 0x101;
+        memset(direction_arrow_flags, 1, 2);
     }
 };
 

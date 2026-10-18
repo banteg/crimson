@@ -519,3 +519,13 @@ esi; push esi; push eax`) where the shared source spills the reused
 all three body draws) breaks 1.9.93; per-purpose size, half-size and
 effect-offset locals and block scopes leave 1.9.8 unchanged. It likely needs a
 guarded body.
+
+## 1.9.8 exact (2026-10-19)
+
+Both builds are exact. Under `CL_BUILD == 10908` the body, dead-body and
+muzzle draws pass `player_state_table[current_player_index].size` directly,
+the dead shadow reuses `sprite_size` (giving the 0x28 frame), and the
+transition tint copies the alpha, reads `grim_interface_ptr` into a local, then
+stores the alpha into the tint, so 9044 cannot forward the copy into `esi`
+(`late_register_value_cse` sees the `ecx` reload first). Shared versions of
+the dead-shadow reuse and the direct dead-body draw break 1.9.93.

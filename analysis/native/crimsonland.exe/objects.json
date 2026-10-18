@@ -449,7 +449,7 @@
     "source_sha256": "4d50fb679e67443596bff9fad9f6b9a87823595160bf28f462b716cae740d360",
     "status": "passed"
   },
-  "audit_digest": "9fe16c025bf93724041fa394fea183a476d02e32c75aeed842d3b74b27709f1d",
+  "audit_digest": "8369e16bf0350c21e7028386f327b41e59a8cb631b6f2b64427e4244e7a4bd2e",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -24056,7 +24056,7 @@
         {
           "path": "tools/match/include/crimson_config_defaults_impl.h",
           "repository_relative": true,
-          "sha256": "8c830d60ca7bf0bd2624af6cf11993ded183ca9f5cf6132b25f9ba39f211ecb7"
+          "sha256": "9b047d752d3f53324eee5306107a2a1662595dc57c22f6b7a3766e9bdd62ca6e"
         },
         {
           "path": "tools/match/include/crimsonland_console.h",
@@ -24085,7 +24085,7 @@
           "canonical_source_sha256": "708a89432a7cae752151ceef7fee619bab031f103be6f37d7d4ebafda8dc9455",
           "effective_end": 4205518,
           "end": 4205518,
-          "experiment_epoch": "a500c56b0619c299ba0d7931e2b33ad176994a8dae070fdb46e73d2cdb93c6b4",
+          "experiment_epoch": "204ed2c09d363334644ee08846aa1f4eed668deebe15d897251d7e46738b3a68",
           "function": "config_init_defaults",
           "match": {
             "body_byte_exact": true,
@@ -74430,7 +74430,7 @@
         {
           "path": "decomp/1.9/crimsonland/crimsonland/config_sync_from_grim.cpp",
           "repository_relative": true,
-          "sha256": "3e8e39156179d257412ac34154505a04ab5b286c8278319d43f238f4e4b1d322"
+          "sha256": "e37d58b4228b84794702de00cb1b75a3f9997619a80a90c9049f762a6bea70b4"
         },
         {
           "path": "tools/match/scratches/config_sync_from_grim/scratch.conf",
@@ -74463,6 +74463,11 @@
           "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
         },
         {
+          "path": "tools/match/include/crimson_config_defaults_impl.h",
+          "repository_relative": true,
+          "sha256": "9b047d752d3f53324eee5306107a2a1662595dc57c22f6b7a3766e9bdd62ca6e"
+        },
+        {
           "path": "tools/match/include/crimsonland_console.h",
           "repository_relative": true,
           "sha256": "554cd12b90e5bf678d57997217a1413357d9ca8bfb6bc0f422e29b9c25e37d9a"
@@ -74491,10 +74496,10 @@
           "canonical_config_sha256": "cbc04e616c2b1ae271b8064e5aeea6a0f5dc19d79953798afa410d84d468b6af",
           "canonical_scratch": "tools/match/scratches/config_sync_from_grim",
           "canonical_source": "decomp/1.9/crimsonland/crimsonland/config_sync_from_grim.cpp",
-          "canonical_source_sha256": "3e8e39156179d257412ac34154505a04ab5b286c8278319d43f238f4e4b1d322",
+          "canonical_source_sha256": "e37d58b4228b84794702de00cb1b75a3f9997619a80a90c9049f762a6bea70b4",
           "effective_end": 4321577,
           "end": 4321577,
-          "experiment_epoch": "d708d0837a59360f7d87170607c386985c41c30795c21e425d4ca60dde2e68b3",
+          "experiment_epoch": "86cd6f45ceea2db903a12e3055d1d6347d991251d3cd40f29a0a2959b77c38ae",
           "function": "config_sync_from_grim",
           "match": {
             "body_byte_exact": true,
@@ -74535,7 +74540,7 @@
       "object_sha256": "3f363819144eda7431b9de23a96c1bfdcc14ffd1d56b9a06b2f1fdc51391ccd2",
       "scratch": "tools/match/scratches/config_sync_from_grim",
       "source": "decomp/1.9/crimsonland/crimsonland/config_sync_from_grim.cpp",
-      "source_sha256": "3e8e39156179d257412ac34154505a04ab5b286c8278319d43f238f4e4b1d322",
+      "source_sha256": "e37d58b4228b84794702de00cb1b75a3f9997619a80a90c9049f762a6bea70b4",
       "target_size": 1225,
       "translation_unit": {
         "kind": "isolated",
@@ -79066,7 +79071,7 @@
         {
           "path": "decomp/1.9/crimsonland/crimsonland/player_render.cpp",
           "repository_relative": true,
-          "sha256": "09a1fc9f0bf0d75e3de4b20f229ee7fe699d0e6f6456ee4aa4695f738ea9c510"
+          "sha256": "838ac36ec54363f7b5fe72ef761e5c77d0f811dbf5d2d641402eb53068e39597"
         },
         {
           "path": "tools/match/scratches/player_render/scratch.conf",
@@ -79127,10 +79132,10 @@
           "canonical_config_sha256": "d8d7c2bdf1d8910fb3bfb5b5a59b586aee7062ba2edf9b561709701f249942b6",
           "canonical_scratch": "tools/match/scratches/player_render",
           "canonical_source": "decomp/1.9/crimsonland/crimsonland/player_render.cpp",
-          "canonical_source_sha256": "09a1fc9f0bf0d75e3de4b20f229ee7fe699d0e6f6456ee4aa4695f738ea9c510",
+          "canonical_source_sha256": "838ac36ec54363f7b5fe72ef761e5c77d0f811dbf5d2d641402eb53068e39597",
           "effective_end": 4363638,
           "end": 4363638,
-          "experiment_epoch": "431638069b071234a451ccde013c8118e33ee36303d7b5db75266d51f1567260",
+          "experiment_epoch": "f00ada701b6d04dfda6d06df5dd03828a276bc1363e4deeed5d9afb4e1fa0f98",
           "function": "player_render",
           "match": {
             "body_byte_exact": true,
@@ -79171,7 +79176,7 @@
       "object_sha256": "94d6b4ee62b87439a0d33b0bf75cb8fec342ecae1fec9a9531eef34f5bb0e8e2",
       "scratch": "tools/match/scratches/player_render",
       "source": "decomp/1.9/crimsonland/crimsonland/player_render.cpp",
-      "source_sha256": "09a1fc9f0bf0d75e3de4b20f229ee7fe699d0e6f6456ee4aa4695f738ea9c510",
+      "source_sha256": "838ac36ec54363f7b5fe72ef761e5c77d0f811dbf5d2d641402eb53068e39597",
       "target_size": 4582,
       "translation_unit": {
         "kind": "isolated",

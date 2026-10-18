@@ -63,3 +63,18 @@ header keeps a commented code-generation-only `CL_BUILD == 10908` guard.
 ## Not landed (2026-10-16)
 
 The `ui_info_texts = 1` 1.9.8 spelling above is not in the source: guards land only when every build they claim compiles exactly, and this body still differs in register allocation under 9044.
+
+## 1.9.8 match (2026-10-19)
+
+Both builds match: 1.9.93 stays exact; 1.9.8 is 127/127 with references
+84/0/0 and one encoded byte left, the SIB of the default-name copy store
+(native `[eax+esi]`, 9044 `[esi+eax]`; see
+`../highscore_sync_worker/NOTES.md`). The register swap came from colouring
+priority (`scripts/c2/priority_trace.py --build 1.9.8`): the 16-bit arrow-flag
+store `*(unsigned short *)direction_arrow_flags = 0x101` shared its immediate
+with `key_pick_perk = 0x101`, adding a candidate range to block 1 and raising
+the delta's priority above the source cursor's. `memset(direction_arrow_flags,
+1, 2)` emits the same `mov word` with a different immediate, so the cursor
+colours `eax` first. The defaults also move `detail_preset`, the POV angles,
+the reserved word and the screen size to config_sync_from_grim's store order,
+and a guard stores `ui_info_texts` directly under 1.9.8.
