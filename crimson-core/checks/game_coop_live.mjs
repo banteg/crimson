@@ -1676,13 +1676,23 @@ const ranked = entries.map((each) => each.length);
 // Under each profile: the ticks, the input delay, how far apart the runs were after each stall and once settled, and
 // each machine's rollbacks by depth, the deepest guess, frames that stalled, the most ticks a frame ran again, and
 // revised deaths; and for the play before the run's end, each machine's ticks run, ticks run again, frames, frames
-// that stalled and rollbacks by depth.
+// that stalled and rollbacks by depth, and from those the columns of the spec's profile table
+// (docs/rewrite/network-coop.md §3.1): each machine's rollbacks per minute of ticks run (3,600), their mean depth,
+// the deepest of either machine's, ticks run again per tick run, and the share of frames that stalled (%).
+const rolled = (s) => s.depths.reduce((a, b) => a + b, 0);
 const m2 = profiled.map(({ profile, ticks, delay, drift, pace, played, stats }) => ({
   profile,
   ticks,
   delay,
   pace,
   played: played?.map((s) => [s.ticks, s.resimulated, s.frames, s.stalled_frames, s.depths]),
+  table: played && {
+    per_minute: played.map((s) => Math.round((rolled(s) * 3600) / s.ticks)),
+    mean_depth: played.map((s) => +(s.depths.reduce((n, count, i) => n + count * (i + 1), 0) / rolled(s)).toFixed(1)),
+    deepest: Math.max(...played.map((s) => s.depths.findLastIndex(Boolean) + 1)),
+    again_per_tick: played.map((s) => +(s.resimulated / s.ticks).toFixed(2)),
+    stalled_pct: played.map((s) => +((100 * s.stalled_frames) / s.frames).toFixed(1)),
+  },
   drift: drift?.map(({ after, settled }) => [after.most, +settled.mean.toFixed(2)]),
   depths: stats.map((s) => s.depths),
   guessed: stats.map((s) => s.guessed_lead),

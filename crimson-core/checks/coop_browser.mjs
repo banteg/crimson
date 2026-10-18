@@ -18,7 +18,9 @@
 // the same state on both, each seat's records moving its player at times. The
 // guest's page then sends late (coop.js's delay hook: its DataChannel sends held
 // 60 ± 25 ms), so the host's game runs on predictions of player 2's records and
-// rolls them back, while both keep playing and agreeing on every confirmed tick.
+// rolls them back, while both keep playing and agreeing on every confirmed tick;
+// meanwhile the host's page times its frames that ran ticks, drawing on, and the
+// check prints their p50 and p99.
 // The guest's tab then goes to the background for longer than the liveness timeout,
 // which would end the session of a page that sent nothing there, and the run
 // goes on. A desync the guest's page makes closes both sessions and stops both
@@ -310,6 +312,33 @@ async function open(name, origin, { webrtc = true } = {}) {
     keyUp: (code) => key("keyUp", code),
     // The page's next animation frame, which runs a pass of the game first.
     frame: () => evaluate(() => new Promise((resolve) => requestAnimationFrame(() => resolve()))),
+    // From now on, the page's animation frames that ran ticks or ran them again (client_coop_telemetry's ticks run
+    // and run again), each timed whole (performance.now): the input, the game's frame with its ticks and the newest
+    // tick's drawing, and the WebGL calls; `stop` ends the timing and returns them (ms) with the ticks each ran, the
+    // frames there were in all and the seconds it took.
+    timeFrames: () =>
+      evaluate(() => {
+        const ran = () => {
+          const words = new Int32Array(Module.HEAPU8.buffer, Module.ccall("client_coop_telemetry", "number", [], []), 4);
+          return words[2] + words[3];
+        };
+        const untimed = window.requestAnimationFrame, timed = { frames: [], all: 0, since: performance.now(), untimed };
+        window.requestAnimationFrame = (callback) =>
+          untimed((time) => {
+            const before = ran(), start = performance.now();
+            callback(time);
+            const ms = performance.now() - start;
+            ++timed.all;
+            if (ran() > before) timed.frames.push([ms, ran() - before]);
+          });
+        window.timedFrames = timed;
+      }),
+    stopFrames: () =>
+      evaluate(() => {
+        const { frames, all, since, untimed } = window.timedFrames;
+        window.requestAnimationFrame = untimed;
+        return { frames, all, seconds: (performance.now() - since) / 1000, isolated: crossOriginIsolated };
+      }),
     async type(text) {
       for (const ch of text) await letter(ch);
     },
@@ -516,14 +545,27 @@ try {
 
   // The guest's page sends late: the host's game runs player 2's ticks on predictions and rolls them back, and the
   // run goes on, agreeing on both pages.
+  // Its frames that ran ticks, drawing on, timed meanwhile: their p50 and p99 (the page is not cross-origin
+  // isolated, so the timer resolves 0.1 ms), the ticks they ran (and ran again) each, and how many frames the page
+  // had a second.
   const early = await host.telemetry();
+  await host.timeFrames();
   await guest.evaluate((delay) => (coop.delay = delay), LATE_SENDS);
   await fight();
   await guest.evaluate(() => (coop.delay = null));
+  const { frames, all, seconds, isolated } = await host.stopFrames();
   const lagged = (await host.telemetry()).map((n, i) => n - early[i]);
   const depths = lagged.slice(...DEPTHS);
   console.log("the host's rollbacks by depth with the guest's sends late:", depths, "round trip", lagged[0] + early[0], "ms");
   assert.ok(depths.some(Boolean), "the host's game rolled back");
+  const sorted = frames.map(([ms]) => ms).toSorted((a, b) => a - b);
+  const at = (q) => +sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))].toFixed(2);
+  const ticks = frames.reduce((n, [, ran]) => n + ran, 0);
+  console.log(
+    "the host's frames that ran ticks meanwhile, drawing on:",
+    JSON.stringify({ n: frames.length, p50: at(0.5), p99: at(0.99), max: at(1), ticks_per_frame: +(ticks / frames.length).toFixed(1),
+      frames_per_second: +(all / seconds).toFixed(1), isolated }),
+  );
   await host.shot("late");
 
   // The guest's tab goes to the background (another tab of its window in front, its focus emulation off), past the

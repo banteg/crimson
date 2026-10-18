@@ -282,7 +282,8 @@ error and its confirmed ticks advancing, and every confirmed tick both pages
 hold must have run with the same records and left the same state hash on both,
 each seat's records moving its player. Then the guest's page sends late (its
 DataChannel sends held 60 ± 25 ms), and the host's game rolls back while both
-keep agreeing. The guest's tab goes to the background
+keep agreeing; meanwhile the host's page times its frames that ran ticks,
+drawing on, and the check prints their p50 and p99. The guest's tab goes to the background
 past the liveness timeout, which would end the session of a page that sent
 nothing, and the run goes on; a desync the guest's page makes closes both
 sessions and both panels say so; the host leaves its stopped run first and its
@@ -312,7 +313,8 @@ under the user's folder, so the check runs outside the command sandbox too.
 node crimson-core/checks/coop_cost.mjs [game.wasm] [--from 20] [--to 35] [--session 60]
 ```
 
-What co-op costs late in a long two-player Survival run, the numbers in
+What co-op's simulation costs late in a long two-player Survival run, the
+numbers in
 [network co-op §3.1](../docs/rewrite/network-coop.md#31-measurements-on-crimson-core-apple-m1-pro-wasm):
 a bot plays both players of the run a co-op session starts (the ranked profile,
 the original's bugs fixed) with their health held full, a plain run and the run
@@ -320,9 +322,12 @@ through the co-op engine, and the check prints per-call p50/p99 of the plain
 step, the co-op tick, the slot capture and restore, the state hash and 8- and
 12-tick rollbacks over ticks run on a stand-in record (their bakes held) between
 `--from` and `--to` minutes of the run's time, the slot size and the engine's
-memory, then the work of frames that ran ticks, rollback depths and stalls over
-`--session` seconds at 60 and 144 Hz with player two's records 60 ± 20 ms late.
-`checks/coop_browser.mjs` runs the same `measure` in Chrome.
+memory, the minute the creature pool first fills and the perks held at
+`--from`, then the work of frames that ran ticks, rollback depths and stalls over
+`--session` seconds at 60 and 144 Hz from `--to` on, with player two's records
+60 ± 20 ms late (the jitter seeded). The module runs headless: nothing draws,
+and no wire carries the records. `checks/coop_browser.mjs` runs the same
+`measure` in Chrome.
 
 ### Original executable
 
