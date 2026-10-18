@@ -2,6 +2,32 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.19.0
+
+### For players
+
+#### Online co-op in the browser
+
+- Click **Play co-op** on crimson.land/play, send the invite link, and play Survival or any stock quest together, each on your own machine. The host picks the run from the menus; either player can click Play Again or Play Next.
+- Whoever opens the perk menu picks the perk, and the partner sees a card naming it. Escape pauses for both players, and Leave ends the session from the pause banner.
+- Play runs on rollback: each game runs ahead on its own input and corrects itself when the partner's arrives, so moderate lag doesn't slow your aim. If WebRTC can't connect directly, the session goes through a relay.
+- Finished co-op runs (a team wipe or a completed quest) rank on their own boards (Survival, Quests and hardcore Quests) under both players' names, "A & B". Each player names the run at its end screen and signs it, and the co-op room confirms the pair played together. A run that can't be confirmed still plays, unranked.
+- Co-op replays play from the boards and run pages with the game's two-player camera and HUD.
+- Each of you keeps your own settings and save; the session takes neither over.
+
+#### Other changes
+
+- On a gamepad, the d-pad and left stick step the focus to the nearest button in that direction, and the right stick steers the cursor (A clicks), in the browser and desktop games and in the Python port.
+- In live runs, a pick of Breathing Room ages creatures by the run's own time step, as the verifier does.
+- Pressing Escape as a quest completes no longer pauses the run-down, which made the run's replay disagree with the verifier.
+
+### Under the hood
+
+- The [network co-op specification](https://github.com/banteg/crimson/blob/master/docs/rewrite/network-coop.md) records the design, the gates and the measured rollback costs.
+- `/api/replays` lists every ranked run's replay; CI replays them under a PR's verifier, and the deploy takes those verdicts.
+- Co-op sessions report daily totals of their connection type, round trip and rollbacks to the gameplay analytics; the privacy page lists what is sent.
+- Production deploys post to the release Telegram chat when they finish.
+
 ## 0.18.0
 
 ### For players
