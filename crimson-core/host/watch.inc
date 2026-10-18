@@ -559,13 +559,13 @@ static bool watch_on_menu() {
 }
 // A link skips the intro, as a click does (game_startup_init), and starts as
 // the menu comes in after it, cutting straight to the replay; one that comes
-// while a co-op session is on waits for the session's end.
+// while co-op is open (a session, or a room waiting for one) waits for its end.
 static bool custom_quest_linked;
 static void watch_follow_link() {
   if (!watch.linked && !custom_quest_linked)
     return;
   startup_skip_requested = 1;
-  if (!game_live && !run_active && !watch.armed && !coop_on() && watch_on_menu() && ui_transition_direction &&
+  if (!game_live && !run_active && !watch.armed && !coop_open() && watch_on_menu() && ui_transition_direction &&
       ui_elements_max_timeline() > 0 && ui_elements_timeline > 0) {
     if (watch.linked) {
       watch.linked = false;
@@ -843,9 +843,9 @@ void highscore_watch(float *card, highscore_record_t *record) {
   }
   if (!named)
     return;
-  // While a co-op session is on, Watch shows as the original's disabled
-  // buttons do, and says why.
-  bool coop = coop_on();
+  // While co-op is open (a session, or a room waiting for one), Watch shows as
+  // the original's disabled buttons do, and says why.
+  bool coop = coop_open();
   button.enabled = !coop;
   button.alpha = coop ? 0.5f : 1.0f;
   float at[2] = {card[0], card[1] + 150.0f};
@@ -913,7 +913,7 @@ __attribute__((export_name("game_watch"))) int game_watch(int rank, int day, int
   watch_link_run[0] = 0;
   watch.seek = watch.stop_at = 0;
   watch.linked = true;
-  if (coop_on())
+  if (coop_open())
     coop_note("The replay plays once co-op ends");
   return 1;
 }
@@ -949,8 +949,9 @@ __attribute__((export_name("game_custom_quest_play"))) int game_custom_quest_pla
   if (game_live || !custom_quest_valid() || config_blob.screen_width != 1024 || config_blob.screen_height != 768)
     return 0;
   custom_quest_linked = true;
-  // Its run waits for a co-op session's end, as a link to a replay does.
-  if (coop_on())
+  // Its run waits for co-op's end (a session's, or a room's), as a link to a
+  // replay does.
+  if (coop_open())
     coop_note("The quest starts once co-op ends");
   return 1;
 }

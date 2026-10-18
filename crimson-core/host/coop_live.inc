@@ -1,7 +1,11 @@
 // A co-op session inside the running original (docs/rewrite/network-coop.md
 // §5): the transport opens it (game_coop_connect) and it lives across the menus
-// and the runs. While it is on, the menus show every quest unlocked, and the
-// buttons that start a run start a co-op run: the Host's click picks it (the
+// and the runs. The page tells the game too when it holds a seat in a co-op
+// room (game_coop_in_room): before the partner's game connects, while it
+// reconnects, between sessions. While co-op is open, a session or a room, the
+// menus show every quest unlocked; in a room without a session the buttons that
+// start a run start nothing, and say the run waits for the partner. In a
+// session they start a co-op run: the Host's click picks it (the
 // Guest's tells the Host which run comes next from an end screen), and both
 // machines' screens come to it the way the original starts a run, its fade to
 // gameplay, where game_state_set starts the run (coop_start_run). A run plays
@@ -11,8 +15,8 @@
 // end screens to pass their name entries (RUN_SIGNED), and a run
 // comes to no screen while it changes, so a click that leaves the end screen
 // (Main Menu is Leave) wins over a run that arrives after it. A run of the
-// player's own, playing as the session opened (any mode, the tutorial too),
-// plays out on the player's own save first.
+// player's own, playing as the session or the room opened (any mode, the
+// tutorial too), plays out on the player's own save first.
 //
 // Every pass of the game runs the session (game_coop_pump), whatever the
 // screen and with the window in the background too: the partner waits on this
@@ -32,6 +36,10 @@
 
 // The session goes on: the transport is open and nothing closed it.
 static bool coop_on() { return wire.session && !wire.closed; }
+// Co-op is open: a session, or a seat in a room that waits for one.
+static bool coop_open() { return coop_on() || coop_live.room >= 0; }
+// What a run's start waits for in a room without a session: the partner.
+static const char *coop_waiting() { return coop_live.room == 0 ? "Co-op: waiting for Player 2" : "Co-op: waiting for Player 1"; }
 
 // What the session shows over a run and the menus.
 static struct {
@@ -117,7 +125,7 @@ static bool coop_playable(int mode, int major, int minor) {
          (mode == GAME_MODE_QUEST && major >= 1 && major <= 5 && minor >= 1 && minor <= 10);
 }
 
-// The menus' unlocks: every quest's while the session is on, else the player's.
+// The menus' unlocks: every quest's while co-op is open, else the player's.
 static void coop_overlay(bool on) {
   if (on == coop_live.overlay)
     return;
@@ -377,16 +385,19 @@ static void coop_draw_line(const char *line) {
   grim_interface_ptr->grim_set_config_var(0x18, 0.5f);
   viewer_text(16, viewer_h() - 40, line, 1, 1, 1, 1);
 }
-// The menus' line on the session: what became of a click or why the session
-// ended, a while; a run of the player's own first; the Host's run
+// The menus' line on co-op: what became of a click or why the session ended, a
+// while; in a room without a session, that runs wait for the partner; a run of
+// the player's own first; the Host's run
 // waiting for the Guest (or for this player's name), the Guest's choice
 // waiting for the Host; else that it is on (none while the screen fades to a
 // run).
 static const char *coop_menu_line() {
   if (coop_live.note && host_time_ms() - coop_live.note_at < COOP_NOTE_MS)
     return coop_live.note;
-  if (!coop_on() || coop_live.entering)
+  if (coop_live.entering)
     return nullptr;
+  if (!coop_on())
+    return coop_live.room >= 0 ? coop_waiting() : nullptr;
   if (!wire.hello)
     return "Co-op: connecting";
   if (coop_busy())
@@ -658,7 +669,7 @@ bool game_coop_pump() {
     game_state_pending = GAME_STATE_GAMEPLAY;
   }
   bool on = coop_on(), busy = coop_busy(), gone = coop_gone();
-  coop_overlay(on && !busy);
+  coop_overlay(coop_open() && !busy);
   // A session that ended says why, a while.
   if (coop_ui.was_on && !on)
     if (const char *why = coop_why())
@@ -715,14 +726,17 @@ bool game_coop_pump() {
 // the end note (game/changes/coop-run.patch): true when the session takes the
 // click. The Host's picks the run (on an end screen's, after a choice the Host
 // already took); the Guest's waits for the Host's. Co-op plays Survival and the
-// stock quests. A click while the screen comes to a run starts nothing more.
+// stock quests. A click while the screen comes to a run starts nothing more; in
+// a room without a session, none starts anything: the run waits for the partner.
 bool game_coop_setup_run(int mode, int major, int minor) {
-  if (!coop_on())
+  if (!coop_open())
     return false;
   if (coop_live.entering)
     return true;
   if (!coop_playable(mode, major, minor))
     coop_note("Co-op plays Survival and the quests");
+  else if (!coop_on())
+    coop_note(coop_waiting());
   else if (wire.seat == 1)
     coop_note("The host picks the run");
   else if (!(coop_live.ended && coop_live.latched))
@@ -734,11 +748,11 @@ bool game_coop_setup_run(int mode, int major, int minor) {
 // Guest tells the Host, which starts it, the first choice it saw winning; Play
 // Another opens the quest list on both. Play Next past the last quest shows the
 // end note, which starts nothing. The end screen of a run of the player's own
-// starts the session's run as the menus do; a co-op run's starts nothing once
-// its session ended (the next pass goes to the menu), nor while the screen comes
-// to the next run.
+// starts the session's run as the menus do, and in a room without a session
+// none; a co-op run's starts nothing once its session ended (the next pass goes
+// to the menu), nor while the screen comes to the next run.
 bool game_coop_next_run(int choice) {
-  if (!coop_on() || coop_gone())
+  if ((!coop_on() || coop_gone()) && (coop_live.ended || coop_live.room < 0))
     return coop_live.ended;
   if (coop_live.entering)
     return true;
@@ -790,13 +804,23 @@ bool game_coop_focus(int active) {
 // A co-op run's banner shows its buttons (game/pad.cpp): the pad steps their
 // focus as outside gameplay.
 bool game_coop_banner() { return coop_live.playing && coop_ui.banner; }
+// The page holds `seat` (0 the room's host, 1 its guest) in a co-op room, from
+// when it opens or joins one until it leaves it or co-op ends there (-1): while
+// it does, co-op is open whether or not a session runs (coop_open). 1 when the
+// game took it.
+__attribute__((export_name("game_coop_in_room"))) int game_coop_in_room(int seat) {
+  if (seat < -1 || seat > 1)
+    return 0;
+  coop_live.room = seat;
+  return 1;
+}
 // Why the session or its run stopped, as the game tells its player (coop_why),
 // for the page's panel; null when this machine left or nothing stopped.
 __attribute__((export_name("game_coop_why"))) const char *game_coop_why() { return coop_why(); }
 }
 // The menus' line (ui_elements_update_and_render).
 static void coop_menus_draw() {
-  if (!wire.session || coop_live.playing)
+  if ((!wire.session && coop_live.room < 0) || coop_live.playing)
     return;
   if (const char *line = coop_menu_line())
     coop_draw_line(line);

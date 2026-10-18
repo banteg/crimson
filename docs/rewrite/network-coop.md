@@ -1059,8 +1059,16 @@ ranked attempt, recorded as a standard replay and verified by the service like
 any other.
 
 - **Run setup (Host)**: the Host picks Survival or **any** stock quest, normal
-  or hardcore: while a session is on, the menus show every quest unlocked, and
-  the player's own unlocks stay in the save. The Guest's menus start nothing;
+  or hardcore: while co-op is open, the menus show every quest unlocked (all
+  five stages, the Hardcore box), and the player's own unlocks stay in the save.
+  Co-op is open from the moment the page holds a seat in a room, not only while
+  a session runs: before the partner's game connects, while it reconnects, and
+  between sessions. In a room without a session no button starts a run (the
+  menus', the Tutorial's, an end screen's Play Again or Play Next): each says
+  the run waits for the other player, and the run starts once the session
+  does; Play Another still opens the quest list. Once the page leaves the room
+  or co-op ends there, the menus are the player's own again and runs alone
+  start as before. The Guest's menus start nothing;
   its clicks wait for the Host's. The run plays the
   ranked profile with `player_count = 2` instead of `1`: a fresh seed the room
   issues to the pair (Section 6.1) and the overlay save the ranked rules give
@@ -1165,8 +1173,8 @@ any other.
   ends at its last confirmed tick with its replay saved, and its end screens
   belong to no later session.
 
-- **A run alone**: a session can open while a player's own run plays (the
-  Host waiting for an invite, say): any mode, the Tutorial and Typ-o, two
+- **A run alone**: a session or a room can open while a player's own run
+  plays (a reloaded page's game, say): any mode, the Tutorial and Typ-o, two
   local players or a resolution the client does not record, and practice (a
   replay gives way). That run plays out on the player's own save, its unlocks
   included, and its window's focus pauses it as alone; the menus' every-quest
@@ -1174,11 +1182,12 @@ any other.
   gives up after 10 s, as for any start), and for its end screen's name entry
   after it. Its end screen's buttons are run setup, as the menus'.
 
-- **No replays in a session**: while a session is on, nothing plays in the
+- **No replays in a session**: while co-op is open (a session, or a room
+  waiting for one), nothing plays in the
   one world the game has but its runs. The high scores' Watch shows as the
   original's disabled buttons do ("Not during co-op"), and so does practice's
-  Take over; a link to a replay or a custom quest waits for the session's end,
-  through its runs, and the menus say so. A replay that played as the session
+  Take over; a link to a replay or a custom quest waits for co-op's end,
+  through its runs, and the menus say so. The Ranked box stands down too. A replay that played as the session
   opened gives way to its first run. The engine's run and the session's are one:
   any other run's start stops both (`coop_stop`), so the session's run is never
   started without the engine's. A new session takes no choice of the last: a
@@ -1421,6 +1430,11 @@ exports, which the page calls with `Module.ccall`:
   taken after making room, which can move the module's memory. The page writes
   the bytes there (`Module.HEAPU8.set`), then calls
   `client_coop_receive(channel, size)` (`game_coop_receive`);
+- `client_coop_room(seat)` tells the game the seat the page holds in a room
+  (`game_coop_in_room`: 0 its host, 1 its guest), or `-1` once the page left
+  it or co-op ended there; `-1` before the game has started, and the page tells
+  it again on its next look at co-op. While the page holds a seat, co-op is
+  open in the game whether or not a session runs (Section 5.3);
 - `client_coop_status()` returns `game_coop_status`, and `client_coop_why()`
   why the session or its run stopped as the game tells its player
   (`game_coop_why`, null for none);
@@ -1482,7 +1496,12 @@ A Copy link the clipboard refuses leaves the link selected in its box. Inside an
 site instead. Co-op keeps the page's lock on the game's storage: one tab per
 origin plays.
 
-Once the connection is up and no session runs, the page connects the game as
+From the moment it opens or joins a room the page tells the game its seat
+there (`client_coop_room`), until it closes the room, a new room takes its
+place, the room fails or closes, or co-op ends there (the reasons below that
+end co-op): the game's menus are co-op's meanwhile, a session or not (Section
+5.3), so a host waiting for its partner, or for it to come back, starts no run
+alone. Once the connection is up and no session runs, the page connects the game as
 its seat (0 for the room's host, 1 for its guest). It ends the session with
 `COOP_DISCONNECTED` when the transport gives up or the panel's Close is used,
 and with `COOP_PARTNER_GONE` when the partner's page went (a new page, or its
@@ -1930,7 +1949,11 @@ whose page reports.
    fade, a Play Again pressed twice, and a leave from the failed quest's Main
    Menu that a click right after does not undo; last, both quit a run that a
    session opening over that replay starts (practice taking none of it over),
-   with configuration saves in it. Before them, a session opens while one machine
+   with configuration saves in it. Before them, a fresh save in the Host's seat
+   waits in a room for its partner, its menus showing every quest and the
+   Hardcore box and starting no run alone (not the Tutorial, not a quest), until
+   the partner's session opens and quest 5.10 hardcore starts on both; leaving
+   the room leaves its save as it was. Then a session opens while one machine
    is in the tutorial, plays a local two-player quest and plays a quest alone,
    each playing out on its own save (the window in the background stopping
    them), the last's end screen keeping its name entry before a run the Host

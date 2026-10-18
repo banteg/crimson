@@ -7,7 +7,8 @@
 //
 // First over WebRTC. The host's Play co-op opens a room and shows the invite
 // link, whose Copy link leaves the link selected in its box when the clipboard
-// refuses. The guest opens it, and both connect over a WebRTC candidate pair
+// refuses. Waiting there for its partner, the host's game starts no run alone:
+// its Survival starts nothing. The guest opens it, and both connect over a WebRTC candidate pair
 // (not the room's relay). The guest reloads and joins again, then the host
 // does: each time the other page's game ends its session with the page that
 // went and begins one with the new page, again over WebRTC. The host's menus
@@ -513,6 +514,15 @@ try {
     }),
     ["coop-invite", 0, invite.href.length, invite.href.length],
   );
+  // The host's game, in the room without its partner, starts no run alone: Survival starts nothing, and Escape goes
+  // back to the main menu.
+  await sleep(STARTUP_MS);
+  await press(host, MAIN_MENU, PLAY_GAME);
+  await press(host, PLAY_GAME_MENU, SURVIVAL);
+  await sleep(2000);
+  assert.equal(await host.screen(), PLAY_GAME_MENU, "a run alone in a room");
+  await tap(host, "Escape");
+  await until("the host's main menu", async () => (await host.screen()) === MAIN_MENU, 5000);
 
   // The guest opens the invite on its own origin.
   await guest.goto(`${guest.origin}/play/?coop=${room}`);

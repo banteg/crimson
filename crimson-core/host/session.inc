@@ -109,8 +109,11 @@ static struct {
   uint32_t entered;
   PortableConfig next;
   PortableConfig last; // the last co-op run's, for the next
-  // While a session is on: the menus' unlocks are every quest's, the player's
-  // own kept here.
+  // The seat the page holds in a co-op room (game_coop_in_room), -1 none: the
+  // room may wait for the partner, or for a session to begin again.
+  int room = -1;
+  // While co-op is open (a room or a session): the menus' unlocks are every
+  // quest's, the player's own kept here.
   bool overlay;
   LiveUnlocks own;
   // The player's menu settings, while the co-op run's are in their place.
@@ -134,9 +137,11 @@ static void practice_stop();
 static void practice_end();
 static int practice_frame();
 static void practice_render();
-// A co-op session is on (host/coop_live.inc): no replay starts, and no practice
-// takes one over; a line for the player on the menus.
+// A co-op session is on (host/coop_live.inc); co-op is open, a session or a
+// room waiting for one: no replay starts, no practice takes one over, the
+// Ranked box stands down, and the menus show a line for the player.
 static bool coop_on();
+static bool coop_open();
 static void coop_note(const char *note);
 // A co-op tick's terrain bake and music wait for its confirmation (host/coop.inc):
 // a track, the in-game tune, a fade, a volume.

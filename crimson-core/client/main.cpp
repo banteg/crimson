@@ -531,6 +531,10 @@ double coop_now() { return w2c_host_time_ms(&host); }
 CLIENT_EXPORT int client_coop_connect(int seat) {
   return started ? (int)w2c_game_game_coop_connect(&game, seat, coop_now()) : -1;
 }
+// The page holds `seat` in a co-op room, or none (-1) once it left the room or co-op ended there
+// (host/coop_live.inc game_coop_in_room): while it does, the menus are co-op's, a session or not. -1 before the
+// game has started.
+CLIENT_EXPORT int client_coop_room(int seat) { return started ? (int)w2c_game_game_coop_in_room(&game, seat) : -1; }
 // The transport closed, or the partner's page went (host/coop_wire.inc CoopReason).
 CLIENT_EXPORT int client_coop_disconnect(int reason) { return w2c_game_game_coop_disconnect(&game, reason); }
 // A message of `size` bytes on `channel`: the page writes it where

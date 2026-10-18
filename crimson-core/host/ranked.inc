@@ -432,8 +432,9 @@ void ranked_menu(float *base, float *tips, bool list_open) {
   static int box_tip, profile_tip; // the tips' fade, as the modes' hover_anim
   static char note[48];
   // A co-op session plays its runs under the ranked rules for two players
-  // whatever the box says, so the box stands down while one is on.
-  bool boxed = !coop_on();
+  // whatever the box says, so the box stands down while co-op is open (a
+  // session, or a room waiting for one, whose menus start no run of one player).
+  bool boxed = !coop_open();
   if (!ranked_controls() || !boxed)
     ranked_checked = false;
   // Like the modes, it neither hovers nor toggles while the list is open.

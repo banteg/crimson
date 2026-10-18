@@ -529,7 +529,9 @@
   // when the game closes it. A player leaving, or two games that cannot play
   // together, end co-op and close the room; after a lost connection, a reloaded
   // page or a desync the next session begins once the pages connect again (after
-  // a desync, once this player left the stopped run).
+  // a desync, once this player left the stopped run). The game also hears which
+  // seat the page holds in the room until co-op ends there (client_coop_room):
+  // meanwhile its menus are co-op's, a session or not.
   /* PLAY_COOP */
   // game_coop_status (host/coop_wire.inc): both games said hello, the session closed, a run a desync or an error
   // stopped is still on this player's screen; why, bits 16-23 (CoopReason). The reasons that end co-op, said as the
@@ -689,8 +691,21 @@
     coopWatch();
     coopShow(0);
   }, 500);
+  // The game hears which seat this page holds in a room (0 its host, 1 its guest), and none (-1) once the page
+  // left it or co-op ended there (a leave, games that cannot play together, a room that failed or closed): while it
+  // holds one, the game's menus show every quest and start no run without a session. Told again until the game
+  // takes it (it is up).
+  let coopRoomTold = -1;
+  function coopRoom() {
+    const seat = coop && coopEnded === null && !["error", "closed"].includes(coop.state) ? (coop.role === "host" ? 0 : 1) : -1;
+    if (seat === coopRoomTold) return;
+    try {
+      if (Module.ccall("client_coop_room", "number", ["number"], [seat]) >= 0) coopRoomTold = seat;
+    } catch {}
+  }
   // The panel says how co-op stands. It stays while co-op is not under way; otherwise `ms` shows it that long.
   function coopShow(ms) {
+    coopRoom();
     coopPanel.hidden = !coop;
     if (!coop) return;
     const { state, reason, role } = coop, waiting = role === "host" && state === "waiting" && !coopEnded;

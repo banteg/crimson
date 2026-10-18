@@ -24,7 +24,7 @@ static void practice_stop() {
 static const char *practice_reason() {
   if (!live.watching || live.practicing)
     return "";
-  if (coop_on())
+  if (coop_open())
     return "Not during co-op";
   // The branch plays one player's live input.
   if (cfg.players > 1)
