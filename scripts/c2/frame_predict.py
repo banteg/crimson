@@ -9,6 +9,9 @@ reference estimate is shown next to the compiler's weight for named locals.
     uv run python scripts/c2/frame_predict.py tools/match/scratches/<name> --out /tmp/<new-dir>
     uv run python scripts/c2/frame_predict.py <scratch> --out <dir> --source variant.cpp --json out.json
 
+`capture_and_observe(..., build=...)` also observes other builds' C2 (LAYOUTS: 1.9.8 is 12.00.9044,
+msvc6.5pp; native_slots.py --build uses it). The packer model below is 8966's.
+
 Diagnostic only: no compiler decision is changed and no match credit is earned.
 See tools/match/c2/compiler/frame-model.md.
 """
@@ -29,18 +32,86 @@ from crimson_re import match
 from crimson_re import match_c2 as c2
 from crimson_re import match_c2_replay as replay
 
-# (site RVA, target RVA, return hook) for C2.DLL 12.00.8966, image base 0x10700000.
-HOOKS = (
-    (0x583FC, 0x33B7B, False),  # 0 compile_functions -> stack_frame_layout_pass (ecx = function)
-    (0x33EDA, 0x3C7E4, False),  # 1 count refs: source operand -> order_stack_object
-    (0x33F7C, 0x3C7E4, False),  # 2 count refs: destination operand
-    (0x93CC0, 0x3C7E4, False),  # 3 count refs: call alias-set member, source side
-    (0x93D2A, 0x3C7E4, False),  # 4 count refs: call alias-set member, destination side
-    (0x33CDE, 0x4B617, True),  # 5 pack_frame_locals -> pack_stack_slots
-    (0x5842F, 0x3404F, False),  # 6 compile_functions -> generate_prolog_epilog (frame size known)
-)
+BASE = 0x10700000
 REF_KIND = {1: "src", 2: "dst", 3: "src-alias", 4: "dst-alias"}
-# Optional allocator decision hooks (--decisions): (site, target, return hook, label, register holding the range).
+# Observer roles: 0 stack_frame_layout_pass entry (ecx = function), 1 order_stack_object call (ecx = object,
+# ebx = tuple, ebp = operand), 2 pack_stack_slots (ecx = function, entry and return), 3 the density sort of the
+# local slots (entry), 4 generate_prolog_epilog entry (frame size known), 5 allocator decision (--decisions).
+ROLES = {"layout": 0, "ref": 1, "pack": 2, "sort": 3, "prolog": 4}
+
+
+@dataclass(frozen=True)
+class Layout:
+    """Where one C2 build keeps what the stack-layout observer reads (image base 0x10700000)."""
+
+    c2_sha256: str
+    # (role, call site VA, callee VA, return hook, reference kind); a reference hook either has one
+    # REF_KIND or, when one call site serves both operand lists, the base kind (1 operand, 3 alias) plus
+    # the register-frame word holding the list side (0 source, 1 destination).
+    hooks: tuple[tuple[str, int, int, bool, tuple[int, int]], ...]
+    # Field offsets and globals, as C macros of the observer.
+    fields: dict[str, int]
+
+
+# Register-frame words: pushad 0..7 (edi esi ebp esp ebx edx ecx eax), flags 8, return 9, caller stack 10..
+LAYOUTS = {
+    "msvc6.5": Layout(
+        c2_sha256="d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+        hooks=(
+            ("layout", 0x107583FC, 0x10733B7B, False, (0, -1)),
+            ("ref", 0x10733EDA, 0x1073C7E4, False, (1, -1)),  # source operand
+            ("ref", 0x10733F7C, 0x1073C7E4, False, (2, -1)),  # destination operand
+            ("ref", 0x10793CC0, 0x1073C7E4, False, (3, -1)),  # call alias-set member, source side
+            ("ref", 0x10793D2A, 0x1073C7E4, False, (4, -1)),  # call alias-set member, destination side
+            ("pack", 0x10733CDE, 0x1074B617, True, (0, -1)),
+            ("sort", 0x1074B8FB, 0x10761BF0, False, (0, -1)),
+            ("prolog", 0x1075842F, 0x1073404F, False, (0, -1)),
+        ),
+        fields={
+            "FN_FLAGS": 0x34,
+            "FN_FRAME_SIZE": 0x5B,  # of the function symbol
+            "BLOCK_WORD": 10 + 0x10 // 4,
+            "BLK_NUMBER": 0x6C,
+            "BLK_DEPTH": 0x6E,
+            "OBJECTS": 0x9F220,
+            "INTERFERENCE": 0x9F204,
+            "PARAMS": 0x9F21C,
+            "OBJECT_COUNT": 0x9F20C,
+            "SLOTS": 0x9F228,
+            "SLOT_COUNT": 0x9F224,
+            "SLOT_STRIDE": 0x14,
+            "CURSOR": 0xAC108,
+        },
+    ),
+    "msvc6.5pp": Layout(
+        c2_sha256="6c8e3988a5ccd69a9f9829b5c7512848d71c018b8d24be3928d7b00b5f79f231",
+        hooks=(
+            ("layout", 0x1070CE45, 0x1070DA4C, False, (0, -1)),
+            ("ref", 0x1070DE4C, 0x10713312, False, (1, 10 + 0x14 // 4)),  # one walk over both operand lists
+            ("ref", 0x1078BFAC, 0x10713312, False, (3, 10 + 0x14 // 4)),  # call alias-set member
+            ("pack", 0x1070DBD1, 0x1074764F, True, (0, -1)),
+            ("sort", 0x10747990, 0x1076FC94, False, (0, -1)),
+            ("prolog", 0x1070CE6B, 0x1070DF15, False, (0, -1)),
+        ),
+        fields={
+            "FN_FLAGS": 0x64,
+            "FN_FRAME_SIZE": 0x50,
+            "BLOCK_WORD": 10 + 0x10 // 4,
+            "BLK_NUMBER": 0x70,
+            "BLK_DEPTH": 0x72,
+            "OBJECTS": 0xB15FC,
+            "INTERFERENCE": 0xB15EC,
+            "PARAMS": 0xB15F4,
+            "OBJECT_COUNT": 0xB15F8,
+            "SLOTS": 0xB15E8,
+            "SLOT_COUNT": 0xB15E4,
+            "SLOT_STRIDE": 0x18,
+            "CURSOR": 0xC4564,
+        },
+    ),
+}
+# Optional allocator decision hooks (--decisions, C2 8966 only): (site, target, return hook, label, register
+# holding the range).
 # pushad order in the observer: edi 0, esi 1, ebp 2, esp 3, ebx 4, edx 5, ecx 6, eax 7.
 DECISION_HOOKS = (
     (0x3094B, 0x1F578, False, "forward-substituted", 5),  # forward_substitute_single_def_ranges
@@ -135,49 +206,57 @@ static void decision(unsigned long phase, unsigned long *lr, unsigned long resul
     text(fe ? *(char **)(fe + 0x18) : 0);
 }
 #endif
+static unsigned long *slot(unsigned long i) { return (unsigned long *)(G(SLOTS) + i * SLOT_STRIDE); }
 static void __cdecl observe(unsigned long phase, unsigned long *r)
 {
-    unsigned long *s, i, n;
+    unsigned long *s, i, n, index = phase % 100;
     unsigned char *t, *fn;
-    if (phase == 0) {
+    if (roles[index] == 0) {
         fn = (unsigned char *)r[6];
-        word(0xF0); word(*(unsigned long *)(fn + 0x34));
+        word(0xF0); word(*(unsigned long *)(fn + FN_FLAGS));
         text(*(char **)(*(unsigned char **)fn + 0x18));
-    } else if (phase >= 1 && phase <= 4) {
+    } else if (roles[index] == 1) {
         t = (unsigned char *)r[4];
-        s = (unsigned long *)r[10 + 4];
-        word(0xF1); word(phase); word(r[6]); word((unsigned long)t); word(t[8]); word(*(unsigned long *)(t + 4));
+        s = (unsigned long *)r[BLOCK_WORD];
+        word(0xF1); word(ref_kind[index] + (ref_side[index] < 0 ? 0 : r[ref_side[index]]));
+        word(r[6]); word((unsigned long)t); word(t[8]); word(*(unsigned long *)(t + 4));
         word(*(unsigned short *)(t + 0x10)); word(*(unsigned char *)(r[2] + 8));
-        word(s ? (unsigned long)s : 0); word(s ? *(short *)((unsigned char *)s + 0x6e) : 0);
-        word(s ? *(short *)((unsigned char *)s + 0x6c) : 0);
-    } else if (phase == 5) {
+        word(s ? (unsigned long)s : 0); word(s ? *(short *)((unsigned char *)s + BLK_DEPTH) : 0);
+        word(s ? *(short *)((unsigned char *)s + BLK_NUMBER) : 0);
+    } else if (roles[index] == 2 && phase < 100) {
         fn = (unsigned char *)r[6];
-        word(0xF3); word(*(unsigned long *)(fn + 0x34)); word(r[5]); word(G(0x9F21C)); word(G(0x9F20C));
-        for (s = (unsigned long *)G(0x9F220); s; s = (unsigned long *)s[0x2c / 4]) {
+        word(0xF3); word(*(unsigned long *)(fn + FN_FLAGS)); word(r[5]); word(G(PARAMS)); word(G(OBJECT_COUNT));
+        for (s = (unsigned long *)G(OBJECTS); s; s = (unsigned long *)s[0x2c / 4]) {
             object(s);
-            bits(((unsigned long **)G(0x9F204))[s[0x38 / 4]]);
+            bits(((unsigned long **)G(INTERFERENCE))[s[0x38 / 4]]);
         }
         word(0xF9);
-    } else if (phase == 105) {
-        word(0xF4); word(G(0x9F1FC)); word(G(0xAC108)); n = G(0x9F224); word(n);
+    } else if (roles[index] == 2) {
+        word(0xF4); word(G(CURSOR)); n = G(SLOT_COUNT); word(n);
         for (i = 0; i < n; ++i) {
-            s = (unsigned long *)(G(0x9F228) + i * 0x14);
+            s = slot(i);
             word(s[2]); word(s[3]); word(s[4]); bits((unsigned long *)s[0]);
         }
-        for (s = (unsigned long *)G(0x9F220); s; s = (unsigned long *)s[0x2c / 4]) {
+        for (s = (unsigned long *)G(OBJECTS); s; s = (unsigned long *)s[0x2c / 4]) {
             word((unsigned long)s);
             word(((unsigned char *)s)[4] == 4 || ((unsigned char *)s)[4] == 5 ? *(unsigned long *)((unsigned char *)s[0] + 0xc) : s[0x28 / 4]);
             word(((unsigned char *)s)[5]);
         }
         word(0xF9);
-    } else if (phase == 6) {
+    } else if (roles[index] == 3) {
+        word(0xF8); word(r[6]); word(r[5]);
+        for (i = r[6]; (long)i <= (long)r[5]; ++i) {
+            s = slot(i);
+            word(s[2]); word(s[3]); bits((unsigned long *)s[0]);
+        }
+    } else if (roles[index] == 4) {
         fn = (unsigned char *)r[6];
-        word(0xF5); word(*(unsigned long *)(*(unsigned char **)fn + 0x5b)); word(*(unsigned long *)(fn + 0x34));
+        word(0xF5); word(*(unsigned long *)(*(unsigned char **)fn + FN_FRAME_SIZE)); word(*(unsigned long *)(fn + FN_FLAGS));
     }
 #ifdef DECISIONS
-    else if (phase >= 7 && phase < 100 && decision_reg[phase - 7] < 0) dump_named_operands((unsigned char *)r[6]);
-    else if (phase >= 7 && phase < 100) decision(phase, (unsigned long *)r[decision_reg[phase - 7]], 0);
-    else if (phase >= 107) decision(phase, (unsigned long *)r[1], r[7]);
+    else if (phase < 100 && decision_reg[index - DECISION_BASE] < 0) dump_named_operands((unsigned char *)r[6]);
+    else if (phase < 100) decision(index - DECISION_BASE, (unsigned long *)r[decision_reg[index - DECISION_BASE]], 0);
+    else decision(index - DECISION_BASE + 100, (unsigned long *)r[1], r[7]);
 #endif
 }
 /* HOOKS */
@@ -215,7 +294,7 @@ void __stdcall start(void)
 
 def hook_source(hooks) -> str:
     """Naked callsite wrappers (same shape as match_c2.observer_source, own phase numbering)."""
-    out = [f"#define HOOK_COUNT {len(hooks)}", "#define INVOKE_RVA 357444"]
+    out = [f"#define HOOK_COUNT {len(hooks)}", f"#define INVOKE_RVA {c2.invoke_rva()}"]
     wrappers = []
     for index, (_, _, ret) in enumerate(hooks):
         slot = index * 4
@@ -238,12 +317,26 @@ def hook_source(hooks) -> str:
     return "\n".join(out), "\n".join(wrappers + arrays)
 
 
-def observer_source(decisions: bool = False) -> str:
-    hooks = HOOKS + tuple(h[:3] for h in DECISION_HOOKS) if decisions else HOOKS
+def observer_source(compiler: str, decisions: bool = False) -> str:
+    layout = LAYOUTS[compiler]
+    hooks = [(site - BASE, target - BASE, ret) for _, site, target, ret, _ in layout.hooks]
+    roles = [ROLES[role] for role, *_ in layout.hooks]
+    kinds = [kind for *_, (kind, _) in layout.hooks]
+    sides = [side for *_, (_, side) in layout.hooks]
+    if decisions:
+        if compiler != "msvc6.5":
+            raise ValueError("--decisions hooks are C2 8966 (msvc6.5) call sites")
+        hooks += [(site, target, ret) for site, target, ret, *_ in DECISION_HOOKS]
+        roles += [5] * len(DECISION_HOOKS)
     defines, wrappers = hook_source(hooks)
+    defines += "".join(f"\n#define {name} {value:#x}" for name, value in layout.fields.items())
+    defines += f"\nstatic const unsigned long roles[] = {{{','.join(map(str, roles))}}};"
+    defines += f"\nstatic const long ref_kind[] = {{{','.join(map(str, kinds))}}};"
+    defines += f"\nstatic const long ref_side[] = {{{','.join(map(str, sides))}}};"
     if decisions:
         regs = ",".join(str(h[4]) for h in DECISION_HOOKS)
-        defines += f"\n#define DECISIONS 1\nstatic const long decision_reg[] = {{{regs}}};"
+        defines += f"\n#define DECISIONS 1\n#define DECISION_BASE {len(layout.hooks)}"
+        defines += f"\nstatic const long decision_reg[] = {{{regs}}};"
     return defines + OBSERVER.replace("/* HOOKS */", wrappers)
 
 
@@ -293,6 +386,8 @@ class Frame:
     refs: list[dict] = field(default_factory=list)
     decisions: list[dict] = field(default_factory=list)
     range_operands: list[dict] = field(default_factory=list)
+    # The local slots handed to the density sort (frames above 0x80 local bytes), in their packing order.
+    presort: list[dict] = field(default_factory=list)
 
 
 def s32(v: int) -> int:
@@ -342,14 +437,21 @@ def decode(data: bytes) -> list[Frame]:
                 fr.objects[-1].fe_offset = s32(fr.objects[-1].fe_offset)
         elif tag == 0xF4:
             fr = frames[-1]
-            fr.local_bytes, fr.cursor = w(), s32(w())
+            fr.cursor = s32(w())
             for _ in range(w()):
                 size, weight, offset = w(), w(), s32(w())
                 fr.slots.append({"size": size, "weight": weight, "offset": offset, "members": bitlist()})
+            # Every local slot adds its size; parameter slots come first, one per parameter.
+            fr.local_bytes = sum(slot["size"] for slot in fr.slots[fr.param_slots :])
             by_ptr = {o.ptr: o for o in fr.objects}
             while (ptr := w()) != 0xF9:
                 o = by_ptr[ptr]
                 o.offset, o.f5_after = s32(w()), w()
+        elif tag == 0xF8:
+            lo, hi = s32(w()), s32(w())
+            frames[-1].presort = [
+                {"size": w(), "weight": w(), "members": bitlist()} for _ in range(lo, hi + 1)
+            ]
         elif tag == 0xF5:
             frames[-1].frame_size, frames[-1].flags = w(), w()
         elif tag == 0xF6:
@@ -370,8 +472,7 @@ def decode(data: bytes) -> list[Frame]:
             )
             d = dict(zip(keys, [w() for _ in keys], strict=True))
             d["name"] = txt()
-            ph = d["phase"] % 100
-            d["event"] = DECISION_HOOKS[ph - len(HOOKS)][3]
+            d["event"] = DECISION_HOOKS[d["phase"] % 100][3]
             if d["phase"] >= 100:
                 d["event"] += " (register chosen)" if d["event"] == "coloured" else f" -> {d['result']}"
             d["benefit"], d["priority"] = s32(d["benefit"]), s32(d["priority"])
@@ -667,15 +768,16 @@ def stack_refs(code: bytes, base: int, direct_pop) -> dict:
     return {"refs": refs, "conflicts": conflicts, "body_depth": body_depth, "depths": depths, "frame_size": frame}
 
 
-def binary_frames(config, object_path: Path) -> dict:
+def binary_frames(config, object_path: Path, target: match.MatchTarget | None = None) -> dict:
     """esp-relative frame references of the native target and the compiled candidate."""
+    target = target or match.default_match_target(config.image)
     manifest = match.load_function_manifest(
-        match.default_functions_path(config.image),
-        metadata_path=match.default_metadata_path(config.image),
-        image_name=match.default_image_path(config.image).name,
+        target.functions_path,
+        metadata_path=target.metadata_path,
+        image_name=target.image_name,
     )
     _, start, end = match.resolve_function(manifest, config.function, end_override=config.end_va)
-    image = match.load_image(match.default_image_path(config.image), manifest.image_base)
+    image = match.load_image(target.image_path, manifest.image_base)
     by_name = manifest.by_name
 
     def native_pop(insn):
@@ -717,21 +819,27 @@ def capture_and_observe(
     source: Path | None,
     *,
     decisions: bool = False,
+    build: str | None = None,
 ) -> tuple[list[Frame], dict]:
-    config = match.load_scratch_config(scratch.resolve())
+    """Observe the scratch's stack layout, compiled as `build` (default canonical) with that build's C2.
+
+    info["config"] compiles the frozen copy under `out/source`; info["target"] is the image it matches.
+    """
+    config, target = c2.scratch_target(scratch, build)
     if out.exists():
         raise SystemExit(f"--out must be a new directory: {out}")
     out = out.resolve()
     out.mkdir(parents=True)
     src = out / "source"
-    shutil.copytree(config.directory, src, ignore=shutil.ignore_patterns("build", "__pycache__", "*.json", "*.jsonl"))
+    frozen = c2.copy_scratch(config, src, shutil.ignore_patterns("build", "__pycache__", "*.json", "*.jsonl"))
     if source is not None:
-        shutil.copyfile(source, src / config.source)
+        shutil.copyfile(source, src / frozen.source)
     folders = {n: out / n for n in ("helper", "capture", "observed")}
     for d in folders.values():
         d.mkdir()
-    frozen = replace(config, directory=src)
-    with c2.compiler_environment():
+    with replay.using_compiler(config.compiler), c2.compiler_environment():
+        if replay.sha((replay.COMPILER / "Bin/C2.DLL").read_bytes()) != LAYOUTS[config.compiler].c2_sha256:
+            raise SystemExit(f"{config.compiler} C2.DLL is not the build the stack-layout hooks were read from")
         shutil.copyfile(c2.ASSETS / "capture.c", folders["helper"] / "capture.c")
         replay.compile_driver(folders["helper"], "capture.c", "capture.obj")
         replay.link(folders["helper"], "capture.dll", "capture.obj", dll=True)
@@ -760,7 +868,7 @@ def capture_and_observe(
             + "\n};\n"
         )
         (obs / "replay_settings.h").write_text(settings)
-        (obs / "observer.c").write_text(observer_source(decisions))
+        (obs / "observer.c").write_text(observer_source(config.compiler, decisions))
         replay.compile_driver(obs, "observer.c", "observer.obj")
         replay.link(obs, "observer.exe", "observer.obj")
         replay.run([replay.WIBO, "observer.exe"], obs)
@@ -768,12 +876,13 @@ def capture_and_observe(
     if not same:
         raise SystemExit("Observed object differs from the normal compile; observation is not preserving")
     try:
-        metrics = replay.function_metrics(frozen, normal)
+        metrics = replay.function_metrics(frozen, normal, target)
     except (ValueError, KeyError):  # a synthetic control with no native counterpart
         metrics = None
     return decode((obs / "frame.bin").read_bytes()), {
-        "config": config,
-        "source": (src / config.source).read_text(encoding="latin1"),
+        "config": frozen,
+        "target": target,
+        "source": (src / frozen.source).read_text(encoding="latin1"),
         "metrics": metrics,
         "object": str(normal),
     }
@@ -933,9 +1042,9 @@ def print_report(rep: dict) -> None:
         )
 
 
-def print_native(config, object_path: Path) -> None:
+def print_native(config, object_path: Path, target: match.MatchTarget | None = None) -> None:
     """Per-dword reference counts, offsets from the frame bottom (add the callee-saved pushes for esp+N)."""
-    frames = binary_frames(config, object_path)
+    frames = binary_frames(config, object_path, target)
     counts = {}
     for side, r in frames.items():
         pushes = r["body_depth"] - r["frame_size"]
@@ -1000,7 +1109,7 @@ def main() -> None:
             f" refs {m['references_ok']}/{m['reference_problems']}",
         )
     if args.native:
-        print_native(info["config"], Path(info["object"]))
+        print_native(info["config"], Path(info["object"]), info["target"])
     if args.json:
         args.json.write_text(json.dumps({"reports": reports, "metrics": m}, indent=1) + "\n")
     if not all(r["offsets_predicted"] and r["list_order_replayed"] for r in reports):

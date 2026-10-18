@@ -54915,7 +54915,7 @@
   "identities": {
     "inventory": "2d1f1b46c84400fdd844e8891187ab581dbcfadee4ca87ffa103416f86e0c4cb",
     "inventory_policy": "native-functions-and-full-executable-remainder-v1",
-    "scoring": "44fa67c7bcb012283a45888bb29c6818486ddda64c57cab0e3a55f77466446af",
+    "scoring": "ad1d94e0ef27b9658da2ea10f90b3b8ba16c2dea16d95e7b41fd2318c50b44a4",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1",
     "target": {
       "game_bins/crimsonland/1.0.2/crimson.exe": "7f7ccf19ef028570c73c4478562a23d57c54c91e7335e88c373d092e9faa07fe",
@@ -55004,8 +55004,8 @@
     "crimson-re/src/crimson_re/match.py": "02b7cb3cc29a508a33ae7edf1bd64a499a86e6db1ff67448ede9f32b36bdad0e",
     "crimson-re/src/crimson_re/match_address_diagnostics.py": "9ced244f19063007ad5ee5c3e8965623a68e6daa65ad466f3f429389a4365949",
     "crimson-re/src/crimson_re/match_builds.py": "808fde7a931eda7275bd6c57288a9ab2b72ef3553642ac42a11f32c0a5e83fce",
-    "crimson-re/src/crimson_re/match_c2.py": "607d3d420f70d712c07554c80ee7ce899812d0e2ad6f22a16f23d5cceb5cc390",
-    "crimson-re/src/crimson_re/match_c2_replay.py": "caf50bb239c95c9f7bdeedebb2957f6ed31afabb88c816320487ddfc0baef96e",
+    "crimson-re/src/crimson_re/match_c2.py": "5d4886c9ba3ab95905996bd6975e73d0c875dd97c6b00202e9461d48068ece82",
+    "crimson-re/src/crimson_re/match_c2_replay.py": "6ccf45b01ecdf436661f099c856984e37792de09b09478d5f7813f561fea540b",
     "crimson-re/src/crimson_re/match_data_inventory.py": "323356f82d9e3684b7047834adafd305b25582e50ffb034c98d4970502671fe6",
     "crimson-re/src/crimson_re/match_data_report.py": "cdecf8c358acb6b246dc246383f87a55b4d054724c6b71ee57a3a0a5afc275e3",
     "crimson-re/src/crimson_re/match_diagnostics.py": "eaf44db12942fc040b91f0352a90cc38a3abe3991c1163ea815b9acf940e0382",

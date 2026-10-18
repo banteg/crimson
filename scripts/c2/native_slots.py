@@ -9,10 +9,17 @@ into a vote "candidate object X lives at native bottom offset B". It then prints
   candidate offsets and weights, and the candidate interference edges that forbid the grouping;
 - native frame references that no candidate object explains (objects the candidate lacks);
 - the packer replay in the compiler's list order, flagging each placement whose slot mates live
-  in different native slots (the first flagged line is usually the one to fix).
+  in different native slots (the first flagged line is usually the one to fix);
+- the compiler's slots in frame order with their weight and density, and, when the local slots
+  exceed 0x80 bytes, each slot's position before the density sort (equal densities keep the order
+  the unstable quicksort leaves them in).
 
     uv run python scripts/c2/native_slots.py tools/match/scratches/<name> --out /tmp/<new-dir>
     uv run python scripts/c2/native_slots.py <scratch> --out <dir> --source variant.cpp [--json out.json]
+    uv run python scripts/c2/native_slots.py <scratch> --out <dir> --build 1.9.8
+
+`--build` compiles the scratch as that game build and observes its C2 (1.9.8: 12.00.9044, msvc6.5pp),
+against that build's image.
 
 Offsets are bottom-relative (esp after the callee-saved pushes, before argument pushes). Diagnostic
 only; see tools/match/c2/compiler/native-slot-partition.md.
@@ -26,7 +33,6 @@ import json
 import re
 import sys
 from collections import Counter, defaultdict
-from dataclasses import replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -86,13 +92,20 @@ def listing_operands(rows, declarations):
     return result
 
 
-def analyze(fr: fp.Frame, config, object_path: Path, listing_text: str) -> dict:
+def analyze(
+    fr: fp.Frame,
+    config,
+    object_path: Path,
+    listing_text: str,
+    target: match.MatchTarget | None = None,
+) -> dict:
     declarations, rows = parse_stack_listing(listing_text, symbol=config.symbol or config.function)
     names = object_names(fr, declarations)
     by_alias = {names[o.ptr]: o for o in fr.objects}
     first_line = min((ln for r in rows.values() for ln in r.source_lines), default=2)
     line_bias = first_line - 2  # observer line = source line - (function start - 1); see the note
-    frames = fp.binary_frames(config, object_path)
+    target = target or match.default_match_target(config.image)
+    frames = fp.binary_frames(config, object_path, target)
     tf, cf = frames["target"]["frame_size"], frames["candidate"]["frame_size"]
     tref, cref = defaultdict(list), defaultdict(list)
     for a, off, _ in frames["target"]["refs"]:
@@ -102,12 +115,12 @@ def analyze(fr: fp.Frame, config, object_path: Path, listing_text: str) -> dict:
         if -cf <= off < 0:
             cref[a].append(off + cf)
     manifest = match.load_function_manifest(
-        match.default_functions_path(config.image),
-        metadata_path=match.default_metadata_path(config.image),
-        image_name=match.default_image_path(config.image).name,
+        target.functions_path,
+        metadata_path=target.metadata_path,
+        image_name=target.image_name,
     )
     _, start, end = match.resolve_function(manifest, config.function, end_override=config.end_va)
-    image = match.load_image(match.default_image_path(config.image), manifest.image_base)
+    image = match.load_image(target.image_path, manifest.image_base)
     md = capstone.Cs(capstone.CS_ARCH_X86, capstone.CS_MODE_32)
     tins = list(md.disasm(image.function_bytes(start, end), start))
     cand = match.extract_object_function(match.parse_coff_object(object_path.read_bytes()), config.symbol)
@@ -223,7 +236,42 @@ def report(fr: fp.Frame, res: dict) -> dict:
                 f"  << {names[k]} w{o['weight']} {act} slot {hit} (native {nb:#x}) with "
                 + ", ".join(f"{names[m]}@{native[m]:#x}" for m in mates[:4]),
             )
-    return {"groups": rows, "at_native_offset": same, "mapped": len(native)}
+    return {"groups": rows, "at_native_offset": same, "mapped": len(native), "slots": slot_order(fr, res)}
+
+
+def density(slot: dict) -> int:
+    return int(slot["weight"] * 1000 / slot["size"])  # idiv truncates toward zero
+
+
+def slot_order(fr: fp.Frame, res: dict) -> list[dict]:
+    """The compiler's slots in frame order; local slots carry their packing position when density-sorted."""
+    names, native, bottom = res["names"], res["native"], res["bottom"]
+    ptr = {o.index: o.ptr for o in fr.objects}
+    packed = {tuple(sorted(s["members"])): i for i, s in enumerate(fr.presort, start=fr.param_slots)}
+    sorted_note = "density-sorted, #n = packing position" if fr.presort else "not density-sorted"
+    print(f"compiler slots in frame order (local bytes {fr.local_bytes:#x}, {sorted_note}):")
+    print("  slot  packed  bottom  size  weight  density  members (native base)")
+    rows = []
+    for i, s in enumerate(fr.slots):
+        members = [ptr[m] for m in s["members"] if m in ptr]
+        position = packed.get(tuple(sorted(s["members"])))
+        kind = "param" if i < fr.param_slots else f"#{position}" if position is not None else ""
+        base = min((bottom[p] for p in members if p in bottom), default=None)
+        where = "" if base is None else f"{base:#x}"
+        desc = ", ".join(f"{names[p]}" + (f" ({native[p]:#x})" if p in native else "") for p in members)
+        print(f"  {i:>4}  {kind:>6}  {where:>6}  {s['size']:>4}  {s['weight']:>6}  {density(s):>7}  {desc}")
+        rows.append(
+            {
+                "slot": i,
+                "packed": position,
+                "bottom": base,
+                "size": s["size"],
+                "weight": s["weight"],
+                "density": density(s),
+                "members": [names[p] for p in members],
+            },
+        )
+    return rows
 
 
 def main() -> None:
@@ -232,14 +280,14 @@ def main() -> None:
     parser.add_argument("--out", type=Path, required=True, help="new work directory")
     parser.add_argument("--source", type=Path, help="compile this source instead of the scratch's own")
     parser.add_argument("--json", type=Path, help="write the partition as JSON")
+    parser.add_argument("--build", help="compile and observe as this game build (default: canonical)")
     args = parser.parse_args()
-    frames, info = fp.capture_and_observe(args.scratch, args.out, args.source)
+    frames, info = fp.capture_and_observe(args.scratch, args.out, args.source, build=args.build)
     config = info["config"]
     fr = next(f for f in frames if (config.symbol or config.function) in f.name)
-    frozen = replace(config, directory=args.out.resolve() / "source")
-    listing = match.generate_compiler_listing(frozen, output=args.out.resolve() / "listing.cod")
+    listing = match.generate_compiler_listing(config, output=args.out.resolve() / "listing.cod")
     text = listing.listing_path.read_bytes().decode("latin1")
-    res = analyze(fr, frozen, Path(info["object"]), text)
+    res = analyze(fr, config, Path(info["object"]), text, info["target"])
     out = report(fr, res)
     m = info["metrics"]
     if m:

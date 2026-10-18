@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import copy
+import dataclasses
 import json
+import shutil
 import struct
 
 import pytest
 
+from crimson_re import match
 from crimson_re import match_c2 as c2
 
 PROFILE = {"hooks": [{"site": 0x100, "target": 0x200, "return": True}]}
@@ -98,3 +101,62 @@ def test_verified_reader_rejects_modified_snapshot(tmp_path):
     (tmp_path / "snapshots.json").write_bytes(data + b" ")
     with pytest.raises(ValueError, match="digest"):
         c2.read_verified(tmp_path)
+
+
+def coff_object(path, *, debug: bytes | None, text: bytes, timestamp: int = 0):
+    """A two-section i386 object: an optional `.debug$S` (as msvc6.5pp writes first), then `.text`."""
+    sections = ([(b".debug$S", debug, 0x42100040)] if debug is not None else []) + [(b".text", text, 0x60500020)]
+    offset = 20 + 40 * len(sections)
+    headers, raw, symbols = b"", b"", b""
+    for number, (name, body, flags) in enumerate(sections, 1):
+        headers += struct.pack("<8sIIIIIIHHI", name, 0, 0, len(body), offset, 0, 0, 0, 0, flags)
+        raw += body
+        offset += len(body)
+        symbols += struct.pack("<8sIhHBB", name, 0, number, 0, 3, 1)
+        symbols += struct.pack("<IHHIHB3x", len(body), 0, 0, sum(body), 0, 0)
+    header = struct.pack("<HHIIIHH", 0x14C, len(sections), timestamp, offset, 2 * len(sections), 0, 0)
+    path.write_bytes(header + headers + raw + symbols + struct.pack("<I", 4))
+    return path
+
+
+def test_normalized_coff_drops_only_the_object_path_record(tmp_path):
+    scratch = coff_object(tmp_path / "a.obj", debug=b"\x04\x00\x00\x00 Z:\\b\\a.obj", text=b"\x90\xc3", timestamp=1)
+    replayed = coff_object(tmp_path / "b.obj", debug=b"\x04\x00\x00\x00 Z:\\observed\\replay.obj", text=b"\x90\xc3")
+    changed = coff_object(tmp_path / "c.obj", debug=b"\x04\x00\x00\x00 Z:\\b\\a.obj", text=b"\x91\xc3")
+    assert c2.replay.normalized_coff(scratch) == c2.replay.normalized_coff(replayed)
+    assert c2.replay.normalized_coff(scratch) != c2.replay.normalized_coff(changed)
+    normalized = match.parse_coff_object(c2.replay.normalized_coff(replayed))
+    assert [section.data for section in normalized.sections] == [b"", b"\x90\xc3"]
+
+
+def test_normalized_coff_without_debug_section_ignores_only_the_timestamp(tmp_path):
+    first = coff_object(tmp_path / "a.obj", debug=None, text=b"\x90\xc3", timestamp=1)
+    data = bytearray(first.read_bytes())
+    data[4:8] = bytes(4)
+    assert c2.replay.normalized_coff(first) == bytes(data)
+
+
+def test_copy_scratch_brings_a_recovered_source_beside_the_conf(tmp_path):
+    scratch, recovered = tmp_path / "scratch", tmp_path / "decomp" / "unit"
+    scratch.mkdir()
+    recovered.mkdir(parents=True)
+    (scratch / "scratch.conf").write_text("FUNCTION=f\n")
+    (recovered / "f.cpp").write_text("int f() { return 1; }\n")
+    (scratch / "local.cpp").write_text("int g() { return 2; }\n")
+    config = match.ScratchConfig(
+        directory=scratch,
+        function="f",
+        image="crimsonland.exe",
+        compiler="msvc6.5pp",
+        cflags="/O2",
+        source="../decomp/unit/f.cpp",
+        end_va=None,
+        symbol=None,
+        note="",
+    )
+    ignore = shutil.ignore_patterns("build")
+    copied = c2.copy_scratch(config, tmp_path / "out", ignore)
+    assert (copied.directory / copied.source).read_text() == "int f() { return 1; }\n"
+    assert copied.directory == tmp_path / "out"
+    local = c2.copy_scratch(dataclasses.replace(config, source="local.cpp"), tmp_path / "out2", ignore)
+    assert local.source == "local.cpp"

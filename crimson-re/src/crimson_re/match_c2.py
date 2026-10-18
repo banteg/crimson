@@ -12,7 +12,9 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from . import match
+import pefile
+
+from . import match, match_builds
 from . import match_c2_replay as replay
 
 ASSETS = match.DEFAULT_MATCH_ROOT / "c2"
@@ -28,7 +30,7 @@ def require(condition: bool, message: str) -> None:
 @contextmanager
 def compiler_environment():
     values = {
-        "MSVC_VER": "msvc6.5",
+        "MSVC_VER": replay.COMPILER.name,
         "CRIMSON_MSVC_ROOT": str(replay.COMPILER),
         "CRIMSON_MATCH_INCLUDE_OVERLAY": "",
         "WIBO": str(replay.WIBO),
@@ -54,6 +56,14 @@ def load_profile() -> dict[str, Any]:
         "C2 binary does not match the pinned observer profile; no hooks installed",
     )
     return profile
+
+
+def invoke_rva() -> int:
+    """RVA of the selected compiler's `_InvokeCompilerPass@12`, the backend entry an observer calls."""
+    image = pefile.PE(str(replay.COMPILER / "Bin/C2.DLL"), fast_load=True)
+    directory = image.OPTIONAL_HEADER.DATA_DIRECTORY[pefile.DIRECTORY_ENTRY["IMAGE_DIRECTORY_ENTRY_EXPORT"]]
+    exports = image.parse_export_directory(directory.VirtualAddress, directory.Size)
+    return next(entry.address for entry in exports.symbols if entry.name == b"_InvokeCompilerPass@12")
 
 
 def observer_source(profile: dict[str, Any]) -> str:
@@ -293,27 +303,57 @@ def compare(left: list[dict[str, Any]], right: list[dict[str, Any]]) -> dict[str
     }
 
 
-def trace(scratch: Path, out: Path, *, passes_only: bool = False) -> dict[str, Any]:
+def scratch_target(scratch: Path, build: str | None = None) -> tuple[match.ScratchConfig, match.MatchTarget]:
+    """The scratch as compiled for `build` (its compiler and CL_BUILD) and the image it is matched against."""
+    config = match.load_scratch_config(scratch.resolve())
+    if build is None:
+        return config, match.default_match_target(config.image)
+    image = match_builds.load_registry().image(build, config.image)
+    return image.scratch_config(config), image.target
+
+
+def copy_scratch(config: match.ScratchConfig, directory: Path, ignore) -> match.ScratchConfig:
+    """Copy the scratch to `directory`, with a SOURCE kept outside it (decomp/) beside its conf; compile the copy."""
+    shutil.copytree(config.directory, directory, ignore=ignore)
+    source = (config.directory / config.source).resolve()
+    if source.is_relative_to(config.directory.resolve()):
+        return replace(config, directory=directory)
+    shutil.copyfile(source, directory / source.name)
+    return replace(config, directory=directory, source=source.name)
+
+
+def trace(scratch: Path, out: Path, *, passes_only: bool = False, build: str | None = None) -> dict[str, Any]:
+    """Observe the scratch's backend with the profile pinned to its compiler's C2.DLL (see `scratch_target`)."""
+    config, target = scratch_target(scratch, build)
+    with replay.using_compiler(config.compiler):
+        return _trace(config, target, out, passes_only=passes_only, build=build)
+
+
+def _trace(
+    config: match.ScratchConfig,
+    target: match.MatchTarget,
+    out: Path,
+    *,
+    passes_only: bool,
+    build: str | None,
+) -> dict[str, Any]:
     profile = load_profile()
     if passes_only:
         profile = {**profile, "hooks": profile["hooks"][:12]}
-    config = match.load_scratch_config(scratch.resolve())
-    require(config.compiler == "msvc6.5", "Only the pinned msvc6.5 profile is supported")
     require(not out.exists(), "Output directory must be new, to exclude stale traces and objects")
     out = out.resolve()
-    replay.windows_path(out / "captured-source" / config.source)
+    replay.windows_path(out / "captured-source" / Path(config.source).name)
     # Copy local includes as well as source; retain shared include-overlay configuration.
     require(not out.is_relative_to(config.directory.resolve()), "Output must be outside the scratch directory")
     out.mkdir(parents=True)
     (out / "profile.json").write_text(json.dumps(profile, indent=2) + "\n")
     source = out / "source"
-    shutil.copytree(config.directory, source, ignore=shutil.ignore_patterns("build", "__pycache__", ".git"))
+    frozen = copy_scratch(config, source, shutil.ignore_patterns("build", "__pycache__", ".git"))
     captured_source = out / "captured-source"
     shutil.copytree(source, captured_source)
     folders = {name: out / name for name in ("helper", "capture", "replay", "observed", "missing-stream")}
     for directory in folders.values():
         directory.mkdir()
-    frozen = replace(config, directory=source)
     with compiler_environment():
         helper = folders["helper"]
         shutil.copyfile(ASSETS / "capture.c", helper / "capture.c")
@@ -350,8 +390,11 @@ def trace(scratch: Path, out: Path, *, passes_only: bool = False) -> dict[str, A
             all(replay.normalized_coff(p) == normalized for p in objects),
             "Observation changed the whole COFF object",
         )
-        metrics = replay.function_metrics(frozen, normal)
-        require(all(replay.function_metrics(frozen, p) == metrics for p in objects), "Replay matcher metrics differ")
+        metrics = replay.function_metrics(frozen, normal, target)
+        require(
+            all(replay.function_metrics(frozen, p, target) == metrics for p in objects),
+            "Replay matcher metrics differ",
+        )
         missing = streams["ex"]
         backup = missing.with_suffix(".withheld")
         missing.rename(backup)
@@ -389,8 +432,10 @@ def trace(scratch: Path, out: Path, *, passes_only: bool = False) -> dict[str, A
         "kind": "preserving-c2-trace",
         "profile": profile["name"],
         "function": config.function,
+        "build": build,
+        "compiler": config.compiler,
         "cflags": config.cflags,
-        "source_sha256": replay.sha((source / config.source).read_bytes()),
+        "source_sha256": replay.sha((source / frozen.source).read_bytes()),
         "build_key": json.loads((normal.parent / "scratch-build.json").read_text())["key"],
         "input_hashes": {str(p): replay.sha(p.read_bytes()) for p in inputs if p.is_file()},
         "stream_hashes": hashes,

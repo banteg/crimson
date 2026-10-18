@@ -47,8 +47,9 @@ tracks esp depth through a target or candidate listing, which gives frame offset
 counts from bytes alone. It was validated against the VC6 `.cod` listing annotations: 679 of 679
 and 104 of 104 `name$[esp+N]` operands agree.
 
-The tool cannot yet handle scratches whose `SOURCE` is a relative path outside the scratch
-directory. Hook indices are its own; it does not use `profile.json`.
+A `SOURCE` outside the scratch directory (the recovered `decomp/` tree) is copied next to the
+frozen conf. Hook indices are its own; it does not use `profile.json`. Its observer also runs on
+C2 12.00.9044 (§9); `native_slots.py --build 1.9.8` uses that.
 
 **Validation.** The replay reproduced every offset and the reference-count list order for:
 - 93 functions with 1,833 stack objects, from 104 randomly sampled scratches with local sources.
@@ -389,6 +390,43 @@ the variants.
   | 0x10 | regional split done |
   | 0x20 | requeued piece |
   | 0x40 | deferred once |
+
+## 9. C2 12.00.9044 (1.9.8, msvc6.5pp)
+
+The stack-layout pass has the same shape in the Processor Pack back end (sha256 `6c8e3988…`, base
+0x10700000). `frame_predict.LAYOUTS` holds the hooks below and `native_slots.py --build 1.9.8`
+observes through them; the preserving check drops `.debug$S`, where 9044 writes the object path.
+
+| Hook | 8966 site → callee | 9044 site → callee |
+|---|---|---|
+| `stack_frame_layout_pass` (ecx = function) | 0x107583fc → 0x10733b7b | 0x1070ce45 → 0x1070da4c |
+| `order_stack_object`, operand | 0x10733eda (src), 0x10733f7c (dst) → 0x1073c7e4 | 0x1070de4c → 0x10713312 |
+| `order_stack_object`, call alias set | 0x10793cc0 (src), 0x10793d2a (dst) | 0x1078bfac |
+| `pack_stack_slots` (`pack_frame_locals` 0x10733bf8 / 0x1070dafa) | 0x10733cde → 0x1074b617 | 0x1070dbd1 → 0x1074764f |
+| density sort (ecx = first local slot, edx = last) | 0x1074b8fb → 0x10761bf0 | 0x10747990 → 0x1076fc94 |
+| `generate_prolog_epilog` | 0x1075842f → 0x1073404f | 0x1070ce6b → 0x1070df15 |
+
+- 9044 walks a tuple's source (+0x1c) and destination (+0x20) operand lists in one loop, so one call
+  site serves both; the side is the loop counter at the caller's `[esp+0x14]` (0 source, 1
+  destination), the block is at `[esp+0x10]`, the tuple in ebx and the operand in ebp, as in 8966.
+- Globals (8966 → 9044): object list 0x9f220 → 0xb15fc, interference sets 0x9f204 → 0xb15ec,
+  parameter count 0x9f21c → 0xb15f4, object count 0x9f20c → 0xb15f8, slots 0x9f228 → 0xb15e8,
+  slot count 0x9f224 → 0xb15e4, offset cursor 0xac108 → 0xc4564. 9044 keeps local bytes on the
+  stack only; the tools sum the local slot sizes, which is the same number.
+- Slot record: 0x18 bytes (8966 0x14): +0 members, +4 interference, +8 size, +0x0c weight, +0x10
+  parameter offset, and a new +0x14 alignment. Object fields (+0x20 size, +0x28 temporary offset,
+  +0x2c next, +0x34 weight, +0x38 index, front-end +0x0c offset) are unchanged; function flags move
+  to fn+0x64 and the frame size to function symbol +0x50; blocks number at +0x70 and depth at +0x72.
+- Reference counting (`order_stack_object`), the join rule (newest slot first, `size ≤ 2 × slot
+  size`, no conflict either way, done per object in 0x1074855e), the 0x70 repack and the 0x80
+  density sort (`weight*1000/size`, same quicksort) are 8966's. The replay in §4 reproduced every
+  offset of `statistics_update_check_worker`, `game_frame_update`, `projectile_render`,
+  `creature_update_all`, `player_update`, `highscore_load_table` and `survival_update` under 9044.
+- Two differences the §4 model does not cover yet: dead parameter homes are reused unless flag
+  0x40 is set or fn+0x28 (the frame's requested alignment) is positive, where 8966 tests flags
+  0x600000 (`ui_list_widget_update` reuses `list` and `xy` under 9044); and a slot aligns to the
+  largest type alignment of its members (`1 << (obj+0x54 − 1)`, capped at fn+0x28, or 4 when that is
+  0) instead of to its size.
 
 ## Open questions
 

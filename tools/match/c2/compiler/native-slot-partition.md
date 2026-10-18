@@ -25,7 +25,11 @@ See also:
 
 ```sh
 uv run python scripts/c2/native_slots.py tools/match/scratches/<name> --out /tmp/<new-dir> [--source v.cpp] [--json p.json]
+uv run python scripts/c2/native_slots.py tools/match/scratches/<name> --out /tmp/<new-dir> --build 1.9.8
 ```
+
+`--build` compiles the scratch as that game build and observes its own C2 against its image (1.9.8:
+C2 12.00.9044, hooks in [frame-model.md](frame-model.md) §9).
 
 The tool compiles through the preserving observer and through a `/FAsc` listing, which is
 object-equivalent. The listing names the candidate object behind every `[esp+N]`. Anonymous temps
@@ -33,7 +37,7 @@ are resolved by offset and source line.
 
 The tool aligns candidate and native instructions with difflib over normalized text. Each aligned frame
 reference votes "object X lives at native bottom B". The member offset inside X is subtracted, so a
-`.y` reference votes for the object base. It prints three things:
+`.y` reference votes for the object base. It prints four things:
 
 1. **The native partition.** For every native object base it lists the candidate objects voted there,
    with their candidate offset, weight and vote count. In brackets it lists every candidate
@@ -47,6 +51,10 @@ reference votes "object X lives at native bottom B". The member offset inside X 
 3. **The packer replay in the candidate's list order.** Each placement whose slot mates live in
    different native slots is marked `<<`. The first `<<` is normally the one to fix. Later marks are
    usually its cascade.
+4. **The compiler's slots in frame order**, with candidate bottom offset, size, weight, density and
+   members (with their native base). Above 0x80 local bytes the local slots are density-sorted, and
+   `#n` is each slot's position before the sort: equal densities keep whatever order the unstable
+   quicksort leaves, so `#n` shows which packing order a tie needs.
 
 ## 2. Liveness rule: objects that are never killed are loop-wide [verified]
 

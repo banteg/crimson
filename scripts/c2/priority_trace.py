@@ -1,23 +1,30 @@
 """Trace VC6 C2 global-colouring priorities per block, and the colouring order (diagnostic only).
 
-`score_live_ranges` (0x10724b25) walks the blocks in list order. For every block it adds
-P*w*S_b to each live range referenced in the block and subtracts P*w from each range that is only
-live through it (P = distinct candidate ranges referenced in the block, w = 1 << loop depth,
-S_b = the range's raw savings in the block). This tool hooks:
+`score_live_ranges` walks the blocks in list order. For every block it adds P*w*S_b to each live
+range referenced in the block and subtracts P*w from each range that is only live through it
+(P = distinct candidate ranges referenced in the block, w = 1 << loop depth, S_b = the range's raw
+savings in the block). This tool hooks, per C2 build (see LAYOUTS and
+tools/match/c2/compiler/regalloc.md):
 
-    score0    0x1072fc30 -> 0x10724b25   initial scoring (dump at return)
-    rescore   0x1072fd62 -> 0x10724b25   rescoring after a split (dump at return)
-    choose    0x1072fe5f -> 0x10732f7c   chooser entry and return (range, allowed set, register)
-    split     0x1072fd3d -> 0x107204d6   split at the pending markers
-    unprof    0x1072fdc7 -> 0x10732001   range with benefit <= 0
-    block     0x10724b72 -> 0x1072547e   start of every block inside score_live_ranges
+    colour    global_color_registers entry (ecx = function)
+    score0    initial scoring (dump at return)
+    rescore   rescoring after a split (dump at return)
+    choose    chooser entry and return (range, allowed set, register)
+    split     split at the pending markers
+    unprof    range with benefit <= 0
+    block     start of every block inside score_live_ranges
 
 At each block start it records the running priority and benefit of every live range, so the
 difference between two consecutive records is exactly that block's contribution. At each scoring
 return it records the per-block live-in/live-out/referenced range sets and every live range.
 
     uv run python scripts/c2/priority_trace.py <scratch> --out <new-dir> [--constant 0] [--symbol 549]
+    uv run python scripts/c2/priority_trace.py <scratch> --out <new-dir> --build 1.9.8 --symbol 549
     uv run python scripts/c2/priority_trace.py --reuse <trace-dir> --constant 0 --symbol 549
+
+`--build` compiles the scratch as that game build (decomp/builds.json: its compiler and CL_BUILD)
+and observes that compiler's C2: 1.9.93 is C2 12.00.8966 (msvc6.5), 1.9.8 is 12.00.9044
+(msvc6.5pp, which colours four register classes instead of two).
 
 The report prints the colouring order (every chooser call with its priority, block span, allowed set
 and register) and, for the ranges selected by --constant/--symbol/--range, their per-block priority
@@ -37,24 +44,102 @@ import itertools
 import json
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-import il_stage_trace as stage
+import iv_trace as iv
+
+from crimson_re import match_c2 as c2
 
 REGISTERS = {1: "eax", 2: "ecx", 3: "edx", 4: "ebx", 5: "esp", 6: "ebp", 7: "esi", 8: "edi"}
-REGISTER_DESCRIPTORS = 0xAC784  # eax descriptor RVA; the others follow at 0x54-byte steps
-NAMES = {12: "score0", 13: "rescore", 14: "choose", 15: "split", 16: "unprof", 17: "block"}
+NAMES = ("colour", "score0", "rescore", "choose", "split", "unprof", "block")
+# Observer actions per hook: 0 event head only, 5 dump ranges at return, 6 one range (ecx at entry, again at
+# return), 7 running priorities at a block start.
+MODES = {"colour": 0, "score0": 5, "rescore": 5, "choose": 6, "split": 0, "unprof": 6, "block": 7}
+RETURNS = {"score0", "rescore", "choose", "unprof"}
 
-stage.PRESETS["priority"] = (
-    (0x1072FC30, 0x10724B25, "score0", True, 5),
-    (0x1072FD62, 0x10724B25, "rescore", True, 5),
-    (0x1072FE5F, 0x10732F7C, "choose", True, 6),
-    (0x1072FD3D, 0x107204D6, "split", False, 0),
-    (0x1072FDC7, 0x10732001, "unprof", True, 6),
-    (0x10724B72, 0x1072547E, "block", False, 7),
-)
+
+@dataclass(frozen=True)
+class Layout:
+    """Where one C2 build keeps what the observer reads (image base 0x10700000)."""
+
+    c2_sha256: str
+    # (call site VA, callee VA) per NAMES entry
+    hooks: tuple[tuple[int, int], ...]
+    # Word of the observer's register frame (pushad 0..7, flags 8, return 9, caller stack 10..) holding
+    # the block at the block-start call.
+    block_word: int
+    # Field offsets and globals, as C macros of the observer.
+    fields: dict[str, int]
+
+
+LAYOUTS = {
+    "msvc6.5": Layout(
+        c2_sha256="d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+        hooks=(
+            (0x107583B2, 0x1072FB58),
+            (0x1072FC30, 0x10724B25),
+            (0x1072FD62, 0x10724B25),
+            (0x1072FE5F, 0x10732F7C),
+            (0x1072FD3D, 0x107204D6),
+            (0x1072FDC7, 0x10732001),
+            (0x10724B72, 0x1072547E),
+        ),
+        block_word=2,  # ebp
+        fields={
+            "LR_TABLE": 0x9D88C,
+            "LR_PRIO": 0xC,
+            "LR_REG": 0x10,
+            "LR_ID": 0x1C,
+            "LR_ALLOWED": 0x20,
+            "LR_REFS": 0x24,
+            "LR_FIRST": 0x28,
+            "LR_NEXT": 0x2C,
+            "LR_LAST": 0x30,
+            "LR_BENEFIT": 0x3C,
+            "LR_TIE": 0x40,
+            "BLK_IN": 0x40,
+            "BLK_OUT": 0x44,
+            "BLK_REF": 0x48,
+            "BLK_NUMBER": 0x6C,
+            "BLK_DEPTH": 0x6E,
+        },
+    ),
+    "msvc6.5pp": Layout(
+        c2_sha256="6c8e3988a5ccd69a9f9829b5c7512848d71c018b8d24be3928d7b00b5f79f231",
+        hooks=(
+            (0x1072E336, 0x1073122D),
+            (0x107313C2, 0x10707A0B),
+            (0x10731461, 0x10707A0B),
+            (0x10731552, 0x10709937),
+            (0x1073143E, 0x10744286),
+            (0x107314C5, 0x10743332),
+            (0x10707A54, 0x107054F8),
+        ),
+        block_word=10 + 0x1C // 4,  # [esp+0x1c] at the call
+        fields={
+            "LR_TABLE": 0xAC5B8,
+            "LR_PRIO": 0xC,
+            "LR_REG": 0x10,
+            "LR_ID": 0x1C,
+            "LR_ALLOWED": 0x20,
+            "LR_REFS": 0x24,
+            "LR_FIRST": 0x28,
+            "LR_NEXT": 0x2C,
+            "LR_LAST": 0x34,
+            "LR_BENEFIT": 0x40,
+            "LR_TIE": 0x44,
+            "BLK_IN": 0x48,
+            "BLK_OUT": 0x4C,
+            "BLK_REF": 0x50,
+            "BLK_NUMBER": 0x70,
+            "BLK_DEPTH": 0x72,
+        },
+    ),
+}
+BASE = 0x10700000
 
 EXTRA = r"""
 static unsigned long saved_lr, bumped[256], nbumped;
@@ -70,80 +155,131 @@ static void lrline(unsigned long lr)
     unsigned long y, node;
     if (!lr) return;
     y = W(lr, 0);
-    s("LR id="); dec(W(lr, 0x1c)); s(" p="); hx(lr);
+    s("LR id="); dec(W(lr, LR_ID)); s(" p="); hx(lr);
     s(" sym="); if (y) { dec(W(y, 0x1c)); s(" cls="); dec(*(unsigned char *)(y + 4)); } else s("-");
     if (y && *(unsigned char *)(y + 4) == 13 && (node = W(y, 0x28)) != 0 && *(unsigned char *)(node + 8) == 7)
         { s(" val="); dec((long)W(node, 0x18)); }
-    s(" prio="); dec((long)W(lr, 0xc)); s(" ben="); dec((long)W(lr, 0x3c)); s(" refs="); dec((long)W(lr, 0x24));
-    s(" tie="); dec((long)W(lr, 0x40)); s(" reg="); hx(W(lr, 0x10) ? W(lr, 0x10) - compiler_base : 0);
-    s(" fb="); hx(W(lr, 0x28)); s(" lb="); hx(W(lr, 0x30)); s(" allowed="); bits(W(lr, 0x20)); s("\n");
+    s(" prio="); dec((long)W(lr, LR_PRIO)); s(" ben="); dec((long)W(lr, LR_BENEFIT));
+    s(" refs="); dec((long)W(lr, LR_REFS)); s(" tie="); dec((long)W(lr, LR_TIE));
+    s(" reg="); dec(W(lr, LR_REG) ? W(W(lr, LR_REG), 0x1c) : 0);
+    s(" fb="); hx(W(lr, LR_FIRST)); s(" lb="); hx(W(lr, LR_LAST)); s(" allowed="); bits(W(lr, LR_ALLOWED)); s("\n");
 }
 static void bump(void)
 {
     unsigned long b, lr, y, node, k, key, first = W(W(W(saved_function, 8), 0), 0);
     for (b = 0; b < 0x400; ++b)
-        for (lr = W(compiler_base + 0x9d88c, b * 4); lr; lr = W(lr, 0x2c)) {
+        for (lr = W(compiler_base + LR_TABLE, b * 4); lr; lr = W(lr, LR_NEXT)) {
             y = W(lr, 0);
             if (!y || *(unsigned char *)(y + 4) != 13 || !(node = W(y, 0x28)) || *(unsigned char *)(node + 8) != 7)
                 continue;
-            if ((long)W(node, 0x18) != BUMP_VALUE || W(lr, 0x28) != first) continue;
-            key = lr ^ (W(lr, 0x1c) << 20);
+            if ((long)W(node, 0x18) != BUMP_VALUE || W(lr, LR_FIRST) != first) continue;
+            key = lr ^ (W(lr, LR_ID) << 20);
             for (k = 0; k < nbumped && bumped[k] != key; ++k) ;
             if (k < nbumped || nbumped == 256) continue;
             bumped[nbumped++] = key;
-            *(long *)(lr + 0xc) += BUMP_BONUS;
-            s("BUMP id="); dec(W(lr, 0x1c)); s(" prio="); dec((long)W(lr, 0xc)); s("\n");
+            *(long *)(lr + LR_PRIO) += BUMP_BONUS;
+            s("BUMP id="); dec(W(lr, LR_ID)); s(" prio="); dec((long)W(lr, LR_PRIO)); s("\n");
         }
 }
 static void dump_ranges(unsigned long block)
 {
     unsigned long fn = saved_function, blk, b, lr;
     if (block) {
-        s("BS n="); dec(*(short *)(block + 0x6c)); s(" d="); dec(*(unsigned char *)(block + 0x6e)); s(" :");
+        s("BS n="); dec(*(short *)(block + BLK_NUMBER)); s(" d="); dec(*(unsigned char *)(block + BLK_DEPTH)); s(" :");
         for (b = 0; b < 0x400; ++b)
-            for (lr = W(compiler_base + 0x9d88c, b * 4); lr; lr = W(lr, 0x2c))
-                { s(" "); dec(W(lr, 0x1c)); s("="); dec((long)W(lr, 0xc)); s("/"); dec((long)W(lr, 0x3c)); }
+            for (lr = W(compiler_base + LR_TABLE, b * 4); lr; lr = W(lr, LR_NEXT))
+                { s(" "); dec(W(lr, LR_ID)); s("="); dec((long)W(lr, LR_PRIO)); s("/"); dec((long)W(lr, LR_BENEFIT)); }
         s("\n");
         return;
     }
     if (BUMP_BONUS) bump();
     for (blk = W(W(fn, 8), 0); blk; blk = W(blk, 0)) {
-        s("BLK n="); dec(*(short *)(blk + 0x6c)); s(" p="); hx(blk); s(" d="); dec(*(unsigned char *)(blk + 0x6e));
-        s(" in="); bits(W(blk, 0x40)); s(" out="); bits(W(blk, 0x44)); s(" ref="); bits(W(blk, 0x48)); s("\n");
+        s("BLK n="); dec(*(short *)(blk + BLK_NUMBER)); s(" p="); hx(blk); s(" d="); dec(*(unsigned char *)(blk + BLK_DEPTH));
+        s(" in="); bits(W(blk, BLK_IN)); s(" out="); bits(W(blk, BLK_OUT)); s(" ref="); bits(W(blk, BLK_REF)); s("\n");
     }
     for (b = 0; b < 0x400; ++b)
-        for (lr = W(compiler_base + 0x9d88c, b * 4); lr; lr = W(lr, 0x2c)) lrline(lr);
+        for (lr = W(compiler_base + LR_TABLE, b * 4); lr; lr = W(lr, LR_NEXT)) lrline(lr);
 }
 """
 
 
-def observer_source(bump_value: int, bonus: int):
-    base = stage.observer_source
+def profile(compiler: str) -> dict:
+    layout = LAYOUTS[compiler]
+    hooks = [
+        {"site": site - BASE, "target": target - BASE, "return": name in RETURNS, "mode": MODES[name], "name": name}
+        for name, (site, target) in zip(NAMES, layout.hooks, strict=True)
+    ]
+    return {
+        "schema_version": 1,
+        "name": f"{compiler}-c2-{layout.c2_sha256[:8]}-priority",
+        "c2_sha256": layout.c2_sha256,
+        "invoke_rva": c2.invoke_rva(),
+        "hooks": hooks,
+    }
 
-    def patched(iv):
-        make = base(iv)
 
-        def source(prof):
-            text = make(prof)
-            # Hooks 8..10 run inside global colouring with ecx != function; keep the function pointer.
-            text = text.replace("if (phase < 12) saved_function = r[6];", "if (phase < 8) saved_function = r[6];")
-            extra = EXTRA.replace("BUMP_VALUE", str(bump_value)).replace("BUMP_BONUS", str(bonus))
-            text = text.replace("static void __cdecl observe(", extra + "static void __cdecl observe(", 1)
-            text = text.replace(
+def load_profile(compiler: str):
+    def load():
+        prof = profile(compiler)
+        if c2.replay.sha((c2.replay.COMPILER / "Bin/C2.DLL").read_bytes()) != prof["c2_sha256"]:
+            raise ValueError(f"{c2.replay.COMPILER.name} C2.DLL is not the build the {compiler} hooks were read from")
+        return prof
+
+    return load
+
+
+def observer_source(compiler: str, bump_value: int, bonus: int):
+    layout = LAYOUTS[compiler]
+
+    def source(prof):
+        stock = iv.STOCK_OBSERVER_SOURCE(prof)
+        wrappers = stock[stock.index("__declspec(naked)") : stock.index("void __stdcall start")]
+        header = stock[: stock.index("#include")]
+        defines = "".join(f"#define {name} {value:#x}\n" for name, value in layout.fields.items())
+        modes = "static unsigned long modes[] = {" + ",".join(str(h["mode"]) for h in prof["hooks"]) + "};\n"
+        text = iv.OBSERVER.replace("/* GENERATED_HOOKS */", wrappers)
+        replacements = (
+            ("    if (phase < 12) saved_function = r[6];\n", "    if (phase == 0) saved_function = r[6];\n"),
+            ("    if (phase == 12) saved_loop = r[6];\n", ""),
+            ("static char buf[65536];", modes + "static unsigned long compiler_base;\nstatic char buf[65536];"),
+            (
+                "    base = (unsigned char *)invoke - INVOKE_RVA;\n",
+                "    base = (unsigned char *)invoke - INVOKE_RVA;\n    compiler_base = (unsigned long)base;\n",
+            ),
+            (
+                "static void __cdecl observe(",
+                EXTRA.replace("BUMP_VALUE", str(bump_value)).replace("BUMP_BONUS", str(bonus))
+                + "static void __cdecl observe(",
+            ),
+            (
                 '    s("END\\n");\n    flush();\n}',
-                "    if (modes[index] == 5 && phase >= 100) dump_ranges(0);\n"
-                "    if (modes[index] == 7) dump_ranges(r[2]);\n"
-                "    if (modes[index] == 6) { if (phase < 100) saved_lr = r[6]; lrline(saved_lr); }\n"
-                '    s("END\\n");\n    flush();\n}',
-                1,
-            )
-            if "dump_ranges(r[2])" not in text or "phase < 8" not in text:
-                raise ValueError("Unexpected observer template")
-            return text
+                (
+                    "    if (modes[index] == 5 && phase >= 100) dump_ranges(0);\n"
+                    f"    if (modes[index] == 7) dump_ranges(r[{layout.block_word}]);\n"
+                    "    if (modes[index] == 6) { if (phase < 100) saved_lr = r[6]; lrline(saved_lr); }\n"
+                    '    s("END\\n");\n    flush();\n}'
+                ),
+            ),
+        )
+        for old, new in replacements:
+            if text.count(old) != 1:
+                raise ValueError(f"Unexpected observer template near {old.strip()[:40]!r}")
+            text = text.replace(old, new)
+        return header + defines + text
 
-        return source
+    return source
 
-    return patched
+
+def trace(scratch: Path, out: Path, build: str | None, bump_value: int, bonus: int) -> dict:
+    config, _ = c2.scratch_target(scratch, build)
+    stock = (c2.load_profile, c2.observer_source, c2.decode_trace)
+    c2.load_profile = load_profile(config.compiler)
+    c2.observer_source = observer_source(config.compiler, bump_value, bonus)
+    c2.decode_trace = iv.decode
+    try:
+        return c2.trace(scratch, out, build=build)
+    finally:
+        c2.load_profile, c2.observer_source, c2.decode_trace = stock
 
 
 def events(path: Path):
@@ -159,8 +295,8 @@ def events(path: Path):
 def parse_range(line: str) -> dict:
     fields = dict(re.findall(r"(\w+)=(\S*)", line))
     fields["allowed"] = [REGISTERS[int(x)] for x in fields.get("allowed", "").split(",") if x]
-    reg = int(fields.get("reg", "0"), 16)
-    fields["register"] = REGISTERS.get((reg - REGISTER_DESCRIPTORS) // 0x54 + 1) if reg else None
+    reg = int(fields.get("reg", "0"))
+    fields["register"] = REGISTERS.get(reg, f"reg{reg}") if reg else None
     return fields
 
 
@@ -179,16 +315,16 @@ def report(trace_dir: Path, constants: set[str], symbols: set[str], ranges: set[
     print("colouring order:")
     for phase, lines in events(trace_dir / "observed/phases.bin"):
         index = phase % 100
-        name = NAMES.get(index)
-        if name is None:
-            continue
+        name = NAMES[index]
         for line in lines:
             if line.startswith("BLK"):
                 fields = dict(re.findall(r"(\w+)=(\S*)", line))
                 blocks[fields["p"]] = fields["n"]
             elif line.startswith("BUMP"):
                 print("   ", line)
-        if name in ("score0", "rescore") and phase < 100:
+        if name == "colour":
+            print("  == function")
+        elif name in ("score0", "rescore") and phase < 100:
             current = {"name": name, "starts": []}
             runs.append(current)
         elif name == "block" and current is not None:
@@ -236,6 +372,7 @@ def main():
     parser.add_argument("scratch", nargs="?", type=Path)
     parser.add_argument("--out", type=Path)
     parser.add_argument("--reuse", type=Path, help="report an existing trace directory")
+    parser.add_argument("--build", help="compile and observe as this game build (default: canonical)")
     parser.add_argument("--constant", action="append", default=[], help="report ranges of this constant value")
     parser.add_argument("--symbol", action="append", default=[], help="report ranges of this symbol id")
     parser.add_argument("--range", action="append", default=[], help="report this live-range id")
@@ -246,16 +383,14 @@ def main():
     if trace_dir is None:
         if args.scratch is None or args.out is None:
             parser.error("scratch and --out are required")
-        c2, iv = stage.load_modules()
-        stage.observer_source = observer_source(args.bump_constant, args.bonus)
         try:
-            result = stage.trace(c2, iv, args.scratch, args.out, "priority")
+            result = trace(args.scratch, args.out, args.build, args.bump_constant, args.bonus)
             print(json.dumps({"metrics": result["metrics"]}))
         except ValueError as error:
             if not args.bonus:
                 raise
-            config = c2.match.load_scratch_config((args.out / "source").resolve())
-            metrics = c2.replay.function_metrics(config, args.out / "observed/replay.obj")
+            config, target = c2.scratch_target(args.out / "source", args.build)
+            metrics = c2.replay.function_metrics(config, args.out / "observed/replay.obj", target)
             print(json.dumps({"intervention": str(error), "observed_metrics": metrics}))
         trace_dir = args.out
     report(trace_dir, set(args.constant), set(args.symbol), set(args.range))

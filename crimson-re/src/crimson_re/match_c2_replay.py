@@ -3,14 +3,17 @@
 import hashlib
 import json
 import shutil
+import struct
 import subprocess
+from contextlib import contextmanager
 from pathlib import Path
 
 from . import match
 
 HERE = match.DEFAULT_MATCH_ROOT / "c2"
 ROOT = match.REPO_ROOT
-COMPILER = match.DEFAULT_MATCH_ROOT / "compilers/msvc6.5"
+COMPILERS = match.DEFAULT_MATCH_ROOT / "compilers"
+COMPILER = COMPILERS / "msvc6.5"
 WIBO = match.DEFAULT_MATCH_ROOT / "bin/wibo"
 PROVIDERS = ROOT / "analysis/native/crimsonland.exe/link/providers"
 SUFFIXES = ("ex", "in", "sy", "gl")
@@ -41,10 +44,51 @@ def run(arguments, directory, *, check=True):
     return result
 
 
+@contextmanager
+def using_compiler(name: str):
+    """Point capture, replay and observer builds at `compilers/<name>`, the C2 build being observed."""
+    global COMPILER
+    previous, COMPILER = COMPILER, COMPILERS / name
+    try:
+        yield COMPILER
+    finally:
+        COMPILER = previous
+
+
 def normalized_coff(path: Path) -> bytes:
+    """The object with its IMAGE_FILE_HEADER timestamp zeroed and its `.debug$S` sections removed.
+
+    Only the Processor Pack C2 writes `.debug$S` here: an S_OBJNAME record naming the object's own path, which
+    differs between a scratch build and its replay. Everything else, including every file pointer and the
+    symbol table, is compared after the removal.
+    """
     data = bytearray(path.read_bytes())
     match.parse_coff_object(bytes(data))
-    data[4:8] = bytes(4)  # Only the IMAGE_FILE_HEADER timestamp is ignored.
+    data[4:8] = bytes(4)
+    section_count, symbols_at, symbol_count, optional_size = struct.unpack_from("<HxxxxIIH", data, 2)
+    headers = 20 + optional_size
+    for index in reversed(range(section_count)):
+        header = headers + index * 40
+        if bytes(data[header : header + 8]).rstrip(b"\0") != b".debug$S":
+            continue
+        size, start = struct.unpack_from("<II", data, header + 16)
+        struct.pack_into("<II", data, header + 16, 0, 0)
+        for other in range(section_count):
+            for field in (20, 24, 28):  # raw data, relocations, line numbers
+                (pointer,) = struct.unpack_from("<I", data, headers + other * 40 + field)
+                if pointer > start:
+                    struct.pack_into("<I", data, headers + other * 40 + field, pointer - size)
+        symbol = 0
+        while symbol < symbol_count:
+            record = symbols_at + symbol * 18
+            aux = data[record + 17]
+            if struct.unpack_from("<h", data, record + 12)[0] == index + 1 and aux:
+                data[record + 18 : record + 36] = bytes(18)  # the section definition's length and checksum
+            symbol += 1 + aux
+        if symbols_at > start:
+            symbols_at -= size
+            struct.pack_into("<I", data, 8, symbols_at)
+        del data[start : start + size]
     return bytes(data)
 
 
@@ -120,13 +164,16 @@ def build_replay(directory, arguments):
     link(directory, "replay.exe", "replay-driver.obj")
 
 
-def function_metrics(config, object_path):
+def function_metrics(config, object_path, target: match.MatchTarget | None = None):
+    target = target or match.default_match_target(config.image)
     result = match.run_match(
         obj_path=object_path,
         function=config.function,
-        image_path=match.default_image_path(config.image),
-        functions_path=match.default_functions_path(config.image),
-        metadata_path=match.default_metadata_path(config.image),
+        image_path=target.image_path,
+        functions_path=target.functions_path,
+        metadata_path=target.metadata_path,
+        image_name=target.image_name,
+        data_map_path=target.data_map_path,
         end_va=config.end_va,
         object_extent=config.archive_extent,
         object_end_symbol=config.archive_end_symbol,

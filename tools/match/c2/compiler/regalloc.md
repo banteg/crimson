@@ -282,7 +282,48 @@ It ends with `ret n`. Under /GZ, `__chkesp` is added.
   - It is kept in a callee-saved register only if its `const_score` exceeds 2.
 - **Frame pointer:** omitting it (`/Oy`, default with /O2) gives the allocator 7 registers. Heavy use of doubles or frame references can take ebp back.
 
-## 7. Open questions and uncertainty
+## 7. C2 12.00.9044 (1.9.8, msvc6.5pp)
+
+1.9.8 was compiled with the Processor Pack back end, 12.00.9044 (sha256 `6c8e3988…`, base 0x10700000,
+`_InvokeCompilerPass@12` at RVA 0x6D4B5). The colouring loop of §3.1 is the same algorithm at new
+addresses, read from the disassembly and confirmed by `priority_trace.py --build 1.9.8` (per-block
+contributions add up to the final priority; the chooser's register is the one the object uses):
+
+| Routine | 8966 | 9044 | Call site in the colouring driver (9044) |
+|---|---|---|---|
+| per-function regalloc stage wrapper | (inline in 0x10757fc2) | 0x1072e2f0 | driver 0x1076e112 |
+| `global_color_registers` | 0x1072fb58 | 0x1073122d | 0x1072e336 (ecx = function) |
+| `choose_frame_pointer_mode` | 0x1072f8fc | 0x10730fc2 | 0x107312d3 |
+| `mark_register_pressure_splits` | 0x10730ab7 | 0x107321f0 | 0x107313af |
+| `score_live_ranges` | 0x10724b25 | 0x10707a0b | 0x107313c2 (initial), 0x10731461 (rescore) |
+| `prune_low_use_live_ranges` | 0x10725b42 | 0x10708777 | 0x107313d4, 0x10731473 |
+| `build_colour_queue` | 0x10733569 | 0x10732af5 | 0x10731402 |
+| remove flagged ranges from the queue | 0x1072049c | 0x107452b1 | 0x1073142f |
+| split at the pending markers | 0x107204d6 | 0x10744286 | 0x1073143e |
+| requeue split pieces | 0x1072158f | 0x107452f4 | 0x10731485 |
+| `handle_unprofitable_live_range` | 0x10732001 | 0x10743332 | 0x107314c5 (ecx = range) |
+| interference and pressure splits | 0x10732216 | 0x10708af7 | 0x10731544 |
+| `choose_register_for_live_range` | 0x10732f7c | 0x10709937 | 0x10731552 (ecx = range) |
+| propagate colour to neighbours | 0x10733230 | 0x10709bb6 | 0x10731562 |
+| queue insert (§3.7) | 0x10731d21 | 0x10708a6e | |
+| block start in `score_live_ranges` (`bitset_intersects`) | 0x1072547e at 0x10724b72 | 0x107054f8 at 0x10707a54 | block at `[esp+0x1c]`, not in a register |
+
+Differences that matter to a tracer:
+
+- The driver colours **four register classes**, 3 down to 0 (`0x107ad970[class]` candidate sets,
+  `k` per class at `0x107c9628[class]`), not x87 then integer.
+- Live range (`c2_live_range`): +0x0c priority, +0x10 register, +0x1c id, +0x20 allowed set, +0x24
+  references, +0x28 first block and +0x2c hash chain as in 8966; the **last block moves to +0x34**,
+  the definition marker to +0x3c, the **benefit to +0x40** and the **tie key to +0x44**.
+- Live-range hash table: RVA 0xAC5B8 (8966 0x9D88C), still 0x400 buckets by `id & 0x3ff`; queue
+  head 0x107ac5b4.
+- Block: live-in/live-out/referenced sets at +0x48/+0x4c/+0x50 (8966 +0x40/+0x44/+0x48), number
+  +0x70, loop depth +0x72 (8966 +0x6c/+0x6e), loop record +0x6c. Bitsets keep the 8966 layout.
+- Register descriptors start at RVA 0xC4A40 with a 0x58-byte stride (8966 0xAC730, 0x54); both keep
+  the register number (1 eax … 8 edi) at +0x1c, which is what the tools print.
+- `/Ot` is `[0x107c45a0]`; the function flags live at fn+0x64 (8966 +0x34).
+
+## 8. Open questions and uncertainty
 
 - The x87 path is only named. This covers 0x107645d8 (float class), 0x1073932c and 0x107392c7, and the class-1 queue.
 - The internals of the web builder are only partly read: 0x1072ed0d, 0x1073168d, and the reload placement in 0x1072e5b9 and 0x1072e7cb.
