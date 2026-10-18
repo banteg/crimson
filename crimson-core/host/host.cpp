@@ -341,7 +341,7 @@ extern "C" float portable_nearest_creature(float x, float y) {
   return best;
 }
 // The timeline probe: each read compares the creature pool, player one's perk
-// counts and the bonus pool with the previous read's.
+// counts and the bonus pool with the previous read's, and reads each player.
 static PortableProbe probe;
 static float creature_health[385];
 static bool creature_alive[385];
@@ -381,18 +381,18 @@ extern "C" uintptr_t portable_probe() {
       ++probe.nukes;
     bonus_seen[i] = bonus_pool[i].picked;
   }
-  probe.x = p.position.x;
-  probe.y = p.position.y;
-  probe.health = p.health;
   probe.elapsed_ms = probe_mode == GAME_MODE_QUEST ? quest_spawn_timeline : run_elapsed_ms;
   probe.experience = p.experience;
   probe.level = p.level;
-  probe.weapon_id = p.weapon_id;
   probe.kills = creature_kill_count;
-  const float timers[8] = {bonus_double_xp_timer, bonus_weapon_power_up_timer, p.fire_bullets_timer,
-                           bonus_freeze_timer, bonus_reflex_boost_timer, bonus_energizer_timer,
-                           p.shield_timer, p.speed_bonus_timer};
+  const float timers[5] = {bonus_double_xp_timer, bonus_weapon_power_up_timer, bonus_freeze_timer,
+                           bonus_reflex_boost_timer, bonus_energizer_timer};
   memcpy(probe.timers, timers, sizeof(timers));
+  for (uint32_t i = 0; i < cfg.players; ++i) {
+    const player_state_t &player = player_state_table[i];
+    probe.players[i] = {player.position.x, player.position.y, player.health, player.weapon_id,
+                        player.fire_bullets_timer, player.shield_timer, player.speed_bonus_timer};
+  }
   return (uintptr_t)&probe;
 }
 #ifndef CRIMSON_GAME

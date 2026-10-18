@@ -232,15 +232,17 @@ export type RunSummary = Omit<RunDetailView, "timeline" | "moderation">;
 
 export async function runDetailView(env: Env, id: string, moderator: boolean): Promise<RunDetailView | null> {
   const run = await runSummary(env, id);
-  return run && { ...run, timeline: await timelineFor(env, id), moderation: moderator ? await runModeration(env, id) : null };
+  return run && { ...run, timeline: await timelineFor(env, id, BOARDS[run.board].players), moderation: moderator ? await runModeration(env, id) : null };
 }
 
 // A run anyone may see by its id: not hidden, and not a banned account's, as the boards filter; a retired run keeps
 // its page and replay.
 const VISIBLE_RUN = `r.hidden = 0 AND ${NOT_BANNED}`;
 
-export async function visibleRun(env: Env, id: string): Promise<boolean> {
-  return !!(await env.DB.prepare(`SELECT 1 FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND ${VISIBLE_RUN}`).bind(id).first());
+// The board of a run anyone may see, null for none.
+export async function visibleRun(env: Env, id: string): Promise<Board | null> {
+  const run = await env.DB.prepare(`SELECT r.board FROM runs r JOIN accounts a ON a.id = r.account_id WHERE r.id = ? AND ${VISIBLE_RUN}`).bind(id).first<{ board: Board }>();
+  return run?.board ?? null;
 }
 
 export async function runSummary(env: Env, id: string): Promise<RunSummary | null> {

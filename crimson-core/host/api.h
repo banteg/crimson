@@ -13,15 +13,22 @@ struct PortableConfig {
       friendly_fire, hardcore, retry, preserve_bugs, players;
   uint32_t weapon_usage[53];
 };
-// Player one after a tick, for a run's timeline (service/src/timeline.ts). `damage` is the health creatures have
-// lost since the run started (overkill excluded) and `nukes` the Nukes picked up; `pick_ids` are the perks picked
-// since the previous read. The timers are Double Experience, Weapon Power Up, Fire Bullets, Freeze, Reflex Boost,
-// Energizer, Shield and Speed.
+// The run after a tick, for its timeline (service/src/timeline.ts). `damage` is the health creatures have lost since
+// the run started (overkill excluded) and `nukes` the Nukes picked up; `pick_ids` are the perks picked since the
+// previous read. Experience, level and perks are player one's, which the original keeps for the whole team. The
+// shared timers are Double Experience, Weapon Power Up, Freeze, Reflex Boost and Energizer; each of the run's players
+// (PortableConfig.players, the rest zero) has their own place, health, weapon and Fire Bullets, Shield and Speed.
+struct PortableProbePlayer {
+  float x, y, health;
+  int32_t weapon_id;
+  float fire_bullets_timer, shield_timer, speed_bonus_timer;
+};
 struct PortableProbe {
-  float x, y, health, damage;
-  int32_t elapsed_ms, experience, level, weapon_id, kills, nukes, picks;
+  float damage;
+  int32_t elapsed_ms, experience, level, kills, nukes, picks;
   int32_t pick_ids[8];
-  float timers[8];
+  float timers[5];
+  PortableProbePlayer players[2];
 };
 // What a tick baked into the terrain (fx_queue_render), for a run's ground (service/src/ground.ts): its decals, as
 // fx_queue holds them, then its corpses, as fx_queue_add_rotated's arrays do. A decal's position is its centre; a
@@ -49,7 +56,7 @@ struct PortableQuest {
 static_assert(sizeof(PortableConfig) == 264);
 static_assert(sizeof(PortableSpawn) == 24);
 static_assert(sizeof(PortableQuest) == 6184);
-static_assert(sizeof(PortableProbe) == 108);
+static_assert(sizeof(PortableProbe) == 136);
 static_assert(sizeof(PortableBake) == 44);
 static_assert(sizeof(PortableInput) == 20);
 static_assert(sizeof(PortableCommand) == 8);

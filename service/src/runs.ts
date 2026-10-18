@@ -464,16 +464,20 @@ export async function signalsFor(env: Env, runId: string): Promise<Signals | nul
   return signals;
 }
 
-// A run's timeline. Runs accepted before timelines were recorded get theirs the first time it is asked for, by
-// replaying their stored file again; null when there is no such replay.
-export async function timelineFor(env: Env, runId: string): Promise<Timeline | null> {
-  const stored = await env.REPLAYS.get(timelineKey(runId));
-  if (stored) return stored.json<Timeline>();
+// The timeline of a run of `players` players. Runs accepted before timelines were recorded, and co-op runs recorded
+// before timelines kept each player's own, get theirs the first time it is asked for, by replaying their stored file
+// again; a stored one the verifier no longer replays stays. Null when there is neither.
+export async function timelineFor(env: Env, runId: string, players: number): Promise<Timeline | null> {
+  const stored = await (await env.REPLAYS.get(timelineKey(runId)))?.json<Timeline>();
+  if (stored && (stored.players?.length ?? 1) === players) return stored;
   const file = await env.REPLAYS.get(`runs/${runId}.crd`);
-  if (!file) return null;
+  if (!file) return stored ?? null;
   const replay = decodeReplay(inflateReplay(new Uint8Array(await file.arrayBuffer())));
   const verdict = await verifyRun(env, replay, encodeTransport(replay));
-  if (!verdict.ok) throw new Error(`run ${runId} no longer verifies: ${verdict.reason}`);
+  if (!verdict.ok) {
+    if (stored) return stored;
+    throw new Error(`run ${runId} no longer verifies: ${verdict.reason}`);
+  }
   await putTimeline(env, runId, verdict.timeline);
   return verdict.timeline;
 }

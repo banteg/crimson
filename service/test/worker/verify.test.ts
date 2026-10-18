@@ -1,11 +1,58 @@
 import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { decodeReplay, inflateReplay } from "../../src/replay";
+import { hex, sha256 } from "../../src/crypto";
 import { encodeTransport } from "../../src/transport";
 import { TickMonitor, verifyRun } from "../../src/verify";
 import vectors from "../vectors.json";
 
 const decode64 = (text: string) => Uint8Array.from(atob(text), (ch) => ch.charCodeAt(0));
+const timelineOf = async (file: string) => {
+  const replay = decodeReplay(inflateReplay(decode64(file)));
+  const verdict = await verifyRun(env, replay, encodeTransport(replay));
+  if (!verdict.ok) throw new Error(verdict.reason);
+  return verdict.timeline;
+};
+
+describe("timelines", () => {
+  it("a one-player run's timeline stays the one its page has always read", async () => {
+    const timeline = await timelineOf(vectors.ranked_run);
+    expect(timeline).not.toHaveProperty("players");
+    // JSON.stringify of the timeline the probe of player one alone recorded (before co-op timelines), as R2 stores it.
+    expect(hex(await sha256(new TextEncoder().encode(JSON.stringify(timeline))))).toBe("742ef30f92441a643262ca0dbc488eeb781dec5d9134ea827c148f3f32ef1b97");
+  });
+
+  it("a co-op run's timeline has each player's path, health, weapons and death, and player one's at the top", async () => {
+    const timeline = await timelineOf(vectors.coop_run.file);
+    const [one, two] = timeline.players!;
+    // Both hold the pistol where they spawned, firing in circles; player two dies first, then player one ends the run.
+    expect(timeline.players).toHaveLength(2);
+    expect([one!.death_s, two!.death_s]).toEqual([31.568, 27.904]);
+    expect(one!.weapons).toEqual([{ t: 0.016, id: 1 }]);
+    expect(two!.weapons).toEqual([{ t: 0.016, id: 1 }]);
+    expect([one!.path[0], two!.path[0]]).toEqual([[0.016, 512, 512], [0.016, 432, 432]]);
+    // A path ends where its player died.
+    expect([one!.path.at(-1)![0], two!.path.at(-1)![0]]).toEqual([31.568, 27.904]);
+    for (const player of [one!, two!]) {
+      expect(player.health).toHaveLength(timeline.samples.length);
+      expect(player.health.at(-1)).toBe(0);
+      expect(player.health[0]).toBe(100);
+    }
+    // The top level stays player one's, as a one-player page reads it.
+    expect(timeline.samples.map((sample) => sample[3])).toEqual(one!.health);
+    expect(timeline.path.slice(0, one!.path.length - 1)).toEqual(one!.path.slice(0, -1));
+    expect(timeline.weapons).toEqual(one!.weapons);
+    expect(timeline.duration_s).toBe(32.8);
+  });
+
+  it("a co-op quest both players clear has no deaths", async () => {
+    const timeline = await timelineOf(vectors.coop_run.quest_file);
+    expect(timeline.players!.map((player) => [player.death_s, player.weapons])).toEqual([
+      [null, [{ t: 0.016, id: 3 }]],
+      [null, [{ t: 0.016, id: 3 }]],
+    ]);
+  });
+});
 
 describe("two players", () => {
   it.each([

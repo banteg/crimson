@@ -4,7 +4,7 @@ import { concat, COOP_RUN_DOMAIN, fromHex, hex, LOGIN_DOMAIN, RUN_DOMAIN, sha256
 import { confirmMerge } from "../../src/accounts";
 import { tokenHash } from "../../src/auth";
 import { decodeReplay, inflateReplay } from "../../src/replay";
-import type { BoardView, CustomQuestDetailView, CustomQuestsListView, GameScore, LoginView, ProfileView, ReplaysView, RunDetailView } from "../../src/api-types";
+import type { BoardView, CustomQuestDetailView, CustomQuestsListView, GameScore, LoginView, ProfileView, ReplaysView, RunDetailView, Timeline } from "../../src/api-types";
 import { validateRecipeSource } from "../../src/runs";
 import vectors from "../vectors.json";
 
@@ -696,6 +696,20 @@ describe("co-op runs", () => {
     expect((await SELF.fetch(`${ORIGIN}/runs/${run.id}.png`)).headers.get("content-type")).toBe("image/png");
 
     expect((await uploadPair(file, [alice, "alice"], [bob, "bob"])).status).toBe(409);
+  });
+
+  it("a pair's run page has both players' timelines, and an older one-player timeline is replayed again", async () => {
+    const [alice, bob] = await pair();
+    expect((await uploadPair(file, [alice, "alice"], [bob, "bob"])).status).toBe(201);
+    const id = vectors.coop_run.run_id;
+    const detail = await get<RunDetailView>(`/api/runs/${id}`);
+    expect(detail.timeline!.players!.map((player) => player.death_s)).toEqual([31.568, 27.904]);
+
+    // A co-op timeline recorded before timelines kept each player's own.
+    const { players: _, ...older } = detail.timeline!;
+    await env.REPLAYS.put(`runs/${id}.timeline.json`, JSON.stringify(older));
+    expect(await get<Timeline>(`/api/runs/${id}/timeline`)).toEqual(detail.timeline);
+    expect(await (await env.REPLAYS.get(`runs/${id}.timeline.json`))!.json()).toEqual(detail.timeline);
   });
 
   it("both partners' pages upload the same run at once: the service takes it once", async () => {

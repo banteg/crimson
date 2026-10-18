@@ -191,7 +191,9 @@ export interface LoginView {
 
 // A run's timeline (src/timeline.ts): one sample a second, [t, experience, level, health, kills, damage dealt], the
 // position ten times a second, and when weapons, levels, perks, nukes and timed bonuses changed. Times are seconds of
-// run time; perk and weapon ids are the game's. The seed rebuilds the run's terrain.
+// run time; perk and weapon ids are the game's. The seed rebuilds the run's terrain. Health, position, weapons and the
+// Fire Bullets, Shield and Speed timers (PLAYER_EFFECTS) are player one's; experience, levels, perks, kills, damage,
+// nukes and the other timers are the whole run's. A co-op run's timeline also has `players`, each player's own.
 export interface Timeline {
   seed: number;
   duration_s: number;
@@ -202,6 +204,20 @@ export interface Timeline {
   levels: { t: number; level: number }[];
   nukes: number[];
   effects: Record<string, [start: number, end: number][]>;
+  players?: PlayerTimeline[];
+}
+
+// The timed bonuses each player has their own of; the others are the whole run's.
+export const PLAYER_EFFECTS = ["Fire Bullets", "Shield", "Speed"];
+
+// One player of a co-op run, player one first: their health at each sample's time, and their path, weapons and own
+// timed bonuses up to their death, if they died (`death_s`), where the path ends.
+export interface PlayerTimeline {
+  health: number[];
+  path: [t: number, x: number, y: number][];
+  weapons: { t: number; id: number }[];
+  effects: Record<string, [start: number, end: number][]>;
+  death_s: number | null;
 }
 
 // Every run the boards rank, for CI to replay through a changed verifier before it ships (scripts/reverify.mjs).

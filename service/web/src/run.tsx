@@ -1,7 +1,7 @@
 // A run's page: its stats, experience against the board's top run and the player's best, kill rate or damage, weapons,
 // perks and timed bonuses, and where it was played, all from the timeline verification recorded (src/timeline.ts).
 import { type Accessor, createMemo, createResource, createSignal, For, type JSX, Show } from "solid-js";
-import { BOARDS, type Category, type RunDetailView, type SignalName, type Timeline } from "../../src/api-types";
+import { BOARDS, type Category, PLAYER_EFFECTS, type RunDetailView, type SignalName, type Timeline } from "../../src/api-types";
 import { boardPath } from "../../src/paths";
 import { lifeBonusMs } from "../../src/quest-time";
 import { get, moderate } from "./api";
@@ -21,7 +21,8 @@ interface Sample {
   t: number;
   xp: number;
   level: number;
-  health: number;
+  // Each seat's health.
+  healths: number[];
   kills: number;
   damage: number;
 }
@@ -31,20 +32,50 @@ interface Mark {
   name: string;
 }
 
-// A timeline as the charts read it: samples by name, perks and weapons by name, and the run's terrain.
-interface RunTimeline extends Omit<Timeline, "samples" | "weapons" | "perks"> {
-  samples: Sample[];
+// A player as the charts draw them: a one-player run's player one, or each player of a co-op run with their name.
+interface Seat {
+  label: string;
+  color: string;
+  path: Timeline["path"];
   weapons: Mark[];
+  // Their own timed bonuses; a one-player run keeps all of them in the run's.
+  effects: [name: string, spans: [start: number, end: number][]][];
+  death: number | null;
+}
+
+// A timeline as the charts read it: samples by name, perks by name, its seats, the timed bonuses the whole run shares
+// (a one-player run's all), and the run's terrain.
+interface RunTimeline extends Omit<Timeline, "samples" | "weapons" | "perks" | "players" | "effects"> {
+  samples: Sample[];
   perks: Mark[];
+  seats: Seat[];
+  effects: [name: string, spans: [start: number, end: number][]][];
   terrain: Ground;
 }
 
+const weaponMarks = (weapons: Timeline["weapons"]) => weapons.map(({ t, id }) => ({ t, name: WEAPONS[id]?.name ?? `weapon ${id}` }));
+
 function prepare(timeline: Timeline, detail: RunDetailView): RunTimeline {
+  const { players, weapons, ...run } = timeline;
+  const effects = Object.entries(timeline.effects);
+  const seats: Seat[] = players
+    ? players.map((player, i) => ({
+        label: detail.team?.[i]?.name ?? `P${i + 1}`,
+        color: SEAT_COLORS[i]!,
+        path: player.path,
+        weapons: weaponMarks(player.weapons),
+        effects: Object.entries(player.effects),
+        death: player.death_s,
+      }))
+    : [{ label: "", color: SEAT_COLORS[0]!, path: timeline.path, weapons: weaponMarks(weapons), effects: [], death: null }];
   return {
-    ...timeline,
-    samples: timeline.samples.map(([t, xp, level, health, kills, damage]) => ({ t, xp, level, health, kills, damage })),
-    weapons: timeline.weapons.map(({ t, id }) => ({ t, name: WEAPONS[id]?.name ?? `weapon ${id}` })),
+    ...run,
+    samples: timeline.samples.map(([t, xp, level, health, kills, damage], i) => ({
+      t, xp, level, healths: players ? players.map((player) => player.health[i]!) : [health], kills, damage,
+    })),
     perks: timeline.perks.map(({ t, id }) => ({ t, name: PERKS[id] ?? `perk ${id}` })),
+    seats,
+    effects: players ? effects.filter(([name]) => !PLAYER_EFFECTS.includes(name)) : effects,
     terrain: runGround(timeline.seed, { quest: detail.quest, hardcore: BOARDS[detail.board].hardcore, customSlots: detail.custom_slots ?? undefined }),
   };
 }
@@ -69,6 +100,8 @@ const BLUE = "rgb(70,180,240)";
 const RED = "rgb(250,70,60)";
 const GREEN = "rgb(128,255,153)";
 const GOLD = "rgb(240,200,90)";
+// Each seat's line in the arena and its name in the charts: player one's white, player two's blue.
+const SEAT_COLORS = ["#fff", BLUE];
 const WINDOW_S = 15;
 const LABEL_GAP = 24;
 // ui_wicons: an 8x8 grid of 32px cells; each icon is two cells wide, at frame icon_index * 2.
@@ -76,6 +109,8 @@ const ICON_CELL = 32;
 
 const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 const grouped = (n: number) => Math.round(n).toLocaleString("en-US");
+// A player's name in a chart's label column.
+const fit = (text: string, chars = 20) => (text.length > chars ? `${text.slice(0, chars - 1)}…` : text);
 const short = (n: number) => (n >= 1e6 ? `${+(n / 1e6).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(Math.round(n)));
 
 // A round gridline step at least `rough`: 1, 2 or 5 times a power of ten.
@@ -171,7 +206,17 @@ function Readout(props: { run: RunTimeline; cursor: Cursor; rivals: Rival[] }) {
   const sample = () => at(props.run.samples, time());
   return (
     <p class="readout">
-      <b>{clock(time())}</b> · {grouped(sample().xp)} xp · level {sample().level} · {Math.round(sample().health)} hp
+      <b>{clock(time())}</b> · {grouped(sample().xp)} xp · level {sample().level}
+      <Show when={props.run.seats.length > 1} fallback={<> · {Math.round(sample().healths[0]!)} hp</>}>
+        <For each={props.run.seats}>
+          {(seat, i) => (
+            <>
+              {" · "}
+              <span style={{ color: seat.color }}>{seat.label}</span> {Math.round(sample().healths[i()]!)} hp
+            </>
+          )}
+        </For>
+      </Show>
       <For each={drawn(props.rivals)}>
         {({ rival, run: other }) => {
           const end = other.samples.at(-1)!;
@@ -202,6 +247,10 @@ function ExperienceChart(props: { run: RunTimeline; cursor: Cursor; rivals: Riva
   const tickH = 10;
   const healthTop = ticks + tickH + 24;
   const healthH = 46;
+  // One health band for each seat.
+  const bandGap = 12;
+  const bandTop = (seat: number) => healthTop + seat * (healthH + bandGap);
+  const healthBottom = bandTop(run.seats.length - 1) + healthH;
   const milestone = roundStep((run.levels.at(-1)?.level ?? 0) / 10);
   // Labels are kept from the last level back, each at least LABEL_GAP left of the one after it.
   const labelled = () => {
@@ -218,12 +267,16 @@ function ExperienceChart(props: { run: RunTimeline; cursor: Cursor; rivals: Riva
   const max = () => Math.ceil(peak() / step()) * step();
   const y = (xp: number) => plot - (xp / max()) * (plot - top);
   const line = (samples: { t: number; xp: number }[]) => samples.map((s) => `${x(s.t)},${y(s.xp)}`).join(" ");
-  const health =
-    `M${x(0)},${healthTop + healthH} ` +
-    run.samples.map((s) => `L${x(s.t)},${healthTop + healthH - (s.health / 100) * healthH}`).join(" ") +
-    ` L${x(run.duration_s)},${healthTop + healthH} Z`;
+  const health = (seat: number) => {
+    const bottom = bandTop(seat) + healthH;
+    return (
+      `M${x(0)},${bottom} ` +
+      run.samples.map((s) => `L${x(s.t)},${bottom - (s.healths[seat]! / 100) * healthH}`).join(" ") +
+      ` L${x(run.duration_s)},${bottom} Z`
+    );
+  };
   return (
-    <svg viewBox={`0 0 ${W} ${healthTop + healthH + 22}`} class="chart" {...track(props.cursor)}>
+    <svg viewBox={`0 0 ${W} ${healthBottom + 22}`} class="chart" {...track(props.cursor)}>
       <For each={Array.from({ length: max() / step() + 1 }, (_, i) => i * step())}>
         {(v) => (
           <>
@@ -253,12 +306,30 @@ function ExperienceChart(props: { run: RunTimeline; cursor: Cursor; rivals: Riva
           </text>
         )}
       </For>
-      <text x={LEFT - 8} y={healthTop + 18} class="axis" text-anchor="end">
-        health
-      </text>
-      <path d={health} fill={RED} fill-opacity="0.35" stroke={RED} stroke-width="1" />
-      <TimeAxis run={run} y={healthTop + healthH + 18} />
-      <CursorLine run={run} cursor={props.cursor} top={top} bottom={healthTop + healthH} />
+      <For each={run.seats}>
+        {(seat, i) => (
+          <>
+            <Show
+              when={run.seats.length > 1}
+              fallback={
+                <text x={LEFT - 8} y={bandTop(i()) + 18} class="axis" text-anchor="end">
+                  health
+                </text>
+              }
+            >
+              <text x={LEFT - 8} y={bandTop(i()) + 18} class="axis" text-anchor="end" style={{ fill: seat.color }}>
+                {fit(seat.label)}
+              </text>
+              <text x={LEFT - 8} y={bandTop(i()) + 32} class="axis small" text-anchor="end">
+                health
+              </text>
+            </Show>
+            <path d={health(i())} fill={RED} fill-opacity="0.35" stroke={RED} stroke-width="1" />
+          </>
+        )}
+      </For>
+      <TimeAxis run={run} y={healthBottom + 18} />
+      <CursorLine run={run} cursor={props.cursor} top={top} bottom={healthBottom} />
     </svg>
   );
 }
@@ -321,15 +392,56 @@ function RateChart(props: { run: RunTimeline; cursor: Cursor; rivals: Rival[]; k
 function WeaponsChart(props: { run: RunTimeline; cursor: Cursor; held: boolean }) {
   const run = props.run;
   const { x, track } = axis(run);
-  const segments = run.weapons.map((w, i) => ({ ...w, end: run.weapons[i + 1]?.t ?? run.duration_s }));
-  const names = [...new Set(run.weapons.map((w) => w.name))];
-  const totals = names.map((name) => ({ name, seconds: segments.filter((s) => s.name === name).reduce((sum, s) => sum + s.end - s.t, 0) }));
-  totals.sort((a, b) => b.seconds - a.seconds);
+  const coop = run.seats.length > 1;
+  // Each seat's weapons up to their death or the run's end, and how long they held each.
+  const seats = run.seats.map((seat) => {
+    const end = seat.death ?? run.duration_s;
+    const segments = seat.weapons.map((w, i) => ({ ...w, end: seat.weapons[i + 1]?.t ?? end }));
+    const names = [...new Set(seat.weapons.map((w) => w.name))];
+    const totals = names.map((name) => ({ name, seconds: segments.filter((s) => s.name === name).reduce((sum, s) => sum + s.end - s.t, 0) }));
+    totals.sort((a, b) => b.seconds - a.seconds);
+    return { seat, end, segments, names, totals };
+  });
+  const longest = Math.max(...seats.map((s) => s.totals[0]?.seconds ?? 0));
   const ROW = 30;
-  const effects = Object.entries(run.effects);
-  const effectsTop = names.length * ROW + 10;
   const EFFECT_ROW = 13;
-  const height = () => (props.held ? names.length * ROW + 8 : effectsTop + effects.length * EFFECT_ROW + 26);
+  const HEAD = 22;
+  // The rows top to bottom: in co-op each player's name over their weapons and own timed bonuses, then the shared
+  // bonuses under their own heading.
+  const rows = (held: boolean) => {
+    const heads: { y: number; label: string; color: string }[] = [];
+    const weapons: { y: number; name: string; at: (typeof seats)[number] }[] = [];
+    const effects: { y: number; name: string; spans: [number, number][] }[] = [];
+    let y = 0;
+    const effectRows = (list: RunTimeline["effects"]) => {
+      for (const [name, spans] of list) {
+        effects.push({ y, name, spans });
+        y += EFFECT_ROW;
+      }
+    };
+    seats.forEach((at, i) => {
+      if (coop) {
+        if (i) y += 10;
+        heads.push({ y, label: at.seat.label, color: at.seat.color });
+        y += HEAD;
+      }
+      for (const name of held ? at.totals.map((total) => total.name) : at.names) {
+        weapons.push({ y, name, at });
+        y += ROW;
+      }
+      if (!held) effectRows(at.seat.effects);
+    });
+    if (!held) {
+      y += 10;
+      if (coop && run.effects.length) {
+        heads.push({ y, label: "Both players", color: "" });
+        y += HEAD;
+      }
+      effectRows(run.effects);
+    }
+    return { heads, weapons, effects, height: held ? y + 8 : y + 26 };
+  };
+  const layout = createMemo(() => rows(props.held));
   const icon = (name: string, y: number) => (
     <>
       <WeaponIcon icon={iconOf(name)} x={0} y={y} width={52} />
@@ -344,19 +456,27 @@ function WeaponsChart(props: { run: RunTimeline; cursor: Cursor; held: boolean }
     </text>
   );
   return (
-    <svg viewBox={`0 0 ${W} ${height()}`} class="chart" {...track(props.cursor)}>
+    <svg viewBox={`0 0 ${W} ${layout().height}`} class="chart" {...track(props.cursor)}>
+      <For each={layout().heads}>
+        {(head) => (
+          <text x={0} y={head.y + 15} class="axis" style={head.color ? { fill: head.color } : undefined}>
+            {fit(head.label, 40)}
+          </text>
+        )}
+      </For>
       <Show
         when={!props.held}
         fallback={
-          <For each={totals}>
-            {(total, i) => {
-              const width = (total.seconds / totals[0]!.seconds) * (W - LEFT - RIGHT - 110);
+          <For each={layout().weapons}>
+            {(row) => {
+              const total = row.at.totals.find((total) => total.name === row.name)!;
+              const width = (total.seconds / longest) * (W - LEFT - RIGHT - 110);
               return (
                 <g>
-                  {icon(total.name, i() * ROW + 2)}
-                  <rect x={LEFT} y={i() * ROW + 6} width={width} height={18} fill={BLUE} fill-opacity="0.55" />
-                  <text x={LEFT + width + 8} y={i() * ROW + 20} class="axis">
-                    {clock(total.seconds)} · {Math.round((total.seconds / run.duration_s) * 100)}%
+                  {icon(total.name, row.y + 2)}
+                  <rect x={LEFT} y={row.y + 6} width={width} height={18} fill={BLUE} fill-opacity="0.55" />
+                  <text x={LEFT + width + 8} y={row.y + 20} class="axis">
+                    {clock(total.seconds)} · {Math.round((total.seconds / row.at.end) * 100)}%
                   </text>
                 </g>
               );
@@ -364,16 +484,16 @@ function WeaponsChart(props: { run: RunTimeline; cursor: Cursor; held: boolean }
           </For>
         }
       >
-        <For each={names}>
-          {(name, i) => (
+        <For each={layout().weapons}>
+          {(row) => (
             <g>
-              {icon(name, i() * ROW + 2)}
-              <line x1={LEFT} x2={W - RIGHT} y1={i() * ROW + 15} y2={i() * ROW + 15} class="grid" />
-              <For each={segments.filter((s) => s.name === name)}>
+              {icon(row.name, row.y + 2)}
+              <line x1={LEFT} x2={W - RIGHT} y1={row.y + 15} y2={row.y + 15} class="grid" />
+              <For each={row.at.segments.filter((s) => s.name === row.name)}>
                 {(s) => (
-                  <rect x={x(s.t)} y={i() * ROW + 6} width={Math.max(2, x(s.end) - x(s.t))} height={18} fill={BLUE} fill-opacity="0.7">
+                  <rect x={x(s.t)} y={row.y + 6} width={Math.max(2, x(s.end) - x(s.t))} height={18} fill={BLUE} fill-opacity="0.7">
                     <title>
-                      {name}, {clock(s.t)}–{clock(s.end)}
+                      {row.name}, {clock(s.t)}–{clock(s.end)}
                     </title>
                   </rect>
                 )}
@@ -381,15 +501,15 @@ function WeaponsChart(props: { run: RunTimeline; cursor: Cursor; held: boolean }
             </g>
           )}
         </For>
-        <For each={effects}>
-          {([name, spans], i) => (
+        <For each={layout().effects}>
+          {(row) => (
             <g>
-              {label(name, effectsTop + i() * EFFECT_ROW + 9, "axis small")}
-              <For each={spans}>
+              {label(row.name, row.y + 9, "axis small")}
+              <For each={row.spans}>
                 {([start, end]) => (
-                  <rect x={x(start)} y={effectsTop + i() * EFFECT_ROW} width={Math.max(1.5, x(end) - x(start))} height={EFFECT_ROW - 4} fill={GOLD} fill-opacity="0.7">
+                  <rect x={x(start)} y={row.y} width={Math.max(1.5, x(end) - x(start))} height={EFFECT_ROW - 4} fill={GOLD} fill-opacity="0.7">
                     <title>
-                      {name} {clock(start)}–{clock(end)}
+                      {row.name} {clock(start)}–{clock(end)}
                     </title>
                   </rect>
                 )}
@@ -397,8 +517,8 @@ function WeaponsChart(props: { run: RunTimeline; cursor: Cursor; held: boolean }
             </g>
           )}
         </For>
-        <TimeAxis run={run} y={height() - 6} />
-        <CursorLine run={run} cursor={props.cursor} top={0} bottom={height() - 22} />
+        <TimeAxis run={run} y={layout().height - 6} />
+        <CursorLine run={run} cursor={props.cursor} top={0} bottom={layout().height - 22} />
       </Show>
     </svg>
   );
@@ -426,6 +546,21 @@ function Perks(props: { run: RunTimeline }) {
   );
 }
 
+// How a run, or a co-op player's part in it, ended.
+function EndMark(props: { x: number; y: number; outcome: string }) {
+  return (
+    <g role="img" aria-label={props.outcome === "quest_completed" ? "Quest completed" : props.outcome === "death" ? "Death" : "Run ended"}>
+      <Show when={props.outcome === "quest_completed"} fallback={
+        <Show when={props.outcome === "death"} fallback={<circle cx={props.x} cy={props.y} r="18" fill="none" stroke={GOLD} stroke-width="6" />}>
+          <path d={`M${props.x - 18},${props.y - 18} l36,36 M${props.x + 18},${props.y - 18} l-36,36`} stroke={RED} stroke-width="8" />
+        </Show>
+      }>
+        <path d={`M${props.x - 20},${props.y} l14,16 l28,-32`} fill="none" stroke={GREEN} stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+      </Show>
+    </g>
+  );
+}
+
 function Arena(props: { id: string; run: RunTimeline; cursor: Cursor; outcome: string }) {
   const run = props.run;
   // The ground as the run left it, baked by the service; the run's bare terrain stands in until it arrives.
@@ -433,35 +568,53 @@ function Arena(props: { id: string; run: RunTimeline; cursor: Cursor; outcome: s
   const layers = () => [`url(/runs/${props.id}.ground.jpg)`, ...(terrain() ? [`url(${terrain()})`] : [])].join(", ");
   const TRAIL_S = 20;
   const now = () => props.cursor.t() ?? run.duration_s;
-  const trail = () => run.path.filter(([t]) => t > now() - TRAIL_S && t <= now());
-  const here = () => at(run.path, now(), (p) => p[0]);
+  const coop = run.seats.length > 1;
   return (
     <div class="arena-row">
       <div class="arena" style={{ "background-image": layers() }}>
         <svg viewBox="0 0 1024 1024">
-          <polyline points={trail().map(([, x, y]) => `${x},${y}`).join(" ")} fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round" stroke-opacity="0.9" />
-          <Show
-            when={props.cursor.t() !== null}
-            fallback={
-              <g role="img" aria-label={props.outcome === "quest_completed" ? "Quest completed" : props.outcome === "death" ? "Death" : "Run ended"}>
-                <Show when={props.outcome === "quest_completed"} fallback={
-                  <Show when={props.outcome === "death"} fallback={<circle cx={here()[1]} cy={here()[2]} r="18" fill="none" stroke={GOLD} stroke-width="6" />}>
-                    <path d={`M${here()[1] - 18},${here()[2] - 18} l36,36 M${here()[1] + 18},${here()[2] - 18} l-36,36`} stroke={RED} stroke-width="8" />
+          <For each={run.seats}>
+            {(seat) => {
+              const trail = () => seat.path.filter(([t]) => t > now() - TRAIL_S && t <= now());
+              const here = () => at(seat.path, now(), (p) => p[0]);
+              // A co-op player who died by now is marked where they did; the others end as the run did.
+              const died = () => seat.death !== null && now() >= seat.death;
+              return (
+                <>
+                  <polyline points={trail().map(([, x, y]) => `${x},${y}`).join(" ")} fill="none" stroke={seat.color} stroke-width="5" stroke-linejoin="round" stroke-opacity="0.9" />
+                  <Show when={props.cursor.t() === null || died()} fallback={<circle cx={here()[1]} cy={here()[2]} r="14" fill={seat.color} stroke="#000" stroke-width="4" />}>
+                    <EndMark x={here()[1]} y={here()[2]} outcome={died() ? "death" : props.outcome} />
                   </Show>
-                }>
-                  <path d={`M${here()[1] - 20},${here()[2]} l14,16 l28,-32`} fill="none" stroke={GREEN} stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
-                </Show>
-              </g>
-            }
-          >
-            <circle cx={here()[1]} cy={here()[2]} r="14" fill="#fff" stroke="#000" stroke-width="4" />
-          </Show>
+                </>
+              );
+            }}
+          </For>
         </svg>
       </div>
-      <p class="muted arena-note">
-        The ground is as the run left it. The white line is their last {TRAIL_S} seconds before the time under the cursor, or before
-        the run ended. {props.outcome === "quest_completed" ? "The green check marks quest completion." : props.outcome === "death" ? "The red X marks death." : "The gold circle marks the end of the run."}
-      </p>
+      <Show
+        when={coop}
+        fallback={
+          <p class="muted arena-note">
+            The ground is as the run left it. The white line is their last {TRAIL_S} seconds before the time under the cursor, or before
+            the run ended. {props.outcome === "quest_completed" ? "The green check marks quest completion." : props.outcome === "death" ? "The red X marks death." : "The gold circle marks the end of the run."}
+          </p>
+        }
+      >
+        <p class="muted arena-note">
+          The ground is as the run left it. Each line is a player's last {TRAIL_S} seconds before the time under the cursor, or before the
+          run ended:{" "}
+          <For each={run.seats}>
+            {(seat, i) => (
+              <>
+                {i() ? (i() === run.seats.length - 1 ? " and " : ", ") : ""}
+                <span style={{ color: seat.color }}>{seat.label}</span>
+              </>
+            )}
+          </For>
+          . A red X marks where a player died.{" "}
+          {props.outcome === "quest_completed" ? "The green check marks quest completion." : props.outcome === "death" ? "" : "The gold circle marks the end of the run."}
+        </p>
+      </Show>
     </div>
   );
 }

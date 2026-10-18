@@ -142,7 +142,8 @@ async function handle(request: Request, env: Env, url: URL): Promise<Response> {
     return run ? json(run) : refuse(404, "no such run");
   }
   if ((match = /^GET \/api\/runs\/([0-9a-f]{64})\/timeline$/.exec(route))) {
-    const timeline = (await visibleRun(env, match[1]!)) && (await timelineFor(env, match[1]!));
+    const board = await visibleRun(env, match[1]!);
+    const timeline = board && (await timelineFor(env, match[1]!, BOARDS[board].players));
     return timeline ? json(timeline) : refuse(404, "no such run");
   }
   if (route === "GET /api/me") return json({ account: viewer, role });

@@ -96,7 +96,7 @@ function simulate(replay: Replay, transport: Uint8Array, bake?: (bakes: DataView
 
   const monitor = new TickMonitor(players);
   monitor.updateCamera(c);
-  const recorder = new TimelineRecorder(replay.run.seed);
+  const recorder = new TimelineRecorder(replay.run.seed, players);
   const nearest = (x: number, y: number) => c.portable_nearest_creature(x, y);
   const inputs = players * INPUT_BYTES;
   let at = CONFIG_BYTES + (custom ? QUEST_BYTES : 0);
