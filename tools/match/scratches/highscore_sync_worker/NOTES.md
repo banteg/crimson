@@ -358,3 +358,9 @@ spelled with `this->player_name`, `&player_name[0]`, `&default_player_name[0]`,
 a local destination pointer or a local source pointer. Spelling the reset
 inline in the function (direct or through a record pointer) loses the cursor
 loop (525/528).
+
+The order is the class-3 symbol-leaf hash (`id << 6`, 16 bits) of
+`tools/match/c2/compiler/sib-operand-order.md`: the delta's id is larger than
+the source cursor's, so the delta sorts first unless its id crosses 1024 and
+wraps. Native implies roughly 90 to 160 more symbol ids ahead of the reset; no
+source change that adds them without other byte changes is known yet.

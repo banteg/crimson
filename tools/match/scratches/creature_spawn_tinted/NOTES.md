@@ -67,3 +67,14 @@ chains every store in source order.
   1.9.8 and breaks 1.9.93; `float move_speed = ...; move_speed *= 1.2f;` and
   parenthesised products fix neither.
 
+
+## 1.9.8 exact (2026-10-18)
+
+Both builds are exact. The position copy goes through its own pointer,
+`vec2f_t *dst_pos = &creature_pool[slot_id].position; *dst_pos = *pos;`, which
+is shared: the pointer's alias class intersects the following field stores, so
+9044 keeps the `pos_y` store ahead of the `vel_y` copy
+(`tools/match/c2/compiler/small-aggregate-copies.md`). Two code-generation
+guards remain, after the searches above found no shared order: 1.9.8 stores
+`vel_x` after `health`, and its size block writes `flags |= 0x80` before
+`move_speed *= 1.2f` without the single-use local.

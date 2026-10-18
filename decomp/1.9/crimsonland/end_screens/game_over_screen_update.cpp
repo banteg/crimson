@@ -239,82 +239,77 @@ extern "C" void game_over_screen_update(void)
                 1.0f,
                 game_over_highscore_rank_index + 1);
         }
-        ui_cursor_render();
-        return;
-    } else if (ui_screen_phase != 1) {
-        ui_cursor_render();
-        return;
-    }
-
-    xy = banner_xy;
-    name_input.text = name_buffer;
-    xy.x += 30.0f;
-    if (game_over_highscore_rank_index >= 100) {
-        xy.y += 62.0f;
-        grim_interface_ptr->grim_draw_text_small_fmt(
-            xy.x + 8.0f,
-            xy.y,
-            "Score too low for top%d.",
-            100);
-        xy.y += 6.0f;
-    } else {
-        xy.y += 64.0f;
-    }
-
-    {
-        game_over_vec2_t entry_xy(xy.x, xy.y + 16.0f);
-        ui_text_input_render(
-            entry_xy,
-            &highscore_active_record,
-            1.0f,
-            game_over_highscore_rank_index + 1);
-    }
-
-    xy.y += 146.0f;
-    static game_over_button_t play_again_button;
-    play_again_button.label = "Play Again";
-
-    static game_over_button_t highscores_button;
-    highscores_button.label = "High scores";
-
-    static game_over_button_t main_menu_button;
-    main_menu_button.label = "Main Menu";
-
-    xy.x = xy.x - 4.0f + 26.0f;
-    ui_button_update((float *)&xy, (ui_button_t *)&play_again_button);
-    xy.y += 32.0f;
-    ui_button_update((float *)&xy, (ui_button_t *)&highscores_button);
-    xy.y += 32.0f;
-    ui_button_update((float *)&xy, (ui_button_t *)&main_menu_button);
-    xy.y += 32.0f;
-
-    if (play_again_button.activated) {
-        ui_transition_direction = 0;
-        game_state_pending = GAME_STATE_GAMEPLAY;
-        if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
-            game_state_pending = GAME_STATE_TYPO_GAMEPLAY;
+    } else if (ui_screen_phase == 1) {
+        xy = banner_xy;
+        name_input.text = name_buffer;
+        xy.x += 30.0f;
+        if (game_over_highscore_rank_index >= 100) {
+            xy.y += 62.0f;
+            grim_interface_ptr->grim_draw_text_small_fmt(
+                xy.x + 8.0f,
+                xy.y,
+                "Score too low for top%d.",
+                100);
+            xy.y += 6.0f;
+        } else {
+            xy.y += 64.0f;
         }
-        music_fade_out_all(music_track_crimson_theme_id);
-        music_fade_out_all(music_track_shortie_monk_id);
-        music_fade_out_all(music_track_game_playlist);
-    }
-    if (highscores_button.activated) {
-        highscore_return_game_mode_id = config_game_mode;
-        highscore_return_latch = 1;
-        highscore_return_quest_stage_major = quest_stage_major;
-        highscore_return_quest_stage_minor = quest_stage_minor;
-        highscore_return_hardcore_flag = config_hardcore;
-        ui_transition_direction = 0;
-        game_state_pending = GAME_STATE_HIGHSCORES;
-    }
-    if (main_menu_button.activated) {
-        music_fade_out_all(music_track_game_playlist);
-        music_fade_out_all(music_track_crimson_theme_id);
-        music_fade_out_all(music_track_shortie_monk_id);
-        music_play_exclusive(music_track_crimson_theme_id);
-        ui_transition_direction = 0;
-        game_state_pending = GAME_STATE_MAIN_MENU;
-        ui_sign_crimson.focus_disabled = 0;
+
+        {
+            game_over_vec2_t entry_xy(xy.x, xy.y + 16.0f);
+            ui_text_input_render(
+                entry_xy,
+                &highscore_active_record,
+                1.0f,
+                game_over_highscore_rank_index + 1);
+        }
+
+        xy.y += 146.0f;
+        static game_over_button_t play_again_button;
+        play_again_button.label = "Play Again";
+
+        static game_over_button_t highscores_button;
+        highscores_button.label = "High scores";
+
+        static game_over_button_t main_menu_button;
+        main_menu_button.label = "Main Menu";
+
+        xy.x = xy.x - 4.0f + 26.0f;
+        ui_button_update((float *)&xy, (ui_button_t *)&play_again_button);
+        xy.y += 32.0f;
+        ui_button_update((float *)&xy, (ui_button_t *)&highscores_button);
+        xy.y += 32.0f;
+        ui_button_update((float *)&xy, (ui_button_t *)&main_menu_button);
+        xy.y += 32.0f;
+
+        if (play_again_button.activated) {
+            ui_transition_direction = 0;
+            game_state_pending = GAME_STATE_GAMEPLAY;
+            if (config_game_mode == GAME_MODE_TYPO_SHOOTER) {
+                game_state_pending = GAME_STATE_TYPO_GAMEPLAY;
+            }
+            music_fade_out_all(music_track_crimson_theme_id);
+            music_fade_out_all(music_track_shortie_monk_id);
+            music_fade_out_all(music_track_game_playlist);
+        }
+        if (highscores_button.activated) {
+            highscore_return_game_mode_id = config_game_mode;
+            highscore_return_latch = 1;
+            highscore_return_quest_stage_major = quest_stage_major;
+            highscore_return_quest_stage_minor = quest_stage_minor;
+            highscore_return_hardcore_flag = config_hardcore;
+            ui_transition_direction = 0;
+            game_state_pending = GAME_STATE_HIGHSCORES;
+        }
+        if (main_menu_button.activated) {
+            music_fade_out_all(music_track_game_playlist);
+            music_fade_out_all(music_track_crimson_theme_id);
+            music_fade_out_all(music_track_shortie_monk_id);
+            music_play_exclusive(music_track_crimson_theme_id);
+            ui_transition_direction = 0;
+            game_state_pending = GAME_STATE_MAIN_MENU;
+            ui_sign_crimson.focus_disabled = 0;
+        }
     }
 
     ui_cursor_render();

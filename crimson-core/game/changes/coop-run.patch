@@ -45,21 +45,18 @@ past its name entry: the next run waits for both players'.
          ui_transition_direction = 0;
 --- a/decomp/1.9/crimsonland/end_screens/game_over_screen_update.cpp
 +++ b/decomp/1.9/crimsonland/end_screens/game_over_screen_update.cpp
-@@ -244,6 +244,7 @@
-     } else if (ui_screen_phase != 1) {
-         ui_cursor_render();
-         return;
-     }
-+    game_coop_end_ready();
+@@ -242,3 +242,4 @@
+     } else if (ui_screen_phase == 1) {
++        game_coop_end_ready();
+         xy = banner_xy;
+         name_input.text = name_buffer;
+@@ -283,5 +283,5 @@
+         xy.y += 32.0f;
  
-     xy = banner_xy;
-@@ -289,5 +289,5 @@
-     xy.y += 32.0f;
- 
--    if (play_again_button.activated) {
-+    if (play_again_button.activated && !game_coop_next_run(0)) {
-         ui_transition_direction = 0;
-         game_state_pending = GAME_STATE_GAMEPLAY;
+-        if (play_again_button.activated) {
++        if (play_again_button.activated && !game_coop_next_run(0)) {
+             ui_transition_direction = 0;
+             game_state_pending = GAME_STATE_GAMEPLAY;
 --- a/decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp
 +++ b/decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp
 @@ -486,3 +486,4 @@

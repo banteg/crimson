@@ -79,3 +79,12 @@ spellings, all byte-neutral for 1.9.93:
 Residual: in the main-menu branch native schedules the three zero stores before
 the merged `add esp, 0x10`; 9044 emits the pop first. All six store orders
 compile to the same schedule.
+
+## 1.9.8 exact (2026-10-18)
+
+Both builds are exact with no guard. Phase 1 is now the `else if
+(ui_screen_phase == 1)` arm of the phase chain and falls through to the one
+`ui_cursor_render()` at the end; the early `ui_cursor_render(); return;` exits
+are gone. With every non-phase-1 path joining the shared epilogue, C2 9044 no
+longer cross-jumps the merged `add esp, 0x10` ahead of the main-menu arm's
+three zero stores, and 1.9.93 compiles the same body.
