@@ -6,14 +6,23 @@ import pytest
 
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
+from crimson.input_codes import PadCode
 from crimson.modes.quest_mode import QuestMode
+from crimson.modes.survival_mode import SurvivalMode
+from crimson.perks.selection import perk_selection_open_choices
 from crimson.quests.level import QuestLevel
 from crimson.screens import menu
 from crimson.screens.actions import Route, StartRun
 from crimson.screens.assets import require_runtime_resources
 from crimson.screens.menu import MenuView
+from crimson.screens.panels.controls import ControlsMenuView, RebindCapture
+from crimson.screens.panels.controls_labels import RebindRowSpec, RebindTarget
+from crimson.screens.panels.credits import CreditsView
+from crimson.screens.panels.databases_perks import UnlockedPerksDatabaseView
+from crimson.screens.panels.databases_weapons import UnlockedWeaponsDatabaseView
 from crimson.screens.panels.options import OptionsMenuView
 from crimson.screens.panels.play_game import PlayGameMenuView
+from crimson.screens.panels.stats import StatisticsMenuView
 from crimson.screens.quest_views import QuestsMenuView
 from crimson.screens.quest_views.quest_failed import QuestFailedView
 from crimson.ui.focus import UI_FOCUS_TIMER_MS
@@ -31,6 +40,7 @@ RIGHT_X = int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_X)
 RIGHT_Y = int(rl.GamepadAxis.GAMEPAD_AXIS_RIGHT_Y)
 PAD_A = rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN
 PAD_B = rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT
+PAD_START = rl.GamepadButton.GAMEPAD_BUTTON_MIDDLE_RIGHT
 
 
 @pytest.fixture
@@ -149,12 +159,85 @@ def test_options_slider_with_the_pad(loop, mocker) -> None:
     assert loop.state.config.display.detail_preset == 4
 
 
-def test_pad_b_backs_out_of_a_panel(loop, mocker) -> None:
-    loop.navigation.navigate(Route.PLAY_GAME)
-    finish_transition(loop)
+@pytest.mark.parametrize(
+    ("routes", "screen", "below"),
+    [
+        ((Route.PLAY_GAME,), PlayGameMenuView, MenuView),
+        ((Route.PLAY_GAME, Route.QUESTS), QuestsMenuView, PlayGameMenuView),
+        ((Route.OPTIONS,), OptionsMenuView, MenuView),
+        ((Route.OPTIONS, Route.CONTROLS), ControlsMenuView, OptionsMenuView),
+        ((Route.STATISTICS,), StatisticsMenuView, MenuView),
+        ((Route.STATISTICS, Route.WEAPONS), UnlockedWeaponsDatabaseView, StatisticsMenuView),
+        ((Route.STATISTICS, Route.PERKS), UnlockedPerksDatabaseView, StatisticsMenuView),
+        ((Route.STATISTICS, Route.CREDITS), CreditsView, StatisticsMenuView),
+    ],
+)
+def test_pad_b_backs_out_of_every_menu_screen(loop, mocker, routes, screen, below) -> None:
+    for route in routes:
+        loop.navigation.navigate(route)
+        finish_transition(loop)
+    assert isinstance(loop.state.screens.active, screen)
     press(loop, mocker, PAD_B)
     finish_transition(loop)
-    assert isinstance(loop.state.screens.active, menu.MenuView)
+    assert isinstance(loop.state.screens.active, below)
+
+
+def test_pad_b_closes_the_open_player_count_list_before_backing_out(loop, mocker) -> None:
+    loop.navigation.navigate(Route.PLAY_GAME)
+    finish_transition(loop)
+    panel = loop.state.screens.active
+    assert isinstance(panel, PlayGameMenuView)
+    panel.player_count_list.open = True
+    press(loop, mocker, PAD_B)
+    finish_transition(loop)
+    assert loop.state.screens.active is panel
+    assert not panel.player_count_list.open
+    press(loop, mocker, PAD_B)
+    finish_transition(loop)
+    assert isinstance(loop.state.screens.active, MenuView)
+
+
+@pytest.mark.parametrize(
+    ("row", "binds"),
+    [
+        (RebindRowSpec("Up/Down Axis:", RebindTarget.PLAYER_MOVE_AXIS_CODES, 0, axis=True), False),
+        (RebindRowSpec("Fire:", RebindTarget.PLAYER_FIRE_CODE), True),
+    ],
+)
+def test_pad_b_cancels_an_axis_rebind_and_binds_a_button_row(loop, mocker, row, binds) -> None:
+    loop.navigation.navigate(Route.OPTIONS)
+    loop.navigation.navigate(Route.CONTROLS)
+    finish_transition(loop)
+    view = loop.state.screens.active
+    assert isinstance(view, ControlsMenuView)
+    # Player 2's rows, which read the pad in the second slot.
+    view._capture = RebindCapture(row, 1, skip_frames=0)
+    press(loop, mocker, PAD_B)
+    finish_transition(loop)
+    # An axis row takes no buttons, so B cancels it; a button row takes B as its binding. The screen stays.
+    assert view._capture is None
+    assert loop.state.screens.active is view
+    assert (loop.state.config.controls.player(1).fire_code == PadCode.FACE_RIGHT) == binds
+    press(loop, mocker, PAD_B)
+    finish_transition(loop)
+    assert isinstance(loop.state.screens.active, OptionsMenuView)
+
+
+@pytest.mark.parametrize("button", [PAD_B, PAD_START])
+def test_pad_b_or_start_backs_out_of_the_perk_menu(loop, mocker, button) -> None:
+    loop.navigation.navigate(StartRun(GameMode.SURVIVAL))
+    run = loop.state.screens.gameplay
+    assert isinstance(run, SurvivalMode)
+    run.state.perk_selection.pending_count = 1
+    perk_selection_open_choices(run.state, run.world.players, game_mode=GameMode.SURVIVAL)
+    run._perk_menu.open_menu()
+    for _ in range(4):
+        loop.update(0.1)
+    press(loop, mocker, button)
+    finish_transition(loop)
+    # Start, the pad's Escape, closes the menu like B instead of pausing the run.
+    assert not run._perk_menu.open
+    assert loop.state.screens.active is run
 
 
 def _fail_a_quest(loop: GameLoopView) -> QuestFailedView:

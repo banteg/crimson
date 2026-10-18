@@ -24,11 +24,11 @@
 // and A walk the rest of the menus to the run, past a stick
 // resting short of a step; the left stick moves away from the nearest
 // creature, the right stick aims at it and R2 fires; Triangle asks for the perk
-// menu, and the d-pad and A pick while the mouse rests on another choice; Start
-// pauses, Start or B resumes; the pad disconnects for a while mid-run and comes
-// back; and on the end screen the name field takes A, then Main Menu. A fresh
-// profile takes the pad profile on first use, so the run records the Dual
-// Action Pad schemes.
+// menu, B cancels the first, and the d-pad and A pick while the mouse rests on
+// another choice; Start pauses, Start or B resumes; the pad disconnects for a
+// while mid-run and comes back; and on the end screen the name field takes A,
+// then B leaves for the main menu. A fresh profile takes the pad profile on
+// first use, so the run records the Dual Action Pad schemes.
 //
 // With --silent the original starts with sound and music off, so it loads no
 // music and its track ids are all 0: the run's ticks still tell the end tunes
@@ -161,8 +161,8 @@ function steer(screen, [x, y]) {
 }
 // An end screen by the pad: R2, the fire key, skips a quest's reveal of its
 // time; below Ok, the name field takes A as a typed Enter, which saves the
-// score; then Main Menu, the last of `buttons`.
-function leaveByPad(screen, buttons) {
+// score; then B, as Main Menu.
+function leaveByPad(screen) {
   settle(screen);
   if (screen === QUEST_RESULTS) {
     tap({ press: [PAD_R2] });
@@ -175,7 +175,7 @@ function leaveByPad(screen, buttons) {
     if (frames > 120) throw Error(`A on screen ${screen}'s name field saved no score`);
     frame(16, { cursor: PAD_CURSOR });
   }
-  choose(screen, buttons - 1);
+  tap({ press: [PAD_EAST] });
   settle(MAIN_MENU);
 }
 
@@ -271,7 +271,8 @@ const stick = ([x, y]) => (x || y ? [(x * 1000) / Math.hypot(x, y), (y * 1000) /
 
 // Frame times from 4 ms (most frames run no tick) to 50 ms (three ticks).
 const times = [16, 7, 33, 16, 50, 4, 16, 12, 21];
-let started = false, seed, ticks = 0, frames = 0, idle = 0, choice = 0, pauses = 0, resumes = 0, picked = false;
+let started = false, seed, ticks = 0, frames = 0, idle = 0, choice = 0, pauses = 0, resumes = 0, picked = false,
+  cancelled = false;
 // The verifier's run has ended and runs down for 500 ms; Escape goes once in that time.
 let ending = false, escapedEnd = false;
 // With --pad the pad is away for a stretch of the run, then comes back.
@@ -286,6 +287,17 @@ while (true) {
       // the menu closes. A choice the mouse hovers is no pick.
       const parked = [PERK_CHOICE[0], PERK_CHOICE[1] + 19 * 4];
       if (!settle(PERK_SELECTION, parked)) continue;
+      // B cancels the first menu, which Triangle asks for again.
+      if (!cancelled) {
+        tap({ press: [PAD_EAST] }, parked);
+        for (let frames = 0; game.game_state() === PERK_SELECTION; ++frames) {
+          if (frames > 120) throw Error("B left the perk menu open");
+          frame(16, { cursor: parked });
+        }
+        if (game.game_state() !== GAMEPLAY) throw Error(`B on the perk menu went to screen ${game.game_state()}`);
+        cancelled = true;
+        continue;
+      }
       for (let i = 0; i < 1 + (choice++ % 4); ++i) tap({ hat: HAT_UP }, parked);
       tap({ press: [PAD_SOUTH] }, parked);
       tap({ press: [PAD_SOUTH] }, parked);
@@ -390,6 +402,7 @@ for (const r of decode(replay()).records)
 if (!quest && (!commands[1] || pauses < 2)) throw Error(`the run picked ${commands[1]} perks and paused ${pauses} times`);
 if (padded) {
   if (!unplugged || ticks < UNPLUGGED[1]) throw Error(`the run ended at tick ${ticks}, before the pad came back`);
+  if (commands[1] && !cancelled) throw Error("the run picked perks without B cancelling a perk menu");
   // The pad's first press switched the fresh profile to the pad profile: every tick moves and aims by the sticks.
   const schemes = decode(replay()).records.map((r) => `${(r.readUInt32LE(16) >> 9) & 7}/${(r.readUInt32LE(16) >> 13) & 7}`);
   const other = schemes.find((scheme) => scheme !== "3/4");
@@ -411,9 +424,7 @@ if (!game.game_replay_open()) throw Error("the module cannot play its own replay
 const reread = memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size());
 if (!reread.equals(replay())) throw Error("the saved replay reads back differently from the recording");
 if (ranked) checkRanked();
-// Main Menu is the last of Play Again, High scores and Main Menu, or with
-// Play Next above them on a quest's.
-if (padded) leaveByPad(quest ? QUEST_RESULTS : GAME_OVER, quest ? 4 : 3);
+if (padded) leaveByPad(quest ? QUEST_RESULTS : GAME_OVER);
 console.log(JSON.stringify({ seed, ticks, frames, picks: commands[1], pauses, ...(padded ? { pad: true } : {}), ...(silent ? { silent: true } : {}), ...(tunes ? { tunes: true } : {}) }));
 
 // The quests the player's save unlocks (game.cfg, src/crimson/persistence/save_status.py).

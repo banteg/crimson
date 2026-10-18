@@ -242,7 +242,7 @@ jobs:
         with:
           name: runtime-game
           path: crimson-core/build/game
-      - name: Boot, play by mouse and by pad, rank, read, watch, seek, and load online scores
+      - name: Boot, play by mouse and by pad, go back by pad, rank, read, watch, seek, and load online scores
         run: |
           uv run --no-sync python crimson-core/checks/effect_overflow.py
           uv run --no-sync python crimson-core/checks/game_files.py "$RUNNER_TEMP/game"
@@ -252,6 +252,7 @@ jobs:
           node crimson-core/checks/game_session.mjs --quest --seed 1 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --seed 4069574050 "$(fresh)"
           node crimson-core/checks/game_session.mjs --pad --quest --seed 1 "$(fresh)"
+          node crimson-core/checks/game_pad_back.mjs "$(fresh)"
           node crimson-core/checks/game_session.mjs --ranked --seed 4069574050 "$(fresh)"
           # Breathing Room, picked off a 16 ms frame, ages the creatures by the last tick's time step.
           node crimson-core/checks/game_session.mjs --ranked --seed 23 "$(fresh)"

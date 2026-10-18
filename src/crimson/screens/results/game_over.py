@@ -243,6 +243,7 @@ class GameOverUi(msgspec.Struct):
                 return None
             button_pos = button_pos.offset(dy=32.0)
 
+            # Port: Escape (the pad's B) is Main Menu once the buttons show, past the name entry.
             if button_update(
                 resources,
                 self._main_menu_button,
@@ -251,7 +252,7 @@ class GameOverUi(msgspec.Struct):
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
-            ):
+            ) or self.focus.escape:
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
                 self._begin_close_transition(ResultAction.MAIN_MENU)

@@ -10,7 +10,8 @@
 // - outside gameplay, and over a co-op run's banner (host/coop_live.inc), the
 //   pad steps the original's keyboard focus about the screen and presses the
 //   keys its screens read, and its right stick steers the cursor, which A
-//   clicks with; Start pauses and resumes;
+//   clicks with; B is Escape, which every screen takes as its way out
+//   (changes/escape-back.patch); Start pauses and resumes;
 // - the controls screen captures pad buttons and sticks as standard codes.
 #include <math.h>
 #include "crimsonland_gameplay.h"
@@ -29,6 +30,7 @@ bool config_sync_from_grim(void);
 void ui_menu_pause_click_resume(void);
 void game_key_char(int character);
 bool game_coop_banner(void);
+bool game_watching(void);
 unsigned char ui_focus_update(int id);
 void ui_focus_draw(float *xy);
 extern int ui_screen_phase;
@@ -415,7 +417,7 @@ Direction stepped(Direction held) {
 // Once a frame, after Grim polls its devices: the pad's presses as the keys the
 // original's screens read, and its directions as steps of the focus. Start is
 // Escape everywhere (it pauses a run); in gameplay the rest of the pad plays,
-// but over a co-op banner's buttons.
+// but over a co-op banner's buttons, and B leaves a replay as Escape does.
 void navigate() {
   bool gameplay =
       (game_state_id == GAME_STATE_GAMEPLAY || game_state_id == GAME_STATE_TYPO_GAMEPLAY) && !game_coop_banner();
@@ -449,7 +451,7 @@ void navigate() {
     ui_menu_pause_click_resume();
     return;
   }
-  if (pressed[START - FACE_DOWN])
+  if (pressed[START - FACE_DOWN] || (gameplay && game_watching() && pressed[FACE_RIGHT - FACE_DOWN]))
     press(ESCAPE);
   if (gameplay)
     return;
@@ -620,10 +622,14 @@ void ui_element_render(ui_element_t *element) {
 }
 
 // A focused list: closed, A opens it; open, the pad's up/down walk its rows and
-// A picks one (dropdown.py).
+// A picks one (dropdown.py). An open list takes Escape, the keyboard's or B, as
+// closing it, ahead of the screen, which takes it as going back
+// (changes/escape-back.patch).
 int ui_list_widget_update_recovered(float *xy, ui_list_widget_t *list);
 int ui_list_widget_update(float *xy, ui_list_widget_t *list) {
   place(list, xy[0], xy[1]);
+  if (list->open > 0 && grim_interface_ptr->grim_was_key_pressed(ESCAPE))
+    list->open = 0;
   int result = ui_list_widget_update_recovered(xy, list);
   if (focused(list) && list->enabled) {
     nav.enter_opens |= list->open <= 0;

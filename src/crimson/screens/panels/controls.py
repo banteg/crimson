@@ -368,9 +368,9 @@ class ControlsMenuView(PanelMenuView):
         assert capture is not None
         active_row = capture.row
         active_player = capture.player_index
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or rl.is_mouse_button_pressed(
-            rl.MouseButton.MOUSE_BUTTON_RIGHT,
-        ):
+        # Escape cancels, and so does the pad's B on an axis row, which takes no buttons; a button row binds B.
+        escape = self.state.focus.escape if active_row.axis else rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE)
+        if escape or rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
             self._capture = None
             return
 

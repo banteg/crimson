@@ -244,10 +244,6 @@ class QuestResultsView(MenuScreen):
             self._consume_enter = False
             focus.enter = False
 
-        if focus.escape:
-            self._activate_main_menu()
-            return
-
         qualifies = int(self.rank) < TABLE_MAX
         audio = self.state.audio
         sfx = (lambda name: play_sfx(audio.sfx, name)) if audio is not None else None
@@ -368,6 +364,7 @@ class QuestResultsView(MenuScreen):
                 return
             button_pos = button_pos.offset(dy=32.0)
 
+            # Port: Escape (the pad's B) is Main Menu once the buttons show, past the reveal and the name entry.
             if button_update(
                 resources,
                 self._main_menu_button,
@@ -376,7 +373,7 @@ class QuestResultsView(MenuScreen):
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
-            ):
+            ) or focus.escape:
                 self._activate_main_menu()
                 return
 

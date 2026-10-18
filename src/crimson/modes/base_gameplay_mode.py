@@ -539,9 +539,12 @@ class BaseGameplayMode:
 
         frame_dt, frame_dt_ui_ms = self._tick_frame(dt)
         if self._perk_menu.open and (
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)
+            rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE)
+            or pad_nav_pressed(PadCode.FACE_RIGHT)
+            or pad_nav_pressed(PadCode.START)
         ):
-            # Escape (or the pad's B) backs out of the perk menu before the mode sees it, so it cannot also pause.
+            # Escape (or the pad's B or Start, its Escape) backs out of the perk menu before the mode sees it, so it
+            # cannot also pause.
             self.audio_bridge.play_sfx(SfxId.UI_BUTTONCLICK)
             self._perk_menu.close()
         else:

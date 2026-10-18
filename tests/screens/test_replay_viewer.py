@@ -245,6 +245,23 @@ def test_esc_returns_to_the_screen_below_once(open_viewer: OpenViewer, mocker) -
     assert viewer.take_action() is None
 
 
+@pytest.mark.parametrize(
+    "button", [rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, rl.GamepadButton.GAMEPAD_BUTTON_MIDDLE_RIGHT],
+)
+def test_the_pads_b_or_start_returns_to_the_screen_below(open_viewer: OpenViewer, mocker, button) -> None:
+    viewer = open_viewer(record_replay(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 4))
+    mocker.patch.object(rl, "is_gamepad_available", side_effect=lambda gamepad: int(gamepad) == 0)
+    mocker.patch.object(rl, "get_gamepad_axis_movement", return_value=0.0)
+    mocker.patch.object(rl, "is_gamepad_button_down", return_value=False)
+    mocker.patch.object(
+        rl, "is_gamepad_button_pressed", side_effect=lambda gamepad, pressed: int(gamepad) == 0 and pressed == button,
+    )
+
+    viewer.update(0.016)
+
+    assert viewer.take_action() is Route.BACK
+
+
 def test_the_music_is_the_tune_the_run_has_where_playback_is(open_viewer: OpenViewer, mocker) -> None:
     replay = load_replay_file(RECORDED_DIR / "quest-1.1-completed.crd")
     music = MusicState(ready=True, enabled=True, volume=1.0, active_track="crimson_theme", queue=["gt1_ingame", "gt2_harppen"])

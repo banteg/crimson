@@ -143,6 +143,17 @@ def test_quest_results_next_run_keeps_the_world_lit(
     assert view.world_entity_alpha() == 1.0
 
 
+@pytest.mark.parametrize(("phase", "leaves"), [(0, False), (1, False), (2, True)])
+def test_escape_is_main_menu_once_the_buttons_show(
+    make_game_state, headless_resources, mocker, phase: int, leaves: bool,
+) -> None:
+    view, _audio = _open_view(make_game_state, headless_resources, mocker, phase=phase)
+    # Escape, or the pad's B: the reveal and the name entry keep it, so a stray press does not leave unsaved.
+    view.state.focus.escape = True
+    view.update(0.016)
+    assert view.state.ui.closing == leaves
+
+
 def test_quest_results_name_entry_waits_for_controls_release(make_game_state, headless_resources, mocker) -> None:
     view, _audio = _open_view(make_game_state, headless_resources, mocker, phase=1)
     view.name_entry.waiting_for_release = True

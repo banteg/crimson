@@ -278,6 +278,13 @@ answer the standard codes from the joystick state they already poll
   original took only the hovered one ([`game/changes/perk-focus.patch`](game/changes/perk-focus.patch)).
   Start is Escape everywhere: it pauses a run, and Start or B resumes it, as in
   the 2014 remake.
+- **Back**: B is Escape, and every screen takes Escape as its way out, as in
+  the Python port: the original's controls screen, quest list, perk screen,
+  mods menu and secret credits went back only from their buttons, and its end
+  screens take Escape as Main Menu once their buttons show, past the name
+  entry ([`game/changes/escape-back.patch`](game/changes/escape-back.patch)).
+  An open list closes on Escape before the screen takes it, a rebind waiting
+  for an axis cancels on B, and B leaves a replay being watched.
 - **Controls**: a rebind takes a pad button or stick as its standard code,
   d-pad included.
 
@@ -290,7 +297,8 @@ move and aim under the pad schemes, so its replay verifies unchanged and the
 ranked input is the same tuple. `checks/game_session.mjs --pad` plays the
 menus, a Survival run (or with `--quest`, a quest from the quest list) with its
 perk picks and pauses, and the end screen's name entry by pad alone,
-unplugging it mid-run, while the verifier agrees on every tick. Local
+unplugging it mid-run, while the verifier agrees on every tick, and
+`checks/game_pad_back.mjs` presses B on every menu screen and a replay. Local
 co-op on several pads follows the single player.
 
 ### Evidence

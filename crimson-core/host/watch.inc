@@ -943,6 +943,9 @@ __attribute__((export_name("game_watch_moment"))) int game_watch_moment(int tick
 __attribute__((export_name("game_watch_status"))) int game_watch_status() {
   return !live.watching ? -1 : watch.phase != WATCH_ENDED ? 0 : !watch.stopped.empty() ? 3 : watch.played ? 1 : 2;
 }
+// A replay plays, not a run taken over from it (game/pad.cpp): the pad's B
+// leaves it as Escape does.
+bool game_watching() { return live.watching && !live.practicing; }
 __attribute__((export_name("game_custom_quest_title"))) char *game_custom_quest_title() { return custom_quest_title; }
 __attribute__((export_name("game_custom_quest_author"))) char *game_custom_quest_author() { return custom_quest_author; }
 __attribute__((export_name("game_custom_quest_play"))) int game_custom_quest_play() {

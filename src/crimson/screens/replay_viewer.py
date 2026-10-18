@@ -29,6 +29,7 @@ from grim.raylib_api import rl, rl_rectangle, rl_vector2
 from grim.view import ViewContext
 
 from ..game_states import GameStateId
+from ..input_codes import PadCode, pad_nav_pressed
 from ..modes.replay_playback_mode import ReplayPlaybackMode
 from ..perks.ids import perk_display_name
 from ..persistence.highscores import HighScoreRecord
@@ -279,7 +280,8 @@ class ReplayViewer:
         assert prep is not None and self._history is not None
         prep.poll()
         self._history.feed(prep)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        # Escape leaves, and so do the pad's B and Start (crimson-core/game/pad.cpp).
+        if self._focus.escape or pad_nav_pressed(PadCode.START):
             self.close_requested = True
             return
         self._keys()

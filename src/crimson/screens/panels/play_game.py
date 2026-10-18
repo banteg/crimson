@@ -92,7 +92,11 @@ class PlayGameMenuView(PanelMenuView):
     def update(self, dt: float) -> None:
         if not self._update_panel(dt):
             return
-        self._update_back_button()
+        # Escape closes an open list before it goes back.
+        closing_list = self.player_count_list.open and self.state.focus.escape
+        if closing_list:
+            self.player_count_list.open = False
+        self._update_back_button(enabled=not closing_list)
         entry = self._entry
         if self.state.ui.closing or entry is None or not self._entry_enabled():
             return

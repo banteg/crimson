@@ -135,3 +135,16 @@ def test_game_over_play_again_keeps_the_world_lit(tmp_path: Path, assets_dir: Pa
     ui._begin_close_transition(ResultAction.PLAY_AGAIN)
     ui.timeline.timeline_ms = 0
     assert ui.world_entity_alpha() == 1.0
+
+
+@pytest.mark.parametrize(("phase", "leaves"), [(0, False), (1, True)])
+def test_escape_is_main_menu_once_the_buttons_show(
+    tmp_path: Path, assets_dir: Path, make_mode_config, phase: int, leaves: bool,
+) -> None:
+    ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=phase)
+    if phase == 0:
+        ui.name_entry.start("banteg", focus=ui.focus)
+    # Escape, or the pad's B: the name entry keeps it, so a stray press does not leave without saving the score.
+    ui.focus.escape = True
+    ui.update(0.016, record=_survival_record(), player_name_default="", rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
+    assert ui._close_action is (ResultAction.MAIN_MENU if leaves else None)
