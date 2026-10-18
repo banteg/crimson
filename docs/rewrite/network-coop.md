@@ -1702,7 +1702,9 @@ a perk pick: this machine's own request, whose production stops at the
 request's tick until that tick is confirmed, the open menu's picker's choice
 (the partner picking on its perk screen, or the choice on its way), or the
 partner's records past the tick its pick went on, which its game produces only
-once its perk screen has closed. The picker's own frames on its perk screen run
+once its perk screen has closed: for as long as that screen takes to close
+(`COOP_PICK_FADE_MS`, 400 ms from confirming the pick's tick), after which a
+record still away is the network's. The picker's own frames on its perk screen run
 no ticks and count as neither. The game times that work by `host_clock_ms`, a
 clock finer than a millisecond (`SDL_GetTicksNS` in the clients), not the whole
 milliseconds of `host_time_ms`, which the original reads. Each summary comes from

@@ -576,6 +576,22 @@ const RING = 256,
   UNHEARD = 60;
 // A ticks packet's hash_ack (host/coop_wire.inc), -1 none.
 const hashAck = (bytes) => new DataView(bytes.buffer, bytes.byteOffset).getInt32(32, true);
+// A ticks packet cut back to the records up to tick `last`, without its hashes: its head (the newest record's tick)
+// at byte 20, the records' perk nibbles at 36, and the records, 20 bytes each from 40, oldest first.
+function cutTo(bytes, last) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset), count = bytes[1], head = view.getUint32(20, true);
+  const kept = Math.max(0, count - Math.max(0, head - last));
+  if (kept === count) return bytes;
+  const out = bytes.slice(0, 40 + 20 * kept), cut = new DataView(out.buffer);
+  out[1] = kept;
+  out[3] = 0;
+  cut.setUint32(20, last, true);
+  cut.setUint32(36, (view.getUint32(36, true) & (2 ** (4 * kept) - 1)) >>> 0, true);
+  return out;
+}
+// How long the engine takes a partner's records to stop after its pick for its perk screen's close
+// (host/coop.inc COOP_PICK_FADE_MS).
+const PICK_FADE_MS = Number(/COOP_PICK_FADE_MS = (\d+)/.exec(fs.readFileSync(new URL("host/coop.inc", CORE), "utf8"))[1]);
 // A ticks packet without its hashes.
 const bare = (bytes) => {
   const kept = bytes.slice(0, bytes.length - 4 * bytes[3]);
@@ -1190,6 +1206,43 @@ function pipeCases(stream, truth, short, shortTruth) {
     // The timeout counts from the Host's last frame before that packet.
     sim.dropped(h, REASON.stalled, past - h.frameMs, PROGRESS_MS, 2 * h.frameMs);
     lines.push(sim.report("stalled", start));
+  }
+  // A pick, then the picker's records past its tick withheld for a second (its ticks packets cut back to the pick, its
+  // repairs lost) while it plays on: the other peer's frames that wait count as perk waits only while the picker's
+  // perk screen could still be closing (PICK_FADE_MS from confirming the pick's tick), and as network stalls after.
+  {
+    const start = at(),
+      sim = new Pipe(stream, truth, mode, { seed: 21, faults: false });
+    const WITHHELD_MS = 1000;
+    let pick = null,
+      confirmedAt = null,
+      last = null;
+    const waits = { fade: { network: 0, perk: 0 }, after: { network: 0, perk: 0 } };
+    const withheld = (p) => p === pick?.picker && sim.now < pick.at + WITHHELD_MS;
+    sim.drop = (p, channel) => channel === 1 && withheld(p);
+    sim.alter = (p, channel, bytes) => (channel === 0 && withheld(p) ? cutTo(bytes, pick.tick) : bytes);
+    sim.hooks.advanced = (p) => {
+      // The picker's choice goes on the next record it produces.
+      if (!pick && sim.status(p) & STATUS.picker) pick = { picker: p, other: sim.peers[1 - p.seat], tick: p.g.game_coop_produced() + 1, at: sim.now };
+      if (!pick || p !== pick.other) return;
+      if (confirmedAt === null && p.g.game_coop_confirmed() >= pick.tick) confirmedAt = sim.now;
+      const { stalled_network: network, stalled_perk: perk } = coopStats(p.g);
+      if (last && confirmedAt !== null && sim.now < pick.at + WITHHELD_MS) {
+        const when = waits[sim.now - confirmedAt < PICK_FADE_MS ? "fade" : "after"];
+        when.network += network - last.network;
+        when.perk += perk - last.perk;
+      }
+      last = { network, perk };
+    };
+    sim.connect();
+    sim.start();
+    sim.until(() => pick && sim.now >= pick.at + WITHHELD_MS, "the pick and the records withheld");
+    assert.equal(pick.other.g.game_coop_remote(), pick.tick, "the picker's records past its pick arrived");
+    const { fade, after } = waits;
+    assert.ok(fade.perk > 0 && fade.network === 0 && after.network > 0 && after.perk === 0, `waits ${JSON.stringify(waits)}`);
+    sim.finish();
+    sim.ended(stream.ticks - 1);
+    lines.push({ ...sim.report("withheld after a pick", start), waits });
   }
   // The transport closes mid-run: the Host, told so, closes at once, its run ending at its last confirmed tick.
   {

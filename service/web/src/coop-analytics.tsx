@@ -116,7 +116,8 @@ function Histogram(props: { title: JSX.Element; counts: number[]; labels: string
   const total = () => sum(props.counts);
   const most = () => Math.max(...props.counts) || 1;
   const y = (n: number) => bottom - (n / most()) * (bottom - top);
-  const share = (n: number) => (n ? `${Math.max(1, Math.round((100 * n) / total()))}%` : "");
+  // Whole percents; a share under one shows as such, its exact count in the bar's title.
+  const share = (n: number) => (!n ? "" : (100 * n) / total() < 1 ? "<1%" : `${Math.round((100 * n) / total())}%`);
   return (
     <Chart title={props.title} height={bottom + 18}>
       <line x1={0} x2={W} y1={bottom + 0.5} y2={bottom + 0.5} class="grid" />
