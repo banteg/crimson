@@ -446,8 +446,11 @@ async function putGround(env: Env, runId: string, jpeg: Uint8Array): Promise<Uin
   return jpeg;
 }
 
-function putTimeline(env: Env, runId: string, timeline: Timeline): Promise<R2Object> {
-  return env.REPLAYS.put(timelineKey(runId), JSON.stringify(timeline), { httpMetadata: { contentType: "application/json" } });
+// A stored timeline's metadata key for why its run could not be replayed to bring it up to date.
+export const STALE = "stale";
+
+function putTimeline(env: Env, runId: string, timeline: Timeline, customMetadata?: Record<string, string>): Promise<R2Object> {
+  return env.REPLAYS.put(timelineKey(runId), JSON.stringify(timeline), { httpMetadata: { contentType: "application/json" }, customMetadata });
 }
 
 // A run's input signals (src/signals.ts). Runs accepted before signals were measured get theirs the first time a
@@ -466,20 +469,31 @@ export async function signalsFor(env: Env, runId: string): Promise<Signals | nul
 
 // The timeline of a run of `players` players. Runs accepted before timelines were recorded, and co-op runs recorded
 // before timelines kept each player's own, get theirs the first time it is asked for, by replaying their stored file
-// again; a stored one the verifier no longer replays stays. Null when there is neither.
+// again. A stored one whose run no longer replays stays, marked (STALE) so later views serve it without trying again;
+// views that arrive while the first replays each replay too, until one of them stores its result. Null when there is
+// neither a timeline nor a replay.
 export async function timelineFor(env: Env, runId: string, players: number): Promise<Timeline | null> {
-  const stored = await (await env.REPLAYS.get(timelineKey(runId)))?.json<Timeline>();
-  if (stored && (stored.players?.length ?? 1) === players) return stored;
+  const object = await env.REPLAYS.get(timelineKey(runId));
+  const stored = await object?.json<Timeline>();
+  if (stored && ((stored.players?.length ?? 1) === players || object!.customMetadata?.[STALE] !== undefined)) return stored;
   const file = await env.REPLAYS.get(`runs/${runId}.crd`);
   if (!file) return stored ?? null;
-  const replay = decodeReplay(inflateReplay(new Uint8Array(await file.arrayBuffer())));
-  const verdict = await verifyRun(env, replay, encodeTransport(replay));
-  if (!verdict.ok) {
-    if (stored) return stored;
-    throw new Error(`run ${runId} no longer verifies: ${verdict.reason}`);
+  let reason: string;
+  try {
+    const replay = decodeReplay(inflateReplay(new Uint8Array(await file.arrayBuffer())));
+    const verdict = await verifyRun(env, replay, encodeTransport(replay));
+    if (verdict.ok) {
+      await putTimeline(env, runId, verdict.timeline);
+      return verdict.timeline;
+    }
+    reason = verdict.reason;
+  } catch (error) {
+    if (!stored) throw error;
+    reason = String(error);
   }
-  await putTimeline(env, runId, verdict.timeline);
-  return verdict.timeline;
+  if (!stored) throw new Error(`run ${runId} no longer verifies: ${reason}`);
+  await putTimeline(env, runId, stored, { [STALE]: reason });
+  return stored;
 }
 
 // A run's ground as it ended (src/ground.ts), as a JPEG. Runs accepted before grounds were baked get theirs the first

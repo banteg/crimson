@@ -38,26 +38,35 @@ function active(effects: Timeline["effects"], name: string, t: number): void {
 
 const sampledHealth = (health: number) => Math.round(Math.max(0, health) * 10) / 10;
 
-// One co-op player's own record, kept until they die.
+// One co-op player's own record. A downed player (health 0 or less) can be healed back up while their health stays
+// above the MediKit's floor, so only their last fall that lasts to the run's end is their death: the path keeps its
+// point at each fall and ends at that one, and their own bonuses count only while they stand.
 class PlayerRecorder {
   private weapon = -1;
+  // When the player last went down, while they still are.
+  private down: number | null = null;
   readonly line: PlayerTimeline = { health: [], path: [], weapons: [], effects: {}, death_s: null };
 
   constructor(private readonly at: number) {}
 
   record(probe: DataView, t: number, point: boolean): void {
-    if (this.line.death_s !== null) return;
     const f32 = (offset: number) => probe.getFloat32(this.at + offset, true);
     const weapon = probe.getInt32(this.at + 12, true);
     if (weapon !== this.weapon) this.line.weapons.push({ t, id: (this.weapon = weapon) });
-    const dead = !(f32(8) > 0);
-    if (dead) this.line.death_s = t;
-    if (point || dead) this.line.path.push([t, Math.round(f32(0)), Math.round(f32(4))]);
-    if (point && !dead) for (const [name, offset] of EFFECTS) if (PLAYER_EFFECTS.includes(name) && f32(offset) > 0) active(this.line.effects, name, t);
+    const standing = f32(8) > 0;
+    const fell = !standing && this.down === null;
+    this.down = standing ? null : (this.down ?? t);
+    if (point || fell) this.line.path.push([t, Math.round(f32(0)), Math.round(f32(4))]);
+    if (point && standing) for (const [name, offset] of EFFECTS) if (PLAYER_EFFECTS.includes(name) && f32(offset) > 0) active(this.line.effects, name, t);
   }
 
   sample(probe: DataView): void {
     this.line.health.push(sampledHealth(probe.getFloat32(this.at + 8, true)));
+  }
+
+  finish(): void {
+    const death = (this.line.death_s = this.down);
+    if (death !== null) this.line.path = this.line.path.filter(([t]) => t <= death);
   }
 }
 
@@ -105,6 +114,7 @@ export class TimelineRecorder {
     // The final tick is always a sample, so the curves end where the run did.
     if ((this.tick - 1) % TICKS_PER_SAMPLE !== 0 && this.last) this.sample(this.last);
     this.timeline.duration_s = this.timeline.samples.at(-1)?.[0] ?? 0;
+    for (const player of this.players) player.finish();
     return this.timeline;
   }
 

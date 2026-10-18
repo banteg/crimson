@@ -5,7 +5,7 @@ import { confirmMerge } from "../../src/accounts";
 import { tokenHash } from "../../src/auth";
 import { decodeReplay, inflateReplay } from "../../src/replay";
 import type { BoardView, CustomQuestDetailView, CustomQuestsListView, GameScore, LoginView, ProfileView, ReplaysView, RunDetailView, Timeline } from "../../src/api-types";
-import { validateRecipeSource } from "../../src/runs";
+import { STALE, timelineFor, validateRecipeSource } from "../../src/runs";
 import vectors from "../vectors.json";
 
 const ORIGIN = "https://crimson.land";
@@ -710,6 +710,29 @@ describe("co-op runs", () => {
     await env.REPLAYS.put(`runs/${id}.timeline.json`, JSON.stringify(older));
     expect(await get<Timeline>(`/api/runs/${id}/timeline`)).toEqual(detail.timeline);
     expect(await (await env.REPLAYS.get(`runs/${id}.timeline.json`))!.json()).toEqual(detail.timeline);
+  });
+
+  it("an older co-op timeline whose run no longer replays is kept, and its run replayed once", async () => {
+    const [alice, bob] = await pair();
+    expect((await uploadPair(file, [alice, "alice"], [bob, "bob"])).status).toBe(201);
+    const id = vectors.coop_run.run_id;
+    const { players: _, ...older } = (await get<RunDetailView>(`/api/runs/${id}`)).timeline!;
+    await env.REPLAYS.put(`runs/${id}.timeline.json`, JSON.stringify(older));
+    // A replay the verifier refuses in place of the run's.
+    await env.REPLAYS.put(`runs/${id}.crd`, decode64(vectors.illegal_command_run));
+    let replays = 0;
+    const REPLAYS = new Proxy(env.REPLAYS, {
+      get(target, key) {
+        if (key === "get") return (name: string) => (name.endsWith(".crd") && replays++, target.get(name));
+        const value = Reflect.get(target, key);
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
+
+    for (let view = 0; view < 3; view++) expect(await timelineFor({ ...env, REPLAYS }, id, 2)).toEqual(older);
+    expect(replays).toBe(1);
+    expect((await env.REPLAYS.head(`runs/${id}.timeline.json`))!.customMetadata![STALE]).toContain("perk_pick without an open perk");
+    expect(await get<Timeline>(`/api/runs/${id}/timeline`)).toEqual(older);
   });
 
   it("both partners' pages upload the same run at once: the service takes it once", async () => {
