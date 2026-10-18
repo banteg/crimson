@@ -705,6 +705,46 @@
               "end": "0x0046E944"
             }
           ]
+        },
+        {
+          "id": "sdk-imports",
+          "version": "DirectX 8.1 SDK and Platform SDK import libraries (d3d8.lib, dsound.lib, urlmon.lib, version.lib)",
+          "linkage": "dynamic",
+          "confidence": "binary-dependency-confirmed",
+          "imports": [
+            {
+              "module": "d3d8",
+              "symbols": [
+                "Direct3DCreate8"
+              ]
+            },
+            {
+              "module": "dsound",
+              "symbols": [
+                "ordinal:11"
+              ]
+            },
+            {
+              "module": "urlmon",
+              "symbols": [
+                "HlinkNavigateString"
+              ]
+            },
+            {
+              "module": "version",
+              "symbols": [
+                "GetFileVersionInfoA",
+                "GetFileVersionInfoSizeA",
+                "VerQueryValueA"
+              ]
+            }
+          ],
+          "ranges": [
+            {
+              "start": "0x0046E944",
+              "end": "0x0046E968"
+            }
+          ]
         }
       ]
     },

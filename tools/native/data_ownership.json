@@ -3101,10 +3101,10 @@
     {
       "image": "grim.dll",
       "name": "grim_format_info_entries",
-      "owner": "game",
+      "owner": "libraries",
       "evidence": {
-        "path": "analysis/ghidra/maps/data_map.json",
-        "reason": "Recovered grim_format_info_t[43] object: Start of the 36-byte D3D pixel-format descriptor table.. Extent: analysis/ghidra/maps/data_map.json: grim_format_info_t[43]; tools/native/abi/grim.dll/abi_assertions.cpp: format_info_table_43_is_0x60c"
+        "path": "tools/native/data_definitions/grim.dll.json",
+        "reason": "Pinned DirectX 8.1 d3dx8.lib cd3dxcodec.obj .rdata table: read only by grim_format_info_lookup and d3dx_find_closest_device_format inside the d3dx8 range"
       }
     },
     {

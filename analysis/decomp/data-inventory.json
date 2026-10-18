@@ -49,7 +49,7 @@
       "image": "grim.dll",
       "name": "grim_format_info_entries",
       "owners": [
-        "game"
+        "libraries"
       ],
       "reason": null,
       "size": 1548,
@@ -30414,11 +30414,11 @@
   "ownership": {
     "game": {
       "matched_bytes": 346897,
-      "total_bytes": 348445
+      "total_bytes": 346897
     },
     "libraries": {
       "matched_bytes": 14179,
-      "total_bytes": 41478
+      "total_bytes": 43026
     },
     "unknown": {
       "matched_bytes": 0,
@@ -60246,7 +60246,7 @@
       "objects": [
         "grim_format_info_entries"
       ],
-      "owner": "game",
+      "owner": "libraries",
       "section": ".rdata",
       "size": 1548,
       "source": null

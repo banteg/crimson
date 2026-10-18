@@ -54913,7 +54913,7 @@
     }
   ],
   "identities": {
-    "inventory": "f28cfb5d4bfd0cf1a554584363ce4536490930d7bedd6d08d1ff56a613f7ed89",
+    "inventory": "2d1f1b46c84400fdd844e8891187ab581dbcfadee4ca87ffa103416f86e0c4cb",
     "inventory_policy": "native-functions-and-full-executable-remainder-v1",
     "scoring": "44fa67c7bcb012283a45888bb29c6818486ddda64c57cab0e3a55f77466446af",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1",
@@ -54996,7 +54996,7 @@
     "analysis/ida/raw/grim.dll/functions.json": "a8771cd74e8ce0c3dc9f2d22ee470c4b093e814af3739ffb0a62059e20801f26",
     "analysis/ida/raw/grim.dll/imports.json": "ffc865dc723dd872e65ee74c3c6471296712f26191b3ff214c05abf22da9b6a2",
     "analysis/ida/raw/grim.dll/metadata.json": "b68d86de85411f481fd2555c9271849646be97ec21dafd1a06b87bb314e63f25",
-    "analysis/library_provenance.json": "738aa67399f44dd5d8407d70e8d6018105db81bff8515609a124c872b3dbe9c6",
+    "analysis/library_provenance.json": "86d61091dac50a8cdf6b8a03c8b7efd36d75a79b681f2ffea236441881858996",
     "analysis/matching_scope.json": "3492406d95e46324f79e1454e7800e4a0f7b4ef4dc445143810bcff8b2872086",
     "crimson-re/src/crimson_re/cli/match.py": "c1487bccbfa471a22686448ed3101f993e113db7d069556f31645789f42812f6",
     "crimson-re/src/crimson_re/library_match.py": "7527e3b7e813b099665ffca627948da6c93c4a1921b5d3f3900d69d21ef6180b",
@@ -58417,7 +58417,7 @@
     "tools/native/data_candidates.json": "daddb830280f864f2688556617d9478d3e28518031e5af3ea23d762005b86621",
     "tools/native/data_definitions/crimsonland.exe.json": "61e6907fa5b8e5b473e06e5217411ef459048c6fbf3ee5a8041fc8e472072b63",
     "tools/native/data_definitions/grim.dll.json": "915d9dfa0f4c5f6b42dee3287ed40b1e5cb13a4760483b9f2f62b5e50531bc0b",
-    "tools/native/data_ownership.json": "87a3f03dd1fa66311629886c6b62d8dba92b9ef0dfe332735f3aae2f0e1645b4",
+    "tools/native/data_ownership.json": "1ae4080d63cf288bb1bb5dbfba517e201336843d691496744247f8a33714d74f",
     "tools/native/linker_aliases/crimsonland.exe.json": "852b2fb43228b6495e3ab325f00b3bf942a9244cfb4313aa3d146910dabd7f3b",
     "tools/native/linker_aliases/grim.dll.json": "7d0f37f43a195e318d402cf79f8f6357db9dbde4b2a085631ea8567b6b540682",
     "tools/native/providers/crimsonland.exe.json": "56ae09ebeb4b0178bfa4d95cccedb97d5deb78cf4f1b0c6c81e1eb88fa251a46",

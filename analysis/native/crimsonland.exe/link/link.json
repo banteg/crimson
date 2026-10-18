@@ -11,7 +11,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "738aa67399f44dd5d8407d70e8d6018105db81bff8515609a124c872b3dbe9c6"
+          "sha256": "86d61091dac50a8cdf6b8a03c8b7efd36d75a79b681f2ffea236441881858996"
         },
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
         "source_artifact": "visual-cpp-6-sp6-media"
@@ -29,7 +29,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "738aa67399f44dd5d8407d70e8d6018105db81bff8515609a124c872b3dbe9c6"
+          "sha256": "86d61091dac50a8cdf6b8a03c8b7efd36d75a79b681f2ffea236441881858996"
         }
       }
     },
@@ -44,7 +44,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "738aa67399f44dd5d8407d70e8d6018105db81bff8515609a124c872b3dbe9c6"
+          "sha256": "86d61091dac50a8cdf6b8a03c8b7efd36d75a79b681f2ffea236441881858996"
         },
         "member": "DXF/DXSDK/lib/d3dx8.lib",
         "source_artifact": "directx-8.1-sdk-full"
@@ -264,7 +264,7 @@
           "note": "The provenance manifest pins the exact LIBCMT archive and records its whole-range executable match.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "738aa67399f44dd5d8407d70e8d6018105db81bff8515609a124c872b3dbe9c6"
+          "sha256": "86d61091dac50a8cdf6b8a03c8b7efd36d75a79b681f2ffea236441881858996"
         }
       ],
       "kind": "static-library",
@@ -1086,7 +1086,7 @@
           "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "738aa67399f44dd5d8407d70e8d6018105db81bff8515609a124c872b3dbe9c6"
+          "sha256": "86d61091dac50a8cdf6b8a03c8b7efd36d75a79b681f2ffea236441881858996"
         }
       ],
       "import_library": {
@@ -1394,7 +1394,7 @@
           "note": "The pinned VC6 SP6 LIBCMT archive defines __snprintf and _tolower.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "738aa67399f44dd5d8407d70e8d6018105db81bff8515609a124c872b3dbe9c6"
+          "sha256": "86d61091dac50a8cdf6b8a03c8b7efd36d75a79b681f2ffea236441881858996"
         }
       ],
       "kind": "static-library",
@@ -1448,7 +1448,7 @@
           "note": "The pinned D3DX8 and VC6 archives record these decorated KERNEL32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "738aa67399f44dd5d8407d70e8d6018105db81bff8515609a124c872b3dbe9c6"
+          "sha256": "86d61091dac50a8cdf6b8a03c8b7efd36d75a79b681f2ffea236441881858996"
         }
       ],
       "import_library": {
@@ -1724,7 +1724,7 @@
           "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "738aa67399f44dd5d8407d70e8d6018105db81bff8515609a124c872b3dbe9c6"
+          "sha256": "86d61091dac50a8cdf6b8a03c8b7efd36d75a79b681f2ffea236441881858996"
         },
         {
           "note": "The final missing DirectX member is an exact 1,014-instruction match with all 61 references aligned.",
@@ -1762,7 +1762,7 @@
           "note": "The pinned DirectX 8.1 archive matches the executable's entire D3DX8 range; the dispatch initializer and thunk match d3dxmath.obj exactly.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "738aa67399f44dd5d8407d70e8d6018105db81bff8515609a124c872b3dbe9c6"
+          "sha256": "86d61091dac50a8cdf6b8a03c8b7efd36d75a79b681f2ffea236441881858996"
         },
         {
           "note": "The archive proof identifies D3DXVec2Normalize as an original static D3DX8 provider used by both images.",
