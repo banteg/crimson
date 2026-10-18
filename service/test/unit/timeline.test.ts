@@ -42,4 +42,19 @@ describe("co-op timelines", () => {
     expect(second!.effects).toEqual({ Shield: [[2.4, 3.744]] });
     expect(second!.health).toEqual([50, 0, 50, 50, 0, 0]);
   });
+
+  it("a dead player's weapons end where they died, though a partner's Random Weapon swaps theirs later", () => {
+    const recorder = new TimelineRecorder(1, 2);
+    const two = { x: 300, health: 100, weapon: 1, shield: 0 };
+    for (let tick = 0; tick <= 180; tick++) {
+      const one = { x: 100, health: tick >= 60 ? -20 : 100, weapon: tick >= 120 ? 7 : 1, shield: 0 };
+      recorder.record(probe(tick, [one, two]));
+    }
+    const [first, second] = recorder.finish().players!;
+
+    expect(first!.death_s).toBe(0.96);
+    expect(first!.weapons).toEqual([{ t: 0, id: 1 }]);
+    expect(first!.path.at(-1)![0]).toBe(0.96);
+    expect(second!.death_s).toBeNull();
+  });
 });

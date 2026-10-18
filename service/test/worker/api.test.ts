@@ -735,6 +735,30 @@ describe("co-op runs", () => {
     expect(await get<Timeline>(`/api/runs/${id}/timeline`)).toEqual(older);
   });
 
+  it("an upgraded co-op timeline that fails to store is not marked stale, and the next view stores it", async () => {
+    const [alice, bob] = await pair();
+    expect((await uploadPair(file, [alice, "alice"], [bob, "bob"])).status).toBe(201);
+    const id = vectors.coop_run.run_id;
+    const upgraded = (await get<RunDetailView>(`/api/runs/${id}`)).timeline!;
+    const { players: _, ...older } = upgraded;
+    await env.REPLAYS.put(`runs/${id}.timeline.json`, JSON.stringify(older));
+    let failures = 1;
+    const REPLAYS = new Proxy(env.REPLAYS, {
+      get(target, key) {
+        if (key === "put")
+          return (...args: Parameters<R2Bucket["put"]>) => (failures-- > 0 ? Promise.reject(new Error("R2 is down")) : target.put(...args));
+        const value = Reflect.get(target, key);
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
+
+    await expect(timelineFor({ ...env, REPLAYS }, id, 2)).rejects.toThrow("R2 is down");
+    const kept = (await env.REPLAYS.get(`runs/${id}.timeline.json`))!;
+    expect([kept.customMetadata, await kept.json()]).toEqual([{}, older]);
+    expect(await timelineFor({ ...env, REPLAYS }, id, 2)).toEqual(upgraded);
+    expect(await (await env.REPLAYS.get(`runs/${id}.timeline.json`))!.json()).toEqual(upgraded);
+  });
+
   it("both partners' pages upload the same run at once: the service takes it once", async () => {
     const [alice, bob] = await pair();
     const statuses = await Promise.all([0, 1].map(() => uploadPair(file, [alice, "alice"], [bob, "bob"]).then((response) => response.status)));

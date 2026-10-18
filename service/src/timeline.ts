@@ -40,7 +40,7 @@ const sampledHealth = (health: number) => Math.round(Math.max(0, health) * 10) /
 
 // One co-op player's own record. A downed player (health 0 or less) can be healed back up while their health stays
 // above the MediKit's floor, so only their last fall that lasts to the run's end is their death: the path keeps its
-// point at each fall and ends at that one, and their own bonuses count only while they stand.
+// point at each fall and ends at that one, as their weapons do, and their own bonuses count only while they stand.
 class PlayerRecorder {
   private weapon = -1;
   // When the player last went down, while they still are.
@@ -64,9 +64,13 @@ class PlayerRecorder {
     this.line.health.push(sampledHealth(probe.getFloat32(this.at + 8, true)));
   }
 
+  // A dead player's rows end where they died: a partner's Random Weapon still swaps their weapon afterwards. Their own
+  // bonuses already ended when they went down.
   finish(): void {
     const death = (this.line.death_s = this.down);
-    if (death !== null) this.line.path = this.line.path.filter(([t]) => t <= death);
+    if (death === null) return;
+    this.line.path = this.line.path.filter(([t]) => t <= death);
+    this.line.weapons = this.line.weapons.filter(({ t }) => t <= death);
   }
 }
 

@@ -478,22 +478,25 @@ export async function timelineFor(env: Env, runId: string, players: number): Pro
   if (stored && ((stored.players?.length ?? 1) === players || object!.customMetadata?.[STALE] !== undefined)) return stored;
   const file = await env.REPLAYS.get(`runs/${runId}.crd`);
   if (!file) return stored ?? null;
-  let reason: string;
-  try {
-    const replay = decodeReplay(inflateReplay(new Uint8Array(await file.arrayBuffer())));
-    const verdict = await verifyRun(env, replay, encodeTransport(replay));
-    if (verdict.ok) {
-      await putTimeline(env, runId, verdict.timeline);
-      return verdict.timeline;
-    }
-    reason = verdict.reason;
-  } catch (error) {
+  const replayed = await replayTimeline(env, file).catch((error: unknown) => {
     if (!stored) throw error;
-    reason = String(error);
+    return String(error);
+  });
+  // Only a replay that fails marks the stored timeline; failing to store a new one leaves it for the next view.
+  if (typeof replayed !== "string") {
+    await putTimeline(env, runId, replayed);
+    return replayed;
   }
-  if (!stored) throw new Error(`run ${runId} no longer verifies: ${reason}`);
-  await putTimeline(env, runId, stored, { [STALE]: reason });
+  if (!stored) throw new Error(`run ${runId} no longer verifies: ${replayed}`);
+  await putTimeline(env, runId, stored, { [STALE]: replayed });
   return stored;
+}
+
+// A stored replay's timeline, or why the verifier refuses it.
+async function replayTimeline(env: Env, file: R2ObjectBody): Promise<Timeline | string> {
+  const replay = decodeReplay(inflateReplay(new Uint8Array(await file.arrayBuffer())));
+  const verdict = await verifyRun(env, replay, encodeTransport(replay));
+  return verdict.ok ? verdict.timeline : verdict.reason;
 }
 
 // A run's ground as it ended (src/ground.ts), as a JPEG. Runs accepted before grounds were baked get theirs the first
