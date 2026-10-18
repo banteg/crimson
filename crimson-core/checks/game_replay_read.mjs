@@ -104,6 +104,7 @@ const broken = {
   "a short seat key": "v34([bytes(31)])",
   "a seat key as text": "v34(['k' * 32])",
   "player two's perk commands": picked(1),
+  "a tick with no inputs first": "pack({**wire, 'ticks': [[[], wire['ticks'][0][1]]] + wire['ticks'][1:]})",
 };
 for (const [name, expression] of Object.entries(broken))
   if (rewrite(expression)) throw Error(`a replay with ${name} reads as playable`);
@@ -115,6 +116,7 @@ const coopBroken = {
   "a third player's perk command": picked(2),
   "a negative player index": picked(-1),
   "one player's inputs a tick": "pack({**wire, 'ticks': [[t[0][:1], t[1]] for t in wire['ticks']]})",
+  "ticks with no inputs first": "pack({**wire, 'ticks': [[[], t[1]] for t in wire['ticks'][:2]] + wire['ticks'][2:]})",
   "no players": "pack({**wire, 'run': {**wire['run'], 'player_count': 0}, 'seat_keys': None})",
   "five players": "pack({**wire, 'run': {**wire['run'], 'player_count': 5}, 'seat_keys': None})",
 };

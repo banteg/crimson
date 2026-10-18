@@ -112,7 +112,10 @@ for (const name of [...replays, ...Object.keys(coop)]) {
   if (coop[name]) fs.writeFileSync(path.join(watched, name), Buffer.from(coop[name], "base64"));
   else fs.copyFileSync(path.join(fixtures, name), path.join(watched, name));
   memory().write(`watched/${name}\0`, game.game_replay_path(), "latin1");
-  if (!game.game_replay_open()) continue; // one the Python port plays (game_replay_read.mjs)
+  if (!game.game_replay_open()) {
+    if (coop[name]) throw Error(`${name} does not read`);
+    continue; // one the Python port plays (game_replay_read.mjs)
+  }
   const recording = Buffer.from(memory().subarray(game.game_replay_recording(), game.game_replay_recording() + game.game_replay_recording_size()));
   if (!game.game_watch() || (!played && !game.game_watch())) throw Error(`${name}: Watch does not start`);
   if (name === "survival-238852.crd") {

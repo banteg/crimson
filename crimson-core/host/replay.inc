@@ -668,7 +668,7 @@ static void replay_read_ticks(MsgpackReader &r, LoadedReplay &out, uint32_t &pla
     uint32_t inputs = r.array();
     if (inputs > 2)
       return void(out.reason = "This run needs the Python port");
-    if (players && inputs != players)
+    if (!inputs || (players && inputs != players))
       return void(r.ok = false);
     players = inputs;
     PortableInput input[2];
