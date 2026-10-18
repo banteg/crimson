@@ -23859,9 +23859,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 1,
-          "ok": 388,
+          "ok": 426,
           "positional": false,
-          "unresolved": 38
+          "unresolved": 0
         },
         "state": "wip",
         "target_instructions": 1345,
@@ -25994,9 +25994,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 0,
-          "ok": 135,
+          "ok": 217,
           "positional": false,
-          "unresolved": 82
+          "unresolved": 0
         },
         "state": "wip",
         "target_instructions": 449,
@@ -32784,9 +32784,9 @@
         "excluded_target_ranges": [],
         "references": {
           "mismatched": 1,
-          "ok": 312,
+          "ok": 314,
           "positional": false,
-          "unresolved": 2
+          "unresolved": 0
         },
         "state": "wip",
         "target_instructions": 1177,
@@ -40728,10 +40728,10 @@
         ],
         "excluded_target_ranges": [],
         "references": {
-          "mismatched": 18,
-          "ok": 449,
+          "mismatched": 2,
+          "ok": 614,
           "positional": false,
-          "unresolved": 149
+          "unresolved": 0
         },
         "state": "wip",
         "target_instructions": 1926,
@@ -76669,11 +76669,11 @@
     "analysis/decomp/1.9.1/grim.dll/functions.json": "6185b878c9c09683f915ebaf47a208241a4052da347e010e6f1db04fc064da26",
     "analysis/decomp/1.9.1/grim.dll/imports.json": "a4929b2195b0aae572e9a11ba6473f48bc15213aff13465c7aae5833759002e1",
     "analysis/decomp/1.9.1/grim.dll/metadata.json": "2283281db97d8c9d22c4240bb9f1b5eed552e6ca4d7303f729a5464af296b6ac",
-    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "097f4c616c8dc12a8cbc138efa0025cd5e23f3711fcbf8d107cdaf38e7ae9c42",
+    "analysis/decomp/1.9.8/crimsonland.exe/data.json": "2c936a78c50685be142bde71cdbca48231f16f68f227d4df2cd5a9828a46b085",
     "analysis/decomp/1.9.8/crimsonland.exe/functions.json": "a8533f7146bccef3b5d32378753e2f332888fcbb3a5f2703996c0a3694ca592f",
     "analysis/decomp/1.9.8/crimsonland.exe/imports.json": "0c31f6358f0514e1c8815d7921c8ad3779199591dd36954c4cce4a7bd3024c18",
     "analysis/decomp/1.9.8/crimsonland.exe/metadata.json": "9b248110b10661b30a5d703fc60149baf131572ed64ec85dc77fb71e6b448e4d",
-    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "0c108505b6bc1457c8baf8c638ef323aa017e552961a52fef1d9b87935dad0ca",
+    "analysis/decomp/1.9.8/crimsonland.exe/recovered.json": "fb3e17f4bdd49349117e49bffad29882f929afdcdd4c4dd1dbc4fc48d3f31a69",
     "analysis/decomp/1.9.8/grim.dll/data.json": "5de381e9062acbbeabef1fdf16908f8107548db12a0af7d438389044c9ffb56c",
     "analysis/decomp/1.9.8/grim.dll/functions.json": "3b9e34b2eda5c994d29139b11a098c95eb9862dd8688fda5f5a0d5b63e01dce0",
     "analysis/decomp/1.9.8/grim.dll/imports.json": "f2e55491c2a9be4e9dcb81246e54f4366f646cf04fc5fd08f6f316e01dd14e7a",
